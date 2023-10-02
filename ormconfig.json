@@ -1,0 +1,15 @@
+{
+  "type": "postgres",
+  "host": "localhost",
+  "port": 5432,
+  "username": "nonopwells",
+  "password": "NOW1",
+  "database": "nonopwellsnew",
+  "entities": ["src/**/*.entity.ts"],
+  "logging": false,
+  "migrationsTableName": "migrations",
+  "migrations": ["src/core/database/migrations/*{.ts,.js}"],
+  "cli": {
+    "migrationsDir": "src/core/database/migrations"
+  }
+}
