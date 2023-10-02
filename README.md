@@ -1,73 +1,90 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+## Metgo
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+A destination management application for internal and external tourism
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+</br>
 
-## Description
+## Tech stack
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- Nest Js
+- Node Js
+- Flutter
 
-## Installation
+## unstall Dependencies
+
+clone the repo and use `cd backend ` and run the following command to install dependencies and current version of node Node Version Manger (nvm) will select the project's current node version from the `.nvmrc` files in the root directory.
 
 ```bash
-$ npm install
+nvm install
+nvm use
+yarn install
 ```
 
-## Running the app
+## getting started using a local backend, and local postgress database
+
+These are the steps to run database migrations on a new database.
+
+**Creating a new database**
+
+1. if youdont't have postgresql intalled, please intall postgresql. You can do this on Mac via homeBrew with:
+
+```
+brew install postresql@14
+```
+
+2. Then start the postgres with the command (if postgress was already running, you'll need to restart it with `brew services restart postgresql@14`):
+
+```
+brew services start postgresql@14
+```
+
+open the postgress shell with one of these commands:
+
+`psql postgres` or ` sudo -u postgres psql`
+
+then create the database through the posrgres shell as per below. The postgres shell has a promt like this ` postgres=#`
+
+create database metgo
+create user metgo with encrypted password metgo
+grand all privileges on database metgo to metgo
+
+Then, you can verify the database was create like this:
+
+```
+\l
+```
+
+This will allow you to quit"
+
+```
+\q
+```
+
+Once the database is created , next we will setup the connection to the database. Note that if you would like to use different database name or password, thoese xhnage will need to reflected in your variables.
+
+</br>
+
+**Setuo environment Variables:**
+
+from the directory `backend` copy the `local.env.example` file and rename it `local.env` (which is be ignored by Git):
 
 ```bash
-# development
-$ npm run start
 
-# watch mode
-$ npm run start:dev
+cp local.env.example local.env
 
-# production mode
-$ npm run start:prod
 ```
 
-## Test
+open `local.env` and asked your lead developer for the missing API key value variables:
+
+**Importnat Note:** for every new instance of a ./backend terminal going forard, you will neeed to run the command `export DEV_CONFIG=local` before starting the backend. This will allow the config.services.ts (backend configuration file) to detect your environment variables' credentail and then connect to the database. Also note that if your .env files is named differentlt (examples: local.test.env), replace `local` with the name (example `local.test.env`).
+
+## run the database migrations
+
+## runnning the app
+
+Now that our database is setup, run the following to start the backend. Remember that `local` should match the name of your current .env files.
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+export DEV_CONFIG=local
+yarn start:dev
 ```
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](LICENSE).
