@@ -10,7 +10,7 @@ A destination management application for internal and external tourism
 - Node Js
 - Flutter
 
-## unstall Dependencies
+## install Dependencies
 
 clone the repo and use `cd backend ` and run the following command to install dependencies and current version of node Node Version Manger (nvm) will select the project's current node version from the `.nvmrc` files in the root directory.
 

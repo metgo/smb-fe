@@ -12,8 +12,8 @@ export class ConfigService {
   constructor() {
     const { DEV_CONFIG } = process.env;
 
-    const config =
-      DEV_CONFIG && fs.existsSync(`${DEV_CONFIG}.env`)
+    const config
+      = DEV_CONFIG && fs.existsSync(`${DEV_CONFIG}.env`)
         ? dotenv.parse(fs.readFileSync(`${DEV_CONFIG}.env`))
         : this.parseEnv();
 
@@ -44,7 +44,6 @@ export class ConfigService {
       if (process.env[variable]) {
         // eslint-disable-next-line no-param-reassign
         obj[variable] = process.env[variable];
-        // console.log(process.env[variable]);
       }
 
       return obj;
@@ -69,8 +68,8 @@ export class ConfigService {
       AUTH_JWT_SECRET: Joi.string().required(),
       JWT_TOKEN_EXPIRES: Joi.string().required(),
     }).unknown(true);
-    const { error, value: validatedEnvConfig } =
-      envVarsSchema.validate(envConfig);
+    const { error, value: validatedEnvConfig }
+      = envVarsSchema.validate(envConfig);
 
     if (error) {
       throw new Error(`Config validation error: ${error.message}`);
