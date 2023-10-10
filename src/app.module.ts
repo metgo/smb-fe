@@ -1,10 +1,16 @@
 import { Module } from '@nestjs/common';
+import { MongooseModule } from '@nestjs/mongoose';
+
+import dbConfig from './core/dbConfig';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule } from './services/config/config.module';
 
 @Module({
-  imports: [ConfigModule],
+  imports: [
+    MongooseModule.forRoot(dbConfig.uri),
+    ConfigModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })

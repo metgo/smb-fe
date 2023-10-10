@@ -38,6 +38,7 @@ export class ConfigService {
       'JWT_TOKEN_EXPIRES',
       'ADMIN_JWT_TOKEN_EXPIRES',
       'REFRESH_TOKEN_TOKEN_EXPIRATION_IN_SECONDS',
+      'MONGODB_URI',
     ];
 
     return ENV_VARIABLES.reduce((obj: any, variable) => {
@@ -67,6 +68,7 @@ export class ConfigService {
       ENV_NAME: Joi.string().required(),
       AUTH_JWT_SECRET: Joi.string().required(),
       JWT_TOKEN_EXPIRES: Joi.string().required(),
+      MONGODB_URI: Joi.string().required(),
     }).unknown(true);
     const { error, value: validatedEnvConfig }
       = envVarsSchema.validate(envConfig);
