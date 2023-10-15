@@ -1,0 +1,18 @@
+openapi: 3.0.0
+paths:
+  /:
+    get:
+      operationId: getHello
+      parameters: []
+      responses:
+        "200":
+          description: ""
+info:
+  title: METGO
+  description: API Documentation for MetGo
+  version: 1.0.0
+  contact: {}
+tags: []
+servers: []
+components:
+  schemas: {}
