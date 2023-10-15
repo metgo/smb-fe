@@ -1,8 +1,15 @@
+/* eslint-disable no-console */
 import { NestFactory } from '@nestjs/core';
+import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder } from '@nestjs/swagger';
 import { OpenApiNestFactory } from 'nest-openapi-tools';
 
 import { AppModule } from 'src/app.module';
+import { ConfigService } from 'src/services/config/config.service';
+
+const configService = new ConfigService();
+
+const API_PORT = configService.get('API_PORT');
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -36,6 +43,8 @@ async function bootstrap() {
     },
   );
 
-  await app.listen(3000);
+  app.useGlobalPipes(new ValidationPipe());
+  await app.listen(API_PORT);
+  console.log(`Main process started with process: ${process.pid}:${API_PORT}`);
 }
 bootstrap();

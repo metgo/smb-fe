@@ -25,7 +25,7 @@ export class ConfigService {
     const ENV_VARIABLES = [
       'NODE_ENV',
       'HOST',
-      'PORT',
+      'API_PORT',
       'DATABASE_HOST',
       'DATABASE_PORT',
       'DATABASE_NAME',
@@ -59,6 +59,7 @@ export class ConfigService {
         .default('development'),
       HOST: Joi.string().default('localhost'),
       PORT: Joi.number().port().default(3000),
+      API_PORT: Joi.number().port().default(3000),
       DATABASE_HOST: Joi.string().default('localhost'),
       DATABASE_PORT: Joi.number().port().default(5432),
       DATABASE_NAME: Joi.string().required(),
