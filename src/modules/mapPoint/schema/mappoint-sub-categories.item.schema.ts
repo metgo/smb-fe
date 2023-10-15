@@ -10,24 +10,24 @@ export class MapPoinMapPointSubCategoiresItem {
       name: string;
 
     @Prop()
-      mapPontId: {
+      mapPontId: [
         type: mongoose.Schema.Types.ObjectId,
         ref: 'MapPoint',
         required: true,
-      };
+      ];
 
     @Prop()
-      mapPontCategoriesId: {
+      mapPontCategoriesId: [
         type: mongoose.Schema.Types.ObjectId,
         ref: 'MapPointCategories',
         required: true,
-    };
+      ];
 
   @Prop()
-    mapPontSubCategoriesId: {
+    mapPontSubCategoriesId: [
       type: mongoose.Schema.Types.ObjectId,
       ref: '  MapPointSubCategoires',
       required: true,
-    };
+    ];
 }
 export const MapPoinMapPointSubCategoiresItemSchema = SchemaFactory.createForClass(MapPoinMapPointSubCategoiresItem);

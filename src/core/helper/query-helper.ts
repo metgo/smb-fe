@@ -2,8 +2,7 @@ import { Model } from 'mongoose';
 
 export async function findByFieldName<T>(model: Model<T>, fieldName: keyof T, item: string) {
   const filterBy = { [fieldName]: item };
-  const data = await model.find({ ...filterBy, delatedAt: [false, null] });
-  console.log(data);
+  const data = await model.find({ ...filterBy, delatedAt: { $in: [false, null] } });
   return data;
 }
 
