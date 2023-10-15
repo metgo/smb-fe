@@ -5,11 +5,13 @@ import dbConfig from './core/dbConfig';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule } from './services/config/config.module';
+import { MapPointModule } from './modules/mapPoint/mappoint.module';
 
 @Module({
   imports: [
     MongooseModule.forRoot(dbConfig.uri),
     ConfigModule,
+    MapPointModule,
   ],
   controllers: [AppController],
   providers: [AppService],
