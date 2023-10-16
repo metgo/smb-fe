@@ -1,15 +1,31 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class createMapPointDto {
     @IsNotEmpty()
     @IsString()
       name: string;
+
+  @IsOptional()
+    @IsString()
+    icon: string;
+
+  @IsOptional()
+    @IsString()
+    pathAlt: string;
 }
 
 export class createMapPointCategoriesDto {
     @IsNotEmpty()
     @IsString()
       name: string;
+
+  @IsOptional()
+    @IsString()
+    icon: string;
+
+  @IsOptional()
+    @IsString()
+    pathAlt: string;
 
     @IsNotEmpty()
       mapPointId: [];
@@ -20,11 +36,19 @@ export class createMapPointSubCategoriesDto {
     @IsString()
       name: string;
 
+  @IsOptional()
+    @IsString()
+    icon: string;
+
+  @IsOptional()
+    @IsString()
+    pathAlt: string;
+
     @IsNotEmpty()
       mapPointId: [];
 
     @IsNotEmpty()
-      mapPointCatId: [];
+      mapPointCategoriesId: [];
 }
 
 export class createMapPointSubCategoriesItemDto {
@@ -32,12 +56,20 @@ export class createMapPointSubCategoriesItemDto {
     @IsString()
       name: string;
 
+  @IsOptional()
+    @IsString()
+    icon: string;
+
+  @IsOptional()
+    @IsString()
+    pathAlt: string;
+
   @IsNotEmpty()
     mapPointId: [];
 
   @IsNotEmpty()
-    mapPointCatId: [];
+    mapPointCategoriesId: [];
 
   @IsNotEmpty()
-    mapPointSubCatId: [];
+    mapPointSubCategoriesId: [];
 }

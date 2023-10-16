@@ -1,21 +1,24 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
 
-// eslint-disable-next-line no-use-before-define
-export type MapPointCategoiresDocument = HydratedDocument<MapPointCategories>
-
 @Schema()
 export class MapPointCategories {
-    @Prop()
-      name: string;
+  @Prop()
+    name: string;
 
-    @Prop()
-      mapPointId: [
-          {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'MapPoint',
-            required: true,
-          }
-        ];
+  @Prop()
+    icon: string;
+  
+  @Prop()
+    iconAlt: string;
+
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'MapPoint',
+    required: true,
+  })
+    mapPointId: mongoose.Types.ObjectId[];
 }
+
+export type MapPointCategoiresDocument = HydratedDocument<MapPointCategories>
 export const MapPointCategoriesSchema = SchemaFactory.createForClass(MapPointCategories);

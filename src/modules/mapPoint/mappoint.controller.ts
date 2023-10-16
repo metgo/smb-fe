@@ -1,7 +1,9 @@
 import {
-  Body, Controller, Get, HttpStatus, InternalServerErrorException, Post, Res,
+  Body, Controller, Get, HttpStatus, Post, Res,
 } from '@nestjs/common';
-import { createMapPointCategoriesDto, createMapPointDto } from './dto';
+import {
+  createMapPointCategoriesDto, createMapPointDto, createMapPointSubCategoriesDto, createMapPointSubCategoriesItemDto,
+} from './dto';
 import { MapPointServices } from './mappoint.services';
 import { Response } from 'express';
 
@@ -38,10 +40,38 @@ export class MapPointController {
 
   @Get('admin/map-point-categoires')
    async getAllMapPointCategoires() {
-     try {
-       return await this.mapPointService.getAllMapPoint();
-     } catch (error) {
-       throw new InternalServerErrorException('Internal Server Error');
-     }
+     return await this.mapPointService.getAllMapPointCategoires();
+   }
+
+  // mapPoint subcategoires actions
+   @Post('admin/map-point-sub-categoires')
+  async createMapPointSubCategoires(@Res() response: Response, @Body() dto: createMapPointSubCategoriesDto) {
+    const newMapPoint = await this.mapPointService.createMapPointSubCategoires(dto);
+    return response.status(HttpStatus.CREATED).json({
+      statusCode: HttpStatus.CREATED,
+      message: 'map Point has been created successfully',
+      data: newMapPoint,
+    });
+  }
+
+  @Get('admin/map-point-sub-categoires')
+   async getAllMapPointSubCategoires() {
+     return await this.mapPointService.getAllMapPointSubCategoires();
+   }
+
+  // mapPoint subcategoires actions
+   @Post('admin/map-point-sub-categoires-items')
+  async createMapPointSubCategoiresItems(@Res() response: Response, @Body() dto: createMapPointSubCategoriesItemDto) {
+    const newMapPoint = await this.mapPointService.createMapPointSubCategoiresItems(dto);
+    return response.status(HttpStatus.CREATED).json({
+      statusCode: HttpStatus.CREATED,
+      message: 'map Point has been created successfully',
+      data: newMapPoint,
+    });
+  }
+
+  @Get('admin/map-point-sub-categoires-items')
+   async getAllMapPointSubCategoiresItems() {
+     return await this.mapPointService.getAllMapPointSubCategoiresItems();
    }
 }

@@ -1,33 +1,40 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
 
-// eslint-disable-next-line no-use-before-define
-export type MapPointSubCategoiresItemDocument = HydratedDocument<MapPoinMapPointSubCategoiresItem>
-
-@Schema()
-export class MapPoinMapPointSubCategoiresItem {
-    @Prop()
-      name: string;
-
-    @Prop()
-      mapPontId: [
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'MapPoint',
-        required: true,
-      ];
-
-    @Prop()
-      mapPontCategoriesId: [
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'MapPointCategories',
-        required: true,
-      ];
+@Schema({ collection: 'MapPoint' })
+export class MapPointSubCategoiresItem {
+  @Prop()
+    name: string;
 
   @Prop()
-    mapPontSubCategoriesId: [
+    icon: string;
+
+  @Prop()
+    iconAlt: string;
+
+  @Prop(
+    {
       type: mongoose.Schema.Types.ObjectId,
-      ref: '  MapPointSubCategoires',
+      ref: 'MapPoint',
       required: true,
-    ];
+    },
+  )
+    mapPointId: mongoose.Types.ObjectId[];
+
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'MapPointCategoires',
+    required: true,
+  })
+    mapPointCategoriesId: mongoose.Types.ObjectId[];
+
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'MapPointSubCategoires',
+    required: true,
+  })
+    mapPointSubCategoriesId: mongoose.Types.ObjectId[];
 }
-export const MapPoinMapPointSubCategoiresItemSchema = SchemaFactory.createForClass(MapPoinMapPointSubCategoiresItem);
+
+export type MapPointSubCategoiresItemDocument = HydratedDocument<MapPointSubCategoiresItem>
+export const MapPointSubCategoiresItemSchema = SchemaFactory.createForClass(MapPointSubCategoiresItem);

@@ -1,8 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument } from 'mongoose';
-
-// eslint-disable-next-line no-use-before-define
-export type BusinessDocument = HydratedDocument<Business>;
+import mongoose, { HydratedDocument } from 'mongoose';
 
 @Schema()
 export class Business {
@@ -10,18 +7,24 @@ export class Business {
     name: string;
 
   @Prop()
-    address: number;
+    address: string;
 
   @Prop()
     phoneNumber: string;
 
   @Prop()
-    bussEmail: string;
+    busiEmail: string;
 
   @Prop()
     description: string;
 
-  @Prop()
+  @Prop({
+    type: {
+      name: String,
+      phone: String,
+      address: String,
+    },
+  })
     contactDetails: {
         name: string,
         phone: string,
@@ -31,7 +34,12 @@ export class Business {
   @Prop()
     collabrationUser: [];
 
-  @Prop()
+  @Prop({
+    type: {
+      lat: String,
+      long: String,
+    },
+  })
     geoLoaction: {
       lat: string,
       long: string
@@ -52,7 +60,30 @@ export class Business {
           name: string
           url: string
         }
-    ];
+  ];
+
+  @Prop(
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'MapPoint',
+      required: false,
+    },
+  )
+    mapPointId: mongoose.Types.ObjectId[];
+
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'MapPointCategoires',
+    required: false,
+  })
+    mapPointCategoriesId: mongoose.Types.ObjectId[];
+
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'MapPointSubCategoires',
+    required: false,
+  })
+    mapPointSubCategoriesId: mongoose.Types.ObjectId[];
 
   @Prop()
     openingHrs: [
@@ -67,5 +98,5 @@ export class Business {
         }
     ];
 }
-
+export type BusinessDocument = HydratedDocument<Business>;
 export const BusinessSchema = SchemaFactory.createForClass(Business);

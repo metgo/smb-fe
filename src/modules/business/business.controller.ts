@@ -1,6 +1,13 @@
-import { Controller } from '@nestjs/common';
+import { Body, Controller, Post } from '@nestjs/common';
+import { BusinessService } from './business.service';
+import { createBusinessDto } from './dto';
 
 @Controller()
 export class BusinessController {
-  constructor() {}
+  constructor(private readonly businessServices: BusinessService) { }
+
+  @Post('business/')
+  async createBusiness(@Body() dto: createBusinessDto) {
+    return this.businessServices.createBusiness(dto);
+  }
 }

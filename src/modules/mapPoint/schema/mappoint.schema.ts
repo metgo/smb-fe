@@ -6,6 +6,12 @@ import { AuditableSchema } from 'src/core/helper/auditable.schema';
 export class MapPoint extends AuditableSchema {
     @Prop({ unique: true, required: true })
       name: string;
+
+  @Prop()
+    icon: string;
+
+  @Prop()
+    iconAlt: string;
 }
 
 export type MapPointDocument = HydratedDocument<MapPoint>
