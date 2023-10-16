@@ -2,6 +2,7 @@ import { Injectable, InternalServerErrorException, NotFoundException } from '@ne
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
+import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { CreateUserRequest } from 'src/modules/users/requests/create-user.request';
 import { UpdateUserRequest } from 'src/modules/users/requests/update-user.request';
 import { GetUserDetailsResponse } from 'src/modules/users/responses/get-user-details.response';
@@ -35,6 +36,7 @@ export class UsersService {
         updatedAt: user.updatedAt,
       };
     } catch (error) {
+      exceptionHandling(error);
       throw new InternalServerErrorException('Couldn\'t find user');
     }
   }
@@ -56,6 +58,7 @@ export class UsersService {
         updatedAt: newUser.updatedAt,
       };
     } catch (error) {
+      exceptionHandling(error);
       throw new InternalServerErrorException('Couldn\'t save user');
     }
   }
@@ -83,6 +86,7 @@ export class UsersService {
         updatedAt: updatedUser.updatedAt,
       };
     } catch (error) {
+      exceptionHandling(error);
       throw new InternalServerErrorException('Couldn\'t update user');
     }
   }
@@ -113,6 +117,7 @@ export class UsersService {
         deletedAt: deletedUser.deletedAt,
       };
     } catch (error) {
+      exceptionHandling(error);
       throw new InternalServerErrorException('Couldn\'t delete user');
     }
   }
