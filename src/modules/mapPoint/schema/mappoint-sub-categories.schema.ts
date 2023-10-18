@@ -29,5 +29,5 @@ export class MapPointSubCategories {
       mapPointCategoriesId: mongoose.Types.ObjectId[];
 }
 
-export type MapPointCategoiresDocument = HydratedDocument<MapPointSubCategories>
+export type MapPointCategoriesDocument = HydratedDocument<MapPointSubCategories>
 export const MapPointSubCategoriesSchema = SchemaFactory.createForClass(MapPointSubCategories);

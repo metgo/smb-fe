@@ -2,7 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
 
 @Schema({ collection: 'MapPoint' })
-export class MapPointSubCategoiresItem {
+export class MapPointSubCategoriesItem {
   @Prop()
     name: string;
 
@@ -23,18 +23,18 @@ export class MapPointSubCategoiresItem {
 
   @Prop({
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'MapPointCategoires',
+    ref: 'MapPointCategories',
     required: true,
   })
     mapPointCategoriesId: mongoose.Types.ObjectId[];
 
   @Prop({
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'MapPointSubCategoires',
+    ref: 'MapPointSubCategories',
     required: true,
   })
     mapPointSubCategoriesId: mongoose.Types.ObjectId[];
 }
 
-export type MapPointSubCategoiresItemDocument = HydratedDocument<MapPointSubCategoiresItem>
-export const MapPointSubCategoiresItemSchema = SchemaFactory.createForClass(MapPointSubCategoiresItem);
+export type MapPointSubCategoriesItemDocument = HydratedDocument<MapPointSubCategoriesItem>
+export const MapPointSubCategoriesItemSchema = SchemaFactory.createForClass(MapPointSubCategoriesItem);

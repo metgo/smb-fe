@@ -8,7 +8,7 @@ export class MapPointCategories {
 
   @Prop()
     icon: string;
-  
+
   @Prop()
     iconAlt: string;
 
@@ -20,5 +20,5 @@ export class MapPointCategories {
     mapPointId: mongoose.Types.ObjectId[];
 }
 
-export type MapPointCategoiresDocument = HydratedDocument<MapPointCategories>
+export type MapPointCategoriesDocument = HydratedDocument<MapPointCategories>
 export const MapPointCategoriesSchema = SchemaFactory.createForClass(MapPointCategories);

@@ -1,0 +1,361 @@
+openapi: 3.0.0
+paths:
+  /admin/map-point:
+    post:
+      operationId: createMapPoint
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/createMapPointDto"
+      responses:
+        "200":
+          description: Map Point was successfully created
+        "422":
+          description: Failed Validation
+      tags:
+        - Admin
+    get:
+      operationId: getAllMapPoint
+      parameters: []
+      responses:
+        "200":
+          description: ""
+  /admin/map-point-Categories:
+    post:
+      operationId: createMapPointCategories
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/createMapPointCategoriesDto"
+      responses:
+        "201":
+          description: ""
+    get:
+      operationId: getAllMapPointCategories
+      parameters: []
+      responses:
+        "200":
+          description: ""
+  /admin/map-point-sub-Categories:
+    post:
+      operationId: createMapPointSubCategories
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/createMapPointSubCategoriesDto"
+      responses:
+        "201":
+          description: ""
+    get:
+      operationId: getAllMapPointSubCategories
+      parameters: []
+      responses:
+        "200":
+          description: ""
+  /admin/map-point-sub-Categories-items:
+    post:
+      operationId: createMapPointSubCategoriesItems
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/createMapPointSubCategoriesItemDto"
+      responses:
+        "201":
+          description: ""
+    get:
+      operationId: getAllMapPointSubCategoriesItems
+      parameters: []
+      responses:
+        "200":
+          description: ""
+  /business:
+    post:
+      operationId: createBusiness
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/createBusinessDto"
+      responses:
+        "201":
+          description: ""
+    get:
+      operationId: getAllBusiness
+      parameters: []
+      responses:
+        "200":
+          description: ""
+  "/business/{id}":
+    put:
+      operationId: updateBusiness
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/updateBusinessDto"
+      responses:
+        "200":
+          description: ""
+  /users/me:
+    get:
+      operationId: me
+      summary: Get My Information
+      parameters: []
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetUserDetailsResponse"
+      tags:
+        - Users
+  /users:
+    post:
+      operationId: createUser
+      summary: Create new user
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateUserRequest"
+      responses:
+        "201":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetUserDetailsResponse"
+      tags:
+        - Users
+  "/users/{userId}":
+    patch:
+      operationId: updateUser
+      summary: Update User's Information
+      parameters:
+        - name: userId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUserRequest"
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetUserDetailsResponse"
+      tags:
+        - Users
+    delete:
+      operationId: softDeleteUser
+      summary: Delete User's Information
+      parameters:
+        - name: userId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetUserDetailsResponse"
+      tags:
+        - Users
+info:
+  title: METGO
+  description: API Documentation for MetGo
+  version: 1.0.0
+  contact: {}
+tags: []
+servers: []
+components:
+  schemas:
+    createMapPointDto:
+      type: object
+      properties:
+        name:
+          type: string
+        icon:
+          type: string
+        pathAlt:
+          type: string
+      required:
+        - name
+    createMapPointCategoriesDto:
+      type: object
+      properties:
+        name:
+          type: string
+        icon:
+          type: string
+        pathAlt:
+          type: string
+        mapPointId:
+          type: array
+          items:
+            type: string
+      required:
+        - name
+        - mapPointId
+    createMapPointSubCategoriesDto:
+      type: object
+      properties:
+        name:
+          type: string
+        icon:
+          type: string
+        pathAlt:
+          type: string
+        mapPointId:
+          type: array
+          items:
+            type: string
+        mapPointCategoriesId:
+          type: array
+          items:
+            type: string
+      required:
+        - name
+        - mapPointId
+        - mapPointCategoriesId
+    createMapPointSubCategoriesItemDto:
+      type: object
+      properties:
+        name:
+          type: string
+        icon:
+          type: string
+        pathAlt:
+          type: string
+        mapPointId:
+          type: array
+          items:
+            type: string
+        mapPointCategoriesId:
+          type: array
+          items:
+            type: string
+        mapPointSubCategoriesId:
+          type: array
+          items:
+            type: string
+      required:
+        - name
+        - mapPointId
+        - mapPointCategoriesId
+        - mapPointSubCategoriesId
+    createBusinessDto:
+      type: object
+      properties: {}
+    updateBusinessDto:
+      type: object
+      properties: {}
+    GetUserDetailsResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        fullName:
+          type: string
+        phone:
+          type: number
+        address:
+          type: string
+        email:
+          type: string
+        lastLogin:
+          format: date-time
+          type: string
+        isPhoneVerify:
+          type: boolean
+        isEmailVerify:
+          type: boolean
+        loginAttempts:
+          type: number
+        role:
+          type: string
+        hasBusiness:
+          type: boolean
+        createdAt:
+          format: date-time
+          type: string
+        updatedAt:
+          format: date-time
+          type: string
+        deletedAt:
+          format: date-time
+          type: string
+      required:
+        - id
+        - fullName
+        - phone
+        - address
+        - email
+        - lastLogin
+        - isPhoneVerify
+        - isEmailVerify
+        - loginAttempts
+        - role
+        - hasBusiness
+        - createdAt
+        - updatedAt
+        - deletedAt
+    CreateUserRequest:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+      required:
+        - email
+        - password
+    UpdateUserRequest:
+      type: object
+      properties:
+        fullName:
+          type: string
+        phone:
+          type: number
+        email:
+          type: string
+        address:
+          type: string
+      required:
+        - fullName
+        - phone
+        - email
+        - address
