@@ -115,7 +115,7 @@ export class createBusinessDto {
   })
   @IsOptional()
   @IsString()
-  geoLocation: geoLocation;
+    geoLocation: geoLocation;
 
 @ApiProperty({
   required: false,
@@ -129,7 +129,7 @@ export class createBusinessDto {
   })
   @IsOptional()
   @IsArray()
-  socialMedia: socialMedia;
+    socialMedia: socialMedia;
 
 @ApiProperty({
   required: false,
