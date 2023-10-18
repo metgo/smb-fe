@@ -40,7 +40,7 @@ export class Business {
       long: String,
     },
   })
-    geoLoaction: {
+    geoLocation: {
       lat: string,
       long: string
     };
@@ -64,7 +64,7 @@ export class Business {
 
   @Prop(
     {
-      type: mongoose.Schema.Types.ObjectId,
+      type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'MapPoint' }],
       ref: 'MapPoint',
       required: false,
     },
@@ -72,15 +72,14 @@ export class Business {
     mapPointId: mongoose.Types.ObjectId[];
 
   @Prop({
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'MapPointCategoires',
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'MapPointCategories' }],
+    ref: 'MapPointCategories',
     required: false,
   })
     mapPointCategoriesId: mongoose.Types.ObjectId[];
 
   @Prop({
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'MapPointSubCategoires',
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'MapPointSubCategories' }],
     required: false,
   })
     mapPointSubCategoriesId: mongoose.Types.ObjectId[];

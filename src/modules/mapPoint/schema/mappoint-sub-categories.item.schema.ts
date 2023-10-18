@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
 
-@Schema({ collection: 'MapPoint' })
+@Schema()
 export class MapPointSubCategoriesItem {
   @Prop()
     name: string;
@@ -14,7 +14,7 @@ export class MapPointSubCategoriesItem {
 
   @Prop(
     {
-      type: mongoose.Schema.Types.ObjectId,
+      type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'MapPoint' }],
       ref: 'MapPoint',
       required: true,
     },
@@ -22,14 +22,14 @@ export class MapPointSubCategoriesItem {
     mapPointId: mongoose.Types.ObjectId[];
 
   @Prop({
-    type: mongoose.Schema.Types.ObjectId,
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'MapPointCategories' }],
     ref: 'MapPointCategories',
     required: true,
   })
     mapPointCategoriesId: mongoose.Types.ObjectId[];
 
   @Prop({
-    type: mongoose.Schema.Types.ObjectId,
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'MapPointSubCategories' }],
     ref: 'MapPointSubCategories',
     required: true,
   })

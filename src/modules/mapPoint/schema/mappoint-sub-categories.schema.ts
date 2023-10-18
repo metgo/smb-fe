@@ -14,7 +14,7 @@ export class MapPointSubCategories {
 
   @Prop(
     {
-      type: mongoose.Schema.Types.ObjectId,
+      type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'MapPoint' }],
       ref: 'MapPoint',
       required: true,
     },
@@ -22,7 +22,7 @@ export class MapPointSubCategories {
     mapPointId: mongoose.Types.ObjectId[];
 
     @Prop({
-      type: mongoose.Schema.Types.ObjectId,
+      type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'MapPointCategories' }],
       ref: 'MapPointCategories',
       required: true,
     })
