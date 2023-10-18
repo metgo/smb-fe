@@ -520,9 +520,130 @@ components:
     updateMapPointSubCategoriesItemDto:
       type: object
       properties: {}
+    ContactDetails:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of contact person
+        phone:
+          type: string
+          description: Phone numer of contact person
+        address:
+          type: string
+          description: address of contact person
+      required:
+        - name
+        - phone
+        - address
+    geoLocation:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Latitide of map
+        url:
+          type: string
+          description: longitude of map
+      required:
+        - name
+        - url
+    images:
+      type: object
+      properties:
+        image:
+          type: string
+          description: path of image
+        caption:
+          type: string
+          description: caption of image
+        alt:
+          type: string
+          description: Image alternative text
+      required:
+        - image
+        - caption
+        - alt
+    socialMedia:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of social Media
+        url:
+          type: string
+          description: url of social media
+      required:
+        - name
+        - url
+    OpeningHours:
+      type: object
+      properties:
+        days:
+          type: string
+          description: Days of operation
+        open:
+          format: date-time
+          type: string
+          description: Opening time
+        close:
+          format: date-time
+          type: string
+          description: Closing time
+        isHoliday:
+          type: boolean
+          description: Is it a holiday?
+          default: false
+      required:
+        - days
+        - open
+        - close
+        - isHoliday
     createBusinessDto:
       type: object
-      properties: {}
+      properties:
+        name:
+          type: string
+        address:
+          type: string
+        phoneNumber:
+          type: string
+        busiEmail:
+          type: string
+        description:
+          type: string
+        contactDetails:
+          $ref: "#/components/schemas/ContactDetails"
+        collabrationUser:
+          type: array
+          items:
+            type: string
+        geoLocation:
+          $ref: "#/components/schemas/geoLocation"
+        images:
+          $ref: "#/components/schemas/images"
+        socialMedia:
+          $ref: "#/components/schemas/socialMedia"
+        mapPointId:
+          type: array
+          items:
+            type: string
+        mapPointCategoriesId:
+          type: array
+          items:
+            type: string
+        mapPointSubCategoriesId:
+          type: array
+          items:
+            type: string
+        openingHrs:
+          $ref: "#/components/schemas/OpeningHours"
+      required:
+        - name
+        - address
+        - phoneNumber
+        - busiEmail
+        - description
     updateBusinessDto:
       type: object
       properties: {}
