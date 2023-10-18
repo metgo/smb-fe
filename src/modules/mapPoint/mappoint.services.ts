@@ -5,9 +5,9 @@ import {
   createMapPointCategoriesDto, createMapPointDto, createMapPointSubCategoriesDto, createMapPointSubCategoriesItemDto,
 } from './dto';
 import { MapPoint } from './schema/mappoint.schema';
-import { MapPointCategories } from './schema/mappoint-categoires.schema';
+import { MapPointCategories } from './schema/mappoint-categories.schema';
 import { findAll, findOneByFieldName } from 'src/core/helper/query-helper';
-import { MapPointSubCategories } from './schema/mappoint-sub-categoires.schema';
+import { MapPointSubCategories } from './schema/mappoint-sub-categories.schema';
 import { MapPointSubCategoiresItem } from './schema/mappoint-sub-categories.item.schema';
 
 @Injectable()
@@ -34,15 +34,6 @@ export class MapPointServices {
     return mapPoint;
   }
 
-  async findByName(name: string): Promise<MapPoint | undefined> {
-    const fieldName = 'name';
-    const mapPoint = await findOneByFieldName<MapPoint>(this.MapPointModel, fieldName, name);
-    if (!mapPoint) {
-      return undefined;
-    }
-    throw new BadRequestException('Map Point with this name alread exits');
-  }
-
   async createMapPointCategoires(dto: createMapPointCategoriesDto): Promise<MapPointCategories> {
     const newMapPoint = new this.MapPointCategoiresModel(dto);
     return newMapPoint.save();
@@ -51,7 +42,7 @@ export class MapPointServices {
   async getAllMapPointCategoires(): Promise<MapPointCategories & any> {
     const mapPoint = await findAll<MapPointCategories>(this.MapPointCategoiresModel);
     if (mapPoint.length === 0) {
-      throw new NotFoundException('Map Point Not Found');
+      throw new NotFoundException('Map Point Categoires Not Found');
     }
 
     return mapPoint;
@@ -65,7 +56,7 @@ export class MapPointServices {
   async getAllMapPointSubCategoires(): Promise<MapPointSubCategories & any> {
     const mapPoint = await findAll<MapPointSubCategories>(this.MapPointSubCategoriesModel);
     if (mapPoint.length === 0) {
-      throw new NotFoundException('Map Point Not Found');
+      throw new NotFoundException('Map Point Sub Categoires Not Found');
     }
 
     return mapPoint;
@@ -79,8 +70,18 @@ export class MapPointServices {
   async getAllMapPointSubCategoiresItems(): Promise<MapPointSubCategoiresItem & any> {
     const mapPoint = await findAll<MapPointSubCategoiresItem>(this.MapPointSubCategoriesItemsModel);
     if (mapPoint.length === 0) {
-      throw new NotFoundException('Map Point Not Found');
+      throw new NotFoundException('Map Point Sub Categoires items Not Found');
     }
     return mapPoint;
+  }
+
+
+    async findByName(name: string): Promise<MapPoint | undefined> {
+    const fieldName = 'name';
+    const mapPoint = await findOneByFieldName<MapPoint>(this.MapPointModel, fieldName, name);
+    if (!mapPoint) {
+      return undefined;
+    }
+    throw new BadRequestException('Map Point with this name alread exists');
   }
 }

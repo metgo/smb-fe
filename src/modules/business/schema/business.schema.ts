@@ -3,19 +3,19 @@ import mongoose, { HydratedDocument } from 'mongoose';
 
 @Schema()
 export class Business {
-  @Prop()
+  @Prop({ required: true })
     name: string;
 
-  @Prop()
+  @Prop({ required: true })
     address: string;
 
-  @Prop()
+  @Prop({ unique: true })
     phoneNumber: string;
 
-  @Prop()
+  @Prop({ unique: true })
     busiEmail: string;
 
-  @Prop()
+  @Prop({ required: true })
     description: string;
 
   @Prop({

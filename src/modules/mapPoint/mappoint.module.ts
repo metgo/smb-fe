@@ -3,8 +3,8 @@ import { MapPointController } from './mappoint.controller';
 import { MapPointServices } from './mappoint.services';
 import { MongooseModule } from '@nestjs/mongoose';
 import { MapPointSchema } from './schema/mappoint.schema';
-import { MapPointCategoriesSchema } from './schema/mappoint-categoires.schema';
-import { MapPointSubCategoriesSchema } from './schema/mappoint-sub-categoires.schema';
+import { MapPointCategoriesSchema } from './schema/mappoint-categories.schema';
+import { MapPointSubCategoriesSchema } from './schema/mappoint-sub-categories.schema';
 import { MapPointSubCategoiresItemSchema } from './schema/mappoint-sub-categories.item.schema';
 
 @Module({

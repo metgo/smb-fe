@@ -3,7 +3,6 @@ import {
   IsArray, IsNotEmpty, IsObject, IsOptional, IsString,
 } from 'class-validator';
 import transformEmail from 'src/core/helper/transformEmail';
-import { IsEmailAlreadyExist } from 'src/core/validation/isEmailAlreadyExists';
 
 export class createBusinessDto {
     @IsNotEmpty()
@@ -19,7 +18,6 @@ export class createBusinessDto {
       phoneNumber: string;
 
     @IsString()
-    @IsEmailAlreadyExist({ message: 'email alreadys used by other business' })
     @Transform(transformEmail)
       busiEmail: string;
 
