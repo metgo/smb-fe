@@ -273,7 +273,7 @@ paths:
             schema:
               $ref: "#/components/schemas/createBusinessDto"
       responses:
-        "200":
+        "201":
           description: Business was successfully created
         "422":
           description: Failed Validation
@@ -322,7 +322,7 @@ paths:
               $ref: "#/components/schemas/updateBusinessDto"
       responses:
         "200":
-          description: Business was successfully listed
+          description: Business was successfully updated
         "422":
           description: Failed Validation
       tags:
@@ -343,7 +343,11 @@ paths:
               $ref: "#/components/schemas/updateBusinessDto"
       responses:
         "200":
-          description: ""
+          description: Business was successfully updated
+        "422":
+          description: Failed Validation
+      tags:
+        - Business
   /users/me:
     get:
       operationId: me

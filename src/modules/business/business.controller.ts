@@ -14,7 +14,7 @@ export class BusinessController {
 
   @ApiEndpoint({
     tags: ['Business'],
-    response: { status: 200, description: ServerSuccess.BUSINESS_CREATED },
+    response: { status: 201, description: ServerSuccess.BUSINESS_CREATED },
   })
   @Post('business')
   async createBusiness(@Res() response:Response, @Body() dto: createBusinessDto) {
@@ -46,7 +46,7 @@ export class BusinessController {
 
   @ApiEndpoint({
     tags: ['Business'],
-    response: { status: 200, description: ServerSuccess.BUSINESS_LISTED },
+    response: { status: 200, description: ServerSuccess.BUSINESS_UPDATED },
   })
   @Put('business/:id')
   async updateBusiness(
@@ -59,6 +59,10 @@ export class BusinessController {
     return responseHelper(response, HttpStatus.OK, ServerSuccess.BUSINESS_UPDATED, business, null, null);
   }
 
+  @ApiEndpoint({
+    tags: ['Business'],
+    response: { status: 200, description: ServerSuccess.BUSINESS_UPDATED },
+  })
   @Delete('business/:id')
   async deleteBusiness(
     @Res() response:Response,

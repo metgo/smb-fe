@@ -9,7 +9,12 @@ import { Response } from 'express';
 import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
 import { responseHelper } from 'src/core/helper/response.helper';
 import { ServerSuccess } from 'src/common/constant';
-import { updateMapPointCategoriesDto, updateMapPointDto, updateMapPointSubCategoriesDto, updateMapPointSubCategoriesItemDto } from './dto/updateMapPoint.dto';
+import {
+  updateMapPointCategoriesDto,
+  updateMapPointDto,
+  updateMapPointSubCategoriesDto,
+  updateMapPointSubCategoriesItemDto,
+} from './dto/updateMapPoint.dto';
 
 @Controller()
 export class MapPointController {
