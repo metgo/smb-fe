@@ -11,18 +11,63 @@ paths:
             schema:
               $ref: "#/components/schemas/createMapPointDto"
       responses:
-        "200":
+        "201":
           description: Map Point was successfully created
         "422":
           description: Failed Validation
       tags:
         - Admin
+        - Map Point
     get:
       operationId: getAllMapPoint
       parameters: []
       responses:
         "200":
-          description: ""
+          description: Map Point was successfully listed
+        "422":
+          description: Failed Validation
+      tags:
+        - Admin
+        - Map Point
+  "/admin/map-point/{id}":
+    put:
+      operationId: updateMapPoint
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/updateMapPointDto"
+      responses:
+        "200":
+          description: Map Point was successfully updated
+        "422":
+          description: Failed Validation
+      tags:
+        - Admin
+        - Map Point
+    delete:
+      operationId: deleteMapPoint
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Map Point was successfully updated
+        "422":
+          description: Failed Validation
+      tags:
+        - Admin
+        - Map Point
   /admin/map-point-Categories:
     post:
       operationId: createMapPointCategories
@@ -34,14 +79,63 @@ paths:
             schema:
               $ref: "#/components/schemas/createMapPointCategoriesDto"
       responses:
-        "201":
-          description: ""
+        "200":
+          description: Map Point Categories was successfully created
+        "422":
+          description: Failed Validation
+      tags:
+        - Admin
+        - Map Point Categories
     get:
       operationId: getAllMapPointCategories
       parameters: []
       responses:
         "200":
-          description: ""
+          description: Map Point Categories was successfully listed
+        "422":
+          description: Failed Validation
+      tags:
+        - Admin
+        - Map Point Categories
+  "/admin/map-point-Categories/{id}":
+    put:
+      operationId: updateMapPointCategories
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/updateMapPointCategoriesDto"
+      responses:
+        "200":
+          description: Map Point Categories was successfully updated
+        "422":
+          description: Failed Validation
+      tags:
+        - Admin
+        - Map Point Categories
+    delete:
+      operationId: deleteMapPointCategories
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Map Point Categories was successfully updated
+        "422":
+          description: Failed Validation
+      tags:
+        - Admin
+        - Map Point Categories
   /admin/map-point-sub-Categories:
     post:
       operationId: createMapPointSubCategories
@@ -54,13 +148,52 @@ paths:
               $ref: "#/components/schemas/createMapPointSubCategoriesDto"
       responses:
         "201":
-          description: ""
+          description: Map Point Sub Categories was successfully created
+        "422":
+          description: Failed Validation
+      tags:
+        - Admin
+        - Map Point Sub Categories
     get:
       operationId: getAllMapPointSubCategories
       parameters: []
       responses:
         "200":
-          description: ""
+          description: Map Point Sub Categories was successfully listed
+        "422":
+          description: Failed Validation
+      tags:
+        - Admin
+        - Map Point Sub Categories
+  "/admin/map-point-sub-Categories/{id}":
+    put:
+      operationId: updateMapPointSubCategories
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/updateMapPointSubCategoriesDto"
+      responses:
+        "200":
+          description: Map Point Sub Categories was successfully updated
+        "422":
+          description: Failed Validation
+      tags:
+        - Admin
+        - Map Point Sub Categories
+    delete:
+      operationId: deleteMapPointSubCategories
+      parameters: []
+      responses:
+        "200":
+          description: Map Point Sub Categories was successfully updated
+        "422":
+          description: Failed Validation
+      tags:
+        - Admin
+        - Map Point Sub Categories
   /admin/map-point-sub-Categories-items:
     post:
       operationId: createMapPointSubCategoriesItems
@@ -72,14 +205,63 @@ paths:
             schema:
               $ref: "#/components/schemas/createMapPointSubCategoriesItemDto"
       responses:
-        "201":
-          description: ""
+        "200":
+          description: Map Point Sub Categories Items was successfully created
+        "422":
+          description: Failed Validation
+      tags:
+        - Admin
+        - Map Point Sub Categories Item
     get:
       operationId: getAllMapPointSubCategoriesItems
       parameters: []
       responses:
         "200":
-          description: ""
+          description: Map Point Sub Categories Items was successfully listed
+        "422":
+          description: Failed Validation
+      tags:
+        - Admin
+        - Map Point Sub Categories Item
+  "/admin/map-point-sub-Categories-items/{id}":
+    put:
+      operationId: updateMapPointSubCategoriesItems
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/updateMapPointSubCategoriesItemDto"
+      responses:
+        "200":
+          description: Map Point Sub Categories Items was successfully updated
+        "422":
+          description: Failed Validation
+      tags:
+        - Admin
+        - Map Point Sub Categories Item
+    delete:
+      operationId: deleteMapPointSubCategoriesItems
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Map Point Sub Categories Items was successfully updated
+        "422":
+          description: Failed Validation
+      tags:
+        - Admin
+        - Map Point Sub Categories Item
   /business:
     post:
       operationId: createBusiness
@@ -92,13 +274,37 @@ paths:
               $ref: "#/components/schemas/createBusinessDto"
       responses:
         "201":
-          description: ""
+          description: Business was successfully created
+        "422":
+          description: Failed Validation
+      tags:
+        - Business
     get:
       operationId: getAllBusiness
       parameters: []
       responses:
         "200":
-          description: ""
+          description: Business was successfully listed
+        "422":
+          description: Failed Validation
+      tags:
+        - Business
+  /business-details:
+    get:
+      operationId: getBusiness
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Business was successfully listed
+        "422":
+          description: Failed Validation
+      tags:
+        - Business
   "/business/{id}":
     put:
       operationId: updateBusiness
@@ -116,7 +322,32 @@ paths:
               $ref: "#/components/schemas/updateBusinessDto"
       responses:
         "200":
-          description: ""
+          description: Business was successfully updated
+        "422":
+          description: Failed Validation
+      tags:
+        - Business
+    delete:
+      operationId: deleteBusiness
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/updateBusinessDto"
+      responses:
+        "200":
+          description: Business was successfully updated
+        "422":
+          description: Failed Validation
+      tags:
+        - Business
   /users/me:
     get:
       operationId: me
@@ -214,6 +445,9 @@ components:
           type: string
       required:
         - name
+    updateMapPointDto:
+      type: object
+      properties: {}
     createMapPointCategoriesDto:
       type: object
       properties:
@@ -230,6 +464,9 @@ components:
       required:
         - name
         - mapPointId
+    updateMapPointCategoriesDto:
+      type: object
+      properties: {}
     createMapPointSubCategoriesDto:
       type: object
       properties:
@@ -251,6 +488,9 @@ components:
         - name
         - mapPointId
         - mapPointCategoriesId
+    updateMapPointSubCategoriesDto:
+      type: object
+      properties: {}
     createMapPointSubCategoriesItemDto:
       type: object
       properties:
@@ -277,9 +517,133 @@ components:
         - mapPointId
         - mapPointCategoriesId
         - mapPointSubCategoriesId
-    createBusinessDto:
+    updateMapPointSubCategoriesItemDto:
       type: object
       properties: {}
+    ContactDetails:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of contact person
+        phone:
+          type: string
+          description: Phone numer of contact person
+        address:
+          type: string
+          description: address of contact person
+      required:
+        - name
+        - phone
+        - address
+    geoLocation:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Latitide of map
+        url:
+          type: string
+          description: longitude of map
+      required:
+        - name
+        - url
+    images:
+      type: object
+      properties:
+        image:
+          type: string
+          description: path of image
+        caption:
+          type: string
+          description: caption of image
+        alt:
+          type: string
+          description: Image alternative text
+      required:
+        - image
+        - caption
+        - alt
+    socialMedia:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of social Media
+        url:
+          type: string
+          description: url of social media
+      required:
+        - name
+        - url
+    OpeningHours:
+      type: object
+      properties:
+        days:
+          type: string
+          description: Days of operation
+        open:
+          format: date-time
+          type: string
+          description: Opening time
+        close:
+          format: date-time
+          type: string
+          description: Closing time
+        isHoliday:
+          type: boolean
+          description: Is it a holiday?
+          default: false
+      required:
+        - days
+        - open
+        - close
+        - isHoliday
+    createBusinessDto:
+      type: object
+      properties:
+        name:
+          type: string
+        address:
+          type: string
+        phoneNumber:
+          type: string
+        busiEmail:
+          type: string
+        description:
+          type: string
+        contactDetails:
+          $ref: "#/components/schemas/ContactDetails"
+        collabrationUser:
+          type: array
+          items:
+            type: string
+        geoLocation:
+          $ref: "#/components/schemas/geoLocation"
+        images:
+          $ref: "#/components/schemas/images"
+        socialMedia:
+          $ref: "#/components/schemas/socialMedia"
+        mapPointId:
+          type: array
+          items:
+            type: string
+        mapPointCategoriesId:
+          type: array
+          items:
+            type: string
+        mapPointSubCategoriesId:
+          type: array
+          items:
+            type: string
+        openingHrs:
+          $ref: "#/components/schemas/OpeningHours"
+      required:
+        - name
+        - address
+        - phoneNumber
+        - busiEmail
+        - description
     updateBusinessDto:
       type: object
       properties: {}
