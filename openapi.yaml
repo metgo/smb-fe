@@ -1,5 +1,122 @@
 openapi: 3.0.0
 paths:
+  /admin/map-point:
+    post:
+      operationId: createMapPoint
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/createMapPointDto"
+      responses:
+        "200":
+          description: Map Point was successfully created
+        "422":
+          description: Failed Validation
+      tags:
+        - Admin
+    get:
+      operationId: getAllMapPoint
+      parameters: []
+      responses:
+        "200":
+          description: ""
+  /admin/map-point-Categories:
+    post:
+      operationId: createMapPointCategories
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/createMapPointCategoriesDto"
+      responses:
+        "201":
+          description: ""
+    get:
+      operationId: getAllMapPointCategories
+      parameters: []
+      responses:
+        "200":
+          description: ""
+  /admin/map-point-sub-Categories:
+    post:
+      operationId: createMapPointSubCategories
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/createMapPointSubCategoriesDto"
+      responses:
+        "201":
+          description: ""
+    get:
+      operationId: getAllMapPointSubCategories
+      parameters: []
+      responses:
+        "200":
+          description: ""
+  /admin/map-point-sub-Categories-items:
+    post:
+      operationId: createMapPointSubCategoriesItems
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/createMapPointSubCategoriesItemDto"
+      responses:
+        "201":
+          description: ""
+    get:
+      operationId: getAllMapPointSubCategoriesItems
+      parameters: []
+      responses:
+        "200":
+          description: ""
+  /business:
+    post:
+      operationId: createBusiness
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/createBusinessDto"
+      responses:
+        "201":
+          description: ""
+    get:
+      operationId: getAllBusiness
+      parameters: []
+      responses:
+        "200":
+          description: ""
+  "/business/{id}":
+    put:
+      operationId: updateBusiness
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/updateBusinessDto"
+      responses:
+        "200":
+          description: ""
   /users/me:
     get:
       operationId: me
@@ -86,6 +203,86 @@ tags: []
 servers: []
 components:
   schemas:
+    createMapPointDto:
+      type: object
+      properties:
+        name:
+          type: string
+        icon:
+          type: string
+        pathAlt:
+          type: string
+      required:
+        - name
+    createMapPointCategoriesDto:
+      type: object
+      properties:
+        name:
+          type: string
+        icon:
+          type: string
+        pathAlt:
+          type: string
+        mapPointId:
+          type: array
+          items:
+            type: string
+      required:
+        - name
+        - mapPointId
+    createMapPointSubCategoriesDto:
+      type: object
+      properties:
+        name:
+          type: string
+        icon:
+          type: string
+        pathAlt:
+          type: string
+        mapPointId:
+          type: array
+          items:
+            type: string
+        mapPointCategoriesId:
+          type: array
+          items:
+            type: string
+      required:
+        - name
+        - mapPointId
+        - mapPointCategoriesId
+    createMapPointSubCategoriesItemDto:
+      type: object
+      properties:
+        name:
+          type: string
+        icon:
+          type: string
+        pathAlt:
+          type: string
+        mapPointId:
+          type: array
+          items:
+            type: string
+        mapPointCategoriesId:
+          type: array
+          items:
+            type: string
+        mapPointSubCategoriesId:
+          type: array
+          items:
+            type: string
+      required:
+        - name
+        - mapPointId
+        - mapPointCategoriesId
+        - mapPointSubCategoriesId
+    createBusinessDto:
+      type: object
+      properties: {}
+    updateBusinessDto:
+      type: object
+      properties: {}
     GetUserDetailsResponse:
       type: object
       properties:
