@@ -289,7 +289,7 @@ paths:
           description: Failed Validation
       tags:
         - Business
-  /business-details:
+  "/business-details/{id}":
     get:
       operationId: getBusiness
       parameters:
@@ -539,15 +539,15 @@ components:
     geoLocation:
       type: object
       properties:
-        name:
+        lat:
           type: string
           description: Latitide of map
-        url:
+        long:
           type: string
           description: longitude of map
       required:
-        - name
-        - url
+        - lat
+        - long
     images:
       type: object
       properties:

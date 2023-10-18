@@ -55,10 +55,10 @@ class socialMedia {
 
 class geoLocation {
  @ApiProperty({ type: String, description: 'Latitide of map' })
-   name: string;
+   lat: string;
 
   @ApiProperty({ type: String, description: 'longitude of map' })
-    url: String;
+    long: String;
 }
 export class createBusinessDto {
   @ApiProperty({
@@ -114,7 +114,7 @@ export class createBusinessDto {
     required: false,
   })
   @IsOptional()
-  @IsString()
+  @IsObject()
     geoLocation: geoLocation;
 
 @ApiProperty({
@@ -150,12 +150,12 @@ export class createBusinessDto {
 })
    @IsOptional()
     @IsArray()
-  mapPointSubCategoriesId: [];
+  mapPointSubCategoriesId: [string];
 
   @ApiProperty({
     required: false,
   })
   @IsOptional()
-  @IsObject()
+  @IsArray()
     openingHrs: OpeningHours;
 }

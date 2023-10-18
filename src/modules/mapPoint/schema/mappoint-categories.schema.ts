@@ -13,7 +13,7 @@ export class MapPointCategories {
     iconAlt: string;
 
   @Prop({
-    type: mongoose.Schema.Types.ObjectId,
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'MapPoint' }],
     ref: 'MapPoint',
     required: true,
   })

@@ -1,9 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Business } from './schema/business.schema';
 import { createBusinessDto, updateBusinessDto } from './dto';
 import {
+  findOneByFieldName,
   findOneById, queryhandler, updateById,
 } from 'src/core/helper/query-helper';
 import { ServerErrors } from 'src/common/constant';
@@ -63,11 +64,11 @@ export class BusinessService {
     return business;
   }
 
-  async findBusinessEmail(email: string): Promise<boolean> {
-    const bussEmail = await this.BusinessModel.findOne({ busiEmail: email });
+  async findBusinessByFieldName(fieldName: keyof Business, items: string): Promise<boolean> {
+    const bussEmail = await findOneByFieldName<Business>(this.BusinessModel, fieldName, items);
     if (bussEmail) {
-      return true;
+      throw new BadRequestException(`${fieldName === 'name' ? 'Business Name' : 'Business Email'} already exists`);
     }
-    return false;
+    return undefined;
   }
 }

@@ -17,7 +17,9 @@ export class BusinessController {
     response: { status: 201, description: ServerSuccess.BUSINESS_CREATED },
   })
   @Post('business')
-  async createBusiness(@Res() response:Response, @Body() dto: createBusinessDto) {
+  async createBusiness(@Res() response: Response, @Body() dto: createBusinessDto) {
+    await this.businessServices.findBusinessByFieldName('name', dto.name);
+    await this.businessServices.findBusinessByFieldName('busiEmail', dto.busiEmail);
     const business = await this.businessServices.createBusiness(dto);
     return responseHelper(response, HttpStatus.CREATED, ServerSuccess.BUSINESS_CREATED, business, null, null);
   }
@@ -27,7 +29,9 @@ export class BusinessController {
     response: { status: 200, description: ServerSuccess.BUSINESS_LISTED },
   })
   @Get('business')
-  async getAllBusiness(@Res() response: Response) {
+  async getAllBusiness(
+    @Res() response: Response,
+  ) {
     const business = await this.businessServices.getAllBusiness();
 
     return responseHelper(response, HttpStatus.OK, ServerSuccess.BUSINESS_LISTED, business, null, null);
@@ -37,7 +41,7 @@ export class BusinessController {
     tags: ['Business'],
     response: { status: 200, description: ServerSuccess.BUSINESS_LISTED },
   })
-  @Get('business-details')
+  @Get('business-details/:id')
   async getBusiness(@Res() response: Response, @Param('id') id: string) {
     const business = await this.businessServices.getBusiness(id);
 
@@ -54,6 +58,7 @@ export class BusinessController {
     @Param('id') bussId: string,
     @Body() dto: updateBusinessDto,
   ) {
+    console.log(dto);
     const business = await this.businessServices.updateBusiness(bussId, dto);
 
     return responseHelper(response, HttpStatus.OK, ServerSuccess.BUSINESS_UPDATED, business, null, null);
