@@ -12,6 +12,9 @@ export class MapPoint extends AuditableSchema {
 
   @Prop()
     iconAlt: string;
+
+  @Prop({ type: Boolean, default: false })
+    hasMultiple: boolean;
 }
 
 export type MapPointDocument = HydratedDocument<MapPoint>
