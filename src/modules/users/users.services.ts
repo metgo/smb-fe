@@ -10,7 +10,7 @@ import { UpdateUserRequest } from 'src/modules/users/requests/update-user.reques
 import { GetUserDetailsResponse } from 'src/modules/users/responses/get-user-details.response';
 import { User } from 'src/modules/users/schema/users.schema';
 import { createUserByAdminDto } from './requests/create-user-ByAdmin.dto';
-import { findByFieldName, findOneById } from 'src/core/helper/query-helper';
+import { findOneByFieldName, findOneById } from 'src/core/helper/query-helper';
 import { ServerErrors } from 'src/common/constant';
 import { passwordGenerator } from 'src/common/utils/randomPassword.genetator';
 
@@ -131,7 +131,7 @@ export class UsersService {
   // admin create users
 
   async adminCreateUser(dto: createUserByAdminDto) {
-    const user = await findByFieldName<User>(this.UserModel, 'email', dto.email);
+    const user = await findOneByFieldName<User>(this.UserModel, 'email', dto.email);
     if (user) {
       throw new BadRequestException(ServerErrors.USER_EXISTS);
     }
