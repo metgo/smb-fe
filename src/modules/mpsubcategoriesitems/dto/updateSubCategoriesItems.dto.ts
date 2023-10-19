@@ -1,4 +1,4 @@
 import { PartialType } from '@nestjs/swagger';
-import { createMPSubCategoriesItemsDto } from './createSubCategoriesitems.dto';
+import { createMPSubCategoriesItemsDto } from './createSubCategoriesItems.dto';
 
 export class updateMPSubCategoriesItemsDto extends PartialType(createMPSubCategoriesItemsDto) { }
