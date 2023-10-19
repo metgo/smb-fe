@@ -15,6 +15,8 @@ export const softValidationPipe = new ValidationPipe({
 
 export const ServerErrors = {
   USER_NOT_FOUND: 'User not found',
+  USER_EXISTS: 'User already exists',
+  NOT_DMO_USER: 'Not a dmo user',
   JWT_EXPIRED_OR_NOT_FOUND: 'Authorization header not found or jwt token has expired',
   FAILED_VALIDATION: 'Failed Validation',
   MAP_POINT_EXISTS: 'This Map Point already exists',
@@ -26,6 +28,10 @@ export const ServerErrors = {
   MAP_POINT_SUB_CATEGORIES_NOT_FOUND: 'This Map Point Sub Categories not found',
   MAP_POINT_SUB_CATEGORIES_ITEMS_NOT_FOUND: 'This Map Point Sub Categories Items not found',
   BUSINESS_NOT_FOUND: 'Business not found',
+  DMO_NOT_FOUND: 'DMO not found',
+  DMO_EXISTS: 'DMO already exists',
+  SOCIAL_MEDIA_NOT_FOUND: 'Social Media not found',
+  BUSINESS_PHONE_EXISTS: 'Business Number already exists',
 };
 
 export const ServerSuccess = {
@@ -44,5 +50,13 @@ export const ServerSuccess = {
   BUSINESS_CREATED: 'Business was successfully created',
   BUSINESS_LISTED: 'Business was successfully listed',
   BUSINESS_UPDATED: 'Business was successfully updated',
-
+  DMO_CREATED: 'DMO was successfully created',
+  DMO_LISTED: 'DMO was successfully listed',
+  DMO_UPDTED: 'DMO was successfully updated',
+  SOCIAL_MEDIA_CREATED: 'Social Media was successfully created',
+  SOCIAL_MEDIA_LISTED: 'Social Media was successfully listed',
+  SOCIAL_MEDIA_UPDTED: 'Social Media was successfully updated',
+  USER_CREATED: 'User was succesfully created',
+  USER_LISTED: 'User was succesfully listed',
+  USER_Updated: 'User was succesfully updated',
 };
