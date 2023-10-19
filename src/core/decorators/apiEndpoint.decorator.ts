@@ -55,6 +55,7 @@ export const ApiEndpoint = (args: {
       } else {
         decorators.push(
           (target, propertyKey) => (
+            // eslint-disable-next-line no-console
             console.warn(
               `${targetLogPrefix(target, propertyKey)} response.enforceStatus specified, `
                 + 'but response.status is not a number, so it will not be enforced',

@@ -12,6 +12,7 @@ export function permissionsRequiredIsEnabled(): boolean {
 
     /** @NOTE Make sure the .env filename for prod is added as a conditional!!! */
 
+    // eslint-disable-next-line no-console
     console.warn("No .env file found. Make sure to have either '.env' or 'local.env'.");
     return false;
   }

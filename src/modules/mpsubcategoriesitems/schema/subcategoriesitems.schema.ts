@@ -1,8 +1,9 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
+import { AuditableSchema } from 'src/core/helper/auditable.schema';
 
 @Schema()
-export class MapPointSubCategoriesItem {
+export class MPSubCategoriesItems extends AuditableSchema {
   @Prop()
     name: string;
 
@@ -11,6 +12,9 @@ export class MapPointSubCategoriesItem {
 
   @Prop()
     iconAlt: string;
+
+  @Prop({ type: Boolean, default: false })
+    hasMultiple: boolean;
 
   @Prop(
     {
@@ -22,19 +26,19 @@ export class MapPointSubCategoriesItem {
     mapPointId: mongoose.Types.ObjectId[];
 
   @Prop({
-    type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'MapPointCategories' }],
-    ref: 'MapPointCategories',
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'MPCategories' }],
+    ref: 'MPCategories',
     required: true,
   })
     mapPointCategoriesId: mongoose.Types.ObjectId[];
 
   @Prop({
-    type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'MapPointSubCategories' }],
-    ref: 'MapPointSubCategories',
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'MPSubCategories' }],
+    ref: 'MPSubCategories',
     required: true,
   })
     mapPointSubCategoriesId: mongoose.Types.ObjectId[];
 }
 
-export type MapPointSubCategoriesItemDocument = HydratedDocument<MapPointSubCategoriesItem>
-export const MapPointSubCategoriesItemSchema = SchemaFactory.createForClass(MapPointSubCategoriesItem);
+export type MPSubCategoriesItemsDocument = HydratedDocument<MPSubCategoriesItems>
+export const MPSubCategoriesItemsSchema = SchemaFactory.createForClass(MPSubCategoriesItems);

@@ -1,6 +1,6 @@
 openapi: 3.0.0
 paths:
-  /admin/map-point:
+  /admin/mp:
     post:
       operationId: createMapPoint
       parameters: []
@@ -29,7 +29,7 @@ paths:
       tags:
         - Admin
         - Map Point
-  "/admin/map-point/{id}":
+  "/admin/mp/{id}":
     put:
       operationId: updateMapPoint
       parameters:
@@ -68,16 +68,16 @@ paths:
       tags:
         - Admin
         - Map Point
-  /admin/map-point-Categories:
+  /admin/mp-categories:
     post:
-      operationId: createMapPointCategories
+      operationId: createMPCategories
       parameters: []
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/createMapPointCategoriesDto"
+              $ref: "#/components/schemas/createMPCategoriesDto"
       responses:
         "200":
           description: Map Point Categories was successfully created
@@ -87,7 +87,7 @@ paths:
         - Admin
         - Map Point Categories
     get:
-      operationId: getAllMapPointCategories
+      operationId: getAllMPCategories
       parameters: []
       responses:
         "200":
@@ -97,9 +97,9 @@ paths:
       tags:
         - Admin
         - Map Point Categories
-  "/admin/map-point-Categories/{id}":
+  "/admin/mp-categories/{id}":
     put:
-      operationId: updateMapPointCategories
+      operationId: updateMPCategories
       parameters:
         - name: id
           required: true
@@ -111,7 +111,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/updateMapPointCategoriesDto"
+              $ref: "#/components/schemas/updateMPCategoriesDto"
       responses:
         "200":
           description: Map Point Categories was successfully updated
@@ -121,7 +121,7 @@ paths:
         - Admin
         - Map Point Categories
     delete:
-      operationId: deleteMapPointCategories
+      operationId: deleteMPCategories
       parameters:
         - name: id
           required: true
@@ -136,16 +136,16 @@ paths:
       tags:
         - Admin
         - Map Point Categories
-  /admin/map-point-sub-Categories:
+  /admin/mp-sub-categories:
     post:
-      operationId: createMapPointSubCategories
+      operationId: createMPSubCategories
       parameters: []
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/createMapPointSubCategoriesDto"
+              $ref: "#/components/schemas/createMPSubCategoriesDto"
       responses:
         "201":
           description: Map Point Sub Categories was successfully created
@@ -155,7 +155,7 @@ paths:
         - Admin
         - Map Point Sub Categories
     get:
-      operationId: getAllMapPointSubCategories
+      operationId: getAllMPSubCategories
       parameters: []
       responses:
         "200":
@@ -165,16 +165,16 @@ paths:
       tags:
         - Admin
         - Map Point Sub Categories
-  "/admin/map-point-sub-Categories/{id}":
+  "/admin/mp-sub-categories/{id}":
     put:
-      operationId: updateMapPointSubCategories
+      operationId: updateMPSubCategories
       parameters: []
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/updateMapPointSubCategoriesDto"
+              $ref: "#/components/schemas/updateMPSubCategoriesDto"
       responses:
         "200":
           description: Map Point Sub Categories was successfully updated
@@ -184,7 +184,7 @@ paths:
         - Admin
         - Map Point Sub Categories
     delete:
-      operationId: deleteMapPointSubCategories
+      operationId: deleteMPSubCategories
       parameters: []
       responses:
         "200":
@@ -194,18 +194,18 @@ paths:
       tags:
         - Admin
         - Map Point Sub Categories
-  /admin/map-point-sub-Categories-items:
+  /admin/mp-sub-categories-items:
     post:
-      operationId: createMapPointSubCategoriesItems
+      operationId: createMPSubCategoriesItems
       parameters: []
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/createMapPointSubCategoriesItemDto"
+              $ref: "#/components/schemas/createMPSubCategoriesItemsDto"
       responses:
-        "200":
+        "201":
           description: Map Point Sub Categories Items was successfully created
         "422":
           description: Failed Validation
@@ -213,7 +213,7 @@ paths:
         - Admin
         - Map Point Sub Categories Item
     get:
-      operationId: getAllMapPointSubCategoriesItems
+      operationId: getAllMPSubCategoriesItems
       parameters: []
       responses:
         "200":
@@ -223,9 +223,9 @@ paths:
       tags:
         - Admin
         - Map Point Sub Categories Item
-  "/admin/map-point-sub-Categories-items/{id}":
+  "/admin/mp-sub-categories-items/{id}":
     put:
-      operationId: updateMapPointSubCategoriesItems
+      operationId: updateMPSubCategoriesItems
       parameters:
         - name: id
           required: true
@@ -237,7 +237,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/updateMapPointSubCategoriesItemDto"
+              $ref: "#/components/schemas/updateMPSubCategoriesItemsDto"
       responses:
         "200":
           description: Map Point Sub Categories Items was successfully updated
@@ -247,7 +247,7 @@ paths:
         - Admin
         - Map Point Sub Categories Item
     delete:
-      operationId: deleteMapPointSubCategoriesItems
+      operationId: deleteMPSubCategoriesItems
       parameters:
         - name: id
           required: true
@@ -289,7 +289,7 @@ paths:
           description: Failed Validation
       tags:
         - Business
-  "/business-details/{id}":
+  "/business/{id}":
     get:
       operationId: getBusiness
       parameters:
@@ -305,7 +305,6 @@ paths:
           description: Failed Validation
       tags:
         - Business
-  "/business/{id}":
     put:
       operationId: updateBusiness
       parameters:
@@ -425,6 +424,151 @@ paths:
                 $ref: "#/components/schemas/GetUserDetailsResponse"
       tags:
         - Users
+  /users/admin/user:
+    post:
+      operationId: adminCreateUser
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/createUserByAdminDto"
+      responses:
+        "201":
+          description: User was succesfully created
+        "422":
+          description: Failed Validation
+      tags:
+        - Users
+        - Admin
+        - Admin User
+  /admin/dmo:
+    post:
+      operationId: createDMO
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateDMODto"
+      responses:
+        "201":
+          description: DMO was successfully created
+        "422":
+          description: Failed Validation
+      tags:
+        - Admin
+        - DMO
+    get:
+      operationId: getAllDMO
+      parameters: []
+      responses:
+        "200":
+          description: DMO was successfully listed
+        "422":
+          description: Failed Validation
+      tags:
+        - Admin
+        - DMO
+  "/admin/dmo/{id}":
+    put:
+      operationId: updateMPSubCategoriesItems
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateDMODto"
+      responses:
+        "200":
+          description: DMO was successfully updated
+        "422":
+          description: Failed Validation
+      tags:
+        - Admin
+        - DMO
+    delete:
+      operationId: deleteMPSubCategoriesItems
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: DMO was successfully updated
+        "422":
+          description: Failed Validation
+      tags:
+        - Admin
+        - DMO
+  /admin/social-media:
+    post:
+      operationId: createSocialMedai
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/createSocialMediaDto"
+      responses:
+        "201":
+          description: Social Media was successfully created
+        "422":
+          description: Failed Validation
+      tags:
+        - Admin
+        - Social Media
+    get:
+      operationId: getSocialMedia
+      parameters: []
+      responses:
+        "200":
+          description: Social Media was successfully listed
+        "422":
+          description: Failed Validation
+      tags:
+        - Admin
+        - Social Media
+  "/admin/social-media/{id}":
+    put:
+      operationId: updateSocialMedia
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/updateSocialMediaDto"
+      responses:
+        "200":
+          description: Social Media was successfully updated
+        "422":
+          description: Failed Validation
+      tags:
+        - Admin
+        - Social Media
+    delete:
+      operationId: deleteSocialMedai
+      parameters: []
+      responses:
+        "200":
+          description: Social Media was successfully updated
+        "422":
+          description: Failed Validation
+      tags:
+        - Admin
+        - Social Media
 info:
   title: METGO
   description: API Documentation for MetGo
@@ -443,12 +587,14 @@ components:
           type: string
         pathAlt:
           type: string
+        hasMultiple:
+          type: boolean
       required:
         - name
     updateMapPointDto:
       type: object
       properties: {}
-    createMapPointCategoriesDto:
+    createMPCategoriesDto:
       type: object
       properties:
         name:
@@ -457,6 +603,8 @@ components:
           type: string
         pathAlt:
           type: string
+        hasMultiple:
+          type: boolean
         mapPointId:
           type: array
           items:
@@ -464,10 +612,10 @@ components:
       required:
         - name
         - mapPointId
-    updateMapPointCategoriesDto:
+    updateMPCategoriesDto:
       type: object
       properties: {}
-    createMapPointSubCategoriesDto:
+    createMPSubCategoriesDto:
       type: object
       properties:
         name:
@@ -488,10 +636,10 @@ components:
         - name
         - mapPointId
         - mapPointCategoriesId
-    updateMapPointSubCategoriesDto:
+    updateMPSubCategoriesDto:
       type: object
       properties: {}
-    createMapPointSubCategoriesItemDto:
+    createMPSubCategoriesItemsDto:
       type: object
       properties:
         name:
@@ -500,6 +648,8 @@ components:
           type: string
         pathAlt:
           type: string
+        hasMultiple:
+          type: boolean
         mapPointId:
           type: array
           items:
@@ -517,9 +667,29 @@ components:
         - mapPointId
         - mapPointCategoriesId
         - mapPointSubCategoriesId
-    updateMapPointSubCategoriesItemDto:
+    updateMPSubCategoriesItemsDto:
       type: object
-      properties: {}
+      properties:
+        name:
+          type: string
+        icon:
+          type: string
+        pathAlt:
+          type: string
+        hasMultiple:
+          type: boolean
+        mapPointId:
+          type: array
+          items:
+            type: string
+        mapPointCategoriesId:
+          type: array
+          items:
+            type: string
+        mapPointSubCategoriesId:
+          type: array
+          items:
+            type: string
     ContactDetails:
       type: object
       properties:
@@ -572,7 +742,7 @@ components:
           description: Name of social Media
         url:
           type: string
-          description: url of social media
+          description: Url of social media
       required:
         - name
         - url
@@ -618,6 +788,17 @@ components:
           type: array
           items:
             type: string
+        dmoId:
+          type: string
+        status:
+          type: string
+          enum:
+            - PENDING
+            - APPROVED
+            - CLOSED
+            - REJECTED
+        isPreview:
+          type: string
         geoLocation:
           $ref: "#/components/schemas/geoLocation"
         images:
@@ -723,3 +904,62 @@ components:
         - phone
         - email
         - address
+    createUserByAdminDto:
+      type: object
+      properties:
+        fullName:
+          type: string
+        email:
+          type: string
+        phone:
+          type: number
+        address:
+          type: string
+        role:
+          type: string
+          enum:
+            - admin
+            - superadmin
+            - traveller
+            - dmo
+            - dmoadmin
+      required:
+        - fullName
+        - email
+        - phone
+        - address
+        - role
+    CreateDMODto:
+      type: object
+      properties:
+        name:
+          type: string
+        userId:
+          type: string
+        collaboratorsUser:
+          type: array
+          items:
+            type: string
+      required:
+        - name
+        - userId
+        - collaboratorsUser
+    UpdateDMODto:
+      type: object
+      properties: {}
+    createSocialMediaDto:
+      type: object
+      properties:
+        name:
+          type: string
+        icon:
+          type: string
+        iconAlt:
+          type: string
+      required:
+        - name
+        - icon
+        - iconAlt
+    updateSocialMediaDto:
+      type: object
+      properties: {}

@@ -3,13 +3,19 @@ import { BusinessController } from './business.controller';
 import { BusinessService } from './business.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { BusinessSchema } from './schema/business.schema';
+import { UsersService } from '../users/users.services';
+import { UserSchema } from '../users/schema/users.schema';
+import { DMOSchema } from '../dmo/schema/dmo.schema';
+import { DMOService } from '../dmo/dmo.service';
 
 @Module({
   imports: [MongooseModule.forFeature([
     { name: 'Business', schema: BusinessSchema },
+    { name: 'User', schema: UserSchema },
+    { name: 'DMO', schema: DMOSchema },
   ])],
   controllers: [BusinessController],
-  providers: [BusinessService],
+  providers: [BusinessService, UsersService, DMOService],
   exports: [BusinessService],
 })
 export class BusinessModule {}

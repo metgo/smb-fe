@@ -18,6 +18,7 @@ export class IsEmailAlreadyExistConstraint implements ValidatorConstraintInterfa
 }
 
 export function IsEmailAlreadyExist(validationOption?: ValidationOptions) {
+  // eslint-disable-next-line func-names
   return function (object: Record<string, any>, propertyName: string) {
     registerDecorator({
       target: object.constructor,

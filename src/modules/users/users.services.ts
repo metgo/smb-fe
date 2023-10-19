@@ -1,4 +1,6 @@
-import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException, Injectable, InternalServerErrorException, NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
@@ -7,6 +9,10 @@ import { CreateUserRequest } from 'src/modules/users/requests/create-user.reques
 import { UpdateUserRequest } from 'src/modules/users/requests/update-user.request';
 import { GetUserDetailsResponse } from 'src/modules/users/responses/get-user-details.response';
 import { User } from 'src/modules/users/schema/users.schema';
+import { createUserByAdminDto } from './requests/create-user-ByAdmin.dto';
+import { findByFieldName, findOneById } from 'src/core/helper/query-helper';
+import { ServerErrors } from 'src/common/constant';
+import { passwordGenerator } from 'src/common/utils/randomPassword.genetator';
 
 @Injectable()
 export class UsersService {
@@ -120,5 +126,31 @@ export class UsersService {
       exceptionHandling(error);
       throw new InternalServerErrorException('Couldn\'t delete user');
     }
+  }
+
+  // admin create users
+
+  async adminCreateUser(dto: createUserByAdminDto) {
+    const user = await findByFieldName<User>(this.UserModel, 'email', dto.email);
+    if (user) {
+      throw new BadRequestException(ServerErrors.USER_EXISTS);
+    }
+    const password = await passwordGenerator();
+    const newUser = new this.UserModel({ ...dto, password });
+
+    return newUser;
+  }
+
+  async findDMOUser(id: string) {
+    const dmoUser = await findOneById<User>(this.UserModel, id);
+
+    if (!dmoUser) {
+      throw new NotFoundException(ServerErrors.USER_NOT_FOUND);
+    }
+    if (dmoUser.role !== 'dmo') {
+      throw new NotFoundException(ServerErrors.NOT_DMO_USER);
+    }
+
+    return true;
   }
 }

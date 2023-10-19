@@ -1,4 +1,6 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException, Injectable, NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Business } from './schema/business.schema';
@@ -8,10 +10,13 @@ import {
   findOneById, queryhandler, updateById,
 } from 'src/core/helper/query-helper';
 import { ServerErrors } from 'src/common/constant';
+import { FilterQuery } from './interface/FilterQuery.interface';
 
 @Injectable()
 export class BusinessService {
-  constructor(@InjectModel('Business') private BusinessModel: Model<Business>) { }
+  constructor(
+    @InjectModel('Business') private BusinessModel: Model<Business>,
+  ) { }
 
   async createBusiness(dto: createBusinessDto): Promise<Business> {
     const newBusiness = new this.BusinessModel(dto);
@@ -19,13 +24,32 @@ export class BusinessService {
     return newBusiness;
   }
 
-  async getAllBusiness() {
-    let findQuery: {};
+  async getAllBusiness(query: FilterQuery) {
+    let findQuery: any = {};
     let select: {};
     let page: number;
     let limit: number;
-    let populate: string;
+    let populate: any;
     let populate1: string;
+    if (query.search) {
+      findQuery = {
+        ...query,
+        $text: { $search: query.search, $caseSensitive: false, $diacriticSensitive: false },
+      };
+
+      delete findQuery?.search;
+    } else if (query) {
+      findQuery = {
+        ...query,
+      };
+    }
+    // eslint-disable-next-line prefer-const
+    populate = {
+      path: 'mapPointId mapPointCategoriesId mapPointSubCategoriesId',
+      select: '-createdAt -updatedAt -createdBy -updatedBy -deletedBy -deletedAt -isDeleted',
+    };
+    // eslint-disable-next-line prefer-const
+    select = '-createdAt -updatedAt -createdBy -updatedBy -deletedBy -deletedAt -isDeleted';
     const allBusiness = await queryhandler<Business>(
       this.BusinessModel,
       findQuery,
@@ -64,10 +88,10 @@ export class BusinessService {
     return business;
   }
 
-  async findBusinessByFieldName(fieldName: keyof Business, items: string): Promise<boolean> {
+  async findByFieldName(fieldName: keyof Business, items: string): Promise<boolean> {
     const bussEmail = await findOneByFieldName<Business>(this.BusinessModel, fieldName, items);
     if (bussEmail) {
-      throw new BadRequestException(`${fieldName === 'name' ? 'Business Name' : 'Business Email'} already exists`);
+      throw new BadRequestException(`${fieldName} already exists`);
     }
     return undefined;
   }

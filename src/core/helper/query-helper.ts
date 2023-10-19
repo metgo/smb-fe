@@ -52,11 +52,11 @@ export async function findAll<T>(model: Model<T>) {
 export async function queryhandler<T>(
   model: Model<T>,
   findQuery: {},
-  select: {},
+  select: string | {},
   page: number,
   limit: number,
-  populate: string,
-  populate1: string,
+  populate: any,
+  populate1: any,
 ) {
   const datas: any = {};
   datas.data = await model
@@ -66,6 +66,6 @@ export async function queryhandler<T>(
     .limit(limit)
     .populate(populate)
     .populate(populate1);
-  datas.totalData = await model.countDocuments();
+  datas.totalData = await model.countDocuments(findQuery);
   return datas;
 }

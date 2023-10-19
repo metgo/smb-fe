@@ -1,8 +1,9 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
+import { AuditableSchema } from 'src/core/helper/auditable.schema';
 
 @Schema()
-export class MapPointSubCategories {
+export class MPSubCategories extends AuditableSchema {
   @Prop()
     name: string;
 
@@ -11,6 +12,9 @@ export class MapPointSubCategories {
 
   @Prop()
     iconAlt: string;
+
+  @Prop({ type: Boolean, default: false })
+    hasMultiple: boolean;
 
   @Prop(
     {
@@ -22,12 +26,12 @@ export class MapPointSubCategories {
     mapPointId: mongoose.Types.ObjectId[];
 
     @Prop({
-      type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'MapPointCategories' }],
-      ref: 'MapPointCategories',
+      type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'MPCategories' }],
+      ref: 'MPCategories',
       required: true,
     })
       mapPointCategoriesId: mongoose.Types.ObjectId[];
 }
 
-export type MapPointCategoriesDocument = HydratedDocument<MapPointSubCategories>
-export const MapPointSubCategoriesSchema = SchemaFactory.createForClass(MapPointSubCategories);
+export type MPSubCategoriesDocument = HydratedDocument<MPSubCategories>
+export const MPSubCategoriesSchema = SchemaFactory.createForClass(MPSubCategories);
