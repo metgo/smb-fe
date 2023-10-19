@@ -1,5 +1,5 @@
 import {
-  Body, Controller, Delete, Get, HttpStatus, Param, Post, Put, Res,
+  Body, Controller, Delete, Get, HttpStatus, Param, Post, Put, Query, Res,
 } from '@nestjs/common';
 import { BusinessService } from './business.service';
 import { createBusinessDto, updateBusinessDto } from './dto';
@@ -7,10 +7,15 @@ import { Response } from 'express';
 import { responseHelper } from 'src/core/helper/response.helper';
 import { ServerSuccess } from 'src/common/constant';
 import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
+import { FilterQuery } from './interface/FilterQuery.interface';
+import { DMOService } from '../dmo/dmo.service';
 
 @Controller()
 export class BusinessController {
-  constructor(private readonly businessServices: BusinessService) { }
+  constructor(
+    private readonly businessServices: BusinessService,
+    private readonly dmoService: DMOService,
+  ) { }
 
   @ApiEndpoint({
     tags: ['Business'],
@@ -18,8 +23,10 @@ export class BusinessController {
   })
   @Post('business')
   async createBusiness(@Res() response: Response, @Body() dto: createBusinessDto) {
-    await this.businessServices.findBusinessByFieldName('name', dto.name);
-    await this.businessServices.findBusinessByFieldName('busiEmail', dto.busiEmail);
+    await this.businessServices.findByFieldName('name', dto.name);
+    await this.businessServices.findByFieldName('phoneNumber', dto.phoneNumber);
+    await this.businessServices.findByFieldName('busiEmail', dto.busiEmail);
+    await this.dmoService.findDMO(dto.dmoId);
     const business = await this.businessServices.createBusiness(dto);
     return responseHelper(response, HttpStatus.CREATED, ServerSuccess.BUSINESS_CREATED, business, null, null);
   }
@@ -31,8 +38,9 @@ export class BusinessController {
   @Get('business')
   async getAllBusiness(
     @Res() response: Response,
+    @Query() query?: FilterQuery,
   ) {
-    const business = await this.businessServices.getAllBusiness();
+    const business = await this.businessServices.getAllBusiness(query);
 
     return responseHelper(response, HttpStatus.OK, ServerSuccess.BUSINESS_LISTED, business, null, null);
   }
@@ -41,7 +49,7 @@ export class BusinessController {
     tags: ['Business'],
     response: { status: 200, description: ServerSuccess.BUSINESS_LISTED },
   })
-  @Get('business-details/:id')
+  @Get('business/:id')
   async getBusiness(@Res() response: Response, @Param('id') id: string) {
     const business = await this.businessServices.getBusiness(id);
 
@@ -58,7 +66,6 @@ export class BusinessController {
     @Param('id') bussId: string,
     @Body() dto: updateBusinessDto,
   ) {
-    console.log(dto);
     const business = await this.businessServices.updateBusiness(bussId, dto);
 
     return responseHelper(response, HttpStatus.OK, ServerSuccess.BUSINESS_UPDATED, business, null, null);

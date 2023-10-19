@@ -1,8 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import {
-  IsArray, IsNotEmpty, IsObject, IsOptional, IsString,
+  IsArray, IsBoolean, IsNotEmpty, IsObject, IsOptional, IsString,
 } from 'class-validator';
+import { BusinessStatus } from 'src/common/enum';
 import transformEmail from 'src/core/helper/transformEmail';
 
 class OpeningHours {
@@ -49,7 +50,7 @@ class socialMedia {
  @ApiProperty({ type: String, description: 'Name of social Media' })
    name: string;
 
-  @ApiProperty({ type: String, description: 'url of social media' })
+  @ApiProperty({ type: String, description: 'Url of social media' })
     url: String;
 }
 
@@ -107,8 +108,30 @@ export class createBusinessDto {
   required: false,
 })
     @IsOptional()
-    @IsString()
+    @IsArray()
   collabrationUser: [];
+
+  @ApiProperty({
+    required: false,
+  })
+    @IsNotEmpty()
+    @IsString()
+    dmoId: string;
+
+  @ApiProperty({
+    required: false,
+    enum: BusinessStatus,
+  })
+    @IsOptional()
+    @IsString()
+    status: BusinessStatus;
+
+  @ApiProperty({
+    required: false,
+  })
+    @IsOptional()
+    @IsBoolean()
+    isPreview: string;
 
   @ApiProperty({
     required: false,
@@ -150,7 +173,7 @@ export class createBusinessDto {
 })
    @IsOptional()
     @IsArray()
-  mapPointSubCategoriesId: [string];
+  mapPointSubCategoriesId: [];
 
   @ApiProperty({
     required: false,

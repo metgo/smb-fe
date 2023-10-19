@@ -1,8 +1,10 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
+import { BusinessStatus } from 'src/common/enum';
+import { AuditableSchema } from 'src/core/helper/auditable.schema';
 
 @Schema()
-export class Business {
+export class Business extends AuditableSchema {
   @Prop({ required: true })
     name: string;
 
@@ -18,6 +20,12 @@ export class Business {
   @Prop({ required: true })
     description: string;
 
+  @Prop({ enum: BusinessStatus, default: BusinessStatus.PENDING })
+    status: BusinessStatus;
+
+  @Prop({ default: true })
+    isPreview: boolean;
+
   @Prop({
     type: {
       name: String,
@@ -31,8 +39,26 @@ export class Business {
         address: string,
   };
 
-  @Prop()
-    collabrationUser: [];
+  @Prop({
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Users' }],
+    ref: 'Users',
+    required: true,
+  })
+    collabrationUser: mongoose.Types.ObjectId[];
+
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Users',
+    required: false,
+  })
+    userId: mongoose.Types.ObjectId;
+
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'DMO',
+    required: true,
+  })
+    dmoId: mongoose.Types.ObjectId;
 
   @Prop({
     type: {
@@ -65,24 +91,28 @@ export class Business {
   @Prop(
     {
       type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'MapPoint' }],
-      ref: 'MapPoint',
       required: false,
     },
   )
     mapPointId: mongoose.Types.ObjectId[];
 
   @Prop({
-    type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'MapPointCategories' }],
-    ref: 'MapPointCategories',
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'MPCategories' }],
     required: false,
   })
     mapPointCategoriesId: mongoose.Types.ObjectId[];
 
   @Prop({
-    type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'MapPointSubCategories' }],
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'MPSubCategories' }],
     required: false,
   })
     mapPointSubCategoriesId: mongoose.Types.ObjectId[];
+
+  @Prop({
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'MPSubCategoriesItems' }],
+    required: false,
+  })
+    mapPointSubCategoriesItemsId: mongoose.Types.ObjectId[];
 
   @Prop()
     openingHrs: [
@@ -98,4 +128,6 @@ export class Business {
     ];
 }
 export type BusinessDocument = HydratedDocument<Business>;
+
 export const BusinessSchema = SchemaFactory.createForClass(Business);
+BusinessSchema.index({ name: 'text', description: 'text' });
