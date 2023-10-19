@@ -54,7 +54,7 @@ export class MPSubCategoriesController {
   @Put('admin/mp-sub-categories/:id')
    async updateMPSubCategories(
     @Res() response: Response,
-    @Param() id: string,
+    @Param('id') id: string,
     @Body() dto: updateMPSubCategoriesDto,
    ) {
      const MPSubCategories = await this.mpSubCategoriesService.updateMPSubCategories(id, dto);

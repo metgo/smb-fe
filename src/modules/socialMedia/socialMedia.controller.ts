@@ -64,9 +64,10 @@ export class SocialMediaController {
     @Put('admin/social-media/:id')
     async updateSocialMedia(
         @Res() response: Response,
-        @Param() id: string,
+        @Param('id') id: string,
         @Body() dto: updateSocialMediaDto,
     ) {
+      console.log(id);
       const socialMedia = await this.socialMediaService.update(id, dto);
       return responseHelper(
         response,
@@ -88,7 +89,7 @@ export class SocialMediaController {
     @Delete('admin/social-media/:id')
     async deleteSocialMedai(
          @Res() response: Response,
-        @Param() id: string,
+        @Param('id') id: string,
     ) {
       const socialMedia = await this.socialMediaService.softDelete(id);
       return responseHelper(
