@@ -10,7 +10,7 @@ import { UpdateUserRequest } from 'src/modules/users/requests/update-user.reques
 import { GetUserDetailsResponse } from 'src/modules/users/responses/get-user-details.response';
 import { User } from 'src/modules/users/schema/users.schema';
 import { createUserByAdminDto } from './requests/create-user-ByAdmin.dto';
-import { findByFieldName, findOneByFieldName, findOneById } from 'src/core/helper/query-helper';
+import { findOneByFieldName, findOneById } from 'src/core/helper/query-helper';
 import { ServerErrors } from 'src/common/constant';
 import { passwordGenerator } from 'src/common/utils/randomPassword.genetator';
 
