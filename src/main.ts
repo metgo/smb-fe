@@ -18,7 +18,17 @@ async function bootstrap() {
     app,
     new DocumentBuilder()
       .setTitle('METGO')
-      .setDescription('API Documentation for MetGo'),
+      .setDescription('API Documentation for MetGo')
+      .addBearerAuth(
+        {
+          description: 'Default JWT Authorization',
+          type: 'http',
+          in: 'header',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+        },
+        'defaultBearerAuth',
+      ),
     {
       webServerOptions: {
         enabled: true,

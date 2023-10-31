@@ -14,8 +14,10 @@ export const softValidationPipe = new ValidationPipe({
 });
 
 export const ServerErrors = {
-  USER_NOT_FOUND: 'User not found',
-  USER_EXISTS: 'User already exists',
+  USER: {
+    NOT_FOUND: 'User not found',
+    EXISTS: 'User already exists',
+  },
   NOT_DMO_USER: 'Not a dmo user',
   JWT_EXPIRED_OR_NOT_FOUND: 'Authorization header not found or jwt token has expired',
   FAILED_VALIDATION: 'Failed Validation',

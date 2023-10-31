@@ -1,21 +1,38 @@
 import {
   Body,
-  Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Req, Res,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Patch,
+  Post,
+  Req,
+  Res,
+  UseGuards,
 } from '@nestjs/common';
 import {
-  ApiCreatedResponse, ApiOkResponse, ApiOperation, ApiTags,
+  ApiBearerAuth,
+  ApiInternalServerErrorResponse,
+  ApiNotFoundResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
 } from '@nestjs/swagger';
+import { Response } from 'express';
 
-import { UsersService } from 'src/modules/users/users.services';
-import { CreateUserRequest } from 'src/modules/users/requests/create-user.request';
+import { ServerErrors, ServerSuccess } from 'src/common/constant';
+import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
+import { JwtAuthGuard } from 'src/core/guards/jwt/jwt.guards';
+import { responseHelper } from 'src/core/helper/response.helper';
+import { createUserByAdminDto } from 'src/modules/users/requests/create-user-ByAdmin.dto';
 import { UpdateUserRequest } from 'src/modules/users/requests/update-user.request';
 import { GetUserDetailsResponse } from 'src/modules/users/responses/get-user-details.response';
-import { Response } from 'express';
-import { createUserByAdminDto } from './requests/create-user-ByAdmin.dto';
-import { responseHelper } from 'src/core/helper/response.helper';
-import { ServerSuccess } from 'src/common/constant';
-import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
+import { UsersService } from 'src/modules/users/users.services';
 
+@UseGuards(JwtAuthGuard)
+@ApiBearerAuth('defaultBearerAuth')
 @ApiTags('Users')
 @Controller('/users')
 export class UsersController {
@@ -24,6 +41,8 @@ export class UsersController {
   ) {}
 
   @HttpCode(HttpStatus.OK)
+  @ApiInternalServerErrorResponse({ description: 'Couldn\'t find user' })
+  @ApiNotFoundResponse({ description: ServerErrors.USER.NOT_FOUND })
   @ApiOkResponse({ type: GetUserDetailsResponse })
   @ApiOperation({ summary: 'Get My Information' })
   @Get('/me')
@@ -31,15 +50,9 @@ export class UsersController {
     return await this.userService.getMyInformation(req.user.id);
   }
 
-  @HttpCode(HttpStatus.CREATED)
-  @ApiCreatedResponse({ type: GetUserDetailsResponse })
-  @ApiOperation({ summary: 'Create new user' })
-  @Post()
-  async createUser(@Body() body: CreateUserRequest) {
-    return await this.userService.create(body);
-  }
-
   @HttpCode(HttpStatus.OK)
+  @ApiInternalServerErrorResponse({ description: 'Couldn\'t update user' })
+  @ApiNotFoundResponse({ description: ServerErrors.USER.NOT_FOUND })
   @ApiOkResponse({ type: GetUserDetailsResponse })
   @ApiOperation({ summary: 'Update User\'s Information' })
   @Patch(':userId')
@@ -48,6 +61,8 @@ export class UsersController {
   }
 
   @HttpCode(HttpStatus.OK)
+  @ApiInternalServerErrorResponse({ description: 'Couldn\'t delete user' })
+  @ApiNotFoundResponse({ description: ServerErrors.USER.NOT_FOUND })
   @ApiOkResponse({ type: GetUserDetailsResponse })
   @ApiOperation({ summary: 'Delete User\'s Information' })
   @Delete('/:userId')

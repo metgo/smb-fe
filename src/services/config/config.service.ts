@@ -12,10 +12,9 @@ export class ConfigService {
   constructor() {
     const { DEV_CONFIG } = process.env;
 
-    const config
-      = DEV_CONFIG && fs.existsSync(`${DEV_CONFIG}.env`)
-        ? dotenv.parse(fs.readFileSync(`${DEV_CONFIG}.env`))
-        : this.parseEnv();
+    const config = DEV_CONFIG && fs.existsSync(`${DEV_CONFIG}.env`)
+      ? dotenv.parse(fs.readFileSync(`${DEV_CONFIG}.env`))
+      : this.parseEnv();
 
     this.envConfig = this.validateInput(config);
   }
@@ -25,14 +24,15 @@ export class ConfigService {
     const ENV_VARIABLES = [
       'NODE_ENV',
       'HOST',
-      'API_PORT',
       'ENV_NAME',
-      'AUTH_JWT_SECRET',
-      'RESET_PASSWORD_TOKEN_EXPIRATION_IN_SECONDS',
+      'API_PORT',
+      'MONGODB_URI',
       'JWT_TOKEN_EXPIRES',
       'ADMIN_JWT_TOKEN_EXPIRES',
-      'REFRESH_TOKEN_TOKEN_EXPIRATION_IN_SECONDS',
-      'MONGODB_URI',
+      'REFRESH_TOKEN_EXPIRATION_IN_SECONDS',
+      'RESET_PASSWORD_TOKEN_EXPIRATION_IN_SECONDS',
+      'ACCESS_TOKEN',
+      'REFRESH_TOKEN',
     ];
 
     return ENV_VARIABLES.reduce((obj: any, variable) => {
@@ -52,15 +52,16 @@ export class ConfigService {
         .valid('development', 'production', 'testing')
         .default('development'),
       HOST: Joi.string().default('localhost'),
-      PORT: Joi.number().port().default(3000),
-      API_PORT: Joi.number().port().default(3000),
       ENV_NAME: Joi.string().required(),
-      AUTH_JWT_SECRET: Joi.string().required(),
-      JWT_TOKEN_EXPIRES: Joi.string().required(),
+      API_PORT: Joi.number().port().default(3000),
+      PORT: Joi.number().port().default(3000),
       MONGODB_URI: Joi.string().required(),
+      JWT_TOKEN_EXPIRES: Joi.number().required(),
+      ACCESS_TOKEN: Joi.string().required(),
+      REFRESH_TOKEN: Joi.string().required(),
     }).unknown(true);
-    const { error, value: validatedEnvConfig }
-      = envVarsSchema.validate(envConfig);
+
+    const { error, value: validatedEnvConfig } = envVarsSchema.validate(envConfig);
 
     if (error) {
       throw new Error(`Config validation error: ${error.message}`);

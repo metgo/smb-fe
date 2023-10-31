@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
-  IsEmail, IsOptional, IsPhoneNumber, IsString,
+  IsEmail, IsOptional, IsString,
 } from 'class-validator';
 
 export class UpdateUserRequest {
@@ -9,7 +9,6 @@ export class UpdateUserRequest {
   @ApiProperty()
   readonly fullName: string;
 
-  @IsPhoneNumber()
   @IsOptional()
   @ApiProperty()
   readonly phone: number;

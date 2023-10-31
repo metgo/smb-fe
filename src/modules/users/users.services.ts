@@ -1,18 +1,19 @@
 import {
-  BadRequestException, Injectable, InternalServerErrorException, NotFoundException,
+  BadRequestException, ConflictException, Injectable, InternalServerErrorException, NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
 import { exceptionHandling } from 'src/common/utils/exception-handling';
-import { CreateUserRequest } from 'src/modules/users/requests/create-user.request';
+import { RegisterRequest } from 'src/modules/auth/requests/register.request';
 import { UpdateUserRequest } from 'src/modules/users/requests/update-user.request';
 import { GetUserDetailsResponse } from 'src/modules/users/responses/get-user-details.response';
 import { User } from 'src/modules/users/schema/users.schema';
 import { createUserByAdminDto } from './requests/create-user-ByAdmin.dto';
-import { findOneByFieldName, findOneById } from 'src/core/helper/query-helper';
+import { findOneByFieldName, findOneById, updateById } from 'src/core/helper/query-helper';
 import { ServerErrors } from 'src/common/constant';
 import { passwordGenerator } from 'src/common/utils/randomPassword.genetator';
+import { UpdateLastLoginRequest } from 'src/modules/users/requests/update-last-logins.request';
 
 @Injectable()
 export class UsersService {
@@ -23,10 +24,10 @@ export class UsersService {
 
   async getMyInformation(userId: string): Promise<GetUserDetailsResponse> {
     try {
-      const user = await this.UserModel.findById(userId);
+      const user = await findOneById<User>(this.UserModel, userId);
 
       if (!user) {
-        throw new NotFoundException('User Not Found');
+        throw new NotFoundException(ServerErrors.USER.NOT_FOUND);
       }
 
       return {
@@ -47,9 +48,18 @@ export class UsersService {
     }
   }
 
-  async create(createUserDto: CreateUserRequest): Promise<GetUserDetailsResponse> {
+  async create(registerDto: RegisterRequest): Promise<GetUserDetailsResponse> {
     try {
-      const newUser = await (new this.UserModel(createUserDto)).save();
+      const userExists = await findOneByFieldName<User>(
+        this.UserModel,
+        'email',
+        registerDto.email,
+      );
+
+      if (userExists) {
+        throw new ConflictException(ServerErrors.USER.EXISTS);
+      }
+      const newUser = await (new this.UserModel(registerDto)).save();
 
       return {
         id: newUser.id,
@@ -69,14 +79,16 @@ export class UsersService {
     }
   }
 
-  async update(userId: string, updateUserDto: UpdateUserRequest): Promise<GetUserDetailsResponse> {
+  async update(userId: string, updateUserDto: UpdateUserRequest | UpdateLastLoginRequest): Promise<GetUserDetailsResponse> {
     try {
-      const updatedUser = await this.UserModel
-        .findOneAndUpdate({ _id: userId }, updateUserDto, { new: true })
-        .exec();
+      const updatedUser = await updateById<User>(
+        this.UserModel,
+        userId,
+        updateUserDto,
+      );
 
       if (!updatedUser) {
-        throw new NotFoundException('User Not Found');
+        throw new NotFoundException(ServerErrors.USER.NOT_FOUND);
       }
 
       return {
@@ -99,14 +111,14 @@ export class UsersService {
 
   async softDelete(userId: string): Promise<GetUserDetailsResponse> {
     try {
-      const deletedUser = await this.UserModel.findOneAndUpdate(
-        { _id: userId, deletedAt: null },
+      const deletedUser = await updateById<User>(
+        this.UserModel,
+        userId,
         { deletedAt: new Date() },
-        { new: true },
       );
 
       if (!deletedUser) {
-        throw new NotFoundException('User Not Found');
+        throw new NotFoundException(ServerErrors.USER.NOT_FOUND);
       }
 
       return {
@@ -128,12 +140,31 @@ export class UsersService {
     }
   }
 
+  async findByEmail(email: string): Promise<any> {
+    try {
+      const user = await findOneByFieldName<User>(
+        this.UserModel,
+        'email',
+        email,
+      );
+
+      if (!user) {
+        throw new NotFoundException(ServerErrors.USER.NOT_FOUND);
+      }
+
+      return user;
+    } catch (error) {
+      exceptionHandling(error);
+      throw new InternalServerErrorException('Couldn\'t find user with given email');
+    }
+  }
+
   // admin create users
 
   async adminCreateUser(dto: createUserByAdminDto) {
     const user = await findOneByFieldName<User>(this.UserModel, 'email', dto.email);
     if (user) {
-      throw new BadRequestException(ServerErrors.USER_EXISTS);
+      throw new BadRequestException(ServerErrors.USER.EXISTS);
     }
     const password = await passwordGenerator();
     const newUser = new this.UserModel({ ...dto, password });
@@ -145,7 +176,7 @@ export class UsersService {
     const dmoUser = await findOneById<User>(this.UserModel, id);
 
     if (!dmoUser) {
-      throw new NotFoundException(ServerErrors.USER_NOT_FOUND);
+      throw new NotFoundException(ServerErrors.USER.NOT_FOUND);
     }
     if (dmoUser.role !== 'dmo') {
       throw new NotFoundException(ServerErrors.NOT_DMO_USER);

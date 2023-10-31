@@ -1,5 +1,143 @@
 openapi: 3.0.0
 paths:
+  /auth/login:
+    post:
+      operationId: login
+      summary: Login to system
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SignInRequest"
+      responses:
+        "404":
+          description: User not found
+        "500":
+          description: Couldn't find user with given email
+      tags:
+        - Auth
+  /auth/register:
+    post:
+      operationId: register
+      summary: Register new user
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterRequest"
+      responses:
+        "201":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetUserDetailsResponse"
+        "409":
+          description: User already exists
+        "500":
+          description: Couldn't save user
+      tags:
+        - Auth
+  /users/me:
+    get:
+      operationId: me
+      summary: Get My Information
+      parameters: []
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetUserDetailsResponse"
+        "404":
+          description: User not found
+        "500":
+          description: Couldn't find user
+      tags:
+        - Users
+      security:
+        - defaultBearerAuth: []
+  "/users/{userId}":
+    patch:
+      operationId: updateUser
+      summary: Update User's Information
+      parameters:
+        - name: userId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUserRequest"
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetUserDetailsResponse"
+        "404":
+          description: User not found
+        "500":
+          description: Couldn't update user
+      tags:
+        - Users
+      security:
+        - defaultBearerAuth: []
+    delete:
+      operationId: softDeleteUser
+      summary: Delete User's Information
+      parameters:
+        - name: userId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetUserDetailsResponse"
+        "404":
+          description: User not found
+        "500":
+          description: Couldn't delete user
+      tags:
+        - Users
+      security:
+        - defaultBearerAuth: []
+  /users/admin/user:
+    post:
+      operationId: adminCreateUser
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/createUserByAdminDto"
+      responses:
+        "201":
+          description: User was succesfully created
+        "422":
+          description: Failed Validation
+      tags:
+        - Users
+        - Admin
+        - Admin User
+      security:
+        - defaultBearerAuth: []
   /admin/mp:
     post:
       operationId: createMapPoint
@@ -352,102 +490,6 @@ paths:
           description: Failed Validation
       tags:
         - Business
-  /users/me:
-    get:
-      operationId: me
-      summary: Get My Information
-      parameters: []
-      responses:
-        "200":
-          description: ""
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/GetUserDetailsResponse"
-      tags:
-        - Users
-  /users:
-    post:
-      operationId: createUser
-      summary: Create new user
-      parameters: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/CreateUserRequest"
-      responses:
-        "201":
-          description: ""
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/GetUserDetailsResponse"
-      tags:
-        - Users
-  "/users/{userId}":
-    patch:
-      operationId: updateUser
-      summary: Update User's Information
-      parameters:
-        - name: userId
-          required: true
-          in: path
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/UpdateUserRequest"
-      responses:
-        "200":
-          description: ""
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/GetUserDetailsResponse"
-      tags:
-        - Users
-    delete:
-      operationId: softDeleteUser
-      summary: Delete User's Information
-      parameters:
-        - name: userId
-          required: true
-          in: path
-          schema:
-            type: string
-      responses:
-        "200":
-          description: ""
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/GetUserDetailsResponse"
-      tags:
-        - Users
-  /users/admin/user:
-    post:
-      operationId: adminCreateUser
-      parameters: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/createUserByAdminDto"
-      responses:
-        "201":
-          description: User was succesfully created
-        "422":
-          description: Failed Validation
-      tags:
-        - Users
-        - Admin
-        - Admin User
   /admin/dmo:
     post:
       operationId: createDMO
@@ -592,7 +634,125 @@ info:
 tags: []
 servers: []
 components:
+  securitySchemes:
+    defaultBearerAuth:
+      scheme: bearer
+      bearerFormat: JWT
+      description: Default JWT Authorization
+      type: http
+      in: header
   schemas:
+    SignInRequest:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+      required:
+        - email
+        - password
+    RegisterRequest:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+      required:
+        - email
+        - password
+    GetUserDetailsResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        fullName:
+          type: string
+        phone:
+          type: number
+        address:
+          type: string
+        email:
+          type: string
+        lastLogin:
+          format: date-time
+          type: string
+        isPhoneVerify:
+          type: boolean
+        isEmailVerify:
+          type: boolean
+        loginAttempts:
+          type: number
+        role:
+          type: string
+        hasBusiness:
+          type: boolean
+        createdAt:
+          format: date-time
+          type: string
+        updatedAt:
+          format: date-time
+          type: string
+        deletedAt:
+          format: date-time
+          type: string
+      required:
+        - id
+        - fullName
+        - phone
+        - address
+        - email
+        - lastLogin
+        - isPhoneVerify
+        - isEmailVerify
+        - loginAttempts
+        - role
+        - hasBusiness
+        - createdAt
+        - updatedAt
+        - deletedAt
+    UpdateUserRequest:
+      type: object
+      properties:
+        fullName:
+          type: string
+        phone:
+          type: number
+        email:
+          type: string
+        address:
+          type: string
+      required:
+        - fullName
+        - phone
+        - email
+        - address
+    createUserByAdminDto:
+      type: object
+      properties:
+        fullName:
+          type: string
+        email:
+          type: string
+        phone:
+          type: number
+        address:
+          type: string
+        role:
+          type: string
+          enum:
+            - admin
+            - superadmin
+            - traveller
+            - dmo
+            - dmoadmin
+      required:
+        - fullName
+        - email
+        - phone
+        - address
+        - role
     createMapPointDto:
       type: object
       properties:
@@ -843,107 +1003,6 @@ components:
     updateBusinessDto:
       type: object
       properties: {}
-    GetUserDetailsResponse:
-      type: object
-      properties:
-        id:
-          type: string
-        fullName:
-          type: string
-        phone:
-          type: number
-        address:
-          type: string
-        email:
-          type: string
-        lastLogin:
-          format: date-time
-          type: string
-        isPhoneVerify:
-          type: boolean
-        isEmailVerify:
-          type: boolean
-        loginAttempts:
-          type: number
-        role:
-          type: string
-        hasBusiness:
-          type: boolean
-        createdAt:
-          format: date-time
-          type: string
-        updatedAt:
-          format: date-time
-          type: string
-        deletedAt:
-          format: date-time
-          type: string
-      required:
-        - id
-        - fullName
-        - phone
-        - address
-        - email
-        - lastLogin
-        - isPhoneVerify
-        - isEmailVerify
-        - loginAttempts
-        - role
-        - hasBusiness
-        - createdAt
-        - updatedAt
-        - deletedAt
-    CreateUserRequest:
-      type: object
-      properties:
-        email:
-          type: string
-        password:
-          type: string
-      required:
-        - email
-        - password
-    UpdateUserRequest:
-      type: object
-      properties:
-        fullName:
-          type: string
-        phone:
-          type: number
-        email:
-          type: string
-        address:
-          type: string
-      required:
-        - fullName
-        - phone
-        - email
-        - address
-    createUserByAdminDto:
-      type: object
-      properties:
-        fullName:
-          type: string
-        email:
-          type: string
-        phone:
-          type: number
-        address:
-          type: string
-        role:
-          type: string
-          enum:
-            - admin
-            - superadmin
-            - traveller
-            - dmo
-            - dmoadmin
-      required:
-        - fullName
-        - email
-        - phone
-        - address
-        - role
     CreateDMODto:
       type: object
       properties:
