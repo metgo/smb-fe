@@ -7,11 +7,8 @@ export class MPSubCategories extends AuditableSchema {
   @Prop()
     name: string;
 
-  @Prop()
-    icon: string;
-
-  @Prop()
-    iconAlt: string;
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Icons' })
+    icon: mongoose.Types.ObjectId;
 
   @Prop({ type: Boolean, default: false })
     hasMultiple: boolean;
@@ -25,12 +22,12 @@ export class MPSubCategories extends AuditableSchema {
   )
     mapPointId: mongoose.Types.ObjectId[];
 
-    @Prop({
-      type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'MPCategories' }],
-      ref: 'MPCategories',
-      required: true,
-    })
-      mapPointCategoriesId: mongoose.Types.ObjectId[];
+  @Prop({
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'MPCategories' }],
+    ref: 'MPCategories',
+    required: true,
+  })
+    mapPointCategoriesId: mongoose.Types.ObjectId[];
 }
 
 export type MPSubCategoriesDocument = HydratedDocument<MPSubCategories>

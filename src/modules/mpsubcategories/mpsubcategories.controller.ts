@@ -1,12 +1,12 @@
 import {
-  Body, Controller, Delete, Get, HttpStatus, Param, Post, Put, Res,
+  Body, Controller, Delete, Get, HttpStatus, Param, Post, Put, Query, Res,
 } from '@nestjs/common';
 import { MPSubCategoriesService } from './mpsubcategories.service';
 import { ServerSuccess } from 'src/common/constant';
 import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
 import { responseHelper } from 'src/core/helper/response.helper';
 import { Response } from 'express';
-import { createMPSubCategoriesDto, updateMPSubCategoriesDto } from './dto';
+import { createMPSubCategoriesDto, FilterQuery, updateMPSubCategoriesDto } from './dto';
 
 @Controller()
 export class MPSubCategoriesController {
@@ -32,10 +32,11 @@ export class MPSubCategoriesController {
    @ApiEndpoint({
      tags: ['Admin', 'Map Point Sub Categories'],
      response: { status: 200, description: ServerSuccess.MAP_POINT_SUB_CATEGORIES_LISTED },
+     softBlockExtraDtoFields: true,
    })
   @Get('admin/mp-sub-categories')
-     async getAllMPSubCategories(@Res() response: Response) {
-       const MPSubCategories = await this.mpSubCategoriesService.getAllMPSubCategories();
+     async getAllMPSubCategories(@Res() response: Response, @Query() query: FilterQuery) {
+       const MPSubCategories = await this.mpSubCategoriesService.getAllMPSubCategories(query);
 
        return responseHelper(
          response,

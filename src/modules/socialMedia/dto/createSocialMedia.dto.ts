@@ -15,11 +15,4 @@ export class createSocialMediaDto {
     @IsString()
     @IsNotEmpty()
       icon: string;
-
-    @ApiProperty({
-      required: true,
-    })
-    @IsString()
-    @IsNotEmpty()
-      iconAlt: string;
 }

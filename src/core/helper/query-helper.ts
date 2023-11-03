@@ -12,6 +12,12 @@ export async function findOneByFieldName<T>(model: Model<T>, fieldName: keyof T,
   return data;
 }
 
+export async function findOneByFieldNameExcludeId<T>(model: Model<T>, fieldName: keyof T, item: string, id: string) {
+  const filterBy = { [fieldName]: item };
+  const data = await model.findOne({ ...filterBy, deletedAt: { $in: [null] }, _id: { $nin: [id] } });
+  return data;
+}
+
 export async function findOneById<T>(model: Model<T>, item: string) {
   const filterBy = { _id: item };
   const data = await model.findOne(

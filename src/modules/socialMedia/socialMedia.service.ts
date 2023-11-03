@@ -1,3 +1,4 @@
+/* eslint-disable prefer-const */
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { SocialMedia } from './schema/socialMedia.schema';
@@ -6,6 +7,7 @@ import { Model } from 'mongoose';
 import { queryhandler, updateById } from 'src/core/helper/query-helper';
 import { updateSocialMediaDto } from './dto/updateSocialMedia.dto';
 import { ServerErrors } from 'src/common/constant';
+import { disSelect } from 'src/common/utils/select.handling';
 
 @Injectable()
 export class SocialMediaService {
@@ -22,11 +24,15 @@ export class SocialMediaService {
     let select: string;
     let page: number;
     let limit: number;
-    let populate: string;
+    let populate: {};
     let populate1: string;
 
+    populate = {
+      path: 'icon',
+      select: `${disSelect}`,
+    };
     // eslint-disable-next-line prefer-const
-    select = '-createdAt -updatedAt -createdBy -updatedBy -deletedBy -deletedAt -isDeleted';
+    select = `${disSelect}`;
     const socialMedia = await queryhandler<SocialMedia>(
       this.SocialMediaModel,
       findQuery,

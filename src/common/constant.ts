@@ -34,6 +34,12 @@ export const ServerErrors = {
   DMO_EXISTS: 'DMO already exists',
   SOCIAL_MEDIA_NOT_FOUND: 'Social Media not found',
   BUSINESS_PHONE_EXISTS: 'Business Number already exists',
+
+  ICON_NOT_FOUND: 'Icon not found',
+  ICON_CATEGORY_NOT_FOUND: 'Icon category not found',
+  ICON_EXISTS: 'Icon already exists',
+  ICON_CATEGORY_EXISTS: 'Icon category already exists',
+
 };
 
 export const ServerSuccess = {
@@ -60,5 +66,13 @@ export const ServerSuccess = {
   SOCIAL_MEDIA_UPDTED: 'Social Media was successfully updated',
   USER_CREATED: 'User was succesfully created',
   USER_LISTED: 'User was succesfully listed',
-  USER_Updated: 'User was succesfully updated',
+  USER_UPDATED: 'User was succesfully updated',
+
+  ICON_CREATED: 'Icon was succesfully created',
+  ICON_LISTED: 'Icon was succesfully listed',
+  ICON_UPDATED: 'Icon was succesfully updated',
+
+  ICON_CATEGORY_CREATED: 'Icon category was succesfully created',
+  ICON_CATEGORY_LISTED: 'Icon category was succesfully listed',
+  ICON_CATEGORY_UPDATED: 'Icon category was succesfully updated',
 };

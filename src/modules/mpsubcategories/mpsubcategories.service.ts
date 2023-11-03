@@ -1,10 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { createMPSubCategoriesDto, updateMPSubCategoriesDto } from './dto';
+import { createMPSubCategoriesDto, FilterQuery, updateMPSubCategoriesDto } from './dto';
 import { MPSubCategories } from './schema/subcategories.schema';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { queryhandler, updateById } from 'src/core/helper/query-helper';
 import { ServerErrors } from 'src/common/constant';
+import { disSelect } from 'src/common/utils/select.handling';
 
 @Injectable()
 export class MPSubCategoriesService {
@@ -15,13 +16,27 @@ export class MPSubCategoriesService {
     return newMPSubCategories.save();
   }
 
-  async getAllMPSubCategories(): Promise<MPSubCategories & any> {
+  async getAllMPSubCategories(query: FilterQuery): Promise<MPSubCategories & any> {
     let findQuery: {};
     let select: {};
     let page: number;
     let limit: number;
     let populate: {};
     let populate1: string;
+
+    if (query.mapPointId) {
+      const mapPoint = JSON.parse(query.mapPointId);
+      findQuery = {
+        mapPointId: { $in: mapPoint },
+      };
+    }
+    if (query.mapPointCategoriesId) {
+      const mapPointCat = JSON.parse(query.mapPointCategoriesId);
+      findQuery = {
+        ...findQuery,
+        mapPointCategoriesId: { $in: mapPointCat },
+      };
+    }
     // eslint-disable-next-line prefer-const
     populate = {
       path: 'mapPointId mapPointCategoriesId',
@@ -29,7 +44,7 @@ export class MPSubCategoriesService {
       match: { delatedAt: { $in: [false, null] } },
     };
     // eslint-disable-next-line prefer-const
-    select = '-createdAt -updatedAt -createdBy -updatedBy -deletedBy -deletedAt -isDelete';
+    select = `${disSelect}`;
     const newMPSubCategories = await queryhandler<MPSubCategories>(
       this.MPSubCategoriesModel,
       findQuery,
@@ -39,7 +54,6 @@ export class MPSubCategoriesService {
       populate,
       populate1,
     );
-
     return newMPSubCategories;
   }
 

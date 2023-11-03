@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument } from 'mongoose';
+import mongoose, { HydratedDocument } from 'mongoose';
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
 
 @Schema()
@@ -7,11 +7,8 @@ export class MapPoint extends AuditableSchema {
     @Prop({ unique: true, required: true })
       name: string;
 
-  @Prop()
-    icon: string;
-
-  @Prop()
-    iconAlt: string;
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Icons' })
+    icon: mongoose.Types.ObjectId;
 
   @Prop({ type: Boolean, default: false })
     hasMultiple: boolean;

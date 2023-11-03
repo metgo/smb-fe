@@ -1,13 +1,13 @@
+/* eslint-disable no-unused-expressions */
 import {
   Body, Controller, Delete, Get, HttpStatus, Param, Post, Put, Query, Res,
 } from '@nestjs/common';
 import { BusinessService } from './business.service';
-import { createBusinessDto, updateBusinessDto } from './dto';
+import { createBusinessDto, FilterQuery, updateBusinessDto } from './dto';
 import { Response } from 'express';
 import { responseHelper } from 'src/core/helper/response.helper';
 import { ServerSuccess } from 'src/common/constant';
 import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
-import { FilterQuery } from './interface/FilterQuery.interface';
 import { DMOService } from '../dmo/dmo.service';
 
 @Controller()
@@ -23,10 +23,10 @@ export class BusinessController {
   })
   @Post('business')
   async createBusiness(@Res() response: Response, @Body() dto: createBusinessDto) {
-    await this.businessServices.findByFieldName('name', dto.name);
-    await this.businessServices.findByFieldName('phoneNumber', dto.phoneNumber);
-    await this.businessServices.findByFieldName('busiEmail', dto.busiEmail);
-    await this.dmoService.findDMO(dto.dmoId);
+    dto.name && await this.businessServices.findByFieldName('name', dto.name);
+    dto.phoneNumber && await this.businessServices.findByFieldName('phoneNumber', dto.phoneNumber);
+    dto.busiEmail && await this.businessServices.findByFieldName('busiEmail', dto.busiEmail);
+    dto.dmoId && await this.dmoService.findDMO(dto.dmoId);
     const business = await this.businessServices.createBusiness(dto);
     return responseHelper(response, HttpStatus.CREATED, ServerSuccess.BUSINESS_CREATED, business, null, null);
   }
@@ -34,6 +34,7 @@ export class BusinessController {
   @ApiEndpoint({
     tags: ['Business'],
     response: { status: 200, description: ServerSuccess.BUSINESS_LISTED },
+    softBlockExtraDtoFields: true,
   })
   @Get('business')
   async getAllBusiness(
@@ -63,10 +64,14 @@ export class BusinessController {
   @Put('business/:id')
   async updateBusiness(
     @Res() response:Response,
-    @Param('id') bussId: string,
+    @Param('id') id: string,
     @Body() dto: updateBusinessDto,
   ) {
-    const business = await this.businessServices.updateBusiness(bussId, dto);
+    dto.name && await this.businessServices.findByFieldNameExcludeId('name', dto.name, id);
+    dto.phoneNumber && await this.businessServices.findByFieldNameExcludeId('phoneNumber', dto.phoneNumber, id);
+    dto.busiEmail && await this.businessServices.findByFieldNameExcludeId('busiEmail', dto.busiEmail, id);
+    dto.dmoId && await this.dmoService.findDMO(dto.dmoId);
+    const business = await this.businessServices.updateBusiness(id, dto);
 
     return responseHelper(response, HttpStatus.OK, ServerSuccess.BUSINESS_UPDATED, business, null, null);
   }
@@ -79,9 +84,8 @@ export class BusinessController {
   async deleteBusiness(
     @Res() response:Response,
     @Param('id') bussId: string,
-    @Body() dto: updateBusinessDto,
   ) {
-    const business = await this.businessServices.updateBusiness(bussId, dto);
+    const business = await this.businessServices.deleteBusiness(bussId);
 
     return responseHelper(response, HttpStatus.OK, ServerSuccess.BUSINESS_UPDATED, business, null, null);
   }

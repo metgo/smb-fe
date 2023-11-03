@@ -7,11 +7,8 @@ export class MPSubCategoriesItems extends AuditableSchema {
   @Prop()
     name: string;
 
-  @Prop()
-    icon: string;
-
-  @Prop()
-    iconAlt: string;
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Icons' })
+    icon: mongoose.Types.ObjectId;
 
   @Prop({ type: Boolean, default: false })
     hasMultiple: boolean;

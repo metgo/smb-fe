@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import {
-  IsArray, IsBoolean, IsNotEmpty, IsObject, IsOptional, IsString,
+  IsArray, IsBoolean, IsObject, IsOptional, IsString,
 } from 'class-validator';
 import { BusinessStatus } from 'src/common/enum';
 import transformEmail from 'src/core/helper/transformEmail';
@@ -47,8 +47,8 @@ class images {
 }
 
 class socialMedia {
- @ApiProperty({ type: String, description: 'Name of social Media' })
-   name: string;
+ @ApiProperty({ type: String, description: 'Id  of social Media' })
+   socialMediaId: string;
 
   @ApiProperty({ type: String, description: 'Url of social media' })
     url: String;
@@ -63,23 +63,23 @@ class geoLocation {
 }
 export class createBusinessDto {
   @ApiProperty({
-    required: true,
+    required: false,
   })
-    @IsNotEmpty()
+    @IsOptional()
     @IsString()
     name: string;
 
 @ApiProperty({
-  required: true,
+  required: false,
 })
-    @IsNotEmpty()
+    @IsOptional()
     @IsString()
   address: string;
 
 @ApiProperty({
-  required: true,
+  required: false,
 })
-    @IsNotEmpty()
+   @IsOptional()
     @IsString()
   phoneNumber: string;
 
@@ -87,13 +87,14 @@ export class createBusinessDto {
   required: true,
 })
     @IsString()
+    @IsOptional()
     @Transform(transformEmail)
   busiEmail: string;
 
 @ApiProperty({
   required: true,
 })
-    @IsNotEmpty()
+    @IsOptional()
     @IsString()
   description: string;
 
@@ -114,7 +115,7 @@ export class createBusinessDto {
   @ApiProperty({
     required: false,
   })
-    @IsNotEmpty()
+  @IsOptional()
     @IsString()
     dmoId: string;
 

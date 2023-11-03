@@ -4,13 +4,12 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Business } from './schema/business.schema';
-import { createBusinessDto, updateBusinessDto } from './dto';
+import { createBusinessDto, FilterQuery, updateBusinessDto } from './dto';
 import {
-  findOneByFieldName,
-  findOneById, queryhandler, updateById,
+  findOneByFieldName, findOneByFieldNameExcludeId, queryhandler, updateById,
 } from 'src/core/helper/query-helper';
 import { ServerErrors } from 'src/common/constant';
-import { FilterQuery } from './interface/FilterQuery.interface';
+import { disSelect } from 'src/common/utils/select.handling';
 
 @Injectable()
 export class BusinessService {
@@ -30,7 +29,7 @@ export class BusinessService {
     let page: number;
     let limit: number;
     let populate: any;
-    let populate1: string;
+    let populate1: {};
     if (query.search) {
       findQuery = {
         ...query,
@@ -46,10 +45,20 @@ export class BusinessService {
     // eslint-disable-next-line prefer-const
     populate = {
       path: 'mapPointId mapPointCategoriesId mapPointSubCategoriesId',
-      select: '-createdAt -updatedAt -createdBy -updatedBy -deletedBy -deletedAt -isDeleted',
+      select: `${disSelect}`,
+    };
+
+    // eslint-disable-next-line prefer-const
+    populate1 = {
+      path: 'socialMedia.socialMediaId',
+      select: `${disSelect}`,
+      populate: {
+        path: 'icon',
+        select: `${disSelect}`,
+      },
     };
     // eslint-disable-next-line prefer-const
-    select = '-createdAt -updatedAt -createdBy -updatedBy -deletedBy -deletedAt -isDeleted';
+    select = `${disSelect}`;
     const allBusiness = await queryhandler<Business>(
       this.BusinessModel,
       findQuery,
@@ -63,7 +72,23 @@ export class BusinessService {
   }
 
   async getBusiness(id: string) {
-    const business = await findOneById<Business>(this.BusinessModel, id);
+    const populate = {
+      path: 'mapPointId mapPointCategoriesId mapPointSubCategoriesId',
+      select: `${disSelect}`,
+    };
+
+    // eslint-disable-next-line prefer-const
+    const populate1 = {
+      path: 'socialMedia.socialMediaId',
+      select: `${disSelect}`,
+      populate: {
+        path: 'icon',
+        select: `${disSelect}`,
+      },
+    };
+    // eslint-disable-next-line prefer-const
+    const select = `${disSelect}`;
+    const business = await this.BusinessModel.findById(id).select(select).populate(populate).populate(populate1);
 
     if (!business) {
       throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
@@ -80,7 +105,7 @@ export class BusinessService {
   }
 
   async deleteBusiness(id: string): Promise<Business> {
-    const updateField = { isDeleted: true, deleteAt: new Date() };
+    const updateField = { isDeleted: true, deletedAt: new Date() };
     const business = await updateById<Business>(this.BusinessModel, id, updateField);
     if (!business) {
       throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
@@ -93,6 +118,14 @@ export class BusinessService {
     if (bussEmail) {
       throw new BadRequestException(`${fieldName} already exists`);
     }
-    return undefined;
+    return false;
+  }
+
+  async findByFieldNameExcludeId(fieldName: keyof Business, items: string, id:string): Promise<boolean> {
+    const bussEmail = await findOneByFieldNameExcludeId<Business>(this.BusinessModel, fieldName, items, id);
+    if (bussEmail) {
+      throw new BadRequestException(`${fieldName} already exists`);
+    }
+    return false;
   }
 }
