@@ -18,13 +18,6 @@ export class createMapPointDto {
   @IsString()
     icon: string;
 
-  @ApiProperty({
-    required: false,
-  })
-  @IsOptional()
-    @IsString()
-    pathAlt: string;
-
     @ApiProperty({
       required: false,
     })

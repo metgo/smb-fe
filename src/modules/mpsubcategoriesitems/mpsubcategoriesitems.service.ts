@@ -3,8 +3,9 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { MPSubCategoriesItems } from './schema/subcategoriesitems.schema';
 import { queryhandler, updateById } from 'src/core/helper/query-helper';
-import { createMPSubCategoriesItemsDto, updateMPSubCategoriesItemsDto } from './dto';
+import { createMPSubCategoriesItemsDto, FilterQuery, updateMPSubCategoriesItemsDto } from './dto';
 import { ServerErrors } from 'src/common/constant';
+import { disSelect } from 'src/common/utils/select.handling';
 
 @Injectable()
 export class MPSubCategoriesItemsService {
@@ -15,7 +16,7 @@ export class MPSubCategoriesItemsService {
     return newMapPoint.save();
   }
 
-  async getAllMPSubCategoriesItems(): Promise<MPSubCategoriesItems & any> {
+  async getAllMPSubCategoriesItems(query: FilterQuery): Promise<MPSubCategoriesItems & any> {
     let findQuery: {};
     let select: {};
     let page: number;
@@ -23,6 +24,26 @@ export class MPSubCategoriesItemsService {
     let populate: any;
     let populate1: string;
 
+    if (query.mapPointId) {
+      const mapPoint = JSON.parse(query.mapPointId);
+      findQuery = {
+        mapPointId: { $in: mapPoint },
+      };
+    }
+    if (query.mapPointCategoriesId) {
+      const mapPointCat = JSON.parse(query.mapPointCategoriesId);
+      findQuery = {
+        ...findQuery,
+        mapPointCategoriesId: { $in: mapPointCat },
+      };
+    }
+    if (query.mapPointSubCategoriesId) {
+      const mapPointSubCat = JSON.parse(query.mapPointSubCategoriesId);
+      findQuery = {
+        ...findQuery,
+        mapPointSubCategoriesId: { $in: mapPointSubCat },
+      };
+    }
     // eslint-disable-next-line prefer-const
     populate = {
       path: 'mapPointId mapPointCategoriesId mapPointSubCategoriesId',
@@ -30,7 +51,7 @@ export class MPSubCategoriesItemsService {
       match: { delatedAt: { $in: [false, null] } },
     };
     // eslint-disable-next-line prefer-const
-    select = '-createdAt -updatedAt -createdBy -updatedBy -deletedBy -deletedAt -isDelete';
+    select = `${disSelect}`;
     const mapPoint = await queryhandler<MPSubCategoriesItems>(
       this.MPSubCategoriesItemsModel,
       findQuery,

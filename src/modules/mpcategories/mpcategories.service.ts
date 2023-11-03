@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { createMPCategoriesDto, updateMPCategoriesDto } from './dto';
+import { createMPCategoriesDto, FilterQuery, updateMPCategoriesDto } from './dto';
 import { MPCategories } from './schema/categories.schema';
 import { Model } from 'mongoose';
 import { queryhandler, updateById } from 'src/core/helper/query-helper';
@@ -15,7 +15,7 @@ export class MPCategoiresService {
     return newMapPoint.save();
   }
 
-  async getAllMPCategories(): Promise<MPCategories & any> {
+  async getAllMPCategories(query: FilterQuery): Promise<MPCategories & any> {
     let findQuery: {};
     let select: {};
     let page: number;
@@ -23,6 +23,14 @@ export class MPCategoiresService {
     let populate: any;
     let populate1: string;
 
+    // eslint-disable-next-line prefer-const
+
+    if (query.mapPointId) {
+      const mapPoint = JSON.parse(query.mapPointId);
+      findQuery = {
+        mapPointId: { $in: mapPoint },
+      };
+    }
     // eslint-disable-next-line prefer-const
     populate = {
       path: 'mapPointId',

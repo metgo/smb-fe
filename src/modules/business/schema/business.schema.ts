@@ -5,19 +5,19 @@ import { AuditableSchema } from 'src/core/helper/auditable.schema';
 
 @Schema()
 export class Business extends AuditableSchema {
-  @Prop({ required: true })
+  @Prop({ required: false })
     name: string;
 
-  @Prop({ required: true })
+  @Prop({ required: false })
     address: string;
 
-  @Prop({ unique: true })
+  @Prop({ unique: false })
     phoneNumber: string;
 
-  @Prop({ unique: true })
+  @Prop({ unique: false })
     busiEmail: string;
 
-  @Prop({ required: true })
+  @Prop({ required: false })
     description: string;
 
   @Prop({ enum: BusinessStatus, default: BusinessStatus.PENDING })
@@ -42,7 +42,7 @@ export class Business extends AuditableSchema {
   @Prop({
     type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Users' }],
     ref: 'Users',
-    required: true,
+    required: false,
   })
     collabrationUser: mongoose.Types.ObjectId[];
 
@@ -56,7 +56,7 @@ export class Business extends AuditableSchema {
   @Prop({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'DMO',
-    required: true,
+    required: false,
   })
     dmoId: mongoose.Types.ObjectId;
 
@@ -80,10 +80,17 @@ export class Business extends AuditableSchema {
         }
     ];
 
-  @Prop()
+  @Prop({
+    required: false,
+    type: mongoose.Types.ObjectId,
+    ref: 'SocialMedia',
+  })
     socialMedia: [
         {
-          name: string
+        socialMediaId: {
+            type: mongoose.Types.ObjectId,
+            ref: 'SocialMedia'
+          }
           url: string
         }
   ];
@@ -114,7 +121,7 @@ export class Business extends AuditableSchema {
   })
     mapPointSubCategoriesItemsId: mongoose.Types.ObjectId[];
 
-  @Prop()
+  @Prop({ required: false })
     openingHrs: [
         {
           days: string
@@ -122,7 +129,7 @@ export class Business extends AuditableSchema {
           close: Date
           isHoliday: {
             type: Boolean,
-            default: false // Default value for isHoliday
+            default: false
           }
         }
     ];
