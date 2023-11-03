@@ -226,7 +226,20 @@ paths:
         - Map Point Categories
     get:
       operationId: getAllMPCategories
-      parameters: []
+      parameters:
+        - name: search
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: mapPointId
+          required: false
+          in: query
+          description: |-
+            must follow the pattern 
+             [id, id,..]
+          schema:
+            type: string
       responses:
         "200":
           description: Map Point Categories was successfully listed
@@ -294,7 +307,28 @@ paths:
         - Map Point Sub Categories
     get:
       operationId: getAllMPSubCategories
-      parameters: []
+      parameters:
+        - name: search
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: mapPointId
+          required: false
+          in: query
+          description: |-
+            must follow the pattern 
+             [id, id,..]
+          schema:
+            type: string
+        - name: mapPointCategoriesId
+          required: false
+          in: query
+          description: |-
+            must follow the pattern 
+             [id, id,..]
+          schema:
+            type: string
       responses:
         "200":
           description: Map Point Sub Categories was successfully listed
@@ -357,7 +391,36 @@ paths:
         - Map Point Sub Categories Item
     get:
       operationId: getAllMPSubCategoriesItems
-      parameters: []
+      parameters:
+        - name: search
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: mapPointId
+          required: false
+          in: query
+          description: |-
+            must follow the pattern 
+             [id, id,..]
+          schema:
+            type: string
+        - name: mapPointCategoriesId
+          required: false
+          in: query
+          description: |-
+            must follow the pattern 
+             [id, id,..]
+          schema:
+            type: string
+        - name: mapPointSubCategoriesId
+          required: false
+          in: query
+          description: |-
+            must follow the pattern 
+             [id, id,..]
+          schema:
+            type: string
       responses:
         "200":
           description: Map Point Sub Categories Items was successfully listed
@@ -424,7 +487,44 @@ paths:
         - Business
     get:
       operationId: getAllBusiness
-      parameters: []
+      parameters:
+        - name: search
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: mapPointId
+          required: false
+          in: query
+          description: |-
+            must follow the pattern 
+             [id, id,..]
+          schema:
+            type: string
+        - name: mapPointCategoriesId
+          required: false
+          in: query
+          description: |-
+            must follow the pattern 
+             [id, id,..]
+          schema:
+            type: string
+        - name: mapPointSubCategoriesId
+          required: false
+          in: query
+          description: |-
+            must follow the pattern 
+             [id, id,..]
+          schema:
+            type: string
+        - name: mapPointCategoriesItemsId
+          required: false
+          in: query
+          description: |-
+            must follow the pattern 
+             [id, id,..]
+          schema:
+            type: string
       responses:
         "200":
           description: Business was successfully listed
@@ -477,12 +577,6 @@ paths:
           in: path
           schema:
             type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/updateBusinessDto"
       responses:
         "200":
           description: Business was successfully updated
@@ -626,6 +720,90 @@ paths:
       tags:
         - Admin
         - Social Media
+  /admin/icon:
+    post:
+      operationId: createIcon
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateIconDto"
+      responses:
+        "201":
+          description: Icon was succesfully created
+        "422":
+          description: Failed Validation
+      tags:
+        - Admin
+        - Icon
+    get:
+      operationId: getIcons
+      parameters: []
+      responses:
+        "200":
+          description: Icon was succesfully listed
+        "422":
+          description: Failed Validation
+      tags:
+        - Admin
+        - Icon
+  "/admin/icon/{id}":
+    get:
+      operationId: getIcon
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Icon was succesfully listed
+        "422":
+          description: Failed Validation
+      tags:
+        - Admin
+        - Icon
+    put:
+      operationId: updateIcon
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateIconDto"
+      responses:
+        "200":
+          description: Icon was succesfully updated
+        "422":
+          description: Failed Validation
+      tags:
+        - Admin
+        - Icon
+    delete:
+      operationId: softDeleteIcon
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Icon was succesfully updated
+        "422":
+          description: Failed Validation
+      tags:
+        - Admin
+        - Icon
 info:
   title: METGO
   description: API Documentation for MetGo
@@ -759,8 +937,6 @@ components:
         name:
           type: string
         icon:
-          type: string
-        pathAlt:
           type: string
         hasMultiple:
           type: boolean
@@ -912,14 +1088,14 @@ components:
     socialMedia:
       type: object
       properties:
-        name:
+        socialMediaId:
           type: string
-          description: Name of social Media
+          description: Id  of social Media
         url:
           type: string
           description: Url of social media
       required:
-        - name
+        - socialMediaId
         - url
     OpeningHours:
       type: object
@@ -995,9 +1171,6 @@ components:
         openingHrs:
           $ref: "#/components/schemas/OpeningHours"
       required:
-        - name
-        - address
-        - phoneNumber
         - busiEmail
         - description
     updateBusinessDto:
@@ -1028,12 +1201,22 @@ components:
           type: string
         icon:
           type: string
-        iconAlt:
-          type: string
       required:
         - name
         - icon
-        - iconAlt
     updateSocialMediaDto:
+      type: object
+      properties: {}
+    CreateIconDto:
+      type: object
+      properties:
+        name:
+          type: string
+        iconPath:
+          type: string
+      required:
+        - name
+        - iconPath
+    UpdateIconDto:
       type: object
       properties: {}

@@ -14,6 +14,7 @@ import { MPSubCategoriesModule } from './modules/mpsubcategories/mpsubcategories
 import { MPSubCategoriesItemsModule } from './modules/mpsubcategoriesitems/mpsubcategoriesitems.module';
 import { DMOModule } from './modules/dmo/dmo.module';
 import { SocialMediaModule } from './modules/socialMedia/socialMedia.module';
+import { IconsModule } from './modules/icons/icons.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { SocialMediaModule } from './modules/socialMedia/socialMedia.module';
     UsersModule,
     DMOModule,
     SocialMediaModule,
+    IconsModule,
   ],
   providers: [
     {
