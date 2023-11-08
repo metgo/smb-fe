@@ -77,8 +77,8 @@ export class IconsService {
   // find icon by field name
 
   async findByFieldName(fieldName: keyof Icons, items: string): Promise<boolean> {
-    const bussEmail = await findOneByFieldName<Icons>(this.IconModel, fieldName, items);
-    if (bussEmail) {
+    const icon = await findOneByFieldName<Icons>(this.IconModel, fieldName, items);
+    if (icon) {
       throw new BadRequestException(`${fieldName} already exists`);
     }
     return false;

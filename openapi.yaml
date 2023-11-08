@@ -584,6 +584,54 @@ paths:
           description: Failed Validation
       tags:
         - Business
+  /my-business:
+    get:
+      operationId: getMyBusiness
+      parameters:
+        - name: search
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: mapPointId
+          required: false
+          in: query
+          description: |-
+            must follow the pattern 
+             [id, id,..]
+          schema:
+            type: string
+        - name: mapPointCategoriesId
+          required: false
+          in: query
+          description: |-
+            must follow the pattern 
+             [id, id,..]
+          schema:
+            type: string
+        - name: mapPointSubCategoriesId
+          required: false
+          in: query
+          description: |-
+            must follow the pattern 
+             [id, id,..]
+          schema:
+            type: string
+        - name: mapPointCategoriesItemsId
+          required: false
+          in: query
+          description: |-
+            must follow the pattern 
+             [id, id,..]
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Business was successfully listed
+        "422":
+          description: Failed Validation
+      tags:
+        - Business
   /admin/dmo:
     post:
       operationId: createDMO

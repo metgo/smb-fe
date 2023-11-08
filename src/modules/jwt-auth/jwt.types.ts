@@ -1,3 +1,5 @@
+import { UserType } from '../users/users.type';
+
 export interface ITokens {
   accessToken: string;
   refreshToken: string;
@@ -24,5 +26,7 @@ export interface IJWTUser {
 
 export interface ITokenUser {
   email: string;
-  password: string;
+  id: string;
+  role: UserType,
+  hasBusiness: boolean
 }

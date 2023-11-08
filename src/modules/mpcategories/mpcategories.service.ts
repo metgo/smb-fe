@@ -5,6 +5,7 @@ import { MPCategories } from './schema/categories.schema';
 import { Model } from 'mongoose';
 import { queryhandler, updateById } from 'src/core/helper/query-helper';
 import { ServerErrors } from 'src/common/constant';
+import { disSelect } from 'src/common/utils/select.handling';
 
 @Injectable()
 export class MPCategoiresService {
@@ -21,7 +22,7 @@ export class MPCategoiresService {
     let page: number;
     let limit: number;
     let populate: any;
-    let populate1: string;
+    let populate1: {};
 
     // eslint-disable-next-line prefer-const
 
@@ -38,7 +39,12 @@ export class MPCategoiresService {
       match: { delatedAt: { $in: [false, null] } },
     };
     // eslint-disable-next-line prefer-const
-    select = '-createdAt -updatedAt -createdBy -updatedBy -deletedBy -deletedAt -isDelete';
+    populate1 = {
+      path: 'icon',
+      select: disSelect,
+    };
+    // eslint-disable-next-line prefer-const
+    select = disSelect;
     const mapPoint = await queryhandler<MPCategories>(
       this.MPCategoriesModel,
       findQuery,

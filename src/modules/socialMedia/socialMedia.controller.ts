@@ -14,15 +14,16 @@ import { updateSocialMediaDto } from './dto/updateSocialMedia.dto';
 export class SocialMediaController {
   constructor(private readonly socialMediaService: SocialMediaService) { }
 
-    @ApiEndpoint({
-      tags: ['Admin', 'Social Media'],
-      response: {
-        status: 201,
-        description: ServerSuccess.SOCIAL_MEDIA_CREATED,
-      },
-    })
-    @Post('admin/social-media')
-  async createSocialMedai(@Res() response: Response, @Body() dto:createSocialMediaDto) {
+  @ApiEndpoint({
+    tags: ['Admin', 'Social Media'],
+    response: {
+      status: 201,
+      description: ServerSuccess.SOCIAL_MEDIA_CREATED,
+    },
+  })
+  @Post('admin/social-media')
+  async createSocialMedai(@Res() response: Response, @Body() dto: createSocialMediaDto) {
+    await this.socialMediaService.findByFieldName('name', dto.name);
     const socialMedia = await this.socialMediaService.create(dto);
     return responseHelper(
       response,
@@ -34,71 +35,71 @@ export class SocialMediaController {
     );
   }
 
-    @ApiEndpoint({
-      tags: ['Admin', 'Social Media'],
-      response: {
-        status: 200,
-        description: ServerSuccess.SOCIAL_MEDIA_LISTED,
-      },
-    })
-    @Get('admin/social-media')
-    async getSocialMedia(@Res() response: Response) {
-      const socialMedia = await this.socialMediaService.getAll();
-      return responseHelper(
-        response,
-        HttpStatus.OK,
-        ServerSuccess.SOCIAL_MEDIA_LISTED,
-        socialMedia,
-        null,
-        null,
-      );
-    }
+  @ApiEndpoint({
+    tags: ['Admin', 'Social Media'],
+    response: {
+      status: 200,
+      description: ServerSuccess.SOCIAL_MEDIA_LISTED,
+    },
+  })
+  @Get('admin/social-media')
+  async getSocialMedia(@Res() response: Response) {
+    const socialMedia = await this.socialMediaService.getAll();
+    return responseHelper(
+      response,
+      HttpStatus.OK,
+      ServerSuccess.SOCIAL_MEDIA_LISTED,
+      socialMedia,
+      null,
+      null,
+    );
+  }
 
-    @ApiEndpoint({
-      tags: ['Admin', 'Social Media'],
-      response: {
-        status: 200,
-        description: ServerSuccess.SOCIAL_MEDIA_UPDTED,
-      },
-    })
-    @Put('admin/social-media/:id')
-    async updateSocialMedia(
+  @ApiEndpoint({
+    tags: ['Admin', 'Social Media'],
+    response: {
+      status: 200,
+      description: ServerSuccess.SOCIAL_MEDIA_UPDTED,
+    },
+  })
+  @Put('admin/social-media/:id')
+  async updateSocialMedia(
+      @Res() response: Response,
+      @Param('id') id: string,
+      @Body() dto: updateSocialMediaDto,
+  ) {
+    console.log(id);
+    const socialMedia = await this.socialMediaService.update(id, dto);
+    return responseHelper(
+      response,
+      HttpStatus.OK,
+      ServerSuccess.SOCIAL_MEDIA_UPDTED,
+      socialMedia,
+      null,
+      null,
+    );
+  }
+
+  @ApiEndpoint({
+    tags: ['Admin', 'Social Media'],
+    response: {
+      status: 200,
+      description: ServerSuccess.SOCIAL_MEDIA_UPDTED,
+    },
+  })
+  @Delete('admin/social-media/:id')
+  async deleteSocialMedai(
         @Res() response: Response,
-        @Param('id') id: string,
-        @Body() dto: updateSocialMediaDto,
-    ) {
-      console.log(id);
-      const socialMedia = await this.socialMediaService.update(id, dto);
-      return responseHelper(
-        response,
-        HttpStatus.OK,
-        ServerSuccess.SOCIAL_MEDIA_UPDTED,
-        socialMedia,
-        null,
-        null,
-      );
-    }
-
-    @ApiEndpoint({
-      tags: ['Admin', 'Social Media'],
-      response: {
-        status: 200,
-        description: ServerSuccess.SOCIAL_MEDIA_UPDTED,
-      },
-    })
-    @Delete('admin/social-media/:id')
-    async deleteSocialMedai(
-         @Res() response: Response,
-        @Param('id') id: string,
-    ) {
-      const socialMedia = await this.socialMediaService.softDelete(id);
-      return responseHelper(
-        response,
-        HttpStatus.OK,
-        ServerSuccess.SOCIAL_MEDIA_UPDTED,
-        socialMedia,
-        null,
-        null,
-      );
-    }
+      @Param('id') id: string,
+  ) {
+    const socialMedia = await this.socialMediaService.softDelete(id);
+    return responseHelper(
+      response,
+      HttpStatus.OK,
+      ServerSuccess.SOCIAL_MEDIA_UPDTED,
+      socialMedia,
+      null,
+      null,
+    );
+  }
 }
