@@ -14,7 +14,7 @@ export class createMapPointDto {
   @ApiProperty({
     required: false,
   })
-  @IsOptional()
+  @IsNotEmpty()
   @IsString()
     icon: string;
 

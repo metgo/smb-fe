@@ -1,10 +1,10 @@
 /* eslint-disable prefer-const */
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { SocialMedia } from './schema/socialMedia.schema';
 import { createSocialMediaDto } from './dto/createSocialMedia.dto';
 import { Model } from 'mongoose';
-import { queryhandler, updateById } from 'src/core/helper/query-helper';
+import { findOneByFieldName, queryhandler, updateById } from 'src/core/helper/query-helper';
 import { updateSocialMediaDto } from './dto/updateSocialMedia.dto';
 import { ServerErrors } from 'src/common/constant';
 import { disSelect } from 'src/common/utils/select.handling';
@@ -68,5 +68,13 @@ export class SocialMediaService {
       throw new NotFoundException(ServerErrors.SOCIAL_MEDIA_NOT_FOUND);
     }
     return socialMedia;
+  }
+
+  async findByFieldName(fieldName: keyof SocialMedia, items: string): Promise<boolean> {
+    const socialMedia = await findOneByFieldName<SocialMedia>(this.SocialMediaModel, fieldName, items);
+    if (socialMedia) {
+      throw new BadRequestException(`${fieldName} already exists`);
+    }
+    return false;
   }
 }

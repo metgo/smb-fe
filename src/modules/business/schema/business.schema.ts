@@ -3,21 +3,21 @@ import mongoose, { HydratedDocument } from 'mongoose';
 import { BusinessStatus } from 'src/common/enum';
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
 
-@Schema()
+@Schema({ strict: false })
 export class Business extends AuditableSchema {
-  @Prop({ required: false })
+  @Prop({ required: false, default: null })
     name: string;
 
-  @Prop({ required: false })
+  @Prop({ required: false, default: null })
     address: string;
 
-  @Prop({ unique: false })
+  @Prop({ unique: true, default: null })
     phoneNumber: string;
 
-  @Prop({ unique: false })
+  @Prop({ unique: true, default: null })
     busiEmail: string;
 
-  @Prop({ required: false })
+  @Prop({ required: false, default: null })
     description: string;
 
   @Prop({ enum: BusinessStatus, default: BusinessStatus.PENDING })
@@ -32,11 +32,12 @@ export class Business extends AuditableSchema {
       phone: String,
       address: String,
     },
+    default: null,
   })
     contactDetails: {
-        name: string,
-        phone: string,
-        address: string,
+        name: { type: string, default: null},
+        phone: { type: string, default: null},
+        address: { type: string, default: null},
   };
 
   @Prop({
@@ -57,26 +58,28 @@ export class Business extends AuditableSchema {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'DMO',
     required: false,
+    default: null,
   })
     dmoId: mongoose.Types.ObjectId;
 
   @Prop({
     type: {
-      lat: String,
-      long: String,
+      lat: { type: String, default: null },
+      long: { type: String, default: null },
     },
+    default: null,
   })
     geoLocation: {
-      lat: string,
-      long: string
+      lat: { type: string, default: null},
+      long: { type: string, default: null},
     };
 
   @Prop()
     images: [
         {
-          image: string
-          caption: string
-          alt:string
+          image: { type: string, default: null}
+          caption: { type: string, default: null}
+          alt:{ type: string, default: null}
         }
     ];
 
@@ -84,6 +87,7 @@ export class Business extends AuditableSchema {
     required: false,
     type: mongoose.Types.ObjectId,
     ref: 'SocialMedia',
+    default: null,
   })
     socialMedia: [
         {
@@ -91,7 +95,7 @@ export class Business extends AuditableSchema {
             type: mongoose.Types.ObjectId,
             ref: 'SocialMedia'
           }
-          url: string
+          url: { type: string}
         }
   ];
 
@@ -132,7 +136,7 @@ export class Business extends AuditableSchema {
             default: false
           }
         }
-    ];
+  ];
 }
 export type BusinessDocument = HydratedDocument<Business>;
 

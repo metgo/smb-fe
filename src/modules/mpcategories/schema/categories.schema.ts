@@ -7,7 +7,7 @@ export class MPCategories extends AuditableSchema {
   @Prop()
     name: string;
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Icons' })
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Icons', default: null })
     icon: mongoose.Types.ObjectId;
 
   @Prop({ type: Boolean, default: false })

@@ -17,8 +17,8 @@ export class BusinessService {
     @InjectModel('Business') private BusinessModel: Model<Business>,
   ) { }
 
-  async createBusiness(dto: createBusinessDto): Promise<Business> {
-    const newBusiness = new this.BusinessModel(dto);
+  async createBusiness(dto: createBusinessDto, userId: string): Promise<Business> {
+    const newBusiness = new this.BusinessModel({ ...dto, userId });
     await newBusiness.save();
     return newBusiness;
   }
@@ -46,6 +46,10 @@ export class BusinessService {
     populate = {
       path: 'mapPointId mapPointCategoriesId mapPointSubCategoriesId',
       select: `${disSelect}`,
+      populate: {
+        path: 'icon',
+        select: `${disSelect}`,
+      },
     };
 
     // eslint-disable-next-line prefer-const
@@ -75,6 +79,10 @@ export class BusinessService {
     const populate = {
       path: 'mapPointId mapPointCategoriesId mapPointSubCategoriesId',
       select: `${disSelect}`,
+      populate: {
+        path: 'icon',
+        select: `${disSelect}`,
+      },
     };
 
     // eslint-disable-next-line prefer-const
@@ -94,6 +102,58 @@ export class BusinessService {
       throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
     }
     return business;
+  }
+
+  async getAllMyBusiness(query: FilterQuery, userId: string) {
+    let findQuery: any = {};
+    let select: {};
+    let page: number;
+    let limit: number;
+    let populate: any;
+    let populate1: {};
+    if (query.search) {
+      findQuery = {
+        ...query,
+        $text: { $search: query.search, $caseSensitive: false, $diacriticSensitive: false },
+      };
+
+      delete findQuery?.search;
+    } else if (query) {
+      findQuery = {
+        ...query,
+      };
+    }
+    findQuery = {
+      ...findQuery,
+      userId,
+    };
+    // eslint-disable-next-line prefer-const
+    populate = {
+      path: 'mapPointId mapPointCategoriesId mapPointSubCategoriesId',
+      select: `${disSelect}`,
+    };
+
+    // eslint-disable-next-line prefer-const
+    populate1 = {
+      path: 'socialMedia.socialMediaId',
+      select: `${disSelect}`,
+      populate: {
+        path: 'icon',
+        select: `${disSelect}`,
+      },
+    };
+    // eslint-disable-next-line prefer-const
+    select = `${disSelect}`;
+    const allBusiness = await queryhandler<Business>(
+      this.BusinessModel,
+      findQuery,
+      select,
+      page,
+      limit,
+      populate,
+      populate1,
+    );
+    return allBusiness;
   }
 
   async updateBusiness(id: string, dto: updateBusinessDto) {

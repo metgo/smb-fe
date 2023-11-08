@@ -14,7 +14,6 @@ export class AuthService {
   ) {}
 
   async login(body: SignInRequest): Promise<any> {
-    const { accessToken, refreshToken } = this.jwtAuthService.login(body);
     const user = await this.usersService.findByEmail(body.email);
     if (user?.password !== body.password) {
       await this.usersService.update(user.id, {
@@ -25,7 +24,13 @@ export class AuthService {
       // take action if login attempts is greater than 5
       throw new UnauthorizedException('Invalid credential');
     }
-
+    const userBody = {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      hasBusiness: user.hasBusiness,
+    };
+    const { accessToken, refreshToken } = this.jwtAuthService.login(userBody);
     await this.usersService.update(user.id, {
       lastLogin: new Date(),
       loginAttempts: 0,

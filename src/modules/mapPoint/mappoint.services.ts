@@ -7,6 +7,7 @@ import { findOneByFieldName, queryhandler, updateById } from 'src/core/helper/qu
 import { ServerErrors } from 'src/common/constant';
 import { createMapPointDto } from './dto';
 import { updateMapPointDto } from './dto/updateMapPoint.dto';
+import { disSelect } from 'src/common/utils/select.handling';
 
 @Injectable()
 export class MapPointServices {
@@ -31,10 +32,16 @@ export class MapPointServices {
     let select: {};
     let page: number;
     let limit: number;
-    let populate: string;
+    let populate: {};
     let populate1: string;
+
     // eslint-disable-next-line prefer-const
-    select = '-createdAt -updatedAt -createdBy -updatedBy -deletedBy -deletedAt -isDelete';
+    populate = {
+      path: 'icon',
+      select: disSelect,
+    };
+    // eslint-disable-next-line prefer-const
+    select = disSelect;
     const mapPoint = await queryhandler<MapPoint>(
       this.MapPointModel,
       findQuery,
