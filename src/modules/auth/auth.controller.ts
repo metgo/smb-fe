@@ -41,6 +41,7 @@ export class AuthController {
   @ApiOperation({ summary: 'Register new user' })
   @Post('register')
   async register(@Body() body: RegisterRequest) {
-    return await this.userService.create(body);
+    await this.userService.create(body);
+    return await this.authService.login(body);
   }
 }
