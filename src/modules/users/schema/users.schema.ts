@@ -11,7 +11,10 @@ export class User {
     fullName: string;
 
   @Prop()
-    phone: number;
+    countryCode: string;
+
+  @Prop()
+    phoneNumber: string;
 
   @Prop()
     address: string;

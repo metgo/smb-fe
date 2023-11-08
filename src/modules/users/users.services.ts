@@ -33,7 +33,10 @@ export class UsersService {
       return {
         id: user.id,
         fullName: user.fullName,
-        phone: user.phone,
+        phoneDetails: {
+          countryCode: user.countryCode,
+          phoneNumber: user.phoneNumber,
+        },
         address: user.address,
         email: user.email,
         isPhoneVerify: user.isPhoneVerify,
@@ -64,7 +67,10 @@ export class UsersService {
       return {
         id: newUser.id,
         fullName: newUser.fullName,
-        phone: newUser.phone,
+        phoneDetails: {
+          countryCode: newUser.countryCode,
+          phoneNumber: newUser.phoneNumber,
+        },
         address: newUser.address,
         email: newUser.email,
         isPhoneVerify: newUser.isPhoneVerify,
@@ -94,7 +100,10 @@ export class UsersService {
       return {
         id: updatedUser.id,
         fullName: updatedUser.fullName,
-        phone: updatedUser.phone,
+        phoneDetails: {
+          countryCode: updatedUser.countryCode,
+          phoneNumber: updatedUser.phoneNumber,
+        },
         address: updatedUser.address,
         email: updatedUser.email,
         isPhoneVerify: updatedUser.isPhoneVerify,
@@ -124,7 +133,10 @@ export class UsersService {
       return {
         id: deletedUser.id,
         fullName: deletedUser.fullName,
-        phone: deletedUser.phone,
+        phoneDetails: {
+          countryCode: deletedUser.countryCode,
+          phoneNumber: deletedUser.phoneNumber,
+        },
         address: deletedUser.address,
         email: deletedUser.email,
         isPhoneVerify: deletedUser.isPhoneVerify,

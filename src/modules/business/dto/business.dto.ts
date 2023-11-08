@@ -25,8 +25,11 @@ class OpeningHours {
 }
 
 class ContactDetails {
-   @ApiProperty({ type: String, description: 'Name of contact person' })
-     name: string;
+  @ApiProperty({ type: String, description: 'Name of contact person' })
+    name: string;
+
+  @ApiProperty({ type: String, description: 'Country code of phone number of contact person' })
+    countryCode: string;
 
   @ApiProperty({ type: String, description: 'Phone numer of contact person' })
     phone: string;
@@ -36,8 +39,8 @@ class ContactDetails {
 }
 
 class images {
- @ApiProperty({ type: String, description: 'path of image' })
-   image: string;
+  @ApiProperty({ type: String, description: 'path of image' })
+    image: string;
 
   @ApiProperty({ type: String, description: 'caption of image' })
     caption: String;
@@ -47,16 +50,16 @@ class images {
 }
 
 class socialMedia {
- @ApiProperty({ type: String, description: 'Id  of social Media' })
-   socialMediaId: string;
+  @ApiProperty({ type: String, description: 'Id  of social Media' })
+    socialMediaId: string;
 
   @ApiProperty({ type: String, description: 'Url of social media' })
     url: String;
 }
 
 class geoLocation {
- @ApiProperty({ type: String, description: 'Latitide of map' })
-   lat: string;
+  @ApiProperty({ type: String, description: 'Latitide of map' })
+    lat: string;
 
   @ApiProperty({ type: String, description: 'longitude of map' })
     long: String;
@@ -65,52 +68,59 @@ export class createBusinessDto {
   @ApiProperty({
     required: false,
   })
-    @IsOptional()
-    @IsString()
+  @IsOptional()
+  @IsString()
     name: string;
 
-@ApiProperty({
-  required: false,
-})
-    @IsOptional()
-    @IsString()
-  address: string;
+  @ApiProperty({
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+    address: string;
 
-@ApiProperty({
-  required: false,
-})
-   @IsOptional()
-    @IsString()
-  phoneNumber: string;
+  @ApiProperty({
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+    countryCode: string;
 
-@ApiProperty({
-  required: true,
-})
-    @IsString()
-    @IsOptional()
-    @Transform(transformEmail)
-  busiEmail: string;
+  @ApiProperty({
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+    phoneNumber: string;
 
-@ApiProperty({
-  required: true,
-})
-    @IsOptional()
-    @IsString()
-  description: string;
+  @ApiProperty({
+    required: true,
+  })
+  @IsString()
+  @IsOptional()
+  @Transform(transformEmail)
+    busiEmail: string;
 
-@ApiProperty({
-  required: false,
-})
-    @IsOptional()
-    @IsObject()
-  contactDetails: ContactDetails;
+  @ApiProperty({
+    required: true,
+  })
+  @IsOptional()
+  @IsString()
+    description: string;
 
-@ApiProperty({
-  required: false,
-})
-    @IsOptional()
-    @IsArray()
-  collabrationUser: [];
+  @ApiProperty({
+    required: false,
+  })
+  @IsOptional()
+  @IsObject()
+    contactDetails: ContactDetails;
+
+  @ApiProperty({
+    required: false,
+  })
+  @IsOptional()
+  @IsArray()
+    collabrationUser: [];
 
   @ApiProperty({
     required: false,

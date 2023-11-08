@@ -6,3 +6,8 @@ export enum UserType {
     DMO = 'dmo',
     DMOADMIN ='dmoadmin'
 }
+
+export interface phoneDetails{
+  countryCode: string;
+  phoneNumber: string;
+}

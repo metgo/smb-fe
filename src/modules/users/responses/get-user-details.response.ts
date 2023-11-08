@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { UserType } from 'src/modules/users/users.type';
+import { UserType, phoneDetails } from 'src/modules/users/users.type';
 
 export class GetUserDetailsResponse {
   @ApiProperty()
@@ -9,7 +9,7 @@ export class GetUserDetailsResponse {
     fullName: string;
 
   @ApiProperty()
-    phone: number;
+    phoneDetails: phoneDetails;
 
   @ApiProperty()
     address: string;

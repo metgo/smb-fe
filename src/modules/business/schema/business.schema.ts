@@ -11,6 +11,9 @@ export class Business extends AuditableSchema {
   @Prop({ required: false, default: null })
     address: string;
 
+  @Prop()
+    countryCode: string;
+
   @Prop({ unique: true, default: null })
     phoneNumber: string;
 
@@ -29,6 +32,7 @@ export class Business extends AuditableSchema {
   @Prop({
     type: {
       name: String,
+      countryCode: String,
       phone: String,
       address: String,
     },
@@ -36,6 +40,7 @@ export class Business extends AuditableSchema {
   })
     contactDetails: {
         name: { type: string, default: null},
+        countryCode: { type: string, default: null},
         phone: { type: string, default: null},
         address: { type: string, default: null},
   };

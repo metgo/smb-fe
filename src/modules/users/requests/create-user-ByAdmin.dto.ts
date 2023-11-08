@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
-  IsEmail, IsEnum, IsNotEmpty, IsOptional, IsPhoneNumber, IsString,
+  IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString,
 } from 'class-validator';
 import { UserType } from '../users.type';
 
@@ -15,10 +15,15 @@ export class createUserByAdminDto {
   @ApiProperty({ required: true })
   readonly email: string;
 
-  @IsPhoneNumber()
+  @IsString()
   @IsOptional()
   @ApiProperty()
-  readonly phone: number;
+  readonly countryCode: string;
+
+  @IsString()
+  @IsOptional()
+  @ApiProperty()
+  readonly phoneNumber: string;
 
   @IsString()
   @IsOptional()

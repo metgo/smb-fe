@@ -895,8 +895,8 @@ components:
           type: string
         fullName:
           type: string
-        phone:
-          type: number
+        phoneDetails:
+          type: object
         address:
           type: string
         email:
@@ -926,7 +926,7 @@ components:
       required:
         - id
         - fullName
-        - phone
+        - phoneDetails
         - address
         - email
         - lastLogin
@@ -943,15 +943,18 @@ components:
       properties:
         fullName:
           type: string
-        phone:
-          type: number
+        countryCode:
+          type: string
+        phoneNumber:
+          type: string
         email:
           type: string
         address:
           type: string
       required:
         - fullName
-        - phone
+        - countryCode
+        - phoneNumber
         - email
         - address
     createUserByAdminDto:
@@ -961,8 +964,10 @@ components:
           type: string
         email:
           type: string
-        phone:
-          type: number
+        countryCode:
+          type: string
+        phoneNumber:
+          type: string
         address:
           type: string
         role:
@@ -976,7 +981,8 @@ components:
       required:
         - fullName
         - email
-        - phone
+        - countryCode
+        - phoneNumber
         - address
         - role
     createMapPointDto:
@@ -1095,6 +1101,9 @@ components:
         name:
           type: string
           description: Name of contact person
+        countryCode:
+          type: string
+          description: Country code of phone number of contact person
         phone:
           type: string
           description: Phone numer of contact person
@@ -1103,6 +1112,7 @@ components:
           description: address of contact person
       required:
         - name
+        - countryCode
         - phone
         - address
     geoLocation:
@@ -1174,6 +1184,8 @@ components:
         name:
           type: string
         address:
+          type: string
+        countryCode:
           type: string
         phoneNumber:
           type: string
