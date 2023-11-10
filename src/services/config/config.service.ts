@@ -33,6 +33,10 @@ export class ConfigService {
       'RESET_PASSWORD_TOKEN_EXPIRATION_IN_SECONDS',
       'ACCESS_TOKEN',
       'REFRESH_TOKEN',
+      'GCS_BUCKET',
+      'MEDIA_STORAGE_FOLDER',
+      'GCS_PROJECT_ID',
+      'GCS_FILE_PATH',
     ];
 
     return ENV_VARIABLES.reduce((obj: any, variable) => {
@@ -59,6 +63,10 @@ export class ConfigService {
       JWT_TOKEN_EXPIRES: Joi.number().required(),
       ACCESS_TOKEN: Joi.string().required(),
       REFRESH_TOKEN: Joi.string().required(),
+      GCS_BUCKET: Joi.string().required(),
+      MEDIA_STORAGE_FOLDER: Joi.string().required(),
+      GCS_PROJECT_ID: Joi.string().required(),
+      GCS_FILE_PATH: Joi.string().required(),
     }).unknown(true);
 
     const { error, value: validatedEnvConfig } = envVarsSchema.validate(envConfig);

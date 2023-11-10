@@ -1,26 +1,40 @@
+/* eslint-disable no-undef */
+/* eslint-disable no-unused-vars */
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { ServerErrors } from 'src/common/constant';
 import { disSelect } from 'src/common/utils/select.handling';
-import { findOneByFieldName, queryhandler, updateById } from 'src/core/helper/query-helper';
+import {
+  findOneByFieldName, findOneById, queryhandler, updateById,
+} from 'src/core/helper/query-helper';
 import {
   CreateIconDto, UpdateIconDto,
 } from './dto';
 import { Icons } from './schema/icon.schema';
+import { GcpBucketService } from 'src/services/gcp-bucket/gcp-bucket.services';
 
 @Injectable()
 export class IconsService {
   constructor(
-        @InjectModel('Icons') private IconModel: Model<Icons>,
+    @InjectModel('Icons')
+    private IconModel: Model<Icons>,
+    private gcpBucketServices: GcpBucketService,
   ) { }
 
   // icons actions
-  async createIcon(dto: CreateIconDto) {
+  async createIcon(dto: CreateIconDto, file: Express.Multer.File) {
+    if (!file) {
+      throw new BadRequestException('Please upload file');
+    }
+
+    const iconPath = await this.gcpBucketServices.upload(file);
+
     const iconAlt = dto.name.toLowerCase()
       .replace(/[^a-zA-Z0-9\s]/g, '') // Remove non-alphanumeric characters
       .replace(/\s+/g, '_');
-    const newIconCategory = new this.IconModel({ ...dto, iconAlt });
+
+    const newIconCategory = new this.IconModel({ ...dto, iconAlt, iconPath });
     return newIconCategory.save();
   }
 
@@ -52,13 +66,23 @@ export class IconsService {
     return iconCategory;
   }
 
-  async updateIcon(id: string, dto: UpdateIconDto) {
-    const iconCategory = await updateById<Icons>(this.IconModel, id, dto);
+  async updateIcon(id: string, dto: UpdateIconDto, newIcon: Express.Multer.File) {
+    const updateDto = async () => {
+      const existingIcon = await findOneById<Icons>(this.IconModel, id);
 
-    if (!iconCategory) {
+      const newUrl = await this.gcpBucketServices.update(existingIcon.iconPath, newIcon);
+
+      return { ...dto, iconPath: newUrl };
+    };
+
+    const updatedDTO = newIcon ? await updateDto() : dto;
+
+    const updatedIcon = await updateById<Icons>(this.IconModel, id, updatedDTO);
+
+    if (!updatedIcon) {
       throw new NotFoundException(ServerErrors.ICON_NOT_FOUND);
     }
-    return iconCategory;
+    return updatedIcon;
   }
 
   async softDeleteIcon(id:string) {

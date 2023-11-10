@@ -7,10 +7,12 @@ import { UserSchema } from '../users/schema/users.schema';
 import { UsersService } from '../users/users.services';
 
 @Module({
-  imports: [MongooseModule.forFeature([
-    { name: 'DMO', schema: DMOSchema },
-    { name: 'User', schema: UserSchema },
-  ])],
+  imports: [
+    MongooseModule.forFeature([
+      { name: 'DMO', schema: DMOSchema },
+      { name: 'User', schema: UserSchema },
+    ]),
+  ],
   providers: [DMOService, UsersService],
   controllers: [DMOController],
 })

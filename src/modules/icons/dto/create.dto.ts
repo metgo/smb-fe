@@ -8,11 +8,4 @@ export class CreateIconDto {
       @IsNotEmpty()
       @IsString()
       name: string;
-
-    @ApiProperty({
-      required: true,
-    })
-    @IsNotEmpty()
-    @IsString()
-      iconPath: string;
 }

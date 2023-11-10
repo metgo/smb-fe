@@ -1,6 +1,7 @@
 /* eslint-disable prefer-const */
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+
 import { SocialMedia } from './schema/socialMedia.schema';
 import { createSocialMediaDto } from './dto/createSocialMedia.dto';
 import { Model } from 'mongoose';
@@ -11,7 +12,10 @@ import { disSelect } from 'src/common/utils/select.handling';
 
 @Injectable()
 export class SocialMediaService {
-  constructor(@InjectModel('SocialMedia') private SocialMediaModel: Model<SocialMedia>) { }
+  constructor(
+    @InjectModel('SocialMedia')
+    private SocialMediaModel: Model<SocialMedia>,
+  ) { }
 
   async create(dto: createSocialMediaDto) {
     const newSocialMedia = new this.SocialMediaModel(dto);

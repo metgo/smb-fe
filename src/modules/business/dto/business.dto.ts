@@ -156,7 +156,7 @@ export class createBusinessDto {
 })
     @IsOptional()
     @IsArray()
-  images: images;
+  images: images[];
 
   @ApiProperty({
     required: false,

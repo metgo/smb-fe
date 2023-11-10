@@ -1,3 +1,6 @@
+/* eslint-disable no-param-reassign */
+/* eslint-disable no-undef */
+/* eslint-disable no-unused-vars */
 import {
   BadRequestException, Injectable, NotFoundException,
 } from '@nestjs/common';
@@ -10,12 +13,14 @@ import {
 } from 'src/core/helper/query-helper';
 import { ServerErrors } from 'src/common/constant';
 import { disSelect } from 'src/common/utils/select.handling';
+import { Image } from 'src/modules/business/business.type';
 
 @Injectable()
 export class BusinessService {
   constructor(
-    @InjectModel('Business') private BusinessModel: Model<Business>,
-  ) { }
+    @InjectModel('Business')
+    private BusinessModel: Model<Business>,
+  ) {}
 
   async createBusiness(dto: createBusinessDto, userId: string): Promise<Business> {
     const newBusiness = new this.BusinessModel({ ...dto, userId });
@@ -156,8 +161,29 @@ export class BusinessService {
     return allBusiness;
   }
 
-  async updateBusiness(id: string, dto: updateBusinessDto) {
-    const updateBusiness = await this.BusinessModel.findOneAndUpdate({ _id: id }, dto, { new: true });
+  async updateBusiness(id: string, dto: updateBusinessDto | Image[]): Promise<Business> {
+    let updatedField:any = dto;
+    if (!(dto instanceof updateBusinessDto)) {
+      const existingBusiness = await this.getBusiness(id);
+
+      const images = [...existingBusiness.images, ...dto];
+
+      updatedField = { images };
+    }
+
+    const updateBusiness = await this.BusinessModel.findOneAndUpdate({ _id: id }, updatedField, { new: true });
+    if (!updateBusiness) {
+      throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
+    }
+    return updateBusiness;
+  }
+
+  async deleteImage(id: string, imageUrl: any): Promise<Business> {
+    const existingBusiness = await this.getBusiness(id);
+
+    const images = existingBusiness.images.filter(image => image.image !== imageUrl);
+
+    const updateBusiness = await this.BusinessModel.findOneAndUpdate({ _id: id }, { images }, { new: true });
     if (!updateBusiness) {
       throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
     }

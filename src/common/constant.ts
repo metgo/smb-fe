@@ -75,4 +75,9 @@ export const ServerSuccess = {
   ICON_CATEGORY_CREATED: 'Icon category was succesfully created',
   ICON_CATEGORY_LISTED: 'Icon category was succesfully listed',
   ICON_CATEGORY_UPDATED: 'Icon category was succesfully updated',
+
+  MEDIA: {
+    UPLOADED: 'Media uploaded successfully',
+    DELETED: 'Media deleted successfully',
+  },
 };

@@ -768,7 +768,7 @@ paths:
       tags:
         - Admin
         - Social Media
-  /admin/icon:
+  /admin/icons:
     post:
       operationId: createIcon
       parameters: []
@@ -797,7 +797,7 @@ paths:
       tags:
         - Admin
         - Icon
-  "/admin/icon/{id}":
+  "/admin/icons/{id}":
     get:
       operationId: getIcon
       parameters:
@@ -852,6 +852,49 @@ paths:
       tags:
         - Admin
         - Icon
+  "/media/business/{businessId}":
+    post:
+      operationId: createMedia
+      summary: Upload image for business
+      parameters:
+        - name: businessId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "201":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/responseHelper"
+      tags:
+        - Business Media
+    delete:
+      operationId: deleteMedia
+      summary: Delete image for business
+      parameters:
+        - name: businessId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeleteMediaDTO"
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/responseHelper"
+      tags:
+        - Business Media
 info:
   title: METGO
   description: API Documentation for MetGo
@@ -1127,22 +1170,6 @@ components:
       required:
         - lat
         - long
-    images:
-      type: object
-      properties:
-        image:
-          type: string
-          description: path of image
-        caption:
-          type: string
-          description: caption of image
-        alt:
-          type: string
-          description: Image alternative text
-      required:
-        - image
-        - caption
-        - alt
     socialMedia:
       type: object
       properties:
@@ -1213,7 +1240,9 @@ components:
         geoLocation:
           $ref: "#/components/schemas/geoLocation"
         images:
-          $ref: "#/components/schemas/images"
+          type: array
+          items:
+            type: string
         socialMedia:
           $ref: "#/components/schemas/socialMedia"
         mapPointId:
@@ -1272,11 +1301,18 @@ components:
       properties:
         name:
           type: string
-        iconPath:
-          type: string
       required:
         - name
-        - iconPath
     UpdateIconDto:
       type: object
       properties: {}
+    responseHelper:
+      type: object
+      properties: {}
+    DeleteMediaDTO:
+      type: object
+      properties:
+        imageUrl:
+          type: string
+      required:
+        - imageUrl

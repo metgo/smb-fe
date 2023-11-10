@@ -3,7 +3,6 @@ import { APP_PIPE } from '@nestjs/core';
 import { MongooseModule } from '@nestjs/mongoose';
 
 import dbConfig from './core/dbConfig';
-import { ConfigModule } from './services/config/config.module';
 import { AuthModule } from 'src/modules/auth/auth.module';
 import { JwtAuthModule } from 'src/modules/jwt-auth/jwt-auth.module';
 import { MapPointModule } from './modules/mapPoint/mappoint.module';
@@ -15,6 +14,9 @@ import { MPSubCategoriesItemsModule } from './modules/mpsubcategoriesitems/mpsub
 import { DMOModule } from './modules/dmo/dmo.module';
 import { SocialMediaModule } from './modules/socialMedia/socialMedia.module';
 import { IconsModule } from './modules/icons/icons.module';
+import { BusinessMediaModule } from 'src/modules/business-media/business-media.module';
+import { GcpBucketModule } from 'src/services/gcp-bucket/gcp-bucket.module';
+import { ConfigModule } from 'src/services/config/config.module';
 
 @Module({
   imports: [
@@ -22,6 +24,7 @@ import { IconsModule } from './modules/icons/icons.module';
     AuthModule,
     JwtAuthModule,
     ConfigModule,
+    GcpBucketModule,
     MapPointModule,
     MPCategoriesModule,
     MPSubCategoriesModule,
@@ -31,6 +34,7 @@ import { IconsModule } from './modules/icons/icons.module';
     DMOModule,
     SocialMediaModule,
     IconsModule,
+    BusinessMediaModule,
   ],
   providers: [
     {

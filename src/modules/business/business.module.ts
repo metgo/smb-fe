@@ -9,11 +9,13 @@ import { DMOSchema } from '../dmo/schema/dmo.schema';
 import { DMOService } from '../dmo/dmo.service';
 
 @Module({
-  imports: [MongooseModule.forFeature([
-    { name: 'Business', schema: BusinessSchema },
-    { name: 'User', schema: UserSchema },
-    { name: 'DMO', schema: DMOSchema },
-  ])],
+  imports: [
+    MongooseModule.forFeature([
+      { name: 'Business', schema: BusinessSchema },
+      { name: 'User', schema: UserSchema },
+      { name: 'DMO', schema: DMOSchema },
+    ]),
+  ],
   controllers: [BusinessController],
   providers: [BusinessService, UsersService, DMOService],
   exports: [BusinessService],
