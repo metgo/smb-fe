@@ -3,7 +3,7 @@ import mongoose, { HydratedDocument } from 'mongoose';
 import { BusinessStatus } from 'src/common/enum';
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
 
-@Schema({ strict: false })
+@Schema({})
 export class Business extends AuditableSchema {
   @Prop({ required: false, default: null })
     name: string;

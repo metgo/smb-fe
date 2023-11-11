@@ -788,7 +788,12 @@ paths:
         - Icon
     get:
       operationId: getIcons
-      parameters: []
+      parameters:
+        - name: search
+          required: false
+          in: query
+          schema:
+            type: string
       responses:
         "200":
           description: Icon was succesfully listed
@@ -1068,6 +1073,8 @@ components:
       properties:
         name:
           type: string
+        hasMultiple:
+          type: boolean
         icon:
           type: string
         pathAlt:

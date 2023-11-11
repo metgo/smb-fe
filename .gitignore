@@ -40,3 +40,5 @@ lerna-debug.log*
 
 # Credential Files
 /credentials
+credential/metgo-staging-server-6d235c8ca059.json
+.gitignore

@@ -1,13 +1,13 @@
 /* eslint-disable no-undef */
 /* eslint-disable no-unused-vars */
 import {
-  Body, Controller, Delete, Get, HttpStatus, Param, Post, Put, Res, UploadedFile, UseInterceptors,
+  Body, Controller, Delete, Get, HttpStatus, Param, Post, Put, Query, Res, UploadedFile, UseInterceptors,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { ServerSuccess } from 'src/common/constant';
 import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
 import { responseHelper } from 'src/core/helper/response.helper';
-import { CreateIconDto, UpdateIconDto } from './dto';
+import { CreateIconDto, FilterQuery, UpdateIconDto } from './dto';
 import { IconsService } from './icons.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { fileFilterByExtensions } from 'src/services/gcp-bucket/middleware/file-filter';
@@ -51,8 +51,8 @@ export class IconsController {
     },
   })
     @Get('')
-  async getIcons(@Res() response: Response) {
-    const icon = await this.iconsService.getIcons();
+  async getIcons(@Res() response: Response, @Query() query:FilterQuery) {
+    const icon = await this.iconsService.getIcons(query);
     return responseHelper(
       response,
       HttpStatus.OK,
