@@ -9,7 +9,7 @@ import {
   findOneByFieldName, findOneById, queryhandler, updateById,
 } from 'src/core/helper/query-helper';
 import {
-  CreateIconDto, UpdateIconDto,
+  CreateIconDto, FilterQuery, UpdateIconDto,
 } from './dto';
 import { Icons } from './schema/icon.schema';
 import { GcpBucketService } from 'src/services/gcp-bucket/gcp-bucket.services';
@@ -38,13 +38,19 @@ export class IconsService {
     return newIconCategory.save();
   }
 
-  async getIcons() {
+  async getIcons(query:FilterQuery) {
     let findQuery: {};
     let select: {};
     let page: number;
     let limit: number;
     let populate: string;
     let populate1: string;
+    if (query.search) {
+      // findQuery = { $text: { $search: query.search, $caseSensitive: false, $diacriticSensitive: false } };
+      findQuery = {
+        name: { $regex: query.search, $options: 'i' },
+      };
+    }
 
     // eslint-disable-next-line prefer-const
     select = `${disSelect}`;
