@@ -14,13 +14,41 @@ import { findOneByFieldName, findOneById, updateById } from 'src/core/helper/que
 import { ServerErrors } from 'src/common/constant';
 import { passwordGenerator } from 'src/common/utils/randomPassword.genetator';
 import { UpdateLastLoginRequest } from 'src/modules/users/requests/update-last-logins.request';
+import { ConfigService } from 'src/services/config/config.service';
+import { UserType } from './users.type';
 
 @Injectable()
 export class UsersService {
+  private email: string;
+  private password: string;
   constructor(
     @InjectModel(User.name)
     private UserModel: Model<User>,
-  ) {}
+  ) {
+    const configService = new ConfigService();
+
+    this.email = configService.superAdminEmail;
+    this.password = configService.superAdminPassword;
+  }
+
+  async seedSuperadmin() {
+    const superadmin = {
+      fullName: 'Super Admin',
+      email: this.email,
+      password: this.password,
+      role: UserType.SUPERADMIN,
+    };
+
+    // Check if superadmin already exists
+    const existingSuperadmin = await this.UserModel.findOne({ email: superadmin.email }).exec();
+
+    if (!existingSuperadmin) {
+      await this.UserModel.create(superadmin);
+      console.log('Superadmin seeded successfully.');
+    } else {
+      console.log('Superadmin already exists.');
+    }
+  }
 
   async getMyInformation(userId: string): Promise<GetUserDetailsResponse> {
     try {

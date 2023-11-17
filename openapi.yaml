@@ -900,6 +900,27 @@ paths:
                 $ref: "#/components/schemas/responseHelper"
       tags:
         - Business Media
+  /admin/create-campaign:
+    post:
+      operationId: createCampaign
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/createCampaignDto"
+      responses:
+        "201":
+          description: Campaign was succesfully created
+        "401":
+          description: Authorization header not found or jwt token has expired
+        "422":
+          description: Failed Validation
+      security:
+        - bearer: []
+      tags:
+        - "Campign Admin "
 info:
   title: METGO
   description: API Documentation for MetGo
@@ -1323,3 +1344,26 @@ components:
           type: string
       required:
         - imageUrl
+    createCampaignDto:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        amount:
+          type: number
+        status:
+          type: string
+          enum:
+            - PUBLIC
+            - CLOSED
+            - PRIVATE
+        code:
+          type: string
+      required:
+        - name
+        - description
+        - amount
+        - status
+        - code

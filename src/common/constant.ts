@@ -80,4 +80,8 @@ export const ServerSuccess = {
     UPLOADED: 'Media uploaded successfully',
     DELETED: 'Media deleted successfully',
   },
+  CAMPAIGN_CREATED: 'Campaign was succesfully created',
+  CAMPAIGN_LISTED: 'Campaign was succesfully listed',
+  CAMPAIGN_UPDATED: 'Campaign was succesfully updated',
+
 };

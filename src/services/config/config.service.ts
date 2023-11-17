@@ -37,6 +37,8 @@ export class ConfigService {
       'MEDIA_STORAGE_FOLDER',
       'GCS_PROJECT_ID',
       'GCS_FILE_PATH',
+      'SUPER_ADMIN_EMAIL',
+      'SUPER_ADMIN_PASSWORD',
     ];
 
     return ENV_VARIABLES.reduce((obj: any, variable) => {
@@ -67,6 +69,8 @@ export class ConfigService {
       MEDIA_STORAGE_FOLDER: Joi.string().required(),
       GCS_PROJECT_ID: Joi.string().required(),
       GCS_FILE_PATH: Joi.string().required(),
+      SUPER_ADMIN_EMAIL: Joi.string().required(),
+      SUPER_ADMIN_PASSWORD: Joi.string().required(),
     }).unknown(true);
 
     const { error, value: validatedEnvConfig } = envVarsSchema.validate(envConfig);
@@ -88,6 +92,14 @@ export class ConfigService {
 
   get nodeEnvironment() {
     return this.get('NODE_ENV');
+  }
+
+  get superAdminEmail() {
+    return this.get('SUPER_ADMIN_EMAIL');
+  }
+
+  get superAdminPassword() {
+    return this.get('SUPER_ADMIN_PASSWORD');
   }
 
   /**
