@@ -18,6 +18,7 @@ import { BusinessMediaModule } from 'src/modules/business-media/business-media.m
 import { GcpBucketModule } from 'src/services/gcp-bucket/gcp-bucket.module';
 import { ConfigModule } from 'src/services/config/config.module';
 import { CampaignModule } from './modules/campaign/campaign.module';
+import { EncryptionModule } from './services/encryption/encryption.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { CampaignModule } from './modules/campaign/campaign.module';
     IconsModule,
     BusinessMediaModule,
     CampaignModule,
+    EncryptionModule,
   ],
   providers: [
     {
