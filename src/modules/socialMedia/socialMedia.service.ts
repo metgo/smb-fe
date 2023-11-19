@@ -5,10 +5,13 @@ import { InjectModel } from '@nestjs/mongoose';
 import { SocialMedia } from './schema/socialMedia.schema';
 import { createSocialMediaDto } from './dto/createSocialMedia.dto';
 import { Model } from 'mongoose';
-import { findOneByFieldName, queryhandler, updateById } from 'src/core/helper/query-helper';
+import {
+  findOneByFieldName, findOneByFieldNameExcludeId, queryhandler, updateById,
+} from 'src/core/helper/query-helper';
 import { updateSocialMediaDto } from './dto/updateSocialMedia.dto';
 import { ServerErrors } from 'src/common/constant';
 import { disSelect } from 'src/common/utils/select.handling';
+import { FilterQuery } from './dto/query.dto';
 
 @Injectable()
 export class SocialMediaService {
@@ -23,7 +26,7 @@ export class SocialMediaService {
     return await newSocialMedia.save();
   }
 
-  async getAll() {
+  async getAll(query:FilterQuery) {
     let findQuery: {};
     let select: string;
     let page: number;
@@ -31,6 +34,11 @@ export class SocialMediaService {
     let populate: {};
     let populate1: string;
 
+    if (query.search) {
+      findQuery = {
+        name: { $regex: query.search, $options: 'i' },
+      };
+    }
     populate = {
       path: 'icon',
       select: `${disSelect}`,
@@ -76,6 +84,19 @@ export class SocialMediaService {
 
   async findByFieldName(fieldName: keyof SocialMedia, items: string): Promise<boolean> {
     const socialMedia = await findOneByFieldName<SocialMedia>(this.SocialMediaModel, fieldName, items);
+    if (socialMedia) {
+      throw new BadRequestException(`${fieldName} already exists`);
+    }
+    return false;
+  }
+
+  async findByFieldNameExcludeId(fieldName: keyof SocialMedia, items: string, id:string): Promise<boolean> {
+    const socialMedia = await findOneByFieldNameExcludeId<SocialMedia>(
+      this.SocialMediaModel,
+      fieldName,
+      items,
+      id,
+    );
     if (socialMedia) {
       throw new BadRequestException(`${fieldName} already exists`);
     }

@@ -6,7 +6,7 @@ import { Model } from 'mongoose';
 import { ServerErrors } from 'src/common/constant';
 import { disSelect } from 'src/common/utils/select.handling';
 import {
-  findOneByFieldName, findOneById, queryhandler, updateById,
+  findOneByFieldName, findOneByFieldNameExcludeId, findOneById, queryhandler, updateById,
 } from 'src/core/helper/query-helper';
 import {
   CreateIconDto, FilterQuery, UpdateIconDto,
@@ -108,6 +108,19 @@ export class IconsService {
 
   async findByFieldName(fieldName: keyof Icons, items: string): Promise<boolean> {
     const icon = await findOneByFieldName<Icons>(this.IconModel, fieldName, items);
+    if (icon) {
+      throw new BadRequestException(`${fieldName} already exists`);
+    }
+    return false;
+  }
+
+  async findByFieldNameExcludeId(fieldName: keyof Icons, items: string, id:string): Promise<boolean> {
+    const icon = await findOneByFieldNameExcludeId<Icons>(
+      this.IconModel,
+      fieldName,
+      items,
+      id,
+    );
     if (icon) {
       throw new BadRequestException(`${fieldName} already exists`);
     }

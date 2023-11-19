@@ -1,9 +1,11 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { createMPCategoriesDto, FilterQuery, updateMPCategoriesDto } from './dto';
 import { MPCategories } from './schema/categories.schema';
 import { Model } from 'mongoose';
-import { queryhandler, updateById } from 'src/core/helper/query-helper';
+import {
+  findOneByFieldName, findOneByFieldNameExcludeId, queryhandler, updateById,
+} from 'src/core/helper/query-helper';
 import { ServerErrors } from 'src/common/constant';
 import { disSelect } from 'src/common/utils/select.handling';
 
@@ -73,5 +75,21 @@ export class MPCategoiresService {
       throw new NotFoundException(ServerErrors.MAP_POINT_SUB_CATEGORIES_NOT_FOUND);
     }
     return mpCategories;
+  }
+
+  async findByFieldName(fieldName: keyof MPCategories, items: string): Promise<boolean> {
+    const mpCategories = await findOneByFieldName<MPCategories>(this.MPCategoriesModel, fieldName, items);
+    if (mpCategories) {
+      throw new BadRequestException(`${fieldName} already exists`);
+    }
+    return false;
+  }
+
+  async findByFieldNameExcludeId(fieldName: keyof MPCategories, items: string, id:string): Promise<boolean> {
+    const mpCategories = await findOneByFieldNameExcludeId<MPCategories>(this.MPCategoriesModel, fieldName, items, id);
+    if (mpCategories) {
+      throw new BadRequestException(`${fieldName} already exists`);
+    }
+    return false;
   }
 }

@@ -53,7 +53,7 @@ export class MapPointController {
     @Param('id') mapPointId: string,
     @Body() dto: updateMapPointDto,
    ) {
-     await this.mapPointService.findByName(dto.name);
+     await this.mapPointService.findByFieldNameExcludeId('name', dto.name, mapPointId);
      const newMapPoint = await this.mapPointService.updateMapPoint(mapPointId, dto);
      return responseHelper(
        response,
