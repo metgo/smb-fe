@@ -920,7 +920,89 @@ paths:
       security:
         - bearer: []
       tags:
-        - "Campign Admin "
+        - Admin, Campaign
+  /get-campaign:
+    get:
+      operationId: getAllCampaign
+      parameters:
+        - name: search
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: size
+          required: false
+          in: query
+          schema:
+            type: number
+        - name: page
+          required: false
+          in: query
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Campaign was succesfully listed
+        "422":
+          description: Failed Validation
+      tags:
+        - Admin, Campaign
+  "/get-campaign/{id}":
+    get:
+      operationId: getCampaign
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Campaign was succesfully listed
+        "422":
+          description: Failed Validation
+      tags:
+        - Admin, Campaign
+  "/update-campaign/{id}":
+    put:
+      operationId: updateCampaign
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/updateCampaignDto"
+      responses:
+        "200":
+          description: Campaign was succesfully updated
+        "422":
+          description: Failed Validation
+      tags:
+        - Admin
+        - Campaign
+  "/delete-campaign/{id}":
+    delete:
+      operationId: softDeleteCampaign
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Campaign was succesfully updated
+        "422":
+          description: Failed Validation
+      tags:
+        - Admin
+        - Campaign
 info:
   title: METGO
   description: API Documentation for MetGo
@@ -1367,3 +1449,6 @@ components:
         - amount
         - status
         - code
+    updateCampaignDto:
+      type: object
+      properties: {}

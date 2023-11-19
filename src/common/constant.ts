@@ -36,9 +36,12 @@ export const ServerErrors = {
   BUSINESS_PHONE_EXISTS: 'Business Number already exists',
 
   ICON_NOT_FOUND: 'Icon not found',
-  ICON_CATEGORY_NOT_FOUND: 'Icon category not found',
   ICON_EXISTS: 'Icon already exists',
+  ICON_CATEGORY_NOT_FOUND: 'Icon category not found',
   ICON_CATEGORY_EXISTS: 'Icon category already exists',
+
+  CAMPAIGN_NOT_FOUND: 'Campaign not found',
+  CAMPAIGN_EXISTS: 'Campaign already exists',
 
 };
 
