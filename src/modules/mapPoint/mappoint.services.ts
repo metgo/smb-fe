@@ -3,7 +3,9 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
 import { MapPoint } from './schema/mappoint.schema';
-import { findOneByFieldName, queryhandler, updateById } from 'src/core/helper/query-helper';
+import {
+  findOneByFieldName, findOneByFieldNameExcludeId, queryhandler, updateById,
+} from 'src/core/helper/query-helper';
 import { ServerErrors } from 'src/common/constant';
 import { createMapPointDto } from './dto';
 import { updateMapPointDto } from './dto/updateMapPoint.dto';
@@ -83,5 +85,18 @@ export class MapPointServices {
       return undefined;
     }
     throw new BadRequestException(ServerErrors.MAP_POINT_EXISTS);
+  }
+
+  async findByFieldNameExcludeId(fieldName: keyof MapPoint, items: string, id:string): Promise<boolean> {
+    const mapPoint = await findOneByFieldNameExcludeId<MapPoint>(
+      this.MapPointModel,
+      fieldName,
+      items,
+      id,
+    );
+    if (mapPoint) {
+      throw new BadRequestException(`${fieldName} already exists`);
+    }
+    return false;
   }
 }

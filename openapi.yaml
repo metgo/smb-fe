@@ -720,7 +720,12 @@ paths:
         - Social Media
     get:
       operationId: getSocialMedia
-      parameters: []
+      parameters:
+        - name: search
+          required: false
+          in: query
+          schema:
+            type: string
       responses:
         "200":
           description: Social Media was successfully listed

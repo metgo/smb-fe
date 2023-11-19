@@ -18,6 +18,7 @@ export class MPSubCategoriesController {
      })
   @Post('admin/mp-sub-categories')
   async createMPSubCategories(@Res() response: Response, @Body() dto: createMPSubCategoriesDto) {
+    await this.mpSubCategoriesService.findByFieldName('name', dto.name);
     const MPSubCategories = await this.mpSubCategoriesService.createMPSubCategories(dto);
     return responseHelper(
       response,
@@ -58,6 +59,7 @@ export class MPSubCategoriesController {
     @Param('id') id: string,
     @Body() dto: updateMPSubCategoriesDto,
    ) {
+     await this.mpSubCategoriesService.findByFieldNameExcludeId('name', dto.name, id);
      const MPSubCategories = await this.mpSubCategoriesService.updateMPSubCategories(id, dto);
      return responseHelper(
        response,

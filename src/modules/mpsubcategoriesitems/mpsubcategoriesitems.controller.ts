@@ -18,6 +18,7 @@ export class MPSubCategoriesItemsController {
       })
   @Post('admin/mp-sub-categories-items')
   async createMPSubCategoriesItems(@Res() response: Response, @Body() dto: createMPSubCategoriesItemsDto) {
+    await this.mpSubCategoriesItemsService.findByFieldName('name', dto.name);
     const MPSubCategoriesItem = await this.mpSubCategoriesItemsService.createMPSubCategoriesItems(dto);
     return responseHelper(
       response,
