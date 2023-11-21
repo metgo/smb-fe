@@ -43,6 +43,11 @@ export const ServerErrors = {
   CAMPAIGN_NOT_FOUND: 'Campaign not found',
   CAMPAIGN_EXISTS: 'Campaign already exists',
 
+  BUSS_CATEGORY: {
+    NOT_FOUND: 'Business Category not found',
+    EXISTS: 'Bussiness Category already exists',
+  },
+
 };
 
 export const ServerSuccess = {
@@ -86,5 +91,12 @@ export const ServerSuccess = {
   CAMPAIGN_CREATED: 'Campaign was succesfully created',
   CAMPAIGN_LISTED: 'Campaign was succesfully listed',
   CAMPAIGN_UPDATED: 'Campaign was succesfully updated',
+
+  BUSS_CATEGORY: {
+    CREATED: 'Business Category was succesfully created',
+    UPDATED: 'Bussiness Category was succesfully updated',
+    LISTED: 'Bussiness Category was succesfully listed',
+    DELETED: 'Bussiness Category was succesfully deleted',
+  },
 
 };
