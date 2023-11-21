@@ -905,6 +905,156 @@ paths:
                 $ref: "#/components/schemas/responseHelper"
       tags:
         - Business Media
+  "/businesses/{businessId}/products":
+    post:
+      operationId: createProduct
+      summary: Create product by business
+      parameters:
+        - name: businessId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProductDto"
+      responses:
+        "201":
+          description: Product was created successfully
+        "401":
+          description: Authorization header not found or jwt token has expired
+        "422":
+          description: Failed Validation
+      security:
+        - bearer: []
+      tags:
+        - Business
+        - Products
+  "/products/{productId}":
+    get:
+      operationId: getProductDetails
+      summary: Get detail of a product
+      parameters:
+        - name: productId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Product was listed sucessfully
+        "404":
+          description: Product not found
+        "422":
+          description: Failed Validation
+      tags:
+        - Business
+        - Products
+  /my-products:
+    get:
+      operationId: getMyProductsDetails
+      summary: Get my products
+      parameters: []
+      responses:
+        "200":
+          description: Product was listed sucessfully
+        "422":
+          description: Failed Validation
+      tags:
+        - Business
+        - Products
+  /collaborated-products:
+    get:
+      operationId: getMyCollaboratedProductsDetails
+      summary: Get my collaborated products
+      parameters: []
+      responses:
+        "200":
+          description: Product was listed sucessfully
+        "422":
+          description: Failed Validation
+      tags:
+        - Business
+        - Products
+  /products:
+    get:
+      operationId: getAllProducts
+      summary: Get all products
+      parameters: []
+      responses:
+        "200":
+          description: Product was listed sucessfully
+        "422":
+          description: Failed Validation
+      tags:
+        - Business
+        - Products
+  "/businesses/{businessId}/products/{productId}":
+    patch:
+      operationId: updateProduct
+      summary: Update product details
+      parameters:
+        - name: businessId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: productId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProductDto"
+      responses:
+        "200":
+          description: Product was updated sucessfully
+        "401":
+          description: Authorization header not found or jwt token has expired
+        "404":
+          description: Product not found
+        "422":
+          description: Failed Validation
+      security:
+        - bearer: []
+      tags:
+        - Business
+        - Products
+    delete:
+      operationId: deleteProduct
+      summary: Delete a product
+      parameters:
+        - name: businessId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: productId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Product was updated sucessfully
+        "401":
+          description: Authorization header not found or jwt token has expired
+        "404":
+          description: Product not found
+        "422":
+          description: Failed Validation
+      security:
+        - bearer: []
+      tags:
+        - Business
+        - Products
 info:
   title: METGO
   description: API Documentation for MetGo
@@ -1328,3 +1478,69 @@ components:
           type: string
       required:
         - imageUrl
+    Price:
+      type: object
+      properties:
+        markedPrice:
+          type: number
+        discountAmount:
+          type: number
+        discountPercent:
+          type: number
+      required:
+        - markedPrice
+        - discountAmount
+        - discountPercent
+    Quantity:
+      type: object
+      properties:
+        initial:
+          type: number
+      required:
+        - initial
+    ProductDto:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        price:
+          $ref: "#/components/schemas/Price"
+        quantity:
+          $ref: "#/components/schemas/Quantity"
+        status:
+          type: string
+          enum:
+            - active
+            - inactive
+        categories:
+          description: Array of ObjectId
+          type: array
+          items:
+            type: string
+        subCategories:
+          description: Array of ObjectId
+          type: array
+          items:
+            type: string
+        features:
+          description: Array of ObjectId
+          type: array
+          items:
+            type: string
+        collaboratorId:
+          description: Array of ObjectId
+          type: array
+          items:
+            type: string
+      required:
+        - name
+        - description
+        - price
+        - quantity
+        - status
+        - categories
+        - subCategories
+        - features
+        - collaboratorId

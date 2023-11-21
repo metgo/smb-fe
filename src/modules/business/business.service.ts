@@ -9,7 +9,7 @@ import { Model } from 'mongoose';
 import { Business } from './schema/business.schema';
 import { createBusinessDto, FilterQuery, updateBusinessDto } from './dto';
 import {
-  findOneByFieldName, findOneByFieldNameExcludeId, queryhandler, updateById,
+  findOneByFieldName, findOneByFieldNameExcludeId, findOneByFieldNames, queryhandler, updateById,
 } from 'src/core/helper/query-helper';
 import { ServerErrors } from 'src/common/constant';
 import { disSelect } from 'src/common/utils/select.handling';
@@ -213,5 +213,11 @@ export class BusinessService {
       throw new BadRequestException(`${fieldName} already exists`);
     }
     return false;
+  }
+
+  async findByFieldItems(fieldNames: object): Promise<Business> {
+    const business = await findOneByFieldNames<Business>(this.BusinessModel, fieldNames);
+
+    return business;
   }
 }

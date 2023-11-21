@@ -6,6 +6,9 @@ import {
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
+  ApiOperation,
+  ApiParam,
+  ApiParamOptions,
   ApiResponse,
   ApiResponseOptions,
   ApiTags,
@@ -35,6 +38,8 @@ export const ApiEndpoint = (args: {
   }
   tags?: string[]
   softBlockExtraDtoFields?: boolean
+  operation?: string
+  params?: ApiParamOptions[]
 }) => {
   const {
     allowExtraDtoFields,
@@ -42,6 +47,8 @@ export const ApiEndpoint = (args: {
     response,
     tags,
     softBlockExtraDtoFields,
+    operation,
+    params,
   } = args;
 
   const decorators: MethodDecorator[] = [];
@@ -67,8 +74,16 @@ export const ApiEndpoint = (args: {
     }
   }
 
+  if (params?.length) {
+    params.map((param: ApiParamOptions) => decorators.push(ApiParam({ ...param })));
+  }
+
   if (tags?.length) {
     decorators.push(ApiTags(...tags));
+  }
+
+  if (operation) {
+    decorators.push(ApiOperation({ summary: operation }));
   }
 
   // ApiResponse decorator in that case.

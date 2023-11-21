@@ -14,6 +14,7 @@ export const softValidationPipe = new ValidationPipe({
 });
 
 export const ServerErrors = {
+  FORBIDDEN: 'Access Denied',
   USER: {
     NOT_FOUND: 'User not found',
     EXISTS: 'User already exists',
@@ -39,6 +40,13 @@ export const ServerErrors = {
   ICON_CATEGORY_NOT_FOUND: 'Icon category not found',
   ICON_EXISTS: 'Icon already exists',
   ICON_CATEGORY_EXISTS: 'Icon category already exists',
+
+  PRODUCT: {
+    NOT_FOUND: 'Product not found',
+    ADD_FAILED: {
+      BUSINESS: 'Unable to add a new product as your business is either not valid or have not been approved by DMO.',
+    },
+  },
 
 };
 
@@ -77,7 +85,14 @@ export const ServerSuccess = {
   ICON_CATEGORY_UPDATED: 'Icon category was succesfully updated',
 
   MEDIA: {
-    UPLOADED: 'Media uploaded successfully',
-    DELETED: 'Media deleted successfully',
+    UPLOADED: 'Media was uploaded successfully',
+    DELETED: 'Media was deleted successfully',
+  },
+
+  PRODUCTS: {
+    CREATED: 'Product was created successfully',
+    UPDATED: 'Product was updated sucessfully',
+    LISTED: 'Product was listed sucessfully',
+    DELETED: 'Product was deleted sucessfully',
   },
 };

@@ -17,6 +17,7 @@ import { IconsModule } from './modules/icons/icons.module';
 import { BusinessMediaModule } from 'src/modules/business-media/business-media.module';
 import { GcpBucketModule } from 'src/services/gcp-bucket/gcp-bucket.module';
 import { ConfigModule } from 'src/services/config/config.module';
+import { ProductsModule } from 'src/modules/products/products.module';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { ConfigModule } from 'src/services/config/config.module';
     SocialMediaModule,
     IconsModule,
     BusinessMediaModule,
+    ProductsModule,
   ],
   providers: [
     {
