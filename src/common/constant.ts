@@ -48,6 +48,11 @@ export const ServerErrors = {
     },
   },
 
+  ACCESSIBILITY: {
+    NOT_FOUND: 'Accessibility not found',
+    EXISTS: 'Accessibility already exists',
+  },
+
 };
 
 export const ServerSuccess = {
@@ -94,5 +99,12 @@ export const ServerSuccess = {
     UPDATED: 'Product was updated sucessfully',
     LISTED: 'Product was listed sucessfully',
     DELETED: 'Product was deleted sucessfully',
+  },
+
+  ACCESSIBILITY: {
+    CREATED: 'Accessibility was created successfully',
+    UPDATED: 'Accessibility was updated sucessfully',
+    LISTED: 'Accessibility was listed sucessfully',
+    DELETED: 'Accessibility was deleted sucessfully',
   },
 };

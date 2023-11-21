@@ -18,6 +18,7 @@ import { BusinessMediaModule } from 'src/modules/business-media/business-media.m
 import { GcpBucketModule } from 'src/services/gcp-bucket/gcp-bucket.module';
 import { ConfigModule } from 'src/services/config/config.module';
 import { ProductsModule } from 'src/modules/products/products.module';
+import { AccessibilityModule } from './modules/accessibility/accessibility.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { ProductsModule } from 'src/modules/products/products.module';
     IconsModule,
     BusinessMediaModule,
     ProductsModule,
+    AccessibilityModule,
   ],
   providers: [
     {
