@@ -1003,6 +1003,115 @@ paths:
       tags:
         - Admin
         - Campaign
+  /admin/buss-category:
+    post:
+      operationId: create
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/createBussCategoryDto"
+      responses:
+        "201":
+          description: Business Category was succesfully created
+        "401":
+          description: Authorization header not found or jwt token has expired
+        "422":
+          description: Failed Validation
+      security:
+        - bearer: []
+      tags:
+        - Admin
+        - Bussiness Categories
+    get:
+      operationId: getAll
+      parameters:
+        - name: search
+          required: false
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Bussiness Category was succesfully listed
+        "401":
+          description: Authorization header not found or jwt token has expired
+        "422":
+          description: Failed Validation
+      security:
+        - bearer: []
+      tags:
+        - Admin
+        - Bussiness Categories
+  "/admin/buss-category/{id}":
+    get:
+      operationId: getOne
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Bussiness Category was succesfully listed
+        "401":
+          description: Authorization header not found or jwt token has expired
+        "422":
+          description: Failed Validation
+      security:
+        - bearer: []
+      tags:
+        - Admin
+        - Bussiness Categories
+    put:
+      operationId: update
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/updateBusinessDto"
+      responses:
+        "201":
+          description: Bussiness Category was succesfully updated
+        "401":
+          description: Authorization header not found or jwt token has expired
+        "422":
+          description: Failed Validation
+      security:
+        - bearer: []
+      tags:
+        - Admin
+        - Bussiness Categories
+    delete:
+      operationId: softDelete
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Bussiness Category was succesfully deleted
+        "401":
+          description: Authorization header not found or jwt token has expired
+        "422":
+          description: Failed Validation
+      security:
+        - bearer: []
+      tags:
+        - Admin
+        - Bussiness Categories
 info:
   title: METGO
   description: API Documentation for MetGo
@@ -1451,3 +1560,13 @@ components:
     updateCampaignDto:
       type: object
       properties: {}
+    createBussCategoryDto:
+      type: object
+      properties:
+        name:
+          type: string
+        icon:
+          type: string
+      required:
+        - name
+        - icon

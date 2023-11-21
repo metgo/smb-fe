@@ -1,7 +1,8 @@
-import { Prop, SchemaFactory } from '@nestjs/mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
 
+@Schema({})
 export class BussCategory extends AuditableSchema {
     @Prop({ required: true })
       name: string;

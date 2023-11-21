@@ -13,7 +13,7 @@ import { Roles } from 'src/core/guards/authorization/roles';
 import { UserType } from '../users/users.type';
 import { JwtAuthGuard } from 'src/core/guards/jwt/jwt.guards';
 
-@Controller('buss-categories')
+@Controller()
 export class BussCategoriesController {
   constructor(
         private readonly bussCategoryService: BussCategoriesService,
@@ -99,8 +99,6 @@ export class BussCategoriesController {
     );
   }
 
-  @Roles(UserType.SUPERADMIN, UserType.ADMIN)
-  @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
     tags: ['Admin', 'Bussiness Categories'],
     response: {
@@ -110,6 +108,8 @@ export class BussCategoriesController {
     softBlockExtraDtoFields: true,
     noAuthToken: true,
   })
+  @Roles(UserType.SUPERADMIN, UserType.ADMIN)
+  @UseGuards(JwtAuthGuard)
   @Put('admin/buss-category/:id')
   async update(
     @Req() req,
@@ -117,7 +117,7 @@ export class BussCategoriesController {
     @Body() dto: updateBusinessDto,
     @Param('id') id: string,
   ) {
-    await this.bussCategoryService.findByFieldName('name', dto.name);
+    await this.bussCategoryService.findByFieldNameExcludeId('name', dto.name, id);
 
     const updateBussCategory = await this.bussCategoryService.update(dto, id, req.user.id);
     return responseHelper(
