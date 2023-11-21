@@ -20,6 +20,7 @@ import { ConfigModule } from 'src/services/config/config.module';
 import { CampaignModule } from './modules/campaign/campaign.module';
 import { EncryptionModule } from './services/encryption/encryption.module';
 import { BussCategoriesModule } from './modules/buss-categories/buss-categories.module';
+import { BussSubCategoriesModule } from './modules/buss-subcategories/buss-subcategories.module';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { BussCategoriesModule } from './modules/buss-categories/buss-categories.
     CampaignModule,
     EncryptionModule,
     BussCategoriesModule,
+    BussSubCategoriesModule,
   ],
   providers: [
     {

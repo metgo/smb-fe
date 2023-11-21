@@ -47,6 +47,10 @@ export const ServerErrors = {
     NOT_FOUND: 'Business Category not found',
     EXISTS: 'Bussiness Category already exists',
   },
+  BUSS_SUB_CATEGORY: {
+    NOT_FOUND: 'Business Sub Category not found',
+    EXISTS: 'Bussiness Sub Category already exists',
+  },
 
 };
 
@@ -97,6 +101,12 @@ export const ServerSuccess = {
     UPDATED: 'Bussiness Category was succesfully updated',
     LISTED: 'Bussiness Category was succesfully listed',
     DELETED: 'Bussiness Category was succesfully deleted',
+  },
+  BUSS_SUB_CATEGORY: {
+    CREATED: 'Business Sub Category was succesfully created',
+    UPDATED: 'Bussiness Sub Category was succesfully updated',
+    LISTED: 'Bussiness SUb Category was succesfully listed',
+    DELETED: 'Bussiness Sub Category was succesfully deleted',
   },
 
 };

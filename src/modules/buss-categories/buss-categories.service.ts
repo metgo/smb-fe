@@ -60,7 +60,14 @@ export class BussCategoriesService {
 
   async getOne(id: string) {
     const select = `${disSelect}`;
-    const bussCategory = await this.BussCategoryModel.findById(id).select(select).exec();
+    const populate = {
+      path: 'icon',
+      select: disSelect,
+    };
+    const bussCategory = await this.BussCategoryModel.findById(id)
+      .select(select)
+      .populate(populate)
+      .exec();
     return bussCategory;
   }
 
