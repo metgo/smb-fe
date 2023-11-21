@@ -8,7 +8,6 @@ export enum BusinessStatus {
 }
 
 export enum CampaignStatus {
-    PUBLIC = 'PUBLIC',
-    CLOSED = 'CLOSED',
-    PRIVATE = 'PRIVATE'
+    ACTIVE = 'ACTIVE',
+    INACTIVE = 'INACTIVE',
 }
