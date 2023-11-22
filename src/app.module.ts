@@ -17,7 +17,6 @@ import { IconsModule } from './modules/icons/icons.module';
 import { BusinessMediaModule } from 'src/modules/business-media/business-media.module';
 import { GcpBucketModule } from 'src/services/gcp-bucket/gcp-bucket.module';
 import { ConfigModule } from 'src/services/config/config.module';
-import { CampaignModule } from './modules/campaign/campaign.module';
 import { EncryptionModule } from './services/encryption/encryption.module';
 import { BussCategoriesModule } from './modules/buss-categories/buss-categories.module';
 import { BussSubCategoriesModule } from './modules/buss-subcategories/buss-subcategories.module';
@@ -40,7 +39,6 @@ import { ProductsModule } from 'src/modules/products/products.module';
     SocialMediaModule,
     IconsModule,
     BusinessMediaModule,
-    CampaignModule,
     EncryptionModule,
     BussCategoriesModule,
     BussSubCategoriesModule,

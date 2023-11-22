@@ -47,6 +47,10 @@ export const ServerErrors = {
       BUSINESS: 'Unable to add a new product as your business is either not valid or have not been approved by DMO.',
     },
   },
+  BUSS_CATEGORY: {
+    NOT_FOUND: 'Business Category not found',
+    EXISTS: 'Bussiness Category already exists',
+  },
 
 };
 
