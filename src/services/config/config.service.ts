@@ -37,6 +37,9 @@ export class ConfigService {
       'MEDIA_STORAGE_FOLDER',
       'GCS_PROJECT_ID',
       'GCS_FILE_PATH',
+      'SUPER_ADMIN_EMAIL',
+      'SUPER_ADMIN_PASSWORD',
+      'DATABASE_ENCRYPTION_KEY',
     ];
 
     return ENV_VARIABLES.reduce((obj: any, variable) => {
@@ -59,6 +62,7 @@ export class ConfigService {
       ENV_NAME: Joi.string().required(),
       API_PORT: Joi.number().port().default(3000),
       PORT: Joi.number().port().default(3000),
+      DATABASE_ENCRYPTION_KEY: Joi.string().required(),
       MONGODB_URI: Joi.string().required(),
       JWT_TOKEN_EXPIRES: Joi.number().required(),
       ACCESS_TOKEN: Joi.string().required(),
@@ -67,6 +71,8 @@ export class ConfigService {
       MEDIA_STORAGE_FOLDER: Joi.string().required(),
       GCS_PROJECT_ID: Joi.string().required(),
       GCS_FILE_PATH: Joi.string().required(),
+      SUPER_ADMIN_EMAIL: Joi.string().required(),
+      SUPER_ADMIN_PASSWORD: Joi.string().required(),
     }).unknown(true);
 
     const { error, value: validatedEnvConfig } = envVarsSchema.validate(envConfig);
@@ -90,12 +96,15 @@ export class ConfigService {
     return this.get('NODE_ENV');
   }
 
-  /**
-   * Whether this backend is deployed and running in the cloud
-   */
+  get superAdminEmail() {
+    return this.get('SUPER_ADMIN_EMAIL');
+  }
 
-  /**
-   * Whether the database is deployed in the cloud and has an associated
-   * backend deployed and running in the cloud.
-   */
+  get superAdminPassword() {
+    return this.get('SUPER_ADMIN_PASSWORD');
+  }
+
+  get dataBaseEncriptionKey() {
+    return this.get('DATABASE_ENCRYPTION_KEY');
+  }
 }
