@@ -1438,9 +1438,8 @@ components:
         status:
           type: string
           enum:
-            - PUBLIC
-            - CLOSED
-            - PRIVATE
+            - ACTIVE
+            - INACTIVE
         code:
           type: string
       required:
