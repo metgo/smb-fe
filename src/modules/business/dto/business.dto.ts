@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import {
+  ArrayMaxSize,
   IsArray, IsBoolean, IsObject, IsOptional, IsString,
 } from 'class-validator';
 import transformEmail from 'src/core/helper/transformEmail';
@@ -133,15 +134,15 @@ export class createBusinessDto {
     required: false,
     enum: BusinessStatus,
   })
-    @IsOptional()
-    @IsString()
+  @IsOptional()
+  @IsString()
     status: BusinessStatus;
 
   @ApiProperty({
     required: false,
   })
-    @IsOptional()
-    @IsBoolean()
+  @IsOptional()
+  @IsBoolean()
     isPreview: string;
 
   @ApiProperty({
@@ -151,12 +152,12 @@ export class createBusinessDto {
   @IsObject()
     geoLocation: geoLocation;
 
-@ApiProperty({
-  required: false,
-})
-    @IsOptional()
-    @IsArray()
-  images: images[];
+  @ApiProperty({
+    required: false,
+  })
+  @IsOptional()
+  @IsArray()
+    images: images[];
 
   @ApiProperty({
     required: false,
@@ -165,26 +166,41 @@ export class createBusinessDto {
   @IsArray()
     socialMedia: socialMedia;
 
-@ApiProperty({
-  required: false,
-})
-    @IsOptional()
-    @IsArray()
-  mapPointId: [];
+  @ApiProperty({
+    required: false,
+  })
+  @IsOptional()
+  @IsArray()
+    groupTypesId: [];
 
-@ApiProperty({
-  required: false,
-})
-    @IsOptional()
-    @IsArray()
-  mapPointCategoriesId: [];
+  @ApiProperty({
+    required: false,
+  })
+  @IsOptional()
+  @IsArray()
+    accessibilitiesId: [];
 
-@ApiProperty({
-  required: false,
-})
-   @IsOptional()
-    @IsArray()
-  mapPointSubCategoriesId: [];
+  @ApiProperty({
+    required: false,
+  })
+  @IsOptional()
+  @IsArray()
+    bussCategoriesId: [];
+
+  @ApiProperty({
+    required: false,
+  })
+  @IsOptional()
+  @IsArray()
+    bussSubCategoriesId: [];
+
+  @ApiProperty({
+    required: false,
+  })
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(5, { message: 'Tags should not be more than 5' })
+    tags: string[];
 
   @ApiProperty({
     required: false,

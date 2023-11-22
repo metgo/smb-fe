@@ -8,17 +8,21 @@ export class FilterQuery {
 
     @ApiProperty({ type: String, required: false, description: 'must follow the pattern \n [id, id,..]' })
     @IsOptional()
-      mapPointId: string;
+      groupTypesId: string;
 
     @ApiProperty({ type: String, required: false, description: 'must follow the pattern \n [id, id,..]' })
     @IsOptional()
-      mapPointCategoriesId: string;
+      accessibilitiesId: string;
 
     @ApiProperty({ type: String, required: false, description: 'must follow the pattern \n [id, id,..]' })
     @IsOptional()
-      mapPointSubCategoriesId: string;
+      bussCategoriesId: string;
 
     @ApiProperty({ type: String, required: false, description: 'must follow the pattern \n [id, id,..]' })
     @IsOptional()
-      mapPointCategoriesItemsId: string;
+      bussSubCategoriesId: string;
+
+    @ApiProperty({ type: String, required: false, description: 'must follow the pattern \n [string, string,..]' })
+    @IsOptional()
+      tags: string;
 }
