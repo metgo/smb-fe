@@ -1,4 +1,8 @@
-import { SetMetadata } from '@nestjs/common';
-import { UserType } from 'src/modules/users/users.type';
+import { SetMetadata, UseGuards } from '@nestjs/common';
+import { RoleGuard } from './role.guards';
 
-export const Roles = (...roles: UserType[]) => SetMetadata('roles', roles);
+// eslint-disable-next-line no-sequences
+export const Roles = (...roles: string[]) => (target:any, key?: string, discritptor?:any) => {
+  SetMetadata('roles', roles)(target, key, discritptor);
+  UseGuards(RoleGuard)(target, key, discritptor);
+};

@@ -3,7 +3,7 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder } from '@nestjs/swagger';
 import { OpenApiNestFactory } from 'nest-openapi-tools';
-
+import { UsersService } from 'src/modules/users/users.services';
 import { AppModule } from 'src/app.module';
 import { ConfigService } from 'src/services/config/config.service';
 
@@ -13,6 +13,10 @@ const API_PORT = configService.get('API_PORT');
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  const seederService = app.get(UsersService);
+
+  await seederService.seedSuperadmin();
 
   await OpenApiNestFactory.configure(
     app,
