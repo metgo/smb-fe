@@ -12,12 +12,13 @@ import { Response } from 'express';
 export class MPCategoriesController {
   constructor(private readonly mpCategoriesService: MPCategoiresService) { }
 
-     @ApiEndpoint({
-       tags: ['Admin', 'Map Point Categories'],
-       response: { status: 200, description: ServerSuccess.MAP_POINT_CATEGORIES_CREATED },
-     })
-   @Post('admin/mp-categories')
+  @ApiEndpoint({
+    tags: ['Admin', 'Map Point Categories'],
+    response: { status: 200, description: ServerSuccess.MAP_POINT_CATEGORIES_CREATED },
+  })
+  @Post('admin/mp-categories')
   async createMPCategories(@Res() response: Response, @Body() dto: createMPCategoriesDto) {
+    await this.mpCategoriesService.findByFieldName('name', dto.name);
     const mpCategories = await this.mpCategoriesService.createMPCategories(dto);
     return responseHelper(
       response,
@@ -35,18 +36,18 @@ export class MPCategoriesController {
      softBlockExtraDtoFields: true,
    })
   @Get('admin/mp-categories')
-     async getAllMPCategories(@Res() response: Response, @Query() query: FilterQuery) {
-       const mpCategories = await this.mpCategoriesService.getAllMPCategories(query);
+  async getAllMPCategories(@Res() response: Response, @Query() query: FilterQuery) {
+    const mpCategories = await this.mpCategoriesService.getAllMPCategories(query);
 
-       return responseHelper(
-         response,
-         HttpStatus.OK,
-         ServerSuccess.MAP_POINT_CATEGORIES_CREATED,
-         mpCategories,
-         null,
-         null,
-       );
-     }
+    return responseHelper(
+      response,
+      HttpStatus.OK,
+      ServerSuccess.MAP_POINT_CATEGORIES_CREATED,
+      mpCategories,
+      null,
+      null,
+    );
+  }
 
   @ApiEndpoint({
     tags: ['Admin', 'Map Point Categories'],
@@ -58,6 +59,7 @@ export class MPCategoriesController {
     @Param('id') id: string,
     @Body() dto: updateMPCategoriesDto,
    ) {
+     await this.mpCategoriesService.findByFieldNameExcludeId('name', dto.name, id);
      const mpCategories = await this.mpCategoriesService.updateMPCategories(id, dto);
      return responseHelper(
        response,

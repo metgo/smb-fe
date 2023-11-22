@@ -98,6 +98,7 @@ export class IconsController {
       @Body() dto: UpdateIconDto,
     @UploadedFile() newIcon: Express.Multer.File,
   ) {
+    await this.iconsService.findByFieldNameExcludeId('name', dto.name, id);
     const icon = await this.iconsService.updateIcon(id, dto, newIcon);
     return responseHelper(
       response,

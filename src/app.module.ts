@@ -21,6 +21,7 @@ import { CampaignModule } from './modules/campaign/campaign.module';
 import { EncryptionModule } from './services/encryption/encryption.module';
 import { BussCategoriesModule } from './modules/buss-categories/buss-categories.module';
 import { BussSubCategoriesModule } from './modules/buss-subcategories/buss-subcategories.module';
+import { ProductsModule } from 'src/modules/products/products.module';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { BussSubCategoriesModule } from './modules/buss-subcategories/buss-subca
     EncryptionModule,
     BussCategoriesModule,
     BussSubCategoriesModule,
+    ProductsModule,
   ],
   providers: [
     {

@@ -1,6 +1,6 @@
 import {
   Body,
-  Controller, Delete, Get, HttpStatus, Param, Post, Put, Res,
+  Controller, Delete, Get, HttpStatus, Param, Post, Put, Query, Res,
 } from '@nestjs/common';
 
 import { ServerSuccess } from 'src/common/constant';
@@ -10,6 +10,7 @@ import { Response } from 'express';
 import { createSocialMediaDto } from './dto/createSocialMedia.dto';
 import { responseHelper } from 'src/core/helper/response.helper';
 import { updateSocialMediaDto } from './dto/updateSocialMedia.dto';
+import { FilterQuery } from './dto/query.dto';
 
 @Controller('admin/social-media')
 export class SocialMediaController {
@@ -28,7 +29,6 @@ export class SocialMediaController {
       @Body() dto:createSocialMediaDto,
   ) {
     await this.socialMediaService.findByFieldName('name', dto.name);
-
     const socialMedia = await this.socialMediaService.create(dto);
     return responseHelper(
       response,
@@ -48,8 +48,8 @@ export class SocialMediaController {
     },
   })
   @Get()
-  async getSocialMedia(@Res() response: Response) {
-    const socialMedia = await this.socialMediaService.getAll();
+  async getSocialMedia(@Res() response: Response, @Query() query:FilterQuery) {
+    const socialMedia = await this.socialMediaService.getAll(query);
     return responseHelper(
       response,
       HttpStatus.OK,
@@ -73,6 +73,7 @@ export class SocialMediaController {
       @Param('id') id: string,
       @Body() dto: updateSocialMediaDto,
   ) {
+    await this.socialMediaService.findByFieldNameExcludeId('name', dto.name, id);
     const socialMedia = await this.socialMediaService.update(id, dto);
     return responseHelper(
       response,

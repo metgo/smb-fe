@@ -720,7 +720,12 @@ paths:
         - Social Media
     get:
       operationId: getSocialMedia
-      parameters: []
+      parameters:
+        - name: search
+          required: false
+          in: query
+          schema:
+            type: string
       responses:
         "200":
           description: Social Media was successfully listed
@@ -904,15 +909,32 @@ paths:
     post:
       operationId: createCampaign
       parameters: []
+  "/businesses/{businessId}/products":
+    post:
+      operationId: createProduct
+      summary: Create product by business
+      parameters:
+        - name: businessId
+          required: true
+          in: path
+          schema:
+            type: string
       requestBody:
         required: true
         content:
           application/json:
             schema:
+<<<<<<< HEAD
               $ref: "#/components/schemas/createCampaignDto"
       responses:
         "201":
           description: Campaign was succesfully created
+=======
+              $ref: "#/components/schemas/ProductDto"
+      responses:
+        "201":
+          description: Product was created successfully
+>>>>>>> main
         "401":
           description: Authorization header not found or jwt token has expired
         "422":
@@ -920,6 +942,7 @@ paths:
       security:
         - bearer: []
       tags:
+<<<<<<< HEAD
         - Admin, Campaign
   /get-campaign:
     get:
@@ -1160,10 +1183,80 @@ paths:
       operationId: getOne
       parameters:
         - name: id
+=======
+        - Business
+        - Products
+  "/products/{productId}":
+    get:
+      operationId: getProductDetails
+      summary: Get detail of a product
+      parameters:
+        - name: productId
           required: true
           in: path
           schema:
             type: string
+      responses:
+        "200":
+          description: Product was listed sucessfully
+        "404":
+          description: Product not found
+        "422":
+          description: Failed Validation
+      tags:
+        - Business
+        - Products
+  /my-products:
+    get:
+      operationId: getMyProductsDetails
+      summary: Get my products
+      parameters: []
+      responses:
+        "200":
+          description: Product was listed sucessfully
+        "422":
+          description: Failed Validation
+      tags:
+        - Business
+        - Products
+  /collaborated-products:
+    get:
+      operationId: getMyCollaboratedProductsDetails
+      summary: Get my collaborated products
+      parameters: []
+      responses:
+        "200":
+          description: Product was listed sucessfully
+        "422":
+          description: Failed Validation
+      tags:
+        - Business
+        - Products
+  /products:
+    get:
+      operationId: getAllProducts
+      summary: Get all products
+      parameters: []
+      responses:
+        "200":
+          description: Product was listed sucessfully
+        "422":
+          description: Failed Validation
+      tags:
+        - Business
+        - Products
+  "/businesses/{businessId}/products/{productId}":
+    patch:
+      operationId: updateProduct
+      summary: Update product details
+      parameters:
+        - name: businessId
+>>>>>>> main
+          required: true
+          in: path
+          schema:
+            type: string
+<<<<<<< HEAD
       responses:
         "200":
           description: Bussiness SUb Category was succesfully listed
@@ -1176,6 +1269,9 @@ paths:
       operationId: update
       parameters:
         - name: id
+=======
+        - name: productId
+>>>>>>> main
           required: true
           in: path
           schema:
@@ -1185,39 +1281,78 @@ paths:
         content:
           application/json:
             schema:
+<<<<<<< HEAD
               $ref: "#/components/schemas/updateBussSubCategoryDto"
       responses:
         "200":
           description: Bussiness Sub Category was succesfully updated
         "401":
           description: Authorization header not found or jwt token has expired
+=======
+              $ref: "#/components/schemas/ProductDto"
+      responses:
+        "200":
+          description: Product was updated sucessfully
+        "401":
+          description: Authorization header not found or jwt token has expired
+        "404":
+          description: Product not found
+>>>>>>> main
         "422":
           description: Failed Validation
       security:
         - bearer: []
       tags:
+<<<<<<< HEAD
         - Admin
         - Business Sub Categories
     delete:
       operationId: softDelete
       parameters:
         - name: id
+=======
+        - Business
+        - Products
+    delete:
+      operationId: deleteProduct
+      summary: Delete a product
+      parameters:
+        - name: businessId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: productId
+>>>>>>> main
           required: true
           in: path
           schema:
             type: string
       responses:
         "200":
+<<<<<<< HEAD
           description: Bussiness Sub Category was succesfully deleted
         "401":
           description: Authorization header not found or jwt token has expired
+=======
+          description: Product was updated sucessfully
+        "401":
+          description: Authorization header not found or jwt token has expired
+        "404":
+          description: Product not found
+>>>>>>> main
         "422":
           description: Failed Validation
       security:
         - bearer: []
       tags:
+<<<<<<< HEAD
         - Admin
         - Business Sub Categories
+=======
+        - Business
+        - Products
+>>>>>>> main
 info:
   title: METGO
   description: API Documentation for MetGo
@@ -1641,13 +1776,38 @@ components:
           type: string
       required:
         - imageUrl
+<<<<<<< HEAD
     createCampaignDto:
+=======
+    Price:
+      type: object
+      properties:
+        markedPrice:
+          type: number
+        discountAmount:
+          type: number
+        discountPercent:
+          type: number
+      required:
+        - markedPrice
+        - discountAmount
+        - discountPercent
+    Quantity:
+      type: object
+      properties:
+        initial:
+          type: number
+      required:
+        - initial
+    ProductDto:
+>>>>>>> main
       type: object
       properties:
         name:
           type: string
         description:
           type: string
+<<<<<<< HEAD
         amount:
           type: number
         status:
@@ -1684,12 +1844,51 @@ components:
         icon:
           type: string
         bussCategoryId:
+=======
+        price:
+          $ref: "#/components/schemas/Price"
+        quantity:
+          $ref: "#/components/schemas/Quantity"
+        status:
+          type: string
+          enum:
+            - active
+            - inactive
+        categories:
+          description: Array of ObjectId
+          type: array
+          items:
+            type: string
+        subCategories:
+          description: Array of ObjectId
+          type: array
+          items:
+            type: string
+        features:
+          description: Array of ObjectId
+          type: array
+          items:
+            type: string
+        collaboratorId:
+          description: Array of ObjectId
+>>>>>>> main
           type: array
           items:
             type: string
       required:
         - name
+<<<<<<< HEAD
         - bussCategoryId
     updateBussSubCategoryDto:
       type: object
       properties: {}
+=======
+        - description
+        - price
+        - quantity
+        - status
+        - categories
+        - subCategories
+        - features
+        - collaboratorId
+>>>>>>> main

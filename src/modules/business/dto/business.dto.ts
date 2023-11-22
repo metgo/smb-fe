@@ -3,8 +3,8 @@ import { Transform } from 'class-transformer';
 import {
   IsArray, IsBoolean, IsObject, IsOptional, IsString,
 } from 'class-validator';
-import { BusinessStatus } from 'src/common/enum';
 import transformEmail from 'src/core/helper/transformEmail';
+import { BusinessStatus } from 'src/modules/business/business.type';
 
 class OpeningHours {
   @ApiProperty({ type: String, description: 'Days of operation' })
