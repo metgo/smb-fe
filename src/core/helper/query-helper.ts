@@ -77,11 +77,7 @@ export async function queryhandler<T>(
   datas.data = await model
     .find({ ...findQuery, deletedAt: { $in: [null] } })
     .select(select)
-<<<<<<< HEAD
-    .skip(page - 1)
-=======
     .skip((page - 1) * limit)
->>>>>>> main
     .limit(limit)
     .populate(populate)
     .populate(populate1);

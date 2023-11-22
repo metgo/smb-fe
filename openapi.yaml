@@ -924,17 +924,10 @@ paths:
         content:
           application/json:
             schema:
-<<<<<<< HEAD
-              $ref: "#/components/schemas/createCampaignDto"
-      responses:
-        "201":
-          description: Campaign was succesfully created
-=======
               $ref: "#/components/schemas/ProductDto"
       responses:
         "201":
           description: Product was created successfully
->>>>>>> main
         "401":
           description: Authorization header not found or jwt token has expired
         "422":
@@ -942,248 +935,6 @@ paths:
       security:
         - bearer: []
       tags:
-<<<<<<< HEAD
-        - Admin, Campaign
-  /get-campaign:
-    get:
-      operationId: getAllCampaign
-      parameters:
-        - name: search
-          required: false
-          in: query
-          schema:
-            type: string
-        - name: size
-          required: false
-          in: query
-          schema:
-            type: number
-        - name: page
-          required: false
-          in: query
-          schema:
-            type: number
-      responses:
-        "200":
-          description: Campaign was succesfully listed
-        "422":
-          description: Failed Validation
-      tags:
-        - Admin, Campaign
-  "/get-campaign/{id}":
-    get:
-      operationId: getCampaign
-      parameters:
-        - name: id
-          required: true
-          in: path
-          schema:
-            type: string
-      responses:
-        "200":
-          description: Campaign was succesfully listed
-        "422":
-          description: Failed Validation
-      tags:
-        - Admin, Campaign
-  "/update-campaign/{id}":
-    put:
-      operationId: updateCampaign
-      parameters:
-        - name: id
-          required: true
-          in: path
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/updateCampaignDto"
-      responses:
-        "200":
-          description: Campaign was succesfully updated
-        "422":
-          description: Failed Validation
-      tags:
-        - Admin
-        - Campaign
-  "/delete-campaign/{id}":
-    delete:
-      operationId: softDeleteCampaign
-      parameters:
-        - name: id
-          required: true
-          in: path
-          schema:
-            type: string
-      responses:
-        "200":
-          description: Campaign was succesfully updated
-        "422":
-          description: Failed Validation
-      tags:
-        - Admin
-        - Campaign
-  /admin/buss-category:
-    post:
-      operationId: create
-      parameters: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/createBussCategoryDto"
-      responses:
-        "201":
-          description: Business Category was succesfully created
-        "401":
-          description: Authorization header not found or jwt token has expired
-        "422":
-          description: Failed Validation
-      security:
-        - bearer: []
-      tags:
-        - Admin
-        - Bussiness Categories
-    get:
-      operationId: getAll
-      parameters:
-        - name: search
-          required: false
-          in: query
-          schema:
-            type: string
-      responses:
-        "200":
-          description: Bussiness Category was succesfully listed
-        "401":
-          description: Authorization header not found or jwt token has expired
-        "422":
-          description: Failed Validation
-      security:
-        - bearer: []
-      tags:
-        - Admin
-        - Bussiness Categories
-  "/admin/buss-category/{id}":
-    get:
-      operationId: getOne
-      parameters:
-        - name: id
-          required: true
-          in: path
-          schema:
-            type: string
-      responses:
-        "200":
-          description: Bussiness Category was succesfully listed
-        "401":
-          description: Authorization header not found or jwt token has expired
-        "422":
-          description: Failed Validation
-      security:
-        - bearer: []
-      tags:
-        - Admin
-        - Bussiness Categories
-    put:
-      operationId: update
-      parameters:
-        - name: id
-          required: true
-          in: path
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/updateBusinessDto"
-      responses:
-        "201":
-          description: Bussiness Category was succesfully updated
-        "401":
-          description: Authorization header not found or jwt token has expired
-        "422":
-          description: Failed Validation
-      security:
-        - bearer: []
-      tags:
-        - Admin
-        - Bussiness Categories
-    delete:
-      operationId: softDelete
-      parameters:
-        - name: id
-          required: true
-          in: path
-          schema:
-            type: string
-      responses:
-        "200":
-          description: Bussiness Category was succesfully deleted
-        "401":
-          description: Authorization header not found or jwt token has expired
-        "422":
-          description: Failed Validation
-      security:
-        - bearer: []
-      tags:
-        - Admin
-        - Bussiness Categories
-  /admin/buss-sub-category:
-    post:
-      operationId: create
-      parameters: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/createBussSubCategoryDto"
-      responses:
-        "200":
-          description: Business Sub Category was succesfully created
-        "401":
-          description: Authorization header not found or jwt token has expired
-        "422":
-          description: Failed Validation
-      security:
-        - bearer: []
-      tags:
-        - Admin
-        - Business Sub Categories
-    get:
-      operationId: getAll
-      parameters:
-        - name: search
-          required: false
-          in: query
-          schema:
-            type: string
-        - name: bussCategoryId
-          required: false
-          in: query
-          schema:
-            type: string
-      responses:
-        "200":
-          description: Bussiness SUb Category was succesfully listed
-        "422":
-          description: Failed Validation
-      tags:
-        - Admin
-        - Business Sub Categories
-  "/admin/buss-sub-category/{id}":
-    get:
-      operationId: getOne
-      parameters:
-        - name: id
-=======
         - Business
         - Products
   "/products/{productId}":
@@ -1251,27 +1002,11 @@ paths:
       summary: Update product details
       parameters:
         - name: businessId
->>>>>>> main
           required: true
           in: path
           schema:
             type: string
-<<<<<<< HEAD
-      responses:
-        "200":
-          description: Bussiness SUb Category was succesfully listed
-        "422":
-          description: Failed Validation
-      tags:
-        - Admin
-        - Business Sub Categories
-    put:
-      operationId: update
-      parameters:
-        - name: id
-=======
         - name: productId
->>>>>>> main
           required: true
           in: path
           schema:
@@ -1281,14 +1016,6 @@ paths:
         content:
           application/json:
             schema:
-<<<<<<< HEAD
-              $ref: "#/components/schemas/updateBussSubCategoryDto"
-      responses:
-        "200":
-          description: Bussiness Sub Category was succesfully updated
-        "401":
-          description: Authorization header not found or jwt token has expired
-=======
               $ref: "#/components/schemas/ProductDto"
       responses:
         "200":
@@ -1297,20 +1024,11 @@ paths:
           description: Authorization header not found or jwt token has expired
         "404":
           description: Product not found
->>>>>>> main
         "422":
           description: Failed Validation
       security:
         - bearer: []
       tags:
-<<<<<<< HEAD
-        - Admin
-        - Business Sub Categories
-    delete:
-      operationId: softDelete
-      parameters:
-        - name: id
-=======
         - Business
         - Products
     delete:
@@ -1323,36 +1041,24 @@ paths:
           schema:
             type: string
         - name: productId
->>>>>>> main
           required: true
           in: path
           schema:
             type: string
       responses:
         "200":
-<<<<<<< HEAD
-          description: Bussiness Sub Category was succesfully deleted
-        "401":
-          description: Authorization header not found or jwt token has expired
-=======
           description: Product was updated sucessfully
         "401":
           description: Authorization header not found or jwt token has expired
         "404":
           description: Product not found
->>>>>>> main
         "422":
           description: Failed Validation
       security:
         - bearer: []
       tags:
-<<<<<<< HEAD
-        - Admin
-        - Business Sub Categories
-=======
         - Business
         - Products
->>>>>>> main
 info:
   title: METGO
   description: API Documentation for MetGo
@@ -1776,9 +1482,6 @@ components:
           type: string
       required:
         - imageUrl
-<<<<<<< HEAD
-    createCampaignDto:
-=======
     Price:
       type: object
       properties:
@@ -1800,51 +1503,12 @@ components:
       required:
         - initial
     ProductDto:
->>>>>>> main
       type: object
       properties:
         name:
           type: string
         description:
           type: string
-<<<<<<< HEAD
-        amount:
-          type: number
-        status:
-          type: string
-          enum:
-            - ACTIVE
-            - INACTIVE
-        code:
-          type: string
-      required:
-        - name
-        - description
-        - amount
-        - status
-        - code
-    updateCampaignDto:
-      type: object
-      properties: {}
-    createBussCategoryDto:
-      type: object
-      properties:
-        name:
-          type: string
-        icon:
-          type: string
-      required:
-        - name
-        - icon
-    createBussSubCategoryDto:
-      type: object
-      properties:
-        name:
-          type: string
-        icon:
-          type: string
-        bussCategoryId:
-=======
         price:
           $ref: "#/components/schemas/Price"
         quantity:
@@ -1871,18 +1535,11 @@ components:
             type: string
         collaboratorId:
           description: Array of ObjectId
->>>>>>> main
           type: array
           items:
             type: string
       required:
         - name
-<<<<<<< HEAD
-        - bussCategoryId
-    updateBussSubCategoryDto:
-      type: object
-      properties: {}
-=======
         - description
         - price
         - quantity
@@ -1891,4 +1548,3 @@ components:
         - subCategories
         - features
         - collaboratorId
->>>>>>> main

@@ -41,24 +41,11 @@ export const ServerErrors = {
   ICON_CATEGORY_NOT_FOUND: 'Icon category not found',
   ICON_CATEGORY_EXISTS: 'Icon category already exists',
 
-<<<<<<< HEAD
-  CAMPAIGN_NOT_FOUND: 'Campaign not found',
-  CAMPAIGN_EXISTS: 'Campaign already exists',
-
-  BUSS_CATEGORY: {
-    NOT_FOUND: 'Business Category not found',
-    EXISTS: 'Bussiness Category already exists',
-  },
-  BUSS_SUB_CATEGORY: {
-    NOT_FOUND: 'Business Sub Category not found',
-    EXISTS: 'Bussiness Sub Category already exists',
-=======
   PRODUCT: {
     NOT_FOUND: 'Product not found',
     ADD_FAILED: {
       BUSINESS: 'Unable to add a new product as your business is either not valid or have not been approved by DMO.',
     },
->>>>>>> main
   },
 
 };
