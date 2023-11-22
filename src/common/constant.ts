@@ -57,6 +57,11 @@ export const ServerErrors = {
     EXISTS: 'Group Type already exists',
   },
 
+  ACCESSIBILITY: {
+    NOT_FOUND: 'Accessibility not found',
+    EXISTS: 'Accessibility already exists',
+  },
+
 };
 
 export const ServerSuccess = {
@@ -105,6 +110,12 @@ export const ServerSuccess = {
     DELETED: 'Product was deleted sucessfully',
   },
 
+  ACCESSIBILITY: {
+    CREATED: 'Accessibility was created successfully',
+    UPDATED: 'Accessibility was updated sucessfully',
+    LISTED: 'Accessibility was listed sucessfully',
+    DELETED: 'Accessibility was deleted sucessfully',
+  },
   GROUP_TYPE: {
     CREATED: 'Group Type was created successfully',
     UPDATED: 'Group Type was updated sucessfully',
