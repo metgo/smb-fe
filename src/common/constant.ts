@@ -52,6 +52,11 @@ export const ServerErrors = {
     EXISTS: 'Bussiness Category already exists',
   },
 
+  GROUP_TYPE: {
+    NOT_FOUND: 'Group Type not found',
+    EXISTS: 'Group Type already exists',
+  },
+
 };
 
 export const ServerSuccess = {
@@ -98,6 +103,13 @@ export const ServerSuccess = {
     UPDATED: 'Product was updated sucessfully',
     LISTED: 'Product was listed sucessfully',
     DELETED: 'Product was deleted sucessfully',
+  },
+
+  GROUP_TYPE: {
+    CREATED: 'Group Type was created successfully',
+    UPDATED: 'Group Type was updated sucessfully',
+    LISTED: 'Group Type was listed sucessfully',
+    DELETED: 'Group Type was deleted sucessfully',
   },
   CAMPAIGN_CREATED: 'Campaign was succesfully created',
   CAMPAIGN_LISTED: 'Campaign was succesfully listed',

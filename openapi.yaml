@@ -1270,6 +1270,95 @@ paths:
       tags:
         - Business
         - Products
+  /admin/group-type:
+    post:
+      operationId: create
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/createGroupTypeDto"
+      responses:
+        "201":
+          description: Group Type was created successfully
+        "422":
+          description: Failed Validation
+      tags:
+        - Admin
+        - Group Type
+    get:
+      operationId: getAll
+      parameters:
+        - name: search
+          required: false
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Group Type was listed sucessfully
+        "422":
+          description: Failed Validation
+      tags:
+        - Admin
+        - Group Type
+  "/admin/group-type/{id}":
+    get:
+      operationId: getOne
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Group Type was listed sucessfully
+        "422":
+          description: Failed Validation
+      tags:
+        - Admin
+        - Group Type
+    put:
+      operationId: update
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/updateGroupTypeDto"
+      responses:
+        "200":
+          description: Group Type was updated sucessfully
+        "422":
+          description: Failed Validation
+      tags:
+        - Admin
+        - Group Type
+    delete:
+      operationId: delete
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Group Type was deleted sucessfully
+        "422":
+          description: Failed Validation
+      tags:
+        - Admin
+        - Group Type
 info:
   title: METGO
   description: API Documentation for MetGo
@@ -1786,3 +1875,16 @@ components:
         - subCategories
         - features
         - collaboratorId
+    createGroupTypeDto:
+      type: object
+      properties:
+        name:
+          type: string
+        icon:
+          type: string
+      required:
+        - name
+        - icon
+    updateGroupTypeDto:
+      type: object
+      properties: {}
