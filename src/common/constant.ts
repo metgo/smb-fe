@@ -37,8 +37,8 @@ export const ServerErrors = {
   BUSINESS_PHONE_EXISTS: 'Business Number already exists',
 
   ICON_NOT_FOUND: 'Icon not found',
-  ICON_CATEGORY_NOT_FOUND: 'Icon category not found',
   ICON_EXISTS: 'Icon already exists',
+  ICON_CATEGORY_NOT_FOUND: 'Icon category not found',
   ICON_CATEGORY_EXISTS: 'Icon category already exists',
 
   PRODUCT: {
@@ -46,6 +46,10 @@ export const ServerErrors = {
     ADD_FAILED: {
       BUSINESS: 'Unable to add a new product as your business is either not valid or have not been approved by DMO.',
     },
+  },
+  BUSS_CATEGORY: {
+    NOT_FOUND: 'Business Category not found',
+    EXISTS: 'Bussiness Category already exists',
   },
 
 };
@@ -95,4 +99,21 @@ export const ServerSuccess = {
     LISTED: 'Product was listed sucessfully',
     DELETED: 'Product was deleted sucessfully',
   },
+  CAMPAIGN_CREATED: 'Campaign was succesfully created',
+  CAMPAIGN_LISTED: 'Campaign was succesfully listed',
+  CAMPAIGN_UPDATED: 'Campaign was succesfully updated',
+
+  BUSS_CATEGORY: {
+    CREATED: 'Business Category was succesfully created',
+    UPDATED: 'Bussiness Category was succesfully updated',
+    LISTED: 'Bussiness Category was succesfully listed',
+    DELETED: 'Bussiness Category was succesfully deleted',
+  },
+  BUSS_SUB_CATEGORY: {
+    CREATED: 'Business Sub Category was succesfully created',
+    UPDATED: 'Bussiness Sub Category was succesfully updated',
+    LISTED: 'Bussiness SUb Category was succesfully listed',
+    DELETED: 'Bussiness Sub Category was succesfully deleted',
+  },
+
 };
