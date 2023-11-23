@@ -1464,6 +1464,109 @@ paths:
       tags:
         - Admin
         - Group Type
+  /admin/voucher-template:
+    post:
+      operationId: create
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/createVoucherTemplateDto"
+      responses:
+        "200":
+          description: Voucher Template was succesfully created
+        "401":
+          description: Authorization header not found or jwt token has expired
+        "422":
+          description: Failed Validation
+      security:
+        - bearer: []
+      tags:
+        - Admin
+        - Voucher Template
+  /voucher-template:
+    get:
+      operationId: getAll
+      parameters:
+        - name: search
+          required: false
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Voucher Template was succesfully listed
+        "422":
+          description: Failed Validation
+      tags:
+        - Admin
+        - Voucher Template
+  "/voucher-template/{id}":
+    get:
+      operationId: getOne
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Voucher Template was succesfully listed
+        "422":
+          description: Failed Validation
+      tags:
+        - Admin
+        - Voucher Template
+  "/admin/voucher-template/{id}":
+    put:
+      operationId: update
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/updateVoucherTemplateDto"
+      responses:
+        "200":
+          description: Voucher Template was succesfully updated
+        "401":
+          description: Authorization header not found or jwt token has expired
+        "422":
+          description: Failed Validation
+      security:
+        - bearer: []
+      tags:
+        - Admin
+        - Voucher Template
+    delete:
+      operationId: softDelete
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Voucher Template was succesfully deleted
+        "401":
+          description: Authorization header not found or jwt token has expired
+        "422":
+          description: Failed Validation
+      security:
+        - bearer: []
+      tags:
+        - Admin
+        - Voucher Template
   /admin/campaign:
     post:
       operationId: create
@@ -2149,6 +2252,28 @@ components:
         - name
         - icon
     updateGroupTypeDto:
+      type: object
+      properties: {}
+    createVoucherTemplateDto:
+      type: object
+      properties:
+        name:
+          type: string
+        amount:
+          type: number
+        campCode:
+          type: string
+        description:
+          type: string
+        campId:
+          type: string
+      required:
+        - name
+        - amount
+        - campCode
+        - description
+        - campId
+    updateVoucherTemplateDto:
       type: object
       properties: {}
     createCampaignDto:

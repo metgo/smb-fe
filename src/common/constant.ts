@@ -52,6 +52,11 @@ export const ServerErrors = {
     EXISTS: 'Bussiness Category already exists',
   },
 
+  BUSS_SUB_CATEGORY: {
+    NOT_FOUND: 'Business Sub Category not found',
+    EXISTS: 'Bussiness Sub Category already exists',
+  },
+
   GROUP_TYPE: {
     NOT_FOUND: 'Group Type not found',
     EXISTS: 'Group Type already exists',
@@ -60,6 +65,10 @@ export const ServerErrors = {
   ACCESSIBILITY: {
     NOT_FOUND: 'Accessibility not found',
     EXISTS: 'Accessibility already exists',
+  },
+  VOUCHER_TEMPLATE: {
+    NOT_FOUND: 'Voucher Template not found',
+    EXISTS: 'Voucher Template already exists',
   },
 
   CAMPAIGN: {
@@ -142,6 +151,12 @@ export const ServerSuccess = {
     UPDATED: 'Bussiness Sub Category was succesfully updated',
     LISTED: 'Bussiness SUb Category was succesfully listed',
     DELETED: 'Bussiness Sub Category was succesfully deleted',
+  },
+  VOUCHER_TEMPLATE: {
+    CREATED: 'Voucher Template was succesfully created',
+    UPDATED: 'Voucher Template was succesfully updated',
+    LISTED: 'Voucher Template was succesfully listed',
+    DELETED: 'Voucher Template was succesfully deleted',
   },
 
   CAMPAIGN: {
