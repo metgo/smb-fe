@@ -2,7 +2,11 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
 
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
+import { Accessibility } from 'src/modules/accessibility/schema/accessibility.schema';
 import { BusinessStatus } from 'src/modules/business/business.type';
+import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.schema';
+import { BussSubCategory } from 'src/modules/buss-subcategories/schema/buss-subCategory.schema';
+import { GroupType } from 'src/modules/group-type/schema/group-type.schema';
 
 @Schema({})
 export class Business extends AuditableSchema {
@@ -107,29 +111,40 @@ export class Business extends AuditableSchema {
 
   @Prop(
     {
-      type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'MapPoint' }],
+      type: [{ type: mongoose.Schema.Types.ObjectId, ref: GroupType.name }],
       required: false,
     },
   )
-    mapPointId: mongoose.Types.ObjectId[];
+    groupTypesId: mongoose.Types.ObjectId[];
 
   @Prop({
-    type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'MPCategories' }],
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: Accessibility.name }],
     required: false,
   })
-    mapPointCategoriesId: mongoose.Types.ObjectId[];
+    accessibilitiesId: mongoose.Types.ObjectId[];
 
   @Prop({
-    type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'MPSubCategories' }],
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: BussCategory.name }],
     required: false,
   })
-    mapPointSubCategoriesId: mongoose.Types.ObjectId[];
+    bussCategoriesId: mongoose.Types.ObjectId[];
 
   @Prop({
-    type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'MPSubCategoriesItems' }],
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: BussSubCategory.name }],
     required: false,
   })
-    mapPointSubCategoriesItemsId: mongoose.Types.ObjectId[];
+    bussSubCategoriesId: mongoose.Types.ObjectId[];
+
+    @Prop({
+      type: [String],
+      validate: {
+        validator(value: string[]) {
+          return value.length <= 5;
+        },
+        message: 'Tags should not be more than 5',
+      },
+    })
+      tags: string[];
 
   @Prop({ required: false })
     openingHrs: [

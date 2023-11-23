@@ -71,6 +71,11 @@ export const ServerErrors = {
     EXISTS: 'Voucher Template already exists',
   },
 
+  CAMPAIGN: {
+    NOT_FOUND: 'Campaign not found',
+    EXISTS: 'Campaign already exists',
+  },
+
 };
 
 export const ServerSuccess = {
@@ -152,6 +157,13 @@ export const ServerSuccess = {
     UPDATED: 'Voucher Template was succesfully updated',
     LISTED: 'Voucher Template was succesfully listed',
     DELETED: 'Voucher Template was succesfully deleted',
+  },
+
+  CAMPAIGN: {
+    CREATED: 'Campaign was succesfully created',
+    UPDATED: 'Campaign was succesfully updated',
+    LISTED: 'Campaign was succesfully listed',
+    DELETED: 'Campaign was succesfully deleted',
   },
 
 };

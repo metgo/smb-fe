@@ -493,7 +493,7 @@ paths:
           in: query
           schema:
             type: string
-        - name: mapPointId
+        - name: groupTypesId
           required: false
           in: query
           description: |-
@@ -501,7 +501,7 @@ paths:
              [id, id,..]
           schema:
             type: string
-        - name: mapPointCategoriesId
+        - name: accessibilitiesId
           required: false
           in: query
           description: |-
@@ -509,7 +509,7 @@ paths:
              [id, id,..]
           schema:
             type: string
-        - name: mapPointSubCategoriesId
+        - name: bussCategoriesId
           required: false
           in: query
           description: |-
@@ -517,12 +517,20 @@ paths:
              [id, id,..]
           schema:
             type: string
-        - name: mapPointCategoriesItemsId
+        - name: bussSubCategoriesId
           required: false
           in: query
           description: |-
             must follow the pattern 
              [id, id,..]
+          schema:
+            type: string
+        - name: tags
+          required: false
+          in: query
+          description: |-
+            must follow the pattern 
+             [string, string,..]
           schema:
             type: string
       responses:
@@ -593,7 +601,7 @@ paths:
           in: query
           schema:
             type: string
-        - name: mapPointId
+        - name: groupTypesId
           required: false
           in: query
           description: |-
@@ -601,7 +609,7 @@ paths:
              [id, id,..]
           schema:
             type: string
-        - name: mapPointCategoriesId
+        - name: accessibilitiesId
           required: false
           in: query
           description: |-
@@ -609,7 +617,7 @@ paths:
              [id, id,..]
           schema:
             type: string
-        - name: mapPointSubCategoriesId
+        - name: bussCategoriesId
           required: false
           in: query
           description: |-
@@ -617,12 +625,20 @@ paths:
              [id, id,..]
           schema:
             type: string
-        - name: mapPointCategoriesItemsId
+        - name: bussSubCategoriesId
           required: false
           in: query
           description: |-
             must follow the pattern 
              [id, id,..]
+          schema:
+            type: string
+        - name: tags
+          required: false
+          in: query
+          description: |-
+            must follow the pattern 
+             [string, string,..]
           schema:
             type: string
       responses:
@@ -1551,6 +1567,143 @@ paths:
       tags:
         - Admin
         - Voucher Template
+  /admin/campaign:
+    post:
+      operationId: create
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/createCampaignDto"
+      responses:
+        "201":
+          description: Campaign was succesfully created
+        "401":
+          description: Authorization header not found or jwt token has expired
+        "422":
+          description: Failed Validation
+      security:
+        - bearer: []
+      tags:
+        - Admin, Campaign
+    get:
+      operationId: getAll
+      parameters:
+        - name: search
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: size
+          required: false
+          in: query
+          schema:
+            type: number
+        - name: page
+          required: false
+          in: query
+          schema:
+            type: number
+        - name: dmoId
+          required: false
+          in: query
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Campaign was succesfully listed
+        "422":
+          description: Failed Validation
+      tags:
+        - Admin, Campaign
+  "/admin/campaign/{id}":
+    get:
+      operationId: getOne
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Campaign was succesfully listed
+        "422":
+          description: Failed Validation
+      tags:
+        - Admin, Campaign
+    delete:
+      operationId: softDelete
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Campaign was succesfully updated
+        "422":
+          description: Failed Validation
+      tags:
+        - Admin
+        - Campaign
+  /admin/my-campaign:
+    get:
+      operationId: getMy
+      parameters:
+        - name: search
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: size
+          required: false
+          in: query
+          schema:
+            type: number
+        - name: page
+          required: false
+          in: query
+          schema:
+            type: number
+        - name: dmoId
+          required: false
+          in: query
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Campaign was succesfully listed
+        "422":
+          description: Failed Validation
+      tags:
+        - Admin, Campaign
+  "/admin/update/{id}":
+    put:
+      operationId: update
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/updateCampaignDto"
+      responses:
+        "200":
+          description: Campaign was succesfully updated
+        "422":
+          description: Failed Validation
+      tags:
+        - Admin
+        - Campaign
 info:
   title: METGO
   description: API Documentation for MetGo
@@ -1903,15 +2056,23 @@ components:
             type: string
         socialMedia:
           $ref: "#/components/schemas/socialMedia"
-        mapPointId:
+        groupTypesId:
           type: array
           items:
             type: string
-        mapPointCategoriesId:
+        accessibilitiesId:
           type: array
           items:
             type: string
-        mapPointSubCategoriesId:
+        bussCategoriesId:
+          type: array
+          items:
+            type: string
+        bussSubCategoriesId:
+          type: array
+          items:
+            type: string
+        tags:
           type: array
           items:
             type: string
@@ -2113,5 +2274,45 @@ components:
         - description
         - campId
     updateVoucherTemplateDto:
+      type: object
+      properties: {}
+    createCampaignDto:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        status:
+          type: string
+          enum:
+            - ACTIVE
+            - INACTIVE
+        code:
+          type: string
+        segment:
+          type: array
+          items:
+            type: string
+        crowed:
+          type: array
+          items:
+            type: string
+        startDate:
+          format: date-time
+          type: string
+        endDate:
+          format: date-time
+          type: string
+      required:
+        - name
+        - description
+        - status
+        - code
+        - segment
+        - crowed
+        - startDate
+        - endDate
+    updateCampaignDto:
       type: object
       properties: {}

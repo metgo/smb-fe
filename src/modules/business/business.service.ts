@@ -49,7 +49,7 @@ export class BusinessService {
     }
     // eslint-disable-next-line prefer-const
     populate = {
-      path: 'mapPointId mapPointCategoriesId mapPointSubCategoriesId',
+      path: 'groupTypesId accessibilitiesId bussCategoriesId bussSubCategoriesId',
       select: `${disSelect}`,
       populate: {
         path: 'icon',
@@ -82,7 +82,7 @@ export class BusinessService {
 
   async getBusiness(id: string) {
     const populate = {
-      path: 'mapPointId mapPointCategoriesId mapPointSubCategoriesId',
+      path: 'groupTypesId accessibilitiesId bussCategoriesId bussSubCategoriesId',
       select: `${disSelect}`,
       populate: {
         path: 'icon',
@@ -134,8 +134,12 @@ export class BusinessService {
     };
     // eslint-disable-next-line prefer-const
     populate = {
-      path: 'mapPointId mapPointCategoriesId mapPointSubCategoriesId',
+      path: 'groupTypesId accessibilitiesId bussCategoriesId bussSubCategoriesId',
       select: `${disSelect}`,
+      populate: {
+        path: 'icon',
+        select: `${disSelect}`,
+      },
     };
 
     // eslint-disable-next-line prefer-const

@@ -24,6 +24,7 @@ import { ProductsModule } from 'src/modules/products/products.module';
 import { AccessibilityModule } from './modules/accessibility/accessibility.module';
 import { GroupTypeModule } from './modules/group-type/group-type.module';
 import { VoucherTemplateModule } from './modules/voucher-template/voucher-template.module';
+import { CampaignModule } from './modules/campaign/campaign.module';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { VoucherTemplateModule } from './modules/voucher-template/voucher-templa
     AccessibilityModule,
     GroupTypeModule,
     VoucherTemplateModule,
+    CampaignModule,
   ],
   providers: [
     {
