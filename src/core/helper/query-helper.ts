@@ -11,6 +11,13 @@ export async function findOneByFieldNames<T>(model: Model<T>, fieldNames: object
   return data;
 }
 
+export async function findOneByOrCase<T>(model: Model<T>, fieldNames: object) {
+  console.log(fieldNames);
+  const data = await model.findOne({ ...fieldNames, deletedAt: { $in: [null] } });
+  console.log(data);
+  return data;
+}
+
 export async function findOneByFieldName<T>(model: Model<T>, fieldName: keyof T, item: string) {
   const filterBy = { [fieldName]: item };
   const data = await model.findOne({ ...filterBy, deletedAt: { $in: [null] } });

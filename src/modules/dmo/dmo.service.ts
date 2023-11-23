@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -6,6 +7,7 @@ import { CreateDMODto, UpdateDMODto } from './dto';
 import {
   findOneByFieldName,
   findOneById,
+  findOneByOrCase,
   queryhandler,
   updateById,
 } from 'src/core/helper/query-helper';
@@ -83,5 +85,19 @@ export class DMOService {
       throw new NotFoundException(ServerErrors.DMO_NOT_FOUND);
     }
     return true;
+  }
+
+  async findDMOByUserID(id: string) {
+    const findQuery = {
+      $or: [
+        { userId: id },
+        { collaboratorsUser: { $in: [id] } },
+      ],
+    };
+    const dmo = await findOneByOrCase<DMO>(this.DMOModel, findQuery);
+    if (!dmo) {
+      throw new NotFoundException(ServerErrors.DMO_NOT_FOUND);
+    }
+    return dmo._id;
   }
 }

@@ -62,6 +62,11 @@ export const ServerErrors = {
     EXISTS: 'Accessibility already exists',
   },
 
+  CAMPAIGN: {
+    NOT_FOUND: 'Campaign not found',
+    EXISTS: 'Campaign already exists',
+  },
+
 };
 
 export const ServerSuccess = {
@@ -137,6 +142,13 @@ export const ServerSuccess = {
     UPDATED: 'Bussiness Sub Category was succesfully updated',
     LISTED: 'Bussiness SUb Category was succesfully listed',
     DELETED: 'Bussiness Sub Category was succesfully deleted',
+  },
+
+  CAMPAIGN: {
+    CREATED: 'Campaign was succesfully created',
+    UPDATED: 'Campaign was succesfully updated',
+    LISTED: 'Campaign was succesfully listed',
+    DELETED: 'Campaign was succesfully deleted',
   },
 
 };
