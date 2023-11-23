@@ -48,7 +48,7 @@ import { VoucherTemplateModule } from './modules/voucher-template/voucher-templa
     ProductsModule,
     AccessibilityModule,
     GroupTypeModule,
-    VoucherTemplateModule
+    VoucherTemplateModule,
   ],
   providers: [
     {
