@@ -14,6 +14,7 @@ export const softValidationPipe = new ValidationPipe({
 });
 
 export const ServerErrors = {
+  FORBIDDEN: 'Access Denied',
   USER: {
     NOT_FOUND: 'User not found',
     EXISTS: 'User already exists',
@@ -40,8 +41,31 @@ export const ServerErrors = {
   ICON_CATEGORY_NOT_FOUND: 'Icon category not found',
   ICON_CATEGORY_EXISTS: 'Icon category already exists',
 
-  CAMPAIGN_NOT_FOUND: 'Campaign not found',
-  CAMPAIGN_EXISTS: 'Campaign already exists',
+  PRODUCT: {
+    NOT_FOUND: 'Product not found',
+    ADD_FAILED: {
+      BUSINESS: 'Unable to add a new product as your business is either not valid or have not been approved by DMO.',
+    },
+  },
+  BUSS_CATEGORY: {
+    NOT_FOUND: 'Business Category not found',
+    EXISTS: 'Bussiness Category already exists',
+  },
+
+  GROUP_TYPE: {
+    NOT_FOUND: 'Group Type not found',
+    EXISTS: 'Group Type already exists',
+  },
+
+  ACCESSIBILITY: {
+    NOT_FOUND: 'Accessibility not found',
+    EXISTS: 'Accessibility already exists',
+  },
+
+  CAMPAIGN: {
+    NOT_FOUND: 'Campaign not found',
+    EXISTS: 'Campaign already exists',
+  },
 
 };
 
@@ -80,11 +104,51 @@ export const ServerSuccess = {
   ICON_CATEGORY_UPDATED: 'Icon category was succesfully updated',
 
   MEDIA: {
-    UPLOADED: 'Media uploaded successfully',
-    DELETED: 'Media deleted successfully',
+    UPLOADED: 'Media was uploaded successfully',
+    DELETED: 'Media was deleted successfully',
+  },
+
+  PRODUCTS: {
+    CREATED: 'Product was created successfully',
+    UPDATED: 'Product was updated sucessfully',
+    LISTED: 'Product was listed sucessfully',
+    DELETED: 'Product was deleted sucessfully',
+  },
+
+  ACCESSIBILITY: {
+    CREATED: 'Accessibility was created successfully',
+    UPDATED: 'Accessibility was updated sucessfully',
+    LISTED: 'Accessibility was listed sucessfully',
+    DELETED: 'Accessibility was deleted sucessfully',
+  },
+  GROUP_TYPE: {
+    CREATED: 'Group Type was created successfully',
+    UPDATED: 'Group Type was updated sucessfully',
+    LISTED: 'Group Type was listed sucessfully',
+    DELETED: 'Group Type was deleted sucessfully',
   },
   CAMPAIGN_CREATED: 'Campaign was succesfully created',
   CAMPAIGN_LISTED: 'Campaign was succesfully listed',
   CAMPAIGN_UPDATED: 'Campaign was succesfully updated',
+
+  BUSS_CATEGORY: {
+    CREATED: 'Business Category was succesfully created',
+    UPDATED: 'Bussiness Category was succesfully updated',
+    LISTED: 'Bussiness Category was succesfully listed',
+    DELETED: 'Bussiness Category was succesfully deleted',
+  },
+  BUSS_SUB_CATEGORY: {
+    CREATED: 'Business Sub Category was succesfully created',
+    UPDATED: 'Bussiness Sub Category was succesfully updated',
+    LISTED: 'Bussiness SUb Category was succesfully listed',
+    DELETED: 'Bussiness Sub Category was succesfully deleted',
+  },
+
+  CAMPAIGN: {
+    CREATED: 'Campaign was succesfully created',
+    UPDATED: 'Campaign was succesfully updated',
+    LISTED: 'Campaign was succesfully listed',
+    DELETED: 'Campaign was succesfully deleted',
+  },
 
 };

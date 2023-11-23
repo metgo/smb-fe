@@ -1,9 +1,11 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { createMPSubCategoriesDto, FilterQuery, updateMPSubCategoriesDto } from './dto';
 import { MPSubCategories } from './schema/subcategories.schema';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
-import { queryhandler, updateById } from 'src/core/helper/query-helper';
+import {
+  findOneByFieldName, findOneByFieldNameExcludeId, queryhandler, updateById,
+} from 'src/core/helper/query-helper';
 import { ServerErrors } from 'src/common/constant';
 import { disSelect } from 'src/common/utils/select.handling';
 
@@ -22,7 +24,7 @@ export class MPSubCategoriesService {
     let page: number;
     let limit: number;
     let populate: {};
-    let populate1: string;
+    let populate1: {};
 
     if (query.mapPointId) {
       const mapPoint = JSON.parse(query.mapPointId);
@@ -42,6 +44,12 @@ export class MPSubCategoriesService {
       path: 'mapPointId mapPointCategoriesId',
       select: '_id, name',
       match: { delatedAt: { $in: [false, null] } },
+    };
+
+    // eslint-disable-next-line prefer-const
+    populate1 = {
+      path: 'icon',
+      select: disSelect,
     };
     // eslint-disable-next-line prefer-const
     select = `${disSelect}`;
@@ -72,5 +80,26 @@ export class MPSubCategoriesService {
       throw new NotFoundException(ServerErrors.MAP_POINT_SUB_CATEGORIES_NOT_FOUND);
     }
     return mpSubCategories;
+  }
+
+  async findByFieldName(fieldName: keyof MPSubCategories, items: string): Promise<boolean> {
+    const mpSubCategories = await findOneByFieldName<MPSubCategories>(this.MPSubCategoriesModel, fieldName, items);
+    if (mpSubCategories) {
+      throw new BadRequestException(`${fieldName} already exists`);
+    }
+    return false;
+  }
+
+  async findByFieldNameExcludeId(fieldName: keyof MPSubCategories, items: string, id:string): Promise<boolean> {
+    const mpSubCategories = await findOneByFieldNameExcludeId<MPSubCategories>(
+      this.MPSubCategoriesModel,
+      fieldName,
+      items,
+      id,
+    );
+    if (mpSubCategories) {
+      throw new BadRequestException(`${fieldName} already exists`);
+    }
+    return false;
   }
 }

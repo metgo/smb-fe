@@ -1,6 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
 import {
-  IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString,
+  IsArray,
+  IsNotEmpty, IsOptional, IsString,
 } from 'class-validator';
 import { CampaignStatus } from 'src/common/enum';
 
@@ -15,12 +17,6 @@ export class createCampaignDto {
   @IsNotEmpty()
     description: string;
 
-  @ApiProperty()
-  @IsNumber()
-  @IsNotEmpty()
-  @IsPositive()
-    amount: number;
-
   @ApiProperty({ enum: CampaignStatus })
   @IsOptional()
     status: CampaignStatus;
@@ -29,4 +25,24 @@ export class createCampaignDto {
   @IsString()
   @IsNotEmpty()
     code: string;
+
+  @ApiProperty()
+  @IsArray()
+  @IsOptional()
+    segment: [];
+
+  @ApiProperty()
+  @IsArray()
+  @IsOptional()
+    crowed: [];
+
+  @ApiProperty()
+  @IsNotEmpty()
+  @Transform(({ value }) => new Date(value))
+    startDate: Date;
+
+  @ApiProperty()
+  @IsNotEmpty()
+  @Transform(({ value }) => new Date(value))
+    endDate: Date;
 }

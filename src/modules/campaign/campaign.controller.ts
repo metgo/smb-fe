@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 /* eslint-disable no-undef */
 /* eslint-disable no-sequences */
 /* eslint-disable no-unused-expressions */
@@ -17,11 +18,14 @@ import { FilterQuery } from './dto/query.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { fileFilterByExtensions } from 'src/services/gcp-bucket/middleware/file-filter';
 import { updateCampaignDto } from './dto/updateCampaign.dto';
+import { DMOService } from '../dmo/dmo.service';
+import mongoose from 'mongoose';
 
 @Controller()
 export class CampaignController {
   constructor(
-      private readonly campaignService: CampaignService,
+    private readonly campaignService: CampaignService,
+    private readonly dmoService: DMOService,
   ) { }
 
   @Roles(UserType.SUPERADMIN, UserType.ADMIN, UserType.DMO)
@@ -41,12 +45,13 @@ export class CampaignController {
       @UploadedFile() campImage: Express.Multer.File,
   ) {
     const user = request.user.id;
-    dto.name && await this.campaignService.findByFieldName('name', dto.name);
-    let dmoId: string | undefined;
-    // if (user.role === 'DMO') {
-    //   dmoId = await this.
-    // }
-    const campaign = await this.campaignService.create(dto, campImage, user);
+    await this.campaignService.findByFieldName('name', dto.name);
+    await this.campaignService.findByFieldName('code', dto.code);
+    let dmoId: mongoose.Types.ObjectId | null;
+    if (request.user.role === 'dmo') {
+      dmoId = await this.dmoService.findDMOByUserID(user);
+    }
+    const campaign = await this.campaignService.create(dto, campImage, user, dmoId);
     return responseHelper(response, HttpStatus.CREATED, ServerSuccess.CAMPAIGN_CREATED, campaign, null, null);
   }
 
@@ -90,6 +95,8 @@ export class CampaignController {
     );
   }
 
+  @Roles(UserType.SUPERADMIN, UserType.ADMIN, UserType.DMO)
+  @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
     tags: ['Admin, Campaign'],
     response: {
@@ -97,13 +104,14 @@ export class CampaignController {
       description: ServerSuccess.CAMPAIGN_LISTED,
     },
   })
-  @Get('admin/campaign/:id')
+  @Get('admin/my-campaign')
   async getMy(
     @Req() request,
     @Res() response: Response,
     @Query() query: FilterQuery,
   ) {
     const user = request.user.id;
+    query.dmoId && await this.dmoService.findDMOByUserID(user);
     const campaign = await this.campaignService.getMy(query, user);
     return responseHelper(
       response,

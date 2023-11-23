@@ -13,4 +13,8 @@ export class FilterQuery {
   @ApiProperty({ type: Number, required: false })
   @IsOptional()
     page: number;
+
+  @ApiProperty({ type: Number, required: false })
+  @IsOptional()
+    dmoId: string;
 }

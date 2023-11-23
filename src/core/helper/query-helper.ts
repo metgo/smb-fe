@@ -6,6 +6,18 @@ export async function findByFieldName<T>(model: Model<T>, fieldName: keyof T, it
   return data;
 }
 
+export async function findOneByFieldNames<T>(model: Model<T>, fieldNames: object) {
+  const data = await model.findOne({ ...fieldNames, deletedAt: { $in: [null] } });
+  return data;
+}
+
+export async function findOneByOrCase<T>(model: Model<T>, fieldNames: object) {
+  console.log(fieldNames);
+  const data = await model.findOne({ ...fieldNames, deletedAt: { $in: [null] } });
+  console.log(data);
+  return data;
+}
+
 export async function findOneByFieldName<T>(model: Model<T>, fieldName: keyof T, item: string) {
   const filterBy = { [fieldName]: item };
   const data = await model.findOne({ ...filterBy, deletedAt: { $in: [null] } });
@@ -35,6 +47,7 @@ export async function update<T>(model: Model<T>, fieldName: keyof T, item: strin
   }
   return data;
 }
+
 export async function updateById<T>(model: Model<T>, item: string, updateField: object) {
   const filterBy = { _id: item };
   const data = await model.findOneAndUpdate(
@@ -43,6 +56,13 @@ export async function updateById<T>(model: Model<T>, item: string, updateField: 
     { new: true },
   );
 
+  return data;
+}
+
+export async function updateWhere<T>(model: Model<T>, filterFields: object, updateField: object) {
+  const filterBy = { ...filterFields, deletedAt: { $in: [null] } };
+
+  const data = await model.findOneAndUpdate(filterBy, updateField, { new: true });
   return data;
 }
 
@@ -57,14 +77,14 @@ export async function queryhandler<T>(
   select: string | {},
   page: number,
   limit: number,
-  populate: any,
-  populate1: any,
+  populate?: any,
+  populate1?: any,
 ) {
   const datas: any = {};
   datas.data = await model
     .find({ ...findQuery, deletedAt: { $in: [null] } })
     .select(select)
-    .skip(page - 1)
+    .skip((page - 1) * limit)
     .limit(limit)
     .populate(populate)
     .populate(populate1);

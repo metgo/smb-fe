@@ -1,7 +1,7 @@
 /* eslint-disable no-undef */
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import mongoose, { Model } from 'mongoose';
 import { Campaign } from './schema/campaign.schema';
 import {
   findOneByFieldName, findOneByFieldNameExcludeId, findOneById, queryhandler, updateById,
@@ -27,7 +27,12 @@ export class CampaignService {
 
   }
 
-  async create(dto: createCampaignDto, file:Express.Multer.File, userId: string): Promise<Campaign> {
+  async create(
+    dto: createCampaignDto,
+    file: Express.Multer.File,
+    userId: string,
+    dmoId: mongoose.Types.ObjectId,
+  ): Promise<Campaign> {
     if (!file) {
       throw new BadRequestException('Please upload file');
     }
@@ -35,8 +40,9 @@ export class CampaignService {
     const newCampaign = new this.CampaignModel({
       ...dto,
       code: this.encryptionService.encrypt(dto.code, this.configService.dataBaseEncriptionKey),
-      campImage,
+      imagePath: campImage,
       createdBy: userId,
+      dmoId,
     });
     await newCampaign.save();
     return newCampaign;
@@ -102,6 +108,13 @@ export class CampaignService {
       ...findQuery,
       createdBy: { $in: [userId] },
     };
+    if (query.dmoId) {
+      findQuery = {
+        ...findQuery,
+        dmoId: { $in: [query.dmoId] },
+      };
+      delete findQuery?.createdBy;
+    }
 
     if (query.page) {
       page = Number(query.page);
@@ -155,7 +168,7 @@ export class CampaignService {
     const updateCampaign = await updateById<Campaign>(this.CampaignModel, id, updatedDTO);
 
     if (!updateCampaign) {
-      throw new NotFoundException(ServerErrors.CAMPAIGN_NOT_FOUND);
+      throw new NotFoundException(ServerErrors.CAMPAIGN.NOT_FOUND);
     }
     return updateCampaign;
   }
@@ -168,7 +181,7 @@ export class CampaignService {
       updateField,
     );
     if (!campaign) {
-      throw new NotFoundException(ServerErrors.CAMPAIGN_NOT_FOUND);
+      throw new NotFoundException(ServerErrors.CAMPAIGN.NOT_FOUND);
     }
     return campaign;
   }

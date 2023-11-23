@@ -720,7 +720,12 @@ paths:
         - Social Media
     get:
       operationId: getSocialMedia
-      parameters: []
+      parameters:
+        - name: search
+          required: false
+          in: query
+          schema:
+            type: string
       responses:
         "200":
           description: Social Media was successfully listed
@@ -900,6 +905,549 @@ paths:
                 $ref: "#/components/schemas/responseHelper"
       tags:
         - Business Media
+  /admin/buss-category:
+    post:
+      operationId: create
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/createBussCategoryDto"
+      responses:
+        "201":
+          description: Business Category was succesfully created
+        "401":
+          description: Authorization header not found or jwt token has expired
+        "422":
+          description: Failed Validation
+      security:
+        - bearer: []
+      tags:
+        - Admin
+        - Bussiness Categories
+    get:
+      operationId: getAll
+      parameters:
+        - name: search
+          required: false
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Bussiness Category was succesfully listed
+        "401":
+          description: Authorization header not found or jwt token has expired
+        "422":
+          description: Failed Validation
+      security:
+        - bearer: []
+      tags:
+        - Admin
+        - Bussiness Categories
+  "/admin/buss-category/{id}":
+    get:
+      operationId: getOne
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Bussiness Category was succesfully listed
+        "401":
+          description: Authorization header not found or jwt token has expired
+        "422":
+          description: Failed Validation
+      security:
+        - bearer: []
+      tags:
+        - Admin
+        - Bussiness Categories
+    put:
+      operationId: update
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/updateBusinessDto"
+      responses:
+        "201":
+          description: Bussiness Category was succesfully updated
+        "401":
+          description: Authorization header not found or jwt token has expired
+        "422":
+          description: Failed Validation
+      security:
+        - bearer: []
+      tags:
+        - Admin
+        - Bussiness Categories
+    delete:
+      operationId: softDelete
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Bussiness Category was succesfully deleted
+        "401":
+          description: Authorization header not found or jwt token has expired
+        "422":
+          description: Failed Validation
+      security:
+        - bearer: []
+      tags:
+        - Admin
+        - Bussiness Categories
+  /admin/buss-sub-category:
+    post:
+      operationId: create
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/createBussSubCategoryDto"
+      responses:
+        "200":
+          description: Business Sub Category was succesfully created
+        "401":
+          description: Authorization header not found or jwt token has expired
+        "422":
+          description: Failed Validation
+      security:
+        - bearer: []
+      tags:
+        - Admin
+        - Business Sub Categories
+    get:
+      operationId: getAll
+      parameters:
+        - name: search
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: bussCategoryId
+          required: false
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Bussiness SUb Category was succesfully listed
+        "422":
+          description: Failed Validation
+      tags:
+        - Admin
+        - Business Sub Categories
+  "/admin/buss-sub-category/{id}":
+    get:
+      operationId: getOne
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Bussiness SUb Category was succesfully listed
+        "422":
+          description: Failed Validation
+      tags:
+        - Admin
+        - Business Sub Categories
+    put:
+      operationId: update
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/updateBussSubCategoryDto"
+      responses:
+        "200":
+          description: Bussiness Sub Category was succesfully updated
+        "401":
+          description: Authorization header not found or jwt token has expired
+        "422":
+          description: Failed Validation
+      security:
+        - bearer: []
+      tags:
+        - Admin
+        - Business Sub Categories
+    delete:
+      operationId: softDelete
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Bussiness Sub Category was succesfully deleted
+        "401":
+          description: Authorization header not found or jwt token has expired
+        "422":
+          description: Failed Validation
+      security:
+        - bearer: []
+      tags:
+        - Admin
+        - Business Sub Categories
+  "/businesses/{businessId}/products":
+    post:
+      operationId: createProduct
+      summary: Create product by business
+      parameters:
+        - name: businessId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProductDto"
+      responses:
+        "201":
+          description: Product was created successfully
+        "401":
+          description: Authorization header not found or jwt token has expired
+        "422":
+          description: Failed Validation
+      security:
+        - bearer: []
+      tags:
+        - Business
+        - Products
+  "/products/{productId}":
+    get:
+      operationId: getProductDetails
+      summary: Get detail of a product
+      parameters:
+        - name: productId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Product was listed sucessfully
+        "404":
+          description: Product not found
+        "422":
+          description: Failed Validation
+      tags:
+        - Business
+        - Products
+  /my-products:
+    get:
+      operationId: getMyProductsDetails
+      summary: Get my products
+      parameters: []
+      responses:
+        "200":
+          description: Product was listed sucessfully
+        "422":
+          description: Failed Validation
+      tags:
+        - Business
+        - Products
+  /collaborated-products:
+    get:
+      operationId: getMyCollaboratedProductsDetails
+      summary: Get my collaborated products
+      parameters: []
+      responses:
+        "200":
+          description: Product was listed sucessfully
+        "422":
+          description: Failed Validation
+      tags:
+        - Business
+        - Products
+  /products:
+    get:
+      operationId: getAllProducts
+      summary: Get all products
+      parameters: []
+      responses:
+        "200":
+          description: Product was listed sucessfully
+        "422":
+          description: Failed Validation
+      tags:
+        - Business
+        - Products
+  "/businesses/{businessId}/products/{productId}":
+    patch:
+      operationId: updateProduct
+      summary: Update product details
+      parameters:
+        - name: businessId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: productId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProductDto"
+      responses:
+        "200":
+          description: Product was updated sucessfully
+        "401":
+          description: Authorization header not found or jwt token has expired
+        "404":
+          description: Product not found
+        "422":
+          description: Failed Validation
+      security:
+        - bearer: []
+      tags:
+        - Business
+        - Products
+    delete:
+      operationId: deleteProduct
+      summary: Delete a product
+      parameters:
+        - name: businessId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: productId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Product was updated sucessfully
+        "401":
+          description: Authorization header not found or jwt token has expired
+        "404":
+          description: Product not found
+        "422":
+          description: Failed Validation
+      security:
+        - bearer: []
+      tags:
+        - Business
+        - Products
+  /admin/accessibility:
+    post:
+      operationId: create
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/createAccessibilityDto"
+      responses:
+        "201":
+          description: Accessibility was created successfully
+        "422":
+          description: Failed Validation
+      tags:
+        - Admin
+        - Accessibility
+    get:
+      operationId: getAll
+      parameters:
+        - name: search
+          required: false
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Accessibility was listed sucessfully
+        "422":
+          description: Failed Validation
+      tags:
+        - Admin
+        - Accessibility
+  "/admin/accessibility/{id}":
+    get:
+      operationId: getOne
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Accessibility was listed sucessfully
+        "422":
+          description: Failed Validation
+      tags:
+        - Admin
+        - Accessibility
+    put:
+      operationId: update
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/updateAccessibilityDto"
+      responses:
+        "200":
+          description: Accessibility was updated sucessfully
+        "422":
+          description: Failed Validation
+      tags:
+        - Admin
+        - Accessibility
+    delete:
+      operationId: delete
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Accessibility was deleted sucessfully
+        "422":
+          description: Failed Validation
+      tags:
+        - Admin
+        - Accessibility
+  /admin/group-type:
+    post:
+      operationId: create
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/createGroupTypeDto"
+      responses:
+        "201":
+          description: Group Type was created successfully
+        "422":
+          description: Failed Validation
+      tags:
+        - Admin
+        - Group Type
+    get:
+      operationId: getAll
+      parameters:
+        - name: search
+          required: false
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Group Type was listed sucessfully
+        "422":
+          description: Failed Validation
+      tags:
+        - Admin
+        - Group Type
+  "/admin/group-type/{id}":
+    get:
+      operationId: getOne
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Group Type was listed sucessfully
+        "422":
+          description: Failed Validation
+      tags:
+        - Admin
+        - Group Type
+    put:
+      operationId: update
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/updateGroupTypeDto"
+      responses:
+        "200":
+          description: Group Type was updated sucessfully
+        "422":
+          description: Failed Validation
+      tags:
+        - Admin
+        - Group Type
+    delete:
+      operationId: delete
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Group Type was deleted sucessfully
+        "422":
+          description: Failed Validation
+      tags:
+        - Admin
+        - Group Type
   /admin/campaign:
     post:
       operationId: create
@@ -939,6 +1487,11 @@ paths:
           in: query
           schema:
             type: number
+        - name: dmoId
+          required: false
+          in: query
+          schema:
+            type: number
       responses:
         "200":
           description: Campaign was succesfully listed
@@ -948,23 +1501,13 @@ paths:
         - Admin, Campaign
   "/admin/campaign/{id}":
     get:
-      operationId: getMy
+      operationId: getOne
       parameters:
-        - name: search
-          required: false
-          in: query
+        - name: id
+          required: true
+          in: path
           schema:
             type: string
-        - name: size
-          required: false
-          in: query
-          schema:
-            type: number
-        - name: page
-          required: false
-          in: query
-          schema:
-            type: number
       responses:
         "200":
           description: Campaign was succesfully listed
@@ -988,6 +1531,37 @@ paths:
       tags:
         - Admin
         - Campaign
+  /admin/my-campaign:
+    get:
+      operationId: getMy
+      parameters:
+        - name: search
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: size
+          required: false
+          in: query
+          schema:
+            type: number
+        - name: page
+          required: false
+          in: query
+          schema:
+            type: number
+        - name: dmoId
+          required: false
+          in: query
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Campaign was succesfully listed
+        "422":
+          description: Failed Validation
+      tags:
+        - Admin, Campaign
   "/admin/update/{id}":
     put:
       operationId: update
@@ -1434,6 +2008,125 @@ components:
           type: string
       required:
         - imageUrl
+    createBussCategoryDto:
+      type: object
+      properties:
+        name:
+          type: string
+        icon:
+          type: string
+      required:
+        - name
+        - icon
+    createBussSubCategoryDto:
+      type: object
+      properties:
+        name:
+          type: string
+        icon:
+          type: string
+        bussCategoryId:
+          type: array
+          items:
+            type: string
+      required:
+        - name
+        - bussCategoryId
+    updateBussSubCategoryDto:
+      type: object
+      properties: {}
+    Price:
+      type: object
+      properties:
+        markedPrice:
+          type: number
+        discountAmount:
+          type: number
+        discountPercent:
+          type: number
+      required:
+        - markedPrice
+        - discountAmount
+        - discountPercent
+    Quantity:
+      type: object
+      properties:
+        initial:
+          type: number
+      required:
+        - initial
+    ProductDto:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        price:
+          $ref: "#/components/schemas/Price"
+        quantity:
+          $ref: "#/components/schemas/Quantity"
+        status:
+          type: string
+          enum:
+            - active
+            - inactive
+        categories:
+          description: Array of ObjectId
+          type: array
+          items:
+            type: string
+        subCategories:
+          description: Array of ObjectId
+          type: array
+          items:
+            type: string
+        features:
+          description: Array of ObjectId
+          type: array
+          items:
+            type: string
+        collaboratorId:
+          description: Array of ObjectId
+          type: array
+          items:
+            type: string
+      required:
+        - name
+        - description
+        - price
+        - quantity
+        - status
+        - categories
+        - subCategories
+        - features
+        - collaboratorId
+    createAccessibilityDto:
+      type: object
+      properties:
+        name:
+          type: string
+        icon:
+          type: string
+      required:
+        - name
+        - icon
+    updateAccessibilityDto:
+      type: object
+      properties: {}
+    createGroupTypeDto:
+      type: object
+      properties:
+        name:
+          type: string
+        icon:
+          type: string
+      required:
+        - name
+        - icon
+    updateGroupTypeDto:
+      type: object
+      properties: {}
     createCampaignDto:
       type: object
       properties:
@@ -1441,8 +2134,6 @@ components:
           type: string
         description:
           type: string
-        amount:
-          type: number
         status:
           type: string
           enum:
@@ -1450,12 +2141,29 @@ components:
             - INACTIVE
         code:
           type: string
+        segment:
+          type: array
+          items:
+            type: string
+        crowed:
+          type: array
+          items:
+            type: string
+        startDate:
+          format: date-time
+          type: string
+        endDate:
+          format: date-time
+          type: string
       required:
         - name
         - description
-        - amount
         - status
         - code
+        - segment
+        - crowed
+        - startDate
+        - endDate
     updateCampaignDto:
       type: object
       properties: {}

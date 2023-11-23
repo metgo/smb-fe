@@ -8,9 +8,6 @@ export class Campaign extends AuditableSchema {
   @Prop({})
     name: string;
 
-  @Prop({})
-    amount: number;
-
   @Prop({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'DMO',
