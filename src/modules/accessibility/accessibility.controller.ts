@@ -25,6 +25,7 @@ export class AccessibilityController {
       status: 201,
       description: ServerSuccess.ACCESSIBILITY.CREATED,
     },
+    noAuthToken: true,
   })
   @Post('admin/accessibility')
   async create(
@@ -92,6 +93,7 @@ export class AccessibilityController {
       status: 200,
       description: ServerSuccess.ACCESSIBILITY.UPDATED,
     },
+    noAuthToken: true,
   })
   @Put('admin/accessibility/:id')
   async update(
@@ -120,6 +122,7 @@ export class AccessibilityController {
       status: 200,
       description: ServerSuccess.ACCESSIBILITY.DELETED,
     },
+    noAuthToken: true,
   })
   @Delete('admin/accessibility/:id')
   async delete(

@@ -1,5 +1,18 @@
 import {
-  Body, Controller, Delete, ForbiddenException, Get, HttpCode, HttpStatus, Param, Patch, Post, Query, Req, Res, UseGuards,
+  Body,
+  Controller,
+  Delete,
+  ForbiddenException,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Req,
+  Res,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiNotFoundResponse } from '@nestjs/swagger';
 import { Response } from 'express';
@@ -92,6 +105,7 @@ export class ProductsController {
     tags: ['Business', 'Products'],
     response: { status: HttpStatus.OK, description: ServerSuccess.PRODUCTS.LISTED },
     operation: 'Get my products',
+    softBlockExtraDtoFields: true,
   })
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
@@ -121,6 +135,7 @@ export class ProductsController {
     tags: ['Business', 'Products'],
     response: { status: HttpStatus.OK, description: ServerSuccess.PRODUCTS.LISTED },
     operation: 'Get my collaborated products',
+    softBlockExtraDtoFields: true,
   })
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
@@ -151,6 +166,7 @@ export class ProductsController {
     tags: ['Business', 'Products'],
     response: { status: HttpStatus.OK, description: ServerSuccess.PRODUCTS.LISTED },
     operation: 'Get all products',
+    softBlockExtraDtoFields: true,
   })
   @HttpCode(HttpStatus.OK)
   @Get('/products')
@@ -199,7 +215,12 @@ export class ProductsController {
     @Req() req,
     @Res() response: Response,
   ) {
-    const product = await this.productsService.update(productId, businessId, req.user.id, body);
+    const product = await this.productsService.update({
+      productId,
+      businessId,
+      loggedInUserId: req.user.id,
+      body,
+    });
     return responseHelper(
       response,
       HttpStatus.OK,

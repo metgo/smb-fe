@@ -14,7 +14,7 @@ import { MPSubCategoriesItemsModule } from './modules/mpsubcategoriesitems/mpsub
 import { DMOModule } from './modules/dmo/dmo.module';
 import { SocialMediaModule } from './modules/socialMedia/socialMedia.module';
 import { IconsModule } from './modules/icons/icons.module';
-import { BusinessMediaModule } from 'src/modules/business-media/business-media.module';
+import { MediaModule } from 'src/modules/media/media.module';
 import { GcpBucketModule } from 'src/services/gcp-bucket/gcp-bucket.module';
 import { ConfigModule } from 'src/services/config/config.module';
 import { EncryptionModule } from './services/encryption/encryption.module';
@@ -42,7 +42,7 @@ import { CampaignModule } from './modules/campaign/campaign.module';
     DMOModule,
     SocialMediaModule,
     IconsModule,
-    BusinessMediaModule,
+    MediaModule,
     EncryptionModule,
     BussCategoriesModule,
     BussSubCategoriesModule,

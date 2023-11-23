@@ -1,9 +1,3 @@
-export interface Image {
-    image: string,
-    caption: string,
-    alt: string,
-}
-
 // eslint-disable-next-line no-shadow
 export enum BusinessStatus {
     PENDING = 'PENDING',

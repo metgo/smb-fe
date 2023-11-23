@@ -1,15 +1,19 @@
 /* eslint-disable no-undef */
 /* eslint-disable no-unused-vars */
 import {
-  Body, Controller, Delete, Get, HttpStatus, Param, Post, Put, Query, Res, UploadedFile, UseInterceptors,
+  Body, Controller, Delete, Get, HttpStatus, Param, Post, Put, Query, Res, UploadedFile, UseGuards, UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
+
 import { ServerSuccess } from 'src/common/constant';
 import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
+import { Roles } from 'src/core/guards/authorization/roles';
+import { JwtAuthGuard } from 'src/core/guards/jwt/jwt.guards';
 import { responseHelper } from 'src/core/helper/response.helper';
-import { CreateIconDto, FilterQuery, UpdateIconDto } from './dto';
-import { IconsService } from './icons.service';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { CreateIconDto, FilterQuery, UpdateIconDto } from 'src/modules/icons/dto';
+import { IconsService } from 'src/modules/icons/icons.service';
+import { UserType } from 'src/modules/users/users.type';
 import { fileFilterByExtensions } from 'src/services/gcp-bucket/middleware/file-filter';
 
 @Controller('admin/icons')
@@ -24,6 +28,8 @@ export class IconsController {
     },
   })
   @UseInterceptors(FileInterceptor('icon', { fileFilter: fileFilterByExtensions }))
+  @Roles(UserType.ADMIN, UserType.DMO, UserType.SUPERADMIN)
+  @UseGuards(JwtAuthGuard)
   @Post('')
   async createIcon(
     @Res() response: Response,
@@ -90,6 +96,8 @@ export class IconsController {
       description: ServerSuccess.ICON_UPDATED,
     },
   })
+  @Roles(UserType.ADMIN, UserType.DMO, UserType.SUPERADMIN)
+  @UseGuards(JwtAuthGuard)
   @UseInterceptors(FileInterceptor('newIcon', { fileFilter: fileFilterByExtensions }))
   @Put('/:id')
   async updateIcon(
@@ -117,6 +125,8 @@ export class IconsController {
       description: ServerSuccess.ICON_UPDATED,
     },
   })
+  @Roles(UserType.ADMIN, UserType.DMO, UserType.SUPERADMIN)
+  @UseGuards(JwtAuthGuard)
   @Delete('/:id')
   async softDeleteIcon(@Res() response: Response, @Param('id') id: string) {
     const icon = await this.iconsService.softDeleteIcon(id);

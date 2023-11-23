@@ -31,6 +31,9 @@ export class Business extends AuditableSchema {
   @Prop({ enum: BusinessStatus, default: BusinessStatus.PENDING })
     status: BusinessStatus;
 
+  @Prop()
+    rejected_reason: string;
+
   @Prop({ default: true })
     isPreview: boolean;
 
@@ -86,11 +89,11 @@ export class Business extends AuditableSchema {
 
   @Prop()
     images: [
-        {
-          image: { type: string, default: null}
-          caption: { type: string, default: null}
-          alt:{ type: string, default: null}
-        }
+      {
+        image: { type: string, default: null}
+        caption: { type: string, default: null}
+        alt:{ type: string, default: null}
+      }
     ];
 
   @Prop({

@@ -12,8 +12,9 @@ import {
   findOneByFieldName, findOneByFieldNameExcludeId, findOneByFieldNames, queryhandler, updateById,
 } from 'src/core/helper/query-helper';
 import { ServerErrors } from 'src/common/constant';
+import { Image } from 'src/common/interface/image.interface';
 import { disSelect } from 'src/common/utils/select.handling';
-import { Image } from 'src/modules/business/business.type';
+import { UpdateBusinessByAdminDto } from 'src/modules/business/dto/update-business-status.dto';
 
 @Injectable()
 export class BusinessService {
@@ -23,7 +24,7 @@ export class BusinessService {
   ) {}
 
   async createBusiness(dto: createBusinessDto, userId: string): Promise<Business> {
-    const newBusiness = new this.BusinessModel({ ...dto, userId });
+    const newBusiness = new this.BusinessModel({ ...dto, userId, createdBy: userId });
     await newBusiness.save();
     return newBusiness;
   }
@@ -165,14 +166,22 @@ export class BusinessService {
     return allBusiness;
   }
 
-  async updateBusiness(id: string, dto: updateBusinessDto | Image[]): Promise<Business> {
-    let updatedField:any = dto;
-    if (!(dto instanceof updateBusinessDto)) {
+  async updateBusiness(
+    id: string,
+    loggedInUserId: string,
+    dto: updateBusinessDto | Image[] | UpdateBusinessByAdminDto,
+  ): Promise<Business> {
+    let updatedField: any = {
+      ...dto,
+      updatedAt: new Date(),
+      updatedBy: loggedInUserId,
+    };
+    if (!(dto instanceof updateBusinessDto || dto instanceof UpdateBusinessByAdminDto)) {
       const existingBusiness = await this.getBusiness(id);
 
       const images = [...existingBusiness.images, ...dto];
 
-      updatedField = { images };
+      updatedField = { ...updatedField, images };
     }
 
     const updateBusiness = await this.BusinessModel.findOneAndUpdate({ _id: id }, updatedField, { new: true });
@@ -182,20 +191,24 @@ export class BusinessService {
     return updateBusiness;
   }
 
-  async deleteImage(id: string, imageUrl: any): Promise<Business> {
+  async deleteImage(loggedInUserId: string, id: string, imageUrl: any): Promise<Business> {
     const existingBusiness = await this.getBusiness(id);
 
     const images = existingBusiness.images.filter(image => image.image !== imageUrl);
 
-    const updateBusiness = await this.BusinessModel.findOneAndUpdate({ _id: id }, { images }, { new: true });
+    const updateBusiness = await this.BusinessModel.findOneAndUpdate(
+      { _id: id },
+      { images, updatedAt: new Date(), updatedBy: loggedInUserId },
+      { new: true },
+    );
     if (!updateBusiness) {
       throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
     }
     return updateBusiness;
   }
 
-  async deleteBusiness(id: string): Promise<Business> {
-    const updateField = { isDeleted: true, deletedAt: new Date() };
+  async deleteBusiness(id: string, loggedInUserId: string): Promise<Business> {
+    const updateField = { isDeleted: true, deletedAt: new Date(), deletedBy: loggedInUserId };
     const business = await updateById<Business>(this.BusinessModel, id, updateField);
     if (!business) {
       throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);

@@ -481,8 +481,12 @@ paths:
       responses:
         "201":
           description: Business was successfully created
+        "401":
+          description: Authorization header not found or jwt token has expired
         "422":
           description: Failed Validation
+      security:
+        - bearer: []
       tags:
         - Business
     get:
@@ -573,8 +577,12 @@ paths:
       responses:
         "200":
           description: Business was successfully updated
+        "401":
+          description: Authorization header not found or jwt token has expired
         "422":
           description: Failed Validation
+      security:
+        - bearer: []
       tags:
         - Business
     delete:
@@ -588,8 +596,12 @@ paths:
       responses:
         "200":
           description: Business was successfully updated
+        "401":
+          description: Authorization header not found or jwt token has expired
         "422":
           description: Failed Validation
+      security:
+        - bearer: []
       tags:
         - Business
   /my-business:
@@ -644,10 +656,40 @@ paths:
       responses:
         "200":
           description: Business was successfully listed
+        "401":
+          description: Authorization header not found or jwt token has expired
         "422":
           description: Failed Validation
+      security:
+        - bearer: []
       tags:
         - Business
+  "/admin/business/{businessId}":
+    patch:
+      operationId: updateBusinessByAdmin
+      parameters:
+        - name: businessId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateBusinessByAdminDto"
+      responses:
+        "200":
+          description: Business was successfully updated
+        "401":
+          description: Authorization header not found or jwt token has expired
+        "422":
+          description: Failed Validation
+      security:
+        - bearer: []
+      tags:
+        - Admin, Business
   /admin/dmo:
     post:
       operationId: createDMO
@@ -878,28 +920,53 @@ paths:
       tags:
         - Admin
         - Icon
-  "/media/business/{businessId}":
+  /media:
     post:
       operationId: createMedia
-      summary: Upload image for business
-      parameters:
-        - name: businessId
-          required: true
-          in: path
-          schema:
-            type: string
+      summary: Upload images
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UploadDTO"
       responses:
         "201":
-          description: ""
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/responseHelper"
+          description: Media was uploaded successfully
+        "401":
+          description: Authorization header not found or jwt token has expired
+        "422":
+          description: Failed Validation
+      security:
+        - bearer: []
       tags:
-        - Business Media
+        - Media
     delete:
       operationId: deleteMedia
-      summary: Delete image for business
+      summary: Delete an image
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeleteMediaDTO"
+      responses:
+        "200":
+          description: Media was deleted successfully
+        "401":
+          description: Authorization header not found or jwt token has expired
+        "422":
+          description: Failed Validation
+      security:
+        - bearer: []
+      tags:
+        - Media
+  "/businesses/{businessId}/products":
+    post:
+      operationId: createProduct
+      summary: Create product by business
       parameters:
         - name: businessId
           required: true
@@ -911,16 +978,141 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/DeleteMediaDTO"
+              $ref: "#/components/schemas/ProductDto"
+      responses:
+        "201":
+          description: Product was created successfully
+        "401":
+          description: Authorization header not found or jwt token has expired
+        "422":
+          description: Failed Validation
+      security:
+        - bearer: []
+      tags:
+        - Business
+        - Products
+  "/products/{productId}":
+    get:
+      operationId: getProductDetails
+      summary: Get detail of a product
+      parameters:
+        - name: productId
+          required: true
+          in: path
+          schema:
+            type: string
       responses:
         "200":
-          description: ""
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/responseHelper"
+          description: Product was listed sucessfully
+        "404":
+          description: Product not found
+        "422":
+          description: Failed Validation
       tags:
-        - Business Media
+        - Business
+        - Products
+  /my-products:
+    get:
+      operationId: getMyProductsDetails
+      summary: Get my products
+      parameters: []
+      responses:
+        "200":
+          description: Product was listed sucessfully
+        "422":
+          description: Failed Validation
+      tags:
+        - Business
+        - Products
+  /collaborated-products:
+    get:
+      operationId: getMyCollaboratedProductsDetails
+      summary: Get my collaborated products
+      parameters: []
+      responses:
+        "200":
+          description: Product was listed sucessfully
+        "422":
+          description: Failed Validation
+      tags:
+        - Business
+        - Products
+  /products:
+    get:
+      operationId: getAllProducts
+      summary: Get all products
+      parameters: []
+      responses:
+        "200":
+          description: Product was listed sucessfully
+        "422":
+          description: Failed Validation
+      tags:
+        - Business
+        - Products
+  "/businesses/{businessId}/products/{productId}":
+    patch:
+      operationId: updateProduct
+      summary: Update product details
+      parameters:
+        - name: businessId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: productId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProductDto"
+      responses:
+        "200":
+          description: Product was updated sucessfully
+        "401":
+          description: Authorization header not found or jwt token has expired
+        "404":
+          description: Product not found
+        "422":
+          description: Failed Validation
+      security:
+        - bearer: []
+      tags:
+        - Business
+        - Products
+    delete:
+      operationId: deleteProduct
+      summary: Delete a product
+      parameters:
+        - name: businessId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: productId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Product was updated sucessfully
+        "401":
+          description: Authorization header not found or jwt token has expired
+        "404":
+          description: Product not found
+        "422":
+          description: Failed Validation
+      security:
+        - bearer: []
+      tags:
+        - Business
+        - Products
   /admin/buss-category:
     post:
       operationId: create
@@ -1136,156 +1328,6 @@ paths:
       tags:
         - Admin
         - Business Sub Categories
-  "/businesses/{businessId}/products":
-    post:
-      operationId: createProduct
-      summary: Create product by business
-      parameters:
-        - name: businessId
-          required: true
-          in: path
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ProductDto"
-      responses:
-        "201":
-          description: Product was created successfully
-        "401":
-          description: Authorization header not found or jwt token has expired
-        "422":
-          description: Failed Validation
-      security:
-        - bearer: []
-      tags:
-        - Business
-        - Products
-  "/products/{productId}":
-    get:
-      operationId: getProductDetails
-      summary: Get detail of a product
-      parameters:
-        - name: productId
-          required: true
-          in: path
-          schema:
-            type: string
-      responses:
-        "200":
-          description: Product was listed sucessfully
-        "404":
-          description: Product not found
-        "422":
-          description: Failed Validation
-      tags:
-        - Business
-        - Products
-  /my-products:
-    get:
-      operationId: getMyProductsDetails
-      summary: Get my products
-      parameters: []
-      responses:
-        "200":
-          description: Product was listed sucessfully
-        "422":
-          description: Failed Validation
-      tags:
-        - Business
-        - Products
-  /collaborated-products:
-    get:
-      operationId: getMyCollaboratedProductsDetails
-      summary: Get my collaborated products
-      parameters: []
-      responses:
-        "200":
-          description: Product was listed sucessfully
-        "422":
-          description: Failed Validation
-      tags:
-        - Business
-        - Products
-  /products:
-    get:
-      operationId: getAllProducts
-      summary: Get all products
-      parameters: []
-      responses:
-        "200":
-          description: Product was listed sucessfully
-        "422":
-          description: Failed Validation
-      tags:
-        - Business
-        - Products
-  "/businesses/{businessId}/products/{productId}":
-    patch:
-      operationId: updateProduct
-      summary: Update product details
-      parameters:
-        - name: businessId
-          required: true
-          in: path
-          schema:
-            type: string
-        - name: productId
-          required: true
-          in: path
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ProductDto"
-      responses:
-        "200":
-          description: Product was updated sucessfully
-        "401":
-          description: Authorization header not found or jwt token has expired
-        "404":
-          description: Product not found
-        "422":
-          description: Failed Validation
-      security:
-        - bearer: []
-      tags:
-        - Business
-        - Products
-    delete:
-      operationId: deleteProduct
-      summary: Delete a product
-      parameters:
-        - name: businessId
-          required: true
-          in: path
-          schema:
-            type: string
-        - name: productId
-          required: true
-          in: path
-          schema:
-            type: string
-      responses:
-        "200":
-          description: Product was updated sucessfully
-        "401":
-          description: Authorization header not found or jwt token has expired
-        "404":
-          description: Product not found
-        "422":
-          description: Failed Validation
-      security:
-        - bearer: []
-      tags:
-        - Business
-        - Products
   /admin/accessibility:
     post:
       operationId: create
@@ -1299,8 +1341,12 @@ paths:
       responses:
         "201":
           description: Accessibility was created successfully
+        "401":
+          description: Authorization header not found or jwt token has expired
         "422":
           description: Failed Validation
+      security:
+        - bearer: []
       tags:
         - Admin
         - Accessibility
@@ -1354,8 +1400,12 @@ paths:
       responses:
         "200":
           description: Accessibility was updated sucessfully
+        "401":
+          description: Authorization header not found or jwt token has expired
         "422":
           description: Failed Validation
+      security:
+        - bearer: []
       tags:
         - Admin
         - Accessibility
@@ -1370,8 +1420,12 @@ paths:
       responses:
         "200":
           description: Accessibility was deleted sucessfully
+        "401":
+          description: Authorization header not found or jwt token has expired
         "422":
           description: Failed Validation
+      security:
+        - bearer: []
       tags:
         - Admin
         - Accessibility
@@ -1388,8 +1442,12 @@ paths:
       responses:
         "201":
           description: Group Type was created successfully
+        "401":
+          description: Authorization header not found or jwt token has expired
         "422":
           description: Failed Validation
+      security:
+        - bearer: []
       tags:
         - Admin
         - Group Type
@@ -1443,8 +1501,12 @@ paths:
       responses:
         "200":
           description: Group Type was updated sucessfully
+        "401":
+          description: Authorization header not found or jwt token has expired
         "422":
           description: Failed Validation
+      security:
+        - bearer: []
       tags:
         - Admin
         - Group Type
@@ -1459,8 +1521,12 @@ paths:
       responses:
         "200":
           description: Group Type was deleted sucessfully
+        "401":
+          description: Authorization header not found or jwt token has expired
         "422":
           description: Failed Validation
+      security:
+        - bearer: []
       tags:
         - Admin
         - Group Type
@@ -2084,6 +2150,20 @@ components:
     updateBusinessDto:
       type: object
       properties: {}
+    UpdateBusinessByAdminDto:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+            - PENDING
+            - APPROVED
+            - CLOSED
+            - REJECTED
+        rejected_reason:
+          type: string
+      required:
+        - status
     CreateDMODto:
       type: object
       properties:
@@ -2125,43 +2205,37 @@ components:
     UpdateIconDto:
       type: object
       properties: {}
-    responseHelper:
+    UploadDTO:
       type: object
-      properties: {}
+      properties:
+        refId:
+          type: string
+        reference:
+          type: string
+          enum:
+            - Business
+            - Product
+        businessId:
+          type: string
+      required:
+        - refId
+        - reference
     DeleteMediaDTO:
       type: object
       properties:
         imageUrl:
           type: string
+        refId:
+          type: string
+        reference:
+          type: string
+          enum:
+            - Business
+            - Product
       required:
         - imageUrl
-    createBussCategoryDto:
-      type: object
-      properties:
-        name:
-          type: string
-        icon:
-          type: string
-      required:
-        - name
-        - icon
-    createBussSubCategoryDto:
-      type: object
-      properties:
-        name:
-          type: string
-        icon:
-          type: string
-        bussCategoryId:
-          type: array
-          items:
-            type: string
-      required:
-        - name
-        - bussCategoryId
-    updateBussSubCategoryDto:
-      type: object
-      properties: {}
+        - refId
+        - reference
     Price:
       type: object
       properties:
@@ -2189,6 +2263,10 @@ components:
           type: string
         description:
           type: string
+        images:
+          type: array
+          items:
+            type: string
         price:
           $ref: "#/components/schemas/Price"
         quantity:
@@ -2228,6 +2306,33 @@ components:
         - subCategories
         - features
         - collaboratorId
+    createBussCategoryDto:
+      type: object
+      properties:
+        name:
+          type: string
+        icon:
+          type: string
+      required:
+        - name
+        - icon
+    createBussSubCategoryDto:
+      type: object
+      properties:
+        name:
+          type: string
+        icon:
+          type: string
+        bussCategoryId:
+          type: array
+          items:
+            type: string
+      required:
+        - name
+        - bussCategoryId
+    updateBussSubCategoryDto:
+      type: object
+      properties: {}
     createAccessibilityDto:
       type: object
       properties:

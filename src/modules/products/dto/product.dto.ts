@@ -5,6 +5,17 @@ import {
 } from 'class-validator';
 import { ProductStatus } from 'src/modules/products/products.type';
 
+class images {
+  @ApiProperty({ type: String, description: 'path of image' })
+    image: string;
+
+  @ApiProperty({ type: String, description: 'caption of image' })
+    caption: String;
+
+  @ApiProperty({ type: String, description: 'Image alternative text' })
+    alt: String;
+}
+
 class Price {
     @IsNumber()
     @IsNotEmpty()
@@ -39,6 +50,13 @@ export class ProductDto {
     @IsOptional()
     @ApiProperty()
       description: string;
+
+    @ApiProperty({
+      required: false,
+    })
+    @IsOptional()
+    @IsArray()
+      images: images[];
 
     @ApiProperty()
     @IsNotEmpty()

@@ -1,9 +1,11 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
+
 import { IconsController } from './icons.controller';
 import { IconsService } from './icons.service';
 import { IconsSchema } from './schema/icon.schema';
 import { GcpBucketModule } from 'src/services/gcp-bucket/gcp-bucket.module';
+import { UsersModule } from 'src/modules/users/users.module';
 
 @Module({
   imports: [
@@ -11,6 +13,7 @@ import { GcpBucketModule } from 'src/services/gcp-bucket/gcp-bucket.module';
       { name: 'Icons', schema: IconsSchema },
     ]),
     GcpBucketModule,
+    UsersModule,
   ],
   controllers: [IconsController],
   providers: [IconsService],

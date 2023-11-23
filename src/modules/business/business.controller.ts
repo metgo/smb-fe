@@ -2,17 +2,20 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-unused-expressions */
 import {
-  Body, Controller, Delete, Get, HttpStatus, Param, Post, Put, Query, Req, Res, UseGuards,
+  Body, Controller, Delete, Get, HttpStatus, Param, Patch, Post, Put, Query, Req, Res, UseGuards,
 } from '@nestjs/common';
+import { Response } from 'express';
 
 import { BusinessService } from './business.service';
 import { createBusinessDto, FilterQuery, updateBusinessDto } from './dto';
-import { Response } from 'express';
-import { responseHelper } from 'src/core/helper/response.helper';
 import { ServerSuccess } from 'src/common/constant';
 import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
-import { DMOService } from '../dmo/dmo.service';
+import { responseHelper } from 'src/core/helper/response.helper';
+import { Roles } from 'src/core/guards/authorization/roles';
 import { JwtAuthGuard } from 'src/core/guards/jwt/jwt.guards';
+import { UpdateBusinessByAdminDto } from 'src/modules/business/dto/update-business-status.dto';
+import { DMOService } from 'src/modules/dmo/dmo.service';
+import { UserType } from 'src/modules/users/users.type';
 
 @Controller()
 export class BusinessController {
@@ -25,6 +28,7 @@ export class BusinessController {
   @ApiEndpoint({
     tags: ['Business'],
     response: { status: 201, description: ServerSuccess.BUSINESS_CREATED },
+    noAuthToken: true,
   })
   @Post('business')
   async createBusiness(
@@ -72,6 +76,7 @@ export class BusinessController {
     tags: ['Business'],
     response: { status: 200, description: ServerSuccess.BUSINESS_LISTED },
     softBlockExtraDtoFields: true,
+    noAuthToken: true,
   })
   @Get('my-business')
   async getMyBusiness(
@@ -88,9 +93,13 @@ export class BusinessController {
   @ApiEndpoint({
     tags: ['Business'],
     response: { status: 200, description: ServerSuccess.BUSINESS_UPDATED },
+    noAuthToken: true,
+    params: [{ name: 'id', type: 'string', required: true }],
   })
+  @UseGuards(JwtAuthGuard)
   @Put('business/:id')
   async updateBusiness(
+    @Req() request,
     @Res() response:Response,
     @Param('id') id: string,
     @Body() dto: updateBusinessDto,
@@ -99,7 +108,27 @@ export class BusinessController {
     dto.phoneNumber && await this.businessServices.findByFieldNameExcludeId('phoneNumber', dto.phoneNumber, id);
     dto.busiEmail && await this.businessServices.findByFieldNameExcludeId('busiEmail', dto.busiEmail, id);
     dto.dmoId && await this.dmoService.findDMO(dto.dmoId);
-    const business = await this.businessServices.updateBusiness(id, dto);
+    const business = await this.businessServices.updateBusiness(id, request.user.id, dto);
+
+    return responseHelper(response, HttpStatus.OK, ServerSuccess.BUSINESS_UPDATED, business, null, null);
+  }
+
+  @ApiEndpoint({
+    tags: ['Admin, Business'],
+    response: { status: 200, description: ServerSuccess.BUSINESS_UPDATED },
+    noAuthToken: true,
+    params: [{ name: 'businessId', type: 'string', required: true }],
+  })
+  @Roles(UserType.ADMIN, UserType.DMO, UserType.SUPERADMIN)
+  @UseGuards(JwtAuthGuard)
+  @Patch('admin/business/:businessId')
+  async updateBusinessByAdmin(
+    @Req() request,
+    @Res() response: Response,
+    @Param('businessId') businessId: string,
+    @Body() dto: UpdateBusinessByAdminDto,
+  ) {
+    const business = await this.businessServices.updateBusiness(businessId, request.user.id, dto);
 
     return responseHelper(response, HttpStatus.OK, ServerSuccess.BUSINESS_UPDATED, business, null, null);
   }
@@ -107,13 +136,17 @@ export class BusinessController {
   @ApiEndpoint({
     tags: ['Business'],
     response: { status: 200, description: ServerSuccess.BUSINESS_UPDATED },
+    noAuthToken: true,
+    params: [{ name: 'id', type: 'string', required: true }],
   })
+  @UseGuards(JwtAuthGuard)
   @Delete('business/:id')
   async deleteBusiness(
+    @Req() request,
     @Res() response:Response,
     @Param('id') bussId: string,
   ) {
-    const business = await this.businessServices.deleteBusiness(bussId);
+    const business = await this.businessServices.deleteBusiness(bussId, request.user.id);
 
     return responseHelper(response, HttpStatus.OK, ServerSuccess.BUSINESS_UPDATED, business, null, null);
   }

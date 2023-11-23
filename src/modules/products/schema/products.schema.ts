@@ -20,6 +20,15 @@ export class Product extends AuditableSchema {
   })
     businessId: mongoose.Types.ObjectId;
 
+  @Prop()
+    images: [
+      {
+        image: { type: string, default: null}
+        caption: { type: string, default: null}
+        alt:{ type: string, default: null}
+      }
+    ];
+
   @Prop({
     type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Users' }],
     ref: 'Users',

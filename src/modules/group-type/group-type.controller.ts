@@ -25,6 +25,7 @@ export class GroupTypeController {
       status: 201,
       description: ServerSuccess.GROUP_TYPE.CREATED,
     },
+    noAuthToken: true,
   })
   @Post('admin/group-type')
   async create(
@@ -92,6 +93,7 @@ export class GroupTypeController {
       status: 200,
       description: ServerSuccess.GROUP_TYPE.UPDATED,
     },
+    noAuthToken: true,
   })
   @Put('admin/group-type/:id')
   async update(
@@ -120,6 +122,7 @@ export class GroupTypeController {
       status: 200,
       description: ServerSuccess.GROUP_TYPE.DELETED,
     },
+    noAuthToken: true,
   })
   @Delete('admin/group-type/:id')
   async delete(
