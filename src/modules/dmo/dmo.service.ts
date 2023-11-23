@@ -84,4 +84,12 @@ export class DMOService {
     }
     return true;
   }
+
+    async findDMOByUserID(id: string) {
+    const dmo = await findOneByFieldName<DMO>(this.DMOModel, 'userId', id);
+    if (!dmo) {
+      throw new NotFoundException(ServerErrors.DMO_NOT_FOUND);
+    }
+    return true;
+  }
 }

@@ -27,17 +27,22 @@ export class CampaignService {
 
   }
 
-  async createCampaign(dto: createCampaignDto, userId: string): Promise<Campaign> {
+  async create(dto: createCampaignDto, file:Express.Multer.File, userId: string): Promise<Campaign> {
+    if (!file) {
+      throw new BadRequestException('Please upload file');
+    }
+    const campImage = await this.gcpBucketServices.upload(file);
     const newCampaign = new this.CampaignModel({
       ...dto,
       code: this.encryptionService.encrypt(dto.code, this.configService.dataBaseEncriptionKey),
+      campImage,
       createdBy: userId,
     });
     await newCampaign.save();
     return newCampaign;
   }
 
-  async getAllCampaign(query: FilterQuery) {
+  async getAll(query: FilterQuery) {
     let findQuery: any = {};
     let select: {};
     let page: number;
@@ -76,7 +81,7 @@ export class CampaignService {
     return allCampaign;
   }
 
-  async getMyCampaign(query: FilterQuery, userId: string) {
+  async getMy(query: FilterQuery, userId: string) {
     let findQuery: any = {};
     let select: {};
     let page: number;
@@ -119,7 +124,7 @@ export class CampaignService {
     return allCampaign;
   }
 
-  async getCampaign(id: string) {
+  async getOne(id: string) {
     const select = disSelect;
     const campaign = await this.CampaignModel.findById(id).select(select).exec();
     if (campaign) {
@@ -129,16 +134,23 @@ export class CampaignService {
     return campaign;
   }
 
-  async updateCampaign(id: string, dto: updateCampaignDto, newImage: Express.Multer.File): Promise<Campaign> {
+  async update(
+    id: string,
+    dto: updateCampaignDto,
+    newImage: Express.Multer.File,
+    userId: string,
+  ): Promise<Campaign> {
     const updateDto = async () => {
       const existingImage = await findOneById<Campaign>(this.CampaignModel, id);
 
       const newUrl = await this.gcpBucketServices.update(existingImage.imagePath, newImage);
 
-      return { ...dto, imagePath: newUrl };
+      return {
+        ...dto, imagePath: newUrl, updatedBy: userId, updatedAt: new Date(),
+      };
     };
 
-    const updatedDTO = newImage ? await updateDto() : dto;
+    const updatedDTO = newImage ? await updateDto() : { ...dto, updatedBy: userId, updatedAt: new Date() };
 
     const updateCampaign = await updateById<Campaign>(this.CampaignModel, id, updatedDTO);
 
@@ -148,7 +160,7 @@ export class CampaignService {
     return updateCampaign;
   }
 
-  async softDeleteCampaign(id:string) {
+  async softDelete(id:string) {
     const updateField = { isDeleted: true, deleteAt: new Date() };
     const campaign = await updateById<Campaign>(
       this.CampaignModel,

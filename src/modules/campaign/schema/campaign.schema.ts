@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument } from 'mongoose';
+import mongoose, { HydratedDocument } from 'mongoose';
 import { CampaignStatus } from 'src/common/enum';
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
 
@@ -11,6 +11,13 @@ export class Campaign extends AuditableSchema {
   @Prop({})
     amount: number;
 
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'DMO',
+    default: null,
+  })
+    dmoId: mongoose.Types.ObjectId;
+
   @Prop({})
     code: string;
 
@@ -19,6 +26,16 @@ export class Campaign extends AuditableSchema {
 
   @Prop({})
     imagePath: string;
+
+  @Prop({})
+    crowed: string[];
+
+  @Prop({
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Business' }],
+    ref: 'Business',
+    required: true,
+  })
+    segment: mongoose.Types.ObjectId[];
 
   @Prop({ default: CampaignStatus.INACTIVE })
     status: CampaignStatus;

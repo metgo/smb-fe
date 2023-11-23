@@ -900,9 +900,9 @@ paths:
                 $ref: "#/components/schemas/responseHelper"
       tags:
         - Business Media
-  /admin/create-campaign:
+  /admin/campaign:
     post:
-      operationId: createCampaign
+      operationId: create
       parameters: []
       requestBody:
         required: true
@@ -921,9 +921,8 @@ paths:
         - bearer: []
       tags:
         - Admin, Campaign
-  /get-campaign:
     get:
-      operationId: getAllCampaign
+      operationId: getAll
       parameters:
         - name: search
           required: false
@@ -947,9 +946,34 @@ paths:
           description: Failed Validation
       tags:
         - Admin, Campaign
-  "/get-campaign/{id}":
+  "/admin/campaign/{id}":
     get:
-      operationId: getCampaign
+      operationId: getMy
+      parameters:
+        - name: search
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: size
+          required: false
+          in: query
+          schema:
+            type: number
+        - name: page
+          required: false
+          in: query
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Campaign was succesfully listed
+        "422":
+          description: Failed Validation
+      tags:
+        - Admin, Campaign
+    delete:
+      operationId: softDelete
       parameters:
         - name: id
           required: true
@@ -958,14 +982,15 @@ paths:
             type: string
       responses:
         "200":
-          description: Campaign was succesfully listed
+          description: Campaign was succesfully updated
         "422":
           description: Failed Validation
       tags:
-        - Admin, Campaign
-  "/update-campaign/{id}":
+        - Admin
+        - Campaign
+  "/admin/update/{id}":
     put:
-      operationId: updateCampaign
+      operationId: update
       parameters:
         - name: id
           required: true
@@ -978,23 +1003,6 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/updateCampaignDto"
-      responses:
-        "200":
-          description: Campaign was succesfully updated
-        "422":
-          description: Failed Validation
-      tags:
-        - Admin
-        - Campaign
-  "/delete-campaign/{id}":
-    delete:
-      operationId: softDeleteCampaign
-      parameters:
-        - name: id
-          required: true
-          in: path
-          schema:
-            type: string
       responses:
         "200":
           description: Campaign was succesfully updated

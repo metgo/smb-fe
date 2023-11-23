@@ -24,7 +24,7 @@ export class CampaignController {
       private readonly campaignService: CampaignService,
   ) { }
 
-  @Roles(UserType.SUPERADMIN, UserType.ADMIN)
+  @Roles(UserType.SUPERADMIN, UserType.ADMIN, UserType.DMO)
   @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
     tags: ['Admin, Campaign'],
@@ -32,17 +32,21 @@ export class CampaignController {
     noAuthToken: true,
     softBlockExtraDtoFields: true,
   })
-  @Post('admin/create-campaign')
-  async createCampaign(
-        @Body() dto: createCampaignDto,
-        @Req() request,
-        @Res() response: Response,
+  @UseInterceptors(FileInterceptor('campImage', { fileFilter: fileFilterByExtensions }))
+  @Post('admin/campaign')
+  async create(
+      @Body() dto: createCampaignDto,
+      @Req() request,
+      @Res() response: Response,
+      @UploadedFile() campImage: Express.Multer.File,
   ) {
     const user = request.user.id;
     dto.name && await this.campaignService.findByFieldName('name', dto.name);
-    dto.code && await this.campaignService.findByFieldName('code', dto.code);
-
-    const campaign = await this.campaignService.createCampaign(dto, user);
+    let dmoId: string | undefined;
+    // if (user.role === 'DMO') {
+    //   dmoId = await this.
+    // }
+    const campaign = await this.campaignService.create(dto, campImage, user);
     return responseHelper(response, HttpStatus.CREATED, ServerSuccess.CAMPAIGN_CREATED, campaign, null, null);
   }
 
@@ -53,9 +57,9 @@ export class CampaignController {
       description: ServerSuccess.CAMPAIGN_LISTED,
     },
   })
-  @Get('get-campaign')
-  async getAllCampaign(@Res() response: Response, @Query() query:FilterQuery) {
-    const campaign = await this.campaignService.getAllCampaign(query);
+  @Get('admin/campaign')
+  async getAll(@Res() response: Response, @Query() query:FilterQuery) {
+    const campaign = await this.campaignService.getAll(query);
     return responseHelper(
       response,
       HttpStatus.OK,
@@ -73,9 +77,34 @@ export class CampaignController {
       description: ServerSuccess.CAMPAIGN_LISTED,
     },
   })
-  @Get('get-campaign/:id')
-  async getCampaign(@Res() response: Response, @Param('id') id: string) {
-    const campaign = await this.campaignService.getCampaign(id);
+  @Get('admin/campaign/:id')
+  async getOne(@Res() response: Response, @Param('id') id: string) {
+    const campaign = await this.campaignService.getOne(id);
+    return responseHelper(
+      response,
+      HttpStatus.OK,
+      ServerSuccess.CAMPAIGN_LISTED,
+      campaign,
+      null,
+      null,
+    );
+  }
+
+  @ApiEndpoint({
+    tags: ['Admin, Campaign'],
+    response: {
+      status: 200,
+      description: ServerSuccess.CAMPAIGN_LISTED,
+    },
+  })
+  @Get('admin/campaign/:id')
+  async getMy(
+    @Req() request,
+    @Res() response: Response,
+    @Query() query: FilterQuery,
+  ) {
+    const user = request.user.id;
+    const campaign = await this.campaignService.getMy(query, user);
     return responseHelper(
       response,
       HttpStatus.OK,
@@ -95,16 +124,18 @@ export class CampaignController {
       description: ServerSuccess.CAMPAIGN_UPDATED,
     },
   })
-  @UseInterceptors(FileInterceptor('newImage', { fileFilter: fileFilterByExtensions }))
-  @Put('update-campaign/:id')
-  async updateCampaign(
+  @UseInterceptors(FileInterceptor('campImage', { fileFilter: fileFilterByExtensions }))
+  @Put('admin/update/:id')
+  async update(
       @Res() response: Response,
+      @Req() request,
       @Param('id') id: string,
       @Body() dto: updateCampaignDto,
-      @UploadedFile() newImage: Express.Multer.File,
+      @UploadedFile() campImage: Express.Multer.File,
   ) {
+    const user = request.user.id;
     await this.campaignService.findByFieldNameExcludeId('name', dto.name, id);
-    const campaign = await this.campaignService.updateCampaign(id, dto, newImage);
+    const campaign = await this.campaignService.update(id, dto, campImage, user);
     return responseHelper(
       response,
       HttpStatus.OK,
@@ -124,9 +155,9 @@ export class CampaignController {
       description: ServerSuccess.CAMPAIGN_UPDATED,
     },
   })
-  @Delete('delete-campaign/:id')
-  async softDeleteCampaign(@Res() response: Response, @Param('id') id: string) {
-    const campaign = await this.campaignService.softDeleteCampaign(id);
+  @Delete('admin/campaign/:id')
+  async softDelete(@Res() response: Response, @Param('id') id: string) {
+    const campaign = await this.campaignService.softDelete(id);
     return responseHelper(
       response,
       HttpStatus.OK,
