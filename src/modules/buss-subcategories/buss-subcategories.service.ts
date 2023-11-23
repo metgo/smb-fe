@@ -84,7 +84,7 @@ export class BussSubCategoriesService {
   async update(id: string, dto: updateBussSubCategoryDto, userId: string): Promise<BussSubCategory> {
     const bussSubCategory = await updateById<BussSubCategory>(this.BussSubCategoryModel, id, { ...dto, updateBy: userId });
     if (!bussSubCategory) {
-      throw new NotFoundException(ServerErrors.MAP_POINT_CATEGORIES_NOT_FOUND);
+      throw new NotFoundException(ServerErrors.BUSS_SUB_CATEGORY.NOT_FOUND);
     }
     return bussSubCategory;
   }
@@ -95,7 +95,7 @@ export class BussSubCategoriesService {
     };
     const bussSubCategory = await updateById<BussSubCategory>(this.BussSubCategoryModel, id, updateField);
     if (!bussSubCategory) {
-      throw new NotFoundException(ServerErrors.MAP_POINT_SUB_CATEGORIES_NOT_FOUND);
+      throw new NotFoundException(ServerErrors.BUSS_SUB_CATEGORY.NOT_FOUND);
     }
     return bussSubCategory;
   }

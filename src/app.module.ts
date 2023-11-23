@@ -23,6 +23,7 @@ import { BussSubCategoriesModule } from './modules/buss-subcategories/buss-subca
 import { ProductsModule } from 'src/modules/products/products.module';
 import { AccessibilityModule } from './modules/accessibility/accessibility.module';
 import { GroupTypeModule } from './modules/group-type/group-type.module';
+import { VoucherTemplateModule } from './modules/voucher-template/voucher-template.module';
 
 @Module({
   imports: [
@@ -47,6 +48,7 @@ import { GroupTypeModule } from './modules/group-type/group-type.module';
     ProductsModule,
     AccessibilityModule,
     GroupTypeModule,
+    VoucherTemplateModule
   ],
   providers: [
     {
