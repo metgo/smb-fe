@@ -178,4 +178,11 @@ export const ServerSuccess = {
     DELETED: 'Campaign was succesfully deleted',
   },
 
+  ORDERS: {
+    CREATED: 'Order was succesfully created',
+    UPDATED: 'Order was succesfully updated',
+    LISTED: 'Order was succesfully listed',
+    DELETED: 'Order was succesfully deleted',
+  },
+
 };

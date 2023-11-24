@@ -1,5 +1,5 @@
-import { Prop, Schema } from '@nestjs/mongoose';
-import mongoose, { Mongoose } from 'mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import mongoose, { HydratedDocument } from 'mongoose';
 
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
 import { OrderStatus, PaymentMode } from 'src/modules/order/order.type';
@@ -9,33 +9,38 @@ import { User } from 'src/modules/users/schema/users.schema';
 @Schema()
 export class Order extends AuditableSchema {
     @Prop({
-        type: mongoose.Schema.Types.ObjectId,
-        ref: Product.name,
-        required: true,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: Product.name,
+      required: true,
     })
-        productId: [mongoose.Types.ObjectId];
+      productId: mongoose.Types.ObjectId[];
 
     @Prop({
-        type: mongoose.Schema.Types.ObjectId,
-        ref: User.name,
-        required: true,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: User.name,
+      required: true,
     })
-        userId: mongoose.Types.ObjectId;
+      userId: mongoose.Types.ObjectId;
 
     @Prop({
-        enum: OrderStatus, default: OrderStatus.PENDING
+      enum: OrderStatus, default: OrderStatus.PENDING,
     })
-        status: OrderStatus
+      status: OrderStatus;
 
     @Prop()
-        payment: [{
-            mode: PaymentMode,
-        }]
+      paymentMode: PaymentMode[];
 
     @Prop()
-        voucher: [{
-            id: mongoose.Schema.Types.ObjectId,
-            redeemedAmout: number,
-        }]
+      voucher: [{
+        id: mongoose.Schema.Types.ObjectId,
+        redeemedAmout: number,
+      }];
 
+    @Prop({ default: 0 })
+      totalAmount: number;
 }
+
+export type OrderDocument = HydratedDocument<Order>;
+
+export const OrderSchema = SchemaFactory.createForClass(Order);
+OrderSchema.index({ name: 'text', description: 'text' });

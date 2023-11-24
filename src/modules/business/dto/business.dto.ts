@@ -5,7 +5,6 @@ import {
   IsArray, IsBoolean, IsObject, IsOptional, IsString,
 } from 'class-validator';
 import transformEmail from 'src/core/helper/transformEmail';
-import { BusinessStatus } from 'src/modules/business/business.type';
 
 class OpeningHours {
   @ApiProperty({ type: String, description: 'Days of operation' })
@@ -130,13 +129,6 @@ export class createBusinessDto {
     @IsString()
     dmoId: string;
 
-  @ApiProperty({
-    required: false,
-    enum: BusinessStatus,
-  })
-  @IsOptional()
-  @IsString()
-    status: BusinessStatus;
 
   @ApiProperty({
     required: false,
