@@ -166,3 +166,4 @@ export type BusinessDocument = HydratedDocument<Business>;
 
 export const BusinessSchema = SchemaFactory.createForClass(Business);
 BusinessSchema.index({ name: 'text', description: 'text' });
+BusinessSchema.index({ geoLocation: '2dsphere' });

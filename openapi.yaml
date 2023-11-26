@@ -537,6 +537,18 @@ paths:
              [string, string,..]
           schema:
             type: string
+        - name: lat
+          required: false
+          in: query
+          description: latitude of the location
+          schema:
+            type: string
+        - name: long
+          required: false
+          in: query
+          description: longituted of the location
+          schema:
+            type: string
       responses:
         "200":
           description: Business was successfully listed
@@ -651,6 +663,18 @@ paths:
           description: |-
             must follow the pattern 
              [string, string,..]
+          schema:
+            type: string
+        - name: lat
+          required: false
+          in: query
+          description: latitude of the location
+          schema:
+            type: string
+        - name: long
+          required: false
+          in: query
+          description: longituted of the location
           schema:
             type: string
       responses:

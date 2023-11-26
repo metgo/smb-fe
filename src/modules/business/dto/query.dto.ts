@@ -25,4 +25,12 @@ export class FilterQuery {
     @ApiProperty({ type: String, required: false, description: 'must follow the pattern \n [string, string,..]' })
     @IsOptional()
       tags: string;
+
+    @ApiProperty({ type: String, required: false, description: 'latitude of the location' })
+    @IsOptional()
+      lat: string;
+
+    @ApiProperty({ type: String, required: false, description: 'longituted of the location' })
+    @IsOptional()
+      long: string;
 }

@@ -48,6 +48,23 @@ export class BusinessService {
         ...query,
       };
     }
+    const maxDistanceInMeters = 5000;
+    if (query.lat && query.long) {
+      findQuery = {
+        ...findQuery,
+        'geoLocation.lat': { $ne: null }, // Filter out businesses without latitude data
+        'geoLocation.long': { $ne: null }, // Filter out businesses without longitude data
+        geoLocation: {
+          $near: {
+            $geometry: {
+              type: 'Point',
+              coordinates: [parseFloat(query.lat), parseFloat(query.long)],
+            },
+            $maxDistance: maxDistanceInMeters,
+          },
+        },
+      };
+    }
     // eslint-disable-next-line prefer-const
     populate = {
       path: 'groupTypesId accessibilitiesId bussCategoriesId bussSubCategoriesId',
