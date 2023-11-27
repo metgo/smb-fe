@@ -478,10 +478,10 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/OrderDto"
+              $ref: "#/components/schemas/CreateOrderDto"
       responses:
         "201":
-          description: Product was created successfully
+          description: Order was succesfully created
         "401":
           description: Authorization header not found or jwt token has expired
         "422":
@@ -490,7 +490,77 @@ paths:
         - bearer: []
       tags:
         - Products
-        - Order
+        - Orders
+    get:
+      operationId: getAllOrders
+      summary: Get all orders
+      parameters: []
+      responses:
+        "200":
+          description: Order was succesfully listed
+        "422":
+          description: Failed Validation
+      tags:
+        - Products
+        - Orders
+  "/orders/{orderId}":
+    get:
+      operationId: getOrderDetails
+      summary: Get detail of a order
+      parameters:
+        - name: orderId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Order was succesfully listed
+        "422":
+          description: Failed Validation
+      tags:
+        - Products
+        - Orders
+    patch:
+      operationId: updateOrder
+      summary: Update order status
+      parameters:
+        - name: orderId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateOrderDto"
+      responses:
+        "200":
+          description: Order was succesfully updated
+        "401":
+          description: Authorization header not found or jwt token has expired
+        "422":
+          description: Failed Validation
+      security:
+        - bearer: []
+      tags:
+        - Products
+        - Orders
+  /my-orders:
+    get:
+      operationId: getMyOrders
+      summary: Get my orders
+      parameters: []
+      responses:
+        "200":
+          description: Order was succesfully listed
+        "422":
+          description: Failed Validation
+      tags:
+        - Products
+        - Orders
   /business:
     post:
       operationId: createBusiness
@@ -2198,7 +2268,7 @@ components:
           type: array
           items:
             type: string
-    OrderDto:
+    CreateOrderDto:
       type: object
       properties:
         productId:
@@ -2215,6 +2285,20 @@ components:
         - productId
         - payment
         - voucher
+    UpdateOrderDto:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+            - pending
+            - processing
+            - shipped
+            - delivered
+            - canceled
+            - returned
+      required:
+        - status
     ContactDetails:
       type: object
       properties:

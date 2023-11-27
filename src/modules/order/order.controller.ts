@@ -61,9 +61,10 @@ export class OrderController {
   @Get('orders/:orderId')
   async getOrderDetails(
     @Param('orderId') orderId: string,
+    @Req() req,
     @Res() response: Response,
   ) {
-    const order = await this.orderService.findOne(orderId);
+    const order = await this.orderService.findMyOrderInfo(req.user, orderId);
     return responseHelper(
       response,
       HttpStatus.OK,
@@ -150,8 +151,8 @@ export class OrderController {
     @Req() req,
     @Res() response: Response,
   ) {
-    const order = await this.orderService.update(
-      req.user.id,
+    const order = await this.orderService.updateOrder(
+      req.user,
       orderId,
       body,
     );

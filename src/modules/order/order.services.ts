@@ -1,6 +1,6 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import mongoose, { Model } from 'mongoose';
 
 import { ServerErrors } from 'src/common/constant';
 import { paginationConfig } from 'src/common/pagination.config';
@@ -9,6 +9,7 @@ import { CreateOrderDto } from 'src/modules/order/dto/create-order.dto';
 import { UpdateOrderDto } from 'src/modules/order/dto/update-order.dto';
 import { FindOrders } from 'src/modules/order/order.type';
 import { Order } from 'src/modules/order/schema/order.schema';
+import { UserType } from 'src/modules/users/users.type';
 
 @Injectable()
 export class OrderService {
@@ -25,6 +26,8 @@ export class OrderService {
     });
 
     await newOrder.save();
+
+    // update vouchers detail
     return newOrder;
   }
 
@@ -32,7 +35,7 @@ export class OrderService {
     const updatedField = { ...body, updatedBy: loggedInUserId, updatedAt: new Date() };
     const updateOrder = await this.OrderModel.findOneAndUpdate(
       { _id: id },
-      { updatedField },
+      updatedField,
       { new: true },
     );
 
@@ -54,6 +57,23 @@ export class OrderService {
     }
 
     return order;
+  }
+
+  async findMyOrderInfo(loggedInUser: any, orderId: string) : Promise<Order> {
+    const order = await this.checkIfAllowed(loggedInUser, orderId);
+    return order;
+  }
+
+  async updateOrder(loggedInUser: any, orderId: string, body: UpdateOrderDto): Promise<Order> {
+    const order = await this.checkIfAllowed(loggedInUser, orderId);
+
+    if (!order) {
+      throw new ForbiddenException(ServerErrors.FORBIDDEN);
+    }
+
+    const updatedOrder = await this.update(loggedInUser.id, orderId, body);
+
+    return updatedOrder;
   }
 
   async findAll(queries: FindOrders) : Promise<Order[]> {
@@ -78,5 +98,19 @@ export class OrderService {
       limit,
     );
     return orders;
+  }
+
+  private async checkIfAllowed(loggedInUser: any, orderId: string): Promise<Order> {
+    const allowedRoles = [UserType.ADMIN, UserType.DMO, UserType.SUPERADMIN];
+    const order = await this.findOne(orderId);
+
+    if (
+      !allowedRoles.includes(loggedInUser.role)
+      && !(new mongoose.Types.ObjectId(loggedInUser.id).equals(order.userId))
+    ) {
+      throw new ForbiddenException(ServerErrors.FORBIDDEN);
+    }
+
+    return order;
   }
 }
