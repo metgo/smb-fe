@@ -24,7 +24,7 @@ class Mode {
     mode: PaymentMode;
 }
 
-export class OrderDto {
+export class CreateOrderDto {
   @IsString()
   @IsNotEmpty()
   @ApiProperty()
