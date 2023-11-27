@@ -3,17 +3,17 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { DMOSchema } from './schema/dmo.schema';
 import { DMOService } from './dmo.service';
 import { DMOController } from './dmo.controller';
-import { UserSchema } from '../users/schema/users.schema';
-import { UsersService } from '../users/users.services';
+import { UsersModule } from '../users/users.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: 'DMO', schema: DMOSchema },
-      { name: 'User', schema: UserSchema },
     ]),
+    UsersModule,
   ],
-  providers: [DMOService, UsersService],
+  providers: [DMOService],
   controllers: [DMOController],
+  exports: [DMOService],
 })
 export class DMOModule {}

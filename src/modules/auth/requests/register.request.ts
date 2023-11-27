@@ -1,5 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsNotEmpty, MinLength } from 'class-validator';
+import {
+  IsEmail, IsNotEmpty, IsString, MinLength,
+} from 'class-validator';
 
 export class RegisterRequest {
   @IsEmail()
@@ -11,4 +13,14 @@ export class RegisterRequest {
   @MinLength(8)
   @ApiProperty()
   readonly password: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty()
+  readonly fullName: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty()
+  readonly phone: string;
 }

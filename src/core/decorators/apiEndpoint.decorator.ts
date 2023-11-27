@@ -90,7 +90,7 @@ export const ApiEndpoint = (args: {
   decorators.push(ApiResponse({ status: 422, description: ServerErrors.FAILED_VALIDATION }));
 
   if (noAuthToken) {
-    decorators.push(ApiBearerAuth());
+    decorators.push(ApiBearerAuth('defaultBearerAuth'));
     decorators.push(ApiResponse({ status: 401, description: ServerErrors.JWT_EXPIRED_OR_NOT_FOUND }));
 
     /** @TODO After permissionsRequired feature and permissions data has been UATed, remove the feature flags below. */

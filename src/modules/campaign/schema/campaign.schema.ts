@@ -5,6 +5,14 @@ import { AuditableSchema } from 'src/core/helper/auditable.schema';
 
 @Schema({})
 export class Campaign extends AuditableSchema {
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    index: true,
+    required: true,
+    auto: true,
+  })
+    _id: mongoose.Types.ObjectId;
+
   @Prop({})
     name: string;
 

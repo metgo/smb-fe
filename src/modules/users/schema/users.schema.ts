@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument } from 'mongoose';
+import mongoose, { HydratedDocument } from 'mongoose';
 
 import { UserType } from 'src/modules/users/users.type';
 
@@ -7,6 +7,14 @@ import { UserType } from 'src/modules/users/users.type';
   timestamps: true,
 })
 export class User {
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    index: true,
+    required: true,
+    auto: true,
+  })
+    _id: mongoose.Types.ObjectId;
+
   @Prop()
     fullName: string;
 

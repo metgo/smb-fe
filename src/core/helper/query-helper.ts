@@ -12,9 +12,7 @@ export async function findOneByFieldNames<T>(model: Model<T>, fieldNames: object
 }
 
 export async function findOneByOrCase<T>(model: Model<T>, fieldNames: object) {
-  console.log(fieldNames);
   const data = await model.findOne({ ...fieldNames, deletedAt: { $in: [null] } });
-  console.log(data);
   return data;
 }
 

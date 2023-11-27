@@ -3,27 +3,27 @@ import { CampaignService } from './campaign.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { CampaignSchema } from './schema/campaign.schema';
 import { CampaignController } from './campaign.controller';
-import { UserSchema } from '../users/schema/users.schema';
-import { EncryptionService } from 'src/services/encryption/encryption.service';
-import { ConfigService } from 'src/services/config/config.service';
 import { GcpBucketModule } from 'src/services/gcp-bucket/gcp-bucket.module';
 import { UsersModule } from '../users/users.module';
-import { DMOSchema } from '../dmo/schema/dmo.schema';
-import { DMOService } from '../dmo/dmo.service';
+import { EncryptionModule } from 'src/services/encryption/encryption.module';
+import { ConfigModule } from 'src/services/config/config.module';
+import { DMOModule } from '../dmo/dmo.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: 'Campaign', schema: CampaignSchema },
-      { name: 'User', schema: UserSchema },
-      { name: 'DMO', schema: DMOSchema },
     ]),
     GcpBucketModule,
     UsersModule,
+    EncryptionModule,
+    ConfigModule,
+    DMOModule,
   ],
   providers: [
-    CampaignService, EncryptionService, ConfigService, DMOService,
+    CampaignService,
   ],
   controllers: [CampaignController],
+  exports: [CampaignService],
 })
 export class CampaignModule {}

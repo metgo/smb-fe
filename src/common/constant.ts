@@ -70,6 +70,10 @@ export const ServerErrors = {
     NOT_FOUND: 'Voucher Template not found',
     EXISTS: 'Voucher Template already exists',
   },
+  VOUCHER: {
+    NOT_FOUND: 'Voucher not found',
+    EXISTS: 'Voucher  already exists',
+  },
 
   CAMPAIGN: {
     NOT_FOUND: 'Campaign not found',
@@ -157,6 +161,14 @@ export const ServerSuccess = {
     UPDATED: 'Voucher Template was succesfully updated',
     LISTED: 'Voucher Template was succesfully listed',
     DELETED: 'Voucher Template was succesfully deleted',
+  },
+
+  VOUCHER: {
+    CREATED: 'Voucher  was succesfully created',
+    UPDATED: 'Voucher  was succesfully updated',
+    LISTED: 'Voucher  was succesfully listed',
+    DELETED: 'Voucher  was succesfully deleted',
+    ASSIGNED: 'Voucher was successfully asigned',
   },
 
   CAMPAIGN: {

@@ -40,8 +40,15 @@ export class ConfigService {
       'SUPER_ADMIN_EMAIL',
       'SUPER_ADMIN_PASSWORD',
       'DATABASE_ENCRYPTION_KEY',
+      'FROM_NAME',
+      'FROM_EMAIL',
+      'SERVICE_CLIENT',
+      'PRIVATE_KEY',
+      'ACCESS_URL',
+      'EMAIL_HOST',
+      'USER',
+      'PASSWORD',
     ];
-
     return ENV_VARIABLES.reduce((obj: any, variable) => {
       if (process.env[variable]) {
         // eslint-disable-next-line no-param-reassign
@@ -73,6 +80,14 @@ export class ConfigService {
       GCS_FILE_PATH: Joi.string().required(),
       SUPER_ADMIN_EMAIL: Joi.string().required(),
       SUPER_ADMIN_PASSWORD: Joi.string().required(),
+      FROM_EMAIL: Joi.string().required(),
+      SERVICE_CLIENT: Joi.string().required(),
+      PRIVATE_KEY: Joi.string().required(),
+      ACCESS_URL: Joi.string().required(),
+      FROM_NAME: Joi.string().required(),
+      EMAIL_HOST: Joi.string().required(),
+      USER: Joi.string().required(),
+      PASSWORD: Joi.string().required(),
     }).unknown(true);
 
     const { error, value: validatedEnvConfig } = envVarsSchema.validate(envConfig);
@@ -106,5 +121,18 @@ export class ConfigService {
 
   get dataBaseEncriptionKey() {
     return this.get('DATABASE_ENCRYPTION_KEY');
+  }
+
+  get emailDetails() {
+    return {
+      FROM_NAME: this.get('FROM_NAME'),
+      FROM_EMAIL: this.get('FROM_EMAIL'),
+      SERVICE_CLIENT: this.get('SERVICE_CLIENT'),
+      PRIVATE_KEY: this.get('PRIVATE_KEY'),
+      ACCESS_URL: this.get('ACCESS_URL'),
+      EMAIL_HOST: this.get('EMAIL_HOST'),
+      USER: this.get('USER'),
+      PASSWORD: this.get('PASSWORD'),
+    };
   }
 }

@@ -7,6 +7,7 @@ import { UsersService } from '../users/users.services';
 import { UserSchema } from '../users/schema/users.schema';
 import { DMOSchema } from '../dmo/schema/dmo.schema';
 import { DMOService } from '../dmo/dmo.service';
+import { MailModule } from 'src/services/mail/mail.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { DMOService } from '../dmo/dmo.service';
       { name: 'User', schema: UserSchema },
       { name: 'DMO', schema: DMOSchema },
     ]),
+    MailModule,
   ],
   controllers: [BusinessController],
   providers: [BusinessService, UsersService, DMOService],

@@ -1,10 +1,11 @@
+/* eslint-disable no-underscore-dangle */
 /* eslint-disable no-undef */
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
 import { Campaign } from './schema/campaign.schema';
 import {
-  findOneByFieldName, findOneByFieldNameExcludeId, findOneById, queryhandler, updateById,
+  findOneByFieldName, findOneByFieldNameExcludeId, findOneByFieldNames, findOneById, queryhandler, updateById,
 } from 'src/core/helper/query-helper';
 import { createCampaignDto } from './dto/createCampaign.dto';
 import { FilterQuery } from './dto/query.dto';
@@ -14,6 +15,7 @@ import { ConfigService } from 'src/services/config/config.service';
 import { updateCampaignDto } from './dto/updateCampaign.dto';
 import { ServerErrors } from 'src/common/constant';
 import { GcpBucketService } from 'src/services/gcp-bucket/gcp-bucket.services';
+import { CampaignStatus } from 'src/common/enum';
 
 @Injectable()
 export class CampaignService {
@@ -39,7 +41,6 @@ export class CampaignService {
     const campImage = await this.gcpBucketServices.upload(file);
     const newCampaign = new this.CampaignModel({
       ...dto,
-      code: this.encryptionService.encrypt(dto.code, this.configService.dataBaseEncriptionKey),
       imagePath: campImage,
       createdBy: userId,
       dmoId,
@@ -182,6 +183,18 @@ export class CampaignService {
     );
     if (!campaign) {
       throw new NotFoundException(ServerErrors.CAMPAIGN.NOT_FOUND);
+    }
+    return campaign;
+  }
+
+  async findAndReturn(fieldName: keyof Campaign, items: string): Promise<Campaign> {
+    const fieldNames = {
+      [fieldName]: items,
+      status: CampaignStatus.ACTIVE,
+    };
+    const campaign = await findOneByFieldNames<Campaign>(this.CampaignModel, fieldNames);
+    if (!campaign) {
+      throw new NotFoundException(`${fieldName} not found`);
     }
     return campaign;
   }

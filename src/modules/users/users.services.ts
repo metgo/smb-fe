@@ -16,6 +16,7 @@ import { passwordGenerator } from 'src/common/utils/randomPassword.genetator';
 import { UpdateLastLoginRequest } from 'src/modules/users/requests/update-last-logins.request';
 import { ConfigService } from 'src/services/config/config.service';
 import { UserType } from './users.type';
+import { MailService } from 'src/services/mail/mail.service';
 
 @Injectable()
 export class UsersService {
@@ -24,6 +25,7 @@ export class UsersService {
   constructor(
     @InjectModel(User.name)
     private UserModel: Model<User>,
+    private readonly mailService: MailService,
   ) {
     const configService = new ConfigService();
 
@@ -92,6 +94,7 @@ export class UsersService {
       }
       const newUser = await (new this.UserModel(registerDto)).save();
 
+      await this.mailService.sendWelcome(newUser);
       return {
         id: newUser.id,
         fullName: newUser.fullName,
@@ -197,6 +200,20 @@ export class UsersService {
       exceptionHandling(error);
       throw new InternalServerErrorException('Couldn\'t find user with given email');
     }
+  }
+
+  async findByEmailOrNull(email: string): Promise<User | null> {
+    const user = await findOneByFieldName<User>(
+      this.UserModel,
+      'email',
+      email,
+    );
+
+    if (!user) {
+      return null;
+    }
+
+    return user;
   }
 
   // admin create users

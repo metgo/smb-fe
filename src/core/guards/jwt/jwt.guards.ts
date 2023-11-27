@@ -8,6 +8,10 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from 'src/modules/users/users.services';
 
+const whiteListAPI = [
+  '/buy-voucher',
+];
+
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
   constructor(
@@ -16,38 +20,41 @@ export class JwtAuthGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    try {
-      const request = context.switchToHttp().getRequest();
-      const token = request.headers.authorization?.replace('Bearer ', '');
-      if (!token) {
-        throw new UnauthorizedException('Unauthorized access');
-      }
-
-      const decoded = this.jwtService.verify(token);
-      const user = await this.userService.findByEmail(decoded.email);
-
-      if (!user) {
-        throw new NotFoundException('User not found');
-      }
-
-      request.user = {
-        id: user.id,
-        fullName: user.fullName,
-        phoneDetails: {
-          countryCode: user.countryCode,
-          phoneNumber: user.phoneNumber,
-        },
-        address: user.address,
-        email: user.email,
-        role: user.role,
-        isPhoneVerify: user.isPhoneVerify,
-        isEmailVerify: user.isEmailVerify,
-        hasBusiness: user.hasBusiness,
-      };
-
+    const request = context.switchToHttp().getRequest();
+    const token = request.headers.authorization?.replace('Bearer ', '');
+    if (!token && whiteListAPI.includes(request.path)) {
       return true;
+    }
+    if (!token) {
+      throw new UnauthorizedException('Unauthorized access');
+    }
+
+    let decoded;
+    try {
+      decoded = this.jwtService.verify(token);
     } catch (error) {
       throw new UnauthorizedException('Unauthorized access');
     }
+    const user = await this.userService.findByEmail(decoded.email);
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    request.user = {
+      id: user.id,
+      fullName: user.fullName,
+      phoneDetails: {
+        countryCode: user.countryCode,
+        phoneNumber: user.phoneNumber,
+      },
+      address: user.address,
+      email: user.email,
+      role: user.role,
+      isPhoneVerify: user.isPhoneVerify,
+      isEmailVerify: user.isEmailVerify,
+      hasBusiness: user.hasBusiness,
+    };
+
+    return true;
   }
 }
