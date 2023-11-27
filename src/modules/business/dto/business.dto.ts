@@ -126,9 +126,8 @@ export class createBusinessDto {
     required: false,
   })
   @IsOptional()
-    @IsString()
+  @IsString()
     dmoId: string;
-
 
   @ApiProperty({
     required: false,
