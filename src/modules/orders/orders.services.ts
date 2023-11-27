@@ -5,17 +5,19 @@ import mongoose, { Model } from 'mongoose';
 import { ServerErrors } from 'src/common/constant';
 import { paginationConfig } from 'src/common/pagination.config';
 import { findOneByFieldNames, queryhandler } from 'src/core/helper/query-helper';
-import { CreateOrderDto } from 'src/modules/order/dto/create-order.dto';
-import { UpdateOrderDto } from 'src/modules/order/dto/update-order.dto';
-import { FindOrders } from 'src/modules/order/order.type';
-import { Order } from 'src/modules/order/schema/order.schema';
+import { CreateOrderDto, Voucher } from 'src/modules/orders/dto/create-order.dto';
+import { UpdateOrderDto } from 'src/modules/orders/dto/update-order.dto';
+import { FindOrders } from 'src/modules/orders/orders.type';
+import { Order } from 'src/modules/orders/schema/orders.schema';
 import { UserType } from 'src/modules/users/users.type';
+import { VoucherService } from 'src/modules/vouchers/voucher.service';
 
 @Injectable()
 export class OrderService {
   constructor(
     @InjectModel(Order.name)
     private OrderModel: Model<Order>,
+    private readonly voucherService: VoucherService,
   ) {}
 
   async create(loggedInUserId: string, body: CreateOrderDto): Promise<Order> {
@@ -28,6 +30,9 @@ export class OrderService {
     await newOrder.save();
 
     // update vouchers detail
+    body.voucher.map(async (voucher: Voucher) => {
+      await this.voucherService.updateVoucherAmount(loggedInUserId, voucher.id, voucher.redeemedAmount);
+    });
     return newOrder;
   }
 

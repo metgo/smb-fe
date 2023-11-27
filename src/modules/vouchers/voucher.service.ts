@@ -1,16 +1,16 @@
 /* eslint-disable prefer-const */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-plusplus */
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException, ForbiddenException, Injectable, NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
 import { Voucher } from './schema/voucher.schema';
 import {
   FilterQuery, createGuestVoucherDto, createVoucherDto,
 } from './dto';
-import { EncryptionService } from 'src/services/encryption/encryption.service';
 import { generateRandomCode } from 'src/common/utils/randomCode.generator';
-import { ConfigService } from 'src/services/config/config.service';
 import { queryhandler, updateWhere } from 'src/core/helper/query-helper';
 import { disSelect } from 'src/common/utils/select.handling';
 import { ServerErrors } from 'src/common/constant';
@@ -21,8 +21,6 @@ export class VoucherService {
   constructor(
     @InjectModel('Voucher')
     private readonly VoucherModel: Model<Voucher>,
-    private readonly encryptionService: EncryptionService,
-    private readonly configService: ConfigService,
   ) { }
 
   async create(
@@ -155,5 +153,27 @@ export class VoucherService {
       throw new NotFoundException(ServerErrors.VOUCHER.NOT_FOUND);
     }
     return assignUser;
+  }
+
+  async updateVoucherAmount(loggedInUserId: string, voucherId: string, redeemedAmount: number): Promise<Voucher> {
+    const voucher = await this.getOneById(voucherId);
+
+    if (voucher.remainingAmount < redeemedAmount) {
+      throw new ForbiddenException(ServerErrors.FORBIDDEN);
+    }
+
+    const remainingAmount = voucher.remainingAmount - redeemedAmount;
+    const updatedField = { remainingAmount, updatedBy: loggedInUserId, updatedAt: new Date() };
+    const updatedVoucher = await this.VoucherModel.findOneAndUpdate(
+      { _id: voucherId },
+      updatedField,
+      { new: true },
+    );
+
+    if (!updatedVoucher) {
+      throw new NotFoundException(ServerErrors.VOUCHER.NOT_FOUND);
+    }
+
+    return updatedVoucher;
   }
 }

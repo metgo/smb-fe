@@ -8,10 +8,10 @@ import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
 import { Roles } from 'src/core/guards/authorization/roles';
 import { JwtAuthGuard } from 'src/core/guards/jwt/jwt.guards';
 import { responseHelper } from 'src/core/helper/response.helper';
-import { CreateOrderDto } from 'src/modules/order/dto/create-order.dto';
-import { UpdateOrderDto } from 'src/modules/order/dto/update-order.dto';
-import { OrderService } from 'src/modules/order/order.services';
-import { IOrderQuery } from 'src/modules/order/order.type';
+import { CreateOrderDto } from 'src/modules/orders/dto/create-order.dto';
+import { UpdateOrderDto } from 'src/modules/orders/dto/update-order.dto';
+import { OrderService } from 'src/modules/orders/orders.services';
+import { IOrderQuery } from 'src/modules/orders/orders.type';
 import { UserType } from 'src/modules/users/users.type';
 
 @Controller()

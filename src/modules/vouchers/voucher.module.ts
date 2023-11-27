@@ -22,5 +22,6 @@ import { UsersModule } from '../users/users.module';
   ],
   controllers: [VoucherController],
   providers: [VoucherService],
+  exports: [VoucherService],
 })
 export class VoucherModule {}

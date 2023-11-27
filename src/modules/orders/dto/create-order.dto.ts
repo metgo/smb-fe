@@ -1,11 +1,11 @@
 import {
-  IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString,
+  IsEnum, IsNotEmpty, IsNumber, IsOptional, IsPositive, IsString,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
-import { PaymentMode } from 'src/modules/order/order.type';
+import { PaymentMode } from 'src/modules/orders/orders.type';
 
-class Voucher {
+export class Voucher {
   @IsString()
   @IsNotEmpty()
   @ApiProperty()
@@ -37,4 +37,10 @@ export class CreateOrderDto {
   @IsOptional()
   @ApiProperty()
     voucher: Voucher[];
+
+  @IsNumber()
+  @IsPositive()
+  @IsNotEmpty()
+  @ApiProperty()
+    totalAmount: number;
 }
