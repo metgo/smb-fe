@@ -5,7 +5,7 @@ import mongoose, { Model } from 'mongoose';
 import { ServerErrors } from 'src/common/constant';
 import { paginationConfig } from 'src/common/pagination.config';
 import { findOneByFieldNames, queryhandler } from 'src/core/helper/query-helper';
-import { CreateOrderDto, Voucher } from 'src/modules/orders/dto/create-order.dto';
+import { CreateOrderDto } from 'src/modules/orders/dto/create-order.dto';
 import { UpdateOrderDto } from 'src/modules/orders/dto/update-order.dto';
 import { FindOrders } from 'src/modules/orders/orders.type';
 import { Order } from 'src/modules/orders/schema/orders.schema';
@@ -21,18 +21,23 @@ export class OrderService {
   ) {}
 
   async create(loggedInUserId: string, body: CreateOrderDto): Promise<Order> {
+    // get voucherIds anc sort by amount
+    const voucherIds = await this.voucherService.findByIds(body.voucher);
+    voucherIds.sort((a, b) => b.remainingAmount - a.remainingAmount);
+
+    // update vouchers detail
+    const voucher = await this.processVouchers(loggedInUserId, voucherIds, body.totalAmount);
+
+    // product count -
+
     const newOrder = new this.OrderModel({
       ...body,
+      voucher,
       userId: loggedInUserId,
       createdBy: loggedInUserId,
     });
 
     await newOrder.save();
-
-    // update vouchers detail
-    body.voucher.map(async (voucher: Voucher) => {
-      await this.voucherService.updateVoucherAmount(loggedInUserId, voucher.id, voucher.redeemedAmount);
-    });
     return newOrder;
   }
 
@@ -117,5 +122,33 @@ export class OrderService {
     }
 
     return order;
+  }
+
+  private async processVouchers(loggedInUserId: string, voucherIds, totalAmountOfProduct) {
+    let voucherInfo = [];
+    const processVouchers = async (vouchers, index = 0, initialRedeemedAmount = 0) => {
+      if (index >= vouchers.length || (index > 0 && initialRedeemedAmount === 0)) {
+        return;
+      }
+
+      const voucher = vouchers[index];
+      const { amountToBeRedeemed: updateRedeemedAmount, redeemedAmount } = await this.voucherService.updateVoucherAmount(
+        loggedInUserId,
+        voucher.id,
+        index === 0 ? totalAmountOfProduct : initialRedeemedAmount,
+      );
+
+      voucherInfo = [...voucherInfo, {
+        id: voucher.id,
+        redeemedAmount,
+      }];
+
+      await processVouchers(vouchers, index + 1, updateRedeemedAmount);
+    };
+
+    await processVouchers(voucherIds);
+    voucherInfo.filter(Boolean);
+
+    return voucherInfo;
   }
 }

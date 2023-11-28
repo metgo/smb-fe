@@ -565,6 +565,12 @@ paths:
     post:
       operationId: create
       parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/createVoucherDto"
       responses:
         "201":
           description: Voucher  was succesfully created
@@ -2272,8 +2278,10 @@ components:
       type: object
       properties:
         productId:
-          type: string
-        payment:
+          type: array
+          items:
+            type: string
+        paymentMode:
           type: array
           items:
             type: string
@@ -2285,7 +2293,7 @@ components:
           type: number
       required:
         - productId
-        - payment
+        - paymentMode
         - voucher
         - totalAmount
     UpdateOrderDto:
@@ -2302,6 +2310,25 @@ components:
             - returned
       required:
         - status
+    createVoucherDto:
+      type: object
+      properties:
+        name:
+          type: string
+        campCode:
+          type: string
+        amount:
+          type: number
+        noOfVoucher:
+          type: number
+        email:
+          type: string
+      required:
+        - name
+        - campCode
+        - amount
+        - noOfVoucher
+        - email
     updateAssignedUserVoucherDto:
       type: object
       properties:

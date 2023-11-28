@@ -7,10 +7,9 @@ import { ServerSuccess } from 'src/common/constant';
 import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
 import { VoucherService } from './voucher.service';
 import {
-  FilterQuery, createGuestVoucherDto, createVoucherDto, updateAssignedUserVoucherDto,
+  FilterQuery, createVoucherDto, updateAssignedUserVoucherDto,
 } from './dto';
 import { CampaignService } from '../campaign/campaign.service';
-import { Campaign } from '../campaign/schema/campaign.schema';
 import { JwtAuthGuard } from 'src/core/guards/jwt/jwt.guards';
 import { UsersService } from '../users/users.services';
 import { User } from '../users/schema/users.schema';
@@ -37,14 +36,27 @@ export class VoucherController {
   @Post('buy-voucher')
   async create(
     @Req() req,
-    @Body() dto: createVoucherDto | createGuestVoucherDto,
+    @Res() response: Response,
+    @Body() dto: createVoucherDto,
   ) {
     const userId: string | null = req.user ? req.user.id : null;
-    let campaign: Campaign;
+    let voucher;
+
     if (dto.campCode) {
-      campaign = await this.campaignService.findAndReturn('code', dto.campCode);
+      const campaign = await this.campaignService.findAndReturn('code', dto.campCode);
+      voucher = await this.voucherService.create(dto, userId, campaign._id);
     }
-    await this.voucherService.create(dto, campaign._id, userId);
+
+    voucher = await this.voucherService.create(dto, userId);
+
+    return responseHelper(
+      response,
+      HttpStatus.OK,
+      ServerSuccess.VOUCHER.CREATED,
+      voucher,
+      null,
+      null,
+    );
   }
 
   @ApiEndpoint({
