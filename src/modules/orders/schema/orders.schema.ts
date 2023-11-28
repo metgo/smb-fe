@@ -9,8 +9,10 @@ import { User } from 'src/modules/users/schema/users.schema';
 @Schema()
 export class Order extends AuditableSchema {
     @Prop({
-      type: mongoose.Schema.Types.ObjectId,
-      ref: Product.name,
+      type: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: Product.name,
+      }],
       required: true,
     })
       productId: mongoose.Types.ObjectId[];

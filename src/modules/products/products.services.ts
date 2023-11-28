@@ -179,6 +179,28 @@ export class ProductsService {
     return deletedProduct;
   }
 
+  async updateProductByFields(productId: string, updatedFields: any): Promise<Product> {
+    const productInfo = await this.findOne(productId);
+    const updatedField = {
+      ...updatedFields,
+      quantity: {
+        initial: productInfo.quantity.initial,
+        sold: (!productInfo.quantity.sold ? 0 : productInfo.quantity.sold) + updatedFields.sold,
+        remaining: productInfo.quantity.remaining - updatedFields.remaining,
+      },
+    };
+
+    const updatedProduct = await updateWhere<Product>(
+      this.ProductModel,
+      {
+        _id: productId,
+      },
+      { ...updatedField },
+    );
+
+    return updatedProduct;
+  }
+
   async deleteImage(loggedInUserId: string, id: string, imageUrl: any): Promise<Product> {
     const existingProduct = await this.ProductModel.findById(id);
 

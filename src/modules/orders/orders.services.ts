@@ -9,6 +9,7 @@ import { CreateOrderDto } from 'src/modules/orders/dto/create-order.dto';
 import { UpdateOrderDto } from 'src/modules/orders/dto/update-order.dto';
 import { FindOrders } from 'src/modules/orders/orders.type';
 import { Order } from 'src/modules/orders/schema/orders.schema';
+import { ProductsService } from 'src/modules/products/products.services';
 import { UserType } from 'src/modules/users/users.type';
 import { VoucherService } from 'src/modules/vouchers/voucher.service';
 
@@ -17,18 +18,33 @@ export class OrderService {
   constructor(
     @InjectModel(Order.name)
     private OrderModel: Model<Order>,
+    private readonly productsService: ProductsService,
     private readonly voucherService: VoucherService,
   ) {}
 
   async create(loggedInUserId: string, body: CreateOrderDto): Promise<Order> {
     // get voucherIds anc sort by amount
     const voucherIds = await this.voucherService.findByIds(body.voucher);
-    voucherIds.sort((a, b) => b.remainingAmount - a.remainingAmount);
+    voucherIds.sort((a, b) => {
+      if (
+        (body.totalAmount === a.remainingAmount && body.totalAmount !== b.remainingAmount)
+          || (body.totalAmount !== a.remainingAmount && body.totalAmount === b.remainingAmount)
+      ) {
+        return body.totalAmount === a.remainingAmount ? -1 : 1;
+      }
+      return b.remainingAmount - a.remainingAmount;
+    });
 
-    // update vouchers detail
+    // update vouchers detail and deduct voucher amounts
     const voucher = await this.processVouchers(loggedInUserId, voucherIds, body.totalAmount);
 
-    // product count -
+    // deduct product count
+    body.productId.map(async (productId: string) => {
+      await this.productsService.updateProductByFields(productId, {
+        sold: 1,
+        remaining: 1,
+      });
+    });
 
     const newOrder = new this.OrderModel({
       ...body,
