@@ -24,7 +24,18 @@ export class BusinessService {
   ) {}
 
   async createBusiness(dto: createBusinessDto, userId: string): Promise<Business> {
-    const newBusiness = new this.BusinessModel({ ...dto, userId, createdBy: userId });
+    const cordinates = {
+      location: {
+        coordinates: [parseFloat(dto.geoLocation.long), parseFloat(dto.geoLocation.lat)],
+      },
+    };
+
+    const newBusiness = new this.BusinessModel({
+      ...dto,
+      userId,
+      createdBy: userId,
+      location: cordinates.location,
+    });
     await newBusiness.save();
     return newBusiness;
   }
@@ -48,22 +59,51 @@ export class BusinessService {
         ...query,
       };
     }
-    const maxDistanceInRadius = 5 / 6371;
+
+    const METERS_PER_MILE = 1609.34;
+    const maxDistanceInRadius = 5 / 3963;
     if (query.lat && query.long) {
-      console.log(query.long, query.lat);
+      // findQuery = {
+      //   ...findQuery, // Filter out businesses without longitude data
+      //   location: {
+      //     $nearSphere: {
+      //       $geometry: {
+      //         type: 'Point',
+      //         coordinates: [query.long, query.lat],
+      //       },
+      //       $minDistance: 1000,
+      //       $maxDistance: 5000,
+      //     },
+      //   },
+      // };
+
       findQuery = {
         ...findQuery, // Filter out businesses without longitude data
-        geoLocation: {
+        location: {
           $geoWithin: {
-            $centerSphere: [[query.long, query.lat], maxDistanceInRadius],
+            $centerSphere: [
+              [query.long, query.lat],
+              maxDistanceInRadius,
+            ],
           },
         },
       };
+      // findQuery = {
+      //   ...findQuery,
+      //   location: {
+      //     $near: {
+      //       $geometry: {
+      //         type: 'Point',
+      //         coordinates: [query.long, query.lat],
+      //       },
+      //       $minDistance: 1000,
+      //       $maxDistance: 5000,
+      //     },
+      //   },
+      // };
       delete findQuery?.lat;
       delete findQuery?.long;
     }
-
-    console.log(findQuery);
     // eslint-disable-next-line prefer-const
     populate = {
       path: 'groupTypesId accessibilitiesId bussCategoriesId bussSubCategoriesId',
@@ -187,11 +227,31 @@ export class BusinessService {
     loggedInUserId: string,
     dto: updateBusinessDto | Image[] | UpdateBusinessByAdminDto,
   ): Promise<Business> {
-    let updatedField: any = {
+    console.log(dto);
+    let updatedField: any;
+    let cordinates:any;
+    if (dto instanceof updateBusinessDto && dto.geoLocation) {
+      cordinates = {
+        location: {
+          coordinates: [parseFloat(dto.geoLocation.long), parseFloat(dto.geoLocation.lat)],
+        },
+      };
+      updatedField = {
+        ...dto,
+        location: {
+          type: 'Point',
+          coordinates: cordinates.location.coordinates,
+        },
+      };
+    }
+    console.log(cordinates);
+    updatedField = {
+      ...updatedField,
       ...dto,
       updatedAt: new Date(),
       updatedBy: loggedInUserId,
     };
+    console.log(updatedField);
     if (!(dto instanceof updateBusinessDto || dto instanceof UpdateBusinessByAdminDto)) {
       const existingBusiness = await this.getBusiness(id);
 

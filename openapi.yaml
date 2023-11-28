@@ -2173,7 +2173,9 @@ components:
         - description
     updateBusinessDto:
       type: object
-      properties: {}
+      properties:
+        geoLocation:
+          $ref: "#/components/schemas/geoLocation"
     UpdateBusinessByAdminDto:
       type: object
       properties:

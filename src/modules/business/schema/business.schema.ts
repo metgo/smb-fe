@@ -7,6 +7,7 @@ import { BusinessStatus } from 'src/modules/business/business.type';
 import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.schema';
 import { BussSubCategory } from 'src/modules/buss-subcategories/schema/buss-subCategory.schema';
 import { GroupType } from 'src/modules/group-type/schema/group-type.schema';
+import { GeoJSON } from 'typeorm';
 
 @Schema({})
 export class Business extends AuditableSchema {
@@ -85,6 +86,30 @@ export class Business extends AuditableSchema {
     geoLocation: {
       lat: { type: string, default: null},
       long: { type: string, default: null},
+  };
+
+  @Prop({
+    type: {
+      type: String,
+      default: 'Point',
+      index: '2dsphere',
+    },
+    coordinates: {
+      type: [Number],
+      default: null,
+    },
+
+  })
+    location: {
+      type: {
+        type: String,
+        default: 'Point',
+        index: '2dsphere',
+      },
+      coordinates: {
+        type: [Number]
+        default: null,
+      },
     };
 
   @Prop()
@@ -162,8 +187,8 @@ export class Business extends AuditableSchema {
         }
   ];
 }
-export type BusinessDocument = HydratedDocument<Business>;
 
 export const BusinessSchema = SchemaFactory.createForClass(Business);
 BusinessSchema.index({ name: 'text', description: 'text' });
-BusinessSchema.index({ geoLocation: '2dsphere' });
+BusinessSchema.index({ location: '2dsphere' });
+export type BusinessDocument = HydratedDocument<Business>;

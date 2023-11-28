@@ -63,7 +63,7 @@ class geoLocation {
     lat: string;
 
   @ApiProperty({ type: String, description: 'longitude of map' })
-    long: String;
+    long: string;
 }
 export class createBusinessDto {
   @ApiProperty({
