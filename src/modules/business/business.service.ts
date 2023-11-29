@@ -25,17 +25,22 @@ export class BusinessService {
   ) {}
 
   async createBusiness(dto: createBusinessDto, userId: string): Promise<Business> {
-    const cordinates = {
-      location: {
+    let newDto:any = dto;
+    if (dto.geoLocation) {
+      const location = {
+        type: 'Point',
         coordinates: [parseFloat(dto.geoLocation.long), parseFloat(dto.geoLocation.lat)],
-      },
-    };
-
+      };
+      newDto = {
+        ...newDto,
+        location,
+      };
+    }
+    console.log(newDto);
     const newBusiness = new this.BusinessModel({
-      ...dto,
+      ...newDto,
       userId,
       createdBy: userId,
-      location: cordinates.location,
     });
     await newBusiness.save();
     return newBusiness;
@@ -145,7 +150,6 @@ export class BusinessService {
       limit = Number(query.limit);
       delete findQuery.limit;
     }
-    console.log(findQuery);
     // eslint-disable-next-line prefer-const
     populate = {
       path: 'groupTypesId accessibilitiesId bussCategoriesId bussSubCategoriesId',
