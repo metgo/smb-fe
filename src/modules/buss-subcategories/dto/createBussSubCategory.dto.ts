@@ -7,18 +7,16 @@ export class createBussSubCategoryDto {
   })
   @IsNotEmpty()
   @IsString()
-    name: string;
+  name: string;
 
   @ApiProperty({
     required: false,
   })
-  @IsNotEmpty()
-  @IsString()
-    icon: string;
+  icon: string;
 
   @ApiProperty({
     required: true,
   })
   @IsNotEmpty()
-    bussCategoryId: [];
+  bussCategoryId: [];
 }
