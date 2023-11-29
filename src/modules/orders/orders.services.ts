@@ -14,7 +14,7 @@ import { UserType } from 'src/modules/users/users.type';
 import { VoucherService } from 'src/modules/vouchers/voucher.service';
 
 @Injectable()
-export class OrderService {
+export class OrdersService {
   constructor(
     @InjectModel(Order.name)
     private OrderModel: Model<Order>,
@@ -66,7 +66,7 @@ export class OrderService {
     );
 
     if (!updateOrder) {
-      throw new NotFoundException(ServerErrors.ORDER.NOT_FOUND);
+      throw new NotFoundException(ServerErrors.ORDERS.NOT_FOUND);
     }
 
     return updateOrder;
@@ -79,7 +79,7 @@ export class OrderService {
     );
 
     if (!order) {
-      throw new NotFoundException(ServerErrors.ORDER.NOT_FOUND);
+      throw new NotFoundException(ServerErrors.ORDERS.NOT_FOUND);
     }
 
     return order;

@@ -80,7 +80,7 @@ export const ServerErrors = {
     EXISTS: 'Campaign already exists',
   },
 
-  ORDER: {
+  ORDERS: {
     NOT_FOUND: 'Order not found',
   },
 };

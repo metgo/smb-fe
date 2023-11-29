@@ -25,7 +25,7 @@ import { AccessibilityModule } from './modules/accessibility/accessibility.modul
 import { GroupTypeModule } from './modules/group-type/group-type.module';
 import { VoucherTemplateModule } from './modules/voucher-template/voucher-template.module';
 import { CampaignModule } from './modules/campaign/campaign.module';
-import { OrderModule } from 'src/modules/orders/orders.modules';
+import { OrdersModule } from 'src/modules/orders/orders.modules';
 import { VoucherModule } from './modules/vouchers/voucher.module';
 
 @Module({
@@ -39,7 +39,7 @@ import { VoucherModule } from './modules/vouchers/voucher.module';
     MPCategoriesModule,
     MPSubCategoriesModule,
     MPSubCategoriesItemsModule,
-    OrderModule,
+    OrdersModule,
     BusinessModule,
     UsersModule,
     DMOModule,

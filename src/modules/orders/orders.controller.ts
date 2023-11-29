@@ -10,14 +10,14 @@ import { JwtAuthGuard } from 'src/core/guards/jwt/jwt.guards';
 import { responseHelper } from 'src/core/helper/response.helper';
 import { CreateOrderDto } from 'src/modules/orders/dto/create-order.dto';
 import { UpdateOrderDto } from 'src/modules/orders/dto/update-order.dto';
-import { OrderService } from 'src/modules/orders/orders.services';
+import { OrdersService } from 'src/modules/orders/orders.services';
 import { IOrderQuery } from 'src/modules/orders/orders.type';
 import { UserType } from 'src/modules/users/users.type';
 
 @Controller()
-export class OrderController {
+export class OrdersController {
   constructor(
-      private orderService: OrderService,
+      private ordersService: OrdersService,
   ) {}
 
   @ApiEndpoint({
@@ -35,7 +35,7 @@ export class OrderController {
     @Req() req,
     @Res() response: Response,
   ) {
-    const order = await this.orderService.create(req.user.id, body);
+    const order = await this.ordersService.create(req.user.id, body);
     return responseHelper(
       response,
       HttpStatus.CREATED,
@@ -64,7 +64,7 @@ export class OrderController {
     @Req() req,
     @Res() response: Response,
   ) {
-    const order = await this.orderService.findMyOrderInfo(req.user, orderId);
+    const order = await this.ordersService.findMyOrderInfo(req.user, orderId);
     return responseHelper(
       response,
       HttpStatus.OK,
@@ -88,7 +88,7 @@ export class OrderController {
     @Req() req,
     @Res() response: Response,
   ) {
-    const orders = await this.orderService.findAll({
+    const orders = await this.ordersService.findAll({
       query,
       myOrder: true,
       loggedInUser: req.user.id,
@@ -117,7 +117,7 @@ export class OrderController {
     @Query() query: IOrderQuery,
     @Res() response: Response,
   ) {
-    const orders = await this.orderService.findAll({
+    const orders = await this.ordersService.findAll({
       query,
     });
     return responseHelper(
@@ -151,7 +151,7 @@ export class OrderController {
     @Req() req,
     @Res() response: Response,
   ) {
-    const order = await this.orderService.updateOrder(
+    const order = await this.ordersService.updateOrder(
       req.user,
       orderId,
       body,
