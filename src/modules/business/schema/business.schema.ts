@@ -90,8 +90,6 @@ export class Business extends AuditableSchema {
   @Prop({
     type: {
       type: String,
-      default: 'Point',
-      index: '2dsphere',
     },
     coordinates: {
       type: [Number],
@@ -102,12 +100,9 @@ export class Business extends AuditableSchema {
     location: {
       type: {
         type: String,
-        default: 'Point',
-        index: '2dsphere',
       },
       coordinates: {
         type: [Number]
-        default: null,
       },
     };
 
