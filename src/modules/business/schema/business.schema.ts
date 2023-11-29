@@ -85,6 +85,30 @@ export class Business extends AuditableSchema {
     geoLocation: {
       lat: { type: string, default: null},
       long: { type: string, default: null},
+  };
+
+  @Prop({
+    type: {
+      type: String,
+      default: 'Point',
+      index: '2dsphere',
+    },
+    coordinates: {
+      type: [Number],
+      default: null,
+    },
+
+  })
+    location: {
+      type: {
+        type: String,
+        default: 'Point',
+        index: '2dsphere',
+      },
+      coordinates: {
+        type: [Number]
+        default: null,
+      },
     };
 
   @Prop()
@@ -162,7 +186,8 @@ export class Business extends AuditableSchema {
         }
   ];
 }
-export type BusinessDocument = HydratedDocument<Business>;
 
 export const BusinessSchema = SchemaFactory.createForClass(Business);
-BusinessSchema.index({ name: 'text', description: 'text' });
+BusinessSchema.index({ name: 'text', description: 'text', tags: 'text' });
+BusinessSchema.index({ location: '2dsphere' });
+export type BusinessDocument = HydratedDocument<Business>;

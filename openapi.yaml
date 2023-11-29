@@ -497,6 +497,16 @@ paths:
           in: query
           schema:
             type: string
+        - name: page
+          required: false
+          in: query
+          schema:
+            type: number
+        - name: limit
+          required: false
+          in: query
+          schema:
+            type: number
         - name: groupTypesId
           required: false
           in: query
@@ -529,12 +539,16 @@ paths:
              [id, id,..]
           schema:
             type: string
-        - name: tags
+        - name: lat
           required: false
           in: query
-          description: |-
-            must follow the pattern 
-             [string, string,..]
+          description: latitude of the location
+          schema:
+            type: string
+        - name: long
+          required: false
+          in: query
+          description: longituted of the location
           schema:
             type: string
       responses:
@@ -613,6 +627,16 @@ paths:
           in: query
           schema:
             type: string
+        - name: page
+          required: false
+          in: query
+          schema:
+            type: number
+        - name: limit
+          required: false
+          in: query
+          schema:
+            type: number
         - name: groupTypesId
           required: false
           in: query
@@ -645,12 +669,16 @@ paths:
              [id, id,..]
           schema:
             type: string
-        - name: tags
+        - name: lat
           required: false
           in: query
-          description: |-
-            must follow the pattern 
-             [string, string,..]
+          description: latitude of the location
+          schema:
+            type: string
+        - name: long
+          required: false
+          in: query
+          description: longituted of the location
           schema:
             type: string
       responses:
@@ -2309,7 +2337,9 @@ components:
         - description
     updateBusinessDto:
       type: object
-      properties: {}
+      properties:
+        geoLocation:
+          $ref: "#/components/schemas/geoLocation"
     UpdateBusinessByAdminDto:
       type: object
       properties:
