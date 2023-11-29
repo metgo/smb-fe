@@ -497,6 +497,16 @@ paths:
           in: query
           schema:
             type: string
+        - name: page
+          required: false
+          in: query
+          schema:
+            type: number
+        - name: limit
+          required: false
+          in: query
+          schema:
+            type: number
         - name: groupTypesId
           required: false
           in: query
@@ -527,14 +537,6 @@ paths:
           description: |-
             must follow the pattern 
              [id, id,..]
-          schema:
-            type: string
-        - name: tags
-          required: false
-          in: query
-          description: |-
-            must follow the pattern 
-             [string, string,..]
           schema:
             type: string
         - name: lat
@@ -625,6 +627,16 @@ paths:
           in: query
           schema:
             type: string
+        - name: page
+          required: false
+          in: query
+          schema:
+            type: number
+        - name: limit
+          required: false
+          in: query
+          schema:
+            type: number
         - name: groupTypesId
           required: false
           in: query
@@ -655,14 +667,6 @@ paths:
           description: |-
             must follow the pattern 
              [id, id,..]
-          schema:
-            type: string
-        - name: tags
-          required: false
-          in: query
-          description: |-
-            must follow the pattern 
-             [string, string,..]
           schema:
             type: string
         - name: lat

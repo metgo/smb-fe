@@ -15,6 +15,7 @@ import { ServerErrors } from 'src/common/constant';
 import { Image } from 'src/common/interface/image.interface';
 import { disSelect } from 'src/common/utils/select.handling';
 import { UpdateBusinessByAdminDto } from 'src/modules/business/dto/update-business-status.dto';
+import { paginationConfig } from 'src/common/pagination.config';
 
 @Injectable()
 export class BusinessService {
@@ -43,8 +44,8 @@ export class BusinessService {
   async getAllBusiness(query: FilterQuery) {
     let findQuery: any = {};
     let select: {};
-    let page: number;
-    let limit: number;
+    let { page } = paginationConfig;
+    let { limit } = paginationConfig;
     let populate: any;
     let populate1: {};
     if (query.search) {
@@ -57,6 +58,37 @@ export class BusinessService {
     } else if (query) {
       findQuery = {
         ...query,
+      };
+    }
+    if (query.bussCategoriesId) {
+      const bussCategoriesId = JSON.parse(query.bussCategoriesId);
+      findQuery = {
+        ...findQuery,
+        bussCategoriesId: { $in: bussCategoriesId },
+      };
+    }
+
+    if (query.bussSubCategoriesId) {
+      const bussSubCategoriesId = JSON.parse(query.bussSubCategoriesId);
+      findQuery = {
+        ...findQuery,
+        bussSubCategoriesId: { $in: bussSubCategoriesId },
+      };
+    }
+
+    if (query.accessibilitiesId) {
+      const accessibilitiesId = JSON.parse(query.accessibilitiesId);
+      findQuery = {
+        ...findQuery,
+        accessibilitiesId: { $in: accessibilitiesId },
+      };
+    }
+
+    if (query.groupTypesId) {
+      const groupTypesId = JSON.parse(query.groupTypesId);
+      findQuery = {
+        ...findQuery,
+        groupTypesId: { $in: groupTypesId },
       };
     }
 
@@ -104,6 +136,16 @@ export class BusinessService {
       delete findQuery?.lat;
       delete findQuery?.long;
     }
+
+    if (query.page) {
+      page = Number(query.page);
+      delete findQuery.page;
+    }
+    if (query.limit) {
+      limit = Number(query.limit);
+      delete findQuery.limit;
+    }
+    console.log(findQuery);
     // eslint-disable-next-line prefer-const
     populate = {
       path: 'groupTypesId accessibilitiesId bussCategoriesId bussSubCategoriesId',
@@ -123,6 +165,7 @@ export class BusinessService {
         select: `${disSelect}`,
       },
     };
+
     // eslint-disable-next-line prefer-const
     select = `${disSelect}`;
     const allBusiness = await queryhandler<Business>(
