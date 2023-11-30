@@ -27,6 +27,7 @@ export class OrdersController {
     noAuthToken: true,
     operation: 'Create order detail',
   })
+  @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.CREATED)
   @Post('orders')
   async createOrder(
