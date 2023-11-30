@@ -31,8 +31,8 @@ export class VoucherTemplateController {
   @UseInterceptors(FileInterceptor('voucherImage', { fileFilter: fileFilterByExtensions }))
   @Post('admin/voucher-template')
   async create(
-      @Req() req,
-      @Res() response: Response,
+    @Req() req,
+    @Res() response: Response,
     @Body() dto: createVoucherTemplateDto,
     @UploadedFile() voucherImage: Express.Multer.File,
   ) {

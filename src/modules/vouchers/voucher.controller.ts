@@ -7,7 +7,7 @@ import { ServerSuccess } from 'src/common/constant';
 import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
 import { VoucherService } from './voucher.service';
 import {
-  FilterQuery, createGuestVoucherDto, createVoucherDto, updateAssignedUserVoucherDto,
+  FilterQuery, createVoucherDto, updateAssignedUserVoucherDto,
 } from './dto';
 import { CampaignService } from '../campaign/campaign.service';
 import { Campaign } from '../campaign/schema/campaign.schema';
@@ -37,14 +37,24 @@ export class VoucherController {
   @Post('buy-voucher')
   async create(
     @Req() req,
-    @Body() dto: createVoucherDto | createGuestVoucherDto,
+    @Res() response: Response,
+    @Body() dto: createVoucherDto,
   ) {
     const userId: string | null = req.user ? req.user.id : null;
     let campaign: Campaign;
     if (dto.campCode) {
       campaign = await this.campaignService.findAndReturn('code', dto.campCode);
     }
-    await this.voucherService.create(dto, campaign._id, userId);
+    const link = await this.voucherService.create(dto, campaign._id, userId);
+    console.log(link);
+    return responseHelper(
+      response,
+      HttpStatus.OK,
+      ServerSuccess.VOUCHER.LISTED,
+      link,
+      null,
+      null,
+    );
   }
 
   @ApiEndpoint({
@@ -57,7 +67,7 @@ export class VoucherController {
     return responseHelper(
       response,
       HttpStatus.OK,
-      ServerSuccess.VOUCHER.CREATED,
+      ServerSuccess.VOUCHER.LISTED,
       voucher,
       null,
       null,
@@ -129,6 +139,7 @@ export class VoucherController {
   ) {
     const userId = request.user.id;
     const vouchers = await this.voucherService.getMyAssign(userId, query);
+    console.log(vouchers);
     return responseHelper(
       response,
       HttpStatus.OK,

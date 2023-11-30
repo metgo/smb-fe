@@ -1,4 +1,4 @@
-import { Model } from 'mongoose';
+import mongoose, { Model } from 'mongoose';
 
 export async function findByFieldName<T>(model: Model<T>, fieldName: keyof T, item: string) {
   const filterBy = { [fieldName]: item };
@@ -40,6 +40,20 @@ export async function findOneById<T>(model: Model<T>, item: string) {
 export async function update<T>(model: Model<T>, fieldName: keyof T, item: string, updateField: object) {
   const filterBy = { [fieldName]: item };
   const data = await model.findOneAndUpdate({ ...filterBy, deletedAt: { $in: [null] } }, updateField, { new: true });
+  if (!data) {
+    return undefined;
+  }
+  return data;
+}
+
+export async function updateMany<T>(
+  model: Model<T>,
+  fieldName: keyof T,
+  item: mongoose.Types.ObjectId[],
+  updateField: object,
+) {
+  const filterBy = { [fieldName]: { $in: item } };
+  const data = await model.updateMany({ ...filterBy, deletedAt: { $in: [null] } }, updateField, { new: true });
   if (!data) {
     return undefined;
   }
