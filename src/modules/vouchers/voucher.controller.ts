@@ -17,6 +17,7 @@ import { VoucherStatus } from 'src/common/enum';
 import { UpdateFieldInterface } from './interface';
 import { responseHelper } from 'src/core/helper/response.helper';
 import { Response } from 'express';
+import { Campaign } from '../campaign/schema/campaign.schema';
 
 @Controller()
 export class VoucherController {
