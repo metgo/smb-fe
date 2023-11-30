@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { VoucherController } from './voucher.controller';
 import { VoucherService } from './voucher.service';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -8,6 +8,7 @@ import { EncryptionModule } from 'src/services/encryption/encryption.module';
 import { ConfigModule } from 'src/services/config/config.module';
 import { GcpBucketModule } from 'src/services/gcp-bucket/gcp-bucket.module';
 import { UsersModule } from '../users/users.module';
+import { PaymentsModule } from 'src/services/payments/payments.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { UsersModule } from '../users/users.module';
     ConfigModule,
     GcpBucketModule,
     UsersModule,
+    forwardRef(() => PaymentsModule),
   ],
   controllers: [VoucherController],
   providers: [VoucherService],

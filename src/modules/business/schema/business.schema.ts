@@ -19,14 +19,17 @@ export class Business extends AuditableSchema {
   @Prop()
     countryCode: string;
 
-  @Prop({ unique: true, default: null })
+  @Prop({ default: null })
     phoneNumber: string;
 
-  @Prop({ unique: true, default: null })
+  @Prop({ default: null })
     busiEmail: string;
 
   @Prop({ required: false, default: null })
     description: string;
+
+  @Prop({ required: false })
+    shortDescription: string;
 
   @Prop({ enum: BusinessStatus, default: BusinessStatus.PENDING })
     status: BusinessStatus;
@@ -47,11 +50,11 @@ export class Business extends AuditableSchema {
     default: null,
   })
     contactDetails: {
-        name: { type: string, default: null},
-        countryCode: { type: string, default: null},
-        phone: { type: string, default: null},
-        address: { type: string, default: null},
-  };
+      name: { type: string, default: null},
+      countryCode: { type: string, default: null},
+      phone: { type: string, default: null},
+      address: { type: string, default: null},
+    };
 
   @Prop({
     type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Users' }],
@@ -87,14 +90,31 @@ export class Business extends AuditableSchema {
       long: { type: string, default: null},
     };
 
+  @Prop({
+    type: {
+      type: String,
+    },
+    coordinates: {
+      type: [Number],
+      default: null,
+    },
+
+  })
+    location: {
+      type: {
+        type: String,
+      },
+      coordinates: {
+        type: number[];
+      },
+    };
+
   @Prop()
-    images: [
-      {
-        image: { type: string, default: null}
-        caption: { type: string, default: null}
-        alt:{ type: string, default: null}
-      }
-    ];
+    images: [{
+      image: { type: string, default: null}
+      caption: { type: string, default: null}
+      alt:{ type: string, default: null}
+    }];
 
   @Prop({
     required: false,
@@ -102,22 +122,18 @@ export class Business extends AuditableSchema {
     ref: 'SocialMedia',
     default: null,
   })
-    socialMedia: [
-        {
-        socialMediaId: {
-            type: mongoose.Types.ObjectId,
-            ref: 'SocialMedia'
-          }
-          url: { type: string}
-        }
-  ];
+    socialMedia: [{
+      socialMediaId: {
+        type: mongoose.Types.ObjectId,
+        ref: 'SocialMedia'
+      }
+      url: { type: string}
+    }];
 
-  @Prop(
-    {
-      type: [{ type: mongoose.Schema.Types.ObjectId, ref: GroupType.name }],
-      required: false,
-    },
-  )
+  @Prop({
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: GroupType.name }],
+    required: false,
+  })
     groupTypesId: mongoose.Types.ObjectId[];
 
   @Prop({
@@ -138,16 +154,16 @@ export class Business extends AuditableSchema {
   })
     bussSubCategoriesId: mongoose.Types.ObjectId[];
 
-    @Prop({
-      type: [String],
-      validate: {
-        validator(value: string[]) {
-          return value.length <= 5;
-        },
-        message: 'Tags should not be more than 5',
+  @Prop({
+    type: [String],
+    validate: {
+      validator(value: string[]) {
+        return value.length <= 5;
       },
-    })
-      tags: string[];
+      message: 'Tags should not be more than 5',
+    },
+  })
+    tags: string[];
 
   @Prop({ required: false })
     openingHrs: [
@@ -161,8 +177,15 @@ export class Business extends AuditableSchema {
           }
         }
   ];
+
+  @Prop({ type: Boolean, default: false })
+    isAlwaysOpen: boolean;
+
+  @Prop({ type: Boolean, default: false })
+    isOpenOnWeekends: boolean;
 }
-export type BusinessDocument = HydratedDocument<Business>;
 
 export const BusinessSchema = SchemaFactory.createForClass(Business);
-BusinessSchema.index({ name: 'text', description: 'text' });
+BusinessSchema.index({ name: 'text', description: 'text', tags: 'text' });
+BusinessSchema.index({ location: '2dsphere' });
+export type BusinessDocument = HydratedDocument<Business>;

@@ -40,20 +40,18 @@ export class VoucherController {
     @Body() dto: createVoucherDto,
   ) {
     const userId: string | null = req.user ? req.user.id : null;
-    let voucher;
+    let campaign: Campaign;
 
     if (dto.campCode) {
-      const campaign = await this.campaignService.findAndReturn('code', dto.campCode);
-      voucher = await this.voucherService.create(dto, userId, campaign._id);
+      campaign = await this.campaignService.findAndReturn('code', dto.campCode);
     }
-
-    voucher = await this.voucherService.create(dto, userId);
-
+    const link = await this.voucherService.create(dto, userId ,campaign._id);
+    console.log(link);
     return responseHelper(
       response,
       HttpStatus.OK,
-      ServerSuccess.VOUCHER.CREATED,
-      voucher,
+      ServerSuccess.VOUCHER.LISTED,
+      link,
       null,
       null,
     );
@@ -69,7 +67,7 @@ export class VoucherController {
     return responseHelper(
       response,
       HttpStatus.OK,
-      ServerSuccess.VOUCHER.CREATED,
+      ServerSuccess.VOUCHER.LISTED,
       voucher,
       null,
       null,
@@ -141,6 +139,7 @@ export class VoucherController {
   ) {
     const userId = request.user.id;
     const vouchers = await this.voucherService.getMyAssign(userId, query);
+    console.log(vouchers);
     return responseHelper(
       response,
       HttpStatus.OK,

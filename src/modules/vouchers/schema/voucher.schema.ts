@@ -1,11 +1,19 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
-import { VoucherStatus } from 'src/common/enum';
+import { VoucherPaymentStatus, VoucherStatus } from 'src/common/enum';
 import { twoYearExpireDate } from 'src/common/expireDate';
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
 
 @Schema()
 export class Voucher extends AuditableSchema {
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    index: true,
+    required: true,
+    auto: true,
+  })
+    _id: mongoose.Types.ObjectId;
+
   @Prop()
     name: string;
 
@@ -21,6 +29,11 @@ export class Voucher extends AuditableSchema {
 
   @Prop()
     remainingAmount: number;
+
+  @Prop({
+    default: VoucherPaymentStatus.UNPAID,
+  })
+    paymentStatus: VoucherPaymentStatus;
 
   @Prop({ enum: VoucherStatus, default: VoucherStatus.UNASSIGNED })
     status: VoucherStatus;

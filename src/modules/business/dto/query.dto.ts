@@ -6,6 +6,14 @@ export class FilterQuery {
     @IsOptional()
       search: string;
 
+    @ApiProperty({ type: Number, required: false })
+    @IsOptional()
+      page: number;
+
+    @ApiProperty({ type: Number, required: false })
+    @IsOptional()
+      limit: number;
+
     @ApiProperty({ type: String, required: false, description: 'must follow the pattern \n [id, id,..]' })
     @IsOptional()
       groupTypesId: string;
@@ -22,7 +30,11 @@ export class FilterQuery {
     @IsOptional()
       bussSubCategoriesId: string;
 
-    @ApiProperty({ type: String, required: false, description: 'must follow the pattern \n [string, string,..]' })
+    @ApiProperty({ type: String, required: false, description: 'latitude of the location' })
     @IsOptional()
-      tags: string;
+      lat: string;
+
+    @ApiProperty({ type: String, required: false, description: 'longituted of the location' })
+    @IsOptional()
+      long: string;
 }

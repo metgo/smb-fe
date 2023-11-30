@@ -15,6 +15,7 @@ import { ServerErrors } from 'src/common/constant';
 import { Image } from 'src/common/interface/image.interface';
 import { disSelect } from 'src/common/utils/select.handling';
 import { UpdateBusinessByAdminDto } from 'src/modules/business/dto/update-business-status.dto';
+import { paginationConfig } from 'src/common/pagination.config';
 
 @Injectable()
 export class BusinessService {
@@ -24,7 +25,23 @@ export class BusinessService {
   ) {}
 
   async createBusiness(dto: createBusinessDto, userId: string): Promise<Business> {
-    const newBusiness = new this.BusinessModel({ ...dto, userId, createdBy: userId });
+    let newDto:any = dto;
+    if (dto.geoLocation) {
+      const location = {
+        type: 'Point',
+        coordinates: [parseFloat(dto.geoLocation.long), parseFloat(dto.geoLocation.lat)],
+      };
+      newDto = {
+        ...newDto,
+        location,
+      };
+    }
+    console.log(newDto);
+    const newBusiness = new this.BusinessModel({
+      ...newDto,
+      userId,
+      createdBy: userId,
+    });
     await newBusiness.save();
     return newBusiness;
   }
@@ -32,8 +49,8 @@ export class BusinessService {
   async getAllBusiness(query: FilterQuery) {
     let findQuery: any = {};
     let select: {};
-    let page: number;
-    let limit: number;
+    let { page } = paginationConfig;
+    let { limit } = paginationConfig;
     let populate: any;
     let populate1: {};
     if (query.search) {
@@ -47,6 +64,91 @@ export class BusinessService {
       findQuery = {
         ...query,
       };
+    }
+    if (query.bussCategoriesId) {
+      const bussCategoriesId = JSON.parse(query.bussCategoriesId);
+      findQuery = {
+        ...findQuery,
+        bussCategoriesId: { $in: bussCategoriesId },
+      };
+    }
+
+    if (query.bussSubCategoriesId) {
+      const bussSubCategoriesId = JSON.parse(query.bussSubCategoriesId);
+      findQuery = {
+        ...findQuery,
+        bussSubCategoriesId: { $in: bussSubCategoriesId },
+      };
+    }
+
+    if (query.accessibilitiesId) {
+      const accessibilitiesId = JSON.parse(query.accessibilitiesId);
+      findQuery = {
+        ...findQuery,
+        accessibilitiesId: { $in: accessibilitiesId },
+      };
+    }
+
+    if (query.groupTypesId) {
+      const groupTypesId = JSON.parse(query.groupTypesId);
+      findQuery = {
+        ...findQuery,
+        groupTypesId: { $in: groupTypesId },
+      };
+    }
+
+    const METERS_PER_MILE = 1609.34;
+    const maxDistanceInRadius = 5 / 3963;
+    if (query.lat && query.long) {
+      // findQuery = {
+      //   ...findQuery, // Filter out businesses without longitude data
+      //   location: {
+      //     $nearSphere: {
+      //       $geometry: {
+      //         type: 'Point',
+      //         coordinates: [query.long, query.lat],
+      //       },
+      //       $minDistance: 1000,
+      //       $maxDistance: 5000,
+      //     },
+      //   },
+      // };
+
+      findQuery = {
+        ...findQuery, // Filter out businesses without longitude data
+        location: {
+          $geoWithin: {
+            $centerSphere: [
+              [query.long, query.lat],
+              maxDistanceInRadius,
+            ],
+          },
+        },
+      };
+      // findQuery = {
+      //   ...findQuery,
+      //   location: {
+      //     $near: {
+      //       $geometry: {
+      //         type: 'Point',
+      //         coordinates: [query.long, query.lat],
+      //       },
+      //       $minDistance: 1000,
+      //       $maxDistance: 5000,
+      //     },
+      //   },
+      // };
+      delete findQuery?.lat;
+      delete findQuery?.long;
+    }
+
+    if (query.page) {
+      page = Number(query.page);
+      delete findQuery.page;
+    }
+    if (query.limit) {
+      limit = Number(query.limit);
+      delete findQuery.limit;
     }
     // eslint-disable-next-line prefer-const
     populate = {
@@ -67,6 +169,7 @@ export class BusinessService {
         select: `${disSelect}`,
       },
     };
+
     // eslint-disable-next-line prefer-const
     select = `${disSelect}`;
     const allBusiness = await queryhandler<Business>(
@@ -171,11 +274,31 @@ export class BusinessService {
     loggedInUserId: string,
     dto: updateBusinessDto | Image[] | UpdateBusinessByAdminDto,
   ): Promise<Business> {
-    let updatedField: any = {
+    console.log(dto);
+    let updatedField: any;
+    let cordinates:any;
+    if (dto instanceof updateBusinessDto && dto.geoLocation) {
+      cordinates = {
+        location: {
+          coordinates: [parseFloat(dto.geoLocation.long), parseFloat(dto.geoLocation.lat)],
+        },
+      };
+      updatedField = {
+        ...dto,
+        location: {
+          type: 'Point',
+          coordinates: cordinates.location.coordinates,
+        },
+      };
+    }
+    console.log(cordinates);
+    updatedField = {
+      ...updatedField,
       ...dto,
       updatedAt: new Date(),
       updatedBy: loggedInUserId,
     };
+    console.log(updatedField);
     if (!(dto instanceof updateBusinessDto || dto instanceof UpdateBusinessByAdminDto)) {
       const existingBusiness = await this.getBusiness(id);
 

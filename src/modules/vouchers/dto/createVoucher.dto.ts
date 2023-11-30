@@ -6,6 +6,9 @@ import {
 import { AmountRange } from 'src/core/decorators/range.decorator';
 
 export class createVoucherDto {
+  @ApiProperty({
+    required: true,
+  })
   @IsString()
   @IsNotEmpty()
   @ApiProperty()
@@ -16,13 +19,17 @@ export class createVoucherDto {
   @IsOptional()
     campCode: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    required: true,
+  })
   @IsNotEmpty()
   @AmountRange(1, 5000, { message: 'Amount should be between 1 and 5000' })
   @Transform(({ value }) => parseInt(value, 10), { toClassOnly: true })
     amount: number;
 
-  @ApiProperty()
+  @ApiProperty({
+    required: true,
+  })
   @IsNotEmpty()
   @IsPositive()
   @Transform(({ value }) => parseInt(value, 10), { toClassOnly: true })

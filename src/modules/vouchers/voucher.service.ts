@@ -2,7 +2,7 @@
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-plusplus */
 import {
-  BadRequestException, Injectable, NotFoundException,
+  BadRequestException, Inject, Injectable, NotFoundException, forwardRef,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
@@ -11,16 +11,19 @@ import {
   FilterQuery, createVoucherDto,
 } from './dto';
 import { generateRandomCode } from 'src/common/utils/randomCode.generator';
-import { queryhandler, updateWhere } from 'src/core/helper/query-helper';
+import { queryhandler, updateMany, updateWhere } from 'src/core/helper/query-helper';
 import { disSelect } from 'src/common/utils/select.handling';
 import { ServerErrors } from 'src/common/constant';
 import { UpdateFieldInterface } from './interface';
+import { PaymentsService } from 'src/services/payments/payments.service';
 
 @Injectable()
 export class VoucherService {
   constructor(
     @InjectModel('Voucher')
     private readonly VoucherModel: Model<Voucher>,
+    @Inject(forwardRef(() => PaymentsService))
+    private readonly paymentService: PaymentsService,
   ) { }
 
   async create(
@@ -29,8 +32,8 @@ export class VoucherService {
     campaignId?: mongoose.Types.ObjectId,
   ) {
     let i: number = 0;
-    let vouchers = [];
-
+    const voucherId: any = [];
+    const totalAmount = dto.noOfVoucher * dto.amount;
     for (i = 0; i < dto.noOfVoucher; i++) {
       const randomCode = generateRandomCode(12);
       const code = dto?.campCode ? dto.campCode + randomCode : `TAV8${randomCode}`;
@@ -41,13 +44,11 @@ export class VoucherService {
         campId: campaignId || null,
         createdBy: userId,
       });
-
-      vouchers.push(newVoucher.save());
+      newVoucher.save();
+      voucherId.push(newVoucher._id);
     }
-
-    await Promise.all(vouchers);
-
-    return 'success';
+    console.log(voucherId);
+    return this.paymentService.generateLink(totalAmount, 'ILS', 'VOUCHER_PAYMENT', voucherId);
   }
 
   async getOne(code: string) {
@@ -110,13 +111,13 @@ export class VoucherService {
   async getMyAssign(userId: string, query:FilterQuery) {
     let findQuery: any = {};
     let select: {};
-    let page: number = 1;
-    let limit: number = 10;
+    let page: number;
+    let limit: number;
     let populate: any;
     let populate1: {};
 
     findQuery = {
-      assignedTo: userId,
+      assignedTo: new mongoose.Types.ObjectId(userId),
     };
     if (query.search) {
       findQuery = {
@@ -134,6 +135,7 @@ export class VoucherService {
     delete findQuery?.page;
     delete findQuery?.limit;
     delete findQuery?.status;
+
     select = disSelect;
     const voucher = await queryhandler<Voucher>(
       this.VoucherModel,
@@ -158,6 +160,19 @@ export class VoucherService {
       throw new NotFoundException(ServerErrors.VOUCHER.NOT_FOUND);
     }
     return assignUser;
+  }
+
+  async update(id: mongoose.Types.ObjectId[], updateField: object) {
+    const updateVoucher = await updateMany<Voucher>(
+      this.VoucherModel,
+      '_id',
+      id,
+      updateField,
+    );
+
+    if (!updateVoucher) {
+      throw new BadRequestException('voucher not found');
+    }
   }
 
   async findByIds(ids: string[]): Promise<Voucher[]> {

@@ -27,6 +27,7 @@ import { VoucherTemplateModule } from './modules/voucher-template/voucher-templa
 import { CampaignModule } from './modules/campaign/campaign.module';
 import { OrdersModule } from 'src/modules/orders/orders.modules';
 import { VoucherModule } from './modules/vouchers/voucher.module';
+import { PaymentsModule } from './services/payments/payments.module';
 
 @Module({
   imports: [
@@ -55,6 +56,7 @@ import { VoucherModule } from './modules/vouchers/voucher.module';
     VoucherTemplateModule,
     CampaignModule,
     VoucherModule,
+    PaymentsModule,
   ],
   providers: [
     {
