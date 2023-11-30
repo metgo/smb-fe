@@ -19,10 +19,10 @@ export class Business extends AuditableSchema {
   @Prop()
     countryCode: string;
 
-  @Prop({ unique: true, default: null })
+  @Prop({ default: null })
     phoneNumber: string;
 
-  @Prop({ unique: true, default: null })
+  @Prop({ default: null })
     busiEmail: string;
 
   @Prop({ required: false, default: null })
