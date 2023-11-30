@@ -491,18 +491,6 @@ paths:
       tags:
         - Products
         - Orders
-    get:
-      operationId: getAllOrders
-      summary: Get all orders
-      parameters: []
-      responses:
-        "200":
-          description: Order was succesfully listed
-        "422":
-          description: Failed Validation
-      tags:
-        - Products
-        - Orders
   "/orders/{orderId}":
     get:
       operationId: getOrderDetails
@@ -552,6 +540,19 @@ paths:
     get:
       operationId: getMyOrders
       summary: Get my orders
+      parameters: []
+      responses:
+        "200":
+          description: Order was succesfully listed
+        "422":
+          description: Failed Validation
+      tags:
+        - Products
+        - Orders
+  /all-orders:
+    get:
+      operationId: getAllOrders
+      summary: Get all orders
       parameters: []
       responses:
         "200":

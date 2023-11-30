@@ -4,6 +4,7 @@ import mongoose, { Model } from 'mongoose';
 
 import { ServerErrors } from 'src/common/constant';
 import { paginationConfig } from 'src/common/pagination.config';
+import { sortByPriorityAndHighest } from 'src/common/sort-priority-and-highest';
 import { findOneByFieldNames, queryhandler } from 'src/core/helper/query-helper';
 import { CreateOrderDto } from 'src/modules/orders/dto/create-order.dto';
 import { UpdateOrderDto } from 'src/modules/orders/dto/update-order.dto';
@@ -25,18 +26,11 @@ export class OrdersService {
   async create(loggedInUserId: string, body: CreateOrderDto): Promise<Order> {
     // get voucherIds anc sort by amount
     const voucherIds = await this.voucherService.findByIds(body.voucher);
-    voucherIds.sort((a, b) => {
-      if (
-        (body.totalAmount === a.remainingAmount && body.totalAmount !== b.remainingAmount)
-          || (body.totalAmount !== a.remainingAmount && body.totalAmount === b.remainingAmount)
-      ) {
-        return body.totalAmount === a.remainingAmount ? -1 : 1;
-      }
-      return b.remainingAmount - a.remainingAmount;
-    });
+
+    const sortedVoucher = sortByPriorityAndHighest(body.totalAmount, voucherIds);
 
     // update vouchers detail and deduct voucher amounts
-    const voucher = await this.processVouchers(loggedInUserId, voucherIds, body.totalAmount);
+    const voucher = await this.processVouchers(loggedInUserId, sortedVoucher, body.totalAmount);
 
     // deduct product count
     body.productId.map(async (productId: string) => {
@@ -49,8 +43,8 @@ export class OrdersService {
     const newOrder = new this.OrderModel({
       ...body,
       voucher,
-      userId: loggedInUserId,
-      createdBy: loggedInUserId,
+      userId: loggedInUserId || null,
+      createdBy: loggedInUserId || null,
     });
 
     await newOrder.save();

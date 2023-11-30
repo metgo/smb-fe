@@ -10,6 +10,7 @@ import {
   FilterQuery, createVoucherDto, updateAssignedUserVoucherDto,
 } from './dto';
 import { CampaignService } from '../campaign/campaign.service';
+import { Campaign } from '../campaign/schema/campaign.schema';
 import { JwtAuthGuard } from 'src/core/guards/jwt/jwt.guards';
 import { UsersService } from '../users/users.services';
 import { User } from '../users/schema/users.schema';
@@ -17,7 +18,6 @@ import { VoucherStatus } from 'src/common/enum';
 import { UpdateFieldInterface } from './interface';
 import { responseHelper } from 'src/core/helper/response.helper';
 import { Response } from 'express';
-import { Campaign } from '../campaign/schema/campaign.schema';
 
 @Controller()
 export class VoucherController {
@@ -46,8 +46,8 @@ export class VoucherController {
     if (dto.campCode) {
       campaign = await this.campaignService.findAndReturn('code', dto.campCode);
     }
-    const link = await this.voucherService.create(dto, userId ,campaign._id);
-    console.log(link);
+    const link = await this.voucherService.create(dto, userId, campaign._id);
+
     return responseHelper(
       response,
       HttpStatus.OK,

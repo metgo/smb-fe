@@ -27,7 +27,6 @@ export class OrdersController {
     noAuthToken: true,
     operation: 'Create order detail',
   })
-  @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.CREATED)
   @Post('orders')
   async createOrder(
@@ -35,7 +34,7 @@ export class OrdersController {
     @Req() req,
     @Res() response: Response,
   ) {
-    const order = await this.ordersService.create(req.user.id, body);
+    const order = await this.ordersService.create(req?.user?.id, body);
     return responseHelper(
       response,
       HttpStatus.CREATED,
@@ -112,7 +111,7 @@ export class OrdersController {
   @Roles(UserType.SUPERADMIN, UserType.ADMIN, UserType.DMO)
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
-  @Get('orders')
+  @Get('all-orders')
   async getAllOrders(
     @Query() query: IOrderQuery,
     @Res() response: Response,

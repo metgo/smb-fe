@@ -12,6 +12,7 @@ import { UsersService } from 'src/modules/users/users.services';
 
 const whiteListAPI = [
   '/buy-voucher',
+  '/orders',
 ];
 
 @Injectable()

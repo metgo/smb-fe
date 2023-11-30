@@ -16,6 +16,7 @@ export enum PaymentMode {
 export interface IOrderQuery{
     page?: number,
     limit?: number,
+    status: OrderStatus
 }
 
 export interface FindOrders {
