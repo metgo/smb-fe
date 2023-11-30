@@ -26,6 +26,7 @@ import { GroupTypeModule } from './modules/group-type/group-type.module';
 import { VoucherTemplateModule } from './modules/voucher-template/voucher-template.module';
 import { CampaignModule } from './modules/campaign/campaign.module';
 import { VoucherModule } from './modules/vouchers/voucher.module';
+import { PaymentsModule } from './services/payments/payments.module';
 
 @Module({
   imports: [
@@ -53,6 +54,7 @@ import { VoucherModule } from './modules/vouchers/voucher.module';
     VoucherTemplateModule,
     CampaignModule,
     VoucherModule,
+    PaymentsModule,
   ],
   providers: [
     {

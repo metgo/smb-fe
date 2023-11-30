@@ -1802,6 +1802,12 @@ paths:
     post:
       operationId: create
       parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/createVoucherDto"
       responses:
         "201":
           description: Voucher  was succesfully created
@@ -1869,12 +1875,12 @@ paths:
               - REDEEMED
             type: string
         - name: page
-          required: true
+          required: false
           in: query
           schema:
             type: number
         - name: limit
-          required: true
+          required: false
           in: query
           schema:
             type: number
@@ -1910,12 +1916,12 @@ paths:
               - REDEEMED
             type: string
         - name: page
-          required: true
+          required: false
           in: query
           schema:
             type: number
         - name: limit
-          required: true
+          required: false
           in: query
           schema:
             type: number
@@ -1952,6 +1958,20 @@ paths:
       tags:
         - Admin
         - Voucher
+  /payment/success:
+    get:
+      operationId: success
+      parameters: []
+      responses:
+        "200":
+          description: ""
+  /payment/failure:
+    get:
+      operationId: failure
+      parameters: []
+      responses:
+        "200":
+          description: ""
 info:
   title: METGO
   description: API Documentation for MetGo
@@ -2611,6 +2631,25 @@ components:
     updateCampaignDto:
       type: object
       properties: {}
+    createVoucherDto:
+      type: object
+      properties:
+        name:
+          type: string
+        campCode:
+          type: string
+        amount:
+          type: number
+        noOfVoucher:
+          type: number
+        email:
+          type: string
+      required:
+        - name
+        - campCode
+        - amount
+        - noOfVoucher
+        - email
     updateAssignedUserVoucherDto:
       type: object
       properties:

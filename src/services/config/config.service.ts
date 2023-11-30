@@ -48,6 +48,13 @@ export class ConfigService {
       'EMAIL_HOST',
       'USER',
       'PASSWORD',
+      'PAYMENT_URL',
+      'PAYMENT_API',
+      'PAYMENT_SECRET',
+      'PAYMENT_PAGE_UUID',
+      'PAYMNET_SUCCESS',
+      'PAYMENT_FAILURE',
+      'URL',
     ];
     return ENV_VARIABLES.reduce((obj: any, variable) => {
       if (process.env[variable]) {
@@ -88,6 +95,13 @@ export class ConfigService {
       EMAIL_HOST: Joi.string().required(),
       USER: Joi.string().required(),
       PASSWORD: Joi.string().required(),
+      PAYMENT_URL: Joi.string().required(),
+      PAYMENT_API: Joi.string().required(),
+      PAYMENT_SECRET: Joi.string().required(),
+      PAYMENT_PAGE_UUID: Joi.string().required(),
+      PAYMNET_SUCCESS: Joi.string().required(),
+      PAYMENT_FAILURE: Joi.string().required(),
+      URL: Joi.string().required(),
     }).unknown(true);
 
     const { error, value: validatedEnvConfig } = envVarsSchema.validate(envConfig);
@@ -133,6 +147,18 @@ export class ConfigService {
       EMAIL_HOST: this.get('EMAIL_HOST'),
       USER: this.get('USER'),
       PASSWORD: this.get('PASSWORD'),
+    };
+  }
+
+  get paymentDetails() {
+    return {
+      URL: this.get('PAYMENT_URL'),
+      API: this.get('PAYMENT_API'),
+      SECRET: this.get('PAYMENT_SECRET'),
+      PAGE_UUID: this.get('PAYMENT_PAGE_UUID'),
+      SUCCESS: this.get('PAYMNET_SUCCESS'),
+      FAILURE: this.get('PAYMENT_FAILURE'),
+      SERVER_URL: this.get('URL'),
     };
   }
 }

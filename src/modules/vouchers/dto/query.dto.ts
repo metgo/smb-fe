@@ -11,11 +11,11 @@ export class FilterQuery {
   @IsOptional()
     status: VoucherStatus;
 
-  @ApiProperty({ type: Number, required: true })
-  @IsNotEmpty()
+  @ApiProperty({ type: Number, required: false })
+  @IsOptional()
     page: number;
 
-  @ApiProperty({ type: Number, required: true })
-  @IsNotEmpty()
+  @ApiProperty({ type: Number, required: false })
+  @IsOptional()
     limit: number;
 }

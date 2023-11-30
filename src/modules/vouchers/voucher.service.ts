@@ -1,36 +1,39 @@
 /* eslint-disable prefer-const */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-plusplus */
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException, Inject, Injectable, NotFoundException, forwardRef,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
 import { Voucher } from './schema/voucher.schema';
 import {
-  FilterQuery, createGuestVoucherDto, createVoucherDto,
+  FilterQuery, createVoucherDto,
 } from './dto';
-import { EncryptionService } from 'src/services/encryption/encryption.service';
 import { generateRandomCode } from 'src/common/utils/randomCode.generator';
-import { ConfigService } from 'src/services/config/config.service';
-import { queryhandler, updateWhere } from 'src/core/helper/query-helper';
+import { queryhandler, updateMany, updateWhere } from 'src/core/helper/query-helper';
 import { disSelect } from 'src/common/utils/select.handling';
 import { ServerErrors } from 'src/common/constant';
 import { UpdateFieldInterface } from './interface';
+import { PaymentsService } from 'src/services/payments/payments.service';
 
 @Injectable()
 export class VoucherService {
   constructor(
     @InjectModel('Voucher')
     private readonly VoucherModel: Model<Voucher>,
-    private readonly encryptionService: EncryptionService,
-    private readonly configService: ConfigService,
+    @Inject(forwardRef(() => PaymentsService))
+    private readonly paymentService: PaymentsService,
   ) { }
 
   async create(
-    dto: createVoucherDto | createGuestVoucherDto,
+    dto: createVoucherDto,
     campaign: mongoose.Types.ObjectId,
     userId: string | null,
   ) {
     let i: number = 0;
+    const voucherId: any = [];
+    const totalAmount = dto.noOfVoucher * dto.amount;
     for (i = 0; i < dto.noOfVoucher; i++) {
       const randomCode = generateRandomCode(12);
       const code = dto.campCode + randomCode;
@@ -42,9 +45,10 @@ export class VoucherService {
         createdBy: userId,
       });
       newVoucher.save();
+      voucherId.push(newVoucher._id);
     }
-
-    return 'success';
+    console.log(voucherId);
+    return this.paymentService.generateLink(totalAmount, 'ILS', 'VOUCHER_PAYMENT', voucherId);
   }
 
   async getOne(code: string) {
@@ -107,13 +111,13 @@ export class VoucherService {
   async getMyAssign(userId: string, query:FilterQuery) {
     let findQuery: any = {};
     let select: {};
-    let page: number = 1;
-    let limit: number = 10;
+    let page: number;
+    let limit: number;
     let populate: any;
     let populate1: {};
 
     findQuery = {
-      assignedTo: userId,
+      assignedTo: new mongoose.Types.ObjectId(userId),
     };
     if (query.search) {
       findQuery = {
@@ -131,6 +135,7 @@ export class VoucherService {
     delete findQuery?.page;
     delete findQuery?.limit;
     delete findQuery?.status;
+
     select = disSelect;
     const voucher = await queryhandler<Voucher>(
       this.VoucherModel,
@@ -155,5 +160,18 @@ export class VoucherService {
       throw new NotFoundException(ServerErrors.VOUCHER.NOT_FOUND);
     }
     return assignUser;
+  }
+
+  async update(id: mongoose.Types.ObjectId[], updateField: object) {
+    const updateVoucher = await updateMany<Voucher>(
+      this.VoucherModel,
+      '_id',
+      id,
+      updateField,
+    );
+
+    if (!updateVoucher) {
+      throw new BadRequestException('voucher not found');
+    }
   }
 }
