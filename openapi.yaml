@@ -562,6 +562,385 @@ paths:
       tags:
         - Products
         - Orders
+  /payment/success:
+    get:
+      operationId: success
+      parameters: []
+      responses:
+        "200":
+          description: ""
+  /payment/failure:
+    get:
+      operationId: failure
+      parameters: []
+      responses:
+        "200":
+          description: ""
+  /buy-voucher:
+    post:
+      operationId: create
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/createVoucherDto"
+      responses:
+        "201":
+          description: Voucher  was succesfully created
+        "401":
+          description: Authorization header not found or jwt token has expired
+        "422":
+          description: Failed Validation
+      security:
+        - defaultBearerAuth: []
+      tags:
+        - Admin
+        - Voucher
+  "/voucher-code/{code}":
+    get:
+      operationId: getOne
+      parameters:
+        - name: code
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Voucher  was succesfully listed
+        "422":
+          description: Failed Validation
+      tags:
+        - Admin
+        - Voucher
+  "/voucher-id/{id}":
+    get:
+      operationId: getOneById
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Voucher  was succesfully created
+        "422":
+          description: Failed Validation
+      tags:
+        - Admin
+        - Voucher
+  /my-voucher:
+    get:
+      operationId: getAll
+      parameters:
+        - name: search
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: status
+          required: false
+          in: query
+          schema:
+            enum:
+              - ASSIGNED
+              - UNASSIGNED
+              - WAITING
+              - EXPIRED
+              - REDEEMED
+            type: string
+        - name: page
+          required: false
+          in: query
+          schema:
+            type: number
+        - name: limit
+          required: false
+          in: query
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Voucher  was succesfully listed
+        "401":
+          description: Authorization header not found or jwt token has expired
+        "422":
+          description: Failed Validation
+      security:
+        - defaultBearerAuth: []
+      tags:
+        - Admin, Voucher
+  /voucher/assign-me:
+    get:
+      operationId: assignToMe
+      parameters:
+        - name: search
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: status
+          required: false
+          in: query
+          schema:
+            enum:
+              - ASSIGNED
+              - UNASSIGNED
+              - WAITING
+              - EXPIRED
+              - REDEEMED
+            type: string
+        - name: page
+          required: false
+          in: query
+          schema:
+            type: number
+        - name: limit
+          required: false
+          in: query
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Voucher  was succesfully listed
+        "401":
+          description: Authorization header not found or jwt token has expired
+        "422":
+          description: Failed Validation
+      security:
+        - defaultBearerAuth: []
+      tags:
+        - Admin, Voucher
+  /voucher/assign-user:
+    patch:
+      operationId: assignUser
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/updateAssignedUserVoucherDto"
+      responses:
+        "200":
+          description: Voucher was successfully asigned
+        "401":
+          description: Authorization header not found or jwt token has expired
+        "422":
+          description: Failed Validation
+      security:
+        - defaultBearerAuth: []
+      tags:
+        - Admin
+        - Voucher
+  /admin/campaign:
+    post:
+      operationId: create
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/createCampaignDto"
+      responses:
+        "201":
+          description: Campaign was succesfully created
+        "401":
+          description: Authorization header not found or jwt token has expired
+        "422":
+          description: Failed Validation
+      security:
+        - defaultBearerAuth: []
+      tags:
+        - Admin, Campaign
+    get:
+      operationId: getAll
+      parameters:
+        - name: search
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: size
+          required: false
+          in: query
+          schema:
+            type: number
+        - name: page
+          required: false
+          in: query
+          schema:
+            type: number
+        - name: dmoId
+          required: false
+          in: query
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Campaign was succesfully listed
+        "422":
+          description: Failed Validation
+      tags:
+        - Admin, Campaign
+  "/admin/campaign/{id}":
+    get:
+      operationId: getOne
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Campaign was succesfully listed
+        "422":
+          description: Failed Validation
+      tags:
+        - Admin, Campaign
+    delete:
+      operationId: softDelete
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Campaign was succesfully updated
+        "422":
+          description: Failed Validation
+      tags:
+        - Admin
+        - Campaign
+  /admin/my-campaign:
+    get:
+      operationId: getMy
+      parameters:
+        - name: search
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: size
+          required: false
+          in: query
+          schema:
+            type: number
+        - name: page
+          required: false
+          in: query
+          schema:
+            type: number
+        - name: dmoId
+          required: false
+          in: query
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Campaign was succesfully listed
+        "422":
+          description: Failed Validation
+      tags:
+        - Admin, Campaign
+  "/admin/update/{id}":
+    put:
+      operationId: update
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/updateCampaignDto"
+      responses:
+        "200":
+          description: Campaign was succesfully updated
+        "422":
+          description: Failed Validation
+      tags:
+        - Admin
+        - Campaign
+  /admin/dmo:
+    post:
+      operationId: createDMO
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateDMODto"
+      responses:
+        "201":
+          description: DMO was successfully created
+        "422":
+          description: Failed Validation
+      tags:
+        - Admin
+        - DMO
+    get:
+      operationId: getAllDMO
+      parameters: []
+      responses:
+        "200":
+          description: DMO was successfully listed
+        "422":
+          description: Failed Validation
+      tags:
+        - Admin
+        - DMO
+  "/admin/dmo/{id}":
+    put:
+      operationId: updateMPSubCategoriesItems
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateDMODto"
+      responses:
+        "200":
+          description: DMO was successfully updated
+        "422":
+          description: Failed Validation
+      tags:
+        - Admin
+        - DMO
+    delete:
+      operationId: deleteMPSubCategoriesItems
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: DMO was successfully updated
+        "422":
+          description: Failed Validation
+      tags:
+        - Admin
+        - DMO
   "/businesses/{businessId}/products":
     post:
       operationId: createProduct
@@ -962,385 +1341,6 @@ paths:
         - defaultBearerAuth: []
       tags:
         - Admin, Business
-  /buy-voucher:
-    post:
-      operationId: create
-      parameters: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/createVoucherDto"
-      responses:
-        "201":
-          description: Voucher  was succesfully created
-        "401":
-          description: Authorization header not found or jwt token has expired
-        "422":
-          description: Failed Validation
-      security:
-        - defaultBearerAuth: []
-      tags:
-        - Admin
-        - Voucher
-  "/voucher-code/{code}":
-    get:
-      operationId: getOne
-      parameters:
-        - name: code
-          required: true
-          in: path
-          schema:
-            type: string
-      responses:
-        "200":
-          description: Voucher  was succesfully listed
-        "422":
-          description: Failed Validation
-      tags:
-        - Admin
-        - Voucher
-  "/voucher-id/{id}":
-    get:
-      operationId: getOneById
-      parameters:
-        - name: id
-          required: true
-          in: path
-          schema:
-            type: string
-      responses:
-        "200":
-          description: Voucher  was succesfully created
-        "422":
-          description: Failed Validation
-      tags:
-        - Admin
-        - Voucher
-  /my-voucher:
-    get:
-      operationId: getAll
-      parameters:
-        - name: search
-          required: false
-          in: query
-          schema:
-            type: string
-        - name: status
-          required: false
-          in: query
-          schema:
-            enum:
-              - ASSIGNED
-              - UNASSIGNED
-              - WAITING
-              - EXPIRED
-              - REDEEMED
-            type: string
-        - name: page
-          required: false
-          in: query
-          schema:
-            type: number
-        - name: limit
-          required: false
-          in: query
-          schema:
-            type: number
-      responses:
-        "200":
-          description: Voucher  was succesfully listed
-        "401":
-          description: Authorization header not found or jwt token has expired
-        "422":
-          description: Failed Validation
-      security:
-        - defaultBearerAuth: []
-      tags:
-        - Admin, Voucher
-  /voucher/assign-me:
-    get:
-      operationId: assignToMe
-      parameters:
-        - name: search
-          required: false
-          in: query
-          schema:
-            type: string
-        - name: status
-          required: false
-          in: query
-          schema:
-            enum:
-              - ASSIGNED
-              - UNASSIGNED
-              - WAITING
-              - EXPIRED
-              - REDEEMED
-            type: string
-        - name: page
-          required: false
-          in: query
-          schema:
-            type: number
-        - name: limit
-          required: false
-          in: query
-          schema:
-            type: number
-      responses:
-        "200":
-          description: Voucher  was succesfully listed
-        "401":
-          description: Authorization header not found or jwt token has expired
-        "422":
-          description: Failed Validation
-      security:
-        - defaultBearerAuth: []
-      tags:
-        - Admin, Voucher
-  /voucher/assign-user:
-    patch:
-      operationId: assignUser
-      parameters: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/updateAssignedUserVoucherDto"
-      responses:
-        "200":
-          description: Voucher was successfully asigned
-        "401":
-          description: Authorization header not found or jwt token has expired
-        "422":
-          description: Failed Validation
-      security:
-        - defaultBearerAuth: []
-      tags:
-        - Admin
-        - Voucher
-  /admin/campaign:
-    post:
-      operationId: create
-      parameters: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/createCampaignDto"
-      responses:
-        "201":
-          description: Campaign was succesfully created
-        "401":
-          description: Authorization header not found or jwt token has expired
-        "422":
-          description: Failed Validation
-      security:
-        - defaultBearerAuth: []
-      tags:
-        - Admin, Campaign
-    get:
-      operationId: getAll
-      parameters:
-        - name: search
-          required: false
-          in: query
-          schema:
-            type: string
-        - name: size
-          required: false
-          in: query
-          schema:
-            type: number
-        - name: page
-          required: false
-          in: query
-          schema:
-            type: number
-        - name: dmoId
-          required: false
-          in: query
-          schema:
-            type: number
-      responses:
-        "200":
-          description: Campaign was succesfully listed
-        "422":
-          description: Failed Validation
-      tags:
-        - Admin, Campaign
-  "/admin/campaign/{id}":
-    get:
-      operationId: getOne
-      parameters:
-        - name: id
-          required: true
-          in: path
-          schema:
-            type: string
-      responses:
-        "200":
-          description: Campaign was succesfully listed
-        "422":
-          description: Failed Validation
-      tags:
-        - Admin, Campaign
-    delete:
-      operationId: softDelete
-      parameters:
-        - name: id
-          required: true
-          in: path
-          schema:
-            type: string
-      responses:
-        "200":
-          description: Campaign was succesfully updated
-        "422":
-          description: Failed Validation
-      tags:
-        - Admin
-        - Campaign
-  /admin/my-campaign:
-    get:
-      operationId: getMy
-      parameters:
-        - name: search
-          required: false
-          in: query
-          schema:
-            type: string
-        - name: size
-          required: false
-          in: query
-          schema:
-            type: number
-        - name: page
-          required: false
-          in: query
-          schema:
-            type: number
-        - name: dmoId
-          required: false
-          in: query
-          schema:
-            type: number
-      responses:
-        "200":
-          description: Campaign was succesfully listed
-        "422":
-          description: Failed Validation
-      tags:
-        - Admin, Campaign
-  "/admin/update/{id}":
-    put:
-      operationId: update
-      parameters:
-        - name: id
-          required: true
-          in: path
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/updateCampaignDto"
-      responses:
-        "200":
-          description: Campaign was succesfully updated
-        "422":
-          description: Failed Validation
-      tags:
-        - Admin
-        - Campaign
-  /admin/dmo:
-    post:
-      operationId: createDMO
-      parameters: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/CreateDMODto"
-      responses:
-        "201":
-          description: DMO was successfully created
-        "422":
-          description: Failed Validation
-      tags:
-        - Admin
-        - DMO
-    get:
-      operationId: getAllDMO
-      parameters: []
-      responses:
-        "200":
-          description: DMO was successfully listed
-        "422":
-          description: Failed Validation
-      tags:
-        - Admin
-        - DMO
-  "/admin/dmo/{id}":
-    put:
-      operationId: updateMPSubCategoriesItems
-      parameters:
-        - name: id
-          required: true
-          in: path
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/UpdateDMODto"
-      responses:
-        "200":
-          description: DMO was successfully updated
-        "422":
-          description: Failed Validation
-      tags:
-        - Admin
-        - DMO
-    delete:
-      operationId: deleteMPSubCategoriesItems
-      parameters:
-        - name: id
-          required: true
-          in: path
-          schema:
-            type: string
-      responses:
-        "200":
-          description: DMO was successfully updated
-        "422":
-          description: Failed Validation
-      tags:
-        - Admin
-        - DMO
-  /payment/success:
-    get:
-      operationId: success
-      parameters: []
-      responses:
-        "200":
-          description: ""
-  /payment/failure:
-    get:
-      operationId: failure
-      parameters: []
-      responses:
-        "200":
-          description: ""
   /admin/social-media:
     post:
       operationId: createSocialMedai
@@ -2353,6 +2353,93 @@ components:
             - returned
       required:
         - status
+    createVoucherDto:
+      type: object
+      properties:
+        name:
+          type: string
+        campCode:
+          type: string
+        amount:
+          type: number
+        noOfVoucher:
+          type: number
+        email:
+          type: string
+      required:
+        - name
+        - campCode
+        - amount
+        - noOfVoucher
+        - email
+    updateAssignedUserVoucherDto:
+      type: object
+      properties:
+        email:
+          type: string
+        code:
+          type: string
+      required:
+        - email
+        - code
+    createCampaignDto:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        status:
+          type: string
+          enum:
+            - ACTIVE
+            - INACTIVE
+        code:
+          type: string
+        segment:
+          type: array
+          items:
+            type: string
+        crowed:
+          type: array
+          items:
+            type: string
+        startDate:
+          format: date-time
+          type: string
+        endDate:
+          format: date-time
+          type: string
+      required:
+        - name
+        - description
+        - status
+        - code
+        - segment
+        - crowed
+        - startDate
+        - endDate
+    updateCampaignDto:
+      type: object
+      properties: {}
+    CreateDMODto:
+      type: object
+      properties:
+        name:
+          type: string
+        userId:
+          type: string
+        collaboratorsUser:
+          type: array
+          items:
+            type: string
+      required:
+        - name
+        - userId
+        - collaboratorsUser
+    UpdateDMODto:
+      type: object
+      properties: {}
     Price:
       type: object
       properties:
@@ -2567,93 +2654,6 @@ components:
           type: string
       required:
         - status
-    createVoucherDto:
-      type: object
-      properties:
-        name:
-          type: string
-        campCode:
-          type: string
-        amount:
-          type: number
-        noOfVoucher:
-          type: number
-        email:
-          type: string
-      required:
-        - name
-        - campCode
-        - amount
-        - noOfVoucher
-        - email
-    updateAssignedUserVoucherDto:
-      type: object
-      properties:
-        email:
-          type: string
-        code:
-          type: string
-      required:
-        - email
-        - code
-    createCampaignDto:
-      type: object
-      properties:
-        name:
-          type: string
-        description:
-          type: string
-        status:
-          type: string
-          enum:
-            - ACTIVE
-            - INACTIVE
-        code:
-          type: string
-        segment:
-          type: array
-          items:
-            type: string
-        crowed:
-          type: array
-          items:
-            type: string
-        startDate:
-          format: date-time
-          type: string
-        endDate:
-          format: date-time
-          type: string
-      required:
-        - name
-        - description
-        - status
-        - code
-        - segment
-        - crowed
-        - startDate
-        - endDate
-    updateCampaignDto:
-      type: object
-      properties: {}
-    CreateDMODto:
-      type: object
-      properties:
-        name:
-          type: string
-        userId:
-          type: string
-        collaboratorsUser:
-          type: array
-          items:
-            type: string
-      required:
-        - name
-        - userId
-        - collaboratorsUser
-    UpdateDMODto:
-      type: object
-      properties: {}
     createSocialMediaDto:
       type: object
       properties:

@@ -8,6 +8,7 @@ import { Request } from 'express';
 import { update } from 'src/core/helper/query-helper';
 import { VoucherService } from 'src/modules/vouchers/voucher.service';
 import { VoucherPaymentStatus } from 'src/common/enum';
+import { PaymentPurpose } from 'src/services/payments/payments.type';
 
 @Injectable()
 export class PaymentsService {
@@ -23,7 +24,7 @@ export class PaymentsService {
     return await this.PaymentModel.create(insertField);
   }
 
-  async generateLink(amount: number, currency: string, purpose: string, id: [mongoose.Types.ObjectId]) {
+  async generateLink(amount: number, currency: string, purpose: PaymentPurpose, id: [mongoose.Types.ObjectId]) {
     console.log(
       {
         Authorization: `{"api_key": "${this.configService.paymentDetails.API}","secret_key": "${this.configService.paymentDetails.SECRET}"}`,
@@ -48,7 +49,7 @@ export class PaymentsService {
       },
     );
     let insertField;
-    if (purpose === 'VOUCHER_PAYMENT') {
+    if (purpose === PaymentPurpose.VOUCHER) {
       insertField = {
         purpose,
         amount,
@@ -56,7 +57,7 @@ export class PaymentsService {
         voucherId: id,
         paymentRequestId: abc.data.data.page_request_uid,
       };
-    } else {
+    } else if (purpose === PaymentPurpose.ORDER) {
       insertField = {
         purpose,
         amount,
@@ -89,7 +90,7 @@ export class PaymentsService {
       requestUid,
       updateField,
     );
-    if (payments.purpose === 'VOUCHER_PAYMENT') {
+    if (payments.purpose === PaymentPurpose.VOUCHER) {
       this.voucherService.update(payments.voucherId, { paymentStatus: VoucherPaymentStatus.PAID });
     }
   }

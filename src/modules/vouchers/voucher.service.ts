@@ -16,6 +16,7 @@ import { disSelect } from 'src/common/utils/select.handling';
 import { ServerErrors } from 'src/common/constant';
 import { UpdateFieldInterface } from './interface';
 import { PaymentsService } from 'src/services/payments/payments.service';
+import { PaymentPurpose } from 'src/services/payments/payments.type';
 
 @Injectable()
 export class VoucherService {
@@ -47,8 +48,7 @@ export class VoucherService {
       newVoucher.save();
       voucherId.push(newVoucher._id);
     }
-    console.log(voucherId);
-    return this.paymentService.generateLink(totalAmount, 'ILS', 'VOUCHER_PAYMENT', voucherId);
+    return this.paymentService.generateLink(totalAmount, 'ILS', PaymentPurpose.VOUCHER, voucherId);
   }
 
   async getOne(code: string) {

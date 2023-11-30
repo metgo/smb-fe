@@ -13,6 +13,8 @@ import { Order } from 'src/modules/orders/schema/orders.schema';
 import { ProductsService } from 'src/modules/products/products.services';
 import { UserType } from 'src/modules/users/users.type';
 import { VoucherService } from 'src/modules/vouchers/voucher.service';
+import { PaymentsService } from 'src/services/payments/payments.service';
+import { PaymentPurpose } from 'src/services/payments/payments.type';
 
 @Injectable()
 export class OrdersService {
@@ -21,9 +23,14 @@ export class OrdersService {
     private OrderModel: Model<Order>,
     private readonly productsService: ProductsService,
     private readonly voucherService: VoucherService,
+    private readonly paymentService: PaymentsService,
   ) {}
 
   async create(loggedInUserId: string, body: CreateOrderDto): Promise<Order> {
+    const orderId = new mongoose.Types.ObjectId();
+    // proceed payment
+    await this.paymentService.generateLink(body.totalAmount, 'ILS', PaymentPurpose.ORDER, [orderId]);
+
     // get voucherIds anc sort by amount
     const voucherIds = await this.voucherService.findByIds(body.voucher);
 
@@ -42,6 +49,7 @@ export class OrdersService {
 
     const newOrder = new this.OrderModel({
       ...body,
+      _id: orderId,
       voucher,
       userId: loggedInUserId || null,
       createdBy: loggedInUserId || null,
