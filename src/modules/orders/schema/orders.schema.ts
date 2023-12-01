@@ -1,4 +1,3 @@
-import { number } from '@hapi/joi';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
 
@@ -43,10 +42,10 @@ export class Order extends AuditableSchema {
       redeemedAmount: number,
     }];
 
-  @Prop({ type: number, default: 0 })
+  @Prop({ type: Number, default: 0 })
     totalAmount: number;
 
-  @Prop({ type: number, default: 0 })
+  @Prop({ type: Number, default: 0 })
     creditCardPayment: number;
 }
 

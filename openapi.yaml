@@ -2334,11 +2334,14 @@ components:
             type: string
         totalAmount:
           type: number
+        creditCardPayment:
+          type: number
       required:
         - productId
         - paymentMode
         - voucher
         - totalAmount
+        - creditCardPayment
     UpdateOrderDto:
       type: object
       properties:
