@@ -50,7 +50,9 @@ export class VoucherService {
       newVoucher.save();
       voucherId.push(newVoucher._id);
     }
-    return this.paymentService.generateLink(totalAmount, Currency.ILS, PaymentPurpose.VOUCHER, voucherId);
+
+    const paymentLink = await this.paymentService.generateLink(totalAmount, Currency.ILS, PaymentPurpose.VOUCHER, voucherId);
+    return paymentLink;
   }
 
   async getOne(code: string) {

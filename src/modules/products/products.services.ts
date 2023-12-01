@@ -186,7 +186,7 @@ export class ProductsService {
       quantity: {
         initial: productInfo.quantity.initial,
         sold: (!productInfo.quantity.sold ? 0 : productInfo.quantity.sold) + updatedFields.sold,
-        remaining: productInfo.quantity.remaining - updatedFields.remaining,
+        remaining: productInfo.quantity.remaining - updatedFields.sold,
       },
     };
 

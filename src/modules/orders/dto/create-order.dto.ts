@@ -5,16 +5,39 @@ import {
   IsNumber,
   IsOptional,
   IsPositive,
+  IsString,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 import { PaymentMode } from 'src/modules/orders/orders.type';
 
-export class CreateOrderDto {
-  @ArrayMinSize(1, { message: 'At least one product is required' })
+class Product {
+  @IsString()
   @IsNotEmpty()
   @ApiProperty()
-    productId: string[];
+    id: string;
+
+  @IsNumber()
+  @IsPositive()
+  @ApiProperty()
+    quantity: number;
+}
+
+class Voucher {
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty()
+    id: string;
+
+  @IsNumber()
+  @IsPositive()
+  @ApiProperty()
+    redeemedAmount: number;
+}
+export class CreateOrderDto {
+  @IsNotEmpty()
+  @ApiProperty()
+    productId: Product[];
 
   @ArrayMinSize(1, { message: 'At least one payment mode is required' })
   @ArrayUnique({ message: 'Payment mode must be unique' })
@@ -23,13 +46,18 @@ export class CreateOrderDto {
     paymentMode: PaymentMode[];
 
   @IsOptional()
-  @ArrayUnique({ message: 'Same voucher used multiple times' })
   @ApiProperty()
-    voucher: string[];
+    voucher: Voucher[];
 
   @IsNumber()
   @IsPositive({ message: 'Please add valid amount' })
   @IsNotEmpty()
   @ApiProperty()
     totalAmount: number;
+
+  @IsNumber()
+  @IsPositive({ message: 'Please add valid amount' })
+  @IsNotEmpty()
+  @ApiProperty()
+    creditCardPayment: number;
 }

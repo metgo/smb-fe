@@ -4,6 +4,7 @@ import { ConfigModule } from '../config/config.module';
 import { PaymentsController } from './payments.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { PaymentSchema } from './schema/payments.schema';
+import { OrdersModule } from 'src/modules/orders/orders.modules';
 import { VoucherModule } from 'src/modules/vouchers/voucher.module';
 
 @Module({
@@ -12,6 +13,7 @@ import { VoucherModule } from 'src/modules/vouchers/voucher.module';
       { name: 'Payment', schema: PaymentSchema },
     ]),
     ConfigModule,
+    forwardRef(() => OrdersModule),
     forwardRef(() => VoucherModule),
   ],
   controllers: [PaymentsController],

@@ -9,6 +9,7 @@ import { update } from 'src/core/helper/query-helper';
 import { VoucherService } from 'src/modules/vouchers/voucher.service';
 import { Currency, VoucherPaymentStatus } from 'src/common/enum';
 import { PaymentPurpose } from 'src/services/payments/payments.type';
+import { OrdersService } from 'src/modules/orders/orders.services';
 
 @Injectable()
 export class PaymentsService {
@@ -18,20 +19,21 @@ export class PaymentsService {
     private readonly configService: ConfigService,
     @Inject(forwardRef(() => VoucherService))
     private readonly voucherService: VoucherService,
+    @Inject(forwardRef(() => OrdersService))
+    private readonly ordersService: OrdersService,
   ) { }
 
   async createPayment(insertField:any) {
     return await this.PaymentModel.create(insertField);
   }
 
-  async generateLink(amount: number, currency: Currency, purpose: PaymentPurpose, id: [mongoose.Types.ObjectId]) {
-    console.log(
-      {
-        Authorization: `{"api_key": "${this.configService.paymentDetails.API}","secret_key": "${this.configService.paymentDetails.SECRET}"}`,
-      },
-    );
-    console.log(`${this.configService.paymentDetails.SERVER_URL}${this.configService.paymentDetails.SUCCESS}`);
-    const abc = await axios.post(
+  async generateLink(
+    amount: number,
+    currency: Currency,
+    purpose: PaymentPurpose,
+    id: [mongoose.Types.ObjectId] | mongoose.Types.ObjectId,
+  ) {
+    const payPlusResponse = await axios.post(
       `${this.configService.paymentDetails.URL}PaymentPages/generatelink`,
       {
         payment_page_uid: this.configService.paymentDetails.PAGE_UUID,
@@ -55,24 +57,25 @@ export class PaymentsService {
         amount,
         currency,
         voucherId: id,
-        paymentRequestId: abc.data.data.page_request_uid,
+        paymentRequestId: payPlusResponse.data.data.page_request_uid,
       };
-    } else if (purpose === PaymentPurpose.ORDER) {
+    }
+
+    if (purpose === PaymentPurpose.ORDER) {
       insertField = {
         purpose,
         amount,
         currency,
         orderId: id,
-        paymentRequestId: abc.data.data.page_request_uid,
+        paymentRequestId: payPlusResponse.data.data.page_request_uid,
       };
     }
-    console.log(abc.data, abc.data.data);
-    if (abc.data.results.status === 'success') {
-      console.log('test');
+
+    if (payPlusResponse.data.results.status === 'success') {
       await this.createPayment(insertField);
     }
 
-    return abc.data;
+    return payPlusResponse.data;
   }
 
   async paymentSucess(request: Request) {
@@ -91,7 +94,10 @@ export class PaymentsService {
       updateField,
     );
     if (payments.purpose === PaymentPurpose.VOUCHER) {
-      this.voucherService.update(payments.voucherId, { paymentStatus: VoucherPaymentStatus.PAID });
+      await this.voucherService.update(payments.voucherId, { paymentStatus: VoucherPaymentStatus.PAID });
+    }
+    if (payments.purpose === PaymentPurpose.ORDER) {
+      await this.ordersService.updateOrderAfterPayment(payments.orderId);
     }
   }
 

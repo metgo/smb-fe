@@ -1,12 +1,16 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException, Injectable, NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
 
 import { ServerErrors } from 'src/common/constant';
-import { Currency } from 'src/common/enum';
+import { Currency, PaymentStatus } from 'src/common/enum';
 import { paginationConfig } from 'src/common/pagination.config';
 import { sortByPriorityAndHighest } from 'src/common/sort-priority-and-highest';
-import { findOneByFieldNames, queryhandler } from 'src/core/helper/query-helper';
+import {
+  findOneByFieldNames, findOneById, queryhandler, updateById,
+} from 'src/core/helper/query-helper';
 import { CreateOrderDto } from 'src/modules/orders/dto/create-order.dto';
 import { UpdateOrderDto } from 'src/modules/orders/dto/update-order.dto';
 import { FindOrders } from 'src/modules/orders/orders.type';
@@ -27,37 +31,55 @@ export class OrdersService {
     private readonly paymentService: PaymentsService,
   ) {}
 
-  async create(loggedInUserId: string, body: CreateOrderDto): Promise<Order> {
-    const orderId = new mongoose.Types.ObjectId();
-    // proceed payment
-    await this.paymentService.generateLink(body.totalAmount, Currency.ILS, PaymentPurpose.ORDER, [orderId]);
-
-    // get voucherIds anc sort by amount
-    const voucherIds = await this.voucherService.findByIds(body.voucher);
-
-    const sortedVoucher = sortByPriorityAndHighest(body.totalAmount, voucherIds);
-
-    // update vouchers detail and deduct voucher amounts
-    const voucher = await this.processVouchers(loggedInUserId, sortedVoucher, body.totalAmount);
-
-    // deduct product count
-    body.productId.map(async (productId: string) => {
-      await this.productsService.updateProductByFields(productId, {
-        sold: 1,
-        remaining: 1,
-      });
-    });
-
+  async create(loggedInUserId: string, body: CreateOrderDto): Promise<any> {
     const newOrder = new this.OrderModel({
       ...body,
-      _id: orderId,
-      voucher,
       userId: loggedInUserId || null,
       createdBy: loggedInUserId || null,
     });
 
-    await newOrder.save();
-    return newOrder;
+    const order = await newOrder.save();
+
+    const link = await this.paymentService.generateLink(
+      body.creditCardPayment,
+      Currency.ILS,
+      PaymentPurpose.ORDER,
+      order.id,
+    );
+
+    return link;
+  }
+
+  async updateOrderAfterPayment(orderId: string): Promise<Order> {
+    const orderDetail = await findOneById<Order>(this.OrderModel, orderId);
+
+    // get voucherIds and sort by amount
+    const arrayOfVoucherIds = orderDetail.voucher.map(obj => obj.id);
+    const voucherIds = await this.voucherService.findByIds(arrayOfVoucherIds);
+
+    const sortedVoucher = sortByPriorityAndHighest(orderDetail.totalAmount, voucherIds);
+
+    // update vouchers detail and deduct voucher amounts
+    const voucher = await this.processVouchers(orderDetail.createdBy, sortedVoucher, orderDetail.totalAmount);
+
+    // deduct product count
+    orderDetail.products.map(async product => {
+      await this.productsService.updateProductByFields(product.id, {
+        sold: product.quantity,
+      });
+    });
+
+    const updatedField = {
+      paymentStatus: PaymentStatus.SUCCESS,
+      voucher,
+    };
+
+    const updateOrder = await updateById<Order>(
+      this.OrderModel,
+      orderId,
+      updatedField,
+    );
+    return updateOrder;
   }
 
   async update(loggedInUserId: string, id:string, body: UpdateOrderDto): Promise<Order> {

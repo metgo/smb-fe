@@ -2,6 +2,8 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
 import { PaymentStatus, VoucherStatus } from 'src/common/enum';
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
+import { Order } from 'src/modules/orders/schema/orders.schema';
+import { Voucher } from 'src/modules/vouchers/schema/voucher.schema';
 
 @Schema()
 export class Payment extends AuditableSchema {
@@ -41,19 +43,18 @@ export class Payment extends AuditableSchema {
 
   @Prop(
     {
-      type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Voucher' }],
+      type: [{ type: mongoose.Schema.Types.ObjectId, ref: Voucher.name }],
       default: null,
     },
   )
     voucherId: [];
 
-  @Prop(
-    {
-      type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Order' }],
-      default: null,
-    },
-  )
-    orderId: [];
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    ref: Order.name,
+    default: null,
+  })
+    orderId: string;
 
   @Prop({ enum: PaymentStatus, default: PaymentStatus.FAILURE })
     status: VoucherStatus;
