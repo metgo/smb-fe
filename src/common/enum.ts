@@ -14,9 +14,9 @@ export enum VoucherStatus {
 }
 
 export enum PaymentStatus {
-
     SUCCESS = 'SUCCESS',
     FAILURE = 'FAILURE',
+    PENDING = 'PENDING'
 }
 
 export enum VoucherPaymentStatus {

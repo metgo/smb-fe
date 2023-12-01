@@ -36,6 +36,7 @@ export class OrdersService {
       ...body,
       userId: loggedInUserId || null,
       createdBy: loggedInUserId || null,
+      paymentStatus: PaymentStatus.PENDING,
     });
 
     const order = await newOrder.save();

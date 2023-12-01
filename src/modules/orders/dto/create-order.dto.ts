@@ -37,7 +37,7 @@ class Voucher {
 export class CreateOrderDto {
   @IsNotEmpty()
   @ApiProperty()
-    productId: Product[];
+    products: Product[];
 
   @ArrayMinSize(1, { message: 'At least one payment mode is required' })
   @ArrayUnique({ message: 'Payment mode must be unique' })

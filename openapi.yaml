@@ -2320,7 +2320,7 @@ components:
     CreateOrderDto:
       type: object
       properties:
-        productId:
+        products:
           type: array
           items:
             type: string
@@ -2337,7 +2337,7 @@ components:
         creditCardPayment:
           type: number
       required:
-        - productId
+        - products
         - paymentMode
         - voucher
         - totalAmount
