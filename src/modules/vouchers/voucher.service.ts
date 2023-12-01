@@ -10,7 +10,9 @@ import { Voucher } from './schema/voucher.schema';
 import {
   FilterQuery, createVoucherDto,
 } from './dto';
+import { Currency } from 'src/common/enum';
 import { generateRandomCode } from 'src/common/utils/randomCode.generator';
+import { remainingAmountCalculation } from 'src/common/utils/remaining-amount-calculation';
 import { queryhandler, updateMany, updateWhere } from 'src/core/helper/query-helper';
 import { disSelect } from 'src/common/utils/select.handling';
 import { ServerErrors } from 'src/common/constant';
@@ -48,7 +50,7 @@ export class VoucherService {
       newVoucher.save();
       voucherId.push(newVoucher._id);
     }
-    return this.paymentService.generateLink(totalAmount, 'ILS', PaymentPurpose.VOUCHER, voucherId);
+    return this.paymentService.generateLink(totalAmount, Currency.ILS, PaymentPurpose.VOUCHER, voucherId);
   }
 
   async getOne(code: string) {
@@ -184,8 +186,8 @@ export class VoucherService {
   async updateVoucherAmount(loggedInUserId: string, voucherId: string, totalAmount: number) {
     const voucher = await this.getOneById(voucherId);
 
-    const remainingAmount = Math.max(0, voucher.remainingAmount - totalAmount);
-    const amountToBeRedeemed = Math.max(0, totalAmount - voucher.remainingAmount);
+    const remainingAmount = remainingAmountCalculation(voucher.remainingAmount, totalAmount);
+    const amountToBeRedeemed = remainingAmountCalculation(totalAmount, voucher.remainingAmount);
 
     const updatedVoucher = await this.VoucherModel.findOneAndUpdate(
       { _id: voucherId },

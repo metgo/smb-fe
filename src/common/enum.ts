@@ -24,3 +24,9 @@ export enum VoucherPaymentStatus {
     UNPAID = 'UNPAID',
     FAILED = 'FAILED',
 }
+
+export enum Currency {
+    ILS = 'ILS',
+    AUD = 'AUD',
+    USD = 'USD',
+}

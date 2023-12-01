@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
 
 import { ServerErrors } from 'src/common/constant';
+import { Currency } from 'src/common/enum';
 import { paginationConfig } from 'src/common/pagination.config';
 import { sortByPriorityAndHighest } from 'src/common/sort-priority-and-highest';
 import { findOneByFieldNames, queryhandler } from 'src/core/helper/query-helper';
@@ -29,7 +30,7 @@ export class OrdersService {
   async create(loggedInUserId: string, body: CreateOrderDto): Promise<Order> {
     const orderId = new mongoose.Types.ObjectId();
     // proceed payment
-    await this.paymentService.generateLink(body.totalAmount, 'ILS', PaymentPurpose.ORDER, [orderId]);
+    await this.paymentService.generateLink(body.totalAmount, Currency.ILS, PaymentPurpose.ORDER, [orderId]);
 
     // get voucherIds anc sort by amount
     const voucherIds = await this.voucherService.findByIds(body.voucher);
@@ -106,24 +107,22 @@ export class OrdersService {
 
   async findAll(queries: FindOrders) : Promise<Order[]> {
     const {
-      query, myOrder, loggedInUser,
+      query, myOrder, loggedInUser, page, limit,
     } = queries;
 
     let findQuery: any = query;
     let select: {};
-    const page: number = query?.page || paginationConfig.page;
-    const limit: number = query?.limit || paginationConfig.limit;
 
     if (myOrder) {
-      findQuery = { ...query, userId: loggedInUser };
+      findQuery = { ...findQuery, userId: loggedInUser };
     }
 
     const orders = await queryhandler<Order>(
       this.OrderModel,
       findQuery,
       select,
-      page,
-      limit,
+      page || paginationConfig.page,
+      limit || paginationConfig.limit,
     );
     return orders;
   }

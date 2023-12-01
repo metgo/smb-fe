@@ -14,13 +14,13 @@ export enum PaymentMode {
 }
 
 export interface IOrderQuery{
-    page?: number,
-    limit?: number,
     status: OrderStatus
 }
 
 export interface FindOrders {
     query: IOrderQuery,
     myOrder?: boolean,
+    page?: number,
+    limit?: number
     loggedInUser?: string,
 }

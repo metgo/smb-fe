@@ -7,7 +7,7 @@ import mongoose, { Model } from 'mongoose';
 import { Request } from 'express';
 import { update } from 'src/core/helper/query-helper';
 import { VoucherService } from 'src/modules/vouchers/voucher.service';
-import { VoucherPaymentStatus } from 'src/common/enum';
+import { Currency, VoucherPaymentStatus } from 'src/common/enum';
 import { PaymentPurpose } from 'src/services/payments/payments.type';
 
 @Injectable()
@@ -24,7 +24,7 @@ export class PaymentsService {
     return await this.PaymentModel.create(insertField);
   }
 
-  async generateLink(amount: number, currency: string, purpose: PaymentPurpose, id: [mongoose.Types.ObjectId]) {
+  async generateLink(amount: number, currency: Currency, purpose: PaymentPurpose, id: [mongoose.Types.ObjectId]) {
     console.log(
       {
         Authorization: `{"api_key": "${this.configService.paymentDetails.API}","secret_key": "${this.configService.paymentDetails.SECRET}"}`,
