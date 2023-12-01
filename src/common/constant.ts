@@ -80,6 +80,9 @@ export const ServerErrors = {
     EXISTS: 'Campaign already exists',
   },
 
+  ORDERS: {
+    NOT_FOUND: 'Order not found',
+  },
 };
 
 export const ServerSuccess = {
@@ -176,6 +179,13 @@ export const ServerSuccess = {
     UPDATED: 'Campaign was succesfully updated',
     LISTED: 'Campaign was succesfully listed',
     DELETED: 'Campaign was succesfully deleted',
+  },
+
+  ORDERS: {
+    CREATED: 'Order was succesfully created',
+    UPDATED: 'Order was succesfully updated',
+    LISTED: 'Order was succesfully listed',
+    DELETED: 'Order was succesfully deleted',
   },
 
 };

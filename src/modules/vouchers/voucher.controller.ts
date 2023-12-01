@@ -42,11 +42,12 @@ export class VoucherController {
   ) {
     const userId: string | null = req.user ? req.user.id : null;
     let campaign: Campaign;
+
     if (dto.campCode) {
       campaign = await this.campaignService.findAndReturn('code', dto.campCode);
     }
-    const link = await this.voucherService.create(dto, campaign._id, userId);
-    console.log(link);
+    const link = await this.voucherService.create(dto, userId, campaign._id);
+
     return responseHelper(
       response,
       HttpStatus.OK,

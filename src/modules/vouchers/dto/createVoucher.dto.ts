@@ -11,6 +11,7 @@ export class createVoucherDto {
   })
   @IsString()
   @IsNotEmpty()
+  @ApiProperty()
     name: string;
 
   @ApiProperty()

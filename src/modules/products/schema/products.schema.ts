@@ -4,6 +4,7 @@ import mongoose, { HydratedDocument } from 'mongoose';
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
 import { Business } from 'src/modules/business/schema/business.schema';
 import { ProductStatus } from 'src/modules/products/products.type';
+import { User } from 'src/modules/users/schema/users.schema';
 
 @Schema()
 export class Product extends AuditableSchema {
@@ -30,8 +31,7 @@ export class Product extends AuditableSchema {
     ];
 
   @Prop({
-    type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Users' }],
-    ref: 'Users',
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: User.name }],
     required: false,
   })
     collaboratorId: mongoose.Types.ObjectId[];
@@ -99,20 +99,28 @@ export class Product extends AuditableSchema {
     status: ProductStatus;
 
   @Prop({
-    type: mongoose.Schema.Types.ObjectId,
+    type: [{
+      type: mongoose.Schema.Types.ObjectId,
+    }],
     required: false,
   })
-    categories: [mongoose.Schema.Types.ObjectId];
+    categories: mongoose.Schema.Types.ObjectId[];
 
   @Prop({
-    type: mongoose.Schema.Types.ObjectId,
+    type: [{
+      type: mongoose.Schema.Types.ObjectId,
+    }],
     required: false,
   })
-    subCategories: [mongoose.Schema.Types.ObjectId];
+    subCategories: mongoose.Schema.Types.ObjectId[];
 
   // need to implement in future
-  @Prop()
-    features: [mongoose.Schema.Types.ObjectId];
+  @Prop({
+    type: [{
+      type: mongoose.Schema.Types.ObjectId,
+    }],
+  })
+    features: mongoose.Schema.Types.ObjectId[];
 }
 
 export type Products = HydratedDocument<Product>

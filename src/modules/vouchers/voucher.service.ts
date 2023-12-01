@@ -10,12 +10,15 @@ import { Voucher } from './schema/voucher.schema';
 import {
   FilterQuery, createVoucherDto,
 } from './dto';
+import { Currency } from 'src/common/enum';
 import { generateRandomCode } from 'src/common/utils/randomCode.generator';
+import { remainingAmountCalculation } from 'src/common/utils/remaining-amount-calculation';
 import { queryhandler, updateMany, updateWhere } from 'src/core/helper/query-helper';
 import { disSelect } from 'src/common/utils/select.handling';
 import { ServerErrors } from 'src/common/constant';
 import { UpdateFieldInterface } from './interface';
 import { PaymentsService } from 'src/services/payments/payments.service';
+import { PaymentPurpose } from 'src/services/payments/payments.type';
 
 @Injectable()
 export class VoucherService {
@@ -28,27 +31,28 @@ export class VoucherService {
 
   async create(
     dto: createVoucherDto,
-    campaign: mongoose.Types.ObjectId,
     userId: string | null,
+    campaignId?: mongoose.Types.ObjectId,
   ) {
     let i: number = 0;
     const voucherId: any = [];
     const totalAmount = dto.noOfVoucher * dto.amount;
     for (i = 0; i < dto.noOfVoucher; i++) {
       const randomCode = generateRandomCode(12);
-      const code = dto.campCode + randomCode;
+      const code = dto?.campCode ? dto.campCode + randomCode : `TAV8${randomCode}`;
       const newVoucher = new this.VoucherModel({
         ...dto,
         code,
-        remainingAmount: `${dto.amount}`,
-        campId: campaign._id,
+        remainingAmount: dto.amount,
+        campId: campaignId || null,
         createdBy: userId,
       });
       newVoucher.save();
       voucherId.push(newVoucher._id);
     }
-    console.log(voucherId);
-    return this.paymentService.generateLink(totalAmount, 'ILS', 'VOUCHER_PAYMENT', voucherId);
+
+    const paymentLink = await this.paymentService.generateLink(totalAmount, Currency.ILS, PaymentPurpose.VOUCHER, voucherId);
+    return paymentLink;
   }
 
   async getOne(code: string) {
@@ -173,5 +177,37 @@ export class VoucherService {
     if (!updateVoucher) {
       throw new BadRequestException('voucher not found');
     }
+  }
+
+  async findByIds(ids: string[]): Promise<Voucher[]> {
+    const voucherIds = await this.VoucherModel.find({ _id: { $in: ids } });
+
+    return voucherIds;
+  }
+
+  async updateVoucherAmount(loggedInUserId: string, voucherId: string, totalAmount: number) {
+    const voucher = await this.getOneById(voucherId);
+
+    const remainingAmount = remainingAmountCalculation(voucher.remainingAmount, totalAmount);
+    const amountToBeRedeemed = remainingAmountCalculation(totalAmount, voucher.remainingAmount);
+
+    const updatedVoucher = await this.VoucherModel.findOneAndUpdate(
+      { _id: voucherId },
+      {
+        updatedBy: loggedInUserId,
+        updatedAt: new Date(),
+        remainingAmount,
+      },
+      { new: true },
+    );
+
+    if (!updatedVoucher) {
+      throw new NotFoundException(ServerErrors.VOUCHER.NOT_FOUND);
+    }
+
+    return {
+      amountToBeRedeemed,
+      redeemedAmount: totalAmount - amountToBeRedeemed,
+    };
   }
 }

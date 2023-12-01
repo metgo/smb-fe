@@ -17,92 +17,92 @@ class images {
 }
 
 class Price {
-    @IsNumber()
-    @IsNotEmpty()
-    @ApiProperty()
-      markedPrice: number;
+  @IsNumber()
+  @IsNotEmpty()
+  @ApiProperty()
+    markedPrice: number;
 
-    @IsNumber()
-    @IsOptional()
-    @ApiProperty()
-      discountAmount: number;
+  @IsNumber()
+  @IsOptional()
+  @ApiProperty()
+    discountAmount: number;
 
-    @IsNumber()
-    @IsOptional()
-    @ApiProperty()
-      discountPercent: number;
+  @IsNumber()
+  @IsOptional()
+  @ApiProperty()
+    discountPercent: number;
 }
 
 class Quantity {
-    @IsNumber()
-    @IsNotEmpty()
-    @ApiProperty()
-      initial: number;
+  @IsNumber()
+  @IsNotEmpty()
+  @ApiProperty()
+    initial: number;
 }
 
 export class ProductDto {
-    @IsString()
-    @IsNotEmpty()
-    @ApiProperty()
-      name: string;
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty()
+    name: string;
 
-    @IsString()
-    @IsOptional()
-    @ApiProperty()
-      description: string;
+  @IsString()
+  @IsOptional()
+  @ApiProperty()
+    description: string;
 
-    @ApiProperty({
-      required: false,
-    })
-    @IsOptional()
-    @IsArray()
-      images: images[];
+  @ApiProperty({
+    required: false,
+  })
+  @IsOptional()
+  @IsArray()
+    images: images[];
 
-    @ApiProperty()
-    @IsNotEmpty()
-      price: Price;
+  @ApiProperty()
+  @IsNotEmpty()
+    price: Price;
 
-    @ApiProperty()
-    @IsNotEmpty()
-      quantity: Quantity;
+  @ApiProperty()
+  @IsNotEmpty()
+    quantity: Quantity;
 
-    @IsEnum(ProductStatus)
-    @IsNotEmpty()
-    @ApiProperty({
-      type: 'enum',
-      enum: ProductStatus,
-    })
-      status: ProductStatus;
+  @IsEnum(ProductStatus)
+  @IsNotEmpty()
+  @ApiProperty({
+    type: 'enum',
+    enum: ProductStatus,
+  })
+    status: ProductStatus;
 
-    @IsArray()
-    @IsOptional()
-    @ApiProperty({
-      type: [String],
-      description: 'Array of ObjectId',
-    })
-      categories: string[];
+  @IsArray()
+  @IsOptional()
+  @ApiProperty({
+    type: [String],
+    description: 'Array of ObjectId',
+  })
+    categories: string[];
 
-    @IsArray()
-    @IsOptional()
-    @ApiProperty({
-      type: [String],
-      description: 'Array of ObjectId',
-    })
-      subCategories: string[];
+  @IsArray()
+  @IsOptional()
+  @ApiProperty({
+    type: [String],
+    description: 'Array of ObjectId',
+  })
+    subCategories: string[];
 
-    @IsArray()
-    @IsOptional()
-    @ApiProperty({
-      type: [String],
-      description: 'Array of ObjectId',
-    })
-      features: string[];
+  @IsArray()
+  @IsOptional()
+  @ApiProperty({
+    type: [String],
+    description: 'Array of ObjectId',
+  })
+    features: string[];
 
-    @IsArray()
-    @IsOptional()
-    @ApiProperty({
-      type: [String],
-      description: 'Array of ObjectId',
-    })
-      collaboratorId: string[];
+  @IsArray()
+  @IsOptional()
+  @ApiProperty({
+    type: [String],
+    description: 'Array of ObjectId',
+  })
+    collaboratorId: string[];
 }
