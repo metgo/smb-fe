@@ -13,11 +13,14 @@ import { UpdateOrderDto } from 'src/modules/orders/dto/update-order.dto';
 import { OrdersService } from 'src/modules/orders/orders.services';
 import { IOrderQuery } from 'src/modules/orders/orders.type';
 import { UserType } from 'src/modules/users/users.type';
+import { ProductsService } from '../products/products.services';
+import { calculateTotalAmount } from 'src/common/calculate-total-amount';
 
 @Controller()
 export class OrdersController {
   constructor(
-      private ordersService: OrdersService,
+    private ordersService: OrdersService,
+    private productService: ProductsService,
   ) {}
 
   @ApiEndpoint({
@@ -35,7 +38,14 @@ export class OrdersController {
     @Req() req,
     @Res() response: Response,
   ) {
-    const order = await this.ordersService.create(req?.user?.id, body);
+    const productIds = body.products.map(product => product.id);
+
+    console.log(productIds);
+    const productsFromDB = await this.productService.findManyById(productIds);
+    console.log(productsFromDB);
+    const totalAmount = await calculateTotalAmount(body.products, productsFromDB);
+    console.log({ totalAmount });
+    const order = await this.ordersService.create(req.user ? req.user.id : null, body, totalAmount);
     return responseHelper(
       response,
       HttpStatus.CREATED,

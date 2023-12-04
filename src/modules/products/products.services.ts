@@ -104,6 +104,22 @@ export class ProductsService {
     return products;
   }
 
+  async findManyById(ids: string[]): Promise<Product[]> {
+    const findQuery = { _id: { $in: ids } };
+    let select: {};
+    let page: number;
+    let limit: number;
+
+    const products = await queryhandler<Product>(
+      this.ProductModel,
+      findQuery,
+      select,
+      page,
+      limit,
+    );
+    return products;
+  }
+
   async update(command: updateCommand): Promise<Product> {
     let updatedField = {
       ...command.body,

@@ -31,7 +31,8 @@ export class OrdersService {
     private readonly paymentService: PaymentsService,
   ) {}
 
-  async create(loggedInUserId: string, body: CreateOrderDto): Promise<any> {
+  async create(loggedInUserId: string | null, body: CreateOrderDto, totalAmount: number): Promise<any> {
+    console.log(loggedInUserId);
     const newOrder = new this.OrderModel({
       ...body,
       userId: loggedInUserId || null,
@@ -42,7 +43,7 @@ export class OrdersService {
     const order = await newOrder.save();
 
     const link = await this.paymentService.generateLink(
-      body.creditCardPayment,
+      totalAmount,
       Currency.ILS,
       PaymentPurpose.ORDER,
       order.id,
