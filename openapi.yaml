@@ -1115,7 +1115,7 @@ paths:
       tags:
         - Admin, Voucher
   /voucher/assign-user:
-    patch:
+    put:
       operationId: assignUser
       parameters: []
       requestBody:

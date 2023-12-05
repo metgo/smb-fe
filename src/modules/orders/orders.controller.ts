@@ -15,12 +15,15 @@ import { IOrderQuery } from 'src/modules/orders/orders.type';
 import { UserType } from 'src/modules/users/users.type';
 import { ProductsService } from '../products/products.services';
 import { calculateTotalAmount } from 'src/common/calculate-total-amount';
+import { sortByPriorityAndHighest } from 'src/common/sort-priority-and-highest';
+import { VoucherService } from '../vouchers/voucher.service';
 
 @Controller()
 export class OrdersController {
   constructor(
     private ordersService: OrdersService,
     private productService: ProductsService,
+    private voucherService: VoucherService,
   ) {}
 
   @ApiEndpoint({
@@ -39,12 +42,16 @@ export class OrdersController {
     @Res() response: Response,
   ) {
     const productIds = body.products.map(product => product.id);
+    const voucherIds = body.voucher.map(voucher => voucher.id);
 
     console.log(productIds);
     const productsFromDB = await this.productService.findManyById(productIds);
     console.log(productsFromDB);
     const totalAmount = await calculateTotalAmount(body.products, productsFromDB);
     console.log({ totalAmount });
+
+    const vouchers = await this.voucherService.findByIds(voucherIds);
+    const sortedVoucher = sortByPriorityAndHighest(totalAmount, vouchers);
     const order = await this.ordersService.create(req.user ? req.user.id : null, body, totalAmount);
     return responseHelper(
       response,
