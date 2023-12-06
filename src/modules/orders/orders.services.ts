@@ -50,7 +50,7 @@ export class OrdersService {
         PaymentPurpose.ORDER,
         order.id,
       );
-      return link;
+      return [link];
     }
 
     return link;
