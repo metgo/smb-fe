@@ -6,14 +6,11 @@ import {
 import { ProductStatus } from 'src/modules/products/products.type';
 
 class images {
-  @ApiProperty({ type: String, description: 'path of image' })
-    image: string;
+  image: string;
 
-  @ApiProperty({ type: String, description: 'caption of image' })
-    caption: String;
+  caption: String;
 
-  @ApiProperty({ type: String, description: 'Image alternative text' })
-    alt: String;
+  alt: String;
 }
 
 class Price {
@@ -46,14 +43,11 @@ export class ProductDto {
   @ApiProperty()
     name: string;
 
+  @ApiProperty()
   @IsString()
   @IsOptional()
-  @ApiProperty()
     description: string;
 
-  @ApiProperty({
-    required: false,
-  })
   @IsOptional()
   @IsArray()
     images: images[];
