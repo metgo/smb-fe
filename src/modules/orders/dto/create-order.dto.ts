@@ -1,6 +1,7 @@
 import {
   ArrayMinSize,
   ArrayUnique,
+  IsEmail,
   IsNotEmpty,
   IsNumber,
   IsOptional,
@@ -28,15 +29,10 @@ class Voucher {
   @IsNotEmpty()
   @ApiProperty()
     id: string;
-
-  @IsNumber()
-  @IsPositive()
-  @ApiProperty()
-    redeemedAmount: number;
 }
 export class CreateOrderDto {
   @IsNotEmpty()
-  @ApiProperty()
+  @ApiProperty({ type: [Product] })
     products: Product[];
 
   @ArrayMinSize(1, { message: 'At least one payment mode is required' })
@@ -46,18 +42,17 @@ export class CreateOrderDto {
     paymentMode: PaymentMode[];
 
   @IsOptional()
-  @ApiProperty()
+  @ApiProperty({ type: [Voucher] })
     voucher: Voucher[];
 
   @IsNumber()
   @IsPositive({ message: 'Please add valid amount' })
-  @IsNotEmpty()
-  @ApiProperty()
-    totalAmount: number;
-
-  @IsNumber()
-  @IsPositive({ message: 'Please add valid amount' })
-  @IsNotEmpty()
+  @IsOptional()
   @ApiProperty()
     creditCardPayment: number;
+
+  @IsEmail()
+  @IsOptional()
+  @ApiProperty()
+    email: string;
 }

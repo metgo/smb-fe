@@ -19,7 +19,7 @@ export class Order extends AuditableSchema {
   @Prop({
     type: mongoose.Schema.Types.ObjectId,
     ref: User.name,
-    required: true,
+    required: false,
   })
     userId: mongoose.Types.ObjectId;
 
@@ -32,6 +32,9 @@ export class Order extends AuditableSchema {
     enum: PaymentStatus,
   })
     paymentStatus: PaymentStatus;
+
+    @Prop({ default: null })
+      email: string;
 
   @Prop()
     paymentMode: PaymentMode[];

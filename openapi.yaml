@@ -1115,7 +1115,7 @@ paths:
       tags:
         - Admin, Voucher
   /voucher/assign-user:
-    patch:
+    put:
       operationId: assignUser
       parameters: []
       requestBody:
@@ -2317,13 +2317,30 @@ components:
           type: array
           items:
             type: string
+    Product:
+      type: object
+      properties:
+        id:
+          type: string
+        quantity:
+          type: number
+      required:
+        - id
+        - quantity
+    Voucher:
+      type: object
+      properties:
+        id:
+          type: string
+      required:
+        - id
     CreateOrderDto:
       type: object
       properties:
         products:
           type: array
           items:
-            type: string
+            $ref: "#/components/schemas/Product"
         paymentMode:
           type: array
           items:
@@ -2331,17 +2348,17 @@ components:
         voucher:
           type: array
           items:
-            type: string
-        totalAmount:
-          type: number
+            $ref: "#/components/schemas/Voucher"
         creditCardPayment:
           type: number
+        email:
+          type: string
       required:
         - products
         - paymentMode
         - voucher
-        - totalAmount
         - creditCardPayment
+        - email
     UpdateOrderDto:
       type: object
       properties:

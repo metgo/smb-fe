@@ -48,7 +48,12 @@ export class VoucherTemplateService {
 
     if (query.search) {
       findQuery = {
-        name: { $in: query.search },
+        $or: [
+          { name: { $regex: query.search, $options: 'i' } },
+          { description: { $regex: query.search, $options: 'i' } },
+
+        ],
+
       };
     }
     // eslint-disable-next-line prefer-const

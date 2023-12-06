@@ -1,7 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-unused-expressions */
 import {
-  Body, Controller, Get, HttpStatus, Param, Patch, Post, Query, Req, Res, UseGuards,
+  Body, Controller, Get, HttpStatus, Param, Post, Put, Query, Req, Res, UseGuards,
 } from '@nestjs/common';
 import { ServerSuccess } from 'src/common/constant';
 import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
@@ -140,7 +140,6 @@ export class VoucherController {
   ) {
     const userId = request.user.id;
     const vouchers = await this.voucherService.getMyAssign(userId, query);
-    console.log(vouchers);
     return responseHelper(
       response,
       HttpStatus.OK,
@@ -158,7 +157,7 @@ export class VoucherController {
     softBlockExtraDtoFields: true,
     noAuthToken: true,
   })
-  @Patch('voucher/assign-user')
+  @Put('voucher/assign-user')
   async assignUser(
     @Req() req,
     @Res() response: Response,
