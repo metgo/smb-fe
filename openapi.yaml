@@ -2351,11 +2351,14 @@ components:
             $ref: "#/components/schemas/Voucher"
         creditCardPayment:
           type: number
+        email:
+          type: string
       required:
         - products
         - paymentMode
         - voucher
         - creditCardPayment
+        - email
     UpdateOrderDto:
       type: object
       properties:

@@ -33,6 +33,9 @@ export class Order extends AuditableSchema {
   })
     paymentStatus: PaymentStatus;
 
+    @Prop({ default: null })
+      email: string;
+
   @Prop()
     paymentMode: PaymentMode[];
 

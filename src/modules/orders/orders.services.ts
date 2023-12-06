@@ -32,23 +32,26 @@ export class OrdersService {
   ) {}
 
   async create(loggedInUserId: string | null, body: CreateOrderDto, totalAmount: number): Promise<any> {
-    console.log(loggedInUserId);
     const newOrder = new this.OrderModel({
       ...body,
       userId: loggedInUserId || null,
       createdBy: loggedInUserId || null,
       paymentStatus: PaymentStatus.PENDING,
+      email: loggedInUserId ? null : body.email,
     });
 
     const order = await newOrder.save();
-    
+    let link = [];
 
-    const link = await this.paymentService.generateLink(
-      totalAmount,
-      Currency.ILS,
-      PaymentPurpose.ORDER,
-      order.id,
-    );
+    if (totalAmount !== 0) {
+      link = await this.paymentService.generateLink(
+        totalAmount,
+        Currency.ILS,
+        PaymentPurpose.ORDER,
+        order.id,
+      );
+      return link;
+    }
 
     return link;
   }
@@ -166,7 +169,7 @@ export class OrdersService {
     return order;
   }
 
-  private async processVouchers(loggedInUserId: string, voucherIds, totalAmountOfProduct) {
+  async processVouchers(loggedInUserId: string | null, voucherIds, totalAmountOfProduct) {
     let voucherInfo = [];
     const processVouchers = async (vouchers, index = 0, initialRedeemedAmount = 0) => {
       if (index >= vouchers.length || (index > 0 && initialRedeemedAmount === 0)) {

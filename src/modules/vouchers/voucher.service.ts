@@ -185,7 +185,7 @@ export class VoucherService {
     return voucherIds;
   }
 
-  async updateVoucherAmount(loggedInUserId: string, voucherId: string, totalAmount: number) {
+  async updateVoucherAmount(loggedInUserId: string | null, voucherId: string, totalAmount: number) {
     const voucher = await this.getOneById(voucherId);
 
     const remainingAmount = remainingAmountCalculation(voucher.remainingAmount, totalAmount);

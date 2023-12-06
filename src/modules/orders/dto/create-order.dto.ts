@@ -1,6 +1,7 @@
 import {
   ArrayMinSize,
   ArrayUnique,
+  IsEmail,
   IsNotEmpty,
   IsNumber,
   IsOptional,
@@ -49,4 +50,9 @@ export class CreateOrderDto {
   @IsOptional()
   @ApiProperty()
     creditCardPayment: number;
+
+  @IsEmail()
+  @IsOptional()
+  @ApiProperty()
+    email: string;
 }
