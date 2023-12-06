@@ -5,6 +5,14 @@ import {
 } from 'class-validator';
 import { ProductStatus } from 'src/modules/products/products.type';
 
+class images {
+  image: string;
+
+  caption: String;
+
+  alt: String;
+}
+
 class Price {
   @IsNumber()
   @IsNotEmpty()
@@ -35,10 +43,14 @@ export class ProductDto {
   @ApiProperty()
     name: string;
 
+  @ApiProperty()
   @IsString()
   @IsOptional()
-  @ApiProperty()
     description: string;
+
+  @IsOptional()
+  @IsArray()
+    images: images[];
 
   @ApiProperty()
   @IsNotEmpty()

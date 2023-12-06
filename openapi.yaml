@@ -2406,10 +2406,6 @@ components:
           type: string
         description:
           type: string
-        images:
-          type: array
-          items:
-            type: string
         price:
           $ref: "#/components/schemas/Price"
         quantity:
