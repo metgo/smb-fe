@@ -23,4 +23,14 @@ export class RegisterRequest {
   @IsNotEmpty()
   @ApiProperty()
   readonly phone: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty()
+  readonly address: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty()
+  readonly countryCode: string;
 }
