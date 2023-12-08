@@ -101,5 +101,14 @@ export async function queryhandler<T>(
     .populate(populate)
     .populate(populate1);
   datas.totalData = await model.countDocuments(findQuery);
+  const meta = {
+    page,
+    limit,
+    data: datas.data.length,
+    pageCount: Math.ceil(datas.totalData / limit),
+    hasPreviousPage: page > 1,
+    hasNextPage: page < Math.ceil(datas.totalData / limit),
+  };
+  datas.meta = meta;
   return datas;
 }
