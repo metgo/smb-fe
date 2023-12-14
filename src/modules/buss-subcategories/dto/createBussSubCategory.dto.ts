@@ -21,4 +21,9 @@ export class createBussSubCategoryDto {
   })
   @IsNotEmpty()
     bussCategoryId: [];
+
+  @ApiProperty()
+  @IsOptional()
+  @IsString()
+    hebrewName: string;
 }

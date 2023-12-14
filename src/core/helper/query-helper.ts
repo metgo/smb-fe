@@ -1,4 +1,5 @@
 import mongoose, { Model } from 'mongoose';
+import { Locale } from 'src/common/enum';
 
 export async function findByFieldName<T>(model: Model<T>, fieldName: keyof T, item: string) {
   const filterBy = { [fieldName]: item };
@@ -91,6 +92,7 @@ export async function queryhandler<T>(
   limit: number,
   populate?: any,
   populate1?: any,
+  languageQuery ?: Locale,
 ) {
   const datas: any = {};
   datas.data = await model
@@ -100,6 +102,14 @@ export async function queryhandler<T>(
     .limit(limit)
     .populate(populate)
     .populate(populate1);
+
+  if (languageQuery && languageQuery === Locale.HEBREW) {
+    datas.data.map(data => {
+      // eslint-disable-next-line no-param-reassign
+      data.name = data?.hebrewName || data.name;
+      return { ...data };
+    });
+  }
   datas.totalData = await model.countDocuments(findQuery);
   const meta = {
     page,

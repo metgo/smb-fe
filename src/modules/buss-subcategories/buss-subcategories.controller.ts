@@ -2,7 +2,9 @@ import {
   Body, Controller, Delete, Get, HttpStatus, Param, Post, Put, Query, Req, Res, UseGuards,
 } from '@nestjs/common';
 import { Response } from 'express';
+
 import { ServerSuccess } from 'src/common/constant';
+import { Locale } from 'src/common/enum';
 import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
 import { responseHelper } from 'src/core/helper/response.helper';
 import { BussSubCategoriesService } from './buss-subcategories.service';
@@ -62,14 +64,18 @@ export class BussSubCategoriesController {
     );
   }
 
-   @ApiEndpoint({
-     tags: ['Admin', 'Business Sub Categories'],
-     response: { status: 200, description: ServerSuccess.BUSS_SUB_CATEGORY.LISTED },
-     softBlockExtraDtoFields: true,
-   })
+  @ApiEndpoint({
+    tags: ['Admin', 'Business Sub Categories'],
+    response: { status: 200, description: ServerSuccess.BUSS_SUB_CATEGORY.LISTED },
+    softBlockExtraDtoFields: true,
+  })
   @Get('admin/buss-sub-category/:id')
-   async getOne(@Res() response: Response, @Param('id') id: string) {
-     const bussSubCategory = await this.bussSubCategoriesService.getOne(id);
+   async getOne(
+    @Res() response: Response,
+    @Param('id') id: string,
+    @Query('locale') locale: Locale,
+   ) {
+     const bussSubCategory = await this.bussSubCategoriesService.getOne(id, locale);
 
      return responseHelper(
        response,
@@ -90,23 +96,23 @@ export class BussSubCategoriesController {
     noAuthToken: true,
   })
   @Put('admin/buss-sub-category/:id')
-   async update(
+  async update(
     @Req() req,
     @Res() response: Response,
     @Param('id') id: string,
     @Body() dto: updateBussSubCategoryDto,
-   ) {
-     const bussSubCategory = await this.bussSubCategoriesService.update(id, dto, req.user.id);
-     await this.bussSubCategoriesService.findByFieldNameExcludeId('name', dto.name, id);
-     return responseHelper(
-       response,
-       HttpStatus.OK,
-       ServerSuccess.BUSS_SUB_CATEGORY.UPDATED,
-       bussSubCategory,
-       null,
-       null,
-     );
-   }
+  ) {
+    const bussSubCategory = await this.bussSubCategoriesService.update(id, dto, req.user.id);
+    await this.bussSubCategoriesService.findByFieldNameExcludeId('name', dto.name, id);
+    return responseHelper(
+      response,
+      HttpStatus.OK,
+      ServerSuccess.BUSS_SUB_CATEGORY.UPDATED,
+      bussSubCategory,
+      null,
+      null,
+    );
+  }
 
   @Roles(UserType.SUPERADMIN, UserType.ADMIN)
   @UseGuards(JwtAuthGuard)

@@ -16,6 +16,9 @@ export class BussSubCategory extends AuditableSchema {
     required: true,
   })
     bussCategoryId: mongoose.Types.ObjectId[];
+
+  @Prop()
+    hebrewName: string;
 }
 
 export type BussSubCategoryDocument = HydratedDocument<BussSubCategory>

@@ -1,13 +1,15 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { BussSubCategory } from './schema/buss-subCategory.schema';
+import { Model } from 'mongoose';
+
+import { Locale } from 'src/common/enum';
+import { ServerErrors } from 'src/common/constant';
 import { disSelect } from 'src/common/utils/select.handling';
 import {
   findOneByFieldName, findOneByFieldNameExcludeId, queryhandler, updateById,
 } from 'src/core/helper/query-helper';
-import { ServerErrors } from 'src/common/constant';
+import { BussSubCategory } from './schema/buss-subCategory.schema';
 import { FilterQuery, createBussSubCategoryDto, updateBussSubCategoryDto } from './dto';
-import { Model } from 'mongoose';
 
 @Injectable()
 export class BussSubCategoriesService {
@@ -58,12 +60,13 @@ export class BussSubCategoriesService {
       limit,
       populate,
       populate1,
+      query.locale,
     );
 
     return bussSubCategory;
   }
 
-  async getOne(id: string) {
+  async getOne(id: string, locale: Locale) {
     const select = `${disSelect}`;
     const populate = {
       path: 'bussCategoryId',
@@ -78,6 +81,10 @@ export class BussSubCategoriesService {
       .populate(populate)
       .populate(populate1)
       .exec();
+
+    if (locale === Locale.HEBREW) {
+      bussCategory.name = bussCategory?.hebrewName || bussCategory.name;
+    }
     return bussCategory;
   }
 

@@ -1,16 +1,18 @@
 /* eslint-disable prefer-const */
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { BussCategory } from './schema/buss.category.schema';
 import { Model } from 'mongoose';
+
+import { ServerErrors } from 'src/common/constant';
+import { Locale } from 'src/common/enum';
 import {
   findOneByFieldName, findOneByFieldNameExcludeId, queryhandler, updateById,
 } from 'src/core/helper/query-helper';
 import { disSelect } from 'src/common/utils/select.handling';
 import { UpdateBussCategoryDto } from './dto/updateBussCategoryDto';
 import { createBussCategoryDto } from './dto/createBussCategoryDto';
-import { ServerErrors } from 'src/common/constant';
 import { FilterQuery } from './dto/query.dto';
+import { BussCategory } from './schema/buss.category.schema';
 
 @Injectable()
 export class BussCategoriesService {
@@ -54,11 +56,12 @@ export class BussCategoriesService {
       limit,
       populate,
       populate1,
+      query.locale,
     );
     return bussCategoriesList;
   }
 
-  async getOne(id: string) {
+  async getOne(id: string, locale: Locale) {
     const select = `${disSelect}`;
     const populate = {
       path: 'icon',
@@ -68,6 +71,10 @@ export class BussCategoriesService {
       .select(select)
       .populate(populate)
       .exec();
+
+    if (locale === Locale.HEBREW) {
+      bussCategory.name = bussCategory?.hebrewName || bussCategory.name;
+    }
     return bussCategory;
   }
 

@@ -1,17 +1,19 @@
 import {
   Body, Controller, Delete, Get, HttpStatus, Param, Post, Put, Query, Req, Res, UseGuards,
 } from '@nestjs/common';
-import { BussCategoriesService } from './buss-categories.service';
-import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
-import { createBussCategoryDto } from './dto/createBussCategoryDto';
-import { ServerSuccess } from 'src/common/constant';
-import { responseHelper } from 'src/core/helper/response.helper';
 import { Response } from 'express';
-import { updateBusinessDto } from '../business/dto';
-import { FilterQuery } from './dto/query.dto';
+
+import { ServerSuccess } from 'src/common/constant';
+import { Locale } from 'src/common/enum';
+import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
 import { Roles } from 'src/core/guards/authorization/roles';
-import { UserType } from '../users/users.type';
 import { JwtAuthGuard } from 'src/core/guards/jwt/jwt.guards';
+import { responseHelper } from 'src/core/helper/response.helper';
+import { BussCategoriesService } from './buss-categories.service';
+import { updateBussSubCategoryDto } from '../buss-subcategories/dto';
+import { createBussCategoryDto } from './dto/createBussCategoryDto';
+import { FilterQuery } from './dto/query.dto';
+import { UserType } from '../users/users.type';
 
 @Controller()
 export class BussCategoriesController {
@@ -87,8 +89,9 @@ export class BussCategoriesController {
   async getOne(
     @Res() response: Response,
     @Param('id') id: string,
+    @Query('locale') locale: Locale,
   ) {
-    const bussCategory = await this.bussCategoryService.getOne(id);
+    const bussCategory = await this.bussCategoryService.getOne(id, locale);
     return responseHelper(
       response,
       HttpStatus.OK,
@@ -114,7 +117,7 @@ export class BussCategoriesController {
   async update(
     @Req() req,
     @Res() response: Response,
-    @Body() dto: updateBusinessDto,
+    @Body() dto: updateBussSubCategoryDto,
     @Param('id') id: string,
   ) {
     await this.bussCategoryService.findByFieldNameExcludeId('name', dto.name, id);

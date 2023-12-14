@@ -30,3 +30,8 @@ export enum Currency {
     AUD = 'AUD',
     USD = 'USD',
 }
+
+export enum Locale {
+    ENGLISH = 'en',
+    HEBREW = 'he',
+}

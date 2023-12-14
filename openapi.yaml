@@ -1576,6 +1576,14 @@ paths:
           in: query
           schema:
             type: string
+        - name: locale
+          required: true
+          in: query
+          schema:
+            enum:
+              - en
+              - he
+            type: string
       responses:
         "200":
           description: Bussiness Category was succesfully listed
@@ -1595,6 +1603,11 @@ paths:
         - name: id
           required: true
           in: path
+          schema:
+            type: string
+        - name: locale
+          required: true
+          in: query
           schema:
             type: string
       responses:
@@ -1622,7 +1635,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/updateBusinessDto"
+              $ref: "#/components/schemas/updateBussSubCategoryDto"
       responses:
         "201":
           description: Bussiness Category was succesfully updated
@@ -1690,6 +1703,14 @@ paths:
           in: query
           schema:
             type: string
+        - name: locale
+          required: true
+          in: query
+          schema:
+            enum:
+              - en
+              - he
+            type: string
       responses:
         "200":
           description: Bussiness SUb Category was succesfully listed
@@ -1705,6 +1726,11 @@ paths:
         - name: id
           required: true
           in: path
+          schema:
+            type: string
+        - name: locale
+          required: true
+          in: query
           schema:
             type: string
       responses:
@@ -2737,9 +2763,15 @@ components:
           type: string
         icon:
           type: string
+        hebrewName:
+          type: string
       required:
         - name
         - icon
+        - hebrewName
+    updateBussSubCategoryDto:
+      type: object
+      properties: {}
     createBussSubCategoryDto:
       type: object
       properties:
@@ -2751,12 +2783,12 @@ components:
           type: array
           items:
             type: string
+        hebrewName:
+          type: string
       required:
         - name
         - bussCategoryId
-    updateBussSubCategoryDto:
-      type: object
-      properties: {}
+        - hebrewName
     createAccessibilityDto:
       type: object
       properties:
