@@ -107,10 +107,12 @@ export const ServerSuccess = {
   SOCIAL_MEDIA_CREATED: 'Social Media was successfully created',
   SOCIAL_MEDIA_LISTED: 'Social Media was successfully listed',
   SOCIAL_MEDIA_UPDTED: 'Social Media was successfully updated',
-  USER_CREATED: 'User was succesfully created',
-  USER_LISTED: 'User was succesfully listed',
-  USER_UPDATED: 'User was succesfully updated',
-
+  USER: {
+    CREATED: 'User was succesfully created',
+    LISTED: 'User was succesfully listed',
+    UPDATED: 'User was succesfully updated',
+    DELETED: 'User was deleted successfully',
+  },
   ICON_CREATED: 'Icon was succesfully created',
   ICON_LISTED: 'Icon was succesfully listed',
   ICON_UPDATED: 'Icon was succesfully updated',

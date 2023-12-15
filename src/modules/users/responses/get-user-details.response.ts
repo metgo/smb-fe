@@ -15,6 +15,9 @@ export class GetUserDetailsResponse {
     address: string;
 
   @ApiProperty()
+    dob: Date;
+
+  @ApiProperty()
     email: string;
 
   @ApiProperty()

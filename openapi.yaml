@@ -48,20 +48,52 @@ paths:
       summary: Get My Information
       parameters: []
       responses:
-        "200":
-          description: ""
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/GetUserDetailsResponse"
-        "404":
-          description: User not found
-        "500":
-          description: Couldn't find user
-      tags:
-        - Users
+        "201":
+          description: User was succesfully created
+        "401":
+          description: Authorization header not found or jwt token has expired
+        "422":
+          description: Failed Validation
       security:
         - defaultBearerAuth: []
+      tags:
+        - Users
+    patch:
+      operationId: updateMyInfo
+      summary: Update My Information
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUserRequest"
+      responses:
+        "200":
+          description: User was succesfully updated
+        "401":
+          description: Authorization header not found or jwt token has expired
+        "422":
+          description: Failed Validation
+      security:
+        - defaultBearerAuth: []
+      tags:
+        - Users
+    delete:
+      operationId: softDeleteMe
+      summary: Delete Me
+      parameters: []
+      responses:
+        "200":
+          description: User was succesfully updated
+        "401":
+          description: Authorization header not found or jwt token has expired
+        "422":
+          description: Failed Validation
+      security:
+        - defaultBearerAuth: []
+      tags:
+        - Users
   "/users/{userId}":
     patch:
       operationId: updateUser
@@ -80,19 +112,15 @@ paths:
               $ref: "#/components/schemas/UpdateUserRequest"
       responses:
         "200":
-          description: ""
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/GetUserDetailsResponse"
-        "404":
-          description: User not found
-        "500":
-          description: Couldn't update user
-      tags:
-        - Users
+          description: User was succesfully updated
+        "401":
+          description: Authorization header not found or jwt token has expired
+        "422":
+          description: Failed Validation
       security:
         - defaultBearerAuth: []
+      tags:
+        - Users
     delete:
       operationId: softDeleteUser
       summary: Delete User's Information
@@ -104,22 +132,19 @@ paths:
             type: string
       responses:
         "200":
-          description: ""
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/GetUserDetailsResponse"
-        "404":
-          description: User not found
-        "500":
-          description: Couldn't delete user
-      tags:
-        - Users
+          description: User was succesfully updated
+        "401":
+          description: Authorization header not found or jwt token has expired
+        "422":
+          description: Failed Validation
       security:
         - defaultBearerAuth: []
-  /users/admin/user:
+      tags:
+        - Users
+  /users/admin:
     post:
       operationId: adminCreateUser
+      summary: Create User By Admin
       parameters: []
       requestBody:
         required: true
@@ -130,14 +155,15 @@ paths:
       responses:
         "201":
           description: User was succesfully created
+        "401":
+          description: Authorization header not found or jwt token has expired
         "422":
           description: Failed Validation
-      tags:
-        - Users
-        - Admin
-        - Admin User
       security:
         - defaultBearerAuth: []
+      tags:
+        - Admin
+        - Users
   /admin/mp:
     post:
       operationId: createMapPoint
@@ -2127,7 +2153,7 @@ components:
           type: string
         fullName:
           type: string
-        phone:
+        phoneNumber:
           type: string
         address:
           type: string
@@ -2137,7 +2163,7 @@ components:
         - email
         - password
         - fullName
-        - phone
+        - phoneNumber
         - address
         - countryCode
     GetUserDetailsResponse:
@@ -2150,6 +2176,9 @@ components:
         phoneDetails:
           type: object
         address:
+          type: string
+        dob:
+          format: date-time
           type: string
         email:
           type: string
@@ -2180,6 +2209,7 @@ components:
         - fullName
         - phoneDetails
         - address
+        - dob
         - email
         - lastLogin
         - isPhoneVerify
@@ -2199,6 +2229,9 @@ components:
           type: string
         phoneNumber:
           type: string
+        dob:
+          format: date-time
+          type: string
         email:
           type: string
         address:
@@ -2207,6 +2240,7 @@ components:
         - fullName
         - countryCode
         - phoneNumber
+        - dob
         - email
         - address
     createUserByAdminDto:

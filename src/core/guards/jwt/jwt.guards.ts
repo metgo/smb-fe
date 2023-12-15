@@ -26,7 +26,7 @@ export class JwtAuthGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const token = request.headers.authorization?.replace('Bearer ', '');
 
-    if (!token || token.length <= 10 && whiteListAPI.includes(request.path)) {
+    if ((!token || token.length <= 10) && whiteListAPI.includes(request.path)) {
       return true;
     }
     if (!token) {

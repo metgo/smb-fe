@@ -19,6 +19,11 @@ export class UpdateUserRequest {
   @ApiProperty()
   readonly phoneNumber: string;
 
+  @IsString()
+  @IsOptional()
+  @ApiProperty()
+  readonly dob: Date;
+
   @IsEmail()
   @IsOptional()
   @ApiProperty()

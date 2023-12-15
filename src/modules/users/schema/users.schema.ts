@@ -27,6 +27,9 @@ export class User {
   @Prop()
     address: string;
 
+  @Prop()
+    dob: Date;
+
   @Prop({ required: true, unique: true })
     email: string;
 

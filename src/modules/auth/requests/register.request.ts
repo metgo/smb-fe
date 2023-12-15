@@ -22,7 +22,7 @@ export class RegisterRequest {
   @IsString()
   @IsNotEmpty()
   @ApiProperty()
-  readonly phone: string;
+  readonly phoneNumber: string;
 
   @IsString()
   @IsNotEmpty()
