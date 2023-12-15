@@ -27,7 +27,7 @@ export class User {
   @Prop()
     address: string;
 
-  @Prop()
+  @Prop({ default: null })
     dob: Date;
 
   @Prop({ required: true, unique: true })
