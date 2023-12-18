@@ -34,7 +34,7 @@ export class UsersController {
   @HttpCode(HttpStatus.OK)
   @ApiEndpoint({
     tags: ['Users'],
-    response: { status: HttpStatus.CREATED, description: ServerSuccess.USER.CREATED },
+    response: { status: HttpStatus.OK, description: ServerSuccess.USER.LISTED },
     softBlockExtraDtoFields: true,
     noAuthToken: true,
     operation: 'Get My Information',
@@ -47,8 +47,8 @@ export class UsersController {
     const user = await this.userService.getMyInformation(req.user.id);
     return responseHelper(
       response,
-      HttpStatus.CREATED,
-      ServerSuccess.USER.CREATED,
+      HttpStatus.OK,
+      ServerSuccess.USER.LISTED,
       user,
       null,
       null,
@@ -69,6 +69,7 @@ export class UsersController {
     @Req() req,
     @Res() response: Response,
   ) {
+    await this.userService.findByFieldNameExcludeId('email', body.email, req.user.id);
     const user = await this.userService.update(req.user.id, body);
     return responseHelper(
       response,
@@ -95,6 +96,7 @@ export class UsersController {
     @Param('userId') userId: string,
     @Res() response: Response,
   ) {
+    await this.userService.findByFieldNameExcludeId('email', body.email, userId);
     const user = await this.userService.update(userId, body);
     return responseHelper(
       response,
@@ -109,7 +111,7 @@ export class UsersController {
   @HttpCode(HttpStatus.OK)
   @ApiEndpoint({
     tags: ['Users'],
-    response: { status: HttpStatus.OK, description: ServerSuccess.USER.UPDATED },
+    response: { status: HttpStatus.OK, description: ServerSuccess.USER.DELETED },
     softBlockExtraDtoFields: true,
     noAuthToken: true,
     operation: 'Delete Me',
@@ -133,7 +135,7 @@ export class UsersController {
   @HttpCode(HttpStatus.OK)
   @ApiEndpoint({
     tags: ['Users'],
-    response: { status: HttpStatus.OK, description: ServerSuccess.USER.UPDATED },
+    response: { status: HttpStatus.OK, description: ServerSuccess.USER.DELETED },
     softBlockExtraDtoFields: true,
     noAuthToken: true,
     operation: 'Delete User\'s Information',

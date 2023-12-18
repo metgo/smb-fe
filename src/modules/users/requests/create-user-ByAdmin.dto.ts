@@ -8,7 +8,12 @@ export class createUserByAdminDto {
   @IsString()
   @IsNotEmpty()
   @ApiProperty()
-  readonly fullName: string;
+  readonly firstName: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty()
+  readonly lastName: string;
 
   @IsEmail()
   @IsNotEmpty()

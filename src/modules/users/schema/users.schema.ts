@@ -18,6 +18,12 @@ export class User {
   @Prop()
     fullName: string;
 
+  @Prop({ default: null })
+    firstName: string;
+
+  @Prop({ default: null })
+    lastName: string;
+
   @Prop()
     countryCode: string;
 

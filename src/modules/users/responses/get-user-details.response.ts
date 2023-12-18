@@ -9,6 +9,12 @@ export class GetUserDetailsResponse {
     fullName: string;
 
   @ApiProperty()
+    firstName: string;
+
+  @ApiProperty()
+    lastName: string;
+
+  @ApiProperty()
     phoneDetails: phoneDetails;
 
   @ApiProperty()

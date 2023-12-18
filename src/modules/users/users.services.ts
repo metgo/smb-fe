@@ -10,7 +10,9 @@ import { UpdateUserRequest } from 'src/modules/users/requests/update-user.reques
 import { GetUserDetailsResponse } from 'src/modules/users/responses/get-user-details.response';
 import { User } from 'src/modules/users/schema/users.schema';
 import { createUserByAdminDto } from './requests/create-user-ByAdmin.dto';
-import { findOneByFieldName, findOneById, updateById } from 'src/core/helper/query-helper';
+import {
+  findOneByFieldName, findOneByFieldNameExcludeId, findOneById, updateById,
+} from 'src/core/helper/query-helper';
 import { ServerErrors } from 'src/common/constant';
 import { passwordGenerator } from 'src/common/utils/randomPassword.genetator';
 import { UpdateLastLoginRequest } from 'src/modules/users/requests/update-last-logins.request';
@@ -60,9 +62,12 @@ export class UsersService {
         throw new NotFoundException(ServerErrors.USER.NOT_FOUND);
       }
 
+      const [splittedfirstName, splittedlastName] = user.fullName.split(' ');
       return {
         id: user.id,
         fullName: user.fullName,
+        firstName: user.firstName || splittedfirstName,
+        lastName: user.lastName || splittedlastName,
         phoneDetails: {
           countryCode: user.countryCode,
           phoneNumber: user.phoneNumber,
@@ -99,6 +104,8 @@ export class UsersService {
       return {
         id: newUser.id,
         fullName: newUser.fullName,
+        firstName: newUser.firstName,
+        lastName: newUser.lastName,
         phoneDetails: {
           countryCode: newUser.countryCode,
           phoneNumber: newUser.phoneNumber,
@@ -133,6 +140,8 @@ export class UsersService {
       return {
         id: updatedUser.id,
         fullName: updatedUser.fullName,
+        firstName: updatedUser.firstName,
+        lastName: updatedUser.lastName,
         phoneDetails: {
           countryCode: updatedUser.countryCode,
           phoneNumber: updatedUser.phoneNumber,
@@ -167,6 +176,8 @@ export class UsersService {
       return {
         id: deletedUser.id,
         fullName: deletedUser.fullName,
+        firstName: deletedUser.firstName,
+        lastName: deletedUser.lastName,
         phoneDetails: {
           countryCode: deletedUser.countryCode,
           phoneNumber: deletedUser.phoneNumber,
@@ -244,5 +255,18 @@ export class UsersService {
     }
 
     return true;
+  }
+
+  async findByFieldNameExcludeId(fieldName: keyof User, items: string, id:string): Promise<boolean> {
+    const user = await findOneByFieldNameExcludeId<User>(
+      this.UserModel,
+      fieldName,
+      items,
+      id,
+    );
+    if (user) {
+      throw new BadRequestException(`${fieldName.toUpperCase()} already exists`);
+    }
+    return false;
   }
 }

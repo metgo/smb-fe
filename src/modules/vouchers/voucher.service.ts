@@ -59,7 +59,11 @@ export class VoucherService {
 
   async getOne(code: string) {
     const select = disSelect;
-    const voucher = await this.VoucherModel.findOne({ code }).select(select).exec();
+    const populate = {
+      path: 'campId',
+      select: `${disSelect}`,
+    };
+    const voucher = await this.VoucherModel.findOne({ code }).select(select).populate(populate).exec();
     if (!voucher) {
       throw new BadRequestException(ServerErrors.VOUCHER.NOT_FOUND);
     }
@@ -68,7 +72,11 @@ export class VoucherService {
 
   async getOneById(id: string) {
     const select = disSelect;
-    const voucher = await this.VoucherModel.findById(id).select(select).exec();
+    const populate = {
+      path: 'campId',
+      select: `${disSelect}`,
+    };
+    const voucher = await this.VoucherModel.findById(id).select(select).populate(populate).exec();
     if (!voucher) {
       throw new BadRequestException(ServerErrors.VOUCHER.NOT_FOUND);
     }
@@ -85,7 +93,10 @@ export class VoucherService {
 
     const select = disSelect;
     let findQuery: any = { ...query, createdBy: userId };
-    let populate: any;
+    const populate = {
+      path: 'campId',
+      select: `${disSelect}`,
+    };
     let populate1: {};
 
     if (assignedToMe) {
@@ -143,7 +154,11 @@ export class VoucherService {
   }
 
   async findByIds(ids: string[]): Promise<Voucher[]> {
-    const voucherIds = await this.VoucherModel.find({ _id: { $in: ids } });
+    const populate = {
+      path: 'campId',
+      select: `${disSelect}`,
+    };
+    const voucherIds = await this.VoucherModel.find({ _id: { $in: ids } }).populate(populate).exec();
 
     return voucherIds;
   }

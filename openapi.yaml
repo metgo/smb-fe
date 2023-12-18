@@ -49,7 +49,7 @@ paths:
       parameters: []
       responses:
         "201":
-          description: User was succesfully created
+          description: User was succesfully listed
         "401":
           description: Authorization header not found or jwt token has expired
         "422":
@@ -85,7 +85,7 @@ paths:
       parameters: []
       responses:
         "200":
-          description: User was succesfully updated
+          description: User was deleted successfully
         "401":
           description: Authorization header not found or jwt token has expired
         "422":
@@ -132,7 +132,7 @@ paths:
             type: string
       responses:
         "200":
-          description: User was succesfully updated
+          description: User was deleted successfully
         "401":
           description: Authorization header not found or jwt token has expired
         "422":
@@ -2486,7 +2486,9 @@ components:
           type: string
         password:
           type: string
-        fullName:
+        firstName:
+          type: string
+        lastName:
           type: string
         phoneNumber:
           type: string
@@ -2497,7 +2499,8 @@ components:
       required:
         - email
         - password
-        - fullName
+        - firstName
+        - lastName
         - phoneNumber
         - address
         - countryCode
@@ -2507,6 +2510,10 @@ components:
         id:
           type: string
         fullName:
+          type: string
+        firstName:
+          type: string
+        lastName:
           type: string
         phoneDetails:
           type: object
@@ -2542,6 +2549,8 @@ components:
       required:
         - id
         - fullName
+        - firstName
+        - lastName
         - phoneDetails
         - address
         - dob
@@ -2558,7 +2567,9 @@ components:
     UpdateUserRequest:
       type: object
       properties:
-        fullName:
+        firstName:
+          type: string
+        lastName:
           type: string
         countryCode:
           type: string
@@ -2572,7 +2583,8 @@ components:
         address:
           type: string
       required:
-        - fullName
+        - firstName
+        - lastName
         - countryCode
         - phoneNumber
         - dob
@@ -2581,7 +2593,9 @@ components:
     createUserByAdminDto:
       type: object
       properties:
-        fullName:
+        firstName:
+          type: string
+        lastName:
           type: string
         email:
           type: string
@@ -2600,7 +2614,8 @@ components:
             - dmo
             - dmoadmin
       required:
-        - fullName
+        - firstName
+        - lastName
         - email
         - countryCode
         - phoneNumber
