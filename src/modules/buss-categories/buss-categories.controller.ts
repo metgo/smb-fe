@@ -58,7 +58,6 @@ export class BussCategoriesController {
       description: ServerSuccess.BUSS_CATEGORY.LISTED,
     },
     softBlockExtraDtoFields: true,
-    noAuthToken: true,
   })
   @Get('admin/buss-category')
   async getAll(

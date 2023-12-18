@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
-  IsEnum, IsNumber, IsOptional, IsPositive,
+  IsEnum, IsNumber, IsOptional,
 } from 'class-validator';
 import { OrderStatus } from 'src/modules/orders/orders.type';
 
@@ -11,13 +11,11 @@ export class FilterQuery {
 
   @ApiProperty({ type: Number, required: false })
   @IsNumber()
-  @IsPositive()
   @IsOptional()
     page: number;
 
   @ApiProperty({ type: Number, required: false })
   @IsNumber()
-  @IsPositive()
   @IsOptional()
     limit: number;
 

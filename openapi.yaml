@@ -1908,12 +1908,8 @@ paths:
       responses:
         "200":
           description: Bussiness Category was succesfully listed
-        "401":
-          description: Authorization header not found or jwt token has expired
         "422":
           description: Failed Validation
-      security:
-        - defaultBearerAuth: []
       tags:
         - Admin
         - Business-Categories

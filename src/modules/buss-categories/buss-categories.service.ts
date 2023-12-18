@@ -30,7 +30,7 @@ export class BussCategoriesService {
 
   async getAll(queries: FilterQuery) {
     const {
-      page, limit, search, ...query
+      page, limit, search, locale, ...query
     } = queries;
 
     const queryPage = page ? Number(page) : paginationConfig.page;
@@ -64,7 +64,7 @@ export class BussCategoriesService {
       queryLimit,
       populate,
       populate1,
-      query.locale,
+      locale,
     );
     return bussCategoriesList;
   }

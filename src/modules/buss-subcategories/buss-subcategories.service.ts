@@ -26,7 +26,7 @@ export class BussSubCategoriesService {
 
   async getAll(queries: FilterQuery): Promise<BussSubCategory & any> {
     const {
-      page, limit, search, ...query
+      page, limit, search, locale, ...query
     } = queries;
 
     const queryPage = page ? Number(page) : paginationConfig.page;
@@ -74,7 +74,7 @@ export class BussSubCategoriesService {
       queryLimit,
       populate,
       populate1,
-      query.locale,
+      locale,
     );
 
     return bussSubCategory;
