@@ -95,7 +95,7 @@ export class VoucherController {
   }
 
   @ApiEndpoint({
-    tags: ['Admin, Voucher'],
+    tags: ['Admin', 'Voucher'],
     response: {
       status: 200,
       description: ServerSuccess.VOUCHER.LISTED,
@@ -123,7 +123,7 @@ export class VoucherController {
   }
 
   @ApiEndpoint({
-    tags: ['Admin, Voucher'],
+    tags: ['Admin', 'Voucher'],
     response: {
       status: 200,
       description: ServerSuccess.VOUCHER.LISTED,
@@ -139,7 +139,7 @@ export class VoucherController {
     @Query() query: FilterQuery,
   ) {
     const userId = request.user.id;
-    const vouchers = await this.voucherService.getMyAssign(userId, query);
+    const vouchers = await this.voucherService.getMy(userId, query, true);
     return responseHelper(
       response,
       HttpStatus.OK,

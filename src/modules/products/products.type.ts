@@ -1,5 +1,6 @@
 import { Image } from 'src/common/interface/image.interface';
 import { ProductDto } from 'src/modules/products/dto/product.dto';
+import { FilterQuery } from 'src/modules/products/dto/query.dto';
 
 /* eslint-disable no-shadow */
 export enum ProductStatus {
@@ -7,14 +8,8 @@ export enum ProductStatus {
     INACTIVE = 'inactive',
 }
 
-export interface IProductQuery{
-    page?: number,
-    limit?: number,
-    businessId?: string;
-}
-
-export interface FindProducts {
-    query: IProductQuery,
+export interface FindProductsQuery {
+    query: FilterQuery,
     myProduct?: boolean,
     collaboratedProducts?: boolean,
     loggedInUser?: string,

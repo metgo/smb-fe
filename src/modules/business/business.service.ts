@@ -6,6 +6,8 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+
+import { maxDistanceInRadius } from 'src/common/max-distance-in-radius';
 import { Business } from './schema/business.schema';
 import { createBusinessDto, FilterQuery, updateBusinessDto } from './dto';
 import {
@@ -36,7 +38,6 @@ export class BusinessService {
         location,
       };
     }
-    console.log(newDto);
     const newBusiness = new this.BusinessModel({
       ...newDto,
       userId,
@@ -46,25 +47,27 @@ export class BusinessService {
     return newBusiness;
   }
 
-  async getAllBusiness(query: FilterQuery) {
-    let findQuery: any = {};
+  async getAllBusiness(queries: FilterQuery) {
+    const {
+      page, limit, search, long, lat, ...query
+    } = queries;
+
+    const queryPage = page ? Number(page) : paginationConfig.page;
+    const queryLimit = limit ? Number(limit) : paginationConfig.limit;
+
+    let findQuery: any = query;
+
     let select: {};
-    let { page } = paginationConfig;
-    let { limit } = paginationConfig;
+
     let populate: any;
     let populate1: {};
-    if (query.search) {
+    if (search) {
       findQuery = {
-        ...query,
-        $text: { $search: query.search, $caseSensitive: false, $diacriticSensitive: false },
-      };
-
-      delete findQuery?.search;
-    } else if (query) {
-      findQuery = {
-        ...query,
+        ...findQuery,
+        $text: { $search: search, $caseSensitive: false, $diacriticSensitive: false },
       };
     }
+
     if (query.bussCategoriesId) {
       const bussCategoriesId = JSON.parse(query.bussCategoriesId);
       findQuery = {
@@ -97,9 +100,7 @@ export class BusinessService {
       };
     }
 
-    const METERS_PER_MILE = 1609.34;
-    const maxDistanceInRadius = 5 / 3963;
-    if (query.lat && query.long) {
+    if (long && lat) {
       // findQuery = {
       //   ...findQuery, // Filter out businesses without longitude data
       //   location: {
@@ -119,7 +120,7 @@ export class BusinessService {
         location: {
           $geoWithin: {
             $centerSphere: [
-              [query.long, query.lat],
+              [long, lat],
               maxDistanceInRadius,
             ],
           },
@@ -138,18 +139,8 @@ export class BusinessService {
       //     },
       //   },
       // };
-      delete findQuery?.lat;
-      delete findQuery?.long;
     }
 
-    if (query.page) {
-      page = Number(query.page);
-      delete findQuery.page;
-    }
-    if (query.limit) {
-      limit = Number(query.limit);
-      delete findQuery.limit;
-    }
     // eslint-disable-next-line prefer-const
     populate = {
       path: 'groupTypesId accessibilitiesId bussCategoriesId bussSubCategoriesId',
@@ -172,12 +163,13 @@ export class BusinessService {
 
     // eslint-disable-next-line prefer-const
     select = `${disSelect}`;
+
     const allBusiness = await queryhandler<Business>(
       this.BusinessModel,
       findQuery,
       select,
-      page,
-      limit,
+      queryPage,
+      queryLimit,
       populate,
       populate1,
     );
@@ -213,29 +205,24 @@ export class BusinessService {
     return business;
   }
 
-  async getAllMyBusiness(query: FilterQuery, userId: string) {
-    let findQuery: any = {};
+  async getAllMyBusiness(queries: FilterQuery, userId: string) {
+    const {
+      page, limit, search, ...query
+    } = queries;
+
+    const queryPage = page ? Number(page) : paginationConfig.page;
+    const queryLimit = limit ? Number(limit) : paginationConfig.limit;
+
+    let findQuery: any = { ...query, userId };
     let select: {};
-    let page: number;
-    let limit: number;
     let populate: any;
     let populate1: {};
-    if (query.search) {
+    if (search) {
       findQuery = {
         ...query,
-        $text: { $search: query.search, $caseSensitive: false, $diacriticSensitive: false },
-      };
-
-      delete findQuery?.search;
-    } else if (query) {
-      findQuery = {
-        ...query,
+        $text: { $search: search, $caseSensitive: false, $diacriticSensitive: false },
       };
     }
-    findQuery = {
-      ...findQuery,
-      userId,
-    };
     // eslint-disable-next-line prefer-const
     populate = {
       path: 'groupTypesId accessibilitiesId bussCategoriesId bussSubCategoriesId',
@@ -261,8 +248,8 @@ export class BusinessService {
       this.BusinessModel,
       findQuery,
       select,
-      page,
-      limit,
+      queryPage,
+      queryLimit,
       populate,
       populate1,
     );

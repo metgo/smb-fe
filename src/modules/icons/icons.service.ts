@@ -3,7 +3,9 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+
 import { ServerErrors } from 'src/common/constant';
+import { paginationConfig } from 'src/common/pagination.config';
 import { disSelect } from 'src/common/utils/select.handling';
 import {
   findOneByFieldName, findOneByFieldNameExcludeId, findOneById, queryhandler, updateById,
@@ -38,11 +40,17 @@ export class IconsService {
     return newIconCategory.save();
   }
 
-  async getIcons(query:FilterQuery) {
+  async getIcons(queries: FilterQuery) {
+    const {
+      page, limit, ...query
+    } = queries;
+
+    const queryPage = page ? Number(page) : paginationConfig.page;
+    const queryLimit = limit ? Number(limit) : paginationConfig.limit;
+    const select = `${disSelect}`;
+
     let findQuery: {};
-    let select: {};
-    let page: number;
-    let limit: number;
+
     let populate: string;
     let populate1: string;
     if (query.search) {
@@ -52,14 +60,12 @@ export class IconsService {
       };
     }
 
-    // eslint-disable-next-line prefer-const
-    select = `${disSelect}`;
     const iconList = await queryhandler<Icons>(
       this.IconModel,
       findQuery,
       select,
-      page,
-      limit,
+      queryPage,
+      queryLimit,
       populate,
       populate1,
     );

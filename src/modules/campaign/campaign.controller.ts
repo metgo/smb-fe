@@ -31,7 +31,7 @@ export class CampaignController {
   @Roles(UserType.SUPERADMIN, UserType.ADMIN, UserType.DMO)
   @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
-    tags: ['Admin, Campaign'],
+    tags: ['Admin', 'Campaign'],
     response: { status: 201, description: ServerSuccess.CAMPAIGN_CREATED },
     noAuthToken: true,
     softBlockExtraDtoFields: true,
@@ -56,7 +56,7 @@ export class CampaignController {
   }
 
   @ApiEndpoint({
-    tags: ['Admin, Campaign'],
+    tags: ['Admin', 'Campaign'],
     response: {
       status: 200,
       description: ServerSuccess.CAMPAIGN_LISTED,
@@ -76,7 +76,7 @@ export class CampaignController {
   }
 
   @ApiEndpoint({
-    tags: ['Admin, Campaign'],
+    tags: ['Admin', 'Campaign'],
     response: {
       status: 200,
       description: ServerSuccess.CAMPAIGN_LISTED,
@@ -98,11 +98,13 @@ export class CampaignController {
   @Roles(UserType.SUPERADMIN, UserType.ADMIN, UserType.DMO)
   @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
-    tags: ['Admin, Campaign'],
+    tags: ['Admin', 'Campaign'],
     response: {
       status: 200,
       description: ServerSuccess.CAMPAIGN_LISTED,
     },
+    noAuthToken: true,
+    softBlockExtraDtoFields: true,
   })
   @Get('admin/my-campaign')
   async getMy(
@@ -131,6 +133,8 @@ export class CampaignController {
       status: 200,
       description: ServerSuccess.CAMPAIGN_UPDATED,
     },
+    noAuthToken: true,
+    softBlockExtraDtoFields: true,
   })
   @UseInterceptors(FileInterceptor('campImage', { fileFilter: fileFilterByExtensions }))
   @Put('admin/update/:id')
@@ -162,6 +166,7 @@ export class CampaignController {
       status: 200,
       description: ServerSuccess.CAMPAIGN_UPDATED,
     },
+    noAuthToken: true,
   })
   @Delete('admin/campaign/:id')
   async softDelete(@Res() response: Response, @Param('id') id: string) {

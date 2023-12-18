@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional } from 'class-validator';
+import { IsNumber, IsOptional, IsPositive } from 'class-validator';
 import { VoucherStatus } from 'src/common/enum';
 
 export class FilterQuery {
@@ -12,10 +12,14 @@ export class FilterQuery {
     status: VoucherStatus;
 
   @ApiProperty({ type: Number, required: false })
+  @IsNumber()
+  @IsPositive()
   @IsOptional()
     page: number;
 
   @ApiProperty({ type: Number, required: false })
+  @IsNumber()
+  @IsPositive()
   @IsOptional()
     limit: number;
 }

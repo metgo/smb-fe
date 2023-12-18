@@ -25,14 +25,14 @@ import { responseHelper } from 'src/core/helper/response.helper';
 import { BusinessService } from 'src/modules/business/business.service';
 import { BusinessStatus } from 'src/modules/business/business.type';
 import { ProductDto } from 'src/modules/products/dto/product.dto';
+import { FilterQuery } from 'src/modules/products//dto/query.dto';
 import { ProductsService } from 'src/modules/products/products.services';
-import { IProductQuery } from 'src/modules/products/products.type';
 
 @Controller()
 export class ProductsController {
   constructor(
-        private productsService: ProductsService,
-        private businessService: BusinessService,
+    private productsService: ProductsService,
+    private businessService: BusinessService,
   ) {}
 
   @ApiEndpoint({
@@ -74,7 +74,7 @@ export class ProductsController {
   }
 
   @ApiEndpoint({
-    tags: ['Business', 'Products'],
+    tags: ['Products'],
     response: { status: HttpStatus.OK, description: ServerSuccess.PRODUCTS.LISTED },
     operation: 'Get detail of a product',
     params: [{
@@ -102,10 +102,11 @@ export class ProductsController {
   }
 
   @ApiEndpoint({
-    tags: ['Business', 'Products'],
+    tags: ['Products'],
     response: { status: HttpStatus.OK, description: ServerSuccess.PRODUCTS.LISTED },
     operation: 'Get my products',
     softBlockExtraDtoFields: true,
+    noAuthToken: true,
   })
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
@@ -113,7 +114,7 @@ export class ProductsController {
   async getMyProductsDetails(
     @Req() req,
     @Res() response: Response,
-    @Query() query: IProductQuery,
+    @Query() query: FilterQuery,
   ) {
     const product = await this.productsService.findAll({
       query,
@@ -132,10 +133,11 @@ export class ProductsController {
   }
 
   @ApiEndpoint({
-    tags: ['Business', 'Products'],
+    tags: ['Products'],
     response: { status: HttpStatus.OK, description: ServerSuccess.PRODUCTS.LISTED },
     operation: 'Get my collaborated products',
     softBlockExtraDtoFields: true,
+    noAuthToken: true,
   })
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
@@ -143,7 +145,7 @@ export class ProductsController {
   async getMyCollaboratedProductsDetails(
     @Req() req,
     @Res() response: Response,
-    @Query() query: IProductQuery,
+    @Query() query: FilterQuery,
   ) {
     const product = await this.productsService.findAll({
       query,
@@ -163,7 +165,7 @@ export class ProductsController {
   }
 
   @ApiEndpoint({
-    tags: ['Business', 'Products'],
+    tags: ['Products'],
     response: { status: HttpStatus.OK, description: ServerSuccess.PRODUCTS.LISTED },
     operation: 'Get all products',
     softBlockExtraDtoFields: true,
@@ -172,7 +174,7 @@ export class ProductsController {
   @Get('/products')
   async getAllProducts(
     @Res() response: Response,
-    @Query() query: IProductQuery,
+    @Query() query: FilterQuery,
   ) {
     const product = await this.productsService.findAll({
       query,

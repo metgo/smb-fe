@@ -2,8 +2,10 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { DMO } from './schema/dmo.schema';
-import { CreateDMODto, UpdateDMODto } from './dto';
+
+import { ServerErrors } from 'src/common/constant';
+import { paginationConfig } from 'src/common/pagination.config';
+import { disSelect } from 'src/common/utils/select.handling';
 import {
   findOneByFieldName,
   findOneById,
@@ -11,7 +13,9 @@ import {
   queryhandler,
   updateById,
 } from 'src/core/helper/query-helper';
-import { ServerErrors } from 'src/common/constant';
+import { DMO } from './schema/dmo.schema';
+import { CreateDMODto, FilterQuery, UpdateDMODto } from './dto';
+
 import { UsersService } from '../users/users.services';
 
 @Injectable()
@@ -35,22 +39,30 @@ export class DMOService {
     return newDMO.save();
   }
 
-  async getAllDMO() {
+  async getAllDMO(queries: FilterQuery) {
+    const {
+      page, limit, search,
+    } = queries;
+
+    const queryPage = page ? Number(page) : paginationConfig.page;
+    const queryLimit = limit ? Number(limit) : paginationConfig.limit;
+
     let findQuery: {};
-    let select: {};
-    let page: number;
-    let limit: number;
     let populate: string;
     let populate1: string;
+    const select = `${disSelect}`;
 
-    // eslint-disable-next-line prefer-const
-    select = '-createdAt -updatedAt -createdBy -updatedBy -deletedBy -deletedAt -isDelete';
+    if (search) {
+      findQuery = {
+        $text: { $search: search, $caseSensitive: false, $diacriticSensitive: false },
+      };
+    }
     const dmoList = await queryhandler<DMO>(
       this.DMOModel,
       findQuery,
       select,
-      page,
-      limit,
+      queryPage,
+      queryLimit,
       populate,
       populate1,
     );

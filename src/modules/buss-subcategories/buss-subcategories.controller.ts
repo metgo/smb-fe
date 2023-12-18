@@ -16,13 +16,13 @@ import { UserType } from '../users/users.type';
 @Controller()
 export class BussSubCategoriesController {
   constructor(
-        private readonly bussSubCategoriesService: BussSubCategoriesService,
+    private readonly bussSubCategoriesService: BussSubCategoriesService,
   ) {}
 
   @Roles(UserType.SUPERADMIN, UserType.ADMIN)
   @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
-    tags: ['Admin', 'Business Sub Categories'],
+    tags: ['Admin', 'Business Sub-Categories'],
     response: { status: 200, description: ServerSuccess.BUSS_SUB_CATEGORY.CREATED },
     softBlockExtraDtoFields: true,
     noAuthToken: true,
@@ -45,11 +45,11 @@ export class BussSubCategoriesController {
     );
   }
 
-   @ApiEndpoint({
-     tags: ['Admin', 'Business Sub Categories'],
-     response: { status: 200, description: ServerSuccess.BUSS_SUB_CATEGORY.LISTED },
-     softBlockExtraDtoFields: true,
-   })
+  @ApiEndpoint({
+    tags: ['Admin', 'Business Sub-Categories'],
+    response: { status: 200, description: ServerSuccess.BUSS_SUB_CATEGORY.LISTED },
+    softBlockExtraDtoFields: true,
+  })
   @Get('admin/buss-sub-category')
   async getAll(@Res() response: Response, @Query() query: FilterQuery) {
     const bussSubCategory = await this.bussSubCategoriesService.getAll(query);
@@ -65,32 +65,32 @@ export class BussSubCategoriesController {
   }
 
   @ApiEndpoint({
-    tags: ['Admin', 'Business Sub Categories'],
+    tags: ['Admin', 'Business Sub-Categories'],
     response: { status: 200, description: ServerSuccess.BUSS_SUB_CATEGORY.LISTED },
     softBlockExtraDtoFields: true,
   })
   @Get('admin/buss-sub-category/:id')
-   async getOne(
+  async getOne(
     @Res() response: Response,
     @Param('id') id: string,
     @Query('locale') locale: Locale,
-   ) {
-     const bussSubCategory = await this.bussSubCategoriesService.getOne(id, locale);
+  ) {
+    const bussSubCategory = await this.bussSubCategoriesService.getOne(id, locale);
 
-     return responseHelper(
-       response,
-       HttpStatus.OK,
-       ServerSuccess.BUSS_SUB_CATEGORY.LISTED,
-       bussSubCategory,
-       null,
-       null,
-     );
-   }
+    return responseHelper(
+      response,
+      HttpStatus.OK,
+      ServerSuccess.BUSS_SUB_CATEGORY.LISTED,
+      bussSubCategory,
+      null,
+      null,
+    );
+  }
 
   @Roles(UserType.SUPERADMIN, UserType.ADMIN)
   @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
-    tags: ['Admin', 'Business Sub Categories'],
+    tags: ['Admin', 'Business Sub-Categories'],
     response: { status: 200, description: ServerSuccess.BUSS_SUB_CATEGORY.UPDATED },
     softBlockExtraDtoFields: true,
     noAuthToken: true,
@@ -117,7 +117,7 @@ export class BussSubCategoriesController {
   @Roles(UserType.SUPERADMIN, UserType.ADMIN)
   @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
-    tags: ['Admin', 'Business Sub Categories'],
+    tags: ['Admin', 'Business Sub-Categories'],
     response: { status: 200, description: ServerSuccess.BUSS_SUB_CATEGORY.DELETED },
     noAuthToken: true,
   })

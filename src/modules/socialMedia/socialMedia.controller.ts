@@ -1,16 +1,19 @@
 import {
   Body,
-  Controller, Delete, Get, HttpStatus, Param, Post, Put, Query, Res,
+  Controller, Delete, Get, HttpStatus, Param, Post, Put, Query, Res, UseGuards,
 } from '@nestjs/common';
+import { Response } from 'express';
 
 import { ServerSuccess } from 'src/common/constant';
 import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
-import { SocialMediaService } from './socialMedia.service';
-import { Response } from 'express';
-import { createSocialMediaDto } from './dto/createSocialMedia.dto';
+import { Roles } from 'src/core/guards/authorization/roles';
+import { JwtAuthGuard } from 'src/core/guards/jwt/jwt.guards';
 import { responseHelper } from 'src/core/helper/response.helper';
+import { SocialMediaService } from './socialMedia.service';
+import { createSocialMediaDto } from './dto/createSocialMedia.dto';
 import { updateSocialMediaDto } from './dto/updateSocialMedia.dto';
 import { FilterQuery } from './dto/query.dto';
+import { UserType } from '../users/users.type';
 
 @Controller('admin/social-media')
 export class SocialMediaController {
@@ -22,9 +25,12 @@ export class SocialMediaController {
       status: 201,
       description: ServerSuccess.SOCIAL_MEDIA_CREATED,
     },
+    noAuthToken: true,
   })
+  @Roles(UserType.SUPERADMIN, UserType.ADMIN)
+  @UseGuards(JwtAuthGuard)
   @Post()
-  async createSocialMedai(
+  async createSocialMedia(
       @Res() response: Response,
       @Body() dto:createSocialMediaDto,
   ) {
@@ -66,7 +72,10 @@ export class SocialMediaController {
       status: 200,
       description: ServerSuccess.SOCIAL_MEDIA_UPDTED,
     },
+    noAuthToken: true,
   })
+  @Roles(UserType.SUPERADMIN, UserType.ADMIN)
+  @UseGuards(JwtAuthGuard)
   @Put('/:id')
   async updateSocialMedia(
       @Res() response: Response,
@@ -91,7 +100,10 @@ export class SocialMediaController {
       status: 200,
       description: ServerSuccess.SOCIAL_MEDIA_UPDTED,
     },
+    noAuthToken: true,
   })
+  @Roles(UserType.SUPERADMIN, UserType.ADMIN)
+  @UseGuards(JwtAuthGuard)
   @Delete('/:id')
   async deleteSocialMedai(
          @Res() response: Response,

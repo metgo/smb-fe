@@ -1,5 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsNotEmpty, IsOptional } from 'class-validator';
+import {
+  IsEnum, IsNotEmpty, IsNumber, IsOptional, IsPositive,
+} from 'class-validator';
 
 import { Locale } from 'src/common/enum';
 
@@ -20,4 +22,16 @@ export class FilterQuery {
   @IsNotEmpty()
   @IsEnum(Locale)
     locale: Locale;
+
+  @ApiProperty({ type: Number, required: false })
+  @IsNumber()
+  @IsPositive()
+  @IsOptional()
+    page: number;
+
+  @ApiProperty({ type: Number, required: false })
+  @IsNumber()
+  @IsPositive()
+  @IsOptional()
+    limit: number;
 }

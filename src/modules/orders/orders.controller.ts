@@ -4,20 +4,20 @@ import {
 } from '@nestjs/common';
 import { Response } from 'express';
 
+import { calculateTotalAmount } from 'src/common/calculate-total-amount';
 import { ServerSuccess } from 'src/common/constant';
+import { sortByPriorityAndHighest } from 'src/common/sort-priority-and-highest';
 import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
 import { Roles } from 'src/core/guards/authorization/roles';
 import { JwtAuthGuard } from 'src/core/guards/jwt/jwt.guards';
 import { responseHelper } from 'src/core/helper/response.helper';
 import { CreateOrderDto } from 'src/modules/orders/dto/create-order.dto';
+import { FilterQuery } from 'src/modules/orders/dto/query.dto';
 import { UpdateOrderDto } from 'src/modules/orders/dto/update-order.dto';
 import { OrdersService } from 'src/modules/orders/orders.services';
-import { IOrderQuery } from 'src/modules/orders/orders.type';
+import { ProductsService } from 'src/modules/products/products.services';
 import { UserType } from 'src/modules/users/users.type';
-import { ProductsService } from '../products/products.services';
-import { calculateTotalAmount } from 'src/common/calculate-total-amount';
-import { sortByPriorityAndHighest } from 'src/common/sort-priority-and-highest';
-import { VoucherService } from '../vouchers/voucher.service';
+import { VoucherService } from 'src/modules/vouchers/voucher.service';
 
 @Controller()
 export class OrdersController {
@@ -88,6 +88,7 @@ export class OrdersController {
       type: 'string',
       required: true,
     }],
+    noAuthToken: true,
   })
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
@@ -112,12 +113,14 @@ export class OrdersController {
     tags: ['Products', 'Orders'],
     response: { status: HttpStatus.OK, description: ServerSuccess.ORDERS.LISTED },
     operation: 'Get my orders',
+    softBlockExtraDtoFields: true,
+    noAuthToken: true,
   })
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
   @Get('my-orders')
   async getMyOrders(
-    @Query() query: IOrderQuery,
+    @Query() query: FilterQuery,
     @Req() req,
     @Res() response: Response,
   ) {
@@ -141,13 +144,14 @@ export class OrdersController {
     response: { status: HttpStatus.OK, description: ServerSuccess.ORDERS.LISTED },
     operation: 'Get all orders',
     softBlockExtraDtoFields: true,
+    noAuthToken: true,
   })
   @Roles(UserType.SUPERADMIN, UserType.ADMIN, UserType.DMO)
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
   @Get('all-orders')
   async getAllOrders(
-    @Query() query: IOrderQuery,
+    @Query() query: FilterQuery,
     @Res() response: Response,
   ) {
     const orders = await this.ordersService.findAll({

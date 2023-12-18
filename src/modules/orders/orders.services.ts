@@ -8,18 +8,19 @@ import { ServerErrors } from 'src/common/constant';
 import { Currency, PaymentStatus } from 'src/common/enum';
 import { paginationConfig } from 'src/common/pagination.config';
 import { sortByPriorityAndHighest } from 'src/common/sort-priority-and-highest';
+import { disSelect } from 'src/common/utils/select.handling';
 import {
   findOneByFieldNames, findOneById, queryhandler, updateById,
 } from 'src/core/helper/query-helper';
 import { CreateOrderDto } from 'src/modules/orders/dto/create-order.dto';
 import { UpdateOrderDto } from 'src/modules/orders/dto/update-order.dto';
-import { FindOrders } from 'src/modules/orders/orders.type';
 import { Order } from 'src/modules/orders/schema/orders.schema';
 import { ProductsService } from 'src/modules/products/products.services';
 import { UserType } from 'src/modules/users/users.type';
 import { VoucherService } from 'src/modules/vouchers/voucher.service';
 import { PaymentsService } from 'src/services/payments/payments.service';
 import { PaymentPurpose } from 'src/services/payments/payments.type';
+import { FindOrdersQuery } from 'src/modules/orders/orders.type';
 
 @Injectable()
 export class OrdersService {
@@ -133,24 +134,34 @@ export class OrdersService {
     return updatedOrder;
   }
 
-  async findAll(queries: FindOrders) : Promise<Order[]> {
+  async findAll(queries: FindOrdersQuery) : Promise<Order[]> {
     const {
-      query, myOrder, loggedInUser, page, limit,
-    } = queries;
+      search, page, limit, ...query
+    } = queries.query;
+
+    const queryPage = page ? Number(page) : paginationConfig.page;
+    const queryLimit = limit ? Number(limit) : paginationConfig.limit;
 
     let findQuery: any = query;
-    let select: {};
+    const select = `${disSelect}`;
 
-    if (myOrder) {
-      findQuery = { ...findQuery, userId: loggedInUser };
+    if (search) {
+      findQuery = {
+        ...findQuery,
+        $text: { $search: search, $caseSensitive: false, $diacriticSensitive: false },
+      };
+    }
+
+    if (queries.myOrder) {
+      findQuery = { ...findQuery, userId: queries.loggedInUser };
     }
 
     const orders = await queryhandler<Order>(
       this.OrderModel,
       findQuery,
       select,
-      page || paginationConfig.page,
-      limit || paginationConfig.limit,
+      queryPage,
+      queryLimit,
     );
     return orders;
   }

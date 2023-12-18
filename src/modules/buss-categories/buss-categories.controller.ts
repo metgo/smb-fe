@@ -18,13 +18,13 @@ import { UserType } from '../users/users.type';
 @Controller()
 export class BussCategoriesController {
   constructor(
-        private readonly bussCategoryService: BussCategoriesService,
+    private readonly bussCategoryService: BussCategoriesService,
   ) { }
 
   @Roles(UserType.SUPERADMIN, UserType.ADMIN)
   @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
-    tags: ['Admin', 'Bussiness Categories'],
+    tags: ['Admin', 'Business-Categories'],
     response: {
       status: 201,
       description: ServerSuccess.BUSS_CATEGORY.CREATED,
@@ -52,7 +52,7 @@ export class BussCategoriesController {
   }
 
   @ApiEndpoint({
-    tags: ['Admin', 'Bussiness Categories'],
+    tags: ['Admin', 'Business-Categories'],
     response: {
       status: 200,
       description: ServerSuccess.BUSS_CATEGORY.LISTED,
@@ -77,7 +77,7 @@ export class BussCategoriesController {
   }
 
   @ApiEndpoint({
-    tags: ['Admin', 'Bussiness Categories'],
+    tags: ['Admin', 'Business-Categories'],
     response: {
       status: 200,
       description: ServerSuccess.BUSS_CATEGORY.LISTED,
@@ -103,7 +103,7 @@ export class BussCategoriesController {
   }
 
   @ApiEndpoint({
-    tags: ['Admin', 'Bussiness Categories'],
+    tags: ['Admin', 'Business-Categories'],
     response: {
       status: 201,
       description: ServerSuccess.BUSS_CATEGORY.UPDATED,
@@ -136,7 +136,7 @@ export class BussCategoriesController {
   @Roles(UserType.SUPERADMIN, UserType.ADMIN)
   @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
-    tags: ['Admin', 'Bussiness Categories'],
+    tags: ['Admin', 'Business-Categories'],
     response: {
       status: 200,
       description: ServerSuccess.BUSS_CATEGORY.DELETED,

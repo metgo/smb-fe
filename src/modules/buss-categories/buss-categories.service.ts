@@ -5,10 +5,11 @@ import { Model } from 'mongoose';
 
 import { ServerErrors } from 'src/common/constant';
 import { Locale } from 'src/common/enum';
+import { paginationConfig } from 'src/common/pagination.config';
+import { disSelect } from 'src/common/utils/select.handling';
 import {
   findOneByFieldName, findOneByFieldNameExcludeId, queryhandler, updateById,
 } from 'src/core/helper/query-helper';
-import { disSelect } from 'src/common/utils/select.handling';
 import { UpdateBussCategoryDto } from './dto/updateBussCategoryDto';
 import { createBussCategoryDto } from './dto/createBussCategoryDto';
 import { FilterQuery } from './dto/query.dto';
@@ -27,17 +28,24 @@ export class BussCategoriesService {
     return newBussCategories;
   }
 
-  async getAll(query:FilterQuery) {
-    let findQuery: any = {};
+  async getAll(queries: FilterQuery) {
+    const {
+      page, limit, search, ...query
+    } = queries;
+
+    const queryPage = page ? Number(page) : paginationConfig.page;
+    const queryLimit = limit ? Number(limit) : paginationConfig.limit;
+
+    let findQuery: any = query;
     let select: {};
-    let page: number;
-    let limit: number;
+
     let populate: any;
     let populate1: {};
 
-    if (query.search) {
+    if (search) {
       findQuery = {
-        name: { $regex: query.search, $options: 'i' },
+        ...findQuery,
+        name: { $regex: search, $options: 'i' },
       };
     }
 
@@ -52,8 +60,8 @@ export class BussCategoriesService {
       this.BussCategoryModel,
       findQuery,
       select,
-      page,
-      limit,
+      queryPage,
+      queryLimit,
       populate,
       populate1,
       query.locale,

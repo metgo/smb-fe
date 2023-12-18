@@ -177,14 +177,33 @@ paths:
       responses:
         "201":
           description: Map Point was successfully created
+        "401":
+          description: Authorization header not found or jwt token has expired
         "422":
           description: Failed Validation
+      security:
+        - defaultBearerAuth: []
       tags:
         - Admin
         - Map Point
     get:
       operationId: getAllMapPoint
-      parameters: []
+      parameters:
+        - name: search
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: page
+          required: false
+          in: query
+          schema:
+            type: number
+        - name: limit
+          required: false
+          in: query
+          schema:
+            type: number
       responses:
         "200":
           description: Map Point was successfully listed
@@ -211,8 +230,12 @@ paths:
       responses:
         "200":
           description: Map Point was successfully updated
+        "401":
+          description: Authorization header not found or jwt token has expired
         "422":
           description: Failed Validation
+      security:
+        - defaultBearerAuth: []
       tags:
         - Admin
         - Map Point
@@ -227,8 +250,12 @@ paths:
       responses:
         "200":
           description: Map Point was successfully updated
+        "401":
+          description: Authorization header not found or jwt token has expired
         "422":
           description: Failed Validation
+      security:
+        - defaultBearerAuth: []
       tags:
         - Admin
         - Map Point
@@ -530,8 +557,12 @@ paths:
       responses:
         "200":
           description: Order was succesfully listed
+        "401":
+          description: Authorization header not found or jwt token has expired
         "422":
           description: Failed Validation
+      security:
+        - defaultBearerAuth: []
       tags:
         - Products
         - Orders
@@ -566,12 +597,43 @@ paths:
     get:
       operationId: getMyOrders
       summary: Get my orders
-      parameters: []
+      parameters:
+        - name: search
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: page
+          required: false
+          in: query
+          schema:
+            type: number
+        - name: limit
+          required: false
+          in: query
+          schema:
+            type: number
+        - name: status
+          required: false
+          in: query
+          schema:
+            enum:
+              - pending
+              - processing
+              - shipped
+              - delivered
+              - canceled
+              - returned
+            type: string
       responses:
         "200":
           description: Order was succesfully listed
+        "401":
+          description: Authorization header not found or jwt token has expired
         "422":
           description: Failed Validation
+      security:
+        - defaultBearerAuth: []
       tags:
         - Products
         - Orders
@@ -579,12 +641,43 @@ paths:
     get:
       operationId: getAllOrders
       summary: Get all orders
-      parameters: []
+      parameters:
+        - name: search
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: page
+          required: false
+          in: query
+          schema:
+            type: number
+        - name: limit
+          required: false
+          in: query
+          schema:
+            type: number
+        - name: status
+          required: false
+          in: query
+          schema:
+            enum:
+              - pending
+              - processing
+              - shipped
+              - delivered
+              - canceled
+              - returned
+            type: string
       responses:
         "200":
           description: Order was succesfully listed
+        "401":
+          description: Authorization header not found or jwt token has expired
         "422":
           description: Failed Validation
+      security:
+        - defaultBearerAuth: []
       tags:
         - Products
         - Orders
@@ -593,15 +686,19 @@ paths:
       operationId: success
       parameters: []
       responses:
-        "200":
-          description: ""
+        "422":
+          description: Failed Validation
+      tags:
+        - Payment
   /payment/failure:
     get:
       operationId: failure
       parameters: []
       responses:
-        "200":
-          description: ""
+        "422":
+          description: Failed Validation
+      tags:
+        - Payment
   "/businesses/{businessId}/products":
     post:
       operationId: createProduct
@@ -648,46 +745,134 @@ paths:
         "422":
           description: Failed Validation
       tags:
-        - Business
         - Products
   /my-products:
     get:
       operationId: getMyProductsDetails
       summary: Get my products
-      parameters: []
+      parameters:
+        - name: search
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: page
+          required: false
+          in: query
+          schema:
+            type: number
+        - name: limit
+          required: false
+          in: query
+          schema:
+            type: number
+        - name: businessId
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: status
+          required: false
+          in: query
+          schema:
+            enum:
+              - active
+              - inactive
+            type: string
       responses:
         "200":
           description: Product was listed sucessfully
+        "401":
+          description: Authorization header not found or jwt token has expired
         "422":
           description: Failed Validation
+      security:
+        - defaultBearerAuth: []
       tags:
-        - Business
         - Products
   /collaborated-products:
     get:
       operationId: getMyCollaboratedProductsDetails
       summary: Get my collaborated products
-      parameters: []
+      parameters:
+        - name: search
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: page
+          required: false
+          in: query
+          schema:
+            type: number
+        - name: limit
+          required: false
+          in: query
+          schema:
+            type: number
+        - name: businessId
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: status
+          required: false
+          in: query
+          schema:
+            enum:
+              - active
+              - inactive
+            type: string
       responses:
         "200":
           description: Product was listed sucessfully
+        "401":
+          description: Authorization header not found or jwt token has expired
         "422":
           description: Failed Validation
+      security:
+        - defaultBearerAuth: []
       tags:
-        - Business
         - Products
   /products:
     get:
       operationId: getAllProducts
       summary: Get all products
-      parameters: []
+      parameters:
+        - name: search
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: page
+          required: false
+          in: query
+          schema:
+            type: number
+        - name: limit
+          required: false
+          in: query
+          schema:
+            type: number
+        - name: businessId
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: status
+          required: false
+          in: query
+          schema:
+            enum:
+              - active
+              - inactive
+            type: string
       responses:
         "200":
           description: Product was listed sucessfully
         "422":
           description: Failed Validation
       tags:
-        - Business
         - Products
   "/businesses/{businessId}/products/{productId}":
     patch:
@@ -1001,7 +1186,8 @@ paths:
       security:
         - defaultBearerAuth: []
       tags:
-        - Admin, Business
+        - Admin
+        - Business
   /buy-voucher:
     post:
       operationId: create
@@ -1098,7 +1284,8 @@ paths:
       security:
         - defaultBearerAuth: []
       tags:
-        - Admin, Voucher
+        - Admin
+        - Voucher
   /voucher/assign-me:
     get:
       operationId: assignToMe
@@ -1139,7 +1326,8 @@ paths:
       security:
         - defaultBearerAuth: []
       tags:
-        - Admin, Voucher
+        - Admin
+        - Voucher
   /voucher/assign-user:
     put:
       operationId: assignUser
@@ -1182,7 +1370,8 @@ paths:
       security:
         - defaultBearerAuth: []
       tags:
-        - Admin, Campaign
+        - Admin
+        - Campaign
     get:
       operationId: getAll
       parameters:
@@ -1201,6 +1390,11 @@ paths:
           in: query
           schema:
             type: number
+        - name: limit
+          required: false
+          in: query
+          schema:
+            type: number
         - name: dmoId
           required: false
           in: query
@@ -1212,7 +1406,8 @@ paths:
         "422":
           description: Failed Validation
       tags:
-        - Admin, Campaign
+        - Admin
+        - Campaign
   "/admin/campaign/{id}":
     get:
       operationId: getOne
@@ -1228,7 +1423,8 @@ paths:
         "422":
           description: Failed Validation
       tags:
-        - Admin, Campaign
+        - Admin
+        - Campaign
     delete:
       operationId: softDelete
       parameters:
@@ -1240,8 +1436,12 @@ paths:
       responses:
         "200":
           description: Campaign was succesfully updated
+        "401":
+          description: Authorization header not found or jwt token has expired
         "422":
           description: Failed Validation
+      security:
+        - defaultBearerAuth: []
       tags:
         - Admin
         - Campaign
@@ -1264,6 +1464,11 @@ paths:
           in: query
           schema:
             type: number
+        - name: limit
+          required: false
+          in: query
+          schema:
+            type: number
         - name: dmoId
           required: false
           in: query
@@ -1272,10 +1477,15 @@ paths:
       responses:
         "200":
           description: Campaign was succesfully listed
+        "401":
+          description: Authorization header not found or jwt token has expired
         "422":
           description: Failed Validation
+      security:
+        - defaultBearerAuth: []
       tags:
-        - Admin, Campaign
+        - Admin
+        - Campaign
   "/admin/update/{id}":
     put:
       operationId: update
@@ -1294,8 +1504,12 @@ paths:
       responses:
         "200":
           description: Campaign was succesfully updated
+        "401":
+          description: Authorization header not found or jwt token has expired
         "422":
           description: Failed Validation
+      security:
+        - defaultBearerAuth: []
       tags:
         - Admin
         - Campaign
@@ -1312,14 +1526,33 @@ paths:
       responses:
         "201":
           description: DMO was successfully created
+        "401":
+          description: Authorization header not found or jwt token has expired
         "422":
           description: Failed Validation
+      security:
+        - defaultBearerAuth: []
       tags:
         - Admin
         - DMO
     get:
       operationId: getAllDMO
-      parameters: []
+      parameters:
+        - name: search
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: page
+          required: false
+          in: query
+          schema:
+            type: number
+        - name: limit
+          required: false
+          in: query
+          schema:
+            type: number
       responses:
         "200":
           description: DMO was successfully listed
@@ -1346,8 +1579,12 @@ paths:
       responses:
         "200":
           description: DMO was successfully updated
+        "401":
+          description: Authorization header not found or jwt token has expired
         "422":
           description: Failed Validation
+      security:
+        - defaultBearerAuth: []
       tags:
         - Admin
         - DMO
@@ -1362,14 +1599,18 @@ paths:
       responses:
         "200":
           description: DMO was successfully updated
+        "401":
+          description: Authorization header not found or jwt token has expired
         "422":
           description: Failed Validation
+      security:
+        - defaultBearerAuth: []
       tags:
         - Admin
         - DMO
   /admin/social-media:
     post:
-      operationId: createSocialMedai
+      operationId: createSocialMedia
       parameters: []
       requestBody:
         required: true
@@ -1380,8 +1621,12 @@ paths:
       responses:
         "201":
           description: Social Media was successfully created
+        "401":
+          description: Authorization header not found or jwt token has expired
         "422":
           description: Failed Validation
+      security:
+        - defaultBearerAuth: []
       tags:
         - Admin
         - Social Media
@@ -1393,6 +1638,16 @@ paths:
           in: query
           schema:
             type: string
+        - name: page
+          required: false
+          in: query
+          schema:
+            type: number
+        - name: limit
+          required: false
+          in: query
+          schema:
+            type: number
       responses:
         "200":
           description: Social Media was successfully listed
@@ -1419,8 +1674,12 @@ paths:
       responses:
         "200":
           description: Social Media was successfully updated
+        "401":
+          description: Authorization header not found or jwt token has expired
         "422":
           description: Failed Validation
+      security:
+        - defaultBearerAuth: []
       tags:
         - Admin
         - Social Media
@@ -1435,8 +1694,12 @@ paths:
       responses:
         "200":
           description: Social Media was successfully updated
+        "401":
+          description: Authorization header not found or jwt token has expired
         "422":
           description: Failed Validation
+      security:
+        - defaultBearerAuth: []
       tags:
         - Admin
         - Social Media
@@ -1453,8 +1716,12 @@ paths:
       responses:
         "201":
           description: Icon was succesfully created
+        "401":
+          description: Authorization header not found or jwt token has expired
         "422":
           description: Failed Validation
+      security:
+        - defaultBearerAuth: []
       tags:
         - Admin
         - Icon
@@ -1466,6 +1733,16 @@ paths:
           in: query
           schema:
             type: string
+        - name: page
+          required: false
+          in: query
+          schema:
+            type: number
+        - name: limit
+          required: false
+          in: query
+          schema:
+            type: number
       responses:
         "200":
           description: Icon was succesfully listed
@@ -1508,8 +1785,12 @@ paths:
       responses:
         "200":
           description: Icon was succesfully updated
+        "401":
+          description: Authorization header not found or jwt token has expired
         "422":
           description: Failed Validation
+      security:
+        - defaultBearerAuth: []
       tags:
         - Admin
         - Icon
@@ -1524,8 +1805,12 @@ paths:
       responses:
         "200":
           description: Icon was succesfully updated
+        "401":
+          description: Authorization header not found or jwt token has expired
         "422":
           description: Failed Validation
+      security:
+        - defaultBearerAuth: []
       tags:
         - Admin
         - Icon
@@ -1593,7 +1878,7 @@ paths:
         - defaultBearerAuth: []
       tags:
         - Admin
-        - Bussiness Categories
+        - Business-Categories
     get:
       operationId: getAll
       parameters:
@@ -1610,6 +1895,16 @@ paths:
               - en
               - he
             type: string
+        - name: page
+          required: false
+          in: query
+          schema:
+            type: number
+        - name: limit
+          required: false
+          in: query
+          schema:
+            type: number
       responses:
         "200":
           description: Bussiness Category was succesfully listed
@@ -1621,7 +1916,7 @@ paths:
         - defaultBearerAuth: []
       tags:
         - Admin
-        - Bussiness Categories
+        - Business-Categories
   "/admin/buss-category/{id}":
     get:
       operationId: getOne
@@ -1647,7 +1942,7 @@ paths:
         - defaultBearerAuth: []
       tags:
         - Admin
-        - Bussiness Categories
+        - Business-Categories
     put:
       operationId: update
       parameters:
@@ -1673,7 +1968,7 @@ paths:
         - defaultBearerAuth: []
       tags:
         - Admin
-        - Bussiness Categories
+        - Business-Categories
     delete:
       operationId: softDelete
       parameters:
@@ -1693,7 +1988,7 @@ paths:
         - defaultBearerAuth: []
       tags:
         - Admin
-        - Bussiness Categories
+        - Business-Categories
   /admin/buss-sub-category:
     post:
       operationId: create
@@ -1715,7 +2010,7 @@ paths:
         - defaultBearerAuth: []
       tags:
         - Admin
-        - Business Sub Categories
+        - Business Sub-Categories
     get:
       operationId: getAll
       parameters:
@@ -1737,6 +2032,16 @@ paths:
               - en
               - he
             type: string
+        - name: page
+          required: false
+          in: query
+          schema:
+            type: number
+        - name: limit
+          required: false
+          in: query
+          schema:
+            type: number
       responses:
         "200":
           description: Bussiness SUb Category was succesfully listed
@@ -1744,7 +2049,7 @@ paths:
           description: Failed Validation
       tags:
         - Admin
-        - Business Sub Categories
+        - Business Sub-Categories
   "/admin/buss-sub-category/{id}":
     get:
       operationId: getOne
@@ -1766,7 +2071,7 @@ paths:
           description: Failed Validation
       tags:
         - Admin
-        - Business Sub Categories
+        - Business Sub-Categories
     put:
       operationId: update
       parameters:
@@ -1792,7 +2097,7 @@ paths:
         - defaultBearerAuth: []
       tags:
         - Admin
-        - Business Sub Categories
+        - Business Sub-Categories
     delete:
       operationId: softDelete
       parameters:
@@ -1812,7 +2117,7 @@ paths:
         - defaultBearerAuth: []
       tags:
         - Admin
-        - Business Sub Categories
+        - Business Sub-Categories
   /admin/accessibility:
     post:
       operationId: create
@@ -1843,6 +2148,16 @@ paths:
           in: query
           schema:
             type: string
+        - name: page
+          required: false
+          in: query
+          schema:
+            type: number
+        - name: limit
+          required: false
+          in: query
+          schema:
+            type: number
       responses:
         "200":
           description: Accessibility was listed sucessfully
@@ -1944,6 +2259,16 @@ paths:
           in: query
           schema:
             type: string
+        - name: page
+          required: false
+          in: query
+          schema:
+            type: number
+        - name: limit
+          required: false
+          in: query
+          schema:
+            type: number
       responses:
         "200":
           description: Group Type was listed sucessfully
@@ -2046,6 +2371,16 @@ paths:
           in: query
           schema:
             type: string
+        - name: page
+          required: false
+          in: query
+          schema:
+            type: number
+        - name: limit
+          required: false
+          in: query
+          schema:
+            type: number
       responses:
         "200":
           description: Voucher Template was succesfully listed

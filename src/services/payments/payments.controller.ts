@@ -1,16 +1,22 @@
 import {
   Controller, Get, HttpStatus, Req, Res,
 } from '@nestjs/common';
-import { PaymentsService } from './payments.service';
 import { Request, Response } from 'express';
+
+import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
 import { responseHelper } from 'src/core/helper/response.helper';
+import { PaymentsService } from './payments.service';
 
 @Controller('payment')
 export class PaymentsController {
   constructor(
-  private readonly paymentService: PaymentsService,
+    private readonly paymentService: PaymentsService,
   ) { }
 
+  @ApiEndpoint({
+    tags: ['Payment'],
+    softBlockExtraDtoFields: true,
+  })
   @Get('success')
   async success(@Req() request: Request, @Res() response: Response) {
     await this.paymentService.paymentSucess(request);
@@ -24,7 +30,11 @@ export class PaymentsController {
     );
   }
 
-    @Get('failure')
+  @ApiEndpoint({
+    tags: ['Payment'],
+    softBlockExtraDtoFields: true,
+  })
+  @Get('failure')
   async failure() {
     console.log('test');
   }

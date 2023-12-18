@@ -1,9 +1,12 @@
 /* eslint-disable prefer-const */
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { Accessibility } from './schema/accessibility.schema';
 import { InjectModel } from '@nestjs/mongoose';
-import { FilterQuery, createAccessibilityDto, updateAccessibilityDto } from './dto';
+
+import { paginationConfig } from 'src/common/pagination.config';
 import { disSelect } from 'src/common/utils/select.handling';
+import { Accessibility } from './schema/accessibility.schema';
+import { FilterQuery, createAccessibilityDto, updateAccessibilityDto } from './dto';
+
 import {
   findOneByFieldName, findOneByFieldNameExcludeId, queryhandler, updateById,
 } from 'src/core/helper/query-helper';
@@ -22,11 +25,16 @@ export class AccessibilityService {
     return newAccessibility.save();
   }
 
-  async getAll(query:FilterQuery) {
+  async getAll(queries:FilterQuery) {
+    const {
+      page, limit, ...query
+    } = queries;
+
+    const queryPage = page ? Number(page) : paginationConfig.page;
+    const queryLimit = limit ? Number(limit) : paginationConfig.limit;
+
     let findQuery: {};
     let select: {};
-    let page: number;
-    let limit: number;
     let populate: {};
     let populate1: {};
     if (query.search) {
@@ -44,8 +52,8 @@ export class AccessibilityService {
       this.AccessibilityModel,
       findQuery,
       select,
-      page,
-      limit,
+      queryPage,
+      queryLimit,
       populate,
       populate1,
     );

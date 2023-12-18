@@ -2,7 +2,9 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+
 import { ServerErrors } from 'src/common/constant';
+import { paginationConfig } from 'src/common/pagination.config';
 import { disSelect } from 'src/common/utils/select.handling';
 import { VoucherTemplate } from './schema/voucher-template.schema';
 import { FilterQuery, createVoucherTemplateDto, updateVoucherTemplateDto } from './dto';
@@ -36,35 +38,34 @@ export class VoucherTemplateService {
     return newVoucherTemplate.save();
   }
 
-  async getAll(query: FilterQuery): Promise<VoucherTemplate & any> {
+  async getAll(queries: FilterQuery): Promise<VoucherTemplate & any> {
+    const {
+      page, limit, search,
+    } = queries;
+
+    const queryPage = page ? Number(page) : paginationConfig.page;
+    const queryLimit = limit ? Number(limit) : paginationConfig.limit;
+    const select = disSelect;
+
     let findQuery: {};
-    let select: {};
-    let page: number;
-    let limit: number;
     let populate: any;
     let populate1: {};
 
-    // eslint-disable-next-line prefer-const
-
-    if (query.search) {
+    if (search) {
       findQuery = {
         $or: [
-          { name: { $regex: query.search, $options: 'i' } },
-          { description: { $regex: query.search, $options: 'i' } },
-
+          { name: { $regex: search, $options: 'i' } },
+          { description: { $regex: search, $options: 'i' } },
         ],
-
       };
     }
-    // eslint-disable-next-line prefer-const
-    // eslint-disable-next-line prefer-const
-    select = disSelect;
+
     const voucherTemplate = await queryhandler<VoucherTemplate>(
       this.VoucherTemplateModel,
       findQuery,
       select,
-      page,
-      limit,
+      queryPage,
+      queryLimit,
       populate,
       populate1,
     );

@@ -114,7 +114,7 @@ export class BusinessController {
   }
 
   @ApiEndpoint({
-    tags: ['Admin, Business'],
+    tags: ['Admin', 'Business'],
     response: { status: 200, description: ServerSuccess.BUSINESS_UPDATED },
     noAuthToken: true,
     params: [{ name: 'businessId', type: 'string', required: true }],

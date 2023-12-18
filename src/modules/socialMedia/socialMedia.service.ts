@@ -1,16 +1,17 @@
 /* eslint-disable prefer-const */
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-
-import { SocialMedia } from './schema/socialMedia.schema';
-import { createSocialMediaDto } from './dto/createSocialMedia.dto';
 import { Model } from 'mongoose';
+
+import { ServerErrors } from 'src/common/constant';
+import { paginationConfig } from 'src/common/pagination.config';
+import { disSelect } from 'src/common/utils/select.handling';
 import {
   findOneByFieldName, findOneByFieldNameExcludeId, queryhandler, updateById,
 } from 'src/core/helper/query-helper';
+import { SocialMedia } from './schema/socialMedia.schema';
+import { createSocialMediaDto } from './dto/createSocialMedia.dto';
 import { updateSocialMediaDto } from './dto/updateSocialMedia.dto';
-import { ServerErrors } from 'src/common/constant';
-import { disSelect } from 'src/common/utils/select.handling';
 import { FilterQuery } from './dto/query.dto';
 
 @Injectable()
@@ -26,17 +27,22 @@ export class SocialMediaService {
     return await newSocialMedia.save();
   }
 
-  async getAll(query:FilterQuery) {
+  async getAll(queries: FilterQuery) {
+    const {
+      page, limit, search,
+    } = queries;
+
+    const queryPage = page ? Number(page) : paginationConfig.page;
+    const queryLimit = limit ? Number(limit) : paginationConfig.limit;
+
     let findQuery: {};
     let select: string;
-    let page: number;
-    let limit: number;
     let populate: {};
     let populate1: string;
 
-    if (query.search) {
+    if (search) {
       findQuery = {
-        name: { $regex: query.search, $options: 'i' },
+        name: { $regex: search, $options: 'i' },
       };
     }
     populate = {
@@ -49,8 +55,8 @@ export class SocialMediaService {
       this.SocialMediaModel,
       findQuery,
       select,
-      page,
-      limit,
+      queryPage,
+      queryLimit,
       populate,
       populate1,
     );

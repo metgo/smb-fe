@@ -1,14 +1,16 @@
 /* eslint-disable prefer-const */
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { GroupType } from './schema/group-type.schema';
+
+import { ServerErrors } from 'src/common/constant';
+import { paginationConfig } from 'src/common/pagination.config';
 import { disSelect } from 'src/common/utils/select.handling';
-import { FilterQuery, createGroupTypeDto, updateGroupTypeDto } from './dto';
 import {
   findOneByFieldName, findOneByFieldNameExcludeId, queryhandler, updateById,
 } from 'src/core/helper/query-helper';
-import { ServerErrors } from 'src/common/constant';
-import { InjectModel } from '@nestjs/mongoose';
+import { GroupType } from './schema/group-type.schema';
+import { FilterQuery, createGroupTypeDto, updateGroupTypeDto } from './dto';
 
 @Injectable()
 export class GroupTypeService {
@@ -22,13 +24,19 @@ export class GroupTypeService {
     return newGroupType.save();
   }
 
-  async getAll(query:FilterQuery) {
+  async getAll(queries: FilterQuery) {
+    const {
+      page, limit, ...query
+    } = queries;
+
+    const queryPage = page ? Number(page) : paginationConfig.page;
+    const queryLimit = limit ? Number(limit) : paginationConfig.limit;
+    const select = `${disSelect}`;
+
     let findQuery: {};
-    let select: {};
-    let page: number;
-    let limit: number;
     let populate: {};
     let populate1: {};
+
     if (query.search) {
       findQuery = {
         name: { $regex: query.search, $options: 'i' },
@@ -39,16 +47,16 @@ export class GroupTypeService {
       select: disSelect,
     };
 
-    select = `${disSelect}`;
     const groupType = await queryhandler<GroupType>(
       this.GroupTypeModel,
       findQuery,
       select,
-      page,
-      limit,
+      queryPage,
+      queryLimit,
       populate,
       populate1,
     );
+
     return groupType;
   }
 

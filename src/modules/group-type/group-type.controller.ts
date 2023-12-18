@@ -1,15 +1,16 @@
 import {
   Body, Controller, Delete, Get, HttpStatus, Param, Post, Put, Query, Req, Res, UseGuards,
 } from '@nestjs/common';
-import { GroupTypeService } from './group-type.service';
 import { Response } from 'express';
-import { FilterQuery, createGroupTypeDto, updateGroupTypeDto } from './dto';
-import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
+
 import { ServerSuccess } from 'src/common/constant';
-import { responseHelper } from 'src/core/helper/response.helper';
+import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
 import { Roles } from 'src/core/guards/authorization/roles';
-import { UserType } from '../users/users.type';
 import { JwtAuthGuard } from 'src/core/guards/jwt/jwt.guards';
+import { responseHelper } from 'src/core/helper/response.helper';
+import { GroupTypeService } from './group-type.service';
+import { FilterQuery, createGroupTypeDto, updateGroupTypeDto } from './dto';
+import { UserType } from '../users/users.type';
 
 @Controller()
 export class GroupTypeController {
@@ -97,10 +98,10 @@ export class GroupTypeController {
   })
   @Put('admin/group-type/:id')
   async update(
-      @Req() req,
-      @Res() response: Response,
-      @Param('id') id: string,
-      @Body() dto: updateGroupTypeDto,
+    @Req() req,
+    @Res() response: Response,
+    @Param('id') id: string,
+    @Body() dto: updateGroupTypeDto,
   ) {
     await this.groupTypeService.findByFieldNameExcludeId('name', dto.name, id);
     const groupType = await this.groupTypeService.update(id, dto, req.user.id);
@@ -126,9 +127,9 @@ export class GroupTypeController {
   })
   @Delete('admin/group-type/:id')
   async delete(
-        @Req() req,
-        @Res() response: Response,
-        @Param('id') id: string,
+    @Req() req,
+    @Res() response: Response,
+    @Param('id') id: string,
   ) {
     const groupType = await this.groupTypeService.softDelete(id, req.user.id);
     return responseHelper(

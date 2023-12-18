@@ -1,3 +1,5 @@
+import { FilterQuery } from 'src/modules/orders/dto/query.dto';
+
 /* eslint-disable no-shadow */
 export enum OrderStatus {
     PENDING= 'pending',
@@ -13,14 +15,8 @@ export enum PaymentMode {
     CARD = 'card',
 }
 
-export interface IOrderQuery{
-    status: OrderStatus
-}
-
-export interface FindOrders {
-    query: IOrderQuery,
+export interface FindOrdersQuery {
+    query: FilterQuery,
     myOrder?: boolean,
-    page?: number,
-    limit?: number
     loggedInUser?: string,
 }

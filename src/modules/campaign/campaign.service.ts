@@ -4,6 +4,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
 import { Campaign } from './schema/campaign.schema';
+import { paginationConfig } from 'src/common/pagination.config';
 import {
   findOneByFieldName, findOneByFieldNameExcludeId, findOneByFieldNames, findOneById, queryhandler, updateById,
 } from 'src/core/helper/query-helper';
@@ -49,29 +50,26 @@ export class CampaignService {
     return newCampaign;
   }
 
-  async getAll(query: FilterQuery) {
-    let findQuery: any = {};
+  async getAll(queries: FilterQuery) {
+    const {
+      page, limit, search, ...query
+    } = queries;
+
+    const queryPage = page ? Number(page) : paginationConfig.page;
+    const queryLimit = limit ? Number(limit) : paginationConfig.limit;
+
+    let findQuery: any = query;
     let select: {};
-    let page: number;
-    let limit: number;
     let populate: any;
     let populate1: {};
-    if (query.search) {
+    if (search) {
       findQuery = {
+        ...findQuery,
         $or: [
-          { name: { $regex: query.search, $options: 'i' } },
-          { description: { $regex: query.search, $options: 'i' } },
+          { name: { $regex: search, $options: 'i' } },
+          { description: { $regex: search, $options: 'i' } },
         ],
       };
-
-      delete findQuery?.search;
-    }
-
-    if (query.page) {
-      page = Number(query.page);
-    }
-    if (query.size) {
-      limit = Number(query.size);
     }
 
     // eslint-disable-next-line prefer-const
@@ -80,35 +78,39 @@ export class CampaignService {
       this.CampaignModel,
       findQuery,
       select,
-      page,
-      limit,
+      queryPage,
+      queryLimit,
       populate,
       populate1,
     );
     return allCampaign;
   }
 
-  async getMy(query: FilterQuery, userId: string) {
-    let findQuery: any = {};
-    let select: {};
-    let page: number;
-    let limit: number;
-    let populate: any;
-    let populate1: {};
-    if (query.search) {
-      findQuery = {
-        $or: [
-          { name: { $regex: query.search, $options: 'i' } },
-          { description: { $regex: query.search, $options: 'i' } },
-        ],
-      };
+  async getMy(queries: FilterQuery, userId: string) {
+    const {
+      page, limit, search, ...query
+    } = queries;
 
-      delete findQuery?.search;
-    }
-    findQuery = {
-      ...findQuery,
+    const queryPage = page ? Number(page) : paginationConfig.page;
+    const queryLimit = limit ? Number(limit) : paginationConfig.limit;
+
+    let findQuery: any = {
+      ...query,
       createdBy: { $in: [userId] },
     };
+    let select: {};
+    let populate: any;
+    let populate1: {};
+    if (search) {
+      findQuery = {
+        ...findQuery,
+        $or: [
+          { name: { $regex: search, $options: 'i' } },
+          { description: { $regex: search, $options: 'i' } },
+        ],
+      };
+    }
+
     if (query.dmoId) {
       findQuery = {
         ...findQuery,
@@ -117,21 +119,14 @@ export class CampaignService {
       delete findQuery?.createdBy;
     }
 
-    if (query.page) {
-      page = Number(query.page);
-    }
-    if (query.size) {
-      limit = Number(query.size);
-    }
-
     // eslint-disable-next-line prefer-const
     select = `${disSelect}`;
     const allCampaign = await queryhandler<Campaign>(
       this.CampaignModel,
       findQuery,
       select,
-      page,
-      limit,
+      queryPage,
+      queryLimit,
       populate,
       populate1,
     );

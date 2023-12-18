@@ -1,27 +1,36 @@
 import {
-  Body, Controller, Delete, Get, HttpStatus, Param, Post, Put, Res,
+  Body, Controller, Delete, Get, HttpStatus, Param, Post, Put, Query, Res, UseGuards,
 } from '@nestjs/common';
-import { DMOService } from './dmo.service';
-import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
-import { ServerSuccess } from 'src/common/constant';
 import { Response } from 'express';
-import { CreateDMODto, UpdateDMODto } from './dto';
+
+import { ServerSuccess } from 'src/common/constant';
+import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
+import { Roles } from 'src/core/guards/authorization/roles';
+import { JwtAuthGuard } from 'src/core/guards/jwt/jwt.guards';
 import { responseHelper } from 'src/core/helper/response.helper';
+import { DMOService } from 'src/modules/dmo//dmo.service';
+import { CreateDMODto, UpdateDMODto, FilterQuery } from 'src/modules/dmo/dto';
+import { UserType } from 'src/modules/users/users.type';
 
 @Controller()
 export class DMOController {
   constructor(private readonly dmoServices: DMOService) { }
 
-    @ApiEndpoint({
-      tags: ['Admin', 'DMO'],
-      response: {
-        status: 201,
-        description: ServerSuccess.DMO_CREATED,
-      },
-    })
-    @Post('admin/dmo')
+  @ApiEndpoint({
+    tags: ['Admin', 'DMO'],
+    response: {
+      status: 201,
+      description: ServerSuccess.DMO_CREATED,
+    },
+    softBlockExtraDtoFields: true,
+    noAuthToken: true,
+  })
+  @Roles(UserType.TRAVELLER, UserType.ADMIN)
+  @UseGuards(JwtAuthGuard)
+  @Post('admin/dmo')
   async createDMO(@Res() response: Response, @Body() dto: CreateDMODto) {
     const newDMO = await this.dmoServices.createDMO(dto);
+
     return responseHelper(
       response,
       HttpStatus.CREATED,
@@ -32,70 +41,79 @@ export class DMOController {
     );
   }
 
- @ApiEndpoint({
-   tags: ['Admin', 'DMO'],
-   response: {
-     status: 200,
-     description: ServerSuccess.DMO_LISTED,
-   },
- })
-    @Get('admin/dmo')
-    async getAllDMO(@Res() response: Response) {
-      const dmo = await this.dmoServices.getAllDMO();
-      return responseHelper(
-        response,
-        HttpStatus.OK,
-        ServerSuccess.DMO_LISTED,
-        dmo,
-        null,
-        null,
-      );
-    }
+  @ApiEndpoint({
+    tags: ['Admin', 'DMO'],
+    response: {
+      status: 200,
+      description: ServerSuccess.DMO_LISTED,
+    },
+    softBlockExtraDtoFields: true,
+  })
+  @Get('admin/dmo')
+  async getAllDMO(@Res() response: Response, @Query() query: FilterQuery) {
+    const dmo = await this.dmoServices.getAllDMO(query);
+    return responseHelper(
+      response,
+      HttpStatus.OK,
+      ServerSuccess.DMO_LISTED,
+      dmo,
+      null,
+      null,
+    );
+  }
 
-    @ApiEndpoint({
-      tags: ['Admin', 'DMO'],
-      response: {
-        status: 200,
-        description: ServerSuccess.DMO_UPDTED,
-      },
-    })
-     @Put('admin/dmo/:id')
- async updateMPSubCategoriesItems(
+  @ApiEndpoint({
+    tags: ['Admin', 'DMO'],
+    response: {
+      status: 200,
+      description: ServerSuccess.DMO_UPDTED,
+    },
+    softBlockExtraDtoFields: true,
+    noAuthToken: true,
+  })
+  @Roles(UserType.TRAVELLER, UserType.ADMIN)
+  @UseGuards(JwtAuthGuard)
+  @Put('admin/dmo/:id')
+  async updateMPSubCategoriesItems(
     @Res() response: Response,
     @Param('id') id: string,
     @Body() dto: UpdateDMODto,
- ) {
-   const dmo = await this.dmoServices.updateDMO(id, dto);
-   return responseHelper(
-     response,
-     HttpStatus.OK,
-     ServerSuccess.DMO_UPDTED,
-     dmo,
-     null,
-     null,
-   );
- }
+  ) {
+    const dmo = await this.dmoServices.updateDMO(id, dto);
+    return responseHelper(
+      response,
+      HttpStatus.OK,
+      ServerSuccess.DMO_UPDTED,
+      dmo,
+      null,
+      null,
+    );
+  }
 
-     @ApiEndpoint({
-       tags: ['Admin', 'DMO'],
-       response: {
-         status: 200,
-         description: ServerSuccess.DMO_UPDTED,
-       },
-     })
-    @Delete('admin/dmo/:id')
-    async deleteMPSubCategoriesItems(
+  @ApiEndpoint({
+    tags: ['Admin', 'DMO'],
+    response: {
+      status: 200,
+      description: ServerSuccess.DMO_UPDTED,
+    },
+    softBlockExtraDtoFields: true,
+    noAuthToken: true,
+  })
+  @Roles(UserType.TRAVELLER, UserType.ADMIN)
+  @UseGuards(JwtAuthGuard)
+  @Delete('admin/dmo/:id')
+  async deleteMPSubCategoriesItems(
     @Res() response: Response,
     @Param('id') id: string,
-    ) {
-      const dmo = await this.dmoServices.softDeleteDMO(id);
-      return responseHelper(
-        response,
-        HttpStatus.OK,
-        ServerSuccess.DMO_UPDTED,
-        dmo,
-        null,
-        null,
-      );
-    }
+  ) {
+    const dmo = await this.dmoServices.softDeleteDMO(id);
+    return responseHelper(
+      response,
+      HttpStatus.OK,
+      ServerSuccess.DMO_UPDTED,
+      dmo,
+      null,
+      null,
+    );
+  }
 }

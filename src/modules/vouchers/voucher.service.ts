@@ -6,6 +6,8 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
+
+import { paginationConfig } from 'src/common/pagination.config';
 import { Voucher } from './schema/voucher.schema';
 import {
   FilterQuery, createVoucherDto,
@@ -73,80 +75,41 @@ export class VoucherService {
     return voucher;
   }
 
-  async getMy(userId: string, query: FilterQuery) {
-    let findQuery: any = {};
-    let select: {};
-    let page: number = 1;
-    let limit: number = 10;
+  async getMy(userId: string, queries: FilterQuery, assignedToMe?: boolean) {
+    const {
+      page, limit, search, ...query
+    } = queries;
+
+    const queryPage = page ? Number(page) : paginationConfig.page;
+    const queryLimit = limit ? Number(limit) : paginationConfig.limit;
+
+    const select = disSelect;
+    let findQuery: any = { ...query, createdBy: userId };
     let populate: any;
     let populate1: {};
 
-    findQuery = {
-      createdBy: userId,
-    };
-    if (query.search) {
+    if (assignedToMe) {
       findQuery = {
         ...findQuery,
-        ...query,
-        name: { $regex: query.search, $options: 'i' },
+        assignedTo: new mongoose.Types.ObjectId(userId),
       };
-      delete findQuery?.search;
-    } else {
+      delete findQuery?.createdBy;
+      delete findQuery?.status;
+    }
+
+    if (search) {
       findQuery = {
         ...findQuery,
-        ...query,
+        name: { $regex: search, $options: 'i' },
       };
     }
-    delete findQuery?.page;
-    delete findQuery?.limit;
-    select = disSelect;
+
     const voucher = await queryhandler<Voucher>(
       this.VoucherModel,
       findQuery,
       select,
-      page,
-      limit,
-      populate,
-      populate1,
-    );
-    return voucher;
-  }
-
-  async getMyAssign(userId: string, query:FilterQuery) {
-    let findQuery: any = {};
-    let select: {};
-    let page: number;
-    let limit: number;
-    let populate: any;
-    let populate1: {};
-
-    findQuery = {
-      assignedTo: new mongoose.Types.ObjectId(userId),
-    };
-    if (query.search) {
-      findQuery = {
-        ...findQuery,
-        ...query,
-        name: { $regex: query.search, $options: 'i' },
-      };
-      delete findQuery?.search;
-    } else {
-      findQuery = {
-        ...findQuery,
-        ...query,
-      };
-    }
-    delete findQuery?.page;
-    delete findQuery?.limit;
-    delete findQuery?.status;
-
-    select = disSelect;
-    const voucher = await queryhandler<Voucher>(
-      this.VoucherModel,
-      findQuery,
-      select,
-      page,
-      limit,
+      queryPage,
+      queryLimit,
       populate,
       populate1,
     );

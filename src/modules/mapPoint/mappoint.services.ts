@@ -2,14 +2,15 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
+import { ServerErrors } from 'src/common/constant';
+import { paginationConfig } from 'src/common/pagination.config';
+import { disSelect } from 'src/common/utils/select.handling';
+
 import { MapPoint } from './schema/mappoint.schema';
 import {
   findOneByFieldName, findOneByFieldNameExcludeId, queryhandler, updateById,
 } from 'src/core/helper/query-helper';
-import { ServerErrors } from 'src/common/constant';
-import { createMapPointDto } from './dto';
-import { updateMapPointDto } from './dto/updateMapPoint.dto';
-import { disSelect } from 'src/common/utils/select.handling';
+import { FilterQuery, createMapPointDto, updateMapPointDto } from './dto';
 
 @Injectable()
 export class MapPointServices {
@@ -29,13 +30,24 @@ export class MapPointServices {
     return newMapPoint.save();
   }
 
-  async getAllMapPoint(): Promise<MapPoint & any> {
+  async getAllMapPoint(queries: FilterQuery): Promise<MapPoint & any> {
+    const {
+      page, limit, search,
+    } = queries;
+
+    const queryPage = page ? Number(page) : paginationConfig.page;
+    const queryLimit = limit ? Number(limit) : paginationConfig.limit;
+
     let findQuery: {};
     let select: {};
-    let page: number;
-    let limit: number;
     let populate: {};
     let populate1: string;
+
+    if (search) {
+      findQuery = {
+        $text: { $search: search, $caseSensitive: false, $diacriticSensitive: false },
+      };
+    }
 
     // eslint-disable-next-line prefer-const
     populate = {
@@ -48,8 +60,8 @@ export class MapPointServices {
       this.MapPointModel,
       findQuery,
       select,
-      page,
-      limit,
+      queryPage,
+      queryLimit,
       populate,
       populate1,
     );

@@ -7,13 +7,14 @@ import { Model } from 'mongoose';
 import { ServerErrors } from 'src/common/constant';
 import { paginationConfig } from 'src/common/pagination.config';
 import { sellingPriceForAmountOrPercent } from 'src/common/utils/discount-calculation';
+import { disSelect } from 'src/common/utils/select.handling';
 import {
   findOneByFieldNames, queryhandler, updateWhere,
 } from 'src/core/helper/query-helper';
 import { Business } from 'src/modules/business/schema/business.schema';
 import { Product } from 'src/modules/products/schema/products.schema';
 import { ProductDto } from 'src/modules/products/dto/product.dto';
-import { FindProducts, ProductStatus, updateCommand } from 'src/modules/products/products.type';
+import { FindProductsQuery, ProductStatus, updateCommand } from 'src/modules/products/products.type';
 
 @Injectable()
 export class ProductsService {
@@ -74,32 +75,44 @@ export class ProductsService {
     return product;
   }
 
-  async findAll(queries: FindProducts) : Promise<Product[]> {
+  async findAll(queries: FindProductsQuery) : Promise<Product[]> {
     const {
-      query, myProduct, collaboratedProducts, loggedInUser,
-    } = queries;
+      search, page, limit, ...query
+    } = queries.query;
 
     let findQuery: any = query;
-    let select: {};
-    const page: number = query?.page || paginationConfig.page;
-    const limit: number = query?.limit || paginationConfig.limit;
+    const select = `${disSelect}`;
+    const queryPage = page ? Number(page) : paginationConfig.page;
+    const queryLimit = limit ? Number(limit) : paginationConfig.limit;
 
-    findQuery = { ...query, status: ProductStatus.ACTIVE };
-
-    if (myProduct) {
-      findQuery = { ...query, primaryUserId: loggedInUser };
+    if (!query.status) {
+      findQuery = { ...query, status: ProductStatus.ACTIVE };
     }
 
-    if (collaboratedProducts) {
-      findQuery = { ...query, collaboratorId: loggedInUser };
+    if (search) {
+      findQuery = {
+        ...findQuery,
+        $or: [
+          { name: { $regex: search, $options: 'i' } },
+          { description: { $regex: search, $options: 'i' } },
+        ],
+      };
+    }
+
+    if (queries.myProduct) {
+      findQuery = { ...findQuery, primaryUserId: queries.loggedInUser };
+    }
+
+    if (queries.collaboratedProducts) {
+      findQuery = { ...findQuery, collaboratorId: queries.loggedInUser };
     }
 
     const products = await queryhandler<Product>(
       this.ProductModel,
       findQuery,
       select,
-      page,
-      limit,
+      queryPage,
+      queryLimit,
     );
     return products;
   }

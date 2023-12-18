@@ -26,6 +26,7 @@ export class IconsController {
       status: 201,
       description: ServerSuccess.ICON_CREATED,
     },
+    noAuthToken: true,
   })
   @UseInterceptors(FileInterceptor('icon', { fileFilter: fileFilterByExtensions }))
   @Roles(UserType.ADMIN, UserType.DMO, UserType.SUPERADMIN)
@@ -56,8 +57,8 @@ export class IconsController {
       description: ServerSuccess.ICON_LISTED,
     },
   })
-    @Get('')
-  async getIcons(@Res() response: Response, @Query() query:FilterQuery) {
+  @Get('')
+  async getIcons(@Res() response: Response, @Query() query: FilterQuery) {
     const icon = await this.iconsService.getIcons(query);
     return responseHelper(
       response,
@@ -95,6 +96,7 @@ export class IconsController {
       status: 200,
       description: ServerSuccess.ICON_UPDATED,
     },
+    noAuthToken: true,
   })
   @Roles(UserType.ADMIN, UserType.DMO, UserType.SUPERADMIN)
   @UseGuards(JwtAuthGuard)
@@ -124,6 +126,7 @@ export class IconsController {
       status: 200,
       description: ServerSuccess.ICON_UPDATED,
     },
+    noAuthToken: true,
   })
   @Roles(UserType.ADMIN, UserType.DMO, UserType.SUPERADMIN)
   @UseGuards(JwtAuthGuard)

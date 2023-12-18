@@ -4,6 +4,7 @@ import { Model } from 'mongoose';
 
 import { Locale } from 'src/common/enum';
 import { ServerErrors } from 'src/common/constant';
+import { paginationConfig } from 'src/common/pagination.config';
 import { disSelect } from 'src/common/utils/select.handling';
 import {
   findOneByFieldName, findOneByFieldNameExcludeId, queryhandler, updateById,
@@ -23,19 +24,32 @@ export class BussSubCategoriesService {
     return newBussSubCategory.save();
   }
 
-  async getAll(query: FilterQuery): Promise<BussSubCategory & any> {
-    let findQuery: {};
+  async getAll(queries: FilterQuery): Promise<BussSubCategory & any> {
+    const {
+      page, limit, search, ...query
+    } = queries;
+
+    const queryPage = page ? Number(page) : paginationConfig.page;
+    const queryLimit = limit ? Number(limit) : paginationConfig.limit;
+
+    let findQuery: any = query;
     let select: {};
-    let page: number;
-    let limit: number;
     let populate: any;
     let populate1: {};
+
+    if (search) {
+      findQuery = {
+        ...findQuery,
+        name: { $regex: search, $options: 'i' },
+      };
+    }
 
     // eslint-disable-next-line prefer-const
 
     if (query.bussCategoryId) {
       const bussCategory = JSON.parse(query.bussCategoryId);
       findQuery = {
+        ...findQuery,
         bussCategoryId: { $in: bussCategory },
       };
     }
@@ -56,8 +70,8 @@ export class BussSubCategoriesService {
       this.BussSubCategoryModel,
       findQuery,
       select,
-      page,
-      limit,
+      queryPage,
+      queryLimit,
       populate,
       populate1,
       query.locale,
