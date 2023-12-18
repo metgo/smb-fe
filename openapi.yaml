@@ -48,7 +48,7 @@ paths:
       summary: Get My Information
       parameters: []
       responses:
-        "201":
+        "200":
           description: User was succesfully listed
         "401":
           description: Authorization header not found or jwt token has expired

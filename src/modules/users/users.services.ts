@@ -62,7 +62,8 @@ export class UsersService {
         throw new NotFoundException(ServerErrors.USER.NOT_FOUND);
       }
 
-      const [splittedfirstName, splittedlastName] = user.fullName.split(' ');
+      const [splittedfirstName, splittedlastName] = (user.fullName || '').split(' ');
+
       return {
         id: user.id,
         fullName: user.fullName,
