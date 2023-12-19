@@ -1,16 +1,19 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
-  IsEmail, IsNotEmpty, IsOptional, IsString,
+  IsEmail, IsOptional, IsString,
 } from 'class-validator';
+import { IsNotBlank } from 'src/core/decorators/is-not-blank.decorator';
 
 export class UpdateUserRequest {
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
+  @IsNotBlank()
   @ApiProperty()
   readonly firstName: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
+  @IsNotBlank()
   @ApiProperty()
   readonly lastName: string;
 
@@ -20,7 +23,8 @@ export class UpdateUserRequest {
   readonly countryCode: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
+  @IsNotBlank()
   @ApiProperty()
   readonly phoneNumber: string;
 
@@ -30,7 +34,8 @@ export class UpdateUserRequest {
   readonly dob: Date;
 
   @IsEmail()
-  @IsNotEmpty()
+  @IsOptional()
+  @IsNotBlank()
   @ApiProperty()
   readonly email: string;
 

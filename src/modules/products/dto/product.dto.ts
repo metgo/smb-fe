@@ -3,6 +3,7 @@ import {
   IsArray,
   IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString,
 } from 'class-validator';
+import { IsNotBlank } from 'src/core/decorators/is-not-blank.decorator';
 import { ProductStatus } from 'src/modules/products/products.type';
 
 class images {
@@ -39,7 +40,8 @@ class Quantity {
 
 export class ProductDto {
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
+  @IsNotBlank()
   @ApiProperty()
     name: string;
 
@@ -53,15 +55,18 @@ export class ProductDto {
     images: images[];
 
   @ApiProperty()
-  @IsNotEmpty()
+  @IsOptional()
+  @IsNotBlank()
     price: Price;
 
   @ApiProperty()
-  @IsNotEmpty()
+  @IsOptional()
+  @IsNotBlank()
     quantity: Quantity;
 
   @IsEnum(ProductStatus)
-  @IsNotEmpty()
+  @IsOptional()
+  @IsNotBlank()
   @ApiProperty({
     type: 'enum',
     enum: ProductStatus,
