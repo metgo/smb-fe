@@ -3,6 +3,7 @@ import mongoose, { HydratedDocument } from 'mongoose';
 import { VoucherPaymentStatus, VoucherStatus } from 'src/common/enum';
 import { twoYearExpireDate } from 'src/common/expireDate';
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
+import { Campaign } from 'src/modules/campaign/schema/campaign.schema';
 
 @Schema()
 export class Voucher extends AuditableSchema {
@@ -51,6 +52,7 @@ export class Voucher extends AuditableSchema {
     {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
+      ref: Campaign.name,
     },
   )
     campId: mongoose.Types.ObjectId;
