@@ -23,7 +23,6 @@ import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
 import { JwtAuthGuard } from 'src/core/guards/jwt/jwt.guards';
 import { responseHelper } from 'src/core/helper/response.helper';
 import { BusinessService } from 'src/modules/business/business.service';
-import { BusinessStatus } from 'src/modules/business/business.type';
 import { ProductDto } from 'src/modules/products/dto/product.dto';
 import { FilterQuery } from 'src/modules/products//dto/query.dto';
 import { ProductsService } from 'src/modules/products/products.services';
