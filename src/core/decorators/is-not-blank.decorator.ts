@@ -9,7 +9,10 @@ export function IsNotBlank(validationOptions?: ValidationOptions) {
       propertyName,
       options: validationOptions,
       validator: {
-        validate(value: string) {
+        validate(value: string | Number) {
+          if (validationOptions?.each) {
+            return value !== null && value !== undefined && value !== 0;
+          }
           return typeof value === 'string' && value.trim() !== '';
         },
         defaultMessage() {

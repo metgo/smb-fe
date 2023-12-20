@@ -23,7 +23,6 @@ import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
 import { JwtAuthGuard } from 'src/core/guards/jwt/jwt.guards';
 import { responseHelper } from 'src/core/helper/response.helper';
 import { BusinessService } from 'src/modules/business/business.service';
-import { BusinessStatus } from 'src/modules/business/business.type';
 import { ProductDto } from 'src/modules/products/dto/product.dto';
 import { FilterQuery } from 'src/modules/products//dto/query.dto';
 import { ProductsService } from 'src/modules/products/products.services';
@@ -52,7 +51,12 @@ export class ProductsController {
     @Res() response: Response,
     @Body() body: ProductDto,
   ) {
-    const business = await this.businessService.findByFieldItems({ _id: businessId, status: BusinessStatus.APPROVED });
+    /**
+     * status: BusinessStatus.APPROVED
+     * need to discuess or we will not impment it
+     *  */
+
+    const business = await this.businessService.findByFieldItems({ _id: businessId });
     if (!business) {
       throw new ForbiddenException(ServerErrors.PRODUCT.ADD_FAILED.BUSINESS);
     }
