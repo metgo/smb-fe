@@ -174,7 +174,7 @@ export const ServerSuccess = {
     UPDATED: 'Voucher  was succesfully updated',
     LISTED: 'Voucher  was succesfully listed',
     DELETED: 'Voucher  was succesfully deleted',
-    ASSIGNED: 'Voucher was successfully asigned',
+    ASSIGNED: 'Voucher was successfully assigned',
   },
 
   CAMPAIGN: {

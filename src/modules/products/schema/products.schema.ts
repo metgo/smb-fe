@@ -3,6 +3,8 @@ import mongoose, { HydratedDocument } from 'mongoose';
 
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
 import { Business } from 'src/modules/business/schema/business.schema';
+import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.schema';
+import { BussSubCategory } from 'src/modules/buss-subcategories/schema/buss-subCategory.schema';
 import { ProductStatus } from 'src/modules/products/products.type';
 import { User } from 'src/modules/users/schema/users.schema';
 
@@ -101,6 +103,7 @@ export class Product extends AuditableSchema {
   @Prop({
     type: [{
       type: mongoose.Schema.Types.ObjectId,
+      ref: BussCategory.name,
     }],
     required: false,
   })
@@ -109,6 +112,7 @@ export class Product extends AuditableSchema {
   @Prop({
     type: [{
       type: mongoose.Schema.Types.ObjectId,
+      ref: BussSubCategory.name,
     }],
     required: false,
   })

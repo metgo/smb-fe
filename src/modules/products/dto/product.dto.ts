@@ -17,6 +17,7 @@ class images {
 class Price {
   @IsNumber()
   @IsNotEmpty()
+  @IsNotBlank()
   @ApiProperty()
     markedPrice: number;
 
@@ -33,7 +34,8 @@ class Price {
 
 class Quantity {
   @IsNumber()
-  @IsNotEmpty()
+  @IsNotBlank()
+  @IsOptional()
   @ApiProperty()
     initial: number;
 }

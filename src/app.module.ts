@@ -28,6 +28,7 @@ import { CampaignModule } from './modules/campaign/campaign.module';
 import { OrdersModule } from 'src/modules/orders/orders.modules';
 import { VoucherModule } from './modules/vouchers/voucher.module';
 import { PaymentsModule } from './services/payments/payments.module';
+import { CampaignSegmentModule } from './modules/campaign-segments/campaignSegment.module';
 
 @Module({
   imports: [
@@ -55,6 +56,7 @@ import { PaymentsModule } from './services/payments/payments.module';
     GroupTypeModule,
     VoucherTemplateModule,
     CampaignModule,
+    CampaignSegmentModule,
     VoucherModule,
     PaymentsModule,
   ],

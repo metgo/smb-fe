@@ -1,21 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsOptional } from 'class-validator';
+
 import { VoucherStatus } from 'src/common/enum';
+import { CommonFilterQuery } from 'src/common/utils/common-filter-query';
 
-export class FilterQuery {
-  @ApiProperty({ type: String, required: false })
-  @IsOptional()
-    search: string;
-
+export class FilterQuery extends CommonFilterQuery {
   @ApiProperty({ enum: VoucherStatus, required: false })
   @IsOptional()
     status: VoucherStatus;
-
-  @ApiProperty({ type: Number, required: false })
-  @IsOptional()
-    page: number;
-
-  @ApiProperty({ type: Number, required: false })
-  @IsOptional()
-    limit: number;
 }

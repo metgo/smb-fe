@@ -8,6 +8,7 @@ import { UsersModule } from '../users/users.module';
 import { EncryptionModule } from 'src/services/encryption/encryption.module';
 import { ConfigModule } from 'src/services/config/config.module';
 import { DMOModule } from '../dmo/dmo.module';
+import { CampaignSegmentModule } from '../campaign-segments/campaignSegment.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { DMOModule } from '../dmo/dmo.module';
     EncryptionModule,
     ConfigModule,
     DMOModule,
+    CampaignSegmentModule,
   ],
   providers: [
     CampaignService,

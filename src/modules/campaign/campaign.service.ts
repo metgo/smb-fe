@@ -2,7 +2,7 @@
 /* eslint-disable no-undef */
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import mongoose, { Model } from 'mongoose';
+import { Model } from 'mongoose';
 import { Campaign } from './schema/campaign.schema';
 import { paginationConfig } from 'src/common/pagination.config';
 import {
@@ -34,7 +34,6 @@ export class CampaignService {
     dto: createCampaignDto,
     file: Express.Multer.File,
     userId: string,
-    dmoId: mongoose.Types.ObjectId,
   ): Promise<Campaign> {
     if (!file) {
       throw new BadRequestException('Please upload file');
@@ -44,7 +43,6 @@ export class CampaignService {
       ...dto,
       imagePath: campImage,
       createdBy: userId,
-      dmoId,
     });
     await newCampaign.save();
     return newCampaign;

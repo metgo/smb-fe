@@ -1,4 +1,3 @@
-/* eslint-disable prefer-const */
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -6,6 +5,7 @@ import { Model } from 'mongoose';
 import { ServerErrors } from 'src/common/constant';
 import { Locale } from 'src/common/enum';
 import { paginationConfig } from 'src/common/pagination.config';
+import { ExternalApiFilterQuery } from 'src/common/query-handler/external-api-filter.query';
 import { disSelect } from 'src/common/utils/select.handling';
 import {
   findOneByFieldName, findOneByFieldNameExcludeId, queryhandler, updateById,
@@ -14,12 +14,15 @@ import { UpdateBussCategoryDto } from './dto/updateBussCategoryDto';
 import { createBussCategoryDto } from './dto/createBussCategoryDto';
 import { FilterQuery } from './dto/query.dto';
 import { BussCategory } from './schema/buss.category.schema';
+import { BussSubCategory } from '../buss-subcategories/schema/buss-subCategory.schema';
 
 @Injectable()
 export class BussCategoriesService {
   constructor(
     @InjectModel('BussCategory')
     private BussCategoryModel: Model<BussCategory>,
+    @InjectModel(BussSubCategory.name)
+    private BussSubCategoryModel: Model<BussSubCategory>,
   ) { }
 
   async create(dto:createBussCategoryDto, userId:string) {
@@ -37,9 +40,12 @@ export class BussCategoriesService {
     const queryLimit = limit ? Number(limit) : paginationConfig.limit;
 
     let findQuery: any = query;
-    let select: {};
+    const select = `${disSelect}`;
 
-    let populate: any;
+    const populate = {
+      path: 'icon',
+      select: disSelect,
+    };
     let populate1: {};
 
     if (search) {
@@ -48,13 +54,6 @@ export class BussCategoriesService {
         name: { $regex: search, $options: 'i' },
       };
     }
-
-    select = `${disSelect}`;
-
-    populate = {
-      path: 'icon',
-      select: disSelect,
-    };
 
     const bussCategoriesList = await queryhandler<BussCategory>(
       this.BussCategoryModel,
@@ -124,5 +123,44 @@ export class BussCategoriesService {
       throw new BadRequestException(`${fieldName} already exists`);
     }
     return false;
+  }
+
+  async getAllForExternalApi(queries: ExternalApiFilterQuery) {
+    const select = disSelect;
+    const populate = {
+      path: 'icon',
+      select: `${disSelect}`,
+    };
+    let findQuery: any = {};
+
+    if (queries.search) {
+      findQuery = {
+        name: { $regex: queries.search, $options: 'i' },
+      };
+    }
+    const categories = await this.BussCategoryModel
+      .find({ ...findQuery, deletedAt: { $in: [null] } })
+      .lean()
+      .select(select)
+      .populate(populate)
+      .exec();
+
+    let categoriesWithSubCategories = [];
+    const select2 = `${disSelect} -bussCategoryId`;
+
+    await Promise.all(categories.map(async category => {
+      const categoryWithSubCategory:any = category;
+
+      categoryWithSubCategory.sub_categories = await this.BussSubCategoryModel
+        // eslint-disable-next-line no-underscore-dangle
+        .find({ bussCategoryId: category._id, deletedAt: { $in: [null] } })
+        .select(select2)
+        .populate(populate)
+        .exec();
+
+      categoriesWithSubCategories = [...categoriesWithSubCategories, categoryWithSubCategory];
+    }));
+
+    return categoriesWithSubCategories;
   }
 }

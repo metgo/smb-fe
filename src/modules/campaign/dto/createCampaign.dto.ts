@@ -1,7 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import {
-  IsArray,
   IsNotEmpty, IsOptional, IsString,
 } from 'class-validator';
 import { CampaignStatus } from 'src/common/enum';
@@ -25,16 +24,6 @@ export class createCampaignDto {
   @IsString()
   @IsNotEmpty()
     code: string;
-
-  @ApiProperty()
-  @IsArray()
-  @IsOptional()
-    segment: [];
-
-  @ApiProperty()
-  @IsArray()
-  @IsOptional()
-    crowed: [];
 
   @ApiProperty()
   @IsNotEmpty()

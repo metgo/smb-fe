@@ -13,6 +13,7 @@ import {
   FilterQuery, createVoucherDto,
 } from './dto';
 import { Currency } from 'src/common/enum';
+import { ExternalApiFilterQuery } from 'src/common/query-handler/external-api-filter.query';
 import { generateRandomCode } from 'src/common/utils/randomCode.generator';
 import { remainingAmountCalculation } from 'src/common/utils/remaining-amount-calculation';
 import { queryhandler, updateMany, updateWhere } from 'src/core/helper/query-helper';
@@ -83,7 +84,7 @@ export class VoucherService {
     return voucher;
   }
 
-  async getMy(userId: string, queries: FilterQuery, assignedToMe?: boolean) {
+  async getMy(userId: string, queries: FilterQuery | ExternalApiFilterQuery, assignedToMe?: boolean) {
     const {
       page, limit, search, ...query
     } = queries;
@@ -92,7 +93,10 @@ export class VoucherService {
     const queryLimit = limit ? Number(limit) : paginationConfig.limit;
 
     const select = disSelect;
+
     let findQuery: any = { ...query, createdBy: userId };
+    delete findQuery?.identifierId;
+
     const populate = {
       path: 'campId',
       select: `${disSelect}`,
@@ -149,7 +153,7 @@ export class VoucherService {
     );
 
     if (!updateVoucher) {
-      throw new BadRequestException('voucher not found');
+      throw new BadRequestException(ServerErrors.VOUCHER.NOT_FOUND);
     }
   }
 

@@ -4,20 +4,23 @@ import {
   Body, Controller, Get, HttpStatus, Param, Post, Put, Query, Req, Res, UseGuards,
 } from '@nestjs/common';
 import { ServerSuccess } from 'src/common/constant';
+import { ExternalApiFilterQuery } from 'src/common/query-handler/external-api-filter.query';
 import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
+import { ExternalApiGuard } from 'src/core/guards/authorization/external-api-guards';
+import { JwtAuthGuard } from 'src/core/guards/jwt/jwt.guards';
 import { VoucherService } from './voucher.service';
 import {
   FilterQuery, createVoucherDto, updateAssignedUserVoucherDto,
 } from './dto';
 import { CampaignService } from '../campaign/campaign.service';
 import { Campaign } from '../campaign/schema/campaign.schema';
-import { JwtAuthGuard } from 'src/core/guards/jwt/jwt.guards';
 import { UsersService } from '../users/users.services';
 import { User } from '../users/schema/users.schema';
 import { VoucherStatus } from 'src/common/enum';
 import { UpdateFieldInterface } from './interface';
 import { responseHelper } from 'src/core/helper/response.helper';
 import { Response } from 'express';
+import { ConfigService } from 'src/services/config/config.service';
 
 @Controller()
 export class VoucherController {
@@ -25,6 +28,7 @@ export class VoucherController {
     private readonly voucherService: VoucherService,
     private readonly campaignService: CampaignService,
     private readonly userSerive: UsersService,
+    private readonly configService: ConfigService,
   ) { }
 
   @UseGuards(JwtAuthGuard)
@@ -159,6 +163,72 @@ export class VoucherController {
   })
   @Put('voucher/assign-user')
   async assignUser(
+    @Req() req,
+    @Res() response: Response,
+    @Body() dto: updateAssignedUserVoucherDto,
+  ) {
+    const userId = req.user.id;
+    let user: User | null;
+    if (dto.email) {
+      user = await this.userSerive.findByEmailOrNull(dto.email);
+    }
+    const updateField: UpdateFieldInterface = {
+      assignedTo: user ? user._id : null,
+      waitingUserEmail: user ? null : dto.email,
+      status: user ? VoucherStatus.ASSIGNED : VoucherStatus.WAITING,
+      updatedBy: userId,
+      updatedAt: new Date(),
+    };
+    await this.voucherService.assignUser(dto.code, updateField);
+    return responseHelper(
+      response,
+      HttpStatus.OK,
+      ServerSuccess.VOUCHER.ASSIGNED,
+      null,
+      null,
+      null,
+    );
+  }
+
+  @ApiEndpoint({
+    tags: ['External Api', 'Voucher'],
+    response: {
+      status: 200,
+      description: ServerSuccess.VOUCHER.LISTED,
+    },
+    softBlockExtraDtoFields: true,
+    noAuthToken: true,
+  })
+  @UseGuards(JwtAuthGuard)
+  @UseGuards(ExternalApiGuard)
+  @Get('externalapi/my_vouchers')
+  async getAllMyVouchersExternalApi(
+    @Res() response: Response,
+    @Req() request,
+    @Query() query: ExternalApiFilterQuery,
+  ) {
+    const userId = request.user.id;
+    const vouchers = await this.voucherService.getMy(userId, query);
+    return responseHelper(
+      response,
+      HttpStatus.OK,
+      ServerSuccess.VOUCHER.LISTED,
+      vouchers,
+      null,
+      null,
+    );
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @ApiEndpoint({
+    tags: ['Admin', 'Voucher'],
+    response: { status: 200, description: ServerSuccess.VOUCHER.ASSIGNED },
+    softBlockExtraDtoFields: true,
+    noAuthToken: true,
+  })
+  @UseGuards(ExternalApiGuard)
+  @Put('externalapi/assign_voucher_to_user')
+  async assignVoucherToUserExternalApi(
     @Req() req,
     @Res() response: Response,
     @Body() dto: updateAssignedUserVoucherDto,

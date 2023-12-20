@@ -14,5 +14,6 @@ import { UsersModule } from '../users/users.module';
   ],
   controllers: [BussSubCategoriesController],
   providers: [BussSubCategoriesService],
+  exports: [BussSubCategoriesService],
 })
 export class BussSubCategoriesModule {}

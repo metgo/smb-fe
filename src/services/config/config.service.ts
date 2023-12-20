@@ -55,6 +55,7 @@ export class ConfigService {
       'PAYMNET_SUCCESS',
       'PAYMENT_FAILURE',
       'URL',
+      'IDENTIFIER_ID',
     ];
     return ENV_VARIABLES.reduce((obj: any, variable) => {
       if (process.env[variable]) {
@@ -102,6 +103,7 @@ export class ConfigService {
       PAYMNET_SUCCESS: Joi.string().required(),
       PAYMENT_FAILURE: Joi.string().required(),
       URL: Joi.string().required(),
+      IDENTIFIER_ID: Joi.string().required(),
     }).unknown(true);
 
     const { error, value: validatedEnvConfig } = envVarsSchema.validate(envConfig);
@@ -159,6 +161,12 @@ export class ConfigService {
       SUCCESS: this.get('PAYMNET_SUCCESS'),
       FAILURE: this.get('PAYMENT_FAILURE'),
       SERVER_URL: this.get('URL'),
+    };
+  }
+
+  get externalApiIdentifier() {
+    return {
+      IDENTIFIER_ID: this.get('IDENTIFIER_ID'),
     };
   }
 }

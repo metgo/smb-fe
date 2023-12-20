@@ -1253,6 +1253,16 @@ paths:
           in: query
           schema:
             type: string
+        - name: page
+          required: false
+          in: query
+          schema:
+            type: number
+        - name: limit
+          required: false
+          in: query
+          schema:
+            type: number
         - name: status
           required: false
           in: query
@@ -1264,16 +1274,6 @@ paths:
               - EXPIRED
               - REDEEMED
             type: string
-        - name: page
-          required: false
-          in: query
-          schema:
-            type: number
-        - name: limit
-          required: false
-          in: query
-          schema:
-            type: number
       responses:
         "200":
           description: Voucher  was succesfully listed
@@ -1295,6 +1295,16 @@ paths:
           in: query
           schema:
             type: string
+        - name: page
+          required: false
+          in: query
+          schema:
+            type: number
+        - name: limit
+          required: false
+          in: query
+          schema:
+            type: number
         - name: status
           required: false
           in: query
@@ -1306,16 +1316,6 @@ paths:
               - EXPIRED
               - REDEEMED
             type: string
-        - name: page
-          required: false
-          in: query
-          schema:
-            type: number
-        - name: limit
-          required: false
-          in: query
-          schema:
-            type: number
       responses:
         "200":
           description: Voucher  was succesfully listed
@@ -1340,7 +1340,65 @@ paths:
               $ref: "#/components/schemas/updateAssignedUserVoucherDto"
       responses:
         "200":
-          description: Voucher was successfully asigned
+          description: Voucher was successfully assigned
+        "401":
+          description: Authorization header not found or jwt token has expired
+        "422":
+          description: Failed Validation
+      security:
+        - defaultBearerAuth: []
+      tags:
+        - Admin
+        - Voucher
+  /externalapi/my_vouchers:
+    get:
+      operationId: getAllMyVouchersExternalApi
+      parameters:
+        - name: search
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: page
+          required: false
+          in: query
+          schema:
+            type: number
+        - name: limit
+          required: false
+          in: query
+          schema:
+            type: number
+        - name: identifierId
+          required: true
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Voucher  was succesfully listed
+        "401":
+          description: Authorization header not found or jwt token has expired
+        "422":
+          description: Failed Validation
+      security:
+        - defaultBearerAuth: []
+      tags:
+        - External Api
+        - Voucher
+  /externalapi/assign_voucher_to_user:
+    put:
+      operationId: assignVoucherToUserExternalApi
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/updateAssignedUserVoucherDto"
+      responses:
+        "200":
+          description: Voucher was successfully assigned
         "401":
           description: Authorization header not found or jwt token has expired
         "422":
@@ -1608,6 +1666,138 @@ paths:
       tags:
         - Admin
         - DMO
+  /admin/dmo-by-id:
+    post:
+      operationId: getAllDMOById
+      parameters: []
+      responses:
+        "200":
+          description: DMO was successfully listed
+        "422":
+          description: Failed Validation
+      tags:
+        - Admin
+        - DMOId
+  /campaign-segment:
+    post:
+      operationId: create
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/createCampaignSegmentDto"
+      responses:
+        "201":
+          description: Campaign was succesfully created
+        "401":
+          description: Authorization header not found or jwt token has expired
+        "422":
+          description: Failed Validation
+      security:
+        - defaultBearerAuth: []
+      tags:
+        - Admin
+        - CampaignSegment
+  /campaign-segment/all:
+    get:
+      operationId: getAll
+      parameters: []
+      responses:
+        "200":
+          description: Campaign was succesfully created
+        "401":
+          description: Authorization header not found or jwt token has expired
+        "422":
+          description: Failed Validation
+      security:
+        - defaultBearerAuth: []
+      tags:
+        - Admin, CampaignSegment
+  /externalapi/get_all_products:
+    get:
+      operationId: getAllProductsForExternalApi
+      summary: External Api - Get all products
+      parameters:
+        - name: search
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: page
+          required: false
+          in: query
+          schema:
+            type: number
+        - name: limit
+          required: false
+          in: query
+          schema:
+            type: number
+        - name: identifierId
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: campCode
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: status
+          required: false
+          in: query
+          schema:
+            enum:
+              - active
+              - inactive
+            type: string
+      responses:
+        "200":
+          description: Product was listed sucessfully
+        "422":
+          description: Failed Validation
+      tags:
+        - Products
+        - External Api
+  /externalapi/get_all_businesses:
+    get:
+      operationId: getAllBusinessForExternalApi
+      parameters:
+        - name: search
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: page
+          required: false
+          in: query
+          schema:
+            type: number
+        - name: limit
+          required: false
+          in: query
+          schema:
+            type: number
+        - name: identifierId
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: campCode
+          required: true
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Business was successfully listed
+        "422":
+          description: Failed Validation
+      tags:
+        - Business
+        - External Api
   /admin/social-media:
     post:
       operationId: createSocialMedia
@@ -1887,14 +2077,6 @@ paths:
           in: query
           schema:
             type: string
-        - name: locale
-          required: true
-          in: query
-          schema:
-            enum:
-              - en
-              - he
-            type: string
         - name: page
           required: false
           in: query
@@ -1905,6 +2087,14 @@ paths:
           in: query
           schema:
             type: number
+        - name: locale
+          required: true
+          in: query
+          schema:
+            enum:
+              - en
+              - he
+            type: string
       responses:
         "200":
           description: Bussiness Category was succesfully listed
@@ -1984,6 +2174,38 @@ paths:
         - defaultBearerAuth: []
       tags:
         - Admin
+        - Business-Categories
+  /externalapi/get_categories:
+    get:
+      operationId: getAllCategoriesForExternalApi
+      parameters:
+        - name: search
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: page
+          required: false
+          in: query
+          schema:
+            type: number
+        - name: limit
+          required: false
+          in: query
+          schema:
+            type: number
+        - name: identifierId
+          required: true
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Bussiness Category was succesfully listed
+        "422":
+          description: Failed Validation
+      tags:
+        - External Api
         - Business-Categories
   /admin/buss-sub-category:
     post:
@@ -3038,14 +3260,6 @@ components:
             - INACTIVE
         code:
           type: string
-        segment:
-          type: array
-          items:
-            type: string
-        crowed:
-          type: array
-          items:
-            type: string
         startDate:
           format: date-time
           type: string
@@ -3057,8 +3271,6 @@ components:
         - description
         - status
         - code
-        - segment
-        - crowed
         - startDate
         - endDate
     updateCampaignDto:
@@ -3082,6 +3294,36 @@ components:
     UpdateDMODto:
       type: object
       properties: {}
+    createCampaignSegmentDto:
+      type: object
+      properties:
+        campaign_ID:
+          type: object
+        DMOs:
+          type: object
+        businesses:
+          type: array
+          items:
+            type: string
+        products:
+          type: array
+          items:
+            type: string
+        crowed_age:
+          type: array
+          items:
+            type: string
+        crowed_origion:
+          type: array
+          items:
+            type: string
+      required:
+        - campaign_ID
+        - DMOs
+        - businesses
+        - products
+        - crowed_age
+        - crowed_origion
     createSocialMediaDto:
       type: object
       properties:

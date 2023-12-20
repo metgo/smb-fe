@@ -7,6 +7,7 @@ import { ServerErrors } from 'src/common/constant';
 import { paginationConfig } from 'src/common/pagination.config';
 import { disSelect } from 'src/common/utils/select.handling';
 import {
+  findByFieldName,
   findOneByFieldName,
   findOneById,
   findOneByOrCase,
@@ -111,5 +112,10 @@ export class DMOService {
       throw new NotFoundException(ServerErrors.DMO_NOT_FOUND);
     }
     return dmo._id;
+  }
+
+  async getAllDMOById(userId: string) {
+    const items = await findByFieldName<DMO>(this.DMOModel, 'userId', userId);
+    return items.map(item => item._id);
   }
 }

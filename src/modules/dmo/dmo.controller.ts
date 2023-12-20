@@ -1,5 +1,5 @@
 import {
-  Body, Controller, Delete, Get, HttpStatus, Param, Post, Put, Query, Res, UseGuards,
+  Body, Controller, Delete, Get, HttpStatus, Param, Post, Put, Query, Req, Res, UseGuards,
 } from '@nestjs/common';
 import { Response } from 'express';
 
@@ -111,6 +111,28 @@ export class DMOController {
       response,
       HttpStatus.OK,
       ServerSuccess.DMO_UPDTED,
+      dmo,
+      null,
+      null,
+    );
+  }
+
+  @Roles(UserType.SUPERADMIN, UserType.ADMIN, UserType.DMO)
+  @UseGuards(JwtAuthGuard)
+  @ApiEndpoint({
+    tags: ['Admin', 'DMOId'],
+    response: {
+      status: 200,
+      description: ServerSuccess.DMO_LISTED,
+    },
+  })
+  @Post('admin/dmo-by-id')
+  async getAllDMOById(@Res() response: Response, @Req() request) {
+    const dmo = await this.dmoServices.getAllDMOById(request.user.id);
+    return responseHelper(
+      response,
+      HttpStatus.OK,
+      ServerSuccess.DMO_LISTED,
       dmo,
       null,
       null,
