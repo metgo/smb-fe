@@ -56,12 +56,10 @@ export class ProductDto {
 
   @ApiProperty()
   @IsOptional()
-  @IsNotBlank()
     price: Price;
 
   @ApiProperty()
   @IsOptional()
-  @IsNotBlank()
     quantity: Quantity;
 
   @IsEnum(ProductStatus)

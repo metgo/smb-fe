@@ -52,7 +52,12 @@ export class ProductsController {
     @Res() response: Response,
     @Body() body: ProductDto,
   ) {
-    const business = await this.businessService.findByFieldItems({ _id: businessId, status: BusinessStatus.APPROVED });
+    /**
+     * status: BusinessStatus.APPROVED
+     * need to discuess or we will not impment it
+     *  */
+
+    const business = await this.businessService.findByFieldItems({ _id: businessId });
     if (!business) {
       throw new ForbiddenException(ServerErrors.PRODUCT.ADD_FAILED.BUSINESS);
     }

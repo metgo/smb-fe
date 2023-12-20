@@ -1,4 +1,4 @@
-import { ValidationOptions, registerDecorator } from 'class-validator';
+import { ValidationOptions, registerDecorator, ValidationArguments } from 'class-validator';
 import { ServerErrors } from 'src/common/constant';
 
 export function IsNotBlank(validationOptions?: ValidationOptions) {
@@ -9,7 +9,10 @@ export function IsNotBlank(validationOptions?: ValidationOptions) {
       propertyName,
       options: validationOptions,
       validator: {
-        validate(value: string) {
+        validate(value: string | Number, args: ValidationArguments) {
+          if (validationOptions?.each) {
+            return value !== null && value !== undefined && value !== 0;
+          }
           return typeof value === 'string' && value.trim() !== '';
         },
         defaultMessage() {
