@@ -11,7 +11,7 @@ import { GetUserDetailsResponse } from 'src/modules/users/responses/get-user-det
 import { User } from 'src/modules/users/schema/users.schema';
 import { createUserByAdminDto } from './requests/create-user-ByAdmin.dto';
 import {
-  findOneByFieldName, findOneByFieldNameExcludeId, findOneById, updateById,
+  findOneByFieldName, findOneByFieldNameExcludeId, findOneById, update, updateById,
 } from 'src/core/helper/query-helper';
 import { ServerErrors } from 'src/common/constant';
 import { passwordGenerator } from 'src/common/utils/randomPassword.genetator';
@@ -19,6 +19,7 @@ import { UpdateLastLoginRequest } from 'src/modules/users/requests/update-last-l
 import { ConfigService } from 'src/services/config/config.service';
 import { UserType } from './users.type';
 import { MailService } from 'src/services/mail/mail.service';
+import { ChangePasswordDto } from '../auth/requests/change-password.dto';
 
 @Injectable()
 export class UsersService {
@@ -159,6 +160,13 @@ export class UsersService {
     } catch (error) {
       exceptionHandling(error);
       throw new InternalServerErrorException('Couldn\'t update user');
+    }
+  }
+
+  async changePassword(user: string, dto: ChangePasswordDto) {
+    const changePassword = await update<User>(this.UserModel, 'email', user, { password: dto.password });
+    if (!changePassword) {
+      throw new NotFoundException(ServerErrors.USER.NOT_FOUND);
     }
   }
 
