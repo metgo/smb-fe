@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 import {
   BadRequestException, ConflictException, Injectable, InternalServerErrorException, NotFoundException,
 } from '@nestjs/common';
@@ -13,12 +14,18 @@ import { createUserByAdminDto } from './requests/create-user-ByAdmin.dto';
 import {
   findOneByFieldName, findOneByFieldNameExcludeId, findOneById, updateById,
 } from 'src/core/helper/query-helper';
-import { ServerErrors } from 'src/common/constant';
+import { ServerErrors, ServerSuccess } from 'src/common/constant';
 import { passwordGenerator } from 'src/common/utils/randomPassword.genetator';
 import { UpdateLastLoginRequest } from 'src/modules/users/requests/update-last-logins.request';
 import { ConfigService } from 'src/services/config/config.service';
 import { UserType } from './users.type';
 import { MailService } from 'src/services/mail/mail.service';
+import { OTP } from './schema/otp.schema';
+import { generateOTP } from 'src/common/otpGenerate';
+import { JwtAuthService } from '../jwt-auth/services/jwt-auth.service';
+import { checkExpireDate, oneHrsExpireDate } from 'src/common/expireDate';
+import { VerifyOtpDto } from '../auth/requests/verify-otp.dto';
+import { UpdatePasswordDto } from '../auth/requests/forget-password.dto';
 
 @Injectable()
 export class UsersService {
@@ -27,7 +34,10 @@ export class UsersService {
   constructor(
     @InjectModel(User.name)
     private UserModel: Model<User>,
+    @InjectModel(OTP.name)
+    private OtpModel: Model<OTP>,
     private readonly mailService: MailService,
+    private readonly jwtAuthService: JwtAuthService,
   ) {
     const configService = new ConfigService();
 
@@ -124,6 +134,67 @@ export class UsersService {
       exceptionHandling(error);
       throw new InternalServerErrorException('Couldn\'t save user');
     }
+  }
+
+  async generateOtp(user: User): Promise<string> {
+    const code = await generateOTP();
+
+    const otp = await this.OtpModel.create({
+      code,
+      expireDate: oneHrsExpireDate(),
+      userId: user._id,
+    });
+
+    const otpBody = {
+      id: `${otp._id}`,
+      code: otp.code,
+      email: user.email,
+    };
+    const { otpToken } = this.jwtAuthService.otpToken(otpBody);
+
+    await this.mailService.sendForgetPasswordOtp(user, code);
+    return otpToken;
+  }
+
+  async verifyOtp(dto: VerifyOtpDto): Promise<string> {
+    const decode = this.jwtAuthService.otpDecode(dto.token);
+
+    const otp = await this.OtpModel.findById(decode.id).exec();
+
+    if (otp.code === dto.code) {
+      if (checkExpireDate(otp.expireDate)) {
+        if (!otp.isVerify) {
+          await updateById<OTP>(this.OtpModel, otp._id, { isVerify: true, updatedAt: new Date() });
+          return ServerSuccess.OTP.VERIFY;
+        }
+        throw new BadRequestException(ServerErrors.OTP.EXPIRE);
+      } else {
+        throw new BadRequestException(ServerErrors.OTP.EXPIRE);
+      }
+    } else {
+      throw new BadRequestException(ServerErrors.OTP.NOT_MATCH);
+    }
+  }
+
+  async updatePassword(dto: UpdatePasswordDto) {
+    const decode = this.jwtAuthService.otpDecode(dto.token);
+
+    const otp = await this.OtpModel.findById(decode.id).exec();
+
+    if (!otp.isVerify) {
+      throw new BadRequestException(ServerErrors.OTP.NOT_VERIFY);
+    }
+
+    const updateUser = await updateById<User>(
+      this.UserModel,
+      otp.userId,
+      { password: dto.password, updatedAt: new Date() },
+    );
+
+    if (!updateUser) {
+      throw new BadRequestException(ServerErrors.USER.NOT_FOUND);
+    }
+    return true;
   }
 
   async update(userId: string, updateUserDto: UpdateUserRequest | UpdateLastLoginRequest): Promise<GetUserDetailsResponse> {

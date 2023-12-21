@@ -85,6 +85,11 @@ export const ServerErrors = {
   ORDERS: {
     NOT_FOUND: 'Order not found',
   },
+  OTP: {
+    EXPIRE: 'Code was expire',
+    NOT_MATCH: 'Code not match',
+    NOT_VERIFY: 'Code was not verify',
+  },
 };
 
 export const ServerSuccess = {
@@ -114,6 +119,7 @@ export const ServerSuccess = {
     LISTED: 'User was succesfully listed',
     UPDATED: 'User was succesfully updated',
     DELETED: 'User was deleted successfully',
+    FORGET_PASSWORD: 'OTP was successfully send',
   },
   ICON_CREATED: 'Icon was succesfully created',
   ICON_LISTED: 'Icon was succesfully listed',
@@ -191,5 +197,7 @@ export const ServerSuccess = {
     LISTED: 'Order was succesfully listed',
     DELETED: 'Order was succesfully deleted',
   },
-
+  OTP: {
+    VERIFY: 'Code was verify',
+  },
 };

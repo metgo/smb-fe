@@ -31,7 +31,7 @@ export class VoucherTemplate extends AuditableSchema {
     @Prop()
       imageAlt: string;
 
-  @Prop({ default: twoYearExpireDate(new Date()) })
+  @Prop({ default: twoYearExpireDate() })
     expireDate: Date;
 }
 

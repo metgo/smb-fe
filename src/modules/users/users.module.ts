@@ -6,12 +6,15 @@ import { UsersController } from 'src/modules/users/users.controller';
 import { UsersService } from 'src/modules/users/users.services';
 import { ConfigModule } from 'src/services/config/config.module';
 import { MailModule } from 'src/services/mail/mail.module';
+import { JwtAuthModule } from '../jwt-auth/jwt-auth.module';
+import { OTP, OTPSchema } from './schema/otp.schema';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
+    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }, { name: OTP.name, schema: OTPSchema }]),
     ConfigModule,
     MailModule,
+    JwtAuthModule,
   ],
   controllers: [UsersController],
   providers: [UsersService],
