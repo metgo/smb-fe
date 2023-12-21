@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import {
   IsEnum, IsOptional, IsString,
 } from 'class-validator';
-import { CommonFilterQuery } from 'src/common/utils/common-filter-query';
+import { CommonFilterQuery } from 'src/common/query-handler/common-filter-query';
 import { ProductStatus } from '../products.type';
 
 export class FilterQuery extends CommonFilterQuery {

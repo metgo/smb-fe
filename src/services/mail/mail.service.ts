@@ -30,22 +30,18 @@ export class MailService {
 
   private async renderTemplate(template: string, context: any): Promise<any> {
     try {
-      const templatePath = path.join(__dirname, 'templates', template);
-      console.log({ templatePath });
       const compiledTemplate = pug.compileFile(path.join(__dirname, '..', '..', '..', 'src/templates', template)); // Compile the Pug template
-      console.log(compiledTemplate);
+
       return compiledTemplate(context);
     } catch (error) {
-      console.log(error);
       return 'error';
     }
   }
 
   private async sendMail(to: string, subject: string, template:string, context:any): Promise<void> {
     const html = await this.renderTemplate(template, context);
-    console.log(html);
     const mailOptions: SendMailOptions = {
-      from: this.configSerivce.emailDetails.FROM_EMAIL,
+      from: `${this.configSerivce.emailDetails.FROM_NAME} <${this.configSerivce.emailDetails.FROM_EMAIL}>`,
       to,
       subject,
       html,
@@ -66,7 +62,32 @@ export class MailService {
       'Welcome to Metgo',
       'welcome-email.pug',
       {
+        guestName: to.fullName ? to.fullName : 'User',
+      },
+    );
+  }
+
+  sendForgetPasswordOtp(to: User, otp: string) {
+    return this.sendMail(
+      to.email,
+      'Forget Password - MetGo',
+      'forget-password.pug',
+      {
+        guestName: to.fullName ? to.fullName : 'User',
+        otp,
+      },
+    );
+  }
+
+  sendWelcomeWithPwd(to: User) {
+    return this.sendMail(
+      to.email,
+      'Welcome to MetGo',
+      'welcome-email-with-pwd.pug',
+      {
         guestName: to.fullName ? to.fullName : 'Sitanshu',
+        email: to.email,
+        password: to.password,
       },
     );
   }

@@ -2,7 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import jwtDecode from 'jwt-decode';
 
-import { IJWTUser, ITokens, ITokenUser } from 'src/modules/jwt-auth/jwt.types';
+import {
+  IJWTOtp, IJWTUser, ITokenOtp, ITokens, ITokenUser, OtpToken,
+} from 'src/modules/jwt-auth/jwt.types';
 import { ConfigService } from 'src/services/config/config.service';
 
 const configService = new ConfigService();
@@ -28,5 +30,20 @@ export class JwtAuthService {
   decode(token: string) {
     const user: IJWTUser = jwtDecode(token);
     return user;
+  }
+
+  otpToken(otp: ITokenOtp): OtpToken {
+    const otpPayload = { ...otp };
+    return {
+      otpToken: this.jwtService.sign(otpPayload, {
+        secret: configService.get('ACCESS_TOKEN'),
+        expiresIn: 86400,
+      }),
+    };
+  }
+
+  otpDecode(token: string) {
+    const otp: IJWTOtp = jwtDecode(token);
+    return otp;
   }
 }

@@ -16,7 +16,7 @@ export class createVoucherDto {
 
   @ApiProperty()
   @IsString()
-  @IsOptional()
+  @IsNotEmpty()
     campCode: string;
 
   @ApiProperty({

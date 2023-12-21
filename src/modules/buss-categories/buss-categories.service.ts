@@ -5,7 +5,6 @@ import { Model } from 'mongoose';
 import { ServerErrors } from 'src/common/constant';
 import { Locale } from 'src/common/enum';
 import { paginationConfig } from 'src/common/pagination.config';
-import { ExternalApiFilterQuery } from 'src/common/query-handler/external-api-filter.query';
 import { disSelect } from 'src/common/utils/select.handling';
 import {
   findOneByFieldName, findOneByFieldNameExcludeId, queryhandler, updateById,
@@ -125,21 +124,15 @@ export class BussCategoriesService {
     return false;
   }
 
-  async getAllForExternalApi(queries: ExternalApiFilterQuery) {
+  async getAllForExternalApi() {
     const select = disSelect;
     const populate = {
       path: 'icon',
       select: `${disSelect}`,
     };
-    let findQuery: any = {};
 
-    if (queries.search) {
-      findQuery = {
-        name: { $regex: queries.search, $options: 'i' },
-      };
-    }
     const categories = await this.BussCategoryModel
-      .find({ ...findQuery, deletedAt: { $in: [null] } })
+      .find({ deletedAt: { $in: [null] } })
       .lean()
       .select(select)
       .populate(populate)

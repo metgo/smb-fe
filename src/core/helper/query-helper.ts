@@ -61,7 +61,7 @@ export async function updateMany<T>(
   return data;
 }
 
-export async function updateById<T>(model: Model<T>, item: string, updateField: object) {
+export async function updateById<T>(model: Model<T>, item: string | mongoose.Types.ObjectId, updateField: object) {
   const filterBy = { _id: item };
   const data = await model.findOneAndUpdate(
     { ...filterBy, deletedAt: { $in: [null] } },

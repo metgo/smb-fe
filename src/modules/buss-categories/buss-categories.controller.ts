@@ -178,7 +178,8 @@ export class BussCategoriesController {
     @Res() response: Response,
     @Query() query: ExternalApiFilterQuery,
   ) {
-    const allBussCategoires = await this.bussCategoryService.getAllForExternalApi(query);
+    console.log(query);
+    const allBussCategoires = await this.bussCategoryService.getAllForExternalApi();
     return responseHelper(
       response,
       HttpStatus.OK,

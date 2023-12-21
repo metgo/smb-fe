@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 import {
   BadRequestException, ConflictException, Injectable, InternalServerErrorException, NotFoundException,
 } from '@nestjs/common';
@@ -13,13 +14,19 @@ import { createUserByAdminDto } from './requests/create-user-ByAdmin.dto';
 import {
   findOneByFieldName, findOneByFieldNameExcludeId, findOneById, update, updateById,
 } from 'src/core/helper/query-helper';
-import { ServerErrors } from 'src/common/constant';
+import { ServerErrors, ServerSuccess } from 'src/common/constant';
 import { passwordGenerator } from 'src/common/utils/randomPassword.genetator';
 import { UpdateLastLoginRequest } from 'src/modules/users/requests/update-last-logins.request';
 import { ConfigService } from 'src/services/config/config.service';
 import { UserType } from './users.type';
 import { MailService } from 'src/services/mail/mail.service';
 import { ChangePasswordDto } from '../auth/requests/change-password.dto';
+import { OTP } from './schema/otp.schema';
+import { generateOTP } from 'src/common/otpGenerate';
+import { JwtAuthService } from '../jwt-auth/services/jwt-auth.service';
+import { checkExpireDate, oneHrsExpireDate } from 'src/common/expireDate';
+import { VerifyOtpDto } from '../auth/requests/verify-otp.dto';
+import { UpdatePasswordDto } from '../auth/requests/forget-password.dto';
 
 @Injectable()
 export class UsersService {
@@ -28,7 +35,10 @@ export class UsersService {
   constructor(
     @InjectModel(User.name)
     private UserModel: Model<User>,
+    @InjectModel(OTP.name)
+    private OtpModel: Model<OTP>,
     private readonly mailService: MailService,
+    private readonly jwtAuthService: JwtAuthService,
   ) {
     const configService = new ConfigService();
 
@@ -127,6 +137,67 @@ export class UsersService {
     }
   }
 
+  async generateOtp(user: User): Promise<string> {
+    const code = await generateOTP();
+
+    const otp = await this.OtpModel.create({
+      code,
+      expireDate: oneHrsExpireDate(),
+      userId: user._id,
+    });
+
+    const otpBody = {
+      id: `${otp._id}`,
+      code: otp.code,
+      email: user.email,
+    };
+    const { otpToken } = this.jwtAuthService.otpToken(otpBody);
+
+    await this.mailService.sendForgetPasswordOtp(user, code);
+    return otpToken;
+  }
+
+  async verifyOtp(dto: VerifyOtpDto): Promise<string> {
+    const decode = this.jwtAuthService.otpDecode(dto.token);
+
+    const otp = await this.OtpModel.findById(decode.id).exec();
+
+    if (otp.code === dto.code) {
+      if (checkExpireDate(otp.expireDate)) {
+        if (!otp.isVerify) {
+          await updateById<OTP>(this.OtpModel, otp._id, { isVerify: true, updatedAt: new Date() });
+          return ServerSuccess.OTP.VERIFY;
+        }
+        throw new BadRequestException(ServerErrors.OTP.EXPIRE);
+      } else {
+        throw new BadRequestException(ServerErrors.OTP.EXPIRE);
+      }
+    } else {
+      throw new BadRequestException(ServerErrors.OTP.NOT_MATCH);
+    }
+  }
+
+  async updatePassword(dto: UpdatePasswordDto) {
+    const decode = this.jwtAuthService.otpDecode(dto.token);
+
+    const otp = await this.OtpModel.findById(decode.id).exec();
+
+    if (!otp.isVerify) {
+      throw new BadRequestException(ServerErrors.OTP.NOT_VERIFY);
+    }
+
+    const updateUser = await updateById<User>(
+      this.UserModel,
+      otp.userId,
+      { password: dto.password, updatedAt: new Date() },
+    );
+
+    if (!updateUser) {
+      throw new BadRequestException(ServerErrors.USER.NOT_FOUND);
+    }
+    return true;
+  }
+
   async update(userId: string, updateUserDto: UpdateUserRequest | UpdateLastLoginRequest): Promise<GetUserDetailsResponse> {
     try {
       const updatedUser = await updateById<User>(
@@ -163,11 +234,12 @@ export class UsersService {
     }
   }
 
-  async changePassword(user: string, dto: ChangePasswordDto) {
+  async changePassword(user: string, dto: ChangePasswordDto): Promise<Boolean> {
     const changePassword = await update<User>(this.UserModel, 'email', user, { password: dto.password });
     if (!changePassword) {
       throw new NotFoundException(ServerErrors.USER.NOT_FOUND);
     }
+    return true;
   }
 
   async softDelete(userId: string): Promise<GetUserDetailsResponse> {
@@ -277,5 +349,60 @@ export class UsersService {
       throw new BadRequestException(`${fieldName.toUpperCase()} already exists`);
     }
     return false;
+  }
+
+  async createByExternalApi(registerDto: RegisterRequest): Promise<GetUserDetailsResponse> {
+    try {
+      const user = await findOneByFieldName<User>(
+        this.UserModel,
+        'email',
+        registerDto.email,
+      );
+
+      if (user) {
+        return {
+          id: user.id,
+          fullName: user.fullName,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          phoneDetails: {
+            countryCode: user.countryCode,
+            phoneNumber: user.phoneNumber,
+          },
+          address: user.address,
+          dob: user.dob,
+          email: user.email,
+          isPhoneVerify: user.isPhoneVerify,
+          isEmailVerify: user.isEmailVerify,
+          role: user.role,
+          createdAt: user.createdAt,
+          updatedAt: user.updatedAt,
+        };
+      }
+      const newUser = await (new this.UserModel(registerDto)).save();
+
+      await this.mailService.sendWelcomeWithPwd(newUser);
+      return {
+        id: newUser.id,
+        fullName: newUser.fullName,
+        firstName: newUser.firstName,
+        lastName: newUser.lastName,
+        phoneDetails: {
+          countryCode: newUser.countryCode,
+          phoneNumber: newUser.phoneNumber,
+        },
+        address: newUser.address,
+        dob: newUser.dob,
+        email: newUser.email,
+        isPhoneVerify: newUser.isPhoneVerify,
+        isEmailVerify: newUser.isEmailVerify,
+        role: newUser.role,
+        createdAt: newUser.createdAt,
+        updatedAt: newUser.updatedAt,
+      };
+    } catch (error) {
+      exceptionHandling(error);
+      throw new InternalServerErrorException('Couldn\'t save user');
+    }
   }
 }
