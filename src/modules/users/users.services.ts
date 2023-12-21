@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 import {
   BadRequestException, ConflictException, Injectable, InternalServerErrorException, NotFoundException,
 } from '@nestjs/common';
@@ -19,6 +20,10 @@ import { UpdateLastLoginRequest } from 'src/modules/users/requests/update-last-l
 import { ConfigService } from 'src/services/config/config.service';
 import { UserType } from './users.type';
 import { MailService } from 'src/services/mail/mail.service';
+import { OTP } from './schema/otp.schema';
+import { generateOTP } from 'src/common/otpGenerate';
+import { JwtAuthService } from '../jwt-auth/services/jwt-auth.service';
+import { oneHrsExpireDate } from 'src/common/expireDate';
 
 @Injectable()
 export class UsersService {
@@ -27,7 +32,10 @@ export class UsersService {
   constructor(
     @InjectModel(User.name)
     private UserModel: Model<User>,
+    @InjectModel(OTP.name)
+    private OtpModel: Model<OTP>,
     private readonly mailService: MailService,
+    private readonly jwtAuthService: JwtAuthService,
   ) {
     const configService = new ConfigService();
 
@@ -124,6 +132,26 @@ export class UsersService {
       exceptionHandling(error);
       throw new InternalServerErrorException('Couldn\'t save user');
     }
+  }
+
+  async generateOtp(user: User): Promise<string> {
+    const code = await generateOTP();
+
+    const otp = await this.OtpModel.create({
+      code,
+      expireDate: oneHrsExpireDate(),
+      userId: user._id,
+    });
+
+    const otpBody = {
+      id: `${otp._id}`,
+      code: otp.code,
+      email: user.email,
+    };
+    const { otpToken } = this.jwtAuthService.otpToken(otpBody);
+
+    await this.mailService.sendForgetPasswordOtp(user, code);
+    return otpToken;
   }
 
   async update(userId: string, updateUserDto: UpdateUserRequest | UpdateLastLoginRequest): Promise<GetUserDetailsResponse> {

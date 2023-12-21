@@ -57,7 +57,7 @@ export class Voucher extends AuditableSchema {
   )
     campId: mongoose.Types.ObjectId;
 
-  @Prop({ default: twoYearExpireDate(new Date()) })
+  @Prop({ default: twoYearExpireDate() })
     expireDate: Date;
 }
 
