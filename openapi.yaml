@@ -751,11 +751,6 @@ paths:
       operationId: getMyProductsDetails
       summary: Get my products
       parameters:
-        - name: search
-          required: false
-          in: query
-          schema:
-            type: string
         - name: page
           required: false
           in: query
@@ -766,6 +761,11 @@ paths:
           in: query
           schema:
             type: number
+        - name: search
+          required: false
+          in: query
+          schema:
+            type: string
         - name: businessId
           required: false
           in: query
@@ -795,11 +795,6 @@ paths:
       operationId: getMyCollaboratedProductsDetails
       summary: Get my collaborated products
       parameters:
-        - name: search
-          required: false
-          in: query
-          schema:
-            type: string
         - name: page
           required: false
           in: query
@@ -810,6 +805,11 @@ paths:
           in: query
           schema:
             type: number
+        - name: search
+          required: false
+          in: query
+          schema:
+            type: string
         - name: businessId
           required: false
           in: query
@@ -839,11 +839,6 @@ paths:
       operationId: getAllProducts
       summary: Get all products
       parameters:
-        - name: search
-          required: false
-          in: query
-          schema:
-            type: string
         - name: page
           required: false
           in: query
@@ -854,6 +849,11 @@ paths:
           in: query
           schema:
             type: number
+        - name: search
+          required: false
+          in: query
+          schema:
+            type: string
         - name: businessId
           required: false
           in: query
@@ -961,11 +961,6 @@ paths:
     get:
       operationId: getAllBusiness
       parameters:
-        - name: search
-          required: false
-          in: query
-          schema:
-            type: string
         - name: page
           required: false
           in: query
@@ -976,6 +971,11 @@ paths:
           in: query
           schema:
             type: number
+        - name: search
+          required: false
+          in: query
+          schema:
+            type: string
         - name: groupTypesId
           required: false
           in: query
@@ -1091,11 +1091,6 @@ paths:
     get:
       operationId: getMyBusiness
       parameters:
-        - name: search
-          required: false
-          in: query
-          schema:
-            type: string
         - name: page
           required: false
           in: query
@@ -1106,6 +1101,11 @@ paths:
           in: query
           schema:
             type: number
+        - name: search
+          required: false
+          in: query
+          schema:
+            type: string
         - name: groupTypesId
           required: false
           in: query
@@ -1248,11 +1248,6 @@ paths:
     get:
       operationId: getAll
       parameters:
-        - name: search
-          required: false
-          in: query
-          schema:
-            type: string
         - name: page
           required: false
           in: query
@@ -1263,6 +1258,11 @@ paths:
           in: query
           schema:
             type: number
+        - name: search
+          required: false
+          in: query
+          schema:
+            type: string
         - name: status
           required: false
           in: query
@@ -1290,11 +1290,6 @@ paths:
     get:
       operationId: assignToMe
       parameters:
-        - name: search
-          required: false
-          in: query
-          schema:
-            type: string
         - name: page
           required: false
           in: query
@@ -1305,6 +1300,11 @@ paths:
           in: query
           schema:
             type: number
+        - name: search
+          required: false
+          in: query
+          schema:
+            type: string
         - name: status
           required: false
           in: query
@@ -1354,11 +1354,6 @@ paths:
     get:
       operationId: getAllMyVouchersExternalApi
       parameters:
-        - name: search
-          required: false
-          in: query
-          schema:
-            type: string
         - name: page
           required: false
           in: query
@@ -1389,7 +1384,12 @@ paths:
   /externalapi/assign_voucher_to_user:
     put:
       operationId: assignVoucherToUserExternalApi
-      parameters: []
+      parameters:
+        - name: identifierId
+          required: true
+          in: query
+          schema:
+            type: string
       requestBody:
         required: true
         content:
@@ -1406,7 +1406,7 @@ paths:
       security:
         - defaultBearerAuth: []
       tags:
-        - Admin
+        - External Api
         - Voucher
   /admin/campaign:
     post:
@@ -1720,11 +1720,6 @@ paths:
       operationId: getAllProductsForExternalApi
       summary: External Api - Get all products
       parameters:
-        - name: search
-          required: false
-          in: query
-          schema:
-            type: string
         - name: page
           required: false
           in: query
@@ -1765,11 +1760,6 @@ paths:
     get:
       operationId: getAllBusinessForExternalApi
       parameters:
-        - name: search
-          required: false
-          in: query
-          schema:
-            type: string
         - name: page
           required: false
           in: query
@@ -2072,11 +2062,6 @@ paths:
     get:
       operationId: getAll
       parameters:
-        - name: search
-          required: false
-          in: query
-          schema:
-            type: string
         - name: page
           required: false
           in: query
@@ -2087,6 +2072,11 @@ paths:
           in: query
           schema:
             type: number
+        - name: search
+          required: false
+          in: query
+          schema:
+            type: string
         - name: locale
           required: true
           in: query
@@ -2179,11 +2169,6 @@ paths:
     get:
       operationId: getAllCategoriesForExternalApi
       parameters:
-        - name: search
-          required: false
-          in: query
-          schema:
-            type: string
         - name: page
           required: false
           in: query

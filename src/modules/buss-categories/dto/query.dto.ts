@@ -3,7 +3,7 @@ import {
   IsEnum, IsNotEmpty,
 } from 'class-validator';
 import { Locale } from 'src/common/enum';
-import { CommonFilterQuery } from 'src/common/utils/common-filter-query';
+import { CommonFilterQuery } from 'src/common/query-handler/common-filter-query';
 
 export class FilterQuery extends CommonFilterQuery {
   @ApiProperty({

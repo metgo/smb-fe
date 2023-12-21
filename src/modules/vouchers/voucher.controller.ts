@@ -20,6 +20,7 @@ import { VoucherStatus } from 'src/common/enum';
 import { UpdateFieldInterface } from './interface';
 import { responseHelper } from 'src/core/helper/response.helper';
 import { Response } from 'express';
+import { ExternalApiVoucherFilterQuery } from 'src/modules/vouchers/dto/external-api.query.dto';
 import { ConfigService } from 'src/services/config/config.service';
 
 @Controller()
@@ -208,7 +209,7 @@ export class VoucherController {
     @Query() query: ExternalApiFilterQuery,
   ) {
     const userId = request.user.id;
-    const vouchers = await this.voucherService.getMy(userId, query);
+    const vouchers = await this.voucherService.getMyVoucherForExternalApi(userId, query);
     return responseHelper(
       response,
       HttpStatus.OK,
@@ -221,7 +222,7 @@ export class VoucherController {
 
   @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
-    tags: ['Admin', 'Voucher'],
+    tags: ['External Api', 'Voucher'],
     response: { status: 200, description: ServerSuccess.VOUCHER.ASSIGNED },
     softBlockExtraDtoFields: true,
     noAuthToken: true,
@@ -232,6 +233,7 @@ export class VoucherController {
     @Req() req,
     @Res() response: Response,
     @Body() dto: updateAssignedUserVoucherDto,
+    @Query() query: ExternalApiVoucherFilterQuery,
   ) {
     const userId = req.user.id;
     let user: User | null;
@@ -245,6 +247,7 @@ export class VoucherController {
       updatedBy: userId,
       updatedAt: new Date(),
     };
+    console.log(query);
     await this.voucherService.assignUser(dto.code, updateField);
     return responseHelper(
       response,

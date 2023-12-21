@@ -84,7 +84,7 @@ export class VoucherService {
     return voucher;
   }
 
-  async getMy(userId: string, queries: FilterQuery | ExternalApiFilterQuery, assignedToMe?: boolean) {
+  async getMy(userId: string, queries: FilterQuery, assignedToMe?: boolean) {
     const {
       page, limit, search, ...query
     } = queries;
@@ -118,6 +118,37 @@ export class VoucherService {
         name: { $regex: search, $options: 'i' },
       };
     }
+
+    const voucher = await queryhandler<Voucher>(
+      this.VoucherModel,
+      findQuery,
+      select,
+      queryPage,
+      queryLimit,
+      populate,
+      populate1,
+    );
+    return voucher;
+  }
+
+  async getMyVoucherForExternalApi(userId: string, queries: ExternalApiFilterQuery) {
+    const {
+      page, limit, ...query
+    } = queries;
+
+    const queryPage = page ? Number(page) : paginationConfig.page;
+    const queryLimit = limit ? Number(limit) : paginationConfig.limit;
+
+    const select = disSelect;
+
+    let findQuery: any = { ...query, createdBy: userId };
+    delete findQuery?.identifierId;
+
+    const populate = {
+      path: 'campId',
+      select: `${disSelect}`,
+    };
+    let populate1: {};
 
     const voucher = await queryhandler<Voucher>(
       this.VoucherModel,
