@@ -1408,6 +1408,60 @@ paths:
       tags:
         - External Api
         - Voucher
+  /externalapi/purchase_vouchers:
+    post:
+      operationId: buyVoucherByExternalApi
+      parameters:
+        - name: identifierId
+          required: true
+          in: query
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/createVoucherDto"
+      responses:
+        "201":
+          description: Voucher  was succesfully created
+        "401":
+          description: Authorization header not found or jwt token has expired
+        "422":
+          description: Failed Validation
+      security:
+        - defaultBearerAuth: []
+      tags:
+        - External Api
+        - Voucher
+  /externalapi/update_voucher_balance:
+    post:
+      operationId: updateVoucherBalanceByExternalApi
+      parameters:
+        - name: identifierId
+          required: true
+          in: query
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateVoucherBalance"
+      responses:
+        "200":
+          description: Voucher  was succesfully updated
+        "401":
+          description: Authorization header not found or jwt token has expired
+        "422":
+          description: Failed Validation
+      security:
+        - defaultBearerAuth: []
+      tags:
+        - External Api
+        - Voucher
   /admin/campaign:
     post:
       operationId: create
@@ -3231,6 +3285,16 @@ components:
       required:
         - email
         - code
+    UpdateVoucherBalance:
+      type: object
+      properties:
+        voucherId:
+          type: string
+        amount:
+          type: number
+      required:
+        - voucherId
+        - amount
     createCampaignDto:
       type: object
       properties:

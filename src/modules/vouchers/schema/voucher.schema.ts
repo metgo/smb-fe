@@ -48,6 +48,9 @@ export class Voucher extends AuditableSchema {
   })
     assignedTo: mongoose.Types.ObjectId;
 
+  @Prop({ default: null })
+    identifierId: string;
+
   @Prop(
     {
       type: mongoose.Schema.Types.ObjectId,

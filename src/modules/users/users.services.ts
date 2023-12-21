@@ -270,4 +270,59 @@ export class UsersService {
     }
     return false;
   }
+
+  async createByExternalApi(registerDto: RegisterRequest): Promise<GetUserDetailsResponse> {
+    try {
+      const user = await findOneByFieldName<User>(
+        this.UserModel,
+        'email',
+        registerDto.email,
+      );
+
+      if (user) {
+        return {
+          id: user.id,
+          fullName: user.fullName,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          phoneDetails: {
+            countryCode: user.countryCode,
+            phoneNumber: user.phoneNumber,
+          },
+          address: user.address,
+          dob: user.dob,
+          email: user.email,
+          isPhoneVerify: user.isPhoneVerify,
+          isEmailVerify: user.isEmailVerify,
+          role: user.role,
+          createdAt: user.createdAt,
+          updatedAt: user.updatedAt,
+        };
+      }
+      const newUser = await (new this.UserModel(registerDto)).save();
+
+      await this.mailService.sendWelcomeWithPwd(newUser);
+      return {
+        id: newUser.id,
+        fullName: newUser.fullName,
+        firstName: newUser.firstName,
+        lastName: newUser.lastName,
+        phoneDetails: {
+          countryCode: newUser.countryCode,
+          phoneNumber: newUser.phoneNumber,
+        },
+        address: newUser.address,
+        dob: newUser.dob,
+        email: newUser.email,
+        isPhoneVerify: newUser.isPhoneVerify,
+        isEmailVerify: newUser.isEmailVerify,
+        role: newUser.role,
+        createdAt: newUser.createdAt,
+        updatedAt: newUser.updatedAt,
+      };
+    } catch (error) {
+      exceptionHandling(error);
+      throw new InternalServerErrorException('Couldn\'t save user');
+    }
+  }
 }

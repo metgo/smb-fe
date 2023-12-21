@@ -2,10 +2,11 @@
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-plusplus */
 import {
-  BadRequestException, Inject, Injectable, NotFoundException, forwardRef,
+  BadRequestException, Inject, Injectable, NotFoundException, UnprocessableEntityException, forwardRef,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
+import { nanoid } from 'nanoid';
 
 import { paginationConfig } from 'src/common/pagination.config';
 import { Voucher } from './schema/voucher.schema';
@@ -22,6 +23,10 @@ import { ServerErrors } from 'src/common/constant';
 import { UpdateFieldInterface } from './interface';
 import { PaymentsService } from 'src/services/payments/payments.service';
 import { PaymentPurpose } from 'src/services/payments/payments.type';
+import { CampaignService } from 'src/modules/campaign/campaign.service';
+import { UsersService } from 'src/modules/users/users.services';
+import { ExternalApiVoucherFilterQuery } from 'src/modules/vouchers/dto/external-api.query.dto';
+import { UpdateVoucherBalance } from 'src/modules/vouchers/dto/update-voucher-balance.dto';
 
 @Injectable()
 export class VoucherService {
@@ -30,6 +35,8 @@ export class VoucherService {
     private readonly VoucherModel: Model<Voucher>,
     @Inject(forwardRef(() => PaymentsService))
     private readonly paymentService: PaymentsService,
+    private readonly campaignService: CampaignService,
+    private readonly usersService: UsersService,
   ) { }
 
   async create(
@@ -71,17 +78,19 @@ export class VoucherService {
     return voucher;
   }
 
-  async getOneById(id: string) {
-    const select = disSelect;
-    const populate = {
-      path: 'campId',
-      select: `${disSelect}`,
-    };
-    const voucher = await this.VoucherModel.findById(id).select(select).populate(populate).exec();
-    if (!voucher) {
+  async getOneById(id: string): Promise<Voucher> {
+    try {
+      const select = disSelect;
+      const populate = {
+        path: 'campId',
+        select: `${disSelect}`,
+      };
+      const voucher = await this.VoucherModel.findById(id).select(select).populate(populate).exec();
+
+      return voucher;
+    } catch (err) {
       throw new BadRequestException(ServerErrors.VOUCHER.NOT_FOUND);
     }
-    return voucher;
   }
 
   async getMy(userId: string, queries: FilterQuery, assignedToMe?: boolean) {
@@ -221,6 +230,85 @@ export class VoucherService {
     return {
       amountToBeRedeemed,
       redeemedAmount: totalAmount - amountToBeRedeemed,
+    };
+  }
+
+  async purchaseVoucherForExternalApi(
+    dto: createVoucherDto,
+    query: ExternalApiVoucherFilterQuery,
+    userId: string,
+  ) {
+    const campaign = await this.campaignService.findAndReturn('code', dto.campCode);
+
+    let i: number = 0;
+    const voucherId: any = [];
+    const totalAmount = dto.noOfVoucher * dto.amount;
+    for (i = 0; i < dto.noOfVoucher; i++) {
+      const randomCode = generateRandomCode(12);
+      const code = dto?.campCode ? dto.campCode + randomCode : `TAV8${randomCode}`;
+      const newVoucher = new this.VoucherModel({
+        ...dto,
+        code,
+        remainingAmount: dto.amount,
+        campId: campaign._id,
+        createdBy: userId,
+        identifierId: query.identifierId,
+      });
+      newVoucher.save();
+      voucherId.push(newVoucher._id);
+    }
+
+    const [user, paymentLink] = await Promise.all([
+      this.usersService.createByExternalApi({
+        email: dto.email,
+        password: nanoid(9),
+        firstName: '',
+        lastName: '',
+        phoneNumber: '',
+        address: '',
+        countryCode: '',
+      }),
+      this.paymentService.generateLink(
+        totalAmount,
+        Currency.ILS,
+        PaymentPurpose.VOUCHER,
+        voucherId,
+      ),
+    ]);
+
+    console.log(user);
+
+    return paymentLink;
+  }
+
+  async updateVoucherAmountByExternalApi(
+    loggedInUserId: string,
+    query: ExternalApiVoucherFilterQuery,
+    body: UpdateVoucherBalance,
+  ) {
+    const voucher = await this.getOneById(body.voucherId);
+
+    if (body.amount > voucher.remainingAmount) {
+      throw new UnprocessableEntityException(ServerErrors.VOUCHER.CANNOT_UPDATE_BALANCE);
+    }
+
+    const remainingAmount = remainingAmountCalculation(voucher.remainingAmount, body.amount);
+    const amountToBeRedeemed = remainingAmountCalculation(body.amount, voucher.remainingAmount);
+
+    await this.VoucherModel.findOneAndUpdate(
+      { _id: body.voucherId },
+      {
+        updatedBy: loggedInUserId,
+        updatedAt: new Date(),
+        remainingAmount,
+        identifierId: query.identifierId,
+      },
+      { new: true },
+    );
+
+    return {
+      amountToBeRedeemed,
+      redeemedAmount: body.amount - amountToBeRedeemed,
     };
   }
 }

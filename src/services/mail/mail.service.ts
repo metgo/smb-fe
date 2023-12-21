@@ -71,6 +71,19 @@ export class MailService {
     );
   }
 
+  sendWelcomeWithPwd(to: User) {
+    return this.sendMail(
+      to.email,
+      'Welcome to MetGo',
+      'welcome-email-with-pwd.pug',
+      {
+        guestName: to.fullName ? to.fullName : 'Sitanshu',
+        email: to.email,
+        password: to.password,
+      },
+    );
+  }
+
   sendVoucherList(to: User) {
     return this.sendMail(
       to.email,

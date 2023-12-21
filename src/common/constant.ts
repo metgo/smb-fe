@@ -74,6 +74,7 @@ export const ServerErrors = {
   VOUCHER: {
     NOT_FOUND: 'Voucher not found',
     EXISTS: 'Voucher  already exists',
+    CANNOT_UPDATE_BALANCE: 'The voucher balance cannot be updated as the entered amount exceeds the voucher value',
   },
 
   CAMPAIGN: {

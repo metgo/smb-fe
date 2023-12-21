@@ -22,6 +22,7 @@ import { responseHelper } from 'src/core/helper/response.helper';
 import { Response } from 'express';
 import { ExternalApiVoucherFilterQuery } from 'src/modules/vouchers/dto/external-api.query.dto';
 import { ConfigService } from 'src/services/config/config.service';
+import { UpdateVoucherBalance } from 'src/modules/vouchers/dto/update-voucher-balance.dto';
 
 @Controller()
 export class VoucherController {
@@ -254,6 +255,60 @@ export class VoucherController {
       HttpStatus.OK,
       ServerSuccess.VOUCHER.ASSIGNED,
       null,
+      null,
+      null,
+    );
+  }
+
+  @ApiEndpoint({
+    tags: ['External Api', 'Voucher'],
+    response: { status: HttpStatus.CREATED, description: ServerSuccess.VOUCHER.CREATED },
+    softBlockExtraDtoFields: true,
+    noAuthToken: true,
+  })
+  @UseGuards(JwtAuthGuard)
+  @UseGuards(ExternalApiGuard)
+  @Post('externalapi/purchase_vouchers')
+  async buyVoucherByExternalApi(
+    @Req() req,
+    @Res() response: Response,
+    @Body() dto: createVoucherDto,
+    @Query() query: ExternalApiVoucherFilterQuery,
+  ) {
+    const link = await this.voucherService.purchaseVoucherForExternalApi(dto, query, req.user.id);
+
+    return responseHelper(
+      response,
+      HttpStatus.CREATED,
+      ServerSuccess.VOUCHER.CREATED,
+      link,
+      null,
+      null,
+    );
+  }
+
+  @ApiEndpoint({
+    tags: ['External Api', 'Voucher'],
+    response: { status: HttpStatus.OK, description: ServerSuccess.VOUCHER.UPDATED },
+    softBlockExtraDtoFields: true,
+    noAuthToken: true,
+  })
+  @UseGuards(JwtAuthGuard)
+  @UseGuards(ExternalApiGuard)
+  @Post('externalapi/update_voucher_balance')
+  async updateVoucherBalanceByExternalApi(
+    @Req() req,
+    @Res() response: Response,
+    @Body() dto: UpdateVoucherBalance,
+    @Query() query: ExternalApiVoucherFilterQuery,
+  ) {
+    const voucher = await this.voucherService.updateVoucherAmountByExternalApi(req.user.id, query, dto);
+
+    return responseHelper(
+      response,
+      HttpStatus.OK,
+      ServerSuccess.VOUCHER.UPDATED,
+      voucher,
       null,
       null,
     );
