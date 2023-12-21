@@ -120,7 +120,10 @@ export const ServerSuccess = {
     LISTED: 'User was succesfully listed',
     UPDATED: 'User was succesfully updated',
     DELETED: 'User was deleted successfully',
+<<<<<<< HEAD
     CHANGEPASSWORD: 'Password change successfully',
+=======
+>>>>>>> main
     FORGET_PASSWORD: 'OTP was successfully send',
   },
   ICON_CREATED: 'Icon was succesfully created',
