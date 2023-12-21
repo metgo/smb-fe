@@ -14,7 +14,7 @@ import { createUserByAdminDto } from './requests/create-user-ByAdmin.dto';
 import {
   findOneByFieldName, findOneByFieldNameExcludeId, findOneById, updateById,
 } from 'src/core/helper/query-helper';
-import { ServerErrors } from 'src/common/constant';
+import { ServerErrors, ServerSuccess } from 'src/common/constant';
 import { passwordGenerator } from 'src/common/utils/randomPassword.genetator';
 import { UpdateLastLoginRequest } from 'src/modules/users/requests/update-last-logins.request';
 import { ConfigService } from 'src/services/config/config.service';
@@ -23,7 +23,9 @@ import { MailService } from 'src/services/mail/mail.service';
 import { OTP } from './schema/otp.schema';
 import { generateOTP } from 'src/common/otpGenerate';
 import { JwtAuthService } from '../jwt-auth/services/jwt-auth.service';
-import { oneHrsExpireDate } from 'src/common/expireDate';
+import { checkExpireDate, oneHrsExpireDate } from 'src/common/expireDate';
+import { VerifyOtpDto } from '../auth/requests/verify-otp.dto';
+import { UpdatePasswordDto } from '../auth/requests/forget-password.dto';
 
 @Injectable()
 export class UsersService {
@@ -152,6 +154,47 @@ export class UsersService {
 
     await this.mailService.sendForgetPasswordOtp(user, code);
     return otpToken;
+  }
+
+  async verifyOtp(dto: VerifyOtpDto): Promise<string> {
+    const decode = this.jwtAuthService.otpDecode(dto.token);
+
+    const otp = await this.OtpModel.findById(decode.id).exec();
+
+    if (otp.code === dto.code) {
+      if (checkExpireDate(otp.expireDate)) {
+        if (!otp.isVerify) {
+          await updateById<OTP>(this.OtpModel, otp._id, { isVerify: true, updatedAt: new Date() });
+          return ServerSuccess.OTP.VERIFY;
+        }
+        throw new BadRequestException(ServerErrors.OTP.EXPIRE);
+      } else {
+        throw new BadRequestException(ServerErrors.OTP.EXPIRE);
+      }
+    } else {
+      throw new BadRequestException(ServerErrors.OTP.NOT_MATCH);
+    }
+  }
+
+  async updatePassword(dto: UpdatePasswordDto) {
+    const decode = this.jwtAuthService.otpDecode(dto.token);
+
+    const otp = await this.OtpModel.findById(decode.id).exec();
+
+    if (!otp.isVerify) {
+      throw new BadRequestException(ServerErrors.OTP.NOT_VERIFY);
+    }
+
+    const updateUser = await updateById<User>(
+      this.UserModel,
+      otp.userId,
+      { password: dto.password, updatedAt: new Date() },
+    );
+
+    if (!updateUser) {
+      throw new BadRequestException(ServerErrors.USER.NOT_FOUND);
+    }
+    return true;
   }
 
   async update(userId: string, updateUserDto: UpdateUserRequest | UpdateLastLoginRequest): Promise<GetUserDetailsResponse> {

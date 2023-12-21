@@ -42,7 +42,7 @@ paths:
           description: Couldn't save user
       tags:
         - Auth
-  /auth/forget-password:
+  /auth/forget/send-otp:
     post:
       operationId: forgetPassword
       parameters: []
@@ -52,6 +52,42 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/ForgetPasswordDto"
+      responses:
+        "200":
+          description: OTP was successfully send
+        "422":
+          description: Failed Validation
+      tags:
+        - Auth
+  /auth/verify-otp:
+    post:
+      operationId: verifyOtp
+      summary: verify your code
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VerifyOtpDto"
+      responses:
+        "200":
+          description: OTP was successfully send
+        "422":
+          description: Failed Validation
+      tags:
+        - Auth
+  /auth/forget-password:
+    post:
+      operationId: updatePassword
+      summary: Update password
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdatePasswordDto"
       responses:
         "200":
           description: OTP was successfully send
@@ -2806,6 +2842,29 @@ components:
           type: string
       required:
         - email
+    VerifyOtpDto:
+      type: object
+      properties:
+        code:
+          type: string
+        token:
+          type: string
+      required:
+        - code
+        - token
+    UpdatePasswordDto:
+      type: object
+      properties:
+        password:
+          type: string
+        confirmPassword:
+          type: string
+        token:
+          type: string
+      required:
+        - password
+        - confirmPassword
+        - token
     UpdateUserRequest:
       type: object
       properties:

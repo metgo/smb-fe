@@ -29,7 +29,7 @@ export interface IJWTUser {
 }
 
 export interface IJWTOtp {
-  _id: string;
+  id: string;
   code: string;
   expireDate: Date;
   isv:string;
