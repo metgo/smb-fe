@@ -12,7 +12,7 @@ import { GetUserDetailsResponse } from 'src/modules/users/responses/get-user-det
 import { User } from 'src/modules/users/schema/users.schema';
 import { createUserByAdminDto } from './requests/create-user-ByAdmin.dto';
 import {
-  findOneByFieldName, findOneByFieldNameExcludeId, findOneById, updateById,
+  findOneByFieldName, findOneByFieldNameExcludeId, findOneById, update, updateById,
 } from 'src/core/helper/query-helper';
 import { ServerErrors, ServerSuccess } from 'src/common/constant';
 import { passwordGenerator } from 'src/common/utils/randomPassword.genetator';
@@ -20,6 +20,7 @@ import { UpdateLastLoginRequest } from 'src/modules/users/requests/update-last-l
 import { ConfigService } from 'src/services/config/config.service';
 import { UserType } from './users.type';
 import { MailService } from 'src/services/mail/mail.service';
+import { ChangePasswordDto } from '../auth/requests/change-password.dto';
 import { OTP } from './schema/otp.schema';
 import { generateOTP } from 'src/common/otpGenerate';
 import { JwtAuthService } from '../jwt-auth/services/jwt-auth.service';
@@ -231,6 +232,14 @@ export class UsersService {
       exceptionHandling(error);
       throw new InternalServerErrorException('Couldn\'t update user');
     }
+  }
+
+  async changePassword(user: string, dto: ChangePasswordDto): Promise<Boolean> {
+    const changePassword = await update<User>(this.UserModel, 'email', user, { password: dto.password });
+    if (!changePassword) {
+      throw new NotFoundException(ServerErrors.USER.NOT_FOUND);
+    }
+    return true;
   }
 
   async softDelete(userId: string): Promise<GetUserDetailsResponse> {

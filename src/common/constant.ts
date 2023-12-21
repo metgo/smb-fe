@@ -19,6 +19,7 @@ export const ServerErrors = {
   USER: {
     NOT_FOUND: 'User not found',
     EXISTS: 'User already exists',
+    NOT_MATCH: 'Password Not match',
   },
   NOT_DMO_USER: 'Not a dmo user',
   JWT_EXPIRED_OR_NOT_FOUND: 'Authorization header not found or jwt token has expired',
@@ -119,6 +120,7 @@ export const ServerSuccess = {
     LISTED: 'User was succesfully listed',
     UPDATED: 'User was succesfully updated',
     DELETED: 'User was deleted successfully',
+    CHANGEPASSWORD: 'Password change successfully',
     FORGET_PASSWORD: 'OTP was successfully send',
   },
   ICON_CREATED: 'Icon was succesfully created',

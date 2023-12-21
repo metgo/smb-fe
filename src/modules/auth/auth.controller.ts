@@ -1,5 +1,5 @@
 import {
-  Body, Controller, Post, HttpCode, HttpStatus, Res, BadRequestException,
+  Body, Controller, Post, HttpCode, HttpStatus, UseGuards, Req, Res, Put, BadRequestException,
 } from '@nestjs/common';
 import {
   ApiConflictResponse,
@@ -12,13 +12,15 @@ import {
 
 import { ServerErrors, ServerSuccess } from 'src/common/constant';
 import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
+import { JwtAuthGuard } from 'src/core/guards/jwt/jwt.guards';
 import { AuthService } from 'src/modules/auth/auth.services';
 import { RegisterRequest } from 'src/modules/auth/requests/register.request';
 import { SignInRequest } from 'src/modules/auth/requests/signin.request';
 import { GetUserDetailsResponse } from 'src/modules/users/responses/get-user-details.response';
 import { UsersService } from 'src/modules/users/users.services';
-import { ForgetPasswordDto, UpdatePasswordDto } from './requests/forget-password.dto';
+import { ChangePasswordDto } from './requests/change-password.dto';
 import { Response } from 'express';
+import { ForgetPasswordDto, UpdatePasswordDto } from './requests/forget-password.dto';
 import { responseHelper } from 'src/core/helper/response.helper';
 import { VerifyOtpDto } from './requests/verify-otp.dto';
 
@@ -50,9 +52,39 @@ export class AuthController {
     return await this.authService.login(body);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @ApiEndpoint({
+    tags: [],
+    response: { status: 200, description: ServerSuccess.USER.CHANGEPASSWORD },
+    softBlockExtraDtoFields: true,
+    noAuthToken: true,
+    operation: 'change your password',
+  })
+  @Put('change-password')
+  async changePassword(
+    @Req() req,
+    @Res() response: Response,
+    @Body() dto: ChangePasswordDto,
+  ) {
+    if (dto.password !== dto.confirmPassword) {
+      throw new BadRequestException(ServerErrors.USER.NOT_MATCH);
+    }
+    await this.userService.changePassword(req.user.email, dto);
+
+    return responseHelper(
+      response,
+      HttpStatus.OK,
+      ServerSuccess.USER.CHANGEPASSWORD,
+      null,
+      null,
+      null,
+    );
+  }
+
   @ApiEndpoint({
     tags: [],
     response: { status: 200, description: ServerSuccess.USER.FORGET_PASSWORD },
+    operation: 'forget password - send otp',
   })
   @Post('send-otp')
   async forgetPassword(
