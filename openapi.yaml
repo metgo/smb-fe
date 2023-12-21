@@ -42,7 +42,7 @@ paths:
           description: Couldn't save user
       tags:
         - Auth
-  /auth/forget/send-otp:
+  /auth/send-otp:
     post:
       operationId: forgetPassword
       parameters: []

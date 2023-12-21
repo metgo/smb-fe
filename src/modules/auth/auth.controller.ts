@@ -54,7 +54,7 @@ export class AuthController {
     tags: [],
     response: { status: 200, description: ServerSuccess.USER.FORGET_PASSWORD },
   })
-  @Post('forget/send-otp')
+  @Post('send-otp')
   async forgetPassword(
     @Res() response: Response,
     @Body() dto: ForgetPasswordDto,
