@@ -10,6 +10,7 @@ import { DMOService } from '../dmo/dmo.service';
 import { MailModule } from 'src/services/mail/mail.module';
 import { OTPSchema } from '../users/schema/otp.schema';
 import { JwtAuthService } from '../jwt-auth/services/jwt-auth.service';
+import { HashModule } from 'src/services/hash/hash.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { JwtAuthService } from '../jwt-auth/services/jwt-auth.service';
       { name: 'DMO', schema: DMOSchema },
     ]),
     MailModule,
+    HashModule,
   ],
   controllers: [BusinessController],
   providers: [BusinessService, UsersService, DMOService, JwtAuthService],

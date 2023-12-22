@@ -69,13 +69,13 @@ export class AuthController {
     if (dto.password !== dto.confirmPassword) {
       throw new BadRequestException(ServerErrors.USER.NOT_MATCH);
     }
-    await this.userService.changePassword(req.user.email, dto);
+    const user = await this.userService.changePassword(req.user.email, dto);
 
     return responseHelper(
       response,
       HttpStatus.OK,
       ServerSuccess.USER.CHANGEPASSWORD,
-      null,
+      user,
       null,
       null,
     );

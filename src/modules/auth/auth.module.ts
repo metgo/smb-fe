@@ -6,6 +6,7 @@ import { AuthService } from 'src/modules/auth/auth.services';
 import { AuthController } from 'src/modules/auth/auth.controller';
 import { JwtAuthModule } from 'src/modules/jwt-auth/jwt-auth.module';
 import { ConfigService } from 'src/services/config/config.service';
+import { HashModule } from 'src/services/hash/hash.module';
 
 const configService = new ConfigService();
 
@@ -18,6 +19,7 @@ const configService = new ConfigService();
       secret: configService.get('ACCESS_TOKEN'),
       signOptions: { expiresIn: configService.get('JWT_TOKEN_EXPIRES') },
     }),
+    HashModule,
   ],
   providers: [AuthService],
   controllers: [AuthController],

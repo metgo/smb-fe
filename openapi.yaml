@@ -42,9 +42,32 @@ paths:
           description: Couldn't save user
       tags:
         - Auth
+  /auth/change-password:
+    put:
+      operationId: changePassword
+      summary: change your password
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChangePasswordDto"
+      responses:
+        "200":
+          description: Password change successfully
+        "401":
+          description: Authorization header not found or jwt token has expired
+        "422":
+          description: Failed Validation
+      tags:
+        - Auth
+      security:
+        - defaultBearerAuth: []
   /auth/send-otp:
     post:
       operationId: forgetPassword
+      summary: forget password - send otp
       parameters: []
       requestBody:
         required: true
@@ -2874,6 +2897,16 @@ components:
         - createdAt
         - updatedAt
         - deletedAt
+    ChangePasswordDto:
+      type: object
+      properties:
+        password:
+          type: string
+        confirmPassword:
+          type: string
+      required:
+        - password
+        - confirmPassword
     ForgetPasswordDto:
       type: object
       properties:

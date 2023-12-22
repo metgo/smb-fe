@@ -5,17 +5,21 @@ import {
 import { SignInRequest } from 'src/modules/auth/requests/signin.request';
 import { JwtAuthService } from 'src/modules/jwt-auth/services/jwt-auth.service';
 import { UsersService } from 'src/modules/users/users.services';
+import { HashService } from 'src/services/hash/hash.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private usersService: UsersService,
     private jwtAuthService: JwtAuthService,
+    private readonly hashService: HashService,
   ) {}
 
   async login(body: SignInRequest): Promise<any> {
     const user = await this.usersService.findByEmail(body.email);
-    if (user?.password !== body.password) {
+    const isPasswordValid = await this.hashService.validate(user.password, body.password);
+
+    if (!isPasswordValid) {
       await this.usersService.update(user.id, {
         lastLogin: user.lastLogin,
         loginAttempts: user.loginAttempts + 1,

@@ -19,6 +19,7 @@ import { passwordGenerator } from 'src/common/utils/randomPassword.genetator';
 import { UpdateLastLoginRequest } from 'src/modules/users/requests/update-last-logins.request';
 import { ConfigService } from 'src/services/config/config.service';
 import { UserType } from './users.type';
+import { HashService } from 'src/services/hash/hash.service';
 import { MailService } from 'src/services/mail/mail.service';
 import { ChangePasswordDto } from '../auth/requests/change-password.dto';
 import { OTP } from './schema/otp.schema';
@@ -38,6 +39,7 @@ export class UsersService {
     @InjectModel(OTP.name)
     private OtpModel: Model<OTP>,
     private readonly mailService: MailService,
+    private readonly hashService: HashService,
     private readonly jwtAuthService: JwtAuthService,
   ) {
     const configService = new ConfigService();
@@ -110,7 +112,10 @@ export class UsersService {
       if (userExists) {
         throw new ConflictException(ServerErrors.USER.EXISTS);
       }
-      const newUser = await (new this.UserModel(registerDto)).save();
+
+      const hashedPassword = await this.hashService.create(registerDto.password);
+
+      const newUser = await (new this.UserModel({ ...registerDto, password: hashedPassword })).save();
 
       await this.mailService.sendWelcome(newUser);
       return {
@@ -185,11 +190,12 @@ export class UsersService {
     if (!otp.isVerify) {
       throw new BadRequestException(ServerErrors.OTP.NOT_VERIFY);
     }
+    const hashedPassword = await this.hashService.create(dto.password);
 
     const updateUser = await updateById<User>(
       this.UserModel,
       otp.userId,
-      { password: dto.password, updatedAt: new Date() },
+      { password: hashedPassword, updatedAt: new Date() },
     );
 
     if (!updateUser) {
@@ -234,12 +240,14 @@ export class UsersService {
     }
   }
 
-  async changePassword(user: string, dto: ChangePasswordDto): Promise<Boolean> {
-    const changePassword = await update<User>(this.UserModel, 'email', user, { password: dto.password });
-    if (!changePassword) {
+  async changePassword(user: string, dto: ChangePasswordDto): Promise<User> {
+    const hashedPassword = await this.hashService.create(dto.password);
+
+    const userWithChangedPwd = await update<User>(this.UserModel, 'email', user, { password: hashedPassword });
+    if (!userWithChangedPwd) {
       throw new NotFoundException(ServerErrors.USER.NOT_FOUND);
     }
-    return true;
+    return userWithChangedPwd;
   }
 
   async softDelete(userId: string): Promise<GetUserDetailsResponse> {

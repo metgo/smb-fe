@@ -29,6 +29,7 @@ import { OrdersModule } from 'src/modules/orders/orders.modules';
 import { VoucherModule } from './modules/vouchers/voucher.module';
 import { PaymentsModule } from './services/payments/payments.module';
 import { CampaignSegmentModule } from './modules/campaign-segments/campaignSegment.module';
+import { HashModule } from './services/hash/hash.module';
 
 @Module({
   imports: [
@@ -59,6 +60,7 @@ import { CampaignSegmentModule } from './modules/campaign-segments/campaignSegme
     CampaignSegmentModule,
     VoucherModule,
     PaymentsModule,
+    HashModule,
   ],
   providers: [
     {
