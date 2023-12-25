@@ -3,7 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import jwtDecode from 'jwt-decode';
 
 import {
-  IJWTOtp, IJWTUser, ITokenOtp, ITokens, ITokenUser, OtpToken,
+  IJWTOtp, ITokenOtp, ITokens, ITokenUser, OtpToken,
 } from 'src/modules/jwt-auth/jwt.types';
 import { ConfigService } from 'src/services/config/config.service';
 
@@ -25,11 +25,6 @@ export class JwtAuthService {
         expiresIn: 86400,
       }),
     };
-  }
-
-  decode(token: string) {
-    const user: IJWTUser = jwtDecode(token);
-    return user;
   }
 
   otpToken(otp: ITokenOtp): OtpToken {

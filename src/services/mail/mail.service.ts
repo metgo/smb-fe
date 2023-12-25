@@ -62,18 +62,19 @@ export class MailService {
       'Welcome to Metgo',
       'welcome-email.pug',
       {
-        guestName: to.fullName ? to.fullName : 'User',
+        guestName: to.firstName ? to.firstName : 'User',
       },
     );
   }
 
   sendForgetPasswordOtp(to: User, otp: string) {
+    const name = to.firstName || to.fullName;
     return this.sendMail(
       to.email,
       'Forget Password - MetGo',
       'forget-password.pug',
       {
-        guestName: to.fullName ? to.fullName : 'User',
+        guestName: name || 'User',
         otp,
       },
     );

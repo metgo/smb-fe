@@ -40,12 +40,16 @@ export class AuthService {
       loginAttempts: 0,
     });
 
+    const [splittedfirstName, splittedlastName] = (user.fullName || '').split(' ');
+
     return {
       accessToken,
       refreshToken,
       user: {
         id: user.id,
         fullName: user.fullName,
+        firstName: user.firstName || splittedfirstName,
+        lastName: user.lastName || splittedlastName,
         email: user.email,
         isPhoneVerify: user.isPhoneVerify,
         isEmailVerify: user.isEmailVerify,
