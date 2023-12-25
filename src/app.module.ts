@@ -31,6 +31,7 @@ import { VoucherModule } from './modules/vouchers/voucher.module';
 import { PaymentsModule } from './services/payments/payments.module';
 import { CampaignSegmentModule } from './modules/campaign-segments/campaignSegment.module';
 import { HashModule } from './services/hash/hash.module';
+import { MailChimpModule } from 'src/services/mailchimp/mailchimp.module';
 
 @Module({
   imports: [
@@ -63,6 +64,7 @@ import { HashModule } from './services/hash/hash.module';
     PaymentsModule,
     HashModule,
     ExternalApiModule,
+    MailChimpModule,
   ],
   providers: [
     {
