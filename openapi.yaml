@@ -2857,6 +2857,8 @@ components:
           type: string
         email:
           type: string
+        language_preference:
+          type: string
         lastLogin:
           format: date-time
           type: string
@@ -2888,6 +2890,7 @@ components:
         - address
         - dob
         - email
+        - language_preference
         - lastLogin
         - isPhoneVerify
         - isEmailVerify
@@ -2955,6 +2958,11 @@ components:
           type: string
         address:
           type: string
+        language_preference:
+          type: string
+          enum:
+            - en
+            - he
       required:
         - firstName
         - lastName
@@ -2963,6 +2971,7 @@ components:
         - dob
         - email
         - address
+        - language_preference
     createUserByAdminDto:
       type: object
       properties:

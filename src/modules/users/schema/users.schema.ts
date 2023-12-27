@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
+import { Locale } from 'src/common/enum';
 
 import { UserType } from 'src/modules/users/users.type';
 
@@ -38,6 +39,9 @@ export class User {
 
   @Prop({ required: true, unique: true })
     email: string;
+
+  @Prop({ default: Locale.ENGLISH })
+    language_preference: Locale;
 
   @Prop({ required: true })
     password: string;

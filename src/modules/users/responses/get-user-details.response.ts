@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Locale } from 'src/common/enum';
 import { UserType, phoneDetails } from 'src/modules/users/users.type';
 
 export class GetUserDetailsResponse {
@@ -25,6 +26,9 @@ export class GetUserDetailsResponse {
 
   @ApiProperty()
     email: string;
+
+  @ApiProperty()
+    language_preference: Locale;
 
   @ApiProperty()
     lastLogin?: Date;

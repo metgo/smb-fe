@@ -1,7 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
-  IsEmail, IsOptional, IsString,
+  IsEmail, IsEnum, IsOptional, IsString,
 } from 'class-validator';
+import { Locale } from 'src/common/enum';
 import { IsNotBlank } from 'src/core/decorators/is-not-blank.decorator';
 
 export class UpdateUserRequest {
@@ -43,4 +44,13 @@ export class UpdateUserRequest {
   @IsOptional()
   @ApiProperty()
   readonly address: string;
+
+  @IsEnum(Locale)
+  @IsOptional()
+  @ApiProperty({
+    type: 'enum',
+    enum: Locale,
+    required: true,
+  })
+  readonly language_preference: Locale;
 }
