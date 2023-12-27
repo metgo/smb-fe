@@ -3237,6 +3237,22 @@ components:
         - subCategories
         - features
         - collaboratorId
+    Address:
+      type: object
+      properties:
+        country:
+          type: string
+        city:
+          type: string
+        location:
+          type: string
+        additional_information:
+          type: string
+      required:
+        - country
+        - city
+        - location
+        - additional_information
     ContactDetails:
       type: object
       properties:
@@ -3310,7 +3326,7 @@ components:
         name:
           type: string
         address:
-          type: string
+          $ref: "#/components/schemas/Address"
         countryCode:
           type: string
         phoneNumber:

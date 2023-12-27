@@ -6,6 +6,20 @@ import {
 } from 'class-validator';
 import transformEmail from 'src/core/helper/transformEmail';
 
+class Address {
+  @ApiProperty({ type: String })
+    country: string;
+
+  @ApiProperty({ type: String })
+    city: string;
+
+  @ApiProperty({ type: String })
+    location: string;
+
+  @ApiProperty({ type: String })
+    additional_information: string;
+}
+
 class OpeningHours {
   @ApiProperty({ type: String, description: 'Days of operation' })
     days: string;
@@ -76,8 +90,7 @@ export class createBusinessDto {
     required: false,
   })
   @IsOptional()
-  @IsString()
-    address: string;
+    address: Address;
 
   @ApiProperty({
     required: false,

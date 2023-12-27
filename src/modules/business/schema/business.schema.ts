@@ -13,8 +13,21 @@ export class Business extends AuditableSchema {
   @Prop({ required: false, default: null })
     name: string;
 
-  @Prop({ required: false, default: null })
-    address: string;
+  @Prop({
+    type: {
+      country: String,
+      city: String,
+      location: String,
+      additional_information: String,
+    },
+    default: null,
+  })
+    address: {
+      country:{ type: string, default: null},
+      city: { type: string, default: null},
+      location: { type: string, default: null},
+      additional_information: { type: string, default: null},
+    };
 
   @Prop()
     countryCode: string;
