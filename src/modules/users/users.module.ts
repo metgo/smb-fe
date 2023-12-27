@@ -9,6 +9,7 @@ import { HashModule } from 'src/services/hash/hash.module';
 import { MailModule } from 'src/services/mail/mail.module';
 import { JwtAuthModule } from '../jwt-auth/jwt-auth.module';
 import { OTP, OTPSchema } from './schema/otp.schema';
+import { MailChimpModule } from 'src/services/mailchimp/mailchimp.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { OTP, OTPSchema } from './schema/otp.schema';
     MailModule,
     HashModule,
     JwtAuthModule,
+    MailChimpModule,
   ],
   controllers: [UsersController],
   providers: [UsersService],

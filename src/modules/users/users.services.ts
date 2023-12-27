@@ -28,6 +28,7 @@ import { JwtAuthService } from '../jwt-auth/services/jwt-auth.service';
 import { checkExpireDate, oneHrsExpireDate } from 'src/common/expireDate';
 import { VerifyOtpDto } from '../auth/requests/verify-otp.dto';
 import { UpdatePasswordDto } from '../auth/requests/forget-password.dto';
+import { MailChimpService } from 'src/services/mailchimp/mailchimp.service';
 
 @Injectable()
 export class UsersService {
@@ -41,6 +42,7 @@ export class UsersService {
     private readonly mailService: MailService,
     private readonly hashService: HashService,
     private readonly jwtAuthService: JwtAuthService,
+    private mailchimpService: MailChimpService,
   ) {
     const configService = new ConfigService();
 
@@ -118,7 +120,10 @@ export class UsersService {
 
       const newUser = await (new this.UserModel({ ...registerDto, password: hashedPassword })).save();
 
+      await this.mailchimpService.subscribe(newUser.firstName, newUser.lastName, newUser.email);
+
       await this.mailService.sendWelcome(newUser);
+
       return {
         id: newUser.id,
         fullName: newUser.fullName,

@@ -56,9 +56,9 @@ export class ConfigService {
       'PAYMENT_FAILURE',
       'URL',
       'IDENTIFIER_ID',
-      'MAILCHIMP_BASE_URL',
       'MAILCHIMP_API_KEY',
       'MAILCHIMP_AUDIENCE',
+      'MAILCHIMP_SERVER_PREFIX',
     ];
     return ENV_VARIABLES.reduce((obj: any, variable) => {
       if (process.env[variable]) {
@@ -107,9 +107,9 @@ export class ConfigService {
       PAYMENT_FAILURE: Joi.string().required(),
       URL: Joi.string().required(),
       IDENTIFIER_ID: Joi.string().required(),
-      MAILCHIMP_BASE_URL: Joi.string().required(),
       MAILCHIMP_API_KEY: Joi.string().required(),
       MAILCHIMP_AUDIENCE: Joi.string().required(),
+      MAILCHIMP_SERVER_PREFIX: Joi.string().required(),
 
     }).unknown(true);
 
@@ -179,9 +179,9 @@ export class ConfigService {
 
   get email() {
     return {
-      MAILCHIMP_BASE_URL: this.get('MAILCHIMP_BASE_URL'),
       MAILCHIMP_API_KEY: this.get('MAILCHIMP_API_KEY'),
       MAILCHIMP_AUDIENCE: this.get('MAILCHIMP_AUDIENCE'),
+      MAILCHIMP_SERVER_PREFIX: this.get('MAILCHIMP_SERVER_PREFIX'),
     };
   }
 }

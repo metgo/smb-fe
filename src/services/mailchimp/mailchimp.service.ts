@@ -1,32 +1,42 @@
-// mailchimp.service.ts
-import { Injectable } from '@nestjs/common';
-import { HttpService } from '@nestjs/axios';
-import { AxiosResponse } from 'axios';
-
+import mailchimp from '@mailchimp/mailchimp_marketing';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from 'src/services/config/config.service';
 
 @Injectable()
 export class MailChimpService {
-  constructor(
-    private readonly httpService: HttpService,
-    private readonly configService: ConfigService,
-  ) {}
+  constructor(private readonly configService: ConfigService) {}
 
-  async subscribe(email: string): Promise<AxiosResponse> {
-    const baseUrl = this.configService.email.MAILCHIMP_BASE_URL;
-    const audience = this.configService.email.MAILCHIMP_AUDIENCE;
-    const apiKey = this.configService.email.MAILCHIMP_API_KEY;
+  async subscribe(firstName: string, lastName: string, email: string): Promise<string> {
+    const { MAILCHIMP_AUDIENCE, MAILCHIMP_API_KEY, MAILCHIMP_SERVER_PREFIX } = this.configService.email;
 
-    const url = `${baseUrl}/lists/${audience}/members`;
-    const data = {
-      email_address: email,
-      status: 'subscribed',
-    };
+    mailchimp.setConfig({
+      apiKey: MAILCHIMP_API_KEY,
+      server: MAILCHIMP_SERVER_PREFIX,
+    });
 
-    return this.httpService.post(url, data, {
-      headers: {
-        Authorization: `Basic ${Buffer.from(`apikey:${apiKey}`).toString('base64')}`,
-      },
-    }).toPromise();
+    try {
+      await mailchimp.lists.addListMember(MAILCHIMP_AUDIENCE, {
+        email_address: email,
+        status: 'subscribed',
+        merge_fields: {
+          FNAME: firstName,
+          LNAME: lastName,
+          MMERGE5: 'MetGo', // business name
+          MMERGE3: '1234', // business address
+        },
+      });
+
+      return 'Email sent successfully';
+    } catch (error) {
+      if (error.response && error.response.text) {
+        const parsedError = JSON.parse(error.response.text);
+
+        if (parsedError?.title === 'Member Exists') {
+          return 'Email already subscribed';
+        }
+      }
+
+      throw new InternalServerErrorException('Couldn\'t send email');
+    }
   }
 }
