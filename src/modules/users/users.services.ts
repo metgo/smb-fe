@@ -122,6 +122,8 @@ export class UsersService {
 
       await this.mailchimpService.subscribe(newUser.firstName, newUser.lastName, newUser.email);
 
+      await this.mailchimpService.sendTransactionalEmail();
+
       await this.mailService.sendWelcome(newUser);
 
       return {

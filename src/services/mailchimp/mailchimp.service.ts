@@ -39,4 +39,32 @@ export class MailChimpService {
       throw new InternalServerErrorException('Couldn\'t send email');
     }
   }
+
+  async sendTransactionalEmail() {
+    const { MAILCHIMP_API_KEY } = this.configService.email;
+
+    // eslint-disable-next-line global-require
+    const mailchimpTransaction = require('@mailchimp/mailchimp_transactional')(MAILCHIMP_API_KEY);
+
+    const message = {
+      from_email: 'prism@pacecode.com.np',
+      subject: 'Hello world',
+      text: 'Welcome to Mailchimp Transactional!',
+      to: [
+        {
+          email: 'pc.prism.np@gmail.com',
+          type: 'to',
+        },
+      ],
+    };
+
+    try {
+      const response = await mailchimpTransaction.messages.send({ message });
+      console.log('Email sent successfully:', response);
+      return response;
+    } catch (error) {
+      console.error('Error sending email:', error);
+      throw error;
+    }
+  }
 }

@@ -13,6 +13,7 @@ import { JwtAuthService } from '../jwt-auth/services/jwt-auth.service';
 import { HashModule } from 'src/services/hash/hash.module';
 import { Media, MediaSchema } from '../media/schema/media.schema';
 import { GcpBucketModule } from 'src/services/gcp-bucket/gcp-bucket.module';
+import { MailChimpModule } from 'src/services/mailchimp/mailchimp.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { GcpBucketModule } from 'src/services/gcp-bucket/gcp-bucket.module';
     MailModule,
     HashModule,
     GcpBucketModule,
+    MailChimpModule,
   ],
   controllers: [BusinessController],
   providers: [BusinessService, UsersService, DMOService, JwtAuthService],
