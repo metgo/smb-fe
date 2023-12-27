@@ -2,7 +2,21 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-unused-expressions */
 import {
-  Body, Controller, Delete, Get, HttpStatus, Param, Patch, Post, Put, Query, Req, Res, UseGuards,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpStatus,
+  Param,
+  Patch,
+  Post,
+  Put,
+  Query,
+  Req,
+  Res,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { Response } from 'express';
 
@@ -16,6 +30,9 @@ import { JwtAuthGuard } from 'src/core/guards/jwt/jwt.guards';
 import { UpdateBusinessByAdminDto } from 'src/modules/business/dto/update-business-status.dto';
 import { DMOService } from 'src/modules/dmo/dmo.service';
 import { UserType } from 'src/modules/users/users.type';
+import { WebCreateBusiness } from './dto/web-create-business.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { fileFilterByExtensions } from 'src/services/gcp-bucket/middleware/file-filter';
 
 @Controller()
 export class BusinessController {
@@ -42,6 +59,30 @@ export class BusinessController {
     dto.busiEmail && await this.businessServices.findByFieldName('busiEmail', dto.busiEmail);
     dto.dmoId && await this.dmoService.findDMO(dto.dmoId);
     const business = await this.businessServices.createBusiness(dto, user);
+    return responseHelper(response, HttpStatus.CREATED, ServerSuccess.BUSINESS_CREATED, business, null, null);
+  }
+
+  @Roles(UserType.SUPERADMIN)
+  @UseGuards(JwtAuthGuard)
+  @ApiEndpoint({
+    tags: ['Business', 'Web'],
+    response: { status: 201, description: ServerSuccess.BUSINESS_CREATED },
+    noAuthToken: true,
+  })
+  @Post('admin/business')
+  @UseInterceptors(FileInterceptor('file', { fileFilter: fileFilterByExtensions }))
+  async createBusinessForWeb(
+    @Req() request,
+    @Res() response: Response,
+    @Body() body: WebCreateBusiness,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    const loggedInUserId = request.user.id;
+    body.name && await this.businessServices.findByFieldName('name', body.name);
+    body.phoneNumber && await this.businessServices.findByFieldName('phoneNumber', body.phoneNumber);
+    body.busiEmail && await this.businessServices.findByFieldName('busiEmail', body.busiEmail);
+    body.dmoId && await this.dmoService.findDMO(body.dmoId);
+    const business = await this.businessServices.createBusinesForWeb(body, loggedInUserId, file);
     return responseHelper(response, HttpStatus.CREATED, ServerSuccess.BUSINESS_CREATED, business, null, null);
   }
 

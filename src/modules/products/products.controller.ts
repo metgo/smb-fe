@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import {
   Body,
   Controller,
@@ -12,7 +13,9 @@ import {
   Query,
   Req,
   Res,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { ApiNotFoundResponse } from '@nestjs/swagger';
 import { Response } from 'express';
@@ -26,6 +29,11 @@ import { BusinessService } from 'src/modules/business/business.service';
 import { ProductDto } from 'src/modules/products/dto/product.dto';
 import { FilterQuery } from 'src/modules/products//dto/query.dto';
 import { ProductsService } from 'src/modules/products/products.services';
+import { Roles } from 'src/core/guards/authorization/roles';
+import { UserType } from '../users/users.type';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { fileFilterByExtensions } from 'src/services/gcp-bucket/middleware/file-filter';
+import { WebCreateProduct } from './dto/web-create-product.dto';
 
 @Controller()
 export class ProductsController {
@@ -67,6 +75,48 @@ export class ProductsController {
     }
 
     const product = await this.productsService.create(req.user.id, businessId, business, body);
+    return responseHelper(
+      response,
+      HttpStatus.CREATED,
+      ServerSuccess.PRODUCTS.CREATED,
+      product,
+      null,
+      null,
+    );
+  }
+
+  @ApiEndpoint({
+    tags: ['Business', 'Products', 'Web'],
+    response: { status: HttpStatus.CREATED, description: ServerSuccess.PRODUCTS.CREATED },
+    softBlockExtraDtoFields: true,
+    noAuthToken: true,
+    operation: 'Create product by business',
+    params: [{ name: 'businessId', type: 'string', required: true }],
+  })
+  @Roles(UserType.SUPERADMIN)
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.CREATED)
+  @Post('admin/businesses/:businessId/products')
+  @UseInterceptors(FileInterceptor('file', { fileFilter: fileFilterByExtensions }))
+  async createProductForWeb(
+    @Param('businessId') bussinessId: string,
+    @Req() req,
+    @Res() response: Response,
+    @Body() body: WebCreateProduct,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    const business = await this.businessService.findByFieldItems({ _id: bussinessId });
+    if (!business) {
+      throw new ForbiddenException(ServerErrors.PRODUCT.ADD_FAILED.BUSINESS);
+    }
+    const userId = new mongoose.Types.ObjectId(body.userId);
+    if (!userId.equals(business.userId)
+      || business.collabrationUser.includes(userId)
+    ) {
+      throw new ForbiddenException(ServerErrors.FORBIDDEN);
+    }
+
+    const product = await this.productsService.createForWeb(req.user.id, bussinessId, business, body, file);
     return responseHelper(
       response,
       HttpStatus.CREATED,

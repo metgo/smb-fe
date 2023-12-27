@@ -18,12 +18,18 @@ import { Image } from 'src/common/interface/image.interface';
 import { disSelect } from 'src/common/utils/select.handling';
 import { UpdateBusinessByAdminDto } from 'src/modules/business/dto/update-business-status.dto';
 import { paginationConfig } from 'src/common/pagination.config';
+import { GcpBucketService } from 'src/services/gcp-bucket/gcp-bucket.services';
+import { WebCreateBusiness } from './dto/web-create-business.dto';
+import { Media } from '../media/schema/media.schema';
 
 @Injectable()
 export class BusinessService {
   constructor(
     @InjectModel('Business')
     private BusinessModel: Model<Business>,
+    private readonly gcpBucketServices: GcpBucketService,
+    @InjectModel('Media')
+    private MediaModel: Model<Media>,
   ) {}
 
   async createBusiness(dto: createBusinessDto, userId: string): Promise<Business> {
@@ -44,6 +50,52 @@ export class BusinessService {
       createdBy: userId,
     });
     await newBusiness.save();
+    return newBusiness;
+  }
+
+  async createBusinesForWeb(
+    dto: WebCreateBusiness,
+    loggedInUserId: string,
+    image: Express.Multer.File,
+  ): Promise<Business> {
+    let newDto:any = dto;
+    if (dto.geoLocation) {
+      const location = {
+        type: 'Point',
+        coordinates: [parseFloat(dto.geoLocation.long), parseFloat(dto.geoLocation.lat)],
+      };
+      newDto = {
+        ...newDto,
+        location,
+      };
+    }
+    const businessImageUrl = image ? await this.gcpBucketServices.upload(image) : null;
+
+    const images = [{
+      image: businessImageUrl || null,
+      caption: image?.originalname || null,
+      alt: image?.originalname || null,
+    }];
+
+    const newBusiness = new this.BusinessModel({
+      ...newDto,
+      images,
+      createdBy: loggedInUserId,
+    });
+    await newBusiness.save();
+
+    const newMedia = new this.MediaModel({
+      reference: {
+        refId: newBusiness.id,
+        schema: 'Business',
+      },
+      createdBy: loggedInUserId,
+      url: businessImageUrl,
+      originalName: image.originalname,
+      mimetype: image.mimetype,
+    });
+    await newMedia.save();
+
     return newBusiness;
   }
 

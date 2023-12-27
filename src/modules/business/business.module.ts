@@ -11,6 +11,8 @@ import { MailModule } from 'src/services/mail/mail.module';
 import { OTPSchema } from '../users/schema/otp.schema';
 import { JwtAuthService } from '../jwt-auth/services/jwt-auth.service';
 import { HashModule } from 'src/services/hash/hash.module';
+import { Media, MediaSchema } from '../media/schema/media.schema';
+import { GcpBucketModule } from 'src/services/gcp-bucket/gcp-bucket.module';
 
 @Module({
   imports: [
@@ -19,9 +21,11 @@ import { HashModule } from 'src/services/hash/hash.module';
       { name: 'User', schema: UserSchema },
       { name: 'OTP', schema: OTPSchema },
       { name: 'DMO', schema: DMOSchema },
+      { name: Media.name, schema: MediaSchema },
     ]),
     MailModule,
     HashModule,
+    GcpBucketModule,
   ],
   controllers: [BusinessController],
   providers: [BusinessService, UsersService, DMOService, JwtAuthService],

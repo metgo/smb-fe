@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 /* eslint-disable no-param-reassign */
 /* eslint-disable no-nested-ternary */
 import { Injectable, NotFoundException } from '@nestjs/common';
@@ -15,12 +16,15 @@ import { Business } from 'src/modules/business/schema/business.schema';
 import { Product } from 'src/modules/products/schema/products.schema';
 import { ProductDto } from 'src/modules/products/dto/product.dto';
 import { FindProductsQuery, ProductStatus, updateCommand } from 'src/modules/products/products.type';
+import { GcpBucketService } from 'src/services/gcp-bucket/gcp-bucket.services';
+import { WebCreateProduct } from './dto/web-create-product.dto';
 
 @Injectable()
 export class ProductsService {
   constructor(
     @InjectModel(Product.name)
     private ProductModel: Model<Product>,
+    private readonly gcpBucketServices: GcpBucketService,
   ) {}
 
   async create(
@@ -53,6 +57,61 @@ export class ProductsService {
       createdBy: userId,
       primaryUserId: business.userId,
       dmoId: business.dmoId,
+    };
+
+    const newProduct = new this.ProductModel({
+      ...createdField,
+    });
+
+    return await newProduct.save();
+  }
+
+  async createForWeb(
+    loggedInUserId: string,
+    businessId: string,
+    business: Business,
+    body: WebCreateProduct,
+    file: Express.Multer.File,
+  ): Promise<Product> {
+    let price;
+    let quantity;
+    if (body?.price?.markedPrice) {
+      const sellingPrice = sellingPriceForAmountOrPercent(
+        body.price.markedPrice,
+        body.price.discountAmount,
+        body.price.discountPercent,
+      );
+
+      price = {
+        ...body.price,
+        sellingPrice,
+      };
+    }
+
+    if (body.quantity) {
+      quantity = {
+        ...body.quantity,
+        remaining: body.quantity?.initial ? body.quantity.initial : 0,
+      };
+    }
+
+    const productImageUrl = file ? await this.gcpBucketServices.upload(file) : null;
+
+    const images = [{
+      image: productImageUrl,
+      caption: file?.originalname || null,
+      alt: file?.originalname || null,
+    }];
+
+    const createdField = {
+      ...body,
+      price,
+      quantity,
+      businessId,
+      createdBy: loggedInUserId,
+      primaryUserId: business.userId,
+      dmoId: business.dmoId,
+      images,
     };
 
     const newProduct = new this.ProductModel({

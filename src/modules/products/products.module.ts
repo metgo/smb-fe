@@ -7,6 +7,7 @@ import { Product, ProductSchema } from 'src/modules/products/schema/products.sch
 import { ProductsService } from 'src/modules/products/products.services';
 import { ProductsController } from 'src/modules/products/products.controller';
 import { UsersModule } from 'src/modules/users/users.module';
+import { GcpBucketModule } from 'src/services/gcp-bucket/gcp-bucket.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { UsersModule } from 'src/modules/users/users.module';
     AuthModule,
     BusinessModule,
     UsersModule,
+    GcpBucketModule,
   ],
   providers: [ProductsService],
   controllers: [ProductsController],

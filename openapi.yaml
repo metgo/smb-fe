@@ -803,6 +803,35 @@ paths:
       tags:
         - Business
         - Products
+  "/admin/businesses/{businessId}/products":
+    post:
+      operationId: createProductForWeb
+      summary: Create product by business
+      parameters:
+        - name: businessId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WebCreateProduct"
+      responses:
+        "201":
+          description: Product was created successfully
+        "401":
+          description: Authorization header not found or jwt token has expired
+        "422":
+          description: Failed Validation
+      security:
+        - defaultBearerAuth: []
+      tags:
+        - Business
+        - Products
+        - Web
   "/products/{productId}":
     get:
       operationId: getProductDetails
@@ -1103,6 +1132,28 @@ paths:
           description: Failed Validation
       tags:
         - Business
+  /admin/business:
+    post:
+      operationId: createBusinessForWeb
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WebCreateBusiness"
+      responses:
+        "201":
+          description: Business was successfully created
+        "401":
+          description: Authorization header not found or jwt token has expired
+        "422":
+          description: Failed Validation
+      security:
+        - defaultBearerAuth: []
+      tags:
+        - Business
+        - Web
   "/business/{id}":
     get:
       operationId: getBusiness
@@ -3237,6 +3288,55 @@ components:
         - subCategories
         - features
         - collaboratorId
+    WebCreateProduct:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        price:
+          $ref: "#/components/schemas/Price"
+        quantity:
+          $ref: "#/components/schemas/Quantity"
+        status:
+          type: string
+          enum:
+            - active
+            - inactive
+        categories:
+          description: Array of ObjectId
+          type: array
+          items:
+            type: string
+        subCategories:
+          description: Array of ObjectId
+          type: array
+          items:
+            type: string
+        features:
+          description: Array of ObjectId
+          type: array
+          items:
+            type: string
+        collaboratorId:
+          description: Array of ObjectId
+          type: array
+          items:
+            type: string
+        userId:
+          type: string
+      required:
+        - name
+        - description
+        - price
+        - quantity
+        - status
+        - categories
+        - subCategories
+        - features
+        - collaboratorId
+        - userId
     Address:
       type: object
       properties:
@@ -3375,6 +3475,66 @@ components:
             type: string
         openingHrs:
           $ref: "#/components/schemas/OpeningHours"
+      required:
+        - busiEmail
+        - description
+    WebCreateBusiness:
+      type: object
+      properties:
+        name:
+          type: string
+        address:
+          $ref: "#/components/schemas/Address"
+        countryCode:
+          type: string
+        phoneNumber:
+          type: string
+        busiEmail:
+          type: string
+        description:
+          type: string
+        contactDetails:
+          $ref: "#/components/schemas/ContactDetails"
+        collabrationUser:
+          type: array
+          items:
+            type: string
+        dmoId:
+          type: string
+        isPreview:
+          type: string
+        geoLocation:
+          $ref: "#/components/schemas/geoLocation"
+        images:
+          type: array
+          items:
+            type: string
+        socialMedia:
+          $ref: "#/components/schemas/socialMedia"
+        groupTypesId:
+          type: array
+          items:
+            type: string
+        accessibilitiesId:
+          type: array
+          items:
+            type: string
+        bussCategoriesId:
+          type: array
+          items:
+            type: string
+        bussSubCategoriesId:
+          type: array
+          items:
+            type: string
+        tags:
+          type: array
+          items:
+            type: string
+        openingHrs:
+          $ref: "#/components/schemas/OpeningHours"
+        userId:
+          type: string
       required:
         - busiEmail
         - description
