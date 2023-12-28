@@ -3442,7 +3442,7 @@ components:
         dmoId:
           type: string
         isPreview:
-          type: string
+          type: boolean
         geoLocation:
           $ref: "#/components/schemas/geoLocation"
         images:
@@ -3500,7 +3500,7 @@ components:
         dmoId:
           type: string
         isPreview:
-          type: string
+          type: boolean
         geoLocation:
           $ref: "#/components/schemas/geoLocation"
         images:
@@ -3533,10 +3533,19 @@ components:
           $ref: "#/components/schemas/OpeningHours"
         userId:
           type: string
+        status:
+          type: string
+          enum:
+            - PENDING
+            - APPROVED
+            - CLOSED
+            - REJECTED
+        rejected_reason:
+          type: string
       required:
         - busiEmail
         - description
-        - userId
+        - status
     updateBusinessDto:
       type: object
       properties:
