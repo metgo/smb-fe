@@ -14,6 +14,7 @@ import { createBussCategoryDto } from './dto/createBussCategoryDto';
 import { FilterQuery } from './dto/query.dto';
 import { BussCategory } from './schema/buss.category.schema';
 import { BussSubCategory } from '../buss-subcategories/schema/buss-subCategory.schema';
+import { ExternalApiCategoriesQuery } from 'src/modules/buss-categories/dto/external-api-categories.query.dto';
 
 @Injectable()
 export class BussCategoriesService {
@@ -124,7 +125,7 @@ export class BussCategoriesService {
     return false;
   }
 
-  async getAllForExternalApi() {
+  async getAllForExternalApi(query: ExternalApiCategoriesQuery) {
     const select = disSelect;
     const populate = {
       path: 'icon',
@@ -138,6 +139,14 @@ export class BussCategoriesService {
       .populate(populate)
       .exec();
 
+    if (query.locale === Locale.HEBREW) {
+      categories.map(category => {
+        // eslint-disable-next-line no-param-reassign
+        category.name = category?.hebrewName || category.name;
+        return { ...category };
+      });
+    }
+
     let categoriesWithSubCategories = [];
     const select2 = `${disSelect} -bussCategoryId`;
 
@@ -150,6 +159,14 @@ export class BussCategoriesService {
         .select(select2)
         .populate(populate)
         .exec();
+
+      if (query.locale === Locale.HEBREW) {
+        categoryWithSubCategory.sub_categories.map(subCategory => {
+          // eslint-disable-next-line no-param-reassign
+          subCategory.name = subCategory?.hebrewName || subCategory.name;
+          return { ...subCategory };
+        });
+      }
 
       categoriesWithSubCategories = [...categoriesWithSubCategories, categoryWithSubCategory];
     }));

@@ -5,7 +5,6 @@ import { Response } from 'express';
 
 import { ServerSuccess } from 'src/common/constant';
 import { Locale } from 'src/common/enum';
-import { ExternalApiFilterQuery } from 'src/common/query-handler/external-api-filter.query';
 import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
 import { ExternalApiGuard } from 'src/core/guards/authorization/external-api-guards';
 import { Roles } from 'src/core/guards/authorization/roles';
@@ -16,13 +15,12 @@ import { updateBussSubCategoryDto } from '../buss-subcategories/dto';
 import { createBussCategoryDto } from './dto/createBussCategoryDto';
 import { FilterQuery } from './dto/query.dto';
 import { UserType } from '../users/users.type';
-import { ConfigService } from 'src/services/config/config.service';
+import { ExternalApiCategoriesQuery } from 'src/modules/buss-categories/dto/external-api-categories.query.dto';
 
 @Controller()
 export class BussCategoriesController {
   constructor(
     private readonly bussCategoryService: BussCategoriesService,
-    private readonly configService: ConfigService,
   ) { }
 
   @Roles(UserType.SUPERADMIN, UserType.ADMIN)
@@ -176,10 +174,9 @@ export class BussCategoriesController {
   @Get('/externalapi/get_categories')
   async getAllCategoriesForExternalApi(
     @Res() response: Response,
-    @Query() query: ExternalApiFilterQuery,
+    @Query() query: ExternalApiCategoriesQuery,
   ) {
-    console.log(query);
-    const allBussCategoires = await this.bussCategoryService.getAllForExternalApi();
+    const allBussCategoires = await this.bussCategoryService.getAllForExternalApi(query);
     return responseHelper(
       response,
       HttpStatus.OK,

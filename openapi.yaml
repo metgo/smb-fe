@@ -2365,6 +2365,14 @@ paths:
           in: query
           schema:
             type: string
+        - name: locale
+          required: false
+          in: query
+          schema:
+            enum:
+              - en
+              - he
+            type: string
       responses:
         "200":
           description: Bussiness Category was succesfully listed
@@ -3538,6 +3546,7 @@ components:
       required:
         - busiEmail
         - description
+        - userId
     updateBusinessDto:
       type: object
       properties:
