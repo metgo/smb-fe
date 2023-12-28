@@ -147,7 +147,7 @@ export class createBusinessDto {
   })
   @IsOptional()
   @IsBoolean()
-    isPreview: string;
+    isPreview: boolean;
 
   @ApiProperty({
     required: false,
