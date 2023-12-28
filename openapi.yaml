@@ -2350,16 +2350,6 @@ paths:
     get:
       operationId: getAllCategoriesForExternalApi
       parameters:
-        - name: page
-          required: false
-          in: query
-          schema:
-            type: number
-        - name: limit
-          required: false
-          in: query
-          schema:
-            type: number
         - name: identifierId
           required: true
           in: query

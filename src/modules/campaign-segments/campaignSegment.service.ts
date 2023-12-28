@@ -44,9 +44,7 @@ export default class CampaignSegmentService {
   }
 
   async getAllProducts(query: ExtendedProductFilterQuery) {
-    const { page = paginationConfig.page, limit = paginationConfig.limit, campCode } = query;
-    const pages = Number(page);
-    const limits = Number(limit);
+    const { page, limit, campCode } = query;
 
     const campDetails = await this.campaignService.findAndReturn('code', campCode);
 
@@ -73,8 +71,26 @@ export default class CampaignSegmentService {
 
     const totalData = campaignSegment.products.length;
 
-    const startIndex = (pages - 1) * limit;
-    const endIndex = pages * limit;
+    if (!page && !limit) {
+      const products = campaignSegment.products.map((product: any) => ({
+        name: product.name,
+        description: product.description,
+        price: product.price,
+        categories: product.categories,
+        images: product.images,
+      }));
+
+      return {
+        totalData,
+        products,
+      };
+    }
+
+    const pages = Number(page) || paginationConfig.page;
+    const limits = Number(limit) || paginationConfig.limit;
+
+    const startIndex = (pages - 1) * limits;
+    const endIndex = pages * limits;
     const productsSlice = campaignSegment.products.slice(startIndex, endIndex);
 
     const paginatedProducts = productsSlice.map((product: any) => ({
@@ -85,23 +101,21 @@ export default class CampaignSegmentService {
       images: product.images,
     }));
 
-    const pageCount = Math.ceil(totalData / limit);
+    const pageCount = Math.ceil(totalData / limits);
 
     return {
       page: pages,
       limit: limits,
       totalData,
-      products: paginatedProducts,
       pageCount,
       hasPreviousPage: pages > 1,
       hasNextPage: pages < pageCount,
+      products: paginatedProducts,
     };
   }
 
   async getAllBusiness(query: ExternalApiWithCampCodeFilterQuery) {
-    const { page = paginationConfig.page, limit = paginationConfig.limit, campCode } = query;
-    const pages = Number(page);
-    const limits = Number(limit);
+    const { page, limit, campCode } = query;
 
     const campDetails = await this.campaignService.findAndReturn('code', campCode);
 
@@ -118,6 +132,7 @@ export default class CampaignSegmentService {
         },
       },
     };
+
     const campaignSegment = await this.CampaignSegmentModel
       .findOne({ campaign_ID: campDetails._id })
       .populate(populate)
@@ -127,8 +142,27 @@ export default class CampaignSegmentService {
 
     const totalData = campaignSegment.businesses.length;
 
-    const startIndex = (pages - 1) * limit;
-    const endIndex = pages * limit;
+    if (!page && !limit) {
+      const businesses = campaignSegment.businesses.map((business: any) => ({
+        name: business.name,
+        description: business.description,
+        geoLocation: business.geoLocation,
+        address: business.address,
+        images: business.images,
+        bussCategoriesId: business.bussCategoriesId,
+      }));
+
+      return {
+        totalData,
+        businesses,
+      };
+    }
+
+    const pages = Number(page) || paginationConfig.page;
+    const limits = Number(limit) || paginationConfig.limit;
+
+    const startIndex = (pages - 1) * limits;
+    const endIndex = pages * limits;
     const businessSlice = campaignSegment.businesses.slice(startIndex, endIndex);
 
     const paginatedBusiness = businessSlice.map((business: any) => ({
@@ -140,16 +174,16 @@ export default class CampaignSegmentService {
       bussCategoriesId: business.bussCategoriesId,
     }));
 
-    const pageCount = Math.ceil(totalData / limit);
+    const pageCount = Math.ceil(totalData / limits);
 
     return {
       page: pages,
       limit: limits,
       totalData,
-      products: paginatedBusiness,
       pageCount,
       hasPreviousPage: pages > 1,
       hasNextPage: pages < pageCount,
+      businesses: paginatedBusiness,
     };
   }
 }

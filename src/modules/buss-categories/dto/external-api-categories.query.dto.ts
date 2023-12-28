@@ -1,9 +1,15 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsOptional } from 'class-validator';
+import {
+  IsEnum, IsNotEmpty, IsOptional, IsString,
+} from 'class-validator';
 import { Locale } from 'src/common/enum';
-import { ExternalApiFilterQuery } from 'src/common/query-handler/external-api-filter.query';
 
-export class ExternalApiCategoriesQuery extends ExternalApiFilterQuery {
+export class ExternalApiCategoriesQuery {
+  @ApiProperty({ type: String, required: true })
+  @IsString()
+  @IsNotEmpty()
+    identifierId: string;
+
   @ApiProperty({
     type: 'enum',
     enum: Locale,
