@@ -69,16 +69,22 @@ export default class CampaignSegmentService {
       .lean()
       .exec();
 
-    const totalData = campaignSegment.products.length;
-
     if (!page && !limit) {
-      const products = campaignSegment.products.map((product: any) => ({
-        name: product.name,
-        description: product.description,
-        price: product.price,
-        categories: product.categories,
-        images: product.images,
-      }));
+      const products = campaignSegment.products
+        .filter((product: any) => {
+          if (!query.categoriesId) {
+            return true;
+          }
+
+          return product.categories.some(category => query.categoriesId.includes(String(category._id)));
+        }).map((product: any) => ({
+          name: product.name,
+          description: product.description,
+          price: product.price,
+          categories: product.categories,
+          images: product.images,
+        }));
+      const totalData = products.length;
 
       return {
         totalData,
@@ -93,13 +99,23 @@ export default class CampaignSegmentService {
     const endIndex = pages * limits;
     const productsSlice = campaignSegment.products.slice(startIndex, endIndex);
 
-    const paginatedProducts = productsSlice.map((product: any) => ({
-      name: product.name,
-      description: product.description,
-      price: product.price,
-      categories: product.categories,
-      images: product.images,
-    }));
+    const paginatedProducts = productsSlice
+      .filter((product: any) => {
+        if (!query.categoriesId) {
+          return true;
+        }
+
+        return product.categories.some(category => query.categoriesId.includes(String(category._id)));
+      })
+      .map((product: any) => ({
+        name: product.name,
+        description: product.description,
+        price: product.price,
+        categories: product.categories,
+        images: product.images,
+      }));
+
+    const totalData = paginatedProducts.length;
 
     const pageCount = Math.ceil(totalData / limits);
 

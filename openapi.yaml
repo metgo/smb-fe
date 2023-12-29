@@ -1929,6 +1929,13 @@ paths:
               - active
               - inactive
             type: string
+        - name: categoriesId
+          required: false
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
       responses:
         "200":
           description: Product was listed sucessfully
