@@ -33,6 +33,7 @@ import { UserType } from 'src/modules/users/users.type';
 import { WebCreateBusiness } from './dto/web-create-business.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { fileFilterByExtensions } from 'src/services/gcp-bucket/middleware/file-filter';
+import { updateWebBusinessDto } from './dto/web.update.dto';
 
 @Controller()
 export class BusinessController {
@@ -144,6 +145,32 @@ export class BusinessController {
     @Res() response:Response,
     @Param('id') id: string,
     @Body() dto: updateBusinessDto,
+  ) {
+    dto.name && await this.businessServices.findByFieldNameExcludeId('name', dto.name, id);
+    dto.phoneNumber && await this.businessServices.findByFieldNameExcludeId('phoneNumber', dto.phoneNumber, id);
+    dto.busiEmail && await this.businessServices.findByFieldNameExcludeId('busiEmail', dto.busiEmail, id);
+    dto.dmoId && await this.dmoService.findDMO(dto.dmoId);
+    const business = await this.businessServices.updateBusiness(id, request.user.id, dto);
+
+    return responseHelper(response, HttpStatus.OK, ServerSuccess.BUSINESS_UPDATED, business, null, null);
+  }
+
+  @Roles(UserType.SUPERADMIN)
+  @UseGuards(JwtAuthGuard)
+  @ApiEndpoint({
+    tags: ['Business Web'],
+    response: { status: 200, description: ServerSuccess.BUSINESS_UPDATED },
+    noAuthToken: true,
+    params: [{ name: 'id', type: 'string', required: true }],
+  })
+
+  @UseGuards(JwtAuthGuard)
+  @Put('admin/business/:id')
+  async updateBusinessWeb(
+    @Req() request,
+    @Res() response:Response,
+    @Param('id') id: string,
+    @Body() dto: updateWebBusinessDto,
   ) {
     dto.name && await this.businessServices.findByFieldNameExcludeId('name', dto.name, id);
     dto.phoneNumber && await this.businessServices.findByFieldNameExcludeId('phoneNumber', dto.phoneNumber, id);

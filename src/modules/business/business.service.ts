@@ -21,6 +21,7 @@ import { paginationConfig } from 'src/common/pagination.config';
 import { GcpBucketService } from 'src/services/gcp-bucket/gcp-bucket.services';
 import { WebCreateBusiness } from './dto/web-create-business.dto';
 import { Media } from '../media/schema/media.schema';
+import { updateWebBusinessDto } from './dto/web.update.dto';
 
 @Injectable()
 export class BusinessService {
@@ -58,7 +59,7 @@ export class BusinessService {
     loggedInUserId: string,
     image: Express.Multer.File,
   ): Promise<Business> {
-    let newDto:any = dto;
+    let newDto: any = dto;
     if (dto.geoLocation) {
       const location = {
         type: 'Point',
@@ -91,8 +92,8 @@ export class BusinessService {
       },
       createdBy: loggedInUserId,
       url: businessImageUrl,
-      originalName: image.originalname,
-      mimetype: image.mimetype,
+      originalName: image?.originalname || null,
+      mimetype: image?.mimetype || null,
     });
     await newMedia.save();
 
@@ -311,9 +312,8 @@ export class BusinessService {
   async updateBusiness(
     id: string,
     loggedInUserId: string,
-    dto: updateBusinessDto | Image[] | UpdateBusinessByAdminDto,
+    dto: updateBusinessDto | Image[] | UpdateBusinessByAdminDto | updateWebBusinessDto,
   ): Promise<Business> {
-    console.log(dto);
     let updatedField: any;
     let cordinates:any;
     if (dto instanceof updateBusinessDto && dto.geoLocation) {
@@ -330,15 +330,14 @@ export class BusinessService {
         },
       };
     }
-    console.log(cordinates);
     updatedField = {
       ...updatedField,
       ...dto,
       updatedAt: new Date(),
       updatedBy: loggedInUserId,
     };
-    console.log(updatedField);
-    if (!(dto instanceof updateBusinessDto || dto instanceof UpdateBusinessByAdminDto)) {
+    if (!(
+      dto instanceof updateBusinessDto || dto instanceof UpdateBusinessByAdminDto || dto instanceof updateWebBusinessDto)) {
       const existingBusiness = await this.getBusiness(id);
 
       const images = [...existingBusiness.images, ...dto];

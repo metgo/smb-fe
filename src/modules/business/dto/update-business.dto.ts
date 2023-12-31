@@ -1,7 +1,7 @@
 import { PartialType } from '@nestjs/mapped-types';
 import { createBusinessDto } from './business.dto';
 import { ApiProperty } from '@nestjs/swagger';
-import { IsObject, IsOptional } from 'class-validator';
+import { IsObject, IsOptional, IsString } from 'class-validator';
 
 class geoLocation {
   @ApiProperty({ type: String, description: 'Latitide of map' })
@@ -12,6 +12,13 @@ class geoLocation {
 }
 
 export class updateBusinessDto extends PartialType(createBusinessDto) {
+  @ApiProperty({
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+    name: string;
+
   @ApiProperty({
     required: false,
   })

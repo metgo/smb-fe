@@ -109,12 +109,12 @@ export class ProductsController {
     if (!business) {
       throw new ForbiddenException(ServerErrors.PRODUCT.ADD_FAILED.BUSINESS);
     }
-    const userId = new mongoose.Types.ObjectId(body.userId);
-    if (!userId.equals(business.userId)
-      || business.collabrationUser.includes(userId)
-    ) {
-      throw new ForbiddenException(ServerErrors.FORBIDDEN);
-    }
+    // const userId = new mongoose.Types.ObjectId(body.userId);
+    // if (!userId.equals(business.userId)
+    //   || business.collabrationUser.includes(userId)
+    // ) {
+    //   throw new ForbiddenException(ServerErrors.FORBIDDEN);
+    // }
 
     const product = await this.productsService.createForWeb(req.user.id, bussinessId, business, body, file);
     return responseHelper(
@@ -173,6 +173,38 @@ export class ProductsController {
     const product = await this.productsService.findAll({
       query,
       myProduct: true,
+      collaboratedProducts: false,
+      loggedInUser: req.user.id,
+    });
+    return responseHelper(
+      response,
+      HttpStatus.OK,
+      ServerSuccess.PRODUCTS.LISTED,
+      product,
+      null,
+      null,
+    );
+  }
+
+  @Roles(UserType.SUPERADMIN)
+  @UseGuards(JwtAuthGuard)
+  @ApiEndpoint({
+    tags: ['Products'],
+    response: { status: HttpStatus.OK, description: ServerSuccess.PRODUCTS.LISTED },
+    operation: 'Products of specific business',
+    softBlockExtraDtoFields: true,
+    noAuthToken: true,
+  })
+  @HttpCode(HttpStatus.OK)
+  @Get('admin/products')
+  async getBusinessProducts(
+    @Req() req,
+    @Res() response: Response,
+    @Query() query: FilterQuery,
+  ) {
+    const product = await this.productsService.findAll({
+      query,
+      myProduct: false,
       collaboratedProducts: false,
       loggedInUser: req.user.id,
     });

@@ -895,6 +895,50 @@ paths:
         - defaultBearerAuth: []
       tags:
         - Products
+  /admin/products:
+    get:
+      operationId: getBusinessProducts
+      summary: Products of specific business
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            type: number
+        - name: limit
+          required: false
+          in: query
+          schema:
+            type: number
+        - name: search
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: businessId
+          required: false
+          in: query
+          schema:
+            type: string
+        - name: status
+          required: false
+          in: query
+          schema:
+            enum:
+              - active
+              - inactive
+            type: string
+      responses:
+        "200":
+          description: Product was listed sucessfully
+        "401":
+          description: Authorization header not found or jwt token has expired
+        "422":
+          description: Failed Validation
+      security:
+        - defaultBearerAuth: []
+      tags:
+        - Products
   /collaborated-products:
     get:
       operationId: getMyCollaboratedProductsDetails
@@ -1288,6 +1332,32 @@ paths:
         - defaultBearerAuth: []
       tags:
         - Business
+  "/admin/business/{id}":
+    put:
+      operationId: updateBusinessWeb
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/updateWebBusinessDto"
+      responses:
+        "200":
+          description: Business was successfully updated
+        "401":
+          description: Authorization header not found or jwt token has expired
+        "422":
+          description: Failed Validation
+      security:
+        - defaultBearerAuth: []
+      tags:
+        - Business Web
   "/admin/business/{businessId}":
     patch:
       operationId: updateBusinessByAdmin
@@ -3556,8 +3626,76 @@ components:
     updateBusinessDto:
       type: object
       properties:
+        name:
+          type: string
         geoLocation:
           $ref: "#/components/schemas/geoLocation"
+    updateWebBusinessDto:
+      type: object
+      properties:
+        name:
+          type: string
+        address:
+          $ref: "#/components/schemas/Address"
+        countryCode:
+          type: string
+        phoneNumber:
+          type: string
+        busiEmail:
+          type: string
+        description:
+          type: string
+        contactDetails:
+          $ref: "#/components/schemas/ContactDetails"
+        collabrationUser:
+          type: array
+          items:
+            type: string
+        dmoId:
+          type: string
+        isPreview:
+          type: boolean
+        geoLocation:
+          $ref: "#/components/schemas/geoLocation"
+        images:
+          type: array
+          items:
+            type: string
+        socialMedia:
+          $ref: "#/components/schemas/socialMedia"
+        groupTypesId:
+          type: array
+          items:
+            type: string
+        accessibilitiesId:
+          type: array
+          items:
+            type: string
+        bussCategoriesId:
+          type: array
+          items:
+            type: string
+        bussSubCategoriesId:
+          type: array
+          items:
+            type: string
+        tags:
+          type: array
+          items:
+            type: string
+        openingHrs:
+          $ref: "#/components/schemas/OpeningHours"
+        userId:
+          type: string
+        status:
+          type: string
+          enum:
+            - PENDING
+            - APPROVED
+            - CLOSED
+            - REJECTED
+        rejected_reason:
+          type: string
     UpdateBusinessByAdminDto:
       type: object
       properties:

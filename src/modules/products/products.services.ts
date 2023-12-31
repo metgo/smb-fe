@@ -109,7 +109,7 @@ export class ProductsService {
       quantity,
       businessId,
       createdBy: loggedInUserId,
-      primaryUserId: business.userId,
+      primaryUserId: business?.userId || null,
       dmoId: business.dmoId,
       images,
     };
