@@ -13,7 +13,7 @@ const API_PORT = configService.get('API_PORT');
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-
+  app.enableCors();
   const seederService = app.get(UsersService);
 
   await seederService.seedSuperadmin();
@@ -58,7 +58,7 @@ async function bootstrap() {
   );
 
   app.useGlobalPipes(new ValidationPipe());
-  await app.listen(3000);
+  await app.listen(3001);
   console.log(`Main process started with process: ${process.pid}:${API_PORT}`);
 }
 bootstrap();

@@ -26,9 +26,7 @@ export default class CampaignSegmentService {
 
   async create(
     dto: createCampaignSegmentDto,
-    // dmoId: mongoose.Types.ObjectId,
   ): Promise<CampaignSegment> {
-    // console.log(dmoId);
     const newCampaignSegment = new this.CampaignSegmentModel({
       ...dto,
     });
