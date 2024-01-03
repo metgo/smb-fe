@@ -196,7 +196,7 @@ export class BusinessService {
 
     // eslint-disable-next-line prefer-const
     populate = {
-      path: 'groupTypesId accessibilitiesId bussCategoriesId bussSubCategoriesId',
+      path: 'groupTypesId accessibilitiesId bussCategoriesId bussSubCategoriesId socialMedia.socialMediaId',
       select: `${disSelect}`,
       populate: {
         path: 'icon',
@@ -206,12 +206,8 @@ export class BusinessService {
 
     // eslint-disable-next-line prefer-const
     populate1 = {
-      path: 'socialMedia.socialMediaId',
-      select: `${disSelect}`,
-      populate: {
-        path: 'icon',
-        select: `${disSelect}`,
-      },
+      path: 'dmoId',
+      select: `${disSelect} -userId -collaboratorsUser`,
     };
 
     // eslint-disable-next-line prefer-const
@@ -231,7 +227,7 @@ export class BusinessService {
 
   async getBusiness(id: string) {
     const populate = {
-      path: 'groupTypesId accessibilitiesId bussCategoriesId bussSubCategoriesId',
+      path: 'groupTypesId accessibilitiesId bussCategoriesId bussSubCategoriesId socialMedia.socialMediaId',
       select: `${disSelect}`,
       populate: {
         path: 'icon',
@@ -241,12 +237,8 @@ export class BusinessService {
 
     // eslint-disable-next-line prefer-const
     const populate1 = {
-      path: 'socialMedia.socialMediaId',
-      select: `${disSelect}`,
-      populate: {
-        path: 'icon',
-        select: `${disSelect}`,
-      },
+      path: 'dmoId',
+      select: `${disSelect} -userId -collaboratorsUser`,
     };
     // eslint-disable-next-line prefer-const
     const select = `${disSelect}`;
@@ -278,7 +270,7 @@ export class BusinessService {
     }
     // eslint-disable-next-line prefer-const
     populate = {
-      path: 'groupTypesId accessibilitiesId bussCategoriesId bussSubCategoriesId',
+      path: 'groupTypesId accessibilitiesId bussCategoriesId bussSubCategoriesId socialMedia.socialMediaId',
       select: `${disSelect}`,
       populate: {
         path: 'icon',
@@ -288,12 +280,8 @@ export class BusinessService {
 
     // eslint-disable-next-line prefer-const
     populate1 = {
-      path: 'socialMedia.socialMediaId',
-      select: `${disSelect}`,
-      populate: {
-        path: 'icon',
-        select: `${disSelect}`,
-      },
+      path: 'dmoId',
+      select: `${disSelect} -userId -collaboratorsUser`,
     };
     // eslint-disable-next-line prefer-const
     select = `${disSelect}`;
