@@ -150,7 +150,7 @@ export class VoucherService {
 
     const select = disSelect;
 
-    let findQuery: any = { ...query, createdBy: userId };
+    let findQuery: any = { ...query, assignedTo: userId };
     delete findQuery?.identifierId;
 
     const populate = {
