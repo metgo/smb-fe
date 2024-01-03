@@ -202,4 +202,11 @@ export const ServerSuccess = {
   OTP: {
     VERIFY: 'Code was verify',
   },
+  EXTERNAL_API: {
+    VOUCHER: {
+      CREATED: 'voucher was created successfully',
+      UPDATE_BALANCE: 'Voucher Balance was successfully updated to',
+      ASSIGNED: 'Voucher was successfully assigned to',
+    },
+  },
 };

@@ -253,7 +253,7 @@ export class VoucherController {
     return responseHelper(
       response,
       HttpStatus.OK,
-      ServerSuccess.VOUCHER.ASSIGNED,
+      `${ServerSuccess.EXTERNAL_API.VOUCHER.ASSIGNED}:${dto.email}`,
       null,
       null,
       null,
@@ -280,7 +280,7 @@ export class VoucherController {
     return responseHelper(
       response,
       HttpStatus.CREATED,
-      ServerSuccess.VOUCHER.CREATED,
+      `${dto.campCode} ${ServerSuccess.EXTERNAL_API.VOUCHER.CREATED}`,
       link,
       null,
       null,
@@ -307,7 +307,7 @@ export class VoucherController {
     return responseHelper(
       response,
       HttpStatus.OK,
-      ServerSuccess.VOUCHER.UPDATED,
+      `${ServerSuccess.EXTERNAL_API.VOUCHER.UPDATE_BALANCE} ${dto.amount}`,
       voucher,
       null,
       null,
