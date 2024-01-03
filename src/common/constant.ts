@@ -74,7 +74,8 @@ export const ServerErrors = {
   },
   VOUCHER: {
     NOT_FOUND: 'Voucher not found',
-    EXISTS: 'Voucher  already exists',
+    EXISTS: 'Voucher already exists',
+    UNPAID: 'Access to the voucher is forbidden until payment is made successfully',
     CANNOT_UPDATE_BALANCE: 'The voucher balance cannot be updated as the entered amount exceeds the voucher value',
   },
 
@@ -179,10 +180,10 @@ export const ServerSuccess = {
   },
 
   VOUCHER: {
-    CREATED: 'Voucher  was succesfully created',
-    UPDATED: 'Voucher  was succesfully updated',
-    LISTED: 'Voucher  was succesfully listed',
-    DELETED: 'Voucher  was succesfully deleted',
+    CREATED: 'Voucher was succesfully created',
+    UPDATED: 'Voucher was succesfully updated',
+    LISTED: 'Voucher was succesfully listed',
+    DELETED: 'Voucher was succesfully deleted',
     ASSIGNED: 'Voucher was successfully assigned',
   },
 

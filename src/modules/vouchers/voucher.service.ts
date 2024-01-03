@@ -2,7 +2,13 @@
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-plusplus */
 import {
-  BadRequestException, Inject, Injectable, NotFoundException, UnprocessableEntityException, forwardRef,
+  BadRequestException,
+  ForbiddenException,
+  Inject,
+  Injectable,
+  NotFoundException,
+  UnprocessableEntityException,
+  forwardRef,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
@@ -13,7 +19,7 @@ import { Voucher } from './schema/voucher.schema';
 import {
   FilterQuery, createVoucherDto,
 } from './dto';
-import { Currency } from 'src/common/enum';
+import { Currency, VoucherPaymentStatus } from 'src/common/enum';
 import { ExternalApiFilterQuery } from 'src/common/query-handler/external-api-filter.query';
 import { generateRandomCode } from 'src/common/utils/randomCode.generator';
 import { remainingAmountCalculation } from 'src/common/utils/remaining-amount-calculation';
@@ -65,7 +71,7 @@ export class VoucherService {
     return paymentLink;
   }
 
-  async getOne(code: string) {
+  async getOne(code: string, externalApi?:boolean) {
     const select = disSelect;
     const populate = {
       path: 'campId',
@@ -74,6 +80,19 @@ export class VoucherService {
     const voucher = await this.VoucherModel.findOne({ code }).select(select).populate(populate).exec();
     if (!voucher) {
       throw new BadRequestException(ServerErrors.VOUCHER.NOT_FOUND);
+    }
+
+    if (voucher.paymentStatus !== VoucherPaymentStatus.PAID) {
+      throw new ForbiddenException(ServerErrors.VOUCHER.UNPAID);
+    }
+
+    if (externalApi) {
+      return {
+        remainingAmount: voucher.remainingAmount,
+        expireDate: voucher.expireDate,
+        paymentStatus: voucher.paymentStatus,
+        status: voucher.status,
+      };
     }
     return voucher;
   }

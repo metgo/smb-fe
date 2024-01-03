@@ -1397,7 +1397,7 @@ paths:
               $ref: "#/components/schemas/createVoucherDto"
       responses:
         "201":
-          description: Voucher  was succesfully created
+          description: Voucher was succesfully created
         "401":
           description: Authorization header not found or jwt token has expired
         "422":
@@ -1418,7 +1418,7 @@ paths:
             type: string
       responses:
         "200":
-          description: Voucher  was succesfully listed
+          description: Voucher was succesfully listed
         "422":
           description: Failed Validation
       tags:
@@ -1435,7 +1435,7 @@ paths:
             type: string
       responses:
         "200":
-          description: Voucher  was succesfully created
+          description: Voucher was succesfully created
         "422":
           description: Failed Validation
       tags:
@@ -1473,7 +1473,7 @@ paths:
             type: string
       responses:
         "200":
-          description: Voucher  was succesfully listed
+          description: Voucher was succesfully listed
         "401":
           description: Authorization header not found or jwt token has expired
         "422":
@@ -1515,7 +1515,7 @@ paths:
             type: string
       responses:
         "200":
-          description: Voucher  was succesfully listed
+          description: Voucher was succesfully listed
         "401":
           description: Authorization header not found or jwt token has expired
         "422":
@@ -1568,7 +1568,7 @@ paths:
             type: string
       responses:
         "200":
-          description: Voucher  was succesfully listed
+          description: Voucher was succesfully listed
         "401":
           description: Authorization header not found or jwt token has expired
         "422":
@@ -1622,7 +1622,7 @@ paths:
               $ref: "#/components/schemas/createVoucherDto"
       responses:
         "201":
-          description: Voucher  was succesfully created
+          description: Voucher was succesfully created
         "401":
           description: Authorization header not found or jwt token has expired
         "422":
@@ -1649,13 +1649,35 @@ paths:
               $ref: "#/components/schemas/UpdateVoucherBalance"
       responses:
         "200":
-          description: Voucher  was succesfully updated
+          description: Voucher was succesfully updated
         "401":
           description: Authorization header not found or jwt token has expired
         "422":
           description: Failed Validation
       security:
         - defaultBearerAuth: []
+      tags:
+        - External Api
+        - Voucher
+  "/externalapi/voucher/{code}":
+    get:
+      operationId: getVoucherDetailByExternalApi
+      parameters:
+        - name: code
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: identifierId
+          required: true
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Voucher was succesfully listed
+        "422":
+          description: Failed Validation
       tags:
         - External Api
         - Voucher

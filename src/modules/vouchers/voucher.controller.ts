@@ -313,4 +313,28 @@ export class VoucherController {
       null,
     );
   }
+
+  @ApiEndpoint({
+    tags: ['External Api', 'Voucher'],
+    response: { status: 200, description: ServerSuccess.VOUCHER.LISTED },
+  })
+  @UseGuards(JwtAuthGuard)
+  @UseGuards(ExternalApiGuard)
+  @Get('externalapi/voucher/:code')
+  async getVoucherDetailByExternalApi(
+    @Res() response: Response,
+    @Param('code') code: string,
+    // eslint-disable-next-line no-unused-vars
+    @Query() query: ExternalApiVoucherFilterQuery,
+  ) {
+    const voucher = await this.voucherService.getOne(code, true);
+    return responseHelper(
+      response,
+      HttpStatus.OK,
+      ServerSuccess.VOUCHER.LISTED,
+      voucher,
+      null,
+      null,
+    );
+  }
 }
