@@ -3522,10 +3522,6 @@ components:
           type: boolean
         geoLocation:
           $ref: "#/components/schemas/geoLocation"
-        images:
-          type: array
-          items:
-            type: string
         socialMedia:
           $ref: "#/components/schemas/socialMedia"
         groupTypesId:
@@ -3580,10 +3576,6 @@ components:
           type: boolean
         geoLocation:
           $ref: "#/components/schemas/geoLocation"
-        images:
-          type: array
-          items:
-            type: string
         socialMedia:
           $ref: "#/components/schemas/socialMedia"
         groupTypesId:
@@ -3657,10 +3649,6 @@ components:
           type: boolean
         geoLocation:
           $ref: "#/components/schemas/geoLocation"
-        images:
-          type: array
-          items:
-            type: string
         socialMedia:
           $ref: "#/components/schemas/socialMedia"
         groupTypesId:

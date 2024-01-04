@@ -111,6 +111,7 @@ export async function queryhandler<T>(
     });
   }
   datas.totalData = await model.countDocuments(findQuery);
+  console.log(datas.totalData);
   const meta = {
     page,
     limit,

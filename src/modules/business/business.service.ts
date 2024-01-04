@@ -57,7 +57,7 @@ export class BusinessService {
   async createBusinesForWeb(
     dto: WebCreateBusiness,
     loggedInUserId: string,
-    image: Express.Multer.File,
+    image: Array<Express.Multer.File>,
   ): Promise<Business> {
     let newDto: any = dto;
     if (dto.geoLocation) {
@@ -70,13 +70,30 @@ export class BusinessService {
         location,
       };
     }
-    const businessImageUrl = image ? await this.gcpBucketServices.upload(image) : null;
+    const images = [];
+    Promise.all(
+      image.map(async (file: Express.Multer.File) => {
+        // store in gcp
+        const imageUrl = await this.gcpBucketServices.upload(file);
 
-    const images = [{
-      image: businessImageUrl || null,
-      caption: image?.originalname || null,
-      alt: image?.originalname || null,
-    }];
+        const imageObject = {
+
+          image: imageUrl || null,
+          caption: file?.originalname || null,
+          alt: file?.originalname || null,
+
+        };
+        images.push(imageObject);
+      }),
+    );
+
+    // const businessImageUrl = image ? await this.gcpBucketServices.upload(image) : null;
+
+    // const images = [{
+    //   image: businessImageUrl || null,
+    //   caption: image?.originalname || null,
+    //   alt: image?.originalname || null,
+    // }];
 
     const newBusiness = new this.BusinessModel({
       ...newDto,
@@ -85,17 +102,19 @@ export class BusinessService {
     });
     await newBusiness.save();
 
-    const newMedia = new this.MediaModel({
-      reference: {
-        refId: newBusiness.id,
-        schema: 'Business',
-      },
-      createdBy: loggedInUserId,
-      url: businessImageUrl,
-      originalName: image?.originalname || null,
-      mimetype: image?.mimetype || null,
+    newBusiness.images.map(async (img: any) => {
+      const newMedia = new this.MediaModel({
+        reference: {
+          refId: newBusiness.id,
+          schema: 'Business',
+        },
+        createdBy: loggedInUserId,
+        url: img.image,
+        originalName: img?.caption || null,
+        mimetype: img?.mimetype || null,
+      });
+      await newMedia.save();
     });
-    await newMedia.save();
 
     return newBusiness;
   }

@@ -15,6 +15,7 @@ import {
   Req,
   Res,
   UploadedFile,
+  UploadedFiles,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -31,7 +32,7 @@ import { UpdateBusinessByAdminDto } from 'src/modules/business/dto/update-busine
 import { DMOService } from 'src/modules/dmo/dmo.service';
 import { UserType } from 'src/modules/users/users.type';
 import { WebCreateBusiness } from './dto/web-create-business.dto';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { AnyFilesInterceptor, FileInterceptor } from '@nestjs/platform-express';
 import { fileFilterByExtensions } from 'src/services/gcp-bucket/middleware/file-filter';
 import { updateWebBusinessDto } from './dto/web.update.dto';
 
@@ -71,19 +72,19 @@ export class BusinessController {
     noAuthToken: true,
   })
   @Post('admin/business')
-  @UseInterceptors(FileInterceptor('file', { fileFilter: fileFilterByExtensions }))
+  @UseInterceptors(AnyFilesInterceptor({ fileFilter: fileFilterByExtensions }))
   async createBusinessForWeb(
     @Req() request,
     @Res() response: Response,
     @Body() body: WebCreateBusiness,
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFiles() image: Array<Express.Multer.File>,
   ) {
     const loggedInUserId = request.user.id;
     body.name && await this.businessServices.findByFieldName('name', body.name);
     body.phoneNumber && await this.businessServices.findByFieldName('phoneNumber', body.phoneNumber);
     body.busiEmail && await this.businessServices.findByFieldName('busiEmail', body.busiEmail);
     body.dmoId && await this.dmoService.findDMO(body.dmoId);
-    const business = await this.businessServices.createBusinesForWeb(body, loggedInUserId, file);
+    const business = await this.businessServices.createBusinesForWeb(body, loggedInUserId, image);
     return responseHelper(response, HttpStatus.CREATED, ServerSuccess.BUSINESS_CREATED, business, null, null);
   }
 
