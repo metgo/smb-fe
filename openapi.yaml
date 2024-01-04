@@ -2028,6 +2028,13 @@ paths:
             type: array
             items:
               type: string
+        - name: subCategoriesId
+          required: false
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
       responses:
         "200":
           description: Product was listed sucessfully

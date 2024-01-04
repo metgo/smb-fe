@@ -18,4 +18,12 @@ export class ExtendedProductFilterQuery extends ExternalApiWithCampCodeFilterQue
   })
   @IsOptional()
     categoriesId: string[];
+
+  @ApiProperty({
+    required: false,
+    isArray: true,
+    type: String,
+  })
+  @IsOptional()
+    subCategoriesId: string[];
 }
