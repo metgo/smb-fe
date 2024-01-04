@@ -156,12 +156,12 @@ export class createBusinessDto {
   @IsObject()
     geoLocation: geoLocation;
 
-  // @ApiProperty({
-  //   required: false,
-  // })
-  // @IsOptional()
-  // @IsArray()
-  //   images: images[];
+  @ApiProperty({
+    required: false,
+  })
+  @IsOptional()
+  @IsArray()
+    images: images[];
 
   @ApiProperty({
     required: false,

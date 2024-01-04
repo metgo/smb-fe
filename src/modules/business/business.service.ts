@@ -71,7 +71,7 @@ export class BusinessService {
       };
     }
     const images = [];
-    Promise.all(
+    await Promise.all(
       image.map(async (file: Express.Multer.File) => {
         // store in gcp
         const imageUrl = await this.gcpBucketServices.upload(file);
@@ -83,6 +83,7 @@ export class BusinessService {
           alt: file?.originalname || null,
 
         };
+        console.log(imageObject);
         images.push(imageObject);
       }),
     );
@@ -94,27 +95,28 @@ export class BusinessService {
     //   caption: image?.originalname || null,
     //   alt: image?.originalname || null,
     // }];
-
+    console.log({ images });
     const newBusiness = new this.BusinessModel({
       ...newDto,
       images,
       createdBy: loggedInUserId,
     });
-    await newBusiness.save();
+    console.log({ newBusiness });
+    // await newBusiness.save();
 
-    newBusiness.images.map(async (img: any) => {
-      const newMedia = new this.MediaModel({
-        reference: {
-          refId: newBusiness.id,
-          schema: 'Business',
-        },
-        createdBy: loggedInUserId,
-        url: img.image,
-        originalName: img?.caption || null,
-        mimetype: img?.mimetype || null,
-      });
-      await newMedia.save();
-    });
+    // newBusiness.images.map(async (img: any) => {
+    //   const newMedia = new this.MediaModel({
+    //     reference: {
+    //       refId: newBusiness.id,
+    //       schema: 'Business',
+    //     },
+    //     createdBy: loggedInUserId,
+    //     url: img.image,
+    //     originalName: img?.caption || null,
+    //     mimetype: img?.mimetype || null,
+    //   });
+    //   await newMedia.save();
+    // });
 
     return newBusiness;
   }

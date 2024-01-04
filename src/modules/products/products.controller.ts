@@ -13,7 +13,7 @@ import {
   Query,
   Req,
   Res,
-  UploadedFile,
+  UploadedFiles,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -31,7 +31,7 @@ import { FilterQuery } from 'src/modules/products//dto/query.dto';
 import { ProductsService } from 'src/modules/products/products.services';
 import { Roles } from 'src/core/guards/authorization/roles';
 import { UserType } from '../users/users.type';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { fileFilterByExtensions } from 'src/services/gcp-bucket/middleware/file-filter';
 import { WebCreateProduct } from './dto/web-create-product.dto';
 
@@ -97,13 +97,13 @@ export class ProductsController {
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.CREATED)
   @Post('admin/businesses/:businessId/products')
-  @UseInterceptors(FileInterceptor('file', { fileFilter: fileFilterByExtensions }))
+  @UseInterceptors(AnyFilesInterceptor({ fileFilter: fileFilterByExtensions }))
   async createProductForWeb(
     @Param('businessId') bussinessId: string,
     @Req() req,
     @Res() response: Response,
     @Body() body: WebCreateProduct,
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFiles() file: Array<Express.Multer.File>,
   ) {
     const business = await this.businessService.findByFieldItems({ _id: bussinessId });
     if (!business) {

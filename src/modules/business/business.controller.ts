@@ -14,7 +14,6 @@ import {
   Query,
   Req,
   Res,
-  UploadedFile,
   UploadedFiles,
   UseGuards,
   UseInterceptors,
@@ -32,7 +31,7 @@ import { UpdateBusinessByAdminDto } from 'src/modules/business/dto/update-busine
 import { DMOService } from 'src/modules/dmo/dmo.service';
 import { UserType } from 'src/modules/users/users.type';
 import { WebCreateBusiness } from './dto/web-create-business.dto';
-import { AnyFilesInterceptor, FileInterceptor } from '@nestjs/platform-express';
+import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { fileFilterByExtensions } from 'src/services/gcp-bucket/middleware/file-filter';
 import { updateWebBusinessDto } from './dto/web.update.dto';
 
