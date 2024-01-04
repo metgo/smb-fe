@@ -107,9 +107,7 @@ export class ProductsService {
           alt: file?.originalname || null,
 
         };
-        console.log(imageObject);
         images.push(imageObject);
-        console.log(images);
       }),
     );
     // const productImageUrl = file ? await this.gcpBucketServices.upload(file) : null;
@@ -120,7 +118,6 @@ export class ProductsService {
     //   alt: file?.originalname || null,
     // }];
 
-    console.log("bibash", images)
     const createdField = {
       ...body,
       price,
