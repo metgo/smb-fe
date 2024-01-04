@@ -71,7 +71,7 @@ export class ProductsService {
     businessId: string,
     business: Business,
     body: WebCreateProduct,
-    file: Express.Multer.File,
+    files: Array<Express.Multer.File>,
   ): Promise<Product> {
     let price;
     let quantity;
@@ -95,13 +95,28 @@ export class ProductsService {
       };
     }
 
-    const productImageUrl = file ? await this.gcpBucketServices.upload(file) : null;
+    const images = [];
+    await Promise.all(
+      files.map(async (file: Express.Multer.File) => {
+        // store in gcp
+        const imageUrl = await this.gcpBucketServices.upload(file);
+        const imageObject = {
 
-    const images = [{
-      image: productImageUrl,
-      caption: file?.originalname || null,
-      alt: file?.originalname || null,
-    }];
+          image: imageUrl || null,
+          caption: file?.originalname || null,
+          alt: file?.originalname || null,
+
+        };
+        images.push(imageObject);
+      }),
+    );
+    // const productImageUrl = file ? await this.gcpBucketServices.upload(file) : null;
+
+    // const images = [{
+    //   image: productImageUrl,
+    //   caption: file?.originalname || null,
+    //   alt: file?.originalname || null,
+    // }];
 
     const createdField = {
       ...body,
