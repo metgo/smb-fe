@@ -59,10 +59,19 @@ export default class CampaignSegmentService {
         },
       },
     };
+    const populate1 = {
+      path: 'products',
+      select: `${disSelect}`,
+      populate: {
+        path: 'subCategories businessId',
+        select: `${disSelect}`,
+      },
+    };
 
     const campaignSegment = await this.CampaignSegmentModel
       .findOne({ campaign_ID: campDetails._id })
       .populate(populate)
+      .populate(populate1)
       .select(select)
       .lean()
       .exec();
@@ -70,8 +79,10 @@ export default class CampaignSegmentService {
     if (!page && !limit) {
       const products = campaignSegment.products
         .filter((product: any) => {
-          if (!query.categoriesId) {
+          if (!query.categoriesId && !query.subCategoriesId) {
             return true;
+          } if (query.subCategoriesId) {
+            return product.subCategories.some(subCategory => query.subCategoriesId.includes(String(subCategory._id)));
           }
 
           return product.categories.some(category => query.categoriesId.includes(String(category._id)));
@@ -81,6 +92,8 @@ export default class CampaignSegmentService {
           price: product.price,
           categories: product.categories,
           images: product.images,
+          business: product.businessId,
+          subCategories: product.subCategories,
         }));
       const totalData = products.length;
 
@@ -93,16 +106,26 @@ export default class CampaignSegmentService {
     const pages = Number(page) || paginationConfig.page;
     const limits = Number(limit) || paginationConfig.limit;
 
+    /**
+     * actually this is not good way to slice the data and apply the filter
+     * on this case but you can slice after you received the data
+     * example if get 20 data anf we pass the limit 10, the bellow filter will filter from first 10 data
+     * and we have the 8 data on next 10 datas.
+     * need to change this please go over this
+     */
+
     const startIndex = (pages - 1) * limits;
     const endIndex = pages * limits;
     const productsSlice = campaignSegment.products.slice(startIndex, endIndex);
 
     const paginatedProducts = productsSlice
       .filter((product: any) => {
-        if (!query.categoriesId) {
+        if (!query.categoriesId && !query.subCategoriesId) {
           return true;
         }
-
+        if (query.subCategoriesId) {
+          return product.subCategories.some(subCategory => query.subCategoriesId.includes(String(subCategory._id)));
+        }
         return product.categories.some(category => query.categoriesId.includes(String(category._id)));
       })
       .map((product: any) => ({
@@ -111,6 +134,8 @@ export default class CampaignSegmentService {
         price: product.price,
         categories: product.categories,
         images: product.images,
+        business: product.businessId,
+        subCategories: product.subCategories,
       }));
 
     const totalData = paginatedProducts.length;
