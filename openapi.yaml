@@ -757,6 +757,29 @@ paths:
       tags:
         - Products
         - Orders
+  /externalapi/orders:
+    post:
+      operationId: createOrderForExternalApi
+      parameters:
+        - name: identifierId
+          required: true
+          in: query
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateOrderDto"
+      responses:
+        "200":
+          description: Order was succesfully created
+        "422":
+          description: Failed Validation
+      tags:
+        - Orders
+        - External Api
   /payment/success:
     get:
       operationId: success
@@ -3447,12 +3470,27 @@ components:
           type: number
         email:
           type: string
+        phone:
+          type: string
+        address:
+          type: string
+        name:
+          type: string
+        businessId:
+          description: Array of BusinessId
+          type: array
+          items:
+            type: string
       required:
         - products
         - paymentMode
         - voucher
         - creditCardPayment
         - email
+        - phone
+        - address
+        - name
+        - businessId
     UpdateOrderDto:
       type: object
       properties:

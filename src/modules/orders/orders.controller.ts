@@ -36,7 +36,6 @@ export class OrdersController {
     noAuthToken: true,
     operation: 'Create order detail',
   })
-  @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.CREATED)
   @Post('orders')
   async createOrder(
@@ -210,6 +209,7 @@ export class OrdersController {
     response: { status: 200, description: ServerSuccess.ORDERS.CREATED },
     softBlockExtraDtoFields: true,
   })
+  @UseGuards(JwtAuthGuard)
   @UseGuards(ExternalApiGuard)
   @Post('/externalapi/orders')
   async createOrderForExternalApi(
@@ -218,10 +218,6 @@ export class OrdersController {
     @Req() req,
     @Res() response: Response,
   ) {
-    if (!req.user && !body.email) {
-      throw new BadRequestException('Email is required');
-    }
-
     let voucherIds;
     let vouchers;
     let sortedVoucher;
@@ -239,7 +235,7 @@ export class OrdersController {
 
       if (sortedVoucher) {
         voucher = await this.ordersService.processVouchers(
-          req.user ? req.user.id : null,
+          req.user.id,
           sortedVoucher,
           totalAmount,
         );
@@ -252,7 +248,7 @@ export class OrdersController {
     }
 
     const order = await this.ordersService.create(
-      req.user ? req.user.id : null,
+      req.user.id,
       body,
       totalAmount,
       query.identifierId,
