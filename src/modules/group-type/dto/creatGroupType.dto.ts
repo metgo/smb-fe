@@ -20,4 +20,9 @@ export class createGroupTypeDto {
   @IsNotEmpty()
   @IsString()
     icon: string;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsString()
+    hebrewName: string;
 }

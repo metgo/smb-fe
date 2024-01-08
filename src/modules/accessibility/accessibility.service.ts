@@ -2,11 +2,12 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 
+import { Locale } from 'src/common/enum';
 import { paginationConfig } from 'src/common/pagination.config';
+import { LocaleFilterQuery } from 'src/common/query-handler/locale-filter.query';
 import { disSelect } from 'src/common/utils/select.handling';
 import { Accessibility } from './schema/accessibility.schema';
-import { FilterQuery, createAccessibilityDto, updateAccessibilityDto } from './dto';
-
+import { createAccessibilityDto, updateAccessibilityDto } from './dto';
 import {
   findOneByFieldName, findOneByFieldNameExcludeId, queryhandler, updateById,
 } from 'src/core/helper/query-helper';
@@ -16,38 +17,38 @@ import { Model } from 'mongoose';
 @Injectable()
 export class AccessibilityService {
   constructor(
-       @InjectModel('Accessibility')
-        private readonly AccessibilityModel: Model<Accessibility>,
-  ) { }
+    @InjectModel('Accessibility')
+    private readonly AccessibilityModel: Model<Accessibility>,
+  ) {}
 
   async create(dto: createAccessibilityDto, userId: string) {
     const newAccessibility = new this.AccessibilityModel({ ...dto, createdBy: userId });
     return newAccessibility.save();
   }
 
-  async getAll(queries:FilterQuery) {
+  async getAll(queries: LocaleFilterQuery) {
     const {
-      page, limit, ...query
+      page, limit, search, locale, ...query
     } = queries;
 
     const queryPage = page ? Number(page) : paginationConfig.page;
     const queryLimit = limit ? Number(limit) : paginationConfig.limit;
+    const select = `${disSelect}`;
 
-    let findQuery: {};
-    let select: {};
-    let populate: {};
+    let findQuery: {} = query;
     let populate1: {};
-    if (query.search) {
+
+    if (search) {
       findQuery = {
-        name: { $regex: query.search, $options: 'i' },
+        ...findQuery,
+        name: { $regex: search, $options: 'i' },
       };
     }
-    populate = {
+    const populate = {
       path: 'icon',
       select: disSelect,
     };
 
-    select = `${disSelect}`;
     const accessibility = await queryhandler<Accessibility>(
       this.AccessibilityModel,
       findQuery,
@@ -56,11 +57,12 @@ export class AccessibilityService {
       queryLimit,
       populate,
       populate1,
+      locale,
     );
     return accessibility;
   }
 
-  async getOne(id: string) {
+  async getOne(id: string, locale: Locale) {
     const select = `${disSelect}`;
     const populate = {
       path: 'icon',
@@ -70,6 +72,10 @@ export class AccessibilityService {
       .select(select)
       .populate(populate)
       .exec();
+
+    if (locale === Locale.HEBREW) {
+      accessibility.name = accessibility?.hebrewName || accessibility.name;
+    }
     return accessibility;
   }
 

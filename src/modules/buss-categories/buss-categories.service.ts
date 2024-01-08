@@ -5,13 +5,13 @@ import { Model } from 'mongoose';
 import { ServerErrors } from 'src/common/constant';
 import { Locale } from 'src/common/enum';
 import { paginationConfig } from 'src/common/pagination.config';
+import { LocaleFilterQuery } from 'src/common/query-handler/locale-filter.query';
 import { disSelect } from 'src/common/utils/select.handling';
 import {
   findOneByFieldName, findOneByFieldNameExcludeId, queryhandler, updateById,
 } from 'src/core/helper/query-helper';
 import { UpdateBussCategoryDto } from './dto/updateBussCategoryDto';
 import { createBussCategoryDto } from './dto/createBussCategoryDto';
-import { FilterQuery } from './dto/query.dto';
 import { BussCategory } from './schema/buss.category.schema';
 import { BussSubCategory } from '../buss-subcategories/schema/buss-subCategory.schema';
 import { ExternalApiCategoriesQuery } from 'src/modules/buss-categories/dto/external-api-categories.query.dto';
@@ -31,7 +31,7 @@ export class BussCategoriesService {
     return newBussCategories;
   }
 
-  async getAll(queries: FilterQuery) {
+  async getAll(queries: LocaleFilterQuery) {
     const {
       page, limit, search, locale, ...query
     } = queries;

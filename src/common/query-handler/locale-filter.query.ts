@@ -1,11 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsEnum, IsNotEmpty,
-} from 'class-validator';
+import { IsEnum, IsNotEmpty } from 'class-validator';
+
 import { Locale } from 'src/common/enum';
 import { CommonFilterQuery } from 'src/common/query-handler/common-filter-query';
 
-export class FilterQuery extends CommonFilterQuery {
+export class LocaleFilterQuery extends CommonFilterQuery {
   @ApiProperty({
     type: 'enum',
     enum: Locale,

@@ -3,46 +3,48 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
+import { Locale } from 'src/common/enum';
 import { ServerErrors } from 'src/common/constant';
 import { paginationConfig } from 'src/common/pagination.config';
+import { LocaleFilterQuery } from 'src/common/query-handler/locale-filter.query';
 import { disSelect } from 'src/common/utils/select.handling';
 import {
   findOneByFieldName, findOneByFieldNameExcludeId, queryhandler, updateById,
 } from 'src/core/helper/query-helper';
 import { GroupType } from './schema/group-type.schema';
-import { FilterQuery, createGroupTypeDto, updateGroupTypeDto } from './dto';
+import { createGroupTypeDto, updateGroupTypeDto } from './dto';
 
 @Injectable()
 export class GroupTypeService {
   constructor(
-       @InjectModel('GroupType')
-        private readonly GroupTypeModel: Model<GroupType>,
-  ) { }
+    @InjectModel('GroupType')
+    private readonly GroupTypeModel: Model<GroupType>,
+  ) {}
 
   async create(dto: createGroupTypeDto, userId: string) {
     const newGroupType = new this.GroupTypeModel({ ...dto, createdBy: userId });
     return newGroupType.save();
   }
 
-  async getAll(queries: FilterQuery) {
+  async getAll(queries: LocaleFilterQuery) {
     const {
-      page, limit, ...query
+      page, limit, search, locale, ...query
     } = queries;
 
     const queryPage = page ? Number(page) : paginationConfig.page;
     const queryLimit = limit ? Number(limit) : paginationConfig.limit;
     const select = `${disSelect}`;
 
-    let findQuery: {};
-    let populate: {};
+    let findQuery: {} = query;
     let populate1: {};
 
-    if (query.search) {
+    if (search) {
       findQuery = {
-        name: { $regex: query.search, $options: 'i' },
+        ...findQuery,
+        name: { $regex: search, $options: 'i' },
       };
     }
-    populate = {
+    const populate = {
       path: 'icon',
       select: disSelect,
     };
@@ -55,12 +57,13 @@ export class GroupTypeService {
       queryLimit,
       populate,
       populate1,
+      locale,
     );
 
     return groupType;
   }
 
-  async getOne(id: string) {
+  async getOne(id: string, locale: Locale) {
     const select = `${disSelect}`;
     const populate = {
       path: 'icon',
@@ -70,6 +73,10 @@ export class GroupTypeService {
       .select(select)
       .populate(populate)
       .exec();
+
+    if (locale === Locale.HEBREW) {
+      groupType.name = groupType?.hebrewName || groupType.name;
+    }
     return groupType;
   }
 

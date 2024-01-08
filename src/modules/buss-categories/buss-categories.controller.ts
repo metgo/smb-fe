@@ -5,6 +5,7 @@ import { Response } from 'express';
 
 import { ServerSuccess } from 'src/common/constant';
 import { Locale } from 'src/common/enum';
+import { LocaleFilterQuery } from 'src/common/query-handler/locale-filter.query';
 import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
 import { ExternalApiGuard } from 'src/core/guards/authorization/external-api-guards';
 import { Roles } from 'src/core/guards/authorization/roles';
@@ -13,7 +14,6 @@ import { responseHelper } from 'src/core/helper/response.helper';
 import { BussCategoriesService } from './buss-categories.service';
 import { updateBussSubCategoryDto } from '../buss-subcategories/dto';
 import { createBussCategoryDto } from './dto/createBussCategoryDto';
-import { FilterQuery } from './dto/query.dto';
 import { UserType } from '../users/users.type';
 import { ExternalApiCategoriesQuery } from 'src/modules/buss-categories/dto/external-api-categories.query.dto';
 
@@ -64,7 +64,7 @@ export class BussCategoriesController {
   @Get('admin/buss-category')
   async getAll(
     @Res() response: Response,
-    @Query() query: FilterQuery,
+    @Query() query: LocaleFilterQuery,
   ) {
     const allBussCategoires = await this.bussCategoryService.getAll(query);
     return responseHelper(

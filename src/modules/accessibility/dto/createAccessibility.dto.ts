@@ -20,4 +20,9 @@ export class createAccessibilityDto {
   @IsNotEmpty()
   @IsString()
     icon: string;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsString()
+    hebrewName: string;
 }

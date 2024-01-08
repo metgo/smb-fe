@@ -4,18 +4,20 @@ import {
 import { Response } from 'express';
 
 import { ServerSuccess } from 'src/common/constant';
+import { Locale } from 'src/common/enum';
+import { LocaleFilterQuery } from 'src/common/query-handler/locale-filter.query';
 import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
 import { Roles } from 'src/core/guards/authorization/roles';
 import { JwtAuthGuard } from 'src/core/guards/jwt/jwt.guards';
 import { responseHelper } from 'src/core/helper/response.helper';
 import { GroupTypeService } from './group-type.service';
-import { FilterQuery, createGroupTypeDto, updateGroupTypeDto } from './dto';
+import { createGroupTypeDto, updateGroupTypeDto } from './dto';
 import { UserType } from '../users/users.type';
 
 @Controller()
 export class GroupTypeController {
   constructor(
-        private readonly groupTypeService: GroupTypeService,
+    private readonly groupTypeService: GroupTypeService,
   ) { }
 
   @Roles(UserType.SUPERADMIN, UserType.ADMIN)
@@ -54,7 +56,7 @@ export class GroupTypeController {
     },
   })
   @Get('admin/group-type')
-  async getAll(@Res() response: Response, @Query() query: FilterQuery) {
+  async getAll(@Res() response: Response, @Query() query: LocaleFilterQuery) {
     const groupType = await this.groupTypeService.getAll(query);
     return responseHelper(
       response,
@@ -74,8 +76,12 @@ export class GroupTypeController {
     },
   })
   @Get('admin/group-type/:id')
-  async getOne(@Res() response: Response, @Param('id') id: string) {
-    const groupType = await this.groupTypeService.getOne(id);
+  async getOne(
+    @Res() response: Response,
+    @Param('id') id: string,
+    @Query('locale') locale: Locale,
+  ) {
+    const groupType = await this.groupTypeService.getOne(id, locale);
     return responseHelper(
       response,
       HttpStatus.OK,
