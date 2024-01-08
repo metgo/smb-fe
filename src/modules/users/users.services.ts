@@ -4,6 +4,7 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { nanoid } from 'nanoid';
 
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { RegisterRequest } from 'src/modules/auth/requests/register.request';
@@ -15,7 +16,6 @@ import {
   findOneByFieldName, findOneByFieldNameExcludeId, findOneById, update, updateById,
 } from 'src/core/helper/query-helper';
 import { ServerErrors, ServerSuccess } from 'src/common/constant';
-import { passwordGenerator } from 'src/common/utils/randomPassword.genetator';
 import { UpdateLastLoginRequest } from 'src/modules/users/requests/update-last-logins.request';
 import { ConfigService } from 'src/services/config/config.service';
 import { UserType } from './users.type';
@@ -331,7 +331,7 @@ export class UsersService {
     if (user) {
       throw new BadRequestException(ServerErrors.USER.EXISTS);
     }
-    const password = await passwordGenerator();
+    const password = nanoid(8);
     const newUser = new this.UserModel({ ...dto, password });
 
     return newUser;

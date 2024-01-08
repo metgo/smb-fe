@@ -2967,6 +2967,121 @@ paths:
       tags:
         - Admin
         - Voucher Template
+  /external-api:
+    post:
+      operationId: create
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateExternalApiDTO"
+      responses:
+        "201":
+          description: New External API was added successfully
+        "401":
+          description: Authorization header not found or jwt token has expired
+        "422":
+          description: Failed Validation
+      security:
+        - defaultBearerAuth: []
+      tags:
+        - External API
+    get:
+      operationId: getAll
+      parameters:
+        - name: page
+          required: false
+          in: query
+          schema:
+            type: number
+        - name: limit
+          required: false
+          in: query
+          schema:
+            type: number
+        - name: search
+          required: false
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: External APIs was listed successfully
+        "401":
+          description: Authorization header not found or jwt token has expired
+        "422":
+          description: Failed Validation
+      security:
+        - defaultBearerAuth: []
+      tags:
+        - External API
+  "/external-api/{id}":
+    get:
+      operationId: get
+      parameters:
+        - name: id
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: External APIs was listed successfully
+        "401":
+          description: Authorization header not found or jwt token has expired
+        "422":
+          description: Failed Validation
+      security:
+        - defaultBearerAuth: []
+      tags:
+        - External API
+  "/external-api/{externalApiId}":
+    put:
+      operationId: update
+      parameters:
+        - name: externalApiId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateExternalApiDTO"
+      responses:
+        "200":
+          description: External APIs was updated successfully
+        "401":
+          description: Authorization header not found or jwt token has expired
+        "422":
+          description: Failed Validation
+      security:
+        - defaultBearerAuth: []
+      tags:
+        - External API
+    delete:
+      operationId: softDelete
+      parameters:
+        - name: externalApiId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        "200":
+          description: "**Company** can no longer use our API"
+        "401":
+          description: Authorization header not found or jwt token has expired
+        "422":
+          description: Failed Validation
+      security:
+        - defaultBearerAuth: []
+      tags:
+        - External API
 info:
   title: METGO
   description: API Documentation for MetGo
@@ -4029,3 +4144,22 @@ components:
     updateVoucherTemplateDto:
       type: object
       properties: {}
+    CreateExternalApiDTO:
+      type: object
+      properties:
+        companyName:
+          type: string
+        companyEmail:
+          type: string
+        companyPhone:
+          type: string
+        companyAddress:
+          type: string
+        ipAddress:
+          type: string
+      required:
+        - companyName
+        - companyEmail
+        - companyPhone
+        - companyAddress
+        - ipAddress

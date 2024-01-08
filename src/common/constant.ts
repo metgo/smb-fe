@@ -92,6 +92,9 @@ export const ServerErrors = {
     NOT_MATCH: 'Code not match',
     NOT_VERIFY: 'Code was not verify',
   },
+  EXTERNAL_API: {
+    NOT_FOUND: 'External API was not found',
+  },
 };
 
 export const ServerSuccess = {
@@ -204,6 +207,10 @@ export const ServerSuccess = {
     VERIFY: 'Code was verify',
   },
   EXTERNAL_API: {
+    CREATED: 'New External API was added successfully',
+    LISTED: 'External APIs was listed successfully',
+    UPDATED: 'External APIs was updated successfully',
+    DELETED: 'can no longer use our API',
     VOUCHER: {
       CREATED: 'voucher was created successfully',
       UPDATE_BALANCE: 'Voucher Balance was successfully updated to',

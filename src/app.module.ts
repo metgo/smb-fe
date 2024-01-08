@@ -4,6 +4,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 
 import dbConfig from './core/dbConfig';
 import { AuthModule } from 'src/modules/auth/auth.module';
+import { ExternalApiModule } from 'src/modules/external-api/external-api.module';
 import { JwtAuthModule } from 'src/modules/jwt-auth/jwt-auth.module';
 import { MapPointModule } from './modules/mapPoint/mappoint.module';
 import { BusinessModule } from './modules/business/business.module';
@@ -61,6 +62,7 @@ import { HashModule } from './services/hash/hash.module';
     VoucherModule,
     PaymentsModule,
     HashModule,
+    ExternalApiModule,
   ],
   providers: [
     {
