@@ -12,7 +12,10 @@ import { User } from 'src/modules/users/schema/users.schema';
 export class Order extends AuditableSchema {
   @Prop({
     required: true,
-    type: mongoose.Schema.Types.ObjectId,
+    type: [{
+      id: mongoose.Schema.Types.ObjectId,
+      quantity: Number,
+    }],
     ref: Product.name,
     default: null,
   })
@@ -72,6 +75,9 @@ export class Order extends AuditableSchema {
 
   @Prop({ type: Number, default: 0 })
     creditCardPayment: number;
+
+  @Prop({ default: null })
+    identifierId: string;
 }
 
 export type OrderDocument = HydratedDocument<Order>;

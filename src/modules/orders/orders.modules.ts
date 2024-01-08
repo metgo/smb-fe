@@ -4,10 +4,11 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { OrdersController } from 'src/modules/orders/orders.controller';
 import { Order, OrderSchema } from 'src/modules/orders/schema/orders.schema';
 import { OrdersService } from 'src/modules/orders/orders.services';
-import { PaymentsModule } from 'src/services/payments/payments.module';
 import { ProductsModule } from 'src/modules/products/products.module';
 import { UsersModule } from 'src/modules/users/users.module';
 import { VoucherModule } from 'src/modules/vouchers/voucher.module';
+import { ConfigModule } from 'src/services/config/config.module';
+import { PaymentsModule } from 'src/services/payments/payments.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { VoucherModule } from 'src/modules/vouchers/voucher.module';
     ProductsModule,
     UsersModule,
     VoucherModule,
+    ConfigModule,
   ],
   controllers: [OrdersController],
   providers: [OrdersService],

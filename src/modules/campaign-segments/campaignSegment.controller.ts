@@ -14,13 +14,11 @@ import { createCampaignSegmentDto } from './dto/cfreateCampaignSegment.dto';
 import CampaignSegmentService from './campaignSegment.service';
 import { UserType } from '../users/users.type';
 import { ExtendedProductFilterQuery } from 'src/modules/products/dto/external-api.query.dto';
-import { ConfigService } from 'src/services/config/config.service';
 
 @Controller()
 export class CampaignSegmentController {
   constructor(
     private readonly campaignSegmentService: CampaignSegmentService,
-    private readonly configService: ConfigService,
   ) { }
 
   @Roles(UserType.SUPERADMIN, UserType.ADMIN, UserType.DMO)

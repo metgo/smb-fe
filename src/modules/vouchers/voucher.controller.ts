@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { ServerSuccess } from 'src/common/constant';
 import { ExternalApiFilterQuery } from 'src/common/query-handler/external-api-filter.query';
+import { ExternalApiPostQuery } from 'src/common/query-handler/externalapi-post.query';
 import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
 import { ExternalApiGuard } from 'src/core/guards/authorization/external-api-guards';
 import { JwtAuthGuard } from 'src/core/guards/jwt/jwt.guards';
@@ -20,7 +21,6 @@ import { VoucherStatus } from 'src/common/enum';
 import { UpdateFieldInterface } from './interface';
 import { responseHelper } from 'src/core/helper/response.helper';
 import { Response } from 'express';
-import { ExternalApiVoucherFilterQuery } from 'src/modules/vouchers/dto/external-api.query.dto';
 import { ConfigService } from 'src/services/config/config.service';
 import { UpdateVoucherBalance } from 'src/modules/vouchers/dto/update-voucher-balance.dto';
 
@@ -234,7 +234,7 @@ export class VoucherController {
     @Req() req,
     @Res() response: Response,
     @Body() dto: updateAssignedUserVoucherDto,
-    @Query() query: ExternalApiVoucherFilterQuery,
+    @Query() query: ExternalApiPostQuery,
   ) {
     const userId = req.user.id;
     let user: User | null;
@@ -273,7 +273,7 @@ export class VoucherController {
     @Req() req,
     @Res() response: Response,
     @Body() dto: createVoucherDto,
-    @Query() query: ExternalApiVoucherFilterQuery,
+    @Query() query: ExternalApiPostQuery,
   ) {
     const link = await this.voucherService.purchaseVoucherForExternalApi(dto, query, req.user.id);
 
@@ -300,7 +300,7 @@ export class VoucherController {
     @Req() req,
     @Res() response: Response,
     @Body() dto: UpdateVoucherBalance,
-    @Query() query: ExternalApiVoucherFilterQuery,
+    @Query() query: ExternalApiPostQuery,
   ) {
     const voucher = await this.voucherService.updateVoucherAmountByExternalApi(req.user.id, query, dto);
 
@@ -325,7 +325,7 @@ export class VoucherController {
     @Res() response: Response,
     @Param('code') code: string,
     // eslint-disable-next-line no-unused-vars
-    @Query() query: ExternalApiVoucherFilterQuery,
+    @Query() query: ExternalApiPostQuery,
   ) {
     const voucher = await this.voucherService.getOne(code, true);
     return responseHelper(

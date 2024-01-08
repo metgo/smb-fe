@@ -21,6 +21,7 @@ import {
 } from './dto';
 import { Currency, VoucherPaymentStatus } from 'src/common/enum';
 import { ExternalApiFilterQuery } from 'src/common/query-handler/external-api-filter.query';
+import { ExternalApiPostQuery } from 'src/common/query-handler/externalapi-post.query';
 import { generateRandomCode } from 'src/common/utils/randomCode.generator';
 import { remainingAmountCalculation } from 'src/common/utils/remaining-amount-calculation';
 import { queryhandler, updateMany, updateWhere } from 'src/core/helper/query-helper';
@@ -31,7 +32,6 @@ import { PaymentsService } from 'src/services/payments/payments.service';
 import { PaymentPurpose } from 'src/services/payments/payments.type';
 import { CampaignService } from 'src/modules/campaign/campaign.service';
 import { UsersService } from 'src/modules/users/users.services';
-import { ExternalApiVoucherFilterQuery } from 'src/modules/vouchers/dto/external-api.query.dto';
 import { UpdateVoucherBalance } from 'src/modules/vouchers/dto/update-voucher-balance.dto';
 
 @Injectable()
@@ -254,7 +254,7 @@ export class VoucherService {
 
   async purchaseVoucherForExternalApi(
     dto: createVoucherDto,
-    query: ExternalApiVoucherFilterQuery,
+    query: ExternalApiPostQuery,
     userId: string,
   ) {
     const campaign = await this.campaignService.findAndReturn('code', dto.campCode);
@@ -302,7 +302,7 @@ export class VoucherService {
 
   async updateVoucherAmountByExternalApi(
     loggedInUserId: string,
-    query: ExternalApiVoucherFilterQuery,
+    query: ExternalApiPostQuery,
     body: UpdateVoucherBalance,
   ) {
     const voucher = await this.getOneById(body.voucherId);

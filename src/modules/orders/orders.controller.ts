@@ -6,8 +6,10 @@ import { Response } from 'express';
 
 import { calculateTotalAmount } from 'src/common/calculate-total-amount';
 import { ServerSuccess } from 'src/common/constant';
+import { ExternalApiPostQuery } from 'src/common/query-handler/externalapi-post.query';
 import { sortByPriorityAndHighest } from 'src/common/sort-priority-and-highest';
 import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
+import { ExternalApiGuard } from 'src/core/guards/authorization/external-api-guards';
 import { Roles } from 'src/core/guards/authorization/roles';
 import { JwtAuthGuard } from 'src/core/guards/jwt/jwt.guards';
 import { responseHelper } from 'src/core/helper/response.helper';
@@ -197,6 +199,68 @@ export class OrdersController {
       response,
       HttpStatus.OK,
       ServerSuccess.ORDERS.UPDATED,
+      order,
+      null,
+      null,
+    );
+  }
+
+  @ApiEndpoint({
+    tags: ['Orders', 'External Api'],
+    response: { status: 200, description: ServerSuccess.ORDERS.CREATED },
+    softBlockExtraDtoFields: true,
+  })
+  @UseGuards(ExternalApiGuard)
+  @Post('/externalapi/orders')
+  async createOrderForExternalApi(
+    @Body() body: CreateOrderDto,
+    @Query() query: ExternalApiPostQuery,
+    @Req() req,
+    @Res() response: Response,
+  ) {
+    if (!req.user && !body.email) {
+      throw new BadRequestException('Email is required');
+    }
+
+    let voucherIds;
+    let vouchers;
+    let sortedVoucher;
+    let voucher;
+
+    const productIds = body.products.map(product => product.id);
+    const productsFromDB = await this.productService.findManyById(productIds);
+    let totalAmount:number = await calculateTotalAmount(body.products, productsFromDB);
+
+    if (body.voucher) voucherIds = body.voucher.map(item => item.id);
+
+    if (voucherIds) {
+      vouchers = await this.voucherService.findByIds(voucherIds);
+      sortedVoucher = sortByPriorityAndHighest(totalAmount, vouchers);
+
+      if (sortedVoucher) {
+        voucher = await this.ordersService.processVouchers(
+          req.user ? req.user.id : null,
+          sortedVoucher,
+          totalAmount,
+        );
+      }
+    }
+
+    if (voucher) {
+      const redemeAmount = voucher.reduce((total: number, item) => total + item.redeemedAmount, 0);
+      totalAmount -= redemeAmount;
+    }
+
+    const order = await this.ordersService.create(
+      req.user ? req.user.id : null,
+      body,
+      totalAmount,
+      query.identifierId,
+    );
+    return responseHelper(
+      response,
+      HttpStatus.CREATED,
+      ServerSuccess.ORDERS.CREATED,
       order,
       null,
       null,

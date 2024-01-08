@@ -32,12 +32,18 @@ export class OrdersService {
     private readonly paymentService: PaymentsService,
   ) {}
 
-  async create(loggedInUserId: string | null, body: CreateOrderDto, totalAmount: number): Promise<any> {
+  async create(
+    loggedInUserId: string | null,
+    body: CreateOrderDto,
+    totalAmount: number,
+    identifierId?:string,
+  ): Promise<any> {
     const newOrder = new this.OrderModel({
       ...body,
       userId: loggedInUserId || null,
       createdBy: loggedInUserId || null,
       paymentStatus: PaymentStatus.PENDING,
+      identifierId: identifierId || null,
     });
 
     const order = await newOrder.save();
