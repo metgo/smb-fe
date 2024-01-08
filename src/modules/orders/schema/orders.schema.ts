@@ -3,18 +3,31 @@ import mongoose, { HydratedDocument } from 'mongoose';
 
 import { PaymentStatus } from 'src/common/enum';
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
+import { Business } from 'src/modules/business/schema/business.schema';
 import { OrderStatus, PaymentMode } from 'src/modules/orders/orders.type';
+import { Product } from 'src/modules/products/schema/products.schema';
 import { User } from 'src/modules/users/schema/users.schema';
 
 @Schema()
 export class Order extends AuditableSchema {
   @Prop({
     required: true,
+    type: mongoose.Schema.Types.ObjectId,
+    ref: Product.name,
+    default: null,
   })
     products: [{
-      id: string,
+      id: mongoose.Types.ObjectId,
       quantity: number,
     }];
+
+  @Prop({
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: Business.name }],
+    ref: Business.name,
+    required: false,
+    default: [],
+  })
+    businessId: mongoose.Types.ObjectId[];
 
   @Prop({
     type: mongoose.Schema.Types.ObjectId,
@@ -33,8 +46,17 @@ export class Order extends AuditableSchema {
   })
     paymentStatus: PaymentStatus;
 
-    @Prop({ default: null })
-      email: string;
+  @Prop({ default: null })
+    email: string;
+
+  @Prop({ default: null })
+    phone: string;
+
+  @Prop({ default: null })
+    address: string;
+
+  @Prop({ default: null })
+    name: string;
 
   @Prop()
     paymentMode: PaymentMode[];

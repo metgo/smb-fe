@@ -1,6 +1,7 @@
 import {
   ArrayMinSize,
   ArrayUnique,
+  IsArray,
   IsEmail,
   IsNotEmpty,
   IsNumber,
@@ -52,7 +53,30 @@ export class CreateOrderDto {
     creditCardPayment: number;
 
   @IsEmail()
-  @IsOptional()
+  @IsNotEmpty()
   @ApiProperty()
     email: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty()
+    phone: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty()
+    address: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty()
+    name: string;
+
+  @IsArray()
+  @IsNotEmpty()
+  @ApiProperty({
+    type: [String],
+    description: 'Array of BusinessId',
+  })
+    businessId: string[];
 }

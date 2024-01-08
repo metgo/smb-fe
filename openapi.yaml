@@ -3306,12 +3306,27 @@ components:
           type: number
         email:
           type: string
+        phone:
+          type: string
+        address:
+          type: string
+        name:
+          type: string
+        businessId:
+          description: Array of BusinessId
+          type: array
+          items:
+            type: string
       required:
         - products
         - paymentMode
         - voucher
         - creditCardPayment
         - email
+        - phone
+        - address
+        - name
+        - businessId
     UpdateOrderDto:
       type: object
       properties:

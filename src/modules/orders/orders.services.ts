@@ -38,7 +38,6 @@ export class OrdersService {
       userId: loggedInUserId || null,
       createdBy: loggedInUserId || null,
       paymentStatus: PaymentStatus.PENDING,
-      email: loggedInUserId ? null : body.email,
     });
 
     const order = await newOrder.save();
@@ -71,7 +70,8 @@ export class OrdersService {
 
     // deduct product count
     orderDetail.products.map(async product => {
-      await this.productsService.updateProductByFields(product.id, {
+      const productId = product.id.toString();
+      await this.productsService.updateProductByFields(productId, {
         sold: product.quantity,
       });
     });
