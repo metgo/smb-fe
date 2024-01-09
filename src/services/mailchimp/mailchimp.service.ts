@@ -1,21 +1,25 @@
-import mailchimp from '@mailchimp/mailchimp_marketing';
+/* eslint-disable global-require */
+import * as mailchimp from '@mailchimp/mailchimp_marketing';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
+
 import { ConfigService } from 'src/services/config/config.service';
+import { sendEmail } from 'src/services/mailchimp/mailchimp.type';
 
 @Injectable()
 export class MailChimpService {
-  constructor(private readonly configService: ConfigService) {}
+  constructor(private readonly configService: ConfigService) {
+    const { MARKETING_API_KEY, SERVER_PREFIX } = this.configService.mailchimp;
+    mailchimp.setConfig({
+      apiKey: MARKETING_API_KEY,
+      server: SERVER_PREFIX,
+    });
+  }
 
   async subscribe(firstName: string, lastName: string, email: string): Promise<string> {
-    const { MAILCHIMP_AUDIENCE, MAILCHIMP_API_KEY, MAILCHIMP_SERVER_PREFIX } = this.configService.email;
-
-    mailchimp.setConfig({
-      apiKey: MAILCHIMP_API_KEY,
-      server: MAILCHIMP_SERVER_PREFIX,
-    });
+    const { AUDIENCE } = this.configService.mailchimp;
 
     try {
-      await mailchimp.lists.addListMember(MAILCHIMP_AUDIENCE, {
+      await mailchimp.lists.addListMember(AUDIENCE, {
         email_address: email,
         status: 'subscribed',
         merge_fields: {
@@ -40,25 +44,23 @@ export class MailChimpService {
     }
   }
 
-  async sendTransactionalEmail() {
-    const { MAILCHIMP_API_KEY } = this.configService.email;
-
-    // eslint-disable-next-line global-require
-    const mailchimpTransaction = require('@mailchimp/mailchimp_transactional')(MAILCHIMP_API_KEY);
-
-    const message = {
-      from_email: 'prism@pacecode.com.np',
-      subject: 'Hello world',
-      text: 'Welcome to Mailchimp Transactional!',
-      to: [
-        {
-          email: 'pc.prism.np@gmail.com',
-          type: 'to',
-        },
-      ],
-    };
-
+  async sendTransactionalEmail(body: sendEmail) {
     try {
+      const { TRANSACTIONAL_API_KEY, FROM_EMAIL } = this.configService.mailchimp;
+      const mailchimpTransaction = require('@mailchimp/mailchimp_transactional')(TRANSACTIONAL_API_KEY);
+
+      const message = {
+        from_email: FROM_EMAIL,
+        subject: body.subject,
+        text: body.text,
+        to: [
+          {
+            email: body.to,
+            type: 'to',
+          },
+        ],
+      };
+
       const response = await mailchimpTransaction.messages.send({ message });
       console.log('Email sent successfully:', response);
       return response;

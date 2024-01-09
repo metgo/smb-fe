@@ -120,11 +120,12 @@ export class UsersService {
 
       const newUser = await (new this.UserModel({ ...registerDto, password: hashedPassword })).save();
 
-      await this.mailchimpService.subscribe(newUser.firstName, newUser.lastName, newUser.email);
+      await Promise.all([
+        this.mailchimpService.subscribe(newUser.firstName, newUser.lastName, newUser.email),
+        this.mailchimpService.sendTransactionalEmail({ subject: 'Welcome', to: newUser.email, text: 'Welcome to MetGo' }),
+      ]);
 
-      await this.mailchimpService.sendTransactionalEmail();
-
-      await this.mailService.sendWelcome(newUser);
+      // await this.mailService.sendWelcome(newUser);
 
       return {
         id: newUser.id,
