@@ -50,6 +50,13 @@ export class AuthService {
         fullName: user.fullName,
         firstName: user.firstName || splittedfirstName,
         lastName: user.lastName || splittedlastName,
+        phoneDetails: {
+          countryCode: user.countryCode || null,
+          phoneNumber: user.phoneNumber,
+        },
+        language_preference: user.language_preference,
+        address: user.address,
+        dob: user.dob,
         email: user.email,
         isPhoneVerify: user.isPhoneVerify,
         isEmailVerify: user.isEmailVerify,
