@@ -181,7 +181,7 @@ export class VoucherController {
       updatedBy: userId,
       updatedAt: new Date(),
     };
-    await this.voucherService.assignUser(dto.code, updateField);
+    await this.voucherService.assignUser(dto.code, updateField, user);
     return responseHelper(
       response,
       HttpStatus.OK,

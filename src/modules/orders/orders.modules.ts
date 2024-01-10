@@ -9,6 +9,7 @@ import { UsersModule } from 'src/modules/users/users.module';
 import { VoucherModule } from 'src/modules/vouchers/voucher.module';
 import { ConfigModule } from 'src/services/config/config.module';
 import { PaymentsModule } from 'src/services/payments/payments.module';
+import { MailChimpModule } from 'src/services/mailchimp/mailchimp.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { PaymentsModule } from 'src/services/payments/payments.module';
     UsersModule,
     VoucherModule,
     ConfigModule,
+    MailChimpModule,
   ],
   controllers: [OrdersController],
   providers: [OrdersService],

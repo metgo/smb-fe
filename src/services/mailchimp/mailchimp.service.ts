@@ -40,6 +40,8 @@ export class MailChimpService {
         }
       }
 
+      // couldn't add this user - email to metgo support instead of throwing error
+
       throw new InternalServerErrorException('Couldn\'t send email');
     }
   }
