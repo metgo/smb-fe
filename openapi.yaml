@@ -3105,6 +3105,40 @@ paths:
         - defaultBearerAuth: []
       tags:
         - External API
+  /external-api/auth/login:
+    post:
+      operationId: login
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SignInRequest"
+      responses:
+        "200":
+          description: User was succesfully created
+        "422":
+          description: Failed Validation
+      tags:
+        - External API
+  /external-api/auth/register:
+    post:
+      operationId: register
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExternalApiRegisterRequest"
+      responses:
+        "200":
+          description: User was succesfully created
+        "422":
+          description: Failed Validation
+      tags:
+        - External API
 info:
   title: METGO
   description: API Documentation for MetGo
@@ -4201,3 +4235,31 @@ components:
         - companyPhone
         - companyAddress
         - ipAddress
+    ExternalApiRegisterRequest:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        phoneNumber:
+          type: string
+        address:
+          type: string
+        countryCode:
+          type: string
+        identifierId:
+          type: string
+      required:
+        - email
+        - password
+        - firstName
+        - lastName
+        - phoneNumber
+        - address
+        - countryCode
+        - identifierId

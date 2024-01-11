@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
-import { generateRandomIdentifier } from 'src/common/utils/random-identifierId-generator';
 
+import { generateRandomIdentifier } from 'src/common/utils/random-identifierId-generator';
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
 
 @Schema()

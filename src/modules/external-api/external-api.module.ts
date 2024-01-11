@@ -1,7 +1,9 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
-import { ExternalApiController } from 'src/modules/external-api/external-api.controller';
+import { AuthModule } from 'src/modules/auth/auth.module';
+import { ExternalApiController } from 'src/modules/external-api/controllers/external-api.controller';
+import { ExternalAPIServiceController } from 'src/modules/external-api/controllers/external-api-services.controller';
 import { ExternalApiServices } from 'src/modules/external-api/external-api.service';
 import { ExternalApi, ExternalApiSchema } from 'src/modules/external-api/schema/external-api.schema';
 import { UsersModule } from 'src/modules/users/users.module';
@@ -11,9 +13,10 @@ import { UsersModule } from 'src/modules/users/users.module';
     MongooseModule.forFeature([
       { name: ExternalApi.name, schema: ExternalApiSchema },
     ]),
+    AuthModule,
     UsersModule,
   ],
-  controllers: [ExternalApiController],
+  controllers: [ExternalApiController, ExternalAPIServiceController],
   providers: [ExternalApiServices],
 })
 export class ExternalApiModule {}

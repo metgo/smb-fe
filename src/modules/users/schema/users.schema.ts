@@ -2,6 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
 import { Locale } from 'src/common/enum';
 
+import { ExternalApi } from 'src/modules/external-api/schema/external-api.schema';
 import { UserType } from 'src/modules/users/users.type';
 
 @Schema({
@@ -37,7 +38,7 @@ export class User {
   @Prop({ default: null })
     dob: Date;
 
-  @Prop({ required: true, unique: true })
+  @Prop({ required: true })
     email: string;
 
   @Prop({ default: Locale.ENGLISH })
@@ -72,8 +73,17 @@ export class User {
 
   @Prop({ default: null })
     deletedAt: Date;
+
+  @Prop({
+    default: null,
+    type: mongoose.Schema.Types.ObjectId,
+    ref: ExternalApi.name,
+    required: false,
+  })
+    externalApiId: mongoose.Types.ObjectId;
 }
 
 export type Users = HydratedDocument<User>;
 
 export const UserSchema = SchemaFactory.createForClass(User);
+UserSchema.index({ email: 1, externalApiId: 1 }, { unique: true });

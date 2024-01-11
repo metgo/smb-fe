@@ -1,3 +1,4 @@
+/* eslint-disable consistent-return */
 /* eslint-disable no-underscore-dangle */
 import {
   BadRequestException, ConflictException, Injectable, InternalServerErrorException, NotFoundException,
@@ -28,6 +29,7 @@ import { JwtAuthService } from '../jwt-auth/services/jwt-auth.service';
 import { checkExpireDate, oneHrsExpireDate } from 'src/common/expireDate';
 import { VerifyOtpDto } from '../auth/requests/verify-otp.dto';
 import { UpdatePasswordDto } from '../auth/requests/forget-password.dto';
+import { ExternalApiRegisterRequest } from 'src/modules/external-api/dto/register-user.dto';
 import { MailChimpService } from 'src/services/mailchimp/mailchimp.service';
 
 @Injectable()
@@ -104,18 +106,8 @@ export class UsersService {
     }
   }
 
-  async create(registerDto: RegisterRequest): Promise<GetUserDetailsResponse> {
+  async create(registerDto: RegisterRequest | ExternalApiRegisterRequest): Promise<GetUserDetailsResponse> {
     try {
-      const userExists = await findOneByFieldName<User>(
-        this.UserModel,
-        'email',
-        registerDto.email,
-      );
-
-      if (userExists) {
-        throw new ConflictException(ServerErrors.USER.EXISTS);
-      }
-
       const hashedPassword = await this.hashService.create(registerDto.password);
 
       const newUser = await (new this.UserModel({ ...registerDto, password: hashedPassword })).save();
@@ -151,8 +143,10 @@ export class UsersService {
         updatedAt: newUser.updatedAt,
       };
     } catch (error) {
+      if (error.code === 11000) {
+        throw new ConflictException(ServerErrors.USER.EXISTS);
+      }
       exceptionHandling(error);
-      throw new InternalServerErrorException('Couldn\'t save user');
     }
   }
 
