@@ -56,6 +56,11 @@ export class ConfigService {
       'PAYMENT_FAILURE',
       'URL',
       'IDENTIFIER_ID',
+      'MAILCHIMP_MARKETING_API_KEY',
+      'MAILCHIMP_TRANSACTIONAL_API_KEY',
+      'MAILCHIMP_AUDIENCE',
+      'MAILCHIMP_SERVER_PREFIX',
+      'MAILCHIMP_FROM_EMAIL',
     ];
     return ENV_VARIABLES.reduce((obj: any, variable) => {
       if (process.env[variable]) {
@@ -104,6 +109,12 @@ export class ConfigService {
       PAYMENT_FAILURE: Joi.string().required(),
       URL: Joi.string().required(),
       IDENTIFIER_ID: Joi.string().required(),
+      MAILCHIMP_MARKETING_API_KEY: Joi.string().required(),
+      MAILCHIMP_TRANSACTIONAL_API_KEY: Joi.string().required(),
+      MAILCHIMP_AUDIENCE: Joi.string().required(),
+      MAILCHIMP_SERVER_PREFIX: Joi.string().required(),
+      MAILCHIMP_FROM_EMAIL: Joi.string().required(),
+
     }).unknown(true);
 
     const { error, value: validatedEnvConfig } = envVarsSchema.validate(envConfig);
@@ -167,6 +178,16 @@ export class ConfigService {
   get externalApiIdentifier() {
     return {
       IDENTIFIER_ID: this.get('IDENTIFIER_ID'),
+    };
+  }
+
+  get mailchimp() {
+    return {
+      MARKETING_API_KEY: this.get('MAILCHIMP_MARKETING_API_KEY'),
+      TRANSACTIONAL_API_KEY: this.get('MAILCHIMP_TRANSACTIONAL_API_KEY'),
+      AUDIENCE: this.get('MAILCHIMP_AUDIENCE'),
+      SERVER_PREFIX: this.get('MAILCHIMP_SERVER_PREFIX'),
+      FROM_EMAIL: this.get('MAILCHIMP_FROM_EMAIL'),
     };
   }
 }

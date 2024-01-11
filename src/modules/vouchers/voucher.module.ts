@@ -8,6 +8,7 @@ import { EncryptionModule } from 'src/services/encryption/encryption.module';
 import { ConfigModule } from 'src/services/config/config.module';
 import { GcpBucketModule } from 'src/services/gcp-bucket/gcp-bucket.module';
 import { UsersModule } from '../users/users.module';
+import { MailChimpModule } from 'src/services/mailchimp/mailchimp.module';
 import { PaymentsModule } from 'src/services/payments/payments.module';
 
 @Module({
@@ -21,6 +22,7 @@ import { PaymentsModule } from 'src/services/payments/payments.module';
     GcpBucketModule,
     UsersModule,
     forwardRef(() => PaymentsModule),
+    MailChimpModule,
   ],
   controllers: [VoucherController],
   providers: [VoucherService],

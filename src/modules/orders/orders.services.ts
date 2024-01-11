@@ -21,6 +21,7 @@ import { VoucherService } from 'src/modules/vouchers/voucher.service';
 import { PaymentsService } from 'src/services/payments/payments.service';
 import { PaymentPurpose } from 'src/services/payments/payments.type';
 import { FindOrdersQuery } from 'src/modules/orders/orders.type';
+import { MailChimpService } from 'src/services/mailchimp/mailchimp.service';
 
 @Injectable()
 export class OrdersService {
@@ -30,6 +31,7 @@ export class OrdersService {
     private readonly productsService: ProductsService,
     private readonly voucherService: VoucherService,
     private readonly paymentService: PaymentsService,
+    private mailchimpService: MailChimpService,
   ) {}
 
   async create(
@@ -56,8 +58,20 @@ export class OrdersService {
         PaymentPurpose.ORDER,
         order.id,
       );
+
+      await this.mailchimpService.sendTransactionalEmail({
+        subject: 'Payment Success | Order - MetGo',
+        to: body.email,
+        text: `Dear ${body.name}, \n Your payment has been successfully received.`,
+      });
       return [link];
     }
+
+    await this.mailchimpService.sendTransactionalEmail({
+      subject: 'Order Confirmed - MetGo',
+      to: body.email,
+      text: `Dear ${body.name}, \n Your order has been placed successfully.`,
+    });
 
     return link;
   }

@@ -1,0 +1,74 @@
+/* eslint-disable global-require */
+import * as mailchimp from '@mailchimp/mailchimp_marketing';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
+
+import { ConfigService } from 'src/services/config/config.service';
+import { sendEmail } from 'src/services/mailchimp/mailchimp.type';
+
+@Injectable()
+export class MailChimpService {
+  constructor(private readonly configService: ConfigService) {
+    const { MARKETING_API_KEY, SERVER_PREFIX } = this.configService.mailchimp;
+    mailchimp.setConfig({
+      apiKey: MARKETING_API_KEY,
+      server: SERVER_PREFIX,
+    });
+  }
+
+  async subscribe(firstName: string, lastName: string, email: string): Promise<string> {
+    const { AUDIENCE } = this.configService.mailchimp;
+
+    try {
+      await mailchimp.lists.addListMember(AUDIENCE, {
+        email_address: email,
+        status: 'subscribed',
+        merge_fields: {
+          FNAME: firstName,
+          LNAME: lastName,
+          MMERGE5: 'MetGo', // business name
+          MMERGE3: '1234', // business address
+        },
+      });
+
+      return 'Email sent successfully';
+    } catch (error) {
+      if (error.response && error.response.text) {
+        const parsedError = JSON.parse(error.response.text);
+
+        if (parsedError?.title === 'Member Exists') {
+          return 'Email already subscribed';
+        }
+      }
+
+      // couldn't add this user - email to metgo support instead of throwing error
+
+      throw new InternalServerErrorException('Couldn\'t send email');
+    }
+  }
+
+  async sendTransactionalEmail(body: sendEmail) {
+    try {
+      const { TRANSACTIONAL_API_KEY, FROM_EMAIL } = this.configService.mailchimp;
+      const mailchimpTransaction = require('@mailchimp/mailchimp_transactional')(TRANSACTIONAL_API_KEY);
+
+      const message = {
+        from_email: FROM_EMAIL,
+        subject: body.subject,
+        text: body.text,
+        to: [
+          {
+            email: body.to,
+            type: 'to',
+          },
+        ],
+      };
+
+      const response = await mailchimpTransaction.messages.send({ message });
+      console.log('Email sent successfully:', response);
+      return response;
+    } catch (error) {
+      console.error('Error sending email:', error);
+      throw error;
+    }
+  }
+}

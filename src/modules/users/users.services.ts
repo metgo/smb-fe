@@ -28,6 +28,7 @@ import { JwtAuthService } from '../jwt-auth/services/jwt-auth.service';
 import { checkExpireDate, oneHrsExpireDate } from 'src/common/expireDate';
 import { VerifyOtpDto } from '../auth/requests/verify-otp.dto';
 import { UpdatePasswordDto } from '../auth/requests/forget-password.dto';
+import { MailChimpService } from 'src/services/mailchimp/mailchimp.service';
 
 @Injectable()
 export class UsersService {
@@ -41,6 +42,7 @@ export class UsersService {
     private readonly mailService: MailService,
     private readonly hashService: HashService,
     private readonly jwtAuthService: JwtAuthService,
+    private mailchimpService: MailChimpService,
   ) {
     const configService = new ConfigService();
 
@@ -118,7 +120,17 @@ export class UsersService {
 
       const newUser = await (new this.UserModel({ ...registerDto, password: hashedPassword })).save();
 
-      await this.mailService.sendWelcome(newUser);
+      await Promise.all([
+        this.mailchimpService.subscribe(newUser.firstName, newUser.lastName, newUser.email),
+        this.mailchimpService.sendTransactionalEmail({
+          subject: 'Welcome to MetGo',
+          to: newUser.email,
+          text: `Dear ${newUser.firstName}, \n We are thrilled to welcome you to MetGo, your trusted partner in destination management. Whether you're here for business or leisure, we are committed to ensuring your stay is memorable and stress-free.`,
+        }),
+      ]);
+
+      // await this.mailService.sendWelcome(newUser);
+
       return {
         id: newUser.id,
         fullName: newUser.fullName,
@@ -160,7 +172,14 @@ export class UsersService {
     };
     const { otpToken } = this.jwtAuthService.otpToken(otpBody);
 
-    await this.mailService.sendForgetPasswordOtp(user, code);
+    await this.mailchimpService.sendTransactionalEmail({
+      to: user.email,
+      subject: 'Forget Password - MetGo',
+      text: `We received a request to reset your MetGo account password. Please use the following One-Time Password (OTP) within the next hour: ${code}. \n This OTP is valid for the next 1 hour. If you did not request a password reset, please ignore this email.`,
+    });
+
+    // await this.mailService.sendForgetPasswordOtp(user, code);
+
     return otpToken;
   }
 
@@ -394,7 +413,17 @@ export class UsersService {
       }
       const newUser = await (new this.UserModel(registerDto)).save();
 
-      await this.mailService.sendWelcomeWithPwd(newUser);
+      await Promise.all([
+        this.mailchimpService.subscribe(newUser.firstName, newUser.lastName, newUser.email),
+        this.mailchimpService.sendTransactionalEmail({
+          subject: 'Welcome to MetGo',
+          to: newUser.email,
+          text: `Dear ${newUser.firstName}, \n We are thrilled to welcome you to MetGo, your trusted partner in destination management. Whether you're here for business or leisure, we are committed to ensuring your stay is memorable and stress-free. \n \n Login Credentials \n Email : ${newUser.email} \n Password: ${newUser.password}`,
+        }),
+      ]);
+
+      // await this.mailService.sendWelcomeWithPwd(newUser);
+
       return {
         id: newUser.id,
         fullName: newUser.fullName,

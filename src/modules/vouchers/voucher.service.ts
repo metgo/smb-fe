@@ -28,9 +28,11 @@ import { queryhandler, updateMany, updateWhere } from 'src/core/helper/query-hel
 import { disSelect } from 'src/common/utils/select.handling';
 import { ServerErrors } from 'src/common/constant';
 import { UpdateFieldInterface } from './interface';
+import { MailChimpService } from 'src/services/mailchimp/mailchimp.service';
 import { PaymentsService } from 'src/services/payments/payments.service';
 import { PaymentPurpose } from 'src/services/payments/payments.type';
 import { CampaignService } from 'src/modules/campaign/campaign.service';
+import { User } from 'src/modules/users/schema/users.schema';
 import { UsersService } from 'src/modules/users/users.services';
 import { UpdateVoucherBalance } from 'src/modules/vouchers/dto/update-voucher-balance.dto';
 
@@ -43,6 +45,7 @@ export class VoucherService {
     private readonly paymentService: PaymentsService,
     private readonly campaignService: CampaignService,
     private readonly usersService: UsersService,
+    private mailchimpService: MailChimpService,
   ) { }
 
   async create(
@@ -68,6 +71,21 @@ export class VoucherService {
     }
 
     const paymentLink = await this.paymentService.generateLink(totalAmount, Currency.ILS, PaymentPurpose.VOUCHER, voucherId);
+
+    if (dto.email) {
+      await this.mailchimpService.sendTransactionalEmail({
+        subject: 'Payment Success | Voucher - MetGo',
+        to: dto.email,
+        text: `Dear ${dto.name}, \n Your payment has been successfully received.`,
+      });
+
+      await this.mailchimpService.sendTransactionalEmail({
+        subject: 'Voucher Confirmed - MetGo',
+        to: dto.email,
+        text: `Dear ${dto.name}, \n ${dto.noOfVoucher} vouchers with campaign code - ${dto.campCode} has been created successfully. Each voucher's worth is ${dto.amount}.`,
+      });
+    }
+
     return paymentLink;
   }
 
@@ -190,7 +208,7 @@ export class VoucherService {
     return voucher;
   }
 
-  async assignUser(code: string, updateField: UpdateFieldInterface) {
+  async assignUser(code: string, updateField: UpdateFieldInterface, user?: User | null) {
     const filterQuery = {
       code,
       assignedTo: null,
@@ -200,6 +218,15 @@ export class VoucherService {
     if (!assignUser) {
       throw new NotFoundException(ServerErrors.VOUCHER.NOT_FOUND);
     }
+
+    const email = user ? user?.email : updateField.waitingUserEmail;
+    const name = user ? user?.firstName : 'User';
+    await this.mailchimpService.sendTransactionalEmail({
+      subject: 'Voucher Assigned - MetGo',
+      to: email,
+      text: `Dear ${name}, \n Voucher with campaign code - ${code} has been assigned to you.`,
+    });
+
     return assignUser;
   }
 
@@ -295,7 +322,13 @@ export class VoucherService {
       ),
     ]);
 
-    console.log(user);
+    if (paymentLink && dto.email) {
+      await this.mailchimpService.sendTransactionalEmail({
+        subject: 'Voucher Assigned - MetGo',
+        to: user.email,
+        text: `Dear ${user.firstName}, \n ${dto.noOfVoucher} vouchers with campaign code - ${dto.campCode} has been assigned to you. Each voucher's worth is ${dto.amount}.`,
+      });
+    }
 
     return paymentLink;
   }
