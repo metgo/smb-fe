@@ -317,6 +317,7 @@ export class VoucherController {
   @ApiEndpoint({
     tags: ['External Api', 'Voucher'],
     response: { status: 200, description: ServerSuccess.VOUCHER.LISTED },
+    noAuthToken: true,
   })
   @UseGuards(JwtAuthGuard)
   @UseGuards(ExternalApiGuard)
