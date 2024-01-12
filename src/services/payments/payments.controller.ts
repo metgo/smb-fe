@@ -1,5 +1,5 @@
 import {
-  Controller, Get, HttpStatus, Req, Res,
+  Controller, Get, HttpStatus, Post, Req, Res,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 
@@ -17,7 +17,7 @@ export class PaymentsController {
     tags: ['Payment'],
     softBlockExtraDtoFields: true,
   })
-  @Get('success')
+  @Post('success')
   async success(@Req() request: Request, @Res() response: Response) {
     await this.paymentService.paymentSucess(request);
     return responseHelper(

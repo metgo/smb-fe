@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
-import { PaymentStatus, VoucherStatus } from 'src/common/enum';
+import { PaymentStatus } from 'src/common/enum';
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
 import { Order } from 'src/modules/orders/schema/orders.schema';
 import { Voucher } from 'src/modules/vouchers/schema/voucher.schema';
@@ -56,8 +56,8 @@ export class Payment extends AuditableSchema {
   })
     orderId: string;
 
-  @Prop({ enum: PaymentStatus, default: PaymentStatus.FAILURE })
-    status: VoucherStatus;
+  @Prop({ enum: PaymentStatus, default: PaymentStatus.PENDING })
+    status: PaymentStatus;
 
   @Prop({
     default: null,

@@ -7,7 +7,7 @@ import mongoose, { Model } from 'mongoose';
 import { Request } from 'express';
 import { update } from 'src/core/helper/query-helper';
 import { VoucherService } from 'src/modules/vouchers/voucher.service';
-import { Currency, VoucherPaymentStatus } from 'src/common/enum';
+import { Currency, PaymentStatus } from 'src/common/enum';
 import { PaymentPurpose } from 'src/services/payments/payments.type';
 import { OrdersService } from 'src/modules/orders/orders.services';
 
@@ -50,24 +50,23 @@ export class PaymentsService {
         },
       },
     );
-    let insertField;
+    let insertField : any = {
+      purpose,
+      amount,
+      currency,
+      paymentRequestId: payPlusResponse.data.data.page_request_uid,
+    };
     if (purpose === PaymentPurpose.VOUCHER) {
       insertField = {
-        purpose,
-        amount,
-        currency,
+        ...insertField,
         voucherId: id,
-        paymentRequestId: payPlusResponse.data.data.page_request_uid,
       };
     }
 
     if (purpose === PaymentPurpose.ORDER) {
       insertField = {
-        purpose,
-        amount,
-        currency,
+        ...insertField,
         orderId: id,
-        paymentRequestId: payPlusResponse.data.data.page_request_uid,
       };
     }
 
@@ -79,22 +78,24 @@ export class PaymentsService {
   }
 
   async paymentSucess(request: Request) {
-    const requestData:any = request.query;
-    const requestUid = requestData.page_request_uid.toString();
+    const requestBody = request.body;
+    const pageRequestUid = requestBody?.page_request_uid;
+
     const updateField = {
-      customerName: requestData.customer_name,
-      identificationNumber: requestData.identification_number,
-      customerEmail: requestData.customer_email,
-      method: requestData.method,
+      customerName: requestBody?.customer_name,
+      identificationNumber: requestBody?.identification_number,
+      customerEmail: requestBody?.customer_email,
+      method: requestBody?.method,
+      status: PaymentStatus.SUCCESS,
     };
     const payments = await update<Payment>(
       this.PaymentModel,
       'paymentRequestId',
-      requestUid,
+      pageRequestUid,
       updateField,
     );
     if (payments.purpose === PaymentPurpose.VOUCHER) {
-      await this.voucherService.update(payments.voucherId, { paymentStatus: VoucherPaymentStatus.PAID });
+      await this.voucherService.update(payments.voucherId, { paymentStatus: PaymentStatus.SUCCESS });
     }
     if (payments.purpose === PaymentPurpose.ORDER) {
       await this.ordersService.updateOrderAfterPayment(payments.orderId);

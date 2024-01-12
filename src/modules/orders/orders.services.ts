@@ -20,7 +20,7 @@ import { UserType } from 'src/modules/users/users.type';
 import { VoucherService } from 'src/modules/vouchers/voucher.service';
 import { PaymentsService } from 'src/services/payments/payments.service';
 import { PaymentPurpose } from 'src/services/payments/payments.type';
-import { FindOrdersQuery } from 'src/modules/orders/orders.type';
+import { FindOrdersQuery, OrderStatus } from 'src/modules/orders/orders.type';
 import { MailChimpService } from 'src/services/mailchimp/mailchimp.service';
 
 @Injectable()
@@ -99,6 +99,7 @@ export class OrdersService {
     const updatedField = {
       paymentStatus: PaymentStatus.SUCCESS,
       voucher,
+      status: OrderStatus.PROCESSING,
     };
 
     const updateOrder = await updateById<Order>(
