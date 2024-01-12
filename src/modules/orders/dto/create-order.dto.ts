@@ -58,6 +58,11 @@ export class CreateOrderDto {
     email: string;
 
   @IsString()
+  @IsOptional()
+  @ApiProperty()
+    countryCode: string;
+
+  @IsString()
   @IsNotEmpty()
   @ApiProperty()
     phone: string;
@@ -66,6 +71,16 @@ export class CreateOrderDto {
   @IsNotEmpty()
   @ApiProperty()
     address: string;
+
+  @IsString()
+  @IsOptional()
+  @ApiProperty()
+    firstName: string;
+
+  @IsString()
+  @IsOptional()
+  @ApiProperty()
+    lastName: string;
 
   @IsString()
   @IsNotEmpty()

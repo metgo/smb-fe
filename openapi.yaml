@@ -781,7 +781,7 @@ paths:
         - Orders
         - External Api
   /payment/success:
-    get:
+    post:
       operationId: success
       parameters: []
       responses:
@@ -3508,9 +3508,15 @@ components:
           type: number
         email:
           type: string
+        countryCode:
+          type: string
         phone:
           type: string
         address:
+          type: string
+        firstName:
+          type: string
+        lastName:
           type: string
         name:
           type: string
@@ -3525,8 +3531,11 @@ components:
         - voucher
         - creditCardPayment
         - email
+        - countryCode
         - phone
         - address
+        - firstName
+        - lastName
         - name
         - businessId
     UpdateOrderDto:

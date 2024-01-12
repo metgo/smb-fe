@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Body, Controller, Get, HttpCode, HttpStatus, Param, Patch, Post, Query, Req, Res, UseGuards,
 } from '@nestjs/common';
 import { Response } from 'express';
@@ -43,32 +42,33 @@ export class OrdersController {
     @Req() req,
     @Res() response: Response,
   ) {
-    if (!req.user && !body.email) {
-      throw new BadRequestException('Email is required');
-    }
-    let voucherIds;
     const productIds = body.products.map(product => product.id);
-    if (body.voucher) voucherIds = body.voucher.map(voucher => voucher.id);
 
     const productsFromDB = await this.productService.findManyById(productIds);
     let totalAmount:number = await calculateTotalAmount(body.products, productsFromDB);
 
-    let vouchers;
-    if (voucherIds) vouchers = await this.voucherService.findByIds(voucherIds);
-    let sortedVoucher;
-    if (voucherIds) sortedVoucher = sortByPriorityAndHighest(totalAmount, vouchers);
-    let voucher;
-    if (sortedVoucher) {
-      voucher = await this.ordersService.processVouchers(
-        req.user ? req.user.id : null,
-        sortedVoucher,
-        totalAmount,
-      );
+    if (body.voucher?.length) {
+      const voucherIds = body.voucher.map(voucher => voucher.id);
+      const vouchers = await this.voucherService.findByIds(voucherIds);
+
+      if (vouchers?.length) {
+        const sortedVoucher = sortByPriorityAndHighest(totalAmount, vouchers);
+
+        if (sortedVoucher?.length) {
+          const voucher = await this.ordersService.processVouchers(
+            req.user ? req.user.id : null,
+            sortedVoucher,
+            totalAmount,
+          );
+
+          if (voucher?.length) {
+            const redeemedAmount = voucher.reduce((total, item) => total + item.redeemedAmount, 0);
+            totalAmount -= redeemedAmount;
+          }
+        }
+      }
     }
-    if (voucher) {
-      const redemeAmount = voucher.reduce((total, item) => total + item.redeemedAmount, 0);
-      totalAmount -= redemeAmount;
-    }
+
     const order = await this.ordersService.create(req.user ? req.user.id : null, body, totalAmount);
     return responseHelper(
       response,

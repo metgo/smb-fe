@@ -53,6 +53,9 @@ export class Order extends AuditableSchema {
     email: string;
 
   @Prop({ default: null })
+    countryCode: string;
+
+  @Prop({ default: null })
     phone: string;
 
   @Prop({ default: null })
@@ -60,6 +63,12 @@ export class Order extends AuditableSchema {
 
   @Prop({ default: null })
     name: string;
+
+  @Prop({ default: null })
+    firstName: string;
+
+  @Prop({ default: null })
+    lastName: string;
 
   @Prop()
     paymentMode: PaymentMode[];
