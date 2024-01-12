@@ -12,6 +12,7 @@ import { disSelect } from 'src/common/utils/select.handling';
 import {
   findOneByFieldNames, queryhandler, updateWhere,
 } from 'src/core/helper/query-helper';
+import { BusinessService } from 'src/modules/business/business.service';
 import { Business } from 'src/modules/business/schema/business.schema';
 import { Product } from 'src/modules/products/schema/products.schema';
 import { ProductDto } from 'src/modules/products/dto/product.dto';
@@ -25,6 +26,7 @@ export class ProductsService {
     @InjectModel(Product.name)
     private ProductModel: Model<Product>,
     private readonly gcpBucketServices: GcpBucketService,
+    private readonly businessService: BusinessService,
   ) {}
 
   async create(
@@ -63,7 +65,11 @@ export class ProductsService {
       ...createdField,
     });
 
-    return await newProduct.save();
+    const product = await newProduct.save();
+
+    // add products to business
+    await this.businessService.addProductToBusiness(businessId, product.id);
+    return product;
   }
 
   async createForWeb(
@@ -133,7 +139,11 @@ export class ProductsService {
       ...createdField,
     });
 
-    return await newProduct.save();
+    const product = await newProduct.save();
+
+    // add products to business
+    await this.businessService.addProductToBusiness(businessId, product.id);
+    return product;
   }
 
   async findOne(productId: string): Promise<Product> {

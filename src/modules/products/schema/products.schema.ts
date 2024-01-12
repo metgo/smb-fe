@@ -127,6 +127,6 @@ export class Product extends AuditableSchema {
     features: mongoose.Schema.Types.ObjectId[];
 }
 
-export type Products = HydratedDocument<Product>
+export type Products = HydratedDocument<Product>;
 
 export const ProductSchema = SchemaFactory.createForClass(Product);

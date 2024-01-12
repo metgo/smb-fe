@@ -22,6 +22,9 @@ import { GcpBucketService } from 'src/services/gcp-bucket/gcp-bucket.services';
 import { WebCreateBusiness } from './dto/web-create-business.dto';
 import { Media } from '../media/schema/media.schema';
 import { updateWebBusinessDto } from './dto/web.update.dto';
+import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.schema';
+import { BussSubCategory } from 'src/modules/buss-subcategories/schema/buss-subCategory.schema';
+import { Product } from 'src/modules/products/schema/products.schema';
 
 @Injectable()
 export class BusinessService {
@@ -31,6 +34,12 @@ export class BusinessService {
     private readonly gcpBucketServices: GcpBucketService,
     @InjectModel('Media')
     private MediaModel: Model<Media>,
+    @InjectModel(BussCategory.name)
+    private BussCategoryModel: Model<BussCategory>,
+    @InjectModel(BussSubCategory.name)
+    private BussSubCategoryModel: Model<BussSubCategory>,
+    @InjectModel(Product.name)
+    private ProductModel: Model<Product>,
   ) {}
 
   async createBusiness(dto: createBusinessDto, userId: string): Promise<Business> {
@@ -133,11 +142,38 @@ export class BusinessService {
 
     let populate: any;
     let populate1: {};
+
     if (search) {
+      const [matchingCategoryIds, matchingSubCategoryIds] = await Promise.all([
+        this.BussCategoryModel.find({ name: { $regex: search, $options: 'i' } }).select('_id'),
+        this.BussSubCategoryModel.find({ name: { $regex: search, $options: 'i' } }).select('_id'),
+      ]);
+
+      const matchingProductsIds = await this.ProductModel
+        .find({
+          $or: [
+            { name: { $regex: search, $options: 'i' } },
+            { description: { $regex: search, $options: 'i' } },
+            { categories: { $in: matchingCategoryIds } },
+            { subCategories: { $in: matchingSubCategoryIds } },
+          ],
+        })
+        .select('_id');
+
       findQuery = {
         ...findQuery,
-        $text: { $search: search, $caseSensitive: false, $diacriticSensitive: false },
+        $or: [
+          { name: { $regex: search, $options: 'i' } },
+          { description: { $regex: search, $options: 'i' } },
+          { bussCategoriesId: { $in: matchingCategoryIds } },
+          { bussSubCategoriesId: { $in: matchingSubCategoryIds } },
+          { productsId: { $in: matchingProductsIds } },
+        ],
       };
+
+      if (!(matchingCategoryIds?.length || matchingSubCategoryIds?.length || matchingProductsIds?.length)) {
+        findQuery.$text = { $search: search, $caseSensitive: false, $diacriticSensitive: false };
+      }
     }
 
     if (query.bussCategoriesId) {
@@ -404,5 +440,13 @@ export class BusinessService {
     const business = await findOneByFieldNames<Business>(this.BusinessModel, fieldNames);
 
     return business;
+  }
+
+  async addProductToBusiness(id: string, productId: string) {
+    return await this.BusinessModel.findOneAndUpdate(
+      { _id: id },
+      { $push: { productsId: productId } },
+      { new: true },
+    );
   }
 }

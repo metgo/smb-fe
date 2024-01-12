@@ -14,6 +14,9 @@ import { HashModule } from 'src/services/hash/hash.module';
 import { Media, MediaSchema } from '../media/schema/media.schema';
 import { GcpBucketModule } from 'src/services/gcp-bucket/gcp-bucket.module';
 import { MailChimpModule } from 'src/services/mailchimp/mailchimp.module';
+import { BussCategory, BussCategorySchema } from '../buss-categories/schema/buss.category.schema';
+import { BussSubCategory, BussSubCategorySchema } from '../buss-subcategories/schema/buss-subCategory.schema';
+import { Product, ProductSchema } from '../products/schema/products.schema';
 
 @Module({
   imports: [
@@ -23,6 +26,9 @@ import { MailChimpModule } from 'src/services/mailchimp/mailchimp.module';
       { name: 'OTP', schema: OTPSchema },
       { name: 'DMO', schema: DMOSchema },
       { name: Media.name, schema: MediaSchema },
+      { name: BussCategory.name, schema: BussCategorySchema },
+      { name: BussSubCategory.name, schema: BussSubCategorySchema },
+      { name: Product.name, schema: ProductSchema },
     ]),
     MailModule,
     HashModule,

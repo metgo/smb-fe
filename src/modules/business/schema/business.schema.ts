@@ -7,6 +7,7 @@ import { BusinessStatus } from 'src/modules/business/business.type';
 import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.schema';
 import { BussSubCategory } from 'src/modules/buss-subcategories/schema/buss-subCategory.schema';
 import { GroupType } from 'src/modules/group-type/schema/group-type.schema';
+import { User } from 'src/modules/users/schema/users.schema';
 
 @Schema({})
 export class Business extends AuditableSchema {
@@ -70,7 +71,7 @@ export class Business extends AuditableSchema {
     };
 
   @Prop({
-    type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Users' }],
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: User.name }],
     ref: 'Users',
     required: false,
   })
@@ -180,22 +181,28 @@ export class Business extends AuditableSchema {
 
   @Prop({ required: false })
     openingHrs: [
-        {
-          days: string
-          open: Date
-          close: Date
-          isHoliday: {
-            type: Boolean,
-            default: false
-          }
+      {
+        days: string
+        open: Date
+        close: Date
+        isHoliday: {
+          type: Boolean,
+          default: false
         }
-  ];
+      }
+    ];
 
   @Prop({ type: Boolean, default: false })
     isAlwaysOpen: boolean;
 
   @Prop({ type: Boolean, default: false })
     isOpenOnWeekends: boolean;
+
+  @Prop({
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product' }],
+    required: false,
+  })
+    productsId: mongoose.Types.ObjectId[];
 }
 
 export const BusinessSchema = SchemaFactory.createForClass(Business);
