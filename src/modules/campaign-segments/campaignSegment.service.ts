@@ -76,6 +76,14 @@ export default class CampaignSegmentService {
       .lean()
       .exec();
 
+    if (!campaignSegment?.products || !campaignSegment?.products?.length) {
+      return {
+        totalData: 0,
+        products: [],
+      };
+    }
+    const totalData = campaignSegment?.products?.length;
+
     if (!page && !limit) {
       const products = campaignSegment.products
         .filter((product: any) => {
@@ -95,7 +103,6 @@ export default class CampaignSegmentService {
           business: product.businessId,
           subCategories: product.subCategories,
         }));
-      const totalData = products.length;
 
       return {
         totalData,
@@ -138,8 +145,6 @@ export default class CampaignSegmentService {
         subCategories: product.subCategories,
       }));
 
-    const totalData = paginatedProducts.length;
-
     const pageCount = Math.ceil(totalData / limits);
 
     return {
@@ -179,6 +184,12 @@ export default class CampaignSegmentService {
       .lean()
       .exec();
 
+    if (!campaignSegment?.businesses || !campaignSegment?.businesses?.length) {
+      return {
+        totalData: 0,
+        businesses: [],
+      };
+    }
     const totalData = campaignSegment.businesses.length;
 
     if (!page && !limit) {
