@@ -6,6 +6,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { PaymentSchema } from './schema/payments.schema';
 import { OrdersModule } from 'src/modules/orders/orders.modules';
 import { VoucherModule } from 'src/modules/vouchers/voucher.module';
+import { MailChimpModule } from 'src/services/mailchimp/mailchimp.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { VoucherModule } from 'src/modules/vouchers/voucher.module';
     ConfigModule,
     forwardRef(() => OrdersModule),
     forwardRef(() => VoucherModule),
+    MailChimpModule,
   ],
   controllers: [PaymentsController],
   providers: [PaymentsService],

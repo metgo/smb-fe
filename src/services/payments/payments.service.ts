@@ -8,6 +8,7 @@ import { Request } from 'express';
 import { update } from 'src/core/helper/query-helper';
 import { VoucherService } from 'src/modules/vouchers/voucher.service';
 import { Currency, PaymentStatus } from 'src/common/enum';
+import { MailChimpService } from 'src/services/mailchimp/mailchimp.service';
 import { PaymentPurpose } from 'src/services/payments/payments.type';
 import { OrdersService } from 'src/modules/orders/orders.services';
 
@@ -21,6 +22,7 @@ export class PaymentsService {
     private readonly voucherService: VoucherService,
     @Inject(forwardRef(() => OrdersService))
     private readonly ordersService: OrdersService,
+    private mailchimpService: MailChimpService,
   ) { }
 
   async createPayment(insertField:any) {
@@ -32,6 +34,8 @@ export class PaymentsService {
     currency: Currency,
     purpose: PaymentPurpose,
     id: [mongoose.Types.ObjectId] | mongoose.Types.ObjectId,
+    customerEmail?: string,
+    customerName?: string,
   ) {
     const payPlusResponse = await axios.post(
       `${this.configService.paymentDetails.URL}PaymentPages/generatelink`,
@@ -41,7 +45,7 @@ export class PaymentsService {
         currency_code: currency,
         refURL_success: `${this.configService.paymentDetails.SERVER_URL}${this.configService.paymentDetails.SUCCESS}`,
         refURL_failure: `${this.configService.paymentDetails.SERVER_URL}${this.configService.paymentDetails.FAILURE}`,
-        more_info: purpose,
+        more_info: `${purpose} | ${customerEmail} | ${customerName}`,
       },
       {
         headers: {
@@ -79,6 +83,8 @@ export class PaymentsService {
 
   async paymentSucess(request: Request) {
     const requestBody = request.body;
+    const [purpose, email, name] = requestBody?.more_info?.split(' | ');
+
     const pageRequestUid = requestBody?.page_request_uid;
 
     const updateField = {
@@ -94,11 +100,22 @@ export class PaymentsService {
       pageRequestUid,
       updateField,
     );
-    if (payments.purpose === PaymentPurpose.VOUCHER) {
+
+    await this.mailchimpService.sendTransactionalEmail({
+      subject: 'Payment Success | Order - MetGo',
+      to: email,
+      text: `Dear ${name}, Your payment has been successfully received.`,
+    });
+    if (purpose === PaymentPurpose.VOUCHER) {
       await this.voucherService.update(payments.voucherId, { paymentStatus: PaymentStatus.SUCCESS });
     }
-    if (payments.purpose === PaymentPurpose.ORDER) {
+    if (purpose === PaymentPurpose.ORDER) {
       await this.ordersService.updateOrderAfterPayment(payments.orderId);
+      await this.mailchimpService.sendTransactionalEmail({
+        subject: 'Order Confirmed - MetGo',
+        to: requestBody.more_info.email,
+        text: `Dear ${name}, Your order has been placed successfully.`,
+      });
     }
   }
 

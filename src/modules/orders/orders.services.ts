@@ -21,7 +21,6 @@ import { VoucherService } from 'src/modules/vouchers/voucher.service';
 import { PaymentsService } from 'src/services/payments/payments.service';
 import { PaymentPurpose } from 'src/services/payments/payments.type';
 import { FindOrdersQuery, OrderStatus } from 'src/modules/orders/orders.type';
-import { MailChimpService } from 'src/services/mailchimp/mailchimp.service';
 
 @Injectable()
 export class OrdersService {
@@ -31,7 +30,6 @@ export class OrdersService {
     private readonly productsService: ProductsService,
     private readonly voucherService: VoucherService,
     private readonly paymentService: PaymentsService,
-    private mailchimpService: MailChimpService,
   ) {}
 
   async create(
@@ -57,28 +55,39 @@ export class OrdersService {
         Currency.ILS,
         PaymentPurpose.ORDER,
         order.id,
+        body.email,
+        body.name,
       );
 
-      await this.mailchimpService.sendTransactionalEmail({
-        subject: 'Payment Success | Order - MetGo',
-        to: body.email,
-        text: `Dear ${body.name}, \n Your payment has been successfully received.`,
-      });
       return [link];
     }
-
-    await this.mailchimpService.sendTransactionalEmail({
-      subject: 'Order Confirmed - MetGo',
-      to: body.email,
-      text: `Dear ${body.name}, \n Your order has been placed successfully.`,
-    });
 
     return link;
   }
 
   async updateOrderAfterPayment(orderId: string): Promise<Order> {
     const orderDetail = await findOneById<Order>(this.OrderModel, orderId);
+    if (!orderDetail?.voucher || !orderDetail?.voucher?.length) {
+      // deduct product count
+      orderDetail.products.map(async product => {
+        const productId = product.id.toString();
+        await this.productsService.updateProductByFields(productId, {
+          sold: product.quantity,
+        });
+      });
 
+      const updatedField = {
+        paymentStatus: PaymentStatus.SUCCESS,
+        status: OrderStatus.PROCESSING,
+      };
+
+      const updateOrder = await updateById<Order>(
+        this.OrderModel,
+        orderId,
+        updatedField,
+      );
+      return updateOrder;
+    }
     // get voucherIds and sort by amount
     const arrayOfVoucherIds = orderDetail.voucher.map(obj => obj.id);
     const voucherIds = await this.voucherService.findByIds(arrayOfVoucherIds);
