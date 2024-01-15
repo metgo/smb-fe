@@ -106,6 +106,7 @@ export class VoucherService {
 
     if (externalApi) {
       return {
+        id: voucher._id,
         remainingAmount: voucher.remainingAmount,
         expireDate: voucher.expireDate,
         paymentStatus: voucher.paymentStatus,
@@ -256,6 +257,10 @@ export class VoucherService {
   async updateVoucherAmount(loggedInUserId: string | null, voucherId: string, totalAmount: number) {
     const voucher = await this.getOneById(voucherId);
 
+    if (voucher.paymentStatus !== VoucherPaymentStatus.PAID) {
+      throw new UnprocessableEntityException(ServerErrors.VOUCHER.UNPAID);
+    }
+
     const remainingAmount = remainingAmountCalculation(voucher.remainingAmount, totalAmount);
     const amountToBeRedeemed = remainingAmountCalculation(totalAmount, voucher.remainingAmount);
 
@@ -339,6 +344,10 @@ export class VoucherService {
     body: UpdateVoucherBalance,
   ) {
     const voucher = await this.getOneById(body.voucherId);
+
+    if (voucher.paymentStatus !== VoucherPaymentStatus.PAID) {
+      throw new UnprocessableEntityException(ServerErrors.VOUCHER.UNPAID);
+    }
 
     if (body.amount > voucher.remainingAmount) {
       throw new UnprocessableEntityException(ServerErrors.VOUCHER.CANNOT_UPDATE_BALANCE);
