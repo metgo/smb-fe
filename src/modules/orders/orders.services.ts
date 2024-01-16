@@ -98,12 +98,12 @@ export class OrdersService {
     const voucher = await this.processVouchers(orderDetail.createdBy, sortedVoucher, orderDetail.totalAmount);
 
     // deduct product count
-    orderDetail.products.map(async product => {
+    await Promise.all(orderDetail.products.map(async product => {
       const productId = product.id.toString();
       await this.productsService.updateProductByFields(productId, {
         sold: product.quantity,
       });
-    });
+    }));
 
     const updatedField = {
       paymentStatus: PaymentStatus.SUCCESS,

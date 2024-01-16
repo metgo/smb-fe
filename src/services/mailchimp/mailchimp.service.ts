@@ -1,6 +1,7 @@
+/* eslint-disable consistent-return */
 /* eslint-disable global-require */
 import * as mailchimp from '@mailchimp/mailchimp_marketing';
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 
 import { ConfigService } from 'src/services/config/config.service';
 import { sendEmail } from 'src/services/mailchimp/mailchimp.type';
@@ -16,7 +17,7 @@ export class MailChimpService {
   }
 
   async subscribe(firstName: string, lastName: string, email: string): Promise<string> {
-    const { AUDIENCE } = this.configService.mailchimp;
+    const { AUDIENCE, TAV8_SUPPORT_EMAIL } = this.configService.mailchimp;
 
     try {
       await mailchimp.lists.addListMember(AUDIENCE, {
@@ -40,9 +41,11 @@ export class MailChimpService {
         }
       }
 
-      // couldn't add this user - email to metgo support instead of throwing error
-
-      throw new InternalServerErrorException('Couldn\'t send email');
+      await this.sendTransactionalEmail({
+        subject: 'Failed to add audience',
+        to: TAV8_SUPPORT_EMAIL,
+        text: `Dear MetGo, We are unable to add this user email: ${email} to audience. Please proceed to add it manually.`,
+      });
     }
   }
 
@@ -68,7 +71,6 @@ export class MailChimpService {
       return response;
     } catch (error) {
       console.error('Error sending email:', error);
-      throw error;
     }
   }
 }

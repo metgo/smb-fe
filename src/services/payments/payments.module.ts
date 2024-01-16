@@ -7,6 +7,7 @@ import { PaymentSchema } from './schema/payments.schema';
 import { OrdersModule } from 'src/modules/orders/orders.modules';
 import { VoucherModule } from 'src/modules/vouchers/voucher.module';
 import { MailChimpModule } from 'src/services/mailchimp/mailchimp.module';
+import { BusinessModule } from 'src/modules/business/business.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { MailChimpModule } from 'src/services/mailchimp/mailchimp.module';
     forwardRef(() => OrdersModule),
     forwardRef(() => VoucherModule),
     MailChimpModule,
+    BusinessModule,
   ],
   controllers: [PaymentsController],
   providers: [PaymentsService],

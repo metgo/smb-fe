@@ -61,6 +61,7 @@ export class ConfigService {
       'MAILCHIMP_AUDIENCE',
       'MAILCHIMP_SERVER_PREFIX',
       'MAILCHIMP_FROM_EMAIL',
+      'MAILCHIMP_TAV8_SUPPORT_EMAIL',
     ];
     return ENV_VARIABLES.reduce((obj: any, variable) => {
       if (process.env[variable]) {
@@ -114,6 +115,7 @@ export class ConfigService {
       MAILCHIMP_AUDIENCE: Joi.string().required(),
       MAILCHIMP_SERVER_PREFIX: Joi.string().required(),
       MAILCHIMP_FROM_EMAIL: Joi.string().required(),
+      MAILCHIMP_TAV8_SUPPORT_EMAIL: Joi.string().required(),
 
     }).unknown(true);
 
@@ -188,6 +190,7 @@ export class ConfigService {
       AUDIENCE: this.get('MAILCHIMP_AUDIENCE'),
       SERVER_PREFIX: this.get('MAILCHIMP_SERVER_PREFIX'),
       FROM_EMAIL: this.get('MAILCHIMP_FROM_EMAIL'),
+      TAV8_SUPPORT_EMAIL: this.get('MAILCHIMP_TAV8_SUPPORT_EMAIL'),
     };
   }
 }

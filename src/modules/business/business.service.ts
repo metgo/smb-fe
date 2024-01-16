@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { ObjectId } from 'typeorm';
 
 import { maxDistanceInRadius } from 'src/common/max-distance-in-radius';
 import { Business } from './schema/business.schema';
@@ -448,5 +449,13 @@ export class BusinessService {
       { $push: { productsId: productId } },
       { new: true },
     );
+  }
+
+  async findBusinessEmailByIds(ids: ObjectId[]) {
+    const bussEmails = await this.BusinessModel
+      .find({ _id: { $in: ids } })
+      .select('busiEmail');
+
+    return bussEmails;
   }
 }
