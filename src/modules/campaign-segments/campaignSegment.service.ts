@@ -95,6 +95,7 @@ export default class CampaignSegmentService {
 
           return product.categories.some(category => query.categoriesId.includes(String(category._id)));
         }).map((product: any) => ({
+          id: product.id,
           name: product.name,
           description: product.description,
           price: product.price,
@@ -136,6 +137,7 @@ export default class CampaignSegmentService {
         return product.categories.some(category => query.categoriesId.includes(String(category._id)));
       })
       .map((product: any) => ({
+        id: product.id,
         name: product.name,
         description: product.description,
         price: product.price,
@@ -194,6 +196,7 @@ export default class CampaignSegmentService {
 
     if (!page && !limit) {
       const businesses = campaignSegment.businesses.map((business: any) => ({
+        id: business.id,
         name: business.name,
         description: business.description,
         geoLocation: business.geoLocation,
@@ -216,6 +219,7 @@ export default class CampaignSegmentService {
     const businessSlice = campaignSegment.businesses.slice(startIndex, endIndex);
 
     const paginatedBusiness = businessSlice.map((business: any) => ({
+      id: business.id,
       name: business.name,
       description: business.description,
       geoLocation: business.geoLocation,
