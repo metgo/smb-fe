@@ -32,9 +32,9 @@ export class AccessibilityController {
   })
   @Post('admin/accessibility')
   async create(
-      @Req() req,
-      @Res() response: Response,
-      @Body() dto: createAccessibilityDto,
+    @Req() req,
+    @Res() response: Response,
+    @Body() dto: createAccessibilityDto,
   ) {
     await this.accessibilityService.findByFieldName('name', dto.name);
     const groupType = await this.accessibilityService.create(dto, req.user.id);
@@ -133,9 +133,9 @@ export class AccessibilityController {
   })
   @Delete('admin/accessibility/:id')
   async delete(
-        @Req() req,
-        @Res() response: Response,
-        @Param('id') id: string,
+    @Req() req,
+    @Res() response: Response,
+    @Param('id') id: string,
   ) {
     const groupType = await this.accessibilityService.softDelete(id, req.user.id);
     return responseHelper(

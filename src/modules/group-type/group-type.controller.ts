@@ -32,9 +32,9 @@ export class GroupTypeController {
   })
   @Post('admin/group-type')
   async create(
-      @Req() req,
-      @Res() response: Response,
-      @Body() dto: createGroupTypeDto,
+    @Req() req,
+    @Res() response: Response,
+    @Body() dto: createGroupTypeDto,
   ) {
     await this.groupTypeService.findByFieldName('name', dto.name);
     const groupType = await this.groupTypeService.create(dto, req.user.id);
