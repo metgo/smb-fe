@@ -29,9 +29,9 @@ export class BussSubCategoriesController {
   })
   @Post('admin/buss-sub-category')
   async create(
-      @Req() req,
-      @Res() response: Response,
-      @Body() dto: createBussSubCategoryDto,
+    @Req() req,
+    @Res() response: Response,
+    @Body() dto: createBussSubCategoryDto,
   ) {
     await this.bussSubCategoriesService.findByFieldName('name', dto.name);
     const bussSubCategory = await this.bussSubCategoriesService.create(dto, req.user.id);

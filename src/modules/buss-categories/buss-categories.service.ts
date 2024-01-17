@@ -37,7 +37,7 @@ export class BussCategoriesService {
     } = queries;
 
     const queryPage = page ? Number(page) : paginationConfig.page;
-    const queryLimit = limit ? Number(limit) : paginationConfig.limit;
+    const queryLimit = limit ? Number(limit) : paginationConfig.MAX_ASPECT_LIMIT;
 
     let findQuery: any = query;
     const select = `${disSelect}`;
