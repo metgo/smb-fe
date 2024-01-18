@@ -42,7 +42,7 @@ export class User {
     email: string;
 
   @Prop({ default: Locale.ENGLISH })
-    language_preference: Locale;
+    languagePreference: Locale;
 
   @Prop({ required: true })
     password: string;

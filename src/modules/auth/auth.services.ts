@@ -54,7 +54,7 @@ export class AuthService {
           countryCode: user.countryCode || null,
           phoneNumber: user.phoneNumber,
         },
-        language_preference: user.language_preference,
+        languagePreference: user.languagePreference,
         address: user.address,
         dob: user.dob,
         email: user.email,

@@ -52,5 +52,5 @@ export class UpdateUserRequest {
     enum: Locale,
     required: true,
   })
-  readonly language_preference: Locale;
+  readonly languagePreference: Locale;
 }
