@@ -28,7 +28,7 @@ export class GetUserDetailsResponse {
     email: string;
 
   @ApiProperty()
-    language_preference: Locale;
+    languagePreference: Locale;
 
   @ApiProperty()
     lastLogin?: Date;
