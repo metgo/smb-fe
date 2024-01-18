@@ -3214,7 +3214,7 @@ components:
           type: string
         email:
           type: string
-        language_preference:
+        languagePreference:
           type: string
         lastLogin:
           format: date-time
@@ -3247,7 +3247,7 @@ components:
         - address
         - dob
         - email
-        - language_preference
+        - languagePreference
         - lastLogin
         - isPhoneVerify
         - isEmailVerify
@@ -3315,7 +3315,7 @@ components:
           type: string
         address:
           type: string
-        language_preference:
+        languagePreference:
           type: string
           enum:
             - en
@@ -3328,7 +3328,7 @@ components:
         - dob
         - email
         - address
-        - language_preference
+        - languagePreference
     createUserByAdminDto:
       type: object
       properties:
