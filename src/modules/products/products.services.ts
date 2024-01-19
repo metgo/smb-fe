@@ -16,7 +16,9 @@ import { BusinessService } from 'src/modules/business/business.service';
 import { Business } from 'src/modules/business/schema/business.schema';
 import { Product } from 'src/modules/products/schema/products.schema';
 import { ProductDto } from 'src/modules/products/dto/product.dto';
-import { FindProductsQuery, ProductStatus, updateCommand } from 'src/modules/products/products.type';
+import {
+  FindProductsQuery, ProductStatus, UpdateCommand, UploadMediaCommand,
+} from 'src/modules/products/products.type';
 import { GcpBucketService } from 'src/services/gcp-bucket/gcp-bucket.services';
 import { WebCreateProduct } from './dto/web-create-product.dto';
 import { UserType } from 'src/modules/users/users.type';
@@ -237,40 +239,31 @@ export class ProductsService {
     return products;
   }
 
-  async update(command: updateCommand): Promise<Product> {
-    let updatedField = {
+  async update(command: UpdateCommand): Promise<Product> {
+    const sellingPrice = sellingPriceForAmountOrPercent(
+      command.body.price.markedPrice,
+      command.body.price.discountAmount,
+      command.body.price.discountPercent,
+    );
+
+    const price = {
+      ...command.body.price,
+      sellingPrice,
+    };
+
+    // might need to update in later
+    const quantity = {
+      ...command.body.quantity,
+      remaining: command.body.quantity.initial,
+    };
+
+    const updatedField = {
       ...command.body,
       updatedBy: command.loggedInUserId,
       updatedAt: new Date(),
+      price,
+      quantity,
     };
-
-    if (command.body instanceof ProductDto) {
-      const sellingPrice = sellingPriceForAmountOrPercent(
-        command.body.price.markedPrice,
-        command.body.price.discountAmount,
-        command.body.price.discountPercent,
-      );
-
-      const price = {
-        ...command.body.price,
-        sellingPrice,
-      };
-
-      // might need to update in later
-      const quantity = {
-        ...command.body.quantity,
-        remaining: command.body.quantity.initial,
-      };
-
-      updatedField = { ...updatedField, price, quantity };
-    }
-
-    if (!(command.body instanceof ProductDto)) {
-      updatedField = {
-        ...updatedField,
-        images: command.body,
-      };
-    }
 
     const updatedProduct = await updateWhere<Product>(
       this.ProductModel,
@@ -283,6 +276,35 @@ export class ProductsService {
         ],
       },
       { ...updatedField },
+    );
+
+    if (!updatedProduct) {
+      throw new NotFoundException(ServerErrors.PRODUCT.NOT_FOUND);
+    }
+
+    return updatedProduct;
+  }
+
+  async uploadMedia(command: UploadMediaCommand) {
+    const updatedField = {
+      updatedBy: command.loggedInUserId,
+      updatedAt: new Date(),
+    };
+
+    const updatedProduct = await updateWhere<Product>(
+      this.ProductModel,
+      {
+        _id: command.productId,
+        businessId: command.businessId,
+        $or: [
+          { primaryUserId: command.loggedInUserId },
+          { collaboratorId: command.loggedInUserId },
+        ],
+      },
+      {
+        $push: { images: { $each: command.body } },
+        $set: updatedField,
+      },
     );
 
     if (!updatedProduct) {
@@ -345,7 +367,7 @@ export class ProductsService {
       { new: true },
     );
     if (!updateProduct) {
-      throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
+      throw new NotFoundException(ServerErrors.PRODUCT.NOT_FOUND);
     }
 
     return updateProduct;

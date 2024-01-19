@@ -56,13 +56,13 @@ export class MediaServices {
 
     // update to business model
     if (body.reference === ReferenceType.BUSINESS) {
-      const updateBusiness = await this.businessService.updateBusiness(body.refId, loggedInUser, images);
+      const updateBusiness = await this.businessService.uploadMedia(body.refId, loggedInUser.id, images);
       return updateBusiness;
     }
 
     // update to product model
     if (body.reference === ReferenceType.PRODUCT) {
-      const updateProduct = await this.productService.update({
+      const updateProduct = await this.productService.uploadMedia({
         productId: body.refId,
         businessId: body.businessId,
         loggedInUserId: loggedInUser.id,

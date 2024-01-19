@@ -14,7 +14,7 @@ import {
   AllFilterQuery, createBusinessDto, FilterQuery, updateBusinessDto,
 } from 'src/modules/business/dto';
 import {
-  findOneByFieldName, findOneByFieldNameExcludeId, findOneByFieldNames, queryhandler, updateById,
+  findOneByFieldName, findOneByFieldNameExcludeId, findOneByFieldNames, queryhandler, updateById, updateWhere,
 } from 'src/core/helper/query-helper';
 import { ServerErrors } from 'src/common/constant';
 import { Image } from 'src/common/interface/image.interface';
@@ -372,7 +372,7 @@ export class BusinessService {
   async updateBusiness(
     id: string,
     loggedInUser: any,
-    dto: updateBusinessDto | Image[] | UpdateBusinessByAdminDto | updateWebBusinessDto,
+    dto: updateBusinessDto | UpdateBusinessByAdminDto | updateWebBusinessDto,
   ): Promise<Business> {
     let updatedField: any;
     let cordinates:any;
@@ -396,20 +396,36 @@ export class BusinessService {
       updatedAt: new Date(),
       updatedBy: loggedInUser.id,
     };
-    if (!(
-      dto instanceof updateBusinessDto || dto instanceof UpdateBusinessByAdminDto || dto instanceof updateWebBusinessDto)) {
-      const existingBusiness = await this.getBusiness(id, loggedInUser);
-
-      const images = [...existingBusiness.images, ...dto];
-
-      updatedField = { ...updatedField, images };
-    }
 
     const updateBusiness = await this.BusinessModel.findOneAndUpdate({ _id: id }, updatedField, { new: true });
     if (!updateBusiness) {
       throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
     }
     return updateBusiness;
+  }
+
+  async uploadMedia(id: string, loggedInUserId: string, dto: Image[]) {
+    const updatedField = {
+      updatedBy: loggedInUserId,
+      updatedAt: new Date(),
+    };
+
+    const updatedBusiness = await updateWhere<Business>(
+      this.BusinessModel,
+      {
+        _id: id,
+        userId: loggedInUserId,
+      },
+      {
+        $push: { images: { $each: dto } },
+        $set: updatedField,
+      },
+    );
+
+    if (!updatedBusiness) {
+      throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
+    }
+    return updatedBusiness;
   }
 
   async deleteImage(loggedInUser: any, id: string, imageUrl: any): Promise<Business> {

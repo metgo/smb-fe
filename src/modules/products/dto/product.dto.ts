@@ -6,14 +6,6 @@ import {
 import { IsNotBlank } from 'src/core/decorators/is-not-blank.decorator';
 import { ProductStatus } from 'src/modules/products/products.type';
 
-class images {
-  image: string;
-
-  caption: String;
-
-  alt: String;
-}
-
 class Price {
   @IsNumber()
   @IsNotEmpty()
@@ -51,10 +43,6 @@ export class ProductDto {
   @IsString()
   @IsOptional()
     description: string;
-
-  @IsOptional()
-  @IsArray()
-    images: images[];
 
   @ApiProperty()
   @IsNotEmpty()

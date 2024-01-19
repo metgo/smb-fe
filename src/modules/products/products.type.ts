@@ -16,9 +16,16 @@ export interface FindProductsQuery {
     isAdmin?:boolean,
 }
 
-export interface updateCommand {
+export interface UpdateCommand {
     productId: string,
     businessId: string,
     loggedInUserId: string,
-    body: ProductDto | Image[],
+    body: ProductDto,
+}
+
+export interface UploadMediaCommand {
+    productId: string,
+    businessId: string,
+    loggedInUserId: string,
+    body: Image[],
 }
