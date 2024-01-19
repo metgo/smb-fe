@@ -57,11 +57,11 @@ export class ProductDto {
     images: images[];
 
   @ApiProperty()
-  @IsOptional()
+  @IsNotEmpty()
     price: Price;
 
   @ApiProperty()
-  @IsOptional()
+  @IsNotEmpty()
     quantity: Quantity;
 
   @IsEnum(ProductStatus)

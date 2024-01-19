@@ -20,7 +20,7 @@ import { UserType } from 'src/modules/users/users.type';
 import { VoucherService } from 'src/modules/vouchers/voucher.service';
 import { PaymentsService } from 'src/services/payments/payments.service';
 import { PaymentPurpose } from 'src/services/payments/payments.type';
-import { FindOrdersQuery, OrderStatus } from 'src/modules/orders/orders.type';
+import { FindOrdersQuery, OrderStatus, PaymentMode } from 'src/modules/orders/orders.type';
 
 @Injectable()
 export class OrdersService {
@@ -36,33 +36,51 @@ export class OrdersService {
     loggedInUserId: string | null,
     body: CreateOrderDto,
     totalAmount: number,
+    actualAmountOfProduct:number,
     identifierId?:string,
   ): Promise<any> {
+    if (totalAmount <= 0) {
+      const newOrder = new this.OrderModel({
+        ...body,
+        userId: loggedInUserId || null,
+        createdBy: loggedInUserId || null,
+        paymentStatus: PaymentStatus.SUCCESS,
+        identifierId: identifierId || null,
+        status: OrderStatus.PROCESSING,
+        creditCardPayment: totalAmount,
+        paymentMode: [PaymentMode.VOUCHER],
+        totalAmount: actualAmountOfProduct,
+      });
+
+      await newOrder.save();
+      return;
+    }
+
     const newOrder = new this.OrderModel({
       ...body,
       userId: loggedInUserId || null,
       createdBy: loggedInUserId || null,
       paymentStatus: PaymentStatus.PENDING,
       identifierId: identifierId || null,
+      creditCardPayment: totalAmount,
+      paymentMode: totalAmount === actualAmountOfProduct ? [PaymentMode.CARD] : [PaymentMode.CARD, PaymentMode.VOUCHER],
+      totalAmount: actualAmountOfProduct,
+      voucher: totalAmount === actualAmountOfProduct ? [] : [...body.voucher],
     });
 
     const order = await newOrder.save();
-    let link = [];
 
-    if (totalAmount !== 0) {
-      link = await this.paymentService.generateLink(
-        totalAmount,
-        Currency.ILS,
-        PaymentPurpose.ORDER,
-        order.id,
-        body.email,
-        body.name,
-      );
+    const link = await this.paymentService.generateLink(
+      totalAmount,
+      Currency.ILS,
+      PaymentPurpose.ORDER,
+      order.id,
+      body.email,
+      body.name,
+    );
 
-      return [link];
-    }
-
-    return link;
+    // eslint-disable-next-line consistent-return
+    return [link];
   }
 
   async updateOrderAfterPayment(orderId: string): Promise<Order> {

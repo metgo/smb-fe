@@ -32,7 +32,6 @@ export class OrdersController {
     tags: ['Products', 'Orders'],
     response: { status: HttpStatus.CREATED, description: ServerSuccess.ORDERS.CREATED },
     softBlockExtraDtoFields: true,
-    noAuthToken: true,
     operation: 'Create order detail',
   })
   @HttpCode(HttpStatus.CREATED)
@@ -43,33 +42,40 @@ export class OrdersController {
     @Res() response: Response,
   ) {
     const productIds = body.products.map(product => product.id);
-
     const productsFromDB = await this.productService.findManyById(productIds);
-    let totalAmount:number = await calculateTotalAmount(body.products, productsFromDB);
+
+    let totalAmountToPay:number = await calculateTotalAmount(body.products, productsFromDB);
+    const actualAmountOfProduct = totalAmountToPay;
 
     if (body.voucher?.length) {
       const voucherIds = body.voucher.map(voucher => voucher.id);
       const vouchers = await this.voucherService.findByIds(voucherIds);
 
       if (vouchers?.length) {
-        const sortedVoucher = sortByPriorityAndHighest(totalAmount, vouchers);
+        const sortedVoucher = sortByPriorityAndHighest(totalAmountToPay, vouchers);
 
         if (sortedVoucher?.length) {
           const voucher = await this.ordersService.processVouchers(
             req.user ? req.user.id : null,
             sortedVoucher,
-            totalAmount,
+            totalAmountToPay,
           );
 
           if (voucher?.length) {
             const redeemedAmount = voucher.reduce((total, item) => total + item.redeemedAmount, 0);
-            totalAmount -= redeemedAmount;
+            totalAmountToPay -= redeemedAmount;
           }
         }
       }
     }
 
-    const order = await this.ordersService.create(req.user ? req.user.id : null, body, totalAmount);
+    const order = await this.ordersService.create(
+      req.user ? req.user.id : null,
+      body,
+      totalAmountToPay,
+      actualAmountOfProduct,
+    );
+
     return responseHelper(
       response,
       HttpStatus.CREATED,
@@ -208,6 +214,7 @@ export class OrdersController {
     tags: ['Orders', 'External Api'],
     response: { status: 200, description: ServerSuccess.ORDERS.CREATED },
     softBlockExtraDtoFields: true,
+    noAuthToken: true,
   })
   @UseGuards(JwtAuthGuard)
   @UseGuards(ExternalApiGuard)
@@ -218,39 +225,39 @@ export class OrdersController {
     @Req() req,
     @Res() response: Response,
   ) {
-    let voucherIds;
-    let vouchers;
-    let sortedVoucher;
-    let voucher;
-
     const productIds = body.products.map(product => product.id);
     const productsFromDB = await this.productService.findManyById(productIds);
-    let totalAmount:number = await calculateTotalAmount(body.products, productsFromDB);
 
-    if (body.voucher) voucherIds = body.voucher.map(item => item.id);
+    let totalAmountToPay:number = await calculateTotalAmount(body.products, productsFromDB);
+    const actualAmountOfProduct = totalAmountToPay;
 
-    if (voucherIds) {
-      vouchers = await this.voucherService.findByIds(voucherIds);
-      sortedVoucher = sortByPriorityAndHighest(totalAmount, vouchers);
+    if (body.voucher?.length) {
+      const voucherIds = body.voucher.map(voucher => voucher.id);
+      const vouchers = await this.voucherService.findByIds(voucherIds);
 
-      if (sortedVoucher) {
-        voucher = await this.ordersService.processVouchers(
-          req.user.id,
-          sortedVoucher,
-          totalAmount,
-        );
+      if (vouchers?.length) {
+        const sortedVoucher = sortByPriorityAndHighest(totalAmountToPay, vouchers);
+
+        if (sortedVoucher?.length) {
+          const voucher = await this.ordersService.processVouchers(
+            req.user.id,
+            sortedVoucher,
+            totalAmountToPay,
+          );
+
+          if (voucher?.length) {
+            const redeemedAmount = voucher.reduce((total: number, item) => total + item.redeemedAmount, 0);
+            totalAmountToPay -= redeemedAmount;
+          }
+        }
       }
-    }
-
-    if (voucher) {
-      const redemeAmount = voucher.reduce((total: number, item) => total + item.redeemedAmount, 0);
-      totalAmount -= redemeAmount;
     }
 
     const order = await this.ordersService.create(
       req.user.id,
       body,
-      totalAmount,
+      totalAmountToPay,
+      actualAmountOfProduct,
       query.identifierId,
     );
     return responseHelper(
