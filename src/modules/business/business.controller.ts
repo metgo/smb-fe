@@ -18,10 +18,13 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
+import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
 
 import { BusinessService } from './business.service';
-import { createBusinessDto, FilterQuery, updateBusinessDto } from './dto';
+import {
+  AllFilterQuery, createBusinessDto, FilterQuery, updateBusinessDto, WebCreateBusiness,
+} from './dto';
 import { ServerSuccess } from 'src/common/constant';
 import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
 import { responseHelper } from 'src/core/helper/response.helper';
@@ -30,8 +33,6 @@ import { JwtAuthGuard } from 'src/core/guards/jwt/jwt.guards';
 import { UpdateBusinessByAdminDto } from 'src/modules/business/dto/update-business-status.dto';
 import { DMOService } from 'src/modules/dmo/dmo.service';
 import { UserType } from 'src/modules/users/users.type';
-import { WebCreateBusiness } from './dto/web-create-business.dto';
-import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { fileFilterByExtensions } from 'src/services/gcp-bucket/middleware/file-filter';
 import { updateWebBusinessDto } from './dto/web.update.dto';
 
@@ -47,6 +48,7 @@ export class BusinessController {
     tags: ['Business'],
     response: { status: 201, description: ServerSuccess.BUSINESS_CREATED },
     noAuthToken: true,
+    operation: 'Create a business by any logged in user',
   })
   @Post('business')
   async createBusiness(
@@ -69,6 +71,7 @@ export class BusinessController {
     tags: ['Business', 'Web'],
     response: { status: 201, description: ServerSuccess.BUSINESS_CREATED },
     noAuthToken: true,
+    operation: 'Create a business by superadmin role',
   })
   @Post('admin/business')
   @UseInterceptors(AnyFilesInterceptor({ fileFilter: fileFilterByExtensions }))
@@ -91,6 +94,7 @@ export class BusinessController {
     tags: ['Business'],
     response: { status: 200, description: ServerSuccess.BUSINESS_LISTED },
     softBlockExtraDtoFields: true,
+    operation: 'Get all approved business by any user',
   })
   @Get('business')
   async getAllBusiness(
@@ -102,13 +106,54 @@ export class BusinessController {
     return responseHelper(response, HttpStatus.OK, ServerSuccess.BUSINESS_LISTED, business, null, null);
   }
 
+  @Roles(UserType.ADMIN, UserType.DMO, UserType.SUPERADMIN)
+  @UseGuards(JwtAuthGuard)
+  @ApiEndpoint({
+    tags: ['Admin', 'Business'],
+    response: { status: 200, description: ServerSuccess.BUSINESS_LISTED },
+    softBlockExtraDtoFields: true,
+    noAuthToken: true,
+    operation: 'Get all businesses by admin, superadmin and dmo role',
+  })
+  @Get('admin/businesses')
+  async getAllBusinessForAdmin(
+    @Res() response: Response,
+    @Query() query?: AllFilterQuery,
+  ) {
+    const business = await this.businessServices.getAllBusiness(query, true);
+
+    return responseHelper(response, HttpStatus.OK, ServerSuccess.BUSINESS_LISTED, business, null, null);
+  }
+
   @ApiEndpoint({
     tags: ['Business'],
     response: { status: 200, description: ServerSuccess.BUSINESS_LISTED },
+    operation: 'Get approved business detail by any user',
   })
   @Get('business/:id')
-  async getBusiness(@Res() response: Response, @Param('id') id: string) {
-    const business = await this.businessServices.getBusiness(id);
+  async getBusinessDetailForAll(
+    @Res() response: Response,
+    @Param('id') id: string,
+  ) {
+    const business = await this.businessServices.getBusiness(id, null);
+
+    return responseHelper(response, HttpStatus.OK, ServerSuccess.BUSINESS_LISTED, business, null, null);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @ApiEndpoint({
+    tags: ['Business'],
+    response: { status: 200, description: ServerSuccess.BUSINESS_LISTED },
+    noAuthToken: true,
+    operation: 'Get any business detail by admin, superadmin, dmo role or business owner ',
+  })
+  @Get('admin/businesses/:id')
+  async getBusinessDetailForAdmin(
+    @Req() request,
+    @Res() response: Response,
+    @Param('id') id: string,
+  ) {
+    const business = await this.businessServices.getBusiness(id, request.user);
 
     return responseHelper(response, HttpStatus.OK, ServerSuccess.BUSINESS_LISTED, business, null, null);
   }
@@ -119,12 +164,13 @@ export class BusinessController {
     response: { status: 200, description: ServerSuccess.BUSINESS_LISTED },
     softBlockExtraDtoFields: true,
     noAuthToken: true,
+    operation: 'Get all businesses details by business owner ',
   })
   @Get('my-business')
   async getMyBusiness(
     @Req() request,
     @Res() response: Response,
-    @Query() query?: FilterQuery,
+    @Query() query?: AllFilterQuery,
   ) {
     const userId = request.user.id;
     const business = await this.businessServices.getAllMyBusiness(query, userId);
@@ -137,10 +183,11 @@ export class BusinessController {
     response: { status: 200, description: ServerSuccess.BUSINESS_UPDATED },
     noAuthToken: true,
     params: [{ name: 'id', type: 'string', required: true }],
+    operation: 'Update businesses details by business owner ',
   })
   @UseGuards(JwtAuthGuard)
   @Put('business/:id')
-  async updateBusiness(
+  async updateMyBusiness(
     @Req() request,
     @Res() response:Response,
     @Param('id') id: string,
@@ -150,7 +197,8 @@ export class BusinessController {
     dto.phoneNumber && await this.businessServices.findByFieldNameExcludeId('phoneNumber', dto.phoneNumber, id);
     dto.busiEmail && await this.businessServices.findByFieldNameExcludeId('busiEmail', dto.busiEmail, id);
     dto.dmoId && await this.dmoService.findDMO(dto.dmoId);
-    const business = await this.businessServices.updateBusiness(id, request.user.id, dto);
+    // need to check if the logged in user is business owner or collaborator
+    const business = await this.businessServices.updateBusiness(id, request.user, dto);
 
     return responseHelper(response, HttpStatus.OK, ServerSuccess.BUSINESS_UPDATED, business, null, null);
   }
@@ -162,9 +210,8 @@ export class BusinessController {
     response: { status: 200, description: ServerSuccess.BUSINESS_UPDATED },
     noAuthToken: true,
     params: [{ name: 'id', type: 'string', required: true }],
+    operation: 'Update businesses details by superadmin ',
   })
-
-  @UseGuards(JwtAuthGuard)
   @Put('admin/business/:id')
   async updateBusinessWeb(
     @Req() request,
@@ -176,7 +223,7 @@ export class BusinessController {
     dto.phoneNumber && await this.businessServices.findByFieldNameExcludeId('phoneNumber', dto.phoneNumber, id);
     dto.busiEmail && await this.businessServices.findByFieldNameExcludeId('busiEmail', dto.busiEmail, id);
     dto.dmoId && await this.dmoService.findDMO(dto.dmoId);
-    const business = await this.businessServices.updateBusiness(id, request.user.id, dto);
+    const business = await this.businessServices.updateBusiness(id, request.user, dto);
 
     return responseHelper(response, HttpStatus.OK, ServerSuccess.BUSINESS_UPDATED, business, null, null);
   }
@@ -196,7 +243,7 @@ export class BusinessController {
     @Param('businessId') businessId: string,
     @Body() dto: UpdateBusinessByAdminDto,
   ) {
-    const business = await this.businessServices.updateBusiness(businessId, request.user.id, dto);
+    const business = await this.businessServices.updateBusiness(businessId, request.user, dto);
 
     return responseHelper(response, HttpStatus.OK, ServerSuccess.BUSINESS_UPDATED, business, null, null);
   }

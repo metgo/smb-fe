@@ -3,7 +3,7 @@
 /* eslint-disable no-nested-ternary */
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import mongoose, { Model } from 'mongoose';
 
 import { ServerErrors } from 'src/common/constant';
 import { paginationConfig } from 'src/common/pagination.config';
@@ -19,6 +19,7 @@ import { ProductDto } from 'src/modules/products/dto/product.dto';
 import { FindProductsQuery, ProductStatus, updateCommand } from 'src/modules/products/products.type';
 import { GcpBucketService } from 'src/services/gcp-bucket/gcp-bucket.services';
 import { WebCreateProduct } from './dto/web-create-product.dto';
+import { UserType } from 'src/modules/users/users.type';
 
 @Injectable()
 export class ProductsService {
@@ -159,6 +160,25 @@ export class ProductsService {
     return product;
   }
 
+  async findOneForAdminOrPrimaryUser(productId: string, loggedInUser: any): Promise<Product> {
+    const product = await findOneByFieldNames<Product>(
+      this.ProductModel,
+      { _id: productId },
+    );
+    const allowedRoles = [UserType.ADMIN, UserType.DMO, UserType.SUPERADMIN];
+
+    if (!product || (
+      !allowedRoles.includes(loggedInUser.role)
+      && !product.primaryUserId.equals(new mongoose.Types.ObjectId(loggedInUser.id))
+      && !product.collaboratorId.includes(new mongoose.Types.ObjectId(loggedInUser.id))
+    )
+    ) {
+      throw new NotFoundException(ServerErrors.PRODUCT.NOT_FOUND);
+    }
+
+    return product;
+  }
+
   async findAll(queries: FindProductsQuery) : Promise<Product[]> {
     const {
       search, page, limit, ...query
@@ -169,7 +189,7 @@ export class ProductsService {
     const queryPage = page ? Number(page) : paginationConfig.page;
     const queryLimit = limit ? Number(limit) : paginationConfig.limit;
 
-    if (!query.status) {
+    if (!('status' in query) && !queries.myProduct && !queries.collaboratedProducts && !queries.isAdmin) {
       findQuery = { ...query, status: ProductStatus.ACTIVE };
     }
 

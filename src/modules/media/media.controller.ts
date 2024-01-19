@@ -39,7 +39,7 @@ export class MediaController {
     @Res() response: Response,
     @UploadedFiles() files?: Array<Express.Multer.File>,
   ) {
-    const media = await this.mediaServices.create(req.user.id, files, body);
+    const media = await this.mediaServices.create(req.user, files, body);
     return responseHelper(
       response,
       HttpStatus.CREATED,
@@ -64,7 +64,7 @@ export class MediaController {
     @Req() req,
     @Res() response: Response,
   ) {
-    const media = await this.mediaServices.delete(req.user.id, body);
+    const media = await this.mediaServices.delete(req.user, body);
     return responseHelper(
       response,
       HttpStatus.OK,

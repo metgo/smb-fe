@@ -17,23 +17,22 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
+import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { ApiNotFoundResponse } from '@nestjs/swagger';
 import { Response } from 'express';
 import mongoose from 'mongoose';
 
 import { ServerErrors, ServerSuccess } from 'src/common/constant';
 import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
+import { Roles } from 'src/core/guards/authorization/roles';
 import { JwtAuthGuard } from 'src/core/guards/jwt/jwt.guards';
 import { responseHelper } from 'src/core/helper/response.helper';
 import { BusinessService } from 'src/modules/business/business.service';
 import { ProductDto } from 'src/modules/products/dto/product.dto';
-import { FilterQuery } from 'src/modules/products//dto/query.dto';
+import { AllFilterQuery, FilterQuery, WebCreateProduct } from 'src/modules/products/dto';
 import { ProductsService } from 'src/modules/products/products.services';
-import { Roles } from 'src/core/guards/authorization/roles';
-import { UserType } from '../users/users.type';
-import { AnyFilesInterceptor } from '@nestjs/platform-express';
+import { UserType } from 'src/modules/users/users.type';
 import { fileFilterByExtensions } from 'src/services/gcp-bucket/middleware/file-filter';
-import { WebCreateProduct } from './dto/web-create-product.dto';
 
 @Controller()
 export class ProductsController {
@@ -90,7 +89,7 @@ export class ProductsController {
     response: { status: HttpStatus.CREATED, description: ServerSuccess.PRODUCTS.CREATED },
     softBlockExtraDtoFields: true,
     noAuthToken: true,
-    operation: 'Create product by business',
+    operation: 'Create product for business by superadmin',
     params: [{ name: 'businessId', type: 'string', required: true }],
   })
   @Roles(UserType.SUPERADMIN)
@@ -130,7 +129,7 @@ export class ProductsController {
   @ApiEndpoint({
     tags: ['Products'],
     response: { status: HttpStatus.OK, description: ServerSuccess.PRODUCTS.LISTED },
-    operation: 'Get detail of a product',
+    operation: 'Get active product detail by all',
     params: [{
       name: 'productId',
       type: 'string',
@@ -140,7 +139,7 @@ export class ProductsController {
   @ApiNotFoundResponse({ description: ServerErrors.PRODUCT.NOT_FOUND })
   @HttpCode(HttpStatus.OK)
   @Get('/products/:productId')
-  async getProductDetails(
+  async getProductDetailsByAll(
     @Param('productId') productId: string,
     @Res() response: Response,
   ) {
@@ -156,9 +155,40 @@ export class ProductsController {
   }
 
   @ApiEndpoint({
+    tags: ['Admin', 'Products'],
+    response: { status: HttpStatus.OK, description: ServerSuccess.PRODUCTS.LISTED },
+    operation: 'Get detail of a product by admin, superadmin, dmo and product owner',
+    params: [{
+      name: 'productId',
+      type: 'string',
+      required: true,
+    }],
+    noAuthToken: true,
+  })
+  @UseGuards(JwtAuthGuard)
+  @ApiNotFoundResponse({ description: ServerErrors.PRODUCT.NOT_FOUND })
+  @HttpCode(HttpStatus.OK)
+  @Get('admin/products/:productId')
+  async getProductDetailsByAdmin(
+    @Req() req,
+    @Param('productId') productId: string,
+    @Res() response: Response,
+  ) {
+    const product = await this.productsService.findOneForAdminOrPrimaryUser(productId, req.user);
+    return responseHelper(
+      response,
+      HttpStatus.OK,
+      ServerSuccess.PRODUCTS.LISTED,
+      product,
+      null,
+      null,
+    );
+  }
+
+  @ApiEndpoint({
     tags: ['Products'],
     response: { status: HttpStatus.OK, description: ServerSuccess.PRODUCTS.LISTED },
-    operation: 'Get my products',
+    operation: 'Get all my products',
     softBlockExtraDtoFields: true,
     noAuthToken: true,
   })
@@ -168,7 +198,7 @@ export class ProductsController {
   async getMyProductsDetails(
     @Req() req,
     @Res() response: Response,
-    @Query() query: FilterQuery,
+    @Query() query: AllFilterQuery,
   ) {
     const product = await this.productsService.findAll({
       query,
@@ -186,12 +216,12 @@ export class ProductsController {
     );
   }
 
-  @Roles(UserType.SUPERADMIN)
+  @Roles(UserType.ADMIN, UserType.DMO, UserType.SUPERADMIN)
   @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
     tags: ['Products'],
     response: { status: HttpStatus.OK, description: ServerSuccess.PRODUCTS.LISTED },
-    operation: 'Products of specific business',
+    operation: 'Get all products by admin, dmo and superadmin',
     softBlockExtraDtoFields: true,
     noAuthToken: true,
   })
@@ -200,13 +230,14 @@ export class ProductsController {
   async getBusinessProducts(
     @Req() req,
     @Res() response: Response,
-    @Query() query: FilterQuery,
+    @Query() query: AllFilterQuery,
   ) {
     const product = await this.productsService.findAll({
       query,
       myProduct: false,
       collaboratedProducts: false,
       loggedInUser: req.user.id,
+      isAdmin: true,
     });
     return responseHelper(
       response,
@@ -221,7 +252,7 @@ export class ProductsController {
   @ApiEndpoint({
     tags: ['Products'],
     response: { status: HttpStatus.OK, description: ServerSuccess.PRODUCTS.LISTED },
-    operation: 'Get my collaborated products',
+    operation: 'Get all my collaborated products',
     softBlockExtraDtoFields: true,
     noAuthToken: true,
   })
@@ -231,7 +262,7 @@ export class ProductsController {
   async getMyCollaboratedProductsDetails(
     @Req() req,
     @Res() response: Response,
-    @Query() query: FilterQuery,
+    @Query() query: AllFilterQuery,
   ) {
     const product = await this.productsService.findAll({
       query,
@@ -253,7 +284,7 @@ export class ProductsController {
   @ApiEndpoint({
     tags: ['Products'],
     response: { status: HttpStatus.OK, description: ServerSuccess.PRODUCTS.LISTED },
-    operation: 'Get all products',
+    operation: 'Get all active products by users',
     softBlockExtraDtoFields: true,
   })
   @HttpCode(HttpStatus.OK)

@@ -1,6 +1,6 @@
 import { Image } from 'src/common/interface/image.interface';
 import { ProductDto } from 'src/modules/products/dto/product.dto';
-import { FilterQuery } from 'src/modules/products/dto/query.dto';
+import { AllFilterQuery, FilterQuery } from 'src/modules/products/dto';
 
 /* eslint-disable no-shadow */
 export enum ProductStatus {
@@ -9,10 +9,11 @@ export enum ProductStatus {
 }
 
 export interface FindProductsQuery {
-    query: FilterQuery,
+    query: AllFilterQuery | FilterQuery,
     myProduct?: boolean,
     collaboratedProducts?: boolean,
     loggedInUser?: string,
+    isAdmin?:boolean,
 }
 
 export interface updateCommand {

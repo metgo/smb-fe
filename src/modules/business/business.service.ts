@@ -5,27 +5,31 @@ import {
   BadRequestException, Injectable, NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import mongoose, { Model } from 'mongoose';
 import { ObjectId } from 'typeorm';
 
 import { maxDistanceInRadius } from 'src/common/max-distance-in-radius';
 import { Business } from './schema/business.schema';
-import { createBusinessDto, FilterQuery, updateBusinessDto } from './dto';
+import {
+  AllFilterQuery, createBusinessDto, FilterQuery, updateBusinessDto,
+} from 'src/modules/business/dto';
 import {
   findOneByFieldName, findOneByFieldNameExcludeId, findOneByFieldNames, queryhandler, updateById,
 } from 'src/core/helper/query-helper';
 import { ServerErrors } from 'src/common/constant';
 import { Image } from 'src/common/interface/image.interface';
-import { disSelect } from 'src/common/utils/select.handling';
-import { UpdateBusinessByAdminDto } from 'src/modules/business/dto/update-business-status.dto';
 import { paginationConfig } from 'src/common/pagination.config';
+import { disSelect } from 'src/common/utils/select.handling';
+import { BusinessStatus } from 'src/modules/business/business.type';
+import { UpdateBusinessByAdminDto } from 'src/modules/business/dto/update-business-status.dto';
 import { GcpBucketService } from 'src/services/gcp-bucket/gcp-bucket.services';
-import { WebCreateBusiness } from './dto/web-create-business.dto';
+import { WebCreateBusiness } from 'src/modules/business/dto/web-create-business.dto';
 import { Media } from '../media/schema/media.schema';
 import { updateWebBusinessDto } from './dto/web.update.dto';
 import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.schema';
 import { BussSubCategory } from 'src/modules/buss-subcategories/schema/buss-subCategory.schema';
 import { Product } from 'src/modules/products/schema/products.schema';
+import { UserType } from 'src/modules/users/users.type';
 
 @Injectable()
 export class BusinessService {
@@ -129,7 +133,7 @@ export class BusinessService {
     return newBusiness;
   }
 
-  async getAllBusiness(queries: FilterQuery) {
+  async getAllBusiness(queries: FilterQuery | AllFilterQuery, isAdmin?: boolean) {
     const {
       page, limit, search, long, lat, ...query
     } = queries;
@@ -138,6 +142,10 @@ export class BusinessService {
     const queryLimit = limit ? Number(limit) : paginationConfig.limit;
 
     let findQuery: any = query;
+
+    if (!('status' in query) && !isAdmin) {
+      findQuery = { ...query, status: BusinessStatus.APPROVED };
+    }
 
     let select: {};
 
@@ -281,7 +289,7 @@ export class BusinessService {
     return allBusiness;
   }
 
-  async getBusiness(id: string) {
+  async getBusiness(id: string, loggedInUser: any) {
     const populate = {
       path: 'groupTypesId accessibilitiesId bussCategoriesId bussSubCategoriesId socialMedia.socialMediaId',
       select: `${disSelect}`,
@@ -300,13 +308,21 @@ export class BusinessService {
     const select = `${disSelect}`;
     const business = await this.BusinessModel.findById(id).select(select).populate(populate).populate(populate1);
 
-    if (!business) {
+    const allowedRoles = [UserType.ADMIN, UserType.SUPERADMIN, UserType.DMO];
+
+    if (!business || (
+      !(
+        loggedInUser
+        && (allowedRoles.includes(loggedInUser.role) || business.userId.equals(new mongoose.Types.ObjectId(loggedInUser.id)))
+      ) && business.status !== BusinessStatus.APPROVED
+    )) {
       throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
     }
+
     return business;
   }
 
-  async getAllMyBusiness(queries: FilterQuery, userId: string) {
+  async getAllMyBusiness(queries: AllFilterQuery, userId: string) {
     const {
       page, limit, search, ...query
     } = queries;
@@ -355,7 +371,7 @@ export class BusinessService {
 
   async updateBusiness(
     id: string,
-    loggedInUserId: string,
+    loggedInUser: any,
     dto: updateBusinessDto | Image[] | UpdateBusinessByAdminDto | updateWebBusinessDto,
   ): Promise<Business> {
     let updatedField: any;
@@ -378,11 +394,11 @@ export class BusinessService {
       ...updatedField,
       ...dto,
       updatedAt: new Date(),
-      updatedBy: loggedInUserId,
+      updatedBy: loggedInUser.id,
     };
     if (!(
       dto instanceof updateBusinessDto || dto instanceof UpdateBusinessByAdminDto || dto instanceof updateWebBusinessDto)) {
-      const existingBusiness = await this.getBusiness(id);
+      const existingBusiness = await this.getBusiness(id, loggedInUser);
 
       const images = [...existingBusiness.images, ...dto];
 
@@ -396,14 +412,14 @@ export class BusinessService {
     return updateBusiness;
   }
 
-  async deleteImage(loggedInUserId: string, id: string, imageUrl: any): Promise<Business> {
-    const existingBusiness = await this.getBusiness(id);
+  async deleteImage(loggedInUser: any, id: string, imageUrl: any): Promise<Business> {
+    const existingBusiness = await this.getBusiness(id, loggedInUser);
 
     const images = existingBusiness.images.filter(image => image.image !== imageUrl);
 
     const updateBusiness = await this.BusinessModel.findOneAndUpdate(
       { _id: id },
-      { images, updatedAt: new Date(), updatedBy: loggedInUserId },
+      { images, updatedAt: new Date(), updatedBy: loggedInUser.id },
       { new: true },
     );
     if (!updateBusiness) {

@@ -10,8 +10,10 @@ import { disSelect } from 'src/common/utils/select.handling';
 import { CampaignSegment } from './schema/campaignSegment.schema';
 import { createCampaignSegmentDto } from './dto/cfreateCampaignSegment.dto';
 import { DMOService } from '../dmo/dmo.service';
+import { BusinessStatus } from 'src/modules/business/business.type';
 import { CampaignService } from 'src/modules/campaign/campaign.service';
 import { ExtendedProductFilterQuery } from 'src/modules/products/dto/external-api.query.dto';
+import { ProductStatus } from 'src/modules/products/products.type';
 
 @Injectable()
 export default class CampaignSegmentService {
@@ -82,11 +84,11 @@ export default class CampaignSegmentService {
         products: [],
       };
     }
-    const totalData = campaignSegment?.products?.length;
 
     if (!page && !limit) {
       const products = campaignSegment.products
         .filter((product: any) => {
+          if (product.status === ProductStatus.INACTIVE) return false;
           if (!query.categoriesId && !query.subCategoriesId) {
             return true;
           } if (query.subCategoriesId) {
@@ -104,6 +106,8 @@ export default class CampaignSegmentService {
           business: product.businessId,
           subCategories: product.subCategories,
         }));
+
+      const totalData = products?.length;
 
       return {
         totalData,
@@ -123,11 +127,12 @@ export default class CampaignSegmentService {
      */
 
     const startIndex = (pages - 1) * limits;
-    const endIndex = pages * limits;
-    const productsSlice = campaignSegment.products.slice(startIndex, endIndex);
+    const endIndex = startIndex + limits;
 
-    const paginatedProducts = productsSlice
+    const filteredProducts = campaignSegment.products
       .filter((product: any) => {
+        if (product.status === ProductStatus.INACTIVE) return false;
+
         if (!query.categoriesId && !query.subCategoriesId) {
           return true;
         }
@@ -147,7 +152,10 @@ export default class CampaignSegmentService {
         subCategories: product.subCategories,
       }));
 
+    const totalData = filteredProducts.length;
     const pageCount = Math.ceil(totalData / limits);
+
+    const paginatedProducts = filteredProducts.slice(startIndex, endIndex);
 
     return {
       page: pages,
@@ -192,18 +200,24 @@ export default class CampaignSegmentService {
         businesses: [],
       };
     }
-    const totalData = campaignSegment.businesses.length;
 
     if (!page && !limit) {
-      const businesses = campaignSegment.businesses.map((business: any) => ({
-        id: business._id,
-        name: business.name,
-        description: business.description,
-        geoLocation: business.geoLocation,
-        address: business.address,
-        images: business.images,
-        bussCategoriesId: business.bussCategoriesId,
-      }));
+      const businesses = campaignSegment.businesses
+        .filter((business: any) => {
+          if (business.status === BusinessStatus.APPROVED) return true;
+          return false;
+        })
+        .map((business: any) => ({
+          id: business._id,
+          name: business.name,
+          description: business.description,
+          geoLocation: business.geoLocation,
+          address: business.address,
+          images: business.images,
+          bussCategoriesId: business.bussCategoriesId,
+        }));
+
+      const totalData = businesses.length;
 
       return {
         totalData,
@@ -215,20 +229,27 @@ export default class CampaignSegmentService {
     const limits = Number(limit) || paginationConfig.limit;
 
     const startIndex = (pages - 1) * limits;
-    const endIndex = pages * limits;
-    const businessSlice = campaignSegment.businesses.slice(startIndex, endIndex);
+    const endIndex = startIndex + limits;
 
-    const paginatedBusiness = businessSlice.map((business: any) => ({
-      id: business._id,
-      name: business.name,
-      description: business.description,
-      geoLocation: business.geoLocation,
-      address: business.address,
-      images: business.images,
-      bussCategoriesId: business.bussCategoriesId,
-    }));
+    const filteredBusiness = campaignSegment?.businesses
+      .filter((business: any) => {
+        if (business.status === BusinessStatus.APPROVED) return true;
+        return false;
+      })
+      .map((business: any) => ({
+        id: business._id,
+        name: business.name,
+        description: business.description,
+        geoLocation: business.geoLocation,
+        address: business.address,
+        images: business.images,
+        bussCategoriesId: business.bussCategoriesId,
+      }));
 
+    const totalData = filteredBusiness.length;
     const pageCount = Math.ceil(totalData / limits);
+
+    const paginatedBusiness = filteredBusiness.slice(startIndex, endIndex);
 
     return {
       page: pages,
