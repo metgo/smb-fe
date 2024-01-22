@@ -19,6 +19,7 @@ import {
 import { ServerErrors } from 'src/common/constant';
 import { Image } from 'src/common/interface/image.interface';
 import { paginationConfig } from 'src/common/pagination.config';
+import { generateRandomCode } from 'src/common/utils/randomCode.generator';
 import { disSelect } from 'src/common/utils/select.handling';
 import { BusinessStatus } from 'src/modules/business/business.type';
 import { UpdateBusinessByAdminDto } from 'src/modules/business/dto/update-business-status.dto';
@@ -30,6 +31,7 @@ import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.s
 import { BussSubCategory } from 'src/modules/buss-subcategories/schema/buss-subCategory.schema';
 import { Product } from 'src/modules/products/schema/products.schema';
 import { UserType } from 'src/modules/users/users.type';
+import { exceptionHandling } from 'src/common/utils/exception-handling';
 
 @Injectable()
 export class BusinessService {
@@ -47,6 +49,7 @@ export class BusinessService {
     private ProductModel: Model<Product>,
   ) {}
 
+  // eslint-disable-next-line consistent-return
   async createBusiness(dto: createBusinessDto, userId: string): Promise<Business> {
     let newDto:any = dto;
     if (dto.geoLocation) {
@@ -59,15 +62,33 @@ export class BusinessService {
         location,
       };
     }
-    const newBusiness = new this.BusinessModel({
-      ...newDto,
-      userId,
-      createdBy: userId,
-    });
-    await newBusiness.save();
-    return newBusiness;
+    try {
+      const slug = this.generateSlug(dto?.name);
+      const newBusiness = new this.BusinessModel({
+        ...newDto,
+        userId,
+        createdBy: userId,
+        slug,
+      });
+      await newBusiness.save();
+      return newBusiness;
+    } catch (error) {
+      if (this.isDuplicateKeyError(error, 'slug')) {
+        const slug = this.generateSlug(dto?.name);
+        const newBusiness = new this.BusinessModel({
+          ...newDto,
+          userId,
+          createdBy: userId,
+          slug,
+        });
+        await newBusiness.save();
+        return newBusiness;
+      }
+      exceptionHandling(error);
+    }
   }
 
+  // eslint-disable-next-line consistent-return
   async createBusinesForWeb(
     dto: WebCreateBusiness,
     loggedInUserId: string,
@@ -85,9 +106,9 @@ export class BusinessService {
       };
     }
     const images = [];
+    // add to GCP
     await Promise.all(
       image.map(async (file: Express.Multer.File) => {
-        // store in gcp
         const imageUrl = await this.gcpBucketServices.upload(file);
 
         const imageObject = {
@@ -101,36 +122,62 @@ export class BusinessService {
       }),
     );
 
-    // const businessImageUrl = image ? await this.gcpBucketServices.upload(image) : null;
-
-    // const images = [{
-    //   image: businessImageUrl || null,
-    //   caption: image?.originalname || null,
-    //   alt: image?.originalname || null,
-    // }];
-
-    const newBusiness = new this.BusinessModel({
-      ...newDto,
-      images,
-      createdBy: loggedInUserId,
-    });
-    await newBusiness.save();
-
-    newBusiness.images.map(async (img: any) => {
-      const newMedia = new this.MediaModel({
-        reference: {
-          refId: newBusiness.id,
-          schema: 'Business',
-        },
+    try {
+      const slug = this.generateSlug(dto?.name);
+      const newBusiness = new this.BusinessModel({
+        ...newDto,
+        images,
         createdBy: loggedInUserId,
-        url: img.image,
-        originalName: img?.caption || null,
-        mimetype: img?.mimetype || null,
+        slug,
       });
-      await newMedia.save();
-    });
+      await newBusiness.save();
 
-    return newBusiness;
+      // add to Media Table
+      await Promise.all(newBusiness.images.map(async (img: any) => {
+        const newMedia = new this.MediaModel({
+          reference: {
+            refId: newBusiness.id,
+            schema: 'Business',
+          },
+          createdBy: loggedInUserId,
+          url: img.image,
+          originalName: img?.caption || null,
+          mimetype: img?.mimetype || null,
+        });
+        await newMedia.save();
+      }));
+
+      return newBusiness;
+    } catch (err) {
+      if (this.isDuplicateKeyError(err, 'slug')) {
+        const slug = this.generateSlug(dto?.name);
+        const newBusiness = new this.BusinessModel({
+          ...newDto,
+          images,
+          createdBy: loggedInUserId,
+          slug,
+        });
+        await newBusiness.save();
+
+        // add to Media Table
+        await Promise.all(newBusiness.images.map(async (img: any) => {
+          const newMedia = new this.MediaModel({
+            reference: {
+              refId: newBusiness.id,
+              schema: 'Business',
+            },
+            createdBy: loggedInUserId,
+            url: img.image,
+            originalName: img?.caption || null,
+            mimetype: img?.mimetype || null,
+          });
+          await newMedia.save();
+        }));
+
+        return newBusiness;
+      }
+      exceptionHandling(err);
+    }
   }
 
   async getAllBusiness(queries: FilterQuery | AllFilterQuery, isAdmin?: boolean) {
@@ -489,5 +536,13 @@ export class BusinessService {
       .select('busiEmail');
 
     return bussEmails;
+  }
+
+  private generateSlug(name: string | null): string {
+    return name ? `${name.replace(/ /g, '-').toLowerCase()}` : `${generateRandomCode(3).toLowerCase()}-${generateRandomCode(4).toLowerCase()}`;
+  }
+
+  private isDuplicateKeyError(error: any, fieldName: string): boolean {
+    return error.code === 11000 && error?.keyPattern && error?.keyPattern[fieldName] === 1;
   }
 }
