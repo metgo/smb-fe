@@ -21,6 +21,8 @@ export interface UpdateCommand {
     businessId: string,
     loggedInUserId: string,
     body: ProductDto,
+    isAdmin: boolean |null,
+
 }
 
 export interface UploadMediaCommand {

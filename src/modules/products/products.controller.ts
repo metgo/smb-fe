@@ -339,6 +339,44 @@ export class ProductsController {
       businessId,
       loggedInUserId: req.user.id,
       body,
+      isAdmin: false,
+    });
+    return responseHelper(
+      response,
+      HttpStatus.OK,
+      ServerSuccess.PRODUCTS.UPDATED,
+      product,
+      null,
+      null,
+    );
+  }
+
+  @Roles(UserType.SUPERADMIN)
+  @UseGuards(JwtAuthGuard)
+  @ApiEndpoint({
+    tags: ['Product', 'Web'],
+    response: { status: 200, description: ServerSuccess.PRODUCTS.UPDATED },
+    noAuthToken: true,
+    params: [
+      { name: 'businessId', type: 'string', required: true },
+      { name: 'productId', type: 'string', required: true },
+    ],
+    operation: 'Update the product by super admin roles',
+  })
+  @Patch('/businesses/:businessId/products/:productId')
+  async updateProductByAdmin(
+    @Param('businessId') businessId: string,
+    @Param('productId') productId: string,
+    @Body() body: ProductDto,
+    @Req() req,
+    @Res() response: Response,
+  ) {
+    const product = await this.productsService.update({
+      productId,
+      businessId,
+      loggedInUserId: req.user.id,
+      body,
+      isAdmin: true,
     });
     return responseHelper(
       response,

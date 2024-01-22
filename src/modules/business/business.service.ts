@@ -308,6 +308,8 @@ export class BusinessService {
     const select = `${disSelect}`;
     const business = await this.BusinessModel.findById(id).select(select).populate(populate).populate(populate1);
 
+    console.log(business, loggedInUser);
+
     const allowedRoles = [UserType.ADMIN, UserType.SUPERADMIN, UserType.DMO];
 
     if (!business || (
@@ -316,6 +318,7 @@ export class BusinessService {
         && (allowedRoles.includes(loggedInUser.role) || business.userId.equals(new mongoose.Types.ObjectId(loggedInUser.id)))
       ) && business.status !== BusinessStatus.APPROVED
     )) {
+      console.log(loggedInUser);
       throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
     }
 

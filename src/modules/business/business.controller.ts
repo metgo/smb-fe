@@ -144,6 +144,24 @@ export class BusinessController {
   @ApiEndpoint({
     tags: ['Business'],
     response: { status: 200, description: ServerSuccess.BUSINESS_LISTED },
+    operation: 'Get approved business detail by any user',
+    noAuthToken: true,
+  })
+  @Get('my-business/:id')
+  async getBusinessDetailOwner(
+    @Res() response: Response,
+    @Req() request:any,
+    @Param('id') id: string,
+  ) {
+    const business = await this.businessServices.getBusiness(id, request?.user);
+
+    return responseHelper(response, HttpStatus.OK, ServerSuccess.BUSINESS_LISTED, business, null, null);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @ApiEndpoint({
+    tags: ['Business'],
+    response: { status: 200, description: ServerSuccess.BUSINESS_LISTED },
     noAuthToken: true,
     operation: 'Get any business detail by admin, superadmin, dmo role or business owner ',
   })
