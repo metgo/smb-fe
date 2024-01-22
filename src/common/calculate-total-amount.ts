@@ -1,4 +1,5 @@
 import { BadRequestException } from '@nestjs/common';
+import { ServerErrors } from 'src/common/constant';
 
 /* eslint-disable no-underscore-dangle */
 export async function calculateTotalAmount(productsPayload:any, products: any) {
@@ -7,6 +8,9 @@ export async function calculateTotalAmount(productsPayload:any, products: any) {
     const totalAmount = productsPayload.reduce((sum:number, payloadProduct:any) => {
       const dbProduct = products.data.find((dbProd:any) => dbProd._id.toString() === payloadProduct.id);
 
+      if (!Number(payloadProduct?.quantity)) {
+        throw new BadRequestException(ServerErrors.INVALID_QUANTITY);
+      }
       if (dbProduct.quantity.remaining < payloadProduct.quantity) {
         throw new BadRequestException('There is less quantity then you request');
       }

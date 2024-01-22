@@ -1,4 +1,6 @@
+/* eslint-disable consistent-return */
 import {
+  BadRequestException,
   ForbiddenException, Injectable, NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
@@ -8,6 +10,7 @@ import { ServerErrors } from 'src/common/constant';
 import { Currency, PaymentStatus } from 'src/common/enum';
 import { paginationConfig } from 'src/common/pagination.config';
 import { sortByPriorityAndHighest } from 'src/common/sort-priority-and-highest';
+import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { disSelect } from 'src/common/utils/select.handling';
 import {
   findOneByFieldNames, findOneById, queryhandler, updateById,
@@ -39,48 +42,58 @@ export class OrdersService {
     actualAmountOfProduct:number,
     identifierId?:string,
   ): Promise<any> {
-    if (totalAmount <= 0) {
+    try {
+      if (totalAmount <= 0) {
+        const newOrder = new this.OrderModel({
+          ...body,
+          userId: loggedInUserId || null,
+          createdBy: loggedInUserId || null,
+          paymentStatus: PaymentStatus.SUCCESS,
+          identifierId: identifierId || null,
+          status: OrderStatus.PROCESSING,
+          creditCardPayment: totalAmount,
+          paymentMode: [PaymentMode.VOUCHER],
+          totalAmount: actualAmountOfProduct,
+        });
+
+        await newOrder.save();
+        return;
+      }
+
       const newOrder = new this.OrderModel({
         ...body,
         userId: loggedInUserId || null,
         createdBy: loggedInUserId || null,
-        paymentStatus: PaymentStatus.SUCCESS,
+        paymentStatus: PaymentStatus.PENDING,
         identifierId: identifierId || null,
-        status: OrderStatus.PROCESSING,
         creditCardPayment: totalAmount,
-        paymentMode: [PaymentMode.VOUCHER],
+        paymentMode: totalAmount === actualAmountOfProduct ? [PaymentMode.CARD] : [PaymentMode.CARD, PaymentMode.VOUCHER],
         totalAmount: actualAmountOfProduct,
+        voucher: totalAmount === actualAmountOfProduct ? [] : [...body.voucher],
       });
 
-      await newOrder.save();
-      return;
+      const order = await newOrder.save();
+
+      const link = await this.paymentService.generateLink(
+        totalAmount,
+        Currency.ILS,
+        PaymentPurpose.ORDER,
+        order.id,
+        body.email,
+        body.name,
+      );
+
+      return [link];
+    } catch (error) {
+      if (error?.name === 'CastError' && error?.kind === 'ObjectId') {
+        throw new BadRequestException(`${error?.model?.modelName} ${ServerErrors.INVALID_ID}`);
+      }
+      if (error?.errors['businessId.0']?.kind) {
+        throw new BadRequestException(`Business ${ServerErrors.INVALID_ID}`);
+      }
+
+      exceptionHandling(error);
     }
-
-    const newOrder = new this.OrderModel({
-      ...body,
-      userId: loggedInUserId || null,
-      createdBy: loggedInUserId || null,
-      paymentStatus: PaymentStatus.PENDING,
-      identifierId: identifierId || null,
-      creditCardPayment: totalAmount,
-      paymentMode: totalAmount === actualAmountOfProduct ? [PaymentMode.CARD] : [PaymentMode.CARD, PaymentMode.VOUCHER],
-      totalAmount: actualAmountOfProduct,
-      voucher: totalAmount === actualAmountOfProduct ? [] : [...body.voucher],
-    });
-
-    const order = await newOrder.save();
-
-    const link = await this.paymentService.generateLink(
-      totalAmount,
-      Currency.ILS,
-      PaymentPurpose.ORDER,
-      order.id,
-      body.email,
-      body.name,
-    );
-
-    // eslint-disable-next-line consistent-return
-    return [link];
   }
 
   async updateOrderAfterPayment(orderId: string): Promise<Order> {
@@ -166,20 +179,34 @@ export class OrdersService {
   }
 
   async findMyOrderInfo(loggedInUser: any, orderId: string) : Promise<Order> {
-    const order = await this.checkIfAllowed(loggedInUser, orderId);
-    return order;
+    try {
+      const order = await this.checkIfAllowed(loggedInUser, orderId);
+      return order;
+    } catch (error) {
+      if (error?.name === 'CastError' && error?.kind === 'ObjectId') {
+        throw new BadRequestException(`${error?.model?.modelName} ${ServerErrors.INVALID_ID}`);
+      }
+      exceptionHandling(error);
+    }
   }
 
   async updateOrder(loggedInUser: any, orderId: string, body: UpdateOrderDto): Promise<Order> {
-    const order = await this.checkIfAllowed(loggedInUser, orderId);
+    try {
+      const order = await this.checkIfAllowed(loggedInUser, orderId);
 
-    if (!order) {
-      throw new ForbiddenException(ServerErrors.FORBIDDEN);
+      if (!order) {
+        throw new ForbiddenException(ServerErrors.FORBIDDEN);
+      }
+
+      const updatedOrder = await this.update(loggedInUser.id, orderId, body);
+
+      return updatedOrder;
+    } catch (error) {
+      if (error?.name === 'CastError' && error?.kind === 'ObjectId') {
+        throw new BadRequestException(`${error?.model?.modelName} ${ServerErrors.INVALID_ID}`);
+      }
+      exceptionHandling(error);
     }
-
-    const updatedOrder = await this.update(loggedInUser.id, orderId, body);
-
-    return updatedOrder;
   }
 
   async findAll(queries: FindOrdersQuery) : Promise<Order[]> {

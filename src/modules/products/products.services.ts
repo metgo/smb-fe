@@ -1,13 +1,14 @@
 /* eslint-disable no-undef */
 /* eslint-disable no-param-reassign */
 /* eslint-disable no-nested-ternary */
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
 
 import { ServerErrors } from 'src/common/constant';
 import { paginationConfig } from 'src/common/pagination.config';
 import { sellingPriceForAmountOrPercent } from 'src/common/utils/discount-calculation';
+import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { disSelect } from 'src/common/utils/select.handling';
 import {
   findOneByFieldNames, queryhandler, updateWhere,
@@ -223,20 +224,32 @@ export class ProductsService {
     return products;
   }
 
+  // eslint-disable-next-line consistent-return
   async findManyById(ids: string[]): Promise<Product[]> {
-    const findQuery = { _id: { $in: ids } };
-    let select: {};
-    let page: number;
-    let limit: number;
+    try {
+      const findQuery = { _id: { $in: ids } };
+      let select: {};
+      let page: number;
+      let limit: number;
 
-    const products = await queryhandler<Product>(
-      this.ProductModel,
-      findQuery,
-      select,
-      page,
-      limit,
-    );
-    return products;
+      const products = await queryhandler<Product>(
+        this.ProductModel,
+        findQuery,
+        select,
+        page,
+        limit,
+      );
+      if (!products?.data?.length) {
+        throw new NotFoundException(ServerErrors.PRODUCT.NOT_FOUND);
+      }
+
+      return products;
+    } catch (error) {
+      if (error?.name === 'CastError' && error?.kind === 'ObjectId') {
+        throw new BadRequestException(`${error?.model?.modelName} ${ServerErrors.INVALID_ID}`);
+      }
+      exceptionHandling(error);
+    }
   }
 
   async update(command: UpdateCommand): Promise<Product> {
