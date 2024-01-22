@@ -5,3 +5,8 @@ export enum BusinessStatus {
     CLOSED = 'CLOSED',
     REJECTED = 'REJECTED',
 }
+
+export interface GetBusinessByIdOrSlug{
+    id: string
+    loggedInUser: any;
+}

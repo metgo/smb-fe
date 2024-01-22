@@ -21,7 +21,7 @@ import { Image } from 'src/common/interface/image.interface';
 import { paginationConfig } from 'src/common/pagination.config';
 import { generateRandomCode } from 'src/common/utils/randomCode.generator';
 import { disSelect } from 'src/common/utils/select.handling';
-import { BusinessStatus } from 'src/modules/business/business.type';
+import { BusinessStatus, GetBusinessByIdOrSlug } from 'src/modules/business/business.type';
 import { UpdateBusinessByAdminDto } from 'src/modules/business/dto/update-business-status.dto';
 import { GcpBucketService } from 'src/services/gcp-bucket/gcp-bucket.services';
 import { WebCreateBusiness } from 'src/modules/business/dto/web-create-business.dto';
@@ -336,7 +336,11 @@ export class BusinessService {
     return allBusiness;
   }
 
-  async getBusiness(id: string, loggedInUser: any) {
+  // eslint-disable-next-line consistent-return
+  async getBusiness(command: GetBusinessByIdOrSlug) {
+    const {
+      id, loggedInUser,
+    } = command;
     const populate = {
       path: 'groupTypesId accessibilitiesId bussCategoriesId bussSubCategoriesId socialMedia.socialMediaId',
       select: `${disSelect}`,
@@ -346,27 +350,47 @@ export class BusinessService {
       },
     };
 
-    // eslint-disable-next-line prefer-const
     const populate1 = {
       path: 'dmoId',
       select: `${disSelect} -userId -collaboratorsUser`,
     };
-    // eslint-disable-next-line prefer-const
     const select = `${disSelect}`;
-    const business = await this.BusinessModel.findById(id).select(select).populate(populate).populate(populate1);
-
     const allowedRoles = [UserType.ADMIN, UserType.SUPERADMIN, UserType.DMO];
 
-    if (!business || (
-      !(
-        loggedInUser
-        && (allowedRoles.includes(loggedInUser.role) || business.userId.equals(new mongoose.Types.ObjectId(loggedInUser.id)))
-      ) && business.status !== BusinessStatus.APPROVED
-    )) {
-      throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
-    }
+    try {
+      const business = await this.BusinessModel.findById(id).select(select).populate(populate).populate(populate1);
 
-    return business;
+      if (!business || (
+        !(
+          loggedInUser
+          && (allowedRoles.includes(loggedInUser.role)
+          || business.userId.equals(new mongoose.Types.ObjectId(loggedInUser.id)))
+        ) && business.status !== BusinessStatus.APPROVED
+      )) {
+        throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
+      }
+
+      return business;
+    } catch (error) {
+      if (error?.name === 'CastError' && error?.kind === 'ObjectId') {
+        if (error?.model?.modelName === Business.name) {
+          const business = await findOneByFieldName<Business>(this.BusinessModel, 'slug', id);
+          if (!business || (
+            !(
+              loggedInUser
+          && (allowedRoles.includes(loggedInUser.role)
+          || business.userId.equals(new mongoose.Types.ObjectId(loggedInUser.id)))
+            ) && business.status !== BusinessStatus.APPROVED
+          )) {
+            throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
+          }
+
+          return business;
+        }
+        throw new BadRequestException(`${error?.model?.modelName} ${ServerErrors.INVALID_ID}`);
+      }
+      exceptionHandling(error);
+    }
   }
 
   async getAllMyBusiness(queries: AllFilterQuery, userId: string) {
@@ -476,7 +500,9 @@ export class BusinessService {
   }
 
   async deleteImage(loggedInUser: any, id: string, imageUrl: any): Promise<Business> {
-    const existingBusiness = await this.getBusiness(id, loggedInUser);
+    const existingBusiness = await this.getBusiness({
+      id, loggedInUser,
+    });
 
     const images = existingBusiness.images.filter(image => image.image !== imageUrl);
 
