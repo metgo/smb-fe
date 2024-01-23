@@ -16,13 +16,13 @@ import { UploadDTO } from 'src/modules/media/dto/upload.dto';
 import { MediaServices } from 'src/modules/media/media.service';
 import { fileFilterByExtensions } from 'src/services/gcp-bucket/middleware/file-filter';
 
-@UseGuards(JwtAuthGuard)
 @Controller('media')
 export class MediaController {
   constructor(
     private readonly mediaServices: MediaServices,
   ) {}
 
+  @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
     tags: ['Media'],
     response: { status: HttpStatus.CREATED, description: ServerSuccess.MEDIA.UPLOADED },
@@ -50,7 +50,7 @@ export class MediaController {
     );
   }
 
-  @HttpCode(HttpStatus.OK)
+  @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
     tags: ['Media'],
     response: { status: HttpStatus.OK, description: ServerSuccess.MEDIA.DELETED },

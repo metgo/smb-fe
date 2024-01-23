@@ -144,6 +144,7 @@ export class BusinessService {
     let findQuery: any = query;
 
     if (!('status' in query) && !isAdmin) {
+      console.log(!('status' in query) && !isAdmin);
       findQuery = { ...query, status: BusinessStatus.APPROVED };
     }
 
@@ -277,6 +278,7 @@ export class BusinessService {
     // eslint-disable-next-line prefer-const
     select = `${disSelect}`;
 
+    console.log(findQuery);
     const allBusiness = await queryhandler<Business>(
       this.BusinessModel,
       findQuery,
@@ -407,23 +409,39 @@ export class BusinessService {
     return updateBusiness;
   }
 
-  async uploadMedia(id: string, loggedInUserId: string, dto: Image[]) {
+  async uploadMedia(id: string, loggedInUserId: string, dto: Image[], role: string) {
     const updatedField = {
       updatedBy: loggedInUserId,
       updatedAt: new Date(),
     };
 
-    const updatedBusiness = await updateWhere<Business>(
-      this.BusinessModel,
-      {
-        _id: id,
-        userId: loggedInUserId,
-      },
-      {
-        $push: { images: { $each: dto } },
-        $set: updatedField,
-      },
-    );
+    let updatedBusiness:mongoose.Document<unknown, {}, Business> & Business & {
+      _id: mongoose.Types.ObjectId
+    };
+    if (role === UserType.SUPERADMIN) {
+      updatedBusiness = await updateWhere<Business>(
+        this.BusinessModel,
+        {
+          _id: id,
+        },
+        {
+          $push: { images: { $each: dto } },
+          $set: updatedField,
+        },
+      );
+    } else {
+      updatedBusiness = await updateWhere<Business>(
+        this.BusinessModel,
+        {
+          _id: id,
+          userId: loggedInUserId,
+        },
+        {
+          $push: { images: { $each: dto } },
+          $set: updatedField,
+        },
+      );
+    }
 
     if (!updatedBusiness) {
       throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);

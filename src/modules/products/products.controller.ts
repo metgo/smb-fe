@@ -10,6 +10,7 @@ import {
   Param,
   Patch,
   Post,
+  Put,
   Query,
   Req,
   Res,
@@ -363,11 +364,11 @@ export class ProductsController {
     ],
     operation: 'Update the product by super admin roles',
   })
-  @Patch('/businesses/:businessId/products/:productId')
+  @Put('admin/businesses/:businessId/products/:productId')
   async updateProductByAdmin(
     @Param('businessId') businessId: string,
     @Param('productId') productId: string,
-    @Body() body: ProductDto,
+    @Body() body: WebCreateProduct,
     @Req() req,
     @Res() response: Response,
   ) {
