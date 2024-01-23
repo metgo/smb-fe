@@ -19,8 +19,9 @@ import {
 import { ServerErrors } from 'src/common/constant';
 import { Image } from 'src/common/interface/image.interface';
 import { paginationConfig } from 'src/common/pagination.config';
+import { generateRandomCode } from 'src/common/utils/randomCode.generator';
 import { disSelect } from 'src/common/utils/select.handling';
-import { BusinessStatus } from 'src/modules/business/business.type';
+import { BusinessStatus, GetBusinessByIdOrSlug } from 'src/modules/business/business.type';
 import { UpdateBusinessByAdminDto } from 'src/modules/business/dto/update-business-status.dto';
 import { GcpBucketService } from 'src/services/gcp-bucket/gcp-bucket.services';
 import { WebCreateBusiness } from 'src/modules/business/dto/web-create-business.dto';
@@ -30,6 +31,7 @@ import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.s
 import { BussSubCategory } from 'src/modules/buss-subcategories/schema/buss-subCategory.schema';
 import { Product } from 'src/modules/products/schema/products.schema';
 import { UserType } from 'src/modules/users/users.type';
+import { exceptionHandling } from 'src/common/utils/exception-handling';
 
 @Injectable()
 export class BusinessService {
@@ -47,6 +49,7 @@ export class BusinessService {
     private ProductModel: Model<Product>,
   ) {}
 
+  // eslint-disable-next-line consistent-return
   async createBusiness(dto: createBusinessDto, userId: string): Promise<Business> {
     let newDto:any = dto;
     if (dto.geoLocation) {
@@ -59,15 +62,33 @@ export class BusinessService {
         location,
       };
     }
-    const newBusiness = new this.BusinessModel({
-      ...newDto,
-      userId,
-      createdBy: userId,
-    });
-    await newBusiness.save();
-    return newBusiness;
+    try {
+      const slug = this.generateSlug(dto?.name);
+      const newBusiness = new this.BusinessModel({
+        ...newDto,
+        userId,
+        createdBy: userId,
+        slug,
+      });
+      await newBusiness.save();
+      return newBusiness;
+    } catch (error) {
+      if (this.isDuplicateKeyError(error, 'slug')) {
+        const slug = this.generateSlug(dto?.name);
+        const newBusiness = new this.BusinessModel({
+          ...newDto,
+          userId,
+          createdBy: userId,
+          slug,
+        });
+        await newBusiness.save();
+        return newBusiness;
+      }
+      exceptionHandling(error);
+    }
   }
 
+  // eslint-disable-next-line consistent-return
   async createBusinesForWeb(
     dto: WebCreateBusiness,
     loggedInUserId: string,
@@ -85,9 +106,9 @@ export class BusinessService {
       };
     }
     const images = [];
+    // add to GCP
     await Promise.all(
       image.map(async (file: Express.Multer.File) => {
-        // store in gcp
         const imageUrl = await this.gcpBucketServices.upload(file);
 
         const imageObject = {
@@ -101,36 +122,62 @@ export class BusinessService {
       }),
     );
 
-    // const businessImageUrl = image ? await this.gcpBucketServices.upload(image) : null;
-
-    // const images = [{
-    //   image: businessImageUrl || null,
-    //   caption: image?.originalname || null,
-    //   alt: image?.originalname || null,
-    // }];
-
-    const newBusiness = new this.BusinessModel({
-      ...newDto,
-      images,
-      createdBy: loggedInUserId,
-    });
-    await newBusiness.save();
-
-    newBusiness.images.map(async (img: any) => {
-      const newMedia = new this.MediaModel({
-        reference: {
-          refId: newBusiness.id,
-          schema: 'Business',
-        },
+    try {
+      const slug = this.generateSlug(dto?.name);
+      const newBusiness = new this.BusinessModel({
+        ...newDto,
+        images,
         createdBy: loggedInUserId,
-        url: img.image,
-        originalName: img?.caption || null,
-        mimetype: img?.mimetype || null,
+        slug,
       });
-      await newMedia.save();
-    });
+      await newBusiness.save();
 
-    return newBusiness;
+      // add to Media Table
+      await Promise.all(newBusiness.images.map(async (img: any) => {
+        const newMedia = new this.MediaModel({
+          reference: {
+            refId: newBusiness.id,
+            schema: 'Business',
+          },
+          createdBy: loggedInUserId,
+          url: img.image,
+          originalName: img?.caption || null,
+          mimetype: img?.mimetype || null,
+        });
+        await newMedia.save();
+      }));
+
+      return newBusiness;
+    } catch (err) {
+      if (this.isDuplicateKeyError(err, 'slug')) {
+        const slug = this.generateSlug(dto?.name);
+        const newBusiness = new this.BusinessModel({
+          ...newDto,
+          images,
+          createdBy: loggedInUserId,
+          slug,
+        });
+        await newBusiness.save();
+
+        // add to Media Table
+        await Promise.all(newBusiness.images.map(async (img: any) => {
+          const newMedia = new this.MediaModel({
+            reference: {
+              refId: newBusiness.id,
+              schema: 'Business',
+            },
+            createdBy: loggedInUserId,
+            url: img.image,
+            originalName: img?.caption || null,
+            mimetype: img?.mimetype || null,
+          });
+          await newMedia.save();
+        }));
+
+        return newBusiness;
+      }
+      exceptionHandling(err);
+    }
   }
 
   async getAllBusiness(queries: FilterQuery | AllFilterQuery, isAdmin?: boolean) {
@@ -289,7 +336,11 @@ export class BusinessService {
     return allBusiness;
   }
 
-  async getBusiness(id: string, loggedInUser: any) {
+  // eslint-disable-next-line consistent-return
+  async getBusiness(command: GetBusinessByIdOrSlug) {
+    const {
+      id, loggedInUser,
+    } = command;
     const populate = {
       path: 'groupTypesId accessibilitiesId bussCategoriesId bussSubCategoriesId socialMedia.socialMediaId',
       select: `${disSelect}`,
@@ -299,27 +350,47 @@ export class BusinessService {
       },
     };
 
-    // eslint-disable-next-line prefer-const
     const populate1 = {
       path: 'dmoId',
       select: `${disSelect} -userId -collaboratorsUser`,
     };
-    // eslint-disable-next-line prefer-const
     const select = `${disSelect}`;
-    const business = await this.BusinessModel.findById(id).select(select).populate(populate).populate(populate1);
-
     const allowedRoles = [UserType.ADMIN, UserType.SUPERADMIN, UserType.DMO];
 
-    if (!business || (
-      !(
-        loggedInUser
-        && (allowedRoles.includes(loggedInUser.role) || business.userId.equals(new mongoose.Types.ObjectId(loggedInUser.id)))
-      ) && business.status !== BusinessStatus.APPROVED
-    )) {
-      throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
-    }
+    try {
+      const business = await this.BusinessModel.findById(id).select(select).populate(populate).populate(populate1);
 
-    return business;
+      if (!business || (
+        !(
+          loggedInUser
+          && (allowedRoles.includes(loggedInUser.role)
+          || business.userId.equals(new mongoose.Types.ObjectId(loggedInUser.id)))
+        ) && business.status !== BusinessStatus.APPROVED
+      )) {
+        throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
+      }
+
+      return business;
+    } catch (error) {
+      if (error?.name === 'CastError' && error?.kind === 'ObjectId') {
+        if (error?.model?.modelName === Business.name) {
+          const business = await findOneByFieldName<Business>(this.BusinessModel, 'slug', id);
+          if (!business || (
+            !(
+              loggedInUser
+          && (allowedRoles.includes(loggedInUser.role)
+          || business.userId.equals(new mongoose.Types.ObjectId(loggedInUser.id)))
+            ) && business.status !== BusinessStatus.APPROVED
+          )) {
+            throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
+          }
+
+          return business;
+        }
+        throw new BadRequestException(`${error?.model?.modelName} ${ServerErrors.INVALID_ID}`);
+      }
+      exceptionHandling(error);
+    }
   }
 
   async getAllMyBusiness(queries: AllFilterQuery, userId: string) {
@@ -429,7 +500,9 @@ export class BusinessService {
   }
 
   async deleteImage(loggedInUser: any, id: string, imageUrl: any): Promise<Business> {
-    const existingBusiness = await this.getBusiness(id, loggedInUser);
+    const existingBusiness = await this.getBusiness({
+      id, loggedInUser,
+    });
 
     const images = existingBusiness.images.filter(image => image.image !== imageUrl);
 
@@ -489,5 +562,13 @@ export class BusinessService {
       .select('busiEmail');
 
     return bussEmails;
+  }
+
+  private generateSlug(name: string | null): string {
+    return name ? `${name.replace(/ /g, '-').toLowerCase()}` : `${generateRandomCode(3).toLowerCase()}-${generateRandomCode(4).toLowerCase()}`;
+  }
+
+  private isDuplicateKeyError(error: any, fieldName: string): boolean {
+    return error.code === 11000 && error?.keyPattern && error?.keyPattern[fieldName] === 1;
   }
 }

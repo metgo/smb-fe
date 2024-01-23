@@ -130,12 +130,15 @@ export class BusinessController {
     response: { status: 200, description: ServerSuccess.BUSINESS_LISTED },
     operation: 'Get approved business detail by any user',
   })
-  @Get('business/:id')
+  @Get('business/:idOrSlug')
   async getBusinessDetailForAll(
     @Res() response: Response,
-    @Param('id') id: string,
+    @Param('idOrSlug') idOrSlug: string,
   ) {
-    const business = await this.businessServices.getBusiness(id, null);
+    const business = await this.businessServices.getBusiness({
+      id: idOrSlug,
+      loggedInUser: null,
+    });
 
     return responseHelper(response, HttpStatus.OK, ServerSuccess.BUSINESS_LISTED, business, null, null);
   }
@@ -153,7 +156,10 @@ export class BusinessController {
     @Res() response: Response,
     @Param('id') id: string,
   ) {
-    const business = await this.businessServices.getBusiness(id, request.user);
+    const business = await this.businessServices.getBusiness({
+      id,
+      loggedInUser: request.user,
+    });
 
     return responseHelper(response, HttpStatus.OK, ServerSuccess.BUSINESS_LISTED, business, null, null);
   }

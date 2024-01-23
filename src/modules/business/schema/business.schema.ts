@@ -203,6 +203,12 @@ export class Business extends AuditableSchema {
     required: false,
   })
     productsId: mongoose.Types.ObjectId[];
+
+  @Prop({
+    unique: true,
+    required: true,
+  })
+    slug: string;
 }
 
 export const BusinessSchema = SchemaFactory.createForClass(Business);
