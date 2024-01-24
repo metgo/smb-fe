@@ -1,3 +1,4 @@
+/* eslint-disable consistent-return */
 import {
   Body, Controller, Get, HttpCode, HttpStatus, Param, Patch, Post, Query, Req, Res, UseGuards,
 } from '@nestjs/common';
@@ -7,6 +8,7 @@ import { calculateTotalAmount } from 'src/common/calculate-total-amount';
 import { ServerSuccess } from 'src/common/constant';
 import { ExternalApiPostQuery } from 'src/common/query-handler/externalapi-post.query';
 import { sortByPriorityAndHighest } from 'src/common/sort-priority-and-highest';
+import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
 import { ExternalApiGuard } from 'src/core/guards/authorization/external-api-guards';
 import { Roles } from 'src/core/guards/authorization/roles';
@@ -41,49 +43,53 @@ export class OrdersController {
     @Req() req,
     @Res() response: Response,
   ) {
-    const productIds = body.products.map(product => product.id);
-    const productsFromDB = await this.productService.findManyById(productIds);
+    try {
+      const productIds = body.products.map(product => product.id);
+      const productsFromDB = await this.productService.findManyById(productIds);
 
-    let totalAmountToPay:number = await calculateTotalAmount(body.products, productsFromDB);
-    const actualAmountOfProduct = totalAmountToPay;
+      let totalAmountToPay:number = await calculateTotalAmount(body.products, productsFromDB);
+      const actualAmountOfProduct = totalAmountToPay;
 
-    if (body.voucher?.length) {
-      const voucherIds = body.voucher.map(voucher => voucher.id);
-      const vouchers = await this.voucherService.findByIds(voucherIds);
+      if (body.voucher?.length) {
+        const voucherIds = body.voucher.map(voucher => voucher.id);
+        const vouchers = await this.voucherService.findByValidIds(voucherIds);
 
-      if (vouchers?.length) {
-        const sortedVoucher = sortByPriorityAndHighest(totalAmountToPay, vouchers);
+        if (vouchers?.length) {
+          const sortedVoucher = sortByPriorityAndHighest(totalAmountToPay, vouchers);
 
-        if (sortedVoucher?.length) {
-          const voucher = await this.ordersService.processVouchers(
-            req.user ? req.user.id : null,
-            sortedVoucher,
-            totalAmountToPay,
-          );
+          if (sortedVoucher?.length) {
+            const voucher = await this.ordersService.processVouchers(
+              req.user ? req.user.id : null,
+              sortedVoucher,
+              totalAmountToPay,
+            );
 
-          if (voucher?.length) {
-            const redeemedAmount = voucher.reduce((total, item) => total + item.redeemedAmount, 0);
-            totalAmountToPay -= redeemedAmount;
+            if (voucher?.length) {
+              const redeemedAmount = voucher.reduce((total, item) => total + item.redeemedAmount, 0);
+              totalAmountToPay -= redeemedAmount;
+            }
           }
         }
       }
+
+      const order = await this.ordersService.create(
+        req.user ? req.user.id : null,
+        body,
+        totalAmountToPay,
+        actualAmountOfProduct,
+      );
+
+      return responseHelper(
+        response,
+        HttpStatus.CREATED,
+        ServerSuccess.ORDERS.CREATED,
+        order,
+        null,
+        null,
+      );
+    } catch (err) {
+      exceptionHandling(err);
     }
-
-    const order = await this.ordersService.create(
-      req.user ? req.user.id : null,
-      body,
-      totalAmountToPay,
-      actualAmountOfProduct,
-    );
-
-    return responseHelper(
-      response,
-      HttpStatus.CREATED,
-      ServerSuccess.ORDERS.CREATED,
-      order,
-      null,
-      null,
-    );
   }
 
   @ApiEndpoint({
@@ -225,48 +231,52 @@ export class OrdersController {
     @Req() req,
     @Res() response: Response,
   ) {
-    const productIds = body.products.map(product => product.id);
-    const productsFromDB = await this.productService.findManyById(productIds);
+    try {
+      const productIds = body.products.map(product => product.id);
+      const productsFromDB = await this.productService.findManyById(productIds);
 
-    let totalAmountToPay:number = await calculateTotalAmount(body.products, productsFromDB);
-    const actualAmountOfProduct = totalAmountToPay;
+      let totalAmountToPay:number = await calculateTotalAmount(body.products, productsFromDB);
+      const actualAmountOfProduct = totalAmountToPay;
 
-    if (body.voucher?.length) {
-      const voucherIds = body.voucher.map(voucher => voucher.id);
-      const vouchers = await this.voucherService.findByIds(voucherIds);
+      if (body.voucher?.length) {
+        const voucherIds = body.voucher.map(voucher => voucher.id);
+        const vouchers = await this.voucherService.findByValidIds(voucherIds);
 
-      if (vouchers?.length) {
-        const sortedVoucher = sortByPriorityAndHighest(totalAmountToPay, vouchers);
+        if (vouchers?.length) {
+          const sortedVoucher = sortByPriorityAndHighest(totalAmountToPay, vouchers);
 
-        if (sortedVoucher?.length) {
-          const voucher = await this.ordersService.processVouchers(
-            req.user.id,
-            sortedVoucher,
-            totalAmountToPay,
-          );
+          if (sortedVoucher?.length) {
+            const voucher = await this.ordersService.processVouchers(
+              req.user.id,
+              sortedVoucher,
+              totalAmountToPay,
+            );
 
-          if (voucher?.length) {
-            const redeemedAmount = voucher.reduce((total: number, item) => total + item.redeemedAmount, 0);
-            totalAmountToPay -= redeemedAmount;
+            if (voucher?.length) {
+              const redeemedAmount = voucher.reduce((total: number, item) => total + item.redeemedAmount, 0);
+              totalAmountToPay -= redeemedAmount;
+            }
           }
         }
       }
-    }
 
-    const order = await this.ordersService.create(
-      req.user.id,
-      body,
-      totalAmountToPay,
-      actualAmountOfProduct,
-      query.identifierId,
-    );
-    return responseHelper(
-      response,
-      HttpStatus.CREATED,
-      ServerSuccess.ORDERS.CREATED,
-      order,
-      null,
-      null,
-    );
+      const order = await this.ordersService.create(
+        req.user.id,
+        body,
+        totalAmountToPay,
+        actualAmountOfProduct,
+        query.identifierId,
+      );
+      return responseHelper(
+        response,
+        HttpStatus.CREATED,
+        ServerSuccess.ORDERS.CREATED,
+        order,
+        null,
+        null,
+      );
+    } catch (err) {
+      exceptionHandling(err);
+    }
   }
 }

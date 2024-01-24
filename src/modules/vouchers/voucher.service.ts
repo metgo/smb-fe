@@ -22,6 +22,7 @@ import {
 import { Currency, VoucherPaymentStatus } from 'src/common/enum';
 import { ExternalApiFilterQuery } from 'src/common/query-handler/external-api-filter.query';
 import { ExternalApiPostQuery } from 'src/common/query-handler/externalapi-post.query';
+import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { generateRandomCode } from 'src/common/utils/randomCode.generator';
 import { remainingAmountCalculation } from 'src/common/utils/remaining-amount-calculation';
 import { queryhandler, updateMany, updateWhere } from 'src/core/helper/query-helper';
@@ -252,6 +253,23 @@ export class VoucherService {
     const voucherIds = await this.VoucherModel.find({ _id: { $in: ids } }).populate(populate).exec();
 
     return voucherIds;
+  }
+
+  // eslint-disable-next-line consistent-return
+  async findByValidIds(ids: string[]): Promise<Voucher[]> {
+    try {
+      const populate = {
+        path: 'campId',
+        select: `${disSelect}`,
+      };
+      const voucherIds = await this.VoucherModel.find({ _id: { $in: ids } }).populate(populate).exec();
+      return voucherIds;
+    } catch (error) {
+      if (error?.name === 'CastError' && error?.kind === 'ObjectId') {
+        throw new BadRequestException(`${error?.model?.modelName} ${ServerErrors.INVALID_ID}`);
+      }
+      exceptionHandling(error);
+    }
   }
 
   async updateVoucherAmount(loggedInUserId: string | null, voucherId: string, totalAmount: number) {

@@ -21,7 +21,6 @@ import { VoucherStatus } from 'src/common/enum';
 import { UpdateFieldInterface } from './interface';
 import { responseHelper } from 'src/core/helper/response.helper';
 import { Response } from 'express';
-import { ConfigService } from 'src/services/config/config.service';
 import { UpdateVoucherBalance } from 'src/modules/vouchers/dto/update-voucher-balance.dto';
 
 @Controller()
@@ -30,7 +29,6 @@ export class VoucherController {
     private readonly voucherService: VoucherService,
     private readonly campaignService: CampaignService,
     private readonly userSerive: UsersService,
-    private readonly configService: ConfigService,
   ) { }
 
   @UseGuards(JwtAuthGuard)

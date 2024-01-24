@@ -16,6 +16,8 @@ export const softValidationPipe = new ValidationPipe({
 export const ServerErrors = {
   FORBIDDEN: 'Access Denied',
   IS_NOT_BLANK: 'cannot be empty or contain only spaces',
+  INVALID_ID: 'id is invalid',
+  INVALID_QUANTITY: 'Entered quantity is not valid number',
   USER: {
     NOT_FOUND: 'User not found',
     EXISTS: 'User already exists',
