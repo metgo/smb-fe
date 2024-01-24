@@ -63,11 +63,6 @@ export class CreateOrderDto {
   @ApiProperty()
     lastName: string;
 
-  @IsString()
-  @IsNotEmpty()
-  @ApiProperty()
-    name: string;
-
   @IsArray()
   @IsNotEmpty()
   @ApiProperty({

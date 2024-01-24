@@ -62,9 +62,6 @@ export class Order extends AuditableSchema {
     address: string;
 
   @Prop({ default: null })
-    name: string;
-
-  @Prop({ default: null })
     firstName: string;
 
   @Prop({ default: null })

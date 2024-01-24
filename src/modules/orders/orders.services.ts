@@ -80,7 +80,7 @@ export class OrdersService {
         PaymentPurpose.ORDER,
         order.id,
         body.email,
-        body.name,
+        body.firstName,
       );
 
       return [link];
