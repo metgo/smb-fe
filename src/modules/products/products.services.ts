@@ -277,19 +277,32 @@ export class ProductsService {
       price,
       quantity,
     };
-
-    const updatedProduct = await updateWhere<Product>(
-      this.ProductModel,
-      {
-        _id: command.productId,
-        businessId: command.businessId,
-        $or: [
-          { primaryUserId: command.loggedInUserId },
-          { collaboratorId: command.loggedInUserId },
-        ],
-      },
-      { ...updatedField },
-    );
+    let updatedProduct: mongoose.Document<unknown, {}, Product>& Product & {
+      _id: mongoose.Types.ObjectId;
+    };
+    if (command.isAdmin) {
+      updatedProduct = await updateWhere<Product>(
+        this.ProductModel,
+        {
+          _id: command.productId,
+          businessId: command.businessId,
+        },
+        { ...updatedField },
+      );
+    } else {
+      updatedProduct = await updateWhere<Product>(
+        this.ProductModel,
+        {
+          _id: command.productId,
+          businessId: command.businessId,
+          $or: [
+            { primaryUserId: command.loggedInUserId },
+            { collaboratorId: command.loggedInUserId },
+          ],
+        },
+        { ...updatedField },
+      );
+    }
 
     if (!updatedProduct) {
       throw new NotFoundException(ServerErrors.PRODUCT.NOT_FOUND);
@@ -304,21 +317,38 @@ export class ProductsService {
       updatedAt: new Date(),
     };
 
-    const updatedProduct = await updateWhere<Product>(
-      this.ProductModel,
-      {
-        _id: command.productId,
-        businessId: command.businessId,
-        $or: [
-          { primaryUserId: command.loggedInUserId },
-          { collaboratorId: command.loggedInUserId },
-        ],
-      },
-      {
-        $push: { images: { $each: command.body } },
-        $set: updatedField,
-      },
-    );
+    let updatedProduct: mongoose.Document<unknown, {}, Product> & Product & {
+      _id: mongoose.Types.ObjectId;
+  };
+    if (command.role === UserType.SUPERADMIN) {
+      updatedProduct = await updateWhere<Product>(
+        this.ProductModel,
+        {
+          _id: command.productId,
+          businessId: command.businessId,
+        },
+        {
+          $push: { images: { $each: command.body } },
+          $set: updatedField,
+        },
+      );
+    } else {
+      updatedProduct = await updateWhere<Product>(
+        this.ProductModel,
+        {
+          _id: command.productId,
+          businessId: command.businessId,
+          $or: [
+            { primaryUserId: command.loggedInUserId },
+            { collaboratorId: command.loggedInUserId },
+          ],
+        },
+        {
+          $push: { images: { $each: command.body } },
+          $set: updatedField,
+        },
+      );
+    }
 
     if (!updatedProduct) {
       throw new NotFoundException(ServerErrors.PRODUCT.NOT_FOUND);

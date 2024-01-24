@@ -35,6 +35,7 @@ import { DMOService } from 'src/modules/dmo/dmo.service';
 import { UserType } from 'src/modules/users/users.type';
 import { fileFilterByExtensions } from 'src/services/gcp-bucket/middleware/file-filter';
 import { updateWebBusinessDto } from './dto/web.update.dto';
+import { GetBusinessByIdOrSlug } from './business.type';
 
 @Controller()
 export class BusinessController {
@@ -139,6 +140,28 @@ export class BusinessController {
       id: idOrSlug,
       loggedInUser: null,
     });
+
+    return responseHelper(response, HttpStatus.OK, ServerSuccess.BUSINESS_LISTED, business, null, null);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @ApiEndpoint({
+    tags: ['Business'],
+    response: { status: 200, description: ServerSuccess.BUSINESS_LISTED },
+    operation: 'Get approved business detail by any user',
+    noAuthToken: true,
+  })
+  @Get('my-business/:id')
+  async getBusinessDetailOwner(
+    @Res() response: Response,
+    @Req() request:any,
+    @Param('id') id: string,
+  ) {
+    const command: GetBusinessByIdOrSlug = {
+      id,
+      loggedInUser: request?.user,
+    };
+    const business = await this.businessServices.getBusiness(command);
 
     return responseHelper(response, HttpStatus.OK, ServerSuccess.BUSINESS_LISTED, business, null, null);
   }

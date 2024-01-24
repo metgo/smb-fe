@@ -1,6 +1,8 @@
 import { Image } from 'src/common/interface/image.interface';
 import { ProductDto } from 'src/modules/products/dto/product.dto';
 import { AllFilterQuery, FilterQuery } from 'src/modules/products/dto';
+import { WebCreateProduct } from 'src/modules/products/dto/web-create-product.dto';
+import { UserType } from '../users/users.type';
 
 /* eslint-disable no-shadow */
 export enum ProductStatus {
@@ -20,7 +22,9 @@ export interface UpdateCommand {
     productId: string,
     businessId: string,
     loggedInUserId: string,
-    body: ProductDto,
+    body: ProductDto | WebCreateProduct,
+    isAdmin: boolean | null,
+
 }
 
 export interface UploadMediaCommand {
@@ -28,4 +32,5 @@ export interface UploadMediaCommand {
     businessId: string,
     loggedInUserId: string,
     body: Image[],
+    role: UserType
 }

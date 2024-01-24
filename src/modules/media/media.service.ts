@@ -56,7 +56,7 @@ export class MediaServices {
 
     // update to business model
     if (body.reference === ReferenceType.BUSINESS) {
-      const updateBusiness = await this.businessService.uploadMedia(body.refId, loggedInUser.id, images);
+      const updateBusiness = await this.businessService.uploadMedia(body.refId, loggedInUser.id, images, loggedInUser.role);
       return updateBusiness;
     }
 
@@ -67,6 +67,7 @@ export class MediaServices {
         businessId: body.businessId,
         loggedInUserId: loggedInUser.id,
         body: images,
+        role: loggedInUser.role,
       });
       return updateProduct;
     }
