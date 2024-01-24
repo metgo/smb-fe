@@ -54,19 +54,14 @@ export class CreateOrderDto {
     address: string;
 
   @IsString()
-  @IsOptional()
+  @IsNotEmpty()
   @ApiProperty()
     firstName: string;
 
   @IsString()
-  @IsOptional()
-  @ApiProperty()
-    lastName: string;
-
-  @IsString()
   @IsNotEmpty()
   @ApiProperty()
-    name: string;
+    lastName: string;
 
   @IsArray()
   @IsNotEmpty()

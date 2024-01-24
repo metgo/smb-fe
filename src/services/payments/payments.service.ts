@@ -119,7 +119,7 @@ export class PaymentsService {
       await this.mailchimpService.sendTransactionalEmail({
         subject: 'Order Confirmed - MetGo',
         to: updateOrder.email,
-        text: `Dear ${updateOrder.name}, Your order has been placed successfully.`,
+        text: `Dear ${updateOrder.firstName}, Your order has been placed successfully.`,
       });
       // SEND TO BUSINESS OWNER
       const businessEmails = await this.businessService.findBusinessEmailByIds(updateOrder.businessId);
