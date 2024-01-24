@@ -54,12 +54,12 @@ export class CreateOrderDto {
     address: string;
 
   @IsString()
-  @IsOptional()
+  @IsNotEmpty()
   @ApiProperty()
     firstName: string;
 
   @IsString()
-  @IsOptional()
+  @IsNotEmpty()
   @ApiProperty()
     lastName: string;
 
