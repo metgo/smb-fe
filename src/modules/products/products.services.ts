@@ -163,7 +163,7 @@ export class ProductsService {
     return product;
   }
 
-  async findOneForAdminOrPrimaryUser(productId: string, loggedInUser: any): Promise<Product> {
+  async findOneForLoggedInUser(productId: string, loggedInUser: any): Promise<Product> {
     const product = await findOneByFieldNames<Product>(
       this.ProductModel,
       { _id: productId },
