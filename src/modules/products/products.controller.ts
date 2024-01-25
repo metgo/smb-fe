@@ -158,7 +158,7 @@ export class ProductsController {
   @ApiEndpoint({
     tags: ['Admin', 'Products'],
     response: { status: HttpStatus.OK, description: ServerSuccess.PRODUCTS.LISTED },
-    operation: 'Get detail of a product by admin, superadmin, dmo and product owner',
+    operation: 'Get detail of a product by admin, superadmin and dmo user',
     params: [{
       name: 'productId',
       type: 'string',
@@ -166,6 +166,7 @@ export class ProductsController {
     }],
     noAuthToken: true,
   })
+  @Roles(UserType.ADMIN, UserType.DMO, UserType.SUPERADMIN)
   @UseGuards(JwtAuthGuard)
   @ApiNotFoundResponse({ description: ServerErrors.PRODUCT.NOT_FOUND })
   @HttpCode(HttpStatus.OK)
@@ -175,7 +176,7 @@ export class ProductsController {
     @Param('productId') productId: string,
     @Res() response: Response,
   ) {
-    const product = await this.productsService.findOneForAdminOrPrimaryUser(productId, req.user);
+    const product = await this.productsService.findOneForLoggedInUser(productId, req.user);
     return responseHelper(
       response,
       HttpStatus.OK,
@@ -217,10 +218,41 @@ export class ProductsController {
     );
   }
 
+  @ApiEndpoint({
+    tags: ['Products'],
+    response: { status: HttpStatus.OK, description: ServerSuccess.PRODUCTS.LISTED },
+    operation: 'Get detail of a product of logged-in user',
+    params: [{
+      name: 'productId',
+      type: 'string',
+      required: true,
+    }],
+    noAuthToken: true,
+  })
+  @UseGuards(JwtAuthGuard)
+  @ApiNotFoundResponse({ description: ServerErrors.PRODUCT.NOT_FOUND })
+  @HttpCode(HttpStatus.OK)
+  @Get('/my-products/:productId')
+  async getProductDetailsByALoggedInUser(
+    @Req() req,
+    @Param('productId') productId: string,
+    @Res() response: Response,
+  ) {
+    const product = await this.productsService.findOneForLoggedInUser(productId, req.user);
+    return responseHelper(
+      response,
+      HttpStatus.OK,
+      ServerSuccess.PRODUCTS.LISTED,
+      product,
+      null,
+      null,
+    );
+  }
+
   @Roles(UserType.ADMIN, UserType.DMO, UserType.SUPERADMIN)
   @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
-    tags: ['Products'],
+    tags: ['Admin', 'Products'],
     response: { status: HttpStatus.OK, description: ServerSuccess.PRODUCTS.LISTED },
     operation: 'Get all products by admin, dmo and superadmin',
     softBlockExtraDtoFields: true,

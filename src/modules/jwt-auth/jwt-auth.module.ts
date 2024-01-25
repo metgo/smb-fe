@@ -4,6 +4,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { JwtAuthService } from 'src/modules/jwt-auth/services/jwt-auth.service';
 import { JwtAuthStrategy } from 'src/modules/jwt-auth/jwt-auth.strategy';
 import { JwtStrategyProvider } from 'src/modules/jwt-auth/providers/jwt-strategy.provider';
+import { ConfigModule } from 'src/services/config/config.module';
 import { ConfigService } from 'src/services/config/config.service';
 
 const configService = new ConfigService();
@@ -12,9 +13,10 @@ const configService = new ConfigService();
   imports: [
     JwtModule.register({
       global: true,
-      secret: configService.get('ACCESS_TOKEN'),
-      signOptions: { expiresIn: configService.get('JWT_TOKEN_EXPIRES') },
+      secret: configService.JWT.ACCESS_TOKEN,
+      signOptions: { expiresIn: configService.JWT.TOKEN_EXPIRES },
     }),
+    ConfigModule,
   ],
   providers: [JwtAuthStrategy, JwtAuthService, JwtStrategyProvider],
   exports: [JwtModule, JwtAuthService],

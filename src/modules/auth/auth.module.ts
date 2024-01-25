@@ -16,8 +16,8 @@ const configService = new ConfigService();
     JwtAuthModule,
     JwtModule.register({
       global: true,
-      secret: configService.get('ACCESS_TOKEN'),
-      signOptions: { expiresIn: configService.get('JWT_TOKEN_EXPIRES') },
+      secret: configService.JWT.ACCESS_TOKEN,
+      signOptions: { expiresIn: configService.JWT.TOKEN_EXPIRES },
     }),
     HashModule,
   ],
