@@ -28,9 +28,9 @@ export class ConfigService {
       'API_PORT',
       'MONGODB_URI',
       'JWT_TOKEN_EXPIRES',
-      'ADMIN_JWT_TOKEN_EXPIRES',
-      'REFRESH_TOKEN_EXPIRATION_IN_SECONDS',
-      'RESET_PASSWORD_TOKEN_EXPIRATION_IN_SECONDS',
+      'ACCESS_TOKEN_EXPIRATION',
+      'REFRESH_TOKEN_EXPIRATION',
+      'OTP_EXPIRATION',
       'ACCESS_TOKEN',
       'REFRESH_TOKEN',
       'GCS_BUCKET',
@@ -82,10 +82,11 @@ export class ConfigService {
       HOST: Joi.string().default('localhost'),
       ENV_NAME: Joi.string().required(),
       API_PORT: Joi.number().port().default(3000),
-      PORT: Joi.number().port().default(3000),
-      DATABASE_ENCRYPTION_KEY: Joi.string().required(),
       MONGODB_URI: Joi.string().required(),
       JWT_TOKEN_EXPIRES: Joi.number().required(),
+      ACCESS_TOKEN_EXPIRATION: Joi.number().required(),
+      REFRESH_TOKEN_EXPIRATION: Joi.number().required(),
+      OTP_EXPIRATION: Joi.number().required(),
       ACCESS_TOKEN: Joi.string().required(),
       REFRESH_TOKEN: Joi.string().required(),
       GCS_BUCKET: Joi.string().required(),
@@ -94,6 +95,7 @@ export class ConfigService {
       GCS_FILE_PATH: Joi.string().required(),
       SUPER_ADMIN_EMAIL: Joi.string().required(),
       SUPER_ADMIN_PASSWORD: Joi.string().required(),
+      DATABASE_ENCRYPTION_KEY: Joi.string().required(),
       FROM_EMAIL: Joi.string().required(),
       SERVICE_CLIENT: Joi.string().required(),
       PRIVATE_KEY: Joi.string().required(),
@@ -191,6 +193,17 @@ export class ConfigService {
       SERVER_PREFIX: this.get('MAILCHIMP_SERVER_PREFIX'),
       FROM_EMAIL: this.get('MAILCHIMP_FROM_EMAIL'),
       TAV8_SUPPORT_EMAIL: this.get('MAILCHIMP_TAV8_SUPPORT_EMAIL'),
+    };
+  }
+
+  get JWT() {
+    return {
+      TOKEN_EXPIRES: this.get('JWT_TOKEN_EXPIRES'),
+      ACCESS_TOKEN_EXPIRATION: this.get('ACCESS_TOKEN_EXPIRATION'),
+      REFRESH_TOKEN_EXPIRATION: this.get('REFRESH_TOKEN_EXPIRATION'),
+      OTP_EXPIRATION: this.get('OTP_EXPIRATION'),
+      ACCESS_TOKEN: this.get('ACCESS_TOKEN'),
+      REFRESH_TOKEN: this.get('REFRESH_TOKEN'),
     };
   }
 }

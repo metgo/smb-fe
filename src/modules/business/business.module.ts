@@ -7,6 +7,7 @@ import { UsersService } from '../users/users.services';
 import { UserSchema } from '../users/schema/users.schema';
 import { DMOSchema } from '../dmo/schema/dmo.schema';
 import { DMOService } from '../dmo/dmo.service';
+import { ConfigModule } from 'src/services/config/config.module';
 import { MailModule } from 'src/services/mail/mail.module';
 import { OTPSchema } from '../users/schema/otp.schema';
 import { JwtAuthService } from '../jwt-auth/services/jwt-auth.service';
@@ -30,6 +31,7 @@ import { Product, ProductSchema } from '../products/schema/products.schema';
       { name: BussSubCategory.name, schema: BussSubCategorySchema },
       { name: Product.name, schema: ProductSchema },
     ]),
+    ConfigModule,
     MailModule,
     HashModule,
     GcpBucketModule,
