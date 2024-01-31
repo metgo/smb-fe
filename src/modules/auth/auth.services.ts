@@ -1,6 +1,7 @@
 import {
-  Injectable, UnauthorizedException,
+  Injectable, NotFoundException, UnauthorizedException,
 } from '@nestjs/common';
+import { ServerErrors } from 'src/common/constant';
 
 import { LoginInterface } from 'src/modules/auth/interface/login.interface';
 import { SignInRequest } from 'src/modules/auth/requests/signin.request';
@@ -17,17 +18,24 @@ export class AuthService {
   ) {}
 
   async login(body: SignInRequest): Promise<LoginInterface> {
-    const user = await this.usersService.findByEmail(body.email);
+    const user = await this.usersService.validateUserIfNeedToRecover(body.email);
+
+    if (!user) {
+      throw new NotFoundException(ServerErrors.USER.NOT_FOUND);
+    }
     const isPasswordValid = await this.hashService.validate(user.password, body.password);
 
+    if (user.loginAttempts > 4) {
+      throw new UnauthorizedException(ServerErrors.USER.BLOCKED);
+    }
+
     if (!isPasswordValid) {
-      await this.usersService.update(user.id, {
-        lastLogin: user.lastLogin,
+      await this.usersService.updateLastLogin(user.id, {
         loginAttempts: user.loginAttempts + 1,
       });
 
       // take action if login attempts is greater than 5
-      throw new UnauthorizedException('Invalid credential');
+      throw new UnauthorizedException(ServerErrors.USER.INVALID_CREDENTIALS);
     }
     const userBody = {
       id: user.id,
@@ -36,21 +44,18 @@ export class AuthService {
       hasBusiness: user.hasBusiness,
     };
     const { accessToken, refreshToken } = this.jwtAuthService.login(userBody);
-    await this.usersService.update(user.id, {
+    await this.usersService.updateLastLogin(user.id, {
       lastLogin: new Date(),
       loginAttempts: 0,
     });
-
-    const [splittedfirstName, splittedlastName] = (user.fullName || '').split(' ');
 
     return {
       accessToken,
       refreshToken,
       user: {
         id: user.id,
-        fullName: user.fullName,
-        firstName: user.firstName || splittedfirstName,
-        lastName: user.lastName || splittedlastName,
+        firstName: user.firstName,
+        lastName: user.lastName,
         phoneDetails: {
           countryCode: user.countryCode || null,
           phoneNumber: user.phoneNumber,

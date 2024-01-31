@@ -45,13 +45,11 @@ export class JwtAuthGuard implements CanActivate {
     if (!user) {
       throw new NotFoundException('User not found');
     }
-    const [splittedfirstName, splittedlastName] = (user.fullName || '').split(' ');
 
     request.user = {
       id: user.id,
-      fullName: user.fullName,
-      firstName: user.firstName || splittedfirstName,
-      lastName: user.lastName || splittedlastName,
+      firstName: user.firstName,
+      lastName: user.lastName,
       phoneDetails: {
         countryCode: user.countryCode,
         phoneNumber: user.phoneNumber,

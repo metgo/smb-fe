@@ -20,7 +20,7 @@ import { GetUserDetailsResponse } from 'src/modules/users/responses/get-user-det
 import { UsersService } from 'src/modules/users/users.services';
 import { ChangePasswordDto } from './requests/change-password.dto';
 import { Response } from 'express';
-import { ForgetPasswordDto, UpdatePasswordDto } from './requests/forget-password.dto';
+import { SendOtpToEmailDTO, UpdatePasswordDto } from './requests/forget-password.dto';
 import { responseHelper } from 'src/core/helper/response.helper';
 import { VerifyOtpDto } from './requests/verify-otp.dto';
 
@@ -89,7 +89,7 @@ export class AuthController {
   @Post('send-otp')
   async forgetPassword(
     @Res() response: Response,
-    @Body() dto: ForgetPasswordDto,
+    @Body() dto: SendOtpToEmailDTO,
   ) {
     const user = await this.userService.findByEmail(dto.email);
 
@@ -146,6 +146,28 @@ export class AuthController {
       response,
       HttpStatus.OK,
       ServerSuccess.USER.UPDATED,
+      null,
+      null,
+      null,
+    );
+  }
+
+  @ApiEndpoint({
+    tags: ['Auth'],
+    response: { status: HttpStatus.OK, description: ServerSuccess.USER.RECOVER },
+    operation: 'Recover user account',
+  })
+  @Post('recover-account')
+  async recoverUserAccount(
+    @Res() response: Response,
+    @Body() body: SendOtpToEmailDTO,
+  ) {
+    await this.userService.recoverUserAccount(body);
+
+    return responseHelper(
+      response,
+      HttpStatus.OK,
+      ServerSuccess.USER.RECOVER,
       null,
       null,
       null,

@@ -68,7 +68,7 @@ export class MailService {
   }
 
   sendForgetPasswordOtp(to: User, otp: string) {
-    const name = to.firstName || to.fullName;
+    const name = to.firstName;
     return this.sendMail(
       to.email,
       'Forget Password - MetGo',
@@ -86,7 +86,7 @@ export class MailService {
       'Welcome to MetGo',
       'welcome-email-with-pwd.pug',
       {
-        guestName: to.fullName ? to.fullName : 'Sitanshu',
+        guestName: to.firstName ? to.firstName : 'Sitanshu',
         email: to.email,
         password: to.password,
       },

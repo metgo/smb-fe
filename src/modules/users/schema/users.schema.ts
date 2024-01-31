@@ -1,14 +1,13 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
-import { Locale } from 'src/common/enum';
 
+import { Locale } from 'src/common/enum';
+import { AuditableSchema } from 'src/core/helper/auditable.schema';
 import { ExternalApi } from 'src/modules/external-api/schema/external-api.schema';
 import { UserType } from 'src/modules/users/users.type';
 
-@Schema({
-  timestamps: true,
-})
-export class User {
+@Schema({})
+export class User extends AuditableSchema {
   @Prop({
     type: mongoose.Schema.Types.ObjectId,
     index: true,
@@ -16,9 +15,6 @@ export class User {
     auto: true,
   })
     _id: mongoose.Types.ObjectId;
-
-  @Prop()
-    fullName: string;
 
   @Prop({ default: null })
     firstName: string;
@@ -64,15 +60,6 @@ export class User {
 
   @Prop({ default: false })
     hasBusiness: boolean;
-
-  @Prop({ default: Date.now })
-    createdAt: Date;
-
-  @Prop({ default: Date.now })
-    updatedAt: Date;
-
-  @Prop({ default: null })
-    deletedAt: Date;
 
   @Prop({
     default: null,

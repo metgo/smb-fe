@@ -1,5 +1,6 @@
 import { Module, ValidationPipe } from '@nestjs/common';
 import { APP_PIPE } from '@nestjs/core';
+import { ScheduleModule } from '@nestjs/schedule';
 import { MongooseModule } from '@nestjs/mongoose';
 
 import dbConfig from './core/dbConfig';
@@ -36,6 +37,7 @@ import { AuthorityModule } from 'src/modules/authority/authority.module';
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     MongooseModule.forRoot(dbConfig.uri),
     AuthModule,
     JwtAuthModule,

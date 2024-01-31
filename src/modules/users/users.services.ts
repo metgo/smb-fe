@@ -19,18 +19,16 @@ import {
   findOneByFieldName, findOneByFieldNameExcludeId, findOneById, update, updateById,
 } from 'src/core/helper/query-helper';
 import { ServerErrors, ServerSuccess } from 'src/common/constant';
-import { UpdateLastLoginRequest } from 'src/modules/users/requests/update-last-logins.request';
 import { ConfigService } from 'src/services/config/config.service';
-import { UserType } from './users.type';
+import { UpdateLastLogin, UserType } from 'src/modules/users/users.type';
 import { HashService } from 'src/services/hash/hash.service';
-import { MailService } from 'src/services/mail/mail.service';
 import { ChangePasswordDto } from '../auth/requests/change-password.dto';
 import { OTP } from './schema/otp.schema';
 import { generateOTP } from 'src/common/otpGenerate';
 import { JwtAuthService } from '../jwt-auth/services/jwt-auth.service';
 import { checkExpireDate, oneHrsExpireDate } from 'src/common/expireDate';
 import { VerifyOtpDto } from '../auth/requests/verify-otp.dto';
-import { UpdatePasswordDto } from '../auth/requests/forget-password.dto';
+import { SendOtpToEmailDTO, UpdatePasswordDto } from '../auth/requests/forget-password.dto';
 import { ExternalApiRegisterRequest } from 'src/modules/external-api/dto/register-user.dto';
 import { MailChimpService } from 'src/services/mailchimp/mailchimp.service';
 
@@ -43,7 +41,6 @@ export class UsersService {
     private UserModel: Model<User>,
     @InjectModel(OTP.name)
     private OtpModel: Model<OTP>,
-    private readonly mailService: MailService,
     private readonly hashService: HashService,
     private readonly jwtAuthService: JwtAuthService,
     private mailchimpService: MailChimpService,
@@ -56,7 +53,8 @@ export class UsersService {
 
   async seedSuperadmin() {
     const superadmin = {
-      fullName: 'Super Admin',
+      firstName: 'Super',
+      lastName: 'Admin',
       email: this.email,
       password: this.password,
       role: UserType.SUPERADMIN,
@@ -81,13 +79,10 @@ export class UsersService {
         throw new NotFoundException(ServerErrors.USER.NOT_FOUND);
       }
 
-      const [splittedfirstName, splittedlastName] = (user.fullName || '').split(' ');
-
       return {
         id: user.id,
-        fullName: user.fullName,
-        firstName: user.firstName || splittedfirstName,
-        lastName: user.lastName || splittedlastName,
+        firstName: user.firstName,
+        lastName: user.lastName,
         phoneDetails: {
           countryCode: user.countryCode,
           phoneNumber: user.phoneNumber,
@@ -110,6 +105,8 @@ export class UsersService {
 
   async create(registerDto: RegisterRequest | ExternalApiRegisterRequest): Promise<GetUserDetailsResponse> {
     try {
+      await this.validateUserIfNeedToRecover(registerDto.email);
+
       const hashedPassword = await this.hashService.create(registerDto.password);
 
       const newUser = await (new this.UserModel({ ...registerDto, password: hashedPassword })).save();
@@ -129,7 +126,6 @@ export class UsersService {
 
       return {
         id: newUser.id,
-        fullName: newUser.fullName,
         firstName: newUser.firstName,
         lastName: newUser.lastName,
         phoneDetails: {
@@ -228,7 +224,48 @@ export class UsersService {
     return true;
   }
 
-  async update(userId: string, updateUserDto: UpdateUserRequest | UpdateLastLoginRequest): Promise<GetUserDetailsResponse> {
+  async update(
+    userId: string,
+    loggedInUserId: string,
+    updateUserDto: UpdateUserRequest,
+  ): Promise<GetUserDetailsResponse> {
+    try {
+      const updatedData = { ...updateUserDto, updatedBy: loggedInUserId };
+      const updatedUser = await updateById<User>(
+        this.UserModel,
+        userId,
+        updatedData,
+      );
+
+      if (!updatedUser) {
+        throw new NotFoundException(ServerErrors.USER.NOT_FOUND);
+      }
+
+      return {
+        id: updatedUser.id,
+        firstName: updatedUser.firstName,
+        lastName: updatedUser.lastName,
+        phoneDetails: {
+          countryCode: updatedUser.countryCode,
+          phoneNumber: updatedUser.phoneNumber,
+        },
+        languagePreference: updatedUser.languagePreference,
+        address: updatedUser.address,
+        dob: updatedUser.dob,
+        email: updatedUser.email,
+        isPhoneVerify: updatedUser.isPhoneVerify,
+        isEmailVerify: updatedUser.isEmailVerify,
+        role: updatedUser.role,
+        createdAt: updatedUser.createdAt,
+        updatedAt: updatedUser.updatedAt,
+      };
+    } catch (error) {
+      exceptionHandling(error);
+      throw new InternalServerErrorException('Couldn\'t update user');
+    }
+  }
+
+  async updateLastLogin(userId: string, updateUserDto: UpdateLastLogin) {
     try {
       const updatedUser = await updateById<User>(
         this.UserModel,
@@ -242,7 +279,6 @@ export class UsersService {
 
       return {
         id: updatedUser.id,
-        fullName: updatedUser.fullName,
         firstName: updatedUser.firstName,
         lastName: updatedUser.lastName,
         phoneDetails: {
@@ -286,12 +322,82 @@ export class UsersService {
     return userWithChangedPwd;
   }
 
-  async softDelete(userId: string): Promise<GetUserDetailsResponse> {
+  async handleDelete() {
+    const today = new Date();
+    const thirtyDaysAgo = today.setDate(today.getDate() - 30);
+
+    const deletedUsers = await this.UserModel.find({
+      deletedAt: { $lte: thirtyDaysAgo },
+      isDeleted: false,
+    });
+
+    return await Promise.all(
+      deletedUsers.map(async user => await this.softDeleteByCron(user.id)),
+    );
+  }
+
+  async softDeleteByCron(userId: string): Promise<GetUserDetailsResponse> {
+    try {
+      const currentDate = new Date();
+      const timestamp = Math.floor(currentDate.getTime() / 1000);
+
+      const email = `${nanoid(5)}__${timestamp}@metgo.app`;
+      const newPassword = 'MetGo@023';
+
+      const password = await this.hashService.create(newPassword);
+
+      const updateField = {
+        phoneNumber: '1111111111',
+        countryCode: '+1',
+        email,
+        password,
+        isDeleted: true,
+        updatedAt: new Date(),
+      };
+
+      const deletedUser = await this.UserModel.findOneAndUpdate(
+        { _id: userId },
+        updateField,
+        { new: true },
+      );
+
+      if (!deletedUser) {
+        return;
+      }
+
+      return {
+        id: deletedUser.id,
+        firstName: deletedUser.firstName,
+        lastName: deletedUser.lastName,
+        phoneDetails: {
+          countryCode: deletedUser.countryCode,
+          phoneNumber: deletedUser.phoneNumber,
+        },
+        languagePreference: deletedUser.languagePreference,
+        address: deletedUser.address,
+        dob: deletedUser.dob,
+        email: deletedUser.email,
+        isPhoneVerify: deletedUser.isPhoneVerify,
+        isEmailVerify: deletedUser.isEmailVerify,
+        role: deletedUser.role,
+        createdAt: deletedUser.createdAt,
+        updatedAt: deletedUser.updatedAt,
+        deletedAt: deletedUser.deletedAt,
+      };
+    } catch (error) {
+      exceptionHandling(error);
+    }
+  }
+
+  async softDeleteAllowRecovery(userId: string, loggedInUserId: string): Promise<GetUserDetailsResponse> {
     try {
       const deletedUser = await updateById<User>(
         this.UserModel,
         userId,
-        { deletedAt: new Date() },
+        {
+          deletedAt: new Date(),
+          deletedBy: loggedInUserId,
+        },
       );
 
       if (!deletedUser) {
@@ -300,7 +406,6 @@ export class UsersService {
 
       return {
         id: deletedUser.id,
-        fullName: deletedUser.fullName,
         firstName: deletedUser.firstName,
         lastName: deletedUser.lastName,
         phoneDetails: {
@@ -426,7 +531,6 @@ export class UsersService {
 
       return {
         id: newUser.id,
-        fullName: newUser.fullName,
         firstName: newUser.firstName,
         lastName: newUser.lastName,
         phoneDetails: {
@@ -446,6 +550,65 @@ export class UsersService {
     } catch (error) {
       exceptionHandling(error);
       throw new InternalServerErrorException('Couldn\'t save user');
+    }
+  }
+
+  async validateUserIfNeedToRecover(email: string) {
+    try {
+      const user = await this.UserModel.findOne({ email });
+
+      if (user && !user?.isDeleted && user?.deletedAt) {
+        throw new ConflictException(ServerErrors.USER.DELETED_BUT_RECOVERABLE);
+      }
+
+      if (!user) {
+        return null;
+      }
+
+      return user;
+    } catch (err) {
+      exceptionHandling(err);
+    }
+  }
+
+  async recoverUserAccount(body: SendOtpToEmailDTO) {
+    try {
+      const recoveredUser = await this.UserModel.findOneAndUpdate(
+        { email: body.email },
+        {
+          $set: {
+            deletedAt: null,
+            deletedBy: null,
+            isDeleted: false,
+          },
+        },
+      );
+
+      if (!recoveredUser) {
+        throw new NotFoundException(ServerErrors.USER.NOT_FOUND);
+      }
+
+      return {
+        id: recoveredUser.id,
+        firstName: recoveredUser.firstName,
+        lastName: recoveredUser.lastName,
+        phoneDetails: {
+          countryCode: recoveredUser.countryCode,
+          phoneNumber: recoveredUser.phoneNumber,
+        },
+        languagePreference: recoveredUser.languagePreference,
+        address: recoveredUser.address,
+        dob: recoveredUser.dob,
+        email: recoveredUser.email,
+        isPhoneVerify: recoveredUser.isPhoneVerify,
+        isEmailVerify: recoveredUser.isEmailVerify,
+        role: recoveredUser.role,
+        createdAt: recoveredUser.createdAt,
+        updatedAt: recoveredUser.updatedAt,
+        deletedAt: recoveredUser.deletedAt,
+      };
+    } catch (error) {
+      exceptionHandling(error);
     }
   }
 }

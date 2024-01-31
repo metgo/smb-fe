@@ -11,3 +11,8 @@ export interface phoneDetails{
   countryCode: string;
   phoneNumber: string;
 }
+
+export interface UpdateLastLogin {
+  lastLogin?: Date,
+  loginAttempts: number,
+}

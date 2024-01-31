@@ -7,9 +7,6 @@ export class GetUserDetailsResponse {
     id: string;
 
   @ApiProperty()
-    fullName: string;
-
-  @ApiProperty()
     firstName: string;
 
   @ApiProperty()

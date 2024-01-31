@@ -3,7 +3,6 @@ import { UserType } from 'src/modules/users/users.type';
 
 export interface LoggedInUserInterface{
     id: string,
-    fullName: string,
     firstName: string
     lastName: string,
     phoneDetails: {
