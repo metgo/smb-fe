@@ -20,8 +20,8 @@ import { fileFilterByExtensions } from 'src/services/gcp-bucket/middleware/file-
 import { updateCampaignDto } from './dto/updateCampaign.dto';
 import { DMOService } from '../dmo/dmo.service';
 import mongoose from 'mongoose';
-import CampaignSegmentService from '../campaign-segments/campaignSegment.service';
-import { createCampaignSegmentDto } from '../campaign-segments/dto/cfreateCampaignSegment.dto';
+import CampaignSegmentService from 'src/modules/campaign-segments/campaignSegment.service';
+import { CreateCampaignSegmentDTO } from 'src/modules/campaign-segments/dto/create-campaign-segment.dto';
 
 @Controller()
 export class CampaignController {
@@ -55,15 +55,15 @@ export class CampaignController {
       dmoId = await this.dmoService.findDMOByUserID(user);
     }
     const campaign = await this.campaignService.create(dto, campImage, user);
-    const campaignSegmentDto: createCampaignSegmentDto = {
-      campaign_ID: campaign._id,
-      DMOs: dmoId,
+    const campaignSegmentDto: CreateCampaignSegmentDTO = {
+      campaign_ID: campaign._id.toString(),
+      DMOs: [dmoId.toString()],
       businesses: [], // Assign empty arrays or appropriate values
       products: [],
       crowed_age: [],
       crowed_origion: [],
     };
-    await this.campaignSegmentService.create(campaignSegmentDto);
+    await this.campaignSegmentService.create(request.user.id, campaignSegmentDto);
 
     return responseHelper(response, HttpStatus.CREATED, ServerSuccess.CAMPAIGN_CREATED, campaign, null, null);
   }

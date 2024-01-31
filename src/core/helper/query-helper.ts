@@ -75,7 +75,14 @@ export async function updateById<T>(model: Model<T>, item: string | mongoose.Typ
 export async function updateWhere<T>(model: Model<T>, filterFields: object, updateField: object) {
   const filterBy = { ...filterFields, deletedAt: { $in: [null] } };
 
-  const data = await model.findOneAndUpdate(filterBy, updateField, { new: true });
+  const data = await model.findOneAndUpdate(
+    filterBy,
+    {
+      ...updateField,
+      updatedAt: new Date(),
+    },
+    { new: true },
+  );
   return data;
 }
 

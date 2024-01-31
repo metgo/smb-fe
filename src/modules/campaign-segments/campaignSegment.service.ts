@@ -1,19 +1,22 @@
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-undef */
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
+import { ServerErrors } from 'src/common/constant';
 import { paginationConfig } from 'src/common/pagination.config';
 import { ExternalApiWithCampCodeFilterQuery } from 'src/common/query-handler/external-api-campcode.query';
 import { disSelect } from 'src/common/utils/select.handling';
+import { updateWhere } from 'src/core/helper/query-helper';
 import { CampaignSegment } from './schema/campaignSegment.schema';
-import { createCampaignSegmentDto } from './dto/cfreateCampaignSegment.dto';
+import { CreateCampaignSegmentDTO } from 'src/modules/campaign-segments/dto/create-campaign-segment.dto';
 import { DMOService } from '../dmo/dmo.service';
 import { BusinessStatus } from 'src/modules/business/business.type';
 import { CampaignService } from 'src/modules/campaign/campaign.service';
 import { ExtendedProductFilterQuery } from 'src/modules/products/dto/external-api.query.dto';
 import { ProductStatus } from 'src/modules/products/products.type';
+import { UpdateCampaignSegmentDTO } from 'src/modules/campaign-segments/dto/update-campaign-segment.dto';
 
 @Injectable()
 export default class CampaignSegmentService {
@@ -27,16 +30,47 @@ export default class CampaignSegmentService {
   }
 
   async create(
-    dto: createCampaignSegmentDto,
+    loggedInUserId: string,
+    dto: CreateCampaignSegmentDTO,
   ): Promise<CampaignSegment> {
+    const existCampaignSegment = await this.getByCampaignId(dto.campaign_ID.toString());
+
+    if (existCampaignSegment) {
+      throw new ConflictException(ServerErrors.CAMPAIGN.EXISTS);
+    }
+
     const newCampaignSegment = new this.CampaignSegmentModel({
       ...dto,
+      createdBy: loggedInUserId,
     });
     await newCampaignSegment.save();
     return newCampaignSegment;
   }
 
-  async getAll(userId: string) {
+  async getByCampaignId(campaignid: string) {
+    const campaignSegment = await this.CampaignSegmentModel.find({ campaign_ID: campaignid }).exec();
+
+    return campaignSegment;
+  }
+
+  async update(
+    loggedInUserId: string,
+    campaignId: string,
+    body: UpdateCampaignSegmentDTO,
+  ): Promise<CampaignSegment> {
+    const updatedCampaignSegment = await updateWhere<CampaignSegment>(
+      this.CampaignSegmentModel,
+      { campaign_ID: campaignId },
+      { ...body, updatedBy: loggedInUserId },
+    );
+
+    if (!updatedCampaignSegment) {
+      throw new NotFoundException(ServerErrors.CAMPAIGN.NOT_FOUND);
+    }
+    return updatedCampaignSegment;
+  }
+
+  async getAllDMOsOfCampaignSegment(userId: string) {
     const dmoIds = await this.dmoService.getAllDMOById(userId);
     const items = await this.CampaignSegmentModel.find({ DMOs: { $in: dmoIds } }).exec();
 

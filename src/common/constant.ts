@@ -200,11 +200,11 @@ export const ServerSuccess = {
     ASSIGNED: 'Voucher was successfully assigned',
   },
 
-  CAMPAIGN: {
-    CREATED: 'Campaign was succesfully created',
-    UPDATED: 'Campaign was succesfully updated',
-    LISTED: 'Campaign was succesfully listed',
-    DELETED: 'Campaign was succesfully deleted',
+  CAMPAIGN_SEGMENT: {
+    CREATED: 'Campaign segment was succesfully created',
+    UPDATED: 'Campaign segment was succesfully updated',
+    LISTED: 'Campaign segment was succesfully listed',
+    DELETED: 'Campaign segment was succesfully deleted',
   },
 
   ORDERS: {

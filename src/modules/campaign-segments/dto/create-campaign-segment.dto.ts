@@ -4,16 +4,16 @@ import {
   IsNotEmpty, IsOptional, IsString,
 } from 'class-validator';
 
-export class createCampaignSegmentDto {
+export class CreateCampaignSegmentDTO {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
-    campaign_ID: object;
+    campaign_ID: string;
 
-  @ApiProperty()
+  @ApiProperty({ type: [String] })
   @IsArray()
   @IsOptional()
-    DMOs: object;
+    DMOs: string[];
 
   @ApiProperty()
   @IsArray()
