@@ -155,6 +155,10 @@ export const ServerSuccess = {
     LISTED: 'Accessibility was listed sucessfully',
     DELETED: 'Accessibility was deleted sucessfully',
   },
+  AUTHORITY: {
+    CREATED: 'Authority was created successfully',
+    LISTED: 'Authority was listed sucessfully',
+  },
   GROUP_TYPE: {
     CREATED: 'Group Type was created successfully',
     UPDATED: 'Group Type was updated sucessfully',
