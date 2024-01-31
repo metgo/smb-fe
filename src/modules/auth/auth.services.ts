@@ -2,6 +2,7 @@ import {
   Injectable, UnauthorizedException,
 } from '@nestjs/common';
 
+import { LoginInterface } from 'src/modules/auth/interface/login.interface';
 import { SignInRequest } from 'src/modules/auth/requests/signin.request';
 import { JwtAuthService } from 'src/modules/jwt-auth/services/jwt-auth.service';
 import { UsersService } from 'src/modules/users/users.services';
@@ -15,7 +16,7 @@ export class AuthService {
     private readonly hashService: HashService,
   ) {}
 
-  async login(body: SignInRequest): Promise<any> {
+  async login(body: SignInRequest): Promise<LoginInterface> {
     const user = await this.usersService.findByEmail(body.email);
     const isPasswordValid = await this.hashService.validate(user.password, body.password);
 

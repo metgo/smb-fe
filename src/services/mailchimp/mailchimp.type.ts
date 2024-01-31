@@ -1,5 +1,6 @@
 export interface sendEmail {
     to: string;
-    subject: string;
-    text: string;
+    templatedId: string;
+    mergeVars: any;
+    text?: string;
 }

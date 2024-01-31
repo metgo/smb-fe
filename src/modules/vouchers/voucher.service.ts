@@ -14,12 +14,13 @@ import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
 import { nanoid } from 'nanoid';
 
+import { EnglishTemplate, HebrewTemplate } from 'src/common/mailchimp/templateId';
 import { paginationConfig } from 'src/common/pagination.config';
 import { Voucher } from './schema/voucher.schema';
 import {
   FilterQuery, createVoucherDto,
 } from './dto';
-import { Currency, VoucherPaymentStatus } from 'src/common/enum';
+import { Currency, Locale, VoucherPaymentStatus } from 'src/common/enum';
 import { ExternalApiFilterQuery } from 'src/common/query-handler/external-api-filter.query';
 import { ExternalApiPostQuery } from 'src/common/query-handler/externalapi-post.query';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
@@ -28,14 +29,14 @@ import { remainingAmountCalculation } from 'src/common/utils/remaining-amount-ca
 import { queryhandler, updateMany, updateWhere } from 'src/core/helper/query-helper';
 import { disSelect } from 'src/common/utils/select.handling';
 import { ServerErrors } from 'src/common/constant';
-import { UpdateFieldInterface } from './interface';
 import { MailChimpService } from 'src/services/mailchimp/mailchimp.service';
 import { PaymentsService } from 'src/services/payments/payments.service';
 import { PaymentPurpose } from 'src/services/payments/payments.type';
+import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interface';
 import { CampaignService } from 'src/modules/campaign/campaign.service';
-import { User } from 'src/modules/users/schema/users.schema';
 import { UsersService } from 'src/modules/users/users.services';
 import { UpdateVoucherBalance } from 'src/modules/vouchers/dto/update-voucher-balance.dto';
+import { AssignVoucherCommand } from 'src/modules/vouchers/interface/assign-voucher.interface';
 
 @Injectable()
 export class VoucherService {
@@ -51,7 +52,7 @@ export class VoucherService {
 
   async create(
     dto: createVoucherDto,
-    userId: string | null,
+    user: LoggedInUserInterface,
     campaignId?: mongoose.Types.ObjectId,
   ) {
     let i: number = 0;
@@ -65,27 +66,21 @@ export class VoucherService {
         code,
         remainingAmount: dto.amount,
         campId: campaignId || null,
-        createdBy: userId,
+        createdBy: user?.id || null,
       });
       newVoucher.save();
       voucherId.push(newVoucher._id);
     }
 
-    const paymentLink = await this.paymentService.generateLink(totalAmount, Currency.ILS, PaymentPurpose.VOUCHER, voucherId);
-
-    if (dto.email) {
-      await this.mailchimpService.sendTransactionalEmail({
-        subject: 'Payment Success | Voucher - MetGo',
-        to: dto.email,
-        text: `Dear ${dto.name}, \n Your payment has been successfully received.`,
-      });
-
-      await this.mailchimpService.sendTransactionalEmail({
-        subject: 'Voucher Confirmed - MetGo',
-        to: dto.email,
-        text: `Dear ${dto.name}, \n ${dto.noOfVoucher} vouchers with campaign code - ${dto.campCode} has been created successfully. Each voucher's worth is ${dto.amount}.`,
-      });
-    }
+    const paymentLink = await this.paymentService.generateLink({
+      amount: totalAmount,
+      currency: Currency.ILS,
+      purpose: PaymentPurpose.VOUCHER,
+      id: voucherId,
+      customerEmail: dto.email,
+      customerName: dto.name,
+      loggedInUserLanguagePreference: user.languagePreference,
+    });
 
     return paymentLink;
   }
@@ -210,7 +205,10 @@ export class VoucherService {
     return voucher;
   }
 
-  async assignUser(code: string, updateField: UpdateFieldInterface, user?: User | null) {
+  async assignUser(command: AssignVoucherCommand) {
+    const {
+      code, updateField, loggedInUserEmail, user,
+    } = command;
     const filterQuery = {
       code,
       assignedTo: null,
@@ -224,9 +222,16 @@ export class VoucherService {
     const email = user ? user?.email : updateField.waitingUserEmail;
     const name = user ? user?.firstName : 'User';
     await this.mailchimpService.sendTransactionalEmail({
-      subject: 'Voucher Assigned - MetGo',
       to: email,
-      text: `Dear ${name}, \n Voucher with campaign code - ${code} has been assigned to you.`,
+      templatedId: user?.languagePreference === Locale.HEBREW
+        ? HebrewTemplate.VoucherAssignedToYou
+        : EnglishTemplate.VoucherAssignedToYou,
+      mergeVars: {
+        FNAME: name,
+        VOUCHERCREATER: loggedInUserEmail,
+        USERNAME: email,
+        PASSWORD: '',
+      },
     });
 
     return assignUser;
@@ -305,7 +310,7 @@ export class VoucherService {
   async purchaseVoucherForExternalApi(
     dto: createVoucherDto,
     query: ExternalApiPostQuery,
-    userId: string,
+    user: LoggedInUserInterface,
   ) {
     const campaign = await this.campaignService.findAndReturn('code', dto.campCode);
 
@@ -320,14 +325,15 @@ export class VoucherService {
         code,
         remainingAmount: dto.amount,
         campId: campaign._id,
-        createdBy: userId,
+        createdBy: user.id,
         identifierId: query.identifierId,
       });
       newVoucher.save();
       voucherId.push(newVoucher._id);
     }
 
-    const [user, paymentLink] = await Promise.all([
+    // eslint-disable-next-line no-unused-vars
+    const [createdUser, paymentLink] = await Promise.all([
       this.usersService.createByExternalApi({
         email: dto.email,
         password: nanoid(9),
@@ -337,21 +343,16 @@ export class VoucherService {
         address: '',
         countryCode: '',
       }),
-      this.paymentService.generateLink(
-        totalAmount,
-        Currency.ILS,
-        PaymentPurpose.VOUCHER,
-        voucherId,
-      ),
+      this.paymentService.generateLink({
+        amount: totalAmount,
+        currency: Currency.ILS,
+        purpose: PaymentPurpose.VOUCHER,
+        id: voucherId,
+        customerEmail: dto.email,
+        customerName: dto.name,
+        loggedInUserLanguagePreference: user.languagePreference,
+      }),
     ]);
-
-    if (paymentLink && dto.email) {
-      await this.mailchimpService.sendTransactionalEmail({
-        subject: 'Voucher Assigned - MetGo',
-        to: user.email,
-        text: `Dear ${user.firstName}, \n ${dto.noOfVoucher} vouchers with campaign code - ${dto.campCode} has been assigned to you. Each voucher's worth is ${dto.amount}.`,
-      });
-    }
 
     return paymentLink;
   }

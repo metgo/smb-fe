@@ -574,12 +574,15 @@ export class BusinessService {
     );
   }
 
+  // eslint-disable-next-line consistent-return
   async findBusinessEmailByIds(ids: ObjectId[]) {
-    const bussEmails = await this.BusinessModel
-      .find({ _id: { $in: ids } })
-      .select('busiEmail');
+    try {
+      const businessDetails = await this.BusinessModel.find({ _id: { $in: ids } });
 
-    return bussEmails;
+      return businessDetails;
+    } catch (error) {
+      exceptionHandling(error);
+    }
   }
 
   private generateSlug(name: string | null): string {

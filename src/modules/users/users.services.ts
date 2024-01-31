@@ -7,6 +7,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { nanoid } from 'nanoid';
 
+import { Locale } from 'src/common/enum';
+import { EnglishTemplate, HebrewTemplate } from 'src/common/mailchimp/templateId';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { RegisterRequest } from 'src/modules/auth/requests/register.request';
 import { UpdateUserRequest } from 'src/modules/users/requests/update-user.request';
@@ -115,9 +117,11 @@ export class UsersService {
       await Promise.all([
         this.mailchimpService.subscribe(newUser.firstName, newUser.lastName, newUser.email),
         this.mailchimpService.sendTransactionalEmail({
-          subject: 'Welcome to MetGo',
           to: newUser.email,
-          text: `Dear ${newUser.firstName}, \n We are thrilled to welcome you to MetGo, your trusted partner in destination management. Whether you're here for business or leisure, we are committed to ensuring your stay is memorable and stress-free.`,
+          templatedId: EnglishTemplate.UserRegistrationBySelf,
+          mergeVars: {
+            FNAME: newUser.firstName,
+          },
         }),
       ]);
 
@@ -168,8 +172,13 @@ export class UsersService {
 
     await this.mailchimpService.sendTransactionalEmail({
       to: user.email,
-      subject: 'Forget Password - MetGo',
-      text: `We received a request to reset your MetGo account password. Please use the following One-Time Password (OTP) within the next hour: ${code}. \n This OTP is valid for the next 1 hour. If you did not request a password reset, please ignore this email.`,
+      templatedId: user.languagePreference === Locale.HEBREW
+        ? HebrewTemplate.ForgotPassword
+        : EnglishTemplate.ForgotPassword,
+      mergeVars: {
+        FNAME: user.firstName,
+        OTP: code,
+      },
     });
 
     // await this.mailService.sendForgetPasswordOtp(user, code);
@@ -263,6 +272,17 @@ export class UsersService {
     if (!userWithChangedPwd) {
       throw new NotFoundException(ServerErrors.USER.NOT_FOUND);
     }
+
+    await this.mailchimpService.sendTransactionalEmail({
+      to: userWithChangedPwd.email,
+      templatedId: userWithChangedPwd.languagePreference === Locale.HEBREW
+        ? HebrewTemplate.PasswordChangeConfirmation
+        : EnglishTemplate.PasswordChangeConfirmation,
+      mergeVars: {
+        FNAME: userWithChangedPwd.firstName,
+      },
+    });
+
     return userWithChangedPwd;
   }
 
@@ -385,34 +405,20 @@ export class UsersService {
       );
 
       if (user) {
-        return {
-          id: user.id,
-          fullName: user.fullName,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          phoneDetails: {
-            countryCode: user.countryCode,
-            phoneNumber: user.phoneNumber,
-          },
-          languagePreference: user.languagePreference,
-          address: user.address,
-          dob: user.dob,
-          email: user.email,
-          isPhoneVerify: user.isPhoneVerify,
-          isEmailVerify: user.isEmailVerify,
-          role: user.role,
-          createdAt: user.createdAt,
-          updatedAt: user.updatedAt,
-        };
+        return;
       }
       const newUser = await (new this.UserModel(registerDto)).save();
 
       await Promise.all([
         this.mailchimpService.subscribe(newUser.firstName, newUser.lastName, newUser.email),
         this.mailchimpService.sendTransactionalEmail({
-          subject: 'Welcome to MetGo',
           to: newUser.email,
-          text: `Dear ${newUser.firstName}, \n We are thrilled to welcome you to MetGo, your trusted partner in destination management. Whether you're here for business or leisure, we are committed to ensuring your stay is memorable and stress-free. \n \n Login Credentials \n Email : ${newUser.email} \n Password: ${newUser.password}`,
+          templatedId: EnglishTemplate.UserRegistrationByAdmin,
+          mergeVars: {
+            FNAME: newUser.firstName,
+            USERNAME: newUser.email,
+            PASSWORD: newUser.password,
+          },
         }),
       ]);
 

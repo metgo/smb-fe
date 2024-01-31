@@ -9,6 +9,7 @@ import { ExternalApiPostQuery } from 'src/common/query-handler/externalapi-post.
 import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
 import { ExternalApiGuard } from 'src/core/guards/authorization/external-api-guards';
 import { JwtAuthGuard } from 'src/core/guards/jwt/jwt.guards';
+import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interface';
 import { VoucherService } from './voucher.service';
 import {
   FilterQuery, createVoucherDto, updateAssignedUserVoucherDto,
@@ -44,13 +45,13 @@ export class VoucherController {
     @Res() response: Response,
     @Body() dto: createVoucherDto,
   ) {
-    const userId: string | null = req.user ? req.user.id : null;
+    const user: LoggedInUserInterface | null = req?.user ?? null;
     let campaign: Campaign;
 
     if (dto.campCode) {
       campaign = await this.campaignService.findAndReturn('code', dto.campCode);
     }
-    const link = await this.voucherService.create(dto, userId, campaign._id);
+    const link = await this.voucherService.create(dto, user, campaign._id);
 
     return responseHelper(
       response,
@@ -168,6 +169,7 @@ export class VoucherController {
     @Body() dto: updateAssignedUserVoucherDto,
   ) {
     const userId = req.user.id;
+    const loggedInUserEmail = req.user.email;
     let user: User | null;
     if (dto.email) {
       user = await this.userSerive.findByEmailOrNull(dto.email);
@@ -179,7 +181,12 @@ export class VoucherController {
       updatedBy: userId,
       updatedAt: new Date(),
     };
-    await this.voucherService.assignUser(dto.code, updateField, user);
+    await this.voucherService.assignUser({
+      code: dto.code,
+      updateField,
+      loggedInUserEmail,
+      user,
+    });
     return responseHelper(
       response,
       HttpStatus.OK,
@@ -235,6 +242,7 @@ export class VoucherController {
     @Query() query: ExternalApiPostQuery,
   ) {
     const userId = req.user.id;
+    const loggedInUserEmail = req.user.email;
     let user: User | null;
     if (dto.email) {
       user = await this.userSerive.findByEmailOrNull(dto.email);
@@ -247,7 +255,11 @@ export class VoucherController {
       updatedAt: new Date(),
     };
     console.log(query);
-    await this.voucherService.assignUser(dto.code, updateField);
+    await this.voucherService.assignUser({
+      code: dto.code,
+      updateField,
+      loggedInUserEmail,
+    });
     return responseHelper(
       response,
       HttpStatus.OK,
@@ -273,7 +285,7 @@ export class VoucherController {
     @Body() dto: createVoucherDto,
     @Query() query: ExternalApiPostQuery,
   ) {
-    const link = await this.voucherService.purchaseVoucherForExternalApi(dto, query, req.user.id);
+    const link = await this.voucherService.purchaseVoucherForExternalApi(dto, query, req.user);
 
     return responseHelper(
       response,

@@ -2,17 +2,19 @@ import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import axios from 'axios';
 import { Request } from 'express';
-import mongoose, { Model } from 'mongoose';
+import { Model } from 'mongoose';
 
-import { Currency, PaymentStatus } from 'src/common/enum';
+import { Locale, PaymentStatus } from 'src/common/enum';
+import { EnglishTemplate, HebrewTemplate } from 'src/common/mailchimp/templateId';
+import { ConfigService } from '../config/config.service';
+import { Payment } from './schema/payments.schema';
 import { update } from 'src/core/helper/query-helper';
 import { BusinessService } from 'src/modules/business/business.service';
 import { OrdersService } from 'src/modules/orders/orders.services';
+import { ProductsService } from 'src/modules/products/products.services';
 import { VoucherService } from 'src/modules/vouchers/voucher.service';
-import { ConfigService } from 'src/services/config/config.service';
 import { MailChimpService } from 'src/services/mailchimp/mailchimp.service';
-import { PaymentPurpose } from 'src/services/payments/payments.type';
-import { Payment } from 'src/services/payments/schema/payments.schema';
+import { GenerateLinkCommand, PaymentPurpose } from 'src/services/payments/payments.type';
 
 @Injectable()
 export class PaymentsService {
@@ -26,20 +28,17 @@ export class PaymentsService {
     private readonly ordersService: OrdersService,
     private mailchimpService: MailChimpService,
     private readonly businessService: BusinessService,
+    private readonly productsService: ProductsService,
   ) { }
 
   async createPayment(insertField:any) {
     return await this.PaymentModel.create(insertField);
   }
 
-  async generateLink(
-    amount: number,
-    currency: Currency,
-    purpose: PaymentPurpose,
-    id: [mongoose.Types.ObjectId] | mongoose.Types.ObjectId,
-    customerEmail?: string,
-    customerName?: string,
-  ) {
+  async generateLink(command: GenerateLinkCommand) {
+    const {
+      amount, currency, purpose, id, customerEmail, customerName, loggedInUserLanguagePreference,
+    } = command;
     const payPlusResponse = await axios.post(
       `${this.configService.paymentDetails.URL}PaymentPages/generatelink`,
       {
@@ -51,6 +50,7 @@ export class PaymentsService {
         more_info: purpose,
         more_info_1: customerEmail,
         more_info_2: customerName,
+        more_info_3: loggedInUserLanguagePreference,
       },
       {
         headers: {
@@ -106,30 +106,73 @@ export class PaymentsService {
     );
 
     await this.mailchimpService.sendTransactionalEmail({
-      subject: 'Payment Success | Order - MetGo',
       to: requestBody?.more_info_1,
-      text: `Dear ${requestBody?.more_info_2}, Your payment has been successfully received.`,
+      templatedId: requestBody.more_info_3 === Locale.HEBREW
+        ? HebrewTemplate.PaymentSuccessful
+        : EnglishTemplate.PaymentSuccessful,
+      mergeVars: {
+        FNAME: requestBody?.more_info_2,
+        TOTALAMOUNT: requestBody?.amount,
+      },
     });
     if (requestBody?.more_info === PaymentPurpose.VOUCHER) {
       await this.voucherService.update(payments.voucherId, { paymentStatus: PaymentStatus.SUCCESS });
+
+      await this.mailchimpService.sendTransactionalEmail({
+        to: requestBody?.more_info_1,
+        templatedId: requestBody.more_info_3 === Locale.HEBREW
+          ? HebrewTemplate.VoucherConfirmation
+          : EnglishTemplate.VoucherConfirmation,
+        mergeVars: {
+          FNAME: requestBody?.more_info_2,
+          USERNAME: requestBody?.more_info_1,
+          PASSWORD: '',
+        },
+      });
     }
     if (requestBody?.more_info === PaymentPurpose.ORDER) {
       const updateOrder = await this.ordersService.updateOrderAfterPayment(payments.orderId);
 
+      const [getProductInformation, businessDetails] = await Promise.all([
+        this.productsService.getProductInformationForOrders(updateOrder.products),
+        this.businessService.findBusinessEmailByIds(updateOrder.businessId),
+      ]);
+
       await this.mailchimpService.sendTransactionalEmail({
-        subject: 'Order Confirmed - MetGo',
         to: updateOrder.email,
-        text: `Dear ${updateOrder.firstName}, Your order has been placed successfully.`,
+        templatedId: requestBody.more_info_3 === Locale.HEBREW
+          ? HebrewTemplate.OrderConfirmationForClient
+          : EnglishTemplate.OrderConfirmationForClient,
+        mergeVars: {
+          FNAME: updateOrder.firstName,
+          BUYERNAME: businessDetails[0].name,
+          PRODUCTNAME: getProductInformation[0].name,
+          QUANTITY: 1,
+          COST: getProductInformation[0].price.sellingPrice,
+          TOTALAMOUNT: updateOrder.totalAmount,
+          PHONE: businessDetails[0].phoneNumber,
+          EMAIL: businessDetails[0].busiEmail,
+        },
       });
       // SEND TO BUSINESS OWNER
-      const businessEmails = await this.businessService.findBusinessEmailByIds(updateOrder.businessId);
 
-      await Promise.all(businessEmails.map(async business => {
+      await Promise.all(businessDetails.map(async business => {
         if (!business?.busiEmail) return;
         await this.mailchimpService.sendTransactionalEmail({
-          subject: 'Order Confirmed - MetGo',
           to: business.busiEmail,
-          text: 'Dear Business, Your product from business has been placed successfully.',
+          templatedId: requestBody.more_info_3 === Locale.HEBREW
+            ? HebrewTemplate.OrderReceivedForBusiness
+            : EnglishTemplate.OrderReceivedForBusiness,
+          mergeVars: {
+            FNAME: updateOrder.firstName,
+            BUYERNAME: business.name,
+            PRODUCTNAME: getProductInformation[0].name,
+            QUANTITY: 1,
+            COST: getProductInformation[0].price.sellingPrice,
+            TOTALAMOUNT: updateOrder.totalAmount,
+            PHONE: business.phoneNumber,
+            EMAIL: business.busiEmail,
+          },
         });
       }));
     }

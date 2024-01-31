@@ -2,6 +2,7 @@
 /* eslint-disable global-require */
 import * as mailchimp from '@mailchimp/mailchimp_marketing';
 import { Injectable } from '@nestjs/common';
+import { HebrewTemplate } from 'src/common/mailchimp/templateId';
 
 import { ConfigService } from 'src/services/config/config.service';
 import { sendEmail } from 'src/services/mailchimp/mailchimp.type';
@@ -42,8 +43,11 @@ export class MailChimpService {
       }
 
       await this.sendTransactionalEmail({
-        subject: 'Failed to add audience',
         to: TAV8_SUPPORT_EMAIL,
+        templatedId: HebrewTemplate.FailedToSendEmail,
+        mergeVars: {
+          EMAIL: email,
+        },
         text: `Dear MetGo, We are unable to add this user email: ${email} to audience. Please proceed to add it manually.`,
       });
     }
@@ -56,17 +60,19 @@ export class MailChimpService {
 
       const message = {
         from_email: FROM_EMAIL,
-        subject: body.subject,
-        text: body.text,
-        to: [
-          {
-            email: body.to,
-            type: 'to',
-          },
-        ],
+        template: {
+          name: body.templatedId,
+        },
+        to: [{ email: body.to }],
+        merge_vars: [{ rcpt: body.to, vars: Object.entries(body.mergeVars).map(([name, content]) => ({ name, content })) }],
       };
 
-      const response = await mailchimpTransaction.messages.send({ message });
+      const response = await mailchimpTransaction.messages.sendTemplate({
+        template_name: body.templatedId,
+        template_content: [],
+        message,
+      });
+
       console.log('Email sent successfully:', response);
       return response;
     } catch (error) {

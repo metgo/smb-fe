@@ -7,6 +7,7 @@ import { Model } from 'mongoose';
 
 import { ServerErrors } from 'src/common/constant';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
+import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interface';
 import { BusinessService } from 'src/modules/business/business.service';
 import { Business } from 'src/modules/business/schema/business.schema';
 import { DeleteMediaDTO } from 'src/modules/media/dto/delete.dto';
@@ -27,7 +28,7 @@ export class MediaServices {
       private productService: ProductsService,
   ) {}
 
-  async create(loggedInUser: any, files: Array<Express.Multer.File>, body: UploadDTO) {
+  async create(loggedInUser: LoggedInUserInterface, files: Array<Express.Multer.File>, body: UploadDTO) {
     const images = await Promise.all(
       files.map(async (file: Express.Multer.File) => {
         // store in gcp
@@ -78,7 +79,7 @@ export class MediaServices {
   }
 
   // eslint-disable-next-line consistent-return
-  async delete(loggedInUser: any, body: DeleteMediaDTO): Promise<Business | Product> {
+  async delete(loggedInUser: LoggedInUserInterface, body: DeleteMediaDTO): Promise<Business | Product> {
     let deletedImage;
     // delete from business module
     if (body.reference === ReferenceType.BUSINESS) {

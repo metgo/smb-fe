@@ -59,7 +59,7 @@ export class OrdersController {
 
           if (sortedVoucher?.length) {
             const voucher = await this.ordersService.processVouchers(
-              req.user ? req.user.id : null,
+              req?.user?.id ?? null,
               sortedVoucher,
               totalAmountToPay,
             );
@@ -73,7 +73,7 @@ export class OrdersController {
       }
 
       const order = await this.ordersService.create(
-        req.user ? req.user.id : null,
+        req.user || null,
         body,
         totalAmountToPay,
         actualAmountOfProduct,
@@ -261,7 +261,7 @@ export class OrdersController {
       }
 
       const order = await this.ordersService.create(
-        req.user.id,
+        req.user,
         body,
         totalAmountToPay,
         actualAmountOfProduct,

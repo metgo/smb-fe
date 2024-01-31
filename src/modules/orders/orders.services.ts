@@ -7,7 +7,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
 
 import { ServerErrors } from 'src/common/constant';
-import { Currency, PaymentStatus } from 'src/common/enum';
+import { Currency, Locale, PaymentStatus } from 'src/common/enum';
+import { EnglishTemplate, HebrewTemplate } from 'src/common/mailchimp/templateId';
 import { paginationConfig } from 'src/common/pagination.config';
 import { sortByPriorityAndHighest } from 'src/common/sort-priority-and-highest';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
@@ -15,6 +16,8 @@ import { disSelect } from 'src/common/utils/select.handling';
 import {
   findOneByFieldNames, findOneById, queryhandler, updateById,
 } from 'src/core/helper/query-helper';
+import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interface';
+import { BusinessService } from 'src/modules/business/business.service';
 import { CreateOrderDto } from 'src/modules/orders/dto/create-order.dto';
 import { UpdateOrderDto } from 'src/modules/orders/dto/update-order.dto';
 import { Order } from 'src/modules/orders/schema/orders.schema';
@@ -23,6 +26,7 @@ import { UserType } from 'src/modules/users/users.type';
 import { VoucherService } from 'src/modules/vouchers/voucher.service';
 import { PaymentsService } from 'src/services/payments/payments.service';
 import { PaymentPurpose } from 'src/services/payments/payments.type';
+import { MailChimpService } from 'src/services/mailchimp/mailchimp.service';
 import { FindOrdersQuery, OrderStatus, PaymentMode } from 'src/modules/orders/orders.type';
 
 @Injectable()
@@ -30,13 +34,15 @@ export class OrdersService {
   constructor(
     @InjectModel(Order.name)
     private OrderModel: Model<Order>,
+    private readonly businessService: BusinessService,
+    private readonly mailchimpService: MailChimpService,
     private readonly productsService: ProductsService,
     private readonly voucherService: VoucherService,
     private readonly paymentService: PaymentsService,
   ) {}
 
   async create(
-    loggedInUserId: string | null,
+    loggedInUser: LoggedInUserInterface | null,
     body: CreateOrderDto,
     totalAmount: number,
     actualAmountOfProduct:number,
@@ -46,8 +52,8 @@ export class OrdersService {
       if (totalAmount <= 0) {
         const newOrder = new this.OrderModel({
           ...body,
-          userId: loggedInUserId || null,
-          createdBy: loggedInUserId || null,
+          userId: loggedInUser?.id ?? null,
+          createdBy: loggedInUser?.id ?? null,
           paymentStatus: PaymentStatus.SUCCESS,
           identifierId: identifierId || null,
           status: OrderStatus.PROCESSING,
@@ -56,14 +62,58 @@ export class OrdersService {
           totalAmount: actualAmountOfProduct,
         });
 
-        await newOrder.save();
+        const order = await newOrder.save();
+
+        const [getProductInformation, businessDetails] = await Promise.all([
+          this.productsService.getProductInformationForOrders(body.products),
+          this.businessService.findBusinessEmailByIds(order.businessId),
+        ]);
+
+        await this.mailchimpService.sendTransactionalEmail({
+          to: order.email,
+          templatedId: (loggedInUser?.languagePreference === Locale.HEBREW)
+            ? HebrewTemplate.OrderConfirmationForClient
+            : EnglishTemplate.OrderConfirmationForClient,
+          mergeVars: {
+            FNAME: order.firstName,
+            BUYERNAME: businessDetails[0].name || '',
+            PRODUCTNAME: getProductInformation[0].name,
+            QUANTITY: body.products[0].quantity,
+            COST: getProductInformation[0].price.sellingPrice,
+            TOTALAMOUNT: order.totalAmount,
+            PHONE: businessDetails[0].phoneNumber || '',
+            EMAIL: businessDetails[0].busiEmail || '',
+          },
+        });
+
+        // SEND TO BUSINESS OWNER
+        await Promise.all(businessDetails.map(async business => {
+          if (!business?.busiEmail) return;
+          await this.mailchimpService.sendTransactionalEmail({
+            to: business.busiEmail,
+            templatedId: (loggedInUser?.languagePreference === Locale.HEBREW)
+              ? HebrewTemplate.OrderReceivedForBusiness
+              : EnglishTemplate.OrderReceivedForBusiness,
+            mergeVars: {
+              FNAME: order.firstName,
+              BUYERNAME: business.name || '',
+              PRODUCTNAME: getProductInformation[0].name,
+              QUANTITY: body.products[0].quantity,
+              COST: getProductInformation[0].price.sellingPrice,
+              TOTALAMOUNT: order.totalAmount,
+              PHONE: business.phoneNumber || '',
+              EMAIL: business.busiEmail || '',
+            },
+          });
+        }));
+
         return;
       }
 
       const newOrder = new this.OrderModel({
         ...body,
-        userId: loggedInUserId || null,
-        createdBy: loggedInUserId || null,
+        userId: loggedInUser?.id ?? null,
+        createdBy: loggedInUser?.id ?? null,
         paymentStatus: PaymentStatus.PENDING,
         identifierId: identifierId || null,
         creditCardPayment: totalAmount,
@@ -74,14 +124,15 @@ export class OrdersService {
 
       const order = await newOrder.save();
 
-      const link = await this.paymentService.generateLink(
-        totalAmount,
-        Currency.ILS,
-        PaymentPurpose.ORDER,
-        order.id,
-        body.email,
-        body.firstName,
-      );
+      const link = await this.paymentService.generateLink({
+        amount: totalAmount,
+        currency: Currency.ILS,
+        purpose: PaymentPurpose.ORDER,
+        id: order.id,
+        customerEmail: body.email,
+        customerName: body.firstName,
+        loggedInUserLanguagePreference: loggedInUser?.languagePreference || Locale.ENGLISH,
+      });
 
       return [link];
     } catch (error) {
@@ -178,7 +229,7 @@ export class OrdersService {
     return order;
   }
 
-  async findMyOrderInfo(loggedInUser: any, orderId: string) : Promise<Order> {
+  async findMyOrderInfo(loggedInUser: LoggedInUserInterface, orderId: string) : Promise<Order> {
     try {
       const order = await this.checkIfAllowed(loggedInUser, orderId);
       return order;
@@ -190,7 +241,7 @@ export class OrdersService {
     }
   }
 
-  async updateOrder(loggedInUser: any, orderId: string, body: UpdateOrderDto): Promise<Order> {
+  async updateOrder(loggedInUser: LoggedInUserInterface, orderId: string, body: UpdateOrderDto): Promise<Order> {
     try {
       const order = await this.checkIfAllowed(loggedInUser, orderId);
 

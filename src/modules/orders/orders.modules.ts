@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
+import { BusinessModule } from 'src/modules/business/business.module';
 import { OrdersController } from 'src/modules/orders/orders.controller';
 import { Order, OrderSchema } from 'src/modules/orders/schema/orders.schema';
 import { OrdersService } from 'src/modules/orders/orders.services';
@@ -16,6 +17,7 @@ import { MailChimpModule } from 'src/services/mailchimp/mailchimp.module';
     MongooseModule.forFeature([
       { name: Order.name, schema: OrderSchema },
     ]),
+    BusinessModule,
     PaymentsModule,
     ProductsModule,
     UsersModule,

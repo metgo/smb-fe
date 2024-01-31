@@ -13,6 +13,7 @@ import { disSelect } from 'src/common/utils/select.handling';
 import {
   findOneByFieldNames, queryhandler, updateWhere,
 } from 'src/core/helper/query-helper';
+import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interface';
 import { BusinessService } from 'src/modules/business/business.service';
 import { Business } from 'src/modules/business/schema/business.schema';
 import { Product } from 'src/modules/products/schema/products.schema';
@@ -163,7 +164,7 @@ export class ProductsService {
     return product;
   }
 
-  async findOneForLoggedInUser(productId: string, loggedInUser: any): Promise<Product> {
+  async findOneForLoggedInUser(productId: string, loggedInUser: LoggedInUserInterface): Promise<Product> {
     const product = await findOneByFieldNames<Product>(
       this.ProductModel,
       { _id: productId },
@@ -422,5 +423,24 @@ export class ProductsService {
     }
 
     return updateProduct;
+  }
+
+  // eslint-disable-next-line consistent-return
+  async getProductInformationForOrders(productInfo) {
+    try {
+      const ids = productInfo.map(item => item.id.toString());
+      const products = await this.ProductModel.find({ _id: { $in: ids } });
+
+      if (!products?.length) {
+        throw new NotFoundException(ServerErrors.PRODUCT.NOT_FOUND);
+      }
+
+      return products;
+    } catch (error) {
+      if (error?.name === 'CastError' && error?.kind === 'ObjectId') {
+        throw new BadRequestException(`${error?.model?.modelName} ${ServerErrors.INVALID_ID}`);
+      }
+      exceptionHandling(error);
+    }
   }
 }
