@@ -1,10 +1,12 @@
 /* eslint-disable no-param-reassign */
 /* eslint-disable no-undef */
 /* eslint-disable no-unused-vars */
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
+import { ServerErrors } from 'src/common/constant';
+import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { BusinessService } from 'src/modules/business/business.service';
 import { Business } from 'src/modules/business/schema/business.schema';
 import { DeleteMediaDTO } from 'src/modules/media/dto/delete.dto';
@@ -75,6 +77,7 @@ export class MediaServices {
     return images;
   }
 
+  // eslint-disable-next-line consistent-return
   async delete(loggedInUser: any, body: DeleteMediaDTO): Promise<Business | Product> {
     let deletedImage;
     // delete from business module
@@ -96,8 +99,14 @@ export class MediaServices {
     }
 
     // delete image in gcp
-    await this.gcpBucketServices.delete(body.imageUrl);
-
-    return deletedImage;
+    try {
+      await this.gcpBucketServices.delete(body.imageUrl);
+      return deletedImage;
+    } catch (err) {
+      if (err?.errors[0]?.reason === 'notFound') {
+        throw new NotFoundException(ServerErrors.MEDIA.NOT_FOUND);
+      }
+      exceptionHandling(err);
+    }
   }
 }

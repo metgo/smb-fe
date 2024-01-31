@@ -50,6 +50,7 @@ export const ServerErrors = {
     ADD_FAILED: {
       BUSINESS: 'Unable to add a new product as your business is either not valid or have not been approved by DMO.',
     },
+    IMAGE_EMPTY: 'Product must have at least one image',
   },
   BUSS_CATEGORY: {
     NOT_FOUND: 'Business Category not found',
@@ -96,6 +97,9 @@ export const ServerErrors = {
   },
   EXTERNAL_API: {
     NOT_FOUND: 'External API was not found',
+  },
+  MEDIA: {
+    NOT_FOUND: 'URL not found',
   },
 };
 

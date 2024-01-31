@@ -402,7 +402,15 @@ export class ProductsService {
   async deleteImage(loggedInUserId: string, id: string, imageUrl: any): Promise<Product> {
     const existingProduct = await this.ProductModel.findById(id);
 
+    if (!existingProduct) {
+      throw new NotFoundException(ServerErrors.PRODUCT.NOT_FOUND);
+    }
+
     const images = existingProduct.images.filter(image => image.image !== imageUrl);
+
+    if (!images?.length) {
+      throw new BadRequestException(ServerErrors.PRODUCT.IMAGE_EMPTY);
+    }
 
     const updateProduct = await this.ProductModel.findOneAndUpdate(
       { _id: id },
