@@ -13,6 +13,8 @@ import { responseHelper } from 'src/core/helper/response.helper';
 import { CreateCampaignSegmentDTO } from 'src/modules/campaign-segments/dto/create-campaign-segment.dto';
 import { UpdateCampaignSegmentDTO } from 'src/modules/campaign-segments/dto/update-campaign-segment.dto';
 import CampaignSegmentService from 'src/modules/campaign-segments/campaignSegment.service';
+import { GetByCampCodeQuery } from 'src/modules/campaign-segments/queries/get-by-campcode.query';
+import { GetProductsByCampCodeQuery } from 'src/modules/campaign-segments/queries/get-products-by-campcode.query';
 import { UserType } from 'src/modules/users/users.type';
 import { ExtendedProductFilterQuery } from 'src/modules/products/dto/external-api.query.dto';
 
@@ -25,7 +27,7 @@ export class CampaignSegmentController {
   @Roles(UserType.SUPERADMIN, UserType.ADMIN, UserType.DMO)
   @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
-    tags: ['Admin', 'CampaignSegment'],
+    tags: ['Admin', 'Campaign Segment'],
     response: { status: HttpStatus.CREATED, description: ServerSuccess.CAMPAIGN_SEGMENT.CREATED },
     noAuthToken: true,
     softBlockExtraDtoFields: true,
@@ -51,7 +53,7 @@ export class CampaignSegmentController {
   @Roles(UserType.SUPERADMIN, UserType.ADMIN, UserType.DMO)
   @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
-    tags: ['Admin', 'CampaignSegment'],
+    tags: ['Admin', 'Campaign Segment'],
     response: { status: HttpStatus.OK, description: ServerSuccess.CAMPAIGN_SEGMENT.UPDATED },
     noAuthToken: true,
     softBlockExtraDtoFields: true,
@@ -79,7 +81,7 @@ export class CampaignSegmentController {
   @Roles(UserType.SUPERADMIN, UserType.ADMIN, UserType.DMO)
   @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
-    tags: ['Admin', 'CampaignSegment'],
+    tags: ['Admin', 'Campaign Segment'],
     response: { status: HttpStatus.OK, description: ServerSuccess.CAMPAIGN_SEGMENT.DELETED },
     noAuthToken: true,
     operation: 'Delete by campaign Id',
@@ -105,7 +107,7 @@ export class CampaignSegmentController {
   @Roles(UserType.SUPERADMIN, UserType.ADMIN, UserType.DMO)
   @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
-    tags: ['Admin, CampaignSegment'],
+    tags: ['Admin, Campaign Segment'],
     response: { status: HttpStatus.OK, description: ServerSuccess.CAMPAIGN_CREATED },
     noAuthToken: true,
     softBlockExtraDtoFields: true,
@@ -121,6 +123,75 @@ export class CampaignSegmentController {
       HttpStatus.OK,
       ServerSuccess.CAMPAIGN_LISTED,
       campaign,
+      null,
+      null,
+    );
+  }
+
+  @ApiEndpoint({
+    tags: ['Campaign Segment'],
+    response: { status: HttpStatus.OK, description: ServerSuccess.DMO_LISTED },
+    operation: 'Get all DMOs related to a campaign',
+    softBlockExtraDtoFields: true,
+  })
+  @Get('/campaigns/dmos')
+  async getAllDMOsOfCampaign(
+    @Res() response: Response,
+    @Query() query?: GetByCampCodeQuery,
+  ) {
+    const dmos = await this.campaignSegmentService.getAllDMOsOfCampaign(query);
+
+    return responseHelper(
+      response,
+      HttpStatus.OK,
+      ServerSuccess.DMO_LISTED,
+      dmos,
+      null,
+      null,
+    );
+  }
+
+  @ApiEndpoint({
+    tags: ['Campaign Segment'],
+    response: { status: HttpStatus.OK, description: ServerSuccess.BUSINESS_LISTED },
+    operation: 'Get all businesses related to a campaign',
+    softBlockExtraDtoFields: true,
+  })
+  @Get('/campaigns/businesses')
+  async getAllBusinessesOfCampaign(
+    @Res() response: Response,
+    @Query() query?: GetByCampCodeQuery,
+  ) {
+    const business = await this.campaignSegmentService.getAllBusiness(query);
+
+    return responseHelper(
+      response,
+      HttpStatus.OK,
+      ServerSuccess.BUSINESS_LISTED,
+      business,
+      null,
+      null,
+    );
+  }
+
+  @ApiEndpoint({
+    tags: ['Campaign Segment'],
+    response: { status: HttpStatus.OK, description: ServerSuccess.PRODUCTS.LISTED },
+    operation: 'Get all products related to a campaign',
+    softBlockExtraDtoFields: true,
+  })
+  @HttpCode(HttpStatus.OK)
+  @Get('/campaigns/products')
+  async getAllProductsOfCampaign(
+    @Res() response: Response,
+    @Query() query: GetProductsByCampCodeQuery,
+  ) {
+    const product = await this.campaignSegmentService.getAllProducts(query);
+    return responseHelper(
+      response,
+      HttpStatus.OK,
+      ServerSuccess.PRODUCTS.LISTED,
+      product,
       null,
       null,
     );

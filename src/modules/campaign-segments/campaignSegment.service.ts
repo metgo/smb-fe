@@ -18,6 +18,8 @@ import { CampaignService } from 'src/modules/campaign/campaign.service';
 import { ExtendedProductFilterQuery } from 'src/modules/products/dto/external-api.query.dto';
 import { ProductStatus } from 'src/modules/products/products.type';
 import { UpdateCampaignSegmentDTO } from 'src/modules/campaign-segments/dto/update-campaign-segment.dto';
+import { GetByCampCodeQuery } from 'src/modules/campaign-segments/queries/get-by-campcode.query';
+import { GetProductsByCampCodeQuery } from 'src/modules/campaign-segments/queries/get-products-by-campcode.query';
 
 @Injectable()
 export default class CampaignSegmentService {
@@ -109,7 +111,74 @@ export default class CampaignSegmentService {
     return items;
   }
 
-  async getAllProducts(query: ExtendedProductFilterQuery) {
+  async getAllDMOsOfCampaign(query: GetByCampCodeQuery) {
+    const { page, limit, campCode } = query;
+    const campDetails = await this.campaignService.findAndReturn('code', campCode);
+
+    const select = disSelect;
+
+    const populate = {
+      path: 'DMOs',
+      select: `${disSelect}`,
+    };
+
+    const campaignSegment = await this.CampaignSegmentModel
+      .findOne({ campaign_ID: campDetails._id })
+      .populate(populate)
+      .select(select)
+      .lean()
+      .exec();
+
+    if (!campaignSegment?.DMOs || !campaignSegment?.DMOs?.length) {
+      return {
+        totalData: 0,
+        dmos: [],
+      };
+    }
+    if (!page && !limit) {
+      const dmos = campaignSegment.DMOs
+        .map((dmo: any) => ({
+          id: dmo._id,
+          name: dmo.name,
+        }));
+
+      const totalData = dmos.length;
+
+      return {
+        totalData,
+        dmos,
+      };
+    }
+
+    const pages = Number(page) || paginationConfig.page;
+    const limits = Number(limit) || paginationConfig.limit;
+
+    const startIndex = (pages - 1) * limits;
+    const endIndex = startIndex + limits;
+
+    const filteredDMOs = campaignSegment?.DMOs
+      .map((dmo: any) => ({
+        id: dmo._id,
+        name: dmo.name,
+      }));
+
+    const totalData = filteredDMOs.length;
+    const pageCount = Math.ceil(totalData / limits);
+
+    const paginatedDMOs = filteredDMOs.slice(startIndex, endIndex);
+
+    return {
+      page: pages,
+      limit: limits,
+      totalData,
+      pageCount,
+      hasPreviousPage: pages > 1,
+      hasNextPage: pages < pageCount,
+      businesses: paginatedDMOs,
+    };
+  }
+
+  async getAllProducts(query: ExtendedProductFilterQuery | GetProductsByCampCodeQuery) {
     const { page, limit, campCode } = query;
 
     const campDetails = await this.campaignService.findAndReturn('code', campCode);
@@ -234,7 +303,7 @@ export default class CampaignSegmentService {
     };
   }
 
-  async getAllBusiness(query: ExternalApiWithCampCodeFilterQuery) {
+  async getAllBusiness(query: ExternalApiWithCampCodeFilterQuery | GetByCampCodeQuery) {
     const { page, limit, campCode } = query;
 
     const campDetails = await this.campaignService.findAndReturn('code', campCode);
