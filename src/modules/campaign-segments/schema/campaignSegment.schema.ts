@@ -20,7 +20,6 @@ export class CampaignSegment extends AuditableSchema {
       type: mongoose.Schema.Types.ObjectId,
       ref: Campaign.name,
       required: true,
-      unique: true,
     })
       campaign_ID: mongoose.Types.ObjectId;
 

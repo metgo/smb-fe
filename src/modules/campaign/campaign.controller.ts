@@ -61,7 +61,7 @@ export class CampaignController {
       businesses: [], // Assign empty arrays or appropriate values
       products: [],
       crowed_age: [],
-      crowed_origion: [],
+      crowed_origin: [],
     };
     await this.campaignSegmentService.create(request.user.id, campaignSegmentDto);
 

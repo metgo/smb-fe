@@ -7,6 +7,7 @@ import { Model } from 'mongoose';
 import { ServerErrors } from 'src/common/constant';
 import { paginationConfig } from 'src/common/pagination.config';
 import { ExternalApiWithCampCodeFilterQuery } from 'src/common/query-handler/external-api-campcode.query';
+import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { disSelect } from 'src/common/utils/select.handling';
 import { updateWhere } from 'src/core/helper/query-helper';
 import { CampaignSegment } from './schema/campaignSegment.schema';
@@ -35,7 +36,7 @@ export default class CampaignSegmentService {
   ): Promise<CampaignSegment> {
     const existCampaignSegment = await this.getByCampaignId(dto.campaign_ID.toString());
 
-    if (existCampaignSegment) {
+    if (existCampaignSegment?.length) {
       throw new ConflictException(ServerErrors.CAMPAIGN.EXISTS);
     }
 
@@ -48,26 +49,57 @@ export default class CampaignSegmentService {
   }
 
   async getByCampaignId(campaignid: string) {
-    const campaignSegment = await this.CampaignSegmentModel.find({ campaign_ID: campaignid }).exec();
+    const campaignSegment = await this.CampaignSegmentModel.find({ campaign_ID: campaignid, isDeleted: false }).exec();
 
     return campaignSegment;
   }
 
+  // eslint-disable-next-line consistent-return
   async update(
     loggedInUserId: string,
     campaignId: string,
     body: UpdateCampaignSegmentDTO,
   ): Promise<CampaignSegment> {
-    const updatedCampaignSegment = await updateWhere<CampaignSegment>(
-      this.CampaignSegmentModel,
-      { campaign_ID: campaignId },
-      { ...body, updatedBy: loggedInUserId },
-    );
+    try {
+      const updatedCampaignSegment = await updateWhere<CampaignSegment>(
+        this.CampaignSegmentModel,
+        { campaign_ID: campaignId },
+        { ...body, updatedBy: loggedInUserId },
+      );
 
-    if (!updatedCampaignSegment) {
-      throw new NotFoundException(ServerErrors.CAMPAIGN.NOT_FOUND);
+      if (!updatedCampaignSegment) {
+        throw new NotFoundException(ServerErrors.CAMPAIGN.NOT_FOUND);
+      }
+      return updatedCampaignSegment;
+    } catch (err) {
+      exceptionHandling(err);
     }
-    return updatedCampaignSegment;
+  }
+
+  // eslint-disable-next-line consistent-return
+  async delete(
+    loggedInUserId: string,
+    campaignId: string,
+  ): Promise<CampaignSegment> {
+    try {
+      const deletedCampaignSegment = await updateWhere<CampaignSegment>(
+        this.CampaignSegmentModel,
+        { campaign_ID: campaignId },
+        {
+          updatedBy: loggedInUserId,
+          deletedAt: new Date(),
+          deletedBy: loggedInUserId,
+          isDeleted: true,
+        },
+      );
+
+      if (!deletedCampaignSegment) {
+        throw new NotFoundException(ServerErrors.CAMPAIGN.NOT_FOUND);
+      }
+      return deletedCampaignSegment;
+    } catch (err) {
+      exceptionHandling(err);
+    }
   }
 
   async getAllDMOsOfCampaignSegment(userId: string) {

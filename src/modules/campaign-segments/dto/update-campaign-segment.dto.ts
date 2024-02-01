@@ -28,5 +28,5 @@ export class UpdateCampaignSegmentDTO {
   @ApiProperty()
   @IsArray()
   @IsOptional()
-    crowed_origion: [];
+    crowed_origin: [];
 }

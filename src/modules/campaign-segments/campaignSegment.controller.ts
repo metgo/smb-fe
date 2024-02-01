@@ -1,5 +1,5 @@
 import {
-  Body, Controller, Get, HttpCode, HttpStatus, Param, Patch, Post, Query, Req, Res, UseGuards,
+  Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query, Req, Res, UseGuards,
 } from '@nestjs/common';
 import { Response } from 'express';
 
@@ -20,7 +20,7 @@ import { ExtendedProductFilterQuery } from 'src/modules/products/dto/external-ap
 export class CampaignSegmentController {
   constructor(
     private readonly campaignSegmentService: CampaignSegmentService,
-  ) { }
+  ) {}
 
   @Roles(UserType.SUPERADMIN, UserType.ADMIN, UserType.DMO)
   @UseGuards(JwtAuthGuard)
@@ -55,6 +55,7 @@ export class CampaignSegmentController {
     response: { status: HttpStatus.OK, description: ServerSuccess.CAMPAIGN_SEGMENT.UPDATED },
     noAuthToken: true,
     softBlockExtraDtoFields: true,
+    operation: 'Update by campaign Id',
   })
   @Patch('campaign-segment/:campaignId')
   async update(
@@ -67,8 +68,34 @@ export class CampaignSegmentController {
 
     return responseHelper(
       response,
-      HttpStatus.CREATED,
+      HttpStatus.OK,
       ServerSuccess.CAMPAIGN_SEGMENT.UPDATED,
+      campaignSegment,
+      null,
+      null,
+    );
+  }
+
+  @Roles(UserType.SUPERADMIN, UserType.ADMIN, UserType.DMO)
+  @UseGuards(JwtAuthGuard)
+  @ApiEndpoint({
+    tags: ['Admin', 'CampaignSegment'],
+    response: { status: HttpStatus.OK, description: ServerSuccess.CAMPAIGN_SEGMENT.DELETED },
+    noAuthToken: true,
+    operation: 'Delete by campaign Id',
+  })
+  @Delete('campaign-segment/:campaignId')
+  async deleteCampaignSegment(
+    @Param('campaignId') campaignId: string,
+    @Req() req,
+    @Res() response: Response,
+  ) {
+    const campaignSegment = await this.campaignSegmentService.delete(req.user.id, campaignId);
+
+    return responseHelper(
+      response,
+      HttpStatus.OK,
+      ServerSuccess.CAMPAIGN_SEGMENT.DELETED,
       campaignSegment,
       null,
       null,
