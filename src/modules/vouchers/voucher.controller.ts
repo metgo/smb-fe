@@ -4,7 +4,6 @@ import {
   Body, Controller, Get, HttpStatus, Param, Post, Put, Query, Req, Res, UseGuards,
 } from '@nestjs/common';
 import { ServerSuccess } from 'src/common/constant';
-import { ExternalApiFilterQuery } from 'src/common/query-handler/external-api-filter.query';
 import { ExternalApiPostQuery } from 'src/common/query-handler/externalapi-post.query';
 import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
 import { ExternalApiGuard } from 'src/core/guards/authorization/external-api-guards';
@@ -12,8 +11,8 @@ import { JwtAuthGuard } from 'src/core/guards/jwt/jwt.guards';
 import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interface';
 import { VoucherService } from './voucher.service';
 import {
-  FilterQuery, createVoucherDto, updateAssignedUserVoucherDto,
-} from './dto';
+  createVoucherDto, ExternalApiFilterQuery, FilterQuery, updateAssignedUserVoucherDto, UpdateVoucherBalance,
+} from 'src/modules/vouchers/dto';
 import { CampaignService } from '../campaign/campaign.service';
 import { Campaign } from '../campaign/schema/campaign.schema';
 import { UsersService } from '../users/users.services';
@@ -22,7 +21,6 @@ import { VoucherStatus } from 'src/common/enum';
 import { UpdateFieldInterface } from './interface';
 import { responseHelper } from 'src/core/helper/response.helper';
 import { Response } from 'express';
-import { UpdateVoucherBalance } from 'src/modules/vouchers/dto/update-voucher-balance.dto';
 
 @Controller()
 export class VoucherController {
@@ -109,7 +107,7 @@ export class VoucherController {
     noAuthToken: true,
   })
   @UseGuards(JwtAuthGuard)
-  @Get('my-voucher')
+  @Get('vouchers/created-by-me')
   async getAll(
     @Res() response: Response,
     @Req() request,
@@ -130,14 +128,14 @@ export class VoucherController {
   @ApiEndpoint({
     tags: ['Admin', 'Voucher'],
     response: {
-      status: 200,
+      status: HttpStatus.OK,
       description: ServerSuccess.VOUCHER.LISTED,
     },
     softBlockExtraDtoFields: true,
     noAuthToken: true,
   })
   @UseGuards(JwtAuthGuard)
-  @Get('voucher/assign-me')
+  @Get('vouchers/assigned')
   async assignToMe(
     @Res() response: Response,
     @Req() request,

@@ -17,11 +17,7 @@ import { nanoid } from 'nanoid';
 import { EnglishTemplate, HebrewTemplate } from 'src/common/mailchimp/templateId';
 import { paginationConfig } from 'src/common/pagination.config';
 import { Voucher } from './schema/voucher.schema';
-import {
-  FilterQuery, createVoucherDto,
-} from './dto';
 import { Currency, Locale, VoucherPaymentStatus } from 'src/common/enum';
-import { ExternalApiFilterQuery } from 'src/common/query-handler/external-api-filter.query';
 import { ExternalApiPostQuery } from 'src/common/query-handler/externalapi-post.query';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { generateRandomCode } from 'src/common/utils/randomCode.generator';
@@ -35,7 +31,9 @@ import { PaymentPurpose } from 'src/services/payments/payments.type';
 import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interface';
 import { CampaignService } from 'src/modules/campaign/campaign.service';
 import { UsersService } from 'src/modules/users/users.services';
-import { UpdateVoucherBalance } from 'src/modules/vouchers/dto/update-voucher-balance.dto';
+import {
+  createVoucherDto, ExternalApiFilterQuery, FilterQuery, UpdateVoucherBalance,
+} from 'src/modules/vouchers/dto';
 import { AssignVoucherCommand } from 'src/modules/vouchers/interface/assign-voucher.interface';
 
 @Injectable()
@@ -152,7 +150,6 @@ export class VoucherService {
         assignedTo: new mongoose.Types.ObjectId(userId),
       };
       delete findQuery?.createdBy;
-      delete findQuery?.status;
     }
 
     if (search) {
@@ -176,7 +173,7 @@ export class VoucherService {
 
   async getMyVoucherForExternalApi(userId: string, queries: ExternalApiFilterQuery) {
     const {
-      page, limit, ...query
+      page, limit, search, ...query
     } = queries;
 
     const queryPage = page ? Number(page) : paginationConfig.page;
@@ -193,6 +190,12 @@ export class VoucherService {
     };
     let populate1: {};
 
+    if (search) {
+      findQuery = {
+        ...findQuery,
+        name: { $regex: search, $options: 'i' },
+      };
+    }
     const voucher = await queryhandler<Voucher>(
       this.VoucherModel,
       findQuery,

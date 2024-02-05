@@ -8,4 +8,8 @@ export class FilterQuery extends CommonFilterQuery {
   @ApiProperty({ enum: VoucherStatus, required: false })
   @IsOptional()
     status: VoucherStatus;
+
+  @ApiProperty()
+  @IsOptional()
+    campId: string;
 }
