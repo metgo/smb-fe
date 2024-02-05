@@ -114,7 +114,7 @@ export class VoucherController {
     @Query() query: FilterQuery,
   ) {
     const userId = request.user.id;
-    const vouchers = await this.voucherService.getMy(userId, query);
+    const vouchers = await this.voucherService.getVouchersCreatedByMe(userId, query);
     return responseHelper(
       response,
       HttpStatus.OK,
@@ -142,7 +142,7 @@ export class VoucherController {
     @Query() query: FilterQuery,
   ) {
     const userId = request.user.id;
-    const vouchers = await this.voucherService.getMy(userId, query, true);
+    const vouchers = await this.voucherService.getVouchersAssignedToMe(userId, query);
     return responseHelper(
       response,
       HttpStatus.OK,
@@ -213,7 +213,7 @@ export class VoucherController {
     @Query() query: ExternalApiFilterQuery,
   ) {
     const userId = request.user.id;
-    const vouchers = await this.voucherService.getMyVoucherForExternalApi(userId, query);
+    const vouchers = await this.voucherService.getVouchersAssignedToMe(userId, query);
     return responseHelper(
       response,
       HttpStatus.OK,

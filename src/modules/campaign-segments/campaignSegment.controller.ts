@@ -12,7 +12,7 @@ import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
 import { responseHelper } from 'src/core/helper/response.helper';
 import { CreateCampaignSegmentDTO } from 'src/modules/campaign-segments/dto/create-campaign-segment.dto';
 import { UpdateCampaignSegmentDTO } from 'src/modules/campaign-segments/dto/update-campaign-segment.dto';
-import CampaignSegmentService from 'src/modules/campaign-segments/campaignSegment.service';
+import { CampaignSegmentService } from 'src/modules/campaign-segments/campaignSegment.service';
 import { GetByCampCodeQuery } from 'src/modules/campaign-segments/queries/get-by-campcode.query';
 import { GetProductsByCampCodeQuery } from 'src/modules/campaign-segments/queries/get-products-by-campcode.query';
 import { UserType } from 'src/modules/users/users.type';

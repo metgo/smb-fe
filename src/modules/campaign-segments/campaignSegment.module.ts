@@ -1,5 +1,4 @@
 import { Module, forwardRef } from '@nestjs/common';
-import CampaignSegmentService from './campaignSegment.service';
 import { MongooseModule } from '@nestjs/mongoose';
 // import { UsersModule } from '../users/users.module';
 // import { EncryptionModule } from 'src/services/encryption/encryption.module';
@@ -14,6 +13,7 @@ import { UsersModule } from '../users/users.module';
 import { DMOSchema } from '../dmo/schema/dmo.schema';
 import { BusinessModule } from 'src/modules/business/business.module';
 import { CampaignModule } from 'src/modules/campaign/campaign.module';
+import { CampaignSegmentService } from 'src/modules/campaign-segments/campaignSegment.service';
 import { ProductsModule } from 'src/modules/products/products.module';
 
 const configService = new ConfigService();

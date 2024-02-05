@@ -19,7 +19,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { fileFilterByExtensions } from 'src/services/gcp-bucket/middleware/file-filter';
 import { updateCampaignDto } from './dto/updateCampaign.dto';
 import { DMOService } from '../dmo/dmo.service';
-import CampaignSegmentService from 'src/modules/campaign-segments/campaignSegment.service';
+import { CampaignSegmentService } from 'src/modules/campaign-segments/campaignSegment.service';
 import { CreateCampaignSegmentDTO } from 'src/modules/campaign-segments/dto/create-campaign-segment.dto';
 
 @Controller()

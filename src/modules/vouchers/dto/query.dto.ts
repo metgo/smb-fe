@@ -9,7 +9,17 @@ export class FilterQuery extends CommonFilterQuery {
   @IsOptional()
     status: VoucherStatus;
 
-  @ApiProperty()
+  @ApiProperty({
+    type: [String],
+    required: false,
+  })
   @IsOptional()
     campId: string;
+
+  @ApiProperty({
+    type: String,
+    required: false,
+  })
+  @IsOptional()
+    productId: string;
 }

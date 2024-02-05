@@ -30,6 +30,7 @@ import { PaymentsService } from 'src/services/payments/payments.service';
 import { PaymentPurpose } from 'src/services/payments/payments.type';
 import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interface';
 import { CampaignService } from 'src/modules/campaign/campaign.service';
+import { CampaignSegmentService } from 'src/modules/campaign-segments/campaignSegment.service';
 import { UsersService } from 'src/modules/users/users.services';
 import {
   createVoucherDto, ExternalApiFilterQuery, FilterQuery, UpdateVoucherBalance,
@@ -44,6 +45,7 @@ export class VoucherService {
     @Inject(forwardRef(() => PaymentsService))
     private readonly paymentService: PaymentsService,
     private readonly campaignService: CampaignService,
+    private readonly campaignSegmentService: CampaignSegmentService,
     private readonly usersService: UsersService,
     private mailchimpService: MailChimpService,
   ) { }
@@ -125,9 +127,9 @@ export class VoucherService {
     }
   }
 
-  async getMy(userId: string, queries: FilterQuery, assignedToMe?: boolean) {
+  async getVouchersCreatedByMe(userId: string, queries: FilterQuery) {
     const {
-      page, limit, search, ...query
+      page, limit, campId, search, productId, ...query
     } = queries;
 
     const queryPage = page ? Number(page) : paginationConfig.page;
@@ -136,7 +138,6 @@ export class VoucherService {
     const select = disSelect;
 
     let findQuery: any = { ...query, createdBy: userId };
-    delete findQuery?.identifierId;
 
     const populate = {
       path: 'campId',
@@ -144,12 +145,15 @@ export class VoucherService {
     };
     let populate1: {};
 
-    if (assignedToMe) {
+    if (campId) {
+      const campIds = Array.isArray(campId)
+        ? campId.map(item => new mongoose.Types.ObjectId(item))
+        : [new mongoose.Types.ObjectId(campId)];
+
       findQuery = {
         ...findQuery,
-        assignedTo: new mongoose.Types.ObjectId(userId),
+        campId: { $in: campIds },
       };
-      delete findQuery?.createdBy;
     }
 
     if (search) {
@@ -171,9 +175,9 @@ export class VoucherService {
     return voucher;
   }
 
-  async getMyVoucherForExternalApi(userId: string, queries: ExternalApiFilterQuery) {
+  async getVouchersAssignedToMe(userId: string, queries: FilterQuery | ExternalApiFilterQuery) {
     const {
-      page, limit, search, ...query
+      page, limit, search, campId, productId, ...query
     } = queries;
 
     const queryPage = page ? Number(page) : paginationConfig.page;
@@ -189,6 +193,33 @@ export class VoucherService {
       select: `${disSelect}`,
     };
     let populate1: {};
+
+    let campIdsFromProductId;
+    if (productId) {
+      // get all the campId from campaignSegment the productId is associated to
+      campIdsFromProductId = await this.campaignSegmentService.getCampaignAssociatedToProduct(productId);
+    }
+
+    if (campId) {
+      let campIds = Array.isArray(campId)
+        ? campId.map(item => new mongoose.Types.ObjectId(item))
+        : [new mongoose.Types.ObjectId(campId)];
+
+      if (campIdsFromProductId) {
+        campIds = [...campIds, campIdsFromProductId];
+      }
+      findQuery = {
+        ...findQuery,
+        campId: { $in: campIds },
+      };
+    }
+
+    if (!campId && campIdsFromProductId?.length) {
+      findQuery = {
+        ...findQuery,
+        campId: { $in: campIdsFromProductId },
+      };
+    }
 
     if (search) {
       findQuery = {

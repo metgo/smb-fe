@@ -27,7 +27,7 @@ import { GetProductsByCampCodeQuery } from 'src/modules/campaign-segments/querie
 import { ProductsService } from 'src/modules/products/products.services';
 
 @Injectable()
-export default class CampaignSegmentService {
+export class CampaignSegmentService {
   constructor(
       @InjectModel('CampaignSegment')
       private CampaignSegmentModel: Model<CampaignSegment>,
@@ -481,5 +481,18 @@ export default class CampaignSegmentService {
       hasNextPage: pages < pageCount,
       businesses: paginatedBusiness,
     };
+  }
+
+  // eslint-disable-next-line consistent-return
+  async getCampaignAssociatedToProduct(id: string) {
+    try {
+      const campaignSegments = await this.CampaignSegmentModel.find({ products: { $in: [id] } });
+
+      const campaignIds = campaignSegments.map(obj => obj.campaign_ID);
+
+      return campaignIds;
+    } catch (err) {
+      exceptionHandling(err);
+    }
   }
 }
