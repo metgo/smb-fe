@@ -12,7 +12,9 @@ import { JwtModule } from '@nestjs/jwt';
 import { ConfigService } from 'src/services/config/config.service';
 import { UsersModule } from '../users/users.module';
 import { DMOSchema } from '../dmo/schema/dmo.schema';
+import { BusinessModule } from 'src/modules/business/business.module';
 import { CampaignModule } from 'src/modules/campaign/campaign.module';
+import { ProductsModule } from 'src/modules/products/products.module';
 
 const configService = new ConfigService();
 
@@ -32,6 +34,8 @@ const configService = new ConfigService();
     ConfigModule,
     DMOModule,
     forwardRef(() => CampaignModule),
+    BusinessModule,
+    ProductsModule,
   ],
   providers: [
     CampaignSegmentService,

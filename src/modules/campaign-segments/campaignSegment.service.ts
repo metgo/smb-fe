@@ -5,6 +5,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
 import { ServerErrors } from 'src/common/constant';
+import { convertToString } from 'src/common/convert-to-string';
+import { getUniqueSet } from 'src/common/get-unique-set';
 import { paginationConfig } from 'src/common/pagination.config';
 import { ExternalApiWithCampCodeFilterQuery } from 'src/common/query-handler/external-api-campcode.query';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
@@ -17,9 +19,12 @@ import { BusinessStatus } from 'src/modules/business/business.type';
 import { CampaignService } from 'src/modules/campaign/campaign.service';
 import { ExtendedProductFilterQuery } from 'src/modules/products/dto/external-api.query.dto';
 import { ProductStatus } from 'src/modules/products/products.type';
+import { BusinessService } from 'src/modules/business/business.service';
+import { CampaignSegmentOperation } from 'src/modules/campaign-segments/campaignSegment.type';
 import { UpdateCampaignSegmentDTO } from 'src/modules/campaign-segments/dto/update-campaign-segment.dto';
 import { GetByCampCodeQuery } from 'src/modules/campaign-segments/queries/get-by-campcode.query';
 import { GetProductsByCampCodeQuery } from 'src/modules/campaign-segments/queries/get-products-by-campcode.query';
+import { ProductsService } from 'src/modules/products/products.services';
 
 @Injectable()
 export default class CampaignSegmentService {
@@ -28,9 +33,9 @@ export default class CampaignSegmentService {
       private CampaignSegmentModel: Model<CampaignSegment>,
       private readonly dmoService: DMOService,
       private readonly campaignService: CampaignService,
-  ) {
-
-  }
+      private readonly businessService: BusinessService,
+      private readonly productsService: ProductsService,
+  ) {}
 
   async create(
     loggedInUserId: string,
@@ -42,8 +47,18 @@ export default class CampaignSegmentService {
       throw new ConflictException(ServerErrors.CAMPAIGN.EXISTS);
     }
 
+    // get all business of dmo
+    const businessFromDMOs = await this.businessService.findManyByFieldIds('dmoId', dto.DMOs);
+    const newBusinessList: string[] = [...new Set([...dto.businesses, ...businessFromDMOs])];
+
+    // get all products of dmos
+    const productsFromBusiness = await this.productsService.findManyByFieldIds('businessId', newBusinessList);
+    const newProductsList = [...new Set([...dto.products, ...productsFromBusiness])];
+
     const newCampaignSegment = new this.CampaignSegmentModel({
       ...dto,
+      businesses: newBusinessList,
+      products: newProductsList,
       createdBy: loggedInUserId,
     });
     await newCampaignSegment.save();
@@ -63,11 +78,82 @@ export default class CampaignSegmentService {
     body: UpdateCampaignSegmentDTO,
   ): Promise<CampaignSegment> {
     try {
-      const updatedCampaignSegment = await updateWhere<CampaignSegment>(
-        this.CampaignSegmentModel,
-        { campaign_ID: campaignId },
-        { ...body, updatedBy: loggedInUserId },
-      );
+      let updatedCampaignSegment: CampaignSegment;
+      let updatedField: object = {
+        updatedBy: loggedInUserId,
+      };
+
+      const newDMOsList : string[] = body.DMOs?.length ? getUniqueSet(body.DMOs) : [];
+      let newBusinessesList : string[] = body.businesses?.length ? [...body.businesses] : [];
+      let newProductsList: string[] = body.products?.length ? [...body.products] : [];
+      const newCrowedAgeList: string[] = body.crowed_age?.length ? getUniqueSet(body.crowed_age) : [];
+      const newCrowedOriginList: string[] = body.crowed_origin?.length ? getUniqueSet(body.crowed_origin) : [];
+
+      // get all business of dmo
+      if (newDMOsList?.length) {
+        const businessFromDMOs = await this.businessService.findManyByFieldIds('dmoId', body.DMOs);
+        newBusinessesList = [...newBusinessesList, ...businessFromDMOs];
+      }
+
+      newBusinessesList = getUniqueSet(newBusinessesList);
+
+      // get all products of business
+      if (newBusinessesList?.length) {
+        const productsFromBusiness = await this.productsService.findManyByFieldIds('businessId', newBusinessesList);
+        newProductsList = [...newProductsList, ...productsFromBusiness];
+      }
+
+      newProductsList = getUniqueSet(newProductsList);
+
+      // push new data
+      if (body.operation === CampaignSegmentOperation.UPDATE) {
+        const campaignSegmentDetails = await this.CampaignSegmentModel.findOne({
+          campaign_ID: campaignId, isDeleted: false,
+        });
+
+        const businesses = getUniqueSet([...convertToString(campaignSegmentDetails.businesses), ...newBusinessesList]);
+        const products = getUniqueSet([...convertToString(campaignSegmentDetails.products), ...newProductsList]);
+        const DMOs = getUniqueSet([...convertToString(campaignSegmentDetails.DMOs), ...newDMOsList]);
+        const crowedAge = getUniqueSet([...convertToString(campaignSegmentDetails.crowed_age), ...newCrowedAgeList]);
+        const crowedOrigin = getUniqueSet(
+          [...convertToString(campaignSegmentDetails.crowed_origin), ...newCrowedOriginList],
+        );
+
+        updatedField = {
+          ...updatedField,
+          businesses,
+          products,
+          DMOs,
+          crowed_age: crowedAge,
+          crowed_origin: crowedOrigin,
+        };
+
+        updatedCampaignSegment = await updateWhere<CampaignSegment>(
+          this.CampaignSegmentModel,
+          { campaign_ID: campaignId },
+          {
+            $set: updatedField,
+          },
+        );
+      }
+
+      // pop exisitng data
+      if (body.operation === CampaignSegmentOperation.DELETE) {
+        updatedCampaignSegment = await updateWhere<CampaignSegment>(
+          this.CampaignSegmentModel,
+          { campaign_ID: campaignId },
+          {
+            $pull: {
+              DMOs: { $in: newDMOsList },
+              businesses: { $in: newBusinessesList },
+              products: { $in: newProductsList },
+              crowed_age: { $in: newCrowedAgeList },
+              crowed_origin: { $in: newCrowedOriginList },
+            },
+            $set: updatedField,
+          },
+        );
+      }
 
       if (!updatedCampaignSegment) {
         throw new NotFoundException(ServerErrors.CAMPAIGN.NOT_FOUND);

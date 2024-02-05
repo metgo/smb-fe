@@ -19,7 +19,6 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { fileFilterByExtensions } from 'src/services/gcp-bucket/middleware/file-filter';
 import { updateCampaignDto } from './dto/updateCampaign.dto';
 import { DMOService } from '../dmo/dmo.service';
-import mongoose from 'mongoose';
 import CampaignSegmentService from 'src/modules/campaign-segments/campaignSegment.service';
 import { CreateCampaignSegmentDTO } from 'src/modules/campaign-segments/dto/create-campaign-segment.dto';
 
@@ -50,19 +49,23 @@ export class CampaignController {
     const user = request.user.id;
     await this.campaignService.findByFieldName('name', dto.name);
     await this.campaignService.findByFieldName('code', dto.code);
-    let dmoId: mongoose.Types.ObjectId | null;
-    if (request.user.role === 'dmo') {
-      dmoId = await this.dmoService.findDMOByUserID(user);
-    }
+
     const campaign = await this.campaignService.create(dto, campImage, user);
+
     const campaignSegmentDto: CreateCampaignSegmentDTO = {
       campaign_ID: campaign._id.toString(),
-      DMOs: [dmoId.toString()],
+      DMOs: [],
       businesses: [], // Assign empty arrays or appropriate values
       products: [],
       crowed_age: [],
       crowed_origin: [],
     };
+
+    if (request.user.role === UserType.DMO) {
+      const dmoId = await this.dmoService.findDMOByUserID(user);
+      campaignSegmentDto.DMOs = [dmoId.toString()];
+    }
+
     await this.campaignSegmentService.create(request.user.id, campaignSegmentDto);
 
     return responseHelper(response, HttpStatus.CREATED, ServerSuccess.CAMPAIGN_CREATED, campaign, null, null);

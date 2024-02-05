@@ -1,10 +1,22 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
   IsArray,
+  IsEnum,
+  IsNotEmpty,
   IsOptional,
 } from 'class-validator';
+import { CampaignSegmentOperation } from '../campaignSegment.type';
 
 export class UpdateCampaignSegmentDTO {
+  @ApiProperty({
+    type: 'enum',
+    enum: CampaignSegmentOperation,
+    required: true,
+  })
+  @IsNotEmpty()
+  @IsEnum(CampaignSegmentOperation)
+    operation: CampaignSegmentOperation;
+
   @ApiProperty({ type: [String] })
   @IsArray()
   @IsOptional()
