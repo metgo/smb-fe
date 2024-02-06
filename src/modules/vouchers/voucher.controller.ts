@@ -11,7 +11,13 @@ import { JwtAuthGuard } from 'src/core/guards/jwt/jwt.guards';
 import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interface';
 import { VoucherService } from './voucher.service';
 import {
-  createVoucherDto, ExternalApiFilterQuery, FilterQuery, updateAssignedUserVoucherDto, UpdateVoucherBalance,
+  createVoucherDto,
+  ExternalApiFilterQuery,
+  FilterQuery,
+  GetOneVoucherByExternalApiQuery,
+  GetOneVoucherQuery,
+  updateAssignedUserVoucherDto,
+  UpdateVoucherBalance,
 } from 'src/modules/vouchers/dto';
 import { CampaignService } from '../campaign/campaign.service';
 import { Campaign } from '../campaign/schema/campaign.schema';
@@ -66,8 +72,12 @@ export class VoucherController {
     response: { status: 200, description: ServerSuccess.VOUCHER.LISTED },
   })
   @Get('voucher-code/:code')
-  async getOne(@Res() response: Response, @Param('code') code: string) {
-    const voucher = await this.voucherService.getOne(code);
+  async getOne(
+    @Param('code') code: string,
+    @Res() response: Response,
+    @Query() query: GetOneVoucherQuery,
+  ) {
+    const voucher = await this.voucherService.getOne({ code, productId: query.productId });
     return responseHelper(
       response,
       HttpStatus.OK,
@@ -333,10 +343,9 @@ export class VoucherController {
   async getVoucherDetailByExternalApi(
     @Res() response: Response,
     @Param('code') code: string,
-    // eslint-disable-next-line no-unused-vars
-    @Query() query: ExternalApiPostQuery,
+    @Query() query: GetOneVoucherByExternalApiQuery,
   ) {
-    const voucher = await this.voucherService.getOne(code, true);
+    const voucher = await this.voucherService.getOne({ code, externalApi: false, productId: query.productId });
     return responseHelper(
       response,
       HttpStatus.OK,

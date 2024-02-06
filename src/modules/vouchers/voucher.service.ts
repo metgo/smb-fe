@@ -35,7 +35,7 @@ import { UsersService } from 'src/modules/users/users.services';
 import {
   createVoucherDto, ExternalApiFilterQuery, FilterQuery, UpdateVoucherBalance,
 } from 'src/modules/vouchers/dto';
-import { AssignVoucherCommand } from 'src/modules/vouchers/interface/assign-voucher.interface';
+import { AssignVoucherCommand, GetOneVoucherInterface } from 'src/modules/vouchers/interface';
 
 @Injectable()
 export class VoucherService {
@@ -85,13 +85,37 @@ export class VoucherService {
     return paymentLink;
   }
 
-  async getOne(code: string, externalApi?:boolean) {
+  async getOne(query: GetOneVoucherInterface) {
+    const { code, externalApi, productId } = query;
     const select = disSelect;
     const populate = {
       path: 'campId',
       select: `${disSelect}`,
     };
-    const voucher = await this.VoucherModel.findOne({ code }).select(select).populate(populate).exec();
+
+    let findQuery:any = {
+      code,
+    };
+
+    if (productId) {
+      // get all the campId from campaignSegment the productId is associated to
+      const campaignIds = await this.campaignSegmentService.getCampaignAssociatedToProduct(productId);
+
+      const campIds = Array.isArray(campaignIds)
+        ? campaignIds.map(item => new mongoose.Types.ObjectId(item))
+        : [new mongoose.Types.ObjectId(campaignIds)];
+
+      findQuery = {
+        ...findQuery,
+        campId: { $in: campIds },
+      };
+    }
+
+    const voucher = await this.VoucherModel
+      .findOne(findQuery)
+      .select(select)
+      .populate(populate)
+      .exec();
     if (!voucher) {
       throw new BadRequestException(ServerErrors.VOUCHER.NOT_FOUND);
     }
