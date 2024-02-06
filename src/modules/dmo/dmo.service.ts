@@ -60,13 +60,16 @@ export class DMOService {
     }
     const dmoList = await queryhandler<DMO>(
       this.DMOModel,
-      findQuery,
-      select,
-      queryPage,
-      queryLimit,
-      populate,
-      populate1,
+      {
+        findQuery,
+        select,
+        page: queryPage,
+        limit: queryLimit,
+        populate,
+        populate1,
+      },
     );
+
     return dmoList;
   }
 

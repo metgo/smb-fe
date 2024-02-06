@@ -1,5 +1,6 @@
 import mongoose, { Model } from 'mongoose';
 import { Locale } from 'src/common/enum';
+import { QueryHelperInterface } from 'src/core/helper/query-helper.interface';
 
 export async function findByFieldName<T>(model: Model<T>, fieldName: keyof T, item: string) {
   const filterBy = { [fieldName]: item };
@@ -93,20 +94,26 @@ export async function findAll<T>(model: Model<T>) {
 
 export async function queryhandler<T>(
   model: Model<T>,
-  findQuery: {},
-  select: string | {},
-  page: number,
-  limit: number,
-  populate?: any,
-  populate1?: any,
-  languageQuery ?: Locale,
+  queries: QueryHelperInterface,
 ) {
+  const {
+    findQuery,
+    select,
+    page,
+    limit,
+    sort,
+    populate,
+    populate1,
+    languageQuery,
+  } = queries;
+
   const datas: any = {};
   datas.data = await model
     .find({ ...findQuery, deletedAt: { $in: [null] } })
     .select(select)
     .skip((page - 1) * limit)
     .limit(limit)
+    .sort({ [sort]: -1 })
     .populate(populate)
     .populate(populate1);
 

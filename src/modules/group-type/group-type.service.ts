@@ -51,13 +51,15 @@ export class GroupTypeService {
 
     const groupType = await queryhandler<GroupType>(
       this.GroupTypeModel,
-      findQuery,
-      select,
-      queryPage,
-      queryLimit,
-      populate,
-      populate1,
-      locale,
+      {
+        findQuery,
+        select,
+        page: queryPage,
+        limit: queryLimit,
+        populate,
+        populate1,
+        languageQuery: locale,
+      },
     );
 
     return groupType;

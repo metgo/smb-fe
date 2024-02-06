@@ -325,16 +325,18 @@ export class BusinessService {
     // eslint-disable-next-line prefer-const
     select = `${disSelect}`;
 
-    console.log(findQuery);
     const allBusiness = await queryhandler<Business>(
       this.BusinessModel,
-      findQuery,
-      select,
-      queryPage,
-      queryLimit,
-      populate,
-      populate1,
+      {
+        findQuery,
+        select,
+        page: queryPage,
+        limit: queryLimit,
+        populate,
+        populate1,
+      },
     );
+
     return allBusiness;
   }
 
@@ -432,13 +434,16 @@ export class BusinessService {
     select = `${disSelect}`;
     const allBusiness = await queryhandler<Business>(
       this.BusinessModel,
-      findQuery,
-      select,
-      queryPage,
-      queryLimit,
-      populate,
-      populate1,
+      {
+        findQuery,
+        select,
+        page: queryPage,
+        limit: queryLimit,
+        populate,
+        populate1,
+      },
     );
+
     return allBusiness;
   }
 

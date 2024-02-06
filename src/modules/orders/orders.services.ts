@@ -284,10 +284,12 @@ export class OrdersService {
 
     const orders = await queryhandler<Order>(
       this.OrderModel,
-      findQuery,
-      select,
-      queryPage,
-      queryLimit,
+      {
+        findQuery,
+        select,
+        page: queryPage,
+        limit: queryLimit,
+      },
     );
     return orders;
   }

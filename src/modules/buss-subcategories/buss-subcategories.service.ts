@@ -68,13 +68,15 @@ export class BussSubCategoriesService {
     select = disSelect;
     const bussSubCategory = await queryhandler<BussSubCategory>(
       this.BussSubCategoryModel,
-      findQuery,
-      select,
-      queryPage,
-      queryLimit,
-      populate,
-      populate1,
-      locale,
+      {
+        findQuery,
+        select,
+        page: queryPage,
+        limit: queryLimit,
+        populate,
+        populate1,
+        languageQuery: locale,
+      },
     );
 
     return bussSubCategory;

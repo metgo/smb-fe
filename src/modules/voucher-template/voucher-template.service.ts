@@ -62,12 +62,14 @@ export class VoucherTemplateService {
 
     const voucherTemplate = await queryhandler<VoucherTemplate>(
       this.VoucherTemplateModel,
-      findQuery,
-      select,
-      queryPage,
-      queryLimit,
-      populate,
-      populate1,
+      {
+        findQuery,
+        select,
+        page: queryPage,
+        limit: queryLimit,
+        populate,
+        populate1,
+      },
     );
 
     return voucherTemplate;

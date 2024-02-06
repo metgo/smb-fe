@@ -52,12 +52,14 @@ export class ExternalApiServices {
 
     const externalApi = await queryhandler<ExternalApi>(
       this.ExternalApiModel,
-      findQuery,
-      select,
-      queryPage,
-      queryLimit,
-      populate,
-      populate1,
+      {
+        findQuery,
+        select,
+        page: queryPage,
+        limit: queryLimit,
+        populate,
+        populate1,
+      },
     );
 
     return externalApi;

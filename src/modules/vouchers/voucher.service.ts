@@ -165,13 +165,16 @@ export class VoucherService {
 
     const voucher = await queryhandler<Voucher>(
       this.VoucherModel,
-      findQuery,
-      select,
-      queryPage,
-      queryLimit,
-      populate,
-      populate1,
+      {
+        findQuery,
+        select,
+        page: queryPage,
+        limit: queryLimit,
+        populate,
+        populate1,
+      },
     );
+
     return voucher;
   }
 
@@ -229,12 +232,15 @@ export class VoucherService {
     }
     const voucher = await queryhandler<Voucher>(
       this.VoucherModel,
-      findQuery,
-      select,
-      queryPage,
-      queryLimit,
-      populate,
-      populate1,
+      {
+        findQuery,
+        select,
+        page: queryPage,
+        limit: queryLimit,
+        populate,
+        populate1,
+      },
+
     );
     return voucher;
   }

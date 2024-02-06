@@ -49,12 +49,14 @@ export class MPCategoiresService {
     select = disSelect;
     const mapPoint = await queryhandler<MPCategories>(
       this.MPCategoriesModel,
-      findQuery,
-      select,
-      page,
-      limit,
-      populate,
-      populate1,
+      {
+        findQuery,
+        select,
+        page,
+        limit,
+        populate,
+        populate1,
+      },
     );
 
     return mapPoint;

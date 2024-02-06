@@ -55,13 +55,16 @@ export class MPSubCategoriesService {
     select = `${disSelect}`;
     const newMPSubCategories = await queryhandler<MPSubCategories>(
       this.MPSubCategoriesModel,
-      findQuery,
-      select,
-      page,
-      limit,
-      populate,
-      populate1,
+      {
+        findQuery,
+        select,
+        page,
+        limit,
+        populate,
+        populate1,
+      },
     );
+
     return newMPSubCategories;
   }
 

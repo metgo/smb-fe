@@ -51,14 +51,17 @@ export class AccessibilityService {
 
     const accessibility = await queryhandler<Accessibility>(
       this.AccessibilityModel,
-      findQuery,
-      select,
-      queryPage,
-      queryLimit,
-      populate,
-      populate1,
-      locale,
+      {
+        findQuery,
+        select,
+        page: queryPage,
+        limit: queryLimit,
+        populate,
+        populate1,
+        languageQuery: locale,
+      },
     );
+
     return accessibility;
   }
 

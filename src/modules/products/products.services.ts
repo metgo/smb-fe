@@ -217,11 +217,14 @@ export class ProductsService {
 
     const products = await queryhandler<Product>(
       this.ProductModel,
-      findQuery,
-      select,
-      queryPage,
-      queryLimit,
+      {
+        findQuery,
+        select,
+        page: queryPage,
+        limit: queryLimit,
+      },
     );
+
     return products;
   }
 
@@ -235,11 +238,14 @@ export class ProductsService {
 
       const products = await queryhandler<Product>(
         this.ProductModel,
-        findQuery,
-        select,
-        page,
-        limit,
+        {
+          findQuery,
+          select,
+          page,
+          limit,
+        },
       );
+
       if (!products?.data?.length) {
         throw new NotFoundException(ServerErrors.PRODUCT.NOT_FOUND);
       }

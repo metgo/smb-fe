@@ -74,13 +74,16 @@ export class CampaignService {
     select = `${disSelect}`;
     const allCampaign = await queryhandler<Campaign>(
       this.CampaignModel,
-      findQuery,
-      select,
-      queryPage,
-      queryLimit,
-      populate,
-      populate1,
+      {
+        findQuery,
+        select,
+        page: queryPage,
+        limit: queryLimit,
+        populate,
+        populate1,
+      },
     );
+
     return allCampaign;
   }
 
@@ -121,13 +124,16 @@ export class CampaignService {
     select = `${disSelect}`;
     const allCampaign = await queryhandler<Campaign>(
       this.CampaignModel,
-      findQuery,
-      select,
-      queryPage,
-      queryLimit,
-      populate,
-      populate1,
+      {
+        findQuery,
+        select,
+        page: queryPage,
+        limit: queryLimit,
+        populate,
+        populate1,
+      },
     );
+
     return allCampaign;
   }
 

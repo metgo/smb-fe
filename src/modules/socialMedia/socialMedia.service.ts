@@ -53,12 +53,14 @@ export class SocialMediaService {
     select = `${disSelect}`;
     const socialMedia = await queryhandler<SocialMedia>(
       this.SocialMediaModel,
-      findQuery,
-      select,
-      queryPage,
-      queryLimit,
-      populate,
-      populate1,
+      {
+        findQuery,
+        select,
+        page: queryPage,
+        limit: queryLimit,
+        populate,
+        populate1,
+      },
     );
     return socialMedia;
   }

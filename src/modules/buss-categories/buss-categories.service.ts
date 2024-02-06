@@ -57,14 +57,18 @@ export class BussCategoriesService {
 
     const bussCategoriesList = await queryhandler<BussCategory>(
       this.BussCategoryModel,
-      findQuery,
-      select,
-      queryPage,
-      queryLimit,
-      populate,
-      populate1,
-      locale,
+      {
+        findQuery,
+        select,
+        page: queryPage,
+        limit: queryLimit,
+        sort: 'createdAt',
+        populate,
+        populate1,
+        languageQuery: locale,
+      },
     );
+
     return bussCategoriesList;
   }
 
@@ -134,6 +138,7 @@ export class BussCategoriesService {
 
     const categories = await this.BussCategoryModel
       .find({ deletedAt: { $in: [null] } })
+      .sort({ createdAt: -1 })
       .lean()
       .select(select)
       .populate(populate)

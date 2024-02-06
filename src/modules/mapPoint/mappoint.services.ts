@@ -58,12 +58,14 @@ export class MapPointServices {
     select = disSelect;
     const mapPoint = await queryhandler<MapPoint>(
       this.MapPointModel,
-      findQuery,
-      select,
-      queryPage,
-      queryLimit,
-      populate,
-      populate1,
+      {
+        findQuery,
+        select,
+        page: queryPage,
+        limit: queryLimit,
+        populate,
+        populate1,
+      },
     );
 
     return mapPoint;
