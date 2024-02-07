@@ -3,9 +3,9 @@ import {
   IsString, IsNotEmpty,
 } from 'class-validator';
 
-import { FilterQuery } from './query.dto';
+import { GetMyCreatedVouchersQuery } from 'src/modules/vouchers/queries';
 
-export class ExternalApiFilterQuery extends FilterQuery {
+export class GetMyVouchersExternalApiQuery extends GetMyCreatedVouchersQuery {
   @ApiProperty({ type: String, required: true })
   @IsString()
   @IsNotEmpty()

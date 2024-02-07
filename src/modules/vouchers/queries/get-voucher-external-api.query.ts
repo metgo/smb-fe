@@ -1,9 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsString, IsNotEmpty } from 'class-validator';
 
-import { GetOneVoucherQuery } from 'src/modules/vouchers/dto';
+import { GetVoucherQuery } from 'src/modules/vouchers/queries';
 
-export class GetOneVoucherByExternalApiQuery extends GetOneVoucherQuery {
+export class GetVoucherByExternalApiQuery extends GetVoucherQuery {
   @ApiProperty({ type: String, required: true })
   @IsString()
   @IsNotEmpty()

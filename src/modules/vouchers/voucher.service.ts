@@ -33,9 +33,10 @@ import { CampaignService } from 'src/modules/campaign/campaign.service';
 import { CampaignSegmentService } from 'src/modules/campaign-segments/campaignSegment.service';
 import { UsersService } from 'src/modules/users/users.services';
 import {
-  createVoucherDto, ExternalApiFilterQuery, FilterQuery, UpdateVoucherBalance,
+  createVoucherDto, UpdateVoucherBalance,
 } from 'src/modules/vouchers/dto';
 import { AssignVoucherCommand, GetOneVoucherInterface } from 'src/modules/vouchers/interface';
+import { GetMyAssignedVouchersQuery, GetMyCreatedVouchersQuery, GetMyVouchersExternalApiQuery } from 'src/modules/vouchers/queries';
 
 @Injectable()
 export class VoucherService {
@@ -151,7 +152,7 @@ export class VoucherService {
     }
   }
 
-  async getVouchersCreatedByMe(userId: string, queries: FilterQuery) {
+  async getVouchersCreatedByMe(userId: string, queries: GetMyCreatedVouchersQuery) {
     const {
       page, limit, campId, search, productId, ...query
     } = queries;
@@ -202,7 +203,7 @@ export class VoucherService {
     return voucher;
   }
 
-  async getVouchersAssignedToMe(userId: string, queries: FilterQuery | ExternalApiFilterQuery) {
+  async getVouchersAssignedToMe(userId: string, queries: GetMyAssignedVouchersQuery | GetMyVouchersExternalApiQuery) {
     const {
       page, limit, search, campId, productId, ...query
     } = queries;

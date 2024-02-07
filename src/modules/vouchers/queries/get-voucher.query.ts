@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsString, IsOptional } from 'class-validator';
 
-export class GetOneVoucherQuery {
+export class GetVoucherQuery {
   @ApiProperty({ type: String, required: false })
   @IsString()
   @IsOptional()

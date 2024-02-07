@@ -12,13 +12,16 @@ import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interfac
 import { VoucherService } from './voucher.service';
 import {
   createVoucherDto,
-  ExternalApiFilterQuery,
-  FilterQuery,
-  GetOneVoucherByExternalApiQuery,
-  GetOneVoucherQuery,
   updateAssignedUserVoucherDto,
   UpdateVoucherBalance,
 } from 'src/modules/vouchers/dto';
+import {
+  GetMyAssignedVouchersQuery,
+  GetMyCreatedVouchersQuery,
+  GetMyVouchersExternalApiQuery,
+  GetVoucherByExternalApiQuery,
+  GetVoucherQuery,
+} from 'src/modules/vouchers/queries';
 import { CampaignService } from '../campaign/campaign.service';
 import { Campaign } from '../campaign/schema/campaign.schema';
 import { UsersService } from '../users/users.services';
@@ -75,7 +78,7 @@ export class VoucherController {
   async getOne(
     @Param('code') code: string,
     @Res() response: Response,
-    @Query() query: GetOneVoucherQuery,
+    @Query() query: GetVoucherQuery,
   ) {
     const voucher = await this.voucherService.getOne({ code, productId: query.productId });
     return responseHelper(
@@ -121,7 +124,7 @@ export class VoucherController {
   async getAll(
     @Res() response: Response,
     @Req() request,
-    @Query() query: FilterQuery,
+    @Query() query: GetMyCreatedVouchersQuery,
   ) {
     const userId = request.user.id;
     const vouchers = await this.voucherService.getVouchersCreatedByMe(userId, query);
@@ -149,7 +152,7 @@ export class VoucherController {
   async assignToMe(
     @Res() response: Response,
     @Req() request,
-    @Query() query: FilterQuery,
+    @Query() query: GetMyAssignedVouchersQuery,
   ) {
     const userId = request.user.id;
     const vouchers = await this.voucherService.getVouchersAssignedToMe(userId, query);
@@ -220,7 +223,7 @@ export class VoucherController {
   async getAllMyVouchersExternalApi(
     @Res() response: Response,
     @Req() request,
-    @Query() query: ExternalApiFilterQuery,
+    @Query() query: GetMyVouchersExternalApiQuery,
   ) {
     const userId = request.user.id;
     const vouchers = await this.voucherService.getVouchersAssignedToMe(userId, query);
@@ -343,7 +346,7 @@ export class VoucherController {
   async getVoucherDetailByExternalApi(
     @Res() response: Response,
     @Param('code') code: string,
-    @Query() query: GetOneVoucherByExternalApiQuery,
+    @Query() query: GetVoucherByExternalApiQuery,
   ) {
     const voucher = await this.voucherService.getOne({ code, externalApi: false, productId: query.productId });
     return responseHelper(
