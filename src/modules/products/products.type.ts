@@ -23,7 +23,7 @@ export interface UpdateCommand {
     businessId: string,
     loggedInUserId: string,
     body: ProductDto | WebCreateProduct,
-    isAdmin: boolean | null,
+    isAdmin: boolean,
 
 }
 

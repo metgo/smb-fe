@@ -32,12 +32,15 @@ import { BussSubCategory } from 'src/modules/buss-subcategories/schema/buss-subC
 import { Product } from 'src/modules/products/schema/products.schema';
 import { UserType } from 'src/modules/users/users.type';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
+import { LoggedInUserInterface } from '../auth/interface/login.interface';
+import { DMOService } from '../dmo/dmo.service';
 
 @Injectable()
 export class BusinessService {
   constructor(
     @InjectModel('Business')
     private BusinessModel: Model<Business>,
+    private readonly dmoService: DMOService,
     private readonly gcpBucketServices: GcpBucketService,
     @InjectModel('Media')
     private MediaModel: Model<Media>,
@@ -449,8 +452,9 @@ export class BusinessService {
 
   async updateBusiness(
     id: string,
-    loggedInUser: any,
+    loggedInUser: LoggedInUserInterface,
     dto: updateBusinessDto | UpdateBusinessByAdminDto | updateWebBusinessDto,
+    isDMO?: boolean,
   ): Promise<Business> {
     let updatedField: any;
     let cordinates:any;
@@ -475,7 +479,20 @@ export class BusinessService {
       updatedBy: loggedInUser.id,
     };
 
-    const updateBusiness = await this.BusinessModel.findOneAndUpdate({ _id: id }, updatedField, { new: true });
+    let findQuery: any = {
+      _id: id,
+    };
+
+    if (isDMO) {
+      const dmoId = await this.dmoService.findDMOByUserID(loggedInUser.id);
+
+      findQuery = {
+        ...findQuery,
+        dmoId,
+      };
+    }
+
+    const updateBusiness = await this.BusinessModel.findOneAndUpdate(findQuery, updatedField, { new: true });
     if (!updateBusiness) {
       throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
     }

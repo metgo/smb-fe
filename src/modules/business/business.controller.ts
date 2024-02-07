@@ -273,7 +273,12 @@ export class BusinessController {
     @Param('businessId') businessId: string,
     @Body() dto: UpdateBusinessByAdminDto,
   ) {
-    const business = await this.businessServices.updateBusiness(businessId, request.user, dto);
+    const business = await this.businessServices.updateBusiness(
+      businessId,
+      request.user,
+      dto,
+      request.user.role === UserType.DMO,
+    );
 
     return responseHelper(response, HttpStatus.OK, ServerSuccess.BUSINESS_UPDATED, business, null, null);
   }
