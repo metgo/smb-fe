@@ -47,8 +47,6 @@ export class AuthorityController {
     );
   }
 
-  @Roles(UserType.SUPERADMIN)
-  @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
     tags: ['Admin', 'Authority'],
     noAuthToken: true,
@@ -74,8 +72,6 @@ export class AuthorityController {
     );
   }
 
-  @Roles(UserType.SUPERADMIN)
-  @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
     tags: ['Admin', 'Authority'],
     noAuthToken: true,

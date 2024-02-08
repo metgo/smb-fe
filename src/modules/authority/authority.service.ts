@@ -1,7 +1,8 @@
 /* eslint-disable prefer-const */
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { ServerErrors } from 'src/common/constant';
 
 import { paginationConfig } from 'src/common/pagination.config';
 import { PaginationFilterQuery } from 'src/common/query-handler/pagination.query';
@@ -72,6 +73,9 @@ export class AuthorityService {
         .populate(populate)
         .exec();
 
+      if (!authority) {
+        throw new NotFoundException(ServerErrors.AUTHORITY.NOT_FOUND);
+      }
       return authority;
     } catch (err) {
       exceptionHandling(err);

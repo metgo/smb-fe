@@ -5,6 +5,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 
 import dbConfig from './core/dbConfig';
 import { AuthModule } from 'src/modules/auth/auth.module';
+import { CityModule } from 'src/modules/city/city.module';
 import { ExternalApiModule } from 'src/modules/external-api/external-api.module';
 import { JwtAuthModule } from 'src/modules/jwt-auth/jwt-auth.module';
 import { MapPointModule } from './modules/mapPoint/mappoint.module';
@@ -42,6 +43,7 @@ import { AuthorityModule } from 'src/modules/authority/authority.module';
     AuthModule,
     JwtAuthModule,
     ConfigModule,
+    CityModule,
     GcpBucketModule,
     MapPointModule,
     MPCategoriesModule,

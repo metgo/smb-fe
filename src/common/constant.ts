@@ -74,6 +74,15 @@ export const ServerErrors = {
     NOT_FOUND: 'Accessibility not found',
     EXISTS: 'Accessibility already exists',
   },
+
+  AUTHORITY: {
+    NOT_FOUND: 'Authority not found',
+  },
+
+  CITY: {
+    NOT_FOUND: 'City not found',
+  },
+
   VOUCHER_TEMPLATE: {
     NOT_FOUND: 'Voucher Template not found',
     EXISTS: 'Voucher Template already exists',
@@ -189,6 +198,10 @@ export const ServerSuccess = {
     UPDATED: 'Bussiness Sub Category was succesfully updated',
     LISTED: 'Bussiness SUb Category was succesfully listed',
     DELETED: 'Bussiness Sub Category was succesfully deleted',
+  },
+  CITY: {
+    CREATED: 'City was created successfully',
+    LISTED: 'City was listed sucessfully',
   },
   VOUCHER_TEMPLATE: {
     CREATED: 'Voucher Template was succesfully created',
