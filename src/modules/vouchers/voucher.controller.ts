@@ -226,7 +226,7 @@ export class VoucherController {
     @Query() query: GetMyVouchersExternalApiQuery,
   ) {
     const userId = request.user.id;
-    const vouchers = await this.voucherService.getVouchersAssignedToMe(userId, query);
+    const vouchers = await this.voucherService.getVoucherCreatedByMe(userId, query);
     return responseHelper(
       response,
       HttpStatus.OK,
