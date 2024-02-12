@@ -17,7 +17,7 @@ import { nanoid } from 'nanoid';
 import { EnglishTemplate, HebrewTemplate } from 'src/common/mailchimp/templateId';
 import { paginationConfig } from 'src/common/pagination.config';
 import { Voucher } from './schema/voucher.schema';
-import { Currency, Locale, VoucherPaymentStatus } from 'src/common/enum';
+import { Currency, Locale, PaymentStatus, VoucherPaymentStatus } from 'src/common/enum';
 import { ExternalApiPostQuery } from 'src/common/query-handler/externalapi-post.query';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { generateRandomCode } from 'src/common/utils/randomCode.generator';
@@ -265,6 +265,75 @@ export class VoucherService {
         name: { $regex: search, $options: 'i' },
       };
     }
+    const voucher = await queryhandler<Voucher>(
+      this.VoucherModel,
+      {
+        findQuery,
+        select,
+        page: queryPage,
+        limit: queryLimit,
+        populate,
+        populate1,
+      },
+
+    );
+    return voucher;
+  }
+
+  async getVoucherCreatedByMe(userId: string, queries: GetMyAssignedVouchersQuery | GetMyVouchersExternalApiQuery) {
+    const {
+      page, limit, search, campId, productId, ...query
+    } = queries;
+
+    const queryPage = page ? Number(page) : paginationConfig.page;
+    const queryLimit = limit ? Number(limit) : paginationConfig.limit;
+
+    const select = disSelect;
+
+    let findQuery: any = { ...query, createdBy: userId, paymentStatus: PaymentStatus.SUCCESS };
+    delete findQuery?.identifierId;
+
+    const populate = {
+      path: 'campId',
+      select: `${disSelect}`,
+    };
+    let populate1: {};
+
+    let campIdsFromProductId;
+    if (productId) {
+      // get all the campId from campaignSegment the productId is associated to
+      campIdsFromProductId = await this.campaignSegmentService.getCampaignAssociatedToProduct(productId);
+    }
+
+    if (campId) {
+      let campIds = Array.isArray(campId)
+        ? campId.map(item => new mongoose.Types.ObjectId(item))
+        : [new mongoose.Types.ObjectId(campId)];
+
+      if (campIdsFromProductId) {
+        campIds = [...campIds, campIdsFromProductId];
+      }
+      findQuery = {
+        ...findQuery,
+        campId: { $in: campIds },
+      };
+    }
+
+    if (!campId && campIdsFromProductId?.length) {
+      findQuery = {
+        ...findQuery,
+        campId: { $in: campIdsFromProductId },
+      };
+    }
+
+    if (search) {
+      findQuery = {
+        ...findQuery,
+        name: { $regex: search, $options: 'i' },
+      };
+    }
+
+    console.log(findQuery);
     const voucher = await queryhandler<Voucher>(
       this.VoucherModel,
       {
