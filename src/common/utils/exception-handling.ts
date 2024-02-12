@@ -7,6 +7,8 @@ import {
   PayloadTooLargeException,
   UnauthorizedException,
 } from '@nestjs/common';
+import mongoose from 'mongoose';
+import { ServerErrors } from 'src/common/constant';
 
 export const exceptionHandling = err => {
   if (err instanceof BadRequestException) {
@@ -32,6 +34,13 @@ export const exceptionHandling = err => {
   }
   if (err instanceof MethodNotAllowedException) {
     throw new MethodNotAllowedException(err.message);
+  }
+  if (err instanceof mongoose.Error.CastError) {
+    if (err?.name === 'CastError' && err?.kind === 'ObjectId') {
+      if (err?.model?.modelName) throw new BadRequestException(`${err?.model?.modelName} ${ServerErrors.INVALID_ID}`);
+      throw new BadRequestException(`The used ${ServerErrors.INVALID_ID}`);
+    }
+    throw new InternalServerErrorException('Error in database');
   } else {
     throw new Error(err);
   }

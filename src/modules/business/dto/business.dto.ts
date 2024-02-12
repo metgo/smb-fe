@@ -158,6 +158,7 @@ export class createBusinessDto {
 
   @ApiProperty({
     required: false,
+    type: [images],
   })
   @IsOptional()
   @IsArray()
@@ -165,10 +166,11 @@ export class createBusinessDto {
 
   @ApiProperty({
     required: false,
+    type: [socialMedia],
   })
   @IsOptional()
   @IsArray()
-    socialMedia: socialMedia;
+    socialMedia: socialMedia[];
 
   @ApiProperty({
     required: false,
@@ -208,8 +210,9 @@ export class createBusinessDto {
 
   @ApiProperty({
     required: false,
+    type: [OpeningHours],
   })
   @IsOptional()
   @IsArray()
-    openingHrs: OpeningHours;
+    openingHrs: OpeningHours[];
 }

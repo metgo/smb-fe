@@ -13,6 +13,8 @@ import {
 } from 'src/core/helper/query-helper';
 import { ServerErrors } from 'src/common/constant';
 import { Model } from 'mongoose';
+import { LocaleQuery } from './dto/locale-query.dto';
+import { exceptionHandling } from 'src/common/utils/exception-handling';
 
 @Injectable()
 export class AccessibilityService {
@@ -21,9 +23,14 @@ export class AccessibilityService {
     private readonly AccessibilityModel: Model<Accessibility>,
   ) {}
 
+  // eslint-disable-next-line consistent-return
   async create(dto: createAccessibilityDto, userId: string) {
-    const newAccessibility = new this.AccessibilityModel({ ...dto, createdBy: userId });
-    return newAccessibility.save();
+    try {
+      const newAccessibility = new this.AccessibilityModel({ ...dto, createdBy: userId });
+      return newAccessibility.save();
+    } catch (err) {
+      exceptionHandling(err);
+    }
   }
 
   async getAll(queries: LocaleFilterQuery) {
@@ -65,45 +72,60 @@ export class AccessibilityService {
     return accessibility;
   }
 
-  async getOne(id: string, locale: Locale) {
-    const select = `${disSelect}`;
-    const populate = {
-      path: 'icon',
-      select: disSelect,
-    };
-    const accessibility = await this.AccessibilityModel.findById(id)
-      .select(select)
-      .populate(populate)
-      .exec();
+  // eslint-disable-next-line consistent-return
+  async getOne(id: string, query: LocaleQuery) {
+    try {
+      const select = `${disSelect}`;
+      const populate = {
+        path: 'icon',
+        select: disSelect,
+      };
+      const accessibility = await this.AccessibilityModel.findById(id)
+        .select(select)
+        .populate(populate)
+        .exec();
 
-    if (locale === Locale.HEBREW) {
-      accessibility.name = accessibility?.hebrewName || accessibility.name;
+      if (query.locale === Locale.HEBREW) {
+        accessibility.name = accessibility?.hebrewName || accessibility.name;
+      }
+      return accessibility;
+    } catch (err) {
+      exceptionHandling(err);
     }
-    return accessibility;
   }
 
+  // eslint-disable-next-line consistent-return
   async update(id: string, dto: updateAccessibilityDto, userId: string) {
-    const accessibility = await updateById<Accessibility>(this.AccessibilityModel, id, { ...dto, updatedBy: userId });
+    try {
+      const accessibility = await updateById<Accessibility>(this.AccessibilityModel, id, { ...dto, updatedBy: userId });
 
-    if (!accessibility) {
-      throw new NotFoundException(ServerErrors.ACCESSIBILITY.NOT_FOUND);
+      if (!accessibility) {
+        throw new NotFoundException(ServerErrors.ACCESSIBILITY.NOT_FOUND);
+      }
+      return accessibility;
+    } catch (err) {
+      exceptionHandling(err);
     }
-    return accessibility;
   }
 
+  // eslint-disable-next-line consistent-return
   async softDelete(id:string, userId: string) {
-    const updateField = {
-      isDeleted: true, deleteAt: new Date(), updatedBy: userId, deletedBy: userId,
-    };
-    const accessibility = await updateById<Accessibility>(
-      this.AccessibilityModel,
-      id,
-      updateField,
-    );
-    if (!accessibility) {
-      throw new NotFoundException(ServerErrors.ACCESSIBILITY.NOT_FOUND);
+    try {
+      const updateField = {
+        isDeleted: true, deleteAt: new Date(), updatedBy: userId, deletedBy: userId,
+      };
+      const accessibility = await updateById<Accessibility>(
+        this.AccessibilityModel,
+        id,
+        updateField,
+      );
+      if (!accessibility) {
+        throw new NotFoundException(ServerErrors.ACCESSIBILITY.NOT_FOUND);
+      }
+      return accessibility;
+    } catch (err) {
+      exceptionHandling(err);
     }
-    return accessibility;
   }
 
   async findByFieldName(fieldName: keyof Accessibility, items: string): Promise<boolean> {
@@ -114,16 +136,21 @@ export class AccessibilityService {
     return false;
   }
 
+  // eslint-disable-next-line consistent-return
   async findByFieldNameExcludeId(fieldName: keyof Accessibility, items: string, id:string): Promise<boolean> {
-    const accessibility = await findOneByFieldNameExcludeId<Accessibility>(
-      this.AccessibilityModel,
-      fieldName,
-      items,
-      id,
-    );
-    if (accessibility) {
-      throw new BadRequestException(`${fieldName} already exists`);
+    try {
+      const accessibility = await findOneByFieldNameExcludeId<Accessibility>(
+        this.AccessibilityModel,
+        fieldName,
+        items,
+        id,
+      );
+      if (accessibility) {
+        throw new BadRequestException(`${fieldName} already exists`);
+      }
+      return false;
+    } catch (err) {
+      exceptionHandling(err);
     }
-    return false;
   }
 }

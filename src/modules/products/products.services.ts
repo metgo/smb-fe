@@ -151,36 +151,46 @@ export class ProductsService {
     return product;
   }
 
+  // eslint-disable-next-line consistent-return
   async findOne(productId: string): Promise<Product> {
-    const product = await findOneByFieldNames<Product>(
-      this.ProductModel,
-      { _id: productId, status: ProductStatus.ACTIVE },
-    );
+    try {
+      const product = await findOneByFieldNames<Product>(
+        this.ProductModel,
+        { _id: productId, status: ProductStatus.ACTIVE },
+      );
 
-    if (!product) {
-      throw new NotFoundException(ServerErrors.PRODUCT.NOT_FOUND);
+      if (!product) {
+        throw new NotFoundException(ServerErrors.PRODUCT.NOT_FOUND);
+      }
+
+      return product;
+    } catch (err) {
+      exceptionHandling(err);
     }
-
-    return product;
   }
 
+  // eslint-disable-next-line consistent-return
   async findOneForLoggedInUser(productId: string, loggedInUser: LoggedInUserInterface): Promise<Product> {
-    const product = await findOneByFieldNames<Product>(
-      this.ProductModel,
-      { _id: productId },
-    );
-    const allowedRoles = [UserType.ADMIN, UserType.DMO, UserType.SUPERADMIN];
+    try {
+      const product = await findOneByFieldNames<Product>(
+        this.ProductModel,
+        { _id: productId },
+      );
+      const allowedRoles = [UserType.ADMIN, UserType.DMO, UserType.SUPERADMIN];
 
-    if (!product || (
-      !allowedRoles.includes(loggedInUser.role)
-      && !product.primaryUserId.equals(new mongoose.Types.ObjectId(loggedInUser.id))
-      && !product.collaboratorId.includes(new mongoose.Types.ObjectId(loggedInUser.id))
-    )
-    ) {
-      throw new NotFoundException(ServerErrors.PRODUCT.NOT_FOUND);
+      if (!product || (
+        !allowedRoles.includes(loggedInUser.role)
+        && !product.primaryUserId.equals(new mongoose.Types.ObjectId(loggedInUser.id))
+        && !product.collaboratorId.includes(new mongoose.Types.ObjectId(loggedInUser.id))
+      )
+      ) {
+        throw new NotFoundException(ServerErrors.PRODUCT.NOT_FOUND);
+      }
+
+      return product;
+    } catch (err) {
+      exceptionHandling(err);
     }
-
-    return product;
   }
 
   async findAll(queries: FindProductsQuery) : Promise<Product[]> {
@@ -252,70 +262,73 @@ export class ProductsService {
 
       return products;
     } catch (error) {
-      if (error?.name === 'CastError' && error?.kind === 'ObjectId') {
-        throw new BadRequestException(`${error?.model?.modelName} ${ServerErrors.INVALID_ID}`);
-      }
       exceptionHandling(error);
     }
   }
 
+  // eslint-disable-next-line consistent-return
   async update(command: UpdateCommand): Promise<Product> {
-    const sellingPrice = sellingPriceForAmountOrPercent(
-      command.body.price.markedPrice,
-      command.body.price.discountAmount,
-      command.body.price.discountPercent,
-    );
-
-    const price = {
-      ...command.body.price,
-      sellingPrice,
-    };
-
-    // might need to update in later
-    const quantity = {
-      ...command.body.quantity,
-      remaining: command.body.quantity.initial,
-    };
-
-    const updatedField = {
-      ...command.body,
-      updatedBy: command.loggedInUserId,
-      updatedAt: new Date(),
-      price,
-      quantity,
-    };
-    let updatedProduct: mongoose.Document<unknown, {}, Product>& Product & {
-      _id: mongoose.Types.ObjectId;
-    };
-    if (command.isAdmin) {
-      updatedProduct = await updateWhere<Product>(
-        this.ProductModel,
-        {
-          _id: command.productId,
-          businessId: command.businessId,
-        },
-        { ...updatedField },
+    try {
+      const sellingPrice = sellingPriceForAmountOrPercent(
+        command.body.price.markedPrice,
+        command.body.price.discountAmount,
+        command.body.price.discountPercent,
       );
-    } else {
-      updatedProduct = await updateWhere<Product>(
-        this.ProductModel,
-        {
-          _id: command.productId,
-          businessId: command.businessId,
-          $or: [
-            { primaryUserId: command.loggedInUserId },
-            { collaboratorId: command.loggedInUserId },
-          ],
-        },
-        { ...updatedField },
-      );
-    }
 
-    if (!updatedProduct) {
-      throw new NotFoundException(ServerErrors.PRODUCT.NOT_FOUND);
-    }
+      const price = {
+        ...command.body.price,
+        sellingPrice,
+      };
 
-    return updatedProduct;
+      // might need to update in later
+      const quantity = {
+        ...command.body.quantity,
+        remaining: command.body.quantity.initial,
+      };
+
+      const updatedField = {
+        ...command.body,
+        updatedBy: command.loggedInUserId,
+        updatedAt: new Date(),
+        price,
+        quantity,
+      };
+      let updatedProduct: mongoose.Document<unknown, {}, Product>& Product & {
+        _id: mongoose.Types.ObjectId;
+      };
+
+      if (command.isAdmin) {
+        updatedProduct = await updateWhere<Product>(
+          this.ProductModel,
+          {
+            _id: command.productId,
+            businessId: command.businessId,
+          },
+          { ...updatedField },
+        );
+      } else {
+        updatedProduct = await updateWhere<Product>(
+          this.ProductModel,
+          {
+            _id: command.productId,
+            businessId: command.businessId,
+            $or: [
+              { primaryUserId: command.loggedInUserId },
+              { collaboratorId: command.loggedInUserId },
+            ],
+          },
+          { ...updatedField },
+        );
+      }
+
+      if (!updatedProduct) {
+        throw new NotFoundException(ServerErrors.PRODUCT.NOT_FOUND);
+      }
+
+      return updatedProduct;
+    } catch (err) {
+      exceptionHandling(err);
+    }
   }
 
   async uploadMedia(command: UploadMediaCommand) {
@@ -363,47 +376,57 @@ export class ProductsService {
     return updatedProduct;
   }
 
+  // eslint-disable-next-line consistent-return
   async softDelete(businessId: string, productId: string, loggedInUser: string): Promise<Product> {
-    const deletedProduct = await updateWhere<Product>(
-      this.ProductModel,
-      {
-        _id: productId,
-        businessId,
-        $or: [
-          { primaryUserId: loggedInUser },
-          { collaboratorId: loggedInUser },
-        ],
-      },
-      { deletedAt: new Date(), deletedBy: loggedInUser, isDeleted: true },
-    );
+    try {
+      const deletedProduct = await updateWhere<Product>(
+        this.ProductModel,
+        {
+          _id: productId,
+          businessId,
+          $or: [
+            { primaryUserId: loggedInUser },
+            { collaboratorId: loggedInUser },
+          ],
+        },
+        { deletedAt: new Date(), deletedBy: loggedInUser, isDeleted: true },
+      );
 
-    if (!deletedProduct) {
-      throw new NotFoundException(ServerErrors.PRODUCT.NOT_FOUND);
+      if (!deletedProduct) {
+        throw new NotFoundException(ServerErrors.PRODUCT.NOT_FOUND);
+      }
+
+      return deletedProduct;
+    } catch (err) {
+      exceptionHandling(err);
     }
-
-    return deletedProduct;
   }
 
+  // eslint-disable-next-line consistent-return
   async updateProductByFields(productId: string, updatedFields: any): Promise<Product> {
-    const productInfo = await this.findOne(productId);
-    const updatedField = {
-      ...updatedFields,
-      quantity: {
-        initial: productInfo.quantity.initial,
-        sold: (!productInfo.quantity.sold ? 0 : productInfo.quantity.sold) + updatedFields.sold,
-        remaining: productInfo.quantity.remaining - updatedFields.sold,
-      },
-    };
+    try {
+      const productInfo = await this.findOne(productId);
+      const updatedField = {
+        ...updatedFields,
+        quantity: {
+          initial: productInfo.quantity.initial,
+          sold: (!productInfo.quantity.sold ? 0 : productInfo.quantity.sold) + updatedFields.sold,
+          remaining: productInfo.quantity.remaining - updatedFields.sold,
+        },
+      };
 
-    const updatedProduct = await updateWhere<Product>(
-      this.ProductModel,
-      {
-        _id: productId,
-      },
-      { ...updatedField },
-    );
+      const updatedProduct = await updateWhere<Product>(
+        this.ProductModel,
+        {
+          _id: productId,
+        },
+        { ...updatedField },
+      );
 
-    return updatedProduct;
+      return updatedProduct;
+    } catch (err) {
+      exceptionHandling(err);
+    }
   }
 
   async deleteImage(loggedInUserId: string, id: string, imageUrl: any): Promise<Product> {

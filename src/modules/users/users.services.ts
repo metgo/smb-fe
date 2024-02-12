@@ -4,7 +4,7 @@ import {
   BadRequestException, ConflictException, Injectable, InternalServerErrorException, NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import mongoose, { Model } from 'mongoose';
 import { nanoid } from 'nanoid';
 
 import { Locale } from 'src/common/enum';
@@ -490,16 +490,25 @@ export class UsersService {
   }
 
   async findByFieldNameExcludeId(fieldName: keyof User, items: string, id:string): Promise<boolean> {
-    const user = await findOneByFieldNameExcludeId<User>(
-      this.UserModel,
-      fieldName,
-      items,
-      id,
-    );
-    if (user) {
-      throw new BadRequestException(`${fieldName.toUpperCase()} already exists`);
+    try {
+      const user = await findOneByFieldNameExcludeId<User>(
+        this.UserModel,
+        fieldName,
+        items,
+        id,
+      );
+      if (user) {
+        throw new BadRequestException(`${fieldName.toUpperCase()} already exists`);
+      }
+      return false;
+    } catch (error) {
+      if (error instanceof mongoose.Error.CastError) {
+        if (error?.name === 'CastError' && error?.kind === 'ObjectId') {
+          throw new BadRequestException(`${error?.model?.modelName} ${ServerErrors.INVALID_ID}`);
+        }
+        throw new InternalServerErrorException('Couldn\'t update user');
+      }
     }
-    return false;
   }
 
   async createByExternalApi(registerDto: RegisterRequest): Promise<GetUserDetailsResponse> {

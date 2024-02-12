@@ -55,7 +55,7 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
     tags: [],
-    response: { status: 200, description: ServerSuccess.USER.CHANGEPASSWORD },
+    response: { status: HttpStatus.OK, description: ServerSuccess.USER.CHANGEPASSWORD },
     softBlockExtraDtoFields: true,
     noAuthToken: true,
     operation: 'change your password',
@@ -69,7 +69,7 @@ export class AuthController {
     if (dto.password !== dto.confirmPassword) {
       throw new BadRequestException(ServerErrors.USER.NOT_MATCH);
     }
-    const user = await this.userService.changePassword(req.user.email, dto);
+    const user = await this.userService.changePassword(req.user.id, dto);
 
     return responseHelper(
       response,
@@ -83,7 +83,7 @@ export class AuthController {
 
   @ApiEndpoint({
     tags: [],
-    response: { status: 200, description: ServerSuccess.USER.FORGET_PASSWORD },
+    response: { status: HttpStatus.OK, description: ServerSuccess.USER.FORGET_PASSWORD },
     operation: 'forget password - send otp',
   })
   @Post('send-otp')
@@ -107,7 +107,7 @@ export class AuthController {
 
   @ApiEndpoint({
     tags: [],
-    response: { status: 200, description: ServerSuccess.USER.FORGET_PASSWORD },
+    response: { status: HttpStatus.OK, description: ServerSuccess.USER.FORGET_PASSWORD },
     operation: 'verify your code',
   })
   @Post('verify-otp')
@@ -129,7 +129,7 @@ export class AuthController {
 
   @ApiEndpoint({
     tags: [],
-    response: { status: 200, description: ServerSuccess.USER.FORGET_PASSWORD },
+    response: { status: HttpStatus.OK, description: ServerSuccess.USER.FORGET_PASSWORD },
     operation: 'Update password',
   })
   @Post('forget-password')

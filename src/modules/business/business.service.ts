@@ -450,6 +450,7 @@ export class BusinessService {
     return allBusiness;
   }
 
+  // eslint-disable-next-line consistent-return
   async updateBusiness(
     id: string,
     loggedInUser: LoggedInUserInterface,
@@ -557,13 +558,18 @@ export class BusinessService {
     return updateBusiness;
   }
 
+  // eslint-disable-next-line consistent-return
   async deleteBusiness(id: string, loggedInUserId: string): Promise<Business> {
-    const updateField = { isDeleted: true, deletedAt: new Date(), deletedBy: loggedInUserId };
-    const business = await updateById<Business>(this.BusinessModel, id, updateField);
-    if (!business) {
-      throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
+    try {
+      const updateField = { isDeleted: true, deletedAt: new Date(), deletedBy: loggedInUserId };
+      const business = await updateById<Business>(this.BusinessModel, id, updateField);
+      if (!business) {
+        throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
+      }
+      return business;
+    } catch (err) {
+      exceptionHandling(err);
     }
-    return business;
   }
 
   async findByFieldName(fieldName: keyof Business, items: string): Promise<boolean> {
@@ -574,12 +580,17 @@ export class BusinessService {
     return false;
   }
 
+  // eslint-disable-next-line consistent-return
   async findByFieldNameExcludeId(fieldName: keyof Business, items: string, id:string): Promise<boolean> {
-    const bussEmail = await findOneByFieldNameExcludeId<Business>(this.BusinessModel, fieldName, items, id);
-    if (bussEmail) {
-      throw new BadRequestException(`${fieldName} already exists`);
+    try {
+      const bussEmail = await findOneByFieldNameExcludeId<Business>(this.BusinessModel, fieldName, items, id);
+      if (bussEmail) {
+        throw new BadRequestException(`${fieldName} already exists`);
+      }
+      return false;
+    } catch (err) {
+      exceptionHandling(err);
     }
-    return false;
   }
 
   async findByFieldItems(fieldNames: object): Promise<Business> {

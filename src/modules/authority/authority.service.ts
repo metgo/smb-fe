@@ -19,14 +19,19 @@ export class AuthorityService {
     private readonly AuthorityModel: Model<Authority>,
   ) {}
 
+  // eslint-disable-next-line consistent-return
   async create(dto: AuthorityDTO, userId: string) {
-    const newAuthority = new this.AuthorityModel({
-      ...dto,
-      createdBy: userId,
-    });
+    try {
+      const newAuthority = new this.AuthorityModel({
+        ...dto,
+        createdBy: userId,
+      });
 
-    const authority = await newAuthority.save();
-    return authority;
+      const authority = await newAuthority.save();
+      return authority;
+    } catch (err) {
+      exceptionHandling(err);
+    }
   }
 
   async getAll(query: CommonFilterQuery) {

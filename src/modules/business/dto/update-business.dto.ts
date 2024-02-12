@@ -1,4 +1,3 @@
-import { PartialType } from '@nestjs/mapped-types';
 import { createBusinessDto } from './business.dto';
 import { ApiProperty } from '@nestjs/swagger';
 import { IsObject, IsOptional, IsString } from 'class-validator';
@@ -11,7 +10,7 @@ class geoLocation {
     long: string;
 }
 
-export class updateBusinessDto extends PartialType(createBusinessDto) {
+export class updateBusinessDto extends createBusinessDto {
   @ApiProperty({
     required: false,
   })

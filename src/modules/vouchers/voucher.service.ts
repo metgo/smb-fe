@@ -51,90 +51,100 @@ export class VoucherService {
     private mailchimpService: MailChimpService,
   ) { }
 
+  // eslint-disable-next-line consistent-return
   async create(
     dto: createVoucherDto,
     user: LoggedInUserInterface,
     campaignId?: mongoose.Types.ObjectId,
   ) {
-    let i: number = 0;
-    const voucherId: any = [];
-    const totalAmount = dto.noOfVoucher * dto.amount;
-    for (i = 0; i < dto.noOfVoucher; i++) {
-      const randomCode = generateRandomCode(12);
-      const code = dto?.campCode ? dto.campCode + randomCode : `TAV8${randomCode}`;
-      const newVoucher = new this.VoucherModel({
-        ...dto,
-        code,
-        remainingAmount: dto.amount,
-        campId: campaignId || null,
-        createdBy: user?.id || null,
+    try {
+      let i: number = 0;
+      const voucherId: any = [];
+      const totalAmount = dto.noOfVoucher * dto.amount;
+      for (i = 0; i < dto.noOfVoucher; i++) {
+        const randomCode = generateRandomCode(12);
+        const code = dto?.campCode ? dto.campCode + randomCode : `TAV8${randomCode}`;
+        const newVoucher = new this.VoucherModel({
+          ...dto,
+          code,
+          remainingAmount: dto.amount,
+          campId: campaignId || null,
+          createdBy: user?.id || null,
+        });
+        newVoucher.save();
+        voucherId.push(newVoucher._id);
+      }
+
+      const paymentLink = await this.paymentService.generateLink({
+        amount: totalAmount,
+        currency: Currency.ILS,
+        purpose: PaymentPurpose.VOUCHER,
+        id: voucherId,
+        customerEmail: dto.email,
+        customerName: dto.name,
+        loggedInUserLanguagePreference: user.languagePreference,
       });
-      newVoucher.save();
-      voucherId.push(newVoucher._id);
+
+      return paymentLink;
+    } catch (err) {
+      exceptionHandling(err);
     }
-
-    const paymentLink = await this.paymentService.generateLink({
-      amount: totalAmount,
-      currency: Currency.ILS,
-      purpose: PaymentPurpose.VOUCHER,
-      id: voucherId,
-      customerEmail: dto.email,
-      customerName: dto.name,
-      loggedInUserLanguagePreference: user.languagePreference,
-    });
-
-    return paymentLink;
   }
 
+  // eslint-disable-next-line consistent-return
   async getOne(query: GetOneVoucherInterface) {
-    const { code, externalApi, productId } = query;
-    const select = disSelect;
-    const populate = {
-      path: 'campId',
-      select: `${disSelect}`,
-    };
-
-    let findQuery:any = {
-      code,
-    };
-
-    if (productId) {
-      // get all the campId from campaignSegment the productId is associated to
-      const campaignIds = await this.campaignSegmentService.getCampaignAssociatedToProduct(productId);
-
-      const campIds = Array.isArray(campaignIds)
-        ? campaignIds.map(item => new mongoose.Types.ObjectId(item))
-        : [new mongoose.Types.ObjectId(campaignIds)];
-
-      findQuery = {
-        ...findQuery,
-        campId: { $in: campIds },
+    try {
+      const { code, externalApi, productId } = query;
+      const select = disSelect;
+      const populate = {
+        path: 'campId',
+        select: `${disSelect}`,
       };
-    }
 
-    const voucher = await this.VoucherModel
-      .findOne(findQuery)
-      .select(select)
-      .populate(populate)
-      .exec();
-    if (!voucher) {
-      throw new BadRequestException(ServerErrors.VOUCHER.NOT_FOUND);
-    }
-
-    if (voucher.paymentStatus !== VoucherPaymentStatus.PAID) {
-      throw new ForbiddenException(ServerErrors.VOUCHER.UNPAID);
-    }
-
-    if (externalApi) {
-      return {
-        id: voucher._id,
-        remainingAmount: voucher.remainingAmount,
-        expireDate: voucher.expireDate,
-        paymentStatus: voucher.paymentStatus,
-        status: voucher.status,
+      let findQuery:any = {
+        code,
       };
+
+      if (productId) {
+        // get all the campId from campaignSegment the productId is associated to
+        const campaignIds = await this.campaignSegmentService.getCampaignAssociatedToProduct(productId);
+
+        const campIds = Array.isArray(campaignIds)
+          ? campaignIds.map(item => new mongoose.Types.ObjectId(item))
+          : [new mongoose.Types.ObjectId(campaignIds)];
+
+        findQuery = {
+          ...findQuery,
+          campId: { $in: campIds },
+        };
+      }
+
+      const voucher = await this.VoucherModel
+        .findOne(findQuery)
+        .select(select)
+        .populate(populate)
+        .exec();
+      if (!voucher) {
+        throw new BadRequestException(ServerErrors.VOUCHER.NOT_FOUND);
+      }
+
+      if (voucher.paymentStatus !== VoucherPaymentStatus.PAID) {
+        throw new ForbiddenException(ServerErrors.VOUCHER.UNPAID);
+      }
+
+      if (externalApi) {
+        return {
+          id: voucher._id,
+          remainingAmount: voucher.remainingAmount,
+          expireDate: voucher.expireDate,
+          paymentStatus: voucher.paymentStatus,
+          status: voucher.status,
+        };
+      }
+      return voucher;
+    } catch (err) {
+      exceptionHandling(err);
     }
-    return voucher;
   }
 
   async getOneById(id: string): Promise<Voucher> {
@@ -303,15 +313,19 @@ export class VoucherService {
   }
 
   async update(id: mongoose.Types.ObjectId[], updateField: object) {
-    const updateVoucher = await updateMany<Voucher>(
-      this.VoucherModel,
-      '_id',
-      id,
-      updateField,
-    );
+    try {
+      const updateVoucher = await updateMany<Voucher>(
+        this.VoucherModel,
+        '_id',
+        id,
+        updateField,
+      );
 
-    if (!updateVoucher) {
-      throw new BadRequestException(ServerErrors.VOUCHER.NOT_FOUND);
+      if (!updateVoucher) {
+        throw new BadRequestException(ServerErrors.VOUCHER.NOT_FOUND);
+      }
+    } catch (err) {
+      exceptionHandling(err);
     }
   }
 

@@ -136,9 +136,6 @@ export class OrdersService {
 
       return [link];
     } catch (error) {
-      if (error?.name === 'CastError' && error?.kind === 'ObjectId') {
-        throw new BadRequestException(`${error?.model?.modelName} ${ServerErrors.INVALID_ID}`);
-      }
       if (error?.errors['businessId.0']?.kind) {
         throw new BadRequestException(`Business ${ServerErrors.INVALID_ID}`);
       }
@@ -202,31 +199,39 @@ export class OrdersService {
   }
 
   async update(loggedInUserId: string, id:string, body: UpdateOrderDto): Promise<Order> {
-    const updatedField = { ...body, updatedBy: loggedInUserId, updatedAt: new Date() };
-    const updateOrder = await this.OrderModel.findOneAndUpdate(
-      { _id: id },
-      updatedField,
-      { new: true },
-    );
+    try {
+      const updatedField = { ...body, updatedBy: loggedInUserId, updatedAt: new Date() };
+      const updateOrder = await this.OrderModel.findOneAndUpdate(
+        { _id: id },
+        updatedField,
+        { new: true },
+      );
 
-    if (!updateOrder) {
-      throw new NotFoundException(ServerErrors.ORDERS.NOT_FOUND);
+      if (!updateOrder) {
+        throw new NotFoundException(ServerErrors.ORDERS.NOT_FOUND);
+      }
+
+      return updateOrder;
+    } catch (err) {
+      exceptionHandling(err);
     }
-
-    return updateOrder;
   }
 
   async findOne(id: string): Promise<Order> {
-    const order = await findOneByFieldNames<Order>(
-      this.OrderModel,
-      { _id: id },
-    );
+    try {
+      const order = await findOneByFieldNames<Order>(
+        this.OrderModel,
+        { _id: id },
+      );
 
-    if (!order) {
-      throw new NotFoundException(ServerErrors.ORDERS.NOT_FOUND);
+      if (!order) {
+        throw new NotFoundException(ServerErrors.ORDERS.NOT_FOUND);
+      }
+
+      return order;
+    } catch (err) {
+      exceptionHandling(err);
     }
-
-    return order;
   }
 
   async findMyOrderInfo(loggedInUser: LoggedInUserInterface, orderId: string) : Promise<Order> {
@@ -234,9 +239,6 @@ export class OrdersService {
       const order = await this.checkIfAllowed(loggedInUser, orderId);
       return order;
     } catch (error) {
-      if (error?.name === 'CastError' && error?.kind === 'ObjectId') {
-        throw new BadRequestException(`${error?.model?.modelName} ${ServerErrors.INVALID_ID}`);
-      }
       exceptionHandling(error);
     }
   }
@@ -253,9 +255,6 @@ export class OrdersService {
 
       return updatedOrder;
     } catch (error) {
-      if (error?.name === 'CastError' && error?.kind === 'ObjectId') {
-        throw new BadRequestException(`${error?.model?.modelName} ${ServerErrors.INVALID_ID}`);
-      }
       exceptionHandling(error);
     }
   }

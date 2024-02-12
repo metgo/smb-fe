@@ -3,21 +3,21 @@ import {
 } from '@nestjs/common';
 import { Response } from 'express';
 
-import { Locale } from 'src/common/enum';
-import { LocaleFilterQuery } from 'src/common/query-handler/locale-filter.query';
-import { UserType } from '../users/users.type';
-import { Roles } from 'src/core/guards/authorization/roles';
-import { AccessibilityService } from './accessibility.service';
-import { JwtAuthGuard } from 'src/core/guards/jwt/jwt.guards';
-import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
 import { ServerSuccess } from 'src/common/constant';
-import { createAccessibilityDto, updateAccessibilityDto } from './dto';
+import { LocaleFilterQuery } from 'src/common/query-handler/locale-filter.query';
+import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
+import { Roles } from 'src/core/guards/authorization/roles';
+import { JwtAuthGuard } from 'src/core/guards/jwt/jwt.guards';
 import { responseHelper } from 'src/core/helper/response.helper';
+import { UserType } from '../users/users.type';
+import { AccessibilityService } from './accessibility.service';
+import { createAccessibilityDto, updateAccessibilityDto } from './dto';
+import { LocaleQuery } from './dto/locale-query.dto';
 
 @Controller()
 export class AccessibilityController {
   constructor(
-        private readonly accessibilityService: AccessibilityService,
+    private readonly accessibilityService: AccessibilityService,
   ) { }
 
   @Roles(UserType.SUPERADMIN, UserType.ADMIN)
@@ -25,7 +25,7 @@ export class AccessibilityController {
   @ApiEndpoint({
     tags: ['Admin', 'Accessibility'],
     response: {
-      status: 201,
+      status: HttpStatus.CREATED,
       description: ServerSuccess.ACCESSIBILITY.CREATED,
     },
     noAuthToken: true,
@@ -37,12 +37,12 @@ export class AccessibilityController {
     @Body() dto: createAccessibilityDto,
   ) {
     await this.accessibilityService.findByFieldName('name', dto.name);
-    const groupType = await this.accessibilityService.create(dto, req.user.id);
+    const accessibility = await this.accessibilityService.create(dto, req.user.id);
     return responseHelper(
       response,
       HttpStatus.CREATED,
       ServerSuccess.ACCESSIBILITY.CREATED,
-      groupType,
+      accessibility,
       null,
       null,
     );
@@ -51,18 +51,18 @@ export class AccessibilityController {
   @ApiEndpoint({
     tags: ['Admin', 'Accessibility'],
     response: {
-      status: 200,
+      status: HttpStatus.OK,
       description: ServerSuccess.ACCESSIBILITY.LISTED,
     },
   })
   @Get('admin/accessibility')
   async getAll(@Res() response: Response, @Query() query: LocaleFilterQuery) {
-    const groupType = await this.accessibilityService.getAll(query);
+    const accessibility = await this.accessibilityService.getAll(query);
     return responseHelper(
       response,
       HttpStatus.OK,
       ServerSuccess.ACCESSIBILITY.LISTED,
-      groupType,
+      accessibility,
       null,
       null,
     );
@@ -71,7 +71,7 @@ export class AccessibilityController {
   @ApiEndpoint({
     tags: ['Admin', 'Accessibility'],
     response: {
-      status: 200,
+      status: HttpStatus.OK,
       description: ServerSuccess.ACCESSIBILITY.LISTED,
     },
   })
@@ -79,14 +79,14 @@ export class AccessibilityController {
   async getOne(
     @Res() response: Response,
     @Param('id') id: string,
-    @Query('locale') locale: Locale,
+    @Query() query: LocaleQuery,
   ) {
-    const groupType = await this.accessibilityService.getOne(id, locale);
+    const accessibility = await this.accessibilityService.getOne(id, query);
     return responseHelper(
       response,
       HttpStatus.OK,
       ServerSuccess.ACCESSIBILITY.LISTED,
-      groupType,
+      accessibility,
       null,
       null,
     );
@@ -97,7 +97,7 @@ export class AccessibilityController {
   @ApiEndpoint({
     tags: ['Admin', 'Accessibility'],
     response: {
-      status: 200,
+      status: HttpStatus.OK,
       description: ServerSuccess.ACCESSIBILITY.UPDATED,
     },
     noAuthToken: true,
@@ -110,12 +110,12 @@ export class AccessibilityController {
       @Body() dto: updateAccessibilityDto,
   ) {
     await this.accessibilityService.findByFieldNameExcludeId('name', dto.name, id);
-    const groupType = await this.accessibilityService.update(id, dto, req.user.id);
+    const accessibility = await this.accessibilityService.update(id, dto, req.user.id);
     return responseHelper(
       response,
       HttpStatus.OK,
       ServerSuccess.ACCESSIBILITY.UPDATED,
-      groupType,
+      accessibility,
       null,
       null,
     );
@@ -126,7 +126,7 @@ export class AccessibilityController {
   @ApiEndpoint({
     tags: ['Admin', 'Accessibility'],
     response: {
-      status: 200,
+      status: HttpStatus.OK,
       description: ServerSuccess.ACCESSIBILITY.DELETED,
     },
     noAuthToken: true,

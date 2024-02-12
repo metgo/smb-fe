@@ -47,7 +47,7 @@ export class BusinessController {
   @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
     tags: ['Business'],
-    response: { status: 201, description: ServerSuccess.BUSINESS_CREATED },
+    response: { status: HttpStatus.CREATED, description: ServerSuccess.BUSINESS_CREATED },
     noAuthToken: true,
     operation: 'Create a business by any logged in user',
   })
@@ -70,7 +70,7 @@ export class BusinessController {
   @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
     tags: ['Business', 'Web'],
-    response: { status: 201, description: ServerSuccess.BUSINESS_CREATED },
+    response: { status: HttpStatus.OK, description: ServerSuccess.BUSINESS_CREATED },
     noAuthToken: true,
     operation: 'Create a business by superadmin role',
   })
@@ -93,7 +93,7 @@ export class BusinessController {
 
   @ApiEndpoint({
     tags: ['Business'],
-    response: { status: 200, description: ServerSuccess.BUSINESS_LISTED },
+    response: { status: HttpStatus.OK, description: ServerSuccess.BUSINESS_LISTED },
     softBlockExtraDtoFields: true,
     operation: 'Get all approved business by any user',
   })
@@ -111,7 +111,7 @@ export class BusinessController {
   @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
     tags: ['Admin', 'Business'],
-    response: { status: 200, description: ServerSuccess.BUSINESS_LISTED },
+    response: { status: HttpStatus.OK, description: ServerSuccess.BUSINESS_LISTED },
     softBlockExtraDtoFields: true,
     noAuthToken: true,
     operation: 'Get all businesses by admin, superadmin and dmo role',
@@ -128,7 +128,7 @@ export class BusinessController {
 
   @ApiEndpoint({
     tags: ['Business'],
-    response: { status: 200, description: ServerSuccess.BUSINESS_LISTED },
+    response: { status: HttpStatus.OK, description: ServerSuccess.BUSINESS_LISTED },
     operation: 'Get approved business detail by any user',
   })
   @Get('business/:idOrSlug')
@@ -147,7 +147,7 @@ export class BusinessController {
   @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
     tags: ['Business'],
-    response: { status: 200, description: ServerSuccess.BUSINESS_LISTED },
+    response: { status: HttpStatus.OK, description: ServerSuccess.BUSINESS_LISTED },
     operation: 'Get business detail of logged in user',
     noAuthToken: true,
   })
@@ -170,7 +170,7 @@ export class BusinessController {
   @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
     tags: ['Business'],
-    response: { status: 200, description: ServerSuccess.BUSINESS_LISTED },
+    response: { status: HttpStatus.OK, description: ServerSuccess.BUSINESS_LISTED },
     noAuthToken: true,
     operation: 'Get any business detail by admin, superadmin, dmo role',
   })
@@ -191,7 +191,7 @@ export class BusinessController {
   @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
     tags: ['Business'],
-    response: { status: 200, description: ServerSuccess.BUSINESS_LISTED },
+    response: { status: HttpStatus.OK, description: ServerSuccess.BUSINESS_LISTED },
     softBlockExtraDtoFields: true,
     noAuthToken: true,
     operation: 'Get all businesses details by business owner ',
@@ -210,7 +210,7 @@ export class BusinessController {
 
   @ApiEndpoint({
     tags: ['Business'],
-    response: { status: 200, description: ServerSuccess.BUSINESS_UPDATED },
+    response: { status: HttpStatus.OK, description: ServerSuccess.BUSINESS_UPDATED },
     noAuthToken: true,
     params: [{ name: 'id', type: 'string', required: true }],
     operation: 'Update businesses details by business owner ',
@@ -237,7 +237,7 @@ export class BusinessController {
   @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
     tags: ['Business Web'],
-    response: { status: 200, description: ServerSuccess.BUSINESS_UPDATED },
+    response: { status: HttpStatus.OK, description: ServerSuccess.BUSINESS_UPDATED },
     noAuthToken: true,
     params: [{ name: 'id', type: 'string', required: true }],
     operation: 'Update businesses details by superadmin ',
@@ -260,7 +260,7 @@ export class BusinessController {
 
   @ApiEndpoint({
     tags: ['Admin', 'Business'],
-    response: { status: 200, description: ServerSuccess.BUSINESS_UPDATED },
+    response: { status: HttpStatus.OK, description: ServerSuccess.BUSINESS_UPDATED },
     noAuthToken: true,
     params: [{ name: 'businessId', type: 'string', required: true }],
   })
@@ -285,7 +285,7 @@ export class BusinessController {
 
   @ApiEndpoint({
     tags: ['Business'],
-    response: { status: 200, description: ServerSuccess.BUSINESS_UPDATED },
+    response: { status: HttpStatus.OK, description: ServerSuccess.BUSINESS_UPDATED },
     noAuthToken: true,
     params: [{ name: 'id', type: 'string', required: true }],
   })
