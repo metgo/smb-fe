@@ -17,7 +17,9 @@ import { nanoid } from 'nanoid';
 import { EnglishTemplate, HebrewTemplate } from 'src/common/mailchimp/templateId';
 import { paginationConfig } from 'src/common/pagination.config';
 import { Voucher } from './schema/voucher.schema';
-import { Currency, Locale, PaymentStatus, VoucherPaymentStatus } from 'src/common/enum';
+import {
+  Currency, Locale, PaymentStatus, VoucherPaymentStatus,
+} from 'src/common/enum';
 import { ExternalApiPostQuery } from 'src/common/query-handler/externalapi-post.query';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { generateRandomCode } from 'src/common/utils/randomCode.generator';
