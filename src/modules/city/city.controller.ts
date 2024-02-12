@@ -4,7 +4,7 @@ import {
 import { Response } from 'express';
 
 import { ServerSuccess } from 'src/common/constant';
-import { PaginationFilterQuery } from 'src/common/query-handler/pagination.query';
+import { CommonFilterQuery } from 'src/common/query-handler/common-filter-query';
 import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
 import { Roles } from 'src/core/guards/authorization/roles';
 import { JwtAuthGuard } from 'src/core/guards/jwt/jwt.guards';
@@ -48,13 +48,13 @@ export class CityController {
   }
 
   @ApiEndpoint({
-    tags: ['Admin', 'City'],
+    tags: ['City'],
     response: {
       status: HttpStatus.OK,
       description: ServerSuccess.CITY.LISTED,
     },
   })
-  @Get('admin/cities/:cityId')
+  @Get('cities/:cityId')
   async getCity(
     @Param('cityId') cityId: string,
     @Res() response: Response,
@@ -78,9 +78,9 @@ export class CityController {
       description: ServerSuccess.CITY.LISTED,
     },
   })
-  @Get('admin/cities')
+  @Get('cities')
   async getAllCity(
-    @Query() query: PaginationFilterQuery,
+    @Query() query: CommonFilterQuery,
     @Res() response: Response,
   ) {
     const cities = await this.cityService.getAll(query);

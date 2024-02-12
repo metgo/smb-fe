@@ -5,7 +5,7 @@ import { Model } from 'mongoose';
 import { ServerErrors } from 'src/common/constant';
 
 import { paginationConfig } from 'src/common/pagination.config';
-import { PaginationFilterQuery } from 'src/common/query-handler/pagination.query';
+import { CommonFilterQuery } from 'src/common/query-handler/common-filter-query';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { disSelect } from 'src/common/utils/select.handling';
 import { queryhandler } from 'src/core/helper/query-helper';
@@ -29,20 +29,25 @@ export class AuthorityService {
     return authority;
   }
 
-  async getAll(query: PaginationFilterQuery) {
-    const { page, limit } = query;
+  async getAll(query: CommonFilterQuery) {
+    const { page, limit, search } = query;
 
     const queryPage = page ? Number(page) : paginationConfig.page;
     const queryLimit = limit ? Number(limit) : paginationConfig.limit;
     const select = `${disSelect}`;
 
-    let findQuery: {} = query;
-    let populate1: {};
+    let findQuery: {} = {};
 
     const populate = {
       path: 'dmoId',
       select: `${disSelect}`,
     };
+
+    if (search) {
+      findQuery = {
+        name: { $regex: search, $options: 'i' },
+      };
+    }
 
     const authorities = await queryhandler<Authority>(
       this.AuthorityModel,
@@ -52,7 +57,6 @@ export class AuthorityService {
         page: queryPage,
         limit: queryLimit,
         populate,
-        populate1,
       },
     );
 

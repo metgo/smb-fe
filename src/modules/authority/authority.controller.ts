@@ -4,7 +4,7 @@ import {
 import { Response } from 'express';
 
 import { ServerSuccess } from 'src/common/constant';
-import { PaginationFilterQuery } from 'src/common/query-handler/pagination.query';
+import { CommonFilterQuery } from 'src/common/query-handler/common-filter-query';
 import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
 import { Roles } from 'src/core/guards/authorization/roles';
 import { JwtAuthGuard } from 'src/core/guards/jwt/jwt.guards';
@@ -48,14 +48,13 @@ export class AuthorityController {
   }
 
   @ApiEndpoint({
-    tags: ['Admin', 'Authority'],
-    noAuthToken: true,
+    tags: ['Authority'],
     response: {
       status: HttpStatus.OK,
       description: ServerSuccess.AUTHORITY.LISTED,
     },
   })
-  @Get('admin/authorities/:authorityId')
+  @Get('authorities/:authorityId')
   async getAuthority(
     @Param('authorityId') authorityId: string,
     @Res() response: Response,
@@ -73,16 +72,15 @@ export class AuthorityController {
   }
 
   @ApiEndpoint({
-    tags: ['Admin', 'Authority'],
-    noAuthToken: true,
+    tags: ['Authority'],
     response: {
       status: HttpStatus.OK,
       description: ServerSuccess.AUTHORITY.LISTED,
     },
   })
-  @Get('admin/authorities')
+  @Get('authorities')
   async getAllAuthority(
-    @Query() query: PaginationFilterQuery,
+    @Query() query: CommonFilterQuery,
     @Res() response: Response,
   ) {
     const authorities = await this.authorityService.getAll(query);

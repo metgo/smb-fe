@@ -5,7 +5,7 @@ import { Model } from 'mongoose';
 
 import { ServerErrors } from 'src/common/constant';
 import { paginationConfig } from 'src/common/pagination.config';
-import { PaginationFilterQuery } from 'src/common/query-handler/pagination.query';
+import { CommonFilterQuery } from 'src/common/query-handler/common-filter-query';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { disSelect } from 'src/common/utils/select.handling';
 import { queryhandler } from 'src/core/helper/query-helper';
@@ -33,12 +33,14 @@ export class CityService {
     return city;
   }
 
-  async getAll(query: PaginationFilterQuery) {
-    const { page, limit } = query;
+  async getAll(query: CommonFilterQuery) {
+    const { page, limit, search } = query;
 
     const queryPage = page ? Number(page) : paginationConfig.page;
     const queryLimit = limit ? Number(limit) : paginationConfig.limit;
     const select = `${disSelect} -dmoId`;
+
+    let findQuery: {} = {};
 
     const populate = {
       path: 'authorityId',
@@ -49,10 +51,16 @@ export class CityService {
       },
     };
 
+    if (search) {
+      findQuery = {
+        name: { $regex: search, $options: 'i' },
+      };
+    }
+
     const cities = await queryhandler<City>(
       this.CityModel,
       {
-        findQuery: {},
+        findQuery,
         select,
         page: queryPage,
         limit: queryLimit,
