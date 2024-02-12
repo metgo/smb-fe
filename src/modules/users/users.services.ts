@@ -469,7 +469,8 @@ export class UsersService {
     if (user) {
       throw new BadRequestException(ServerErrors.USER.EXISTS);
     }
-    const password = nanoid(8);
+    const password = await this.hashService.create(nanoid(8));
+
     const newUser = new this.UserModel({ ...dto, password });
 
     return newUser;
@@ -512,7 +513,10 @@ export class UsersService {
       if (user) {
         return;
       }
-      const newUser = await (new this.UserModel(registerDto)).save();
+
+      const hashedPassword = await this.hashService.create(registerDto.password);
+
+      const newUser = await (new this.UserModel({ ...registerDto, password: hashedPassword })).save();
 
       await Promise.all([
         this.mailchimpService.subscribe(newUser.firstName, newUser.lastName, newUser.email),
@@ -522,7 +526,7 @@ export class UsersService {
           mergeVars: {
             FNAME: newUser.firstName,
             USERNAME: newUser.email,
-            PASSWORD: newUser.password,
+            PASSWORD: registerDto.password,
           },
         }),
       ]);
