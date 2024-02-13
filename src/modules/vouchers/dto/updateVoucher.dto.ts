@@ -1,5 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsNotEmpty, IsString } from 'class-validator';
+import {
+  IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString,
+} from 'class-validator';
+import { Locale } from 'src/common/enum';
 
 export class updateVoucherDto { }
 
@@ -13,4 +16,13 @@ export class updateAssignedUserVoucherDto {
   @IsString()
   @IsNotEmpty()
     code: string;
+
+  @ApiProperty({
+    type: 'enum',
+    enum: Locale,
+    required: false,
+  })
+  @IsOptional()
+  @IsEnum(Locale)
+    languagePreference: Locale;
 }

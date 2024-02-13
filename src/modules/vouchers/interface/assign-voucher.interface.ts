@@ -1,9 +1,7 @@
-import { User } from 'src/modules/users/schema/users.schema';
-import { UpdateFieldInterface } from 'src/modules/vouchers/interface/voucher.interface';
+import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interface';
+import { updateAssignedUserVoucherDto } from 'src/modules/vouchers/dto';
 
-export interface AssignVoucherCommand{
-    code: string;
-    updateField: UpdateFieldInterface;
-    loggedInUserEmail: string;
-    user?: User | null
+export interface AssignVoucherCommand {
+    loggedInUser: LoggedInUserInterface;
+    body: updateAssignedUserVoucherDto;
 }

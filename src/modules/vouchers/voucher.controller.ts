@@ -24,10 +24,6 @@ import {
 } from 'src/modules/vouchers/queries';
 import { CampaignService } from '../campaign/campaign.service';
 import { Campaign } from '../campaign/schema/campaign.schema';
-import { UsersService } from '../users/users.services';
-import { User } from '../users/schema/users.schema';
-import { VoucherStatus } from 'src/common/enum';
-import { UpdateFieldInterface } from './interface';
 import { responseHelper } from 'src/core/helper/response.helper';
 import { Response } from 'express';
 
@@ -36,7 +32,6 @@ export class VoucherController {
   constructor(
     private readonly voucherService: VoucherService,
     private readonly campaignService: CampaignService,
-    private readonly userSerive: UsersService,
   ) { }
 
   @UseGuards(JwtAuthGuard)
@@ -179,24 +174,9 @@ export class VoucherController {
     @Res() response: Response,
     @Body() dto: updateAssignedUserVoucherDto,
   ) {
-    const userId = req.user.id;
-    const loggedInUserEmail = req.user.email;
-    let user: User | null;
-    if (dto.email) {
-      user = await this.userSerive.findByEmailOrNull(dto.email);
-    }
-    const updateField: UpdateFieldInterface = {
-      assignedTo: user ? user._id : null,
-      waitingUserEmail: user ? null : dto.email,
-      status: user ? VoucherStatus.ASSIGNED : VoucherStatus.WAITING,
-      updatedBy: userId,
-      updatedAt: new Date(),
-    };
     await this.voucherService.assignUser({
-      code: dto.code,
-      updateField,
-      loggedInUserEmail,
-      user,
+      loggedInUser: req.user,
+      body: dto,
     });
     return responseHelper(
       response,
@@ -252,24 +232,10 @@ export class VoucherController {
     @Body() dto: updateAssignedUserVoucherDto,
     @Query() query: ExternalApiPostQuery,
   ) {
-    const userId = req.user.id;
-    const loggedInUserEmail = req.user.email;
-    let user: User | null;
-    if (dto.email) {
-      user = await this.userSerive.findByEmailOrNull(dto.email);
-    }
-    const updateField: UpdateFieldInterface = {
-      assignedTo: user ? user._id : null,
-      waitingUserEmail: user ? null : dto.email,
-      status: user ? VoucherStatus.ASSIGNED : VoucherStatus.WAITING,
-      updatedBy: userId,
-      updatedAt: new Date(),
-    };
     console.log(query);
     await this.voucherService.assignUser({
-      code: dto.code,
-      updateField,
-      loggedInUserEmail,
+      loggedInUser: req.user,
+      body: dto,
     });
     return responseHelper(
       response,

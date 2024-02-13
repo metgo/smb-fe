@@ -18,7 +18,7 @@ import { EnglishTemplate, HebrewTemplate } from 'src/common/mailchimp/templateId
 import { paginationConfig } from 'src/common/pagination.config';
 import { Voucher } from './schema/voucher.schema';
 import {
-  Currency, Locale, PaymentStatus, VoucherPaymentStatus,
+  Currency, Locale, PaymentStatus, VoucherPaymentStatus, VoucherStatus,
 } from 'src/common/enum';
 import { ExternalApiPostQuery } from 'src/common/query-handler/externalapi-post.query';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
@@ -37,7 +37,7 @@ import { UsersService } from 'src/modules/users/users.services';
 import {
   createVoucherDto, UpdateVoucherBalance,
 } from 'src/modules/vouchers/dto';
-import { AssignVoucherCommand, GetOneVoucherInterface } from 'src/modules/vouchers/interface';
+import { AssignVoucherCommand, GetOneVoucherInterface, UpdateFieldInterface } from 'src/modules/vouchers/interface';
 import { GetMyAssignedVouchersQuery, GetMyCreatedVouchersQuery, GetMyVouchersExternalApiQuery } from 'src/modules/vouchers/queries';
 
 @Injectable()
@@ -335,7 +335,6 @@ export class VoucherService {
       };
     }
 
-    console.log(findQuery);
     const voucher = await queryhandler<Voucher>(
       this.VoucherModel,
       {
@@ -352,31 +351,37 @@ export class VoucherService {
   }
 
   async assignUser(command: AssignVoucherCommand) {
-    const {
-      code, updateField, loggedInUserEmail, user,
-    } = command;
-    const filterQuery = {
-      code,
-      assignedTo: null,
+    const { loggedInUser, body } = command;
+
+    const assignedUser = await this.usersService.findByEmailOrNull(body.email);
+
+    const updateField: UpdateFieldInterface = {
+      assignedTo: assignedUser ? assignedUser._id : null,
+      waitingUserEmail: assignedUser ? null : body.email,
+      status: VoucherStatus.ASSIGNED,
+      updatedBy: loggedInUser.id,
+      updatedAt: new Date(),
     };
+
+    const filterQuery = {
+      code: body.code,
+      paymentStatus: VoucherPaymentStatus.PAID,
+    };
+
     const assignUser = await updateWhere<Voucher>(this.VoucherModel, filterQuery, updateField);
 
     if (!assignUser) {
-      throw new NotFoundException(ServerErrors.VOUCHER.NOT_FOUND);
+      throw new NotFoundException(`${ServerErrors.VOUCHER.NOT_FOUND} or ${ServerErrors.VOUCHER.UNPAID}`);
     }
 
-    const email = user ? user?.email : updateField.waitingUserEmail;
-    const name = user ? user?.firstName : 'User';
     await this.mailchimpService.sendTransactionalEmail({
-      to: email,
-      templatedId: user?.languagePreference === Locale.HEBREW
+      to: body.email,
+      templatedId: body?.languagePreference === Locale.HEBREW
         ? HebrewTemplate.VoucherAssignedToYou
         : EnglishTemplate.VoucherAssignedToYou,
       mergeVars: {
-        FNAME: name,
-        VOUCHERCREATER: loggedInUserEmail,
-        USERNAME: email,
-        PASSWORD: '',
+        VOUCHERCODE: body.code,
+        FULLNAME: `${loggedInUser.firstName} ${loggedInUser.lastName}`,
       },
     });
 
