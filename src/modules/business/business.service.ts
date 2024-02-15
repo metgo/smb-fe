@@ -16,7 +16,7 @@ import {
 import {
   findOneByFieldName, findOneByFieldNameExcludeId, findOneByFieldNames, queryhandler, updateById, updateWhere,
 } from 'src/core/helper/query-helper';
-import { ServerErrors } from 'src/common/constant';
+import { milesConfig, ServerErrors } from 'src/common/constant';
 import { Image } from 'src/common/interface/image.interface';
 import { paginationConfig } from 'src/common/pagination.config';
 import { generateRandomCode } from 'src/common/utils/randomCode.generator';
@@ -25,6 +25,7 @@ import { BusinessStatus, GetBusinessByIdOrSlug } from 'src/modules/business/busi
 import { UpdateBusinessByAdminDto } from 'src/modules/business/dto/update-business-status.dto';
 import { GcpBucketService } from 'src/services/gcp-bucket/gcp-bucket.services';
 import { WebCreateBusiness } from 'src/modules/business/dto/web-create-business.dto';
+import { GetAllUnpaginatedBusinessQuery } from 'src/modules/business/queries/get-all-unpaginated-business.query';
 import { Media } from '../media/schema/media.schema';
 import { updateWebBusinessDto } from './dto/web.update.dto';
 import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.schema';
@@ -289,7 +290,7 @@ export class BusinessService {
           $geoWithin: {
             $centerSphere: [
               [long, lat],
-              maxDistanceInRadius,
+              maxDistanceInRadius(milesConfig),
             ],
           },
         },
@@ -335,6 +336,121 @@ export class BusinessService {
         select,
         page: queryPage,
         limit: queryLimit,
+        populate,
+        populate1,
+      },
+    );
+
+    return allBusiness;
+  }
+
+  async getAllUnpaginatedBusiness(queries: GetAllUnpaginatedBusinessQuery) {
+    const {
+      search, long, lat, miles, ...query
+    } = queries;
+
+    let findQuery: any = { ...query, status: BusinessStatus.APPROVED };
+
+    if (search) {
+      const [matchingCategoryIds, matchingSubCategoryIds] = await Promise.all([
+        this.BussCategoryModel.find({ name: { $regex: search, $options: 'i' } }).select('_id'),
+        this.BussSubCategoryModel.find({ name: { $regex: search, $options: 'i' } }).select('_id'),
+      ]);
+
+      const matchingProductsIds = await this.ProductModel
+        .find({
+          $or: [
+            { name: { $regex: search, $options: 'i' } },
+            { description: { $regex: search, $options: 'i' } },
+            { categories: { $in: matchingCategoryIds } },
+            { subCategories: { $in: matchingSubCategoryIds } },
+          ],
+        })
+        .select('_id');
+
+      findQuery = {
+        ...findQuery,
+        $or: [
+          { name: { $regex: search, $options: 'i' } },
+          { description: { $regex: search, $options: 'i' } },
+          { bussCategoriesId: { $in: matchingCategoryIds } },
+          { bussSubCategoriesId: { $in: matchingSubCategoryIds } },
+          { productsId: { $in: matchingProductsIds } },
+        ],
+      };
+
+      if (!(matchingCategoryIds?.length || matchingSubCategoryIds?.length || matchingProductsIds?.length)) {
+        findQuery.$text = { $search: search, $caseSensitive: false, $diacriticSensitive: false };
+      }
+    }
+
+    if (query.bussCategoriesId) {
+      const bussCategoriesId = JSON.parse(query.bussCategoriesId);
+      findQuery = {
+        ...findQuery,
+        bussCategoriesId: { $in: bussCategoriesId },
+      };
+    }
+
+    if (query.bussSubCategoriesId) {
+      const bussSubCategoriesId = JSON.parse(query.bussSubCategoriesId);
+      findQuery = {
+        ...findQuery,
+        bussSubCategoriesId: { $in: bussSubCategoriesId },
+      };
+    }
+
+    if (query.accessibilitiesId) {
+      const accessibilitiesId = JSON.parse(query.accessibilitiesId);
+      findQuery = {
+        ...findQuery,
+        accessibilitiesId: { $in: accessibilitiesId },
+      };
+    }
+
+    if (query.groupTypesId) {
+      const groupTypesId = JSON.parse(query.groupTypesId);
+      findQuery = {
+        ...findQuery,
+        groupTypesId: { $in: groupTypesId },
+      };
+    }
+
+    if (long && lat) {
+      findQuery = {
+        ...findQuery,
+        location: {
+          $geoWithin: {
+            $centerSphere: [
+              [long, lat],
+              maxDistanceInRadius(miles || milesConfig),
+            ],
+          },
+        },
+      };
+    }
+
+    const populate = {
+      path: 'groupTypesId accessibilitiesId bussCategoriesId bussSubCategoriesId socialMedia.socialMediaId',
+      select: `${disSelect}`,
+      populate: {
+        path: 'icon',
+        select: `${disSelect}`,
+      },
+    };
+
+    const populate1 = {
+      path: 'dmoId',
+      select: `${disSelect} -userId -collaboratorsUser`,
+    };
+
+    const select = `${disSelect}`;
+
+    const allBusiness = await queryhandler<Business>(
+      this.BusinessModel,
+      {
+        findQuery,
+        select,
         populate,
         populate1,
       },

@@ -31,6 +31,7 @@ import { responseHelper } from 'src/core/helper/response.helper';
 import { Roles } from 'src/core/guards/authorization/roles';
 import { JwtAuthGuard } from 'src/core/guards/jwt/jwt.guards';
 import { UpdateBusinessByAdminDto } from 'src/modules/business/dto/update-business-status.dto';
+import { GetAllUnpaginatedBusinessQuery } from 'src/modules/business/queries/get-all-unpaginated-business.query';
 import { DMOService } from 'src/modules/dmo/dmo.service';
 import { UserType } from 'src/modules/users/users.type';
 import { fileFilterByExtensions } from 'src/services/gcp-bucket/middleware/file-filter';
@@ -95,7 +96,7 @@ export class BusinessController {
     tags: ['Business'],
     response: { status: HttpStatus.OK, description: ServerSuccess.BUSINESS_LISTED },
     softBlockExtraDtoFields: true,
-    operation: 'Get all approved business by any user',
+    operation: 'Get all approved business by any user - paginated',
   })
   @Get('business')
   async getAllBusiness(
@@ -103,6 +104,22 @@ export class BusinessController {
     @Query() query?: FilterQuery,
   ) {
     const business = await this.businessServices.getAllBusiness(query);
+
+    return responseHelper(response, HttpStatus.OK, ServerSuccess.BUSINESS_LISTED, business, null, null);
+  }
+
+  @ApiEndpoint({
+    tags: ['Business'],
+    response: { status: HttpStatus.OK, description: ServerSuccess.BUSINESS_LISTED },
+    softBlockExtraDtoFields: true,
+    operation: 'Get all approved business by any user - nonPaginated',
+  })
+  @Get('businesses')
+  async getAllBusinesses(
+    @Res() response: Response,
+    @Query() query?: GetAllUnpaginatedBusinessQuery,
+  ) {
+    const business = await this.businessServices.getAllUnpaginatedBusiness(query);
 
     return responseHelper(response, HttpStatus.OK, ServerSuccess.BUSINESS_LISTED, business, null, null);
   }

@@ -13,6 +13,8 @@ export const softValidationPipe = new ValidationPipe({
   forbidUnknownValues: true,
 });
 
+export const milesConfig = 5;
+
 export const ServerErrors = {
   FORBIDDEN: 'Access Denied',
   IS_NOT_BLANK: 'cannot be empty or contain only spaces',
