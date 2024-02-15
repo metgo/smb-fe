@@ -18,7 +18,7 @@ import { EnglishTemplate, HebrewTemplate } from 'src/common/mailchimp/templateId
 import { paginationConfig } from 'src/common/pagination.config';
 import { Voucher } from './schema/voucher.schema';
 import {
-  Currency, Locale, PaymentStatus, VoucherPaymentStatus, VoucherStatus,
+  Currency, Locale, VoucherPaymentStatus, VoucherStatus,
 } from 'src/common/enum';
 import { ExternalApiPostQuery } from 'src/common/query-handler/externalapi-post.query';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
@@ -292,7 +292,7 @@ export class VoucherService {
 
     const select = disSelect;
 
-    let findQuery: any = { ...query, createdBy: userId, paymentStatus: PaymentStatus.SUCCESS };
+    let findQuery: any = { ...query, createdBy: userId, paymentStatus: VoucherPaymentStatus.PAID };
     delete findQuery?.identifierId;
 
     const populate = {
