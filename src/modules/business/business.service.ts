@@ -186,7 +186,7 @@ export class BusinessService {
 
   async getAllBusiness(queries: FilterQuery | AllFilterQuery, isAdmin?: boolean) {
     const {
-      page, limit, search, long, lat, ...query
+      page, limit, search, long, lat, miles, ...query
     } = queries;
 
     const queryPage = page ? Number(page) : paginationConfig.page;
@@ -290,7 +290,7 @@ export class BusinessService {
           $geoWithin: {
             $centerSphere: [
               [long, lat],
-              maxDistanceInRadius(milesConfig),
+              maxDistanceInRadius(miles || milesConfig),
             ],
           },
         },

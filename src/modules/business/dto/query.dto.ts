@@ -26,4 +26,8 @@ export class FilterQuery extends CommonFilterQuery {
   @ApiProperty({ type: String, required: false, description: 'longituted of the location' })
   @IsOptional()
     long: string;
+
+  @ApiProperty({ type: Number, required: false, description: 'Miles for radius' })
+  @IsOptional()
+    miles: number;
 }
