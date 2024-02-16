@@ -11,7 +11,7 @@ import { sellingPriceForAmountOrPercent } from 'src/common/utils/discount-calcul
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { disSelect } from 'src/common/utils/select.handling';
 import {
-  findOneByFieldNames, queryhandler, updateWhere,
+  findOneByFieldNames, queryhandler, updateOneByManyFields,
 } from 'src/core/helper/query-helper';
 import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interface';
 import { BusinessService } from 'src/modules/business/business.service';
@@ -298,7 +298,7 @@ export class ProductsService {
       };
 
       if (command.isAdmin) {
-        updatedProduct = await updateWhere<Product>(
+        updatedProduct = await updateOneByManyFields<Product>(
           this.ProductModel,
           {
             _id: command.productId,
@@ -307,7 +307,7 @@ export class ProductsService {
           { ...updatedField },
         );
       } else {
-        updatedProduct = await updateWhere<Product>(
+        updatedProduct = await updateOneByManyFields<Product>(
           this.ProductModel,
           {
             _id: command.productId,
@@ -341,7 +341,7 @@ export class ProductsService {
       _id: mongoose.Types.ObjectId;
   };
     if (command.role === UserType.SUPERADMIN) {
-      updatedProduct = await updateWhere<Product>(
+      updatedProduct = await updateOneByManyFields<Product>(
         this.ProductModel,
         {
           _id: command.productId,
@@ -353,7 +353,7 @@ export class ProductsService {
         },
       );
     } else {
-      updatedProduct = await updateWhere<Product>(
+      updatedProduct = await updateOneByManyFields<Product>(
         this.ProductModel,
         {
           _id: command.productId,
@@ -379,7 +379,7 @@ export class ProductsService {
   // eslint-disable-next-line consistent-return
   async softDelete(businessId: string, productId: string, loggedInUser: string): Promise<Product> {
     try {
-      const deletedProduct = await updateWhere<Product>(
+      const deletedProduct = await updateOneByManyFields<Product>(
         this.ProductModel,
         {
           _id: productId,
@@ -415,7 +415,7 @@ export class ProductsService {
         },
       };
 
-      const updatedProduct = await updateWhere<Product>(
+      const updatedProduct = await updateOneByManyFields<Product>(
         this.ProductModel,
         {
           _id: productId,

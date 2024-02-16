@@ -17,6 +17,7 @@ export const milesConfig = 5;
 
 export const ServerErrors = {
   FORBIDDEN: 'Access Denied',
+  IS_NOT_EMPTY: 'cannot be empty',
   IS_NOT_BLANK: 'cannot be empty or contain only spaces',
   INVALID_ID: 'id is invalid',
   INVALID_QUANTITY: 'Entered quantity is not valid number',
@@ -97,7 +98,7 @@ export const ServerErrors = {
   },
 
   CAMPAIGN: {
-    NOT_FOUND: 'Campaign not found',
+    NOT_FOUND: 'Invalid campaign',
     EXISTS: 'Campaign already exists',
   },
 

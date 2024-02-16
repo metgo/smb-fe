@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import {
-  IsNotEmpty, IsOptional, IsString,
+  IsNotEmpty, IsOptional, IsString, MinLength,
 } from 'class-validator';
 import { CampaignStatus } from 'src/common/enum';
 
@@ -22,6 +22,7 @@ export class createCampaignDto {
 
   @ApiProperty()
   @IsString()
+  @MinLength(4)
   @IsNotEmpty()
     code: string;
 

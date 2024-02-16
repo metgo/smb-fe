@@ -19,6 +19,12 @@ export class Voucher extends AuditableSchema {
     name: string;
 
   @Prop({
+    default: null,
+    required: false,
+  })
+    createdByEmail: string;
+
+  @Prop({
     type: Number,
     min: [1, 'Amount must be at least 1.'],
     max: [5000, 'Amount must be at most 5000.'],

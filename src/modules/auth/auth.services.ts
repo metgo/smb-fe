@@ -1,5 +1,5 @@
 import {
-  Injectable, NotFoundException, UnauthorizedException,
+  Inject, Injectable, NotFoundException, UnauthorizedException, forwardRef,
 } from '@nestjs/common';
 import { ServerErrors } from 'src/common/constant';
 
@@ -12,6 +12,7 @@ import { HashService } from 'src/services/hash/hash.service';
 @Injectable()
 export class AuthService {
   constructor(
+    @Inject(forwardRef(() => UsersService))
     private usersService: UsersService,
     private jwtAuthService: JwtAuthService,
     private readonly hashService: HashService,

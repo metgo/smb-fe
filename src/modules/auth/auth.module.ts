@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 
 import { UsersModule } from 'src/modules/users/users.module';
@@ -12,7 +12,7 @@ const configService = new ConfigService();
 
 @Module({
   imports: [
-    UsersModule,
+    forwardRef(() => UsersModule),
     JwtAuthModule,
     JwtModule.register({
       global: true,

@@ -1,5 +1,7 @@
 /* eslint-disable no-underscore-dangle */
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException, Inject, Injectable, NotFoundException, forwardRef,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
@@ -23,6 +25,7 @@ import { UsersService } from '../users/users.services';
 export class DMOService {
   constructor(
     @InjectModel('DMO') private DMOModel: Model<DMO>,
+    @Inject(forwardRef(() => UsersService))
     private userService: UsersService,
   ) { }
 

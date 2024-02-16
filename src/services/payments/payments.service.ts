@@ -4,7 +4,7 @@ import axios from 'axios';
 import { Request } from 'express';
 import { Model } from 'mongoose';
 
-import { Locale, PaymentStatus } from 'src/common/enum';
+import { Locale, PaymentStatus, VoucherPaymentStatus } from 'src/common/enum';
 import { EnglishTemplate, HebrewTemplate } from 'src/common/mailchimp/templateId';
 import { ConfigService } from '../config/config.service';
 import { Payment } from './schema/payments.schema';
@@ -115,21 +115,17 @@ export class PaymentsService {
         TOTALAMOUNT: requestBody?.amount,
       },
     });
-    if (requestBody?.more_info === PaymentPurpose.VOUCHER) {
-      await this.voucherService.update(payments.voucherId, { paymentStatus: PaymentStatus.SUCCESS });
 
-      await this.mailchimpService.sendTransactionalEmail({
-        to: requestBody?.more_info_1,
-        templatedId: requestBody.more_info_3 === Locale.HEBREW
-          ? HebrewTemplate.VoucherConfirmation
-          : EnglishTemplate.VoucherConfirmation,
-        mergeVars: {
-          FNAME: requestBody?.more_info_2,
-          USERNAME: requestBody?.more_info_1,
-          PASSWORD: '',
-        },
+    if (requestBody?.more_info === PaymentPurpose.VOUCHER) {
+      await this.voucherService.updateAfterPaymentSuccess({
+        ids: payments.voucherId,
+        updateField: { paymentStatus: VoucherPaymentStatus.PAID },
+        voucherOwnerEmail: requestBody?.more_info_1,
+        voucherOwnerName: requestBody?.more_info_2,
+        languagePreference: requestBody.more_info_3,
       });
     }
+
     if (requestBody?.more_info === PaymentPurpose.ORDER) {
       const updateOrder = await this.ordersService.updateOrderAfterPayment(payments.orderId);
 

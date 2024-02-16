@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { DMOSchema } from './schema/dmo.schema';
 import { DMOService } from './dmo.service';
@@ -11,7 +11,7 @@ import { JwtAuthModule } from '../jwt-auth/jwt-auth.module';
     MongooseModule.forFeature([
       { name: 'DMO', schema: DMOSchema },
     ]),
-    UsersModule,
+    forwardRef(() => UsersModule),
     JwtAuthModule,
   ],
   providers: [DMOService],

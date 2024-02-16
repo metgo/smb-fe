@@ -1,4 +1,5 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
+
 import { BusinessController } from './business.controller';
 import { BusinessService } from './business.service';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -18,6 +19,7 @@ import { MailChimpModule } from 'src/services/mailchimp/mailchimp.module';
 import { BussCategory, BussCategorySchema } from '../buss-categories/schema/buss.category.schema';
 import { BussSubCategory, BussSubCategorySchema } from '../buss-subcategories/schema/buss-subCategory.schema';
 import { Product, ProductSchema } from '../products/schema/products.schema';
+import { VoucherModule } from 'src/modules/vouchers/voucher.module';
 
 @Module({
   imports: [
@@ -36,6 +38,7 @@ import { Product, ProductSchema } from '../products/schema/products.schema';
     HashModule,
     GcpBucketModule,
     MailChimpModule,
+    forwardRef(() => VoucherModule),
   ],
   controllers: [BusinessController],
   providers: [BusinessService, UsersService, DMOService, JwtAuthService],

@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
 import { BusinessModule } from 'src/modules/business/business.module';
@@ -18,10 +18,10 @@ import { MailChimpModule } from 'src/services/mailchimp/mailchimp.module';
       { name: Order.name, schema: OrderSchema },
     ]),
     BusinessModule,
-    PaymentsModule,
+    forwardRef(() => PaymentsModule),
     ProductsModule,
-    UsersModule,
-    VoucherModule,
+    forwardRef(() => UsersModule),
+    forwardRef(() => VoucherModule),
     ConfigModule,
     MailChimpModule,
   ],

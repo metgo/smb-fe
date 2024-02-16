@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import {
-  IsEmail, IsNotEmpty, IsOptional, IsPositive, IsString,
+  IsEmail, IsNotEmpty, IsPositive, IsString,
 } from 'class-validator';
 import { AmountRange } from 'src/core/decorators/range.decorator';
 
@@ -37,6 +37,6 @@ export class createVoucherDto {
 
   @ApiProperty()
   @IsEmail()
-  @IsOptional()
+  @IsNotEmpty()
     email: string;
 }

@@ -1,6 +1,6 @@
 /* eslint-disable consistent-return */
 import {
-  Body, Controller, Get, HttpCode, HttpStatus, Param, Patch, Post, Query, Req, Res, UseGuards,
+  Body, Controller, Get, HttpCode, HttpStatus, Inject, Param, Patch, Post, Query, Req, Res, UseGuards, forwardRef,
 } from '@nestjs/common';
 import { Response } from 'express';
 
@@ -27,6 +27,7 @@ export class OrdersController {
   constructor(
     private ordersService: OrdersService,
     private productService: ProductsService,
+    @Inject(forwardRef(() => VoucherService))
     private voucherService: VoucherService,
   ) {}
 

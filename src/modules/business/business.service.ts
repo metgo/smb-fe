@@ -14,7 +14,7 @@ import {
   AllFilterQuery, createBusinessDto, FilterQuery, updateBusinessDto,
 } from 'src/modules/business/dto';
 import {
-  findOneByFieldName, findOneByFieldNameExcludeId, findOneByFieldNames, queryhandler, updateById, updateWhere,
+  findOneByFieldName, findOneByFieldNameExcludeId, findOneByFieldNames, queryhandler, updateById, updateOneByManyFields,
 } from 'src/core/helper/query-helper';
 import { milesConfig, ServerErrors } from 'src/common/constant';
 import { Image } from 'src/common/interface/image.interface';
@@ -338,6 +338,7 @@ export class BusinessService {
         limit: queryLimit,
         populate,
         populate1,
+        sort: 'createdAt',
       },
     );
 
@@ -626,7 +627,7 @@ export class BusinessService {
       _id: mongoose.Types.ObjectId
     };
     if (role === UserType.SUPERADMIN) {
-      updatedBusiness = await updateWhere<Business>(
+      updatedBusiness = await updateOneByManyFields<Business>(
         this.BusinessModel,
         {
           _id: id,
@@ -637,7 +638,7 @@ export class BusinessService {
         },
       );
     } else {
-      updatedBusiness = await updateWhere<Business>(
+      updatedBusiness = await updateOneByManyFields<Business>(
         this.BusinessModel,
         {
           _id: id,

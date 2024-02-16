@@ -1,13 +1,12 @@
 import { Module, forwardRef } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-// import { UsersModule } from '../users/users.module';
-// import { EncryptionModule } from 'src/services/encryption/encryption.module';
+import { JwtModule } from '@nestjs/jwt';
+
 import { ConfigModule } from 'src/services/config/config.module';
 import { DMOModule } from '../dmo/dmo.module';
 import { CampaignSegmentController } from './campaignSegment.controller';
 import { CampaignSegmentSchema } from './schema/campaignSegment.schema';
 import { JwtAuthModule } from '../jwt-auth/jwt-auth.module';
-import { JwtModule } from '@nestjs/jwt';
 import { ConfigService } from 'src/services/config/config.service';
 import { UsersModule } from '../users/users.module';
 import { DMOSchema } from '../dmo/schema/dmo.schema';
@@ -24,7 +23,7 @@ const configService = new ConfigService();
       { name: 'CampaignSegment', schema: CampaignSegmentSchema },
       { name: 'DMO', schema: DMOSchema },
     ]),
-    UsersModule,
+    forwardRef(() => UsersModule),
     JwtAuthModule,
     JwtModule.register({
       global: true,

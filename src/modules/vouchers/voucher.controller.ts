@@ -1,15 +1,17 @@
-/* eslint-disable no-underscore-dangle */
-/* eslint-disable no-unused-expressions */
 import {
   Body, Controller, Get, HttpStatus, Param, Post, Put, Query, Req, Res, UseGuards,
 } from '@nestjs/common';
+import { Response } from 'express';
+
 import { ServerSuccess } from 'src/common/constant';
 import { ExternalApiPostQuery } from 'src/common/query-handler/externalapi-post.query';
 import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
 import { ExternalApiGuard } from 'src/core/guards/authorization/external-api-guards';
+import { Roles } from 'src/core/guards/authorization/roles';
 import { JwtAuthGuard } from 'src/core/guards/jwt/jwt.guards';
-import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interface';
-import { VoucherService } from './voucher.service';
+import { responseHelper } from 'src/core/helper/response.helper';
+import { UserType } from 'src/modules/users/users.type';
+import { VoucherService } from 'src/modules/vouchers/voucher.service';
 import {
   createVoucherDto,
   updateAssignedUserVoucherDto,
@@ -22,24 +24,17 @@ import {
   GetVoucherByExternalApiQuery,
   GetVoucherQuery,
 } from 'src/modules/vouchers/queries';
-import { CampaignService } from '../campaign/campaign.service';
-import { Campaign } from '../campaign/schema/campaign.schema';
-import { responseHelper } from 'src/core/helper/response.helper';
-import { Response } from 'express';
 
 @Controller()
 export class VoucherController {
   constructor(
     private readonly voucherService: VoucherService,
-    private readonly campaignService: CampaignService,
-  ) { }
+  ) {}
 
-  @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
-    tags: ['Admin', 'Voucher'],
-    response: { status: 201, description: ServerSuccess.VOUCHER.CREATED },
+    tags: ['Voucher'],
+    response: { status: HttpStatus.CREATED, description: ServerSuccess.VOUCHER.CREATED },
     softBlockExtraDtoFields: true,
-    noAuthToken: true,
   })
   @Post('buy-voucher')
   async create(
@@ -47,19 +42,39 @@ export class VoucherController {
     @Res() response: Response,
     @Body() dto: createVoucherDto,
   ) {
-    const user: LoggedInUserInterface | null = req?.user ?? null;
-    let campaign: Campaign;
-
-    if (dto.campCode) {
-      campaign = await this.campaignService.findAndReturn('code', dto.campCode);
-    }
-    const link = await this.voucherService.create(dto, user, campaign._id);
+    const link = await this.voucherService.create(req.user, dto);
 
     return responseHelper(
       response,
-      HttpStatus.OK,
+      HttpStatus.CREATED,
       ServerSuccess.VOUCHER.LISTED,
       link,
+      null,
+      null,
+    );
+  }
+
+  @Roles(UserType.SUPERADMIN)
+  @UseGuards(JwtAuthGuard)
+  @ApiEndpoint({
+    tags: ['Admin', 'Voucher'],
+    response: { status: HttpStatus.CREATED, description: ServerSuccess.VOUCHER.CREATED },
+    softBlockExtraDtoFields: true,
+    noAuthToken: true,
+  })
+  @Post('admin/vouchers')
+  async createPaidVouchers(
+    @Req() req,
+    @Res() response: Response,
+    @Body() dto: createVoucherDto,
+  ) {
+    const vouchers = await this.voucherService.createdBySuperadmin(req.user, dto);
+
+    return responseHelper(
+      response,
+      HttpStatus.CREATED,
+      ServerSuccess.VOUCHER.LISTED,
+      vouchers,
       null,
       null,
     );
@@ -251,9 +266,7 @@ export class VoucherController {
     tags: ['External Api', 'Voucher'],
     response: { status: HttpStatus.CREATED, description: ServerSuccess.VOUCHER.CREATED },
     softBlockExtraDtoFields: true,
-    noAuthToken: true,
   })
-  @UseGuards(JwtAuthGuard)
   @UseGuards(ExternalApiGuard)
   @Post('externalapi/purchase_vouchers')
   async buyVoucherByExternalApi(
@@ -263,6 +276,33 @@ export class VoucherController {
     @Query() query: ExternalApiPostQuery,
   ) {
     const link = await this.voucherService.purchaseVoucherForExternalApi(dto, query, req.user);
+
+    return responseHelper(
+      response,
+      HttpStatus.CREATED,
+      `${dto.campCode} ${ServerSuccess.EXTERNAL_API.VOUCHER.CREATED}`,
+      link,
+      null,
+      null,
+    );
+  }
+
+  @ApiEndpoint({
+    tags: ['Admin', 'External Api', 'Voucher'],
+    response: { status: HttpStatus.CREATED, description: ServerSuccess.VOUCHER.CREATED },
+    softBlockExtraDtoFields: true,
+  })
+  @Roles(UserType.SUPERADMIN)
+  @UseGuards(JwtAuthGuard)
+  @UseGuards(ExternalApiGuard)
+  @Post('admin/externalapi/vouchers')
+  async buyVoucherByExternalApiBySuperAdmin(
+    @Req() req,
+    @Res() response: Response,
+    @Body() dto: createVoucherDto,
+    @Query() query: ExternalApiPostQuery,
+  ) {
+    const link = await this.voucherService.createdBySuperadmin(req.user, dto, query.identifierId);
 
     return responseHelper(
       response,

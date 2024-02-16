@@ -1,7 +1,6 @@
 /* eslint-disable consistent-return */
 import {
-  BadRequestException,
-  ForbiddenException, Injectable, NotFoundException,
+  BadRequestException, ForbiddenException, Inject, Injectable, NotFoundException, forwardRef,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
@@ -37,7 +36,9 @@ export class OrdersService {
     private readonly businessService: BusinessService,
     private readonly mailchimpService: MailChimpService,
     private readonly productsService: ProductsService,
+    @Inject(forwardRef(() => VoucherService))
     private readonly voucherService: VoucherService,
+    @Inject(forwardRef(() => PaymentsService))
     private readonly paymentService: PaymentsService,
   ) {}
 

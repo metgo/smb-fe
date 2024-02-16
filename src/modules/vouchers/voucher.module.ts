@@ -23,7 +23,7 @@ import { PaymentsModule } from 'src/services/payments/payments.module';
     EncryptionModule,
     ConfigModule,
     GcpBucketModule,
-    UsersModule,
+    forwardRef(() => UsersModule),
     forwardRef(() => PaymentsModule),
     MailChimpModule,
   ],

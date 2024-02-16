@@ -1,4 +1,3 @@
-/* eslint-disable prefer-const */
 /* eslint-disable no-underscore-dangle */
 /* eslint-disable no-plusplus */
 import {
@@ -12,7 +11,6 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
-import { nanoid } from 'nanoid';
 
 import { EnglishTemplate, HebrewTemplate } from 'src/common/mailchimp/templateId';
 import { paginationConfig } from 'src/common/pagination.config';
@@ -24,7 +22,9 @@ import { ExternalApiPostQuery } from 'src/common/query-handler/externalapi-post.
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { generateRandomCode } from 'src/common/utils/randomCode.generator';
 import { remainingAmountCalculation } from 'src/common/utils/remaining-amount-calculation';
-import { queryhandler, updateMany, updateWhere } from 'src/core/helper/query-helper';
+import {
+  findManyByFilter, queryhandler, updateManyByIds, updateManyByManyFields, updateOneByManyFields,
+} from 'src/core/helper/query-helper';
 import { disSelect } from 'src/common/utils/select.handling';
 import { ServerErrors } from 'src/common/constant';
 import { MailChimpService } from 'src/services/mailchimp/mailchimp.service';
@@ -37,7 +37,9 @@ import { UsersService } from 'src/modules/users/users.services';
 import {
   createVoucherDto, UpdateVoucherBalance,
 } from 'src/modules/vouchers/dto';
-import { AssignVoucherCommand, GetOneVoucherInterface, UpdateFieldInterface } from 'src/modules/vouchers/interface';
+import {
+  AssignVoucherCommand, GetOneVoucherInterface, UpdateFieldInterface, UpdateVoucherAfterPaymentInterface,
+} from 'src/modules/vouchers/interface';
 import { GetMyAssignedVouchersQuery, GetMyCreatedVouchersQuery, GetMyVouchersExternalApiQuery } from 'src/modules/vouchers/queries';
 
 @Injectable()
@@ -49,29 +51,35 @@ export class VoucherService {
     private readonly paymentService: PaymentsService,
     private readonly campaignService: CampaignService,
     private readonly campaignSegmentService: CampaignSegmentService,
+    @Inject(forwardRef(() => UsersService))
     private readonly usersService: UsersService,
     private mailchimpService: MailChimpService,
   ) { }
 
   // eslint-disable-next-line consistent-return
   async create(
+    user: LoggedInUserInterface | null,
     dto: createVoucherDto,
-    user: LoggedInUserInterface,
-    campaignId?: mongoose.Types.ObjectId,
   ) {
     try {
+      const campaignId = (await this.campaignService.findAndReturn('code', dto.campCode))._id;
+      const createdByUserId = user?.email === dto?.email
+        ? user?.id
+        : (await this.usersService.findByEmailOrNull(dto.email))?._id;
+
       let i: number = 0;
       const voucherId: any = [];
       const totalAmount = dto.noOfVoucher * dto.amount;
       for (i = 0; i < dto.noOfVoucher; i++) {
         const randomCode = generateRandomCode(12);
-        const code = dto?.campCode ? dto.campCode + randomCode : `TAV8${randomCode}`;
+        const code = dto.campCode + randomCode;
         const newVoucher = new this.VoucherModel({
           ...dto,
           code,
           remainingAmount: dto.amount,
-          campId: campaignId || null,
-          createdBy: user?.id || null,
+          campId: campaignId,
+          createdBy: createdByUserId,
+          createdByEmail: createdByUserId ? null : dto.email,
         });
         newVoucher.save();
         voucherId.push(newVoucher._id);
@@ -84,10 +92,62 @@ export class VoucherService {
         id: voucherId,
         customerEmail: dto.email,
         customerName: dto.name,
-        loggedInUserLanguagePreference: user.languagePreference,
+        loggedInUserLanguagePreference: user ? user.languagePreference : Locale.ENGLISH,
       });
 
       return paymentLink;
+    } catch (err) {
+      exceptionHandling(err);
+    }
+  }
+
+  // eslint-disable-next-line consistent-return
+  async createdBySuperadmin(
+    user: LoggedInUserInterface,
+    dto: createVoucherDto,
+    identifierId?: string,
+  ) {
+    try {
+      const campaignId = (await this.campaignService.findAndReturn('code', dto.campCode))._id;
+      const createdByUserId = user?.email === dto.email
+        ? user?.id
+        : (await this.usersService.findByEmailOrNull(dto.email))?._id;
+
+      let i: number = 0;
+      const vouchers: any = [];
+      const voucherCodes: any = [];
+
+      for (i = 0; i < dto.noOfVoucher; i++) {
+        const randomCode = generateRandomCode(12);
+        const code = dto.campCode + randomCode;
+        const newVoucher = new this.VoucherModel({
+          ...dto,
+          code,
+          remainingAmount: dto.amount,
+          campId: campaignId,
+          createdBy: createdByUserId,
+          createdByEmail: createdByUserId ? null : dto.email,
+          paymentStatus: VoucherPaymentStatus.PAID,
+          identifierId,
+        });
+        newVoucher.save();
+        vouchers.push(newVoucher);
+        voucherCodes.push(code);
+      }
+
+      // send emails?
+      const VOUCHERCODE = (voucherCodes.map(code => `\n${code}`)).toString();
+      await this.mailchimpService.sendTransactionalEmail({
+        to: dto.email,
+        templatedId: HebrewTemplate.VoucherConfirmationNonLoggedIn,
+        mergeVars: {
+          FNAME: dto.name,
+          VOUCHERCODE,
+          TOTALAMOUNT: dto.amount,
+        },
+      });
+
+      return vouchers;
     } catch (err) {
       exceptionHandling(err);
     }
@@ -368,7 +428,7 @@ export class VoucherService {
       paymentStatus: VoucherPaymentStatus.PAID,
     };
 
-    const assignUser = await updateWhere<Voucher>(this.VoucherModel, filterQuery, updateField);
+    const assignUser = await updateOneByManyFields<Voucher>(this.VoucherModel, filterQuery, updateField);
 
     if (!assignUser) {
       throw new NotFoundException(`${ServerErrors.VOUCHER.NOT_FOUND} or ${ServerErrors.VOUCHER.UNPAID}`);
@@ -388,9 +448,10 @@ export class VoucherService {
     return assignUser;
   }
 
+  // eslint-disable-next-line consistent-return
   async update(id: mongoose.Types.ObjectId[], updateField: object) {
     try {
-      const updateVoucher = await updateMany<Voucher>(
+      const updateVoucher = await updateManyByIds<Voucher>(
         this.VoucherModel,
         '_id',
         id,
@@ -399,6 +460,48 @@ export class VoucherService {
 
       if (!updateVoucher) {
         throw new BadRequestException(ServerErrors.VOUCHER.NOT_FOUND);
+      }
+    } catch (err) {
+      exceptionHandling(err);
+    }
+  }
+
+  async updateAfterPaymentSuccess(command: UpdateVoucherAfterPaymentInterface) {
+    try {
+      await this.update(command.ids, command.updateField);
+
+      const voucherDetails = await findManyByFilter<Voucher>(
+        this.VoucherModel,
+        { _id: command.ids },
+      );
+
+      // send emails
+
+      if (voucherDetails[0].createdBy) {
+        await this.mailchimpService.sendTransactionalEmail({
+          to: command.voucherOwnerEmail,
+          templatedId: command.languagePreference === Locale.HEBREW
+            ? HebrewTemplate.VoucherConfirmation
+            : EnglishTemplate.VoucherConfirmation,
+          mergeVars: {
+            FNAME: command.voucherOwnerName,
+          },
+        });
+      }
+
+      if (voucherDetails[0].createdByEmail) {
+        const voucherCodes = (voucherDetails.map(doc => `\n${doc.code}`)).toString();
+
+        await this.mailchimpService.sendTransactionalEmail({
+          to: command.voucherOwnerEmail,
+          templatedId: command.languagePreference === Locale.HEBREW
+            ? HebrewTemplate.VoucherConfirmationNonLoggedIn
+            : EnglishTemplate.VoucherConfirmationNonLoggedIn,
+          mergeVars: {
+            FNAME: command.voucherOwnerName,
+            VOUCHERCODE: voucherCodes,
+          },
+        });
       }
     } catch (err) {
       exceptionHandling(err);
@@ -465,49 +568,41 @@ export class VoucherService {
   async purchaseVoucherForExternalApi(
     dto: createVoucherDto,
     query: ExternalApiPostQuery,
-    user: LoggedInUserInterface,
+    user: LoggedInUserInterface | null,
   ) {
-    const campaign = await this.campaignService.findAndReturn('code', dto.campCode);
+    const campId = (await this.campaignService.findAndReturn('code', dto.campCode))._id;
+    const createdByUserId = user?.email === dto?.email
+      ? user?.id
+      : (await this.usersService.findByEmailOrNull(dto.email))?._id;
 
     let i: number = 0;
     const voucherId: any = [];
     const totalAmount = dto.noOfVoucher * dto.amount;
     for (i = 0; i < dto.noOfVoucher; i++) {
       const randomCode = generateRandomCode(12);
-      const code = dto?.campCode ? dto.campCode + randomCode : `TAV8${randomCode}`;
+      const code = dto.campCode + randomCode;
       const newVoucher = new this.VoucherModel({
         ...dto,
         code,
         remainingAmount: dto.amount,
-        campId: campaign._id,
-        createdBy: user.id,
+        campId,
+        createdBy: createdByUserId,
+        createdByEmail: createdByUserId ? null : dto.email,
         identifierId: query.identifierId,
       });
       newVoucher.save();
       voucherId.push(newVoucher._id);
     }
 
-    // eslint-disable-next-line no-unused-vars
-    const [createdUser, paymentLink] = await Promise.all([
-      this.usersService.createByExternalApi({
-        email: dto.email,
-        password: nanoid(9),
-        firstName: '',
-        lastName: '',
-        phoneNumber: '',
-        address: '',
-        countryCode: '',
-      }),
-      this.paymentService.generateLink({
-        amount: totalAmount,
-        currency: Currency.ILS,
-        purpose: PaymentPurpose.VOUCHER,
-        id: voucherId,
-        customerEmail: dto.email,
-        customerName: dto.name,
-        loggedInUserLanguagePreference: user.languagePreference,
-      }),
-    ]);
+    const paymentLink = await this.paymentService.generateLink({
+      amount: totalAmount,
+      currency: Currency.ILS,
+      purpose: PaymentPurpose.VOUCHER,
+      id: voucherId,
+      customerEmail: dto.email,
+      customerName: dto.name,
+      loggedInUserLanguagePreference: user ? user.languagePreference : Locale.ENGLISH,
+    });
 
     return paymentLink;
   }
@@ -545,5 +640,20 @@ export class VoucherService {
       amountToBeRedeemed,
       redeemedAmount: body.amount - amountToBeRedeemed,
     };
+  }
+
+  async updateVoucherCreatedDetails(email: string, userId: string) {
+    const filterQuery = {
+      createdByEmail: email,
+    };
+
+    const updateField = {
+      createdBy: userId,
+      createdByEmail: null,
+      updatedBy: userId,
+      updatedAt: new Date(),
+    };
+
+    await updateManyByManyFields<Voucher>(this.VoucherModel, filterQuery, updateField);
   }
 }

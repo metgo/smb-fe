@@ -21,7 +21,7 @@ import { CampaignStatus } from 'src/common/enum';
 @Injectable()
 export class CampaignService {
   constructor(
-        @InjectModel('Campaign')
+    @InjectModel('Campaign')
     private CampaignModel: Model<Campaign>,
     private readonly encryptionService: EncryptionService,
     private readonly configService: ConfigService,
@@ -193,7 +193,7 @@ export class CampaignService {
     };
     const campaign = await findOneByFieldNames<Campaign>(this.CampaignModel, fieldNames);
     if (!campaign) {
-      throw new NotFoundException(`${fieldName} not found`);
+      throw new NotFoundException(`${ServerErrors.CAMPAIGN.NOT_FOUND} ${fieldName}.`);
     }
     return campaign;
   }

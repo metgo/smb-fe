@@ -48,7 +48,7 @@ export async function update<T>(model: Model<T>, fieldName: keyof T, item: strin
   return data;
 }
 
-export async function updateMany<T>(
+export async function updateManyByIds<T>(
   model: Model<T>,
   fieldName: keyof T,
   item: mongoose.Types.ObjectId[],
@@ -73,7 +73,7 @@ export async function updateById<T>(model: Model<T>, item: string | mongoose.Typ
   return data;
 }
 
-export async function updateWhere<T>(model: Model<T>, filterFields: object, updateField: object) {
+export async function updateOneByManyFields<T>(model: Model<T>, filterFields: object, updateField: object) {
   const filterBy = { ...filterFields, deletedAt: { $in: [null] } };
 
   const data = await model.findOneAndUpdate(
@@ -87,9 +87,23 @@ export async function updateWhere<T>(model: Model<T>, filterFields: object, upda
   return data;
 }
 
-export async function findAll<T>(model: Model<T>) {
-  const data = await model.find({ isDeleted: { $in: [null] } });
+export async function updateManyByManyFields<T>(model: Model<T>, filterFields: object, updateField: object) {
+  const filterBy = { ...filterFields };
+
+  const data = await model.updateMany(
+    filterBy,
+    {
+      ...updateField,
+      updatedAt: new Date(),
+    },
+    { new: true },
+  );
   return data;
+}
+
+export async function findManyByFilter<T>(model: Model<T>, filter: object) {
+  const updatedDocuments = await model.find(filter).lean();
+  return updatedDocuments;
 }
 
 export async function queryhandler<T>(

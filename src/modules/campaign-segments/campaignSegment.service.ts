@@ -11,7 +11,7 @@ import { paginationConfig } from 'src/common/pagination.config';
 import { ExternalApiWithCampCodeFilterQuery } from 'src/common/query-handler/external-api-campcode.query';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { disSelect } from 'src/common/utils/select.handling';
-import { updateWhere } from 'src/core/helper/query-helper';
+import { updateOneByManyFields } from 'src/core/helper/query-helper';
 import { CampaignSegment } from './schema/campaignSegment.schema';
 import { CreateCampaignSegmentDTO } from 'src/modules/campaign-segments/dto/create-campaign-segment.dto';
 import { DMOService } from '../dmo/dmo.service';
@@ -128,7 +128,7 @@ export class CampaignSegmentService {
           crowed_origin: crowedOrigin,
         };
 
-        updatedCampaignSegment = await updateWhere<CampaignSegment>(
+        updatedCampaignSegment = await updateOneByManyFields<CampaignSegment>(
           this.CampaignSegmentModel,
           { campaign_ID: campaignId },
           {
@@ -139,7 +139,7 @@ export class CampaignSegmentService {
 
       // pop exisitng data
       if (body.operation === CampaignSegmentOperation.DELETE) {
-        updatedCampaignSegment = await updateWhere<CampaignSegment>(
+        updatedCampaignSegment = await updateOneByManyFields<CampaignSegment>(
           this.CampaignSegmentModel,
           { campaign_ID: campaignId },
           {
@@ -170,7 +170,7 @@ export class CampaignSegmentService {
     campaignId: string,
   ): Promise<CampaignSegment> {
     try {
-      const deletedCampaignSegment = await updateWhere<CampaignSegment>(
+      const deletedCampaignSegment = await updateOneByManyFields<CampaignSegment>(
         this.CampaignSegmentModel,
         { campaign_ID: campaignId },
         {

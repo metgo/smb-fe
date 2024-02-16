@@ -1,7 +1,7 @@
 /* eslint-disable consistent-return */
 /* eslint-disable no-underscore-dangle */
 import {
-  BadRequestException, ConflictException, Injectable, InternalServerErrorException, NotFoundException,
+  BadRequestException, ConflictException, Inject, Injectable, InternalServerErrorException, NotFoundException, forwardRef,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
@@ -14,6 +14,7 @@ import { RegisterRequest } from 'src/modules/auth/requests/register.request';
 import { UpdateUserRequest } from 'src/modules/users/requests/update-user.request';
 import { GetUserDetailsResponse } from 'src/modules/users/responses/get-user-details.response';
 import { User } from 'src/modules/users/schema/users.schema';
+import { VoucherService } from 'src/modules/vouchers/voucher.service';
 import { createUserByAdminDto } from './requests/create-user-ByAdmin.dto';
 import {
   findOneByFieldName, findOneByFieldNameExcludeId, findOneById, update, updateById,
@@ -44,6 +45,8 @@ export class UsersService {
     private readonly hashService: HashService,
     private readonly jwtAuthService: JwtAuthService,
     private mailchimpService: MailChimpService,
+    @Inject(forwardRef(() => VoucherService))
+    private voucherService: VoucherService,
   ) {
     const configService = new ConfigService();
 
@@ -112,6 +115,7 @@ export class UsersService {
       const newUser = await (new this.UserModel({ ...registerDto, password: hashedPassword })).save();
 
       await Promise.all([
+        this.voucherService.updateVoucherCreatedDetails(registerDto.email, newUser.id),
         this.mailchimpService.subscribe(newUser.firstName, newUser.lastName, newUser.email),
         this.mailchimpService.sendTransactionalEmail({
           to: newUser.email,
