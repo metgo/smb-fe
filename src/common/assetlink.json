@@ -1,0 +1,14 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls"
+    ],
+    "target": {
+      "namespace": "metgo",
+      "package_name": "com.metgo",
+      "sha256_cert_fingerprints": [
+        "C3:34:09:33:28:76:21:FD:7D:21:FB:6E:44:D4:D5:B4:56:7A:73:2D:9F:94:C3:F9:34:45:D3:24:7F:B9:4E:F3"
+      ]
+    }
+  }
+]

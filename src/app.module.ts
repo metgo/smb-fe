@@ -34,6 +34,7 @@ import { PaymentsModule } from './services/payments/payments.module';
 import { CampaignSegmentModule } from './modules/campaign-segments/campaignSegment.module';
 import { HashModule } from './services/hash/hash.module';
 import { MailChimpModule } from 'src/services/mailchimp/mailchimp.module';
+import { ReadFileModule } from 'src/services/read-file/read-file.module';
 import { AuthorityModule } from 'src/modules/authority/authority.module';
 
 @Module({
@@ -71,6 +72,7 @@ import { AuthorityModule } from 'src/modules/authority/authority.module';
     ExternalApiModule,
     MailChimpModule,
     AuthorityModule,
+    ReadFileModule,
   ],
   providers: [
     {
