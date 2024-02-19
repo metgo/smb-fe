@@ -9,6 +9,8 @@ import mongoose, { Model } from 'mongoose';
 import { ObjectId } from 'typeorm';
 
 import { maxDistanceInRadius } from 'src/common/max-distance-in-radius';
+import { paginateData } from 'src/common/pagination';
+import { getNearestBusiness } from 'src/common/sort-by-nearest';
 import { Business } from './schema/business.schema';
 import {
   AllFilterQuery, createBusinessDto, FilterQuery, updateBusinessDto,
@@ -195,14 +197,24 @@ export class BusinessService {
     let findQuery: any = query;
 
     if (!('status' in query) && !isAdmin) {
-      console.log(!('status' in query) && !isAdmin);
       findQuery = { ...query, status: BusinessStatus.APPROVED };
     }
 
-    let select: {};
+    const populate = {
+      path: 'groupTypesId accessibilitiesId bussCategoriesId bussSubCategoriesId socialMedia.socialMediaId',
+      select: `${disSelect}`,
+      populate: {
+        path: 'icon',
+        select: `${disSelect}`,
+      },
+    };
 
-    let populate: any;
-    let populate1: {};
+    const populate1 = {
+      path: 'dmoId',
+      select: `${disSelect} -userId -collaboratorsUser`,
+    };
+
+    const select = `${disSelect}`;
 
     if (search) {
       const [matchingCategoryIds, matchingSubCategoryIds] = await Promise.all([
@@ -270,20 +282,6 @@ export class BusinessService {
     }
 
     if (long && lat) {
-      // findQuery = {
-      //   ...findQuery, // Filter out businesses without longitude data
-      //   location: {
-      //     $nearSphere: {
-      //       $geometry: {
-      //         type: 'Point',
-      //         coordinates: [query.long, query.lat],
-      //       },
-      //       $minDistance: 1000,
-      //       $maxDistance: 5000,
-      //     },
-      //   },
-      // };
-
       findQuery = {
         ...findQuery, // Filter out businesses without longitude data
         location: {
@@ -295,39 +293,24 @@ export class BusinessService {
           },
         },
       };
-      // findQuery = {
-      //   ...findQuery,
-      //   location: {
-      //     $near: {
-      //       $geometry: {
-      //         type: 'Point',
-      //         coordinates: [query.long, query.lat],
-      //       },
-      //       $minDistance: 1000,
-      //       $maxDistance: 5000,
-      //     },
-      //   },
-      // };
+
+      const allBusiness = await queryhandler<Business>(
+        this.BusinessModel,
+        {
+          findQuery,
+          select,
+          populate,
+          populate1,
+          sort: 'createdAt',
+        },
+      );
+
+      const sortBusiness = getNearestBusiness(parseFloat(lat), parseFloat(long), allBusiness.data);
+
+      const allPaginatedBusinesses = paginateData(queryPage, queryLimit, sortBusiness);
+
+      return allPaginatedBusinesses;
     }
-
-    // eslint-disable-next-line prefer-const
-    populate = {
-      path: 'groupTypesId accessibilitiesId bussCategoriesId bussSubCategoriesId socialMedia.socialMediaId',
-      select: `${disSelect}`,
-      populate: {
-        path: 'icon',
-        select: `${disSelect}`,
-      },
-    };
-
-    // eslint-disable-next-line prefer-const
-    populate1 = {
-      path: 'dmoId',
-      select: `${disSelect} -userId -collaboratorsUser`,
-    };
-
-    // eslint-disable-next-line prefer-const
-    select = `${disSelect}`;
 
     const allBusiness = await queryhandler<Business>(
       this.BusinessModel,
