@@ -140,14 +140,15 @@ export class PaymentsService {
           ? HebrewTemplate.OrderConfirmationForClient
           : EnglishTemplate.OrderConfirmationForClient,
         mergeVars: {
-          FNAME: updateOrder.firstName,
-          BUYERNAME: businessDetails[0].name,
+          BUYERNAME: updateOrder.firstName,
+          BUSINESSNAME: businessDetails[0].name || '',
           PRODUCTNAME: getProductInformation[0].name,
           QUANTITY: 1,
           COST: getProductInformation[0].price.sellingPrice,
           TOTALAMOUNT: updateOrder.totalAmount,
-          PHONE: businessDetails[0].phoneNumber,
-          EMAIL: businessDetails[0].busiEmail,
+          BUSINESSPHONE: businessDetails[0].phoneNumber || '',
+          BUSINESSEMAIL: businessDetails[0].busiEmail || '',
+
         },
       });
       // SEND TO BUSINESS OWNER

@@ -75,14 +75,14 @@ export class OrdersService {
             ? HebrewTemplate.OrderConfirmationForClient
             : EnglishTemplate.OrderConfirmationForClient,
           mergeVars: {
-            FNAME: order.firstName,
-            BUYERNAME: businessDetails[0].name || '',
+            BUYERNAME: order.firstName,
+            BUSINESSNAME: businessDetails[0].name || '',
             PRODUCTNAME: getProductInformation[0].name,
             QUANTITY: body.products[0].quantity,
             COST: getProductInformation[0].price.sellingPrice,
             TOTALAMOUNT: order.totalAmount,
-            PHONE: businessDetails[0].phoneNumber || '',
-            EMAIL: businessDetails[0].busiEmail || '',
+            BUSINESSPHONE: businessDetails[0].phoneNumber || '',
+            BUSINESSEMAIL: businessDetails[0].busiEmail || '',
           },
         });
 
