@@ -95,6 +95,8 @@ export const ServerErrors = {
     EXISTS: 'Voucher already exists',
     UNPAID: 'Access to the voucher is forbidden until payment is made successfully',
     CANNOT_UPDATE_BALANCE: 'The voucher balance cannot be updated as the entered amount exceeds the voucher value',
+    EXPIRED: 'Your voucher has expired and is no longer valid.',
+    CANNOT_ASSIGN: 'This voucher no longer exists or you lack the required permissions',
   },
 
   CAMPAIGN: {

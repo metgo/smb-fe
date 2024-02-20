@@ -81,8 +81,8 @@ export class VoucherController {
   }
 
   @ApiEndpoint({
-    tags: ['Admin', 'Voucher'],
-    response: { status: 200, description: ServerSuccess.VOUCHER.LISTED },
+    tags: ['Voucher'],
+    response: { status: HttpStatus.OK, description: ServerSuccess.VOUCHER.LISTED },
   })
   @Get('voucher-code/:code')
   async getOne(
@@ -103,9 +103,10 @@ export class VoucherController {
 
   @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
-    tags: ['Admin', 'Voucher'],
-    response: { status: 200, description: ServerSuccess.VOUCHER.CREATED },
+    tags: ['Voucher'],
+    response: { status: HttpStatus.OK, description: ServerSuccess.VOUCHER.CREATED },
     softBlockExtraDtoFields: true,
+    noAuthToken: true,
   })
   @Get('voucher-id/:id')
   async getOneById(@Res() response: Response, @Param('id') id: string) {
@@ -121,9 +122,9 @@ export class VoucherController {
   }
 
   @ApiEndpoint({
-    tags: ['Admin', 'Voucher'],
+    tags: ['Voucher'],
     response: {
-      status: 200,
+      status: HttpStatus.OK,
       description: ServerSuccess.VOUCHER.LISTED,
     },
     softBlockExtraDtoFields: true,
@@ -354,7 +355,7 @@ export class VoucherController {
     @Param('code') code: string,
     @Query() query: GetVoucherByExternalApiQuery,
   ) {
-    const voucher = await this.voucherService.getOne({ code, externalApi: false, productId: query.productId });
+    const voucher = await this.voucherService.getOne({ code, externalApi: true, productId: query.productId });
     return responseHelper(
       response,
       HttpStatus.OK,

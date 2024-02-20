@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ConflictException,
   ForbiddenException,
+  GoneException,
   InternalServerErrorException,
   MethodNotAllowedException, NotFoundException,
   PayloadTooLargeException,
@@ -19,6 +20,9 @@ export const exceptionHandling = err => {
   }
   if (err instanceof ForbiddenException) {
     throw new ForbiddenException(err.message);
+  }
+  if (err instanceof GoneException) {
+    throw new GoneException(err.message);
   }
   if (err instanceof InternalServerErrorException) {
     throw new InternalServerErrorException(err.message);

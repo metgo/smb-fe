@@ -1,7 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
 import { VoucherPaymentStatus, VoucherStatus } from 'src/common/enum';
-import { twoYearExpireDate } from 'src/common/expireDate';
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
 import { Campaign } from 'src/modules/campaign/schema/campaign.schema';
 
@@ -66,7 +65,7 @@ export class Voucher extends AuditableSchema {
   )
     campId: mongoose.Types.ObjectId;
 
-  @Prop({ default: twoYearExpireDate() })
+  @Prop({ default: null, type: Date })
     expireDate: Date;
 }
 

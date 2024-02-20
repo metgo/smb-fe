@@ -3,6 +3,7 @@
 import {
   BadRequestException,
   ForbiddenException,
+  GoneException,
   Inject,
   Injectable,
   NotFoundException,
@@ -12,6 +13,7 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
 
+import { checkExpireDate, twoYearExpireDate } from 'src/common/expireDate';
 import { EnglishTemplate, HebrewTemplate } from 'src/common/mailchimp/templateId';
 import { paginationConfig } from 'src/common/pagination.config';
 import { Voucher } from './schema/voucher.schema';
@@ -23,7 +25,7 @@ import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { generateRandomCode } from 'src/common/utils/randomCode.generator';
 import { remainingAmountCalculation } from 'src/common/utils/remaining-amount-calculation';
 import {
-  findManyByFilter, queryhandler, updateManyByIds, updateManyByManyFields, updateOneByManyFields,
+  findManyByFilter, queryhandler, updateById, updateManyByIds, updateManyByManyFields,
 } from 'src/core/helper/query-helper';
 import { disSelect } from 'src/common/utils/select.handling';
 import { ServerErrors } from 'src/common/constant';
@@ -38,7 +40,7 @@ import {
   createVoucherDto, UpdateVoucherBalance,
 } from 'src/modules/vouchers/dto';
 import {
-  AssignVoucherCommand, GetOneVoucherInterface, UpdateFieldInterface, UpdateVoucherAfterPaymentInterface,
+  AssignVoucherCommand, GetOneVoucherInterface, UpdateVoucherAfterPaymentInterface,
 } from 'src/modules/vouchers/interface';
 import { GetMyAssignedVouchersQuery, GetMyCreatedVouchersQuery, GetMyVouchersExternalApiQuery } from 'src/modules/vouchers/queries';
 
@@ -186,8 +188,17 @@ export class VoucherService {
         .select(select)
         .populate(populate)
         .exec();
+
       if (!voucher) {
         throw new BadRequestException(ServerErrors.VOUCHER.NOT_FOUND);
+      }
+
+      if (voucher.expireDate) {
+        const isAvailable = checkExpireDate(voucher.expireDate);
+
+        if (!isAvailable) {
+          throw new GoneException(ServerErrors.VOUCHER.EXPIRED);
+        }
       }
 
       if (voucher.paymentStatus !== VoucherPaymentStatus.PAID) {
@@ -209,6 +220,7 @@ export class VoucherService {
     }
   }
 
+  // eslint-disable-next-line consistent-return
   async getOneById(id: string): Promise<Voucher> {
     try {
       const select = disSelect;
@@ -218,9 +230,21 @@ export class VoucherService {
       };
       const voucher = await this.VoucherModel.findById(id).select(select).populate(populate).exec();
 
+      if (!voucher) {
+        throw new BadRequestException(ServerErrors.VOUCHER.NOT_FOUND);
+      }
+
+      if (voucher.expireDate) {
+        const isAvailable = checkExpireDate(voucher.expireDate);
+
+        if (!isAvailable) {
+          throw new GoneException(ServerErrors.VOUCHER.EXPIRED);
+        }
+      }
+
       return voucher;
     } catch (err) {
-      throw new BadRequestException(ServerErrors.VOUCHER.NOT_FOUND);
+      exceptionHandling(err);
     }
   }
 
@@ -229,8 +253,8 @@ export class VoucherService {
       page, limit, campId, search, productId, ...query
     } = queries;
 
-    const queryPage = page ? Number(page) : paginationConfig.page;
-    const queryLimit = limit ? Number(limit) : paginationConfig.limit;
+    const queryPage = Number(page) || paginationConfig.page;
+    const queryLimit = Number(limit) || paginationConfig.limit;
 
     const select = disSelect;
 
@@ -280,8 +304,8 @@ export class VoucherService {
       page, limit, search, campId, productId, ...query
     } = queries;
 
-    const queryPage = page ? Number(page) : paginationConfig.page;
-    const queryLimit = limit ? Number(limit) : paginationConfig.limit;
+    const queryPage = Number(page) || paginationConfig.page;
+    const queryLimit = Number(limit) || paginationConfig.limit;
 
     const select = disSelect;
 
@@ -412,26 +436,49 @@ export class VoucherService {
 
   async assignUser(command: AssignVoucherCommand) {
     const { loggedInUser, body } = command;
+    const select = disSelect;
 
-    const assignedUser = await this.usersService.findByEmailOrNull(body.email);
+    const [availableVoucher, assignedUser] = await Promise.all([
+      this.VoucherModel
+        .findOne({
+          code: body.code,
+          paymentStatus: VoucherPaymentStatus.PAID,
+          $and: [
+            {
+              $or: [
+                { expireDate: null },
+                { expireDate: { $gte: new Date() } },
+              ],
+            },
+            {
+              $or: [
+                { createdBy: loggedInUser.id, assignedTo: null, waitingUserEmail: null },
+                { assignedTo: loggedInUser.id },
+              ],
+            },
+          ],
+        })
+        .select(select)
+        .exec(),
+      this.usersService.findByEmailOrNull(body.email),
+    ]);
 
-    const updateField: UpdateFieldInterface = {
+    if (!availableVoucher) {
+      throw new NotFoundException(ServerErrors.VOUCHER.CANNOT_ASSIGN);
+    }
+
+    const updateField = {
       assignedTo: assignedUser ? assignedUser._id : null,
       waitingUserEmail: assignedUser ? null : body.email,
       status: VoucherStatus.ASSIGNED,
       updatedBy: loggedInUser.id,
-      updatedAt: new Date(),
+      expireDate: availableVoucher.expireDate ? availableVoucher.expireDate : twoYearExpireDate(),
     };
 
-    const filterQuery = {
-      code: body.code,
-      paymentStatus: VoucherPaymentStatus.PAID,
-    };
-
-    const assignedVoucher = await updateOneByManyFields<Voucher>(this.VoucherModel, filterQuery, updateField);
+    const assignedVoucher = await updateById<Voucher>(this.VoucherModel, availableVoucher._id, updateField);
 
     if (!assignedVoucher) {
-      throw new NotFoundException(`${ServerErrors.VOUCHER.NOT_FOUND} or ${ServerErrors.VOUCHER.UNPAID}`);
+      throw new NotFoundException(ServerErrors.VOUCHER.CANNOT_ASSIGN);
     }
 
     await this.mailchimpService.sendTransactionalEmail({
@@ -442,7 +489,7 @@ export class VoucherService {
       mergeVars: {
         FULLNAME: `${loggedInUser.firstName} ${loggedInUser.lastName}`,
         VOUCHERCODE: body.code,
-        VOUCHERAMOUNT: assignedVoucher.amount,
+        VOUCHERAMOUNT: assignedVoucher.remainingAmount,
       },
     });
 
@@ -527,12 +574,24 @@ export class VoucherService {
         path: 'campId',
         select: `${disSelect}`,
       };
-      const voucherIds = await this.VoucherModel.find({ _id: { $in: ids } }).populate(populate).exec();
+      const voucherIds = await this.VoucherModel.find({
+        $and: [
+          { _id: { $in: ids } },
+          { paymentStatus: VoucherPaymentStatus.PAID },
+          { remainingAmount: { $gt: 0 } },
+          {
+            $or: [
+              { expireDate: null },
+              { expireDate: { $gte: new Date() } },
+            ],
+          },
+        ],
+      })
+        .populate(populate)
+        .exec();
+
       return voucherIds;
     } catch (error) {
-      if (error?.name === 'CastError' && error?.kind === 'ObjectId') {
-        throw new BadRequestException(`${error?.model?.modelName} ${ServerErrors.INVALID_ID}`);
-      }
       exceptionHandling(error);
     }
   }
@@ -544,16 +603,27 @@ export class VoucherService {
       throw new UnprocessableEntityException(ServerErrors.VOUCHER.UNPAID);
     }
 
+    if (voucher.expireDate) {
+      const isAvailable = checkExpireDate(voucher.expireDate);
+
+      if (!isAvailable) {
+        return;
+      }
+    }
+
     const remainingAmount = remainingAmountCalculation(voucher.remainingAmount, totalAmount);
     const amountToBeRedeemed = remainingAmountCalculation(totalAmount, voucher.remainingAmount);
 
+    const updatedField = {
+      updatedBy: loggedInUserId,
+      updatedAt: new Date(),
+      remainingAmount,
+      expireDate: voucher?.expireDate ? voucher?.expireDate : twoYearExpireDate(),
+    };
+
     const updatedVoucher = await this.VoucherModel.findOneAndUpdate(
       { _id: voucherId },
-      {
-        updatedBy: loggedInUserId,
-        updatedAt: new Date(),
-        remainingAmount,
-      },
+      updatedField,
       { new: true },
     );
 
@@ -561,6 +631,7 @@ export class VoucherService {
       throw new NotFoundException(ServerErrors.VOUCHER.NOT_FOUND);
     }
 
+    // eslint-disable-next-line consistent-return
     return {
       amountToBeRedeemed,
       redeemedAmount: totalAmount - amountToBeRedeemed,
@@ -652,6 +723,21 @@ export class VoucherService {
     const updateField = {
       createdBy: userId,
       createdByEmail: null,
+      updatedBy: userId,
+      updatedAt: new Date(),
+    };
+
+    await updateManyByManyFields<Voucher>(this.VoucherModel, filterQuery, updateField);
+  }
+
+  async updateVoucherAssignedDetails(email: string, userId: string) {
+    const filterQuery = {
+      waitingUserEmail: email,
+    };
+
+    const updateField = {
+      assignedTo: userId,
+      waitingUserEmail: null,
       updatedBy: userId,
       updatedAt: new Date(),
     };

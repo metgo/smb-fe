@@ -116,6 +116,7 @@ export class UsersService {
 
       await Promise.all([
         this.voucherService.updateVoucherCreatedDetails(registerDto.email, newUser.id),
+        this.voucherService.updateVoucherAssignedDetails(registerDto.email, newUser.id),
         this.mailchimpService.subscribe(newUser.firstName, newUser.lastName, newUser.email),
         this.mailchimpService.sendTransactionalEmail({
           to: newUser.email,

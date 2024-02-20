@@ -51,7 +51,8 @@ export class OrdersController {
       let totalAmountToPay:number = await calculateTotalAmount(body.products, productsFromDB);
       const actualAmountOfProduct = totalAmountToPay;
 
-      if (body.voucher?.length) {
+      let redeemedVouchers;
+      if (body?.voucher?.length) {
         const voucherIds = body.voucher.map(voucher => voucher.id);
         const vouchers = await this.voucherService.findByValidIds(voucherIds);
 
@@ -59,26 +60,27 @@ export class OrdersController {
           const sortedVoucher = sortByPriorityAndHighest(totalAmountToPay, vouchers);
 
           if (sortedVoucher?.length) {
-            const voucher = await this.ordersService.processVouchers(
+            redeemedVouchers = await this.ordersService.processVouchers(
               req?.user?.id ?? null,
               sortedVoucher,
               totalAmountToPay,
             );
 
-            if (voucher?.length) {
-              const redeemedAmount = voucher.reduce((total, item) => total + item.redeemedAmount, 0);
+            if (redeemedVouchers?.length) {
+              const redeemedAmount = redeemedVouchers.reduce((total, item) => total + item.redeemedAmount, 0);
               totalAmountToPay -= redeemedAmount;
             }
           }
         }
       }
 
-      const order = await this.ordersService.create(
-        req.user || null,
+      const order = await this.ordersService.create({
+        loggedInUserId: req?.user?.id || null,
         body,
-        totalAmountToPay,
+        redeemedVouchers,
+        totalAmount: totalAmountToPay,
         actualAmountOfProduct,
-      );
+      });
 
       return responseHelper(
         response,
@@ -239,7 +241,8 @@ export class OrdersController {
       let totalAmountToPay:number = await calculateTotalAmount(body.products, productsFromDB);
       const actualAmountOfProduct = totalAmountToPay;
 
-      if (body.voucher?.length) {
+      let redeemedVouchers;
+      if (body?.voucher?.length) {
         const voucherIds = body.voucher.map(voucher => voucher.id);
         const vouchers = await this.voucherService.findByValidIds(voucherIds);
 
@@ -247,27 +250,29 @@ export class OrdersController {
           const sortedVoucher = sortByPriorityAndHighest(totalAmountToPay, vouchers);
 
           if (sortedVoucher?.length) {
-            const voucher = await this.ordersService.processVouchers(
+            redeemedVouchers = await this.ordersService.processVouchers(
               req.user.id,
               sortedVoucher,
               totalAmountToPay,
             );
 
-            if (voucher?.length) {
-              const redeemedAmount = voucher.reduce((total: number, item) => total + item.redeemedAmount, 0);
+            if (redeemedVouchers?.length) {
+              const redeemedAmount = redeemedVouchers.reduce((total: number, item) => total + item.redeemedAmount, 0);
               totalAmountToPay -= redeemedAmount;
             }
           }
         }
       }
 
-      const order = await this.ordersService.create(
-        req.user,
+      const order = await this.ordersService.create({
+        loggedInUserId: req.user.id,
         body,
-        totalAmountToPay,
+        redeemedVouchers,
+        totalAmount: totalAmountToPay,
         actualAmountOfProduct,
-        query.identifierId,
-      );
+        identifierId: query.identifierId,
+      });
+
       return responseHelper(
         response,
         HttpStatus.CREATED,

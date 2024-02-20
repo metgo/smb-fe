@@ -17,11 +17,11 @@ import {
 } from 'src/core/helper/query-helper';
 import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interface';
 import { BusinessService } from 'src/modules/business/business.service';
-import { CreateOrderDto } from 'src/modules/orders/dto/create-order.dto';
 import { UpdateOrderDto } from 'src/modules/orders/dto/update-order.dto';
 import { Order } from 'src/modules/orders/schema/orders.schema';
 import { ProductsService } from 'src/modules/products/products.services';
 import { UserType } from 'src/modules/users/users.type';
+import { CreateVoucherCommand } from 'src/modules/vouchers/interface';
 import { VoucherService } from 'src/modules/vouchers/voucher.service';
 import { PaymentsService } from 'src/services/payments/payments.service';
 import { PaymentPurpose } from 'src/services/payments/payments.type';
@@ -42,19 +42,18 @@ export class OrdersService {
     private readonly paymentService: PaymentsService,
   ) {}
 
-  async create(
-    loggedInUser: LoggedInUserInterface | null,
-    body: CreateOrderDto,
-    totalAmount: number,
-    actualAmountOfProduct:number,
-    identifierId?:string,
-  ): Promise<any> {
+  async create(command: CreateVoucherCommand): Promise<any> {
     try {
+      const {
+        loggedInUserId, body, redeemedVouchers, totalAmount, actualAmountOfProduct, identifierId,
+      } = command;
+
       if (totalAmount <= 0) {
         const newOrder = new this.OrderModel({
           ...body,
-          userId: loggedInUser?.id ?? null,
-          createdBy: loggedInUser?.id ?? null,
+          voucher: redeemedVouchers,
+          userId: loggedInUserId ?? null,
+          createdBy: loggedInUserId ?? null,
           paymentStatus: PaymentStatus.SUCCESS,
           identifierId: identifierId || null,
           status: OrderStatus.PROCESSING,
@@ -113,14 +112,14 @@ export class OrdersService {
 
       const newOrder = new this.OrderModel({
         ...body,
-        userId: loggedInUser?.id ?? null,
-        createdBy: loggedInUser?.id ?? null,
+        voucher: redeemedVouchers,
+        userId: loggedInUserId ?? null,
+        createdBy: loggedInUserId ?? null,
         paymentStatus: PaymentStatus.PENDING,
         identifierId: identifierId || null,
         creditCardPayment: totalAmount,
         paymentMode: totalAmount === actualAmountOfProduct ? [PaymentMode.CARD] : [PaymentMode.CARD, PaymentMode.VOUCHER],
         totalAmount: actualAmountOfProduct,
-        voucher: totalAmount === actualAmountOfProduct ? [] : [...body.voucher],
       });
 
       const order = await newOrder.save();
