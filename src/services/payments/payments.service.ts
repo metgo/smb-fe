@@ -37,7 +37,7 @@ export class PaymentsService {
 
   async generateLink(command: GenerateLinkCommand) {
     const {
-      amount, currency, purpose, id, customerEmail, customerName, loggedInUserLanguagePreference,
+      amount, currency, purpose, id, customerEmail, customerName, languagePreference,
     } = command;
     const payPlusResponse = await axios.post(
       `${this.configService.paymentDetails.URL}PaymentPages/generatelink`,
@@ -50,7 +50,7 @@ export class PaymentsService {
         more_info: purpose,
         more_info_1: customerEmail,
         more_info_2: customerName,
-        more_info_3: loggedInUserLanguagePreference,
+        more_info_3: languagePreference,
       },
       {
         headers: {
@@ -160,14 +160,14 @@ export class PaymentsService {
             ? HebrewTemplate.OrderReceivedForBusiness
             : EnglishTemplate.OrderReceivedForBusiness,
           mergeVars: {
-            FNAME: updateOrder.firstName,
-            BUYERNAME: business.name,
+            BUSINESSNAME: business?.name || '',
             PRODUCTNAME: getProductInformation[0].name,
             QUANTITY: 1,
             COST: getProductInformation[0].price.sellingPrice,
             TOTALAMOUNT: updateOrder.totalAmount,
-            PHONE: business.phoneNumber,
-            EMAIL: business.busiEmail,
+            BUYERNAME: `${updateOrder.firstName} ${updateOrder.lastName}`,
+            BUYERPHONE: updateOrder.phone,
+            BUYEREMAIL: updateOrder.email,
           },
         });
       }));

@@ -72,7 +72,7 @@ export class OrdersService {
 
         await this.mailchimpService.sendTransactionalEmail({
           to: order.email,
-          templatedId: (loggedInUser?.languagePreference === Locale.HEBREW)
+          templatedId: (body?.languagePreference === Locale.HEBREW)
             ? HebrewTemplate.OrderConfirmationForClient
             : EnglishTemplate.OrderConfirmationForClient,
           mergeVars: {
@@ -92,18 +92,18 @@ export class OrdersService {
           if (!business?.busiEmail) return;
           await this.mailchimpService.sendTransactionalEmail({
             to: business.busiEmail,
-            templatedId: (loggedInUser?.languagePreference === Locale.HEBREW)
+            templatedId: (body?.languagePreference === Locale.HEBREW)
               ? HebrewTemplate.OrderReceivedForBusiness
               : EnglishTemplate.OrderReceivedForBusiness,
             mergeVars: {
-              FNAME: order.firstName,
-              BUYERNAME: business.name || '',
+              BUSINESSNAME: business?.name || '',
               PRODUCTNAME: getProductInformation[0].name,
               QUANTITY: body.products[0].quantity,
               COST: getProductInformation[0].price.sellingPrice,
               TOTALAMOUNT: order.totalAmount,
-              PHONE: business.phoneNumber || '',
-              EMAIL: business.busiEmail || '',
+              BUYERNAME: `${body.firstName} ${body.lastName}`,
+              BUYERPHONE: body.phone,
+              BUYEREMAIL: body.email,
             },
           });
         }));
@@ -132,7 +132,7 @@ export class OrdersService {
         id: order.id,
         customerEmail: body.email,
         customerName: body.firstName,
-        loggedInUserLanguagePreference: loggedInUser?.languagePreference || Locale.ENGLISH,
+        languagePreference: body?.languagePreference || Locale.ENGLISH,
       });
 
       return [link];

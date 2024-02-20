@@ -1,11 +1,13 @@
 import {
   IsArray,
   IsEmail,
+  IsEnum,
   IsNotEmpty,
   IsOptional,
   IsString,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { Locale } from 'src/common/enum';
 
 class Product {
   @IsString()
@@ -70,4 +72,13 @@ export class CreateOrderDto {
     description: 'Array of BusinessId',
   })
     businessId: string[];
+
+  @ApiProperty({
+    type: 'enum',
+    enum: Locale,
+    required: false,
+  })
+  @IsOptional()
+  @IsEnum(Locale)
+    languagePreference: Locale;
 }

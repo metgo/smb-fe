@@ -14,5 +14,5 @@ export interface GenerateLinkCommand {
     id: [mongoose.Types.ObjectId] | mongoose.Types.ObjectId,
     customerEmail: string,
     customerName: string,
-    loggedInUserLanguagePreference: Locale,
+    languagePreference: Locale,
 }

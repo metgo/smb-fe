@@ -92,7 +92,7 @@ export class VoucherService {
         id: voucherId,
         customerEmail: dto.email,
         customerName: dto.name,
-        loggedInUserLanguagePreference: user ? user.languagePreference : Locale.ENGLISH,
+        languagePreference: user ? user.languagePreference : Locale.ENGLISH,
       });
 
       return paymentLink;
@@ -143,7 +143,7 @@ export class VoucherService {
         mergeVars: {
           FNAME: dto.name,
           VOUCHERCODE,
-          TOTALAMOUNT: dto.amount,
+          VOUCHERAMOUNT: dto.amount,
         },
       });
 
@@ -428,9 +428,9 @@ export class VoucherService {
       paymentStatus: VoucherPaymentStatus.PAID,
     };
 
-    const assignUser = await updateOneByManyFields<Voucher>(this.VoucherModel, filterQuery, updateField);
+    const assignedVoucher = await updateOneByManyFields<Voucher>(this.VoucherModel, filterQuery, updateField);
 
-    if (!assignUser) {
+    if (!assignedVoucher) {
       throw new NotFoundException(`${ServerErrors.VOUCHER.NOT_FOUND} or ${ServerErrors.VOUCHER.UNPAID}`);
     }
 
@@ -440,12 +440,13 @@ export class VoucherService {
         ? HebrewTemplate.VoucherAssignedToYou
         : EnglishTemplate.VoucherAssignedToYou,
       mergeVars: {
-        VOUCHERCODE: body.code,
         FULLNAME: `${loggedInUser.firstName} ${loggedInUser.lastName}`,
+        VOUCHERCODE: body.code,
+        VOUCHERAMOUNT: assignedVoucher.amount,
       },
     });
 
-    return assignUser;
+    return assignedVoucher;
   }
 
   // eslint-disable-next-line consistent-return
@@ -500,6 +501,7 @@ export class VoucherService {
           mergeVars: {
             FNAME: command.voucherOwnerName,
             VOUCHERCODE: voucherCodes,
+            VOUCHERAMOUNT: voucherDetails[0].amount,
           },
         });
       }
@@ -601,7 +603,7 @@ export class VoucherService {
       id: voucherId,
       customerEmail: dto.email,
       customerName: dto.name,
-      loggedInUserLanguagePreference: user ? user.languagePreference : Locale.ENGLISH,
+      languagePreference: user ? user.languagePreference : Locale.ENGLISH,
     });
 
     return paymentLink;
