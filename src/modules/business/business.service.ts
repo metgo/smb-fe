@@ -191,8 +191,8 @@ export class BusinessService {
       page, limit, search, long, lat, miles, ...query
     } = queries;
 
-    const queryPage = page ? Number(page) : paginationConfig.page;
-    const queryLimit = limit ? Number(limit) : paginationConfig.limit;
+    const queryPage = Number(page) || paginationConfig.page;
+    const queryLimit = Number(limit) || paginationConfig.limit;
 
     let findQuery: any = query;
 

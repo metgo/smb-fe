@@ -7,7 +7,7 @@ import { Model } from 'mongoose';
 import { ServerErrors } from 'src/common/constant';
 import { convertToString } from 'src/common/convert-to-string';
 import { getUniqueSet } from 'src/common/get-unique-set';
-import { paginationConfig } from 'src/common/pagination.config';
+import { paginateData } from 'src/common/pagination';
 import { ExternalApiWithCampCodeFilterQuery } from 'src/common/query-handler/external-api-campcode.query';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { disSelect } from 'src/common/utils/select.handling';
@@ -236,32 +236,14 @@ export class CampaignSegmentService {
       };
     }
 
-    const pages = Number(page) || paginationConfig.page;
-    const limits = Number(limit) || paginationConfig.limit;
-
-    const startIndex = (pages - 1) * limits;
-    const endIndex = startIndex + limits;
-
     const filteredDMOs = campaignSegment?.DMOs
       .map((dmo: any) => ({
         id: dmo._id,
         name: dmo.name,
       }));
+    const paginatedBusiness = paginateData(page, limit, filteredDMOs);
 
-    const totalData = filteredDMOs.length;
-    const pageCount = Math.ceil(totalData / limits);
-
-    const paginatedDMOs = filteredDMOs.slice(startIndex, endIndex);
-
-    return {
-      page: pages,
-      limit: limits,
-      totalData,
-      pageCount,
-      hasPreviousPage: pages > 1,
-      hasNextPage: pages < pageCount,
-      businesses: paginatedDMOs,
-    };
+    return paginatedBusiness;
   }
 
   async getAllProducts(query: ExtendedProductFilterQuery | GetProductsByCampCodeQuery) {
@@ -336,20 +318,6 @@ export class CampaignSegmentService {
       };
     }
 
-    const pages = Number(page) || paginationConfig.page;
-    const limits = Number(limit) || paginationConfig.limit;
-
-    /**
-     * actually this is not good way to slice the data and apply the filter
-     * on this case but you can slice after you received the data
-     * example if get 20 data anf we pass the limit 10, the bellow filter will filter from first 10 data
-     * and we have the 8 data on next 10 datas.
-     * need to change this please go over this
-     */
-
-    const startIndex = (pages - 1) * limits;
-    const endIndex = startIndex + limits;
-
     const filteredProducts = campaignSegment.products
       .filter((product: any) => {
         if (product.status === ProductStatus.INACTIVE) return false;
@@ -373,20 +341,9 @@ export class CampaignSegmentService {
         subCategories: product.subCategories,
       }));
 
-    const totalData = filteredProducts.length;
-    const pageCount = Math.ceil(totalData / limits);
+    const paginatedProducts = paginateData(page, limit, filteredProducts);
 
-    const paginatedProducts = filteredProducts.slice(startIndex, endIndex);
-
-    return {
-      page: pages,
-      limit: limits,
-      totalData,
-      pageCount,
-      hasPreviousPage: pages > 1,
-      hasNextPage: pages < pageCount,
-      products: paginatedProducts,
-    };
+    return paginatedProducts;
   }
 
   async getAllBusiness(query: ExternalApiWithCampCodeFilterQuery | GetByCampCodeQuery) {
@@ -446,12 +403,6 @@ export class CampaignSegmentService {
       };
     }
 
-    const pages = Number(page) || paginationConfig.page;
-    const limits = Number(limit) || paginationConfig.limit;
-
-    const startIndex = (pages - 1) * limits;
-    const endIndex = startIndex + limits;
-
     const filteredBusiness = campaignSegment?.businesses
       .filter((business: any) => {
         if (business.status === BusinessStatus.APPROVED) return true;
@@ -467,20 +418,9 @@ export class CampaignSegmentService {
         bussCategoriesId: business.bussCategoriesId,
       }));
 
-    const totalData = filteredBusiness.length;
-    const pageCount = Math.ceil(totalData / limits);
+    const paginatedBusinesses = paginateData(page, limit, filteredBusiness);
 
-    const paginatedBusiness = filteredBusiness.slice(startIndex, endIndex);
-
-    return {
-      page: pages,
-      limit: limits,
-      totalData,
-      pageCount,
-      hasPreviousPage: pages > 1,
-      hasNextPage: pages < pageCount,
-      businesses: paginatedBusiness,
-    };
+    return paginatedBusinesses;
   }
 
   // eslint-disable-next-line consistent-return

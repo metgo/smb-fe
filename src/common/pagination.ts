@@ -1,4 +1,9 @@
-export const paginateData = (page: number, limit: number, list: any[]) => {
+import { paginationConfig } from 'src/common/pagination.config';
+
+export const paginateData = (pages: number, limits: number, list: any[]) => {
+  const page = Number(pages) || paginationConfig.page;
+  const limit = Number(limits) || paginationConfig.limit;
+
   const startIndex = (page - 1) * limit;
   const endIndex = startIndex + limit;
 
@@ -7,13 +12,18 @@ export const paginateData = (page: number, limit: number, list: any[]) => {
 
   const data = list.slice(startIndex, endIndex);
 
-  return {
+  const datas = {
     data,
-    page,
-    limit,
     totalData,
-    pageCount,
-    hasPreviousPage: page > 1,
-    hasNextPage: page < pageCount,
+    meta: {
+      page,
+      limit,
+      data: data.length,
+      pageCount,
+      hasPreviousPage: page > 1,
+      hasNextPage: page < pageCount,
+    },
   };
+
+  return datas;
 };
