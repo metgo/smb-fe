@@ -78,7 +78,6 @@ export class MediaServices {
     return images;
   }
 
-  // eslint-disable-next-line consistent-return
   async delete(loggedInUser: LoggedInUserInterface, body: DeleteMediaDTO): Promise<Business | Product> {
     let deletedImage;
     // delete from business module

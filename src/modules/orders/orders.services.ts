@@ -1,4 +1,3 @@
-/* eslint-disable consistent-return */
 import {
   BadRequestException, ForbiddenException, Inject, Injectable, NotFoundException, forwardRef,
 } from '@nestjs/common';

@@ -1,5 +1,4 @@
 /* eslint-disable no-mixed-operators */
-/* eslint-disable no-bitwise */
 import {
   Injectable,
   ExecutionContext,

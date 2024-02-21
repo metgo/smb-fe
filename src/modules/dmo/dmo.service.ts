@@ -1,4 +1,3 @@
-/* eslint-disable no-underscore-dangle */
 import {
   BadRequestException, Inject, Injectable, NotFoundException, forwardRef,
 } from '@nestjs/common';

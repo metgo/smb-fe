@@ -71,7 +71,6 @@ export class CityService {
     return cities;
   }
 
-  // eslint-disable-next-line consistent-return
   async getOne(id: string) {
     try {
       const select = `${disSelect} -dmoId`;

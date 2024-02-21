@@ -1,4 +1,3 @@
-/* eslint-disable no-underscore-dangle */
 /* eslint-disable no-undef */
 /* eslint-disable no-sequences */
 /* eslint-disable no-unused-expressions */

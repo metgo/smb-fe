@@ -1,7 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { ServerErrors } from 'src/common/constant';
 
-/* eslint-disable no-underscore-dangle */
 export async function calculateTotalAmount(productsPayload:any, products: any) {
   try {
     // Calculate the total amount based on the quantity in the payload and the price in the database

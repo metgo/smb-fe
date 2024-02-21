@@ -1,5 +1,3 @@
-/* eslint-disable consistent-return */
-/* eslint-disable no-underscore-dangle */
 import {
   BadRequestException, ConflictException, Inject, Injectable, InternalServerErrorException, NotFoundException, forwardRef,
 } from '@nestjs/common';

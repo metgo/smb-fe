@@ -1,4 +1,3 @@
-/* eslint-disable no-underscore-dangle */
 /* eslint-disable no-undef */
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
@@ -71,7 +70,6 @@ export class CampaignSegmentService {
     return campaignSegment;
   }
 
-  // eslint-disable-next-line consistent-return
   async update(
     loggedInUserId: string,
     campaignId: string,
@@ -164,7 +162,6 @@ export class CampaignSegmentService {
     }
   }
 
-  // eslint-disable-next-line consistent-return
   async delete(
     loggedInUserId: string,
     campaignId: string,
@@ -423,7 +420,6 @@ export class CampaignSegmentService {
     return paginatedBusinesses;
   }
 
-  // eslint-disable-next-line consistent-return
   async getCampaignAssociatedToProduct(id: string) {
     try {
       const campaignSegments = await this.CampaignSegmentModel.find({ products: { $in: [id] } });

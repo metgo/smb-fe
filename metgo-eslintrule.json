@@ -75,7 +75,7 @@
     "unused-imports/no-unused-imports": ["error"],
 
     "no-underscore-dangle": [
-      "error",
+      "off",
       {
         "allowAfterThis": false,
         "allowAfterSuper": false,
@@ -936,7 +936,7 @@
     ],
     "block-scoped-var": ["error"],
     "complexity": ["off", 11],
-    "consistent-return": ["error"],
+    "consistent-return": ["off"],
     "curly": ["error", "multi-line"],
     "default-case": [
       "error",

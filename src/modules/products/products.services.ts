@@ -151,7 +151,6 @@ export class ProductsService {
     return product;
   }
 
-  // eslint-disable-next-line consistent-return
   async findOne(productId: string): Promise<Product> {
     try {
       const product = await findOneByFieldNames<Product>(
@@ -169,7 +168,6 @@ export class ProductsService {
     }
   }
 
-  // eslint-disable-next-line consistent-return
   async findOneForLoggedInUser(productId: string, loggedInUser: LoggedInUserInterface): Promise<Product> {
     try {
       const product = await findOneByFieldNames<Product>(
@@ -238,7 +236,6 @@ export class ProductsService {
     return products;
   }
 
-  // eslint-disable-next-line consistent-return
   async findManyById(ids: string[]): Promise<Product[]> {
     try {
       const findQuery = { _id: { $in: ids } };
@@ -266,7 +263,6 @@ export class ProductsService {
     }
   }
 
-  // eslint-disable-next-line consistent-return
   async update(command: UpdateCommand): Promise<Product> {
     try {
       const sellingPrice = sellingPriceForAmountOrPercent(
@@ -376,7 +372,6 @@ export class ProductsService {
     return updatedProduct;
   }
 
-  // eslint-disable-next-line consistent-return
   async softDelete(businessId: string, productId: string, loggedInUser: string): Promise<Product> {
     try {
       const deletedProduct = await updateOneByManyFields<Product>(
@@ -402,7 +397,6 @@ export class ProductsService {
     }
   }
 
-  // eslint-disable-next-line consistent-return
   async updateProductByFields(productId: string, updatedFields: any): Promise<Product> {
     try {
       const productInfo = await this.findOne(productId);
@@ -454,7 +448,6 @@ export class ProductsService {
     return updateProduct;
   }
 
-  // eslint-disable-next-line consistent-return
   async getProductInformationForOrders(productInfo) {
     try {
       const ids = productInfo.map(item => item.id.toString());

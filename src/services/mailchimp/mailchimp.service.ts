@@ -1,4 +1,3 @@
-/* eslint-disable consistent-return */
 /* eslint-disable global-require */
 import * as mailchimp from '@mailchimp/mailchimp_marketing';
 import { Injectable } from '@nestjs/common';

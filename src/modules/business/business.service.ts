@@ -1,6 +1,5 @@
 /* eslint-disable no-param-reassign */
 /* eslint-disable no-undef */
-/* eslint-disable no-unused-vars */
 import {
   BadRequestException, Injectable, NotFoundException,
 } from '@nestjs/common';
@@ -55,7 +54,6 @@ export class BusinessService {
     private ProductModel: Model<Product>,
   ) {}
 
-  // eslint-disable-next-line consistent-return
   async createBusiness(dto: createBusinessDto, userId: string): Promise<Business> {
     let newDto:any = dto;
     if (dto.geoLocation) {
@@ -94,7 +92,6 @@ export class BusinessService {
     }
   }
 
-  // eslint-disable-next-line consistent-return
   async createBusinesForWeb(
     dto: WebCreateBusiness,
     loggedInUserId: string,
@@ -443,7 +440,6 @@ export class BusinessService {
     return allBusiness;
   }
 
-  // eslint-disable-next-line consistent-return
   async getBusiness(command: GetBusinessByIdOrSlug) {
     const {
       id, loggedInUser,
@@ -550,7 +546,6 @@ export class BusinessService {
     return allBusiness;
   }
 
-  // eslint-disable-next-line consistent-return
   async updateBusiness(
     id: string,
     loggedInUser: LoggedInUserInterface,
@@ -658,7 +653,6 @@ export class BusinessService {
     return updateBusiness;
   }
 
-  // eslint-disable-next-line consistent-return
   async deleteBusiness(id: string, loggedInUserId: string): Promise<Business> {
     try {
       const updateField = { isDeleted: true, deletedAt: new Date(), deletedBy: loggedInUserId };
@@ -680,7 +674,6 @@ export class BusinessService {
     return false;
   }
 
-  // eslint-disable-next-line consistent-return
   async findByFieldNameExcludeId(fieldName: keyof Business, items: string, id:string): Promise<boolean> {
     try {
       const bussEmail = await findOneByFieldNameExcludeId<Business>(this.BusinessModel, fieldName, items, id);
@@ -707,7 +700,6 @@ export class BusinessService {
     );
   }
 
-  // eslint-disable-next-line consistent-return
   async findBusinessEmailByIds(ids: ObjectId[]) {
     try {
       const businessDetails = await this.BusinessModel.find({ _id: { $in: ids } });

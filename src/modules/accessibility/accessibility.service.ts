@@ -23,7 +23,6 @@ export class AccessibilityService {
     private readonly AccessibilityModel: Model<Accessibility>,
   ) {}
 
-  // eslint-disable-next-line consistent-return
   async create(dto: createAccessibilityDto, userId: string) {
     try {
       const newAccessibility = new this.AccessibilityModel({ ...dto, createdBy: userId });
@@ -72,7 +71,6 @@ export class AccessibilityService {
     return accessibility;
   }
 
-  // eslint-disable-next-line consistent-return
   async getOne(id: string, query: LocaleQuery) {
     try {
       const select = `${disSelect}`;
@@ -94,7 +92,6 @@ export class AccessibilityService {
     }
   }
 
-  // eslint-disable-next-line consistent-return
   async update(id: string, dto: updateAccessibilityDto, userId: string) {
     try {
       const accessibility = await updateById<Accessibility>(this.AccessibilityModel, id, { ...dto, updatedBy: userId });
@@ -108,7 +105,6 @@ export class AccessibilityService {
     }
   }
 
-  // eslint-disable-next-line consistent-return
   async softDelete(id:string, userId: string) {
     try {
       const updateField = {
@@ -136,7 +132,6 @@ export class AccessibilityService {
     return false;
   }
 
-  // eslint-disable-next-line consistent-return
   async findByFieldNameExcludeId(fieldName: keyof Accessibility, items: string, id:string): Promise<boolean> {
     try {
       const accessibility = await findOneByFieldNameExcludeId<Accessibility>(

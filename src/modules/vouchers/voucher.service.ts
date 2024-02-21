@@ -1,4 +1,3 @@
-/* eslint-disable no-underscore-dangle */
 /* eslint-disable no-plusplus */
 import {
   BadRequestException,
@@ -58,7 +57,6 @@ export class VoucherService {
     private mailchimpService: MailChimpService,
   ) { }
 
-  // eslint-disable-next-line consistent-return
   async create(
     user: LoggedInUserInterface | null,
     dto: createVoucherDto,
@@ -103,7 +101,6 @@ export class VoucherService {
     }
   }
 
-  // eslint-disable-next-line consistent-return
   async createdBySuperadmin(
     user: LoggedInUserInterface,
     dto: createVoucherDto,
@@ -155,7 +152,6 @@ export class VoucherService {
     }
   }
 
-  // eslint-disable-next-line consistent-return
   async getOne(query: GetOneVoucherInterface) {
     try {
       const { code, externalApi, productId } = query;
@@ -220,7 +216,6 @@ export class VoucherService {
     }
   }
 
-  // eslint-disable-next-line consistent-return
   async getOneById(id: string): Promise<Voucher> {
     try {
       const select = disSelect;
@@ -496,7 +491,6 @@ export class VoucherService {
     return assignedVoucher;
   }
 
-  // eslint-disable-next-line consistent-return
   async update(id: mongoose.Types.ObjectId[], updateField: object) {
     try {
       const updateVoucher = await updateManyByIds<Voucher>(
@@ -567,7 +561,6 @@ export class VoucherService {
     return voucherIds;
   }
 
-  // eslint-disable-next-line consistent-return
   async findByValidIds(ids: string[]): Promise<Voucher[]> {
     try {
       const populate = {
@@ -631,7 +624,6 @@ export class VoucherService {
       throw new NotFoundException(ServerErrors.VOUCHER.NOT_FOUND);
     }
 
-    // eslint-disable-next-line consistent-return
     return {
       amountToBeRedeemed,
       redeemedAmount: totalAmount - amountToBeRedeemed,

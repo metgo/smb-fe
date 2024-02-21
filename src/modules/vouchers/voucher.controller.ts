@@ -35,6 +35,7 @@ export class VoucherController {
     tags: ['Voucher'],
     response: { status: HttpStatus.CREATED, description: ServerSuccess.VOUCHER.CREATED },
     softBlockExtraDtoFields: true,
+    operation: 'Purchase Voucher By anyone',
   })
   @Post('buy-voucher')
   async create(
@@ -61,6 +62,7 @@ export class VoucherController {
     response: { status: HttpStatus.CREATED, description: ServerSuccess.VOUCHER.CREATED },
     softBlockExtraDtoFields: true,
     noAuthToken: true,
+    operation: 'Purchase Voucher By Superadmin',
   })
   @Post('admin/vouchers')
   async createPaidVouchers(
@@ -83,6 +85,7 @@ export class VoucherController {
   @ApiEndpoint({
     tags: ['Voucher'],
     response: { status: HttpStatus.OK, description: ServerSuccess.VOUCHER.LISTED },
+    operation: 'Get voucher detail by anyone using valid code',
   })
   @Get('voucher-code/:code')
   async getOne(
@@ -101,12 +104,14 @@ export class VoucherController {
     );
   }
 
+  // maybe need to update to superadmin to check expire vouchers too
   @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
     tags: ['Voucher'],
     response: { status: HttpStatus.OK, description: ServerSuccess.VOUCHER.CREATED },
     softBlockExtraDtoFields: true,
     noAuthToken: true,
+    operation: 'Get voucher detail by logged in user using valid id',
   })
   @Get('voucher-id/:id')
   async getOneById(@Res() response: Response, @Param('id') id: string) {
@@ -129,6 +134,7 @@ export class VoucherController {
     },
     softBlockExtraDtoFields: true,
     noAuthToken: true,
+    operation: 'Get created voucher list of logged in user',
   })
   @UseGuards(JwtAuthGuard)
   @Get('vouchers/created-by-me')
@@ -150,13 +156,14 @@ export class VoucherController {
   }
 
   @ApiEndpoint({
-    tags: ['Admin', 'Voucher'],
+    tags: ['Voucher'],
     response: {
       status: HttpStatus.OK,
       description: ServerSuccess.VOUCHER.LISTED,
     },
     softBlockExtraDtoFields: true,
     noAuthToken: true,
+    operation: 'Get assigned voucher list of logged in user',
   })
   @UseGuards(JwtAuthGuard)
   @Get('vouchers/assigned')
@@ -179,10 +186,11 @@ export class VoucherController {
 
   @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
-    tags: ['Admin', 'Voucher'],
+    tags: ['Voucher'],
     response: { status: 200, description: ServerSuccess.VOUCHER.ASSIGNED },
     softBlockExtraDtoFields: true,
     noAuthToken: true,
+    operation: 'Assign voucher to other user by email',
   })
   @Put('voucher/assign-user')
   async assignUser(
@@ -212,6 +220,7 @@ export class VoucherController {
     },
     softBlockExtraDtoFields: true,
     noAuthToken: true,
+    operation: 'Get created voucher list of logged in user - EXTERNAL API',
   })
   @UseGuards(JwtAuthGuard)
   @UseGuards(ExternalApiGuard)
@@ -239,6 +248,7 @@ export class VoucherController {
     response: { status: 200, description: ServerSuccess.VOUCHER.ASSIGNED },
     softBlockExtraDtoFields: true,
     noAuthToken: true,
+    operation: 'Assign voucher to other user by email - EXTERNAL API',
   })
   @UseGuards(ExternalApiGuard)
   @Put('externalapi/assign_voucher_to_user')
@@ -267,6 +277,7 @@ export class VoucherController {
     tags: ['External Api', 'Voucher'],
     response: { status: HttpStatus.CREATED, description: ServerSuccess.VOUCHER.CREATED },
     softBlockExtraDtoFields: true,
+    operation: 'Purchase voucher by anyone - EXTERNAL API',
   })
   @UseGuards(ExternalApiGuard)
   @Post('externalapi/purchase_vouchers')
@@ -292,6 +303,7 @@ export class VoucherController {
     tags: ['Admin', 'External Api', 'Voucher'],
     response: { status: HttpStatus.CREATED, description: ServerSuccess.VOUCHER.CREATED },
     softBlockExtraDtoFields: true,
+    operation: 'Purchase voucher by superadmin - EXTERNAL API',
   })
   @Roles(UserType.SUPERADMIN)
   @UseGuards(JwtAuthGuard)
@@ -316,11 +328,13 @@ export class VoucherController {
   }
 
   @ApiEndpoint({
-    tags: ['External Api', 'Voucher'],
+    tags: ['Admin', 'External Api', 'Voucher'],
     response: { status: HttpStatus.OK, description: ServerSuccess.VOUCHER.UPDATED },
     softBlockExtraDtoFields: true,
     noAuthToken: true,
+    operation: 'Update voucher balance by superadmin - EXTERNAL API',
   })
+  @Roles(UserType.SUPERADMIN)
   @UseGuards(JwtAuthGuard)
   @UseGuards(ExternalApiGuard)
   @Post('externalapi/update_voucher_balance')
@@ -346,6 +360,7 @@ export class VoucherController {
     tags: ['External Api', 'Voucher'],
     response: { status: 200, description: ServerSuccess.VOUCHER.LISTED },
     noAuthToken: true,
+    operation: 'Get voucher detail by anyone using valid code - EXTERNAL API',
   })
   @UseGuards(JwtAuthGuard)
   @UseGuards(ExternalApiGuard)

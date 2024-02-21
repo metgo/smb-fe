@@ -1,4 +1,3 @@
-/* eslint-disable consistent-return */
 import {
   Body, Controller, Get, HttpCode, HttpStatus, Inject, Param, Patch, Post, Query, Req, Res, UseGuards, forwardRef,
 } from '@nestjs/common';

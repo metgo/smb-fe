@@ -19,7 +19,6 @@ export class AuthorityService {
     private readonly AuthorityModel: Model<Authority>,
   ) {}
 
-  // eslint-disable-next-line consistent-return
   async create(dto: AuthorityDTO, userId: string) {
     try {
       const newAuthority = new this.AuthorityModel({
@@ -68,7 +67,6 @@ export class AuthorityService {
     return authorities;
   }
 
-  // eslint-disable-next-line consistent-return
   async getOne(id: string) {
     try {
       const select = `${disSelect}`;
