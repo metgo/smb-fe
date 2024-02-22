@@ -253,18 +253,27 @@ export class CampaignSegmentService {
       path: 'products',
       select: `${disSelect}`,
       populate: {
-        path: 'categories subCategories',
-        select: `${disSelect} -bussCategoryId`,
+        path: 'categories',
+        select: `${disSelect}`,
         populate: {
           path: 'icon',
           select: `${disSelect}`,
         },
       },
     };
+    const populate1 = {
+      path: 'products',
+      select: `${disSelect}`,
+      populate: {
+        path: 'subCategories businessId',
+        select: `${disSelect}`,
+      },
+    };
 
     const campaignSegment = await this.CampaignSegmentModel
       .findOne({ campaign_ID: campDetails._id })
       .populate(populate)
+      .populate(populate1)
       .select(select)
       .lean()
       .exec();
@@ -294,6 +303,7 @@ export class CampaignSegmentService {
           price: product.price,
           categories: product.categories,
           images: product.images,
+          business: product.businessId,
           subCategories: product.subCategories,
         }));
 
@@ -324,6 +334,7 @@ export class CampaignSegmentService {
         price: product.price,
         categories: product.categories,
         images: product.images,
+        business: product.businessId,
         subCategories: product.subCategories,
       }));
 
@@ -342,8 +353,8 @@ export class CampaignSegmentService {
       path: 'businesses',
       select: `${disSelect}`,
       populate: {
-        path: 'bussCategoriesId bussSubCategoriesId',
-        select: `${disSelect} -bussCategoryId`,
+        path: 'bussCategoriesId',
+        select: `${disSelect}`,
         populate: {
           path: 'icon',
           select: `${disSelect}`,
@@ -379,7 +390,6 @@ export class CampaignSegmentService {
           address: business.address,
           images: business.images,
           bussCategoriesId: business.bussCategoriesId,
-          bussSubCategoriesId: business.bussSubCategoriesId,
         }));
 
       const totalData = businesses.length;
@@ -403,7 +413,6 @@ export class CampaignSegmentService {
         address: business.address,
         images: business.images,
         bussCategoriesId: business.bussCategoriesId,
-        bussSubCategoriesId: business.bussSubCategoriesId,
       }));
 
     const paginatedBusinesses = paginateData(page, limit, filteredBusiness);

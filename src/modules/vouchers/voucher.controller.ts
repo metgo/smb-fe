@@ -303,6 +303,7 @@ export class VoucherController {
     tags: ['Admin', 'External Api', 'Voucher'],
     response: { status: HttpStatus.CREATED, description: ServerSuccess.VOUCHER.CREATED },
     softBlockExtraDtoFields: true,
+    noAuthToken: true,
     operation: 'Purchase voucher by superadmin - EXTERNAL API',
   })
   @Roles(UserType.SUPERADMIN)
