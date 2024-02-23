@@ -162,7 +162,7 @@ export class VoucherService {
       };
 
       let findQuery:any = {
-        code,
+        code: code.trim(),
       };
 
       if (productId) {

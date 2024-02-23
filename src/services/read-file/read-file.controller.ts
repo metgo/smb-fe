@@ -5,7 +5,7 @@ import { ReadFileService } from 'src/services/read-file/read-file.service';
 export class ReadFileController {
   constructor(private readonly fileService: ReadFileService) {}
 
-  @Get('deeplink/assetlinks.json')
+  @Get('.well-known/assetlinks.json')
   getData(): any {
     const jsonData = this.fileService.readJSONFile('src/common/assetlink.json');
     return jsonData;
