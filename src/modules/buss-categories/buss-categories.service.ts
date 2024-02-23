@@ -159,7 +159,6 @@ export class BussCategoriesService {
       const categoryWithSubCategory:any = category;
 
       categoryWithSubCategory.sub_categories = await this.BussSubCategoryModel
-        // eslint-disable-next-line no-underscore-dangle
         .find({ bussCategoryId: category._id, deletedAt: { $in: [null] } })
         .select(select2)
         .populate(populate)

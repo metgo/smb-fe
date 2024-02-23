@@ -11,9 +11,8 @@ import { maxDistanceInRadius } from 'src/common/max-distance-in-radius';
 import { paginateData } from 'src/common/pagination';
 import { getNearestBusiness } from 'src/common/sort-by-nearest';
 import { Business } from './schema/business.schema';
-import {
-  AllFilterQuery, createBusinessDto, FilterQuery, updateBusinessDto,
-} from 'src/modules/business/dto';
+import { GetAllBusinessesForGuestQuery, GetAllUnpaginatedBusinessQuery, GetUsersBusinessesQuery } from 'src/modules/business/queries';
+import { createBusinessDto, updateBusinessDto } from 'src/modules/business/dto';
 import {
   findOneByFieldName, findOneByFieldNameExcludeId, findOneByFieldNames, queryhandler, updateById, updateOneByManyFields,
 } from 'src/core/helper/query-helper';
@@ -26,9 +25,9 @@ import { BusinessStatus, GetBusinessByIdOrSlug } from 'src/modules/business/busi
 import { UpdateBusinessByAdminDto } from 'src/modules/business/dto/update-business-status.dto';
 import { GcpBucketService } from 'src/services/gcp-bucket/gcp-bucket.services';
 import { WebCreateBusiness } from 'src/modules/business/dto/web-create-business.dto';
-import { GetAllUnpaginatedBusinessQuery } from 'src/modules/business/queries/get-all-unpaginated-business.query';
 import { Media } from '../media/schema/media.schema';
 import { updateWebBusinessDto } from './dto/web.update.dto';
+import { AuthorityService } from 'src/modules/authority/authority.service';
 import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.schema';
 import { BussSubCategory } from 'src/modules/buss-subcategories/schema/buss-subCategory.schema';
 import { Product } from 'src/modules/products/schema/products.schema';
@@ -42,6 +41,7 @@ export class BusinessService {
   constructor(
     @InjectModel('Business')
     private BusinessModel: Model<Business>,
+    private readonly authorityService: AuthorityService,
     private readonly dmoService: DMOService,
     private readonly gcpBucketServices: GcpBucketService,
     @InjectModel('Media')
@@ -56,6 +56,17 @@ export class BusinessService {
 
   async createBusiness(dto: createBusinessDto, userId: string): Promise<Business> {
     let newDto:any = dto;
+
+    // find dmoId by authority
+    if (dto.authorityId) {
+      const dmo = (await this.authorityService.getOne(dto.authorityId)).dmoId;
+
+      newDto = {
+        ...newDto,
+        dmoId: dmo._id,
+      };
+    }
+
     if (dto.geoLocation) {
       const location = {
         type: 'Point',
@@ -183,7 +194,7 @@ export class BusinessService {
     }
   }
 
-  async getAllBusiness(queries: FilterQuery | AllFilterQuery, isAdmin?: boolean) {
+  async getAllBusiness(queries: GetAllBusinessesForGuestQuery | GetUsersBusinessesQuery, isAdmin?: boolean) {
     const {
       page, limit, search, long, lat, miles, ...query
     } = queries;
@@ -421,7 +432,7 @@ export class BusinessService {
     };
 
     const populate1 = {
-      path: 'dmoId',
+      path: 'dmoId authorityId',
       select: `${disSelect} -userId -collaboratorsUser`,
     };
 
@@ -454,7 +465,7 @@ export class BusinessService {
     };
 
     const populate1 = {
-      path: 'dmoId',
+      path: 'dmoId authorityId',
       select: `${disSelect} -userId -collaboratorsUser`,
     };
     const select = `${disSelect}`;
@@ -496,7 +507,7 @@ export class BusinessService {
     }
   }
 
-  async getAllMyBusiness(queries: AllFilterQuery, userId: string) {
+  async getAllMyBusiness(queries: GetUsersBusinessesQuery, userId: string) {
     const {
       page, limit, search, ...query
     } = queries;
@@ -526,7 +537,7 @@ export class BusinessService {
 
     // eslint-disable-next-line prefer-const
     populate1 = {
-      path: 'dmoId',
+      path: 'dmoId authorityId',
       select: `${disSelect} -userId -collaboratorsUser`,
     };
     // eslint-disable-next-line prefer-const
@@ -553,19 +564,25 @@ export class BusinessService {
     isDMO?: boolean,
   ): Promise<Business> {
     let updatedField: any;
-    let cordinates:any;
+
+    // find dmoId by authority
+    if (dto instanceof updateBusinessDto && dto?.authorityId) {
+      const dmo = (await this.authorityService.getOne(dto.authorityId)).dmoId;
+
+      updatedField = {
+        ...updatedField,
+        dmoId: dmo._id,
+      };
+    }
+
     if (dto instanceof updateBusinessDto && dto.geoLocation) {
-      cordinates = {
-        location: {
-          coordinates: [parseFloat(dto.geoLocation.long), parseFloat(dto.geoLocation.lat)],
-        },
+      const location = {
+        type: 'Point',
+        coordinates: [parseFloat(dto.geoLocation.long), parseFloat(dto.geoLocation.lat)],
       };
       updatedField = {
         ...dto,
-        location: {
-          type: 'Point',
-          coordinates: cordinates.location.coordinates,
-        },
+        location,
       };
     }
     updatedField = {
@@ -713,7 +730,6 @@ export class BusinessService {
   async findManyByFieldIds(fieldName: keyof Business, ids: string[]) {
     const filterBy = { [fieldName]: { $in: ids } };
     const businesses = await this.BusinessModel.find(filterBy).lean().select('_id');
-    // eslint-disable-next-line no-underscore-dangle
     const businessesId = businesses.map(item => item._id.toString());
 
     return businessesId;

@@ -469,7 +469,6 @@ export class ProductsService {
   async findManyByFieldIds(fieldName: keyof Product, ids: string[]) {
     const filterBy = { [fieldName]: { $in: ids } };
     const businesses = await this.ProductModel.find(filterBy).lean().select('_id');
-    // eslint-disable-next-line no-underscore-dangle
     const businessesId = businesses.map(item => item._id.toString());
 
     return businessesId;

@@ -3,13 +3,17 @@ import mongoose, { HydratedDocument } from 'mongoose';
 
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
 import { Accessibility } from 'src/modules/accessibility/schema/accessibility.schema';
+import { Authority } from 'src/modules/authority/schema/authority.schema';
 import { BusinessStatus } from 'src/modules/business/business.type';
 import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.schema';
 import { BussSubCategory } from 'src/modules/buss-subcategories/schema/buss-subCategory.schema';
+import { DMO } from 'src/modules/dmo/schema/dmo.schema';
 import { GroupType } from 'src/modules/group-type/schema/group-type.schema';
+import { Product } from 'src/modules/products/schema/products.schema';
+import { SocialMedia } from 'src/modules/socialMedia/schema/socialMedia.schema';
 import { User } from 'src/modules/users/schema/users.schema';
 
-@Schema({})
+@Schema()
 export class Business extends AuditableSchema {
   @Prop({ required: false, default: null })
     name: string;
@@ -72,21 +76,29 @@ export class Business extends AuditableSchema {
 
   @Prop({
     type: [{ type: mongoose.Schema.Types.ObjectId, ref: User.name }],
-    ref: 'Users',
+    ref: User.name,
     required: false,
   })
     collabrationUser: mongoose.Types.ObjectId[];
 
   @Prop({
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Users',
+    ref: User.name,
     required: false,
   })
     userId: mongoose.Types.ObjectId;
 
   @Prop({
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'DMO',
+    ref: Authority.name,
+    required: false,
+    default: null,
+  })
+    authorityId: mongoose.Types.ObjectId;
+
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    ref: DMO.name,
     required: false,
     default: null,
   })
@@ -132,14 +144,18 @@ export class Business extends AuditableSchema {
 
   @Prop({
     required: false,
-    type: mongoose.Types.ObjectId,
-    ref: 'SocialMedia',
+    type: [{
+      socialMediaId: [{
+        type: mongoose.Types.ObjectId,
+        ref: SocialMedia.name,
+      }],
+      url: String,
+    }],
     default: null,
   })
     socialMedia: [{
       socialMediaId: {
         type: mongoose.Types.ObjectId,
-        ref: 'SocialMedia'
       }
       url: { type: string}
     }];
@@ -199,7 +215,7 @@ export class Business extends AuditableSchema {
     isOpenOnWeekends: boolean;
 
   @Prop({
-    type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product' }],
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: Product.name }],
     required: false,
   })
     productsId: mongoose.Types.ObjectId[];
@@ -214,4 +230,5 @@ export class Business extends AuditableSchema {
 export const BusinessSchema = SchemaFactory.createForClass(Business);
 BusinessSchema.index({ name: 'text', description: 'text', tags: 'text' });
 BusinessSchema.index({ location: '2dsphere' });
+
 export type BusinessDocument = HydratedDocument<Business>;

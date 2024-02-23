@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsOptional } from 'class-validator';
 import { CommonFilterQuery } from 'src/common/query-handler/common-filter-query';
 
-export class FilterQuery extends CommonFilterQuery {
+export class GetAllBusinessesForGuestQuery extends CommonFilterQuery {
   @ApiProperty({ type: String, required: false, description: 'must follow the pattern \n [id, id,..]' })
   @IsOptional()
     groupTypesId: string;

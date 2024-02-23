@@ -21,29 +21,25 @@ import {
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
 
-import { BusinessService } from './business.service';
-import {
-  AllFilterQuery, createBusinessDto, FilterQuery, updateBusinessDto, WebCreateBusiness,
-} from './dto';
 import { ServerSuccess } from 'src/common/constant';
 import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
 import { responseHelper } from 'src/core/helper/response.helper';
 import { Roles } from 'src/core/guards/authorization/roles';
 import { JwtAuthGuard } from 'src/core/guards/jwt/jwt.guards';
-import { UpdateBusinessByAdminDto } from 'src/modules/business/dto/update-business-status.dto';
-import { GetAllUnpaginatedBusinessQuery } from 'src/modules/business/queries/get-all-unpaginated-business.query';
-import { DMOService } from 'src/modules/dmo/dmo.service';
+import {
+  createBusinessDto, UpdateBusinessByAdminDto, updateBusinessDto, WebCreateBusiness, updateWebBusinessDto,
+} from 'src/modules/business/dto';
+import { GetAllBusinessesForGuestQuery, GetAllUnpaginatedBusinessQuery, GetUsersBusinessesQuery } from 'src/modules/business/queries';
+import { BusinessService } from 'src/modules/business/business.service';
 import { UserType } from 'src/modules/users/users.type';
 import { fileFilterByExtensions } from 'src/services/gcp-bucket/middleware/file-filter';
-import { updateWebBusinessDto } from './dto/web.update.dto';
-import { GetBusinessByIdOrSlug } from './business.type';
+import { GetBusinessByIdOrSlug } from 'src/modules/business/business.type';
 
 @Controller()
 export class BusinessController {
   constructor(
     private readonly businessServices: BusinessService,
-    private readonly dmoService: DMOService,
-  ) { }
+  ) {}
 
   @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
@@ -62,7 +58,7 @@ export class BusinessController {
     dto.name && await this.businessServices.findByFieldName('name', dto.name);
     dto.phoneNumber && await this.businessServices.findByFieldName('phoneNumber', dto.phoneNumber);
     dto.busiEmail && await this.businessServices.findByFieldName('busiEmail', dto.busiEmail);
-    dto.dmoId && await this.dmoService.findDMO(dto.dmoId);
+
     const business = await this.businessServices.createBusiness(dto, user);
     return responseHelper(response, HttpStatus.CREATED, ServerSuccess.BUSINESS_CREATED, business, null, null);
   }
@@ -87,7 +83,7 @@ export class BusinessController {
     body.name && await this.businessServices.findByFieldName('name', body.name);
     body.phoneNumber && await this.businessServices.findByFieldName('phoneNumber', body.phoneNumber);
     body.busiEmail && await this.businessServices.findByFieldName('busiEmail', body.busiEmail);
-    body.dmoId && await this.dmoService.findDMO(body.dmoId);
+
     const business = await this.businessServices.createBusinesForWeb(body, loggedInUserId, image);
     return responseHelper(response, HttpStatus.CREATED, ServerSuccess.BUSINESS_CREATED, business, null, null);
   }
@@ -101,7 +97,7 @@ export class BusinessController {
   @Get('business')
   async getAllBusiness(
     @Res() response: Response,
-    @Query() query?: FilterQuery,
+    @Query() query?: GetAllBusinessesForGuestQuery,
   ) {
     const business = await this.businessServices.getAllBusiness(query);
 
@@ -136,7 +132,7 @@ export class BusinessController {
   @Get('admin/businesses')
   async getAllBusinessForAdmin(
     @Res() response: Response,
-    @Query() query?: AllFilterQuery,
+    @Query() query?: GetUsersBusinessesQuery,
   ) {
     const business = await this.businessServices.getAllBusiness(query, true);
 
@@ -217,7 +213,7 @@ export class BusinessController {
   async getMyBusiness(
     @Req() request,
     @Res() response: Response,
-    @Query() query?: AllFilterQuery,
+    @Query() query?: GetUsersBusinessesQuery,
   ) {
     const userId = request.user.id;
     const business = await this.businessServices.getAllMyBusiness(query, userId);
@@ -243,8 +239,7 @@ export class BusinessController {
     dto.name && await this.businessServices.findByFieldNameExcludeId('name', dto.name, id);
     dto.phoneNumber && await this.businessServices.findByFieldNameExcludeId('phoneNumber', dto.phoneNumber, id);
     dto.busiEmail && await this.businessServices.findByFieldNameExcludeId('busiEmail', dto.busiEmail, id);
-    dto.dmoId && await this.dmoService.findDMO(dto.dmoId);
-    // need to check if the logged in user is business owner or collaborator
+
     const business = await this.businessServices.updateBusiness(id, request.user, dto);
 
     return responseHelper(response, HttpStatus.OK, ServerSuccess.BUSINESS_UPDATED, business, null, null);
@@ -269,7 +264,7 @@ export class BusinessController {
     dto.name && await this.businessServices.findByFieldNameExcludeId('name', dto.name, id);
     dto.phoneNumber && await this.businessServices.findByFieldNameExcludeId('phoneNumber', dto.phoneNumber, id);
     dto.busiEmail && await this.businessServices.findByFieldNameExcludeId('busiEmail', dto.busiEmail, id);
-    dto.dmoId && await this.dmoService.findDMO(dto.dmoId);
+
     const business = await this.businessServices.updateBusiness(id, request.user, dto);
 
     return responseHelper(response, HttpStatus.OK, ServerSuccess.BUSINESS_UPDATED, business, null, null);

@@ -2,7 +2,6 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
 
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
-import { Business } from 'src/modules/business/schema/business.schema';
 import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.schema';
 import { BussSubCategory } from 'src/modules/buss-subcategories/schema/buss-subCategory.schema';
 import { ProductStatus } from 'src/modules/products/products.type';
@@ -18,7 +17,7 @@ export class Product extends AuditableSchema {
 
   @Prop({
     type: mongoose.Schema.Types.ObjectId,
-    ref: Business.name,
+    ref: 'Business',
     required: true,
   })
     businessId: mongoose.Types.ObjectId;

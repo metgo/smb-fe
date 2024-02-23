@@ -140,7 +140,7 @@ export class createBusinessDto {
   })
   @IsOptional()
   @IsString()
-    dmoId: string;
+    authorityId: string;
 
   @ApiProperty({
     required: false,

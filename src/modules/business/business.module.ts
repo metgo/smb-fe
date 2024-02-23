@@ -19,6 +19,7 @@ import { MailChimpModule } from 'src/services/mailchimp/mailchimp.module';
 import { BussCategory, BussCategorySchema } from '../buss-categories/schema/buss.category.schema';
 import { BussSubCategory, BussSubCategorySchema } from '../buss-subcategories/schema/buss-subCategory.schema';
 import { Product, ProductSchema } from '../products/schema/products.schema';
+import { AuthorityModule } from 'src/modules/authority/authority.module';
 import { VoucherModule } from 'src/modules/vouchers/voucher.module';
 
 @Module({
@@ -33,6 +34,7 @@ import { VoucherModule } from 'src/modules/vouchers/voucher.module';
       { name: BussSubCategory.name, schema: BussSubCategorySchema },
       { name: Product.name, schema: ProductSchema },
     ]),
+    AuthorityModule,
     ConfigModule,
     MailModule,
     HashModule,

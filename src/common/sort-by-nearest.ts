@@ -15,7 +15,6 @@ const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: numbe
 export const getNearestBusiness = (lat: number, long: number, businesses) => {
   const sortedBusinesses = businesses.map(business => {
     const distance = calculateDistance(lat, long, business.location.coordinates[1], business.location.coordinates[0]);
-    // eslint-disable-next-line no-underscore-dangle
     return { ...business._doc, distance };
   })
     .filter(business => business !== null)

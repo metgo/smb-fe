@@ -127,7 +127,6 @@ export class ExternalApiServices {
   async registerUser(body: ExternalApiRegisterRequest) {
     const externalApi = await this.findByFieldName('identifierId', body.identifierId);
     const { identifierId, ...rest } = body;
-    // eslint-disable-next-line no-underscore-dangle
     const newBody = { ...rest, externalApiId: externalApi._id };
     const user = await this.userService.create(newBody);
 
