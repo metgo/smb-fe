@@ -82,6 +82,7 @@ export class OrdersService {
             TOTALAMOUNT: order.totalAmount,
             BUSINESSPHONE: businessDetails[0].phoneNumber || '',
             BUSINESSEMAIL: businessDetails[0].busiEmail || '',
+            BUSINESSADDRESS: businessDetails[0]?.address?.location || '',
           },
         });
 
@@ -102,6 +103,7 @@ export class OrdersService {
               BUYERNAME: `${body.firstName} ${body.lastName}`,
               BUYERPHONE: body.phone,
               BUYEREMAIL: body.email,
+              BUYERADDRESS: body.address,
             },
           });
         }));

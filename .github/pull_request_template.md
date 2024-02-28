@@ -1,6 +1,6 @@
 ## JIRA
 
-[MET-](https://metgo.atlassian.net/browse/MET-)
+[METGO-](https://metgo.atlassian.net/browse/METGO-)
 
 ## What does this PR do?
 

@@ -148,7 +148,7 @@ export class PaymentsService {
           TOTALAMOUNT: updateOrder.totalAmount,
           BUSINESSPHONE: businessDetails[0].phoneNumber || '',
           BUSINESSEMAIL: businessDetails[0].busiEmail || '',
-
+          BUSINESSADDRESS: businessDetails[0]?.address?.location || '',
         },
       });
       // SEND TO BUSINESS OWNER
@@ -169,6 +169,7 @@ export class PaymentsService {
             BUYERNAME: `${updateOrder.firstName} ${updateOrder.lastName}`,
             BUYERPHONE: updateOrder.phone,
             BUYEREMAIL: updateOrder.email,
+            BUYERADDRESS: updateOrder.address,
           },
         });
       }));
