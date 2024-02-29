@@ -145,10 +145,10 @@ export class Business extends AuditableSchema {
   @Prop({
     required: false,
     type: [{
-      socialMediaId: [{
+      socialMediaId: {
         type: mongoose.Types.ObjectId,
         ref: SocialMedia.name,
-      }],
+      },
       url: String,
     }],
     default: null,

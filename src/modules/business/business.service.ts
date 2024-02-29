@@ -218,7 +218,7 @@ export class BusinessService {
     };
 
     const populate1 = {
-      path: 'dmoId',
+      path: 'dmoId authorityId',
       select: `${disSelect} -userId -collaboratorsUser`,
     };
 
