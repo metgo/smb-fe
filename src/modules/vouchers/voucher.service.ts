@@ -12,6 +12,7 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
 
+import { calculateTotalAmount } from 'src/common/calculate-amounts';
 import { checkExpireDate, twoYearExpireDate } from 'src/common/expireDate';
 import { EnglishTemplate, HebrewTemplate } from 'src/common/mailchimp/templateId';
 import { paginationConfig } from 'src/common/pagination.config';
@@ -34,14 +35,18 @@ import { PaymentPurpose } from 'src/services/payments/payments.type';
 import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interface';
 import { CampaignService } from 'src/modules/campaign/campaign.service';
 import { CampaignSegmentService } from 'src/modules/campaign-segments/campaignSegment.service';
+import { DMOService } from 'src/modules/dmo/dmo.service';
 import { UsersService } from 'src/modules/users/users.services';
+import { UserType } from 'src/modules/users/users.type';
 import {
   createVoucherDto, UpdateVoucherBalance,
 } from 'src/modules/vouchers/dto';
 import {
   AssignVoucherCommand, GetOneVoucherInterface, UpdateVoucherAfterPaymentInterface,
 } from 'src/modules/vouchers/interface';
-import { GetMyAssignedVouchersQuery, GetMyCreatedVouchersQuery, GetMyVouchersExternalApiQuery } from 'src/modules/vouchers/queries';
+import {
+  GetMyAssignedVouchersQuery, GetMyCreatedVouchersQuery, GetVoucherStatsQuery, GetMyVouchersExternalApiQuery,
+} from 'src/modules/vouchers/queries';
 
 @Injectable()
 export class VoucherService {
@@ -52,6 +57,7 @@ export class VoucherService {
     private readonly paymentService: PaymentsService,
     private readonly campaignService: CampaignService,
     private readonly campaignSegmentService: CampaignSegmentService,
+    private readonly dmoService: DMOService,
     @Inject(forwardRef(() => UsersService))
     private readonly usersService: UsersService,
     private mailchimpService: MailChimpService,
@@ -167,7 +173,7 @@ export class VoucherService {
 
       if (productId) {
         // get all the campId from campaignSegment the productId is associated to
-        const campaignIds = await this.campaignSegmentService.getCampaignAssociatedToProduct(productId);
+        const campaignIds = await this.campaignSegmentService.getCampaignAssociatedToIds(productId, 'products');
 
         const campIds = Array.isArray(campaignIds)
           ? campaignIds.map(item => new mongoose.Types.ObjectId(item))
@@ -245,7 +251,7 @@ export class VoucherService {
 
   async getVouchersCreatedByMe(userId: string, queries: GetMyCreatedVouchersQuery) {
     const {
-      page, limit, campId, search, productId, ...query
+      page, limit, search, campId, productId, createdStartDate, createdEndDate, expiryStartDate, expiryEndDate, ...query
     } = queries;
 
     const queryPage = Number(page) || paginationConfig.page;
@@ -276,6 +282,32 @@ export class VoucherService {
       findQuery = {
         ...findQuery,
         name: { $regex: search, $options: 'i' },
+      };
+    }
+
+    if (createdStartDate && createdEndDate) {
+      const startDate = new Date(createdStartDate);
+      const endDate = new Date(createdEndDate);
+
+      findQuery = {
+        ...findQuery,
+        createdAt: {
+          $gte: startDate,
+          $lte: endDate,
+        },
+      };
+    }
+
+    if (expiryStartDate && expiryEndDate) {
+      const startDate = new Date(expiryStartDate);
+      const endDate = new Date(expiryEndDate);
+
+      findQuery = {
+        ...findQuery,
+        expireDate: {
+          $gte: startDate,
+          $lte: endDate,
+        },
       };
     }
 
@@ -316,7 +348,7 @@ export class VoucherService {
     let campIdsFromProductId;
     if (productId) {
       // get all the campId from campaignSegment the productId is associated to
-      campIdsFromProductId = await this.campaignSegmentService.getCampaignAssociatedToProduct(productId);
+      campIdsFromProductId = await this.campaignSegmentService.getCampaignAssociatedToIds(productId, 'products');
     }
 
     if (campId) {
@@ -383,7 +415,7 @@ export class VoucherService {
     let campIdsFromProductId;
     if (productId) {
       // get all the campId from campaignSegment the productId is associated to
-      campIdsFromProductId = await this.campaignSegmentService.getCampaignAssociatedToProduct(productId);
+      campIdsFromProductId = await this.campaignSegmentService.getCampaignAssociatedToIds(productId, 'products');
     }
 
     if (campId) {
@@ -735,5 +767,96 @@ export class VoucherService {
     };
 
     await updateManyByManyFields<Voucher>(this.VoucherModel, filterQuery, updateField);
+  }
+
+  async getStats(loggedInUser: LoggedInUserInterface, query: GetVoucherStatsQuery) {
+    const {
+      createdStartDate, createdEndDate, expiryStartDate, expiryEndDate, ...queries
+    } = query;
+
+    const select = disSelect;
+
+    let findQuery: any = { ...queries, paymentStatus: VoucherPaymentStatus.PAID };
+
+    if (loggedInUser.role === UserType.DMOADMIN) {
+      // find dmo
+      const dmoId = await this.dmoService.findDMOByUserID(loggedInUser.id);
+
+      // get all the campId from campaignSegment the dmoId is associated to
+      const campaignIds = await this.campaignSegmentService.getCampaignAssociatedToIds(dmoId.toString(), 'DMOs');
+
+      const campIds = Array.isArray(campaignIds)
+        ? campaignIds.map(item => new mongoose.Types.ObjectId(item))
+        : [new mongoose.Types.ObjectId(campaignIds)];
+
+      findQuery = {
+        ...findQuery,
+        campId: { $in: campIds },
+      };
+    }
+
+    if (loggedInUser.role === UserType.TRAVELLER) {
+      findQuery = {
+        ...findQuery,
+        createdBy: loggedInUser.id,
+      };
+    }
+
+    if (createdStartDate && createdEndDate) {
+      const startDate = new Date(createdStartDate);
+      const endDate = new Date(createdEndDate);
+
+      if (startDate >= endDate) {
+        throw new BadRequestException(`Created ${ServerErrors.DATE_IS_NOT_LESS}`);
+      }
+
+      findQuery = {
+        ...findQuery,
+        createdAt: {
+          $gte: startDate,
+          $lte: endDate,
+        },
+      };
+    }
+
+    if (expiryStartDate && expiryEndDate) {
+      const startDate = new Date(expiryStartDate);
+      const endDate = new Date(expiryEndDate);
+
+      if (startDate >= endDate) {
+        throw new BadRequestException(`Expiry ${ServerErrors.DATE_IS_NOT_LESS}`);
+      }
+
+      findQuery = {
+        ...findQuery,
+        expireDate: {
+          $gte: startDate,
+          $lte: endDate,
+        },
+      };
+    }
+
+    const populate = {
+      path: 'campId',
+      select: `${disSelect}`,
+    };
+
+    const voucher = await queryhandler<Voucher>(
+      this.VoucherModel,
+      {
+        findQuery,
+        select,
+        populate,
+      },
+    );
+
+    const totalAmountToRedeem = await calculateTotalAmount('remainingAmount', voucher.data);
+    const totalValueOfVoucher = await calculateTotalAmount('amount', voucher.data);
+
+    return {
+      totalNumberOfVoucher: voucher.totalData,
+      totalValueOfVoucher,
+      totalAmountToRedeem,
+    };
   }
 }

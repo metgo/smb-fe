@@ -3,6 +3,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 
 import { CampaignModule } from 'src/modules/campaign/campaign.module';
 import { CampaignSegmentModule } from 'src/modules/campaign-segments/campaignSegment.module';
+import { DMOModule } from 'src/modules/dmo/dmo.module';
 import { UsersModule } from 'src/modules/users/users.module';
 import { VoucherController } from 'src/modules/vouchers/voucher.controller';
 import { VoucherService } from 'src/modules/vouchers/voucher.service';
@@ -20,6 +21,7 @@ import { PaymentsModule } from 'src/services/payments/payments.module';
     ]),
     CampaignModule,
     CampaignSegmentModule,
+    DMOModule,
     EncryptionModule,
     ConfigModule,
     GcpBucketModule,

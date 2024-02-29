@@ -3,7 +3,7 @@ import {
 } from '@nestjs/common';
 import { Response } from 'express';
 
-import { calculateTotalAmount } from 'src/common/calculate-total-amount';
+import { calculateTotalAmount } from 'src/common/calculate-products-total-amount';
 import { ServerSuccess } from 'src/common/constant';
 import { ExternalApiPostQuery } from 'src/common/query-handler/externalapi-post.query';
 import { sortByPriorityAndHighest } from 'src/common/sort-priority-and-highest';

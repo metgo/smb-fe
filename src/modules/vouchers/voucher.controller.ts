@@ -22,6 +22,7 @@ import {
   GetMyCreatedVouchersQuery,
   GetMyVouchersExternalApiQuery,
   GetVoucherByExternalApiQuery,
+  GetVoucherStatsQuery,
   GetVoucherQuery,
 } from 'src/modules/vouchers/queries';
 
@@ -377,6 +378,31 @@ export class VoucherController {
       HttpStatus.OK,
       ServerSuccess.VOUCHER.LISTED,
       voucher,
+      null,
+      null,
+    );
+  }
+
+  @ApiEndpoint({
+    tags: ['Voucher'],
+    response: { status: HttpStatus.OK, description: ServerSuccess.VOUCHER.LISTED },
+    noAuthToken: true,
+  })
+  @Roles(UserType.SUPERADMIN, UserType.DMOADMIN, UserType.TRAVELLER)
+  @UseGuards(JwtAuthGuard)
+  @Get('vouchers/stats')
+  async getVoucherStats(
+    @Req() req,
+    @Res() response: Response,
+    @Query() query: GetVoucherStatsQuery,
+  ) {
+    const voucherStats = await this.voucherService.getStats(req.user, query);
+
+    return responseHelper(
+      response,
+      HttpStatus.OK,
+      ServerSuccess.VOUCHER.LISTED,
+      voucherStats,
       null,
       null,
     );

@@ -420,9 +420,9 @@ export class CampaignSegmentService {
     return paginatedBusinesses;
   }
 
-  async getCampaignAssociatedToProduct(id: string) {
+  async getCampaignAssociatedToIds(id: string, key: keyof CampaignSegment) {
     try {
-      const campaignSegments = await this.CampaignSegmentModel.find({ products: { $in: [id] } });
+      const campaignSegments = await this.CampaignSegmentModel.find({ [key]: { $in: [id] } });
 
       const campaignIds = campaignSegments.map(obj => obj.campaign_ID);
 
