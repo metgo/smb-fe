@@ -41,7 +41,7 @@ export class CreateOrderDto {
     email: string;
 
   @IsString()
-  @IsOptional()
+  @IsNotEmpty()
   @ApiProperty()
     countryCode: string;
 

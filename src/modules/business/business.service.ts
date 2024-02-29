@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
+import { nanoid } from 'nanoid';
 import { ObjectId } from 'typeorm';
 
 import { maxDistanceInRadius } from 'src/common/max-distance-in-radius';
@@ -14,7 +15,14 @@ import { Business } from './schema/business.schema';
 import { GetAllBusinessesForGuestQuery, GetAllUnpaginatedBusinessQuery, GetUsersBusinessesQuery } from 'src/modules/business/queries';
 import { createBusinessDto, updateBusinessDto } from 'src/modules/business/dto';
 import {
-  findOneByFieldName, findOneByFieldNameExcludeId, findOneByFieldNames, queryhandler, updateById, updateOneByManyFields,
+  deleteItem,
+  findManyByFilter,
+  findOneByFieldName,
+  findOneByFieldNameExcludeId,
+  findOneByFieldNameIncludingDeleted,
+  findOneByFieldNames,
+  queryhandler,
+  updateOneByManyFields,
 } from 'src/core/helper/query-helper';
 import { milesConfig, ServerErrors } from 'src/common/constant';
 import { Image } from 'src/common/interface/image.interface';
@@ -22,15 +30,15 @@ import { paginationConfig } from 'src/common/pagination.config';
 import { generateRandomCode } from 'src/common/utils/randomCode.generator';
 import { disSelect } from 'src/common/utils/select.handling';
 import { BusinessStatus, GetBusinessByIdOrSlug } from 'src/modules/business/business.type';
-import { UpdateBusinessByAdminDto } from 'src/modules/business/dto/update-business-status.dto';
+import { UpdateBusinessByAdminDto } from 'src/modules/business/dto/update-business-by-admin.dto';
 import { GcpBucketService } from 'src/services/gcp-bucket/gcp-bucket.services';
 import { WebCreateBusiness } from 'src/modules/business/dto/web-create-business.dto';
 import { Media } from '../media/schema/media.schema';
-import { updateWebBusinessDto } from './dto/web.update.dto';
 import { AuthorityService } from 'src/modules/authority/authority.service';
 import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.schema';
 import { BussSubCategory } from 'src/modules/buss-subcategories/schema/buss-subCategory.schema';
 import { Product } from 'src/modules/products/schema/products.schema';
+import { User } from 'src/modules/users/schema/users.schema';
 import { UserType } from 'src/modules/users/users.type';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { LoggedInUserInterface } from '../auth/interface/login.interface';
@@ -52,6 +60,8 @@ export class BusinessService {
     private BussSubCategoryModel: Model<BussSubCategory>,
     @InjectModel(Product.name)
     private ProductModel: Model<Product>,
+    @InjectModel('User')
+    private UserModel: Model<User>,
   ) {}
 
   async createBusiness(dto: createBusinessDto, userId: string): Promise<Business> {
@@ -86,10 +96,12 @@ export class BusinessService {
         slug,
       });
       await newBusiness.save();
+
+      await this.UserModel.findOneAndUpdate({ _id: userId }, { hasBusiness: true });
       return newBusiness;
     } catch (error) {
       if (this.isDuplicateKeyError(error, 'slug')) {
-        const slug = this.generateSlug(dto?.name);
+        const slug = this.generateSlug(`${dto?.name}${nanoid(2)}`);
         const newBusiness = new this.BusinessModel({
           ...newDto,
           userId,
@@ -97,15 +109,17 @@ export class BusinessService {
           slug,
         });
         await newBusiness.save();
+
+        await this.UserModel.findOneAndUpdate({ _id: userId }, { hasBusiness: true });
         return newBusiness;
       }
       exceptionHandling(error);
     }
   }
 
-  async createBusinesForWeb(
+  async createBusinessByAdmins(
     dto: WebCreateBusiness,
-    loggedInUserId: string,
+    loggedInUser: LoggedInUserInterface,
     image: Array<Express.Multer.File>,
   ): Promise<Business> {
     let newDto: any = dto;
@@ -138,12 +152,22 @@ export class BusinessService {
 
     try {
       const slug = this.generateSlug(dto?.name);
-      const newBusiness = new this.BusinessModel({
+
+      let data = {
         ...newDto,
         images,
-        createdBy: loggedInUserId,
+        createdBy: loggedInUser.id,
         slug,
-      });
+      };
+      if (loggedInUser.role === UserType.DMOADMIN) {
+        const dmoId = await this.dmoService.findDMOByUserID(loggedInUser.id);
+
+        data = {
+          ...data,
+          dmoId,
+        };
+      }
+      const newBusiness = new this.BusinessModel(data);
       await newBusiness.save();
 
       // add to Media Table
@@ -153,7 +177,7 @@ export class BusinessService {
             refId: newBusiness.id,
             schema: 'Business',
           },
-          createdBy: loggedInUserId,
+          createdBy: loggedInUser.id,
           url: img.image,
           originalName: img?.caption || null,
           mimetype: img?.mimetype || null,
@@ -164,13 +188,23 @@ export class BusinessService {
       return newBusiness;
     } catch (err) {
       if (this.isDuplicateKeyError(err, 'slug')) {
-        const slug = this.generateSlug(dto?.name);
-        const newBusiness = new this.BusinessModel({
+        const slug = this.generateSlug(`${dto?.name}${nanoid(2)}`);
+
+        let data = {
           ...newDto,
           images,
-          createdBy: loggedInUserId,
+          createdBy: loggedInUser.id,
           slug,
-        });
+        };
+        if (loggedInUser.role === UserType.DMOADMIN) {
+          const dmoId = await this.dmoService.findDMOByUserID(loggedInUser.id);
+
+          data = {
+            ...data,
+            dmoId,
+          };
+        }
+        const newBusiness = new this.BusinessModel(data);
         await newBusiness.save();
 
         // add to Media Table
@@ -180,7 +214,7 @@ export class BusinessService {
               refId: newBusiness.id,
               schema: 'Business',
             },
-            createdBy: loggedInUserId,
+            createdBy: loggedInUser.id,
             url: img.image,
             originalName: img?.caption || null,
             mimetype: img?.mimetype || null,
@@ -194,7 +228,10 @@ export class BusinessService {
     }
   }
 
-  async getAllBusiness(queries: GetAllBusinessesForGuestQuery | GetUsersBusinessesQuery, isAdmin?: boolean) {
+  async getAllBusiness(
+    queries: GetAllBusinessesForGuestQuery | GetUsersBusinessesQuery,
+    authenticatedUser?: LoggedInUserInterface,
+  ) {
     const {
       page, limit, search, long, lat, miles, ...query
     } = queries;
@@ -204,8 +241,16 @@ export class BusinessService {
 
     let findQuery: any = query;
 
-    if (!('status' in query) && !isAdmin) {
+    if (!('status' in query) && !authenticatedUser) {
       findQuery = { ...query, status: BusinessStatus.APPROVED };
+    }
+
+    if (authenticatedUser && authenticatedUser?.role === UserType.DMOADMIN) {
+      const dmoId = await this.dmoService.findDMOByUserID(authenticatedUser.id);
+      findQuery = {
+        ...findQuery,
+        dmoId,
+      };
     }
 
     const populate = {
@@ -218,7 +263,7 @@ export class BusinessService {
     };
 
     const populate1 = {
-      path: 'dmoId authorityId',
+      path: 'dmoId authorityId productsId',
       select: `${disSelect} -userId -collaboratorsUser`,
     };
 
@@ -432,7 +477,7 @@ export class BusinessService {
     };
 
     const populate1 = {
-      path: 'dmoId authorityId',
+      path: 'dmoId authorityId productsId',
       select: `${disSelect} -userId -collaboratorsUser`,
     };
 
@@ -465,41 +510,65 @@ export class BusinessService {
     };
 
     const populate1 = {
-      path: 'dmoId authorityId',
+      path: 'dmoId authorityId productsId',
       select: `${disSelect} -userId -collaboratorsUser`,
     };
     const select = `${disSelect}`;
-    const allowedRoles = [UserType.ADMIN, UserType.SUPERADMIN, UserType.DMO];
 
     try {
       const business = await this.BusinessModel.findById(id).select(select).populate(populate).populate(populate1);
 
-      if (!business || (
-        !(
-          loggedInUser
-          && (allowedRoles.includes(loggedInUser.role)
-          || business.userId.equals(new mongoose.Types.ObjectId(loggedInUser.id)))
-        ) && business.status !== BusinessStatus.APPROVED
-      )) {
+      if (!business) {
         throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
       }
 
-      return business;
+      if (!loggedInUser && business.status === BusinessStatus.APPROVED && !business.isDeleted) {
+        return business;
+      }
+
+      if (loggedInUser) {
+        if (loggedInUser.role === UserType.SUPERADMIN
+          || business.userId.equals(new mongoose.Types.ObjectId(loggedInUser.id))) {
+          return business;
+        }
+
+        if (loggedInUser.role === UserType.DMOADMIN && business?.dmoId) {
+          const dmoId = await this.dmoService.findDMOByUserID(loggedInUser.id);
+          if (business.dmoId.equals(new mongoose.Types.ObjectId(dmoId))) {
+            return business;
+          }
+        }
+      }
+
+      throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
     } catch (error) {
       if (error?.name === 'CastError' && error?.kind === 'ObjectId') {
         if (error?.model?.modelName === Business.name) {
-          const business = await findOneByFieldName<Business>(this.BusinessModel, 'slug', id);
-          if (!business || (
-            !(
-              loggedInUser
-          && (allowedRoles.includes(loggedInUser.role)
-          || business.userId.equals(new mongoose.Types.ObjectId(loggedInUser.id)))
-            ) && business.status !== BusinessStatus.APPROVED
-          )) {
+          const business = await findOneByFieldNameIncludingDeleted<Business>(this.BusinessModel, 'slug', id);
+          if (!business) {
             throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
           }
 
-          return business;
+          if (!loggedInUser && business.status === BusinessStatus.APPROVED && !business.isDeleted) {
+            return business;
+          }
+
+          if (loggedInUser) {
+            if (loggedInUser.role === UserType.SUPERADMIN
+              || business.userId.equals(new mongoose.Types.ObjectId(loggedInUser.id))
+            ) {
+              return business;
+            }
+
+            if (loggedInUser.role === UserType.DMOADMIN && business.dmoId) {
+              const dmoId = await this.dmoService.findDMOByUserID(loggedInUser.id);
+              if (business.dmoId.equals(new mongoose.Types.ObjectId(dmoId))) {
+                return business;
+              }
+            }
+          }
+
+          throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
         }
         throw new BadRequestException(`${error?.model?.modelName} ${ServerErrors.INVALID_ID}`);
       }
@@ -516,17 +585,13 @@ export class BusinessService {
     const queryLimit = limit ? Number(limit) : paginationConfig.limit;
 
     let findQuery: any = { ...query, userId };
-    let select: {};
-    let populate: any;
-    let populate1: {};
     if (search) {
       findQuery = {
         ...query,
         $text: { $search: search, $caseSensitive: false, $diacriticSensitive: false },
       };
     }
-    // eslint-disable-next-line prefer-const
-    populate = {
+    const populate = {
       path: 'groupTypesId accessibilitiesId bussCategoriesId bussSubCategoriesId socialMedia.socialMediaId',
       select: `${disSelect}`,
       populate: {
@@ -535,13 +600,11 @@ export class BusinessService {
       },
     };
 
-    // eslint-disable-next-line prefer-const
-    populate1 = {
-      path: 'dmoId authorityId',
+    const populate1 = {
+      path: 'dmoId authorityId productsId',
       select: `${disSelect} -userId -collaboratorsUser`,
     };
-    // eslint-disable-next-line prefer-const
-    select = `${disSelect}`;
+    const select = `${disSelect}`;
     const allBusiness = await queryhandler<Business>(
       this.BusinessModel,
       {
@@ -560,13 +623,16 @@ export class BusinessService {
   async updateBusiness(
     id: string,
     loggedInUser: LoggedInUserInterface,
-    dto: updateBusinessDto | UpdateBusinessByAdminDto | updateWebBusinessDto,
-    isDMO?: boolean,
+    dto: updateBusinessDto,
   ): Promise<Business> {
-    let updatedField: any;
+    let updatedField: any = {
+      ...dto,
+      updatedAt: new Date(),
+      updatedBy: loggedInUser.id,
+    };
 
     // find dmoId by authority
-    if (dto instanceof updateBusinessDto && dto?.authorityId) {
+    if (dto?.authorityId) {
       const dmo = (await this.authorityService.getOne(dto.authorityId)).dmoId;
 
       updatedField = {
@@ -575,41 +641,99 @@ export class BusinessService {
       };
     }
 
-    if (dto instanceof updateBusinessDto && dto.geoLocation) {
+    if (dto.geoLocation) {
       const location = {
         type: 'Point',
         coordinates: [parseFloat(dto.geoLocation.long), parseFloat(dto.geoLocation.lat)],
       };
       updatedField = {
-        ...dto,
+        ...updatedField,
         location,
       };
     }
-    updatedField = {
-      ...updatedField,
-      ...dto,
-      updatedAt: new Date(),
-      updatedBy: loggedInUser.id,
-    };
 
-    let findQuery: any = {
-      _id: id,
-    };
-
-    if (isDMO) {
-      const dmoId = await this.dmoService.findDMOByUserID(loggedInUser.id);
-
-      findQuery = {
-        ...findQuery,
-        dmoId,
+    if (dto.name) {
+      const slug = this.generateSlug(dto.name);
+      updatedField = {
+        ...updatedField,
+        slug,
       };
     }
 
-    const updateBusiness = await this.BusinessModel.findOneAndUpdate(findQuery, updatedField, { new: true });
+    const updateBusiness = await this.BusinessModel.findOneAndUpdate(
+      { _id: id, isDeleted: false },
+      updatedField,
+      { new: true },
+    );
     if (!updateBusiness) {
       throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
     }
     return updateBusiness;
+  }
+
+  async updateBusinessByAdmin(
+    id: string,
+    loggedInUser: LoggedInUserInterface,
+    body: UpdateBusinessByAdminDto,
+  ) : Promise<Business> {
+    try {
+      let updatedField: any = {
+        ...body,
+        updatedAt: new Date(),
+        updatedBy: loggedInUser.id,
+      };
+
+      if (body.geoLocation) {
+        const location = {
+          type: 'Point',
+          coordinates: [parseFloat(body.geoLocation.long), parseFloat(body.geoLocation.lat)],
+        };
+        updatedField = {
+          ...updatedField,
+          location,
+        };
+      }
+
+      // find dmoId by authority
+      if (body?.authorityId) {
+        const dmo = (await this.authorityService.getOne(body.authorityId)).dmoId;
+
+        updatedField = {
+          ...updatedField,
+          dmoId: dmo._id,
+        };
+      }
+
+      if (body.name) {
+        const slug = this.generateSlug(body.name);
+        updatedField = {
+          ...updatedField,
+          slug,
+        };
+      }
+
+      let findQuery: any = {
+        _id: id,
+        isDeleted: false,
+      };
+
+      if (loggedInUser.role === UserType.DMOADMIN) {
+        const dmoId = await this.dmoService.findDMOByUserID(loggedInUser.id);
+
+        findQuery = {
+          ...findQuery,
+          dmoId,
+        };
+      }
+
+      const updateBusiness = await this.BusinessModel.findOneAndUpdate(findQuery, updatedField, { new: true });
+      if (!updateBusiness) {
+        throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
+      }
+      return updateBusiness;
+    } catch (err) {
+      exceptionHandling(err);
+    }
   }
 
   async uploadMedia(id: string, loggedInUserId: string, dto: Image[], role: string) {
@@ -672,11 +796,66 @@ export class BusinessService {
 
   async deleteBusiness(id: string, loggedInUserId: string): Promise<Business> {
     try {
-      const updateField = { isDeleted: true, deletedAt: new Date(), deletedBy: loggedInUserId };
-      const business = await updateById<Business>(this.BusinessModel, id, updateField);
+      const updateField = { deletedBy: loggedInUserId };
+      const business = await deleteItem<Business>(this.BusinessModel, { _id: id }, updateField);
       if (!business) {
         throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
       }
+
+      const usersBusinesses = await findManyByFilter<Business>(
+        this.BusinessModel,
+        {
+          userId: loggedInUserId,
+          isDeleted: false,
+        },
+      );
+
+      if (!usersBusinesses?.length) {
+        await this.UserModel.findOneAndUpdate({ _id: loggedInUserId }, { hasBusiness: false });
+      }
+      return business;
+    } catch (err) {
+      exceptionHandling(err);
+    }
+  }
+
+  async deleteBusinessByAdmin(id: string, loggedInUser: LoggedInUserInterface): Promise<Business> {
+    try {
+      const updateField = { deletedBy: loggedInUser.id };
+      let filter : any = {
+        _id: id,
+      };
+
+      if (loggedInUser.role === UserType.DMOADMIN) {
+        const dmoId = await this.dmoService.findDMOByUserID(loggedInUser.id);
+        filter = {
+          ...filter,
+          dmoId,
+        };
+      }
+
+      const business = await deleteItem<Business>(
+        this.BusinessModel,
+        filter,
+        updateField,
+      );
+
+      if (!business) {
+        throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
+      }
+
+      const usersBusinesses = await findManyByFilter<Business>(
+        this.BusinessModel,
+        {
+          userId: business.userId,
+          isDeleted: false,
+        },
+      );
+
+      if (!usersBusinesses?.length) {
+        await this.UserModel.findOneAndUpdate({ _id: business.userId }, { hasBusiness: false });
+      }
+
       return business;
     } catch (err) {
       exceptionHandling(err);

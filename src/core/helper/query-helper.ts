@@ -24,6 +24,12 @@ export async function findOneByFieldName<T>(model: Model<T>, fieldName: keyof T,
   return data;
 }
 
+export async function findOneByFieldNameIncludingDeleted<T>(model: Model<T>, fieldName: keyof T, item: string) {
+  const filterBy = { [fieldName]: item };
+  const data = await model.findOne({ filterBy });
+  return data;
+}
+
 export async function findOneByFieldNameExcludeId<T>(model: Model<T>, fieldName: keyof T, item: string, id: string) {
   const filterBy = { [fieldName]: item };
   const data = await model.findOne({ ...filterBy, deletedAt: { $in: [null] }, _id: { $nin: [id] } });
@@ -104,6 +110,19 @@ export async function updateManyByManyFields<T>(model: Model<T>, filterFields: o
 export async function findManyByFilter<T>(model: Model<T>, filter: object) {
   const updatedDocuments = await model.find(filter).lean();
   return updatedDocuments;
+}
+
+export async function deleteItem<T>(model: Model<T>, filterFields: object, updateField: object) {
+  const data = await model.findOneAndUpdate(
+    filterFields,
+    {
+      ...updateField,
+      isDeleted: true,
+      deletedAt: new Date(),
+    },
+    { new: true },
+  );
+  return data;
 }
 
 export async function queryhandler<T>(

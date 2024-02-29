@@ -1,1 +1,1 @@
-export const disSelect = '-createdAt -updatedAt -createdBy -updatedBy -deletedBy -deletedAt -isDeleted  -__v';
+export const disSelect = '-createdAt -updatedAt -createdBy -updatedBy -deletedBy -deletedAt  -__v';

@@ -27,7 +27,7 @@ import { responseHelper } from 'src/core/helper/response.helper';
 import { Roles } from 'src/core/guards/authorization/roles';
 import { JwtAuthGuard } from 'src/core/guards/jwt/jwt.guards';
 import {
-  createBusinessDto, UpdateBusinessByAdminDto, updateBusinessDto, WebCreateBusiness, updateWebBusinessDto,
+  createBusinessDto, UpdateBusinessByAdminDto, updateBusinessDto, WebCreateBusiness,
 } from 'src/modules/business/dto';
 import { GetAllBusinessesForGuestQuery, GetAllUnpaginatedBusinessQuery, GetUsersBusinessesQuery } from 'src/modules/business/queries';
 import { BusinessService } from 'src/modules/business/business.service';
@@ -63,10 +63,10 @@ export class BusinessController {
     return responseHelper(response, HttpStatus.CREATED, ServerSuccess.BUSINESS_CREATED, business, null, null);
   }
 
-  @Roles(UserType.SUPERADMIN)
+  @Roles(UserType.DMOADMIN, UserType.SUPERADMIN)
   @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
-    tags: ['Business', 'Web'],
+    tags: ['Business', 'DMO-Admin', 'Web'],
     response: { status: HttpStatus.OK, description: ServerSuccess.BUSINESS_CREATED },
     noAuthToken: true,
     operation: 'Create a business by superadmin role',
@@ -79,12 +79,11 @@ export class BusinessController {
     @Body() body: WebCreateBusiness,
     @UploadedFiles() image: Array<Express.Multer.File>,
   ) {
-    const loggedInUserId = request.user.id;
     body.name && await this.businessServices.findByFieldName('name', body.name);
     body.phoneNumber && await this.businessServices.findByFieldName('phoneNumber', body.phoneNumber);
     body.busiEmail && await this.businessServices.findByFieldName('busiEmail', body.busiEmail);
 
-    const business = await this.businessServices.createBusinesForWeb(body, loggedInUserId, image);
+    const business = await this.businessServices.createBusinessByAdmins(body, request.user, image);
     return responseHelper(response, HttpStatus.CREATED, ServerSuccess.BUSINESS_CREATED, business, null, null);
   }
 
@@ -120,21 +119,22 @@ export class BusinessController {
     return responseHelper(response, HttpStatus.OK, ServerSuccess.BUSINESS_LISTED, business, null, null);
   }
 
-  @Roles(UserType.ADMIN, UserType.DMO, UserType.SUPERADMIN)
+  @Roles(UserType.DMOADMIN, UserType.SUPERADMIN)
   @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
-    tags: ['Admin', 'Business'],
+    tags: ['Admin', 'Business', 'DMO-Admin'],
     response: { status: HttpStatus.OK, description: ServerSuccess.BUSINESS_LISTED },
     softBlockExtraDtoFields: true,
     noAuthToken: true,
-    operation: 'Get all businesses by admin, superadmin and dmo role',
+    operation: 'Get all businesses by superadmin and dmo-admin role',
   })
   @Get('admin/businesses')
   async getAllBusinessForAdmin(
+    @Req() request,
     @Res() response: Response,
     @Query() query?: GetUsersBusinessesQuery,
   ) {
-    const business = await this.businessServices.getAllBusiness(query, true);
+    const business = await this.businessServices.getAllBusiness(query, request.user);
 
     return responseHelper(response, HttpStatus.OK, ServerSuccess.BUSINESS_LISTED, business, null, null);
   }
@@ -179,13 +179,13 @@ export class BusinessController {
     return responseHelper(response, HttpStatus.OK, ServerSuccess.BUSINESS_LISTED, business, null, null);
   }
 
-  @Roles(UserType.ADMIN, UserType.DMO, UserType.SUPERADMIN)
+  @Roles(UserType.DMOADMIN, UserType.SUPERADMIN)
   @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
-    tags: ['Business'],
+    tags: ['Admin', 'Business', 'DMO-Admin'],
     response: { status: HttpStatus.OK, description: ServerSuccess.BUSINESS_LISTED },
     noAuthToken: true,
-    operation: 'Get any business detail by admin, superadmin, dmo role',
+    operation: 'Get any business detail by superadmin and dmo-admin role',
   })
   @Get('admin/businesses/:id')
   async getBusinessDetailForAdmin(
@@ -245,51 +245,54 @@ export class BusinessController {
     return responseHelper(response, HttpStatus.OK, ServerSuccess.BUSINESS_UPDATED, business, null, null);
   }
 
-  @Roles(UserType.SUPERADMIN)
+  @Roles(UserType.DMOADMIN, UserType.SUPERADMIN)
   @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
-    tags: ['Business Web'],
+    tags: ['Admin', 'Business', 'DMO-Admin'],
     response: { status: HttpStatus.OK, description: ServerSuccess.BUSINESS_UPDATED },
     noAuthToken: true,
     params: [{ name: 'id', type: 'string', required: true }],
-    operation: 'Update businesses details by superadmin ',
+    operation: 'Update businesses details by superadmin and dmo-admin',
   })
   @Put('admin/business/:id')
   async updateBusinessWeb(
     @Req() request,
     @Res() response:Response,
     @Param('id') id: string,
-    @Body() dto: updateWebBusinessDto,
+    @Body() dto: UpdateBusinessByAdminDto,
   ) {
     dto.name && await this.businessServices.findByFieldNameExcludeId('name', dto.name, id);
     dto.phoneNumber && await this.businessServices.findByFieldNameExcludeId('phoneNumber', dto.phoneNumber, id);
     dto.busiEmail && await this.businessServices.findByFieldNameExcludeId('busiEmail', dto.busiEmail, id);
 
-    const business = await this.businessServices.updateBusiness(id, request.user, dto);
+    const business = await this.businessServices.updateBusinessByAdmin(id, request.user, dto);
 
     return responseHelper(response, HttpStatus.OK, ServerSuccess.BUSINESS_UPDATED, business, null, null);
   }
 
   @ApiEndpoint({
-    tags: ['Admin', 'Business'],
+    tags: ['Admin', 'Business', 'DMO-Admin'],
     response: { status: HttpStatus.OK, description: ServerSuccess.BUSINESS_UPDATED },
     noAuthToken: true,
     params: [{ name: 'businessId', type: 'string', required: true }],
   })
-  @Roles(UserType.ADMIN, UserType.DMO, UserType.SUPERADMIN)
+  @Roles(UserType.DMOADMIN, UserType.SUPERADMIN)
   @UseGuards(JwtAuthGuard)
   @Patch('admin/business/:businessId')
   async updateBusinessByAdmin(
     @Req() request,
     @Res() response: Response,
     @Param('businessId') businessId: string,
-    @Body() dto: UpdateBusinessByAdminDto,
+    @Body() body: UpdateBusinessByAdminDto,
   ) {
-    const business = await this.businessServices.updateBusiness(
+    body.name && await this.businessServices.findByFieldNameExcludeId('name', body.name, businessId);
+    body.phoneNumber && await this.businessServices.findByFieldNameExcludeId('phoneNumber', body.phoneNumber, businessId);
+    body.busiEmail && await this.businessServices.findByFieldNameExcludeId('busiEmail', body.busiEmail, businessId);
+
+    const business = await this.businessServices.updateBusinessByAdmin(
       businessId,
       request.user,
-      dto,
-      request.user.role === UserType.DMO,
+      body,
     );
 
     return responseHelper(response, HttpStatus.OK, ServerSuccess.BUSINESS_UPDATED, business, null, null);
@@ -309,6 +312,25 @@ export class BusinessController {
     @Param('id') bussId: string,
   ) {
     const business = await this.businessServices.deleteBusiness(bussId, request.user.id);
+
+    return responseHelper(response, HttpStatus.OK, ServerSuccess.BUSINESS_UPDATED, business, null, null);
+  }
+
+  @ApiEndpoint({
+    tags: ['Admin', 'DMO-Admin', 'Business'],
+    response: { status: HttpStatus.OK, description: ServerSuccess.BUSINESS_UPDATED },
+    noAuthToken: true,
+    params: [{ name: 'id', type: 'string', required: true }],
+  })
+  @Roles(UserType.DMOADMIN, UserType.SUPERADMIN)
+  @UseGuards(JwtAuthGuard)
+  @Delete('admin/businesses/:id')
+  async deleteBusinessByAdmin(
+    @Req() request,
+    @Res() response: Response,
+    @Param('id') businessId: string,
+  ) {
+    const business = await this.businessServices.deleteBusinessByAdmin(businessId, request.user);
 
     return responseHelper(response, HttpStatus.OK, ServerSuccess.BUSINESS_UPDATED, business, null, null);
   }
