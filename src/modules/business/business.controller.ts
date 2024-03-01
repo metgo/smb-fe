@@ -29,7 +29,9 @@ import { JwtAuthGuard } from 'src/core/guards/jwt/jwt.guards';
 import {
   createBusinessDto, UpdateBusinessByAdminDto, updateBusinessDto, WebCreateBusiness,
 } from 'src/modules/business/dto';
-import { GetAllBusinessesForGuestQuery, GetAllUnpaginatedBusinessQuery, GetUsersBusinessesQuery } from 'src/modules/business/queries';
+import {
+  GetAllBusinessesForGuestQuery, GetAllUnpaginatedBusinessQuery, GetBusinessStatsQuery, GetUsersBusinessesQuery,
+} from 'src/modules/business/queries';
 import { BusinessService } from 'src/modules/business/business.service';
 import { UserType } from 'src/modules/users/users.type';
 import { fileFilterByExtensions } from 'src/services/gcp-bucket/middleware/file-filter';
@@ -333,5 +335,30 @@ export class BusinessController {
     const business = await this.businessServices.deleteBusinessByAdmin(businessId, request.user);
 
     return responseHelper(response, HttpStatus.OK, ServerSuccess.BUSINESS_UPDATED, business, null, null);
+  }
+
+  @ApiEndpoint({
+    tags: ['Business'],
+    response: { status: HttpStatus.OK, description: ServerSuccess.BUSINESS_LISTED },
+    noAuthToken: true,
+  })
+  @Roles(UserType.SUPERADMIN, UserType.DMOADMIN, UserType.TRAVELLER)
+  @UseGuards(JwtAuthGuard)
+  @Get('stats/businesses')
+  async getBusinessStats(
+    @Req() req,
+    @Res() response: Response,
+    @Query() query: GetBusinessStatsQuery,
+  ) {
+    const businessStats = await this.businessServices.getStats(req.user, query);
+
+    return responseHelper(
+      response,
+      HttpStatus.OK,
+      ServerSuccess.BUSINESS_LISTED,
+      businessStats,
+      null,
+      null,
+    );
   }
 }

@@ -17,6 +17,7 @@ import { CreateOrderDto } from 'src/modules/orders/dto/create-order.dto';
 import { FilterQuery } from 'src/modules/orders/dto/query.dto';
 import { UpdateOrderDto } from 'src/modules/orders/dto/update-order.dto';
 import { OrdersService } from 'src/modules/orders/orders.services';
+import { GetOrdersStatsQuery } from 'src/modules/orders/queries/get-orders-stats.query';
 import { ProductsService } from 'src/modules/products/products.services';
 import { UserType } from 'src/modules/users/users.type';
 import { VoucherService } from 'src/modules/vouchers/voucher.service';
@@ -37,6 +38,7 @@ export class OrdersController {
     operation: 'Create order detail',
   })
   @HttpCode(HttpStatus.CREATED)
+  @UseGuards(JwtAuthGuard)
   @Post('orders')
   async createOrder(
     @Body() body: CreateOrderDto,
@@ -283,5 +285,30 @@ export class OrdersController {
     } catch (err) {
       exceptionHandling(err);
     }
+  }
+
+  @ApiEndpoint({
+    tags: ['Orders'],
+    response: { status: HttpStatus.OK, description: ServerSuccess.ORDERS.LISTED },
+    noAuthToken: true,
+  })
+  @Roles(UserType.SUPERADMIN, UserType.TRAVELLER)
+  @UseGuards(JwtAuthGuard)
+  @Get('stats/orders')
+  async getBusinessStats(
+    @Req() req,
+    @Res() response: Response,
+    @Query() query: GetOrdersStatsQuery,
+  ) {
+    const orderStats = await this.ordersService.getStats(req.user, query);
+
+    return responseHelper(
+      response,
+      HttpStatus.OK,
+      ServerSuccess.ORDERS.LISTED,
+      orderStats,
+      null,
+      null,
+    );
   }
 }

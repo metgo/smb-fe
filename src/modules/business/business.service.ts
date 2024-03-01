@@ -4,6 +4,7 @@ import {
   BadRequestException, Injectable, NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { differenceInDays, subDays } from 'date-fns';
 import mongoose, { Model } from 'mongoose';
 import { nanoid } from 'nanoid';
 import { ObjectId } from 'typeorm';
@@ -11,8 +12,11 @@ import { ObjectId } from 'typeorm';
 import { maxDistanceInRadius } from 'src/common/max-distance-in-radius';
 import { paginateData } from 'src/common/pagination';
 import { getNearestBusiness } from 'src/common/sort-by-nearest';
+import { calculateGrowthPercentage } from 'src/common/utils/calculate-growth-percentage';
 import { Business } from './schema/business.schema';
-import { GetAllBusinessesForGuestQuery, GetAllUnpaginatedBusinessQuery, GetUsersBusinessesQuery } from 'src/modules/business/queries';
+import {
+  GetAllBusinessesForGuestQuery, GetAllUnpaginatedBusinessQuery, GetBusinessStatsQuery, GetUsersBusinessesQuery,
+} from 'src/modules/business/queries';
 import { createBusinessDto, updateBusinessDto } from 'src/modules/business/dto';
 import {
   deleteItem,
@@ -912,6 +916,190 @@ export class BusinessService {
     const businessesId = businesses.map(item => item._id.toString());
 
     return businessesId;
+  }
+
+  async getStats(loggedInUser: LoggedInUserInterface, query: GetBusinessStatsQuery) {
+    try {
+      const {
+        startDate, endDate, categoriesId, subCategoriesId,
+      } = query;
+
+      const select = disSelect;
+
+      let findQuery: any = { status: BusinessStatus.APPROVED };
+
+      if (categoriesId) {
+        const bussCategoriesId = Array.isArray(categoriesId)
+          ? categoriesId
+          : [categoriesId];
+
+        findQuery = {
+          ...findQuery,
+          bussCategoriesId: { $in: bussCategoriesId },
+        };
+      }
+
+      if (subCategoriesId) {
+        const bussSubCategoriesId = Array.isArray(subCategoriesId)
+          ? subCategoriesId
+          : [subCategoriesId];
+
+        findQuery = {
+          ...findQuery,
+          bussSubCategoriesId: { $in: bussSubCategoriesId },
+        };
+      }
+
+      if (loggedInUser.role === UserType.DMOADMIN) {
+        const dmoId = await this.dmoService.findDMOByUserID(loggedInUser.id);
+        findQuery = {
+          ...findQuery,
+          dmoId,
+        };
+      }
+
+      if (loggedInUser.role === UserType.TRAVELLER) {
+        findQuery = {
+          ...findQuery,
+          userId: loggedInUser.id,
+        };
+      }
+
+      let createdFindQuery: any = {
+        ...findQuery,
+        isDeleted: false,
+      };
+      let deletedFindQuery: any = {
+        ...findQuery,
+        isDeleted: true,
+      };
+
+      if (startDate && endDate) {
+        const createdStartDate = new Date(startDate);
+        const createdEndDate = new Date(endDate);
+
+        if (createdStartDate >= createdEndDate) {
+          throw new BadRequestException(`Created ${ServerErrors.DATE_IS_NOT_LESS}`);
+        }
+
+        const difference = differenceInDays(createdEndDate, createdStartDate);
+
+        const newStartDate = subDays(createdStartDate, difference);
+
+        createdFindQuery = {
+          ...createdFindQuery,
+          createdAt: {
+            $gte: createdStartDate,
+            $lte: createdEndDate,
+          },
+        };
+
+        deletedFindQuery = {
+          ...deletedFindQuery,
+          deletedAt: {
+            $gte: createdStartDate,
+            $lte: createdEndDate,
+          },
+          createdAt: {
+            $gte: createdStartDate,
+            $lte: createdEndDate,
+          },
+        };
+
+        const pastCreatedFindQuery = {
+          ...createdFindQuery,
+          createdAt: {
+            $gte: newStartDate,
+            $lte: createdStartDate,
+          },
+        };
+
+        const pastDeletedFindQuery = {
+          ...deletedFindQuery,
+          deletedAt: {
+            $gte: newStartDate,
+            $lte: createdStartDate,
+          },
+          createdAt: {
+            $gte: newStartDate,
+            $lte: createdStartDate,
+          },
+        };
+
+        const [createdBusinesses, deletedBusinesses, prevCreatedBusinesses, prevDeletedBusinesses] = await Promise.all([
+          queryhandler<Business>(
+            this.BusinessModel,
+            {
+              findQuery: createdFindQuery,
+              select,
+            },
+          ),
+          queryhandler<Business>(
+            this.BusinessModel,
+            {
+              findQuery: deletedFindQuery,
+              select,
+            },
+          ),
+          queryhandler<Business>(
+            this.BusinessModel,
+            {
+              findQuery: pastCreatedFindQuery,
+              select,
+            },
+          ),
+          queryhandler<Business>(
+            this.BusinessModel,
+            {
+              findQuery: pastDeletedFindQuery,
+              select,
+            },
+          ),
+        ]);
+
+        const newBusinessCreated = createdBusinesses.totalData;
+        const newBusinessDeleted = deletedBusinesses.totalData;
+        const prevBusinessCreated = prevCreatedBusinesses.totalData;
+        const prevBusinessDeleted = prevDeletedBusinesses.totalData;
+
+        return {
+          newBusinessCreated,
+          newBusinessDeleted,
+          prevBusinessCreated,
+          prevBusinessDeleted,
+          createdBusinessIncreased: newBusinessCreated > prevBusinessCreated,
+          deletedBusinessIncreased: newBusinessDeleted > prevBusinessDeleted,
+          createdGrowthPercentage: calculateGrowthPercentage(prevBusinessCreated, newBusinessCreated),
+          deletedGrowthPercentage: calculateGrowthPercentage(prevBusinessDeleted, newBusinessDeleted),
+        };
+      }
+
+      const [createdBusinesses, deletedBusinesses] = await Promise.all([
+        queryhandler<Business>(
+          this.BusinessModel,
+          {
+            findQuery: createdFindQuery,
+            select,
+          },
+        ),
+        queryhandler<Business>(
+          this.BusinessModel,
+          {
+            findQuery: deletedFindQuery,
+            select,
+          },
+        ),
+      ]);
+      const newBusinessCreated = createdBusinesses.totalData;
+      const newBusinessDeleted = deletedBusinesses.totalData;
+
+      return {
+        newBusinessCreated,
+        newBusinessDeleted,
+      };
+    } catch (err) {
+      exceptionHandling(err);
+    }
   }
 
   private generateSlug(name: string | null): string {

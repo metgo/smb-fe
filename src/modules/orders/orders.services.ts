@@ -2,13 +2,16 @@ import {
   BadRequestException, ForbiddenException, Inject, Injectable, NotFoundException, forwardRef,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import { differenceInDays, subDays } from 'date-fns';
 import mongoose, { Model } from 'mongoose';
 
+import { calculateTotalAmount } from 'src/common/calculate-amounts';
 import { ServerErrors } from 'src/common/constant';
 import { Currency, Locale, PaymentStatus } from 'src/common/enum';
 import { EnglishTemplate, HebrewTemplate } from 'src/common/mailchimp/templateId';
 import { paginationConfig } from 'src/common/pagination.config';
 import { sortByPriorityAndHighest } from 'src/common/sort-priority-and-highest';
+import { calculateGrowthPercentage } from 'src/common/utils/calculate-growth-percentage';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { disSelect } from 'src/common/utils/select.handling';
 import {
@@ -17,6 +20,7 @@ import {
 import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interface';
 import { BusinessService } from 'src/modules/business/business.service';
 import { UpdateOrderDto } from 'src/modules/orders/dto/update-order.dto';
+import { GetOrdersStatsQuery } from 'src/modules/orders/queries/get-orders-stats.query';
 import { Order } from 'src/modules/orders/schema/orders.schema';
 import { ProductsService } from 'src/modules/products/products.services';
 import { UserType } from 'src/modules/users/users.type';
@@ -334,5 +338,130 @@ export class OrdersService {
     voucherInfo.filter(Boolean);
 
     return voucherInfo;
+  }
+
+  async getStats(loggedInUser: LoggedInUserInterface, query: GetOrdersStatsQuery) {
+    try {
+      const {
+        startDate, endDate,
+      } = query;
+
+      const select = disSelect;
+
+      let findQuery: any = { paymentStatus: PaymentStatus.SUCCESS };
+
+      if (loggedInUser.role === UserType.TRAVELLER) {
+        findQuery = {
+          ...findQuery,
+          userId: loggedInUser.id,
+        };
+      }
+      let createdFindQuery: any = {
+        ...findQuery,
+        isDeleted: false,
+      };
+
+      if (startDate && endDate) {
+        const createdStartDate = new Date(startDate);
+        const createdEndDate = new Date(endDate);
+
+        if (createdStartDate >= createdEndDate) {
+          throw new BadRequestException(`Created ${ServerErrors.DATE_IS_NOT_LESS}`);
+        }
+
+        const difference = differenceInDays(createdEndDate, createdStartDate);
+
+        const newStartDate = subDays(createdStartDate, difference);
+
+        createdFindQuery = {
+          ...createdFindQuery,
+          createdAt: {
+            $gte: createdStartDate,
+            $lte: createdEndDate,
+          },
+        };
+
+        const pastCreatedFindQuery = {
+          ...createdFindQuery,
+          createdAt: {
+            $gte: newStartDate,
+            $lte: createdStartDate,
+          },
+        };
+
+        const [newCreatedOrders, prevCreatedOrders] = await Promise.all([
+          queryhandler<Order>(
+            this.OrderModel,
+            {
+              findQuery: createdFindQuery,
+              select,
+            },
+          ),
+
+          queryhandler<Order>(
+            this.OrderModel,
+            {
+              findQuery: pastCreatedFindQuery,
+              select,
+            },
+          ),
+
+        ]);
+
+        const newOrdersNo = newCreatedOrders.totalData;
+        const prevOrdersNo = prevCreatedOrders.totalData;
+
+        const [totalAmount,
+          totalAmountPrev,
+          amountPaidByCard,
+          amountPaidByCardPrev,
+        ] = await Promise.all([
+          calculateTotalAmount('totalAmount', newCreatedOrders.data),
+          calculateTotalAmount('totalAmount', prevCreatedOrders.data),
+          calculateTotalAmount('creditCardPayment', newCreatedOrders.data),
+          calculateTotalAmount('creditCardPayment', prevCreatedOrders.data),
+        ]);
+
+        const amountPaidByVouchers = totalAmount - amountPaidByCard;
+        const amountPaidByVouchersPrev = totalAmountPrev - amountPaidByCardPrev;
+
+        return {
+          newOrdersNo,
+          prevOrdersNo,
+          ordersIncreased: newOrdersNo > prevOrdersNo,
+          ordersGrowthPercentage: calculateGrowthPercentage(prevOrdersNo, newOrdersNo),
+          totalAmount,
+          totalAmountPrev,
+          amountPaidByCard,
+          amountPaidByCardPrev,
+          amountPaidByVouchers,
+          amountPaidByVouchersPrev,
+        };
+      }
+
+      const newOrders = await queryhandler<Order>(
+        this.OrderModel,
+        {
+          findQuery: createdFindQuery,
+          select,
+        },
+      );
+
+      const [totalAmount,
+        amountPaidByCard,
+      ] = await Promise.all([
+        calculateTotalAmount('totalAmount', newOrders.data),
+        calculateTotalAmount('creditCardPayment', newOrders.data),
+      ]);
+
+      return {
+        newOrdersNo: newOrders.totalData,
+        totalAmount,
+        amountPaidByCard,
+        amountPaidByVouchers: totalAmount - amountPaidByCard,
+      };
+    } catch (err) {
+      exceptionHandling(err);
+    }
   }
 }

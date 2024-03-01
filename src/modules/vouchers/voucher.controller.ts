@@ -390,7 +390,7 @@ export class VoucherController {
   })
   @Roles(UserType.SUPERADMIN, UserType.DMOADMIN, UserType.TRAVELLER)
   @UseGuards(JwtAuthGuard)
-  @Get('vouchers/stats')
+  @Get('stats/vouchers')
   async getVoucherStats(
     @Req() req,
     @Res() response: Response,
