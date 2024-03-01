@@ -1,8 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsOptional, IsString } from 'class-validator';
-import { ProductDto } from './product.dto';
 
-export class WebCreateProduct extends ProductDto {
+import { ProductDto } from 'src/modules/products/dto';
+
+export class CreateProductByAdmin extends ProductDto {
   @ApiProperty({
     required: true,
   })

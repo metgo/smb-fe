@@ -11,27 +11,28 @@ import { sellingPriceForAmountOrPercent } from 'src/common/utils/discount-calcul
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { disSelect } from 'src/common/utils/select.handling';
 import {
-  findOneByFieldNames, queryhandler, updateOneByManyFields,
+  deleteItem, findOneByFieldNames, queryhandler, updateOneByManyFields,
 } from 'src/core/helper/query-helper';
 import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interface';
 import { BusinessService } from 'src/modules/business/business.service';
+import { BusinessStatus } from 'src/modules/business/business.type';
 import { Business } from 'src/modules/business/schema/business.schema';
+import { DMOService } from 'src/modules/dmo/dmo.service';
 import { Product } from 'src/modules/products/schema/products.schema';
-import { ProductDto } from 'src/modules/products/dto/product.dto';
-import {
-  FindProductsQuery, ProductStatus, UpdateCommand, UploadMediaCommand,
-} from 'src/modules/products/products.type';
-import { GcpBucketService } from 'src/services/gcp-bucket/gcp-bucket.services';
-import { WebCreateProduct } from './dto/web-create-product.dto';
+import { CreateProductByAdmin, ProductDto } from 'src/modules/products/dto';
+import { GetProductsQuery, UpdateProductsCommand, UploadMediaCommand } from 'src/modules/products/interface';
+import { ProductStatus } from 'src/modules/products/products.type';
 import { UserType } from 'src/modules/users/users.type';
+import { GcpBucketService } from 'src/services/gcp-bucket/gcp-bucket.services';
 
 @Injectable()
 export class ProductsService {
   constructor(
     @InjectModel(Product.name)
     private ProductModel: Model<Product>,
-    private readonly gcpBucketServices: GcpBucketService,
     private readonly businessService: BusinessService,
+    private readonly dmoService: DMOService,
+    private readonly gcpBucketServices: GcpBucketService,
   ) {}
 
   async create(
@@ -56,6 +57,10 @@ export class ProductsService {
       remaining: body.quantity.initial,
     };
 
+    const status = business.status !== BusinessStatus.APPROVED && body?.status === ProductStatus.ACTIVE
+      ? ProductStatus.INACTIVE
+      : body?.status || ProductStatus.ACTIVE;
+
     const createdField = {
       ...body,
       price,
@@ -64,6 +69,8 @@ export class ProductsService {
       createdBy: userId,
       primaryUserId: business.userId,
       dmoId: business.dmoId,
+      authorityId: business.authorityId,
+      status,
     };
 
     const newProduct = new this.ProductModel({
@@ -81,7 +88,7 @@ export class ProductsService {
     loggedInUserId: string,
     businessId: string,
     business: Business,
-    body: WebCreateProduct,
+    body: CreateProductByAdmin,
     files: Array<Express.Multer.File>,
   ): Promise<Product> {
     let price;
@@ -106,6 +113,10 @@ export class ProductsService {
       };
     }
 
+    const status = business.status !== BusinessStatus.APPROVED && body?.status === ProductStatus.ACTIVE
+      ? ProductStatus.INACTIVE
+      : body?.status || ProductStatus.ACTIVE;
+
     const images = [];
     await Promise.all(
       files.map(async (file: Express.Multer.File) => {
@@ -113,21 +124,14 @@ export class ProductsService {
         const imageUrl = await this.gcpBucketServices.upload(file);
         const imageObject = {
 
-          image: imageUrl || null,
-          caption: file?.originalname || null,
-          alt: file?.originalname || null,
+          image: imageUrl,
+          caption: file.originalname,
+          alt: file.originalname,
 
         };
         images.push(imageObject);
       }),
     );
-    // const productImageUrl = file ? await this.gcpBucketServices.upload(file) : null;
-
-    // const images = [{
-    //   image: productImageUrl,
-    //   caption: file?.originalname || null,
-    //   alt: file?.originalname || null,
-    // }];
 
     const createdField = {
       ...body,
@@ -135,8 +139,10 @@ export class ProductsService {
       quantity,
       businessId,
       createdBy: loggedInUserId,
-      primaryUserId: business?.userId || null,
+      primaryUserId: body?.userId || business?.userId || loggedInUserId,
       dmoId: business.dmoId,
+      authorityId: business.authorityId,
+      status,
       images,
     };
 
@@ -174,7 +180,7 @@ export class ProductsService {
         this.ProductModel,
         { _id: productId },
       );
-      const allowedRoles = [UserType.ADMIN, UserType.DMO, UserType.SUPERADMIN];
+      const allowedRoles = [UserType.DMOADMIN, UserType.SUPERADMIN];
 
       if (!product || (
         !allowedRoles.includes(loggedInUser.role)
@@ -185,13 +191,21 @@ export class ProductsService {
         throw new NotFoundException(ServerErrors.PRODUCT.NOT_FOUND);
       }
 
+      if (loggedInUser.role === UserType.DMOADMIN) {
+        const dmoId = await this.dmoService.findDMOByUserID(loggedInUser.id);
+
+        if (!product.dmoId.equals(new mongoose.Types.ObjectId(dmoId))) {
+          throw new NotFoundException(ServerErrors.PRODUCT.NOT_FOUND);
+        }
+      }
+
       return product;
     } catch (err) {
       exceptionHandling(err);
     }
   }
 
-  async findAll(queries: FindProductsQuery) : Promise<Product[]> {
+  async findAll(queries: GetProductsQuery) : Promise<Product[]> {
     const {
       search, page, limit, ...query
     } = queries.query;
@@ -216,11 +230,20 @@ export class ProductsService {
     }
 
     if (queries.myProduct) {
-      findQuery = { ...findQuery, primaryUserId: queries.loggedInUser };
+      findQuery = { ...findQuery, primaryUserId: queries.loggedInUser.id };
     }
 
     if (queries.collaboratedProducts) {
-      findQuery = { ...findQuery, collaboratorId: queries.loggedInUser };
+      findQuery = { ...findQuery, collaboratorId: queries.loggedInUser.id };
+    }
+
+    if (queries.isAdmin && queries.loggedInUser.role === UserType.DMOADMIN) {
+      const dmoId = await this.dmoService.findDMOByUserID(queries.loggedInUser.id);
+
+      findQuery = {
+        ...findQuery,
+        dmoId,
+      };
     }
 
     const products = await queryhandler<Product>(
@@ -263,7 +286,7 @@ export class ProductsService {
     }
   }
 
-  async update(command: UpdateCommand): Promise<Product> {
+  async update(command: UpdateProductsCommand): Promise<Product> {
     try {
       const sellingPrice = sellingPriceForAmountOrPercent(
         command.body.price.markedPrice,
@@ -284,38 +307,40 @@ export class ProductsService {
 
       const updatedField = {
         ...command.body,
-        updatedBy: command.loggedInUserId,
+        updatedBy: command.loggedInUser.id,
         updatedAt: new Date(),
         price,
         quantity,
       };
-      let updatedProduct: mongoose.Document<unknown, {}, Product>& Product & {
-        _id: mongoose.Types.ObjectId;
+
+      let filterQuery:any = {
+        _id: command.productId,
+        businessId: command.businessId,
       };
 
-      if (command.isAdmin) {
-        updatedProduct = await updateOneByManyFields<Product>(
-          this.ProductModel,
-          {
-            _id: command.productId,
-            businessId: command.businessId,
-          },
-          { ...updatedField },
-        );
-      } else {
-        updatedProduct = await updateOneByManyFields<Product>(
-          this.ProductModel,
-          {
-            _id: command.productId,
-            businessId: command.businessId,
-            $or: [
-              { primaryUserId: command.loggedInUserId },
-              { collaboratorId: command.loggedInUserId },
-            ],
-          },
-          { ...updatedField },
-        );
+      if (command.isAdmin && command.loggedInUser.role === UserType.DMOADMIN) {
+        const dmoId = await this.dmoService.findDMOByUserID(command.loggedInUser.id);
+        filterQuery = {
+          ...filterQuery,
+          dmoId,
+        };
       }
+
+      if (!command.isAdmin) {
+        filterQuery = {
+          ...filterQuery,
+          $or: [
+            { primaryUserId: command.loggedInUser.id },
+            { collaboratorId: command.loggedInUser.id },
+          ],
+        };
+      }
+
+      const updatedProduct = await updateOneByManyFields<Product>(
+        this.ProductModel,
+        filterQuery,
+        updatedField,
+      );
 
       if (!updatedProduct) {
         throw new NotFoundException(ServerErrors.PRODUCT.NOT_FOUND);
@@ -372,19 +397,42 @@ export class ProductsService {
     return updatedProduct;
   }
 
-  async softDelete(businessId: string, productId: string, loggedInUser: string): Promise<Product> {
+  async softDelete(
+    businessId: string,
+    productId: string,
+    loggedInUser: LoggedInUserInterface,
+    isAdmin?: boolean,
+  ): Promise<Product> {
     try {
-      const deletedProduct = await updateOneByManyFields<Product>(
-        this.ProductModel,
-        {
-          _id: productId,
-          businessId,
+      let filterQuery: any = {
+        _id: productId,
+        businessId,
+      };
+
+      if (isAdmin && loggedInUser.role === UserType.DMOADMIN) {
+        const dmoId = await this.dmoService.findDMOByUserID(loggedInUser.id);
+        filterQuery = {
+          ...filterQuery,
+          dmoId,
+        };
+      }
+
+      if (!isAdmin) {
+        filterQuery = {
+          ...filterQuery,
           $or: [
-            { primaryUserId: loggedInUser },
-            { collaboratorId: loggedInUser },
+            { primaryUserId: loggedInUser.id },
+            { collaboratorId: loggedInUser.id },
           ],
-        },
-        { deletedAt: new Date(), deletedBy: loggedInUser, isDeleted: true },
+        };
+      }
+
+      const updatedField = { deletedBy: loggedInUser.id };
+
+      const deletedProduct = await deleteItem<Product>(
+        this.ProductModel,
+        filterQuery,
+        updatedField,
       );
 
       if (!deletedProduct) {

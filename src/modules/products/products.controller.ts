@@ -29,9 +29,9 @@ import { Roles } from 'src/core/guards/authorization/roles';
 import { JwtAuthGuard } from 'src/core/guards/jwt/jwt.guards';
 import { responseHelper } from 'src/core/helper/response.helper';
 import { BusinessService } from 'src/modules/business/business.service';
-import { ProductDto } from 'src/modules/products/dto/product.dto';
-import { AllFilterQuery, FilterQuery, WebCreateProduct } from 'src/modules/products/dto';
+import { CreateProductByAdmin, ProductDto } from 'src/modules/products/dto';
 import { ProductsService } from 'src/modules/products/products.services';
+import { GetAllProductsForLoggedInUserQuery, GetAllProductsForNonLoggedInUserQuery } from 'src/modules/products/queries';
 import { UserType } from 'src/modules/users/users.type';
 import { fileFilterByExtensions } from 'src/services/gcp-bucket/middleware/file-filter';
 
@@ -90,10 +90,10 @@ export class ProductsController {
     response: { status: HttpStatus.CREATED, description: ServerSuccess.PRODUCTS.CREATED },
     softBlockExtraDtoFields: true,
     noAuthToken: true,
-    operation: 'Create product for business by superadmin',
+    operation: 'Create product for business by superadmin and DMO-admin',
     params: [{ name: 'businessId', type: 'string', required: true }],
   })
-  @Roles(UserType.SUPERADMIN)
+  @Roles(UserType.DMOADMIN, UserType.SUPERADMIN)
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.CREATED)
   @Post('admin/businesses/:businessId/products')
@@ -102,19 +102,13 @@ export class ProductsController {
     @Param('businessId') bussinessId: string,
     @Req() req,
     @Res() response: Response,
-    @Body() body: WebCreateProduct,
+    @Body() body: CreateProductByAdmin,
     @UploadedFiles() file: Array<Express.Multer.File>,
   ) {
     const business = await this.businessService.findByFieldItems({ _id: bussinessId });
     if (!business) {
       throw new ForbiddenException(ServerErrors.PRODUCT.ADD_FAILED.BUSINESS);
     }
-    // const userId = new mongoose.Types.ObjectId(body.userId);
-    // if (!userId.equals(business.userId)
-    //   || business.collabrationUser.includes(userId)
-    // ) {
-    //   throw new ForbiddenException(ServerErrors.FORBIDDEN);
-    // }
 
     const product = await this.productsService.createForWeb(req.user.id, bussinessId, business, body, file);
     return responseHelper(
@@ -158,7 +152,7 @@ export class ProductsController {
   @ApiEndpoint({
     tags: ['Admin', 'Products'],
     response: { status: HttpStatus.OK, description: ServerSuccess.PRODUCTS.LISTED },
-    operation: 'Get detail of a product by admin, superadmin and dmo user',
+    operation: 'Get detail of a product by superadmin and dmo-admin',
     params: [{
       name: 'productId',
       type: 'string',
@@ -166,7 +160,7 @@ export class ProductsController {
     }],
     noAuthToken: true,
   })
-  @Roles(UserType.ADMIN, UserType.DMO, UserType.SUPERADMIN)
+  @Roles(UserType.DMOADMIN, UserType.SUPERADMIN)
   @UseGuards(JwtAuthGuard)
   @ApiNotFoundResponse({ description: ServerErrors.PRODUCT.NOT_FOUND })
   @HttpCode(HttpStatus.OK)
@@ -200,13 +194,13 @@ export class ProductsController {
   async getMyProductsDetails(
     @Req() req,
     @Res() response: Response,
-    @Query() query: AllFilterQuery,
+    @Query() query: GetAllProductsForLoggedInUserQuery,
   ) {
     const product = await this.productsService.findAll({
       query,
       myProduct: true,
       collaboratedProducts: false,
-      loggedInUser: req.user.id,
+      loggedInUser: req.user,
     });
     return responseHelper(
       response,
@@ -249,12 +243,12 @@ export class ProductsController {
     );
   }
 
-  @Roles(UserType.ADMIN, UserType.DMO, UserType.SUPERADMIN)
+  @Roles(UserType.DMOADMIN, UserType.SUPERADMIN)
   @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
     tags: ['Admin', 'Products'],
     response: { status: HttpStatus.OK, description: ServerSuccess.PRODUCTS.LISTED },
-    operation: 'Get all products by admin, dmo and superadmin',
+    operation: 'Get all products by superadmin and dmo-admin',
     softBlockExtraDtoFields: true,
     noAuthToken: true,
   })
@@ -263,13 +257,13 @@ export class ProductsController {
   async getBusinessProducts(
     @Req() req,
     @Res() response: Response,
-    @Query() query: AllFilterQuery,
+    @Query() query: GetAllProductsForLoggedInUserQuery,
   ) {
     const product = await this.productsService.findAll({
       query,
       myProduct: false,
       collaboratedProducts: false,
-      loggedInUser: req.user.id,
+      loggedInUser: req.user,
       isAdmin: true,
     });
     return responseHelper(
@@ -295,13 +289,13 @@ export class ProductsController {
   async getMyCollaboratedProductsDetails(
     @Req() req,
     @Res() response: Response,
-    @Query() query: AllFilterQuery,
+    @Query() query: GetAllProductsForLoggedInUserQuery,
   ) {
     const product = await this.productsService.findAll({
       query,
       myProduct: false,
       collaboratedProducts: true,
-      loggedInUser: req.user.id,
+      loggedInUser: req.user,
     });
 
     return responseHelper(
@@ -324,7 +318,7 @@ export class ProductsController {
   @Get('/products')
   async getAllProducts(
     @Res() response: Response,
-    @Query() query: FilterQuery,
+    @Query() query: GetAllProductsForNonLoggedInUserQuery,
   ) {
     const product = await this.productsService.findAll({
       query,
@@ -370,7 +364,7 @@ export class ProductsController {
     const product = await this.productsService.update({
       productId,
       businessId,
-      loggedInUserId: req.user.id,
+      loggedInUser: req.user,
       body,
       isAdmin: false,
     });
@@ -384,7 +378,7 @@ export class ProductsController {
     );
   }
 
-  @Roles(UserType.SUPERADMIN)
+  @Roles(UserType.DMOADMIN, UserType.SUPERADMIN)
   @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
     tags: ['Product', 'Web'],
@@ -394,20 +388,20 @@ export class ProductsController {
       { name: 'businessId', type: 'string', required: true },
       { name: 'productId', type: 'string', required: true },
     ],
-    operation: 'Update the product by super admin roles',
+    operation: 'Update the product by super admin and DMO-admin roles',
   })
   @Put('admin/businesses/:businessId/products/:productId')
   async updateProductByAdmin(
     @Param('businessId') businessId: string,
     @Param('productId') productId: string,
-    @Body() body: WebCreateProduct,
+    @Body() body: CreateProductByAdmin,
     @Req() req,
     @Res() response: Response,
   ) {
     const product = await this.productsService.update({
       productId,
       businessId,
-      loggedInUserId: req.user.id,
+      loggedInUser: req.user,
       body,
       isAdmin: true,
     });
@@ -425,7 +419,7 @@ export class ProductsController {
     tags: ['Business', 'Products'],
     response: { status: HttpStatus.OK, description: ServerSuccess.PRODUCTS.UPDATED },
     noAuthToken: true,
-    operation: 'Delete a product',
+    operation: 'Delete my product',
     params: [{
       name: 'businessId',
       type: 'string',
@@ -447,7 +441,45 @@ export class ProductsController {
     @Req() req,
     @Res() response: Response,
   ) {
-    const deletedProduct = await this.productsService.softDelete(businessId, productId, req.user.id);
+    const deletedProduct = await this.productsService.softDelete(businessId, productId, req.user);
+    return responseHelper(
+      response,
+      HttpStatus.OK,
+      ServerSuccess.PRODUCTS.DELETED,
+      deletedProduct,
+      null,
+      null,
+    );
+  }
+
+  @ApiEndpoint({
+    tags: ['Business', 'Products'],
+    response: { status: HttpStatus.OK, description: ServerSuccess.PRODUCTS.UPDATED },
+    noAuthToken: true,
+    operation: 'Delete a product by superadmin and DMO-admin',
+    params: [{
+      name: 'businessId',
+      type: 'string',
+      required: true,
+    },
+    {
+      name: 'productId',
+      type: 'string',
+      required: true,
+    }],
+  })
+  @ApiNotFoundResponse({ description: ServerErrors.PRODUCT.NOT_FOUND })
+  @Roles(UserType.DMOADMIN, UserType.SUPERADMIN)
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  @Delete('admin/businesses/:businessId/products/:productId')
+  async deleteProductByAdmin(
+    @Param('businessId') businessId: string,
+    @Param('productId') productId: string,
+    @Req() req,
+    @Res() response: Response,
+  ) {
+    const deletedProduct = await this.productsService.softDelete(businessId, productId, req.user, true);
     return responseHelper(
       response,
       HttpStatus.OK,

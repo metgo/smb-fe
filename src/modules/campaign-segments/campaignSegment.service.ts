@@ -11,19 +11,19 @@ import { ExternalApiWithCampCodeFilterQuery } from 'src/common/query-handler/ext
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { disSelect } from 'src/common/utils/select.handling';
 import { updateOneByManyFields } from 'src/core/helper/query-helper';
-import { CampaignSegment } from './schema/campaignSegment.schema';
-import { CreateCampaignSegmentDTO } from 'src/modules/campaign-segments/dto/create-campaign-segment.dto';
-import { DMOService } from '../dmo/dmo.service';
+import { BusinessService } from 'src/modules/business/business.service';
 import { BusinessStatus } from 'src/modules/business/business.type';
 import { CampaignService } from 'src/modules/campaign/campaign.service';
-import { ExtendedProductFilterQuery } from 'src/modules/products/dto/external-api.query.dto';
-import { ProductStatus } from 'src/modules/products/products.type';
-import { BusinessService } from 'src/modules/business/business.service';
 import { CampaignSegmentOperation } from 'src/modules/campaign-segments/campaignSegment.type';
+import { CreateCampaignSegmentDTO } from 'src/modules/campaign-segments/dto/create-campaign-segment.dto';
 import { UpdateCampaignSegmentDTO } from 'src/modules/campaign-segments/dto/update-campaign-segment.dto';
 import { GetByCampCodeQuery } from 'src/modules/campaign-segments/queries/get-by-campcode.query';
 import { GetProductsByCampCodeQuery } from 'src/modules/campaign-segments/queries/get-products-by-campcode.query';
+import { CampaignSegment } from 'src/modules/campaign-segments/schema/campaignSegment.schema';
+import { DMOService } from 'src/modules/dmo/dmo.service';
 import { ProductsService } from 'src/modules/products/products.services';
+import { ProductStatus } from 'src/modules/products/products.type';
+import { GetAllProductsForExternalApiQuery } from 'src/modules/products/queries';
 
 @Injectable()
 export class CampaignSegmentService {
@@ -243,7 +243,7 @@ export class CampaignSegmentService {
     return paginatedBusiness;
   }
 
-  async getAllProducts(query: ExtendedProductFilterQuery | GetProductsByCampCodeQuery) {
+  async getAllProducts(query: GetAllProductsForExternalApiQuery | GetProductsByCampCodeQuery) {
     const { page, limit, campCode } = query;
 
     const campDetails = await this.campaignService.findAndReturn('code', campCode);

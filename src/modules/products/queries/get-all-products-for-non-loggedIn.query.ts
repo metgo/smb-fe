@@ -1,8 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsOptional, IsString } from 'class-validator';
+
 import { CommonFilterQuery } from 'src/common/query-handler/common-filter-query';
 
-export class FilterQuery extends CommonFilterQuery {
+export class GetAllProductsForNonLoggedInUserQuery extends CommonFilterQuery {
   @ApiProperty({ type: String, required: false })
   @IsString()
   @IsOptional()

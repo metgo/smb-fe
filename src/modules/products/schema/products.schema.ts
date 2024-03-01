@@ -2,8 +2,10 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
 
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
+import { Authority } from 'src/modules/authority/schema/authority.schema';
 import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.schema';
 import { BussSubCategory } from 'src/modules/buss-subcategories/schema/buss-subCategory.schema';
+import { DMO } from 'src/modules/dmo/schema/dmo.schema';
 import { ProductStatus } from 'src/modules/products/products.type';
 import { User } from 'src/modules/users/schema/users.schema';
 
@@ -46,7 +48,14 @@ export class Product extends AuditableSchema {
 
   @Prop({
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'DMO',
+    ref: Authority.name,
+    required: false,
+  })
+    authorityId: mongoose.Types.ObjectId;
+
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    ref: DMO.name,
     required: false,
   })
     dmoId: mongoose.Types.ObjectId;

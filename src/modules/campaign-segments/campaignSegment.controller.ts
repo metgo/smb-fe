@@ -15,8 +15,8 @@ import { UpdateCampaignSegmentDTO } from 'src/modules/campaign-segments/dto/upda
 import { CampaignSegmentService } from 'src/modules/campaign-segments/campaignSegment.service';
 import { GetByCampCodeQuery } from 'src/modules/campaign-segments/queries/get-by-campcode.query';
 import { GetProductsByCampCodeQuery } from 'src/modules/campaign-segments/queries/get-products-by-campcode.query';
+import { GetAllProductsForExternalApiQuery } from 'src/modules/products/queries';
 import { UserType } from 'src/modules/users/users.type';
-import { ExtendedProductFilterQuery } from 'src/modules/products/dto/external-api.query.dto';
 
 @Controller()
 export class CampaignSegmentController {
@@ -208,7 +208,7 @@ export class CampaignSegmentController {
   @Get('/externalapi/get_all_products')
   async getAllProductsForExternalApi(
     @Res() response: Response,
-    @Query() query: ExtendedProductFilterQuery,
+    @Query() query: GetAllProductsForExternalApiQuery,
   ) {
     const product = await this.campaignSegmentService.getAllProducts(query);
     return responseHelper(
