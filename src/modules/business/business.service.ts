@@ -718,7 +718,7 @@ export class BusinessService {
 
       let findQuery: any = {
         _id: id,
-        isDeleted: false,
+        $or: [{ isDeleted: { $exists: false } }, { isDeleted: false }],
       };
 
       if (loggedInUser.role === UserType.DMOADMIN) {

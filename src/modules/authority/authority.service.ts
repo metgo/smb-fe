@@ -4,12 +4,11 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { ServerErrors } from 'src/common/constant';
 
-import { paginationConfig } from 'src/common/pagination.config';
-import { CommonFilterQuery } from 'src/common/query-handler/common-filter-query';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { disSelect } from 'src/common/utils/select.handling';
 import { queryhandler } from 'src/core/helper/query-helper';
 import { AuthorityDTO } from 'src/modules/authority/dto/authority.dto';
+import { GetAllAuthoritiesQuery } from 'src/modules/authority/queries/get-all-authorities.query';
 import { Authority } from 'src/modules/authority/schema/authority.schema';
 
 @Injectable()
@@ -33,38 +32,55 @@ export class AuthorityService {
     }
   }
 
-  async getAll(query: CommonFilterQuery) {
-    const { page, limit, search } = query;
+  async getAll(query: GetAllAuthoritiesQuery) {
+    try {
+      const {
+        page, limit, search, dmoId,
+      } = query;
 
-    const queryPage = page ? Number(page) : paginationConfig.page;
-    const queryLimit = limit ? Number(limit) : paginationConfig.limit;
-    const select = `${disSelect}`;
+      const queryPage = Number(page);
+      const queryLimit = Number(limit);
+      const select = `${disSelect}`;
 
-    let findQuery: {} = {};
+      let findQuery: {} = {};
 
-    const populate = {
-      path: 'dmoId',
-      select: `${disSelect}`,
-    };
-
-    if (search) {
-      findQuery = {
-        name: { $regex: search, $options: 'i' },
+      const populate = {
+        path: 'dmoId',
+        select: `${disSelect}`,
       };
+
+      if (search) {
+        findQuery = {
+          name: { $regex: search, $options: 'i' },
+        };
+      }
+
+      if (dmoId) {
+        const dmoIds = Array.isArray(dmoId)
+          ? dmoId
+          : [dmoId];
+
+        findQuery = {
+          ...findQuery,
+          dmoId: { $in: dmoIds },
+        };
+      }
+
+      const authorities = await queryhandler<Authority>(
+        this.AuthorityModel,
+        {
+          findQuery,
+          select,
+          page: queryPage,
+          limit: queryLimit,
+          populate,
+        },
+      );
+
+      return authorities;
+    } catch (err) {
+      exceptionHandling(err);
     }
-
-    const authorities = await queryhandler<Authority>(
-      this.AuthorityModel,
-      {
-        findQuery,
-        select,
-        page: queryPage,
-        limit: queryLimit,
-        populate,
-      },
-    );
-
-    return authorities;
   }
 
   async getOne(id: string) {

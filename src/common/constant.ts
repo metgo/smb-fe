@@ -21,6 +21,7 @@ export const ServerErrors = {
   IS_NOT_BLANK: 'cannot be empty or contain only spaces',
   DATE_IS_NOT_LESS: 'start date must be less than end date.',
   INVALID_ID: 'id is invalid',
+  INVALID: 'is invalid',
   INVALID_QUANTITY: 'Entered quantity is not valid number',
   USER: {
     NOT_FOUND: 'User not found',

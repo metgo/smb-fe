@@ -4,13 +4,13 @@ import {
 import { Response } from 'express';
 
 import { ServerSuccess } from 'src/common/constant';
-import { CommonFilterQuery } from 'src/common/query-handler/common-filter-query';
 import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
 import { Roles } from 'src/core/guards/authorization/roles';
 import { JwtAuthGuard } from 'src/core/guards/jwt/jwt.guards';
 import { responseHelper } from 'src/core/helper/response.helper';
 import { AuthorityDTO } from 'src/modules/authority/dto/authority.dto';
 import { AuthorityService } from 'src/modules/authority/authority.service';
+import { GetAllAuthoritiesQuery } from 'src/modules/authority/queries/get-all-authorities.query';
 import { UserType } from 'src/modules/users/users.type';
 
 @Controller()
@@ -80,7 +80,7 @@ export class AuthorityController {
   })
   @Get('authorities')
   async getAllAuthority(
-    @Query() query: CommonFilterQuery,
+    @Query() query: GetAllAuthoritiesQuery,
     @Res() response: Response,
   ) {
     const authorities = await this.authorityService.getAll(query);
