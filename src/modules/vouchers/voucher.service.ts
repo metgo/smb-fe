@@ -349,6 +349,12 @@ export class VoucherService {
     if (productId) {
       // get all the campId from campaignSegment the productId is associated to
       campIdsFromProductId = await this.campaignSegmentService.getCampaignAssociatedToIds(productId, 'products');
+
+      if (!campIdsFromProductId?.length) {
+        return {
+          totalData: 0,
+        };
+      }
     }
 
     if (campId) {
