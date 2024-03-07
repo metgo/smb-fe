@@ -29,13 +29,13 @@ import { JwtAuthGuard } from 'src/core/guards/jwt/jwt.guards';
 import {
   createBusinessDto, UpdateBusinessByAdminDto, updateBusinessDto, WebCreateBusiness,
 } from 'src/modules/business/dto';
+import { GetBusinessByIdOrSlug } from 'src/modules/business/business.type';
 import {
   GetAllBusinessesForGuestQuery, GetAllUnpaginatedBusinessQuery, GetBusinessStatsQuery, GetUsersBusinessesQuery,
 } from 'src/modules/business/queries';
-import { BusinessService } from 'src/modules/business/business.service';
+import { BusinessService } from 'src/modules/business/services/business.service';
 import { UserType } from 'src/modules/users/users.type';
 import { fileFilterByExtensions } from 'src/services/gcp-bucket/middleware/file-filter';
-import { GetBusinessByIdOrSlug } from 'src/modules/business/business.type';
 
 @Controller()
 export class BusinessController {
@@ -147,7 +147,7 @@ export class BusinessController {
     operation: 'Get approved business detail by any user',
   })
   @Get('business/:idOrSlug')
-  async getBusinessDetailForAll(
+  async getBusinessDetailFosrAll(
     @Res() response: Response,
     @Param('idOrSlug') idOrSlug: string,
   ) {

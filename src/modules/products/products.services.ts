@@ -15,7 +15,7 @@ import {
   deleteItem, findOneByFieldNames, queryhandler, updateOneByManyFields,
 } from 'src/core/helper/query-helper';
 import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interface';
-import { BusinessService } from 'src/modules/business/business.service';
+import { BusinessService } from 'src/modules/business/services/business.service';
 import { BusinessStatus } from 'src/modules/business/business.type';
 import { Business } from 'src/modules/business/schema/business.schema';
 import { DMOService } from 'src/modules/dmo/dmo.service';

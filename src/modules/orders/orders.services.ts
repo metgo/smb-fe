@@ -18,7 +18,7 @@ import {
   findOneByFieldNames, findOneById, queryhandler, updateById,
 } from 'src/core/helper/query-helper';
 import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interface';
-import { BusinessService } from 'src/modules/business/business.service';
+import { BusinessService } from 'src/modules/business/services/business.service';
 import { UpdateOrderDto } from 'src/modules/orders/dto/update-order.dto';
 import { GetOrdersStatsQuery } from 'src/modules/orders/queries/get-orders-stats.query';
 import { Order } from 'src/modules/orders/schema/orders.schema';

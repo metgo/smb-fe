@@ -1,4 +1,3 @@
-/* eslint-disable no-param-reassign */
 /* eslint-disable no-undef */
 import {
   BadRequestException, Injectable, NotFoundException,
@@ -8,15 +7,16 @@ import mongoose, { Model } from 'mongoose';
 import { nanoid } from 'nanoid';
 import { ObjectId } from 'typeorm';
 
+import { milesConfig, ServerErrors } from 'src/common/constant';
+import { Image } from 'src/common/interface/image.interface';
 import { maxDistanceInRadius } from 'src/common/max-distance-in-radius';
 import { paginateData } from 'src/common/pagination';
+import { paginationConfig } from 'src/common/pagination.config';
 import { getNearestBusiness } from 'src/common/sort-by-nearest';
 import { calculateGrowthPercentage } from 'src/common/utils/calculate-growth-percentage';
-import { Business } from './schema/business.schema';
-import {
-  GetAllBusinessesForGuestQuery, GetAllUnpaginatedBusinessQuery, GetBusinessStatsQuery, GetUsersBusinessesQuery,
-} from 'src/modules/business/queries';
-import { createBusinessDto, updateBusinessDto } from 'src/modules/business/dto';
+import { exceptionHandling } from 'src/common/utils/exception-handling';
+import { generateRandomCode } from 'src/common/utils/randomCode.generator';
+import { disSelect } from 'src/common/utils/select.handling';
 import {
   deleteItem,
   findManyByFilter,
@@ -27,25 +27,24 @@ import {
   queryhandler,
   updateOneByManyFields,
 } from 'src/core/helper/query-helper';
-import { milesConfig, ServerErrors } from 'src/common/constant';
-import { Image } from 'src/common/interface/image.interface';
-import { paginationConfig } from 'src/common/pagination.config';
-import { generateRandomCode } from 'src/common/utils/randomCode.generator';
-import { disSelect } from 'src/common/utils/select.handling';
-import { BusinessStatus, GetBusinessByIdOrSlug } from 'src/modules/business/business.type';
-import { UpdateBusinessByAdminDto } from 'src/modules/business/dto/update-business-by-admin.dto';
-import { GcpBucketService } from 'src/services/gcp-bucket/gcp-bucket.services';
-import { WebCreateBusiness } from 'src/modules/business/dto/web-create-business.dto';
-import { Media } from '../media/schema/media.schema';
+import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interface';
 import { AuthorityService } from 'src/modules/authority/authority.service';
+import { BusinessStatus, GetBusinessByIdOrSlug, GeoServicesTypes } from 'src/modules/business/business.type';
+import {
+  createBusinessDto, updateBusinessDto, WebCreateBusiness, UpdateBusinessByAdminDto,
+} from 'src/modules/business/dto';
+import {
+  GetAllBusinessesForGuestQuery, GetAllUnpaginatedBusinessQuery, GetBusinessStatsQuery, GetUsersBusinessesQuery,
+} from 'src/modules/business/queries';
+import { Business } from 'src/modules/business/schema/business.schema';
 import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.schema';
 import { BussSubCategory } from 'src/modules/buss-subcategories/schema/buss-subCategory.schema';
+import { DMOService } from 'src/modules/dmo/dmo.service';
+import { Media } from 'src/modules/media/schema/media.schema';
 import { Product } from 'src/modules/products/schema/products.schema';
 import { User } from 'src/modules/users/schema/users.schema';
 import { UserType } from 'src/modules/users/users.type';
-import { exceptionHandling } from 'src/common/utils/exception-handling';
-import { LoggedInUserInterface } from '../auth/interface/login.interface';
-import { DMOService } from '../dmo/dmo.service';
+import { GcpBucketService } from 'src/services/gcp-bucket/gcp-bucket.services';
 
 @Injectable()
 export class BusinessService {
@@ -68,7 +67,7 @@ export class BusinessService {
   ) {}
 
   async createBusiness(dto: createBusinessDto, userId: string): Promise<Business> {
-    let newDto:any = dto;
+    let newDto:any = { ...dto, type: GeoServicesTypes.BUSINESS };
 
     // find dmoId by authority
     if (dto.authorityId) {
@@ -125,7 +124,7 @@ export class BusinessService {
     loggedInUser: LoggedInUserInterface,
     image: Array<Express.Multer.File>,
   ): Promise<Business> {
-    let newDto: any = dto;
+    let newDto:any = { ...dto, serviceType: GeoServicesTypes.BUSINESS };
     if (dto.geoLocation) {
       const location = {
         type: 'Point',
@@ -242,10 +241,10 @@ export class BusinessService {
     const queryPage = Number(page) || paginationConfig.page;
     const queryLimit = Number(limit) || paginationConfig.limit;
 
-    let findQuery: any = query;
+    let findQuery: any = { ...query, serviceType: GeoServicesTypes.BUSINESS };
 
     if (!('status' in query) && !authenticatedUser) {
-      findQuery = { ...query, status: BusinessStatus.APPROVED };
+      findQuery = { ...findQuery, status: BusinessStatus.APPROVED };
     }
 
     if (authenticatedUser && authenticatedUser?.role === UserType.DMOADMIN) {
@@ -389,7 +388,7 @@ export class BusinessService {
       search, long, lat, miles, ...query
     } = queries;
 
-    let findQuery: any = { ...query, status: BusinessStatus.APPROVED };
+    let findQuery: any = { ...query, status: BusinessStatus.APPROVED, serviceType: GeoServicesTypes.BUSINESS };
 
     if (search) {
       const [matchingCategoryIds, matchingSubCategoryIds] = await Promise.all([
@@ -587,7 +586,7 @@ export class BusinessService {
     const queryPage = page ? Number(page) : paginationConfig.page;
     const queryLimit = limit ? Number(limit) : paginationConfig.limit;
 
-    let findQuery: any = { ...query, userId };
+    let findQuery: any = { ...query, userId, serviceType: GeoServicesTypes.BUSINESS };
     if (search) {
       findQuery = {
         ...query,
@@ -664,7 +663,7 @@ export class BusinessService {
     }
 
     const updateBusiness = await this.BusinessModel.findOneAndUpdate(
-      { _id: id, isDeleted: false },
+      { _id: id, isDeleted: false, serviceType: GeoServicesTypes.BUSINESS },
       updatedField,
       { new: true },
     );
@@ -718,6 +717,7 @@ export class BusinessService {
       let findQuery: any = {
         _id: id,
         $or: [{ isDeleted: { $exists: false } }, { isDeleted: false }],
+        serviceType: GeoServicesTypes.BUSINESS,
       };
 
       if (loggedInUser.role === UserType.DMOADMIN) {
@@ -800,7 +800,11 @@ export class BusinessService {
   async deleteBusiness(id: string, loggedInUserId: string): Promise<Business> {
     try {
       const updateField = { deletedBy: loggedInUserId };
-      const business = await deleteItem<Business>(this.BusinessModel, { _id: id }, updateField);
+      const business = await deleteItem<Business>(
+        this.BusinessModel,
+        { _id: id, serviceType: GeoServicesTypes.BUSINESS },
+        updateField,
+      );
       if (!business) {
         throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
       }
@@ -834,6 +838,7 @@ export class BusinessService {
         filter = {
           ...filter,
           dmoId,
+          type: GeoServicesTypes.BUSINESS,
         };
       }
 
@@ -920,12 +925,12 @@ export class BusinessService {
   async getStats(loggedInUser: LoggedInUserInterface, query: GetBusinessStatsQuery) {
     try {
       const {
-        startDate, endDate, categoriesId, dmoId, ...queries
+        startDate, endDate, categoriesId, dmoId,
       } = query;
 
       const select = disSelect;
 
-      let findQuery: any = queries;
+      let findQuery: any = { status: BusinessStatus.APPROVED, type: GeoServicesTypes.BUSINESS };
 
       if (categoriesId) {
         const bussCategoriesId = Array.isArray(categoriesId)
@@ -1047,7 +1052,6 @@ export class BusinessService {
 
         const newBusinessCreated = createdBusinesses.totalData;
         const newBusinessDeleted = deletedBusinesses.totalData;
-
         const prevTotalBusinesses = prevCreatedBusinesses.totalData - prevDeletedBusinesses.totalData;
 
         return {

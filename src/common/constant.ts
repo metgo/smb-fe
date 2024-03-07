@@ -23,6 +23,12 @@ export const ServerErrors = {
   INVALID_ID: 'id is invalid',
   INVALID: 'is invalid',
   INVALID_QUANTITY: 'Entered quantity is not valid number',
+  NOT_FOUND: 'not found',
+
+  EVENT: {
+    NOT_FOUND: 'Event not found',
+  },
+
   USER: {
     NOT_FOUND: 'User not found',
     EXISTS: 'User already exists',
@@ -183,6 +189,12 @@ export const ServerSuccess = {
   AUTHORITY: {
     CREATED: 'Authority was created successfully',
     LISTED: 'Authority was listed sucessfully',
+  },
+  EVENTS: {
+    CREATED: 'Events was successfully created',
+    UPDATED: 'Events was successfully updated',
+    LISTED: 'Events was successfully listed',
+    DELETED: 'Events was successfully deleted',
   },
   GROUP_TYPE: {
     CREATED: 'Group Type was created successfully',

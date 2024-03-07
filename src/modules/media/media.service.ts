@@ -8,7 +8,7 @@ import { Model } from 'mongoose';
 import { ServerErrors } from 'src/common/constant';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interface';
-import { BusinessService } from 'src/modules/business/business.service';
+import { BusinessService } from 'src/modules/business/services/business.service';
 import { Business } from 'src/modules/business/schema/business.schema';
 import { DeleteMediaDTO } from 'src/modules/media/dto/delete.dto';
 import { UploadDTO } from 'src/modules/media/dto/upload.dto';

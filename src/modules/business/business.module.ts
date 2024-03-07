@@ -1,8 +1,8 @@
 import { Module, forwardRef } from '@nestjs/common';
-
-import { BusinessController } from './business.controller';
-import { BusinessService } from './business.service';
 import { MongooseModule } from '@nestjs/mongoose';
+
+import { BusinessController } from 'src/modules/business/controllers/business.controller';
+import { BusinessService } from 'src/modules/business/services/business.service';
 import { BusinessSchema } from './schema/business.schema';
 import { UsersService } from '../users/users.services';
 import { UserSchema } from '../users/schema/users.schema';
@@ -21,6 +21,8 @@ import { BussSubCategory, BussSubCategorySchema } from '../buss-subcategories/sc
 import { Product, ProductSchema } from '../products/schema/products.schema';
 import { AuthorityModule } from 'src/modules/authority/authority.module';
 import { VoucherModule } from 'src/modules/vouchers/voucher.module';
+import { EventController } from 'src/modules/business/controllers/event.controller';
+import { EventsService } from 'src/modules/business/services/event.service';
 
 @Module({
   imports: [
@@ -42,8 +44,8 @@ import { VoucherModule } from 'src/modules/vouchers/voucher.module';
     MailChimpModule,
     forwardRef(() => VoucherModule),
   ],
-  controllers: [BusinessController],
-  providers: [BusinessService, UsersService, DMOService, JwtAuthService],
+  controllers: [BusinessController, EventController],
+  providers: [BusinessService, UsersService, DMOService, JwtAuthService, EventsService],
   exports: [BusinessService],
 })
 export class BusinessModule {}

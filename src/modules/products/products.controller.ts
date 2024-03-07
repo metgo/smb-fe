@@ -28,7 +28,7 @@ import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
 import { Roles } from 'src/core/guards/authorization/roles';
 import { JwtAuthGuard } from 'src/core/guards/jwt/jwt.guards';
 import { responseHelper } from 'src/core/helper/response.helper';
-import { BusinessService } from 'src/modules/business/business.service';
+import { BusinessService } from 'src/modules/business/services/business.service';
 import { CreateProductByAdmin, ProductDto } from 'src/modules/products/dto';
 import { ProductsService } from 'src/modules/products/products.services';
 import { GetAllProductsForLoggedInUserQuery, GetAllProductsForNonLoggedInUserQuery, GetProductsStatsQuery } from 'src/modules/products/queries';

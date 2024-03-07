@@ -9,7 +9,7 @@ import { EnglishTemplate, HebrewTemplate } from 'src/common/mailchimp/templateId
 import { ConfigService } from '../config/config.service';
 import { Payment } from './schema/payments.schema';
 import { update } from 'src/core/helper/query-helper';
-import { BusinessService } from 'src/modules/business/business.service';
+import { BusinessService } from 'src/modules/business/services/business.service';
 import { OrdersService } from 'src/modules/orders/orders.services';
 import { ProductsService } from 'src/modules/products/products.services';
 import { VoucherService } from 'src/modules/vouchers/voucher.service';

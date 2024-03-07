@@ -11,7 +11,7 @@ import { ExternalApiWithCampCodeFilterQuery } from 'src/common/query-handler/ext
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { disSelect } from 'src/common/utils/select.handling';
 import { updateOneByManyFields } from 'src/core/helper/query-helper';
-import { BusinessService } from 'src/modules/business/business.service';
+import { BusinessService } from 'src/modules/business/services/business.service';
 import { BusinessStatus } from 'src/modules/business/business.type';
 import { CampaignService } from 'src/modules/campaign/campaign.service';
 import { CampaignSegmentOperation } from 'src/modules/campaign-segments/campaignSegment.type';

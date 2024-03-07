@@ -1,10 +1,11 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
 
+import { Currency } from 'src/common/enum';
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
 import { Accessibility } from 'src/modules/accessibility/schema/accessibility.schema';
 import { Authority } from 'src/modules/authority/schema/authority.schema';
-import { BusinessStatus } from 'src/modules/business/business.type';
+import { BusinessStatus, GeoServicesTypes } from 'src/modules/business/business.type';
 import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.schema';
 import { BussSubCategory } from 'src/modules/buss-subcategories/schema/buss-subCategory.schema';
 import { DMO } from 'src/modules/dmo/schema/dmo.schema';
@@ -220,11 +221,29 @@ export class Business extends AuditableSchema {
   })
     productsId: mongoose.Types.ObjectId[];
 
-  @Prop({
-    unique: true,
-    required: true,
-  })
+  @Prop()
     slug: string;
+
+  @Prop({ enum: GeoServicesTypes, required: false })
+    serviceType: GeoServicesTypes;
+
+  @Prop({ required: false, enum: Currency, default: Currency.ILS })
+    currency: Currency;
+
+  @Prop({ required: false, default: null })
+    price: string;
+
+  @Prop({ required: false, default: null })
+    registrationLink: string;
+
+  @Prop({ required: false, default: null })
+    meetingLink: string;
+
+  @Prop({ required: false, default: null })
+    startDate: Date;
+
+  @Prop({ required: false, default: null })
+    endDate: Date;
 }
 
 export const BusinessSchema = SchemaFactory.createForClass(Business);
