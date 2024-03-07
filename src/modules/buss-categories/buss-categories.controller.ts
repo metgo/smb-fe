@@ -12,8 +12,8 @@ import { Roles } from 'src/core/guards/authorization/roles';
 import { JwtAuthGuard } from 'src/core/guards/jwt/jwt.guards';
 import { responseHelper } from 'src/core/helper/response.helper';
 import { BussCategoriesService } from './buss-categories.service';
-import { updateBussSubCategoryDto } from '../buss-subcategories/dto';
 import { createBussCategoryDto } from './dto/createBussCategoryDto';
+import { UpdateBussCategoryDto } from './dto/updateBussCategoryDto';
 import { UserType } from '../users/users.type';
 import { ExternalApiCategoriesQuery } from 'src/modules/buss-categories/dto/external-api-categories.query.dto';
 
@@ -118,7 +118,7 @@ export class BussCategoriesController {
   async update(
     @Req() req,
     @Res() response: Response,
-    @Body() dto: updateBussSubCategoryDto,
+    @Body() dto: UpdateBussCategoryDto,
     @Param('id') id: string,
   ) {
     await this.bussCategoryService.findByFieldNameExcludeId('name', dto.name, id);

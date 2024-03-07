@@ -43,10 +43,9 @@ export class BussCategoriesService {
     const select = `${disSelect}`;
 
     const populate = {
-      path: 'icon',
+      path: 'icon iconBnW',
       select: disSelect,
     };
-    let populate1: {};
 
     if (search) {
       findQuery = {
@@ -64,7 +63,6 @@ export class BussCategoriesService {
         limit: queryLimit,
         sort: 'createdAt',
         populate,
-        populate1,
         languageQuery: locale,
       },
     );
@@ -75,7 +73,7 @@ export class BussCategoriesService {
   async getOne(id: string, locale: Locale) {
     const select = `${disSelect}`;
     const populate = {
-      path: 'icon',
+      path: 'icon iconBnW',
       select: disSelect,
     };
     const bussCategory = await this.BussCategoryModel.findById(id)
@@ -132,7 +130,7 @@ export class BussCategoriesService {
   async getAllForExternalApi(query: ExternalApiCategoriesQuery) {
     const select = disSelect;
     const populate = {
-      path: 'icon',
+      path: 'icon iconBnW',
       select: `${disSelect}`,
     };
 

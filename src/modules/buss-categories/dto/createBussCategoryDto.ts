@@ -16,6 +16,13 @@ export class createBussCategoryDto {
   @IsString()
     icon: string;
 
+  @ApiProperty({
+    required: true,
+  })
+  @IsNotEmpty()
+  @IsString()
+    iconBnW: string;
+
   @ApiProperty()
   @IsOptional()
   @IsString()
