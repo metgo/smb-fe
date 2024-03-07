@@ -4,7 +4,6 @@ import {
   BadRequestException, Injectable, NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { differenceInDays, subDays } from 'date-fns';
 import mongoose, { Model } from 'mongoose';
 import { nanoid } from 'nanoid';
 import { ObjectId } from 'typeorm';
@@ -921,12 +920,12 @@ export class BusinessService {
   async getStats(loggedInUser: LoggedInUserInterface, query: GetBusinessStatsQuery) {
     try {
       const {
-        startDate, endDate, categoriesId, subCategoriesId,
+        startDate, endDate, categoriesId, dmoId, ...queries
       } = query;
 
       const select = disSelect;
 
-      let findQuery: any = { status: BusinessStatus.APPROVED };
+      let findQuery: any = queries;
 
       if (categoriesId) {
         const bussCategoriesId = Array.isArray(categoriesId)
@@ -939,22 +938,18 @@ export class BusinessService {
         };
       }
 
-      if (subCategoriesId) {
-        const bussSubCategoriesId = Array.isArray(subCategoriesId)
-          ? subCategoriesId
-          : [subCategoriesId];
-
+      if (dmoId) {
         findQuery = {
           ...findQuery,
-          bussSubCategoriesId: { $in: bussSubCategoriesId },
+          dmoId,
         };
       }
 
       if (loggedInUser.role === UserType.DMOADMIN) {
-        const dmoId = await this.dmoService.findDMOByUserID(loggedInUser.id);
+        const dmoID = await this.dmoService.findDMOByUserID(loggedInUser.id);
         findQuery = {
           ...findQuery,
-          dmoId,
+          dmoId: dmoID,
         };
       }
 
@@ -982,10 +977,6 @@ export class BusinessService {
           throw new BadRequestException(`Created ${ServerErrors.DATE_IS_NOT_LESS}`);
         }
 
-        const difference = differenceInDays(createdEndDate, createdStartDate);
-
-        const newStartDate = subDays(createdStartDate, difference);
-
         createdFindQuery = {
           ...createdFindQuery,
           createdAt: {
@@ -1009,20 +1000,17 @@ export class BusinessService {
         const pastCreatedFindQuery = {
           ...createdFindQuery,
           createdAt: {
-            $gte: newStartDate,
-            $lte: createdStartDate,
+            $lt: createdStartDate,
           },
         };
 
         const pastDeletedFindQuery = {
           ...deletedFindQuery,
           deletedAt: {
-            $gte: newStartDate,
-            $lte: createdStartDate,
+            $lt: createdStartDate,
           },
           createdAt: {
-            $gte: newStartDate,
-            $lte: createdStartDate,
+            $lt: createdStartDate,
           },
         };
 
@@ -1059,18 +1047,15 @@ export class BusinessService {
 
         const newBusinessCreated = createdBusinesses.totalData;
         const newBusinessDeleted = deletedBusinesses.totalData;
-        const prevBusinessCreated = prevCreatedBusinesses.totalData;
-        const prevBusinessDeleted = prevDeletedBusinesses.totalData;
+
+        const prevTotalBusinesses = prevCreatedBusinesses.totalData - prevDeletedBusinesses.totalData;
 
         return {
           newBusinessCreated,
           newBusinessDeleted,
-          prevBusinessCreated,
-          prevBusinessDeleted,
-          createdBusinessIncreased: newBusinessCreated > prevBusinessCreated,
-          deletedBusinessIncreased: newBusinessDeleted > prevBusinessDeleted,
-          createdGrowthPercentage: calculateGrowthPercentage(prevBusinessCreated, newBusinessCreated),
-          deletedGrowthPercentage: calculateGrowthPercentage(prevBusinessDeleted, newBusinessDeleted),
+          prevTotalBusinesses,
+          isGrowth: newBusinessCreated - newBusinessDeleted > 0,
+          growthPercentage: calculateGrowthPercentage(prevTotalBusinesses, newBusinessCreated),
         };
       }
 

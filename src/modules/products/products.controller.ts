@@ -31,7 +31,7 @@ import { responseHelper } from 'src/core/helper/response.helper';
 import { BusinessService } from 'src/modules/business/business.service';
 import { CreateProductByAdmin, ProductDto } from 'src/modules/products/dto';
 import { ProductsService } from 'src/modules/products/products.services';
-import { GetAllProductsForLoggedInUserQuery, GetAllProductsForNonLoggedInUserQuery } from 'src/modules/products/queries';
+import { GetAllProductsForLoggedInUserQuery, GetAllProductsForNonLoggedInUserQuery, GetProductsStatsQuery } from 'src/modules/products/queries';
 import { UserType } from 'src/modules/users/users.type';
 import { fileFilterByExtensions } from 'src/services/gcp-bucket/middleware/file-filter';
 
@@ -485,6 +485,31 @@ export class ProductsController {
       HttpStatus.OK,
       ServerSuccess.PRODUCTS.DELETED,
       deletedProduct,
+      null,
+      null,
+    );
+  }
+
+  @ApiEndpoint({
+    tags: ['Products'],
+    response: { status: HttpStatus.OK, description: ServerSuccess.PRODUCTS.LISTED },
+    noAuthToken: true,
+  })
+  @Roles(UserType.SUPERADMIN, UserType.DMOADMIN, UserType.TRAVELLER)
+  @UseGuards(JwtAuthGuard)
+  @Get('stats/products')
+  async getProductsStats(
+    @Req() req,
+    @Res() response: Response,
+    @Query() query: GetProductsStatsQuery,
+  ) {
+    const productsStats = await this.productsService.getStats(req.user, query);
+
+    return responseHelper(
+      response,
+      HttpStatus.OK,
+      ServerSuccess.PRODUCTS.LISTED,
+      productsStats,
       null,
       null,
     );

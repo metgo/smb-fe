@@ -408,34 +408,31 @@ export class OrdersService {
 
         ]);
 
-        const newOrdersNo = newCreatedOrders.totalData;
-        const prevOrdersNo = prevCreatedOrders.totalData;
+        const newOrdersCount = newCreatedOrders.totalData;
+        const prevOrdersCount = prevCreatedOrders.totalData;
 
         const [totalAmount,
           totalAmountPrev,
           amountPaidByCard,
-          amountPaidByCardPrev,
         ] = await Promise.all([
           calculateTotalAmount('totalAmount', newCreatedOrders.data),
           calculateTotalAmount('totalAmount', prevCreatedOrders.data),
           calculateTotalAmount('creditCardPayment', newCreatedOrders.data),
-          calculateTotalAmount('creditCardPayment', prevCreatedOrders.data),
         ]);
 
         const amountPaidByVouchers = totalAmount - amountPaidByCard;
-        const amountPaidByVouchersPrev = totalAmountPrev - amountPaidByCardPrev;
 
         return {
-          newOrdersNo,
-          prevOrdersNo,
-          ordersIncreased: newOrdersNo > prevOrdersNo,
-          ordersGrowthPercentage: calculateGrowthPercentage(prevOrdersNo, newOrdersNo),
+          newOrdersCount,
+          prevOrdersCount,
+          isGrowthInCount: newOrdersCount > prevOrdersCount,
+          countGrowthPercentage: calculateGrowthPercentage(prevOrdersCount, newOrdersCount),
           totalAmount,
           totalAmountPrev,
+          isGrowthInAmount: totalAmount > totalAmountPrev,
+          orderAmountGrowthPercentage: calculateGrowthPercentage(totalAmountPrev, totalAmount),
           amountPaidByCard,
-          amountPaidByCardPrev,
           amountPaidByVouchers,
-          amountPaidByVouchersPrev,
         };
       }
 

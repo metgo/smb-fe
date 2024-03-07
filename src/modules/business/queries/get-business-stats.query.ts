@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional } from 'class-validator';
+import { IsEnum, IsOptional, IsString } from 'class-validator';
+import { BusinessStatus } from 'src/modules/business/business.type';
 
 export class GetBusinessStatsQuery {
   @ApiProperty({ type: Date, required: false })
@@ -14,7 +15,17 @@ export class GetBusinessStatsQuery {
   @IsOptional()
     categoriesId: string[];
 
-  @ApiProperty({ type: [String], required: false, description: 'must follow the pattern \n [id, id,..]' })
+  @ApiProperty({ type: String, required: false })
+  @IsString()
   @IsOptional()
-    subCategoriesId: string[];
+    dmoId: string;
+
+  @ApiProperty({
+    type: 'enum',
+    enum: BusinessStatus,
+    required: false,
+  })
+  @IsEnum(BusinessStatus)
+  @IsOptional()
+    status: BusinessStatus;
 }

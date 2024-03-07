@@ -7,6 +7,7 @@ import mongoose, { Model } from 'mongoose';
 
 import { ServerErrors } from 'src/common/constant';
 import { paginationConfig } from 'src/common/pagination.config';
+import { calculateGrowthPercentage } from 'src/common/utils/calculate-growth-percentage';
 import { sellingPriceForAmountOrPercent } from 'src/common/utils/discount-calculation';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { disSelect } from 'src/common/utils/select.handling';
@@ -21,6 +22,7 @@ import { DMOService } from 'src/modules/dmo/dmo.service';
 import { Product } from 'src/modules/products/schema/products.schema';
 import { CreateProductByAdmin, ProductDto } from 'src/modules/products/dto';
 import { GetProductsQuery, UpdateProductsCommand, UploadMediaCommand } from 'src/modules/products/interface';
+import { GetProductsStatsQuery } from 'src/modules/products/queries';
 import { ProductStatus } from 'src/modules/products/products.type';
 import { UserType } from 'src/modules/users/users.type';
 import { GcpBucketService } from 'src/services/gcp-bucket/gcp-bucket.services';
@@ -520,5 +522,174 @@ export class ProductsService {
     const businessesId = businesses.map(item => item._id.toString());
 
     return businessesId;
+  }
+
+  async getStats(loggedInUser: LoggedInUserInterface, query: GetProductsStatsQuery) {
+    try {
+      const {
+        startDate, endDate, categoriesId, dmoId,
+      } = query;
+
+      const select = disSelect;
+
+      let findQuery: any = {};
+
+      if (categoriesId) {
+        const categoryIds = Array.isArray(categoriesId)
+          ? categoriesId
+          : [categoriesId];
+
+        findQuery = {
+          ...findQuery,
+          categoriesId: { $in: categoryIds },
+        };
+      }
+
+      if (dmoId) {
+        findQuery = {
+          ...findQuery,
+          dmoId,
+        };
+      }
+
+      if (loggedInUser.role === UserType.DMOADMIN) {
+        const dmoID = await this.dmoService.findDMOByUserID(loggedInUser.id);
+        findQuery = {
+          ...findQuery,
+          dmoId: dmoID,
+        };
+      }
+
+      if (loggedInUser.role === UserType.TRAVELLER) {
+        findQuery = {
+          ...findQuery,
+          userId: loggedInUser.id,
+        };
+      }
+
+      let createdFindQuery: any = {
+        ...findQuery,
+        isDeleted: false,
+      };
+      let deletedFindQuery: any = {
+        ...findQuery,
+        isDeleted: true,
+      };
+
+      if (startDate && endDate) {
+        const createdStartDate = new Date(startDate);
+        const createdEndDate = new Date(endDate);
+
+        if (createdStartDate >= createdEndDate) {
+          throw new BadRequestException(`Created ${ServerErrors.DATE_IS_NOT_LESS}`);
+        }
+
+        createdFindQuery = {
+          ...createdFindQuery,
+          createdAt: {
+            $gte: createdStartDate,
+            $lte: createdEndDate,
+          },
+        };
+
+        deletedFindQuery = {
+          ...deletedFindQuery,
+          deletedAt: {
+            $gte: createdStartDate,
+            $lte: createdEndDate,
+          },
+          createdAt: {
+            $gte: createdStartDate,
+            $lte: createdEndDate,
+          },
+        };
+
+        const pastCreatedFindQuery = {
+          ...createdFindQuery,
+          createdAt: {
+            $lt: createdStartDate,
+          },
+        };
+
+        const pastDeletedFindQuery = {
+          ...deletedFindQuery,
+          deletedAt: {
+            $lt: createdStartDate,
+          },
+          createdAt: {
+            $lt: createdStartDate,
+          },
+        };
+
+        const [createdProducts, deletedProducts, prevCreatedProducts, prevDeletedProducts] = await Promise.all([
+          queryhandler<Product>(
+            this.ProductModel,
+            {
+              findQuery: createdFindQuery,
+              select,
+            },
+          ),
+          queryhandler<Product>(
+            this.ProductModel,
+            {
+              findQuery: deletedFindQuery,
+              select,
+            },
+          ),
+          queryhandler<Product>(
+            this.ProductModel,
+            {
+              findQuery: pastCreatedFindQuery,
+              select,
+            },
+          ),
+          queryhandler<Product>(
+            this.ProductModel,
+            {
+              findQuery: pastDeletedFindQuery,
+              select,
+            },
+          ),
+        ]);
+
+        const newProductCreated = createdProducts.totalData;
+        const newProductDeleted = deletedProducts.totalData;
+        const prevTotalProducts = prevCreatedProducts.totalData - prevDeletedProducts.totalData;
+
+        return {
+          newProductCreated,
+          newProductDeleted,
+          prevTotalProducts,
+          isGrowth: newProductCreated - newProductDeleted > 0,
+          growthPercentage: calculateGrowthPercentage(prevTotalProducts, newProductCreated),
+        };
+      }
+
+      const [createdProduct, deletedProduct] = await Promise.all([
+        queryhandler<Product>(
+          this.ProductModel,
+          {
+            findQuery: createdFindQuery,
+            select,
+          },
+        ),
+        queryhandler<Product>(
+          this.ProductModel,
+          {
+            findQuery: deletedFindQuery,
+            select,
+          },
+        ),
+      ]);
+      const newProductCreated = createdProduct.totalData;
+      const newProductDeleted = deletedProduct.totalData;
+
+      return {
+        newProductCreated,
+        newProductDeleted,
+      };
+    } catch (err) {
+      exceptionHandling(err);
+    }
   }
 }
