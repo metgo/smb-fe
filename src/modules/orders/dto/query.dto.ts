@@ -1,7 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsEnum, IsOptional,
-} from 'class-validator';
+import { IsEnum, IsOptional } from 'class-validator';
 import { OrderStatus } from 'src/modules/orders/orders.type';
 
 export class FilterQuery {

@@ -1,7 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
   IsArray,
-  IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString,
+  IsEnum,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
 } from 'class-validator';
 import { IsNotBlank } from 'src/core/decorators/is-not-blank.decorator';
 import { ProductStatus } from 'src/modules/products/products.type';

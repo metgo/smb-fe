@@ -5,7 +5,10 @@ import { Request } from 'express';
 import { Model } from 'mongoose';
 
 import { Locale, PaymentStatus, VoucherPaymentStatus } from 'src/common/enum';
-import { EnglishTemplate, HebrewTemplate } from 'src/common/mailchimp/templateId';
+import {
+  EnglishTemplate,
+  HebrewTemplate,
+} from 'src/common/mailchimp/templateId';
 import { ConfigService } from '../config/config.service';
 import { Payment } from './schema/payments.schema';
 import { update } from 'src/core/helper/query-helper';
@@ -14,7 +17,10 @@ import { OrdersService } from 'src/modules/orders/orders.services';
 import { ProductsService } from 'src/modules/products/products.services';
 import { VoucherService } from 'src/modules/vouchers/voucher.service';
 import { MailChimpService } from 'src/services/mailchimp/mailchimp.service';
-import { GenerateLinkCommand, PaymentPurpose } from 'src/services/payments/payments.type';
+import {
+  GenerateLinkCommand,
+  PaymentPurpose,
+} from 'src/services/payments/payments.type';
 
 @Injectable()
 export class PaymentsService {
@@ -29,15 +35,21 @@ export class PaymentsService {
     private mailchimpService: MailChimpService,
     private readonly businessService: BusinessService,
     private readonly productsService: ProductsService,
-  ) { }
+  ) {}
 
-  async createPayment(insertField:any) {
+  async createPayment(insertField: any) {
     return await this.PaymentModel.create(insertField);
   }
 
   async generateLink(command: GenerateLinkCommand) {
     const {
-      amount, currency, purpose, id, customerEmail, customerName, languagePreference,
+      amount,
+      currency,
+      purpose,
+      id,
+      customerEmail,
+      customerName,
+      languagePreference,
     } = command;
     const payPlusResponse = await axios.post(
       `${this.configService.paymentDetails.URL}PaymentPages/generatelink`,
@@ -59,7 +71,7 @@ export class PaymentsService {
         },
       },
     );
-    let insertField : any = {
+    let insertField: any = {
       purpose,
       amount,
       currency,
@@ -107,9 +119,10 @@ export class PaymentsService {
 
     await this.mailchimpService.sendTransactionalEmail({
       to: requestBody?.more_info_1,
-      templatedId: requestBody.more_info_3 === Locale.HEBREW
-        ? HebrewTemplate.PaymentSuccessful
-        : EnglishTemplate.PaymentSuccessful,
+      templatedId:
+        requestBody.more_info_3 === Locale.HEBREW
+          ? HebrewTemplate.PaymentSuccessful
+          : EnglishTemplate.PaymentSuccessful,
       mergeVars: {
         FNAME: requestBody?.more_info_2,
         TOTALAMOUNT: requestBody?.amount,
@@ -127,18 +140,23 @@ export class PaymentsService {
     }
 
     if (requestBody?.more_info === PaymentPurpose.ORDER) {
-      const updateOrder = await this.ordersService.updateOrderAfterPayment(payments.orderId);
+      const updateOrder = await this.ordersService.updateOrderAfterPayment(
+        payments.orderId,
+      );
 
       const [getProductInformation, businessDetails] = await Promise.all([
-        this.productsService.getProductInformationForOrders(updateOrder.products),
+        this.productsService.getProductInformationForOrders(
+          updateOrder.products,
+        ),
         this.businessService.findBusinessEmailByIds(updateOrder.businessId),
       ]);
 
       await this.mailchimpService.sendTransactionalEmail({
         to: updateOrder.email,
-        templatedId: requestBody.more_info_3 === Locale.HEBREW
-          ? HebrewTemplate.OrderConfirmationForClient
-          : EnglishTemplate.OrderConfirmationForClient,
+        templatedId:
+          requestBody.more_info_3 === Locale.HEBREW
+            ? HebrewTemplate.OrderConfirmationForClient
+            : EnglishTemplate.OrderConfirmationForClient,
         mergeVars: {
           BUYERNAME: updateOrder.firstName,
           BUSINESSNAME: businessDetails[0].name || '',
@@ -146,33 +164,38 @@ export class PaymentsService {
           QUANTITY: 1,
           COST: getProductInformation[0].price.sellingPrice,
           TOTALAMOUNT: updateOrder.totalAmount,
-          BUSINESSPHONE: `${businessDetails[0]?.countryCode}-${businessDetails[0]?.phoneNumber}` || '',
+          BUSINESSPHONE:
+            `${businessDetails[0]?.countryCode}-${businessDetails[0]?.phoneNumber}`
+            || '',
           BUSINESSEMAIL: businessDetails[0].busiEmail || '',
           BUSINESSADDRESS: businessDetails[0]?.address?.location || '',
         },
       });
       // SEND TO BUSINESS OWNER
 
-      await Promise.all(businessDetails.map(async business => {
-        if (!business?.busiEmail) return;
-        await this.mailchimpService.sendTransactionalEmail({
-          to: business.busiEmail,
-          templatedId: requestBody.more_info_3 === Locale.HEBREW
-            ? HebrewTemplate.OrderReceivedForBusiness
-            : EnglishTemplate.OrderReceivedForBusiness,
-          mergeVars: {
-            BUSINESSNAME: business?.name || '',
-            PRODUCTNAME: getProductInformation[0].name,
-            QUANTITY: 1,
-            COST: getProductInformation[0].price.sellingPrice,
-            TOTALAMOUNT: updateOrder.totalAmount,
-            BUYERNAME: `${updateOrder.firstName} ${updateOrder.lastName}`,
-            BUYERPHONE: `${updateOrder.countryCode}-${updateOrder.phone}`,
-            BUYEREMAIL: updateOrder.email,
-            BUYERADDRESS: updateOrder.address,
-          },
-        });
-      }));
+      await Promise.all(
+        businessDetails.map(async business => {
+          if (!business?.busiEmail) return;
+          await this.mailchimpService.sendTransactionalEmail({
+            to: business.busiEmail,
+            templatedId:
+              requestBody.more_info_3 === Locale.HEBREW
+                ? HebrewTemplate.OrderReceivedForBusiness
+                : EnglishTemplate.OrderReceivedForBusiness,
+            mergeVars: {
+              BUSINESSNAME: business?.name || '',
+              PRODUCTNAME: getProductInformation[0].name,
+              QUANTITY: 1,
+              COST: getProductInformation[0].price.sellingPrice,
+              TOTALAMOUNT: updateOrder.totalAmount,
+              BUYERNAME: `${updateOrder.firstName} ${updateOrder.lastName}`,
+              BUYERPHONE: `${updateOrder.countryCode}-${updateOrder.phone}`,
+              BUYEREMAIL: updateOrder.email,
+              BUYERADDRESS: updateOrder.address,
+            },
+          });
+        }),
+      );
     }
   }
 

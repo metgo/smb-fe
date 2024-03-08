@@ -1,6 +1,10 @@
 import { registerDecorator, ValidationOptions } from 'class-validator';
 
-export function AmountRange(min: number, max: number, validationOptions?: ValidationOptions) {
+export function AmountRange(
+  min: number,
+  max: number,
+  validationOptions?: ValidationOptions,
+) {
   return function (object: Object, propertyName: string) {
     registerDecorator({
       name: 'amount',

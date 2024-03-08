@@ -16,8 +16,14 @@ import { HashModule } from 'src/services/hash/hash.module';
 import { Media, MediaSchema } from '../media/schema/media.schema';
 import { GcpBucketModule } from 'src/services/gcp-bucket/gcp-bucket.module';
 import { MailChimpModule } from 'src/services/mailchimp/mailchimp.module';
-import { BussCategory, BussCategorySchema } from '../buss-categories/schema/buss.category.schema';
-import { BussSubCategory, BussSubCategorySchema } from '../buss-subcategories/schema/buss-subCategory.schema';
+import {
+  BussCategory,
+  BussCategorySchema,
+} from '../buss-categories/schema/buss.category.schema';
+import {
+  BussSubCategory,
+  BussSubCategorySchema,
+} from '../buss-subcategories/schema/buss-subCategory.schema';
 import { Product, ProductSchema } from '../products/schema/products.schema';
 import { AuthorityModule } from 'src/modules/authority/authority.module';
 import { VoucherModule } from 'src/modules/vouchers/voucher.module';
@@ -45,7 +51,13 @@ import { EventsService } from 'src/modules/business/services/event.service';
     forwardRef(() => VoucherModule),
   ],
   controllers: [BusinessController, EventController],
-  providers: [BusinessService, UsersService, DMOService, JwtAuthService, EventsService],
+  providers: [
+    BusinessService,
+    UsersService,
+    DMOService,
+    JwtAuthService,
+    EventsService,
+  ],
   exports: [BusinessService],
 })
 export class BusinessModule {}

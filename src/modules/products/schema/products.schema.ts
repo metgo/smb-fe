@@ -26,12 +26,12 @@ export class Product extends AuditableSchema {
 
   @Prop()
     images: [
-      {
-        image: { type: string, default: null}
-        caption: { type: string, default: null}
-        alt:{ type: string, default: null}
-      }
-    ];
+    {
+      image: { type: string; default: null };
+      caption: { type: string; default: null };
+      alt: { type: string; default: null };
+    }
+  ];
 
   @Prop({
     type: [{ type: mongoose.Schema.Types.ObjectId, ref: User.name }],
@@ -69,11 +69,11 @@ export class Product extends AuditableSchema {
     },
   })
     price: {
-      markedPrice: number,
-      discountAmount: number,
-      discountPercent: number,
-      sellingPrice: number, // price after discount
-    };
+    markedPrice: number;
+    discountAmount: number;
+    discountPercent: number;
+    sellingPrice: number; // price after discount
+  };
 
   @Prop({
     type: {
@@ -83,10 +83,10 @@ export class Product extends AuditableSchema {
     },
   })
     quantity: {
-      initial: number,
-      sold: {type: number, default: 0}
-      remaining: number,
-    };
+    initial: number;
+    sold: { type: number; default: 0 };
+    remaining: number;
+  };
 
   @Prop({
     type: {
@@ -99,38 +99,46 @@ export class Product extends AuditableSchema {
       },
     },
   })
-    reviews: [{
-      comment: string,
-      userId: { type: mongoose.Schema.Types.ObjectId },
-      rating: number,
-    }];
+    reviews: [
+    {
+      comment: string;
+      userId: { type: mongoose.Schema.Types.ObjectId };
+      rating: number;
+    }
+  ];
 
   @Prop({ enum: ProductStatus, default: ProductStatus.ACTIVE })
     status: ProductStatus;
 
   @Prop({
-    type: [{
-      type: mongoose.Schema.Types.ObjectId,
-      ref: BussCategory.name,
-    }],
+    type: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: BussCategory.name,
+      },
+    ],
     required: false,
   })
     categories: mongoose.Schema.Types.ObjectId[];
 
   @Prop({
-    type: [{
-      type: mongoose.Schema.Types.ObjectId,
-      ref: BussSubCategory.name,
-    }],
+    type: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: BussSubCategory.name,
+      },
+    ],
     required: false,
   })
     subCategories: mongoose.Schema.Types.ObjectId[];
 
   // need to implement in future
   @Prop({
-    type: [{
-      type: mongoose.Schema.Types.ObjectId,
-    }],
+    type: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+      },
+    ],
   })
     features: mongoose.Schema.Types.ObjectId[];
 }

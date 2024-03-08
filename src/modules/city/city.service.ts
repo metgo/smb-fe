@@ -57,16 +57,13 @@ export class CityService {
       };
     }
 
-    const cities = await queryhandler<City>(
-      this.CityModel,
-      {
-        findQuery,
-        select,
-        page: queryPage,
-        limit: queryLimit,
-        populate,
-      },
-    );
+    const cities = await queryhandler<City>(this.CityModel, {
+      findQuery,
+      select,
+      page: queryPage,
+      limit: queryLimit,
+      populate,
+    });
 
     return cities;
   }

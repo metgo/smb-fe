@@ -32,9 +32,9 @@ export class City extends AuditableSchema {
     default: null,
   })
     geoLocation: {
-      lat: [{ type: string, default: null}],
-      long: [{ type: string, default: null}],
-    };
+    lat: [{ type: string; default: null }];
+    long: [{ type: string; default: null }];
+  };
 }
 
 export const CitySchema = SchemaFactory.createForClass(City);

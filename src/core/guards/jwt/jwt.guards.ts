@@ -9,10 +9,7 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from 'src/modules/users/users.services';
 
-const whiteListAPI = [
-  '/buy-voucher',
-  '/orders',
-];
+const whiteListAPI = ['/buy-voucher', '/orders'];
 
 @Injectable()
 export class JwtAuthGuard implements CanActivate {

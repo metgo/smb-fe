@@ -1,5 +1,16 @@
 import {
-  Body, Controller, Delete, Get, HttpStatus, Param, Post, Put, Query, Req, Res, UseGuards,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpStatus,
+  Param,
+  Post,
+  Put,
+  Query,
+  Req,
+  Res,
+  UseGuards,
 } from '@nestjs/common';
 import { Response } from 'express';
 
@@ -16,9 +27,7 @@ import { LocaleQuery } from './dto/locale-query.dto';
 
 @Controller()
 export class AccessibilityController {
-  constructor(
-    private readonly accessibilityService: AccessibilityService,
-  ) { }
+  constructor(private readonly accessibilityService: AccessibilityService) {}
 
   @Roles(UserType.SUPERADMIN, UserType.ADMIN)
   @UseGuards(JwtAuthGuard)
@@ -37,7 +46,10 @@ export class AccessibilityController {
     @Body() dto: createAccessibilityDto,
   ) {
     await this.accessibilityService.findByFieldName('name', dto.name);
-    const accessibility = await this.accessibilityService.create(dto, req.user.id);
+    const accessibility = await this.accessibilityService.create(
+      dto,
+      req.user.id,
+    );
     return responseHelper(
       response,
       HttpStatus.CREATED,
@@ -104,13 +116,21 @@ export class AccessibilityController {
   })
   @Put('admin/accessibility/:id')
   async update(
-      @Req() req,
-      @Res() response: Response,
-      @Param('id') id: string,
-      @Body() dto: updateAccessibilityDto,
+    @Req() req,
+    @Res() response: Response,
+    @Param('id') id: string,
+    @Body() dto: updateAccessibilityDto,
   ) {
-    await this.accessibilityService.findByFieldNameExcludeId('name', dto.name, id);
-    const accessibility = await this.accessibilityService.update(id, dto, req.user.id);
+    await this.accessibilityService.findByFieldNameExcludeId(
+      'name',
+      dto.name,
+      id,
+    );
+    const accessibility = await this.accessibilityService.update(
+      id,
+      dto,
+      req.user.id,
+    );
     return responseHelper(
       response,
       HttpStatus.OK,
@@ -132,12 +152,11 @@ export class AccessibilityController {
     noAuthToken: true,
   })
   @Delete('admin/accessibility/:id')
-  async delete(
-    @Req() req,
-    @Res() response: Response,
-    @Param('id') id: string,
-  ) {
-    const groupType = await this.accessibilityService.softDelete(id, req.user.id);
+  async delete(@Req() req, @Res() response: Response, @Param('id') id: string) {
+    const groupType = await this.accessibilityService.softDelete(
+      id,
+      req.user.id,
+    );
     return responseHelper(
       response,
       HttpStatus.OK,

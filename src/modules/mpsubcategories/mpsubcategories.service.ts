@@ -1,24 +1,42 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { createMPSubCategoriesDto, FilterQuery, updateMPSubCategoriesDto } from './dto';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import {
+  createMPSubCategoriesDto,
+  FilterQuery,
+  updateMPSubCategoriesDto,
+} from './dto';
 import { MPSubCategories } from './schema/subcategories.schema';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import {
-  findOneByFieldName, findOneByFieldNameExcludeId, queryhandler, updateById,
+  findOneByFieldName,
+  findOneByFieldNameExcludeId,
+  queryhandler,
+  updateById,
 } from 'src/core/helper/query-helper';
 import { ServerErrors } from 'src/common/constant';
 import { disSelect } from 'src/common/utils/select.handling';
 
 @Injectable()
 export class MPSubCategoriesService {
-  constructor(@InjectModel('MPSubCategories') private MPSubCategoriesModel: Model<MPSubCategories>) { }
+  constructor(
+    @InjectModel('MPSubCategories')
+    private MPSubCategoriesModel: Model<MPSubCategories>,
+  ) {}
 
-  async createMPSubCategories(dto: createMPSubCategoriesDto): Promise<MPSubCategories> {
+  async createMPSubCategories(
+    dto: createMPSubCategoriesDto,
+  ): Promise<MPSubCategories> {
     const newMPSubCategories = new this.MPSubCategoriesModel(dto);
     return newMPSubCategories.save();
   }
 
-  async getAllMPSubCategories(query: FilterQuery): Promise<MPSubCategories & any> {
+  async getAllMPSubCategories(
+    query: FilterQuery,
+  ): Promise<MPSubCategories & any> {
     let findQuery: {};
     let select: {};
     let page: number;
@@ -68,8 +86,15 @@ export class MPSubCategoriesService {
     return newMPSubCategories;
   }
 
-  async updateMPSubCategories(id: string, dto:updateMPSubCategoriesDto): Promise<MPSubCategories> {
-    const mpSubCategories = await updateById<MPSubCategories>(this.MPSubCategoriesModel, id, dto);
+  async updateMPSubCategories(
+    id: string,
+    dto: updateMPSubCategoriesDto,
+  ): Promise<MPSubCategories> {
+    const mpSubCategories = await updateById<MPSubCategories>(
+      this.MPSubCategoriesModel,
+      id,
+      dto,
+    );
     if (!mpSubCategories) {
       throw new NotFoundException(ServerErrors.MAP_POINT_CATEGORIES_NOT_FOUND);
     }
@@ -78,22 +103,39 @@ export class MPSubCategoriesService {
 
   async softDeleteMPSubCategories(id: string): Promise<MPSubCategories> {
     const updateField = { isDeleted: true, deleteAt: new Date() };
-    const mpSubCategories = await updateById<MPSubCategories>(this.MPSubCategoriesModel, id, updateField);
+    const mpSubCategories = await updateById<MPSubCategories>(
+      this.MPSubCategoriesModel,
+      id,
+      updateField,
+    );
     if (!mpSubCategories) {
-      throw new NotFoundException(ServerErrors.MAP_POINT_SUB_CATEGORIES_NOT_FOUND);
+      throw new NotFoundException(
+        ServerErrors.MAP_POINT_SUB_CATEGORIES_NOT_FOUND,
+      );
     }
     return mpSubCategories;
   }
 
-  async findByFieldName(fieldName: keyof MPSubCategories, items: string): Promise<boolean> {
-    const mpSubCategories = await findOneByFieldName<MPSubCategories>(this.MPSubCategoriesModel, fieldName, items);
+  async findByFieldName(
+    fieldName: keyof MPSubCategories,
+    items: string,
+  ): Promise<boolean> {
+    const mpSubCategories = await findOneByFieldName<MPSubCategories>(
+      this.MPSubCategoriesModel,
+      fieldName,
+      items,
+    );
     if (mpSubCategories) {
       throw new BadRequestException(`${fieldName} already exists`);
     }
     return false;
   }
 
-  async findByFieldNameExcludeId(fieldName: keyof MPSubCategories, items: string, id:string): Promise<boolean> {
+  async findByFieldNameExcludeId(
+    fieldName: keyof MPSubCategories,
+    items: string,
+    id: string,
+  ): Promise<boolean> {
     const mpSubCategories = await findOneByFieldNameExcludeId<MPSubCategories>(
       this.MPSubCategoriesModel,
       fieldName,

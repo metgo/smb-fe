@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
@@ -6,7 +10,11 @@ import { ServerErrors } from 'src/common/constant';
 import { paginationConfig } from 'src/common/pagination.config';
 import { CommonFilterQuery } from 'src/common/query-handler/common-filter-query';
 import { disSelect } from 'src/common/utils/select.handling';
-import { findOneByFieldName, queryhandler, updateById } from 'src/core/helper/query-helper';
+import {
+  findOneByFieldName,
+  queryhandler,
+  updateById,
+} from 'src/core/helper/query-helper';
 import { CreateExternalApiDTO } from 'src/modules/external-api/dto/create-external-api.dto';
 import { ExternalApiRegisterRequest } from 'src/modules/external-api/dto/register-user.dto';
 import { ExternalApi } from 'src/modules/external-api/schema/external-api.schema';
@@ -27,14 +35,16 @@ export class ExternalApiServices {
       email: body.companyEmail,
       address: body.companyAddress,
     };
-    const newExternalApi = new this.ExternalApiModel({ ...body, companyDetails, createdBy: loggedInUser });
+    const newExternalApi = new this.ExternalApiModel({
+      ...body,
+      companyDetails,
+      createdBy: loggedInUser,
+    });
     return newExternalApi.save();
   }
 
   async getAll(queries: CommonFilterQuery) {
-    const {
-      page, limit, ...query
-    } = queries;
+    const { page, limit, ...query } = queries;
 
     const queryPage = page ? Number(page) : paginationConfig.page;
     const queryLimit = limit ? Number(limit) : paginationConfig.limit;
@@ -50,17 +60,14 @@ export class ExternalApiServices {
       };
     }
 
-    const externalApi = await queryhandler<ExternalApi>(
-      this.ExternalApiModel,
-      {
-        findQuery,
-        select,
-        page: queryPage,
-        limit: queryLimit,
-        populate,
-        populate1,
-      },
-    );
+    const externalApi = await queryhandler<ExternalApi>(this.ExternalApiModel, {
+      findQuery,
+      select,
+      page: queryPage,
+      limit: queryLimit,
+      populate,
+      populate1,
+    });
 
     return externalApi;
   }
@@ -75,7 +82,11 @@ export class ExternalApiServices {
     return externalApiDetail;
   }
 
-  async update(loggedInUserId: string, externalApiId:string, body: CreateExternalApiDTO) {
+  async update(
+    loggedInUserId: string,
+    externalApiId: string,
+    body: CreateExternalApiDTO,
+  ) {
     const companyDetails = {
       name: body.companyName,
       phone: body.companyPhone,
@@ -97,7 +108,7 @@ export class ExternalApiServices {
     return updatedExternalApi;
   }
 
-  async softDelete(loggedInUserId:string, externalApiId: string) {
+  async softDelete(loggedInUserId: string, externalApiId: string) {
     const updateField = {
       isDeleted: true,
       deletedAt: new Date(),
@@ -117,7 +128,11 @@ export class ExternalApiServices {
   }
 
   async findByFieldName(fieldName: keyof ExternalApi, items: string) {
-    const externalApi = await findOneByFieldName<ExternalApi>(this.ExternalApiModel, fieldName, items);
+    const externalApi = await findOneByFieldName<ExternalApi>(
+      this.ExternalApiModel,
+      fieldName,
+      items,
+    );
     if (!externalApi) {
       throw new BadRequestException(ServerErrors.EXTERNAL_API.NOT_FOUND);
     }
@@ -125,7 +140,10 @@ export class ExternalApiServices {
   }
 
   async registerUser(body: ExternalApiRegisterRequest) {
-    const externalApi = await this.findByFieldName('identifierId', body.identifierId);
+    const externalApi = await this.findByFieldName(
+      'identifierId',
+      body.identifierId,
+    );
     const { identifierId, ...rest } = body;
     const newBody = { ...rest, externalApiId: externalApi._id };
     const user = await this.userService.create(newBody);

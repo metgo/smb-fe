@@ -34,20 +34,25 @@ export const ServerErrors = {
     EXISTS: 'User already exists',
     NOT_MATCH: 'Password Not match',
     DELETED_BUT_RECOVERABLE: 'The user has been deleted but can be recovered.',
-    BLOCKED: 'Your account is currently restricted due to multiple unsuccessful login attempts.',
+    BLOCKED:
+      'Your account is currently restricted due to multiple unsuccessful login attempts.',
     INVALID_CREDENTIALS: 'Invalid Credentials',
   },
   NOT_DMO_USER: 'Not a dmo user',
-  JWT_EXPIRED_OR_NOT_FOUND: 'Authorization header not found or jwt token has expired',
+  JWT_EXPIRED_OR_NOT_FOUND:
+    'Authorization header not found or jwt token has expired',
   FAILED_VALIDATION: 'Failed Validation',
   MAP_POINT_EXISTS: 'This Map Point already exists',
   MAP_POINT_CATEGORIES_EXISTS: 'This Map Point Categories already exists',
-  MAP_POINT_SUB_CATEGORIES_EXISTS: 'This Map Point Sub Categories already exists',
-  MAP_POINT_SUB_CATEGORIES_ITEMS_EXISTS: 'This Map Point Sub Categories Items already exists',
+  MAP_POINT_SUB_CATEGORIES_EXISTS:
+    'This Map Point Sub Categories already exists',
+  MAP_POINT_SUB_CATEGORIES_ITEMS_EXISTS:
+    'This Map Point Sub Categories Items already exists',
   MAP_POINT_NOT_FOUND: 'Map Point not found',
   MAP_POINT_CATEGORIES_NOT_FOUND: 'This Map Point Categories not found',
   MAP_POINT_SUB_CATEGORIES_NOT_FOUND: 'This Map Point Sub Categories not found',
-  MAP_POINT_SUB_CATEGORIES_ITEMS_NOT_FOUND: 'This Map Point Sub Categories Items not found',
+  MAP_POINT_SUB_CATEGORIES_ITEMS_NOT_FOUND:
+    'This Map Point Sub Categories Items not found',
   BUSINESS_NOT_FOUND: 'Business not found',
   DMO_NOT_FOUND: 'DMO not found',
   DMO_EXISTS: 'DMO already exists',
@@ -62,7 +67,8 @@ export const ServerErrors = {
   PRODUCT: {
     NOT_FOUND: 'Product not found',
     ADD_FAILED: {
-      BUSINESS: 'Unable to add a new product as your business is either not valid or have not been approved by DMO.',
+      BUSINESS:
+        'Unable to add a new product as your business is either not valid or have not been approved by DMO.',
     },
     IMAGE_EMPTY: 'Product must have at least one image',
   },
@@ -101,10 +107,13 @@ export const ServerErrors = {
   VOUCHER: {
     NOT_FOUND: 'Voucher not found',
     EXISTS: 'Voucher already exists',
-    UNPAID: 'Access to the voucher is forbidden until payment is made successfully',
-    CANNOT_UPDATE_BALANCE: 'The voucher balance cannot be updated as the entered amount exceeds the voucher value',
+    UNPAID:
+      'Access to the voucher is forbidden until payment is made successfully',
+    CANNOT_UPDATE_BALANCE:
+      'The voucher balance cannot be updated as the entered amount exceeds the voucher value',
     EXPIRED: 'Your voucher has expired and is no longer valid.',
-    CANNOT_ASSIGN: 'This voucher no longer exists or you lack the required permissions',
+    CANNOT_ASSIGN:
+      'This voucher no longer exists or you lack the required permissions',
   },
 
   CAMPAIGN: {
@@ -131,16 +140,22 @@ export const ServerErrors = {
 export const ServerSuccess = {
   MAP_POINT_CREATED: 'Map Point was successfully created',
   MAP_POINT_CATEGORIES_CREATED: 'Map Point Categories was successfully created',
-  MAP_POINT_SUB_CATEGORIES_CREATED: 'Map Point Sub Categories was successfully created',
-  MAP_POINT_SUB_CATEGORIES_ITEMS_CREATED: 'Map Point Sub Categories Items was successfully created',
+  MAP_POINT_SUB_CATEGORIES_CREATED:
+    'Map Point Sub Categories was successfully created',
+  MAP_POINT_SUB_CATEGORIES_ITEMS_CREATED:
+    'Map Point Sub Categories Items was successfully created',
   MAP_POINT_LISTED: 'Map Point was successfully listed',
   MAP_POINT_CATEGORIES_LISTED: 'Map Point Categories was successfully listed',
-  MAP_POINT_SUB_CATEGORIES_LISTED: 'Map Point Sub Categories was successfully listed',
-  MAP_POINT_SUB_CATEGORIES_ITEMS_LISTED: 'Map Point Sub Categories Items was successfully listed',
+  MAP_POINT_SUB_CATEGORIES_LISTED:
+    'Map Point Sub Categories was successfully listed',
+  MAP_POINT_SUB_CATEGORIES_ITEMS_LISTED:
+    'Map Point Sub Categories Items was successfully listed',
   MAP_POINT_UPDATED: 'Map Point was successfully updated',
   MAP_POINT_CATEGORIES_UPDATED: 'Map Point Categories was successfully updated',
-  MAP_POINT_SUB_CATEGORIES_UPDATED: 'Map Point Sub Categories was successfully updated',
-  MAP_POINT_SUB_CATEGORIES_ITEMS_UPDATED: 'Map Point Sub Categories Items was successfully updated',
+  MAP_POINT_SUB_CATEGORIES_UPDATED:
+    'Map Point Sub Categories was successfully updated',
+  MAP_POINT_SUB_CATEGORIES_ITEMS_UPDATED:
+    'Map Point Sub Categories Items was successfully updated',
   BUSINESS_CREATED: 'Business was successfully created',
   BUSINESS_LISTED: 'Business was successfully listed',
   BUSINESS_UPDATED: 'Business was successfully updated',
@@ -154,7 +169,8 @@ export const ServerSuccess = {
     CREATED: 'User was succesfully created',
     LISTED: 'User was succesfully listed',
     UPDATED: 'User was succesfully updated',
-    DELETED: 'User was deleted successfully and can be restored within the next 30 days',
+    DELETED:
+      'User was deleted successfully and can be restored within the next 30 days',
     HARD_DELETED: 'User was deleted successfully and cannot be recovered.',
     CHANGEPASSWORD: 'Password change successfully',
     FORGET_PASSWORD: 'OTP was successfully send',

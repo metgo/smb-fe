@@ -2,7 +2,11 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import {
   ArrayMaxSize,
-  IsArray, IsBoolean, IsObject, IsOptional, IsString,
+  IsArray,
+  IsBoolean,
+  IsObject,
+  IsOptional,
+  IsString,
 } from 'class-validator';
 import transformEmail from 'src/core/helper/transformEmail';
 
@@ -42,7 +46,10 @@ class ContactDetails {
   @ApiProperty({ type: String, description: 'Name of contact person' })
     name: string;
 
-  @ApiProperty({ type: String, description: 'Country code of phone number of contact person' })
+  @ApiProperty({
+    type: String,
+    description: 'Country code of phone number of contact person',
+  })
     countryCode: string;
 
   @ApiProperty({ type: String, description: 'Phone numer of contact person' })

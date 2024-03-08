@@ -1,11 +1,11 @@
 import { Response } from 'express';
 
 interface IResponse {
-  statusCode: number,
-  message: string | null,
-  datas: object | Array<Object> | null,
-  error: string | null,
-  token: string | null,
+  statusCode: number;
+  message: string | null;
+  datas: object | Array<Object> | null;
+  error: string | null;
+  token: string | null;
 }
 
 export function responseHelper(

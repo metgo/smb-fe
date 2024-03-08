@@ -11,6 +11,6 @@ export interface IMapPoint {
 
 export interface IMapPointCategoires {
   id: string;
-  name: string
-  mapPointId: []
+  name: string;
+  mapPointId: [];
 }

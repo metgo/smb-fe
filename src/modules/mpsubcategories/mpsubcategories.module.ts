@@ -5,9 +5,11 @@ import { MPSubCategoriesService } from './mpsubcategories.service';
 import { MPSubCategoriesController } from './mpsubcategories.controller';
 
 @Module({
-  imports: [MongooseModule.forFeature([
-    { name: 'MPSubCategories', schema: MPSubCategoriesSchema },
-  ])],
+  imports: [
+    MongooseModule.forFeature([
+      { name: 'MPSubCategories', schema: MPSubCategoriesSchema },
+    ]),
+  ],
   providers: [MPSubCategoriesService],
   controllers: [MPSubCategoriesController],
 })

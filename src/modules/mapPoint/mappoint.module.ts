@@ -8,9 +8,12 @@ import { UsersModule } from '../users/users.module';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{
-      name: 'MapPoint', schema: MapPointSchema,
-    }]),
+    MongooseModule.forFeature([
+      {
+        name: 'MapPoint',
+        schema: MapPointSchema,
+      },
+    ]),
     UsersModule,
   ],
   controllers: [MapPointController],

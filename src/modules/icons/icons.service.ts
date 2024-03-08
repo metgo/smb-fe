@@ -1,6 +1,10 @@
 /* eslint-disable no-undef */
 /* eslint-disable no-unused-vars */
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
@@ -8,11 +12,13 @@ import { ServerErrors } from 'src/common/constant';
 import { paginationConfig } from 'src/common/pagination.config';
 import { disSelect } from 'src/common/utils/select.handling';
 import {
-  findOneByFieldName, findOneByFieldNameExcludeId, findOneById, queryhandler, updateById,
+  findOneByFieldName,
+  findOneByFieldNameExcludeId,
+  findOneById,
+  queryhandler,
+  updateById,
 } from 'src/core/helper/query-helper';
-import {
-  CreateIconDto, FilterQuery, UpdateIconDto,
-} from './dto';
+import { CreateIconDto, FilterQuery, UpdateIconDto } from './dto';
 import { Icons } from './schema/icon.schema';
 import { GcpBucketService } from 'src/services/gcp-bucket/gcp-bucket.services';
 
@@ -22,7 +28,7 @@ export class IconsService {
     @InjectModel('Icons')
     private IconModel: Model<Icons>,
     private gcpBucketServices: GcpBucketService,
-  ) { }
+  ) {}
 
   // icons actions
   async createIcon(dto: CreateIconDto, file: Express.Multer.File) {
@@ -32,7 +38,8 @@ export class IconsService {
 
     const iconPath = await this.gcpBucketServices.upload(file);
 
-    const iconAlt = dto.name.toLowerCase()
+    const iconAlt = dto.name
+      .toLowerCase()
       .replace(/[^a-zA-Z0-9\s]/g, '') // Remove non-alphanumeric characters
       .replace(/\s+/g, '_');
 
@@ -41,9 +48,7 @@ export class IconsService {
   }
 
   async getIcons(queries: FilterQuery) {
-    const {
-      page, limit, ...query
-    } = queries;
+    const { page, limit, ...query } = queries;
 
     const queryPage = page ? Number(page) : paginationConfig.page;
     const queryLimit = limit ? Number(limit) : paginationConfig.limit;
@@ -60,17 +65,14 @@ export class IconsService {
       };
     }
 
-    const iconList = await queryhandler<Icons>(
-      this.IconModel,
-      {
-        findQuery,
-        select,
-        page: queryPage,
-        limit: queryLimit,
-        populate,
-        populate1,
-      },
-    );
+    const iconList = await queryhandler<Icons>(this.IconModel, {
+      findQuery,
+      select,
+      page: queryPage,
+      limit: queryLimit,
+      populate,
+      populate1,
+    });
 
     return iconList;
   }
@@ -81,11 +83,18 @@ export class IconsService {
     return iconCategory;
   }
 
-  async updateIcon(id: string, dto: UpdateIconDto, newIcon: Express.Multer.File) {
+  async updateIcon(
+    id: string,
+    dto: UpdateIconDto,
+    newIcon: Express.Multer.File,
+  ) {
     const updateDto = async () => {
       const existingIcon = await findOneById<Icons>(this.IconModel, id);
 
-      const newUrl = await this.gcpBucketServices.update(existingIcon.iconPath, newIcon);
+      const newUrl = await this.gcpBucketServices.update(
+        existingIcon.iconPath,
+        newIcon,
+      );
 
       return { ...dto, iconPath: newUrl };
     };
@@ -100,7 +109,7 @@ export class IconsService {
     return updatedIcon;
   }
 
-  async softDeleteIcon(id:string) {
+  async softDeleteIcon(id: string) {
     const updateField = { isDeleted: true, deleteAt: new Date() };
     const iconCategory = await updateById<Icons>(
       this.IconModel,
@@ -115,15 +124,26 @@ export class IconsService {
 
   // find icon by field name
 
-  async findByFieldName(fieldName: keyof Icons, items: string): Promise<boolean> {
-    const icon = await findOneByFieldName<Icons>(this.IconModel, fieldName, items);
+  async findByFieldName(
+    fieldName: keyof Icons,
+    items: string,
+  ): Promise<boolean> {
+    const icon = await findOneByFieldName<Icons>(
+      this.IconModel,
+      fieldName,
+      items,
+    );
     if (icon) {
       throw new BadRequestException(`${fieldName} already exists`);
     }
     return false;
   }
 
-  async findByFieldNameExcludeId(fieldName: keyof Icons, items: string, id:string): Promise<boolean> {
+  async findByFieldNameExcludeId(
+    fieldName: keyof Icons,
+    items: string,
+    id: string,
+  ): Promise<boolean> {
     const icon = await findOneByFieldNameExcludeId<Icons>(
       this.IconModel,
       fieldName,

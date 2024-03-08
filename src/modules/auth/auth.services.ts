@@ -1,5 +1,10 @@
 import {
-  ForbiddenException, Inject, Injectable, NotFoundException, UnauthorizedException, forwardRef,
+  ForbiddenException,
+  Inject,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+  forwardRef,
 } from '@nestjs/common';
 import { ServerErrors } from 'src/common/constant';
 
@@ -19,12 +24,17 @@ export class AuthService {
   ) {}
 
   async login(body: SignInRequest): Promise<LoginInterface> {
-    const user = await this.usersService.validateUserIfNeedToRecover(body.email);
+    const user = await this.usersService.validateUserIfNeedToRecover(
+      body.email,
+    );
 
     if (!user) {
       throw new NotFoundException(ServerErrors.USER.NOT_FOUND);
     }
-    const isPasswordValid = await this.hashService.validate(user.password, body.password);
+    const isPasswordValid = await this.hashService.validate(
+      user.password,
+      body.password,
+    );
 
     if (user.loginAttempts > 4) {
       throw new UnauthorizedException(ServerErrors.USER.BLOCKED);

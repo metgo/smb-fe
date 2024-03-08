@@ -1,5 +1,9 @@
 /* eslint-disable no-undef */
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
@@ -28,31 +32,43 @@ import { GetAllProductsForExternalApiQuery } from 'src/modules/products/queries'
 @Injectable()
 export class CampaignSegmentService {
   constructor(
-      @InjectModel('CampaignSegment')
-      private CampaignSegmentModel: Model<CampaignSegment>,
-      private readonly dmoService: DMOService,
-      private readonly campaignService: CampaignService,
-      private readonly businessService: BusinessService,
-      private readonly productsService: ProductsService,
+    @InjectModel('CampaignSegment')
+    private CampaignSegmentModel: Model<CampaignSegment>,
+    private readonly dmoService: DMOService,
+    private readonly campaignService: CampaignService,
+    private readonly businessService: BusinessService,
+    private readonly productsService: ProductsService,
   ) {}
 
   async create(
     loggedInUserId: string,
     dto: CreateCampaignSegmentDTO,
   ): Promise<CampaignSegment> {
-    const existCampaignSegment = await this.getByCampaignId(dto.campaign_ID.toString());
+    const existCampaignSegment = await this.getByCampaignId(
+      dto.campaign_ID.toString(),
+    );
 
     if (existCampaignSegment?.length) {
       throw new ConflictException(ServerErrors.CAMPAIGN.EXISTS);
     }
 
     // get all business of dmo
-    const businessFromDMOs = await this.businessService.findManyByFieldIds('dmoId', dto.DMOs);
-    const newBusinessList: string[] = [...new Set([...dto.businesses, ...businessFromDMOs])];
+    const businessFromDMOs = await this.businessService.findManyByFieldIds(
+      'dmoId',
+      dto.DMOs,
+    );
+    const newBusinessList: string[] = [
+      ...new Set([...dto.businesses, ...businessFromDMOs]),
+    ];
 
     // get all products of dmos
-    const productsFromBusiness = await this.productsService.findManyByFieldIds('businessId', newBusinessList);
-    const newProductsList = [...new Set([...dto.products, ...productsFromBusiness])];
+    const productsFromBusiness = await this.productsService.findManyByFieldIds(
+      'businessId',
+      newBusinessList,
+    );
+    const newProductsList = [
+      ...new Set([...dto.products, ...productsFromBusiness]),
+    ];
 
     const newCampaignSegment = new this.CampaignSegmentModel({
       ...dto,
@@ -65,7 +81,10 @@ export class CampaignSegmentService {
   }
 
   async getByCampaignId(campaignid: string) {
-    const campaignSegment = await this.CampaignSegmentModel.find({ campaign_ID: campaignid, isDeleted: false }).exec();
+    const campaignSegment = await this.CampaignSegmentModel.find({
+      campaign_ID: campaignid,
+      isDeleted: false,
+    }).exec();
 
     return campaignSegment;
   }
@@ -81,15 +100,28 @@ export class CampaignSegmentService {
         updatedBy: loggedInUserId,
       };
 
-      const newDMOsList : string[] = body.DMOs?.length ? getUniqueSet(body.DMOs) : [];
-      let newBusinessesList : string[] = body.businesses?.length ? [...body.businesses] : [];
-      let newProductsList: string[] = body.products?.length ? [...body.products] : [];
-      const newCrowedAgeList: string[] = body.crowed_age?.length ? getUniqueSet(body.crowed_age) : [];
-      const newCrowedOriginList: string[] = body.crowed_origin?.length ? getUniqueSet(body.crowed_origin) : [];
+      const newDMOsList: string[] = body.DMOs?.length
+        ? getUniqueSet(body.DMOs)
+        : [];
+      let newBusinessesList: string[] = body.businesses?.length
+        ? [...body.businesses]
+        : [];
+      let newProductsList: string[] = body.products?.length
+        ? [...body.products]
+        : [];
+      const newCrowedAgeList: string[] = body.crowed_age?.length
+        ? getUniqueSet(body.crowed_age)
+        : [];
+      const newCrowedOriginList: string[] = body.crowed_origin?.length
+        ? getUniqueSet(body.crowed_origin)
+        : [];
 
       // get all business of dmo
       if (newDMOsList?.length) {
-        const businessFromDMOs = await this.businessService.findManyByFieldIds('dmoId', body.DMOs);
+        const businessFromDMOs = await this.businessService.findManyByFieldIds(
+          'dmoId',
+          body.DMOs,
+        );
         newBusinessesList = [...newBusinessesList, ...businessFromDMOs];
       }
 
@@ -97,7 +129,11 @@ export class CampaignSegmentService {
 
       // get all products of business
       if (newBusinessesList?.length) {
-        const productsFromBusiness = await this.productsService.findManyByFieldIds('businessId', newBusinessesList);
+        const productsFromBusiness
+          = await this.productsService.findManyByFieldIds(
+            'businessId',
+            newBusinessesList,
+          );
         newProductsList = [...newProductsList, ...productsFromBusiness];
       }
 
@@ -106,16 +142,30 @@ export class CampaignSegmentService {
       // push new data
       if (body.operation === CampaignSegmentOperation.UPDATE) {
         const campaignSegmentDetails = await this.CampaignSegmentModel.findOne({
-          campaign_ID: campaignId, isDeleted: false,
+          campaign_ID: campaignId,
+          isDeleted: false,
         });
 
-        const businesses = getUniqueSet([...convertToString(campaignSegmentDetails.businesses), ...newBusinessesList]);
-        const products = getUniqueSet([...convertToString(campaignSegmentDetails.products), ...newProductsList]);
-        const DMOs = getUniqueSet([...convertToString(campaignSegmentDetails.DMOs), ...newDMOsList]);
-        const crowedAge = getUniqueSet([...convertToString(campaignSegmentDetails.crowed_age), ...newCrowedAgeList]);
-        const crowedOrigin = getUniqueSet(
-          [...convertToString(campaignSegmentDetails.crowed_origin), ...newCrowedOriginList],
-        );
+        const businesses = getUniqueSet([
+          ...convertToString(campaignSegmentDetails.businesses),
+          ...newBusinessesList,
+        ]);
+        const products = getUniqueSet([
+          ...convertToString(campaignSegmentDetails.products),
+          ...newProductsList,
+        ]);
+        const DMOs = getUniqueSet([
+          ...convertToString(campaignSegmentDetails.DMOs),
+          ...newDMOsList,
+        ]);
+        const crowedAge = getUniqueSet([
+          ...convertToString(campaignSegmentDetails.crowed_age),
+          ...newCrowedAgeList,
+        ]);
+        const crowedOrigin = getUniqueSet([
+          ...convertToString(campaignSegmentDetails.crowed_origin),
+          ...newCrowedOriginList,
+        ]);
 
         updatedField = {
           ...updatedField,
@@ -167,16 +217,17 @@ export class CampaignSegmentService {
     campaignId: string,
   ): Promise<CampaignSegment> {
     try {
-      const deletedCampaignSegment = await updateOneByManyFields<CampaignSegment>(
-        this.CampaignSegmentModel,
-        { campaign_ID: campaignId },
-        {
-          updatedBy: loggedInUserId,
-          deletedAt: new Date(),
-          deletedBy: loggedInUserId,
-          isDeleted: true,
-        },
-      );
+      const deletedCampaignSegment
+        = await updateOneByManyFields<CampaignSegment>(
+          this.CampaignSegmentModel,
+          { campaign_ID: campaignId },
+          {
+            updatedBy: loggedInUserId,
+            deletedAt: new Date(),
+            deletedBy: loggedInUserId,
+            isDeleted: true,
+          },
+        );
 
       if (!deletedCampaignSegment) {
         throw new NotFoundException(ServerErrors.CAMPAIGN.NOT_FOUND);
@@ -189,14 +240,19 @@ export class CampaignSegmentService {
 
   async getAllDMOsOfCampaignSegment(userId: string) {
     const dmoIds = await this.dmoService.getAllDMOById(userId);
-    const items = await this.CampaignSegmentModel.find({ DMOs: { $in: dmoIds } }).exec();
+    const items = await this.CampaignSegmentModel.find({
+      DMOs: { $in: dmoIds },
+    }).exec();
 
     return items;
   }
 
   async getAllDMOsOfCampaign(query: GetByCampCodeQuery) {
     const { page, limit, campCode } = query;
-    const campDetails = await this.campaignService.findAndReturn('code', campCode);
+    const campDetails = await this.campaignService.findAndReturn(
+      'code',
+      campCode,
+    );
 
     const select = disSelect;
 
@@ -205,8 +261,9 @@ export class CampaignSegmentService {
       select: `${disSelect}`,
     };
 
-    const campaignSegment = await this.CampaignSegmentModel
-      .findOne({ campaign_ID: campDetails._id })
+    const campaignSegment = await this.CampaignSegmentModel.findOne({
+      campaign_ID: campDetails._id,
+    })
       .populate(populate)
       .select(select)
       .lean()
@@ -219,11 +276,10 @@ export class CampaignSegmentService {
       };
     }
     if (!page && !limit) {
-      const dmos = campaignSegment.DMOs
-        .map((dmo: any) => ({
-          id: dmo._id,
-          name: dmo.name,
-        }));
+      const dmos = campaignSegment.DMOs.map((dmo: any) => ({
+        id: dmo._id,
+        name: dmo.name,
+      }));
 
       const totalData = dmos.length;
 
@@ -233,20 +289,24 @@ export class CampaignSegmentService {
       };
     }
 
-    const filteredDMOs = campaignSegment?.DMOs
-      .map((dmo: any) => ({
-        id: dmo._id,
-        name: dmo.name,
-      }));
+    const filteredDMOs = campaignSegment?.DMOs.map((dmo: any) => ({
+      id: dmo._id,
+      name: dmo.name,
+    }));
     const paginatedBusiness = paginateData(page, limit, filteredDMOs);
 
     return paginatedBusiness;
   }
 
-  async getAllProducts(query: GetAllProductsForExternalApiQuery | GetProductsByCampCodeQuery) {
+  async getAllProducts(
+    query: GetAllProductsForExternalApiQuery | GetProductsByCampCodeQuery,
+  ) {
     const { page, limit, campCode } = query;
 
-    const campDetails = await this.campaignService.findAndReturn('code', campCode);
+    const campDetails = await this.campaignService.findAndReturn(
+      'code',
+      campCode,
+    );
 
     const select = disSelect;
     const populate = {
@@ -270,8 +330,9 @@ export class CampaignSegmentService {
       },
     };
 
-    const campaignSegment = await this.CampaignSegmentModel
-      .findOne({ campaign_ID: campDetails._id })
+    const campaignSegment = await this.CampaignSegmentModel.findOne({
+      campaign_ID: campDetails._id,
+    })
       .populate(populate)
       .populate(populate1)
       .select(select)
@@ -291,12 +352,14 @@ export class CampaignSegmentService {
           if (product.status === ProductStatus.INACTIVE) return false;
           if (!query.categoriesId && !query.subCategoriesId) {
             return true;
-          } if (query.subCategoriesId) {
+          }
+          if (query.subCategoriesId) {
             return product.subCategories.some(subCategory => query.subCategoriesId.includes(String(subCategory._id)));
           }
 
           return product.categories.some(category => query.categoriesId.includes(String(category._id)));
-        }).map((product: any) => ({
+        })
+        .map((product: any) => ({
           id: product._id,
           name: product.name,
           description: product.description,
@@ -343,10 +406,15 @@ export class CampaignSegmentService {
     return paginatedProducts;
   }
 
-  async getAllBusiness(query: ExternalApiWithCampCodeFilterQuery | GetByCampCodeQuery) {
+  async getAllBusiness(
+    query: ExternalApiWithCampCodeFilterQuery | GetByCampCodeQuery,
+  ) {
     const { page, limit, campCode } = query;
 
-    const campDetails = await this.campaignService.findAndReturn('code', campCode);
+    const campDetails = await this.campaignService.findAndReturn(
+      'code',
+      campCode,
+    );
 
     const select = disSelect;
     const populate = {
@@ -362,8 +430,9 @@ export class CampaignSegmentService {
       },
     };
 
-    const campaignSegment = await this.CampaignSegmentModel
-      .findOne({ campaign_ID: campDetails._id })
+    const campaignSegment = await this.CampaignSegmentModel.findOne({
+      campaign_ID: campDetails._id,
+    })
       .populate(populate)
       .select(select)
       .lean()
@@ -422,7 +491,9 @@ export class CampaignSegmentService {
 
   async getCampaignAssociatedToIds(id: string, key: keyof CampaignSegment) {
     try {
-      const campaignSegments = await this.CampaignSegmentModel.find({ [key]: { $in: [id] } });
+      const campaignSegments = await this.CampaignSegmentModel.find({
+        [key]: { $in: [id] },
+      });
 
       const campaignIds = campaignSegments.map(obj => obj.campaign_ID);
 

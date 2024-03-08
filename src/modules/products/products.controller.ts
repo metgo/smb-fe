@@ -31,7 +31,11 @@ import { responseHelper } from 'src/core/helper/response.helper';
 import { BusinessService } from 'src/modules/business/services/business.service';
 import { CreateProductByAdmin, ProductDto } from 'src/modules/products/dto';
 import { ProductsService } from 'src/modules/products/products.services';
-import { GetAllProductsForLoggedInUserQuery, GetAllProductsForNonLoggedInUserQuery, GetProductsStatsQuery } from 'src/modules/products/queries';
+import {
+  GetAllProductsForLoggedInUserQuery,
+  GetAllProductsForNonLoggedInUserQuery,
+  GetProductsStatsQuery,
+} from 'src/modules/products/queries';
 import { UserType } from 'src/modules/users/users.type';
 import { fileFilterByExtensions } from 'src/services/gcp-bucket/middleware/file-filter';
 
@@ -44,7 +48,10 @@ export class ProductsController {
 
   @ApiEndpoint({
     tags: ['Business', 'Products'],
-    response: { status: HttpStatus.CREATED, description: ServerSuccess.PRODUCTS.CREATED },
+    response: {
+      status: HttpStatus.CREATED,
+      description: ServerSuccess.PRODUCTS.CREATED,
+    },
     softBlockExtraDtoFields: true,
     noAuthToken: true,
     operation: 'Create product by business',
@@ -64,17 +71,27 @@ export class ProductsController {
      * need to discuess or we will not impment it
      *  */
 
-    const business = await this.businessService.findByFieldItems({ _id: businessId });
+    const business = await this.businessService.findByFieldItems({
+      _id: businessId,
+    });
     if (!business) {
       throw new ForbiddenException(ServerErrors.PRODUCT.ADD_FAILED.BUSINESS);
     }
-    if (!(new mongoose.Types.ObjectId(req.user.id).equals(business.userId)
-      || business.collabrationUser.includes(req.user.id))
+    if (
+      !(
+        new mongoose.Types.ObjectId(req.user.id).equals(business.userId)
+        || business.collabrationUser.includes(req.user.id)
+      )
     ) {
       throw new ForbiddenException(ServerErrors.FORBIDDEN);
     }
 
-    const product = await this.productsService.create(req.user.id, businessId, business, body);
+    const product = await this.productsService.create(
+      req.user.id,
+      businessId,
+      business,
+      body,
+    );
     return responseHelper(
       response,
       HttpStatus.CREATED,
@@ -87,7 +104,10 @@ export class ProductsController {
 
   @ApiEndpoint({
     tags: ['Business', 'Products', 'Web'],
-    response: { status: HttpStatus.CREATED, description: ServerSuccess.PRODUCTS.CREATED },
+    response: {
+      status: HttpStatus.CREATED,
+      description: ServerSuccess.PRODUCTS.CREATED,
+    },
     softBlockExtraDtoFields: true,
     noAuthToken: true,
     operation: 'Create product for business by superadmin and DMO-admin',
@@ -105,12 +125,20 @@ export class ProductsController {
     @Body() body: CreateProductByAdmin,
     @UploadedFiles() file: Array<Express.Multer.File>,
   ) {
-    const business = await this.businessService.findByFieldItems({ _id: bussinessId });
+    const business = await this.businessService.findByFieldItems({
+      _id: bussinessId,
+    });
     if (!business) {
       throw new ForbiddenException(ServerErrors.PRODUCT.ADD_FAILED.BUSINESS);
     }
 
-    const product = await this.productsService.createForWeb(req.user.id, bussinessId, business, body, file);
+    const product = await this.productsService.createForWeb(
+      req.user.id,
+      bussinessId,
+      business,
+      body,
+      file,
+    );
     return responseHelper(
       response,
       HttpStatus.CREATED,
@@ -123,13 +151,18 @@ export class ProductsController {
 
   @ApiEndpoint({
     tags: ['Products'],
-    response: { status: HttpStatus.OK, description: ServerSuccess.PRODUCTS.LISTED },
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.PRODUCTS.LISTED,
+    },
     operation: 'Get active product detail by all',
-    params: [{
-      name: 'productId',
-      type: 'string',
-      required: true,
-    }],
+    params: [
+      {
+        name: 'productId',
+        type: 'string',
+        required: true,
+      },
+    ],
   })
   @ApiNotFoundResponse({ description: ServerErrors.PRODUCT.NOT_FOUND })
   @HttpCode(HttpStatus.OK)
@@ -151,13 +184,18 @@ export class ProductsController {
 
   @ApiEndpoint({
     tags: ['Admin', 'Products'],
-    response: { status: HttpStatus.OK, description: ServerSuccess.PRODUCTS.LISTED },
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.PRODUCTS.LISTED,
+    },
     operation: 'Get detail of a product by superadmin and dmo-admin',
-    params: [{
-      name: 'productId',
-      type: 'string',
-      required: true,
-    }],
+    params: [
+      {
+        name: 'productId',
+        type: 'string',
+        required: true,
+      },
+    ],
     noAuthToken: true,
   })
   @Roles(UserType.DMOADMIN, UserType.SUPERADMIN)
@@ -170,7 +208,10 @@ export class ProductsController {
     @Param('productId') productId: string,
     @Res() response: Response,
   ) {
-    const product = await this.productsService.findOneForLoggedInUser(productId, req.user);
+    const product = await this.productsService.findOneForLoggedInUser(
+      productId,
+      req.user,
+    );
     return responseHelper(
       response,
       HttpStatus.OK,
@@ -183,7 +224,10 @@ export class ProductsController {
 
   @ApiEndpoint({
     tags: ['Products'],
-    response: { status: HttpStatus.OK, description: ServerSuccess.PRODUCTS.LISTED },
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.PRODUCTS.LISTED,
+    },
     operation: 'Get all my products',
     softBlockExtraDtoFields: true,
     noAuthToken: true,
@@ -214,13 +258,18 @@ export class ProductsController {
 
   @ApiEndpoint({
     tags: ['Products'],
-    response: { status: HttpStatus.OK, description: ServerSuccess.PRODUCTS.LISTED },
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.PRODUCTS.LISTED,
+    },
     operation: 'Get detail of a product of logged-in user',
-    params: [{
-      name: 'productId',
-      type: 'string',
-      required: true,
-    }],
+    params: [
+      {
+        name: 'productId',
+        type: 'string',
+        required: true,
+      },
+    ],
     noAuthToken: true,
   })
   @UseGuards(JwtAuthGuard)
@@ -232,7 +281,10 @@ export class ProductsController {
     @Param('productId') productId: string,
     @Res() response: Response,
   ) {
-    const product = await this.productsService.findOneForLoggedInUser(productId, req.user);
+    const product = await this.productsService.findOneForLoggedInUser(
+      productId,
+      req.user,
+    );
     return responseHelper(
       response,
       HttpStatus.OK,
@@ -247,7 +299,10 @@ export class ProductsController {
   @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
     tags: ['Admin', 'Products'],
-    response: { status: HttpStatus.OK, description: ServerSuccess.PRODUCTS.LISTED },
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.PRODUCTS.LISTED,
+    },
     operation: 'Get all products by superadmin and dmo-admin',
     softBlockExtraDtoFields: true,
     noAuthToken: true,
@@ -278,7 +333,10 @@ export class ProductsController {
 
   @ApiEndpoint({
     tags: ['Products'],
-    response: { status: HttpStatus.OK, description: ServerSuccess.PRODUCTS.LISTED },
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.PRODUCTS.LISTED,
+    },
     operation: 'Get all my collaborated products',
     softBlockExtraDtoFields: true,
     noAuthToken: true,
@@ -310,7 +368,10 @@ export class ProductsController {
 
   @ApiEndpoint({
     tags: ['Products'],
-    response: { status: HttpStatus.OK, description: ServerSuccess.PRODUCTS.LISTED },
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.PRODUCTS.LISTED,
+    },
     operation: 'Get all active products by users',
     softBlockExtraDtoFields: true,
   })
@@ -335,20 +396,25 @@ export class ProductsController {
 
   @ApiEndpoint({
     tags: ['Business', 'Products'],
-    response: { status: HttpStatus.OK, description: ServerSuccess.PRODUCTS.UPDATED },
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.PRODUCTS.UPDATED,
+    },
     softBlockExtraDtoFields: true,
     noAuthToken: true,
     operation: 'Update product details',
-    params: [{
-      name: 'businessId',
-      required: true,
-      type: 'string',
-    },
-    {
-      name: 'productId',
-      type: 'string',
-      required: true,
-    }],
+    params: [
+      {
+        name: 'businessId',
+        required: true,
+        type: 'string',
+      },
+      {
+        name: 'productId',
+        type: 'string',
+        required: true,
+      },
+    ],
   })
   @ApiNotFoundResponse({ description: ServerErrors.PRODUCT.NOT_FOUND })
   @UseGuards(JwtAuthGuard)
@@ -417,19 +483,24 @@ export class ProductsController {
 
   @ApiEndpoint({
     tags: ['Business', 'Products'],
-    response: { status: HttpStatus.OK, description: ServerSuccess.PRODUCTS.UPDATED },
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.PRODUCTS.UPDATED,
+    },
     noAuthToken: true,
     operation: 'Delete my product',
-    params: [{
-      name: 'businessId',
-      type: 'string',
-      required: true,
-    },
-    {
-      name: 'productId',
-      type: 'string',
-      required: true,
-    }],
+    params: [
+      {
+        name: 'businessId',
+        type: 'string',
+        required: true,
+      },
+      {
+        name: 'productId',
+        type: 'string',
+        required: true,
+      },
+    ],
   })
   @ApiNotFoundResponse({ description: ServerErrors.PRODUCT.NOT_FOUND })
   @UseGuards(JwtAuthGuard)
@@ -441,7 +512,11 @@ export class ProductsController {
     @Req() req,
     @Res() response: Response,
   ) {
-    const deletedProduct = await this.productsService.softDelete(businessId, productId, req.user);
+    const deletedProduct = await this.productsService.softDelete(
+      businessId,
+      productId,
+      req.user,
+    );
     return responseHelper(
       response,
       HttpStatus.OK,
@@ -454,19 +529,24 @@ export class ProductsController {
 
   @ApiEndpoint({
     tags: ['Business', 'Products'],
-    response: { status: HttpStatus.OK, description: ServerSuccess.PRODUCTS.UPDATED },
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.PRODUCTS.UPDATED,
+    },
     noAuthToken: true,
     operation: 'Delete a product by superadmin and DMO-admin',
-    params: [{
-      name: 'businessId',
-      type: 'string',
-      required: true,
-    },
-    {
-      name: 'productId',
-      type: 'string',
-      required: true,
-    }],
+    params: [
+      {
+        name: 'businessId',
+        type: 'string',
+        required: true,
+      },
+      {
+        name: 'productId',
+        type: 'string',
+        required: true,
+      },
+    ],
   })
   @ApiNotFoundResponse({ description: ServerErrors.PRODUCT.NOT_FOUND })
   @Roles(UserType.DMOADMIN, UserType.SUPERADMIN)
@@ -479,7 +559,12 @@ export class ProductsController {
     @Req() req,
     @Res() response: Response,
   ) {
-    const deletedProduct = await this.productsService.softDelete(businessId, productId, req.user, true);
+    const deletedProduct = await this.productsService.softDelete(
+      businessId,
+      productId,
+      req.user,
+      true,
+    );
     return responseHelper(
       response,
       HttpStatus.OK,
@@ -492,7 +577,10 @@ export class ProductsController {
 
   @ApiEndpoint({
     tags: ['Products'],
-    response: { status: HttpStatus.OK, description: ServerSuccess.PRODUCTS.LISTED },
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.PRODUCTS.LISTED,
+    },
     noAuthToken: true,
   })
   @Roles(UserType.SUPERADMIN, UserType.DMOADMIN, UserType.TRAVELLER)

@@ -1,5 +1,16 @@
 import {
-  Body, Controller, Post, HttpCode, HttpStatus, UseGuards, Req, Res, Put, BadRequestException, forwardRef, Inject,
+  Body,
+  Controller,
+  Post,
+  HttpCode,
+  HttpStatus,
+  UseGuards,
+  Req,
+  Res,
+  Put,
+  BadRequestException,
+  forwardRef,
+  Inject,
 } from '@nestjs/common';
 import {
   ApiConflictResponse,
@@ -21,7 +32,11 @@ import { UsersService } from 'src/modules/users/users.services';
 import { OTPPurpose } from 'src/modules/users/users.type';
 import { ChangePasswordDto } from './requests/change-password.dto';
 import { Response } from 'express';
-import { EmailDTO, SendOtpToEmailDTO, UpdatePasswordDto } from './requests/forget-password.dto';
+import {
+  EmailDTO,
+  SendOtpToEmailDTO,
+  UpdatePasswordDto,
+} from './requests/forget-password.dto';
 import { responseHelper } from 'src/core/helper/response.helper';
 import { VerifyOtpDto } from './requests/verify-otp.dto';
 
@@ -32,10 +47,12 @@ export class AuthController {
     private authService: AuthService,
     @Inject(forwardRef(() => UsersService))
     private userService: UsersService,
-  ) { }
+  ) {}
 
   @HttpCode(HttpStatus.OK)
-  @ApiInternalServerErrorResponse({ description: 'Couldn\'t find user with given email' })
+  @ApiInternalServerErrorResponse({
+    description: "Couldn't find user with given email",
+  })
   @ApiNotFoundResponse({ description: ServerErrors.USER.NOT_FOUND })
   @ApiOperation({ summary: 'Login to system' })
   @Post('login')
@@ -46,7 +63,7 @@ export class AuthController {
   @HttpCode(HttpStatus.CREATED)
   @ApiConflictResponse({ description: ServerErrors.USER.EXISTS })
   @ApiCreatedResponse({ type: GetUserDetailsResponse })
-  @ApiInternalServerErrorResponse({ description: 'Couldn\'t save user' })
+  @ApiInternalServerErrorResponse({ description: "Couldn't save user" })
   @ApiOperation({ summary: 'Register new user' })
   @Post('register')
   async register(@Body() body: RegisterRequest) {
@@ -57,7 +74,10 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
     tags: [],
-    response: { status: HttpStatus.OK, description: ServerSuccess.USER.CHANGEPASSWORD },
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.USER.CHANGEPASSWORD,
+    },
     softBlockExtraDtoFields: true,
     noAuthToken: true,
     operation: 'change your password',
@@ -85,7 +105,10 @@ export class AuthController {
 
   @ApiEndpoint({
     tags: [],
-    response: { status: HttpStatus.OK, description: ServerSuccess.USER.FORGET_PASSWORD },
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.USER.FORGET_PASSWORD,
+    },
     operation: 'forget password - send otp',
   })
   @Post('send-otp')
@@ -93,9 +116,10 @@ export class AuthController {
     @Res() response: Response,
     @Body() dto: SendOtpToEmailDTO,
   ) {
-    const user = dto.purpose !== OTPPurpose.RECOVER_ACCOUNT
-      ? await this.userService.findByEmail(dto.email)
-      : await this.userService.findOne(dto.email);
+    const user
+      = dto.purpose !== OTPPurpose.RECOVER_ACCOUNT
+        ? await this.userService.findByEmail(dto.email)
+        : await this.userService.findOne(dto.email);
 
     const token = await this.userService.generateOtp(user, dto.purpose);
 
@@ -111,14 +135,14 @@ export class AuthController {
 
   @ApiEndpoint({
     tags: [],
-    response: { status: HttpStatus.OK, description: ServerSuccess.USER.FORGET_PASSWORD },
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.USER.FORGET_PASSWORD,
+    },
     operation: 'verify your code',
   })
   @Post('verify-otp')
-  async verifyOtp(
-    @Res() response: Response,
-    @Body() dto: VerifyOtpDto,
-  ) {
+  async verifyOtp(@Res() response: Response, @Body() dto: VerifyOtpDto) {
     await this.userService.verifyOtp(dto);
 
     return responseHelper(
@@ -133,7 +157,10 @@ export class AuthController {
 
   @ApiEndpoint({
     tags: [],
-    response: { status: HttpStatus.OK, description: ServerSuccess.USER.FORGET_PASSWORD },
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.USER.FORGET_PASSWORD,
+    },
     operation: 'Update password',
   })
   @Post('forget-password')
@@ -158,14 +185,14 @@ export class AuthController {
 
   @ApiEndpoint({
     tags: ['Auth'],
-    response: { status: HttpStatus.OK, description: ServerSuccess.USER.RECOVER },
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.USER.RECOVER,
+    },
     operation: 'Recover user account',
   })
   @Post('recover-account')
-  async recoverUserAccount(
-    @Res() response: Response,
-    @Body() body: EmailDTO,
-  ) {
+  async recoverUserAccount(@Res() response: Response, @Body() body: EmailDTO) {
     await this.userService.recoverUserAccount(body.email);
 
     return responseHelper(
@@ -180,14 +207,14 @@ export class AuthController {
 
   @ApiEndpoint({
     tags: ['Auth'],
-    response: { status: HttpStatus.OK, description: ServerSuccess.USER.RECOVER },
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.USER.RECOVER,
+    },
     operation: 'Unblock user account',
   })
   @Post('unblock-account')
-  async unblockUserAccount(
-    @Res() response: Response,
-    @Body() body: EmailDTO,
-  ) {
+  async unblockUserAccount(@Res() response: Response, @Body() body: EmailDTO) {
     await this.userService.unblockUserAccount(body.email);
 
     return responseHelper(

@@ -1,5 +1,16 @@
 import {
-  Body, Controller, Delete, Get, HttpStatus, Param, Post, Put, Query, Req, Res, UseGuards,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpStatus,
+  Param,
+  Post,
+  Put,
+  Query,
+  Req,
+  Res,
+  UseGuards,
 } from '@nestjs/common';
 import { Response } from 'express';
 
@@ -19,9 +30,7 @@ import { ExternalApiCategoriesQuery } from 'src/modules/buss-categories/dto/exte
 
 @Controller()
 export class BussCategoriesController {
-  constructor(
-    private readonly bussCategoryService: BussCategoriesService,
-  ) { }
+  constructor(private readonly bussCategoryService: BussCategoriesService) {}
 
   @Roles(UserType.SUPERADMIN, UserType.ADMIN)
   @UseGuards(JwtAuthGuard)
@@ -42,7 +51,10 @@ export class BussCategoriesController {
   ) {
     await this.bussCategoryService.findByFieldName('name', dto.name);
 
-    const newBussCategory = await this.bussCategoryService.create(dto, req.user.id);
+    const newBussCategory = await this.bussCategoryService.create(
+      dto,
+      req.user.id,
+    );
     return responseHelper(
       response,
       HttpStatus.CREATED,
@@ -62,10 +74,7 @@ export class BussCategoriesController {
     softBlockExtraDtoFields: true,
   })
   @Get('admin/buss-category')
-  async getAll(
-    @Res() response: Response,
-    @Query() query: LocaleFilterQuery,
-  ) {
+  async getAll(@Res() response: Response, @Query() query: LocaleFilterQuery) {
     const allBussCategoires = await this.bussCategoryService.getAll(query);
     return responseHelper(
       response,
@@ -121,9 +130,17 @@ export class BussCategoriesController {
     @Body() dto: UpdateBussCategoryDto,
     @Param('id') id: string,
   ) {
-    await this.bussCategoryService.findByFieldNameExcludeId('name', dto.name, id);
+    await this.bussCategoryService.findByFieldNameExcludeId(
+      'name',
+      dto.name,
+      id,
+    );
 
-    const updateBussCategory = await this.bussCategoryService.update(dto, id, req.user.id);
+    const updateBussCategory = await this.bussCategoryService.update(
+      dto,
+      id,
+      req.user.id,
+    );
     return responseHelper(
       response,
       HttpStatus.OK,
@@ -151,7 +168,10 @@ export class BussCategoriesController {
     @Res() response: Response,
     @Param('id') id: string,
   ) {
-    const deleteBussCategory = await this.bussCategoryService.softDelete(id, req.user.id);
+    const deleteBussCategory = await this.bussCategoryService.softDelete(
+      id,
+      req.user.id,
+    );
     return responseHelper(
       response,
       HttpStatus.OK,
@@ -176,7 +196,8 @@ export class BussCategoriesController {
     @Res() response: Response,
     @Query() query: ExternalApiCategoriesQuery,
   ) {
-    const allBussCategoires = await this.bussCategoryService.getAllForExternalApi(query);
+    const allBussCategoires
+      = await this.bussCategoryService.getAllForExternalApi(query);
     return responseHelper(
       response,
       HttpStatus.OK,

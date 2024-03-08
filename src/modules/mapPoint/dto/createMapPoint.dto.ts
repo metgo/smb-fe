@@ -7,8 +7,8 @@ export class createMapPointDto {
   @ApiProperty({
     required: true,
   })
-    @IsNotEmpty()
-    @IsString()
+  @IsNotEmpty()
+  @IsString()
     name: string;
 
   @ApiProperty({
@@ -18,10 +18,10 @@ export class createMapPointDto {
   @IsString()
     icon: string;
 
-    @ApiProperty({
-      required: false,
-    })
+  @ApiProperty({
+    required: false,
+  })
   @IsOptional()
-    @IsBoolean()
-      hasMultiple: boolean;
+  @IsBoolean()
+    hasMultiple: boolean;
 }

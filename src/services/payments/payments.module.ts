@@ -12,9 +12,7 @@ import { ProductsModule } from 'src/modules/products/products.module';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([
-      { name: 'Payment', schema: PaymentSchema },
-    ]),
+    MongooseModule.forFeature([{ name: 'Payment', schema: PaymentSchema }]),
     ConfigModule,
     forwardRef(() => OrdersModule),
     forwardRef(() => VoucherModule),

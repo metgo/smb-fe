@@ -12,9 +12,10 @@ export class ConfigService {
   constructor() {
     const { DEV_CONFIG } = process.env;
 
-    const config = DEV_CONFIG && fs.existsSync(`${DEV_CONFIG}.env`)
-      ? dotenv.parse(fs.readFileSync(`${DEV_CONFIG}.env`))
-      : this.parseEnv();
+    const config
+      = DEV_CONFIG && fs.existsSync(`${DEV_CONFIG}.env`)
+        ? dotenv.parse(fs.readFileSync(`${DEV_CONFIG}.env`))
+        : this.parseEnv();
 
     this.envConfig = this.validateInput(config);
   }
@@ -118,10 +119,10 @@ export class ConfigService {
       MAILCHIMP_SERVER_PREFIX: Joi.string().required(),
       MAILCHIMP_FROM_EMAIL: Joi.string().required(),
       MAILCHIMP_TAV8_SUPPORT_EMAIL: Joi.string().required(),
-
     }).unknown(true);
 
-    const { error, value: validatedEnvConfig } = envVarsSchema.validate(envConfig);
+    const { error, value: validatedEnvConfig }
+      = envVarsSchema.validate(envConfig);
 
     if (error) {
       throw new Error(`Config validation error: ${error.message}`);

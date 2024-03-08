@@ -7,13 +7,12 @@
  * @param {(string|() => string)=} orElse the string to return if ifCondition is not true
  * @returns {string}
  */
-export function strIf(
-  str,
-  ifCondition,
-  orElse?,
-) {
+export function strIf(str, ifCondition, orElse?) {
   const positive = typeof str === 'string' ? () => str : str;
-  const negative = (orElse === undefined || typeof orElse === 'string') ? () => (orElse || '') : orElse;
+  const negative
+    = orElse === undefined || typeof orElse === 'string'
+      ? () => orElse || ''
+      : orElse;
 
   return ifCondition ? positive() : negative();
 }
@@ -26,11 +25,7 @@ export function strIf(
  * @param {(string|() => string)=} singular
  * @returns {string}
  */
-export function pluralize(
-  plural,
-  count,
-  singular,
-) {
+export function pluralize(plural, count, singular) {
   const countConst = count || 0;
 
   return strIf(plural, countConst !== 1, singular);

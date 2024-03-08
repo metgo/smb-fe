@@ -18,6 +18,6 @@ export class Accessibility extends AuditableSchema {
     hebrewName: string;
 }
 
-export type AccessibilityDocument = HydratedDocument<Accessibility>
+export type AccessibilityDocument = HydratedDocument<Accessibility>;
 
 export const AccessibilitySchema = SchemaFactory.createForClass(Accessibility);

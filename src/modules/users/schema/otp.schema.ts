@@ -21,12 +21,10 @@ export class OTP {
   @Prop({ default: false, required: true })
     isVerify: Boolean;
 
-  @Prop(
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: User.name,
-    },
-  )
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    ref: User.name,
+  })
     userId: mongoose.Types.ObjectId;
 }
 

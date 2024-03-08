@@ -15,21 +15,21 @@ export class createMPSubCategoriesItemsDto {
     required: false,
   })
   @IsOptional()
-    @IsString()
+  @IsString()
     icon: string;
 
   @ApiProperty({
     required: false,
   })
   @IsOptional()
-    @IsString()
+  @IsString()
     pathAlt: string;
 
   @ApiProperty({
     required: false,
   })
   @IsOptional()
-    @IsBoolean()
+  @IsBoolean()
     hasMultiple: boolean;
 
   @ApiProperty({

@@ -7,9 +7,7 @@ import { UsersModule } from '../users/users.module';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([
-      { name: 'GroupType', schema: GroupTypeSchema },
-    ]),
+    MongooseModule.forFeature([{ name: 'GroupType', schema: GroupTypeSchema }]),
     UsersModule,
   ],
   controllers: [GroupTypeController],

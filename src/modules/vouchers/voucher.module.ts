@@ -16,9 +16,7 @@ import { PaymentsModule } from 'src/services/payments/payments.module';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([
-      { name: 'Voucher', schema: VoucherSchema },
-    ]),
+    MongooseModule.forFeature([{ name: 'Voucher', schema: VoucherSchema }]),
     CampaignModule,
     CampaignSegmentModule,
     DMOModule,

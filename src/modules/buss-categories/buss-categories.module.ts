@@ -3,10 +3,16 @@ import { MongooseModule } from '@nestjs/mongoose';
 
 import { BussCategoriesController } from './buss-categories.controller';
 import { BussCategoriesService } from './buss-categories.service';
-import { BussCategory, BussCategorySchema } from './schema/buss.category.schema';
+import {
+  BussCategory,
+  BussCategorySchema,
+} from './schema/buss.category.schema';
 import { UsersModule } from '../users/users.module';
 import { BussSubCategoriesModule } from '../buss-subcategories/buss-subcategories.module';
-import { BussSubCategory, BussSubCategorySchema } from '../buss-subcategories/schema/buss-subCategory.schema';
+import {
+  BussSubCategory,
+  BussSubCategorySchema,
+} from '../buss-subcategories/schema/buss-subCategory.schema';
 import { ConfigModule } from 'src/services/config/config.module';
 
 @Module({

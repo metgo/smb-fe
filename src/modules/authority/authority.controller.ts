@@ -1,5 +1,14 @@
 import {
-  Body, Controller, Get, HttpStatus, Param, Post, Query, Req, Res, UseGuards,
+  Body,
+  Controller,
+  Get,
+  HttpStatus,
+  Param,
+  Post,
+  Query,
+  Req,
+  Res,
+  UseGuards,
 } from '@nestjs/common';
 import { Response } from 'express';
 
@@ -15,9 +24,7 @@ import { UserType } from 'src/modules/users/users.type';
 
 @Controller()
 export class AuthorityController {
-  constructor(
-    private readonly authorityService: AuthorityService,
-  ) {}
+  constructor(private readonly authorityService: AuthorityService) {}
 
   @Roles(UserType.SUPERADMIN)
   @UseGuards(JwtAuthGuard)

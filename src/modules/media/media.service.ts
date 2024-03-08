@@ -21,21 +21,25 @@ import { GcpBucketService } from 'src/services/gcp-bucket/gcp-bucket.services';
 @Injectable()
 export class MediaServices {
   constructor(
-      @InjectModel('Media')
-      private MediaModel: Model<Media>,
-      private businessService: BusinessService,
-      private gcpBucketServices: GcpBucketService,
-      private productService: ProductsService,
+    @InjectModel('Media')
+    private MediaModel: Model<Media>,
+    private businessService: BusinessService,
+    private gcpBucketServices: GcpBucketService,
+    private productService: ProductsService,
   ) {}
 
-  async create(loggedInUser: LoggedInUserInterface, files: Array<Express.Multer.File>, body: UploadDTO) {
+  async create(
+    loggedInUser: LoggedInUserInterface,
+    files: Array<Express.Multer.File>,
+    body: UploadDTO,
+  ) {
     const images = await Promise.all(
       files.map(async (file: Express.Multer.File) => {
         // store in gcp
         const imageUrl = await this.gcpBucketServices.upload(file);
 
         if (body.reference === ReferenceType.BUSINESS) {
-        // store in media database
+          // store in media database
           const newMedia = new this.MediaModel({
             reference: {
               refId: body.refId,
@@ -59,7 +63,12 @@ export class MediaServices {
 
     // update to business model
     if (body.reference === ReferenceType.BUSINESS) {
-      const updateBusiness = await this.businessService.uploadMedia(body.refId, loggedInUser.id, images, loggedInUser.role);
+      const updateBusiness = await this.businessService.uploadMedia(
+        body.refId,
+        loggedInUser.id,
+        images,
+        loggedInUser.role,
+      );
       return updateBusiness;
     }
 
@@ -78,11 +87,18 @@ export class MediaServices {
     return images;
   }
 
-  async delete(loggedInUser: LoggedInUserInterface, body: DeleteMediaDTO): Promise<Business | Product> {
+  async delete(
+    loggedInUser: LoggedInUserInterface,
+    body: DeleteMediaDTO,
+  ): Promise<Business | Product> {
     let deletedImage;
     // delete from business module
     if (body.reference === ReferenceType.BUSINESS) {
-      deletedImage = await this.businessService.deleteImage(loggedInUser, body.refId, body.imageUrl);
+      deletedImage = await this.businessService.deleteImage(
+        loggedInUser,
+        body.refId,
+        body.imageUrl,
+      );
 
       // delete image in media
       await this.MediaModel.deleteOne({
@@ -95,7 +111,11 @@ export class MediaServices {
 
     // delete from product module
     if (body.reference === ReferenceType.PRODUCT) {
-      deletedImage = await this.productService.deleteImage(loggedInUser.id, body.refId, body.imageUrl);
+      deletedImage = await this.productService.deleteImage(
+        loggedInUser.id,
+        body.refId,
+        body.imageUrl,
+      );
     }
 
     // delete image in gcp

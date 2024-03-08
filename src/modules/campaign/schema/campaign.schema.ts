@@ -34,5 +34,5 @@ export class Campaign extends AuditableSchema {
   @Prop({ required: true })
     endDate: Date;
 }
-export type CampaignDocument = HydratedDocument<Campaign>
+export type CampaignDocument = HydratedDocument<Campaign>;
 export const CampaignSchema = SchemaFactory.createForClass(Campaign);

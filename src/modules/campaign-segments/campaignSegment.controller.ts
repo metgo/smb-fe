@@ -1,5 +1,17 @@
 import {
-  Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query, Req, Res, UseGuards,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Req,
+  Res,
+  UseGuards,
 } from '@nestjs/common';
 import { Response } from 'express';
 
@@ -28,7 +40,10 @@ export class CampaignSegmentController {
   @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
     tags: ['Admin', 'Campaign Segment'],
-    response: { status: HttpStatus.CREATED, description: ServerSuccess.CAMPAIGN_SEGMENT.CREATED },
+    response: {
+      status: HttpStatus.CREATED,
+      description: ServerSuccess.CAMPAIGN_SEGMENT.CREATED,
+    },
     noAuthToken: true,
     softBlockExtraDtoFields: true,
   })
@@ -38,7 +53,10 @@ export class CampaignSegmentController {
     @Body() dto: CreateCampaignSegmentDTO,
     @Res() response: Response,
   ) {
-    const campaignSegment = await this.campaignSegmentService.create(req.user.id, dto);
+    const campaignSegment = await this.campaignSegmentService.create(
+      req.user.id,
+      dto,
+    );
 
     return responseHelper(
       response,
@@ -54,7 +72,10 @@ export class CampaignSegmentController {
   @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
     tags: ['Admin', 'Campaign Segment'],
-    response: { status: HttpStatus.OK, description: ServerSuccess.CAMPAIGN_SEGMENT.UPDATED },
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.CAMPAIGN_SEGMENT.UPDATED,
+    },
     noAuthToken: true,
     softBlockExtraDtoFields: true,
     operation: 'Update by campaign Id',
@@ -66,7 +87,11 @@ export class CampaignSegmentController {
     @Req() req,
     @Res() response: Response,
   ) {
-    const campaignSegment = await this.campaignSegmentService.update(req.user.id, campaignId, body);
+    const campaignSegment = await this.campaignSegmentService.update(
+      req.user.id,
+      campaignId,
+      body,
+    );
 
     return responseHelper(
       response,
@@ -82,7 +107,10 @@ export class CampaignSegmentController {
   @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
     tags: ['Admin', 'Campaign Segment'],
-    response: { status: HttpStatus.OK, description: ServerSuccess.CAMPAIGN_SEGMENT.DELETED },
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.CAMPAIGN_SEGMENT.DELETED,
+    },
     noAuthToken: true,
     operation: 'Delete by campaign Id',
   })
@@ -92,7 +120,10 @@ export class CampaignSegmentController {
     @Req() req,
     @Res() response: Response,
   ) {
-    const campaignSegment = await this.campaignSegmentService.delete(req.user.id, campaignId);
+    const campaignSegment = await this.campaignSegmentService.delete(
+      req.user.id,
+      campaignId,
+    );
 
     return responseHelper(
       response,
@@ -108,16 +139,19 @@ export class CampaignSegmentController {
   @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
     tags: ['Admin, Campaign Segment'],
-    response: { status: HttpStatus.OK, description: ServerSuccess.CAMPAIGN_CREATED },
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.CAMPAIGN_CREATED,
+    },
     noAuthToken: true,
     softBlockExtraDtoFields: true,
   })
   @Get('campaign-segment/dmo')
-  async getAllDMOsOfCampaignSegment(
-    @Req() req,
-    @Res() response: Response,
-  ) {
-    const campaign = await this.campaignSegmentService.getAllDMOsOfCampaignSegment(req.user.id);
+  async getAllDMOsOfCampaignSegment(@Req() req, @Res() response: Response) {
+    const campaign
+      = await this.campaignSegmentService.getAllDMOsOfCampaignSegment(
+        req.user.id,
+      );
     return responseHelper(
       response,
       HttpStatus.OK,
@@ -153,7 +187,10 @@ export class CampaignSegmentController {
 
   @ApiEndpoint({
     tags: ['Campaign Segment'],
-    response: { status: HttpStatus.OK, description: ServerSuccess.BUSINESS_LISTED },
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.BUSINESS_LISTED,
+    },
     operation: 'Get all businesses related to a campaign',
     softBlockExtraDtoFields: true,
   })
@@ -176,7 +213,10 @@ export class CampaignSegmentController {
 
   @ApiEndpoint({
     tags: ['Campaign Segment'],
-    response: { status: HttpStatus.OK, description: ServerSuccess.PRODUCTS.LISTED },
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.PRODUCTS.LISTED,
+    },
     operation: 'Get all products related to a campaign',
     softBlockExtraDtoFields: true,
   })
@@ -199,7 +239,10 @@ export class CampaignSegmentController {
 
   @ApiEndpoint({
     tags: ['Products', 'External Api'],
-    response: { status: HttpStatus.OK, description: ServerSuccess.PRODUCTS.LISTED },
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.PRODUCTS.LISTED,
+    },
     operation: 'External Api - Get all products',
     softBlockExtraDtoFields: true,
   })
@@ -223,7 +266,10 @@ export class CampaignSegmentController {
 
   @ApiEndpoint({
     tags: ['Business', 'External Api'],
-    response: { status: HttpStatus.OK, description: ServerSuccess.BUSINESS_LISTED },
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.BUSINESS_LISTED,
+    },
     softBlockExtraDtoFields: true,
   })
   @UseGuards(ExternalApiGuard)

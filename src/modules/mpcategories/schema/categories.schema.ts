@@ -21,5 +21,5 @@ export class MPCategories extends AuditableSchema {
     mapPointId: mongoose.Types.ObjectId[];
 }
 
-export type MPCategoriesDocument = HydratedDocument<MPCategories>
+export type MPCategoriesDocument = HydratedDocument<MPCategories>;
 export const MPCategoriesSchema = SchemaFactory.createForClass(MPCategories);

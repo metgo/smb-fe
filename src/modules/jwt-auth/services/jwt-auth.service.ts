@@ -3,7 +3,11 @@ import { JwtService } from '@nestjs/jwt';
 import jwtDecode from 'jwt-decode';
 
 import {
-  IJWTOtp, ITokenOtp, ITokens, ITokenUser, OtpToken,
+  IJWTOtp,
+  ITokenOtp,
+  ITokens,
+  ITokenUser,
+  OtpToken,
 } from 'src/modules/jwt-auth/jwt.types';
 import { ConfigService } from 'src/services/config/config.service';
 
@@ -17,7 +21,10 @@ export class JwtAuthService {
   login(user: ITokenUser): ITokens {
     const userPayload = { ...user };
     const {
-      ACCESS_TOKEN, ACCESS_TOKEN_EXPIRATION, REFRESH_TOKEN, REFRESH_TOKEN_EXPIRATION,
+      ACCESS_TOKEN,
+      ACCESS_TOKEN_EXPIRATION,
+      REFRESH_TOKEN,
+      REFRESH_TOKEN_EXPIRATION,
     } = this.configService.JWT;
 
     return {
@@ -34,9 +41,7 @@ export class JwtAuthService {
 
   otpToken(otp: ITokenOtp): OtpToken {
     const otpPayload = { ...otp };
-    const {
-      ACCESS_TOKEN, OTP_EXPIRATION,
-    } = this.configService.JWT;
+    const { ACCESS_TOKEN, OTP_EXPIRATION } = this.configService.JWT;
     return {
       otpToken: this.jwtService.sign(otpPayload, {
         secret: ACCESS_TOKEN,

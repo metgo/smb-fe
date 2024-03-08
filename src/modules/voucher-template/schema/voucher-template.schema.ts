@@ -17,23 +17,22 @@ export class VoucherTemplate extends AuditableSchema {
   @Prop()
     description: string;
 
-  @Prop(
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      required: false,
-    },
-  )
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    required: false,
+  })
     campId: string;
 
   @Prop()
     imagePath: string;
 
-    @Prop()
-      imageAlt: string;
+  @Prop()
+    imageAlt: string;
 
   @Prop({ default: twoYearExpireDate() })
     expireDate: Date;
 }
 
-export type VoucherTemplateDocument = HydratedDocument<VoucherTemplate>
-export const VoucherTemplateSchema = SchemaFactory.createForClass(VoucherTemplate);
+export type VoucherTemplateDocument = HydratedDocument<VoucherTemplate>;
+export const VoucherTemplateSchema
+  = SchemaFactory.createForClass(VoucherTemplate);

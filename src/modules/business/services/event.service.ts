@@ -12,7 +12,11 @@ import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { deleteItem, queryhandler } from 'src/core/helper/query-helper';
 import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interface';
 import { AuthorityService } from 'src/modules/authority/authority.service';
-import { BusinessStatus, GetBusinessByIdOrSlug, GeoServicesTypes } from 'src/modules/business/business.type';
+import {
+  BusinessStatus,
+  GetBusinessByIdOrSlug,
+  GeoServicesTypes,
+} from 'src/modules/business/business.type';
 import { CreateEventsDto, UpdateEventDto } from 'src/modules/business/dto';
 import { Business } from 'src/modules/business/schema/business.schema';
 import { GetAllBusinessesForGuestQuery } from 'src/modules/business/queries';
@@ -24,14 +28,14 @@ import { UserType } from 'src/modules/users/users.type';
 @Injectable()
 export class EventsService {
   constructor(
-      private readonly authorityService: AuthorityService,
-      @InjectModel('Business')
-      private BusinessModel: Model<Business>,
-      @InjectModel(BussCategory.name)
-      private BussCategoryModel: Model<BussCategory>,
-      @InjectModel(BussSubCategory.name)
-      private BussSubCategoryModel: Model<BussSubCategory>,
-      private readonly dmoService: DMOService,
+    private readonly authorityService: AuthorityService,
+    @InjectModel('Business')
+    private BusinessModel: Model<Business>,
+    @InjectModel(BussCategory.name)
+    private BussCategoryModel: Model<BussCategory>,
+    @InjectModel(BussSubCategory.name)
+    private BussSubCategoryModel: Model<BussSubCategory>,
+    private readonly dmoService: DMOService,
   ) {}
 
   async createEvents(dto: CreateEventsDto, userId: string): Promise<Business> {
@@ -56,7 +60,10 @@ export class EventsService {
       if (dto.geoLocation) {
         const location = {
           type: 'Point',
-          coordinates: [parseFloat(dto.geoLocation.long), parseFloat(dto.geoLocation.lat)],
+          coordinates: [
+            parseFloat(dto.geoLocation.long),
+            parseFloat(dto.geoLocation.lat),
+          ],
         };
         newDto = {
           ...newDto,
@@ -115,8 +122,12 @@ export class EventsService {
 
     if (search) {
       const [matchingCategoryIds, matchingSubCategoryIds] = await Promise.all([
-        this.BussCategoryModel.find({ name: { $regex: search, $options: 'i' } }).select('_id'),
-        this.BussSubCategoryModel.find({ name: { $regex: search, $options: 'i' } }).select('_id'),
+        this.BussCategoryModel.find({
+          name: { $regex: search, $options: 'i' },
+        }).select('_id'),
+        this.BussSubCategoryModel.find({
+          name: { $regex: search, $options: 'i' },
+        }).select('_id'),
       ]);
 
       findQuery = {
@@ -130,7 +141,11 @@ export class EventsService {
       };
 
       if (!(matchingCategoryIds?.length || matchingSubCategoryIds?.length)) {
-        findQuery.$text = { $search: search, $caseSensitive: false, $diacriticSensitive: false };
+        findQuery.$text = {
+          $search: search,
+          $caseSensitive: false,
+          $diacriticSensitive: false,
+        };
       }
     }
 
@@ -179,36 +194,38 @@ export class EventsService {
         },
       };
 
-      const allEvents = await queryhandler<Business>(
-        this.BusinessModel,
-        {
-          findQuery,
-          select,
-          populate,
-          populate1,
-          sort: 'createdAt',
-        },
+      const allEvents = await queryhandler<Business>(this.BusinessModel, {
+        findQuery,
+        select,
+        populate,
+        populate1,
+        sort: 'createdAt',
+      });
+
+      const sortEvents = getNearestBusiness(
+        parseFloat(lat),
+        parseFloat(long),
+        allEvents.data,
       );
 
-      const sortEvents = getNearestBusiness(parseFloat(lat), parseFloat(long), allEvents.data);
-
-      const allPaginatedEvents = paginateData(queryPage, queryLimit, sortEvents);
+      const allPaginatedEvents = paginateData(
+        queryPage,
+        queryLimit,
+        sortEvents,
+      );
 
       return allPaginatedEvents;
     }
 
-    const allEvents = await queryhandler<Business>(
-      this.BusinessModel,
-      {
-        findQuery,
-        select,
-        page: queryPage,
-        limit: queryLimit,
-        populate,
-        populate1,
-        sort: 'createdAt',
-      },
-    );
+    const allEvents = await queryhandler<Business>(this.BusinessModel, {
+      findQuery,
+      select,
+      page: queryPage,
+      limit: queryLimit,
+      populate,
+      populate1,
+      sort: 'createdAt',
+    });
 
     return allEvents;
   }
@@ -232,19 +249,27 @@ export class EventsService {
       };
       const select = `${disSelect}`;
 
-      const event = await this.BusinessModel.findById(id).select(select).populate(populate).populate(populate1);
+      const event = await this.BusinessModel.findById(id)
+        .select(select)
+        .populate(populate)
+        .populate(populate1);
 
       if (!event) {
         throw new NotFoundException(`Events ${ServerErrors.NOT_FOUND}`);
       }
 
-      if (!loggedInUser && event.status === BusinessStatus.APPROVED && !event.isDeleted) {
+      if (
+        !loggedInUser
+        && event.status === BusinessStatus.APPROVED
+        && !event.isDeleted
+      ) {
         return event;
       }
 
       if (loggedInUser) {
-        if (loggedInUser.role === UserType.SUPERADMIN
-            || event.userId.equals(new mongoose.Types.ObjectId(loggedInUser.id))
+        if (
+          loggedInUser.role === UserType.SUPERADMIN
+          || event.userId.equals(new mongoose.Types.ObjectId(loggedInUser.id))
         ) {
           return event;
         }
@@ -287,7 +312,10 @@ export class EventsService {
     if (dto.geoLocation) {
       const location = {
         type: 'Point',
-        coordinates: [parseFloat(dto.geoLocation.long), parseFloat(dto.geoLocation.lat)],
+        coordinates: [
+          parseFloat(dto.geoLocation.long),
+          parseFloat(dto.geoLocation.lat),
+        ],
       };
       updatedField = {
         ...updatedField,
@@ -297,7 +325,10 @@ export class EventsService {
 
     const updatedEvent = await this.BusinessModel.findOneAndUpdate(
       {
-        _id: id, isDeleted: false, serviceType: GeoServicesTypes.EVENT, createdBy: loggedInUser.id,
+        _id: id,
+        isDeleted: false,
+        serviceType: GeoServicesTypes.EVENT,
+        createdBy: loggedInUser.id,
       },
       updatedField,
       { new: true },
@@ -314,7 +345,10 @@ export class EventsService {
       const event = await deleteItem<Business>(
         this.BusinessModel,
         {
-          _id: id, serviceType: GeoServicesTypes.EVENT, createdBy: loggedInUserId, isDeleted: false,
+          _id: id,
+          serviceType: GeoServicesTypes.EVENT,
+          createdBy: loggedInUserId,
+          isDeleted: false,
         },
         updateField,
       );

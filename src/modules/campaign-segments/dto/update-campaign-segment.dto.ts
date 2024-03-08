@@ -1,9 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
-  IsArray,
-  IsEnum,
-  IsNotEmpty,
-  IsOptional,
+  IsArray, IsEnum, IsNotEmpty, IsOptional,
 } from 'class-validator';
 import { CampaignSegmentOperation } from '../campaignSegment.type';
 

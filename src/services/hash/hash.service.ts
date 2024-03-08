@@ -7,7 +7,7 @@ export class HashService {
     return await argon2.hash(plainText);
   }
 
-  async validate(password: string, passwordEntered:string) : Promise<boolean> {
+  async validate(password: string, passwordEntered: string): Promise<boolean> {
     return await argon2.verify(password, passwordEntered);
   }
 }

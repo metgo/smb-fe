@@ -1,5 +1,16 @@
 import {
-  Body, Controller, Delete, Get, HttpStatus, Param, Post, Put, Query, Req, Res, UseGuards,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpStatus,
+  Param,
+  Post,
+  Put,
+  Query,
+  Req,
+  Res,
+  UseGuards,
 } from '@nestjs/common';
 import { Response } from 'express';
 
@@ -16,9 +27,7 @@ import { UserType } from '../users/users.type';
 
 @Controller()
 export class GroupTypeController {
-  constructor(
-    private readonly groupTypeService: GroupTypeService,
-  ) { }
+  constructor(private readonly groupTypeService: GroupTypeService) {}
 
   @Roles(UserType.SUPERADMIN, UserType.ADMIN)
   @UseGuards(JwtAuthGuard)
@@ -132,11 +141,7 @@ export class GroupTypeController {
     noAuthToken: true,
   })
   @Delete('admin/group-type/:id')
-  async delete(
-    @Req() req,
-    @Res() response: Response,
-    @Param('id') id: string,
-  ) {
+  async delete(@Req() req, @Res() response: Response, @Param('id') id: string) {
     const groupType = await this.groupTypeService.softDelete(id, req.user.id);
     return responseHelper(
       response,

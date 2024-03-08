@@ -5,7 +5,10 @@ import { Currency } from 'src/common/enum';
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
 import { Accessibility } from 'src/modules/accessibility/schema/accessibility.schema';
 import { Authority } from 'src/modules/authority/schema/authority.schema';
-import { BusinessStatus, GeoServicesTypes } from 'src/modules/business/business.type';
+import {
+  BusinessStatus,
+  GeoServicesTypes,
+} from 'src/modules/business/business.type';
 import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.schema';
 import { BussSubCategory } from 'src/modules/buss-subcategories/schema/buss-subCategory.schema';
 import { DMO } from 'src/modules/dmo/schema/dmo.schema';
@@ -29,11 +32,11 @@ export class Business extends AuditableSchema {
     default: null,
   })
     address: {
-      country:{ type: string, default: null},
-      city: { type: string, default: null},
-      location: { type: string, default: null},
-      additional_information: { type: string, default: null},
-    };
+    country: { type: string; default: null };
+    city: { type: string; default: null };
+    location: { type: string; default: null };
+    additional_information: { type: string; default: null };
+  };
 
   @Prop()
     countryCode: string;
@@ -69,11 +72,11 @@ export class Business extends AuditableSchema {
     default: null,
   })
     contactDetails: {
-      name: { type: string, default: null},
-      countryCode: { type: string, default: null},
-      phone: { type: string, default: null},
-      address: { type: string, default: null},
-    };
+    name: { type: string; default: null };
+    countryCode: { type: string; default: null };
+    phone: { type: string; default: null };
+    address: { type: string; default: null };
+  };
 
   @Prop({
     type: [{ type: mongoose.Schema.Types.ObjectId, ref: User.name }],
@@ -113,9 +116,9 @@ export class Business extends AuditableSchema {
     default: null,
   })
     geoLocation: {
-      lat: { type: string, default: null},
-      long: { type: string, default: null},
-    };
+    lat: { type: string; default: null };
+    long: { type: string; default: null };
+  };
 
   @Prop({
     type: {
@@ -125,41 +128,46 @@ export class Business extends AuditableSchema {
       type: [Number],
       default: null,
     },
-
   })
     location: {
-      type: {
-        type: String,
-      },
-      coordinates: {
-        type: number[];
-      },
+    type: {
+      type: String;
     };
+    coordinates: {
+      type: number[];
+    };
+  };
 
   @Prop()
-    images: [{
-      image: { type: string, default: null}
-      caption: { type: string, default: null}
-      alt:{ type: string, default: null}
-    }];
+    images: [
+    {
+      image: { type: string; default: null };
+      caption: { type: string; default: null };
+      alt: { type: string; default: null };
+    }
+  ];
 
   @Prop({
     required: false,
-    type: [{
-      socialMediaId: {
-        type: mongoose.Types.ObjectId,
-        ref: SocialMedia.name,
+    type: [
+      {
+        socialMediaId: {
+          type: mongoose.Types.ObjectId,
+          ref: SocialMedia.name,
+        },
+        url: String,
       },
-      url: String,
-    }],
+    ],
     default: null,
   })
-    socialMedia: [{
+    socialMedia: [
+    {
       socialMediaId: {
-        type: mongoose.Types.ObjectId,
-      }
-      url: { type: string}
-    }];
+        type: mongoose.Types.ObjectId;
+      };
+      url: { type: string };
+    }
+  ];
 
   @Prop({
     type: [{ type: mongoose.Schema.Types.ObjectId, ref: GroupType.name }],
@@ -198,16 +206,16 @@ export class Business extends AuditableSchema {
 
   @Prop({ required: false })
     openingHrs: [
-      {
-        days: string
-        open: Date
-        close: Date
-        isHoliday: {
-          type: Boolean,
-          default: false
-        }
-      }
-    ];
+    {
+      days: string;
+      open: Date;
+      close: Date;
+      isHoliday: {
+        type: Boolean;
+        default: false;
+      };
+    }
+  ];
 
   @Prop({ type: Boolean, default: false })
     isAlwaysOpen: boolean;

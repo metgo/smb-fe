@@ -1,5 +1,5 @@
 export interface Image {
-    image: string,
-    caption: string,
-    alt: string,
+  image: string;
+  caption: string;
+  alt: string;
 }

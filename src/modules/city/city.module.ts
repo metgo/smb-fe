@@ -9,9 +9,7 @@ import { UsersModule } from 'src/modules/users/users.module';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([
-      { name: City.name, schema: CitySchema },
-    ]),
+    MongooseModule.forFeature([{ name: City.name, schema: CitySchema }]),
     AuthorityModule,
     UsersModule,
   ],
@@ -19,5 +17,4 @@ import { UsersModule } from 'src/modules/users/users.module';
   providers: [CityService],
   exports: [CityService],
 })
-
 export class CityModule {}

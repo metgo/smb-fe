@@ -1,7 +1,10 @@
 import { Provider } from '@nestjs/common';
 
 import mediaConfig from 'src/services/config/gcp-bucket';
-import { GoogleCloudStorageAdapter, Storage } from 'src/services/gcp-bucket/storage';
+import {
+  GoogleCloudStorageAdapter,
+  Storage,
+} from 'src/services/gcp-bucket/storage';
 import { ConfigService } from 'src/services/config/config.service';
 
 const configService = new ConfigService();

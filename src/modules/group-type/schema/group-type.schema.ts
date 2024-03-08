@@ -18,6 +18,6 @@ export class GroupType extends AuditableSchema {
     hebrewName: string;
 }
 
-export type GroupTypeDocument = HydratedDocument<GroupType>
+export type GroupTypeDocument = HydratedDocument<GroupType>;
 
 export const GroupTypeSchema = SchemaFactory.createForClass(GroupType);

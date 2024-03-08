@@ -9,9 +9,7 @@ import * as path from 'path';
 @Injectable()
 export class MailService {
   private transporter: any;
-  constructor(
-    private readonly configSerivce: ConfigService,
-  ) {
+  constructor(private readonly configSerivce: ConfigService) {
     this.transporter = nodeMailer.createTransport({
       host: this.configSerivce.emailDetails.EMAIL_HOST,
       port: 587,
@@ -30,7 +28,9 @@ export class MailService {
 
   private async renderTemplate(template: string, context: any): Promise<any> {
     try {
-      const compiledTemplate = pug.compileFile(path.join(__dirname, '..', '..', '..', 'src/templates', template)); // Compile the Pug template
+      const compiledTemplate = pug.compileFile(
+        path.join(__dirname, '..', '..', '..', 'src/templates', template),
+      ); // Compile the Pug template
 
       return compiledTemplate(context);
     } catch (error) {
@@ -38,7 +38,12 @@ export class MailService {
     }
   }
 
-  private async sendMail(to: string, subject: string, template:string, context:any): Promise<void> {
+  private async sendMail(
+    to: string,
+    subject: string,
+    template: string,
+    context: any,
+  ): Promise<void> {
     const html = await this.renderTemplate(template, context);
     const mailOptions: SendMailOptions = {
       from: `${this.configSerivce.emailDetails.FROM_NAME} <${this.configSerivce.emailDetails.FROM_EMAIL}>`,
@@ -57,14 +62,9 @@ export class MailService {
   }
 
   sendWelcome(to: User) {
-    return this.sendMail(
-      to.email,
-      'Welcome to Metgo',
-      'welcome-email.pug',
-      {
-        guestName: to.firstName ? to.firstName : 'User',
-      },
-    );
+    return this.sendMail(to.email, 'Welcome to Metgo', 'welcome-email.pug', {
+      guestName: to.firstName ? to.firstName : 'User',
+    });
   }
 
   sendForgetPasswordOtp(to: User, otp: string) {
@@ -94,11 +94,6 @@ export class MailService {
   }
 
   sendVoucherList(to: User) {
-    return this.sendMail(
-      to.email,
-      'Voucher  Metgo',
-      '',
-      {},
-    );
+    return this.sendMail(to.email, 'Voucher  Metgo', '', {});
   }
 }

@@ -3,9 +3,7 @@ import { MailService } from './mail.service';
 import { ConfigModule } from '../config/config.module';
 
 @Module({
-  imports: [
-    ConfigModule,
-  ],
+  imports: [ConfigModule],
   providers: [MailService],
   exports: [MailService],
 })

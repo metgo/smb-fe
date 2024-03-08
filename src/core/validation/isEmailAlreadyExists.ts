@@ -1,9 +1,14 @@
 import {
-  ValidationArguments, ValidationOptions, ValidatorConstraint, ValidatorConstraintInterface, registerDecorator,
+  ValidationArguments,
+  ValidationOptions,
+  ValidatorConstraint,
+  ValidatorConstraintInterface,
+  registerDecorator,
 } from 'class-validator';
 
 @ValidatorConstraint({ async: true })
-export class IsEmailAlreadyExistConstraint implements ValidatorConstraintInterface {
+export class IsEmailAlreadyExistConstraint
+implements ValidatorConstraintInterface {
   // eslint-disable-next-line no-unused-vars
   async validate(email: any, args?: ValidationArguments) {
     if (!email) {

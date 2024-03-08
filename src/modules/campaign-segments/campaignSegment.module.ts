@@ -36,10 +36,8 @@ const configService = new ConfigService();
     BusinessModule,
     ProductsModule,
   ],
-  providers: [
-    CampaignSegmentService,
-  ],
+  providers: [CampaignSegmentService],
   controllers: [CampaignSegmentController],
   exports: [CampaignSegmentService],
 })
-export class CampaignSegmentModule { }
+export class CampaignSegmentModule {}

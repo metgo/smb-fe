@@ -1,7 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
-  IsArray,
-  IsNotEmpty, IsOptional, IsString,
+  IsArray, IsNotEmpty, IsOptional, IsString,
 } from 'class-validator';
 
 export class CreateCampaignSegmentDTO {

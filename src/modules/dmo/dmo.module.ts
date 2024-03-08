@@ -8,9 +8,7 @@ import { JwtAuthModule } from '../jwt-auth/jwt-auth.module';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([
-      { name: 'DMO', schema: DMOSchema },
-    ]),
+    MongooseModule.forFeature([{ name: 'DMO', schema: DMOSchema }]),
     forwardRef(() => UsersModule),
     JwtAuthModule,
   ],

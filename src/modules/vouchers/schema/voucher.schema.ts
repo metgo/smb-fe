@@ -56,18 +56,16 @@ export class Voucher extends AuditableSchema {
   @Prop({ default: null })
     identifierId: string;
 
-  @Prop(
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      required: true,
-      ref: Campaign.name,
-    },
-  )
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    required: true,
+    ref: Campaign.name,
+  })
     campId: mongoose.Types.ObjectId;
 
   @Prop({ default: null, type: Date })
     expireDate: Date;
 }
 
-export type VoucherDocument = HydratedDocument<Voucher>
+export type VoucherDocument = HydratedDocument<Voucher>;
 export const VoucherSchema = SchemaFactory.createForClass(Voucher);

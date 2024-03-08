@@ -3,31 +3,59 @@ import { IsOptional } from 'class-validator';
 import { CommonFilterQuery } from 'src/common/query-handler/common-filter-query';
 
 export class GetAllBusinessesForGuestQuery extends CommonFilterQuery {
-  @ApiProperty({ type: String, required: false, description: 'must follow the pattern \n [id, id,..]' })
+  @ApiProperty({
+    type: String,
+    required: false,
+    description: 'must follow the pattern \n [id, id,..]',
+  })
   @IsOptional()
     groupTypesId: string;
 
-  @ApiProperty({ type: String, required: false, description: 'must follow the pattern \n [id, id,..]' })
+  @ApiProperty({
+    type: String,
+    required: false,
+    description: 'must follow the pattern \n [id, id,..]',
+  })
   @IsOptional()
     accessibilitiesId: string;
 
-  @ApiProperty({ type: String, required: false, description: 'must follow the pattern \n [id, id,..]' })
+  @ApiProperty({
+    type: String,
+    required: false,
+    description: 'must follow the pattern \n [id, id,..]',
+  })
   @IsOptional()
     bussCategoriesId: string;
 
-  @ApiProperty({ type: String, required: false, description: 'must follow the pattern \n [id, id,..]' })
+  @ApiProperty({
+    type: String,
+    required: false,
+    description: 'must follow the pattern \n [id, id,..]',
+  })
   @IsOptional()
     bussSubCategoriesId: string;
 
-  @ApiProperty({ type: String, required: false, description: 'latitude of the location' })
+  @ApiProperty({
+    type: String,
+    required: false,
+    description: 'latitude of the location',
+  })
   @IsOptional()
     lat: string;
 
-  @ApiProperty({ type: String, required: false, description: 'longituted of the location' })
+  @ApiProperty({
+    type: String,
+    required: false,
+    description: 'longituted of the location',
+  })
   @IsOptional()
     long: string;
 
-  @ApiProperty({ type: Number, required: false, description: 'Miles for radius' })
+  @ApiProperty({
+    type: Number,
+    required: false,
+    description: 'Miles for radius',
+  })
   @IsOptional()
     miles: number;
 }

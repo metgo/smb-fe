@@ -2,7 +2,20 @@
 /* eslint-disable no-sequences */
 /* eslint-disable no-unused-expressions */
 import {
-  Body, Controller, Delete, Get, HttpStatus, Param, Post, Put, Query, Req, Res, UploadedFile, UseGuards, UseInterceptors,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpStatus,
+  Param,
+  Post,
+  Put,
+  Query,
+  Req,
+  Res,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { createCampaignDto } from './dto/createCampaign.dto';
 import { Response } from 'express';
@@ -27,7 +40,7 @@ export class CampaignController {
     private readonly campaignService: CampaignService,
     private readonly dmoService: DMOService,
     private readonly campaignSegmentService: CampaignSegmentService,
-  ) { }
+  ) {}
 
   @Roles(UserType.SUPERADMIN, UserType.ADMIN, UserType.DMO)
   @UseGuards(JwtAuthGuard)
@@ -37,13 +50,15 @@ export class CampaignController {
     noAuthToken: true,
     softBlockExtraDtoFields: true,
   })
-  @UseInterceptors(FileInterceptor('campImage', { fileFilter: fileFilterByExtensions }))
+  @UseInterceptors(
+    FileInterceptor('campImage', { fileFilter: fileFilterByExtensions }),
+  )
   @Post('admin/campaign')
   async create(
-      @Body() dto: createCampaignDto,
-      @Req() request,
-      @Res() response: Response,
-      @UploadedFile() campImage: Express.Multer.File,
+    @Body() dto: createCampaignDto,
+    @Req() request,
+    @Res() response: Response,
+    @UploadedFile() campImage: Express.Multer.File,
   ) {
     const user = request.user.id;
     await this.campaignService.findByFieldName('name', dto.name);
@@ -65,9 +80,19 @@ export class CampaignController {
       campaignSegmentDto.DMOs = [dmoId.toString()];
     }
 
-    await this.campaignSegmentService.create(request.user.id, campaignSegmentDto);
+    await this.campaignSegmentService.create(
+      request.user.id,
+      campaignSegmentDto,
+    );
 
-    return responseHelper(response, HttpStatus.CREATED, ServerSuccess.CAMPAIGN_CREATED, campaign, null, null);
+    return responseHelper(
+      response,
+      HttpStatus.CREATED,
+      ServerSuccess.CAMPAIGN_CREATED,
+      campaign,
+      null,
+      null,
+    );
   }
 
   @ApiEndpoint({
@@ -78,7 +103,7 @@ export class CampaignController {
     },
   })
   @Get('admin/campaign')
-  async getAll(@Res() response: Response, @Query() query:FilterQuery) {
+  async getAll(@Res() response: Response, @Query() query: FilterQuery) {
     const campaign = await this.campaignService.getAll(query);
     return responseHelper(
       response,
@@ -128,7 +153,7 @@ export class CampaignController {
     @Query() query: FilterQuery,
   ) {
     const user = request.user.id;
-    query.dmoId && await this.dmoService.findDMOByUserID(user);
+    query.dmoId && (await this.dmoService.findDMOByUserID(user));
     const campaign = await this.campaignService.getMy(query, user);
     return responseHelper(
       response,
@@ -151,18 +176,25 @@ export class CampaignController {
     noAuthToken: true,
     softBlockExtraDtoFields: true,
   })
-  @UseInterceptors(FileInterceptor('campImage', { fileFilter: fileFilterByExtensions }))
+  @UseInterceptors(
+    FileInterceptor('campImage', { fileFilter: fileFilterByExtensions }),
+  )
   @Put('admin/update/:id')
   async update(
-      @Res() response: Response,
-      @Req() request,
-      @Param('id') id: string,
-      @Body() dto: updateCampaignDto,
-      @UploadedFile() campImage: Express.Multer.File,
+    @Res() response: Response,
+    @Req() request,
+    @Param('id') id: string,
+    @Body() dto: updateCampaignDto,
+    @UploadedFile() campImage: Express.Multer.File,
   ) {
     const user = request.user.id;
     await this.campaignService.findByFieldNameExcludeId('name', dto.name, id);
-    const campaign = await this.campaignService.update(id, dto, campImage, user);
+    const campaign = await this.campaignService.update(
+      id,
+      dto,
+      campImage,
+      user,
+    );
     return responseHelper(
       response,
       HttpStatus.OK,

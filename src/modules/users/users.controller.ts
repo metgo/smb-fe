@@ -27,9 +27,7 @@ import { UserType } from 'src/modules/users/users.type';
 
 @Controller('/users')
 export class UsersController {
-  constructor(
-      private userService: UsersService,
-  ) {}
+  constructor(private userService: UsersService) {}
 
   @HttpCode(HttpStatus.OK)
   @ApiEndpoint({
@@ -41,10 +39,7 @@ export class UsersController {
   })
   @UseGuards(JwtAuthGuard)
   @Get('/me')
-  async me(
-    @Req() req,
-    @Res() response: Response,
-  ) {
+  async me(@Req() req, @Res() response: Response) {
     const user = await this.userService.getMyInformation(req.user.id);
     return responseHelper(
       response,
@@ -59,7 +54,10 @@ export class UsersController {
   @HttpCode(HttpStatus.OK)
   @ApiEndpoint({
     tags: ['Users'],
-    response: { status: HttpStatus.OK, description: ServerSuccess.USER.UPDATED },
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.USER.UPDATED,
+    },
     softBlockExtraDtoFields: true,
     noAuthToken: true,
     operation: 'Update My Information',
@@ -71,7 +69,11 @@ export class UsersController {
     @Req() req,
     @Res() response: Response,
   ) {
-    await this.userService.findByFieldNameExcludeId('email', body.email, req.user.id);
+    await this.userService.findByFieldNameExcludeId(
+      'email',
+      body.email,
+      req.user.id,
+    );
     const user = await this.userService.update(req.user.id, req.user.id, body);
     return responseHelper(
       response,
@@ -86,10 +88,13 @@ export class UsersController {
   @HttpCode(HttpStatus.OK)
   @ApiEndpoint({
     tags: ['Users'],
-    response: { status: HttpStatus.OK, description: ServerSuccess.USER.UPDATED },
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.USER.UPDATED,
+    },
     softBlockExtraDtoFields: true,
     noAuthToken: true,
-    operation: 'Update User\'s Information',
+    operation: "Update User's Information",
   })
   @Roles(UserType.SUPERADMIN, UserType.ADMIN, UserType.DMO)
   @UseGuards(JwtAuthGuard)
@@ -100,7 +105,11 @@ export class UsersController {
     @Req() req,
     @Res() response: Response,
   ) {
-    await this.userService.findByFieldNameExcludeId('email', body.email, userId);
+    await this.userService.findByFieldNameExcludeId(
+      'email',
+      body.email,
+      userId,
+    );
     const user = await this.userService.update(userId, req.user.id, body);
     return responseHelper(
       response,
@@ -115,18 +124,21 @@ export class UsersController {
   @HttpCode(HttpStatus.OK)
   @ApiEndpoint({
     tags: ['Users'],
-    response: { status: HttpStatus.OK, description: ServerSuccess.USER.DELETED },
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.USER.DELETED,
+    },
     softBlockExtraDtoFields: true,
     noAuthToken: true,
     operation: 'Delete Me',
   })
   @UseGuards(JwtAuthGuard)
   @Delete('/me')
-  async softDeleteMe(
-    @Req() req,
-    @Res() response: Response,
-  ) {
-    const user = await this.userService.softDeleteAllowRecovery(req.user.id, req.user.id);
+  async softDeleteMe(@Req() req, @Res() response: Response) {
+    const user = await this.userService.softDeleteAllowRecovery(
+      req.user.id,
+      req.user.id,
+    );
     return responseHelper(
       response,
       HttpStatus.OK,
@@ -140,10 +152,13 @@ export class UsersController {
   @HttpCode(HttpStatus.OK)
   @ApiEndpoint({
     tags: ['Users'],
-    response: { status: HttpStatus.OK, description: ServerSuccess.USER.DELETED },
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.USER.DELETED,
+    },
     softBlockExtraDtoFields: true,
     noAuthToken: true,
-    operation: 'Delete User\'s Information can be restored within 30 days',
+    operation: "Delete User's Information can be restored within 30 days",
   })
   @Roles(UserType.SUPERADMIN, UserType.ADMIN, UserType.DMO)
   @UseGuards(JwtAuthGuard)
@@ -153,7 +168,10 @@ export class UsersController {
     @Req() req,
     @Res() response: Response,
   ) {
-    const user = await this.userService.softDeleteAllowRecovery(userId, req.user.id);
+    const user = await this.userService.softDeleteAllowRecovery(
+      userId,
+      req.user.id,
+    );
     return responseHelper(
       response,
       HttpStatus.OK,
@@ -167,8 +185,11 @@ export class UsersController {
   @HttpCode(HttpStatus.OK)
   @ApiEndpoint({
     tags: ['Users'],
-    response: { status: HttpStatus.OK, description: ServerSuccess.USER.HARD_DELETED },
-    operation: 'Delete User\'s Information and can no longer be recovered',
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.USER.HARD_DELETED,
+    },
+    operation: "Delete User's Information and can no longer be recovered",
   })
   @Cron('0 0 * * *')
   @Post('schedule-delete')
@@ -191,7 +212,10 @@ export class UsersController {
   @Roles(UserType.SUPERADMIN, UserType.ADMIN, UserType.DMO)
   @UseGuards(JwtAuthGuard)
   @Post('admin')
-  async adminCreateUser(@Res() response: Response, @Body() dto: createUserByAdminDto) {
+  async adminCreateUser(
+    @Res() response: Response,
+    @Body() dto: createUserByAdminDto,
+  ) {
     const newUser = await this.userService.adminCreateUser(dto);
     await newUser.save();
     return responseHelper(

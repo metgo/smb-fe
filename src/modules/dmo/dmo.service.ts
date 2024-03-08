@@ -1,5 +1,9 @@
 import {
-  BadRequestException, Inject, Injectable, NotFoundException, forwardRef,
+  BadRequestException,
+  Inject,
+  Injectable,
+  NotFoundException,
+  forwardRef,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -26,14 +30,10 @@ export class DMOService {
     @InjectModel('DMO') private DMOModel: Model<DMO>,
     @Inject(forwardRef(() => UsersService))
     private userService: UsersService,
-  ) { }
+  ) {}
 
   async createDMO(dto: CreateDMODto) {
-    const dmo = await findOneByFieldName<DMO>(
-      this.DMOModel,
-      'name',
-      dto.name,
-    );
+    const dmo = await findOneByFieldName<DMO>(this.DMOModel, 'name', dto.name);
     if (dmo) {
       throw new BadRequestException(ServerErrors.DMO_EXISTS);
     }
@@ -43,9 +43,7 @@ export class DMOService {
   }
 
   async getAllDMO(queries: FilterQuery) {
-    const {
-      page, limit, search,
-    } = queries;
+    const { page, limit, search } = queries;
 
     const queryPage = page ? Number(page) : paginationConfig.page;
     const queryLimit = limit ? Number(limit) : paginationConfig.limit;
@@ -57,25 +55,26 @@ export class DMOService {
 
     if (search) {
       findQuery = {
-        $text: { $search: search, $caseSensitive: false, $diacriticSensitive: false },
+        $text: {
+          $search: search,
+          $caseSensitive: false,
+          $diacriticSensitive: false,
+        },
       };
     }
-    const dmoList = await queryhandler<DMO>(
-      this.DMOModel,
-      {
-        findQuery,
-        select,
-        page: queryPage,
-        limit: queryLimit,
-        populate,
-        populate1,
-      },
-    );
+    const dmoList = await queryhandler<DMO>(this.DMOModel, {
+      findQuery,
+      select,
+      page: queryPage,
+      limit: queryLimit,
+      populate,
+      populate1,
+    });
 
     return dmoList;
   }
 
-  async updateDMO(id: string, dto:UpdateDMODto) {
+  async updateDMO(id: string, dto: UpdateDMODto) {
     const dmo = await updateById<DMO>(this.DMOModel, id, dto);
 
     if (!dmo) {
@@ -86,11 +85,7 @@ export class DMOService {
 
   async softDeleteDMO(id: string): Promise<DMO> {
     const updateField = { isDeleted: true, deleteAt: new Date() };
-    const dmo = await updateById<DMO>(
-      this.DMOModel,
-      id,
-      updateField,
-    );
+    const dmo = await updateById<DMO>(this.DMOModel, id, updateField);
     if (!dmo) {
       throw new NotFoundException(ServerErrors.DMO_NOT_FOUND);
     }
@@ -107,10 +102,7 @@ export class DMOService {
 
   async findDMOByUserID(id: string) {
     const findQuery = {
-      $or: [
-        { userId: id },
-        { collaboratorsUser: { $in: [id] } },
-      ],
+      $or: [{ userId: id }, { collaboratorsUser: { $in: [id] } }],
     };
     const dmo = await findOneByOrCase<DMO>(this.DMOModel, findQuery);
     if (!dmo) {

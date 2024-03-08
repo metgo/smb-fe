@@ -21,12 +21,12 @@ export class Media extends AuditableSchema {
     },
   })
     reference: {
-      refId: string,
-      schema: string,
-    };
+    refId: string;
+    schema: string;
+  };
 }
 
-export type MediaDocument = HydratedDocument<Media>
+export type MediaDocument = HydratedDocument<Media>;
 
 export const MediaSchema = SchemaFactory.createForClass(Media);
 MediaSchema.index({ name: 'text', iconAlt: 'text' });

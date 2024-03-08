@@ -2,6 +2,6 @@ import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interfac
 import { updateAssignedUserVoucherDto } from 'src/modules/vouchers/dto';
 
 export interface AssignVoucherCommand {
-    loggedInUser: LoggedInUserInterface;
-    body: updateAssignedUserVoucherDto;
+  loggedInUser: LoggedInUserInterface;
+  body: updateAssignedUserVoucherDto;
 }

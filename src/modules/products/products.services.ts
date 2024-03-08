@@ -1,7 +1,11 @@
 /* eslint-disable no-undef */
 /* eslint-disable no-param-reassign */
 /* eslint-disable no-nested-ternary */
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
 
@@ -12,7 +16,10 @@ import { sellingPriceForAmountOrPercent } from 'src/common/utils/discount-calcul
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { disSelect } from 'src/common/utils/select.handling';
 import {
-  deleteItem, findOneByFieldNames, queryhandler, updateOneByManyFields,
+  deleteItem,
+  findOneByFieldNames,
+  queryhandler,
+  updateOneByManyFields,
 } from 'src/core/helper/query-helper';
 import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interface';
 import { BusinessService } from 'src/modules/business/services/business.service';
@@ -21,7 +28,11 @@ import { Business } from 'src/modules/business/schema/business.schema';
 import { DMOService } from 'src/modules/dmo/dmo.service';
 import { Product } from 'src/modules/products/schema/products.schema';
 import { CreateProductByAdmin, ProductDto } from 'src/modules/products/dto';
-import { GetProductsQuery, UpdateProductsCommand, UploadMediaCommand } from 'src/modules/products/interface';
+import {
+  GetProductsQuery,
+  UpdateProductsCommand,
+  UploadMediaCommand,
+} from 'src/modules/products/interface';
 import { GetProductsStatsQuery } from 'src/modules/products/queries';
 import { ProductStatus } from 'src/modules/products/products.type';
 import { UserType } from 'src/modules/users/users.type';
@@ -59,9 +70,11 @@ export class ProductsService {
       remaining: body.quantity.initial,
     };
 
-    const status = business.status !== BusinessStatus.APPROVED && body?.status === ProductStatus.ACTIVE
-      ? ProductStatus.INACTIVE
-      : body?.status || ProductStatus.ACTIVE;
+    const status
+      = business.status !== BusinessStatus.APPROVED
+      && body?.status === ProductStatus.ACTIVE
+        ? ProductStatus.INACTIVE
+        : body?.status || ProductStatus.ACTIVE;
 
     const createdField = {
       ...body,
@@ -115,9 +128,11 @@ export class ProductsService {
       };
     }
 
-    const status = business.status !== BusinessStatus.APPROVED && body?.status === ProductStatus.ACTIVE
-      ? ProductStatus.INACTIVE
-      : body?.status || ProductStatus.ACTIVE;
+    const status
+      = business.status !== BusinessStatus.APPROVED
+      && body?.status === ProductStatus.ACTIVE
+        ? ProductStatus.INACTIVE
+        : body?.status || ProductStatus.ACTIVE;
 
     const images = [];
     await Promise.all(
@@ -125,11 +140,9 @@ export class ProductsService {
         // store in gcp
         const imageUrl = await this.gcpBucketServices.upload(file);
         const imageObject = {
-
           image: imageUrl,
           caption: file.originalname,
           alt: file.originalname,
-
         };
         images.push(imageObject);
       }),
@@ -161,10 +174,10 @@ export class ProductsService {
 
   async findOne(productId: string): Promise<Product> {
     try {
-      const product = await findOneByFieldNames<Product>(
-        this.ProductModel,
-        { _id: productId, status: ProductStatus.ACTIVE },
-      );
+      const product = await findOneByFieldNames<Product>(this.ProductModel, {
+        _id: productId,
+        status: ProductStatus.ACTIVE,
+      });
 
       if (!product) {
         throw new NotFoundException(ServerErrors.PRODUCT.NOT_FOUND);
@@ -176,19 +189,25 @@ export class ProductsService {
     }
   }
 
-  async findOneForLoggedInUser(productId: string, loggedInUser: LoggedInUserInterface): Promise<Product> {
+  async findOneForLoggedInUser(
+    productId: string,
+    loggedInUser: LoggedInUserInterface,
+  ): Promise<Product> {
     try {
-      const product = await findOneByFieldNames<Product>(
-        this.ProductModel,
-        { _id: productId },
-      );
+      const product = await findOneByFieldNames<Product>(this.ProductModel, {
+        _id: productId,
+      });
       const allowedRoles = [UserType.DMOADMIN, UserType.SUPERADMIN];
 
-      if (!product || (
-        !allowedRoles.includes(loggedInUser.role)
-        && !product.primaryUserId.equals(new mongoose.Types.ObjectId(loggedInUser.id))
-        && !product.collaboratorId.includes(new mongoose.Types.ObjectId(loggedInUser.id))
-      )
+      if (
+        !product
+        || (!allowedRoles.includes(loggedInUser.role)
+          && !product.primaryUserId.equals(
+            new mongoose.Types.ObjectId(loggedInUser.id),
+          )
+          && !product.collaboratorId.includes(
+            new mongoose.Types.ObjectId(loggedInUser.id),
+          ))
       ) {
         throw new NotFoundException(ServerErrors.PRODUCT.NOT_FOUND);
       }
@@ -207,7 +226,7 @@ export class ProductsService {
     }
   }
 
-  async findAll(queries: GetProductsQuery) : Promise<Product[]> {
+  async findAll(queries: GetProductsQuery): Promise<Product[]> {
     const {
       search, page, limit, ...query
     } = queries.query;
@@ -217,7 +236,12 @@ export class ProductsService {
     const queryPage = page ? Number(page) : paginationConfig.page;
     const queryLimit = limit ? Number(limit) : paginationConfig.limit;
 
-    if (!('status' in query) && !queries.myProduct && !queries.collaboratedProducts && !queries.isAdmin) {
+    if (
+      !('status' in query)
+      && !queries.myProduct
+      && !queries.collaboratedProducts
+      && !queries.isAdmin
+    ) {
       findQuery = { ...query, status: ProductStatus.ACTIVE };
     }
 
@@ -240,7 +264,9 @@ export class ProductsService {
     }
 
     if (queries.isAdmin && queries.loggedInUser.role === UserType.DMOADMIN) {
-      const dmoId = await this.dmoService.findDMOByUserID(queries.loggedInUser.id);
+      const dmoId = await this.dmoService.findDMOByUserID(
+        queries.loggedInUser.id,
+      );
 
       findQuery = {
         ...findQuery,
@@ -248,15 +274,12 @@ export class ProductsService {
       };
     }
 
-    const products = await queryhandler<Product>(
-      this.ProductModel,
-      {
-        findQuery,
-        select,
-        page: queryPage,
-        limit: queryLimit,
-      },
-    );
+    const products = await queryhandler<Product>(this.ProductModel, {
+      findQuery,
+      select,
+      page: queryPage,
+      limit: queryLimit,
+    });
 
     return products;
   }
@@ -268,15 +291,12 @@ export class ProductsService {
       let page: number;
       let limit: number;
 
-      const products = await queryhandler<Product>(
-        this.ProductModel,
-        {
-          findQuery,
-          select,
-          page,
-          limit,
-        },
-      );
+      const products = await queryhandler<Product>(this.ProductModel, {
+        findQuery,
+        select,
+        page,
+        limit,
+      });
 
       if (!products?.data?.length) {
         throw new NotFoundException(ServerErrors.PRODUCT.NOT_FOUND);
@@ -315,13 +335,15 @@ export class ProductsService {
         quantity,
       };
 
-      let filterQuery:any = {
+      let filterQuery: any = {
         _id: command.productId,
         businessId: command.businessId,
       };
 
       if (command.isAdmin && command.loggedInUser.role === UserType.DMOADMIN) {
-        const dmoId = await this.dmoService.findDMOByUserID(command.loggedInUser.id);
+        const dmoId = await this.dmoService.findDMOByUserID(
+          command.loggedInUser.id,
+        );
         filterQuery = {
           ...filterQuery,
           dmoId,
@@ -360,9 +382,10 @@ export class ProductsService {
       updatedAt: new Date(),
     };
 
-    let updatedProduct: mongoose.Document<unknown, {}, Product> & Product & {
-      _id: mongoose.Types.ObjectId;
-  };
+    let updatedProduct: mongoose.Document<unknown, {}, Product> &
+      Product & {
+        _id: mongoose.Types.ObjectId;
+      };
     if (command.role === UserType.SUPERADMIN) {
       updatedProduct = await updateOneByManyFields<Product>(
         this.ProductModel,
@@ -447,14 +470,19 @@ export class ProductsService {
     }
   }
 
-  async updateProductByFields(productId: string, updatedFields: any): Promise<Product> {
+  async updateProductByFields(
+    productId: string,
+    updatedFields: any,
+  ): Promise<Product> {
     try {
       const productInfo = await this.findOne(productId);
       const updatedField = {
         ...updatedFields,
         quantity: {
           initial: productInfo.quantity.initial,
-          sold: (!productInfo.quantity.sold ? 0 : productInfo.quantity.sold) + updatedFields.sold,
+          sold:
+            (!productInfo.quantity.sold ? 0 : productInfo.quantity.sold)
+            + updatedFields.sold,
           remaining: productInfo.quantity.remaining - updatedFields.sold,
         },
       };
@@ -473,14 +501,20 @@ export class ProductsService {
     }
   }
 
-  async deleteImage(loggedInUserId: string, id: string, imageUrl: any): Promise<Product> {
+  async deleteImage(
+    loggedInUserId: string,
+    id: string,
+    imageUrl: any,
+  ): Promise<Product> {
     const existingProduct = await this.ProductModel.findById(id);
 
     if (!existingProduct) {
       throw new NotFoundException(ServerErrors.PRODUCT.NOT_FOUND);
     }
 
-    const images = existingProduct.images.filter(image => image.image !== imageUrl);
+    const images = existingProduct.images.filter(
+      image => image.image !== imageUrl,
+    );
 
     if (!images?.length) {
       throw new BadRequestException(ServerErrors.PRODUCT.IMAGE_EMPTY);
@@ -510,7 +544,9 @@ export class ProductsService {
       return products;
     } catch (error) {
       if (error?.name === 'CastError' && error?.kind === 'ObjectId') {
-        throw new BadRequestException(`${error?.model?.modelName} ${ServerErrors.INVALID_ID}`);
+        throw new BadRequestException(
+          `${error?.model?.modelName} ${ServerErrors.INVALID_ID}`,
+        );
       }
       exceptionHandling(error);
     }
@@ -518,13 +554,18 @@ export class ProductsService {
 
   async findManyByFieldIds(fieldName: keyof Product, ids: string[]) {
     const filterBy = { [fieldName]: { $in: ids } };
-    const businesses = await this.ProductModel.find(filterBy).lean().select('_id');
+    const businesses = await this.ProductModel.find(filterBy)
+      .lean()
+      .select('_id');
     const businessesId = businesses.map(item => item._id.toString());
 
     return businessesId;
   }
 
-  async getStats(loggedInUser: LoggedInUserInterface, query: GetProductsStatsQuery) {
+  async getStats(
+    loggedInUser: LoggedInUserInterface,
+    query: GetProductsStatsQuery,
+  ) {
     try {
       const {
         startDate, endDate, categoriesId, dmoId,
@@ -581,7 +622,9 @@ export class ProductsService {
         const createdEndDate = new Date(endDate);
 
         if (createdStartDate >= createdEndDate) {
-          throw new BadRequestException(`Created ${ServerErrors.DATE_IS_NOT_LESS}`);
+          throw new BadRequestException(
+            `Created ${ServerErrors.DATE_IS_NOT_LESS}`,
+          );
         }
 
         createdFindQuery = {
@@ -621,65 +664,56 @@ export class ProductsService {
           },
         };
 
-        const [createdProducts, deletedProducts, prevCreatedProducts, prevDeletedProducts] = await Promise.all([
-          queryhandler<Product>(
-            this.ProductModel,
-            {
-              findQuery: createdFindQuery,
-              select,
-            },
-          ),
-          queryhandler<Product>(
-            this.ProductModel,
-            {
-              findQuery: deletedFindQuery,
-              select,
-            },
-          ),
-          queryhandler<Product>(
-            this.ProductModel,
-            {
-              findQuery: pastCreatedFindQuery,
-              select,
-            },
-          ),
-          queryhandler<Product>(
-            this.ProductModel,
-            {
-              findQuery: pastDeletedFindQuery,
-              select,
-            },
-          ),
+        const [
+          createdProducts,
+          deletedProducts,
+          prevCreatedProducts,
+          prevDeletedProducts,
+        ] = await Promise.all([
+          queryhandler<Product>(this.ProductModel, {
+            findQuery: createdFindQuery,
+            select,
+          }),
+          queryhandler<Product>(this.ProductModel, {
+            findQuery: deletedFindQuery,
+            select,
+          }),
+          queryhandler<Product>(this.ProductModel, {
+            findQuery: pastCreatedFindQuery,
+            select,
+          }),
+          queryhandler<Product>(this.ProductModel, {
+            findQuery: pastDeletedFindQuery,
+            select,
+          }),
         ]);
 
         const newProductCreated = createdProducts.totalData;
         const newProductDeleted = deletedProducts.totalData;
-        const prevTotalProducts = prevCreatedProducts.totalData - prevDeletedProducts.totalData;
+        const prevTotalProducts
+          = prevCreatedProducts.totalData - prevDeletedProducts.totalData;
 
         return {
           newProductCreated,
           newProductDeleted,
           prevTotalProducts,
           isGrowth: newProductCreated - newProductDeleted > 0,
-          growthPercentage: calculateGrowthPercentage(prevTotalProducts, newProductCreated),
+          growthPercentage: calculateGrowthPercentage(
+            prevTotalProducts,
+            newProductCreated,
+          ),
         };
       }
 
       const [createdProduct, deletedProduct] = await Promise.all([
-        queryhandler<Product>(
-          this.ProductModel,
-          {
-            findQuery: createdFindQuery,
-            select,
-          },
-        ),
-        queryhandler<Product>(
-          this.ProductModel,
-          {
-            findQuery: deletedFindQuery,
-            select,
-          },
-        ),
+        queryhandler<Product>(this.ProductModel, {
+          findQuery: createdFindQuery,
+          select,
+        }),
+        queryhandler<Product>(this.ProductModel, {
+          findQuery: deletedFindQuery,
+          select,
+        }),
       ]);
       const newProductCreated = createdProduct.totalData;
       const newProductDeleted = deletedProduct.totalData;

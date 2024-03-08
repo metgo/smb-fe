@@ -1,6 +1,8 @@
 /* eslint-disable no-undef */
 import {
-  BadRequestException, Injectable, NotFoundException,
+  BadRequestException,
+  Injectable,
+  NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
@@ -29,12 +31,22 @@ import {
 } from 'src/core/helper/query-helper';
 import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interface';
 import { AuthorityService } from 'src/modules/authority/authority.service';
-import { BusinessStatus, GetBusinessByIdOrSlug, GeoServicesTypes } from 'src/modules/business/business.type';
 import {
-  createBusinessDto, updateBusinessDto, WebCreateBusiness, UpdateBusinessByAdminDto,
+  BusinessStatus,
+  GetBusinessByIdOrSlug,
+  GeoServicesTypes,
+} from 'src/modules/business/business.type';
+import {
+  createBusinessDto,
+  updateBusinessDto,
+  WebCreateBusiness,
+  UpdateBusinessByAdminDto,
 } from 'src/modules/business/dto';
 import {
-  GetAllBusinessesForGuestQuery, GetAllUnpaginatedBusinessQuery, GetBusinessStatsQuery, GetUsersBusinessesQuery,
+  GetAllBusinessesForGuestQuery,
+  GetAllUnpaginatedBusinessQuery,
+  GetBusinessStatsQuery,
+  GetUsersBusinessesQuery,
 } from 'src/modules/business/queries';
 import { Business } from 'src/modules/business/schema/business.schema';
 import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.schema';
@@ -66,8 +78,11 @@ export class BusinessService {
     private UserModel: Model<User>,
   ) {}
 
-  async createBusiness(dto: createBusinessDto, userId: string): Promise<Business> {
-    let newDto:any = { ...dto, type: GeoServicesTypes.BUSINESS };
+  async createBusiness(
+    dto: createBusinessDto,
+    userId: string,
+  ): Promise<Business> {
+    let newDto: any = { ...dto, type: GeoServicesTypes.BUSINESS };
 
     // find dmoId by authority
     if (dto.authorityId) {
@@ -82,7 +97,10 @@ export class BusinessService {
     if (dto.geoLocation) {
       const location = {
         type: 'Point',
-        coordinates: [parseFloat(dto.geoLocation.long), parseFloat(dto.geoLocation.lat)],
+        coordinates: [
+          parseFloat(dto.geoLocation.long),
+          parseFloat(dto.geoLocation.lat),
+        ],
       };
       newDto = {
         ...newDto,
@@ -99,7 +117,10 @@ export class BusinessService {
       });
       await newBusiness.save();
 
-      await this.UserModel.findOneAndUpdate({ _id: userId }, { hasBusiness: true });
+      await this.UserModel.findOneAndUpdate(
+        { _id: userId },
+        { hasBusiness: true },
+      );
       return newBusiness;
     } catch (error) {
       if (this.isDuplicateKeyError(error, 'slug')) {
@@ -112,7 +133,10 @@ export class BusinessService {
         });
         await newBusiness.save();
 
-        await this.UserModel.findOneAndUpdate({ _id: userId }, { hasBusiness: true });
+        await this.UserModel.findOneAndUpdate(
+          { _id: userId },
+          { hasBusiness: true },
+        );
         return newBusiness;
       }
       exceptionHandling(error);
@@ -124,11 +148,14 @@ export class BusinessService {
     loggedInUser: LoggedInUserInterface,
     image: Array<Express.Multer.File>,
   ): Promise<Business> {
-    let newDto:any = { ...dto, serviceType: GeoServicesTypes.BUSINESS };
+    let newDto: any = { ...dto, serviceType: GeoServicesTypes.BUSINESS };
     if (dto.geoLocation) {
       const location = {
         type: 'Point',
-        coordinates: [parseFloat(dto.geoLocation.long), parseFloat(dto.geoLocation.lat)],
+        coordinates: [
+          parseFloat(dto.geoLocation.long),
+          parseFloat(dto.geoLocation.lat),
+        ],
       };
       newDto = {
         ...newDto,
@@ -142,11 +169,9 @@ export class BusinessService {
         const imageUrl = await this.gcpBucketServices.upload(file);
 
         const imageObject = {
-
           image: imageUrl || null,
           caption: file?.originalname || null,
           alt: file?.originalname || null,
-
         };
         images.push(imageObject);
       }),
@@ -173,19 +198,21 @@ export class BusinessService {
       await newBusiness.save();
 
       // add to Media Table
-      await Promise.all(newBusiness.images.map(async (img: any) => {
-        const newMedia = new this.MediaModel({
-          reference: {
-            refId: newBusiness.id,
-            schema: 'Business',
-          },
-          createdBy: loggedInUser.id,
-          url: img.image,
-          originalName: img?.caption || null,
-          mimetype: img?.mimetype || null,
-        });
-        await newMedia.save();
-      }));
+      await Promise.all(
+        newBusiness.images.map(async (img: any) => {
+          const newMedia = new this.MediaModel({
+            reference: {
+              refId: newBusiness.id,
+              schema: 'Business',
+            },
+            createdBy: loggedInUser.id,
+            url: img.image,
+            originalName: img?.caption || null,
+            mimetype: img?.mimetype || null,
+          });
+          await newMedia.save();
+        }),
+      );
 
       return newBusiness;
     } catch (err) {
@@ -210,19 +237,21 @@ export class BusinessService {
         await newBusiness.save();
 
         // add to Media Table
-        await Promise.all(newBusiness.images.map(async (img: any) => {
-          const newMedia = new this.MediaModel({
-            reference: {
-              refId: newBusiness.id,
-              schema: 'Business',
-            },
-            createdBy: loggedInUser.id,
-            url: img.image,
-            originalName: img?.caption || null,
-            mimetype: img?.mimetype || null,
-          });
-          await newMedia.save();
-        }));
+        await Promise.all(
+          newBusiness.images.map(async (img: any) => {
+            const newMedia = new this.MediaModel({
+              reference: {
+                refId: newBusiness.id,
+                schema: 'Business',
+              },
+              createdBy: loggedInUser.id,
+              url: img.image,
+              originalName: img?.caption || null,
+              mimetype: img?.mimetype || null,
+            });
+            await newMedia.save();
+          }),
+        );
 
         return newBusiness;
       }
@@ -273,20 +302,22 @@ export class BusinessService {
 
     if (search) {
       const [matchingCategoryIds, matchingSubCategoryIds] = await Promise.all([
-        this.BussCategoryModel.find({ name: { $regex: search, $options: 'i' } }).select('_id'),
-        this.BussSubCategoryModel.find({ name: { $regex: search, $options: 'i' } }).select('_id'),
+        this.BussCategoryModel.find({
+          name: { $regex: search, $options: 'i' },
+        }).select('_id'),
+        this.BussSubCategoryModel.find({
+          name: { $regex: search, $options: 'i' },
+        }).select('_id'),
       ]);
 
-      const matchingProductsIds = await this.ProductModel
-        .find({
-          $or: [
-            { name: { $regex: search, $options: 'i' } },
-            { description: { $regex: search, $options: 'i' } },
-            { categories: { $in: matchingCategoryIds } },
-            { subCategories: { $in: matchingSubCategoryIds } },
-          ],
-        })
-        .select('_id');
+      const matchingProductsIds = await this.ProductModel.find({
+        $or: [
+          { name: { $regex: search, $options: 'i' } },
+          { description: { $regex: search, $options: 'i' } },
+          { categories: { $in: matchingCategoryIds } },
+          { subCategories: { $in: matchingSubCategoryIds } },
+        ],
+      }).select('_id');
 
       findQuery = {
         ...findQuery,
@@ -299,8 +330,18 @@ export class BusinessService {
         ],
       };
 
-      if (!(matchingCategoryIds?.length || matchingSubCategoryIds?.length || matchingProductsIds?.length)) {
-        findQuery.$text = { $search: search, $caseSensitive: false, $diacriticSensitive: false };
+      if (
+        !(
+          matchingCategoryIds?.length
+          || matchingSubCategoryIds?.length
+          || matchingProductsIds?.length
+        )
+      ) {
+        findQuery.$text = {
+          $search: search,
+          $caseSensitive: false,
+          $diacriticSensitive: false,
+        };
       }
     }
 
@@ -349,36 +390,38 @@ export class BusinessService {
         },
       };
 
-      const allBusiness = await queryhandler<Business>(
-        this.BusinessModel,
-        {
-          findQuery,
-          select,
-          populate,
-          populate1,
-          sort: 'createdAt',
-        },
+      const allBusiness = await queryhandler<Business>(this.BusinessModel, {
+        findQuery,
+        select,
+        populate,
+        populate1,
+        sort: 'createdAt',
+      });
+
+      const sortBusiness = getNearestBusiness(
+        parseFloat(lat),
+        parseFloat(long),
+        allBusiness.data,
       );
 
-      const sortBusiness = getNearestBusiness(parseFloat(lat), parseFloat(long), allBusiness.data);
-
-      const allPaginatedBusinesses = paginateData(queryPage, queryLimit, sortBusiness);
+      const allPaginatedBusinesses = paginateData(
+        queryPage,
+        queryLimit,
+        sortBusiness,
+      );
 
       return allPaginatedBusinesses;
     }
 
-    const allBusiness = await queryhandler<Business>(
-      this.BusinessModel,
-      {
-        findQuery,
-        select,
-        page: queryPage,
-        limit: queryLimit,
-        populate,
-        populate1,
-        sort: 'createdAt',
-      },
-    );
+    const allBusiness = await queryhandler<Business>(this.BusinessModel, {
+      findQuery,
+      select,
+      page: queryPage,
+      limit: queryLimit,
+      populate,
+      populate1,
+      sort: 'createdAt',
+    });
 
     return allBusiness;
   }
@@ -388,24 +431,30 @@ export class BusinessService {
       search, long, lat, miles, ...query
     } = queries;
 
-    let findQuery: any = { ...query, status: BusinessStatus.APPROVED, serviceType: GeoServicesTypes.BUSINESS };
+    let findQuery: any = {
+      ...query,
+      status: BusinessStatus.APPROVED,
+      serviceType: GeoServicesTypes.BUSINESS,
+    };
 
     if (search) {
       const [matchingCategoryIds, matchingSubCategoryIds] = await Promise.all([
-        this.BussCategoryModel.find({ name: { $regex: search, $options: 'i' } }).select('_id'),
-        this.BussSubCategoryModel.find({ name: { $regex: search, $options: 'i' } }).select('_id'),
+        this.BussCategoryModel.find({
+          name: { $regex: search, $options: 'i' },
+        }).select('_id'),
+        this.BussSubCategoryModel.find({
+          name: { $regex: search, $options: 'i' },
+        }).select('_id'),
       ]);
 
-      const matchingProductsIds = await this.ProductModel
-        .find({
-          $or: [
-            { name: { $regex: search, $options: 'i' } },
-            { description: { $regex: search, $options: 'i' } },
-            { categories: { $in: matchingCategoryIds } },
-            { subCategories: { $in: matchingSubCategoryIds } },
-          ],
-        })
-        .select('_id');
+      const matchingProductsIds = await this.ProductModel.find({
+        $or: [
+          { name: { $regex: search, $options: 'i' } },
+          { description: { $regex: search, $options: 'i' } },
+          { categories: { $in: matchingCategoryIds } },
+          { subCategories: { $in: matchingSubCategoryIds } },
+        ],
+      }).select('_id');
 
       findQuery = {
         ...findQuery,
@@ -418,8 +467,18 @@ export class BusinessService {
         ],
       };
 
-      if (!(matchingCategoryIds?.length || matchingSubCategoryIds?.length || matchingProductsIds?.length)) {
-        findQuery.$text = { $search: search, $caseSensitive: false, $diacriticSensitive: false };
+      if (
+        !(
+          matchingCategoryIds?.length
+          || matchingSubCategoryIds?.length
+          || matchingProductsIds?.length
+        )
+      ) {
+        findQuery.$text = {
+          $search: search,
+          $caseSensitive: false,
+          $diacriticSensitive: false,
+        };
       }
     }
 
@@ -485,23 +544,18 @@ export class BusinessService {
 
     const select = `${disSelect}`;
 
-    const allBusiness = await queryhandler<Business>(
-      this.BusinessModel,
-      {
-        findQuery,
-        select,
-        populate,
-        populate1,
-      },
-    );
+    const allBusiness = await queryhandler<Business>(this.BusinessModel, {
+      findQuery,
+      select,
+      populate,
+      populate1,
+    });
 
     return allBusiness;
   }
 
   async getBusiness(command: GetBusinessByIdOrSlug) {
-    const {
-      id, loggedInUser,
-    } = command;
+    const { id, loggedInUser } = command;
     const populate = {
       path: 'groupTypesId accessibilitiesId bussCategoriesId bussSubCategoriesId socialMedia.socialMediaId',
       select: `${disSelect}`,
@@ -518,19 +572,28 @@ export class BusinessService {
     const select = `${disSelect}`;
 
     try {
-      const business = await this.BusinessModel.findById(id).select(select).populate(populate).populate(populate1);
+      const business = await this.BusinessModel.findById(id)
+        .select(select)
+        .populate(populate)
+        .populate(populate1);
 
       if (!business) {
         throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
       }
 
-      if (!loggedInUser && business.status === BusinessStatus.APPROVED && !business.isDeleted) {
+      if (
+        !loggedInUser
+        && business.status === BusinessStatus.APPROVED
+        && !business.isDeleted
+      ) {
         return business;
       }
 
       if (loggedInUser) {
-        if (loggedInUser.role === UserType.SUPERADMIN
-          || business.userId.equals(new mongoose.Types.ObjectId(loggedInUser.id))) {
+        if (
+          loggedInUser.role === UserType.SUPERADMIN
+          || business.userId.equals(new mongoose.Types.ObjectId(loggedInUser.id))
+        ) {
           return business;
         }
 
@@ -546,24 +609,37 @@ export class BusinessService {
     } catch (error) {
       if (error?.name === 'CastError' && error?.kind === 'ObjectId') {
         if (error?.model?.modelName === Business.name) {
-          const business = await findOneByFieldNameIncludingDeleted<Business>(this.BusinessModel, 'slug', id);
+          const business = await findOneByFieldNameIncludingDeleted<Business>(
+            this.BusinessModel,
+            'slug',
+            id,
+          );
           if (!business) {
             throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
           }
 
-          if (!loggedInUser && business.status === BusinessStatus.APPROVED && !business.isDeleted) {
+          if (
+            !loggedInUser
+            && business.status === BusinessStatus.APPROVED
+            && !business.isDeleted
+          ) {
             return business;
           }
 
           if (loggedInUser) {
-            if (loggedInUser.role === UserType.SUPERADMIN
-              || business.userId.equals(new mongoose.Types.ObjectId(loggedInUser.id))
+            if (
+              loggedInUser.role === UserType.SUPERADMIN
+              || business.userId.equals(
+                new mongoose.Types.ObjectId(loggedInUser.id),
+              )
             ) {
               return business;
             }
 
             if (loggedInUser.role === UserType.DMOADMIN && business.dmoId) {
-              const dmoId = await this.dmoService.findDMOByUserID(loggedInUser.id);
+              const dmoId = await this.dmoService.findDMOByUserID(
+                loggedInUser.id,
+              );
               if (business.dmoId.equals(new mongoose.Types.ObjectId(dmoId))) {
                 return business;
               }
@@ -572,7 +648,9 @@ export class BusinessService {
 
           throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
         }
-        throw new BadRequestException(`${error?.model?.modelName} ${ServerErrors.INVALID_ID}`);
+        throw new BadRequestException(
+          `${error?.model?.modelName} ${ServerErrors.INVALID_ID}`,
+        );
       }
       exceptionHandling(error);
     }
@@ -586,11 +664,19 @@ export class BusinessService {
     const queryPage = page ? Number(page) : paginationConfig.page;
     const queryLimit = limit ? Number(limit) : paginationConfig.limit;
 
-    let findQuery: any = { ...query, userId, serviceType: GeoServicesTypes.BUSINESS };
+    let findQuery: any = {
+      ...query,
+      userId,
+      serviceType: GeoServicesTypes.BUSINESS,
+    };
     if (search) {
       findQuery = {
         ...query,
-        $text: { $search: search, $caseSensitive: false, $diacriticSensitive: false },
+        $text: {
+          $search: search,
+          $caseSensitive: false,
+          $diacriticSensitive: false,
+        },
       };
     }
     const populate = {
@@ -607,17 +693,14 @@ export class BusinessService {
       select: `${disSelect} -userId -collaboratorsUser`,
     };
     const select = `${disSelect}`;
-    const allBusiness = await queryhandler<Business>(
-      this.BusinessModel,
-      {
-        findQuery,
-        select,
-        page: queryPage,
-        limit: queryLimit,
-        populate,
-        populate1,
-      },
-    );
+    const allBusiness = await queryhandler<Business>(this.BusinessModel, {
+      findQuery,
+      select,
+      page: queryPage,
+      limit: queryLimit,
+      populate,
+      populate1,
+    });
 
     return allBusiness;
   }
@@ -646,7 +729,10 @@ export class BusinessService {
     if (dto.geoLocation) {
       const location = {
         type: 'Point',
-        coordinates: [parseFloat(dto.geoLocation.long), parseFloat(dto.geoLocation.lat)],
+        coordinates: [
+          parseFloat(dto.geoLocation.long),
+          parseFloat(dto.geoLocation.lat),
+        ],
       };
       updatedField = {
         ...updatedField,
@@ -677,7 +763,7 @@ export class BusinessService {
     id: string,
     loggedInUser: LoggedInUserInterface,
     body: UpdateBusinessByAdminDto,
-  ) : Promise<Business> {
+  ): Promise<Business> {
     try {
       let updatedField: any = {
         ...body,
@@ -688,7 +774,10 @@ export class BusinessService {
       if (body.geoLocation) {
         const location = {
           type: 'Point',
-          coordinates: [parseFloat(body.geoLocation.long), parseFloat(body.geoLocation.lat)],
+          coordinates: [
+            parseFloat(body.geoLocation.long),
+            parseFloat(body.geoLocation.lat),
+          ],
         };
         updatedField = {
           ...updatedField,
@@ -698,7 +787,8 @@ export class BusinessService {
 
       // find dmoId by authority
       if (body?.authorityId) {
-        const dmo = (await this.authorityService.getOne(body.authorityId)).dmoId;
+        const dmo = (await this.authorityService.getOne(body.authorityId))
+          .dmoId;
 
         updatedField = {
           ...updatedField,
@@ -729,7 +819,11 @@ export class BusinessService {
         };
       }
 
-      const updateBusiness = await this.BusinessModel.findOneAndUpdate(findQuery, updatedField, { new: true });
+      const updateBusiness = await this.BusinessModel.findOneAndUpdate(
+        findQuery,
+        updatedField,
+        { new: true },
+      );
       if (!updateBusiness) {
         throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
       }
@@ -739,15 +833,21 @@ export class BusinessService {
     }
   }
 
-  async uploadMedia(id: string, loggedInUserId: string, dto: Image[], role: string) {
+  async uploadMedia(
+    id: string,
+    loggedInUserId: string,
+    dto: Image[],
+    role: string,
+  ) {
     const updatedField = {
       updatedBy: loggedInUserId,
       updatedAt: new Date(),
     };
 
-    let updatedBusiness:mongoose.Document<unknown, {}, Business> & Business & {
-      _id: mongoose.Types.ObjectId
-    };
+    let updatedBusiness: mongoose.Document<unknown, {}, Business> &
+      Business & {
+        _id: mongoose.Types.ObjectId;
+      };
     if (role === UserType.SUPERADMIN) {
       updatedBusiness = await updateOneByManyFields<Business>(
         this.BusinessModel,
@@ -779,12 +879,19 @@ export class BusinessService {
     return updatedBusiness;
   }
 
-  async deleteImage(loggedInUser: any, id: string, imageUrl: any): Promise<Business> {
+  async deleteImage(
+    loggedInUser: any,
+    id: string,
+    imageUrl: any,
+  ): Promise<Business> {
     const existingBusiness = await this.getBusiness({
-      id, loggedInUser,
+      id,
+      loggedInUser,
     });
 
-    const images = existingBusiness.images.filter(image => image.image !== imageUrl);
+    const images = existingBusiness.images.filter(
+      image => image.image !== imageUrl,
+    );
 
     const updateBusiness = await this.BusinessModel.findOneAndUpdate(
       { _id: id },
@@ -818,7 +925,10 @@ export class BusinessService {
       );
 
       if (!usersBusinesses?.length) {
-        await this.UserModel.findOneAndUpdate({ _id: loggedInUserId }, { hasBusiness: false });
+        await this.UserModel.findOneAndUpdate(
+          { _id: loggedInUserId },
+          { hasBusiness: false },
+        );
       }
       return business;
     } catch (err) {
@@ -826,10 +936,13 @@ export class BusinessService {
     }
   }
 
-  async deleteBusinessByAdmin(id: string, loggedInUser: LoggedInUserInterface): Promise<Business> {
+  async deleteBusinessByAdmin(
+    id: string,
+    loggedInUser: LoggedInUserInterface,
+  ): Promise<Business> {
     try {
       const updateField = { deletedBy: loggedInUser.id };
-      let filter : any = {
+      let filter: any = {
         _id: id,
       };
 
@@ -861,7 +974,10 @@ export class BusinessService {
       );
 
       if (!usersBusinesses?.length) {
-        await this.UserModel.findOneAndUpdate({ _id: business.userId }, { hasBusiness: false });
+        await this.UserModel.findOneAndUpdate(
+          { _id: business.userId },
+          { hasBusiness: false },
+        );
       }
 
       return business;
@@ -870,17 +986,33 @@ export class BusinessService {
     }
   }
 
-  async findByFieldName(fieldName: keyof Business, items: string): Promise<boolean> {
-    const bussEmail = await findOneByFieldName<Business>(this.BusinessModel, fieldName, items);
+  async findByFieldName(
+    fieldName: keyof Business,
+    items: string,
+  ): Promise<boolean> {
+    const bussEmail = await findOneByFieldName<Business>(
+      this.BusinessModel,
+      fieldName,
+      items,
+    );
     if (bussEmail) {
       throw new BadRequestException(`${fieldName} already exists`);
     }
     return false;
   }
 
-  async findByFieldNameExcludeId(fieldName: keyof Business, items: string, id:string): Promise<boolean> {
+  async findByFieldNameExcludeId(
+    fieldName: keyof Business,
+    items: string,
+    id: string,
+  ): Promise<boolean> {
     try {
-      const bussEmail = await findOneByFieldNameExcludeId<Business>(this.BusinessModel, fieldName, items, id);
+      const bussEmail = await findOneByFieldNameExcludeId<Business>(
+        this.BusinessModel,
+        fieldName,
+        items,
+        id,
+      );
       if (bussEmail) {
         throw new BadRequestException(`${fieldName} already exists`);
       }
@@ -891,7 +1023,10 @@ export class BusinessService {
   }
 
   async findByFieldItems(fieldNames: object): Promise<Business> {
-    const business = await findOneByFieldNames<Business>(this.BusinessModel, fieldNames);
+    const business = await findOneByFieldNames<Business>(
+      this.BusinessModel,
+      fieldNames,
+    );
 
     return business;
   }
@@ -906,7 +1041,9 @@ export class BusinessService {
 
   async findBusinessEmailByIds(ids: ObjectId[]) {
     try {
-      const businessDetails = await this.BusinessModel.find({ _id: { $in: ids } });
+      const businessDetails = await this.BusinessModel.find({
+        _id: { $in: ids },
+      });
 
       return businessDetails;
     } catch (error) {
@@ -916,13 +1053,18 @@ export class BusinessService {
 
   async findManyByFieldIds(fieldName: keyof Business, ids: string[]) {
     const filterBy = { [fieldName]: { $in: ids } };
-    const businesses = await this.BusinessModel.find(filterBy).lean().select('_id');
+    const businesses = await this.BusinessModel.find(filterBy)
+      .lean()
+      .select('_id');
     const businessesId = businesses.map(item => item._id.toString());
 
     return businessesId;
   }
 
-  async getStats(loggedInUser: LoggedInUserInterface, query: GetBusinessStatsQuery) {
+  async getStats(
+    loggedInUser: LoggedInUserInterface,
+    query: GetBusinessStatsQuery,
+  ) {
     try {
       const {
         startDate, endDate, categoriesId, dmoId,
@@ -930,7 +1072,10 @@ export class BusinessService {
 
       const select = disSelect;
 
-      let findQuery: any = { status: BusinessStatus.APPROVED, type: GeoServicesTypes.BUSINESS };
+      let findQuery: any = {
+        status: BusinessStatus.APPROVED,
+        type: GeoServicesTypes.BUSINESS,
+      };
 
       if (categoriesId) {
         const bussCategoriesId = Array.isArray(categoriesId)
@@ -979,7 +1124,9 @@ export class BusinessService {
         const createdEndDate = new Date(endDate);
 
         if (createdStartDate >= createdEndDate) {
-          throw new BadRequestException(`Created ${ServerErrors.DATE_IS_NOT_LESS}`);
+          throw new BadRequestException(
+            `Created ${ServerErrors.DATE_IS_NOT_LESS}`,
+          );
         }
 
         createdFindQuery = {
@@ -1019,65 +1166,56 @@ export class BusinessService {
           },
         };
 
-        const [createdBusinesses, deletedBusinesses, prevCreatedBusinesses, prevDeletedBusinesses] = await Promise.all([
-          queryhandler<Business>(
-            this.BusinessModel,
-            {
-              findQuery: createdFindQuery,
-              select,
-            },
-          ),
-          queryhandler<Business>(
-            this.BusinessModel,
-            {
-              findQuery: deletedFindQuery,
-              select,
-            },
-          ),
-          queryhandler<Business>(
-            this.BusinessModel,
-            {
-              findQuery: pastCreatedFindQuery,
-              select,
-            },
-          ),
-          queryhandler<Business>(
-            this.BusinessModel,
-            {
-              findQuery: pastDeletedFindQuery,
-              select,
-            },
-          ),
+        const [
+          createdBusinesses,
+          deletedBusinesses,
+          prevCreatedBusinesses,
+          prevDeletedBusinesses,
+        ] = await Promise.all([
+          queryhandler<Business>(this.BusinessModel, {
+            findQuery: createdFindQuery,
+            select,
+          }),
+          queryhandler<Business>(this.BusinessModel, {
+            findQuery: deletedFindQuery,
+            select,
+          }),
+          queryhandler<Business>(this.BusinessModel, {
+            findQuery: pastCreatedFindQuery,
+            select,
+          }),
+          queryhandler<Business>(this.BusinessModel, {
+            findQuery: pastDeletedFindQuery,
+            select,
+          }),
         ]);
 
         const newBusinessCreated = createdBusinesses.totalData;
         const newBusinessDeleted = deletedBusinesses.totalData;
-        const prevTotalBusinesses = prevCreatedBusinesses.totalData - prevDeletedBusinesses.totalData;
+        const prevTotalBusinesses
+          = prevCreatedBusinesses.totalData - prevDeletedBusinesses.totalData;
 
         return {
           newBusinessCreated,
           newBusinessDeleted,
           prevTotalBusinesses,
           isGrowth: newBusinessCreated - newBusinessDeleted > 0,
-          growthPercentage: calculateGrowthPercentage(prevTotalBusinesses, newBusinessCreated),
+          growthPercentage: calculateGrowthPercentage(
+            prevTotalBusinesses,
+            newBusinessCreated,
+          ),
         };
       }
 
       const [createdBusinesses, deletedBusinesses] = await Promise.all([
-        queryhandler<Business>(
-          this.BusinessModel,
-          {
-            findQuery: createdFindQuery,
-            select,
-          },
-        ),
-        queryhandler<Business>(
-          this.BusinessModel,
-          {
-            findQuery: deletedFindQuery,
-            select,
-          },
-        ),
+        queryhandler<Business>(this.BusinessModel, {
+          findQuery: createdFindQuery,
+          select,
+        }),
+        queryhandler<Business>(this.BusinessModel, {
+          findQuery: deletedFindQuery,
+          select,
+        }),
       ]);
       const newBusinessCreated = createdBusinesses.totalData;
       const newBusinessDeleted = deletedBusinesses.totalData;
@@ -1092,10 +1230,18 @@ export class BusinessService {
   }
 
   private generateSlug(name: string | null): string {
-    return name ? `${name.replace(/ /g, '-').toLowerCase()}` : `${generateRandomCode(3).toLowerCase()}-${generateRandomCode(4).toLowerCase()}`;
+    return name
+      ? `${name.replace(/ /g, '-').toLowerCase()}`
+      : `${generateRandomCode(3).toLowerCase()}-${generateRandomCode(
+        4,
+      ).toLowerCase()}`;
   }
 
   private isDuplicateKeyError(error: any, fieldName: string): boolean {
-    return error.code === 11000 && error?.keyPattern && error?.keyPattern[fieldName] === 1;
+    return (
+      error.code === 11000
+      && error?.keyPattern
+      && error?.keyPattern[fieldName] === 1
+    );
   }
 }

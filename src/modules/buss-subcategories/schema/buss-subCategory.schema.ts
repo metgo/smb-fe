@@ -21,5 +21,6 @@ export class BussSubCategory extends AuditableSchema {
     hebrewName: string;
 }
 
-export type BussSubCategoryDocument = HydratedDocument<BussSubCategory>
-export const BussSubCategorySchema = SchemaFactory.createForClass(BussSubCategory);
+export type BussSubCategoryDocument = HydratedDocument<BussSubCategory>;
+export const BussSubCategorySchema
+  = SchemaFactory.createForClass(BussSubCategory);

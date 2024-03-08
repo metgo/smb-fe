@@ -15,22 +15,22 @@ export class createMPCategoriesDto {
     required: false,
   })
   @IsOptional()
-    @IsString()
+  @IsString()
     icon: string;
 
   @ApiProperty({
     required: false,
   })
   @IsOptional()
-    @IsString()
+  @IsString()
     pathAlt: string;
 
-    @ApiProperty({
-      required: false,
-    })
+  @ApiProperty({
+    required: false,
+  })
   @IsOptional()
-    @IsBoolean()
-      hasMultiple: boolean;
+  @IsBoolean()
+    hasMultiple: boolean;
 
   @ApiProperty({
     required: true,

@@ -16,7 +16,11 @@ export class MailChimpService {
     });
   }
 
-  async subscribe(firstName: string, lastName: string, email: string): Promise<string> {
+  async subscribe(
+    firstName: string,
+    lastName: string,
+    email: string,
+  ): Promise<string> {
     const { AUDIENCE, TAV8_SUPPORT_EMAIL } = this.configService.mailchimp;
 
     try {
@@ -54,8 +58,10 @@ export class MailChimpService {
 
   async sendTransactionalEmail(body: sendEmail) {
     try {
-      const { TRANSACTIONAL_API_KEY, FROM_EMAIL } = this.configService.mailchimp;
-      const mailchimpTransaction = require('@mailchimp/mailchimp_transactional')(TRANSACTIONAL_API_KEY);
+      const { TRANSACTIONAL_API_KEY, FROM_EMAIL }
+        = this.configService.mailchimp;
+      const mailchimpTransaction
+        = require('@mailchimp/mailchimp_transactional')(TRANSACTIONAL_API_KEY);
 
       const message = {
         from_email: FROM_EMAIL,
@@ -63,7 +69,15 @@ export class MailChimpService {
           name: body.templatedId,
         },
         to: [{ email: body.to }],
-        merge_vars: [{ rcpt: body.to, vars: Object.entries(body.mergeVars).map(([name, content]) => ({ name, content })) }],
+        merge_vars: [
+          {
+            rcpt: body.to,
+            vars: Object.entries(body.mergeVars).map(([name, content]) => ({
+              name,
+              content,
+            })),
+          },
+        ],
       };
 
       const response = await mailchimpTransaction.messages.sendTemplate({

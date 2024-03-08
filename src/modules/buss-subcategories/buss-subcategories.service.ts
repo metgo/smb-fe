@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
@@ -7,10 +11,17 @@ import { ServerErrors } from 'src/common/constant';
 import { paginationConfig } from 'src/common/pagination.config';
 import { disSelect } from 'src/common/utils/select.handling';
 import {
-  findOneByFieldName, findOneByFieldNameExcludeId, queryhandler, updateById,
+  findOneByFieldName,
+  findOneByFieldNameExcludeId,
+  queryhandler,
+  updateById,
 } from 'src/core/helper/query-helper';
 import { BussSubCategory } from './schema/buss-subCategory.schema';
-import { FilterQuery, createBussSubCategoryDto, updateBussSubCategoryDto } from './dto';
+import {
+  FilterQuery,
+  createBussSubCategoryDto,
+  updateBussSubCategoryDto,
+} from './dto';
 
 @Injectable()
 export class BussSubCategoriesService {
@@ -19,8 +30,14 @@ export class BussSubCategoriesService {
     private readonly BussSubCategoryModel: Model<BussSubCategory>,
   ) {}
 
-  async create(dto: createBussSubCategoryDto, userId: string): Promise<BussSubCategory> {
-    const newBussSubCategory = new this.BussSubCategoryModel({ ...dto, createdBy: userId });
+  async create(
+    dto: createBussSubCategoryDto,
+    userId: string,
+  ): Promise<BussSubCategory> {
+    const newBussSubCategory = new this.BussSubCategoryModel({
+      ...dto,
+      createdBy: userId,
+    });
     return newBussSubCategory.save();
   }
 
@@ -30,7 +47,9 @@ export class BussSubCategoriesService {
     } = queries;
 
     const queryPage = page ? Number(page) : paginationConfig.page;
-    const queryLimit = limit ? Number(limit) : paginationConfig.MAX_ASPECT_LIMIT;
+    const queryLimit = limit
+      ? Number(limit)
+      : paginationConfig.MAX_ASPECT_LIMIT;
 
     let findQuery: any = query;
     let select: {};
@@ -104,8 +123,16 @@ export class BussSubCategoriesService {
     return bussCategory;
   }
 
-  async update(id: string, dto: updateBussSubCategoryDto, userId: string): Promise<BussSubCategory> {
-    const bussSubCategory = await updateById<BussSubCategory>(this.BussSubCategoryModel, id, { ...dto, updateBy: userId });
+  async update(
+    id: string,
+    dto: updateBussSubCategoryDto,
+    userId: string,
+  ): Promise<BussSubCategory> {
+    const bussSubCategory = await updateById<BussSubCategory>(
+      this.BussSubCategoryModel,
+      id,
+      { ...dto, updateBy: userId },
+    );
     if (!bussSubCategory) {
       throw new NotFoundException(ServerErrors.BUSS_SUB_CATEGORY.NOT_FOUND);
     }
@@ -114,25 +141,48 @@ export class BussSubCategoriesService {
 
   async softDelete(id: string, userId: string): Promise<BussSubCategory> {
     const updateField = {
-      isDeleted: true, deleteAt: new Date(), updatedBy: userId, deletedBy: userId,
+      isDeleted: true,
+      deleteAt: new Date(),
+      updatedBy: userId,
+      deletedBy: userId,
     };
-    const bussSubCategory = await updateById<BussSubCategory>(this.BussSubCategoryModel, id, updateField);
+    const bussSubCategory = await updateById<BussSubCategory>(
+      this.BussSubCategoryModel,
+      id,
+      updateField,
+    );
     if (!bussSubCategory) {
       throw new NotFoundException(ServerErrors.BUSS_SUB_CATEGORY.NOT_FOUND);
     }
     return bussSubCategory;
   }
 
-  async findByFieldName(fieldName: keyof BussSubCategory, items: string): Promise<boolean> {
-    const bussEmail = await findOneByFieldName<BussSubCategory>(this.BussSubCategoryModel, fieldName, items);
+  async findByFieldName(
+    fieldName: keyof BussSubCategory,
+    items: string,
+  ): Promise<boolean> {
+    const bussEmail = await findOneByFieldName<BussSubCategory>(
+      this.BussSubCategoryModel,
+      fieldName,
+      items,
+    );
     if (bussEmail) {
       throw new BadRequestException(`${fieldName} already exists`);
     }
     return false;
   }
 
-  async findByFieldNameExcludeId(fieldName: keyof BussSubCategory, items: string, id:string): Promise<boolean> {
-    const bussEmail = await findOneByFieldNameExcludeId<BussSubCategory>(this.BussSubCategoryModel, fieldName, items, id);
+  async findByFieldNameExcludeId(
+    fieldName: keyof BussSubCategory,
+    items: string,
+    id: string,
+  ): Promise<boolean> {
+    const bussEmail = await findOneByFieldNameExcludeId<BussSubCategory>(
+      this.BussSubCategoryModel,
+      fieldName,
+      items,
+      id,
+    );
     if (bussEmail) {
       throw new BadRequestException(`${fieldName} already exists`);
     }

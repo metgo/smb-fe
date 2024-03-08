@@ -1,5 +1,15 @@
 import {
-  Body, Controller, Get, HttpStatus, Param, Post, Put, Query, Req, Res, UseGuards,
+  Body,
+  Controller,
+  Get,
+  HttpStatus,
+  Param,
+  Post,
+  Put,
+  Query,
+  Req,
+  Res,
+  UseGuards,
 } from '@nestjs/common';
 import { Response } from 'express';
 
@@ -28,13 +38,14 @@ import {
 
 @Controller()
 export class VoucherController {
-  constructor(
-    private readonly voucherService: VoucherService,
-  ) {}
+  constructor(private readonly voucherService: VoucherService) {}
 
   @ApiEndpoint({
     tags: ['Voucher'],
-    response: { status: HttpStatus.CREATED, description: ServerSuccess.VOUCHER.CREATED },
+    response: {
+      status: HttpStatus.CREATED,
+      description: ServerSuccess.VOUCHER.CREATED,
+    },
     softBlockExtraDtoFields: true,
     operation: 'Purchase Voucher By anyone',
   })
@@ -60,7 +71,10 @@ export class VoucherController {
   @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
     tags: ['Admin', 'Voucher'],
-    response: { status: HttpStatus.CREATED, description: ServerSuccess.VOUCHER.CREATED },
+    response: {
+      status: HttpStatus.CREATED,
+      description: ServerSuccess.VOUCHER.CREATED,
+    },
     softBlockExtraDtoFields: true,
     noAuthToken: true,
     operation: 'Purchase Voucher By Superadmin',
@@ -71,7 +85,10 @@ export class VoucherController {
     @Res() response: Response,
     @Body() dto: createVoucherDto,
   ) {
-    const vouchers = await this.voucherService.createdBySuperadmin(req.user, dto);
+    const vouchers = await this.voucherService.createdBySuperadmin(
+      req.user,
+      dto,
+    );
 
     return responseHelper(
       response,
@@ -85,7 +102,10 @@ export class VoucherController {
 
   @ApiEndpoint({
     tags: ['Voucher'],
-    response: { status: HttpStatus.OK, description: ServerSuccess.VOUCHER.LISTED },
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.VOUCHER.LISTED,
+    },
     operation: 'Get voucher detail by anyone using valid code',
   })
   @Get('voucher-code/:code')
@@ -94,7 +114,10 @@ export class VoucherController {
     @Res() response: Response,
     @Query() query: GetVoucherQuery,
   ) {
-    const voucher = await this.voucherService.getOne({ code, productId: query.productId });
+    const voucher = await this.voucherService.getOne({
+      code,
+      productId: query.productId,
+    });
     return responseHelper(
       response,
       HttpStatus.OK,
@@ -109,7 +132,10 @@ export class VoucherController {
   @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
     tags: ['Voucher'],
-    response: { status: HttpStatus.OK, description: ServerSuccess.VOUCHER.CREATED },
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.VOUCHER.CREATED,
+    },
     softBlockExtraDtoFields: true,
     noAuthToken: true,
     operation: 'Get voucher detail by logged in user using valid id',
@@ -145,7 +171,10 @@ export class VoucherController {
     @Query() query: GetMyCreatedVouchersQuery,
   ) {
     const userId = request.user.id;
-    const vouchers = await this.voucherService.getVouchersCreatedByMe(userId, query);
+    const vouchers = await this.voucherService.getVouchersCreatedByMe(
+      userId,
+      query,
+    );
     return responseHelper(
       response,
       HttpStatus.OK,
@@ -174,7 +203,10 @@ export class VoucherController {
     @Query() query: GetMyAssignedVouchersQuery,
   ) {
     const userId = request.user.id;
-    const vouchers = await this.voucherService.getVouchersAssignedToMe(userId, query);
+    const vouchers = await this.voucherService.getVouchersAssignedToMe(
+      userId,
+      query,
+    );
     return responseHelper(
       response,
       HttpStatus.OK,
@@ -232,7 +264,10 @@ export class VoucherController {
     @Query() query: GetMyVouchersExternalApiQuery,
   ) {
     const userId = request.user.id;
-    const vouchers = await this.voucherService.getVoucherCreatedByMe(userId, query);
+    const vouchers = await this.voucherService.getVoucherCreatedByMe(
+      userId,
+      query,
+    );
     return responseHelper(
       response,
       HttpStatus.OK,
@@ -276,7 +311,10 @@ export class VoucherController {
 
   @ApiEndpoint({
     tags: ['External Api', 'Voucher'],
-    response: { status: HttpStatus.CREATED, description: ServerSuccess.VOUCHER.CREATED },
+    response: {
+      status: HttpStatus.CREATED,
+      description: ServerSuccess.VOUCHER.CREATED,
+    },
     softBlockExtraDtoFields: true,
     operation: 'Purchase voucher by anyone - EXTERNAL API',
   })
@@ -288,7 +326,11 @@ export class VoucherController {
     @Body() dto: createVoucherDto,
     @Query() query: ExternalApiPostQuery,
   ) {
-    const link = await this.voucherService.purchaseVoucherForExternalApi(dto, query, req.user);
+    const link = await this.voucherService.purchaseVoucherForExternalApi(
+      dto,
+      query,
+      req.user,
+    );
 
     return responseHelper(
       response,
@@ -302,7 +344,10 @@ export class VoucherController {
 
   @ApiEndpoint({
     tags: ['Admin', 'External Api', 'Voucher'],
-    response: { status: HttpStatus.CREATED, description: ServerSuccess.VOUCHER.CREATED },
+    response: {
+      status: HttpStatus.CREATED,
+      description: ServerSuccess.VOUCHER.CREATED,
+    },
     softBlockExtraDtoFields: true,
     noAuthToken: true,
     operation: 'Purchase voucher by superadmin - EXTERNAL API',
@@ -317,7 +362,11 @@ export class VoucherController {
     @Body() dto: createVoucherDto,
     @Query() query: ExternalApiPostQuery,
   ) {
-    const link = await this.voucherService.createdBySuperadmin(req.user, dto, query.identifierId);
+    const link = await this.voucherService.createdBySuperadmin(
+      req.user,
+      dto,
+      query.identifierId,
+    );
 
     return responseHelper(
       response,
@@ -331,7 +380,10 @@ export class VoucherController {
 
   @ApiEndpoint({
     tags: ['Admin', 'External Api', 'Voucher'],
-    response: { status: HttpStatus.OK, description: ServerSuccess.VOUCHER.UPDATED },
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.VOUCHER.UPDATED,
+    },
     softBlockExtraDtoFields: true,
     noAuthToken: true,
     operation: 'Update voucher balance by superadmin - EXTERNAL API',
@@ -346,7 +398,11 @@ export class VoucherController {
     @Body() dto: UpdateVoucherBalance,
     @Query() query: ExternalApiPostQuery,
   ) {
-    const voucher = await this.voucherService.updateVoucherAmountByExternalApi(req.user.id, query, dto);
+    const voucher = await this.voucherService.updateVoucherAmountByExternalApi(
+      req.user.id,
+      query,
+      dto,
+    );
 
     return responseHelper(
       response,
@@ -372,7 +428,11 @@ export class VoucherController {
     @Param('code') code: string,
     @Query() query: GetVoucherByExternalApiQuery,
   ) {
-    const voucher = await this.voucherService.getOne({ code, externalApi: true, productId: query.productId });
+    const voucher = await this.voucherService.getOne({
+      code,
+      externalApi: true,
+      productId: query.productId,
+    });
     return responseHelper(
       response,
       HttpStatus.OK,
@@ -385,7 +445,10 @@ export class VoucherController {
 
   @ApiEndpoint({
     tags: ['Voucher'],
-    response: { status: HttpStatus.OK, description: ServerSuccess.VOUCHER.LISTED },
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.VOUCHER.LISTED,
+    },
     noAuthToken: true,
   })
   @Roles(UserType.SUPERADMIN, UserType.DMOADMIN, UserType.TRAVELLER)

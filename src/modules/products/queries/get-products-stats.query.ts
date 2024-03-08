@@ -10,7 +10,11 @@ export class GetProductsStatsQuery {
   @IsOptional()
     endDate: Date;
 
-  @ApiProperty({ type: [String], required: false, description: 'must follow the pattern \n [id, id,..]' })
+  @ApiProperty({
+    type: [String],
+    required: false,
+    description: 'must follow the pattern \n [id, id,..]',
+  })
   @IsOptional()
     categoriesId: string[];
 

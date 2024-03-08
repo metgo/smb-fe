@@ -1,6 +1,15 @@
 import {
   Body,
-  Controller, Delete, Get, HttpStatus, Param, Post, Put, Query, Res, UseGuards,
+  Controller,
+  Delete,
+  Get,
+  HttpStatus,
+  Param,
+  Post,
+  Put,
+  Query,
+  Res,
+  UseGuards,
 } from '@nestjs/common';
 import { Response } from 'express';
 
@@ -17,7 +26,7 @@ import { UserType } from '../users/users.type';
 
 @Controller('admin/social-media')
 export class SocialMediaController {
-  constructor(private readonly socialMediaService: SocialMediaService) { }
+  constructor(private readonly socialMediaService: SocialMediaService) {}
 
   @ApiEndpoint({
     tags: ['Admin', 'Social Media'],
@@ -31,8 +40,8 @@ export class SocialMediaController {
   @UseGuards(JwtAuthGuard)
   @Post()
   async createSocialMedia(
-      @Res() response: Response,
-      @Body() dto:createSocialMediaDto,
+    @Res() response: Response,
+    @Body() dto: createSocialMediaDto,
   ) {
     await this.socialMediaService.findByFieldName('name', dto.name);
     const socialMedia = await this.socialMediaService.create(dto);
@@ -54,7 +63,7 @@ export class SocialMediaController {
     },
   })
   @Get()
-  async getSocialMedia(@Res() response: Response, @Query() query:FilterQuery) {
+  async getSocialMedia(@Res() response: Response, @Query() query: FilterQuery) {
     const socialMedia = await this.socialMediaService.getAll(query);
     return responseHelper(
       response,
@@ -78,11 +87,15 @@ export class SocialMediaController {
   @UseGuards(JwtAuthGuard)
   @Put('/:id')
   async updateSocialMedia(
-      @Res() response: Response,
-      @Param('id') id: string,
-      @Body() dto: updateSocialMediaDto,
+    @Res() response: Response,
+    @Param('id') id: string,
+    @Body() dto: updateSocialMediaDto,
   ) {
-    await this.socialMediaService.findByFieldNameExcludeId('name', dto.name, id);
+    await this.socialMediaService.findByFieldNameExcludeId(
+      'name',
+      dto.name,
+      id,
+    );
     const socialMedia = await this.socialMediaService.update(id, dto);
     return responseHelper(
       response,
@@ -105,10 +118,7 @@ export class SocialMediaController {
   @Roles(UserType.SUPERADMIN, UserType.ADMIN)
   @UseGuards(JwtAuthGuard)
   @Delete('/:id')
-  async deleteSocialMedai(
-         @Res() response: Response,
-        @Param('id') id: string,
-  ) {
+  async deleteSocialMedai(@Res() response: Response, @Param('id') id: string) {
     const socialMedia = await this.socialMediaService.softDelete(id);
     return responseHelper(
       response,

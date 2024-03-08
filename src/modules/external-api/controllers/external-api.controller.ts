@@ -1,5 +1,16 @@
 import {
-  Body, Controller, Delete, Get, HttpStatus, Param, Post, Put, Query, Req, Res, UseGuards,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpStatus,
+  Param,
+  Post,
+  Put,
+  Query,
+  Req,
+  Res,
+  UseGuards,
 } from '@nestjs/common';
 import { Response } from 'express';
 
@@ -15,15 +26,16 @@ import { UserType } from 'src/modules/users/users.type';
 
 @Controller('external-api')
 export class ExternalApiController {
-  constructor(
-    private readonly externalApiService: ExternalApiServices,
-  ) {}
+  constructor(private readonly externalApiService: ExternalApiServices) {}
 
   @Roles(UserType.SUPERADMIN)
   @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
     tags: ['External API'],
-    response: { status: HttpStatus.CREATED, description: ServerSuccess.EXTERNAL_API.CREATED },
+    response: {
+      status: HttpStatus.CREATED,
+      description: ServerSuccess.EXTERNAL_API.CREATED,
+    },
     noAuthToken: true,
     softBlockExtraDtoFields: true,
   })
@@ -49,15 +61,15 @@ export class ExternalApiController {
   @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
     tags: ['External API'],
-    response: { status: HttpStatus.OK, description: ServerSuccess.EXTERNAL_API.LISTED },
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.EXTERNAL_API.LISTED,
+    },
     noAuthToken: true,
     softBlockExtraDtoFields: true,
   })
   @Get('')
-  async getAll(
-    @Res() response: Response,
-    @Query() query: CommonFilterQuery,
-  ) {
+  async getAll(@Res() response: Response, @Query() query: CommonFilterQuery) {
     const externalApis = await this.externalApiService.getAll(query);
 
     return responseHelper(
@@ -74,15 +86,15 @@ export class ExternalApiController {
   @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
     tags: ['External API'],
-    response: { status: HttpStatus.OK, description: ServerSuccess.EXTERNAL_API.LISTED },
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.EXTERNAL_API.LISTED,
+    },
     noAuthToken: true,
     softBlockExtraDtoFields: true,
   })
   @Get(':id')
-  async get(
-    @Param('id') id: string,
-    @Res() response: Response,
-  ) {
+  async get(@Param('id') id: string, @Res() response: Response) {
     const externalApis = await this.externalApiService.getById(id);
 
     return responseHelper(
@@ -99,7 +111,10 @@ export class ExternalApiController {
   @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
     tags: ['External API'],
-    response: { status: HttpStatus.OK, description: ServerSuccess.EXTERNAL_API.UPDATED },
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.EXTERNAL_API.UPDATED,
+    },
     noAuthToken: true,
     softBlockExtraDtoFields: true,
   })
@@ -110,7 +125,11 @@ export class ExternalApiController {
     @Req() req,
     @Res() response: Response,
   ) {
-    const externalApi = await this.externalApiService.update(req.user.id, externalApiId, body);
+    const externalApi = await this.externalApiService.update(
+      req.user.id,
+      externalApiId,
+      body,
+    );
 
     return responseHelper(
       response,
@@ -126,7 +145,10 @@ export class ExternalApiController {
   @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
     tags: ['External API'],
-    response: { status: HttpStatus.OK, description: `**Company** ${ServerSuccess.EXTERNAL_API.DELETED}` },
+    response: {
+      status: HttpStatus.OK,
+      description: `**Company** ${ServerSuccess.EXTERNAL_API.DELETED}`,
+    },
     noAuthToken: true,
     softBlockExtraDtoFields: true,
   })
@@ -136,7 +158,10 @@ export class ExternalApiController {
     @Req() req,
     @Res() response: Response,
   ) {
-    const externalApi = await this.externalApiService.softDelete(req.user.id, externalApiId);
+    const externalApi = await this.externalApiService.softDelete(
+      req.user.id,
+      externalApiId,
+    );
 
     return responseHelper(
       response,

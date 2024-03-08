@@ -22,14 +22,14 @@ export class createMPSubCategoriesDto {
     required: false,
   })
   @IsOptional()
-    @IsString()
+  @IsString()
     icon: string;
 
   @ApiProperty({
     required: false,
   })
   @IsOptional()
-    @IsString()
+  @IsString()
     pathAlt: string;
 
   @ApiProperty({

@@ -1,5 +1,10 @@
 import {
-  BadRequestException, ForbiddenException, Inject, Injectable, NotFoundException, forwardRef,
+  BadRequestException,
+  ForbiddenException,
+  Inject,
+  Injectable,
+  NotFoundException,
+  forwardRef,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { differenceInDays, subDays } from 'date-fns';
@@ -8,14 +13,20 @@ import mongoose, { Model } from 'mongoose';
 import { calculateTotalAmount } from 'src/common/calculate-amounts';
 import { ServerErrors } from 'src/common/constant';
 import { Currency, Locale, PaymentStatus } from 'src/common/enum';
-import { EnglishTemplate, HebrewTemplate } from 'src/common/mailchimp/templateId';
+import {
+  EnglishTemplate,
+  HebrewTemplate,
+} from 'src/common/mailchimp/templateId';
 import { paginationConfig } from 'src/common/pagination.config';
 import { sortByPriorityAndHighest } from 'src/common/sort-priority-and-highest';
 import { calculateGrowthPercentage } from 'src/common/utils/calculate-growth-percentage';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { disSelect } from 'src/common/utils/select.handling';
 import {
-  findOneByFieldNames, findOneById, queryhandler, updateById,
+  findOneByFieldNames,
+  findOneById,
+  queryhandler,
+  updateById,
 } from 'src/core/helper/query-helper';
 import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interface';
 import { BusinessService } from 'src/modules/business/services/business.service';
@@ -29,7 +40,11 @@ import { VoucherService } from 'src/modules/vouchers/voucher.service';
 import { PaymentsService } from 'src/services/payments/payments.service';
 import { PaymentPurpose } from 'src/services/payments/payments.type';
 import { MailChimpService } from 'src/services/mailchimp/mailchimp.service';
-import { FindOrdersQuery, OrderStatus, PaymentMode } from 'src/modules/orders/orders.type';
+import {
+  FindOrdersQuery,
+  OrderStatus,
+  PaymentMode,
+} from 'src/modules/orders/orders.type';
 
 @Injectable()
 export class OrdersService {
@@ -48,7 +63,12 @@ export class OrdersService {
   async create(command: CreateVoucherCommand): Promise<any> {
     try {
       const {
-        loggedInUserId, body, redeemedVouchers, totalAmount, actualAmountOfProduct, identifierId,
+        loggedInUserId,
+        body,
+        redeemedVouchers,
+        totalAmount,
+        actualAmountOfProduct,
+        identifierId,
       } = command;
 
       if (totalAmount <= 0) {
@@ -74,9 +94,10 @@ export class OrdersService {
 
         await this.mailchimpService.sendTransactionalEmail({
           to: order.email,
-          templatedId: (body?.languagePreference === Locale.HEBREW)
-            ? HebrewTemplate.OrderConfirmationForClient
-            : EnglishTemplate.OrderConfirmationForClient,
+          templatedId:
+            body?.languagePreference === Locale.HEBREW
+              ? HebrewTemplate.OrderConfirmationForClient
+              : EnglishTemplate.OrderConfirmationForClient,
           mergeVars: {
             BUYERNAME: order.firstName,
             BUSINESSNAME: businessDetails[0].name || '',
@@ -84,33 +105,38 @@ export class OrdersService {
             QUANTITY: body.products[0].quantity,
             COST: getProductInformation[0].price.sellingPrice,
             TOTALAMOUNT: order.totalAmount,
-            BUSINESSPHONE: `${businessDetails[0]?.countryCode}-${businessDetails[0]?.phoneNumber}` || '',
+            BUSINESSPHONE:
+              `${businessDetails[0]?.countryCode}-${businessDetails[0]?.phoneNumber}`
+              || '',
             BUSINESSEMAIL: businessDetails[0].busiEmail || '',
             BUSINESSADDRESS: businessDetails[0]?.address?.location || '',
           },
         });
 
         // SEND TO BUSINESS OWNER
-        await Promise.all(businessDetails.map(async business => {
-          if (!business?.busiEmail) return;
-          await this.mailchimpService.sendTransactionalEmail({
-            to: business.busiEmail,
-            templatedId: (body?.languagePreference === Locale.HEBREW)
-              ? HebrewTemplate.OrderReceivedForBusiness
-              : EnglishTemplate.OrderReceivedForBusiness,
-            mergeVars: {
-              BUSINESSNAME: business?.name || '',
-              PRODUCTNAME: getProductInformation[0].name,
-              QUANTITY: body.products[0].quantity,
-              COST: getProductInformation[0].price.sellingPrice,
-              TOTALAMOUNT: order.totalAmount,
-              BUYERNAME: `${body.firstName} ${body.lastName}`,
-              BUYERPHONE: `${body.countryCode}-${body.phone}`,
-              BUYEREMAIL: body.email,
-              BUYERADDRESS: body.address,
-            },
-          });
-        }));
+        await Promise.all(
+          businessDetails.map(async business => {
+            if (!business?.busiEmail) return;
+            await this.mailchimpService.sendTransactionalEmail({
+              to: business.busiEmail,
+              templatedId:
+                body?.languagePreference === Locale.HEBREW
+                  ? HebrewTemplate.OrderReceivedForBusiness
+                  : EnglishTemplate.OrderReceivedForBusiness,
+              mergeVars: {
+                BUSINESSNAME: business?.name || '',
+                PRODUCTNAME: getProductInformation[0].name,
+                QUANTITY: body.products[0].quantity,
+                COST: getProductInformation[0].price.sellingPrice,
+                TOTALAMOUNT: order.totalAmount,
+                BUYERNAME: `${body.firstName} ${body.lastName}`,
+                BUYERPHONE: `${body.countryCode}-${body.phone}`,
+                BUYEREMAIL: body.email,
+                BUYERADDRESS: body.address,
+              },
+            });
+          }),
+        );
 
         return;
       }
@@ -123,7 +149,10 @@ export class OrdersService {
         paymentStatus: PaymentStatus.PENDING,
         identifierId: identifierId || null,
         creditCardPayment: totalAmount,
-        paymentMode: totalAmount === actualAmountOfProduct ? [PaymentMode.CARD] : [PaymentMode.CARD, PaymentMode.VOUCHER],
+        paymentMode:
+          totalAmount === actualAmountOfProduct
+            ? [PaymentMode.CARD]
+            : [PaymentMode.CARD, PaymentMode.VOUCHER],
         totalAmount: actualAmountOfProduct,
       });
 
@@ -176,18 +205,27 @@ export class OrdersService {
     const arrayOfVoucherIds = orderDetail.voucher.map(obj => obj.id);
     const voucherIds = await this.voucherService.findByIds(arrayOfVoucherIds);
 
-    const sortedVoucher = sortByPriorityAndHighest(orderDetail.totalAmount, voucherIds);
+    const sortedVoucher = sortByPriorityAndHighest(
+      orderDetail.totalAmount,
+      voucherIds,
+    );
 
     // update vouchers detail and deduct voucher amounts
-    const voucher = await this.processVouchers(orderDetail.createdBy, sortedVoucher, orderDetail.totalAmount);
+    const voucher = await this.processVouchers(
+      orderDetail.createdBy,
+      sortedVoucher,
+      orderDetail.totalAmount,
+    );
 
     // deduct product count
-    await Promise.all(orderDetail.products.map(async product => {
-      const productId = product.id.toString();
-      await this.productsService.updateProductByFields(productId, {
-        sold: product.quantity,
-      });
-    }));
+    await Promise.all(
+      orderDetail.products.map(async product => {
+        const productId = product.id.toString();
+        await this.productsService.updateProductByFields(productId, {
+          sold: product.quantity,
+        });
+      }),
+    );
 
     const updatedField = {
       paymentStatus: PaymentStatus.SUCCESS,
@@ -203,9 +241,17 @@ export class OrdersService {
     return updateOrder;
   }
 
-  async update(loggedInUserId: string, id:string, body: UpdateOrderDto): Promise<Order> {
+  async update(
+    loggedInUserId: string,
+    id: string,
+    body: UpdateOrderDto,
+  ): Promise<Order> {
     try {
-      const updatedField = { ...body, updatedBy: loggedInUserId, updatedAt: new Date() };
+      const updatedField = {
+        ...body,
+        updatedBy: loggedInUserId,
+        updatedAt: new Date(),
+      };
       const updateOrder = await this.OrderModel.findOneAndUpdate(
         { _id: id },
         updatedField,
@@ -224,10 +270,9 @@ export class OrdersService {
 
   async findOne(id: string): Promise<Order> {
     try {
-      const order = await findOneByFieldNames<Order>(
-        this.OrderModel,
-        { _id: id },
-      );
+      const order = await findOneByFieldNames<Order>(this.OrderModel, {
+        _id: id,
+      });
 
       if (!order) {
         throw new NotFoundException(ServerErrors.ORDERS.NOT_FOUND);
@@ -239,7 +284,10 @@ export class OrdersService {
     }
   }
 
-  async findMyOrderInfo(loggedInUser: LoggedInUserInterface, orderId: string) : Promise<Order> {
+  async findMyOrderInfo(
+    loggedInUser: LoggedInUserInterface,
+    orderId: string,
+  ): Promise<Order> {
     try {
       const order = await this.checkIfAllowed(loggedInUser, orderId);
       return order;
@@ -248,7 +296,11 @@ export class OrdersService {
     }
   }
 
-  async updateOrder(loggedInUser: LoggedInUserInterface, orderId: string, body: UpdateOrderDto): Promise<Order> {
+  async updateOrder(
+    loggedInUser: LoggedInUserInterface,
+    orderId: string,
+    body: UpdateOrderDto,
+  ): Promise<Order> {
     try {
       const order = await this.checkIfAllowed(loggedInUser, orderId);
 
@@ -264,7 +316,7 @@ export class OrdersService {
     }
   }
 
-  async findAll(queries: FindOrdersQuery) : Promise<Order[]> {
+  async findAll(queries: FindOrdersQuery): Promise<Order[]> {
     const {
       search, page, limit, ...query
     } = queries.query;
@@ -278,7 +330,11 @@ export class OrdersService {
     if (search) {
       findQuery = {
         ...findQuery,
-        $text: { $search: search, $caseSensitive: false, $diacriticSensitive: false },
+        $text: {
+          $search: search,
+          $caseSensitive: false,
+          $diacriticSensitive: false,
+        },
       };
     }
 
@@ -286,25 +342,25 @@ export class OrdersService {
       findQuery = { ...findQuery, userId: queries.loggedInUser };
     }
 
-    const orders = await queryhandler<Order>(
-      this.OrderModel,
-      {
-        findQuery,
-        select,
-        page: queryPage,
-        limit: queryLimit,
-      },
-    );
+    const orders = await queryhandler<Order>(this.OrderModel, {
+      findQuery,
+      select,
+      page: queryPage,
+      limit: queryLimit,
+    });
     return orders;
   }
 
-  private async checkIfAllowed(loggedInUser: any, orderId: string): Promise<Order> {
+  private async checkIfAllowed(
+    loggedInUser: any,
+    orderId: string,
+  ): Promise<Order> {
     const allowedRoles = [UserType.ADMIN, UserType.DMO, UserType.SUPERADMIN];
     const order = await this.findOne(orderId);
 
     if (
       !allowedRoles.includes(loggedInUser.role)
-      && !(new mongoose.Types.ObjectId(loggedInUser.id).equals(order.userId))
+      && !new mongoose.Types.ObjectId(loggedInUser.id).equals(order.userId)
     ) {
       throw new ForbiddenException(ServerErrors.FORBIDDEN);
     }
@@ -312,24 +368,39 @@ export class OrdersService {
     return order;
   }
 
-  async processVouchers(loggedInUserId: string | null, voucherIds, totalAmountOfProduct) {
+  async processVouchers(
+    loggedInUserId: string | null,
+    voucherIds,
+    totalAmountOfProduct,
+  ) {
     let voucherInfo = [];
-    const processVouchers = async (vouchers, index = 0, initialRedeemedAmount = 0) => {
-      if (index >= vouchers.length || (index > 0 && initialRedeemedAmount === 0)) {
+    const processVouchers = async (
+      vouchers,
+      index = 0,
+      initialRedeemedAmount = 0,
+    ) => {
+      if (
+        index >= vouchers.length
+        || (index > 0 && initialRedeemedAmount === 0)
+      ) {
         return;
       }
 
       const voucher = vouchers[index];
-      const { amountToBeRedeemed: updateRedeemedAmount, redeemedAmount } = await this.voucherService.updateVoucherAmount(
-        loggedInUserId,
-        voucher.id,
-        index === 0 ? totalAmountOfProduct : initialRedeemedAmount,
-      );
+      const { amountToBeRedeemed: updateRedeemedAmount, redeemedAmount }
+        = await this.voucherService.updateVoucherAmount(
+          loggedInUserId,
+          voucher.id,
+          index === 0 ? totalAmountOfProduct : initialRedeemedAmount,
+        );
 
-      voucherInfo = [...voucherInfo, {
-        id: voucher.id,
-        redeemedAmount,
-      }];
+      voucherInfo = [
+        ...voucherInfo,
+        {
+          id: voucher.id,
+          redeemedAmount,
+        },
+      ];
 
       await processVouchers(vouchers, index + 1, updateRedeemedAmount);
     };
@@ -340,11 +411,12 @@ export class OrdersService {
     return voucherInfo;
   }
 
-  async getStats(loggedInUser: LoggedInUserInterface, query: GetOrdersStatsQuery) {
+  async getStats(
+    loggedInUser: LoggedInUserInterface,
+    query: GetOrdersStatsQuery,
+  ) {
     try {
-      const {
-        startDate, endDate,
-      } = query;
+      const { startDate, endDate } = query;
 
       const select = disSelect;
 
@@ -366,7 +438,9 @@ export class OrdersService {
         const createdEndDate = new Date(endDate);
 
         if (createdStartDate >= createdEndDate) {
-          throw new BadRequestException(`Created ${ServerErrors.DATE_IS_NOT_LESS}`);
+          throw new BadRequestException(
+            `Created ${ServerErrors.DATE_IS_NOT_LESS}`,
+          );
         }
 
         const difference = differenceInDays(createdEndDate, createdStartDate);
@@ -390,35 +464,26 @@ export class OrdersService {
         };
 
         const [newCreatedOrders, prevCreatedOrders] = await Promise.all([
-          queryhandler<Order>(
-            this.OrderModel,
-            {
-              findQuery: createdFindQuery,
-              select,
-            },
-          ),
+          queryhandler<Order>(this.OrderModel, {
+            findQuery: createdFindQuery,
+            select,
+          }),
 
-          queryhandler<Order>(
-            this.OrderModel,
-            {
-              findQuery: pastCreatedFindQuery,
-              select,
-            },
-          ),
-
+          queryhandler<Order>(this.OrderModel, {
+            findQuery: pastCreatedFindQuery,
+            select,
+          }),
         ]);
 
         const newOrdersCount = newCreatedOrders.totalData;
         const prevOrdersCount = prevCreatedOrders.totalData;
 
-        const [totalAmount,
-          totalAmountPrev,
-          amountPaidByCard,
-        ] = await Promise.all([
-          calculateTotalAmount('totalAmount', newCreatedOrders.data),
-          calculateTotalAmount('totalAmount', prevCreatedOrders.data),
-          calculateTotalAmount('creditCardPayment', newCreatedOrders.data),
-        ]);
+        const [totalAmount, totalAmountPrev, amountPaidByCard]
+          = await Promise.all([
+            calculateTotalAmount('totalAmount', newCreatedOrders.data),
+            calculateTotalAmount('totalAmount', prevCreatedOrders.data),
+            calculateTotalAmount('creditCardPayment', newCreatedOrders.data),
+          ]);
 
         const amountPaidByVouchers = totalAmount - amountPaidByCard;
 
@@ -426,27 +491,28 @@ export class OrdersService {
           newOrdersCount,
           prevOrdersCount,
           isGrowthInCount: newOrdersCount > prevOrdersCount,
-          countGrowthPercentage: calculateGrowthPercentage(prevOrdersCount, newOrdersCount),
+          countGrowthPercentage: calculateGrowthPercentage(
+            prevOrdersCount,
+            newOrdersCount,
+          ),
           totalAmount,
           totalAmountPrev,
           isGrowthInAmount: totalAmount > totalAmountPrev,
-          orderAmountGrowthPercentage: calculateGrowthPercentage(totalAmountPrev, totalAmount),
+          orderAmountGrowthPercentage: calculateGrowthPercentage(
+            totalAmountPrev,
+            totalAmount,
+          ),
           amountPaidByCard,
           amountPaidByVouchers,
         };
       }
 
-      const newOrders = await queryhandler<Order>(
-        this.OrderModel,
-        {
-          findQuery: createdFindQuery,
-          select,
-        },
-      );
+      const newOrders = await queryhandler<Order>(this.OrderModel, {
+        findQuery: createdFindQuery,
+        select,
+      });
 
-      const [totalAmount,
-        amountPaidByCard,
-      ] = await Promise.all([
+      const [totalAmount, amountPaidByCard] = await Promise.all([
         calculateTotalAmount('totalAmount', newOrders.data),
         calculateTotalAmount('creditCardPayment', newOrders.data),
       ]);

@@ -1,37 +1,36 @@
 /* eslint-disable no-shadow */
 export enum CampaignStatus {
-    ACTIVE = 'ACTIVE',
-    INACTIVE = 'INACTIVE',
+  ACTIVE = 'ACTIVE',
+  INACTIVE = 'INACTIVE',
 }
 
 export enum VoucherStatus {
-
-    ASSIGNED = 'ASSIGNED',
-    UNASSIGNED = 'UNASSIGNED',
-    WAITING = 'WAITING',
-    EXPIRED = 'EXPIRED',
-    REDEEMED = 'REDEEMED',
+  ASSIGNED = 'ASSIGNED',
+  UNASSIGNED = 'UNASSIGNED',
+  WAITING = 'WAITING',
+  EXPIRED = 'EXPIRED',
+  REDEEMED = 'REDEEMED',
 }
 
 export enum PaymentStatus {
-    SUCCESS = 'SUCCESS',
-    FAILURE = 'FAILURE',
-    PENDING = 'PENDING'
+  SUCCESS = 'SUCCESS',
+  FAILURE = 'FAILURE',
+  PENDING = 'PENDING',
 }
 
 export enum VoucherPaymentStatus {
-    PAID = 'PAID',
-    UNPAID = 'UNPAID',
-    FAILED = 'FAILED',
+  PAID = 'PAID',
+  UNPAID = 'UNPAID',
+  FAILED = 'FAILED',
 }
 
 export enum Currency {
-    ILS = 'ILS',
-    AUD = 'AUD',
-    USD = 'USD',
+  ILS = 'ILS',
+  AUD = 'AUD',
+  USD = 'USD',
 }
 
 export enum Locale {
-    ENGLISH = 'en',
-    HEBREW = 'he',
+  ENGLISH = 'en',
+  HEBREW = 'he',
 }

@@ -1,5 +1,9 @@
 /* eslint-disable prefer-const */
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
@@ -9,7 +13,10 @@ import { paginationConfig } from 'src/common/pagination.config';
 import { LocaleFilterQuery } from 'src/common/query-handler/locale-filter.query';
 import { disSelect } from 'src/common/utils/select.handling';
 import {
-  findOneByFieldName, findOneByFieldNameExcludeId, queryhandler, updateById,
+  findOneByFieldName,
+  findOneByFieldNameExcludeId,
+  queryhandler,
+  updateById,
 } from 'src/core/helper/query-helper';
 import { GroupType } from './schema/group-type.schema';
 import { createGroupTypeDto, updateGroupTypeDto } from './dto';
@@ -32,7 +39,9 @@ export class GroupTypeService {
     } = queries;
 
     const queryPage = page ? Number(page) : paginationConfig.page;
-    const queryLimit = limit ? Number(limit) : paginationConfig.MAX_ASPECT_LIMIT;
+    const queryLimit = limit
+      ? Number(limit)
+      : paginationConfig.MAX_ASPECT_LIMIT;
     const select = `${disSelect}`;
 
     let findQuery: {} = query;
@@ -49,18 +58,15 @@ export class GroupTypeService {
       select: disSelect,
     };
 
-    const groupType = await queryhandler<GroupType>(
-      this.GroupTypeModel,
-      {
-        findQuery,
-        select,
-        page: queryPage,
-        limit: queryLimit,
-        populate,
-        populate1,
-        languageQuery: locale,
-      },
-    );
+    const groupType = await queryhandler<GroupType>(this.GroupTypeModel, {
+      findQuery,
+      select,
+      page: queryPage,
+      limit: queryLimit,
+      populate,
+      populate1,
+      languageQuery: locale,
+    });
 
     return groupType;
   }
@@ -83,7 +89,10 @@ export class GroupTypeService {
   }
 
   async update(id: string, dto: updateGroupTypeDto, userId: string) {
-    const groupType = await updateById<GroupType>(this.GroupTypeModel, id, { ...dto, updatedBy: userId });
+    const groupType = await updateById<GroupType>(this.GroupTypeModel, id, {
+      ...dto,
+      updatedBy: userId,
+    });
 
     if (!groupType) {
       throw new NotFoundException(ServerErrors.GROUP_TYPE.NOT_FOUND);
@@ -91,9 +100,12 @@ export class GroupTypeService {
     return groupType;
   }
 
-  async softDelete(id:string, userId: string) {
+  async softDelete(id: string, userId: string) {
     const updateField = {
-      isDeleted: true, deleteAt: new Date(), updatedBy: userId, deletedBy: userId,
+      isDeleted: true,
+      deleteAt: new Date(),
+      updatedBy: userId,
+      deletedBy: userId,
     };
     const groupType = await updateById<GroupType>(
       this.GroupTypeModel,
@@ -108,15 +120,26 @@ export class GroupTypeService {
 
   // find  by field name
 
-  async findByFieldName(fieldName: keyof GroupType, items: string): Promise<boolean> {
-    const groupType = await findOneByFieldName<GroupType>(this.GroupTypeModel, fieldName, items);
+  async findByFieldName(
+    fieldName: keyof GroupType,
+    items: string,
+  ): Promise<boolean> {
+    const groupType = await findOneByFieldName<GroupType>(
+      this.GroupTypeModel,
+      fieldName,
+      items,
+    );
     if (groupType) {
       throw new BadRequestException(`${fieldName} already exists`);
     }
     return false;
   }
 
-  async findByFieldNameExcludeId(fieldName: keyof GroupType, items: string, id:string): Promise<boolean> {
+  async findByFieldNameExcludeId(
+    fieldName: keyof GroupType,
+    items: string,
+    id: string,
+  ): Promise<boolean> {
     const groupType = await findOneByFieldNameExcludeId<GroupType>(
       this.GroupTypeModel,
       fieldName,

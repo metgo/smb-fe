@@ -14,18 +14,28 @@ import mongoose, { Model } from 'mongoose';
 
 import { calculateTotalAmount } from 'src/common/calculate-amounts';
 import { checkExpireDate, twoYearExpireDate } from 'src/common/expireDate';
-import { EnglishTemplate, HebrewTemplate } from 'src/common/mailchimp/templateId';
+import {
+  EnglishTemplate,
+  HebrewTemplate,
+} from 'src/common/mailchimp/templateId';
 import { paginationConfig } from 'src/common/pagination.config';
 import { Voucher } from './schema/voucher.schema';
 import {
-  Currency, Locale, VoucherPaymentStatus, VoucherStatus,
+  Currency,
+  Locale,
+  VoucherPaymentStatus,
+  VoucherStatus,
 } from 'src/common/enum';
 import { ExternalApiPostQuery } from 'src/common/query-handler/externalapi-post.query';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { generateRandomCode } from 'src/common/utils/randomCode.generator';
 import { remainingAmountCalculation } from 'src/common/utils/remaining-amount-calculation';
 import {
-  findManyByFilter, queryhandler, updateById, updateManyByIds, updateManyByManyFields,
+  findManyByFilter,
+  queryhandler,
+  updateById,
+  updateManyByIds,
+  updateManyByManyFields,
 } from 'src/core/helper/query-helper';
 import { disSelect } from 'src/common/utils/select.handling';
 import { ServerErrors } from 'src/common/constant';
@@ -39,13 +49,19 @@ import { DMOService } from 'src/modules/dmo/dmo.service';
 import { UsersService } from 'src/modules/users/users.services';
 import { UserType } from 'src/modules/users/users.type';
 import {
-  createVoucherDto, UpdateVoucherBalance,
+  createVoucherDto,
+  UpdateVoucherBalance,
 } from 'src/modules/vouchers/dto';
 import {
-  AssignVoucherCommand, GetOneVoucherInterface, UpdateVoucherAfterPaymentInterface,
+  AssignVoucherCommand,
+  GetOneVoucherInterface,
+  UpdateVoucherAfterPaymentInterface,
 } from 'src/modules/vouchers/interface';
 import {
-  GetMyAssignedVouchersQuery, GetMyCreatedVouchersQuery, GetVoucherStatsQuery, GetMyVouchersExternalApiQuery,
+  GetMyAssignedVouchersQuery,
+  GetMyCreatedVouchersQuery,
+  GetVoucherStatsQuery,
+  GetMyVouchersExternalApiQuery,
 } from 'src/modules/vouchers/queries';
 
 @Injectable()
@@ -61,17 +77,17 @@ export class VoucherService {
     @Inject(forwardRef(() => UsersService))
     private readonly usersService: UsersService,
     private mailchimpService: MailChimpService,
-  ) { }
+  ) {}
 
-  async create(
-    user: LoggedInUserInterface | null,
-    dto: createVoucherDto,
-  ) {
+  async create(user: LoggedInUserInterface | null, dto: createVoucherDto) {
     try {
-      const campaignId = (await this.campaignService.findAndReturn('code', dto.campCode))._id;
-      const createdByUserId = user?.email === dto?.email
-        ? user?.id
-        : (await this.usersService.findByEmailOrNull(dto.email))?._id;
+      const campaignId = (
+        await this.campaignService.findAndReturn('code', dto.campCode)
+      )._id;
+      const createdByUserId
+        = user?.email === dto?.email
+          ? user?.id
+          : (await this.usersService.findByEmailOrNull(dto.email))?._id;
 
       let i: number = 0;
       const voucherId: any = [];
@@ -113,10 +129,13 @@ export class VoucherService {
     identifierId?: string,
   ) {
     try {
-      const campaignId = (await this.campaignService.findAndReturn('code', dto.campCode))._id;
-      const createdByUserId = user?.email === dto.email
-        ? user?.id
-        : (await this.usersService.findByEmailOrNull(dto.email))?._id;
+      const campaignId = (
+        await this.campaignService.findAndReturn('code', dto.campCode)
+      )._id;
+      const createdByUserId
+        = user?.email === dto.email
+          ? user?.id
+          : (await this.usersService.findByEmailOrNull(dto.email))?._id;
 
       let i: number = 0;
       const vouchers: any = [];
@@ -141,7 +160,7 @@ export class VoucherService {
       }
 
       // send emails?
-      const VOUCHERCODE = (voucherCodes.map(code => `\n${code}`)).toString();
+      const VOUCHERCODE = voucherCodes.map(code => `\n${code}`).toString();
       await this.mailchimpService.sendTransactionalEmail({
         to: dto.email,
         templatedId: HebrewTemplate.VoucherConfirmationNonLoggedIn,
@@ -167,13 +186,17 @@ export class VoucherService {
         select: `${disSelect}`,
       };
 
-      let findQuery:any = {
+      let findQuery: any = {
         code: code.trim(),
       };
 
       if (productId) {
         // get all the campId from campaignSegment the productId is associated to
-        const campaignIds = await this.campaignSegmentService.getCampaignAssociatedToIds(productId, 'products');
+        const campaignIds
+          = await this.campaignSegmentService.getCampaignAssociatedToIds(
+            productId,
+            'products',
+          );
 
         const campIds = Array.isArray(campaignIds)
           ? campaignIds.map(item => new mongoose.Types.ObjectId(item))
@@ -185,8 +208,7 @@ export class VoucherService {
         };
       }
 
-      const voucher = await this.VoucherModel
-        .findOne(findQuery)
+      const voucher = await this.VoucherModel.findOne(findQuery)
         .select(select)
         .populate(populate)
         .exec();
@@ -229,7 +251,10 @@ export class VoucherService {
         path: 'campId',
         select: `${disSelect}`,
       };
-      const voucher = await this.VoucherModel.findById(id).select(select).populate(populate).exec();
+      const voucher = await this.VoucherModel.findById(id)
+        .select(select)
+        .populate(populate)
+        .exec();
 
       if (!voucher) {
         throw new BadRequestException(ServerErrors.VOUCHER.NOT_FOUND);
@@ -249,9 +274,21 @@ export class VoucherService {
     }
   }
 
-  async getVouchersCreatedByMe(userId: string, queries: GetMyCreatedVouchersQuery) {
+  async getVouchersCreatedByMe(
+    userId: string,
+    queries: GetMyCreatedVouchersQuery,
+  ) {
     const {
-      page, limit, search, campId, productId, createdStartDate, createdEndDate, expiryStartDate, expiryEndDate, ...query
+      page,
+      limit,
+      search,
+      campId,
+      productId,
+      createdStartDate,
+      createdEndDate,
+      expiryStartDate,
+      expiryEndDate,
+      ...query
     } = queries;
 
     const queryPage = Number(page) || paginationConfig.page;
@@ -311,22 +348,22 @@ export class VoucherService {
       };
     }
 
-    const voucher = await queryhandler<Voucher>(
-      this.VoucherModel,
-      {
-        findQuery,
-        select,
-        page: queryPage,
-        limit: queryLimit,
-        populate,
-        populate1,
-      },
-    );
+    const voucher = await queryhandler<Voucher>(this.VoucherModel, {
+      findQuery,
+      select,
+      page: queryPage,
+      limit: queryLimit,
+      populate,
+      populate1,
+    });
 
     return voucher;
   }
 
-  async getVouchersAssignedToMe(userId: string, queries: GetMyAssignedVouchersQuery | GetMyVouchersExternalApiQuery) {
+  async getVouchersAssignedToMe(
+    userId: string,
+    queries: GetMyAssignedVouchersQuery | GetMyVouchersExternalApiQuery,
+  ) {
     const {
       page, limit, search, campId, productId, ...query
     } = queries;
@@ -348,7 +385,11 @@ export class VoucherService {
     let campIdsFromProductId;
     if (productId) {
       // get all the campId from campaignSegment the productId is associated to
-      campIdsFromProductId = await this.campaignSegmentService.getCampaignAssociatedToIds(productId, 'products');
+      campIdsFromProductId
+        = await this.campaignSegmentService.getCampaignAssociatedToIds(
+          productId,
+          'products',
+        );
 
       if (!campIdsFromProductId?.length) {
         return {
@@ -384,22 +425,21 @@ export class VoucherService {
         name: { $regex: search, $options: 'i' },
       };
     }
-    const voucher = await queryhandler<Voucher>(
-      this.VoucherModel,
-      {
-        findQuery,
-        select,
-        page: queryPage,
-        limit: queryLimit,
-        populate,
-        populate1,
-      },
-
-    );
+    const voucher = await queryhandler<Voucher>(this.VoucherModel, {
+      findQuery,
+      select,
+      page: queryPage,
+      limit: queryLimit,
+      populate,
+      populate1,
+    });
     return voucher;
   }
 
-  async getVoucherCreatedByMe(userId: string, queries: GetMyAssignedVouchersQuery | GetMyVouchersExternalApiQuery) {
+  async getVoucherCreatedByMe(
+    userId: string,
+    queries: GetMyAssignedVouchersQuery | GetMyVouchersExternalApiQuery,
+  ) {
     const {
       page, limit, search, campId, productId, ...query
     } = queries;
@@ -409,7 +449,11 @@ export class VoucherService {
 
     const select = disSelect;
 
-    let findQuery: any = { ...query, createdBy: userId, paymentStatus: VoucherPaymentStatus.PAID };
+    let findQuery: any = {
+      ...query,
+      createdBy: userId,
+      paymentStatus: VoucherPaymentStatus.PAID,
+    };
     delete findQuery?.identifierId;
 
     const populate = {
@@ -421,7 +465,11 @@ export class VoucherService {
     let campIdsFromProductId;
     if (productId) {
       // get all the campId from campaignSegment the productId is associated to
-      campIdsFromProductId = await this.campaignSegmentService.getCampaignAssociatedToIds(productId, 'products');
+      campIdsFromProductId
+        = await this.campaignSegmentService.getCampaignAssociatedToIds(
+          productId,
+          'products',
+        );
     }
 
     if (campId) {
@@ -452,18 +500,14 @@ export class VoucherService {
       };
     }
 
-    const voucher = await queryhandler<Voucher>(
-      this.VoucherModel,
-      {
-        findQuery,
-        select,
-        page: queryPage,
-        limit: queryLimit,
-        populate,
-        populate1,
-      },
-
-    );
+    const voucher = await queryhandler<Voucher>(this.VoucherModel, {
+      findQuery,
+      select,
+      page: queryPage,
+      limit: queryLimit,
+      populate,
+      populate1,
+    });
     return voucher;
   }
 
@@ -472,25 +516,25 @@ export class VoucherService {
     const select = disSelect;
 
     const [availableVoucher, assignedUser] = await Promise.all([
-      this.VoucherModel
-        .findOne({
-          code: body.code,
-          paymentStatus: VoucherPaymentStatus.PAID,
-          $and: [
-            {
-              $or: [
-                { expireDate: null },
-                { expireDate: { $gte: new Date() } },
-              ],
-            },
-            {
-              $or: [
-                { createdBy: loggedInUser.id, assignedTo: null, waitingUserEmail: null },
-                { assignedTo: loggedInUser.id },
-              ],
-            },
-          ],
-        })
+      this.VoucherModel.findOne({
+        code: body.code,
+        paymentStatus: VoucherPaymentStatus.PAID,
+        $and: [
+          {
+            $or: [{ expireDate: null }, { expireDate: { $gte: new Date() } }],
+          },
+          {
+            $or: [
+              {
+                createdBy: loggedInUser.id,
+                assignedTo: null,
+                waitingUserEmail: null,
+              },
+              { assignedTo: loggedInUser.id },
+            ],
+          },
+        ],
+      })
         .select(select)
         .exec(),
       this.usersService.findByEmailOrNull(body.email),
@@ -505,10 +549,16 @@ export class VoucherService {
       waitingUserEmail: assignedUser ? null : body.email,
       status: VoucherStatus.ASSIGNED,
       updatedBy: loggedInUser.id,
-      expireDate: availableVoucher.expireDate ? availableVoucher.expireDate : twoYearExpireDate(),
+      expireDate: availableVoucher.expireDate
+        ? availableVoucher.expireDate
+        : twoYearExpireDate(),
     };
 
-    const assignedVoucher = await updateById<Voucher>(this.VoucherModel, availableVoucher._id, updateField);
+    const assignedVoucher = await updateById<Voucher>(
+      this.VoucherModel,
+      availableVoucher._id,
+      updateField,
+    );
 
     if (!assignedVoucher) {
       throw new NotFoundException(ServerErrors.VOUCHER.CANNOT_ASSIGN);
@@ -516,9 +566,10 @@ export class VoucherService {
 
     await this.mailchimpService.sendTransactionalEmail({
       to: body.email,
-      templatedId: body?.languagePreference === Locale.HEBREW
-        ? HebrewTemplate.VoucherAssignedToYou
-        : EnglishTemplate.VoucherAssignedToYou,
+      templatedId:
+        body?.languagePreference === Locale.HEBREW
+          ? HebrewTemplate.VoucherAssignedToYou
+          : EnglishTemplate.VoucherAssignedToYou,
       mergeVars: {
         FULLNAME: `${loggedInUser.firstName} ${loggedInUser.lastName}`,
         VOUCHERCODE: body.code,
@@ -560,9 +611,10 @@ export class VoucherService {
       if (voucherDetails[0].createdBy) {
         await this.mailchimpService.sendTransactionalEmail({
           to: command.voucherOwnerEmail,
-          templatedId: command.languagePreference === Locale.HEBREW
-            ? HebrewTemplate.VoucherConfirmation
-            : EnglishTemplate.VoucherConfirmation,
+          templatedId:
+            command.languagePreference === Locale.HEBREW
+              ? HebrewTemplate.VoucherConfirmation
+              : EnglishTemplate.VoucherConfirmation,
           mergeVars: {
             FNAME: command.voucherOwnerName,
           },
@@ -570,13 +622,16 @@ export class VoucherService {
       }
 
       if (voucherDetails[0].createdByEmail) {
-        const voucherCodes = (voucherDetails.map(doc => `\n${doc.code}`)).toString();
+        const voucherCodes = voucherDetails
+          .map(doc => `\n${doc.code}`)
+          .toString();
 
         await this.mailchimpService.sendTransactionalEmail({
           to: command.voucherOwnerEmail,
-          templatedId: command.languagePreference === Locale.HEBREW
-            ? HebrewTemplate.VoucherConfirmationNonLoggedIn
-            : EnglishTemplate.VoucherConfirmationNonLoggedIn,
+          templatedId:
+            command.languagePreference === Locale.HEBREW
+              ? HebrewTemplate.VoucherConfirmationNonLoggedIn
+              : EnglishTemplate.VoucherConfirmationNonLoggedIn,
           mergeVars: {
             FNAME: command.voucherOwnerName,
             VOUCHERCODE: voucherCodes,
@@ -594,7 +649,9 @@ export class VoucherService {
       path: 'campId',
       select: `${disSelect}`,
     };
-    const voucherIds = await this.VoucherModel.find({ _id: { $in: ids } }).populate(populate).exec();
+    const voucherIds = await this.VoucherModel.find({ _id: { $in: ids } })
+      .populate(populate)
+      .exec();
 
     return voucherIds;
   }
@@ -611,10 +668,7 @@ export class VoucherService {
           { paymentStatus: VoucherPaymentStatus.PAID },
           { remainingAmount: { $gt: 0 } },
           {
-            $or: [
-              { expireDate: null },
-              { expireDate: { $gte: new Date() } },
-            ],
+            $or: [{ expireDate: null }, { expireDate: { $gte: new Date() } }],
           },
         ],
       })
@@ -627,7 +681,11 @@ export class VoucherService {
     }
   }
 
-  async updateVoucherAmount(loggedInUserId: string | null, voucherId: string, totalAmount: number) {
+  async updateVoucherAmount(
+    loggedInUserId: string | null,
+    voucherId: string,
+    totalAmount: number,
+  ) {
     const voucher = await this.getOneById(voucherId);
 
     if (voucher.paymentStatus !== VoucherPaymentStatus.PAID) {
@@ -642,14 +700,22 @@ export class VoucherService {
       }
     }
 
-    const remainingAmount = remainingAmountCalculation(voucher.remainingAmount, totalAmount);
-    const amountToBeRedeemed = remainingAmountCalculation(totalAmount, voucher.remainingAmount);
+    const remainingAmount = remainingAmountCalculation(
+      voucher.remainingAmount,
+      totalAmount,
+    );
+    const amountToBeRedeemed = remainingAmountCalculation(
+      totalAmount,
+      voucher.remainingAmount,
+    );
 
     const updatedField = {
       updatedBy: loggedInUserId,
       updatedAt: new Date(),
       remainingAmount,
-      expireDate: voucher?.expireDate ? voucher?.expireDate : twoYearExpireDate(),
+      expireDate: voucher?.expireDate
+        ? voucher?.expireDate
+        : twoYearExpireDate(),
     };
 
     const updatedVoucher = await this.VoucherModel.findOneAndUpdate(
@@ -673,10 +739,13 @@ export class VoucherService {
     query: ExternalApiPostQuery,
     user: LoggedInUserInterface | null,
   ) {
-    const campId = (await this.campaignService.findAndReturn('code', dto.campCode))._id;
-    const createdByUserId = user?.email === dto?.email
-      ? user?.id
-      : (await this.usersService.findByEmailOrNull(dto.email))?._id;
+    const campId = (
+      await this.campaignService.findAndReturn('code', dto.campCode)
+    )._id;
+    const createdByUserId
+      = user?.email === dto?.email
+        ? user?.id
+        : (await this.usersService.findByEmailOrNull(dto.email))?._id;
 
     let i: number = 0;
     const voucherId: any = [];
@@ -722,11 +791,19 @@ export class VoucherService {
     }
 
     if (body.amount > voucher.remainingAmount) {
-      throw new UnprocessableEntityException(ServerErrors.VOUCHER.CANNOT_UPDATE_BALANCE);
+      throw new UnprocessableEntityException(
+        ServerErrors.VOUCHER.CANNOT_UPDATE_BALANCE,
+      );
     }
 
-    const remainingAmount = remainingAmountCalculation(voucher.remainingAmount, body.amount);
-    const amountToBeRedeemed = remainingAmountCalculation(body.amount, voucher.remainingAmount);
+    const remainingAmount = remainingAmountCalculation(
+      voucher.remainingAmount,
+      body.amount,
+    );
+    const amountToBeRedeemed = remainingAmountCalculation(
+      body.amount,
+      voucher.remainingAmount,
+    );
 
     await this.VoucherModel.findOneAndUpdate(
       { _id: body.voucherId },
@@ -757,7 +834,11 @@ export class VoucherService {
       updatedAt: new Date(),
     };
 
-    await updateManyByManyFields<Voucher>(this.VoucherModel, filterQuery, updateField);
+    await updateManyByManyFields<Voucher>(
+      this.VoucherModel,
+      filterQuery,
+      updateField,
+    );
   }
 
   async updateVoucherAssignedDetails(email: string, userId: string) {
@@ -772,24 +853,42 @@ export class VoucherService {
       updatedAt: new Date(),
     };
 
-    await updateManyByManyFields<Voucher>(this.VoucherModel, filterQuery, updateField);
+    await updateManyByManyFields<Voucher>(
+      this.VoucherModel,
+      filterQuery,
+      updateField,
+    );
   }
 
-  async getStats(loggedInUser: LoggedInUserInterface, query: GetVoucherStatsQuery) {
+  async getStats(
+    loggedInUser: LoggedInUserInterface,
+    query: GetVoucherStatsQuery,
+  ) {
     const {
-      createdStartDate, createdEndDate, expiryStartDate, expiryEndDate, ...queries
+      createdStartDate,
+      createdEndDate,
+      expiryStartDate,
+      expiryEndDate,
+      ...queries
     } = query;
 
     const select = disSelect;
 
-    let findQuery: any = { ...queries, paymentStatus: VoucherPaymentStatus.PAID };
+    let findQuery: any = {
+      ...queries,
+      paymentStatus: VoucherPaymentStatus.PAID,
+    };
 
     if (loggedInUser.role === UserType.DMOADMIN) {
       // find dmo
       const dmoId = await this.dmoService.findDMOByUserID(loggedInUser.id);
 
       // get all the campId from campaignSegment the dmoId is associated to
-      const campaignIds = await this.campaignSegmentService.getCampaignAssociatedToIds(dmoId.toString(), 'DMOs');
+      const campaignIds
+        = await this.campaignSegmentService.getCampaignAssociatedToIds(
+          dmoId.toString(),
+          'DMOs',
+        );
 
       const campIds = Array.isArray(campaignIds)
         ? campaignIds.map(item => new mongoose.Types.ObjectId(item))
@@ -813,7 +912,9 @@ export class VoucherService {
       const endDate = new Date(createdEndDate);
 
       if (startDate >= endDate) {
-        throw new BadRequestException(`Created ${ServerErrors.DATE_IS_NOT_LESS}`);
+        throw new BadRequestException(
+          `Created ${ServerErrors.DATE_IS_NOT_LESS}`,
+        );
       }
 
       findQuery = {
@@ -830,7 +931,9 @@ export class VoucherService {
       const endDate = new Date(expiryEndDate);
 
       if (startDate >= endDate) {
-        throw new BadRequestException(`Expiry ${ServerErrors.DATE_IS_NOT_LESS}`);
+        throw new BadRequestException(
+          `Expiry ${ServerErrors.DATE_IS_NOT_LESS}`,
+        );
       }
 
       findQuery = {
@@ -847,17 +950,20 @@ export class VoucherService {
       select: `${disSelect}`,
     };
 
-    const voucher = await queryhandler<Voucher>(
-      this.VoucherModel,
-      {
-        findQuery,
-        select,
-        populate,
-      },
-    );
+    const voucher = await queryhandler<Voucher>(this.VoucherModel, {
+      findQuery,
+      select,
+      populate,
+    });
 
-    const totalAmountToRedeem = await calculateTotalAmount('remainingAmount', voucher.data);
-    const totalValueOfVoucher = await calculateTotalAmount('amount', voucher.data);
+    const totalAmountToRedeem = await calculateTotalAmount(
+      'remainingAmount',
+      voucher.data,
+    );
+    const totalValueOfVoucher = await calculateTotalAmount(
+      'amount',
+      voucher.data,
+    );
 
     return {
       totalNumberOfVoucher: voucher.totalData,

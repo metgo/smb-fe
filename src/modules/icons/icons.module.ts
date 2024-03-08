@@ -9,9 +9,7 @@ import { UsersModule } from 'src/modules/users/users.module';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([
-      { name: 'Icons', schema: IconsSchema },
-    ]),
+    MongooseModule.forFeature([{ name: 'Icons', schema: IconsSchema }]),
     GcpBucketModule,
     UsersModule,
   ],

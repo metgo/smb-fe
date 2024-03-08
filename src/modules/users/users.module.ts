@@ -14,7 +14,10 @@ import { MailChimpModule } from 'src/services/mailchimp/mailchimp.module';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }, { name: OTP.name, schema: OTPSchema }]),
+    MongooseModule.forFeature([
+      { name: User.name, schema: UserSchema },
+      { name: OTP.name, schema: OTPSchema },
+    ]),
     ConfigModule,
     MailModule,
     HashModule,

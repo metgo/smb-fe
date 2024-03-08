@@ -1,12 +1,21 @@
 import {
-  BadRequestException, ConflictException, Inject, Injectable, InternalServerErrorException, NotFoundException, forwardRef,
+  BadRequestException,
+  ConflictException,
+  Inject,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+  forwardRef,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
 import { nanoid } from 'nanoid';
 
 import { Locale } from 'src/common/enum';
-import { EnglishTemplate, HebrewTemplate } from 'src/common/mailchimp/templateId';
+import {
+  EnglishTemplate,
+  HebrewTemplate,
+} from 'src/common/mailchimp/templateId';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { RegisterRequest } from 'src/modules/auth/requests/register.request';
 import { UpdateUserRequest } from 'src/modules/users/requests/update-user.request';
@@ -15,11 +24,20 @@ import { User } from 'src/modules/users/schema/users.schema';
 import { VoucherService } from 'src/modules/vouchers/voucher.service';
 import { createUserByAdminDto } from './requests/create-user-ByAdmin.dto';
 import {
-  findOneByFieldName, findOneByFieldNameExcludeId, findOneByFieldNameIncludingDeleted, findOneById, update, updateById,
+  findOneByFieldName,
+  findOneByFieldNameExcludeId,
+  findOneByFieldNameIncludingDeleted,
+  findOneById,
+  update,
+  updateById,
 } from 'src/core/helper/query-helper';
 import { ServerErrors, ServerSuccess } from 'src/common/constant';
 import { ConfigService } from 'src/services/config/config.service';
-import { OTPPurpose, UpdateLastLogin, UserType } from 'src/modules/users/users.type';
+import {
+  OTPPurpose,
+  UpdateLastLogin,
+  UserType,
+} from 'src/modules/users/users.type';
 import { HashService } from 'src/services/hash/hash.service';
 import { ChangePasswordDto } from '../auth/requests/change-password.dto';
 import { OTP } from './schema/otp.schema';
@@ -62,7 +80,9 @@ export class UsersService {
     };
 
     // Check if superadmin already exists
-    const existingSuperadmin = await this.UserModel.findOne({ email: superadmin.email }).exec();
+    const existingSuperadmin = await this.UserModel.findOne({
+      email: superadmin.email,
+    }).exec();
 
     if (!existingSuperadmin) {
       await this.UserModel.create(superadmin);
@@ -100,22 +120,39 @@ export class UsersService {
       };
     } catch (error) {
       exceptionHandling(error);
-      throw new InternalServerErrorException('Couldn\'t find user');
+      throw new InternalServerErrorException("Couldn't find user");
     }
   }
 
-  async create(registerDto: RegisterRequest | ExternalApiRegisterRequest): Promise<GetUserDetailsResponse> {
+  async create(
+    registerDto: RegisterRequest | ExternalApiRegisterRequest,
+  ): Promise<GetUserDetailsResponse> {
     try {
       await this.validateUserIfNeedToRecover(registerDto.email);
 
-      const hashedPassword = await this.hashService.create(registerDto.password);
+      const hashedPassword = await this.hashService.create(
+        registerDto.password,
+      );
 
-      const newUser = await (new this.UserModel({ ...registerDto, password: hashedPassword })).save();
+      const newUser = await new this.UserModel({
+        ...registerDto,
+        password: hashedPassword,
+      }).save();
 
       await Promise.all([
-        this.voucherService.updateVoucherCreatedDetails(registerDto.email, newUser.id),
-        this.voucherService.updateVoucherAssignedDetails(registerDto.email, newUser.id),
-        this.mailchimpService.subscribe(newUser.firstName, newUser.lastName, newUser.email),
+        this.voucherService.updateVoucherCreatedDetails(
+          registerDto.email,
+          newUser.id,
+        ),
+        this.voucherService.updateVoucherAssignedDetails(
+          registerDto.email,
+          newUser.id,
+        ),
+        this.mailchimpService.subscribe(
+          newUser.firstName,
+          newUser.lastName,
+          newUser.email,
+        ),
         this.mailchimpService.sendTransactionalEmail({
           to: newUser.email,
           templatedId: EnglishTemplate.UserRegistrationBySelf,
@@ -172,9 +209,10 @@ export class UsersService {
 
     await this.mailchimpService.sendTransactionalEmail({
       to: user.email,
-      templatedId: user.languagePreference === Locale.HEBREW
-        ? HebrewTemplate.ForgotPassword
-        : EnglishTemplate.ForgotPassword,
+      templatedId:
+        user.languagePreference === Locale.HEBREW
+          ? HebrewTemplate.ForgotPassword
+          : EnglishTemplate.ForgotPassword,
       mergeVars: {
         FNAME: user.firstName,
         OTP: code,
@@ -185,17 +223,17 @@ export class UsersService {
       const password = nanoid(10);
       const hashedPassword = await this.hashService.create(password);
 
-      await updateById<User>(
-        this.UserModel,
-        user._id,
-        { password: hashedPassword, updatedAt: new Date() },
-      );
+      await updateById<User>(this.UserModel, user._id, {
+        password: hashedPassword,
+        updatedAt: new Date(),
+      });
 
       await this.mailchimpService.sendTransactionalEmail({
         to: user.email,
-        templatedId: user.languagePreference === Locale.HEBREW
-          ? HebrewTemplate.PasswordChangeConfirmation
-          : EnglishTemplate.PasswordChangeConfirmation,
+        templatedId:
+          user.languagePreference === Locale.HEBREW
+            ? HebrewTemplate.PasswordChangeConfirmation
+            : EnglishTemplate.PasswordChangeConfirmation,
         mergeVars: {
           FNAME: user.firstName,
           NEWPASSWORD: `New Password: ${password}`,
@@ -214,7 +252,10 @@ export class UsersService {
     if (otp.code === dto.code) {
       if (checkExpireDate(otp.expireDate)) {
         if (!otp.isVerify) {
-          await updateById<OTP>(this.OtpModel, otp._id, { isVerify: true, updatedAt: new Date() });
+          await updateById<OTP>(this.OtpModel, otp._id, {
+            isVerify: true,
+            updatedAt: new Date(),
+          });
           return {
             response: ServerSuccess.OTP.VERIFY,
             purpose: decode.purpose,
@@ -237,11 +278,10 @@ export class UsersService {
     }
     const hashedPassword = await this.hashService.create(dto.password);
 
-    const updateUser = await updateById<User>(
-      this.UserModel,
-      otp.userId,
-      { password: hashedPassword, updatedAt: new Date() },
-    );
+    const updateUser = await updateById<User>(this.UserModel, otp.userId, {
+      password: hashedPassword,
+      updatedAt: new Date(),
+    });
 
     if (!updateUser) {
       throw new BadRequestException(ServerErrors.USER.NOT_FOUND);
@@ -286,7 +326,7 @@ export class UsersService {
       };
     } catch (error) {
       exceptionHandling(error);
-      throw new InternalServerErrorException('Couldn\'t update user');
+      throw new InternalServerErrorException("Couldn't update user");
     }
   }
 
@@ -322,23 +362,29 @@ export class UsersService {
       };
     } catch (error) {
       exceptionHandling(error);
-      throw new InternalServerErrorException('Couldn\'t update user');
+      throw new InternalServerErrorException("Couldn't update user");
     }
   }
 
   async changePassword(user: string, dto: ChangePasswordDto): Promise<User> {
     const hashedPassword = await this.hashService.create(dto.password);
 
-    const userWithChangedPwd = await update<User>(this.UserModel, 'email', user, { password: hashedPassword });
+    const userWithChangedPwd = await update<User>(
+      this.UserModel,
+      'email',
+      user,
+      { password: hashedPassword },
+    );
     if (!userWithChangedPwd) {
       throw new NotFoundException(ServerErrors.USER.NOT_FOUND);
     }
 
     await this.mailchimpService.sendTransactionalEmail({
       to: userWithChangedPwd.email,
-      templatedId: userWithChangedPwd.languagePreference === Locale.HEBREW
-        ? HebrewTemplate.PasswordChangeConfirmation
-        : EnglishTemplate.PasswordChangeConfirmation,
+      templatedId:
+        userWithChangedPwd.languagePreference === Locale.HEBREW
+          ? HebrewTemplate.PasswordChangeConfirmation
+          : EnglishTemplate.PasswordChangeConfirmation,
       mergeVars: {
         FNAME: userWithChangedPwd.firstName,
       },
@@ -414,16 +460,15 @@ export class UsersService {
     }
   }
 
-  async softDeleteAllowRecovery(userId: string, loggedInUserId: string): Promise<GetUserDetailsResponse> {
+  async softDeleteAllowRecovery(
+    userId: string,
+    loggedInUserId: string,
+  ): Promise<GetUserDetailsResponse> {
     try {
-      const deletedUser = await updateById<User>(
-        this.UserModel,
-        userId,
-        {
-          deletedAt: new Date(),
-          deletedBy: loggedInUserId,
-        },
-      );
+      const deletedUser = await updateById<User>(this.UserModel, userId, {
+        deletedAt: new Date(),
+        deletedBy: loggedInUserId,
+      });
 
       if (!deletedUser) {
         throw new NotFoundException(ServerErrors.USER.NOT_FOUND);
@@ -450,7 +495,7 @@ export class UsersService {
       };
     } catch (error) {
       exceptionHandling(error);
-      throw new InternalServerErrorException('Couldn\'t delete user');
+      throw new InternalServerErrorException("Couldn't delete user");
     }
   }
 
@@ -469,7 +514,9 @@ export class UsersService {
       return user;
     } catch (error) {
       exceptionHandling(error);
-      throw new InternalServerErrorException('Couldn\'t find user with given email');
+      throw new InternalServerErrorException(
+        "Couldn't find user with given email",
+      );
     }
   }
 
@@ -488,16 +535,14 @@ export class UsersService {
       return user;
     } catch (error) {
       exceptionHandling(error);
-      throw new InternalServerErrorException('Couldn\'t find user with given email');
+      throw new InternalServerErrorException(
+        "Couldn't find user with given email",
+      );
     }
   }
 
   async findByEmailOrNull(email: string): Promise<User | null> {
-    const user = await findOneByFieldName<User>(
-      this.UserModel,
-      'email',
-      email,
-    );
+    const user = await findOneByFieldName<User>(this.UserModel, 'email', email);
 
     if (!user) {
       return null;
@@ -509,7 +554,11 @@ export class UsersService {
   // admin create users
 
   async adminCreateUser(dto: createUserByAdminDto) {
-    const user = await findOneByFieldName<User>(this.UserModel, 'email', dto.email);
+    const user = await findOneByFieldName<User>(
+      this.UserModel,
+      'email',
+      dto.email,
+    );
     if (user) {
       throw new BadRequestException(ServerErrors.USER.EXISTS);
     }
@@ -533,7 +582,11 @@ export class UsersService {
     return true;
   }
 
-  async findByFieldNameExcludeId(fieldName: keyof User, items: string, id:string): Promise<boolean> {
+  async findByFieldNameExcludeId(
+    fieldName: keyof User,
+    items: string,
+    id: string,
+  ): Promise<boolean> {
     try {
       const user = await findOneByFieldNameExcludeId<User>(
         this.UserModel,
@@ -542,20 +595,26 @@ export class UsersService {
         id,
       );
       if (user) {
-        throw new BadRequestException(`${fieldName.toUpperCase()} already exists`);
+        throw new BadRequestException(
+          `${fieldName.toUpperCase()} already exists`,
+        );
       }
       return false;
     } catch (error) {
       if (error instanceof mongoose.Error.CastError) {
         if (error?.name === 'CastError' && error?.kind === 'ObjectId') {
-          throw new BadRequestException(`${error?.model?.modelName} ${ServerErrors.INVALID_ID}`);
+          throw new BadRequestException(
+            `${error?.model?.modelName} ${ServerErrors.INVALID_ID}`,
+          );
         }
-        throw new InternalServerErrorException('Couldn\'t update user');
+        throw new InternalServerErrorException("Couldn't update user");
       }
     }
   }
 
-  async createByExternalApi(registerDto: RegisterRequest): Promise<GetUserDetailsResponse> {
+  async createByExternalApi(
+    registerDto: RegisterRequest,
+  ): Promise<GetUserDetailsResponse> {
     try {
       const user = await findOneByFieldName<User>(
         this.UserModel,
@@ -567,12 +626,21 @@ export class UsersService {
         return;
       }
 
-      const hashedPassword = await this.hashService.create(registerDto.password);
+      const hashedPassword = await this.hashService.create(
+        registerDto.password,
+      );
 
-      const newUser = await (new this.UserModel({ ...registerDto, password: hashedPassword })).save();
+      const newUser = await new this.UserModel({
+        ...registerDto,
+        password: hashedPassword,
+      }).save();
 
       await Promise.all([
-        this.mailchimpService.subscribe(newUser.firstName, newUser.lastName, newUser.email),
+        this.mailchimpService.subscribe(
+          newUser.firstName,
+          newUser.lastName,
+          newUser.email,
+        ),
         this.mailchimpService.sendTransactionalEmail({
           to: newUser.email,
           templatedId: EnglishTemplate.UserRegistrationByAdmin,
@@ -606,7 +674,7 @@ export class UsersService {
       };
     } catch (error) {
       exceptionHandling(error);
-      throw new InternalServerErrorException('Couldn\'t save user');
+      throw new InternalServerErrorException("Couldn't save user");
     }
   }
 

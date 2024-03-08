@@ -1,5 +1,18 @@
 import {
-  Body, Controller, Get, HttpCode, HttpStatus, Inject, Param, Patch, Post, Query, Req, Res, UseGuards, forwardRef,
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Inject,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Req,
+  Res,
+  UseGuards,
+  forwardRef,
 } from '@nestjs/common';
 import { Response } from 'express';
 
@@ -33,7 +46,10 @@ export class OrdersController {
 
   @ApiEndpoint({
     tags: ['Products', 'Orders'],
-    response: { status: HttpStatus.CREATED, description: ServerSuccess.ORDERS.CREATED },
+    response: {
+      status: HttpStatus.CREATED,
+      description: ServerSuccess.ORDERS.CREATED,
+    },
     softBlockExtraDtoFields: true,
     operation: 'Create order detail',
   })
@@ -49,7 +65,10 @@ export class OrdersController {
       const productIds = body.products.map(product => product.id);
       const productsFromDB = await this.productService.findManyById(productIds);
 
-      let totalAmountToPay:number = await calculateTotalAmount(body.products, productsFromDB);
+      let totalAmountToPay: number = await calculateTotalAmount(
+        body.products,
+        productsFromDB,
+      );
       const actualAmountOfProduct = totalAmountToPay;
 
       let redeemedVouchers;
@@ -58,7 +77,10 @@ export class OrdersController {
         const vouchers = await this.voucherService.findByValidIds(voucherIds);
 
         if (vouchers?.length) {
-          const sortedVoucher = sortByPriorityAndHighest(totalAmountToPay, vouchers);
+          const sortedVoucher = sortByPriorityAndHighest(
+            totalAmountToPay,
+            vouchers,
+          );
 
           if (sortedVoucher?.length) {
             redeemedVouchers = await this.ordersService.processVouchers(
@@ -68,7 +90,10 @@ export class OrdersController {
             );
 
             if (redeemedVouchers?.length) {
-              const redeemedAmount = redeemedVouchers.reduce((total, item) => total + item.redeemedAmount, 0);
+              const redeemedAmount = redeemedVouchers.reduce(
+                (total, item) => total + item.redeemedAmount,
+                0,
+              );
               totalAmountToPay -= redeemedAmount;
             }
           }
@@ -98,13 +123,18 @@ export class OrdersController {
 
   @ApiEndpoint({
     tags: ['Products', 'Orders'],
-    response: { status: HttpStatus.OK, description: ServerSuccess.ORDERS.LISTED },
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.ORDERS.LISTED,
+    },
     operation: 'Get detail of a order',
-    params: [{
-      name: 'orderId',
-      type: 'string',
-      required: true,
-    }],
+    params: [
+      {
+        name: 'orderId',
+        type: 'string',
+        required: true,
+      },
+    ],
     noAuthToken: true,
   })
   @UseGuards(JwtAuthGuard)
@@ -128,7 +158,10 @@ export class OrdersController {
 
   @ApiEndpoint({
     tags: ['Products', 'Orders'],
-    response: { status: HttpStatus.OK, description: ServerSuccess.ORDERS.LISTED },
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.ORDERS.LISTED,
+    },
     operation: 'Get my orders',
     softBlockExtraDtoFields: true,
     noAuthToken: true,
@@ -158,7 +191,10 @@ export class OrdersController {
 
   @ApiEndpoint({
     tags: ['Products', 'Orders'],
-    response: { status: HttpStatus.OK, description: ServerSuccess.ORDERS.LISTED },
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.ORDERS.LISTED,
+    },
     operation: 'Get all orders',
     softBlockExtraDtoFields: true,
     noAuthToken: true,
@@ -167,10 +203,7 @@ export class OrdersController {
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
   @Get('all-orders')
-  async getAllOrders(
-    @Query() query: FilterQuery,
-    @Res() response: Response,
-  ) {
+  async getAllOrders(@Query() query: FilterQuery, @Res() response: Response) {
     const orders = await this.ordersService.findAll({
       query,
     });
@@ -186,15 +219,20 @@ export class OrdersController {
 
   @ApiEndpoint({
     tags: ['Products', 'Orders'],
-    response: { status: HttpStatus.OK, description: ServerSuccess.ORDERS.UPDATED },
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.ORDERS.UPDATED,
+    },
     softBlockExtraDtoFields: true,
     noAuthToken: true,
     operation: 'Update order status',
-    params: [{
-      name: 'orderId',
-      required: true,
-      type: 'string',
-    }],
+    params: [
+      {
+        name: 'orderId',
+        required: true,
+        type: 'string',
+      },
+    ],
   })
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
@@ -205,11 +243,7 @@ export class OrdersController {
     @Req() req,
     @Res() response: Response,
   ) {
-    const order = await this.ordersService.updateOrder(
-      req.user,
-      orderId,
-      body,
-    );
+    const order = await this.ordersService.updateOrder(req.user, orderId, body);
     return responseHelper(
       response,
       HttpStatus.OK,
@@ -239,7 +273,10 @@ export class OrdersController {
       const productIds = body.products.map(product => product.id);
       const productsFromDB = await this.productService.findManyById(productIds);
 
-      let totalAmountToPay:number = await calculateTotalAmount(body.products, productsFromDB);
+      let totalAmountToPay: number = await calculateTotalAmount(
+        body.products,
+        productsFromDB,
+      );
       const actualAmountOfProduct = totalAmountToPay;
 
       let redeemedVouchers;
@@ -248,7 +285,10 @@ export class OrdersController {
         const vouchers = await this.voucherService.findByValidIds(voucherIds);
 
         if (vouchers?.length) {
-          const sortedVoucher = sortByPriorityAndHighest(totalAmountToPay, vouchers);
+          const sortedVoucher = sortByPriorityAndHighest(
+            totalAmountToPay,
+            vouchers,
+          );
 
           if (sortedVoucher?.length) {
             redeemedVouchers = await this.ordersService.processVouchers(
@@ -258,7 +298,10 @@ export class OrdersController {
             );
 
             if (redeemedVouchers?.length) {
-              const redeemedAmount = redeemedVouchers.reduce((total: number, item) => total + item.redeemedAmount, 0);
+              const redeemedAmount = redeemedVouchers.reduce(
+                (total: number, item) => total + item.redeemedAmount,
+                0,
+              );
               totalAmountToPay -= redeemedAmount;
             }
           }
@@ -289,7 +332,10 @@ export class OrdersController {
 
   @ApiEndpoint({
     tags: ['Orders'],
-    response: { status: HttpStatus.OK, description: ServerSuccess.ORDERS.LISTED },
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.ORDERS.LISTED,
+    },
     noAuthToken: true,
   })
   @Roles(UserType.SUPERADMIN, UserType.TRAVELLER)

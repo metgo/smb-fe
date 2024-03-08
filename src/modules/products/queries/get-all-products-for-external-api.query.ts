@@ -1,7 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsEnum, IsOptional,
-} from 'class-validator';
+import { IsEnum, IsOptional } from 'class-validator';
 
 import { ExternalApiWithCampCodeFilterQuery } from 'src/common/query-handler/external-api-campcode.query';
 import { ProductStatus } from 'src/modules/products/products.type';

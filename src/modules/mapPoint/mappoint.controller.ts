@@ -1,5 +1,15 @@
 import {
-  Body, Controller, Delete, Get, HttpStatus, Param, Post, Put, Query, Res, UseGuards,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpStatus,
+  Param,
+  Post,
+  Put,
+  Query,
+  Res,
+  UseGuards,
 } from '@nestjs/common';
 import { Response } from 'express';
 
@@ -7,16 +17,12 @@ import { ServerSuccess } from 'src/common/constant';
 import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
 import { responseHelper } from 'src/core/helper/response.helper';
 import { JwtAuthGuard } from 'src/core/guards/jwt/jwt.guards';
-import {
-  FilterQuery,
-  createMapPointDto,
-  updateMapPointDto,
-} from './dto';
+import { FilterQuery, createMapPointDto, updateMapPointDto } from './dto';
 import { MapPointServices } from './mappoint.services';
 
 @Controller()
 export class MapPointController {
-  constructor(private readonly mapPointService: MapPointServices) { }
+  constructor(private readonly mapPointService: MapPointServices) {}
 
   @ApiEndpoint({
     tags: ['Admin', 'Map Point'],
@@ -26,7 +32,10 @@ export class MapPointController {
   })
   @UseGuards(JwtAuthGuard)
   @Post('admin/mp')
-  async createMapPoint(@Res() response: Response, @Body() dto: createMapPointDto) {
+  async createMapPoint(
+    @Res() response: Response,
+    @Body() dto: createMapPointDto,
+  ) {
     await this.mapPointService.findByName(dto.name);
     const newMapPoint = await this.mapPointService.createMapPoint(dto);
     return responseHelper(
@@ -45,11 +54,18 @@ export class MapPointController {
   })
   @Get('admin/mp')
   async getAllMapPoint(
-    @Res() response:Response,
+    @Res() response: Response,
     @Query() query?: FilterQuery,
   ) {
     const mapPoint = await this.mapPointService.getAllMapPoint(query);
-    return responseHelper(response, HttpStatus.OK, ServerSuccess.MAP_POINT_LISTED, mapPoint, null, null);
+    return responseHelper(
+      response,
+      HttpStatus.OK,
+      ServerSuccess.MAP_POINT_LISTED,
+      mapPoint,
+      null,
+      null,
+    );
   }
 
   @ApiEndpoint({
@@ -65,8 +81,15 @@ export class MapPointController {
     @Param('id') mapPointId: string,
     @Body() dto: updateMapPointDto,
   ) {
-    await this.mapPointService.findByFieldNameExcludeId('name', dto.name, mapPointId);
-    const newMapPoint = await this.mapPointService.updateMapPoint(mapPointId, dto);
+    await this.mapPointService.findByFieldNameExcludeId(
+      'name',
+      dto.name,
+      mapPointId,
+    );
+    const newMapPoint = await this.mapPointService.updateMapPoint(
+      mapPointId,
+      dto,
+    );
     return responseHelper(
       response,
       HttpStatus.OK,
@@ -89,7 +112,9 @@ export class MapPointController {
     @Res() response: Response,
     @Param('id') mapPointId: string,
   ) {
-    const newMapPoint = await this.mapPointService.softDeleteMapPoint(mapPointId);
+    const newMapPoint = await this.mapPointService.softDeleteMapPoint(
+      mapPointId,
+    );
     return responseHelper(
       response,
       HttpStatus.OK,

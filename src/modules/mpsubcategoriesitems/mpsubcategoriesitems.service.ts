@@ -1,25 +1,43 @@
 /* eslint-disable prefer-const */
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { MPSubCategoriesItems } from './schema/subcategoriesitems.schema';
 import {
-  findOneByFieldName, findOneByFieldNameExcludeId, queryhandler, updateById,
+  findOneByFieldName,
+  findOneByFieldNameExcludeId,
+  queryhandler,
+  updateById,
 } from 'src/core/helper/query-helper';
-import { createMPSubCategoriesItemsDto, FilterQuery, updateMPSubCategoriesItemsDto } from './dto';
+import {
+  createMPSubCategoriesItemsDto,
+  FilterQuery,
+  updateMPSubCategoriesItemsDto,
+} from './dto';
 import { ServerErrors } from 'src/common/constant';
 import { disSelect } from 'src/common/utils/select.handling';
 
 @Injectable()
 export class MPSubCategoriesItemsService {
-  constructor(@InjectModel('MPSubCategoriesItems') private MPSubCategoriesItemsModel: Model<MPSubCategoriesItems>) { }
+  constructor(
+    @InjectModel('MPSubCategoriesItems')
+    private MPSubCategoriesItemsModel: Model<MPSubCategoriesItems>,
+  ) {}
 
-  async createMPSubCategoriesItems(dto: createMPSubCategoriesItemsDto): Promise<MPSubCategoriesItems> {
+  async createMPSubCategoriesItems(
+    dto: createMPSubCategoriesItemsDto,
+  ): Promise<MPSubCategoriesItems> {
     const newMapPoint = new this.MPSubCategoriesItemsModel(dto);
     return newMapPoint.save();
   }
 
-  async getAllMPSubCategoriesItems(query: FilterQuery): Promise<MPSubCategoriesItems & any> {
+  async getAllMPSubCategoriesItems(
+    query: FilterQuery,
+  ): Promise<MPSubCategoriesItems & any> {
     let findQuery: {};
     let select: {};
     let page: number;
@@ -71,20 +89,26 @@ export class MPSubCategoriesItemsService {
     return mapPoint;
   }
 
-  async updateMPSubCategoriesItems(id: string, dto: updateMPSubCategoriesItemsDto)
-    : Promise<MPSubCategoriesItems> {
+  async updateMPSubCategoriesItems(
+    id: string,
+    dto: updateMPSubCategoriesItemsDto,
+  ): Promise<MPSubCategoriesItems> {
     const mpSubCategoriesItems = await updateById<MPSubCategoriesItems>(
       this.MPSubCategoriesItemsModel,
       id,
       dto,
     );
     if (!mpSubCategoriesItems) {
-      throw new NotFoundException(ServerErrors.MAP_POINT_SUB_CATEGORIES_ITEMS_NOT_FOUND);
+      throw new NotFoundException(
+        ServerErrors.MAP_POINT_SUB_CATEGORIES_ITEMS_NOT_FOUND,
+      );
     }
     return mpSubCategoriesItems;
   }
 
-  async softDeleteMPSubCategoriesItems(id: string): Promise<MPSubCategoriesItems> {
+  async softDeleteMPSubCategoriesItems(
+    id: string,
+  ): Promise<MPSubCategoriesItems> {
     const updateField = { isDeleted: true, deleteAt: new Date() };
     const mpSubCategoriesItems = await updateById<MPSubCategoriesItems>(
       this.MPSubCategoriesItemsModel,
@@ -92,12 +116,17 @@ export class MPSubCategoriesItemsService {
       updateField,
     );
     if (!mpSubCategoriesItems) {
-      throw new NotFoundException(ServerErrors.MAP_POINT_SUB_CATEGORIES_ITEMS_NOT_FOUND);
+      throw new NotFoundException(
+        ServerErrors.MAP_POINT_SUB_CATEGORIES_ITEMS_NOT_FOUND,
+      );
     }
     return mpSubCategoriesItems;
   }
 
-  async findByFieldName(fieldName: keyof MPSubCategoriesItems, items: string): Promise<boolean> {
+  async findByFieldName(
+    fieldName: keyof MPSubCategoriesItems,
+    items: string,
+  ): Promise<boolean> {
     const mpSubCategoriesItems = await findOneByFieldName<MPSubCategoriesItems>(
       this.MPSubCategoriesItemsModel,
       fieldName,
@@ -109,13 +138,18 @@ export class MPSubCategoriesItemsService {
     return false;
   }
 
-  async findByFieldNameExcludeId(fieldName: keyof MPSubCategoriesItems, items: string, id:string): Promise<boolean> {
-    const mpSubCategoriesItems = await findOneByFieldNameExcludeId<MPSubCategoriesItems>(
-      this.MPSubCategoriesItemsModel,
-      fieldName,
-      items,
-      id,
-    );
+  async findByFieldNameExcludeId(
+    fieldName: keyof MPSubCategoriesItems,
+    items: string,
+    id: string,
+  ): Promise<boolean> {
+    const mpSubCategoriesItems
+      = await findOneByFieldNameExcludeId<MPSubCategoriesItems>(
+        this.MPSubCategoriesItemsModel,
+        fieldName,
+        items,
+        id,
+      );
     if (mpSubCategoriesItems) {
       throw new BadRequestException(`${fieldName} already exists`);
     }

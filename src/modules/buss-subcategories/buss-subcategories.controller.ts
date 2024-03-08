@@ -1,5 +1,16 @@
 import {
-  Body, Controller, Delete, Get, HttpStatus, Param, Post, Put, Query, Req, Res, UseGuards,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpStatus,
+  Param,
+  Post,
+  Put,
+  Query,
+  Req,
+  Res,
+  UseGuards,
 } from '@nestjs/common';
 import { Response } from 'express';
 
@@ -8,7 +19,11 @@ import { Locale } from 'src/common/enum';
 import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
 import { responseHelper } from 'src/core/helper/response.helper';
 import { BussSubCategoriesService } from './buss-subcategories.service';
-import { FilterQuery, createBussSubCategoryDto, updateBussSubCategoryDto } from './dto';
+import {
+  FilterQuery,
+  createBussSubCategoryDto,
+  updateBussSubCategoryDto,
+} from './dto';
 import { Roles } from 'src/core/guards/authorization/roles';
 import { JwtAuthGuard } from 'src/core/guards/jwt/jwt.guards';
 import { UserType } from '../users/users.type';
@@ -23,7 +38,10 @@ export class BussSubCategoriesController {
   @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
     tags: ['Admin', 'Business Sub-Categories'],
-    response: { status: 200, description: ServerSuccess.BUSS_SUB_CATEGORY.CREATED },
+    response: {
+      status: 200,
+      description: ServerSuccess.BUSS_SUB_CATEGORY.CREATED,
+    },
     softBlockExtraDtoFields: true,
     noAuthToken: true,
   })
@@ -34,7 +52,10 @@ export class BussSubCategoriesController {
     @Body() dto: createBussSubCategoryDto,
   ) {
     await this.bussSubCategoriesService.findByFieldName('name', dto.name);
-    const bussSubCategory = await this.bussSubCategoriesService.create(dto, req.user.id);
+    const bussSubCategory = await this.bussSubCategoriesService.create(
+      dto,
+      req.user.id,
+    );
     return responseHelper(
       response,
       HttpStatus.CREATED,
@@ -47,7 +68,10 @@ export class BussSubCategoriesController {
 
   @ApiEndpoint({
     tags: ['Admin', 'Business Sub-Categories'],
-    response: { status: 200, description: ServerSuccess.BUSS_SUB_CATEGORY.LISTED },
+    response: {
+      status: 200,
+      description: ServerSuccess.BUSS_SUB_CATEGORY.LISTED,
+    },
     softBlockExtraDtoFields: true,
   })
   @Get('admin/buss-sub-category')
@@ -66,7 +90,10 @@ export class BussSubCategoriesController {
 
   @ApiEndpoint({
     tags: ['Admin', 'Business Sub-Categories'],
-    response: { status: 200, description: ServerSuccess.BUSS_SUB_CATEGORY.LISTED },
+    response: {
+      status: 200,
+      description: ServerSuccess.BUSS_SUB_CATEGORY.LISTED,
+    },
     softBlockExtraDtoFields: true,
   })
   @Get('admin/buss-sub-category/:id')
@@ -75,7 +102,10 @@ export class BussSubCategoriesController {
     @Param('id') id: string,
     @Query('locale') locale: Locale,
   ) {
-    const bussSubCategory = await this.bussSubCategoriesService.getOne(id, locale);
+    const bussSubCategory = await this.bussSubCategoriesService.getOne(
+      id,
+      locale,
+    );
 
     return responseHelper(
       response,
@@ -91,7 +121,10 @@ export class BussSubCategoriesController {
   @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
     tags: ['Admin', 'Business Sub-Categories'],
-    response: { status: 200, description: ServerSuccess.BUSS_SUB_CATEGORY.UPDATED },
+    response: {
+      status: 200,
+      description: ServerSuccess.BUSS_SUB_CATEGORY.UPDATED,
+    },
     softBlockExtraDtoFields: true,
     noAuthToken: true,
   })
@@ -102,8 +135,16 @@ export class BussSubCategoriesController {
     @Param('id') id: string,
     @Body() dto: updateBussSubCategoryDto,
   ) {
-    const bussSubCategory = await this.bussSubCategoriesService.update(id, dto, req.user.id);
-    await this.bussSubCategoriesService.findByFieldNameExcludeId('name', dto.name, id);
+    const bussSubCategory = await this.bussSubCategoriesService.update(
+      id,
+      dto,
+      req.user.id,
+    );
+    await this.bussSubCategoriesService.findByFieldNameExcludeId(
+      'name',
+      dto.name,
+      id,
+    );
     return responseHelper(
       response,
       HttpStatus.OK,
@@ -118,7 +159,10 @@ export class BussSubCategoriesController {
   @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
     tags: ['Admin', 'Business Sub-Categories'],
-    response: { status: 200, description: ServerSuccess.BUSS_SUB_CATEGORY.DELETED },
+    response: {
+      status: 200,
+      description: ServerSuccess.BUSS_SUB_CATEGORY.DELETED,
+    },
     noAuthToken: true,
   })
   @Delete('admin/buss-sub-category/:id')
@@ -127,7 +171,10 @@ export class BussSubCategoriesController {
     @Res() response: Response,
     @Param('id') id: string,
   ) {
-    const bussSubCategory = await this.bussSubCategoriesService.softDelete(id, req.user.id);
+    const bussSubCategory = await this.bussSubCategoriesService.softDelete(
+      id,
+      req.user.id,
+    );
     return responseHelper(
       response,
       HttpStatus.OK,

@@ -5,13 +5,15 @@ import { MPCategoiresService } from './mpcategories.service';
 import { MPCategoriesController } from './mpcategories.controller';
 
 @Module({
-  imports: [MongooseModule.forFeature([{
-    name: 'MPCategories', schema: MPCategoriesSchema,
-  },
-  ])],
+  imports: [
+    MongooseModule.forFeature([
+      {
+        name: 'MPCategories',
+        schema: MPCategoriesSchema,
+      },
+    ]),
+  ],
   providers: [MPCategoiresService],
   controllers: [MPCategoriesController],
 })
-export class MPCategoriesModule {
-
-}
+export class MPCategoriesModule {}

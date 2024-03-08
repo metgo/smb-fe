@@ -6,29 +6,29 @@ import { GetByCampCodeQuery } from 'src/modules/campaign-segments/queries/get-by
 import { ProductStatus } from 'src/modules/products/products.type';
 
 export class GetProductsByCampCodeQuery extends GetByCampCodeQuery {
-    @ApiProperty({ type: String, required: true })
-    @IsString()
-    @IsNotEmpty()
-      campCode: string;
+  @ApiProperty({ type: String, required: true })
+  @IsString()
+  @IsNotEmpty()
+    campCode: string;
 
-    @ApiProperty({ type: 'enum', enum: ProductStatus, required: false })
-    @IsEnum(ProductStatus)
-    @IsOptional()
-      status: ProductStatus;
+  @ApiProperty({ type: 'enum', enum: ProductStatus, required: false })
+  @IsEnum(ProductStatus)
+  @IsOptional()
+    status: ProductStatus;
 
-    @ApiProperty({
-      required: false,
-      isArray: true,
-      type: String,
-    })
-    @IsOptional()
-      categoriesId: string[];
+  @ApiProperty({
+    required: false,
+    isArray: true,
+    type: String,
+  })
+  @IsOptional()
+    categoriesId: string[];
 
-    @ApiProperty({
-      required: false,
-      isArray: true,
-      type: String,
-    })
-    @IsOptional()
-      subCategoriesId: string[];
+  @ApiProperty({
+    required: false,
+    isArray: true,
+    type: String,
+  })
+  @IsOptional()
+    subCategoriesId: string[];
 }

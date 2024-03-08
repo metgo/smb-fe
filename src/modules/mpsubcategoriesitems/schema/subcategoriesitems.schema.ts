@@ -13,13 +13,11 @@ export class MPSubCategoriesItems extends AuditableSchema {
   @Prop({ type: Boolean, default: false })
     hasMultiple: boolean;
 
-  @Prop(
-    {
-      type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'MapPoint' }],
-      ref: 'MapPoint',
-      required: true,
-    },
-  )
+  @Prop({
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'MapPoint' }],
+    ref: 'MapPoint',
+    required: true,
+  })
     mapPointId: mongoose.Types.ObjectId[];
 
   @Prop({
@@ -37,5 +35,7 @@ export class MPSubCategoriesItems extends AuditableSchema {
     mapPointSubCategoriesId: mongoose.Types.ObjectId[];
 }
 
-export type MPSubCategoriesItemsDocument = HydratedDocument<MPSubCategoriesItems>
-export const MPSubCategoriesItemsSchema = SchemaFactory.createForClass(MPSubCategoriesItems);
+export type MPSubCategoriesItemsDocument =
+  HydratedDocument<MPSubCategoriesItems>;
+export const MPSubCategoriesItemsSchema
+  = SchemaFactory.createForClass(MPSubCategoriesItems);

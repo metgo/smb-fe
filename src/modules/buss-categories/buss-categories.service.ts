@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
@@ -8,7 +12,10 @@ import { paginationConfig } from 'src/common/pagination.config';
 import { LocaleFilterQuery } from 'src/common/query-handler/locale-filter.query';
 import { disSelect } from 'src/common/utils/select.handling';
 import {
-  findOneByFieldName, findOneByFieldNameExcludeId, queryhandler, updateById,
+  findOneByFieldName,
+  findOneByFieldNameExcludeId,
+  queryhandler,
+  updateById,
 } from 'src/core/helper/query-helper';
 import { UpdateBussCategoryDto } from './dto/updateBussCategoryDto';
 import { createBussCategoryDto } from './dto/createBussCategoryDto';
@@ -23,10 +30,13 @@ export class BussCategoriesService {
     private BussCategoryModel: Model<BussCategory>,
     @InjectModel(BussSubCategory.name)
     private BussSubCategoryModel: Model<BussSubCategory>,
-  ) { }
+  ) {}
 
-  async create(dto:createBussCategoryDto, userId:string) {
-    const newBussCategories = new this.BussCategoryModel({ ...dto, createdBy: userId });
+  async create(dto: createBussCategoryDto, userId: string) {
+    const newBussCategories = new this.BussCategoryModel({
+      ...dto,
+      createdBy: userId,
+    });
     await newBussCategories.save();
     return newBussCategories;
   }
@@ -37,7 +47,9 @@ export class BussCategoriesService {
     } = queries;
 
     const queryPage = page ? Number(page) : paginationConfig.page;
-    const queryLimit = limit ? Number(limit) : paginationConfig.MAX_ASPECT_LIMIT;
+    const queryLimit = limit
+      ? Number(limit)
+      : paginationConfig.MAX_ASPECT_LIMIT;
 
     let findQuery: any = query;
     const select = `${disSelect}`;
@@ -87,8 +99,12 @@ export class BussCategoriesService {
     return bussCategory;
   }
 
-  async update(dto: UpdateBussCategoryDto, id: string, userId:string) {
-    const updatedBussCategory = await updateById<BussCategory>(this.BussCategoryModel, id, { ...dto, updatedBy: userId });
+  async update(dto: UpdateBussCategoryDto, id: string, userId: string) {
+    const updatedBussCategory = await updateById<BussCategory>(
+      this.BussCategoryModel,
+      id,
+      { ...dto, updatedBy: userId },
+    );
 
     if (!updatedBussCategory) {
       throw new NotFoundException(ServerErrors.BUSS_CATEGORY.NOT_FOUND); // need to change
@@ -96,9 +112,12 @@ export class BussCategoriesService {
     return updatedBussCategory;
   }
 
-  async softDelete(id:string, userId:string) {
+  async softDelete(id: string, userId: string) {
     const updateField = {
-      isDeleted: true, deleteAt: new Date(), updateBy: userId, deletedBy: userId,
+      isDeleted: true,
+      deleteAt: new Date(),
+      updateBy: userId,
+      deletedBy: userId,
     };
     const bussCategory = await updateById<BussCategory>(
       this.BussCategoryModel,
@@ -106,21 +125,37 @@ export class BussCategoriesService {
       updateField,
     );
     if (!bussCategory) {
-      throw new NotFoundException(ServerErrors.BUSS_CATEGORY.NOT_FOUND);// need to change
+      throw new NotFoundException(ServerErrors.BUSS_CATEGORY.NOT_FOUND); // need to change
     }
     return bussCategory;
   }
 
-  async findByFieldName(fieldName: keyof BussCategory, items: string): Promise<boolean> {
-    const bussCategory = await findOneByFieldName<BussCategory>(this.BussCategoryModel, fieldName, items);
+  async findByFieldName(
+    fieldName: keyof BussCategory,
+    items: string,
+  ): Promise<boolean> {
+    const bussCategory = await findOneByFieldName<BussCategory>(
+      this.BussCategoryModel,
+      fieldName,
+      items,
+    );
     if (bussCategory) {
       throw new BadRequestException(`${fieldName} already exists`);
     }
     return false;
   }
 
-  async findByFieldNameExcludeId(fieldName: keyof BussCategory, items: string, id:string): Promise<boolean> {
-    const bussCategory = await findOneByFieldNameExcludeId<BussCategory>(this.BussCategoryModel, fieldName, items, id);
+  async findByFieldNameExcludeId(
+    fieldName: keyof BussCategory,
+    items: string,
+    id: string,
+  ): Promise<boolean> {
+    const bussCategory = await findOneByFieldNameExcludeId<BussCategory>(
+      this.BussCategoryModel,
+      fieldName,
+      items,
+      id,
+    );
     if (bussCategory) {
       throw new BadRequestException(`${fieldName} already exists`);
     }
@@ -134,8 +169,9 @@ export class BussCategoriesService {
       select: `${disSelect}`,
     };
 
-    const categories = await this.BussCategoryModel
-      .find({ deletedAt: { $in: [null] } })
+    const categories = await this.BussCategoryModel.find({
+      deletedAt: { $in: [null] },
+    })
       .sort({ createdAt: -1 })
       .lean()
       .select(select)
@@ -153,25 +189,33 @@ export class BussCategoriesService {
     let categoriesWithSubCategories = [];
     const select2 = `${disSelect} -bussCategoryId`;
 
-    await Promise.all(categories.map(async category => {
-      const categoryWithSubCategory:any = category;
+    await Promise.all(
+      categories.map(async category => {
+        const categoryWithSubCategory: any = category;
 
-      categoryWithSubCategory.sub_categories = await this.BussSubCategoryModel
-        .find({ bussCategoryId: category._id, deletedAt: { $in: [null] } })
-        .select(select2)
-        .populate(populate)
-        .exec();
+        categoryWithSubCategory.sub_categories
+          = await this.BussSubCategoryModel.find({
+            bussCategoryId: category._id,
+            deletedAt: { $in: [null] },
+          })
+            .select(select2)
+            .populate(populate)
+            .exec();
 
-      if (query.locale === Locale.HEBREW) {
-        categoryWithSubCategory.sub_categories.map(subCategory => {
-          // eslint-disable-next-line no-param-reassign
-          subCategory.name = subCategory?.hebrewName || subCategory.name;
-          return { ...subCategory };
-        });
-      }
+        if (query.locale === Locale.HEBREW) {
+          categoryWithSubCategory.sub_categories.map(subCategory => {
+            // eslint-disable-next-line no-param-reassign
+            subCategory.name = subCategory?.hebrewName || subCategory.name;
+            return { ...subCategory };
+          });
+        }
 
-      categoriesWithSubCategories = [...categoriesWithSubCategories, categoryWithSubCategory];
-    }));
+        categoriesWithSubCategories = [
+          ...categoriesWithSubCategories,
+          categoryWithSubCategory,
+        ];
+      }),
+    );
 
     return categoriesWithSubCategories;
   }

@@ -6,17 +6,17 @@ export interface ITokens {
 }
 
 export interface OtpToken {
-  otpToken: string
+  otpToken: string;
 }
 
 export interface IJWTOtp {
   id: string;
   code: string;
   expireDate: Date;
-  isv:string;
-  isVerify: boolean,
-  userId: string,
-  purpose?: OTPPurpose,
+  isv: string;
+  isVerify: boolean;
+  userId: string;
+  purpose?: OTPPurpose;
   iat: number;
   exp: number;
 }
@@ -24,12 +24,12 @@ export interface IJWTOtp {
 export interface ITokenUser {
   email: string;
   id: string;
-  role: UserType,
-  hasBusiness: boolean
+  role: UserType;
+  hasBusiness: boolean;
 }
 
 export interface ITokenOtp {
   id: string;
   email: string;
-  code: string,
+  code: string;
 }

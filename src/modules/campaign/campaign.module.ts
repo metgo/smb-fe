@@ -12,9 +12,7 @@ import { UsersModule } from 'src/modules/users/users.module';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([
-      { name: 'Campaign', schema: CampaignSchema },
-    ]),
+    MongooseModule.forFeature([{ name: 'Campaign', schema: CampaignSchema }]),
     GcpBucketModule,
     forwardRef(() => UsersModule),
     EncryptionModule,
@@ -22,9 +20,7 @@ import { UsersModule } from 'src/modules/users/users.module';
     DMOModule,
     CampaignSegmentModule,
   ],
-  providers: [
-    CampaignService,
-  ],
+  providers: [CampaignService],
   controllers: [CampaignController],
   exports: [CampaignService],
 })

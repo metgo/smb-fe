@@ -56,9 +56,7 @@ export class AuthorityService {
       }
 
       if (dmoId) {
-        const dmoIds = Array.isArray(dmoId)
-          ? dmoId
-          : [dmoId];
+        const dmoIds = Array.isArray(dmoId) ? dmoId : [dmoId];
 
         findQuery = {
           ...findQuery,
@@ -66,16 +64,13 @@ export class AuthorityService {
         };
       }
 
-      const authorities = await queryhandler<Authority>(
-        this.AuthorityModel,
-        {
-          findQuery,
-          select,
-          page: queryPage,
-          limit: queryLimit,
-          populate,
-        },
-      );
+      const authorities = await queryhandler<Authority>(this.AuthorityModel, {
+        findQuery,
+        select,
+        page: queryPage,
+        limit: queryLimit,
+        populate,
+      });
 
       return authorities;
     } catch (err) {

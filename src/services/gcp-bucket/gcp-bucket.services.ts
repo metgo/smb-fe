@@ -1,5 +1,9 @@
 /* eslint-disable no-undef */
-import { Inject, Injectable, UnprocessableEntityException } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  UnprocessableEntityException,
+} from '@nestjs/common';
 import { nanoid } from 'nanoid';
 import { extname, join } from 'path';
 
@@ -27,7 +31,7 @@ export class GcpBucketService {
     return mediaUrl;
   }
 
-  async update(existingUrl: string, file:Express.Multer.File) {
+  async update(existingUrl: string, file: Express.Multer.File) {
     const newMediaUrl = await this.upload(file);
 
     await this.delete(existingUrl);

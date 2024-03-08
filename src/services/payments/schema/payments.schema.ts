@@ -41,12 +41,10 @@ export class Payment extends AuditableSchema {
   })
     paymentRequestId: string;
 
-  @Prop(
-    {
-      type: [{ type: mongoose.Schema.Types.ObjectId, ref: Voucher.name }],
-      default: null,
-    },
-  )
+  @Prop({
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: Voucher.name }],
+    default: null,
+  })
     voucherId: [];
 
   @Prop({
@@ -65,5 +63,5 @@ export class Payment extends AuditableSchema {
     methods: string;
 }
 
-export type PaymentDocument = HydratedDocument<Payment>
+export type PaymentDocument = HydratedDocument<Payment>;
 export const PaymentSchema = SchemaFactory.createForClass(Payment);

@@ -11,9 +11,7 @@ import { GcpBucketModule } from 'src/services/gcp-bucket/gcp-bucket.module';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([
-      { name: Media.name, schema: MediaSchema },
-    ]),
+    MongooseModule.forFeature([{ name: Media.name, schema: MediaSchema }]),
     GcpBucketModule,
     BusinessModule,
     ProductsModule,

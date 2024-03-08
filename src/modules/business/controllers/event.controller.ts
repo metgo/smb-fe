@@ -24,9 +24,7 @@ import { EventsService } from 'src/modules/business/services/event.service';
 
 @Controller()
 export class EventController {
-  constructor(
-    private readonly eventsService: EventsService,
-  ) {}
+  constructor(private readonly eventsService: EventsService) {}
 
   @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
@@ -58,7 +56,10 @@ export class EventController {
 
   @ApiEndpoint({
     tags: ['Events'],
-    response: { status: HttpStatus.OK, description: ServerSuccess.EVENTS.LISTED },
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.EVENTS.LISTED,
+    },
     softBlockExtraDtoFields: true,
     operation: 'Get all approved events by any user - paginated',
   })
@@ -81,7 +82,10 @@ export class EventController {
 
   @ApiEndpoint({
     tags: ['Events'],
-    response: { status: HttpStatus.OK, description: ServerSuccess.EVENTS.LISTED },
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.EVENTS.LISTED,
+    },
     operation: 'Get approved events detail by any user',
   })
   @Get('events/:id')
@@ -106,7 +110,10 @@ export class EventController {
 
   @ApiEndpoint({
     tags: ['Events'],
-    response: { status: HttpStatus.OK, description: ServerSuccess.EVENTS.UPDATED },
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.EVENTS.UPDATED,
+    },
     noAuthToken: true,
     params: [{ name: 'eventId', type: 'string', required: true }],
   })
@@ -136,7 +143,10 @@ export class EventController {
 
   @ApiEndpoint({
     tags: ['Events'],
-    response: { status: HttpStatus.OK, description: ServerSuccess.EVENTS.DELETED },
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.EVENTS.DELETED,
+    },
     noAuthToken: true,
     params: [{ name: 'id', type: 'string', required: true }],
   })
@@ -144,10 +154,13 @@ export class EventController {
   @Delete('events/:id')
   async deleteEvent(
     @Req() request,
-    @Res() response:Response,
+    @Res() response: Response,
     @Param('id') eventId: string,
   ) {
-    const event = await this.eventsService.deleteEvent(eventId, request.user.id);
+    const event = await this.eventsService.deleteEvent(
+      eventId,
+      request.user.id,
+    );
 
     return responseHelper(
       response,

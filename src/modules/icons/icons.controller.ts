@@ -1,7 +1,19 @@
 /* eslint-disable no-undef */
 /* eslint-disable no-unused-vars */
 import {
-  Body, Controller, Delete, Get, HttpStatus, Param, Post, Put, Query, Res, UploadedFile, UseGuards, UseInterceptors,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpStatus,
+  Param,
+  Post,
+  Put,
+  Query,
+  Res,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
@@ -11,14 +23,18 @@ import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
 import { Roles } from 'src/core/guards/authorization/roles';
 import { JwtAuthGuard } from 'src/core/guards/jwt/jwt.guards';
 import { responseHelper } from 'src/core/helper/response.helper';
-import { CreateIconDto, FilterQuery, UpdateIconDto } from 'src/modules/icons/dto';
+import {
+  CreateIconDto,
+  FilterQuery,
+  UpdateIconDto,
+} from 'src/modules/icons/dto';
 import { IconsService } from 'src/modules/icons/icons.service';
 import { UserType } from 'src/modules/users/users.type';
 import { fileFilterByExtensions } from 'src/services/gcp-bucket/middleware/file-filter';
 
 @Controller('admin/icons')
 export class IconsController {
-  constructor(private readonly iconsService: IconsService) { }
+  constructor(private readonly iconsService: IconsService) {}
 
   @ApiEndpoint({
     tags: ['Admin', 'Icon'],
@@ -28,7 +44,9 @@ export class IconsController {
     },
     noAuthToken: true,
   })
-  @UseInterceptors(FileInterceptor('icon', { fileFilter: fileFilterByExtensions }))
+  @UseInterceptors(
+    FileInterceptor('icon', { fileFilter: fileFilterByExtensions }),
+  )
   @Roles(UserType.ADMIN, UserType.DMO, UserType.SUPERADMIN)
   @UseGuards(JwtAuthGuard)
   @Post('')
@@ -100,12 +118,14 @@ export class IconsController {
   })
   @Roles(UserType.ADMIN, UserType.DMO, UserType.SUPERADMIN)
   @UseGuards(JwtAuthGuard)
-  @UseInterceptors(FileInterceptor('newIcon', { fileFilter: fileFilterByExtensions }))
+  @UseInterceptors(
+    FileInterceptor('newIcon', { fileFilter: fileFilterByExtensions }),
+  )
   @Put('/:id')
   async updateIcon(
-      @Res() response: Response,
-      @Param('id') id: string,
-      @Body() dto: UpdateIconDto,
+    @Res() response: Response,
+    @Param('id') id: string,
+    @Body() dto: UpdateIconDto,
     @UploadedFile() newIcon: Express.Multer.File,
   ) {
     await this.iconsService.findByFieldNameExcludeId('name', dto.name, id);

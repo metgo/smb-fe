@@ -2,52 +2,89 @@ import mongoose, { FilterQuery, Model } from 'mongoose';
 import { Locale } from 'src/common/enum';
 import { QueryHelperInterface } from 'src/core/helper/query-helper.interface';
 
-export async function findByFieldName<T>(model: Model<T>, fieldName: keyof T, item: string) {
+export async function findByFieldName<T>(
+  model: Model<T>,
+  fieldName: keyof T,
+  item: string,
+) {
   const filterBy = { [fieldName]: item };
   const data = await model.find({ ...filterBy, deletedAt: { $in: [null] } });
   return data;
 }
 
-export async function findOneByFieldNames<T>(model: Model<T>, fieldNames: object) {
-  const data = await model.findOne({ ...fieldNames, deletedAt: { $in: [null] } });
+export async function findOneByFieldNames<T>(
+  model: Model<T>,
+  fieldNames: object,
+) {
+  const data = await model.findOne({
+    ...fieldNames,
+    deletedAt: { $in: [null] },
+  });
   return data;
 }
 
 export async function findOneByOrCase<T>(model: Model<T>, fieldNames: object) {
-  const data = await model.findOne({ ...fieldNames, deletedAt: { $in: [null] } });
+  const data = await model.findOne({
+    ...fieldNames,
+    deletedAt: { $in: [null] },
+  });
   return data;
 }
 
-export async function findOneByFieldName<T>(model: Model<T>, fieldName: keyof T, item: string) {
+export async function findOneByFieldName<T>(
+  model: Model<T>,
+  fieldName: keyof T,
+  item: string,
+) {
   const filterBy = { [fieldName]: item };
   const data = await model.findOne({ ...filterBy, deletedAt: { $in: [null] } });
   return data;
 }
 
-export async function findOneByFieldNameIncludingDeleted<T>(model: Model<T>, fieldName: keyof T, item: string) {
+export async function findOneByFieldNameIncludingDeleted<T>(
+  model: Model<T>,
+  fieldName: keyof T,
+  item: string,
+) {
   const filterBy: FilterQuery<T> = { [fieldName]: item } as FilterQuery<T>; // Type assertion
   const data = await model.findOne(filterBy);
   return data;
 }
 
-export async function findOneByFieldNameExcludeId<T>(model: Model<T>, fieldName: keyof T, item: string, id: string) {
+export async function findOneByFieldNameExcludeId<T>(
+  model: Model<T>,
+  fieldName: keyof T,
+  item: string,
+  id: string,
+) {
   const filterBy = { [fieldName]: item };
-  const data = await model.findOne({ ...filterBy, deletedAt: { $in: [null] }, _id: { $nin: [id] } });
+  const data = await model.findOne({
+    ...filterBy,
+    deletedAt: { $in: [null] },
+    _id: { $nin: [id] },
+  });
   return data;
 }
 
 export async function findOneById<T>(model: Model<T>, item: string) {
   const filterBy = { _id: item };
-  const data = await model.findOne(
-    { ...filterBy, deletedAt: { $in: [null] } },
-  );
+  const data = await model.findOne({ ...filterBy, deletedAt: { $in: [null] } });
 
   return data;
 }
 
-export async function update<T>(model: Model<T>, fieldName: keyof T, item: string, updateField: object) {
+export async function update<T>(
+  model: Model<T>,
+  fieldName: keyof T,
+  item: string,
+  updateField: object,
+) {
   const filterBy = { [fieldName]: item };
-  const data = await model.findOneAndUpdate({ ...filterBy, deletedAt: { $in: [null] } }, updateField, { new: true });
+  const data = await model.findOneAndUpdate(
+    { ...filterBy, deletedAt: { $in: [null] } },
+    updateField,
+    { new: true },
+  );
   if (!data) {
     return undefined;
   }
@@ -61,14 +98,22 @@ export async function updateManyByIds<T>(
   updateField: object,
 ) {
   const filterBy = { [fieldName]: { $in: item } };
-  const data = await model.updateMany({ ...filterBy, deletedAt: { $in: [null] } }, updateField, { new: true });
+  const data = await model.updateMany(
+    { ...filterBy, deletedAt: { $in: [null] } },
+    updateField,
+    { new: true },
+  );
   if (!data) {
     return undefined;
   }
   return data;
 }
 
-export async function updateById<T>(model: Model<T>, item: string | mongoose.Types.ObjectId, updateField: object) {
+export async function updateById<T>(
+  model: Model<T>,
+  item: string | mongoose.Types.ObjectId,
+  updateField: object,
+) {
   const filterBy = { _id: item };
   const data = await model.findOneAndUpdate(
     { ...filterBy, deletedAt: { $in: [null] } },
@@ -79,7 +124,11 @@ export async function updateById<T>(model: Model<T>, item: string | mongoose.Typ
   return data;
 }
 
-export async function updateOneByManyFields<T>(model: Model<T>, filterFields: object, updateField: object) {
+export async function updateOneByManyFields<T>(
+  model: Model<T>,
+  filterFields: object,
+  updateField: object,
+) {
   const filterBy = { ...filterFields, deletedAt: { $in: [null] } };
 
   const data = await model.findOneAndUpdate(
@@ -93,7 +142,11 @@ export async function updateOneByManyFields<T>(model: Model<T>, filterFields: ob
   return data;
 }
 
-export async function updateManyByManyFields<T>(model: Model<T>, filterFields: object, updateField: object) {
+export async function updateManyByManyFields<T>(
+  model: Model<T>,
+  filterFields: object,
+  updateField: object,
+) {
   const filterBy = { ...filterFields };
 
   const data = await model.updateMany(
@@ -112,7 +165,11 @@ export async function findManyByFilter<T>(model: Model<T>, filter: object) {
   return updatedDocuments;
 }
 
-export async function deleteItem<T>(model: Model<T>, filterFields: object, updateField: object) {
+export async function deleteItem<T>(
+  model: Model<T>,
+  filterFields: object,
+  updateField: object,
+) {
   const data = await model.findOneAndUpdate(
     filterFields,
     {

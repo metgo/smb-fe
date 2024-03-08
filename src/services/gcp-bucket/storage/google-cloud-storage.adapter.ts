@@ -32,7 +32,9 @@ export class GoogleCloudStorageAdapter implements StorageAdapter {
   }
 
   async delete(url: string) {
-    const location = url.split(`https://storage.googleapis.com/${this.config.bucket}/`)[1];
+    const location = url.split(
+      `https://storage.googleapis.com/${this.config.bucket}/`,
+    )[1];
 
     await this.storageClient.bucket(this.config.bucket).file(location).delete();
   }

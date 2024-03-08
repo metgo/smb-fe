@@ -1,17 +1,30 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { createMPCategoriesDto, FilterQuery, updateMPCategoriesDto } from './dto';
+import {
+  createMPCategoriesDto,
+  FilterQuery,
+  updateMPCategoriesDto,
+} from './dto';
 import { MPCategories } from './schema/categories.schema';
 import { Model } from 'mongoose';
 import {
-  findOneByFieldName, findOneByFieldNameExcludeId, queryhandler, updateById,
+  findOneByFieldName,
+  findOneByFieldNameExcludeId,
+  queryhandler,
+  updateById,
 } from 'src/core/helper/query-helper';
 import { ServerErrors } from 'src/common/constant';
 import { disSelect } from 'src/common/utils/select.handling';
 
 @Injectable()
 export class MPCategoiresService {
-  constructor(@InjectModel('MPCategories') private MPCategoriesModel: Model<MPCategories>) { }
+  constructor(
+    @InjectModel('MPCategories') private MPCategoriesModel: Model<MPCategories>,
+  ) {}
 
   async createMPCategories(dto: createMPCategoriesDto): Promise<MPCategories> {
     const newMapPoint = new this.MPCategoriesModel(dto);
@@ -47,23 +60,27 @@ export class MPCategoiresService {
     };
     // eslint-disable-next-line prefer-const
     select = disSelect;
-    const mapPoint = await queryhandler<MPCategories>(
-      this.MPCategoriesModel,
-      {
-        findQuery,
-        select,
-        page,
-        limit,
-        populate,
-        populate1,
-      },
-    );
+    const mapPoint = await queryhandler<MPCategories>(this.MPCategoriesModel, {
+      findQuery,
+      select,
+      page,
+      limit,
+      populate,
+      populate1,
+    });
 
     return mapPoint;
   }
 
-  async updateMPCategories(id: string, dto:updateMPCategoriesDto): Promise<MPCategories> {
-    const mpCategories = await updateById<MPCategories>(this.MPCategoriesModel, id, dto);
+  async updateMPCategories(
+    id: string,
+    dto: updateMPCategoriesDto,
+  ): Promise<MPCategories> {
+    const mpCategories = await updateById<MPCategories>(
+      this.MPCategoriesModel,
+      id,
+      dto,
+    );
     if (!mpCategories) {
       throw new NotFoundException(ServerErrors.MAP_POINT_CATEGORIES_NOT_FOUND);
     }
@@ -72,23 +89,45 @@ export class MPCategoiresService {
 
   async softDeleteMPCategories(id: string): Promise<MPCategories> {
     const updateField = { isDeleted: true, deleteAt: new Date() };
-    const mpCategories = await updateById<MPCategories>(this.MPCategoriesModel, id, updateField);
+    const mpCategories = await updateById<MPCategories>(
+      this.MPCategoriesModel,
+      id,
+      updateField,
+    );
     if (!mpCategories) {
-      throw new NotFoundException(ServerErrors.MAP_POINT_SUB_CATEGORIES_NOT_FOUND);
+      throw new NotFoundException(
+        ServerErrors.MAP_POINT_SUB_CATEGORIES_NOT_FOUND,
+      );
     }
     return mpCategories;
   }
 
-  async findByFieldName(fieldName: keyof MPCategories, items: string): Promise<boolean> {
-    const mpCategories = await findOneByFieldName<MPCategories>(this.MPCategoriesModel, fieldName, items);
+  async findByFieldName(
+    fieldName: keyof MPCategories,
+    items: string,
+  ): Promise<boolean> {
+    const mpCategories = await findOneByFieldName<MPCategories>(
+      this.MPCategoriesModel,
+      fieldName,
+      items,
+    );
     if (mpCategories) {
       throw new BadRequestException(`${fieldName} already exists`);
     }
     return false;
   }
 
-  async findByFieldNameExcludeId(fieldName: keyof MPCategories, items: string, id:string): Promise<boolean> {
-    const mpCategories = await findOneByFieldNameExcludeId<MPCategories>(this.MPCategoriesModel, fieldName, items, id);
+  async findByFieldNameExcludeId(
+    fieldName: keyof MPCategories,
+    items: string,
+    id: string,
+  ): Promise<boolean> {
+    const mpCategories = await findOneByFieldNameExcludeId<MPCategories>(
+      this.MPCategoriesModel,
+      fieldName,
+      items,
+      id,
+    );
     if (mpCategories) {
       throw new BadRequestException(`${fieldName} already exists`);
     }

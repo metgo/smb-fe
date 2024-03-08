@@ -9,9 +9,7 @@ import { PaymentsService } from './payments.service';
 
 @Controller('payment')
 export class PaymentsController {
-  constructor(
-    private readonly paymentService: PaymentsService,
-  ) { }
+  constructor(private readonly paymentService: PaymentsService) {}
 
   @ApiEndpoint({
     tags: ['Payment'],

@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
@@ -8,7 +12,10 @@ import { disSelect } from 'src/common/utils/select.handling';
 
 import { MapPoint } from './schema/mappoint.schema';
 import {
-  findOneByFieldName, findOneByFieldNameExcludeId, queryhandler, updateById,
+  findOneByFieldName,
+  findOneByFieldNameExcludeId,
+  queryhandler,
+  updateById,
 } from 'src/core/helper/query-helper';
 import { FilterQuery, createMapPointDto, updateMapPointDto } from './dto';
 
@@ -16,24 +23,22 @@ import { FilterQuery, createMapPointDto, updateMapPointDto } from './dto';
 export class MapPointServices {
   constructor(
     @InjectModel('MapPoint') private MapPointModel: Model<MapPoint>,
-  ) { }
+  ) {}
 
   /*
-    *  map point function
-    * create
-    * list
-    * update
-    * delete
-  */
+   *  map point function
+   * create
+   * list
+   * update
+   * delete
+   */
   async createMapPoint(dto: createMapPointDto): Promise<MapPoint> {
     const newMapPoint = new this.MapPointModel(dto);
     return newMapPoint.save();
   }
 
   async getAllMapPoint(queries: FilterQuery): Promise<MapPoint & any> {
-    const {
-      page, limit, search,
-    } = queries;
+    const { page, limit, search } = queries;
 
     const queryPage = page ? Number(page) : paginationConfig.page;
     const queryLimit = limit ? Number(limit) : paginationConfig.limit;
@@ -45,7 +50,11 @@ export class MapPointServices {
 
     if (search) {
       findQuery = {
-        $text: { $search: search, $caseSensitive: false, $diacriticSensitive: false },
+        $text: {
+          $search: search,
+          $caseSensitive: false,
+          $diacriticSensitive: false,
+        },
       };
     }
 
@@ -56,17 +65,14 @@ export class MapPointServices {
     };
     // eslint-disable-next-line prefer-const
     select = disSelect;
-    const mapPoint = await queryhandler<MapPoint>(
-      this.MapPointModel,
-      {
-        findQuery,
-        select,
-        page: queryPage,
-        limit: queryLimit,
-        populate,
-        populate1,
-      },
-    );
+    const mapPoint = await queryhandler<MapPoint>(this.MapPointModel, {
+      findQuery,
+      select,
+      page: queryPage,
+      limit: queryLimit,
+      populate,
+      populate1,
+    });
 
     return mapPoint;
   }
@@ -81,7 +87,11 @@ export class MapPointServices {
 
   async softDeleteMapPoint(id: string): Promise<MapPoint> {
     const updateField = { isDeleted: true, deleteAt: new Date() };
-    const mapPoint = await updateById<MapPoint>(this.MapPointModel, id, updateField);
+    const mapPoint = await updateById<MapPoint>(
+      this.MapPointModel,
+      id,
+      updateField,
+    );
     if (!mapPoint) {
       throw new NotFoundException(ServerErrors.MAP_POINT_NOT_FOUND);
     }
@@ -89,19 +99,27 @@ export class MapPointServices {
   }
 
   /*
-    *  global functions
-    *
-  */
+   *  global functions
+   *
+   */
   async findByName(name: string): Promise<MapPoint | undefined> {
     const fieldName = 'name';
-    const mapPoint = await findOneByFieldName<MapPoint>(this.MapPointModel, fieldName, name);
+    const mapPoint = await findOneByFieldName<MapPoint>(
+      this.MapPointModel,
+      fieldName,
+      name,
+    );
     if (!mapPoint) {
       return undefined;
     }
     throw new BadRequestException(ServerErrors.MAP_POINT_EXISTS);
   }
 
-  async findByFieldNameExcludeId(fieldName: keyof MapPoint, items: string, id:string): Promise<boolean> {
+  async findByFieldNameExcludeId(
+    fieldName: keyof MapPoint,
+    items: string,
+    id: string,
+  ): Promise<boolean> {
     const mapPoint = await findOneByFieldNameExcludeId<MapPoint>(
       this.MapPointModel,
       fieldName,

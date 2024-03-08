@@ -1,5 +1,16 @@
 import {
-  Body, Controller, Delete, Get, HttpStatus, Param, Post, Put, Query, Req, Res, UseGuards,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpStatus,
+  Param,
+  Post,
+  Put,
+  Query,
+  Req,
+  Res,
+  UseGuards,
 } from '@nestjs/common';
 import { Response } from 'express';
 
@@ -14,7 +25,7 @@ import { UserType } from 'src/modules/users/users.type';
 
 @Controller()
 export class DMOController {
-  constructor(private readonly dmoServices: DMOService) { }
+  constructor(private readonly dmoServices: DMOService) {}
 
   @ApiEndpoint({
     tags: ['Admin', 'DMO'],

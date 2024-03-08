@@ -12,17 +12,21 @@ import { User } from 'src/modules/users/schema/users.schema';
 export class Order extends AuditableSchema {
   @Prop({
     required: true,
-    type: [{
-      id: mongoose.Schema.Types.ObjectId,
-      quantity: Number,
-    }],
+    type: [
+      {
+        id: mongoose.Schema.Types.ObjectId,
+        quantity: Number,
+      },
+    ],
     ref: Product.name,
     default: null,
   })
-    products: [{
-      id: mongoose.Types.ObjectId,
-      quantity: number,
-    }];
+    products: [
+    {
+      id: mongoose.Types.ObjectId;
+      quantity: number;
+    }
+  ];
 
   @Prop({
     type: [{ type: mongoose.Schema.Types.ObjectId, ref: Business.name }],
@@ -40,7 +44,8 @@ export class Order extends AuditableSchema {
     userId: mongoose.Types.ObjectId;
 
   @Prop({
-    enum: OrderStatus, default: OrderStatus.PENDING,
+    enum: OrderStatus,
+    default: OrderStatus.PENDING,
   })
     status: OrderStatus;
 
@@ -71,10 +76,12 @@ export class Order extends AuditableSchema {
     paymentMode: PaymentMode[];
 
   @Prop()
-    voucher: [{
-      id: string,
-      redeemedAmount: number,
-    }];
+    voucher: [
+    {
+      id: string;
+      redeemedAmount: number;
+    }
+  ];
 
   @Prop({ type: Number, default: 0 })
     totalAmount: number;

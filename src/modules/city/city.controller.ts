@@ -1,5 +1,14 @@
 import {
-  Body, Controller, Get, HttpStatus, Param, Post, Query, Req, Res, UseGuards,
+  Body,
+  Controller,
+  Get,
+  HttpStatus,
+  Param,
+  Post,
+  Query,
+  Req,
+  Res,
+  UseGuards,
 } from '@nestjs/common';
 import { Response } from 'express';
 
@@ -15,9 +24,7 @@ import { UserType } from 'src/modules/users/users.type';
 
 @Controller()
 export class CityController {
-  constructor(
-      private readonly cityService: CityService,
-  ) {}
+  constructor(private readonly cityService: CityService) {}
 
   @Roles(UserType.SUPERADMIN)
   @UseGuards(JwtAuthGuard)
@@ -30,11 +37,7 @@ export class CityController {
     },
   })
   @Post('admin/cities')
-  async create(
-    @Body() dto: CityDTO,
-    @Req() req,
-    @Res() response: Response,
-  ) {
+  async create(@Body() dto: CityDTO, @Req() req, @Res() response: Response) {
     const city = await this.cityService.create(dto, req.user.id);
 
     return responseHelper(
@@ -55,10 +58,7 @@ export class CityController {
     },
   })
   @Get('cities/:cityId')
-  async getCity(
-    @Param('cityId') cityId: string,
-    @Res() response: Response,
-  ) {
+  async getCity(@Param('cityId') cityId: string, @Res() response: Response) {
     const city = await this.cityService.getOne(cityId);
 
     return responseHelper(

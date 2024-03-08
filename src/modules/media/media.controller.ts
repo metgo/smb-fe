@@ -2,7 +2,17 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-unused-expressions */
 import {
-  Body, Controller, Delete, HttpCode, HttpStatus, Post, Req, Res, UploadedFiles, UseGuards, UseInterceptors,
+  Body,
+  Controller,
+  Delete,
+  HttpCode,
+  HttpStatus,
+  Post,
+  Req,
+  Res,
+  UploadedFiles,
+  UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
@@ -18,14 +28,15 @@ import { fileFilterByExtensions } from 'src/services/gcp-bucket/middleware/file-
 
 @Controller('media')
 export class MediaController {
-  constructor(
-    private readonly mediaServices: MediaServices,
-  ) {}
+  constructor(private readonly mediaServices: MediaServices) {}
 
   @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
     tags: ['Media'],
-    response: { status: HttpStatus.CREATED, description: ServerSuccess.MEDIA.UPLOADED },
+    response: {
+      status: HttpStatus.CREATED,
+      description: ServerSuccess.MEDIA.UPLOADED,
+    },
     operation: 'Upload images',
     noAuthToken: true,
     softBlockExtraDtoFields: true,
@@ -53,7 +64,10 @@ export class MediaController {
   @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
     tags: ['Media'],
-    response: { status: HttpStatus.OK, description: ServerSuccess.MEDIA.DELETED },
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.MEDIA.DELETED,
+    },
     operation: 'Delete an image',
     noAuthToken: true,
     softBlockExtraDtoFields: true,

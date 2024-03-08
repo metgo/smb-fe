@@ -17,10 +17,10 @@ export class ExternalApi extends AuditableSchema {
     },
   })
     companyDetails: {
-      name: string,
-      email: string,
-      phone: string,
-      address: string,
+    name: string;
+    email: string;
+    phone: string;
+    address: string;
   };
 
   @Prop({ unique: true, type: String, default: generateRandomIdentifier(18) })
@@ -30,6 +30,6 @@ export class ExternalApi extends AuditableSchema {
     ipAddress: string;
 }
 
-export type ExternalApiDocument = HydratedDocument<ExternalApi>
+export type ExternalApiDocument = HydratedDocument<ExternalApi>;
 
 export const ExternalApiSchema = SchemaFactory.createForClass(ExternalApi);

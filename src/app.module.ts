@@ -84,5 +84,4 @@ import { AuthorityModule } from 'src/modules/authority/authority.module';
     },
   ],
 })
-
 export class AppModule {}

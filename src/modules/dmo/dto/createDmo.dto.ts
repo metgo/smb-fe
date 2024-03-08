@@ -4,17 +4,17 @@ import {
 } from 'class-validator';
 
 export class CreateDMODto {
-    @ApiProperty()
-    @IsString()
-        @IsNotEmpty()
-      name: string;
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+    name: string;
 
-     @ApiProperty()
-    @IsString()
-       userId: string;
+  @ApiProperty()
+  @IsString()
+    userId: string;
 
-    @ApiProperty()
-    @IsOptional()
-        @IsArray()
-      collaboratorsUser: [];
+  @ApiProperty()
+  @IsOptional()
+  @IsArray()
+    collaboratorsUser: [];
 }

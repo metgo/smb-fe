@@ -19,7 +19,10 @@ export class ExternalAPIServiceController {
   @HttpCode(HttpStatus.OK)
   @ApiEndpoint({
     tags: ['External API'],
-    response: { status: HttpStatus.OK, description: ServerSuccess.USER.CREATED },
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.USER.CREATED,
+    },
     softBlockExtraDtoFields: true,
   })
   @Post('login')
@@ -30,7 +33,10 @@ export class ExternalAPIServiceController {
   @HttpCode(HttpStatus.CREATED)
   @ApiEndpoint({
     tags: ['External API'],
-    response: { status: HttpStatus.OK, description: ServerSuccess.USER.CREATED },
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.USER.CREATED,
+    },
     softBlockExtraDtoFields: true,
   })
   @Post('register')

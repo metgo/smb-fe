@@ -14,9 +14,7 @@ import { MailChimpModule } from 'src/services/mailchimp/mailchimp.module';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([
-      { name: Order.name, schema: OrderSchema },
-    ]),
+    MongooseModule.forFeature([{ name: Order.name, schema: OrderSchema }]),
     BusinessModule,
     forwardRef(() => PaymentsModule),
     ProductsModule,
@@ -29,5 +27,4 @@ import { MailChimpModule } from 'src/services/mailchimp/mailchimp.module';
   providers: [OrdersService],
   exports: [OrdersService],
 })
-
 export class OrdersModule {}
