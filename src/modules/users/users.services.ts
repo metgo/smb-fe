@@ -15,11 +15,11 @@ import { User } from 'src/modules/users/schema/users.schema';
 import { VoucherService } from 'src/modules/vouchers/voucher.service';
 import { createUserByAdminDto } from './requests/create-user-ByAdmin.dto';
 import {
-  findOneByFieldName, findOneByFieldNameExcludeId, findOneById, update, updateById,
+  findOneByFieldName, findOneByFieldNameExcludeId, findOneByFieldNameIncludingDeleted, findOneById, update, updateById,
 } from 'src/core/helper/query-helper';
 import { ServerErrors, ServerSuccess } from 'src/common/constant';
 import { ConfigService } from 'src/services/config/config.service';
-import { UpdateLastLogin, UserType } from 'src/modules/users/users.type';
+import { OTPPurpose, UpdateLastLogin, UserType } from 'src/modules/users/users.type';
 import { HashService } from 'src/services/hash/hash.service';
 import { ChangePasswordDto } from '../auth/requests/change-password.dto';
 import { OTP } from './schema/otp.schema';
@@ -27,7 +27,7 @@ import { generateOTP } from 'src/common/otpGenerate';
 import { JwtAuthService } from '../jwt-auth/services/jwt-auth.service';
 import { checkExpireDate, oneHrsExpireDate } from 'src/common/expireDate';
 import { VerifyOtpDto } from '../auth/requests/verify-otp.dto';
-import { SendOtpToEmailDTO, UpdatePasswordDto } from '../auth/requests/forget-password.dto';
+import { UpdatePasswordDto } from '../auth/requests/forget-password.dto';
 import { ExternalApiRegisterRequest } from 'src/modules/external-api/dto/register-user.dto';
 import { MailChimpService } from 'src/services/mailchimp/mailchimp.service';
 
@@ -153,7 +153,7 @@ export class UsersService {
     }
   }
 
-  async generateOtp(user: User): Promise<string> {
+  async generateOtp(user: User, purpose: OTPPurpose): Promise<string> {
     const code = await generateOTP();
 
     const otp = await this.OtpModel.create({
@@ -166,6 +166,7 @@ export class UsersService {
       id: `${otp._id}`,
       code: otp.code,
       email: user.email,
+      purpose,
     };
     const { otpToken } = this.jwtAuthService.otpToken(otpBody);
 
@@ -180,12 +181,32 @@ export class UsersService {
       },
     });
 
-    // await this.mailService.sendForgetPasswordOtp(user, code);
+    if (purpose === OTPPurpose.UNBLOCK_ACCOUNT) {
+      const password = nanoid(10);
+      const hashedPassword = await this.hashService.create(password);
+
+      await updateById<User>(
+        this.UserModel,
+        user._id,
+        { password: hashedPassword, updatedAt: new Date() },
+      );
+
+      await this.mailchimpService.sendTransactionalEmail({
+        to: user.email,
+        templatedId: user.languagePreference === Locale.HEBREW
+          ? HebrewTemplate.PasswordChangeConfirmation
+          : EnglishTemplate.PasswordChangeConfirmation,
+        mergeVars: {
+          FNAME: user.firstName,
+          NEWPASSWORD: `New Password: ${password}`,
+        },
+      });
+    }
 
     return otpToken;
   }
 
-  async verifyOtp(dto: VerifyOtpDto): Promise<string> {
+  async verifyOtp(dto: VerifyOtpDto): Promise<object> {
     const decode = this.jwtAuthService.otpDecode(dto.token);
 
     const otp = await this.OtpModel.findById(decode.id).exec();
@@ -194,15 +215,16 @@ export class UsersService {
       if (checkExpireDate(otp.expireDate)) {
         if (!otp.isVerify) {
           await updateById<OTP>(this.OtpModel, otp._id, { isVerify: true, updatedAt: new Date() });
-          return ServerSuccess.OTP.VERIFY;
+          return {
+            response: ServerSuccess.OTP.VERIFY,
+            purpose: decode.purpose,
+          };
         }
         throw new BadRequestException(ServerErrors.OTP.EXPIRE);
-      } else {
-        throw new BadRequestException(ServerErrors.OTP.EXPIRE);
       }
-    } else {
-      throw new BadRequestException(ServerErrors.OTP.NOT_MATCH);
+      throw new BadRequestException(ServerErrors.OTP.EXPIRE);
     }
+    throw new BadRequestException(ServerErrors.OTP.NOT_MATCH);
   }
 
   async updatePassword(dto: UpdatePasswordDto) {
@@ -451,6 +473,25 @@ export class UsersService {
     }
   }
 
+  async findOne(email: string): Promise<User> {
+    try {
+      const user = await findOneByFieldNameIncludingDeleted<User>(
+        this.UserModel,
+        'email',
+        email,
+      );
+
+      if (!user) {
+        throw new NotFoundException(ServerErrors.USER.NOT_FOUND);
+      }
+
+      return user;
+    } catch (error) {
+      exceptionHandling(error);
+      throw new InternalServerErrorException('Couldn\'t find user with given email');
+    }
+  }
+
   async findByEmailOrNull(email: string): Promise<User | null> {
     const user = await findOneByFieldName<User>(
       this.UserModel,
@@ -587,10 +628,10 @@ export class UsersService {
     }
   }
 
-  async recoverUserAccount(body: SendOtpToEmailDTO) {
+  async recoverUserAccount(email: string): Promise<GetUserDetailsResponse> {
     try {
       const recoveredUser = await this.UserModel.findOneAndUpdate(
-        { email: body.email },
+        { email },
         {
           $set: {
             deletedAt: null,
@@ -626,5 +667,40 @@ export class UsersService {
     } catch (error) {
       exceptionHandling(error);
     }
+  }
+
+  async unblockUserAccount(email: string): Promise<GetUserDetailsResponse> {
+    const unblockedUser = await this.UserModel.findOneAndUpdate(
+      { email },
+      {
+        $set: {
+          loginAttempts: 0,
+        },
+      },
+    );
+
+    if (!unblockedUser) {
+      throw new NotFoundException(ServerErrors.USER.NOT_FOUND);
+    }
+
+    return {
+      id: unblockedUser.id,
+      firstName: unblockedUser.firstName,
+      lastName: unblockedUser.lastName,
+      phoneDetails: {
+        countryCode: unblockedUser.countryCode,
+        phoneNumber: unblockedUser.phoneNumber,
+      },
+      languagePreference: unblockedUser.languagePreference,
+      address: unblockedUser.address,
+      dob: unblockedUser.dob,
+      email: unblockedUser.email,
+      isPhoneVerify: unblockedUser.isPhoneVerify,
+      isEmailVerify: unblockedUser.isEmailVerify,
+      role: unblockedUser.role,
+      createdAt: unblockedUser.createdAt,
+      updatedAt: unblockedUser.updatedAt,
+      deletedAt: unblockedUser.deletedAt,
+    };
   }
 }

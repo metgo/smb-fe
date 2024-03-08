@@ -159,6 +159,7 @@ export const ServerSuccess = {
     CHANGEPASSWORD: 'Password change successfully',
     FORGET_PASSWORD: 'OTP was successfully send',
     RECOVER: 'User account was successfully recovered',
+    UNBLOCK: 'User account was successfully unblocked',
   },
   ICON_CREATED: 'Icon was succesfully created',
   ICON_LISTED: 'Icon was succesfully listed',

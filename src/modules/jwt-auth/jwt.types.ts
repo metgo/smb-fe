@@ -1,4 +1,4 @@
-import { UserType } from '../users/users.type';
+import { OTPPurpose, UserType } from '../users/users.type';
 
 export interface ITokens {
   accessToken: string;
@@ -16,6 +16,7 @@ export interface IJWTOtp {
   isv:string;
   isVerify: boolean,
   userId: string,
+  purpose?: OTPPurpose,
   iat: number;
   exp: number;
 }

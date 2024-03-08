@@ -18,9 +18,10 @@ import { RegisterRequest } from 'src/modules/auth/requests/register.request';
 import { SignInRequest } from 'src/modules/auth/requests/signin.request';
 import { GetUserDetailsResponse } from 'src/modules/users/responses/get-user-details.response';
 import { UsersService } from 'src/modules/users/users.services';
+import { OTPPurpose } from 'src/modules/users/users.type';
 import { ChangePasswordDto } from './requests/change-password.dto';
 import { Response } from 'express';
-import { SendOtpToEmailDTO, UpdatePasswordDto } from './requests/forget-password.dto';
+import { EmailDTO, SendOtpToEmailDTO, UpdatePasswordDto } from './requests/forget-password.dto';
 import { responseHelper } from 'src/core/helper/response.helper';
 import { VerifyOtpDto } from './requests/verify-otp.dto';
 
@@ -92,9 +93,11 @@ export class AuthController {
     @Res() response: Response,
     @Body() dto: SendOtpToEmailDTO,
   ) {
-    const user = await this.userService.findByEmail(dto.email);
+    const user = dto.purpose !== OTPPurpose.RECOVER_ACCOUNT
+      ? await this.userService.findByEmail(dto.email)
+      : await this.userService.findOne(dto.email);
 
-    const token = await this.userService.generateOtp(user);
+    const token = await this.userService.generateOtp(user, dto.purpose);
 
     return responseHelper(
       response,
@@ -161,14 +164,36 @@ export class AuthController {
   @Post('recover-account')
   async recoverUserAccount(
     @Res() response: Response,
-    @Body() body: SendOtpToEmailDTO,
+    @Body() body: EmailDTO,
   ) {
-    await this.userService.recoverUserAccount(body);
+    await this.userService.recoverUserAccount(body.email);
 
     return responseHelper(
       response,
       HttpStatus.OK,
       ServerSuccess.USER.RECOVER,
+      null,
+      null,
+      null,
+    );
+  }
+
+  @ApiEndpoint({
+    tags: ['Auth'],
+    response: { status: HttpStatus.OK, description: ServerSuccess.USER.RECOVER },
+    operation: 'Unblock user account',
+  })
+  @Post('unblock-account')
+  async unblockUserAccount(
+    @Res() response: Response,
+    @Body() body: EmailDTO,
+  ) {
+    await this.userService.unblockUserAccount(body.email);
+
+    return responseHelper(
+      response,
+      HttpStatus.OK,
+      ServerSuccess.USER.UNBLOCK,
       null,
       null,
       null,

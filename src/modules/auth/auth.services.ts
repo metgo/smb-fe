@@ -1,5 +1,5 @@
 import {
-  Inject, Injectable, NotFoundException, UnauthorizedException, forwardRef,
+  ForbiddenException, Inject, Injectable, NotFoundException, UnauthorizedException, forwardRef,
 } from '@nestjs/common';
 import { ServerErrors } from 'src/common/constant';
 
@@ -36,7 +36,7 @@ export class AuthService {
       });
 
       // take action if login attempts is greater than 5
-      throw new UnauthorizedException(ServerErrors.USER.INVALID_CREDENTIALS);
+      throw new ForbiddenException(ServerErrors.USER.INVALID_CREDENTIALS);
     }
     const userBody = {
       id: user.id,

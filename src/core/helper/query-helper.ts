@@ -1,4 +1,4 @@
-import mongoose, { Model } from 'mongoose';
+import mongoose, { FilterQuery, Model } from 'mongoose';
 import { Locale } from 'src/common/enum';
 import { QueryHelperInterface } from 'src/core/helper/query-helper.interface';
 
@@ -25,8 +25,8 @@ export async function findOneByFieldName<T>(model: Model<T>, fieldName: keyof T,
 }
 
 export async function findOneByFieldNameIncludingDeleted<T>(model: Model<T>, fieldName: keyof T, item: string) {
-  const filterBy = { [fieldName]: item };
-  const data = await model.findOne({ filterBy });
+  const filterBy: FilterQuery<T> = { [fieldName]: item } as FilterQuery<T>; // Type assertion
+  const data = await model.findOne(filterBy);
   return data;
 }
 
