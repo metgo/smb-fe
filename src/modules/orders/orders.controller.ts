@@ -26,11 +26,16 @@ import { ExternalApiGuard } from 'src/core/guards/authorization/external-api-gua
 import { Roles } from 'src/core/guards/authorization/roles';
 import { JwtAuthGuard } from 'src/core/guards/jwt/jwt.guards';
 import { responseHelper } from 'src/core/helper/response.helper';
-import { CreateOrderDto } from 'src/modules/orders/dto/create-order.dto';
-import { FilterQuery } from 'src/modules/orders/dto/query.dto';
-import { UpdateOrderDto } from 'src/modules/orders/dto/update-order.dto';
+import {
+  CreateOrderExternalApiDto,
+  CreateOrderDto,
+  UpdateOrderDto,
+} from 'src/modules/orders/dto';
+import {
+  GetAllOrdersQuery,
+  GetOrdersStatsQuery,
+} from 'src/modules/orders/queries';
 import { OrdersService } from 'src/modules/orders/orders.services';
-import { GetOrdersStatsQuery } from 'src/modules/orders/queries/get-orders-stats.query';
 import { ProductsService } from 'src/modules/products/products.services';
 import { UserType } from 'src/modules/users/users.type';
 import { VoucherService } from 'src/modules/vouchers/voucher.service';
@@ -170,7 +175,7 @@ export class OrdersController {
   @HttpCode(HttpStatus.OK)
   @Get('my-orders')
   async getMyOrders(
-    @Query() query: FilterQuery,
+    @Query() query: GetAllOrdersQuery,
     @Req() req,
     @Res() response: Response,
   ) {
@@ -203,7 +208,10 @@ export class OrdersController {
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
   @Get('all-orders')
-  async getAllOrders(@Query() query: FilterQuery, @Res() response: Response) {
+  async getAllOrders(
+    @Query() query: GetAllOrdersQuery,
+    @Res() response: Response,
+  ) {
     const orders = await this.ordersService.findAll({
       query,
     });
@@ -264,7 +272,7 @@ export class OrdersController {
   @UseGuards(ExternalApiGuard)
   @Post('/externalapi/orders')
   async createOrderForExternalApi(
-    @Body() body: CreateOrderDto,
+    @Body() body: CreateOrderExternalApiDto,
     @Query() query: ExternalApiPostQuery,
     @Req() req,
     @Res() response: Response,

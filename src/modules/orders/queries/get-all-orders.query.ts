@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsOptional } from 'class-validator';
 import { OrderStatus } from 'src/modules/orders/orders.type';
 
-export class FilterQuery {
+export class GetAllOrdersQuery {
   @ApiProperty({ type: String, required: false })
   @IsOptional()
     search: string;

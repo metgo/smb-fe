@@ -31,7 +31,8 @@ import {
 import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interface';
 import { BusinessService } from 'src/modules/business/services/business.service';
 import { UpdateOrderDto } from 'src/modules/orders/dto/update-order.dto';
-import { GetOrdersStatsQuery } from 'src/modules/orders/queries/get-orders-stats.query';
+import { GetAllOrdersInterface } from 'src/modules/orders/interface/get-all-orders.interface';
+import { GetOrdersStatsQuery } from 'src/modules/orders/queries';
 import { Order } from 'src/modules/orders/schema/orders.schema';
 import { ProductsService } from 'src/modules/products/products.services';
 import { UserType } from 'src/modules/users/users.type';
@@ -40,11 +41,7 @@ import { VoucherService } from 'src/modules/vouchers/voucher.service';
 import { PaymentsService } from 'src/services/payments/payments.service';
 import { PaymentPurpose } from 'src/services/payments/payments.type';
 import { MailChimpService } from 'src/services/mailchimp/mailchimp.service';
-import {
-  FindOrdersQuery,
-  OrderStatus,
-  PaymentMode,
-} from 'src/modules/orders/orders.type';
+import { OrderStatus, PaymentMode } from 'src/modules/orders/orders.type';
 
 @Injectable()
 export class OrdersService {
@@ -130,7 +127,7 @@ export class OrdersService {
                 COST: getProductInformation[0].price.sellingPrice,
                 TOTALAMOUNT: order.totalAmount,
                 BUYERNAME: `${body.firstName} ${body.lastName}`,
-                BUYERPHONE: `${body.countryCode}-${body.phone}`,
+                BUYERPHONE: `${body?.countryCode}-${body.phone}`,
                 BUYEREMAIL: body.email,
                 BUYERADDRESS: body.address,
               },
@@ -316,7 +313,7 @@ export class OrdersService {
     }
   }
 
-  async findAll(queries: FindOrdersQuery): Promise<Order[]> {
+  async findAll(queries: GetAllOrdersInterface): Promise<Order[]> {
     const {
       search, page, limit, ...query
     } = queries.query;
