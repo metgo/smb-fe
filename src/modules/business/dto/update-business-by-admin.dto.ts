@@ -1,21 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsEnum, IsNotEmpty, IsOptional, IsString,
-} from 'class-validator';
+import { IsOptional, IsString } from 'class-validator';
 
-import { BusinessStatus } from 'src/modules/business/business.type';
-import { updateBusinessDto } from 'src/modules/business/dto/update-business.dto';
+import { WebCreateBusiness } from './web-create-business.dto';
 
-export class UpdateBusinessByAdminDto extends updateBusinessDto {
-  @ApiProperty({
-    type: 'enum',
-    enum: BusinessStatus,
-    required: true,
-  })
-  @IsNotEmpty()
-  @IsEnum(BusinessStatus)
-    status: BusinessStatus;
-
+export class UpdateBusinessByAdminDto extends WebCreateBusiness {
   @ApiProperty({
     required: false,
   })

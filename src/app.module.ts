@@ -36,6 +36,7 @@ import { HashModule } from './services/hash/hash.module';
 import { MailChimpModule } from 'src/services/mailchimp/mailchimp.module';
 import { ReadFileModule } from 'src/services/read-file/read-file.module';
 import { AuthorityModule } from 'src/modules/authority/authority.module';
+import { StatsModule } from './modules/stats/stats.module';
 
 @Module({
   imports: [
@@ -73,6 +74,7 @@ import { AuthorityModule } from 'src/modules/authority/authority.module';
     MailChimpModule,
     AuthorityModule,
     ReadFileModule,
+    StatsModule,
   ],
   providers: [
     {

@@ -809,7 +809,6 @@ export class BusinessService {
         $or: [{ isDeleted: { $exists: false } }, { isDeleted: false }],
         serviceType: GeoServicesTypes.BUSINESS,
       };
-
       if (loggedInUser.role === UserType.DMOADMIN) {
         const dmoId = await this.dmoService.findDMOByUserID(loggedInUser.id);
 

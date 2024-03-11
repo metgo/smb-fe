@@ -20,6 +20,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@date-fns/upgrade": "^1.0.3",
     "@google-cloud/storage": "^7.5.0",
     "@hapi/joi": "^17.1.1",
     "@mailchimp/mailchimp_marketing": "^3.0.80",
