@@ -164,7 +164,7 @@ export class BussCategoriesService {
 
   async getAllForExternalApi(query: ExternalApiCategoriesQuery) {
     const select = disSelect;
-    const populate = {
+    const populateCategories = {
       path: 'icon iconBnW',
       select: `${disSelect}`,
     };
@@ -175,7 +175,7 @@ export class BussCategoriesService {
       .sort({ createdAt: -1 })
       .lean()
       .select(select)
-      .populate(populate)
+      .populate(populateCategories)
       .exec();
 
     if (query.locale === Locale.HEBREW) {
@@ -187,7 +187,11 @@ export class BussCategoriesService {
     }
 
     let categoriesWithSubCategories = [];
-    const select2 = `${disSelect} -bussCategoryId`;
+    const populateSubCategories = {
+      path: 'icon',
+      select: `${disSelect}`,
+    };
+    const selectSubCategories = `${disSelect} -bussCategoryId`;
 
     await Promise.all(
       categories.map(async category => {
@@ -198,8 +202,8 @@ export class BussCategoriesService {
             bussCategoryId: category._id,
             deletedAt: { $in: [null] },
           })
-            .select(select2)
-            .populate(populate)
+            .select(selectSubCategories)
+            .populate(populateSubCategories)
             .exec();
 
         if (query.locale === Locale.HEBREW) {
