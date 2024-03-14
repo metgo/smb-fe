@@ -17,7 +17,6 @@ import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { disSelect } from 'src/common/utils/select.handling';
 import {
   deleteItem,
-  findOneByFieldNames,
   queryhandler,
   updateOneByManyFields,
 } from 'src/core/helper/query-helper';
@@ -173,13 +172,28 @@ export class ProductsService {
   }
 
   async findOne(productId: string): Promise<Product> {
-    try {
-      const product = await findOneByFieldNames<Product>(this.ProductModel, {
-        _id: productId,
-        status: ProductStatus.ACTIVE,
-      });
+    const populate = {
+      path: 'categories subCategories',
+      select: `${disSelect}`,
+      populate: {
+        path: 'icon',
+        select: `${disSelect}`,
+      },
+    };
 
-      if (!product) {
+    const populate1 = {
+      path: 'dmoId authorityId',
+      select: `${disSelect}`,
+    };
+
+    const select = `${disSelect}`;
+    try {
+      const product = await this.ProductModel.findById(productId)
+        .select(select)
+        .populate(populate)
+        .populate(populate1);
+
+      if (!product || product.status !== ProductStatus.ACTIVE) {
         throw new NotFoundException(ServerErrors.PRODUCT.NOT_FOUND);
       }
 
@@ -193,10 +207,27 @@ export class ProductsService {
     productId: string,
     loggedInUser: LoggedInUserInterface,
   ): Promise<Product> {
+    const populate = {
+      path: 'categories subCategories',
+      select: `${disSelect}`,
+      populate: {
+        path: 'icon',
+        select: `${disSelect}`,
+      },
+    };
+
+    const populate1 = {
+      path: 'dmoId authorityId',
+      select: `${disSelect}`,
+    };
+
+    const select = `${disSelect}`;
     try {
-      const product = await findOneByFieldNames<Product>(this.ProductModel, {
-        _id: productId,
-      });
+      const product = await this.ProductModel.findById(productId)
+        .select(select)
+        .populate(populate)
+        .populate(populate1);
+
       const allowedRoles = [UserType.DMOADMIN, UserType.SUPERADMIN];
 
       if (

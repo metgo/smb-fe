@@ -41,7 +41,7 @@ export class Product extends AuditableSchema {
 
   @Prop({
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Users',
+    ref: User.name,
     required: false,
   })
     primaryUserId: mongoose.Types.ObjectId | null;
