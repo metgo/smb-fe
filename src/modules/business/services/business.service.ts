@@ -82,7 +82,7 @@ export class BusinessService {
     dto: createBusinessDto,
     userId: string,
   ): Promise<Business> {
-    let newDto: any = { ...dto, type: GeoServicesTypes.BUSINESS };
+    let newDto: any = { ...dto, serviceType: GeoServicesTypes.BUSINESS };
 
     // find dmoId by authority
     if (dto.authorityId) {
@@ -950,7 +950,7 @@ export class BusinessService {
         filter = {
           ...filter,
           dmoId,
-          type: GeoServicesTypes.BUSINESS,
+          serviceType: GeoServicesTypes.BUSINESS,
         };
       }
 
@@ -1073,7 +1073,7 @@ export class BusinessService {
 
       let findQuery: any = {
         status: BusinessStatus.APPROVED,
-        type: GeoServicesTypes.BUSINESS,
+        serviceType: GeoServicesTypes.BUSINESS,
       };
 
       if (categoriesId) {
