@@ -1,7 +1,6 @@
 import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import axios from 'axios';
-import { Request } from 'express';
 import { Model } from 'mongoose';
 
 import { Locale, PaymentStatus, VoucherPaymentStatus } from 'src/common/enum';
@@ -47,35 +46,41 @@ export class PaymentsService {
       currency,
       purpose,
       id,
+      languagePreference,
       customerEmail,
       customerName,
-      languagePreference,
     } = command;
-    const payPlusResponse = await axios.post(
-      `${this.configService.paymentDetails.URL}PaymentPages/generatelink`,
+    const {
+      URL, TERMINAL_NUMBER, API_NAME, WEBHOOK_URL, SUCCESS, FAILURE,
+    }
+      = this.configService.cardCom;
+
+    const cardComResponse = await axios.post(
+      URL,
       {
-        payment_page_uid: this.configService.paymentDetails.PAGE_UUID,
-        amount,
-        currency_code: currency,
-        refURL_success: `${this.configService.paymentDetails.SERVER_URL}${this.configService.paymentDetails.SUCCESS}`,
-        refURL_failure: `${this.configService.paymentDetails.SERVER_URL}${this.configService.paymentDetails.FAILURE}`,
-        more_info: purpose,
-        more_info_1: customerEmail,
-        more_info_2: customerName,
-        more_info_3: languagePreference,
+        TerminalNumber: TERMINAL_NUMBER,
+        ApiName: API_NAME,
+        Amount: amount,
+        Language: languagePreference,
+        CoinId: 'NIS',
+        SuccessRedirectUrl: `${this.configService.baseUrl}${SUCCESS}?languagePreference=${languagePreference}`,
+        FailedRedirectUrl: `${this.configService.baseUrl}${FAILURE}?languagePreference=${languagePreference}`,
+        WebHookUrl: WEBHOOK_URL,
       },
       {
         headers: {
           ContentType: 'application/json',
-          Authorization: `{"api_key": "${this.configService.paymentDetails.API}","secret_key": "${this.configService.paymentDetails.SECRET}"}`,
         },
       },
     );
+
     let insertField: any = {
       purpose,
       amount,
       currency,
-      paymentRequestId: payPlusResponse.data.data.page_request_uid,
+      customerName,
+      customerEmail,
+      paymentRequestId: cardComResponse.data.LowProfileId,
     };
     if (purpose === PaymentPurpose.VOUCHER) {
       insertField = {
@@ -91,23 +96,20 @@ export class PaymentsService {
       };
     }
 
-    if (payPlusResponse.data.results.status === 'success') {
+    if (
+      cardComResponse.data.ResponseCode === 0
+      && cardComResponse.data.Description === 'OK'
+    ) {
       await this.createPayment(insertField);
     }
 
-    return payPlusResponse.data;
+    return cardComResponse.data;
   }
 
-  async paymentSucess(request: Request) {
-    const requestBody = request.body;
-
-    const pageRequestUid = requestBody?.page_request_uid;
+  async paymentSucess(query) {
+    const pageRequestUid = query?.lowprofilecode;
 
     const updateField = {
-      customerName: requestBody?.customer_name,
-      identificationNumber: requestBody?.identification_number,
-      customerEmail: requestBody?.more_info_1,
-      method: requestBody?.method,
       status: PaymentStatus.SUCCESS,
     };
     const payments = await update<Payment>(
@@ -118,29 +120,29 @@ export class PaymentsService {
     );
 
     await this.mailchimpService.sendTransactionalEmail({
-      to: requestBody?.more_info_1,
+      to: payments.customerEmail,
       templatedId:
-        requestBody.more_info_3 === Locale.HEBREW
+        query?.languagePreference === Locale.HEBREW
           ? HebrewTemplate.PaymentSuccessful
           : EnglishTemplate.PaymentSuccessful,
       mergeVars: {
-        FNAME: requestBody?.more_info_2,
-        TOTALAMOUNT: requestBody?.amount,
+        FNAME: payments.customerName,
+        TOTALAMOUNT: payments.amount,
       },
     });
 
-    if (requestBody?.more_info === PaymentPurpose.VOUCHER) {
+    if (payments.purpose === PaymentPurpose.VOUCHER) {
       await this.voucherService.updateAfterPaymentSuccess({
         ids: payments.voucherId,
         updateField: { paymentStatus: VoucherPaymentStatus.PAID },
-        voucherOwnerEmail: requestBody?.more_info_1,
-        voucherOwnerName: requestBody?.more_info_2,
-        languagePreference: requestBody.more_info_3,
+        voucherOwnerEmail: payments?.customerEmail,
+        voucherOwnerName: payments?.customerName,
+        languagePreference: query?.languagePreference,
       });
     }
 
-    if (requestBody?.more_info === PaymentPurpose.ORDER) {
-      const updateOrder = await this.ordersService.updateOrderAfterPayment(
+    if (payments.purpose === PaymentPurpose.ORDER) {
+      const updateOrder = await this.ordersService.updateAfterPaymentSuccess(
         payments.orderId,
       );
 
@@ -154,7 +156,7 @@ export class PaymentsService {
       await this.mailchimpService.sendTransactionalEmail({
         to: updateOrder.email,
         templatedId:
-          requestBody.more_info_3 === Locale.HEBREW
+          query?.languagePreference === Locale.HEBREW
             ? HebrewTemplate.OrderConfirmationForClient
             : EnglishTemplate.OrderConfirmationForClient,
         mergeVars: {
@@ -179,7 +181,7 @@ export class PaymentsService {
           await this.mailchimpService.sendTransactionalEmail({
             to: business.busiEmail,
             templatedId:
-              requestBody.more_info_3 === Locale.HEBREW
+              query?.languagePreference === Locale.HEBREW
                 ? HebrewTemplate.OrderReceivedForBusiness
                 : EnglishTemplate.OrderReceivedForBusiness,
             mergeVars: {
@@ -199,5 +201,31 @@ export class PaymentsService {
     }
   }
 
-  PaymentFailure() {}
+  async PaymentFailure(query) {
+    const pageRequestUid = query?.lowprofilecode;
+
+    const updateField = {
+      status: PaymentStatus.FAILURE,
+    };
+    const payments = await update<Payment>(
+      this.PaymentModel,
+      'paymentRequestId',
+      pageRequestUid,
+      updateField,
+    );
+
+    if (payments.purpose === PaymentPurpose.VOUCHER) {
+      await this.voucherService.updateAfterPaymentFailure({
+        ids: payments.voucherId,
+        updateField: { paymentStatus: VoucherPaymentStatus.FAILED },
+        voucherOwnerEmail: payments?.customerEmail,
+        voucherOwnerName: payments?.customerName,
+        languagePreference: query?.languagePreference,
+      });
+    }
+
+    if (payments.purpose === PaymentPurpose.ORDER) {
+      await this.ordersService.updateAfterPaymentFailure(payments.orderId);
+    }
+  }
 }

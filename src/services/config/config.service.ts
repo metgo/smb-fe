@@ -24,9 +24,9 @@ export class ConfigService {
   private parseEnv(): IEnvConfig {
     const ENV_VARIABLES = [
       'NODE_ENV',
-      'HOST',
       'ENV_NAME',
       'API_PORT',
+      'BASE_URL',
       'MONGODB_URI',
       'JWT_TOKEN_EXPIRES',
       'ACCESS_TOKEN_EXPIRATION',
@@ -49,13 +49,12 @@ export class ConfigService {
       'EMAIL_HOST',
       'USER',
       'PASSWORD',
-      'PAYMENT_URL',
-      'PAYMENT_API',
-      'PAYMENT_SECRET',
-      'PAYMENT_PAGE_UUID',
-      'PAYMNET_SUCCESS',
+      'CARDCOM_URL',
+      'CARDCOM_TERMINAL_NUMBER',
+      'CARDCOM_API_NAME',
+      'CARDCOM_WEBHOOK_URL',
+      'PAYMENT_SUCCESS',
       'PAYMENT_FAILURE',
-      'URL',
       'IDENTIFIER_ID',
       'MAILCHIMP_MARKETING_API_KEY',
       'MAILCHIMP_TRANSACTIONAL_API_KEY',
@@ -80,9 +79,9 @@ export class ConfigService {
       NODE_ENV: Joi.string()
         .valid('development', 'production', 'testing')
         .default('development'),
-      HOST: Joi.string().default('localhost'),
       ENV_NAME: Joi.string().required(),
       API_PORT: Joi.number().port().default(3000),
+      BASE_URL: Joi.string().required(),
       MONGODB_URI: Joi.string().required(),
       JWT_TOKEN_EXPIRES: Joi.number().required(),
       ACCESS_TOKEN_EXPIRATION: Joi.number().required(),
@@ -105,13 +104,13 @@ export class ConfigService {
       EMAIL_HOST: Joi.string().required(),
       USER: Joi.string().required(),
       PASSWORD: Joi.string().required(),
-      PAYMENT_URL: Joi.string().required(),
-      PAYMENT_API: Joi.string().required(),
-      PAYMENT_SECRET: Joi.string().required(),
-      PAYMENT_PAGE_UUID: Joi.string().required(),
-      PAYMNET_SUCCESS: Joi.string().required(),
+
+      CARDCOM_URL: Joi.string().required(),
+      CARDCOM_TERMINAL_NUMBER: Joi.number().required(),
+      CARDCOM_API_NAME: Joi.string().required(),
+      CARDCOM_WEBHOOK_URL: Joi.string().required(),
+      PAYMENT_SUCCESS: Joi.string().required(),
       PAYMENT_FAILURE: Joi.string().required(),
-      URL: Joi.string().required(),
       IDENTIFIER_ID: Joi.string().required(),
       MAILCHIMP_MARKETING_API_KEY: Joi.string().required(),
       MAILCHIMP_TRANSACTIONAL_API_KEY: Joi.string().required(),
@@ -143,6 +142,10 @@ export class ConfigService {
     return this.get('NODE_ENV');
   }
 
+  get baseUrl() {
+    return this.get('BASE_URL');
+  }
+
   get superAdminEmail() {
     return this.get('SUPER_ADMIN_EMAIL');
   }
@@ -168,15 +171,14 @@ export class ConfigService {
     };
   }
 
-  get paymentDetails() {
+  get cardCom() {
     return {
-      URL: this.get('PAYMENT_URL'),
-      API: this.get('PAYMENT_API'),
-      SECRET: this.get('PAYMENT_SECRET'),
-      PAGE_UUID: this.get('PAYMENT_PAGE_UUID'),
-      SUCCESS: this.get('PAYMNET_SUCCESS'),
+      URL: this.get('CARDCOM_URL'),
+      TERMINAL_NUMBER: this.get('CARDCOM_TERMINAL_NUMBER'),
+      API_NAME: this.get('CARDCOM_API_NAME'),
+      WEBHOOK_URL: this.get('CARDCOM_WEBHOOK_URL'),
+      SUCCESS: this.get('PAYMENT_SUCCESS'),
       FAILURE: this.get('PAYMENT_FAILURE'),
-      SERVER_URL: this.get('URL'),
     };
   }
 

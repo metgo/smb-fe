@@ -501,37 +501,6 @@ export class ProductsService {
     }
   }
 
-  async updateProductByFields(
-    productId: string,
-    updatedFields: any,
-  ): Promise<Product> {
-    try {
-      const productInfo = await this.findOne(productId);
-      const updatedField = {
-        ...updatedFields,
-        quantity: {
-          initial: productInfo.quantity.initial,
-          sold:
-            (!productInfo.quantity.sold ? 0 : productInfo.quantity.sold)
-            + updatedFields.sold,
-          remaining: productInfo.quantity.remaining - updatedFields.sold,
-        },
-      };
-
-      const updatedProduct = await updateOneByManyFields<Product>(
-        this.ProductModel,
-        {
-          _id: productId,
-        },
-        { ...updatedField },
-      );
-
-      return updatedProduct;
-    } catch (err) {
-      exceptionHandling(err);
-    }
-  }
-
   async deleteImage(
     loggedInUserId: string,
     id: string,

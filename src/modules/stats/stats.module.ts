@@ -29,6 +29,5 @@ import { StatsService } from './stats.service';
   providers: [StatsService],
   controllers: [StatsController],
   exports: [StatsService],
-
 })
 export class StatsModule {}

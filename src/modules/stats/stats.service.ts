@@ -15,18 +15,19 @@ import { subDays, differenceInDays } from 'date-fns';
 @Injectable()
 export class StatsService {
   constructor(
-      @InjectModel('Business')
-      private BusinessModel: Model<Business>,
-        @InjectModel('Product')
-        private ProductModel: Model<Product>,
-        private dmoService: DMOService,
-  ) { }
+    @InjectModel('Business')
+    private BusinessModel: Model<Business>,
+    @InjectModel('Product')
+    private ProductModel: Model<Product>,
+    private dmoService: DMOService,
+  ) {}
 
-  async getBusinessStats(loginUser: LoggedInUserInterface, query: GetALLBusinessProductStatsquery) {
+  async getBusinessStats(
+    loginUser: LoggedInUserInterface,
+    query: GetALLBusinessProductStatsquery,
+  ) {
     if (!query.startDate || !query.endDate) {
-      throw new BadRequestException(
-        'Data is required',
-      );
+      throw new BadRequestException('Data is required');
     }
     const startDate = new Date(query.startDate);
     const endDate = new Date(query.endDate);
@@ -36,9 +37,7 @@ export class StatsService {
       serviceType: GeoServicesTypes.BUSINESS,
     };
     if (startDate >= endDate) {
-      throw new BadRequestException(
-        `Created ${ServerErrors.DATE_IS_NOT_LESS}`,
-      );
+      throw new BadRequestException(`Created ${ServerErrors.DATE_IS_NOT_LESS}`);
     }
 
     if (dmo) {
@@ -126,38 +125,45 @@ export class StatsService {
       ]);
 
       // all business statics
-      const getAllBusinessStats = await getBusinessStats(
-        { ...findQuery },
-      );
+      const getAllBusinessStats = await getBusinessStats({ ...findQuery });
 
       // Count businesses for each category in the given date range
-      const filteredBusinessStats = await getBusinessStats(
-        {
-          ...findQuery,
-          createdAt: {
-            $gte: startDate,
-            $lte: endDate,
-          },
+      const filteredBusinessStats = await getBusinessStats({
+        ...findQuery,
+        createdAt: {
+          $gte: startDate,
+          $lte: endDate,
         },
-      );
+      });
       // Count businesses for each category in the previous date range
       const previousDateFilter = {
         $gte: new Date(subDays(startDate.getTime(), daysDifference)), // 30 days before startDate
         $lt: startDate,
       };
-      const previousDateBusinessStats = await getBusinessStats(
-        { ...findQuery, createdAt: previousDateFilter },
-      );
+      const previousDateBusinessStats = await getBusinessStats({
+        ...findQuery,
+        createdAt: previousDateFilter,
+      });
 
       // Find the growth or declined rate for each category
       const growthRateStats = getAllBusinessStats.map(category => {
         const categoryId = category?.categoryId.toString();
         const totalCount = category?.count;
-        const currentCount = filteredBusinessStats.find(c => c.categoryId.toString() === categoryId)?.count || 0;
-        const previousCount = previousDateBusinessStats.find(c => c.categoryId.toString() === categoryId)?.count || 0;
-        const deleteCount = deletedBusinessStats.find(c => c.categoryId.toString() === categoryId)?.count || 0;
+        const currentCount
+          = filteredBusinessStats.find(
+            c => c.categoryId.toString() === categoryId,
+          )?.count || 0;
+        const previousCount
+          = previousDateBusinessStats.find(
+            c => c.categoryId.toString() === categoryId,
+          )?.count || 0;
+        const deleteCount
+          = deletedBusinessStats.find(
+            c => c.categoryId.toString() === categoryId,
+          )?.count || 0;
 
-        const growthRate = ((currentCount - deleteCount) / (previousCount + currentCount)) * 100;
+        const growthRate
+          = ((currentCount - deleteCount) / (previousCount + currentCount)) * 100;
 
         return {
           categoryId,
@@ -166,7 +172,6 @@ export class StatsService {
           previousCount,
           deleteCount,
           totalCount,
-
         };
       });
       // Your results
@@ -184,11 +189,12 @@ export class StatsService {
     }
   }
 
-  async getProductStats(loginUser: LoggedInUserInterface, query: GetALLBusinessProductStatsquery) {
+  async getProductStats(
+    loginUser: LoggedInUserInterface,
+    query: GetALLBusinessProductStatsquery,
+  ) {
     if (!query.startDate || !query.endDate) {
-      throw new BadRequestException(
-        'Data is required',
-      );
+      throw new BadRequestException('Data is required');
     }
     const startDate = new Date(query.startDate);
     const endDate = new Date(query.endDate);
@@ -198,9 +204,7 @@ export class StatsService {
       serviceType: GeoServicesTypes.BUSINESS,
     };
     if (startDate >= endDate) {
-      throw new BadRequestException(
-        `Created ${ServerErrors.DATE_IS_NOT_LESS}`,
-      );
+      throw new BadRequestException(`Created ${ServerErrors.DATE_IS_NOT_LESS}`);
     }
 
     if (dmo) {
@@ -288,38 +292,45 @@ export class StatsService {
       ]);
 
       // all business statics
-      const getAllProductStats = await getBusinessStats(
-        { ...findQuery },
-      );
+      const getAllProductStats = await getBusinessStats({ ...findQuery });
 
       // Count businesses for each category in the given date range
-      const filteredProductStats = await getBusinessStats(
-        {
-          ...findQuery,
-          createdAt: {
-            $gte: startDate,
-            $lte: endDate,
-          },
+      const filteredProductStats = await getBusinessStats({
+        ...findQuery,
+        createdAt: {
+          $gte: startDate,
+          $lte: endDate,
         },
-      );
+      });
       // Count businesses for each category in the previous date range
       const previousDateFilter = {
         $gte: new Date(subDays(startDate.getTime(), daysDifference)), // 30 days before startDate
         $lt: startDate,
       };
-      const previousDateProductStats = await getBusinessStats(
-        { ...findQuery, createdAt: previousDateFilter },
-      );
+      const previousDateProductStats = await getBusinessStats({
+        ...findQuery,
+        createdAt: previousDateFilter,
+      });
 
       // Find the growth or declined rate for each category
       const growthRateStats = getAllProductStats.map(category => {
         const categoryId = category?.categoryId.toString();
         const totalCount = category?.count;
-        const currentCount = filteredProductStats.find(c => c.categoryId.toString() === categoryId)?.count || 0;
-        const previousCount = previousDateProductStats.find(c => c.categoryId.toString() === categoryId)?.count || 0;
-        const deleteCount = deletedProductStats.find(c => c.categoryId.toString() === categoryId)?.count || 0;
+        const currentCount
+          = filteredProductStats.find(
+            c => c.categoryId.toString() === categoryId,
+          )?.count || 0;
+        const previousCount
+          = previousDateProductStats.find(
+            c => c.categoryId.toString() === categoryId,
+          )?.count || 0;
+        const deleteCount
+          = deletedProductStats.find(
+            c => c.categoryId.toString() === categoryId,
+          )?.count || 0;
 
-        const growthRate = ((currentCount - deleteCount) / (previousCount + currentCount)) * 100;
+        const growthRate
+          = ((currentCount - deleteCount) / (previousCount + currentCount)) * 100;
 
         return {
           categoryId,
@@ -328,7 +339,6 @@ export class StatsService {
           previousCount,
           deleteCount,
           totalCount,
-
         };
       });
       // Your results

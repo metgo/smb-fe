@@ -644,6 +644,14 @@ export class VoucherService {
     }
   }
 
+  async updateAfterPaymentFailure(command: UpdateVoucherAfterPaymentInterface) {
+    try {
+      await this.update(command.ids, command.updateField);
+    } catch (err) {
+      exceptionHandling(err);
+    }
+  }
+
   async findByIds(ids: string[]): Promise<Voucher[]> {
     const populate = {
       path: 'campId',
@@ -820,6 +828,21 @@ export class VoucherService {
       amountToBeRedeemed,
       redeemedAmount: body.amount - amountToBeRedeemed,
     };
+  }
+
+  async updateAmountAfterOrderFailed(vouchers: any) {
+    await Promise.all(
+      vouchers.map(async voucherDetail => {
+        await this.VoucherModel.findOneAndUpdate(
+          { _id: voucherDetail.id },
+          {
+            $set: { updatedAt: new Date() },
+            $inc: { remainingAmount: +voucherDetail.redeemedAmount },
+          },
+          { new: true },
+        );
+      }),
+    );
   }
 
   async updateVoucherCreatedDetails(email: string, userId: string) {

@@ -18,7 +18,6 @@ import {
   HebrewTemplate,
 } from 'src/common/mailchimp/templateId';
 import { paginationConfig } from 'src/common/pagination.config';
-import { sortByPriorityAndHighest } from 'src/common/sort-priority-and-highest';
 import { calculateGrowthPercentage } from 'src/common/utils/calculate-growth-percentage';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { disSelect } from 'src/common/utils/select.handling';
@@ -161,7 +160,7 @@ export class OrdersService {
         purpose: PaymentPurpose.ORDER,
         id: order.id,
         customerEmail: body.email,
-        customerName: body.firstName,
+        customerName: `${body.firstName} ${body.lastName}`,
         languagePreference: body?.languagePreference || Locale.ENGLISH,
       });
 
@@ -175,60 +174,33 @@ export class OrdersService {
     }
   }
 
-  async updateOrderAfterPayment(orderId: string): Promise<Order> {
-    const orderDetail = await findOneById<Order>(this.OrderModel, orderId);
-    if (!orderDetail?.voucher || !orderDetail?.voucher?.length) {
-      // deduct product count
-      orderDetail.products.map(async product => {
-        const productId = product.id.toString();
-        await this.productsService.updateProductByFields(productId, {
-          sold: product.quantity,
-        });
-      });
-
-      const updatedField = {
-        paymentStatus: PaymentStatus.SUCCESS,
-        status: OrderStatus.PROCESSING,
-      };
-
-      const updateOrder = await updateById<Order>(
-        this.OrderModel,
-        orderId,
-        updatedField,
-      );
-      return updateOrder;
-    }
-    // get voucherIds and sort by amount
-    const arrayOfVoucherIds = orderDetail.voucher.map(obj => obj.id);
-    const voucherIds = await this.voucherService.findByIds(arrayOfVoucherIds);
-
-    const sortedVoucher = sortByPriorityAndHighest(
-      orderDetail.totalAmount,
-      voucherIds,
-    );
-
-    // update vouchers detail and deduct voucher amounts
-    const voucher = await this.processVouchers(
-      orderDetail.createdBy,
-      sortedVoucher,
-      orderDetail.totalAmount,
-    );
-
-    // deduct product count
-    await Promise.all(
-      orderDetail.products.map(async product => {
-        const productId = product.id.toString();
-        await this.productsService.updateProductByFields(productId, {
-          sold: product.quantity,
-        });
-      }),
-    );
-
+  async updateAfterPaymentSuccess(orderId: string): Promise<Order> {
     const updatedField = {
       paymentStatus: PaymentStatus.SUCCESS,
-      voucher,
       status: OrderStatus.PROCESSING,
     };
+
+    const updateOrder = await updateById<Order>(
+      this.OrderModel,
+      orderId,
+      updatedField,
+    );
+    return updateOrder;
+  }
+
+  async updateAfterPaymentFailure(orderId: string): Promise<Order> {
+    const orderDetail = await findOneById<Order>(this.OrderModel, orderId);
+    const updatedField = {
+      paymentStatus: PaymentStatus.FAILURE,
+      status: OrderStatus.CANCELED,
+    };
+
+    if (orderDetail?.voucher && orderDetail?.voucher?.length) {
+      // update vouchers detail and add the deducted voucher amounts
+      await this.voucherService.updateAmountAfterOrderFailed(
+        orderDetail.voucher,
+      );
+    }
 
     const updateOrder = await updateById<Order>(
       this.OrderModel,

@@ -3,9 +3,9 @@ import { IsEnum, IsOptional, IsString } from 'class-validator';
 import { BusinessStatus } from 'src/modules/business/business.type';
 
 export class GetALLBusinessProductStatsquery {
-    @ApiProperty({ type: String, required: false })
+  @ApiProperty({ type: String, required: false })
   @IsOptional()
-      startDate: string;
+    startDate: string;
 
   @ApiProperty({ type: String, required: false })
   @IsOptional()

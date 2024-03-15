@@ -1,5 +1,11 @@
 import {
-  Controller, Get, HttpStatus, Query, Req, Res, UseGuards,
+  Controller,
+  Get,
+  HttpStatus,
+  Query,
+  Req,
+  Res,
+  UseGuards,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { ServerSuccess } from 'src/common/constant';
@@ -13,7 +19,7 @@ import { StatsService } from './stats.service';
 
 @Controller()
 export class StatsController {
-  constructor(private statsService: StatsService) { }
+  constructor(private statsService: StatsService) {}
 
   @ApiEndpoint({
     tags: ['Business, Stats'],
@@ -29,7 +35,10 @@ export class StatsController {
     @Res() response: Response,
     @Query() query: GetALLBusinessProductStatsquery,
   ) {
-    const businessStats = await this.statsService.getBusinessStats(req.user, query);
+    const businessStats = await this.statsService.getBusinessStats(
+      req.user,
+      query,
+    );
     return responseHelper(
       response,
       HttpStatus.OK,
@@ -56,7 +65,10 @@ export class StatsController {
     @Res() response: Response,
     @Query() query: GetALLBusinessProductStatsquery,
   ) {
-    const productStats = await this.statsService.getProductStats(req.user, query);
+    const productStats = await this.statsService.getProductStats(
+      req.user,
+      query,
+    );
     return responseHelper(
       response,
       HttpStatus.OK,
