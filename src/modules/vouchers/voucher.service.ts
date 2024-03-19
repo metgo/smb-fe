@@ -114,7 +114,7 @@ export class VoucherService {
         id: voucherId,
         customerEmail: dto.email,
         customerName: dto.name,
-        languagePreference: user ? user.languagePreference : Locale.ENGLISH,
+        languagePreference: dto?.languagePreference || Locale.ENGLISH,
       });
 
       return paymentLink;
@@ -163,7 +163,10 @@ export class VoucherService {
       const VOUCHERCODE = voucherCodes.map(code => `\n${code}`).toString();
       await this.mailchimpService.sendTransactionalEmail({
         to: dto.email,
-        templatedId: HebrewTemplate.VoucherConfirmationNonLoggedIn,
+        templatedId:
+          dto.languagePreference === Locale.HEBREW
+            ? HebrewTemplate.VoucherConfirmationNonLoggedIn
+            : EnglishTemplate.VoucherConfirmationNonLoggedIn,
         mergeVars: {
           FNAME: dto.name,
           VOUCHERCODE,
@@ -781,7 +784,7 @@ export class VoucherService {
       id: voucherId,
       customerEmail: dto.email,
       customerName: dto.name,
-      languagePreference: user ? user.languagePreference : Locale.ENGLISH,
+      languagePreference: dto?.languagePreference || Locale.ENGLISH,
     });
 
     return paymentLink;

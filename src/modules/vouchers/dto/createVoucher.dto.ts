@@ -1,8 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import {
-  IsEmail, IsNotEmpty, IsPositive, IsString,
+  IsEmail,
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsPositive,
+  IsString,
 } from 'class-validator';
+import { Locale } from 'src/common/enum';
 import { AmountRange } from 'src/core/decorators/range.decorator';
 
 export class createVoucherDto {
@@ -39,4 +45,13 @@ export class createVoucherDto {
   @IsEmail()
   @IsNotEmpty()
     email: string;
+
+  @ApiProperty({
+    type: 'enum',
+    enum: Locale,
+    required: false,
+  })
+  @IsOptional()
+  @IsEnum(Locale)
+    languagePreference: Locale;
 }

@@ -44,7 +44,7 @@ export class Voucher extends AuditableSchema {
   @Prop({ enum: VoucherStatus, default: VoucherStatus.UNASSIGNED })
     status: VoucherStatus;
 
-  @Prop()
+  @Prop({ type: String, default: null })
     waitingUserEmail: string;
 
   @Prop({
