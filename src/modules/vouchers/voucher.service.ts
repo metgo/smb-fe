@@ -168,7 +168,7 @@ export class VoucherService {
             ? HebrewTemplate.VoucherConfirmationNonLoggedIn
             : EnglishTemplate.VoucherConfirmationNonLoggedIn,
         mergeVars: {
-          FNAME: dto.name,
+          BUYERNAME: dto.name,
           VOUCHERCODE,
           VOUCHERAMOUNT: dto.amount,
         },
@@ -636,7 +636,7 @@ export class VoucherService {
               ? HebrewTemplate.VoucherConfirmationNonLoggedIn
               : EnglishTemplate.VoucherConfirmationNonLoggedIn,
           mergeVars: {
-            FNAME: command.voucherOwnerName,
+            BUYERNAME: command.voucherOwnerName,
             VOUCHERCODE: voucherCodes,
             VOUCHERAMOUNT: voucherDetails[0].amount,
           },

@@ -126,7 +126,7 @@ export class PaymentsService {
           ? HebrewTemplate.PaymentSuccessful
           : EnglishTemplate.PaymentSuccessful,
       mergeVars: {
-        FNAME: payments.customerName,
+        BUYERNAME: payments.customerName,
         TOTALAMOUNT: payments.amount,
       },
     });
