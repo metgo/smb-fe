@@ -13,9 +13,10 @@ import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
 import { Roles } from 'src/core/guards/authorization/roles';
 import { JwtAuthGuard } from 'src/core/guards/jwt/jwt.guards';
 import { responseHelper } from 'src/core/helper/response.helper';
-import { UserType } from '../users/users.type';
-import { GetALLBusinessProductStatsquery } from './query/query.dto';
-import { StatsService } from './stats.service';
+import { GetALLBusinessProductStatsquery } from 'src/modules/stats/query/query.dto';
+import { StatsService } from 'src/modules/stats/stats.service';
+import { GetByDateRangeQuery } from 'src/modules/stats/query/get-date-range.query';
+import { UserType } from 'src/modules/users/users.type';
 
 @Controller()
 export class StatsController {
@@ -74,6 +75,36 @@ export class StatsController {
       HttpStatus.OK,
       ServerSuccess.PRODUCTS.LISTED,
       productStats,
+      null,
+      null,
+    );
+  }
+
+  @ApiEndpoint({
+    tags: ['Campaign, Stats'],
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.CAMPAIGN_LISTED,
+    },
+    noAuthToken: true,
+  })
+  @Roles(UserType.SUPERADMIN, UserType.DMOADMIN)
+  @UseGuards(JwtAuthGuard)
+  @Get('/stats/campaigns')
+  async getCampaignStats(
+    @Req() req,
+    @Res() response: Response,
+    @Query() query: GetByDateRangeQuery,
+  ) {
+    const campaignStats = await this.statsService.getCampaignStats(
+      req.user,
+      query,
+    );
+    return responseHelper(
+      response,
+      HttpStatus.OK,
+      ServerSuccess.CAMPAIGN_LISTED,
+      campaignStats,
       null,
       null,
     );
