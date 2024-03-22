@@ -54,6 +54,7 @@ export const ServerErrors = {
   MAP_POINT_SUB_CATEGORIES_ITEMS_NOT_FOUND:
     'This Map Point Sub Categories Items not found',
   BUSINESS_NOT_FOUND: 'Business not found',
+  EVENTS_NOT_FOUND: 'Event not found',
   DMO_NOT_FOUND: 'DMO not found',
   DMO_EXISTS: 'DMO already exists',
   SOCIAL_MEDIA_NOT_FOUND: 'Social Media not found',

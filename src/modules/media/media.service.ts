@@ -72,6 +72,16 @@ export class MediaServices {
       return updateBusiness;
     }
 
+    if (body.reference === ReferenceType.EVENT) {
+      const updateBusiness = await this.businessService.uploadMedia(
+        body.refId,
+        loggedInUser.id,
+        images,
+        loggedInUser.role,
+      );
+      return updateBusiness;
+    }
+
     // update to product model
     if (body.reference === ReferenceType.PRODUCT) {
       const updateProduct = await this.productService.uploadMedia({
@@ -94,6 +104,22 @@ export class MediaServices {
     let deletedImage;
     // delete from business module
     if (body.reference === ReferenceType.BUSINESS) {
+      deletedImage = await this.businessService.deleteImage(
+        loggedInUser,
+        body.refId,
+        body.imageUrl,
+      );
+
+      // delete image in media
+      await this.MediaModel.deleteOne({
+        createdBy: loggedInUser.id,
+        'reference.refId': body.refId,
+        'reference.schema': body.reference,
+        url: body.imageUrl,
+      });
+    }
+
+    if (body.reference === ReferenceType.EVENT) {
       deletedImage = await this.businessService.deleteImage(
         loggedInUser,
         body.refId,

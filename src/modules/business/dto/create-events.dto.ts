@@ -4,11 +4,15 @@ import {
   ArrayMaxSize,
   IsArray,
   IsBoolean,
+  IsDateString,
+  IsEnum,
+  IsNotEmpty,
   IsObject,
   IsOptional,
   IsString,
 } from 'class-validator';
 import transformEmail from 'src/core/helper/transformEmail';
+import { BusinessStatus } from '../business.type';
 
 class Address {
   @ApiProperty({ type: String })
@@ -197,4 +201,55 @@ export class CreateEventsDto {
   @IsArray()
   @ArrayMaxSize(5, { message: 'Tags should not be more than 5' })
     tags: string[];
+
+  @ApiProperty({
+    required: false,
+  })
+  @IsOptional()
+  @Transform(value => Number(value))
+    price: number;
+
+  @ApiProperty({
+    required: false,
+  })
+  @IsOptional()
+  @IsDateString()
+    startDate: Date;
+
+  @ApiProperty({
+    required: false,
+  })
+  @IsOptional()
+  @IsDateString()
+    endDate: Date;
+
+  @ApiProperty({
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+    meetingLink: string;
+
+  @ApiProperty({
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+    registrationLink: string;
+
+  @ApiProperty({
+    type: 'enum',
+    enum: BusinessStatus,
+    required: true,
+  })
+  @IsNotEmpty()
+  @IsEnum(BusinessStatus)
+    status: BusinessStatus;
+
+  @ApiProperty({
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+    rejected_reason: string;
 }

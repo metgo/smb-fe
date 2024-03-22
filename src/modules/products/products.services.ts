@@ -17,6 +17,7 @@ import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { disSelect } from 'src/common/utils/select.handling';
 import {
   deleteItem,
+  findOneByIDPopulate,
   queryhandler,
   updateOneByManyFields,
 } from 'src/core/helper/query-helper';
@@ -210,24 +211,11 @@ export class ProductsService {
     const populate = {
       path: 'categories subCategories',
       select: `${disSelect}`,
-      populate: {
-        path: 'icon',
-        select: `${disSelect}`,
-      },
     };
-
-    const populate1 = {
-      path: 'dmoId authorityId',
-      select: `${disSelect}`,
-    };
-
-    const select = `${disSelect}`;
     try {
-      const product = await this.ProductModel.findById(productId)
-        .select(select)
-        .populate(populate)
-        .populate(populate1);
-
+      const product = await findOneByIDPopulate<Product>(this.ProductModel, {
+        _id: productId,
+      }, populate);
       const allowedRoles = [UserType.DMOADMIN, UserType.SUPERADMIN];
 
       if (

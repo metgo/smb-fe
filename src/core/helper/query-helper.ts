@@ -23,6 +23,18 @@ export async function findOneByFieldNames<T>(
   return data;
 }
 
+export async function findOneByIDPopulate<T>(
+  model: Model<T>,
+  fieldNames: object,
+  populate: any,
+) {
+  const data = await model.findOne({
+    ...fieldNames,
+    deletedAt: { $in: [null] },
+  }).populate(populate);
+  return data;
+}
+
 export async function findOneByOrCase<T>(model: Model<T>, fieldNames: object) {
   const data = await model.findOne({
     ...fieldNames,

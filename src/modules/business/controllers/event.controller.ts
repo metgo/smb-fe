@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import {
   Body,
   Controller,
@@ -10,7 +11,9 @@ import {
   Query,
   Req,
   Res,
+  UploadedFiles,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { Response } from 'express';
 
@@ -21,6 +24,8 @@ import { JwtAuthGuard } from 'src/core/guards/jwt/jwt.guards';
 import { CreateEventsDto, UpdateEventDto } from 'src/modules/business/dto';
 import { GetAllBusinessesForGuestQuery } from 'src/modules/business/queries';
 import { EventsService } from 'src/modules/business/services/event.service';
+import { AnyFilesInterceptor } from '@nestjs/platform-express';
+import { fileFilterByExtensions } from 'src/services/gcp-bucket/middleware/file-filter';
 
 @Controller()
 export class EventController {
@@ -37,13 +42,14 @@ export class EventController {
     operation: 'Create an event by any logged in user',
   })
   @Post('events')
+  @UseInterceptors(AnyFilesInterceptor({ fileFilter: fileFilterByExtensions }))
   async createEvent(
     @Req() request,
     @Res() response: Response,
     @Body() dto: CreateEventsDto,
+    @UploadedFiles() image: Array<Express.Multer.File>,
   ) {
-    const events = await this.eventsService.createEvents(dto, request.user.id);
-
+    const events = await this.eventsService.createEvents(dto, request.user, image);
     return responseHelper(
       response,
       HttpStatus.CREATED,
@@ -54,6 +60,7 @@ export class EventController {
     );
   }
 
+  @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
     tags: ['Events'],
     response: {
@@ -65,10 +72,11 @@ export class EventController {
   })
   @Get('events')
   async getAllEvents(
+    @Req() req,
     @Res() response: Response,
     @Query() query?: GetAllBusinessesForGuestQuery,
-  ) {
-    const events = await this.eventsService.getAllEvents(query);
+  ): Promise<Response<any, Record<string, any>>> {
+    const events = await this.eventsService.getAllEvents(query, req.user);
 
     return responseHelper(
       response,
