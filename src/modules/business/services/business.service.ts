@@ -833,7 +833,7 @@ export class BusinessService {
     }
   }
 
-  async assignUsertoBusinesses(ids: mongoose.Types.ObjectId[], userId:string) {
+  async assignUsertoBusinesses(ids: mongoose.Types.ObjectId[], userId: string) {
     try {
       const updateBusiness = await updateManyByIds<Business>(
         this.BusinessModel,

@@ -1,5 +1,9 @@
 /* eslint-disable no-undef */
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
 
@@ -11,7 +15,10 @@ import { getNearestBusiness } from 'src/common/sort-by-nearest';
 import { disSelect } from 'src/common/utils/select.handling';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import {
-  deleteItem, findOneByFieldNameIncludingDeleted, queryhandler, updateOneByManyFields,
+  deleteItem,
+  findOneByFieldNameIncludingDeleted,
+  queryhandler,
+  updateOneByManyFields,
 } from 'src/core/helper/query-helper';
 import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interface';
 import { AuthorityService } from 'src/modules/authority/authority.service';
@@ -71,7 +78,10 @@ export class EventsService {
       };
     }
 
-    if (dto.geoLocation.long !== 'undefined' && dto.geoLocation.lat !== 'undefined') {
+    if (
+      dto.geoLocation.long !== 'undefined'
+      && dto.geoLocation.lat !== 'undefined'
+    ) {
       const location = {
         type: 'Point',
         coordinates: [
@@ -577,9 +587,7 @@ export class EventsService {
           if (loggedInUser) {
             if (
               loggedInUser.role === UserType.SUPERADMIN
-              || event.userId.equals(
-                new mongoose.Types.ObjectId(loggedInUser.id),
-              )
+              || event.userId.equals(new mongoose.Types.ObjectId(loggedInUser.id))
             ) {
               return event;
             }

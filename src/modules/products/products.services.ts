@@ -213,9 +213,13 @@ export class ProductsService {
       select: `${disSelect}`,
     };
     try {
-      const product = await findOneByIDPopulate<Product>(this.ProductModel, {
-        _id: productId,
-      }, populate);
+      const product = await findOneByIDPopulate<Product>(
+        this.ProductModel,
+        {
+          _id: productId,
+        },
+        populate,
+      );
       const allowedRoles = [UserType.DMOADMIN, UserType.SUPERADMIN];
 
       if (

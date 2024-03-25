@@ -558,7 +558,10 @@ export class UsersService {
 
   // admin create users
 
-  async adminCreateUser(dto: createUserByAdminDto, loggedInUser: LoggedInUserInterface) {
+  async adminCreateUser(
+    dto: createUserByAdminDto,
+    loggedInUser: LoggedInUserInterface,
+  ) {
     const user = await this.validateUserIfNeedToRecover(dto.email);
 
     if (user) {
@@ -568,7 +571,7 @@ export class UsersService {
     const password = nanoid(8);
     const hashedPassword = await this.hashService.create(password);
 
-    let body:any = {
+    let body: any = {
       ...dto,
       password: hashedPassword,
     };
@@ -583,27 +586,28 @@ export class UsersService {
 
       newUser = await this.UserModel.create(body);
       await this.dmoService.addCollaborators(loggedInUser.id, newUser.id);
-    } else if (loggedInUser.role === UserType.SUPERADMIN && body.role === UserType.TRAVELLER && body.businessesId?.length) {
+    } else if (
+      loggedInUser.role === UserType.SUPERADMIN
+      && body.role === UserType.TRAVELLER
+      && body.businessesId?.length
+    ) {
       body = {
         ...body,
         hasBusiness: true,
       };
 
       newUser = await this.UserModel.create(body);
-      await this.businessService.assignUsertoBusinesses(body.businessesId, newUser.id);
+      await this.businessService.assignUsertoBusinesses(
+        body.businessesId,
+        newUser.id,
+      );
     } else {
       newUser = await this.UserModel.create(body);
     }
 
     await Promise.all([
-      this.voucherService.updateVoucherCreatedDetails(
-        body.email,
-        newUser.id,
-      ),
-      this.voucherService.updateVoucherAssignedDetails(
-        body.email,
-        newUser.id,
-      ),
+      this.voucherService.updateVoucherCreatedDetails(body.email, newUser.id),
+      this.voucherService.updateVoucherAssignedDetails(body.email, newUser.id),
       this.mailchimpService.subscribe(
         newUser.firstName,
         newUser.lastName,
