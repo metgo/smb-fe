@@ -209,15 +209,15 @@ export class UsersController {
     softBlockExtraDtoFields: true,
     operation: 'Create User By Admin',
   })
-  @Roles(UserType.SUPERADMIN, UserType.ADMIN, UserType.DMO)
+  @Roles(UserType.SUPERADMIN, UserType.DMO)
   @UseGuards(JwtAuthGuard)
   @Post('admin')
   async adminCreateUser(
+    @Req() req,
     @Res() response: Response,
     @Body() dto: createUserByAdminDto,
   ) {
-    const newUser = await this.userService.adminCreateUser(dto);
-    await newUser.save();
+    const newUser = await this.userService.adminCreateUser(dto, req.user);
     return responseHelper(
       response,
       HttpStatus.CREATED,

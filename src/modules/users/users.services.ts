@@ -11,18 +11,13 @@ import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
 import { nanoid } from 'nanoid';
 
+import { ServerErrors, ServerSuccess } from 'src/common/constant';
 import { Locale } from 'src/common/enum';
 import {
   EnglishTemplate,
   HebrewTemplate,
 } from 'src/common/mailchimp/templateId';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
-import { RegisterRequest } from 'src/modules/auth/requests/register.request';
-import { UpdateUserRequest } from 'src/modules/users/requests/update-user.request';
-import { GetUserDetailsResponse } from 'src/modules/users/responses/get-user-details.response';
-import { User } from 'src/modules/users/schema/users.schema';
-import { VoucherService } from 'src/modules/vouchers/voucher.service';
-import { createUserByAdminDto } from './requests/create-user-ByAdmin.dto';
 import {
   findOneByFieldName,
   findOneByFieldNameExcludeId,
@@ -31,7 +26,15 @@ import {
   update,
   updateById,
 } from 'src/core/helper/query-helper';
-import { ServerErrors, ServerSuccess } from 'src/common/constant';
+import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interface';
+import { RegisterRequest } from 'src/modules/auth/requests/register.request';
+import { BusinessService } from 'src/modules/business/services/business.service';
+import { DMOService } from 'src/modules/dmo/dmo.service';
+import { UpdateUserRequest } from 'src/modules/users/requests/update-user.request';
+import { GetUserDetailsResponse } from 'src/modules/users/responses/get-user-details.response';
+import { User } from 'src/modules/users/schema/users.schema';
+import { VoucherService } from 'src/modules/vouchers/voucher.service';
+import { createUserByAdminDto } from './requests/create-user-ByAdmin.dto';
 import { ConfigService } from 'src/services/config/config.service';
 import {
   OTPPurpose,
@@ -58,6 +61,8 @@ export class UsersService {
     private UserModel: Model<User>,
     @InjectModel(OTP.name)
     private OtpModel: Model<OTP>,
+    private readonly businessService: BusinessService,
+    private readonly dmoService: DMOService,
     private readonly hashService: HashService,
     private readonly jwtAuthService: JwtAuthService,
     private mailchimpService: MailChimpService,
@@ -553,18 +558,67 @@ export class UsersService {
 
   // admin create users
 
-  async adminCreateUser(dto: createUserByAdminDto) {
-    const user = await findOneByFieldName<User>(
-      this.UserModel,
-      'email',
-      dto.email,
-    );
+  async adminCreateUser(dto: createUserByAdminDto, loggedInUser: LoggedInUserInterface) {
+    const user = await this.validateUserIfNeedToRecover(dto.email);
+
     if (user) {
       throw new BadRequestException(ServerErrors.USER.EXISTS);
     }
-    const password = await this.hashService.create(nanoid(8));
 
-    const newUser = new this.UserModel({ ...dto, password });
+    const password = nanoid(8);
+    const hashedPassword = await this.hashService.create(password);
+
+    let body:any = {
+      ...dto,
+      password: hashedPassword,
+    };
+
+    let newUser;
+
+    if (loggedInUser.role === UserType.DMO) {
+      body = {
+        ...body,
+        role: UserType.DMOADMIN,
+      };
+
+      newUser = await this.UserModel.create(body);
+      await this.dmoService.addCollaborators(loggedInUser.id, newUser.id);
+    } else if (loggedInUser.role === UserType.SUPERADMIN && body.role === UserType.TRAVELLER && body.businessesId?.length) {
+      body = {
+        ...body,
+        hasBusiness: true,
+      };
+
+      newUser = await this.UserModel.create(body);
+      await this.businessService.assignUsertoBusinesses(body.businessesId, newUser.id);
+    } else {
+      newUser = await this.UserModel.create(body);
+    }
+
+    await Promise.all([
+      this.voucherService.updateVoucherCreatedDetails(
+        body.email,
+        newUser.id,
+      ),
+      this.voucherService.updateVoucherAssignedDetails(
+        body.email,
+        newUser.id,
+      ),
+      this.mailchimpService.subscribe(
+        newUser.firstName,
+        newUser.lastName,
+        newUser.email,
+      ),
+      this.mailchimpService.sendTransactionalEmail({
+        to: newUser.email,
+        templatedId: EnglishTemplate.UserRegistrationByAdmin,
+        mergeVars: {
+          FNAME: newUser.firstName,
+          USERNAME: newUser.email,
+          PASSWORD: password,
+        },
+      }),
+    ]);
 
     return newUser;
   }

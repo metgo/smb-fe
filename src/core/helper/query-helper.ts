@@ -105,7 +105,7 @@ export async function update<T>(
 
 export async function updateManyByIds<T>(
   model: Model<T>,
-  fieldName: keyof T,
+  fieldName: keyof T | '_id',
   item: mongoose.Types.ObjectId[],
   updateField: object,
 ) {
