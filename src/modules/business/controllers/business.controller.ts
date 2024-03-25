@@ -27,6 +27,7 @@ import { responseHelper } from 'src/core/helper/response.helper';
 import { Roles } from 'src/core/guards/authorization/roles';
 import { JwtAuthGuard } from 'src/core/guards/jwt/jwt.guards';
 import {
+  AssignUserDto,
   createBusinessDto,
   UpdateBusinessByAdminDto,
   updateBusinessDto,
@@ -498,6 +499,38 @@ export class BusinessController {
       HttpStatus.OK,
       ServerSuccess.BUSINESS_UPDATED,
       business,
+      null,
+      null,
+    );
+  }
+
+  @ApiEndpoint({
+    tags: ['Admin', 'Business'],
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.BUSINESS_UPDATED,
+    },
+    noAuthToken: true,
+  })
+  @Roles(UserType.SUPERADMIN)
+  @UseGuards(JwtAuthGuard)
+  @Patch('admin/businesses/assign-user')
+  async assignUser(
+    @Req() req,
+    @Res() response: Response,
+    @Body() body: AssignUserDto,
+  ) {
+    const assignedBusiness = await this.businessServices.assignUsertoBusinesses(
+      body.businessesId,
+      body.userId,
+      req.user.id,
+    );
+
+    return responseHelper(
+      response,
+      HttpStatus.OK,
+      ServerSuccess.BUSINESS_UPDATED,
+      assignedBusiness,
       null,
       null,
     );

@@ -108,13 +108,13 @@ export async function update<T>(
 export async function updateManyByIds<T>(
   model: Model<T>,
   fieldName: keyof T | '_id',
-  item: mongoose.Types.ObjectId[],
+  item: mongoose.Types.ObjectId[] | string[],
   updateField: object,
 ) {
   const filterBy = { [fieldName]: { $in: item } };
   const data = await model.updateMany(
     { ...filterBy, deletedAt: { $in: [null] } },
-    updateField,
+    { ...updateField, updatedAt: new Date() },
     { new: true },
   );
   if (!data) {

@@ -833,18 +833,21 @@ export class BusinessService {
     }
   }
 
-  async assignUsertoBusinesses(ids: mongoose.Types.ObjectId[], userId: string) {
+  async assignUsertoBusinesses(businessIds: string[], assignUserId: string, loggedInUserId:string) {
     try {
+      const updatedField = { userId: assignUserId, updatedBy: loggedInUserId };
       const updateBusiness = await updateManyByIds<Business>(
         this.BusinessModel,
         '_id',
-        ids,
-        { userId },
+        businessIds,
+        updatedField,
       );
 
       if (!updateBusiness) {
         throw new BadRequestException(ServerErrors.BUSINESS_NOT_FOUND);
       }
+
+      return updateBusiness;
     } catch (err) {
       exceptionHandling(err);
     }
