@@ -123,6 +123,13 @@ export class UsersService {
         };
       }
 
+      if (!query.isDeleted) {
+        findQuery = {
+          ...findQuery,
+          isDeleted: false,
+        };
+      }
+
       const users = await queryhandler<User>(this.UserModel, {
         findQuery,
         select,

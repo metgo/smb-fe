@@ -12,4 +12,8 @@ export class GetAllUsersQuery extends CommonFilterQuery {
   @ApiProperty({ type: Boolean, required: false })
   @IsOptional()
     hasBusiness: boolean;
+
+  @ApiProperty({ type: Boolean, required: false })
+  @IsOptional()
+    isDeleted: boolean;
 }
