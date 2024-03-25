@@ -42,7 +42,10 @@ export class UsersController {
   @Roles(UserType.SUPERADMIN)
   @UseGuards(JwtAuthGuard)
   @Get('')
-  async getAllUsers(@Query() query: GetAllUsersQuery, @Res() response: Response) {
+  async getAllUsers(
+    @Query() query: GetAllUsersQuery,
+    @Res() response: Response,
+  ) {
     const users = await this.userService.getAllUsers(query);
     return responseHelper(
       response,

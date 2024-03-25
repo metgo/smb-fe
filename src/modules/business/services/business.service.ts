@@ -833,7 +833,11 @@ export class BusinessService {
     }
   }
 
-  async assignUsertoBusinesses(businessIds: string[], assignUserId: string, loggedInUserId:string) {
+  async assignUsertoBusinesses(
+    businessIds: string[],
+    assignUserId: string,
+    loggedInUserId: string,
+  ) {
     try {
       const updatedField = { userId: assignUserId, updatedBy: loggedInUserId };
       const updateBusiness = await updateManyByIds<Business>(

@@ -123,15 +123,12 @@ export class UsersService {
         };
       }
 
-      const users = await queryhandler<User>(
-        this.UserModel,
-        {
-          findQuery,
-          select,
-          page: queryPage,
-          limit: queryLimit,
-        },
-      );
+      const users = await queryhandler<User>(this.UserModel, {
+        findQuery,
+        select,
+        page: queryPage,
+        limit: queryLimit,
+      });
 
       return users;
     } catch (err) {
