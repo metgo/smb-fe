@@ -5,6 +5,7 @@ import { BusinessModule } from 'src/modules/business/business.module';
 import { OrdersController } from 'src/modules/orders/orders.controller';
 import { Order, OrderSchema } from 'src/modules/orders/schema/orders.schema';
 import { OrdersService } from 'src/modules/orders/orders.services';
+import { OrderProductModule } from 'src/modules/order-product/order-product.modules';
 import { ProductsModule } from 'src/modules/products/products.module';
 import { UsersModule } from 'src/modules/users/users.module';
 import { VoucherModule } from 'src/modules/vouchers/voucher.module';
@@ -22,6 +23,7 @@ import { MailChimpModule } from 'src/services/mailchimp/mailchimp.module';
     forwardRef(() => VoucherModule),
     ConfigModule,
     MailChimpModule,
+    OrderProductModule,
   ],
   controllers: [OrdersController],
   providers: [OrdersService],

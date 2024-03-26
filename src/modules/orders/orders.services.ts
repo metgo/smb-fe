@@ -37,10 +37,11 @@ import { ProductsService } from 'src/modules/products/products.services';
 import { UserType } from 'src/modules/users/users.type';
 import { CreateVoucherCommand } from 'src/modules/vouchers/interface';
 import { VoucherService } from 'src/modules/vouchers/voucher.service';
+import { OrderStatus, PaymentMode } from 'src/modules/orders/orders.type';
+import { OrderProductService } from 'src/modules/order-product/order-product.services';
 import { PaymentsService } from 'src/services/payments/payments.service';
 import { PaymentPurpose } from 'src/services/payments/payments.type';
 import { MailChimpService } from 'src/services/mailchimp/mailchimp.service';
-import { OrderStatus, PaymentMode } from 'src/modules/orders/orders.type';
 
 @Injectable()
 export class OrdersService {
@@ -50,10 +51,12 @@ export class OrdersService {
     private readonly businessService: BusinessService,
     private readonly mailchimpService: MailChimpService,
     private readonly productsService: ProductsService,
+    private readonly orderProductService: OrderProductService,
     @Inject(forwardRef(() => VoucherService))
     private readonly voucherService: VoucherService,
     @Inject(forwardRef(() => PaymentsService))
     private readonly paymentService: PaymentsService,
+
   ) {}
 
   async create(command: CreateVoucherCommand): Promise<any> {
@@ -82,6 +85,17 @@ export class OrdersService {
         });
 
         const order = await newOrder.save();
+        await Promise.all(
+          order.products.map(async product => {
+            await this.orderProductService.create({
+              productId: product.id,
+              quantity: product.quantity,
+              loggedInUserId,
+              orderId: order.id,
+              email: order.email,
+            });
+          }),
+        );
 
         const [getProductInformation, businessDetails] = await Promise.all([
           this.productsService.getProductInformationForOrders(body.products),

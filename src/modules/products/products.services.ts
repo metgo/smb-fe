@@ -172,7 +172,7 @@ export class ProductsService {
     return product;
   }
 
-  async findOne(productId: string): Promise<Product> {
+  async findOne(productId: string | mongoose.Types.ObjectId): Promise<Product> {
     const populate = {
       path: 'categories subCategories',
       select: `${disSelect}`,

@@ -29,6 +29,7 @@ import { GroupTypeModule } from './modules/group-type/group-type.module';
 import { VoucherTemplateModule } from './modules/voucher-template/voucher-template.module';
 import { CampaignModule } from './modules/campaign/campaign.module';
 import { OrdersModule } from 'src/modules/orders/orders.modules';
+import { OrderProductModule } from 'src/modules/order-product/order-product.modules';
 import { VoucherModule } from './modules/vouchers/voucher.module';
 import { PaymentsModule } from './services/payments/payments.module';
 import { CampaignSegmentModule } from './modules/campaign-segments/campaignSegment.module';
@@ -36,7 +37,7 @@ import { HashModule } from './services/hash/hash.module';
 import { MailChimpModule } from 'src/services/mailchimp/mailchimp.module';
 import { ReadFileModule } from 'src/services/read-file/read-file.module';
 import { AuthorityModule } from 'src/modules/authority/authority.module';
-import { StatsModule } from './modules/stats/stats.module';
+import { StatsModule } from 'src/modules/stats/stats.module';
 
 @Module({
   imports: [
@@ -52,6 +53,7 @@ import { StatsModule } from './modules/stats/stats.module';
     MPSubCategoriesModule,
     MPSubCategoriesItemsModule,
     OrdersModule,
+    OrderProductModule,
     BusinessModule,
     UsersModule,
     DMOModule,
