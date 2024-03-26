@@ -167,6 +167,18 @@ export class OrdersService {
 
       const order = await newOrder.save();
 
+      await Promise.all(
+        order.products.map(async product => {
+          await this.orderProductService.create({
+            productId: product.id,
+            quantity: product.quantity,
+            loggedInUserId,
+            orderId: order.id,
+            email: order.email,
+          });
+        }),
+      );
+
       const link = await this.paymentService.generateLink({
         amount: totalAmount,
         currency: Currency.ILS,
