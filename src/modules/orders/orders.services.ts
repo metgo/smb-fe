@@ -93,7 +93,6 @@ export class OrdersService {
               quantity: product.quantity,
               loggedInUserId,
               orderId: order.id,
-              email: order.email,
             });
           }),
         );
@@ -169,18 +168,6 @@ export class OrdersService {
 
       const order = await newOrder.save();
 
-      await Promise.all(
-        order.products.map(async product => {
-          await this.orderProductService.create({
-            productId: product.id,
-            quantity: product.quantity,
-            loggedInUserId,
-            orderId: order.id,
-            email: order.email,
-          });
-        }),
-      );
-
       const link = await this.paymentService.generateLink({
         amount: totalAmount,
         currency: Currency.ILS,
@@ -207,6 +194,17 @@ export class OrdersService {
       this.OrderModel,
       orderId,
       updatedField,
+    );
+
+    await Promise.all(
+      updateOrder.products.map(async product => {
+        await this.orderProductService.create({
+          productId: product.id,
+          quantity: product.quantity,
+          loggedInUserId: updateOrder.userId,
+          orderId: updateOrder.id,
+        });
+      }),
     );
     return updateOrder;
   }
