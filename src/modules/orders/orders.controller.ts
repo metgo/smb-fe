@@ -182,7 +182,7 @@ export class OrdersController {
     const orders = await this.ordersService.findAll({
       query,
       myOrder: true,
-      loggedInUser: req.user.id,
+      loggedInUser: req.user,
     });
     return responseHelper(
       response,
@@ -204,16 +204,18 @@ export class OrdersController {
     softBlockExtraDtoFields: true,
     noAuthToken: true,
   })
-  @Roles(UserType.SUPERADMIN, UserType.ADMIN, UserType.DMO)
+  @Roles(UserType.SUPERADMIN, UserType.DMO, UserType.DMOADMIN)
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
   @Get('all-orders')
   async getAllOrders(
     @Query() query: GetAllOrdersQuery,
+    @Req() req,
     @Res() response: Response,
   ) {
     const orders = await this.ordersService.findAll({
       query,
+      loggedInUser: req.user,
     });
     return responseHelper(
       response,
