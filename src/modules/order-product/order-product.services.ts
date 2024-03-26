@@ -37,7 +37,12 @@ export class OrderProductService {
     }
   }
 
-  async findAllForDmo(findQuery, dmoId:mongoose.Types.ObjectId, page: number, limit: number) {
+  async findAllForDmo(
+    findQuery,
+    dmoId: mongoose.Types.ObjectId,
+    page: number,
+    limit: number,
+  ) {
     const pipeline = [
       {
         $lookup: {
