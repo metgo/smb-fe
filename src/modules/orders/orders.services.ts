@@ -56,7 +56,6 @@ export class OrdersService {
     private readonly voucherService: VoucherService,
     @Inject(forwardRef(() => PaymentsService))
     private readonly paymentService: PaymentsService,
-
   ) {}
 
   async create(command: CreateVoucherCommand): Promise<any> {

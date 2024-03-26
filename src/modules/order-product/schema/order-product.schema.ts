@@ -64,36 +64,36 @@ export class OrderProduct extends AuditableSchema {
   @Prop({ default: null })
     email: string;
 
-    @Prop({
-      type: [
-        {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: BussCategory.name,
-        },
-      ],
-      required: false,
-    })
-      categories: mongoose.Schema.Types.ObjectId[];
+  @Prop({
+    type: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: BussCategory.name,
+      },
+    ],
+    required: false,
+  })
+    categories: mongoose.Schema.Types.ObjectId[];
 
-    @Prop({
-      type: [
-        {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: BussSubCategory.name,
-        },
-      ],
-      required: false,
-    })
-      subCategories: mongoose.Schema.Types.ObjectId[];
+  @Prop({
+    type: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: BussSubCategory.name,
+      },
+    ],
+    required: false,
+  })
+    subCategories: mongoose.Schema.Types.ObjectId[];
 
-    @Prop({
-      type: [
-        {
-          type: mongoose.Schema.Types.ObjectId,
-        },
-      ],
-    })
-      features: mongoose.Schema.Types.ObjectId[];
+  @Prop({
+    type: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+      },
+    ],
+  })
+    features: mongoose.Schema.Types.ObjectId[];
 }
 
 export type OrderProducts = HydratedDocument<OrderProduct>;

@@ -1,6 +1,4 @@
-import {
-  Injectable,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
@@ -12,9 +10,9 @@ import { ProductsService } from 'src/modules/products/products.services';
 @Injectable()
 export class OrderProductService {
   constructor(
-      @InjectModel(OrderProduct.name)
-      private OrderProductModel: Model<OrderProduct>,
-      private readonly productsService: ProductsService,
+    @InjectModel(OrderProduct.name)
+    private OrderProductModel: Model<OrderProduct>,
+    private readonly productsService: ProductsService,
   ) {}
 
   async create(command: CreateOrderProductCommand): Promise<any> {
