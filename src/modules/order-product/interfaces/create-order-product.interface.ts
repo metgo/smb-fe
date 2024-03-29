@@ -3,7 +3,6 @@ import mongoose from 'mongoose';
 export interface CreateOrderProductCommand {
   productId: mongoose.Types.ObjectId;
   quantity: number;
-  loggedInUserId?: string;
+  loggedInUserId?: mongoose.Types.ObjectId | string;
   orderId: string;
-  email: string;
 }

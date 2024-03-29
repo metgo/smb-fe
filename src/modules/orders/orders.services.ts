@@ -29,6 +29,7 @@ import {
 } from 'src/core/helper/query-helper';
 import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interface';
 import { BusinessService } from 'src/modules/business/services/business.service';
+import { DMOService } from 'src/modules/dmo/dmo.service';
 import { UpdateOrderDto } from 'src/modules/orders/dto/update-order.dto';
 import { GetAllOrdersInterface } from 'src/modules/orders/interface/get-all-orders.interface';
 import { GetOrdersStatsQuery } from 'src/modules/orders/queries';
@@ -49,6 +50,7 @@ export class OrdersService {
     @InjectModel(Order.name)
     private OrderModel: Model<Order>,
     private readonly businessService: BusinessService,
+    private readonly dmoService: DMOService,
     private readonly mailchimpService: MailChimpService,
     private readonly productsService: ProductsService,
     private readonly orderProductService: OrderProductService,
@@ -91,7 +93,6 @@ export class OrdersService {
               quantity: product.quantity,
               loggedInUserId,
               orderId: order.id,
-              email: order.email,
             });
           }),
         );
@@ -167,18 +168,6 @@ export class OrdersService {
 
       const order = await newOrder.save();
 
-      await Promise.all(
-        order.products.map(async product => {
-          await this.orderProductService.create({
-            productId: product.id,
-            quantity: product.quantity,
-            loggedInUserId,
-            orderId: order.id,
-            email: order.email,
-          });
-        }),
-      );
-
       const link = await this.paymentService.generateLink({
         amount: totalAmount,
         currency: Currency.ILS,
@@ -191,10 +180,6 @@ export class OrdersService {
 
       return [link];
     } catch (error) {
-      if (error?.errors['businessId.0']?.kind) {
-        throw new BadRequestException(`Business ${ServerErrors.INVALID_ID}`);
-      }
-
       exceptionHandling(error);
     }
   }
@@ -209,6 +194,17 @@ export class OrdersService {
       this.OrderModel,
       orderId,
       updatedField,
+    );
+
+    await Promise.all(
+      updateOrder.products.map(async product => {
+        await this.orderProductService.create({
+          productId: product.id,
+          quantity: product.quantity,
+          loggedInUserId: updateOrder.userId,
+          orderId: updateOrder.id,
+        });
+      }),
     );
     return updateOrder;
   }
@@ -310,7 +306,7 @@ export class OrdersService {
     }
   }
 
-  async findAll(queries: GetAllOrdersInterface): Promise<Order[]> {
+  async findAll(queries: GetAllOrdersInterface) {
     const {
       search, page, limit, ...query
     } = queries.query;
@@ -333,7 +329,21 @@ export class OrdersService {
     }
 
     if (queries.myOrder) {
-      findQuery = { ...findQuery, userId: queries.loggedInUser };
+      findQuery = { ...findQuery, userId: queries.loggedInUser.id };
+    }
+
+    if (queries.loggedInUser.role === UserType.DMOADMIN) {
+      const dmoId = await this.dmoService.findDMOByUserID(
+        queries.loggedInUser.id,
+      );
+
+      const orders = await this.orderProductService.findAllForDmo(
+        findQuery,
+        dmoId,
+        queryPage,
+        queryLimit,
+      );
+      return orders;
     }
 
     const orders = await queryhandler<Order>(this.OrderModel, {
