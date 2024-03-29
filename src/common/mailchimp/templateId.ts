@@ -1,5 +1,5 @@
 export const HebrewTemplate = {
-  UserRegistration: '8',
+  UserRegistrationByAdmin: '8',
   UserRegistrationBySelf: 'user-create-an-account-he',
   ForgotPassword: 'password-recovery-he',
   PasswordChangeConfirmation: 'password-reconfig-he',

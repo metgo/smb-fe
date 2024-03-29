@@ -27,6 +27,7 @@ import {
   findOneByFieldNameIncludingDeleted,
   findOneByFieldNames,
   queryhandler,
+  updateManyByIds,
   updateOneByManyFields,
 } from 'src/core/helper/query-helper';
 import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interface';
@@ -826,6 +827,30 @@ export class BusinessService {
       if (!updateBusiness) {
         throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
       }
+      return updateBusiness;
+    } catch (err) {
+      exceptionHandling(err);
+    }
+  }
+
+  async assignUsertoBusinesses(
+    businessIds: string[],
+    assignUserId: string,
+    loggedInUserId: string,
+  ) {
+    try {
+      const updatedField = { userId: assignUserId, updatedBy: loggedInUserId };
+      const updateBusiness = await updateManyByIds<Business>(
+        this.BusinessModel,
+        '_id',
+        businessIds,
+        updatedField,
+      );
+
+      if (!updateBusiness) {
+        throw new BadRequestException(ServerErrors.BUSINESS_NOT_FOUND);
+      }
+
       return updateBusiness;
     } catch (err) {
       exceptionHandling(err);

@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
+  IsArray,
   IsEmail,
   IsEnum,
   IsNotEmpty,
@@ -42,4 +43,14 @@ export class createUserByAdminDto {
   @IsEnum(UserType, { each: true })
   @ApiProperty({ enum: UserType })
   readonly role: UserType;
+
+  @IsString()
+  @IsOptional()
+  @ApiProperty()
+  readonly dmoId: string;
+
+  @IsArray()
+  @IsOptional()
+  @ApiProperty({ type: [String], required: false })
+  readonly businessesId: string[];
 }

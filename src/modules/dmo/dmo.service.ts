@@ -18,11 +18,11 @@ import {
   findOneByOrCase,
   queryhandler,
   updateById,
+  updateOneByManyFields,
 } from 'src/core/helper/query-helper';
 import { DMO } from './schema/dmo.schema';
 import { CreateDMODto, FilterQuery, UpdateDMODto } from './dto';
-
-import { UsersService } from '../users/users.services';
+import { UsersService } from 'src/modules/users/users.services';
 
 @Injectable()
 export class DMOService {
@@ -76,6 +76,23 @@ export class DMOService {
 
   async updateDMO(id: string, dto: UpdateDMODto) {
     const dmo = await updateById<DMO>(this.DMOModel, id, dto);
+
+    if (!dmo) {
+      throw new NotFoundException(ServerErrors.DMO_NOT_FOUND);
+    }
+    return dmo;
+  }
+
+  async addCollaborators(dmoUserId: string, collaboratedUserId: string) {
+    const dmo = await updateOneByManyFields<DMO>(
+      this.DMOModel,
+      {
+        userId: dmoUserId,
+      },
+      {
+        $push: { collaboratorsUser: { $each: [collaboratedUserId] } },
+      },
+    );
 
     if (!dmo) {
       throw new NotFoundException(ServerErrors.DMO_NOT_FOUND);
