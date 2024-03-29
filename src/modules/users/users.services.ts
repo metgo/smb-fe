@@ -18,11 +18,13 @@ import {
   HebrewTemplate,
 } from 'src/common/mailchimp/templateId';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
+import { disSelect } from 'src/common/utils/select.handling';
 import {
   findOneByFieldName,
   findOneByFieldNameExcludeId,
   findOneByFieldNameIncludingDeleted,
   findOneById,
+  queryhandler,
   update,
   updateById,
 } from 'src/core/helper/query-helper';
@@ -50,6 +52,7 @@ import { checkExpireDate, oneHrsExpireDate } from 'src/common/expireDate';
 import { VerifyOtpDto } from '../auth/requests/verify-otp.dto';
 import { UpdatePasswordDto } from '../auth/requests/forget-password.dto';
 import { ExternalApiRegisterRequest } from 'src/modules/external-api/dto/register-user.dto';
+import { GetAllUsersQuery } from 'src/modules/users/queries/get-all-users.query';
 import { MailChimpService } from 'src/services/mailchimp/mailchimp.service';
 
 @Injectable()
@@ -94,6 +97,49 @@ export class UsersService {
       console.log('Superadmin seeded successfully.');
     } else {
       console.log('Superadmin already exists.');
+    }
+  }
+
+  async getAllUsers(queries: GetAllUsersQuery) {
+    try {
+      const {
+        page, limit, search, ...query
+      } = queries;
+
+      const queryPage = page ? Number(page) : null;
+      const queryLimit = limit ? Number(limit) : null;
+
+      let findQuery: any = { ...query };
+      const select = `${disSelect}`;
+
+      if (search) {
+        findQuery = {
+          ...findQuery,
+          $or: [
+            { firstName: { $regex: search, $options: 'i' } },
+            { lastName: { $regex: search, $options: 'i' } },
+            { email: { $regex: search, $options: 'i' } },
+          ],
+        };
+      }
+
+      if (!query.isDeleted) {
+        findQuery = {
+          ...findQuery,
+          isDeleted: false,
+        };
+      }
+
+      const users = await queryhandler<User>(this.UserModel, {
+        findQuery,
+        select,
+        page: queryPage,
+        limit: queryLimit,
+      });
+
+      return users;
+    } catch (err) {
+      exceptionHandling(err);
     }
   }
 
@@ -600,6 +646,7 @@ export class UsersService {
       await this.businessService.assignUsertoBusinesses(
         body.businessesId,
         newUser.id,
+        loggedInUser.id,
       );
     } else {
       newUser = await this.UserModel.create(body);

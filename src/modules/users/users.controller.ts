@@ -8,6 +8,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Req,
   Res,
   UseGuards,
@@ -20,6 +21,7 @@ import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
 import { Roles } from 'src/core/guards/authorization/roles';
 import { JwtAuthGuard } from 'src/core/guards/jwt/jwt.guards';
 import { responseHelper } from 'src/core/helper/response.helper';
+import { GetAllUsersQuery } from 'src/modules/users/queries/get-all-users.query';
 import { createUserByAdminDto } from 'src/modules/users/requests/create-user-ByAdmin.dto';
 import { UpdateUserRequest } from 'src/modules/users/requests/update-user.request';
 import { UsersService } from 'src/modules/users/users.services';
@@ -28,6 +30,32 @@ import { UserType } from 'src/modules/users/users.type';
 @Controller('/users')
 export class UsersController {
   constructor(private userService: UsersService) {}
+
+  @HttpCode(HttpStatus.OK)
+  @ApiEndpoint({
+    tags: ['Admin', 'Users'],
+    response: { status: HttpStatus.OK, description: ServerSuccess.USER.LISTED },
+    softBlockExtraDtoFields: true,
+    noAuthToken: true,
+    operation: 'Get list of all users by superadmin',
+  })
+  @Roles(UserType.SUPERADMIN)
+  @UseGuards(JwtAuthGuard)
+  @Get('')
+  async getAllUsers(
+    @Query() query: GetAllUsersQuery,
+    @Res() response: Response,
+  ) {
+    const users = await this.userService.getAllUsers(query);
+    return responseHelper(
+      response,
+      HttpStatus.OK,
+      ServerSuccess.USER.LISTED,
+      users,
+      null,
+      null,
+    );
+  }
 
   @HttpCode(HttpStatus.OK)
   @ApiEndpoint({
