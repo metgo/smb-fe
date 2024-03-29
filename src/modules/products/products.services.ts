@@ -172,7 +172,7 @@ export class ProductsService {
     return product;
   }
 
-  async findOne(productId: string): Promise<Product> {
+  async findOne(productId: string | mongoose.Types.ObjectId): Promise<Product> {
     const populate = {
       path: 'categories subCategories',
       select: `${disSelect}`,
@@ -213,9 +213,13 @@ export class ProductsService {
       select: `${disSelect}`,
     };
     try {
-      const product = await findOneByIDPopulate<Product>(this.ProductModel, {
-        _id: productId,
-      }, populate);
+      const product = await findOneByIDPopulate<Product>(
+        this.ProductModel,
+        {
+          _id: productId,
+        },
+        populate,
+      );
       const allowedRoles = [UserType.DMOADMIN, UserType.SUPERADMIN];
 
       if (

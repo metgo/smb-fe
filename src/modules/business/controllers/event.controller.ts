@@ -49,7 +49,11 @@ export class EventController {
     @Body() dto: CreateEventsDto,
     @UploadedFiles() image: Array<Express.Multer.File>,
   ) {
-    const events = await this.eventsService.createEvents(dto, request.user, image);
+    const events = await this.eventsService.createEvents(
+      dto,
+      request.user,
+      image,
+    );
     return responseHelper(
       response,
       HttpStatus.CREATED,

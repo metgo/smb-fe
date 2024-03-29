@@ -28,10 +28,12 @@ export async function findOneByIDPopulate<T>(
   fieldNames: object,
   populate: any,
 ) {
-  const data = await model.findOne({
-    ...fieldNames,
-    deletedAt: { $in: [null] },
-  }).populate(populate);
+  const data = await model
+    .findOne({
+      ...fieldNames,
+      deletedAt: { $in: [null] },
+    })
+    .populate(populate);
   return data;
 }
 

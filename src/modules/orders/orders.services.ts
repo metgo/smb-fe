@@ -29,6 +29,7 @@ import {
 } from 'src/core/helper/query-helper';
 import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interface';
 import { BusinessService } from 'src/modules/business/services/business.service';
+import { DMOService } from 'src/modules/dmo/dmo.service';
 import { UpdateOrderDto } from 'src/modules/orders/dto/update-order.dto';
 import { GetAllOrdersInterface } from 'src/modules/orders/interface/get-all-orders.interface';
 import { GetOrdersStatsQuery } from 'src/modules/orders/queries';
@@ -37,10 +38,11 @@ import { ProductsService } from 'src/modules/products/products.services';
 import { UserType } from 'src/modules/users/users.type';
 import { CreateVoucherCommand } from 'src/modules/vouchers/interface';
 import { VoucherService } from 'src/modules/vouchers/voucher.service';
+import { OrderStatus, PaymentMode } from 'src/modules/orders/orders.type';
+import { OrderProductService } from 'src/modules/order-product/order-product.services';
 import { PaymentsService } from 'src/services/payments/payments.service';
 import { PaymentPurpose } from 'src/services/payments/payments.type';
 import { MailChimpService } from 'src/services/mailchimp/mailchimp.service';
-import { OrderStatus, PaymentMode } from 'src/modules/orders/orders.type';
 
 @Injectable()
 export class OrdersService {
@@ -48,8 +50,10 @@ export class OrdersService {
     @InjectModel(Order.name)
     private OrderModel: Model<Order>,
     private readonly businessService: BusinessService,
+    private readonly dmoService: DMOService,
     private readonly mailchimpService: MailChimpService,
     private readonly productsService: ProductsService,
+    private readonly orderProductService: OrderProductService,
     @Inject(forwardRef(() => VoucherService))
     private readonly voucherService: VoucherService,
     @Inject(forwardRef(() => PaymentsService))
@@ -82,6 +86,16 @@ export class OrdersService {
         });
 
         const order = await newOrder.save();
+        await Promise.all(
+          order.products.map(async product => {
+            await this.orderProductService.create({
+              productId: product.id,
+              quantity: product.quantity,
+              loggedInUserId,
+              orderId: order.id,
+            });
+          }),
+        );
 
         const [getProductInformation, businessDetails] = await Promise.all([
           this.productsService.getProductInformationForOrders(body.products),
@@ -166,10 +180,6 @@ export class OrdersService {
 
       return [link];
     } catch (error) {
-      if (error?.errors['businessId.0']?.kind) {
-        throw new BadRequestException(`Business ${ServerErrors.INVALID_ID}`);
-      }
-
       exceptionHandling(error);
     }
   }
@@ -184,6 +194,17 @@ export class OrdersService {
       this.OrderModel,
       orderId,
       updatedField,
+    );
+
+    await Promise.all(
+      updateOrder.products.map(async product => {
+        await this.orderProductService.create({
+          productId: product.id,
+          quantity: product.quantity,
+          loggedInUserId: updateOrder.userId,
+          orderId: updateOrder.id,
+        });
+      }),
     );
     return updateOrder;
   }
@@ -285,7 +306,7 @@ export class OrdersService {
     }
   }
 
-  async findAll(queries: GetAllOrdersInterface): Promise<Order[]> {
+  async findAll(queries: GetAllOrdersInterface) {
     const {
       search, page, limit, ...query
     } = queries.query;
@@ -308,7 +329,21 @@ export class OrdersService {
     }
 
     if (queries.myOrder) {
-      findQuery = { ...findQuery, userId: queries.loggedInUser };
+      findQuery = { ...findQuery, userId: queries.loggedInUser.id };
+    }
+
+    if (queries.loggedInUser.role === UserType.DMOADMIN) {
+      const dmoId = await this.dmoService.findDMOByUserID(
+        queries.loggedInUser.id,
+      );
+
+      const orders = await this.orderProductService.findAllForDmo(
+        findQuery,
+        dmoId,
+        queryPage,
+        queryLimit,
+      );
+      return orders;
     }
 
     const orders = await queryhandler<Order>(this.OrderModel, {
