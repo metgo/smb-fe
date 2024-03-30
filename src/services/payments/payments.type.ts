@@ -15,4 +15,5 @@ export interface GenerateLinkCommand {
   customerEmail: string;
   customerName: string;
   languagePreference: Locale;
+  voucherCode?: string[]
 }

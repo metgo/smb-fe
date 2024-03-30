@@ -111,6 +111,7 @@ export class ConfigService {
       CARDCOM_WEBHOOK_URL: Joi.string().required(),
       PAYMENT_SUCCESS: Joi.string().required(),
       PAYMENT_FAILURE: Joi.string().required(),
+      PAYMENT_INDICATOR: Joi.string().required(),
       IDENTIFIER_ID: Joi.string().required(),
       MAILCHIMP_MARKETING_API_KEY: Joi.string().required(),
       MAILCHIMP_TRANSACTIONAL_API_KEY: Joi.string().required(),
@@ -179,6 +180,7 @@ export class ConfigService {
       WEBHOOK_URL: this.get('CARDCOM_WEBHOOK_URL'),
       SUCCESS: this.get('PAYMENT_SUCCESS'),
       FAILURE: this.get('PAYMENT_FAILURE'),
+      INDICATOR: this.get('PAYMENT_INDICATOR'),
     };
   }
 

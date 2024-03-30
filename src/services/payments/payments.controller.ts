@@ -1,5 +1,5 @@
 import {
-  Controller, Get, HttpStatus, Query, Res,
+  Controller, Get, HttpStatus, Query, Req, Res,
 } from '@nestjs/common';
 import { Response } from 'express';
 
@@ -16,7 +16,8 @@ export class PaymentsController {
     softBlockExtraDtoFields: true,
   })
   @Get('success')
-  async success(@Res() response: Response, @Query() query) {
+  async success(@Req() req, @Res() response: Response, @Query() query) {
+    console.log(query, req);
     await this.paymentService.paymentSucess(query);
     return responseHelper(
       response,
@@ -34,7 +35,26 @@ export class PaymentsController {
   })
   @Get('failure')
   async failure(@Res() response: Response, @Query() query) {
+    console.log(query);
     await this.paymentService.PaymentFailure(query);
+    return responseHelper(
+      response,
+      HttpStatus.OK,
+      'Your payment was not successfully paid',
+      null,
+      null,
+      null,
+    );
+  }
+
+  @ApiEndpoint({
+    tags: ['Payment'],
+    softBlockExtraDtoFields: true,
+  })
+  @Get('indicator')
+  async indicator(@Req() req, @Res() response: Response, @Query() query) {
+    console.log('indicator', query, req);
+    // await this.paymentService.PaymentFailure(query);
     return responseHelper(
       response,
       HttpStatus.OK,
