@@ -91,7 +91,6 @@ export class VoucherService {
 
       let i: number = 0;
       const voucherId: any = [];
-      const voucherCode: string[] = [];
       const totalAmount = dto.noOfVoucher * dto.amount;
       for (i = 0; i < dto.noOfVoucher; i++) {
         const randomCode = generateRandomCode(12);
@@ -106,7 +105,6 @@ export class VoucherService {
         });
         newVoucher.save();
         voucherId.push(newVoucher._id);
-        voucherCode.push(newVoucher.code);
       }
 
       const paymentLink = await this.paymentService.generateLink({
@@ -116,7 +114,6 @@ export class VoucherService {
         id: voucherId,
         customerEmail: dto.email,
         customerName: dto.name,
-        voucherCode,
         languagePreference: dto?.languagePreference || Locale.ENGLISH,
       });
 
