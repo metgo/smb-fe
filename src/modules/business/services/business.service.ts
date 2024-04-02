@@ -1255,7 +1255,7 @@ export class BusinessService {
 
   private generateSlug(name: string | null): string {
     return name
-      ? `${name.replace(/ /g, '-').toLowerCase()}`
+      ? `${name.replace(/ /g, '-').toLowerCase()}-${generateRandomCode(3)}`
       : `${generateRandomCode(3).toLowerCase()}-${generateRandomCode(
         4,
       ).toLowerCase()}`;

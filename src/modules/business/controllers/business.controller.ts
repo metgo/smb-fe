@@ -65,14 +65,6 @@ export class BusinessController {
     @Body() dto: createBusinessDto,
   ) {
     const user = request.user.id;
-    dto.name && (await this.businessServices.findByFieldName('name', dto.name));
-    dto.phoneNumber
-      && (await this.businessServices.findByFieldName(
-        'phoneNumber',
-        dto.phoneNumber,
-      ));
-    dto.busiEmail
-      && (await this.businessServices.findByFieldName('busiEmail', dto.busiEmail));
 
     const business = await this.businessServices.createBusiness(dto, user);
     return responseHelper(
@@ -104,19 +96,6 @@ export class BusinessController {
     @Body() body: WebCreateBusiness,
     @UploadedFiles() image: Array<Express.Multer.File>,
   ) {
-    body.name
-      && (await this.businessServices.findByFieldName('name', body.name));
-    body.phoneNumber
-      && (await this.businessServices.findByFieldName(
-        'phoneNumber',
-        body.phoneNumber,
-      ));
-    body.busiEmail
-      && (await this.businessServices.findByFieldName(
-        'busiEmail',
-        body.busiEmail,
-      ));
-
     const business = await this.businessServices.createBusinessByAdmins(
       body,
       request.user,
@@ -362,25 +341,6 @@ export class BusinessController {
     @Param('id') id: string,
     @Body() dto: updateBusinessDto,
   ) {
-    dto.name
-      && (await this.businessServices.findByFieldNameExcludeId(
-        'name',
-        dto.name,
-        id,
-      ));
-    dto.phoneNumber
-      && (await this.businessServices.findByFieldNameExcludeId(
-        'phoneNumber',
-        dto.phoneNumber,
-        id,
-      ));
-    dto.busiEmail
-      && (await this.businessServices.findByFieldNameExcludeId(
-        'busiEmail',
-        dto.busiEmail,
-        id,
-      ));
-
     const business = await this.businessServices.updateBusiness(
       id,
       request.user,
@@ -416,25 +376,6 @@ export class BusinessController {
     @Param('id') id: string,
     @Body() dto: UpdateBusinessByAdminDto,
   ) {
-    dto.name
-      && (await this.businessServices.findByFieldNameExcludeId(
-        'name',
-        dto.name,
-        id,
-      ));
-    dto.phoneNumber
-      && (await this.businessServices.findByFieldNameExcludeId(
-        'phoneNumber',
-        dto.phoneNumber,
-        id,
-      ));
-    dto.busiEmail
-      && (await this.businessServices.findByFieldNameExcludeId(
-        'busiEmail',
-        dto.busiEmail,
-        id,
-      ));
-
     const business = await this.businessServices.updateBusinessByAdmin(
       id,
       request.user,
@@ -469,25 +410,6 @@ export class BusinessController {
     @Param('businessId') businessId: string,
     @Body() body: UpdateBusinessByAdminDto,
   ) {
-    body.name
-      && (await this.businessServices.findByFieldNameExcludeId(
-        'name',
-        body.name,
-        businessId,
-      ));
-    body.phoneNumber
-      && (await this.businessServices.findByFieldNameExcludeId(
-        'phoneNumber',
-        body.phoneNumber,
-        businessId,
-      ));
-    body.busiEmail
-      && (await this.businessServices.findByFieldNameExcludeId(
-        'busiEmail',
-        body.busiEmail,
-        businessId,
-      ));
-
     const business = await this.businessServices.updateBusinessByAdmin(
       businessId,
       request.user,
