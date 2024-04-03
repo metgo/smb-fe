@@ -38,6 +38,7 @@ import { MailChimpModule } from 'src/services/mailchimp/mailchimp.module';
 import { ReadFileModule } from 'src/services/read-file/read-file.module';
 import { AuthorityModule } from 'src/modules/authority/authority.module';
 import { StatsModule } from 'src/modules/stats/stats.module';
+import { MockDataModule } from 'src/modules/mock-data/mock-data.modules';
 
 @Module({
   imports: [
@@ -77,6 +78,7 @@ import { StatsModule } from 'src/modules/stats/stats.module';
     AuthorityModule,
     ReadFileModule,
     StatsModule,
+    MockDataModule,
   ],
   providers: [
     {

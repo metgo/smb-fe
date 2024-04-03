@@ -186,6 +186,9 @@ export const ServerSuccess = {
   ICON_CATEGORY_LISTED: 'Icon category was succesfully listed',
   ICON_CATEGORY_UPDATED: 'Icon category was succesfully updated',
 
+  MOCK_DATA: {
+    LISTED: 'Mock data  was succesfully listed',
+  },
   MEDIA: {
     UPLOADED: 'Media was uploaded successfully',
     DELETED: 'Media was deleted successfully',
