@@ -34,3 +34,8 @@ export enum Locale {
   ENGLISH = 'en',
   HEBREW = 'he',
 }
+
+export enum SortOrder {
+  ASC = 'ASC',
+  DESC = 'DESC',
+}

@@ -207,7 +207,7 @@ export class OrdersController {
   @Roles(UserType.SUPERADMIN, UserType.DMO, UserType.DMOADMIN)
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
-  @Get('all-orders')
+  @Get('all-orders-cache')
   async getAllOrders(
     @Query() query: GetAllOrdersQuery,
     @Req() req,
