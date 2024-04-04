@@ -5,7 +5,6 @@ import { Model } from 'mongoose';
 import { ServerErrors } from 'src/common/constant';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { queryhandler } from 'src/core/helper/query-helper';
-import { disSelect } from 'src/common/utils/select.handling';
 import { GetMockDataQuery } from 'src/modules/mock-data/queries/get-mock-data.query';
 import { MockData } from 'src/modules/mock-data/mock-data.schema';
 
@@ -74,7 +73,8 @@ export class MockDataServices {
         };
       }
 
-      const select = `${disSelect}`;
+      const select
+        = '-updatedAt -createdBy -updatedBy -deletedBy -deletedAt  -__v -isDeleted';
 
       const mockdata = await queryhandler<MockData>(this.MockDataModel, {
         findQuery,
