@@ -374,10 +374,10 @@ export class OrderProductService {
         dmoID = await this.dmoService.findDMOByUserID(loggedInUser.id);
       }
 
-      if (dmoId) {
+      if (dmoID) {
         pipeline.push({
           $match: {
-            'business_info.dmoId': new mongoose.Types.ObjectId(dmoID),
+            'business_info.dmoId': new mongoose.Types.ObjectId(dmoId),
           },
         });
       }
