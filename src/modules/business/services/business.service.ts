@@ -188,7 +188,8 @@ export class BusinessService {
         slug,
       };
       if (loggedInUser.role === UserType.DMOADMIN) {
-        const dmoId = await this.dmoService.findDMOByUserID(loggedInUser.id);
+        const dmoId = (await this.dmoService.findDMOByUserID(loggedInUser.id))
+          ._id;
 
         data = {
           ...data,
@@ -227,7 +228,8 @@ export class BusinessService {
           slug,
         };
         if (loggedInUser.role === UserType.DMOADMIN) {
-          const dmoId = await this.dmoService.findDMOByUserID(loggedInUser.id);
+          const dmoId = (await this.dmoService.findDMOByUserID(loggedInUser.id))
+            ._id;
 
           data = {
             ...data,
@@ -278,7 +280,9 @@ export class BusinessService {
     }
 
     if (authenticatedUser && authenticatedUser?.role === UserType.DMOADMIN) {
-      const dmoId = await this.dmoService.findDMOByUserID(authenticatedUser.id);
+      const dmoId = (
+        await this.dmoService.findDMOByUserID(authenticatedUser.id)
+      )._id;
       findQuery = {
         ...findQuery,
         dmoId,
@@ -599,7 +603,9 @@ export class BusinessService {
         }
 
         if (loggedInUser.role === UserType.DMOADMIN && business?.dmoId) {
-          const dmoId = await this.dmoService.findDMOByUserID(loggedInUser.id);
+          const dmoId = (await this.dmoService.findDMOByUserID(loggedInUser.id))
+            ._id;
+
           if (business.dmoId.equals(new mongoose.Types.ObjectId(dmoId))) {
             return business;
           }
@@ -638,9 +644,10 @@ export class BusinessService {
             }
 
             if (loggedInUser.role === UserType.DMOADMIN && business.dmoId) {
-              const dmoId = await this.dmoService.findDMOByUserID(
-                loggedInUser.id,
-              );
+              const dmoId = (
+                await this.dmoService.findDMOByUserID(loggedInUser.id)
+              )._id;
+
               if (business.dmoId.equals(new mongoose.Types.ObjectId(dmoId))) {
                 return business;
               }
@@ -811,7 +818,8 @@ export class BusinessService {
         serviceType: GeoServicesTypes.BUSINESS,
       };
       if (loggedInUser.role === UserType.DMOADMIN) {
-        const dmoId = await this.dmoService.findDMOByUserID(loggedInUser.id);
+        const dmoId = (await this.dmoService.findDMOByUserID(loggedInUser.id))
+          ._id;
 
         findQuery = {
           ...findQuery,
@@ -971,7 +979,8 @@ export class BusinessService {
       };
 
       if (loggedInUser.role === UserType.DMOADMIN) {
-        const dmoId = await this.dmoService.findDMOByUserID(loggedInUser.id);
+        const dmoId = (await this.dmoService.findDMOByUserID(loggedInUser.id))
+          ._id;
         filter = {
           ...filter,
           dmoId,
@@ -1120,7 +1129,8 @@ export class BusinessService {
       }
 
       if (loggedInUser.role === UserType.DMOADMIN) {
-        const dmoID = await this.dmoService.findDMOByUserID(loggedInUser.id);
+        const dmoID = (await this.dmoService.findDMOByUserID(loggedInUser.id))
+          ._id;
         findQuery = {
           ...findQuery,
           dmoId: dmoID,

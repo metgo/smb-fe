@@ -125,7 +125,7 @@ export class DMOService {
     if (!dmo) {
       throw new NotFoundException(ServerErrors.DMO_NOT_FOUND);
     }
-    return dmo._id;
+    return dmo;
   }
 
   async getAllDMOById(userId: string) {

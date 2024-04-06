@@ -65,7 +65,7 @@ export class StatsService {
       };
     }
     if (loginUser?.role === UserType.DMO) {
-      const dmoID = await this.dmoService.findDMOByUserID(loginUser.id);
+      const dmoID = (await this.dmoService.findDMOByUserID(loginUser.id))._id;
       findQuery = {
         ...findQuery,
         dmoId: dmoID,
@@ -232,7 +232,7 @@ export class StatsService {
       };
     }
     if (loginUser?.role === UserType.DMO) {
-      const dmoID = await this.dmoService.findDMOByUserID(loginUser.id);
+      const dmoID = (await this.dmoService.findDMOByUserID(loginUser.id))._id;
       findQuery = {
         ...findQuery,
         dmoId: dmoID,
@@ -375,7 +375,8 @@ export class StatsService {
     let findQuery;
     let orderFindQuery: any = { paymentStatus: PaymentStatus.SUCCESS };
     if (loggedInUser.role === UserType.DMOADMIN) {
-      const dmoId = await this.dmoService.findDMOByUserID(loggedInUser.id);
+      const dmoId = (await this.dmoService.findDMOByUserID(loggedInUser.id))
+        ._id;
 
       findQuery = {
         DMOs: { $in: dmoId },

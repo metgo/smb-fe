@@ -150,7 +150,7 @@ export class EventsService {
           slug,
         };
         if (userId.role === UserType.DMOADMIN) {
-          const dmoId = await this.dmoService.findDMOByUserID(userId.id);
+          const dmoId = (await this.dmoService.findDMOByUserID(userId.id))._id;
 
           data = {
             ...data,
@@ -200,7 +200,9 @@ export class EventsService {
     }
 
     if (authenticatedUser && authenticatedUser?.role === UserType.DMOADMIN) {
-      const dmoId = await this.dmoService.findDMOByUserID(authenticatedUser.id);
+      const dmoId = (
+        await this.dmoService.findDMOByUserID(authenticatedUser.id)
+      )._id;
       findQuery = {
         ...findQuery,
         dmoId,
@@ -378,7 +380,8 @@ export class EventsService {
         }
 
         if (loggedInUser.role === UserType.DMOADMIN && event?.dmoId) {
-          const dmoId = await this.dmoService.findDMOByUserID(loggedInUser.id);
+          const dmoId = (await this.dmoService.findDMOByUserID(loggedInUser.id))
+            ._id;
           if (event.dmoId.equals(new mongoose.Types.ObjectId(dmoId))) {
             return event;
           }
@@ -556,7 +559,8 @@ export class EventsService {
         }
 
         if (loggedInUser.role === UserType.DMOADMIN && event?.dmoId) {
-          const dmoId = await this.dmoService.findDMOByUserID(loggedInUser.id);
+          const dmoId = (await this.dmoService.findDMOByUserID(loggedInUser.id))
+            ._id;
           if (event.dmoId.equals(new mongoose.Types.ObjectId(dmoId))) {
             return event;
           }
@@ -593,9 +597,9 @@ export class EventsService {
             }
 
             if (loggedInUser.role === UserType.DMOADMIN && event.dmoId) {
-              const dmoId = await this.dmoService.findDMOByUserID(
-                loggedInUser.id,
-              );
+              const dmoId = (
+                await this.dmoService.findDMOByUserID(loggedInUser.id)
+              )._id;
               if (event.dmoId.equals(new mongoose.Types.ObjectId(dmoId))) {
                 return event;
               }

@@ -10,13 +10,16 @@ import { ServerErrors } from 'src/common/constant';
 
 import { LoginInterface } from 'src/modules/auth/interface/login.interface';
 import { SignInRequest } from 'src/modules/auth/requests/signin.request';
+import { DMOService } from 'src/modules/dmo/dmo.service';
 import { JwtAuthService } from 'src/modules/jwt-auth/services/jwt-auth.service';
 import { UsersService } from 'src/modules/users/users.services';
+import { UserType } from 'src/modules/users/users.type';
 import { HashService } from 'src/services/hash/hash.service';
 
 @Injectable()
 export class AuthService {
   constructor(
+    private dmoService: DMOService,
     @Inject(forwardRef(() => UsersService))
     private usersService: UsersService,
     private jwtAuthService: JwtAuthService,
@@ -55,6 +58,11 @@ export class AuthService {
       hasBusiness: user.hasBusiness,
     };
     const { accessToken, refreshToken } = this.jwtAuthService.login(userBody);
+
+    let dmo;
+    if (user.role === UserType.DMO || user.role === UserType.DMOADMIN) {
+      dmo = await this.dmoService.findDMOByUserID(user.id);
+    }
     await this.usersService.updateLastLogin(user.id, {
       lastLogin: new Date(),
       loginAttempts: 0,
@@ -79,6 +87,7 @@ export class AuthService {
         isEmailVerify: user.isEmailVerify,
         role: user.role,
         hasBusiness: user.hasBusiness,
+        dmo: dmo ? { id: dmo._id, name: dmo.name } : null,
       },
     };
   }

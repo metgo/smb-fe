@@ -192,7 +192,7 @@ export class OrderProductService {
       }
 
       if ([UserType.DMOADMIN, UserType.DMO].includes(loggedInUser.role)) {
-        dmoId = await this.dmoService.findDMOByUserID(loggedInUser.id);
+        dmoId = (await this.dmoService.findDMOByUserID(loggedInUser.id))._id;
       }
 
       if (dmoId) {
@@ -371,7 +371,7 @@ export class OrderProductService {
       }
 
       if ([UserType.DMOADMIN, UserType.DMO].includes(loggedInUser.role)) {
-        dmoID = await this.dmoService.findDMOByUserID(loggedInUser.id);
+        dmoID = (await this.dmoService.findDMOByUserID(loggedInUser.id))._id;
       }
 
       if (dmoID) {

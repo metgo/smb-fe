@@ -333,9 +333,9 @@ export class OrdersService {
     }
 
     if (queries.loggedInUser.role === UserType.DMOADMIN) {
-      const dmoId = await this.dmoService.findDMOByUserID(
-        queries.loggedInUser.id,
-      );
+      const dmoId = (
+        await this.dmoService.findDMOByUserID(queries.loggedInUser.id)
+      )._id;
 
       const orders = await this.orderProductService.findAllForDmo(
         findQuery,

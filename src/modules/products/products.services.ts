@@ -236,7 +236,8 @@ export class ProductsService {
       }
 
       if (loggedInUser.role === UserType.DMOADMIN) {
-        const dmoId = await this.dmoService.findDMOByUserID(loggedInUser.id);
+        const dmoId = (await this.dmoService.findDMOByUserID(loggedInUser.id))
+          ._id;
 
         if (!product.dmoId.equals(new mongoose.Types.ObjectId(dmoId))) {
           throw new NotFoundException(ServerErrors.PRODUCT.NOT_FOUND);

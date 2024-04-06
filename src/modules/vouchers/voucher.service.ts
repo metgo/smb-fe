@@ -907,7 +907,8 @@ export class VoucherService {
 
     if (loggedInUser.role === UserType.DMOADMIN) {
       // find dmo
-      const dmoId = await this.dmoService.findDMOByUserID(loggedInUser.id);
+      const dmoId = (await this.dmoService.findDMOByUserID(loggedInUser.id))
+        ._id;
 
       // get all the campId from campaignSegment the dmoId is associated to
       const campaignIds

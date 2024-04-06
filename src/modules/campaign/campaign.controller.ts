@@ -76,7 +76,7 @@ export class CampaignController {
     };
 
     if (request.user.role === UserType.DMO) {
-      const dmoId = await this.dmoService.findDMOByUserID(user);
+      const dmoId = (await this.dmoService.findDMOByUserID(user))._id;
       campaignSegmentDto.DMOs = [dmoId.toString()];
     }
 
@@ -153,7 +153,7 @@ export class CampaignController {
     @Query() query: FilterQuery,
   ) {
     const user = request.user.id;
-    query.dmoId && (await this.dmoService.findDMOByUserID(user));
+    query.dmoId && (await this.dmoService.findDMOByUserID(user))._id;
     const campaign = await this.campaignService.getMy(query, user);
     return responseHelper(
       response,
