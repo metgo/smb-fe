@@ -23,4 +23,8 @@ export class GetVoucherStatsQuery {
   @ApiProperty({ type: Date, required: false })
   @IsOptional()
     expiryEndDate: Date;
+
+  @ApiProperty({ type: Boolean, required: false })
+  @IsOptional()
+    groupByCampaign: string;
 }

@@ -895,17 +895,19 @@ export class VoucherService {
       createdEndDate,
       expiryStartDate,
       expiryEndDate,
+      groupByCampaign,
       ...queries
     } = query;
-
-    const select = disSelect;
 
     let findQuery: any = {
       ...queries,
       paymentStatus: VoucherPaymentStatus.PAID,
     };
 
-    if (loggedInUser.role === UserType.DMOADMIN) {
+    if (
+      loggedInUser.role === UserType.DMOADMIN
+      || loggedInUser.role === UserType.DMO
+    ) {
       // find dmo
       const dmoId = (await this.dmoService.findDMOByUserID(loggedInUser.id))
         ._id;
@@ -972,6 +974,32 @@ export class VoucherService {
       };
     }
 
+    if (/true/.test(groupByCampaign)) {
+      const groupedByCampId = await this.VoucherModel.aggregate([
+        { $match: findQuery },
+        {
+          $lookup: {
+            from: 'campaigns',
+            localField: 'campId',
+            foreignField: '_id',
+            as: 'camp',
+          },
+        },
+        { $unwind: '$camp' },
+        {
+          $group: {
+            _id: '$camp._id',
+            name: { $first: '$camp.name' },
+            totalNumberOfVoucher: { $sum: 1 },
+            totalValueOfVoucher: { $sum: '$amount' },
+            totalAmountToRedeem: { $sum: '$remainingAmount' },
+          },
+        },
+      ]);
+
+      return groupedByCampId;
+    }
+
     const populate = {
       path: 'campId',
       select: `${disSelect}`,
@@ -979,7 +1007,7 @@ export class VoucherService {
 
     const voucher = await queryhandler<Voucher>(this.VoucherModel, {
       findQuery,
-      select,
+      select: disSelect,
       populate,
     });
 

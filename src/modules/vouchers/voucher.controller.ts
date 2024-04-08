@@ -451,7 +451,12 @@ export class VoucherController {
     },
     noAuthToken: true,
   })
-  @Roles(UserType.SUPERADMIN, UserType.DMOADMIN, UserType.TRAVELLER)
+  @Roles(
+    UserType.SUPERADMIN,
+    UserType.DMOADMIN,
+    UserType.TRAVELLER,
+    UserType.DMO,
+  )
   @UseGuards(JwtAuthGuard)
   @Get('stats/vouchers')
   async getVoucherStats(
