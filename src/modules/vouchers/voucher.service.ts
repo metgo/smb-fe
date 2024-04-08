@@ -62,6 +62,7 @@ import {
   GetMyCreatedVouchersQuery,
   GetVoucherStatsQuery,
   GetMyVouchersExternalApiQuery,
+  GetVoucherStatsGroupedQuery,
 } from 'src/modules/vouchers/queries';
 
 @Injectable()
@@ -1025,5 +1026,144 @@ export class VoucherService {
       totalValueOfVoucher,
       totalAmountToRedeem,
     };
+  }
+
+  async getVoucherStatsGrouped(
+    loggedInUser: LoggedInUserInterface,
+    query: GetVoucherStatsGroupedQuery,
+  ) {
+    const {
+      createdStartDate,
+      createdEndDate,
+      expiryStartDate,
+      expiryEndDate,
+      campId,
+      ...queries
+    } = query;
+
+    let findQuery: any = {
+      ...queries,
+      paymentStatus: VoucherPaymentStatus.PAID,
+    };
+
+    let queryCampId: any[] = campId;
+
+    if (
+      loggedInUser.role === UserType.DMOADMIN
+      || loggedInUser.role === UserType.DMO
+    ) {
+      const dmoId = loggedInUser.dmo.id;
+
+      // get all the campId from campaignSegment the dmoId is associated to
+      const campaignIds
+        = await this.campaignSegmentService.getCampaignAssociatedToIds(
+          dmoId.toString(),
+          'DMOs',
+        );
+
+      const campIds = Array.isArray(campaignIds)
+        ? campaignIds.map(item => new mongoose.Types.ObjectId(item))
+        : [new mongoose.Types.ObjectId(campaignIds)];
+
+      queryCampId = campId?.length ? [...campIds, ...campId] : campIds;
+    }
+
+    if (queryCampId) {
+      const queryCampIds = Array.isArray(queryCampId)
+        ? queryCampId
+        : [new mongoose.Types.ObjectId(queryCampId)];
+      findQuery = {
+        ...findQuery,
+        campId: { $in: queryCampIds },
+      };
+    }
+
+    if (loggedInUser.role === UserType.TRAVELLER) {
+      findQuery = {
+        ...findQuery,
+        createdBy: loggedInUser.id,
+      };
+    }
+
+    if (createdStartDate && createdEndDate) {
+      const startDate = new Date(createdStartDate);
+      const endDate = new Date(createdEndDate);
+
+      if (startDate >= endDate) {
+        throw new BadRequestException(
+          `Created ${ServerErrors.DATE_IS_NOT_LESS}`,
+        );
+      }
+
+      findQuery = {
+        ...findQuery,
+        createdAt: {
+          $gte: startDate,
+          $lte: endDate,
+        },
+      };
+    }
+
+    if (expiryStartDate && expiryEndDate) {
+      const startDate = new Date(expiryStartDate);
+      const endDate = new Date(expiryEndDate);
+
+      if (startDate >= endDate) {
+        throw new BadRequestException(
+          `Expiry ${ServerErrors.DATE_IS_NOT_LESS}`,
+        );
+      }
+
+      findQuery = {
+        ...findQuery,
+        expireDate: {
+          $gte: startDate,
+          $lte: endDate,
+        },
+      };
+    }
+
+    const groupedByCampIdAndDate = await this.VoucherModel.aggregate([
+      { $match: findQuery },
+      {
+        $lookup: {
+          from: 'campaigns',
+          localField: 'campId',
+          foreignField: '_id',
+          as: 'camp',
+        },
+      },
+      { $unwind: '$camp' },
+      {
+        $group: {
+          _id: {
+            campId: '$camp._id',
+            createdAt: {
+              $dateToString: { format: '%Y-%m-%d', date: '$createdAt' },
+            },
+            name: '$camp.name',
+          },
+          totalNumberOfVouchers: { $sum: 1 },
+          totalValueOfVoucher: { $sum: '$amount' },
+          totalAmountToRedeem: { $sum: '$remainingAmount' },
+        },
+      },
+      {
+        $group: {
+          _id: '$_id.campId',
+          name: { $first: '$_id.name' },
+          vouchersByDate: {
+            $push: {
+              createdAt: '$_id.createdAt',
+              totalNumberOfVouchers: '$totalNumberOfVouchers',
+              totalValueOfVoucher: '$totalValueOfVoucher',
+              totalAmountToRedeem: '$totalAmountToRedeem',
+            },
+          },
+        },
+      },
+    ]);
+
+    return groupedByCampIdAndDate;
   }
 }

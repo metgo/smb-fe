@@ -32,6 +32,7 @@ import {
   GetMyCreatedVouchersQuery,
   GetMyVouchersExternalApiQuery,
   GetVoucherByExternalApiQuery,
+  GetVoucherStatsGroupedQuery,
   GetVoucherStatsQuery,
   GetVoucherQuery,
 } from 'src/modules/vouchers/queries';
@@ -458,13 +459,49 @@ export class VoucherController {
     UserType.DMO,
   )
   @UseGuards(JwtAuthGuard)
-  @Get('stats/vouchers')
+  @Get('stats/vouchers-cached')
   async getVoucherStats(
     @Req() req,
     @Res() response: Response,
     @Query() query: GetVoucherStatsQuery,
   ) {
     const voucherStats = await this.voucherService.getStats(req.user, query);
+
+    return responseHelper(
+      response,
+      HttpStatus.OK,
+      ServerSuccess.VOUCHER.LISTED,
+      voucherStats,
+      null,
+      null,
+    );
+  }
+
+  @ApiEndpoint({
+    tags: ['Voucher'],
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.VOUCHER.LISTED,
+    },
+    noAuthToken: true,
+  })
+  @Roles(
+    UserType.SUPERADMIN,
+    UserType.DMOADMIN,
+    UserType.TRAVELLER,
+    UserType.DMO,
+  )
+  @UseGuards(JwtAuthGuard)
+  @Get('stats/vouchers')
+  async getVoucherStatsGrouped(
+    @Req() req,
+    @Res() response: Response,
+    @Query() query: GetVoucherStatsGroupedQuery,
+  ) {
+    const voucherStats = await this.voucherService.getVoucherStatsGrouped(
+      req.user,
+      query,
+    );
 
     return responseHelper(
       response,
