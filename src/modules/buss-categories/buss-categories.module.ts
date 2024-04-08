@@ -13,6 +13,7 @@ import {
   BussSubCategory,
   BussSubCategorySchema,
 } from '../buss-subcategories/schema/buss-subCategory.schema';
+import { DMOModule } from 'src/modules/dmo/dmo.module';
 import { ConfigModule } from 'src/services/config/config.module';
 
 @Module({
@@ -21,9 +22,10 @@ import { ConfigModule } from 'src/services/config/config.module';
       { name: BussCategory.name, schema: BussCategorySchema },
       { name: BussSubCategory.name, schema: BussSubCategorySchema },
     ]),
-    UsersModule,
     BussSubCategoriesModule,
     ConfigModule,
+    DMOModule,
+    UsersModule,
   ],
 
   controllers: [BussCategoriesController],

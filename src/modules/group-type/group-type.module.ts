@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
+
+import { DMOModule } from 'src/modules/dmo/dmo.module';
 import { GroupTypeSchema } from './schema/group-type.schema';
 import { GroupTypeController } from './group-type.controller';
 import { GroupTypeService } from './group-type.service';
@@ -8,6 +10,7 @@ import { UsersModule } from '../users/users.module';
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: 'GroupType', schema: GroupTypeSchema }]),
+    DMOModule,
     UsersModule,
   ],
   controllers: [GroupTypeController],

@@ -6,8 +6,11 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+
 import { Campaign } from './schema/campaign.schema';
+import { paginateData } from 'src/common/pagination';
 import { paginationConfig } from 'src/common/pagination.config';
+import { CampaignStatus } from 'src/common/enum';
 import {
   findOneByFieldName,
   findOneByFieldNameExcludeId,
@@ -16,15 +19,16 @@ import {
   queryhandler,
   updateById,
 } from 'src/core/helper/query-helper';
+import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interface';
 import { createCampaignDto } from './dto/createCampaign.dto';
 import { FilterQuery } from './dto/query.dto';
+import { UserType } from 'src/modules/users/users.type';
 import { disSelect } from 'src/common/utils/select.handling';
 import { EncryptionService } from 'src/services/encryption/encryption.service';
 import { ConfigService } from 'src/services/config/config.service';
 import { updateCampaignDto } from './dto/updateCampaign.dto';
 import { ServerErrors } from 'src/common/constant';
 import { GcpBucketService } from 'src/services/gcp-bucket/gcp-bucket.services';
-import { CampaignStatus } from 'src/common/enum';
 
 @Injectable()
 export class CampaignService {
@@ -54,21 +58,17 @@ export class CampaignService {
     return newCampaign;
   }
 
-  async getAll(queries: FilterQuery) {
+  async getAll(loggedInUser: LoggedInUserInterface, queries: FilterQuery) {
     const {
-      page, limit, search, ...query
+      page, limit, search, dmoId,
     } = queries;
 
     const queryPage = page ? Number(page) : paginationConfig.page;
     const queryLimit = limit ? Number(limit) : paginationConfig.limit;
 
-    let findQuery: any = query;
-    let select: {};
-    let populate: any;
-    let populate1: {};
+    let findQuery: any = {};
     if (search) {
       findQuery = {
-        ...findQuery,
         $or: [
           { name: { $regex: search, $options: 'i' } },
           { description: { $regex: search, $options: 'i' } },
@@ -76,15 +76,56 @@ export class CampaignService {
       };
     }
 
-    // eslint-disable-next-line prefer-const
-    select = `${disSelect}`;
+    let dmoQuery = dmoId ? { $in: [dmoId] } : null;
+    if (
+      loggedInUser.role === UserType.DMO
+      || loggedInUser.role === UserType.DMOADMIN
+    ) {
+      dmoQuery = {
+        $in: [loggedInUser.dmo.id],
+      };
+    }
+
+    if (dmoQuery) {
+      const campaign = await this.CampaignModel.aggregate([
+        { $match: findQuery },
+        {
+          $lookup: {
+            from: 'campaignsegments',
+            localField: '_id',
+            foreignField: 'campaign_ID',
+            as: 'campSegment',
+          },
+        },
+        { $unwind: '$campSegment' },
+        {
+          $match: {
+            'campSegment.DMOs': dmoQuery,
+          },
+        },
+        {
+          $project: {
+            campSegment: 0,
+            createdAt: 0,
+            updatedAt: 0,
+            createdBy: 0,
+            updatedBy: 0,
+            deletedBy: 0,
+            deletedAt: 0,
+            __v: 0,
+          },
+        },
+      ]);
+
+      const paginatedCampaigns = paginateData(queryPage, queryLimit, campaign);
+      return paginatedCampaigns;
+    }
+
     const allCampaign = await queryhandler<Campaign>(this.CampaignModel, {
       findQuery,
-      select,
+      select: disSelect,
       page: queryPage,
       limit: queryLimit,
-      populate,
-      populate1,
     });
 
     return allCampaign;

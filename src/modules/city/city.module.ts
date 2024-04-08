@@ -5,12 +5,14 @@ import { AuthorityModule } from 'src/modules/authority/authority.module';
 import { CityController } from 'src/modules/city/city.controller';
 import { CityService } from 'src/modules/city/city.service';
 import { City, CitySchema } from 'src/modules/city/schema/city.schema';
+import { DMOModule } from 'src/modules/dmo/dmo.module';
 import { UsersModule } from 'src/modules/users/users.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: City.name, schema: CitySchema }]),
     AuthorityModule,
+    DMOModule,
     UsersModule,
   ],
   controllers: [CityController],

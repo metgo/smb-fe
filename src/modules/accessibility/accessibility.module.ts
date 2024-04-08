@@ -1,15 +1,18 @@
 import { Module } from '@nestjs/common';
-import { AccessibilityController } from './accessibility.controller';
-import { AccessibilityService } from './accessibility.service';
 import { MongooseModule } from '@nestjs/mongoose';
-import { AccessibilitySchema } from './schema/accessibility.schema';
-import { UsersModule } from '../users/users.module';
+
+import { AccessibilityController } from 'src/modules/accessibility/accessibility.controller';
+import { AccessibilityService } from 'src/modules/accessibility/accessibility.service';
+import { AccessibilitySchema } from 'src/modules/accessibility/schema/accessibility.schema';
+import { DMOModule } from 'src/modules/dmo/dmo.module';
+import { UsersModule } from 'src/modules/users/users.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: 'Accessibility', schema: AccessibilitySchema },
     ]),
+    DMOModule,
     UsersModule,
   ],
   controllers: [AccessibilityController],

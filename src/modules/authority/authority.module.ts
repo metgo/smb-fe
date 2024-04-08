@@ -7,6 +7,7 @@ import {
   Authority,
   AuthoritySchema,
 } from 'src/modules/authority/schema/authority.schema';
+import { DMOModule } from 'src/modules/dmo/dmo.module';
 import { UsersModule } from 'src/modules/users/users.module';
 
 @Module({
@@ -14,6 +15,7 @@ import { UsersModule } from 'src/modules/users/users.module';
     MongooseModule.forFeature([
       { name: Authority.name, schema: AuthoritySchema },
     ]),
+    DMOModule,
     forwardRef(() => UsersModule),
   ],
   controllers: [AuthorityController],

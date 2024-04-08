@@ -98,13 +98,20 @@ export class CampaignController {
   @ApiEndpoint({
     tags: ['Admin', 'Campaign'],
     response: {
-      status: 200,
+      status: HttpStatus.OK,
       description: ServerSuccess.CAMPAIGN_LISTED,
     },
+    noAuthToken: true,
   })
+  @Roles(UserType.SUPERADMIN, UserType.ADMIN, UserType.DMO, UserType.DMOADMIN)
+  @UseGuards(JwtAuthGuard)
   @Get('admin/campaign')
-  async getAll(@Res() response: Response, @Query() query: FilterQuery) {
-    const campaign = await this.campaignService.getAll(query);
+  async getAll(
+    @Req() request,
+    @Res() response: Response,
+    @Query() query: FilterQuery,
+  ) {
+    const campaign = await this.campaignService.getAll(request.user, query);
     return responseHelper(
       response,
       HttpStatus.OK,
@@ -118,10 +125,14 @@ export class CampaignController {
   @ApiEndpoint({
     tags: ['Admin', 'Campaign'],
     response: {
-      status: 200,
+      status: HttpStatus.OK,
       description: ServerSuccess.CAMPAIGN_LISTED,
     },
+    noAuthToken: true,
+    params: [{ name: 'id', type: 'string', required: true }],
   })
+  @Roles(UserType.SUPERADMIN, UserType.ADMIN)
+  @UseGuards(JwtAuthGuard)
   @Get('admin/campaign/:id')
   async getOne(@Res() response: Response, @Param('id') id: string) {
     const campaign = await this.campaignService.getOne(id);

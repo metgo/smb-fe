@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
+import { DMOModule } from 'src/modules/dmo/dmo.module';
 import {
   MockData,
   MockDataSchema,
@@ -14,6 +15,7 @@ import { UsersModule } from 'src/modules/users/users.module';
     MongooseModule.forFeature([
       { name: MockData.name, schema: MockDataSchema },
     ]),
+    DMOModule,
     UsersModule,
   ],
   controllers: [MockDataController],

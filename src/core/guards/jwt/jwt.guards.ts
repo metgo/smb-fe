@@ -7,7 +7,10 @@ import {
   CanActivate,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+
+import { DMOService } from 'src/modules/dmo/dmo.service';
 import { UsersService } from 'src/modules/users/users.services';
+import { UserType } from 'src/modules/users/users.type';
 
 const whiteListAPI = ['/buy-voucher', '/orders'];
 
@@ -16,6 +19,7 @@ export class JwtAuthGuard implements CanActivate {
   constructor(
     private readonly jwtService: JwtService,
     private readonly userService: UsersService,
+    private readonly dmoService: DMOService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -40,6 +44,11 @@ export class JwtAuthGuard implements CanActivate {
       throw new NotFoundException('User not found');
     }
 
+    let dmo;
+    if (user.role === UserType.DMO || user.role === UserType.DMOADMIN) {
+      dmo = await this.dmoService.findDMOByUserID(user.id);
+    }
+
     request.user = {
       id: user.id,
       firstName: user.firstName,
@@ -48,12 +57,15 @@ export class JwtAuthGuard implements CanActivate {
         countryCode: user.countryCode,
         phoneNumber: user.phoneNumber,
       },
+      languagePreference: user.languagePreference,
       address: user.address,
+      dob: user.dob,
       email: user.email,
-      role: user.role,
       isPhoneVerify: user.isPhoneVerify,
       isEmailVerify: user.isEmailVerify,
+      role: user.role,
       hasBusiness: user.hasBusiness,
+      dmo: dmo ? { id: dmo._id, name: dmo.name } : null,
     };
 
     return true;

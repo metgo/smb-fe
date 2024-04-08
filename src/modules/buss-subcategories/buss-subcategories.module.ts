@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
-import { BussSubCategoriesController } from './buss-subcategories.controller';
 import { MongooseModule } from '@nestjs/mongoose';
+
+import { DMOModule } from 'src/modules/dmo/dmo.module';
+import { BussSubCategoriesController } from './buss-subcategories.controller';
 import { BussSubCategorySchema } from './schema/buss-subCategory.schema';
 import { BussSubCategoriesService } from './buss-subcategories.service';
 import { UsersModule } from '../users/users.module';
@@ -10,6 +12,7 @@ import { UsersModule } from '../users/users.module';
     MongooseModule.forFeature([
       { name: 'BussSubCategory', schema: BussSubCategorySchema },
     ]),
+    DMOModule,
     UsersModule,
   ],
   controllers: [BussSubCategoriesController],
