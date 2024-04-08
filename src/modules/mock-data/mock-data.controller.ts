@@ -33,7 +33,7 @@ export class MockDataController {
     noAuthToken: true,
     operation: 'Get list of all mocked data by superadmin',
   })
-  @Roles(UserType.SUPERADMIN)
+  @Roles(UserType.SUPERADMIN, UserType.DMO, UserType.DMOADMIN)
   @UseGuards(JwtAuthGuard)
   @Get('mock-data')
   async getAllData(
