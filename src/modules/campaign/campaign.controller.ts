@@ -42,7 +42,7 @@ export class CampaignController {
     private readonly campaignSegmentService: CampaignSegmentService,
   ) {}
 
-  @Roles(UserType.SUPERADMIN, UserType.ADMIN, UserType.DMO)
+  @Roles(UserType.SUPERADMIN, UserType.ADMIN, UserType.DMO, UserType.DMOADMIN)
   @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
     tags: ['Admin', 'Campaign'],
@@ -68,16 +68,19 @@ export class CampaignController {
 
     const campaignSegmentDto: CreateCampaignSegmentDTO = {
       campaign_ID: campaign._id.toString(),
-      DMOs: [],
-      businesses: [], // Assign empty arrays or appropriate values
-      products: [],
+      DMOs: dto?.dmoId || [],
+      businesses: dto?.businessId || [],
+      products: dto?.productId || [],
       crowed_age: [],
       crowed_origin: [],
     };
 
-    if (request.user.role === UserType.DMO) {
-      const dmoId = (await this.dmoService.findDMOByUserID(user))._id;
-      campaignSegmentDto.DMOs = [dmoId.toString()];
+    if (
+      dto?.dmoId?.length
+      && (request.user.role === UserType.DMO
+        || request.user.role === UserType.DMOADMIN)
+    ) {
+      campaignSegmentDto.DMOs = [request.user.dmo.id.toString()];
     }
 
     await this.campaignSegmentService.create(
@@ -176,7 +179,7 @@ export class CampaignController {
     );
   }
 
-  @Roles(UserType.SUPERADMIN, UserType.ADMIN)
+  @Roles(UserType.SUPERADMIN, UserType.ADMIN, UserType.DMO, UserType.DMOADMIN)
   @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
     tags: ['Admin', 'Campaign'],
@@ -190,13 +193,13 @@ export class CampaignController {
   @UseInterceptors(
     FileInterceptor('campImage', { fileFilter: fileFilterByExtensions }),
   )
-  @Put('admin/update/:id')
+  @Put('admin/campaign/:id')
   async update(
     @Res() response: Response,
     @Req() request,
     @Param('id') id: string,
     @Body() dto: updateCampaignDto,
-    @UploadedFile() campImage: Express.Multer.File,
+    @UploadedFile() campImage?: Express.Multer.File,
   ) {
     const user = request.user.id;
     await this.campaignService.findByFieldNameExcludeId('name', dto.name, id);

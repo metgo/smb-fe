@@ -35,4 +35,16 @@ export class createCampaignDto {
   @IsNotEmpty()
   @Transform(({ value }) => new Date(value))
     endDate: Date;
+
+  @ApiProperty({ type: [String], required: false })
+  @IsOptional()
+    dmoId: string[];
+
+  @ApiProperty({ type: [String], required: false })
+  @IsOptional()
+    businessId: string[];
+
+  @ApiProperty({ type: [String], required: false })
+  @IsOptional()
+    productId: string[];
 }

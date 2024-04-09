@@ -17,12 +17,12 @@ export class CreateCampaignSegmentDTO {
   @ApiProperty()
   @IsArray()
   @IsOptional()
-    businesses: [];
+    businesses: string[];
 
   @ApiProperty()
   @IsArray()
   @IsOptional()
-    products: [];
+    products: string[];
 
   @ApiProperty()
   @IsArray()

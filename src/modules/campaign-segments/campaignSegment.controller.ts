@@ -68,7 +68,7 @@ export class CampaignSegmentController {
     );
   }
 
-  @Roles(UserType.SUPERADMIN, UserType.ADMIN, UserType.DMO)
+  @Roles(UserType.SUPERADMIN, UserType.ADMIN, UserType.DMO, UserType.DMOADMIN)
   @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
     tags: ['Admin', 'Campaign Segment'],
