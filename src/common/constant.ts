@@ -28,7 +28,9 @@ export const ServerErrors = {
   EVENT: {
     NOT_FOUND: 'Event not found',
   },
-
+  MAP_POINT: {
+    NOT_FOUND: 'Map Point not found',
+  },
   USER: {
     NOT_FOUND: 'User not found',
     EXISTS: 'User already exists',
@@ -216,6 +218,12 @@ export const ServerSuccess = {
     UPDATED: 'Events was successfully updated',
     LISTED: 'Events was successfully listed',
     DELETED: 'Events was successfully deleted',
+  },
+  MAPPOINTS: {
+    CREATED: 'Map-point was successfully created',
+    UPDATED: 'Map-point was successfully updated',
+    LISTED: 'Map-point was successfully listed',
+    DELETED: 'Map-point was successfully deleted',
   },
   GROUP_TYPE: {
     CREATED: 'Group Type was created successfully',

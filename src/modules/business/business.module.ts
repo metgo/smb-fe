@@ -2,7 +2,9 @@ import { Module, forwardRef } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
 import { BusinessController } from 'src/modules/business/controllers/business.controller';
+import { MapPointsController } from 'src/modules/business/controllers/map-point.controller';
 import { BusinessService } from 'src/modules/business/services/business.service';
+import { MapPointsService } from 'src/modules/business/services/map-point.service';
 import { BusinessSchema } from './schema/business.schema';
 import { UsersService } from '../users/users.services';
 import { UserSchema } from '../users/schema/users.schema';
@@ -50,13 +52,14 @@ import { EventsService } from 'src/modules/business/services/event.service';
     MailChimpModule,
     forwardRef(() => VoucherModule),
   ],
-  controllers: [BusinessController, EventController],
+  controllers: [BusinessController, EventController, MapPointsController],
   providers: [
     BusinessService,
     UsersService,
     DMOService,
     JwtAuthService,
     EventsService,
+    MapPointsService,
   ],
   exports: [BusinessService],
 })
