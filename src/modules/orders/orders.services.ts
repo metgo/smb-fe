@@ -531,4 +531,59 @@ export class OrdersService {
       exceptionHandling(err);
     }
   }
+
+  async getOrderStats(
+    loggedInUser: LoggedInUserInterface,
+    query: GetOrdersStatsQuery,
+  ) {
+    try {
+      const { startDate, endDate } = query;
+      let findQuery: any = { paymentStatus: PaymentStatus.SUCCESS };
+
+      if (loggedInUser.role === UserType.TRAVELLER) {
+        findQuery = {
+          ...findQuery,
+          userId: loggedInUser.id,
+        };
+      }
+
+      if (startDate && endDate) {
+        const createdStartDate = new Date(startDate);
+        const createdEndDate = new Date(endDate);
+
+        if (createdStartDate >= createdEndDate) {
+          throw new BadRequestException(
+            `Created ${ServerErrors.DATE_IS_NOT_LESS}`,
+          );
+        }
+
+        findQuery = {
+          ...findQuery,
+          createdAt: {
+            $gte: createdStartDate,
+            $lte: createdEndDate,
+          },
+        };
+      }
+
+      const grouped = await this.OrderModel.aggregate([
+        { $match: findQuery },
+        {
+          $group: {
+            _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+            totalNumber: { $sum: 1 },
+            totalQuantity: { $sum: 1 },
+            totalAmount: { $sum: '$totalAmount' },
+            amountPaidByCreditCard: { $sum: '$creditCardPayment' },
+          },
+        },
+        { $sort: { _id: 1 } },
+      ]);
+
+      return grouped;
+    } catch (err) {
+      exceptionHandling(err);
+      throw err;
+    }
+  }
 }

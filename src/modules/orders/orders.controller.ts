@@ -350,13 +350,41 @@ export class OrdersController {
   })
   @Roles(UserType.SUPERADMIN, UserType.TRAVELLER)
   @UseGuards(JwtAuthGuard)
-  @Get('stats/orders')
+  @Get('stats/orders-cached')
   async getBusinessStats(
     @Req() req,
     @Res() response: Response,
     @Query() query: GetOrdersStatsQuery,
   ) {
     const orderStats = await this.ordersService.getStats(req.user, query);
+
+    return responseHelper(
+      response,
+      HttpStatus.OK,
+      ServerSuccess.ORDERS.LISTED,
+      orderStats,
+      null,
+      null,
+    );
+  }
+
+  @ApiEndpoint({
+    tags: ['Orders'],
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.ORDERS.LISTED,
+    },
+    noAuthToken: true,
+  })
+  @Roles(UserType.SUPERADMIN, UserType.TRAVELLER)
+  @UseGuards(JwtAuthGuard)
+  @Get('stats/orders')
+  async getOrderStats(
+    @Req() req,
+    @Res() response: Response,
+    @Query() query: GetOrdersStatsQuery,
+  ) {
+    const orderStats = await this.ordersService.getOrderStats(req.user, query);
 
     return responseHelper(
       response,

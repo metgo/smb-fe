@@ -1162,6 +1162,15 @@ export class VoucherService {
           },
         },
       },
+      { $unwind: '$vouchersByDate' },
+      { $sort: { 'vouchersByDate.createdAt': 1 } },
+      {
+        $group: {
+          _id: '$_id',
+          name: { $first: '$name' },
+          vouchersByDate: { $push: '$vouchersByDate' },
+        },
+      },
     ]);
 
     return groupedByCampIdAndDate;
