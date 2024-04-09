@@ -5,14 +5,11 @@ import {
   IsArray,
   IsBoolean,
   IsDateString,
-  IsEnum,
-  IsNotEmpty,
   IsObject,
   IsOptional,
   IsString,
 } from 'class-validator';
 import transformEmail from 'src/core/helper/transformEmail';
-import { BusinessStatus } from '../business.type';
 
 class Address {
   @ApiProperty({ type: String })
@@ -236,20 +233,4 @@ export class CreateEventsDto {
   @IsOptional()
   @IsString()
     registrationLink: string;
-
-  @ApiProperty({
-    type: 'enum',
-    enum: BusinessStatus,
-    required: true,
-  })
-  @IsNotEmpty()
-  @IsEnum(BusinessStatus)
-    status: BusinessStatus;
-
-  @ApiProperty({
-    required: false,
-  })
-  @IsString()
-  @IsOptional()
-    rejected_reason: string;
 }

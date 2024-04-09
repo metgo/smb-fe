@@ -16,15 +16,21 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { Response } from 'express';
+import { AnyFilesInterceptor } from '@nestjs/platform-express';
 
 import { ServerSuccess } from 'src/common/constant';
 import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
 import { responseHelper } from 'src/core/helper/response.helper';
+import { Roles } from 'src/core/guards/authorization/roles';
 import { JwtAuthGuard } from 'src/core/guards/jwt/jwt.guards';
-import { CreateEventsDto, UpdateEventDto } from 'src/modules/business/dto';
-import { GetAllBusinessesForGuestQuery } from 'src/modules/business/queries';
+import {
+  CreateEventsDto,
+  UpdateEventDto,
+  UpdateEventsByAdminDto,
+} from 'src/modules/business/dto';
+import { GetUsersBusinessesQuery } from 'src/modules/business/queries';
 import { EventsService } from 'src/modules/business/services/event.service';
-import { AnyFilesInterceptor } from '@nestjs/platform-express';
+import { UserType } from 'src/modules/users/users.type';
 import { fileFilterByExtensions } from 'src/services/gcp-bucket/middleware/file-filter';
 
 @Controller()
@@ -72,13 +78,14 @@ export class EventController {
       description: ServerSuccess.EVENTS.LISTED,
     },
     softBlockExtraDtoFields: true,
-    operation: 'Get all approved events by any user - paginated',
+    noAuthToken: true,
+    operation: 'Get all events',
   })
   @Get('events')
   async getAllEvents(
     @Req() req,
     @Res() response: Response,
-    @Query() query?: GetAllBusinessesForGuestQuery,
+    @Query() query?: GetUsersBusinessesQuery,
   ): Promise<Response<any, Record<string, any>>> {
     const events = await this.eventsService.getAllEvents(query, req.user);
 
@@ -98,16 +105,19 @@ export class EventController {
       status: HttpStatus.OK,
       description: ServerSuccess.EVENTS.LISTED,
     },
+    noAuthToken: true,
     operation: 'Get approved events detail by any user',
   })
+  @UseGuards(JwtAuthGuard)
   @Get('events/:id')
   async getEventDetailForAll(
+    @Req() req,
     @Res() response: Response,
     @Param('id') id: string,
   ) {
     const event = await this.eventsService.getEvents({
       id,
-      loggedInUser: null,
+      loggedInUser: req.user,
     });
 
     return responseHelper(
@@ -136,6 +146,40 @@ export class EventController {
     @Res() response: Response,
     @Param('eventId') eventId: string,
     @Body() body: UpdateEventDto,
+  ) {
+    const event = await this.eventsService.updateEvent(
+      eventId,
+      request.user,
+      body,
+    );
+
+    return responseHelper(
+      response,
+      HttpStatus.OK,
+      ServerSuccess.EVENTS.UPDATED,
+      event,
+      null,
+      null,
+    );
+  }
+
+  @ApiEndpoint({
+    tags: ['Admin', 'Events'],
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.EVENTS.UPDATED,
+    },
+    noAuthToken: true,
+    params: [{ name: 'eventId', type: 'string', required: true }],
+  })
+  @Roles(UserType.DMO, UserType.DMOADMIN, UserType.SUPERADMIN)
+  @UseGuards(JwtAuthGuard)
+  @Patch('admin/events/:eventId')
+  async updateEventByAdmin(
+    @Req() request,
+    @Res() response: Response,
+    @Param('eventId') eventId: string,
+    @Body() body: UpdateEventsByAdminDto,
   ) {
     const event = await this.eventsService.updateEvent(
       eventId,

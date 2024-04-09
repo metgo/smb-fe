@@ -29,7 +29,7 @@ import {
 } from 'src/modules/business/business.type';
 import { CreateEventsDto, UpdateEventDto } from 'src/modules/business/dto';
 import { Business } from 'src/modules/business/schema/business.schema';
-import { GetAllBusinessesForGuestQuery } from 'src/modules/business/queries';
+import { GetUsersBusinessesQuery } from 'src/modules/business/queries';
 import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.schema';
 import { BussSubCategory } from 'src/modules/buss-subcategories/schema/buss-subCategory.schema';
 import { DMOService } from 'src/modules/dmo/dmo.service';
@@ -58,14 +58,14 @@ export class EventsService {
 
   async createEvents(
     dto: CreateEventsDto,
-    userId: LoggedInUserInterface,
+    user: LoggedInUserInterface,
     image: Array<Express.Multer.File>,
   ): Promise<Business> {
     let newDto: any = {
       ...dto,
       serviceType: GeoServicesTypes.EVENT,
-      userId,
-      createdBy: userId,
+      userId: user.id,
+      createdBy: user.id,
     };
 
     // find dmoId by authority
@@ -75,6 +75,15 @@ export class EventsService {
       newDto = {
         ...newDto,
         dmoId: dmo._id,
+      };
+    }
+
+    if (user.role === UserType.DMOADMIN || user.role === UserType.DMO) {
+      const dmoId = (await this.dmoService.findDMOByUserID(user.id))._id;
+
+      newDto = {
+        ...newDto,
+        dmoId,
       };
     }
 
@@ -96,22 +105,25 @@ export class EventsService {
     }
     const images = [];
     // add to GCP
-    await Promise.all(
-      image.map(async (file: Express.Multer.File) => {
-        const imageUrl = await this.gcpBucketServices.upload(file);
+    if (image) {
+      await Promise.all(
+        image.map(async (file: Express.Multer.File) => {
+          const imageUrl = await this.gcpBucketServices.upload(file);
 
-        const imageObject = {
-          image: imageUrl || null,
-          caption: file?.originalname || null,
-          alt: file?.originalname || null,
-        };
-        images.push(imageObject);
-      }),
-    );
-    newDto = {
-      ...newDto,
-      images,
-    };
+          const imageObject = {
+            image: imageUrl || null,
+            caption: file?.originalname || null,
+            alt: file?.originalname || null,
+          };
+          images.push(imageObject);
+        }),
+      );
+      newDto = {
+        ...newDto,
+        images,
+      };
+    }
+
     try {
       const slug = this.generateSlug(dto?.name);
       newDto = {
@@ -122,53 +134,16 @@ export class EventsService {
       await newEvent.save();
 
       // add to Media Table
-      await Promise.all(
-        newEvent.images.map(async (img: any) => {
-          const newMedia = new this.MediaModel({
-            reference: {
-              refId: newEvent.id,
-              schema: 'Event',
-            },
-            createdBy: newEvent.id,
-            url: img.image,
-            originalName: img?.caption || null,
-            mimetype: img?.mimetype || null,
-          });
-          await newMedia.save();
-        }),
-      );
 
-      return newEvent;
-    } catch (error) {
-      if (this.isDuplicateKeyError(error, 'slug')) {
-        const slug = this.generateSlug(`${dto?.name}${nanoid(2)}`);
-
-        let data = {
-          ...newDto,
-          images,
-          createdBy: userId.id,
-          slug,
-        };
-        if (userId.role === UserType.DMOADMIN) {
-          const dmoId = (await this.dmoService.findDMOByUserID(userId.id))._id;
-
-          data = {
-            ...data,
-            dmoId,
-          };
-        }
-        const newBusiness = new this.BusinessModel(data);
-        await newBusiness.save();
-
-        // add to Media Table
+      if (newEvent.images?.length) {
         await Promise.all(
-          newBusiness.images.map(async (img: any) => {
+          newEvent.images.map(async (img: any) => {
             const newMedia = new this.MediaModel({
               reference: {
-                refId: newBusiness.id,
+                refId: newEvent.id,
                 schema: 'Event',
               },
-              createdBy: userId.id,
+              createdBy: newEvent.id,
               url: img.image,
               originalName: img?.caption || null,
               mimetype: img?.mimetype || null,
@@ -176,15 +151,48 @@ export class EventsService {
             await newMedia.save();
           }),
         );
+      }
 
-        return newBusiness;
+      return newEvent;
+    } catch (error) {
+      if (this.isDuplicateKeyError(error, 'slug')) {
+        const slug = this.generateSlug(`${dto?.name}${nanoid(2)}`);
+
+        newDto = {
+          ...newDto,
+          slug,
+        };
+
+        const newEvent = new this.BusinessModel(newDto);
+        await newEvent.save();
+
+        // add to Media Table
+        if (newEvent.images?.length) {
+          await Promise.all(
+            newEvent.images.map(async (img: any) => {
+              const newMedia = new this.MediaModel({
+                reference: {
+                  refId: newEvent.id,
+                  schema: 'Event',
+                },
+                createdBy: user.id,
+                url: img.image,
+                originalName: img?.caption || null,
+                mimetype: img?.mimetype || null,
+              });
+              await newMedia.save();
+            }),
+          );
+        }
+
+        return newEvent;
       }
       exceptionHandling(error);
     }
   }
 
   async getAllEvents(
-    queries: GetAllBusinessesForGuestQuery,
+    queries: GetUsersBusinessesQuery,
     authenticatedUser?: LoggedInUserInterface,
   ) {
     const {
@@ -195,18 +203,21 @@ export class EventsService {
     const queryLimit = Number(limit) || paginationConfig.limit;
     let findQuery: any = { ...query, serviceType: GeoServicesTypes.EVENT };
 
-    if (!('status' in query) && !authenticatedUser) {
-      findQuery = { ...findQuery, status: BusinessStatus.APPROVED };
-    }
+    if (authenticatedUser) {
+      if (authenticatedUser?.role === UserType.DMOADMIN || authenticatedUser?.role === UserType.DMO) {
+        const dmoId = (await this.dmoService.findDMOByUserID(authenticatedUser.id))._id;
+        findQuery = {
+          ...findQuery,
+          dmoId,
+        };
+      }
 
-    if (authenticatedUser && authenticatedUser?.role === UserType.DMOADMIN) {
-      const dmoId = (
-        await this.dmoService.findDMOByUserID(authenticatedUser.id)
-      )._id;
-      findQuery = {
-        ...findQuery,
-        dmoId,
-      };
+      if (authenticatedUser.role === UserType.TRAVELLER) {
+        findQuery = {
+          ...findQuery,
+          userId: authenticatedUser.id,
+        };
+      }
     }
 
     const populate = {
@@ -321,7 +332,6 @@ export class EventsService {
 
       return allPaginatedEvents;
     }
-    console.log(findQuery);
     const allEvents = await queryhandler<Business>(this.BusinessModel, {
       findQuery,
       select,
@@ -405,6 +415,12 @@ export class EventsService {
       updatedBy: loggedInUser.id,
     };
 
+    let findQuery: any = {
+      _id: id,
+      isDeleted: false,
+      serviceType: GeoServicesTypes.EVENT,
+    };
+
     // find dmoId by authority
     if (dto.authorityId) {
       const dmo = (await this.authorityService.getOne(dto.authorityId)).dmoId;
@@ -429,13 +445,23 @@ export class EventsService {
       };
     }
 
+    if (loggedInUser.role === UserType.DMO || loggedInUser.role === UserType.DMOADMIN) {
+      const dmoId = (await this.dmoService.findDMOByUserID(loggedInUser.id))._id;
+
+      findQuery = {
+        ...findQuery,
+        dmoId,
+      };
+    }
+    if (loggedInUser.role === UserType.TRAVELLER) {
+      findQuery = {
+        ...findQuery,
+        userId: loggedInUser.id,
+      };
+    }
+
     const updatedEvent = await this.BusinessModel.findOneAndUpdate(
-      {
-        _id: id,
-        isDeleted: false,
-        serviceType: GeoServicesTypes.EVENT,
-        createdBy: loggedInUser.id,
-      },
+      findQuery,
       updatedField,
       { new: true },
     );
