@@ -258,8 +258,7 @@ export class ProductsService {
       }
 
       if (loggedInUser.role === UserType.DMOADMIN) {
-        const dmoId = (await this.dmoService.findDMOByUserID(loggedInUser.id))
-          ._id;
+        const dmoId = loggedInUser.dmo.id;
 
         if (!product.dmoId.equals(new mongoose.Types.ObjectId(dmoId))) {
           throw new NotFoundException(ServerErrors.PRODUCT.NOT_FOUND);
@@ -310,9 +309,7 @@ export class ProductsService {
     }
 
     if (queries.isAdmin && queries.loggedInUser.role === UserType.DMOADMIN) {
-      const dmoId = await this.dmoService.findDMOByUserID(
-        queries.loggedInUser.id,
-      );
+      const dmoId = queries.loggedInUser.dmo.id;
 
       findQuery = {
         ...findQuery,
@@ -387,9 +384,7 @@ export class ProductsService {
       };
 
       if (command.isAdmin && command.loggedInUser.role === UserType.DMOADMIN) {
-        const dmoId = await this.dmoService.findDMOByUserID(
-          command.loggedInUser.id,
-        );
+        const dmoId = command.loggedInUser.dmo.id;
         filterQuery = {
           ...filterQuery,
           dmoId,
@@ -481,7 +476,7 @@ export class ProductsService {
       };
 
       if (isAdmin && loggedInUser.role === UserType.DMOADMIN) {
-        const dmoId = await this.dmoService.findDMOByUserID(loggedInUser.id);
+        const dmoId = loggedInUser.dmo.id;
         filterQuery = {
           ...filterQuery,
           dmoId,
@@ -609,7 +604,7 @@ export class ProductsService {
       }
 
       if (loggedInUser.role === UserType.DMOADMIN) {
-        const dmoID = await this.dmoService.findDMOByUserID(loggedInUser.id);
+        const dmoID = loggedInUser.dmo.id;
         findQuery = {
           ...findQuery,
           dmoId: dmoID,

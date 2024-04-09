@@ -79,7 +79,7 @@ export class EventsService {
     }
 
     if (user.role === UserType.DMOADMIN || user.role === UserType.DMO) {
-      const dmoId = (await this.dmoService.findDMOByUserID(user.id))._id;
+      const dmoId = user.dmo.id;
 
       newDto = {
         ...newDto,
@@ -204,8 +204,11 @@ export class EventsService {
     let findQuery: any = { ...query, serviceType: GeoServicesTypes.EVENT };
 
     if (authenticatedUser) {
-      if (authenticatedUser?.role === UserType.DMOADMIN || authenticatedUser?.role === UserType.DMO) {
-        const dmoId = (await this.dmoService.findDMOByUserID(authenticatedUser.id))._id;
+      if (
+        authenticatedUser?.role === UserType.DMOADMIN
+        || authenticatedUser?.role === UserType.DMO
+      ) {
+        const dmoId = authenticatedUser.dmo.id;
         findQuery = {
           ...findQuery,
           dmoId,
@@ -390,8 +393,7 @@ export class EventsService {
         }
 
         if (loggedInUser.role === UserType.DMOADMIN && event?.dmoId) {
-          const dmoId = (await this.dmoService.findDMOByUserID(loggedInUser.id))
-            ._id;
+          const dmoId = loggedInUser.dmo.id;
           if (event.dmoId.equals(new mongoose.Types.ObjectId(dmoId))) {
             return event;
           }
@@ -445,8 +447,11 @@ export class EventsService {
       };
     }
 
-    if (loggedInUser.role === UserType.DMO || loggedInUser.role === UserType.DMOADMIN) {
-      const dmoId = (await this.dmoService.findDMOByUserID(loggedInUser.id))._id;
+    if (
+      loggedInUser.role === UserType.DMO
+      || loggedInUser.role === UserType.DMOADMIN
+    ) {
+      const dmoId = loggedInUser.dmo.id;
 
       findQuery = {
         ...findQuery,
@@ -585,8 +590,7 @@ export class EventsService {
         }
 
         if (loggedInUser.role === UserType.DMOADMIN && event?.dmoId) {
-          const dmoId = (await this.dmoService.findDMOByUserID(loggedInUser.id))
-            ._id;
+          const dmoId = loggedInUser.dmo.id;
           if (event.dmoId.equals(new mongoose.Types.ObjectId(dmoId))) {
             return event;
           }
@@ -623,9 +627,7 @@ export class EventsService {
             }
 
             if (loggedInUser.role === UserType.DMOADMIN && event.dmoId) {
-              const dmoId = (
-                await this.dmoService.findDMOByUserID(loggedInUser.id)
-              )._id;
+              const dmoId = loggedInUser.dmo.id;
               if (event.dmoId.equals(new mongoose.Types.ObjectId(dmoId))) {
                 return event;
               }

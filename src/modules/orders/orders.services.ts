@@ -333,9 +333,7 @@ export class OrdersService {
     }
 
     if (queries.loggedInUser.role === UserType.DMOADMIN) {
-      const dmoId = (
-        await this.dmoService.findDMOByUserID(queries.loggedInUser.id)
-      )._id;
+      const dmoId = new mongoose.Types.ObjectId(queries.loggedInUser.dmo.id);
 
       const orders = await this.orderProductService.findAllForDmo(
         findQuery,

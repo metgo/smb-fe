@@ -1,3 +1,5 @@
+import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interface';
+
 // eslint-disable-next-line no-shadow
 export enum BusinessStatus {
   PENDING = 'PENDING',
@@ -8,7 +10,7 @@ export enum BusinessStatus {
 
 export interface GetBusinessByIdOrSlug {
   id: string;
-  loggedInUser: any;
+  loggedInUser: LoggedInUserInterface;
 }
 
 // eslint-disable-next-line no-shadow

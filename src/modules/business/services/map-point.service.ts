@@ -122,9 +122,7 @@ export class MapPointsService {
         authenticatedUser?.role === UserType.DMOADMIN
         || authenticatedUser?.role === UserType.DMO
       ) {
-        const dmoId = (
-          await this.dmoService.findDMOByUserID(authenticatedUser.id)
-        )._id;
+        const dmoId = authenticatedUser.dmo.id;
         findQuery = {
           ...findQuery,
           dmoId,
@@ -310,8 +308,7 @@ export class MapPointsService {
         }
 
         if (loggedInUser.role === UserType.DMOADMIN && mapPoint?.dmoId) {
-          const dmoId = (await this.dmoService.findDMOByUserID(loggedInUser.id))
-            ._id;
+          const dmoId = loggedInUser.dmo.id;
           if (mapPoint.dmoId.equals(new mongoose.Types.ObjectId(dmoId))) {
             return mapPoint;
           }
@@ -369,8 +366,7 @@ export class MapPointsService {
       loggedInUser.role === UserType.DMO
       || loggedInUser.role === UserType.DMOADMIN
     ) {
-      const dmoId = (await this.dmoService.findDMOByUserID(loggedInUser.id))
-        ._id;
+      const dmoId = loggedInUser.dmo.id;
 
       findQuery = {
         ...findQuery,

@@ -910,8 +910,7 @@ export class VoucherService {
       || loggedInUser.role === UserType.DMO
     ) {
       // find dmo
-      const dmoId = (await this.dmoService.findDMOByUserID(loggedInUser.id))
-        ._id;
+      const dmoId = loggedInUser.dmo.id;
 
       // get all the campId from campaignSegment the dmoId is associated to
       const campaignIds
@@ -1026,6 +1025,47 @@ export class VoucherService {
       totalValueOfVoucher,
       totalAmountToRedeem,
     };
+  }
+
+  async getAllVoucherbyAdmin(user: LoggedInUserInterface, query: any) {
+    let findQuery = {};
+    const populate = {
+      path: 'campId assignedTo',
+      select: `${disSelect} `,
+    };
+
+    console.log(query);
+
+    const select = `${disSelect} -code`;
+
+    if (user.role === UserType.DMOADMIN) {
+      // find dmo
+      const dmoId = user.dmo.id;
+
+      // get all the campId from campaignSegment the dmoId is associated to
+      const campaignIds
+        = await this.campaignSegmentService.getCampaignAssociatedToIds(
+          dmoId.toString(),
+          'DMOs',
+        );
+
+      const campIds = Array.isArray(campaignIds)
+        ? campaignIds.map(item => new mongoose.Types.ObjectId(item))
+        : [new mongoose.Types.ObjectId(campaignIds)];
+
+      findQuery = {
+        ...findQuery,
+        campId: { $in: campIds },
+      };
+    }
+
+    const voucher = await queryhandler<Voucher>(this.VoucherModel, {
+      findQuery,
+      select,
+      populate,
+    });
+
+    return voucher;
   }
 
   async getVoucherStatsGrouped(

@@ -477,6 +477,28 @@ export class VoucherController {
     );
   }
 
+  @Roles(UserType.SUPERADMIN, UserType.DMO, UserType.DMOADMIN)
+  @UseGuards(JwtAuthGuard)
+  @Get('admin/voucher')
+  async getAllVoucherbyAdmin(
+    @Req() req,
+    @Res() response: Response,
+    @Query() query: any,
+  ) {
+    const voucher = await this.voucherService.getAllVoucherbyAdmin(
+      req.user,
+      query,
+    );
+    return responseHelper(
+      response,
+      HttpStatus.OK,
+      ServerSuccess.VOUCHER.LISTED,
+      voucher,
+      null,
+      null,
+    );
+  }
+
   @ApiEndpoint({
     tags: ['Voucher'],
     response: {
