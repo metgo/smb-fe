@@ -2,6 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
 
 import { Currency } from 'src/common/enum';
+import { getRandomNumberBetween } from 'src/common/utils/random-number-range';
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
 import { Accessibility } from 'src/modules/accessibility/schema/accessibility.schema';
 import { Authority } from 'src/modules/authority/schema/authority.schema';
@@ -252,6 +253,9 @@ export class Business extends AuditableSchema {
 
   @Prop({ required: false, default: null })
     endDate: Date;
+
+  @Prop({ default: getRandomNumberBetween(17, 93), required: false })
+    impact: number;
 }
 
 export const BusinessSchema = SchemaFactory.createForClass(Business);

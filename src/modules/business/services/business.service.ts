@@ -17,6 +17,7 @@ import { paginationConfig } from 'src/common/pagination.config';
 import { getNearestBusiness } from 'src/common/sort-by-nearest';
 import { calculateGrowthPercentage } from 'src/common/utils/calculate-growth-percentage';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
+import { getRandomNumberBetween } from 'src/common/utils/random-number-range';
 import { generateRandomCode } from 'src/common/utils/randomCode.generator';
 import { disSelect } from 'src/common/utils/select.handling';
 import {
@@ -79,11 +80,32 @@ export class BusinessService {
     private UserModel: Model<User>,
   ) {}
 
+  async seed() {
+    const businesses = await this.BusinessModel.find();
+
+    await Promise.all(
+      businesses.map(async b => {
+        const impact = getRandomNumberBetween(17, 93);
+        await this.BusinessModel.updateOne(
+          { _id: b.id },
+          {
+            $set: { impact },
+          },
+        );
+      }),
+    );
+  }
+
   async createBusiness(
     dto: createBusinessDto,
     userId: string,
   ): Promise<Business> {
-    let newDto: any = { ...dto, serviceType: GeoServicesTypes.BUSINESS };
+    const impact = getRandomNumberBetween(17, 93);
+    let newDto: any = {
+      ...dto,
+      serviceType: GeoServicesTypes.BUSINESS,
+      impact,
+    };
 
     // find dmoId by authority
     if (dto.authorityId) {
@@ -149,7 +171,12 @@ export class BusinessService {
     loggedInUser: LoggedInUserInterface,
     image: Array<Express.Multer.File>,
   ): Promise<Business> {
-    let newDto: any = { ...dto, serviceType: GeoServicesTypes.BUSINESS };
+    const impact = getRandomNumberBetween(17, 93);
+    let newDto: any = {
+      ...dto,
+      serviceType: GeoServicesTypes.BUSINESS,
+      impact,
+    };
     if (dto.geoLocation) {
       const location = {
         type: 'Point',

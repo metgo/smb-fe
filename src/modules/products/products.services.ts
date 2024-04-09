@@ -12,6 +12,7 @@ import mongoose, { Model } from 'mongoose';
 import { ServerErrors } from 'src/common/constant';
 import { paginationConfig } from 'src/common/pagination.config';
 import { calculateGrowthPercentage } from 'src/common/utils/calculate-growth-percentage';
+import { getRandomNumberBetween } from 'src/common/utils/random-number-range';
 import { sellingPriceForAmountOrPercent } from 'src/common/utils/discount-calculation';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { disSelect } from 'src/common/utils/select.handling';
@@ -48,6 +49,22 @@ export class ProductsService {
     private readonly gcpBucketServices: GcpBucketService,
   ) {}
 
+  async seed() {
+    const products = await this.ProductModel.find();
+
+    await Promise.all(
+      products.map(async b => {
+        const impact = getRandomNumberBetween(9, 73);
+        await this.ProductModel.updateOne(
+          { _id: b.id },
+          {
+            $set: { impact },
+          },
+        );
+      }),
+    );
+  }
+
   async create(
     userId: string,
     businessId: string,
@@ -76,6 +93,7 @@ export class ProductsService {
         ? ProductStatus.INACTIVE
         : body?.status || ProductStatus.ACTIVE;
 
+    const impact = getRandomNumberBetween(9, 73);
     const createdField = {
       ...body,
       price,
@@ -86,6 +104,7 @@ export class ProductsService {
       dmoId: business.dmoId,
       authorityId: business.authorityId,
       status,
+      impact,
     };
 
     const newProduct = new this.ProductModel({
@@ -134,6 +153,8 @@ export class ProductsService {
         ? ProductStatus.INACTIVE
         : body?.status || ProductStatus.ACTIVE;
 
+    const impact = getRandomNumberBetween(9, 73);
+
     const images = [];
     await Promise.all(
       files.map(async (file: Express.Multer.File) => {
@@ -159,6 +180,7 @@ export class ProductsService {
       authorityId: business.authorityId,
       status,
       images,
+      impact,
     };
 
     const newProduct = new this.ProductModel({

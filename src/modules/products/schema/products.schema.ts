@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
 
+import { getRandomNumberBetween } from 'src/common/utils/random-number-range';
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
 import { Authority } from 'src/modules/authority/schema/authority.schema';
 import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.schema';
@@ -109,6 +110,9 @@ export class Product extends AuditableSchema {
 
   @Prop({ enum: ProductStatus, default: ProductStatus.ACTIVE })
     status: ProductStatus;
+
+  @Prop({ default: getRandomNumberBetween(9, 73), required: false })
+    impact: number;
 
   @Prop({
     type: [
