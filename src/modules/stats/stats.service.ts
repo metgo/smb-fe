@@ -212,9 +212,7 @@ export class StatsService {
     const endDate = new Date(query.endDate);
     const daysDifference = differenceInDays(endDate, startDate);
     const dmo = query.dmoId;
-    let findQuery: any = {
-      serviceType: GeoServicesTypes.BUSINESS,
-    };
+    let findQuery: any = {};
     if (startDate >= endDate) {
       throw new BadRequestException(`Created ${ServerErrors.DATE_IS_NOT_LESS}`);
     }
@@ -255,14 +253,14 @@ export class StatsService {
         {
           $lookup: {
             from: 'BussCategory', // Replace with your category collection name
-            localField: 'bussCategoriesId',
+            localField: 'categories',
             foreignField: '_id', // Replace with appropriate field in Category model
             as: 'category',
           },
         },
         {
           $group: {
-            _id: '$bussCategoriesId', // Group by category ID
+            _id: '$categories', // Group by category ID
             count: { $sum: 1 }, // Calculate the number of businesses per category
             category: { $first: '$category' }, // Get the first category object (if using Category model)
           },
@@ -275,19 +273,19 @@ export class StatsService {
           $match: filter,
         },
         {
-          $unwind: '$bussCategoriesId', // Unwind bussCategoriesId array
+          $unwind: '$categories', // Unwind bussCategoriesId array
         },
         {
           $lookup: {
             from: 'BussCategory', // Replace with your category collection name
-            localField: 'bussCategoriesId',
+            localField: 'categories',
             foreignField: '_id', // Replace with appropriate field in Category model
             as: 'category',
           },
         },
         {
           $group: {
-            _id: '$bussCategoriesId', // Group by category ID
+            _id: '$categories', // Group by category ID
             count: { $sum: 1 }, // Calculate the number of businesses per category
             category: { $first: '$category' }, // Get the first category object (if using Category model)
           },
