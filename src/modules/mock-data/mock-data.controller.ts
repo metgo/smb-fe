@@ -3,6 +3,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Param,
   Query,
   Res,
   UseGuards,
@@ -46,6 +47,34 @@ export class MockDataController {
       HttpStatus.OK,
       ServerSuccess.MOCK_DATA.LISTED,
       users,
+      null,
+      null,
+    );
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @ApiEndpoint({
+    tags: ['Admin', 'Mock Data'],
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.MOCK_DATA.LISTED,
+    },
+    softBlockExtraDtoFields: true,
+    operation: 'Get statistics of business or product',
+  })
+  @Get('mock-data/statistics/:businessOrProductId')
+  async getStatisticsById(
+    @Param('businessOrProductId') businessOrProductId: string,
+    @Res() response: Response,
+  ) {
+    const stats = await this.mockDataServices.getStatisticsByBussOrProId(
+      businessOrProductId,
+    );
+    return responseHelper(
+      response,
+      HttpStatus.OK,
+      ServerSuccess.MOCK_DATA.LISTED,
+      stats,
       null,
       null,
     );

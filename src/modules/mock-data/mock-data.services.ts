@@ -6,13 +6,23 @@ import { ServerErrors } from 'src/common/constant';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { queryhandler } from 'src/core/helper/query-helper';
 import { GetMockDataQuery } from 'src/modules/mock-data/queries/get-mock-data.query';
-import { MockData } from 'src/modules/mock-data/mock-data.schema';
+import { UsersMockData } from 'src/modules/mock-data/schema/active-users.schema';
+import { StatisticsMockData } from 'src/modules/mock-data/schema/impression-engagement.schema';
+import { Business } from '../business/schema/business.schema';
+import { Product } from '../products/schema/products.schema';
+import { disSelect } from 'src/common/utils/select.handling';
 
 @Injectable()
 export class MockDataServices {
   constructor(
-    @InjectModel(MockData.name)
-    private MockDataModel: Model<MockData>,
+    @InjectModel(UsersMockData.name)
+    private UsersMockDataModel: Model<UsersMockData>,
+    @InjectModel(StatisticsMockData.name)
+    private StatisticsMockDataModel: Model<StatisticsMockData>,
+    @InjectModel(Business.name)
+    private BusinessModel: Model<Business>,
+    @InjectModel(Product.name)
+    private ProductModel: Model<Product>,
   ) {}
 
   async seed() {
@@ -45,8 +55,43 @@ export class MockDataServices {
         identifierId,
       };
 
-      await this.MockDataModel.create(mockData);
+      await this.UsersMockDataModel.create(mockData);
     });
+  }
+
+  async seedStatsMock() {
+    const businesses = await this.BusinessModel.find();
+    const products = await this.ProductModel.find();
+
+    await Promise.all(
+      businesses.map(async buss => {
+        const impression = Math.floor(Math.random() * (200 - 150 + 1)) + 150;
+        const engagement = Math.floor(Math.random() * (200 - 150 + 1)) + 150;
+        const mockData = {
+          businessId: buss.id,
+          productId: null,
+          impression,
+          engagement,
+        };
+
+        await this.StatisticsMockDataModel.create(mockData);
+      }),
+    );
+
+    await Promise.all(
+      products.map(async buss => {
+        const impression = Math.floor(Math.random() * (200 - 150 + 1)) + 150;
+        const engagement = Math.floor(Math.random() * (200 - 150 + 1)) + 150;
+        const mockData = {
+          businessId: null,
+          productId: buss.id,
+          impression,
+          engagement,
+        };
+
+        await this.StatisticsMockDataModel.create(mockData);
+      }),
+    );
   }
 
   async getAllData(queries: GetMockDataQuery) {
@@ -76,14 +121,25 @@ export class MockDataServices {
       const select
         = '-updatedAt -createdBy -updatedBy -deletedBy -deletedAt  -__v -isDeleted';
 
-      const mockdata = await queryhandler<MockData>(this.MockDataModel, {
-        findQuery,
-        select,
-      });
+      const mockdata = await queryhandler<UsersMockData>(
+        this.UsersMockDataModel,
+        {
+          findQuery,
+          select,
+        },
+      );
 
       return mockdata;
     } catch (err) {
       exceptionHandling(err);
     }
+  }
+
+  async getStatisticsByBussOrProId(id: string) {
+    const stats = await this.StatisticsMockDataModel.findOne({
+      $or: [{ businessId: id }, { productId: id }],
+    }).select(disSelect);
+
+    return stats;
   }
 }

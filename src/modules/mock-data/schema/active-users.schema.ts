@@ -4,7 +4,7 @@ import { HydratedDocument } from 'mongoose';
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
 
 @Schema()
-export class MockData extends AuditableSchema {
+export class UsersMockData extends AuditableSchema {
   @Prop()
     userCount: number;
 
@@ -15,6 +15,6 @@ export class MockData extends AuditableSchema {
     identifierId: string;
 }
 
-export type MockDataDocument = HydratedDocument<MockData>;
+export type UsersMockDataDocument = HydratedDocument<UsersMockData>;
 
-export const MockDataSchema = SchemaFactory.createForClass(MockData);
+export const UsersMockDataSchema = SchemaFactory.createForClass(UsersMockData);
