@@ -42,6 +42,8 @@ export class StatsService {
     }
     const startDate = new Date(query.startDate);
     const endDate = new Date(query.endDate);
+    endDate.setDate(endDate.getDate() + 1);
+
     const daysDifference = differenceInDays(endDate, startDate);
     const dmo = query.dmoId;
     let findQuery: any = {
@@ -73,7 +75,7 @@ export class StatsService {
     try {
       const dateFilter = {
         $gte: startDate,
-        $lte: endDate,
+        $lt: endDate,
       };
 
       // Count deleted businesses for each category in the given range
@@ -143,7 +145,7 @@ export class StatsService {
         ...findQuery,
         createdAt: {
           $gte: startDate,
-          $lte: endDate,
+          $lt: endDate,
         },
       });
       // Count businesses for each category in the previous date range
@@ -207,6 +209,8 @@ export class StatsService {
     }
     const startDate = new Date(query.startDate);
     const endDate = new Date(query.endDate);
+    endDate.setDate(endDate.getDate() + 1);
+
     const daysDifference = differenceInDays(endDate, startDate);
     const dmo = query.dmoId;
     let findQuery: any = {};
@@ -236,7 +240,7 @@ export class StatsService {
     try {
       const dateFilter = {
         $gte: startDate,
-        $lte: endDate,
+        $lt: endDate,
       };
 
       // Count deleted businesses for each category in the given range
@@ -306,7 +310,7 @@ export class StatsService {
         ...findQuery,
         createdAt: {
           $gte: startDate,
-          $lte: endDate,
+          $lt: endDate,
         },
       });
       // Count businesses for each category in the previous date range
@@ -378,6 +382,7 @@ export class StatsService {
     if (query.startDate && query.endDate) {
       const createdStartDate = new Date(query.startDate);
       const createdEndDate = new Date(query.endDate);
+      createdEndDate.setDate(createdEndDate.getDate() + 1);
 
       if (createdStartDate >= createdEndDate) {
         throw new BadRequestException(
@@ -388,7 +393,7 @@ export class StatsService {
         ...orderFindQuery,
         createdAt: {
           $gte: createdStartDate,
-          $lte: createdEndDate,
+          $lt: createdEndDate,
         },
       };
     }

@@ -436,6 +436,7 @@ export class OrdersService {
       if (startDate && endDate) {
         const createdStartDate = new Date(startDate);
         const createdEndDate = new Date(endDate);
+        createdEndDate.setDate(createdEndDate.getDate() + 1);
 
         if (createdStartDate >= createdEndDate) {
           throw new BadRequestException(
@@ -451,7 +452,7 @@ export class OrdersService {
           ...createdFindQuery,
           createdAt: {
             $gte: createdStartDate,
-            $lte: createdEndDate,
+            $lt: createdEndDate,
           },
         };
 
@@ -459,7 +460,7 @@ export class OrdersService {
           ...createdFindQuery,
           createdAt: {
             $gte: newStartDate,
-            $lte: createdStartDate,
+            $lt: createdStartDate,
           },
         };
 
@@ -546,6 +547,7 @@ export class OrdersService {
       if (startDate && endDate) {
         const createdStartDate = new Date(startDate);
         const createdEndDate = new Date(endDate);
+        createdEndDate.setDate(createdEndDate.getDate() + 1);
 
         if (createdStartDate >= createdEndDate) {
           throw new BadRequestException(
@@ -557,7 +559,7 @@ export class OrdersService {
           ...findQuery,
           createdAt: {
             $gte: createdStartDate,
-            $lte: createdEndDate,
+            $lt: createdEndDate,
           },
         };
       }

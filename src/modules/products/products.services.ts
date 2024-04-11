@@ -642,6 +642,7 @@ export class ProductsService {
       if (startDate && endDate) {
         const createdStartDate = new Date(startDate);
         const createdEndDate = new Date(endDate);
+        createdEndDate.setDate(createdEndDate.getDate() + 1);
 
         if (createdStartDate >= createdEndDate) {
           throw new BadRequestException(
@@ -653,7 +654,7 @@ export class ProductsService {
           ...createdFindQuery,
           createdAt: {
             $gte: createdStartDate,
-            $lte: createdEndDate,
+            $lt: createdEndDate,
           },
         };
 
@@ -661,11 +662,11 @@ export class ProductsService {
           ...deletedFindQuery,
           deletedAt: {
             $gte: createdStartDate,
-            $lte: createdEndDate,
+            $lt: createdEndDate,
           },
           createdAt: {
             $gte: createdStartDate,
-            $lte: createdEndDate,
+            $lt: createdEndDate,
           },
         };
 

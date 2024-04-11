@@ -937,6 +937,7 @@ export class VoucherService {
     if (createdStartDate && createdEndDate) {
       const startDate = new Date(createdStartDate);
       const endDate = new Date(createdEndDate);
+      endDate.setDate(endDate.getDate() + 1);
 
       if (startDate >= endDate) {
         throw new BadRequestException(
@@ -948,7 +949,7 @@ export class VoucherService {
         ...findQuery,
         createdAt: {
           $gte: startDate,
-          $lte: endDate,
+          $lt: endDate,
         },
       };
     }
@@ -956,6 +957,7 @@ export class VoucherService {
     if (expiryStartDate && expiryEndDate) {
       const startDate = new Date(expiryStartDate);
       const endDate = new Date(expiryEndDate);
+      endDate.setDate(endDate.getDate() + 1);
 
       if (startDate >= endDate) {
         throw new BadRequestException(
@@ -967,7 +969,7 @@ export class VoucherService {
         ...findQuery,
         expireDate: {
           $gte: startDate,
-          $lte: endDate,
+          $lt: endDate,
         },
       };
     }
@@ -1126,6 +1128,7 @@ export class VoucherService {
     if (createdStartDate && createdEndDate) {
       const startDate = new Date(createdStartDate);
       const endDate = new Date(createdEndDate);
+      endDate.setDate(endDate.getDate() + 1);
 
       if (startDate >= endDate) {
         throw new BadRequestException(
@@ -1137,7 +1140,7 @@ export class VoucherService {
         ...findQuery,
         createdAt: {
           $gte: startDate,
-          $lte: endDate,
+          $lt: endDate,
         },
       };
     }
@@ -1145,6 +1148,7 @@ export class VoucherService {
     if (expiryStartDate && expiryEndDate) {
       const startDate = new Date(expiryStartDate);
       const endDate = new Date(expiryEndDate);
+      endDate.setDate(endDate.getDate() + 1);
 
       if (startDate >= endDate) {
         throw new BadRequestException(
@@ -1156,7 +1160,7 @@ export class VoucherService {
         ...findQuery,
         expireDate: {
           $gte: startDate,
-          $lte: endDate,
+          $lt: endDate,
         },
       };
     }

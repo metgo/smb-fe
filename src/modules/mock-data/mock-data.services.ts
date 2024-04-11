@@ -117,6 +117,7 @@ export class MockDataServices {
       if (startDate && endDate) {
         const createdStartDate = new Date(startDate);
         const createdEndDate = new Date(endDate);
+        createdEndDate.setDate(createdEndDate.getDate() + 1);
 
         if (createdStartDate >= createdEndDate) {
           throw new BadRequestException(
@@ -128,7 +129,7 @@ export class MockDataServices {
           ...findQuery,
           createdAt: {
             $gte: createdStartDate,
-            $lte: createdEndDate,
+            $lt: createdEndDate,
           },
         };
       }
