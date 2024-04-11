@@ -152,14 +152,27 @@ export class OrderProductService {
         );
       }
 
-      pipeline.push({
-        $match: {
-          'order_info.createdAt': {
-            $gte: createdStartDate,
-            $lt: createdEndDate,
+      pipeline.push(
+        {
+          $lookup: {
+            from: 'payments',
+            localField: 'order_info._id',
+            foreignField: 'orderId',
+            as: 'payments',
           },
         },
-      });
+        {
+          $unwind: '$payments',
+        },
+        {
+          $match: {
+            'payments.paymentDate': {
+              $gte: createdStartDate,
+              $lt: createdEndDate,
+            },
+          },
+        },
+      );
     }
 
     pipeline.push(
@@ -231,6 +244,10 @@ export class OrderProductService {
             address: '$order_info.address',
             firstName: '$order_info.firstName',
             lastName: '$order_info.lastName',
+            orderInitiatedDate: '$order_info.createdAt',
+            paymentSuccessDate: '$payments.paymentDate',
+            totalAmount: '$order_info.totalAmount',
+            amountPaidByCreditCard: '$order_info.creditCardPayment',
             products: {
               $map: {
                 input: '$order_info.products',
@@ -238,7 +255,7 @@ export class OrderProductService {
                 in: {
                   id: '$$product.id',
                   quantity: '$$product.quantity',
-                  // name: '$matchedProducts.name',
+                  name: '$matchedProducts.name',
                 },
               },
             },
