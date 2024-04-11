@@ -1,6 +1,8 @@
 /* eslint-disable no-undef */
 import {
   BadRequestException,
+  forwardRef,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -53,8 +55,8 @@ import {
 import { Business } from 'src/modules/business/schema/business.schema';
 import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.schema';
 import { BussSubCategory } from 'src/modules/buss-subcategories/schema/buss-subCategory.schema';
-import { DMOService } from 'src/modules/dmo/dmo.service';
 import { Media } from 'src/modules/media/schema/media.schema';
+import { MockDataServices } from 'src/modules/mock-data/mock-data.services';
 import { Product } from 'src/modules/products/schema/products.schema';
 import { User } from 'src/modules/users/schema/users.schema';
 import { UserType } from 'src/modules/users/users.type';
@@ -66,7 +68,8 @@ export class BusinessService {
     @InjectModel('Business')
     private BusinessModel: Model<Business>,
     private readonly authorityService: AuthorityService,
-    private readonly dmoService: DMOService,
+    @Inject(forwardRef(() => AuthorityService))
+    private readonly mockDataService: MockDataServices,
     private readonly gcpBucketServices: GcpBucketService,
     @InjectModel('Media')
     private MediaModel: Model<Media>,
@@ -144,6 +147,12 @@ export class BusinessService {
         { _id: userId },
         { hasBusiness: true },
       );
+
+      // create impression
+      await this.mockDataService.createImpressionEngagementInterface({
+        businessId: newBusiness._id,
+      });
+
       return newBusiness;
     } catch (error) {
       if (this.isDuplicateKeyError(error, 'slug')) {
@@ -160,6 +169,11 @@ export class BusinessService {
           { _id: userId },
           { hasBusiness: true },
         );
+        // create impression
+        await this.mockDataService.createImpressionEngagementInterface({
+          businessId: newBusiness._id,
+        });
+
         return newBusiness;
       }
       exceptionHandling(error);
@@ -225,6 +239,11 @@ export class BusinessService {
       const newBusiness = new this.BusinessModel(data);
       await newBusiness.save();
 
+      // create impression
+      await this.mockDataService.createImpressionEngagementInterface({
+        businessId: newBusiness._id,
+      });
+
       // add to Media Table
       await Promise.all(
         newBusiness.images.map(async (img: any) => {
@@ -263,6 +282,11 @@ export class BusinessService {
         }
         const newBusiness = new this.BusinessModel(data);
         await newBusiness.save();
+
+        // create impression
+        await this.mockDataService.createImpressionEngagementInterface({
+          businessId: newBusiness._id,
+        });
 
         // add to Media Table
         await Promise.all(

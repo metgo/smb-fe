@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
 import { DMOModule } from 'src/modules/dmo/dmo.module';
@@ -25,7 +25,7 @@ import { Product, ProductSchema } from '../products/schema/products.schema';
       { name: Product.name, schema: ProductSchema },
     ]),
     DMOModule,
-    UsersModule,
+    forwardRef(() => UsersModule),
   ],
   controllers: [MockDataController],
   providers: [MockDataServices],

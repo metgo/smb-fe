@@ -8,7 +8,6 @@ import { paginateData } from 'src/common/pagination';
 import { paginationConfig } from 'src/common/pagination.config';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interface';
-import { DMOService } from 'src/modules/dmo/dmo.service';
 import { CreateOrderProductCommand } from 'src/modules/order-product/interfaces/create-order-product.interface';
 import { GetAllOrdersDetailsQuery } from 'src/modules/order-product/queries/get-order-details.query';
 import { GetOrdersSummaryQuery } from 'src/modules/order-product/queries/get-order-summary.query';
@@ -21,7 +20,6 @@ export class OrderProductService {
   constructor(
     @InjectModel(OrderProduct.name)
     private OrderProductModel: Model<OrderProduct>,
-    private readonly dmoService: DMOService,
     private readonly productsService: ProductsService,
   ) {}
 
@@ -205,7 +203,7 @@ export class OrderProductService {
       }
 
       if ([UserType.DMOADMIN, UserType.DMO].includes(loggedInUser.role)) {
-        dmoId = (await this.dmoService.findDMOByUserID(loggedInUser.id))._id;
+        dmoId = loggedInUser.dmo.id;
       }
 
       if (dmoId) {
@@ -388,7 +386,7 @@ export class OrderProductService {
       }
 
       if ([UserType.DMOADMIN, UserType.DMO].includes(loggedInUser.role)) {
-        dmoID = (await this.dmoService.findDMOByUserID(loggedInUser.id))._id;
+        dmoID = loggedInUser.dmo.id;
       }
 
       if (dmoID) {

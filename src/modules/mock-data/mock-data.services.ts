@@ -4,13 +4,14 @@ import { Model } from 'mongoose';
 
 import { ServerErrors } from 'src/common/constant';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
+import { disSelect } from 'src/common/utils/select.handling';
 import { queryhandler } from 'src/core/helper/query-helper';
+import { CreateImpressionEngagementInterface } from 'src/modules/mock-data/interface/create-statistics.interface';
 import { GetMockDataQuery } from 'src/modules/mock-data/queries/get-mock-data.query';
 import { UsersMockData } from 'src/modules/mock-data/schema/active-users.schema';
 import { StatisticsMockData } from 'src/modules/mock-data/schema/impression-engagement.schema';
 import { Business } from '../business/schema/business.schema';
 import { Product } from '../products/schema/products.schema';
-import { disSelect } from 'src/common/utils/select.handling';
 
 @Injectable()
 export class MockDataServices {
@@ -92,6 +93,20 @@ export class MockDataServices {
         await this.StatisticsMockDataModel.create(mockData);
       }),
     );
+  }
+
+  async createImpressionEngagementInterface(
+    command: CreateImpressionEngagementInterface,
+  ) {
+    const impression = Math.floor(Math.random() * (200 - 150 + 1)) + 150;
+    const engagement = Math.floor(Math.random() * (200 - 150 + 1)) + 150;
+
+    const newStats = new this.StatisticsMockDataModel({
+      ...command,
+      impression,
+      engagement,
+    });
+    await newStats.save();
   }
 
   async getAllData(queries: GetMockDataQuery) {

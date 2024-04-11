@@ -29,7 +29,6 @@ import {
 } from 'src/core/helper/query-helper';
 import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interface';
 import { BusinessService } from 'src/modules/business/services/business.service';
-import { DMOService } from 'src/modules/dmo/dmo.service';
 import { UpdateOrderDto } from 'src/modules/orders/dto/update-order.dto';
 import { GetAllOrdersInterface } from 'src/modules/orders/interface/get-all-orders.interface';
 import { GetOrdersStatsQuery } from 'src/modules/orders/queries';
@@ -50,7 +49,6 @@ export class OrdersService {
     @InjectModel(Order.name)
     private OrderModel: Model<Order>,
     private readonly businessService: BusinessService,
-    private readonly dmoService: DMOService,
     private readonly mailchimpService: MailChimpService,
     private readonly productsService: ProductsService,
     private readonly orderProductService: OrderProductService,

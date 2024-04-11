@@ -6,6 +6,7 @@ import { MapPointsController } from 'src/modules/business/controllers/map-point.
 import { BusinessService } from 'src/modules/business/services/business.service';
 import { MapPointsService } from 'src/modules/business/services/map-point.service';
 import { BusinessSchema } from './schema/business.schema';
+import { MockDataModule } from 'src/modules/mock-data/mock-data.modules';
 import { UsersService } from '../users/users.services';
 import { UserSchema } from '../users/schema/users.schema';
 import { DMOSchema } from '../dmo/schema/dmo.schema';
@@ -49,6 +50,7 @@ import { EventsService } from 'src/modules/business/services/event.service';
     MailModule,
     HashModule,
     GcpBucketModule,
+    forwardRef(() => MockDataModule),
     MailChimpModule,
     forwardRef(() => VoucherModule),
   ],

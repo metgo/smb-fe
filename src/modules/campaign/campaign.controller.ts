@@ -30,7 +30,6 @@ import { FilterQuery } from './dto/query.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { fileFilterByExtensions } from 'src/services/gcp-bucket/middleware/file-filter';
 import { updateCampaignDto } from './dto/updateCampaign.dto';
-import { DMOService } from '../dmo/dmo.service';
 import { CampaignSegmentService } from 'src/modules/campaign-segments/campaignSegment.service';
 import { CreateCampaignSegmentDTO } from 'src/modules/campaign-segments/dto/create-campaign-segment.dto';
 
@@ -38,7 +37,6 @@ import { CreateCampaignSegmentDTO } from 'src/modules/campaign-segments/dto/crea
 export class CampaignController {
   constructor(
     private readonly campaignService: CampaignService,
-    private readonly dmoService: DMOService,
     private readonly campaignSegmentService: CampaignSegmentService,
   ) {}
 
@@ -167,7 +165,7 @@ export class CampaignController {
     @Query() query: FilterQuery,
   ) {
     const user = request.user.id;
-    query.dmoId && (await this.dmoService.findDMOByUserID(user))._id;
+    query.dmoId && request.user?.dmo?.id;
     const campaign = await this.campaignService.getMy(query, user);
     return responseHelper(
       response,

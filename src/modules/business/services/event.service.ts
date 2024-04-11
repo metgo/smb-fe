@@ -32,7 +32,6 @@ import { Business } from 'src/modules/business/schema/business.schema';
 import { GetUsersBusinessesQuery } from 'src/modules/business/queries';
 import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.schema';
 import { BussSubCategory } from 'src/modules/buss-subcategories/schema/buss-subCategory.schema';
-import { DMOService } from 'src/modules/dmo/dmo.service';
 import { UserType } from 'src/modules/users/users.type';
 import { GcpBucketService } from 'src/services/gcp-bucket/gcp-bucket.services';
 import { Media } from 'src/modules/media/schema/media.schema';
@@ -50,7 +49,6 @@ export class EventsService {
     private BussCategoryModel: Model<BussCategory>,
     @InjectModel(BussSubCategory.name)
     private BussSubCategoryModel: Model<BussSubCategory>,
-    private readonly dmoService: DMOService,
     private readonly gcpBucketServices: GcpBucketService,
     @InjectModel('Media')
     private MediaModel: Model<Media>,

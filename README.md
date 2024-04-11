@@ -67,4 +67,4 @@ MetGo has used the following third party:
 - **Google Cloud Platform (GCP)**: Utilized for storing media, providing a reliable and scalable solution for managing multimedia content in MetGo.
 - **Google OAuth**: Facilitates the sign-in feature using Google accounts.
 - **Mailchimp**: Used for sending emails and conducting marketing campaigns to user audiences.
-- **PayPlus**: Integrated for seamless payment processing, ensuring a smooth financial transaction experience within the application.
+- **CardCom**: Integrated for seamless payment processing, ensuring a smooth financial transaction experience within the application.

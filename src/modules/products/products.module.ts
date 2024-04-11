@@ -2,7 +2,9 @@ import { Module, forwardRef } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
 import { BusinessModule } from 'src/modules/business/business.module';
+import { BusinessSchema } from 'src/modules/business/schema/business.schema';
 import { DMOModule } from 'src/modules/dmo/dmo.module';
+import { MockDataModule } from 'src/modules/mock-data/mock-data.modules';
 import {
   Product,
   ProductSchema,
@@ -19,7 +21,9 @@ import { GcpBucketModule } from 'src/services/gcp-bucket/gcp-bucket.module';
         name: Product.name,
         schema: ProductSchema,
       },
+      { name: 'Business', schema: BusinessSchema },
     ]),
+    forwardRef(() => MockDataModule),
     BusinessModule,
     DMOModule,
     forwardRef(() => UsersModule),

@@ -45,7 +45,6 @@ import { PaymentPurpose } from 'src/services/payments/payments.type';
 import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interface';
 import { CampaignService } from 'src/modules/campaign/campaign.service';
 import { CampaignSegmentService } from 'src/modules/campaign-segments/campaignSegment.service';
-import { DMOService } from 'src/modules/dmo/dmo.service';
 import { UsersService } from 'src/modules/users/users.services';
 import { UserType } from 'src/modules/users/users.type';
 import {
@@ -74,7 +73,6 @@ export class VoucherService {
     private readonly paymentService: PaymentsService,
     private readonly campaignService: CampaignService,
     private readonly campaignSegmentService: CampaignSegmentService,
-    private readonly dmoService: DMOService,
     @Inject(forwardRef(() => UsersService))
     private readonly usersService: UsersService,
     private mailchimpService: MailChimpService,

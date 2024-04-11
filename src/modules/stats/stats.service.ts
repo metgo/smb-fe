@@ -6,10 +6,10 @@ import { Model } from 'mongoose';
 
 import { ServerErrors } from 'src/common/constant';
 import { PaymentStatus } from 'src/common/enum';
+import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { LoggedInUserInterface } from '../auth/interface/login.interface';
 import { GeoServicesTypes } from '../business/business.type';
 import { Business } from '../business/schema/business.schema';
-import { DMOService } from '../dmo/dmo.service';
 import { Product } from '../products/schema/products.schema';
 import { UserType } from '../users/users.type';
 import { GetALLBusinessProductStatsquery } from './query/query.dto';
@@ -31,7 +31,6 @@ export class StatsService {
     private ProductModel: Model<Product>,
     @InjectModel(Voucher.name)
     private VoucherModel: Model<Voucher>,
-    private dmoService: DMOService,
   ) {}
 
   async getBusinessStats(
@@ -195,9 +194,7 @@ export class StatsService {
         growthRateStats,
       };
     } catch (error) {
-      // Handle errors
-      console.error(error);
-      throw error;
+      exceptionHandling(error);
     }
   }
 
@@ -360,9 +357,7 @@ export class StatsService {
         growthRateStats,
       };
     } catch (error) {
-      // Handle errors
-      console.error(error);
-      throw error;
+      exceptionHandling(error);
     }
   }
 

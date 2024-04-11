@@ -26,7 +26,6 @@ import { Business } from 'src/modules/business/schema/business.schema';
 import { GetUsersBusinessesQuery } from 'src/modules/business/queries';
 import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.schema';
 import { BussSubCategory } from 'src/modules/buss-subcategories/schema/buss-subCategory.schema';
-import { DMOService } from 'src/modules/dmo/dmo.service';
 import { UserType } from 'src/modules/users/users.type';
 
 @Injectable()
@@ -39,7 +38,6 @@ export class MapPointsService {
     private BussCategoryModel: Model<BussCategory>,
     @InjectModel(BussSubCategory.name)
     private BussSubCategoryModel: Model<BussSubCategory>,
-    private readonly dmoService: DMOService,
   ) {}
 
   async createMapPoints(

@@ -3,8 +3,10 @@
 /* eslint-disable no-nested-ternary */
 import {
   BadRequestException,
+  Inject,
   Injectable,
   NotFoundException,
+  forwardRef,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
@@ -26,7 +28,7 @@ import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interfac
 import { BusinessService } from 'src/modules/business/services/business.service';
 import { BusinessStatus } from 'src/modules/business/business.type';
 import { Business } from 'src/modules/business/schema/business.schema';
-import { DMOService } from 'src/modules/dmo/dmo.service';
+import { MockDataServices } from 'src/modules/mock-data/mock-data.services';
 import { Product } from 'src/modules/products/schema/products.schema';
 import { CreateProductByAdmin, ProductDto } from 'src/modules/products/dto';
 import {
@@ -45,7 +47,8 @@ export class ProductsService {
     @InjectModel(Product.name)
     private ProductModel: Model<Product>,
     private readonly businessService: BusinessService,
-    private readonly dmoService: DMOService,
+    @Inject(forwardRef(() => BusinessService))
+    private readonly mockDataService: MockDataServices,
     private readonly gcpBucketServices: GcpBucketService,
   ) {}
 
@@ -115,6 +118,10 @@ export class ProductsService {
 
     // add products to business
     await this.businessService.addProductToBusiness(businessId, product.id);
+
+    await this.mockDataService.createImpressionEngagementInterface({
+      productId: product._id,
+    });
     return product;
   }
 
@@ -191,6 +198,11 @@ export class ProductsService {
 
     // add products to business
     await this.businessService.addProductToBusiness(businessId, product.id);
+
+    await this.mockDataService.createImpressionEngagementInterface({
+      productId: product._id,
+    });
+
     return product;
   }
 
