@@ -42,7 +42,7 @@ export const exceptionHandling = err => {
   }
   if (err instanceof mongoose.Error.CastError) {
     if (err?.name === 'CastError' && err?.kind === 'ObjectId') {
-      if (err?.path) {
+      if (err?.path && err?.path !== '_id') {
         throw new BadRequestException(
           `${err?.path.toUpperCase()} ${ServerErrors.INVALID}`,
         );
