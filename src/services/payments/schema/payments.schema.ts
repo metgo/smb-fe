@@ -61,6 +61,9 @@ export class Payment extends AuditableSchema {
     default: null,
   })
     methods: string;
+
+  @Prop({ default: null })
+    paymentDate: Date;
 }
 
 export type PaymentDocument = HydratedDocument<Payment>;

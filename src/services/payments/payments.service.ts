@@ -118,6 +118,8 @@ export class PaymentsService {
 
     const updateField = {
       status: PaymentStatus.SUCCESS,
+      updatedAt: new Date(),
+      paymentDate: new Date(),
     };
     const payments = await update<Payment>(
       this.PaymentModel,
@@ -213,6 +215,7 @@ export class PaymentsService {
 
     const updateField = {
       status: PaymentStatus.FAILURE,
+      updatedAt: new Date(),
     };
     const payments = await update<Payment>(
       this.PaymentModel,
