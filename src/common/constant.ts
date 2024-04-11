@@ -282,6 +282,12 @@ export const ServerSuccess = {
   OTP: {
     VERIFY: 'Code was verify',
   },
+  SETTINGS: {
+    CREATED: 'Settings was created successfully',
+    UPDATED: 'Settings was updated sucessfully',
+    LISTED: 'Settings was listed sucessfully',
+    DELETED: 'Settings was deleted sucessfully',
+  },
   EXTERNAL_API: {
     CREATED: 'New External API was added successfully',
     LISTED: 'External APIs was listed successfully',

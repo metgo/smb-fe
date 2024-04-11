@@ -3,7 +3,7 @@ import { APP_PIPE } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { MongooseModule } from '@nestjs/mongoose';
 
-import dbConfig from './core/dbConfig';
+import dbConfig from 'src/core/dbConfig';
 import { AuthModule } from 'src/modules/auth/auth.module';
 import { CityModule } from 'src/modules/city/city.module';
 import { ExternalApiModule } from 'src/modules/external-api/external-api.module';
@@ -37,6 +37,7 @@ import { HashModule } from './services/hash/hash.module';
 import { MailChimpModule } from 'src/services/mailchimp/mailchimp.module';
 import { ReadFileModule } from 'src/services/read-file/read-file.module';
 import { AuthorityModule } from 'src/modules/authority/authority.module';
+import { SettingsModule } from 'src/modules/settings/settings.module';
 import { StatsModule } from 'src/modules/stats/stats.module';
 import { MockDataModule } from 'src/modules/mock-data/mock-data.modules';
 
@@ -79,6 +80,7 @@ import { MockDataModule } from 'src/modules/mock-data/mock-data.modules';
     ReadFileModule,
     StatsModule,
     MockDataModule,
+    SettingsModule,
   ],
   providers: [
     {
