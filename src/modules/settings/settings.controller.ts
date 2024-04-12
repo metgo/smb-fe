@@ -62,16 +62,16 @@ export class SettingsController {
       status: HttpStatus.OK,
       description: ServerSuccess.SETTINGS.LISTED,
     },
-    params: [{ name: 'title', type: 'string', required: true }],
-    operation: 'View Page',
+    params: [{ name: 'slug', type: 'string', required: true }],
+    operation: 'View Page By Slug',
   })
   @HttpCode(HttpStatus.OK)
-  @Get('settings/:title')
+  @Get('settings/:slug')
   async getTermsAndCondition(
     @Res() response: Response,
-    @Param('title') title: string,
+    @Param('slug') slug: string,
   ) {
-    const settings = await this.settingsService.findByTitle(title);
+    const settings = await this.settingsService.findBySlug(slug);
 
     return responseHelper(
       response,

@@ -14,9 +14,11 @@ export class SettingsServices {
   ) {}
 
   async create(userId: string, body: SettingsDTO) {
+    const slug = this.generateSlug(body.title);
     const newSettings = new this.SettingsModel({
       ...body,
       createdBy: userId,
+      slug,
     });
 
     const settings = await newSettings.save();
@@ -24,9 +26,9 @@ export class SettingsServices {
     return settings;
   }
 
-  async findByTitle(title: string) {
+  async findBySlug(slug: string) {
     const fieldNames = {
-      title,
+      slug,
     };
     const item = await findOneByFieldNames<Setting>(
       this.SettingsModel,
@@ -34,5 +36,9 @@ export class SettingsServices {
     );
 
     return item;
+  }
+
+  private generateSlug(name: string): string {
+    return `${name.replace(/ /g, '-').toLowerCase()}`;
   }
 }

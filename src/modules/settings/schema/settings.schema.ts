@@ -10,6 +10,9 @@ export class Setting extends AuditableSchema {
 
   @Prop()
     description: string;
+
+  @Prop()
+    slug: string;
 }
 
 export type Settings = HydratedDocument<Setting>;
