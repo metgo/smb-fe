@@ -160,14 +160,29 @@ export class OrderProductService {
           },
         },
         {
-          $unwind: '$payments',
+          $unwind: {
+            path: '$payments',
+            preserveNullAndEmptyArrays: true,
+          },
         },
         {
           $match: {
-            'payments.paymentDate': {
-              $gte: createdStartDate,
-              $lt: createdEndDate,
-            },
+            $or: [
+              {
+                'payments.paymentDate': {
+                  $gte: createdStartDate,
+                  $lt: createdEndDate,
+                },
+              },
+              {
+                'order_info.updatedAt': null,
+                'order_info.creditCardPayment': 0,
+                'order_info.createdAt': {
+                  $gte: createdStartDate,
+                  $lt: createdEndDate,
+                },
+              },
+            ],
           },
         },
       );
