@@ -103,13 +103,16 @@ export class UsersService {
   async getAllUsers(queries: GetAllUsersQuery) {
     try {
       const {
-        page, limit, search, ...query
+        page, limit, search, isDeleted, ...query
       } = queries;
 
       const queryPage = page ? Number(page) : null;
       const queryLimit = limit ? Number(limit) : null;
 
-      let findQuery: any = { ...query };
+      let findQuery: any = {
+        ...query,
+        isDeleted: { $ne: true },
+      };
       const select = `${disSelect}`;
 
       if (search) {
@@ -123,10 +126,10 @@ export class UsersService {
         };
       }
 
-      if (!query.isDeleted) {
+      if (/true/.test(isDeleted)) {
         findQuery = {
           ...findQuery,
-          isDeleted: false,
+          isDeleted: true,
         };
       }
 

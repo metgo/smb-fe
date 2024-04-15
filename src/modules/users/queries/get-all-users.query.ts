@@ -15,5 +15,5 @@ export class GetAllUsersQuery extends CommonFilterQuery {
 
   @ApiProperty({ type: Boolean, required: false })
   @IsOptional()
-    isDeleted: boolean;
+    isDeleted: string;
 }
