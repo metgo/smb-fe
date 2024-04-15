@@ -610,37 +610,22 @@ export class VoucherService {
 
       // send emails
 
-      if (voucherDetails[0].createdBy) {
-        await this.mailchimpService.sendTransactionalEmail({
-          to: command.voucherOwnerEmail,
-          templatedId:
-            command.languagePreference === Locale.HEBREW
-              ? HebrewTemplate.VoucherConfirmation
-              : EnglishTemplate.VoucherConfirmation,
-          mergeVars: {
-            FNAME: command.voucherOwnerName,
-          },
-        });
-      }
+      const voucherCodes = voucherDetails
+        .map(doc => `\n${doc.code}`)
+        .toString();
 
-      if (voucherDetails[0].createdByEmail) {
-        const voucherCodes = voucherDetails
-          .map(doc => `\n${doc.code}`)
-          .toString();
-
-        await this.mailchimpService.sendTransactionalEmail({
-          to: command.voucherOwnerEmail,
-          templatedId:
-            command.languagePreference === Locale.HEBREW
-              ? HebrewTemplate.VoucherConfirmationNonLoggedIn
-              : EnglishTemplate.VoucherConfirmationNonLoggedIn,
-          mergeVars: {
-            BUYERNAME: command.voucherOwnerName,
-            VOUCHERCODE: voucherCodes,
-            VOUCHERAMOUNT: voucherDetails[0].amount,
-          },
-        });
-      }
+      await this.mailchimpService.sendTransactionalEmail({
+        to: command.voucherOwnerEmail,
+        templatedId:
+          command.languagePreference === Locale.HEBREW
+            ? HebrewTemplate.VoucherConfirmationNonLoggedIn
+            : EnglishTemplate.VoucherConfirmationNonLoggedIn,
+        mergeVars: {
+          BUYERNAME: command.voucherOwnerName,
+          VOUCHERCODE: voucherCodes,
+          VOUCHERAMOUNT: voucherDetails[0].amount,
+        },
+      });
     } catch (err) {
       exceptionHandling(err);
     }
