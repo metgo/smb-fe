@@ -212,8 +212,9 @@ export async function queryhandler<T>(
   } = queries;
 
   const datas: any = {};
+  const findQueries = { ...findQuery, deletedAt: { $in: [null] } };
   datas.data = await model
-    .find({ ...findQuery, deletedAt: { $in: [null] } })
+    .find(findQueries)
     .select(select)
     .skip((page - 1) * limit)
     .limit(limit)
@@ -228,7 +229,7 @@ export async function queryhandler<T>(
       return { ...data };
     });
   }
-  datas.totalData = await model.countDocuments(findQuery);
+  datas.totalData = await model.countDocuments(findQueries);
   if (page && limit) {
     const meta = {
       page,
