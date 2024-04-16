@@ -625,35 +625,48 @@ export class UsersService {
       password: hashedPassword,
     };
 
-    let newUser;
+    let newUser = new this.UserModel(body);
 
-    if (loggedInUser.role === UserType.DMO) {
-      body = {
-        ...body,
-        role: UserType.DMOADMIN,
-      };
+    if (dto.dmoId) {
+      if (loggedInUser.role === UserType.SUPERADMIN) {
+        body = {
+          ...body,
+          role: UserType.DMO,
+        };
 
-      newUser = await this.UserModel.create(body);
-      await this.dmoService.addCollaborators(loggedInUser.id, newUser.id);
-    } else if (
-      loggedInUser.role === UserType.SUPERADMIN
-      && body.role === UserType.TRAVELLER
-      && body.businessesId?.length
+        newUser = new this.UserModel(body);
+        await this.dmoService.addUser(dto.dmoId, newUser.id);
+      }
+
+      if (loggedInUser.role === UserType.DMO) {
+        body = {
+          ...body,
+          role: UserType.DMOADMIN,
+        };
+
+        newUser = new this.UserModel(body);
+        await this.dmoService.addCollaborators(loggedInUser.id, newUser.id);
+      }
+    }
+
+    if (
+      body.businessesId?.length
+      && loggedInUser.role === UserType.SUPERADMIN
     ) {
       body = {
         ...body,
         hasBusiness: true,
       };
 
-      newUser = await this.UserModel.create(body);
+      newUser = new this.UserModel(body);
       await this.businessService.assignUsertoBusinesses(
         body.businessesId,
         newUser.id,
         loggedInUser.id,
       );
-    } else {
-      newUser = await this.UserModel.create(body);
     }
+
+    await newUser.save();
 
     await Promise.all([
       this.voucherService.updateVoucherCreatedDetails(body.email, newUser.id),

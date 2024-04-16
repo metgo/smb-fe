@@ -100,6 +100,23 @@ export class DMOService {
     return dmo;
   }
 
+  async addUser(dmoId: string, userId: string) {
+    const dmo = await updateOneByManyFields<DMO>(
+      this.DMOModel,
+      {
+        _id: dmoId,
+      },
+      {
+        userId,
+      },
+    );
+
+    if (!dmo) {
+      throw new NotFoundException(ServerErrors.DMO_NOT_FOUND);
+    }
+    return dmo;
+  }
+
   async softDeleteDMO(id: string): Promise<DMO> {
     const updateField = { isDeleted: true, deleteAt: new Date() };
     const dmo = await updateById<DMO>(this.DMOModel, id, updateField);
