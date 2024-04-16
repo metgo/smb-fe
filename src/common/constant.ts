@@ -288,6 +288,9 @@ export const ServerSuccess = {
     LISTED: 'Settings was listed sucessfully',
     DELETED: 'Settings was deleted sucessfully',
   },
+  PAYMENT: {
+    SUCCESS: 'Your payment was successfully paid',
+  },
   EXTERNAL_API: {
     CREATED: 'New External API was added successfully',
     LISTED: 'External APIs was listed successfully',

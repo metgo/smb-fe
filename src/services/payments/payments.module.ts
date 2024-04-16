@@ -8,17 +8,21 @@ import { OrdersModule } from 'src/modules/orders/orders.modules';
 import { VoucherModule } from 'src/modules/vouchers/voucher.module';
 import { MailChimpModule } from 'src/services/mailchimp/mailchimp.module';
 import { BusinessModule } from 'src/modules/business/business.module';
+import { DMOModule } from 'src/modules/dmo/dmo.module';
 import { ProductsModule } from 'src/modules/products/products.module';
+import { UsersModule } from 'src/modules/users/users.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: 'Payment', schema: PaymentSchema }]),
     ConfigModule,
+    DMOModule,
     forwardRef(() => OrdersModule),
     forwardRef(() => VoucherModule),
     MailChimpModule,
     BusinessModule,
     ProductsModule,
+    forwardRef(() => UsersModule),
   ],
   controllers: [PaymentsController],
   providers: [PaymentsService],
