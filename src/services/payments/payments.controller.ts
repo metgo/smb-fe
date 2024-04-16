@@ -5,7 +5,7 @@ import {
   HttpStatus,
   Param,
   Patch,
-  Query,
+  Post, Query,
   Req,
   Res,
   UseGuards,
@@ -31,7 +31,6 @@ export class PaymentsController {
   })
   @Get('success')
   async success(@Req() req, @Res() response: Response, @Query() query) {
-    console.log(query, req);
     await this.paymentService.paymentSucess(query);
     return responseHelper(
       response,
@@ -49,7 +48,6 @@ export class PaymentsController {
   })
   @Get('failure')
   async failure(@Res() response: Response, @Query() query) {
-    console.log(query);
     await this.paymentService.PaymentFailure(query);
     return responseHelper(
       response,
@@ -65,10 +63,14 @@ export class PaymentsController {
     tags: ['Payment'],
     softBlockExtraDtoFields: true,
   })
-  @Get('indicator')
-  async indicator(@Req() req, @Res() response: Response, @Query() query) {
-    console.log('indicator', query, req);
-    // await this.paymentService.PaymentFailure(query);
+  @Post('indicator')
+  async postIndicator(@Req() req, @Res() response: Response, @Query() query) {
+    console.log('>>>>>>>>>>>POST REQ BODY');
+    console.log(req.body);
+    console.log('>>>>>>>>>>>POST QUERY');
+    console.log(query);
+    console.log('>>>>>>>>>>>POST REQ');
+    console.log(req);
     return responseHelper(
       response,
       HttpStatus.OK,

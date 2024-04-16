@@ -51,28 +51,20 @@ export class PaymentsService {
       customerName,
     } = command;
     const {
-      URL,
-      TERMINAL_NUMBER,
-      API_NAME,
-      WEBHOOK_URL,
-      SUCCESS,
-      FAILURE,
-      INDICATOR,
-    } = this.configService.cardCom;
+      URL, TERMINAL_NUMBER, API_NAME, SUCCESS, FAILURE, INDICATOR,
+    }
+      = this.configService.cardCom;
 
-    console.log(`${this.configService.baseUrl}${INDICATOR}`);
     const cardComResponse = await axios.post(
       URL,
       {
         TerminalNumber: TERMINAL_NUMBER,
         ApiName: API_NAME,
         Amount: amount,
-        Language: languagePreference,
-        CoinId: 'NIS',
+        ISOCoinId: 1,
         SuccessRedirectUrl: `${this.configService.baseUrl}${SUCCESS}?languagePreference=${languagePreference}`,
         FailedRedirectUrl: `${this.configService.baseUrl}${FAILURE}?languagePreference=${languagePreference}`,
-        WebHookUrl: WEBHOOK_URL,
-        IndicatorUrl: `${this.configService.baseUrl}${INDICATOR}?languagePreference=${languagePreference}`,
+        WebHookUrl: `${this.configService.baseUrl}${INDICATOR}?languagePreference=${languagePreference}`,
       },
       {
         headers: {
