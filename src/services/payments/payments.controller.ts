@@ -5,7 +5,8 @@ import {
   HttpStatus,
   Param,
   Patch,
-  Post, Query,
+  Post,
+  Query,
   Req,
   Res,
   UseGuards,
@@ -49,6 +50,28 @@ export class PaymentsController {
   @Get('failure')
   async failure(@Res() response: Response, @Query() query) {
     await this.paymentService.PaymentFailure(query);
+    return responseHelper(
+      response,
+      HttpStatus.OK,
+      'Your payment was not successfully paid',
+      null,
+      null,
+      null,
+    );
+  }
+
+  @ApiEndpoint({
+    tags: ['Payment'],
+    softBlockExtraDtoFields: true,
+  })
+  @Get('indicator')
+  async getIndicator(@Req() req, @Res() response: Response, @Query() query) {
+    console.log('>>>>>>>>>>>GET REQ BODY');
+    console.log(req.body);
+    console.log('>>>>>>>>>>>GET QUERY');
+    console.log(query);
+    console.log('>>>>>>>>>>>GET REQ');
+    console.log(req);
     return responseHelper(
       response,
       HttpStatus.OK,
