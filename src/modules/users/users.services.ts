@@ -420,15 +420,12 @@ export class UsersService {
     }
   }
 
-  async changePassword(user: string, dto: ChangePasswordDto): Promise<User> {
+  async changePassword(id: string, dto: ChangePasswordDto): Promise<User> {
     const hashedPassword = await this.hashService.create(dto.password);
 
-    const userWithChangedPwd = await update<User>(
-      this.UserModel,
-      'email',
-      user,
-      { password: hashedPassword },
-    );
+    const userWithChangedPwd = await update<User>(this.UserModel, '_id', id, {
+      password: hashedPassword,
+    });
     if (!userWithChangedPwd) {
       throw new NotFoundException(ServerErrors.USER.NOT_FOUND);
     }
