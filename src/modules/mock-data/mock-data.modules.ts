@@ -29,5 +29,6 @@ import { Product, ProductSchema } from '../products/schema/products.schema';
   ],
   controllers: [MockDataController],
   providers: [MockDataServices],
+  exports: [MockDataServices],
 })
 export class MockDataModule {}

@@ -1,8 +1,6 @@
 /* eslint-disable no-undef */
 import {
   BadRequestException,
-  forwardRef,
-  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -68,7 +66,6 @@ export class BusinessService {
     @InjectModel('Business')
     private BusinessModel: Model<Business>,
     private readonly authorityService: AuthorityService,
-    @Inject(forwardRef(() => AuthorityService))
     private readonly mockDataService: MockDataServices,
     private readonly gcpBucketServices: GcpBucketService,
     @InjectModel('Media')

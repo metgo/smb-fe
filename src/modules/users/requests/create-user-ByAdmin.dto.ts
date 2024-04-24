@@ -8,6 +8,7 @@ import {
   IsString,
 } from 'class-validator';
 import { UserType } from '../users.type';
+import { Locale } from 'src/common/enum';
 
 export class createUserByAdminDto {
   @IsString()
@@ -53,4 +54,13 @@ export class createUserByAdminDto {
   @IsOptional()
   @ApiProperty({ type: [String], required: false })
   readonly businessesId: string[];
+
+  @IsEnum(Locale)
+  @IsOptional()
+  @ApiProperty({
+    type: 'enum',
+    enum: Locale,
+    required: true,
+  })
+  readonly languagePreference: Locale;
 }
