@@ -23,4 +23,8 @@ export class GetAllOrdersDetailsQuery extends CommonFilterQuery {
   @IsEnum(SortOrder)
   @IsOptional()
     sortOrder: SortOrder;
+
+  @ApiProperty({ type: String, required: false })
+  @IsOptional()
+    productId: string;
 }

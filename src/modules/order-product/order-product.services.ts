@@ -315,8 +315,9 @@ export class OrderProductService {
     queries: GetAllOrdersDetailsQuery,
   ) {
     const {
-      search, page, limit, status, dmoId, sortBy, sortOrder,
-    } = queries;
+      search, page, limit, status, dmoId, productId, sortBy, sortOrder,
+    }
+      = queries;
 
     const sortOrderValue = sortOrder === SortOrder.ASC ? -1 : 1;
     const sortKey = sortBy || 'createdAt';
@@ -368,6 +369,14 @@ export class OrderProductService {
       pipeline.push({
         $match: {
           'products.name': { $regex: search, $options: 'i' },
+        },
+      });
+    }
+
+    if (productId) {
+      pipeline.push({
+        $match: {
+          'products._id': new mongoose.Types.ObjectId(productId),
         },
       });
     }
