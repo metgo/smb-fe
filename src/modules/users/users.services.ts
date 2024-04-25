@@ -17,14 +17,13 @@ import {
   EnglishTemplate,
   HebrewTemplate,
 } from 'src/common/mailchimp/templateId';
+import { paginateData } from 'src/common/pagination';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
-import { disSelect } from 'src/common/utils/select.handling';
 import {
   findOneByFieldName,
   findOneByFieldNameExcludeId,
   findOneByFieldNameIncludingDeleted,
   findOneById,
-  queryhandler,
   update,
   updateById,
 } from 'src/core/helper/query-helper';
@@ -106,14 +105,10 @@ export class UsersService {
         page, limit, search, isDeleted, ...query
       } = queries;
 
-      const queryPage = page ? Number(page) : null;
-      const queryLimit = limit ? Number(limit) : null;
-
       let findQuery: any = {
         ...query,
         isDeleted: { $ne: true },
       };
-      const select = `${disSelect}`;
 
       if (search) {
         findQuery = {
@@ -133,14 +128,62 @@ export class UsersService {
         };
       }
 
-      const users = await queryhandler<User>(this.UserModel, {
-        findQuery,
-        select,
-        page: queryPage,
-        limit: queryLimit,
+      const pipeline: any[] = [
+        {
+          $match: findQuery,
+        },
+      ];
+
+      let project: any = {
+        createdAt: 0,
+        updatedAt: 0,
+        createdBy: 0,
+        updatedBy: 0,
+        deletedBy: 0,
+        deletedAt: 0,
+        __v: 0,
+        password: 0,
+        isDeleted: 0,
+      };
+
+      if (query.role === UserType.DMO || query.role === UserType.DMOADMIN) {
+        pipeline.push(
+          {
+            $lookup: {
+              from: 'dmos',
+              localField: '_id',
+              foreignField:
+                query.role === UserType.DMO ? 'userId' : 'collaboratorsUser',
+              as: 'dmo',
+            },
+          },
+          {
+            $unwind: '$dmo',
+          },
+        );
+
+        project = {
+          ...project,
+          dmo: {
+            userId: 0,
+            collaboratorsUser: 0,
+            ...project,
+          },
+        };
+      }
+
+      pipeline.push({
+        $project: project,
       });
 
-      return users;
+      const users = await this.UserModel.aggregate(pipeline);
+
+      const queryPage = page ? Number(page) : null;
+      const queryLimit = limit ? Number(limit) : null;
+
+      const paginatedUsers = paginateData(queryPage, queryLimit, users);
+
+      return paginatedUsers;
     } catch (err) {
       exceptionHandling(err);
     }

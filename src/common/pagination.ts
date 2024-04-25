@@ -1,6 +1,14 @@
 import { paginationConfig } from 'src/common/pagination.config';
 
 export const paginateData = (pages: number, limits: number, list: any[]) => {
+  if (!pages && !limits) {
+    const datas = {
+      data: list,
+      totalData: list.length,
+    };
+
+    return datas;
+  }
   const page = Number(pages) || paginationConfig.page;
   const limit = Number(limits) || paginationConfig.limit;
 
