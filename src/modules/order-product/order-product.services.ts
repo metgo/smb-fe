@@ -319,7 +319,7 @@ export class OrderProductService {
     }
       = queries;
 
-    const sortOrderValue = sortOrder === SortOrder.ASC ? -1 : 1;
+    const sortOrderValue = sortOrder === SortOrder.ASC ? 1 : -1;
     const sortKey = sortBy || 'createdAt';
 
     const sort = {
@@ -430,6 +430,13 @@ export class OrderProductService {
         updatedBy: 0,
         deletedBy: 0,
         deletedAt: 0,
+        isDeleted: 0,
+        orders: {
+          deletedBy: 0,
+          deletedAt: 0,
+          products: 0,
+          isDeleted: 0,
+        },
         __v: 0,
       },
     });
