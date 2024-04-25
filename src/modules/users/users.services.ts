@@ -64,6 +64,7 @@ export class UsersService {
     @InjectModel(OTP.name)
     private OtpModel: Model<OTP>,
     private readonly businessService: BusinessService,
+    @Inject(forwardRef(() => DMOService))
     private readonly dmoService: DMOService,
     private readonly hashService: HashService,
     private readonly jwtAuthService: JwtAuthService,

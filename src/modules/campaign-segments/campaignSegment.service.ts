@@ -1,8 +1,10 @@
 /* eslint-disable no-undef */
 import {
   ConflictException,
+  Inject,
   Injectable,
   NotFoundException,
+  forwardRef,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -34,6 +36,7 @@ export class CampaignSegmentService {
   constructor(
     @InjectModel('CampaignSegment')
     private CampaignSegmentModel: Model<CampaignSegment>,
+    @Inject(forwardRef(() => DMOService))
     private readonly dmoService: DMOService,
     private readonly campaignService: CampaignService,
     private readonly businessService: BusinessService,
