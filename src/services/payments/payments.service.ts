@@ -29,7 +29,6 @@ export class PaymentsService {
     private readonly configService: ConfigService,
     @Inject(forwardRef(() => VoucherService))
     private readonly voucherService: VoucherService,
-    @Inject(forwardRef(() => OrdersService))
     private readonly ordersService: OrdersService,
     private mailchimpService: MailChimpService,
     private readonly businessService: BusinessService,

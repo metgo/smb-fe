@@ -1,6 +1,8 @@
 import { Module, forwardRef } from '@nestjs/common';
 import { CampaignService } from './campaign.service';
 import { MongooseModule } from '@nestjs/mongoose';
+
+import { AuthorityModule } from 'src/modules/authority/authority.module';
 import { CampaignSchema } from './schema/campaign.schema';
 import { CampaignController } from './campaign.controller';
 import { GcpBucketModule } from 'src/services/gcp-bucket/gcp-bucket.module';
@@ -13,11 +15,12 @@ import { UsersModule } from 'src/modules/users/users.module';
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: 'Campaign', schema: CampaignSchema }]),
+    forwardRef(() => AuthorityModule),
     GcpBucketModule,
     forwardRef(() => UsersModule),
     EncryptionModule,
     ConfigModule,
-    DMOModule,
+    forwardRef(() => DMOModule),
     CampaignSegmentModule,
   ],
   providers: [CampaignService],

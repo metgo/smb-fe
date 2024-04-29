@@ -2,6 +2,7 @@ import { Module, forwardRef } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { JwtModule } from '@nestjs/jwt';
 
+import { AuthorityModule } from 'src/modules/authority/authority.module';
 import { ConfigModule } from 'src/services/config/config.module';
 import { DMOModule } from '../dmo/dmo.module';
 import { CampaignSegmentController } from './campaignSegment.controller';
@@ -23,6 +24,7 @@ const configService = new ConfigService();
       { name: 'CampaignSegment', schema: CampaignSegmentSchema },
       { name: 'DMO', schema: DMOSchema },
     ]),
+    forwardRef(() => AuthorityModule),
     forwardRef(() => UsersModule),
     JwtAuthModule,
     JwtModule.register({
@@ -31,7 +33,7 @@ const configService = new ConfigService();
       signOptions: { expiresIn: configService.JWT.TOKEN_EXPIRES },
     }),
     ConfigModule,
-    DMOModule,
+    forwardRef(() => DMOModule),
     forwardRef(() => CampaignModule),
     BusinessModule,
     ProductsModule,

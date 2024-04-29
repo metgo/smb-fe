@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
+import { AuthorityModule } from 'src/modules/authority/authority.module';
 import { DMOModule } from 'src/modules/dmo/dmo.module';
 import {
   Setting,
@@ -18,6 +19,7 @@ import { UsersModule } from 'src/modules/users/users.module';
         schema: SettingSchema,
       },
     ]),
+    AuthorityModule,
     UsersModule,
     DMOModule,
   ],

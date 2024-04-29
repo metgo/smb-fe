@@ -1,6 +1,7 @@
 import { Module, forwardRef } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
+import { AuthorityModule } from 'src/modules/authority/authority.module';
 import { DMOModule } from 'src/modules/dmo/dmo.module';
 import {
   UsersMockData,
@@ -24,7 +25,8 @@ import { Product, ProductSchema } from '../products/schema/products.schema';
       { name: Business.name, schema: BusinessSchema },
       { name: Product.name, schema: ProductSchema },
     ]),
-    DMOModule,
+    forwardRef(() => AuthorityModule),
+    forwardRef(() => DMOModule),
     forwardRef(() => UsersModule),
   ],
   controllers: [MockDataController],

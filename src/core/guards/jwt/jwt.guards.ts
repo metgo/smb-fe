@@ -8,6 +8,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 
+import { AuthorityService } from 'src/modules/authority/authority.service';
 import { DMOService } from 'src/modules/dmo/dmo.service';
 import { UsersService } from 'src/modules/users/users.services';
 import { UserType } from 'src/modules/users/users.type';
@@ -17,6 +18,7 @@ const whiteListAPI = ['/buy-voucher', '/orders'];
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
   constructor(
+    private authorityService: AuthorityService,
     private readonly jwtService: JwtService,
     private readonly userService: UsersService,
     private readonly dmoService: DMOService,
@@ -45,8 +47,13 @@ export class JwtAuthGuard implements CanActivate {
     }
 
     let dmo;
+    let authority;
     if (user.role === UserType.DMO || user.role === UserType.DMOADMIN) {
       dmo = await this.dmoService.findDMOByUserID(user.id);
+    }
+
+    if (user.role === UserType.AUTHORITY) {
+      authority = await this.authorityService.findAuthorityByUserID(user.id);
     }
 
     request.user = {
@@ -66,6 +73,7 @@ export class JwtAuthGuard implements CanActivate {
       role: user.role,
       hasBusiness: user.hasBusiness,
       dmo: dmo ? { id: dmo._id, name: dmo.name } : null,
+      authority: authority ? { id: authority._id, name: authority.name } : null,
     };
 
     return true;

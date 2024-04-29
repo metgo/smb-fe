@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
 import { AuthModule } from 'src/modules/auth/auth.module';
+import { AuthorityModule } from 'src/modules/authority/authority.module';
 import { DMOModule } from 'src/modules/dmo/dmo.module';
 import { ExternalApiController } from 'src/modules/external-api/controllers/external-api.controller';
 import { ExternalAPIServiceController } from 'src/modules/external-api/controllers/external-api-services.controller';
@@ -18,6 +19,7 @@ import { UsersModule } from 'src/modules/users/users.module';
       { name: ExternalApi.name, schema: ExternalApiSchema },
     ]),
     AuthModule,
+    AuthorityModule,
     DMOModule,
     UsersModule,
   ],

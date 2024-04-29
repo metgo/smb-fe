@@ -1,12 +1,9 @@
 /* eslint-disable no-undef */
-/* eslint-disable no-param-reassign */
 /* eslint-disable no-nested-ternary */
 import {
   BadRequestException,
-  Inject,
   Injectable,
   NotFoundException,
-  forwardRef,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
@@ -47,7 +44,6 @@ export class ProductsService {
     @InjectModel(Product.name)
     private ProductModel: Model<Product>,
     private readonly businessService: BusinessService,
-    @Inject(forwardRef(() => BusinessService))
     private readonly mockDataService: MockDataServices,
     private readonly gcpBucketServices: GcpBucketService,
   ) {}

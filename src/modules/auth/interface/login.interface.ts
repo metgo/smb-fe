@@ -18,6 +18,7 @@ export interface LoggedInUserInterface {
   role: UserType;
   hasBusiness: boolean;
   dmo: null | { id: string; name: string };
+  authority: null | { id: string; name: string };
 }
 
 export interface LoginInterface {

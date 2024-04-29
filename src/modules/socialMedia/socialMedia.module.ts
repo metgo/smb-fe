@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
+import { AuthorityModule } from 'src/modules/authority/authority.module';
 import { DMOModule } from 'src/modules/dmo/dmo.module';
 import { SocialMediaSchema } from './schema/socialMedia.schema';
 import { SocialMediaService } from './socialMedia.service';
@@ -12,6 +13,7 @@ import { UsersModule } from '../users/users.module';
     MongooseModule.forFeature([
       { name: 'SocialMedia', schema: SocialMediaSchema },
     ]),
+    AuthorityModule,
     DMOModule,
     UsersModule,
   ],

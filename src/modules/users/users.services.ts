@@ -1,11 +1,9 @@
 import {
   BadRequestException,
   ConflictException,
-  Inject,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
-  forwardRef,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
@@ -64,12 +62,10 @@ export class UsersService {
     @InjectModel(OTP.name)
     private OtpModel: Model<OTP>,
     private readonly businessService: BusinessService,
-    @Inject(forwardRef(() => DMOService))
     private readonly dmoService: DMOService,
     private readonly hashService: HashService,
     private readonly jwtAuthService: JwtAuthService,
     private mailchimpService: MailChimpService,
-    @Inject(forwardRef(() => VoucherService))
     private voucherService: VoucherService,
   ) {
     const configService = new ConfigService();

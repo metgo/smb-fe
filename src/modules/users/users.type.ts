@@ -5,6 +5,7 @@ export enum UserType {
   TRAVELLER = 'traveller',
   DMO = 'dmo',
   DMOADMIN = 'dmoadmin',
+  AUTHORITY = 'authority',
 }
 
 export interface phoneDetails {

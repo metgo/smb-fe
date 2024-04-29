@@ -4,7 +4,6 @@ import {
   Get,
   HttpCode,
   HttpStatus,
-  Inject,
   Param,
   Patch,
   Post,
@@ -12,7 +11,6 @@ import {
   Req,
   Res,
   UseGuards,
-  forwardRef,
 } from '@nestjs/common';
 import { Response } from 'express';
 
@@ -45,7 +43,6 @@ export class OrdersController {
   constructor(
     private ordersService: OrdersService,
     private productService: ProductsService,
-    @Inject(forwardRef(() => VoucherService))
     private voucherService: VoucherService,
   ) {}
 

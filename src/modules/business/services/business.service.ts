@@ -225,12 +225,24 @@ export class BusinessService {
         createdBy: loggedInUser.id,
         slug,
       };
-      if (loggedInUser.role === UserType.DMOADMIN) {
+      if (
+        loggedInUser.role === UserType.DMOADMIN
+        || loggedInUser.role === UserType.DMO
+      ) {
         const dmoId = loggedInUser.dmo.id;
 
         data = {
           ...data,
           dmoId,
+        };
+      }
+
+      if (loggedInUser.role === UserType.AUTHORITY) {
+        const authorityId = loggedInUser.authority.id;
+
+        data = {
+          ...data,
+          authorityId,
         };
       }
       const newBusiness = new this.BusinessModel(data);
@@ -325,12 +337,25 @@ export class BusinessService {
       findQuery = { ...findQuery, status: BusinessStatus.APPROVED };
     }
 
-    if (authenticatedUser && authenticatedUser?.role === UserType.DMOADMIN) {
+    if (
+      authenticatedUser
+      && (authenticatedUser?.role === UserType.DMOADMIN
+        || authenticatedUser?.role === UserType.DMO)
+    ) {
       const dmoId = authenticatedUser.dmo.id;
 
       findQuery = {
         ...findQuery,
         dmoId,
+      };
+    }
+
+    if (authenticatedUser && authenticatedUser?.role === UserType.AUTHORITY) {
+      const authorityId = authenticatedUser.authority.id;
+
+      findQuery = {
+        ...findQuery,
+        authorityId,
       };
     }
 
@@ -647,10 +672,26 @@ export class BusinessService {
           return business;
         }
 
-        if (loggedInUser.role === UserType.DMOADMIN && business?.dmoId) {
+        if (
+          (loggedInUser.role === UserType.DMOADMIN
+            || loggedInUser.role === UserType.DMO)
+          && business?.dmoId
+        ) {
           const dmoId = loggedInUser.dmo.id;
 
           if (business.dmoId.equals(new mongoose.Types.ObjectId(dmoId))) {
+            return business;
+          }
+        }
+
+        if (loggedInUser.role === UserType.AUTHORITY && business?.authorityId) {
+          const authorityId = loggedInUser.authority.id;
+
+          if (
+            business.authorityId.equals(
+              new mongoose.Types.ObjectId(authorityId),
+            )
+          ) {
             return business;
           }
         }
@@ -687,10 +728,29 @@ export class BusinessService {
               return business;
             }
 
-            if (loggedInUser.role === UserType.DMOADMIN && business.dmoId) {
+            if (
+              (loggedInUser.role === UserType.DMOADMIN
+                || loggedInUser.role === UserType.DMO)
+              && business?.dmoId
+            ) {
               const dmoId = loggedInUser.dmo.id;
 
               if (business.dmoId.equals(new mongoose.Types.ObjectId(dmoId))) {
+                return business;
+              }
+            }
+
+            if (
+              loggedInUser.role === UserType.AUTHORITY
+              && business?.authorityId
+            ) {
+              const authorityId = loggedInUser.authority.id;
+
+              if (
+                business.authorityId.equals(
+                  new mongoose.Types.ObjectId(authorityId),
+                )
+              ) {
                 return business;
               }
             }
@@ -833,6 +893,14 @@ export class BusinessService {
           ...updatedField,
           location,
         };
+      }
+
+      if (
+        loggedInUser.role === UserType.AUTHORITY
+        && body?.authorityId
+        && body.authorityId !== loggedInUser?.authority.id
+      ) {
+        throw new BadRequestException('Wrong Authority Id');
       }
 
       // find dmoId by authority
@@ -1017,14 +1085,23 @@ export class BusinessService {
       const updateField = { deletedBy: loggedInUser.id };
       let filter: any = {
         _id: id,
+        serviceType: GeoServicesTypes.BUSINESS,
       };
 
-      if (loggedInUser.role === UserType.DMOADMIN) {
-        const dmoId = loggedInUser.dmo.id;
+      if (
+        loggedInUser.role === UserType.DMOADMIN
+        || loggedInUser.role === UserType.DMO
+      ) {
         filter = {
           ...filter,
-          dmoId,
-          serviceType: GeoServicesTypes.BUSINESS,
+          dmoId: loggedInUser.dmo.id,
+        };
+      }
+
+      if (loggedInUser.role === UserType.AUTHORITY) {
+        filter = {
+          ...filter,
+          authorityId: loggedInUser.authority.id,
         };
       }
 
@@ -1168,7 +1245,10 @@ export class BusinessService {
         };
       }
 
-      if (loggedInUser.role === UserType.DMOADMIN) {
+      if (
+        loggedInUser.role === UserType.DMOADMIN
+        || loggedInUser.role === UserType.DMO
+      ) {
         const dmoID = loggedInUser.dmo.id;
         findQuery = {
           ...findQuery,
@@ -1180,6 +1260,13 @@ export class BusinessService {
         findQuery = {
           ...findQuery,
           userId: loggedInUser.id,
+        };
+      }
+
+      if (loggedInUser.role === UserType.AUTHORITY) {
+        findQuery = {
+          ...findQuery,
+          authorityId: loggedInUser.authority.id,
         };
       }
 

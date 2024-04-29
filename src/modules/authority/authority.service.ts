@@ -6,7 +6,7 @@ import { ServerErrors } from 'src/common/constant';
 
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { disSelect } from 'src/common/utils/select.handling';
-import { queryhandler } from 'src/core/helper/query-helper';
+import { findOneByOrCase, queryhandler } from 'src/core/helper/query-helper';
 import { AuthorityDTO } from 'src/modules/authority/dto/authority.dto';
 import { GetAllAuthoritiesQuery } from 'src/modules/authority/queries/get-all-authorities.query';
 import { Authority } from 'src/modules/authority/schema/authority.schema';
@@ -98,5 +98,19 @@ export class AuthorityService {
     } catch (err) {
       exceptionHandling(err);
     }
+  }
+
+  async findAuthorityByUserID(userId: string) {
+    const findQuery = {
+      $or: [{ userId }, { collaboratorsUser: { $in: [userId] } }],
+    };
+    const authority = await findOneByOrCase<Authority>(
+      this.AuthorityModel,
+      findQuery,
+    );
+    if (!authority) {
+      throw new NotFoundException(ServerErrors.AUTHORITY.NOT_FOUND);
+    }
+    return authority;
   }
 }

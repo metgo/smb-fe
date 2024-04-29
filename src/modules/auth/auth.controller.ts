@@ -9,8 +9,6 @@ import {
   Res,
   Put,
   BadRequestException,
-  forwardRef,
-  Inject,
 } from '@nestjs/common';
 import {
   ApiConflictResponse,
@@ -45,7 +43,6 @@ import { VerifyOtpDto } from './requests/verify-otp.dto';
 export class AuthController {
   constructor(
     private authService: AuthService,
-    @Inject(forwardRef(() => UsersService))
     private userService: UsersService,
   ) {}
 

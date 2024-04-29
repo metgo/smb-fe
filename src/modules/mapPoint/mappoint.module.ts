@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
+import { AuthorityModule } from 'src/modules/authority/authority.module';
 import { DMOModule } from 'src/modules/dmo/dmo.module';
 import { MapPointController } from './mappoint.controller';
 import { MapPointServices } from './mappoint.services';
@@ -15,6 +16,7 @@ import { UsersModule } from '../users/users.module';
         schema: MapPointSchema,
       },
     ]),
+    AuthorityModule,
     UsersModule,
     DMOModule,
   ],

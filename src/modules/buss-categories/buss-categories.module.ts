@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
+import { AuthorityModule } from 'src/modules/authority/authority.module';
 import { BussCategoriesController } from './buss-categories.controller';
 import { BussCategoriesService } from './buss-categories.service';
 import {
@@ -22,6 +23,7 @@ import { ConfigModule } from 'src/services/config/config.module';
       { name: BussCategory.name, schema: BussCategorySchema },
       { name: BussSubCategory.name, schema: BussSubCategorySchema },
     ]),
+    AuthorityModule,
     BussSubCategoriesModule,
     ConfigModule,
     DMOModule,

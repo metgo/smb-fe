@@ -77,16 +77,22 @@ export class BusinessController {
     );
   }
 
-  @Roles(UserType.DMOADMIN, UserType.SUPERADMIN)
+  @Roles(
+    UserType.AUTHORITY,
+    UserType.DMO,
+    UserType.DMOADMIN,
+    UserType.SUPERADMIN,
+  )
   @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
-    tags: ['Business', 'DMO-Admin', 'Web'],
+    tags: ['Business', 'Business Admin'],
     response: {
       status: HttpStatus.OK,
       description: ServerSuccess.BUSINESS_CREATED,
     },
     noAuthToken: true,
-    operation: 'Create a business by superadmin role',
+    operation:
+      'Create a business by authority, dmo, dmo-admin of their respective area and superadmin',
   })
   @Post('admin/business')
   @UseInterceptors(AnyFilesInterceptor({ fileFilter: fileFilterByExtensions }))
@@ -165,10 +171,15 @@ export class BusinessController {
     );
   }
 
-  @Roles(UserType.DMOADMIN, UserType.SUPERADMIN)
+  @Roles(
+    UserType.AUTHORITY,
+    UserType.DMO,
+    UserType.DMOADMIN,
+    UserType.SUPERADMIN,
+  )
   @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
-    tags: ['Admin', 'Business', 'DMO-Admin'],
+    tags: ['Business', 'Business Admin'],
     response: {
       status: HttpStatus.OK,
       description: ServerSuccess.BUSINESS_LISTED,
@@ -258,16 +269,22 @@ export class BusinessController {
     );
   }
 
-  @Roles(UserType.DMOADMIN, UserType.SUPERADMIN)
+  @Roles(
+    UserType.AUTHORITY,
+    UserType.DMO,
+    UserType.DMOADMIN,
+    UserType.SUPERADMIN,
+  )
   @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
-    tags: ['Admin', 'Business', 'DMO-Admin'],
+    tags: ['Business', 'Business Admin'],
     response: {
       status: HttpStatus.OK,
       description: ServerSuccess.BUSINESS_LISTED,
     },
     noAuthToken: true,
-    operation: 'Get any business detail by superadmin and dmo-admin role',
+    operation:
+      'Get any business detail by authority, dmo and dmo admin role and superadmin role',
   })
   @Get('admin/businesses/:id')
   async getBusinessDetailForAdmin(
@@ -357,17 +374,23 @@ export class BusinessController {
     );
   }
 
-  @Roles(UserType.DMOADMIN, UserType.SUPERADMIN)
+  @Roles(
+    UserType.AUTHORITY,
+    UserType.DMO,
+    UserType.DMOADMIN,
+    UserType.SUPERADMIN,
+  )
   @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
-    tags: ['Admin', 'Business', 'DMO-Admin'],
+    tags: ['Business', 'Business Admin'],
     response: {
       status: HttpStatus.OK,
       description: ServerSuccess.BUSINESS_UPDATED,
     },
     noAuthToken: true,
     params: [{ name: 'id', type: 'string', required: true }],
-    operation: 'Update businesses details by superadmin and dmo-admin',
+    operation:
+      'Update businesses details by superadmin, authority, dmo and dmo-admin',
   })
   @Put('admin/business/:id')
   async updateBusinessWeb(
@@ -393,7 +416,7 @@ export class BusinessController {
   }
 
   @ApiEndpoint({
-    tags: ['Admin', 'Business', 'DMO-Admin'],
+    tags: ['Business', 'Business Admin'],
     response: {
       status: HttpStatus.OK,
       description: ServerSuccess.BUSINESS_UPDATED,
@@ -401,7 +424,12 @@ export class BusinessController {
     noAuthToken: true,
     params: [{ name: 'businessId', type: 'string', required: true }],
   })
-  @Roles(UserType.DMOADMIN, UserType.SUPERADMIN)
+  @Roles(
+    UserType.AUTHORITY,
+    UserType.DMO,
+    UserType.DMOADMIN,
+    UserType.SUPERADMIN,
+  )
   @UseGuards(JwtAuthGuard)
   @Patch('admin/business/:businessId')
   async updateBusinessByAdmin(
@@ -427,7 +455,7 @@ export class BusinessController {
   }
 
   @ApiEndpoint({
-    tags: ['Admin', 'Business'],
+    tags: ['Business Admin', 'Business'],
     response: {
       status: HttpStatus.OK,
       description: ServerSuccess.BUSINESS_UPDATED,
@@ -490,7 +518,7 @@ export class BusinessController {
   }
 
   @ApiEndpoint({
-    tags: ['Admin', 'DMO-Admin', 'Business'],
+    tags: ['Business Admin', 'Business'],
     response: {
       status: HttpStatus.OK,
       description: ServerSuccess.BUSINESS_UPDATED,
@@ -498,7 +526,12 @@ export class BusinessController {
     noAuthToken: true,
     params: [{ name: 'id', type: 'string', required: true }],
   })
-  @Roles(UserType.DMOADMIN, UserType.SUPERADMIN)
+  @Roles(
+    UserType.AUTHORITY,
+    UserType.DMO,
+    UserType.DMOADMIN,
+    UserType.SUPERADMIN,
+  )
   @UseGuards(JwtAuthGuard)
   @Delete('admin/businesses/:id')
   async deleteBusinessByAdmin(
@@ -529,7 +562,6 @@ export class BusinessController {
     },
     noAuthToken: true,
   })
-  @Roles(UserType.SUPERADMIN, UserType.DMOADMIN, UserType.TRAVELLER)
   @UseGuards(JwtAuthGuard)
   @Get('stats/businesses')
   async getBusinessStats(

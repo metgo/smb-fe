@@ -1,6 +1,7 @@
 import { Module, forwardRef } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
+import { AuthorityModule } from 'src/modules/authority/authority.module';
 import { CampaignModule } from 'src/modules/campaign/campaign.module';
 import { CampaignSegmentModule } from 'src/modules/campaign-segments/campaignSegment.module';
 import { DMOModule } from 'src/modules/dmo/dmo.module';
@@ -17,9 +18,10 @@ import { PaymentsModule } from 'src/services/payments/payments.module';
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: 'Voucher', schema: VoucherSchema }]),
+    forwardRef(() => AuthorityModule),
     CampaignModule,
     CampaignSegmentModule,
-    DMOModule,
+    forwardRef(() => DMOModule),
     EncryptionModule,
     ConfigModule,
     GcpBucketModule,

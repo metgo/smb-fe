@@ -1,6 +1,7 @@
 import { Module, forwardRef } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
+import { AuthorityModule } from 'src/modules/authority/authority.module';
 import { BusinessModule } from 'src/modules/business/business.module';
 import { DMOModule } from 'src/modules/dmo/dmo.module';
 import { OrdersController } from 'src/modules/orders/orders.controller';
@@ -17,13 +18,14 @@ import { MailChimpModule } from 'src/services/mailchimp/mailchimp.module';
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Order.name, schema: OrderSchema }]),
+    forwardRef(() => AuthorityModule),
     BusinessModule,
     forwardRef(() => PaymentsModule),
     ProductsModule,
     forwardRef(() => UsersModule),
     forwardRef(() => VoucherModule),
     ConfigModule,
-    DMOModule,
+    forwardRef(() => DMOModule),
     MailChimpModule,
     OrderProductModule,
   ],

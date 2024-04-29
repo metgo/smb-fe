@@ -1,4 +1,4 @@
-import { Module, forwardRef } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
 import { AuthorityController } from 'src/modules/authority/authority.controller';
@@ -16,7 +16,7 @@ import { UsersModule } from 'src/modules/users/users.module';
       { name: Authority.name, schema: AuthoritySchema },
     ]),
     DMOModule,
-    forwardRef(() => UsersModule),
+    UsersModule,
   ],
   controllers: [AuthorityController],
   providers: [AuthorityService],

@@ -1,5 +1,7 @@
 import { Module, forwardRef } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
+
+import { AuthorityModule } from 'src/modules/authority/authority.module';
 import { DMOSchema } from './schema/dmo.schema';
 import { DMOService } from './dmo.service';
 import { DMOController } from './dmo.controller';
@@ -9,8 +11,9 @@ import { JwtAuthModule } from '../jwt-auth/jwt-auth.module';
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: 'DMO', schema: DMOSchema }]),
-    forwardRef(() => UsersModule),
+    UsersModule,
     JwtAuthModule,
+    forwardRef(() => AuthorityModule),
   ],
   providers: [DMOService],
   controllers: [DMOController],

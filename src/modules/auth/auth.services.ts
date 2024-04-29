@@ -1,15 +1,14 @@
 import {
   ForbiddenException,
-  Inject,
   Injectable,
   NotFoundException,
   UnauthorizedException,
-  forwardRef,
 } from '@nestjs/common';
 import { ServerErrors } from 'src/common/constant';
 
 import { LoginInterface } from 'src/modules/auth/interface/login.interface';
 import { SignInRequest } from 'src/modules/auth/requests/signin.request';
+import { AuthorityService } from 'src/modules/authority/authority.service';
 import { DMOService } from 'src/modules/dmo/dmo.service';
 import { JwtAuthService } from 'src/modules/jwt-auth/services/jwt-auth.service';
 import { UsersService } from 'src/modules/users/users.services';
@@ -19,8 +18,8 @@ import { HashService } from 'src/services/hash/hash.service';
 @Injectable()
 export class AuthService {
   constructor(
+    private authorityService: AuthorityService,
     private dmoService: DMOService,
-    @Inject(forwardRef(() => UsersService))
     private usersService: UsersService,
     private jwtAuthService: JwtAuthService,
     private readonly hashService: HashService,
@@ -60,8 +59,13 @@ export class AuthService {
     const { accessToken, refreshToken } = this.jwtAuthService.login(userBody);
 
     let dmo;
+    let authority;
     if (user.role === UserType.DMO || user.role === UserType.DMOADMIN) {
       dmo = await this.dmoService.findDMOByUserID(user.id);
+    }
+
+    if (user.role === UserType.AUTHORITY) {
+      authority = await this.authorityService.findAuthorityByUserID(user.id);
     }
     await this.usersService.updateLastLogin(user.id, {
       lastLogin: new Date(),
@@ -88,6 +92,9 @@ export class AuthService {
         role: user.role,
         hasBusiness: user.hasBusiness,
         dmo: dmo ? { id: dmo._id, name: dmo.name } : null,
+        authority: authority
+          ? { id: authority._id, name: authority.name }
+          : null,
       },
     };
   }

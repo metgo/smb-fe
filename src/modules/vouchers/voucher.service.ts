@@ -69,7 +69,6 @@ export class VoucherService {
   constructor(
     @InjectModel('Voucher')
     private readonly VoucherModel: Model<Voucher>,
-    @Inject(forwardRef(() => PaymentsService))
     private readonly paymentService: PaymentsService,
     private readonly campaignService: CampaignService,
     private readonly campaignSegmentService: CampaignSegmentService,

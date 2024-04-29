@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
+import { AuthorityModule } from 'src/modules/authority/authority.module';
 import { BusinessModule } from 'src/modules/business/business.module';
 import { DMOModule } from 'src/modules/dmo/dmo.module';
 import { MediaController } from 'src/modules/media/media.controller';
@@ -13,6 +14,7 @@ import { GcpBucketModule } from 'src/services/gcp-bucket/gcp-bucket.module';
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Media.name, schema: MediaSchema }]),
+    AuthorityModule,
     GcpBucketModule,
     BusinessModule,
     DMOModule,

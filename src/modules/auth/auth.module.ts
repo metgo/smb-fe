@@ -1,6 +1,7 @@
-import { Module, forwardRef } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 
+import { AuthorityModule } from 'src/modules/authority/authority.module';
 import { UsersModule } from 'src/modules/users/users.module';
 import { AuthService } from 'src/modules/auth/auth.services';
 import { DMOModule } from 'src/modules/dmo/dmo.module';
@@ -13,7 +14,8 @@ const configService = new ConfigService();
 
 @Module({
   imports: [
-    forwardRef(() => UsersModule),
+    UsersModule,
+    AuthorityModule,
     DMOModule,
     JwtAuthModule,
     JwtModule.register({

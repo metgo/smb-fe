@@ -6,15 +6,12 @@ import { MapPointsController } from 'src/modules/business/controllers/map-point.
 import { BusinessService } from 'src/modules/business/services/business.service';
 import { MapPointsService } from 'src/modules/business/services/map-point.service';
 import { BusinessSchema } from './schema/business.schema';
+import { DMOModule } from 'src/modules/dmo/dmo.module';
 import { MockDataModule } from 'src/modules/mock-data/mock-data.modules';
-import { UsersService } from '../users/users.services';
 import { UserSchema } from '../users/schema/users.schema';
 import { DMOSchema } from '../dmo/schema/dmo.schema';
-import { DMOService } from '../dmo/dmo.service';
 import { ConfigModule } from 'src/services/config/config.module';
 import { MailModule } from 'src/services/mail/mail.module';
-import { OTPSchema } from '../users/schema/otp.schema';
-import { JwtAuthService } from '../jwt-auth/services/jwt-auth.service';
 import { HashModule } from 'src/services/hash/hash.module';
 import { Media, MediaSchema } from '../media/schema/media.schema';
 import { GcpBucketModule } from 'src/services/gcp-bucket/gcp-bucket.module';
@@ -32,37 +29,32 @@ import { AuthorityModule } from 'src/modules/authority/authority.module';
 import { VoucherModule } from 'src/modules/vouchers/voucher.module';
 import { EventController } from 'src/modules/business/controllers/event.controller';
 import { EventsService } from 'src/modules/business/services/event.service';
+import { UsersModule } from 'src/modules/users/users.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: 'Business', schema: BusinessSchema },
       { name: 'User', schema: UserSchema },
-      { name: 'OTP', schema: OTPSchema },
       { name: 'DMO', schema: DMOSchema },
       { name: Media.name, schema: MediaSchema },
       { name: BussCategory.name, schema: BussCategorySchema },
       { name: BussSubCategory.name, schema: BussSubCategorySchema },
       { name: Product.name, schema: ProductSchema },
     ]),
-    AuthorityModule,
+    forwardRef(() => AuthorityModule),
     ConfigModule,
     MailModule,
     HashModule,
     GcpBucketModule,
-    forwardRef(() => MockDataModule),
+    MockDataModule,
     MailChimpModule,
     forwardRef(() => VoucherModule),
+    forwardRef(() => UsersModule),
+    forwardRef(() => DMOModule),
   ],
   controllers: [BusinessController, EventController, MapPointsController],
-  providers: [
-    BusinessService,
-    UsersService,
-    DMOService,
-    JwtAuthService,
-    EventsService,
-    MapPointsService,
-  ],
+  providers: [BusinessService, EventsService, MapPointsService],
   exports: [BusinessService],
 })
 export class BusinessModule {}

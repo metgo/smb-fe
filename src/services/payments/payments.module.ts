@@ -1,8 +1,10 @@
 import { Module, forwardRef } from '@nestjs/common';
+import { MongooseModule } from '@nestjs/mongoose';
+
+import { AuthorityModule } from 'src/modules/authority/authority.module';
 import { PaymentsService } from './payments.service';
 import { ConfigModule } from '../config/config.module';
 import { PaymentsController } from './payments.controller';
-import { MongooseModule } from '@nestjs/mongoose';
 import { PaymentSchema } from './schema/payments.schema';
 import { OrdersModule } from 'src/modules/orders/orders.modules';
 import { VoucherModule } from 'src/modules/vouchers/voucher.module';
@@ -15,8 +17,9 @@ import { UsersModule } from 'src/modules/users/users.module';
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: 'Payment', schema: PaymentSchema }]),
+    forwardRef(() => AuthorityModule),
     ConfigModule,
-    DMOModule,
+    forwardRef(() => DMOModule),
     forwardRef(() => OrdersModule),
     forwardRef(() => VoucherModule),
     MailChimpModule,

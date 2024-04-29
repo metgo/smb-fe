@@ -1,6 +1,7 @@
 import { Module, forwardRef } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
+import { AuthorityModule } from 'src/modules/authority/authority.module';
 import { BusinessModule } from 'src/modules/business/business.module';
 import { BusinessSchema } from 'src/modules/business/schema/business.schema';
 import { DMOModule } from 'src/modules/dmo/dmo.module';
@@ -23,9 +24,10 @@ import { GcpBucketModule } from 'src/services/gcp-bucket/gcp-bucket.module';
       },
       { name: 'Business', schema: BusinessSchema },
     ]),
+    forwardRef(() => AuthorityModule),
     forwardRef(() => MockDataModule),
     BusinessModule,
-    DMOModule,
+    forwardRef(() => DMOModule),
     forwardRef(() => UsersModule),
     GcpBucketModule,
   ],
