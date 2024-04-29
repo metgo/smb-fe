@@ -1,5 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional } from 'class-validator';
+import { IsEnum, IsOptional } from 'class-validator';
+
+import { GeoServicesTypes } from '../business.type';
 
 export class GetAllUnpaginatedBusinessQuery {
   @ApiProperty({ type: String, required: false })
@@ -61,4 +63,12 @@ export class GetAllUnpaginatedBusinessQuery {
   })
   @IsOptional()
     miles: number;
+
+  @ApiProperty({
+    enum: GeoServicesTypes,
+    required: false,
+  })
+  @IsEnum(GeoServicesTypes)
+  @IsOptional()
+    serviceType: GeoServicesTypes;
 }

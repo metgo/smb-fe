@@ -1,7 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsOptional } from 'class-validator';
 
-import { BusinessStatus } from 'src/modules/business/business.type';
+import {
+  BusinessStatus,
+  GeoServicesTypes,
+} from 'src/modules/business/business.type';
 import { GetAllBusinessesForGuestQuery } from 'src/modules/business/queries/get-all-businesses-for-guest-user.query';
 
 export class GetUsersBusinessesQuery extends GetAllBusinessesForGuestQuery {
@@ -9,4 +12,13 @@ export class GetUsersBusinessesQuery extends GetAllBusinessesForGuestQuery {
   @IsEnum(BusinessStatus)
   @IsOptional()
     status: BusinessStatus;
+
+  @ApiProperty({
+    type: 'enum',
+    enum: GeoServicesTypes,
+    required: false,
+  })
+  @IsEnum(GeoServicesTypes)
+  @IsOptional()
+    serviceType: GeoServicesTypes;
 }

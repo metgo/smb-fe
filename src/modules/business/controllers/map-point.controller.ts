@@ -1,13 +1,10 @@
 import {
   Body,
   Controller,
-  Delete,
-  Get,
   HttpStatus,
   Param,
   Patch,
   Post,
-  Query,
   Req,
   Res,
   UseGuards,
@@ -24,7 +21,6 @@ import {
   UpdateMapPointsByAdminDto,
   UpdateMapPointsDto,
 } from 'src/modules/business/dto';
-import { GetUsersBusinessesQuery } from 'src/modules/business/queries';
 import { MapPointsService } from 'src/modules/business/services/map-point.service';
 import { UserType } from 'src/modules/users/users.type';
 
@@ -34,15 +30,15 @@ export class MapPointsController {
 
   @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
-    tags: ['Map-Points'],
+    tags: ['Point of Interest'],
     response: {
       status: HttpStatus.CREATED,
       description: ServerSuccess.MAPPOINTS.CREATED,
     },
     noAuthToken: true,
-    operation: 'Create an MapPoints by any logged in user',
+    operation: 'Create a point of interest by any logged in user',
   })
-  @Post('map-points')
+  @Post('point-of-interests')
   async createMapPoint(
     @Req() request,
     @Res() response: Response,
@@ -63,72 +59,8 @@ export class MapPointsController {
     );
   }
 
-  @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
-    tags: ['Map-Points'],
-    response: {
-      status: HttpStatus.OK,
-      description: ServerSuccess.MAPPOINTS.LISTED,
-    },
-    noAuthToken: true,
-    softBlockExtraDtoFields: true,
-    operation: 'Get all map-points',
-  })
-  @Get('map-points')
-  async getAllMapPoints(
-    @Req() req,
-    @Res() response: Response,
-    @Query() query?: GetUsersBusinessesQuery,
-  ) {
-    const mapPoints = await this.mapPointsService.getAllMapPoints(
-      query,
-      req.user,
-    );
-
-    return responseHelper(
-      response,
-      HttpStatus.OK,
-      ServerSuccess.MAPPOINTS.LISTED,
-      mapPoints,
-      null,
-      null,
-    );
-  }
-
-  @ApiEndpoint({
-    tags: ['Map-Points'],
-    response: {
-      status: HttpStatus.OK,
-      description: ServerSuccess.MAPPOINTS.LISTED,
-    },
-    noAuthToken: true,
-    operation: 'Get approved map point detail by any user',
-    params: [{ name: 'id', type: 'string', required: true }],
-  })
-  @UseGuards(JwtAuthGuard)
-  @Get('map-points/:id')
-  async getMapPointsForAll(
-    @Req() req,
-    @Res() response: Response,
-    @Param('id') id: string,
-  ) {
-    const mapPoint = await this.mapPointsService.getMapPoints({
-      id,
-      loggedInUser: req.user,
-    });
-
-    return responseHelper(
-      response,
-      HttpStatus.OK,
-      ServerSuccess.MAPPOINTS.LISTED,
-      mapPoint,
-      null,
-      null,
-    );
-  }
-
-  @ApiEndpoint({
-    tags: ['Map-Points'],
+    tags: ['Point of Interests'],
     response: {
       status: HttpStatus.OK,
       description: ServerSuccess.MAPPOINTS.UPDATED,
@@ -137,7 +69,7 @@ export class MapPointsController {
     params: [{ name: 'mapPointId', type: 'string', required: true }],
   })
   @UseGuards(JwtAuthGuard)
-  @Patch('map-points/:mapPointId')
+  @Patch('point-of-interests/:mapPointId')
   async updateMapPoint(
     @Req() request,
     @Res() response: Response,
@@ -161,7 +93,7 @@ export class MapPointsController {
   }
 
   @ApiEndpoint({
-    tags: ['Admin', 'Map-Points'],
+    tags: ['Admin', 'Point of Interests'],
     response: {
       status: HttpStatus.OK,
       description: ServerSuccess.MAPPOINTS.UPDATED,
@@ -171,7 +103,7 @@ export class MapPointsController {
   })
   @Roles(UserType.DMO, UserType.DMOADMIN, UserType.SUPERADMIN)
   @UseGuards(JwtAuthGuard)
-  @Patch('admin/map-points/:mappointId')
+  @Patch('admin/point-of-interests/:mappointId')
   async updateMappointByAdmin(
     @Req() request,
     @Res() response: Response,
@@ -189,37 +121,6 @@ export class MapPointsController {
       HttpStatus.OK,
       ServerSuccess.MAPPOINTS.UPDATED,
       mappoint,
-      null,
-      null,
-    );
-  }
-
-  @ApiEndpoint({
-    tags: ['Map-Points'],
-    response: {
-      status: HttpStatus.OK,
-      description: ServerSuccess.MAPPOINTS.DELETED,
-    },
-    noAuthToken: true,
-    params: [{ name: 'id', type: 'string', required: true }],
-  })
-  @UseGuards(JwtAuthGuard)
-  @Delete('map-points/:id')
-  async deleteMapPoint(
-    @Req() request,
-    @Res() response: Response,
-    @Param('id') mapPointId: string,
-  ) {
-    const mapPoints = await this.mapPointsService.deleteMapPoint(
-      mapPointId,
-      request.user.id,
-    );
-
-    return responseHelper(
-      response,
-      HttpStatus.OK,
-      ServerSuccess.MAPPOINTS.DELETED,
-      mapPoints,
       null,
       null,
     );

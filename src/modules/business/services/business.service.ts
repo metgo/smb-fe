@@ -96,6 +96,39 @@ export class BusinessService {
     );
   }
 
+  async syncSubcatWithCat() {
+    const businesses = await this.BusinessModel.find();
+
+    await Promise.all(
+      businesses.map(async b => {
+        let bussCategoriesId;
+
+        await Promise.all(
+          b.bussSubCategoriesId.map(async subCategory => {
+            const subCatDetails = await this.BussSubCategoryModel.findById(
+              subCategory,
+            );
+            const catId = subCatDetails?.bussCategoryId[0].toString();
+            if (catId) {
+              bussCategoriesId = bussCategoriesId?.length
+                ? [...bussCategoriesId, catId]
+                : [catId];
+            }
+          }),
+        );
+
+        const bussCat = [...new Set(bussCategoriesId)];
+
+        await this.BusinessModel.updateOne(
+          { _id: b.id },
+          {
+            $set: { bussCategoriesId: bussCat },
+          },
+        );
+      }),
+    );
+  }
+
   async createBusiness(
     dto: createBusinessDto,
     userId: string,
@@ -331,7 +364,7 @@ export class BusinessService {
     const queryPage = Number(page) || paginationConfig.page;
     const queryLimit = Number(limit) || paginationConfig.limit;
 
-    let findQuery: any = { ...query, serviceType: GeoServicesTypes.BUSINESS };
+    let findQuery: any = { ...query };
 
     if (!('status' in query) && !authenticatedUser) {
       findQuery = { ...findQuery, status: BusinessStatus.APPROVED };
@@ -509,7 +542,6 @@ export class BusinessService {
     let findQuery: any = {
       ...query,
       status: BusinessStatus.APPROVED,
-      serviceType: GeoServicesTypes.BUSINESS,
     };
 
     if (search) {
@@ -777,7 +809,6 @@ export class BusinessService {
     let findQuery: any = {
       ...query,
       userId,
-      serviceType: GeoServicesTypes.BUSINESS,
     };
     if (search) {
       findQuery = {
@@ -859,7 +890,7 @@ export class BusinessService {
     }
 
     const updateBusiness = await this.BusinessModel.findOneAndUpdate(
-      { _id: id, isDeleted: false, serviceType: GeoServicesTypes.BUSINESS },
+      { _id: id, isDeleted: false },
       updatedField,
       { new: true },
     );
@@ -925,7 +956,6 @@ export class BusinessService {
       let findQuery: any = {
         _id: id,
         $or: [{ isDeleted: { $exists: false } }, { isDeleted: false }],
-        serviceType: GeoServicesTypes.BUSINESS,
       };
       if (loggedInUser.role === UserType.DMOADMIN) {
         const dmoId = loggedInUser.dmo.id;
@@ -1050,7 +1080,7 @@ export class BusinessService {
       const updateField = { deletedBy: loggedInUserId };
       const business = await deleteItem<Business>(
         this.BusinessModel,
-        { _id: id, serviceType: GeoServicesTypes.BUSINESS },
+        { _id: id },
         updateField,
       );
       if (!business) {
@@ -1224,7 +1254,6 @@ export class BusinessService {
 
       let findQuery: any = {
         status: BusinessStatus.APPROVED,
-        serviceType: GeoServicesTypes.BUSINESS,
       };
 
       if (categoriesId) {

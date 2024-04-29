@@ -17,5 +17,5 @@ export interface GetBusinessByIdOrSlug {
 export enum GeoServicesTypes {
   BUSINESS = 'business',
   EVENT = 'event',
-  MAP_POINT = 'mappoint',
+  POINT_OF_INTEREST = 'point_of_interest',
 }

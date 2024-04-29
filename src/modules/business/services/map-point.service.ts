@@ -7,6 +7,7 @@ import { maxDistanceInRadius } from 'src/common/max-distance-in-radius';
 import { paginateData } from 'src/common/pagination';
 import { paginationConfig } from 'src/common/pagination.config';
 import { getNearestBusiness } from 'src/common/sort-by-nearest';
+import { getRandomNumberBetween } from 'src/common/utils/random-number-range';
 import { generateRandomCode } from 'src/common/utils/randomCode.generator';
 import { disSelect } from 'src/common/utils/select.handling';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
@@ -44,11 +45,13 @@ export class MapPointsService {
     dto: CreateMapPointsDto,
     userId: string,
   ): Promise<Business> {
+    const impact = getRandomNumberBetween(17, 93);
     let newDto: any = {
       ...dto,
-      serviceType: GeoServicesTypes.MAP_POINT,
+      serviceType: GeoServicesTypes.POINT_OF_INTEREST,
       userId,
       createdBy: userId,
+      impact,
     };
 
     // find dmoId by authority
@@ -109,7 +112,10 @@ export class MapPointsService {
     const queryPage = Number(page) || paginationConfig.page;
     const queryLimit = Number(limit) || paginationConfig.limit;
 
-    let findQuery: any = { ...query, serviceType: GeoServicesTypes.MAP_POINT };
+    let findQuery: any = {
+      ...query,
+      serviceType: GeoServicesTypes.POINT_OF_INTEREST,
+    };
 
     if (!authenticatedUser) {
       findQuery = { ...findQuery, status: BusinessStatus.APPROVED };
@@ -333,7 +339,7 @@ export class MapPointsService {
     let findQuery: any = {
       _id: id,
       isDeleted: false,
-      serviceType: GeoServicesTypes.MAP_POINT,
+      serviceType: GeoServicesTypes.POINT_OF_INTEREST,
     };
 
     // find dmoId by authority
@@ -396,7 +402,7 @@ export class MapPointsService {
         this.BusinessModel,
         {
           _id: id,
-          serviceType: GeoServicesTypes.MAP_POINT,
+          serviceType: GeoServicesTypes.POINT_OF_INTEREST,
           createdBy: loggedInUserId,
           isDeleted: false,
         },

@@ -1,6 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional } from 'class-validator';
+import { IsEnum, IsOptional } from 'class-validator';
+
 import { CommonFilterQuery } from 'src/common/query-handler/common-filter-query';
+import { GeoServicesTypes } from '../business.type';
 
 export class GetAllBusinessesForGuestQuery extends CommonFilterQuery {
   @ApiProperty({
@@ -58,4 +60,12 @@ export class GetAllBusinessesForGuestQuery extends CommonFilterQuery {
   })
   @IsOptional()
     miles: number;
+
+  @ApiProperty({
+    enum: GeoServicesTypes,
+    required: false,
+  })
+  @IsEnum(GeoServicesTypes)
+  @IsOptional()
+    serviceType: GeoServicesTypes;
 }
