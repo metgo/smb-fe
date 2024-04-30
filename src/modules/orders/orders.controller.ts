@@ -373,7 +373,6 @@ export class OrdersController {
     },
     noAuthToken: true,
   })
-  @Roles(UserType.SUPERADMIN, UserType.TRAVELLER)
   @UseGuards(JwtAuthGuard)
   @Get('stats/orders')
   async getOrderStats(

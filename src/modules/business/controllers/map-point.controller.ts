@@ -30,7 +30,7 @@ export class MapPointsController {
 
   @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
-    tags: ['Point of Interest'],
+    tags: ['Point of Interests'],
     response: {
       status: HttpStatus.CREATED,
       description: ServerSuccess.MAPPOINTS.CREATED,
@@ -93,7 +93,7 @@ export class MapPointsController {
   }
 
   @ApiEndpoint({
-    tags: ['Admin', 'Point of Interests'],
+    tags: ['Point of Interests - Admin'],
     response: {
       status: HttpStatus.OK,
       description: ServerSuccess.MAPPOINTS.UPDATED,

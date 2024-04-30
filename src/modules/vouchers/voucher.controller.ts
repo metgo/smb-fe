@@ -460,7 +460,7 @@ export class VoucherController {
   )
   @UseGuards(JwtAuthGuard)
   @Get('stats/vouchers-cached')
-  async getVoucherStats(
+  async getVoucherStatsCached(
     @Req() req,
     @Res() response: Response,
     @Query() query: GetVoucherStatsQuery,
@@ -515,12 +515,12 @@ export class VoucherController {
   )
   @UseGuards(JwtAuthGuard)
   @Get('stats/vouchers')
-  async getVoucherStatsGrouped(
+  async getVoucherStats(
     @Req() req,
     @Res() response: Response,
     @Query() query: GetVoucherStatsGroupedQuery,
   ) {
-    const voucherStats = await this.voucherService.getVoucherStatsGrouped(
+    const voucherStats = await this.voucherService.getVoucherStats(
       req.user,
       query,
     );

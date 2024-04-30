@@ -2,7 +2,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { subDays, differenceInDays } from 'date-fns';
-import { Model } from 'mongoose';
+import mongoose, { Model } from 'mongoose';
 
 import { ServerErrors } from 'src/common/constant';
 import { PaymentStatus } from 'src/common/enum';
@@ -53,10 +53,10 @@ export class StatsService {
       throw new BadRequestException(`Created ${ServerErrors.DATE_IS_NOT_LESS}`);
     }
 
-    if (dmo) {
+    if (dmo && loginUser?.role === UserType.SUPERADMIN) {
       findQuery = {
         ...findQuery,
-        dmoId: dmo,
+        dmoId: new mongoose.Types.ObjectId(dmo),
       };
     }
     if (loginUser?.role === UserType.TRAVELLER) {
@@ -65,11 +65,13 @@ export class StatsService {
         userId: loginUser.id,
       };
     }
-    if (loginUser?.role === UserType.DMO) {
-      const dmoID = loginUser.dmo.id;
+    if (
+      loginUser?.role === UserType.DMO
+      || loginUser?.role === UserType.DMOADMIN
+    ) {
       findQuery = {
         ...findQuery,
-        dmoId: dmoID,
+        dmoId: loginUser.dmo.id,
       };
     }
     try {
@@ -218,23 +220,25 @@ export class StatsService {
       throw new BadRequestException(`Created ${ServerErrors.DATE_IS_NOT_LESS}`);
     }
 
-    if (dmo) {
+    if (dmo && loginUser.role === UserType.SUPERADMIN) {
       findQuery = {
         ...findQuery,
-        dmoId: dmo,
+        dmoId: new mongoose.Types.ObjectId(dmo),
       };
     }
-    if (loginUser?.role === UserType.TRAVELLER) {
+    if (loginUser.role === UserType.TRAVELLER) {
       findQuery = {
         ...findQuery,
         userId: loginUser.id,
       };
     }
-    if (loginUser?.role === UserType.DMO) {
-      const dmoID = loginUser.dmo.id;
+    if (
+      loginUser.role === UserType.DMO
+      || loginUser.role === UserType.DMOADMIN
+    ) {
       findQuery = {
         ...findQuery,
-        dmoId: dmoID,
+        dmoId: loginUser.dmo.id,
       };
     }
     try {

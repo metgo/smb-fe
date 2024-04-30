@@ -12,7 +12,12 @@ import mongoose, { Model } from 'mongoose';
 
 import { calculateTotalAmount } from 'src/common/calculate-amounts';
 import { ServerErrors } from 'src/common/constant';
-import { Currency, Locale, PaymentStatus } from 'src/common/enum';
+import {
+  Currency,
+  Locale,
+  PaymentStatus,
+  SortByTimePeriod,
+} from 'src/common/enum';
 import {
   EnglishTemplate,
   HebrewTemplate,
@@ -534,7 +539,9 @@ export class OrdersService {
     query: GetOrdersStatsQuery,
   ) {
     try {
-      const { startDate, endDate } = query;
+      const {
+        startDate, endDate, dmoId, sortBy,
+      } = query;
       let findQuery: any = { paymentStatus: PaymentStatus.SUCCESS };
 
       if (loggedInUser.role === UserType.TRAVELLER) {
@@ -564,11 +571,59 @@ export class OrdersService {
         };
       }
 
-      const grouped = await this.OrderModel.aggregate([
+      const pipeline: any[] = [
         { $match: findQuery },
         {
+          $unwind: '$products',
+        },
+      ];
+
+      let dmoID;
+
+      if (loggedInUser.role === UserType.SUPERADMIN && dmoId) {
+        dmoID = dmoId;
+      }
+
+      if ([UserType.DMOADMIN, UserType.DMO].includes(loggedInUser.role)) {
+        dmoID = loggedInUser.dmo.id;
+      }
+
+      if (dmoID) {
+        pipeline.push(
+          {
+            $lookup: {
+              from: 'products',
+              localField: 'products.id',
+              foreignField: '_id',
+              as: 'matchedProducts',
+            },
+          },
+          {
+            $match: {
+              'matchedProducts.dmoId': new mongoose.Types.ObjectId(dmoID),
+            },
+          },
+        );
+      }
+
+      let format = {
+        $dateToString: { format: '%Y-%m-%d', date: '$createdAt' },
+      };
+      if (sortBy === SortByTimePeriod.WEEKLY) {
+        format = { $dateToString: { format: '%Y-%U', date: '$createdAt' } };
+      }
+
+      if (sortBy === SortByTimePeriod.MONTHLY) {
+        format = { $dateToString: { format: '%Y-%m', date: '$createdAt' } };
+      }
+
+      if (sortBy === SortByTimePeriod.YEARLY) {
+        format = { $dateToString: { format: '%Y', date: '$createdAt' } };
+      }
+      pipeline.push(
+        {
           $group: {
-            _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+            _id: format,
             totalNumber: { $sum: 1 },
             totalQuantity: { $sum: 1 },
             totalAmount: { $sum: '$totalAmount' },
@@ -576,7 +631,9 @@ export class OrdersService {
           },
         },
         { $sort: { _id: 1 } },
-      ]);
+      );
+
+      const grouped = await this.OrderModel.aggregate(pipeline);
 
       return grouped;
     } catch (err) {

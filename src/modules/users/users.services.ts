@@ -99,12 +99,13 @@ export class UsersService {
   async getAllUsers(queries: GetAllUsersQuery) {
     try {
       const {
-        page, limit, search, isDeleted, ...query
+        page, limit, search, isDeleted, hasBusiness, ...query
       } = queries;
 
       let findQuery: any = {
         ...query,
         isDeleted: { $ne: true },
+        hasBusiness: { $ne: true },
       };
 
       if (search) {
@@ -122,6 +123,13 @@ export class UsersService {
         findQuery = {
           ...findQuery,
           isDeleted: true,
+        };
+      }
+
+      if (/true/.test(hasBusiness)) {
+        findQuery = {
+          ...findQuery,
+          hasBusiness: true,
         };
       }
 

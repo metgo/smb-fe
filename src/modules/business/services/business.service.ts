@@ -846,6 +846,12 @@ export class BusinessService {
     return allBusiness;
   }
 
+  async getMyBusiness(userId: string) {
+    const businesses = await this.BusinessModel.find({ userId });
+
+    return businesses;
+  }
+
   async updateBusiness(
     id: string,
     loggedInUser: LoggedInUserInterface,

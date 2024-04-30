@@ -316,7 +316,11 @@ export class ProductsService {
       findQuery = { ...findQuery, collaboratorId: queries.loggedInUser.id };
     }
 
-    if (queries.isAdmin && queries.loggedInUser.role === UserType.DMOADMIN) {
+    if (
+      queries.isAdmin
+      && (queries.loggedInUser.role === UserType.DMOADMIN
+        || queries.loggedInUser.role === UserType.DMO)
+    ) {
       const dmoId = queries.loggedInUser.dmo.id;
 
       findQuery = {

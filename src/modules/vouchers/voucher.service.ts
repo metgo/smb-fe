@@ -23,6 +23,7 @@ import { Voucher } from './schema/voucher.schema';
 import {
   Currency,
   Locale,
+  SortByTimePeriod,
   VoucherPaymentStatus,
   VoucherStatus,
 } from 'src/common/enum';
@@ -1052,7 +1053,7 @@ export class VoucherService {
     return voucher;
   }
 
-  async getVoucherStatsGrouped(
+  async getVoucherStats(
     loggedInUser: LoggedInUserInterface,
     query: GetVoucherStatsGroupedQuery,
   ) {
@@ -1062,6 +1063,7 @@ export class VoucherService {
       expiryStartDate,
       expiryEndDate,
       campId,
+      sortBy,
       ...queries
     } = query;
 
@@ -1149,56 +1151,32 @@ export class VoucherService {
       };
     }
 
-    const groupedByCampIdAndDate = await this.VoucherModel.aggregate([
+    let format = { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } };
+    if (sortBy === SortByTimePeriod.WEEKLY) {
+      format = { $dateToString: { format: '%Y-%U', date: '$createdAt' } };
+    }
+
+    if (sortBy === SortByTimePeriod.MONTHLY) {
+      format = { $dateToString: { format: '%Y-%m', date: '$createdAt' } };
+    }
+
+    if (sortBy === SortByTimePeriod.YEARLY) {
+      format = { $dateToString: { format: '%Y', date: '$createdAt' } };
+    }
+
+    const groupedByDates = await this.VoucherModel.aggregate([
       { $match: findQuery },
       {
-        $lookup: {
-          from: 'campaigns',
-          localField: 'campId',
-          foreignField: '_id',
-          as: 'camp',
-        },
-      },
-      { $unwind: '$camp' },
-      {
         $group: {
-          _id: {
-            campId: '$camp._id',
-            createdAt: {
-              $dateToString: { format: '%Y-%m-%d', date: '$createdAt' },
-            },
-            name: '$camp.name',
-          },
+          _id: format,
           totalNumberOfVouchers: { $sum: 1 },
           totalValueOfVoucher: { $sum: '$amount' },
           totalAmountToRedeem: { $sum: '$remainingAmount' },
         },
       },
-      {
-        $group: {
-          _id: '$_id.campId',
-          name: { $first: '$_id.name' },
-          vouchersByDate: {
-            $push: {
-              createdAt: '$_id.createdAt',
-              totalNumberOfVouchers: '$totalNumberOfVouchers',
-              totalValueOfVoucher: '$totalValueOfVoucher',
-              totalAmountToRedeem: '$totalAmountToRedeem',
-            },
-          },
-        },
-      },
-      { $unwind: '$vouchersByDate' },
-      { $sort: { 'vouchersByDate.createdAt': 1 } },
-      {
-        $group: {
-          _id: '$_id',
-          name: { $first: '$name' },
-          vouchersByDate: { $push: '$vouchersByDate' },
-        },
-      },
+      { $sort: { _id: 1 } },
     ]);
 
-    return groupedByCampIdAndDate;
+    return groupedByDates;
   }
 }

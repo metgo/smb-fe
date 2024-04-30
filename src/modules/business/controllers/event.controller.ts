@@ -3,12 +3,10 @@ import {
   Body,
   Controller,
   Delete,
-  Get,
   HttpStatus,
   Param,
   Patch,
   Post,
-  Query,
   Req,
   Res,
   UploadedFiles,
@@ -28,7 +26,6 @@ import {
   UpdateEventDto,
   UpdateEventsByAdminDto,
 } from 'src/modules/business/dto';
-import { GetUsersBusinessesQuery } from 'src/modules/business/queries';
 import { EventsService } from 'src/modules/business/services/event.service';
 import { UserType } from 'src/modules/users/users.type';
 import { fileFilterByExtensions } from 'src/services/gcp-bucket/middleware/file-filter';
@@ -65,66 +62,6 @@ export class EventController {
       HttpStatus.CREATED,
       ServerSuccess.EVENTS.CREATED,
       events,
-      null,
-      null,
-    );
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @ApiEndpoint({
-    tags: ['Events'],
-    response: {
-      status: HttpStatus.OK,
-      description: ServerSuccess.EVENTS.LISTED,
-    },
-    softBlockExtraDtoFields: true,
-    noAuthToken: true,
-    operation: 'Get all events',
-  })
-  @Get('events')
-  async getAllEvents(
-    @Req() req,
-    @Res() response: Response,
-    @Query() query?: GetUsersBusinessesQuery,
-  ): Promise<Response<any, Record<string, any>>> {
-    const events = await this.eventsService.getAllEvents(query, req.user);
-
-    return responseHelper(
-      response,
-      HttpStatus.OK,
-      ServerSuccess.EVENTS.LISTED,
-      events,
-      null,
-      null,
-    );
-  }
-
-  @ApiEndpoint({
-    tags: ['Events'],
-    response: {
-      status: HttpStatus.OK,
-      description: ServerSuccess.EVENTS.LISTED,
-    },
-    noAuthToken: true,
-    operation: 'Get approved events detail by any user',
-  })
-  @UseGuards(JwtAuthGuard)
-  @Get('events/:id')
-  async getEventDetailForAll(
-    @Req() req,
-    @Res() response: Response,
-    @Param('id') id: string,
-  ) {
-    const event = await this.eventsService.getEvents({
-      id,
-      loggedInUser: req.user,
-    });
-
-    return responseHelper(
-      response,
-      HttpStatus.OK,
-      ServerSuccess.EVENTS.LISTED,
-      event,
       null,
       null,
     );

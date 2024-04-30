@@ -30,6 +30,7 @@ export class StatsController {
     },
     noAuthToken: true,
   })
+  @UseGuards(JwtAuthGuard)
   @Get('/stats/business')
   async getBusinessStats(
     @Req() req,
@@ -58,7 +59,6 @@ export class StatsController {
     },
     noAuthToken: true,
   })
-  @Roles(UserType.SUPERADMIN, UserType.DMOADMIN, UserType.TRAVELLER)
   @UseGuards(JwtAuthGuard)
   @Get('/stats/Product')
   async getProductStats(

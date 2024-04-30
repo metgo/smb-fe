@@ -32,6 +32,7 @@ import { BusinessService } from 'src/modules/business/services/business.service'
 import { CreateProductByAdmin, ProductDto } from 'src/modules/products/dto';
 import { ProductsService } from 'src/modules/products/products.services';
 import {
+  GetAllProductsForAdminQuery,
   GetAllProductsForLoggedInUserQuery,
   GetAllProductsForNonLoggedInUserQuery,
   GetProductsStatsQuery,
@@ -198,7 +199,7 @@ export class ProductsController {
     ],
     noAuthToken: true,
   })
-  @Roles(UserType.DMOADMIN, UserType.SUPERADMIN)
+  @Roles(UserType.DMO, UserType.DMOADMIN, UserType.SUPERADMIN)
   @UseGuards(JwtAuthGuard)
   @ApiNotFoundResponse({ description: ServerErrors.PRODUCT.NOT_FOUND })
   @HttpCode(HttpStatus.OK)
@@ -295,7 +296,7 @@ export class ProductsController {
     );
   }
 
-  @Roles(UserType.DMOADMIN, UserType.SUPERADMIN)
+  @Roles(UserType.DMO, UserType.DMOADMIN, UserType.SUPERADMIN)
   @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
     tags: ['Admin', 'Products'],
@@ -312,12 +313,10 @@ export class ProductsController {
   async getBusinessProducts(
     @Req() req,
     @Res() response: Response,
-    @Query() query: GetAllProductsForLoggedInUserQuery,
+    @Query() query: GetAllProductsForAdminQuery,
   ) {
     const product = await this.productsService.findAll({
       query,
-      myProduct: false,
-      collaboratedProducts: false,
       loggedInUser: req.user,
       isAdmin: true,
     });

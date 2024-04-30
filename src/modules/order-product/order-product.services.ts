@@ -8,6 +8,7 @@ import { paginateData } from 'src/common/pagination';
 import { paginationConfig } from 'src/common/pagination.config';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interface';
+import { BusinessService } from 'src/modules/business/services/business.service';
 import { CreateOrderProductCommand } from 'src/modules/order-product/interfaces/create-order-product.interface';
 import { GetAllOrdersDetailsQuery } from 'src/modules/order-product/queries/get-order-details.query';
 import { GetOrdersSummaryQuery } from 'src/modules/order-product/queries/get-order-summary.query';
@@ -21,6 +22,7 @@ export class OrderProductService {
     @InjectModel(OrderProduct.name)
     private OrderProductModel: Model<OrderProduct>,
     private readonly productsService: ProductsService,
+    private readonly businessService: BusinessService,
   ) {}
 
   async create(command: CreateOrderProductCommand): Promise<any> {
@@ -364,6 +366,20 @@ export class OrderProductService {
         $unwind: '$business_info',
       },
     ];
+
+    if (loggedInUser.role === UserType.TRAVELLER && loggedInUser.hasBusiness) {
+      const businesses = await this.businessService.getMyBusiness(
+        loggedInUser.id,
+      );
+
+      const businessIds = businesses.map(buss => buss._id);
+
+      pipeline.push({
+        $match: {
+          'business_info._id': { $in: businessIds },
+        },
+      });
+    }
 
     if (search) {
       pipeline.push({

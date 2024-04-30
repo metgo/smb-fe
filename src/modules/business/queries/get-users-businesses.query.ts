@@ -21,4 +21,12 @@ export class GetUsersBusinessesQuery extends GetAllBusinessesForGuestQuery {
   @IsEnum(GeoServicesTypes)
   @IsOptional()
     serviceType: GeoServicesTypes;
+
+  @ApiProperty({
+    type: String,
+    required: false,
+    description: 'must follow the pattern \n [id, id,..]',
+  })
+  @IsOptional()
+    dmoId: string;
 }
