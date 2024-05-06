@@ -13,8 +13,6 @@ import { DMOSchema } from '../dmo/schema/dmo.schema';
 import { ConfigModule } from 'src/services/config/config.module';
 import { MailModule } from 'src/services/mail/mail.module';
 import { HashModule } from 'src/services/hash/hash.module';
-import { Media, MediaSchema } from '../media/schema/media.schema';
-import { GcpBucketModule } from 'src/services/gcp-bucket/gcp-bucket.module';
 import { MailChimpModule } from 'src/services/mailchimp/mailchimp.module';
 import {
   BussCategory,
@@ -29,6 +27,7 @@ import { AuthorityModule } from 'src/modules/authority/authority.module';
 import { VoucherModule } from 'src/modules/vouchers/voucher.module';
 import { EventController } from 'src/modules/business/controllers/event.controller';
 import { EventsService } from 'src/modules/business/services/event.service';
+import { MediaModule } from 'src/modules/media/media.module';
 import { UsersModule } from 'src/modules/users/users.module';
 
 @Module({
@@ -37,7 +36,6 @@ import { UsersModule } from 'src/modules/users/users.module';
       { name: 'Business', schema: BusinessSchema },
       { name: 'User', schema: UserSchema },
       { name: 'DMO', schema: DMOSchema },
-      { name: Media.name, schema: MediaSchema },
       { name: BussCategory.name, schema: BussCategorySchema },
       { name: BussSubCategory.name, schema: BussSubCategorySchema },
       { name: Product.name, schema: ProductSchema },
@@ -46,9 +44,9 @@ import { UsersModule } from 'src/modules/users/users.module';
     ConfigModule,
     MailModule,
     HashModule,
-    GcpBucketModule,
     MockDataModule,
     MailChimpModule,
+    MediaModule,
     forwardRef(() => VoucherModule),
     forwardRef(() => UsersModule),
     forwardRef(() => DMOModule),

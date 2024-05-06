@@ -15,6 +15,8 @@ export const softValidationPipe = new ValidationPipe({
 
 export const milesConfig = 5;
 
+export const defaultMetGoLogo = 'default-metgo-logo-OBNusjAgOeNMDToi1.png';
+
 export const ServerErrors = {
   FORBIDDEN: 'Access Denied',
   IS_NOT_EMPTY: 'cannot be empty',

@@ -142,9 +142,9 @@ export class Business extends AuditableSchema {
   @Prop()
     images: [
     {
-      image: { type: string; default: null };
-      caption: { type: string; default: null };
-      alt: { type: string; default: null };
+      image: string;
+      caption: string;
+      alt: string;
     }
   ];
 

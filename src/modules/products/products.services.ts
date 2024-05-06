@@ -2,8 +2,10 @@
 /* eslint-disable no-nested-ternary */
 import {
   BadRequestException,
+  Inject,
   Injectable,
   NotFoundException,
+  forwardRef,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
@@ -36,16 +38,19 @@ import {
 import { GetProductsStatsQuery } from 'src/modules/products/queries';
 import { ProductStatus } from 'src/modules/products/products.type';
 import { UserType } from 'src/modules/users/users.type';
-import { GcpBucketService } from 'src/services/gcp-bucket/gcp-bucket.services';
+import { ReferenceType } from 'src/modules/media/media.type';
+import { MediaServices } from 'src/modules/media/media.service';
 
 @Injectable()
 export class ProductsService {
   constructor(
     @InjectModel(Product.name)
     private ProductModel: Model<Product>,
+    @Inject(forwardRef(() => BusinessService))
     private readonly businessService: BusinessService,
     private readonly mockDataService: MockDataServices,
-    private readonly gcpBucketServices: GcpBucketService,
+    @Inject(forwardRef(() => MediaServices))
+    private readonly mediaServices: MediaServices,
   ) {}
 
   async seed() {
@@ -122,12 +127,12 @@ export class ProductsService {
   }
 
   async createForWeb(
-    loggedInUserId: string,
+    loggedInUser: LoggedInUserInterface,
     businessId: string,
     business: Business,
     body: CreateProductByAdmin,
-    files: Array<Express.Multer.File>,
-  ): Promise<Product> {
+    images: Array<Express.Multer.File>,
+  ) {
     let price;
     let quantity;
     if (body?.price?.markedPrice) {
@@ -158,31 +163,16 @@ export class ProductsService {
 
     const impact = getRandomNumberBetween(9, 73);
 
-    const images = [];
-    await Promise.all(
-      files.map(async (file: Express.Multer.File) => {
-        // store in gcp
-        const imageUrl = await this.gcpBucketServices.upload(file);
-        const imageObject = {
-          image: imageUrl,
-          caption: file.originalname,
-          alt: file.originalname,
-        };
-        images.push(imageObject);
-      }),
-    );
-
     const createdField = {
       ...body,
       price,
       quantity,
       businessId,
-      createdBy: loggedInUserId,
-      primaryUserId: body?.userId || business?.userId || loggedInUserId,
+      createdBy: loggedInUser.id,
+      primaryUserId: body?.userId || business?.userId || loggedInUser.id,
       dmoId: business.dmoId,
       authorityId: business.authorityId,
       status,
-      images,
       impact,
     };
 
@@ -198,6 +188,21 @@ export class ProductsService {
     await this.mockDataService.createImpressionEngagementInterface({
       productId: product._id,
     });
+
+    if (images?.length) {
+      const uploadImageDto = {
+        refId: newProduct._id.toString(),
+        reference: ReferenceType.PRODUCT,
+        businessId,
+      };
+      const updatedProduct = await this.mediaServices.create(
+        loggedInUser,
+        images,
+        uploadImageDto,
+      );
+
+      return updatedProduct;
+    }
 
     return product;
   }

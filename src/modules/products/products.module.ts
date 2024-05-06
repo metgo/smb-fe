@@ -13,7 +13,7 @@ import {
 import { ProductsService } from 'src/modules/products/products.services';
 import { ProductsController } from 'src/modules/products/products.controller';
 import { UsersModule } from 'src/modules/users/users.module';
-import { GcpBucketModule } from 'src/services/gcp-bucket/gcp-bucket.module';
+import { MediaModule } from 'src/modules/media/media.module';
 
 @Module({
   imports: [
@@ -26,10 +26,10 @@ import { GcpBucketModule } from 'src/services/gcp-bucket/gcp-bucket.module';
     ]),
     forwardRef(() => AuthorityModule),
     forwardRef(() => MockDataModule),
-    BusinessModule,
+    forwardRef(() => BusinessModule),
     forwardRef(() => DMOModule),
     forwardRef(() => UsersModule),
-    GcpBucketModule,
+    forwardRef(() => MediaModule),
   ],
   providers: [ProductsService],
   controllers: [ProductsController],

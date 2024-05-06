@@ -1,7 +1,10 @@
-/* eslint-disable no-param-reassign */
 /* eslint-disable no-undef */
-/* eslint-disable no-unused-vars */
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  NotFoundException,
+  forwardRef,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
@@ -23,6 +26,7 @@ export class MediaServices {
   constructor(
     @InjectModel('Media')
     private MediaModel: Model<Media>,
+    @Inject(forwardRef(() => BusinessService))
     private businessService: BusinessService,
     private gcpBucketServices: GcpBucketService,
     private productService: ProductsService,
@@ -154,5 +158,9 @@ export class MediaServices {
       }
       exceptionHandling(err);
     }
+  }
+
+  async getMediaByName(originalName: string) {
+    return await this.MediaModel.findOne({ originalName });
   }
 }

@@ -134,7 +134,7 @@ export class ProductsController {
     }
 
     const product = await this.productsService.createForWeb(
-      req.user.id,
+      req.user,
       bussinessId,
       business,
       body,

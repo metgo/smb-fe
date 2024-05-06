@@ -11,7 +11,6 @@ import { VoucherService } from 'src/modules/vouchers/voucher.service';
 import { VoucherSchema } from 'src/modules/vouchers/schema/voucher.schema';
 import { ConfigModule } from 'src/services/config/config.module';
 import { EncryptionModule } from 'src/services/encryption/encryption.module';
-import { GcpBucketModule } from 'src/services/gcp-bucket/gcp-bucket.module';
 import { MailChimpModule } from 'src/services/mailchimp/mailchimp.module';
 import { PaymentsModule } from 'src/services/payments/payments.module';
 
@@ -24,7 +23,6 @@ import { PaymentsModule } from 'src/services/payments/payments.module';
     forwardRef(() => DMOModule),
     EncryptionModule,
     ConfigModule,
-    GcpBucketModule,
     forwardRef(() => UsersModule),
     forwardRef(() => PaymentsModule),
     MailChimpModule,

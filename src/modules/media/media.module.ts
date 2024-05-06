@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
 import { AuthorityModule } from 'src/modules/authority/authority.module';
@@ -14,12 +14,12 @@ import { GcpBucketModule } from 'src/services/gcp-bucket/gcp-bucket.module';
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Media.name, schema: MediaSchema }]),
-    AuthorityModule,
+    forwardRef(() => AuthorityModule),
     GcpBucketModule,
-    BusinessModule,
-    DMOModule,
+    forwardRef(() => BusinessModule),
+    forwardRef(() => DMOModule),
     ProductsModule,
-    UsersModule,
+    forwardRef(() => UsersModule),
   ],
   controllers: [MediaController],
   providers: [MediaServices],

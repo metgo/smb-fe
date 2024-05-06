@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
+import { nanoid } from 'nanoid';
 
 import { ServerErrors } from 'src/common/constant';
 import { disSelect } from 'src/common/utils/select.handling';
@@ -13,7 +14,6 @@ import { exceptionHandling } from 'src/common/utils/exception-handling';
 import {
   deleteItem,
   findOneByFieldNameIncludingDeleted,
-  updateOneByManyFields,
 } from 'src/core/helper/query-helper';
 import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interface';
 import { AuthorityService } from 'src/modules/authority/authority.service';
@@ -25,11 +25,9 @@ import {
 import { CreateEventsDto, UpdateEventDto } from 'src/modules/business/dto';
 import { Business } from 'src/modules/business/schema/business.schema';
 import { UserType } from 'src/modules/users/users.type';
-import { GcpBucketService } from 'src/services/gcp-bucket/gcp-bucket.services';
-import { Media } from 'src/modules/media/schema/media.schema';
-import { Image } from 'src/common/interface/image.interface';
 import { generateRandomCode } from 'src/common/utils/randomCode.generator';
-import { nanoid } from 'nanoid';
+import { ReferenceType } from 'src/modules/media/media.type';
+import { MediaServices } from 'src/modules/media/media.service';
 
 @Injectable()
 export class EventsService {
@@ -37,16 +35,14 @@ export class EventsService {
     private readonly authorityService: AuthorityService,
     @InjectModel('Business')
     private BusinessModel: Model<Business>,
-    private readonly gcpBucketServices: GcpBucketService,
-    @InjectModel('Media')
-    private MediaModel: Model<Media>,
+    private readonly mediaServices: MediaServices,
   ) {}
 
   async createEvents(
     dto: CreateEventsDto,
     user: LoggedInUserInterface,
-    image: Array<Express.Multer.File>,
-  ): Promise<Business> {
+    images: Array<Express.Multer.File>,
+  ) {
     let newDto: any = {
       ...dto,
       serviceType: GeoServicesTypes.EVENT,
@@ -89,26 +85,6 @@ export class EventsService {
         location,
       };
     }
-    const images = [];
-    // add to GCP
-    if (image) {
-      await Promise.all(
-        image.map(async (file: Express.Multer.File) => {
-          const imageUrl = await this.gcpBucketServices.upload(file);
-
-          const imageObject = {
-            image: imageUrl || null,
-            caption: file?.originalname || null,
-            alt: file?.originalname || null,
-          };
-          images.push(imageObject);
-        }),
-      );
-      newDto = {
-        ...newDto,
-        images,
-      };
-    }
 
     try {
       const slug = this.generateSlug(dto?.name);
@@ -120,25 +96,20 @@ export class EventsService {
       await newEvent.save();
 
       // add to Media Table
-
-      if (newEvent.images?.length) {
-        await Promise.all(
-          newEvent.images.map(async (img: any) => {
-            const newMedia = new this.MediaModel({
-              reference: {
-                refId: newEvent.id,
-                schema: 'Event',
-              },
-              createdBy: newEvent.id,
-              url: img.image,
-              originalName: img?.caption || null,
-              mimetype: img?.mimetype || null,
-            });
-            await newMedia.save();
-          }),
+      if (images?.length) {
+        const body = {
+          refId: newEvent._id.toString(),
+          reference: ReferenceType.EVENT,
+          businessId: null,
+        };
+        const updatedEvent = await this.mediaServices.create(
+          user,
+          images,
+          body,
         );
-      }
 
+        return updatedEvent;
+      }
       return newEvent;
     } catch (error) {
       if (this.isDuplicateKeyError(error, 'slug')) {
@@ -153,24 +124,19 @@ export class EventsService {
         await newEvent.save();
 
         // add to Media Table
-        if (newEvent.images?.length) {
-          await Promise.all(
-            newEvent.images.map(async (img: any) => {
-              const newMedia = new this.MediaModel({
-                reference: {
-                  refId: newEvent.id,
-                  schema: 'Event',
-                },
-                createdBy: user.id,
-                url: img.image,
-                originalName: img?.caption || null,
-                mimetype: img?.mimetype || null,
-              });
-              await newMedia.save();
-            }),
+        if (images?.length) {
+          const body = {
+            refId: newEvent._id.toString(),
+            reference: ReferenceType.EVENT,
+            businessId: null,
+          };
+          const updatedEvent = await this.mediaServices.create(
+            user,
+            images,
+            body,
           );
+          return updatedEvent;
         }
-
         return newEvent;
       }
       exceptionHandling(error);
@@ -269,52 +235,6 @@ export class EventsService {
     } catch (err) {
       exceptionHandling(err);
     }
-  }
-
-  async uploadMedia(
-    id: string,
-    loggedInUserId: string,
-    dto: Image[],
-    role: string,
-  ) {
-    const updatedField = {
-      updatedBy: loggedInUserId,
-      updatedAt: new Date(),
-    };
-
-    let updatedEvents: mongoose.Document<unknown, {}, Business> &
-      Business & {
-        _id: mongoose.Types.ObjectId;
-      };
-    if (role === UserType.SUPERADMIN) {
-      updatedEvents = await updateOneByManyFields<Business>(
-        this.BusinessModel,
-        {
-          _id: id,
-        },
-        {
-          $push: { images: { $each: dto } },
-          $set: updatedField,
-        },
-      );
-    } else {
-      updatedEvents = await updateOneByManyFields<Business>(
-        this.BusinessModel,
-        {
-          _id: id,
-          userId: loggedInUserId,
-        },
-        {
-          $push: { images: { $each: dto } },
-          $set: updatedField,
-        },
-      );
-    }
-
-    if (!updatedEvents) {
-      throw new NotFoundException(ServerErrors.EVENTS_NOT_FOUND);
-    }
-    return updatedEvents;
   }
 
   async getEvent(command: GetBusinessByIdOrSlug) {

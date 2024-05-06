@@ -9,7 +9,11 @@ import mongoose, { Model } from 'mongoose';
 import { nanoid } from 'nanoid';
 import { ObjectId } from 'typeorm';
 
-import { milesConfig, ServerErrors } from 'src/common/constant';
+import {
+  defaultMetGoLogo,
+  milesConfig,
+  ServerErrors,
+} from 'src/common/constant';
 import { Image } from 'src/common/interface/image.interface';
 import { maxDistanceInRadius } from 'src/common/max-distance-in-radius';
 import { paginateData } from 'src/common/pagination';
@@ -53,12 +57,12 @@ import {
 import { Business } from 'src/modules/business/schema/business.schema';
 import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.schema';
 import { BussSubCategory } from 'src/modules/buss-subcategories/schema/buss-subCategory.schema';
-import { Media } from 'src/modules/media/schema/media.schema';
 import { MockDataServices } from 'src/modules/mock-data/mock-data.services';
 import { Product } from 'src/modules/products/schema/products.schema';
 import { User } from 'src/modules/users/schema/users.schema';
 import { UserType } from 'src/modules/users/users.type';
-import { GcpBucketService } from 'src/services/gcp-bucket/gcp-bucket.services';
+import { MediaServices } from 'src/modules/media/media.service';
+import { ReferenceType } from 'src/modules/media/media.type';
 
 @Injectable()
 export class BusinessService {
@@ -66,10 +70,8 @@ export class BusinessService {
     @InjectModel('Business')
     private BusinessModel: Model<Business>,
     private readonly authorityService: AuthorityService,
+    private readonly mediaServices: MediaServices,
     private readonly mockDataService: MockDataServices,
-    private readonly gcpBucketServices: GcpBucketService,
-    @InjectModel('Media')
-    private MediaModel: Model<Media>,
     @InjectModel(BussCategory.name)
     private BussCategoryModel: Model<BussCategory>,
     @InjectModel(BussSubCategory.name)
@@ -213,8 +215,8 @@ export class BusinessService {
   async createBusinessByAdmins(
     dto: WebCreateBusiness,
     loggedInUser: LoggedInUserInterface,
-    image: Array<Express.Multer.File>,
-  ): Promise<Business> {
+    images: Array<Express.Multer.File>,
+  ) {
     const impact = getRandomNumberBetween(17, 93);
     let newDto: any = {
       ...dto,
@@ -234,27 +236,12 @@ export class BusinessService {
         location,
       };
     }
-    const images = [];
-    // add to GCP
-    await Promise.all(
-      image.map(async (file: Express.Multer.File) => {
-        const imageUrl = await this.gcpBucketServices.upload(file);
-
-        const imageObject = {
-          image: imageUrl || null,
-          caption: file?.originalname || null,
-          alt: file?.originalname || null,
-        };
-        images.push(imageObject);
-      }),
-    );
 
     try {
       const slug = this.generateSlug(dto?.name);
 
       let data = {
         ...newDto,
-        images,
         createdBy: loggedInUser.id,
         slug,
       };
@@ -287,21 +274,20 @@ export class BusinessService {
       });
 
       // add to Media Table
-      await Promise.all(
-        newBusiness.images.map(async (img: any) => {
-          const newMedia = new this.MediaModel({
-            reference: {
-              refId: newBusiness.id,
-              schema: 'Business',
-            },
-            createdBy: loggedInUser.id,
-            url: img.image,
-            originalName: img?.caption || null,
-            mimetype: img?.mimetype || null,
-          });
-          await newMedia.save();
-        }),
-      );
+      if (images?.length) {
+        const body = {
+          refId: newBusiness._id.toString(),
+          reference: ReferenceType.BUSINESS,
+          businessId: null,
+        };
+        const updatedBusiness = await this.mediaServices.create(
+          loggedInUser,
+          images,
+          body,
+        );
+
+        return updatedBusiness;
+      }
 
       return newBusiness;
     } catch (err) {
@@ -310,7 +296,6 @@ export class BusinessService {
 
         let data = {
           ...newDto,
-          images,
           createdBy: loggedInUser.id,
           slug,
         };
@@ -330,22 +315,20 @@ export class BusinessService {
           businessId: newBusiness._id,
         });
 
-        // add to Media Table
-        await Promise.all(
-          newBusiness.images.map(async (img: any) => {
-            const newMedia = new this.MediaModel({
-              reference: {
-                refId: newBusiness.id,
-                schema: 'Business',
-              },
-              createdBy: loggedInUser.id,
-              url: img.image,
-              originalName: img?.caption || null,
-              mimetype: img?.mimetype || null,
-            });
-            await newMedia.save();
-          }),
-        );
+        if (images?.length) {
+          const body = {
+            refId: newBusiness._id.toString(),
+            reference: ReferenceType.BUSINESS,
+            businessId: null,
+          };
+          const updatedBusiness = await this.mediaServices.create(
+            loggedInUser,
+            images,
+            body,
+          );
+
+          return updatedBusiness;
+        }
 
         return newBusiness;
       }
@@ -506,6 +489,22 @@ export class BusinessService {
         sort: 'createdAt',
       });
 
+      const businessesWithImage = await Promise.all(
+        allBusiness.data.map(async (business: Business) => {
+          const businessWithImages = business;
+
+          if (!businessWithImages?.images?.length) {
+            const defaultImage = await this.getDefaultImage();
+
+            businessWithImages.images = [defaultImage];
+          }
+
+          return businessWithImages;
+        }),
+      );
+
+      allBusiness.data = businessesWithImage;
+
       const sortBusiness = getNearestBusiness(
         parseFloat(lat),
         parseFloat(long),
@@ -530,6 +529,22 @@ export class BusinessService {
       populate1,
       sort: 'createdAt',
     });
+
+    const businessesWithImage = await Promise.all(
+      allBusiness.data.map(async (business: Business) => {
+        const businessWithImages = business;
+
+        if (!businessWithImages?.images?.length) {
+          const defaultImage = await this.getDefaultImage();
+
+          businessWithImages.images = [defaultImage];
+        }
+
+        return businessWithImages;
+      }),
+    );
+
+    allBusiness.data = businessesWithImage;
 
     return allBusiness;
   }
@@ -658,6 +673,22 @@ export class BusinessService {
       populate1,
     });
 
+    const businessesWithImage = await Promise.all(
+      allBusiness.data.map(async (business: Business) => {
+        const businessWithImages = business;
+
+        if (!businessWithImages?.images?.length) {
+          const defaultImage = await this.getDefaultImage();
+
+          businessWithImages.images = [defaultImage];
+        }
+
+        return businessWithImages;
+      }),
+    );
+
+    allBusiness.data = businessesWithImage;
+
     return allBusiness;
   }
 
@@ -686,6 +717,12 @@ export class BusinessService {
 
       if (!business) {
         throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
+      }
+
+      if (!business?.images?.length) {
+        const defaultImage = await this.getDefaultImage();
+
+        business.images = [defaultImage];
       }
 
       if (
@@ -843,6 +880,21 @@ export class BusinessService {
       populate1,
     });
 
+    const businessesWithImage = await Promise.all(
+      allBusiness.data.map(async (business: Business) => {
+        const businessWithImages = business;
+
+        if (!businessWithImages?.images?.length) {
+          const defaultImage = await this.getDefaultImage();
+
+          businessWithImages.images = [defaultImage];
+        }
+
+        return businessWithImages;
+      }),
+    );
+
+    allBusiness.data = businessesWithImage;
     return allBusiness;
   }
 
@@ -1439,5 +1491,17 @@ export class BusinessService {
       && error?.keyPattern
       && error?.keyPattern[fieldName] === 1
     );
+  }
+
+  private async getDefaultImage() {
+    const getDefaultLogo = await this.mediaServices.getMediaByName(
+      defaultMetGoLogo,
+    );
+
+    return {
+      image: getDefaultLogo.url,
+      caption: getDefaultLogo.originalName,
+      alt: getDefaultLogo.originalName,
+    };
   }
 }
