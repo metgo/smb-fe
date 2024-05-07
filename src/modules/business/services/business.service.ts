@@ -1297,6 +1297,14 @@ export class BusinessService {
     );
   }
 
+  async removeProductFromBusiness(id: string, productId: string) {
+    return await this.BusinessModel.findOneAndUpdate(
+      { _id: id },
+      { $pull: { productsId: productId } },
+      { new: true },
+    );
+  }
+
   async findBusinessEmailByIds(ids: ObjectId[]) {
     try {
       const businessDetails = await this.BusinessModel.find({

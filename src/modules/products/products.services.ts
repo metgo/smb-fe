@@ -46,6 +46,8 @@ export class ProductsService {
   constructor(
     @InjectModel(Product.name)
     private ProductModel: Model<Product>,
+    @InjectModel(Business.name)
+    private BusinessModel: Model<Business>,
     @Inject(forwardRef(() => BusinessService))
     private readonly businessService: BusinessService,
     private readonly mockDataService: MockDataServices,
@@ -525,6 +527,12 @@ export class ProductsService {
         throw new NotFoundException(ServerErrors.PRODUCT.NOT_FOUND);
       }
 
+      // remove from business field
+
+      await this.businessService.removeProductFromBusiness(
+        businessId,
+        productId,
+      );
       return deletedProduct;
     } catch (err) {
       exceptionHandling(err);
