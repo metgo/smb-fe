@@ -39,14 +39,21 @@ export class UsersController {
     noAuthToken: true,
     operation: 'Get list of all users by superadmin',
   })
-  @Roles(UserType.SUPERADMIN)
+  @Roles(
+    UserType.SUPERADMIN,
+    UserType.DMO,
+    UserType.DMOADMIN,
+    UserType.ADMIN,
+    UserType.AUTHORITY,
+  )
   @UseGuards(JwtAuthGuard)
   @Get('')
   async getAllUsers(
     @Query() query: GetAllUsersQuery,
     @Res() response: Response,
+    @Req() req,
   ) {
-    const users = await this.userService.getAllUsers(query);
+    const users = await this.userService.getAllUsers(query, req.user);
     return responseHelper(
       response,
       HttpStatus.OK,
@@ -237,7 +244,13 @@ export class UsersController {
     softBlockExtraDtoFields: true,
     operation: 'Create User By Admin',
   })
-  @Roles(UserType.SUPERADMIN, UserType.DMO)
+  @Roles(
+    UserType.SUPERADMIN,
+    UserType.DMO,
+    UserType.DMOADMIN,
+    UserType.ADMIN,
+    UserType.AUTHORITY,
+  )
   @UseGuards(JwtAuthGuard)
   @Post('admin')
   async adminCreateUser(

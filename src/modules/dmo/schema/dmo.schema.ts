@@ -4,6 +4,14 @@ import { AuditableSchema } from 'src/core/helper/auditable.schema';
 
 @Schema()
 export class DMO extends AuditableSchema {
+  @Prop({
+    type: mongoose.Types.ObjectId,
+    index: true,
+    required: true,
+    auto: true,
+  })
+    _id: mongoose.Types.ObjectId;
+
   @Prop({ type: String, required: true })
     name: string;
 

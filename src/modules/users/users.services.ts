@@ -99,7 +99,10 @@ export class UsersService {
     }
   }
 
-  async getAllUsers(queries: GetAllUsersQuery) {
+  async getAllUsers(
+    queries: GetAllUsersQuery,
+    loginUser: LoggedInUserInterface,
+  ) {
     try {
       const {
         page, limit, search, isDeleted, hasBusiness, role, ...query
@@ -111,6 +114,28 @@ export class UsersService {
         isDeleted: { $ne: true },
         hasBusiness: { $ne: true },
       };
+      if (
+        loginUser.role === UserType.DMO
+        || loginUser.role === UserType.DMOADMIN
+      ) {
+        const userId = await this.businessService.returnUserIDByfield(
+          'dmoId',
+          loginUser.dmo.id,
+        );
+        const updateUser = userId.map(
+          (item: string) => new mongoose.Types.ObjectId(item),
+        );
+        findQuery = {
+          ...findQuery,
+          _id: { $in: updateUser },
+        };
+      }
+      if (loginUser.role === UserType.AUTHORITY) {
+        findQuery = {
+          ...findQuery,
+          authorityId: loginUser.authority.id,
+        };
+      }
 
       if (search) {
         findQuery = {

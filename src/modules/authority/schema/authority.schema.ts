@@ -7,7 +7,7 @@ import { User } from 'src/modules/users/schema/users.schema';
 
 @Schema()
 export class Authority extends AuditableSchema {
-  @Prop({ required: true })
+  @Prop({ type: String, required: true })
     name: string;
 
   @Prop({

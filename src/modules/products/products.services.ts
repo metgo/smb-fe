@@ -163,7 +163,7 @@ export class ProductsService {
 
     const impact = getRandomNumberBetween(9, 73);
 
-    const createdField = {
+    let createdField = {
       ...body,
       price,
       quantity,
@@ -174,7 +174,14 @@ export class ProductsService {
       authorityId: business.authorityId,
       status,
       impact,
+
     };
+    if (loggedInUser.role === UserType.TRAVELLER) {
+      createdField = {
+        ...createdField,
+        primaryUserId: loggedInUser.id,
+      };
+    }
 
     const newProduct = new this.ProductModel({
       ...createdField,
@@ -216,12 +223,10 @@ export class ProductsService {
         select: `${disSelect}`,
       },
     };
-
     const populate1 = {
       path: 'dmoId authorityId',
       select: `${disSelect}`,
     };
-
     const select = `${disSelect}`;
     try {
       const product = await this.ProductModel.findById(productId)
@@ -232,7 +237,6 @@ export class ProductsService {
       if (!product || product.status !== ProductStatus.ACTIVE) {
         throw new NotFoundException(ServerErrors.PRODUCT.NOT_FOUND);
       }
-
       return product;
     } catch (err) {
       exceptionHandling(err);
@@ -256,7 +260,6 @@ export class ProductsService {
         populate,
       );
       const allowedRoles = [UserType.DMOADMIN, UserType.SUPERADMIN];
-
       if (
         !product
         || (!allowedRoles.includes(loggedInUser.role)

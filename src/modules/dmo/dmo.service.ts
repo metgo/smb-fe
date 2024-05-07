@@ -165,4 +165,13 @@ export class DMOService {
     const items = await findByFieldName<DMO>(this.DMOModel, 'userId', userId);
     return items.map(item => item._id);
   }
+
+  async getOneDMOByFieldName(fieldName: keyof DMO, fieldValue: string) {
+    const items = await findByFieldName<DMO>(
+      this.DMOModel,
+      fieldName,
+      fieldValue,
+    );
+    return items[0];
+  }
 }

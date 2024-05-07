@@ -8,6 +8,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
 import { nanoid } from 'nanoid';
 import { ObjectId } from 'typeorm';
+import * as lodash from 'lodash';
 
 import {
   defaultMetGoLogo,
@@ -223,6 +224,15 @@ export class BusinessService {
       serviceType: GeoServicesTypes.BUSINESS,
       impact,
     };
+
+    if (dto.authorityId) {
+      const dmo = (await this.authorityService.getOne(dto.authorityId)).dmoId;
+
+      newDto = {
+        ...newDto,
+        dmoId: dmo._id,
+      };
+    }
     if (dto.geoLocation) {
       const location = {
         type: 'Point',
@@ -245,26 +255,36 @@ export class BusinessService {
         createdBy: loggedInUser.id,
         slug,
       };
-      if (
-        loggedInUser.role === UserType.DMOADMIN
-        || loggedInUser.role === UserType.DMO
-      ) {
-        const dmoId = loggedInUser.dmo.id;
+      // if (
+      //   loggedInUser.role === UserType.DMOADMIN
+      //   || loggedInUser.role === UserType.DMO
+      // ) {
+      //   const dmoId = loggedInUser.dmo.id;
+
+      //   data = {
+      //     ...data,
+      //     dmoId,
+      //   };
+      // }
+
+      // if (loggedInUser.role === UserType.AUTHORITY) {
+      //   const authorityId = loggedInUser.authority.id;
+
+      //   data = {
+      //     ...data,
+      //     authorityId,
+      //   };
+      // }
+
+      if (loggedInUser.role === UserType.TRAVELLER) {
+        const userId = loggedInUser.id;
 
         data = {
           ...data,
-          dmoId,
+          userId,
         };
       }
-
-      if (loggedInUser.role === UserType.AUTHORITY) {
-        const authorityId = loggedInUser.authority.id;
-
-        data = {
-          ...data,
-          authorityId,
-        };
-      }
+      delete data.status;
       const newBusiness = new this.BusinessModel(data);
       await newBusiness.save();
 
@@ -1491,6 +1511,16 @@ export class BusinessService {
       && error?.keyPattern
       && error?.keyPattern[fieldName] === 1
     );
+  }
+
+  async returnUserIDByfield(fieldName: keyof Business, fieldValue: string) {
+    const filterBy = { [fieldName]: { $in: fieldValue } };
+    const businesses = await this.BusinessModel.find(filterBy)
+      .lean()
+      .select('userId');
+    const userId = businesses.map(item => item.userId.toString());
+    const uniqueUserID = lodash.uniq(userId);
+    return uniqueUserID;
   }
 
   private async getDefaultImage() {

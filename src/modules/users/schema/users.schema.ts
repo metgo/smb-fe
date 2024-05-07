@@ -3,6 +3,7 @@ import mongoose, { HydratedDocument } from 'mongoose';
 
 import { Locale } from 'src/common/enum';
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
+import { DMO } from 'src/modules/dmo/schema/dmo.schema';
 import { ExternalApi } from 'src/modules/external-api/schema/external-api.schema';
 import { UserType } from 'src/modules/users/users.type';
 
@@ -60,6 +61,22 @@ export class User extends AuditableSchema {
 
   @Prop({ default: false })
     hasBusiness: boolean;
+
+  @Prop({
+    default: null,
+    type: mongoose.Schema.Types.ObjectId,
+    ref: DMO.name,
+    required: false,
+  })
+    dmoId: mongoose.Types.ObjectId;
+
+  @Prop({
+    default: null,
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Authority',
+    required: false,
+  })
+    authorityId: mongoose.Types.ObjectId;
 
   @Prop({
     default: null,
