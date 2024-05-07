@@ -50,6 +50,11 @@ export class createUserByAdminDto {
   @ApiProperty()
   readonly dmoId: string;
 
+  @IsString()
+  @IsOptional()
+  @ApiProperty()
+  readonly authorityId: string;
+
   @IsArray()
   @IsOptional()
   @ApiProperty({ type: [String], required: false })

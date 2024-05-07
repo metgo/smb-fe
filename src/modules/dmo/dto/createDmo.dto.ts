@@ -9,7 +9,11 @@ export class CreateDMODto {
   @IsNotEmpty()
     name: string;
 
-  @ApiProperty()
+  @ApiProperty({
+    type: String,
+    required: false,
+  })
+  @IsOptional()
   @IsString()
     userId: string;
 

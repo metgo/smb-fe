@@ -98,6 +98,7 @@ export const ServerErrors = {
   },
 
   AUTHORITY: {
+    EXISTS: 'Authority name already exists',
     NOT_FOUND: 'Authority not found',
   },
 

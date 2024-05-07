@@ -1,74 +1,20 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsOptional } from 'class-validator';
+import { IsOptional } from 'class-validator';
 
-import { GeoServicesTypes } from '../business.type';
+import { GetAllBusinessesForGuestQuery } from 'src/modules/business/queries/get-all-businesses-for-guest-user.query';
 
-export class GetAllUnpaginatedBusinessQuery {
-  @ApiProperty({ type: String, required: false })
+export class GetAllUnpaginatedBusinessQuery extends GetAllBusinessesForGuestQuery {
+  @ApiProperty({
+    type: String,
+    required: false,
+  })
   @IsOptional()
-    search: string;
+    authorityId: string;
 
   @ApiProperty({
     type: String,
     required: false,
-    description: 'must follow the pattern \n [id, id,..]',
   })
   @IsOptional()
-    groupTypesId: string;
-
-  @ApiProperty({
-    type: String,
-    required: false,
-    description: 'must follow the pattern \n [id, id,..]',
-  })
-  @IsOptional()
-    accessibilitiesId: string;
-
-  @ApiProperty({
-    type: String,
-    required: false,
-    description: 'must follow the pattern \n [id, id,..]',
-  })
-  @IsOptional()
-    bussCategoriesId: string;
-
-  @ApiProperty({
-    type: String,
-    required: false,
-    description: 'must follow the pattern \n [id, id,..]',
-  })
-  @IsOptional()
-    bussSubCategoriesId: string;
-
-  @ApiProperty({
-    type: String,
-    required: false,
-    description: 'latitude of the location',
-  })
-  @IsOptional()
-    lat: string;
-
-  @ApiProperty({
-    type: String,
-    required: false,
-    description: 'longituted of the location',
-  })
-  @IsOptional()
-    long: string;
-
-  @ApiProperty({
-    type: Number,
-    required: false,
-    description: 'Miles for radius',
-  })
-  @IsOptional()
-    miles: number;
-
-  @ApiProperty({
-    enum: GeoServicesTypes,
-    required: false,
-  })
-  @IsEnum(GeoServicesTypes)
-  @IsOptional()
-    serviceType: GeoServicesTypes;
+    dmoId: string;
 }

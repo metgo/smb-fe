@@ -1,14 +1,19 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsOptional, IsString } from 'class-validator';
-import { BusinessStatus } from 'src/modules/business/business.type';
+import {
+  IsEnum, IsNotEmpty, IsOptional, IsString,
+} from 'class-validator';
+import {
+  BusinessStatus,
+  GeoServicesTypes,
+} from 'src/modules/business/business.type';
 
 export class GetALLBusinessProductStatsquery {
-  @ApiProperty({ type: String, required: false })
-  @IsOptional()
+  @ApiProperty({ type: String, required: true })
+  @IsNotEmpty()
     startDate: string;
 
-  @ApiProperty({ type: String, required: false })
-  @IsOptional()
+  @ApiProperty({ type: String, required: true })
+  @IsNotEmpty()
     endDate: string;
 
   @ApiProperty({
@@ -24,6 +29,11 @@ export class GetALLBusinessProductStatsquery {
   @IsOptional()
     dmoId: string;
 
+  @ApiProperty({ type: String, required: false })
+  @IsString()
+  @IsOptional()
+    authorityId: string;
+
   @ApiProperty({
     type: 'enum',
     enum: BusinessStatus,
@@ -32,4 +42,13 @@ export class GetALLBusinessProductStatsquery {
   @IsEnum(BusinessStatus)
   @IsOptional()
     status: BusinessStatus;
+
+  @ApiProperty({
+    type: 'enum',
+    enum: GeoServicesTypes,
+    required: false,
+  })
+  @IsEnum(GeoServicesTypes)
+  @IsOptional()
+    serviceType: GeoServicesTypes;
 }

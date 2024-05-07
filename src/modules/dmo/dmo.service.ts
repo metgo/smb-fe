@@ -10,6 +10,7 @@ import { Model } from 'mongoose';
 
 import { ServerErrors } from 'src/common/constant';
 import { paginationConfig } from 'src/common/pagination.config';
+import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { disSelect } from 'src/common/utils/select.handling';
 import {
   findByFieldName,
@@ -32,14 +33,25 @@ export class DMOService {
     private userService: UsersService,
   ) {}
 
-  async createDMO(dto: CreateDMODto) {
-    const dmo = await findOneByFieldName<DMO>(this.DMOModel, 'name', dto.name);
-    if (dmo) {
-      throw new BadRequestException(ServerErrors.DMO_EXISTS);
+  async createDMO(dto: CreateDMODto, userId: string) {
+    try {
+      const dmo = await findOneByFieldName<DMO>(
+        this.DMOModel,
+        'name',
+        dto.name,
+      );
+      if (dmo) {
+        throw new BadRequestException(ServerErrors.DMO_EXISTS);
+      }
+      if (dto.userId) {
+        await this.userService.findDMOUser(dto.userId);
+      }
+
+      const newDMO = new this.DMOModel({ ...dto, createdBy: userId });
+      return newDMO.save();
+    } catch (err) {
+      exceptionHandling(err);
     }
-    await this.userService.findDMOUser(dto.userId);
-    const newDMO = new this.DMOModel(dto);
-    return newDMO.save();
   }
 
   async getAllDMO(queries: FilterQuery) {
@@ -75,12 +87,16 @@ export class DMOService {
   }
 
   async updateDMO(id: string, dto: UpdateDMODto) {
-    const dmo = await updateById<DMO>(this.DMOModel, id, dto);
+    try {
+      const dmo = await updateById<DMO>(this.DMOModel, id, dto);
 
-    if (!dmo) {
-      throw new NotFoundException(ServerErrors.DMO_NOT_FOUND);
+      if (!dmo) {
+        throw new NotFoundException(ServerErrors.DMO_NOT_FOUND);
+      }
+      return dmo;
+    } catch (err) {
+      exceptionHandling(err);
     }
-    return dmo;
   }
 
   async addCollaborators(dmoUserId: string, collaboratedUserId: string) {

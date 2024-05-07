@@ -17,6 +17,10 @@ export class GetAllOrdersDetailsQuery extends CommonFilterQuery {
 
   @ApiProperty({ type: String, required: false })
   @IsOptional()
+    authorityId: string;
+
+  @ApiProperty({ type: String, required: false })
+  @IsOptional()
     sortBy: string;
 
   @ApiProperty({ enum: SortOrder, required: false })

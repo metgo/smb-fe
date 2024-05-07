@@ -32,7 +32,6 @@ import { BusinessService } from 'src/modules/business/services/business.service'
 import { CreateProductByAdmin, ProductDto } from 'src/modules/products/dto';
 import { ProductsService } from 'src/modules/products/products.services';
 import {
-  GetAllProductsForAdminQuery,
   GetAllProductsForLoggedInUserQuery,
   GetAllProductsForNonLoggedInUserQuery,
   GetProductsStatsQuery,
@@ -114,7 +113,12 @@ export class ProductsController {
     operation: 'Create product for business by superadmin and DMO-admin',
     params: [{ name: 'businessId', type: 'string', required: true }],
   })
-  @Roles(UserType.DMOADMIN, UserType.SUPERADMIN)
+  @Roles(
+    UserType.AUTHORITY,
+    UserType.DMO,
+    UserType.DMOADMIN,
+    UserType.SUPERADMIN,
+  )
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.CREATED)
   @Post('admin/businesses/:businessId/products')
@@ -199,7 +203,12 @@ export class ProductsController {
     ],
     noAuthToken: true,
   })
-  @Roles(UserType.DMO, UserType.DMOADMIN, UserType.SUPERADMIN)
+  @Roles(
+    UserType.AUTHORITY,
+    UserType.DMO,
+    UserType.DMOADMIN,
+    UserType.SUPERADMIN,
+  )
   @UseGuards(JwtAuthGuard)
   @ApiNotFoundResponse({ description: ServerErrors.PRODUCT.NOT_FOUND })
   @HttpCode(HttpStatus.OK)
@@ -296,7 +305,12 @@ export class ProductsController {
     );
   }
 
-  @Roles(UserType.DMO, UserType.DMOADMIN, UserType.SUPERADMIN)
+  @Roles(
+    UserType.AUTHORITY,
+    UserType.DMO,
+    UserType.DMOADMIN,
+    UserType.SUPERADMIN,
+  )
   @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
     tags: ['Admin', 'Products'],
@@ -313,7 +327,7 @@ export class ProductsController {
   async getBusinessProducts(
     @Req() req,
     @Res() response: Response,
-    @Query() query: GetAllProductsForAdminQuery,
+    @Query() query: GetAllProductsForLoggedInUserQuery,
   ) {
     const product = await this.productsService.findAll({
       query,
@@ -443,7 +457,12 @@ export class ProductsController {
     );
   }
 
-  @Roles(UserType.DMOADMIN, UserType.SUPERADMIN)
+  @Roles(
+    UserType.AUTHORITY,
+    UserType.DMO,
+    UserType.DMOADMIN,
+    UserType.SUPERADMIN,
+  )
   @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
     tags: ['Product', 'Web'],
@@ -548,7 +567,12 @@ export class ProductsController {
     ],
   })
   @ApiNotFoundResponse({ description: ServerErrors.PRODUCT.NOT_FOUND })
-  @Roles(UserType.DMOADMIN, UserType.SUPERADMIN)
+  @Roles(
+    UserType.AUTHORITY,
+    UserType.DMO,
+    UserType.DMOADMIN,
+    UserType.SUPERADMIN,
+  )
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
   @Delete('admin/businesses/:businessId/products/:productId')

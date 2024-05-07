@@ -7,6 +7,7 @@ import { SortOrder } from 'src/common/enum';
 import { paginateData } from 'src/common/pagination';
 import { paginationConfig } from 'src/common/pagination.config';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
+import { unproject } from 'src/common/utils/select.handling';
 import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interface';
 import { BusinessService } from 'src/modules/business/services/business.service';
 import { CreateOrderProductCommand } from 'src/modules/order-product/interfaces/create-order-product.interface';
@@ -317,9 +318,16 @@ export class OrderProductService {
     queries: GetAllOrdersDetailsQuery,
   ) {
     const {
-      search, page, limit, status, dmoId, productId, sortBy, sortOrder,
-    }
-      = queries;
+      search,
+      page,
+      limit,
+      status,
+      dmoId,
+      productId,
+      authorityId,
+      sortBy,
+      sortOrder,
+    } = queries;
 
     const sortOrderValue = sortOrder === SortOrder.ASC ? 1 : -1;
     const sortKey = sortBy || 'createdAt';
@@ -432,30 +440,69 @@ export class OrderProductService {
       if (dmoID) {
         pipeline.push({
           $match: {
-            'business_info.dmoId': new mongoose.Types.ObjectId(dmoId),
+            'business_info.dmoId': new mongoose.Types.ObjectId(dmoID),
           },
         });
       }
     }
 
-    pipeline.push({
-      $project: {
-        business_info: 0,
-        updatedAt: 0,
-        createdBy: 0,
-        updatedBy: 0,
-        deletedBy: 0,
-        deletedAt: 0,
-        isDeleted: 0,
-        orders: {
-          deletedBy: 0,
-          deletedAt: 0,
-          products: 0,
-          isDeleted: 0,
+    if (authorityId || loggedInUser.role === UserType.AUTHORITY) {
+      const authorityID
+        = loggedInUser.role === UserType.AUTHORITY
+          ? new mongoose.Types.ObjectId(loggedInUser.authority.id)
+          : new mongoose.Types.ObjectId(authorityId);
+      pipeline.push({
+        $match: {
+          'business_info.authorityId': authorityID,
         },
-        __v: 0,
+      });
+    }
+
+    pipeline.push(
+      {
+        $lookup: {
+          from: 'payments',
+          localField: 'orders._id',
+          foreignField: 'orderId',
+          as: 'payments',
+        },
       },
-    });
+      {
+        $unwind: {
+          path: '$payments',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $project: {
+          business_info: 0,
+          ...unproject,
+          orders: {
+            products: 0,
+            ...unproject,
+          },
+          payments: {
+            ...unproject,
+            products: 0,
+            voucherId: 0,
+            orderId: 0,
+            status: 0,
+            currency: 0,
+            method: 0,
+            methods: 0,
+            customerName: 0,
+            identificationNumber: 0,
+            customerEmail: 0,
+            purpose: 0,
+            payment: 0,
+          },
+          products: {
+            images: 0,
+            ...unproject,
+          },
+        },
+      },
+    );
 
     const orders = await this.OrderProductModel.aggregate(pipeline);
 

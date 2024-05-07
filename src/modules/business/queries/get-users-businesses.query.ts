@@ -1,10 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsOptional } from 'class-validator';
 
-import {
-  BusinessStatus,
-  GeoServicesTypes,
-} from 'src/modules/business/business.type';
+import { BusinessStatus } from 'src/modules/business/business.type';
 import { GetAllBusinessesForGuestQuery } from 'src/modules/business/queries/get-all-businesses-for-guest-user.query';
 
 export class GetUsersBusinessesQuery extends GetAllBusinessesForGuestQuery {
@@ -14,19 +11,16 @@ export class GetUsersBusinessesQuery extends GetAllBusinessesForGuestQuery {
     status: BusinessStatus;
 
   @ApiProperty({
-    type: 'enum',
-    enum: GeoServicesTypes,
+    type: String,
     required: false,
   })
-  @IsEnum(GeoServicesTypes)
   @IsOptional()
-    serviceType: GeoServicesTypes;
+    dmoId: string;
 
   @ApiProperty({
     type: String,
     required: false,
-    description: 'must follow the pattern \n [id, id,..]',
   })
   @IsOptional()
-    dmoId: string;
+    authorityId: string;
 }

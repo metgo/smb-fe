@@ -36,11 +36,15 @@ export class DMOController {
     softBlockExtraDtoFields: true,
     noAuthToken: true,
   })
-  @Roles(UserType.TRAVELLER, UserType.ADMIN)
+  @Roles(UserType.SUPERADMIN)
   @UseGuards(JwtAuthGuard)
   @Post('admin/dmo')
-  async createDMO(@Res() response: Response, @Body() dto: CreateDMODto) {
-    const newDMO = await this.dmoServices.createDMO(dto);
+  async createDMO(
+    @Res() response: Response,
+    @Body() dto: CreateDMODto,
+    @Req() req,
+  ) {
+    const newDMO = await this.dmoServices.createDMO(dto, req.user.id);
 
     return responseHelper(
       response,

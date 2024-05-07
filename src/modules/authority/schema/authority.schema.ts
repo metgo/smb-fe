@@ -20,7 +20,7 @@ export class Authority extends AuditableSchema {
   @Prop({
     type: mongoose.Schema.Types.ObjectId,
     ref: User.name,
-    required: true,
+    required: false,
   })
     userId: mongoose.Types.ObjectId;
 

@@ -8,7 +8,6 @@ import { ServerErrors } from 'src/common/constant';
 import { PaymentStatus } from 'src/common/enum';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { LoggedInUserInterface } from '../auth/interface/login.interface';
-import { GeoServicesTypes } from '../business/business.type';
 import { Business } from '../business/schema/business.schema';
 import { Product } from '../products/schema/products.schema';
 import { UserType } from '../users/users.type';
@@ -37,26 +36,36 @@ export class StatsService {
     loginUser: LoggedInUserInterface,
     query: GetALLBusinessProductStatsquery,
   ) {
-    if (!query.startDate || !query.endDate) {
-      throw new BadRequestException('Data is required');
+    const {
+      startDate, endDate, categoriesId, dmoId, authorityId, ...queries
     }
-    const startDate = new Date(query.startDate);
-    const endDate = new Date(query.endDate);
-    endDate.setDate(endDate.getDate() + 1);
+      = query;
 
-    const daysDifference = differenceInDays(endDate, startDate);
-    const dmo = query.dmoId;
-    let findQuery: any = {
-      serviceType: GeoServicesTypes.BUSINESS,
-    };
-    if (startDate >= endDate) {
+    const newStartDate = new Date(query.startDate);
+    const newEndDate = new Date(query.endDate);
+    newEndDate.setDate(newEndDate.getDate() + 1);
+
+    if (newStartDate >= newEndDate) {
       throw new BadRequestException(`Created ${ServerErrors.DATE_IS_NOT_LESS}`);
     }
 
-    if (dmo && loginUser?.role === UserType.SUPERADMIN) {
+    const daysDifference = differenceInDays(newEndDate, newStartDate);
+
+    let findQuery: any = {
+      ...queries,
+    };
+
+    if (dmoId) {
       findQuery = {
         ...findQuery,
-        dmoId: new mongoose.Types.ObjectId(dmo),
+        dmoId: new mongoose.Types.ObjectId(dmoId),
+      };
+    }
+
+    if (authorityId) {
+      findQuery = {
+        ...findQuery,
+        authorityId: new mongoose.Types.ObjectId(authorityId),
       };
     }
     if (loginUser?.role === UserType.TRAVELLER) {
@@ -74,10 +83,17 @@ export class StatsService {
         dmoId: loginUser.dmo.id,
       };
     }
+
+    if (loginUser?.role === UserType.AUTHORITY) {
+      findQuery = {
+        ...findQuery,
+        authorityId: loginUser.authority.id,
+      };
+    }
     try {
       const dateFilter = {
-        $gte: startDate,
-        $lt: endDate,
+        $gte: newStartDate,
+        $lt: newEndDate,
       };
 
       // Count deleted businesses for each category in the given range
@@ -146,14 +162,14 @@ export class StatsService {
       const filteredBusinessStats = await getBusinessStats({
         ...findQuery,
         createdAt: {
-          $gte: startDate,
-          $lt: endDate,
+          $gte: newStartDate,
+          $lt: newEndDate,
         },
       });
       // Count businesses for each category in the previous date range
       const previousDateFilter = {
-        $gte: new Date(subDays(startDate.getTime(), daysDifference)), // 30 days before startDate
-        $lt: startDate,
+        $gte: new Date(subDays(newStartDate.getTime(), daysDifference)), // 30 days before newStartDate
+        $lt: newStartDate,
       };
       const previousDateBusinessStats = await getBusinessStats({
         ...findQuery,
@@ -189,6 +205,10 @@ export class StatsService {
           totalCount,
         };
       });
+
+      const totalNumberOfBusinesses = await this.BusinessModel.count({
+        ...findQuery,
+      });
       // Your results
       return {
         deletedBusinessStats,
@@ -196,6 +216,7 @@ export class StatsService {
         filteredBusinessStats,
         previousDateBusinessStats,
         growthRateStats,
+        totalNumberOfBusinesses,
       };
     } catch (error) {
       exceptionHandling(error);
@@ -206,26 +227,30 @@ export class StatsService {
     loginUser: LoggedInUserInterface,
     query: GetALLBusinessProductStatsquery,
   ) {
-    if (!query.startDate || !query.endDate) {
-      throw new BadRequestException('Data is required');
-    }
     const startDate = new Date(query.startDate);
     const endDate = new Date(query.endDate);
     endDate.setDate(endDate.getDate() + 1);
 
     const daysDifference = differenceInDays(endDate, startDate);
-    const dmo = query.dmoId;
     let findQuery: any = {};
     if (startDate >= endDate) {
       throw new BadRequestException(`Created ${ServerErrors.DATE_IS_NOT_LESS}`);
     }
 
-    if (dmo && loginUser.role === UserType.SUPERADMIN) {
+    if (query.dmoId) {
       findQuery = {
         ...findQuery,
-        dmoId: new mongoose.Types.ObjectId(dmo),
+        dmoId: new mongoose.Types.ObjectId(query.dmoId),
       };
     }
+
+    if (query.authorityId) {
+      findQuery = {
+        ...findQuery,
+        authorityId: new mongoose.Types.ObjectId(query.authorityId),
+      };
+    }
+
     if (loginUser.role === UserType.TRAVELLER) {
       findQuery = {
         ...findQuery,
@@ -239,6 +264,13 @@ export class StatsService {
       findQuery = {
         ...findQuery,
         dmoId: loginUser.dmo.id,
+      };
+    }
+
+    if (loginUser?.role === UserType.AUTHORITY) {
+      findQuery = {
+        ...findQuery,
+        authorityId: loginUser.authority.id,
       };
     }
     try {
@@ -356,6 +388,11 @@ export class StatsService {
           totalCount,
         };
       });
+
+      const totalNumberOfProducts = await this.ProductModel.count({
+        ...findQuery,
+      });
+
       // Your results
       return {
         deletedProductStats,
@@ -363,6 +400,7 @@ export class StatsService {
         filteredProductStats,
         previousDateProductStats,
         growthRateStats,
+        totalNumberOfProducts,
       };
     } catch (error) {
       exceptionHandling(error);

@@ -26,7 +26,7 @@ import { UserType } from 'src/modules/users/users.type';
 export class AuthorityController {
   constructor(private readonly authorityService: AuthorityService) {}
 
-  @Roles(UserType.SUPERADMIN)
+  @Roles(UserType.DMO, UserType.DMOADMIN, UserType.SUPERADMIN)
   @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
     tags: ['Admin', 'Authority'],

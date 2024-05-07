@@ -7,7 +7,7 @@ export class DMO extends AuditableSchema {
   @Prop({ type: String, required: true })
     name: string;
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Users', required: true })
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Users', required: false })
     userId: mongoose.Types.ObjectId;
 
   @Prop({
