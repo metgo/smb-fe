@@ -127,11 +127,6 @@ export class OrderProductService {
       {
         $unwind: '$order_info',
       },
-      {
-        $sort: {
-          'order_info.createdAt': -1,
-        },
-      },
     ];
 
     if (query.status) {
@@ -180,7 +175,7 @@ export class OrderProductService {
               {
                 'order_info.updatedAt': null,
                 'order_info.creditCardPayment': 0,
-                'order_info.createdAt': {
+                createdAt: {
                   $gte: createdStartDate,
                   $lt: createdEndDate,
                 },
@@ -244,7 +239,7 @@ export class OrderProductService {
       totalAmountPaidByCreditCard: { $sum: '$order_info.creditCardPayment' },
     };
 
-    if (query.detailedView && query.detailedView.toString() === 'true') {
+    if (query.detailedView && /true/.test(query.detailedView)) {
       commonGroupFields = {
         ...commonGroupFields,
         orders: {
@@ -261,6 +256,7 @@ export class OrderProductService {
             firstName: '$order_info.firstName',
             lastName: '$order_info.lastName',
             orderInitiatedDate: '$order_info.createdAt',
+            orderSuccessDate: '$createdAt',
             paymentSuccessDate: '$payments.paymentDate',
             totalAmount: '$order_info.totalAmount',
             amountPaidByCreditCard: '$order_info.creditCardPayment',
@@ -291,6 +287,11 @@ export class OrderProductService {
       },
       {
         $unwind: '$dmo_info',
+      },
+      {
+        $sort: {
+          createdAt: -1,
+        },
       },
       {
         $group: commonGroupFields,

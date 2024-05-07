@@ -19,7 +19,7 @@ export class GetOrdersSummaryQuery extends PaginationFilterQuery {
 
   @ApiProperty({ type: Boolean, required: false })
   @IsOptional()
-    detailedView: boolean;
+    detailedView: string;
 
   @ApiProperty({ enum: OrderStatus, required: false })
   @IsOptional()
