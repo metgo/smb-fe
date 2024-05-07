@@ -105,15 +105,10 @@ export class UsersService {
   ) {
     try {
       const {
-        page, limit, search, isDeleted, hasBusiness, role, ...query
-      }
-        = queries;
+        page, limit, search, isDeleted, hasBusiness, role,
+      } = queries;
 
-      let findQuery: any = {
-        ...query,
-        isDeleted: { $ne: true },
-        hasBusiness: { $ne: true },
-      };
+      let findQuery: any = {};
       if (
         loginUser.role === UserType.DMO
         || loginUser.role === UserType.DMOADMIN
@@ -148,17 +143,31 @@ export class UsersService {
         };
       }
 
-      if (/true/.test(isDeleted)) {
+      if (isDeleted && /true/.test(isDeleted)) {
         findQuery = {
           ...findQuery,
           isDeleted: true,
         };
       }
 
-      if (/true/.test(hasBusiness)) {
+      if (isDeleted && /false/.test(isDeleted)) {
+        findQuery = {
+          ...findQuery,
+          isDeleted: { $ne: true },
+        };
+      }
+
+      if (hasBusiness && /true/.test(hasBusiness)) {
         findQuery = {
           ...findQuery,
           hasBusiness: true,
+        };
+      }
+
+      if (hasBusiness && /false/.test(hasBusiness)) {
+        findQuery = {
+          ...findQuery,
+          hasBusiness: { $ne: true },
         };
       }
 
