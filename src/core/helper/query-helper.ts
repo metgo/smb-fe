@@ -81,7 +81,7 @@ export async function findOneByFieldNameExcludeId<T>(
 }
 
 export async function findOneById<T>(model: Model<T>, item: string) {
-  const filterBy = { _id: item };
+  const filterBy = { _id: new mongoose.Types.ObjectId(item) };
   const data = await model.findOne({ ...filterBy, deletedAt: { $in: [null] } });
 
   return data;

@@ -176,7 +176,6 @@ export class ProductsService {
       authorityId: business.authorityId,
       status,
       impact,
-
     };
     if (loggedInUser.role === UserType.TRAVELLER) {
       createdField = {
