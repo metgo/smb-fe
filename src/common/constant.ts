@@ -144,6 +144,7 @@ export const ServerErrors = {
 };
 
 export const ServerSuccess = {
+  LISTED: 'Report listed successfully',
   MAP_POINT_CREATED: 'Map Point was successfully created',
   MAP_POINT_CATEGORIES_CREATED: 'Map Point Categories was successfully created',
   MAP_POINT_SUB_CATEGORIES_CREATED:

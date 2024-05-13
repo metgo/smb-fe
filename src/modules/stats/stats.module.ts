@@ -17,6 +17,10 @@ import {
   Voucher,
   VoucherSchema,
 } from 'src/modules/vouchers/schema/voucher.schema';
+import {
+  OrderProduct,
+  OrderProductSchema,
+} from '../order-product/schema/order-product.schema';
 
 @Module({
   imports: [
@@ -36,6 +40,10 @@ import {
       {
         name: Order.name,
         schema: OrderSchema,
+      },
+      {
+        name: OrderProduct.name,
+        schema: OrderProductSchema,
       },
       {
         name: Voucher.name,

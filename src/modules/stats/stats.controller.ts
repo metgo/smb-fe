@@ -1,6 +1,7 @@
 import {
   Controller,
   Get,
+  HttpCode,
   HttpStatus,
   Query,
   Req,
@@ -105,6 +106,67 @@ export class StatsController {
       HttpStatus.OK,
       ServerSuccess.CAMPAIGN_LISTED,
       campaignStats,
+      null,
+      null,
+    );
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @ApiEndpoint({
+    tags: ['Admin'],
+    response: { status: HttpStatus.OK, description: ServerSuccess.LISTED },
+    softBlockExtraDtoFields: true,
+    noAuthToken: true,
+    operation: 'Get list of reports',
+  })
+  @Roles(
+    UserType.ADMIN,
+    UserType.AUTHORITY,
+    UserType.DMOADMIN,
+    UserType.DMO,
+    UserType.SUPERADMIN,
+  )
+  @UseGuards(JwtAuthGuard)
+  @Get('stats/purchase-reports')
+  async getPurchaseReport(
+    @Query() query: GetByDateRangeQuery,
+    @Res() response: Response,
+  ) {
+    const reports = await this.statsService.getPurchaseReports(query);
+    return responseHelper(
+      response,
+      HttpStatus.OK,
+      ServerSuccess.LISTED,
+      reports,
+      null,
+      null,
+    );
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @ApiEndpoint({
+    tags: ['Admin'],
+    response: { status: HttpStatus.OK, description: ServerSuccess.LISTED },
+    softBlockExtraDtoFields: true,
+    noAuthToken: true,
+    operation: 'Get list of most populars',
+  })
+  @Roles(
+    UserType.ADMIN,
+    UserType.AUTHORITY,
+    UserType.DMOADMIN,
+    UserType.DMO,
+    UserType.SUPERADMIN,
+  )
+  @UseGuards(JwtAuthGuard)
+  @Get('stats/popular')
+  async getAllPopulars(@Res() response: Response) {
+    const users = await this.statsService.getAllPopulars();
+    return responseHelper(
+      response,
+      HttpStatus.OK,
+      ServerSuccess.LISTED,
+      users,
       null,
       null,
     );

@@ -5,7 +5,7 @@ import { subDays, differenceInDays } from 'date-fns';
 import mongoose, { Model } from 'mongoose';
 
 import { ServerErrors } from 'src/common/constant';
-import { PaymentStatus } from 'src/common/enum';
+import { PaymentStatus, VoucherPaymentStatus } from 'src/common/enum';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { LoggedInUserInterface } from '../auth/interface/login.interface';
 import { Business } from '../business/schema/business.schema';
@@ -16,6 +16,9 @@ import { CampaignSegment } from 'src/modules/campaign-segments/schema/campaignSe
 import { Order } from 'src/modules/orders/schema/orders.schema';
 import { GetByDateRangeQuery } from 'src/modules/stats/query/get-date-range.query';
 import { Voucher } from 'src/modules/vouchers/schema/voucher.schema';
+import { calculateTotalAmount } from 'src/common/calculate-amounts';
+import { calculateAverage } from 'src/common/calculate-average';
+import { OrderProduct } from '../order-product/schema/order-product.schema';
 
 @Injectable()
 export class StatsService {
@@ -26,6 +29,8 @@ export class StatsService {
     private BusinessModel: Model<Business>,
     @InjectModel(Order.name)
     private OrderModel: Model<Order>,
+    @InjectModel(OrderProduct.name)
+    private OrderProductModel: Model<OrderProduct>,
     @InjectModel('Product')
     private ProductModel: Model<Product>,
     @InjectModel(Voucher.name)
@@ -500,5 +505,178 @@ export class StatsService {
     );
 
     return data;
+  }
+
+  async getPurchaseReports(query: GetByDateRangeQuery) {
+    let findQuery;
+    let totalOrderAmount = 0;
+    let averageOrderAmount = 0;
+    let totalVoucherAmount = 0;
+    let averageVoucherAmountSold = 0;
+    let averageVoucherAmountRedeemed = 0;
+
+    if (query.startDate && query.endDate) {
+      const createdStartDate = new Date(query.startDate);
+      const createdEndDate = new Date(query.endDate);
+      createdEndDate.setDate(createdEndDate.getDate() + 1);
+
+      if (createdStartDate >= createdEndDate) {
+        throw new BadRequestException(
+          `Created ${ServerErrors.DATE_IS_NOT_LESS}`,
+        );
+      }
+
+      findQuery = {
+        createdAt: {
+          $gte: createdStartDate,
+          $lt: createdEndDate,
+        },
+      };
+    }
+    const orders = await this.OrderModel.find({
+      ...findQuery,
+      paymentStatus: PaymentStatus.SUCCESS,
+    });
+
+    if (orders?.length) {
+      // value of total product purchase
+      totalOrderAmount = await calculateTotalAmount('totalAmount', orders);
+
+      // view of average order transaction
+      averageOrderAmount = await calculateAverage(
+        totalOrderAmount,
+        orders.length,
+      );
+    }
+
+    const vouchers = await this.VoucherModel.find({
+      ...findQuery,
+      paymentStatus: VoucherPaymentStatus.PAID,
+    });
+
+    if (vouchers?.length) {
+      // value of total voucher amount purchase
+      totalVoucherAmount = await calculateTotalAmount('amount', vouchers);
+
+      // view of average vouchers sold
+      averageVoucherAmountSold = await calculateAverage(
+        totalVoucherAmount,
+        vouchers.length,
+      );
+
+      // average redeemed vouchers
+      const totalRemainingAmountOfVouchers = await calculateTotalAmount(
+        'remainingAmount',
+        vouchers,
+      );
+
+      const totalRedeemedAmountOfVouchers
+        = totalVoucherAmount - totalRemainingAmountOfVouchers;
+
+      averageVoucherAmountRedeemed = await calculateAverage(
+        totalRedeemedAmountOfVouchers,
+        vouchers.length,
+      );
+    }
+
+    return {
+      totalOrderAmount,
+      averageOrderAmount,
+      totalVoucherAmount,
+      averageVoucherAmountSold,
+      averageVoucherAmountRedeemed,
+    };
+  }
+
+  async getAllPopulars() {
+    // Display of the most viewed products - dummy - list (5)
+    const products = [
+      new mongoose.Types.ObjectId('660913f4abea32abc6feb437'),
+      new mongoose.Types.ObjectId('66091727abea32abc6feb548'),
+      new mongoose.Types.ObjectId('65e84a361a61a535e7f55bfd'),
+      new mongoose.Types.ObjectId('660bbe9cabea32abc6ff0e6d'),
+      new mongoose.Types.ObjectId('661e2ff5afadbe78d022891a'),
+    ];
+
+    const popularProducts = await this.ProductModel.aggregate([
+      {
+        $match: {
+          _id: { $in: products },
+        },
+      },
+      {
+        $addFields: {
+          __order: {
+            $indexOfArray: [products, '$_id'],
+          },
+        },
+      },
+      {
+        $sort: {
+          __order: 1,
+        },
+      },
+    ]);
+
+    // Display of the most purchased products
+    const productIdCounts = await this.OrderProductModel.aggregate([
+      { $group: { _id: '$productId', count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: 5 },
+    ]);
+
+    const productIds = productIdCounts.map(
+      item => new mongoose.Types.ObjectId(item._id),
+    );
+
+    const mostPurchasedProducts = await this.ProductModel.find({
+      _id: { $in: productIds },
+    });
+
+    const top5MostPurchasedProducts = mostPurchasedProducts.map(product => {
+      const countObject = productIdCounts.find(
+        item => item._id.toString() === product._id.toString(),
+      );
+      return { product, noOfOrderPlaced: countObject ? countObject.count : 0 };
+    });
+
+    top5MostPurchasedProducts.sort(
+      (a, b) => b.noOfOrderPlaced - a.noOfOrderPlaced,
+    );
+
+    // Display of the most viewed business pages/engagement - dummy - list (5)
+    const businesses = [
+      new mongoose.Types.ObjectId('65cef0e2d494635a28e5d51d'),
+      new mongoose.Types.ObjectId('65cef0e2d494635a28e5d39b'),
+      new mongoose.Types.ObjectId('65b11209272d5d15b3958012'),
+      new mongoose.Types.ObjectId('65cef0e2d494635a28e5d4e5'),
+      new mongoose.Types.ObjectId('65cef0e2d494635a28e5d42c'),
+    ];
+
+    const popularBusinesses = await this.BusinessModel.aggregate([
+      {
+        $match: {
+          _id: { $in: businesses },
+        },
+      },
+      {
+        $addFields: {
+          __order: {
+            $indexOfArray: [businesses, '$_id'],
+          },
+        },
+      },
+      {
+        $sort: {
+          __order: 1,
+        },
+      },
+    ]);
+
+    return {
+      popularProducts,
+      top5MostPurchasedProducts,
+      popularBusinesses,
+    };
   }
 }

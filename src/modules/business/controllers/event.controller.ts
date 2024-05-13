@@ -34,6 +34,13 @@ import { fileFilterByExtensions } from 'src/services/gcp-bucket/middleware/file-
 export class EventController {
   constructor(private readonly eventsService: EventsService) {}
 
+  @Roles(
+    UserType.ADMIN,
+    UserType.AUTHORITY,
+    UserType.DMOADMIN,
+    UserType.DMO,
+    UserType.SUPERADMIN,
+  )
   @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
     tags: ['Events'],
@@ -76,6 +83,13 @@ export class EventController {
     noAuthToken: true,
     params: [{ name: 'eventId', type: 'string', required: true }],
   })
+  @Roles(
+    UserType.ADMIN,
+    UserType.AUTHORITY,
+    UserType.DMOADMIN,
+    UserType.DMO,
+    UserType.SUPERADMIN,
+  )
   @UseGuards(JwtAuthGuard)
   @Patch('events/:eventId')
   async updateEvent(
@@ -109,7 +123,13 @@ export class EventController {
     noAuthToken: true,
     params: [{ name: 'eventId', type: 'string', required: true }],
   })
-  @Roles(UserType.DMO, UserType.DMOADMIN, UserType.SUPERADMIN)
+  @Roles(
+    UserType.ADMIN,
+    UserType.AUTHORITY,
+    UserType.DMOADMIN,
+    UserType.DMO,
+    UserType.SUPERADMIN,
+  )
   @UseGuards(JwtAuthGuard)
   @Patch('admin/events/:eventId')
   async updateEventByAdmin(
@@ -143,6 +163,13 @@ export class EventController {
     noAuthToken: true,
     params: [{ name: 'id', type: 'string', required: true }],
   })
+  @Roles(
+    UserType.ADMIN,
+    UserType.AUTHORITY,
+    UserType.DMOADMIN,
+    UserType.DMO,
+    UserType.SUPERADMIN,
+  )
   @UseGuards(JwtAuthGuard)
   @Delete('events/:id')
   async deleteEvent(
