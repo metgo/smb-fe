@@ -1,16 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsString, IsNotEmpty, IsOptional, IsEnum,
-} from 'class-validator';
+import { IsOptional, IsEnum } from 'class-validator';
 import { GetByCampCodeQuery } from 'src/modules/campaign-segments/queries/get-by-campcode.query';
 import { ProductStatus } from 'src/modules/products/products.type';
 
 export class GetProductsByCampCodeQuery extends GetByCampCodeQuery {
-  @ApiProperty({ type: String, required: true })
-  @IsString()
-  @IsNotEmpty()
-    campCode: string;
-
   @ApiProperty({ type: 'enum', enum: ProductStatus, required: false })
   @IsEnum(ProductStatus)
   @IsOptional()

@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsString, IsNotEmpty } from 'class-validator';
-import { ExternalApiFilterQuery } from 'src/common/query-handler/external-api-filter.query';
+
+import { ExternalApiFilterQuery } from 'src/modules/external-api/queries/external-api-filter.query';
 
 export class ExternalApiWithCampCodeFilterQuery extends ExternalApiFilterQuery {
   @ApiProperty({ type: String, required: true })

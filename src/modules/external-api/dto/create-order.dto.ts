@@ -26,7 +26,7 @@ class Voucher {
   @ApiProperty()
     id: string;
 }
-export class CreateOrderExternalApiDto {
+export class CreateOrderDto {
   @IsNotEmpty()
   @ApiProperty({ type: [Product] })
     products: Product[];

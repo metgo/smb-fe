@@ -40,13 +40,13 @@ import { GetOrdersStatsQuery } from 'src/modules/orders/queries';
 import { Order } from 'src/modules/orders/schema/orders.schema';
 import { ProductsService } from 'src/modules/products/products.services';
 import { UserType } from 'src/modules/users/users.type';
-import { CreateVoucherCommand } from 'src/modules/vouchers/interface';
 import { VoucherService } from 'src/modules/vouchers/voucher.service';
 import { OrderStatus, PaymentMode } from 'src/modules/orders/orders.type';
 import { OrderProductService } from 'src/modules/order-product/order-product.services';
 import { PaymentsService } from 'src/services/payments/payments.service';
 import { PaymentPurpose } from 'src/services/payments/payments.type';
 import { MailChimpService } from 'src/services/mailchimp/mailchimp.service';
+import { CreateOrderCommand } from 'src/modules/orders/interface/create-order.interface';
 
 @Injectable()
 export class OrdersService {
@@ -63,7 +63,7 @@ export class OrdersService {
     private readonly paymentService: PaymentsService,
   ) {}
 
-  async create(command: CreateVoucherCommand): Promise<any> {
+  async create(command: CreateOrderCommand): Promise<any> {
     try {
       const {
         loggedInUserId,
@@ -71,7 +71,6 @@ export class OrdersService {
         redeemedVouchers,
         totalAmount,
         actualAmountOfProduct,
-        identifierId,
       } = command;
 
       if (totalAmount <= 0) {
@@ -81,7 +80,6 @@ export class OrdersService {
           userId: loggedInUserId ?? null,
           createdBy: loggedInUserId ?? null,
           paymentStatus: PaymentStatus.SUCCESS,
-          identifierId: identifierId || null,
           status: OrderStatus.PROCESSING,
           creditCardPayment: totalAmount,
           paymentMode: [PaymentMode.VOUCHER],
@@ -160,7 +158,6 @@ export class OrdersService {
         userId: loggedInUserId ?? null,
         createdBy: loggedInUserId ?? null,
         paymentStatus: PaymentStatus.PENDING,
-        identifierId: identifierId || null,
         creditCardPayment: totalAmount,
         paymentMode:
           totalAmount === actualAmountOfProduct

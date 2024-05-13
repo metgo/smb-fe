@@ -27,7 +27,6 @@ import {
   VoucherPaymentStatus,
   VoucherStatus,
 } from 'src/common/enum';
-import { ExternalApiPostQuery } from 'src/common/query-handler/externalapi-post.query';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { generateRandomCode } from 'src/common/utils/randomCode.generator';
 import { remainingAmountCalculation } from 'src/common/utils/remaining-amount-calculation';
@@ -48,10 +47,7 @@ import { CampaignService } from 'src/modules/campaign/campaign.service';
 import { CampaignSegmentService } from 'src/modules/campaign-segments/campaignSegment.service';
 import { UsersService } from 'src/modules/users/users.services';
 import { UserType } from 'src/modules/users/users.type';
-import {
-  createVoucherDto,
-  UpdateVoucherBalance,
-} from 'src/modules/vouchers/dto';
+import { createVoucherDto } from 'src/modules/vouchers/dto';
 import {
   AssignVoucherCommand,
   GetOneVoucherInterface,
@@ -61,7 +57,6 @@ import {
   GetMyAssignedVouchersQuery,
   GetMyCreatedVouchersQuery,
   GetVoucherStatsQuery,
-  GetMyVouchersExternalApiQuery,
   GetVoucherStatsGroupedQuery,
 } from 'src/modules/vouchers/queries';
 
@@ -179,7 +174,7 @@ export class VoucherService {
     }
   }
 
-  async getOne(query: GetOneVoucherInterface) {
+  async getOneByCode(query: GetOneVoucherInterface) {
     try {
       const { code, externalApi, productId } = query;
       const select = disSelect;
@@ -298,7 +293,11 @@ export class VoucherService {
 
     const select = disSelect;
 
-    let findQuery: any = { ...query, createdBy: userId };
+    let findQuery: any = {
+      ...query,
+      createdBy: userId,
+      paymentStatus: VoucherPaymentStatus.PAID,
+    };
 
     const populate = {
       path: 'campId',
@@ -364,7 +363,7 @@ export class VoucherService {
 
   async getVouchersAssignedToMe(
     userId: string,
-    queries: GetMyAssignedVouchersQuery | GetMyVouchersExternalApiQuery,
+    queries: GetMyAssignedVouchersQuery,
   ) {
     const {
       page, limit, search, campId, productId, ...query
@@ -440,7 +439,7 @@ export class VoucherService {
 
   async getVoucherCreatedByMe(
     userId: string,
-    queries: GetMyAssignedVouchersQuery | GetMyVouchersExternalApiQuery,
+    queries: GetMyAssignedVouchersQuery,
   ) {
     const {
       page, limit, search, campId, productId, ...query
@@ -726,94 +725,6 @@ export class VoucherService {
     return {
       amountToBeRedeemed,
       redeemedAmount: totalAmount - amountToBeRedeemed,
-    };
-  }
-
-  async purchaseVoucherForExternalApi(
-    dto: createVoucherDto,
-    query: ExternalApiPostQuery,
-    user: LoggedInUserInterface | null,
-  ) {
-    const campId = (
-      await this.campaignService.findAndReturn('code', dto.campCode)
-    )._id;
-    const createdByUserId
-      = user?.email === dto?.email
-        ? user?.id
-        : (await this.usersService.findByEmailOrNull(dto.email))?._id;
-
-    let i: number = 0;
-    const voucherId: any = [];
-    const totalAmount = dto.noOfVoucher * dto.amount;
-    for (i = 0; i < dto.noOfVoucher; i++) {
-      const randomCode = generateRandomCode(12);
-      const code = dto.campCode + randomCode;
-      const newVoucher = new this.VoucherModel({
-        ...dto,
-        code,
-        remainingAmount: dto.amount,
-        campId,
-        createdBy: createdByUserId,
-        createdByEmail: createdByUserId ? null : dto.email,
-        identifierId: query.identifierId,
-      });
-      newVoucher.save();
-      voucherId.push(newVoucher._id);
-    }
-
-    const paymentLink = await this.paymentService.generateLink({
-      amount: totalAmount,
-      currency: Currency.ILS,
-      purpose: PaymentPurpose.VOUCHER,
-      id: voucherId,
-      customerEmail: dto.email,
-      customerName: dto.name,
-      languagePreference: dto?.languagePreference || Locale.ENGLISH,
-    });
-
-    return paymentLink;
-  }
-
-  async updateVoucherAmountByExternalApi(
-    loggedInUserId: string,
-    query: ExternalApiPostQuery,
-    body: UpdateVoucherBalance,
-  ) {
-    const voucher = await this.getOneById(body.voucherId);
-
-    if (voucher.paymentStatus !== VoucherPaymentStatus.PAID) {
-      throw new UnprocessableEntityException(ServerErrors.VOUCHER.UNPAID);
-    }
-
-    if (body.amount > voucher.remainingAmount) {
-      throw new UnprocessableEntityException(
-        ServerErrors.VOUCHER.CANNOT_UPDATE_BALANCE,
-      );
-    }
-
-    const remainingAmount = remainingAmountCalculation(
-      voucher.remainingAmount,
-      body.amount,
-    );
-    const amountToBeRedeemed = remainingAmountCalculation(
-      body.amount,
-      voucher.remainingAmount,
-    );
-
-    await this.VoucherModel.findOneAndUpdate(
-      { _id: body.voucherId },
-      {
-        updatedBy: loggedInUserId,
-        updatedAt: new Date(),
-        remainingAmount,
-        identifierId: query.identifierId,
-      },
-      { new: true },
-    );
-
-    return {
-      amountToBeRedeemed,
-      redeemedAmount: body.amount - amountToBeRedeemed,
     };
   }
 

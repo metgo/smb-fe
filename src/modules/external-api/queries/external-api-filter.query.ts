@@ -1,9 +1,9 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsString, IsNotEmpty } from 'class-validator';
 
-import { GetVoucherQuery } from 'src/modules/vouchers/queries';
+import { PaginationFilterQuery } from 'src/common/query-handler/pagination.query';
 
-export class GetVoucherByExternalApiQuery extends GetVoucherQuery {
+export class ExternalApiFilterQuery extends PaginationFilterQuery {
   @ApiProperty({ type: String, required: true })
   @IsString()
   @IsNotEmpty()

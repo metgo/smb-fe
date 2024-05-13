@@ -21,7 +21,6 @@ import { UpdateBussCategoryDto } from './dto/updateBussCategoryDto';
 import { createBussCategoryDto } from './dto/createBussCategoryDto';
 import { BussCategory } from './schema/buss.category.schema';
 import { BussSubCategory } from '../buss-subcategories/schema/buss-subCategory.schema';
-import { ExternalApiCategoriesQuery } from 'src/modules/buss-categories/dto/external-api-categories.query.dto';
 
 @Injectable()
 export class BussCategoriesService {
@@ -160,67 +159,5 @@ export class BussCategoriesService {
       throw new BadRequestException(`${fieldName} already exists`);
     }
     return false;
-  }
-
-  async getAllForExternalApi(query: ExternalApiCategoriesQuery) {
-    const select = disSelect;
-    const populateCategories = {
-      path: 'icon iconBnW',
-      select: `${disSelect}`,
-    };
-
-    const categories = await this.BussCategoryModel.find({
-      deletedAt: { $in: [null] },
-    })
-      .sort({ createdAt: -1 })
-      .lean()
-      .select(select)
-      .populate(populateCategories)
-      .exec();
-
-    if (query.locale === Locale.HEBREW) {
-      categories.map(category => {
-        // eslint-disable-next-line no-param-reassign
-        category.name = category?.hebrewName || category.name;
-        return { ...category };
-      });
-    }
-
-    let categoriesWithSubCategories = [];
-    const populateSubCategories = {
-      path: 'icon',
-      select: `${disSelect}`,
-    };
-    const selectSubCategories = `${disSelect} -bussCategoryId`;
-
-    await Promise.all(
-      categories.map(async category => {
-        const categoryWithSubCategory: any = category;
-
-        categoryWithSubCategory.sub_categories
-          = await this.BussSubCategoryModel.find({
-            bussCategoryId: category._id,
-            deletedAt: { $in: [null] },
-          })
-            .select(selectSubCategories)
-            .populate(populateSubCategories)
-            .exec();
-
-        if (query.locale === Locale.HEBREW) {
-          categoryWithSubCategory.sub_categories.map(subCategory => {
-            // eslint-disable-next-line no-param-reassign
-            subCategory.name = subCategory?.hebrewName || subCategory.name;
-            return { ...subCategory };
-          });
-        }
-
-        categoriesWithSubCategories = [
-          ...categoriesWithSubCategories,
-          categoryWithSubCategory,
-        ];
-      }),
-    );
-
-    return categoriesWithSubCategories;
   }
 }

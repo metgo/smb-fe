@@ -13,7 +13,6 @@ import { ServerErrors } from 'src/common/constant';
 import { convertToString } from 'src/common/convert-to-string';
 import { getUniqueSet } from 'src/common/get-unique-set';
 import { paginateData } from 'src/common/pagination';
-import { ExternalApiWithCampCodeFilterQuery } from 'src/common/query-handler/external-api-campcode.query';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { disSelect } from 'src/common/utils/select.handling';
 import { updateOneByManyFields } from 'src/core/helper/query-helper';
@@ -29,7 +28,6 @@ import { CampaignSegment } from 'src/modules/campaign-segments/schema/campaignSe
 import { DMOService } from 'src/modules/dmo/dmo.service';
 import { ProductsService } from 'src/modules/products/products.services';
 import { ProductStatus } from 'src/modules/products/products.type';
-import { GetAllProductsForExternalApiQuery } from 'src/modules/products/queries';
 
 @Injectable()
 export class CampaignSegmentService {
@@ -301,10 +299,10 @@ export class CampaignSegmentService {
     return paginatedBusiness;
   }
 
-  async getAllProducts(
-    query: GetAllProductsForExternalApiQuery | GetProductsByCampCodeQuery,
-  ) {
-    const { page, limit, campCode } = query;
+  async getAllProducts(query: GetProductsByCampCodeQuery) {
+    const {
+      page, limit, campCode, ...queries
+    } = query;
 
     const campDetails = await this.campaignService.findAndReturn(
       'code',
@@ -335,6 +333,7 @@ export class CampaignSegmentService {
 
     const campaignSegment = await this.CampaignSegmentModel.findOne({
       campaign_ID: campDetails._id,
+      ...queries,
     })
       .populate(populate)
       .populate(populate1)
@@ -409,9 +408,7 @@ export class CampaignSegmentService {
     return paginatedProducts;
   }
 
-  async getAllBusiness(
-    query: ExternalApiWithCampCodeFilterQuery | GetByCampCodeQuery,
-  ) {
+  async getAllBusiness(query: GetByCampCodeQuery) {
     const { page, limit, campCode } = query;
 
     const campDetails = await this.campaignService.findAndReturn(

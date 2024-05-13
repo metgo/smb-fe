@@ -18,7 +18,6 @@ import { ServerSuccess } from 'src/common/constant';
 import { Locale } from 'src/common/enum';
 import { LocaleFilterQuery } from 'src/common/query-handler/locale-filter.query';
 import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
-import { ExternalApiGuard } from 'src/core/guards/authorization/external-api-guards';
 import { Roles } from 'src/core/guards/authorization/roles';
 import { JwtAuthGuard } from 'src/core/guards/jwt/jwt.guards';
 import { responseHelper } from 'src/core/helper/response.helper';
@@ -26,7 +25,6 @@ import { BussCategoriesService } from './buss-categories.service';
 import { createBussCategoryDto } from './dto/createBussCategoryDto';
 import { UpdateBussCategoryDto } from './dto/updateBussCategoryDto';
 import { UserType } from '../users/users.type';
-import { ExternalApiCategoriesQuery } from 'src/modules/buss-categories/dto/external-api-categories.query.dto';
 
 @Controller()
 export class BussCategoriesController {
@@ -177,32 +175,6 @@ export class BussCategoriesController {
       HttpStatus.OK,
       ServerSuccess.BUSS_CATEGORY.DELETED,
       deleteBussCategory,
-      null,
-      null,
-    );
-  }
-
-  @ApiEndpoint({
-    tags: ['External Api', 'Business-Categories'],
-    response: {
-      status: 200,
-      description: ServerSuccess.BUSS_CATEGORY.LISTED,
-    },
-    softBlockExtraDtoFields: true,
-  })
-  @UseGuards(ExternalApiGuard)
-  @Get('/externalapi/get_categories')
-  async getAllCategoriesForExternalApi(
-    @Res() response: Response,
-    @Query() query: ExternalApiCategoriesQuery,
-  ) {
-    const allBussCategoires
-      = await this.bussCategoryService.getAllForExternalApi(query);
-    return responseHelper(
-      response,
-      HttpStatus.OK,
-      ServerSuccess.BUSS_CATEGORY.LISTED,
-      allBussCategoires,
       null,
       null,
     );

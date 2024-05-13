@@ -1,7 +1,7 @@
 import { BadRequestException } from '@nestjs/common';
 import { ServerErrors } from 'src/common/constant';
 
-export async function calculateTotalAmount(
+export async function calculateProductsTotalAmount(
   productsPayload: any,
   products: any,
 ) {

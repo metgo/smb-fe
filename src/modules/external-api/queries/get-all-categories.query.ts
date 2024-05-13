@@ -4,7 +4,7 @@ import {
 } from 'class-validator';
 import { Locale } from 'src/common/enum';
 
-export class ExternalApiCategoriesQuery {
+export class GetAllCategoriesQuery {
   @ApiProperty({ type: String, required: true })
   @IsString()
   @IsNotEmpty()

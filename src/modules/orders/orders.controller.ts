@@ -14,21 +14,15 @@ import {
 } from '@nestjs/common';
 import { Response } from 'express';
 
-import { calculateTotalAmount } from 'src/common/calculate-products-total-amount';
+import { calculateProductsTotalAmount } from 'src/common/calculate-products-total-amount';
 import { ServerSuccess } from 'src/common/constant';
-import { ExternalApiPostQuery } from 'src/common/query-handler/externalapi-post.query';
 import { sortByPriorityAndHighest } from 'src/common/sort-priority-and-highest';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
-import { ExternalApiGuard } from 'src/core/guards/authorization/external-api-guards';
 import { Roles } from 'src/core/guards/authorization/roles';
 import { JwtAuthGuard } from 'src/core/guards/jwt/jwt.guards';
 import { responseHelper } from 'src/core/helper/response.helper';
-import {
-  CreateOrderExternalApiDto,
-  CreateOrderDto,
-  UpdateOrderDto,
-} from 'src/modules/orders/dto';
+import { CreateOrderDto, UpdateOrderDto } from 'src/modules/orders/dto';
 import {
   GetAllOrdersQuery,
   GetOrdersStatsQuery,
@@ -67,7 +61,7 @@ export class OrdersController {
       const productIds = body.products.map(product => product.id);
       const productsFromDB = await this.productService.findManyById(productIds);
 
-      let totalAmountToPay: number = await calculateTotalAmount(
+      let totalAmountToPay: number = await calculateProductsTotalAmount(
         body.products,
         productsFromDB,
       );
@@ -259,82 +253,6 @@ export class OrdersController {
       null,
       null,
     );
-  }
-
-  @ApiEndpoint({
-    tags: ['Orders', 'External Api'],
-    response: { status: 200, description: ServerSuccess.ORDERS.CREATED },
-    softBlockExtraDtoFields: true,
-    noAuthToken: true,
-  })
-  @UseGuards(JwtAuthGuard)
-  @UseGuards(ExternalApiGuard)
-  @Post('/externalapi/orders')
-  async createOrderForExternalApi(
-    @Body() body: CreateOrderExternalApiDto,
-    @Query() query: ExternalApiPostQuery,
-    @Req() req,
-    @Res() response: Response,
-  ) {
-    try {
-      const productIds = body.products.map(product => product.id);
-      const productsFromDB = await this.productService.findManyById(productIds);
-
-      let totalAmountToPay: number = await calculateTotalAmount(
-        body.products,
-        productsFromDB,
-      );
-      const actualAmountOfProduct = totalAmountToPay;
-
-      let redeemedVouchers;
-      if (body?.voucher?.length) {
-        const voucherIds = body.voucher.map(voucher => voucher.id);
-        const vouchers = await this.voucherService.findByValidIds(voucherIds);
-
-        if (vouchers?.length) {
-          const sortedVoucher = sortByPriorityAndHighest(
-            totalAmountToPay,
-            vouchers,
-          );
-
-          if (sortedVoucher?.length) {
-            redeemedVouchers = await this.ordersService.processVouchers(
-              req.user.id,
-              sortedVoucher,
-              totalAmountToPay,
-            );
-
-            if (redeemedVouchers?.length) {
-              const redeemedAmount = redeemedVouchers.reduce(
-                (total: number, item) => total + item.redeemedAmount,
-                0,
-              );
-              totalAmountToPay -= redeemedAmount;
-            }
-          }
-        }
-      }
-
-      const order = await this.ordersService.create({
-        loggedInUserId: req.user.id,
-        body,
-        redeemedVouchers,
-        totalAmount: totalAmountToPay,
-        actualAmountOfProduct,
-        identifierId: query.identifierId,
-      });
-
-      return responseHelper(
-        response,
-        HttpStatus.CREATED,
-        ServerSuccess.ORDERS.CREATED,
-        order,
-        null,
-        null,
-      );
-    } catch (err) {
-      exceptionHandling(err);
-    }
   }
 
   @ApiEndpoint({

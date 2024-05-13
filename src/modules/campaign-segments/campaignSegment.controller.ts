@@ -16,8 +16,6 @@ import {
 import { Response } from 'express';
 
 import { ServerSuccess } from 'src/common/constant';
-import { ExternalApiWithCampCodeFilterQuery } from 'src/common/query-handler/external-api-campcode.query';
-import { ExternalApiGuard } from 'src/core/guards/authorization/external-api-guards';
 import { Roles } from 'src/core/guards/authorization/roles';
 import { JwtAuthGuard } from 'src/core/guards/jwt/jwt.guards';
 import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
@@ -27,7 +25,6 @@ import { UpdateCampaignSegmentDTO } from 'src/modules/campaign-segments/dto/upda
 import { CampaignSegmentService } from 'src/modules/campaign-segments/campaignSegment.service';
 import { GetByCampCodeQuery } from 'src/modules/campaign-segments/queries/get-by-campcode.query';
 import { GetProductsByCampCodeQuery } from 'src/modules/campaign-segments/queries/get-products-by-campcode.query';
-import { GetAllProductsForExternalApiQuery } from 'src/modules/products/queries';
 import { UserType } from 'src/modules/users/users.type';
 
 @Controller()
@@ -232,59 +229,6 @@ export class CampaignSegmentController {
       HttpStatus.OK,
       ServerSuccess.PRODUCTS.LISTED,
       product,
-      null,
-      null,
-    );
-  }
-
-  @ApiEndpoint({
-    tags: ['Products', 'External Api'],
-    response: {
-      status: HttpStatus.OK,
-      description: ServerSuccess.PRODUCTS.LISTED,
-    },
-    operation: 'External Api - Get all products',
-    softBlockExtraDtoFields: true,
-  })
-  @HttpCode(HttpStatus.OK)
-  @UseGuards(ExternalApiGuard)
-  @Get('/externalapi/get_all_products')
-  async getAllProductsForExternalApi(
-    @Res() response: Response,
-    @Query() query: GetAllProductsForExternalApiQuery,
-  ) {
-    const product = await this.campaignSegmentService.getAllProducts(query);
-    return responseHelper(
-      response,
-      HttpStatus.OK,
-      ServerSuccess.PRODUCTS.LISTED,
-      product,
-      null,
-      null,
-    );
-  }
-
-  @ApiEndpoint({
-    tags: ['Business', 'External Api'],
-    response: {
-      status: HttpStatus.OK,
-      description: ServerSuccess.BUSINESS_LISTED,
-    },
-    softBlockExtraDtoFields: true,
-  })
-  @UseGuards(ExternalApiGuard)
-  @Get('/externalapi/get_all_businesses')
-  async getAllBusinessForExternalApi(
-    @Res() response: Response,
-    @Query() query?: ExternalApiWithCampCodeFilterQuery,
-  ) {
-    const business = await this.campaignSegmentService.getAllBusiness(query);
-
-    return responseHelper(
-      response,
-      HttpStatus.OK,
-      ServerSuccess.BUSINESS_LISTED,
-      business,
       null,
       null,
     );

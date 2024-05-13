@@ -9,10 +9,6 @@ export class GetMyCreatedVouchersQuery extends GetMyAssignedVouchersQuery {
   @IsOptional()
     status: VoucherStatus;
 
-  @ApiProperty({ type: String, required: false })
-  @IsOptional()
-    identifierId: string;
-
   @ApiProperty({ type: Date, required: false })
   @IsOptional()
     createdStartDate: Date;
