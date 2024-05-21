@@ -10,6 +10,7 @@ export const HebrewTemplate = {
   OrderReceivedForBusiness: 'order-confirmation-business-side-in-he',
   OrderConfirmationForClient: 'order-confirmation-client-side-in-he',
   FailedToSendEmail: '',
+  REEDEMABLE_VOUCHER_REMINDER: 'voucher-remainder-he',
 };
 
 export const EnglishTemplate = {
@@ -24,4 +25,5 @@ export const EnglishTemplate = {
   OrderReceivedForBusiness: 'order-confirmation-business-side-en',
   OrderConfirmationForClient: 'order-confirmation-client-side-en',
   FailedToSendEmail: '',
+  REEDEMABLE_VOUCHER_REMINDER: 'voucher-remainder-en',
 };

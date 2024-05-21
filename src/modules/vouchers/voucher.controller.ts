@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
   HttpStatus,
   Param,
   Post,
@@ -11,6 +12,7 @@ import {
   Res,
   UseGuards,
 } from '@nestjs/common';
+import { Cron } from '@nestjs/schedule';
 import { Response } from 'express';
 
 import { ServerSuccess } from 'src/common/constant';
@@ -45,6 +47,7 @@ export class VoucherController {
     softBlockExtraDtoFields: true,
     operation: 'Purchase Voucher By anyone',
   })
+  @HttpCode(HttpStatus.CREATED)
   @Post('buy-voucher')
   async create(
     @Req() req,
@@ -75,6 +78,7 @@ export class VoucherController {
     noAuthToken: true,
     operation: 'Purchase Voucher By Superadmin',
   })
+  @HttpCode(HttpStatus.CREATED)
   @Post('admin/vouchers')
   async createPaidVouchers(
     @Req() req,
@@ -104,6 +108,7 @@ export class VoucherController {
     },
     operation: 'Get voucher detail by anyone using valid code',
   })
+  @HttpCode(HttpStatus.OK)
   @Get('voucher-code/:code')
   async getOne(
     @Param('code') code: string,
@@ -136,6 +141,7 @@ export class VoucherController {
     noAuthToken: true,
     operation: 'Get voucher detail by logged in user using valid id',
   })
+  @HttpCode(HttpStatus.OK)
   @Get('voucher-id/:id')
   async getOneById(@Res() response: Response, @Param('id') id: string) {
     const voucher = await this.voucherService.getOneById(id);
@@ -160,6 +166,7 @@ export class VoucherController {
     operation: 'Get created voucher list of logged in user',
   })
   @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
   @Get('vouchers/created-by-me')
   async getAll(
     @Res() response: Response,
@@ -192,6 +199,7 @@ export class VoucherController {
     operation: 'Get assigned voucher list of logged in user',
   })
   @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
   @Get('vouchers/assigned')
   async assignToMe(
     @Res() response: Response,
@@ -216,11 +224,15 @@ export class VoucherController {
   @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
     tags: ['Voucher'],
-    response: { status: 200, description: ServerSuccess.VOUCHER.ASSIGNED },
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.VOUCHER.ASSIGNED,
+    },
     softBlockExtraDtoFields: true,
     noAuthToken: true,
     operation: 'Assign voucher to other user by email',
   })
+  @HttpCode(HttpStatus.OK)
   @Put('voucher/assign-user')
   async assignUser(
     @Req() req,
@@ -256,6 +268,7 @@ export class VoucherController {
     UserType.DMO,
   )
   @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
   @Get('stats/vouchers-cached')
   async getVoucherStatsCached(
     @Req() req,
@@ -276,6 +289,7 @@ export class VoucherController {
 
   @Roles(UserType.SUPERADMIN, UserType.DMO, UserType.DMOADMIN)
   @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
   @Get('admin/voucher')
   async getAllVoucherbyAdmin(
     @Req() req,
@@ -311,6 +325,7 @@ export class VoucherController {
     UserType.DMO,
   )
   @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
   @Get('stats/vouchers')
   async getVoucherStats(
     @Req() req,
@@ -330,5 +345,41 @@ export class VoucherController {
       null,
       null,
     );
+  }
+
+  @Roles(UserType.SUPERADMIN)
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  @ApiEndpoint({
+    tags: ['Voucher', 'Scheduler'],
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.VOUCHER.UPDATED,
+    },
+    noAuthToken: true,
+    operation:
+      'Send emails for redeemable vouchers ASSIGNEES if created same day of month',
+  })
+  @Cron('0 8 * * *')
+  @Post('vouchers/schedule-send-email')
+  async scheduledSendEmailToRedeemableVoucherOwners() {
+    return await this.voucherService.scheduledEmailToRedeemableVoucherOwners();
+  }
+
+  @Roles(UserType.SUPERADMIN)
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  @ApiEndpoint({
+    tags: ['Voucher'],
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.VOUCHER.UPDATED,
+    },
+    noAuthToken: true,
+    operation: 'Send emails for redeemable vouchers to all ASSIGNEES',
+  })
+  @Post('vouchers/trigger-send-email')
+  async triggerEmailToAllRedeemableVoucherOwners() {
+    return await this.voucherService.triggerEmailToRedeemableVoucherOwners();
   }
 }
