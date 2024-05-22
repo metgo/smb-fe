@@ -7,7 +7,11 @@ import { AppModule } from 'src/app.module';
 import { JwtStrategyProvider } from 'src/modules/jwt-auth/providers/jwt-strategy.provider';
 import { MailChimpService } from 'src/services/mailchimp/mailchimp.service';
 import { PaymentsService } from 'src/services/payments/payments.service';
+import { AuthorityFactory } from 'test/factories/authority.factory';
+import { CampaignFactory } from 'test/factories/campaign.factory';
+import { DMOFactory } from 'test/factories/dmo.factory';
 import { UsersFactory } from 'test/factories/users.factory';
+import { VouchersFactory } from 'test/factories/voucher.factory';
 import { JwtAuthStrategyStub } from 'test/stubs/jwt/jwt-strategy.stub';
 import { MailerStub } from 'test/stubs/mailer/mailer.stub';
 import { StorageStub } from 'test/stubs/storage/storage.stub';
@@ -22,7 +26,13 @@ export const appFactory = async () => {
 
   const moduleRef: TestingModule = await Test.createTestingModule({
     imports: [MongooseModule.forRoot(mongoUri), AppModule],
-    providers: [UsersFactory],
+    providers: [
+      AuthorityFactory,
+      CampaignFactory,
+      DMOFactory,
+      UsersFactory,
+      VouchersFactory,
+    ],
   })
     .overrideProvider(JwtStrategyProvider)
     .useClass(JwtAuthStrategyStub)

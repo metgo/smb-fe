@@ -7,17 +7,23 @@ import mongoose from 'mongoose';
 import { UserType } from 'src/modules/users/users.type';
 import { authToken } from 'test/factories/auth.factory';
 import { appFactory } from 'test/factories/app';
+import { AuthorityFactory } from 'test/factories/authority.factory';
+import { DMOFactory } from 'test/factories/dmo.factory';
 import { UsersFactory } from 'test/factories/users.factory';
 import { User, UserSchema } from 'src/modules/users/schema/users.schema';
 
 describe('Users e2e Test', () => {
   let app: INestApplication;
   let superTest: SuperTest<any>;
+  let authorityFactory: AuthorityFactory;
+  let dmoFactory: DMOFactory;
   let usersFactory: UsersFactory;
   const userModel = mongoose.model(User.name, UserSchema);
 
   beforeAll(async () => {
     app = await appFactory();
+    authorityFactory = await app.get(AuthorityFactory);
+    dmoFactory = await app.get(DMOFactory);
     usersFactory = await app.get(UsersFactory);
     superTest = request(app.getHttpServer());
   });
@@ -181,6 +187,50 @@ describe('Users e2e Test', () => {
         role: UserType.TRAVELLER,
       })
       .expect(HttpStatus.CREATED);
+  });
+
+  it('[POST] /users/admin should register new dmoadmin by dmo', async () => {
+    const dmo = await usersFactory.create({ role: UserType.DMO });
+    const DMO = await dmoFactory.create({ userId: dmo._id });
+
+    const { body } = await superTest
+      .post('/users/admin')
+      .set({ Authorization: `Bearer ${authToken(dmo)}` })
+      .send({
+        firstName: 'test',
+        lastName: 'test',
+        email: 'abc@metgo.app',
+        countryCode: '977',
+        phoneNumber: '1234567890',
+        address: 'test',
+        role: UserType.DMO,
+        dmoId: DMO.id.toString(),
+      })
+      .expect(HttpStatus.CREATED);
+
+    expect(body.datas.role).toEqual(UserType.DMOADMIN);
+  });
+
+  it('[POST] /users/admin should register new authority by admin', async () => {
+    const superadmin = await usersFactory.create({ role: UserType.SUPERADMIN });
+    const authority = await authorityFactory.create({ userId: superadmin._id });
+
+    const { body } = await superTest
+      .post('/users/admin')
+      .set({ Authorization: `Bearer ${authToken(superadmin)}` })
+      .send({
+        firstName: 'test',
+        lastName: 'test',
+        email: 'abc@metgo.app',
+        countryCode: '977',
+        phoneNumber: '1234567890',
+        address: 'test',
+        role: UserType.DMO,
+        authorityId: authority.id.toString(),
+      })
+      .expect(HttpStatus.CREATED);
+
+    expect(body.datas.role).toEqual(UserType.AUTHORITY);
   });
 
   afterAll(async () => {
