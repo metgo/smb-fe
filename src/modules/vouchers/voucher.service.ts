@@ -1133,40 +1133,4 @@ export class VoucherService {
       message: `${noOfEmailSent} emails were sent successfully`,
     };
   }
-
-  async triggerEmailToRedeemableVoucherOwners() {
-    const vouchers = await this.VoucherModel.find({
-      paymentStatus: VoucherPaymentStatus.PAID,
-      remainingAmount: { $gt: 0 },
-      deletedAt: null,
-      deletedBy: null,
-      waitingUserEmail: { $exists: true, $ne: null },
-      status: VoucherStatus.ASSIGNED,
-      $or: [
-        { expireDate: { $exists: false } },
-        { expireDate: null },
-        { expireDate: { $gte: new Date() } },
-      ],
-    });
-
-    let noOfEmailSent: number = 0;
-    await Promise.all(
-      vouchers.map(async voucher => {
-        await this.mailchimpService.sendTransactionalEmail({
-          to: voucher.waitingUserEmail,
-          templatedId: HebrewTemplate.REEDEMABLE_VOUCHER_REMINDER,
-          mergeVars: {
-            BUYERNAME: voucher.name,
-            VOUCHERCODE: voucher.code,
-            VOUCHERAMOUNT: voucher.remainingAmount,
-          },
-        });
-        noOfEmailSent += 1;
-      }),
-    );
-
-    return {
-      message: `${noOfEmailSent} emails were sent successfully`,
-    };
-  }
 }

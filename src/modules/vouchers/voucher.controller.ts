@@ -365,21 +365,4 @@ export class VoucherController {
   async scheduledSendEmailToRedeemableVoucherOwners() {
     return await this.voucherService.scheduledEmailToRedeemableVoucherOwners();
   }
-
-  @Roles(UserType.SUPERADMIN)
-  @UseGuards(JwtAuthGuard)
-  @HttpCode(HttpStatus.OK)
-  @ApiEndpoint({
-    tags: ['Voucher'],
-    response: {
-      status: HttpStatus.OK,
-      description: ServerSuccess.VOUCHER.UPDATED,
-    },
-    noAuthToken: true,
-    operation: 'Send emails for redeemable vouchers to all ASSIGNEES',
-  })
-  @Post('vouchers/trigger-send-email')
-  async triggerEmailToAllRedeemableVoucherOwners() {
-    return await this.voucherService.triggerEmailToRedeemableVoucherOwners();
-  }
 }

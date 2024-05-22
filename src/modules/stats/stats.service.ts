@@ -547,6 +547,30 @@ export class StatsService {
         totalOrderAmount,
         orders.length,
       );
+
+      // average voucher redeemed
+      let totalVoucherAmountRedeemed: number = 0;
+      let totalVoucherLength: number = 0;
+
+      await Promise.all(
+        orders.map(async order => {
+          if (order.voucher && order?.voucher?.length) {
+            await Promise.all(
+              order.voucher.map(async voucher => {
+                if (voucher?.redeemedAmount && voucher?.redeemedAmount > 0) {
+                  totalVoucherAmountRedeemed += voucher.redeemedAmount;
+                  totalVoucherLength += 1;
+                }
+              }),
+            );
+          }
+        }),
+      );
+
+      averageVoucherAmountRedeemed = await calculateAverage(
+        totalVoucherAmountRedeemed,
+        totalVoucherLength,
+      );
     }
 
     const vouchers = await this.VoucherModel.find({
@@ -561,20 +585,6 @@ export class StatsService {
       // view of average vouchers sold
       averageVoucherAmountSold = await calculateAverage(
         totalVoucherAmount,
-        vouchers.length,
-      );
-
-      // average redeemed vouchers
-      const totalRemainingAmountOfVouchers = await calculateTotalAmount(
-        'remainingAmount',
-        vouchers,
-      );
-
-      const totalRedeemedAmountOfVouchers
-        = totalVoucherAmount - totalRemainingAmountOfVouchers;
-
-      averageVoucherAmountRedeemed = await calculateAverage(
-        totalRedeemedAmountOfVouchers,
         vouchers.length,
       );
     }
