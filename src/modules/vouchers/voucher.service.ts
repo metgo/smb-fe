@@ -59,12 +59,14 @@ import {
   GetVoucherStatsQuery,
   GetVoucherStatsGroupedQuery,
 } from 'src/modules/vouchers/queries';
+import { ConfigService } from 'src/services/config/config.service';
 
 @Injectable()
 export class VoucherService {
   constructor(
     @InjectModel('Voucher')
     private readonly VoucherModel: Model<Voucher>,
+    private readonly configService: ConfigService,
     private readonly paymentService: PaymentsService,
     private readonly campaignService: CampaignService,
     private readonly campaignSegmentService: CampaignSegmentService,
@@ -1092,45 +1094,53 @@ export class VoucherService {
   }
 
   async scheduledEmailToRedeemableVoucherOwners() {
-    const currentDate = new Date();
+    const ENV_NAME = this.configService.get('ENV_NAME');
 
-    const vouchers = await this.VoucherModel.find({
-      paymentStatus: VoucherPaymentStatus.PAID,
-      remainingAmount: { $gt: 0 },
-      deletedAt: null,
-      deletedBy: null,
-      waitingUserEmail: { $exists: true, $ne: null },
-      status: VoucherStatus.ASSIGNED,
-      $or: [
-        { expireDate: { $exists: false } },
-        { expireDate: null },
-        { expireDate: { $gte: currentDate } },
-      ],
-    });
+    if (ENV_NAME === 'prod') {
+      const currentDate = new Date();
 
-    let noOfEmailSent: number = 0;
+      const vouchers = await this.VoucherModel.find({
+        paymentStatus: VoucherPaymentStatus.PAID,
+        remainingAmount: { $gt: 0 },
+        deletedAt: null,
+        deletedBy: null,
+        waitingUserEmail: { $exists: true, $ne: null },
+        status: VoucherStatus.ASSIGNED,
+        $or: [
+          { expireDate: { $exists: false } },
+          { expireDate: null },
+          { expireDate: { $gte: currentDate } },
+        ],
+      });
 
-    await Promise.all(
-      vouchers.map(async voucher => {
-        const createdDate = new Date(voucher.createdAt);
+      let noOfEmailSent: number = 0;
 
-        if (currentDate.getDate() === createdDate.getDate()) {
-          await this.mailchimpService.sendTransactionalEmail({
-            to: voucher.waitingUserEmail,
-            templatedId: HebrewTemplate.REEDEMABLE_VOUCHER_REMINDER,
-            mergeVars: {
-              BUYERNAME: voucher.name,
-              VOUCHERCODE: voucher.code,
-              VOUCHERAMOUNT: voucher.remainingAmount,
-            },
-          });
-          noOfEmailSent += 1;
-        }
-      }),
-    );
+      await Promise.all(
+        vouchers.map(async voucher => {
+          const createdDate = new Date(voucher.createdAt);
 
-    return {
-      message: `${noOfEmailSent} emails were sent successfully`,
-    };
+          if (currentDate.getDate() === createdDate.getDate()) {
+            await this.mailchimpService.sendTransactionalEmail({
+              to: voucher.waitingUserEmail,
+              templatedId: HebrewTemplate.REEDEMABLE_VOUCHER_REMINDER,
+              mergeVars: {
+                BUYERNAME: voucher.name,
+                VOUCHERCODE: voucher.code,
+                VOUCHERAMOUNT: voucher.remainingAmount,
+                VOUCHERACTUALAMOUNT: voucher.amount,
+              },
+            });
+            noOfEmailSent += 1;
+          }
+        }),
+      );
+
+      const message = `${noOfEmailSent} emails were sent successfully`;
+      console.log(message);
+
+      return {
+        message,
+      };
+    }
   }
 }
