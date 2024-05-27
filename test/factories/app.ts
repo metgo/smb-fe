@@ -11,6 +11,7 @@ import { AuthorityFactory } from 'test/factories/authority.factory';
 import { BusinessesFactory } from 'test/factories/business.factory';
 import { CampaignFactory } from 'test/factories/campaign.factory';
 import { DMOFactory } from 'test/factories/dmo.factory';
+import { ProductFactory } from 'test/factories/products.factory';
 import { UsersFactory } from 'test/factories/users.factory';
 import { VouchersFactory } from 'test/factories/voucher.factory';
 import { JwtAuthStrategyStub } from 'test/stubs/jwt/jwt-strategy.stub';
@@ -32,6 +33,7 @@ export const appFactory = async () => {
       BusinessesFactory,
       CampaignFactory,
       DMOFactory,
+      ProductFactory,
       UsersFactory,
       VouchersFactory,
     ],
