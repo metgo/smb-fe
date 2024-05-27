@@ -3,7 +3,10 @@ import mongoose from 'mongoose';
 import { faker } from '@faker-js/faker';
 
 import { BaseFactory } from 'test/factories/base.factory';
-import { Product, ProductSchema } from 'src/modules/products/schema/products.schema';
+import {
+  Product,
+  ProductSchema,
+} from 'src/modules/products/schema/products.schema';
 import { ProductStatus } from 'src/modules/products/products.type';
 
 const ProductModel = mongoose.model(Product.name, ProductSchema);

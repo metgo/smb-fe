@@ -109,9 +109,7 @@ describe('Users e2e Test', () => {
       productFactory.createMany(2, { status: ProductStatus.INACTIVE }),
     ]);
 
-    const { body } = await superTest
-      .get('/products')
-      .expect(HttpStatus.OK);
+    const { body } = await superTest.get('/products').expect(HttpStatus.OK);
 
     expect(body.datas.totalData).toEqual(3);
   });
@@ -137,9 +135,7 @@ describe('Users e2e Test', () => {
       productFactory.createMany(2, { status: ProductStatus.INACTIVE }),
     ]);
 
-    await superTest
-      .get('/admin/products')
-      .expect(HttpStatus.UNAUTHORIZED);
+    await superTest.get('/admin/products').expect(HttpStatus.UNAUTHORIZED);
   });
 
   afterAll(async () => {
