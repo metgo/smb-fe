@@ -165,7 +165,7 @@ export class ProductsService {
 
     const impact = getRandomNumberBetween(9, 73);
 
-    let createdField = {
+    const createdField = {
       ...body,
       price,
       quantity,
@@ -177,12 +177,6 @@ export class ProductsService {
       status,
       impact,
     };
-    if (loggedInUser.role === UserType.TRAVELLER) {
-      createdField = {
-        ...createdField,
-        primaryUserId: loggedInUser.id,
-      };
-    }
 
     const newProduct = new this.ProductModel({
       ...createdField,
