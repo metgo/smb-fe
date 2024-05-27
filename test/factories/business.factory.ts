@@ -2,8 +2,14 @@ import { range } from 'lodash';
 import mongoose from 'mongoose';
 import { faker } from '@faker-js/faker';
 
-import { BusinessStatus, GeoServicesTypes } from 'src/modules/business/business.type';
-import { Business, BusinessSchema } from 'src/modules/business/schema/business.schema';
+import {
+  BusinessStatus,
+  GeoServicesTypes,
+} from 'src/modules/business/business.type';
+import {
+  Business,
+  BusinessSchema,
+} from 'src/modules/business/schema/business.schema';
 import { BaseFactory } from 'test/factories/base.factory';
 
 const BusinessModel = mongoose.model(Business.name, BusinessSchema);
