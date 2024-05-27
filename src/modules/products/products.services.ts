@@ -46,8 +46,6 @@ export class ProductsService {
   constructor(
     @InjectModel(Product.name)
     private ProductModel: Model<Product>,
-    @InjectModel(Business.name)
-    private BusinessModel: Model<Business>,
     @Inject(forwardRef(() => BusinessService))
     private readonly businessService: BusinessService,
     private readonly mockDataService: MockDataServices,
