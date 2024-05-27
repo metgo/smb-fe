@@ -8,6 +8,7 @@ import { JwtStrategyProvider } from 'src/modules/jwt-auth/providers/jwt-strategy
 import { MailChimpService } from 'src/services/mailchimp/mailchimp.service';
 import { PaymentsService } from 'src/services/payments/payments.service';
 import { AuthorityFactory } from 'test/factories/authority.factory';
+import { BusinessesFactory } from 'test/factories/business.factory';
 import { CampaignFactory } from 'test/factories/campaign.factory';
 import { DMOFactory } from 'test/factories/dmo.factory';
 import { UsersFactory } from 'test/factories/users.factory';
@@ -28,6 +29,7 @@ export const appFactory = async () => {
     imports: [MongooseModule.forRoot(mongoUri), AppModule],
     providers: [
       AuthorityFactory,
+      BusinessesFactory,
       CampaignFactory,
       DMOFactory,
       UsersFactory,
