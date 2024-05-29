@@ -878,7 +878,10 @@ export class UsersService {
       ),
       this.mailchimpService.sendTransactionalEmail({
         to: newUser.email,
-        templatedId: EnglishTemplate.UserRegistrationByAdmin,
+        templatedId:
+          dto?.languagePreference === Locale.HEBREW
+            ? HebrewTemplate.UserRegistrationByAdmin
+            : EnglishTemplate.UserRegistrationByAdmin,
         mergeVars: {
           FNAME: newUser.firstName,
           USERNAME: newUser.email,
@@ -930,72 +933,6 @@ export class UsersService {
         }
         throw new InternalServerErrorException("Couldn't update user");
       }
-    }
-  }
-
-  async createByExternalApi(
-    registerDto: RegisterRequest,
-  ): Promise<GetUserDetailsResponse> {
-    try {
-      const user = await findOneByFieldName<User>(
-        this.UserModel,
-        'email',
-        registerDto.email,
-      );
-
-      if (user) {
-        return;
-      }
-
-      const hashedPassword = await this.hashService.create(
-        registerDto.password,
-      );
-
-      const newUser = await new this.UserModel({
-        ...registerDto,
-        password: hashedPassword,
-      }).save();
-
-      await Promise.all([
-        this.mailchimpService.subscribe(
-          newUser.firstName,
-          newUser.lastName,
-          newUser.email,
-        ),
-        this.mailchimpService.sendTransactionalEmail({
-          to: newUser.email,
-          templatedId: EnglishTemplate.UserRegistrationByAdmin,
-          mergeVars: {
-            FNAME: newUser.firstName,
-            USERNAME: newUser.email,
-            PASSWORD: registerDto.password,
-          },
-        }),
-      ]);
-
-      // await this.mailService.sendWelcomeWithPwd(newUser);
-
-      return {
-        id: newUser.id,
-        firstName: newUser.firstName,
-        lastName: newUser.lastName,
-        phoneDetails: {
-          countryCode: newUser.countryCode,
-          phoneNumber: newUser.phoneNumber,
-        },
-        languagePreference: newUser.languagePreference,
-        address: newUser.address,
-        dob: newUser.dob,
-        email: newUser.email,
-        isPhoneVerify: newUser.isPhoneVerify,
-        isEmailVerify: newUser.isEmailVerify,
-        role: newUser.role,
-        createdAt: newUser.createdAt,
-        updatedAt: newUser.updatedAt,
-      };
-    } catch (error) {
-      exceptionHandling(error);
-      throw new InternalServerErrorException("Couldn't save user");
     }
   }
 

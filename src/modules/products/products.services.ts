@@ -21,6 +21,7 @@ import {
   deleteItem,
   findOneByIDPopulate,
   queryhandler,
+  updateManyByIds,
   updateOneByManyFields,
 } from 'src/core/helper/query-helper';
 import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interface';
@@ -567,6 +568,37 @@ export class ProductsService {
     }
 
     return updateProduct;
+  }
+
+  async assignUserToProducts(
+    businessIds: string[],
+    assignUserId: string,
+    loggedInUserId: string,
+  ) {
+    try {
+      const productIds = await this.ProductModel.distinct('_id', {
+        businessId: { $in: businessIds },
+      });
+
+      const updatedField = {
+        primaryUserId: assignUserId,
+        updatedBy: loggedInUserId,
+      };
+      const updateProducts = await updateManyByIds<Product>(
+        this.ProductModel,
+        '_id',
+        productIds,
+        updatedField,
+      );
+
+      if (!updateProducts) {
+        throw new BadRequestException(ServerErrors.BUSINESS_NOT_FOUND);
+      }
+
+      return updateProducts;
+    } catch (err) {
+      exceptionHandling(err);
+    }
   }
 
   async getProductInformationForOrders(productInfo) {

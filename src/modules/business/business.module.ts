@@ -28,6 +28,7 @@ import { VoucherModule } from 'src/modules/vouchers/voucher.module';
 import { EventController } from 'src/modules/business/controllers/event.controller';
 import { EventsService } from 'src/modules/business/services/event.service';
 import { MediaModule } from 'src/modules/media/media.module';
+import { ProductsModule } from 'src/modules/products/products.module';
 import { UsersModule } from 'src/modules/users/users.module';
 
 @Module({
@@ -50,6 +51,7 @@ import { UsersModule } from 'src/modules/users/users.module';
     forwardRef(() => VoucherModule),
     forwardRef(() => UsersModule),
     forwardRef(() => DMOModule),
+    forwardRef(() => ProductsModule),
   ],
   controllers: [BusinessController, EventController, MapPointsController],
   providers: [BusinessService, EventsService, MapPointsService],

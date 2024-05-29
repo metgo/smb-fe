@@ -64,6 +64,7 @@ import { User } from 'src/modules/users/schema/users.schema';
 import { UserType } from 'src/modules/users/users.type';
 import { MediaServices } from 'src/modules/media/media.service';
 import { ReferenceType } from 'src/modules/media/media.type';
+import { ProductsService } from 'src/modules/products/products.services';
 
 @Injectable()
 export class BusinessService {
@@ -73,6 +74,7 @@ export class BusinessService {
     private readonly authorityService: AuthorityService,
     private readonly mediaServices: MediaServices,
     private readonly mockDataService: MockDataServices,
+    private readonly productService: ProductsService,
     @InjectModel(BussCategory.name)
     private BussCategoryModel: Model<BussCategory>,
     @InjectModel(BussSubCategory.name)
@@ -1075,6 +1077,12 @@ export class BusinessService {
       if (!updateBusiness) {
         throw new BadRequestException(ServerErrors.BUSINESS_NOT_FOUND);
       }
+
+      await this.productService.assignUserToProducts(
+        businessIds,
+        assignUserId,
+        loggedInUserId,
+      );
 
       return updateBusiness;
     } catch (err) {
