@@ -718,9 +718,17 @@ export class BusinessService {
   async getAllBusinessesForMap(
     queries: GetUsersBusinessesQuery | GetAllUnpaginatedBusinessQuery,
     loggedInUser?: LoggedInUserInterface,
-  ) : Promise<GetAllBusinessesForMapResponse> {
+  ): Promise<GetAllBusinessesForMapResponse> {
     const {
-      search, long, lat, miles, groupTypesId, accessibilitiesId, page, limit, ...query
+      search,
+      long,
+      lat,
+      miles,
+      groupTypesId,
+      accessibilitiesId,
+      page,
+      limit,
+      ...query
     } = queries;
 
     let findQuery: any = {
@@ -732,7 +740,10 @@ export class BusinessService {
     }
 
     if (loggedInUser) {
-      if (loggedInUser.role === UserType.DMOADMIN || loggedInUser.role === UserType.DMO) {
+      if (
+        loggedInUser.role === UserType.DMOADMIN
+        || loggedInUser.role === UserType.DMO
+      ) {
         const dmoId = loggedInUser.dmo.id;
 
         findQuery = {
@@ -859,7 +870,7 @@ export class BusinessService {
     const defaultImage = await this.getDefaultImage();
 
     const businessResponse = await Promise.all(
-      allBusiness.data.map((business) => ({
+      allBusiness.data.map(business => ({
         _id: business._id,
         name: business?.name,
         description: business?.description,

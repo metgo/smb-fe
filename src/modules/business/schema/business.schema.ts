@@ -33,11 +33,11 @@ export class Business extends AuditableSchema {
     default: null,
   })
     address: {
-      country: { type: string; default: null };
-      city: { type: string; default: null };
-      location: { type: string; default: null };
-      additional_information: { type: string; default: null };
-    };
+    country: { type: string; default: null };
+    city: { type: string; default: null };
+    location: { type: string; default: null };
+    additional_information: { type: string; default: null };
+  };
 
   @Prop()
     countryCode: string;
@@ -131,13 +131,13 @@ export class Business extends AuditableSchema {
     },
   })
     location: {
-      type: {
-        type: String;
-      };
-      coordinates: {
-        type: number[];
-      };
+    type: {
+      type: String;
     };
+    coordinates: {
+      type: number[];
+    };
+  };
 
   @Prop()
     images: [
