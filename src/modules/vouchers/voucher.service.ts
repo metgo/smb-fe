@@ -933,7 +933,7 @@ export class VoucherService {
     const {
       search, page, limit, ...queries
     } = query;
-    let findQuery : any = queries;
+    let findQuery: any = queries;
 
     const populate = {
       path: 'campId assignedTo',
@@ -941,9 +941,7 @@ export class VoucherService {
     };
 
     if (search) {
-      const users = await this.usersService.findByRegex(search, [
-        'email',
-      ]);
+      const users = await this.usersService.findByRegex(search, ['email']);
 
       findQuery = {
         ...findQuery,
