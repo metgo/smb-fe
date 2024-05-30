@@ -926,7 +926,10 @@ export class VoucherService {
     };
   }
 
-  async getAllVoucherbyAdmin(user: LoggedInUserInterface, query: CommonFilterQuery) {
+  async getAllVoucherbyAdmin(
+    user: LoggedInUserInterface,
+    query: CommonFilterQuery,
+  ) {
     let findQuery = {};
     const populate = {
       path: 'campId assignedTo',
@@ -934,7 +937,9 @@ export class VoucherService {
     };
 
     if (query.search) {
-      const users = await this.usersService.findByRegex(query.search, ['email']);
+      const users = await this.usersService.findByRegex(query.search, [
+        'email',
+      ]);
 
       findQuery = {
         ...findQuery,
