@@ -19,7 +19,6 @@ import {
   HebrewTemplate,
 } from 'src/common/mailchimp/templateId';
 import { paginationConfig } from 'src/common/pagination.config';
-import { CommonFilterQuery } from 'src/common/query-handler/common-filter-query';
 import { Voucher } from './schema/voucher.schema';
 import {
   Currency,
@@ -59,6 +58,7 @@ import {
   GetMyCreatedVouchersQuery,
   GetVoucherStatsQuery,
   GetVoucherStatsGroupedQuery,
+  GetVouchersByAdminQuery,
 } from 'src/modules/vouchers/queries';
 import { ConfigService } from 'src/services/config/config.service';
 
@@ -928,26 +928,30 @@ export class VoucherService {
 
   async getAllVoucherbyAdmin(
     user: LoggedInUserInterface,
-    query: CommonFilterQuery,
+    query: GetVouchersByAdminQuery,
   ) {
-    let findQuery = {};
+    const {
+      search, page, limit, ...queries
+    } = query;
+    let findQuery : any = queries;
+
     const populate = {
       path: 'campId assignedTo',
       select: `${disSelect} `,
     };
 
-    if (query.search) {
-      const users = await this.usersService.findByRegex(query.search, [
+    if (search) {
+      const users = await this.usersService.findByRegex(search, [
         'email',
       ]);
 
       findQuery = {
         ...findQuery,
         $or: [
-          { name: { $regex: query.search, $options: 'i' } },
-          { waitingUserEmail: { $regex: query.search, $options: 'i' } },
-          { createdByEmail: { $regex: query.search, $options: 'i' } },
-          { code: { $regex: query.search, $options: 'i' } },
+          { name: { $regex: search, $options: 'i' } },
+          { waitingUserEmail: { $regex: search, $options: 'i' } },
+          { createdByEmail: { $regex: search, $options: 'i' } },
+          { code: { $regex: search, $options: 'i' } },
           { assignedTo: { $in: users } },
           { createdBy: { $in: users } },
         ],
@@ -981,8 +985,8 @@ export class VoucherService {
       findQuery,
       select,
       populate,
-      page: Number(query.page),
-      limit: Number(query.limit),
+      page: Number(page),
+      limit: Number(limit),
     });
 
     return voucher;

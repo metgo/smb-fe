@@ -16,7 +16,6 @@ import { Cron } from '@nestjs/schedule';
 import { Response } from 'express';
 
 import { ServerSuccess } from 'src/common/constant';
-import { CommonFilterQuery } from 'src/common/query-handler/common-filter-query';
 import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
 import { Roles } from 'src/core/guards/authorization/roles';
 import { JwtAuthGuard } from 'src/core/guards/jwt/jwt.guards';
@@ -33,6 +32,7 @@ import {
   GetVoucherStatsGroupedQuery,
   GetVoucherStatsQuery,
   GetVoucherQuery,
+  GetVouchersByAdminQuery,
 } from 'src/modules/vouchers/queries';
 
 @Controller()
@@ -301,7 +301,7 @@ export class VoucherController {
   async getAllVoucherbyAdmin(
     @Req() req,
     @Res() response: Response,
-    @Query() query: CommonFilterQuery,
+    @Query() query: GetVouchersByAdminQuery,
   ) {
     const voucher = await this.voucherService.getAllVoucherbyAdmin(
       req.user,
