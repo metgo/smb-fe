@@ -47,8 +47,6 @@ export class ProductsService {
   constructor(
     @InjectModel(Product.name)
     private ProductModel: Model<Product>,
-    @InjectModel(Business.name)
-    private BusinessModel: Model<Business>,
     @Inject(forwardRef(() => BusinessService))
     private readonly businessService: BusinessService,
     private readonly mockDataService: MockDataServices,
@@ -166,7 +164,7 @@ export class ProductsService {
 
     const impact = getRandomNumberBetween(9, 73);
 
-    let createdField = {
+    const createdField = {
       ...body,
       price,
       quantity,
@@ -178,12 +176,6 @@ export class ProductsService {
       status,
       impact,
     };
-    if (loggedInUser.role === UserType.TRAVELLER) {
-      createdField = {
-        ...createdField,
-        primaryUserId: loggedInUser.id,
-      };
-    }
 
     const newProduct = new this.ProductModel({
       ...createdField,
