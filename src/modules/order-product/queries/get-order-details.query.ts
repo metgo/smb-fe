@@ -31,4 +31,8 @@ export class GetAllOrdersDetailsQuery extends CommonFilterQuery {
   @ApiProperty({ type: String, required: false })
   @IsOptional()
     productId: string;
+
+  @ApiProperty({ type: String, required: false })
+  @IsOptional()
+    voucherId: string;
 }

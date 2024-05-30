@@ -326,6 +326,7 @@ export class OrderProductService {
       dmoId,
       productId,
       authorityId,
+      voucherId,
       sortBy,
       sortOrder,
     } = queries;
@@ -410,6 +411,14 @@ export class OrderProductService {
       pipeline.push({
         $match: {
           'orders.status': status,
+        },
+      });
+    }
+
+    if (voucherId) {
+      pipeline.push({
+        $match: {
+          'orders.voucher.id': voucherId,
         },
       });
     }
