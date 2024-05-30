@@ -19,6 +19,7 @@ import {
   HebrewTemplate,
 } from 'src/common/mailchimp/templateId';
 import { paginationConfig } from 'src/common/pagination.config';
+import { CommonFilterQuery } from 'src/common/query-handler/common-filter-query';
 import { Voucher } from './schema/voucher.schema';
 import {
   Currency,
@@ -925,18 +926,32 @@ export class VoucherService {
     };
   }
 
-  async getAllVoucherbyAdmin(user: LoggedInUserInterface, query: any) {
+  async getAllVoucherbyAdmin(user: LoggedInUserInterface, query: CommonFilterQuery) {
     let findQuery = {};
     const populate = {
       path: 'campId assignedTo',
       select: `${disSelect} `,
     };
 
-    console.log(query);
+    if (query.search) {
+      const users = await this.usersService.findByRegex(query.search, ['email']);
+
+      findQuery = {
+        ...findQuery,
+        $or: [
+          { name: { $regex: query.search, $options: 'i' } },
+          { waitingUserEmail: { $regex: query.search, $options: 'i' } },
+          { createdByEmail: { $regex: query.search, $options: 'i' } },
+          { code: { $regex: query.search, $options: 'i' } },
+          { assignedTo: { $in: users } },
+          { createdBy: { $in: users } },
+        ],
+      };
+    }
 
     const select = `${disSelect} -code`;
 
-    if (user.role === UserType.DMOADMIN) {
+    if (user.role === UserType.DMOADMIN || user.role === UserType.DMO) {
       // find dmo
       const dmoId = user.dmo.id;
 
@@ -961,6 +976,8 @@ export class VoucherService {
       findQuery,
       select,
       populate,
+      page: Number(query.page),
+      limit: Number(query.limit),
     });
 
     return voucher;
