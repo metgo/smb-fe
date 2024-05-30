@@ -1029,4 +1029,17 @@ export class UsersService {
       deletedAt: unblockedUser.deletedAt,
     };
   }
+
+  async findByRegex(keyword: string, searchParams: (keyof User)[]) {
+    const regexQueries = searchParams.map(searchParam => ({
+      [searchParam]: { $regex: keyword, $options: 'i' },
+    }));
+
+    const query = {
+      $or: regexQueries,
+    };
+
+    const data = await this.UserModel.find(query).select('_id');
+    return data;
+  }
 }

@@ -32,6 +32,7 @@ import {
   GetVoucherStatsGroupedQuery,
   GetVoucherStatsQuery,
   GetVoucherQuery,
+  GetVouchersByAdminQuery,
 } from 'src/modules/vouchers/queries';
 
 @Controller()
@@ -287,14 +288,20 @@ export class VoucherController {
     );
   }
 
-  @Roles(UserType.SUPERADMIN, UserType.DMO, UserType.DMOADMIN)
+  @Roles(
+    UserType.ADMIN,
+    UserType.AUTHORITY,
+    UserType.DMO,
+    UserType.DMOADMIN,
+    UserType.SUPERADMIN,
+  )
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
-  @Get('admin/voucher')
+  @Get('admin/vouchers')
   async getAllVoucherbyAdmin(
     @Req() req,
     @Res() response: Response,
-    @Query() query: any,
+    @Query() query: GetVouchersByAdminQuery,
   ) {
     const voucher = await this.voucherService.getAllVoucherbyAdmin(
       req.user,

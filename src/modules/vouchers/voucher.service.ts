@@ -58,6 +58,7 @@ import {
   GetMyCreatedVouchersQuery,
   GetVoucherStatsQuery,
   GetVoucherStatsGroupedQuery,
+  GetVouchersByAdminQuery,
 } from 'src/modules/vouchers/queries';
 import { ConfigService } from 'src/services/config/config.service';
 
@@ -925,18 +926,39 @@ export class VoucherService {
     };
   }
 
-  async getAllVoucherbyAdmin(user: LoggedInUserInterface, query: any) {
-    let findQuery = {};
+  async getAllVoucherbyAdmin(
+    user: LoggedInUserInterface,
+    query: GetVouchersByAdminQuery,
+  ) {
+    const {
+      search, page, limit, ...queries
+    } = query;
+    let findQuery: any = queries;
+
     const populate = {
       path: 'campId assignedTo',
       select: `${disSelect} `,
     };
 
-    console.log(query);
+    if (search) {
+      const users = await this.usersService.findByRegex(search, ['email']);
+
+      findQuery = {
+        ...findQuery,
+        $or: [
+          { name: { $regex: search, $options: 'i' } },
+          { waitingUserEmail: { $regex: search, $options: 'i' } },
+          { createdByEmail: { $regex: search, $options: 'i' } },
+          { code: { $regex: search, $options: 'i' } },
+          { assignedTo: { $in: users } },
+          { createdBy: { $in: users } },
+        ],
+      };
+    }
 
     const select = `${disSelect} -code`;
 
-    if (user.role === UserType.DMOADMIN) {
+    if (user.role === UserType.DMOADMIN || user.role === UserType.DMO) {
       // find dmo
       const dmoId = user.dmo.id;
 
@@ -961,6 +983,8 @@ export class VoucherService {
       findQuery,
       select,
       populate,
+      page: Number(page),
+      limit: Number(limit),
     });
 
     return voucher;
