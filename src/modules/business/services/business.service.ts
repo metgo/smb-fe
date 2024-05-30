@@ -55,6 +55,7 @@ import {
   GetBusinessStatsQuery,
   GetUsersBusinessesQuery,
 } from 'src/modules/business/queries';
+import { GetAllBusinessesForMapResponse } from 'src/modules/business/response/get-businesses-for-map.response';
 import { Business } from 'src/modules/business/schema/business.schema';
 import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.schema';
 import { BussSubCategory } from 'src/modules/buss-subcategories/schema/buss-subCategory.schema';
@@ -710,6 +711,183 @@ export class BusinessService {
     );
 
     allBusiness.data = businessesWithImage;
+
+    return allBusiness;
+  }
+
+  async getAllBusinessesForMap(
+    queries: GetUsersBusinessesQuery | GetAllUnpaginatedBusinessQuery,
+    loggedInUser?: LoggedInUserInterface,
+  ): Promise<GetAllBusinessesForMapResponse> {
+    const {
+      search,
+      long,
+      lat,
+      miles,
+      groupTypesId,
+      accessibilitiesId,
+      page,
+      limit,
+      ...query
+    } = queries;
+
+    let findQuery: any = {
+      ...query,
+    };
+
+    if (!('status' in query)) {
+      findQuery = { ...findQuery, status: BusinessStatus.APPROVED };
+    }
+
+    if (loggedInUser) {
+      if (
+        loggedInUser.role === UserType.DMOADMIN
+        || loggedInUser.role === UserType.DMO
+      ) {
+        const dmoId = loggedInUser.dmo.id;
+
+        findQuery = {
+          ...findQuery,
+          dmoId,
+        };
+      }
+
+      if (loggedInUser.role === UserType.AUTHORITY) {
+        const authorityId = loggedInUser.authority.id;
+
+        findQuery = {
+          ...findQuery,
+          authorityId,
+        };
+      }
+
+      if (loggedInUser.role === UserType.TRAVELLER) {
+        findQuery = {
+          ...findQuery,
+          userId: loggedInUser.id,
+        };
+      }
+    }
+
+    if (search) {
+      const [matchingCategoryIds, matchingSubCategoryIds] = await Promise.all([
+        this.BussCategoryModel.find({
+          name: { $regex: search, $options: 'i' },
+        }).select('_id'),
+        this.BussSubCategoryModel.find({
+          name: { $regex: search, $options: 'i' },
+        }).select('_id'),
+      ]);
+
+      const matchingProductsIds = await this.ProductModel.find({
+        $or: [
+          { name: { $regex: search, $options: 'i' } },
+          { description: { $regex: search, $options: 'i' } },
+          { categories: { $in: matchingCategoryIds } },
+          { subCategories: { $in: matchingSubCategoryIds } },
+        ],
+      }).select('_id');
+
+      findQuery = {
+        ...findQuery,
+        $or: [
+          { name: { $regex: search, $options: 'i' } },
+          { description: { $regex: search, $options: 'i' } },
+          { bussCategoriesId: { $in: matchingCategoryIds } },
+          { bussSubCategoriesId: { $in: matchingSubCategoryIds } },
+          { productsId: { $in: matchingProductsIds } },
+        ],
+      };
+
+      if (
+        !(
+          matchingCategoryIds?.length
+          || matchingSubCategoryIds?.length
+          || matchingProductsIds?.length
+        )
+      ) {
+        findQuery.$text = {
+          $search: search,
+          $caseSensitive: false,
+          $diacriticSensitive: false,
+        };
+      }
+    }
+
+    if (query.bussCategoriesId) {
+      const bussCategoriesId = JSON.parse(query.bussCategoriesId);
+      findQuery = {
+        ...findQuery,
+        bussCategoriesId: { $in: bussCategoriesId },
+      };
+    }
+
+    if (query.bussSubCategoriesId) {
+      const bussSubCategoriesId = JSON.parse(query.bussSubCategoriesId);
+      findQuery = {
+        ...findQuery,
+        bussSubCategoriesId: { $in: bussSubCategoriesId },
+      };
+    }
+
+    if (long && lat) {
+      findQuery = {
+        ...findQuery,
+        location: {
+          $geoWithin: {
+            $centerSphere: [
+              [long, lat],
+              maxDistanceInRadius(miles || milesConfig),
+            ],
+          },
+        },
+      };
+    }
+
+    const populate = {
+      path: 'bussCategoriesId bussSubCategoriesId',
+      select: `${disSelect}`,
+      populate: {
+        path: 'icon',
+        select: `${disSelect}`,
+      },
+    };
+
+    const populate1 = {
+      path: 'dmoId authorityId',
+      select: `${disSelect} -userId -collaboratorsUser`,
+    };
+
+    const select = `${disSelect}`;
+
+    const allBusiness = await queryhandler<Business>(this.BusinessModel, {
+      findQuery,
+      select,
+      populate,
+      populate1,
+    });
+
+    const defaultImage = await this.getDefaultImage();
+
+    const businessResponse = await Promise.all(
+      allBusiness.data.map(business => ({
+        _id: business._id,
+        name: business?.name,
+        description: business?.description,
+        status: business?.status,
+        authorityId: business?.authorityId,
+        dmoId: business?.dmoId,
+        geoLocation: business?.geoLocation,
+        location: business?.location,
+        images: business?.images?.length ? business?.images : [defaultImage],
+        bussCategoriesId: business?.bussCategoriesId,
+        bussSubCategoriesId: business?.bussSubCategoriesId,
+        slug: business?.slug,
+        serviceType: business?.serviceType,
+      })),
+    );
+
+    allBusiness.data = businessResponse;
 
     return allBusiness;
   }

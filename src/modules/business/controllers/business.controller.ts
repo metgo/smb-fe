@@ -210,6 +210,66 @@ export class BusinessController {
     );
   }
 
+  @UseGuards(JwtAuthGuard)
+  @ApiEndpoint({
+    tags: ['Business'],
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.BUSINESS_LISTED,
+    },
+    softBlockExtraDtoFields: true,
+    noAuthToken: true,
+    operation: 'Get all businesses for map by admins',
+  })
+  @Get('admin/map-businesses')
+  async getAllBusinessForMapByAdmin(
+    @Req() request,
+    @Res() response: Response,
+    @Query() query?: GetUsersBusinessesQuery,
+  ) {
+    const businesses = await this.businessServices.getAllBusinessesForMap(
+      query,
+      request.user,
+    );
+
+    return responseHelper(
+      response,
+      HttpStatus.OK,
+      ServerSuccess.BUSINESS_LISTED,
+      businesses,
+      null,
+      null,
+    );
+  }
+
+  @ApiEndpoint({
+    tags: ['Business'],
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.BUSINESS_LISTED,
+    },
+    softBlockExtraDtoFields: true,
+    operation: 'Get all businesses for map by non-authenticated users',
+  })
+  @Get('map-businesses')
+  async getAllBusinessForMap(
+    @Res() response: Response,
+    @Query() query?: GetAllUnpaginatedBusinessQuery,
+  ) {
+    const businesses = await this.businessServices.getAllBusinessesForMap(
+      query,
+    );
+
+    return responseHelper(
+      response,
+      HttpStatus.OK,
+      ServerSuccess.BUSINESS_LISTED,
+      businesses,
+      null,
+      null,
+    );
+  }
+
   @ApiEndpoint({
     tags: ['Business'],
     response: {
