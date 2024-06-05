@@ -835,7 +835,7 @@ export class UsersService {
         };
 
         newUser = new this.UserModel(body);
-        await this.dmoService.addCollaborators(loggedInUser.id, newUser.id);
+        await this.dmoService.addCollaborators(loggedInUser.dmo.id, newUser.id);
       }
     }
 

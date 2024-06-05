@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import mongoose, { Model } from 'mongoose';
 import { ServerErrors } from 'src/common/constant';
 
 import { exceptionHandling } from 'src/common/utils/exception-handling';
@@ -139,7 +139,7 @@ export class AuthorityService {
     const authority = await updateOneByManyFields<Authority>(
       this.AuthorityModel,
       {
-        _id: authorityId,
+        _id: new mongoose.Types.ObjectId(authorityId),
       },
       {
         userId,

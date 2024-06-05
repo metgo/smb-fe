@@ -6,7 +6,7 @@ import {
   forwardRef,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import mongoose, { Model } from 'mongoose';
 
 import { ServerErrors } from 'src/common/constant';
 import { paginationConfig } from 'src/common/pagination.config';
@@ -99,11 +99,11 @@ export class DMOService {
     }
   }
 
-  async addCollaborators(dmoUserId: string, collaboratedUserId: string) {
+  async addCollaborators(dmoId: string, collaboratedUserId: string) {
     const dmo = await updateOneByManyFields<DMO>(
       this.DMOModel,
       {
-        userId: dmoUserId,
+        _id: new mongoose.Types.ObjectId(dmoId),
       },
       {
         $push: { collaboratorsUser: { $each: [collaboratedUserId] } },
@@ -120,7 +120,7 @@ export class DMOService {
     const dmo = await updateOneByManyFields<DMO>(
       this.DMOModel,
       {
-        _id: dmoId,
+        _id: new mongoose.Types.ObjectId(dmoId),
       },
       {
         userId,
