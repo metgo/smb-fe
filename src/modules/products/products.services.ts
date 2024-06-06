@@ -242,18 +242,47 @@ export class ProductsService {
     loggedInUser: LoggedInUserInterface,
   ): Promise<Product> {
     const populate = {
-      path: 'categories subCategories',
+      path: 'categories subCategories businessId dmoId',
       select: `${disSelect}`,
     };
     try {
+      let findQuery: any = {
+        _id: productId,
+      };
+
+      if (
+        loggedInUser.role === UserType.DMOADMIN
+        || loggedInUser.role === UserType.DMO
+      ) {
+        const dmoId = loggedInUser.dmo.id;
+
+        findQuery = {
+          ...findQuery,
+          dmoId,
+        };
+      }
+
+      if (loggedInUser.role === UserType.AUTHORITY) {
+        const authorityId = loggedInUser.authority.id;
+
+        findQuery = {
+          ...findQuery,
+          authorityId,
+        };
+      }
+
       const product = await findOneByIDPopulate<Product>(
         this.ProductModel,
-        {
-          _id: productId,
-        },
+        findQuery,
         populate,
       );
-      const allowedRoles = [UserType.DMOADMIN, UserType.SUPERADMIN];
+      const allowedRoles = [
+        UserType.AUTHORITY,
+        UserType.ADMIN,
+        UserType.DMO,
+        UserType.DMOADMIN,
+        UserType.SUPERADMIN,
+      ];
       if (
         !product
         || (!allowedRoles.includes(loggedInUser.role)
@@ -265,14 +294,6 @@ export class ProductsService {
           ))
       ) {
         throw new NotFoundException(ServerErrors.PRODUCT.NOT_FOUND);
-      }
-
-      if (loggedInUser.role === UserType.DMOADMIN) {
-        const dmoId = loggedInUser.dmo.id;
-
-        if (!product.dmoId.equals(new mongoose.Types.ObjectId(dmoId))) {
-          throw new NotFoundException(ServerErrors.PRODUCT.NOT_FOUND);
-        }
       }
 
       return product;
@@ -318,6 +339,7 @@ export class ProductsService {
       findQuery = { ...findQuery, collaboratorId: queries.loggedInUser.id };
     }
 
+    let populate: {};
     if (
       queries.isAdmin
       && (queries.loggedInUser.role === UserType.DMOADMIN
@@ -331,11 +353,28 @@ export class ProductsService {
       };
     }
 
+    if (queries.isAdmin && queries.loggedInUser.role === UserType.AUTHORITY) {
+      const authorityId = queries.loggedInUser.authority.id;
+
+      findQuery = {
+        ...findQuery,
+        authorityId,
+      };
+    }
+
+    if (queries.isAdmin) {
+      populate = {
+        path: 'categories subCategories businessId',
+        select: `${disSelect}`,
+      };
+    }
+
     const products = await queryhandler<Product>(this.ProductModel, {
       findQuery,
       select,
       page: queryPage,
       limit: queryLimit,
+      populate,
     });
 
     return products;
