@@ -57,7 +57,7 @@ describe('Users e2e Test', () => {
       .expect(HttpStatus.CREATED);
   });
 
-  it('[POST] /admin/businesses/:businessId/products should not allow to create product of business by non-admin', async () => {
+  it('[POST] /admin/businesses/:businessId/products should create product of business', async () => {
     const user = await usersFactory.create();
     const business = await businessesFactory.create({ userId: user.id });
 
@@ -75,32 +75,7 @@ describe('Users e2e Test', () => {
       .post(`/admin/businesses/${business.id}/products`)
       .set({ Authorization: `Bearer ${authToken(user)}` })
       .send(body)
-      .expect(HttpStatus.FORBIDDEN);
-  });
-
-  it('[POST] /admin/businesses/:businessId/products should create product of business by admin', async () => {
-    const superadmin = await usersFactory.create({ role: UserType.SUPERADMIN });
-    const user = await usersFactory.create();
-
-    const business = await businessesFactory.create({ userId: user.id });
-
-    const reqBody = {
-      name: 'Pacecode',
-      price: {
-        markedPrice: 30,
-      },
-      quantity: {
-        initial: 5,
-      },
-    };
-
-    const { body } = await superTest
-      .post(`/admin/businesses/${business.id}/products`)
-      .set({ Authorization: `Bearer ${authToken(superadmin)}` })
-      .send(reqBody)
       .expect(HttpStatus.CREATED);
-
-    expect(body.datas.primaryUserId).toBe(user.id);
   });
 
   it('[GET] /products should list all active products to non-authenticated user', async () => {

@@ -9,6 +9,9 @@ import { UserType } from 'src/modules/users/users.type';
 import { appFactory } from 'test/factories/app';
 import { authToken } from 'test/factories/auth.factory';
 import { CampaignFactory } from 'test/factories/campaign.factory';
+import { DMOFactory } from 'test/factories/dmo.factory';
+import { ProductFactory } from 'test/factories/products.factory';
+import { ProductStatus } from 'src/modules/products/products.type';
 import { UsersFactory } from 'test/factories/users.factory';
 import { VouchersFactory } from 'test/factories/voucher.factory';
 
@@ -16,6 +19,8 @@ describe('Users e2e Test', () => {
   let app: INestApplication;
   let superTest: SuperTest<any>;
   let campaignFactory: CampaignFactory;
+  let dmoFactory: DMOFactory;
+  let productFactory: ProductFactory;
   let usersFactory: UsersFactory;
   let voucherFactory: VouchersFactory;
 
@@ -23,6 +28,8 @@ describe('Users e2e Test', () => {
     app = await appFactory();
     superTest = request(app.getHttpServer());
     campaignFactory = await app.get(CampaignFactory);
+    dmoFactory = await app.get(DMOFactory);
+    productFactory = await app.get(ProductFactory);
     usersFactory = await app.get(UsersFactory);
     voucherFactory = await app.get(VouchersFactory);
   });
@@ -104,8 +111,9 @@ describe('Users e2e Test', () => {
       .expect(HttpStatus.FORBIDDEN);
   });
 
-  it('[GET] /voucher-code/:code should return paid voucher details', async () => {
+  it('[GET] /voucher-code/:code should not return voucher details if productId is not sent', async () => {
     const campaign = await campaignFactory.create({ code: 'TEST' });
+
     const expireDate = addDays(new Date(), 5);
 
     const voucher = await voucherFactory.create({
@@ -114,20 +122,59 @@ describe('Users e2e Test', () => {
       expireDate,
     });
 
-    await superTest.get(`/voucher-code/${voucher.code}`).expect(HttpStatus.OK);
+    const { body } = await superTest
+      .get(`/voucher-code/${voucher.code}`)
+      .expect(HttpStatus.BAD_REQUEST);
+
+    expect(body.message).toContain('productId should not be empty');
+  });
+
+  it('[GET] /voucher-code/:code should return paid voucher details', async () => {
+    const dmo = await dmoFactory.create();
+
+    const [product, campaign] = await Promise.all([
+      productFactory.create({ status: ProductStatus.ACTIVE, dmoId: dmo._id }),
+      campaignFactory.create({ code: 'TEST', dmoIds: [dmo._id] }),
+    ]);
+
+    const expireDate = addDays(new Date(), 5);
+
+    const voucher = await voucherFactory.create({
+      campId: campaign.id,
+      paymentStatus: VoucherPaymentStatus.PAID,
+      expireDate,
+    });
+
+    superTest
+      .get(`/voucher-code/${voucher.code}`)
+      .query({ productId: product._id.toString() })
+      .expect(HttpStatus.OK);
   });
 
   it('[GET] /voucher-code/:code should not return if voucher is not paid', async () => {
-    const campaign = await campaignFactory.create({ code: 'TEST' });
+    const dmo = await dmoFactory.create();
+
+    const [product, campaign] = await Promise.all([
+      productFactory.create({ status: ProductStatus.ACTIVE, dmoId: dmo._id }),
+      campaignFactory.create({ code: 'TEST', dmoIds: [dmo._id] }),
+    ]);
+
     const voucher = await voucherFactory.create({ campId: campaign.id });
 
     await superTest
       .get(`/voucher-code/${voucher.code}`)
+      .query({ productId: product._id.toString() })
       .expect(HttpStatus.FORBIDDEN);
   });
 
   it('[GET] /voucher-code/:code should not return if voucher is expired', async () => {
-    const campaign = await campaignFactory.create({ code: 'TEST' });
+    const dmo = await dmoFactory.create();
+
+    const [product, campaign] = await Promise.all([
+      productFactory.create({ status: ProductStatus.ACTIVE, dmoId: dmo._id }),
+      campaignFactory.create({ code: 'TEST', dmoIds: [dmo._id] }),
+    ]);
+
     const expireDate = subDays(new Date(), 1);
     const voucher = await voucherFactory.create({
       campId: campaign.id,
@@ -136,6 +183,7 @@ describe('Users e2e Test', () => {
 
     await superTest
       .get(`/voucher-code/${voucher.code}`)
+      .query({ productId: product._id.toString() })
       .expect(HttpStatus.GONE);
   });
 

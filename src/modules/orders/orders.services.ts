@@ -258,7 +258,7 @@ export class OrdersService {
     }
   }
 
-  async findOne(id: string): Promise<Order> {
+  async findOneById(id: string): Promise<Order> {
     try {
       const order = await findOneByFieldNames<Order>(this.OrderModel, {
         _id: id,
@@ -358,7 +358,7 @@ export class OrdersService {
     orderId: string,
   ): Promise<Order> {
     const allowedRoles = [UserType.ADMIN, UserType.DMO, UserType.SUPERADMIN];
-    const order = await this.findOne(orderId);
+    const order = await this.findOneById(orderId);
 
     if (
       !allowedRoles.includes(loggedInUser.role)

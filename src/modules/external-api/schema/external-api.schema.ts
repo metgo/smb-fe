@@ -1,7 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
 
-import { generateRandomIdentifier } from 'src/common/utils/random-identifierId-generator';
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
 
 @Schema()
@@ -23,7 +22,7 @@ export class ExternalApi extends AuditableSchema {
     address: string;
   };
 
-  @Prop({ unique: true, type: String, default: generateRandomIdentifier(18) })
+  @Prop({ unique: true, type: String, required: true })
     identifierId: string;
 
   @Prop({ default: null })

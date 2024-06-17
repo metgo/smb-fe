@@ -9,10 +9,10 @@ import { PaymentStatus, VoucherPaymentStatus } from 'src/common/enum';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { LoggedInUserInterface } from '../auth/interface/login.interface';
 import { Business } from '../business/schema/business.schema';
+import { Campaign } from 'src/modules/campaign/schema/campaign.schema';
 import { Product } from '../products/schema/products.schema';
 import { UserType } from '../users/users.type';
 import { GetALLBusinessProductStatsquery } from './query/query.dto';
-import { CampaignSegment } from 'src/modules/campaign-segments/schema/campaignSegment.schema';
 import { Order } from 'src/modules/orders/schema/orders.schema';
 import { GetByDateRangeQuery } from 'src/modules/stats/query/get-date-range.query';
 import { Voucher } from 'src/modules/vouchers/schema/voucher.schema';
@@ -23,8 +23,8 @@ import { OrderProduct } from '../order-product/schema/order-product.schema';
 @Injectable()
 export class StatsService {
   constructor(
-    @InjectModel(CampaignSegment.name)
-    private CampaignSegmentModel: Model<CampaignSegment>,
+    @InjectModel(Campaign.name)
+    private CampaignModel: Model<Campaign>,
     @InjectModel('Business')
     private BusinessModel: Model<Business>,
     @InjectModel(Order.name)
@@ -418,11 +418,14 @@ export class StatsService {
   ) {
     let findQuery;
     let orderFindQuery: any = { paymentStatus: PaymentStatus.SUCCESS };
-    if (loggedInUser.role === UserType.DMOADMIN) {
+    if (
+      loggedInUser.role === UserType.DMOADMIN
+      || loggedInUser.role === UserType.DMO
+    ) {
       const dmoId = loggedInUser.dmo.id;
 
       findQuery = {
-        DMOs: { $in: dmoId },
+        dmoIds: { $in: dmoId },
       };
     }
 
@@ -444,10 +447,12 @@ export class StatsService {
         },
       };
     }
-    const [campaigns, orders, vouchers] = await Promise.all([
-      this.CampaignSegmentModel.find({ ...findQuery }),
-      this.OrderModel.find({ ...orderFindQuery }),
+
+    const [campaigns, vouchers, products, orders] = await Promise.all([
+      this.CampaignModel.find({ ...findQuery }),
       this.VoucherModel.find(),
+      this.ProductModel.find(),
+      this.OrderModel.find({ ...orderFindQuery }),
     ]);
 
     const data: any = [];
@@ -455,7 +460,7 @@ export class StatsService {
     await Promise.all(
       campaigns.map(async campaign => {
         const relatedVouchers = vouchers.filter(
-          voucher => voucher.campId.toString() === campaign.campaign_ID.toString(),
+          voucher => voucher.campId.toString() === campaign._id.toString(),
         );
 
         const { vouchersRemainingAmount, vouchersActualAmount }
@@ -472,26 +477,27 @@ export class StatsService {
         let totalPurchaseMadeByCreditCard = 0;
         let totalProductsPurchased = 0;
 
-        if (campaign.products?.length) {
-          await Promise.all(
-            orders.map(async order => {
-              await Promise.all(
-                order.products.map(async product => {
-                  if (campaign.products.includes(product.id)) {
-                    totalPurchasedAmount += order.totalAmount;
-                    totalPurchaseMadeByCreditCard += order.creditCardPayment;
-                    totalProductsPurchased += 1;
-                  }
-                }),
-              );
-            }),
-          );
+        const relatedProducts = products.filter(product => campaign.dmoIds.includes(product.dmoId));
+
+        if (relatedProducts?.length) {
+          const productsId = relatedProducts.map(obj => obj.id);
+
+          const relatedOrders = orders.filter(order => order.products.some(product => productsId.includes(product.id.toString())));
+
+          if (relatedOrders?.length) {
+            await Promise.all(
+              relatedOrders.map(async order => {
+                totalPurchasedAmount += order.totalAmount;
+                totalPurchaseMadeByCreditCard += order.creditCardPayment;
+                totalProductsPurchased += 1;
+              }),
+            );
+          }
         }
 
         data.push({
-          campaign: campaign.campaign_ID,
-          products: campaign.products?.length || 0,
-          businesses: campaign.businesses?.length || 0,
+          campaign: campaign._id,
+          products: relatedProducts?.length || 0,
           vouchers: relatedVouchers.length,
           noOfProductsPurchased: totalProductsPurchased,
           totalAmountOfProductsPurchased: totalPurchasedAmount,

@@ -113,13 +113,6 @@ export class ProductsController {
     operation: 'Create product for business by superadmin and DMO-admin',
     params: [{ name: 'businessId', type: 'string', required: true }],
   })
-  @Roles(
-    UserType.ADMIN,
-    UserType.AUTHORITY,
-    UserType.DMO,
-    UserType.DMOADMIN,
-    UserType.SUPERADMIN,
-  )
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.CREATED)
   @Post('admin/businesses/:businessId/products')

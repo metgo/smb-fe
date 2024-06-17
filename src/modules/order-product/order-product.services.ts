@@ -8,6 +8,7 @@ import { paginateData } from 'src/common/pagination';
 import { paginationConfig } from 'src/common/pagination.config';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { unproject } from 'src/common/utils/select.handling';
+import { findOneById } from 'src/core/helper/query-helper';
 import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interface';
 import { BusinessService } from 'src/modules/business/services/business.service';
 import { CreateOrderProductCommand } from 'src/modules/order-product/interfaces/create-order-product.interface';
@@ -200,6 +201,20 @@ export class OrderProductService {
       },
     );
 
+    if (query.search) {
+      pipeline.push({
+        $match: {
+          $or: [
+            { 'business_info.name': { $regex: query.search, $options: 'i' } },
+            { 'order_info.firstName': { $regex: query.search, $options: 'i' } },
+            { 'order_info.lastName': { $regex: query.search, $options: 'i' } },
+            { 'order_info.email': { $regex: query.search, $options: 'i' } },
+            { 'matchedProducts.name': { $regex: query.search, $options: 'i' } },
+          ],
+        },
+      });
+    }
+
     if (loggedInUser.role === UserType.TRAVELLER) {
       pipeline.push({
         $match: {
@@ -234,6 +249,8 @@ export class OrderProductService {
       businessEmail: { $first: '$business_info.busiEmail' },
       dmoId: { $first: '$dmo_info._id' },
       dmoName: { $first: '$dmo_info.name' },
+      authorityId: { $first: '$authority_info._id' },
+      authorityName: { $first: '$authority_info.name' },
       totalNoOfOrders: { $sum: 1 },
       totalAmount: { $sum: '$amount' },
       totalAmountPaidByCreditCard: { $sum: '$order_info.creditCardPayment' },
@@ -279,6 +296,20 @@ export class OrderProductService {
     pipeline.push(
       {
         $lookup: {
+          from: 'authorities',
+          localField: 'business_info.authorityId',
+          foreignField: '_id',
+          as: 'authority_info',
+        },
+      },
+      {
+        $unwind: {
+          path: '$authority_info',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
           from: 'dmos',
           localField: 'business_info.dmoId',
           foreignField: '_id',
@@ -289,13 +320,9 @@ export class OrderProductService {
         $unwind: '$dmo_info',
       },
       {
-        $sort: {
-          createdAt: -1,
-        },
-      },
-      {
         $group: commonGroupFields,
       },
+      { $sort: { totalNoOfOrders: -1 } },
     );
 
     const orders = await this.OrderProductModel.aggregate(pipeline);
@@ -522,5 +549,14 @@ export class OrderProductService {
     const paginatedOrders = paginateData(queryPage, queryLimit, orders);
 
     return paginatedOrders;
+  }
+
+  async findById(id: string) {
+    const orderProduct = await findOneById<OrderProduct>(
+      this.OrderProductModel,
+      id,
+    );
+
+    return orderProduct;
   }
 }

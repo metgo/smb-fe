@@ -78,11 +78,11 @@ export class BusinessController {
   }
 
   @Roles(
+    UserType.ADMIN,
     UserType.AUTHORITY,
     UserType.DMO,
     UserType.DMOADMIN,
     UserType.SUPERADMIN,
-    UserType.TRAVELLER,
   )
   @UseGuards(JwtAuthGuard)
   @ApiEndpoint({

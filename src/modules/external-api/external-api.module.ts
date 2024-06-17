@@ -7,7 +7,6 @@ import { Business } from 'src/modules/business/schema/business.schema';
 import { BussSubCategory } from 'src/modules/buss-subcategories/schema/buss-subCategory.schema';
 import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.schema';
 import { Campaign } from 'src/modules/campaign/schema/campaign.schema';
-import { CampaignSegment } from 'src/modules/campaign-segments/schema/campaignSegment.schema';
 import { DMOModule } from 'src/modules/dmo/dmo.module';
 import { ExternalApiController } from 'src/modules/external-api/controllers/external-api.controller';
 import { ExternalAPIServiceController } from 'src/modules/external-api/controllers/external-api-services.controller';
@@ -22,11 +21,16 @@ import {
   OrderProductSchema,
 } from 'src/modules/order-product/schema/order-product.schema';
 import { Product } from 'src/modules/products/schema/products.schema';
+import {
+  Rewards,
+  RewardsSchema,
+} from 'src/modules/rewards/schema/rewards.schema';
 import { UsersModule } from 'src/modules/users/users.module';
 import { Voucher } from 'src/modules/vouchers/schema/voucher.schema';
 import { ConfigModule } from 'src/services/config/config.module';
 import { MailChimpModule } from 'src/services/mailchimp/mailchimp.module';
 import { PaymentsModule } from 'src/services/payments/payments.module';
+import { GcpBucketModule } from 'src/services/gcp-bucket/gcp-bucket.module';
 
 @Module({
   imports: [
@@ -35,11 +39,11 @@ import { PaymentsModule } from 'src/services/payments/payments.module';
       { name: BussCategory.name, schema: BussCategory },
       { name: BussSubCategory.name, schema: BussSubCategory },
       { name: Campaign.name, schema: Campaign },
-      { name: CampaignSegment.name, schema: CampaignSegment },
       { name: ExternalApi.name, schema: ExternalApiSchema },
       { name: Order.name, schema: Order },
       { name: OrderProduct.name, schema: OrderProductSchema },
       { name: Product.name, schema: Product },
+      { name: Rewards.name, schema: RewardsSchema },
       { name: Voucher.name, schema: Voucher },
     ]),
     AuthModule,
@@ -49,6 +53,7 @@ import { PaymentsModule } from 'src/services/payments/payments.module';
     MailChimpModule,
     PaymentsModule,
     UsersModule,
+    GcpBucketModule,
   ],
   controllers: [ExternalApiController, ExternalAPIServiceController],
   providers: [ExternalApiServices],

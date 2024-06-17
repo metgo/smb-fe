@@ -24,6 +24,7 @@ import { UserType } from 'src/modules/users/users.type';
 import { VoucherService } from 'src/modules/vouchers/voucher.service';
 import {
   createVoucherDto,
+  RewardVouchersByCampaignDto,
   updateAssignedUserVoucherDto,
 } from 'src/modules/vouchers/dto';
 import {
@@ -89,6 +90,40 @@ export class VoucherController {
     const vouchers = await this.voucherService.createdBySuperadmin(
       req.user,
       dto,
+    );
+
+    return responseHelper(
+      response,
+      HttpStatus.CREATED,
+      ServerSuccess.VOUCHER.LISTED,
+      vouchers,
+      null,
+      null,
+    );
+  }
+
+  @Roles(UserType.ADMIN, UserType.SUPERADMIN)
+  @UseGuards(JwtAuthGuard)
+  @ApiEndpoint({
+    tags: ['Admin', 'Voucher'],
+    response: {
+      status: HttpStatus.CREATED,
+      description: ServerSuccess.VOUCHER.CREATED,
+    },
+    softBlockExtraDtoFields: true,
+    noAuthToken: true,
+    operation: 'Reward Vouchers to users',
+  })
+  @HttpCode(HttpStatus.CREATED)
+  @Post('admin/campaign-vouchers')
+  async rewardVouchersForCampaogn(
+    @Req() req,
+    @Res() response: Response,
+    @Body() body: RewardVouchersByCampaignDto,
+  ) {
+    const vouchers = await this.voucherService.createVouchersByCampaign(
+      req.user,
+      body,
     );
 
     return responseHelper(
@@ -254,6 +289,49 @@ export class VoucherController {
     );
   }
 
+  // @ApiEndpoint({
+  //   tags: ['Vouchers'],
+  //   response: {
+  //     status: HttpStatus.OK,
+  //     description: ServerSuccess.VOUCHER.CREATED,
+  //   },
+  //   softBlockExtraDtoFields: true,
+  //   noAuthToken: true,
+  //   operation: 'Trigger reward voucher',
+  //   params: [
+  //     {
+  //       name: 'orderId',
+  //       required: true,
+  //       type: 'string',
+  //     },
+  //   ],
+  // })
+  // @Roles(
+  //   UserType.ADMIN,
+  //   UserType.AUTHORITY,
+  //   UserType.DMOADMIN,
+  //   UserType.DMO,
+  //   UserType.SUPERADMIN,
+  // )
+  // @UseGuards(JwtAuthGuard)
+  // @HttpCode(HttpStatus.OK)
+  // @Patch('vouchers/:orderId')
+  // async triggerReward(
+  //   @Param('orderId') orderId: string,
+  //   @Req() req,
+  //   @Res() response: Response,
+  // ) {
+  //   const voucher = await this.voucherService.triggerReward(req.user, orderId);
+  //   return responseHelper(
+  //     response,
+  //     HttpStatus.OK,
+  //     ServerSuccess.VOUCHER.CREATED,
+  //     voucher,
+  //     null,
+  //     null,
+  //   );
+  // }
+
   @ApiEndpoint({
     tags: ['Voucher'],
     response: {
@@ -291,10 +369,18 @@ export class VoucherController {
   @Roles(
     UserType.ADMIN,
     UserType.AUTHORITY,
+    UserType.SUPERADMIN,
     UserType.DMO,
     UserType.DMOADMIN,
-    UserType.SUPERADMIN,
   )
+  @ApiEndpoint({
+    tags: ['Voucher'],
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.VOUCHER.LISTED,
+    },
+    noAuthToken: true,
+  })
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
   @Get('admin/vouchers')

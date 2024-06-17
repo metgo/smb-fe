@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import {
   BadRequestException,
   ForbiddenException,
@@ -20,20 +21,22 @@ import {
   VoucherStatus,
 } from 'src/common/enum';
 import { checkExpireDate, twoYearExpireDate } from 'src/common/expireDate';
+import { getUniqueSet } from 'src/common/get-unique-set';
 import {
   EnglishTemplate,
   HebrewTemplate,
 } from 'src/common/mailchimp/templateId';
-import { paginateData } from 'src/common/pagination';
 import { paginationConfig } from 'src/common/pagination.config';
 import { CommonFilterQuery } from 'src/common/query-handler/common-filter-query';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { generateRandomCode } from 'src/common/utils/randomCode.generator';
+import { generateRandomIdentifier } from 'src/common/utils/random-identifierId-generator';
 import { remainingAmountCalculation } from 'src/common/utils/remaining-amount-calculation';
 import { disSelect } from 'src/common/utils/select.handling';
 import {
   findOneByFieldName,
   findOneByFieldNames,
+  findOneByIDPopulate,
   queryhandler,
   updateById,
 } from 'src/core/helper/query-helper';
@@ -43,19 +46,20 @@ import { BusinessStatus } from 'src/modules/business/business.type';
 import { BussSubCategory } from 'src/modules/buss-subcategories/schema/buss-subCategory.schema';
 import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.schema';
 import { Campaign } from 'src/modules/campaign/schema/campaign.schema';
-import { CampaignSegment } from 'src/modules/campaign-segments/schema/campaignSegment.schema';
 import {
+  CreateCampaignDto,
   CreateExternalApiDTO,
   CreateVoucherDto,
   ExternalApiRegisterRequest,
+  RewardVouchersByCampaignDto,
 } from 'src/modules/external-api/dto';
 import { CreateOrderCommand } from 'src/modules/external-api/interface/create-order.interface';
 import { CreateOrderProductCommand } from 'src/modules/external-api/interface/create-order-product.interface';
 import { AssignVoucherCommand } from 'src/modules/external-api/interface/assign-voucher.interface';
+import { CreateRewardCommand } from 'src/modules/external-api/interface/create-reward.interface';
 import { GetOneVoucherInterface } from 'src/modules/external-api/interface/get-one-voucher.interface';
 import {
   ExternalApiPostQuery,
-  ExternalApiWithCampCodeFilterQuery,
   GetAllCategoriesQuery,
   GetAllProductsQuery,
   GetMyVouchersQuery,
@@ -66,8 +70,10 @@ import { OrderStatus, PaymentMode } from 'src/modules/orders/orders.type';
 import { OrderProduct } from 'src/modules/order-product/schema/order-product.schema';
 import { Product } from 'src/modules/products/schema/products.schema';
 import { ProductStatus } from 'src/modules/products/products.type';
+import { Rewards } from 'src/modules/rewards/schema/rewards.schema';
 import { UsersService } from 'src/modules/users/users.services';
 import { Voucher } from 'src/modules/vouchers/schema/voucher.schema';
+import { GcpBucketService } from 'src/services/gcp-bucket/gcp-bucket.services';
 import { MailChimpService } from 'src/services/mailchimp/mailchimp.service';
 import { PaymentPurpose } from 'src/services/payments/payments.type';
 import { PaymentsService } from 'src/services/payments/payments.service';
@@ -83,8 +89,6 @@ export class ExternalApiServices {
     private BussSubCategoryModel: Model<BussSubCategory>,
     @InjectModel('Campaign')
     private CampaignModel: Model<Campaign>,
-    @InjectModel('CampaignSegment')
-    private CampaignSegmentModel: Model<CampaignSegment>,
     @InjectModel(ExternalApi.name)
     private readonly ExternalApiModel: Model<ExternalApi>,
     @InjectModel(Order.name)
@@ -93,8 +97,11 @@ export class ExternalApiServices {
     private OrderProductsModel: Model<OrderProduct>,
     @InjectModel(Product.name)
     private ProductModel: Model<Product>,
+    @InjectModel(Rewards.name)
+    private RewardModel: Model<Rewards>,
     @InjectModel('Voucher')
     private readonly VoucherModel: Model<Voucher>,
+    private readonly gcpBucketServices: GcpBucketService,
     private readonly mailchimpService: MailChimpService,
     private userService: UsersService,
     private readonly paymentService: PaymentsService,
@@ -111,6 +118,10 @@ export class ExternalApiServices {
       ...body,
       companyDetails,
       createdBy: loggedInUser,
+      identifierId: generateRandomIdentifier(
+        body.companyName.substring(0, 4),
+        18,
+      ),
     });
     return newExternalApi.save();
   }
@@ -206,9 +217,95 @@ export class ExternalApiServices {
       items,
     );
     if (!externalApi) {
-      throw new BadRequestException(ServerErrors.EXTERNAL_API.NOT_FOUND);
+      throw new ForbiddenException(ServerErrors.FORBIDDEN);
     }
     return externalApi;
+  }
+
+  async createVouchersByCampaign(
+    loggedInUser: LoggedInUserInterface,
+    body: RewardVouchersByCampaignDto,
+    identifierId: string,
+  ) {
+    try {
+      const assignedUserEmail = await this.userService.findByEmailOrNull(
+        body.email,
+      );
+
+      const campaignReward: any = await this.findRewardByCampId(body.campId);
+
+      if (!campaignReward?.rewardId) {
+        throw new BadRequestException(
+          ServerErrors.CAMPAIGN.EXPIRED_OR_REWARD_DONT_EXIST,
+        );
+      }
+
+      if (
+        campaignReward.rewardId.totalVoucherCreated
+          >= campaignReward.rewardId.voucherLimit
+        || campaignReward.rewardId.totalVoucherCreated + body.noOfVoucher
+          > campaignReward.rewardId.voucherLimit
+      ) {
+        throw new UnprocessableEntityException(
+          ServerErrors.VOUCHER.LIMIT_EXCEEDED,
+        );
+      }
+
+      const externalApiId = (
+        await this.findByFieldName('identifierId', identifierId)
+      )._id;
+
+      let i: number = 0;
+      const voucherCodes: any = [];
+      const vouchers: any = [];
+
+      // eslint-disable-next-line no-plusplus
+      for (i = 0; i < body.noOfVoucher; i++) {
+        const randomCode = generateRandomCode(12);
+        const code = campaignReward.code + randomCode;
+        const newVoucher = new this.VoucherModel({
+          name: body.name,
+          createdBy: loggedInUser.id,
+          amount: campaignReward?.rewardId?.amount,
+          code,
+          remainingAmount: campaignReward?.rewardId?.amount,
+          paymentStatus: VoucherPaymentStatus.PAID,
+          status: VoucherStatus.ASSIGNED,
+          waitingUserEmail: assignedUserEmail?._id ? null : body.email,
+          externalApiId,
+          assignedTo: assignedUserEmail?._id ? assignedUserEmail._id : null,
+          campId: body.campId,
+        });
+        newVoucher.save();
+        voucherCodes.push(code);
+        vouchers.push(newVoucher);
+      }
+
+      // updateRewardLimit
+      await this.deductRewardUsage(
+        campaignReward.rewardId._id,
+        body.noOfVoucher,
+      );
+
+      // send emails?
+      const VOUCHERCODE = voucherCodes.map(code => `\n${code}`).toString();
+      await this.mailchimpService.sendTransactionalEmail({
+        to: body.email,
+        templatedId:
+          body.languagePreference === Locale.HEBREW
+            ? HebrewTemplate.VoucherConfirmationNonLoggedIn
+            : EnglishTemplate.VoucherConfirmationNonLoggedIn,
+        mergeVars: {
+          BUYERNAME: body.name,
+          VOUCHERCODE,
+          VOUCHERAMOUNT: campaignReward.rewardId.amount,
+        },
+      });
+
+      return vouchers;
+    } catch (err) {
+      exceptionHandling(err);
+    }
   }
 
   async registerUser(body: ExternalApiRegisterRequest) {
@@ -388,6 +485,10 @@ export class ExternalApiServices {
         identifierId,
       } = command;
 
+      const externalApiId = (
+        await this.findByFieldName('identifierId', identifierId)
+      )._id;
+
       if (totalAmount <= 0) {
         const newOrder = new this.OrderModel({
           ...body,
@@ -395,7 +496,7 @@ export class ExternalApiServices {
           userId: loggedInUserId,
           createdBy: loggedInUserId,
           paymentStatus: PaymentStatus.SUCCESS,
-          identifierId,
+          externalApiId,
           status: OrderStatus.PROCESSING,
           creditCardPayment: totalAmount,
           paymentMode: [PaymentMode.VOUCHER],
@@ -474,7 +575,7 @@ export class ExternalApiServices {
         userId: loggedInUserId,
         createdBy: loggedInUserId,
         paymentStatus: PaymentStatus.PENDING,
-        identifierId,
+        externalApiId,
         creditCardPayment: totalAmount,
         paymentMode:
           totalAmount === actualAmountOfProduct
@@ -502,189 +603,145 @@ export class ExternalApiServices {
   }
 
   async getAllProducts(query: GetAllProductsQuery) {
-    const { page, limit, campCode } = query;
+    const {
+      page, limit, campCode, categoriesId, subCategoriesId,
+    } = query;
 
     const campDetails = await this.findCampaignAndReturn('code', campCode);
 
     const select = disSelect;
+
+    let findQuery: any = {
+      status: ProductStatus.ACTIVE,
+      dmoId: { $in: campDetails.dmoIds },
+      isDeleted: false,
+    };
+
     const populate = {
-      path: 'products',
+      path: 'categories subCategories',
       select: `${disSelect}`,
       populate: {
-        path: 'categories',
-        select: `${disSelect}`,
-        populate: {
-          path: 'icon',
-          select: `${disSelect}`,
-        },
-      },
-    };
-    const populate1 = {
-      path: 'products',
-      select: `${disSelect}`,
-      populate: {
-        path: 'subCategories businessId',
+        path: 'icon',
         select: `${disSelect}`,
       },
     };
 
-    const campaignSegment = await this.CampaignSegmentModel.findOne({
-      campaign_ID: campDetails._id,
-    })
-      .populate(populate)
-      .populate(populate1)
-      .select(select)
-      .lean()
-      .exec();
+    if (categoriesId) {
+      const categoriesIds = Array.isArray(categoriesId)
+        ? categoriesId
+        : [categoriesId];
 
-    if (!campaignSegment?.products || !campaignSegment?.products?.length) {
+      findQuery = {
+        ...findQuery,
+        categoriesId: { $in: categoriesIds },
+      };
+    }
+
+    if (subCategoriesId) {
+      const subCategoriesIds = Array.isArray(subCategoriesId)
+        ? subCategoriesId
+        : [subCategoriesId];
+
+      findQuery = {
+        ...findQuery,
+        subCategoriesId: { $in: subCategoriesIds },
+      };
+    }
+
+    const productsList = await queryhandler<Product>(this.ProductModel, {
+      findQuery,
+      select,
+      page: Number(page),
+      limit: Number(limit),
+      populate,
+    });
+
+    if (!productsList?.data || !productsList.data?.length) {
       return {
         totalData: 0,
         products: [],
       };
     }
 
-    if (!page && !limit) {
-      const products = campaignSegment.products
-        .filter((product: any) => {
-          if (product.status === ProductStatus.INACTIVE) return false;
-          if (!query.categoriesId && !query.subCategoriesId) {
-            return true;
-          }
-          if (query.subCategoriesId) {
-            return product.subCategories.some(subCategory => query.subCategoriesId.includes(String(subCategory._id)));
-          }
-
-          return product.categories.some(category => query.categoriesId.includes(String(category._id)));
-        })
-        .map((product: any) => ({
-          id: product._id,
-          name: product.name,
-          description: product.description,
-          price: product.price,
-          categories: product.categories,
-          images: product.images,
-          business: product.businessId,
-          subCategories: product.subCategories,
-        }));
-
-      const totalData = products?.length;
-
-      return {
-        totalData,
-        products,
-      };
-    }
-
-    const filteredProducts = campaignSegment.products
-      .filter((product: any) => {
-        if (product.status === ProductStatus.INACTIVE) return false;
-
-        if (!query.categoriesId && !query.subCategoriesId) {
-          return true;
-        }
-        if (query.subCategoriesId) {
-          return product.subCategories.some(subCategory => query.subCategoriesId.includes(String(subCategory._id)));
-        }
-        return product.categories.some(category => query.categoriesId.includes(String(category._id)));
-      })
-      .map((product: any) => ({
-        id: product._id,
-        name: product.name,
-        description: product.description,
-        price: product.price,
-        categories: product.categories,
-        images: product.images,
-        business: product.businessId,
-        subCategories: product.subCategories,
-      }));
-
-    const paginatedProducts = paginateData(page, limit, filteredProducts);
-
-    return paginatedProducts;
+    return productsList;
   }
 
-  async getAllBusiness(query: ExternalApiWithCampCodeFilterQuery) {
-    const { page, limit, campCode } = query;
+  async getAllBusiness(query: GetAllProductsQuery) {
+    const {
+      page, limit, campCode, categoriesId, subCategoriesId,
+    } = query;
 
     const campDetails = await this.findCampaignAndReturn('code', campCode);
 
     const select = disSelect;
+    let findQuery: any = {
+      status: BusinessStatus.APPROVED,
+      dmoId: { $in: campDetails.dmoIds },
+      isDeleted: false,
+    };
+
     const populate = {
-      path: 'businesses',
+      path: 'bussCategoriesId bussSubCategoriesId',
       select: `${disSelect}`,
       populate: {
-        path: 'bussCategoriesId',
+        path: 'icon',
         select: `${disSelect}`,
-        populate: {
-          path: 'icon',
-          select: `${disSelect}`,
-        },
       },
     };
 
-    const campaignSegment = await this.CampaignSegmentModel.findOne({
-      campaign_ID: campDetails._id,
-    })
-      .populate(populate)
-      .select(select)
-      .lean()
-      .exec();
+    if (categoriesId) {
+      const categoriesIds = Array.isArray(categoriesId)
+        ? categoriesId
+        : [categoriesId];
 
-    if (!campaignSegment?.businesses || !campaignSegment?.businesses?.length) {
+      findQuery = {
+        ...findQuery,
+        bussCategoriesId: { $in: categoriesIds },
+      };
+    }
+
+    if (subCategoriesId) {
+      const subCategoriesIds = Array.isArray(subCategoriesId)
+        ? subCategoriesId
+        : [subCategoriesId];
+
+      findQuery = {
+        ...findQuery,
+        bussSubCategoriesId: { $in: subCategoriesIds },
+      };
+    }
+
+    const businesses = await queryhandler<Business>(this.BusinessModel, {
+      findQuery,
+      select,
+      page: Number(page),
+      limit: Number(limit),
+      populate,
+    });
+
+    if (!businesses?.data || !businesses.data?.length) {
       return {
         totalData: 0,
         businesses: [],
       };
     }
 
-    if (!page && !limit) {
-      const businesses = campaignSegment.businesses
-        .filter((business: any) => {
-          if (business.status === BusinessStatus.APPROVED) return true;
-          return false;
-        })
-        .map((business: any) => ({
-          id: business._id,
-          name: business.name,
-          description: business.description,
-          geoLocation: business.geoLocation,
-          address: business.address,
-          images: business.images,
-          bussCategoriesId: business.bussCategoriesId,
-        }));
-
-      const totalData = businesses.length;
-
-      return {
-        totalData,
-        businesses,
-      };
-    }
-
-    const filteredBusiness = campaignSegment?.businesses
-      .filter((business: any) => {
-        if (business.status === BusinessStatus.APPROVED) return true;
-        return false;
-      })
-      .map((business: any) => ({
-        id: business._id,
-        name: business.name,
-        description: business.description,
-        geoLocation: business.geoLocation,
-        address: business.address,
-        images: business.images,
-        bussCategoriesId: business.bussCategoriesId,
-      }));
-
-    const paginatedBusinesses = paginateData(page, limit, filteredBusiness);
-
-    return paginatedBusinesses;
+    return businesses;
   }
 
-  async getVoucherCreatedByMe(userId: string, queries: GetMyVouchersQuery) {
+  async getVouchersCreatedByMe(userId: string, queries: GetMyVouchersQuery) {
     const {
-      page, limit, search, campId, productId, ...query
+      page,
+      limit,
+      search,
+      campId,
+      productId,
+      createdStartDate,
+      createdEndDate,
+      expiryStartDate,
+      expiryEndDate,
+      identifierId,
+      ...query
     } = queries;
 
     const queryPage = page ? Number(page) : paginationConfig.page;
@@ -697,38 +754,47 @@ export class ExternalApiServices {
       createdBy: userId,
       paymentStatus: VoucherPaymentStatus.PAID,
     };
-    delete findQuery?.identifierId;
 
     const populate = {
       path: 'campId',
       select: `${disSelect}`,
     };
-    let populate1: {};
 
     let campIdsFromProductId;
     if (productId) {
-      // get all the campId from campaignSegment the productId is associated to
-      campIdsFromProductId = await this.getCampaignAssociatedToIds(
-        productId,
-        'products',
-      );
+      const dmoOfProduct = (await this.findOneProduct(productId))?.dmoId?._id;
+
+      if (dmoOfProduct) {
+        // find campIds of this dmo
+        campIdsFromProductId = await this.getCampaignAssociatedToIds(
+          dmoOfProduct,
+          'dmoIds',
+        );
+      }
     }
 
     if (campId) {
       let campIds = Array.isArray(campId)
-        ? campId.map(item => new mongoose.Types.ObjectId(item))
-        : [new mongoose.Types.ObjectId(campId)];
+        ? campId.map(item => item)
+        : [campId];
 
       if (campIdsFromProductId) {
-        campIds = [...campIds, campIdsFromProductId];
+        const campIdsFromProductIds = Array.isArray(campIdsFromProductId)
+          ? campIdsFromProductId.map(item => item.toString())
+          : [campIdsFromProductId];
+
+        campIds = [...campIds, ...campIdsFromProductIds];
       }
+
+      const campsId = getUniqueSet(campIds);
+
       findQuery = {
         ...findQuery,
-        campId: { $in: campIds },
+        campId: { $in: campsId },
       };
     }
 
-    if (!campId && campIdsFromProductId?.length) {
+    if (!campId && productId) {
       findQuery = {
         ...findQuery,
         campId: { $in: campIdsFromProductId },
@@ -742,13 +808,38 @@ export class ExternalApiServices {
       };
     }
 
+    if (createdStartDate && createdEndDate) {
+      const startDate = new Date(createdStartDate);
+      const endDate = new Date(createdEndDate);
+
+      findQuery = {
+        ...findQuery,
+        createdAt: {
+          $gte: startDate,
+          $lte: endDate,
+        },
+      };
+    }
+
+    if (expiryStartDate && expiryEndDate) {
+      const startDate = new Date(expiryStartDate);
+      const endDate = new Date(expiryEndDate);
+
+      findQuery = {
+        ...findQuery,
+        expireDate: {
+          $gte: startDate,
+          $lte: endDate,
+        },
+      };
+    }
+
     const voucher = await queryhandler<Voucher>(this.VoucherModel, {
       findQuery,
       select,
       page: queryPage,
       limit: queryLimit,
       populate,
-      populate1,
     });
     return voucher;
   }
@@ -836,6 +927,11 @@ export class ExternalApiServices {
     let i: number = 0;
     const voucherId: any = [];
     const totalAmount = dto.noOfVoucher * dto.amount;
+
+    const externalApiId = (
+      await this.findByFieldName('identifierId', query.identifierId)
+    )._id;
+
     // eslint-disable-next-line no-plusplus
     for (i = 0; i < dto.noOfVoucher; i++) {
       const randomCode = generateRandomCode(12);
@@ -847,7 +943,7 @@ export class ExternalApiServices {
         campId,
         createdBy: createdByUserId,
         createdByEmail: createdByUserId ? null : dto.email,
-        identifierId: query.identifierId,
+        externalApiId,
       });
       newVoucher.save();
       voucherId.push(newVoucher._id);
@@ -884,6 +980,10 @@ export class ExternalApiServices {
       const vouchers: any = [];
       const voucherCodes: any = [];
 
+      const externalApiId = (
+        await this.findByFieldName('identifierId', identifierId)
+      )._id;
+
       // eslint-disable-next-line no-plusplus
       for (i = 0; i < dto.noOfVoucher; i++) {
         const randomCode = generateRandomCode(12);
@@ -896,7 +996,7 @@ export class ExternalApiServices {
           createdBy: createdByUserId,
           createdByEmail: createdByUserId ? null : dto.email,
           paymentStatus: VoucherPaymentStatus.PAID,
-          identifierId,
+          externalApiId,
         });
         newVoucher.save();
         vouchers.push(newVoucher);
@@ -924,43 +1024,112 @@ export class ExternalApiServices {
     }
   }
 
+  async createCampaigns(
+    dto: CreateCampaignDto,
+    files: Array<Express.Multer.File>,
+    userId: string,
+    identifierId: string,
+  ): Promise<Campaign> {
+    await Promise.all([
+      this.findCampaignByFieldName('name', dto.name),
+      this.findCampaignByFieldName('code', dto.code),
+    ]);
+
+    if (!files?.length) {
+      throw new BadRequestException('Please upload logo and campaign image');
+    }
+
+    let imageCount: number = 0;
+
+    await Promise.all(
+      // eslint-disable-next-line array-callback-return
+      files.map(file => {
+        if (file.fieldname === 'logoPath' || file.fieldname === 'campImage') {
+          imageCount += 1;
+        }
+      }),
+    );
+
+    if (imageCount !== 2) {
+      throw new BadRequestException('Please upload logo and campaign image');
+    }
+
+    let campImage: string;
+    let logoPath: string;
+    await Promise.all(
+      files.map(async file => {
+        if (file.fieldname === 'logoPath') {
+          logoPath = await this.gcpBucketServices.upload(file);
+        }
+
+        if (file.fieldname === 'campImage') {
+          campImage = await this.gcpBucketServices.upload(file);
+        }
+      }),
+    );
+
+    const { rewardAmount, rewardVoucherLimit, ...body } = dto;
+
+    const externalApiId = (
+      await this.findByFieldName('identifierId', identifierId)
+    )._id;
+
+    let campaign: any = {
+      ...body,
+      imagePath: campImage,
+      logoPath,
+      createdBy: userId,
+      externalApiId,
+    };
+
+    if (rewardAmount) {
+      // create reward;
+      const reward = await this.createReward({
+        createdBy: userId,
+        amount: rewardAmount,
+        voucherLimit: rewardVoucherLimit,
+      });
+
+      campaign = {
+        ...campaign,
+        rewardId: reward._id,
+      };
+    }
+
+    const newCampaign = new this.CampaignModel(campaign);
+    await newCampaign.save();
+    return newCampaign;
+  }
+
   async getVoucherByCode(query: GetOneVoucherInterface) {
     try {
-      const { code, externalApi, productId } = query;
+      const { code, productId } = query;
       const select = disSelect;
       const populate = {
         path: 'campId',
         select: `${disSelect}`,
       };
 
-      let findQuery: any = {
+      const findQuery: any = {
         code: code.trim(),
       };
 
-      if (productId) {
-        // get all the campId from campaignSegment the productId is associated to
-        const campaignIds = await this.getCampaignAssociatedToIds(
-          productId,
-          'products',
-        );
-
-        const campIds = Array.isArray(campaignIds)
-          ? campaignIds.map(item => new mongoose.Types.ObjectId(item))
-          : [new mongoose.Types.ObjectId(campaignIds)];
-
-        findQuery = {
-          ...findQuery,
-          campId: { $in: campIds },
-        };
-      }
-
-      const voucher = await this.VoucherModel.findOne(findQuery)
+      const voucher: any = await this.VoucherModel.findOne(findQuery)
         .select(select)
         .populate(populate)
         .exec();
 
       if (!voucher) {
         throw new BadRequestException(ServerErrors.VOUCHER.NOT_FOUND);
+      }
+
+      const dmoOfProduct = (await this.findOneProduct(productId))?.dmoId?._id;
+
+      // check if campaign Id has the dmo
+      if (!voucher?.campId?.dmoIds.includes(dmoOfProduct)) {
+        throw new ForbiddenException(
+          'This voucher is not eligible for this product',
+        );
       }
 
       if (voucher.expireDate) {
@@ -975,16 +1144,13 @@ export class ExternalApiServices {
         throw new ForbiddenException(ServerErrors.VOUCHER.UNPAID);
       }
 
-      if (externalApi) {
-        return {
-          id: voucher._id,
-          remainingAmount: voucher.remainingAmount,
-          expireDate: voucher.expireDate,
-          paymentStatus: voucher.paymentStatus,
-          status: voucher.status,
-        };
-      }
-      return voucher;
+      return {
+        id: voucher._id,
+        remainingAmount: voucher.remainingAmount,
+        expireDate: voucher.expireDate,
+        paymentStatus: voucher.paymentStatus,
+        status: voucher.status,
+      };
     } catch (err) {
       exceptionHandling(err);
     }
@@ -1038,15 +1204,15 @@ export class ExternalApiServices {
   }
 
   private async getCampaignAssociatedToIds(
-    id: string,
-    key: keyof CampaignSegment,
+    id: string | ObjectId,
+    key: keyof Campaign,
   ) {
     try {
-      const campaignSegments = await this.CampaignSegmentModel.find({
+      const campaigns = await this.CampaignModel.find({
         [key]: { $in: [id] },
       });
 
-      const campaignIds = campaignSegments.map(obj => obj.campaign_ID);
+      const campaignIds = campaigns.map(obj => obj._id);
 
       return campaignIds;
     } catch (err) {
@@ -1157,6 +1323,85 @@ export class ExternalApiServices {
       return productDetail;
     } catch (error) {
       exceptionHandling(error);
+    }
+  }
+
+  private async findCampaignByFieldName(
+    fieldName: keyof Campaign,
+    items: string,
+  ): Promise<boolean> {
+    const campaign = await findOneByFieldName<Campaign>(
+      this.CampaignModel,
+      fieldName,
+      items,
+    );
+    if (campaign) {
+      throw new BadRequestException(`${fieldName} already exists`);
+    }
+    return false;
+  }
+
+  private async createReward(command: CreateRewardCommand): Promise<Rewards> {
+    const newReward = new this.RewardModel({
+      ...command,
+    });
+
+    const reward = await newReward.save();
+
+    return reward;
+  }
+
+  private async findRewardByCampId(campId: string) {
+    const findQuery = {
+      endDate: { $gte: new Date() },
+      status: CampaignStatus.ACTIVE,
+      _id: campId,
+    };
+
+    const populate = {
+      path: 'rewardId',
+      select: `${disSelect}`,
+    };
+
+    const campaignRewardDetail = await findOneByIDPopulate<Campaign>(
+      this.CampaignModel,
+      findQuery,
+      populate,
+    );
+
+    return campaignRewardDetail;
+  }
+
+  private async deductRewardUsage(id: string, noOfVoucherBought: number) {
+    const updatedDto = { $inc: { totalVoucherCreated: noOfVoucherBought } };
+    const updatedReward = await updateById<Rewards>(
+      this.RewardModel,
+      id,
+      updatedDto,
+    );
+
+    return updatedReward;
+  }
+
+  private async findOneProduct(
+    productId: string | mongoose.Types.ObjectId,
+  ): Promise<Product> {
+    const populate = {
+      path: 'dmoId authorityId',
+      select: `${disSelect}`,
+    };
+    const select = `${disSelect}`;
+    try {
+      const product = await this.ProductModel.findById(productId)
+        .select(select)
+        .populate(populate);
+
+      if (!product || product.status !== ProductStatus.ACTIVE) {
+        throw new NotFoundException(ServerErrors.PRODUCT.NOT_FOUND);
+      }
+      return product;
+    } catch (err) {
+      exceptionHandling(err);
     }
   }
 }

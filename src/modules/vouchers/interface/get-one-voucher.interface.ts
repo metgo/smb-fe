@@ -1,5 +1,4 @@
 export interface GetOneVoucherInterface {
   code: string;
-  externalApi?: boolean;
-  productId?: string;
+  productId: string;
 }

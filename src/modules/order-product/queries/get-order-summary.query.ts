@@ -1,10 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsOptional } from 'class-validator';
 
-import { PaginationFilterQuery } from 'src/common/query-handler/pagination.query';
+import { CommonFilterQuery } from 'src/common/query-handler/common-filter-query';
 import { OrderStatus } from 'src/modules/orders/orders.type';
 
-export class GetOrdersSummaryQuery extends PaginationFilterQuery {
+export class GetOrdersSummaryQuery extends CommonFilterQuery {
   @ApiProperty({ type: Date, required: false })
   @IsOptional()
     startDate: Date;

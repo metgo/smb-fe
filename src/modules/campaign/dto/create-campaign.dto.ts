@@ -1,11 +1,15 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import {
-  IsNotEmpty, IsOptional, IsString, MinLength,
+  IsNotEmpty,
+  IsOptional,
+  IsPositive,
+  IsString,
+  MinLength,
 } from 'class-validator';
 import { CampaignStatus } from 'src/common/enum';
 
-export class createCampaignDto {
+export class CreateCampaignDto {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
@@ -15,6 +19,16 @@ export class createCampaignDto {
   @IsString()
   @IsNotEmpty()
     description: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsOptional()
+    slogan: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsOptional()
+    link: string;
 
   @ApiProperty({ enum: CampaignStatus })
   @IsOptional()
@@ -38,13 +52,20 @@ export class createCampaignDto {
 
   @ApiProperty({ type: [String], required: false })
   @IsOptional()
-    dmoId: string[];
+    dmoIds: string[];
 
-  @ApiProperty({ type: [String], required: false })
+  @ApiProperty({
+    required: false,
+  })
   @IsOptional()
-    businessId: string[];
+  @Transform(({ value }) => parseInt(value, 10), { toClassOnly: true })
+    rewardAmount: number;
 
-  @ApiProperty({ type: [String], required: false })
+  @ApiProperty({
+    required: false,
+  })
   @IsOptional()
-    productId: string[];
+  @IsPositive()
+  @Transform(({ value }) => parseInt(value, 10), { toClassOnly: true })
+    rewardVoucherLimit: number;
 }

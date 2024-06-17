@@ -8,8 +8,8 @@ import { CampaignController } from './campaign.controller';
 import { GcpBucketModule } from 'src/services/gcp-bucket/gcp-bucket.module';
 import { EncryptionModule } from 'src/services/encryption/encryption.module';
 import { ConfigModule } from 'src/services/config/config.module';
-import { DMOModule } from '../dmo/dmo.module';
-import { CampaignSegmentModule } from '../campaign-segments/campaignSegment.module';
+import { DMOModule } from 'src/modules/dmo/dmo.module';
+import { RewardsModule } from 'src/modules/rewards/rewards.module';
 import { UsersModule } from 'src/modules/users/users.module';
 
 @Module({
@@ -21,7 +21,7 @@ import { UsersModule } from 'src/modules/users/users.module';
     EncryptionModule,
     ConfigModule,
     forwardRef(() => DMOModule),
-    CampaignSegmentModule,
+    RewardsModule,
   ],
   providers: [CampaignService],
   controllers: [CampaignController],

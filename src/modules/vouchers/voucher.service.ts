@@ -40,14 +40,18 @@ import {
 import { disSelect } from 'src/common/utils/select.handling';
 import { ServerErrors } from 'src/common/constant';
 import { MailChimpService } from 'src/services/mailchimp/mailchimp.service';
+import { OrdersService } from 'src/modules/orders/orders.services';
 import { PaymentsService } from 'src/services/payments/payments.service';
 import { PaymentPurpose } from 'src/services/payments/payments.type';
 import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interface';
 import { CampaignService } from 'src/modules/campaign/campaign.service';
-import { CampaignSegmentService } from 'src/modules/campaign-segments/campaignSegment.service';
+import { ProductsService } from 'src/modules/products/products.services';
 import { UsersService } from 'src/modules/users/users.services';
 import { UserType } from 'src/modules/users/users.type';
-import { createVoucherDto } from 'src/modules/vouchers/dto';
+import {
+  createVoucherDto,
+  RewardVouchersByCampaignDto,
+} from 'src/modules/vouchers/dto';
 import {
   AssignVoucherCommand,
   GetOneVoucherInterface,
@@ -61,6 +65,8 @@ import {
   GetVouchersByAdminQuery,
 } from 'src/modules/vouchers/queries';
 import { ConfigService } from 'src/services/config/config.service';
+import { RewardsService } from '../rewards/rewards.service';
+import { getUniqueSet } from 'src/common/get-unique-set';
 
 @Injectable()
 export class VoucherService {
@@ -70,10 +76,12 @@ export class VoucherService {
     private readonly configService: ConfigService,
     private readonly paymentService: PaymentsService,
     private readonly campaignService: CampaignService,
-    private readonly campaignSegmentService: CampaignSegmentService,
+    private readonly orderService: OrdersService,
+    private readonly rewardService: RewardsService,
     @Inject(forwardRef(() => UsersService))
     private readonly usersService: UsersService,
     private mailchimpService: MailChimpService,
+    private productService: ProductsService,
   ) {}
 
   async create(user: LoggedInUserInterface | null, dto: createVoucherDto) {
@@ -177,44 +185,118 @@ export class VoucherService {
     }
   }
 
+  async createVouchersByCampaign(
+    loggedInUser: LoggedInUserInterface,
+    body: RewardVouchersByCampaignDto,
+  ) {
+    try {
+      const assignedUserEmail = await this.usersService.findByEmailOrNull(
+        body.email,
+      );
+
+      const campaignReward: any = await this.campaignService.findRewardByCampId(
+        body.campId,
+      );
+
+      if (!campaignReward?.rewardId) {
+        throw new BadRequestException(
+          ServerErrors.CAMPAIGN.EXPIRED_OR_REWARD_DONT_EXIST,
+        );
+      }
+
+      if (
+        campaignReward.rewardId.totalVoucherCreated
+          >= campaignReward.rewardId.voucherLimit
+        || campaignReward.rewardId.totalVoucherCreated + body.noOfVoucher
+          > campaignReward.rewardId.voucherLimit
+      ) {
+        throw new BadRequestException(ServerErrors.VOUCHER.LIMIT_EXCEEDED);
+      }
+
+      let i: number = 0;
+      const voucherCodes: any = [];
+      const vouchers: any = [];
+
+      for (i = 0; i < body.noOfVoucher; i++) {
+        const randomCode = generateRandomCode(12);
+        const code = campaignReward.code + randomCode;
+        const newVoucher = new this.VoucherModel({
+          name: body.name,
+          createdBy: loggedInUser.id,
+          amount: campaignReward?.rewardId?.amount,
+          code,
+          remainingAmount: campaignReward?.rewardId?.amount,
+          paymentStatus: VoucherPaymentStatus.PAID,
+          status: VoucherStatus.ASSIGNED,
+          waitingUserEmail: assignedUserEmail?._id ? null : body.email,
+          assignedTo: assignedUserEmail?._id ? assignedUserEmail._id : null,
+          campId: body.campId,
+        });
+        newVoucher.save();
+        voucherCodes.push(code);
+        vouchers.push(newVoucher);
+      }
+
+      // updateRewardLimit
+      await this.rewardService.updateUsage(
+        campaignReward.rewardId._id,
+        body.noOfVoucher,
+      );
+
+      // send emails
+      const VOUCHERCODE = voucherCodes.map(code => `\n${code}`).toString();
+      await this.mailchimpService.sendTransactionalEmail({
+        to: body.email,
+        templatedId:
+          body.languagePreference === Locale.HEBREW
+            ? HebrewTemplate.VOUCHER_FOR_CAMPAIGN
+            : EnglishTemplate.VOUCHER_FOR_CAMPAIGN,
+        mergeVars: {
+          FNAME: body.name,
+          VOUCHERCODE,
+          VOUCHERAMOUNT: campaignReward.rewardId.amount,
+          CAMPAIGN_NAME: campaignReward.name,
+          CAMPAIGN_LINK: campaignReward.link,
+          CAMPAIGN_SLOGAN: campaignReward.slogan,
+        },
+      });
+
+      return vouchers;
+    } catch (err) {
+      exceptionHandling(err);
+    }
+  }
+
   async getOneByCode(query: GetOneVoucherInterface) {
     try {
-      const { code, externalApi, productId } = query;
+      const { code, productId } = query;
       const select = disSelect;
       const populate = {
         path: 'campId',
         select: `${disSelect}`,
       };
 
-      let findQuery: any = {
+      const findQuery = {
         code: code.trim(),
       };
 
-      if (productId) {
-        // get all the campId from campaignSegment the productId is associated to
-        const campaignIds
-          = await this.campaignSegmentService.getCampaignAssociatedToIds(
-            productId,
-            'products',
-          );
-
-        const campIds = Array.isArray(campaignIds)
-          ? campaignIds.map(item => new mongoose.Types.ObjectId(item))
-          : [new mongoose.Types.ObjectId(campaignIds)];
-
-        findQuery = {
-          ...findQuery,
-          campId: { $in: campIds },
-        };
-      }
-
-      const voucher = await this.VoucherModel.findOne(findQuery)
+      const voucher: any = await this.VoucherModel.findOne(findQuery)
         .select(select)
         .populate(populate)
         .exec();
 
       if (!voucher) {
         throw new BadRequestException(ServerErrors.VOUCHER.NOT_FOUND);
+      }
+
+      const dmoOfProduct = (await this.productService.findOne(productId))?.dmoId
+        ?._id;
+
+      // check if campaign Id has the dmo
+      if (!voucher?.campId?.dmoIds.includes(dmoOfProduct)) {
+        throw new ForbiddenException(
+          'This voucher is not eligible for this product',
+        );
       }
 
       if (voucher.expireDate) {
@@ -229,15 +311,6 @@ export class VoucherService {
         throw new ForbiddenException(ServerErrors.VOUCHER.UNPAID);
       }
 
-      if (externalApi) {
-        return {
-          id: voucher._id,
-          remainingAmount: voucher.remainingAmount,
-          expireDate: voucher.expireDate,
-          paymentStatus: voucher.paymentStatus,
-          status: voucher.status,
-        };
-      }
       return voucher;
     } catch (err) {
       exceptionHandling(err);
@@ -378,7 +451,6 @@ export class VoucherService {
     const select = disSelect;
 
     let findQuery: any = { ...query, assignedTo: userId };
-    delete findQuery?.identifierId;
 
     const populate = {
       path: 'campId',
@@ -388,35 +460,41 @@ export class VoucherService {
 
     let campIdsFromProductId;
     if (productId) {
-      // get all the campId from campaignSegment the productId is associated to
-      campIdsFromProductId
-        = await this.campaignSegmentService.getCampaignAssociatedToIds(
-          productId,
-          'products',
-        );
+      const dmoOfProduct = (await this.productService.findOne(productId))?.dmoId
+        ?._id;
 
-      if (!campIdsFromProductId?.length) {
-        return {
-          totalData: 0,
-        };
+      if (dmoOfProduct) {
+        // find campIds of this dmo
+        campIdsFromProductId
+          = await this.campaignService.getCampaignAssociatedToIds(
+            dmoOfProduct,
+            'dmoIds',
+          );
       }
     }
 
     if (campId) {
       let campIds = Array.isArray(campId)
-        ? campId.map(item => new mongoose.Types.ObjectId(item))
-        : [new mongoose.Types.ObjectId(campId)];
+        ? campId.map(item => item)
+        : [campId];
 
       if (campIdsFromProductId) {
-        campIds = [...campIds, campIdsFromProductId];
+        const campIdsFromProductIds = Array.isArray(campIdsFromProductId)
+          ? campIdsFromProductId.map(item => item.toString())
+          : [campIdsFromProductId];
+
+        campIds = [...campIds, ...campIdsFromProductIds];
       }
+
+      const campsId = getUniqueSet(campIds);
+
       findQuery = {
         ...findQuery,
-        campId: { $in: campIds },
+        campId: { $in: campsId },
       };
     }
 
-    if (!campId && campIdsFromProductId?.length) {
+    if (!campId && productId) {
       findQuery = {
         ...findQuery,
         campId: { $in: campIdsFromProductId },
@@ -429,6 +507,7 @@ export class VoucherService {
         name: { $regex: search, $options: 'i' },
       };
     }
+
     const voucher = await queryhandler<Voucher>(this.VoucherModel, {
       findQuery,
       select,
@@ -468,29 +547,40 @@ export class VoucherService {
 
     let campIdsFromProductId;
     if (productId) {
-      // get all the campId from campaignSegment the productId is associated to
-      campIdsFromProductId
-        = await this.campaignSegmentService.getCampaignAssociatedToIds(
-          productId,
-          'products',
-        );
+      const dmoOfProduct = (await this.productService.findOne(productId))?.dmoId
+        ?._id;
+
+      if (dmoOfProduct) {
+        // find campIds of this dmo
+        campIdsFromProductId
+          = await this.campaignService.getCampaignAssociatedToIds(
+            dmoOfProduct,
+            'dmoIds',
+          );
+      }
     }
 
     if (campId) {
       let campIds = Array.isArray(campId)
-        ? campId.map(item => new mongoose.Types.ObjectId(item))
-        : [new mongoose.Types.ObjectId(campId)];
+        ? campId.map(item => item)
+        : [campId];
 
       if (campIdsFromProductId) {
-        campIds = [...campIds, campIdsFromProductId];
+        const campIdsFromProductIds = Array.isArray(campIdsFromProductId)
+          ? campIdsFromProductId.map(item => item.toString())
+          : [campIdsFromProductId];
+
+        campIds = [...campIds, campIdsFromProductIds];
       }
+
+      const campsId = getUniqueSet(campIds);
       findQuery = {
         ...findQuery,
-        campId: { $in: campIds },
+        campId: { $in: campsId },
       };
     }
 
-    if (!campId && campIdsFromProductId?.length) {
+    if (!campId && productId) {
       findQuery = {
         ...findQuery,
         campId: { $in: campIdsFromProductId },
@@ -784,6 +874,17 @@ export class VoucherService {
     );
   }
 
+  async triggerReward(loggedInUser: LoggedInUserInterface, orderId: string) {
+    const orderDetail = await this.orderService.findOneById(orderId);
+
+    const rewardDetail = await this.campaignService.findRewardByCampId(
+      orderDetail.campId,
+    );
+
+    // create voucher
+    return rewardDetail;
+  }
+
   async getStats(
     loggedInUser: LoggedInUserInterface,
     query: GetVoucherStatsQuery,
@@ -809,12 +910,11 @@ export class VoucherService {
       // find dmo
       const dmoId = loggedInUser.dmo.id;
 
-      // get all the campId from campaignSegment the dmoId is associated to
-      const campaignIds
-        = await this.campaignSegmentService.getCampaignAssociatedToIds(
-          dmoId.toString(),
-          'DMOs',
-        );
+      // get campIds dmoId is associated to
+      const campaignIds = await this.campaignService.getCampaignAssociatedToIds(
+        dmoId,
+        'dmoIds',
+      );
 
       const campIds = Array.isArray(campaignIds)
         ? campaignIds.map(item => new mongoose.Types.ObjectId(item))
@@ -962,12 +1062,11 @@ export class VoucherService {
       // find dmo
       const dmoId = user.dmo.id;
 
-      // get all the campId from campaignSegment the dmoId is associated to
-      const campaignIds
-        = await this.campaignSegmentService.getCampaignAssociatedToIds(
-          dmoId.toString(),
-          'DMOs',
-        );
+      // get campIds dmoId is associated to
+      const campaignIds = await this.campaignService.getCampaignAssociatedToIds(
+        dmoId,
+        'dmoIds',
+      );
 
       const campIds = Array.isArray(campaignIds)
         ? campaignIds.map(item => new mongoose.Types.ObjectId(item))
@@ -1017,12 +1116,11 @@ export class VoucherService {
     ) {
       const dmoId = loggedInUser.dmo.id;
 
-      // get all the campId from campaignSegment the dmoId is associated to
-      const campaignIds
-        = await this.campaignSegmentService.getCampaignAssociatedToIds(
-          dmoId.toString(),
-          'DMOs',
-        );
+      // get campIds dmoId is associated to
+      const campaignIds = await this.campaignService.getCampaignAssociatedToIds(
+        dmoId,
+        'dmoIds',
+      );
 
       const campIds = Array.isArray(campaignIds)
         ? campaignIds.map(item => new mongoose.Types.ObjectId(item))

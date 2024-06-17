@@ -2,6 +2,8 @@
 export enum CampaignStatus {
   ACTIVE = 'ACTIVE',
   INACTIVE = 'INACTIVE',
+  DRAFT = 'DRAFT',
+  EXPIRED = 'EXPIRED',
 }
 
 export enum VoucherStatus {

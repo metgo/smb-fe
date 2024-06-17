@@ -9,9 +9,9 @@ import { UsersModule } from '../users/users.module';
 import { StatsController } from './stats.controller';
 import { StatsService } from './stats.service';
 import {
-  CampaignSegment,
-  CampaignSegmentSchema,
-} from 'src/modules/campaign-segments/schema/campaignSegment.schema';
+  Campaign,
+  CampaignSchema,
+} from 'src/modules/campaign/schema/campaign.schema';
 import { Order, OrderSchema } from 'src/modules/orders/schema/orders.schema';
 import {
   Voucher,
@@ -34,8 +34,8 @@ import {
         schema: ProductSchema,
       },
       {
-        name: CampaignSegment.name,
-        schema: CampaignSegmentSchema,
+        name: Campaign.name,
+        schema: CampaignSchema,
       },
       {
         name: Order.name,

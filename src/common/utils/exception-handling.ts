@@ -8,6 +8,7 @@ import {
   NotFoundException,
   PayloadTooLargeException,
   UnauthorizedException,
+  UnprocessableEntityException,
 } from '@nestjs/common';
 import mongoose from 'mongoose';
 import { ServerErrors } from 'src/common/constant';
@@ -55,6 +56,9 @@ export const exceptionHandling = err => {
       throw new BadRequestException(`The used ${ServerErrors.INVALID_ID}`);
     }
     throw new InternalServerErrorException('Error in database');
+  }
+  if (err instanceof UnprocessableEntityException) {
+    throw new UnprocessableEntityException(err.message);
   } else {
     throw new Error(err);
   }

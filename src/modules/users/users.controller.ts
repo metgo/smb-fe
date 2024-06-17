@@ -51,9 +51,8 @@ export class UsersController {
   async getAllUsers(
     @Query() query: GetAllUsersQuery,
     @Res() response: Response,
-    @Req() req,
   ) {
-    const users = await this.userService.getAllUsers(query, req.user);
+    const users = await this.userService.getAllUsers(query);
     return responseHelper(
       response,
       HttpStatus.OK,

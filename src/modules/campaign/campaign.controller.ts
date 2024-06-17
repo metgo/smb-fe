@@ -1,5 +1,4 @@
 /* eslint-disable no-undef */
-/* eslint-disable no-sequences */
 /* eslint-disable no-unused-expressions */
 import {
   Body,
@@ -9,81 +8,54 @@ import {
   HttpStatus,
   Param,
   Post,
-  Put,
   Query,
   Req,
   Res,
-  UploadedFile,
+  UploadedFiles,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { createCampaignDto } from './dto/createCampaign.dto';
+import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
+
 import { CampaignService } from './campaign.service';
 import { ServerSuccess } from 'src/common/constant';
 import { responseHelper } from 'src/core/helper/response.helper';
 import { JwtAuthGuard } from 'src/core/guards/jwt/jwt.guards';
 import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
 import { Roles } from 'src/core/guards/authorization/roles';
-import { UserType } from '../users/users.type';
 import { FilterQuery } from './dto/query.dto';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { CreateCampaignDto } from './dto/create-campaign.dto';
+import { UserType } from '../users/users.type';
 import { fileFilterByExtensions } from 'src/services/gcp-bucket/middleware/file-filter';
-import { updateCampaignDto } from './dto/updateCampaign.dto';
-import { CampaignSegmentService } from 'src/modules/campaign-segments/campaignSegment.service';
-import { CreateCampaignSegmentDTO } from 'src/modules/campaign-segments/dto/create-campaign-segment.dto';
 
 @Controller()
 export class CampaignController {
-  constructor(
-    private readonly campaignService: CampaignService,
-    private readonly campaignSegmentService: CampaignSegmentService,
-  ) {}
+  constructor(private readonly campaignService: CampaignService) {}
 
-  @Roles(UserType.SUPERADMIN, UserType.ADMIN, UserType.DMO, UserType.DMOADMIN)
+  @Roles(UserType.ADMIN, UserType.SUPERADMIN)
   @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
     tags: ['Admin', 'Campaign'],
-    response: { status: 201, description: ServerSuccess.CAMPAIGN_CREATED },
+    response: {
+      status: HttpStatus.CREATED,
+      description: ServerSuccess.CAMPAIGN_CREATED,
+    },
     noAuthToken: true,
     softBlockExtraDtoFields: true,
   })
-  @UseInterceptors(
-    FileInterceptor('campImage', { fileFilter: fileFilterByExtensions }),
-  )
+  @UseInterceptors(AnyFilesInterceptor({ fileFilter: fileFilterByExtensions }))
   @Post('admin/campaign')
   async create(
-    @Body() dto: createCampaignDto,
+    @Body() dto: CreateCampaignDto,
     @Req() request,
     @Res() response: Response,
-    @UploadedFile() campImage: Express.Multer.File,
+    @UploadedFiles() image: Array<Express.Multer.File>,
   ) {
-    const user = request.user.id;
-    await this.campaignService.findByFieldName('name', dto.name);
-    await this.campaignService.findByFieldName('code', dto.code);
-
-    const campaign = await this.campaignService.create(dto, campImage, user);
-
-    const campaignSegmentDto: CreateCampaignSegmentDTO = {
-      campaign_ID: campaign._id.toString(),
-      DMOs: dto?.dmoId || [],
-      businesses: dto?.businessId || [],
-      products: dto?.productId || [],
-      crowed_age: [],
-      crowed_origin: [],
-    };
-
-    if (
-      dto?.dmoId?.length
-      && (request.user.role === UserType.DMO
-        || request.user.role === UserType.DMOADMIN)
-    ) {
-      campaignSegmentDto.DMOs = [request.user.dmo.id.toString()];
-    }
-
-    await this.campaignSegmentService.create(
+    const campaign = await this.campaignService.create(
+      dto,
+      image,
       request.user.id,
-      campaignSegmentDto,
     );
 
     return responseHelper(
@@ -104,7 +76,13 @@ export class CampaignController {
     },
     noAuthToken: true,
   })
-  @Roles(UserType.SUPERADMIN, UserType.ADMIN, UserType.DMO, UserType.DMOADMIN)
+  @Roles(
+    UserType.ADMIN,
+    UserType.AUTHORITY,
+    UserType.DMO,
+    UserType.DMOADMIN,
+    UserType.SUPERADMIN,
+  )
   @UseGuards(JwtAuthGuard)
   @Get('admin/campaign')
   async getAll(
@@ -132,7 +110,13 @@ export class CampaignController {
     noAuthToken: true,
     params: [{ name: 'id', type: 'string', required: true }],
   })
-  @Roles(UserType.SUPERADMIN, UserType.ADMIN)
+  @Roles(
+    UserType.ADMIN,
+    UserType.AUTHORITY,
+    UserType.DMO,
+    UserType.DMOADMIN,
+    UserType.SUPERADMIN,
+  )
   @UseGuards(JwtAuthGuard)
   @Get('admin/campaign/:id')
   async getOne(@Res() response: Response, @Param('id') id: string) {
@@ -147,12 +131,18 @@ export class CampaignController {
     );
   }
 
-  @Roles(UserType.SUPERADMIN, UserType.ADMIN, UserType.DMO)
+  @Roles(
+    UserType.ADMIN,
+    UserType.AUTHORITY,
+    UserType.DMO,
+    UserType.DMOADMIN,
+    UserType.SUPERADMIN,
+  )
   @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
     tags: ['Admin', 'Campaign'],
     response: {
-      status: 200,
+      status: HttpStatus.OK,
       description: ServerSuccess.CAMPAIGN_LISTED,
     },
     noAuthToken: true,
@@ -177,52 +167,64 @@ export class CampaignController {
     );
   }
 
-  @Roles(UserType.SUPERADMIN, UserType.ADMIN, UserType.DMO, UserType.DMOADMIN)
-  @UseGuards(JwtAuthGuard)
-  @ApiEndpoint({
-    tags: ['Admin', 'Campaign'],
-    response: {
-      status: 200,
-      description: ServerSuccess.CAMPAIGN_UPDATED,
-    },
-    noAuthToken: true,
-    softBlockExtraDtoFields: true,
-  })
-  @UseInterceptors(
-    FileInterceptor('campImage', { fileFilter: fileFilterByExtensions }),
-  )
-  @Put('admin/campaign/:id')
-  async update(
-    @Res() response: Response,
-    @Req() request,
-    @Param('id') id: string,
-    @Body() dto: updateCampaignDto,
-    @UploadedFile() campImage?: Express.Multer.File,
-  ) {
-    const user = request.user.id;
-    await this.campaignService.findByFieldNameExcludeId('name', dto.name, id);
-    const campaign = await this.campaignService.update(
-      id,
-      dto,
-      campImage,
-      user,
-    );
-    return responseHelper(
-      response,
-      HttpStatus.OK,
-      ServerSuccess.CAMPAIGN_UPDATED,
-      campaign,
-      null,
-      null,
-    );
-  }
+  // @Roles(
+  //   UserType.ADMIN,
+  //   UserType.AUTHORITY,
+  //   UserType.DMO,
+  //   UserType.DMOADMIN,
+  //   UserType.SUPERADMIN,
+  // )
+  // @UseGuards(JwtAuthGuard)
+  // @ApiEndpoint({
+  //   tags: ['Admin', 'Campaign'],
+  //   response: {
+  //     status: HttpStatus.OK,
+  //     description: ServerSuccess.CAMPAIGN_UPDATED,
+  //   },
+  //   noAuthToken: true,
+  //   softBlockExtraDtoFields: true,
+  // })
+  // @UseInterceptors(
+  //   FileInterceptor('campImage', { fileFilter: fileFilterByExtensions }),
+  // )
+  // @Put('admin/campaign/:id')
+  // async update(
+  //   @Res() response: Response,
+  //   @Req() request,
+  //   @Param('id') id: string,
+  //   @Body() dto: updateCampaignDto,
+  //   @UploadedFile() campImage?: Express.Multer.File,
+  // ) {
+  //   const user = request.user.id;
+  //   await this.campaignService.findByFieldNameExcludeId('name', dto.name, id);
+  //   const campaign = await this.campaignService.update(
+  //     id,
+  //     dto,
+  //     campImage,
+  //     user,
+  //   );
+  //   return responseHelper(
+  //     response,
+  //     HttpStatus.OK,
+  //     ServerSuccess.CAMPAIGN_UPDATED,
+  //     campaign,
+  //     null,
+  //     null,
+  //   );
+  // }
 
-  @Roles(UserType.SUPERADMIN, UserType.ADMIN, UserType.DMO)
+  @Roles(
+    UserType.ADMIN,
+    UserType.AUTHORITY,
+    UserType.DMO,
+    UserType.DMOADMIN,
+    UserType.SUPERADMIN,
+  )
   @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
     tags: ['Admin', 'Campaign'],
     response: {
-      status: 200,
+      status: HttpStatus.OK,
       description: ServerSuccess.CAMPAIGN_UPDATED,
     },
     noAuthToken: true,

@@ -3,6 +3,7 @@ import mongoose, { HydratedDocument } from 'mongoose';
 import { VoucherPaymentStatus, VoucherStatus } from 'src/common/enum';
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
 import { Campaign } from 'src/modules/campaign/schema/campaign.schema';
+import { ExternalApi } from 'src/modules/external-api/schema/external-api.schema';
 import { User } from 'src/modules/users/schema/users.schema';
 
 @Schema()
@@ -55,8 +56,12 @@ export class Voucher extends AuditableSchema {
   })
     assignedTo: mongoose.Types.ObjectId;
 
-  @Prop({ default: null })
-    identifierId: string;
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    ref: ExternalApi.name,
+    required: false,
+  })
+    externalApiId: mongoose.Types.ObjectId;
 
   @Prop({
     type: mongoose.Schema.Types.ObjectId,

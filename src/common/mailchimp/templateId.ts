@@ -11,6 +11,7 @@ export const HebrewTemplate = {
   OrderConfirmationForClient: 'order-confirmation-client-side-in-he',
   FailedToSendEmail: '',
   REEDEMABLE_VOUCHER_REMINDER: 'voucher-remainder-he',
+  VOUCHER_FOR_CAMPAIGN: 'dynamic-voucher-general-campaign-he',
 };
 
 export const EnglishTemplate = {
@@ -26,4 +27,5 @@ export const EnglishTemplate = {
   OrderConfirmationForClient: 'order-confirmation-client-side-en',
   FailedToSendEmail: '',
   REEDEMABLE_VOUCHER_REMINDER: 'voucher-remainder-en',
+  VOUCHER_FOR_CAMPAIGN: 'dynamic-voucher-general-campaign-en',
 };

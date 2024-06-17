@@ -1,4 +1,4 @@
 import { PartialType } from '@nestjs/mapped-types';
-import { createCampaignDto } from './createCampaign.dto';
+import { CreateCampaignDto } from './create-campaign.dto';
 
-export class updateCampaignDto extends PartialType(createCampaignDto) {}
+export class updateCampaignDto extends PartialType(CreateCampaignDto) {}

@@ -81,4 +81,11 @@ export class CreateOrderDto {
   @IsOptional()
   @IsEnum(Locale)
     languagePreference: Locale;
+
+  @IsString()
+  @IsOptional()
+  @ApiProperty({
+    required: false,
+  })
+    campId: string;
 }

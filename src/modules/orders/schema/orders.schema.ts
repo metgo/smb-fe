@@ -4,6 +4,7 @@ import mongoose, { HydratedDocument } from 'mongoose';
 import { PaymentStatus } from 'src/common/enum';
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
 import { Business } from 'src/modules/business/schema/business.schema';
+import { ExternalApi } from 'src/modules/external-api/schema/external-api.schema';
 import { OrderStatus, PaymentMode } from 'src/modules/orders/orders.type';
 import { Product } from 'src/modules/products/schema/products.schema';
 import { User } from 'src/modules/users/schema/users.schema';
@@ -89,8 +90,15 @@ export class Order extends AuditableSchema {
   @Prop({ type: Number, default: 0 })
     creditCardPayment: number;
 
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    ref: ExternalApi.name,
+    required: false,
+  })
+    externalApiId: mongoose.Types.ObjectId;
+
   @Prop({ default: null })
-    identifierId: string;
+    campId: string;
 }
 
 export type OrderDocument = HydratedDocument<Order>;

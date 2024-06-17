@@ -5,19 +5,22 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { ServerErrors } from 'src/common/constant';
-import { ConfigService } from 'src/services/config/config.service';
+import { ExternalApiServices } from 'src/modules/external-api/external-api.service';
 
 @Injectable()
 export class ExternalApiGuard implements CanActivate {
-  constructor(private readonly configService: ConfigService) {}
+  constructor(private readonly externalAPIService: ExternalApiServices) {}
 
-  canActivate(context: ExecutionContext): boolean {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const { identifierId } = request.query;
 
-    if (
-      identifierId !== this.configService.externalApiIdentifier.IDENTIFIER_ID
-    ) {
+    const externalApiExists = await this.externalAPIService.findByFieldName(
+      'identifierId',
+      identifierId,
+    );
+
+    if (!externalApiExists) {
       throw new UnauthorizedException(ServerErrors.FORBIDDEN);
     }
 

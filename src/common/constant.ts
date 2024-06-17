@@ -120,11 +120,14 @@ export const ServerErrors = {
     EXPIRED: 'Your voucher has expired and is no longer valid.',
     CANNOT_ASSIGN:
       'This voucher no longer exists or you lack the required permissions',
+    LIMIT_EXCEEDED: 'You can no longer create voucher under this campaign',
   },
 
   CAMPAIGN: {
     NOT_FOUND: 'Invalid campaign',
     EXISTS: 'Campaign already exists',
+    EXPIRED_OR_REWARD_DONT_EXIST:
+      'The campaign is either expired or has no reward',
   },
 
   ORDERS: {
@@ -294,6 +297,9 @@ export const ServerSuccess = {
   },
   PAYMENT: {
     SUCCESS: 'Your payment was successfully paid',
+  },
+  REWARD: {
+    UPDATED: 'Rewards was updated sucessfully',
   },
   EXTERNAL_API: {
     CREATED: 'New External API was added successfully',

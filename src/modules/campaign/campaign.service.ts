@@ -6,28 +6,29 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { ObjectId } from 'typeorm';
 
-import { Campaign } from './schema/campaign.schema';
-import { paginateData } from 'src/common/pagination';
-import { paginationConfig } from 'src/common/pagination.config';
+import { ServerErrors } from 'src/common/constant';
 import { CampaignStatus } from 'src/common/enum';
+import { paginationConfig } from 'src/common/pagination.config';
+import { exceptionHandling } from 'src/common/utils/exception-handling';
+import { disSelect } from 'src/common/utils/select.handling';
 import {
   findOneByFieldName,
   findOneByFieldNameExcludeId,
   findOneByFieldNames,
-  findOneById,
+  findOneByIDPopulate,
   queryhandler,
   updateById,
 } from 'src/core/helper/query-helper';
 import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interface';
-import { createCampaignDto } from './dto/createCampaign.dto';
+import { CreateCampaignDto } from './dto/create-campaign.dto';
 import { FilterQuery } from './dto/query.dto';
+import { RewardsService } from 'src/modules/rewards/rewards.service';
 import { UserType } from 'src/modules/users/users.type';
-import { disSelect } from 'src/common/utils/select.handling';
-import { EncryptionService } from 'src/services/encryption/encryption.service';
+import { Campaign } from './schema/campaign.schema';
 import { ConfigService } from 'src/services/config/config.service';
-import { updateCampaignDto } from './dto/updateCampaign.dto';
-import { ServerErrors } from 'src/common/constant';
+import { EncryptionService } from 'src/services/encryption/encryption.service';
 import { GcpBucketService } from 'src/services/gcp-bucket/gcp-bucket.services';
 
 @Injectable()
@@ -38,22 +39,76 @@ export class CampaignService {
     private readonly encryptionService: EncryptionService,
     private readonly configService: ConfigService,
     private readonly gcpBucketServices: GcpBucketService,
+    private readonly rewardService: RewardsService,
   ) {}
 
   async create(
-    dto: createCampaignDto,
-    file: Express.Multer.File,
+    dto: CreateCampaignDto,
+    files: Array<Express.Multer.File>,
     userId: string,
   ): Promise<Campaign> {
-    if (!file) {
+    await Promise.all([
+      this.findByFieldName('name', dto.name),
+      this.findByFieldName('code', dto.code),
+    ]);
+
+    if (!files?.length) {
       throw new BadRequestException('Please upload file');
     }
-    const campImage = await this.gcpBucketServices.upload(file);
-    const newCampaign = new this.CampaignModel({
-      ...dto,
+
+    let imageCount: number = 0;
+
+    await Promise.all(
+      // eslint-disable-next-line array-callback-return
+      files.map(file => {
+        if (file.fieldname === 'logoPath' || file.fieldname === 'campImage') {
+          imageCount += 1;
+        }
+      }),
+    );
+
+    if (imageCount !== 2) {
+      throw new BadRequestException('Please upload logo and campaignImage');
+    }
+
+    let campImage: string;
+    let logoPath: string;
+    await Promise.all(
+      files.map(async file => {
+        if (file.fieldname === 'logoPath') {
+          logoPath = await this.gcpBucketServices.upload(file);
+        }
+
+        if (file.fieldname === 'campImage') {
+          campImage = await this.gcpBucketServices.upload(file);
+        }
+      }),
+    );
+
+    const { rewardAmount, rewardVoucherLimit, ...body } = dto;
+
+    let campaign: any = {
+      ...body,
       imagePath: campImage,
+      logoPath,
       createdBy: userId,
-    });
+    };
+
+    if (rewardAmount) {
+      // create reward;
+      const reward = await this.rewardService.create({
+        createdBy: userId,
+        amount: rewardAmount,
+        voucherLimit: rewardVoucherLimit,
+      });
+
+      campaign = {
+        ...campaign,
+        rewardId: reward._id,
+      };
+    }
+
+    const newCampaign = new this.CampaignModel(campaign);
     await newCampaign.save();
     return newCampaign;
   }
@@ -76,56 +131,34 @@ export class CampaignService {
       };
     }
 
-    let dmoQuery = dmoId ? { $in: [dmoId] } : null;
+    if (dmoId) {
+      findQuery = {
+        ...findQuery,
+        dmoIds: { $in: [dmoId] },
+      };
+    }
+
     if (
       loggedInUser.role === UserType.DMO
       || loggedInUser.role === UserType.DMOADMIN
     ) {
-      dmoQuery = {
-        $in: [loggedInUser.dmo.id],
+      findQuery = {
+        ...findQuery,
+        dmoIds: { $in: [loggedInUser.dmo.id] },
       };
     }
 
-    if (dmoQuery) {
-      const campaign = await this.CampaignModel.aggregate([
-        { $match: findQuery },
-        {
-          $lookup: {
-            from: 'campaignsegments',
-            localField: '_id',
-            foreignField: 'campaign_ID',
-            as: 'campSegment',
-          },
-        },
-        { $unwind: '$campSegment' },
-        {
-          $match: {
-            'campSegment.DMOs': dmoQuery,
-          },
-        },
-        {
-          $project: {
-            campSegment: 0,
-            createdAt: 0,
-            updatedAt: 0,
-            createdBy: 0,
-            updatedBy: 0,
-            deletedBy: 0,
-            deletedAt: 0,
-            __v: 0,
-          },
-        },
-      ]);
-
-      const paginatedCampaigns = paginateData(queryPage, queryLimit, campaign);
-      return paginatedCampaigns;
-    }
+    const populate = {
+      path: 'dmoIds rewardId',
+      select: `${disSelect}`,
+    };
 
     const allCampaign = await queryhandler<Campaign>(this.CampaignModel, {
       findQuery,
       select: disSelect,
       page: queryPage,
       limit: queryLimit,
+      populate,
     });
 
     return allCampaign;
@@ -141,11 +174,13 @@ export class CampaignService {
 
     let findQuery: any = {
       ...query,
-      createdBy: { $in: [userId] },
+      createdBy: userId,
     };
-    let select: {};
-    let populate: any;
-    let populate1: {};
+    const populate = {
+      path: 'dmoIds rewardId',
+      select: `${disSelect}`,
+    };
+
     if (search) {
       findQuery = {
         ...findQuery,
@@ -159,20 +194,17 @@ export class CampaignService {
     if (query.dmoId) {
       findQuery = {
         ...findQuery,
-        dmoId: { $in: [query.dmoId] },
+        dmoIds: { $in: [query.dmoId] },
       };
-      delete findQuery?.createdBy;
     }
 
-    // eslint-disable-next-line prefer-const
-    select = `${disSelect}`;
+    const select = `${disSelect}`;
     const allCampaign = await queryhandler<Campaign>(this.CampaignModel, {
       findQuery,
       select,
       page: queryPage,
       limit: queryLimit,
       populate,
-      populate1,
     });
 
     return allCampaign;
@@ -180,8 +212,14 @@ export class CampaignService {
 
   async getOne(id: string) {
     const select = disSelect;
+    const populate = {
+      path: 'dmoIds rewardId',
+      select: `${disSelect}`,
+    };
+
     const campaign = await this.CampaignModel.findById(id)
       .select(select)
+      .populate(populate)
       .exec();
     if (campaign) {
       delete campaign.code;
@@ -193,43 +231,43 @@ export class CampaignService {
     return campaign;
   }
 
-  async update(
-    id: string,
-    dto: updateCampaignDto,
-    newImage: Express.Multer.File,
-    userId: string,
-  ): Promise<Campaign> {
-    const updateDto = async () => {
-      const existingImage = await findOneById<Campaign>(this.CampaignModel, id);
+  // async update(
+  //   id: string,
+  //   dto: updateCampaignDto,
+  //   newImage: Express.Multer.File,
+  //   userId: string,
+  // ): Promise<Campaign> {
+  //   const updateDto = async () => {
+  //     const existingImage = await findOneById<Campaign>(this.CampaignModel, id);
 
-      const newUrl = await this.gcpBucketServices.update(
-        existingImage.imagePath,
-        newImage,
-      );
+  //     const newUrl = await this.gcpBucketServices.update(
+  //       existingImage.imagePath,
+  //       newImage,
+  //     );
 
-      return {
-        ...dto,
-        imagePath: newUrl,
-        updatedBy: userId,
-        updatedAt: new Date(),
-      };
-    };
+  //     return {
+  //       ...dto,
+  //       imagePath: newUrl,
+  //       updatedBy: userId,
+  //       updatedAt: new Date(),
+  //     };
+  //   };
 
-    const updatedDTO = newImage
-      ? await updateDto()
-      : { ...dto, updatedBy: userId, updatedAt: new Date() };
+  //   const updatedDTO = newImage
+  //     ? await updateDto()
+  //     : { ...dto, updatedBy: userId, updatedAt: new Date() };
 
-    const updateCampaign = await updateById<Campaign>(
-      this.CampaignModel,
-      id,
-      updatedDTO,
-    );
+  //   const updateCampaign = await updateById<Campaign>(
+  //     this.CampaignModel,
+  //     id,
+  //     updatedDTO,
+  //   );
 
-    if (!updateCampaign) {
-      throw new NotFoundException(ServerErrors.CAMPAIGN.NOT_FOUND);
-    }
-    return updateCampaign;
-  }
+  //   if (!updateCampaign) {
+  //     throw new NotFoundException(ServerErrors.CAMPAIGN.NOT_FOUND);
+  //   }
+  //   return updateCampaign;
+  // }
 
   async softDelete(id: string) {
     const updateField = { isDeleted: true, deleteAt: new Date() };
@@ -242,6 +280,27 @@ export class CampaignService {
       throw new NotFoundException(ServerErrors.CAMPAIGN.NOT_FOUND);
     }
     return campaign;
+  }
+
+  async findRewardByCampId(campId: string) {
+    const findQuery = {
+      endDate: { $gte: new Date() },
+      status: CampaignStatus.ACTIVE,
+      _id: campId,
+    };
+
+    const populate = {
+      path: 'rewardId',
+      select: `${disSelect}`,
+    };
+
+    const campaignRewardDetail = await findOneByIDPopulate<Campaign>(
+      this.CampaignModel,
+      findQuery,
+      populate,
+    );
+
+    return campaignRewardDetail;
   }
 
   async findAndReturn(
@@ -294,5 +353,19 @@ export class CampaignService {
       throw new BadRequestException(`${fieldName} already exists`);
     }
     return false;
+  }
+
+  async getCampaignAssociatedToIds(id: string | ObjectId, key: keyof Campaign) {
+    try {
+      const campaigns = await this.CampaignModel.find({
+        [key]: { $in: [id] },
+      });
+
+      const campaignIds = campaigns.map(obj => obj._id);
+
+      return campaignIds;
+    } catch (err) {
+      exceptionHandling(err);
+    }
   }
 }
