@@ -626,6 +626,12 @@ export class ExternalApiServices {
       },
     };
 
+    const populate1 = {
+      path: 'businessId',
+      select:
+        '_id address name geoLocation location busiEmail description contactDetails',
+    };
+
     if (categoriesId) {
       const categoriesIds = Array.isArray(categoriesId)
         ? categoriesId
@@ -633,7 +639,7 @@ export class ExternalApiServices {
 
       findQuery = {
         ...findQuery,
-        categoriesId: { $in: categoriesIds },
+        categories: { $in: categoriesIds },
       };
     }
 
@@ -644,7 +650,7 @@ export class ExternalApiServices {
 
       findQuery = {
         ...findQuery,
-        subCategoriesId: { $in: subCategoriesIds },
+        subCategories: { $in: subCategoriesIds },
       };
     }
 
@@ -654,6 +660,7 @@ export class ExternalApiServices {
       page: Number(page),
       limit: Number(limit),
       populate,
+      populate1,
     });
 
     if (!productsList?.data || !productsList.data?.length) {
@@ -662,6 +669,9 @@ export class ExternalApiServices {
         products: [],
       };
     }
+
+    productsList.products = productsList.data;
+    delete productsList.data;
 
     return productsList;
   }

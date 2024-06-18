@@ -211,6 +211,7 @@ export class ExternalAPIServiceController {
     @Query() query: GetAllProductsQuery,
   ) {
     const product = await this.externalApiService.getAllProducts(query);
+
     return responseHelper(
       response,
       HttpStatus.OK,

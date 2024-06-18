@@ -546,9 +546,16 @@ export class OrderProductService {
     const queryPage = page ? Number(page) : paginationConfig.page;
     const queryLimit = limit ? Number(limit) : paginationConfig.limit;
 
+    let orderTotalAmount = 0;
+    await Promise.all(
+      orders.map(async order => {
+        orderTotalAmount += order.amount;
+        return orderTotalAmount;
+      }),
+    );
     const paginatedOrders = paginateData(queryPage, queryLimit, orders);
 
-    return paginatedOrders;
+    return { ...paginatedOrders, orderTotalAmount };
   }
 
   async findById(id: string) {
