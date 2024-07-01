@@ -104,22 +104,22 @@ export class OrdersService {
         ]);
 
         await this.mailchimpService.sendTransactionalEmail({
-          to: order.email,
+          to: order?.email,
           templatedId:
             body?.languagePreference === Locale.HEBREW
               ? HebrewTemplate.OrderConfirmationForClient
               : EnglishTemplate.OrderConfirmationForClient,
           mergeVars: {
-            BUYERNAME: order.firstName,
-            BUSINESSNAME: businessDetails[0].name || '',
-            PRODUCTNAME: getProductInformation[0].name,
-            QUANTITY: body.products[0].quantity,
-            COST: getProductInformation[0].price.sellingPrice,
-            TOTALAMOUNT: order.totalAmount,
+            BUYERNAME: order?.firstName,
+            BUSINESSNAME: businessDetails[0]?.name || '',
+            PRODUCTNAME: getProductInformation[0]?.name,
+            QUANTITY: body?.products[0]?.quantity,
+            COST: getProductInformation[0]?.price?.sellingPrice,
+            TOTALAMOUNT: order?.totalAmount,
             BUSINESSPHONE:
               `${businessDetails[0]?.countryCode}-${businessDetails[0]?.phoneNumber}`
               || '',
-            BUSINESSEMAIL: businessDetails[0].busiEmail || '',
+            BUSINESSEMAIL: businessDetails[0]?.busiEmail || '',
             BUSINESSADDRESS: businessDetails[0]?.address?.location || '',
           },
         });
@@ -129,21 +129,21 @@ export class OrdersService {
           businessDetails.map(async business => {
             if (!business?.busiEmail) return;
             await this.mailchimpService.sendTransactionalEmail({
-              to: business.busiEmail,
+              to: business?.busiEmail,
               templatedId:
                 body?.languagePreference === Locale.HEBREW
                   ? HebrewTemplate.OrderReceivedForBusiness
                   : EnglishTemplate.OrderReceivedForBusiness,
               mergeVars: {
                 BUSINESSNAME: business?.name || '',
-                PRODUCTNAME: getProductInformation[0].name,
-                QUANTITY: body.products[0].quantity,
-                COST: getProductInformation[0].price.sellingPrice,
-                TOTALAMOUNT: order.totalAmount,
-                BUYERNAME: `${body.firstName} ${body.lastName}`,
-                BUYERPHONE: `${body?.countryCode}-${body.phone}`,
-                BUYEREMAIL: body.email,
-                BUYERADDRESS: body.address,
+                PRODUCTNAME: getProductInformation[0]?.name,
+                QUANTITY: body?.products[0]?.quantity,
+                COST: getProductInformation[0]?.price?.sellingPrice,
+                TOTALAMOUNT: order?.totalAmount,
+                BUYERNAME: `${body?.firstName} ${body?.lastName}`,
+                BUYERPHONE: `${body?.countryCode}-${body?.phone}`,
+                BUYEREMAIL: body?.email,
+                BUYERADDRESS: body?.address,
               },
             });
           }),

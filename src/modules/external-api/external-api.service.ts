@@ -255,31 +255,31 @@ export class ExternalApiServices {
         await this.findByFieldName('identifierId', identifierId)
       )._id;
 
-      let i: number = 0;
       const voucherCodes: any = [];
       const vouchers: any = [];
 
-      // eslint-disable-next-line no-plusplus
-      for (i = 0; i < body.noOfVoucher; i++) {
-        const randomCode = generateRandomCode(12);
-        const code = campaignReward.code + randomCode;
-        const newVoucher = new this.VoucherModel({
-          name: body.name,
-          createdBy: loggedInUser.id,
-          amount: campaignReward?.rewardId?.amount,
-          code,
-          remainingAmount: campaignReward?.rewardId?.amount,
-          paymentStatus: VoucherPaymentStatus.PAID,
-          status: VoucherStatus.ASSIGNED,
-          waitingUserEmail: assignedUserEmail?._id ? null : body.email,
-          externalApiId,
-          assignedTo: assignedUserEmail?._id ? assignedUserEmail._id : null,
-          campId: body.campId,
-        });
-        newVoucher.save();
-        voucherCodes.push(code);
-        vouchers.push(newVoucher);
-      }
+      await Promise.all(
+        Array.from({ length: body.noOfVoucher }).map(async () => {
+          const randomCode = generateRandomCode(12);
+          const code = campaignReward.code + randomCode;
+          const newVoucher = new this.VoucherModel({
+            name: body.name,
+            createdBy: loggedInUser.id,
+            amount: campaignReward?.rewardId?.amount,
+            code,
+            remainingAmount: campaignReward?.rewardId?.amount,
+            paymentStatus: VoucherPaymentStatus.PAID,
+            status: VoucherStatus.ASSIGNED,
+            waitingUserEmail: assignedUserEmail?._id ? null : body.email,
+            externalApiId,
+            assignedTo: assignedUserEmail?._id ? assignedUserEmail._id : null,
+            campId: body.campId,
+          });
+          await newVoucher.save();
+          await voucherCodes.push(code);
+          await vouchers.push(newVoucher);
+        }),
+      );
 
       // updateRewardLimit
       await this.deductRewardUsage(
@@ -288,17 +288,19 @@ export class ExternalApiServices {
       );
 
       // send emails?
-      const VOUCHERCODE = voucherCodes.map(code => `\n${code}`).toString();
+      const VOUCHERCODE = await voucherCodes
+        .map(code => `\n${code}`)
+        .toString();
       await this.mailchimpService.sendTransactionalEmail({
-        to: body.email,
+        to: body?.email,
         templatedId:
           body.languagePreference === Locale.HEBREW
             ? HebrewTemplate.VoucherConfirmationNonLoggedIn
             : EnglishTemplate.VoucherConfirmationNonLoggedIn,
         mergeVars: {
-          BUYERNAME: body.name,
+          BUYERNAME: body?.name,
           VOUCHERCODE,
-          VOUCHERAMOUNT: campaignReward.rewardId.amount,
+          VOUCHERAMOUNT: campaignReward?.rewardId?.amount,
         },
       });
 
@@ -521,22 +523,22 @@ export class ExternalApiServices {
         ]);
 
         await this.mailchimpService.sendTransactionalEmail({
-          to: order.email,
+          to: order?.email,
           templatedId:
             body?.languagePreference === Locale.HEBREW
               ? HebrewTemplate.OrderConfirmationForClient
               : EnglishTemplate.OrderConfirmationForClient,
           mergeVars: {
-            BUYERNAME: order.firstName,
-            BUSINESSNAME: businessDetails[0].name || '',
-            PRODUCTNAME: getProductInformation[0].name,
-            QUANTITY: body.products[0].quantity,
-            COST: getProductInformation[0].price.sellingPrice,
-            TOTALAMOUNT: order.totalAmount,
+            BUYERNAME: order?.firstName,
+            BUSINESSNAME: businessDetails[0]?.name || '',
+            PRODUCTNAME: getProductInformation[0]?.name,
+            QUANTITY: body?.products[0]?.quantity,
+            COST: getProductInformation[0]?.price?.sellingPrice,
+            TOTALAMOUNT: order?.totalAmount,
             BUSINESSPHONE:
               `${businessDetails[0]?.countryCode}-${businessDetails[0]?.phoneNumber}`
               || '',
-            BUSINESSEMAIL: businessDetails[0].busiEmail || '',
+            BUSINESSEMAIL: businessDetails[0]?.busiEmail || '',
             BUSINESSADDRESS: businessDetails[0]?.address?.location || '',
           },
         });
@@ -546,21 +548,21 @@ export class ExternalApiServices {
           businessDetails.map(async business => {
             if (!business?.busiEmail) return;
             await this.mailchimpService.sendTransactionalEmail({
-              to: business.busiEmail,
+              to: business?.busiEmail,
               templatedId:
                 body?.languagePreference === Locale.HEBREW
                   ? HebrewTemplate.OrderReceivedForBusiness
                   : EnglishTemplate.OrderReceivedForBusiness,
               mergeVars: {
                 BUSINESSNAME: business?.name || '',
-                PRODUCTNAME: getProductInformation[0].name,
-                QUANTITY: body.products[0].quantity,
-                COST: getProductInformation[0].price.sellingPrice,
-                TOTALAMOUNT: order.totalAmount,
-                BUYERNAME: `${body.firstName} ${body.lastName}`,
-                BUYERPHONE: `${body?.countryCode}-${body.phone}`,
-                BUYEREMAIL: body.email,
-                BUYERADDRESS: body.address,
+                PRODUCTNAME: getProductInformation[0]?.name,
+                QUANTITY: body?.products[0]?.quantity,
+                COST: getProductInformation[0]?.price?.sellingPrice,
+                TOTALAMOUNT: order?.totalAmount,
+                BUYERNAME: `${body?.firstName} ${body?.lastName}`,
+                BUYERPHONE: `${body?.countryCode}-${body?.phone}`,
+                BUYEREMAIL: body?.email,
+                BUYERADDRESS: body?.address,
               },
             });
           }),
@@ -908,15 +910,15 @@ export class ExternalApiServices {
     }
 
     await this.mailchimpService.sendTransactionalEmail({
-      to: body.email,
+      to: body?.email,
       templatedId:
         body?.languagePreference === Locale.HEBREW
           ? HebrewTemplate.VoucherAssignedToYou
           : EnglishTemplate.VoucherAssignedToYou,
       mergeVars: {
-        FULLNAME: `${loggedInUser.firstName} ${loggedInUser.lastName}`,
-        VOUCHERCODE: body.code,
-        VOUCHERAMOUNT: assignedVoucher.remainingAmount,
+        FULLNAME: `${loggedInUser?.firstName} ${loggedInUser?.lastName}`,
+        VOUCHERCODE: body?.code,
+        VOUCHERAMOUNT: assignedVoucher?.remainingAmount,
       },
     });
 
@@ -986,7 +988,6 @@ export class ExternalApiServices {
           ? user?.id
           : (await this.userService.findByEmailOrNull(dto.email))?._id;
 
-      let i: number = 0;
       const vouchers: any = [];
       const voucherCodes: any = [];
 
@@ -994,37 +995,40 @@ export class ExternalApiServices {
         await this.findByFieldName('identifierId', identifierId)
       )._id;
 
-      // eslint-disable-next-line no-plusplus
-      for (i = 0; i < dto.noOfVoucher; i++) {
-        const randomCode = generateRandomCode(12);
-        const code = dto.campCode + randomCode;
-        const newVoucher = new this.VoucherModel({
-          ...dto,
-          code,
-          remainingAmount: dto.amount,
-          campId: campaignId,
-          createdBy: createdByUserId,
-          createdByEmail: createdByUserId ? null : dto.email,
-          paymentStatus: VoucherPaymentStatus.PAID,
-          externalApiId,
-        });
-        newVoucher.save();
-        vouchers.push(newVoucher);
-        voucherCodes.push(code);
-      }
+      await Promise.all(
+        Array.from({ length: dto.noOfVoucher }).map(async () => {
+          const randomCode = generateRandomCode(12);
+          const code = dto.campCode + randomCode;
+          const newVoucher = new this.VoucherModel({
+            ...dto,
+            code,
+            remainingAmount: dto.amount,
+            campId: campaignId,
+            createdBy: createdByUserId,
+            createdByEmail: createdByUserId ? null : dto.email,
+            paymentStatus: VoucherPaymentStatus.PAID,
+            externalApiId,
+          });
+          await newVoucher.save();
+          await vouchers.push(newVoucher);
+          await voucherCodes.push(code);
+        }),
+      );
 
       // send emails?
-      const VOUCHERCODE = voucherCodes.map(code => `\n${code}`).toString();
+      const VOUCHERCODE = await voucherCodes
+        .map(code => `\n${code}`)
+        .toString();
       await this.mailchimpService.sendTransactionalEmail({
-        to: dto.email,
+        to: dto?.email,
         templatedId:
-          dto.languagePreference === Locale.HEBREW
+          dto?.languagePreference === Locale.HEBREW
             ? HebrewTemplate.VoucherConfirmationNonLoggedIn
             : EnglishTemplate.VoucherConfirmationNonLoggedIn,
         mergeVars: {
-          FNAME: dto.name,
+          FNAME: dto?.name,
           VOUCHERCODE,
-          VOUCHERAMOUNT: dto.amount,
+          VOUCHERAMOUNT: dto?.amount,
         },
       });
 

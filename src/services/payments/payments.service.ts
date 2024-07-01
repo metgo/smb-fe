@@ -121,14 +121,14 @@ export class PaymentsService {
     );
 
     await this.mailchimpService.sendTransactionalEmail({
-      to: payments.customerEmail,
+      to: payments?.customerEmail,
       templatedId:
         query?.languagePreference === Locale.HEBREW
           ? HebrewTemplate.PaymentSuccessful
           : EnglishTemplate.PaymentSuccessful,
       mergeVars: {
-        BUYERNAME: payments.customerName,
-        TOTALAMOUNT: payments.amount,
+        BUYERNAME: payments?.customerName,
+        TOTALAMOUNT: payments?.amount,
       },
     });
 
@@ -155,22 +155,22 @@ export class PaymentsService {
       ]);
 
       await this.mailchimpService.sendTransactionalEmail({
-        to: updateOrder.email,
+        to: updateOrder?.email,
         templatedId:
           query?.languagePreference === Locale.HEBREW
             ? HebrewTemplate.OrderConfirmationForClient
             : EnglishTemplate.OrderConfirmationForClient,
         mergeVars: {
-          BUYERNAME: updateOrder.firstName,
-          BUSINESSNAME: businessDetails[0].name || '',
-          PRODUCTNAME: getProductInformation[0].name,
+          BUYERNAME: updateOrder?.firstName,
+          BUSINESSNAME: businessDetails[0]?.name || '',
+          PRODUCTNAME: getProductInformation[0]?.name,
           QUANTITY: 1,
-          COST: getProductInformation[0].price.sellingPrice,
-          TOTALAMOUNT: updateOrder.totalAmount,
+          COST: getProductInformation[0]?.price?.sellingPrice,
+          TOTALAMOUNT: updateOrder?.totalAmount,
           BUSINESSPHONE:
             `${businessDetails[0]?.countryCode}-${businessDetails[0]?.phoneNumber}`
             || '',
-          BUSINESSEMAIL: businessDetails[0].busiEmail || '',
+          BUSINESSEMAIL: businessDetails[0]?.busiEmail || '',
           BUSINESSADDRESS: businessDetails[0]?.address?.location || '',
         },
       });
@@ -180,21 +180,21 @@ export class PaymentsService {
         businessDetails.map(async business => {
           if (!business?.busiEmail) return;
           await this.mailchimpService.sendTransactionalEmail({
-            to: business.busiEmail,
+            to: business?.busiEmail,
             templatedId:
               query?.languagePreference === Locale.HEBREW
                 ? HebrewTemplate.OrderReceivedForBusiness
                 : EnglishTemplate.OrderReceivedForBusiness,
             mergeVars: {
               BUSINESSNAME: business?.name || '',
-              PRODUCTNAME: getProductInformation[0].name,
+              PRODUCTNAME: getProductInformation[0]?.name,
               QUANTITY: 1,
-              COST: getProductInformation[0].price.sellingPrice,
-              TOTALAMOUNT: updateOrder.totalAmount,
-              BUYERNAME: `${updateOrder.firstName} ${updateOrder.lastName}`,
-              BUYERPHONE: `${updateOrder.countryCode}-${updateOrder.phone}`,
-              BUYEREMAIL: updateOrder.email,
-              BUYERADDRESS: updateOrder.address,
+              COST: getProductInformation[0]?.price?.sellingPrice,
+              TOTALAMOUNT: updateOrder?.totalAmount,
+              BUYERNAME: `${updateOrder?.firstName} ${updateOrder?.lastName}`,
+              BUYERPHONE: `${updateOrder?.countryCode}-${updateOrder?.phone}`,
+              BUYEREMAIL: updateOrder?.email,
+              BUYERADDRESS: updateOrder?.address,
             },
           });
         }),

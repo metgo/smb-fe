@@ -12,6 +12,7 @@ export const HebrewTemplate = {
   FailedToSendEmail: '',
   REEDEMABLE_VOUCHER_REMINDER: 'voucher-remainder-he',
   VOUCHER_FOR_CAMPAIGN: 'dynamic-voucher-general-campaign-he',
+  TransferBusinessOwnership: '',
 };
 
 export const EnglishTemplate = {
@@ -28,4 +29,5 @@ export const EnglishTemplate = {
   FailedToSendEmail: '',
   REEDEMABLE_VOUCHER_REMINDER: 'voucher-remainder-en',
   VOUCHER_FOR_CAMPAIGN: 'dynamic-voucher-general-campaign-en',
+  TransferBusinessOwnership: '',
 };

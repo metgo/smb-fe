@@ -33,7 +33,7 @@ import {
   findOneByFieldNameIncludingDeleted,
   findOneByFieldNames,
   queryhandler,
-  updateManyByIds,
+  updateById,
   updateOneByManyFields,
 } from 'src/core/helper/query-helper';
 import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interface';
@@ -66,6 +66,7 @@ import { UserType } from 'src/modules/users/users.type';
 import { MediaServices } from 'src/modules/media/media.service';
 import { ReferenceType } from 'src/modules/media/media.type';
 import { ProductsService } from 'src/modules/products/products.services';
+import { MailChimpService } from 'src/services/mailchimp/mailchimp.service';
 
 @Injectable()
 export class BusinessService {
@@ -76,6 +77,7 @@ export class BusinessService {
     private readonly mediaServices: MediaServices,
     private readonly mockDataService: MockDataServices,
     private readonly productService: ProductsService,
+    private readonly mailchimpService: MailChimpService,
     @InjectModel(BussCategory.name)
     private BussCategoryModel: Model<BussCategory>,
     @InjectModel(BussSubCategory.name)
@@ -1242,13 +1244,13 @@ export class BusinessService {
     businessIds: string[],
     assignUserId: string,
     loggedInUserId: string,
+    user?: User,
   ) {
     try {
       const updatedField = { userId: assignUserId, updatedBy: loggedInUserId };
-      const updateBusiness = await updateManyByIds<Business>(
+      const updateBusiness = await updateById<Business>(
         this.BusinessModel,
-        '_id',
-        businessIds,
+        businessIds[0],
         updatedField,
       );
 
@@ -1256,11 +1258,35 @@ export class BusinessService {
         throw new BadRequestException(ServerErrors.BUSINESS_NOT_FOUND);
       }
 
+      let assignedUser = user;
+      if (!user) {
+        assignedUser = await findOneByFieldName<User>(
+          this.UserModel,
+          '_id',
+          assignUserId,
+        );
+      }
+
       await this.productService.assignUserToProducts(
         businessIds,
         assignUserId,
         loggedInUserId,
       );
+
+      console.log(assignedUser);
+
+      // email the users
+      // await this.mailchimpService.sendTransactionalEmail({
+      //   to: assignedUser.email,
+      //   templatedId:
+      //     user.languagePreference === Locale.HEBREW
+      //       ? HebrewTemplate.TransferBusinessOwnership
+      //       : EnglishTemplate.TransferBusinessOwnership,
+      //   mergeVars: {
+      //     FNAME: user.firstName,
+      //     BUSINESS_NAME: updateBusiness.name,
+      //   },
+      // });
 
       return updateBusiness;
     } catch (err) {

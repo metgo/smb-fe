@@ -6,6 +6,7 @@ export enum BusinessStatus {
   APPROVED = 'APPROVED',
   CLOSED = 'CLOSED',
   REJECTED = 'REJECTED',
+  DRAFT = 'DRAFT',
 }
 
 export interface GetBusinessByIdOrSlug {

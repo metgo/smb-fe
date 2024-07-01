@@ -85,6 +85,38 @@ export class UsersController {
     );
   }
 
+  @Roles(
+    UserType.SUPERADMIN,
+    UserType.DMO,
+    UserType.DMOADMIN,
+    UserType.ADMIN,
+    UserType.AUTHORITY,
+  )
+  @HttpCode(HttpStatus.OK)
+  @ApiEndpoint({
+    tags: ['Users'],
+    response: { status: HttpStatus.OK, description: ServerSuccess.USER.LISTED },
+    softBlockExtraDtoFields: true,
+    noAuthToken: true,
+    operation: 'Get User Information By Email',
+  })
+  @UseGuards(JwtAuthGuard)
+  @Get('/:email')
+  async findUserByEmail(
+    @Res() response: Response,
+    @Param('email') email: string,
+  ) {
+    const user = await this.userService.findByEmail(email);
+    return responseHelper(
+      response,
+      HttpStatus.OK,
+      ServerSuccess.USER.LISTED,
+      user,
+      null,
+      null,
+    );
+  }
+
   @HttpCode(HttpStatus.OK)
   @ApiEndpoint({
     tags: ['Users'],

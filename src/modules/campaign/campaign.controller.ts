@@ -7,6 +7,7 @@ import {
   Get,
   HttpStatus,
   Param,
+  Patch,
   Post,
   Query,
   Req,
@@ -26,6 +27,8 @@ import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
 import { Roles } from 'src/core/guards/authorization/roles';
 import { FilterQuery } from './dto/query.dto';
 import { CreateCampaignDto } from './dto/create-campaign.dto';
+import { DeleteMediaDTO } from './dto/delete-media.dto';
+import { updateCampaignDto } from './dto/updateCampaign.dto';
 import { UserType } from '../users/users.type';
 import { fileFilterByExtensions } from 'src/services/gcp-bucket/middleware/file-filter';
 
@@ -33,7 +36,7 @@ import { fileFilterByExtensions } from 'src/services/gcp-bucket/middleware/file-
 export class CampaignController {
   constructor(private readonly campaignService: CampaignService) {}
 
-  @Roles(UserType.ADMIN, UserType.SUPERADMIN)
+  @Roles(UserType.ADMIN, UserType.SUPERADMIN, UserType.DMO, UserType.DMOADMIN)
   @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
     tags: ['Admin', 'Campaign'],
@@ -167,51 +170,42 @@ export class CampaignController {
     );
   }
 
-  // @Roles(
-  //   UserType.ADMIN,
-  //   UserType.AUTHORITY,
-  //   UserType.DMO,
-  //   UserType.DMOADMIN,
-  //   UserType.SUPERADMIN,
-  // )
-  // @UseGuards(JwtAuthGuard)
-  // @ApiEndpoint({
-  //   tags: ['Admin', 'Campaign'],
-  //   response: {
-  //     status: HttpStatus.OK,
-  //     description: ServerSuccess.CAMPAIGN_UPDATED,
-  //   },
-  //   noAuthToken: true,
-  //   softBlockExtraDtoFields: true,
-  // })
-  // @UseInterceptors(
-  //   FileInterceptor('campImage', { fileFilter: fileFilterByExtensions }),
-  // )
-  // @Put('admin/campaign/:id')
-  // async update(
-  //   @Res() response: Response,
-  //   @Req() request,
-  //   @Param('id') id: string,
-  //   @Body() dto: updateCampaignDto,
-  //   @UploadedFile() campImage?: Express.Multer.File,
-  // ) {
-  //   const user = request.user.id;
-  //   await this.campaignService.findByFieldNameExcludeId('name', dto.name, id);
-  //   const campaign = await this.campaignService.update(
-  //     id,
-  //     dto,
-  //     campImage,
-  //     user,
-  //   );
-  //   return responseHelper(
-  //     response,
-  //     HttpStatus.OK,
-  //     ServerSuccess.CAMPAIGN_UPDATED,
-  //     campaign,
-  //     null,
-  //     null,
-  //   );
-  // }
+  @Roles(
+    UserType.ADMIN,
+    UserType.AUTHORITY,
+    UserType.DMO,
+    UserType.DMOADMIN,
+    UserType.SUPERADMIN,
+  )
+  @UseGuards(JwtAuthGuard)
+  @ApiEndpoint({
+    tags: ['Admin', 'Campaign'],
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.CAMPAIGN_UPDATED,
+    },
+    noAuthToken: true,
+    softBlockExtraDtoFields: true,
+  })
+  @Patch('admin/campaign/:id')
+  async update(
+    @Res() response: Response,
+    @Req() request,
+    @Param('id') id: string,
+    @Body() dto: updateCampaignDto,
+  ) {
+    const { user } = request;
+    await this.campaignService.findByFieldNameExcludeId('name', dto.name, id);
+    const campaign = await this.campaignService.update(id, dto, user);
+    return responseHelper(
+      response,
+      HttpStatus.OK,
+      ServerSuccess.CAMPAIGN_UPDATED,
+      campaign,
+      null,
+      null,
+    );
+  }
 
   @Roles(
     UserType.ADMIN,
@@ -236,6 +230,77 @@ export class CampaignController {
       response,
       HttpStatus.OK,
       ServerSuccess.CAMPAIGN_UPDATED,
+      campaign,
+      null,
+      null,
+    );
+  }
+
+  @Roles(UserType.ADMIN, UserType.SUPERADMIN, UserType.DMO, UserType.DMOADMIN)
+  @UseGuards(JwtAuthGuard)
+  @ApiEndpoint({
+    tags: ['Admin', 'Campaign'],
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.MEDIA.UPLOADED,
+    },
+    params: [{ name: 'campaignId', type: 'string', required: true }],
+    noAuthToken: true,
+    softBlockExtraDtoFields: true,
+  })
+  @UseInterceptors(AnyFilesInterceptor({ fileFilter: fileFilterByExtensions }))
+  @Patch('admin/campaign-media/:campaignId')
+  async uploadMedia(
+    @Param('campaignId') campaignId: string,
+    @Req() request,
+    @Res() response: Response,
+    @UploadedFiles() image: Array<Express.Multer.File>,
+  ) {
+    const campaign = await this.campaignService.addMedia(
+      campaignId,
+      image,
+      request.user,
+    );
+
+    return responseHelper(
+      response,
+      HttpStatus.OK,
+      ServerSuccess.MEDIA.UPLOADED,
+      campaign,
+      null,
+      null,
+    );
+  }
+
+  @Roles(UserType.ADMIN, UserType.SUPERADMIN, UserType.DMO, UserType.DMOADMIN)
+  @UseGuards(JwtAuthGuard)
+  @ApiEndpoint({
+    tags: ['Admin', 'Campaign'],
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.MEDIA.DELETED,
+    },
+    params: [{ name: 'campaignId', type: 'string', required: true }],
+    noAuthToken: true,
+    softBlockExtraDtoFields: true,
+  })
+  @Delete('admin/campaign-media/:campaignId')
+  async deleteMedia(
+    @Body() dto: DeleteMediaDTO,
+    @Param('campaignId') campaignId: string,
+    @Req() request,
+    @Res() response: Response,
+  ) {
+    const campaign = await this.campaignService.deleteMedia(
+      campaignId,
+      dto,
+      request.user,
+    );
+
+    return responseHelper(
+      response,
+      HttpStatus.OK,
+      ServerSuccess.MEDIA.DELETED,
       campaign,
       null,
       null,

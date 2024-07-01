@@ -23,7 +23,9 @@ import {
 } from 'src/core/helper/query-helper';
 import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interface';
 import { CreateCampaignDto } from './dto/create-campaign.dto';
+import { DeleteMediaDTO } from './dto/delete-media.dto';
 import { FilterQuery } from './dto/query.dto';
+import { updateCampaignDto } from './dto/updateCampaign.dto';
 import { RewardsService } from 'src/modules/rewards/rewards.service';
 import { UserType } from 'src/modules/users/users.type';
 import { Campaign } from './schema/campaign.schema';
@@ -118,9 +120,6 @@ export class CampaignService {
       page, limit, search, dmoId,
     } = queries;
 
-    const queryPage = page ? Number(page) : paginationConfig.page;
-    const queryLimit = limit ? Number(limit) : paginationConfig.limit;
-
     let findQuery: any = {};
     if (search) {
       findQuery = {
@@ -156,8 +155,8 @@ export class CampaignService {
     const allCampaign = await queryhandler<Campaign>(this.CampaignModel, {
       findQuery,
       select: disSelect,
-      page: queryPage,
-      limit: queryLimit,
+      page: Number(page),
+      limit: Number(limit),
       populate,
     });
 
@@ -231,43 +230,53 @@ export class CampaignService {
     return campaign;
   }
 
-  // async update(
-  //   id: string,
-  //   dto: updateCampaignDto,
-  //   newImage: Express.Multer.File,
-  //   userId: string,
-  // ): Promise<Campaign> {
-  //   const updateDto = async () => {
-  //     const existingImage = await findOneById<Campaign>(this.CampaignModel, id);
+  async update(
+    id: string,
+    dto: updateCampaignDto,
+    user: LoggedInUserInterface,
+  ): Promise<Campaign> {
+    try {
+      const updatedDTO = { ...dto, updatedBy: user.id, updatedAt: new Date() };
 
-  //     const newUrl = await this.gcpBucketServices.update(
-  //       existingImage.imagePath,
-  //       newImage,
-  //     );
+      const updateCampaign = await updateById<Campaign>(
+        this.CampaignModel,
+        id,
+        updatedDTO,
+      );
 
-  //     return {
-  //       ...dto,
-  //       imagePath: newUrl,
-  //       updatedBy: userId,
-  //       updatedAt: new Date(),
-  //     };
-  //   };
+      if (!updateCampaign) {
+        throw new NotFoundException(ServerErrors.CAMPAIGN.NOT_FOUND);
+      }
 
-  //   const updatedDTO = newImage
-  //     ? await updateDto()
-  //     : { ...dto, updatedBy: userId, updatedAt: new Date() };
+      if (dto.rewardAmount || dto.rewardVoucherLimit) {
+        if (updateCampaign?.rewardId) {
+          await this.rewardService.update(
+            updateCampaign?.rewardId.toString(),
+            { amount: dto.rewardAmount, voucherLimit: dto.rewardVoucherLimit },
+            user,
+          );
+        }
 
-  //   const updateCampaign = await updateById<Campaign>(
-  //     this.CampaignModel,
-  //     id,
-  //     updatedDTO,
-  //   );
+        if (!updateCampaign?.rewardId) {
+          const reward = await this.rewardService.create({
+            createdBy: user.id,
+            amount: dto?.rewardAmount,
+            voucherLimit: dto?.rewardVoucherLimit,
+          });
 
-  //   if (!updateCampaign) {
-  //     throw new NotFoundException(ServerErrors.CAMPAIGN.NOT_FOUND);
-  //   }
-  //   return updateCampaign;
-  // }
+          await updateById<Campaign>(this.CampaignModel, id, {
+            rewardId: reward._id,
+          });
+        }
+      }
+      return updateCampaign;
+    } catch (err) {
+      if (err.errors?.amount) {
+        throw new BadRequestException('Please enter valid reward amount');
+      }
+      exceptionHandling(err);
+    }
+  }
 
   async softDelete(id: string) {
     const updateField = { isDeleted: true, deleteAt: new Date() };
@@ -280,6 +289,108 @@ export class CampaignService {
       throw new NotFoundException(ServerErrors.CAMPAIGN.NOT_FOUND);
     }
     return campaign;
+  }
+
+  async deleteMedia(
+    campaignId: string,
+    body: DeleteMediaDTO,
+    loggedInUser: LoggedInUserInterface,
+  ) {
+    try {
+      let updatedDTO: any = {
+        updatedBy: loggedInUser.id,
+        updatedAt: new Date(),
+      };
+
+      if (body.mediaType === 'logo') {
+        updatedDTO = { ...updatedDTO, logoPath: null };
+      }
+      if (body.mediaType === 'image') {
+        updatedDTO = { ...updatedDTO, imagePath: null };
+      }
+
+      const updateCampaign = await updateById<Campaign>(
+        this.CampaignModel,
+        campaignId,
+        updatedDTO,
+      );
+
+      if (!updateCampaign) {
+        throw new NotFoundException(ServerErrors.CAMPAIGN.NOT_FOUND);
+      }
+
+      // delete from gcp
+      await this.gcpBucketServices.delete(body.mediaUrl);
+
+      return updateCampaign;
+    } catch (err) {
+      exceptionHandling(err);
+    }
+  }
+
+  async addMedia(
+    campaignId: string,
+    files: Array<Express.Multer.File>,
+    loggedInUser: LoggedInUserInterface,
+  ) {
+    try {
+      if (!files?.length) {
+        throw new BadRequestException('Please upload file');
+      }
+
+      let campImage: string;
+      let logoPath: string;
+      await Promise.all(
+        files.map(async file => {
+          if (file.fieldname === 'logoPath') {
+            logoPath = await this.gcpBucketServices.upload(file);
+          }
+
+          if (file.fieldname === 'campImage') {
+            campImage = await this.gcpBucketServices.upload(file);
+          }
+        }),
+      );
+
+      if (!campImage && !logoPath) {
+        throw new BadRequestException('Please upload file');
+      }
+
+      let updatedDTO: any = {
+        updatedBy: loggedInUser.id,
+        updatedAt: new Date(),
+        createdBy: loggedInUser.id,
+      };
+
+      if (campImage) {
+        updatedDTO = {
+          ...updatedDTO,
+          imagePath: campImage,
+        };
+      }
+
+      if (logoPath) {
+        updatedDTO = {
+          ...updatedDTO,
+          logoPath,
+        };
+      }
+
+      // add to url
+      const updateCampaign = await updateById<Campaign>(
+        this.CampaignModel,
+        campaignId,
+        updatedDTO,
+      );
+
+      if (!updateCampaign) {
+        throw new NotFoundException(ServerErrors.CAMPAIGN.NOT_FOUND);
+      }
+
+      return updateCampaign;
+    } catch (err) {
+      exceptionHandling(err);
+    }
   }
 
   async findRewardByCampId(campId: string) {

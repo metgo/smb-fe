@@ -1,11 +1,13 @@
 /* eslint-disable no-undef */
 import {
+  BadRequestException,
   Inject,
   Injectable,
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { nanoid } from 'nanoid';
 import { extname, join } from 'path';
+import { exceptionHandling } from 'src/common/utils/exception-handling';
 
 import { Storage } from 'src/services/gcp-bucket/storage';
 
@@ -40,8 +42,17 @@ export class GcpBucketService {
   }
 
   async delete(url: string) {
-    await this.storage.delete(url);
+    try {
+      await this.storage.delete(url);
 
-    return 'Deleted Successfully!!';
+      return 'Deleted Successfully!!';
+    } catch (err) {
+      if (err.errors[0].reason === 'notFound') {
+        throw new BadRequestException(
+          "Sorry, we couldn't find the image at that URL.",
+        );
+      }
+      exceptionHandling(err);
+    }
   }
 }

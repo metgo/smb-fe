@@ -1,4 +1,3 @@
-/* eslint-disable no-plusplus */
 import {
   BadRequestException,
   ForbiddenException,
@@ -94,23 +93,24 @@ export class VoucherService {
           ? user?.id
           : (await this.usersService.findByEmailOrNull(dto.email))?._id;
 
-      let i: number = 0;
       const voucherId: any = [];
       const totalAmount = dto.noOfVoucher * dto.amount;
-      for (i = 0; i < dto.noOfVoucher; i++) {
-        const randomCode = generateRandomCode(12);
-        const code = dto.campCode + randomCode;
-        const newVoucher = new this.VoucherModel({
-          ...dto,
-          code,
-          remainingAmount: dto.amount,
-          campId: campaignId,
-          createdBy: createdByUserId,
-          createdByEmail: createdByUserId ? null : dto.email,
-        });
-        newVoucher.save();
-        voucherId.push(newVoucher._id);
-      }
+      await Promise.all(
+        Array.from({ length: dto.noOfVoucher }).map(async () => {
+          const randomCode = generateRandomCode(12);
+          const code = dto.campCode + randomCode;
+          const newVoucher = new this.VoucherModel({
+            ...dto,
+            code,
+            remainingAmount: dto.amount,
+            campId: campaignId,
+            createdBy: createdByUserId,
+            createdByEmail: createdByUserId ? null : dto.email,
+          });
+          await newVoucher.save();
+          await voucherId.push(newVoucher._id);
+        }),
+      );
 
       const paymentLink = await this.paymentService.generateLink({
         amount: totalAmount,
@@ -142,40 +142,43 @@ export class VoucherService {
           ? user?.id
           : (await this.usersService.findByEmailOrNull(dto.email))?._id;
 
-      let i: number = 0;
       const vouchers: any = [];
       const voucherCodes: any = [];
 
-      for (i = 0; i < dto.noOfVoucher; i++) {
-        const randomCode = generateRandomCode(12);
-        const code = dto.campCode + randomCode;
-        const newVoucher = new this.VoucherModel({
-          ...dto,
-          code,
-          remainingAmount: dto.amount,
-          campId: campaignId,
-          createdBy: createdByUserId,
-          createdByEmail: createdByUserId ? null : dto.email,
-          paymentStatus: VoucherPaymentStatus.PAID,
-          identifierId,
-        });
-        newVoucher.save();
-        vouchers.push(newVoucher);
-        voucherCodes.push(code);
-      }
+      await Promise.all(
+        Array.from({ length: dto.noOfVoucher }).map(async () => {
+          const randomCode = generateRandomCode(12);
+          const code = dto.campCode + randomCode;
+          const newVoucher = new this.VoucherModel({
+            ...dto,
+            code,
+            remainingAmount: dto.amount,
+            campId: campaignId,
+            createdBy: createdByUserId,
+            createdByEmail: createdByUserId ? null : dto.email,
+            paymentStatus: VoucherPaymentStatus.PAID,
+            identifierId,
+          });
+          await newVoucher.save();
+          await vouchers.push(newVoucher);
+          await voucherCodes.push(code);
+        }),
+      );
 
       // send emails?
-      const VOUCHERCODE = voucherCodes.map(code => `\n${code}`).toString();
+      const VOUCHERCODE = await voucherCodes
+        .map(code => `\n${code}`)
+        .toString();
       await this.mailchimpService.sendTransactionalEmail({
-        to: dto.email,
+        to: dto?.email,
         templatedId:
-          dto.languagePreference === Locale.HEBREW
+          dto?.languagePreference === Locale.HEBREW
             ? HebrewTemplate.VoucherConfirmationNonLoggedIn
             : EnglishTemplate.VoucherConfirmationNonLoggedIn,
         mergeVars: {
-          BUYERNAME: dto.name,
+          BUYERNAME: dto?.name,
           VOUCHERCODE,
-          VOUCHERAMOUNT: dto.amount,
+          VOUCHERAMOUNT: dto?.amount,
         },
       });
 
@@ -213,29 +216,30 @@ export class VoucherService {
         throw new BadRequestException(ServerErrors.VOUCHER.LIMIT_EXCEEDED);
       }
 
-      let i: number = 0;
       const voucherCodes: any = [];
       const vouchers: any = [];
 
-      for (i = 0; i < body.noOfVoucher; i++) {
-        const randomCode = generateRandomCode(12);
-        const code = campaignReward.code + randomCode;
-        const newVoucher = new this.VoucherModel({
-          name: body.name,
-          createdBy: loggedInUser.id,
-          amount: campaignReward?.rewardId?.amount,
-          code,
-          remainingAmount: campaignReward?.rewardId?.amount,
-          paymentStatus: VoucherPaymentStatus.PAID,
-          status: VoucherStatus.ASSIGNED,
-          waitingUserEmail: assignedUserEmail?._id ? null : body.email,
-          assignedTo: assignedUserEmail?._id ? assignedUserEmail._id : null,
-          campId: body.campId,
-        });
-        newVoucher.save();
-        voucherCodes.push(code);
-        vouchers.push(newVoucher);
-      }
+      await Promise.all(
+        Array.from({ length: body.noOfVoucher }).map(async () => {
+          const randomCode = generateRandomCode(12);
+          const code = campaignReward.code + randomCode;
+          const newVoucher = new this.VoucherModel({
+            name: body.name,
+            createdBy: loggedInUser.id,
+            amount: campaignReward?.rewardId?.amount,
+            code,
+            remainingAmount: campaignReward?.rewardId?.amount,
+            paymentStatus: VoucherPaymentStatus.PAID,
+            status: VoucherStatus.ASSIGNED,
+            waitingUserEmail: assignedUserEmail?._id ? null : body.email,
+            assignedTo: assignedUserEmail?._id ? assignedUserEmail._id : null,
+            campId: body.campId,
+          });
+          await newVoucher.save();
+          await voucherCodes.push(code);
+          await vouchers.push(newVoucher);
+        }),
+      );
 
       // updateRewardLimit
       await this.rewardService.updateUsage(
@@ -244,20 +248,22 @@ export class VoucherService {
       );
 
       // send emails
-      const VOUCHERCODE = voucherCodes.map(code => `\n${code}`).toString();
+      const VOUCHERCODE = await voucherCodes
+        .map(code => `\n${code}`)
+        .toString();
       await this.mailchimpService.sendTransactionalEmail({
-        to: body.email,
+        to: body?.email,
         templatedId:
-          body.languagePreference === Locale.HEBREW
+          body?.languagePreference === Locale.HEBREW
             ? HebrewTemplate.VOUCHER_FOR_CAMPAIGN
             : EnglishTemplate.VOUCHER_FOR_CAMPAIGN,
         mergeVars: {
-          FNAME: body.name,
+          FNAME: body?.name,
           VOUCHERCODE,
-          VOUCHERAMOUNT: campaignReward.rewardId.amount,
-          CAMPAIGN_NAME: campaignReward.name,
-          CAMPAIGN_LINK: campaignReward.link,
-          CAMPAIGN_SLOGAN: campaignReward.slogan,
+          VOUCHERAMOUNT: campaignReward?.rewardId?.amount,
+          CAMPAIGN_NAME: campaignReward?.name,
+          CAMPAIGN_LINK: campaignReward?.link,
+          CAMPAIGN_SLOGAN: campaignReward?.slogan,
         },
       });
 
@@ -659,15 +665,15 @@ export class VoucherService {
     }
 
     await this.mailchimpService.sendTransactionalEmail({
-      to: body.email,
+      to: body?.email,
       templatedId:
         body?.languagePreference === Locale.HEBREW
           ? HebrewTemplate.VoucherAssignedToYou
           : EnglishTemplate.VoucherAssignedToYou,
       mergeVars: {
-        FULLNAME: `${loggedInUser.firstName} ${loggedInUser.lastName}`,
-        VOUCHERCODE: body.code,
-        VOUCHERAMOUNT: assignedVoucher.remainingAmount,
+        FULLNAME: `${loggedInUser?.firstName} ${loggedInUser?.lastName}`,
+        VOUCHERCODE: body?.code,
+        VOUCHERAMOUNT: assignedVoucher?.remainingAmount,
       },
     });
 
@@ -707,15 +713,15 @@ export class VoucherService {
         .toString();
 
       await this.mailchimpService.sendTransactionalEmail({
-        to: command.voucherOwnerEmail,
+        to: command?.voucherOwnerEmail,
         templatedId:
-          command.languagePreference === Locale.HEBREW
+          command?.languagePreference === Locale.HEBREW
             ? HebrewTemplate.VoucherConfirmationNonLoggedIn
             : EnglishTemplate.VoucherConfirmationNonLoggedIn,
         mergeVars: {
-          BUYERNAME: command.voucherOwnerName,
+          BUYERNAME: command?.voucherOwnerName,
           VOUCHERCODE: voucherCodes,
-          VOUCHERAMOUNT: voucherDetails[0].amount,
+          VOUCHERAMOUNT: voucherDetails[0]?.amount,
         },
       });
     } catch (err) {
@@ -1186,33 +1192,59 @@ export class VoucherService {
       };
     }
 
-    let format = { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } };
-    if (sortBy === SortByTimePeriod.WEEKLY) {
-      format = { $dateToString: { format: '%Y-%U', date: '$createdAt' } };
+    if (sortBy) {
+      let format = {
+        $dateToString: { format: '%Y-%m-%d', date: '$createdAt' },
+      };
+      if (sortBy === SortByTimePeriod.WEEKLY) {
+        format = { $dateToString: { format: '%Y-%U', date: '$createdAt' } };
+      }
+
+      if (sortBy === SortByTimePeriod.MONTHLY) {
+        format = { $dateToString: { format: '%Y-%m', date: '$createdAt' } };
+      }
+
+      if (sortBy === SortByTimePeriod.YEARLY) {
+        format = { $dateToString: { format: '%Y', date: '$createdAt' } };
+      }
+
+      const groupedByDates = await this.VoucherModel.aggregate([
+        { $match: findQuery },
+        {
+          $group: {
+            _id: format,
+            totalNumberOfVouchers: { $sum: 1 },
+            totalValueOfVoucher: { $sum: '$amount' },
+            totalAmountToRedeem: { $sum: '$remainingAmount' },
+          },
+        },
+        { $sort: { _id: 1 } },
+      ]);
+
+      return groupedByDates;
     }
 
-    if (sortBy === SortByTimePeriod.MONTHLY) {
-      format = { $dateToString: { format: '%Y-%m', date: '$createdAt' } };
-    }
-
-    if (sortBy === SortByTimePeriod.YEARLY) {
-      format = { $dateToString: { format: '%Y', date: '$createdAt' } };
-    }
-
-    const groupedByDates = await this.VoucherModel.aggregate([
+    const unGroupedVouchers = await this.VoucherModel.aggregate([
       { $match: findQuery },
       {
         $group: {
-          _id: format,
+          _id: null,
           totalNumberOfVouchers: { $sum: 1 },
           totalValueOfVoucher: { $sum: '$amount' },
           totalAmountToRedeem: { $sum: '$remainingAmount' },
         },
       },
-      { $sort: { _id: 1 } },
+      {
+        $project: {
+          _id: 0,
+          totalNumberOfVouchers: 1,
+          totalValueOfVoucher: 1,
+          totalAmountToRedeem: 1,
+        },
+      },
     ]);
 
-    return groupedByDates;
+    return unGroupedVouchers;
   }
 
   async scheduledEmailToRedeemableVoucherOwners() {
@@ -1243,13 +1275,13 @@ export class VoucherService {
 
           if (currentDate.getDate() === createdDate.getDate()) {
             await this.mailchimpService.sendTransactionalEmail({
-              to: voucher.waitingUserEmail,
+              to: voucher?.waitingUserEmail,
               templatedId: HebrewTemplate.REEDEMABLE_VOUCHER_REMINDER,
               mergeVars: {
-                BUYERNAME: voucher.name,
-                VOUCHERCODE: voucher.code,
-                VOUCHERAMOUNT: voucher.remainingAmount,
-                VOUCHERACTUALAMOUNT: voucher.amount,
+                BUYERNAME: voucher?.name,
+                VOUCHERCODE: voucher?.code,
+                VOUCHERAMOUNT: voucher?.remainingAmount,
+                VOUCHERACTUALAMOUNT: voucher?.amount,
               },
             });
             noOfEmailSent += 1;

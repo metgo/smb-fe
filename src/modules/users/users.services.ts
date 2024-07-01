@@ -376,10 +376,10 @@ export class UsersService {
           newUser.email,
         ),
         this.mailchimpService.sendTransactionalEmail({
-          to: newUser.email,
+          to: newUser?.email,
           templatedId: EnglishTemplate.UserRegistrationBySelf,
           mergeVars: {
-            FNAME: newUser.firstName,
+            FNAME: newUser?.firstName,
           },
         }),
       ]);
@@ -430,13 +430,13 @@ export class UsersService {
     const { otpToken } = this.jwtAuthService.otpToken(otpBody);
 
     await this.mailchimpService.sendTransactionalEmail({
-      to: user.email,
+      to: user?.email,
       templatedId:
-        user.languagePreference === Locale.HEBREW
+        user?.languagePreference === Locale.HEBREW
           ? HebrewTemplate.ForgotPassword
           : EnglishTemplate.ForgotPassword,
       mergeVars: {
-        FNAME: user.firstName,
+        FNAME: user?.firstName,
         OTP: code,
       },
     });
@@ -451,13 +451,13 @@ export class UsersService {
       });
 
       await this.mailchimpService.sendTransactionalEmail({
-        to: user.email,
+        to: user?.email,
         templatedId:
-          user.languagePreference === Locale.HEBREW
+          user?.languagePreference === Locale.HEBREW
             ? HebrewTemplate.PasswordChangeConfirmation
             : EnglishTemplate.PasswordChangeConfirmation,
         mergeVars: {
-          FNAME: user.firstName,
+          FNAME: user?.firstName,
           NEWPASSWORD: `New Password: ${password}`,
         },
       });
@@ -599,13 +599,13 @@ export class UsersService {
     }
 
     await this.mailchimpService.sendTransactionalEmail({
-      to: userWithChangedPwd.email,
+      to: userWithChangedPwd?.email,
       templatedId:
-        userWithChangedPwd.languagePreference === Locale.HEBREW
+        userWithChangedPwd?.languagePreference === Locale.HEBREW
           ? HebrewTemplate.PasswordChangeConfirmation
           : EnglishTemplate.PasswordChangeConfirmation,
       mergeVars: {
-        FNAME: userWithChangedPwd.firstName,
+        FNAME: userWithChangedPwd?.firstName,
         NEWPASSWORD: '',
       },
     });
@@ -734,9 +734,6 @@ export class UsersService {
       return user;
     } catch (error) {
       exceptionHandling(error);
-      throw new InternalServerErrorException(
-        "Couldn't find user with given email",
-      );
     }
   }
 
@@ -839,6 +836,7 @@ export class UsersService {
         body.businessesId,
         newUser.id,
         loggedInUser.id,
+        newUser,
       );
     }
 
@@ -853,14 +851,14 @@ export class UsersService {
         newUser.email,
       ),
       this.mailchimpService.sendTransactionalEmail({
-        to: newUser.email,
+        to: newUser?.email,
         templatedId:
           dto?.languagePreference === Locale.HEBREW
             ? HebrewTemplate.UserRegistrationByAdmin
             : EnglishTemplate.UserRegistrationByAdmin,
         mergeVars: {
-          FNAME: newUser.firstName,
-          USERNAME: newUser.email,
+          FNAME: newUser?.firstName,
+          USERNAME: newUser?.email,
           PASSWORD: password,
         },
       }),

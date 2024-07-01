@@ -1,11 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import {
-  IsNotEmpty,
-  IsOptional,
-  IsPositive,
-  IsString,
-  MinLength,
+  IsNotEmpty, IsOptional, IsString, MinLength,
 } from 'class-validator';
 import { CampaignStatus } from 'src/common/enum';
 
@@ -65,7 +61,6 @@ export class CreateCampaignDto {
     required: false,
   })
   @IsOptional()
-  @IsPositive()
   @Transform(({ value }) => parseInt(value, 10), { toClassOnly: true })
     rewardVoucherLimit: number;
 }
