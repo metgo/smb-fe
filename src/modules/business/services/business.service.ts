@@ -897,7 +897,7 @@ export class BusinessService {
   async getBusiness(command: GetBusinessByIdOrSlug) {
     const { id, loggedInUser } = command;
     const populate = {
-      path: 'groupTypesId accessibilitiesId bussCategoriesId bussSubCategoriesId socialMedia.socialMediaId',
+      path: 'groupTypesId accessibilitiesId bussCategoriesId socialMedia.socialMediaId',
       select: `${disSelect}`,
       populate: {
         path: 'icon',
@@ -909,13 +909,24 @@ export class BusinessService {
       path: 'dmoId authorityId productsId',
       select: `${disSelect} -userId -collaboratorsUser`,
     };
+
+    const populate2 = {
+      path: 'bussSubCategoriesId',
+      select: `${disSelect}`,
+      populate: {
+        path: 'icon bussCategoryId',
+        select: `${disSelect}`,
+      },
+    };
+
     const select = `${disSelect}`;
 
     try {
       const business = await this.BusinessModel.findById(id)
         .select(select)
         .populate(populate)
-        .populate(populate1);
+        .populate(populate1)
+        .populate(populate2);
 
       if (!business) {
         throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
