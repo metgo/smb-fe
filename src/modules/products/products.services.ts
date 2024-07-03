@@ -11,7 +11,6 @@ import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
 
 import { ServerErrors } from 'src/common/constant';
-import { paginationConfig } from 'src/common/pagination.config';
 import { calculateGrowthPercentage } from 'src/common/utils/calculate-growth-percentage';
 import { getRandomNumberBetween } from 'src/common/utils/random-number-range';
 import { sellingPriceForAmountOrPercent } from 'src/common/utils/discount-calculation';
@@ -309,8 +308,6 @@ export class ProductsService {
 
     let findQuery: any = query;
     const select = `${disSelect}`;
-    const queryPage = page ? Number(page) : paginationConfig.page;
-    const queryLimit = limit ? Number(limit) : paginationConfig.limit;
 
     if (
       !('status' in query)
@@ -372,8 +369,8 @@ export class ProductsService {
     const products = await queryhandler<Product>(this.ProductModel, {
       findQuery,
       select,
-      page: queryPage,
-      limit: queryLimit,
+      page: Number(page),
+      limit: Number(limit),
       populate,
     });
 

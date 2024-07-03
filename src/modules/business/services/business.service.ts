@@ -18,7 +18,6 @@ import {
 import { Image } from 'src/common/interface/image.interface';
 import { maxDistanceInRadius } from 'src/common/max-distance-in-radius';
 import { paginateData } from 'src/common/pagination';
-import { paginationConfig } from 'src/common/pagination.config';
 import { getNearestBusiness } from 'src/common/sort-by-nearest';
 import { calculateGrowthPercentage } from 'src/common/utils/calculate-growth-percentage';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
@@ -369,9 +368,6 @@ export class BusinessService {
       page, limit, search, long, lat, miles, ...query
     } = queries;
 
-    const queryPage = Number(page) || paginationConfig.page;
-    const queryLimit = Number(limit) || paginationConfig.limit;
-
     let findQuery: any = { ...query };
 
     if (!('status' in query) && !authenticatedUser) {
@@ -537,8 +533,8 @@ export class BusinessService {
       );
 
       const allPaginatedBusinesses = paginateData(
-        queryPage,
-        queryLimit,
+        Number(page),
+        Number(limit),
         sortBusiness,
       );
 
@@ -548,8 +544,8 @@ export class BusinessService {
     const allBusiness = await queryhandler<Business>(this.BusinessModel, {
       findQuery,
       select,
-      page: queryPage,
-      limit: queryLimit,
+      page: Number(page),
+      limit: Number(limit),
       populate,
       populate1,
       sort: 'createdAt',
@@ -1053,9 +1049,6 @@ export class BusinessService {
       page, limit, search, ...query
     } = queries;
 
-    const queryPage = page ? Number(page) : paginationConfig.page;
-    const queryLimit = limit ? Number(limit) : paginationConfig.limit;
-
     let findQuery: any = {
       ...query,
       userId,
@@ -1087,8 +1080,8 @@ export class BusinessService {
     const allBusiness = await queryhandler<Business>(this.BusinessModel, {
       findQuery,
       select,
-      page: queryPage,
-      limit: queryLimit,
+      page: Number(page),
+      limit: Number(limit),
       populate,
       populate1,
     });

@@ -543,9 +543,6 @@ export class OrderProductService {
 
     const orders = await this.OrderProductModel.aggregate(pipeline);
 
-    const queryPage = page ? Number(page) : paginationConfig.page;
-    const queryLimit = limit ? Number(limit) : paginationConfig.limit;
-
     let orderTotalAmount = 0;
     await Promise.all(
       orders.map(async order => {
@@ -553,7 +550,7 @@ export class OrderProductService {
         return orderTotalAmount;
       }),
     );
-    const paginatedOrders = paginateData(queryPage, queryLimit, orders);
+    const paginatedOrders = paginateData(Number(page), Number(limit), orders);
 
     return { ...paginatedOrders, orderTotalAmount };
   }
