@@ -362,7 +362,8 @@ export class OrderProductService {
     const sortKey = sortBy || 'createdAt';
 
     const sort = {
-      [`orders.${sortKey}`]: sortOrderValue,
+      [sortKey]: sortOrderValue,
+      'payments.paymentDate': sortOrderValue,
     };
 
     const pipeline: any[] = [
@@ -387,9 +388,6 @@ export class OrderProductService {
       },
       {
         $unwind: '$orders',
-      },
-      {
-        $sort: sort,
       },
       {
         $lookup: {
@@ -509,6 +507,9 @@ export class OrderProductService {
           path: '$payments',
           preserveNullAndEmptyArrays: true,
         },
+      },
+      {
+        $sort: sort,
       },
       {
         $project: {
