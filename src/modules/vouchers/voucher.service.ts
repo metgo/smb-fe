@@ -234,6 +234,7 @@ export class VoucherService {
             waitingUserEmail: assignedUserEmail?._id ? null : body.email,
             assignedTo: assignedUserEmail?._id ? assignedUserEmail._id : null,
             campId: body.campId,
+            assignedAt: new Date(),
           });
           await newVoucher.save();
           await voucherCodes.push(code);
@@ -646,6 +647,7 @@ export class VoucherService {
 
     const updateField = {
       assignedTo: assignedUser ? assignedUser._id : null,
+      assignedAt: new Date(),
       waitingUserEmail: assignedUser ? null : body.email,
       status: VoucherStatus.ASSIGNED,
       updatedBy: loggedInUser.id,

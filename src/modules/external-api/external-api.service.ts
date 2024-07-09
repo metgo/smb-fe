@@ -274,6 +274,7 @@ export class ExternalApiServices {
             externalApiId,
             assignedTo: assignedUserEmail?._id ? assignedUserEmail._id : null,
             campId: body.campId,
+            assignedAt: new Date(),
           });
           await newVoucher.save();
           await voucherCodes.push(code);
@@ -893,6 +894,7 @@ export class ExternalApiServices {
       assignedTo: assignedUser ? assignedUser._id : null,
       waitingUserEmail: assignedUser ? null : body.email,
       status: VoucherStatus.ASSIGNED,
+      assignedAt: new Date(),
       updatedBy: loggedInUser.id,
       expireDate: availableVoucher.expireDate
         ? availableVoucher.expireDate
