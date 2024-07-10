@@ -11,6 +11,7 @@ import { unproject } from 'src/common/utils/select.handling';
 import { findOneById } from 'src/core/helper/query-helper';
 import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interface';
 import { BusinessService } from 'src/modules/business/services/business.service';
+import { OrderStatus } from 'src/modules/orders/orders.type';
 import { CreateOrderProductCommand } from 'src/modules/order-product/interfaces/create-order-product.interface';
 import { GetAllOrdersDetailsQuery } from 'src/modules/order-product/queries/get-order-details.query';
 import { GetOrdersSummaryQuery } from 'src/modules/order-product/queries/get-order-summary.query';
@@ -390,6 +391,11 @@ export class OrderProductService {
         $unwind: '$orders',
       },
       {
+        $match: {
+          'orders.status': status || OrderStatus.PROCESSING,
+        },
+      },
+      {
         $lookup: {
           from: 'businesses',
           localField: 'products.businessId',
@@ -428,14 +434,6 @@ export class OrderProductService {
       pipeline.push({
         $match: {
           'products._id': new mongoose.Types.ObjectId(productId),
-        },
-      });
-    }
-
-    if (status) {
-      pipeline.push({
-        $match: {
-          'orders.status': status,
         },
       });
     }
