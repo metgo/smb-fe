@@ -23,6 +23,12 @@ export class DMO extends AuditableSchema {
     ref: 'Users',
   })
     collaboratorsUser: mongoose.Types.ObjectId[];
+
+  @Prop()
+    logoPath: string;
+
+  @Prop()
+    imagePath: string;
 }
 
 export type DMODocument = HydratedDocument<DMO>;

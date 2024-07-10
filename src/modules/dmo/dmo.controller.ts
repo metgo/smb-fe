@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import {
   Body,
   Controller,
@@ -10,8 +11,11 @@ import {
   Query,
   Req,
   Res,
+  UploadedFiles,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
+import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
 
 import { ServerSuccess } from 'src/common/constant';
@@ -22,6 +26,7 @@ import { responseHelper } from 'src/core/helper/response.helper';
 import { DMOService } from 'src/modules/dmo//dmo.service';
 import { CreateDMODto, UpdateDMODto, FilterQuery } from 'src/modules/dmo/dto';
 import { UserType } from 'src/modules/users/users.type';
+import { fileFilterByExtensions } from 'src/services/gcp-bucket/middleware/file-filter';
 
 @Controller()
 export class DMOController {
@@ -38,13 +43,15 @@ export class DMOController {
   })
   @Roles(UserType.SUPERADMIN)
   @UseGuards(JwtAuthGuard)
+  @UseInterceptors(AnyFilesInterceptor({ fileFilter: fileFilterByExtensions }))
   @Post('admin/dmo')
   async createDMO(
     @Res() response: Response,
     @Body() dto: CreateDMODto,
     @Req() req,
+    @UploadedFiles() image: Array<Express.Multer.File>,
   ) {
-    const newDMO = await this.dmoServices.createDMO(dto, req.user.id);
+    const newDMO = await this.dmoServices.createDMO(dto, req.user.id, image);
 
     return responseHelper(
       response,

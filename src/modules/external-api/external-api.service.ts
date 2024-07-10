@@ -134,8 +134,10 @@ export class ExternalApiServices {
     const select = `${disSelect}`;
 
     let findQuery: {};
-    let populate: {};
-    let populate1: {};
+    const populate = {
+      path: 'dmoId authorityId',
+      select: `${disSelect}`,
+    };
 
     if (query.search) {
       findQuery = {
@@ -149,7 +151,6 @@ export class ExternalApiServices {
       page: queryPage,
       limit: queryLimit,
       populate,
-      populate1,
     });
 
     return externalApi;

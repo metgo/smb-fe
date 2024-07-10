@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import {
   BadRequestException,
   Inject,
@@ -24,6 +25,7 @@ import {
 import { DMO } from './schema/dmo.schema';
 import { CreateDMODto, FilterQuery, UpdateDMODto } from './dto';
 import { UsersService } from 'src/modules/users/users.services';
+import { GcpBucketService } from 'src/services/gcp-bucket/gcp-bucket.services';
 
 @Injectable()
 export class DMOService {
@@ -31,9 +33,14 @@ export class DMOService {
     @InjectModel('DMO') private DMOModel: Model<DMO>,
     @Inject(forwardRef(() => UsersService))
     private userService: UsersService,
+    private readonly gcpBucketServices: GcpBucketService,
   ) {}
 
-  async createDMO(dto: CreateDMODto, userId: string) {
+  async createDMO(
+    dto: CreateDMODto,
+    userId: string,
+    files: Array<Express.Multer.File>,
+  ) {
     try {
       const dmo = await findOneByFieldName<DMO>(
         this.DMOModel,
@@ -47,7 +54,46 @@ export class DMOService {
         await this.userService.findDMOUser(dto.userId);
       }
 
-      const newDMO = new this.DMOModel({ ...dto, createdBy: userId });
+      if (!files?.length) {
+        throw new BadRequestException('Please upload file');
+      }
+
+      let imageCount: number = 0;
+
+      await Promise.all(
+        // eslint-disable-next-line array-callback-return
+        files.map(file => {
+          if (file.fieldname === 'logoPath' || file.fieldname === 'imagePath') {
+            imageCount += 1;
+          }
+        }),
+      );
+
+      if (imageCount !== 2) {
+        throw new BadRequestException('Please upload logo and dmo image');
+      }
+
+      let imagePath: string;
+      let logoPath: string;
+      await Promise.all(
+        files.map(async file => {
+          if (file.fieldname === 'logoPath') {
+            logoPath = await this.gcpBucketServices.upload(file);
+          }
+
+          if (file.fieldname === 'imagePath') {
+            imagePath = await this.gcpBucketServices.upload(file);
+          }
+        }),
+      );
+
+      const newDMO = new this.DMOModel({
+        ...dto,
+        _id: new mongoose.Types.ObjectId(),
+        createdBy: userId,
+        imagePath,
+        logoPath,
+      });
       return newDMO.save();
     } catch (err) {
       exceptionHandling(err);

@@ -32,4 +32,14 @@ export class CreateExternalApiDTO {
   @IsOptional()
   @IsString()
     ipAddress: string;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsString()
+    dmoId: string;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsString()
+    authorityId: string;
 }
