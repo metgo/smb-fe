@@ -1029,7 +1029,7 @@ export class ExternalApiServices {
             ? HebrewTemplate.VoucherConfirmationNonLoggedIn
             : EnglishTemplate.VoucherConfirmationNonLoggedIn,
         mergeVars: {
-          FNAME: dto?.name,
+          BUYERNAME: dto?.name,
           VOUCHERCODE,
           VOUCHERAMOUNT: dto?.amount,
         },
