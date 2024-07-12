@@ -142,7 +142,8 @@ export class VoucherController {
       status: HttpStatus.OK,
       description: ServerSuccess.VOUCHER.LISTED,
     },
-    operation: 'Get voucher detail by anyone using valid code',
+    operation:
+      'Get voucher detail by anyone using valid code if it is eligible for product buying',
   })
   @HttpCode(HttpStatus.OK)
   @Get('voucher-code/:code')
@@ -151,10 +152,33 @@ export class VoucherController {
     @Res() response: Response,
     @Query() query: GetVoucherQuery,
   ) {
-    const voucher = await this.voucherService.getOneByCode({
+    const voucher = await this.voucherService.getOneByCodeAndProduct({
       code,
       productId: query.productId,
     });
+    return responseHelper(
+      response,
+      HttpStatus.OK,
+      ServerSuccess.VOUCHER.LISTED,
+      voucher,
+      null,
+      null,
+    );
+  }
+
+  @ApiEndpoint({
+    tags: ['Voucher'],
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.VOUCHER.LISTED,
+    },
+    operation: 'Get voucher detail by anyone using valid code',
+  })
+  @HttpCode(HttpStatus.OK)
+  @Get('vouchers/balance/:code')
+  async getOneByCode(@Param('code') code: string, @Res() response: Response) {
+    const voucher = await this.voucherService.getOneByCode(code);
+
     return responseHelper(
       response,
       HttpStatus.OK,

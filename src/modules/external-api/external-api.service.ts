@@ -1140,7 +1140,7 @@ export class ExternalApiServices {
     return newCampaign;
   }
 
-  async getVoucherByCode(query: GetOneVoucherInterface) {
+  async getVoucherByCodeAndProduct(query: GetOneVoucherInterface) {
     try {
       const { code, productId } = query;
       const select = disSelect;
@@ -1189,6 +1189,56 @@ export class ExternalApiServices {
         expireDate: voucher.expireDate,
         paymentStatus: voucher.paymentStatus,
         status: voucher.status,
+      };
+    } catch (err) {
+      exceptionHandling(err);
+    }
+  }
+
+  async getVoucherByCode(code: string) {
+    try {
+      const select = disSelect;
+      const populate = {
+        path: 'campId assignedTo',
+        select: `${disSelect}`,
+      };
+
+      const findQuery: any = {
+        code: code.trim(),
+      };
+
+      const voucher: any = await this.VoucherModel.findOne(findQuery)
+        .select(select)
+        .populate(populate)
+        .exec();
+
+      if (!voucher) {
+        throw new BadRequestException(ServerErrors.VOUCHER.NOT_FOUND);
+      }
+
+      if (voucher.expireDate) {
+        const isAvailable = checkExpireDate(voucher.expireDate);
+
+        if (!isAvailable) {
+          throw new GoneException(ServerErrors.VOUCHER.EXPIRED);
+        }
+      }
+
+      if (voucher.paymentStatus !== VoucherPaymentStatus.PAID) {
+        throw new ForbiddenException(ServerErrors.VOUCHER.UNPAID);
+      }
+
+      return {
+        id: voucher._id,
+        remainingAmount: voucher.remainingAmount,
+        originalAmount: voucher.amount,
+        expireDate: voucher.expireDate,
+        paymentStatus: voucher.paymentStatus,
+        status: voucher.status,
+        campaignName: voucher?.campId?.name,
+        name: voucher?.name,
+        waitingUserEmail: voucher?.waitingUserEmail,
+        assignedTo: voucher?.assignedTo?.firstName,
       };
     } catch (err) {
       exceptionHandling(err);

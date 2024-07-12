@@ -388,7 +388,8 @@ export class ExternalAPIServiceController {
       description: ServerSuccess.VOUCHER.LISTED,
     },
     noAuthToken: true,
-    operation: 'Get voucher detail by anyone using valid code - EXTERNAL API',
+    operation:
+      'Get voucher detail by anyone using valid code if it is eligible for product buying - EXTERNAL API',
   })
   @UseGuards(JwtAuthGuard)
   @UseGuards(ExternalApiGuard)
@@ -398,10 +399,36 @@ export class ExternalAPIServiceController {
     @Param('code') code: string,
     @Query() query: GetVoucherByCodeQuery,
   ) {
-    const voucher = await this.externalApiService.getVoucherByCode({
+    const voucher = await this.externalApiService.getVoucherByCodeAndProduct({
       code,
       productId: query.productId,
     });
+    return responseHelper(
+      response,
+      HttpStatus.OK,
+      ServerSuccess.VOUCHER.LISTED,
+      voucher,
+      null,
+      null,
+    );
+  }
+
+  @ApiEndpoint({
+    tags: ['Voucher'],
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.VOUCHER.LISTED,
+    },
+    operation: 'Get voucher detail by anyone using valid code - EXTERNAL API',
+  })
+  @HttpCode(HttpStatus.OK)
+  @Get('vouchers/balance/:code')
+  async getOneByCodeByExternalApi(
+    @Param('code') code: string,
+    @Res() response: Response,
+  ) {
+    const voucher = await this.externalApiService.getVoucherByCode(code);
+
     return responseHelper(
       response,
       HttpStatus.OK,
