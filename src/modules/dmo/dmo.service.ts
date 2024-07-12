@@ -8,14 +8,15 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
+import { ObjectId } from 'typeorm';
 
 import { ServerErrors } from 'src/common/constant';
 import { paginationConfig } from 'src/common/pagination.config';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { disSelect } from 'src/common/utils/select.handling';
 import {
-  findByFieldName,
   findOneByFieldName,
+  findOneByFieldNames,
   findOneById,
   findOneByOrCase,
   queryhandler,
@@ -216,12 +217,11 @@ export class DMOService {
     return items.map(item => item._id);
   }
 
-  async getOneDMOByFieldName(fieldName: keyof DMO, fieldValue: string) {
-    const items = await findByFieldName<DMO>(
-      this.DMOModel,
-      fieldName,
-      fieldValue,
-    );
-    return items[0];
+  async getById(id: ObjectId) {
+    const items = await findOneByFieldNames<DMO>(this.DMOModel, {
+      _id: id,
+    });
+
+    return items;
   }
 }

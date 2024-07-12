@@ -479,4 +479,24 @@ export class CampaignService {
       exceptionHandling(err);
     }
   }
+
+  async getOneCampaignDetailAssociatedToIds(
+    id: string | ObjectId,
+    key: keyof Campaign,
+  ) {
+    try {
+      const campaigns = await this.CampaignModel.find({
+        [key]: { $in: [id] },
+      });
+
+      const campaignDetail
+        = campaigns.find(obj => obj.logoPath && obj.imagePath)
+        || campaigns.find(obj => obj.logoPath)
+        || campaigns.find(obj => obj.imagePath);
+
+      return campaignDetail;
+    } catch (err) {
+      exceptionHandling(err);
+    }
+  }
 }

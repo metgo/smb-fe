@@ -12,10 +12,12 @@ import * as lodash from 'lodash';
 
 import {
   defaultMetGoLogo,
+  emailDefaultTemplate,
   milesConfig,
   ServerErrors,
 } from 'src/common/constant';
 import { Image } from 'src/common/interface/image.interface';
+import { DynamicHebrewTemplate } from 'src/common/mailchimp/templateId';
 import { maxDistanceInRadius } from 'src/common/max-distance-in-radius';
 import { paginateData } from 'src/common/pagination';
 import { getNearestBusiness } from 'src/common/sort-by-nearest';
@@ -58,6 +60,8 @@ import { GetAllBusinessesForMapResponse } from 'src/modules/business/response/ge
 import { Business } from 'src/modules/business/schema/business.schema';
 import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.schema';
 import { BussSubCategory } from 'src/modules/buss-subcategories/schema/buss-subCategory.schema';
+import { CampaignService } from 'src/modules/campaign/campaign.service';
+import { DMOService } from 'src/modules/dmo/dmo.service';
 import { MockDataServices } from 'src/modules/mock-data/mock-data.services';
 import { Product } from 'src/modules/products/schema/products.schema';
 import { User } from 'src/modules/users/schema/users.schema';
@@ -73,6 +77,8 @@ export class BusinessService {
     @InjectModel('Business')
     private BusinessModel: Model<Business>,
     private readonly authorityService: AuthorityService,
+    private readonly campaignService: CampaignService,
+    private readonly dmoService: DMOService,
     private readonly mediaServices: MediaServices,
     private readonly mockDataService: MockDataServices,
     private readonly productService: ProductsService,
@@ -1277,20 +1283,32 @@ export class BusinessService {
         loggedInUserId,
       );
 
-      console.log(assignedUser);
+      const dmo = await this.dmoService.getById(updateBusiness.dmoId);
+
+      const campaign: any
+        = await this.campaignService.getOneCampaignDetailAssociatedToIds(
+          updateBusiness.dmoId,
+          'dmoIds',
+        );
 
       // email the users
-      // await this.mailchimpService.sendTransactionalEmail({
-      //   to: assignedUser.email,
-      //   templatedId:
-      //     user.languagePreference === Locale.HEBREW
-      //       ? HebrewTemplate.TransferBusinessOwnership
-      //       : EnglishTemplate.TransferBusinessOwnership,
-      //   mergeVars: {
-      //     FNAME: user.firstName,
-      //     BUSINESS_NAME: updateBusiness.name,
-      //   },
-      // });
+      await this.mailchimpService.sendTransactionalEmail({
+        to: assignedUser.email,
+        templatedId: DynamicHebrewTemplate.TransferBusinessOwnership,
+        mergeVars: {
+          FNAME: user?.firstName,
+          BUSINESSNAME: updateBusiness?.name,
+          DMO: dmo?.name,
+          LOGO1: dmo?.logoPath || emailDefaultTemplate.SIDE_LOGO,
+          LOGO2: emailDefaultTemplate.MAIN_LOGO,
+          LOGO3: campaign?.logoPath || emailDefaultTemplate.SIDE_LOGO,
+          PRIMARY_BG_COLOR: emailDefaultTemplate.PRIMARY_BG_COLOR,
+          PRIMARY_TEXT_COLOR: emailDefaultTemplate.PRIMARY_TEXT_COLOR,
+          IMAGE1: emailDefaultTemplate.IMAGE1,
+          IMAGE2: dmo?.imagePath || emailDefaultTemplate.IMAGE2,
+          IMAGE3: campaign?.imagePath || emailDefaultTemplate.IMAGE3,
+        },
+      });
 
       return updateBusiness;
     } catch (err) {

@@ -14,6 +14,7 @@ import mongoose, { Model } from 'mongoose';
 import { calculateTotalAmount } from 'src/common/calculate-amounts';
 import { checkExpireDate, twoYearExpireDate } from 'src/common/expireDate';
 import {
+  DynamicHebrewTemplate,
   EnglishTemplate,
   HebrewTemplate,
 } from 'src/common/mailchimp/templateId';
@@ -37,7 +38,7 @@ import {
   updateManyByManyFields,
 } from 'src/core/helper/query-helper';
 import { disSelect } from 'src/common/utils/select.handling';
-import { ServerErrors } from 'src/common/constant';
+import { ServerErrors, emailDefaultTemplate } from 'src/common/constant';
 import { MailChimpService } from 'src/services/mailchimp/mailchimp.service';
 import { OrdersService } from 'src/modules/orders/orders.services';
 import { PaymentsService } from 'src/services/payments/payments.service';
@@ -616,6 +617,15 @@ export class VoucherService {
     const { loggedInUser, body } = command;
     const select = disSelect;
 
+    const populate = {
+      path: 'campId',
+      select: `${disSelect}`,
+      populate: {
+        path: 'dmoIds',
+        select: `${disSelect}`,
+      },
+    };
+
     const [availableVoucher, assignedUser] = await Promise.all([
       this.VoucherModel.findOne({
         code: body.code,
@@ -637,6 +647,7 @@ export class VoucherService {
         ],
       })
         .select(select)
+        .populate(populate)
         .exec(),
       this.usersService.findByEmailOrNull(body.email),
     ]);
@@ -666,16 +677,27 @@ export class VoucherService {
       throw new NotFoundException(ServerErrors.VOUCHER.CANNOT_ASSIGN);
     }
 
+    const campaign: any = availableVoucher?.campId;
+
     await this.mailchimpService.sendTransactionalEmail({
       to: body?.email,
-      templatedId:
-        body?.languagePreference === Locale.HEBREW
-          ? HebrewTemplate.VoucherAssignedToYou
-          : EnglishTemplate.VoucherAssignedToYou,
+      templatedId: DynamicHebrewTemplate.VoucherAssignedToYou,
       mergeVars: {
-        FULLNAME: `${loggedInUser?.firstName} ${loggedInUser?.lastName}`,
+        CAMPAIGN: campaign?.name,
+        FNAME: `${loggedInUser?.firstName} ${loggedInUser?.lastName}`,
+        ENTITY: campaign?.dmoIds[0]?.name,
+        WEBSITE: campaign?.link,
+        SLOGAN: campaign?.slogan,
         VOUCHERCODE: body?.code,
         VOUCHERAMOUNT: assignedVoucher?.remainingAmount,
+        LOGO1: campaign?.dmoIds[0]?.logoPath || emailDefaultTemplate.SIDE_LOGO,
+        LOGO2: emailDefaultTemplate.MAIN_LOGO,
+        LOGO3: campaign?.logoPath || emailDefaultTemplate.SIDE_LOGO,
+        PRIMARY_BG_COLOR: emailDefaultTemplate.PRIMARY_BG_COLOR,
+        PRIMARY_TEXT_COLOR: emailDefaultTemplate.PRIMARY_TEXT_COLOR,
+        IMAGE1: emailDefaultTemplate.IMAGE1,
+        IMAGE2: campaign?.dmoIds[0]?.imagePath || emailDefaultTemplate.IMAGE2,
+        IMAGE3: campaign?.imagePath || emailDefaultTemplate.IMAGE3,
       },
     });
 

@@ -17,6 +17,21 @@ export const milesConfig = 5;
 
 export const defaultMetGoLogo = 'default-metgo-logo-OBNusjAgOeNMDToi1.png';
 
+export const emailDefaultTemplate = {
+  PRIMARY_BG_COLOR: '#39AEEA',
+  PRIMARY_TEXT_COLOR: '#FFFFFF',
+  SIDE_LOGO:
+    'https://storage.googleapis.com/metgo_dev/2024/6/PXFefWso_3aYY_C9.png',
+  MAIN_LOGO:
+    'https://storage.googleapis.com/metgo_dev/2024/6/PVDn19Gq-k644tRM.png',
+  IMAGE1:
+    'https://mcusercontent.com/ea29cc0201ca929f255720bbf/images/5c7837bc-e798-8d83-6b78-47b42cf81319.png',
+  IMAGE2:
+    'https://mcusercontent.com/ea29cc0201ca929f255720bbf/images/f6ea7516-9ec5-92fe-75e2-0f449ddc04a2.png',
+  IMAGE3:
+    'https://mcusercontent.com/ea29cc0201ca929f255720bbf/images/adfeaba8-bc86-0edc-bca4-96701c43cbd0.jpeg',
+};
+
 export const ServerErrors = {
   FORBIDDEN: 'Access Denied',
   IS_NOT_EMPTY: 'cannot be empty',

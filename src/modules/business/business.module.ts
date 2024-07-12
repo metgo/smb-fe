@@ -24,6 +24,7 @@ import {
 } from '../buss-subcategories/schema/buss-subCategory.schema';
 import { Product, ProductSchema } from '../products/schema/products.schema';
 import { AuthorityModule } from 'src/modules/authority/authority.module';
+import { CampaignModule } from 'src/modules/campaign/campaign.module';
 import { VoucherModule } from 'src/modules/vouchers/voucher.module';
 import { EventController } from 'src/modules/business/controllers/event.controller';
 import { EventsService } from 'src/modules/business/services/event.service';
@@ -42,6 +43,7 @@ import { UsersModule } from 'src/modules/users/users.module';
       { name: Product.name, schema: ProductSchema },
     ]),
     forwardRef(() => AuthorityModule),
+    CampaignModule,
     ConfigModule,
     MailModule,
     HashModule,

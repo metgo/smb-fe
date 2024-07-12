@@ -2,6 +2,7 @@ import { Module, forwardRef } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
 import { AuthorityModule } from 'src/modules/authority/authority.module';
+import { CampaignModule } from 'src/modules/campaign/campaign.module';
 import { DMOModule } from 'src/modules/dmo/dmo.module';
 import { User, UserSchema } from 'src/modules/users/schema/users.schema';
 import { UsersController } from 'src/modules/users/users.controller';
@@ -23,6 +24,7 @@ import { MailChimpModule } from 'src/services/mailchimp/mailchimp.module';
     ]),
     forwardRef(() => AuthorityModule),
     BusinessModule,
+    CampaignModule,
     ConfigModule,
     forwardRef(() => DMOModule),
     MailModule,

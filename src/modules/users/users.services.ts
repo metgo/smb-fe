@@ -9,9 +9,14 @@ import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
 import { nanoid } from 'nanoid';
 
-import { ServerErrors, ServerSuccess } from 'src/common/constant';
+import {
+  ServerErrors,
+  ServerSuccess,
+  emailDefaultTemplate,
+} from 'src/common/constant';
 import { Locale } from 'src/common/enum';
 import {
+  DynamicHebrewTemplate,
   EnglishTemplate,
   HebrewTemplate,
 } from 'src/common/mailchimp/templateId';
@@ -30,6 +35,8 @@ import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interfac
 import { RegisterRequest } from 'src/modules/auth/requests/register.request';
 import { AuthorityService } from 'src/modules/authority/authority.service';
 import { BusinessService } from 'src/modules/business/services/business.service';
+import { CampaignService } from 'src/modules/campaign/campaign.service';
+import { DMO } from 'src/modules/dmo/schema/dmo.schema';
 import { DMOService } from 'src/modules/dmo/dmo.service';
 import { UpdateUserRequest } from 'src/modules/users/requests/update-user.request';
 import { GetUserDetailsResponse } from 'src/modules/users/responses/get-user-details.response';
@@ -65,6 +72,7 @@ export class UsersService {
     private OtpModel: Model<OTP>,
     private readonly authorityService: AuthorityService,
     private readonly businessService: BusinessService,
+    private readonly campaignService: CampaignService,
     private readonly dmoService: DMOService,
     private readonly hashService: HashService,
     private readonly jwtAuthService: JwtAuthService,
@@ -877,6 +885,9 @@ export class UsersService {
     };
 
     let newUser = new this.UserModel(body);
+    let entity: string = 'METGO';
+    let dmo: DMO;
+    let campaign: any;
 
     if (dto.dmoId) {
       if (loggedInUser.role === UserType.SUPERADMIN) {
@@ -886,7 +897,8 @@ export class UsersService {
         };
 
         newUser = new this.UserModel(body);
-        await this.dmoService.addAdmin(dto.dmoId, newUser.id);
+        dmo = await this.dmoService.addAdmin(dto.dmoId, newUser.id);
+        entity = dmo?.name;
       }
 
       if (loggedInUser.role === UserType.DMO) {
@@ -896,7 +908,11 @@ export class UsersService {
         };
 
         newUser = new this.UserModel(body);
-        await this.dmoService.addCollaborators(loggedInUser.dmo.id, newUser.id);
+        dmo = await this.dmoService.addCollaborators(
+          loggedInUser.dmo.id,
+          newUser.id,
+        );
+        entity = dmo?.name;
       }
     }
 
@@ -907,7 +923,11 @@ export class UsersService {
       };
 
       newUser = new this.UserModel(body);
-      await this.authorityService.addAdmin(dto.authorityId, newUser.id);
+      const authority = await this.authorityService.addAdmin(
+        dto.authorityId,
+        newUser.id,
+      );
+      entity = authority?.name;
     }
 
     if (
@@ -930,6 +950,13 @@ export class UsersService {
 
     await newUser.save();
 
+    if (dmo) {
+      campaign = await this.campaignService.getOneCampaignDetailAssociatedToIds(
+        dmo._id,
+        'dmoIds',
+      );
+    }
+
     await Promise.all([
       this.voucherService.updateVoucherCreatedDetails(body.email, newUser.id),
       this.voucherService.updateVoucherAssignedDetails(body.email, newUser.id),
@@ -940,14 +967,21 @@ export class UsersService {
       ),
       this.mailchimpService.sendTransactionalEmail({
         to: newUser?.email,
-        templatedId:
-          dto?.languagePreference === Locale.HEBREW
-            ? HebrewTemplate.UserRegistrationByAdmin
-            : EnglishTemplate.UserRegistrationByAdmin,
+        templatedId: DynamicHebrewTemplate.UserRegistrationByAdmin,
         mergeVars: {
           FNAME: newUser?.firstName,
+          ENTITY: entity,
+          website: 'https://console.metgo.app/',
           USERNAME: newUser?.email,
           PASSWORD: password,
+          LOGO1: dmo?.logoPath || emailDefaultTemplate.SIDE_LOGO,
+          LOGO2: emailDefaultTemplate.MAIN_LOGO,
+          LOGO3: campaign?.logoPath || emailDefaultTemplate.SIDE_LOGO,
+          PRIMARY_BG_COLOR: emailDefaultTemplate.PRIMARY_BG_COLOR,
+          PRIMARY_TEXT_COLOR: emailDefaultTemplate.PRIMARY_TEXT_COLOR,
+          IMAGE1: emailDefaultTemplate.IMAGE1,
+          IMAGE2: dmo?.imagePath || emailDefaultTemplate.IMAGE2,
+          IMAGE3: campaign?.imagePath || emailDefaultTemplate.IMAGE3,
         },
       }),
     ]);

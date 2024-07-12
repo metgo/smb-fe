@@ -11,7 +11,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
 import { ObjectId } from 'typeorm';
 
-import { ServerErrors } from 'src/common/constant';
+import { ServerErrors, emailDefaultTemplate } from 'src/common/constant';
 import {
   CampaignStatus,
   Currency,
@@ -23,6 +23,7 @@ import {
 import { checkExpireDate, twoYearExpireDate } from 'src/common/expireDate';
 import { getUniqueSet } from 'src/common/get-unique-set';
 import {
+  DynamicHebrewTemplate,
   EnglishTemplate,
   HebrewTemplate,
 } from 'src/common/mailchimp/templateId';
@@ -862,6 +863,15 @@ export class ExternalApiServices {
     const { loggedInUser, body } = command;
     const select = disSelect;
 
+    const populate = {
+      path: 'campId',
+      select: `${disSelect}`,
+      populate: {
+        path: 'dmoIds',
+        select: `${disSelect}`,
+      },
+    };
+
     const [availableVoucher, assignedUser] = await Promise.all([
       this.VoucherModel.findOne({
         code: body.code,
@@ -883,6 +893,7 @@ export class ExternalApiServices {
         ],
       })
         .select(select)
+        .populate(populate)
         .exec(),
       this.userService.findByEmailOrNull(body.email),
     ]);
@@ -912,16 +923,27 @@ export class ExternalApiServices {
       throw new NotFoundException(ServerErrors.VOUCHER.CANNOT_ASSIGN);
     }
 
+    const campaign: any = availableVoucher?.campId;
+
     await this.mailchimpService.sendTransactionalEmail({
       to: body?.email,
-      templatedId:
-        body?.languagePreference === Locale.HEBREW
-          ? HebrewTemplate.VoucherAssignedToYou
-          : EnglishTemplate.VoucherAssignedToYou,
+      templatedId: DynamicHebrewTemplate.VoucherAssignedToYou,
       mergeVars: {
-        FULLNAME: `${loggedInUser?.firstName} ${loggedInUser?.lastName}`,
+        CAMPAIGN: campaign?.name,
+        FNAME: `${loggedInUser?.firstName} ${loggedInUser?.lastName}`,
+        ENTITY: campaign?.dmoIds[0]?.name,
+        WEBSITE: campaign?.link,
+        SLOGAN: campaign?.slogan,
         VOUCHERCODE: body?.code,
         VOUCHERAMOUNT: assignedVoucher?.remainingAmount,
+        LOGO1: campaign?.dmoIds[0]?.logoPath || emailDefaultTemplate.SIDE_LOGO,
+        LOGO2: emailDefaultTemplate.MAIN_LOGO,
+        LOGO3: campaign?.logoPath || emailDefaultTemplate.SIDE_LOGO,
+        PRIMARY_BG_COLOR: emailDefaultTemplate.PRIMARY_BG_COLOR,
+        PRIMARY_TEXT_COLOR: emailDefaultTemplate.PRIMARY_TEXT_COLOR,
+        IMAGE1: emailDefaultTemplate.IMAGE1,
+        IMAGE2: campaign?.dmoIds[0]?.imagePath || emailDefaultTemplate.IMAGE2,
+        IMAGE3: campaign?.imagePath || emailDefaultTemplate.IMAGE3,
       },
     });
 

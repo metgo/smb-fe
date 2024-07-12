@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import {
   BadRequestException,
   Injectable,
@@ -19,6 +20,7 @@ import { AuthorityDTO } from 'src/modules/authority/dto/authority.dto';
 import { GetAllAuthoritiesQuery } from 'src/modules/authority/queries/get-all-authorities.query';
 import { Authority } from 'src/modules/authority/schema/authority.schema';
 import { DMOService } from 'src/modules/dmo/dmo.service';
+import { GcpBucketService } from 'src/services/gcp-bucket/gcp-bucket.services';
 
 @Injectable()
 export class AuthorityService {
@@ -26,10 +28,34 @@ export class AuthorityService {
     @InjectModel('Authority')
     private readonly AuthorityModel: Model<Authority>,
     private dmoService: DMOService,
+    private readonly gcpBucketServices: GcpBucketService,
   ) {}
 
-  async create(dto: AuthorityDTO, userId: string) {
+  async create(
+    dto: AuthorityDTO,
+    userId: string,
+    files: Array<Express.Multer.File>,
+  ) {
     try {
+      if (!files?.length) {
+        throw new BadRequestException('Please upload file');
+      }
+
+      let imageCount: number = 0;
+
+      await Promise.all(
+        // eslint-disable-next-line array-callback-return
+        files.map(file => {
+          if (file.fieldname === 'logoPath' || file.fieldname === 'imagePath') {
+            imageCount += 1;
+          }
+        }),
+      );
+
+      if (imageCount !== 2) {
+        throw new BadRequestException('Please upload logo and dmo image');
+      }
+
       const existsAuthority = await findOneByFieldName<Authority>(
         this.AuthorityModel,
         'name',
@@ -41,10 +67,26 @@ export class AuthorityService {
 
       await this.dmoService.findDMO(dto.dmoId);
 
+      let imagePath: string;
+      let logoPath: string;
+      await Promise.all(
+        files.map(async file => {
+          if (file.fieldname === 'logoPath') {
+            logoPath = await this.gcpBucketServices.upload(file);
+          }
+
+          if (file.fieldname === 'imagePath') {
+            imagePath = await this.gcpBucketServices.upload(file);
+          }
+        }),
+      );
+
       const newAuthority = new this.AuthorityModel({
         ...dto,
         adminIds: [dto.userId],
         createdBy: userId,
+        imagePath,
+        logoPath,
       });
 
       const authority = await newAuthority.save();

@@ -31,3 +31,9 @@ export const EnglishTemplate = {
   VOUCHER_FOR_CAMPAIGN: 'dynamic-voucher-general-campaign-en',
   TransferBusinessOwnership: '',
 };
+
+export const DynamicHebrewTemplate = {
+  UserRegistrationByAdmin: 'create-account-dynamic-he',
+  TransferBusinessOwnership: 'dynamic-business-activation-he-new',
+  VoucherAssignedToYou: 'dynamic-voucher-opt-in-he-new',
+};

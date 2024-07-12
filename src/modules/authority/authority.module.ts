@@ -9,6 +9,7 @@ import {
 } from 'src/modules/authority/schema/authority.schema';
 import { DMOModule } from 'src/modules/dmo/dmo.module';
 import { UsersModule } from 'src/modules/users/users.module';
+import { GcpBucketModule } from 'src/services/gcp-bucket/gcp-bucket.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { UsersModule } from 'src/modules/users/users.module';
       { name: Authority.name, schema: AuthoritySchema },
     ]),
     DMOModule,
+    GcpBucketModule,
     UsersModule,
   ],
   controllers: [AuthorityController],

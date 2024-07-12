@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import {
   Body,
   Controller,
@@ -8,8 +9,11 @@ import {
   Query,
   Req,
   Res,
+  UploadedFiles,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
+import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
 
 import { ServerSuccess } from 'src/common/constant';
@@ -21,6 +25,7 @@ import { AuthorityDTO } from 'src/modules/authority/dto/authority.dto';
 import { AuthorityService } from 'src/modules/authority/authority.service';
 import { GetAllAuthoritiesQuery } from 'src/modules/authority/queries/get-all-authorities.query';
 import { UserType } from 'src/modules/users/users.type';
+import { fileFilterByExtensions } from 'src/services/gcp-bucket/middleware/file-filter';
 
 @Controller()
 export class AuthorityController {
@@ -35,14 +40,21 @@ export class AuthorityController {
       status: HttpStatus.CREATED,
       description: ServerSuccess.AUTHORITY.CREATED,
     },
+    softBlockExtraDtoFields: true,
   })
+  @UseInterceptors(AnyFilesInterceptor({ fileFilter: fileFilterByExtensions }))
   @Post('admin/authorities')
   async create(
     @Body() dto: AuthorityDTO,
     @Req() req,
     @Res() response: Response,
+    @UploadedFiles() image: Array<Express.Multer.File>,
   ) {
-    const authority = await this.authorityService.create(dto, req.user.id);
+    const authority = await this.authorityService.create(
+      dto,
+      req.user.id,
+      image,
+    );
 
     return responseHelper(
       response,
