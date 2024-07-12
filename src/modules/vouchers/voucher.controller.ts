@@ -458,4 +458,40 @@ export class VoucherController {
   async scheduledSendEmailToRedeemableVoucherOwners() {
     return await this.voucherService.scheduledEmailToRedeemableVoucherOwners();
   }
+
+  @Roles(UserType.SUPERADMIN)
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  @ApiEndpoint({
+    tags: ['Voucher'],
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.EMAIL.SENT,
+    },
+    params: [
+      {
+        name: 'voucherId',
+        required: true,
+        type: 'string',
+      },
+    ],
+    noAuthToken: true,
+    operation: 'Send email to voucher owner',
+  })
+  @Post('vouchers/send-email/:voucherId')
+  async sendEmailToVoucherOwner(
+    @Param('voucherId') voucherId: string,
+    @Res() response: Response,
+  ) {
+    const voucher = await this.voucherService.sendVoucherDetailEmail(voucherId);
+
+    return responseHelper(
+      response,
+      HttpStatus.OK,
+      ServerSuccess.EMAIL.SENT,
+      voucher,
+      null,
+      null,
+    );
+  }
 }

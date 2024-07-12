@@ -1299,4 +1299,35 @@ export class VoucherService {
       };
     }
   }
+
+  async sendVoucherDetailEmail(id: string) {
+    const populate = {
+      path: 'assignedTo',
+      select: `${disSelect}`,
+    };
+
+    const voucher = await this.VoucherModel.findOne({
+      _id: id,
+      deletedAt: null,
+      deletedBy: null,
+    }).populate(populate);
+
+    const assignedTo: any = voucher?.assignedTo;
+
+    const emailRecipient = assignedTo?.email || voucher?.waitingUserEmail;
+
+    if (emailRecipient) {
+      await this.mailchimpService.sendTransactionalEmail({
+        to: emailRecipient,
+        templatedId: HebrewTemplate.REEDEMABLE_VOUCHER_REMINDER,
+        mergeVars: {
+          BUYERNAME: voucher?.name,
+          VOUCHERCODE: voucher?.code,
+          VOUCHERAMOUNT: voucher?.remainingAmount,
+          VOUCHERACTUALAMOUNT: voucher?.amount,
+        },
+      });
+    }
+    return voucher;
+  }
 }

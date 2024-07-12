@@ -312,4 +312,7 @@ export const ServerSuccess = {
       ASSIGNED: 'Voucher was successfully assigned to',
     },
   },
+  EMAIL: {
+    SENT: 'Email was sent successfully',
+  },
 };
