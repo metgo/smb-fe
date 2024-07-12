@@ -64,7 +64,10 @@ export class AuthService {
       dmo = await this.dmoService.findDMOByUserID(user.id);
     }
 
-    if (user.role === UserType.AUTHORITY) {
+    if (
+      user.role === UserType.AUTHORITY
+      || user.role === UserType.AUTHORITY_ADMIN
+    ) {
       authority = await this.authorityService.findAuthorityByUserID(user.id);
     }
     await this.usersService.updateLastLogin(user.id, {

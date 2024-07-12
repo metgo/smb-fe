@@ -179,7 +179,7 @@ export class UsersService {
             $lookup: {
               from: 'dmos',
               localField: '_id',
-              foreignField: 'userId',
+              foreignField: 'adminIds',
               as: 'dmo',
             },
           },
@@ -242,7 +242,12 @@ export class UsersService {
                   $match: {
                     $expr: {
                       $or: [
-                        { $eq: ['$userId', '$$userId'] },
+                        {
+                          $and: [
+                            { $isArray: '$adminIds' },
+                            { $in: ['$$userId', '$adminIds'] },
+                          ],
+                        },
                         {
                           $and: [
                             { $isArray: '$collaboratorsUser' },
@@ -272,13 +277,96 @@ export class UsersService {
         };
       }
 
-      if (roles && roles.includes(UserType.AUTHORITY)) {
+      if (
+        roles
+        && roles.includes(UserType.AUTHORITY)
+        && !roles.includes(UserType.AUTHORITY_ADMIN)
+      ) {
         pipeline.push(
           {
             $lookup: {
               from: 'authorities',
               localField: '_id',
-              foreignField: 'userId',
+              foreignField: 'adminIds',
+              as: 'authority',
+            },
+          },
+          {
+            $unwind: '$authority',
+          },
+        );
+
+        project = {
+          ...project,
+          authority: {
+            userId: 0,
+            collaboratorsUser: 0,
+            ...project,
+          },
+        };
+      }
+
+      if (
+        roles
+        && roles.includes(UserType.AUTHORITY_ADMIN)
+        && !roles.includes(UserType.AUTHORITY)
+      ) {
+        pipeline.push(
+          {
+            $lookup: {
+              from: 'authorities',
+              localField: '_id',
+              foreignField: 'collaboratorsUser',
+              as: 'authority',
+            },
+          },
+          {
+            $unwind: '$authority',
+          },
+        );
+
+        project = {
+          ...project,
+          authority: {
+            userId: 0,
+            collaboratorsUser: 0,
+            ...project,
+          },
+        };
+      }
+
+      if (
+        roles
+        && roles.includes(UserType.AUTHORITY)
+        && roles.includes(UserType.AUTHORITY_ADMIN)
+      ) {
+        pipeline.push(
+          {
+            $lookup: {
+              from: 'authorities',
+              let: { userId: '$_id' },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: {
+                      $or: [
+                        {
+                          $and: [
+                            { $isArray: '$adminIds' },
+                            { $in: ['$$userId', '$adminIds'] },
+                          ],
+                        },
+                        {
+                          $and: [
+                            { $isArray: '$collaboratorsUser' },
+                            { $in: ['$$userId', '$collaboratorsUser'] },
+                          ],
+                        },
+                      ],
+                    },
+                  },
+                },
+              ],
               as: 'authority',
             },
           },
@@ -798,7 +886,7 @@ export class UsersService {
         };
 
         newUser = new this.UserModel(body);
-        await this.dmoService.addUser(dto.dmoId, newUser.id);
+        await this.dmoService.addAdmin(dto.dmoId, newUser.id);
       }
 
       if (loggedInUser.role === UserType.DMO) {
@@ -819,7 +907,7 @@ export class UsersService {
       };
 
       newUser = new this.UserModel(body);
-      await this.authorityService.addUser(dto.authorityId, newUser.id);
+      await this.authorityService.addAdmin(dto.authorityId, newUser.id);
     }
 
     if (

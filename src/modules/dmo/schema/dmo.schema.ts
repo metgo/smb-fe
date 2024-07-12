@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
+import { User } from 'src/modules/users/schema/users.schema';
 
 @Schema()
 export class DMO extends AuditableSchema {
@@ -15,8 +16,11 @@ export class DMO extends AuditableSchema {
   @Prop({ type: String, required: true })
     name: string;
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Users', required: false })
-    userId: mongoose.Types.ObjectId;
+  @Prop({
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: User.name }],
+    ref: User.name,
+  })
+    adminIds: mongoose.Types.ObjectId[];
 
   @Prop({
     type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Users' }],

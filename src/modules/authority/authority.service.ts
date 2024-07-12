@@ -43,6 +43,7 @@ export class AuthorityService {
 
       const newAuthority = new this.AuthorityModel({
         ...dto,
+        adminIds: [dto.userId],
         createdBy: userId,
       });
 
@@ -66,7 +67,7 @@ export class AuthorityService {
       let findQuery: {} = {};
 
       const populate = {
-        path: 'dmoId userId',
+        path: 'dmoId adminIds',
         select: `${disSelect}`,
       };
 
@@ -103,7 +104,7 @@ export class AuthorityService {
     try {
       const select = `${disSelect}`;
       const populate = {
-        path: 'dmoId userId',
+        path: 'dmoId adminIds',
         select: `${disSelect}`,
       };
 
@@ -123,7 +124,10 @@ export class AuthorityService {
 
   async findAuthorityByUserID(userId: string) {
     const findQuery = {
-      $or: [{ userId }, { collaboratorsUser: { $in: [userId] } }],
+      $or: [
+        { collaboratorsUser: { $in: [userId] } },
+        { adminIds: { $in: [userId] } },
+      ],
     };
     const authority = await findOneByOrCase<Authority>(
       this.AuthorityModel,
@@ -135,7 +139,7 @@ export class AuthorityService {
     return authority;
   }
 
-  async addUser(authorityId: string, userId: string) {
+  async addCollaborators(authorityId: string, userId: string) {
     const authority = await updateOneByManyFields<Authority>(
       this.AuthorityModel,
       {
@@ -143,6 +147,23 @@ export class AuthorityService {
       },
       {
         userId,
+      },
+    );
+
+    if (!authority) {
+      throw new NotFoundException(ServerErrors.AUTHORITY.NOT_FOUND);
+    }
+    return authority;
+  }
+
+  async addAdmin(authorityId: string, userId: string) {
+    const authority = await updateOneByManyFields<Authority>(
+      this.AuthorityModel,
+      {
+        _id: new mongoose.Types.ObjectId(authorityId),
+      },
+      {
+        $push: { adminIds: { $each: [userId] } },
       },
     );
 

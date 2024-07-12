@@ -52,7 +52,10 @@ export class JwtAuthGuard implements CanActivate {
       dmo = await this.dmoService.findDMOByUserID(user.id);
     }
 
-    if (user.role === UserType.AUTHORITY) {
+    if (
+      user.role === UserType.AUTHORITY
+      || user.role === UserType.AUTHORITY_ADMIN
+    ) {
       authority = await this.authorityService.findAuthorityByUserID(user.id);
     }
 

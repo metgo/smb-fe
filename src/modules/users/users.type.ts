@@ -3,9 +3,10 @@ export enum UserType {
   ADMIN = 'admin',
   SUPERADMIN = 'superadmin',
   TRAVELLER = 'traveller',
-  DMO = 'dmo',
+  DMO = 'dmo', // main
   DMOADMIN = 'dmoadmin',
-  AUTHORITY = 'authority',
+  AUTHORITY = 'authority', // main
+  AUTHORITY_ADMIN = 'authorityAdmin',
 }
 
 export interface phoneDetails {

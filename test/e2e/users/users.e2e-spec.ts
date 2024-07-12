@@ -190,12 +190,12 @@ describe('Users e2e Test', () => {
   });
 
   it('[POST] /users/admin should register new dmoadmin by dmo', async () => {
-    const dmo = await usersFactory.create({ role: UserType.DMO });
-    const DMO = await dmoFactory.create({ userId: dmo._id });
+    const dmouser = await usersFactory.create({ role: UserType.DMO });
+    const DMO = await dmoFactory.create({ adminIds: [dmouser._id] });
 
     const { body } = await superTest
       .post('/users/admin')
-      .set({ Authorization: `Bearer ${authToken(dmo)}` })
+      .set({ Authorization: `Bearer ${authToken(dmouser)}` })
       .send({
         firstName: 'test',
         lastName: 'test',
@@ -213,7 +213,9 @@ describe('Users e2e Test', () => {
 
   it('[POST] /users/admin should register new authority by admin', async () => {
     const superadmin = await usersFactory.create({ role: UserType.SUPERADMIN });
-    const authority = await authorityFactory.create({ userId: superadmin._id });
+    const authority = await authorityFactory.create({
+      adminIds: [superadmin._id],
+    });
 
     const { body } = await superTest
       .post('/users/admin')

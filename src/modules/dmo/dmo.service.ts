@@ -89,6 +89,7 @@ export class DMOService {
 
       const newDMO = new this.DMOModel({
         ...dto,
+        adminIds: [dto.userId],
         _id: new mongoose.Types.ObjectId(),
         createdBy: userId,
         imagePath,
@@ -162,14 +163,14 @@ export class DMOService {
     return dmo;
   }
 
-  async addUser(dmoId: string, userId: string) {
+  async addAdmin(dmoId: string, userId: string) {
     const dmo = await updateOneByManyFields<DMO>(
       this.DMOModel,
       {
         _id: new mongoose.Types.ObjectId(dmoId),
       },
       {
-        userId,
+        $push: { adminIds: { $each: [userId] } },
       },
     );
 
@@ -198,7 +199,7 @@ export class DMOService {
 
   async findDMOByUserID(id: string) {
     const findQuery = {
-      $or: [{ userId: id }, { collaboratorsUser: { $in: [id] } }],
+      $or: [{ adminIds: { $in: [id] } }, { collaboratorsUser: { $in: [id] } }],
     };
     const dmo = await findOneByOrCase<DMO>(this.DMOModel, findQuery);
     if (!dmo) {
@@ -208,7 +209,10 @@ export class DMOService {
   }
 
   async getAllDMOById(userId: string) {
-    const items = await findByFieldName<DMO>(this.DMOModel, 'userId', userId);
+    const items = await this.DMOModel.find({
+      adminIds: { $in: [userId] },
+    });
+
     return items.map(item => item._id);
   }
 

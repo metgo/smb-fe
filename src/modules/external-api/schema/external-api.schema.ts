@@ -2,7 +2,6 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
 
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
-import { DMO } from 'src/modules/dmo/schema/dmo.schema';
 
 @Schema()
 export class ExternalApi extends AuditableSchema {
@@ -31,7 +30,7 @@ export class ExternalApi extends AuditableSchema {
 
   @Prop({
     type: mongoose.Schema.Types.ObjectId,
-    ref: DMO.name,
+    ref: 'dmos',
     required: false,
   })
     dmoId: mongoose.Types.ObjectId;

@@ -18,17 +18,22 @@ export class Authority extends AuditableSchema {
     dmoId: mongoose.Types.ObjectId;
 
   @Prop({
-    type: mongoose.Schema.Types.ObjectId,
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: User.name }],
     ref: User.name,
-    required: false,
   })
-    userId: mongoose.Types.ObjectId;
+    adminIds: mongoose.Types.ObjectId[];
 
   @Prop({
     type: [{ type: mongoose.Schema.Types.ObjectId, ref: User.name }],
     ref: User.name,
   })
     collaboratorsUser: mongoose.Types.ObjectId[];
+
+  @Prop()
+    logoPath: string;
+
+  @Prop()
+    imagePath: string;
 }
 
 export const AuthoritySchema = SchemaFactory.createForClass(Authority);
