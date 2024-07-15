@@ -410,7 +410,7 @@ export class UsersService {
     }
   }
 
-  async getMyInformation(userId: string): Promise<GetUserDetailsResponse> {
+  async getUserById(userId: string): Promise<GetUserDetailsResponse> {
     try {
       const user = await findOneById<User>(this.UserModel, userId);
 
@@ -817,11 +817,7 @@ export class UsersService {
 
   async findByEmail(email: string): Promise<any> {
     try {
-      const user = await findOneByFieldName<User>(
-        this.UserModel,
-        'email',
-        email,
-      );
+      const user = await this.findOneByEmail(email);
 
       if (!user) {
         throw new NotFoundException(ServerErrors.USER.NOT_FOUND);
@@ -855,11 +851,16 @@ export class UsersService {
   }
 
   async findByEmailOrNull(email: string): Promise<User | null> {
-    const user = await findOneByFieldName<User>(this.UserModel, 'email', email);
-
+    const user = await this.findOneByEmail(email);
     if (!user) {
       return null;
     }
+
+    return user;
+  }
+
+  async findOneByEmail(email: string) {
+    const user = await findOneByFieldName<User>(this.UserModel, 'email', email);
 
     return user;
   }

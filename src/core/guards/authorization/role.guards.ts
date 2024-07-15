@@ -33,9 +33,7 @@ export class RoleGuard implements CanActivate {
     }
 
     const request = context.switchToHttp().getRequest();
-    const loggedInUser = await this.userService.getMyInformation(
-      request.user.id,
-    );
+    const loggedInUser = await this.userService.getUserById(request.user.id);
 
     if (!allowedRoles.includes(loggedInUser.role)) {
       throw new ForbiddenException('Access Denied');
