@@ -1296,7 +1296,7 @@ export class BusinessService {
         to: assignedUser.email,
         templatedId: DynamicHebrewTemplate.TransferBusinessOwnership,
         mergeVars: {
-          FNAME: user?.firstName,
+          FNAME: assignedUser?.firstName,
           BUSINESSNAME: updateBusiness?.name,
           DMO: dmo?.name,
           LOGO1: dmo?.logoPath || emailDefaultTemplate.SIDE_LOGO,
