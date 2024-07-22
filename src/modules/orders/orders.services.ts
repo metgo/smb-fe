@@ -537,7 +537,7 @@ export class OrdersService {
   ) {
     try {
       const {
-        startDate, endDate, dmoId, sortBy,
+        startDate, endDate, dmoId, sortBy, authorityId,
       } = query;
       let findQuery: any = { paymentStatus: PaymentStatus.SUCCESS };
 
@@ -598,6 +598,50 @@ export class OrdersService {
           {
             $match: {
               'matchedProducts.dmoId': new mongoose.Types.ObjectId(dmoID),
+            },
+          },
+        );
+      }
+
+      let authorityID;
+
+      if (
+        [
+          UserType.SUPERADMIN,
+          UserType.ADMIN,
+          UserType.DMOADMIN,
+          UserType.DMO,
+        ].includes(loggedInUser.role)
+        && dmoId
+      ) {
+        authorityID = authorityId;
+      }
+
+      // check if selected authority belongs to given dmo
+
+      if (
+        [UserType.AUTHORITY, UserType.AUTHORITY_ADMIN].includes(
+          loggedInUser.role,
+        )
+      ) {
+        authorityID = loggedInUser.authority.id;
+      }
+
+      if (authorityID) {
+        pipeline.push(
+          {
+            $lookup: {
+              from: 'products',
+              localField: 'products.id',
+              foreignField: '_id',
+              as: 'matchedProducts',
+            },
+          },
+          {
+            $match: {
+              'matchedProducts.authorityId': new mongoose.Types.ObjectId(
+                authorityId,
+              ),
             },
           },
         );

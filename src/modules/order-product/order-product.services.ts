@@ -244,6 +244,28 @@ export class OrderProductService {
       }
     }
 
+    if (validDmoUserType.includes(loggedInUser.role)) {
+      let { authorityId } = query;
+
+      if (
+        [UserType.AUTHORITY, UserType.AUTHORITY_ADMIN].includes(
+          loggedInUser.role,
+        )
+      ) {
+        authorityId = loggedInUser.authority.id;
+      }
+
+      if (authorityId) {
+        pipeline.push({
+          $match: {
+            'business_info.authorityId': new mongoose.Types.ObjectId(
+              authorityId,
+            ),
+          },
+        });
+      }
+    }
+
     let commonGroupFields: any = {
       _id: '$matchedProducts.businessId',
       businessName: { $first: '$business_info.name' },

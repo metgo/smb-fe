@@ -17,6 +17,10 @@ export class GetOrdersSummaryQuery extends CommonFilterQuery {
   @IsOptional()
     dmoId: string;
 
+  @ApiProperty({ type: String, required: false })
+  @IsOptional()
+    authorityId: string;
+
   @ApiProperty({ type: Boolean, required: false })
   @IsOptional()
     detailedView: string;

@@ -16,6 +16,11 @@ export class GetOrdersStatsQuery {
   @IsOptional()
     dmoId: string;
 
+  @ApiProperty({ type: String, required: false })
+  @IsString()
+  @IsOptional()
+    authorityId: string;
+
   @ApiProperty({ enum: SortByTimePeriod, required: false })
   @IsEnum(SortByTimePeriod)
   @IsOptional()
