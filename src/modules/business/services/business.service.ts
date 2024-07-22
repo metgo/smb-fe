@@ -419,12 +419,23 @@ export class BusinessService {
     const select = `${disSelect}`;
 
     if (search) {
-      const [matchingCategoryIds, matchingSubCategoryIds] = await Promise.all([
+      const [
+        matchingCategoryIds,
+        matchingSubCategoryIds,
+        matchingBusinessOwnerIds,
+      ] = await Promise.all([
         this.BussCategoryModel.find({
           name: { $regex: search, $options: 'i' },
         }).select('_id'),
         this.BussSubCategoryModel.find({
           name: { $regex: search, $options: 'i' },
+        }).select('_id'),
+        this.UserModel.find({
+          $or: [
+            { firstName: { $regex: search, $options: 'i' } },
+            { lastName: { $regex: search, $options: 'i' } },
+            { email: { $regex: search, $options: 'i' } },
+          ],
         }).select('_id'),
       ]);
 
@@ -445,6 +456,7 @@ export class BusinessService {
           { bussCategoriesId: { $in: matchingCategoryIds } },
           { bussSubCategoriesId: { $in: matchingSubCategoryIds } },
           { productsId: { $in: matchingProductsIds } },
+          { userId: { $in: matchingBusinessOwnerIds } },
         ],
       };
 
@@ -453,6 +465,7 @@ export class BusinessService {
           matchingCategoryIds?.length
           || matchingSubCategoryIds?.length
           || matchingProductsIds?.length
+          || matchingBusinessOwnerIds?.length
         )
       ) {
         findQuery.$text = {
@@ -1270,10 +1283,9 @@ export class BusinessService {
 
       let assignedUser = user;
       if (!user) {
-        assignedUser = await findOneByFieldName<User>(
-          this.UserModel,
-          '_id',
-          assignUserId,
+        assignedUser = await this.UserModel.findOneAndUpdate(
+          { _id: assignUserId },
+          { hasBusiness: true },
         );
       }
 
@@ -1290,6 +1302,8 @@ export class BusinessService {
           updateBusiness.dmoId,
           'dmoIds',
         );
+
+      // change previous assigned owner to traveller
 
       // email the users
       await this.mailchimpService.sendTransactionalEmail({
