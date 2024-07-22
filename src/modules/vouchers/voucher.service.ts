@@ -1121,7 +1121,12 @@ export class VoucherService {
     };
 
     if (search) {
-      const users = await this.usersService.findByRegex(search, ['email']);
+      const users = await this.usersService.findByRegex(search, [
+        'email',
+        'firstName',
+        'lastName',
+      ]);
+      const usersString = users?.map(item => item._id?.toString());
 
       findQuery = {
         ...findQuery,
@@ -1131,7 +1136,7 @@ export class VoucherService {
           { createdByEmail: { $regex: search, $options: 'i' } },
           { code: { $regex: search, $options: 'i' } },
           { assignedTo: { $in: users } },
-          { createdBy: { $in: users } },
+          { createdBy: { $in: usersString } },
         ],
       };
     }
