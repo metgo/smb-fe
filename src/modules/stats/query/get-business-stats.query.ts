@@ -7,7 +7,7 @@ import {
   GeoServicesTypes,
 } from 'src/modules/business/business.type';
 
-export class GetALLBusinessProductStatsquery {
+export class GetAllBusinessStatsquery {
   @ApiProperty({ type: String, required: true })
   @IsNotEmpty()
     startDate: string;

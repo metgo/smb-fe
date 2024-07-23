@@ -14,10 +14,11 @@ import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
 import { Roles } from 'src/core/guards/authorization/roles';
 import { JwtAuthGuard } from 'src/core/guards/jwt/jwt.guards';
 import { responseHelper } from 'src/core/helper/response.helper';
-import { GetALLBusinessProductStatsquery } from 'src/modules/stats/query/query.dto';
 import { StatsService } from 'src/modules/stats/stats.service';
 import { GetByDateRangeQuery } from 'src/modules/stats/query/get-date-range.query';
 import { UserType } from 'src/modules/users/users.type';
+import { GetAllBusinessStatsquery } from 'src/modules/stats/query/get-business-stats.query';
+import { GetAllProductStatsQuery } from 'src/modules/stats/query/get-product-stats.query';
 
 @Controller()
 export class StatsController {
@@ -36,7 +37,7 @@ export class StatsController {
   async getBusinessStats(
     @Req() req,
     @Res() response: Response,
-    @Query() query: GetALLBusinessProductStatsquery,
+    @Query() query: GetAllBusinessStatsquery,
   ) {
     const businessStats = await this.statsService.getBusinessStats(
       req.user,
@@ -65,7 +66,7 @@ export class StatsController {
   async getProductStats(
     @Req() req,
     @Res() response: Response,
-    @Query() query: GetALLBusinessProductStatsquery,
+    @Query() query: GetAllProductStatsQuery,
   ) {
     const productStats = await this.statsService.getProductStats(
       req.user,

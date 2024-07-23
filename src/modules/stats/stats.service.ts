@@ -12,9 +12,10 @@ import { Business } from '../business/schema/business.schema';
 import { Campaign } from 'src/modules/campaign/schema/campaign.schema';
 import { Product } from '../products/schema/products.schema';
 import { UserType } from '../users/users.type';
-import { GetALLBusinessProductStatsquery } from './query/query.dto';
 import { Order } from 'src/modules/orders/schema/orders.schema';
+import { GetAllBusinessStatsquery } from 'src/modules/stats/query/get-business-stats.query';
 import { GetByDateRangeQuery } from 'src/modules/stats/query/get-date-range.query';
+import { GetAllProductStatsQuery } from 'src/modules/stats/query/get-product-stats.query';
 import { Voucher } from 'src/modules/vouchers/schema/voucher.schema';
 import { calculateTotalAmount } from 'src/common/calculate-amounts';
 import { calculateAverage } from 'src/common/calculate-average';
@@ -39,7 +40,7 @@ export class StatsService {
 
   async getBusinessStats(
     loginUser: LoggedInUserInterface,
-    query: GetALLBusinessProductStatsquery,
+    query: GetAllBusinessStatsquery,
   ) {
     const {
       startDate, endDate, categoriesId, dmoId, authorityId, ...queries
@@ -230,7 +231,7 @@ export class StatsService {
 
   async getProductStats(
     loginUser: LoggedInUserInterface,
-    query: GetALLBusinessProductStatsquery,
+    query: GetAllProductStatsQuery,
   ) {
     const startDate = new Date(query.startDate);
     const endDate = new Date(query.endDate);
@@ -242,6 +243,12 @@ export class StatsService {
       throw new BadRequestException(`Created ${ServerErrors.DATE_IS_NOT_LESS}`);
     }
 
+    if (query.status) {
+      findQuery = {
+        ...findQuery,
+        status: query.status,
+      };
+    }
     if (query.dmoId) {
       findQuery = {
         ...findQuery,
