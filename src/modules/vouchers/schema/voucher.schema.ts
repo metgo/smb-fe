@@ -75,6 +75,11 @@ export class Voucher extends AuditableSchema {
 
   @Prop({ default: null, type: Date })
     assignedAt: Date;
+
+  @Prop({
+    type: Number,
+  })
+    reminderCount: number;
 }
 
 export type VoucherDocument = HydratedDocument<Voucher>;

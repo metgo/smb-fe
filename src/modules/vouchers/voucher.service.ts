@@ -1353,16 +1353,26 @@ export class VoucherService {
           const createdDate = new Date(voucher.createdAt);
 
           if (currentDate.getDate() === createdDate.getDate()) {
-            await this.mailchimpService.sendTransactionalEmail({
-              to: voucher?.waitingUserEmail,
-              templatedId: HebrewTemplate.REEDEMABLE_VOUCHER_REMINDER,
-              mergeVars: {
-                BUYERNAME: voucher?.name,
-                VOUCHERCODE: voucher?.code,
-                VOUCHERAMOUNT: voucher?.remainingAmount,
-                VOUCHERACTUALAMOUNT: voucher?.amount,
-              },
-            });
+            const emailSent
+              = await this.mailchimpService.sendTransactionalEmail({
+                to: voucher?.waitingUserEmail,
+                templatedId: HebrewTemplate.REEDEMABLE_VOUCHER_REMINDER,
+                mergeVars: {
+                  BUYERNAME: voucher?.name,
+                  VOUCHERCODE: voucher?.code,
+                  VOUCHERAMOUNT: voucher?.remainingAmount,
+                  VOUCHERACTUALAMOUNT: voucher?.amount,
+                },
+              });
+
+            if (emailSent[0].status === 'sent') {
+              await this.VoucherModel.findOneAndUpdate(
+                { _id: voucher.id },
+                { $inc: { reminderCount: 1 } },
+                { new: true },
+              );
+            }
+
             noOfEmailSent += 1;
           }
         }),
