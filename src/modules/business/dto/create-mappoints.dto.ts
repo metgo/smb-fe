@@ -4,11 +4,13 @@ import {
   ArrayMaxSize,
   IsArray,
   IsBoolean,
+  IsEnum,
   IsObject,
   IsOptional,
   IsString,
 } from 'class-validator';
 import transformEmail from 'src/core/helper/transformEmail';
+import { BusinessStatus } from '../business.type';
 
 class Address {
   @ApiProperty({ type: String })
@@ -41,15 +43,22 @@ class ContactDetails {
     address: string;
 }
 
-class images {
-  @ApiProperty({ type: String, description: 'path of image' })
-    image: string;
+class OpeningHours {
+  @ApiProperty({ type: String, description: 'Days of operation' })
+    days: string;
 
-  @ApiProperty({ type: String, description: 'caption of image' })
-    caption: String;
+  @ApiProperty({ type: Date, description: 'Opening time' })
+    open: Date;
 
-  @ApiProperty({ type: String, description: 'Image alternative text' })
-    alt: String;
+  @ApiProperty({ type: Date, description: 'Closing time' })
+    close: Date;
+
+  @ApiProperty({
+    type: Boolean,
+    description: 'Is it a holiday?',
+    default: false,
+  })
+    isHoliday: boolean;
 }
 
 class socialMedia {
@@ -102,7 +111,7 @@ export class CreateMapPointsDto {
   @IsString()
   @IsOptional()
   @Transform(transformEmail)
-    email: string;
+    busiEmail: string;
 
   @ApiProperty({
     required: true,
@@ -148,14 +157,6 @@ export class CreateMapPointsDto {
 
   @ApiProperty({
     required: false,
-    type: [images],
-  })
-  @IsOptional()
-  @IsArray()
-    images: images[];
-
-  @ApiProperty({
-    required: false,
     type: [socialMedia],
   })
   @IsOptional()
@@ -197,4 +198,21 @@ export class CreateMapPointsDto {
   @IsArray()
   @ArrayMaxSize(5, { message: 'Tags should not be more than 5' })
     tags: string[];
+
+  @ApiProperty({
+    type: 'enum',
+    enum: BusinessStatus,
+    required: true,
+  })
+  @IsOptional()
+  @IsEnum(BusinessStatus)
+    status: BusinessStatus;
+
+  @ApiProperty({
+    required: false,
+    type: [OpeningHours],
+  })
+  @IsOptional()
+  @IsArray()
+    openingHrs: OpeningHours[];
 }

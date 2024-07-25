@@ -60,11 +60,13 @@ export class ProductsController {
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.CREATED)
   @Post('/businesses/:businessId/products')
+  @UseInterceptors(AnyFilesInterceptor({ fileFilter: fileFilterByExtensions }))
   async createProduct(
     @Param('businessId') businessId: string,
     @Req() req,
     @Res() response: Response,
     @Body() body: ProductDto,
+    @UploadedFiles() file: Array<Express.Multer.File>,
   ) {
     /**
      * status: BusinessStatus.APPROVED
@@ -87,10 +89,11 @@ export class ProductsController {
     }
 
     const product = await this.productsService.create(
-      req.user.id,
+      req.user,
       businessId,
       business,
       body,
+      file,
     );
     return responseHelper(
       response,

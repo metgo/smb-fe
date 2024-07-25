@@ -59,14 +59,20 @@ export class BusinessController {
     operation: 'Create a business by any logged in user',
   })
   @Post('business')
+  @UseInterceptors(AnyFilesInterceptor({ fileFilter: fileFilterByExtensions }))
   async createBusiness(
     @Req() request,
     @Res() response: Response,
     @Body() dto: createBusinessDto,
+    @UploadedFiles() image: Array<Express.Multer.File>,
   ) {
-    const user = request.user.id;
+    const { user } = request;
 
-    const business = await this.businessServices.createBusiness(dto, user);
+    const business = await this.businessServices.createBusiness(
+      dto,
+      user,
+      image,
+    );
     return responseHelper(
       response,
       HttpStatus.CREATED,

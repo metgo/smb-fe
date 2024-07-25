@@ -144,7 +144,8 @@ export class BusinessService {
 
   async createBusiness(
     dto: createBusinessDto,
-    userId: string,
+    user: LoggedInUserInterface,
+    images: Array<Express.Multer.File>,
   ): Promise<Business> {
     const impact = getRandomNumberBetween(17, 93);
     let newDto: any = {
@@ -180,14 +181,14 @@ export class BusinessService {
       const slug = this.generateSlug(dto?.name);
       const newBusiness = new this.BusinessModel({
         ...newDto,
-        userId,
-        createdBy: userId,
+        userId: user.id,
+        createdBy: user.id,
         slug,
       });
-      await newBusiness.save();
+      const business = await newBusiness.save();
 
       await this.UserModel.findOneAndUpdate(
-        { _id: userId },
+        { _id: user.id },
         { hasBusiness: true },
       );
 
@@ -196,26 +197,46 @@ export class BusinessService {
         businessId: newBusiness._id,
       });
 
+      // add to Media Table
+      if (images?.length) {
+        const body = {
+          refId: business._id.toString(),
+          reference: ReferenceType.BUSINESS,
+          businessId: null,
+        };
+        await this.mediaServices.create(user, images, body);
+      }
+
       return newBusiness;
     } catch (error) {
       if (this.isDuplicateKeyError(error, 'slug')) {
         const slug = this.generateSlug(`${dto?.name}${nanoid(2)}`);
         const newBusiness = new this.BusinessModel({
           ...newDto,
-          userId,
-          createdBy: userId,
+          userId: user.id,
+          createdBy: user.id,
           slug,
         });
-        await newBusiness.save();
+        const business = await newBusiness.save();
 
         await this.UserModel.findOneAndUpdate(
-          { _id: userId },
+          { _id: user.id },
           { hasBusiness: true },
         );
         // create impression
         await this.mockDataService.createImpressionEngagementInterface({
           businessId: newBusiness._id,
         });
+
+        // add to Media Table
+        if (images?.length) {
+          const body = {
+            refId: business._id.toString(),
+            reference: ReferenceType.BUSINESS,
+            businessId: null,
+          };
+          await this.mediaServices.create(user, images, body);
+        }
 
         return newBusiness;
       }
@@ -921,7 +942,7 @@ export class BusinessService {
     };
 
     const populate1 = {
-      path: 'dmoId authorityId userId',
+      path: 'dmoId authorityId userId productsId',
       select: `${disSelect} -userId -collaboratorsUser`,
     };
 

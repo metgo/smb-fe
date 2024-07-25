@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
@@ -27,6 +28,8 @@ import { Business } from 'src/modules/business/schema/business.schema';
 import { GetUsersBusinessesQuery } from 'src/modules/business/queries';
 import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.schema';
 import { BussSubCategory } from 'src/modules/buss-subcategories/schema/buss-subCategory.schema';
+import { ReferenceType } from 'src/modules/media/media.type';
+import { MediaServices } from 'src/modules/media/media.service';
 import { UserType } from 'src/modules/users/users.type';
 
 @Injectable()
@@ -39,18 +42,20 @@ export class MapPointsService {
     private BussCategoryModel: Model<BussCategory>,
     @InjectModel(BussSubCategory.name)
     private BussSubCategoryModel: Model<BussSubCategory>,
+    private readonly mediaServices: MediaServices,
   ) {}
 
   async createMapPoints(
     dto: CreateMapPointsDto,
-    userId: string,
+    user: LoggedInUserInterface,
+    images: Array<Express.Multer.File>,
   ): Promise<Business> {
     const impact = getRandomNumberBetween(17, 93);
     let newDto: any = {
       ...dto,
       serviceType: GeoServicesTypes.POINT_OF_INTEREST,
-      userId,
-      createdBy: userId,
+      userId: user.id,
+      createdBy: user.id,
       impact,
     };
 
@@ -83,9 +88,19 @@ export class MapPointsService {
         ...newDto,
         slug,
       });
-      await newMapPoints.save();
+      const poi = await newMapPoints.save();
 
-      return newMapPoints;
+      if (images?.length) {
+        const body = {
+          refId: poi._id.toString(),
+          reference: ReferenceType.POI,
+          businessId: null,
+        };
+
+        await this.mediaServices.create(user, images, body);
+      }
+
+      return poi;
     } catch (error) {
       if (this.isDuplicateKeyError(error, 'slug')) {
         const slug = this.generateSlug(dto?.name);
@@ -93,9 +108,18 @@ export class MapPointsService {
           ...newDto,
           slug,
         });
-        await newMapPoints.save();
+        const poi = await newMapPoints.save();
 
-        return newMapPoints;
+        if (images?.length) {
+          const body = {
+            refId: poi._id.toString(),
+            reference: ReferenceType.BUSINESS,
+            businessId: null,
+          };
+
+          await this.mediaServices.create(user, images, body);
+        }
+        return poi;
       }
       exceptionHandling(error);
     }

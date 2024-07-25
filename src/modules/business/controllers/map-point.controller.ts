@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import {
   Body,
   Controller,
@@ -7,7 +8,9 @@ import {
   Post,
   Req,
   Res,
+  UploadedFiles,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { Response } from 'express';
 
@@ -23,12 +26,15 @@ import {
 } from 'src/modules/business/dto';
 import { MapPointsService } from 'src/modules/business/services/map-point.service';
 import { UserType } from 'src/modules/users/users.type';
+import { AnyFilesInterceptor } from '@nestjs/platform-express';
+import { fileFilterByExtensions } from 'src/services/gcp-bucket/middleware/file-filter';
 
 @Controller()
 export class MapPointsController {
   constructor(private readonly mapPointsService: MapPointsService) {}
 
   @UseGuards(JwtAuthGuard)
+  @UseInterceptors(AnyFilesInterceptor({ fileFilter: fileFilterByExtensions }))
   @ApiEndpoint({
     tags: ['Point of Interests'],
     response: {
@@ -43,10 +49,12 @@ export class MapPointsController {
     @Req() request,
     @Res() response: Response,
     @Body() dto: CreateMapPointsDto,
+    @UploadedFiles() image: Array<Express.Multer.File>,
   ) {
     const mapPoints = await this.mapPointsService.createMapPoints(
       dto,
-      request.user.id,
+      request.user,
+      image,
     );
 
     return responseHelper(

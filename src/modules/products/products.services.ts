@@ -70,26 +70,33 @@ export class ProductsService {
   }
 
   async create(
-    userId: string,
+    user: LoggedInUserInterface,
     businessId: string,
     business: Business,
     body: ProductDto,
+    images: Array<Express.Multer.File>,
   ): Promise<Product> {
-    const sellingPrice = sellingPriceForAmountOrPercent(
-      body.price.markedPrice,
-      body.price.discountAmount,
-      body.price.discountPercent,
-    );
+    let price;
+    let quantity;
+    if (body?.price?.markedPrice) {
+      const sellingPrice = sellingPriceForAmountOrPercent(
+        body.price.markedPrice,
+        body.price.discountAmount,
+        body.price.discountPercent,
+      );
 
-    const price = {
-      ...body.price,
-      sellingPrice,
-    };
+      price = {
+        ...body.price,
+        sellingPrice,
+      };
+    }
 
-    const quantity = {
-      ...body.quantity,
-      remaining: body.quantity.initial,
-    };
+    if (body.quantity) {
+      quantity = {
+        ...body.quantity,
+        remaining: body?.quantity?.initial || 0,
+      };
+    }
 
     const status
       = business.status !== BusinessStatus.APPROVED
@@ -103,7 +110,7 @@ export class ProductsService {
       price,
       quantity,
       businessId,
-      createdBy: userId,
+      createdBy: user.id,
       primaryUserId: business.userId,
       dmoId: business.dmoId,
       authorityId: business.authorityId,
@@ -123,6 +130,15 @@ export class ProductsService {
     await this.mockDataService.createImpressionEngagementInterface({
       productId: product._id,
     });
+
+    if (images?.length) {
+      const uploadImageDto = {
+        refId: newProduct._id.toString(),
+        reference: ReferenceType.PRODUCT,
+        businessId,
+      };
+      await this.mediaServices.create(user, images, uploadImageDto);
+    }
     return product;
   }
 
@@ -336,7 +352,11 @@ export class ProductsService {
       findQuery = { ...findQuery, collaboratorId: queries.loggedInUser.id };
     }
 
-    let populate: {};
+    let populate = {
+      path: 'businessId',
+      select: `${disSelect}`,
+    };
+
     if (
       queries.isAdmin
       && (queries.loggedInUser.role === UserType.DMOADMIN

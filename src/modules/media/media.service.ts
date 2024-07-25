@@ -42,7 +42,10 @@ export class MediaServices {
         // store in gcp
         const imageUrl = await this.gcpBucketServices.upload(file);
 
-        if (body.reference === ReferenceType.BUSINESS) {
+        if (
+          body.reference === ReferenceType.BUSINESS
+          || body.reference === ReferenceType.POI
+        ) {
           // store in media database
           const newMedia = new this.MediaModel({
             reference: {
@@ -66,7 +69,10 @@ export class MediaServices {
     );
 
     // update to business model
-    if (body.reference === ReferenceType.BUSINESS) {
+    if (
+      body.reference === ReferenceType.BUSINESS
+      || body.reference === ReferenceType.POI
+    ) {
       const updateBusiness = await this.businessService.uploadMedia(
         body.refId,
         loggedInUser.id,
@@ -107,7 +113,10 @@ export class MediaServices {
   ): Promise<Business | Product> {
     let deletedImage;
     // delete from business module
-    if (body.reference === ReferenceType.BUSINESS) {
+    if (
+      body.reference === ReferenceType.BUSINESS
+      || body.reference === ReferenceType.POI
+    ) {
       deletedImage = await this.businessService.deleteImage(
         loggedInUser,
         body.refId,
