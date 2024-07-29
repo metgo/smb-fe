@@ -42,6 +42,12 @@ export class Payment extends AuditableSchema {
     paymentRequestId: string;
 
   @Prop({
+    type: String,
+    required: false,
+  })
+    invoiceURL: string;
+
+  @Prop({
     type: [{ type: mongoose.Schema.Types.ObjectId, ref: Voucher.name }],
     default: null,
   })

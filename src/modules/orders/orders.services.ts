@@ -149,6 +149,25 @@ export class OrdersService {
           }),
         );
 
+        // send invoice
+        await this.paymentService.sendInvoice({
+          customerName: order?.firstName,
+          customerEmail: order?.email,
+          invoiceType: 101,
+          product: [
+            {
+              id: getProductInformation[0]?._id.toString(),
+              price: order?.totalAmount,
+              name: getProductInformation[0]?.name,
+            },
+          ],
+          transactionId: parseInt(order._id.toString(), 10),
+          purpose: PaymentPurpose.ORDER,
+          sumPaid: order?.totalAmount,
+          languagePreference: body?.languagePreference,
+          additionalInformation: 'Paid via Voucher',
+        });
+
         return;
       }
 

@@ -55,6 +55,8 @@ export class ConfigService {
       'PAYMENT_SUCCESS',
       'PAYMENT_FAILURE',
       'PAYMENT_INDICATOR',
+      'CARDCOM_INVOICE_URL',
+      'CARDCOM_INVOICE_API_PWD',
       'IDENTIFIER_ID',
       'MAILCHIMP_MARKETING_API_KEY',
       'MAILCHIMP_TRANSACTIONAL_API_KEY',
@@ -111,6 +113,8 @@ export class ConfigService {
       PAYMENT_SUCCESS: Joi.string().required(),
       PAYMENT_FAILURE: Joi.string().required(),
       PAYMENT_INDICATOR: Joi.string().required(),
+      CARDCOM_INVOICE_URL: Joi.string().optional(),
+      CARDCOM_INVOICE_API_PWD: Joi.string().optional(),
       IDENTIFIER_ID: Joi.string().required(),
       MAILCHIMP_MARKETING_API_KEY: Joi.string().required(),
       MAILCHIMP_TRANSACTIONAL_API_KEY: Joi.string().required(),
@@ -179,6 +183,8 @@ export class ConfigService {
       SUCCESS: this.get('PAYMENT_SUCCESS'),
       FAILURE: this.get('PAYMENT_FAILURE'),
       INDICATOR: this.get('PAYMENT_INDICATOR'),
+      INVOICE_URL: this.get('CARDCOM_INVOICE_URL'),
+      API_PASSWORD: this.get('CARDCOM_INVOICE_API_PWD'),
     };
   }
 

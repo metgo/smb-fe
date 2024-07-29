@@ -798,6 +798,8 @@ export class VoucherService {
           VOUCHERAMOUNT: voucherDetails[0]?.amount,
         },
       });
+
+      return voucherDetails;
     } catch (err) {
       exceptionHandling(err);
     }

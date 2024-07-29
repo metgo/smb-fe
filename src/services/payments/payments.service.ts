@@ -10,7 +10,7 @@ import {
 } from 'src/common/mailchimp/templateId';
 import { ConfigService } from '../config/config.service';
 import { Payment } from './schema/payments.schema';
-import { update } from 'src/core/helper/query-helper';
+import { update, updateById } from 'src/core/helper/query-helper';
 import { BusinessService } from 'src/modules/business/services/business.service';
 import { OrdersService } from 'src/modules/orders/orders.services';
 import { ProductsService } from 'src/modules/products/products.services';
@@ -18,6 +18,7 @@ import { VoucherService } from 'src/modules/vouchers/voucher.service';
 import { MailChimpService } from 'src/services/mailchimp/mailchimp.service';
 import {
   GenerateLinkCommand,
+  InvoiceCommand,
   PaymentPurpose,
 } from 'src/services/payments/payments.type';
 
@@ -133,13 +134,32 @@ export class PaymentsService {
     });
 
     if (payments.purpose === PaymentPurpose.VOUCHER) {
-      await this.voucherService.updateAfterPaymentSuccess({
-        ids: payments.voucherId,
-        updateField: { paymentStatus: VoucherPaymentStatus.PAID },
-        voucherOwnerEmail: payments?.customerEmail,
-        voucherOwnerName: payments?.customerName,
+      const voucherDetails
+        = await this.voucherService.updateAfterPaymentSuccess({
+          ids: payments.voucherId,
+          updateField: { paymentStatus: VoucherPaymentStatus.PAID },
+          voucherOwnerEmail: payments?.customerEmail,
+          voucherOwnerName: payments?.customerName,
+          languagePreference: query?.languagePreference,
+        });
+
+      const invoiceDetail = await this.sendInvoice({
+        customerName: payments?.customerName,
+        customerEmail: payments?.customerEmail,
+        invoiceType: 3,
+        voucherDetails,
+        transactionId: pageRequestUid,
+        purpose: PaymentPurpose.VOUCHER,
+        sumPaid: payments?.amount,
         languagePreference: query?.languagePreference,
+        additionalInformation: '',
       });
+
+      if (invoiceDetail?.InvoiceLink) {
+        await updateById<Payment>(this.PaymentModel, payments._id, {
+          invoiceURL: invoiceDetail.InvoiceLink,
+        });
+      }
     }
 
     if (payments.purpose === PaymentPurpose.ORDER) {
@@ -174,6 +194,76 @@ export class PaymentsService {
           BUSINESSADDRESS: businessDetails[0]?.address?.location || '',
         },
       });
+
+      if (updateOrder?.totalAmount === updateOrder?.creditCardPayment) {
+        const invoiceDetail = await this.sendInvoice({
+          customerName: payments?.customerName,
+          customerEmail: payments?.customerEmail,
+          invoiceType: 101,
+          product: [
+            {
+              id: getProductInformation[0]?._id.toString(),
+              price: payments?.amount,
+              name: getProductInformation[0]?.name,
+            },
+          ],
+          transactionId: pageRequestUid,
+          purpose: PaymentPurpose.ORDER,
+          sumPaid: payments?.amount,
+          languagePreference: query?.languagePreference,
+          additionalInformation: 'Paid via Credit Card',
+        });
+
+        if (invoiceDetail?.InvoiceLink) {
+          await updateById<Payment>(this.PaymentModel, payments._id, {
+            invoiceURL: invoiceDetail.InvoiceLink,
+          });
+        }
+      }
+
+      if (updateOrder?.totalAmount !== updateOrder?.creditCardPayment) {
+        const product = [
+          {
+            id: getProductInformation[0]?._id.toString(),
+            price: updateOrder?.creditCardPayment,
+            name: getProductInformation[0]?.name,
+          },
+        ];
+
+        if (updateOrder?.voucher?.length) {
+          await Promise.all(
+            updateOrder.voucher.map(async voucher => {
+              const voucherDetails = await this.voucherService.getOneById(
+                voucher.id,
+              );
+              product.push({
+                id: voucherDetails.code,
+                price: voucher.redeemedAmount,
+                name: 'Amount Paid by voucher',
+              });
+            }),
+          );
+        }
+
+        const invoiceDetail = await this.sendInvoice({
+          customerName: payments?.customerName,
+          customerEmail: payments?.customerEmail,
+          invoiceType: 101,
+          product,
+          transactionId: pageRequestUid,
+          purpose: PaymentPurpose.ORDER,
+          sumPaid: updateOrder?.totalAmount,
+          languagePreference: query?.languagePreference,
+          additionalInformation: 'Paid via Voucher and Credit Card',
+        });
+
+        if (invoiceDetail?.InvoiceLink) {
+          await updateById<Payment>(this.PaymentModel, payments._id, {
+            invoiceURL: invoiceDetail.InvoiceLink,
+          });
+        }
+      }
+
       // SEND TO BUSINESS OWNER
 
       await Promise.all(
@@ -229,5 +319,66 @@ export class PaymentsService {
     if (payments.purpose === PaymentPurpose.ORDER) {
       await this.ordersService.updateAfterPaymentFailure(payments.orderId);
     }
+  }
+
+  async sendInvoice(command: InvoiceCommand) {
+    const { API_NAME, API_PASSWORD, INVOICE_URL } = this.configService.cardCom;
+
+    const invoiceLines = [];
+    if (command.purpose === PaymentPurpose.VOUCHER) {
+      command.voucherDetails.forEach(voucher => {
+        invoiceLines.push({
+          Description: voucher?.code,
+          Quantity: 1,
+          IsPriceIncludeVAT: true,
+          IsVatFree: 'test vat',
+          Price: voucher.amount,
+          ProductID: voucher._id,
+        });
+      });
+    }
+    if (command.purpose === PaymentPurpose.ORDER) {
+      command.product.forEach(product => {
+        invoiceLines.push({
+          Description: product?.name,
+          Quantity: 1,
+          IsPriceIncludeVAT: true,
+          IsVatFree: 'test vat',
+          Price: product.price,
+          ProductID: product.id,
+        });
+      });
+    }
+    const body = {
+      ApiName: API_NAME,
+      ApiPassword: API_PASSWORD,
+      InvoiceType: command.invoiceType,
+      InvoiceHead: {
+        CustName: command.customerName,
+        Language: command?.languagePreference === Locale.HEBREW ? 'he' : 'en',
+        CoinID: 0,
+        Email: command.customerEmail,
+        SendByEmail: true,
+        ExtIsVatFree: true,
+        DepartmentIdShort: 0,
+        Comments: command.additionalInformation,
+      },
+      InvoiceLines: invoiceLines,
+      CustomLines: [
+        {
+          TransactionID: command.transactionId,
+          TranDate: new Date(),
+          Sum: command.sumPaid,
+        },
+      ],
+    };
+
+    const response = await axios.post(INVOICE_URL, body, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    return response.data;
   }
 }

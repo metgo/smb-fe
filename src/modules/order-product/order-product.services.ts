@@ -431,15 +431,9 @@ export class OrderProductService {
     ];
 
     if (loggedInUser.role === UserType.TRAVELLER && loggedInUser.hasBusiness) {
-      const businesses = await this.businessService.getMyBusiness(
-        loggedInUser.id,
-      );
-
-      const businessIds = businesses.map(buss => buss._id);
-
       pipeline.push({
         $match: {
-          'business_info._id': { $in: businessIds },
+          'business_info.userId': new mongoose.Types.ObjectId(loggedInUser.id),
         },
       });
     }
