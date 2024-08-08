@@ -57,6 +57,7 @@ export class JwtAuthGuard implements CanActivate {
       || user.role === UserType.AUTHORITY_ADMIN
     ) {
       authority = await this.authorityService.findAuthorityByUserID(user.id);
+      dmo = authority.dmoId;
     }
 
     request.user = {

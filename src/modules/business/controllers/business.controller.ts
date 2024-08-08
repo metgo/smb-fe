@@ -180,6 +180,7 @@ export class BusinessController {
 
   @Roles(
     UserType.AUTHORITY,
+    UserType.AUTHORITY_ADMIN,
     UserType.DMO,
     UserType.DMOADMIN,
     UserType.SUPERADMIN,
@@ -338,6 +339,7 @@ export class BusinessController {
 
   @Roles(
     UserType.AUTHORITY,
+    UserType.AUTHORITY_ADMIN,
     UserType.DMO,
     UserType.DMOADMIN,
     UserType.SUPERADMIN,
@@ -443,6 +445,7 @@ export class BusinessController {
 
   @Roles(
     UserType.AUTHORITY,
+    UserType.AUTHORITY_ADMIN,
     UserType.DMO,
     UserType.DMOADMIN,
     UserType.SUPERADMIN,
@@ -493,6 +496,7 @@ export class BusinessController {
   })
   @Roles(
     UserType.AUTHORITY,
+    UserType.AUTHORITY_ADMIN,
     UserType.DMO,
     UserType.DMOADMIN,
     UserType.SUPERADMIN,
@@ -595,6 +599,7 @@ export class BusinessController {
   })
   @Roles(
     UserType.AUTHORITY,
+    UserType.AUTHORITY_ADMIN,
     UserType.DMO,
     UserType.DMOADMIN,
     UserType.SUPERADMIN,

@@ -985,7 +985,7 @@ export class BusinessService {
       if (loggedInUser) {
         if (
           loggedInUser.role === UserType.SUPERADMIN
-          || business.userId.equals(new mongoose.Types.ObjectId(loggedInUser.id))
+          || business?.userId?.equals(new mongoose.Types.ObjectId(loggedInUser.id))
         ) {
           return business;
         }
@@ -1231,9 +1231,10 @@ export class BusinessService {
       }
 
       if (
-        loggedInUser.role === UserType.AUTHORITY
+        (loggedInUser.role === UserType.AUTHORITY
+          || loggedInUser.role === UserType.AUTHORITY_ADMIN)
         && body?.authorityId
-        && body.authorityId !== loggedInUser?.authority.id
+        && body.authorityId !== loggedInUser?.authority.id.toString()
       ) {
         throw new BadRequestException('Wrong Authority Id');
       }

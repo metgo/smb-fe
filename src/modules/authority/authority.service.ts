@@ -171,9 +171,16 @@ export class AuthorityService {
         { adminIds: { $in: [userId] } },
       ],
     };
+
+    const populate = {
+      path: 'dmoId',
+      select: `${disSelect} -userId -collaboratorsUser`,
+    };
+
     const authority = await findOneByOrCase<Authority>(
       this.AuthorityModel,
       findQuery,
+      populate,
     );
     if (!authority) {
       throw new NotFoundException(ServerErrors.AUTHORITY.NOT_FOUND);

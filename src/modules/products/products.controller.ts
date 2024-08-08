@@ -305,6 +305,7 @@ export class ProductsController {
 
   @Roles(
     UserType.AUTHORITY,
+    UserType.AUTHORITY_ADMIN,
     UserType.DMO,
     UserType.DMOADMIN,
     UserType.SUPERADMIN,

@@ -69,6 +69,7 @@ export class AuthService {
       || user.role === UserType.AUTHORITY_ADMIN
     ) {
       authority = await this.authorityService.findAuthorityByUserID(user.id);
+      dmo = authority.dmoId;
     }
     await this.usersService.updateLastLogin(user.id, {
       lastLogin: new Date(),
