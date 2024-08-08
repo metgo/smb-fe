@@ -257,15 +257,26 @@ export class VoucherService {
         to: body?.email,
         templatedId:
           body?.languagePreference === Locale.HEBREW
-            ? HebrewTemplate.VOUCHER_FOR_CAMPAIGN
-            : EnglishTemplate.VOUCHER_FOR_CAMPAIGN,
+            ? DynamicHebrewTemplate.VOUCHER_FOR_CAMPAIGN
+            : DynamicHebrewTemplate.VOUCHER_FOR_CAMPAIGN,
         mergeVars: {
           FNAME: body?.name,
+          CAMPAIGN: campaignReward?.name,
+          SLOGAN: campaignReward?.slogan,
           VOUCHERCODE,
           VOUCHERAMOUNT: campaignReward?.rewardId?.amount,
-          CAMPAIGN_NAME: campaignReward?.name,
-          CAMPAIGN_LINK: campaignReward?.link,
-          CAMPAIGN_SLOGAN: campaignReward?.slogan,
+          WEBSITE: campaignReward?.link,
+          LOGO1:
+            campaignReward?.dmoIds[0]?.logoPath
+            || emailDefaultTemplate.SIDE_LOGO,
+          LOGO2: emailDefaultTemplate.MAIN_LOGO,
+          LOGO3: campaignReward?.logoPath || emailDefaultTemplate.SIDE_LOGO,
+          PRIMARY_BG_COLOR: emailDefaultTemplate.PRIMARY_BG_COLOR,
+          PRIMARY_TEXT_COLOR: emailDefaultTemplate.PRIMARY_TEXT_COLOR,
+          IMAGE1: emailDefaultTemplate.IMAGE1,
+          IMAGE2:
+            campaignReward?.dmoIds[0]?.imagePath || emailDefaultTemplate.IMAGE2,
+          IMAGE3: campaignReward?.imagePath || emailDefaultTemplate.IMAGE3,
         },
       });
 
