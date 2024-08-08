@@ -1,10 +1,12 @@
 /* eslint-disable no-undef */
 import {
   BadRequestException,
+  ConflictException,
   ForbiddenException,
   GoneException,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
@@ -41,7 +43,10 @@ import {
   queryhandler,
   updateById,
 } from 'src/core/helper/query-helper';
-import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interface';
+import {
+  LoggedInUserInterface,
+  LoginInterface,
+} from 'src/modules/auth/interface/login.interface';
 import { Business } from 'src/modules/business/schema/business.schema';
 import { BusinessStatus } from 'src/modules/business/business.type';
 import { BussSubCategory } from 'src/modules/buss-subcategories/schema/buss-subCategory.schema';
@@ -78,6 +83,11 @@ import { GcpBucketService } from 'src/services/gcp-bucket/gcp-bucket.services';
 import { MailChimpService } from 'src/services/mailchimp/mailchimp.service';
 import { PaymentPurpose } from 'src/services/payments/payments.type';
 import { PaymentsService } from 'src/services/payments/payments.service';
+import { SignInRequest } from 'src/modules/auth/requests/signin.request';
+import { HashService } from 'src/services/hash/hash.service';
+import { JwtAuthService } from 'src/modules/jwt-auth/services/jwt-auth.service';
+import { User } from 'src/modules/users/schema/users.schema';
+import { UpdateLastLogin } from 'src/modules/users/users.type';
 
 @Injectable()
 export class ExternalApiServices {
@@ -102,10 +112,14 @@ export class ExternalApiServices {
     private RewardModel: Model<Rewards>,
     @InjectModel('Voucher')
     private readonly VoucherModel: Model<Voucher>,
+    @InjectModel(User.name)
+    private UserModel: Model<User>,
     private readonly gcpBucketServices: GcpBucketService,
     private readonly mailchimpService: MailChimpService,
     private userService: UsersService,
     private readonly paymentService: PaymentsService,
+    private readonly hashService: HashService,
+    private jwtAuthService: JwtAuthService,
   ) {}
 
   async create(loggedInUser: string, body: CreateExternalApiDTO) {
@@ -337,6 +351,77 @@ export class ExternalApiServices {
     const user = await this.userService.create(newBody);
 
     return user;
+  }
+
+  async login(body: SignInRequest): Promise<LoginInterface> {
+    const user = await this.validateUserIfNeedToRecover(body.email);
+
+    if (!user) {
+      throw new NotFoundException(ServerErrors.USER.NOT_FOUND);
+    }
+
+    if (!user.externalApiId) {
+      throw new NotFoundException(ServerErrors.EXTERNAL_API.NOT_FOUND);
+    }
+
+    const validExternalApi = await this.getById(user.externalApiId.toString());
+
+    if (!validExternalApi) {
+      throw new NotFoundException(ServerErrors.EXTERNAL_API.NOT_FOUND);
+    }
+
+    const isPasswordValid = await this.hashService.validate(
+      user.password,
+      body.password,
+    );
+
+    if (user.loginAttempts > 4) {
+      throw new UnauthorizedException(ServerErrors.USER.BLOCKED);
+    }
+
+    if (!isPasswordValid) {
+      await this.updateLastLogin(user.id, {
+        loginAttempts: user.loginAttempts + 1,
+      });
+
+      // take action if login attempts is greater than 5
+      throw new ForbiddenException(ServerErrors.USER.INVALID_CREDENTIALS);
+    }
+    const userBody = {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      hasBusiness: user.hasBusiness,
+      externalApiId: user.externalApiId,
+    };
+    const { accessToken, refreshToken } = this.jwtAuthService.login(userBody);
+
+    await this.updateLastLogin(user.id, {
+      lastLogin: new Date(),
+      loginAttempts: 0,
+    });
+
+    return {
+      accessToken,
+      refreshToken,
+      user: {
+        id: user.id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        phoneDetails: {
+          countryCode: user.countryCode || null,
+          phoneNumber: user.phoneNumber,
+        },
+        languagePreference: user.languagePreference,
+        address: user.address,
+        dob: user.dob,
+        email: user.email,
+        isPhoneVerify: user.isPhoneVerify,
+        isEmailVerify: user.isEmailVerify,
+        role: user.role,
+        hasBusiness: user.hasBusiness,
+      },
+    };
   }
 
   async getAllCategories(query: GetAllCategoriesQuery) {
@@ -1524,6 +1609,62 @@ export class ExternalApiServices {
       return product;
     } catch (err) {
       exceptionHandling(err);
+    }
+  }
+
+  private async validateUserIfNeedToRecover(email: string) {
+    try {
+      const user = await this.UserModel.findOne({ email });
+
+      if (user && !user?.isDeleted && user?.deletedAt) {
+        throw new ConflictException(ServerErrors.USER.DELETED_BUT_RECOVERABLE);
+      }
+
+      if (!user) {
+        return null;
+      }
+
+      return user;
+    } catch (err) {
+      exceptionHandling(err);
+    }
+  }
+
+  private async updateLastLogin(
+    userId: string,
+    updateUserDto: UpdateLastLogin,
+  ) {
+    try {
+      const updatedUser = await updateById<User>(
+        this.UserModel,
+        userId,
+        updateUserDto,
+      );
+
+      if (!updatedUser) {
+        throw new NotFoundException(ServerErrors.USER.NOT_FOUND);
+      }
+
+      return {
+        id: updatedUser.id,
+        firstName: updatedUser.firstName,
+        lastName: updatedUser.lastName,
+        phoneDetails: {
+          countryCode: updatedUser.countryCode,
+          phoneNumber: updatedUser.phoneNumber,
+        },
+        languagePreference: updatedUser.languagePreference,
+        address: updatedUser.address,
+        dob: updatedUser.dob,
+        email: updatedUser.email,
+        isPhoneVerify: updatedUser.isPhoneVerify,
+        isEmailVerify: updatedUser.isEmailVerify,
+        role: updatedUser.role,
+        createdAt: updatedUser.createdAt,
+        updatedAt: updatedUser.updatedAt,
+      };
+    } catch (error) {
+      exceptionHandling(error);
     }
   }
 }

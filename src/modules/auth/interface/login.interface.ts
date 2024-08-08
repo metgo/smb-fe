@@ -17,8 +17,8 @@ export interface LoggedInUserInterface {
   isEmailVerify: boolean;
   role: UserType;
   hasBusiness: boolean;
-  dmo: null | { id: string; name: string };
-  authority: null | { id: string; name: string };
+  dmo?: null | { id: string; name: string };
+  authority?: null | { id: string; name: string };
 }
 
 export interface LoginInterface {

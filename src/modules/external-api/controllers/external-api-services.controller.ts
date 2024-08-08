@@ -14,11 +14,12 @@ import {
   Param,
   UseInterceptors,
   UploadedFiles,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
 
-import { ServerSuccess } from 'src/common/constant';
+import { ServerErrors, ServerSuccess } from 'src/common/constant';
 import { calculateProductsTotalAmount } from 'src/common/calculate-products-total-amount';
 import { sortByPriorityAndHighest } from 'src/common/sort-priority-and-highest';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
@@ -26,6 +27,7 @@ import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
 import { Roles } from 'src/core/guards/authorization/roles';
 import { ExternalApiGuard } from 'src/core/guards/authorization/external-api-guards';
 import { JwtAuthGuard } from 'src/core/guards/jwt/jwt.guards';
+import { JwtExternalApiAuthGuard } from 'src/core/guards/jwt/jwt-externalapi.guards';
 import { responseHelper } from 'src/core/helper/response.helper';
 import { AuthService } from 'src/modules/auth/auth.services';
 import { SignInRequest } from 'src/modules/auth/requests/signin.request';
@@ -66,7 +68,7 @@ export class ExternalAPIServiceController {
   })
   @Post('login')
   async login(@Body() body: SignInRequest) {
-    return await this.authService.login(body);
+    return await this.externalApiService.login(body);
   }
 
   @HttpCode(HttpStatus.CREATED)
@@ -483,14 +485,7 @@ export class ExternalAPIServiceController {
     );
   }
 
-  @Roles(
-    UserType.ADMIN,
-    UserType.AUTHORITY,
-    UserType.DMO,
-    UserType.DMOADMIN,
-    UserType.SUPERADMIN,
-  )
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtExternalApiAuthGuard)
   @UseGuards(ExternalApiGuard)
   @ApiEndpoint({
     tags: ['External Api'],
@@ -510,6 +505,10 @@ export class ExternalAPIServiceController {
     @Body() body: RewardVouchersByCampaignDto,
     @Query() query: ExternalApiPostQuery,
   ) {
+    if (req.user.externalApi.identifierId !== query.identifierId) {
+      throw new UnauthorizedException(ServerErrors.FORBIDDEN);
+    }
+
     const vouchers = await this.externalApiService.createVouchersByCampaign(
       req.user,
       body,

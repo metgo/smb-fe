@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
+import { JwtModule } from '@nestjs/jwt';
 
 import { AuthModule } from 'src/modules/auth/auth.module';
 import { AuthorityModule } from 'src/modules/authority/authority.module';
@@ -31,7 +32,12 @@ import { ConfigModule } from 'src/services/config/config.module';
 import { MailChimpModule } from 'src/services/mailchimp/mailchimp.module';
 import { PaymentsModule } from 'src/services/payments/payments.module';
 import { GcpBucketModule } from 'src/services/gcp-bucket/gcp-bucket.module';
+import { JwtAuthModule } from 'src/modules/jwt-auth/jwt-auth.module';
+import { User, UserSchema } from 'src/modules/users/schema/users.schema';
+import { ConfigService } from 'src/services/config/config.service';
+import { HashModule } from 'src/services/hash/hash.module';
 
+const configService = new ConfigService();
 @Module({
   imports: [
     MongooseModule.forFeature([
@@ -44,12 +50,20 @@ import { GcpBucketModule } from 'src/services/gcp-bucket/gcp-bucket.module';
       { name: OrderProduct.name, schema: OrderProductSchema },
       { name: Product.name, schema: Product },
       { name: Rewards.name, schema: RewardsSchema },
+      { name: User.name, schema: UserSchema },
       { name: Voucher.name, schema: Voucher },
     ]),
     AuthModule,
     AuthorityModule,
     DMOModule,
     ConfigModule,
+    HashModule,
+    JwtAuthModule,
+    JwtModule.register({
+      global: true,
+      secret: configService.JWT.ACCESS_TOKEN,
+      signOptions: { expiresIn: configService.JWT.TOKEN_EXPIRES },
+    }),
     MailChimpModule,
     PaymentsModule,
     UsersModule,
