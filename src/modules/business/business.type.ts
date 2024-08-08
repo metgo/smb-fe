@@ -14,7 +14,6 @@ export interface GetBusinessByIdOrSlug {
   loggedInUser: LoggedInUserInterface;
 }
 
-
 // eslint-disable-next-line no-shadow
 export enum GeoServicesTypes {
   BUSINESS = 'business',
