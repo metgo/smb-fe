@@ -20,6 +20,7 @@ import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { disSelect } from 'src/common/utils/select.handling';
 import {
   deleteItem,
+  deleteItems,
   findOneByIDPopulate,
   queryhandler,
   updateManyByIds,
@@ -887,6 +888,24 @@ export class ProductsService {
       };
     } catch (err) {
       exceptionHandling(err);
+    }
+  }
+
+  async deleteProductPostBusinessDelete(
+    loggedInUserId: string,
+    businessId: string,
+  ) {
+    const filterQuery = { businessId };
+    const updatedField = { deletedBy: loggedInUserId };
+
+    const deletedProducts = await deleteItems<Product>(
+      this.ProductModel,
+      filterQuery,
+      updatedField,
+    );
+
+    if (!deletedProducts) {
+      throw new NotFoundException(ServerErrors.PRODUCT.NOT_FOUND);
     }
   }
 }

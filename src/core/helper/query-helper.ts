@@ -203,6 +203,23 @@ export async function deleteItem<T>(
   return data;
 }
 
+export async function deleteItems<T>(
+  model: Model<T>,
+  filterFields: object,
+  updateField: object,
+) {
+  const data = await model.updateMany(
+    filterFields,
+    {
+      ...updateField,
+      isDeleted: true,
+      deletedAt: new Date(),
+    },
+    { new: true },
+  );
+  return data;
+}
+
 export async function queryhandler<T>(
   model: Model<T>,
   queries: QueryHelperInterface,

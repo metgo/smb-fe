@@ -798,11 +798,18 @@ export class UsersService {
       const deletedUser = await updateById<User>(this.UserModel, userId, {
         deletedAt: new Date(),
         deletedBy: loggedInUserId,
+        isDeleted: true,
       });
 
       if (!deletedUser) {
         throw new NotFoundException(ServerErrors.USER.NOT_FOUND);
       }
+
+      // delete business associated to the user
+      await this.businessService.deleteBusinessesPostUserDelete(
+        userId,
+        loggedInUserId,
+      );
 
       return {
         id: deletedUser.id,
@@ -1094,6 +1101,11 @@ export class UsersService {
       if (!recoveredUser) {
         throw new NotFoundException(ServerErrors.USER.NOT_FOUND);
       }
+
+      // recoverBusinesses
+      await this.businessService.recoverBusinessPostUserRecovery(
+        recoveredUser._id.toString(),
+      );
 
       return {
         id: recoveredUser.id,

@@ -1,7 +1,7 @@
 export interface StorageAdapter {
   readonly upload: (
     location: string,
-    content: Buffer | ArrayBuffer
+    content: Buffer | ArrayBuffer,
   ) => Promise<void>;
   readonly getUrl: (location: string) => string;
   readonly delete: (location: string) => Promise<void>;

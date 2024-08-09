@@ -100,9 +100,8 @@ export class ExternalAPIServiceController {
     @Res() response: Response,
     @Query() query: GetAllCategoriesQuery,
   ) {
-    const allBussCategoires = await this.externalApiService.getAllCategories(
-      query,
-    );
+    const allBussCategoires
+      = await this.externalApiService.getAllCategories(query);
     return responseHelper(
       response,
       HttpStatus.OK,
@@ -133,9 +132,8 @@ export class ExternalAPIServiceController {
   ) {
     try {
       const productIds = body.products.map(product => product.id);
-      const productsFromDB = await this.externalApiService.findProductsIds(
-        productIds,
-      );
+      const productsFromDB
+        = await this.externalApiService.findProductsIds(productIds);
 
       let totalAmountToPay: number = await calculateProductsTotalAmount(
         body.products,
@@ -146,9 +144,8 @@ export class ExternalAPIServiceController {
       let redeemedVouchers;
       if (body?.voucher?.length) {
         const voucherIds = body.voucher.map(voucher => voucher.id);
-        const vouchers = await this.externalApiService.findVouchersByValidIds(
-          voucherIds,
-        );
+        const vouchers
+          = await this.externalApiService.findVouchersByValidIds(voucherIds);
 
         if (vouchers?.length) {
           const sortedVoucher = sortByPriorityAndHighest(

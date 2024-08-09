@@ -112,9 +112,8 @@ export class MapPointController {
     @Res() response: Response,
     @Param('id') mapPointId: string,
   ) {
-    const newMapPoint = await this.mapPointService.softDeleteMapPoint(
-      mapPointId,
-    );
+    const newMapPoint
+      = await this.mapPointService.softDeleteMapPoint(mapPointId);
     return responseHelper(
       response,
       HttpStatus.OK,

@@ -164,9 +164,8 @@ export class BusinessController {
     @Res() response: Response,
     @Query() query?: GetAllUnpaginatedBusinessQuery,
   ) {
-    const business = await this.businessServices.getAllUnpaginatedBusiness(
-      query,
-    );
+    const business
+      = await this.businessServices.getAllUnpaginatedBusiness(query);
 
     return responseHelper(
       response,
@@ -263,9 +262,8 @@ export class BusinessController {
     @Res() response: Response,
     @Query() query?: GetAllUnpaginatedBusinessQuery,
   ) {
-    const businesses = await this.businessServices.getAllBusinessesForMap(
-      query,
-    );
+    const businesses
+      = await this.businessServices.getAllBusinessesForMap(query);
 
     return responseHelper(
       response,

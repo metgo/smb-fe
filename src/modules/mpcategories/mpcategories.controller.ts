@@ -62,9 +62,8 @@ export class MPCategoriesController {
     @Res() response: Response,
     @Query() query: FilterQuery,
   ) {
-    const mpCategories = await this.mpCategoriesService.getAllMPCategories(
-      query,
-    );
+    const mpCategories
+      = await this.mpCategoriesService.getAllMPCategories(query);
 
     return responseHelper(
       response,
@@ -117,9 +116,8 @@ export class MPCategoriesController {
   })
   @Delete('admin/mp-categories/:id')
   async deleteMPCategories(@Res() response: Response, @Param('id') id: string) {
-    const mpCategories = await this.mpCategoriesService.softDeleteMPCategories(
-      id,
-    );
+    const mpCategories
+      = await this.mpCategoriesService.softDeleteMPCategories(id);
     return responseHelper(
       response,
       HttpStatus.OK,

@@ -30,6 +30,7 @@ import { generateRandomCode } from 'src/common/utils/randomCode.generator';
 import { disSelect } from 'src/common/utils/select.handling';
 import {
   deleteItem,
+  deleteItems,
   findManyByFilter,
   findOneByFieldName,
   findOneByFieldNameExcludeId,
@@ -122,9 +123,8 @@ export class BusinessService {
 
         await Promise.all(
           b.bussSubCategoriesId.map(async subCategory => {
-            const subCatDetails = await this.BussSubCategoryModel.findById(
-              subCategory,
-            );
+            const subCatDetails
+              = await this.BussSubCategoryModel.findById(subCategory);
             const catId = subCatDetails?.bussCategoryId[0].toString();
             if (catId) {
               bussCategoriesId = bussCategoriesId?.length
@@ -814,7 +814,10 @@ export class BusinessService {
         };
       }
 
-      if (loggedInUser.role === UserType.AUTHORITY) {
+      if (
+        loggedInUser.role === UserType.AUTHORITY
+        || loggedInUser.role === UserType.AUTHORITY_ADMIN
+      ) {
         const authorityId = loggedInUser.authority.id;
 
         findQuery = {
@@ -827,51 +830,6 @@ export class BusinessService {
         findQuery = {
           ...findQuery,
           userId: loggedInUser.id,
-        };
-      }
-    }
-
-    if (search) {
-      const [matchingCategoryIds, matchingSubCategoryIds] = await Promise.all([
-        this.BussCategoryModel.find({
-          name: { $regex: search, $options: 'i' },
-        }).select('_id'),
-        this.BussSubCategoryModel.find({
-          name: { $regex: search, $options: 'i' },
-        }).select('_id'),
-      ]);
-
-      const matchingProductsIds = await this.ProductModel.find({
-        $or: [
-          { name: { $regex: search, $options: 'i' } },
-          { description: { $regex: search, $options: 'i' } },
-          { categories: { $in: matchingCategoryIds } },
-          { subCategories: { $in: matchingSubCategoryIds } },
-        ],
-      }).select('_id');
-
-      findQuery = {
-        ...findQuery,
-        $or: [
-          { name: { $regex: search, $options: 'i' } },
-          { description: { $regex: search, $options: 'i' } },
-          { bussCategoriesId: { $in: matchingCategoryIds } },
-          { bussSubCategoriesId: { $in: matchingSubCategoryIds } },
-          { productsId: { $in: matchingProductsIds } },
-        ],
-      };
-
-      if (
-        !(
-          matchingCategoryIds?.length
-          || matchingSubCategoryIds?.length
-          || matchingProductsIds?.length
-        )
-      ) {
-        findQuery.$text = {
-          $search: search,
-          $caseSensitive: false,
-          $diacriticSensitive: false,
         };
       }
     }
@@ -889,20 +847,6 @@ export class BusinessService {
       findQuery = {
         ...findQuery,
         bussSubCategoriesId: { $in: bussSubCategoriesId },
-      };
-    }
-
-    if (long && lat) {
-      findQuery = {
-        ...findQuery,
-        location: {
-          $geoWithin: {
-            $centerSphere: [
-              [long, lat],
-              maxDistanceInRadius(miles || milesConfig),
-            ],
-          },
-        },
       };
     }
 
@@ -929,8 +873,6 @@ export class BusinessService {
       populate1,
     });
 
-    const defaultImage = await this.getDefaultImage();
-
     const businessResponse = await Promise.all(
       allBusiness.data.map(business => ({
         _id: business._id,
@@ -941,10 +883,8 @@ export class BusinessService {
         dmoId: business?.dmoId,
         geoLocation: business?.geoLocation,
         location: business?.location,
-        images: business?.images?.length ? business?.images : [defaultImage],
         bussCategoriesId: business?.bussCategoriesId,
         bussSubCategoriesId: business?.bussSubCategoriesId,
-        slug: business?.slug,
         serviceType: business?.serviceType,
       })),
     );
@@ -1500,20 +1440,11 @@ export class BusinessService {
         throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
       }
 
-      const usersBusinesses = await findManyByFilter<Business>(
-        this.BusinessModel,
-        {
-          userId: loggedInUserId,
-          isDeleted: false,
-        },
+      await this.updateUserRole(loggedInUserId);
+      await this.productService.deleteProductPostBusinessDelete(
+        loggedInUserId,
+        id,
       );
-
-      if (!usersBusinesses?.length) {
-        await this.UserModel.findOneAndUpdate(
-          { _id: loggedInUserId },
-          { hasBusiness: false },
-        );
-      }
 
       this.logger.info('[BUSINESS]: DELETED', {
         message: business,
@@ -1565,21 +1496,11 @@ export class BusinessService {
         throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
       }
 
-      const usersBusinesses = await findManyByFilter<Business>(
-        this.BusinessModel,
-        {
-          userId: business.userId,
-          isDeleted: false,
-        },
+      await this.updateUserRole(business?.userId?.toString());
+      await this.productService.deleteProductPostBusinessDelete(
+        loggedInUser.id,
+        id,
       );
-
-      if (!usersBusinesses?.length) {
-        await this.UserModel.findOneAndUpdate(
-          { _id: business.userId },
-          { hasBusiness: false },
-        );
-      }
-
       this.logger.info('[BUSINESS]: DELETED BY ADMIN', {
         message: business,
       });
@@ -1673,6 +1594,70 @@ export class BusinessService {
     const businessesId = businesses.map(item => item._id.toString());
 
     return businessesId;
+  }
+
+  async deleteBusinessesPostUserDelete(userId: string, loggedInUserId: string) {
+    const filter: any = {
+      userId,
+      serviceType: GeoServicesTypes.BUSINESS,
+    };
+
+    const businessesToBeUpdated
+      = await this.BusinessModel.find(filter).select('_id');
+
+    if (businessesToBeUpdated?.length) {
+      const updateField = { deletedBy: loggedInUserId };
+      const businessIds = businessesToBeUpdated.map(item => item._id);
+      const filterProduct = {
+        businessId: { $in: businessIds },
+      };
+
+      try {
+        await deleteItems<Business>(this.BusinessModel, filter, updateField);
+
+        // deleteProduct associated to these business;
+
+        await deleteItems<Product>(
+          this.ProductModel,
+          filterProduct,
+          updateField,
+        );
+      } catch (err) {
+        exceptionHandling(err);
+      }
+    }
+  }
+
+  async recoverBusinessPostUserRecovery(userId: string) {
+    const filter: any = {
+      userId,
+      serviceType: GeoServicesTypes.BUSINESS,
+    };
+
+    const businessesToBeRecovered
+      = await this.BusinessModel.find(filter).select('_id');
+
+    if (businessesToBeRecovered?.length) {
+      const updateField = {
+        deletedBy: null,
+        deletedAt: null,
+        isDeleted: false,
+      };
+      const businessIds = businessesToBeRecovered.map(item => item._id);
+
+      const filterProduct = {
+        businessId: { $in: businessIds },
+      };
+
+      try {
+        await this.BusinessModel.updateMany(filter, updateField);
+
+        // recover products associated to these business;
+        await this.ProductModel.updateMany(filterProduct, updateField);
+      } catch (err) {
+        exceptionHandling(err);
+      }
+    }
   }
 
   async getStats(
@@ -1870,14 +1855,30 @@ export class BusinessService {
   }
 
   private async getDefaultImage() {
-    const getDefaultLogo = await this.mediaServices.getMediaByName(
-      defaultMetGoLogo,
-    );
+    const getDefaultLogo
+      = await this.mediaServices.getMediaByName(defaultMetGoLogo);
 
     return {
       image: getDefaultLogo.url,
       caption: getDefaultLogo.originalName,
       alt: getDefaultLogo.originalName,
     };
+  }
+
+  private async updateUserRole(loggedInUserId: string) {
+    const usersBusinesses = await findManyByFilter<Business>(
+      this.BusinessModel,
+      {
+        userId: loggedInUserId,
+        isDeleted: false,
+      },
+    );
+
+    if (!usersBusinesses?.length) {
+      await this.UserModel.findOneAndUpdate(
+        { _id: loggedInUserId },
+        { hasBusiness: false },
+      );
+    }
   }
 }
