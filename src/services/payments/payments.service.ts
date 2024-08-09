@@ -2,12 +2,15 @@ import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import axios from 'axios';
 import { Model } from 'mongoose';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 
 import { Locale, PaymentStatus, VoucherPaymentStatus } from 'src/common/enum';
 import {
   EnglishTemplate,
   HebrewTemplate,
 } from 'src/common/mailchimp/templateId';
+import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { ConfigService } from '../config/config.service';
 import { Payment } from './schema/payments.schema';
 import { update, updateById } from 'src/core/helper/query-helper';
@@ -25,6 +28,8 @@ import {
 @Injectable()
 export class PaymentsService {
   constructor(
+    @Inject(WINSTON_MODULE_PROVIDER)
+    private readonly logger: Logger,
     @InjectModel('Payment')
     private readonly PaymentModel: Model<Payment>,
     private readonly configService: ConfigService,
@@ -38,7 +43,19 @@ export class PaymentsService {
   ) {}
 
   async createPayment(insertField: any) {
-    return await this.PaymentModel.create(insertField);
+    try {
+      const payment = await this.PaymentModel.create(insertField);
+      this.logger.info('[PAYMENT]: CREATED', {
+        message: payment,
+      });
+
+      return payment;
+    } catch (err) {
+      this.logger.error('[PAYMENT]: FAILED TO CREATE', {
+        err: err.message,
+      });
+      exceptionHandling(err);
+    }
   }
 
   async generateLink(command: GenerateLinkCommand) {
@@ -107,111 +124,57 @@ export class PaymentsService {
   }
 
   async paymentSucess(query) {
-    const pageRequestUid = query?.lowprofilecode;
+    try {
+      const pageRequestUid = query?.lowprofilecode;
 
-    const updateField = {
-      status: PaymentStatus.SUCCESS,
-      updatedAt: new Date(),
-      paymentDate: new Date(),
-    };
-    const payments = await update<Payment>(
-      this.PaymentModel,
-      'paymentRequestId',
-      pageRequestUid,
-      updateField,
-    );
-
-    await this.mailchimpService.sendTransactionalEmail({
-      to: payments?.customerEmail,
-      templatedId:
-        query?.languagePreference === Locale.HEBREW
-          ? HebrewTemplate.PaymentSuccessful
-          : EnglishTemplate.PaymentSuccessful,
-      mergeVars: {
-        BUYERNAME: payments?.customerName,
-        TOTALAMOUNT: payments?.amount,
-      },
-    });
-
-    if (payments.purpose === PaymentPurpose.VOUCHER) {
-      const voucherDetails
-        = await this.voucherService.updateAfterPaymentSuccess({
-          ids: payments.voucherId,
-          updateField: { paymentStatus: VoucherPaymentStatus.PAID },
-          voucherOwnerEmail: payments?.customerEmail,
-          voucherOwnerName: payments?.customerName,
-          languagePreference: query?.languagePreference,
-        });
-
-      const invoiceDetail = await this.sendInvoice({
-        customerName: payments?.customerName,
-        customerEmail: payments?.customerEmail,
-        invoiceType: 3,
-        voucherDetails,
-        transactionId: pageRequestUid,
-        purpose: PaymentPurpose.VOUCHER,
-        sumPaid: payments?.amount,
-        languagePreference: query?.languagePreference,
-        additionalInformation: '',
-      });
-
-      if (invoiceDetail?.InvoiceLink) {
-        await updateById<Payment>(this.PaymentModel, payments._id, {
-          invoiceURL: invoiceDetail.InvoiceLink,
-        });
-      }
-    }
-
-    if (payments.purpose === PaymentPurpose.ORDER) {
-      const updateOrder = await this.ordersService.updateAfterPaymentSuccess(
-        payments.orderId,
+      const updateField = {
+        status: PaymentStatus.SUCCESS,
+        updatedAt: new Date(),
+        paymentDate: new Date(),
+      };
+      const payments = await update<Payment>(
+        this.PaymentModel,
+        'paymentRequestId',
+        pageRequestUid,
+        updateField,
       );
 
-      const [getProductInformation, businessDetails] = await Promise.all([
-        this.productsService.getProductInformationForOrders(
-          updateOrder.products,
-        ),
-        this.businessService.findBusinessEmailByIds(updateOrder.businessId),
-      ]);
+      this.logger.info('[PAYMENT]: UPDATED AFTER PAID SUCCESSFULLY', {
+        message: payments,
+      });
 
       await this.mailchimpService.sendTransactionalEmail({
-        to: updateOrder?.email,
+        to: payments?.customerEmail,
         templatedId:
           query?.languagePreference === Locale.HEBREW
-            ? HebrewTemplate.OrderConfirmationForClient
-            : EnglishTemplate.OrderConfirmationForClient,
+            ? HebrewTemplate.PaymentSuccessful
+            : EnglishTemplate.PaymentSuccessful,
         mergeVars: {
-          BUYERNAME: updateOrder?.firstName,
-          BUSINESSNAME: businessDetails[0]?.name || '',
-          PRODUCTNAME: getProductInformation[0]?.name,
-          QUANTITY: 1,
-          COST: getProductInformation[0]?.price?.sellingPrice,
-          TOTALAMOUNT: updateOrder?.totalAmount,
-          BUSINESSPHONE:
-            `${businessDetails[0]?.countryCode}-${businessDetails[0]?.phoneNumber}`
-            || '',
-          BUSINESSEMAIL: businessDetails[0]?.busiEmail || '',
-          BUSINESSADDRESS: businessDetails[0]?.address?.location || '',
+          BUYERNAME: payments?.customerName,
+          TOTALAMOUNT: payments?.amount,
         },
       });
 
-      if (updateOrder?.totalAmount === updateOrder?.creditCardPayment) {
+      if (payments.purpose === PaymentPurpose.VOUCHER) {
+        const voucherDetails
+          = await this.voucherService.updateAfterPaymentSuccess({
+            ids: payments.voucherId,
+            updateField: { paymentStatus: VoucherPaymentStatus.PAID },
+            voucherOwnerEmail: payments?.customerEmail,
+            voucherOwnerName: payments?.customerName,
+            languagePreference: query?.languagePreference,
+          });
+
         const invoiceDetail = await this.sendInvoice({
           customerName: payments?.customerName,
           customerEmail: payments?.customerEmail,
-          invoiceType: 101,
-          product: [
-            {
-              id: getProductInformation[0]?._id.toString(),
-              price: payments?.amount,
-              name: getProductInformation[0]?.name,
-            },
-          ],
+          invoiceType: 3,
+          voucherDetails,
           transactionId: pageRequestUid,
-          purpose: PaymentPurpose.ORDER,
+          purpose: PaymentPurpose.VOUCHER,
           sumPaid: payments?.amount,
           languagePreference: query?.languagePreference,
-          additionalInformation: 'Paid via Credit Card',
+          additionalInformation: '',
         });
 
         if (invoiceDetail?.InvoiceLink) {
@@ -221,103 +184,182 @@ export class PaymentsService {
         }
       }
 
-      if (updateOrder?.totalAmount !== updateOrder?.creditCardPayment) {
-        const product = [
-          {
-            id: getProductInformation[0]?._id.toString(),
-            price: updateOrder?.creditCardPayment,
-            name: getProductInformation[0]?.name,
+      if (payments.purpose === PaymentPurpose.ORDER) {
+        const updateOrder = await this.ordersService.updateAfterPaymentSuccess(
+          payments.orderId,
+        );
+
+        const [getProductInformation, businessDetails] = await Promise.all([
+          this.productsService.getProductInformationForOrders(
+            updateOrder.products,
+          ),
+          this.businessService.findBusinessEmailByIds(updateOrder.businessId),
+        ]);
+
+        await this.mailchimpService.sendTransactionalEmail({
+          to: updateOrder?.email,
+          templatedId:
+            query?.languagePreference === Locale.HEBREW
+              ? HebrewTemplate.OrderConfirmationForClient
+              : EnglishTemplate.OrderConfirmationForClient,
+          mergeVars: {
+            BUYERNAME: updateOrder?.firstName,
+            BUSINESSNAME: businessDetails[0]?.name || '',
+            PRODUCTNAME: getProductInformation[0]?.name,
+            QUANTITY: 1,
+            COST: getProductInformation[0]?.price?.sellingPrice,
+            TOTALAMOUNT: updateOrder?.totalAmount,
+            BUSINESSPHONE:
+              `${businessDetails[0]?.countryCode}-${businessDetails[0]?.phoneNumber}`
+              || '',
+            BUSINESSEMAIL: businessDetails[0]?.busiEmail || '',
+            BUSINESSADDRESS: businessDetails[0]?.address?.location || '',
           },
-        ];
-
-        if (updateOrder?.voucher?.length) {
-          await Promise.all(
-            updateOrder.voucher.map(async voucher => {
-              const voucherDetails = await this.voucherService.getOneById(
-                voucher.id,
-              );
-              product.push({
-                id: voucherDetails.code,
-                price: voucher.redeemedAmount,
-                name: 'Amount Paid by voucher',
-              });
-            }),
-          );
-        }
-
-        const invoiceDetail = await this.sendInvoice({
-          customerName: payments?.customerName,
-          customerEmail: payments?.customerEmail,
-          invoiceType: 101,
-          product,
-          transactionId: pageRequestUid,
-          purpose: PaymentPurpose.ORDER,
-          sumPaid: updateOrder?.totalAmount,
-          languagePreference: query?.languagePreference,
-          additionalInformation: 'Paid via Voucher and Credit Card',
         });
 
-        if (invoiceDetail?.InvoiceLink) {
-          await updateById<Payment>(this.PaymentModel, payments._id, {
-            invoiceURL: invoiceDetail.InvoiceLink,
+        if (updateOrder?.totalAmount === updateOrder?.creditCardPayment) {
+          const invoiceDetail = await this.sendInvoice({
+            customerName: payments?.customerName,
+            customerEmail: payments?.customerEmail,
+            invoiceType: 101,
+            product: [
+              {
+                id: getProductInformation[0]?._id.toString(),
+                price: payments?.amount,
+                name: getProductInformation[0]?.name,
+              },
+            ],
+            transactionId: pageRequestUid,
+            purpose: PaymentPurpose.ORDER,
+            sumPaid: payments?.amount,
+            languagePreference: query?.languagePreference,
+            additionalInformation: 'Paid via Credit Card',
           });
+
+          if (invoiceDetail?.InvoiceLink) {
+            await updateById<Payment>(this.PaymentModel, payments._id, {
+              invoiceURL: invoiceDetail.InvoiceLink,
+            });
+          }
         }
-      }
 
-      // SEND TO BUSINESS OWNER
-
-      await Promise.all(
-        businessDetails.map(async business => {
-          if (!business?.busiEmail) return;
-          await this.mailchimpService.sendTransactionalEmail({
-            to: business?.busiEmail,
-            templatedId:
-              query?.languagePreference === Locale.HEBREW
-                ? HebrewTemplate.OrderReceivedForBusiness
-                : EnglishTemplate.OrderReceivedForBusiness,
-            mergeVars: {
-              BUSINESSNAME: business?.name || '',
-              PRODUCTNAME: getProductInformation[0]?.name,
-              QUANTITY: 1,
-              COST: getProductInformation[0]?.price?.sellingPrice,
-              TOTALAMOUNT: updateOrder?.totalAmount,
-              BUYERNAME: `${updateOrder?.firstName} ${updateOrder?.lastName}`,
-              BUYERPHONE: `${updateOrder?.countryCode}-${updateOrder?.phone}`,
-              BUYEREMAIL: updateOrder?.email,
-              BUYERADDRESS: updateOrder?.address,
+        if (updateOrder?.totalAmount !== updateOrder?.creditCardPayment) {
+          const product = [
+            {
+              id: getProductInformation[0]?._id.toString(),
+              price: updateOrder?.creditCardPayment,
+              name: getProductInformation[0]?.name,
             },
+          ];
+
+          if (updateOrder?.voucher?.length) {
+            await Promise.all(
+              updateOrder.voucher.map(async voucher => {
+                const voucherDetails = await this.voucherService.getOneById(
+                  voucher.id,
+                );
+                product.push({
+                  id: voucherDetails.code,
+                  price: voucher.redeemedAmount,
+                  name: 'Amount Paid by voucher',
+                });
+              }),
+            );
+          }
+
+          const invoiceDetail = await this.sendInvoice({
+            customerName: payments?.customerName,
+            customerEmail: payments?.customerEmail,
+            invoiceType: 101,
+            product,
+            transactionId: pageRequestUid,
+            purpose: PaymentPurpose.ORDER,
+            sumPaid: updateOrder?.totalAmount,
+            languagePreference: query?.languagePreference,
+            additionalInformation: 'Paid via Voucher and Credit Card',
           });
-        }),
-      );
+
+          if (invoiceDetail?.InvoiceLink) {
+            await updateById<Payment>(this.PaymentModel, payments._id, {
+              invoiceURL: invoiceDetail.InvoiceLink,
+            });
+          }
+        }
+
+        // SEND TO BUSINESS OWNER
+
+        await Promise.all(
+          businessDetails.map(async business => {
+            if (!business?.busiEmail) return;
+            await this.mailchimpService.sendTransactionalEmail({
+              to: business?.busiEmail,
+              templatedId:
+                query?.languagePreference === Locale.HEBREW
+                  ? HebrewTemplate.OrderReceivedForBusiness
+                  : EnglishTemplate.OrderReceivedForBusiness,
+              mergeVars: {
+                BUSINESSNAME: business?.name || '',
+                PRODUCTNAME: getProductInformation[0]?.name,
+                QUANTITY: 1,
+                COST: getProductInformation[0]?.price?.sellingPrice,
+                TOTALAMOUNT: updateOrder?.totalAmount,
+                BUYERNAME: `${updateOrder?.firstName} ${updateOrder?.lastName}`,
+                BUYERPHONE: `${updateOrder?.countryCode}-${updateOrder?.phone}`,
+                BUYEREMAIL: updateOrder?.email,
+                BUYERADDRESS: updateOrder?.address,
+              },
+            });
+          }),
+        );
+      }
+    } catch (err) {
+      this.logger.error('[PAYMENT]: PAYMENT FAILED', {
+        err: err.message,
+      });
+      exceptionHandling(err);
     }
   }
 
   async PaymentFailure(query) {
-    const pageRequestUid = query?.lowprofilecode;
+    try {
+      const pageRequestUid = query?.lowprofilecode;
 
-    const updateField = {
-      status: PaymentStatus.FAILURE,
-      updatedAt: new Date(),
-    };
-    const payments = await update<Payment>(
-      this.PaymentModel,
-      'paymentRequestId',
-      pageRequestUid,
-      updateField,
-    );
+      const updateField = {
+        status: PaymentStatus.FAILURE,
+        updatedAt: new Date(),
+      };
+      const payments = await update<Payment>(
+        this.PaymentModel,
+        'paymentRequestId',
+        pageRequestUid,
+        updateField,
+      );
 
-    if (payments.purpose === PaymentPurpose.VOUCHER) {
-      await this.voucherService.updateAfterPaymentFailure({
-        ids: payments.voucherId,
-        updateField: { paymentStatus: VoucherPaymentStatus.FAILED },
-        voucherOwnerEmail: payments?.customerEmail,
-        voucherOwnerName: payments?.customerName,
-        languagePreference: query?.languagePreference,
+      this.logger.info('[PAYMENT]: UPDATED AFTER PAID FAILED', {
+        message: payments,
       });
-    }
 
-    if (payments.purpose === PaymentPurpose.ORDER) {
-      await this.ordersService.updateAfterPaymentFailure(payments.orderId);
+      if (payments.purpose === PaymentPurpose.VOUCHER) {
+        await this.voucherService.updateAfterPaymentFailure({
+          ids: payments.voucherId,
+          updateField: { paymentStatus: VoucherPaymentStatus.FAILED },
+          voucherOwnerEmail: payments?.customerEmail,
+          voucherOwnerName: payments?.customerName,
+          languagePreference: query?.languagePreference,
+        });
+      }
+
+      if (payments.purpose === PaymentPurpose.ORDER) {
+        await this.ordersService.updateAfterPaymentFailure(payments.orderId);
+      }
+    } catch (err) {
+      this.logger.error(
+        '[PAYMENT]: FAILED TO UPDATE PAYMENT AFTER PAYMENT FAILURE',
+        {
+          err: err.message,
+        },
+      );
+      exceptionHandling(err);
     }
   }
 

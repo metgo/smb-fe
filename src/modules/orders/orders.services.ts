@@ -9,6 +9,8 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { differenceInDays, subDays } from 'date-fns';
 import mongoose, { Model } from 'mongoose';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 
 import { calculateTotalAmount } from 'src/common/calculate-amounts';
 import { ServerErrors } from 'src/common/constant';
@@ -51,6 +53,8 @@ import { CreateOrderCommand } from 'src/modules/orders/interface/create-order.in
 @Injectable()
 export class OrdersService {
   constructor(
+    @Inject(WINSTON_MODULE_PROVIDER)
+    private readonly logger: Logger,
     @InjectModel(Order.name)
     private OrderModel: Model<Order>,
     private readonly businessService: BusinessService,
@@ -87,6 +91,11 @@ export class OrdersService {
         });
 
         const order = await newOrder.save();
+
+        this.logger.info('[ORDER]: CREATED-PAID BY VOUCHER', {
+          message: order,
+        });
+
         await Promise.all(
           order.products.map(async product => {
             await this.orderProductService.create({
@@ -187,6 +196,12 @@ export class OrdersService {
 
       const order = await newOrder.save();
 
+      this.logger.info(`[ORDER]: CREATED-PAID BY ${order.paymentMode}`, {
+        message: order,
+      });
+
+      this.logger.info('[ORDER]: PROCEED TO PAY', { message: order });
+
       const link = await this.paymentService.generateLink({
         amount: totalAmount,
         currency: Currency.ILS,
@@ -199,55 +214,82 @@ export class OrdersService {
 
       return [link];
     } catch (error) {
+      this.logger.error('[ORDER]: FAILED TO CREATE', {
+        err: error.message,
+      });
       exceptionHandling(error);
     }
   }
 
   async updateAfterPaymentSuccess(orderId: string): Promise<Order> {
-    const updatedField = {
-      paymentStatus: PaymentStatus.SUCCESS,
-      status: OrderStatus.PROCESSING,
-    };
+    try {
+      const updatedField = {
+        paymentStatus: PaymentStatus.SUCCESS,
+        status: OrderStatus.PROCESSING,
+      };
 
-    const updateOrder = await updateById<Order>(
-      this.OrderModel,
-      orderId,
-      updatedField,
-    );
+      const updateOrder = await updateById<Order>(
+        this.OrderModel,
+        orderId,
+        updatedField,
+      );
 
-    await Promise.all(
-      updateOrder.products.map(async product => {
-        await this.orderProductService.create({
-          productId: product.id,
-          quantity: product.quantity,
-          loggedInUserId: updateOrder.userId,
-          orderId: updateOrder.id,
-        });
-      }),
-    );
-    return updateOrder;
+      this.logger.info('[ORDER]: UPDATED AFTER PAYMENT SUCCESS', {
+        message: updateOrder,
+      });
+
+      await Promise.all(
+        updateOrder.products.map(async product => {
+          await this.orderProductService.create({
+            productId: product.id,
+            quantity: product.quantity,
+            loggedInUserId: updateOrder.userId,
+            orderId: updateOrder.id,
+          });
+        }),
+      );
+
+      return updateOrder;
+    } catch (err) {
+      this.logger.error('[ORDER]: FAILED TO UPDATE AFTER PAYMENT SUCCESS', {
+        err: err.message,
+      });
+      exceptionHandling(err);
+    }
   }
 
   async updateAfterPaymentFailure(orderId: string): Promise<Order> {
-    const orderDetail = await findOneById<Order>(this.OrderModel, orderId);
-    const updatedField = {
-      paymentStatus: PaymentStatus.FAILURE,
-      status: OrderStatus.CANCELED,
-    };
+    try {
+      const orderDetail = await findOneById<Order>(this.OrderModel, orderId);
+      const updatedField = {
+        paymentStatus: PaymentStatus.FAILURE,
+        status: OrderStatus.CANCELED,
+      };
 
-    if (orderDetail?.voucher && orderDetail?.voucher?.length) {
-      // update vouchers detail and add the deducted voucher amounts
-      await this.voucherService.updateAmountAfterOrderFailed(
-        orderDetail.voucher,
+      if (orderDetail?.voucher && orderDetail?.voucher?.length) {
+        // update vouchers detail and add the deducted voucher amounts
+        await this.voucherService.updateAmountAfterOrderFailed(
+          orderDetail.voucher,
+        );
+      }
+
+      const updateOrder = await updateById<Order>(
+        this.OrderModel,
+        orderId,
+        updatedField,
       );
-    }
 
-    const updateOrder = await updateById<Order>(
-      this.OrderModel,
-      orderId,
-      updatedField,
-    );
-    return updateOrder;
+      this.logger.info('[ORDER]: UPDATED AFTER PAYMENT FAILED', {
+        message: updateOrder,
+      });
+
+      return updateOrder;
+    } catch (err) {
+      this.logger.error('[ORDER]: FAILED TO UPDATE AFTER PAYMENT FAILURE', {
+        err: err.message,
+      });
+      exceptionHandling(err);
+    }
   }
 
   async update(
@@ -271,8 +313,13 @@ export class OrdersService {
         throw new NotFoundException(ServerErrors.ORDERS.NOT_FOUND);
       }
 
+      this.logger.info('[ORDER]: UPDATED', { message: updateOrder });
+
       return updateOrder;
     } catch (err) {
+      this.logger.error('[ORDER]: FAILED TO UPDATE', {
+        err: err.message,
+      });
       exceptionHandling(err);
     }
   }
@@ -317,10 +364,15 @@ export class OrdersService {
         throw new ForbiddenException(ServerErrors.FORBIDDEN);
       }
 
+      this.logger.info('[ORDER]: UPDATED', { message: order });
+
       const updatedOrder = await this.update(loggedInUser.id, orderId, body);
 
       return updatedOrder;
     } catch (error) {
+      this.logger.error('[ORDER]: FAILED TO UPDATE', {
+        err: error.message,
+      });
       exceptionHandling(error);
     }
   }
@@ -394,42 +446,53 @@ export class OrdersService {
     voucherIds,
     totalAmountOfProduct,
   ) {
-    let voucherInfo = [];
-    const processVouchers = async (
-      vouchers,
-      index = 0,
-      initialRedeemedAmount = 0,
-    ) => {
-      if (
-        index >= vouchers.length
-        || (index > 0 && initialRedeemedAmount === 0)
-      ) {
-        return;
-      }
+    try {
+      let voucherInfo = [];
+      const processVouchers = async (
+        vouchers,
+        index = 0,
+        initialRedeemedAmount = 0,
+      ) => {
+        if (
+          index >= vouchers.length
+          || (index > 0 && initialRedeemedAmount === 0)
+        ) {
+          return;
+        }
 
-      const voucher = vouchers[index];
-      const { amountToBeRedeemed: updateRedeemedAmount, redeemedAmount }
-        = await this.voucherService.updateVoucherAmount(
-          loggedInUserId,
-          voucher.id,
-          index === 0 ? totalAmountOfProduct : initialRedeemedAmount,
-        );
+        const voucher = vouchers[index];
+        const { amountToBeRedeemed: updateRedeemedAmount, redeemedAmount }
+          = await this.voucherService.updateVoucherAmount(
+            loggedInUserId,
+            voucher.id,
+            index === 0 ? totalAmountOfProduct : initialRedeemedAmount,
+          );
 
-      voucherInfo = [
-        ...voucherInfo,
-        {
-          id: voucher.id,
-          redeemedAmount,
-        },
-      ];
+        voucherInfo = [
+          ...voucherInfo,
+          {
+            id: voucher.id,
+            redeemedAmount,
+          },
+        ];
 
-      await processVouchers(vouchers, index + 1, updateRedeemedAmount);
-    };
+        await processVouchers(vouchers, index + 1, updateRedeemedAmount);
+      };
 
-    await processVouchers(voucherIds);
-    voucherInfo.filter(Boolean);
+      await processVouchers(voucherIds);
+      voucherInfo.filter(Boolean);
 
-    return voucherInfo;
+      this.logger.info('[ORDER]: PROCESS VOUCHERS FOR ORDER', {
+        message: voucherInfo,
+      });
+
+      return voucherInfo;
+    } catch (err) {
+      this.logger.error('[ORDER]: FAILED TO PROCESS VOUCHERS FOR ORDER', {
+        err: err.message,
+      });
+      exceptionHandling(err);
+    }
   }
 
   async getStats(

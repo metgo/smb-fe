@@ -22,6 +22,7 @@
   "dependencies": {
     "@date-fns/upgrade": "^1.0.3",
     "@faker-js/faker": "^8.4.1",
+    "@google-cloud/logging-winston": "^6.0.0",
     "@google-cloud/storage": "^7.5.0",
     "@hapi/joi": "^17.1.1",
     "@mailchimp/mailchimp_marketing": "^3.0.80",
@@ -58,6 +59,7 @@
     "mongoose": "^7.6.0",
     "nanoid": "^3.2.0",
     "nest-openapi-tools": "^6.0.0",
+    "nest-winston": "^1.9.7",
     "nodemailer": "^6.9.7",
     "passport": "^0.6.0",
     "passport-jwt": "^4.0.0",
@@ -65,7 +67,8 @@
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.8.1",
     "typeorm": "^0.3.17",
-    "uuid": "^9.0.1"
+    "uuid": "^9.0.1",
+    "winston": "^3.14.0"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.0.0",

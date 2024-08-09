@@ -1,13 +1,16 @@
 import {
   BadRequestException,
   ConflictException,
+  Inject,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { nanoid } from 'nanoid';
+import { Logger } from 'winston';
 
 import {
   ServerErrors,
@@ -66,6 +69,8 @@ export class UsersService {
   private email: string;
   private password: string;
   constructor(
+    @Inject(WINSTON_MODULE_PROVIDER)
+    private readonly logger: Logger,
     @InjectModel(User.name)
     private UserModel: Model<User>,
     @InjectModel(OTP.name)
@@ -457,6 +462,8 @@ export class UsersService {
         password: hashedPassword,
       }).save();
 
+      this.logger.info('[USER]: CREATED', { message: newUser });
+
       await Promise.all([
         this.voucherService.updateVoucherCreatedDetails(
           registerDto.email,
@@ -501,6 +508,9 @@ export class UsersService {
         updatedAt: newUser.updatedAt,
       };
     } catch (error) {
+      this.logger.error('[USER]: FAILED TO CREATE', {
+        err: error.message,
+      });
       if (error.code === 11000) {
         throw new ConflictException(ServerErrors.USER.EXISTS);
       }
@@ -624,6 +634,8 @@ export class UsersService {
         throw new NotFoundException(ServerErrors.USER.NOT_FOUND);
       }
 
+      this.logger.info('[USER]: UPDATED', { message: updatedUser });
+
       return {
         id: updatedUser.id,
         firstName: updatedUser.firstName,
@@ -643,8 +655,10 @@ export class UsersService {
         updatedAt: updatedUser.updatedAt,
       };
     } catch (error) {
+      this.logger.error('[USER]: FAILED TO UPDATE', {
+        err: error.message,
+      });
       exceptionHandling(error);
-      throw new InternalServerErrorException("Couldn't update user");
     }
   }
 
@@ -871,123 +885,136 @@ export class UsersService {
     dto: createUserByAdminDto,
     loggedInUser: LoggedInUserInterface,
   ) {
-    const user = await this.validateUserIfNeedToRecover(dto.email);
+    try {
+      const user = await this.validateUserIfNeedToRecover(dto.email);
 
-    if (user) {
-      throw new BadRequestException(ServerErrors.USER.EXISTS);
-    }
-
-    const password = nanoid(8);
-    const hashedPassword = await this.hashService.create(password);
-
-    let body: any = {
-      ...dto,
-      password: hashedPassword,
-    };
-
-    let newUser = new this.UserModel(body);
-    let entity: string = 'METGO';
-    let dmo: DMO;
-    let campaign: any;
-
-    if (dto.dmoId) {
-      if (loggedInUser.role === UserType.SUPERADMIN) {
-        body = {
-          ...body,
-          role: UserType.DMO,
-        };
-
-        newUser = new this.UserModel(body);
-        dmo = await this.dmoService.addAdmin(dto.dmoId, newUser.id);
-        entity = dmo?.name;
+      if (user) {
+        throw new BadRequestException(ServerErrors.USER.EXISTS);
       }
 
-      if (loggedInUser.role === UserType.DMO) {
+      const password = nanoid(8);
+      const hashedPassword = await this.hashService.create(password);
+
+      let body: any = {
+        ...dto,
+        password: hashedPassword,
+      };
+
+      let newUser = new this.UserModel(body);
+      let entity: string = 'METGO';
+      let dmo: DMO;
+      let campaign: any;
+
+      if (dto.dmoId) {
+        if (loggedInUser.role === UserType.SUPERADMIN) {
+          body = {
+            ...body,
+            role: UserType.DMO,
+          };
+
+          newUser = new this.UserModel(body);
+          dmo = await this.dmoService.addAdmin(dto.dmoId, newUser.id);
+          entity = dmo?.name;
+        }
+
+        if (loggedInUser.role === UserType.DMO) {
+          body = {
+            ...body,
+            role: UserType.DMOADMIN,
+          };
+
+          newUser = new this.UserModel(body);
+          dmo = await this.dmoService.addCollaborators(
+            loggedInUser.dmo.id,
+            newUser.id,
+          );
+          entity = dmo?.name;
+        }
+      }
+
+      if (dto.authorityId) {
         body = {
           ...body,
-          role: UserType.DMOADMIN,
+          role: UserType.AUTHORITY,
         };
 
         newUser = new this.UserModel(body);
-        dmo = await this.dmoService.addCollaborators(
-          loggedInUser.dmo.id,
+        const authority = await this.authorityService.addAdmin(
+          dto.authorityId,
           newUser.id,
         );
-        entity = dmo?.name;
+        entity = authority?.name;
       }
+
+      if (
+        body.businessesId?.length
+        && loggedInUser.role === UserType.SUPERADMIN
+      ) {
+        body = {
+          ...body,
+          hasBusiness: true,
+        };
+
+        newUser = new this.UserModel(body);
+        await this.businessService.assignUsertoBusinesses(
+          body.businessesId,
+          newUser.id,
+          loggedInUser.id,
+          newUser,
+        );
+      }
+
+      await newUser.save();
+
+      this.logger.info('[USER]: CREATED BY ADMIN', { message: newUser });
+
+      if (dmo) {
+        campaign
+          = await this.campaignService.getOneCampaignDetailAssociatedToIds(
+            dmo._id,
+            'dmoIds',
+          );
+      }
+
+      await Promise.all([
+        this.voucherService.updateVoucherCreatedDetails(body.email, newUser.id),
+        this.voucherService.updateVoucherAssignedDetails(
+          body.email,
+          newUser.id,
+        ),
+        this.mailchimpService.subscribe(
+          newUser.firstName,
+          newUser.lastName,
+          newUser.email,
+        ),
+        this.mailchimpService.sendTransactionalEmail({
+          to: newUser?.email,
+          templatedId: DynamicHebrewTemplate.UserRegistrationByAdmin,
+          mergeVars: {
+            FNAME: newUser?.firstName,
+            ENTITY: entity,
+            website: 'https://console.metgo.app/',
+            USERNAME: newUser?.email,
+            PASSWORD: password,
+            LOGO1: dmo?.logoPath || emailDefaultTemplate.SIDE_LOGO,
+            LOGO2: emailDefaultTemplate.MAIN_LOGO,
+            LOGO3: campaign?.logoPath || emailDefaultTemplate.SIDE_LOGO,
+            PRIMARY_BG_COLOR: emailDefaultTemplate.PRIMARY_BG_COLOR,
+            PRIMARY_TEXT_COLOR: emailDefaultTemplate.PRIMARY_TEXT_COLOR,
+            IMAGE1: emailDefaultTemplate.IMAGE1,
+            IMAGE2: dmo?.imagePath || emailDefaultTemplate.IMAGE2,
+            IMAGE3: campaign?.imagePath || emailDefaultTemplate.IMAGE3,
+          },
+        }),
+      ]);
+
+      return newUser;
+    } catch (err) {
+      this.logger.error('[USER]: FAILED TO CREATE BY ADMIN', {
+        err: err.message,
+      });
+      exceptionHandling(err);
     }
-
-    if (dto.authorityId) {
-      body = {
-        ...body,
-        role: UserType.AUTHORITY,
-      };
-
-      newUser = new this.UserModel(body);
-      const authority = await this.authorityService.addAdmin(
-        dto.authorityId,
-        newUser.id,
-      );
-      entity = authority?.name;
-    }
-
-    if (
-      body.businessesId?.length
-      && loggedInUser.role === UserType.SUPERADMIN
-    ) {
-      body = {
-        ...body,
-        hasBusiness: true,
-      };
-
-      newUser = new this.UserModel(body);
-      await this.businessService.assignUsertoBusinesses(
-        body.businessesId,
-        newUser.id,
-        loggedInUser.id,
-        newUser,
-      );
-    }
-
-    await newUser.save();
-
-    if (dmo) {
-      campaign = await this.campaignService.getOneCampaignDetailAssociatedToIds(
-        dmo._id,
-        'dmoIds',
-      );
-    }
-
-    await Promise.all([
-      this.voucherService.updateVoucherCreatedDetails(body.email, newUser.id),
-      this.voucherService.updateVoucherAssignedDetails(body.email, newUser.id),
-      this.mailchimpService.subscribe(
-        newUser.firstName,
-        newUser.lastName,
-        newUser.email,
-      ),
-      this.mailchimpService.sendTransactionalEmail({
-        to: newUser?.email,
-        templatedId: DynamicHebrewTemplate.UserRegistrationByAdmin,
-        mergeVars: {
-          FNAME: newUser?.firstName,
-          ENTITY: entity,
-          website: 'https://console.metgo.app/',
-          USERNAME: newUser?.email,
-          PASSWORD: password,
-          LOGO1: dmo?.logoPath || emailDefaultTemplate.SIDE_LOGO,
-          LOGO2: emailDefaultTemplate.MAIN_LOGO,
-          LOGO3: campaign?.logoPath || emailDefaultTemplate.SIDE_LOGO,
-          PRIMARY_BG_COLOR: emailDefaultTemplate.PRIMARY_BG_COLOR,
-          PRIMARY_TEXT_COLOR: emailDefaultTemplate.PRIMARY_TEXT_COLOR,
-          IMAGE1: emailDefaultTemplate.IMAGE1,
-          IMAGE2: dmo?.imagePath || emailDefaultTemplate.IMAGE2,
-          IMAGE3: campaign?.imagePath || emailDefaultTemplate.IMAGE3,
-        },
-      }),
-    ]);
-
-    return newUser;
   }
 
   async findDMOUser(id: string) {

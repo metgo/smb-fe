@@ -1,14 +1,16 @@
 /* eslint-disable no-undef */
 import {
   BadRequestException,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
 import { nanoid } from 'nanoid';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { ObjectId } from 'typeorm';
-import * as lodash from 'lodash';
+import { Logger } from 'winston';
 
 import {
   defaultMetGoLogo,
@@ -74,6 +76,8 @@ import { MailChimpService } from 'src/services/mailchimp/mailchimp.service';
 @Injectable()
 export class BusinessService {
   constructor(
+    @Inject(WINSTON_MODULE_PROVIDER)
+    private readonly logger: Logger,
     @InjectModel('Business')
     private BusinessModel: Model<Business>,
     private readonly authorityService: AuthorityService,
@@ -207,6 +211,8 @@ export class BusinessService {
         await this.mediaServices.create(user, images, body);
       }
 
+      this.logger.info('[BUSINESS]: CREATED', { message: newBusiness });
+
       return newBusiness;
     } catch (error) {
       if (this.isDuplicateKeyError(error, 'slug')) {
@@ -238,8 +244,13 @@ export class BusinessService {
           await this.mediaServices.create(user, images, body);
         }
 
+        this.logger.info('[BUSINESS]: CREATED', { message: newBusiness });
+
         return newBusiness;
       }
+      this.logger.error('[BUSINESS]: FAILED TO CREATE', {
+        err: error.message,
+      });
       exceptionHandling(error);
     }
   }
@@ -300,10 +311,12 @@ export class BusinessService {
 
       // if (loggedInUser.role === UserType.AUTHORITY) {
       //   const authorityId = loggedInUser.authority.id;
+      //   const dmoId = loggedInUser.dmo.id;
 
       //   data = {
       //     ...data,
       //     authorityId,
+      //     dmoId,
       //   };
       // }
 
@@ -339,6 +352,10 @@ export class BusinessService {
 
         return updatedBusiness;
       }
+
+      this.logger.info('[BUSINESS]: CREATED BY ADMIN', {
+        message: newBusiness,
+      });
 
       return newBusiness;
     } catch (err) {
@@ -381,8 +398,15 @@ export class BusinessService {
           return updatedBusiness;
         }
 
+        this.logger.info('[BUSINESS]: CREATED BY ADMIN', {
+          message: newBusiness,
+        });
+
         return newBusiness;
       }
+      this.logger.error('[BUSINESS]: FAILED TO CREATE BY ADMIN', {
+        err: err.message,
+      });
       exceptionHandling(err);
     }
   }
@@ -1155,53 +1179,62 @@ export class BusinessService {
     loggedInUser: LoggedInUserInterface,
     dto: updateBusinessDto,
   ): Promise<Business> {
-    let updatedField: any = {
-      ...dto,
-      updatedAt: new Date(),
-      updatedBy: loggedInUser.id,
-    };
-
-    // find dmoId by authority
-    if (dto?.authorityId) {
-      const dmo = (await this.authorityService.getOne(dto.authorityId)).dmoId;
-
-      updatedField = {
-        ...updatedField,
-        dmoId: dmo._id,
+    try {
+      let updatedField: any = {
+        ...dto,
+        updatedAt: new Date(),
+        updatedBy: loggedInUser.id,
       };
-    }
 
-    if (dto.geoLocation) {
-      const location = {
-        type: 'Point',
-        coordinates: [
-          parseFloat(dto.geoLocation.long),
-          parseFloat(dto.geoLocation.lat),
-        ],
-      };
-      updatedField = {
-        ...updatedField,
-        location,
-      };
-    }
+      // find dmoId by authority
+      if (dto?.authorityId) {
+        const dmo = (await this.authorityService.getOne(dto.authorityId)).dmoId;
 
-    if (dto.name) {
-      const slug = this.generateSlug(dto.name);
-      updatedField = {
-        ...updatedField,
-        slug,
-      };
-    }
+        updatedField = {
+          ...updatedField,
+          dmoId: dmo._id,
+        };
+      }
 
-    const updateBusiness = await this.BusinessModel.findOneAndUpdate(
-      { _id: id, isDeleted: false },
-      updatedField,
-      { new: true },
-    );
-    if (!updateBusiness) {
-      throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
+      if (dto.geoLocation) {
+        const location = {
+          type: 'Point',
+          coordinates: [
+            parseFloat(dto.geoLocation.long),
+            parseFloat(dto.geoLocation.lat),
+          ],
+        };
+        updatedField = {
+          ...updatedField,
+          location,
+        };
+      }
+
+      if (dto.name) {
+        const slug = this.generateSlug(dto.name);
+        updatedField = {
+          ...updatedField,
+          slug,
+        };
+      }
+
+      const updateBusiness = await this.BusinessModel.findOneAndUpdate(
+        { _id: id, isDeleted: false },
+        updatedField,
+        { new: true },
+      );
+      if (!updateBusiness) {
+        throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
+      }
+
+      this.logger.info('[BUSINESS]: UPDATED', { message: updateBusiness });
+      return updateBusiness;
+    } catch (err) {
+      this.logger.error('[BUSINESS]: FAILED TO UPDATE', {
+        err: err.message,
+      });
+      exceptionHandling(err);
     }
-    return updateBusiness;
   }
 
   async updateBusinessByAdmin(
@@ -1279,8 +1312,16 @@ export class BusinessService {
       if (!updateBusiness) {
         throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
       }
+
+      this.logger.info('[BUSINESS]: UPDATED BY ADMIN', {
+        message: updateBusiness,
+      });
+
       return updateBusiness;
     } catch (err) {
+      this.logger.error('[BUSINESS]: FAILED TO UPDATE BY ADMIN', {
+        err: err.message,
+      });
       exceptionHandling(err);
     }
   }
@@ -1346,8 +1387,16 @@ export class BusinessService {
         },
       });
 
+      this.logger.info('[BUSINESS]: ASSIGNED', { message: updateBusiness });
+
       return updateBusiness;
     } catch (err) {
+      this.logger.error(
+        `[BUSINESS]: FAILED TO ASSIGN businessIds:${businessIds}`,
+        {
+          err: err.message,
+        },
+      );
       exceptionHandling(err);
     }
   }
@@ -1358,44 +1407,52 @@ export class BusinessService {
     dto: Image[],
     role: string,
   ) {
-    const updatedField = {
-      updatedBy: loggedInUserId,
-      updatedAt: new Date(),
-    };
-
-    let updatedBusiness: mongoose.Document<unknown, {}, Business> &
-      Business & {
-        _id: mongoose.Types.ObjectId;
+    try {
+      const updatedField = {
+        updatedBy: loggedInUserId,
+        updatedAt: new Date(),
       };
-    if (role === UserType.SUPERADMIN) {
-      updatedBusiness = await updateOneByManyFields<Business>(
-        this.BusinessModel,
-        {
-          _id: id,
-        },
-        {
-          $push: { images: { $each: dto } },
-          $set: updatedField,
-        },
-      );
-    } else {
-      updatedBusiness = await updateOneByManyFields<Business>(
-        this.BusinessModel,
-        {
-          _id: id,
-          userId: loggedInUserId,
-        },
-        {
-          $push: { images: { $each: dto } },
-          $set: updatedField,
-        },
-      );
-    }
 
-    if (!updatedBusiness) {
-      throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
+      let updatedBusiness: mongoose.Document<unknown, {}, Business> &
+        Business & {
+          _id: mongoose.Types.ObjectId;
+        };
+      if (role === UserType.SUPERADMIN) {
+        updatedBusiness = await updateOneByManyFields<Business>(
+          this.BusinessModel,
+          {
+            _id: id,
+          },
+          {
+            $push: { images: { $each: dto } },
+            $set: updatedField,
+          },
+        );
+      } else {
+        updatedBusiness = await updateOneByManyFields<Business>(
+          this.BusinessModel,
+          {
+            _id: id,
+            userId: loggedInUserId,
+          },
+          {
+            $push: { images: { $each: dto } },
+            $set: updatedField,
+          },
+        );
+      }
+
+      if (!updatedBusiness) {
+        throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
+      }
+      this.logger.info(`[BUSINESS]: UPLOADED IMAGES for ${id}`);
+      return updatedBusiness;
+    } catch (err) {
+      this.logger.error(`[BUSINESS]: FAILED TO UPLOAD IMAGE businessId:${id}`, {
+        err: err.message,
+      });
+      exceptionHandling(err);
     }
-    return updatedBusiness;
   }
 
   async deleteImage(
@@ -1403,24 +1460,32 @@ export class BusinessService {
     id: string,
     imageUrl: any,
   ): Promise<Business> {
-    const existingBusiness = await this.getBusiness({
-      id,
-      loggedInUser,
-    });
+    try {
+      const existingBusiness = await this.getBusiness({
+        id,
+        loggedInUser,
+      });
 
-    const images = existingBusiness.images.filter(
-      image => image.image !== imageUrl,
-    );
+      const images = existingBusiness.images.filter(
+        image => image.image !== imageUrl,
+      );
 
-    const updateBusiness = await this.BusinessModel.findOneAndUpdate(
-      { _id: id },
-      { images, updatedAt: new Date(), updatedBy: loggedInUser.id },
-      { new: true },
-    );
-    if (!updateBusiness) {
-      throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
+      const updateBusiness = await this.BusinessModel.findOneAndUpdate(
+        { _id: id },
+        { images, updatedAt: new Date(), updatedBy: loggedInUser.id },
+        { new: true },
+      );
+      if (!updateBusiness) {
+        throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
+      }
+      this.logger.info(`[BUSINESS]: DELETED IMAGES for ${id}`);
+      return updateBusiness;
+    } catch (err) {
+      this.logger.error(`[BUSINESS]: FAILED TO DELETE IMAGE businessId:${id}`, {
+        err: err.message,
+      });
+      exceptionHandling(err);
     }
-    return updateBusiness;
   }
 
   async deleteBusiness(id: string, loggedInUserId: string): Promise<Business> {
@@ -1449,8 +1514,15 @@ export class BusinessService {
           { hasBusiness: false },
         );
       }
+
+      this.logger.info('[BUSINESS]: DELETED', {
+        message: business,
+      });
       return business;
     } catch (err) {
+      this.logger.error('[BUSINESS]: FAILED TO DELETE', {
+        err: err.message,
+      });
       exceptionHandling(err);
     }
   }
@@ -1508,8 +1580,14 @@ export class BusinessService {
         );
       }
 
+      this.logger.info('[BUSINESS]: DELETED BY ADMIN', {
+        message: business,
+      });
       return business;
     } catch (err) {
+      this.logger.error('[BUSINESS]: FAILED TO DELETE BY ADMIN', {
+        err: err.message,
+      });
       exceptionHandling(err);
     }
   }
@@ -1789,16 +1867,6 @@ export class BusinessService {
       && error?.keyPattern
       && error?.keyPattern[fieldName] === 1
     );
-  }
-
-  async returnUserIDByfield(fieldName: keyof Business, fieldValue: string) {
-    const filterBy = { [fieldName]: { $in: fieldValue } };
-    const businesses = await this.BusinessModel.find(filterBy)
-      .lean()
-      .select('userId');
-    const userId = businesses.map(item => item.userId.toString());
-    const uniqueUserID = lodash.uniq(userId);
-    return uniqueUserID;
   }
 
   private async getDefaultImage() {

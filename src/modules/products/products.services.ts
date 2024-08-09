@@ -9,6 +9,8 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 
 import { ServerErrors } from 'src/common/constant';
 import { calculateGrowthPercentage } from 'src/common/utils/calculate-growth-percentage';
@@ -44,6 +46,8 @@ import { MediaServices } from 'src/modules/media/media.service';
 @Injectable()
 export class ProductsService {
   constructor(
+    @Inject(WINSTON_MODULE_PROVIDER)
+    private readonly logger: Logger,
     @InjectModel(Product.name)
     private ProductModel: Model<Product>,
     @Inject(forwardRef(() => BusinessService))
@@ -118,28 +122,37 @@ export class ProductsService {
       impact,
     };
 
-    const newProduct = new this.ProductModel({
-      ...createdField,
-    });
+    try {
+      const newProduct = new this.ProductModel({
+        ...createdField,
+      });
 
-    const product = await newProduct.save();
+      const product = await newProduct.save();
 
-    // add products to business
-    await this.businessService.addProductToBusiness(businessId, product.id);
+      this.logger.info('[PRODUCT]: CREATED', { message: product });
 
-    await this.mockDataService.createImpressionEngagementInterface({
-      productId: product._id,
-    });
+      // add products to business
+      await this.businessService.addProductToBusiness(businessId, product.id);
 
-    if (images?.length) {
-      const uploadImageDto = {
-        refId: newProduct._id.toString(),
-        reference: ReferenceType.PRODUCT,
-        businessId,
-      };
-      await this.mediaServices.create(user, images, uploadImageDto);
+      await this.mockDataService.createImpressionEngagementInterface({
+        productId: product._id,
+      });
+
+      if (images?.length) {
+        const uploadImageDto = {
+          refId: newProduct._id.toString(),
+          reference: ReferenceType.PRODUCT,
+          businessId,
+        };
+        await this.mediaServices.create(user, images, uploadImageDto);
+      }
+      return product;
+    } catch (err) {
+      this.logger.error('[PRODUCT]: FAILED TO CREATE', {
+        err: err.message,
+      });
+      exceptionHandling(err);
     }
-    return product;
   }
 
   async createForWeb(
@@ -196,31 +209,40 @@ export class ProductsService {
       ...createdField,
     });
 
-    const product = await newProduct.save();
+    try {
+      const product = await newProduct.save();
 
-    // add products to business
-    await this.businessService.addProductToBusiness(businessId, product.id);
+      this.logger.info('[PRODUCT]: CREATED', { message: product });
 
-    await this.mockDataService.createImpressionEngagementInterface({
-      productId: product._id,
-    });
+      // add products to business
+      await this.businessService.addProductToBusiness(businessId, product.id);
 
-    if (images?.length) {
-      const uploadImageDto = {
-        refId: newProduct._id.toString(),
-        reference: ReferenceType.PRODUCT,
-        businessId,
-      };
-      const updatedProduct = await this.mediaServices.create(
-        loggedInUser,
-        images,
-        uploadImageDto,
-      );
+      await this.mockDataService.createImpressionEngagementInterface({
+        productId: product._id,
+      });
 
-      return updatedProduct;
+      if (images?.length) {
+        const uploadImageDto = {
+          refId: newProduct._id.toString(),
+          reference: ReferenceType.PRODUCT,
+          businessId,
+        };
+        const updatedProduct = await this.mediaServices.create(
+          loggedInUser,
+          images,
+          uploadImageDto,
+        );
+
+        return updatedProduct;
+      }
+
+      return product;
+    } catch (err) {
+      this.logger.error('[PRODUCT]: FAILED TO CREATE', {
+        err: err.message,
+      });
+      exceptionHandling(err);
     }
-
-    return product;
   }
 
   async findOne(productId: string | mongoose.Types.ObjectId): Promise<Product> {
@@ -481,56 +503,74 @@ export class ProductsService {
         throw new NotFoundException(ServerErrors.PRODUCT.NOT_FOUND);
       }
 
+      this.logger.info('[PRODUCT]: UPDATED', { message: updatedProduct });
+
       return updatedProduct;
     } catch (err) {
+      this.logger.error('[PRODUCT]: FAILED TO UPDATE', {
+        err: err.message,
+      });
       exceptionHandling(err);
     }
   }
 
   async uploadMedia(command: UploadMediaCommand) {
-    const updatedField = {
-      updatedBy: command.loggedInUserId,
-      updatedAt: new Date(),
-    };
-
-    let updatedProduct: mongoose.Document<unknown, {}, Product> &
-      Product & {
-        _id: mongoose.Types.ObjectId;
+    try {
+      const updatedField = {
+        updatedBy: command.loggedInUserId,
+        updatedAt: new Date(),
       };
-    if (command.role === UserType.SUPERADMIN) {
-      updatedProduct = await updateOneByManyFields<Product>(
-        this.ProductModel,
-        {
-          _id: command.productId,
-          businessId: command.businessId,
-        },
-        {
-          $push: { images: { $each: command.body } },
-          $set: updatedField,
-        },
-      );
-    } else {
-      updatedProduct = await updateOneByManyFields<Product>(
-        this.ProductModel,
-        {
-          _id: command.productId,
-          businessId: command.businessId,
-          $or: [
-            { primaryUserId: command.loggedInUserId },
-            { collaboratorId: command.loggedInUserId },
-          ],
-        },
-        {
-          $push: { images: { $each: command.body } },
-          $set: updatedField,
-        },
-      );
-    }
 
-    if (!updatedProduct) {
-      throw new NotFoundException(ServerErrors.PRODUCT.NOT_FOUND);
+      let updatedProduct: mongoose.Document<unknown, {}, Product> &
+        Product & {
+          _id: mongoose.Types.ObjectId;
+        };
+      if (command.role === UserType.SUPERADMIN) {
+        updatedProduct = await updateOneByManyFields<Product>(
+          this.ProductModel,
+          {
+            _id: command.productId,
+            businessId: command.businessId,
+          },
+          {
+            $push: { images: { $each: command.body } },
+            $set: updatedField,
+          },
+        );
+      } else {
+        updatedProduct = await updateOneByManyFields<Product>(
+          this.ProductModel,
+          {
+            _id: command.productId,
+            businessId: command.businessId,
+            $or: [
+              { primaryUserId: command.loggedInUserId },
+              { collaboratorId: command.loggedInUserId },
+            ],
+          },
+          {
+            $push: { images: { $each: command.body } },
+            $set: updatedField,
+          },
+        );
+      }
+
+      if (!updatedProduct) {
+        throw new NotFoundException(ServerErrors.PRODUCT.NOT_FOUND);
+      }
+
+      this.logger.info(`[PRODUCT]: UPLOADED IMAGES for ${command.productId}`);
+
+      return updatedProduct;
+    } catch (err) {
+      this.logger.error(
+        `[PRODUCT]: FAILED TO UPLOAD IMAGE productId:${command.productId}`,
+        {
+          err: err.message,
+        },
+      );
+      exceptionHandling(err);
     }
-    return updatedProduct;
   }
 
   async softDelete(
@@ -575,6 +615,8 @@ export class ProductsService {
         throw new NotFoundException(ServerErrors.PRODUCT.NOT_FOUND);
       }
 
+      this.logger.info('[PRODUCT]: DELETED ', { message: deletedProduct });
+
       // remove from business field
 
       await this.businessService.removeProductFromBusiness(
@@ -583,6 +625,9 @@ export class ProductsService {
       );
       return deletedProduct;
     } catch (err) {
+      this.logger.error('[PRODUCT]: FAILED TO DELETE', {
+        err: err.message,
+      });
       exceptionHandling(err);
     }
   }

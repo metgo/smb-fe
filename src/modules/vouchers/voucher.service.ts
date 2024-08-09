@@ -10,6 +10,8 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 
 import { calculateTotalAmount } from 'src/common/calculate-amounts';
 import { checkExpireDate, twoYearExpireDate } from 'src/common/expireDate';
@@ -71,6 +73,8 @@ import { getUniqueSet } from 'src/common/get-unique-set';
 @Injectable()
 export class VoucherService {
   constructor(
+    @Inject(WINSTON_MODULE_PROVIDER)
+    private readonly logger: Logger,
     @InjectModel('Voucher')
     private readonly VoucherModel: Model<Voucher>,
     private readonly configService: ConfigService,
@@ -113,6 +117,8 @@ export class VoucherService {
         }),
       );
 
+      this.logger.info('[VOUCHER]: CREATED', { message: voucherId });
+
       const paymentLink = await this.paymentService.generateLink({
         amount: totalAmount,
         currency: Currency.ILS,
@@ -125,6 +131,9 @@ export class VoucherService {
 
       return paymentLink;
     } catch (err) {
+      this.logger.error('[VOUCHER]: FAILED TO CREATE', {
+        err: err.message,
+      });
       exceptionHandling(err);
     }
   }
@@ -166,6 +175,10 @@ export class VoucherService {
         }),
       );
 
+      this.logger.info('[VOUCHER]: CREATED BY ADMIN', {
+        message: voucherCodes,
+      });
+
       // send emails?
       const VOUCHERCODE = await voucherCodes
         .map(code => `\n${code}`)
@@ -185,6 +198,9 @@ export class VoucherService {
 
       return vouchers;
     } catch (err) {
+      this.logger.error('[VOUCHER]: FAILED TO CREATE BY ADMIN', {
+        err: err.message,
+      });
       exceptionHandling(err);
     }
   }
@@ -243,6 +259,8 @@ export class VoucherService {
         }),
       );
 
+      this.logger.info('[REWARD_VOUCHER]: CREATED', { message: voucherCodes });
+
       // updateRewardLimit
       await this.rewardService.updateUsage(
         campaignReward.rewardId._id,
@@ -282,6 +300,9 @@ export class VoucherService {
 
       return vouchers;
     } catch (err) {
+      this.logger.error('[REWARD_VOUCHER]: FAILED TO REWARD VOUCHER', {
+        err: err.message,
+      });
       exceptionHandling(err);
     }
   }
@@ -675,94 +696,106 @@ export class VoucherService {
   }
 
   async assignUser(command: AssignVoucherCommand) {
-    const { loggedInUser, body } = command;
-    const select = disSelect;
+    try {
+      const { loggedInUser, body } = command;
+      const select = disSelect;
 
-    const populate = {
-      path: 'campId',
-      select: `${disSelect}`,
-      populate: {
-        path: 'dmoIds',
+      const populate = {
+        path: 'campId',
         select: `${disSelect}`,
-      },
-    };
+        populate: {
+          path: 'dmoIds',
+          select: `${disSelect}`,
+        },
+      };
 
-    const [availableVoucher, assignedUser] = await Promise.all([
-      this.VoucherModel.findOne({
-        code: body.code,
-        paymentStatus: VoucherPaymentStatus.PAID,
-        $and: [
-          {
-            $or: [{ expireDate: null }, { expireDate: { $gte: new Date() } }],
-          },
-          {
-            $or: [
-              {
-                createdBy: loggedInUser.id,
-                assignedTo: null,
-                waitingUserEmail: null,
-              },
-              { assignedTo: loggedInUser.id },
-            ],
-          },
-        ],
-      })
-        .select(select)
-        .populate(populate)
-        .exec(),
-      this.usersService.findByEmailOrNull(body.email),
-    ]);
+      const [availableVoucher, assignedUser] = await Promise.all([
+        this.VoucherModel.findOne({
+          code: body.code,
+          paymentStatus: VoucherPaymentStatus.PAID,
+          $and: [
+            {
+              $or: [{ expireDate: null }, { expireDate: { $gte: new Date() } }],
+            },
+            {
+              $or: [
+                {
+                  createdBy: loggedInUser.id,
+                  assignedTo: null,
+                  waitingUserEmail: null,
+                },
+                { assignedTo: loggedInUser.id },
+              ],
+            },
+          ],
+        })
+          .select(select)
+          .populate(populate)
+          .exec(),
+        this.usersService.findByEmailOrNull(body.email),
+      ]);
 
-    if (!availableVoucher) {
-      throw new NotFoundException(ServerErrors.VOUCHER.CANNOT_ASSIGN);
+      if (!availableVoucher) {
+        throw new NotFoundException(ServerErrors.VOUCHER.CANNOT_ASSIGN);
+      }
+
+      const updateField = {
+        assignedTo: assignedUser ? assignedUser._id : null,
+        assignedAt: new Date(),
+        waitingUserEmail: assignedUser ? null : body.email,
+        status: VoucherStatus.ASSIGNED,
+        updatedBy: loggedInUser.id,
+        expireDate: availableVoucher.expireDate
+          ? availableVoucher.expireDate
+          : twoYearExpireDate(),
+      };
+
+      const assignedVoucher = await updateById<Voucher>(
+        this.VoucherModel,
+        availableVoucher._id,
+        updateField,
+      );
+
+      if (!assignedVoucher) {
+        throw new NotFoundException(ServerErrors.VOUCHER.CANNOT_ASSIGN);
+      }
+
+      this.logger.info('[VOUCHER]: ASSIGNED', {
+        message: assignedVoucher,
+      });
+
+      const campaign: any = availableVoucher?.campId;
+
+      await this.mailchimpService.sendTransactionalEmail({
+        to: body?.email,
+        templatedId: DynamicHebrewTemplate.VoucherAssignedToYou,
+        mergeVars: {
+          CAMPAIGN: campaign?.name,
+          FNAME: `${loggedInUser?.firstName} ${loggedInUser?.lastName}`,
+          ENTITY: campaign?.dmoIds[0]?.name,
+          WEBSITE: campaign?.link,
+          SLOGAN: campaign?.slogan,
+          VOUCHERCODE: body?.code,
+          VOUCHERAMOUNT: assignedVoucher?.remainingAmount,
+          LOGO1:
+            campaign?.dmoIds[0]?.logoPath || emailDefaultTemplate.SIDE_LOGO,
+          LOGO2: emailDefaultTemplate.MAIN_LOGO,
+          LOGO3: campaign?.logoPath || emailDefaultTemplate.SIDE_LOGO,
+          PRIMARY_BG_COLOR: emailDefaultTemplate.PRIMARY_BG_COLOR,
+          PRIMARY_TEXT_COLOR: emailDefaultTemplate.PRIMARY_TEXT_COLOR,
+          IMAGE1: emailDefaultTemplate.IMAGE1,
+          IMAGE2: campaign?.dmoIds[0]?.imagePath || emailDefaultTemplate.IMAGE2,
+          IMAGE3: campaign?.imagePath || emailDefaultTemplate.IMAGE3,
+        },
+      });
+
+      return assignedVoucher;
+    } catch (err) {
+      this.logger.error('[VOUCHER]: FAILED TO ASSIGN VOUCHER', {
+        err: err.message,
+      });
+      exceptionHandling(err);
     }
-
-    const updateField = {
-      assignedTo: assignedUser ? assignedUser._id : null,
-      assignedAt: new Date(),
-      waitingUserEmail: assignedUser ? null : body.email,
-      status: VoucherStatus.ASSIGNED,
-      updatedBy: loggedInUser.id,
-      expireDate: availableVoucher.expireDate
-        ? availableVoucher.expireDate
-        : twoYearExpireDate(),
-    };
-
-    const assignedVoucher = await updateById<Voucher>(
-      this.VoucherModel,
-      availableVoucher._id,
-      updateField,
-    );
-
-    if (!assignedVoucher) {
-      throw new NotFoundException(ServerErrors.VOUCHER.CANNOT_ASSIGN);
-    }
-
-    const campaign: any = availableVoucher?.campId;
-
-    await this.mailchimpService.sendTransactionalEmail({
-      to: body?.email,
-      templatedId: DynamicHebrewTemplate.VoucherAssignedToYou,
-      mergeVars: {
-        CAMPAIGN: campaign?.name,
-        FNAME: `${loggedInUser?.firstName} ${loggedInUser?.lastName}`,
-        ENTITY: campaign?.dmoIds[0]?.name,
-        WEBSITE: campaign?.link,
-        SLOGAN: campaign?.slogan,
-        VOUCHERCODE: body?.code,
-        VOUCHERAMOUNT: assignedVoucher?.remainingAmount,
-        LOGO1: campaign?.dmoIds[0]?.logoPath || emailDefaultTemplate.SIDE_LOGO,
-        LOGO2: emailDefaultTemplate.MAIN_LOGO,
-        LOGO3: campaign?.logoPath || emailDefaultTemplate.SIDE_LOGO,
-        PRIMARY_BG_COLOR: emailDefaultTemplate.PRIMARY_BG_COLOR,
-        PRIMARY_TEXT_COLOR: emailDefaultTemplate.PRIMARY_TEXT_COLOR,
-        IMAGE1: emailDefaultTemplate.IMAGE1,
-        IMAGE2: campaign?.dmoIds[0]?.imagePath || emailDefaultTemplate.IMAGE2,
-        IMAGE3: campaign?.imagePath || emailDefaultTemplate.IMAGE3,
-      },
-    });
-
-    return assignedVoucher;
   }
 
   async update(id: mongoose.Types.ObjectId[], updateField: object) {
@@ -777,7 +810,12 @@ export class VoucherService {
       if (!updateVoucher) {
         throw new BadRequestException(ServerErrors.VOUCHER.NOT_FOUND);
       }
+
+      this.logger.info('[VOUCHER]: UPDATED', { message: updateVoucher });
     } catch (err) {
+      this.logger.error('[VOUCHER]: FAILED TO UPDATE', {
+        err: err.message,
+      });
       exceptionHandling(err);
     }
   }
@@ -791,6 +829,9 @@ export class VoucherService {
         { _id: command.ids },
       );
 
+      this.logger.info('[VOUCHER]: UPDATED AFTER PAYMENT', {
+        message: voucherDetails,
+      });
       // send emails
 
       const voucherCodes = voucherDetails
@@ -812,6 +853,9 @@ export class VoucherService {
 
       return voucherDetails;
     } catch (err) {
+      this.logger.error('[VOUCHER]: FAILED TO UPDATE AFTER PAYMENT SUCCESS', {
+        err: err.message,
+      });
       exceptionHandling(err);
     }
   }
@@ -819,7 +863,13 @@ export class VoucherService {
   async updateAfterPaymentFailure(command: UpdateVoucherAfterPaymentInterface) {
     try {
       await this.update(command.ids, command.updateField);
+      this.logger.info('[VOUCHER]: UPDATED AFTER PAYMENT FAILURE', {
+        message: command.ids,
+      });
     } catch (err) {
+      this.logger.error('[VOUCHER]: FAILED TO UPDATE AFTER PAYMENT FAILURE', {
+        err: err.message,
+      });
       exceptionHandling(err);
     }
   }
@@ -866,105 +916,152 @@ export class VoucherService {
     voucherId: string,
     totalAmount: number,
   ) {
-    const voucher = await this.getOneById(voucherId);
+    try {
+      const voucher = await this.getOneById(voucherId);
 
-    if (voucher.paymentStatus !== VoucherPaymentStatus.PAID) {
-      throw new UnprocessableEntityException(ServerErrors.VOUCHER.UNPAID);
-    }
-
-    if (voucher.expireDate) {
-      const isAvailable = checkExpireDate(voucher.expireDate);
-
-      if (!isAvailable) {
-        return;
+      if (voucher.paymentStatus !== VoucherPaymentStatus.PAID) {
+        throw new UnprocessableEntityException(ServerErrors.VOUCHER.UNPAID);
       }
+
+      if (voucher.expireDate) {
+        const isAvailable = checkExpireDate(voucher.expireDate);
+
+        if (!isAvailable) {
+          return;
+        }
+      }
+
+      const remainingAmount = remainingAmountCalculation(
+        voucher.remainingAmount,
+        totalAmount,
+      );
+      const amountToBeRedeemed = remainingAmountCalculation(
+        totalAmount,
+        voucher.remainingAmount,
+      );
+
+      const updatedField = {
+        updatedBy: loggedInUserId,
+        updatedAt: new Date(),
+        remainingAmount,
+        expireDate: voucher?.expireDate
+          ? voucher?.expireDate
+          : twoYearExpireDate(),
+      };
+
+      const updatedVoucher = await this.VoucherModel.findOneAndUpdate(
+        { _id: voucherId },
+        updatedField,
+        { new: true },
+      );
+
+      if (!updatedVoucher) {
+        throw new NotFoundException(ServerErrors.VOUCHER.NOT_FOUND);
+      }
+
+      this.logger.info('[VOUCHER]: AMOUNT UPDATED', {
+        message: updatedVoucher,
+      });
+
+      return {
+        amountToBeRedeemed,
+        redeemedAmount: totalAmount - amountToBeRedeemed,
+      };
+    } catch (err) {
+      this.logger.error('[VOUCHER]: FAILED TO UPDATE AMOUNT', {
+        err: err.message,
+      });
+      exceptionHandling(err);
     }
-
-    const remainingAmount = remainingAmountCalculation(
-      voucher.remainingAmount,
-      totalAmount,
-    );
-    const amountToBeRedeemed = remainingAmountCalculation(
-      totalAmount,
-      voucher.remainingAmount,
-    );
-
-    const updatedField = {
-      updatedBy: loggedInUserId,
-      updatedAt: new Date(),
-      remainingAmount,
-      expireDate: voucher?.expireDate
-        ? voucher?.expireDate
-        : twoYearExpireDate(),
-    };
-
-    const updatedVoucher = await this.VoucherModel.findOneAndUpdate(
-      { _id: voucherId },
-      updatedField,
-      { new: true },
-    );
-
-    if (!updatedVoucher) {
-      throw new NotFoundException(ServerErrors.VOUCHER.NOT_FOUND);
-    }
-
-    return {
-      amountToBeRedeemed,
-      redeemedAmount: totalAmount - amountToBeRedeemed,
-    };
   }
 
   async updateAmountAfterOrderFailed(vouchers: any) {
-    await Promise.all(
-      vouchers.map(async voucherDetail => {
-        await this.VoucherModel.findOneAndUpdate(
-          { _id: voucherDetail.id },
-          {
-            $set: { updatedAt: new Date() },
-            $inc: { remainingAmount: +voucherDetail.redeemedAmount },
-          },
-          { new: true },
-        );
-      }),
-    );
+    try {
+      await Promise.all(
+        vouchers.map(async voucherDetail => {
+          await this.VoucherModel.findOneAndUpdate(
+            { _id: voucherDetail.id },
+            {
+              $set: { updatedAt: new Date() },
+              $inc: { remainingAmount: +voucherDetail.redeemedAmount },
+            },
+            { new: true },
+          );
+        }),
+      );
+      this.logger.info('[VOUCHER]: UPDATED AFTER ORDER FAILED', {
+        message: vouchers,
+      });
+    } catch (err) {
+      this.logger.error('[VOUCHER]: FAILED TO UPDATE AFTER ORDER FAILED', {
+        err: err.message,
+      });
+      exceptionHandling(err);
+    }
   }
 
   async updateVoucherCreatedDetails(email: string, userId: string) {
-    const filterQuery = {
-      createdByEmail: email,
-    };
+    try {
+      const filterQuery = {
+        createdByEmail: email,
+      };
 
-    const updateField = {
-      createdBy: userId,
-      createdByEmail: null,
-      updatedBy: userId,
-      updatedAt: new Date(),
-    };
+      const updateField = {
+        createdBy: userId,
+        createdByEmail: null,
+        updatedBy: userId,
+        updatedAt: new Date(),
+      };
 
-    await updateManyByManyFields<Voucher>(
-      this.VoucherModel,
-      filterQuery,
-      updateField,
-    );
+      await updateManyByManyFields<Voucher>(
+        this.VoucherModel,
+        filterQuery,
+        updateField,
+      );
+      this.logger.info(
+        '[VOUCHER]: UPDATED VOUCHER CREATED DETAILS AFTER REGISTER',
+      );
+    } catch (err) {
+      this.logger.error(
+        '[VOUCHER]: FAILED TO UPDATE VOUCHER CREATED DETAILS AFTER REGISTER',
+        {
+          err: err.message,
+        },
+      );
+      exceptionHandling(err);
+    }
   }
 
   async updateVoucherAssignedDetails(email: string, userId: string) {
-    const filterQuery = {
-      waitingUserEmail: email,
-    };
+    try {
+      const filterQuery = {
+        waitingUserEmail: email,
+      };
 
-    const updateField = {
-      assignedTo: userId,
-      waitingUserEmail: null,
-      updatedBy: userId,
-      updatedAt: new Date(),
-    };
+      const updateField = {
+        assignedTo: userId,
+        waitingUserEmail: null,
+        updatedBy: userId,
+        updatedAt: new Date(),
+      };
 
-    await updateManyByManyFields<Voucher>(
-      this.VoucherModel,
-      filterQuery,
-      updateField,
-    );
+      await updateManyByManyFields<Voucher>(
+        this.VoucherModel,
+        filterQuery,
+        updateField,
+      );
+      this.logger.info(
+        '[VOUCHER]: UPDATED VOUCHER ASSIGNED DETAILS AFTER REGISTER',
+      );
+    } catch (err) {
+      this.logger.error(
+        '[VOUCHER]: FAILED TO UPDATE VOUCHER ASSIGNED DETAILS AFTER REGISTER',
+        {
+          err: err.message,
+        },
+      );
+      exceptionHandling(err);
+    }
   }
 
   async triggerReward(loggedInUser: LoggedInUserInterface, orderId: string) {
@@ -1401,33 +1498,44 @@ export class VoucherService {
   }
 
   async sendVoucherDetailEmail(id: string) {
-    const populate = {
-      path: 'assignedTo',
-      select: `${disSelect}`,
-    };
+    try {
+      const populate = {
+        path: 'assignedTo',
+        select: `${disSelect}`,
+      };
 
-    const voucher = await this.VoucherModel.findOne({
-      _id: id,
-      deletedAt: null,
-      deletedBy: null,
-    }).populate(populate);
+      const voucher = await this.VoucherModel.findOne({
+        _id: id,
+        deletedAt: null,
+        deletedBy: null,
+      }).populate(populate);
 
-    const assignedTo: any = voucher?.assignedTo;
+      const assignedTo: any = voucher?.assignedTo;
 
-    const emailRecipient = assignedTo?.email || voucher?.waitingUserEmail;
+      const emailRecipient = assignedTo?.email || voucher?.waitingUserEmail;
 
-    if (emailRecipient) {
-      await this.mailchimpService.sendTransactionalEmail({
-        to: emailRecipient,
-        templatedId: HebrewTemplate.REEDEMABLE_VOUCHER_REMINDER,
-        mergeVars: {
-          BUYERNAME: voucher?.name,
-          VOUCHERCODE: voucher?.code,
-          VOUCHERAMOUNT: voucher?.remainingAmount,
-          VOUCHERACTUALAMOUNT: voucher?.amount,
-        },
+      if (emailRecipient) {
+        await this.mailchimpService.sendTransactionalEmail({
+          to: emailRecipient,
+          templatedId: HebrewTemplate.REEDEMABLE_VOUCHER_REMINDER,
+          mergeVars: {
+            BUYERNAME: voucher?.name,
+            VOUCHERCODE: voucher?.code,
+            VOUCHERAMOUNT: voucher?.remainingAmount,
+            VOUCHERACTUALAMOUNT: voucher?.amount,
+          },
+        });
+      }
+
+      this.logger.info('[VOUCHER]: SENT EMAIL OF VOUCHER DETAIL', {
+        message: voucher,
       });
+      return voucher;
+    } catch (err) {
+      this.logger.error('[VOUCHER]: FAILED TO SEND EMAIL OF VOUCHER DETAIL', {
+        err: err.message,
+      });
+      exceptionHandling(err);
     }
-    return voucher;
   }
 }

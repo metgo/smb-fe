@@ -4,6 +4,7 @@ import {
   ConflictException,
   ForbiddenException,
   GoneException,
+  Inject,
   Injectable,
   NotFoundException,
   UnauthorizedException,
@@ -11,7 +12,9 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { ObjectId } from 'typeorm';
+import { Logger } from 'winston';
 
 import { ServerErrors, emailDefaultTemplate } from 'src/common/constant';
 import {
@@ -92,6 +95,8 @@ import { UpdateLastLogin } from 'src/modules/users/users.type';
 @Injectable()
 export class ExternalApiServices {
   constructor(
+    @Inject(WINSTON_MODULE_PROVIDER)
+    private readonly logger: Logger,
     @InjectModel('Business')
     private BusinessModel: Model<Business>,
     @InjectModel('BussCategory')
@@ -123,22 +128,33 @@ export class ExternalApiServices {
   ) {}
 
   async create(loggedInUser: string, body: CreateExternalApiDTO) {
-    const companyDetails = {
-      name: body.companyName,
-      phone: body.companyPhone,
-      email: body.companyEmail,
-      address: body.companyAddress,
-    };
-    const newExternalApi = new this.ExternalApiModel({
-      ...body,
-      companyDetails,
-      createdBy: loggedInUser,
-      identifierId: generateRandomIdentifier(
-        body.companyName.substring(0, 4),
-        18,
-      ),
-    });
-    return newExternalApi.save();
+    try {
+      const companyDetails = {
+        name: body.companyName,
+        phone: body.companyPhone,
+        email: body.companyEmail,
+        address: body.companyAddress,
+      };
+      const newExternalApi = new this.ExternalApiModel({
+        ...body,
+        companyDetails,
+        createdBy: loggedInUser,
+        identifierId: generateRandomIdentifier(
+          body.companyName.substring(0, 4),
+          18,
+        ),
+      });
+
+      const newExternalAPI = await newExternalApi.save();
+      this.logger.info('[EXTERNAL_API]: CREATED', { message: newExternalAPI });
+
+      return newExternalAPI;
+    } catch (err) {
+      this.logger.error('[EXTERNAL_API]: FAILED TO CREATE', {
+        err: err.message,
+      });
+      exceptionHandling(err);
+    }
   }
 
   async getAll(queries: CommonFilterQuery) {
@@ -186,25 +202,40 @@ export class ExternalApiServices {
     externalApiId: string,
     body: CreateExternalApiDTO,
   ) {
-    const companyDetails = {
-      name: body.companyName,
-      phone: body.companyPhone,
-      email: body.companyEmail,
-      address: body.companyAddress,
-    };
+    try {
+      const companyDetails = {
+        name: body.companyName,
+        phone: body.companyPhone,
+        email: body.companyEmail,
+        address: body.companyAddress,
+      };
 
-    const updateField = { ...body, companyDetails, updatedBy: loggedInUserId };
+      const updateField = {
+        ...body,
+        companyDetails,
+        updatedBy: loggedInUserId,
+      };
 
-    const updatedExternalApi = await updateById<ExternalApi>(
-      this.ExternalApiModel,
-      externalApiId,
-      updateField,
-    );
+      const updatedExternalApi = await updateById<ExternalApi>(
+        this.ExternalApiModel,
+        externalApiId,
+        updateField,
+      );
 
-    if (!updatedExternalApi) {
-      throw new NotFoundException(ServerErrors.EXTERNAL_API.NOT_FOUND);
+      if (!updatedExternalApi) {
+        throw new NotFoundException(ServerErrors.EXTERNAL_API.NOT_FOUND);
+      }
+      this.logger.info('[EXTERNAL_API]: UPDATED', {
+        message: updatedExternalApi,
+      });
+
+      return updatedExternalApi;
+    } catch (err) {
+      this.logger.error('[EXTERNAL_API]: FAILED TO UPDATE', {
+        err: err.message,
+      });
+      exceptionHandling(err);
     }
-    return updatedExternalApi;
   }
 
   async softDelete(loggedInUserId: string, externalApiId: string) {
@@ -298,6 +329,10 @@ export class ExternalApiServices {
         }),
       );
 
+      this.logger.info('[EXTERNAL_API_REWARD_VOUCHER_BY_CAMPAIGN]: CREATED', {
+        message: voucherCodes,
+      });
+
       // updateRewardLimit
       await this.deductRewardUsage(
         campaignReward.rewardId._id,
@@ -337,20 +372,35 @@ export class ExternalApiServices {
 
       return vouchers;
     } catch (err) {
+      this.logger.error(
+        '[EXTERNAL_API_REWARD_VOUCHER_BY_CAMPAIGN]: FAILED TO CREATE',
+        {
+          err: err.message,
+        },
+      );
       exceptionHandling(err);
     }
   }
 
   async registerUser(body: ExternalApiRegisterRequest) {
-    const externalApi = await this.findByFieldName(
-      'identifierId',
-      body.identifierId,
-    );
-    const { identifierId, ...rest } = body;
-    const newBody = { ...rest, externalApiId: externalApi._id };
-    const user = await this.userService.create(newBody);
+    try {
+      const externalApi = await this.findByFieldName(
+        'identifierId',
+        body.identifierId,
+      );
+      const { identifierId, ...rest } = body;
+      const newBody = { ...rest, externalApiId: externalApi._id };
+      const user = await this.userService.create(newBody);
 
-    return user;
+      this.logger.info('[EXTERNAL_API_USER]: CREATED', { message: user });
+
+      return user;
+    } catch (err) {
+      this.logger.error('[EXTERNAL_API_USER]: FAILED TO CREATE', {
+        err: err.message,
+      });
+      exceptionHandling(err);
+    }
   }
 
   async login(body: SignInRequest): Promise<LoginInterface> {
@@ -540,42 +590,56 @@ export class ExternalApiServices {
     voucherIds,
     totalAmountOfProduct,
   ) {
-    let voucherInfo = [];
-    const processVouchers = async (
-      vouchers,
-      index = 0,
-      initialRedeemedAmount = 0,
-    ) => {
-      if (
-        index >= vouchers.length
-        || (index > 0 && initialRedeemedAmount === 0)
-      ) {
-        return;
-      }
+    try {
+      let voucherInfo = [];
+      const processVouchers = async (
+        vouchers,
+        index = 0,
+        initialRedeemedAmount = 0,
+      ) => {
+        if (
+          index >= vouchers.length
+          || (index > 0 && initialRedeemedAmount === 0)
+        ) {
+          return;
+        }
 
-      const voucher = vouchers[index];
-      const { amountToBeRedeemed: updateRedeemedAmount, redeemedAmount }
-        = await this.updateVoucherAmount(
-          loggedInUserId,
-          voucher.id,
-          index === 0 ? totalAmountOfProduct : initialRedeemedAmount,
-        );
+        const voucher = vouchers[index];
+        const { amountToBeRedeemed: updateRedeemedAmount, redeemedAmount }
+          = await this.updateVoucherAmount(
+            loggedInUserId,
+            voucher.id,
+            index === 0 ? totalAmountOfProduct : initialRedeemedAmount,
+          );
 
-      voucherInfo = [
-        ...voucherInfo,
+        voucherInfo = [
+          ...voucherInfo,
+          {
+            id: voucher.id,
+            redeemedAmount,
+          },
+        ];
+
+        await processVouchers(vouchers, index + 1, updateRedeemedAmount);
+      };
+
+      await processVouchers(voucherIds);
+      voucherInfo.filter(Boolean);
+
+      this.logger.info('[EXTERNAL_API_ORDER]: PROCESSED VOUCHER FOR ORDER', {
+        message: voucherInfo,
+      });
+
+      return voucherInfo;
+    } catch (err) {
+      this.logger.error(
+        '[EXTERNAL_API_ORDER]: FAILED TO PROCESS VOUCHER FOR ORDER',
         {
-          id: voucher.id,
-          redeemedAmount,
+          err: err.message,
         },
-      ];
-
-      await processVouchers(vouchers, index + 1, updateRedeemedAmount);
-    };
-
-    await processVouchers(voucherIds);
-    voucherInfo.filter(Boolean);
-
-    return voucherInfo;
+      );
+      exceptionHandling(err);
+    }
   }
 
   async createOrder(command: CreateOrderCommand): Promise<any> {
@@ -608,6 +672,10 @@ export class ExternalApiServices {
         });
 
         const order = await newOrder.save();
+
+        this.logger.info('[EXTERNAL_API_ORDERS]: CREATED-PAID BY VOUCHER', {
+          message: order,
+        });
         await Promise.all(
           order.products.map(async product => {
             await this.createOrderProduct({
@@ -709,6 +777,11 @@ export class ExternalApiServices {
 
       const order = await newOrder.save();
 
+      this.logger.info(
+        `[EXTERNAL_API_ORDERS]: CREATED-PAID BY ${order.paymentMode}`,
+        { message: order },
+      );
+
       const link = await this.paymentService.generateLink({
         amount: totalAmount,
         currency: Currency.ILS,
@@ -721,6 +794,9 @@ export class ExternalApiServices {
 
       return [link];
     } catch (error) {
+      this.logger.error('[EXTERNAL_API_ORDERS]: FAILED TO CREATE ORDER', {
+        err: error.message,
+      });
       exceptionHandling(error);
     }
   }
@@ -978,94 +1054,105 @@ export class ExternalApiServices {
   }
 
   async assignVoucher(command: AssignVoucherCommand) {
-    const { loggedInUser, body } = command;
-    const select = disSelect;
+    try {
+      const { loggedInUser, body } = command;
+      const select = disSelect;
 
-    const populate = {
-      path: 'campId',
-      select: `${disSelect}`,
-      populate: {
-        path: 'dmoIds',
+      const populate = {
+        path: 'campId',
         select: `${disSelect}`,
-      },
-    };
+        populate: {
+          path: 'dmoIds',
+          select: `${disSelect}`,
+        },
+      };
 
-    const [availableVoucher, assignedUser] = await Promise.all([
-      this.VoucherModel.findOne({
-        code: body.code,
-        paymentStatus: VoucherPaymentStatus.PAID,
-        $and: [
-          {
-            $or: [{ expireDate: null }, { expireDate: { $gte: new Date() } }],
-          },
-          {
-            $or: [
-              {
-                createdBy: loggedInUser.id,
-                assignedTo: null,
-                waitingUserEmail: null,
-              },
-              { assignedTo: loggedInUser.id },
-            ],
-          },
-        ],
-      })
-        .select(select)
-        .populate(populate)
-        .exec(),
-      this.userService.findByEmailOrNull(body.email),
-    ]);
+      const [availableVoucher, assignedUser] = await Promise.all([
+        this.VoucherModel.findOne({
+          code: body.code,
+          paymentStatus: VoucherPaymentStatus.PAID,
+          $and: [
+            {
+              $or: [{ expireDate: null }, { expireDate: { $gte: new Date() } }],
+            },
+            {
+              $or: [
+                {
+                  createdBy: loggedInUser.id,
+                  assignedTo: null,
+                  waitingUserEmail: null,
+                },
+                { assignedTo: loggedInUser.id },
+              ],
+            },
+          ],
+        })
+          .select(select)
+          .populate(populate)
+          .exec(),
+        this.userService.findByEmailOrNull(body.email),
+      ]);
 
-    if (!availableVoucher) {
-      throw new NotFoundException(ServerErrors.VOUCHER.CANNOT_ASSIGN);
+      if (!availableVoucher) {
+        throw new NotFoundException(ServerErrors.VOUCHER.CANNOT_ASSIGN);
+      }
+
+      const updateField = {
+        assignedTo: assignedUser ? assignedUser._id : null,
+        waitingUserEmail: assignedUser ? null : body.email,
+        status: VoucherStatus.ASSIGNED,
+        assignedAt: new Date(),
+        updatedBy: loggedInUser.id,
+        expireDate: availableVoucher.expireDate
+          ? availableVoucher.expireDate
+          : twoYearExpireDate(),
+      };
+
+      const assignedVoucher = await updateById<Voucher>(
+        this.VoucherModel,
+        availableVoucher._id,
+        updateField,
+      );
+
+      if (!assignedVoucher) {
+        throw new NotFoundException(ServerErrors.VOUCHER.CANNOT_ASSIGN);
+      }
+      this.logger.info('[EXTERNAL_API_VOUCHER]: ASSSIGNED', {
+        message: assignedVoucher,
+      });
+
+      const campaign: any = availableVoucher?.campId;
+
+      await this.mailchimpService.sendTransactionalEmail({
+        to: body?.email,
+        templatedId: DynamicHebrewTemplate.VoucherAssignedToYou,
+        mergeVars: {
+          CAMPAIGN: campaign?.name,
+          FNAME: `${loggedInUser?.firstName} ${loggedInUser?.lastName}`,
+          ENTITY: campaign?.dmoIds[0]?.name,
+          WEBSITE: campaign?.link,
+          SLOGAN: campaign?.slogan,
+          VOUCHERCODE: body?.code,
+          VOUCHERAMOUNT: assignedVoucher?.remainingAmount,
+          LOGO1:
+            campaign?.dmoIds[0]?.logoPath || emailDefaultTemplate.SIDE_LOGO,
+          LOGO2: emailDefaultTemplate.MAIN_LOGO,
+          LOGO3: campaign?.logoPath || emailDefaultTemplate.SIDE_LOGO,
+          PRIMARY_BG_COLOR: emailDefaultTemplate.PRIMARY_BG_COLOR,
+          PRIMARY_TEXT_COLOR: emailDefaultTemplate.PRIMARY_TEXT_COLOR,
+          IMAGE1: emailDefaultTemplate.IMAGE1,
+          IMAGE2: campaign?.dmoIds[0]?.imagePath || emailDefaultTemplate.IMAGE2,
+          IMAGE3: campaign?.imagePath || emailDefaultTemplate.IMAGE3,
+        },
+      });
+
+      return assignedVoucher;
+    } catch (err) {
+      this.logger.error('[EXTERNAL_API_VOUCHER]: FAILED TO ASSIGN', {
+        err: err.message,
+      });
+      exceptionHandling(err);
     }
-
-    const updateField = {
-      assignedTo: assignedUser ? assignedUser._id : null,
-      waitingUserEmail: assignedUser ? null : body.email,
-      status: VoucherStatus.ASSIGNED,
-      assignedAt: new Date(),
-      updatedBy: loggedInUser.id,
-      expireDate: availableVoucher.expireDate
-        ? availableVoucher.expireDate
-        : twoYearExpireDate(),
-    };
-
-    const assignedVoucher = await updateById<Voucher>(
-      this.VoucherModel,
-      availableVoucher._id,
-      updateField,
-    );
-
-    if (!assignedVoucher) {
-      throw new NotFoundException(ServerErrors.VOUCHER.CANNOT_ASSIGN);
-    }
-
-    const campaign: any = availableVoucher?.campId;
-
-    await this.mailchimpService.sendTransactionalEmail({
-      to: body?.email,
-      templatedId: DynamicHebrewTemplate.VoucherAssignedToYou,
-      mergeVars: {
-        CAMPAIGN: campaign?.name,
-        FNAME: `${loggedInUser?.firstName} ${loggedInUser?.lastName}`,
-        ENTITY: campaign?.dmoIds[0]?.name,
-        WEBSITE: campaign?.link,
-        SLOGAN: campaign?.slogan,
-        VOUCHERCODE: body?.code,
-        VOUCHERAMOUNT: assignedVoucher?.remainingAmount,
-        LOGO1: campaign?.dmoIds[0]?.logoPath || emailDefaultTemplate.SIDE_LOGO,
-        LOGO2: emailDefaultTemplate.MAIN_LOGO,
-        LOGO3: campaign?.logoPath || emailDefaultTemplate.SIDE_LOGO,
-        PRIMARY_BG_COLOR: emailDefaultTemplate.PRIMARY_BG_COLOR,
-        PRIMARY_TEXT_COLOR: emailDefaultTemplate.PRIMARY_TEXT_COLOR,
-        IMAGE1: emailDefaultTemplate.IMAGE1,
-        IMAGE2: campaign?.dmoIds[0]?.imagePath || emailDefaultTemplate.IMAGE2,
-        IMAGE3: campaign?.imagePath || emailDefaultTemplate.IMAGE3,
-      },
-    });
-
-    return assignedVoucher;
   }
 
   async purchaseVoucher(
@@ -1073,48 +1160,60 @@ export class ExternalApiServices {
     query: ExternalApiPostQuery,
     user: LoggedInUserInterface | null,
   ) {
-    const campId = (await this.findCampaignAndReturn('code', dto.campCode))._id;
-    const createdByUserId
-      = user?.email === dto?.email
-        ? user?.id
-        : (await this.userService.findByEmailOrNull(dto.email))?._id;
+    try {
+      const campId = (await this.findCampaignAndReturn('code', dto.campCode))
+        ._id;
+      const createdByUserId
+        = user?.email === dto?.email
+          ? user?.id
+          : (await this.userService.findByEmailOrNull(dto.email))?._id;
 
-    let i: number = 0;
-    const voucherId: any = [];
-    const totalAmount = dto.noOfVoucher * dto.amount;
+      let i: number = 0;
+      const voucherId: any = [];
+      const totalAmount = dto.noOfVoucher * dto.amount;
 
-    const externalApiId = (
-      await this.findByFieldName('identifierId', query.identifierId)
-    )._id;
+      const externalApiId = (
+        await this.findByFieldName('identifierId', query.identifierId)
+      )._id;
 
-    // eslint-disable-next-line no-plusplus
-    for (i = 0; i < dto.noOfVoucher; i++) {
-      const randomCode = generateRandomCode(12);
-      const code = dto.campCode + randomCode;
-      const newVoucher = new this.VoucherModel({
-        ...dto,
-        code,
-        remainingAmount: dto.amount,
-        campId,
-        createdBy: createdByUserId,
-        createdByEmail: createdByUserId ? null : dto.email,
-        externalApiId,
+      // eslint-disable-next-line no-plusplus
+      for (i = 0; i < dto.noOfVoucher; i++) {
+        const randomCode = generateRandomCode(12);
+        const code = dto.campCode + randomCode;
+        const newVoucher = new this.VoucherModel({
+          ...dto,
+          code,
+          remainingAmount: dto.amount,
+          campId,
+          createdBy: createdByUserId,
+          createdByEmail: createdByUserId ? null : dto.email,
+          externalApiId,
+        });
+        newVoucher.save();
+        voucherId.push(newVoucher._id);
+      }
+
+      this.logger.info('[EXTERNAL_API_VOUCHER]: PURCHASED', {
+        message: voucherId,
       });
-      newVoucher.save();
-      voucherId.push(newVoucher._id);
+
+      const paymentLink = await this.paymentService.generateLink({
+        amount: totalAmount,
+        currency: Currency.ILS,
+        purpose: PaymentPurpose.VOUCHER,
+        id: voucherId,
+        customerEmail: dto.email,
+        customerName: dto.name,
+        languagePreference: dto.languagePreference || Locale.ENGLISH,
+      });
+
+      return paymentLink;
+    } catch (err) {
+      this.logger.error('[EXTERNAL_API_VOUCHER]: FAILED TO PURCHASE VOUCHERS', {
+        err: err.message,
+      });
+      exceptionHandling(err);
     }
-
-    const paymentLink = await this.paymentService.generateLink({
-      amount: totalAmount,
-      currency: Currency.ILS,
-      purpose: PaymentPurpose.VOUCHER,
-      id: voucherId,
-      customerEmail: dto.email,
-      customerName: dto.name,
-      languagePreference: dto.languagePreference || Locale.ENGLISH,
-    });
-
-    return paymentLink;
   }
 
   async createVoucherBySuperadmin(
@@ -1158,6 +1257,10 @@ export class ExternalApiServices {
         }),
       );
 
+      this.logger.info('[EXTERNAL_API_VOUCHERS]: CREATED BY SUPERADMIN', {
+        message: voucherCodes,
+      });
+
       // send emails?
       const VOUCHERCODE = await voucherCodes
         .map(code => `\n${code}`)
@@ -1177,6 +1280,12 @@ export class ExternalApiServices {
 
       return vouchers;
     } catch (err) {
+      this.logger.error(
+        '[EXTERNAL_API_VOUCHERS]: FAILED TO CREATE VOUCHERS BY SUPERADMIN',
+        {
+          err: err.message,
+        },
+      );
       exceptionHandling(err);
     }
   }
@@ -1187,75 +1296,86 @@ export class ExternalApiServices {
     userId: string,
     identifierId: string,
   ): Promise<Campaign> {
-    await Promise.all([
-      this.findCampaignByFieldName('name', dto.name),
-      this.findCampaignByFieldName('code', dto.code),
-    ]);
+    try {
+      await Promise.all([
+        this.findCampaignByFieldName('name', dto.name),
+        this.findCampaignByFieldName('code', dto.code),
+      ]);
 
-    if (!files?.length) {
-      throw new BadRequestException('Please upload logo and campaign image');
-    }
+      if (!files?.length) {
+        throw new BadRequestException('Please upload logo and campaign image');
+      }
 
-    let imageCount: number = 0;
+      let imageCount: number = 0;
 
-    await Promise.all(
-      // eslint-disable-next-line array-callback-return
-      files.map(file => {
-        if (file.fieldname === 'logoPath' || file.fieldname === 'campImage') {
-          imageCount += 1;
-        }
-      }),
-    );
+      await Promise.all(
+        // eslint-disable-next-line array-callback-return
+        files.map(file => {
+          if (file.fieldname === 'logoPath' || file.fieldname === 'campImage') {
+            imageCount += 1;
+          }
+        }),
+      );
 
-    if (imageCount !== 2) {
-      throw new BadRequestException('Please upload logo and campaign image');
-    }
+      if (imageCount !== 2) {
+        throw new BadRequestException('Please upload logo and campaign image');
+      }
 
-    let campImage: string;
-    let logoPath: string;
-    await Promise.all(
-      files.map(async file => {
-        if (file.fieldname === 'logoPath') {
-          logoPath = await this.gcpBucketServices.upload(file);
-        }
+      let campImage: string;
+      let logoPath: string;
+      await Promise.all(
+        files.map(async file => {
+          if (file.fieldname === 'logoPath') {
+            logoPath = await this.gcpBucketServices.upload(file);
+          }
 
-        if (file.fieldname === 'campImage') {
-          campImage = await this.gcpBucketServices.upload(file);
-        }
-      }),
-    );
+          if (file.fieldname === 'campImage') {
+            campImage = await this.gcpBucketServices.upload(file);
+          }
+        }),
+      );
 
-    const { rewardAmount, rewardVoucherLimit, ...body } = dto;
+      const { rewardAmount, rewardVoucherLimit, ...body } = dto;
 
-    const externalApiId = (
-      await this.findByFieldName('identifierId', identifierId)
-    )._id;
+      const externalApiId = (
+        await this.findByFieldName('identifierId', identifierId)
+      )._id;
 
-    let campaign: any = {
-      ...body,
-      imagePath: campImage,
-      logoPath,
-      createdBy: userId,
-      externalApiId,
-    };
-
-    if (rewardAmount) {
-      // create reward;
-      const reward = await this.createReward({
+      let campaign: any = {
+        ...body,
+        imagePath: campImage,
+        logoPath,
         createdBy: userId,
-        amount: rewardAmount,
-        voucherLimit: rewardVoucherLimit,
+        externalApiId,
+      };
+
+      if (rewardAmount) {
+        // create reward;
+        const reward = await this.createReward({
+          createdBy: userId,
+          amount: rewardAmount,
+          voucherLimit: rewardVoucherLimit,
+        });
+
+        campaign = {
+          ...campaign,
+          rewardId: reward._id,
+        };
+      }
+
+      const newCampaign = new this.CampaignModel(campaign);
+      await newCampaign.save();
+      this.logger.info('[EXTERNAL_API_CAMPAIGN]: CREATED', {
+        message: newCampaign,
       });
 
-      campaign = {
-        ...campaign,
-        rewardId: reward._id,
-      };
+      return newCampaign;
+    } catch (err) {
+      this.logger.error('[EXTERNAL_API_CAMPAIGN]: FAILED TO CREATE', {
+        err: err.message,
+      });
+      exceptionHandling(err);
     }
-
-    const newCampaign = new this.CampaignModel(campaign);
-    await newCampaign.save();
-    return newCampaign;
   }
 
   async getVoucherByCodeAndProduct(query: GetOneVoucherInterface) {
@@ -1462,52 +1582,66 @@ export class ExternalApiServices {
     voucherId: string,
     totalAmount: number,
   ) {
-    const voucher = await this.getOneVoucherById(voucherId);
+    try {
+      const voucher = await this.getOneVoucherById(voucherId);
 
-    if (voucher.paymentStatus !== VoucherPaymentStatus.PAID) {
-      throw new UnprocessableEntityException(ServerErrors.VOUCHER.UNPAID);
-    }
-
-    if (voucher.expireDate) {
-      const isAvailable = checkExpireDate(voucher.expireDate);
-
-      if (!isAvailable) {
-        return;
+      if (voucher.paymentStatus !== VoucherPaymentStatus.PAID) {
+        throw new UnprocessableEntityException(ServerErrors.VOUCHER.UNPAID);
       }
+
+      if (voucher.expireDate) {
+        const isAvailable = checkExpireDate(voucher.expireDate);
+
+        if (!isAvailable) {
+          return;
+        }
+      }
+
+      const remainingAmount = remainingAmountCalculation(
+        voucher.remainingAmount,
+        totalAmount,
+      );
+      const amountToBeRedeemed = remainingAmountCalculation(
+        totalAmount,
+        voucher.remainingAmount,
+      );
+
+      const updatedField = {
+        updatedBy: loggedInUserId,
+        updatedAt: new Date(),
+        remainingAmount,
+        expireDate: voucher?.expireDate
+          ? voucher?.expireDate
+          : twoYearExpireDate(),
+      };
+
+      const updatedVoucher = await this.VoucherModel.findOneAndUpdate(
+        { _id: voucherId },
+        updatedField,
+        { new: true },
+      );
+
+      if (!updatedVoucher) {
+        throw new NotFoundException(ServerErrors.VOUCHER.NOT_FOUND);
+      }
+
+      this.logger.info('[EXTERNAL_API_VOUCHER]: UPDATED VOUCHER AMOUNT', {
+        message: updatedVoucher,
+      });
+
+      return {
+        amountToBeRedeemed,
+        redeemedAmount: totalAmount - amountToBeRedeemed,
+      };
+    } catch (err) {
+      this.logger.error(
+        '[EXTERNAL_API_VOUCHER]: FAILED TO UPDATE VOUCHER AMOUNT',
+        {
+          err: err.message,
+        },
+      );
+      exceptionHandling(err);
     }
-
-    const remainingAmount = remainingAmountCalculation(
-      voucher.remainingAmount,
-      totalAmount,
-    );
-    const amountToBeRedeemed = remainingAmountCalculation(
-      totalAmount,
-      voucher.remainingAmount,
-    );
-
-    const updatedField = {
-      updatedBy: loggedInUserId,
-      updatedAt: new Date(),
-      remainingAmount,
-      expireDate: voucher?.expireDate
-        ? voucher?.expireDate
-        : twoYearExpireDate(),
-    };
-
-    const updatedVoucher = await this.VoucherModel.findOneAndUpdate(
-      { _id: voucherId },
-      updatedField,
-      { new: true },
-    );
-
-    if (!updatedVoucher) {
-      throw new NotFoundException(ServerErrors.VOUCHER.NOT_FOUND);
-    }
-
-    return {
-      amountToBeRedeemed,
-      redeemedAmount: totalAmount - amountToBeRedeemed,
-    };
   }
 
   private async createOrderProduct(
@@ -1549,13 +1683,22 @@ export class ExternalApiServices {
   }
 
   private async createReward(command: CreateRewardCommand): Promise<Rewards> {
-    const newReward = new this.RewardModel({
-      ...command,
-    });
+    try {
+      const newReward = new this.RewardModel({
+        ...command,
+      });
 
-    const reward = await newReward.save();
+      const reward = await newReward.save();
 
-    return reward;
+      this.logger.info('[EXTERNAL_API_REWARD]: CREATED', { message: reward });
+
+      return reward;
+    } catch (err) {
+      this.logger.error('[EXTERNAL_API_REWARD]: FAILED TO CREATE', {
+        err: err.message,
+      });
+      exceptionHandling(err);
+    }
   }
 
   private async findRewardByCampId(campId: string) {
@@ -1580,14 +1723,28 @@ export class ExternalApiServices {
   }
 
   private async deductRewardUsage(id: string, noOfVoucherBought: number) {
-    const updatedDto = { $inc: { totalVoucherCreated: noOfVoucherBought } };
-    const updatedReward = await updateById<Rewards>(
-      this.RewardModel,
-      id,
-      updatedDto,
-    );
+    try {
+      const updatedDto = { $inc: { totalVoucherCreated: noOfVoucherBought } };
+      const updatedReward = await updateById<Rewards>(
+        this.RewardModel,
+        id,
+        updatedDto,
+      );
 
-    return updatedReward;
+      this.logger.info('[EXTERNAL_API_REWARD]: UPDATED REWARD USAGE NO', {
+        message: updatedReward,
+      });
+
+      return updatedReward;
+    } catch (err) {
+      this.logger.error(
+        '[EXTERNAL_API_REWARD]: FAILED TO UPDATE REWARD USAGE NO',
+        {
+          err: err.message,
+        },
+      );
+      exceptionHandling(err);
+    }
   }
 
   private async findOneProduct(

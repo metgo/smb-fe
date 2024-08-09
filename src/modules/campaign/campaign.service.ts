@@ -1,12 +1,15 @@
 /* eslint-disable no-undef */
 import {
   BadRequestException,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { ObjectId } from 'typeorm';
+import { Logger } from 'winston';
 
 import { ServerErrors } from 'src/common/constant';
 import { CampaignStatus } from 'src/common/enum';
@@ -36,6 +39,8 @@ import { GcpBucketService } from 'src/services/gcp-bucket/gcp-bucket.services';
 @Injectable()
 export class CampaignService {
   constructor(
+    @Inject(WINSTON_MODULE_PROVIDER)
+    private readonly logger: Logger,
     @InjectModel('Campaign')
     private CampaignModel: Model<Campaign>,
     private readonly encryptionService: EncryptionService,
@@ -49,70 +54,78 @@ export class CampaignService {
     files: Array<Express.Multer.File>,
     userId: string,
   ): Promise<Campaign> {
-    await Promise.all([
-      this.findByFieldName('name', dto.name),
-      this.findByFieldName('code', dto.code),
-    ]);
+    try {
+      await Promise.all([
+        this.findByFieldName('name', dto.name),
+        this.findByFieldName('code', dto.code),
+      ]);
 
-    if (!files?.length) {
-      throw new BadRequestException('Please upload file');
-    }
+      if (!files?.length) {
+        throw new BadRequestException('Please upload file');
+      }
 
-    let imageCount: number = 0;
+      let imageCount: number = 0;
 
-    await Promise.all(
-      // eslint-disable-next-line array-callback-return
-      files.map(file => {
-        if (file.fieldname === 'logoPath' || file.fieldname === 'campImage') {
-          imageCount += 1;
-        }
-      }),
-    );
+      await Promise.all(
+        // eslint-disable-next-line array-callback-return
+        files.map(file => {
+          if (file.fieldname === 'logoPath' || file.fieldname === 'campImage') {
+            imageCount += 1;
+          }
+        }),
+      );
 
-    if (imageCount !== 2) {
-      throw new BadRequestException('Please upload logo and campaignImage');
-    }
+      if (imageCount !== 2) {
+        throw new BadRequestException('Please upload logo and campaignImage');
+      }
 
-    let campImage: string;
-    let logoPath: string;
-    await Promise.all(
-      files.map(async file => {
-        if (file.fieldname === 'logoPath') {
-          logoPath = await this.gcpBucketServices.upload(file);
-        }
+      let campImage: string;
+      let logoPath: string;
+      await Promise.all(
+        files.map(async file => {
+          if (file.fieldname === 'logoPath') {
+            logoPath = await this.gcpBucketServices.upload(file);
+          }
 
-        if (file.fieldname === 'campImage') {
-          campImage = await this.gcpBucketServices.upload(file);
-        }
-      }),
-    );
+          if (file.fieldname === 'campImage') {
+            campImage = await this.gcpBucketServices.upload(file);
+          }
+        }),
+      );
 
-    const { rewardAmount, rewardVoucherLimit, ...body } = dto;
+      const { rewardAmount, rewardVoucherLimit, ...body } = dto;
 
-    let campaign: any = {
-      ...body,
-      imagePath: campImage,
-      logoPath,
-      createdBy: userId,
-    };
-
-    if (rewardAmount) {
-      // create reward;
-      const reward = await this.rewardService.create({
+      let campaign: any = {
+        ...body,
+        imagePath: campImage,
+        logoPath,
         createdBy: userId,
-        amount: rewardAmount,
-        voucherLimit: rewardVoucherLimit,
-      });
-
-      campaign = {
-        ...campaign,
-        rewardId: reward._id,
       };
-    }
 
-    const newCampaign = new this.CampaignModel(campaign);
-    await newCampaign.save();
-    return newCampaign;
+      if (rewardAmount) {
+        // create reward;
+        const reward = await this.rewardService.create({
+          createdBy: userId,
+          amount: rewardAmount,
+          voucherLimit: rewardVoucherLimit,
+        });
+
+        campaign = {
+          ...campaign,
+          rewardId: reward._id,
+        };
+      }
+
+      const newCampaign = new this.CampaignModel(campaign);
+      await newCampaign.save();
+      this.logger.info('[CAMPAIGN]: CREATED', { message: newCampaign });
+      return newCampaign;
+    } catch (err) {
+      this.logger.error('[CAMPAIGN]: FAILED TO CREATE', {
+        err: err.message,
+      });
+      exceptionHandling(err);
+    }
   }
 
   async getAll(loggedInUser: LoggedInUserInterface, queries: FilterQuery) {
@@ -248,6 +261,8 @@ export class CampaignService {
         throw new NotFoundException(ServerErrors.CAMPAIGN.NOT_FOUND);
       }
 
+      this.logger.info('[CAMPAIGN]: UPDATED', { message: updateCampaign });
+
       if (dto.rewardAmount || dto.rewardVoucherLimit) {
         if (updateCampaign?.rewardId) {
           await this.rewardService.update(
@@ -271,6 +286,9 @@ export class CampaignService {
       }
       return updateCampaign;
     } catch (err) {
+      this.logger.error('[CAMPAIGN]: FAILED TO UPDATE', {
+        err: err.message,
+      });
       if (err.errors?.amount) {
         throw new BadRequestException('Please enter valid reward amount');
       }
@@ -322,8 +340,13 @@ export class CampaignService {
       // delete from gcp
       await this.gcpBucketServices.delete(body.mediaUrl);
 
+      this.logger.info('[CAMPAIGN]: DELETE MEDIA', { message: updateCampaign });
+
       return updateCampaign;
     } catch (err) {
+      this.logger.error('[CAMPAIGN]: FAILED TO DELETE MEDIA', {
+        err: err.message,
+      });
       exceptionHandling(err);
     }
   }
@@ -387,8 +410,13 @@ export class CampaignService {
         throw new NotFoundException(ServerErrors.CAMPAIGN.NOT_FOUND);
       }
 
+      this.logger.info('[CAMPAIGN]: UPLOAD MEDIA', { message: updateCampaign });
+
       return updateCampaign;
     } catch (err) {
+      this.logger.error('[CAMPAIGN]: FAILED TO UPLOAD MEDIA', {
+        err: err.message,
+      });
       exceptionHandling(err);
     }
   }

@@ -2,6 +2,7 @@ import { Module, ValidationPipe } from '@nestjs/common';
 import { APP_PIPE } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { MongooseModule } from '@nestjs/mongoose';
+import { WinstonModule } from 'nest-winston';
 
 import dbConfig from 'src/core/dbConfig';
 import { AuthModule } from 'src/modules/auth/auth.module';
@@ -41,11 +42,14 @@ import { SettingsModule } from 'src/modules/settings/settings.module';
 import { StatsModule } from 'src/modules/stats/stats.module';
 import { MockDataModule } from 'src/modules/mock-data/mock-data.modules';
 import { RewardsModule } from 'src/modules/rewards/rewards.module';
+import winstonConfig from 'src/services/winston/winston';
+import { WinstonLoggerModule } from 'src/services/winston/winston.module';
 
 @Module({
   imports: [
     ScheduleModule.forRoot(),
     MongooseModule.forRoot(dbConfig.uri),
+    WinstonModule.forRoot(winstonConfig),
     AuthModule,
     AuthorityModule,
     JwtAuthModule,
@@ -83,6 +87,7 @@ import { RewardsModule } from 'src/modules/rewards/rewards.module';
     MockDataModule,
     SettingsModule,
     RewardsModule,
+    WinstonLoggerModule,
   ],
   providers: [
     {
