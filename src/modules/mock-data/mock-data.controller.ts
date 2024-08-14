@@ -60,10 +60,9 @@ export class MockDataController {
     @Param('businessOrProductId') businessOrProductId: string,
     @Res() response: Response,
   ) {
-    const stats
-      = await this.mockDataServices.getStatisticsByBussOrProId(
-        businessOrProductId,
-      );
+    const stats = await this.mockDataServices.getStatisticsByBussOrProId(
+      businessOrProductId,
+    );
     return responseHelper(
       response,
       HttpStatus.OK,

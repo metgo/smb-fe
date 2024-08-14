@@ -508,9 +508,12 @@ export class UsersService {
         updatedAt: newUser.updatedAt,
       };
     } catch (error) {
-      this.logger.error('[USER]: FAILED TO CREATE', {
-        err: error.message,
-      });
+      this.logger.error(
+        `[USER]: FAILED TO CREATE ------ ERROR: ${error.message}`,
+        {
+          err: error.message,
+        },
+      );
       if (error.code === 11000) {
         throw new ConflictException(ServerErrors.USER.EXISTS);
       }
@@ -655,9 +658,12 @@ export class UsersService {
         updatedAt: updatedUser.updatedAt,
       };
     } catch (error) {
-      this.logger.error('[USER]: FAILED TO UPDATE', {
-        err: error.message,
-      });
+      this.logger.error(
+        `[USER]: FAILED TO UPDATE ------ ERROR: ${error.message}`,
+        {
+          err: error.message,
+        },
+      );
       exceptionHandling(error);
     }
   }
@@ -1017,9 +1023,12 @@ export class UsersService {
 
       return newUser;
     } catch (err) {
-      this.logger.error('[USER]: FAILED TO CREATE BY ADMIN', {
-        err: err.message,
-      });
+      this.logger.error(
+        `[USER]: FAILED TO CREATE BY ADMIN ------ ERROR: ${err.message}`,
+        {
+          err: err.message,
+        },
+      );
       exceptionHandling(err);
     }
   }

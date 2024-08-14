@@ -145,7 +145,7 @@ export class Business extends AuditableSchema {
       image: string;
       caption: string;
       alt: string;
-    },
+    }
   ];
 
   @Prop({
@@ -167,7 +167,7 @@ export class Business extends AuditableSchema {
         type: mongoose.Types.ObjectId;
       };
       url: { type: string };
-    },
+    }
   ];
 
   @Prop({
@@ -215,7 +215,7 @@ export class Business extends AuditableSchema {
         type: Boolean;
         default: false;
       };
-    },
+    }
   ];
 
   @Prop({ type: Boolean, default: false })

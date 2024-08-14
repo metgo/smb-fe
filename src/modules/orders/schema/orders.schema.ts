@@ -26,7 +26,7 @@ export class Order extends AuditableSchema {
     {
       id: mongoose.Types.ObjectId;
       quantity: number;
-    },
+    }
   ];
 
   @Prop({
@@ -81,7 +81,7 @@ export class Order extends AuditableSchema {
     {
       id: string;
       redeemedAmount: number;
-    },
+    }
   ];
 
   @Prop({ type: Number, default: 0 })

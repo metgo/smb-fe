@@ -15,9 +15,12 @@ import {
   UseInterceptors,
   UploadedFiles,
   UnauthorizedException,
+  Inject,
 } from '@nestjs/common';
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 
 import { ServerErrors, ServerSuccess } from 'src/common/constant';
 import { calculateProductsTotalAmount } from 'src/common/calculate-products-total-amount';
@@ -53,6 +56,8 @@ import { fileFilterByExtensions } from 'src/services/gcp-bucket/middleware/file-
 @Controller('externalapi')
 export class ExternalAPIServiceController {
   constructor(
+    @Inject(WINSTON_MODULE_PROVIDER)
+    private readonly logger: Logger,
     private authService: AuthService,
     private externalApiService: ExternalApiServices,
   ) {}
@@ -100,8 +105,9 @@ export class ExternalAPIServiceController {
     @Res() response: Response,
     @Query() query: GetAllCategoriesQuery,
   ) {
-    const allBussCategoires
-      = await this.externalApiService.getAllCategories(query);
+    const allBussCategoires = await this.externalApiService.getAllCategories(
+      query,
+    );
     return responseHelper(
       response,
       HttpStatus.OK,
@@ -132,8 +138,9 @@ export class ExternalAPIServiceController {
   ) {
     try {
       const productIds = body.products.map(product => product.id);
-      const productsFromDB
-        = await this.externalApiService.findProductsIds(productIds);
+      const productsFromDB = await this.externalApiService.findProductsIds(
+        productIds,
+      );
 
       let totalAmountToPay: number = await calculateProductsTotalAmount(
         body.products,
@@ -144,8 +151,9 @@ export class ExternalAPIServiceController {
       let redeemedVouchers;
       if (body?.voucher?.length) {
         const voucherIds = body.voucher.map(voucher => voucher.id);
-        const vouchers
-          = await this.externalApiService.findVouchersByValidIds(voucherIds);
+        const vouchers = await this.externalApiService.findVouchersByValidIds(
+          voucherIds,
+        );
 
         if (vouchers?.length) {
           const sortedVoucher = sortByPriorityAndHighest(
@@ -189,6 +197,9 @@ export class ExternalAPIServiceController {
         null,
       );
     } catch (err) {
+      this.logger.error('[EXTERNAL_API_ORDER]: FAILED TO CREATE ORDER', {
+        err: err.message,
+      });
       exceptionHandling(err);
     }
   }
@@ -502,23 +513,33 @@ export class ExternalAPIServiceController {
     @Body() body: RewardVouchersByCampaignDto,
     @Query() query: ExternalApiPostQuery,
   ) {
-    if (req.user.externalApi.identifierId !== query.identifierId) {
-      throw new UnauthorizedException(ServerErrors.FORBIDDEN);
+    try {
+      if (req.user.externalApi.identifierId !== query.identifierId) {
+        throw new UnauthorizedException(ServerErrors.FORBIDDEN);
+      }
+
+      const vouchers = await this.externalApiService.createVouchersByCampaign(
+        req.user,
+        body,
+        query.identifierId,
+      );
+
+      return responseHelper(
+        response,
+        HttpStatus.CREATED,
+        ServerSuccess.VOUCHER.LISTED,
+        vouchers,
+        null,
+        null,
+      );
+    } catch (err) {
+      this.logger.error(
+        '[EXTERNAL_API_CAMPAIGN_REWARD]: FAILED TO CREATE CAMPAIGN VOUCHER',
+        {
+          err: err.message,
+        },
+      );
+      exceptionHandling(err);
     }
-
-    const vouchers = await this.externalApiService.createVouchersByCampaign(
-      req.user,
-      body,
-      query.identifierId,
-    );
-
-    return responseHelper(
-      response,
-      HttpStatus.CREATED,
-      ServerSuccess.VOUCHER.LISTED,
-      vouchers,
-      null,
-      null,
-    );
   }
 }

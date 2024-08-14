@@ -123,8 +123,9 @@ export class BusinessService {
 
         await Promise.all(
           b.bussSubCategoriesId.map(async subCategory => {
-            const subCatDetails
-              = await this.BussSubCategoryModel.findById(subCategory);
+            const subCatDetails = await this.BussSubCategoryModel.findById(
+              subCategory,
+            );
             const catId = subCatDetails?.bussCategoryId[0].toString();
             if (catId) {
               bussCategoriesId = bussCategoriesId?.length
@@ -1602,8 +1603,9 @@ export class BusinessService {
       serviceType: GeoServicesTypes.BUSINESS,
     };
 
-    const businessesToBeUpdated
-      = await this.BusinessModel.find(filter).select('_id');
+    const businessesToBeUpdated = await this.BusinessModel.find(filter).select(
+      '_id',
+    );
 
     if (businessesToBeUpdated?.length) {
       const updateField = { deletedBy: loggedInUserId };
@@ -1634,8 +1636,9 @@ export class BusinessService {
       serviceType: GeoServicesTypes.BUSINESS,
     };
 
-    const businessesToBeRecovered
-      = await this.BusinessModel.find(filter).select('_id');
+    const businessesToBeRecovered = await this.BusinessModel.find(
+      filter,
+    ).select('_id');
 
     if (businessesToBeRecovered?.length) {
       const updateField = {
@@ -1855,8 +1858,9 @@ export class BusinessService {
   }
 
   private async getDefaultImage() {
-    const getDefaultLogo
-      = await this.mediaServices.getMediaByName(defaultMetGoLogo);
+    const getDefaultLogo = await this.mediaServices.getMediaByName(
+      defaultMetGoLogo,
+    );
 
     return {
       image: getDefaultLogo.url,

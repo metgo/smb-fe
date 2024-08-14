@@ -200,8 +200,6 @@ export class OrdersService {
         message: order,
       });
 
-      this.logger.info('[ORDER]: PROCEED TO PAY', { message: order });
-
       const link = await this.paymentService.generateLink({
         amount: totalAmount,
         currency: Currency.ILS,
@@ -212,6 +210,7 @@ export class OrdersService {
         languagePreference: body?.languagePreference || Locale.ENGLISH,
       });
 
+      this.logger.info('[ORDER]: PAYMENT LINK SENT', { message: link });
       return [link];
     } catch (error) {
       this.logger.error('[ORDER]: FAILED TO CREATE', {

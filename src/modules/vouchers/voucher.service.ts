@@ -129,6 +129,7 @@ export class VoucherService {
         languagePreference: dto?.languagePreference || Locale.ENGLISH,
       });
 
+      this.logger.info('[VOUCHER]: PAYMENT LINK SENT', { message: voucherId });
       return paymentLink;
     } catch (err) {
       this.logger.error('[VOUCHER]: FAILED TO CREATE', {
@@ -907,6 +908,9 @@ export class VoucherService {
 
       return voucherIds;
     } catch (error) {
+      this.logger.error('[ORDER-VOUCHER]: FAILED TO FIND VALID VOUCHERS', {
+        err: error.message,
+      });
       exceptionHandling(error);
     }
   }

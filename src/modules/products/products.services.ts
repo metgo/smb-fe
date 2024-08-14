@@ -440,6 +440,9 @@ export class ProductsService {
 
       return products;
     } catch (error) {
+      this.logger.error('[PRODUCT]: FAILED TO LIST PRODUCTS', {
+        err: error.message,
+      });
       exceptionHandling(error);
     }
   }

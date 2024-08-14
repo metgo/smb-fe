@@ -422,44 +422,61 @@ export class CampaignService {
   }
 
   async findRewardByCampId(campId: string) {
-    const findQuery = {
-      endDate: { $gte: new Date() },
-      status: CampaignStatus.ACTIVE,
-      _id: campId,
-    };
+    try {
+      const findQuery = {
+        endDate: { $gte: new Date() },
+        status: CampaignStatus.ACTIVE,
+        _id: campId,
+      };
 
-    const populate = {
-      path: 'rewardId',
-      select: `${disSelect}`,
-    };
+      const populate = {
+        path: 'rewardId',
+        select: `${disSelect}`,
+      };
 
-    const campaignRewardDetail = await findOneByIDPopulate<Campaign>(
-      this.CampaignModel,
-      findQuery,
-      populate,
-    );
+      const campaignRewardDetail = await findOneByIDPopulate<Campaign>(
+        this.CampaignModel,
+        findQuery,
+        populate,
+      );
 
-    return campaignRewardDetail;
+      return campaignRewardDetail;
+    } catch (err) {
+      this.logger.error(
+        '[CAMPAIGN]: FAILED TO GET REWARD DETAILS OF CAMPAIGN',
+        {
+          err: err.message,
+        },
+      );
+      exceptionHandling(err);
+    }
   }
 
   async findAndReturn(
     fieldName: keyof Campaign,
     items: string,
   ): Promise<Campaign> {
-    const fieldNames = {
-      [fieldName]: items,
-      status: CampaignStatus.ACTIVE,
-    };
-    const campaign = await findOneByFieldNames<Campaign>(
-      this.CampaignModel,
-      fieldNames,
-    );
-    if (!campaign) {
-      throw new NotFoundException(
-        `${ServerErrors.CAMPAIGN.NOT_FOUND} ${fieldName}.`,
+    try {
+      const fieldNames = {
+        [fieldName]: items,
+        status: CampaignStatus.ACTIVE,
+      };
+      const campaign = await findOneByFieldNames<Campaign>(
+        this.CampaignModel,
+        fieldNames,
       );
+      if (!campaign) {
+        throw new NotFoundException(
+          `${ServerErrors.CAMPAIGN.NOT_FOUND} ${fieldName}.`,
+        );
+      }
+      return campaign;
+    } catch (err) {
+      this.logger.error('[CAMPAIGN]: FAILED TO GET CAMPAIGN DETAILS', {
+        err: err.message,
+      });
+      exceptionHandling(err);
     }
-    return campaign;
   }
 
   async findByFieldName(

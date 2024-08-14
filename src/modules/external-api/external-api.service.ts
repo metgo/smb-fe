@@ -258,15 +258,22 @@ export class ExternalApiServices {
   }
 
   async findByFieldName(fieldName: keyof ExternalApi, items: string) {
-    const externalApi = await findOneByFieldName<ExternalApi>(
-      this.ExternalApiModel,
-      fieldName,
-      items,
-    );
-    if (!externalApi) {
-      throw new ForbiddenException(ServerErrors.FORBIDDEN);
+    try {
+      const externalApi = await findOneByFieldName<ExternalApi>(
+        this.ExternalApiModel,
+        fieldName,
+        items,
+      );
+      if (!externalApi) {
+        throw new ForbiddenException(ServerErrors.FORBIDDEN);
+      }
+      return externalApi;
+    } catch (err) {
+      this.logger.error('[EXTERNAL_API]: FAILED TO GET EXTERNAL API', {
+        err: err.message,
+      });
+      exceptionHandling(err);
     }
-    return externalApi;
   }
 
   async createVouchersByCampaign(
@@ -556,6 +563,9 @@ export class ExternalApiServices {
 
       return products;
     } catch (error) {
+      this.logger.error('[EXTERNAL_API_PRODUCT]: FAILED TO LIST PRODUCTS', {
+        err: error.message,
+      });
       exceptionHandling(error);
     }
   }
@@ -581,6 +591,12 @@ export class ExternalApiServices {
 
       return voucherIds;
     } catch (error) {
+      this.logger.error(
+        '[EXTERNAL_API_ORDER-VOUCHER]: FAILED TO FIND VALID VOUCHERS',
+        {
+          err: error.message,
+        },
+      );
       exceptionHandling(error);
     }
   }
@@ -790,6 +806,10 @@ export class ExternalApiServices {
         customerEmail: body.email,
         customerName: body.firstName,
         languagePreference: body?.languagePreference || Locale.ENGLISH,
+      });
+
+      this.logger.info('[EXTERNAL_API_ORDERS]: PAYMENT LINK SENT', {
+        message: link,
       });
 
       return [link];
@@ -1514,20 +1534,30 @@ export class ExternalApiServices {
     fieldName: keyof Campaign,
     items: string,
   ): Promise<Campaign> {
-    const fieldNames = {
-      [fieldName]: items,
-      status: CampaignStatus.ACTIVE,
-    };
-    const campaign = await findOneByFieldNames<Campaign>(
-      this.CampaignModel,
-      fieldNames,
-    );
-    if (!campaign) {
-      throw new NotFoundException(
-        `${ServerErrors.CAMPAIGN.NOT_FOUND} ${fieldName}.`,
+    try {
+      const fieldNames = {
+        [fieldName]: items,
+        status: CampaignStatus.ACTIVE,
+      };
+      const campaign = await findOneByFieldNames<Campaign>(
+        this.CampaignModel,
+        fieldNames,
       );
+      if (!campaign) {
+        throw new NotFoundException(
+          `${ServerErrors.CAMPAIGN.NOT_FOUND} ${fieldName}.`,
+        );
+      }
+      return campaign;
+    } catch (err) {
+      this.logger.error(
+        '[EXTERNAL_API_CAMPAIGN]: FAILED TO GET CAMPAIGN DETAILS',
+        {
+          err: err.message,
+        },
+      );
+      exceptionHandling(err);
     }
-    return campaign;
   }
 
   private async getCampaignAssociatedToIds(

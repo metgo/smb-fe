@@ -4,6 +4,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Inject,
   Param,
   Patch,
   Post,
@@ -13,6 +14,8 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { Response } from 'express';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 
 import { calculateProductsTotalAmount } from 'src/common/calculate-products-total-amount';
 import { ServerSuccess } from 'src/common/constant';
@@ -35,6 +38,8 @@ import { VoucherService } from 'src/modules/vouchers/voucher.service';
 @Controller()
 export class OrdersController {
   constructor(
+    @Inject(WINSTON_MODULE_PROVIDER)
+    private readonly logger: Logger,
     private ordersService: OrdersService,
     private productService: ProductsService,
     private voucherService: VoucherService,
@@ -113,6 +118,9 @@ export class OrdersController {
         null,
       );
     } catch (err) {
+      this.logger.error('[ORDER]: FAILED TO CREATE ORDER', {
+        err: err.message,
+      });
       exceptionHandling(err);
     }
   }

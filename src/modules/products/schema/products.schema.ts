@@ -31,7 +31,7 @@ export class Product extends AuditableSchema {
       image: { type: string; default: null };
       caption: { type: string; default: null };
       alt: { type: string; default: null };
-    },
+    }
   ];
 
   @Prop({
@@ -105,7 +105,7 @@ export class Product extends AuditableSchema {
       comment: string;
       userId: { type: mongoose.Schema.Types.ObjectId };
       rating: number;
-    },
+    }
   ];
 
   @Prop({ enum: ProductStatus, default: ProductStatus.ACTIVE })
