@@ -28,6 +28,10 @@ export class GetVoucherStatsGroupedQuery {
   @IsOptional()
     campId: string[];
 
+  @ApiProperty({ type: String, required: false })
+  @IsOptional()
+    dmoId: string;
+
   @ApiProperty({ enum: SortByTimePeriod, required: false })
   @IsEnum(SortByTimePeriod)
   @IsOptional()

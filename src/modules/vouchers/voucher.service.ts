@@ -1299,6 +1299,7 @@ export class VoucherService {
       expiryEndDate,
       campId,
       sortBy,
+      dmoId,
       ...queries
     } = query;
 
@@ -1308,16 +1309,24 @@ export class VoucherService {
     };
 
     let queryCampId: any[] = campId;
+    let dmo;
 
+    if (dmoId) {
+      dmo = dmoId;
+    }
     if (
       loggedInUser.role === UserType.DMOADMIN
       || loggedInUser.role === UserType.DMO
+      || loggedInUser.role === UserType.AUTHORITY
+      || loggedInUser.role === UserType.AUTHORITY_ADMIN
     ) {
-      const dmoId = loggedInUser.dmo.id;
+      dmo = loggedInUser.dmo.id;
+    }
 
+    if (dmo) {
       // get campIds dmoId is associated to
       const campaignIds = await this.campaignService.getCampaignAssociatedToIds(
-        dmoId,
+        dmo,
         'dmoIds',
       );
 
