@@ -1416,6 +1416,11 @@ export class VoucherService {
           $group: {
             _id: format,
             totalNumberOfVouchers: { $sum: 1 },
+            totalAssignedVouchers: {
+              $sum: {
+                $cond: [{ $eq: ['$status', VoucherStatus.ASSIGNED] }, 1, 0],
+              },
+            },
             totalValueOfVoucher: { $sum: '$amount' },
             totalAmountToRedeem: { $sum: '$remainingAmount' },
           },
@@ -1432,6 +1437,11 @@ export class VoucherService {
         $group: {
           _id: null,
           totalNumberOfVouchers: { $sum: 1 },
+          totalAssignedVouchers: {
+            $sum: {
+              $cond: [{ $eq: ['$status', VoucherStatus.ASSIGNED] }, 1, 0],
+            },
+          },
           totalValueOfVoucher: { $sum: '$amount' },
           totalAmountToRedeem: { $sum: '$remainingAmount' },
         },
