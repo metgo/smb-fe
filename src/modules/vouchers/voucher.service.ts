@@ -1300,6 +1300,7 @@ export class VoucherService {
       campId,
       sortBy,
       dmoId,
+      campaignType,
       ...queries
     } = query;
 
@@ -1325,9 +1326,10 @@ export class VoucherService {
 
     if (dmo) {
       // get campIds dmoId is associated to
-      const campaignIds = await this.campaignService.getCampaignAssociatedToIds(
+      const campaignIds = await this.campaignService.getStatsVoucher(
         dmo,
         'dmoIds',
+        campaignType,
       );
 
       const campIds = Array.isArray(campaignIds)
@@ -1341,6 +1343,19 @@ export class VoucherService {
       const queryCampIds = Array.isArray(queryCampId)
         ? queryCampId
         : [new mongoose.Types.ObjectId(queryCampId)];
+      findQuery = {
+        ...findQuery,
+        campId: { $in: queryCampIds },
+      };
+    }
+
+    if (!queryCampId && campaignType) {
+      const campaignIds = await this.campaignService.getIdsByType(campaignType);
+
+      const queryCampIds = Array.isArray(campaignIds)
+        ? campaignIds
+        : [new mongoose.Types.ObjectId(campaignIds)];
+
       findQuery = {
         ...findQuery,
         campId: { $in: queryCampIds },

@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
 
-import { CampaignStatus } from 'src/common/enum';
+import { CampaignStatus, CampaignType } from 'src/common/enum';
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
 import { DMO } from 'src/modules/dmo/schema/dmo.schema';
 import { ExternalApi } from 'src/modules/external-api/schema/external-api.schema';
@@ -28,6 +28,9 @@ export class Campaign extends AuditableSchema {
 
   @Prop({ default: CampaignStatus.DRAFT })
     status: CampaignStatus;
+
+  @Prop({ default: CampaignType.CASH_BACK })
+    type: CampaignType;
 
   @Prop()
     code: string;

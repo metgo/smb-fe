@@ -12,7 +12,7 @@ import { ObjectId } from 'typeorm';
 import { Logger } from 'winston';
 
 import { ServerErrors } from 'src/common/constant';
-import { CampaignStatus } from 'src/common/enum';
+import { CampaignStatus, CampaignType } from 'src/common/enum';
 import { paginationConfig } from 'src/common/pagination.config';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { disSelect } from 'src/common/utils/select.handling';
@@ -52,7 +52,7 @@ export class CampaignService {
   async create(
     dto: CreateCampaignDto,
     files: Array<Express.Multer.File>,
-    userId: string,
+    user: LoggedInUserInterface,
   ): Promise<Campaign> {
     try {
       await Promise.all([
@@ -99,13 +99,24 @@ export class CampaignService {
         ...body,
         imagePath: campImage,
         logoPath,
-        createdBy: userId,
+        createdBy: user.id,
       };
+
+      if (
+        user.role === UserType.AUTHORITY
+        || user.role === UserType.AUTHORITY_ADMIN
+        || user.role === UserType.TRAVELLER
+      ) {
+        campaign = {
+          ...campaign,
+          type: CampaignType.CASH_BACK,
+        };
+      }
 
       if (rewardAmount) {
         // create reward;
         const reward = await this.rewardService.create({
-          createdBy: userId,
+          createdBy: user.id,
           amount: rewardAmount,
           voucherLimit: rewardVoucherLimit,
         });
@@ -130,10 +141,10 @@ export class CampaignService {
 
   async getAll(loggedInUser: LoggedInUserInterface, queries: FilterQuery) {
     const {
-      page, limit, search, dmoId,
+      page, limit, search, dmoId, type,
     } = queries;
 
-    let findQuery: any = {};
+    let findQuery: any = { type };
     if (search) {
       findQuery = {
         $or: [
@@ -249,7 +260,18 @@ export class CampaignService {
     user: LoggedInUserInterface,
   ): Promise<Campaign> {
     try {
-      const updatedDTO = { ...dto, updatedBy: user.id, updatedAt: new Date() };
+      let updatedDTO = { ...dto, updatedBy: user.id, updatedAt: new Date() };
+
+      if (
+        user.role === UserType.AUTHORITY
+        || user.role === UserType.AUTHORITY_ADMIN
+        || user.role === UserType.TRAVELLER
+      ) {
+        updatedDTO = {
+          ...updatedDTO,
+          type: CampaignType.CASH_BACK,
+        };
+      }
 
       const updateCampaign = await updateById<Campaign>(
         this.CampaignModel,
@@ -516,6 +538,45 @@ export class CampaignService {
       const campaigns = await this.CampaignModel.find({
         [key]: { $in: [id] },
       });
+
+      const campaignIds = campaigns.map(obj => obj._id);
+
+      return campaignIds;
+    } catch (err) {
+      exceptionHandling(err);
+    }
+  }
+
+  async getStatsVoucher(
+    id: string | ObjectId,
+    key: keyof Campaign,
+    type: CampaignType,
+  ) {
+    try {
+      let findQuery: any = {
+        [key]: { $in: [id] },
+      };
+
+      if (type) {
+        findQuery = {
+          ...findQuery,
+          type,
+        };
+      }
+
+      const campaigns = await this.CampaignModel.find(findQuery);
+
+      const campaignIds = campaigns.map(obj => obj._id);
+
+      return campaignIds;
+    } catch (err) {
+      exceptionHandling(err);
+    }
+  }
+
+  async getIdsByType(type: CampaignType) {
+    try {
+      const campaigns = await this.CampaignModel.find({ type });
 
       const campaignIds = campaigns.map(obj => obj._id);
 

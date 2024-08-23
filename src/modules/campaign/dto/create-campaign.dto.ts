@@ -3,7 +3,7 @@ import { Transform } from 'class-transformer';
 import {
   IsNotEmpty, IsOptional, IsString, MinLength,
 } from 'class-validator';
-import { CampaignStatus } from 'src/common/enum';
+import { CampaignStatus, CampaignType } from 'src/common/enum';
 
 export class CreateCampaignDto {
   @ApiProperty()
@@ -29,6 +29,10 @@ export class CreateCampaignDto {
   @ApiProperty({ enum: CampaignStatus })
   @IsOptional()
     status: CampaignStatus;
+
+  @ApiProperty({ enum: CampaignType })
+  @IsOptional()
+    type: CampaignType;
 
   @ApiProperty()
   @IsString()

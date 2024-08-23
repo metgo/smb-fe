@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsOptional } from 'class-validator';
 
-import { SortByTimePeriod, VoucherStatus } from 'src/common/enum';
+import { CampaignType, SortByTimePeriod, VoucherStatus } from 'src/common/enum';
 
 export class GetVoucherStatsGroupedQuery {
   @ApiProperty({ enum: VoucherStatus, required: false })
@@ -36,4 +36,8 @@ export class GetVoucherStatsGroupedQuery {
   @IsEnum(SortByTimePeriod)
   @IsOptional()
     sortBy: SortByTimePeriod;
+
+  @ApiProperty({ enum: CampaignType })
+  @IsOptional()
+    campaignType: CampaignType;
 }

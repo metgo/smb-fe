@@ -58,7 +58,7 @@ export class CampaignController {
     const campaign = await this.campaignService.create(
       dto,
       image,
-      request.user.id,
+      request.user,
     );
 
     return responseHelper(
