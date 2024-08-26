@@ -821,10 +821,19 @@ export class ExternalApiServices {
     }
   }
 
-  async getAllProducts(query: GetAllProductsQuery) {
+  async getAllProducts(queries: GetAllProductsQuery) {
     const {
-      page, limit, campCode, categoriesId, subCategoriesId,
-    } = query;
+      identifierId,
+      categoriesId,
+      subCategoriesId,
+      search,
+      priceMin,
+      priceMax,
+      page,
+      limit,
+      campCode,
+      ...query
+    } = queries;
 
     const campDetails = await this.findCampaignAndReturn('code', campCode);
 
@@ -834,21 +843,7 @@ export class ExternalApiServices {
       status: ProductStatus.ACTIVE,
       dmoId: { $in: campDetails.dmoIds },
       isDeleted: false,
-    };
-
-    const populate = {
-      path: 'categories subCategories',
-      select: `${disSelect}`,
-      populate: {
-        path: 'icon',
-        select: `${disSelect}`,
-      },
-    };
-
-    const populate1 = {
-      path: 'businessId',
-      select:
-        '_id address name geoLocation location busiEmail description contactDetails',
+      ...query,
     };
 
     if (categoriesId) {
@@ -872,6 +867,45 @@ export class ExternalApiServices {
         subCategories: { $in: subCategoriesIds },
       };
     }
+
+    if (priceMax < priceMin) {
+      throw new BadRequestException('Invalid Price Range');
+    }
+
+    if (priceMin && priceMax) {
+      findQuery = {
+        ...findQuery,
+        'price.sellingPrice': {
+          $gte: priceMin,
+          $lte: priceMax,
+        },
+      };
+    }
+
+    if (search) {
+      findQuery = {
+        ...findQuery,
+        $or: [
+          { name: { $regex: search, $options: 'i' } },
+          { description: { $regex: search, $options: 'i' } },
+        ],
+      };
+    }
+
+    const populate = {
+      path: 'categories subCategories',
+      select: `${disSelect}`,
+      populate: {
+        path: 'icon',
+        select: `${disSelect}`,
+      },
+    };
+
+    const populate1 = {
+      path: 'businessId',
+      select:
+        '_id address name geoLocation location busiEmail description contactDetails',
+    };
 
     const productsList = await queryhandler<Product>(this.ProductModel, {
       findQuery,
