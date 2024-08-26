@@ -52,6 +52,7 @@ import {
 import { ExternalApiServices } from 'src/modules/external-api/external-api.service';
 import { UserType } from 'src/modules/users/users.type';
 import { fileFilterByExtensions } from 'src/services/gcp-bucket/middleware/file-filter';
+import { GetAllBusinessQuery } from 'src/modules/external-api/queries/get_all_business.query';
 
 @Controller('externalapi')
 export class ExternalAPIServiceController {
@@ -244,7 +245,7 @@ export class ExternalAPIServiceController {
   @Get('get_all_businesses')
   async getAllBusinessForExternalApi(
     @Res() response: Response,
-    @Query() query?: GetAllProductsQuery,
+    @Query() query?: GetAllBusinessQuery,
   ) {
     const business = await this.externalApiService.getAllBusiness(query);
 

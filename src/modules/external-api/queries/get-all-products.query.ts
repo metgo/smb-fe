@@ -20,6 +20,22 @@ export class GetAllProductsQuery extends ExternalApiWithCampCodeFilterQuery {
   @IsOptional()
     subCategoriesId: string[];
 
+  @ApiProperty({
+    type: String,
+    required: false,
+    description: 'must follow the pattern \n [id, id,..]',
+  })
+  @IsOptional()
+    groupTypesId: string;
+
+  @ApiProperty({
+    type: String,
+    required: false,
+    description: 'must follow the pattern \n [id, id,..]',
+  })
+  @IsOptional()
+    accessibilitiesId: string;
+
   @ApiProperty({ type: String, required: false })
   @IsString()
   @IsOptional()

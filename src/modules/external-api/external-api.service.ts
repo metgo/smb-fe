@@ -74,6 +74,7 @@ import {
   GetMyVouchersQuery,
 } from 'src/modules/external-api/queries';
 import { ExternalApi } from 'src/modules/external-api/schema/external-api.schema';
+import { GetAllBusinessQuery } from 'src/modules/external-api/queries/get_all_business.query';
 import { Order } from 'src/modules/orders/schema/orders.schema';
 import { OrderStatus, PaymentMode } from 'src/modules/orders/orders.type';
 import { OrderProduct } from 'src/modules/order-product/schema/order-product.schema';
@@ -929,10 +930,17 @@ export class ExternalApiServices {
     return productsList;
   }
 
-  async getAllBusiness(query: GetAllProductsQuery) {
+  async getAllBusiness(queries: GetAllBusinessQuery) {
     const {
-      page, limit, campCode, categoriesId, subCategoriesId,
-    } = query;
+      page,
+      limit,
+      campCode,
+      categoriesId,
+      subCategoriesId,
+      search,
+      identifierId,
+      ...query
+    } = queries;
 
     const campDetails = await this.findCampaignAndReturn('code', campCode);
 
@@ -941,10 +949,11 @@ export class ExternalApiServices {
       status: BusinessStatus.APPROVED,
       dmoId: { $in: campDetails.dmoIds },
       isDeleted: false,
+      ...query,
     };
 
     const populate = {
-      path: 'bussCategoriesId bussSubCategoriesId',
+      path: 'bussCategoriesId bussSubCategoriesId groupTypesId accessibilitiesId',
       select: `${disSelect}`,
       populate: {
         path: 'icon',
@@ -972,6 +981,64 @@ export class ExternalApiServices {
         ...findQuery,
         bussSubCategoriesId: { $in: subCategoriesIds },
       };
+    }
+
+    if (search) {
+      const [
+        matchingCategoryIds,
+        matchingSubCategoryIds,
+        matchingBusinessOwnerIds,
+      ] = await Promise.all([
+        this.BussCategoryModel.find({
+          name: { $regex: search, $options: 'i' },
+        }).select('_id'),
+        this.BussSubCategoryModel.find({
+          name: { $regex: search, $options: 'i' },
+        }).select('_id'),
+        this.UserModel.find({
+          $or: [
+            { firstName: { $regex: search, $options: 'i' } },
+            { lastName: { $regex: search, $options: 'i' } },
+            { email: { $regex: search, $options: 'i' } },
+          ],
+        }).select('_id'),
+      ]);
+
+      const matchingProductsIds = await this.ProductModel.find({
+        $or: [
+          { name: { $regex: search, $options: 'i' } },
+          { description: { $regex: search, $options: 'i' } },
+          { categories: { $in: matchingCategoryIds } },
+          { subCategories: { $in: matchingSubCategoryIds } },
+        ],
+      }).select('_id');
+
+      findQuery = {
+        ...findQuery,
+        $or: [
+          { name: { $regex: search, $options: 'i' } },
+          { description: { $regex: search, $options: 'i' } },
+          { bussCategoriesId: { $in: matchingCategoryIds } },
+          { bussSubCategoriesId: { $in: matchingSubCategoryIds } },
+          { productsId: { $in: matchingProductsIds } },
+          { userId: { $in: matchingBusinessOwnerIds } },
+        ],
+      };
+
+      if (
+        !(
+          matchingCategoryIds?.length
+          || matchingSubCategoryIds?.length
+          || matchingProductsIds?.length
+          || matchingBusinessOwnerIds?.length
+        )
+      ) {
+        findQuery.$text = {
+          $search: search,
+          $caseSensitive: false,
+          $diacriticSensitive: false,
+        };
+      }
     }
 
     const businesses = await queryhandler<Business>(this.BusinessModel, {
