@@ -18,6 +18,7 @@ import {
   milesConfig,
   ServerErrors,
 } from 'src/common/constant';
+import { deepEqual } from 'src/common/deepEqual';
 import { Image } from 'src/common/interface/image.interface';
 import { DynamicHebrewTemplate } from 'src/common/mailchimp/templateId';
 import { maxDistanceInRadius } from 'src/common/max-distance-in-radius';
@@ -61,6 +62,7 @@ import {
 } from 'src/modules/business/queries';
 import { GetAllBusinessesForMapResponse } from 'src/modules/business/response/get-businesses-for-map.response';
 import { Business } from 'src/modules/business/schema/business.schema';
+import { BusinessAudit } from 'src/modules/business/schema/business-audit.schema';
 import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.schema';
 import { BussSubCategory } from 'src/modules/buss-subcategories/schema/buss-subCategory.schema';
 import { CampaignService } from 'src/modules/campaign/campaign.service';
@@ -81,6 +83,8 @@ export class BusinessService {
     private readonly logger: Logger,
     @InjectModel('Business')
     private BusinessModel: Model<Business>,
+    @InjectModel('BusinessAudit')
+    private BusinessAuditModel: Model<BusinessAudit>,
     private readonly authorityService: AuthorityService,
     private readonly campaignService: CampaignService,
     private readonly dmoService: DMOService,
@@ -1159,6 +1163,8 @@ export class BusinessService {
         };
       }
 
+      const oldDataFForAudit = await this.BusinessModel.findById(id);
+
       const updateBusiness = await this.BusinessModel.findOneAndUpdate(
         { _id: id, isDeleted: false },
         updatedField,
@@ -1167,6 +1173,8 @@ export class BusinessService {
       if (!updateBusiness) {
         throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
       }
+
+      await this.addToBusinessAuditTable(oldDataFForAudit, updateBusiness);
 
       this.logger.info('[BUSINESS]: UPDATED', { message: updateBusiness });
       return updateBusiness;
@@ -1245,6 +1253,8 @@ export class BusinessService {
         };
       }
 
+      const oldDataFForAudit = await this.BusinessModel.findById(id);
+
       const updateBusiness = await this.BusinessModel.findOneAndUpdate(
         findQuery,
         updatedField,
@@ -1253,6 +1263,8 @@ export class BusinessService {
       if (!updateBusiness) {
         throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
       }
+
+      await this.addToBusinessAuditTable(oldDataFForAudit, updateBusiness);
 
       this.logger.info('[BUSINESS]: UPDATED BY ADMIN', {
         message: updateBusiness,
@@ -1275,6 +1287,9 @@ export class BusinessService {
   ) {
     try {
       const updatedField = { userId: assignUserId, updatedBy: loggedInUserId };
+      const oldDataFForAudit = await this.BusinessModel.findById(
+        businessIds[0],
+      );
       const updateBusiness = await updateById<Business>(
         this.BusinessModel,
         businessIds[0],
@@ -1284,6 +1299,8 @@ export class BusinessService {
       if (!updateBusiness) {
         throw new BadRequestException(ServerErrors.BUSINESS_NOT_FOUND);
       }
+
+      await this.addToBusinessAuditTable(oldDataFForAudit, updateBusiness);
 
       let assignedUser = user;
       if (!user) {
@@ -1358,6 +1375,9 @@ export class BusinessService {
         Business & {
           _id: mongoose.Types.ObjectId;
         };
+
+      const oldDataFForAudit = await this.BusinessModel.findById(id);
+
       if (role === UserType.SUPERADMIN) {
         updatedBusiness = await updateOneByManyFields<Business>(
           this.BusinessModel,
@@ -1386,6 +1406,9 @@ export class BusinessService {
       if (!updatedBusiness) {
         throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
       }
+
+      await this.addToBusinessAuditTable(oldDataFForAudit, updatedBusiness);
+
       this.logger.info(`[BUSINESS]: UPLOADED IMAGES for ${id}`);
       return updatedBusiness;
     } catch (err) {
@@ -1419,6 +1442,9 @@ export class BusinessService {
       if (!updateBusiness) {
         throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
       }
+
+      await this.addToBusinessAuditTable(existingBusiness, updateBusiness);
+
       this.logger.info(`[BUSINESS]: DELETED IMAGES for ${id}`);
       return updateBusiness;
     } catch (err) {
@@ -1883,6 +1909,46 @@ export class BusinessService {
         { _id: loggedInUserId },
         { hasBusiness: false },
       );
+    }
+  }
+
+  private async addToBusinessAuditTable(oldDoc, newDoc) {
+    const changedFields = {};
+
+    const newData = newDoc.toObject();
+    const oldData = oldDoc.toObject();
+
+    Object.entries(newData).forEach(([key, newValue]) => {
+      if (key === 'updatedAt') {
+        return;
+      }
+      const oldValue = oldData[key];
+
+      if (!deepEqual(oldValue, newValue)) {
+        changedFields[key] = { original: oldValue, updated: newValue };
+      }
+    });
+
+    if (Object.keys(changedFields).length > 0) {
+      const auditEntry = {
+        businessId: newDoc._id,
+        changedFields,
+        updatedBy: newDoc.updatedBy,
+        updatedAt: new Date(),
+      };
+
+      try {
+        await this.BusinessAuditModel.create(auditEntry);
+        this.logger.info('[BUSINESS HISTORY]: ADDED TO BUSINESS HISTORY', {
+          auditEntry,
+        });
+      } catch (error) {
+        this.logger.error(
+          '[BUSINESS HISTORY]: FAILED TO ADD TO BUSINESS HISTORY',
+          { err: error.message },
+        );
+        exceptionHandling(error);
+      }
     }
   }
 }

@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { nanoid } from 'nanoid';
 import { extname, join } from 'path';
+import { defaultMetGoLogoURL } from 'src/common/constant';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 
 import { Storage } from 'src/services/gcp-bucket/storage';
@@ -36,14 +37,14 @@ export class GcpBucketService {
   async update(existingUrl: string, file: Express.Multer.File) {
     const newMediaUrl = await this.upload(file);
 
-    await this.delete(existingUrl);
+    if (existingUrl !== defaultMetGoLogoURL) await this.delete(existingUrl);
 
     return newMediaUrl;
   }
 
   async delete(url: string) {
     try {
-      await this.storage.delete(url);
+      if (url !== defaultMetGoLogoURL) await this.storage.delete(url);
 
       return 'Deleted Successfully!!';
     } catch (err) {

@@ -27,6 +27,7 @@ import { AuthorityModule } from 'src/modules/authority/authority.module';
 import { CampaignModule } from 'src/modules/campaign/campaign.module';
 import { VoucherModule } from 'src/modules/vouchers/voucher.module';
 import { EventController } from 'src/modules/business/controllers/event.controller';
+import { BusinessAuditSchema } from 'src/modules/business/schema/business-audit.schema';
 import { EventsService } from 'src/modules/business/services/event.service';
 import { MediaModule } from 'src/modules/media/media.module';
 import { ProductsModule } from 'src/modules/products/products.module';
@@ -41,6 +42,7 @@ import { UsersModule } from 'src/modules/users/users.module';
       { name: BussCategory.name, schema: BussCategorySchema },
       { name: BussSubCategory.name, schema: BussSubCategorySchema },
       { name: Product.name, schema: ProductSchema },
+      { name: 'BusinessAudit', schema: BusinessAuditSchema },
     ]),
     forwardRef(() => AuthorityModule),
     CampaignModule,

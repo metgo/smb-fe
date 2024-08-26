@@ -11,7 +11,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { ObjectId } from 'typeorm';
 import { Logger } from 'winston';
 
-import { ServerErrors } from 'src/common/constant';
+import { ServerErrors, defaultMetGoLogoURL } from 'src/common/constant';
 import { CampaignStatus, CampaignType } from 'src/common/enum';
 import { paginationConfig } from 'src/common/pagination.config';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
@@ -360,7 +360,7 @@ export class CampaignService {
       }
 
       // delete from gcp
-      await this.gcpBucketServices.delete(body.mediaUrl);
+      if (body.mediaUrl !== defaultMetGoLogoURL) await this.gcpBucketServices.delete(body.mediaUrl);
 
       this.logger.info('[CAMPAIGN]: DELETE MEDIA', { message: updateCampaign });
 

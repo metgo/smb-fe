@@ -16,6 +16,8 @@ export const softValidationPipe = new ValidationPipe({
 export const milesConfig = 5;
 
 export const defaultMetGoLogo = 'default-metgo-logo-OBNusjAgOeNMDToi1.png';
+export const defaultMetGoLogoURL
+  = 'https://storage.googleapis.com/metgo_dev/2024/6/dzqmK8civ9yuGPs8.png';
 
 export const emailDefaultTemplate = {
   PRIMARY_BG_COLOR: '#39AEEA',

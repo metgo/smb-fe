@@ -105,7 +105,7 @@ export class CreateEventsDto {
   @IsString()
   @IsOptional()
   @Transform(transformEmail)
-    email: string;
+    busiEmail: string;
 
   @ApiProperty({
     required: true,
@@ -205,7 +205,6 @@ export class CreateEventsDto {
     required: false,
   })
   @IsOptional()
-  @Transform(value => Number(value))
     price: number;
 
   @ApiProperty({

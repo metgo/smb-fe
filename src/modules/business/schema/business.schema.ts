@@ -249,10 +249,10 @@ export class Business extends AuditableSchema {
     meetingLink: string;
 
   @Prop({ required: false, default: null })
-    startDate: Date;
+    startDate: string;
 
   @Prop({ required: false, default: null })
-    endDate: Date;
+    endDate: string;
 
   @Prop({ default: getRandomNumberBetween(17, 93), required: false })
     impact: number;

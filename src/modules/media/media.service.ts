@@ -8,7 +8,7 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
-import { ServerErrors } from 'src/common/constant';
+import { ServerErrors, defaultMetGoLogoURL } from 'src/common/constant';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interface';
 import { BusinessService } from 'src/modules/business/services/business.service';
@@ -113,6 +113,8 @@ export class MediaServices {
   ): Promise<Business | Product> {
     let deletedImage;
     // delete from business module
+
+    if (body.imageUrl === defaultMetGoLogoURL) return;
     if (
       body.reference === ReferenceType.BUSINESS
       || body.reference === ReferenceType.POI
@@ -159,7 +161,7 @@ export class MediaServices {
 
     // delete image in gcp
     try {
-      await this.gcpBucketServices.delete(body.imageUrl);
+      if (body.imageUrl !== defaultMetGoLogoURL) await this.gcpBucketServices.delete(body.imageUrl);
       return deletedImage;
     } catch (err) {
       if (err?.errors[0]?.reason === 'notFound') {
