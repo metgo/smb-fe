@@ -64,6 +64,8 @@ export class ConfigService {
       'MAILCHIMP_SERVER_PREFIX',
       'MAILCHIMP_FROM_EMAIL',
       'MAILCHIMP_TAV8_SUPPORT_EMAIL',
+      'GA_BALA_PROPERTY_ID',
+      'GA_TAV8_PROPERTY_ID',
     ];
     return ENV_VARIABLES.reduce((obj: any, variable) => {
       if (process.env[variable]) {
@@ -122,6 +124,8 @@ export class ConfigService {
       MAILCHIMP_SERVER_PREFIX: Joi.string().required(),
       MAILCHIMP_FROM_EMAIL: Joi.string().required(),
       MAILCHIMP_TAV8_SUPPORT_EMAIL: Joi.string().required(),
+      GA_BALA_PROPERTY_ID: Joi.string().required(),
+      GA_TAV8_PROPERTY_ID: Joi.string().required(),
     }).unknown(true);
 
     const { error, value: validatedEnvConfig }
@@ -213,6 +217,13 @@ export class ConfigService {
       OTP_EXPIRATION: this.get('OTP_EXPIRATION'),
       ACCESS_TOKEN: this.get('ACCESS_TOKEN'),
       REFRESH_TOKEN: this.get('REFRESH_TOKEN'),
+    };
+  }
+
+  get googleAnalytics() {
+    return {
+      BALA_PROPERTY_ID: this.get('GA_BALA_PROPERTY_ID'),
+      TAV8_PROPERTY_ID: this.get('GA_TAV8_PROPERTY_ID'),
     };
   }
 }

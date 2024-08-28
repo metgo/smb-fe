@@ -55,8 +55,11 @@ class ContactDetails {
   @ApiProperty({ type: String, description: 'Phone numer of contact person' })
     phone: string;
 
-  @ApiProperty({ type: String, description: 'address of contact person' })
+  @ApiProperty({ type: String, description: 'Address of contact person' })
     address: string;
+
+  @ApiProperty({ type: String, description: 'Email of contact person' })
+    email: string;
 }
 
 class images {

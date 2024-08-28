@@ -42,6 +42,7 @@ import { SettingsModule } from 'src/modules/settings/settings.module';
 import { StatsModule } from 'src/modules/stats/stats.module';
 import { MockDataModule } from 'src/modules/mock-data/mock-data.modules';
 import { RewardsModule } from 'src/modules/rewards/rewards.module';
+import { GAModule } from 'src/services/google-analytics/ga.module';
 import winstonConfig from 'src/services/winston/winston';
 import { WinstonLoggerModule } from 'src/services/winston/winston.module';
 
@@ -87,6 +88,7 @@ import { WinstonLoggerModule } from 'src/services/winston/winston.module';
     MockDataModule,
     SettingsModule,
     RewardsModule,
+    GAModule,
     WinstonLoggerModule,
   ],
   providers: [

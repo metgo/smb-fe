@@ -455,6 +455,13 @@
   resolved "https://registry.yarnpkg.com/@faker-js/faker/-/faker-8.4.1.tgz#5d5e8aee8fce48f5e189bf730ebd1f758f491451"
   integrity sha512-XQ3cU+Q8Uqmrbf2e0cIC/QN43sTBSC8KF12u29Mb47tWrt2hAgBXSgpZMj4Ao8Uk0iJcU99QsOCaIL8934obCg==
 
+"@google-analytics/data@^4.8.0":
+  version "4.8.0"
+  resolved "https://registry.yarnpkg.com/@google-analytics/data/-/data-4.8.0.tgz#01ab91c558f85060619e19c084ac746d7ce9d34d"
+  integrity sha512-uOYF/ZZmkkeTTUZYt8avhDURHGcc5Y/nzYSkkUjfAbRG9xbiLfjlal6vaWIFLJITxbcgAfalzTpJdtkXKgP7Yw==
+  dependencies:
+    google-gax "^4.0.3"
+
 "@google-cloud/common@^5.0.0":
   version "5.0.2"
   resolved "https://registry.yarnpkg.com/@google-cloud/common/-/common-5.0.2.tgz#423ad94b125d44263cbed2b5eb1ce1d4d53dc038"

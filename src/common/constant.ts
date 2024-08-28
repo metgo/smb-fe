@@ -220,6 +220,9 @@ export const ServerSuccess = {
     DELETED: 'Media was deleted successfully',
   },
 
+  USER_ENGAGEMENT: {
+    LISTED: 'User Engagement was succesfully listed',
+  },
   PRODUCTS: {
     CREATED: 'Product was created successfully',
     UPDATED: 'Product was updated sucessfully',

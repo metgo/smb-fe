@@ -69,6 +69,7 @@ export class Business extends AuditableSchema {
       countryCode: String,
       phone: String,
       address: String,
+      email: String,
     },
     default: null,
   })
@@ -77,6 +78,7 @@ export class Business extends AuditableSchema {
     countryCode: { type: string; default: null };
     phone: { type: string; default: null };
     address: { type: string; default: null };
+    email: { type: string; default: null };
   };
 
   @Prop({
