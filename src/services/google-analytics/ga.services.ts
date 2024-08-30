@@ -106,6 +106,114 @@ export class GoogleAnalyticsService {
     }
   }
 
+  async activeUserData(query: GetUserEngagementQuery) {
+    try {
+      if (!query.externalApi) {
+        const { BALA_PROPERTY_ID, TAV8_PROPERTY_ID }
+          = this.configService.googleAnalytics;
+        const bala = await this.googleAnalyticsActiveUser(
+          query.startDate,
+          query.endDate,
+          BALA_PROPERTY_ID,
+          'activeUsers',
+        );
+        const tav8 = await this.googleAnalyticsActiveUser(
+          query.startDate,
+          query.endDate,
+          TAV8_PROPERTY_ID,
+          'activeUsers',
+        );
+
+        const total = [...bala, ...tav8];
+
+        return total;
+      }
+      let externalApiPlatform;
+
+      if (query.externalApi === ExternalApiTypes.BALA) {
+        const { BALA_PROPERTY_ID } = this.configService.googleAnalytics;
+        externalApiPlatform = BALA_PROPERTY_ID;
+      }
+
+      if (query.externalApi === ExternalApiTypes.TAV8) {
+        const { TAV8_PROPERTY_ID } = this.configService.googleAnalytics;
+        externalApiPlatform = TAV8_PROPERTY_ID;
+      }
+
+      if (
+        query.externalApi !== ExternalApiTypes.TAV8
+        && query.externalApi !== ExternalApiTypes.BALA
+      ) {
+        return;
+      }
+
+      const data = await this.googleAnalyticsActiveUser(
+        query.startDate,
+        query.endDate,
+        externalApiPlatform,
+        'activeUsers',
+      );
+
+      return data;
+    } catch (err) {
+      exceptionHandling(err);
+    }
+  }
+
+  async views(query: GetUserEngagementQuery) {
+    try {
+      if (!query.externalApi) {
+        const { BALA_PROPERTY_ID, TAV8_PROPERTY_ID }
+          = this.configService.googleAnalytics;
+        const bala = await this.googleAnalyticsActiveUser(
+          query.startDate,
+          query.endDate,
+          BALA_PROPERTY_ID,
+          'screenPageViews',
+        );
+        const tav8 = await this.googleAnalyticsActiveUser(
+          query.startDate,
+          query.endDate,
+          TAV8_PROPERTY_ID,
+          'screenPageViews',
+        );
+
+        const total = [...bala, ...tav8];
+
+        return total;
+      }
+      let externalApiPlatform;
+
+      if (query.externalApi === ExternalApiTypes.BALA) {
+        const { BALA_PROPERTY_ID } = this.configService.googleAnalytics;
+        externalApiPlatform = BALA_PROPERTY_ID;
+      }
+
+      if (query.externalApi === ExternalApiTypes.TAV8) {
+        const { TAV8_PROPERTY_ID } = this.configService.googleAnalytics;
+        externalApiPlatform = TAV8_PROPERTY_ID;
+      }
+
+      if (
+        query.externalApi !== ExternalApiTypes.TAV8
+        && query.externalApi !== ExternalApiTypes.BALA
+      ) {
+        return [];
+      }
+
+      const data = await this.googleAnalyticsActiveUser(
+        query.startDate,
+        query.endDate,
+        externalApiPlatform,
+        'screenPageViews',
+      );
+
+      return data;
+    } catch (err) {
+      exceptionHandling(err);
+    }
+  }
+
   private async googleAnalyticsUserEngagement(
     startDate: string,
     endDate: string,
@@ -153,6 +261,57 @@ export class GoogleAnalyticsService {
           )}-${rawDate.slice(6, 8)}`;
           const userCount = Number(item.metricValues[0].value);
           return { date: formattedDate, userCount };
+        })
+        .sort(
+          (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+        );
+
+      return formattedData;
+    } catch (err) {
+      exceptionHandling(err);
+    }
+  }
+
+  private async googleAnalyticsActiveUser(
+    startDate: string,
+    endDate: string,
+    externalApi: string,
+    type: string,
+  ) {
+    try {
+      const [response] = await this.analyticsDataClient.runReport({
+        property: `properties/${externalApi}`,
+        dateRanges: [
+          {
+            startDate,
+            endDate,
+          },
+        ],
+        dimensions: [
+          {
+            name: 'date',
+          },
+        ],
+        metrics: [
+          {
+            name: type,
+          },
+        ],
+      });
+
+      const formattedData = response?.rows
+        .map(row => {
+          const date = row?.dimensionValues[0]?.value;
+
+          const formattedDate = `${date.slice(0, 4)}-${date.slice(
+            4,
+            6,
+          )}-${date.slice(6, 8)}`;
+
+          return {
+            date: formattedDate,
+            value: Number(row.metricValues[0].value),
+          };
         })
         .sort(
           (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
@@ -221,35 +380,3 @@ export class GoogleAnalyticsService {
     return formattedData;
   }
 }
-
-// const [response] = await this.analyticsDataClient.runReport({
-//   property: `properties/${BALA_PROPERTY_ID}`,
-//   dateRanges: [
-//     {
-//       startDate: query.startDate,
-//       endDate: query.endDate,
-//     },
-//   ],
-//   dimensions: [
-//     {
-//       name: 'eventName',
-//     },
-//     {
-//       name: 'date',
-//     },
-//   ],
-//   metrics: [
-//     {
-//       name: 'screenPageViews',
-//     },
-//   ],
-//   dimensionFilter: {
-//     filter: {
-//       fieldName: 'eventName',
-//       stringFilter: {
-//         matchType: 'EXACT',
-//         value: 'page_view',
-//       },
-//     },
-//   },
-// });

@@ -17,7 +17,7 @@ export class GAController {
     tags: ['Google Analytics'],
   })
   @Get('users-engagement')
-  async activeUsers(
+  async usersEngagement(
     @Res() response: Response,
     @Query() query: GetUserEngagementQuery,
   ) {
@@ -42,6 +42,46 @@ export class GAController {
     @Query() query: GetUserEngagementQuery,
   ) {
     const data = await this.gaServices.engagementTime(query);
+
+    return responseHelper(
+      response,
+      HttpStatus.OK,
+      ServerSuccess.USER_ENGAGEMENT.LISTED,
+      data,
+      null,
+      null,
+    );
+  }
+
+  @ApiEndpoint({
+    tags: ['Google Analytics'],
+  })
+  @Get('active-users')
+  async activeUsers(
+    @Res() response: Response,
+    @Query() query: GetUserEngagementQuery,
+  ) {
+    const data = await this.gaServices.activeUserData(query);
+
+    return responseHelper(
+      response,
+      HttpStatus.OK,
+      ServerSuccess.USER_ENGAGEMENT.LISTED,
+      data,
+      null,
+      null,
+    );
+  }
+
+  @ApiEndpoint({
+    tags: ['Google Analytics'],
+  })
+  @Get('page-views')
+  async views(
+    @Res() response: Response,
+    @Query() query: GetUserEngagementQuery,
+  ) {
+    const data = await this.gaServices.views(query);
 
     return responseHelper(
       response,

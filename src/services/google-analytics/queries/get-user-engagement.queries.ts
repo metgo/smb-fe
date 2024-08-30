@@ -1,7 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsOptional } from 'class-validator';
-
-import { ExternalApiTypes } from 'src/services/google-analytics/ga.types';
+import { IsOptional, IsString } from 'class-validator';
 
 export class GetUserEngagementQuery {
   @ApiProperty({ type: String, required: true })
@@ -13,11 +11,9 @@ export class GetUserEngagementQuery {
     endDate: string;
 
   @ApiProperty({
-    type: 'enum',
-    enum: ExternalApiTypes,
     required: false,
   })
-  @IsEnum(ExternalApiTypes)
+  @IsString()
   @IsOptional()
-    externalApi: ExternalApiTypes;
+    externalApi: string;
 }
