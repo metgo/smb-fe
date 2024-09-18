@@ -206,6 +206,73 @@ export class VoucherService {
     }
   }
 
+  async createdBySuperadminNewTemplate(
+    user: LoggedInUserInterface,
+    dto: createVoucherDto,
+    identifierId?: string,
+  ) {
+    try {
+      const campaignId = (
+        await this.campaignService.findAndReturn('code', dto.campCode)
+      )._id;
+      const createdByUserId
+        = user?.email === dto.email
+          ? user?.id
+          : (await this.usersService.findByEmailOrNull(dto.email))?._id;
+
+      const vouchers: any = [];
+      const voucherCodes: any = [];
+
+      await Promise.all(
+        Array.from({ length: dto.noOfVoucher }).map(async () => {
+          const randomCode = generateRandomCode(12);
+          const code = dto.campCode + randomCode;
+          const newVoucher = new this.VoucherModel({
+            ...dto,
+            code,
+            remainingAmount: dto.amount,
+            campId: campaignId,
+            createdBy: createdByUserId,
+            createdByEmail: createdByUserId ? null : dto.email,
+            paymentStatus: VoucherPaymentStatus.PAID,
+            identifierId,
+          });
+          await newVoucher.save();
+          await vouchers.push(newVoucher);
+          await voucherCodes.push(code);
+        }),
+      );
+
+      this.logger.info('[VOUCHER]: CREATED BY ADMIN NEW TEMPLATE', {
+        message: voucherCodes,
+      });
+
+      // send emails?
+      const VOUCHERCODE = await voucherCodes
+        .map(code => `\n${code}`)
+        .toString();
+      await this.mailchimpService.sendTransactionalEmail({
+        to: dto?.email,
+        templatedId:
+          dto?.languagePreference === Locale.HEBREW
+            ? HebrewTemplate.VoucherConfirmationNonLoggedInNewTemplate
+            : EnglishTemplate.VoucherConfirmationNonLoggedInNewTemplate,
+        mergeVars: {
+          BUYERNAME: dto?.name,
+          VOUCHERCODE,
+          VOUCHERAMOUNT: dto?.amount,
+        },
+      });
+
+      return vouchers;
+    } catch (err) {
+      this.logger.error('[VOUCHER]: FAILED TO CREATE BY ADMIN NEW TEMPLATE', {
+        err: err.message,
+      });
+      exceptionHandling(err);
+    }
+  }
+
   async createVouchersByCampaign(
     loggedInUser: LoggedInUserInterface,
     body: RewardVouchersByCampaignDto,

@@ -395,6 +395,43 @@ export class ExternalAPIServiceController {
   @ApiEndpoint({
     tags: ['External Api'],
     response: {
+      status: HttpStatus.CREATED,
+      description: ServerSuccess.VOUCHER.CREATED,
+    },
+    softBlockExtraDtoFields: true,
+    noAuthToken: true,
+    operation: 'Purchase voucher by superadmin - EXTERNAL API',
+  })
+  @Roles(UserType.SUPERADMIN)
+  @UseGuards(JwtAuthGuard)
+  @UseGuards(ExternalApiGuard)
+  @Post('admin/vouchers-template')
+  async buyVoucherByExternalApiBySuperAdminNewTemplate(
+    @Req() req,
+    @Res() response: Response,
+    @Body() dto: CreateVoucherDto,
+    @Query() query: ExternalApiPostQuery,
+  ) {
+    const link
+      = await this.externalApiService.createVoucherBySuperadminNewTemplate(
+        req.user,
+        dto,
+        query.identifierId,
+      );
+
+    return responseHelper(
+      response,
+      HttpStatus.CREATED,
+      `${dto.campCode} ${ServerSuccess.EXTERNAL_API.VOUCHER.CREATED}`,
+      link,
+      null,
+      null,
+    );
+  }
+
+  @ApiEndpoint({
+    tags: ['External Api'],
+    response: {
       status: HttpStatus.OK,
       description: ServerSuccess.VOUCHER.LISTED,
     },

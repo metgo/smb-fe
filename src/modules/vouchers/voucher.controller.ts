@@ -102,6 +102,40 @@ export class VoucherController {
     );
   }
 
+  @Roles(UserType.SUPERADMIN)
+  @UseGuards(JwtAuthGuard)
+  @ApiEndpoint({
+    tags: ['Admin', 'Voucher'],
+    response: {
+      status: HttpStatus.CREATED,
+      description: ServerSuccess.VOUCHER.CREATED,
+    },
+    softBlockExtraDtoFields: true,
+    noAuthToken: true,
+    operation: 'Purchase Voucher By Superadmin',
+  })
+  @HttpCode(HttpStatus.CREATED)
+  @Post('admin/vouchers-template')
+  async createPaidVouchersNewTemplate(
+    @Req() req,
+    @Res() response: Response,
+    @Body() dto: createVoucherDto,
+  ) {
+    const vouchers = await this.voucherService.createdBySuperadminNewTemplate(
+      req.user,
+      dto,
+    );
+
+    return responseHelper(
+      response,
+      HttpStatus.CREATED,
+      ServerSuccess.VOUCHER.LISTED,
+      vouchers,
+      null,
+      null,
+    );
+  }
+
   @Roles(UserType.ADMIN, UserType.SUPERADMIN)
   @UseGuards(JwtAuthGuard)
   @ApiEndpoint({

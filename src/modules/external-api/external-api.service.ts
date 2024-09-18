@@ -1411,6 +1411,83 @@ export class ExternalApiServices {
     }
   }
 
+  async createVoucherBySuperadminNewTemplate(
+    user: LoggedInUserInterface,
+    dto: CreateVoucherDto,
+    identifierId?: string,
+  ) {
+    try {
+      const campaignId = (
+        await this.findCampaignAndReturn('code', dto.campCode)
+      )._id;
+      const createdByUserId
+        = user?.email === dto.email
+          ? user?.id
+          : (await this.userService.findByEmailOrNull(dto.email))?._id;
+
+      const vouchers: any = [];
+      const voucherCodes: any = [];
+
+      const externalApiId = (
+        await this.findByFieldName('identifierId', identifierId)
+      )._id;
+
+      await Promise.all(
+        Array.from({ length: dto.noOfVoucher }).map(async () => {
+          const randomCode = generateRandomCode(12);
+          const code = dto.campCode + randomCode;
+          const newVoucher = new this.VoucherModel({
+            ...dto,
+            code,
+            remainingAmount: dto.amount,
+            campId: campaignId,
+            createdBy: createdByUserId,
+            createdByEmail: createdByUserId ? null : dto.email,
+            paymentStatus: VoucherPaymentStatus.PAID,
+            externalApiId,
+          });
+          await newVoucher.save();
+          await vouchers.push(newVoucher);
+          await voucherCodes.push(code);
+        }),
+      );
+
+      this.logger.info(
+        '[EXTERNAL_API_VOUCHERS]: CREATED BY SUPERADMIN NEW TEMPLATE',
+        {
+          message: voucherCodes,
+        },
+      );
+
+      // send emails?
+      const VOUCHERCODE = await voucherCodes
+        .map(code => `\n${code}`)
+        .toString();
+      await this.mailchimpService.sendTransactionalEmail({
+        to: dto?.email,
+        templatedId:
+          dto?.languagePreference === Locale.HEBREW
+            ? HebrewTemplate.VoucherConfirmationNonLoggedInNewTemplate
+            : EnglishTemplate.VoucherConfirmationNonLoggedInNewTemplate,
+        mergeVars: {
+          BUYERNAME: dto?.name,
+          VOUCHERCODE,
+          VOUCHERAMOUNT: dto?.amount,
+        },
+      });
+
+      return vouchers;
+    } catch (err) {
+      this.logger.error(
+        '[EXTERNAL_API_VOUCHERS]: FAILED TO CREATE VOUCHERS BY SUPERADMIN NEW TEMPLATE',
+        {
+          err: err.message,
+        },
+      );
+      exceptionHandling(err);
+    }
+  }
+
   async createCampaigns(
     dto: CreateCampaignDto,
     files: Array<Express.Multer.File>,
