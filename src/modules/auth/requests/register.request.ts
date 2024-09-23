@@ -1,6 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
-  IsEmail, IsNotEmpty, IsString, MinLength,
+  IsEmail,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  MinLength,
 } from 'class-validator';
 
 export class RegisterRequest {
@@ -20,22 +24,17 @@ export class RegisterRequest {
   readonly firstName: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   @ApiProperty()
   readonly lastName: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   @ApiProperty()
   readonly phoneNumber: string;
 
   @IsString()
-  @IsNotEmpty()
-  @ApiProperty()
-  readonly address: string;
-
-  @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   @ApiProperty()
   readonly countryCode: string;
 }

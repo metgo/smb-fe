@@ -105,6 +105,7 @@ export class MockDataServices {
       ...command,
       impression,
       engagement,
+      createdAt: new Date(),
     });
     await newStats.save();
   }

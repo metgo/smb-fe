@@ -161,6 +161,7 @@ export class BusinessService {
       ...dto,
       serviceType: GeoServicesTypes.BUSINESS,
       impact,
+      createdAt: new Date(),
     };
 
     // find dmoId by authority
@@ -270,6 +271,7 @@ export class BusinessService {
       ...dto,
       serviceType: GeoServicesTypes.BUSINESS,
       impact,
+      createdAt: new Date(),
     };
 
     if (dto.authorityId) {

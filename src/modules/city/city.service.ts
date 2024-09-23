@@ -27,6 +27,7 @@ export class CityService {
       ...dto,
       dmoId,
       createdBy: userId,
+      createdAt: new Date(),
     });
 
     const city = await newCity.save();

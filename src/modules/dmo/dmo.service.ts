@@ -93,6 +93,7 @@ export class DMOService {
         adminIds: [dto.userId],
         _id: new mongoose.Types.ObjectId(),
         createdBy: userId,
+        createdAt: new Date(),
         imagePath,
         logoPath,
       });

@@ -33,7 +33,10 @@ export class MapPointServices {
    * delete
    */
   async createMapPoint(dto: createMapPointDto): Promise<MapPoint> {
-    const newMapPoint = new this.MapPointModel(dto);
+    const newMapPoint = new this.MapPointModel({
+      ...dto,
+      createdAt: new Date(),
+    });
     return newMapPoint.save();
   }
 

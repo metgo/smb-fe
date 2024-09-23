@@ -83,6 +83,7 @@ export class OrdersService {
           voucher: redeemedVouchers,
           userId: loggedInUserId ?? null,
           createdBy: loggedInUserId ?? null,
+          createdAt: new Date(),
           paymentStatus: PaymentStatus.SUCCESS,
           status: OrderStatus.PROCESSING,
           creditCardPayment: totalAmount,
@@ -185,6 +186,7 @@ export class OrdersService {
         voucher: redeemedVouchers,
         userId: loggedInUserId ?? null,
         createdBy: loggedInUserId ?? null,
+        createdAt: new Date(),
         paymentStatus: PaymentStatus.PENDING,
         creditCardPayment: totalAmount,
         paymentMode:

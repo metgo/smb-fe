@@ -36,6 +36,7 @@ export const emailDefaultTemplate = {
 
 export const ServerErrors = {
   FORBIDDEN: 'Access Denied',
+  UNAUTHORIZED_ACCESS: 'Unauthorized access',
   IS_NOT_EMPTY: 'cannot be empty',
   IS_NOT_BLANK: 'cannot be empty or contain only spaces',
   DATE_IS_NOT_LESS: 'start date must be less than end date.',

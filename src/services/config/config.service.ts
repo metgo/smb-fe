@@ -27,6 +27,7 @@ export class ConfigService {
       'ENV_NAME',
       'API_PORT',
       'BASE_URL',
+      'FE_BASE_URL',
       'MONGODB_URI',
       'JWT_TOKEN_EXPIRES',
       'ACCESS_TOKEN_EXPIRATION',
@@ -66,6 +67,9 @@ export class ConfigService {
       'MAILCHIMP_TAV8_SUPPORT_EMAIL',
       'GA_BALA_PROPERTY_ID',
       'GA_TAV8_PROPERTY_ID',
+      'GOOGLE_CLIENT_ID',
+      'GOOGLE_CLIENT_SECRET',
+      'GOOGLE_REDIRECT_URI',
     ];
     return ENV_VARIABLES.reduce((obj: any, variable) => {
       if (process.env[variable]) {
@@ -86,6 +90,7 @@ export class ConfigService {
       ENV_NAME: Joi.string().required(),
       API_PORT: Joi.number().port().default(3000),
       BASE_URL: Joi.string().required(),
+      FE_BASE_URL: Joi.string().required(),
       MONGODB_URI: Joi.string().required(),
       JWT_TOKEN_EXPIRES: Joi.number().required(),
       ACCESS_TOKEN_EXPIRATION: Joi.number().required(),
@@ -126,6 +131,9 @@ export class ConfigService {
       MAILCHIMP_TAV8_SUPPORT_EMAIL: Joi.string().required(),
       GA_BALA_PROPERTY_ID: Joi.string().required(),
       GA_TAV8_PROPERTY_ID: Joi.string().required(),
+      GOOGLE_CLIENT_ID: Joi.string().required(),
+      GOOGLE_CLIENT_SECRET: Joi.string().required(),
+      GOOGLE_REDIRECT_URI: Joi.string().required(),
     }).unknown(true);
 
     const { error, value: validatedEnvConfig }
@@ -151,7 +159,10 @@ export class ConfigService {
   }
 
   get baseUrl() {
-    return this.get('BASE_URL');
+    return {
+      BE: this.get('BASE_URL'),
+      FE: this.get('FE_BASE_URL'),
+    };
   }
 
   get superAdminEmail() {
@@ -224,6 +235,14 @@ export class ConfigService {
     return {
       BALA_PROPERTY_ID: this.get('GA_BALA_PROPERTY_ID'),
       TAV8_PROPERTY_ID: this.get('GA_TAV8_PROPERTY_ID'),
+    };
+  }
+
+  get googleOAuth() {
+    return {
+      CLIENT_ID: this.get('GOOGLE_CLIENT_ID'),
+      CLIENT_SECRET: this.get('GOOGLE_CLIENT_SECRET'),
+      REDIRECT_URI: this.get('GOOGLE_REDIRECT_URI'),
     };
   }
 }

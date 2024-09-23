@@ -43,7 +43,12 @@ export class IconsService {
       .replace(/[^a-zA-Z0-9\s]/g, '') // Remove non-alphanumeric characters
       .replace(/\s+/g, '_');
 
-    const newIconCategory = new this.IconModel({ ...dto, iconAlt, iconPath });
+    const newIconCategory = new this.IconModel({
+      ...dto,
+      iconAlt,
+      iconPath,
+      createdAt: new Date(),
+    });
     return newIconCategory.save();
   }
 

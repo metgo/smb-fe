@@ -37,6 +37,7 @@ export class BussSubCategoriesService {
     const newBussSubCategory = new this.BussSubCategoryModel({
       ...dto,
       createdBy: userId,
+      createdAt: new Date(),
     });
     return newBussSubCategory.save();
   }

@@ -34,6 +34,7 @@ export class BussCategoriesService {
   async create(dto: createBussCategoryDto, userId: string) {
     const newBussCategories = new this.BussCategoryModel({
       ...dto,
+      createdAt: new Date(),
       createdBy: userId,
     });
     await newBussCategories.save();

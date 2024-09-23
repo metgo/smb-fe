@@ -29,7 +29,11 @@ export class GroupTypeService {
   ) {}
 
   async create(dto: createGroupTypeDto, userId: string) {
-    const newGroupType = new this.GroupTypeModel({ ...dto, createdBy: userId });
+    const newGroupType = new this.GroupTypeModel({
+      ...dto,
+      createdBy: userId,
+      createdAt: new Date(),
+    });
     return newGroupType.save();
   }
 

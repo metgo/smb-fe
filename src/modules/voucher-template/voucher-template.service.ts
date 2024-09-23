@@ -52,6 +52,7 @@ export class VoucherTemplateService {
     const newVoucherTemplate = new this.VoucherTemplateModel({
       ...dto,
       createdBy: userId,
+      createdAt: new Date(),
       imagePath,
       imageAlt,
     });

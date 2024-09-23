@@ -76,6 +76,7 @@ export class CampaignSegmentService {
       businesses: newBusinessList,
       products: newProductsList,
       createdBy: loggedInUserId,
+      createdAt: new Date(),
     });
     await newCampaignSegment.save();
     return newCampaignSegment;

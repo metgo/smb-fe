@@ -10,7 +10,6 @@ import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { unproject } from 'src/common/utils/select.handling';
 import { findOneById } from 'src/core/helper/query-helper';
 import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interface';
-import { BusinessService } from 'src/modules/business/services/business.service';
 import { OrderStatus } from 'src/modules/orders/orders.type';
 import { CreateOrderProductCommand } from 'src/modules/order-product/interfaces/create-order-product.interface';
 import { GetAllOrdersDetailsQuery } from 'src/modules/order-product/queries/get-order-details.query';
@@ -25,7 +24,6 @@ export class OrderProductService {
     @InjectModel(OrderProduct.name)
     private OrderProductModel: Model<OrderProduct>,
     private readonly productsService: ProductsService,
-    private readonly businessService: BusinessService,
   ) {}
 
   async create(command: CreateOrderProductCommand): Promise<any> {
@@ -39,6 +37,7 @@ export class OrderProductService {
         userId: command.loggedInUserId ?? null,
         orderId: command.orderId,
         createdBy: command.loggedInUserId ?? null,
+        createdAt: new Date(),
       });
 
       const productDetail = await productDetails.save();
@@ -465,7 +464,7 @@ export class OrderProductService {
     if (loggedInUser.role === UserType.TRAVELLER) {
       pipeline.push({
         $match: {
-          'business_info.userId': new mongoose.Types.ObjectId(loggedInUser.id),
+          'orders.userId': new mongoose.Types.ObjectId(loggedInUser.id),
         },
       });
     }

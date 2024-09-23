@@ -28,6 +28,7 @@ export class SettingsServices {
     const newSettings = new this.SettingsModel({
       ...body,
       createdBy: userId,
+      createdAt: new Date(),
       slug,
     });
 

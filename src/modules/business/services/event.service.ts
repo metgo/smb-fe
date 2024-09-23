@@ -48,6 +48,7 @@ export class EventsService {
       serviceType: GeoServicesTypes.EVENT,
       userId: user.id,
       createdBy: user.id,
+      createdAt: new Date(),
     };
 
     // find dmoId by authority

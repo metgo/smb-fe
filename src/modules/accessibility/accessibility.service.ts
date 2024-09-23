@@ -35,6 +35,7 @@ export class AccessibilityService {
       const newAccessibility = new this.AccessibilityModel({
         ...dto,
         createdBy: userId,
+        createdAt: new Date(),
       });
       return newAccessibility.save();
     } catch (err) {

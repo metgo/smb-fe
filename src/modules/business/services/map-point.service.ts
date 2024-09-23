@@ -57,6 +57,7 @@ export class MapPointsService {
       userId: user.id,
       createdBy: user.id,
       impact,
+      createdAt: new Date(),
     };
 
     // find dmoId by authority

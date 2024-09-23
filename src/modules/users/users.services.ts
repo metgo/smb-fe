@@ -34,8 +34,11 @@ import {
   update,
   updateById,
 } from 'src/core/helper/query-helper';
+import { IGoogleUser } from 'src/modules/auth/auth.types';
 import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interface';
 import { RegisterRequest } from 'src/modules/auth/requests/register.request';
+import { RegisterStep1Request } from 'src/modules/auth/requests/register-step1.request';
+import { RegisterStep2Request } from 'src/modules/auth/requests/register-step2.request';
 import { AuthorityService } from 'src/modules/authority/authority.service';
 import { BusinessService } from 'src/modules/business/services/business.service';
 import { CampaignService } from 'src/modules/campaign/campaign.service';
@@ -460,34 +463,10 @@ export class UsersService {
       const newUser = await new this.UserModel({
         ...registerDto,
         password: hashedPassword,
+        createdAt: new Date(),
       }).save();
 
-      this.logger.info('[USER]: CREATED', { message: newUser });
-
-      await Promise.all([
-        this.voucherService.updateVoucherCreatedDetails(
-          registerDto.email,
-          newUser.id,
-        ),
-        this.voucherService.updateVoucherAssignedDetails(
-          registerDto.email,
-          newUser.id,
-        ),
-        this.mailchimpService.subscribe(
-          newUser.firstName,
-          newUser.lastName,
-          newUser.email,
-        ),
-        this.mailchimpService.sendTransactionalEmail({
-          to: newUser?.email,
-          templatedId: EnglishTemplate.UserRegistrationBySelf,
-          mergeVars: {
-            FNAME: newUser?.firstName,
-          },
-        }),
-      ]);
-
-      // await this.mailService.sendWelcome(newUser);
+      await this.postUserCreation(registerDto.email, newUser);
 
       return {
         id: newUser.id,
@@ -510,6 +489,128 @@ export class UsersService {
     } catch (error) {
       this.logger.error(
         `[USER]: FAILED TO CREATE ------ ERROR: ${error.message}`,
+        {
+          err: error.message,
+        },
+      );
+      if (error.code === 11000) {
+        throw new ConflictException(ServerErrors.USER.EXISTS);
+      }
+      exceptionHandling(error);
+    }
+  }
+
+  async createStep1(
+    registerDto: RegisterStep1Request,
+  ): Promise<GetUserDetailsResponse> {
+    try {
+      const user = await this.validateUserIfNeedToRecover(registerDto.email);
+
+      if (user && !user?.password) {
+        return {
+          id: user.id,
+          firstName: user.firstName,
+          lastName: user?.lastName,
+          phoneDetails: {
+            countryCode: user?.countryCode,
+            phoneNumber: user?.phoneNumber,
+          },
+          languagePreference: user.languagePreference,
+          address: user?.address,
+          dob: user?.dob,
+          email: user.email,
+          isPhoneVerify: user?.isPhoneVerify,
+          isEmailVerify: user?.isEmailVerify,
+          role: user.role,
+          createdAt: user.createdAt,
+          updatedAt: user.updatedAt,
+        };
+      }
+
+      const newUser = await new this.UserModel({
+        ...registerDto,
+        createdAt: new Date(),
+      }).save();
+
+      this.logger.info('[USER]: STEP-1 OF CREATION COMPLETED', {
+        message: newUser,
+      });
+
+      return {
+        id: newUser.id,
+        firstName: newUser.firstName,
+        lastName: newUser?.lastName,
+        phoneDetails: {
+          countryCode: newUser?.countryCode,
+          phoneNumber: newUser?.phoneNumber,
+        },
+        languagePreference: newUser.languagePreference,
+        address: newUser?.address,
+        dob: newUser?.dob,
+        email: newUser.email,
+        isPhoneVerify: newUser?.isPhoneVerify,
+        isEmailVerify: newUser?.isEmailVerify,
+        role: newUser.role,
+        createdAt: newUser.createdAt,
+        updatedAt: newUser.updatedAt,
+      };
+    } catch (error) {
+      this.logger.error(
+        `[USER]: FAILED TO CREATE AT STEP 1------ ERROR: ${error.message}`,
+        {
+          err: error.message,
+        },
+      );
+      if (error.code === 11000) {
+        throw new ConflictException(ServerErrors.USER.EXISTS);
+      }
+      exceptionHandling(error);
+    }
+  }
+
+  async updateForStep2(
+    userId: string,
+    registerDto: RegisterStep2Request,
+  ): Promise<GetUserDetailsResponse> {
+    try {
+      const hashedPassword = await this.hashService.create(
+        registerDto.password,
+      );
+
+      const updateField = {
+        ...registerDto,
+        password: hashedPassword,
+        updatedAt: new Date(),
+      };
+
+      const user = await updateById<User>(this.UserModel, userId, updateField);
+      this.logger.info('[USER]: STEP-2 OF CREATION COMPLETED', {
+        message: user,
+      });
+
+      await this.postUserCreation(user.email, user);
+
+      return {
+        id: user.id,
+        firstName: user.firstName,
+        lastName: user?.lastName,
+        phoneDetails: {
+          countryCode: user?.countryCode,
+          phoneNumber: user?.phoneNumber,
+        },
+        languagePreference: user.languagePreference,
+        address: user?.address,
+        dob: user?.dob,
+        email: user.email,
+        isPhoneVerify: user?.isPhoneVerify,
+        isEmailVerify: user?.isEmailVerify,
+        role: user.role,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+      };
+    } catch (error) {
+      this.logger.error(
+        `[USER]: FAILED TO CREATE AT STEP 2------ ERROR: ${error.message}`,
         {
           err: error.message,
         },
@@ -911,6 +1012,7 @@ export class UsersService {
       let body: any = {
         ...dto,
         password: hashedPassword,
+        createdAt: new Date(),
       };
 
       let newUser = new this.UserModel(body);
@@ -1186,5 +1288,61 @@ export class UsersService {
 
     const data = await this.UserModel.find(query).select('_id');
     return data;
+  }
+
+  // Oauth
+  async createUserFromGoogleLogin(googleUser: IGoogleUser) {
+    const user = await findOneByFieldName<User>(
+      this.UserModel,
+      'email',
+      googleUser.email,
+    );
+
+    if (!user) {
+      const password = nanoid(10);
+      const hashedPassword = await this.hashService.create(password);
+      const sanitizedUser = new this.UserModel({
+        email: googleUser.email,
+        isEmailVerify: googleUser.verified_email,
+        firstName: googleUser.given_name,
+        lastName: googleUser.family_name,
+        password: hashedPassword,
+      });
+
+      const savedUser = await this.UserModel.create(sanitizedUser);
+
+      await this.postUserCreation(googleUser.email, savedUser);
+
+      return savedUser;
+    }
+
+    return user;
+  }
+
+  private async postUserCreation(registeredEmail: string, newUser: User) {
+    this.logger.info('[USER]: CREATED', { message: newUser });
+
+    await Promise.all([
+      this.mailchimpService.subscribe(
+        newUser.firstName,
+        newUser.lastName,
+        newUser.email,
+      ),
+      this.mailchimpService.sendTransactionalEmail({
+        to: newUser?.email,
+        templatedId: EnglishTemplate.UserRegistrationBySelf,
+        mergeVars: {
+          FNAME: newUser?.firstName,
+        },
+      }),
+      this.voucherService.updateVoucherCreatedDetails(
+        registeredEmail,
+        newUser._id.toString(),
+      ),
+      this.voucherService.updateVoucherAssignedDetails(
+        registeredEmail,
+        newUser._id.toString(),
+      ),
+    ]);
   }
 }

@@ -7,6 +7,7 @@ import {
   CanActivate,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { ServerErrors } from 'src/common/constant';
 
 import { AuthorityService } from 'src/modules/authority/authority.service';
 import { DMOService } from 'src/modules/dmo/dmo.service';
@@ -26,24 +27,38 @@ export class JwtAuthGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
-    const token = request.headers.authorization?.replace('Bearer ', '');
+
+    let token = request.headers.authorization?.replace('Bearer ', '');
+
+    if (request.headers.cookie) {
+      const { accessToken } = request.headers.cookie
+        .split(';')
+        .map(cookie => cookie.trim().split('='))
+        .reduce((acc, [key, value]) => {
+          acc[key] = value;
+          return acc;
+        }, {});
+
+      token = accessToken;
+    }
+
     if ((!token || token.length <= 10) && whiteListAPI.includes(request.path)) {
       return true;
     }
     if (!token) {
-      throw new UnauthorizedException('Unauthorized access');
+      throw new UnauthorizedException(ServerErrors.UNAUTHORIZED_ACCESS);
     }
 
     let decoded;
     try {
       decoded = this.jwtService.verify(token);
     } catch (error) {
-      throw new UnauthorizedException('Unauthorized access');
+      throw new UnauthorizedException(ServerErrors.UNAUTHORIZED_ACCESS);
     }
     const user = await this.userService.findByEmail(decoded.email);
 
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException(ServerErrors.USER.NOT_FOUND);
     }
 
     let dmo;

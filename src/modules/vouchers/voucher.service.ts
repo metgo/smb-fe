@@ -110,6 +110,7 @@ export class VoucherService {
             remainingAmount: dto.amount,
             campId: campaignId,
             createdBy: createdByUserId,
+            createdAt: new Date(),
             createdByEmail: createdByUserId ? null : dto.email,
           });
           await newVoucher.save();
@@ -166,6 +167,7 @@ export class VoucherService {
             remainingAmount: dto.amount,
             campId: campaignId,
             createdBy: createdByUserId,
+            createdAt: new Date(),
             createdByEmail: createdByUserId ? null : dto.email,
             paymentStatus: VoucherPaymentStatus.PAID,
             identifierId,
@@ -311,6 +313,7 @@ export class VoucherService {
           const newVoucher = new this.VoucherModel({
             name: body.name,
             createdBy: loggedInUser.id,
+            createdAt: new Date(),
             amount: campaignReward?.rewardId?.amount,
             code,
             remainingAmount: campaignReward?.rewardId?.amount,

@@ -34,7 +34,6 @@ describe('Auth e2e Test', () => {
       firstName: 'test',
       lastName: 'test',
       phoneNumber: '1234567890',
-      address: 'test',
       countryCode: '977',
     };
     await superTest.post('/auth/register').send(req).expect(HttpStatus.CREATED);
@@ -49,7 +48,6 @@ describe('Auth e2e Test', () => {
       firstName: 'test',
       lastName: 'test',
       phoneNumber: '1234567890',
-      address: 'test',
       countryCode: '977',
     };
     await superTest

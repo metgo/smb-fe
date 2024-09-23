@@ -100,6 +100,7 @@ export class CampaignService {
         imagePath: campImage,
         logoPath,
         createdBy: user.id,
+        createdAt: new Date(),
       };
 
       if (

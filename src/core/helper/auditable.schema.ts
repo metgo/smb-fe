@@ -3,7 +3,7 @@ import { Prop } from '@nestjs/mongoose';
 // eslint-disable-next-line no-use-before-define
 
 export abstract class AuditableSchema {
-  @Prop({ default: new Date() })
+  @Prop()
     createdAt: Date;
 
   @Prop({ default: null })

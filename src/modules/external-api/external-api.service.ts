@@ -140,6 +140,7 @@ export class ExternalApiServices {
         ...body,
         companyDetails,
         createdBy: loggedInUser,
+        createdAt: new Date(),
         identifierId: generateRandomIdentifier(
           body.companyName.substring(0, 4),
           18,
@@ -320,6 +321,7 @@ export class ExternalApiServices {
           const newVoucher = new this.VoucherModel({
             name: body.name,
             createdBy: loggedInUser.id,
+            createdAt: new Date(),
             amount: campaignReward?.rewardId?.amount,
             code,
             remainingAmount: campaignReward?.rewardId?.amount,
@@ -680,6 +682,7 @@ export class ExternalApiServices {
           voucher: redeemedVouchers,
           userId: loggedInUserId,
           createdBy: loggedInUserId,
+          createdAt: new Date(),
           paymentStatus: PaymentStatus.SUCCESS,
           externalApiId,
           status: OrderStatus.PROCESSING,
@@ -782,6 +785,7 @@ export class ExternalApiServices {
         voucher: redeemedVouchers,
         userId: loggedInUserId,
         createdBy: loggedInUserId,
+        createdAt: new Date(),
         paymentStatus: PaymentStatus.PENDING,
         externalApiId,
         creditCardPayment: totalAmount,
@@ -1307,6 +1311,7 @@ export class ExternalApiServices {
           remainingAmount: dto.amount,
           campId,
           createdBy: createdByUserId,
+          createdAt: new Date(),
           createdByEmail: createdByUserId ? null : dto.email,
           externalApiId,
         });
@@ -1368,6 +1373,7 @@ export class ExternalApiServices {
             remainingAmount: dto.amount,
             campId: campaignId,
             createdBy: createdByUserId,
+            createdAt: new Date(),
             createdByEmail: createdByUserId ? null : dto.email,
             paymentStatus: VoucherPaymentStatus.PAID,
             externalApiId,
@@ -1544,6 +1550,7 @@ export class ExternalApiServices {
         imagePath: campImage,
         logoPath,
         createdBy: userId,
+        createdAt: new Date(),
         externalApiId,
       };
 
@@ -1865,6 +1872,7 @@ export class ExternalApiServices {
         userId: command.loggedInUserId,
         orderId: command.orderId,
         createdBy: command.loggedInUserId,
+        createdAt: new Date(),
       });
 
       const productDetail = await productDetails.save();
@@ -1894,6 +1902,7 @@ export class ExternalApiServices {
     try {
       const newReward = new this.RewardModel({
         ...command,
+        createdAt: new Date(),
       });
 
       const reward = await newReward.save();

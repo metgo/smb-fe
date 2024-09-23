@@ -73,6 +73,7 @@ export class PaymentsService {
     }
       = this.configService.cardCom;
 
+    const { BE } = this.configService.baseUrl;
     const cardComResponse = await axios.post(
       URL,
       {
@@ -80,9 +81,9 @@ export class PaymentsService {
         ApiName: API_NAME,
         Amount: amount,
         ISOCoinId: 1,
-        SuccessRedirectUrl: `${this.configService.baseUrl}${SUCCESS}?languagePreference=${languagePreference}`,
-        FailedRedirectUrl: `${this.configService.baseUrl}${FAILURE}?languagePreference=${languagePreference}`,
-        WebHookUrl: `${this.configService.baseUrl}${INDICATOR}?languagePreference=${languagePreference}`,
+        SuccessRedirectUrl: `${BE}${SUCCESS}?languagePreference=${languagePreference}`,
+        FailedRedirectUrl: `${BE}${FAILURE}?languagePreference=${languagePreference}`,
+        WebHookUrl: `${BE}${INDICATOR}?languagePreference=${languagePreference}`,
       },
       {
         headers: {

@@ -85,6 +85,7 @@ export class AuthorityService {
         ...dto,
         adminIds: [dto.userId],
         createdBy: userId,
+        createdAt: new Date(),
         imagePath,
         logoPath,
       });

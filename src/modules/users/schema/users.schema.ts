@@ -40,7 +40,7 @@ export class User extends AuditableSchema {
   @Prop({ default: Locale.ENGLISH })
     languagePreference: Locale;
 
-  @Prop({ required: true })
+  @Prop({ required: false, default: '' })
     password: string;
 
   @Prop({ type: Date })

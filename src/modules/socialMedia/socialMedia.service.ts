@@ -29,7 +29,10 @@ export class SocialMediaService {
   ) {}
 
   async create(dto: createSocialMediaDto) {
-    const newSocialMedia = new this.SocialMediaModel(dto);
+    const newSocialMedia = new this.SocialMediaModel({
+      ...dto,
+      createdAt: new Date(),
+    });
 
     return await newSocialMedia.save();
   }

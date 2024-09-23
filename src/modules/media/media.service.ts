@@ -53,6 +53,7 @@ export class MediaServices {
               schema: body.reference,
             },
             createdBy: loggedInUser.id,
+            createdAt: new Date(),
             url: imageUrl,
             originalName: file.originalname,
             mimetype: file.mimetype,

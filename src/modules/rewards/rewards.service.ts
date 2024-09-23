@@ -24,6 +24,7 @@ export class RewardsService {
     try {
       const newReward = new this.RewardModel({
         ...command,
+        createdAt: new Date(),
       });
 
       const reward = await newReward.save();

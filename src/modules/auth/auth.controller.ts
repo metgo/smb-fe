@@ -9,6 +9,10 @@ import {
   Res,
   Put,
   BadRequestException,
+  Get,
+  Query,
+  Param,
+  Patch,
 } from '@nestjs/common';
 import {
   ApiConflictResponse,
@@ -23,7 +27,8 @@ import { ServerErrors, ServerSuccess } from 'src/common/constant';
 import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
 import { JwtAuthGuard } from 'src/core/guards/jwt/jwt.guards';
 import { AuthService } from 'src/modules/auth/auth.services';
-import { RegisterRequest } from 'src/modules/auth/requests/register.request';
+import { RegisterStep1Request } from 'src/modules/auth/requests/register-step1.request';
+import { RegisterStep2Request } from 'src/modules/auth/requests/register-step2.request';
 import { SignInRequest } from 'src/modules/auth/requests/signin.request';
 import { GetUserDetailsResponse } from 'src/modules/users/responses/get-user-details.response';
 import { UsersService } from 'src/modules/users/users.services';
@@ -62,10 +67,26 @@ export class AuthController {
   @ApiCreatedResponse({ type: GetUserDetailsResponse })
   @ApiInternalServerErrorResponse({ description: "Couldn't save user" })
   @ApiOperation({ summary: 'Register new user' })
-  @Post('register')
-  async register(@Body() body: RegisterRequest) {
-    await this.userService.create(body);
-    return await this.authService.login(body);
+  @Post('register-step1')
+  async registerStep1(@Body() body: RegisterStep1Request) {
+    return await this.userService.createStep1(body);
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @ApiConflictResponse({ description: ServerErrors.USER.EXISTS })
+  @ApiCreatedResponse({ type: GetUserDetailsResponse })
+  @ApiInternalServerErrorResponse({ description: "Couldn't save user" })
+  @ApiOperation({ summary: 'Register new user' })
+  @Patch('register-step2/:userId')
+  async registerStep2(
+    @Body() body: RegisterStep2Request,
+    @Param('userId') userId: string,
+  ) {
+    const user = await this.userService.updateForStep2(userId, body);
+    return await this.authService.login({
+      email: user.email,
+      password: body.password,
+    });
   }
 
   @UseGuards(JwtAuthGuard)
@@ -222,5 +243,34 @@ export class AuthController {
       null,
       null,
     );
+  }
+
+  // OAuth
+  @ApiEndpoint({
+    tags: ['Google OAuth'],
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.USER.RECOVER,
+    },
+    operation: 'Login Via Google',
+  })
+  @Get('google/url')
+  getGoogleAuthURL(@Res() res) {
+    const url = this.authService.getGoogleAuthURL();
+
+    return res.redirect(url);
+  }
+
+  @ApiEndpoint({
+    tags: ['Google OAuth'],
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.USER.RECOVER,
+    },
+    operation: 'Login Via Google',
+  })
+  @Get('google')
+  async getGoogleUser(@Query('code') code: string, @Res() res) {
+    return await this.authService.getGoogleUser(res, code);
   }
 }
