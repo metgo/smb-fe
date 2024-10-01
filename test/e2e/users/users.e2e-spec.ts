@@ -204,7 +204,7 @@ describe('Users e2e Test', () => {
         phoneNumber: '1234567890',
         address: 'test',
         role: UserType.DMO,
-        dmoId: DMO.id.toString(),
+        dmoId: DMO.id?.toString(),
       })
       .expect(HttpStatus.CREATED);
 
@@ -228,7 +228,7 @@ describe('Users e2e Test', () => {
         phoneNumber: '1234567890',
         address: 'test',
         role: UserType.DMO,
-        authorityId: authority.id.toString(),
+        authorityId: authority.id?.toString(),
       })
       .expect(HttpStatus.CREATED);
 

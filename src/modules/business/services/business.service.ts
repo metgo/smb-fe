@@ -130,7 +130,7 @@ export class BusinessService {
             const subCatDetails = await this.BussSubCategoryModel.findById(
               subCategory,
             );
-            const catId = subCatDetails?.bussCategoryId[0].toString();
+            const catId = subCatDetails?.bussCategoryId[0]?.toString();
             if (catId) {
               bussCategoriesId = bussCategoriesId?.length
                 ? [...bussCategoriesId, catId]
@@ -210,7 +210,7 @@ export class BusinessService {
       // add to Media Table
       if (images?.length) {
         const body = {
-          refId: business._id.toString(),
+          refId: business._id?.toString(),
           reference: ReferenceType.BUSINESS,
           businessId: null,
         };
@@ -243,7 +243,7 @@ export class BusinessService {
         // add to Media Table
         if (images?.length) {
           const body = {
-            refId: business._id.toString(),
+            refId: business._id?.toString(),
             reference: ReferenceType.BUSINESS,
             businessId: null,
           };
@@ -347,7 +347,7 @@ export class BusinessService {
       // add to Media Table
       if (images?.length) {
         const body = {
-          refId: newBusiness._id.toString(),
+          refId: newBusiness._id?.toString(),
           reference: ReferenceType.BUSINESS,
           businessId: null,
         };
@@ -392,7 +392,7 @@ export class BusinessService {
 
         if (images?.length) {
           const body = {
-            refId: newBusiness._id.toString(),
+            refId: newBusiness._id?.toString(),
             reference: ReferenceType.BUSINESS,
             businessId: null,
           };
@@ -1218,7 +1218,7 @@ export class BusinessService {
         (loggedInUser.role === UserType.AUTHORITY
           || loggedInUser.role === UserType.AUTHORITY_ADMIN)
         && body?.authorityId
-        && body.authorityId !== loggedInUser?.authority.id.toString()
+        && body.authorityId !== loggedInUser?.authority.id?.toString()
       ) {
         throw new BadRequestException('Wrong Authority Id');
       }
@@ -1620,7 +1620,7 @@ export class BusinessService {
     const businesses = await this.BusinessModel.find(filterBy)
       .lean()
       .select('_id');
-    const businessesId = businesses.map(item => item._id.toString());
+    const businessesId = businesses.map(item => item._id?.toString());
 
     return businessesId;
   }

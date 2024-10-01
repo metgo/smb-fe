@@ -93,7 +93,7 @@ export class MapPointsService {
 
       if (images?.length) {
         const body = {
-          refId: poi._id.toString(),
+          refId: poi._id?.toString(),
           reference: ReferenceType.POI,
           businessId: null,
         };
@@ -113,7 +113,7 @@ export class MapPointsService {
 
         if (images?.length) {
           const body = {
-            refId: poi._id.toString(),
+            refId: poi._id?.toString(),
             reference: ReferenceType.BUSINESS,
             businessId: null,
           };

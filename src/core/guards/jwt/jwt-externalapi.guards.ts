@@ -44,7 +44,7 @@ export class JwtExternalApiAuthGuard implements CanActivate {
       throw new NotFoundException(ServerErrors.USER.NOT_FOUND);
     }
 
-    if (decoded.externalApiId.toString() !== user.externalApiId.toString()) {
+    if (decoded.externalApiId?.toString() !== user.externalApiId?.toString()) {
       throw new UnauthorizedException(ServerErrors.FORBIDDEN);
     }
 
@@ -53,7 +53,7 @@ export class JwtExternalApiAuthGuard implements CanActivate {
     }
 
     const validExternalApi = await this.externalApiService.getById(
-      user.externalApiId.toString(),
+      user.externalApiId?.toString(),
     );
 
     if (!validExternalApi) {

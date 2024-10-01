@@ -225,7 +225,7 @@ export class PaymentsService {
             invoiceType: 101,
             product: [
               {
-                id: getProductInformation[0]?._id.toString(),
+                id: getProductInformation[0]?._id?.toString(),
                 price: payments?.amount,
                 name: getProductInformation[0]?.name,
               },
@@ -247,7 +247,7 @@ export class PaymentsService {
         if (updateOrder?.totalAmount !== updateOrder?.creditCardPayment) {
           const product = [
             {
-              id: getProductInformation[0]?._id.toString(),
+              id: getProductInformation[0]?._id?.toString(),
               price: updateOrder?.creditCardPayment,
               name: getProductInformation[0]?.name,
             },

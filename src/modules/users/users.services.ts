@@ -1215,7 +1215,7 @@ export class UsersService {
 
       // recoverBusinesses
       await this.businessService.recoverBusinessPostUserRecovery(
-        recoveredUser._id.toString(),
+        recoveredUser._id?.toString(),
       );
 
       return {
@@ -1337,11 +1337,11 @@ export class UsersService {
       }),
       this.voucherService.updateVoucherCreatedDetails(
         registeredEmail,
-        newUser._id.toString(),
+        newUser._id?.toString(),
       ),
       this.voucherService.updateVoucherAssignedDetails(
         registeredEmail,
-        newUser._id.toString(),
+        newUser._id?.toString(),
       ),
     ]);
   }

@@ -184,19 +184,19 @@ export class StatsService {
 
       // Find the growth or declined rate for each category
       const growthRateStats = getAllBusinessStats.map(category => {
-        const categoryId = category?.categoryId.toString();
+        const categoryId = category?.categoryId?.toString();
         const totalCount = category?.count;
         const currentCount
           = filteredBusinessStats.find(
-            c => c.categoryId.toString() === categoryId,
+            c => c.categoryId?.toString() === categoryId,
           )?.count || 0;
         const previousCount
           = previousDateBusinessStats.find(
-            c => c.categoryId.toString() === categoryId,
+            c => c.categoryId?.toString() === categoryId,
           )?.count || 0;
         const deleteCount
           = deletedBusinessStats.find(
-            c => c.categoryId.toString() === categoryId,
+            c => c.categoryId?.toString() === categoryId,
           )?.count || 0;
 
         const growthRate
@@ -373,19 +373,19 @@ export class StatsService {
 
       // Find the growth or declined rate for each category
       const growthRateStats = getAllProductStats.map(category => {
-        const categoryId = category?.categoryId.toString();
+        const categoryId = category?.categoryId?.toString();
         const totalCount = category?.count;
         const currentCount
           = filteredProductStats.find(
-            c => c.categoryId.toString() === categoryId,
+            c => c.categoryId?.toString() === categoryId,
           )?.count || 0;
         const previousCount
           = previousDateProductStats.find(
-            c => c.categoryId.toString() === categoryId,
+            c => c.categoryId?.toString() === categoryId,
           )?.count || 0;
         const deleteCount
           = deletedProductStats.find(
-            c => c.categoryId.toString() === categoryId,
+            c => c.categoryId?.toString() === categoryId,
           )?.count || 0;
 
         const growthRate
@@ -467,7 +467,7 @@ export class StatsService {
     await Promise.all(
       campaigns.map(async campaign => {
         const relatedVouchers = vouchers.filter(
-          voucher => voucher.campId.toString() === campaign._id.toString(),
+          voucher => voucher.campId?.toString() === campaign._id?.toString(),
         );
 
         const { vouchersRemainingAmount, vouchersActualAmount }
@@ -489,7 +489,7 @@ export class StatsService {
         if (relatedProducts?.length) {
           const productsId = relatedProducts.map(obj => obj.id);
 
-          const relatedOrders = orders.filter(order => order.products.some(product => productsId.includes(product.id.toString())));
+          const relatedOrders = orders.filter(order => order.products.some(product => productsId.includes(product.id?.toString())));
 
           if (relatedOrders?.length) {
             await Promise.all(
@@ -658,7 +658,7 @@ export class StatsService {
 
     const top5MostPurchasedProducts = mostPurchasedProducts.map(product => {
       const countObject = productIdCounts.find(
-        item => item._id.toString() === product._id.toString(),
+        item => item._id?.toString() === product._id?.toString(),
       );
       return { product, noOfOrderPlaced: countObject ? countObject.count : 0 };
     });

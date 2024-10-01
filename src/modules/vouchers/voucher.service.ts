@@ -185,7 +185,7 @@ export class VoucherService {
       // send emails?
       const VOUCHERCODE = await voucherCodes
         .map(code => `\n${code}`)
-        .toString();
+        ?.toString();
       await this.mailchimpService.sendTransactionalEmail({
         to: dto?.email,
         templatedId:
@@ -252,7 +252,7 @@ export class VoucherService {
       // send emails?
       const VOUCHERCODE = await voucherCodes
         .map(code => `\n${code}`)
-        .toString();
+        ?.toString();
       await this.mailchimpService.sendTransactionalEmail({
         to: dto?.email,
         templatedId:
@@ -341,7 +341,7 @@ export class VoucherService {
       // send emails
       const VOUCHERCODE = await voucherCodes
         .map(code => `\n${code}`)
-        .toString();
+        ?.toString();
       await this.mailchimpService.sendTransactionalEmail({
         to: body?.email,
         templatedId:
@@ -641,7 +641,7 @@ export class VoucherService {
 
       if (campIdsFromProductId) {
         const campIdsFromProductIds = Array.isArray(campIdsFromProductId)
-          ? campIdsFromProductId.map(item => item.toString())
+          ? campIdsFromProductId.map(item => item?.toString())
           : [campIdsFromProductId];
 
         campIds = [...campIds, ...campIdsFromProductIds];
@@ -728,7 +728,7 @@ export class VoucherService {
 
       if (campIdsFromProductId) {
         const campIdsFromProductIds = Array.isArray(campIdsFromProductId)
-          ? campIdsFromProductId.map(item => item.toString())
+          ? campIdsFromProductId.map(item => item?.toString())
           : [campIdsFromProductId];
 
         campIds = [...campIds, campIdsFromProductIds];
@@ -907,7 +907,7 @@ export class VoucherService {
 
       const voucherCodes = voucherDetails
         .map(doc => `\n${doc.code}`)
-        .toString();
+        ?.toString();
 
       await this.mailchimpService.sendTransactionalEmail({
         to: command?.voucherOwnerEmail,

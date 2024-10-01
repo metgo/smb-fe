@@ -10,7 +10,7 @@ export async function calculateProductsTotalAmount(
     const totalAmount = productsPayload.reduce(
       (sum: number, payloadProduct: any) => {
         const dbProduct = products.data.find(
-          (dbProd: any) => dbProd._id.toString() === payloadProduct.id,
+          (dbProd: any) => dbProd._id?.toString() === payloadProduct.id,
         );
 
         if (!Number(payloadProduct?.quantity)) {

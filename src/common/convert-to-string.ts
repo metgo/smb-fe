@@ -1,3 +1,3 @@
 export function convertToString(arr: any[]) {
-  return arr.map(item => item.toString());
+  return arr.map(item => item?.toString());
 }

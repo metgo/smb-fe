@@ -99,7 +99,7 @@ export class EventsService {
       // add to Media Table
       if (images?.length) {
         const body = {
-          refId: newEvent._id.toString(),
+          refId: newEvent._id?.toString(),
           reference: ReferenceType.EVENT,
           businessId: null,
         };
@@ -127,7 +127,7 @@ export class EventsService {
         // add to Media Table
         if (images?.length) {
           const body = {
-            refId: newEvent._id.toString(),
+            refId: newEvent._id?.toString(),
             reference: ReferenceType.EVENT,
             businessId: null,
           };

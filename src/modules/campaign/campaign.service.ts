@@ -289,7 +289,7 @@ export class CampaignService {
       if (dto.rewardAmount || dto.rewardVoucherLimit) {
         if (updateCampaign?.rewardId) {
           await this.rewardService.update(
-            updateCampaign?.rewardId.toString(),
+            updateCampaign?.rewardId?.toString(),
             { amount: dto.rewardAmount, voucherLimit: dto.rewardVoucherLimit },
             user,
           );

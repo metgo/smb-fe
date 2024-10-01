@@ -147,7 +147,7 @@ describe('Users e2e Test', () => {
 
     superTest
       .get(`/voucher-code/${voucher.code}`)
-      .query({ productId: product._id.toString() })
+      .query({ productId: product._id?.toString() })
       .expect(HttpStatus.OK);
   });
 
@@ -163,7 +163,7 @@ describe('Users e2e Test', () => {
 
     await superTest
       .get(`/voucher-code/${voucher.code}`)
-      .query({ productId: product._id.toString() })
+      .query({ productId: product._id?.toString() })
       .expect(HttpStatus.FORBIDDEN);
   });
 
@@ -183,7 +183,7 @@ describe('Users e2e Test', () => {
 
     await superTest
       .get(`/voucher-code/${voucher.code}`)
-      .query({ productId: product._id.toString() })
+      .query({ productId: product._id?.toString() })
       .expect(HttpStatus.GONE);
   });
 

@@ -352,7 +352,7 @@ export class ExternalApiServices {
       // send emails?
       const VOUCHERCODE = await voucherCodes
         .map(code => `\n${code}`)
-        .toString();
+        ?.toString();
       await this.mailchimpService.sendTransactionalEmail({
         to: body?.email,
         templatedId:
@@ -424,7 +424,7 @@ export class ExternalApiServices {
       throw new NotFoundException(ServerErrors.EXTERNAL_API.NOT_FOUND);
     }
 
-    const validExternalApi = await this.getById(user.externalApiId.toString());
+    const validExternalApi = await this.getById(user.externalApiId?.toString());
 
     if (!validExternalApi) {
       throw new NotFoundException(ServerErrors.EXTERNAL_API.NOT_FOUND);
@@ -765,12 +765,12 @@ export class ExternalApiServices {
           invoiceType: 101,
           product: [
             {
-              id: getProductInformation[0]?._id.toString(),
+              id: getProductInformation[0]?._id?.toString(),
               price: order?.totalAmount,
               name: getProductInformation[0]?.name,
             },
           ],
-          transactionId: parseInt(order._id.toString(), 10),
+          transactionId: parseInt(order._id?.toString(), 10),
           purpose: PaymentPurpose.ORDER,
           sumPaid: order?.totalAmount,
           languagePreference: body?.languagePreference,
@@ -1114,7 +1114,7 @@ export class ExternalApiServices {
 
       if (campIdsFromProductId) {
         const campIdsFromProductIds = Array.isArray(campIdsFromProductId)
-          ? campIdsFromProductId.map(item => item.toString())
+          ? campIdsFromProductId.map(item => item?.toString())
           : [campIdsFromProductId];
 
         campIds = [...campIds, ...campIdsFromProductIds];
@@ -1391,7 +1391,7 @@ export class ExternalApiServices {
       // send emails?
       const VOUCHERCODE = await voucherCodes
         .map(code => `\n${code}`)
-        .toString();
+        ?.toString();
       await this.mailchimpService.sendTransactionalEmail({
         to: dto?.email,
         templatedId:
@@ -1468,7 +1468,7 @@ export class ExternalApiServices {
       // send emails?
       const VOUCHERCODE = await voucherCodes
         .map(code => `\n${code}`)
-        .toString();
+        ?.toString();
       await this.mailchimpService.sendTransactionalEmail({
         to: dto?.email,
         templatedId:
@@ -1690,7 +1690,7 @@ export class ExternalApiServices {
 
   private async getProductInformationForOrders(productInfo) {
     try {
-      const ids = productInfo.map(item => item.id.toString());
+      const ids = productInfo.map(item => item.id?.toString());
       const products = await this.ProductModel.find({ _id: { $in: ids } });
 
       if (!products?.length) {

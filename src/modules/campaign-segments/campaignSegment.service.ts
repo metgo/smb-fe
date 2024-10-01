@@ -46,7 +46,7 @@ export class CampaignSegmentService {
     dto: CreateCampaignSegmentDTO,
   ): Promise<CampaignSegment> {
     const existCampaignSegment = await this.getByCampaignId(
-      dto.campaign_ID.toString(),
+      dto.campaign_ID?.toString(),
     );
 
     if (existCampaignSegment?.length) {

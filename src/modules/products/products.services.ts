@@ -142,7 +142,7 @@ export class ProductsService {
 
       if (images?.length) {
         const uploadImageDto = {
-          refId: newProduct._id.toString(),
+          refId: newProduct._id?.toString(),
           reference: ReferenceType.PRODUCT,
           businessId,
         };
@@ -226,7 +226,7 @@ export class ProductsService {
 
       if (images?.length) {
         const uploadImageDto = {
-          refId: newProduct._id.toString(),
+          refId: newProduct._id?.toString(),
           reference: ReferenceType.PRODUCT,
           businessId,
         };
@@ -702,7 +702,7 @@ export class ProductsService {
 
   async getProductInformationForOrders(productInfo) {
     try {
-      const ids = productInfo.map(item => item.id.toString());
+      const ids = productInfo.map(item => item.id?.toString());
       const products = await this.ProductModel.find({ _id: { $in: ids } });
 
       if (!products?.length) {
@@ -725,7 +725,7 @@ export class ProductsService {
     const businesses = await this.ProductModel.find(filterBy)
       .lean()
       .select('_id');
-    const businessesId = businesses.map(item => item._id.toString());
+    const businessesId = businesses.map(item => item._id?.toString());
 
     return businessesId;
   }
