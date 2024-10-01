@@ -22,7 +22,11 @@ const filterRouterExplorer = winston.format(info => {
 export default {
   level: 'info',
   exitOnError: false,
-  format: winston.format.combine(filterRouterExplorer(), winston.format.json()),
+  format: winston.format.combine(
+    filterRouterExplorer(),
+    winston.format.timestamp(),
+    winston.format.json(), // Log in JSON format for structured logging
+  ),
   transports:
     ENV_NAME !== 'local'
       ? new GCloudLoggingWinston({

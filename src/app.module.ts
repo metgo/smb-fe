@@ -1,4 +1,4 @@
-import { Module, ValidationPipe } from '@nestjs/common';
+import { MiddlewareConsumer, Module, ValidationPipe } from '@nestjs/common';
 import { APP_PIPE } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -45,6 +45,7 @@ import { RewardsModule } from 'src/modules/rewards/rewards.module';
 import { GAModule } from 'src/services/google-analytics/ga.module';
 import winstonConfig from 'src/services/winston/winston';
 import { WinstonLoggerModule } from 'src/services/winston/winston.module';
+import { LoggingMiddleware } from './services/middleware/logger';
 
 @Module({
   imports: [
@@ -101,4 +102,10 @@ import { WinstonLoggerModule } from 'src/services/winston/winston.module';
     },
   ],
 })
-export class AppModule {}
+export class AppModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(LoggingMiddleware) // Apply the logging middleware globally
+      .forRoutes('*'); // Log all routes
+  }
+}
