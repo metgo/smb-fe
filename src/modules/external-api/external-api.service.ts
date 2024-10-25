@@ -813,9 +813,9 @@ export class ExternalApiServices {
         languagePreference: body?.languagePreference || Locale.ENGLISH,
       });
 
-      this.logger.info('[EXTERNAL_API_ORDERS]: PAYMENT LINK SENT', {
-        message: link,
-      });
+      this.logger.info(
+        `[EXTERNAL_API_ORDERS]: PAYMENT LINK SENT >> link: ${link}`,
+      );
 
       return [link];
     } catch (error) {

@@ -65,31 +65,61 @@ export class MediaServices {
           image: imageUrl,
           caption: file.originalname,
           alt: file.originalname,
+          imageType: file.fieldname,
         };
       }),
     );
+
+    const logoImages = images
+      .filter(image => image.imageType === 'logo')
+      .map(({ image, caption, alt }) => ({ image, caption, alt }));
+    const coverImages = images
+      .filter(image => image.imageType === 'cover')
+      .map(({ image, caption, alt }) => ({ image, caption, alt }));
+    const allImage = images
+      .filter(image => image.imageType === 'image')
+      .map(({ image, caption, alt }) => ({ image, caption, alt }));
+
+    const productImage = images
+      .filter(image => image.imageType === 'file')
+      .map(({ image, caption, alt }) => ({ image, caption, alt }));
 
     // update to business model
     if (
       body.reference === ReferenceType.BUSINESS
       || body.reference === ReferenceType.POI
+      || body.reference === ReferenceType.EVENT
     ) {
-      const updateBusiness = await this.businessService.uploadMedia(
-        body.refId,
-        loggedInUser.id,
-        images,
-        loggedInUser.role,
-      );
-      return updateBusiness;
-    }
+      let updateBusiness;
+      if (allImage?.length) {
+        updateBusiness = await this.businessService.uploadMedia(
+          body.refId,
+          loggedInUser.id,
+          allImage,
+          loggedInUser.role,
+        );
+      }
 
-    if (body.reference === ReferenceType.EVENT) {
-      const updateBusiness = await this.businessService.uploadMedia(
-        body.refId,
-        loggedInUser.id,
-        images,
-        loggedInUser.role,
-      );
+      if (logoImages?.length) {
+        updateBusiness = await this.businessService.uploadMediaByFieldName(
+          body.refId,
+          loggedInUser.id,
+          logoImages,
+          'logo',
+          loggedInUser.role,
+        );
+      }
+
+      if (coverImages?.length) {
+        updateBusiness = await this.businessService.uploadMediaByFieldName(
+          body.refId,
+          loggedInUser.id,
+          coverImages,
+          'cover',
+          loggedInUser.role,
+        );
+      }
+
       return updateBusiness;
     }
 
@@ -99,7 +129,7 @@ export class MediaServices {
         productId: body.refId,
         businessId: body.businessId,
         loggedInUserId: loggedInUser.id,
-        body: images,
+        body: productImage,
         role: loggedInUser.role,
       });
       return updateProduct;
@@ -165,7 +195,10 @@ export class MediaServices {
       if (body.imageUrl !== defaultMetGoLogoURL) await this.gcpBucketServices.delete(body.imageUrl);
       return deletedImage;
     } catch (err) {
-      if (err?.errors[0]?.reason === 'notFound') {
+      if (
+        (err?.errors?.length && err?.errors[0]?.reason === 'notFound')
+        || err?.message === 'A file name must be specified.'
+      ) {
         throw new NotFoundException(ServerErrors.MEDIA.NOT_FOUND);
       }
       exceptionHandling(err);

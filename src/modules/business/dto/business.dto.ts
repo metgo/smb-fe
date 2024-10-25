@@ -88,6 +88,17 @@ class geoLocation {
   @ApiProperty({ type: String, description: 'longitude of map' })
     long: string;
 }
+
+class DeliveryArea {
+  @ApiProperty({ type: String, description: 'DeliveryArea' })
+    area: string;
+
+  @ApiProperty({ type: String, description: 'Price to deliver to the area' })
+    price: string;
+
+  @ApiProperty({ type: String, description: 'Pickup location in that area' })
+    pickUpLocation: string;
+}
 export class createBusinessDto {
   @ApiProperty({
     required: false,
@@ -125,11 +136,18 @@ export class createBusinessDto {
     busiEmail: string;
 
   @ApiProperty({
-    required: true,
+    required: false,
   })
   @IsOptional()
   @IsString()
     description: string;
+
+  @ApiProperty({
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+    shortDescription: string;
 
   @ApiProperty({
     required: false,
@@ -200,6 +218,13 @@ export class createBusinessDto {
     required: false,
   })
   @IsOptional()
+  @IsString()
+    primaryCategoryId: string;
+
+  @ApiProperty({
+    required: false,
+  })
+  @IsOptional()
   @IsArray()
     bussCategoriesId: [];
 
@@ -220,9 +245,47 @@ export class createBusinessDto {
 
   @ApiProperty({
     required: false,
+  })
+  @IsOptional()
+    isAlwaysOpen: boolean;
+
+  @ApiProperty({
+    required: false,
     type: [OpeningHours],
   })
   @IsOptional()
   @IsArray()
     openingHrs: OpeningHours[];
+
+  @ApiProperty({
+    required: false,
+    type: [DeliveryArea],
+  })
+  @IsOptional()
+  @IsArray()
+    deliveryArea: DeliveryArea[];
+
+  @ApiProperty({
+    required: false,
+  })
+  @IsOptional()
+    deliverySpecificSellerInfo: string[];
+
+  @ApiProperty({
+    required: false,
+  })
+  @IsOptional()
+    deliveryReturnExchange: string[];
+
+  @ApiProperty({
+    required: false,
+  })
+  @IsOptional()
+    deliveryAdditionalInfo: string;
+
+  @ApiProperty({
+    required: false,
+  })
+  @IsOptional()
+    isPickUpAvailable: boolean;
 }

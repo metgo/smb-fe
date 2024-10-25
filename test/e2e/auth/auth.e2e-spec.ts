@@ -27,31 +27,26 @@ describe('Auth e2e Test', () => {
     jest.restoreAllMocks();
   });
 
-  it('[POST] /auth/register should register new user', async () => {
+  it('[POST] /auth/register-step1 should register new user', async () => {
     const req = {
       email: 'abc@metgo.app',
-      password: 'qwertyuiop',
       firstName: 'test',
-      lastName: 'test',
-      phoneNumber: '1234567890',
-      countryCode: '977',
     };
-    await superTest.post('/auth/register').send(req).expect(HttpStatus.CREATED);
+    await superTest
+      .post('/auth/register-step1')
+      .send(req)
+      .expect(HttpStatus.CREATED);
   });
 
-  it('[POST] /auth/register should not allow to register with existed email', async () => {
+  it('[POST] /auth/register-step1 should not allow to register with existed email', async () => {
     await usersFactory.create({ email: 'abc@metgo.app' });
 
     const req = {
       email: 'abc@metgo.app',
-      password: 'qwertyuiop',
       firstName: 'test',
-      lastName: 'test',
-      phoneNumber: '1234567890',
-      countryCode: '977',
     };
     await superTest
-      .post('/auth/register')
+      .post('/auth/register-step1')
       .send(req)
       .expect(HttpStatus.CONFLICT);
   });

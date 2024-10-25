@@ -274,6 +274,54 @@ export class BusinessService {
       createdAt: new Date(),
     };
 
+    if (newDto?.openingHrs && Array.isArray(newDto?.openingHrs)) {
+      const openingHrs = newDto?.openingHrs?.map(hrs => ({
+        ...hrs,
+        isHoliday: hrs?.isHoliday === 'true' || hrs?.isHoliday === true,
+      }));
+      newDto = {
+        ...newDto,
+        openingHrs,
+      };
+    }
+
+    if (newDto?.deliveryArea && Array.isArray(newDto?.deliveryArea)) {
+      const deliveryArea = newDto.deliveryArea.map(area => {
+        if (area?.pickUpLocation && Array.isArray(area?.pickUpLocation)) {
+          const pickUpLocation = area.pickUpLocation.map(location => {
+            const newL = {
+              ...location,
+              isAlwaysOpen:
+                location?.isAlwaysOpen === 'true'
+                || location?.isAlwaysOpen === true,
+            };
+            if (newL?.openingHrs && Array.isArray(newL.openingHrs)) {
+              const openingHrs = newL.openingHrs.map(hrs => ({
+                ...hrs,
+                isHoliday: hrs?.isHoliday === 'true' || hrs?.isHoliday === true,
+              }));
+              return {
+                ...newL,
+                openingHrs,
+              };
+            }
+            return newL;
+          });
+
+          return {
+            ...area,
+            pickUpLocation,
+          };
+        }
+        return area;
+      });
+
+      newDto = {
+        ...newDto,
+        deliveryArea,
+      };
+    }
+
     if (dto.authorityId) {
       const dmo = (await this.authorityService.getOne(dto.authorityId)).dmoId;
 
@@ -335,7 +383,6 @@ export class BusinessService {
           userId,
         };
       }
-      delete data.status;
       const newBusiness = new this.BusinessModel(data);
       await newBusiness.save();
 
@@ -351,13 +398,7 @@ export class BusinessService {
           reference: ReferenceType.BUSINESS,
           businessId: null,
         };
-        const updatedBusiness = await this.mediaServices.create(
-          loggedInUser,
-          images,
-          body,
-        );
-
-        return updatedBusiness;
+        await this.mediaServices.create(loggedInUser, images, body);
       }
 
       this.logger.info('[BUSINESS]: CREATED BY ADMIN', {
@@ -396,13 +437,7 @@ export class BusinessService {
             reference: ReferenceType.BUSINESS,
             businessId: null,
           };
-          const updatedBusiness = await this.mediaServices.create(
-            loggedInUser,
-            images,
-            body,
-          );
-
-          return updatedBusiness;
+          await this.mediaServices.create(loggedInUser, images, body);
         }
 
         this.logger.info('[BUSINESS]: CREATED BY ADMIN', {
@@ -939,12 +974,6 @@ export class BusinessService {
         throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
       }
 
-      if (!business?.images?.length) {
-        const defaultImage = await this.getDefaultImage();
-
-        business.images = [defaultImage];
-      }
-
       if (
         !loggedInUser
         && business.status === BusinessStatus.APPROVED
@@ -1176,9 +1205,10 @@ export class BusinessService {
         throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
       }
 
+      this.logger.info('[BUSINESS]: UPDATED', { message: updateBusiness });
+
       await this.addToBusinessAuditTable(oldDataFForAudit, updateBusiness);
 
-      this.logger.info('[BUSINESS]: UPDATED', { message: updateBusiness });
       return updateBusiness;
     } catch (err) {
       this.logger.error('[BUSINESS]: FAILED TO UPDATE', {
@@ -1266,11 +1296,11 @@ export class BusinessService {
         throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
       }
 
-      await this.addToBusinessAuditTable(oldDataFForAudit, updateBusiness);
-
       this.logger.info('[BUSINESS]: UPDATED BY ADMIN', {
         message: updateBusiness,
       });
+
+      await this.addToBusinessAuditTable(oldDataFForAudit, updateBusiness);
 
       return updateBusiness;
     } catch (err) {
@@ -1301,8 +1331,6 @@ export class BusinessService {
       if (!updateBusiness) {
         throw new BadRequestException(ServerErrors.BUSINESS_NOT_FOUND);
       }
-
-      await this.addToBusinessAuditTable(oldDataFForAudit, updateBusiness);
 
       let assignedUser = user;
       if (!user) {
@@ -1348,6 +1376,8 @@ export class BusinessService {
       });
 
       this.logger.info('[BUSINESS]: ASSIGNED', { message: updateBusiness });
+
+      await this.addToBusinessAuditTable(oldDataFForAudit, updateBusiness);
 
       return updateBusiness;
     } catch (err) {
@@ -1409,7 +1439,54 @@ export class BusinessService {
         throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
       }
 
+      this.logger.info(`[BUSINESS]: UPLOADED IMAGES for ${id}`);
+
       await this.addToBusinessAuditTable(oldDataFForAudit, updatedBusiness);
+
+      return updatedBusiness;
+    } catch (err) {
+      this.logger.error(`[BUSINESS]: FAILED TO UPLOAD IMAGE businessId:${id}`, {
+        err: err.message,
+      });
+      exceptionHandling(err);
+    }
+  }
+
+  async uploadMediaByFieldName(
+    id: string,
+    loggedInUserId: string,
+    dto: Image[],
+    fieldName: string,
+    role: string,
+  ) {
+    try {
+      const updatedField = {
+        updatedBy: loggedInUserId,
+        updatedAt: new Date(),
+        [fieldName]: dto[0],
+      };
+
+      let updatedBusiness;
+      if (role === UserType.SUPERADMIN) {
+        updatedBusiness = await this.BusinessModel.updateOne(
+          {
+            _id: id,
+          },
+          {
+            $set: updatedField,
+          },
+        );
+      } else {
+        updatedBusiness = await this.BusinessModel.updateOne(
+          {
+            _id: id,
+            userId: loggedInUserId,
+          },
+          {
+            $set: updatedField,
+          },
+        );
+      }
 
       this.logger.info(`[BUSINESS]: UPLOADED IMAGES for ${id}`);
       return updatedBusiness;
@@ -1445,9 +1522,10 @@ export class BusinessService {
         throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
       }
 
+      this.logger.info(`[BUSINESS]: DELETED IMAGES for ${id}`);
+
       await this.addToBusinessAuditTable(existingBusiness, updateBusiness);
 
-      this.logger.info(`[BUSINESS]: DELETED IMAGES for ${id}`);
       return updateBusiness;
     } catch (err) {
       this.logger.error(`[BUSINESS]: FAILED TO DELETE IMAGE businessId:${id}`, {
@@ -1894,6 +1972,7 @@ export class BusinessService {
       image: getDefaultLogo.url,
       caption: getDefaultLogo.originalName,
       alt: getDefaultLogo.originalName,
+      isPrimary: false,
     };
   }
 
@@ -1915,6 +1994,7 @@ export class BusinessService {
   }
 
   private async addToBusinessAuditTable(oldDoc, newDoc) {
+    this.logger.info('[BUSINESS HISTORY]: START TO ADD TO BUSINESS HISTORY');
     const changedFields = {};
 
     const newData = newDoc.toObject();

@@ -48,7 +48,12 @@ export class GcpBucketService {
 
       return 'Deleted Successfully!!';
     } catch (err) {
-      if (err.errors[0].reason === 'notFound') {
+      if (err?.message === 'A file name must be specified.') {
+        throw new BadRequestException(
+          "Sorry, we couldn't find the image at that URL.",
+        );
+      }
+      if (err?.errors[0]?.reason === 'notFound') {
         throw new BadRequestException(
           "Sorry, we couldn't find the image at that URL.",
         );

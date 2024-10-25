@@ -8,6 +8,8 @@ import {
   IsString,
 } from 'class-validator';
 import { IsNotBlank } from 'src/core/decorators/is-not-blank.decorator';
+import { ToBoolean } from 'src/core/decorators/to-boolean.decorator';
+import { DeliveryArea } from 'src/modules/business/dto';
 import { ProductStatus } from 'src/modules/products/products.type';
 
 class Price {
@@ -29,11 +31,14 @@ class Price {
 }
 
 class Quantity {
-  @IsNumber()
-  @IsNotBlank()
   @IsOptional()
   @ApiProperty()
     initial: number;
+
+  @IsOptional()
+  @ApiProperty()
+  @ToBoolean()
+    isUnlimited: boolean;
 }
 
 export class ProductDto {
@@ -96,4 +101,52 @@ export class ProductDto {
     description: 'Array of ObjectId',
   })
     collaboratorId: string[];
+
+  @ApiProperty({
+    required: false,
+    type: [DeliveryArea],
+  })
+  @IsOptional()
+  @IsArray()
+    deliveryArea: DeliveryArea[];
+
+  @ApiProperty({
+    required: false,
+  })
+  @IsOptional()
+    deliverySpecificSellerInfo: string[];
+
+  @ApiProperty({
+    required: false,
+  })
+  @IsOptional()
+    deliveryReturnExchange: string[];
+
+  @ApiProperty({
+    required: false,
+  })
+  @IsOptional()
+    deliveryAdditionalInfo: string;
+
+  @ApiProperty({
+    required: false,
+  })
+  @IsOptional()
+  @ToBoolean()
+    isPickUpAvailable: boolean;
+
+  @ApiProperty({
+    required: false,
+  })
+  @IsOptional()
+  @ToBoolean()
+    deliveryInfoSameAsBusiness: boolean;
+
+  @IsOptional()
+  @ApiProperty()
+    activeStartDate: Date;
+
+  @IsOptional()
+  @ApiProperty()
+    activeEndDate: Date;
 }

@@ -19,6 +19,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
+import { Cron } from '@nestjs/schedule';
 import { ApiNotFoundResponse } from '@nestjs/swagger';
 import { Response } from 'express';
 import mongoose from 'mongoose';
@@ -623,5 +624,20 @@ export class ProductsController {
       null,
       null,
     );
+  }
+
+  @HttpCode(HttpStatus.OK)
+  @ApiEndpoint({
+    tags: ['Products'],
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.PRODUCTS.UPDATED,
+    },
+    operation: 'Update status',
+  })
+  @Cron('0 0 * * *')
+  @Patch('products/schedule-status')
+  async updateStatus() {
+    return await this.productsService.updateStatus();
   }
 }

@@ -4,6 +4,7 @@ import mongoose, { HydratedDocument } from 'mongoose';
 import { getRandomNumberBetween } from 'src/common/utils/random-number-range';
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
 import { Authority } from 'src/modules/authority/schema/authority.schema';
+import { DeliveryArea } from 'src/modules/business/schema/business.schema';
 import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.schema';
 import { BussSubCategory } from 'src/modules/buss-subcategories/schema/buss-subCategory.schema';
 import { DMO } from 'src/modules/dmo/schema/dmo.schema';
@@ -81,12 +82,14 @@ export class Product extends AuditableSchema {
       initial: Number,
       sold: Number,
       remaining: Number,
+      isUnlimited: Boolean,
     },
   })
     quantity: {
     initial: number;
     sold: { type: number; default: 0 };
     remaining: number;
+    isUnlimited: boolean;
   };
 
   @Prop({
@@ -135,6 +138,30 @@ export class Product extends AuditableSchema {
     required: false,
   })
     subCategories: mongoose.Schema.Types.ObjectId[];
+
+  @Prop({ type: Boolean, default: false })
+    deliveryInfoSameAsBusiness: boolean;
+
+  @Prop({ required: false })
+    deliveryArea: DeliveryArea[];
+
+  @Prop({ required: false, type: [String] })
+    deliverySpecificSellerInfo: string[];
+
+  @Prop({ required: false, type: [String] })
+    deliveryReturnExchange: string[];
+
+  @Prop({ required: false })
+    deliveryAdditionalInfo: string;
+
+  @Prop({ type: Boolean, default: false })
+    isPickUpAvailable: boolean;
+
+  @Prop({ default: null })
+    activeStartDate: Date;
+
+  @Prop({ default: null })
+    activeEndDate: Date;
 
   // need to implement in future
   @Prop({

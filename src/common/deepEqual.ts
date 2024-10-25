@@ -6,8 +6,8 @@ export function deepEqual(oldData: any, newData: any): boolean {
 
   if (oldDataString === newDataString) return true;
 
-  const oldDataOBJ = JSON.parse(oldDataString);
-  const newDataOBJ = JSON.parse(newDataString);
+  const oldDataOBJ = oldDataString ? JSON.parse(oldDataString) : null;
+  const newDataOBJ = newDataString ? JSON.parse(newDataString) : null;
 
   if (typeof oldDataOBJ === 'string' && typeof newDataOBJ === 'string') {
     return oldDataOBJ === newDataOBJ;
@@ -16,7 +16,9 @@ export function deepEqual(oldData: any, newData: any): boolean {
   if (
     typeof oldDataOBJ === 'object'
     && typeof newDataOBJ === 'object'
+    && oldDataOBJ
     && '_id' in oldDataOBJ
+    && newDataOBJ
     && '_id' in newDataOBJ
   ) {
     const keys = Object.keys(newDataOBJ);

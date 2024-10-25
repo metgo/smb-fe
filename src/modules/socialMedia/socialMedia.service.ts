@@ -64,6 +64,7 @@ export class SocialMediaService {
       select,
       page: queryPage,
       limit: queryLimit,
+      sort: 'createdAt',
       populate,
       populate1,
     });

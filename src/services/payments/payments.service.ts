@@ -140,9 +140,9 @@ export class PaymentsService {
         updateField,
       );
 
-      this.logger.info('[PAYMENT]: UPDATED AFTER PAID SUCCESSFULLY', {
-        message: payments,
-      });
+      this.logger.info(
+        `[PAYMENT]: UPDATED AFTER PAID SUCCESSFULLY >> payments: ${payments}`,
+      );
 
       await this.mailchimpService.sendTransactionalEmail({
         to: payments?.customerEmail,
@@ -156,7 +156,7 @@ export class PaymentsService {
         },
       });
 
-      if (payments.purpose === PaymentPurpose.VOUCHER) {
+      if (payments?.purpose === PaymentPurpose.VOUCHER) {
         const voucherDetails
           = await this.voucherService.updateAfterPaymentSuccess({
             ids: payments.voucherId,
@@ -185,7 +185,7 @@ export class PaymentsService {
         }
       }
 
-      if (payments.purpose === PaymentPurpose.ORDER) {
+      if (payments?.purpose === PaymentPurpose.ORDER) {
         const updateOrder = await this.ordersService.updateAfterPaymentSuccess(
           payments.orderId,
         );
@@ -314,7 +314,7 @@ export class PaymentsService {
         );
       }
     } catch (err) {
-      this.logger.error('[PAYMENT]: PAYMENT FAILED', {
+      this.logger.error(`[PAYMENT]: PAYMENT FAILED >> err: ${err.message}`, {
         err: err.message,
       });
       exceptionHandling(err);

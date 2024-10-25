@@ -97,10 +97,17 @@ export class ProductsService {
     }
 
     if (body.quantity) {
-      quantity = {
-        ...body.quantity,
-        remaining: body?.quantity?.initial || 0,
-      };
+      if (body.quantity?.isUnlimited) {
+        quantity = {
+          isUnlimited: true,
+        };
+      }
+      if (!body.quantity?.isUnlimited) {
+        quantity = {
+          ...body.quantity,
+          remaining: body?.quantity?.initial || 0,
+        };
+      }
     }
 
     const status
@@ -110,7 +117,7 @@ export class ProductsService {
         : body?.status || ProductStatus.ACTIVE;
 
     const impact = getRandomNumberBetween(9, 73);
-    const createdField = {
+    let createdField: any = {
       ...body,
       price,
       quantity,
@@ -123,6 +130,46 @@ export class ProductsService {
       status,
       impact,
     };
+
+    if (
+      createdField?.deliveryArea
+      && Array.isArray(createdField?.deliveryArea)
+    ) {
+      const deliveryArea = createdField.deliveryArea.map(area => {
+        if (area?.pickUpLocation && Array.isArray(area?.pickUpLocation)) {
+          const pickUpLocation = area.pickUpLocation.map(location => {
+            const newL = {
+              ...location,
+              isAlwaysOpen:
+                location?.isAlwaysOpen === 'true'
+                || location?.isAlwaysOpen === true,
+            };
+            if (newL?.openingHrs && Array.isArray(newL.openingHrs)) {
+              const openingHrs = newL.openingHrs.map(hrs => ({
+                ...hrs,
+                isHoliday: hrs?.isHoliday === 'true' || hrs?.isHoliday === true,
+              }));
+              return {
+                ...newL,
+                openingHrs,
+              };
+            }
+            return newL;
+          });
+
+          return {
+            ...area,
+            pickUpLocation,
+          };
+        }
+        return area;
+      });
+
+      createdField = {
+        ...createdField,
+        deliveryArea,
+      };
+    }
 
     try {
       const newProduct = new this.ProductModel({
@@ -180,10 +227,17 @@ export class ProductsService {
     }
 
     if (body.quantity) {
-      quantity = {
-        ...body.quantity,
-        remaining: body.quantity?.initial ? body.quantity.initial : 0,
-      };
+      if (body.quantity?.isUnlimited) {
+        quantity = {
+          isUnlimited: true,
+        };
+      }
+      if (!body.quantity?.isUnlimited) {
+        quantity = {
+          ...body.quantity,
+          remaining: body?.quantity?.initial || 0,
+        };
+      }
     }
 
     const status
@@ -194,7 +248,7 @@ export class ProductsService {
 
     const impact = getRandomNumberBetween(9, 73);
 
-    const createdField = {
+    let createdField: any = {
       ...body,
       price,
       quantity,
@@ -207,6 +261,46 @@ export class ProductsService {
       status,
       impact,
     };
+
+    if (
+      createdField?.deliveryArea
+      && Array.isArray(createdField?.deliveryArea)
+    ) {
+      const deliveryArea = createdField.deliveryArea.map(area => {
+        if (area?.pickUpLocation && Array.isArray(area?.pickUpLocation)) {
+          const pickUpLocation = area.pickUpLocation.map(location => {
+            const newL = {
+              ...location,
+              isAlwaysOpen:
+                location?.isAlwaysOpen === 'true'
+                || location?.isAlwaysOpen === true,
+            };
+            if (newL?.openingHrs && Array.isArray(newL.openingHrs)) {
+              const openingHrs = newL.openingHrs.map(hrs => ({
+                ...hrs,
+                isHoliday: hrs?.isHoliday === 'true' || hrs?.isHoliday === true,
+              }));
+              return {
+                ...newL,
+                openingHrs,
+              };
+            }
+            return newL;
+          });
+
+          return {
+            ...area,
+            pickUpLocation,
+          };
+        }
+        return area;
+      });
+
+      createdField = {
+        ...createdField,
+        deliveryArea,
+      };
+    }
 
     const newProduct = new this.ProductModel({
       ...createdField,
@@ -463,18 +557,40 @@ export class ProductsService {
       };
 
       // might need to update in later
-      const quantity = {
-        ...command.body.quantity,
-        remaining: command.body.quantity.initial,
-      };
+      let quantity;
 
-      const updatedField = {
+      if (command.body.quantity) {
+        if (command.body.quantity?.isUnlimited) {
+          quantity = {
+            isUnlimited: true,
+          };
+        }
+        if (!command.body.quantity?.isUnlimited) {
+          quantity = {
+            ...command.body.quantity,
+            remaining: command.body.quantity.initial,
+          };
+        }
+      }
+
+      let updatedField = {
         ...command.body,
         updatedBy: command.loggedInUser.id,
         updatedAt: new Date(),
         price,
         quantity,
       };
+
+      if (updatedField?.deliveryInfoSameAsBusiness) {
+        updatedField = {
+          ...updatedField,
+          deliveryArea: [],
+          deliverySpecificSellerInfo: [],
+          deliveryReturnExchange: [],
+          deliveryAdditionalInfo: null,
+          isPickUpAvailable: false,
+        };
+      }
 
       let filterQuery: any = {
         _id: command.productId,
@@ -893,6 +1009,36 @@ export class ProductsService {
       };
     } catch (err) {
       exceptionHandling(err);
+    }
+  }
+
+  async updateStatus() {
+    const products = await this.ProductModel.find({
+      activeStartDate: { $exists: true, $ne: null },
+      activeEndDate: { $exists: true, $ne: null },
+    });
+
+    const today = new Date();
+
+    const updateOps = products.map(product => {
+      const startDate = new Date(product.activeStartDate);
+      const endDate = new Date(product.activeEndDate);
+
+      const status
+        = today >= startDate && today <= endDate
+          ? ProductStatus.ACTIVE
+          : ProductStatus.INACTIVE;
+
+      return {
+        updateOne: {
+          filter: { _id: product._id },
+          update: { status },
+        },
+      };
+    });
+
+    if (updateOps.length > 0) {
+      await this.ProductModel.bulkWrite(updateOps);
     }
   }
 

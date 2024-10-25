@@ -18,6 +18,23 @@ import { Product } from 'src/modules/products/schema/products.schema';
 import { SocialMedia } from 'src/modules/socialMedia/schema/socialMedia.schema';
 import { User } from 'src/modules/users/schema/users.schema';
 
+export class DeliveryArea {
+  area: string;
+  price: string;
+  pickUpLocation: {
+    address: string;
+    isAlwaysOpen: boolean;
+    openingHrs: {
+      days: string;
+      open: Date;
+      close: Date;
+      isHoliday: {
+        type: BooleanConstructor;
+        default: boolean;
+      };
+    }[];
+  }[];
+}
 @Schema()
 export class Business extends AuditableSchema {
   @Prop({ required: false, default: null })
@@ -147,8 +164,37 @@ export class Business extends AuditableSchema {
       image: string;
       caption: string;
       alt: string;
+      isPrimary: boolean;
     }
   ];
+
+  @Prop({
+    type: {
+      image: String,
+      caption: String,
+      alt: String,
+    },
+    default: null,
+  })
+    logo: {
+    image: { type: string; default: null };
+    caption: { type: string; default: null };
+    alt: { type: string; default: null };
+  };
+
+  @Prop({
+    type: {
+      image: String,
+      caption: String,
+      alt: String,
+    },
+    default: null,
+  })
+    cover: {
+    image: { type: string; default: null };
+    caption: { type: string; default: null };
+    alt: { type: string; default: null };
+  };
 
   @Prop({
     required: false,
@@ -183,6 +229,14 @@ export class Business extends AuditableSchema {
     required: false,
   })
     accessibilitiesId: mongoose.Types.ObjectId[];
+
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    ref: BussCategory.name,
+    required: false,
+    default: null,
+  })
+    primaryCategoryId: mongoose.Types.ObjectId;
 
   @Prop({
     type: [{ type: mongoose.Schema.Types.ObjectId, ref: BussCategory.name }],
@@ -256,8 +310,26 @@ export class Business extends AuditableSchema {
   @Prop({ required: false, default: null })
     endDate: string;
 
+  @Prop({ required: false })
+    deliveryArea: DeliveryArea[];
+
+  @Prop({ required: false, type: [String] })
+    deliverySpecificSellerInfo: string[];
+
+  @Prop({ required: false, type: [String] })
+    deliveryReturnExchange: string[];
+
+  @Prop({ required: false })
+    deliveryAdditionalInfo: string;
+
+  @Prop({ type: Boolean, default: false })
+    isPickUpAvailable: boolean;
+
   @Prop({ default: getRandomNumberBetween(17, 93), required: false })
     impact: number;
+
+  @Prop({ default: 0 })
+    completionPercent: number;
 }
 
 export const BusinessSchema = SchemaFactory.createForClass(Business);

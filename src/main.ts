@@ -61,7 +61,11 @@ async function bootstrap() {
     },
   );
 
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(
+    new ValidationPipe({
+      transform: true,
+    }),
+  );
   await app.listen(API_PORT);
   console.log(`Main process started with process: ${process.pid}:${API_PORT}`);
 }
