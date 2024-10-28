@@ -139,13 +139,6 @@ export class WebCreateBusiness {
     status: BusinessStatus;
 
   @ApiProperty({
-    required: false,
-  })
-  @IsOptional()
-  @IsString()
-    rejected_reason: string;
-
-  @ApiProperty({
     required: true,
   })
   @IsNotEmpty()

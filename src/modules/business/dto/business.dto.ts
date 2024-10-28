@@ -288,4 +288,10 @@ export class createBusinessDto {
   })
   @IsOptional()
     isPickUpAvailable: boolean;
+
+  @ApiProperty({
+    required: false,
+  })
+  @IsOptional()
+    completionPercent: number;
 }
