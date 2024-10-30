@@ -42,6 +42,15 @@ class ContactDetails {
 
   @ApiProperty({ type: String, description: 'address of contact person' })
     address: string;
+
+  @ApiProperty({
+    type: String,
+    description: 'Country code of phone number of contact person whatsapp',
+  })
+    whatsAppCountryCode: string;
+
+  @ApiProperty({ type: String, description: 'Phone numer of contact person' })
+    whatsAppNumber: string;
 }
 
 class images {

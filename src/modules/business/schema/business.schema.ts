@@ -87,6 +87,8 @@ export class Business extends AuditableSchema {
       phone: String,
       address: String,
       email: String,
+      whatsAppCountryCode: String,
+      whatsAppNumber: String,
     },
     default: null,
   })
@@ -96,6 +98,8 @@ export class Business extends AuditableSchema {
     phone: { type: string; default: null };
     address: { type: string; default: null };
     email: { type: string; default: null };
+    whatsAppCountryCode: { type: string; default: null };
+    whatsAppNumber: { type: string; default: null };
   };
 
   @Prop({
