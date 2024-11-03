@@ -1340,6 +1340,20 @@ export class BusinessService {
         );
       }
 
+      const checkIfBusinessExists = await this.BusinessModel.findOne({
+        userId: oldDataFForAudit?.userId,
+        deletedAt: null,
+        deletedBy: null,
+        isDeleted: false,
+      });
+
+      if (!checkIfBusinessExists) {
+        await this.UserModel.findOneAndUpdate(
+          { _id: oldDataFForAudit?.userId },
+          { hasBusiness: false },
+        );
+      }
+
       await this.productService.assignUserToProducts(
         businessIds,
         assignUserId,
