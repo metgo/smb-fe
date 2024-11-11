@@ -1516,6 +1516,7 @@ export class BusinessService {
     loggedInUser: any,
     id: string,
     imageUrl: any,
+    businessImageType: string,
   ): Promise<Business> {
     try {
       const existingBusiness = await this.getBusiness({
@@ -1523,13 +1524,37 @@ export class BusinessService {
         loggedInUser,
       });
 
-      const images = existingBusiness.images.filter(
-        image => image.image !== imageUrl,
-      );
+      let updatedField: any = {
+        updatedAt: new Date(),
+        updatedBy: loggedInUser.id,
+      };
+
+      if (businessImageType === 'logo') {
+        updatedField = {
+          ...updatedField,
+          logo: null,
+        };
+      }
+      if (businessImageType === 'cover') {
+        updatedField = {
+          ...updatedField,
+          cover: null,
+        };
+      }
+      if (businessImageType === 'images') {
+        const images = existingBusiness.images.filter(
+          image => image.image !== imageUrl,
+        );
+
+        updatedField = {
+          ...updatedField,
+          images,
+        };
+      }
 
       const updateBusiness = await this.BusinessModel.findOneAndUpdate(
         { _id: id },
-        { images, updatedAt: new Date(), updatedBy: loggedInUser.id },
+        updatedField,
         { new: true },
       );
       if (!updateBusiness) {

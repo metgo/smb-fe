@@ -1,5 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
+import {
+  IsEnum, IsNotEmpty, IsOptional, IsString,
+} from 'class-validator';
 import { ReferenceType } from '../media.type';
 
 export class DeleteMediaDTO {
@@ -24,4 +26,8 @@ export class DeleteMediaDTO {
   @IsEnum(ReferenceType)
   @IsNotEmpty()
   readonly reference: ReferenceType;
+
+  @ApiProperty()
+  @IsOptional()
+  readonly businessImageType: string;
 }
