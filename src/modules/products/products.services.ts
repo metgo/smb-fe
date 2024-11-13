@@ -545,11 +545,41 @@ export class ProductsService {
 
   async update(command: UpdateProductsCommand): Promise<Product> {
     try {
-      let updatedField = {
+      let updatedField: any = {
         ...command.body,
         updatedBy: command.loggedInUser.id,
         updatedAt: new Date(),
       };
+
+      if (
+        (command?.body?.updatedPrimaryImageIndex
+          || command?.body?.updatedPrimaryImageIndex === 0)
+        && command?.body?.updatedPrimaryImageURL
+      ) {
+        const oldDataFForAudit = await this.ProductModel.findById(
+          command?.productId,
+        );
+
+        const images = oldDataFForAudit.images.map((image, index) => {
+          if (
+            image.image === command?.body?.updatedPrimaryImageURL
+            && index === command?.body?.updatedPrimaryImageIndex
+          ) {
+            return {
+              ...image,
+              caption: 'metgoBusinessPrimaryImageIncoming.jpg',
+              isPrimary: true,
+            };
+          }
+          const { isPrimary, ...rest } = image;
+          return rest;
+        });
+
+        updatedField = {
+          ...updatedField,
+          images,
+        };
+      }
 
       let price;
       if (command.body.price) {

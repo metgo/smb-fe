@@ -1172,7 +1172,7 @@ export class BusinessService {
         };
       }
 
-      if (dto.geoLocation) {
+      if (dto?.geoLocation) {
         const location = {
           type: 'Point',
           coordinates: [
@@ -1186,7 +1186,7 @@ export class BusinessService {
         };
       }
 
-      if (dto.name) {
+      if (dto?.name) {
         const slug = this.generateSlug(dto.name);
         updatedField = {
           ...updatedField,
@@ -1196,6 +1196,31 @@ export class BusinessService {
 
       const oldDataFForAudit = await this.BusinessModel.findById(id);
 
+      if (
+        (dto?.updatedPrimaryImageIndex
+          || dto?.updatedPrimaryImageIndex === 0)
+        && dto?.updatedPrimaryImageURL
+      ) {
+        const images = oldDataFForAudit.images.map((image, index) => {
+          if (
+            image.image === dto.updatedPrimaryImageURL
+            && index === dto.updatedPrimaryImageIndex
+          ) {
+            return {
+              ...image,
+              caption: 'metgoBusinessPrimaryImageIncoming.jpg',
+              isPrimary: true,
+            };
+          }
+          const { isPrimary, ...rest } = image;
+          return rest;
+        });
+
+        updatedField = {
+          ...updatedField,
+          images,
+        };
+      }
       const updateBusiness = await this.BusinessModel.findOneAndUpdate(
         { _id: id, isDeleted: false },
         updatedField,
@@ -1230,7 +1255,7 @@ export class BusinessService {
         updatedBy: loggedInUser.id,
       };
 
-      if (body.geoLocation) {
+      if (body?.geoLocation) {
         const location = {
           type: 'Point',
           coordinates: [
@@ -1264,7 +1289,7 @@ export class BusinessService {
         };
       }
 
-      if (body.name) {
+      if (body?.name) {
         const slug = this.generateSlug(body.name);
         updatedField = {
           ...updatedField,
@@ -1287,6 +1312,31 @@ export class BusinessService {
 
       const oldDataFForAudit = await this.BusinessModel.findById(id);
 
+      if (
+        (body?.updatedPrimaryImageIndex
+          || body?.updatedPrimaryImageIndex === 0)
+        && body?.updatedPrimaryImageURL
+      ) {
+        const images = oldDataFForAudit.images.map((image, index) => {
+          if (
+            image.image === body.updatedPrimaryImageURL
+            && index === body.updatedPrimaryImageIndex
+          ) {
+            return {
+              ...image,
+              caption: 'metgoBusinessPrimaryImageIncoming.jpg',
+              isPrimary: true,
+            };
+          }
+          const { isPrimary, ...rest } = image;
+          return rest;
+        });
+
+        updatedField = {
+          ...updatedField,
+          images,
+        };
+      }
       const updateBusiness = await this.BusinessModel.findOneAndUpdate(
         findQuery,
         updatedField,
