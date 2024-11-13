@@ -1422,6 +1422,16 @@ export class BusinessService {
           _id: mongoose.Types.ObjectId;
         };
 
+      const newImages = dto?.map(img => {
+        if (img?.caption === 'metgoBusinessPrimaryImageIncoming.jpg') {
+          return {
+            ...img,
+            isPrimary: true,
+          };
+        }
+        return img;
+      });
+
       const oldDataFForAudit = await this.BusinessModel.findById(id);
 
       if (role === UserType.SUPERADMIN) {
@@ -1431,7 +1441,7 @@ export class BusinessService {
             _id: id,
           },
           {
-            $push: { images: { $each: dto } },
+            $push: { images: { $each: newImages } },
             $set: updatedField,
           },
         );
@@ -1443,7 +1453,7 @@ export class BusinessService {
             userId: loggedInUserId,
           },
           {
-            $push: { images: { $each: dto } },
+            $push: { images: { $each: newImages } },
             $set: updatedField,
           },
         );

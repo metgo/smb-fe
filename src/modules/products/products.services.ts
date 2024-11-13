@@ -545,21 +545,35 @@ export class ProductsService {
 
   async update(command: UpdateProductsCommand): Promise<Product> {
     try {
-      const sellingPrice = sellingPriceForAmountOrPercent(
-        command.body.price.markedPrice,
-        command.body.price.discountAmount,
-        command.body.price.discountPercent,
-      );
-
-      const price = {
-        ...command.body.price,
-        sellingPrice,
+      let updatedField = {
+        ...command.body,
+        updatedBy: command.loggedInUser.id,
+        updatedAt: new Date(),
       };
 
-      // might need to update in later
+      let price;
+      if (command.body.price) {
+        const sellingPrice = sellingPriceForAmountOrPercent(
+          command.body?.price?.markedPrice,
+          command.body?.price?.discountAmount,
+          command.body?.price?.discountPercent,
+        );
+        price = {
+          ...command.body?.price,
+          sellingPrice,
+        };
+      }
+
+      if (price) {
+        updatedField = {
+          ...updatedField,
+          price,
+        };
+      }
+
       let quantity;
 
-      if (command.body.quantity) {
+      if (command.body?.quantity) {
         if (command.body.quantity?.isUnlimited) {
           quantity = {
             isUnlimited: true,
@@ -573,13 +587,12 @@ export class ProductsService {
         }
       }
 
-      let updatedField = {
-        ...command.body,
-        updatedBy: command.loggedInUser.id,
-        updatedAt: new Date(),
-        price,
-        quantity,
-      };
+      if (quantity) {
+        updatedField = {
+          ...updatedField,
+          quantity,
+        };
+      }
 
       if (updatedField?.deliveryInfoSameAsBusiness) {
         updatedField = {

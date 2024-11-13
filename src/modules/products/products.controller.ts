@@ -30,7 +30,12 @@ import { Roles } from 'src/core/guards/authorization/roles';
 import { JwtAuthGuard } from 'src/core/guards/jwt/jwt.guards';
 import { responseHelper } from 'src/core/helper/response.helper';
 import { BusinessService } from 'src/modules/business/services/business.service';
-import { CreateProductByAdmin, ProductDto } from 'src/modules/products/dto';
+import {
+  CreateProductByAdmin,
+  ProductDto,
+  UpdateProductByAdminDto,
+  UpdateProductDto,
+} from 'src/modules/products/dto';
 import { ProductsService } from 'src/modules/products/products.services';
 import {
   GetAllProductsForLoggedInUserQuery,
@@ -436,7 +441,7 @@ export class ProductsController {
   async updateProduct(
     @Param('businessId') businessId: string,
     @Param('productId') productId: string,
-    @Body() body: ProductDto,
+    @Body() body: UpdateProductDto,
     @Req() req,
     @Res() response: Response,
   ) {
@@ -478,7 +483,7 @@ export class ProductsController {
   async updateProductByAdmin(
     @Param('businessId') businessId: string,
     @Param('productId') productId: string,
-    @Body() body: CreateProductByAdmin,
+    @Body() body: UpdateProductByAdminDto,
     @Req() req,
     @Res() response: Response,
   ) {
