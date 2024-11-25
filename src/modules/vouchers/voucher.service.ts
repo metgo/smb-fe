@@ -1326,7 +1326,12 @@ export class VoucherService {
 
     const select = `${disSelect} -code`;
 
-    if (user.role === UserType.DMOADMIN || user.role === UserType.DMO) {
+    if (
+      user.role === UserType.DMOADMIN
+      || user.role === UserType.DMO
+      || user.role === UserType.AUTHORITY_ADMIN
+      || user.role === UserType.AUTHORITY
+    ) {
       // find dmo
       const dmoId = user.dmo.id;
 

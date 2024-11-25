@@ -426,13 +426,7 @@ export class VoucherController {
   //   );
   // }
 
-  @Roles(
-    UserType.ADMIN,
-    UserType.AUTHORITY,
-    UserType.SUPERADMIN,
-    UserType.DMO,
-    UserType.DMOADMIN,
-  )
+  @Roles(UserType.ADMIN, UserType.SUPERADMIN)
   @ApiEndpoint({
     tags: ['Voucher'],
     response: {
@@ -471,12 +465,6 @@ export class VoucherController {
     },
     noAuthToken: true,
   })
-  @Roles(
-    UserType.SUPERADMIN,
-    UserType.DMOADMIN,
-    UserType.TRAVELLER,
-    UserType.DMO,
-  )
   @UseGuards(JwtAuthGuard)
   @HttpCode(HttpStatus.OK)
   @Get('stats/vouchers')

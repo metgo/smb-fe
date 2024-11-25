@@ -165,6 +165,8 @@ export class CampaignService {
     if (
       loggedInUser.role === UserType.DMO
       || loggedInUser.role === UserType.DMOADMIN
+      || loggedInUser.role === UserType.AUTHORITY
+      || loggedInUser.role === UserType.AUTHORITY_ADMIN
     ) {
       findQuery = {
         ...findQuery,

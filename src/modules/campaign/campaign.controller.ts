@@ -82,6 +82,7 @@ export class CampaignController {
   @Roles(
     UserType.ADMIN,
     UserType.AUTHORITY,
+    UserType.AUTHORITY_ADMIN,
     UserType.DMO,
     UserType.DMOADMIN,
     UserType.SUPERADMIN,
