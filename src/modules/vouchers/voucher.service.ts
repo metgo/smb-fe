@@ -13,7 +13,6 @@ import mongoose, { Model } from 'mongoose';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 
-import { calculateTotalAmount } from 'src/common/calculate-amounts';
 import { checkExpireDate, twoYearExpireDate } from 'src/common/expireDate';
 import {
   DynamicHebrewTemplate,
@@ -52,6 +51,7 @@ import { UsersService } from 'src/modules/users/users.services';
 import { UserType } from 'src/modules/users/users.type';
 import {
   createVoucherDto,
+  PromoDetailDto,
   RewardVouchersByCampaignDto,
 } from 'src/modules/vouchers/dto';
 import {
@@ -62,7 +62,6 @@ import {
 import {
   GetMyAssignedVouchersQuery,
   GetMyCreatedVouchersQuery,
-  GetVoucherStatsQuery,
   GetVoucherStatsGroupedQuery,
   GetVouchersByAdminQuery,
 } from 'src/modules/vouchers/queries';
@@ -1149,146 +1148,146 @@ export class VoucherService {
     return rewardDetail;
   }
 
-  async getStats(
-    loggedInUser: LoggedInUserInterface,
-    query: GetVoucherStatsQuery,
-  ) {
-    const {
-      createdStartDate,
-      createdEndDate,
-      expiryStartDate,
-      expiryEndDate,
-      groupByCampaign,
-      ...queries
-    } = query;
+  // async getStats(
+  //   loggedInUser: LoggedInUserInterface,
+  //   query: GetVoucherStatsQuery,
+  // ) {
+  //   const {
+  //     createdStartDate,
+  //     createdEndDate,
+  //     expiryStartDate,
+  //     expiryEndDate,
+  //     groupByCampaign,
+  //     ...queries
+  //   } = query;
 
-    let findQuery: any = {
-      ...queries,
-      paymentStatus: VoucherPaymentStatus.PAID,
-    };
+  //   let findQuery: any = {
+  //     ...queries,
+  //     paymentStatus: VoucherPaymentStatus.PAID,
+  //   };
 
-    if (
-      loggedInUser.role === UserType.DMOADMIN
-      || loggedInUser.role === UserType.DMO
-    ) {
-      // find dmo
-      const dmoId = loggedInUser.dmo.id;
+  //   if (
+  //     loggedInUser.role === UserType.DMOADMIN
+  //     || loggedInUser.role === UserType.DMO
+  //   ) {
+  //     // find dmo
+  //     const dmoId = loggedInUser.dmo.id;
 
-      // get campIds dmoId is associated to
-      const campaignIds = await this.campaignService.getCampaignAssociatedToIds(
-        dmoId,
-        'dmoIds',
-      );
+  //     // get campIds dmoId is associated to
+  //     const campaignIds = await this.campaignService.getCampaignAssociatedToIds(
+  //       dmoId,
+  //       'dmoIds',
+  //     );
 
-      const campIds = Array.isArray(campaignIds)
-        ? campaignIds.map(item => new mongoose.Types.ObjectId(item))
-        : [new mongoose.Types.ObjectId(campaignIds)];
+  //     const campIds = Array.isArray(campaignIds)
+  //       ? campaignIds.map(item => new mongoose.Types.ObjectId(item))
+  //       : [new mongoose.Types.ObjectId(campaignIds)];
 
-      findQuery = {
-        ...findQuery,
-        campId: { $in: campIds },
-      };
-    }
+  //     findQuery = {
+  //       ...findQuery,
+  //       campId: { $in: campIds },
+  //     };
+  //   }
 
-    if (loggedInUser.role === UserType.TRAVELLER) {
-      findQuery = {
-        ...findQuery,
-        createdBy: loggedInUser.id,
-      };
-    }
+  //   if (loggedInUser.role === UserType.TRAVELLER) {
+  //     findQuery = {
+  //       ...findQuery,
+  //       createdBy: loggedInUser.id,
+  //     };
+  //   }
 
-    if (createdStartDate && createdEndDate) {
-      const startDate = new Date(createdStartDate);
-      const endDate = new Date(createdEndDate);
-      endDate.setDate(endDate.getDate() + 1);
+  //   if (createdStartDate && createdEndDate) {
+  //     const startDate = new Date(createdStartDate);
+  //     const endDate = new Date(createdEndDate);
+  //     endDate.setDate(endDate.getDate() + 1);
 
-      if (startDate >= endDate) {
-        throw new BadRequestException(
-          `Created ${ServerErrors.DATE_IS_NOT_LESS}`,
-        );
-      }
+  //     if (startDate >= endDate) {
+  //       throw new BadRequestException(
+  //         `Created ${ServerErrors.DATE_IS_NOT_LESS}`,
+  //       );
+  //     }
 
-      findQuery = {
-        ...findQuery,
-        createdAt: {
-          $gte: startDate,
-          $lt: endDate,
-        },
-      };
-    }
+  //     findQuery = {
+  //       ...findQuery,
+  //       createdAt: {
+  //         $gte: startDate,
+  //         $lt: endDate,
+  //       },
+  //     };
+  //   }
 
-    if (expiryStartDate && expiryEndDate) {
-      const startDate = new Date(expiryStartDate);
-      const endDate = new Date(expiryEndDate);
-      endDate.setDate(endDate.getDate() + 1);
+  //   if (expiryStartDate && expiryEndDate) {
+  //     const startDate = new Date(expiryStartDate);
+  //     const endDate = new Date(expiryEndDate);
+  //     endDate.setDate(endDate.getDate() + 1);
 
-      if (startDate >= endDate) {
-        throw new BadRequestException(
-          `Expiry ${ServerErrors.DATE_IS_NOT_LESS}`,
-        );
-      }
+  //     if (startDate >= endDate) {
+  //       throw new BadRequestException(
+  //         `Expiry ${ServerErrors.DATE_IS_NOT_LESS}`,
+  //       );
+  //     }
 
-      findQuery = {
-        ...findQuery,
-        expireDate: {
-          $gte: startDate,
-          $lt: endDate,
-        },
-      };
-    }
+  //     findQuery = {
+  //       ...findQuery,
+  //       expireDate: {
+  //         $gte: startDate,
+  //         $lt: endDate,
+  //       },
+  //     };
+  //   }
 
-    if (/true/.test(groupByCampaign)) {
-      const groupedByCampId = await this.VoucherModel.aggregate([
-        { $match: findQuery },
-        {
-          $lookup: {
-            from: 'campaigns',
-            localField: 'campId',
-            foreignField: '_id',
-            as: 'camp',
-          },
-        },
-        { $unwind: '$camp' },
-        {
-          $group: {
-            _id: '$camp._id',
-            name: { $first: '$camp.name' },
-            totalNumberOfVoucher: { $sum: 1 },
-            totalValueOfVoucher: { $sum: '$amount' },
-            totalAmountToRedeem: { $sum: '$remainingAmount' },
-          },
-        },
-      ]);
+  //   if (/true/.test(groupByCampaign)) {
+  //     const groupedByCampId = await this.VoucherModel.aggregate([
+  //       { $match: findQuery },
+  //       {
+  //         $lookup: {
+  //           from: 'campaigns',
+  //           localField: 'campId',
+  //           foreignField: '_id',
+  //           as: 'camp',
+  //         },
+  //       },
+  //       { $unwind: '$camp' },
+  //       {
+  //         $group: {
+  //           _id: '$camp._id',
+  //           name: { $first: '$camp.name' },
+  //           totalNumberOfVoucher: { $sum: 1 },
+  //           totalValueOfVoucher: { $sum: '$amount' },
+  //           totalAmountToRedeem: { $sum: '$remainingAmount' },
+  //         },
+  //       },
+  //     ]);
 
-      return groupedByCampId;
-    }
+  //     return groupedByCampId;
+  //   }
 
-    const populate = {
-      path: 'campId',
-      select: `${disSelect}`,
-    };
+  //   const populate = {
+  //     path: 'campId',
+  //     select: `${disSelect}`,
+  //   };
 
-    const voucher = await queryhandler<Voucher>(this.VoucherModel, {
-      findQuery,
-      select: disSelect,
-      populate,
-    });
+  //   const voucher = await queryhandler<Voucher>(this.VoucherModel, {
+  //     findQuery,
+  //     select: disSelect,
+  //     populate,
+  //   });
 
-    const totalAmountToRedeem = await calculateTotalAmount(
-      'remainingAmount',
-      voucher.data,
-    );
-    const totalValueOfVoucher = await calculateTotalAmount(
-      'amount',
-      voucher.data,
-    );
+  //   const totalAmountToRedeem = await calculateTotalAmount(
+  //     'remainingAmount',
+  //     voucher.data,
+  //   );
+  //   const totalValueOfVoucher = await calculateTotalAmount(
+  //     'amount',
+  //     voucher.data,
+  //   );
 
-    return {
-      totalNumberOfVoucher: voucher.totalData,
-      totalValueOfVoucher,
-      totalAmountToRedeem,
-    };
-  }
+  //   return {
+  //     totalNumberOfVoucher: voucher.totalData,
+  //     totalValueOfVoucher,
+  //     totalAmountToRedeem,
+  //   };
+  // }
 
   async getAllVoucherbyAdmin(
     user: LoggedInUserInterface,
@@ -1643,6 +1642,90 @@ export class VoucherService {
       this.logger.error('[VOUCHER]: FAILED TO SEND EMAIL OF VOUCHER DETAIL', {
         err: err.message,
       });
+      exceptionHandling(err);
+    }
+  }
+
+  async sendPromotionalEmailToVoucherOwner(
+    body: PromoDetailDto,
+    amount?: number,
+    campIds?: string[],
+  ) {
+    try {
+      const populate = {
+        path: 'assignedTo',
+        select: `${disSelect}`,
+      };
+
+      let query: any = {
+        deletedAt: null,
+        deletedBy: null,
+        remainingAmount: { $gte: amount || 20 },
+      };
+
+      if (campIds && campIds?.length > 0) {
+        query = {
+          ...query,
+          campId: { $in: campIds },
+        };
+      }
+
+      const vouchers = await this.VoucherModel.find(query).populate(populate);
+
+      const eligibleVouchers = vouchers.map(async voucher => {
+        const assignedTo: any = voucher?.assignedTo;
+
+        const emailRecipient = assignedTo?.email || voucher?.waitingUserEmail;
+
+        if (emailRecipient) {
+          await this.mailchimpService.sendTransactionalEmail({
+            to: emailRecipient,
+            templatedId: HebrewTemplate.VOUCHER_PROMOTIONAL,
+            mergeVars: {
+              NAME: voucher?.name,
+              VOUCHERCODE: voucher?.code,
+              VOUCHERACTUALAMOUNT: voucher?.amount,
+              VOUCHERAMOUNT: voucher?.remainingAmount,
+            },
+          });
+
+          const promoDetails = {
+            promoName: body.promoName,
+            date: new Date(),
+          };
+
+          await this.VoucherModel.updateOne(
+            { _id: voucher._id },
+            {
+              $push: { promoDetails },
+            },
+          );
+
+          this.logger.info('[VOUCHER]: SPECIAL OFFER EMAIL SENT TO VOUCHER', {
+            message: voucher,
+          });
+        }
+
+        return voucher;
+      });
+
+      const results = await Promise.allSettled(eligibleVouchers);
+
+      this.logger.info(
+        '[VOUCHER]: All emails sent successfully for special event',
+        {
+          count: results.length,
+        },
+      );
+
+      return { message: 'Emails sent successfully', count: results?.length };
+    } catch (err) {
+      this.logger.error(
+        '[VOUCHER]: FAILED TO SEND EMAIL SPECIAL OFFER TO VOUCHERS',
+        {
+          err: err.message,
+        },
+      );
       exceptionHandling(err);
     }
   }

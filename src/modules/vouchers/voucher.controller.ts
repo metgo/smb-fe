@@ -5,6 +5,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  Patch,
   Post,
   Put,
   Query,
@@ -13,6 +14,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
+import { ApiQuery } from '@nestjs/swagger';
 import { Response } from 'express';
 
 import { ServerSuccess } from 'src/common/constant';
@@ -24,6 +26,7 @@ import { UserType } from 'src/modules/users/users.type';
 import { VoucherService } from 'src/modules/vouchers/voucher.service';
 import {
   createVoucherDto,
+  PromoDetailDto,
   RewardVouchersByCampaignDto,
   updateAssignedUserVoucherDto,
 } from 'src/modules/vouchers/dto';
@@ -31,7 +34,6 @@ import {
   GetMyAssignedVouchersQuery,
   GetMyCreatedVouchersQuery,
   GetVoucherStatsGroupedQuery,
-  GetVoucherStatsQuery,
   GetVoucherQuery,
   GetVouchersByAdminQuery,
 } from 'src/modules/vouchers/queries';
@@ -390,39 +392,39 @@ export class VoucherController {
   //   );
   // }
 
-  @ApiEndpoint({
-    tags: ['Voucher'],
-    response: {
-      status: HttpStatus.OK,
-      description: ServerSuccess.VOUCHER.LISTED,
-    },
-    noAuthToken: true,
-  })
-  @Roles(
-    UserType.SUPERADMIN,
-    UserType.DMOADMIN,
-    UserType.TRAVELLER,
-    UserType.DMO,
-  )
-  @UseGuards(JwtAuthGuard)
-  @HttpCode(HttpStatus.OK)
-  @Get('stats/vouchers-cached')
-  async getVoucherStatsCached(
-    @Req() req,
-    @Res() response: Response,
-    @Query() query: GetVoucherStatsQuery,
-  ) {
-    const voucherStats = await this.voucherService.getStats(req.user, query);
+  // @ApiEndpoint({
+  //   tags: ['Voucher'],
+  //   response: {
+  //     status: HttpStatus.OK,
+  //     description: ServerSuccess.VOUCHER.LISTED,
+  //   },
+  //   noAuthToken: true,
+  // })
+  // @Roles(
+  //   UserType.SUPERADMIN,
+  //   UserType.DMOADMIN,
+  //   UserType.TRAVELLER,
+  //   UserType.DMO,
+  // )
+  // @UseGuards(JwtAuthGuard)
+  // @HttpCode(HttpStatus.OK)
+  // @Get('stats/vouchers-cached')
+  // async getVoucherStatsCached(
+  //   @Req() req,
+  //   @Res() response: Response,
+  //   @Query() query: GetVoucherStatsQuery,
+  // ) {
+  //   const voucherStats = await this.voucherService.getStats(req.user, query);
 
-    return responseHelper(
-      response,
-      HttpStatus.OK,
-      ServerSuccess.VOUCHER.LISTED,
-      voucherStats,
-      null,
-      null,
-    );
-  }
+  //   return responseHelper(
+  //     response,
+  //     HttpStatus.OK,
+  //     ServerSuccess.VOUCHER.LISTED,
+  //     voucherStats,
+  //     null,
+  //     null,
+  //   );
+  // }
 
   @Roles(
     UserType.ADMIN,
@@ -534,7 +536,7 @@ export class VoucherController {
       },
     ],
     noAuthToken: true,
-    operation: 'Send email to voucher owner',
+    operation: 'Send email to voucher owner regarding its voucher details',
   })
   @Post('vouchers/send-email/:voucherId')
   async sendEmailToVoucherOwner(
@@ -542,6 +544,55 @@ export class VoucherController {
     @Res() response: Response,
   ) {
     const voucher = await this.voucherService.sendVoucherDetailEmail(voucherId);
+
+    return responseHelper(
+      response,
+      HttpStatus.OK,
+      ServerSuccess.EMAIL.SENT,
+      voucher,
+      null,
+      null,
+    );
+  }
+
+  @Roles(UserType.SUPERADMIN)
+  @UseGuards(JwtAuthGuard)
+  @HttpCode(HttpStatus.OK)
+  @ApiEndpoint({
+    tags: ['Voucher'],
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.EMAIL.SENT,
+    },
+    noAuthToken: true,
+    operation: 'Send email to voucher owner for promotions',
+  })
+  @ApiQuery({
+    name: 'amount',
+    required: false,
+    type: Number,
+    description:
+      'Amount to filter the vouchers by (greater than and equal to this amount)',
+  })
+  @ApiQuery({
+    name: 'campIds',
+    required: false,
+    type: [String],
+    description: 'Array of campaign IDs to filter the vouchers by',
+  })
+  @Patch('vouchers/promotions')
+  async sendPromotionalEmail(
+    @Body() body: PromoDetailDto,
+    @Query('amount') amount: number,
+    @Query('campIds') campIds: string[],
+    @Res() response: Response,
+  ) {
+    const voucher
+      = await this.voucherService.sendPromotionalEmailToVoucherOwner(
+        body,
+        amount,
+        campIds,
+      );
 
     return responseHelper(
       response,

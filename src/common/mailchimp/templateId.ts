@@ -12,6 +12,7 @@ export const HebrewTemplate = {
   OrderConfirmationForClient: 'order-confirmation-client-side-in-he',
   FailedToSendEmail: '',
   REEDEMABLE_VOUCHER_REMINDER: 'voucher-remainder-he',
+  VOUCHER_PROMOTIONAL: 'send-promotion-to-all-users',
   VOUCHER_FOR_CAMPAIGN: 'dynamic-voucher-general-campaign-he',
   TransferBusinessOwnership: '',
 };

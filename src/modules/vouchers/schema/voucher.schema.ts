@@ -6,6 +6,10 @@ import { Campaign } from 'src/modules/campaign/schema/campaign.schema';
 import { ExternalApi } from 'src/modules/external-api/schema/external-api.schema';
 import { User } from 'src/modules/users/schema/users.schema';
 
+class PromotionalEmailDetails {
+  promoName: string;
+  date: string;
+}
 @Schema()
 export class Voucher extends AuditableSchema {
   @Prop({
@@ -80,6 +84,9 @@ export class Voucher extends AuditableSchema {
     type: Number,
   })
     reminderCount: number;
+
+  @Prop({ required: false })
+    promoDetails: PromotionalEmailDetails[];
 }
 
 export type VoucherDocument = HydratedDocument<Voucher>;
