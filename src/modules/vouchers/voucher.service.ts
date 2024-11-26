@@ -1398,7 +1398,7 @@ export class VoucherService {
       dmo = loggedInUser.dmo.id;
     }
 
-    if (dmo) {
+    if (!campId?.length && dmo && campaignType) {
       // get campIds dmoId is associated to
       const campaignIds = await this.campaignService.getStatsVoucher(
         dmo,
