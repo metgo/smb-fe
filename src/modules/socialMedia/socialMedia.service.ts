@@ -8,6 +8,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
 import { ServerErrors } from 'src/common/constant';
+import { SortOrder } from 'src/common/enum';
 import { paginationConfig } from 'src/common/pagination.config';
 import { disSelect } from 'src/common/utils/select.handling';
 import {
@@ -65,6 +66,7 @@ export class SocialMediaService {
       page: queryPage,
       limit: queryLimit,
       sort: 'createdAt',
+      sortOrder: SortOrder.DESC,
       populate,
       populate1,
     });

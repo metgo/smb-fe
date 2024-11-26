@@ -19,6 +19,7 @@ import {
   ServerErrors,
 } from 'src/common/constant';
 import { deepEqual } from 'src/common/deepEqual';
+import { SortOrder } from 'src/common/enum';
 import { Image } from 'src/common/interface/image.interface';
 import { DynamicHebrewTemplate } from 'src/common/mailchimp/templateId';
 import { maxDistanceInRadius } from 'src/common/max-distance-in-radius';
@@ -458,7 +459,15 @@ export class BusinessService {
     authenticatedUser?: LoggedInUserInterface,
   ) {
     const {
-      page, limit, search, long, lat, miles, ...query
+      page,
+      limit,
+      search,
+      long,
+      lat,
+      miles,
+      sortByName,
+      sortByImpact,
+      ...query
     } = queries;
 
     let findQuery: any = { ...query };
@@ -595,6 +604,19 @@ export class BusinessService {
       };
     }
 
+    let sort = 'createdAt';
+    let sortOrder = SortOrder.DESC;
+
+    if (sortByName) {
+      sort = 'name';
+      sortOrder = sortByName;
+    }
+
+    if (sortByImpact) {
+      sort = 'impact';
+      sortOrder = sortByImpact;
+    }
+
     if (long && lat) {
       findQuery = {
         ...findQuery, // Filter out businesses without longitude data
@@ -613,7 +635,8 @@ export class BusinessService {
         select,
         populate,
         populate1,
-        sort: 'createdAt',
+        sort,
+        sortOrder,
       });
 
       const businessesWithImage = await Promise.all(
@@ -654,7 +677,8 @@ export class BusinessService {
       limit: Number(limit),
       populate,
       populate1,
-      sort: 'createdAt',
+      sort,
+      sortOrder,
     });
 
     const businessesWithImage = await Promise.all(
@@ -678,8 +702,9 @@ export class BusinessService {
 
   async getAllUnpaginatedBusiness(queries: GetAllUnpaginatedBusinessQuery) {
     const {
-      search, long, lat, miles, ...query
-    } = queries;
+      search, long, lat, miles, sortByName, sortByImpact, ...query
+    }
+      = queries;
 
     let findQuery: any = {
       ...query,
@@ -793,11 +818,26 @@ export class BusinessService {
 
     const select = `${disSelect}`;
 
+    let sort = 'createdAt';
+    let sortOrder = SortOrder.DESC;
+
+    if (sortByName) {
+      sort = 'name';
+      sortOrder = sortByName;
+    }
+
+    if (sortByImpact) {
+      sort = 'impact';
+      sortOrder = sortByImpact;
+    }
+
     const allBusiness = await queryhandler<Business>(this.BusinessModel, {
       findQuery,
       select,
       populate,
       populate1,
+      sort,
+      sortOrder,
     });
 
     const businessesWithImage = await Promise.all(
@@ -1086,7 +1126,7 @@ export class BusinessService {
 
   async getAllMyBusiness(queries: GetUsersBusinessesQuery, userId: string) {
     const {
-      page, limit, search, ...query
+      page, limit, search, sortByName, sortByImpact, ...query
     } = queries;
 
     let findQuery: any = {
@@ -1117,6 +1157,20 @@ export class BusinessService {
       select: `${disSelect} -userId -collaboratorsUser`,
     };
     const select = `${disSelect}`;
+
+    let sort = 'createdAt';
+    let sortOrder = SortOrder.DESC;
+
+    if (sortByName) {
+      sort = 'name';
+      sortOrder = sortByName;
+    }
+
+    if (sortByImpact) {
+      sort = 'impact';
+      sortOrder = sortByImpact;
+    }
+
     const allBusiness = await queryhandler<Business>(this.BusinessModel, {
       findQuery,
       select,
@@ -1124,6 +1178,8 @@ export class BusinessService {
       limit: Number(limit),
       populate,
       populate1,
+      sort,
+      sortOrder,
     });
 
     const businessesWithImage = await Promise.all(

@@ -3,6 +3,7 @@ import { IsEnum, IsOptional } from 'class-validator';
 
 import { CommonFilterQuery } from 'src/common/query-handler/common-filter-query';
 import { GeoServicesTypes } from '../business.type';
+import { SortOrder } from 'src/common/enum';
 
 export class GetAllBusinessesForGuestQuery extends CommonFilterQuery {
   @ApiProperty({
@@ -68,4 +69,20 @@ export class GetAllBusinessesForGuestQuery extends CommonFilterQuery {
   @IsEnum(GeoServicesTypes)
   @IsOptional()
     serviceType: GeoServicesTypes;
+
+  @ApiProperty({
+    enum: SortOrder,
+    required: false,
+  })
+  @IsEnum(SortOrder)
+  @IsOptional()
+    sortByName: SortOrder;
+
+  @ApiProperty({
+    enum: SortOrder,
+    required: false,
+  })
+  @IsEnum(SortOrder)
+  @IsOptional()
+    sortByImpact: SortOrder;
 }

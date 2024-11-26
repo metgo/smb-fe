@@ -1,4 +1,4 @@
-import { Locale } from 'src/common/enum';
+import { Locale, SortOrder } from 'src/common/enum';
 
 export interface QueryHelperInterface {
   findQuery: {};
@@ -6,6 +6,7 @@ export interface QueryHelperInterface {
   page?: number;
   limit?: number;
   sort?: string;
+  sortOrder?: SortOrder;
   populate?: any;
   populate1?: any;
   languageQuery?: Locale;

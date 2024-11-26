@@ -1,5 +1,5 @@
 import mongoose, { FilterQuery, Model } from 'mongoose';
-import { Locale } from 'src/common/enum';
+import { Locale, SortOrder } from 'src/common/enum';
 import { QueryHelperInterface } from 'src/core/helper/query-helper.interface';
 
 export async function findByFieldName<T>(
@@ -230,6 +230,7 @@ export async function queryhandler<T>(
     page,
     limit,
     sort,
+    sortOrder,
     populate,
     populate1,
     languageQuery,
@@ -240,9 +241,10 @@ export async function queryhandler<T>(
   datas.data = await model
     .find(findQueries)
     .select(select)
+    .collation({ locale: 'en', strength: 2 })
     .skip((page - 1) * limit)
     .limit(limit)
-    .sort({ [sort]: -1 })
+    .sort({ [sort]: sortOrder === SortOrder.ASC ? 1 : -1 })
     .populate(populate)
     .populate(populate1);
 

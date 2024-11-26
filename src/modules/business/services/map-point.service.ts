@@ -4,6 +4,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
 
 import { ServerErrors, milesConfig } from 'src/common/constant';
+import { SortOrder } from 'src/common/enum';
 import { maxDistanceInRadius } from 'src/common/max-distance-in-radius';
 import { paginateData } from 'src/common/pagination';
 import { paginationConfig } from 'src/common/pagination.config';
@@ -262,6 +263,7 @@ export class MapPointsService {
         populate,
         populate1,
         sort: 'createdAt',
+        sortOrder: SortOrder.DESC,
       });
 
       const sortEvents = getNearestBusiness(
@@ -287,6 +289,7 @@ export class MapPointsService {
       populate,
       populate1,
       sort: 'createdAt',
+      sortOrder: SortOrder.DESC,
     });
 
     return allMapPoints;

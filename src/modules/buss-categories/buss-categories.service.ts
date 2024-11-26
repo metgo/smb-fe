@@ -7,7 +7,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
 import { ServerErrors } from 'src/common/constant';
-import { Locale } from 'src/common/enum';
+import { Locale, SortOrder } from 'src/common/enum';
 import { paginationConfig } from 'src/common/pagination.config';
 import { LocaleFilterQuery } from 'src/common/query-handler/locale-filter.query';
 import { disSelect } from 'src/common/utils/select.handling';
@@ -74,6 +74,7 @@ export class BussCategoriesService {
         page: queryPage,
         limit: queryLimit,
         sort: 'createdAt',
+        sortOrder: SortOrder.DESC,
         populate,
         languageQuery: locale,
       },
