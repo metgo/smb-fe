@@ -50,6 +50,9 @@ class ContactDetails {
 
   @ApiProperty({ type: String, description: 'Phone numer of contact person' })
     whatsAppNumber: string;
+
+  @ApiProperty({ type: String, description: 'Phone numer of contact person' })
+    prefferedChannel: string;
 }
 
 class OpeningHours {
