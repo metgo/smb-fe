@@ -50,6 +50,7 @@ import { ProductsService } from 'src/modules/products/products.services';
 import { UsersService } from 'src/modules/users/users.services';
 import { UserType } from 'src/modules/users/users.type';
 import {
+  CreateVoucherBySuperadminDto,
   createVoucherDto,
   PromoDetailDto,
   RewardVouchersByCampaignDto,
@@ -141,7 +142,7 @@ export class VoucherService {
 
   async createdBySuperadmin(
     user: LoggedInUserInterface,
-    dto: createVoucherDto,
+    dto: CreateVoucherBySuperadminDto,
     identifierId?: string,
   ) {
     try {
@@ -152,6 +153,13 @@ export class VoucherService {
         = user?.email === dto.email
           ? user?.id
           : (await this.usersService.findByEmailOrNull(dto.email))?._id;
+
+      let assigneeId;
+      if (dto?.assigneeEmail) {
+        assigneeId = (
+          await this.usersService.findByEmailOrNull(dto.assigneeEmail)
+        )?._id;
+      }
 
       const vouchers: any = [];
       const voucherCodes: any = [];
@@ -168,6 +176,9 @@ export class VoucherService {
             createdBy: createdByUserId,
             createdAt: new Date(),
             createdByEmail: createdByUserId ? null : dto.email,
+            waitingUserEmail:
+              dto?.assigneeEmail && !assigneeId ? dto?.assigneeEmail : null,
+            assignedTo: dto?.assigneeEmail ? assigneeId || null : null,
             paymentStatus: VoucherPaymentStatus.PAID,
             identifierId,
           });
@@ -197,6 +208,21 @@ export class VoucherService {
           VOUCHERAMOUNT: dto?.amount,
         },
       });
+
+      if (dto?.assigneeEmail) {
+        await this.mailchimpService.sendTransactionalEmail({
+          to: dto?.assigneeEmail,
+          templatedId:
+            dto?.languagePreference === Locale.HEBREW
+              ? HebrewTemplate.VoucherConfirmationNonLoggedIn
+              : EnglishTemplate.VoucherConfirmationNonLoggedIn,
+          mergeVars: {
+            BUYERNAME: dto?.name,
+            VOUCHERCODE,
+            VOUCHERAMOUNT: dto?.amount,
+          },
+        });
+      }
 
       return vouchers;
     } catch (err) {

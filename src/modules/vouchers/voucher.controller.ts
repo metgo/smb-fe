@@ -25,6 +25,7 @@ import { responseHelper } from 'src/core/helper/response.helper';
 import { UserType } from 'src/modules/users/users.type';
 import { VoucherService } from 'src/modules/vouchers/voucher.service';
 import {
+  CreateVoucherBySuperadminDto,
   createVoucherDto,
   PromoDetailDto,
   RewardVouchersByCampaignDto,
@@ -87,7 +88,7 @@ export class VoucherController {
   async createPaidVouchers(
     @Req() req,
     @Res() response: Response,
-    @Body() dto: createVoucherDto,
+    @Body() dto: CreateVoucherBySuperadminDto,
   ) {
     const vouchers = await this.voucherService.createdBySuperadmin(
       req.user,
