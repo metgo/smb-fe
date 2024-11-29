@@ -1320,7 +1320,7 @@ export class VoucherService {
     query: GetVouchersByAdminQuery,
   ) {
     const {
-      search, page, limit, ...queries
+      search, page, limit, dmoId, ...queries
     } = query;
     let findQuery: any = queries;
 
@@ -1352,18 +1352,20 @@ export class VoucherService {
 
     const select = `${disSelect} -code`;
 
+    let dmo = dmoId;
     if (
       user.role === UserType.DMOADMIN
       || user.role === UserType.DMO
       || user.role === UserType.AUTHORITY_ADMIN
       || user.role === UserType.AUTHORITY
     ) {
-      // find dmo
-      const dmoId = user.dmo.id;
+      dmo = user.dmo.id;
+    }
 
+    if (dmo) {
       // get campIds dmoId is associated to
       const campaignIds = await this.campaignService.getCampaignAssociatedToIds(
-        dmoId,
+        dmo,
         'dmoIds',
       );
 

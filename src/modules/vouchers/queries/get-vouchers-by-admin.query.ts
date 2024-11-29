@@ -19,4 +19,9 @@ export class GetVouchersByAdminQuery extends CommonFilterQuery {
   @IsEnum(VoucherStatus)
   @IsOptional()
     status: string;
+
+  @ApiProperty({ type: String, required: false })
+  @IsString()
+  @IsOptional()
+    dmoId: string;
 }
