@@ -19,8 +19,7 @@ export class LoggingMiddleware implements NestMiddleware {
     };
 
     // Log the API request path and payload (body)
-    this.logger.info('API Request', requestPayload);
-    console.log(requestPayload);
+    this.logger.info(`API Request - ${req.params['0']}`, requestPayload);
     next();
   }
 }
