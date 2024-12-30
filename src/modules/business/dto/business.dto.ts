@@ -4,6 +4,7 @@ import {
   ArrayMaxSize,
   IsArray,
   IsBoolean,
+  IsNotEmpty,
   IsObject,
   IsOptional,
   IsString,
@@ -306,4 +307,33 @@ export class createBusinessDto {
   })
   @IsOptional()
     completionPercent: number;
+
+  @ApiProperty({
+    required: true,
+  })
+  @IsString()
+  @IsNotEmpty()
+    bankNumber: string;
+
+  @ApiProperty({
+    required: true,
+  })
+  @IsString()
+  @IsNotEmpty()
+    branchNumber: string;
+
+  @ApiProperty({
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+    accountNumber: string;
+
+  @IsString()
+  @IsOptional()
+  @ApiProperty({
+    type: 'string',
+    required: true,
+  })
+    businessNumberByGovt: string;
 }

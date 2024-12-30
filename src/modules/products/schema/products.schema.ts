@@ -29,7 +29,7 @@ export class Product extends AuditableSchema {
   @Prop()
     images: [
     {
-      image: string;
+      image: { type: String; required: true };
       caption: string;
       alt: string;
       isPrimary: boolean;

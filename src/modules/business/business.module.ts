@@ -26,6 +26,7 @@ import { Product, ProductSchema } from '../products/schema/products.schema';
 import { AuthorityModule } from 'src/modules/authority/authority.module';
 import { CampaignModule } from 'src/modules/campaign/campaign.module';
 import { VoucherModule } from 'src/modules/vouchers/voucher.module';
+import { BankAccountModule } from 'src/modules/bank-account/bank-account.module';
 import { EventController } from 'src/modules/business/controllers/event.controller';
 import { BusinessAuditSchema } from 'src/modules/business/schema/business-audit.schema';
 import { EventsService } from 'src/modules/business/services/event.service';
@@ -52,6 +53,7 @@ import { UsersModule } from 'src/modules/users/users.module';
     MockDataModule,
     MailChimpModule,
     MediaModule,
+    BankAccountModule,
     forwardRef(() => VoucherModule),
     forwardRef(() => UsersModule),
     forwardRef(() => DMOModule),

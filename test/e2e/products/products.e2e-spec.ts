@@ -48,6 +48,7 @@ describe('Users e2e Test', () => {
       quantity: {
         initial: 5,
       },
+      description: 'This is test description',
     };
 
     await superTest
@@ -69,6 +70,7 @@ describe('Users e2e Test', () => {
       quantity: {
         initial: 5,
       },
+      description: 'This is test description',
     };
 
     await superTest

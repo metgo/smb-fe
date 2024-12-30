@@ -562,7 +562,8 @@ export class ProductsService {
 
         const images = oldDataFForAudit.images.map((image, index) => {
           if (
-            image.image === command?.body?.updatedPrimaryImageURL
+            typeof image.image === 'string'
+            && image.image === command?.body?.updatedPrimaryImageURL
             && index === command?.body?.updatedPrimaryImageIndex
           ) {
             return {

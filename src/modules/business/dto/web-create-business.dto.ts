@@ -347,4 +347,33 @@ export class WebCreateBusiness {
   })
   @IsOptional()
     completionPercent: number;
+
+  @ApiProperty({
+    required: true,
+  })
+  @IsString()
+  @IsNotEmpty()
+    bankNumber: string;
+
+  @ApiProperty({
+    required: true,
+  })
+  @IsString()
+  @IsNotEmpty()
+    branchNumber: string;
+
+  @ApiProperty({
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+    accountNumber: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty({
+    type: 'string',
+    required: true,
+  })
+    businessNumberByGovt: string;
 }

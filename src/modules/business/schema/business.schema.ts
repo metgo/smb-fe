@@ -6,6 +6,7 @@ import { getRandomNumberBetween } from 'src/common/utils/random-number-range';
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
 import { Accessibility } from 'src/modules/accessibility/schema/accessibility.schema';
 import { Authority } from 'src/modules/authority/schema/authority.schema';
+import { BankAccount } from 'src/modules/bank-account/bank-account.schema';
 import {
   BusinessStatus,
   GeoServicesTypes,
@@ -65,11 +66,11 @@ export class Business extends AuditableSchema {
   @Prop({ default: null })
     busiEmail: string;
 
-  @Prop({ required: false, default: null })
-    description: string;
-
-  @Prop({ required: false })
+  @Prop()
     shortDescription: string;
+
+  @Prop()
+    description: string;
 
   @Prop({ enum: BusinessStatus, default: BusinessStatus.PENDING })
     status: BusinessStatus;
@@ -336,6 +337,13 @@ export class Business extends AuditableSchema {
 
   @Prop({ default: 0 })
     completionPercent: number;
+
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    ref: BankAccount.name,
+    required: false,
+  })
+    bankAccountId: mongoose.Types.ObjectId;
 }
 
 export const BusinessSchema = SchemaFactory.createForClass(Business);

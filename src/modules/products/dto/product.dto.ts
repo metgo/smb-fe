@@ -43,14 +43,13 @@ class Quantity {
 
 export class ProductDto {
   @IsString()
-  @IsOptional()
-  @IsNotBlank()
+  @IsNotEmpty()
   @ApiProperty()
     name: string;
 
   @ApiProperty()
   @IsString()
-  @IsOptional()
+  @IsNotEmpty()
     description: string;
 
   @ApiProperty()

@@ -76,6 +76,7 @@ import { MediaServices } from 'src/modules/media/media.service';
 import { ReferenceType } from 'src/modules/media/media.type';
 import { ProductsService } from 'src/modules/products/products.services';
 import { MailChimpService } from 'src/services/mailchimp/mailchimp.service';
+import { BankAccountServices } from 'src/modules/bank-account/bank-account.service';
 
 @Injectable()
 export class BusinessService {
@@ -86,6 +87,7 @@ export class BusinessService {
     private BusinessModel: Model<Business>,
     @InjectModel('BusinessAudit')
     private BusinessAuditModel: Model<BusinessAudit>,
+    private readonly bankAccountService: BankAccountServices,
     private readonly authorityService: AuthorityService,
     private readonly campaignService: CampaignService,
     private readonly dmoService: DMOService,
@@ -188,6 +190,20 @@ export class BusinessService {
         location,
       };
     }
+
+    // create bank account
+    const bankAccount = await this.bankAccountService.create(user, {
+      bankNumber: dto?.bankNumber,
+      branchNumber: dto?.branchNumber,
+      accountNumber: dto?.accountNumber,
+      businessNumberByGovt: dto?.businessNumberByGovt,
+    });
+
+    newDto = {
+      ...newDto,
+      bankAccountId: bankAccount?._id,
+    };
+
     try {
       const slug = this.generateSlug(dto?.name);
       const newBusiness = new this.BusinessModel({
@@ -344,6 +360,19 @@ export class BusinessService {
         location,
       };
     }
+
+    // create bank account
+    const bankAccount = await this.bankAccountService.create(loggedInUser, {
+      bankNumber: dto?.bankNumber,
+      branchNumber: dto?.branchNumber,
+      accountNumber: dto?.accountNumber,
+      businessNumberByGovt: dto?.businessNumberByGovt,
+    });
+
+    newDto = {
+      ...newDto,
+      bankAccountId: bankAccount?._id,
+    };
 
     try {
       const slug = this.generateSlug(dto?.name);
@@ -992,6 +1021,11 @@ export class BusinessService {
       select: `${disSelect} -userId -collaboratorsUser`,
     };
 
+    const populate3 = {
+      path: 'bankAccountId',
+      select: `${disSelect}`,
+    };
+
     const populate2 = {
       path: 'bussSubCategoriesId',
       select: `${disSelect}`,
@@ -1008,7 +1042,8 @@ export class BusinessService {
         .select(select)
         .populate(populate)
         .populate(populate1)
-        .populate(populate2);
+        .populate(populate2)
+        .populate(populate3);
 
       if (!business) {
         throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
@@ -1252,6 +1287,17 @@ export class BusinessService {
 
       const oldDataFForAudit = await this.BusinessModel.findById(id);
 
+      await this.bankAccountService.update(
+        loggedInUser,
+        oldDataFForAudit?.bankAccountId,
+        {
+          bankNumber: dto?.bankNumber,
+          branchNumber: dto?.branchNumber,
+          accountNumber: dto?.accountNumber,
+          businessNumberByGovt: dto?.businessNumberByGovt,
+        },
+      );
+
       if (
         (dto?.updatedPrimaryImageIndex
           || dto?.updatedPrimaryImageIndex === 0)
@@ -1368,6 +1414,17 @@ export class BusinessService {
 
       const oldDataFForAudit = await this.BusinessModel.findById(id);
 
+      await this.bankAccountService.update(
+        loggedInUser,
+        oldDataFForAudit?.bankAccountId,
+        {
+          bankNumber: body?.bankNumber,
+          branchNumber: body?.branchNumber,
+          accountNumber: body?.accountNumber,
+          businessNumberByGovt: body?.businessNumberByGovt,
+        },
+      );
+
       if (
         (body?.updatedPrimaryImageIndex
           || body?.updatedPrimaryImageIndex === 0)
@@ -1393,6 +1450,9 @@ export class BusinessService {
           images,
         };
       }
+
+      console.log(updatedField);
+
       const updateBusiness = await this.BusinessModel.findOneAndUpdate(
         findQuery,
         updatedField,

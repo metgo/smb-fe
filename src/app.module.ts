@@ -10,6 +10,7 @@ import { CityModule } from 'src/modules/city/city.module';
 import { ExternalApiModule } from 'src/modules/external-api/external-api.module';
 import { JwtAuthModule } from 'src/modules/jwt-auth/jwt-auth.module';
 import { MapPointModule } from './modules/mapPoint/mappoint.module';
+import { BankAccountModule } from 'src/modules/bank-account/bank-account.module';
 import { BusinessModule } from './modules/business/business.module';
 import { UsersModule } from 'src/modules/users/users.module';
 import { MPCategoriesModule } from './modules/mpcategories/mpcategories.module';
@@ -91,6 +92,7 @@ import { LoggingMiddleware } from './services/middleware/logger';
     RewardsModule,
     GAModule,
     WinstonLoggerModule,
+    BankAccountModule,
   ],
   providers: [
     {
