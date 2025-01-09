@@ -5,16 +5,16 @@ import { AuditableSchema } from 'src/core/helper/auditable.schema';
 
 @Schema()
 export class BankAccount extends AuditableSchema {
-  @Prop({ required: true })
+  @Prop({ required: false })
     bankNumber: string;
 
-  @Prop({ required: true })
+  @Prop({ required: false })
     branchNumber: string;
 
   @Prop({ required: false, default: null })
     accountNumber: string;
 
-  @Prop({ required: true })
+  @Prop({ required: false })
     businessNumberByGovt: string;
 }
 

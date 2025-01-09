@@ -4,7 +4,6 @@ import {
   ArrayMaxSize,
   IsArray,
   IsBoolean,
-  IsNotEmpty,
   IsObject,
   IsOptional,
   IsString,
@@ -309,17 +308,17 @@ export class createBusinessDto {
     completionPercent: number;
 
   @ApiProperty({
-    required: true,
+    required: false,
   })
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
     bankNumber: string;
 
   @ApiProperty({
-    required: true,
+    required: false,
   })
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
     branchNumber: string;
 
   @ApiProperty({
@@ -333,7 +332,7 @@ export class createBusinessDto {
   @IsOptional()
   @ApiProperty({
     type: 'string',
-    required: true,
+    required: false,
   })
     businessNumberByGovt: string;
 }

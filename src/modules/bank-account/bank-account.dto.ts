@@ -1,12 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsOptional, IsString } from 'class-validator';
 
 export class BankAccountDTO {
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   @ApiProperty({
     type: 'string',
-    required: true,
+    required: false,
   })
   readonly bankNumber: string;
 
@@ -14,7 +14,7 @@ export class BankAccountDTO {
   @IsOptional()
   @ApiProperty({
     type: 'string',
-    required: true,
+    required: false,
   })
   readonly branchNumber: string;
 
@@ -26,19 +26,11 @@ export class BankAccountDTO {
   })
   readonly accountNumber: string;
 
-  // @IsString()
-  // @IsNotEmpty()
-  // @ApiProperty({
-  //   type: 'string',
-  //   required: true,
-  // })
-  // readonly accountNumber: string;
-
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   @ApiProperty({
     type: 'string',
-    required: true,
+    required: false,
   })
   readonly businessNumberByGovt: string;
 }

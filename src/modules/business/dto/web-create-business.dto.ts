@@ -352,14 +352,14 @@ export class WebCreateBusiness {
     required: true,
   })
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
     bankNumber: string;
 
   @ApiProperty({
-    required: true,
+    required: false,
   })
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
     branchNumber: string;
 
   @ApiProperty({
@@ -370,10 +370,10 @@ export class WebCreateBusiness {
     accountNumber: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   @ApiProperty({
     type: 'string',
-    required: true,
+    required: false,
   })
     businessNumberByGovt: string;
 }
