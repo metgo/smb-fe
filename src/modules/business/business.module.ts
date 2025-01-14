@@ -56,7 +56,7 @@ import { UsersModule } from 'src/modules/users/users.module';
     forwardRef(() => DMOModule),
     forwardRef(() => ProductsModule),
   ],
-  controllers: [BusinessController ],
+  controllers: [BusinessController],
   providers: [BusinessService, EventsService],
   exports: [BusinessService],
 })

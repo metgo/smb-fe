@@ -10,9 +10,7 @@ import mongoose, { Model } from 'mongoose';
 import { ServerErrors } from 'src/common/constant';
 import { disSelect } from 'src/common/utils/select.handling';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
-import {
-  findOneByFieldNameIncludingDeleted,
-} from 'src/core/helper/query-helper';
+import { findOneByFieldNameIncludingDeleted } from 'src/core/helper/query-helper';
 
 import {
   BusinessStatus,

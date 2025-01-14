@@ -2,7 +2,6 @@ import { ApiProperty } from '@nestjs/swagger';
 
 import { ToBoolean } from 'src/core/decorators/to-boolean.decorator';
 
-
 class OpeningHours {
   @ApiProperty({ type: String, description: 'Days of operation' })
     days: string;
