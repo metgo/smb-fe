@@ -6,7 +6,6 @@ import { DMOModule } from 'src/modules/dmo/dmo.module';
 import { IconsController } from './icons.controller';
 import { IconsService } from './icons.service';
 import { IconsSchema } from './schema/icon.schema';
-import { GcpBucketModule } from 'src/services/gcp-bucket/gcp-bucket.module';
 import { UsersModule } from 'src/modules/users/users.module';
 
 @Module({
@@ -14,7 +13,6 @@ import { UsersModule } from 'src/modules/users/users.module';
     MongooseModule.forFeature([{ name: 'Icons', schema: IconsSchema }]),
     AuthorityModule,
     DMOModule,
-    GcpBucketModule,
     UsersModule,
   ],
   controllers: [IconsController],

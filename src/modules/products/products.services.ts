@@ -5,7 +5,6 @@ import {
   Inject,
   Injectable,
   NotFoundException,
-  forwardRef,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
@@ -15,34 +14,23 @@ import { Logger } from 'winston';
 import { ServerErrors } from 'src/common/constant';
 import { calculateGrowthPercentage } from 'src/common/utils/calculate-growth-percentage';
 import { getRandomNumberBetween } from 'src/common/utils/random-number-range';
-import { sellingPriceForAmountOrPercent } from 'src/common/utils/discount-calculation';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { disSelect } from 'src/common/utils/select.handling';
 import {
-  deleteItem,
-  deleteItems,
   findOneByIDPopulate,
   queryhandler,
   updateManyByIds,
   updateOneByManyFields,
 } from 'src/core/helper/query-helper';
 import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interface';
-import { BusinessService } from 'src/modules/business/services/business.service';
-import { BusinessStatus } from 'src/modules/business/business.type';
-import { Business } from 'src/modules/business/schema/business.schema';
-import { MockDataServices } from 'src/modules/mock-data/mock-data.services';
 import { Product } from 'src/modules/products/schema/products.schema';
-import { CreateProductByAdmin, ProductDto } from 'src/modules/products/dto';
 import {
   GetProductsQuery,
-  UpdateProductsCommand,
   UploadMediaCommand,
 } from 'src/modules/products/interface';
 import { GetProductsStatsQuery } from 'src/modules/products/queries';
 import { ProductStatus } from 'src/modules/products/products.type';
 import { UserType } from 'src/modules/users/users.type';
-import { ReferenceType } from 'src/modules/media/media.type';
-import { MediaServices } from 'src/modules/media/media.service';
 
 @Injectable()
 export class ProductsService {
@@ -51,11 +39,6 @@ export class ProductsService {
     private readonly logger: Logger,
     @InjectModel(Product.name)
     private ProductModel: Model<Product>,
-    @Inject(forwardRef(() => BusinessService))
-    private readonly businessService: BusinessService,
-    private readonly mockDataService: MockDataServices,
-    @Inject(forwardRef(() => MediaServices))
-    private readonly mediaServices: MediaServices,
   ) {}
 
   async seed() {
@@ -72,274 +55,6 @@ export class ProductsService {
         );
       }),
     );
-  }
-
-  async create(
-    user: LoggedInUserInterface,
-    businessId: string,
-    business: Business,
-    body: ProductDto,
-    images: Array<Express.Multer.File>,
-  ): Promise<Product> {
-    let price;
-    let quantity;
-    if (body?.price?.markedPrice) {
-      const sellingPrice = sellingPriceForAmountOrPercent(
-        body.price.markedPrice,
-        body.price.discountAmount,
-        body.price.discountPercent,
-      );
-
-      price = {
-        ...body.price,
-        sellingPrice,
-      };
-    }
-
-    if (body.quantity) {
-      if (body.quantity?.isUnlimited) {
-        quantity = {
-          isUnlimited: true,
-        };
-      }
-      if (!body.quantity?.isUnlimited) {
-        quantity = {
-          ...body.quantity,
-          remaining: body?.quantity?.initial || 0,
-        };
-      }
-    }
-
-    const status
-      = business.status !== BusinessStatus.APPROVED
-      && body?.status === ProductStatus.ACTIVE
-        ? ProductStatus.INACTIVE
-        : body?.status || ProductStatus.ACTIVE;
-
-    const impact = getRandomNumberBetween(9, 73);
-    let createdField: any = {
-      ...body,
-      price,
-      quantity,
-      businessId,
-      createdBy: user.id,
-      createdAt: new Date(),
-      primaryUserId: business.userId,
-      dmoId: business.dmoId,
-      authorityId: business.authorityId,
-      status,
-      impact,
-    };
-
-    if (
-      createdField?.deliveryArea
-      && Array.isArray(createdField?.deliveryArea)
-    ) {
-      const deliveryArea = createdField.deliveryArea.map(area => {
-        if (area?.pickUpLocation && Array.isArray(area?.pickUpLocation)) {
-          const pickUpLocation = area.pickUpLocation.map(location => {
-            const newL = {
-              ...location,
-              isAlwaysOpen:
-                location?.isAlwaysOpen === 'true'
-                || location?.isAlwaysOpen === true,
-            };
-            if (newL?.openingHrs && Array.isArray(newL.openingHrs)) {
-              const openingHrs = newL.openingHrs.map(hrs => ({
-                ...hrs,
-                isHoliday: hrs?.isHoliday === 'true' || hrs?.isHoliday === true,
-              }));
-              return {
-                ...newL,
-                openingHrs,
-              };
-            }
-            return newL;
-          });
-
-          return {
-            ...area,
-            pickUpLocation,
-          };
-        }
-        return area;
-      });
-
-      createdField = {
-        ...createdField,
-        deliveryArea,
-      };
-    }
-
-    try {
-      const newProduct = new this.ProductModel({
-        ...createdField,
-      });
-
-      const product = await newProduct.save();
-
-      this.logger.info('[PRODUCT]: CREATED', { message: product });
-
-      // add products to business
-      await this.businessService.addProductToBusiness(businessId, product.id);
-
-      await this.mockDataService.createImpressionEngagementInterface({
-        productId: product._id,
-      });
-
-      if (images?.length) {
-        const uploadImageDto = {
-          refId: newProduct._id?.toString(),
-          reference: ReferenceType.PRODUCT,
-          businessId,
-        };
-        await this.mediaServices.create(user, images, uploadImageDto);
-      }
-      return product;
-    } catch (err) {
-      this.logger.error('[PRODUCT]: FAILED TO CREATE', {
-        err: err.message,
-      });
-      exceptionHandling(err);
-    }
-  }
-
-  async createForWeb(
-    loggedInUser: LoggedInUserInterface,
-    businessId: string,
-    business: Business,
-    body: CreateProductByAdmin,
-    images: Array<Express.Multer.File>,
-  ) {
-    let price;
-    let quantity;
-    if (body?.price?.markedPrice) {
-      const sellingPrice = sellingPriceForAmountOrPercent(
-        body.price.markedPrice,
-        body.price.discountAmount,
-        body.price.discountPercent,
-      );
-
-      price = {
-        ...body.price,
-        sellingPrice,
-      };
-    }
-
-    if (body.quantity) {
-      if (body.quantity?.isUnlimited) {
-        quantity = {
-          isUnlimited: true,
-        };
-      }
-      if (!body.quantity?.isUnlimited) {
-        quantity = {
-          ...body.quantity,
-          remaining: body?.quantity?.initial || 0,
-        };
-      }
-    }
-
-    const status
-      = business.status !== BusinessStatus.APPROVED
-      && body?.status === ProductStatus.ACTIVE
-        ? ProductStatus.INACTIVE
-        : body?.status || ProductStatus.ACTIVE;
-
-    const impact = getRandomNumberBetween(9, 73);
-
-    let createdField: any = {
-      ...body,
-      price,
-      quantity,
-      businessId,
-      createdBy: loggedInUser.id,
-      createdAt: new Date(),
-      primaryUserId: body?.userId || business?.userId || loggedInUser.id,
-      dmoId: business.dmoId,
-      authorityId: business.authorityId,
-      status,
-      impact,
-    };
-
-    if (
-      createdField?.deliveryArea
-      && Array.isArray(createdField?.deliveryArea)
-    ) {
-      const deliveryArea = createdField.deliveryArea.map(area => {
-        if (area?.pickUpLocation && Array.isArray(area?.pickUpLocation)) {
-          const pickUpLocation = area.pickUpLocation.map(location => {
-            const newL = {
-              ...location,
-              isAlwaysOpen:
-                location?.isAlwaysOpen === 'true'
-                || location?.isAlwaysOpen === true,
-            };
-            if (newL?.openingHrs && Array.isArray(newL.openingHrs)) {
-              const openingHrs = newL.openingHrs.map(hrs => ({
-                ...hrs,
-                isHoliday: hrs?.isHoliday === 'true' || hrs?.isHoliday === true,
-              }));
-              return {
-                ...newL,
-                openingHrs,
-              };
-            }
-            return newL;
-          });
-
-          return {
-            ...area,
-            pickUpLocation,
-          };
-        }
-        return area;
-      });
-
-      createdField = {
-        ...createdField,
-        deliveryArea,
-      };
-    }
-
-    const newProduct = new this.ProductModel({
-      ...createdField,
-    });
-
-    try {
-      const product = await newProduct.save();
-
-      this.logger.info('[PRODUCT]: CREATED', { message: product });
-
-      // add products to business
-      await this.businessService.addProductToBusiness(businessId, product.id);
-
-      await this.mockDataService.createImpressionEngagementInterface({
-        productId: product._id,
-      });
-
-      if (images?.length) {
-        const uploadImageDto = {
-          refId: newProduct._id?.toString(),
-          reference: ReferenceType.PRODUCT,
-          businessId,
-        };
-        const updatedProduct = await this.mediaServices.create(
-          loggedInUser,
-          images,
-          uploadImageDto,
-        );
-
-        return updatedProduct;
-      }
-
-      return product;
-    } catch (err) {
-      this.logger.error('[PRODUCT]: FAILED TO CREATE', {
-        err: err.message,
-      });
-      exceptionHandling(err);
-    }
   }
 
   async findOne(productId: string | mongoose.Types.ObjectId): Promise<Product> {
@@ -543,143 +258,6 @@ export class ProductsService {
     }
   }
 
-  async update(command: UpdateProductsCommand): Promise<Product> {
-    try {
-      let updatedField: any = {
-        ...command.body,
-        updatedBy: command.loggedInUser.id,
-        updatedAt: new Date(),
-      };
-
-      if (
-        (command?.body?.updatedPrimaryImageIndex
-          || command?.body?.updatedPrimaryImageIndex === 0)
-        && command?.body?.updatedPrimaryImageURL
-      ) {
-        const oldDataFForAudit = await this.ProductModel.findById(
-          command?.productId,
-        );
-
-        const images = oldDataFForAudit.images.map((image, index) => {
-          if (
-            typeof image.image === 'string'
-            && image.image === command?.body?.updatedPrimaryImageURL
-            && index === command?.body?.updatedPrimaryImageIndex
-          ) {
-            return {
-              ...image,
-              caption: 'metgoBusinessPrimaryImageIncoming.jpg',
-              isPrimary: true,
-            };
-          }
-          const { isPrimary, ...rest } = image;
-          return rest;
-        });
-
-        updatedField = {
-          ...updatedField,
-          images,
-        };
-      }
-
-      let price;
-      if (command.body.price) {
-        const sellingPrice = sellingPriceForAmountOrPercent(
-          command.body?.price?.markedPrice,
-          command.body?.price?.discountAmount,
-          command.body?.price?.discountPercent,
-        );
-        price = {
-          ...command.body?.price,
-          sellingPrice,
-        };
-      }
-
-      if (price) {
-        updatedField = {
-          ...updatedField,
-          price,
-        };
-      }
-
-      let quantity;
-
-      if (command.body?.quantity) {
-        if (command.body.quantity?.isUnlimited) {
-          quantity = {
-            isUnlimited: true,
-          };
-        }
-        if (!command.body.quantity?.isUnlimited) {
-          quantity = {
-            ...command.body.quantity,
-            remaining: command.body.quantity.initial,
-          };
-        }
-      }
-
-      if (quantity) {
-        updatedField = {
-          ...updatedField,
-          quantity,
-        };
-      }
-
-      if (updatedField?.deliveryInfoSameAsBusiness) {
-        updatedField = {
-          ...updatedField,
-          deliveryArea: [],
-          deliverySpecificSellerInfo: [],
-          deliveryReturnExchange: [],
-          deliveryAdditionalInfo: null,
-          isPickUpAvailable: false,
-        };
-      }
-
-      let filterQuery: any = {
-        _id: command.productId,
-        businessId: command.businessId,
-      };
-
-      if (command.isAdmin && command.loggedInUser.role === UserType.DMOADMIN) {
-        const dmoId = command.loggedInUser.dmo.id;
-        filterQuery = {
-          ...filterQuery,
-          dmoId,
-        };
-      }
-
-      if (!command.isAdmin) {
-        filterQuery = {
-          ...filterQuery,
-          $or: [
-            { primaryUserId: command.loggedInUser.id },
-            { collaboratorId: command.loggedInUser.id },
-          ],
-        };
-      }
-
-      const updatedProduct = await updateOneByManyFields<Product>(
-        this.ProductModel,
-        filterQuery,
-        updatedField,
-      );
-
-      if (!updatedProduct) {
-        throw new NotFoundException(ServerErrors.PRODUCT.NOT_FOUND);
-      }
-
-      this.logger.info('[PRODUCT]: UPDATED', { message: updatedProduct });
-
-      return updatedProduct;
-    } catch (err) {
-      this.logger.error('[PRODUCT]: FAILED TO UPDATE', {
-        err: err.message,
-      });
-      exceptionHandling(err);
-    }
-  }
-
   async uploadMedia(command: UploadMediaCommand) {
     try {
       const updatedField = {
@@ -735,65 +313,6 @@ export class ProductsService {
           err: err.message,
         },
       );
-      exceptionHandling(err);
-    }
-  }
-
-  async softDelete(
-    businessId: string,
-    productId: string,
-    loggedInUser: LoggedInUserInterface,
-    isAdmin?: boolean,
-  ): Promise<Product> {
-    try {
-      let filterQuery: any = {
-        _id: productId,
-        businessId,
-      };
-
-      if (isAdmin && loggedInUser.role === UserType.DMOADMIN) {
-        const dmoId = loggedInUser.dmo.id;
-        filterQuery = {
-          ...filterQuery,
-          dmoId,
-        };
-      }
-
-      if (!isAdmin) {
-        filterQuery = {
-          ...filterQuery,
-          $or: [
-            { primaryUserId: loggedInUser.id },
-            { collaboratorId: loggedInUser.id },
-          ],
-        };
-      }
-
-      const updatedField = { deletedBy: loggedInUser.id };
-
-      const deletedProduct = await deleteItem<Product>(
-        this.ProductModel,
-        filterQuery,
-        updatedField,
-      );
-
-      if (!deletedProduct) {
-        throw new NotFoundException(ServerErrors.PRODUCT.NOT_FOUND);
-      }
-
-      this.logger.info('[PRODUCT]: DELETED ', { message: deletedProduct });
-
-      // remove from business field
-
-      await this.businessService.removeProductFromBusiness(
-        businessId,
-        productId,
-      );
-      return deletedProduct;
-    } catch (err) {
-      this.logger.error('[PRODUCT]: FAILED TO DELETE', {
-        err: err.message,
-      });
       exceptionHandling(err);
     }
   }
@@ -878,16 +397,6 @@ export class ProductsService {
       }
       exceptionHandling(error);
     }
-  }
-
-  async findManyByFieldIds(fieldName: keyof Product, ids: string[]) {
-    const filterBy = { [fieldName]: { $in: ids } };
-    const businesses = await this.ProductModel.find(filterBy)
-      .lean()
-      .select('_id');
-    const businessesId = businesses.map(item => item._id?.toString());
-
-    return businessesId;
   }
 
   async getStats(
@@ -1053,54 +562,6 @@ export class ProductsService {
       };
     } catch (err) {
       exceptionHandling(err);
-    }
-  }
-
-  async updateStatus() {
-    const products = await this.ProductModel.find({
-      activeStartDate: { $exists: true, $ne: null },
-      activeEndDate: { $exists: true, $ne: null },
-    });
-
-    const today = new Date();
-
-    const updateOps = products.map(product => {
-      const startDate = new Date(product.activeStartDate);
-      const endDate = new Date(product.activeEndDate);
-
-      const status
-        = today >= startDate && today <= endDate
-          ? ProductStatus.ACTIVE
-          : ProductStatus.INACTIVE;
-
-      return {
-        updateOne: {
-          filter: { _id: product._id },
-          update: { status },
-        },
-      };
-    });
-
-    if (updateOps.length > 0) {
-      await this.ProductModel.bulkWrite(updateOps);
-    }
-  }
-
-  async deleteProductPostBusinessDelete(
-    loggedInUserId: string,
-    businessId: string,
-  ) {
-    const filterQuery = { businessId };
-    const updatedField = { deletedBy: loggedInUserId };
-
-    const deletedProducts = await deleteItems<Product>(
-      this.ProductModel,
-      filterQuery,
-      updatedField,
-    );
-
-    if (!deletedProducts) {
-      throw new NotFoundException(ServerErrors.PRODUCT.NOT_FOUND);
     }
   }
 }

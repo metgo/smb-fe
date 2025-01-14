@@ -1,9 +1,5 @@
 /* eslint-disable no-undef */
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
 import { ServerErrors } from 'src/common/constant';
@@ -11,91 +7,19 @@ import { ServerErrors } from 'src/common/constant';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { disSelect } from 'src/common/utils/select.handling';
 import {
-  findOneByFieldName,
   findOneByOrCase,
   queryhandler,
   updateOneByManyFields,
 } from 'src/core/helper/query-helper';
-import { AuthorityDTO } from 'src/modules/authority/dto/authority.dto';
 import { GetAllAuthoritiesQuery } from 'src/modules/authority/queries/get-all-authorities.query';
 import { Authority } from 'src/modules/authority/schema/authority.schema';
-import { DMOService } from 'src/modules/dmo/dmo.service';
-import { GcpBucketService } from 'src/services/gcp-bucket/gcp-bucket.services';
 
 @Injectable()
 export class AuthorityService {
   constructor(
     @InjectModel('Authority')
     private readonly AuthorityModel: Model<Authority>,
-    private dmoService: DMOService,
-    private readonly gcpBucketServices: GcpBucketService,
   ) {}
-
-  async create(
-    dto: AuthorityDTO,
-    userId: string,
-    files: Array<Express.Multer.File>,
-  ) {
-    try {
-      if (!files?.length) {
-        throw new BadRequestException('Please upload file');
-      }
-
-      let imageCount: number = 0;
-
-      await Promise.all(
-        // eslint-disable-next-line array-callback-return
-        files.map(file => {
-          if (file.fieldname === 'logoPath' || file.fieldname === 'imagePath') {
-            imageCount += 1;
-          }
-        }),
-      );
-
-      if (imageCount !== 2) {
-        throw new BadRequestException('Please upload logo and dmo image');
-      }
-
-      const existsAuthority = await findOneByFieldName<Authority>(
-        this.AuthorityModel,
-        'name',
-        dto.name,
-      );
-      if (existsAuthority) {
-        throw new BadRequestException(ServerErrors.AUTHORITY.EXISTS);
-      }
-
-      await this.dmoService.findDMO(dto.dmoId);
-
-      let imagePath: string;
-      let logoPath: string;
-      await Promise.all(
-        files.map(async file => {
-          if (file.fieldname === 'logoPath') {
-            logoPath = await this.gcpBucketServices.upload(file);
-          }
-
-          if (file.fieldname === 'imagePath') {
-            imagePath = await this.gcpBucketServices.upload(file);
-          }
-        }),
-      );
-
-      const newAuthority = new this.AuthorityModel({
-        ...dto,
-        adminIds: [dto.userId],
-        createdBy: userId,
-        createdAt: new Date(),
-        imagePath,
-        logoPath,
-      });
-
-      const authority = await newAuthority.save();
-      return authority;
-    } catch (err) {
-      exceptionHandling(err);
-    }
-  }
 
   async getAll(query: GetAllAuthoritiesQuery) {
     try {
@@ -183,23 +107,6 @@ export class AuthorityService {
       findQuery,
       populate,
     );
-    if (!authority) {
-      throw new NotFoundException(ServerErrors.AUTHORITY.NOT_FOUND);
-    }
-    return authority;
-  }
-
-  async addCollaborators(authorityId: string, userId: string) {
-    const authority = await updateOneByManyFields<Authority>(
-      this.AuthorityModel,
-      {
-        _id: new mongoose.Types.ObjectId(authorityId),
-      },
-      {
-        userId,
-      },
-    );
-
     if (!authority) {
       throw new NotFoundException(ServerErrors.AUTHORITY.NOT_FOUND);
     }

@@ -7,12 +7,10 @@ import { DMOService } from './dmo.service';
 import { DMOController } from './dmo.controller';
 import { UsersModule } from '../users/users.module';
 import { JwtAuthModule } from '../jwt-auth/jwt-auth.module';
-import { GcpBucketModule } from 'src/services/gcp-bucket/gcp-bucket.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: 'DMO', schema: DMOSchema }]),
-    GcpBucketModule,
     UsersModule,
     JwtAuthModule,
     forwardRef(() => AuthorityModule),

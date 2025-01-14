@@ -13,9 +13,6 @@ import { MapPointModule } from './modules/mapPoint/mappoint.module';
 import { BankAccountModule } from 'src/modules/bank-account/bank-account.module';
 import { BusinessModule } from './modules/business/business.module';
 import { UsersModule } from 'src/modules/users/users.module';
-import { MPCategoriesModule } from './modules/mpcategories/mpcategories.module';
-import { MPSubCategoriesModule } from './modules/mpsubcategories/mpsubcategories.module';
-import { MPSubCategoriesItemsModule } from './modules/mpsubcategoriesitems/mpsubcategoriesitems.module';
 import { DMOModule } from './modules/dmo/dmo.module';
 import { SocialMediaModule } from './modules/socialMedia/socialMedia.module';
 import { IconsModule } from './modules/icons/icons.module';
@@ -34,12 +31,10 @@ import { OrdersModule } from 'src/modules/orders/orders.modules';
 import { OrderProductModule } from 'src/modules/order-product/order-product.modules';
 import { VoucherModule } from './modules/vouchers/voucher.module';
 import { PaymentsModule } from './services/payments/payments.module';
-import { CampaignSegmentModule } from './modules/campaign-segments/campaignSegment.module';
 import { HashModule } from './services/hash/hash.module';
 import { MailChimpModule } from 'src/services/mailchimp/mailchimp.module';
 import { ReadFileModule } from 'src/services/read-file/read-file.module';
 import { AuthorityModule } from 'src/modules/authority/authority.module';
-import { SettingsModule } from 'src/modules/settings/settings.module';
 import { StatsModule } from 'src/modules/stats/stats.module';
 import { MockDataModule } from 'src/modules/mock-data/mock-data.modules';
 import { RewardsModule } from 'src/modules/rewards/rewards.module';
@@ -60,9 +55,6 @@ import { LoggingMiddleware } from './services/middleware/logger';
     CityModule,
     GcpBucketModule,
     MapPointModule,
-    MPCategoriesModule,
-    MPSubCategoriesModule,
-    MPSubCategoriesItemsModule,
     OrdersModule,
     OrderProductModule,
     BusinessModule,
@@ -79,7 +71,6 @@ import { LoggingMiddleware } from './services/middleware/logger';
     GroupTypeModule,
     VoucherTemplateModule,
     CampaignModule,
-    CampaignSegmentModule,
     VoucherModule,
     PaymentsModule,
     HashModule,
@@ -88,7 +79,6 @@ import { LoggingMiddleware } from './services/middleware/logger';
     ReadFileModule,
     StatsModule,
     MockDataModule,
-    SettingsModule,
     RewardsModule,
     GAModule,
     WinstonLoggerModule,

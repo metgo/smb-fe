@@ -1,70 +1,18 @@
 /* eslint-disable no-undef */
 import {
-  Body,
-  Controller,
-  Get,
-  HttpStatus,
-  Param,
-  Post,
-  Query,
-  Req,
-  Res,
-  UploadedFiles,
-  UseGuards,
-  UseInterceptors,
+  Controller, Get, HttpStatus, Param, Query, Res,
 } from '@nestjs/common';
-import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
 
 import { ServerSuccess } from 'src/common/constant';
 import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
-import { Roles } from 'src/core/guards/authorization/roles';
-import { JwtAuthGuard } from 'src/core/guards/jwt/jwt.guards';
 import { responseHelper } from 'src/core/helper/response.helper';
-import { AuthorityDTO } from 'src/modules/authority/dto/authority.dto';
 import { AuthorityService } from 'src/modules/authority/authority.service';
 import { GetAllAuthoritiesQuery } from 'src/modules/authority/queries/get-all-authorities.query';
-import { UserType } from 'src/modules/users/users.type';
-import { fileFilterByExtensions } from 'src/services/gcp-bucket/middleware/file-filter';
 
 @Controller()
 export class AuthorityController {
   constructor(private readonly authorityService: AuthorityService) {}
-
-  @Roles(UserType.DMO, UserType.DMOADMIN, UserType.SUPERADMIN)
-  @UseGuards(JwtAuthGuard)
-  @ApiEndpoint({
-    tags: ['Admin', 'Authority'],
-    noAuthToken: true,
-    response: {
-      status: HttpStatus.CREATED,
-      description: ServerSuccess.AUTHORITY.CREATED,
-    },
-    softBlockExtraDtoFields: true,
-  })
-  @UseInterceptors(AnyFilesInterceptor({ fileFilter: fileFilterByExtensions }))
-  @Post('admin/authorities')
-  async create(
-    @Body() dto: AuthorityDTO,
-    @Req() req,
-    @Res() response: Response,
-    @UploadedFiles() image: Array<Express.Multer.File>,
-  ) {
-    const authority = await this.authorityService.create(
-      dto,
-      req.user.id,
-      image,
-    );
-
-    return responseHelper(
-      response,
-      HttpStatus.CREATED,
-      ServerSuccess.AUTHORITY.CREATED,
-      authority,
-      null,
-      null,
-    );
-  }
 
   @ApiEndpoint({
     tags: ['Authority'],

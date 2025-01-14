@@ -1,40 +1,27 @@
 /* eslint-disable no-undef */
-import {
-  BadRequestException,
-  Inject,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { ObjectId } from 'typeorm';
 import { Logger } from 'winston';
 
-import { ServerErrors, defaultMetGoLogoURL } from 'src/common/constant';
+import { ServerErrors } from 'src/common/constant';
 import { CampaignStatus, CampaignType } from 'src/common/enum';
 import { paginationConfig } from 'src/common/pagination.config';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { disSelect } from 'src/common/utils/select.handling';
 import {
-  findOneByFieldName,
-  findOneByFieldNameExcludeId,
   findOneByFieldNames,
   findOneByIDPopulate,
   queryhandler,
-  updateById,
 } from 'src/core/helper/query-helper';
 import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interface';
-import { CreateCampaignDto } from './dto/create-campaign.dto';
-import { DeleteMediaDTO } from './dto/delete-media.dto';
 import { FilterQuery } from './dto/query.dto';
-import { updateCampaignDto } from './dto/updateCampaign.dto';
-import { RewardsService } from 'src/modules/rewards/rewards.service';
 import { UserType } from 'src/modules/users/users.type';
 import { Campaign } from './schema/campaign.schema';
 import { ConfigService } from 'src/services/config/config.service';
 import { EncryptionService } from 'src/services/encryption/encryption.service';
-import { GcpBucketService } from 'src/services/gcp-bucket/gcp-bucket.services';
 
 @Injectable()
 export class CampaignService {
@@ -45,100 +32,7 @@ export class CampaignService {
     private CampaignModel: Model<Campaign>,
     private readonly encryptionService: EncryptionService,
     private readonly configService: ConfigService,
-    private readonly gcpBucketServices: GcpBucketService,
-    private readonly rewardService: RewardsService,
   ) {}
-
-  async create(
-    dto: CreateCampaignDto,
-    files: Array<Express.Multer.File>,
-    user: LoggedInUserInterface,
-  ): Promise<Campaign> {
-    try {
-      await Promise.all([
-        this.findByFieldName('name', dto.name),
-        this.findByFieldName('code', dto.code),
-      ]);
-
-      if (!files?.length) {
-        throw new BadRequestException('Please upload file');
-      }
-
-      let imageCount: number = 0;
-
-      await Promise.all(
-        // eslint-disable-next-line array-callback-return
-        files.map(file => {
-          if (file.fieldname === 'logoPath' || file.fieldname === 'campImage') {
-            imageCount += 1;
-          }
-        }),
-      );
-
-      if (imageCount !== 2) {
-        throw new BadRequestException('Please upload logo and campaignImage');
-      }
-
-      let campImage: string;
-      let logoPath: string;
-      await Promise.all(
-        files.map(async file => {
-          if (file.fieldname === 'logoPath') {
-            logoPath = await this.gcpBucketServices.upload(file);
-          }
-
-          if (file.fieldname === 'campImage') {
-            campImage = await this.gcpBucketServices.upload(file);
-          }
-        }),
-      );
-
-      const { rewardAmount, rewardVoucherLimit, ...body } = dto;
-
-      let campaign: any = {
-        ...body,
-        imagePath: campImage,
-        logoPath,
-        createdBy: user.id,
-        createdAt: new Date(),
-      };
-
-      if (
-        user.role === UserType.AUTHORITY
-        || user.role === UserType.AUTHORITY_ADMIN
-        || user.role === UserType.TRAVELLER
-      ) {
-        campaign = {
-          ...campaign,
-          type: CampaignType.CASH_BACK,
-        };
-      }
-
-      if (rewardAmount) {
-        // create reward;
-        const reward = await this.rewardService.create({
-          createdBy: user.id,
-          amount: rewardAmount,
-          voucherLimit: rewardVoucherLimit,
-        });
-
-        campaign = {
-          ...campaign,
-          rewardId: reward._id,
-        };
-      }
-
-      const newCampaign = new this.CampaignModel(campaign);
-      await newCampaign.save();
-      this.logger.info('[CAMPAIGN]: CREATED', { message: newCampaign });
-      return newCampaign;
-    } catch (err) {
-      this.logger.error('[CAMPAIGN]: FAILED TO CREATE', {
-        err: err.message,
-      });
-      exceptionHandling(err);
-    }
-  }
 
   async getAll(loggedInUser: LoggedInUserInterface, queries: FilterQuery) {
     const {
@@ -257,195 +151,6 @@ export class CampaignService {
     return campaign;
   }
 
-  async update(
-    id: string,
-    dto: updateCampaignDto,
-    user: LoggedInUserInterface,
-  ): Promise<Campaign> {
-    try {
-      let updatedDTO = { ...dto, updatedBy: user.id, updatedAt: new Date() };
-
-      if (
-        user.role === UserType.AUTHORITY
-        || user.role === UserType.AUTHORITY_ADMIN
-        || user.role === UserType.TRAVELLER
-      ) {
-        updatedDTO = {
-          ...updatedDTO,
-          type: CampaignType.CASH_BACK,
-        };
-      }
-
-      const updateCampaign = await updateById<Campaign>(
-        this.CampaignModel,
-        id,
-        updatedDTO,
-      );
-
-      if (!updateCampaign) {
-        throw new NotFoundException(ServerErrors.CAMPAIGN.NOT_FOUND);
-      }
-
-      this.logger.info('[CAMPAIGN]: UPDATED', { message: updateCampaign });
-
-      if (dto.rewardAmount || dto.rewardVoucherLimit) {
-        if (updateCampaign?.rewardId) {
-          await this.rewardService.update(
-            updateCampaign?.rewardId?.toString(),
-            { amount: dto.rewardAmount, voucherLimit: dto.rewardVoucherLimit },
-            user,
-          );
-        }
-
-        if (!updateCampaign?.rewardId) {
-          const reward = await this.rewardService.create({
-            createdBy: user.id,
-            amount: dto?.rewardAmount,
-            voucherLimit: dto?.rewardVoucherLimit,
-          });
-
-          await updateById<Campaign>(this.CampaignModel, id, {
-            rewardId: reward._id,
-          });
-        }
-      }
-      return updateCampaign;
-    } catch (err) {
-      this.logger.error('[CAMPAIGN]: FAILED TO UPDATE', {
-        err: err.message,
-      });
-      if (err.errors?.amount) {
-        throw new BadRequestException('Please enter valid reward amount');
-      }
-      exceptionHandling(err);
-    }
-  }
-
-  async softDelete(id: string) {
-    const updateField = { isDeleted: true, deleteAt: new Date() };
-    const campaign = await updateById<Campaign>(
-      this.CampaignModel,
-      id,
-      updateField,
-    );
-    if (!campaign) {
-      throw new NotFoundException(ServerErrors.CAMPAIGN.NOT_FOUND);
-    }
-    return campaign;
-  }
-
-  async deleteMedia(
-    campaignId: string,
-    body: DeleteMediaDTO,
-    loggedInUser: LoggedInUserInterface,
-  ) {
-    try {
-      let updatedDTO: any = {
-        updatedBy: loggedInUser.id,
-        updatedAt: new Date(),
-      };
-
-      if (body.mediaType === 'logo') {
-        updatedDTO = { ...updatedDTO, logoPath: null };
-      }
-      if (body.mediaType === 'image') {
-        updatedDTO = { ...updatedDTO, imagePath: null };
-      }
-
-      const updateCampaign = await updateById<Campaign>(
-        this.CampaignModel,
-        campaignId,
-        updatedDTO,
-      );
-
-      if (!updateCampaign) {
-        throw new NotFoundException(ServerErrors.CAMPAIGN.NOT_FOUND);
-      }
-
-      // delete from gcp
-      if (body.mediaUrl !== defaultMetGoLogoURL) await this.gcpBucketServices.delete(body.mediaUrl);
-
-      this.logger.info('[CAMPAIGN]: DELETE MEDIA', { message: updateCampaign });
-
-      return updateCampaign;
-    } catch (err) {
-      this.logger.error('[CAMPAIGN]: FAILED TO DELETE MEDIA', {
-        err: err.message,
-      });
-      exceptionHandling(err);
-    }
-  }
-
-  async addMedia(
-    campaignId: string,
-    files: Array<Express.Multer.File>,
-    loggedInUser: LoggedInUserInterface,
-  ) {
-    try {
-      if (!files?.length) {
-        throw new BadRequestException('Please upload file');
-      }
-
-      let campImage: string;
-      let logoPath: string;
-      await Promise.all(
-        files.map(async file => {
-          if (file.fieldname === 'logoPath') {
-            logoPath = await this.gcpBucketServices.upload(file);
-          }
-
-          if (file.fieldname === 'campImage') {
-            campImage = await this.gcpBucketServices.upload(file);
-          }
-        }),
-      );
-
-      if (!campImage && !logoPath) {
-        throw new BadRequestException('Please upload file');
-      }
-
-      let updatedDTO: any = {
-        updatedBy: loggedInUser.id,
-        updatedAt: new Date(),
-        createdBy: loggedInUser.id,
-      };
-
-      if (campImage) {
-        updatedDTO = {
-          ...updatedDTO,
-          imagePath: campImage,
-        };
-      }
-
-      if (logoPath) {
-        updatedDTO = {
-          ...updatedDTO,
-          logoPath,
-        };
-      }
-
-      // add to url
-      const updateCampaign = await updateById<Campaign>(
-        this.CampaignModel,
-        campaignId,
-        updatedDTO,
-      );
-
-      if (!updateCampaign) {
-        throw new NotFoundException(ServerErrors.CAMPAIGN.NOT_FOUND);
-      }
-
-      this.logger.info('[CAMPAIGN]: UPLOAD MEDIA', { message: updateCampaign });
-
-      return updateCampaign;
-    } catch (err) {
-      this.logger.error('[CAMPAIGN]: FAILED TO UPLOAD MEDIA', {
-        err: err.message,
-      });
-      exceptionHandling(err);
-    }
-  }
-
   async findRewardByCampId(campId: string) {
     try {
       const findQuery = {
@@ -502,38 +207,6 @@ export class CampaignService {
       });
       exceptionHandling(err);
     }
-  }
-
-  async findByFieldName(
-    fieldName: keyof Campaign,
-    items: string,
-  ): Promise<boolean> {
-    const campaign = await findOneByFieldName<Campaign>(
-      this.CampaignModel,
-      fieldName,
-      items,
-    );
-    if (campaign) {
-      throw new BadRequestException(`${fieldName} already exists`);
-    }
-    return false;
-  }
-
-  async findByFieldNameExcludeId(
-    fieldName: keyof Campaign,
-    items: string,
-    id: string,
-  ): Promise<boolean> {
-    const campaign = await findOneByFieldNameExcludeId<Campaign>(
-      this.CampaignModel,
-      fieldName,
-      items,
-      id,
-    );
-    if (campaign) {
-      throw new BadRequestException(`${fieldName} already exists`);
-    }
-    return false;
   }
 
   async getCampaignAssociatedToIds(id: string | ObjectId, key: keyof Campaign) {

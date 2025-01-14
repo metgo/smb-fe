@@ -2,23 +2,15 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-unused-expressions */
 import {
-  Body,
   Controller,
-  Delete,
   Get,
   HttpStatus,
   Param,
-  Patch,
-  Post,
-  Put,
   Query,
   Req,
   Res,
-  UploadedFiles,
   UseGuards,
-  UseInterceptors,
 } from '@nestjs/common';
-import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
 
 import { ServerSuccess } from 'src/common/constant';
@@ -26,13 +18,6 @@ import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
 import { responseHelper } from 'src/core/helper/response.helper';
 import { Roles } from 'src/core/guards/authorization/roles';
 import { JwtAuthGuard } from 'src/core/guards/jwt/jwt.guards';
-import {
-  AssignUserDto,
-  createBusinessDto,
-  UpdateBusinessByAdminDto,
-  updateBusinessDto,
-  WebCreateBusiness,
-} from 'src/modules/business/dto';
 import { GetBusinessByIdOrSlug } from 'src/modules/business/business.type';
 import {
   GetAllBusinessesForGuestQuery,
@@ -42,87 +27,10 @@ import {
 } from 'src/modules/business/queries';
 import { BusinessService } from 'src/modules/business/services/business.service';
 import { UserType } from 'src/modules/users/users.type';
-import { fileFilterByExtensions } from 'src/services/gcp-bucket/middleware/file-filter';
 
 @Controller()
 export class BusinessController {
   constructor(private readonly businessServices: BusinessService) {}
-
-  @UseGuards(JwtAuthGuard)
-  @ApiEndpoint({
-    tags: ['Business'],
-    response: {
-      status: HttpStatus.CREATED,
-      description: ServerSuccess.BUSINESS_CREATED,
-    },
-    noAuthToken: true,
-    operation: 'Create a business by any logged in user',
-  })
-  @Post('business')
-  @UseInterceptors(AnyFilesInterceptor({ fileFilter: fileFilterByExtensions }))
-  async createBusiness(
-    @Req() request,
-    @Res() response: Response,
-    @Body() dto: createBusinessDto,
-    @UploadedFiles() image: Array<Express.Multer.File>,
-  ) {
-    const { user } = request;
-
-    const business = await this.businessServices.createBusiness(
-      dto,
-      user,
-      image,
-    );
-    return responseHelper(
-      response,
-      HttpStatus.CREATED,
-      ServerSuccess.BUSINESS_CREATED,
-      business,
-      null,
-      null,
-    );
-  }
-
-  @Roles(
-    UserType.ADMIN,
-    UserType.AUTHORITY,
-    UserType.DMO,
-    UserType.DMOADMIN,
-    UserType.SUPERADMIN,
-  )
-  @UseGuards(JwtAuthGuard)
-  @ApiEndpoint({
-    tags: ['Business', 'Business Admin'],
-    response: {
-      status: HttpStatus.OK,
-      description: ServerSuccess.BUSINESS_CREATED,
-    },
-    noAuthToken: true,
-    operation:
-      'Create a business by authority, dmo, dmo-admin of their respective area and superadmin',
-  })
-  @Post('admin/business')
-  @UseInterceptors(AnyFilesInterceptor({ fileFilter: fileFilterByExtensions }))
-  async createBusinessForWeb(
-    @Req() request,
-    @Res() response: Response,
-    @Body() body: WebCreateBusiness,
-    @UploadedFiles() image: Array<Express.Multer.File>,
-  ) {
-    const business = await this.businessServices.createBusinessByAdmins(
-      body,
-      request.user,
-      image,
-    );
-    return responseHelper(
-      response,
-      HttpStatus.CREATED,
-      ServerSuccess.BUSINESS_CREATED,
-      business,
-      null,
-      null,
-    );
-  }
 
   @ApiEndpoint({
     tags: ['Business'],
@@ -403,223 +311,6 @@ export class BusinessController {
       response,
       HttpStatus.OK,
       ServerSuccess.BUSINESS_LISTED,
-      business,
-      null,
-      null,
-    );
-  }
-
-  @ApiEndpoint({
-    tags: ['Business'],
-    response: {
-      status: HttpStatus.OK,
-      description: ServerSuccess.BUSINESS_UPDATED,
-    },
-    noAuthToken: true,
-    params: [{ name: 'id', type: 'string', required: true }],
-    operation: 'Update businesses details by business owner ',
-  })
-  @UseGuards(JwtAuthGuard)
-  @Put('business/:id')
-  async updateMyBusiness(
-    @Req() request,
-    @Res() response: Response,
-    @Param('id') id: string,
-    @Body() dto: updateBusinessDto,
-  ) {
-    const business = await this.businessServices.updateBusiness(
-      id,
-      request.user,
-      dto,
-    );
-
-    return responseHelper(
-      response,
-      HttpStatus.OK,
-      ServerSuccess.BUSINESS_UPDATED,
-      business,
-      null,
-      null,
-    );
-  }
-
-  @Roles(
-    UserType.AUTHORITY,
-    UserType.AUTHORITY_ADMIN,
-    UserType.DMO,
-    UserType.DMOADMIN,
-    UserType.SUPERADMIN,
-  )
-  @UseGuards(JwtAuthGuard)
-  @ApiEndpoint({
-    tags: ['Business', 'Business Admin'],
-    response: {
-      status: HttpStatus.OK,
-      description: ServerSuccess.BUSINESS_UPDATED,
-    },
-    noAuthToken: true,
-    params: [{ name: 'id', type: 'string', required: true }],
-    operation:
-      'Update businesses details by superadmin, authority, dmo and dmo-admin',
-  })
-  @Put('admin/business/:id')
-  async updateBusinessWeb(
-    @Req() request,
-    @Res() response: Response,
-    @Param('id') id: string,
-    @Body() dto: UpdateBusinessByAdminDto,
-  ) {
-    const business = await this.businessServices.updateBusinessByAdmin(
-      id,
-      request.user,
-      dto,
-    );
-
-    return responseHelper(
-      response,
-      HttpStatus.OK,
-      ServerSuccess.BUSINESS_UPDATED,
-      business,
-      null,
-      null,
-    );
-  }
-
-  @ApiEndpoint({
-    tags: ['Business', 'Business Admin'],
-    response: {
-      status: HttpStatus.OK,
-      description: ServerSuccess.BUSINESS_UPDATED,
-    },
-    noAuthToken: true,
-    params: [{ name: 'businessId', type: 'string', required: true }],
-  })
-  @Roles(
-    UserType.AUTHORITY,
-    UserType.AUTHORITY_ADMIN,
-    UserType.DMO,
-    UserType.DMOADMIN,
-    UserType.SUPERADMIN,
-  )
-  @UseGuards(JwtAuthGuard)
-  @Patch('admin/business/:businessId')
-  async updateBusinessByAdmin(
-    @Req() request,
-    @Res() response: Response,
-    @Param('businessId') businessId: string,
-    @Body() body: UpdateBusinessByAdminDto,
-  ) {
-    const business = await this.businessServices.updateBusinessByAdmin(
-      businessId,
-      request.user,
-      body,
-    );
-
-    return responseHelper(
-      response,
-      HttpStatus.OK,
-      ServerSuccess.BUSINESS_UPDATED,
-      business,
-      null,
-      null,
-    );
-  }
-
-  @ApiEndpoint({
-    tags: ['Business Admin', 'Business'],
-    response: {
-      status: HttpStatus.OK,
-      description: ServerSuccess.BUSINESS_UPDATED,
-    },
-    noAuthToken: true,
-  })
-  @Roles(UserType.SUPERADMIN)
-  @UseGuards(JwtAuthGuard)
-  @Patch('admin/businesses/assign-user')
-  async assignUser(
-    @Req() req,
-    @Res() response: Response,
-    @Body() body: AssignUserDto,
-  ) {
-    const assignedBusiness = await this.businessServices.assignUsertoBusinesses(
-      body.businessesId,
-      body.userId,
-      req.user.id,
-    );
-
-    return responseHelper(
-      response,
-      HttpStatus.OK,
-      ServerSuccess.BUSINESS_UPDATED,
-      assignedBusiness,
-      null,
-      null,
-    );
-  }
-
-  @ApiEndpoint({
-    tags: ['Business'],
-    response: {
-      status: HttpStatus.OK,
-      description: ServerSuccess.BUSINESS_UPDATED,
-    },
-    noAuthToken: true,
-    params: [{ name: 'id', type: 'string', required: true }],
-  })
-  @UseGuards(JwtAuthGuard)
-  @Delete('business/:id')
-  async deleteBusiness(
-    @Req() request,
-    @Res() response: Response,
-    @Param('id') bussId: string,
-  ) {
-    const business = await this.businessServices.deleteBusiness(
-      bussId,
-      request.user.id,
-    );
-
-    return responseHelper(
-      response,
-      HttpStatus.OK,
-      ServerSuccess.BUSINESS_UPDATED,
-      business,
-      null,
-      null,
-    );
-  }
-
-  @ApiEndpoint({
-    tags: ['Business Admin', 'Business'],
-    response: {
-      status: HttpStatus.OK,
-      description: ServerSuccess.BUSINESS_UPDATED,
-    },
-    noAuthToken: true,
-    params: [{ name: 'id', type: 'string', required: true }],
-  })
-  @Roles(
-    UserType.AUTHORITY,
-    UserType.AUTHORITY_ADMIN,
-    UserType.DMO,
-    UserType.DMOADMIN,
-    UserType.SUPERADMIN,
-  )
-  @UseGuards(JwtAuthGuard)
-  @Delete('admin/businesses/:id')
-  async deleteBusinessByAdmin(
-    @Req() request,
-    @Res() response: Response,
-    @Param('id') businessId: string,
-  ) {
-    const business = await this.businessServices.deleteBusinessByAdmin(
-      businessId,
-      request.user,
-    );
-
-    return responseHelper(
-      response,
-      HttpStatus.OK,
-      ServerSuccess.BUSINESS_UPDATED,
       business,
       null,
       null,
