@@ -2,9 +2,7 @@ import { Module, forwardRef } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
 import { BusinessController } from 'src/modules/business/controllers/business.controller';
-import { MapPointsController } from 'src/modules/business/controllers/map-point.controller';
 import { BusinessService } from 'src/modules/business/services/business.service';
-import { MapPointsService } from 'src/modules/business/services/map-point.service';
 import { BusinessSchema } from './schema/business.schema';
 import { DMOModule } from 'src/modules/dmo/dmo.module';
 import { MockDataModule } from 'src/modules/mock-data/mock-data.modules';
@@ -27,7 +25,6 @@ import { AuthorityModule } from 'src/modules/authority/authority.module';
 import { CampaignModule } from 'src/modules/campaign/campaign.module';
 import { VoucherModule } from 'src/modules/vouchers/voucher.module';
 import { BankAccountModule } from 'src/modules/bank-account/bank-account.module';
-import { EventController } from 'src/modules/business/controllers/event.controller';
 import { BusinessAuditSchema } from 'src/modules/business/schema/business-audit.schema';
 import { EventsService } from 'src/modules/business/services/event.service';
 import { MediaModule } from 'src/modules/media/media.module';
@@ -59,8 +56,8 @@ import { UsersModule } from 'src/modules/users/users.module';
     forwardRef(() => DMOModule),
     forwardRef(() => ProductsModule),
   ],
-  controllers: [BusinessController, EventController, MapPointsController],
-  providers: [BusinessService, EventsService, MapPointsService],
+  controllers: [BusinessController ],
+  providers: [BusinessService, EventsService],
   exports: [BusinessService],
 })
 export class BusinessModule {}
