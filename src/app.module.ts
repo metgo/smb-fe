@@ -13,9 +13,6 @@ import { MapPointModule } from './modules/mapPoint/mappoint.module';
 import { BankAccountModule } from 'src/modules/bank-account/bank-account.module';
 import { BusinessModule } from './modules/business/business.module';
 import { UsersModule } from 'src/modules/users/users.module';
-import { MPCategoriesModule } from './modules/mpcategories/mpcategories.module';
-import { MPSubCategoriesModule } from './modules/mpsubcategories/mpsubcategories.module';
-import { MPSubCategoriesItemsModule } from './modules/mpsubcategoriesitems/mpsubcategoriesitems.module';
 import { DMOModule } from './modules/dmo/dmo.module';
 import { SocialMediaModule } from './modules/socialMedia/socialMedia.module';
 import { IconsModule } from './modules/icons/icons.module';
@@ -60,9 +57,6 @@ import { LoggingMiddleware } from './services/middleware/logger';
     CityModule,
     GcpBucketModule,
     MapPointModule,
-    MPCategoriesModule,
-    MPSubCategoriesModule,
-    MPSubCategoriesItemsModule,
     OrdersModule,
     OrderProductModule,
     BusinessModule,
