@@ -10,7 +10,6 @@ import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { disSelect } from 'src/common/utils/select.handling';
 import { queryhandler } from 'src/core/helper/query-helper';
 import { AuthorityService } from 'src/modules/authority/authority.service';
-import { CityDTO } from 'src/modules/city/dto/create-city.dto';
 import { City } from 'src/modules/city/schema/city.schema';
 
 @Injectable()
@@ -20,19 +19,6 @@ export class CityService {
     private readonly CityModel: Model<City>,
     private readonly authorityService: AuthorityService,
   ) {}
-
-  async create(dto: CityDTO, userId: string) {
-    const { dmoId } = await this.authorityService.getOne(dto.authorityId);
-    const newCity = new this.CityModel({
-      ...dto,
-      dmoId,
-      createdBy: userId,
-      createdAt: new Date(),
-    });
-
-    const city = await newCity.save();
-    return city;
-  }
 
   async getAll(query: CommonFilterQuery) {
     const { page, limit, search } = query;

@@ -1,54 +1,17 @@
 import {
-  Body,
-  Controller,
-  Get,
-  HttpStatus,
-  Param,
-  Post,
-  Query,
-  Req,
-  Res,
-  UseGuards,
+  Controller, Get, HttpStatus, Param, Query, Res,
 } from '@nestjs/common';
 import { Response } from 'express';
 
 import { ServerSuccess } from 'src/common/constant';
 import { CommonFilterQuery } from 'src/common/query-handler/common-filter-query';
 import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
-import { Roles } from 'src/core/guards/authorization/roles';
-import { JwtAuthGuard } from 'src/core/guards/jwt/jwt.guards';
 import { responseHelper } from 'src/core/helper/response.helper';
 import { CityService } from 'src/modules/city/city.service';
-import { CityDTO } from 'src/modules/city/dto/create-city.dto';
-import { UserType } from 'src/modules/users/users.type';
 
 @Controller()
 export class CityController {
   constructor(private readonly cityService: CityService) {}
-
-  @Roles(UserType.SUPERADMIN)
-  @UseGuards(JwtAuthGuard)
-  @ApiEndpoint({
-    tags: ['Admin', 'City'],
-    noAuthToken: true,
-    response: {
-      status: HttpStatus.CREATED,
-      description: ServerSuccess.CITY.CREATED,
-    },
-  })
-  @Post('admin/cities')
-  async create(@Body() dto: CityDTO, @Req() req, @Res() response: Response) {
-    const city = await this.cityService.create(dto, req.user.id);
-
-    return responseHelper(
-      response,
-      HttpStatus.CREATED,
-      ServerSuccess.CITY.CREATED,
-      city,
-      null,
-      null,
-    );
-  }
 
   @ApiEndpoint({
     tags: ['City'],
