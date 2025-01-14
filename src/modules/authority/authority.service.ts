@@ -1,8 +1,5 @@
 /* eslint-disable no-undef */
-import {
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
 import { ServerErrors } from 'src/common/constant';
@@ -16,8 +13,6 @@ import {
 } from 'src/core/helper/query-helper';
 import { GetAllAuthoritiesQuery } from 'src/modules/authority/queries/get-all-authorities.query';
 import { Authority } from 'src/modules/authority/schema/authority.schema';
-import { DMOService } from 'src/modules/dmo/dmo.service';
-import { GcpBucketService } from 'src/services/gcp-bucket/gcp-bucket.services';
 
 @Injectable()
 export class AuthorityService {
