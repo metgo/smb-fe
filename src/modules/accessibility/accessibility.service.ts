@@ -1,7 +1,5 @@
 /* eslint-disable prefer-const */
-import {
-  Injectable,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 
 import { Locale } from 'src/common/enum';
@@ -9,9 +7,7 @@ import { paginationConfig } from 'src/common/pagination.config';
 import { LocaleFilterQuery } from 'src/common/query-handler/locale-filter.query';
 import { disSelect } from 'src/common/utils/select.handling';
 import { Accessibility } from './schema/accessibility.schema';
-import {
-  queryhandler,
-} from 'src/core/helper/query-helper';
+import { queryhandler } from 'src/core/helper/query-helper';
 import { Model } from 'mongoose';
 import { LocaleQuery } from './dto/locale-query.dto';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
@@ -22,7 +18,6 @@ export class AccessibilityService {
     @InjectModel('Accessibility')
     private readonly AccessibilityModel: Model<Accessibility>,
   ) {}
-
 
   async getAll(queries: LocaleFilterQuery) {
     const {

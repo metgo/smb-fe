@@ -1,10 +1,5 @@
 import {
-  Controller,
-  Get,
-  HttpStatus,
-  Param,
-  Query,
-  Res,
+  Controller, Get, HttpStatus, Param, Query, Res,
 } from '@nestjs/common';
 import { Response } from 'express';
 
@@ -62,5 +57,4 @@ export class AccessibilityController {
       null,
     );
   }
-
 }
