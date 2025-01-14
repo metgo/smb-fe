@@ -35,7 +35,6 @@ import { HashModule } from './services/hash/hash.module';
 import { MailChimpModule } from 'src/services/mailchimp/mailchimp.module';
 import { ReadFileModule } from 'src/services/read-file/read-file.module';
 import { AuthorityModule } from 'src/modules/authority/authority.module';
-import { SettingsModule } from 'src/modules/settings/settings.module';
 import { StatsModule } from 'src/modules/stats/stats.module';
 import { MockDataModule } from 'src/modules/mock-data/mock-data.modules';
 import { RewardsModule } from 'src/modules/rewards/rewards.module';
@@ -80,7 +79,6 @@ import { LoggingMiddleware } from './services/middleware/logger';
     ReadFileModule,
     StatsModule,
     MockDataModule,
-    SettingsModule,
     RewardsModule,
     GAModule,
     WinstonLoggerModule,
