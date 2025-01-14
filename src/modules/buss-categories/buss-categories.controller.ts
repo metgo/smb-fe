@@ -1,16 +1,5 @@
 import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  HttpStatus,
-  Param,
-  Post,
-  Put,
-  Query,
-  Req,
-  Res,
-  UseGuards,
+  Controller, Get, HttpStatus, Param, Query, Res,
 } from '@nestjs/common';
 import { Response } from 'express';
 
@@ -18,50 +7,13 @@ import { ServerSuccess } from 'src/common/constant';
 import { Locale } from 'src/common/enum';
 import { LocaleFilterQuery } from 'src/common/query-handler/locale-filter.query';
 import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
-import { Roles } from 'src/core/guards/authorization/roles';
-import { JwtAuthGuard } from 'src/core/guards/jwt/jwt.guards';
+
 import { responseHelper } from 'src/core/helper/response.helper';
 import { BussCategoriesService } from './buss-categories.service';
-import { createBussCategoryDto } from './dto/createBussCategoryDto';
-import { UpdateBussCategoryDto } from './dto/updateBussCategoryDto';
-import { UserType } from '../users/users.type';
 
 @Controller()
 export class BussCategoriesController {
   constructor(private readonly bussCategoryService: BussCategoriesService) {}
-
-  @Roles(UserType.SUPERADMIN, UserType.ADMIN)
-  @UseGuards(JwtAuthGuard)
-  @ApiEndpoint({
-    tags: ['Admin', 'Business-Categories'],
-    response: {
-      status: 201,
-      description: ServerSuccess.BUSS_CATEGORY.CREATED,
-    },
-    softBlockExtraDtoFields: true,
-    noAuthToken: true,
-  })
-  @Post('admin/buss-category')
-  async create(
-    @Req() req,
-    @Res() response: Response,
-    @Body() dto: createBussCategoryDto,
-  ) {
-    await this.bussCategoryService.findByFieldName('name', dto.name);
-
-    const newBussCategory = await this.bussCategoryService.create(
-      dto,
-      req.user.id,
-    );
-    return responseHelper(
-      response,
-      HttpStatus.CREATED,
-      ServerSuccess.BUSS_CATEGORY.CREATED,
-      newBussCategory,
-      null,
-      null,
-    );
-  }
 
   @ApiEndpoint({
     tags: ['Admin', 'Business-Categories'],
@@ -105,76 +57,6 @@ export class BussCategoriesController {
       HttpStatus.OK,
       ServerSuccess.BUSS_CATEGORY.LISTED,
       bussCategory,
-      null,
-      null,
-    );
-  }
-
-  @ApiEndpoint({
-    tags: ['Admin', 'Business-Categories'],
-    response: {
-      status: 201,
-      description: ServerSuccess.BUSS_CATEGORY.UPDATED,
-    },
-    softBlockExtraDtoFields: true,
-    noAuthToken: true,
-  })
-  @Roles(UserType.SUPERADMIN, UserType.ADMIN)
-  @UseGuards(JwtAuthGuard)
-  @Put('admin/buss-category/:id')
-  async update(
-    @Req() req,
-    @Res() response: Response,
-    @Body() dto: UpdateBussCategoryDto,
-    @Param('id') id: string,
-  ) {
-    await this.bussCategoryService.findByFieldNameExcludeId(
-      'name',
-      dto.name,
-      id,
-    );
-
-    const updateBussCategory = await this.bussCategoryService.update(
-      dto,
-      id,
-      req.user.id,
-    );
-    return responseHelper(
-      response,
-      HttpStatus.OK,
-      ServerSuccess.BUSS_CATEGORY.UPDATED,
-      updateBussCategory,
-      null,
-      null,
-    );
-  }
-
-  @Roles(UserType.SUPERADMIN, UserType.ADMIN)
-  @UseGuards(JwtAuthGuard)
-  @ApiEndpoint({
-    tags: ['Admin', 'Business-Categories'],
-    response: {
-      status: 200,
-      description: ServerSuccess.BUSS_CATEGORY.DELETED,
-    },
-    softBlockExtraDtoFields: true,
-    noAuthToken: true,
-  })
-  @Delete('admin/buss-category/:id')
-  async softDelete(
-    @Req() req,
-    @Res() response: Response,
-    @Param('id') id: string,
-  ) {
-    const deleteBussCategory = await this.bussCategoryService.softDelete(
-      id,
-      req.user.id,
-    );
-    return responseHelper(
-      response,
-      HttpStatus.OK,
-      ServerSuccess.BUSS_CATEGORY.DELETED,
-      deleteBussCategory,
       null,
       null,
     );
