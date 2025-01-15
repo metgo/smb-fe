@@ -7,20 +7,17 @@ import { authToken } from 'test/factories/auth.factory';
 import { appFactory } from 'test/factories/app';
 import { ProductFactory } from 'test/factories/products.factory';
 import { UsersFactory } from 'test/factories/users.factory';
-import { BusinessesFactory } from 'test/factories/business.factory';
 import { ProductStatus } from 'src/modules/products/products.type';
 import { UserType } from 'src/modules/users/users.type';
 
 describe('Users e2e Test', () => {
   let app: INestApplication;
   let superTest: SuperTest<any>;
-  let businessesFactory: BusinessesFactory;
   let productFactory: ProductFactory;
   let usersFactory: UsersFactory;
 
   beforeAll(async () => {
     app = await appFactory();
-    businessesFactory = await app.get(BusinessesFactory);
     productFactory = await app.get(ProductFactory);
     usersFactory = await app.get(UsersFactory);
     superTest = request(app.getHttpServer());

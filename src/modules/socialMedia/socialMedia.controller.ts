@@ -1,9 +1,5 @@
 import {
-  Controller,
-  Get,
-  HttpStatus,
-  Query,
-  Res,
+  Controller, Get, HttpStatus, Query, Res,
 } from '@nestjs/common';
 import { Response } from 'express';
 

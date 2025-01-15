@@ -1,16 +1,12 @@
 /* eslint-disable prefer-const */
-import {
-  Injectable,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
 import { SortOrder } from 'src/common/enum';
 import { paginationConfig } from 'src/common/pagination.config';
 import { disSelect } from 'src/common/utils/select.handling';
-import {
-  queryhandler,
-} from 'src/core/helper/query-helper';
+import { queryhandler } from 'src/core/helper/query-helper';
 import { SocialMedia } from './schema/socialMedia.schema';
 
 import { FilterQuery } from './dto/query.dto';
