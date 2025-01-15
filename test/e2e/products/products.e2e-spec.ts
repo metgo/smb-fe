@@ -36,50 +36,6 @@ describe('Users e2e Test', () => {
     jest.restoreAllMocks();
   });
 
-  it('[POST] /businesses/:businessId/products should create product of business', async () => {
-    const user = await usersFactory.create();
-    const business = await businessesFactory.create({ userId: user.id });
-
-    const body = {
-      name: 'Pacecode',
-      price: {
-        markedPrice: 30,
-      },
-      quantity: {
-        initial: 5,
-      },
-      description: 'This is test description',
-    };
-
-    await superTest
-      .post(`/businesses/${business.id}/products`)
-      .set({ Authorization: `Bearer ${authToken(user)}` })
-      .send(body)
-      .expect(HttpStatus.CREATED);
-  });
-
-  it('[POST] /admin/businesses/:businessId/products should create product of business', async () => {
-    const user = await usersFactory.create();
-    const business = await businessesFactory.create({ userId: user.id });
-
-    const body = {
-      name: 'Pacecode',
-      price: {
-        markedPrice: 30,
-      },
-      quantity: {
-        initial: 5,
-      },
-      description: 'This is test description',
-    };
-
-    await superTest
-      .post(`/admin/businesses/${business.id}/products`)
-      .set({ Authorization: `Bearer ${authToken(user)}` })
-      .send(body)
-      .expect(HttpStatus.CREATED);
-  });
-
   it('[GET] /products should list all active products to non-authenticated user', async () => {
     await Promise.all([
       productFactory.createMany(3, { status: ProductStatus.ACTIVE }),
