@@ -11,11 +11,16 @@ COPY package.json yarn.lock ./
 RUN yarn 
 
 
+
+# Ensure the directory exists
+RUN mkdir -p /app/credentials
+
+
 # Example Dockerfile
 ARG GCS_FILE_PATH
 
 # Copy the credentials file into the image
-COPY $GCS_FILE_PATH /app/credentials/metgo-staging-server-6d235c8ca059.json
+COPY credentials/metgo-staging-server-6d235c8ca059.json /app/credentials/metgo-staging-server-6d235c8ca059.json
 # Copy the rest of the application code
 COPY . .
 
