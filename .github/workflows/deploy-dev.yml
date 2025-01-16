@@ -15,6 +15,11 @@ jobs:
         uses: actions/checkout@v3
 
 
+      - name: Create GCS credentials file
+        run: |
+          mkdir -p credentials
+          echo -n "${{ secrets.GCP_PATH }}" | base64 -d > credentials/metgo-staging-server-6d235c8ca059.json
+
         # Decode and create the .env file
       - name: Create .env file
         run: |
@@ -27,7 +32,10 @@ jobs:
 
       - name: Login to Docker Hub, Build and Push Docker Image
         run: |
-          docker build --build-arg="ENV=development" -t ${{ secrets.DOCKERHUB_USERNAME }}/metgo:develop
+          docker build \
+            --build-arg ENV=development \
+            --build-arg GCS_FILE_PATH=/app/credentials/metgo-staging-server-6d235c8ca059.json \
+            -t ${{ secrets.DOCKERHUB_USERNAME }}/metgo:develop
           docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/metgo:develop
           docker image prune -f
@@ -59,4 +67,7 @@ jobs:
           host: ${{ secrets.SERVER_IP }}
           user: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+      
+      - name: Cleanup sensitive files
+        run: rm -rf credentials
 
