@@ -33,9 +33,7 @@ jobs:
       - name: Login to Docker Hub, Build and Push Docker Image
         run: |
           docker build \
-            --build-arg ENV=development \
-            --build-arg GCS_FILE_PATH=/app/credentials/metgo-staging-server-6d235c8ca059.json \
-            -t ${{ secrets.DOCKERHUB_USERNAME }}/metgo:develop
+            --build-arg ENV=development -t ${{ secrets.DOCKERHUB_USERNAME }}/metgo:develop
           docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/metgo:develop
           docker image prune -f
@@ -69,5 +67,5 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
       
       - name: Cleanup sensitive files
-        run: rm -rf credentials
+        run: rm -rf credentials .env.development
 
