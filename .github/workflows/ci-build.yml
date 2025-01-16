@@ -4,15 +4,15 @@ name: Build
 
 on:
   push:
-    branches:
-      - main
-      - release/*
-      - instance/*
-  pull_request:
-    branches:
-      - main
-      - release/*
-      - instance/*
+  #   branches:
+  #     - main
+  #     - release/*
+  #     - instance/*
+  # pull_request:
+  #   branches:
+  #     - main
+  #     - release/*
+  #     - instance/*
 
 jobs:
   check:

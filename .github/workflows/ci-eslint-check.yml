@@ -8,16 +8,16 @@ on:
       project:
         required: true
         type: string
-  push:
-    branches:
-      - main
-      - release/*
-      - instance/*
-  pull_request:
-    branches:
-      - main
-      - release/*
-      - instance/*
+  # push:
+  #   branches:
+  #     - main
+  #     - release/*
+  #     - instance/*
+  # pull_request:
+  #   branches:
+  #     - main
+  #     - release/*
+  #     - instance/*
 
 env: # environment variables (available in any part of the action)
   NODE_VERSION: 16.20.1
