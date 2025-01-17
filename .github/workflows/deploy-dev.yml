@@ -23,7 +23,7 @@ jobs:
         # Decode and create the .env file
       - name: Create .env file
         run: |
-          echo -n ${{ secrets.ENV_FILE_DEV }} | base64 -d > development.env
+          echo -n "${{ secrets.ENV_FILE_DEV }}" | base64 -d > development.env
 
       # Log in to Docker Hub
 
