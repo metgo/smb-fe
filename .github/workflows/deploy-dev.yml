@@ -23,18 +23,20 @@ jobs:
         # Decode and create the .env file
       - name: Create .env file
         run: |
-          echo -n "${{ secrets.ENV_FILE_DEV }}" | base64 -d > .env.development
+          echo -n ${{ secrets.ENV_FILE_DEV }} | base64 -d > development.env
 
-      # Export environment variable and set configuration
-      - name: Set environment variable
-        run: echo "DEV_CONFIG=development" >> $GITHUB_ENV
-
+      # Log in to Docker Hub
 
       - name: Login to Docker Hub, Build and Push Docker Image
+        env:
+          DEV_CONFIG: development
         run: |
-          docker build --build-arg ENV=development -t ${{ secrets.DOCKERHUB_USERNAME }}/metgo:develop .
+          export DEV_CONFIG=$DEV_CONFIG
+          echo "Using DEV_CONFIG=${DEV_CONFIG}"
+
+          docker build --build-arg="ENV=development" -t ${{ secrets.DOCKERHUB_USERNAME }}/metgo:develop
           docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/metgo:develop
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/nimto:develop
           docker image prune -f
   
   deploy:
@@ -50,7 +52,7 @@ jobs:
             cd external
 
             # Login to DockerHub to pull images
-            echo ${{ secrets.SUDO_PASSWORD }} | sudo -S docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+            echo ${{ secrets.SUDO_PASSWORD }} | sudo -S docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
 
             # Pull docker image
             echo ${{ secrets.SUDO_PASSWORD }} | sudo -S docker-compose pull
@@ -64,7 +66,7 @@ jobs:
           host: ${{ secrets.SERVER_IP }}
           user: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          options: "-t"
+          options: "-T -o StrictHostKeyChecking=no"
       
       - name: Cleanup sensitive files
         run: rm -rf credentials .env.development
