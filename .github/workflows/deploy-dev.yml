@@ -36,7 +36,7 @@ jobs:
 
           docker build --build-arg="ENV=development" -t ${{ secrets.DOCKERHUB_USERNAME }}/metgo:develop .
           docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/nimto:develop
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/metgo:develop
           docker image prune -f
   
   deploy:
