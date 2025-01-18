@@ -1,8 +1,8 @@
 # Step 1: Build the app with yarn
 FROM node:20.12.1 AS builder
 
-# Install OpenJDK for OpenAPI generator to work (Adjust JDK version if needed)
-RUN apt-get update && apt-get install -y openjdk-11-jdk && apt-get clean
+# Install OpenJDK 17 for OpenAPI generator to work (use the correct version)
+RUN apt-get update && apt-get install -y openjdk-17-jdk && apt-get clean
 
 # Verify Java installation (add this line to ensure Java is available in PATH)
 RUN java -version
@@ -15,15 +15,6 @@ COPY package.json yarn.lock ./
 
 # Install dependencies
 RUN yarn
-
-# # Ensure the directory for credentials exists
-# RUN mkdir -p /app/credentials
-
-# # If GCS_FILE_PATH is an ARG, copy the credentials file accordingly
-# # Assuming GCS_FILE_PATH is passed as an environment variable or secret
-# # You could optionally pass this ARG through your build pipeline (CI/CD)
-# ARG GCS_FILE_PATH
-# COPY ${GCS_FILE_PATH} /app/credentials/metgo-staging-server-6d235c8ca059.json
 
 # Copy the rest of the application code (excluding node_modules or unwanted files)
 COPY . .
