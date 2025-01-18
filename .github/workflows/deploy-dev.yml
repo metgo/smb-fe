@@ -14,6 +14,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
+
+      - name: Create GCS credentials file
+        run: |
+          mkdir -p credentials
+          echo -n "${{ secrets.GCP_PATH }}" | base64 -d > credentials/metgo-staging-server-6d235c8ca059.json
+
         # Decode and create the .env file
       - name: Create .env file
         run: |
@@ -63,5 +69,5 @@ jobs:
           options: "-T -o StrictHostKeyChecking=no"
       
       - name: Cleanup sensitive files
-        run: rm -rf  .env.development
+        run: rm -rf credentials .env.development
 
