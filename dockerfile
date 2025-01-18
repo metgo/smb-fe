@@ -1,8 +1,11 @@
 # Step 1: Build the app with yarn
 FROM node:20.12.1 AS builder
 
-# Install Java (for OpenAPI generator)
-RUN apt-get update && apt-get install -y default-jdk && apt-get clean
+# Install OpenJDK for OpenAPI generator to work (Adjust JDK version if needed)
+RUN apt-get update && apt-get install -y openjdk-11-jdk && apt-get clean
+
+# Verify Java installation (add this line to ensure Java is available in PATH)
+RUN java -version
 
 # Set working directory
 WORKDIR /app
@@ -13,7 +16,7 @@ COPY package.json yarn.lock ./
 # Install dependencies
 RUN yarn
 
-# Ensure the directory for credentials exists
+# # Ensure the directory for credentials exists
 # RUN mkdir -p /app/credentials
 
 # # If GCS_FILE_PATH is an ARG, copy the credentials file accordingly
@@ -28,7 +31,7 @@ COPY . .
 # Build the NestJS app
 RUN yarn build
 
-# Step 2: Prepare the final image
+# Step 2: Prepare the final image (slim runtime)
 FROM node:20.12.1 AS runner
 
 # Set working directory
