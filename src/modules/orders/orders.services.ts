@@ -302,8 +302,8 @@ export class OrdersService {
           apartment: cartItem?.apartment,
           additionalInfo: cartItem?.additionalInfo,
           amount: cartItem?.amount,
-          loggedInUserId: loggedInUser?.id,
           orderId: order.id,
+          loggedInUserId: loggedInUser?.id,
         });
       }),
     );
