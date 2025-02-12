@@ -438,7 +438,9 @@ export class OrdersService {
         message: updateOrder,
       });
 
-      const findCartProducts = (await this.cartService.findOneByOrderId(orderId)).product;
+      const findCartProducts = (
+        await this.cartService.findOneByOrderId(orderId)
+      ).product;
 
       await this.productsService.deductQuantity(findCartProducts);
 
