@@ -438,7 +438,9 @@ export class OrdersService {
         message: updateOrder,
       });
 
-      const findCartDetail = await this.cartService.findOneByOrderId(orderId);
+      const findCartProducts = (await this.cartService.findOneByOrderId(orderId)).product;
+
+      await this.productsService.deductQuantity(findCartProducts);
 
       const getProductInformation
         = await this.productsService.getProductInformationForOrders(
@@ -446,7 +448,7 @@ export class OrdersService {
         );
       const orderProduct = await Promise.all(
         updateOrder.products.map(async product => {
-          const cartItem = findCartDetail.product.find(
+          const cartItem = findCartProducts.find(
             item => item.id.toString() === product.id.toString(),
           );
 
