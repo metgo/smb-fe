@@ -248,7 +248,7 @@ export async function queryhandler<T>(
     .populate(populate)
     .populate(populate1);
 
-  if (languageQuery && languageQuery === Locale.HEBREW) {
+  if (!languageQuery || languageQuery === Locale.HEBREW) {
     datas.data.map(data => {
       // eslint-disable-next-line no-param-reassign
       data.name = data?.hebrewName || data.name;

@@ -15,6 +15,7 @@ import { MailModule } from 'src/services/mail/mail.module';
 import { JwtAuthModule } from '../jwt-auth/jwt-auth.module';
 import { OTP, OTPSchema } from './schema/otp.schema';
 import { MailChimpModule } from 'src/services/mailchimp/mailchimp.module';
+import { ExternalApiModule } from 'src/modules/external-api/external-api.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { MailChimpModule } from 'src/services/mailchimp/mailchimp.module';
     CampaignModule,
     ConfigModule,
     forwardRef(() => DMOModule),
+    ExternalApiModule,
     MailModule,
     HashModule,
     JwtAuthModule,

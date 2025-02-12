@@ -22,7 +22,6 @@ import {
 import { paginationConfig } from 'src/common/pagination.config';
 import { Voucher } from './schema/voucher.schema';
 import {
-  Currency,
   Locale,
   SortByTimePeriod,
   VoucherPaymentStatus,
@@ -43,18 +42,16 @@ import { ServerErrors, emailDefaultTemplate } from 'src/common/constant';
 import { MailChimpService } from 'src/services/mailchimp/mailchimp.service';
 import { OrdersService } from 'src/modules/orders/orders.services';
 import { PaymentsService } from 'src/services/payments/payments.service';
-import { PaymentPurpose } from 'src/services/payments/payments.type';
 import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interface';
 import { CampaignService } from 'src/modules/campaign/campaign.service';
 import { ProductsService } from 'src/modules/products/products.services';
 import { UsersService } from 'src/modules/users/users.services';
 import { UserType } from 'src/modules/users/users.type';
 import {
-  CreateVoucherBySuperadminDto,
-  createVoucherDto,
   PromoDetailDto,
   RewardVouchersByCampaignDto,
 } from 'src/modules/vouchers/dto';
+import { FreezeVoucherDTO } from 'src/modules/vouchers/dto/freeze-voucher.dto';
 import {
   AssignVoucherCommand,
   GetOneVoucherInterface,
@@ -62,13 +59,17 @@ import {
 } from 'src/modules/vouchers/interface';
 import {
   GetMyAssignedVouchersQuery,
-  GetMyCreatedVouchersQuery,
   GetVoucherStatsGroupedQuery,
   GetVouchersByAdminQuery,
 } from 'src/modules/vouchers/queries';
 import { ConfigService } from 'src/services/config/config.service';
-import { RewardsService } from '../rewards/rewards.service';
+import { RewardsService } from 'src/modules/rewards/rewards.service';
 import { getUniqueSet } from 'src/common/get-unique-set';
+import { GetMyVouchersQuery } from './queries/get-my-vouchers.query';
+import { CreateVoucherDto } from './dto/create-voucher.dto';
+import { ExternalApiServices } from 'src/modules/external-api/external-api.service';
+import { CartService } from 'src/modules/cart/cart.service';
+import { ObjectId } from 'typeorm';
 
 @Injectable()
 export class VoucherService {
@@ -80,89 +81,96 @@ export class VoucherService {
     private readonly configService: ConfigService,
     private readonly paymentService: PaymentsService,
     private readonly campaignService: CampaignService,
+    private readonly externalApiServices: ExternalApiServices,
     private readonly orderService: OrdersService,
     private readonly rewardService: RewardsService,
     @Inject(forwardRef(() => UsersService))
     private readonly usersService: UsersService,
     private mailchimpService: MailChimpService,
     private productService: ProductsService,
+    private cartService: CartService,
   ) {}
 
-  async create(user: LoggedInUserInterface | null, dto: createVoucherDto) {
+  async create(dto: CreateVoucherDto, user?: LoggedInUserInterface) {
     try {
-      const campaignId = (
-        await this.campaignService.findAndReturn('code', dto.campCode)
+      const campId = (
+        await this.campaignService.findCampaignAndReturn('code', dto.campCode)
       )._id;
       const createdByUserId
         = user?.email === dto?.email
           ? user?.id
           : (await this.usersService.findByEmailOrNull(dto.email))?._id;
 
-      const voucherId: any = [];
+      let i: number = 0;
+      const voucherId: ObjectId[] = [];
+      const vouchers = [];
+
       const totalAmount = dto.noOfVoucher * dto.amount;
-      await Promise.all(
-        Array.from({ length: dto.noOfVoucher }).map(async () => {
-          const randomCode = generateRandomCode(12);
-          const code = dto.campCode + randomCode;
-          const newVoucher = new this.VoucherModel({
-            ...dto,
-            code,
-            remainingAmount: dto.amount,
-            campId: campaignId,
-            createdBy: createdByUserId,
-            createdAt: new Date(),
-            createdByEmail: createdByUserId ? null : dto.email,
-          });
-          await newVoucher.save();
-          await voucherId.push(newVoucher._id);
-        }),
-      );
 
-      this.logger.info('[VOUCHER]: CREATED', { message: voucherId });
+      console.log(totalAmount);
 
-      const paymentLink = await this.paymentService.generateLink({
-        amount: totalAmount,
-        currency: Currency.ILS,
-        purpose: PaymentPurpose.VOUCHER,
-        id: voucherId,
-        customerEmail: dto.email,
-        customerName: dto.name,
-        languagePreference: dto?.languagePreference || Locale.ENGLISH,
+      const externalApiId = (
+        await this.externalApiServices.findByIdentifierId(dto.identifierId)
+      )._id;
+
+      // eslint-disable-next-line no-plusplus
+      for (i = 0; i < dto.noOfVoucher; i++) {
+        const randomCode = generateRandomCode(12);
+        const code = dto.campCode + randomCode;
+        const newVoucher = new this.VoucherModel({
+          ...dto,
+          code,
+          remainingAmount: dto.amount,
+          campId,
+          createdBy: createdByUserId,
+          createdAt: new Date(),
+          createdByEmail: createdByUserId ? null : dto.email,
+          externalApiId,
+        });
+        newVoucher.save();
+        vouchers.push(newVoucher);
+        voucherId.push(newVoucher._id);
+      }
+
+      this.logger.info(`[${dto.identifierId}-VOUCHER]: PURCHASE STARTED`, {
+        message: voucherId,
       });
 
-      this.logger.info('[VOUCHER]: PAYMENT LINK SENT', { message: voucherId });
-      return paymentLink;
+      return vouchers;
     } catch (err) {
-      this.logger.error('[VOUCHER]: FAILED TO CREATE', {
-        err: err.message,
-      });
+      this.logger.error(
+        `[${dto.identifierId}-VOUCHER]: FAILED TO PURCHASE VOUCHERS`,
+        {
+          err: err.message,
+        },
+      );
       exceptionHandling(err);
     }
   }
 
   async createdBySuperadmin(
     user: LoggedInUserInterface,
-    dto: CreateVoucherBySuperadminDto,
+    dto: CreateVoucherDto,
     identifierId?: string,
   ) {
     try {
       const campaignId = (
-        await this.campaignService.findAndReturn('code', dto.campCode)
+        await this.campaignService.findCampaignAndReturn('code', dto.campCode)
       )._id;
       const createdByUserId
         = user?.email === dto.email
           ? user?.id
           : (await this.usersService.findByEmailOrNull(dto.email))?._id;
 
-      let assigneeId;
-      if (dto?.assigneeEmail) {
-        assigneeId = (
-          await this.usersService.findByEmailOrNull(dto.assigneeEmail)
-        )?._id;
-      }
-
       const vouchers: any = [];
       const voucherCodes: any = [];
+
+      const externalApiId = (
+        await this.externalApiServices.findByFieldName(
+          'identifierId',
+          identifierId,
+        )
+      )._id;
 
       await Promise.all(
         Array.from({ length: dto.noOfVoucher }).map(async () => {
@@ -176,11 +184,8 @@ export class VoucherService {
             createdBy: createdByUserId,
             createdAt: new Date(),
             createdByEmail: createdByUserId ? null : dto.email,
-            waitingUserEmail:
-              dto?.assigneeEmail && !assigneeId ? dto?.assigneeEmail : null,
-            assignedTo: dto?.assigneeEmail ? assigneeId || null : null,
             paymentStatus: VoucherPaymentStatus.PAID,
-            identifierId,
+            externalApiId,
           });
           await newVoucher.save();
           await vouchers.push(newVoucher);
@@ -188,7 +193,7 @@ export class VoucherService {
         }),
       );
 
-      this.logger.info('[VOUCHER]: CREATED BY ADMIN', {
+      this.logger.info('[EXTERNAL_API_VOUCHERS]: CREATED BY SUPERADMIN', {
         message: voucherCodes,
       });
 
@@ -209,24 +214,9 @@ export class VoucherService {
         },
       });
 
-      if (dto?.assigneeEmail) {
-        await this.mailchimpService.sendTransactionalEmail({
-          to: dto?.assigneeEmail,
-          templatedId:
-            dto?.languagePreference === Locale.HEBREW
-              ? HebrewTemplate.VoucherConfirmationNonLoggedIn
-              : EnglishTemplate.VoucherConfirmationNonLoggedIn,
-          mergeVars: {
-            BUYERNAME: dto?.name,
-            VOUCHERCODE,
-            VOUCHERAMOUNT: dto?.amount,
-          },
-        });
-      }
-
       return vouchers;
     } catch (err) {
-      this.logger.error('[VOUCHER]: FAILED TO CREATE BY ADMIN', {
+      this.logger.error('[VOUCHERS]: FAILED TO CREATE VOUCHERS BY SUPERADMIN', {
         err: err.message,
       });
       exceptionHandling(err);
@@ -235,12 +225,12 @@ export class VoucherService {
 
   async createdBySuperadminNewTemplate(
     user: LoggedInUserInterface,
-    dto: createVoucherDto,
+    dto: CreateVoucherDto,
     identifierId?: string,
   ) {
     try {
       const campaignId = (
-        await this.campaignService.findAndReturn('code', dto.campCode)
+        await this.campaignService.findCampaignAndReturn('code', dto.campCode)
       )._id;
       const createdByUserId
         = user?.email === dto.email
@@ -249,6 +239,13 @@ export class VoucherService {
 
       const vouchers: any = [];
       const voucherCodes: any = [];
+
+      const externalApiId = (
+        await this.externalApiServices.findByFieldName(
+          'identifierId',
+          identifierId,
+        )
+      )._id;
 
       await Promise.all(
         Array.from({ length: dto.noOfVoucher }).map(async () => {
@@ -260,9 +257,10 @@ export class VoucherService {
             remainingAmount: dto.amount,
             campId: campaignId,
             createdBy: createdByUserId,
+            createdAt: new Date(),
             createdByEmail: createdByUserId ? null : dto.email,
             paymentStatus: VoucherPaymentStatus.PAID,
-            identifierId,
+            externalApiId,
           });
           await newVoucher.save();
           await vouchers.push(newVoucher);
@@ -270,9 +268,12 @@ export class VoucherService {
         }),
       );
 
-      this.logger.info('[VOUCHER]: CREATED BY ADMIN NEW TEMPLATE', {
-        message: voucherCodes,
-      });
+      this.logger.info(
+        '[EXTERNAL_API_VOUCHERS]: CREATED BY SUPERADMIN NEW TEMPLATE',
+        {
+          message: voucherCodes,
+        },
+      );
 
       // send emails?
       const VOUCHERCODE = await voucherCodes
@@ -293,9 +294,12 @@ export class VoucherService {
 
       return vouchers;
     } catch (err) {
-      this.logger.error('[VOUCHER]: FAILED TO CREATE BY ADMIN NEW TEMPLATE', {
-        err: err.message,
-      });
+      this.logger.error(
+        '[EXTERNAL_API_VOUCHERS]: FAILED TO CREATE VOUCHERS BY SUPERADMIN NEW TEMPLATE',
+        {
+          err: err.message,
+        },
+      );
       exceptionHandling(err);
     }
   }
@@ -303,6 +307,7 @@ export class VoucherService {
   async createVouchersByCampaign(
     loggedInUser: LoggedInUserInterface,
     body: RewardVouchersByCampaignDto,
+    identifierId: string,
   ) {
     try {
       const assignedUserEmail = await this.usersService.findByEmailOrNull(
@@ -325,8 +330,17 @@ export class VoucherService {
         || campaignReward.rewardId.totalVoucherCreated + body.noOfVoucher
           > campaignReward.rewardId.voucherLimit
       ) {
-        throw new BadRequestException(ServerErrors.VOUCHER.LIMIT_EXCEEDED);
+        throw new UnprocessableEntityException(
+          ServerErrors.VOUCHER.LIMIT_EXCEEDED,
+        );
       }
+
+      const externalApiId = (
+        await this.externalApiServices.findByFieldName(
+          'identifierId',
+          identifierId,
+        )
+      )._id;
 
       const voucherCodes: any = [];
       const vouchers: any = [];
@@ -345,6 +359,7 @@ export class VoucherService {
             paymentStatus: VoucherPaymentStatus.PAID,
             status: VoucherStatus.ASSIGNED,
             waitingUserEmail: assignedUserEmail?._id ? null : body.email,
+            externalApiId,
             assignedTo: assignedUserEmail?._id ? assignedUserEmail._id : null,
             campId: body.campId,
             assignedAt: new Date(),
@@ -355,7 +370,9 @@ export class VoucherService {
         }),
       );
 
-      this.logger.info('[REWARD_VOUCHER]: CREATED', { message: voucherCodes });
+      this.logger.info('[EXTERNAL_API_REWARD_VOUCHER_BY_CAMPAIGN]: CREATED', {
+        message: voucherCodes,
+      });
 
       // updateRewardLimit
       await this.rewardService.updateUsage(
@@ -363,14 +380,14 @@ export class VoucherService {
         body.noOfVoucher,
       );
 
-      // send emails
+      // send emails?
       const VOUCHERCODE = await voucherCodes
         .map(code => `\n${code}`)
         ?.toString();
       await this.mailchimpService.sendTransactionalEmail({
         to: body?.email,
         templatedId:
-          body?.languagePreference === Locale.HEBREW
+          body.languagePreference === Locale.HEBREW
             ? DynamicHebrewTemplate.VOUCHER_FOR_CAMPAIGN
             : DynamicHebrewTemplate.VOUCHER_FOR_CAMPAIGN,
         mergeVars: {
@@ -396,9 +413,12 @@ export class VoucherService {
 
       return vouchers;
     } catch (err) {
-      this.logger.error('[REWARD_VOUCHER]: FAILED TO REWARD VOUCHER', {
-        err: err.message,
-      });
+      this.logger.error(
+        '[EXTERNAL_API_REWARD_VOUCHER_BY_CAMPAIGN]: FAILED TO CREATE',
+        {
+          err: err.message,
+        },
+      );
       exceptionHandling(err);
     }
   }
@@ -412,7 +432,7 @@ export class VoucherService {
         select: `${disSelect}`,
       };
 
-      const findQuery = {
+      const findQuery: any = {
         code: code.trim(),
       };
 
@@ -487,16 +507,30 @@ export class VoucherService {
       }
 
       return {
-        id: voucher._id,
-        remainingAmount: voucher.remainingAmount,
-        originalAmount: voucher.amount,
-        expireDate: voucher.expireDate,
-        paymentStatus: voucher.paymentStatus,
-        status: voucher.status,
-        campaignName: voucher?.campId?.name,
-        name: voucher?.name,
-        waitingUserEmail: voucher?.waitingUserEmail,
-        assignedTo: voucher?.assignedTo?.firstName,
+        external_id: voucher._id,
+        code: voucher.code,
+        current_balance: voucher.remainingAmount,
+        expiry_date: voucher.expireDate,
+        metadata: {
+          customer_data: {
+            name: 'John Doe',
+            email: 'john.doe@example.com',
+            phone: '+972-50-1234567',
+          },
+          company_data: {
+            company_name: 'Best Coffee Co.',
+            company_id: '12345',
+            contact_email: 'support@bestcoffee.com',
+          },
+        },
+        purchase_details: {
+          purchased_by: {
+            name: voucher.createdBy,
+            email: voucher.createdByEmail,
+          },
+          purchase_date: voucher.createdAt,
+          payment_method: 'Credit Card',
+        },
       };
     } catch (err) {
       exceptionHandling(err);
@@ -533,10 +567,7 @@ export class VoucherService {
     }
   }
 
-  async getVouchersCreatedByMe(
-    userId: string,
-    queries: GetMyCreatedVouchersQuery,
-  ) {
+  async getVouchersCreatedByMe(userId: string, queries: GetMyVouchersQuery) {
     const {
       page,
       limit,
@@ -547,11 +578,12 @@ export class VoucherService {
       createdEndDate,
       expiryStartDate,
       expiryEndDate,
+      identifierId,
       ...query
     } = queries;
 
-    const queryPage = Number(page) || paginationConfig.page;
-    const queryLimit = Number(limit) || paginationConfig.limit;
+    const queryPage = page ? Number(page) : paginationConfig.page;
+    const queryLimit = limit ? Number(limit) : paginationConfig.limit;
 
     const select = disSelect;
 
@@ -565,16 +597,47 @@ export class VoucherService {
       path: 'campId',
       select: `${disSelect}`,
     };
-    let populate1: {};
+
+    let campIdsFromProductId;
+    if (productId) {
+      const dmoOfProduct = (await this.productService.findOne(productId))?.dmoId
+        ?._id;
+
+      if (dmoOfProduct) {
+        // find campIds of this dmo
+        campIdsFromProductId
+          = await this.campaignService.getCampaignAssociatedToIds(
+            dmoOfProduct,
+            'dmoIds',
+          );
+      }
+    }
 
     if (campId) {
-      const campIds = Array.isArray(campId)
-        ? campId.map(item => new mongoose.Types.ObjectId(item))
-        : [new mongoose.Types.ObjectId(campId)];
+      let campIds = Array.isArray(campId)
+        ? campId.map(item => item)
+        : [campId];
+
+      if (campIdsFromProductId) {
+        const campIdsFromProductIds = Array.isArray(campIdsFromProductId)
+          ? campIdsFromProductId.map(item => item?.toString())
+          : [campIdsFromProductId];
+
+        campIds = [...campIds, ...campIdsFromProductIds];
+      }
+
+      const campsId = getUniqueSet(campIds);
 
       findQuery = {
         ...findQuery,
-        campId: { $in: campIds },
+        campId: { $in: campsId },
+      };
+    }
+
+    if (!campId && productId) {
+      findQuery = {
+        ...findQuery,
+        campId: { $in: campIdsFromProductId },
       };
     }
 
@@ -617,9 +680,7 @@ export class VoucherService {
       page: queryPage,
       limit: queryLimit,
       populate,
-      populate1,
     });
-
     return voucher;
   }
 
@@ -791,7 +852,7 @@ export class VoucherService {
     return voucher;
   }
 
-  async assignUser(command: AssignVoucherCommand) {
+  async assignVoucher(command: AssignVoucherCommand) {
     try {
       const { loggedInUser, body } = command;
       const select = disSelect;
@@ -855,7 +916,6 @@ export class VoucherService {
       if (!assignedVoucher) {
         throw new NotFoundException(ServerErrors.VOUCHER.CANNOT_ASSIGN);
       }
-
       this.logger.info('[VOUCHER]: ASSIGNED', {
         message: assignedVoucher,
       });
@@ -970,9 +1030,42 @@ export class VoucherService {
     }
   }
 
+  async updateVoucherPostPaymentUpdate(
+    voucherIds: string[],
+    paymentStatus: VoucherPaymentStatus,
+    loggedInUser?: LoggedInUserInterface,
+  ) {
+    try {
+      const updateField = {
+        paymentStatus,
+        updatedAt: new Date(),
+        updatedBy: loggedInUser?.id,
+      };
+      const updateVouchers = await updateManyByIds<Voucher>(
+        this.VoucherModel,
+        '_id',
+        voucherIds,
+        updateField,
+      );
+
+      if (!updateVouchers) {
+        throw new BadRequestException(ServerErrors.VOUCHER.NOT_FOUND);
+      }
+
+      this.logger.info('[VOUCHER]: UPDATED AFTER PAYMENT FAILURE', {
+        message: voucherIds,
+      });
+    } catch (err) {
+      this.logger.error('[VOUCHER]: FAILED TO UPDATE AFTER PAYMENT FAILURE', {
+        err: err.message,
+      });
+      exceptionHandling(err);
+    }
+  }
+
   async findByIds(ids: string[]): Promise<Voucher[]> {
     const populate = {
-      path: 'campId',
+      path: 'campId externalApiId',
       select: `${disSelect}`,
     };
     const voucherIds = await this.VoucherModel.find({ _id: { $in: ids } })
@@ -980,6 +1073,166 @@ export class VoucherService {
       .exec();
 
     return voucherIds;
+  }
+
+  async freezeVouchers(
+    command: FreezeVoucherDTO,
+    loggedInUser: LoggedInUserInterface,
+  ) {
+    try {
+      if (!command?.voucher?.length) {
+        throw new BadRequestException('Please enter vouchers');
+      }
+
+      const voucherIds = command.voucher?.map(voucher => voucher.id);
+      const vouchers = await this.findByValidIds(voucherIds);
+
+      if (!vouchers?.length) {
+        throw new BadRequestException('Please enter valid vouchers');
+      }
+
+      const updatedVouchers = await Promise.all(
+        vouchers?.map(async voucher => {
+          const commandVoucher = command.voucher.find(
+            v => v.id.toString() === voucher._id.toString(),
+          );
+          if (voucher?.remainingAmount < commandVoucher?.amount) {
+            throw new BadRequestException(
+              'The provided amount is greater than available amount',
+            );
+          }
+          if (voucher?.remainingAmount >= commandVoucher?.amount) {
+            const updateField = {
+              remainingAmount:
+                voucher?.remainingAmount - commandVoucher?.amount,
+              $push: {
+                freeze: {
+                  cartId: command.cartId,
+                  amount: commandVoucher.amount,
+                },
+              },
+              updatedAt: new Date(),
+              updatedBy: loggedInUser?.id,
+            };
+
+            const updatedVoucher = await this.VoucherModel.findByIdAndUpdate(
+              voucher._id,
+              updateField,
+              { new: true },
+            );
+            this.logger.info('[VOUCHER]: FREEZED', { message: updatedVoucher });
+            return updatedVoucher;
+          }
+        }),
+      );
+
+      return updatedVouchers;
+    } catch (err) {
+      this.logger.error('[VOUCHER]: FAILED TO FREEZE VOUCHER', {
+        err: err.message,
+      });
+      exceptionHandling(err);
+    }
+  }
+
+  async deleteFreezeVouchersPostSuccess(
+    vouchers: { id: string; redeemedAmount: number }[],
+    orderId: string,
+    loggedInUser: LoggedInUserInterface,
+  ) {
+    try {
+      await Promise.all(
+        vouchers.map(async voucherDetail => {
+          const cart = await this.cartService.findOneByOrderId(orderId);
+          await this.VoucherModel.findOneAndUpdate(
+            { _id: voucherDetail.id },
+            {
+              $set: { updatedAt: new Date(), updatedBy: loggedInUser?.id },
+              $pull: { freeze: { cartId: cart._id } },
+            },
+            { new: true },
+          );
+        }),
+      );
+      this.logger.info('[VOUCHER]: UPDATED AFTER ORDER FAILED', {
+        message: vouchers,
+      });
+    } catch (err) {
+      this.logger.error('[VOUCHER]: FAILED TO UPDATE AFTER ORDER FAILED', {
+        err: err.message,
+      });
+      exceptionHandling(err);
+    }
+  }
+
+  async reimburseFreezeVouchersPostFailure(
+    vouchers: { id: string; redeemedAmount: number }[],
+    orderId: string,
+    loggedInUser: LoggedInUserInterface,
+  ) {
+    try {
+      const cart = await this.cartService.findOneByOrderId(orderId);
+
+      await Promise.all(
+        vouchers.map(async voucherDetail => {
+          await this.VoucherModel.updateOne(
+            { _id: voucherDetail.id },
+            [
+              {
+                $set: {
+                  updatedAt: new Date(),
+                  updatedBy: loggedInUser?.id,
+                  remainingAmount: {
+                    $add: [
+                      '$remainingAmount',
+                      {
+                        $ifNull: [
+                          {
+                            $arrayElemAt: [
+                              {
+                                $map: {
+                                  input: {
+                                    $filter: {
+                                      input: '$freeze',
+                                      as: 'f',
+                                      cond: { $eq: ['$$f.cartId', cart._id] },
+                                    },
+                                  },
+                                  as: 'filteredFreeze',
+                                  in: '$$filteredFreeze.amount',
+                                },
+                              },
+                              0,
+                            ],
+                          },
+                          0,
+                        ],
+                      },
+                    ],
+                  },
+                  freeze: {
+                    $filter: {
+                      input: '$freeze',
+                      as: 'f',
+                      cond: { $ne: ['$$f.cartId', cart._id] }, // Remove the matching cartId from freeze
+                    },
+                  },
+                },
+              },
+            ],
+            { new: true },
+          );
+        }),
+      );
+      this.logger.info('[VOUCHER]: UPDATED AFTER ORDER FAILED', {
+        message: vouchers,
+      });
+    } catch (err) {
+      this.logger.error('[VOUCHER]: FAILED TO UPDATE AFTER ORDER FAILED', {
+        err: err.message,
+      });
+      exceptionHandling(err);
+    }
   }
 
   async findByValidIds(ids: string[]): Promise<Voucher[]> {
@@ -1173,147 +1426,6 @@ export class VoucherService {
     // create voucher
     return rewardDetail;
   }
-
-  // async getStats(
-  //   loggedInUser: LoggedInUserInterface,
-  //   query: GetVoucherStatsQuery,
-  // ) {
-  //   const {
-  //     createdStartDate,
-  //     createdEndDate,
-  //     expiryStartDate,
-  //     expiryEndDate,
-  //     groupByCampaign,
-  //     ...queries
-  //   } = query;
-
-  //   let findQuery: any = {
-  //     ...queries,
-  //     paymentStatus: VoucherPaymentStatus.PAID,
-  //   };
-
-  //   if (
-  //     loggedInUser.role === UserType.DMOADMIN
-  //     || loggedInUser.role === UserType.DMO
-  //   ) {
-  //     // find dmo
-  //     const dmoId = loggedInUser.dmo.id;
-
-  //     // get campIds dmoId is associated to
-  //     const campaignIds = await this.campaignService.getCampaignAssociatedToIds(
-  //       dmoId,
-  //       'dmoIds',
-  //     );
-
-  //     const campIds = Array.isArray(campaignIds)
-  //       ? campaignIds.map(item => new mongoose.Types.ObjectId(item))
-  //       : [new mongoose.Types.ObjectId(campaignIds)];
-
-  //     findQuery = {
-  //       ...findQuery,
-  //       campId: { $in: campIds },
-  //     };
-  //   }
-
-  //   if (loggedInUser.role === UserType.TRAVELLER) {
-  //     findQuery = {
-  //       ...findQuery,
-  //       createdBy: loggedInUser.id,
-  //     };
-  //   }
-
-  //   if (createdStartDate && createdEndDate) {
-  //     const startDate = new Date(createdStartDate);
-  //     const endDate = new Date(createdEndDate);
-  //     endDate.setDate(endDate.getDate() + 1);
-
-  //     if (startDate >= endDate) {
-  //       throw new BadRequestException(
-  //         `Created ${ServerErrors.DATE_IS_NOT_LESS}`,
-  //       );
-  //     }
-
-  //     findQuery = {
-  //       ...findQuery,
-  //       createdAt: {
-  //         $gte: startDate,
-  //         $lt: endDate,
-  //       },
-  //     };
-  //   }
-
-  //   if (expiryStartDate && expiryEndDate) {
-  //     const startDate = new Date(expiryStartDate);
-  //     const endDate = new Date(expiryEndDate);
-  //     endDate.setDate(endDate.getDate() + 1);
-
-  //     if (startDate >= endDate) {
-  //       throw new BadRequestException(
-  //         `Expiry ${ServerErrors.DATE_IS_NOT_LESS}`,
-  //       );
-  //     }
-
-  //     findQuery = {
-  //       ...findQuery,
-  //       expireDate: {
-  //         $gte: startDate,
-  //         $lt: endDate,
-  //       },
-  //     };
-  //   }
-
-  //   if (/true/.test(groupByCampaign)) {
-  //     const groupedByCampId = await this.VoucherModel.aggregate([
-  //       { $match: findQuery },
-  //       {
-  //         $lookup: {
-  //           from: 'campaigns',
-  //           localField: 'campId',
-  //           foreignField: '_id',
-  //           as: 'camp',
-  //         },
-  //       },
-  //       { $unwind: '$camp' },
-  //       {
-  //         $group: {
-  //           _id: '$camp._id',
-  //           name: { $first: '$camp.name' },
-  //           totalNumberOfVoucher: { $sum: 1 },
-  //           totalValueOfVoucher: { $sum: '$amount' },
-  //           totalAmountToRedeem: { $sum: '$remainingAmount' },
-  //         },
-  //       },
-  //     ]);
-
-  //     return groupedByCampId;
-  //   }
-
-  //   const populate = {
-  //     path: 'campId',
-  //     select: `${disSelect}`,
-  //   };
-
-  //   const voucher = await queryhandler<Voucher>(this.VoucherModel, {
-  //     findQuery,
-  //     select: disSelect,
-  //     populate,
-  //   });
-
-  //   const totalAmountToRedeem = await calculateTotalAmount(
-  //     'remainingAmount',
-  //     voucher.data,
-  //   );
-  //   const totalValueOfVoucher = await calculateTotalAmount(
-  //     'amount',
-  //     voucher.data,
-  //   );
-
-  //   return {
-  //     totalNumberOfVoucher: voucher.totalData,
-  //     totalValueOfVoucher,
-  //     totalAmountToRedeem,
-  //   };
-  // }
 
   async getAllVoucherbyAdmin(
     user: LoggedInUserInterface,

@@ -32,7 +32,7 @@ export class RewardController {
   )
   @UseGuards(JwtAuthGuard)
   @ApiEndpoint({
-    tags: ['Admin', 'Campaign'],
+    tags: ['Campaign'],
     response: {
       status: HttpStatus.OK,
       description: ServerSuccess.REWARD.UPDATED,

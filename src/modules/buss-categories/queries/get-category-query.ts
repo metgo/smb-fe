@@ -4,11 +4,11 @@ import {
 } from 'class-validator';
 import { Locale } from 'src/common/enum';
 
-export class GetAllCategoriesQuery {
+export class GetCategoryQuery {
   @ApiProperty({ type: String, required: true })
   @IsString()
   @IsNotEmpty()
-    identifierId: string;
+    campCode: string;
 
   @ApiProperty({
     type: 'enum',

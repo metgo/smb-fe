@@ -37,4 +37,9 @@ export class RegisterRequest {
   @IsOptional()
   @ApiProperty()
   readonly countryCode: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty({ required: true })
+  readonly identifierId: string;
 }

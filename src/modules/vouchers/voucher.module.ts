@@ -15,20 +15,24 @@ import { ConfigModule } from 'src/services/config/config.module';
 import { EncryptionModule } from 'src/services/encryption/encryption.module';
 import { MailChimpModule } from 'src/services/mailchimp/mailchimp.module';
 import { PaymentsModule } from 'src/services/payments/payments.module';
+import { ExternalApiModule } from 'src/modules/external-api/external-api.module';
+import { CartModule } from 'src/modules/cart/cart.modules';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: 'Voucher', schema: VoucherSchema }]),
     forwardRef(() => AuthorityModule),
-    CampaignModule,
+    forwardRef(() => CampaignModule),
     forwardRef(() => DMOModule),
     EncryptionModule,
+    forwardRef(() => ExternalApiModule),
+    CartModule,
     ConfigModule,
     forwardRef(() => UsersModule),
     forwardRef(() => PaymentsModule),
     MailChimpModule,
-    OrdersModule,
-    RewardsModule,
+    forwardRef(() => OrdersModule),
+    forwardRef(() => RewardsModule),
     ProductsModule,
   ],
   controllers: [VoucherController],

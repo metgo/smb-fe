@@ -6,6 +6,7 @@ import { PaymentsService } from './payments.service';
 import { ConfigModule } from '../config/config.module';
 import { PaymentsController } from './payments.controller';
 import { PaymentSchema } from './schema/payments.schema';
+import { ExternalApiModule } from 'src/modules/external-api/external-api.module';
 import { OrdersModule } from 'src/modules/orders/orders.modules';
 import { VoucherModule } from 'src/modules/vouchers/voucher.module';
 import { MailChimpModule } from 'src/services/mailchimp/mailchimp.module';
@@ -20,11 +21,12 @@ import { UsersModule } from 'src/modules/users/users.module';
     forwardRef(() => AuthorityModule),
     ConfigModule,
     forwardRef(() => DMOModule),
+    forwardRef(() => ExternalApiModule),
     forwardRef(() => OrdersModule),
     forwardRef(() => VoucherModule),
     MailChimpModule,
-    BusinessModule,
-    ProductsModule,
+    forwardRef(() => BusinessModule),
+    forwardRef(() => ProductsModule),
     forwardRef(() => UsersModule),
   ],
   controllers: [PaymentsController],

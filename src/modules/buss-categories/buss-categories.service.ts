@@ -1,38 +1,47 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import mongoose, { Model } from 'mongoose';
 
-import { Locale, SortOrder } from 'src/common/enum';
-import { paginationConfig } from 'src/common/pagination.config';
-import { LocaleFilterQuery } from 'src/common/query-handler/locale-filter.query';
+import { Locale } from 'src/common/enum';
 import { disSelect } from 'src/common/utils/select.handling';
 import { queryhandler } from 'src/core/helper/query-helper';
-import { BussCategory } from './schema/buss.category.schema';
+import { GetAllCategoriesQuery } from 'src/modules/buss-categories/queries/get-all-categories.query';
+import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.schema';
+import { CampaignService } from 'src/modules/campaign/campaign.service';
+import { GetCategoryQuery } from 'src/modules/buss-categories/queries/get-category-query';
 
 @Injectable()
 export class BussCategoriesService {
   constructor(
     @InjectModel('BussCategory')
     private BussCategoryModel: Model<BussCategory>,
+    private campaignService: CampaignService,
   ) {}
 
-  async getAll(queries: LocaleFilterQuery) {
+  async getAllCategories(query: GetAllCategoriesQuery) {
     const {
-      page, limit, search, locale, ...query
-    } = queries;
+      page, limit, search, locale, campCode,
+    } = query;
 
-    const queryPage = page ? Number(page) : paginationConfig.page;
-    const queryLimit = limit
-      ? Number(limit)
-      : paginationConfig.MAX_ASPECT_LIMIT;
+    const campDetails = await this.campaignService.findCampaignAndReturn(
+      'code',
+      campCode,
+    );
 
-    let findQuery: any = query;
-    const select = `${disSelect}`;
+    if (!campDetails?.categoryIds?.length) {
+      return [];
+    }
 
-    const populate = {
-      path: 'icon iconBnW',
-      select: disSelect,
+    const queryPage = page ? Number(page) : null;
+    const queryLimit = limit ? Number(limit) : null;
+
+    let findQuery: any = {
+      deletedAt: { $in: [null] },
+      isDeleted: false,
+      deletedBy: null,
+      _id: { $in: campDetails.categoryIds },
     };
+    const select = '_id name hebrewName';
 
     if (search) {
       findQuery = {
@@ -41,7 +50,7 @@ export class BussCategoriesService {
       };
     }
 
-    const bussCategoriesList = await queryhandler<BussCategory>(
+    const categories = await queryhandler<BussCategory>(
       this.BussCategoryModel,
       {
         findQuery,
@@ -49,16 +58,34 @@ export class BussCategoriesService {
         page: queryPage,
         limit: queryLimit,
         sort: 'createdAt',
-        sortOrder: SortOrder.DESC,
-        populate,
-        languageQuery: locale,
+        languageQuery: locale || Locale.HEBREW,
       },
     );
 
-    return bussCategoriesList;
+    categories.data = await Promise.all(
+      categories?.data?.map(cat => ({
+        id: cat.id,
+        name: cat.name,
+      })),
+    );
+
+    return categories;
   }
 
-  async getOne(id: string, locale: Locale) {
+  async getOne(id: string, query: GetCategoryQuery) {
+    const campDetails = await this.campaignService.findCampaignAndReturn(
+      'code',
+      query.campCode,
+    );
+
+    if (!campDetails?.categoryIds?.length) {
+      return {};
+    }
+
+    if (!campDetails.categoryIds.includes(new mongoose.Types.ObjectId(id))) {
+      return {};
+    }
+
     const select = `${disSelect}`;
     const populate = {
       path: 'icon iconBnW',
@@ -69,9 +96,14 @@ export class BussCategoriesService {
       .populate(populate)
       .exec();
 
-    if (locale === Locale.HEBREW) {
+    if (!query.locale || query.locale === Locale.HEBREW) {
       bussCategory.name = bussCategory?.hebrewName || bussCategory.name;
     }
-    return bussCategory;
+
+    return {
+      id: bussCategory?.id,
+      name: bussCategory?.name,
+      icon: bussCategory?.icon,
+    };
   }
 }

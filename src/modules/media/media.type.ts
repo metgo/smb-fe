@@ -4,4 +4,5 @@ export enum ReferenceType {
   POI = 'Point_Of_Interest',
   PRODUCT = 'Product',
   EVENT = 'Event',
+  Order = 'Order',
 }

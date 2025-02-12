@@ -115,13 +115,18 @@ export class UsersService {
     }
   }
 
-  async getAllUsers(queries: GetAllUsersQuery) {
+  async getAllUsers(
+    queries: GetAllUsersQuery,
+    loggedInUser: LoggedInUserInterface,
+  ) {
     try {
       const {
-        page, limit, search, isDeleted, hasBusiness, role,
+        page, limit, search, isDeleted,
       } = queries;
 
-      let findQuery: any = {};
+      let findQuery: any = {
+        externalApiId: new mongoose.Types.ObjectId(loggedInUser.externalApi.id),
+      };
 
       if (search) {
         findQuery = {
@@ -148,258 +153,18 @@ export class UsersService {
         };
       }
 
-      if (hasBusiness && /true/.test(hasBusiness)) {
-        findQuery = {
-          ...findQuery,
-          hasBusiness: true,
-        };
-      }
-
-      if (hasBusiness && /false/.test(hasBusiness)) {
-        findQuery = {
-          ...findQuery,
-          hasBusiness: { $ne: true },
-        };
-      }
-
-      let roles: UserType[];
-      if (role) {
-        roles = Array.isArray(role) ? role : [role];
-
-        findQuery = {
-          ...findQuery,
-          role: { $in: roles },
-        };
-      }
-
       const pipeline: any[] = [
         {
           $match: findQuery,
         },
       ];
 
-      let project: any = {
+      const project: any = {
         createdAt: 0,
         updatedAt: 0,
         password: 0,
         ...unproject,
       };
-
-      if (
-        roles
-        && roles.includes(UserType.DMO)
-        && !roles.includes(UserType.DMOADMIN)
-      ) {
-        pipeline.push(
-          {
-            $lookup: {
-              from: 'dmos',
-              localField: '_id',
-              foreignField: 'adminIds',
-              as: 'dmo',
-            },
-          },
-          {
-            $unwind: '$dmo',
-          },
-        );
-
-        project = {
-          ...project,
-          dmo: {
-            userId: 0,
-            collaboratorsUser: 0,
-            ...project,
-          },
-        };
-      }
-
-      if (
-        roles
-        && roles.includes(UserType.DMOADMIN)
-        && !roles.includes(UserType.DMO)
-      ) {
-        pipeline.push(
-          {
-            $lookup: {
-              from: 'dmos',
-              localField: '_id',
-              foreignField: 'collaboratorsUser',
-              as: 'dmo',
-            },
-          },
-          {
-            $unwind: '$dmo',
-          },
-        );
-
-        project = {
-          ...project,
-          dmo: {
-            userId: 0,
-            collaboratorsUser: 0,
-            ...project,
-          },
-        };
-      }
-
-      if (
-        roles
-        && roles.includes(UserType.DMO)
-        && roles.includes(UserType.DMOADMIN)
-      ) {
-        pipeline.push(
-          {
-            $lookup: {
-              from: 'dmos',
-              let: { userId: '$_id' },
-              pipeline: [
-                {
-                  $match: {
-                    $expr: {
-                      $or: [
-                        {
-                          $and: [
-                            { $isArray: '$adminIds' },
-                            { $in: ['$$userId', '$adminIds'] },
-                          ],
-                        },
-                        {
-                          $and: [
-                            { $isArray: '$collaboratorsUser' },
-                            { $in: ['$$userId', '$collaboratorsUser'] },
-                          ],
-                        },
-                      ],
-                    },
-                  },
-                },
-              ],
-              as: 'dmo',
-            },
-          },
-          {
-            $unwind: '$dmo',
-          },
-        );
-
-        project = {
-          ...project,
-          dmo: {
-            userId: 0,
-            collaboratorsUser: 0,
-            ...project,
-          },
-        };
-      }
-
-      if (
-        roles
-        && roles.includes(UserType.AUTHORITY)
-        && !roles.includes(UserType.AUTHORITY_ADMIN)
-      ) {
-        pipeline.push(
-          {
-            $lookup: {
-              from: 'authorities',
-              localField: '_id',
-              foreignField: 'adminIds',
-              as: 'authority',
-            },
-          },
-          {
-            $unwind: '$authority',
-          },
-        );
-
-        project = {
-          ...project,
-          authority: {
-            userId: 0,
-            collaboratorsUser: 0,
-            ...project,
-          },
-        };
-      }
-
-      if (
-        roles
-        && roles.includes(UserType.AUTHORITY_ADMIN)
-        && !roles.includes(UserType.AUTHORITY)
-      ) {
-        pipeline.push(
-          {
-            $lookup: {
-              from: 'authorities',
-              localField: '_id',
-              foreignField: 'collaboratorsUser',
-              as: 'authority',
-            },
-          },
-          {
-            $unwind: '$authority',
-          },
-        );
-
-        project = {
-          ...project,
-          authority: {
-            userId: 0,
-            collaboratorsUser: 0,
-            ...project,
-          },
-        };
-      }
-
-      if (
-        roles
-        && roles.includes(UserType.AUTHORITY)
-        && roles.includes(UserType.AUTHORITY_ADMIN)
-      ) {
-        pipeline.push(
-          {
-            $lookup: {
-              from: 'authorities',
-              let: { userId: '$_id' },
-              pipeline: [
-                {
-                  $match: {
-                    $expr: {
-                      $or: [
-                        {
-                          $and: [
-                            { $isArray: '$adminIds' },
-                            { $in: ['$$userId', '$adminIds'] },
-                          ],
-                        },
-                        {
-                          $and: [
-                            { $isArray: '$collaboratorsUser' },
-                            { $in: ['$$userId', '$collaboratorsUser'] },
-                          ],
-                        },
-                      ],
-                    },
-                  },
-                },
-              ],
-              as: 'authority',
-            },
-          },
-          {
-            $unwind: '$authority',
-          },
-        );
-
-        project = {
-          ...project,
-          authority: {
-            userId: 0,
-            collaboratorsUser: 0,
-            ...project,
-          },
-        };
-      }
 
       pipeline.push({
         $project: project,
@@ -801,7 +566,6 @@ export class UsersService {
       };
     } catch (error) {
       exceptionHandling(error);
-      throw new InternalServerErrorException("Couldn't update user");
     }
   }
 

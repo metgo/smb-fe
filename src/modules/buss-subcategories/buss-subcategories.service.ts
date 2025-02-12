@@ -1,35 +1,57 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import mongoose, { Model } from 'mongoose';
 
 import { Locale } from 'src/common/enum';
-import { paginationConfig } from 'src/common/pagination.config';
 import { disSelect } from 'src/common/utils/select.handling';
 import { queryhandler } from 'src/core/helper/query-helper';
 import { BussSubCategory } from './schema/buss-subCategory.schema';
-import { FilterQuery } from './dto';
+import { GetAllSubCategoriesQuery } from 'src/modules/buss-subcategories/queries/get-all-subcategories.query';
+import { GetSubCategoryQuery } from 'src/modules/buss-subcategories/queries/get-subcategory.query';
+import { CampaignService } from 'src/modules/campaign/campaign.service';
 
 @Injectable()
 export class BussSubCategoriesService {
   constructor(
     @InjectModel('BussSubCategory')
     private readonly BussSubCategoryModel: Model<BussSubCategory>,
+    private campaignService: CampaignService,
   ) {}
 
-  async getAll(queries: FilterQuery): Promise<BussSubCategory & any> {
+  async getAll(
+    queries: GetAllSubCategoriesQuery,
+  ): Promise<BussSubCategory & any> {
     const {
-      page, limit, search, locale, ...query
+      page, limit, search, locale, campCode, bussCategoryId,
     } = queries;
 
-    const queryPage = page ? Number(page) : paginationConfig.page;
-    const queryLimit = limit
-      ? Number(limit)
-      : paginationConfig.MAX_ASPECT_LIMIT;
+    const campDetails = await this.campaignService.findCampaignAndReturn(
+      'code',
+      campCode,
+    );
 
-    let findQuery: any = query;
-    let select: {};
-    let populate: any;
-    let populate1: {};
+    if (!campDetails?.categoryIds?.length) {
+      return [];
+    }
+
+    let categoryIds = campDetails?.categoryIds;
+
+    if (bussCategoryId) {
+      if (
+        !campDetails.categoryIds.includes(
+          new mongoose.Types.ObjectId(bussCategoryId),
+        )
+      ) {
+        return [];
+      }
+      categoryIds = [new mongoose.Types.ObjectId(bussCategoryId)];
+    }
+
+    const queryPage = page ? Number(page) : null;
+    const queryLimit = limit ? Number(limit) : null;
+
+    let findQuery: any = { bussCategoryId: { $in: categoryIds } };
+    const select = '_id name hebrewName';
 
     if (search) {
       findQuery = {
@@ -39,27 +61,12 @@ export class BussSubCategoriesService {
     }
 
     // eslint-disable-next-line prefer-const
-
-    if (query.bussCategoryId) {
-      const bussCategory = JSON.parse(query.bussCategoryId);
-      findQuery = {
-        ...findQuery,
-        bussCategoryId: { $in: bussCategory },
-      };
-    }
-    // eslint-disable-next-line prefer-const
-    populate = {
+    const populate = {
       path: 'bussCategoryId',
-      select: '_id, name',
+      select,
       match: { delatedAt: { $in: [false, null] } },
     };
-    // eslint-disable-next-line prefer-const
-    populate1 = {
-      path: 'icon',
-      select: disSelect,
-    };
-    // eslint-disable-next-line prefer-const
-    select = disSelect;
+
     const bussSubCategory = await queryhandler<BussSubCategory>(
       this.BussSubCategoryModel,
       {
@@ -68,19 +75,41 @@ export class BussSubCategoriesService {
         page: queryPage,
         limit: queryLimit,
         populate,
-        populate1,
-        languageQuery: locale,
+        languageQuery: locale || Locale.HEBREW,
       },
     );
 
+    bussSubCategory.data = await Promise.all(
+      bussSubCategory?.data?.map(async subCat => {
+        const parent = subCat?.bussCategoryId?.length
+          ? await Promise.all(
+            subCat.bussCategoryId.map(cat => (locale === Locale.ENGLISH ? cat.name : cat.hebrewName)),
+          )
+          : [];
+        return {
+          id: subCat.id,
+          name: subCat.name,
+          parent,
+        };
+      }),
+    );
     return bussSubCategory;
   }
 
-  async getOne(id: string, locale: Locale) {
+  async getOne(id: string, query: GetSubCategoryQuery) {
+    const campDetails = await this.campaignService.findCampaignAndReturn(
+      'code',
+      query.campCode,
+    );
+
+    if (!campDetails?.categoryIds?.length) {
+      return {};
+    }
+
     const select = `${disSelect}`;
     const populate = {
       path: 'bussCategoryId',
-      select: '_id , name',
+      select,
     };
     const populate1 = {
       path: 'icon',
@@ -92,9 +121,31 @@ export class BussSubCategoriesService {
       .populate(populate1)
       .exec();
 
-    if (locale === Locale.HEBREW) {
+    if (
+      bussCategory?.bussCategoryId?.some(
+        catId => !campDetails.categoryIds.includes(new mongoose.Types.ObjectId(catId)),
+      )
+    ) {
+      return {};
+    }
+
+    if (!query.locale || query.locale === Locale.HEBREW) {
       bussCategory.name = bussCategory?.hebrewName || bussCategory.name;
     }
-    return bussCategory;
+
+    let parent;
+    if (bussCategory?.bussCategoryId?.length) {
+      const parentCat: any = bussCategory?.bussCategoryId[0];
+      parent
+        = !query.locale || query.locale === Locale.HEBREW
+          ? parentCat?.hebrewName || parentCat?.name || ''
+          : parentCat?.name || '';
+    }
+
+    return {
+      id: bussCategory.id,
+      name: bussCategory.name,
+      parent,
+    };
   }
 }

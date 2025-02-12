@@ -3,9 +3,12 @@ import mongoose, { HydratedDocument } from 'mongoose';
 
 import { PaymentStatus } from 'src/common/enum';
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
-import { Business } from 'src/modules/business/schema/business.schema';
 import { ExternalApi } from 'src/modules/external-api/schema/external-api.schema';
-import { OrderStatus, PaymentMode } from 'src/modules/orders/orders.type';
+import {
+  DeliveryMethod,
+  OrderStatus,
+  PaymentMode,
+} from 'src/modules/orders/orders.type';
 import { Product } from 'src/modules/products/schema/products.schema';
 import { User } from 'src/modules/users/schema/users.schema';
 
@@ -15,27 +18,20 @@ export class Order extends AuditableSchema {
     required: true,
     type: [
       {
-        id: mongoose.Schema.Types.ObjectId,
+        id: { type: mongoose.Schema.Types.ObjectId, ref: Product.name },
         quantity: Number,
+        price: Number,
+        address: String,
       },
     ],
-    ref: Product.name,
     default: null,
   })
-    products: [
-    {
-      id: mongoose.Types.ObjectId;
-      quantity: number;
-    }
-  ];
-
-  @Prop({
-    type: [{ type: mongoose.Schema.Types.ObjectId, ref: Business.name }],
-    ref: Business.name,
-    required: false,
-    default: [],
-  })
-    businessId: mongoose.Types.ObjectId[];
+    products: {
+    id: mongoose.Types.ObjectId;
+    quantity: number;
+    price: number;
+    address: string;
+  }[];
 
   @Prop({
     type: mongoose.Schema.Types.ObjectId,
@@ -65,9 +61,6 @@ export class Order extends AuditableSchema {
     phone: string;
 
   @Prop({ default: null })
-    address: string;
-
-  @Prop({ default: null })
     firstName: string;
 
   @Prop({ default: null })
@@ -84,6 +77,9 @@ export class Order extends AuditableSchema {
     }
   ];
 
+  @Prop({ enum: DeliveryMethod, default: DeliveryMethod.DELIVER })
+    deliveryMethod: DeliveryMethod;
+
   @Prop({ type: Number, default: 0 })
     totalAmount: number;
 
@@ -97,8 +93,92 @@ export class Order extends AuditableSchema {
   })
     externalApiId: mongoose.Types.ObjectId;
 
+  @Prop({ type: Number, default: 0 })
+    deliveryFee: number;
+
   @Prop({ default: null })
     campId: string;
+
+  @Prop({
+    type: String,
+    default: null,
+  })
+    qrCodeUrl: string;
+
+  @Prop({
+    type: {
+      by: { type: mongoose.Schema.Types.ObjectId, ref: User.name },
+      date: { type: Date },
+      additional_information: { type: String },
+      isAutomatic: { type: Boolean, default: false },
+    },
+  })
+    packaging: {
+    by: mongoose.Types.ObjectId;
+    date: Date;
+    additional_information: string;
+    isAutomatic: boolean;
+  };
+
+  @Prop({
+    type: {
+      by: { type: mongoose.Schema.Types.ObjectId, ref: User.name },
+      date: { type: Date },
+      additional_information: { type: String },
+      isAutomatic: { type: Boolean, default: false },
+    },
+  })
+    shipped: {
+    by: mongoose.Types.ObjectId;
+    date: Date;
+    additional_information: string;
+    isAutomatic: boolean;
+  };
+
+  @Prop({
+    type: {
+      by: { type: mongoose.Schema.Types.ObjectId, ref: User.name },
+      date: { type: Date },
+      additional_information: { type: String },
+      isAutomatic: { type: Boolean, default: false },
+    },
+  })
+    delivered: {
+    by: mongoose.Types.ObjectId;
+    date: Date;
+    additional_information: string;
+    isAutomatic: boolean;
+  };
+
+  @Prop({
+    type: {
+      by: { type: mongoose.Schema.Types.ObjectId, ref: User.name },
+      date: { type: Date, required: true },
+      additional_information: { type: String },
+      isAutomatic: { type: Boolean, default: false },
+    },
+  })
+    completed: {
+    by: mongoose.Types.ObjectId;
+    date: Date;
+    additional_information: String;
+    isAutomatic: boolean;
+  };
+
+  @Prop({
+    type: {
+      by: { type: mongoose.Schema.Types.ObjectId, ref: User.name },
+      date: { type: Date },
+      canceled_reason: { type: String },
+      isAutomatic: { type: Boolean, default: false },
+    },
+  })
+    cancelled: {
+    by: mongoose.Types.ObjectId;
+    date: Date;
+    canceled_reason: string;
+    isAutomatic: boolean;
+  };
 }
 
 export type OrderDocument = HydratedDocument<Order>;

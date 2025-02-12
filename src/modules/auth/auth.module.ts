@@ -7,6 +7,7 @@ import { AuthController } from 'src/modules/auth/auth.controller';
 import { AuthService } from 'src/modules/auth/auth.services';
 import { GoogleOauthClientProvider } from 'src/modules/auth/providers/google-oauth-client-provider';
 import { DMOModule } from 'src/modules/dmo/dmo.module';
+import { ExternalApiModule } from 'src/modules/external-api/external-api.module';
 import { JwtAuthModule } from 'src/modules/jwt-auth/jwt-auth.module';
 import { UsersModule } from 'src/modules/users/users.module';
 import { ConfigModule } from 'src/services/config/config.module';
@@ -21,6 +22,7 @@ const configService = new ConfigService();
     AuthorityModule,
     ConfigModule,
     DMOModule,
+    ExternalApiModule,
     JwtAuthModule,
     JwtModule.register({
       global: true,

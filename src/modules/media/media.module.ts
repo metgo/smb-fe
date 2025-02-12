@@ -18,7 +18,7 @@ import { GcpBucketModule } from 'src/services/gcp-bucket/gcp-bucket.module';
     GcpBucketModule,
     forwardRef(() => BusinessModule),
     forwardRef(() => DMOModule),
-    ProductsModule,
+    forwardRef(() => ProductsModule),
     forwardRef(() => UsersModule),
   ],
   controllers: [MediaController],

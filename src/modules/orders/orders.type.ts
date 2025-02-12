@@ -12,3 +12,8 @@ export enum PaymentMode {
   VOUCHER = 'voucher',
   CARD = 'card',
 }
+
+export enum DeliveryMethod {
+  PICK_UP = 'pick_up',
+  DELIVER = 'deliver',
+}

@@ -148,6 +148,10 @@ export const ServerErrors = {
       'The campaign is either expired or has no reward',
   },
 
+  CART: {
+    NOT_FOUND: 'Cart not found',
+  },
+
   ORDERS: {
     NOT_FOUND: 'Order not found',
   },
@@ -157,6 +161,7 @@ export const ServerErrors = {
     NOT_VERIFY: 'Code was not verify',
   },
   EXTERNAL_API: {
+    IDENTIFIER_ID: 'The provided identifier id doesnt exist',
     NOT_FOUND: 'External API was not found',
   },
   MEDIA: {
@@ -193,6 +198,12 @@ export const ServerSuccess = {
   SOCIAL_MEDIA_CREATED: 'Social Media was successfully created',
   SOCIAL_MEDIA_LISTED: 'Social Media was successfully listed',
   SOCIAL_MEDIA_UPDTED: 'Social Media was successfully updated',
+  CART: {
+    CREATED: 'Cart was succesfully created',
+    UPDATED: 'Cart was succesfully updated',
+    LISTED: 'Cart was succesfully listed',
+    DELETED: 'Cart was succesfully deleted',
+  },
   USER: {
     CREATED: 'User was succesfully created',
     LISTED: 'User was succesfully listed',
@@ -317,6 +328,8 @@ export const ServerSuccess = {
     DELETED: 'Settings was deleted sucessfully',
   },
   PAYMENT: {
+    START: 'Your payment process begins',
+    UPDATE: 'Your payment was successfully updated',
     SUCCESS: 'Your payment was successfully paid',
   },
   REWARD: {

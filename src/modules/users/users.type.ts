@@ -7,6 +7,7 @@ export enum UserType {
   DMOADMIN = 'dmoadmin',
   AUTHORITY = 'authority', // main
   AUTHORITY_ADMIN = 'authorityAdmin',
+  EXTERNAL_API_ADMIN = 'external_api_admin',
 }
 
 export interface phoneDetails {

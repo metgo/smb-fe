@@ -1,24 +1,15 @@
 import {
-  IsArray,
   IsEmail,
   IsEnum,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
   IsString,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+
 import { Locale } from 'src/common/enum';
-
-class Product {
-  @IsString()
-  @IsNotEmpty()
-  @ApiProperty()
-    id: string;
-
-  @IsNotEmpty()
-  @ApiProperty()
-    quantity: number;
-}
+import { DeliveryMethod } from 'src/modules/orders/orders.type';
 
 class Voucher {
   @IsString()
@@ -26,10 +17,12 @@ class Voucher {
   @ApiProperty()
     id: string;
 }
+
 export class CreateOrderDto {
   @IsNotEmpty()
-  @ApiProperty({ type: [Product] })
-    products: Product[];
+  @IsString()
+  @ApiProperty()
+    cartId: string;
 
   @IsOptional()
   @ApiProperty({ type: [Voucher] })
@@ -53,25 +46,12 @@ export class CreateOrderDto {
   @IsString()
   @IsNotEmpty()
   @ApiProperty()
-    address: string;
-
-  @IsString()
-  @IsNotEmpty()
-  @ApiProperty()
     firstName: string;
 
   @IsString()
   @IsNotEmpty()
   @ApiProperty()
     lastName: string;
-
-  @IsArray()
-  @IsNotEmpty()
-  @ApiProperty({
-    type: [String],
-    description: 'Array of BusinessId',
-  })
-    businessId: string[];
 
   @ApiProperty({
     type: 'enum',
@@ -83,9 +63,23 @@ export class CreateOrderDto {
     languagePreference: Locale;
 
   @IsString()
-  @IsOptional()
+  @IsNotEmpty()
   @ApiProperty({
-    required: false,
+    required: true,
   })
-    campId: string;
+    campCode: string;
+
+  @ApiProperty({
+    type: 'enum',
+    enum: Locale,
+    required: true,
+  })
+  @IsNotEmpty()
+  @IsEnum(DeliveryMethod)
+    deliveryMethod: DeliveryMethod;
+
+  @IsNumber()
+  @IsNotEmpty()
+  @ApiProperty()
+    deliveryFee: number;
 }

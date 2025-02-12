@@ -16,7 +16,7 @@ export class IconsController {
   constructor(private readonly iconsService: IconsService) {}
 
   @ApiEndpoint({
-    tags: ['Admin', 'Icon'],
+    tags: ['Icon'],
     response: {
       status: 200,
       description: ServerSuccess.ICON_LISTED,
@@ -36,7 +36,7 @@ export class IconsController {
   }
 
   @ApiEndpoint({
-    tags: ['Admin', 'Icon'],
+    tags: ['Icon'],
     response: {
       status: 200,
       description: ServerSuccess.ICON_LISTED,

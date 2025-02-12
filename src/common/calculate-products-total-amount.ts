@@ -3,14 +3,15 @@ import { ServerErrors } from 'src/common/constant';
 
 export async function calculateProductsTotalAmount(
   productsPayload: any,
-  products: any,
+  productsFromDB: any,
 ) {
   try {
+    const cartItems = [];
     // Calculate the total amount based on the quantity in the payload and the price in the database
-    const totalAmount = productsPayload.reduce(
+    const actualAmountOfProduct = productsPayload.reduce(
       (sum: number, payloadProduct: any) => {
-        const dbProduct = products.data.find(
-          (dbProd: any) => dbProd._id?.toString() === payloadProduct.id,
+        const dbProduct = productsFromDB.find(
+          (dbProd: any) => dbProd._id?.toString() === payloadProduct.id.toString(),
         );
 
         if (!Number(payloadProduct?.quantity)) {
@@ -21,7 +22,14 @@ export async function calculateProductsTotalAmount(
             'There is less quantity then you request',
           );
         }
+
         if (dbProduct) {
+          cartItems.push({
+            id: payloadProduct.id,
+            quantity: payloadProduct.quantity,
+            address: payloadProduct?.address,
+            price: dbProduct?.price?.sellingPrice,
+          });
           return sum + payloadProduct.quantity * dbProduct.price.sellingPrice;
         }
 
@@ -29,7 +37,8 @@ export async function calculateProductsTotalAmount(
       },
       0,
     );
-    return totalAmount;
+
+    return { actualAmountOfProduct, cartItems };
   } catch (error) {
     throw new BadRequestException(error);
   }

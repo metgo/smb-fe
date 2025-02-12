@@ -15,7 +15,7 @@ export class DMOController {
   constructor(private readonly dmoServices: DMOService) {}
 
   @ApiEndpoint({
-    tags: ['Admin', 'DMO'],
+    tags: ['DMO'],
     response: {
       status: 200,
       description: ServerSuccess.DMO_LISTED,

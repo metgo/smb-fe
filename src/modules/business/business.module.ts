@@ -30,6 +30,7 @@ import { EventsService } from 'src/modules/business/services/event.service';
 import { MediaModule } from 'src/modules/media/media.module';
 import { ProductsModule } from 'src/modules/products/products.module';
 import { UsersModule } from 'src/modules/users/users.module';
+import { ExternalApiModule } from 'src/modules/external-api/external-api.module';
 
 @Module({
   imports: [
@@ -43,8 +44,9 @@ import { UsersModule } from 'src/modules/users/users.module';
       { name: 'BusinessAudit', schema: BusinessAuditSchema },
     ]),
     forwardRef(() => AuthorityModule),
-    CampaignModule,
+    forwardRef(() => CampaignModule),
     ConfigModule,
+    forwardRef(() => ExternalApiModule),
     MailModule,
     HashModule,
     MockDataModule,

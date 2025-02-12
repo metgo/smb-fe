@@ -12,4 +12,10 @@ module.exports = {
     node: true,
     jest: true,
   },
+  rules: {
+    'camelcase': 'off', 
+    '@typescript-eslint/camelcase': [
+      'off',
+    ],
+  },
 };

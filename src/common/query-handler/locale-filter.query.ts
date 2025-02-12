@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEnum, IsNotEmpty } from 'class-validator';
+import { IsEnum, IsOptional } from 'class-validator';
 
 import { Locale } from 'src/common/enum';
 import { CommonFilterQuery } from 'src/common/query-handler/common-filter-query';
@@ -8,9 +8,9 @@ export class LocaleFilterQuery extends CommonFilterQuery {
   @ApiProperty({
     type: 'enum',
     enum: Locale,
-    required: true,
+    required: false,
   })
-  @IsNotEmpty()
+  @IsOptional()
   @IsEnum(Locale)
     locale: Locale;
 }

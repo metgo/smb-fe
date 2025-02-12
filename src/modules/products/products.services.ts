@@ -9,28 +9,28 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { ObjectId } from 'typeorm';
 import { Logger } from 'winston';
 
 import { ServerErrors } from 'src/common/constant';
-import { calculateGrowthPercentage } from 'src/common/utils/calculate-growth-percentage';
 import { getRandomNumberBetween } from 'src/common/utils/random-number-range';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { disSelect } from 'src/common/utils/select.handling';
 import {
-  findOneByIDPopulate,
   queryhandler,
   updateManyByIds,
   updateOneByManyFields,
 } from 'src/core/helper/query-helper';
 import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interface';
+import { CampaignService } from 'src/modules/campaign/campaign.service';
 import { Product } from 'src/modules/products/schema/products.schema';
-import {
-  GetProductsQuery,
-  UploadMediaCommand,
-} from 'src/modules/products/interface';
-import { GetProductsStatsQuery } from 'src/modules/products/queries';
+import { UploadMediaCommand } from 'src/modules/products/interface';
 import { ProductStatus } from 'src/modules/products/products.type';
+import { GetAllProductsQuery } from 'src/modules/products/queries/get-all-products.query';
 import { UserType } from 'src/modules/users/users.type';
+import { AddProductToCart } from 'src/modules/cart/dto/add-to-cart.dto';
+import { CartService } from 'src/modules/cart/cart.service';
+import { GetProductsQuery } from 'src/modules/products/queries/get-product.query';
 
 @Injectable()
 export class ProductsService {
@@ -39,6 +39,8 @@ export class ProductsService {
     private readonly logger: Logger,
     @InjectModel(Product.name)
     private ProductModel: Model<Product>,
+    private campaignService: CampaignService,
+    private cartService: CartService,
   ) {}
 
   async seed() {
@@ -86,63 +88,57 @@ export class ProductsService {
     }
   }
 
-  async findOneForLoggedInUser(
-    productId: string,
-    loggedInUser: LoggedInUserInterface,
-  ): Promise<Product> {
-    const populate = {
-      path: 'categories subCategories businessId dmoId',
-      select: `${disSelect}`,
-    };
+  async getOne(productId: string, query: GetProductsQuery) {
     try {
-      let findQuery: any = {
-        _id: productId,
+      const campDetails = await this.campaignService.findCampaignAndReturn(
+        'code',
+        query.campCode,
+      );
+
+      if (
+        !campDetails?.productIds?.length
+        && !campDetails?.dmoIds?.length
+        && !campDetails?.businessIds?.length
+      ) {
+        return {};
+      }
+
+      const populate = {
+        path: 'businessId',
+        select: '_id logo name address geoLocation location openingHrs',
       };
 
+      const select
+        = '_id name dmoId description images price quantity businessId deliveryArea deliverySpecificSellerInfo isPickUpAvailable categories subCategories';
+
+      const populate1 = {
+        path: 'categories subCategories',
+        select: '_id name hebrewName',
+      };
+
+      const product = await this.ProductModel.findOne({
+        _id: productId,
+        status: ProductStatus.ACTIVE,
+        deletedAt: null,
+        deletedBy: null,
+        isDeleted: false,
+      })
+        .populate(populate)
+        .populate(populate1)
+        .select(select);
+
       if (
-        loggedInUser.role === UserType.DMOADMIN
-        || loggedInUser.role === UserType.DMO
+        !campDetails.dmoIds.includes(
+          new mongoose.Types.ObjectId(product.dmoId),
+        )
+        && !campDetails.productIds.includes(
+          new mongoose.Types.ObjectId(productId),
+        )
+        && !campDetails.businessIds.includes(
+          new mongoose.Types.ObjectId(product.businessId),
+        )
       ) {
-        const dmoId = loggedInUser.dmo.id;
-
-        findQuery = {
-          ...findQuery,
-          dmoId,
-        };
-      }
-
-      if (loggedInUser.role === UserType.AUTHORITY) {
-        const authorityId = loggedInUser.authority.id;
-
-        findQuery = {
-          ...findQuery,
-          authorityId,
-        };
-      }
-
-      const product = await findOneByIDPopulate<Product>(
-        this.ProductModel,
-        findQuery,
-        populate,
-      );
-      const allowedRoles = [
-        UserType.AUTHORITY,
-        UserType.ADMIN,
-        UserType.DMO,
-        UserType.DMOADMIN,
-        UserType.SUPERADMIN,
-      ];
-      if (
-        !product
-        || (!allowedRoles.includes(loggedInUser.role)
-          && !product.primaryUserId.equals(
-            new mongoose.Types.ObjectId(loggedInUser.id),
-          )
-          && !product.collaboratorId.includes(
-            new mongoose.Types.ObjectId(loggedInUser.id),
-          ))
-      ) {
-        throw new NotFoundException(ServerErrors.PRODUCT.NOT_FOUND);
+        return {};
       }
 
       return product;
@@ -151,21 +147,133 @@ export class ProductsService {
     }
   }
 
-  async findAll(queries: GetProductsQuery): Promise<Product[]> {
+  async getAllProducts(queries: GetAllProductsQuery) {
     const {
-      search, page, limit, ...query
-    } = queries.query;
+      campCode,
+      businessId,
+      categoriesId,
+      subCategoriesId,
+      groupTypesId,
+      accessibilitiesId,
+      priceMin,
+      priceMax,
+      search,
+      page,
+      limit,
+      vendorDelivers,
+    } = queries;
 
-    let findQuery: any = query;
-    const select = `${disSelect}`;
+    const campDetails = await this.campaignService.findCampaignAndReturn(
+      'code',
+      campCode,
+    );
 
     if (
-      !('status' in query)
-      && !queries.myProduct
-      && !queries.collaboratedProducts
-      && !queries.isAdmin
+      !campDetails?.productIds?.length
+      && !campDetails?.dmoIds?.length
+      && !campDetails?.businessIds?.length
     ) {
-      findQuery = { ...query, status: ProductStatus.ACTIVE };
+      return { data: [] };
+    }
+
+    let findQuery: any = {
+      status: ProductStatus.ACTIVE,
+      isDeleted: false,
+      deletedBy: null,
+      deletedAt: null,
+    };
+
+    if (vendorDelivers) {
+      findQuery = {
+        ...findQuery,
+        deliveryArea: { $exists: true, $ne: [], $not: { $size: 0 } },
+      };
+    }
+
+    if (businessId) {
+      findQuery = {
+        ...findQuery,
+        businessId,
+      };
+    }
+
+    if (campDetails?.dmoIds?.length) {
+      findQuery = {
+        ...findQuery,
+        dmoId: { $in: campDetails.dmoIds },
+      };
+    }
+
+    if (campDetails?.businessIds?.length) {
+      findQuery = {
+        ...findQuery,
+        businessId: { $in: campDetails.businessIds },
+      };
+    }
+
+    if (campDetails?.productIds?.length) {
+      findQuery = {
+        ...findQuery,
+        _id: { $in: campDetails.productIds },
+      };
+    }
+
+    if (categoriesId) {
+      const categoriesIds = Array.isArray(categoriesId)
+        ? categoriesId
+        : [categoriesId];
+
+      findQuery = {
+        ...findQuery,
+        categories: { $in: categoriesIds },
+      };
+    }
+
+    if (subCategoriesId) {
+      const subCategoriesIds = Array.isArray(subCategoriesId)
+        ? subCategoriesId
+        : [subCategoriesId];
+
+      findQuery = {
+        ...findQuery,
+        subCategories: { $in: subCategoriesIds },
+      };
+    }
+
+    if (groupTypesId) {
+      const groupTypeIds = Array.isArray(groupTypesId)
+        ? groupTypesId
+        : [groupTypesId];
+
+      findQuery = {
+        ...findQuery,
+        groupTypesId: { $in: groupTypeIds },
+      };
+    }
+
+    if (accessibilitiesId) {
+      const accessibilitiesIds = Array.isArray(accessibilitiesId)
+        ? accessibilitiesId
+        : [accessibilitiesId];
+
+      findQuery = {
+        ...findQuery,
+        accessibilitiesId: { $in: accessibilitiesIds },
+      };
+    }
+
+    if (priceMax < priceMin) {
+      throw new BadRequestException('Invalid Price Range');
+    }
+
+    if (priceMin && priceMax) {
+      findQuery = {
+        ...findQuery,
+        'price.sellingPrice': {
+          $gte: priceMin,
+          $lte: priceMax,
+        },
+      };
     }
 
     if (search) {
@@ -178,78 +286,53 @@ export class ProductsService {
       };
     }
 
-    if (queries.myProduct) {
-      findQuery = { ...findQuery, primaryUserId: queries.loggedInUser.id };
-    }
+    const select
+      = '_id name description images price quantity businessId categories subCategories';
 
-    if (queries.collaboratedProducts) {
-      findQuery = { ...findQuery, collaboratorId: queries.loggedInUser.id };
-    }
-
-    let populate = {
+    const populate = {
       path: 'businessId',
-      select: `${disSelect}`,
+      select: '_id logo name address geoLocation location openingHrs',
     };
 
-    if (
-      queries.isAdmin
-      && (queries.loggedInUser.role === UserType.DMOADMIN
-        || queries.loggedInUser.role === UserType.DMO)
-    ) {
-      const dmoId = queries.loggedInUser.dmo.id;
+    const populate1 = {
+      path: 'categories subCategories',
+      select: '_id name hebrewName',
+    };
 
-      findQuery = {
-        ...findQuery,
-        dmoId,
-      };
-    }
-
-    if (queries.isAdmin && queries.loggedInUser.role === UserType.AUTHORITY) {
-      const authorityId = queries.loggedInUser.authority.id;
-
-      findQuery = {
-        ...findQuery,
-        authorityId,
-      };
-    }
-
-    if (queries.isAdmin) {
-      populate = {
-        path: 'categories subCategories businessId',
-        select: `${disSelect}`,
-      };
-    }
-
-    const products = await queryhandler<Product>(this.ProductModel, {
+    const productsList = await queryhandler<Product>(this.ProductModel, {
       findQuery,
       select,
       page: Number(page),
       limit: Number(limit),
       populate,
+      populate1,
     });
 
-    return products;
+    if (!productsList?.data || !productsList.data?.length) {
+      return {
+        totalData: 0,
+        products: [],
+      };
+    }
+
+    return productsList;
   }
 
   async findManyById(ids: string[]): Promise<Product[]> {
     try {
-      const findQuery = { _id: { $in: ids } };
+      const findQuery = { _id: { $in: ids }, status: ProductStatus.ACTIVE };
       let select: {};
-      let page: number;
-      let limit: number;
 
       const products = await queryhandler<Product>(this.ProductModel, {
         findQuery,
         select,
-        page,
-        limit,
       });
 
       if (!products?.data?.length) {
         throw new NotFoundException(ServerErrors.PRODUCT.NOT_FOUND);
       }
 
-      return products;
+      return products?.data;
     } catch (error) {
       this.logger.error('[PRODUCT]: FAILED TO LIST PRODUCTS', {
         err: error.message,
@@ -399,169 +482,238 @@ export class ProductsService {
     }
   }
 
-  async getStats(
-    loggedInUser: LoggedInUserInterface,
-    query: GetProductsStatsQuery,
-  ) {
+  async getProductInformationForCart(productInfo) {
     try {
-      const {
-        startDate, endDate, categoriesId, dmoId,
-      } = query;
-
-      const select = disSelect;
-
-      let findQuery: any = {};
-
-      if (categoriesId) {
-        const categoryIds = Array.isArray(categoriesId)
-          ? categoriesId
-          : [categoriesId];
-
-        findQuery = {
-          ...findQuery,
-          categoriesId: { $in: categoryIds },
-        };
-      }
-
-      if (dmoId) {
-        findQuery = {
-          ...findQuery,
-          dmoId,
-        };
-      }
-
-      if (loggedInUser.role === UserType.DMOADMIN) {
-        const dmoID = loggedInUser.dmo.id;
-        findQuery = {
-          ...findQuery,
-          dmoId: dmoID,
-        };
-      }
-
-      if (loggedInUser.role === UserType.TRAVELLER) {
-        findQuery = {
-          ...findQuery,
-          userId: loggedInUser.id,
-        };
-      }
-
-      let createdFindQuery: any = {
-        ...findQuery,
+      const product = await this.ProductModel.findOne({
+        _id: productInfo?.id,
+        'quantity.remaining': { $gte: productInfo?.quantity },
         isDeleted: false,
-      };
-      let deletedFindQuery: any = {
-        ...findQuery,
-        isDeleted: true,
-      };
+        status: ProductStatus.ACTIVE,
+      });
 
-      if (startDate && endDate) {
-        const createdStartDate = new Date(startDate);
-        const createdEndDate = new Date(endDate);
-        createdEndDate.setDate(createdEndDate.getDate() + 1);
-
-        if (createdStartDate >= createdEndDate) {
-          throw new BadRequestException(
-            `Created ${ServerErrors.DATE_IS_NOT_LESS}`,
-          );
-        }
-
-        createdFindQuery = {
-          ...createdFindQuery,
-          createdAt: {
-            $gte: createdStartDate,
-            $lt: createdEndDate,
-          },
-        };
-
-        deletedFindQuery = {
-          ...deletedFindQuery,
-          deletedAt: {
-            $gte: createdStartDate,
-            $lt: createdEndDate,
-          },
-          createdAt: {
-            $gte: createdStartDate,
-            $lt: createdEndDate,
-          },
-        };
-
-        const pastCreatedFindQuery = {
-          ...createdFindQuery,
-          createdAt: {
-            $lt: createdStartDate,
-          },
-        };
-
-        const pastDeletedFindQuery = {
-          ...deletedFindQuery,
-          deletedAt: {
-            $lt: createdStartDate,
-          },
-          createdAt: {
-            $lt: createdStartDate,
-          },
-        };
-
-        const [
-          createdProducts,
-          deletedProducts,
-          prevCreatedProducts,
-          prevDeletedProducts,
-        ] = await Promise.all([
-          queryhandler<Product>(this.ProductModel, {
-            findQuery: createdFindQuery,
-            select,
-          }),
-          queryhandler<Product>(this.ProductModel, {
-            findQuery: deletedFindQuery,
-            select,
-          }),
-          queryhandler<Product>(this.ProductModel, {
-            findQuery: pastCreatedFindQuery,
-            select,
-          }),
-          queryhandler<Product>(this.ProductModel, {
-            findQuery: pastDeletedFindQuery,
-            select,
-          }),
-        ]);
-
-        const newProductCreated = createdProducts.totalData;
-        const newProductDeleted = deletedProducts.totalData;
-        const prevTotalProducts
-          = prevCreatedProducts.totalData - prevDeletedProducts.totalData;
-
-        return {
-          newProductCreated,
-          newProductDeleted,
-          prevTotalProducts,
-          isGrowth: newProductCreated - newProductDeleted > 0,
-          growthPercentage: calculateGrowthPercentage(
-            prevTotalProducts,
-            newProductCreated,
-          ),
-        };
+      if (!product) {
+        throw new NotFoundException(ServerErrors.PRODUCT.NOT_FOUND);
       }
 
-      const [createdProduct, deletedProduct] = await Promise.all([
-        queryhandler<Product>(this.ProductModel, {
-          findQuery: createdFindQuery,
-          select,
-        }),
-        queryhandler<Product>(this.ProductModel, {
-          findQuery: deletedFindQuery,
-          select,
-        }),
-      ]);
-      const newProductCreated = createdProduct.totalData;
-      const newProductDeleted = deletedProduct.totalData;
+      return product;
+    } catch (error) {
+      if (error?.name === 'CastError' && error?.kind === 'ObjectId') {
+        throw new BadRequestException(
+          `${error?.model?.modelName} ${ServerErrors.INVALID_ID}`,
+        );
+      }
+      exceptionHandling(error);
+    }
+  }
 
-      return {
-        newProductCreated,
-        newProductDeleted,
-      };
+  async checkTofreezeQuantity(products: AddProductToCart[]) {
+    try {
+      const availableProducts = await Promise.all(
+        products.map(async productInfo => {
+          const product = await this.findOne(productInfo.id);
+
+          if (product.quantity.remaining < productInfo.quantity) {
+            throw new BadRequestException(
+              `Insufficient quantity for product: ${productInfo.id}`,
+            );
+          }
+        }),
+      );
+
+      return availableProducts;
     } catch (err) {
+      this.logger.error('[VOUCHER]: FAILED TO UPDATE', {
+        err: err.message,
+      });
       exceptionHandling(err);
     }
+  }
+
+  async freezeQuantity(
+    products: AddProductToCart[],
+    cartId: ObjectId,
+    loggedInUser?: LoggedInUserInterface,
+  ) {
+    try {
+      const updatedProducts = await Promise.all(
+        products.map(async productInfo => {
+          const product = await this.findOne(productInfo.id);
+
+          const updateField = {
+            'quantity.remaining':
+              product.quantity.remaining - productInfo.quantity,
+            $push: {
+              freeze: {
+                cartId,
+                quantity: productInfo.quantity,
+              },
+            },
+            updatedAt: new Date(),
+            updatedBy: loggedInUser?.id,
+          };
+
+          const updatedProduct = await this.ProductModel.findByIdAndUpdate(
+            productInfo.id,
+            updateField,
+            { new: true },
+          );
+
+          if (!updatedProduct) {
+            throw new NotFoundException(ServerErrors.PRODUCT.NOT_FOUND);
+          }
+
+          return updatedProduct;
+        }),
+      );
+
+      this.logger.info('[Order-Product]: Quantity freezed', {
+        message: updatedProducts,
+      });
+
+      return updatedProducts;
+    } catch (err) {
+      this.logger.error('[VOUCHER]: FAILED TO UPDATE', {
+        err: err.message,
+      });
+      exceptionHandling(err);
+    }
+  }
+
+  async deleteFreezeProductPostSuccess(
+    products: {
+      id: ObjectId;
+      quantity: number;
+      price: number;
+      address: string;
+    }[],
+    orderId: string,
+    loggedInUser: LoggedInUserInterface,
+  ) {
+    try {
+      await Promise.all(
+        products.map(async product => {
+          const cart = await this.cartService.findOneByOrderId(orderId);
+          await this.ProductModel.findOneAndUpdate(
+            { _id: product.id },
+            {
+              $set: { updatedAt: new Date(), updatedBy: loggedInUser?.id },
+              $pull: { freeze: { cartId: cart._id } },
+            },
+            { new: true },
+          );
+        }),
+      );
+      this.logger.info('[EXTERNAL-API-PRODUCT]: REMOVE FREEZED ITEM DETAILS', {
+        message: products,
+      });
+    } catch (err) {
+      this.logger.error(
+        '[EXTERNAL-API-PRODUCT]: FAILED TO REMOVE FREEZE DATA',
+        {
+          err: err.message,
+        },
+      );
+      exceptionHandling(err);
+    }
+  }
+
+  async reimburseFreezeProductsPostFailure(
+    products: {
+      id: ObjectId;
+      quantity: number;
+      price: number;
+      address: string;
+    }[],
+    orderId: string,
+    loggedInUser: LoggedInUserInterface,
+  ) {
+    try {
+      const cart = await this.cartService.findOneByOrderId(orderId);
+
+      await Promise.all(
+        products.map(async product => {
+          await this.ProductModel.updateOne(
+            { _id: product.id, 'freeze.cartId': cart._id },
+            [
+              {
+                $set: {
+                  updatedAt: new Date(),
+                  updatedBy: loggedInUser?.id,
+                  'quantity.remaining': {
+                    $add: [
+                      '$quantity.remaining',
+                      {
+                        $ifNull: [
+                          {
+                            $arrayElemAt: [
+                              {
+                                $map: {
+                                  input: {
+                                    $filter: {
+                                      input: '$freeze',
+                                      as: 'f',
+                                      cond: { $eq: ['$$f.cartId', cart._id] },
+                                    },
+                                  },
+                                  as: 'filteredFreeze',
+                                  in: '$$filteredFreeze.quantity',
+                                },
+                              },
+                              0,
+                            ],
+                          },
+                          0,
+                        ],
+                      },
+                    ],
+                  },
+                  freeze: {
+                    $filter: {
+                      input: '$freeze',
+                      as: 'f',
+                      cond: { $ne: ['$$f.cartId', cart._id] },
+                    },
+                  },
+                },
+              },
+            ],
+            { new: true },
+          );
+        }),
+      );
+      this.logger.info(
+        '[EXTERNAL-API-PRODUCT]: REIMBURSED PRODUCT QUANTITY ONCE PAYMENT FAILED',
+        {
+          message: products,
+        },
+      );
+    } catch (err) {
+      this.logger.error(
+        '[EXTERNAL-API-PRODUCT]: FAILED TO REIMBURSE QUANITTY AFTER PAYMENT FAILED',
+        {
+          err: err.message,
+        },
+      );
+      exceptionHandling(err);
+    }
+  }
+
+  async deductQuantity(products) {
+    const bulkOps = products.map(pro => ({
+      updateOne: {
+        filter: { _id: pro.id },
+        update: [
+          {
+            $set: {
+              'quantity.remaining': {
+                $subtract: ['$quantity.remaining', pro.quantity],
+              },
+            },
+          },
+        ],
+      },
+    }));
+
+    await this.ProductModel.bulkWrite(bulkOps);
   }
 }

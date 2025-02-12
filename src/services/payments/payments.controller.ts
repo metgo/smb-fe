@@ -18,9 +18,9 @@ import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
 import { Roles } from 'src/core/guards/authorization/roles';
 import { JwtAuthGuard } from 'src/core/guards/jwt/jwt.guards';
 import { responseHelper } from 'src/core/helper/response.helper';
-import { PaymentsService } from './payments.service';
 import { UserType } from 'src/modules/users/users.type';
 import { LocaleQuery } from 'src/modules/accessibility/dto/locale-query.dto';
+import { PaymentsService } from 'src/services/payments/payments.service';
 
 @Controller('payment')
 export class PaymentsController {
@@ -113,7 +113,7 @@ export class PaymentsController {
       description: ServerSuccess.PAYMENT.SUCCESS,
     },
     softBlockExtraDtoFields: true,
-    tags: ['Payment', 'Admin'],
+    tags: ['Payment'],
   })
   @Roles(UserType.SUPERADMIN)
   @UseGuards(JwtAuthGuard)
@@ -136,4 +136,134 @@ export class PaymentsController {
       null,
     );
   }
+
+  // @ApiEndpoint({
+  //   noAuthToken: true,
+  //   operation: 'Start Payment Process step [3]',
+  //   response: {
+  //     status: HttpStatus.CREATED,
+  //     description: ServerSuccess.PAYMENT.START,
+  //   },
+  //   softBlockExtraDtoFields: true,
+  //   tags: ['Order Process'],
+  // })
+  // @Post('order')
+  // async startOrderPaymentProcess(
+  //   @Body() dto: OrderPaymentDto,
+  //   @Req() req,
+  //   @Res() response: Response,
+  // ) {
+  //   const payment = await this.paymentService.startOrderPaymentProcess(
+  //     dto,
+  //     req?.user,
+  //   );
+
+  //   return responseHelper(
+  //     response,
+  //     HttpStatus.CREATED,
+  //     ServerSuccess.PAYMENT.START,
+  //     payment,
+  //     null,
+  //     null,
+  //   );
+  // }
+
+  // @ApiEndpoint({
+  //   noAuthToken: true,
+  //   operation: 'Update PaymentStatus step [4]',
+  //   params: [{ name: 'lowProfileId', type: 'string', required: true }],
+  //   response: {
+  //     status: HttpStatus.OK,
+  //     description: ServerSuccess.PAYMENT.UPDATE,
+  //   },
+  //   softBlockExtraDtoFields: true,
+  //   tags: ['Order Process'],
+  // })
+  // @Patch('order/:lowProfileId')
+  // async updateOrderProcessPaymentStatus(
+  //   @Body() dto: UpdatePaymentProcessDto,
+  //   @Param('lowProfileId') lowProfileId: string,
+  //   @Req() req,
+  //   @Res() response: Response,
+  // ) {
+  //   const payment = await this.paymentService.updateOrderPaymentProcess(
+  //     lowProfileId,
+  //     dto,
+  //     req?.user,
+  //   );
+
+  //   return responseHelper(
+  //     response,
+  //     HttpStatus.OK,
+  //     `${ServerSuccess.PAYMENT.UPDATE} to ${dto.status}`,
+  //     payment,
+  //     null,
+  //     null,
+  //   );
+  // }
+
+  // @ApiEndpoint({
+  //   noAuthToken: true,
+  //   operation: 'Start Payment Process step [2]',
+  //   response: {
+  //     status: HttpStatus.CREATED,
+  //     description: ServerSuccess.PAYMENT.START,
+  //   },
+  //   softBlockExtraDtoFields: true,
+  //   tags: ['Voucher Process'],
+  // })
+  // @Post('voucher')
+  // async startVoucherPaymentProcess(
+  //   @Body() dto: VoucherPaymentDto,
+  //   @Req() req,
+  //   @Res() response: Response,
+  // ) {
+  //   const payment = await this.paymentService.startVoucherPaymentProcess(
+  //     dto,
+  //     req?.user,
+  //   );
+
+  //   return responseHelper(
+  //     response,
+  //     HttpStatus.CREATED,
+  //     ServerSuccess.PAYMENT.START,
+  //     payment,
+  //     null,
+  //     null,
+  //   );
+  // }
+
+  // @ApiEndpoint({
+  //   noAuthToken: true,
+  //   operation: 'Update PaymentStatus step [3]',
+  //   params: [{ name: 'lowProfileId', type: 'string', required: true }],
+  //   response: {
+  //     status: HttpStatus.OK,
+  //     description: ServerSuccess.PAYMENT.UPDATE,
+  //   },
+  //   softBlockExtraDtoFields: true,
+  //   tags: ['Voucher Process'],
+  // })
+  // @Patch('voucher/:lowProfileId')
+  // async updateProcessPaymentStatus(
+  //   @Body() dto: UpdatePaymentProcessDto,
+  //   @Param('lowProfileId') lowProfileId: string,
+  //   @Req() req,
+  //   @Res() response: Response,
+  // ) {
+  //   const payment = await this.paymentService.updateVoucherPaymentProcess(
+  //     lowProfileId,
+  //     dto,
+  //     req?.user,
+  //   );
+
+  //   return responseHelper(
+  //     response,
+  //     HttpStatus.OK,
+  //     `${ServerSuccess.PAYMENT.UPDATE} to ${dto.status}`,
+  //     payment,
+  //     null,
+  //     null,
+  //   );
+  // }
 }

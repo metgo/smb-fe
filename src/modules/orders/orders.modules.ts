@@ -11,15 +11,19 @@ import { OrderProductModule } from 'src/modules/order-product/order-product.modu
 import { ProductsModule } from 'src/modules/products/products.module';
 import { UsersModule } from 'src/modules/users/users.module';
 import { VoucherModule } from 'src/modules/vouchers/voucher.module';
+import { ExternalApiModule } from 'src/modules/external-api/external-api.module';
+import { CartModule } from 'src/modules/cart/cart.modules';
 import { ConfigModule } from 'src/services/config/config.module';
 import { PaymentsModule } from 'src/services/payments/payments.module';
 import { MailChimpModule } from 'src/services/mailchimp/mailchimp.module';
+import { QRCodeModule } from 'src/services/qr-code/qr-code.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Order.name, schema: OrderSchema }]),
     forwardRef(() => AuthorityModule),
     BusinessModule,
+    forwardRef(() => ExternalApiModule),
     forwardRef(() => PaymentsModule),
     ProductsModule,
     forwardRef(() => UsersModule),
@@ -28,6 +32,8 @@ import { MailChimpModule } from 'src/services/mailchimp/mailchimp.module';
     forwardRef(() => DMOModule),
     MailChimpModule,
     OrderProductModule,
+    CartModule,
+    QRCodeModule,
   ],
   controllers: [OrdersController],
   providers: [OrdersService],

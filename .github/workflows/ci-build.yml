@@ -3,21 +3,16 @@
 name: Build
 
 on:
-  workflow_call:
-    inputs:
-      project:
-        required: true
-        type: string
-  # push:
-  #   branches:
-  #     - main
-  #     - release/*
-  #     - instance/*
-  # pull_request:
-  #   branches:
-  #     - main
-  #     - release/*
-  #     - instance/*
+  push:
+    branches:
+      - main
+      - release/*
+      - instance/*
+  pull_request:
+    branches:
+      - main
+      - release/*
+      - instance/*
 
 jobs:
   check:
@@ -26,7 +21,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [16.20.1]
+        node-version: [20.9.0]
 
     steps:
       - name: Checkout the code

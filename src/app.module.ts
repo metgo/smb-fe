@@ -41,7 +41,10 @@ import { RewardsModule } from 'src/modules/rewards/rewards.module';
 import { GAModule } from 'src/services/google-analytics/ga.module';
 import winstonConfig from 'src/services/winston/winston';
 import { WinstonLoggerModule } from 'src/services/winston/winston.module';
-import { LoggingMiddleware } from './services/middleware/logger';
+import { LoggingMiddleware } from 'src/services/middleware/logger';
+import { CartModule } from 'src/modules/cart/cart.modules';
+import { SmsModule } from 'src/services/sms/sms.module';
+import { QRCodeModule } from 'src/services/qr-code/qr-code.module';
 
 @Module({
   imports: [
@@ -83,6 +86,9 @@ import { LoggingMiddleware } from './services/middleware/logger';
     GAModule,
     WinstonLoggerModule,
     BankAccountModule,
+    CartModule,
+    SmsModule,
+    QRCodeModule,
   ],
   providers: [
     {

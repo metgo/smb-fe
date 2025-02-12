@@ -8,26 +8,25 @@ import {
   BussCategory,
   BussCategorySchema,
 } from './schema/buss.category.schema';
+import { CampaignModule } from 'src/modules/campaign/campaign.module';
 import { UsersModule } from '../users/users.module';
 import { BussSubCategoriesModule } from '../buss-subcategories/buss-subcategories.module';
-import {
-  BussSubCategory,
-  BussSubCategorySchema,
-} from '../buss-subcategories/schema/buss-subCategory.schema';
 import { DMOModule } from 'src/modules/dmo/dmo.module';
+import { ExternalApiModule } from 'src/modules/external-api/external-api.module';
 import { ConfigModule } from 'src/services/config/config.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: BussCategory.name, schema: BussCategorySchema },
-      { name: BussSubCategory.name, schema: BussSubCategorySchema },
     ]),
     AuthorityModule,
     BussSubCategoriesModule,
     ConfigModule,
+    ExternalApiModule,
     DMOModule,
     UsersModule,
+    CampaignModule,
   ],
 
   controllers: [BussCategoriesController],

@@ -19,6 +19,10 @@ export interface LoggedInUserInterface {
   hasBusiness: boolean;
   dmo?: null | { id: string; name: string };
   authority?: null | { id: string; name: string };
+  externalApi: {
+    id: string;
+    identifierId: string;
+  };
 }
 
 export interface LoginInterface {

@@ -1,14 +1,17 @@
 import {
-  Controller, Get, HttpStatus, Param, Query, Res,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Query,
 } from '@nestjs/common';
-import { Response } from 'express';
 
 import { ServerSuccess } from 'src/common/constant';
-import { Locale } from 'src/common/enum';
 import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
-import { responseHelper } from 'src/core/helper/response.helper';
 import { BussSubCategoriesService } from './buss-subcategories.service';
-import { FilterQuery } from './dto';
+import { GetAllSubCategoriesQuery } from './queries/get-all-subcategories.query';
+import { GetSubCategoryQuery } from './queries/get-subcategory.query';
 
 @Controller()
 export class BussSubCategoriesController {
@@ -17,53 +20,37 @@ export class BussSubCategoriesController {
   ) {}
 
   @ApiEndpoint({
-    tags: ['Admin', 'Business Sub-Categories'],
+    tags: ['Business Sub-Categories'],
     response: {
-      status: 200,
+      status: HttpStatus.OK,
       description: ServerSuccess.BUSS_SUB_CATEGORY.LISTED,
     },
     softBlockExtraDtoFields: true,
   })
-  @Get('admin/buss-sub-category')
-  async getAll(@Res() response: Response, @Query() query: FilterQuery) {
-    const bussSubCategory = await this.bussSubCategoriesService.getAll(query);
+  @HttpCode(HttpStatus.OK)
+  @Get('subcategory')
+  async getAll(@Query() query: GetAllSubCategoriesQuery) {
+    const bussSubCategories = await this.bussSubCategoriesService.getAll(query);
 
-    return responseHelper(
-      response,
-      HttpStatus.OK,
-      ServerSuccess.BUSS_SUB_CATEGORY.LISTED,
-      bussSubCategory,
-      null,
-      null,
-    );
+    return bussSubCategories;
   }
 
   @ApiEndpoint({
-    tags: ['Admin', 'Business Sub-Categories'],
+    tags: ['Business Sub-Categories'],
     response: {
-      status: 200,
+      status: HttpStatus.OK,
       description: ServerSuccess.BUSS_SUB_CATEGORY.LISTED,
     },
     softBlockExtraDtoFields: true,
   })
-  @Get('admin/buss-sub-category/:id')
-  async getOne(
-    @Res() response: Response,
-    @Param('id') id: string,
-    @Query('locale') locale: Locale,
-  ) {
+  @HttpCode(HttpStatus.OK)
+  @Get('subcategory/:id')
+  async getOne(@Param('id') id: string, @Query() query: GetSubCategoryQuery) {
     const bussSubCategory = await this.bussSubCategoriesService.getOne(
       id,
-      locale,
+      query,
     );
 
-    return responseHelper(
-      response,
-      HttpStatus.OK,
-      ServerSuccess.BUSS_SUB_CATEGORY.LISTED,
-      bussSubCategory,
-      null,
-      null,
-    );
+    return bussSubCategory;
   }
 }

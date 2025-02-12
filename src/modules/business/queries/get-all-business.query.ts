@@ -3,7 +3,7 @@ import { IsOptional, IsString } from 'class-validator';
 
 import { ExternalApiWithCampCodeFilterQuery } from 'src/modules/external-api/queries/external-api-campcode.query';
 
-export class GetAllProductsQuery extends ExternalApiWithCampCodeFilterQuery {
+export class GetAllBusinessQuery extends ExternalApiWithCampCodeFilterQuery {
   @ApiProperty({
     required: false,
     isArray: true,
@@ -44,12 +44,4 @@ export class GetAllProductsQuery extends ExternalApiWithCampCodeFilterQuery {
   @ApiProperty({ type: String, required: false })
   @IsOptional()
     search: string;
-
-  @ApiProperty({ type: Number, required: false })
-  @IsOptional()
-    priceMin: number;
-
-  @ApiProperty({ type: Number, required: false })
-  @IsOptional()
-    priceMax: number;
 }

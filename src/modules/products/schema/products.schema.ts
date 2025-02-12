@@ -7,12 +7,21 @@ import { Authority } from 'src/modules/authority/schema/authority.schema';
 import { DeliveryArea } from 'src/modules/business/schema/business.schema';
 import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.schema';
 import { BussSubCategory } from 'src/modules/buss-subcategories/schema/buss-subCategory.schema';
+import { Cart } from 'src/modules/cart/cart.schema';
 import { DMO } from 'src/modules/dmo/schema/dmo.schema';
 import { ProductStatus } from 'src/modules/products/products.type';
 import { User } from 'src/modules/users/schema/users.schema';
 
 @Schema()
 export class Product extends AuditableSchema {
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    index: true,
+    required: true,
+    auto: true,
+  })
+    _id: mongoose.Types.ObjectId;
+
   @Prop()
     name: string;
 
@@ -173,6 +182,19 @@ export class Product extends AuditableSchema {
     ],
   })
     features: mongoose.Schema.Types.ObjectId[];
+
+  @Prop({
+    type: [
+      {
+        quantity: Number,
+        cartId: { type: mongoose.Schema.Types.ObjectId, ref: Cart.name },
+      },
+    ],
+  })
+    freeze: {
+    quantity: number;
+    cartId: mongoose.Types.ObjectId;
+  }[];
 }
 
 export type Products = HydratedDocument<Product>;

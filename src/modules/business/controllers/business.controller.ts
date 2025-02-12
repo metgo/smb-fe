@@ -4,34 +4,26 @@
 import {
   Controller,
   Get,
+  HttpCode,
   HttpStatus,
   Param,
   Query,
   Req,
-  Res,
   UseGuards,
 } from '@nestjs/common';
-import { Response } from 'express';
 
 import { ServerSuccess } from 'src/common/constant';
 import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
-import { responseHelper } from 'src/core/helper/response.helper';
-import { Roles } from 'src/core/guards/authorization/roles';
-import { JwtAuthGuard } from 'src/core/guards/jwt/jwt.guards';
-import { GetBusinessByIdOrSlug } from 'src/modules/business/business.type';
-import {
-  GetAllBusinessesForGuestQuery,
-  GetAllUnpaginatedBusinessQuery,
-  GetBusinessStatsQuery,
-  GetUsersBusinessesQuery,
-} from 'src/modules/business/queries';
+import { JwtExternalApiAuthGuard } from 'src/core/guards/jwt/jwt-externalapi.guards';
+import { GetAllUnpaginatedBusinessQuery } from 'src/modules/business/queries';
+import { GetAllBusinessQuery } from 'src/modules/business/queries/get-all-business.query';
 import { BusinessService } from 'src/modules/business/services/business.service';
-import { UserType } from 'src/modules/users/users.type';
 
 @Controller()
 export class BusinessController {
   constructor(private readonly businessServices: BusinessService) {}
 
+  @UseGuards(JwtExternalApiAuthGuard)
   @ApiEndpoint({
     tags: ['Business'],
     response: {
@@ -39,122 +31,39 @@ export class BusinessController {
       description: ServerSuccess.BUSINESS_LISTED,
     },
     softBlockExtraDtoFields: true,
-    operation: 'Get all approved business by any user - paginated',
+    noAuthToken: true,
+    operation: 'Get all businesses',
   })
-  @Get('business')
-  async getAllBusiness(
-    @Res() response: Response,
-    @Query() query?: GetAllBusinessesForGuestQuery,
-  ) {
-    const business = await this.businessServices.getAllBusiness(query);
-
-    return responseHelper(
-      response,
-      HttpStatus.OK,
-      ServerSuccess.BUSINESS_LISTED,
-      business,
-      null,
-      null,
-    );
-  }
-
-  @ApiEndpoint({
-    tags: ['Business'],
-    response: {
-      status: HttpStatus.OK,
-      description: ServerSuccess.BUSINESS_LISTED,
-    },
-    softBlockExtraDtoFields: true,
-    operation: 'Get all approved business by any user - nonPaginated',
-  })
+  @HttpCode(HttpStatus.OK)
   @Get('businesses')
-  async getAllBusinesses(
-    @Res() response: Response,
-    @Query() query?: GetAllUnpaginatedBusinessQuery,
-  ) {
-    const business = await this.businessServices.getAllUnpaginatedBusiness(
-      query,
-    );
-
-    return responseHelper(
-      response,
-      HttpStatus.OK,
-      ServerSuccess.BUSINESS_LISTED,
-      business,
-      null,
-      null,
-    );
-  }
-
-  @Roles(
-    UserType.AUTHORITY,
-    UserType.AUTHORITY_ADMIN,
-    UserType.DMO,
-    UserType.DMOADMIN,
-    UserType.SUPERADMIN,
-  )
-  @UseGuards(JwtAuthGuard)
-  @ApiEndpoint({
-    tags: ['Business', 'Business Admin'],
-    response: {
-      status: HttpStatus.OK,
-      description: ServerSuccess.BUSINESS_LISTED,
-    },
-    softBlockExtraDtoFields: true,
-    noAuthToken: true,
-    operation: 'Get all businesses by superadmin and dmo-admin role',
-  })
-  @Get('admin/businesses')
-  async getAllBusinessForAdmin(
-    @Req() request,
-    @Res() response: Response,
-    @Query() query?: GetUsersBusinessesQuery,
-  ) {
-    const business = await this.businessServices.getAllBusiness(
-      query,
+  async getAllBusiness(@Req() request, @Query() query?: GetAllBusinessQuery) {
+    const businesses = await this.businessServices.getAllBusiness(
       request.user,
+      query,
     );
 
-    return responseHelper(
-      response,
-      HttpStatus.OK,
-      ServerSuccess.BUSINESS_LISTED,
-      business,
-      null,
-      null,
-    );
+    return businesses;
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtExternalApiAuthGuard)
   @ApiEndpoint({
     tags: ['Business'],
     response: {
       status: HttpStatus.OK,
       description: ServerSuccess.BUSINESS_LISTED,
     },
-    softBlockExtraDtoFields: true,
     noAuthToken: true,
-    operation: 'Get all businesses for map by admins',
+    operation: 'Get any business detail',
   })
-  @Get('admin/map-businesses')
-  async getAllBusinessForMapByAdmin(
-    @Req() request,
-    @Res() response: Response,
-    @Query() query?: GetUsersBusinessesQuery,
-  ) {
-    const businesses = await this.businessServices.getAllBusinessesForMap(
-      query,
-      request.user,
-    );
+  @HttpCode(HttpStatus.OK)
+  @Get('businesses/:id')
+  async getBusinessDetailForAdmin(@Req() request, @Param('id') id: string) {
+    const business = await this.businessServices.getBusiness({
+      id,
+      loggedInUser: request.user,
+    });
 
-    return responseHelper(
-      response,
-      HttpStatus.OK,
-      ServerSuccess.BUSINESS_LISTED,
-      businesses,
-      null,
-      null,
-    );
+    return business;
   }
 
   @ApiEndpoint({
@@ -167,180 +76,12 @@ export class BusinessController {
     operation: 'Get all businesses for map by non-authenticated users',
   })
   @Get('map-businesses')
-  async getAllBusinessForMap(
-    @Res() response: Response,
-    @Query() query?: GetAllUnpaginatedBusinessQuery,
-  ) {
+  @HttpCode(HttpStatus.OK)
+  async getAllBusinessForMap(@Query() query?: GetAllUnpaginatedBusinessQuery) {
     const businesses = await this.businessServices.getAllBusinessesForMap(
       query,
     );
 
-    return responseHelper(
-      response,
-      HttpStatus.OK,
-      ServerSuccess.BUSINESS_LISTED,
-      businesses,
-      null,
-      null,
-    );
-  }
-
-  @ApiEndpoint({
-    tags: ['Business'],
-    response: {
-      status: HttpStatus.OK,
-      description: ServerSuccess.BUSINESS_LISTED,
-    },
-    operation: 'Get approved business detail by any user',
-  })
-  @Get('business/:idOrSlug')
-  async getBusinessDetailFosrAll(
-    @Res() response: Response,
-    @Param('idOrSlug') idOrSlug: string,
-  ) {
-    const business = await this.businessServices.getBusiness({
-      id: idOrSlug,
-      loggedInUser: null,
-    });
-
-    return responseHelper(
-      response,
-      HttpStatus.OK,
-      ServerSuccess.BUSINESS_LISTED,
-      business,
-      null,
-      null,
-    );
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @ApiEndpoint({
-    tags: ['Business'],
-    response: {
-      status: HttpStatus.OK,
-      description: ServerSuccess.BUSINESS_LISTED,
-    },
-    operation: 'Get business detail of logged in user',
-    noAuthToken: true,
-  })
-  @Get('my-business/:id')
-  async getBusinessDetailOwner(
-    @Res() response: Response,
-    @Req() request: any,
-    @Param('id') id: string,
-  ) {
-    const command: GetBusinessByIdOrSlug = {
-      id,
-      loggedInUser: request?.user,
-    };
-    const business = await this.businessServices.getBusiness(command);
-
-    return responseHelper(
-      response,
-      HttpStatus.OK,
-      ServerSuccess.BUSINESS_LISTED,
-      business,
-      null,
-      null,
-    );
-  }
-
-  @Roles(
-    UserType.AUTHORITY,
-    UserType.AUTHORITY_ADMIN,
-    UserType.DMO,
-    UserType.DMOADMIN,
-    UserType.SUPERADMIN,
-  )
-  @UseGuards(JwtAuthGuard)
-  @ApiEndpoint({
-    tags: ['Business', 'Business Admin'],
-    response: {
-      status: HttpStatus.OK,
-      description: ServerSuccess.BUSINESS_LISTED,
-    },
-    noAuthToken: true,
-    operation:
-      'Get any business detail by authority, dmo and dmo admin role and superadmin role',
-  })
-  @Get('admin/businesses/:id')
-  async getBusinessDetailForAdmin(
-    @Req() request,
-    @Res() response: Response,
-    @Param('id') id: string,
-  ) {
-    const business = await this.businessServices.getBusiness({
-      id,
-      loggedInUser: request.user,
-    });
-
-    return responseHelper(
-      response,
-      HttpStatus.OK,
-      ServerSuccess.BUSINESS_LISTED,
-      business,
-      null,
-      null,
-    );
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @ApiEndpoint({
-    tags: ['Business'],
-    response: {
-      status: HttpStatus.OK,
-      description: ServerSuccess.BUSINESS_LISTED,
-    },
-    softBlockExtraDtoFields: true,
-    noAuthToken: true,
-    operation: 'Get all businesses details by business owner ',
-  })
-  @Get('my-business')
-  async getMyBusiness(
-    @Req() request,
-    @Res() response: Response,
-    @Query() query?: GetUsersBusinessesQuery,
-  ) {
-    const userId = request.user.id;
-    const business = await this.businessServices.getAllMyBusiness(
-      query,
-      userId,
-    );
-
-    return responseHelper(
-      response,
-      HttpStatus.OK,
-      ServerSuccess.BUSINESS_LISTED,
-      business,
-      null,
-      null,
-    );
-  }
-
-  @ApiEndpoint({
-    tags: ['Business'],
-    response: {
-      status: HttpStatus.OK,
-      description: ServerSuccess.BUSINESS_LISTED,
-    },
-    noAuthToken: true,
-  })
-  @UseGuards(JwtAuthGuard)
-  @Get('stats/businesses')
-  async getBusinessStats(
-    @Req() req,
-    @Res() response: Response,
-    @Query() query: GetBusinessStatsQuery,
-  ) {
-    const businessStats = await this.businessServices.getStats(req.user, query);
-
-    return responseHelper(
-      response,
-      HttpStatus.OK,
-      ServerSuccess.BUSINESS_LISTED,
-      businessStats,
-      null,
-      null,
-    );
+    return businesses;
   }
 }

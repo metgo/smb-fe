@@ -11,42 +11,28 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { ObjectId } from 'typeorm';
 import { Logger } from 'winston';
 
-import {
-  defaultMetGoLogo,
-  emailDefaultTemplate,
-  milesConfig,
-  ServerErrors,
-} from 'src/common/constant';
+import { emailDefaultTemplate, ServerErrors } from 'src/common/constant';
 import { deepEqual } from 'src/common/deepEqual';
-import { SortOrder } from 'src/common/enum';
 import { Image } from 'src/common/interface/image.interface';
 import { DynamicHebrewTemplate } from 'src/common/mailchimp/templateId';
-import { maxDistanceInRadius } from 'src/common/max-distance-in-radius';
-import { paginateData } from 'src/common/pagination';
-import { getNearestBusiness } from 'src/common/sort-by-nearest';
-import { calculateGrowthPercentage } from 'src/common/utils/calculate-growth-percentage';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { getRandomNumberBetween } from 'src/common/utils/random-number-range';
 import { disSelect } from 'src/common/utils/select.handling';
 import {
   deleteItems,
   findOneByFieldNameIncludingDeleted,
-  findOneByFieldNames,
   queryhandler,
   updateById,
   updateOneByManyFields,
 } from 'src/core/helper/query-helper';
 import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interface';
-import { AuthorityService } from 'src/modules/authority/authority.service';
 import {
   BusinessStatus,
   GetBusinessByIdOrSlug,
   GeoServicesTypes,
 } from 'src/modules/business/business.type';
 import {
-  GetAllBusinessesForGuestQuery,
   GetAllUnpaginatedBusinessQuery,
-  GetBusinessStatsQuery,
   GetUsersBusinessesQuery,
 } from 'src/modules/business/queries';
 import { GetAllBusinessesForMapResponse } from 'src/modules/business/response/get-businesses-for-map.response';
@@ -56,14 +42,12 @@ import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.s
 import { BussSubCategory } from 'src/modules/buss-subcategories/schema/buss-subCategory.schema';
 import { CampaignService } from 'src/modules/campaign/campaign.service';
 import { DMOService } from 'src/modules/dmo/dmo.service';
-import { MockDataServices } from 'src/modules/mock-data/mock-data.services';
 import { Product } from 'src/modules/products/schema/products.schema';
 import { User } from 'src/modules/users/schema/users.schema';
 import { UserType } from 'src/modules/users/users.type';
-import { MediaServices } from 'src/modules/media/media.service';
 import { ProductsService } from 'src/modules/products/products.services';
 import { MailChimpService } from 'src/services/mailchimp/mailchimp.service';
-import { BankAccountServices } from 'src/modules/bank-account/bank-account.service';
+import { GetAllBusinessQuery } from '../queries/get-all-business.query';
 
 @Injectable()
 export class BusinessService {
@@ -74,12 +58,8 @@ export class BusinessService {
     private BusinessModel: Model<Business>,
     @InjectModel('BusinessAudit')
     private BusinessAuditModel: Model<BusinessAudit>,
-    private readonly bankAccountService: BankAccountServices,
-    private readonly authorityService: AuthorityService,
     private readonly campaignService: CampaignService,
     private readonly dmoService: DMOService,
-    private readonly mediaServices: MediaServices,
-    private readonly mockDataService: MockDataServices,
     private readonly productService: ProductsService,
     private readonly mailchimpService: MailChimpService,
     @InjectModel(BussCategory.name)
@@ -142,51 +122,36 @@ export class BusinessService {
   }
 
   async getAllBusiness(
-    queries: GetAllBusinessesForGuestQuery | GetUsersBusinessesQuery,
-    authenticatedUser?: LoggedInUserInterface,
+    loggedInUser: LoggedInUserInterface,
+    queries: GetAllBusinessQuery,
   ) {
     const {
       page,
       limit,
+      campCode,
+      categoriesId,
+      subCategoriesId,
       search,
-      long,
-      lat,
-      miles,
-      sortByName,
-      sortByImpact,
       ...query
     } = queries;
 
-    let findQuery: any = { ...query };
+    console.log(loggedInUser);
 
-    if (!('status' in query) && !authenticatedUser) {
-      findQuery = { ...findQuery, status: BusinessStatus.APPROVED };
-    }
+    const campDetails = await this.campaignService.findCampaignAndReturn(
+      'code',
+      campCode,
+    );
 
-    if (
-      authenticatedUser
-      && (authenticatedUser?.role === UserType.DMOADMIN
-        || authenticatedUser?.role === UserType.DMO)
-    ) {
-      const dmoId = authenticatedUser.dmo.id;
-
-      findQuery = {
-        ...findQuery,
-        dmoId,
-      };
-    }
-
-    if (authenticatedUser && authenticatedUser?.role === UserType.AUTHORITY) {
-      const authorityId = authenticatedUser.authority.id;
-
-      findQuery = {
-        ...findQuery,
-        authorityId,
-      };
-    }
+    const select = disSelect;
+    let findQuery: any = {
+      status: BusinessStatus.APPROVED,
+      dmoId: { $in: campDetails.dmoIds },
+      isDeleted: false,
+      ...query,
+    };
 
     const populate = {
-      path: 'groupTypesId accessibilitiesId bussCategoriesId bussSubCategoriesId socialMedia.socialMediaId',
+      path: 'bussCategoriesId bussSubCategoriesId groupTypesId accessibilitiesId',
       select: `${disSelect}`,
       populate: {
         path: 'icon',
@@ -194,12 +159,27 @@ export class BusinessService {
       },
     };
 
-    const populate1 = {
-      path: 'dmoId authorityId productsId',
-      select: `${disSelect} -userId -collaboratorsUser`,
-    };
+    if (categoriesId) {
+      const categoriesIds = Array.isArray(categoriesId)
+        ? categoriesId
+        : [categoriesId];
 
-    const select = `${disSelect}`;
+      findQuery = {
+        ...findQuery,
+        bussCategoriesId: { $in: categoriesIds },
+      };
+    }
+
+    if (subCategoriesId) {
+      const subCategoriesIds = Array.isArray(subCategoriesId)
+        ? subCategoriesId
+        : [subCategoriesId];
+
+      findQuery = {
+        ...findQuery,
+        bussSubCategoriesId: { $in: subCategoriesIds },
+      };
+    }
 
     if (search) {
       const [
@@ -259,291 +239,30 @@ export class BusinessService {
       }
     }
 
-    if (query.bussCategoriesId) {
-      const bussCategoriesId = JSON.parse(query.bussCategoriesId);
-      findQuery = {
-        ...findQuery,
-        bussCategoriesId: { $in: bussCategoriesId },
-      };
-    }
-
-    if (query.bussSubCategoriesId) {
-      const bussSubCategoriesId = JSON.parse(query.bussSubCategoriesId);
-      findQuery = {
-        ...findQuery,
-        bussSubCategoriesId: { $in: bussSubCategoriesId },
-      };
-    }
-
-    if (query.accessibilitiesId) {
-      const accessibilitiesId = JSON.parse(query.accessibilitiesId);
-      findQuery = {
-        ...findQuery,
-        accessibilitiesId: { $in: accessibilitiesId },
-      };
-    }
-
-    if (query.groupTypesId) {
-      const groupTypesId = JSON.parse(query.groupTypesId);
-      findQuery = {
-        ...findQuery,
-        groupTypesId: { $in: groupTypesId },
-      };
-    }
-
-    let sort = 'createdAt';
-    let sortOrder = SortOrder.DESC;
-
-    if (sortByName) {
-      sort = 'name';
-      sortOrder = sortByName;
-    }
-
-    if (sortByImpact) {
-      sort = 'impact';
-      sortOrder = sortByImpact;
-    }
-
-    if (long && lat) {
-      findQuery = {
-        ...findQuery, // Filter out businesses without longitude data
-        location: {
-          $geoWithin: {
-            $centerSphere: [
-              [long, lat],
-              maxDistanceInRadius(miles || milesConfig),
-            ],
-          },
-        },
-      };
-
-      const allBusiness = await queryhandler<Business>(this.BusinessModel, {
-        findQuery,
-        select,
-        populate,
-        populate1,
-        sort,
-        sortOrder,
-      });
-
-      const businessesWithImage = await Promise.all(
-        allBusiness.data.map(async (business: Business) => {
-          const businessWithImages = business;
-
-          if (!businessWithImages?.images?.length) {
-            const defaultImage = await this.getDefaultImage();
-
-            businessWithImages.images = [defaultImage];
-          }
-
-          return businessWithImages;
-        }),
-      );
-
-      allBusiness.data = businessesWithImage;
-
-      const sortBusiness = getNearestBusiness(
-        parseFloat(lat),
-        parseFloat(long),
-        allBusiness.data,
-      );
-
-      const allPaginatedBusinesses = paginateData(
-        Number(page),
-        Number(limit),
-        sortBusiness,
-      );
-
-      return allPaginatedBusinesses;
-    }
-
-    const allBusiness = await queryhandler<Business>(this.BusinessModel, {
+    const businesses = await queryhandler<Business>(this.BusinessModel, {
       findQuery,
       select,
       page: Number(page),
       limit: Number(limit),
       populate,
-      populate1,
-      sort,
-      sortOrder,
     });
 
-    const businessesWithImage = await Promise.all(
-      allBusiness.data.map(async (business: Business) => {
-        const businessWithImages = business;
+    if (!businesses?.data || !businesses.data?.length) {
+      return {
+        totalData: 0,
+        businesses: [],
+      };
+    }
 
-        if (!businessWithImages?.images?.length) {
-          const defaultImage = await this.getDefaultImage();
-
-          businessWithImages.images = [defaultImage];
-        }
-
-        return businessWithImages;
-      }),
+    const businessesData = await Promise.all(
+      businesses.data.map(async business => ({
+        id: business._id,
+        name: business.name,
+        slug: business.slug,
+      })),
     );
 
-    allBusiness.data = businessesWithImage;
-
-    return allBusiness;
-  }
-
-  async getAllUnpaginatedBusiness(queries: GetAllUnpaginatedBusinessQuery) {
-    const {
-      search, long, lat, miles, sortByName, sortByImpact, ...query
-    }
-      = queries;
-
-    let findQuery: any = {
-      ...query,
-      status: BusinessStatus.APPROVED,
-    };
-
-    if (search) {
-      const [matchingCategoryIds, matchingSubCategoryIds] = await Promise.all([
-        this.BussCategoryModel.find({
-          name: { $regex: search, $options: 'i' },
-        }).select('_id'),
-        this.BussSubCategoryModel.find({
-          name: { $regex: search, $options: 'i' },
-        }).select('_id'),
-      ]);
-
-      const matchingProductsIds = await this.ProductModel.find({
-        $or: [
-          { name: { $regex: search, $options: 'i' } },
-          { description: { $regex: search, $options: 'i' } },
-          { categories: { $in: matchingCategoryIds } },
-          { subCategories: { $in: matchingSubCategoryIds } },
-        ],
-      }).select('_id');
-
-      findQuery = {
-        ...findQuery,
-        $or: [
-          { name: { $regex: search, $options: 'i' } },
-          { description: { $regex: search, $options: 'i' } },
-          { bussCategoriesId: { $in: matchingCategoryIds } },
-          { bussSubCategoriesId: { $in: matchingSubCategoryIds } },
-          { productsId: { $in: matchingProductsIds } },
-        ],
-      };
-
-      if (
-        !(
-          matchingCategoryIds?.length
-          || matchingSubCategoryIds?.length
-          || matchingProductsIds?.length
-        )
-      ) {
-        findQuery.$text = {
-          $search: search,
-          $caseSensitive: false,
-          $diacriticSensitive: false,
-        };
-      }
-    }
-
-    if (query.bussCategoriesId) {
-      const bussCategoriesId = JSON.parse(query.bussCategoriesId);
-      findQuery = {
-        ...findQuery,
-        bussCategoriesId: { $in: bussCategoriesId },
-      };
-    }
-
-    if (query.bussSubCategoriesId) {
-      const bussSubCategoriesId = JSON.parse(query.bussSubCategoriesId);
-      findQuery = {
-        ...findQuery,
-        bussSubCategoriesId: { $in: bussSubCategoriesId },
-      };
-    }
-
-    if (query.accessibilitiesId) {
-      const accessibilitiesId = JSON.parse(query.accessibilitiesId);
-      findQuery = {
-        ...findQuery,
-        accessibilitiesId: { $in: accessibilitiesId },
-      };
-    }
-
-    if (query.groupTypesId) {
-      const groupTypesId = JSON.parse(query.groupTypesId);
-      findQuery = {
-        ...findQuery,
-        groupTypesId: { $in: groupTypesId },
-      };
-    }
-
-    if (long && lat) {
-      findQuery = {
-        ...findQuery,
-        location: {
-          $geoWithin: {
-            $centerSphere: [
-              [long, lat],
-              maxDistanceInRadius(miles || milesConfig),
-            ],
-          },
-        },
-      };
-    }
-
-    const populate = {
-      path: 'groupTypesId accessibilitiesId bussCategoriesId bussSubCategoriesId socialMedia.socialMediaId',
-      select: `${disSelect}`,
-      populate: {
-        path: 'icon',
-        select: `${disSelect}`,
-      },
-    };
-
-    const populate1 = {
-      path: 'dmoId authorityId productsId',
-      select: `${disSelect} -userId -collaboratorsUser`,
-    };
-
-    const select = `${disSelect}`;
-
-    let sort = 'createdAt';
-    let sortOrder = SortOrder.DESC;
-
-    if (sortByName) {
-      sort = 'name';
-      sortOrder = sortByName;
-    }
-
-    if (sortByImpact) {
-      sort = 'impact';
-      sortOrder = sortByImpact;
-    }
-
-    const allBusiness = await queryhandler<Business>(this.BusinessModel, {
-      findQuery,
-      select,
-      populate,
-      populate1,
-      sort,
-      sortOrder,
-    });
-
-    const businessesWithImage = await Promise.all(
-      allBusiness.data.map(async (business: Business) => {
-        const businessWithImages = business;
-
-        if (!businessWithImages?.images?.length) {
-          const defaultImage = await this.getDefaultImage();
-
-          businessWithImages.images = [defaultImage];
-        }
-
-        return businessWithImages;
-      }),
-    );
-
-    allBusiness.data = businessesWithImage;
-
-    return allBusiness;
+    return businessesData;
   }
 
   async getAllBusinessesForMap(
@@ -665,6 +384,9 @@ export class BusinessService {
 
   async getBusiness(command: GetBusinessByIdOrSlug) {
     const { id, loggedInUser } = command;
+
+    console.log(loggedInUser);
+
     const populate = {
       path: 'groupTypesId accessibilitiesId bussCategoriesId socialMedia.socialMediaId',
       select: `${disSelect}`,
@@ -707,48 +429,55 @@ export class BusinessService {
         throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
       }
 
-      if (
-        !loggedInUser
-        && business.status === BusinessStatus.APPROVED
-        && !business.isDeleted
-      ) {
-        return business;
+      const groupTypesId: any = business?.groupTypesId;
+      const group_types = groupTypesId?.map(g => g.name);
+
+      const accessibilitiesId: any = business?.accessibilitiesId;
+      const accessibilities = accessibilitiesId?.map(g => g.name);
+
+      const bussCategoriesId: any = business?.bussCategoriesId;
+      const categories = bussCategoriesId?.map(g => g.name);
+
+      const bussSubCategoriesId: any = business?.bussSubCategoriesId;
+      const sub_categories = bussSubCategoriesId?.map(g => g.name);
+
+      const businessDetail = {
+        id: business._id,
+        business_details: {
+          logo: business?.logo?.image,
+          background_color: '#FFFFFF',
+          name: business?.name,
+          description: business?.description,
+          short_description: business?.shortDescription,
+          slug: business?.slug,
+        },
+        timings: {
+          isOpenOnWeekends: business?.isOpenOnWeekends,
+          isAlwaysOpen: business?.isAlwaysOpen,
+          opening_hours: business?.openingHrs,
+        },
+        geoLocation: business?.geoLocation,
+        group_types,
+        accessibilities,
+        categories,
+        sub_categories,
+        contact_details: business?.contactDetails,
+        social_media: business?.socialMedia,
+        delivery_data: {
+          delivery_areas: {
+            locations: business?.deliveryArea,
+          },
+          delivery_return_exchange: business?.deliveryReturnExchange,
+          delivery_specific_seller_info: business?.deliverySpecificSellerInfo,
+          is_pickup_available: business?.isPickUpAvailable,
+        },
+      };
+
+      if (business.status !== BusinessStatus.APPROVED) {
+        throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
       }
 
-      if (loggedInUser) {
-        if (
-          loggedInUser.role === UserType.SUPERADMIN
-          || business?.userId?.equals(new mongoose.Types.ObjectId(loggedInUser.id))
-        ) {
-          return business;
-        }
-
-        if (
-          (loggedInUser.role === UserType.DMOADMIN
-            || loggedInUser.role === UserType.DMO)
-          && business?.dmoId
-        ) {
-          const dmoId = loggedInUser.dmo.id;
-
-          if (business.dmoId.equals(new mongoose.Types.ObjectId(dmoId))) {
-            return business;
-          }
-        }
-
-        if (loggedInUser.role === UserType.AUTHORITY && business?.authorityId) {
-          const authorityId = loggedInUser.authority.id;
-
-          if (
-            business.authorityId.equals(
-              new mongoose.Types.ObjectId(authorityId),
-            )
-          ) {
-            return business;
-          }
-        }
-      }
-
-      throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
+      return businessDetail;
     } catch (error) {
       if (error?.name === 'CastError' && error?.kind === 'ObjectId') {
         if (error?.model?.modelName === Business.name) {
@@ -761,53 +490,55 @@ export class BusinessService {
             throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
           }
 
-          if (
-            !loggedInUser
-            && business.status === BusinessStatus.APPROVED
-            && !business.isDeleted
-          ) {
-            return business;
+          const groupTypesId: any = business?.groupTypesId;
+          const group_types = groupTypesId?.map(g => g.name);
+
+          const accessibilitiesId: any = business?.accessibilitiesId;
+          const accessibilities = accessibilitiesId?.map(g => g.name);
+
+          const bussCategoriesId: any = business?.bussCategoriesId;
+          const categories = bussCategoriesId?.map(g => g.name);
+
+          const bussSubCategoriesId: any = business?.bussSubCategoriesId;
+          const sub_categories = bussSubCategoriesId?.map(g => g.name);
+
+          const businessDetail = {
+            id: business._id,
+            business_details: {
+              logo: business?.logo?.image,
+              background_color: '#FFFFFF',
+              name: business?.name,
+              description: business?.description,
+              short_description: business?.shortDescription,
+              slug: business?.slug,
+            },
+            timings: {
+              isOpenOnWeekends: business?.isOpenOnWeekends,
+              isAlwaysOpen: business?.isAlwaysOpen,
+              opening_hours: business?.openingHrs,
+            },
+            geoLocation: business?.geoLocation,
+            group_types,
+            accessibilities,
+            categories,
+            sub_categories,
+            contact_details: business?.contactDetails,
+            social_media: business?.socialMedia,
+            delivery_data: {
+              delivery_areas: {
+                locations: business?.deliveryArea,
+              },
+              delivery_return_exchange: business?.deliveryReturnExchange,
+              delivery_specific_seller_info:
+                business?.deliverySpecificSellerInfo,
+              is_pickup_available: business?.isPickUpAvailable,
+            },
+          };
+          if (business.status !== BusinessStatus.APPROVED) {
+            throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
           }
 
-          if (loggedInUser) {
-            if (
-              loggedInUser.role === UserType.SUPERADMIN
-              || business.userId.equals(
-                new mongoose.Types.ObjectId(loggedInUser.id),
-              )
-            ) {
-              return business;
-            }
-
-            if (
-              (loggedInUser.role === UserType.DMOADMIN
-                || loggedInUser.role === UserType.DMO)
-              && business?.dmoId
-            ) {
-              const dmoId = loggedInUser.dmo.id;
-
-              if (business.dmoId.equals(new mongoose.Types.ObjectId(dmoId))) {
-                return business;
-              }
-            }
-
-            if (
-              loggedInUser.role === UserType.AUTHORITY
-              && business?.authorityId
-            ) {
-              const authorityId = loggedInUser.authority.id;
-
-              if (
-                business.authorityId.equals(
-                  new mongoose.Types.ObjectId(authorityId),
-                )
-              ) {
-                return business;
-              }
-            }
-          }
-
-          throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
+          return businessDetail;
         }
         throw new BadRequestException(
           `${error?.model?.modelName} ${ServerErrors.INVALID_ID}`,
@@ -815,88 +546,6 @@ export class BusinessService {
       }
       exceptionHandling(error);
     }
-  }
-
-  async getAllMyBusiness(queries: GetUsersBusinessesQuery, userId: string) {
-    const {
-      page, limit, search, sortByName, sortByImpact, ...query
-    } = queries;
-
-    let findQuery: any = {
-      ...query,
-      userId,
-    };
-    if (search) {
-      findQuery = {
-        ...query,
-        $text: {
-          $search: search,
-          $caseSensitive: false,
-          $diacriticSensitive: false,
-        },
-      };
-    }
-    const populate = {
-      path: 'groupTypesId accessibilitiesId bussCategoriesId bussSubCategoriesId socialMedia.socialMediaId',
-      select: `${disSelect}`,
-      populate: {
-        path: 'icon',
-        select: `${disSelect}`,
-      },
-    };
-
-    const populate1 = {
-      path: 'dmoId authorityId productsId',
-      select: `${disSelect} -userId -collaboratorsUser`,
-    };
-    const select = `${disSelect}`;
-
-    let sort = 'createdAt';
-    let sortOrder = SortOrder.DESC;
-
-    if (sortByName) {
-      sort = 'name';
-      sortOrder = sortByName;
-    }
-
-    if (sortByImpact) {
-      sort = 'impact';
-      sortOrder = sortByImpact;
-    }
-
-    const allBusiness = await queryhandler<Business>(this.BusinessModel, {
-      findQuery,
-      select,
-      page: Number(page),
-      limit: Number(limit),
-      populate,
-      populate1,
-      sort,
-      sortOrder,
-    });
-
-    const businessesWithImage = await Promise.all(
-      allBusiness.data.map(async (business: Business) => {
-        const businessWithImages = business;
-
-        if (!businessWithImages?.images?.length) {
-          const defaultImage = await this.getDefaultImage();
-
-          businessWithImages.images = [defaultImage];
-        }
-
-        return businessWithImages;
-      }),
-    );
-
-    allBusiness.data = businessesWithImage;
-    return allBusiness;
-  }
-
-  async getMyBusiness(userId: string) {
-    const businesses = await this.BusinessModel.find({ userId });
-
-    return businesses;
   }
 
   async assignUsertoBusinesses(
@@ -1110,92 +759,67 @@ export class BusinessService {
     }
   }
 
-  async deleteImage(
-    loggedInUser: any,
-    id: string,
-    imageUrl: any,
-    businessImageType: string,
-  ): Promise<Business> {
-    try {
-      const existingBusiness = await this.getBusiness({
-        id,
-        loggedInUser,
-      });
+  // async deleteImage(
+  //   loggedInUser: any,
+  //   id: string,
+  //   imageUrl: any,
+  //   businessImageType: string,
+  // ): Promise<Business> {
+  //   try {
+  //     const existingBusiness = await this.getBusiness({
+  //       id,
+  //       loggedInUser,
+  //     });
 
-      let updatedField: any = {
-        updatedAt: new Date(),
-        updatedBy: loggedInUser.id,
-      };
+  //     let updatedField: any = {
+  //       updatedAt: new Date(),
+  //       updatedBy: loggedInUser.id,
+  //     };
 
-      if (businessImageType === 'logo') {
-        updatedField = {
-          ...updatedField,
-          logo: null,
-        };
-      }
-      if (businessImageType === 'cover') {
-        updatedField = {
-          ...updatedField,
-          cover: null,
-        };
-      }
-      if (businessImageType === 'images') {
-        const images = existingBusiness.images.filter(
-          image => image.image !== imageUrl,
-        );
+  //     if (businessImageType === 'logo') {
+  //       updatedField = {
+  //         ...updatedField,
+  //         logo: null,
+  //       };
+  //     }
+  //     if (businessImageType === 'cover') {
+  //       updatedField = {
+  //         ...updatedField,
+  //         cover: null,
+  //       };
+  //     }
+  //     if (businessImageType === 'images') {
+  //       const images = existingBusiness?.images?.filter(
+  //         image => image.image !== imageUrl,
+  //       );
 
-        updatedField = {
-          ...updatedField,
-          images,
-        };
-      }
+  //       updatedField = {
+  //         ...updatedField,
+  //         images,
+  //       };
+  //     }
 
-      const updateBusiness = await this.BusinessModel.findOneAndUpdate(
-        { _id: id },
-        updatedField,
-        { new: true },
-      );
-      if (!updateBusiness) {
-        throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
-      }
+  //     const updateBusiness = await this.BusinessModel.findOneAndUpdate(
+  //       { _id: id },
+  //       updatedField,
+  //       { new: true },
+  //     );
+  //     if (!updateBusiness) {
+  //       throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
+  //     }
 
-      this.logger.info(`[BUSINESS]: DELETED IMAGES for ${id}`);
+  //     this.logger.info(`[BUSINESS]: DELETED IMAGES for ${id}`);
 
-      await this.addToBusinessAuditTable(existingBusiness, updateBusiness);
+  //     await this.addToBusinessAuditTable(existingBusiness, updateBusiness);
 
-      return updateBusiness;
-    } catch (err) {
-      this.logger.error(`[BUSINESS]: FAILED TO DELETE IMAGE businessId:${id}`, {
-        err: err.message,
-      });
-      exceptionHandling(err);
-    }
-  }
-
-  async findByFieldItems(fieldNames: object): Promise<Business> {
-    const business = await findOneByFieldNames<Business>(
-      this.BusinessModel,
-      fieldNames,
-    );
-
-    return business;
-  }
-
-  async addProductToBusiness(id: string, productId: string) {
-    return await this.BusinessModel.findOneAndUpdate(
-      { _id: id },
-      { $push: { productsId: productId } },
-      { new: true },
-    );
-  }
-
-  async removeProductFromBusiness(id: string, productId: string) {
-    return await this.BusinessModel.findOneAndUpdate(
-      { _id: id },
-      { $pull: { productsId: productId } },
-      { new: true },
-    );
-  }
+  //     return updateBusiness;
+  //   } catch (err) {
+  //     this.logger.error(`[BUSINESS]: FAILED TO DELETE IMAGE businessId:${id}`, {
+  //       err: err.message,
+  //     });
+  //     exceptionHandling(err);
+  //   }
+  // }
 
   async findBusinessEmailByIds(ids: ObjectId[]) {
     try {
@@ -1207,16 +831,6 @@ export class BusinessService {
     } catch (error) {
       exceptionHandling(error);
     }
-  }
-
-  async findManyByFieldIds(fieldName: keyof Business, ids: string[]) {
-    const filterBy = { [fieldName]: { $in: ids } };
-    const businesses = await this.BusinessModel.find(filterBy)
-      .lean()
-      .select('_id');
-    const businessesId = businesses.map(item => item._id?.toString());
-
-    return businessesId;
   }
 
   async deleteBusinessesPostUserDelete(userId: string, loggedInUserId: string) {
@@ -1283,197 +897,6 @@ export class BusinessService {
         exceptionHandling(err);
       }
     }
-  }
-
-  async getStats(
-    loggedInUser: LoggedInUserInterface,
-    query: GetBusinessStatsQuery,
-  ) {
-    try {
-      const {
-        startDate, endDate, categoriesId, dmoId,
-      } = query;
-
-      const select = disSelect;
-
-      let findQuery: any = {
-        status: BusinessStatus.APPROVED,
-      };
-
-      if (categoriesId) {
-        const bussCategoriesId = Array.isArray(categoriesId)
-          ? categoriesId
-          : [categoriesId];
-
-        findQuery = {
-          ...findQuery,
-          bussCategoriesId: { $in: bussCategoriesId },
-        };
-      }
-
-      if (dmoId) {
-        findQuery = {
-          ...findQuery,
-          dmoId,
-        };
-      }
-
-      if (
-        loggedInUser.role === UserType.DMOADMIN
-        || loggedInUser.role === UserType.DMO
-      ) {
-        const dmoID = loggedInUser.dmo.id;
-        findQuery = {
-          ...findQuery,
-          dmoId: dmoID,
-        };
-      }
-
-      if (loggedInUser.role === UserType.TRAVELLER) {
-        findQuery = {
-          ...findQuery,
-          userId: loggedInUser.id,
-        };
-      }
-
-      if (loggedInUser.role === UserType.AUTHORITY) {
-        findQuery = {
-          ...findQuery,
-          authorityId: loggedInUser.authority.id,
-        };
-      }
-
-      let createdFindQuery: any = {
-        ...findQuery,
-        isDeleted: false,
-      };
-      let deletedFindQuery: any = {
-        ...findQuery,
-        isDeleted: true,
-      };
-
-      if (startDate && endDate) {
-        const createdStartDate = new Date(startDate);
-        const createdEndDate = new Date(endDate);
-        createdEndDate.setDate(createdEndDate.getDate() + 1);
-
-        if (createdStartDate >= createdEndDate) {
-          throw new BadRequestException(
-            `Created ${ServerErrors.DATE_IS_NOT_LESS}`,
-          );
-        }
-
-        createdFindQuery = {
-          ...createdFindQuery,
-          createdAt: {
-            $gte: createdStartDate,
-            $lt: createdEndDate,
-          },
-        };
-
-        deletedFindQuery = {
-          ...deletedFindQuery,
-          deletedAt: {
-            $gte: createdStartDate,
-            $lt: createdEndDate,
-          },
-          createdAt: {
-            $gte: createdStartDate,
-            $lt: createdEndDate,
-          },
-        };
-
-        const pastCreatedFindQuery = {
-          ...createdFindQuery,
-          createdAt: {
-            $lt: createdStartDate,
-          },
-        };
-
-        const pastDeletedFindQuery = {
-          ...deletedFindQuery,
-          deletedAt: {
-            $lt: createdStartDate,
-          },
-          createdAt: {
-            $lt: createdStartDate,
-          },
-        };
-
-        const [
-          createdBusinesses,
-          deletedBusinesses,
-          prevCreatedBusinesses,
-          prevDeletedBusinesses,
-        ] = await Promise.all([
-          queryhandler<Business>(this.BusinessModel, {
-            findQuery: createdFindQuery,
-            select,
-          }),
-          queryhandler<Business>(this.BusinessModel, {
-            findQuery: deletedFindQuery,
-            select,
-          }),
-          queryhandler<Business>(this.BusinessModel, {
-            findQuery: pastCreatedFindQuery,
-            select,
-          }),
-          queryhandler<Business>(this.BusinessModel, {
-            findQuery: pastDeletedFindQuery,
-            select,
-          }),
-        ]);
-
-        const newBusinessCreated = createdBusinesses.totalData;
-        const newBusinessDeleted = deletedBusinesses.totalData;
-        const prevTotalBusinesses
-          = prevCreatedBusinesses.totalData - prevDeletedBusinesses.totalData;
-
-        return {
-          newBusinessCreated,
-          newBusinessDeleted,
-          prevTotalBusinesses,
-          isGrowth: newBusinessCreated - newBusinessDeleted > 0,
-          growthPercentage: calculateGrowthPercentage(
-            prevTotalBusinesses,
-            newBusinessCreated,
-          ),
-        };
-      }
-
-      const [createdBusinesses, deletedBusinesses] = await Promise.all([
-        queryhandler<Business>(this.BusinessModel, {
-          findQuery: createdFindQuery,
-          select,
-        }),
-        queryhandler<Business>(this.BusinessModel, {
-          findQuery: deletedFindQuery,
-          select,
-        }),
-      ]);
-      const newBusinessCreated = createdBusinesses.totalData;
-      const newBusinessDeleted = deletedBusinesses.totalData;
-
-      return {
-        newBusinessCreated,
-        newBusinessDeleted,
-      };
-    } catch (err) {
-      exceptionHandling(err);
-    }
-  }
-
-  private async getDefaultImage() {
-    const getDefaultLogo = await this.mediaServices.getMediaByName(
-      defaultMetGoLogo,
-    );
-
-    return {
-      image: getDefaultLogo.url,
-      caption: getDefaultLogo.originalName,
-      alt: getDefaultLogo.originalName,
-      isPrimary: false,
-    };
   }
 
   private async addToBusinessAuditTable(oldDoc, newDoc) {

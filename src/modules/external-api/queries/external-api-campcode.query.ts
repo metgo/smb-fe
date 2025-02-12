@@ -1,9 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsString, IsNotEmpty } from 'class-validator';
+import { PaginationFilterQuery } from 'src/common/query-handler/pagination.query';
 
-import { ExternalApiFilterQuery } from 'src/modules/external-api/queries/external-api-filter.query';
-
-export class ExternalApiWithCampCodeFilterQuery extends ExternalApiFilterQuery {
+export class ExternalApiWithCampCodeFilterQuery extends PaginationFilterQuery {
   @ApiProperty({ type: String, required: true })
   @IsString()
   @IsNotEmpty()

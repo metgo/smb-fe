@@ -1,4 +1,10 @@
-import { Inject, Injectable, forwardRef } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Inject,
+  Injectable,
+  forwardRef,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import axios from 'axios';
 import { Model } from 'mongoose';
@@ -11,9 +17,10 @@ import {
   HebrewTemplate,
 } from 'src/common/mailchimp/templateId';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
-import { ConfigService } from '../config/config.service';
-import { Payment } from './schema/payments.schema';
 import { update, updateById } from 'src/core/helper/query-helper';
+
+import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interface';
+import { ConfigService } from '../config/config.service';
 import { BusinessService } from 'src/modules/business/services/business.service';
 import { OrdersService } from 'src/modules/orders/orders.services';
 import { ProductsService } from 'src/modules/products/products.services';
@@ -24,6 +31,11 @@ import {
   InvoiceCommand,
   PaymentPurpose,
 } from 'src/services/payments/payments.type';
+import { OrderPaymentDto } from 'src/services/payments/dto/initiate-order.dto';
+import { VoucherPaymentDto } from 'src/services/payments/dto/inititate-voucher.dto';
+import { UpdatePaymentProcessDto } from 'src/services/payments/dto/update-payment-process.dto';
+import { Payment } from 'src/services/payments/schema/payments.schema';
+import { PaymentMode } from 'src/modules/orders/orders.type';
 
 @Injectable()
 export class PaymentsService {
@@ -190,12 +202,15 @@ export class PaymentsService {
           payments.orderId,
         );
 
-        const [getProductInformation, businessDetails] = await Promise.all([
-          this.productsService.getProductInformationForOrders(
+        const getProductInformation
+          = await this.productsService.getProductInformationForOrders(
             updateOrder.products,
-          ),
-          this.businessService.findBusinessEmailByIds(updateOrder.businessId),
-        ]);
+          );
+
+        const businessIds = getProductInformation.map(pro => pro.businessId);
+
+        const businessDetails
+          = await this.businessService.findBusinessEmailByIds(businessIds);
 
         await this.mailchimpService.sendTransactionalEmail({
           to: updateOrder?.email,
@@ -307,7 +322,6 @@ export class PaymentsService {
                 BUYERNAME: `${updateOrder?.firstName} ${updateOrder?.lastName}`,
                 BUYERPHONE: `${updateOrder?.countryCode}-${updateOrder?.phone}`,
                 BUYEREMAIL: updateOrder?.email,
-                BUYERADDRESS: updateOrder?.address,
               },
             });
           }),
@@ -423,5 +437,270 @@ export class PaymentsService {
     });
 
     return response.data;
+  }
+
+  async startOrderPaymentProcess(
+    command: OrderPaymentDto,
+    loggedInUser?: LoggedInUserInterface,
+  ) {
+    try {
+      const orderInfo: any = await this.ordersService.findOneByIdAndPopulate(
+        command?.orderId,
+      );
+      const existPayment = await this.findByOrderId(command.orderId);
+
+      if (existPayment) {
+        throw new ForbiddenException('Multiple payment process');
+      }
+
+      if (orderInfo?.externalApiId?.identifierId !== command.identifierId) {
+        this.logger.error(
+          `[PAYMENT]: FAILED TO START PAYMENT PROCESS IN ${command.identifierId}, wrong identifierId`,
+        );
+        throw new ForbiddenException('You cannot process for checkout');
+      }
+
+      const payment = await this.PaymentModel.create({
+        ...command,
+        purpose: PaymentPurpose.ORDER,
+        currency: 'ILS',
+        customerName: command?.customerName || orderInfo?.firstName,
+        customerEmail: command?.customerEmail || orderInfo?.email,
+        paymentRequestId: command.lowProfileId,
+        status: PaymentStatus.PENDING,
+        createdBy: loggedInUser?.id,
+        createdAt: new Date(),
+      });
+
+      // update order
+      await this.ordersService.updatePostPaymentStart(
+        command.orderId,
+        {
+          paymentMode: orderInfo?.voucher?.length
+            ? [PaymentMode.VOUCHER, PaymentMode.CARD]
+            : [PaymentMode.CARD],
+          creditCardPayment: command.amount,
+        },
+        loggedInUser?.id,
+      );
+      this.logger.info(
+        `[${command.identifierId}-PAYMENT]: ORDER PAYMENT PROCESS STARTED`,
+        {
+          message: payment,
+        },
+      );
+
+      return payment;
+    } catch (err) {
+      this.logger.error(
+        `[${command.identifierId}-PAYMENT]: FAILED TO START ORDER PAYMENT PROCESS`,
+        {
+          err: err.message,
+        },
+      );
+      exceptionHandling(err);
+    }
+  }
+
+  async updateOrderPaymentProcess(
+    pageRequestUid: string,
+    body: UpdatePaymentProcessDto,
+    loggedInUser?: LoggedInUserInterface,
+  ) {
+    try {
+      if (body.status === PaymentStatus.FAILURE && !body?.failure_reason) {
+        throw new BadRequestException('Please provide a valid failure reason');
+      }
+      const updateField = {
+        ...body,
+        updatedAt: new Date(),
+        paymentDate: new Date(),
+        updatedBy: loggedInUser?.id,
+      };
+      const payments = await update<Payment>(
+        this.PaymentModel,
+        'paymentRequestId',
+        pageRequestUid,
+        updateField,
+      );
+
+      // if payment success
+      if (body?.status === PaymentStatus.SUCCESS) {
+        const updateOrder
+          = await this.ordersService.updateOrderPostSuccessPayment(
+            payments?.orderId,
+            loggedInUser,
+          );
+
+        // remove the freeze vouchers
+        if (updateOrder?.voucher && updateOrder?.voucher?.length) {
+          await this.voucherService.deleteFreezeVouchersPostSuccess(
+            updateOrder.voucher,
+            payments?.orderId,
+            loggedInUser,
+          );
+        }
+
+        // remove product freeze quantity
+        await this.productsService.deleteFreezeProductPostSuccess(
+          updateOrder.products,
+          payments?.orderId,
+          loggedInUser,
+        );
+      }
+
+      // if payment failure
+      if (body?.status === PaymentStatus.FAILURE) {
+        const updateOrder
+          = await this.ordersService.updateOrderPostFailurePayment(
+            payments?.orderId,
+            loggedInUser,
+          );
+
+        if (updateOrder?.voucher && updateOrder?.voucher?.length) {
+          await this.voucherService.reimburseFreezeVouchersPostFailure(
+            updateOrder.voucher,
+            payments?.orderId,
+            loggedInUser,
+          );
+        }
+
+        // reimburse product quantity
+
+        await this.productsService.reimburseFreezeProductsPostFailure(
+          updateOrder.products,
+          payments?.orderId,
+          loggedInUser,
+        );
+      }
+
+      return payments;
+    } catch (err) {
+      this.logger.error(
+        `[EXTERNAL API]: PAYMENT STATUS UPDATED >> err: ${err.message}`,
+        {
+          err: err.message,
+        },
+      );
+      exceptionHandling(err);
+    }
+  }
+
+  async startVoucherPaymentProcess(
+    command: VoucherPaymentDto,
+    loggedInUser?: LoggedInUserInterface,
+  ) {
+    try {
+      const voucherInfo: any = await this.voucherService.findByIds(
+        command.voucherId,
+      );
+
+      const existPayment = await this.findByVoucherId(command.voucherId);
+
+      if (existPayment) {
+        throw new ForbiddenException('Multiple payment process');
+      }
+
+      await Promise.all(
+        voucherInfo?.map(async voucher => {
+          if (voucher?.externalApiId?.identifierId !== command.identifierId) {
+            this.logger.error(
+              `[${command.identifierId} - PAYMENT]: FAILED TO START PAYMENT PROCESS-wrong identifierId`,
+            );
+            throw new ForbiddenException('You cannot process for checkout');
+          }
+        }),
+      );
+
+      const payment = await this.PaymentModel.create({
+        ...command,
+        purpose: PaymentPurpose.VOUCHER,
+        currency: 'ILS',
+        paymentRequestId: command.lowProfileId,
+        status: PaymentStatus.PENDING,
+        createdBy: loggedInUser?.id,
+        createdAt: new Date(),
+      });
+
+      this.logger.info(
+        `[${command.identifierId}-PAYMENT]: VOUCHER PAYMENT PROCESS STARTED`,
+        {
+          message: payment,
+        },
+      );
+
+      return payment;
+    } catch (err) {
+      this.logger.error(
+        `[${command.identifierId}-PAYMENT]: FAILED TO START VOUCHER PAYMENT PROCESS`,
+        {
+          err: err.message,
+        },
+      );
+      exceptionHandling(err);
+    }
+  }
+
+  async updateVoucherPaymentProcess(
+    pageRequestUid: string,
+    body: UpdatePaymentProcessDto,
+    loggedInUser?: LoggedInUserInterface,
+  ) {
+    try {
+      if (body.status === PaymentStatus.FAILURE && !body?.failure_reason) {
+        throw new BadRequestException('Please provide a valid failure reason');
+      }
+      const updateField = {
+        ...body,
+        updatedAt: new Date(),
+        paymentDate: new Date(),
+        updatedBy: loggedInUser?.id,
+      };
+      const payments = await update<Payment>(
+        this.PaymentModel,
+        'paymentRequestId',
+        pageRequestUid,
+        updateField,
+      );
+
+      // if payment success
+
+      await this.voucherService.updateVoucherPostPaymentUpdate(
+        payments?.voucherId,
+        body.status === PaymentStatus.SUCCESS
+          ? VoucherPaymentStatus.PAID
+          : VoucherPaymentStatus.FAILED,
+        loggedInUser,
+      );
+      return payments;
+    } catch (err) {
+      this.logger.error(
+        `[EXTERNAL API]: FAILED WHILE PAYING FOR VOUCHER - ${pageRequestUid} >> err: ${err.message}`,
+        {
+          err: err.message,
+        },
+      );
+      exceptionHandling(err);
+    }
+  }
+
+  async findByOrderId(orderId: string) {
+    try {
+      const payment = await this.PaymentModel.findOne({ orderId });
+
+      return payment;
+    } catch (err) {
+      exceptionHandling(err);
+    }
+  }
+
+  async findByVoucherId(voucherId: string[]) {
+    try {
+      const payment = await this.PaymentModel.findOne({ voucherId });
+
+      return payment;
+    } catch (err) {
+      exceptionHandling(err);
+    }
   }
 }

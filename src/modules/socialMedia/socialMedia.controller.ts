@@ -14,7 +14,7 @@ export class SocialMediaController {
   constructor(private readonly socialMediaService: SocialMediaService) {}
 
   @ApiEndpoint({
-    tags: ['Admin', 'Social Media'],
+    tags: ['Social Media'],
     response: {
       status: 200,
       description: ServerSuccess.SOCIAL_MEDIA_LISTED,

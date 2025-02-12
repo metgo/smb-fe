@@ -145,27 +145,27 @@ export class MediaServices {
     let deletedImage;
     // delete from business module
 
-    if (body.imageUrl === defaultMetGoLogoURL) return;
-    if (
-      body.reference === ReferenceType.BUSINESS
-      || body.reference === ReferenceType.POI
-      || body.reference === ReferenceType.EVENT
-    ) {
-      deletedImage = await this.businessService.deleteImage(
-        loggedInUser,
-        body.refId,
-        body.imageUrl,
-        body.businessImageType,
-      );
+    // if (body.imageUrl === defaultMetGoLogoURL) return;
+    // if (
+    //   body.reference === ReferenceType.BUSINESS
+    //   || body.reference === ReferenceType.POI
+    //   || body.reference === ReferenceType.EVENT
+    // ) {
+    //   deletedImage = await this.businessService.deleteImage(
+    //     loggedInUser,
+    //     body.refId,
+    //     body.imageUrl,
+    //     body.businessImageType,
+    //   );
 
-      // delete image in media
-      await this.MediaModel.deleteOne({
-        createdBy: loggedInUser.id,
-        'reference.refId': body.refId,
-        'reference.schema': body.reference,
-        url: body.imageUrl,
-      });
-    }
+    //   // delete image in media
+    //   await this.MediaModel.deleteOne({
+    //     createdBy: loggedInUser.id,
+    //     'reference.refId': body.refId,
+    //     'reference.schema': body.reference,
+    //     url: body.imageUrl,
+    //   });
+    // }
 
     // delete from product module
     if (body.reference === ReferenceType.PRODUCT) {

@@ -7,25 +7,19 @@ import {
   forwardRef,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { differenceInDays, subDays } from 'date-fns';
 import mongoose, { Model } from 'mongoose';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 
-import { calculateTotalAmount } from 'src/common/calculate-amounts';
+import { calculateProductsTotalAmount } from 'src/common/calculate-products-total-amount';
 import { ServerErrors } from 'src/common/constant';
-import {
-  Currency,
-  Locale,
-  PaymentStatus,
-  SortByTimePeriod,
-} from 'src/common/enum';
+import { Currency, Locale, PaymentStatus } from 'src/common/enum';
 import {
   EnglishTemplate,
   HebrewTemplate,
 } from 'src/common/mailchimp/templateId';
 import { paginationConfig } from 'src/common/pagination.config';
-import { calculateGrowthPercentage } from 'src/common/utils/calculate-growth-percentage';
+import { sortByPriorityAndHighest } from 'src/common/sort-priority-and-highest';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { disSelect } from 'src/common/utils/select.handling';
 import {
@@ -34,21 +28,29 @@ import {
   queryhandler,
   updateById,
 } from 'src/core/helper/query-helper';
+
 import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interface';
 import { BusinessService } from 'src/modules/business/services/business.service';
+import { CartService } from 'src/modules/cart/cart.service';
+import { CartStatus } from 'src/modules/cart/cart.types';
+import { StartCheckoutDto } from 'src/modules/orders/dto/start-checkout.dto';
 import { UpdateOrderDto } from 'src/modules/orders/dto/update-order.dto';
 import { GetAllOrdersInterface } from 'src/modules/orders/interface/get-all-orders.interface';
-import { GetOrdersStatsQuery } from 'src/modules/orders/queries';
 import { Order } from 'src/modules/orders/schema/orders.schema';
 import { ProductsService } from 'src/modules/products/products.services';
 import { UserType } from 'src/modules/users/users.type';
 import { VoucherService } from 'src/modules/vouchers/voucher.service';
+import { CreateOrderDto } from 'src/modules/orders/dto';
 import { OrderStatus, PaymentMode } from 'src/modules/orders/orders.type';
 import { OrderProductService } from 'src/modules/order-product/order-product.services';
+
 import { PaymentsService } from 'src/services/payments/payments.service';
 import { PaymentPurpose } from 'src/services/payments/payments.type';
 import { MailChimpService } from 'src/services/mailchimp/mailchimp.service';
 import { CreateOrderCommand } from 'src/modules/orders/interface/create-order.interface';
+import { ExternalApiServices } from 'src/modules/external-api/external-api.service';
+import { QRCodeService } from 'src/services/qr-code/qr-code.service';
+import { ConfigService } from 'src/services/config/config.service';
 
 @Injectable()
 export class OrdersService {
@@ -65,159 +67,391 @@ export class OrdersService {
     private readonly voucherService: VoucherService,
     @Inject(forwardRef(() => PaymentsService))
     private readonly paymentService: PaymentsService,
+    private readonly externalApiService: ExternalApiServices,
+    private readonly cartService: CartService,
+    private readonly qrCodeService: QRCodeService,
+    private readonly configService: ConfigService,
   ) {}
 
-  async create(command: CreateOrderCommand): Promise<any> {
+  async startCheckOutProcess(
+    body: CreateOrderDto,
+    loggedInUser?: LoggedInUserInterface,
+  ): Promise<any> {
     try {
-      const {
-        loggedInUserId,
-        body,
-        redeemedVouchers,
-        totalAmount,
-        actualAmountOfProduct,
-      } = command;
+      const cartDetails = await this.cartService.findOneById(body.cartId);
 
-      if (totalAmount <= 0) {
-        const newOrder = new this.OrderModel({
-          ...body,
-          voucher: redeemedVouchers,
-          userId: loggedInUserId ?? null,
-          createdBy: loggedInUserId ?? null,
-          createdAt: new Date(),
-          paymentStatus: PaymentStatus.SUCCESS,
-          status: OrderStatus.PROCESSING,
-          creditCardPayment: totalAmount,
-          paymentMode: [PaymentMode.VOUCHER],
-          totalAmount: actualAmountOfProduct,
-        });
-
-        const order = await newOrder.save();
-
-        this.logger.info('[ORDER]: CREATED-PAID BY VOUCHER', {
-          message: order,
-        });
-
-        await Promise.all(
-          order.products.map(async product => {
-            await this.orderProductService.create({
-              productId: product.id,
-              quantity: product.quantity,
-              loggedInUserId,
-              orderId: order.id,
-            });
-          }),
+      if (cartDetails?.status !== CartStatus.PENDING) {
+        throw new BadRequestException(
+          'This cart is no longer available to checkout',
         );
-
-        const [getProductInformation, businessDetails] = await Promise.all([
-          this.productsService.getProductInformationForOrders(body.products),
-          this.businessService.findBusinessEmailByIds(order.businessId),
-        ]);
-
-        await this.mailchimpService.sendTransactionalEmail({
-          to: order?.email,
-          templatedId:
-            body?.languagePreference === Locale.HEBREW
-              ? HebrewTemplate.OrderConfirmationForClient
-              : EnglishTemplate.OrderConfirmationForClient,
-          mergeVars: {
-            BUYERNAME: order?.firstName,
-            BUSINESSNAME: businessDetails[0]?.name || '',
-            PRODUCTNAME: getProductInformation[0]?.name,
-            QUANTITY: body?.products[0]?.quantity,
-            COST: getProductInformation[0]?.price?.sellingPrice,
-            TOTALAMOUNT: order?.totalAmount,
-            BUSINESSPHONE:
-              `${businessDetails[0]?.countryCode}-${businessDetails[0]?.phoneNumber}`
-              || '',
-            BUSINESSEMAIL: businessDetails[0]?.busiEmail || '',
-            BUSINESSADDRESS: businessDetails[0]?.address?.location || '',
-          },
-        });
-
-        // SEND TO BUSINESS OWNER
-        await Promise.all(
-          businessDetails.map(async business => {
-            if (!business?.busiEmail) return;
-            await this.mailchimpService.sendTransactionalEmail({
-              to: business?.busiEmail,
-              templatedId:
-                body?.languagePreference === Locale.HEBREW
-                  ? HebrewTemplate.OrderReceivedForBusiness
-                  : EnglishTemplate.OrderReceivedForBusiness,
-              mergeVars: {
-                BUSINESSNAME: business?.name || '',
-                PRODUCTNAME: getProductInformation[0]?.name,
-                QUANTITY: body?.products[0]?.quantity,
-                COST: getProductInformation[0]?.price?.sellingPrice,
-                TOTALAMOUNT: order?.totalAmount,
-                BUYERNAME: `${body?.firstName} ${body?.lastName}`,
-                BUYERPHONE: `${body?.countryCode}-${body?.phone}`,
-                BUYEREMAIL: body?.email,
-                BUYERADDRESS: body?.address,
-              },
-            });
-          }),
-        );
-
-        // send invoice
-        await this.paymentService.sendInvoice({
-          customerName: order?.firstName,
-          customerEmail: order?.email,
-          invoiceType: 101,
-          product: [
-            {
-              id: getProductInformation[0]?._id?.toString(),
-              price: order?.totalAmount,
-              name: getProductInformation[0]?.name,
-            },
-          ],
-          transactionId: parseInt(order._id?.toString(), 10),
-          purpose: PaymentPurpose.ORDER,
-          sumPaid: order?.totalAmount,
-          languagePreference: body?.languagePreference,
-          additionalInformation: 'Paid via Voucher',
-        });
-
-        return;
       }
 
-      const newOrder = new this.OrderModel({
+      const productIds = cartDetails.product.map(product => product.id.toString());
+
+      const productsFromDB = await this.productsService.findManyById(
+        productIds,
+      );
+
+      const { actualAmountOfProduct, cartItems }
+        = await calculateProductsTotalAmount(
+          cartDetails?.product,
+          productsFromDB,
+        );
+
+      let totalAmountToPay = actualAmountOfProduct + body.deliveryFee;
+
+      let redeemedVouchers;
+      if (body?.voucher?.length) {
+        const voucherIds = body.voucher.map(voucher => voucher.id);
+        const vouchers = await this.voucherService.findByValidIds(voucherIds);
+
+        if (vouchers?.length) {
+          const sortedVoucher = sortByPriorityAndHighest(
+            totalAmountToPay,
+            vouchers,
+          );
+
+          if (sortedVoucher?.length) {
+            redeemedVouchers = await this.processVouchers(
+              loggedInUser?.id ?? null,
+              sortedVoucher,
+              totalAmountToPay,
+            );
+
+            if (redeemedVouchers?.length) {
+              const redeemedAmount = redeemedVouchers.reduce(
+                (total, item) => total + item.redeemedAmount,
+                0,
+              );
+              totalAmountToPay -= redeemedAmount;
+            }
+          }
+        }
+      }
+
+      const order = await this.createOrder({
+        loggedInUser,
+        body,
+        redeemedVouchers,
+        totalAmount: totalAmountToPay,
+        actualAmountOfProduct,
+        productInfo: productsFromDB,
+        cartItems,
+      });
+
+      return order;
+    } catch (error) {
+      this.logger.error('[ORDER]: FAILED TO CREATE ORDER', {
+        err: error.message,
+      });
+      exceptionHandling(error);
+    }
+  }
+
+  async createOrder(orderCommand: CreateOrderCommand): Promise<any> {
+    const {
+      loggedInUser,
+      body,
+      redeemedVouchers,
+      totalAmount,
+      actualAmountOfProduct,
+      productInfo,
+      cartItems,
+    } = orderCommand;
+
+    try {
+      const newOrder = new this.OrderModel();
+
+      const qrCodeUrl = await this.qrCodeService.generateQRCode(
+        `${this.configService.get(
+          'BASE_URL',
+        )}orders/${newOrder._id.toString()}`,
+        newOrder._id.toString(),
+        loggedInUser,
+      );
+
+      const command = {
         ...body,
+        _id: newOrder._id,
+        products: cartItems,
         voucher: redeemedVouchers,
-        userId: loggedInUserId ?? null,
-        createdBy: loggedInUserId ?? null,
+        userId: loggedInUser?.id ?? null,
+        createdBy: loggedInUser?.id ?? null,
         createdAt: new Date(),
-        paymentStatus: PaymentStatus.PENDING,
         creditCardPayment: totalAmount,
-        paymentMode:
-          totalAmount === actualAmountOfProduct
-            ? [PaymentMode.CARD]
-            : [PaymentMode.CARD, PaymentMode.VOUCHER],
         totalAmount: actualAmountOfProduct,
+        qrCodeUrl,
+      };
+
+      if (totalAmount <= 0) {
+        return await this.createOrderWithNoCardComPayment(
+          command,
+          productInfo,
+          cartItems,
+          loggedInUser,
+        );
+      }
+
+      return await this.createOrderWithCardComPayment(
+        command,
+        totalAmount,
+        actualAmountOfProduct,
+        loggedInUser,
+      );
+    } catch (error) {
+      this.logger.error('[EXTERNAL_API_ORDERS]: FAILED TO CREATE ORDER', {
+        err: error.message,
+      });
+      exceptionHandling(error);
+    }
+  }
+
+  async createOrderWithCardComPayment(
+    command,
+    totalAmount,
+    actualAmountOfProduct,
+    loggedInUser,
+  ) {
+    const orderWithQR = new this.OrderModel({
+      ...command,
+      paymentStatus: PaymentStatus.PENDING,
+      paymentMode:
+        totalAmount === actualAmountOfProduct
+          ? [PaymentMode.CARD]
+          : [PaymentMode.CARD, PaymentMode.VOUCHER],
+    });
+
+    const order = await orderWithQR.save();
+    await this.cartService.updateCartPostCheckout(
+      command.cartId,
+      order._id,
+      loggedInUser,
+    );
+
+    this.logger.info(
+      `[EXTERNAL_API_ORDERS]: CREATED-PAID BY ${order.paymentMode}`,
+      { message: order },
+    );
+
+    const link = await this.paymentService.generateLink({
+      amount: totalAmount,
+      currency: Currency.ILS,
+      purpose: PaymentPurpose.ORDER,
+      id: order.id,
+      customerEmail: command.email,
+      customerName: command.firstName,
+      languagePreference: command?.languagePreference || Locale.ENGLISH,
+    });
+
+    this.logger.info(
+      `[EXTERNAL_API_ORDERS]: PAYMENT LINK SENT >> link: ${link}`,
+    );
+
+    return [link];
+  }
+
+  async createOrderWithNoCardComPayment(
+    command,
+    productInfo,
+    cartItems,
+    loggedInUser,
+  ) {
+    const orderWithQR = new this.OrderModel({
+      ...command,
+      paymentStatus: PaymentStatus.SUCCESS,
+      status: OrderStatus.PROCESSING,
+      paymentMode: [PaymentMode.VOUCHER],
+    });
+
+    const order = await orderWithQR.save();
+
+    this.logger.info('[EXTERNAL_API_ORDERS]: CREATED-PAID BY VOUCHER', {
+      message: order,
+    });
+
+    await Promise.all([
+      this.productsService.deductQuantity(cartItems),
+      order.products.map(async product => {
+        await this.orderProductService.create({
+          productId: product.id,
+          quantity: product.quantity,
+          loggedInUserId: loggedInUser?.id,
+          orderId: order.id,
+        });
+      }),
+      // update cart status
+      this.cartService.updateCartPostCheckout(
+        command.cartId,
+        order._id,
+        loggedInUser,
+      ),
+    ]);
+
+    const businessIds = productInfo.map(pro => pro.businessId);
+
+    const businessDetails = await this.businessService.findBusinessEmailByIds(
+      businessIds,
+    );
+
+    const productsHtml = productInfo
+      .map(product => {
+        const matchingProduct = cartItems.find(
+          p => p.id.toString() === product._id.toString(),
+        );
+        return `
+          <div class="single-product">
+              <div class="order-item" dir="rtl">
+                  <img src="${product.images?.[0]?.image || ''}" alt="${
+  product.name
+}">
+                  <div class="product-info">
+                      <span class="product-name">${product.name}</span>
+                      <span class="product-quantity">כמות: ${
+  matchingProduct?.quantity || 1
+} יח'</span>
+                  </div>
+                  <p class="product-price">${
+  product.price?.sellingPrice || ''
+} ש"ח</p>
+              </div>
+          </div>
+        `;
+      })
+      .join('');
+
+    await this.mailchimpService.sendTransactionalEmail({
+      to: order?.email,
+      templatedId:
+        command?.languagePreference === Locale.HEBREW
+          ? HebrewTemplate.OrderConfirmationForClient
+          : EnglishTemplate.OrderConfirmationForClient,
+      mergeVars: {
+        BUYERNAME: order?.firstName,
+        BUSINESSNAME: businessDetails[0]?.name || '',
+        PRODUCTS_HTML: productsHtml, // Now passing the full HTML instead of an array
+        TOTALAMOUNT: order?.totalAmount,
+        BUSINESSPHONE:
+          `${businessDetails[0]?.countryCode}-${businessDetails[0]?.phoneNumber}`
+          || '',
+        BUSINESSEMAIL: businessDetails[0]?.busiEmail || '',
+        BUSINESSADDRESS: businessDetails[0]?.address?.location || '',
+        QRCODEURL: order?.qrCodeUrl || '',
+      },
+    });
+
+    // SEND TO BUSINESS OWNER
+    await Promise.all(
+      businessDetails.map(async business => {
+        if (!business?.busiEmail) return;
+        await this.mailchimpService.sendTransactionalEmail({
+          to: business?.busiEmail,
+          templatedId:
+            command?.languagePreference === Locale.HEBREW
+              ? HebrewTemplate.OrderReceivedForBusiness
+              : EnglishTemplate.OrderReceivedForBusiness,
+          mergeVars: {
+            BUSINESSNAME: business?.name || '',
+            PRODUCTNAME: productInfo[0]?.name,
+            QUANTITY: productInfo[0]?.quantity,
+            COST: productInfo[0]?.price?.sellingPrice,
+            TOTALAMOUNT: order?.totalAmount,
+            BUYERNAME: `${command?.firstName} ${command?.lastName}`,
+            BUYERPHONE: `${command?.countryCode}-${command?.phone}`,
+            BUYEREMAIL: command?.email,
+            BUYERADDRESS: cartItems[0].address,
+          },
+        });
+      }),
+    );
+
+    // send invoice
+    await this.paymentService.sendInvoice({
+      customerName: order?.firstName,
+      customerEmail: order?.email,
+      invoiceType: 101,
+      product: [
+        {
+          id: productInfo[0]?._id?.toString(),
+          price: order?.totalAmount,
+          name: productInfo[0]?.name,
+        },
+      ],
+      transactionId: parseInt(order._id?.toString(), 10),
+      purpose: PaymentPurpose.ORDER,
+      sumPaid: order?.totalAmount,
+      languagePreference: command?.languagePreference,
+      additionalInformation: 'Paid via Voucher',
+    });
+
+    return order;
+  }
+
+  // shaleev
+  async processCheckout(
+    body: StartCheckoutDto,
+    loggedInUser?: LoggedInUserInterface,
+  ): Promise<any> {
+    try {
+      const { cartId, ...command } = body;
+
+      const externalApiId = (
+        await this.externalApiService.findByIdentifierId(command.identifierId)
+      )._id;
+
+      if (!cartId) {
+        throw new BadRequestException('Please enter valid cart details');
+      }
+
+      let businessId = [];
+
+      const cartDetail = await this.cartService.findOneByIdAndPopulate(cartId);
+
+      await Promise.all(
+        command.products?.map(async (product: any) => {
+          if (!product.id) {
+            return;
+          }
+
+          const productDetail = await this.productsService.findOne(product.id);
+
+          businessId = [...businessId, productDetail?.businessId?._id];
+        }),
+      );
+
+      // freeze the voucher
+      //  calling a api instead we need to freeze voucher here instead
+      const newOrder = new this.OrderModel({
+        ...command,
+        businessId,
+        userId: loggedInUser?.id,
+        status: OrderStatus.PENDING,
+        paymentStatus: PaymentStatus.PENDING,
+        totalAmount: cartDetail.totalAmount,
+        externalApiId,
+        createdBy: loggedInUser?.id,
+        createdAt: new Date(),
       });
 
       const order = await newOrder.save();
 
-      this.logger.info(`[ORDER]: CREATED-PAID BY ${order.paymentMode}`, {
+      await this.cartService.updateCartPostCheckout(
+        cartId,
+        order._id,
+        loggedInUser,
+      );
+
+      this.logger.info(`[${externalApiId} - ORDERS]: Start to create order`, {
         message: order,
       });
 
-      const link = await this.paymentService.generateLink({
-        amount: totalAmount,
-        currency: Currency.ILS,
-        purpose: PaymentPurpose.ORDER,
-        id: order.id,
-        customerEmail: body.email,
-        customerName: `${body.firstName} ${body.lastName}`,
-        languagePreference: body?.languagePreference || Locale.ENGLISH,
-      });
-
-      this.logger.info('[ORDER]: PAYMENT LINK SENT', { message: link });
-      return [link];
+      return order;
     } catch (error) {
-      this.logger.error('[ORDER]: FAILED TO CREATE', {
-        err: error.message,
-      });
+      this.logger.error(
+        `[${body.identifierId} - ORDERS]:  FAILED TO CREATE ORDER WHILE STARTING TO CHECKOUT`,
+        {
+          err: error.message,
+        },
+      );
       exceptionHandling(error);
     }
   }
@@ -294,9 +528,9 @@ export class OrdersService {
   }
 
   async update(
-    loggedInUserId: string,
     id: string,
     body: UpdateOrderDto,
+    loggedInUserId?: string,
   ): Promise<Order> {
     try {
       const updatedField = {
@@ -354,27 +588,101 @@ export class OrdersService {
   }
 
   async updateOrder(
-    loggedInUser: LoggedInUserInterface,
     orderId: string,
     body: UpdateOrderDto,
+    loggedInUser?: LoggedInUserInterface,
   ): Promise<Order> {
     try {
-      const order = await this.checkIfAllowed(loggedInUser, orderId);
+      const order = await this.findOneById(orderId);
 
       if (!order) {
         throw new ForbiddenException(ServerErrors.FORBIDDEN);
       }
 
+      // update vouchers
+      // update products
+      const updatedOrder = await this.update(orderId, body, loggedInUser?.id);
+
       this.logger.info('[ORDER]: UPDATED', { message: order });
-
-      const updatedOrder = await this.update(loggedInUser.id, orderId, body);
-
       return updatedOrder;
     } catch (error) {
       this.logger.error('[ORDER]: FAILED TO UPDATE', {
         err: error.message,
       });
       exceptionHandling(error);
+    }
+  }
+
+  async updateOrderPostSuccessPayment(
+    orderId: string,
+    loggedInUser?: LoggedInUserInterface,
+  ): Promise<Order> {
+    try {
+      const updatedField = {
+        paymentStatus: PaymentStatus.SUCCESS,
+        status: OrderStatus.PROCESSING,
+        updatedAt: new Date(),
+        updatedBy: loggedInUser?.id,
+      };
+
+      const updateOrder = await updateById<Order>(
+        this.OrderModel,
+        orderId,
+        updatedField,
+      );
+
+      this.logger.info('[ORDER]: UPDATED AFTER PAYMENT SUCCESS', {
+        message: updateOrder,
+      });
+
+      await Promise.all(
+        updateOrder.products.map(async product => {
+          await this.orderProductService.create({
+            productId: product.id,
+            quantity: product.quantity,
+            loggedInUserId: updateOrder.userId,
+            orderId: updateOrder.id,
+          });
+        }),
+      );
+
+      return updateOrder;
+    } catch (err) {
+      this.logger.error('[ORDER]: FAILED TO UPDATE AFTER PAYMENT SUCCESS', {
+        err: err.message,
+      });
+      exceptionHandling(err);
+    }
+  }
+
+  async updateOrderPostFailurePayment(
+    orderId: string,
+    loggedInUser: LoggedInUserInterface,
+  ): Promise<Order> {
+    try {
+      const updatedField = {
+        paymentStatus: PaymentStatus.FAILURE,
+        status: OrderStatus.CANCELED,
+        updatedAt: new Date(),
+        updatedBy: loggedInUser?.id,
+      };
+
+      const updateOrder = await updateById<Order>(
+        this.OrderModel,
+        orderId,
+        updatedField,
+      );
+
+      this.logger.info('[ORDER]: UPDATED AFTER PAYMENT FAILED', {
+        message: updateOrder,
+      });
+
+      return updateOrder;
+    } catch (err) {
+      this.logger.error('[ORDER]: FAILED TO UPDATE AFTER PAYMENT FAILURE', {
+        err: err.message,
+      });
+      exceptionHandling(err);
     }
   }
 
@@ -483,286 +791,69 @@ export class OrdersService {
       await processVouchers(voucherIds);
       voucherInfo.filter(Boolean);
 
-      this.logger.info('[ORDER]: PROCESS VOUCHERS FOR ORDER', {
+      this.logger.info('[EXTERNAL_API_ORDER]: PROCESSED VOUCHER FOR ORDER', {
         message: voucherInfo,
       });
 
       return voucherInfo;
     } catch (err) {
-      this.logger.error('[ORDER]: FAILED TO PROCESS VOUCHERS FOR ORDER', {
+      this.logger.error(
+        '[EXTERNAL_API_ORDER]: FAILED TO PROCESS VOUCHER FOR ORDER',
+        {
+          err: err.message,
+        },
+      );
+      exceptionHandling(err);
+    }
+  }
+
+  async findOneByIdAndPopulate(id: string) {
+    try {
+      const populate = {
+        path: 'externalApiId',
+        select: '_id, identifierId',
+      };
+      const order = await this.OrderModel.findById(id).populate(populate);
+
+      if (!order) {
+        throw new NotFoundException(ServerErrors.ORDERS.NOT_FOUND);
+      }
+
+      return order;
+    } catch (err) {
+      exceptionHandling(err);
+    }
+  }
+
+  async updatePostPaymentStart(
+    id: string,
+    body: any,
+    loggedInUserId?: string,
+  ): Promise<Order> {
+    try {
+      const updatedField = {
+        ...body,
+        updatedBy: loggedInUserId,
+        updatedAt: new Date(),
+      };
+      const updateOrder = await this.OrderModel.findOneAndUpdate(
+        { _id: id },
+        updatedField,
+        { new: true },
+      );
+
+      if (!updateOrder) {
+        throw new NotFoundException(ServerErrors.ORDERS.NOT_FOUND);
+      }
+
+      this.logger.info('[ORDER]: UPDATED', { message: updateOrder });
+
+      return updateOrder;
+    } catch (err) {
+      this.logger.error('[ORDER]: FAILED TO UPDATE', {
         err: err.message,
       });
       exceptionHandling(err);
-    }
-  }
-
-  async getStats(
-    loggedInUser: LoggedInUserInterface,
-    query: GetOrdersStatsQuery,
-  ) {
-    try {
-      const { startDate, endDate } = query;
-
-      const select = disSelect;
-
-      let findQuery: any = { paymentStatus: PaymentStatus.SUCCESS };
-
-      if (loggedInUser.role === UserType.TRAVELLER) {
-        findQuery = {
-          ...findQuery,
-          userId: loggedInUser.id,
-        };
-      }
-      let createdFindQuery: any = {
-        ...findQuery,
-        isDeleted: false,
-      };
-
-      if (startDate && endDate) {
-        const createdStartDate = new Date(startDate);
-        const createdEndDate = new Date(endDate);
-        createdEndDate.setDate(createdEndDate.getDate() + 1);
-
-        if (createdStartDate >= createdEndDate) {
-          throw new BadRequestException(
-            `Created ${ServerErrors.DATE_IS_NOT_LESS}`,
-          );
-        }
-
-        const difference = differenceInDays(createdEndDate, createdStartDate);
-
-        const newStartDate = subDays(createdStartDate, difference);
-
-        createdFindQuery = {
-          ...createdFindQuery,
-          createdAt: {
-            $gte: createdStartDate,
-            $lt: createdEndDate,
-          },
-        };
-
-        const pastCreatedFindQuery = {
-          ...createdFindQuery,
-          createdAt: {
-            $gte: newStartDate,
-            $lt: createdStartDate,
-          },
-        };
-
-        const [newCreatedOrders, prevCreatedOrders] = await Promise.all([
-          queryhandler<Order>(this.OrderModel, {
-            findQuery: createdFindQuery,
-            select,
-          }),
-
-          queryhandler<Order>(this.OrderModel, {
-            findQuery: pastCreatedFindQuery,
-            select,
-          }),
-        ]);
-
-        const newOrdersCount = newCreatedOrders.totalData;
-        const prevOrdersCount = prevCreatedOrders.totalData;
-
-        const [totalAmount, totalAmountPrev, amountPaidByCard]
-          = await Promise.all([
-            calculateTotalAmount('totalAmount', newCreatedOrders.data),
-            calculateTotalAmount('totalAmount', prevCreatedOrders.data),
-            calculateTotalAmount('creditCardPayment', newCreatedOrders.data),
-          ]);
-
-        const amountPaidByVouchers = totalAmount - amountPaidByCard;
-
-        return {
-          newOrdersCount,
-          prevOrdersCount,
-          isGrowthInCount: newOrdersCount > prevOrdersCount,
-          countGrowthPercentage: calculateGrowthPercentage(
-            prevOrdersCount,
-            newOrdersCount,
-          ),
-          totalAmount,
-          totalAmountPrev,
-          isGrowthInAmount: totalAmount > totalAmountPrev,
-          orderAmountGrowthPercentage: calculateGrowthPercentage(
-            totalAmountPrev,
-            totalAmount,
-          ),
-          amountPaidByCard,
-          amountPaidByVouchers,
-        };
-      }
-
-      const newOrders = await queryhandler<Order>(this.OrderModel, {
-        findQuery: createdFindQuery,
-        select,
-      });
-
-      const [totalAmount, amountPaidByCard] = await Promise.all([
-        calculateTotalAmount('totalAmount', newOrders.data),
-        calculateTotalAmount('creditCardPayment', newOrders.data),
-      ]);
-
-      return {
-        newOrdersNo: newOrders.totalData,
-        totalAmount,
-        amountPaidByCard,
-        amountPaidByVouchers: totalAmount - amountPaidByCard,
-      };
-    } catch (err) {
-      exceptionHandling(err);
-    }
-  }
-
-  async getOrderStats(
-    loggedInUser: LoggedInUserInterface,
-    query: GetOrdersStatsQuery,
-  ) {
-    try {
-      const {
-        startDate, endDate, dmoId, sortBy, authorityId,
-      } = query;
-      let findQuery: any = { paymentStatus: PaymentStatus.SUCCESS };
-
-      if (loggedInUser.role === UserType.TRAVELLER) {
-        findQuery = {
-          ...findQuery,
-          userId: loggedInUser.id,
-        };
-      }
-
-      if (startDate && endDate) {
-        const createdStartDate = new Date(startDate);
-        const createdEndDate = new Date(endDate);
-        createdEndDate.setDate(createdEndDate.getDate() + 1);
-
-        if (createdStartDate >= createdEndDate) {
-          throw new BadRequestException(
-            `Created ${ServerErrors.DATE_IS_NOT_LESS}`,
-          );
-        }
-
-        findQuery = {
-          ...findQuery,
-          createdAt: {
-            $gte: createdStartDate,
-            $lt: createdEndDate,
-          },
-        };
-      }
-
-      const pipeline: any[] = [
-        { $match: findQuery },
-        {
-          $unwind: '$products',
-        },
-      ];
-
-      let dmoID;
-
-      if (loggedInUser.role === UserType.SUPERADMIN && dmoId) {
-        dmoID = dmoId;
-      }
-
-      if ([UserType.DMOADMIN, UserType.DMO].includes(loggedInUser.role)) {
-        dmoID = loggedInUser.dmo.id;
-      }
-
-      if (dmoID) {
-        pipeline.push(
-          {
-            $lookup: {
-              from: 'products',
-              localField: 'products.id',
-              foreignField: '_id',
-              as: 'matchedProducts',
-            },
-          },
-          {
-            $match: {
-              'matchedProducts.dmoId': new mongoose.Types.ObjectId(dmoID),
-            },
-          },
-        );
-      }
-
-      let authorityID;
-
-      if (
-        [
-          UserType.SUPERADMIN,
-          UserType.ADMIN,
-          UserType.DMOADMIN,
-          UserType.DMO,
-        ].includes(loggedInUser.role)
-        && dmoId
-      ) {
-        authorityID = authorityId;
-      }
-
-      // check if selected authority belongs to given dmo
-
-      if (
-        [UserType.AUTHORITY, UserType.AUTHORITY_ADMIN].includes(
-          loggedInUser.role,
-        )
-      ) {
-        authorityID = loggedInUser.authority.id;
-      }
-
-      if (authorityID) {
-        pipeline.push(
-          {
-            $lookup: {
-              from: 'products',
-              localField: 'products.id',
-              foreignField: '_id',
-              as: 'matchedProducts',
-            },
-          },
-          {
-            $match: {
-              'matchedProducts.authorityId': new mongoose.Types.ObjectId(
-                authorityId,
-              ),
-            },
-          },
-        );
-      }
-
-      let format = {
-        $dateToString: { format: '%Y-%m-%d', date: '$createdAt' },
-      };
-      if (sortBy === SortByTimePeriod.WEEKLY) {
-        format = { $dateToString: { format: '%Y-%U', date: '$createdAt' } };
-      }
-
-      if (sortBy === SortByTimePeriod.MONTHLY) {
-        format = { $dateToString: { format: '%Y-%m', date: '$createdAt' } };
-      }
-
-      if (sortBy === SortByTimePeriod.YEARLY) {
-        format = { $dateToString: { format: '%Y', date: '$createdAt' } };
-      }
-      pipeline.push(
-        {
-          $group: {
-            _id: format,
-            totalNumber: { $sum: 1 },
-            totalQuantity: { $sum: 1 },
-            totalAmount: { $sum: '$totalAmount' },
-            amountPaidByCreditCard: { $sum: '$creditCardPayment' },
-          },
-        },
-        { $sort: { _id: 1 } },
-      );
-
-      const grouped = await this.OrderModel.aggregate(pipeline);
-
-      return grouped;
-    } catch (err) {
-      exceptionHandling(err);
-      throw err;
     }
   }
 }
