@@ -198,40 +198,11 @@ export class PaymentsService {
       }
 
       if (payments?.purpose === PaymentPurpose.ORDER) {
-        const updateOrder = await this.ordersService.updateAfterPaymentSuccess(
-          payments.orderId,
-        );
-
-        const getProductInformation
-          = await this.productsService.getProductInformationForOrders(
-            updateOrder.products,
+        const { updateOrder, getProductInformation }
+          = await this.ordersService.updateAfterPaymentSuccess(
+            payments.orderId,
+            query?.languagePreference,
           );
-
-        const businessIds = getProductInformation.map(pro => pro.businessId);
-
-        const businessDetails
-          = await this.businessService.findBusinessEmailByIds(businessIds);
-
-        await this.mailchimpService.sendTransactionalEmail({
-          to: updateOrder?.email,
-          templatedId:
-            query?.languagePreference === Locale.HEBREW
-              ? HebrewTemplate.OrderConfirmationForClient
-              : EnglishTemplate.OrderConfirmationForClient,
-          mergeVars: {
-            BUYERNAME: updateOrder?.firstName,
-            BUSINESSNAME: businessDetails[0]?.name || '',
-            PRODUCTNAME: getProductInformation[0]?.name,
-            QUANTITY: 1,
-            COST: getProductInformation[0]?.price?.sellingPrice,
-            TOTALAMOUNT: updateOrder?.totalAmount,
-            BUSINESSPHONE:
-              `${businessDetails[0]?.countryCode}-${businessDetails[0]?.phoneNumber}`
-              || '',
-            BUSINESSEMAIL: businessDetails[0]?.busiEmail || '',
-            BUSINESSADDRESS: businessDetails[0]?.address?.location || '',
-          },
-        });
 
         if (updateOrder?.totalAmount === updateOrder?.creditCardPayment) {
           const invoiceDetail = await this.sendInvoice({
@@ -301,31 +272,6 @@ export class PaymentsService {
             });
           }
         }
-
-        // SEND TO BUSINESS OWNER
-
-        await Promise.all(
-          businessDetails.map(async business => {
-            if (!business?.busiEmail) return;
-            await this.mailchimpService.sendTransactionalEmail({
-              to: business?.busiEmail,
-              templatedId:
-                query?.languagePreference === Locale.HEBREW
-                  ? HebrewTemplate.OrderReceivedForBusiness
-                  : EnglishTemplate.OrderReceivedForBusiness,
-              mergeVars: {
-                BUSINESSNAME: business?.name || '',
-                PRODUCTNAME: getProductInformation[0]?.name,
-                QUANTITY: 1,
-                COST: getProductInformation[0]?.price?.sellingPrice,
-                TOTALAMOUNT: updateOrder?.totalAmount,
-                BUYERNAME: `${updateOrder?.firstName} ${updateOrder?.lastName}`,
-                BUYERPHONE: `${updateOrder?.countryCode}-${updateOrder?.phone}`,
-                BUYEREMAIL: updateOrder?.email,
-              },
-            });
-          }),
-        );
       }
     } catch (err) {
       this.logger.error(`[PAYMENT]: PAYMENT FAILED >> err: ${err.message}`, {
@@ -502,89 +448,89 @@ export class PaymentsService {
     }
   }
 
-  async updateOrderPaymentProcess(
-    pageRequestUid: string,
-    body: UpdatePaymentProcessDto,
-    loggedInUser?: LoggedInUserInterface,
-  ) {
-    try {
-      if (body.status === PaymentStatus.FAILURE && !body?.failure_reason) {
-        throw new BadRequestException('Please provide a valid failure reason');
-      }
-      const updateField = {
-        ...body,
-        updatedAt: new Date(),
-        paymentDate: new Date(),
-        updatedBy: loggedInUser?.id,
-      };
-      const payments = await update<Payment>(
-        this.PaymentModel,
-        'paymentRequestId',
-        pageRequestUid,
-        updateField,
-      );
+  // async updateOrderPaymentProcess(
+  //   pageRequestUid: string,
+  //   body: UpdatePaymentProcessDto,
+  //   loggedInUser?: LoggedInUserInterface,
+  // ) {
+  //   try {
+  //     if (body.status === PaymentStatus.FAILURE && !body?.failure_reason) {
+  //       throw new BadRequestException('Please provide a valid failure reason');
+  //     }
+  //     const updateField = {
+  //       ...body,
+  //       updatedAt: new Date(),
+  //       paymentDate: new Date(),
+  //       updatedBy: loggedInUser?.id,
+  //     };
+  //     const payments = await update<Payment>(
+  //       this.PaymentModel,
+  //       'paymentRequestId',
+  //       pageRequestUid,
+  //       updateField,
+  //     );
 
-      // if payment success
-      if (body?.status === PaymentStatus.SUCCESS) {
-        const updateOrder
-          = await this.ordersService.updateOrderPostSuccessPayment(
-            payments?.orderId,
-            loggedInUser,
-          );
+  //     // if payment success
+  //     if (body?.status === PaymentStatus.SUCCESS) {
+  //       const updateOrder
+  //         = await this.ordersService.updateOrderPostSuccessPayment(
+  //           payments?.orderId,
+  //           loggedInUser,
+  //         );
 
-        // remove the freeze vouchers
-        if (updateOrder?.voucher && updateOrder?.voucher?.length) {
-          await this.voucherService.deleteFreezeVouchersPostSuccess(
-            updateOrder.voucher,
-            payments?.orderId,
-            loggedInUser,
-          );
-        }
+  //       // remove the freeze vouchers
+  //       if (updateOrder?.voucher && updateOrder?.voucher?.length) {
+  //         await this.voucherService.deleteFreezeVouchersPostSuccess(
+  //           updateOrder.voucher,
+  //           payments?.orderId,
+  //           loggedInUser,
+  //         );
+  //       }
 
-        // remove product freeze quantity
-        await this.productsService.deleteFreezeProductPostSuccess(
-          updateOrder.products,
-          payments?.orderId,
-          loggedInUser,
-        );
-      }
+  //       // remove product freeze quantity
+  //       await this.productsService.deleteFreezeProductPostSuccess(
+  //         updateOrder.products,
+  //         payments?.orderId,
+  //         loggedInUser,
+  //       );
+  //     }
 
-      // if payment failure
-      if (body?.status === PaymentStatus.FAILURE) {
-        const updateOrder
-          = await this.ordersService.updateOrderPostFailurePayment(
-            payments?.orderId,
-            loggedInUser,
-          );
+  //     // if payment failure
+  //     if (body?.status === PaymentStatus.FAILURE) {
+  //       const updateOrder
+  //         = await this.ordersService.updateOrderPostFailurePayment(
+  //           payments?.orderId,
+  //           loggedInUser,
+  //         );
 
-        if (updateOrder?.voucher && updateOrder?.voucher?.length) {
-          await this.voucherService.reimburseFreezeVouchersPostFailure(
-            updateOrder.voucher,
-            payments?.orderId,
-            loggedInUser,
-          );
-        }
+  //       if (updateOrder?.voucher && updateOrder?.voucher?.length) {
+  //         await this.voucherService.reimburseFreezeVouchersPostFailure(
+  //           updateOrder.voucher,
+  //           payments?.orderId,
+  //           loggedInUser,
+  //         );
+  //       }
 
-        // reimburse product quantity
+  //       // reimburse product quantity
 
-        await this.productsService.reimburseFreezeProductsPostFailure(
-          updateOrder.products,
-          payments?.orderId,
-          loggedInUser,
-        );
-      }
+  //       await this.productsService.reimburseFreezeProductsPostFailure(
+  //         updateOrder.products,
+  //         payments?.orderId,
+  //         loggedInUser,
+  //       );
+  //     }
 
-      return payments;
-    } catch (err) {
-      this.logger.error(
-        `[EXTERNAL API]: PAYMENT STATUS UPDATED >> err: ${err.message}`,
-        {
-          err: err.message,
-        },
-      );
-      exceptionHandling(err);
-    }
-  }
+  //     return payments;
+  //   } catch (err) {
+  //     this.logger.error(
+  //       `[EXTERNAL API]: PAYMENT STATUS UPDATED >> err: ${err.message}`,
+  //       {
+  //         err: err.message,
+  //       },
+  //     );
+  //     exceptionHandling(err);
+  //   }
+  // }
 
   async startVoucherPaymentProcess(
     command: VoucherPaymentDto,

@@ -26,7 +26,7 @@ export class OrderProductService {
     private readonly productsService: ProductsService,
   ) {}
 
-  async create(command: CreateOrderProductCommand): Promise<any> {
+  async create(command: CreateOrderProductCommand): Promise<OrderProduct> {
     try {
       const product = await this.productsService.findOne(command.productId);
 

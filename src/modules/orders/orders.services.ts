@@ -51,6 +51,9 @@ import { CreateOrderCommand } from 'src/modules/orders/interface/create-order.in
 import { ExternalApiServices } from 'src/modules/external-api/external-api.service';
 import { QRCodeService } from 'src/services/qr-code/qr-code.service';
 import { ConfigService } from 'src/services/config/config.service';
+import { OrderProduct } from 'src/modules/order-product/schema/order-product.schema';
+import { Product } from 'src/modules/products/schema/products.schema';
+import { CampaignService } from 'src/modules/campaign/campaign.service';
 
 @Injectable()
 export class OrdersService {
@@ -71,6 +74,7 @@ export class OrdersService {
     private readonly cartService: CartService,
     private readonly qrCodeService: QRCodeService,
     private readonly configService: ConfigService,
+    private readonly campaignService: CampaignService,
   ) {}
 
   async startCheckOutProcess(
@@ -129,13 +133,16 @@ export class OrdersService {
         }
       }
 
+      const products = productIds.map(id => ({ id }));
+
       const order = await this.createOrder({
         loggedInUser,
         body,
         redeemedVouchers,
         totalAmount: totalAmountToPay,
         actualAmountOfProduct,
-        productInfo: productsFromDB,
+        products,
+        productDetails: productsFromDB,
         cartItems,
       });
 
@@ -155,11 +162,16 @@ export class OrdersService {
       redeemedVouchers,
       totalAmount,
       actualAmountOfProduct,
-      productInfo,
+      products,
+      productDetails,
       cartItems,
     } = orderCommand;
 
     try {
+      const campDetails = await this.campaignService.findCampaignAndReturn(
+        'code',
+        body.campCode,
+      );
       const newOrder = new this.OrderModel();
 
       const qrCodeUrl = await this.qrCodeService.generateQRCode(
@@ -173,7 +185,7 @@ export class OrdersService {
       const command = {
         ...body,
         _id: newOrder._id,
-        products: cartItems,
+        products,
         voucher: redeemedVouchers,
         userId: loggedInUser?.id ?? null,
         createdBy: loggedInUser?.id ?? null,
@@ -181,12 +193,13 @@ export class OrdersService {
         creditCardPayment: totalAmount,
         totalAmount: actualAmountOfProduct,
         qrCodeUrl,
+        campId: campDetails._id,
       };
 
       if (totalAmount <= 0) {
         return await this.createOrderWithNoCardComPayment(
           command,
-          productInfo,
+          productDetails,
           cartItems,
           loggedInUser,
         );
@@ -252,9 +265,9 @@ export class OrdersService {
 
   async createOrderWithNoCardComPayment(
     command,
-    productInfo,
+    productInfo: Product[],
     cartItems,
-    loggedInUser,
+    loggedInUser: LoggedInUserInterface | null,
   ) {
     const orderWithQR = new this.OrderModel({
       ...command,
@@ -269,16 +282,33 @@ export class OrdersService {
       message: order,
     });
 
-    await Promise.all([
-      this.productsService.deductQuantity(cartItems),
+    const orderProduct = await Promise.all(
       order.products.map(async product => {
-        await this.orderProductService.create({
-          productId: product.id,
-          quantity: product.quantity,
+        const cartItem = cartItems.find(
+          item => item.id.toString() === product.id.toString(),
+        );
+        return await this.orderProductService.create({
+          productId: cartItem?.id,
+          quantity: cartItem?.quantity,
+          email: cartItem?.email,
+          countryCode: cartItem?.countryCode,
+          phone: cartItem?.phone,
+          firstName: cartItem?.firstName,
+          lastName: cartItem?.lastName,
+          deliveryMethod: cartItem?.deliveryMethod,
+          deliveryArea: cartItem?.deliveryArea,
+          deliveryPickupLocation: cartItem?.deliveryPickupLocation,
+          houseNo: cartItem?.houseNo,
+          apartment: cartItem?.apartment,
+          additionalInfo: cartItem?.additionalInfo,
+          amount: cartItem?.amount,
           loggedInUserId: loggedInUser?.id,
           orderId: order.id,
         });
       }),
+    );
+    await Promise.all([
+      this.productsService.deductQuantity(cartItems),
       // update cart status
       this.cartService.updateCartPostCheckout(
         command.cartId,
@@ -287,95 +317,27 @@ export class OrdersService {
       ),
     ]);
 
-    const businessIds = productInfo.map(pro => pro.businessId);
-
-    const businessDetails = await this.businessService.findBusinessEmailByIds(
-      businessIds,
+    await this.sendEmailPostOrderPayment(
+      productInfo,
+      order,
+      orderProduct,
+      command?.languagePreference,
     );
-
-    const productsHtml = productInfo
-      .map(product => {
-        const matchingProduct = cartItems.find(
-          p => p.id.toString() === product._id.toString(),
-        );
-        return `
-          <div class="single-product">
-              <div class="order-item" dir="rtl">
-                  <img src="${product.images?.[0]?.image || ''}" alt="${
-  product.name
-}">
-                  <div class="product-info">
-                      <span class="product-name">${product.name}</span>
-                      <span class="product-quantity">כמות: ${
-  matchingProduct?.quantity || 1
-} יח'</span>
-                  </div>
-                  <p class="product-price">${
-  product.price?.sellingPrice || ''
-} ש"ח</p>
-              </div>
-          </div>
-        `;
-      })
-      .join('');
-
-    await this.mailchimpService.sendTransactionalEmail({
-      to: order?.email,
-      templatedId:
-        command?.languagePreference === Locale.HEBREW
-          ? HebrewTemplate.OrderConfirmationForClient
-          : EnglishTemplate.OrderConfirmationForClient,
-      mergeVars: {
-        BUYERNAME: order?.firstName,
-        BUSINESSNAME: businessDetails[0]?.name || '',
-        PRODUCTS_HTML: productsHtml, // Now passing the full HTML instead of an array
-        TOTALAMOUNT: order?.totalAmount,
-        BUSINESSPHONE:
-          `${businessDetails[0]?.countryCode}-${businessDetails[0]?.phoneNumber}`
-          || '',
-        BUSINESSEMAIL: businessDetails[0]?.busiEmail || '',
-        BUSINESSADDRESS: businessDetails[0]?.address?.location || '',
-        QRCODEURL: order?.qrCodeUrl || '',
-      },
-    });
-
-    // SEND TO BUSINESS OWNER
-    await Promise.all(
-      businessDetails.map(async business => {
-        if (!business?.busiEmail) return;
-        await this.mailchimpService.sendTransactionalEmail({
-          to: business?.busiEmail,
-          templatedId:
-            command?.languagePreference === Locale.HEBREW
-              ? HebrewTemplate.OrderReceivedForBusiness
-              : EnglishTemplate.OrderReceivedForBusiness,
-          mergeVars: {
-            BUSINESSNAME: business?.name || '',
-            PRODUCTNAME: productInfo[0]?.name,
-            QUANTITY: productInfo[0]?.quantity,
-            COST: productInfo[0]?.price?.sellingPrice,
-            TOTALAMOUNT: order?.totalAmount,
-            BUYERNAME: `${command?.firstName} ${command?.lastName}`,
-            BUYERPHONE: `${command?.countryCode}-${command?.phone}`,
-            BUYEREMAIL: command?.email,
-            BUYERADDRESS: cartItems[0].address,
-          },
-        });
-      }),
-    );
-
     // send invoice
+
+    const productInvoice = await Promise.all(
+      productInfo?.map(pro => ({
+        id: pro._id.toString(),
+        price: pro?.price?.sellingPrice,
+        name: pro?.name,
+      })),
+    );
+
     await this.paymentService.sendInvoice({
       customerName: order?.firstName,
       customerEmail: order?.email,
       invoiceType: 101,
-      product: [
-        {
-          id: productInfo[0]?._id?.toString(),
-          price: order?.totalAmount,
-          name: productInfo[0]?.name,
-        },
-      ],
+      product: productInvoice,
       transactionId: parseInt(order._id?.toString(), 10),
       purpose: PaymentPurpose.ORDER,
       sumPaid: order?.totalAmount,
@@ -456,7 +418,10 @@ export class OrdersService {
     }
   }
 
-  async updateAfterPaymentSuccess(orderId: string): Promise<Order> {
+  async updateAfterPaymentSuccess(
+    orderId: string,
+    languagePreference?: Locale,
+  ): Promise<{ updateOrder: Order; getProductInformation: Product[] }> {
     try {
       const updatedField = {
         paymentStatus: PaymentStatus.SUCCESS,
@@ -473,18 +438,54 @@ export class OrdersService {
         message: updateOrder,
       });
 
-      await Promise.all(
+      const findCartDetail = await this.cartService.findOneByOrderId(orderId);
+
+      const getProductInformation
+        = await this.productsService.getProductInformationForOrders(
+          updateOrder.products,
+        );
+      const orderProduct = await Promise.all(
         updateOrder.products.map(async product => {
-          await this.orderProductService.create({
-            productId: product.id,
-            quantity: product.quantity,
+          const cartItem = findCartDetail.product.find(
+            item => item.id.toString() === product.id.toString(),
+          );
+
+          const productsInfo = getProductInformation.find(
+            item => item._id.toString() === product.id.toString(),
+          );
+
+          return await this.orderProductService.create({
+            productId: new mongoose.Types.ObjectId(cartItem.id),
+            quantity: cartItem.quantity,
+            email: cartItem.email,
+            countryCode: cartItem.countryCode,
+            phone: cartItem.phone,
+            firstName: cartItem.firstName,
+            lastName: cartItem.lastName,
+            deliveryMethod: cartItem.deliveryMethod,
+            deliveryArea: cartItem.deliveryArea,
+            deliveryPickupLocation: cartItem.deliveryPickupLocation,
+            houseNo: cartItem.houseNo,
+            apartment: cartItem.apartment,
+            additionalInfo: cartItem.additionalInfo,
+            amount: productsInfo.price.sellingPrice,
             loggedInUserId: updateOrder.userId,
             orderId: updateOrder.id,
           });
         }),
       );
 
-      return updateOrder;
+      await this.sendEmailPostOrderPayment(
+        getProductInformation,
+        updateOrder,
+        orderProduct,
+        languagePreference,
+      );
+
+      return {
+        updateOrder,
+        getProductInformation,
+      };
     } catch (err) {
       this.logger.error('[ORDER]: FAILED TO UPDATE AFTER PAYMENT SUCCESS', {
         err: err.message,
@@ -613,47 +614,47 @@ export class OrdersService {
     }
   }
 
-  async updateOrderPostSuccessPayment(
-    orderId: string,
-    loggedInUser?: LoggedInUserInterface,
-  ): Promise<Order> {
-    try {
-      const updatedField = {
-        paymentStatus: PaymentStatus.SUCCESS,
-        status: OrderStatus.PROCESSING,
-        updatedAt: new Date(),
-        updatedBy: loggedInUser?.id,
-      };
+  // async updateOrderPostSuccessPayment(
+  //   orderId: string,
+  //   loggedInUser?: LoggedInUserInterface,
+  // ): Promise<Order> {
+  //   try {
+  //     const updatedField = {
+  //       paymentStatus: PaymentStatus.SUCCESS,
+  //       status: OrderStatus.PROCESSING,
+  //       updatedAt: new Date(),
+  //       updatedBy: loggedInUser?.id,
+  //     };
 
-      const updateOrder = await updateById<Order>(
-        this.OrderModel,
-        orderId,
-        updatedField,
-      );
+  //     const updateOrder = await updateById<Order>(
+  //       this.OrderModel,
+  //       orderId,
+  //       updatedField,
+  //     );
 
-      this.logger.info('[ORDER]: UPDATED AFTER PAYMENT SUCCESS', {
-        message: updateOrder,
-      });
+  //     this.logger.info('[ORDER]: UPDATED AFTER PAYMENT SUCCESS', {
+  //       message: updateOrder,
+  //     });
 
-      await Promise.all(
-        updateOrder.products.map(async product => {
-          await this.orderProductService.create({
-            productId: product.id,
-            quantity: product.quantity,
-            loggedInUserId: updateOrder.userId,
-            orderId: updateOrder.id,
-          });
-        }),
-      );
+  //     await Promise.all(
+  //       updateOrder.products.map(async product => {
+  //         await this.orderProductService.create({
+  //           productId: product.id,
+  //           quantity: product.quantity,
+  //           loggedInUserId: updateOrder.userId,
+  //           orderId: updateOrder.id,
+  //         });
+  //       }),
+  //     );
 
-      return updateOrder;
-    } catch (err) {
-      this.logger.error('[ORDER]: FAILED TO UPDATE AFTER PAYMENT SUCCESS', {
-        err: err.message,
-      });
-      exceptionHandling(err);
-    }
-  }
+  //     return updateOrder;
+  //   } catch (err) {
+  //     this.logger.error('[ORDER]: FAILED TO UPDATE AFTER PAYMENT SUCCESS', {
+  //       err: err.message,
+  //     });
+  //     exceptionHandling(err);
+  //   }
+  // }
 
   async updateOrderPostFailurePayment(
     orderId: string,
@@ -855,5 +856,89 @@ export class OrdersService {
       });
       exceptionHandling(err);
     }
+  }
+
+  async sendEmailPostOrderPayment(
+    productInfo: Product[],
+    order: Order,
+    orderProduct: OrderProduct[],
+    languagePreference?: Locale,
+  ) {
+    const businessIds = productInfo.map(pro => pro.businessId);
+
+    const businessDetails = await this.businessService.findBusinessEmailByIds(
+      businessIds,
+    );
+
+    const productsHtml = productInfo
+      .map(product => {
+        const matchingProduct = orderProduct.find(
+          p => p.productId.toString() === product._id.toString(),
+        );
+        return `
+          <div class="single-product">
+              <div class="order-item" dir="rtl">
+                  <img src="${product.images?.[0]?.image || ''}" alt="${
+  product.name
+}">
+                  <div class="product-info">
+                      <span class="product-name">${product.name}</span>
+                      <span class="product-quantity">כמות: ${
+  matchingProduct?.quantity || 1
+} יח'</span>
+                  </div>
+                  <p class="product-price">${
+  product.price?.sellingPrice || ''
+} ש"ח</p>
+              </div>
+          </div>
+        `;
+      })
+      .join('');
+
+    await this.mailchimpService.sendTransactionalEmail({
+      to: order?.email,
+      templatedId:
+        languagePreference === Locale.ENGLISH
+          ? EnglishTemplate.OrderConfirmationForClient
+          : HebrewTemplate.OrderConfirmationForClient,
+      mergeVars: {
+        BUYERNAME: order?.firstName,
+        BUSINESSNAME: businessDetails[0]?.name || '',
+        PRODUCTS_HTML: productsHtml, // Now passing the full HTML instead of an array
+        TOTALAMOUNT: order?.totalAmount,
+        BUSINESSPHONE:
+          `${businessDetails[0]?.countryCode}-${businessDetails[0]?.phoneNumber}`
+          || '',
+        BUSINESSEMAIL: businessDetails[0]?.busiEmail || '',
+        BUSINESSADDRESS: businessDetails[0]?.address?.location || '',
+        QRCODEURL: order?.qrCodeUrl || '',
+      },
+    });
+
+    // SEND TO BUSINESS OWNER
+    await Promise.all(
+      businessDetails.map(async business => {
+        if (!business?.busiEmail) return;
+        await this.mailchimpService.sendTransactionalEmail({
+          to: business?.busiEmail,
+          templatedId:
+            languagePreference === Locale.ENGLISH
+              ? EnglishTemplate.OrderReceivedForBusiness
+              : HebrewTemplate.OrderReceivedForBusiness,
+          mergeVars: {
+            BUSINESSNAME: business?.name || '',
+            PRODUCTNAME: productInfo[0]?.name,
+            QUANTITY: productInfo[0]?.quantity,
+            COST: productInfo[0]?.price?.sellingPrice,
+            TOTALAMOUNT: order?.totalAmount,
+            BUYERNAME: `${order?.firstName} ${order?.lastName}`,
+            BUYERPHONE: `${order?.countryCode}-${order?.phone}`,
+            BUYEREMAIL: order?.email,
+            BUYERADDRESS: orderProduct[0].deliveryArea,
+          },
+        });
+      }),
+    );
   }
 }

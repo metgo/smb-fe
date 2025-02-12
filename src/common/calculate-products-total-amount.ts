@@ -27,8 +27,18 @@ export async function calculateProductsTotalAmount(
           cartItems.push({
             id: payloadProduct.id,
             quantity: payloadProduct.quantity,
-            address: payloadProduct?.address,
-            price: dbProduct?.price?.sellingPrice,
+            amount: dbProduct?.price?.sellingPrice,
+            email: payloadProduct.email,
+            countryCode: payloadProduct.countryCode,
+            phone: payloadProduct.phone,
+            firstName: payloadProduct.firstName,
+            lastName: payloadProduct.lastName,
+            deliveryMethod: payloadProduct.deliveryMethod,
+            deliveryArea: payloadProduct.deliveryArea,
+            deliveryPickupLocation: payloadProduct.deliveryPickupLocation,
+            houseNo: payloadProduct.houseNo,
+            apartment: payloadProduct.apartment,
+            additionalInfo: payloadProduct.additionalInfo,
           });
           return sum + payloadProduct.quantity * dbProduct.price.sellingPrice;
         }

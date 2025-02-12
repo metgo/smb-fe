@@ -4,6 +4,7 @@ import mongoose, { HydratedDocument } from 'mongoose';
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
 import { Campaign } from 'src/modules/campaign/schema/campaign.schema';
 import { CartStatus } from 'src/modules/cart/cart.types';
+import { DeliveryMethod } from '../orders/orders.type';
 
 @Schema({})
 export class Cart extends AuditableSchema {
@@ -21,7 +22,17 @@ export class Cart extends AuditableSchema {
       {
         id: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
         quantity: Number,
-        address: String,
+        email: String,
+        countryCode: String,
+        phone: String,
+        firstName: String,
+        lastName: String,
+        deliveryMethod: { type: String, enum: Object.values(DeliveryMethod) },
+        deliveryArea: String,
+        deliveryPickupLocation: String,
+        houseNo: String,
+        apartment: String,
+        additionalInfo: String,
       },
     ],
   })
@@ -29,7 +40,17 @@ export class Cart extends AuditableSchema {
     {
       id: mongoose.Types.ObjectId;
       quantity: number;
-      address: string;
+      email: string;
+      countryCode: string;
+      phone: string;
+      firstName: string;
+      lastName: string;
+      deliveryMethod: DeliveryMethod;
+      deliveryArea: string;
+      deliveryPickupLocation: string;
+      houseNo: string;
+      apartment: string;
+      additionalInfo: string;
     }
   ];
 

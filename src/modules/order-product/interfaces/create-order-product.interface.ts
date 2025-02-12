@@ -1,8 +1,21 @@
 import mongoose from 'mongoose';
+import { DeliveryMethod } from 'src/modules/orders/orders.type';
 
 export interface CreateOrderProductCommand {
   productId: mongoose.Types.ObjectId;
   quantity: number;
+  email: string;
+  countryCode: string;
+  phone: string;
+  firstName: string;
+  lastName: string;
+  deliveryMethod: DeliveryMethod;
+  deliveryArea: string;
+  deliveryPickupLocation: string;
+  houseNo: string;
+  apartment: string;
+  additionalInfo: string;
+  amount: number;
   loggedInUserId?: mongoose.Types.ObjectId | string;
   orderId: string;
 }
