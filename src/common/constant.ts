@@ -131,6 +131,7 @@ export const ServerErrors = {
   VOUCHER: {
     NOT_FOUND: 'Voucher not found',
     EXISTS: 'Voucher already exists',
+    NO_BALANCE: 'This voucher has no balance and is not applicable.',
     UNPAID:
       'Access to the voucher is forbidden until payment is made successfully',
     CANNOT_UPDATE_BALANCE:

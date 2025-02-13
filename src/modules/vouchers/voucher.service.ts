@@ -425,34 +425,52 @@ export class VoucherService {
 
   async getOneByCodeAndProduct(query: GetOneVoucherInterface) {
     try {
-      const { code, productId } = query;
-      const select = disSelect;
-      const populate = {
-        path: 'campId',
-        select: `${disSelect}`,
-      };
+      const { code, productId, campCode } = query;
+
+      const campDetails = await this.campaignService.findCampaignAndReturn(
+        'code',
+        campCode,
+      );
+
+      const productDetail = await this.productService.findOne(productId);
+
+      if (
+        !campDetails?.productIds?.length
+        && !campDetails?.businessIds?.length
+        && !campDetails?.dmoIds?.length
+      ) {
+        throw new ForbiddenException(
+          'This product doesnt belong to this campaign',
+        );
+      }
+
+      if (
+        !campDetails.dmoIds.includes(productDetail?.dmoId?._id)
+        && !campDetails.businessIds.includes(productDetail?.businessId)
+        && !campDetails.productIds.includes(productDetail?._id)
+      ) {
+        throw new ForbiddenException(
+          'This product doesnt belong to this campaign',
+        );
+      }
 
       const findQuery: any = {
         code: code.trim(),
+        campId: campDetails._id,
+        isDeleted: false,
       };
 
       const voucher: any = await this.VoucherModel.findOne(findQuery)
-        .select(select)
-        .populate(populate)
+        .select('_id code remainingAmount expireDate paymentStatus')
         .exec();
 
       if (!voucher) {
         throw new BadRequestException(ServerErrors.VOUCHER.NOT_FOUND);
       }
 
-      const dmoOfProduct = (await this.productService.findOne(productId))?.dmoId
-        ?._id;
-
-      // check if campaign Id has the dmo
-      if (!voucher?.campId?.dmoIds.includes(dmoOfProduct)) {
-        throw new ForbiddenException(
-          'This voucher is not eligible for this product',
-        );
+      if (voucher.paymentStatus !== VoucherPaymentStatus.PAID) {
+        throw new ForbiddenException(ServerErrors.VOUCHER.UNPAID);
+        // throw new PaymentRequiredException(ServerErrors.VOUCHER.UNPAID);
       }
 
       if (voucher.expireDate) {
@@ -463,8 +481,8 @@ export class VoucherService {
         }
       }
 
-      if (voucher.paymentStatus !== VoucherPaymentStatus.PAID) {
-        throw new ForbiddenException(ServerErrors.VOUCHER.UNPAID);
+      if (!voucher.remainingAmount) {
+        throw new UnprocessableEntityException(ServerErrors.VOUCHER.NO_BALANCE);
       }
 
       return voucher;

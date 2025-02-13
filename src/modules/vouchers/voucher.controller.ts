@@ -204,6 +204,7 @@ export class VoucherController {
     const voucher = await this.voucherService.getOneByCodeAndProduct({
       code,
       productId: query.productId,
+      campCode: query.campCode,
     });
     return voucher;
   }
