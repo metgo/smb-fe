@@ -27,6 +27,7 @@ import {
   VoucherPaymentStatus,
   VoucherStatus,
 } from 'src/common/enum';
+import { PaymentRequiredException } from 'src/common/exception/payment-required';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { generateRandomCode } from 'src/common/utils/randomCode.generator';
 import { remainingAmountCalculation } from 'src/common/utils/remaining-amount-calculation';
@@ -41,7 +42,6 @@ import { disSelect } from 'src/common/utils/select.handling';
 import { ServerErrors, emailDefaultTemplate } from 'src/common/constant';
 import { MailChimpService } from 'src/services/mailchimp/mailchimp.service';
 import { OrdersService } from 'src/modules/orders/orders.services';
-import { PaymentsService } from 'src/services/payments/payments.service';
 import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interface';
 import { CampaignService } from 'src/modules/campaign/campaign.service';
 import { ProductsService } from 'src/modules/products/products.services';
@@ -79,7 +79,6 @@ export class VoucherService {
     @InjectModel('Voucher')
     private readonly VoucherModel: Model<Voucher>,
     private readonly configService: ConfigService,
-    private readonly paymentService: PaymentsService,
     private readonly campaignService: CampaignService,
     private readonly externalApiServices: ExternalApiServices,
     private readonly orderService: OrdersService,
@@ -469,8 +468,7 @@ export class VoucherService {
       }
 
       if (voucher.paymentStatus !== VoucherPaymentStatus.PAID) {
-        throw new ForbiddenException(ServerErrors.VOUCHER.UNPAID);
-        // throw new PaymentRequiredException(ServerErrors.VOUCHER.UNPAID);
+        throw new PaymentRequiredException(ServerErrors.VOUCHER.UNPAID);
       }
 
       if (voucher.expireDate) {
