@@ -1,4 +1,5 @@
 import {
+  IsBoolean,
   IsEmail,
   IsEnum,
   IsNotEmpty,
@@ -73,6 +74,21 @@ export class UpdateCartDto {
   @IsOptional()
   @ApiProperty()
     apartment: string;
+
+  @IsString()
+  @IsOptional()
+  @ApiProperty()
+    city: string;
+
+  @IsString()
+  @IsOptional()
+  @ApiProperty()
+    street: string;
+
+  @IsBoolean()
+  @IsOptional()
+  @ApiProperty()
+    isGift: boolean;
 
   @IsString()
   @IsOptional()

@@ -38,6 +38,9 @@ export async function calculateProductsTotalAmount(
             deliveryPickupLocation: payloadProduct.deliveryPickupLocation,
             houseNo: payloadProduct.houseNo,
             apartment: payloadProduct.apartment,
+            city: payloadProduct.city,
+            street: payloadProduct.street,
+            isGift: payloadProduct.isGift,
             additionalInfo: payloadProduct.additionalInfo,
           });
           return sum + payloadProduct.quantity * dbProduct.price.sellingPrice;

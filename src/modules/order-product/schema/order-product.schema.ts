@@ -67,6 +67,15 @@ export class OrderProduct extends AuditableSchema {
     apartment: string;
 
   @Prop({ default: null })
+    city: string;
+
+  @Prop({ default: null })
+    street: string;
+
+  @Prop({ default: false, type: Boolean })
+    isGift: boolean;
+
+  @Prop({ default: null })
     additionalInfo: string;
 }
 

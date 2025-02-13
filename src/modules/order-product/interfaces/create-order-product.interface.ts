@@ -14,6 +14,9 @@ export interface CreateOrderProductCommand {
   deliveryPickupLocation: string;
   houseNo: string;
   apartment: string;
+  city: string;
+  street: string;
+  isGift: boolean;
   additionalInfo: string;
   amount: number;
   loggedInUserId?: mongoose.Types.ObjectId | string;

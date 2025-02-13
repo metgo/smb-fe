@@ -140,6 +140,9 @@ export class CartService {
           = command?.deliveryPickupLocation;
         existingProductInCart[productIndex].houseNo = command?.houseNo;
         existingProductInCart[productIndex].apartment = command?.apartment;
+        existingProductInCart[productIndex].city = command?.city;
+        existingProductInCart[productIndex].street = command?.street;
+        existingProductInCart[productIndex].isGift = command?.isGift;
         existingProductInCart[productIndex].additionalInfo
           = command?.additionalInfo;
       } else {
@@ -156,6 +159,9 @@ export class CartService {
           deliveryArea: command?.deliveryArea,
           deliveryPickupLocation: command?.deliveryPickupLocation,
           houseNo: command?.houseNo,
+          city: command?.city,
+          street: command?.street,
+          isGift: command?.isGift,
           apartment: command?.apartment,
           additionalInfo: command?.additionalInfo,
         });

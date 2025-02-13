@@ -32,6 +32,9 @@ export class Cart extends AuditableSchema {
         deliveryPickupLocation: String,
         houseNo: String,
         apartment: String,
+        city: String,
+        street: String,
+        isGift: Boolean,
         additionalInfo: String,
       },
     ],
@@ -50,6 +53,9 @@ export class Cart extends AuditableSchema {
       deliveryPickupLocation: string;
       houseNo: string;
       apartment: string;
+      city: string;
+      street: string;
+      isGift: boolean;
       additionalInfo: string;
     }
   ];
