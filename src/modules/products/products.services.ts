@@ -179,8 +179,6 @@ export class ProductsService {
     let findQuery: any = {
       status: ProductStatus.ACTIVE,
       isDeleted: false,
-      deletedBy: null,
-      deletedAt: null,
     };
 
     if (vendorDelivers) {

@@ -20,7 +20,6 @@ import { getRandomNumberBetween } from 'src/common/utils/random-number-range';
 import { disSelect } from 'src/common/utils/select.handling';
 import {
   deleteItems,
-  findOneByFieldNameIncludingDeleted,
   queryhandler,
   updateById,
   updateOneByManyFields,
@@ -47,7 +46,6 @@ import { User } from 'src/modules/users/schema/users.schema';
 import { UserType } from 'src/modules/users/users.type';
 import { ProductsService } from 'src/modules/products/products.services';
 import { MailChimpService } from 'src/services/mailchimp/mailchimp.service';
-import { GetAllBusinessQuery } from '../queries/get-all-business.query';
 
 @Injectable()
 export class BusinessService {
@@ -119,150 +117,6 @@ export class BusinessService {
         );
       }),
     );
-  }
-
-  async getAllBusiness(
-    loggedInUser: LoggedInUserInterface,
-    queries: GetAllBusinessQuery,
-  ) {
-    const {
-      page,
-      limit,
-      campCode,
-      categoriesId,
-      subCategoriesId,
-      search,
-      ...query
-    } = queries;
-
-    console.log(loggedInUser);
-
-    const campDetails = await this.campaignService.findCampaignAndReturn(
-      'code',
-      campCode,
-    );
-
-    const select = disSelect;
-    let findQuery: any = {
-      status: BusinessStatus.APPROVED,
-      dmoId: { $in: campDetails.dmoIds },
-      isDeleted: false,
-      ...query,
-    };
-
-    const populate = {
-      path: 'bussCategoriesId bussSubCategoriesId groupTypesId accessibilitiesId',
-      select: `${disSelect}`,
-      populate: {
-        path: 'icon',
-        select: `${disSelect}`,
-      },
-    };
-
-    if (categoriesId) {
-      const categoriesIds = Array.isArray(categoriesId)
-        ? categoriesId
-        : [categoriesId];
-
-      findQuery = {
-        ...findQuery,
-        bussCategoriesId: { $in: categoriesIds },
-      };
-    }
-
-    if (subCategoriesId) {
-      const subCategoriesIds = Array.isArray(subCategoriesId)
-        ? subCategoriesId
-        : [subCategoriesId];
-
-      findQuery = {
-        ...findQuery,
-        bussSubCategoriesId: { $in: subCategoriesIds },
-      };
-    }
-
-    if (search) {
-      const [
-        matchingCategoryIds,
-        matchingSubCategoryIds,
-        matchingBusinessOwnerIds,
-      ] = await Promise.all([
-        this.BussCategoryModel.find({
-          name: { $regex: search, $options: 'i' },
-        }).select('_id'),
-        this.BussSubCategoryModel.find({
-          name: { $regex: search, $options: 'i' },
-        }).select('_id'),
-        this.UserModel.find({
-          $or: [
-            { firstName: { $regex: search, $options: 'i' } },
-            { lastName: { $regex: search, $options: 'i' } },
-            { email: { $regex: search, $options: 'i' } },
-          ],
-        }).select('_id'),
-      ]);
-
-      const matchingProductsIds = await this.ProductModel.find({
-        $or: [
-          { name: { $regex: search, $options: 'i' } },
-          { description: { $regex: search, $options: 'i' } },
-          { categories: { $in: matchingCategoryIds } },
-          { subCategories: { $in: matchingSubCategoryIds } },
-        ],
-      }).select('_id');
-
-      findQuery = {
-        ...findQuery,
-        $or: [
-          { name: { $regex: search, $options: 'i' } },
-          { description: { $regex: search, $options: 'i' } },
-          { bussCategoriesId: { $in: matchingCategoryIds } },
-          { bussSubCategoriesId: { $in: matchingSubCategoryIds } },
-          { productsId: { $in: matchingProductsIds } },
-          { userId: { $in: matchingBusinessOwnerIds } },
-        ],
-      };
-
-      if (
-        !(
-          matchingCategoryIds?.length
-          || matchingSubCategoryIds?.length
-          || matchingProductsIds?.length
-          || matchingBusinessOwnerIds?.length
-        )
-      ) {
-        findQuery.$text = {
-          $search: search,
-          $caseSensitive: false,
-          $diacriticSensitive: false,
-        };
-      }
-    }
-
-    const businesses = await queryhandler<Business>(this.BusinessModel, {
-      findQuery,
-      select,
-      page: Number(page),
-      limit: Number(limit),
-      populate,
-    });
-
-    if (!businesses?.data || !businesses.data?.length) {
-      return {
-        totalData: 0,
-        businesses: [],
-      };
-    }
-
-    const businessesData = await Promise.all(
-      businesses.data.map(async business => ({
-        id: business._id,
-        name: business.name,
-        slug: business.slug,
-      })),
-    );
-
-    return businessesData;
   }
 
   async getAllBusinessesForMap(
@@ -383,34 +237,13 @@ export class BusinessService {
   }
 
   async getBusiness(command: GetBusinessByIdOrSlug) {
-    const { id, loggedInUser } = command;
-
-    console.log(loggedInUser);
+    const { id } = command;
 
     const populate = {
-      path: 'groupTypesId accessibilitiesId bussCategoriesId socialMedia.socialMediaId',
+      path: 'groupTypesId accessibilitiesId bussCategoriesId bussSubCategoriesId socialMedia.socialMediaId',
       select: `${disSelect}`,
       populate: {
         path: 'icon',
-        select: `${disSelect}`,
-      },
-    };
-
-    const populate1 = {
-      path: 'dmoId authorityId userId productsId',
-      select: `${disSelect} -userId -collaboratorsUser`,
-    };
-
-    const populate3 = {
-      path: 'bankAccountId',
-      select: `${disSelect}`,
-    };
-
-    const populate2 = {
-      path: 'bussSubCategoriesId',
-      select: `${disSelect}`,
-      populate: {
-        path: 'icon bussCategoryId',
         select: `${disSelect}`,
       },
     };
@@ -420,126 +253,15 @@ export class BusinessService {
     try {
       const business = await this.BusinessModel.findById(id)
         .select(select)
-        .populate(populate)
-        .populate(populate1)
-        .populate(populate2)
-        .populate(populate3);
+        .populate(populate);
 
-      if (!business) {
+      if (!business || business?.status !== BusinessStatus.APPROVED) {
         throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
       }
 
-      const groupTypesId: any = business?.groupTypesId;
-      const group_types = groupTypesId?.map(g => g.name);
-
-      const accessibilitiesId: any = business?.accessibilitiesId;
-      const accessibilities = accessibilitiesId?.map(g => g.name);
-
-      const bussCategoriesId: any = business?.bussCategoriesId;
-      const categories = bussCategoriesId?.map(g => g.name);
-
-      const bussSubCategoriesId: any = business?.bussSubCategoriesId;
-      const sub_categories = bussSubCategoriesId?.map(g => g.name);
-
-      const businessDetail = {
-        id: business._id,
-        business_details: {
-          logo: business?.logo?.image,
-          background_color: '#FFFFFF',
-          name: business?.name,
-          description: business?.description,
-          short_description: business?.shortDescription,
-          slug: business?.slug,
-        },
-        timings: {
-          isOpenOnWeekends: business?.isOpenOnWeekends,
-          isAlwaysOpen: business?.isAlwaysOpen,
-          opening_hours: business?.openingHrs,
-        },
-        geoLocation: business?.geoLocation,
-        group_types,
-        accessibilities,
-        categories,
-        sub_categories,
-        contact_details: business?.contactDetails,
-        social_media: business?.socialMedia,
-        delivery_data: {
-          delivery_areas: {
-            locations: business?.deliveryArea,
-          },
-          delivery_return_exchange: business?.deliveryReturnExchange,
-          delivery_specific_seller_info: business?.deliverySpecificSellerInfo,
-          is_pickup_available: business?.isPickUpAvailable,
-        },
-      };
-
-      if (business.status !== BusinessStatus.APPROVED) {
-        throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
-      }
-
-      return businessDetail;
+      return business;
     } catch (error) {
       if (error?.name === 'CastError' && error?.kind === 'ObjectId') {
-        if (error?.model?.modelName === Business.name) {
-          const business = await findOneByFieldNameIncludingDeleted<Business>(
-            this.BusinessModel,
-            'slug',
-            id,
-          );
-          if (!business) {
-            throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
-          }
-
-          const groupTypesId: any = business?.groupTypesId;
-          const group_types = groupTypesId?.map(g => g.name);
-
-          const accessibilitiesId: any = business?.accessibilitiesId;
-          const accessibilities = accessibilitiesId?.map(g => g.name);
-
-          const bussCategoriesId: any = business?.bussCategoriesId;
-          const categories = bussCategoriesId?.map(g => g.name);
-
-          const bussSubCategoriesId: any = business?.bussSubCategoriesId;
-          const sub_categories = bussSubCategoriesId?.map(g => g.name);
-
-          const businessDetail = {
-            id: business._id,
-            business_details: {
-              logo: business?.logo?.image,
-              background_color: '#FFFFFF',
-              name: business?.name,
-              description: business?.description,
-              short_description: business?.shortDescription,
-              slug: business?.slug,
-            },
-            timings: {
-              isOpenOnWeekends: business?.isOpenOnWeekends,
-              isAlwaysOpen: business?.isAlwaysOpen,
-              opening_hours: business?.openingHrs,
-            },
-            geoLocation: business?.geoLocation,
-            group_types,
-            accessibilities,
-            categories,
-            sub_categories,
-            contact_details: business?.contactDetails,
-            social_media: business?.socialMedia,
-            delivery_data: {
-              delivery_areas: {
-                locations: business?.deliveryArea,
-              },
-              delivery_return_exchange: business?.deliveryReturnExchange,
-              delivery_specific_seller_info:
-                business?.deliverySpecificSellerInfo,
-              is_pickup_available: business?.isPickUpAvailable,
-            },
-          };
-          if (business.status !== BusinessStatus.APPROVED) {
-            throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
-          }
-
-          return businessDetail;
-        }
         throw new BadRequestException(
           `${error?.model?.modelName} ${ServerErrors.INVALID_ID}`,
         );

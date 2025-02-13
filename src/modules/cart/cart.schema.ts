@@ -2,7 +2,6 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
 
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
-import { Campaign } from 'src/modules/campaign/schema/campaign.schema';
 import { CartStatus } from 'src/modules/cart/cart.types';
 import { DeliveryMethod } from '../orders/orders.type';
 
@@ -68,7 +67,7 @@ export class Cart extends AuditableSchema {
 
   @Prop({
     type: mongoose.Schema.Types.ObjectId,
-    ref: Campaign.name,
+    ref: 'Campaign',
     required: true,
   })
     campId: mongoose.Types.ObjectId;

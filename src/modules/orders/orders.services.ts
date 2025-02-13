@@ -174,10 +174,13 @@ export class OrdersService {
       );
       const newOrder = new this.OrderModel();
 
+      const baseUrl
+        = this.configService.get('ENV_NAME') === 'prod'
+          ? 'https://console.metgo.app/'
+          : 'https://stg.console.metgo.app/';
+
       const qrCodeUrl = await this.qrCodeService.generateQRCode(
-        `${this.configService.get(
-          'BASE_URL',
-        )}orders/${newOrder._id.toString()}`,
+        `${baseUrl}orders/${newOrder._id.toString()}`,
         newOrder._id.toString(),
         loggedInUser,
       );

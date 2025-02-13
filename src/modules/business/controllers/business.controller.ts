@@ -8,59 +8,37 @@ import {
   HttpStatus,
   Param,
   Query,
-  Req,
-  UseGuards,
 } from '@nestjs/common';
 
 import { ServerSuccess } from 'src/common/constant';
 import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
-import { JwtExternalApiAuthGuard } from 'src/core/guards/jwt/jwt-externalapi.guards';
 import { GetAllUnpaginatedBusinessQuery } from 'src/modules/business/queries';
-import { GetAllBusinessQuery } from 'src/modules/business/queries/get-all-business.query';
 import { BusinessService } from 'src/modules/business/services/business.service';
 
 @Controller()
 export class BusinessController {
   constructor(private readonly businessServices: BusinessService) {}
 
-  @UseGuards(JwtExternalApiAuthGuard)
   @ApiEndpoint({
     tags: ['Business'],
     response: {
       status: HttpStatus.OK,
       description: ServerSuccess.BUSINESS_LISTED,
     },
-    softBlockExtraDtoFields: true,
-    noAuthToken: true,
-    operation: 'Get all businesses',
-  })
-  @HttpCode(HttpStatus.OK)
-  @Get('businesses')
-  async getAllBusiness(@Req() request, @Query() query?: GetAllBusinessQuery) {
-    const businesses = await this.businessServices.getAllBusiness(
-      request.user,
-      query,
-    );
-
-    return businesses;
-  }
-
-  @UseGuards(JwtExternalApiAuthGuard)
-  @ApiEndpoint({
-    tags: ['Business'],
-    response: {
-      status: HttpStatus.OK,
-      description: ServerSuccess.BUSINESS_LISTED,
-    },
-    noAuthToken: true,
     operation: 'Get any business detail',
+    params: [
+      {
+        name: 'businessId',
+        type: 'string',
+        required: true,
+      },
+    ],
   })
   @HttpCode(HttpStatus.OK)
-  @Get('businesses/:id')
-  async getBusinessDetailForAdmin(@Req() request, @Param('id') id: string) {
+  @Get('businesses/:businessId')
+  async getBusinessDetailForAdmin(@Param('businessId') businessId: string) {
     const business = await this.businessServices.getBusiness({
-      id,
-      loggedInUser: request.user,
+      id: businessId,
     });
 
     return business;
