@@ -168,6 +168,9 @@ export const ServerErrors = {
   MEDIA: {
     NOT_FOUND: 'URL not found',
   },
+  PAYMENT: {
+    FAILED: 'Your payment was failed',
+  },
 };
 
 export const ServerSuccess = {
