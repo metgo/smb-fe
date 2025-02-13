@@ -3,6 +3,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 
 import { AuthorityModule } from 'src/modules/authority/authority.module';
 import { BusinessModule } from 'src/modules/business/business.module';
+import { CampaignModule } from 'src/modules/campaign/campaign.module';
 import { DMOModule } from 'src/modules/dmo/dmo.module';
 import { OrdersController } from 'src/modules/orders/orders.controller';
 import { Order, OrderSchema } from 'src/modules/orders/schema/orders.schema';
@@ -34,6 +35,7 @@ import { QRCodeModule } from 'src/services/qr-code/qr-code.module';
     OrderProductModule,
     CartModule,
     QRCodeModule,
+    forwardRef(() => CampaignModule),
   ],
   controllers: [OrdersController],
   providers: [OrdersService],

@@ -15,7 +15,6 @@ import { CreateOrderProductCommand } from 'src/modules/order-product/interfaces/
 import { GetAllOrdersDetailsQuery } from 'src/modules/order-product/queries/get-order-details.query';
 import { GetOrdersSummaryQuery } from 'src/modules/order-product/queries/get-order-summary.query';
 import { OrderProduct } from 'src/modules/order-product/schema/order-product.schema';
-import { ProductsService } from 'src/modules/products/products.services';
 import { UserType } from 'src/modules/users/users.type';
 
 @Injectable()
@@ -23,19 +22,13 @@ export class OrderProductService {
   constructor(
     @InjectModel(OrderProduct.name)
     private OrderProductModel: Model<OrderProduct>,
-    private readonly productsService: ProductsService,
   ) {}
 
-  async create(command: CreateOrderProductCommand): Promise<any> {
+  async create(command: CreateOrderProductCommand): Promise<OrderProduct> {
     try {
-      const product = await this.productsService.findOne(command.productId);
-
       const productDetails = new this.OrderProductModel({
-        productId: command.productId,
-        quantity: command.quantity,
-        amount: product.price.sellingPrice,
+        ...command,
         userId: command.loggedInUserId ?? null,
-        orderId: command.orderId,
         createdBy: command.loggedInUserId ?? null,
         createdAt: new Date(),
       });

@@ -4,11 +4,7 @@ import mongoose, { HydratedDocument } from 'mongoose';
 import { PaymentStatus } from 'src/common/enum';
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
 import { ExternalApi } from 'src/modules/external-api/schema/external-api.schema';
-import {
-  DeliveryMethod,
-  OrderStatus,
-  PaymentMode,
-} from 'src/modules/orders/orders.type';
+import { OrderStatus, PaymentMode } from 'src/modules/orders/orders.type';
 import { Product } from 'src/modules/products/schema/products.schema';
 import { User } from 'src/modules/users/schema/users.schema';
 
@@ -19,18 +15,12 @@ export class Order extends AuditableSchema {
     type: [
       {
         id: { type: mongoose.Schema.Types.ObjectId, ref: Product.name },
-        quantity: Number,
-        price: Number,
-        address: String,
       },
     ],
     default: null,
   })
     products: {
     id: mongoose.Types.ObjectId;
-    quantity: number;
-    price: number;
-    address: string;
   }[];
 
   @Prop({
@@ -76,9 +66,6 @@ export class Order extends AuditableSchema {
       redeemedAmount: number;
     }
   ];
-
-  @Prop({ enum: DeliveryMethod, default: DeliveryMethod.DELIVER })
-    deliveryMethod: DeliveryMethod;
 
   @Prop({ type: Number, default: 0 })
     totalAmount: number;

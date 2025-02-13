@@ -1,7 +1,10 @@
-import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interface';
-import { CreateOrderDto } from '../dto';
-import { Product } from 'src/modules/products/schema/products.schema';
 import { ObjectId } from 'typeorm';
+
+import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interface';
+import { Product } from 'src/modules/products/schema/products.schema';
+
+import { CreateOrderDto } from 'src/modules/orders/dto';
+import { DeliveryMethod } from 'src/modules/orders/orders.type';
 
 export interface CreateOrderCommand {
   loggedInUser: LoggedInUserInterface | null;
@@ -9,11 +12,25 @@ export interface CreateOrderCommand {
   redeemedVouchers: [];
   totalAmount: number;
   actualAmountOfProduct: number;
-  productInfo: Product[];
+  products: { id: string }[];
+  productDetails: Product[];
   cartItems: {
-    id: ObjectId;
+    productId: ObjectId;
     quantity: number;
-    address?: string;
-    price: number;
+    email: string;
+    countryCode: string;
+    phone: string;
+    firstName: string;
+    lastName: string;
+    deliveryMethod: DeliveryMethod;
+    deliveryArea: string;
+    deliveryPickupLocation: string;
+    houseNo: string;
+    apartment: string;
+    city: string;
+    street: string;
+    isGift: boolean;
+    additionalInfo: string;
+    amount: number;
   }[];
 }

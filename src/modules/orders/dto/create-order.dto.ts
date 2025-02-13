@@ -9,7 +9,6 @@ import {
 import { ApiProperty } from '@nestjs/swagger';
 
 import { Locale } from 'src/common/enum';
-import { DeliveryMethod } from 'src/modules/orders/orders.type';
 
 class Voucher {
   @IsString()
@@ -68,15 +67,6 @@ export class CreateOrderDto {
     required: true,
   })
     campCode: string;
-
-  @ApiProperty({
-    type: 'enum',
-    enum: Locale,
-    required: true,
-  })
-  @IsNotEmpty()
-  @IsEnum(DeliveryMethod)
-    deliveryMethod: DeliveryMethod;
 
   @IsNumber()
   @IsNotEmpty()

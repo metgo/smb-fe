@@ -5,29 +5,24 @@ import {
   HttpCode,
   HttpStatus,
   Param,
-  Patch,
   Post,
   Query,
   Req,
-  Res,
   UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
-import { Response } from 'express';
+import { ApiResponse } from '@nestjs/swagger';
 
 import { ServerErrors, ServerSuccess } from 'src/common/constant';
 import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
 import { ExternalApiGuard } from 'src/core/guards/authorization/external-api-guards';
 import { JwtExternalApiAuthGuard } from 'src/core/guards/jwt/jwt-externalapi.guards';
-import { responseHelper } from 'src/core/helper/response.helper';
 
 import { VoucherService } from 'src/modules/vouchers/voucher.service';
 import { ExternalApiPostQuery } from 'src/common/query-handler/external-api.query';
-import { CreateVoucherDto } from './dto/create-voucher.dto';
 import { GetVoucherByCodeQuery } from './queries/get-by-code.query';
 import { RewardVouchersByCampaignDto } from './dto';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
-import { FreezeVoucherDTO } from 'src/modules/vouchers/dto/freeze-voucher.dto';
 
 @Controller()
 export class VoucherController {
@@ -124,32 +119,32 @@ export class VoucherController {
   //   );
   // }
 
-  @ApiEndpoint({
-    tags: ['Voucher Process'],
-    response: {
-      status: HttpStatus.CREATED,
-      description: ServerSuccess.VOUCHER.CREATED,
-    },
-    softBlockExtraDtoFields: true,
-    operation: 'Start to Purchase voucher - step [1]',
-  })
-  @Post('vouchers')
-  async buyVoucherByExternalApi(
-    @Req() req,
-    @Res() response: Response,
-    @Body() dto: CreateVoucherDto,
-  ) {
-    const vouchers = await this.voucherService.create(dto, req?.user);
+  // @ApiEndpoint({
+  //   tags: ['Voucher Process'],
+  //   response: {
+  //     status: HttpStatus.CREATED,
+  //     description: ServerSuccess.VOUCHER.CREATED,
+  //   },
+  //   softBlockExtraDtoFields: true,
+  //   operation: 'Start to Purchase voucher - step [1]',
+  // })
+  // @Post('vouchers')
+  // async buyVoucherByExternalApi(
+  //   @Req() req,
+  //   @Res() response: Response,
+  //   @Body() dto: CreateVoucherDto,
+  // ) {
+  //   const vouchers = await this.voucherService.create(dto, req?.user);
 
-    return responseHelper(
-      response,
-      HttpStatus.CREATED,
-      `${dto.campCode} ${ServerSuccess.EXTERNAL_API.VOUCHER.CREATED}`,
-      vouchers,
-      null,
-      null,
-    );
-  }
+  //   return responseHelper(
+  //     response,
+  //     HttpStatus.CREATED,
+  //     `${dto.campCode} ${ServerSuccess.EXTERNAL_API.VOUCHER.CREATED}`,
+  //     vouchers,
+  //     null,
+  //     null,
+  //   );
+  // }
 
   // @ApiEndpoint({
   //   tags: ['Voucher'],
@@ -196,6 +191,31 @@ export class VoucherController {
     operation:
       'Get voucher detail by anyone using valid code if it is eligible for product buying',
   })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: `${ServerErrors.CAMPAIGN.NOT_FOUND} /  ${ServerErrors.PRODUCT.NOT_FOUND}`,
+  })
+  @ApiResponse({
+    status: HttpStatus.FORBIDDEN,
+    description: 'This product doesnt belong to this campaign',
+  })
+  @ApiResponse({
+    status: HttpStatus.BAD_REQUEST,
+    description: ServerErrors.VOUCHER.NOT_FOUND,
+  })
+  @ApiResponse({
+    status: HttpStatus.PAYMENT_REQUIRED,
+    description: ServerErrors.VOUCHER.UNPAID,
+  })
+  @ApiResponse({
+    status: HttpStatus.GONE,
+    description: ServerErrors.VOUCHER.EXPIRED,
+  })
+  @ApiResponse({
+    status: HttpStatus.UNPROCESSABLE_ENTITY,
+    description: ServerErrors.VOUCHER.NO_BALANCE,
+  })
+  @HttpCode(HttpStatus.OK)
   @Get('vouchers/:code')
   async getVoucherDetailByExternalApi(
     @Param('code') code: string,
@@ -204,6 +224,7 @@ export class VoucherController {
     const voucher = await this.voucherService.getOneByCodeAndProduct({
       code,
       productId: query.productId,
+      campCode: query.campCode,
     });
     return voucher;
   }
@@ -224,7 +245,6 @@ export class VoucherController {
   @Post('admin/campaign-vouchers')
   async rewardVouchersForCampaogn(
     @Req() req,
-    @Res() response: Response,
     @Body() body: RewardVouchersByCampaignDto,
     @Query() query: ExternalApiPostQuery,
   ) {
@@ -239,42 +259,35 @@ export class VoucherController {
         query.identifierId,
       );
 
-      return responseHelper(
-        response,
-        HttpStatus.CREATED,
-        ServerSuccess.VOUCHER.LISTED,
-        vouchers,
-        null,
-        null,
-      );
+      return vouchers;
     } catch (err) {
       exceptionHandling(err);
     }
   }
 
-  @ApiEndpoint({
-    tags: ['Voucher'],
-    response: {
-      status: HttpStatus.OK,
-      description: ServerSuccess.EXTERNAL_API.VOUCHER.UPDATE_BALANCE,
-    },
-    softBlockExtraDtoFields: true,
-    operation: 'Freeze Voucher',
-  })
-  @Patch('freeze-amount')
-  async freezeVoucherAmount(
-    @Req() req,
-    @Res() response: Response,
-    @Body() dto: FreezeVoucherDTO,
-  ) {
-    const vouchers = await this.voucherService.freezeVouchers(dto, req?.user);
-    return responseHelper(
-      response,
-      HttpStatus.OK,
-      ServerSuccess.EXTERNAL_API.VOUCHER.UPDATE_BALANCE,
-      vouchers,
-      null,
-      null,
-    );
-  }
+  // @ApiEndpoint({
+  //   tags: ['Voucher'],
+  //   response: {
+  //     status: HttpStatus.OK,
+  //     description: ServerSuccess.EXTERNAL_API.VOUCHER.UPDATE_BALANCE,
+  //   },
+  //   softBlockExtraDtoFields: true,
+  //   operation: 'Freeze Voucher',
+  // })
+  // @Patch('freeze-amount')
+  // async freezeVoucherAmount(
+  //   @Req() req,
+  //   @Res() response: Response,
+  //   @Body() dto: FreezeVoucherDTO,
+  // ) {
+  //   const vouchers = await this.voucherService.freezeVouchers(dto, req?.user);
+  //   return responseHelper(
+  //     response,
+  //     HttpStatus.OK,
+  //     ServerSuccess.EXTERNAL_API.VOUCHER.UPDATE_BALANCE,
+  //     vouchers,
+  //     null,
+  //     null,
+  //   );
+  // }
 }

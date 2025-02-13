@@ -7,5 +7,5 @@ export class GetVoucherByCodeQuery extends GetVoucherQuery {
   @ApiProperty({ type: String, required: true })
   @IsString()
   @IsNotEmpty()
-    identifierId: string;
+    campCode: string;
 }

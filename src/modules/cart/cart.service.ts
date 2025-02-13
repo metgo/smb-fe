@@ -126,14 +126,44 @@ export class CartService {
       let existingProductInCart: any = existingCart?.product;
 
       if (productIndex !== -1) {
-        existingProductInCart[productIndex].quantity = command.quantity;
-        existingProductInCart[productIndex].address = command?.address;
+        existingProductInCart[productIndex].quantity = command?.quantity;
+        existingProductInCart[productIndex].email = command?.email;
+        existingProductInCart[productIndex].countryCode = command?.countryCode;
+        existingProductInCart[productIndex].phone = command?.phone;
+        existingProductInCart[productIndex].firstName = command?.firstName;
+        existingProductInCart[productIndex].lastName = command?.lastName;
+        existingProductInCart[productIndex].deliveryMethod
+          = command?.deliveryMethod;
+        existingProductInCart[productIndex].deliveryArea
+          = command?.deliveryArea;
+        existingProductInCart[productIndex].deliveryPickupLocation
+          = command?.deliveryPickupLocation;
+        existingProductInCart[productIndex].houseNo = command?.houseNo;
+        existingProductInCart[productIndex].apartment = command?.apartment;
+        existingProductInCart[productIndex].city = command?.city;
+        existingProductInCart[productIndex].street = command?.street;
+        existingProductInCart[productIndex].isGift = command?.isGift;
+        existingProductInCart[productIndex].additionalInfo
+          = command?.additionalInfo;
       } else {
         // Add new product item to the cart if it doesn't exist
         existingProductInCart.push({
           id: new mongoose.Types.ObjectId(command.productId),
-          quantity: command.quantity,
-          address: command?.address,
+          quantity: command?.quantity,
+          email: command?.email,
+          countryCode: command?.countryCode,
+          phone: command?.phone,
+          firstName: command?.firstName,
+          lastName: command?.lastName,
+          deliveryMethod: command?.deliveryMethod,
+          deliveryArea: command?.deliveryArea,
+          deliveryPickupLocation: command?.deliveryPickupLocation,
+          houseNo: command?.houseNo,
+          city: command?.city,
+          street: command?.street,
+          isGift: command?.isGift,
+          apartment: command?.apartment,
+          additionalInfo: command?.additionalInfo,
         });
       }
 

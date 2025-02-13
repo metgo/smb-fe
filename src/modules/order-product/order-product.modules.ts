@@ -11,7 +11,6 @@ import {
   OrderProductSchema,
 } from 'src/modules/order-product/schema/order-product.schema';
 import { OrdersModule } from 'src/modules/orders/orders.modules';
-import { ProductsModule } from 'src/modules/products/products.module';
 import { UsersModule } from 'src/modules/users/users.module';
 import { ConfigModule } from 'src/services/config/config.module';
 
@@ -23,7 +22,6 @@ import { ConfigModule } from 'src/services/config/config.module';
     forwardRef(() => AuthorityModule),
     BusinessModule,
     forwardRef(() => DMOModule),
-    ProductsModule,
     ConfigModule,
     forwardRef(() => OrdersModule),
     forwardRef(() => UsersModule),
