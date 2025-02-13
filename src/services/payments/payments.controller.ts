@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
   HttpStatus,
   Param,
   Patch,
@@ -13,7 +14,7 @@ import {
 } from '@nestjs/common';
 import { Response } from 'express';
 
-import { ServerSuccess } from 'src/common/constant';
+import { ServerErrors, ServerSuccess } from 'src/common/constant';
 import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
 import { Roles } from 'src/core/guards/authorization/roles';
 import { JwtAuthGuard } from 'src/core/guards/jwt/jwt.guards';
@@ -30,34 +31,28 @@ export class PaymentsController {
     tags: ['Payment'],
     softBlockExtraDtoFields: true,
   })
+  @HttpCode(HttpStatus.OK)
   @Get('success')
-  async success(@Req() req, @Res() response: Response, @Query() query) {
+  async success(@Query() query) {
     await this.paymentService.paymentSucess(query);
-    return responseHelper(
-      response,
-      HttpStatus.OK,
-      ServerSuccess.PAYMENT.SUCCESS,
-      null,
-      null,
-      null,
-    );
+    return {
+      statusCode: HttpStatus.OK,
+      message: ServerSuccess.PAYMENT.SUCCESS,
+    };
   }
 
   @ApiEndpoint({
     tags: ['Payment'],
     softBlockExtraDtoFields: true,
   })
+  @HttpCode(HttpStatus.BAD_REQUEST)
   @Get('failure')
-  async failure(@Res() response: Response, @Query() query) {
+  async failure(@Query() query) {
     await this.paymentService.PaymentFailure(query);
-    return responseHelper(
-      response,
-      HttpStatus.OK,
-      'Your payment was not successfully paid',
-      null,
-      null,
-      null,
-    );
+    return {
+      statusCode: HttpStatus.BAD_REQUEST,
+      message: ServerErrors.PAYMENT.FAILED,
+    };
   }
 
   @ApiEndpoint({

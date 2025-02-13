@@ -12,6 +12,7 @@ import {
 } from '@nestjs/common';
 import mongoose from 'mongoose';
 import { ServerErrors } from 'src/common/constant';
+import { PaymentRequiredException } from 'src/common/exception/payment-required';
 
 export const exceptionHandling = err => {
   if (err instanceof BadRequestException) {
@@ -56,6 +57,9 @@ export const exceptionHandling = err => {
       throw new BadRequestException(`The used ${ServerErrors.INVALID_ID}`);
     }
     throw new InternalServerErrorException('Error in database');
+  }
+  if (err instanceof PaymentRequiredException) {
+    throw new PaymentRequiredException(err.message);
   }
   if (err instanceof UnprocessableEntityException) {
     throw new UnprocessableEntityException(err.message);
