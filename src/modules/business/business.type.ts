@@ -11,7 +11,7 @@ export enum BusinessStatus {
 
 export interface GetBusinessByIdOrSlug {
   id: string;
-  loggedInUser: LoggedInUserInterface;
+  loggedInUser?: LoggedInUserInterface;
 }
 
 // eslint-disable-next-line no-shadow
