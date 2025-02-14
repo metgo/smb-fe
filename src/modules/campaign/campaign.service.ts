@@ -183,6 +183,7 @@ export class CampaignService {
       select: disSelect,
       page: Number(page),
       limit: Number(limit),
+      sort: 'createdAt',
       populate,
     });
 
@@ -229,6 +230,7 @@ export class CampaignService {
       select,
       page: queryPage,
       limit: queryLimit,
+      sort: 'createdAt',
       populate,
     });
 

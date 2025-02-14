@@ -13,7 +13,9 @@ import { Logger } from 'winston';
 
 import { calculateProductsTotalAmount } from 'src/common/calculate-products-total-amount';
 import { ServerErrors } from 'src/common/constant';
-import { Currency, Locale, PaymentStatus } from 'src/common/enum';
+import {
+  Currency, Locale, PaymentStatus, SortOrder,
+} from 'src/common/enum';
 import {
   EnglishTemplate,
   HebrewTemplate,
@@ -743,6 +745,8 @@ export class OrdersService {
       select,
       page: queryPage,
       limit: queryLimit,
+      sort: 'createdAt',
+      sortOrder: SortOrder.DESC,
     });
     return orders;
   }

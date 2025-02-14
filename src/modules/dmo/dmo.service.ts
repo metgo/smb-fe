@@ -45,6 +45,7 @@ export class DMOService {
       select,
       page: queryPage,
       limit: queryLimit,
+      sort: 'name',
       populate,
       populate1,
     });

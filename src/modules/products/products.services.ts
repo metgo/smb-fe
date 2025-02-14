@@ -13,6 +13,7 @@ import { ObjectId } from 'typeorm';
 import { Logger } from 'winston';
 
 import { ServerErrors } from 'src/common/constant';
+import { SortOrder } from 'src/common/enum';
 import { getRandomNumberBetween } from 'src/common/utils/random-number-range';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { disSelect } from 'src/common/utils/select.handling';
@@ -302,6 +303,8 @@ export class ProductsService {
       select,
       page: Number(page),
       limit: Number(limit),
+      sort: 'createdAt',
+      sortOrder: SortOrder.DESC,
       populate,
       populate1,
     });

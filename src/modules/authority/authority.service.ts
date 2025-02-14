@@ -58,6 +58,7 @@ export class AuthorityService {
         select,
         page: queryPage,
         limit: queryLimit,
+        sort: 'name',
         populate,
       });
 

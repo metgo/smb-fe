@@ -41,6 +41,7 @@ export class AccessibilityService {
         select,
         page: Number(page),
         limit: Number(limit),
+        sort: 'name',
         languageQuery: locale,
       },
     );

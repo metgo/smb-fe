@@ -213,6 +213,7 @@ export class BusinessService {
       select,
       populate,
       populate1,
+      sort: 'name',
     });
 
     const businessResponse = await Promise.all(

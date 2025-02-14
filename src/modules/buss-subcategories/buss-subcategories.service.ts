@@ -75,6 +75,7 @@ export class BussSubCategoriesService {
         page: queryPage,
         limit: queryLimit,
         populate,
+        sort: 'name',
         languageQuery: locale || Locale.HEBREW,
       },
     );

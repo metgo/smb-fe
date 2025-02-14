@@ -37,6 +37,7 @@ export class GroupTypeService {
       select,
       page: Number(page),
       limit: Number(limit),
+      sort: 'name',
       languageQuery: locale,
     });
 
