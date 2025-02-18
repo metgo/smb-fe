@@ -1,7 +1,5 @@
 /* eslint-disable no-undef */
-import {
-  Controller,
-} from '@nestjs/common';
+import { Controller } from '@nestjs/common';
 
 import { DMOService } from 'src/modules/dmo//dmo.service';
 

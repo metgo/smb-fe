@@ -424,14 +424,30 @@ export class VoucherService {
 
   async getOneByCodeAndProduct(query: GetOneVoucherInterface) {
     try {
-      const { code, productId, campCode } = query;
-
-      const campDetails = await this.campaignService.findCampaignAndReturn(
-        'code',
-        campCode,
-      );
+      const { code, productId } = query;
 
       const productDetail = await this.productService.findOne(productId);
+
+      const findQuery: any = {
+        code: code.trim(),
+        isDeleted: false,
+      };
+
+      const populate = {
+        path: 'campId',
+        select: 'code name dmoIds productIds businessIds',
+      };
+
+      const voucher: any = await this.VoucherModel.findOne(findQuery)
+        .select('_id code remainingAmount expireDate paymentStatus campId')
+        .populate(populate)
+        .exec();
+
+      if (!voucher) {
+        throw new BadRequestException(ServerErrors.VOUCHER.NOT_FOUND);
+      }
+
+      const campDetails = voucher?.campId;
 
       if (
         !campDetails?.productIds?.length
@@ -439,7 +455,7 @@ export class VoucherService {
         && !campDetails?.dmoIds?.length
       ) {
         throw new ForbiddenException(
-          'This product doesnt belong to this campaign',
+          'This voucher cannot be used for this product',
         );
       }
 
@@ -449,22 +465,8 @@ export class VoucherService {
         && !campDetails.productIds.includes(productDetail?._id)
       ) {
         throw new ForbiddenException(
-          'This product doesnt belong to this campaign',
+          'This voucher cannot be used for this product',
         );
-      }
-
-      const findQuery: any = {
-        code: code.trim(),
-        campId: campDetails._id,
-        isDeleted: false,
-      };
-
-      const voucher: any = await this.VoucherModel.findOne(findQuery)
-        .select('_id code remainingAmount expireDate paymentStatus')
-        .exec();
-
-      if (!voucher) {
-        throw new BadRequestException(ServerErrors.VOUCHER.NOT_FOUND);
       }
 
       if (voucher.paymentStatus !== VoucherPaymentStatus.PAID) {
@@ -483,7 +485,13 @@ export class VoucherService {
         throw new UnprocessableEntityException(ServerErrors.VOUCHER.NO_BALANCE);
       }
 
-      return voucher;
+      return {
+        _id: voucher._id,
+        code: voucher.code,
+        remainingAmount: voucher.remainingAmount,
+        expireDate: voucher.expireDate,
+        paymentStatus: voucher.paymentStatus,
+      };
     } catch (err) {
       exceptionHandling(err);
     }

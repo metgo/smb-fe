@@ -20,9 +20,9 @@ import { JwtExternalApiAuthGuard } from 'src/core/guards/jwt/jwt-externalapi.gua
 
 import { VoucherService } from 'src/modules/vouchers/voucher.service';
 import { ExternalApiPostQuery } from 'src/common/query-handler/external-api.query';
-import { GetVoucherByCodeQuery } from './queries/get-by-code.query';
 import { RewardVouchersByCampaignDto } from './dto';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
+import { GetVoucherQuery } from './queries';
 
 @Controller()
 export class VoucherController {
@@ -197,7 +197,7 @@ export class VoucherController {
   })
   @ApiResponse({
     status: HttpStatus.FORBIDDEN,
-    description: 'This product doesnt belong to this campaign',
+    description: 'This voucher cannot be used for this product',
   })
   @ApiResponse({
     status: HttpStatus.BAD_REQUEST,
@@ -219,12 +219,11 @@ export class VoucherController {
   @Get('vouchers/:code')
   async getVoucherDetailByExternalApi(
     @Param('code') code: string,
-    @Query() query: GetVoucherByCodeQuery,
+    @Query() query: GetVoucherQuery,
   ) {
     const voucher = await this.voucherService.getOneByCodeAndProduct({
       code,
       productId: query.productId,
-      campCode: query.campCode,
     });
     return voucher;
   }
