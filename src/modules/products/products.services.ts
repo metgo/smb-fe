@@ -29,7 +29,6 @@ import { UploadMediaCommand } from 'src/modules/products/interface';
 import { ProductStatus } from 'src/modules/products/products.type';
 import { GetAllProductsQuery } from 'src/modules/products/queries/get-all-products.query';
 import { UserType } from 'src/modules/users/users.type';
-import { AddProductToCart } from 'src/modules/cart/dto/add-to-cart.dto';
 import { CartService } from 'src/modules/cart/cart.service';
 import { GetProductsQuery } from 'src/modules/products/queries/get-product.query';
 
@@ -75,12 +74,22 @@ export class ProductsService {
     };
     const select = `${disSelect}`;
     try {
-      const product = await this.ProductModel.findById(productId)
+      const product = await this.ProductModel.findOne({
+        _id: productId,
+        status: ProductStatus.ACTIVE,
+        deletedAt: null,
+        deletedBy: null,
+        isDeleted: false,
+        $or: [
+          { 'quantity.remaining': { $gt: 0 } },
+          { 'quantity.isUnlimited': true },
+        ],
+      })
         .select(select)
         .populate(populate)
         .populate(populate1);
 
-      if (!product || product.status !== ProductStatus.ACTIVE) {
+      if (!product) {
         throw new NotFoundException(ServerErrors.PRODUCT.NOT_FOUND);
       }
       return product;
@@ -123,10 +132,18 @@ export class ProductsService {
         deletedAt: null,
         deletedBy: null,
         isDeleted: false,
+        $or: [
+          { 'quantity.remaining': { $gt: 0 } },
+          { 'quantity.isUnlimited': true },
+        ],
       })
         .populate(populate)
         .populate(populate1)
         .select(select);
+
+      if (!product) {
+        throw new NotFoundException(ServerErrors.PRODUCT.NOT_FOUND);
+      }
 
       if (
         !campDetails.dmoIds.includes(
@@ -139,7 +156,7 @@ export class ProductsService {
           new mongoose.Types.ObjectId(product.businessId),
         )
       ) {
-        return {};
+        throw new NotFoundException(ServerErrors.PRODUCT.NOT_FOUND);
       }
 
       return product;
@@ -180,6 +197,10 @@ export class ProductsService {
     let findQuery: any = {
       status: ProductStatus.ACTIVE,
       isDeleted: false,
+      $or: [
+        { 'quantity.remaining': { $gt: 0 } },
+        { 'quantity.isUnlimited': true },
+      ],
     };
 
     if (vendorDelivers) {
@@ -487,7 +508,10 @@ export class ProductsService {
     try {
       const product = await this.ProductModel.findOne({
         _id: productInfo?.id,
-        'quantity.remaining': { $gte: productInfo?.quantity },
+        $or: [
+          { 'quantity.remaining': { $gte: productInfo?.quantity } },
+          { 'quantity.isUnlimited': true },
+        ],
         isDeleted: false,
         status: ProductStatus.ACTIVE,
       });
@@ -507,78 +531,78 @@ export class ProductsService {
     }
   }
 
-  async checkTofreezeQuantity(products: AddProductToCart[]) {
-    try {
-      const availableProducts = await Promise.all(
-        products.map(async productInfo => {
-          const product = await this.findOne(productInfo.id);
+  // async checkTofreezeQuantity(products: AddProductToCart[]) {
+  //   try {
+  //     const availableProducts = await Promise.all(
+  //       products.map(async productInfo => {
+  //         const product = await this.findOne(productInfo.id);
 
-          if (product.quantity.remaining < productInfo.quantity) {
-            throw new BadRequestException(
-              `Insufficient quantity for product: ${productInfo.id}`,
-            );
-          }
-        }),
-      );
+  //         if (product.quantity.remaining < productInfo.quantity) {
+  //           throw new BadRequestException(
+  //             `Insufficient quantity for product: ${productInfo.id}`,
+  //           );
+  //         }
+  //       }),
+  //     );
 
-      return availableProducts;
-    } catch (err) {
-      this.logger.error('[VOUCHER]: FAILED TO UPDATE', {
-        err: err.message,
-      });
-      exceptionHandling(err);
-    }
-  }
+  //     return availableProducts;
+  //   } catch (err) {
+  //     this.logger.error('[VOUCHER]: FAILED TO UPDATE', {
+  //       err: err.message,
+  //     });
+  //     exceptionHandling(err);
+  //   }
+  // }
 
-  async freezeQuantity(
-    products: AddProductToCart[],
-    cartId: ObjectId,
-    loggedInUser?: LoggedInUserInterface,
-  ) {
-    try {
-      const updatedProducts = await Promise.all(
-        products.map(async productInfo => {
-          const product = await this.findOne(productInfo.id);
+  // async freezeQuantity(
+  //   products: AddProductToCart[],
+  //   cartId: ObjectId,
+  //   loggedInUser?: LoggedInUserInterface,
+  // ) {
+  //   try {
+  //     const updatedProducts = await Promise.all(
+  //       products.map(async productInfo => {
+  //         const product = await this.findOne(productInfo.id);
 
-          const updateField = {
-            'quantity.remaining':
-              product.quantity.remaining - productInfo.quantity,
-            $push: {
-              freeze: {
-                cartId,
-                quantity: productInfo.quantity,
-              },
-            },
-            updatedAt: new Date(),
-            updatedBy: loggedInUser?.id,
-          };
+  //         const updateField = {
+  //           'quantity.remaining':
+  //             product.quantity.remaining - productInfo.quantity,
+  //           $push: {
+  //             freeze: {
+  //               cartId,
+  //               quantity: productInfo.quantity,
+  //             },
+  //           },
+  //           updatedAt: new Date(),
+  //           updatedBy: loggedInUser?.id,
+  //         };
 
-          const updatedProduct = await this.ProductModel.findByIdAndUpdate(
-            productInfo.id,
-            updateField,
-            { new: true },
-          );
+  //         const updatedProduct = await this.ProductModel.findByIdAndUpdate(
+  //           productInfo.id,
+  //           updateField,
+  //           { new: true },
+  //         );
 
-          if (!updatedProduct) {
-            throw new NotFoundException(ServerErrors.PRODUCT.NOT_FOUND);
-          }
+  //         if (!updatedProduct) {
+  //           throw new NotFoundException(ServerErrors.PRODUCT.NOT_FOUND);
+  //         }
 
-          return updatedProduct;
-        }),
-      );
+  //         return updatedProduct;
+  //       }),
+  //     );
 
-      this.logger.info('[Order-Product]: Quantity freezed', {
-        message: updatedProducts,
-      });
+  //     this.logger.info('[Order-Product]: Quantity freezed', {
+  //       message: updatedProducts,
+  //     });
 
-      return updatedProducts;
-    } catch (err) {
-      this.logger.error('[VOUCHER]: FAILED TO UPDATE', {
-        err: err.message,
-      });
-      exceptionHandling(err);
-    }
-  }
+  //     return updatedProducts;
+  //   } catch (err) {
+  //     this.logger.error('[VOUCHER]: FAILED TO UPDATE', {
+  //       err: err.message,
+  //     });
+  //     exceptionHandling(err);
+  //   }
+  // }
 
   async deleteFreezeProductPostSuccess(
     products: {

@@ -19,7 +19,6 @@ import {
   EnglishTemplate,
   HebrewTemplate,
 } from 'src/common/mailchimp/templateId';
-import { paginationConfig } from 'src/common/pagination.config';
 import { Voucher } from './schema/voucher.schema';
 import {
   Locale,
@@ -58,14 +57,11 @@ import {
   UpdateVoucherAfterPaymentInterface,
 } from 'src/modules/vouchers/interface';
 import {
-  GetMyAssignedVouchersQuery,
   GetVoucherStatsGroupedQuery,
   GetVouchersByAdminQuery,
 } from 'src/modules/vouchers/queries';
 import { ConfigService } from 'src/services/config/config.service';
 import { RewardsService } from 'src/modules/rewards/rewards.service';
-import { getUniqueSet } from 'src/common/get-unique-set';
-import { GetMyVouchersQuery } from './queries/get-my-vouchers.query';
 import { CreateVoucherDto } from './dto/create-voucher.dto';
 import { ExternalApiServices } from 'src/modules/external-api/external-api.service';
 import { CartService } from 'src/modules/cart/cart.service';
@@ -591,290 +587,290 @@ export class VoucherService {
     }
   }
 
-  async getVouchersCreatedByMe(userId: string, queries: GetMyVouchersQuery) {
-    const {
-      page,
-      limit,
-      search,
-      campId,
-      productId,
-      createdStartDate,
-      createdEndDate,
-      expiryStartDate,
-      expiryEndDate,
-      identifierId,
-      ...query
-    } = queries;
+  // async getVouchersCreatedByMe(userId: string, queries: GetMyVouchersQuery) {
+  //   const {
+  //     page,
+  //     limit,
+  //     search,
+  //     campId,
+  //     productId,
+  //     createdStartDate,
+  //     createdEndDate,
+  //     expiryStartDate,
+  //     expiryEndDate,
+  //     identifierId,
+  //     ...query
+  //   } = queries;
 
-    const queryPage = page ? Number(page) : paginationConfig.page;
-    const queryLimit = limit ? Number(limit) : paginationConfig.limit;
+  //   const queryPage = page ? Number(page) : paginationConfig.page;
+  //   const queryLimit = limit ? Number(limit) : paginationConfig.limit;
 
-    const select = disSelect;
+  //   const select = disSelect;
 
-    let findQuery: any = {
-      ...query,
-      createdBy: userId,
-      paymentStatus: VoucherPaymentStatus.PAID,
-    };
+  //   let findQuery: any = {
+  //     ...query,
+  //     createdBy: userId,
+  //     paymentStatus: VoucherPaymentStatus.PAID,
+  //   };
 
-    const populate = {
-      path: 'campId',
-      select: `${disSelect}`,
-    };
+  //   const populate = {
+  //     path: 'campId',
+  //     select: `${disSelect}`,
+  //   };
 
-    let campIdsFromProductId;
-    if (productId) {
-      const dmoOfProduct = (await this.productService.findOne(productId))?.dmoId
-        ?._id;
+  //   let campIdsFromProductId;
+  //   if (productId) {
+  //     const dmoOfProduct = (await this.productService.findOne(productId))?.dmoId
+  //       ?._id;
 
-      if (dmoOfProduct) {
-        // find campIds of this dmo
-        campIdsFromProductId
-          = await this.campaignService.getCampaignAssociatedToIds(
-            dmoOfProduct,
-            'dmoIds',
-          );
-      }
-    }
+  //     if (dmoOfProduct) {
+  //       // find campIds of this dmo
+  //       campIdsFromProductId
+  //         = await this.campaignService.getCampaignAssociatedToIds(
+  //           dmoOfProduct,
+  //           'dmoIds',
+  //         );
+  //     }
+  //   }
 
-    if (campId) {
-      let campIds = Array.isArray(campId)
-        ? campId.map(item => item)
-        : [campId];
+  //   if (campId) {
+  //     let campIds = Array.isArray(campId)
+  //       ? campId.map(item => item)
+  //       : [campId];
 
-      if (campIdsFromProductId) {
-        const campIdsFromProductIds = Array.isArray(campIdsFromProductId)
-          ? campIdsFromProductId.map(item => item?.toString())
-          : [campIdsFromProductId];
+  //     if (campIdsFromProductId) {
+  //       const campIdsFromProductIds = Array.isArray(campIdsFromProductId)
+  //         ? campIdsFromProductId.map(item => item?.toString())
+  //         : [campIdsFromProductId];
 
-        campIds = [...campIds, ...campIdsFromProductIds];
-      }
+  //       campIds = [...campIds, ...campIdsFromProductIds];
+  //     }
 
-      const campsId = getUniqueSet(campIds);
+  //     const campsId = getUniqueSet(campIds);
 
-      findQuery = {
-        ...findQuery,
-        campId: { $in: campsId },
-      };
-    }
+  //     findQuery = {
+  //       ...findQuery,
+  //       campId: { $in: campsId },
+  //     };
+  //   }
 
-    if (!campId && productId) {
-      findQuery = {
-        ...findQuery,
-        campId: { $in: campIdsFromProductId },
-      };
-    }
+  //   if (!campId && productId) {
+  //     findQuery = {
+  //       ...findQuery,
+  //       campId: { $in: campIdsFromProductId },
+  //     };
+  //   }
 
-    if (search) {
-      findQuery = {
-        ...findQuery,
-        name: { $regex: search, $options: 'i' },
-      };
-    }
+  //   if (search) {
+  //     findQuery = {
+  //       ...findQuery,
+  //       name: { $regex: search, $options: 'i' },
+  //     };
+  //   }
 
-    if (createdStartDate && createdEndDate) {
-      const startDate = new Date(createdStartDate);
-      const endDate = new Date(createdEndDate);
+  //   if (createdStartDate && createdEndDate) {
+  //     const startDate = new Date(createdStartDate);
+  //     const endDate = new Date(createdEndDate);
 
-      findQuery = {
-        ...findQuery,
-        createdAt: {
-          $gte: startDate,
-          $lte: endDate,
-        },
-      };
-    }
+  //     findQuery = {
+  //       ...findQuery,
+  //       createdAt: {
+  //         $gte: startDate,
+  //         $lte: endDate,
+  //       },
+  //     };
+  //   }
 
-    if (expiryStartDate && expiryEndDate) {
-      const startDate = new Date(expiryStartDate);
-      const endDate = new Date(expiryEndDate);
+  //   if (expiryStartDate && expiryEndDate) {
+  //     const startDate = new Date(expiryStartDate);
+  //     const endDate = new Date(expiryEndDate);
 
-      findQuery = {
-        ...findQuery,
-        expireDate: {
-          $gte: startDate,
-          $lte: endDate,
-        },
-      };
-    }
+  //     findQuery = {
+  //       ...findQuery,
+  //       expireDate: {
+  //         $gte: startDate,
+  //         $lte: endDate,
+  //       },
+  //     };
+  //   }
 
-    const voucher = await queryhandler<Voucher>(this.VoucherModel, {
-      findQuery,
-      select,
-      page: queryPage,
-      limit: queryLimit,
-      populate,
-    });
-    return voucher;
-  }
+  //   const voucher = await queryhandler<Voucher>(this.VoucherModel, {
+  //     findQuery,
+  //     select,
+  //     page: queryPage,
+  //     limit: queryLimit,
+  //     populate,
+  //   });
+  //   return voucher;
+  // }
 
-  async getVouchersAssignedToMe(
-    userId: string,
-    queries: GetMyAssignedVouchersQuery,
-  ) {
-    const {
-      page, limit, search, campId, productId, ...query
-    } = queries;
+  // async getVouchersAssignedToMe(
+  //   userId: string,
+  //   queries: GetMyAssignedVouchersQuery,
+  // ) {
+  //   const {
+  //     page, limit, search, campId, productId, ...query
+  //   } = queries;
 
-    const queryPage = Number(page) || paginationConfig.page;
-    const queryLimit = Number(limit) || paginationConfig.limit;
+  //   const queryPage = Number(page) || paginationConfig.page;
+  //   const queryLimit = Number(limit) || paginationConfig.limit;
 
-    const select = disSelect;
+  //   const select = disSelect;
 
-    let findQuery: any = { ...query, assignedTo: userId };
+  //   let findQuery: any = { ...query, assignedTo: userId };
 
-    const populate = {
-      path: 'campId',
-      select: `${disSelect}`,
-    };
-    let populate1: {};
+  //   const populate = {
+  //     path: 'campId',
+  //     select: `${disSelect}`,
+  //   };
+  //   let populate1: {};
 
-    let campIdsFromProductId;
-    if (productId) {
-      const dmoOfProduct = (await this.productService.findOne(productId))?.dmoId
-        ?._id;
+  //   let campIdsFromProductId;
+  //   if (productId) {
+  //     const dmoOfProduct = (await this.productService.findOne(productId))?.dmoId
+  //       ?._id;
 
-      if (dmoOfProduct) {
-        // find campIds of this dmo
-        campIdsFromProductId
-          = await this.campaignService.getCampaignAssociatedToIds(
-            dmoOfProduct,
-            'dmoIds',
-          );
-      }
-    }
+  //     if (dmoOfProduct) {
+  //       // find campIds of this dmo
+  //       campIdsFromProductId
+  //         = await this.campaignService.getCampaignAssociatedToIds(
+  //           dmoOfProduct,
+  //           'dmoIds',
+  //         );
+  //     }
+  //   }
 
-    if (campId) {
-      let campIds = Array.isArray(campId)
-        ? campId.map(item => item)
-        : [campId];
+  //   if (campId) {
+  //     let campIds = Array.isArray(campId)
+  //       ? campId.map(item => item)
+  //       : [campId];
 
-      if (campIdsFromProductId) {
-        const campIdsFromProductIds = Array.isArray(campIdsFromProductId)
-          ? campIdsFromProductId.map(item => item?.toString())
-          : [campIdsFromProductId];
+  //     if (campIdsFromProductId) {
+  //       const campIdsFromProductIds = Array.isArray(campIdsFromProductId)
+  //         ? campIdsFromProductId.map(item => item?.toString())
+  //         : [campIdsFromProductId];
 
-        campIds = [...campIds, ...campIdsFromProductIds];
-      }
+  //       campIds = [...campIds, ...campIdsFromProductIds];
+  //     }
 
-      const campsId = getUniqueSet(campIds);
+  //     const campsId = getUniqueSet(campIds);
 
-      findQuery = {
-        ...findQuery,
-        campId: { $in: campsId },
-      };
-    }
+  //     findQuery = {
+  //       ...findQuery,
+  //       campId: { $in: campsId },
+  //     };
+  //   }
 
-    if (!campId && productId) {
-      findQuery = {
-        ...findQuery,
-        campId: { $in: campIdsFromProductId },
-      };
-    }
+  //   if (!campId && productId) {
+  //     findQuery = {
+  //       ...findQuery,
+  //       campId: { $in: campIdsFromProductId },
+  //     };
+  //   }
 
-    if (search) {
-      findQuery = {
-        ...findQuery,
-        name: { $regex: search, $options: 'i' },
-      };
-    }
+  //   if (search) {
+  //     findQuery = {
+  //       ...findQuery,
+  //       name: { $regex: search, $options: 'i' },
+  //     };
+  //   }
 
-    const voucher = await queryhandler<Voucher>(this.VoucherModel, {
-      findQuery,
-      select,
-      page: queryPage,
-      limit: queryLimit,
-      populate,
-      populate1,
-    });
-    return voucher;
-  }
+  //   const voucher = await queryhandler<Voucher>(this.VoucherModel, {
+  //     findQuery,
+  //     select,
+  //     page: queryPage,
+  //     limit: queryLimit,
+  //     populate,
+  //     populate1,
+  //   });
+  //   return voucher;
+  // }
 
-  async getVoucherCreatedByMe(
-    userId: string,
-    queries: GetMyAssignedVouchersQuery,
-  ) {
-    const {
-      page, limit, search, campId, productId, ...query
-    } = queries;
+  // async getVoucherCreatedByMe(
+  //   userId: string,
+  //   queries: GetMyAssignedVouchersQuery,
+  // ) {
+  //   const {
+  //     page, limit, search, campId, productId, ...query
+  //   } = queries;
 
-    const queryPage = page ? Number(page) : paginationConfig.page;
-    const queryLimit = limit ? Number(limit) : paginationConfig.limit;
+  //   const queryPage = page ? Number(page) : paginationConfig.page;
+  //   const queryLimit = limit ? Number(limit) : paginationConfig.limit;
 
-    const select = disSelect;
+  //   const select = disSelect;
 
-    let findQuery: any = {
-      ...query,
-      createdBy: userId,
-      paymentStatus: VoucherPaymentStatus.PAID,
-    };
-    delete findQuery?.identifierId;
+  //   let findQuery: any = {
+  //     ...query,
+  //     createdBy: userId,
+  //     paymentStatus: VoucherPaymentStatus.PAID,
+  //   };
+  //   delete findQuery?.identifierId;
 
-    const populate = {
-      path: 'campId',
-      select: `${disSelect}`,
-    };
-    let populate1: {};
+  //   const populate = {
+  //     path: 'campId',
+  //     select: `${disSelect}`,
+  //   };
+  //   let populate1: {};
 
-    let campIdsFromProductId;
-    if (productId) {
-      const dmoOfProduct = (await this.productService.findOne(productId))?.dmoId
-        ?._id;
+  //   let campIdsFromProductId;
+  //   if (productId) {
+  //     const dmoOfProduct = (await this.productService.findOne(productId))?.dmoId
+  //       ?._id;
 
-      if (dmoOfProduct) {
-        // find campIds of this dmo
-        campIdsFromProductId
-          = await this.campaignService.getCampaignAssociatedToIds(
-            dmoOfProduct,
-            'dmoIds',
-          );
-      }
-    }
+  //     if (dmoOfProduct) {
+  //       // find campIds of this dmo
+  //       campIdsFromProductId
+  //         = await this.campaignService.getCampaignAssociatedToIds(
+  //           dmoOfProduct,
+  //           'dmoIds',
+  //         );
+  //     }
+  //   }
 
-    if (campId) {
-      let campIds = Array.isArray(campId)
-        ? campId.map(item => item)
-        : [campId];
+  //   if (campId) {
+  //     let campIds = Array.isArray(campId)
+  //       ? campId.map(item => item)
+  //       : [campId];
 
-      if (campIdsFromProductId) {
-        const campIdsFromProductIds = Array.isArray(campIdsFromProductId)
-          ? campIdsFromProductId.map(item => item?.toString())
-          : [campIdsFromProductId];
+  //     if (campIdsFromProductId) {
+  //       const campIdsFromProductIds = Array.isArray(campIdsFromProductId)
+  //         ? campIdsFromProductId.map(item => item?.toString())
+  //         : [campIdsFromProductId];
 
-        campIds = [...campIds, campIdsFromProductIds];
-      }
+  //       campIds = [...campIds, campIdsFromProductIds];
+  //     }
 
-      const campsId = getUniqueSet(campIds);
-      findQuery = {
-        ...findQuery,
-        campId: { $in: campsId },
-      };
-    }
+  //     const campsId = getUniqueSet(campIds);
+  //     findQuery = {
+  //       ...findQuery,
+  //       campId: { $in: campsId },
+  //     };
+  //   }
 
-    if (!campId && productId) {
-      findQuery = {
-        ...findQuery,
-        campId: { $in: campIdsFromProductId },
-      };
-    }
+  //   if (!campId && productId) {
+  //     findQuery = {
+  //       ...findQuery,
+  //       campId: { $in: campIdsFromProductId },
+  //     };
+  //   }
 
-    if (search) {
-      findQuery = {
-        ...findQuery,
-        name: { $regex: search, $options: 'i' },
-      };
-    }
+  //   if (search) {
+  //     findQuery = {
+  //       ...findQuery,
+  //       name: { $regex: search, $options: 'i' },
+  //     };
+  //   }
 
-    const voucher = await queryhandler<Voucher>(this.VoucherModel, {
-      findQuery,
-      select,
-      page: queryPage,
-      limit: queryLimit,
-      populate,
-      populate1,
-    });
-    return voucher;
-  }
+  //   const voucher = await queryhandler<Voucher>(this.VoucherModel, {
+  //     findQuery,
+  //     select,
+  //     page: queryPage,
+  //     limit: queryLimit,
+  //     populate,
+  //     populate1,
+  //   });
+  //   return voucher;
+  // }
 
   async assignVoucher(command: AssignVoucherCommand) {
     try {
