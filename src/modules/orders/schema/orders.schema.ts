@@ -92,20 +92,8 @@ export class Order extends AuditableSchema {
   })
     qrCodeUrl: string;
 
-  @Prop({
-    type: {
-      by: { type: mongoose.Schema.Types.ObjectId, ref: User.name },
-      date: { type: Date },
-      additional_information: { type: String },
-      isAutomatic: { type: Boolean, default: false },
-    },
-  })
-    packaging: {
-    by: mongoose.Types.ObjectId;
-    date: Date;
-    additional_information: string;
-    isAutomatic: boolean;
-  };
+  @Prop({ default: null })
+    paymentDate: Date;
 
   @Prop({
     type: {
@@ -116,21 +104,6 @@ export class Order extends AuditableSchema {
     },
   })
     shipped: {
-    by: mongoose.Types.ObjectId;
-    date: Date;
-    additional_information: string;
-    isAutomatic: boolean;
-  };
-
-  @Prop({
-    type: {
-      by: { type: mongoose.Schema.Types.ObjectId, ref: User.name },
-      date: { type: Date },
-      additional_information: { type: String },
-      isAutomatic: { type: Boolean, default: false },
-    },
-  })
-    delivered: {
     by: mongoose.Types.ObjectId;
     date: Date;
     additional_information: string;

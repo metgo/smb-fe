@@ -2,7 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
 
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
-import { DeliveryMethod } from 'src/modules/orders/orders.type';
+import { DeliveryMethod, OrderStatus } from 'src/modules/orders/orders.type';
 import { Order } from 'src/modules/orders/schema/orders.schema';
 import { Product } from 'src/modules/products/schema/products.schema';
 import { User } from 'src/modules/users/schema/users.schema';
@@ -77,6 +77,60 @@ export class OrderProduct extends AuditableSchema {
 
   @Prop({ default: null })
     additionalInfo: string;
+
+  @Prop({
+    enum: OrderStatus,
+    default: OrderStatus.PROCESSING,
+  })
+    status: OrderStatus;
+
+  @Prop({ type: Number, default: 0 })
+    deliveryFee: number;
+
+  @Prop({
+    type: {
+      by: { type: mongoose.Schema.Types.ObjectId, ref: User.name },
+      date: { type: Date },
+      additional_information: { type: String },
+      isAutomatic: { type: Boolean, default: false },
+    },
+  })
+    shipped: {
+    by: mongoose.Types.ObjectId;
+    date: Date;
+    additional_information: string;
+    isAutomatic: boolean;
+  };
+
+  @Prop({
+    type: {
+      by: { type: mongoose.Schema.Types.ObjectId, ref: User.name },
+      date: { type: Date, required: true },
+      additional_information: { type: String },
+      isAutomatic: { type: Boolean, default: false },
+    },
+  })
+    completed: {
+    by: mongoose.Types.ObjectId;
+    date: Date;
+    additional_information: String;
+    isAutomatic: boolean;
+  };
+
+  @Prop({
+    type: {
+      by: { type: mongoose.Schema.Types.ObjectId, ref: User.name },
+      date: { type: Date },
+      canceled_reason: { type: String },
+      isAutomatic: { type: Boolean, default: false },
+    },
+  })
+    cancelled: {
+    by: mongoose.Types.ObjectId;
+    date: Date;
+    canceled_reason: string;
+    isAutomatic: boolean;
+  };
 }
 
 export type OrderProducts = HydratedDocument<OrderProduct>;

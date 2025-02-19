@@ -15,6 +15,10 @@ export const HebrewTemplate = {
   VOUCHER_PROMOTIONAL: 'send-promotion-to-all-users',
   VOUCHER_FOR_CAMPAIGN: 'dynamic-voucher-general-campaign-he',
   TransferBusinessOwnership: '',
+  OrderStatusUpdateForClient: 'dynamic-order-status-update-client-side-he',
+  OrderStatusUpdateForBusiness: 'dynamic-order-confirmation-business-side-he-1',
+  OrderScheduleShippedToDelivery: 'dynamic-order-shipped-he',
+  OrderScheduleDeliveryToCompleted: 'dynamic-order-delivery-he',
 };
 
 export const EnglishTemplate = {
@@ -33,6 +37,10 @@ export const EnglishTemplate = {
   REEDEMABLE_VOUCHER_REMINDER: 'voucher-remainder-en',
   VOUCHER_FOR_CAMPAIGN: 'dynamic-voucher-general-campaign-en',
   TransferBusinessOwnership: '',
+  OrderStatusUpdateForClient: 'dynamic-order-status-update-client-side-en',
+  OrderStatusUpdateForBusiness: 'dynamic-order-status-update-business-side-en',
+  OrderScheduleShippedToDelivery: 'dynamic-order-shipped-en',
+  OrderScheduleDeliveryToCompleted: 'dynamic-order-delivery-en',
 };
 
 export const DynamicHebrewTemplate = {

@@ -43,7 +43,11 @@ import { ProductsService } from 'src/modules/products/products.services';
 import { UserType } from 'src/modules/users/users.type';
 import { VoucherService } from 'src/modules/vouchers/voucher.service';
 import { CreateOrderDto } from 'src/modules/orders/dto';
-import { OrderStatus, PaymentMode } from 'src/modules/orders/orders.type';
+import {
+  DeliveryMethod,
+  OrderStatus,
+  PaymentMode,
+} from 'src/modules/orders/orders.type';
 import { OrderProductService } from 'src/modules/order-product/order-product.services';
 
 import { PaymentsService } from 'src/services/payments/payments.service';
@@ -276,6 +280,7 @@ export class OrdersService {
   ) {
     const orderWithQR = new this.OrderModel({
       ...command,
+      paymentDate: new Date(),
       paymentStatus: PaymentStatus.SUCCESS,
       status: OrderStatus.PROCESSING,
       paymentMode: [PaymentMode.VOUCHER],
@@ -434,6 +439,7 @@ export class OrdersService {
       const updatedField = {
         paymentStatus: PaymentStatus.SUCCESS,
         status: OrderStatus.PROCESSING,
+        paymentDate: new Date(),
       };
 
       const updateOrder = await updateById<Order>(
@@ -932,6 +938,18 @@ export class OrdersService {
         QRCODEURL: order?.qrCodeUrl || '',
       },
     });
+    let BUYERADDRESS: string;
+
+    if (
+      orderProduct?.length
+      && orderProduct[0]?.deliveryMethod === DeliveryMethod.DELIVER
+    ) {
+      BUYERADDRESS = orderProduct[0]?.deliveryArea;
+    } else if (languagePreference === Locale.ENGLISH) {
+      BUYERADDRESS = ' SELF PICK UP';
+    } else {
+      BUYERADDRESS = 'איסוף עצמי';
+    }
 
     // SEND TO BUSINESS OWNER
     await Promise.all(
@@ -952,7 +970,7 @@ export class OrdersService {
             BUYERNAME: `${order?.firstName} ${order?.lastName}`,
             BUYERPHONE: `${order?.countryCode}-${order?.phone}`,
             BUYEREMAIL: order?.email,
-            BUYERADDRESS: orderProduct[0].deliveryArea,
+            BUYERADDRESS,
           },
         });
       }),
