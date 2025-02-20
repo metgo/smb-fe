@@ -185,8 +185,10 @@ export class OrdersService {
           ? 'https://console.metgo.app/'
           : 'https://stg.console.metgo.app/';
 
+      const orderUrlWithUTM = `${baseUrl}orders/${newOrder._id.toString()}?utm_source=qr_code&utm_medium=tav8`;
+
       const qrCodeUrl = await this.qrCodeService.generateQRCode(
-        `${baseUrl}orders/${newOrder._id.toString()}`,
+        orderUrlWithUTM,
         newOrder._id.toString(),
         loggedInUser,
       );

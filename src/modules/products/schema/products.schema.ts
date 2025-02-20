@@ -90,14 +90,14 @@ export class Product extends AuditableSchema {
   @Prop({
     type: {
       initial: Number,
-      sold: Number,
+      sold: { type: Number, default: 0 },
       remaining: Number,
       isUnlimited: Boolean,
     },
   })
     quantity: {
     initial: number;
-    sold: { type: number; default: 0 };
+    sold: number;
     remaining: number;
     isUnlimited: boolean;
   };

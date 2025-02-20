@@ -17,7 +17,10 @@ export async function calculateProductsTotalAmount(
         if (!Number(payloadProduct?.quantity)) {
           throw new BadRequestException(ServerErrors.INVALID_QUANTITY);
         }
-        if (dbProduct.quantity.remaining < payloadProduct.quantity) {
+        if (
+          dbProduct?.quantity?.remaining < payloadProduct?.quantity
+          && !dbProduct?.quantity?.isUnlimited
+        ) {
           throw new BadRequestException(
             'There is less quantity then you request',
           );

@@ -11,6 +11,14 @@ import { User } from 'src/modules/users/schema/users.schema';
 @Schema()
 export class Order extends AuditableSchema {
   @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    index: true,
+    required: true,
+    auto: true,
+  })
+    _id: mongoose.Types.ObjectId;
+
+  @Prop({
     required: true,
     type: [
       {
@@ -49,6 +57,9 @@ export class Order extends AuditableSchema {
 
   @Prop({ default: null })
     phone: string;
+
+  @Prop({ default: null })
+    address: string;
 
   @Prop({ default: null })
     firstName: string;

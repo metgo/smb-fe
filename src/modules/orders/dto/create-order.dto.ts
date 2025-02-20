@@ -52,6 +52,11 @@ export class CreateOrderDto {
   @ApiProperty()
     lastName: string;
 
+  @IsString()
+  @IsOptional()
+  @ApiProperty()
+    address: string;
+
   @ApiProperty({
     type: 'enum',
     enum: Locale,
