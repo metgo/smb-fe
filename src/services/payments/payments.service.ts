@@ -159,9 +159,9 @@ export class PaymentsService {
     }
   }
 
-  async paymentSucess(query) {
+  async paymentSucess(query, languagePreference) {
     try {
-      const pageRequestUid = query?.lowprofilecode;
+      const pageRequestUid = query?.LowProfileId;
 
       const updateField = {
         status: PaymentStatus.SUCCESS,
@@ -182,9 +182,9 @@ export class PaymentsService {
       await this.mailchimpService.sendTransactionalEmail({
         to: payments?.customerEmail,
         templatedId:
-          query?.languagePreference === Locale.HEBREW
-            ? HebrewTemplate.PaymentSuccessful
-            : EnglishTemplate.PaymentSuccessful,
+          languagePreference === Locale.ENGLISH
+            ? EnglishTemplate.PaymentSuccessful
+            : HebrewTemplate.PaymentSuccessful,
         mergeVars: {
           BUYERNAME: payments?.customerName,
           TOTALAMOUNT: payments?.amount,
@@ -198,7 +198,7 @@ export class PaymentsService {
             updateField: { paymentStatus: VoucherPaymentStatus.PAID },
             voucherOwnerEmail: payments?.customerEmail,
             voucherOwnerName: payments?.customerName,
-            languagePreference: query?.languagePreference,
+            languagePreference,
           });
 
         const invoiceDetail = await this.sendInvoice({
@@ -209,7 +209,7 @@ export class PaymentsService {
           transactionId: pageRequestUid,
           purpose: PaymentPurpose.VOUCHER,
           sumPaid: payments?.amount,
-          languagePreference: query?.languagePreference,
+          languagePreference,
           additionalInformation: '',
         });
 
@@ -224,7 +224,7 @@ export class PaymentsService {
         const { updateOrder, getProductInformation }
           = await this.ordersService.updateAfterPaymentSuccess(
             payments.orderId,
-            query?.languagePreference,
+            languagePreference,
           );
 
         if (updateOrder?.totalAmount === updateOrder?.creditCardPayment) {
@@ -242,7 +242,7 @@ export class PaymentsService {
             transactionId: pageRequestUid,
             purpose: PaymentPurpose.ORDER,
             sumPaid: payments?.amount,
-            languagePreference: query?.languagePreference,
+            languagePreference,
             additionalInformation: 'Paid via Credit Card',
           });
 
@@ -285,7 +285,7 @@ export class PaymentsService {
             transactionId: pageRequestUid,
             purpose: PaymentPurpose.ORDER,
             sumPaid: updateOrder?.totalAmount,
-            languagePreference: query?.languagePreference,
+            languagePreference,
             additionalInformation: 'Paid via Voucher and Credit Card',
           });
 

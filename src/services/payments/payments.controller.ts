@@ -60,38 +60,19 @@ export class PaymentsController {
     tags: ['Payment'],
     softBlockExtraDtoFields: true,
   })
-  @Get('indicator')
-  async getIndicator(@Req() req, @Res() response: Response, @Query() query) {
-    console.log('>>>>>>>>>>>GET REQ BODY');
-    console.log(req.body);
-    console.log('>>>>>>>>>>>GET QUERY');
-    console.log(query);
-    console.log('>>>>>>>>>>>GET REQ');
-    console.log(req);
-    await this.paymentService.paymentSucess(query);
-    return responseHelper(
-      response,
-      HttpStatus.OK,
-      'Your payment was not successfully paid',
-      null,
-      null,
-      null,
-    );
-  }
-
-  @ApiEndpoint({
-    tags: ['Payment'],
-    softBlockExtraDtoFields: true,
-  })
   @Post('indicator')
   async postIndicator(@Req() req, @Res() response: Response, @Query() query) {
-    console.log('>>>>>>>>>>>POST REQ BODY');
-    console.log(req.body);
-    console.log('>>>>>>>>>>>POST QUERY');
-    console.log(query);
-    console.log('>>>>>>>>>>>POST REQ');
-    console.log(req);
-    await this.paymentService.paymentSucess(query);
+    console.log('>>>>>>>>>>>POST REQ RESPONSE CODE');
+    console.log(req?.body?.ResponseCode);
+    console.log('>>>>>>>>>>>POST REQ LowProfileId');
+    console.log(req?.body?.LowProfileId);
+
+    if (req?.body?.ResponseCode === 0) {
+      await this.paymentService.paymentSucess(
+        req.body,
+        query.languagePreference,
+      );
+    }
     return responseHelper(
       response,
       HttpStatus.OK,
@@ -121,10 +102,12 @@ export class PaymentsController {
     @Param('paymentRequestId') paymentRequestId: string,
     @Res() response: Response,
   ) {
-    await this.paymentService.paymentSucess({
-      lowprofilecode: paymentRequestId,
-      languagePreference: dto.locale,
-    });
+    await this.paymentService.paymentSucess(
+      {
+        lowprofilecode: paymentRequestId,
+      },
+      dto?.locale,
+    );
     return responseHelper(
       response,
       HttpStatus.OK,
