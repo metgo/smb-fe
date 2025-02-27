@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   ForbiddenException,
   Inject,
   Injectable,
@@ -21,9 +22,7 @@ import { update, updateById } from 'src/core/helper/query-helper';
 
 import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interface';
 import { ConfigService } from '../config/config.service';
-import { BusinessService } from 'src/modules/business/services/business.service';
 import { OrdersService } from 'src/modules/orders/orders.services';
-import { ProductsService } from 'src/modules/products/products.services';
 import { VoucherService } from 'src/modules/vouchers/voucher.service';
 import { MailChimpService } from 'src/services/mailchimp/mailchimp.service';
 import {
@@ -50,8 +49,6 @@ export class PaymentsService {
     @Inject(forwardRef(() => OrdersService))
     private readonly ordersService: OrdersService,
     private mailchimpService: MailChimpService,
-    private readonly businessService: BusinessService,
-    private readonly productsService: ProductsService,
   ) {}
 
   async createPayment(insertField: any) {
@@ -86,54 +83,80 @@ export class PaymentsService {
       = this.configService.cardCom;
 
     const { BE } = this.configService.baseUrl;
-    const cardComResponse = await axios.post(
-      URL,
-      {
-        TerminalNumber: TERMINAL_NUMBER,
-        ApiName: API_NAME,
-        Amount: amount,
-        ISOCoinId: 1,
-        SuccessRedirectUrl: `${BE}${SUCCESS}?languagePreference=${languagePreference}`,
-        FailedRedirectUrl: `${BE}${FAILURE}?languagePreference=${languagePreference}`,
-        WebHookUrl: `${BE}${INDICATOR}?languagePreference=${languagePreference}`,
-      },
-      {
-        headers: {
-          ContentType: 'application/json',
+
+    try {
+      const cardComResponse = await axios.post(
+        URL,
+        {
+          TerminalNumber: TERMINAL_NUMBER,
+          ApiName: API_NAME,
+          Amount: amount,
+          ISOCoinId: 1,
+          SuccessRedirectUrl: `${BE}${SUCCESS}?languagePreference=${languagePreference}`,
+          FailedRedirectUrl: `${BE}${FAILURE}?languagePreference=${languagePreference}`,
+          WebHookUrl: `${BE}${INDICATOR}?languagePreference=${languagePreference}`,
         },
-      },
-    );
+        {
+          headers: {
+            ContentType: 'application/json',
+          },
+        },
+      );
 
-    let insertField: any = {
-      purpose,
-      amount,
-      currency,
-      customerName,
-      customerEmail,
-      paymentRequestId: cardComResponse.data.LowProfileId,
-    };
-    if (purpose === PaymentPurpose.VOUCHER) {
-      insertField = {
-        ...insertField,
-        voucherId: id,
+      this.logger.info(`[CARDCOM-REQUST]: ${cardComResponse}`);
+
+      if (!cardComResponse?.data?.LowProfileId) {
+        this.logger.error(
+          '[CARDCOM]: No LowProfileId received after cardcom api was hit ',
+        );
+        throw new ConflictException('Failed to receive link from cardcom');
+      }
+      let insertField: any = {
+        purpose,
+        amount,
+        currency,
+        customerName,
+        customerEmail,
+        paymentRequestId: cardComResponse.data.LowProfileId,
       };
-    }
+      if (purpose === PaymentPurpose.VOUCHER) {
+        insertField = {
+          ...insertField,
+          voucherId: id,
+        };
+      }
 
-    if (purpose === PaymentPurpose.ORDER) {
-      insertField = {
-        ...insertField,
-        orderId: id,
-      };
-    }
+      if (purpose === PaymentPurpose.ORDER) {
+        insertField = {
+          ...insertField,
+          orderId: id,
+        };
+      }
 
-    if (
-      cardComResponse.data.ResponseCode === 0
-      && cardComResponse.data.Description === 'OK'
-    ) {
-      await this.createPayment(insertField);
-    }
+      if (
+        cardComResponse.data.ResponseCode === 0
+        && cardComResponse.data.Description === 'OK'
+      ) {
+        await this.createPayment(insertField);
+      }
 
-    return cardComResponse.data;
+      return cardComResponse.data;
+    } catch (err) {
+      this.logger.error('[CARDCOM]: FAILED TO GENERATE LINK', {
+        err: err.message,
+      });
+
+      await this.mailchimpService.sendTransactionalEmail({
+        to: 'barak@metgo.app',
+        templatedId: EnglishTemplate.OrderFailAlert,
+        mergeVars: {
+          BUYERNAME: customerName,
+          BUYEREMAIL: customerEmail,
+          PURPOSE: purpose.toLowerCase(),
+        },
+      });
+      exceptionHandling(err);
+    }
   }
 
   async paymentSucess(query) {
@@ -376,13 +399,28 @@ export class PaymentsService {
       ],
     };
 
-    const response = await axios.post(INVOICE_URL, body, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
+    try {
+      const response = await axios.post(INVOICE_URL, body, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
 
-    return response.data;
+      return response.data;
+    } catch (err) {
+      this.logger.error('[CARDCOM]: Error while requesting invoice');
+
+      await this.mailchimpService.sendTransactionalEmail({
+        to: 'barak@metgo.app',
+        templatedId: EnglishTemplate.OrderFailAlert,
+        mergeVars: {
+          BUYERNAME: command.customerName,
+          BUYEREMAIL: command.customerEmail,
+          PURPOSE: command?.purpose?.toLowerCase(),
+        },
+      });
+      exceptionHandling(err);
+    }
   }
 
   async startOrderPaymentProcess(

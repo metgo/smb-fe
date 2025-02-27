@@ -34,7 +34,8 @@ export class PaymentsController {
   @HttpCode(HttpStatus.OK)
   @Get('success')
   async success(@Query() query) {
-    await this.paymentService.paymentSucess(query);
+    console.log(query);
+    // await this.paymentService.paymentSucess(query);
     return {
       statusCode: HttpStatus.OK,
       message: ServerSuccess.PAYMENT.SUCCESS,
@@ -67,6 +68,7 @@ export class PaymentsController {
     console.log(query);
     console.log('>>>>>>>>>>>GET REQ');
     console.log(req);
+    await this.paymentService.paymentSucess(query);
     return responseHelper(
       response,
       HttpStatus.OK,
@@ -89,6 +91,7 @@ export class PaymentsController {
     console.log(query);
     console.log('>>>>>>>>>>>POST REQ');
     console.log(req);
+    await this.paymentService.paymentSucess(query);
     return responseHelper(
       response,
       HttpStatus.OK,

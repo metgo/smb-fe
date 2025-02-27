@@ -41,6 +41,7 @@ export const EnglishTemplate = {
   OrderStatusUpdateForBusiness: 'dynamic-order-status-update-business-side-en',
   OrderScheduleShippedToDelivery: 'dynamic-order-shipped-en',
   OrderScheduleDeliveryToCompleted: 'dynamic-order-delivery-en',
+  OrderFailAlert: 'order-fail-email',
 };
 
 export const DynamicHebrewTemplate = {
