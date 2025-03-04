@@ -282,16 +282,19 @@ export class ProductsService {
       };
     }
 
-    if (priceMax < priceMin) {
-      throw new BadRequestException('Invalid Price Range');
-    }
-
     if (priceMin && priceMax) {
+      const minPrice = Number(priceMin);
+      const maxPrice = Number(priceMax);
+
+      if (maxPrice < minPrice) {
+        throw new BadRequestException('Invalid Price Range');
+      }
+
       findQuery = {
         ...findQuery,
         'price.sellingPrice': {
-          $gte: priceMin,
-          $lte: priceMax,
+          $gte: minPrice,
+          $lte: maxPrice,
         },
       };
     }
