@@ -1,10 +1,12 @@
 import { Module, forwardRef } from '@nestjs/common';
+import { CqrsModule } from '@nestjs/cqrs';
 import { MongooseModule } from '@nestjs/mongoose';
 
 import { AuthorityModule } from 'src/modules/authority/authority.module';
 import { CampaignModule } from 'src/modules/campaign/campaign.module';
 import { DMOModule } from 'src/modules/dmo/dmo.module';
 import { UsersModule } from 'src/modules/users/users.module';
+import { CreateVouchersHandler } from 'src/modules/vouchers/commands/handler/create-voucher.handler';
 import { VoucherController } from 'src/modules/vouchers/voucher.controller';
 import { VoucherService } from 'src/modules/vouchers/voucher.service';
 import { VoucherSchema } from 'src/modules/vouchers/schema/voucher.schema';
@@ -20,6 +22,7 @@ import { CartModule } from 'src/modules/cart/cart.modules';
 
 @Module({
   imports: [
+    CqrsModule,
     MongooseModule.forFeature([{ name: 'Voucher', schema: VoucherSchema }]),
     forwardRef(() => AuthorityModule),
     forwardRef(() => CampaignModule),
@@ -36,7 +39,7 @@ import { CartModule } from 'src/modules/cart/cart.modules';
     ProductsModule,
   ],
   controllers: [VoucherController],
-  providers: [VoucherService],
+  providers: [VoucherService, CreateVouchersHandler],
   exports: [VoucherService],
 })
 export class VoucherModule {}

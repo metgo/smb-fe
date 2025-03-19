@@ -17,13 +17,68 @@ export class createVoucherDto {
   })
   @IsString()
   @IsNotEmpty()
-  @ApiProperty()
-    name: string;
+    creatorName: string;
+
+  @ApiProperty({
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+    creatorCountryCode: string;
+
+  @ApiProperty({
+    required: true,
+  })
+  @IsString()
+  @IsNotEmpty()
+    creatorPhone: string;
+
+  @ApiProperty({
+    required: true,
+  })
+  @IsEmail()
+  @IsNotEmpty()
+    creatorEmail: string;
+
+  @ApiProperty({
+    required: true,
+  })
+  @IsNotEmpty()
+  @IsString()
+    message: string;
 
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
     campCode: string;
+
+  @ApiProperty({
+    required: true,
+  })
+  @IsString()
+  @IsNotEmpty()
+    assigneeName: string;
+
+  @ApiProperty({
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+    assigneeCountryCode: string;
+
+  @ApiProperty({
+    required: false,
+  })
+  @IsString()
+  @IsOptional()
+    assigneePhone: string;
+
+  @ApiProperty({
+    required: false,
+  })
+  @IsEmail()
+  @IsOptional()
+    assigneeEmail: string;
 
   @ApiProperty({
     required: true,
@@ -41,11 +96,6 @@ export class createVoucherDto {
   @Transform(({ value }) => parseInt(value, 10), { toClassOnly: true })
     noOfVoucher: number;
 
-  @ApiProperty()
-  @IsEmail()
-  @IsNotEmpty()
-    email: string;
-
   @ApiProperty({
     type: 'enum',
     enum: Locale,
@@ -54,4 +104,9 @@ export class createVoucherDto {
   @IsOptional()
   @IsEnum(Locale)
     languagePreference: Locale;
+
+  @ApiProperty({ type: String, required: true })
+  @IsString()
+  @IsNotEmpty()
+    identifierId: string;
 }

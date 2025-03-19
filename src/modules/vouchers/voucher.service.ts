@@ -65,7 +65,6 @@ import { RewardsService } from 'src/modules/rewards/rewards.service';
 import { CreateVoucherDto } from './dto/create-voucher.dto';
 import { ExternalApiServices } from 'src/modules/external-api/external-api.service';
 import { CartService } from 'src/modules/cart/cart.service';
-import { ObjectId } from 'typeorm';
 
 @Injectable()
 export class VoucherService {
@@ -85,63 +84,6 @@ export class VoucherService {
     private productService: ProductsService,
     private cartService: CartService,
   ) {}
-
-  async create(dto: CreateVoucherDto, user?: LoggedInUserInterface) {
-    try {
-      const campId = (
-        await this.campaignService.findCampaignAndReturn('code', dto.campCode)
-      )._id;
-      const createdByUserId
-        = user?.email === dto?.email
-          ? user?.id
-          : (await this.usersService.findByEmailOrNull(dto.email))?._id;
-
-      let i: number = 0;
-      const voucherId: ObjectId[] = [];
-      const vouchers = [];
-
-      const totalAmount = dto.noOfVoucher * dto.amount;
-
-      console.log(totalAmount);
-
-      const externalApiId = (
-        await this.externalApiServices.findByIdentifierId(dto.identifierId)
-      )._id;
-
-      // eslint-disable-next-line no-plusplus
-      for (i = 0; i < dto.noOfVoucher; i++) {
-        const randomCode = generateRandomCode(12);
-        const code = dto.campCode + randomCode;
-        const newVoucher = new this.VoucherModel({
-          ...dto,
-          code,
-          remainingAmount: dto.amount,
-          campId,
-          createdBy: createdByUserId,
-          createdAt: new Date(),
-          createdByEmail: createdByUserId ? null : dto.email,
-          externalApiId,
-        });
-        newVoucher.save();
-        vouchers.push(newVoucher);
-        voucherId.push(newVoucher._id);
-      }
-
-      this.logger.info(`[${dto.identifierId}-VOUCHER]: PURCHASE STARTED`, {
-        message: voucherId,
-      });
-
-      return vouchers;
-    } catch (err) {
-      this.logger.error(
-        `[${dto.identifierId}-VOUCHER]: FAILED TO PURCHASE VOUCHERS`,
-        {
-          err: err.message,
-        },
-      );
-      exceptionHandling(err);
-    }
-  }
 
   async createdBySuperadmin(
     user: LoggedInUserInterface,

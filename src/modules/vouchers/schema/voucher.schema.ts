@@ -90,6 +90,64 @@ export class Voucher extends AuditableSchema {
     promoDetails: PromotionalEmailDetails[];
 
   @Prop({
+    type: {
+      id: { type: mongoose.Schema.Types.ObjectId, ref: User.name },
+      name: String,
+      countryCode: String,
+      phone: String,
+      email: String,
+      createdAt: Date,
+    },
+    _id: false,
+  })
+    creatorInfo: {
+    id: mongoose.Types.ObjectId;
+    name: string;
+    countryCode: string;
+    phone: string;
+    email: string;
+    createdAt: Date;
+  };
+
+  @Prop({
+    type: {
+      id: { type: mongoose.Schema.Types.ObjectId, ref: User.name },
+      name: String,
+      countryCode: String,
+      phone: String,
+      email: String,
+      assignedAt: Date,
+    },
+    _id: false,
+  })
+    assigneeInfo: {
+    id: mongoose.Types.ObjectId;
+    name: string;
+    countryCode: string;
+    phone: string;
+    email: string;
+    assignedAt: Date;
+  };
+
+  @Prop({
+    type: {
+      id: { type: mongoose.Schema.Types.ObjectId, ref: User.name },
+      name: String,
+      countryCode: String,
+      phone: String,
+      email: String,
+    },
+    _id: false,
+  })
+    purchaserInfo: {
+    id: mongoose.Types.ObjectId;
+    name: string;
+    countryCode: string;
+    phone: string;
+    email: string;
+  };
+
+  @Prop({
     type: [
       {
         amount: Number,

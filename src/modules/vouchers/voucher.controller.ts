@@ -11,6 +11,7 @@ import {
   UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
+import { CommandBus } from '@nestjs/cqrs';
 import { ApiResponse } from '@nestjs/swagger';
 
 import { ServerErrors, ServerSuccess } from 'src/common/constant';
@@ -20,13 +21,17 @@ import { JwtExternalApiAuthGuard } from 'src/core/guards/jwt/jwt-externalapi.gua
 
 import { VoucherService } from 'src/modules/vouchers/voucher.service';
 import { ExternalApiPostQuery } from 'src/common/query-handler/external-api.query';
-import { RewardVouchersByCampaignDto } from './dto';
+import { RewardVouchersByCampaignDto, createVoucherDto } from './dto';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { GetVoucherQuery } from './queries';
+import { CreateVouchersCommand } from './commands/create-voucher.command';
 
 @Controller()
 export class VoucherController {
-  constructor(private readonly voucherService: VoucherService) {}
+  constructor(
+    private readonly commandBus: CommandBus,
+    private readonly voucherService: VoucherService,
+  ) {}
 
   // @ApiEndpoint({
   //   tags: ['Voucher'],
@@ -119,32 +124,23 @@ export class VoucherController {
   //   );
   // }
 
-  // @ApiEndpoint({
-  //   tags: ['Voucher Process'],
-  //   response: {
-  //     status: HttpStatus.CREATED,
-  //     description: ServerSuccess.VOUCHER.CREATED,
-  //   },
-  //   softBlockExtraDtoFields: true,
-  //   operation: 'Start to Purchase voucher - step [1]',
-  // })
-  // @Post('vouchers')
-  // async buyVoucherByExternalApi(
-  //   @Req() req,
-  //   @Res() response: Response,
-  //   @Body() dto: CreateVoucherDto,
-  // ) {
-  //   const vouchers = await this.voucherService.create(dto, req?.user);
-
-  //   return responseHelper(
-  //     response,
-  //     HttpStatus.CREATED,
-  //     `${dto.campCode} ${ServerSuccess.EXTERNAL_API.VOUCHER.CREATED}`,
-  //     vouchers,
-  //     null,
-  //     null,
-  //   );
-  // }
+  @ApiEndpoint({
+    tags: ['Voucher'],
+    response: {
+      status: HttpStatus.CREATED,
+      description: ServerSuccess.VOUCHER.CREATED,
+    },
+    softBlockExtraDtoFields: true,
+    operation: 'Purchase Voucher For Personal Use',
+  })
+  @HttpCode(HttpStatus.CREATED)
+  @Post('vouchers')
+  async create(@Req() req, @Body() dto: createVoucherDto) {
+    const link = await this.commandBus.execute(
+      new CreateVouchersCommand(dto, req?.user),
+    );
+    return link;
+  }
 
   // @ApiEndpoint({
   //   tags: ['Voucher'],
