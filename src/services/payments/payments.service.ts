@@ -146,15 +146,19 @@ export class PaymentsService {
         err: err.message,
       });
 
-      await this.mailchimpService.sendTransactionalEmail({
-        to: 'barak@metgo.app',
-        templatedId: EnglishTemplate.OrderFailAlert,
-        mergeVars: {
-          BUYERNAME: customerName,
-          BUYEREMAIL: customerEmail,
-          PURPOSE: purpose.toLowerCase(),
-        },
-      });
+      const ENV_NAME = this.configService.get('ENV_NAME');
+
+      if (ENV_NAME === 'prod') {
+        await this.mailchimpService.sendTransactionalEmail({
+          to: 'barak@metgo.app',
+          templatedId: EnglishTemplate.OrderFailAlert,
+          mergeVars: {
+            BUYERNAME: customerName,
+            BUYEREMAIL: customerEmail,
+            PURPOSE: purpose.toLowerCase(),
+          },
+        });
+      }
       exceptionHandling(err);
     }
   }
@@ -410,15 +414,18 @@ export class PaymentsService {
     } catch (err) {
       this.logger.error('[CARDCOM]: Error while requesting invoice');
 
-      await this.mailchimpService.sendTransactionalEmail({
-        to: 'barak@metgo.app',
-        templatedId: EnglishTemplate.OrderFailAlert,
-        mergeVars: {
-          BUYERNAME: command.customerName,
-          BUYEREMAIL: command.customerEmail,
-          PURPOSE: command?.purpose?.toLowerCase(),
-        },
-      });
+      const ENV_NAME = this.configService.get('ENV_NAME');
+      if (ENV_NAME === 'prod') {
+        await this.mailchimpService.sendTransactionalEmail({
+          to: 'barak@metgo.app',
+          templatedId: EnglishTemplate.OrderFailAlert,
+          mergeVars: {
+            BUYERNAME: command.customerName,
+            BUYEREMAIL: command.customerEmail,
+            PURPOSE: command?.purpose?.toLowerCase(),
+          },
+        });
+      }
       exceptionHandling(err);
     }
   }
