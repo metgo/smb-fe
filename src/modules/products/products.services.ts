@@ -178,6 +178,8 @@ export class ProductsService {
       search,
       page,
       limit,
+      sortBy,
+      sortOrder,
       vendorDelivers,
     } = queries;
 
@@ -327,8 +329,8 @@ export class ProductsService {
       select,
       page: Number(page),
       limit: Number(limit),
-      sort: 'createdAt',
-      sortOrder: SortOrder.DESC,
+      sort: sortBy || 'createdAt',
+      sortOrder: sortOrder || SortOrder.DESC,
       populate,
       populate1,
     });

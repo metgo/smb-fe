@@ -1,5 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import {
+  IsEnum, IsNotEmpty, IsOptional, IsString,
+} from 'class-validator';
+import { SortOrder } from 'src/common/enum';
 import { CommonFilterQuery } from 'src/common/query-handler/common-filter-query';
 
 export class GetAllProductsQuery extends CommonFilterQuery {
@@ -56,4 +59,17 @@ export class GetAllProductsQuery extends CommonFilterQuery {
   @ApiProperty({ type: Boolean, required: false })
   @IsOptional()
     vendorDelivers: boolean;
+
+  @ApiProperty({ type: String, required: false })
+  @IsString()
+  @IsOptional()
+    sortBy: string;
+
+  @ApiProperty({
+    enum: SortOrder,
+    required: false,
+  })
+  @IsEnum(SortOrder)
+  @IsOptional()
+    sortOrder: SortOrder;
 }
