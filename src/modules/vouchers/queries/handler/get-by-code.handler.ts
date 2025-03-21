@@ -3,7 +3,11 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
 import { VoucherPaymentStatus } from 'src/common/enum';
-import { GoneException, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  GoneException,
+  UnprocessableEntityException,
+} from '@nestjs/common';
 import { PaymentRequiredException } from 'src/common/exception/payment-required';
 import { checkExpireDate } from 'src/common/expireDate';
 import { ServerErrors } from 'src/common/constant';
@@ -41,13 +45,13 @@ export class GetByCodeHandler implements IQueryHandler<GetByCodeQuery> {
         .exec();
 
       if (!voucher) {
-        throw new NotFoundException(ServerErrors.VOUCHER.NOT_FOUND);
+        throw new UnprocessableEntityException(ServerErrors.VOUCHER.NOT_FOUND);
       }
 
       const campDetails = voucher?.campId;
 
       if (campDetails?.code !== campCode) {
-        throw new NotFoundException(ServerErrors.VOUCHER.NOT_FOUND);
+        throw new ForbiddenException(ServerErrors.VOUCHER.RESTRICTED_CAMPAIGN);
       }
 
       if (voucher.paymentStatus !== VoucherPaymentStatus.PAID) {

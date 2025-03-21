@@ -236,8 +236,12 @@ export class VoucherController {
     operation: 'Get voucher detail by anyone using valid code',
   })
   @ApiResponse({
-    status: HttpStatus.NOT_FOUND,
-    description: ServerErrors.PRODUCT.NOT_FOUND,
+    status: HttpStatus.UNPROCESSABLE_ENTITY,
+    description: ServerErrors.VOUCHER.NOT_FOUND,
+  })
+  @ApiResponse({
+    status: HttpStatus.FORBIDDEN,
+    description: ServerErrors.VOUCHER.RESTRICTED_CAMPAIGN,
   })
   @ApiResponse({
     status: HttpStatus.PAYMENT_REQUIRED,

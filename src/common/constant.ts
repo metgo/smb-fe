@@ -130,6 +130,7 @@ export const ServerErrors = {
   },
   VOUCHER: {
     NOT_FOUND: 'Voucher not found',
+    RESTRICTED_CAMPAIGN: 'This voucher cannot be used on this website',
     EXISTS: 'Voucher already exists',
     NO_BALANCE: 'This voucher has no balance and is not applicable.',
     UNPAID:
