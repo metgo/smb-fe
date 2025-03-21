@@ -159,6 +159,9 @@ export class Voucher extends AuditableSchema {
     amount: number;
     cartId: mongoose.Types.ObjectId;
   }[];
+
+  @Prop()
+    message: string;
 }
 
 export type VoucherDocument = HydratedDocument<Voucher>;

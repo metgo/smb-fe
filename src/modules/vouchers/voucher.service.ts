@@ -65,6 +65,7 @@ import { RewardsService } from 'src/modules/rewards/rewards.service';
 import { CreateVoucherDto } from './dto/create-voucher.dto';
 import { ExternalApiServices } from 'src/modules/external-api/external-api.service';
 import { CartService } from 'src/modules/cart/cart.service';
+import { SmsService } from 'src/services/sms/sms.service';
 
 @Injectable()
 export class VoucherService {
@@ -77,6 +78,7 @@ export class VoucherService {
     private readonly campaignService: CampaignService,
     private readonly externalApiServices: ExternalApiServices,
     private readonly orderService: OrdersService,
+    private readonly smsService: SmsService,
     private readonly rewardService: RewardsService,
     @Inject(forwardRef(() => UsersService))
     private readonly usersService: UsersService,
@@ -956,18 +958,34 @@ export class VoucherService {
         .map(doc => `\n${doc.code}`)
         ?.toString();
 
-      await this.mailchimpService.sendTransactionalEmail({
-        to: command?.voucherOwnerEmail,
-        templatedId:
-          command?.languagePreference === Locale.HEBREW
-            ? HebrewTemplate.VoucherConfirmationNonLoggedIn
-            : EnglishTemplate.VoucherConfirmationNonLoggedIn,
-        mergeVars: {
-          BUYERNAME: command?.voucherOwnerName,
-          VOUCHERCODE: voucherCodes,
-          VOUCHERAMOUNT: voucherDetails[0]?.amount,
-        },
-      });
+      if (voucherDetails[0]?.assigneeInfo?.email) {
+        await this.mailchimpService.sendTransactionalEmail({
+          to: voucherDetails[0]?.assigneeInfo?.email,
+          templatedId:
+            command?.languagePreference === Locale.HEBREW
+              ? HebrewTemplate.VoucherConfirmationNonLoggedIn
+              : EnglishTemplate.VoucherConfirmationNonLoggedIn,
+          mergeVars: {
+            BUYERNAME: voucherDetails[0]?.assigneeInfo?.name,
+            VOUCHERCODE: voucherCodes,
+            VOUCHERAMOUNT: voucherDetails[0]?.amount,
+            MESSAGE: voucherDetails[0]?.message,
+          },
+        });
+      }
+
+      if (voucherDetails[0]?.assigneeInfo?.phone) {
+        const countryCode
+          = voucherDetails[0]?.assigneeInfo?.countryCode || '972';
+        await this.smsService.sendSms({
+          firstName: voucherDetails[0]?.assigneeInfo?.name,
+          lastName: '',
+          phone: `+${countryCode}${voucherDetails[0]?.assigneeInfo?.phone}`,
+          message: `שלום רב ${voucherDetails[0]?.assigneeInfo?.name} \n קיבלת לאחרונה תו מתנה של תו-8 - אתר המתנות מעוטף עזה והנגב המערבי \n !אנו מזמינים אותך לממש אותו \n ${voucherDetails[0]?.message} \n \n ${voucherDetails[0]?.remainingAmount} :יתרת השובר שלך \n ${voucherDetails[0]?.code} :קוד השובר שלך  \n \n לכניסה לאתר תו8 ומימוש התו יש להכנס לכאן>> https://tav-8.co.il/product \n \n ,כאן עבורך לכל שאלה \n צוות תו-8`,
+          sender: 'TAV8',
+          subject: 'Voucher',
+        });
+      }
 
       return voucherDetails;
     } catch (err) {

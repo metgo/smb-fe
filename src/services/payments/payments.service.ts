@@ -1,7 +1,5 @@
 import {
-  BadRequestException,
   ConflictException,
-  ForbiddenException,
   Inject,
   Injectable,
   forwardRef,
@@ -20,7 +18,6 @@ import {
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { update, updateById } from 'src/core/helper/query-helper';
 
-import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interface';
 import { ConfigService } from '../config/config.service';
 import { OrdersService } from 'src/modules/orders/orders.services';
 import { VoucherService } from 'src/modules/vouchers/voucher.service';
@@ -30,11 +27,7 @@ import {
   InvoiceCommand,
   PaymentPurpose,
 } from 'src/services/payments/payments.type';
-import { OrderPaymentDto } from 'src/services/payments/dto/initiate-order.dto';
-import { VoucherPaymentDto } from 'src/services/payments/dto/inititate-voucher.dto';
-import { UpdatePaymentProcessDto } from 'src/services/payments/dto/update-payment-process.dto';
 import { Payment } from 'src/services/payments/schema/payments.schema';
-import { PaymentMode } from 'src/modules/orders/orders.type';
 
 @Injectable()
 export class PaymentsService {
@@ -200,8 +193,6 @@ export class PaymentsService {
           = await this.voucherService.updateAfterPaymentSuccess({
             ids: payments.voucherId,
             updateField: { paymentStatus: VoucherPaymentStatus.PAID },
-            voucherOwnerEmail: payments?.customerEmail,
-            voucherOwnerName: payments?.customerName,
             languagePreference,
           });
 
@@ -331,8 +322,6 @@ export class PaymentsService {
         await this.voucherService.updateAfterPaymentFailure({
           ids: payments.voucherId,
           updateField: { paymentStatus: VoucherPaymentStatus.FAILED },
-          voucherOwnerEmail: payments?.customerEmail,
-          voucherOwnerName: payments?.customerName,
           languagePreference: query?.languagePreference,
         });
       }
@@ -430,68 +419,68 @@ export class PaymentsService {
     }
   }
 
-  async startOrderPaymentProcess(
-    command: OrderPaymentDto,
-    loggedInUser?: LoggedInUserInterface,
-  ) {
-    try {
-      const orderInfo: any = await this.ordersService.findOneByIdAndPopulate(
-        command?.orderId,
-      );
-      const existPayment = await this.findByOrderId(command.orderId);
+  // async startOrderPaymentProcess(
+  //   command: OrderPaymentDto,
+  //   loggedInUser?: LoggedInUserInterface,
+  // ) {
+  //   try {
+  //     const orderInfo: any = await this.ordersService.findOneByIdAndPopulate(
+  //       command?.orderId,
+  //     );
+  //     const existPayment = await this.findByOrderId(command.orderId);
 
-      if (existPayment) {
-        throw new ForbiddenException('Multiple payment process');
-      }
+  //     if (existPayment) {
+  //       throw new ForbiddenException('Multiple payment process');
+  //     }
 
-      if (orderInfo?.externalApiId?.identifierId !== command.identifierId) {
-        this.logger.error(
-          `[PAYMENT]: FAILED TO START PAYMENT PROCESS IN ${command.identifierId}, wrong identifierId`,
-        );
-        throw new ForbiddenException('You cannot process for checkout');
-      }
+  //     if (orderInfo?.externalApiId?.identifierId !== command.identifierId) {
+  //       this.logger.error(
+  //         `[PAYMENT]: FAILED TO START PAYMENT PROCESS IN ${command.identifierId}, wrong identifierId`,
+  //       );
+  //       throw new ForbiddenException('You cannot process for checkout');
+  //     }
 
-      const payment = await this.PaymentModel.create({
-        ...command,
-        purpose: PaymentPurpose.ORDER,
-        currency: 'ILS',
-        customerName: command?.customerName || orderInfo?.firstName,
-        customerEmail: command?.customerEmail || orderInfo?.email,
-        paymentRequestId: command.lowProfileId,
-        status: PaymentStatus.PENDING,
-        createdBy: loggedInUser?.id,
-        createdAt: new Date(),
-      });
+  //     const payment = await this.PaymentModel.create({
+  //       ...command,
+  //       purpose: PaymentPurpose.ORDER,
+  //       currency: 'ILS',
+  //       customerName: command?.customerName || orderInfo?.firstName,
+  //       customerEmail: command?.customerEmail || orderInfo?.email,
+  //       paymentRequestId: command.lowProfileId,
+  //       status: PaymentStatus.PENDING,
+  //       createdBy: loggedInUser?.id,
+  //       createdAt: new Date(),
+  //     });
 
-      // update order
-      await this.ordersService.updatePostPaymentStart(
-        command.orderId,
-        {
-          paymentMode: orderInfo?.voucher?.length
-            ? [PaymentMode.VOUCHER, PaymentMode.CARD]
-            : [PaymentMode.CARD],
-          creditCardPayment: command.amount,
-        },
-        loggedInUser?.id,
-      );
-      this.logger.info(
-        `[${command.identifierId}-PAYMENT]: ORDER PAYMENT PROCESS STARTED`,
-        {
-          message: payment,
-        },
-      );
+  //     // update order
+  //     await this.ordersService.updatePostPaymentStart(
+  //       command.orderId,
+  //       {
+  //         paymentMode: orderInfo?.voucher?.length
+  //           ? [PaymentMode.VOUCHER, PaymentMode.CARD]
+  //           : [PaymentMode.CARD],
+  //         creditCardPayment: command.amount,
+  //       },
+  //       loggedInUser?.id,
+  //     );
+  //     this.logger.info(
+  //       `[${command.identifierId}-PAYMENT]: ORDER PAYMENT PROCESS STARTED`,
+  //       {
+  //         message: payment,
+  //       },
+  //     );
 
-      return payment;
-    } catch (err) {
-      this.logger.error(
-        `[${command.identifierId}-PAYMENT]: FAILED TO START ORDER PAYMENT PROCESS`,
-        {
-          err: err.message,
-        },
-      );
-      exceptionHandling(err);
-    }
-  }
+  //     return payment;
+  //   } catch (err) {
+  //     this.logger.error(
+  //       `[${command.identifierId}-PAYMENT]: FAILED TO START ORDER PAYMENT PROCESS`,
+  //       {
+  //         err: err.message,
+  //       },
+  //     );
+  //     exceptionHandling(err);
+  //   }
+  // }
 
   // async updateOrderPaymentProcess(
   //   pageRequestUid: string,
@@ -577,121 +566,121 @@ export class PaymentsService {
   //   }
   // }
 
-  async startVoucherPaymentProcess(
-    command: VoucherPaymentDto,
-    loggedInUser?: LoggedInUserInterface,
-  ) {
-    try {
-      const voucherInfo: any = await this.voucherService.findByIds(
-        command.voucherId,
-      );
+  // async startVoucherPaymentProcess(
+  //   command: VoucherPaymentDto,
+  //   loggedInUser?: LoggedInUserInterface,
+  // ) {
+  //   try {
+  //     const voucherInfo: any = await this.voucherService.findByIds(
+  //       command.voucherId,
+  //     );
 
-      const existPayment = await this.findByVoucherId(command.voucherId);
+  //     const existPayment = await this.findByVoucherId(command.voucherId);
 
-      if (existPayment) {
-        throw new ForbiddenException('Multiple payment process');
-      }
+  //     if (existPayment) {
+  //       throw new ForbiddenException('Multiple payment process');
+  //     }
 
-      await Promise.all(
-        voucherInfo?.map(async voucher => {
-          if (voucher?.externalApiId?.identifierId !== command.identifierId) {
-            this.logger.error(
-              `[${command.identifierId} - PAYMENT]: FAILED TO START PAYMENT PROCESS-wrong identifierId`,
-            );
-            throw new ForbiddenException('You cannot process for checkout');
-          }
-        }),
-      );
+  //     await Promise.all(
+  //       voucherInfo?.map(async voucher => {
+  //         if (voucher?.externalApiId?.identifierId !== command.identifierId) {
+  //           this.logger.error(
+  //             `[${command.identifierId} - PAYMENT]: FAILED TO START PAYMENT PROCESS-wrong identifierId`,
+  //           );
+  //           throw new ForbiddenException('You cannot process for checkout');
+  //         }
+  //       }),
+  //     );
 
-      const payment = await this.PaymentModel.create({
-        ...command,
-        purpose: PaymentPurpose.VOUCHER,
-        currency: 'ILS',
-        paymentRequestId: command.lowProfileId,
-        status: PaymentStatus.PENDING,
-        createdBy: loggedInUser?.id,
-        createdAt: new Date(),
-      });
+  //     const payment = await this.PaymentModel.create({
+  //       ...command,
+  //       purpose: PaymentPurpose.VOUCHER,
+  //       currency: 'ILS',
+  //       paymentRequestId: command.lowProfileId,
+  //       status: PaymentStatus.PENDING,
+  //       createdBy: loggedInUser?.id,
+  //       createdAt: new Date(),
+  //     });
 
-      this.logger.info(
-        `[${command.identifierId}-PAYMENT]: VOUCHER PAYMENT PROCESS STARTED`,
-        {
-          message: payment,
-        },
-      );
+  //     this.logger.info(
+  //       `[${command.identifierId}-PAYMENT]: VOUCHER PAYMENT PROCESS STARTED`,
+  //       {
+  //         message: payment,
+  //       },
+  //     );
 
-      return payment;
-    } catch (err) {
-      this.logger.error(
-        `[${command.identifierId}-PAYMENT]: FAILED TO START VOUCHER PAYMENT PROCESS`,
-        {
-          err: err.message,
-        },
-      );
-      exceptionHandling(err);
-    }
-  }
+  //     return payment;
+  //   } catch (err) {
+  //     this.logger.error(
+  //       `[${command.identifierId}-PAYMENT]: FAILED TO START VOUCHER PAYMENT PROCESS`,
+  //       {
+  //         err: err.message,
+  //       },
+  //     );
+  //     exceptionHandling(err);
+  //   }
+  // }
 
-  async updateVoucherPaymentProcess(
-    pageRequestUid: string,
-    body: UpdatePaymentProcessDto,
-    loggedInUser?: LoggedInUserInterface,
-  ) {
-    try {
-      if (body.status === PaymentStatus.FAILURE && !body?.failure_reason) {
-        throw new BadRequestException('Please provide a valid failure reason');
-      }
-      const updateField = {
-        ...body,
-        updatedAt: new Date(),
-        paymentDate: new Date(),
-        updatedBy: loggedInUser?.id,
-      };
-      const payments = await update<Payment>(
-        this.PaymentModel,
-        'paymentRequestId',
-        pageRequestUid,
-        updateField,
-      );
+  // async updateVoucherPaymentProcess(
+  //   pageRequestUid: string,
+  //   body: UpdatePaymentProcessDto,
+  //   loggedInUser?: LoggedInUserInterface,
+  // ) {
+  //   try {
+  //     if (body.status === PaymentStatus.FAILURE && !body?.failure_reason) {
+  //       throw new BadRequestException('Please provide a valid failure reason');
+  //     }
+  //     const updateField = {
+  //       ...body,
+  //       updatedAt: new Date(),
+  //       paymentDate: new Date(),
+  //       updatedBy: loggedInUser?.id,
+  //     };
+  //     const payments = await update<Payment>(
+  //       this.PaymentModel,
+  //       'paymentRequestId',
+  //       pageRequestUid,
+  //       updateField,
+  //     );
 
-      // if payment success
+  //     // if payment success
 
-      await this.voucherService.updateVoucherPostPaymentUpdate(
-        payments?.voucherId,
-        body.status === PaymentStatus.SUCCESS
-          ? VoucherPaymentStatus.PAID
-          : VoucherPaymentStatus.FAILED,
-        loggedInUser,
-      );
-      return payments;
-    } catch (err) {
-      this.logger.error(
-        `[EXTERNAL API]: FAILED WHILE PAYING FOR VOUCHER - ${pageRequestUid} >> err: ${err.message}`,
-        {
-          err: err.message,
-        },
-      );
-      exceptionHandling(err);
-    }
-  }
+  //     await this.voucherService.updateVoucherPostPaymentUpdate(
+  //       payments?.voucherId,
+  //       body.status === PaymentStatus.SUCCESS
+  //         ? VoucherPaymentStatus.PAID
+  //         : VoucherPaymentStatus.FAILED,
+  //       loggedInUser,
+  //     );
+  //     return payments;
+  //   } catch (err) {
+  //     this.logger.error(
+  //       `[EXTERNAL API]: FAILED WHILE PAYING FOR VOUCHER - ${pageRequestUid} >> err: ${err.message}`,
+  //       {
+  //         err: err.message,
+  //       },
+  //     );
+  //     exceptionHandling(err);
+  //   }
+  // }
 
-  async findByOrderId(orderId: string) {
-    try {
-      const payment = await this.PaymentModel.findOne({ orderId });
+  // async findByOrderId(orderId: string) {
+  //   try {
+  //     const payment = await this.PaymentModel.findOne({ orderId });
 
-      return payment;
-    } catch (err) {
-      exceptionHandling(err);
-    }
-  }
+  //     return payment;
+  //   } catch (err) {
+  //     exceptionHandling(err);
+  //   }
+  // }
 
-  async findByVoucherId(voucherId: string[]) {
-    try {
-      const payment = await this.PaymentModel.findOne({ voucherId });
+  // async findByVoucherId(voucherId: string[]) {
+  //   try {
+  //     const payment = await this.PaymentModel.findOne({ voucherId });
 
-      return payment;
-    } catch (err) {
-      exceptionHandling(err);
-    }
-  }
+  //     return payment;
+  //   } catch (err) {
+  //     exceptionHandling(err);
+  //   }
+  // }
 }

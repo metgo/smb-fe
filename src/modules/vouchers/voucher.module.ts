@@ -20,6 +20,7 @@ import { PaymentsModule } from 'src/services/payments/payments.module';
 import { ExternalApiModule } from 'src/modules/external-api/external-api.module';
 import { CartModule } from 'src/modules/cart/cart.modules';
 import { GetByCodeHandler } from './queries/handler/get-by-code.handler';
+import { SmsModule } from 'src/services/sms/sms.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { GetByCodeHandler } from './queries/handler/get-by-code.handler';
     forwardRef(() => OrdersModule),
     forwardRef(() => RewardsModule),
     ProductsModule,
+    SmsModule,
   ],
   controllers: [VoucherController],
   providers: [VoucherService, CreateVouchersHandler, GetByCodeHandler],

@@ -72,11 +72,23 @@ export class PaymentsController {
         req.body,
         query.languagePreference,
       );
+
+      return responseHelper(
+        response,
+        HttpStatus.OK,
+        'Your payment was successfully paid',
+        null,
+        null,
+        null,
+      );
     }
+
+    await this.paymentService.PaymentFailure(req.body);
+
     return responseHelper(
       response,
       HttpStatus.OK,
-      'Your payment was not successfully paid',
+      ServerErrors.PAYMENT.FAILED,
       null,
       null,
       null,

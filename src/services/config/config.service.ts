@@ -70,6 +70,7 @@ export class ConfigService {
       'GOOGLE_CLIENT_ID',
       'GOOGLE_CLIENT_SECRET',
       'GOOGLE_REDIRECT_URI',
+      'SMS_CONFIRM_PURCHASE_TOKEN',
     ];
     return ENV_VARIABLES.reduce((obj: any, variable) => {
       if (process.env[variable]) {
@@ -134,6 +135,7 @@ export class ConfigService {
       GOOGLE_CLIENT_ID: Joi.string().required(),
       GOOGLE_CLIENT_SECRET: Joi.string().required(),
       GOOGLE_REDIRECT_URI: Joi.string().required(),
+      SMS_CONFIRM_PURCHASE_TOKEN: Joi.string().required(),
     }).unknown(true);
 
     const { error, value: validatedEnvConfig }

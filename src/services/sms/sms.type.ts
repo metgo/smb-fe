@@ -16,9 +16,12 @@ export interface SmsSettings {
 }
 
 export interface SmsPayload {
-  Message: string;
-  Recipients: Recipient[];
-  Settings: SmsSettings;
+  firstName: string;
+  lastName: string;
+  phone: string;
+  message: string;
+  sender: string;
+  subject: string;
 }
 
 export interface SmsResponse {

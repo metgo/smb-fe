@@ -71,6 +71,7 @@ implements ICommandHandler<CreateVouchersCommand> {
             code,
             campId,
             externalApiId,
+            message: body.message,
             createdAt: new Date(),
             expireDate: twoYearExpireDate(),
             creatorInfo: {
