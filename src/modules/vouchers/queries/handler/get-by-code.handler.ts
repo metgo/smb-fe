@@ -1,0 +1,76 @@
+import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+
+import { VoucherPaymentStatus } from 'src/common/enum';
+import { GoneException, NotFoundException } from '@nestjs/common';
+import { PaymentRequiredException } from 'src/common/exception/payment-required';
+import { checkExpireDate } from 'src/common/expireDate';
+import { ServerErrors } from 'src/common/constant';
+import { exceptionHandling } from 'src/common/utils/exception-handling';
+
+import { Campaign } from 'src/modules/campaign/schema/campaign.schema';
+import { Voucher } from '../../schema/voucher.schema';
+import { GetByCodeQuery } from '../get-by-code.query';
+import { GetByCodeInterface } from '../../interface/get-by-code.handler';
+
+@QueryHandler(GetByCodeQuery)
+export class GetByCodeHandler implements IQueryHandler<GetByCodeQuery> {
+  constructor(
+    @InjectModel('Voucher')
+    private readonly VoucherModel: Model<Voucher>,
+  ) {}
+
+  async execute(query: GetByCodeQuery): Promise<GetByCodeInterface> {
+    try {
+      const { code, campCode, loggedInUser } = query;
+
+      const findQuery: any = {
+        code: code.trim(),
+        isDeleted: false,
+      };
+
+      console.log(loggedInUser);
+
+      const voucher = await this.VoucherModel.findOne(findQuery)
+        .select('_id code remainingAmount expireDate paymentStatus campId')
+        .populate<{ campId: Campaign }>(
+          'campId',
+          'code name dmoIds productIds businessIds',
+        )
+        .exec();
+
+      if (!voucher) {
+        throw new NotFoundException(ServerErrors.VOUCHER.NOT_FOUND);
+      }
+
+      const campDetails = voucher?.campId;
+
+      if (campDetails?.code !== campCode) {
+        throw new NotFoundException(ServerErrors.VOUCHER.NOT_FOUND);
+      }
+
+      if (voucher.paymentStatus !== VoucherPaymentStatus.PAID) {
+        throw new PaymentRequiredException(ServerErrors.VOUCHER.UNPAID);
+      }
+
+      if (voucher.expireDate) {
+        const isAvailable = checkExpireDate(voucher.expireDate);
+
+        if (!isAvailable) {
+          throw new GoneException(ServerErrors.VOUCHER.EXPIRED);
+        }
+      }
+
+      return {
+        _id: voucher._id,
+        code: voucher.code,
+        remainingAmount: voucher.remainingAmount,
+        expireDate: voucher.expireDate,
+        paymentStatus: voucher.paymentStatus,
+      };
+    } catch (err) {
+      exceptionHandling(err);
+    }
+  }
+}

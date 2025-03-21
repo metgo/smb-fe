@@ -1,11 +1,9 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNotEmpty } from 'class-validator';
+import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interface';
 
-import { GetVoucherQuery } from 'src/modules/vouchers/queries';
-
-export class GetVoucherByCodeQuery extends GetVoucherQuery {
-  @ApiProperty({ type: String, required: true })
-  @IsString()
-  @IsNotEmpty()
-    campCode: string;
+export class GetByCodeQuery {
+  constructor(
+    public readonly code: string,
+    public readonly campCode: string,
+    public readonly loggedInUser?: LoggedInUserInterface,
+  ) {}
 }

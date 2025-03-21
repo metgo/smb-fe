@@ -19,6 +19,7 @@ import { MailChimpModule } from 'src/services/mailchimp/mailchimp.module';
 import { PaymentsModule } from 'src/services/payments/payments.module';
 import { ExternalApiModule } from 'src/modules/external-api/external-api.module';
 import { CartModule } from 'src/modules/cart/cart.modules';
+import { GetByCodeHandler } from './queries/handler/get-by-code.handler';
 
 @Module({
   imports: [
@@ -39,7 +40,7 @@ import { CartModule } from 'src/modules/cart/cart.modules';
     ProductsModule,
   ],
   controllers: [VoucherController],
-  providers: [VoucherService, CreateVouchersHandler],
+  providers: [VoucherService, CreateVouchersHandler, GetByCodeHandler],
   exports: [VoucherService],
 })
 export class VoucherModule {}

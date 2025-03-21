@@ -11,7 +11,7 @@ import {
   UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
-import { CommandBus } from '@nestjs/cqrs';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiResponse } from '@nestjs/swagger';
 
 import { ServerErrors, ServerSuccess } from 'src/common/constant';
@@ -25,11 +25,14 @@ import { RewardVouchersByCampaignDto, createVoucherDto } from './dto';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { GetVoucherQuery } from './queries';
 import { CreateVouchersCommand } from './commands/create-voucher.command';
+import { GetVoucherByCodeQuery } from './dto/get-by-code.query';
+import { GetByCodeQuery } from './queries/get-by-code.query';
 
 @Controller()
 export class VoucherController {
   constructor(
     private readonly commandBus: CommandBus,
+    private readonly queryBus: QueryBus,
     private readonly voucherService: VoucherService,
   ) {}
 
@@ -221,6 +224,39 @@ export class VoucherController {
       code,
       productId: query.productId,
     });
+    return voucher;
+  }
+
+  @ApiEndpoint({
+    tags: ['Voucher'],
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.VOUCHER.LISTED,
+    },
+    operation: 'Get voucher detail by anyone using valid code',
+  })
+  @ApiResponse({
+    status: HttpStatus.NOT_FOUND,
+    description: ServerErrors.PRODUCT.NOT_FOUND,
+  })
+  @ApiResponse({
+    status: HttpStatus.PAYMENT_REQUIRED,
+    description: ServerErrors.VOUCHER.UNPAID,
+  })
+  @ApiResponse({
+    status: HttpStatus.GONE,
+    description: ServerErrors.VOUCHER.EXPIRED,
+  })
+  @HttpCode(HttpStatus.OK)
+  @Get('voucher-by-code/:code')
+  async getVoucherDetailByCode(
+    @Param('code') code: string,
+    @Query() query: GetVoucherByCodeQuery,
+  ) {
+    const voucher = await this.queryBus.execute(
+      new GetByCodeQuery(code, query.campCode),
+    );
+
     return voucher;
   }
 
