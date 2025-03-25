@@ -15,6 +15,11 @@ import { ProductsController } from 'src/modules/products/products.controller';
 import { UsersModule } from 'src/modules/users/users.module';
 import { MediaModule } from 'src/modules/media/media.module';
 import { CartModule } from '../cart/cart.modules';
+import { Business, BusinessSchema } from '../business/schema/business.schema';
+import {
+  Authority,
+  AuthoritySchema,
+} from '../authority/schema/authority.schema';
 
 @Module({
   imports: [
@@ -22,6 +27,14 @@ import { CartModule } from '../cart/cart.modules';
       {
         name: Product.name,
         schema: ProductSchema,
+      },
+      {
+        name: Business.name,
+        schema: BusinessSchema,
+      },
+      {
+        name: Authority.name,
+        schema: AuthoritySchema,
       },
     ]),
     forwardRef(() => AuthorityModule),

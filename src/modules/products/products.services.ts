@@ -31,6 +31,8 @@ import { GetAllProductsQuery } from 'src/modules/products/queries/get-all-produc
 import { UserType } from 'src/modules/users/users.type';
 import { CartService } from 'src/modules/cart/cart.service';
 import { GetProductsQuery } from 'src/modules/products/queries/get-product.query';
+import { Business } from '../business/schema/business.schema';
+import { Authority } from '../authority/schema/authority.schema';
 
 @Injectable()
 export class ProductsService {
@@ -39,6 +41,10 @@ export class ProductsService {
     private readonly logger: Logger,
     @InjectModel(Product.name)
     private ProductModel: Model<Product>,
+    @InjectModel(Business.name)
+    private BusinessModel: Model<Business>,
+    @InjectModel(Authority.name)
+    private AuthorityModel: Model<Authority>,
     private campaignService: CampaignService,
     private cartService: CartService,
   ) {}
@@ -302,11 +308,35 @@ export class ProductsService {
     }
 
     if (search) {
+      const [matchingBusinessIds, matchingAuthorityIds] = await Promise.all([
+        this.BusinessModel.find({
+          $or: [
+            { name: { $regex: search, $options: 'i' } },
+            { description: { $regex: search, $options: 'i' } },
+            { 'address.country': { $regex: search, $options: 'i' } },
+            { 'address.city': { $regex: search, $options: 'i' } },
+            { 'address.location': { $regex: search, $options: 'i' } },
+            {
+              'address.additional_information': {
+                $regex: search,
+                $options: 'i',
+              },
+            },
+            { 'contactDetails.address': { $regex: search, $options: 'i' } },
+          ],
+        }).select('_id'),
+        this.AuthorityModel.find({
+          name: { $regex: search, $options: 'i' },
+        }).select('_id'),
+      ]);
+
       findQuery = {
         ...findQuery,
         $or: [
           { name: { $regex: search, $options: 'i' } },
           { description: { $regex: search, $options: 'i' } },
+          { authorityId: { $in: matchingAuthorityIds } },
+          { businessId: { $in: matchingBusinessIds } },
         ],
       };
     }
@@ -314,15 +344,16 @@ export class ProductsService {
     const select
       = '_id name description images price quantity businessId categories subCategories';
 
-    const populate = {
-      path: 'businessId',
-      select: '_id logo name address geoLocation location openingHrs',
-    };
-
-    const populate1 = {
-      path: 'categories subCategories',
-      select: '_id name hebrewName',
-    };
+    const populate = [
+      {
+        path: 'businessId',
+        select: '_id logo name address geoLocation location openingHrs',
+      },
+      {
+        path: 'categories subCategories',
+        select: '_id name hebrewName',
+      },
+    ];
 
     const productsList = await queryhandler<Product>(this.ProductModel, {
       findQuery,
@@ -332,7 +363,6 @@ export class ProductsService {
       sort: sortBy || 'createdAt',
       sortOrder: sortOrder || SortOrder.DESC,
       populate,
-      populate1,
     });
 
     if (!productsList?.data || !productsList.data?.length) {
