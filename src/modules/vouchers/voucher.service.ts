@@ -944,7 +944,7 @@ export class VoucherService {
     try {
       await this.update(command.ids, command.updateField);
 
-      const voucherDetails = await findManyByFilter<Voucher>(
+      const voucherDetails: Voucher[] = await findManyByFilter<Voucher>(
         this.VoucherModel,
         { _id: command.ids },
       );
@@ -958,6 +958,8 @@ export class VoucherService {
         .map(doc => `\n${doc.code}`)
         ?.toString();
 
+      const link = `https://tav-8.co.il/product?utm_source=sms&utm_medium=tav8&voucherId=${voucherDetails[0]?.code}`;
+
       if (voucherDetails[0]?.assigneeInfo?.email) {
         await this.mailchimpService.sendTransactionalEmail({
           to: voucherDetails[0]?.assigneeInfo?.email,
@@ -970,6 +972,7 @@ export class VoucherService {
             VOUCHERCODE: voucherCodes,
             VOUCHERAMOUNT: voucherDetails[0]?.amount,
             MESSAGE: voucherDetails[0]?.message,
+            REDIRECT_LINK: link,
           },
         });
       }
@@ -981,7 +984,7 @@ export class VoucherService {
           firstName: voucherDetails[0]?.assigneeInfo?.name,
           lastName: '',
           phone: `+${countryCode}${voucherDetails[0]?.assigneeInfo?.phone}`,
-          message: `שלום רב ${voucherDetails[0]?.assigneeInfo?.name} \n קיבלת לאחרונה תו מתנה של תו-8 - אתר המתנות מעוטף עזה והנגב המערבי \n !אנו מזמינים אותך לממש אותו \n ${voucherDetails[0]?.message} \n \n ${voucherDetails[0]?.remainingAmount} :יתרת השובר שלך \n ${voucherDetails[0]?.code} :קוד השובר שלך  \n \n לכניסה לאתר תו8 ומימוש התו יש להכנס לכאן>> https://tav-8.co.il/product \n \n ,כאן עבורך לכל שאלה \n צוות תו-8`,
+          message: `שלום רב ${voucherDetails[0]?.assigneeInfo?.name} \n קיבלת לאחרונה תו מתנה של תו-8 - אתר המתנות מעוטף עזה והנגב המערבי \n !אנו מזמינים אותך לממש אותו \n ${voucherDetails[0]?.message} \n \n ${voucherDetails[0]?.remainingAmount} :יתרת השובר שלך \n ${voucherCodes} :קוד השובר שלך  \n \n לכניסה לאתר תו8 ומימוש התו יש להכנס לכאן>> ${link} \n \n ,כאן עבורך לכל שאלה \n צוות תו-8`,
           sender: 'TAV8',
           subject: 'Voucher',
         });
