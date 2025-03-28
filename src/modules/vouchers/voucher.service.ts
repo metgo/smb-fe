@@ -942,6 +942,8 @@ export class VoucherService {
 
   async updateAfterPaymentSuccess(command: UpdateVoucherAfterPaymentInterface) {
     try {
+      const ENV_NAME = this.configService.get('ENV_NAME');
+
       await this.update(command.ids, command.updateField);
 
       const voucherDetails: Voucher[] = await findManyByFilter<Voucher>(
@@ -958,7 +960,10 @@ export class VoucherService {
         .map(doc => `\n${doc.code}`)
         ?.toString();
 
-      const link = `https://tav-8.co.il/product?utm_source=sms&utm_medium=tav8&voucherId=${voucherDetails[0]?.code}`;
+      const link
+        = ENV_NAME === 'prod'
+          ? `https://tav-8.co.il/product?utm_source=sms&utm_medium=tav8&voucherId=${voucherDetails[0]?.code}`
+          : `https://tav8.metgo.app/product?utm_source=sms&utm_medium=tav8&voucherId=${voucherDetails[0]?.code}`;
 
       if (voucherDetails[0]?.assigneeInfo?.email) {
         await this.mailchimpService.sendTransactionalEmail({
