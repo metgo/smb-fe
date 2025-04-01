@@ -269,6 +269,41 @@ export class CartService {
     }
   }
 
+  async updateCartBeforePayment(
+    cartId: string,
+    orderId: ObjectId,
+    loggedInUser?: LoggedInUserInterface,
+  ) {
+    try {
+      const updatedField = {
+        updatedBy: loggedInUser?.id,
+        updatedAt: new Date(),
+        orderId,
+        status: CartStatus.PAYMENT_PENDING,
+      };
+
+      const updatedCart = await this.CartModel.findOneAndUpdate(
+        { _id: cartId },
+        updatedField,
+        { new: true },
+      );
+
+      this.logger.info('[EXTERNAL_API_CART]: Cart READY FOR PAYMENT', {
+        message: updatedCart,
+      });
+
+      return updatedCart;
+    } catch (error) {
+      this.logger.error(
+        '[EXTERNAL_API_CART]: FAILED TO UPDATE CART FOR PAYMENT',
+        {
+          err: error.message,
+        },
+      );
+      exceptionHandling(error);
+    }
+  }
+
   async updateCartPostCheckout(
     cartId: string,
     orderId: ObjectId,
@@ -297,6 +332,41 @@ export class CartService {
       this.logger.error('[EXTERNAL_API_CART]: FAILED TO ADD ITEM TO CART', {
         err: error.message,
       });
+      exceptionHandling(error);
+    }
+  }
+
+  async updateCartPostPayment(orderId: string) {
+    try {
+      const updatedField = {
+        updatedAt: new Date(),
+        orderId,
+        status: CartStatus.ORDER_PLACED,
+      };
+
+      const cartId = (await this.findOneByOrderId(orderId))?._id;
+
+      const updatedCart = await this.CartModel.findOneAndUpdate(
+        { _id: cartId },
+        updatedField,
+        { new: true },
+      );
+
+      this.logger.info(
+        '[EXTERNAL_API_CART]: CART WAS CONVERTED TO ORDER SUCCESSFULLY',
+        {
+          message: updatedCart,
+        },
+      );
+
+      return updatedCart;
+    } catch (error) {
+      this.logger.error(
+        '[EXTERNAL_API_CART]: FAILED TO CONVERTED TO ORDER SUCCESSFULLY',
+        {
+          err: error.message,
+        },
+      );
       exceptionHandling(error);
     }
   }

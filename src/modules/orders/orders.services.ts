@@ -35,7 +35,6 @@ import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interfac
 import { BusinessService } from 'src/modules/business/services/business.service';
 import { CartService } from 'src/modules/cart/cart.service';
 import { CartStatus } from 'src/modules/cart/cart.types';
-import { StartCheckoutDto } from 'src/modules/orders/dto/start-checkout.dto';
 import { UpdateOrderDto } from 'src/modules/orders/dto/update-order.dto';
 import { GetAllOrdersInterface } from 'src/modules/orders/interface/get-all-orders.interface';
 import { Order } from 'src/modules/orders/schema/orders.schema';
@@ -90,7 +89,10 @@ export class OrdersService {
     try {
       const cartDetails = await this.cartService.findOneById(body.cartId);
 
-      if (cartDetails?.status !== CartStatus.PENDING) {
+      if (
+        cartDetails?.status === CartStatus.TIME_OUT
+        || cartDetails?.status === CartStatus.ORDER_PLACED
+      ) {
         throw new BadRequestException(
           'This cart is no longer available to checkout',
         );
@@ -246,12 +248,11 @@ export class OrdersService {
     });
 
     const order = await orderWithQR.save();
-    await this.cartService.updateCartPostCheckout(
+    await this.cartService.updateCartBeforePayment(
       command.cartId,
       order._id,
       loggedInUser,
     );
-
     this.logger.info(
       `[EXTERNAL_API_ORDERS]: CREATED-PAID BY ${order.paymentMode}`,
       { message: order },
@@ -364,74 +365,74 @@ export class OrdersService {
   }
 
   // shaleev
-  async processCheckout(
-    body: StartCheckoutDto,
-    loggedInUser?: LoggedInUserInterface,
-  ): Promise<any> {
-    try {
-      const { cartId, ...command } = body;
+  // async processCheckout(
+  //   body: StartCheckoutDto,
+  //   loggedInUser?: LoggedInUserInterface,
+  // ): Promise<any> {
+  //   try {
+  //     const { cartId, ...command } = body;
 
-      const externalApiId = (
-        await this.externalApiService.findByIdentifierId(command.identifierId)
-      )._id;
+  //     const externalApiId = (
+  //       await this.externalApiService.findByIdentifierId(command.identifierId)
+  //     )._id;
 
-      if (!cartId) {
-        throw new BadRequestException('Please enter valid cart details');
-      }
+  //     if (!cartId) {
+  //       throw new BadRequestException('Please enter valid cart details');
+  //     }
 
-      let businessId = [];
+  //     let businessId = [];
 
-      const cartDetail = await this.cartService.findOneByIdAndPopulate(cartId);
+  //     const cartDetail = await this.cartService.findOneByIdAndPopulate(cartId);
 
-      await Promise.all(
-        command.products?.map(async (product: any) => {
-          if (!product.id) {
-            return;
-          }
+  //     await Promise.all(
+  //       command.products?.map(async (product: any) => {
+  //         if (!product.id) {
+  //           return;
+  //         }
 
-          const productDetail = await this.productsService.findOne(product.id);
+  //         const productDetail = await this.productsService.findOne(product.id);
 
-          businessId = [...businessId, productDetail?.businessId?._id];
-        }),
-      );
+  //         businessId = [...businessId, productDetail?.businessId?._id];
+  //       }),
+  //     );
 
-      // freeze the voucher
-      //  calling a api instead we need to freeze voucher here instead
-      const newOrder = new this.OrderModel({
-        ...command,
-        businessId,
-        userId: loggedInUser?.id,
-        status: OrderStatus.PENDING,
-        paymentStatus: PaymentStatus.PENDING,
-        totalAmount: cartDetail.totalAmount,
-        externalApiId,
-        createdBy: loggedInUser?.id,
-        createdAt: new Date(),
-      });
+  //     // freeze the voucher
+  //     //  calling a api instead we need to freeze voucher here instead
+  //     const newOrder = new this.OrderModel({
+  //       ...command,
+  //       businessId,
+  //       userId: loggedInUser?.id,
+  //       status: OrderStatus.PENDING,
+  //       paymentStatus: PaymentStatus.PENDING,
+  //       totalAmount: cartDetail.totalAmount,
+  //       externalApiId,
+  //       createdBy: loggedInUser?.id,
+  //       createdAt: new Date(),
+  //     });
 
-      const order = await newOrder.save();
+  //     const order = await newOrder.save();
 
-      await this.cartService.updateCartPostCheckout(
-        cartId,
-        order._id,
-        loggedInUser,
-      );
+  //     await this.cartService.updateCartPostCheckout(
+  //       cartId,
+  //       order._id,
+  //       loggedInUser,
+  //     );
 
-      this.logger.info(`[${externalApiId} - ORDERS]: Start to create order`, {
-        message: order,
-      });
+  //     this.logger.info(`[${externalApiId} - ORDERS]: Start to create order`, {
+  //       message: order,
+  //     });
 
-      return order;
-    } catch (error) {
-      this.logger.error(
-        `[${body.identifierId} - ORDERS]:  FAILED TO CREATE ORDER WHILE STARTING TO CHECKOUT`,
-        {
-          err: error.message,
-        },
-      );
-      exceptionHandling(error);
-    }
-  }
+  //     return order;
+  //   } catch (error) {
+  //     this.logger.error(
+  //       `[${body.identifierId} - ORDERS]:  FAILED TO CREATE ORDER WHILE STARTING TO CHECKOUT`,
+  //       {
+  //         err: error.message,
+  //       },
+  //     );
+  //     exceptionHandling(error);
+  //   }
+  // }
 
   async updateAfterPaymentSuccess(
     orderId: string,
@@ -454,9 +455,9 @@ export class OrdersService {
         message: updateOrder,
       });
 
-      const findCartProducts = (
-        await this.cartService.findOneByOrderId(orderId)
-      ).product;
+      const cart = await this.cartService.updateCartPostPayment(orderId);
+
+      const findCartProducts = cart?.product;
 
       await this.productsService.deductQuantity(findCartProducts);
 
