@@ -27,7 +27,7 @@ import { CampaignService } from 'src/modules/campaign/campaign.service';
 import { Product } from 'src/modules/products/schema/products.schema';
 import { UploadMediaCommand } from 'src/modules/products/interface';
 import { ProductStatus } from 'src/modules/products/products.type';
-import { GetAllProductsQuery } from 'src/modules/products/queries/get-all-products.query';
+import { GetAllProductsQuery } from 'src/modules/products/requests/get-all-products.query';
 import { UserType } from 'src/modules/users/users.type';
 import { CartService } from 'src/modules/cart/cart.service';
 import { GetProductsQuery } from 'src/modules/products/queries/get-product.query';

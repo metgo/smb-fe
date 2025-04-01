@@ -7,17 +7,22 @@ import {
   Param,
   Query,
 } from '@nestjs/common';
+import { QueryBus } from '@nestjs/cqrs';
 import { ApiNotFoundResponse } from '@nestjs/swagger';
 
 import { ServerErrors, ServerSuccess } from 'src/common/constant';
 import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
 import { ProductsService } from 'src/modules/products/products.services';
-import { GetAllProductsQuery } from 'src/modules/products/queries/get-all-products.query';
+import { GetAllProductsQuery } from 'src/modules/products/requests/get-all-products.query';
 import { GetProductsQuery } from 'src/modules/products/queries/get-product.query';
+import { GetAllProductsForMapQuery } from './queries/get-all-products-for-map.query';
 
 @Controller()
 export class ProductsController {
-  constructor(private productsService: ProductsService) {}
+  constructor(
+    private productsService: ProductsService,
+    private readonly queryBus: QueryBus,
+  ) {}
 
   @ApiEndpoint({
     tags: ['Products'],
@@ -60,5 +65,24 @@ export class ProductsController {
   async getAllProducts(@Query() query: GetAllProductsQuery) {
     const product = await this.productsService.getAllProducts(query);
     return product;
+  }
+
+  @ApiEndpoint({
+    tags: ['Products'],
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.PRODUCTS.LISTED,
+    },
+    operation: 'Get all active products for map',
+    softBlockExtraDtoFields: true,
+  })
+  @HttpCode(HttpStatus.OK)
+  @Get('/map-products')
+  async getAllProductsForMap(@Query() query: GetAllProductsQuery) {
+    const products = await this.queryBus.execute(
+      new GetAllProductsForMapQuery(query),
+    );
+
+    return products;
   }
 }

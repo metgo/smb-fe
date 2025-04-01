@@ -1,4 +1,5 @@
 import { Module, forwardRef } from '@nestjs/common';
+import { CqrsModule } from '@nestjs/cqrs';
 import { MongooseModule } from '@nestjs/mongoose';
 
 import { AuthorityModule } from 'src/modules/authority/authority.module';
@@ -20,9 +21,11 @@ import {
   Authority,
   AuthoritySchema,
 } from '../authority/schema/authority.schema';
+import { GetAllProductsForMapHandler } from './queries/handler/get-all-products-for-map.handler';
 
 @Module({
   imports: [
+    CqrsModule,
     MongooseModule.forFeature([
       {
         name: Product.name,
@@ -46,7 +49,7 @@ import {
     forwardRef(() => CampaignModule),
     forwardRef(() => ExternalApiModule),
   ],
-  providers: [ProductsService],
+  providers: [ProductsService, GetAllProductsForMapHandler],
   controllers: [ProductsController],
   exports: [ProductsService],
 })
