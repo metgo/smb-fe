@@ -1,4 +1,5 @@
 import { Module, forwardRef } from '@nestjs/common';
+import { CqrsModule } from '@nestjs/cqrs';
 import { CampaignService } from './campaign.service';
 import { MongooseModule } from '@nestjs/mongoose';
 
@@ -15,9 +16,11 @@ import { UsersModule } from 'src/modules/users/users.module';
 import { GcpBucketModule } from 'src/services/gcp-bucket/gcp-bucket.module';
 import { EncryptionModule } from 'src/services/encryption/encryption.module';
 import { ConfigModule } from 'src/services/config/config.module';
+import { FindByIdAndPopulateHandler } from './queries/handler/find-by-id-and-populate.handler';
 
 @Module({
   imports: [
+    CqrsModule,
     MongooseModule.forFeature([
       { name: Campaign.name, schema: CampaignSchema },
     ]),
@@ -30,7 +33,7 @@ import { ConfigModule } from 'src/services/config/config.module';
     forwardRef(() => DMOModule),
     RewardsModule,
   ],
-  providers: [CampaignService],
+  providers: [CampaignService, FindByIdAndPopulateHandler],
   controllers: [CampaignController],
   exports: [CampaignService],
 })

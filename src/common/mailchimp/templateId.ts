@@ -50,3 +50,11 @@ export const DynamicHebrewTemplate = {
   VoucherAssignedToYou: 'dynamic-voucher-opt-in-he-new',
   VOUCHER_FOR_CAMPAIGN: 'dynamic-voucher-purchase-he-new',
 };
+
+export const DynamicEmailTemplate = {
+  CreateBusiness: 'create-a-new-business-email',
+  CancelOrderForCustomer: 'order-cancellation-in-client-side',
+  VoucherPurchase: 'offline-voucher',
+  OrderConfirmationForClient: 'order-confirmation-client-side-en',
+  OrderConfirmationForVendor: 'order-sent-to-purchaser',
+};

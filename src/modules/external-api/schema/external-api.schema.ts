@@ -2,6 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
 
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
+import { Theme } from 'src/modules/themes/schema/theme.schema';
 
 @Schema()
 export class ExternalApi extends AuditableSchema {
@@ -41,6 +42,13 @@ export class ExternalApi extends AuditableSchema {
     required: false,
   })
     authorityId: mongoose.Types.ObjectId;
+
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    ref: Theme.name,
+    required: false,
+  })
+    themeId: mongoose.Types.ObjectId;
 }
 
 export type ExternalApiDocument = HydratedDocument<ExternalApi>;

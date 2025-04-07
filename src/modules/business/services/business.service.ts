@@ -11,17 +11,15 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { ObjectId } from 'typeorm';
 import { Logger } from 'winston';
 
-import { emailDefaultTemplate, ServerErrors } from 'src/common/constant';
+import { ServerErrors } from 'src/common/constant';
 import { deepEqual } from 'src/common/deepEqual';
 import { Image } from 'src/common/interface/image.interface';
-import { DynamicHebrewTemplate } from 'src/common/mailchimp/templateId';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { getRandomNumberBetween } from 'src/common/utils/random-number-range';
 import { disSelect } from 'src/common/utils/select.handling';
 import {
   deleteItems,
   queryhandler,
-  updateById,
   updateOneByManyFields,
 } from 'src/core/helper/query-helper';
 import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interface';
@@ -271,99 +269,99 @@ export class BusinessService {
     }
   }
 
-  async assignUsertoBusinesses(
-    businessIds: string[],
-    assignUserId: string,
-    loggedInUserId: string,
-    user?: User,
-  ) {
-    try {
-      const updatedField = { userId: assignUserId, updatedBy: loggedInUserId };
-      const oldDataFForAudit = await this.BusinessModel.findById(
-        businessIds[0],
-      );
-      const updateBusiness = await updateById<Business>(
-        this.BusinessModel,
-        businessIds[0],
-        updatedField,
-      );
+  // async assignUsertoBusinesses(
+  //   businessIds: string[],
+  //   assignUserId: string,
+  //   loggedInUserId: string,
+  //   user?: User,
+  // ) {
+  //   try {
+  //     const updatedField = { userId: assignUserId, updatedBy: loggedInUserId };
+  //     const oldDataFForAudit = await this.BusinessModel.findById(
+  //       businessIds[0],
+  //     );
+  //     const updateBusiness = await updateById<Business>(
+  //       this.BusinessModel,
+  //       businessIds[0],
+  //       updatedField,
+  //     );
 
-      if (!updateBusiness) {
-        throw new BadRequestException(ServerErrors.BUSINESS_NOT_FOUND);
-      }
+  //     if (!updateBusiness) {
+  //       throw new BadRequestException(ServerErrors.BUSINESS_NOT_FOUND);
+  //     }
 
-      let assignedUser = user;
-      if (!user) {
-        assignedUser = await this.UserModel.findOneAndUpdate(
-          { _id: assignUserId },
-          { hasBusiness: true },
-        );
-      }
+  //     let assignedUser = user;
+  //     if (!user) {
+  //       assignedUser = await this.UserModel.findOneAndUpdate(
+  //         { _id: assignUserId },
+  //         { hasBusiness: true },
+  //       );
+  //     }
 
-      const checkIfBusinessExists = await this.BusinessModel.findOne({
-        userId: oldDataFForAudit?.userId,
-        deletedAt: null,
-        deletedBy: null,
-        isDeleted: false,
-      });
+  //     const checkIfBusinessExists = await this.BusinessModel.findOne({
+  //       userId: oldDataFForAudit?.userId,
+  //       deletedAt: null,
+  //       deletedBy: null,
+  //       isDeleted: false,
+  //     });
 
-      if (!checkIfBusinessExists) {
-        await this.UserModel.findOneAndUpdate(
-          { _id: oldDataFForAudit?.userId },
-          { hasBusiness: false },
-        );
-      }
+  //     if (!checkIfBusinessExists) {
+  //       await this.UserModel.findOneAndUpdate(
+  //         { _id: oldDataFForAudit?.userId },
+  //         { hasBusiness: false },
+  //       );
+  //     }
 
-      await this.productService.assignUserToProducts(
-        businessIds,
-        assignUserId,
-        loggedInUserId,
-      );
+  //     await this.productService.assignUserToProducts(
+  //       businessIds,
+  //       assignUserId,
+  //       loggedInUserId,
+  //     );
 
-      const dmo = await this.dmoService.getById(updateBusiness.dmoId);
+  //     const dmo = await this.dmoService.getById(updateBusiness.dmoId);
 
-      const campaign: any
-        = await this.campaignService.getOneCampaignDetailAssociatedToIds(
-          updateBusiness.dmoId,
-          'dmoIds',
-        );
+  //     const campaign: any
+  //       = await this.campaignService.getOneCampaignDetailAssociatedToIds(
+  //         updateBusiness.dmoId,
+  //         'dmoIds',
+  //       );
 
-      // change previous assigned owner to traveller
+  //     // change previous assigned owner to traveller
 
-      // email the users
-      await this.mailchimpService.sendTransactionalEmail({
-        to: assignedUser.email,
-        templatedId: DynamicHebrewTemplate.TransferBusinessOwnership,
-        mergeVars: {
-          FNAME: assignedUser?.firstName,
-          BUSINESSNAME: updateBusiness?.name,
-          DMO: dmo?.name,
-          LOGO1: dmo?.logoPath || emailDefaultTemplate.SIDE_LOGO,
-          LOGO2: emailDefaultTemplate.MAIN_LOGO,
-          LOGO3: campaign?.logoPath || emailDefaultTemplate.SIDE_LOGO,
-          PRIMARY_BG_COLOR: emailDefaultTemplate.PRIMARY_BG_COLOR,
-          PRIMARY_TEXT_COLOR: emailDefaultTemplate.PRIMARY_TEXT_COLOR,
-          IMAGE1: emailDefaultTemplate.IMAGE1,
-          IMAGE2: dmo?.imagePath || emailDefaultTemplate.IMAGE2,
-          IMAGE3: campaign?.imagePath || emailDefaultTemplate.IMAGE3,
-        },
-      });
+  //     // email the users
+  //     await this.mailchimpService.sendTransactionalEmail({
+  //       to: assignedUser.email,
+  //       templatedId: DynamicHebrewTemplate.TransferBusinessOwnership,
+  //       mergeVars: {
+  //         FNAME: assignedUser?.firstName,
+  //         BUSINESSNAME: updateBusiness?.name,
+  //         DMO: dmo?.name,
+  //         LOGO1: dmo?.logoPath || emailDefaultTemplate.SIDE_LOGO,
+  //         LOGO2: emailDefaultTemplate.MAIN_LOGO,
+  //         LOGO3: campaign?.logoPath || emailDefaultTemplate.SIDE_LOGO,
+  //         PRIMARY_BG_COLOR: emailDefaultTemplate.PRIMARY_BG_COLOR,
+  //         PRIMARY_TEXT_COLOR: emailDefaultTemplate.PRIMARY_TEXT_COLOR,
+  //         IMAGE1: emailDefaultTemplate.IMAGE1,
+  //         IMAGE2: dmo?.imagePath || emailDefaultTemplate.IMAGE2,
+  //         IMAGE3: campaign?.imagePath || emailDefaultTemplate.IMAGE3,
+  //       },
+  //     });
 
-      this.logger.info('[BUSINESS]: ASSIGNED', { message: updateBusiness });
+  //     this.logger.info('[BUSINESS]: ASSIGNED', { message: updateBusiness });
 
-      await this.addToBusinessAuditTable(oldDataFForAudit, updateBusiness);
+  //     await this.addToBusinessAuditTable(oldDataFForAudit, updateBusiness);
 
-      return updateBusiness;
-    } catch (err) {
-      this.logger.error(
-        `[BUSINESS]: FAILED TO ASSIGN businessIds:${businessIds}`,
-        {
-          err: err.message,
-        },
-      );
-      exceptionHandling(err);
-    }
-  }
+  //     return updateBusiness;
+  //   } catch (err) {
+  //     this.logger.error(
+  //       `[BUSINESS]: FAILED TO ASSIGN businessIds:${businessIds}`,
+  //       {
+  //         err: err.message,
+  //       },
+  //     );
+  //     exceptionHandling(err);
+  //   }
+  // }
 
   async uploadMedia(
     id: string,

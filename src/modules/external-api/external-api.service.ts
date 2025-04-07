@@ -186,11 +186,14 @@ export class ExternalApiServices {
 
   async findByIdentifierId(identifierId: string) {
     try {
-      const externalApi = await findOneByFieldName<ExternalApi>(
-        this.ExternalApiModel,
-        'identifierId',
+      const populate = {
+        path: 'themeId',
+        select:
+          'primaryColor secondaryColor faceBookUrl instagramUrl twitterUrl threadsUrl websiteUrl youtubeUrl whatsappNo',
+      };
+      const externalApi = await this.ExternalApiModel.findOne({
         identifierId,
-      );
+      }).populate(populate);
       if (!externalApi) {
         throw new ForbiddenException(ServerErrors.EXTERNAL_API.IDENTIFIER_ID);
       }
@@ -202,6 +205,28 @@ export class ExternalApiServices {
           err: err.message,
         },
       );
+      exceptionHandling(err);
+    }
+  }
+
+  async findByIdAndPopulateThem(id: string) {
+    try {
+      const populate = {
+        path: 'themeId',
+        select:
+          'primaryColor secondaryColor faceBookUrl instagramUrl twitterUrl threadsUrl websiteUrl youtubeUrl whatsappNo',
+      };
+      const externalApi = await this.ExternalApiModel.findOne({
+        _id: id,
+      }).populate(populate);
+      if (!externalApi) {
+        throw new ForbiddenException(ServerErrors.EXTERNAL_API.IDENTIFIER_ID);
+      }
+      return externalApi;
+    } catch (err) {
+      this.logger.error(`[EXTERNAL_API-${id}]: FAILED TO GET EXTERNAL API'`, {
+        err: err.message,
+      });
       exceptionHandling(err);
     }
   }

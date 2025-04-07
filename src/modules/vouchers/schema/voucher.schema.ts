@@ -21,15 +21,6 @@ export class Voucher extends AuditableSchema {
   })
     _id: mongoose.Types.ObjectId;
 
-  @Prop()
-    name: string;
-
-  @Prop({
-    default: null,
-    required: false,
-  })
-    createdByEmail: string;
-
   @Prop({
     type: Number,
     min: [1, 'Amount must be at least 1.'],
@@ -51,16 +42,6 @@ export class Voucher extends AuditableSchema {
   @Prop({ enum: VoucherStatus, default: VoucherStatus.UNASSIGNED })
     status: VoucherStatus;
 
-  @Prop({ type: String, default: null })
-    waitingUserEmail: string;
-
-  @Prop({
-    type: mongoose.Schema.Types.ObjectId,
-    ref: User.name,
-    default: null,
-  })
-    assignedTo: mongoose.Types.ObjectId;
-
   @Prop({
     type: mongoose.Schema.Types.ObjectId,
     ref: ExternalApi.name,
@@ -77,9 +58,6 @@ export class Voucher extends AuditableSchema {
 
   @Prop({ default: null, type: Date })
     expireDate: Date;
-
-  @Prop({ default: null, type: Date })
-    assignedAt: Date;
 
   @Prop({
     type: Number,

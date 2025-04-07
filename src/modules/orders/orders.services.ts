@@ -16,12 +16,10 @@ import { ServerErrors } from 'src/common/constant';
 import {
   Currency, Locale, PaymentStatus, SortOrder,
 } from 'src/common/enum';
-import {
-  EnglishTemplate,
-  HebrewTemplate,
-} from 'src/common/mailchimp/templateId';
+import { DynamicEmailTemplate } from 'src/common/mailchimp/templateId';
 import { paginationConfig } from 'src/common/pagination.config';
 import { sortByPriorityAndHighest } from 'src/common/sort-priority-and-highest';
+import { getCommonEmailFields } from 'src/common/utils/email/common-fields';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { disSelect } from 'src/common/utils/select.handling';
 import {
@@ -42,11 +40,7 @@ import { ProductsService } from 'src/modules/products/products.services';
 import { UserType } from 'src/modules/users/users.type';
 import { VoucherService } from 'src/modules/vouchers/voucher.service';
 import { CreateOrderDto } from 'src/modules/orders/dto';
-import {
-  DeliveryMethod,
-  OrderStatus,
-  PaymentMode,
-} from 'src/modules/orders/orders.type';
+import { OrderStatus, PaymentMode } from 'src/modules/orders/orders.type';
 import { OrderProductService } from 'src/modules/order-product/order-product.services';
 
 import { PaymentsService } from 'src/services/payments/payments.service';
@@ -180,6 +174,9 @@ export class OrdersService {
         'code',
         body.campCode,
       );
+      const externalApi = await this.externalApiService.findByIdentifierId(
+        body.identifierId,
+      );
       const newOrder = new this.OrderModel();
 
       const baseUrl
@@ -198,6 +195,7 @@ export class OrdersService {
       const command = {
         ...body,
         _id: newOrder._id,
+        externalApi,
         products,
         voucher: redeemedVouchers,
         userId: loggedInUser?.id ?? null,
@@ -283,6 +281,7 @@ export class OrdersService {
   ) {
     const orderWithQR = new this.OrderModel({
       ...command,
+      externalApiId: command?.externalApi?._id,
       paymentDate: new Date(),
       paymentStatus: PaymentStatus.SUCCESS,
       status: OrderStatus.PROCESSING,
@@ -337,6 +336,7 @@ export class OrdersService {
       productInfo,
       order,
       orderProduct,
+      command?.externalApi,
       command?.languagePreference,
     );
     // send invoice
@@ -456,6 +456,9 @@ export class OrdersService {
       });
 
       const cart = await this.cartService.updateCartPostPayment(orderId);
+      const externalApi = await this.externalApiService.findByIdentifierId(
+        updateOrder.externalApiId.toString(),
+      );
 
       const findCartProducts = cart?.product;
 
@@ -503,6 +506,7 @@ export class OrdersService {
         getProductInformation,
         updateOrder,
         orderProduct,
+        externalApi,
         languagePreference,
       );
 
@@ -888,8 +892,11 @@ export class OrdersService {
     productInfo: Product[],
     order: Order,
     orderProduct: OrderProduct[],
+    externalApi: any,
     languagePreference?: Locale,
   ) {
+    console.log(languagePreference);
+
     const businessIds = productInfo.map(pro => pro.businessId);
 
     const businessDetails = await this.businessService.findBusinessEmailByIds(
@@ -902,57 +909,75 @@ export class OrdersService {
           p => p.productId.toString() === product._id.toString(),
         );
         return `
-          <div class="single-product">
-              <div class="order-item" dir="rtl">
+        <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom: 20px;">
+        <tr>
+          <td style="padding: 10px; background: #f3f8f5; direction: rtl; border-radius: 20px;">
+            <table cellpadding="0" cellspacing="0" border="0" width="100%">
+              <tr>
+                <td style="padding: 0; vertical-align: middle;">
                   <img src="${product.images?.[0]?.image || ''}" alt="${
-  product.name
-}">
-                  <div class="product-info">
-                      <span class="product-name">${product.name}</span>
-                      <span class="product-quantity">כמות: ${
-  matchingProduct?.quantity || 1
-} יח'</span>
-                  </div>
-                  <p class="product-price">${
-  product.price?.sellingPrice || ''
-} ש"ח</p>
-              </div>
-          </div>
+  product?.name
+}"
+                    style="max-width: 100px; height: 100px; margin-left: 10px; display: block;">
+                </td>
+                <td style="padding: 0 10px; vertical-align: middle;" width="100%">
+                  <span
+                    style="display: block; font-size: 16px; color: #333333;">${
+  product?.name
+}</span>
+                  <span style="display: block; font-size: 14px; color: #666666;">כמות:
+                    ${matchingProduct?.quantity || 1}</span>
+                </td>
+                <td style="padding: 0; vertical-align: middle; white-space: nowrap;">
+                  <span dir="rtl" style="font-size: 16px; color: #333333;">₪${
+  product?.price?.sellingPrice || ''
+}</span>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
         `;
       })
       .join('');
 
+    const { bucketUrl, emailFields } = getCommonEmailFields(
+      externalApi.identifierId,
+      externalApi.themeId,
+    );
+
+    const orderEmailFields = {
+      ...emailFields,
+      BUTTON_LINK: externalApi?.themeId?.websiteUrl,
+      CHANGE_SETTINGS_LINK: externalApi?.themeId?.websiteUrl,
+      BANNER_IMG: `${bucketUrl}footer/banner-web.png`,
+      MOBILE_BANNER_IMG: `${bucketUrl}footer/banner-mobile.png`,
+      FOOTER_LINK1: externalApi?.themeId?.websiteUrl,
+      BUSINESSNAME: businessDetails[0]?.name || '',
+      BUSINESSPHONE:
+        `${businessDetails[0]?.countryCode}-${businessDetails[0]?.phoneNumber}`
+        || '',
+      BUSINESSEMAIL: businessDetails[0]?.busiEmail || '',
+      PRODUCTS_HTML: productsHtml,
+    };
     await this.mailchimpService.sendTransactionalEmail({
       to: order?.email,
-      templatedId:
-        languagePreference === Locale.ENGLISH
-          ? EnglishTemplate.OrderConfirmationForClient
-          : HebrewTemplate.OrderConfirmationForClient,
+      templatedId: DynamicEmailTemplate.OrderConfirmationForClient,
       mergeVars: {
+        ...orderEmailFields,
         BUYERNAME: order?.firstName,
-        BUSINESSNAME: businessDetails[0]?.name || '',
-        PRODUCTS_HTML: productsHtml, // Now passing the full HTML instead of an array
         TOTALAMOUNT: order?.totalAmount,
-        BUSINESSPHONE:
-          `${businessDetails[0]?.countryCode}-${businessDetails[0]?.phoneNumber}`
-          || '',
-        BUSINESSEMAIL: businessDetails[0]?.busiEmail || '',
         BUSINESSADDRESS: businessDetails[0]?.address?.location || '',
         QRCODEURL: order?.qrCodeUrl || '',
       },
     });
-    let BUYERADDRESS: string;
 
-    if (
-      orderProduct?.length
-      && orderProduct[0]?.deliveryMethod === DeliveryMethod.DELIVER
-    ) {
-      BUYERADDRESS = orderProduct[0]?.deliveryArea;
-    } else if (languagePreference === Locale.ENGLISH) {
-      BUYERADDRESS = ' SELF PICK UP';
-    } else {
-      BUYERADDRESS = 'איסוף עצמי';
-    }
+    const DATE_A_WEEK_FROM_TODAY = new Date(
+      Date.now() + 7 * 24 * 60 * 60 * 1000,
+    )
+      .toLocaleDateString('en-GB')
+      .replace(/(\d{4})/, year => year.slice(-2));
 
     // SEND TO BUSINESS OWNER
     await Promise.all(
@@ -960,20 +985,12 @@ export class OrdersService {
         if (!business?.busiEmail) return;
         await this.mailchimpService.sendTransactionalEmail({
           to: business?.busiEmail,
-          templatedId:
-            languagePreference === Locale.ENGLISH
-              ? EnglishTemplate.OrderReceivedForBusiness
-              : HebrewTemplate.OrderReceivedForBusiness,
+          templatedId: DynamicEmailTemplate.OrderConfirmationForVendor,
           mergeVars: {
-            BUSINESSNAME: business?.name || '',
-            PRODUCTNAME: productInfo[0]?.name,
-            QUANTITY: productInfo[0]?.quantity,
-            COST: productInfo[0]?.price?.sellingPrice,
-            TOTALAMOUNT: order?.totalAmount,
-            BUYERNAME: `${order?.firstName} ${order?.lastName}`,
-            BUYERPHONE: `${order?.countryCode}-${order?.phone}`,
-            BUYEREMAIL: order?.email,
-            BUYERADDRESS,
+            ...orderEmailFields,
+            ORDER_NUMBER: order?._id,
+            DATE_A_WEEK_FROM_TODAY,
+            TOTAL_ORDER_AMOUNT: order?.totalAmount,
           },
         });
       }),

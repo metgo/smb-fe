@@ -1,8 +1,8 @@
 import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interface';
-import { GetAllOrdersQuery } from 'src/modules/orders/queries/get-all-orders.query';
+import { GetAllOrdersRequest } from 'src/modules/orders/requests/get-all-orders.request';
 
 export interface GetAllOrdersInterface {
-  query: GetAllOrdersQuery;
+  query: GetAllOrdersRequest;
   myOrder?: boolean;
   loggedInUser: LoggedInUserInterface;
 }

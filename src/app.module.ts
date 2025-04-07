@@ -45,6 +45,7 @@ import { LoggingMiddleware } from 'src/services/middleware/logger';
 import { CartModule } from 'src/modules/cart/cart.modules';
 import { SmsModule } from 'src/services/sms/sms.module';
 import { QRCodeModule } from 'src/services/qr-code/qr-code.module';
+import { ThemeModule } from './modules/themes/theme.module';
 
 @Module({
   imports: [
@@ -89,6 +90,7 @@ import { QRCodeModule } from 'src/services/qr-code/qr-code.module';
     CartModule,
     SmsModule,
     QRCodeModule,
+    ThemeModule,
   ],
   providers: [
     {

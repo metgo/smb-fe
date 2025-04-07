@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { IsEnum, IsOptional, IsString } from 'class-validator';
 import { SortByTimePeriod } from 'src/common/enum';
 
-export class GetOrdersStatsQuery {
+export class GetOrdersStatsRequest {
   @ApiProperty({ type: Date, required: false })
   @IsOptional()
     startDate: Date;

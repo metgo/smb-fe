@@ -8,37 +8,31 @@ import {
   UnprocessableEntityException,
   forwardRef,
 } from '@nestjs/common';
+import { QueryBus } from '@nestjs/cqrs';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 
 import { checkExpireDate, twoYearExpireDate } from 'src/common/expireDate';
-import {
-  DynamicHebrewTemplate,
-  EnglishTemplate,
-  HebrewTemplate,
-} from 'src/common/mailchimp/templateId';
+import { DynamicEmailTemplate } from 'src/common/mailchimp/templateId';
 import { Voucher } from './schema/voucher.schema';
 import {
-  Locale,
   SortByTimePeriod,
   VoucherPaymentStatus,
   VoucherStatus,
 } from 'src/common/enum';
 import { PaymentRequiredException } from 'src/common/exception/payment-required';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
-import { generateRandomCode } from 'src/common/utils/randomCode.generator';
 import { remainingAmountCalculation } from 'src/common/utils/remaining-amount-calculation';
 import {
   findManyByFilter,
   queryhandler,
-  updateById,
   updateManyByIds,
   updateManyByManyFields,
 } from 'src/core/helper/query-helper';
 import { disSelect } from 'src/common/utils/select.handling';
-import { ServerErrors, emailDefaultTemplate } from 'src/common/constant';
+import { ServerErrors } from 'src/common/constant';
 import { MailChimpService } from 'src/services/mailchimp/mailchimp.service';
 import { OrdersService } from 'src/modules/orders/orders.services';
 import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interface';
@@ -46,13 +40,8 @@ import { CampaignService } from 'src/modules/campaign/campaign.service';
 import { ProductsService } from 'src/modules/products/products.services';
 import { UsersService } from 'src/modules/users/users.services';
 import { UserType } from 'src/modules/users/users.type';
-import {
-  PromoDetailDto,
-  RewardVouchersByCampaignDto,
-} from 'src/modules/vouchers/dto';
 import { FreezeVoucherDTO } from 'src/modules/vouchers/dto/freeze-voucher.dto';
 import {
-  AssignVoucherCommand,
   GetOneVoucherInterface,
   UpdateVoucherAfterPaymentInterface,
 } from 'src/modules/vouchers/interface';
@@ -62,10 +51,11 @@ import {
 } from 'src/modules/vouchers/queries';
 import { ConfigService } from 'src/services/config/config.service';
 import { RewardsService } from 'src/modules/rewards/rewards.service';
-import { CreateVoucherDto } from './dto/create-voucher.dto';
 import { ExternalApiServices } from 'src/modules/external-api/external-api.service';
 import { CartService } from 'src/modules/cart/cart.service';
 import { SmsService } from 'src/services/sms/sms.service';
+import { FindByIdAndPopulateQuery } from '../campaign/queries/find-by-id-and-populate.query';
+import { getCommonEmailFields } from 'src/common/utils/email/common-fields';
 
 @Injectable()
 export class VoucherService {
@@ -85,282 +75,283 @@ export class VoucherService {
     private mailchimpService: MailChimpService,
     private productService: ProductsService,
     private cartService: CartService,
+    private queryBus: QueryBus,
   ) {}
 
-  async createdBySuperadmin(
-    user: LoggedInUserInterface,
-    dto: CreateVoucherDto,
-    identifierId?: string,
-  ) {
-    try {
-      const campaignId = (
-        await this.campaignService.findCampaignAndReturn('code', dto.campCode)
-      )._id;
-      const createdByUserId
-        = user?.email === dto.email
-          ? user?.id
-          : (await this.usersService.findByEmailOrNull(dto.email))?._id;
+  // async createdBySuperadmin(
+  //   user: LoggedInUserInterface,
+  //   dto: CreateVoucherDto,
+  //   identifierId?: string,
+  // ) {
+  //   try {
+  //     const campaignId = (
+  //       await this.campaignService.findCampaignAndReturn('code', dto.campCode)
+  //     )._id;
+  //     const createdByUserId
+  //       = user?.email === dto.email
+  //         ? user?.id
+  //         : (await this.usersService.findByEmailOrNull(dto.email))?._id;
 
-      const vouchers: any = [];
-      const voucherCodes: any = [];
+  //     const vouchers: any = [];
+  //     const voucherCodes: any = [];
 
-      const externalApiId = (
-        await this.externalApiServices.findByFieldName(
-          'identifierId',
-          identifierId,
-        )
-      )._id;
+  //     const externalApiId = (
+  //       await this.externalApiServices.findByFieldName(
+  //         'identifierId',
+  //         identifierId,
+  //       )
+  //     )._id;
 
-      await Promise.all(
-        Array.from({ length: dto.noOfVoucher }).map(async () => {
-          const randomCode = generateRandomCode(12);
-          const code = dto.campCode + randomCode;
-          const newVoucher = new this.VoucherModel({
-            ...dto,
-            code,
-            remainingAmount: dto.amount,
-            campId: campaignId,
-            createdBy: createdByUserId,
-            createdAt: new Date(),
-            createdByEmail: createdByUserId ? null : dto.email,
-            paymentStatus: VoucherPaymentStatus.PAID,
-            externalApiId,
-          });
-          await newVoucher.save();
-          await vouchers.push(newVoucher);
-          await voucherCodes.push(code);
-        }),
-      );
+  //     await Promise.all(
+  //       Array.from({ length: dto.noOfVoucher }).map(async () => {
+  //         const randomCode = generateRandomCode(12);
+  //         const code = dto.campCode + randomCode;
+  //         const newVoucher = new this.VoucherModel({
+  //           ...dto,
+  //           code,
+  //           remainingAmount: dto.amount,
+  //           campId: campaignId,
+  //           createdBy: createdByUserId,
+  //           createdAt: new Date(),
+  //           createdByEmail: createdByUserId ? null : dto.email,
+  //           paymentStatus: VoucherPaymentStatus.PAID,
+  //           externalApiId,
+  //         });
+  //         await newVoucher.save();
+  //         await vouchers.push(newVoucher);
+  //         await voucherCodes.push(code);
+  //       }),
+  //     );
 
-      this.logger.info('[EXTERNAL_API_VOUCHERS]: CREATED BY SUPERADMIN', {
-        message: voucherCodes,
-      });
+  //     this.logger.info('[EXTERNAL_API_VOUCHERS]: CREATED BY SUPERADMIN', {
+  //       message: voucherCodes,
+  //     });
 
-      // send emails?
-      const VOUCHERCODE = await voucherCodes
-        .map(code => `\n${code}`)
-        ?.toString();
-      await this.mailchimpService.sendTransactionalEmail({
-        to: dto?.email,
-        templatedId:
-          dto?.languagePreference === Locale.HEBREW
-            ? HebrewTemplate.VoucherConfirmationNonLoggedIn
-            : EnglishTemplate.VoucherConfirmationNonLoggedIn,
-        mergeVars: {
-          BUYERNAME: dto?.name,
-          VOUCHERCODE,
-          VOUCHERAMOUNT: dto?.amount,
-        },
-      });
+  //     // send emails?
+  //     const VOUCHERCODE = await voucherCodes
+  //       .map(code => `\n${code}`)
+  //       ?.toString();
+  //     await this.mailchimpService.sendTransactionalEmail({
+  //       to: dto?.email,
+  //       templatedId:
+  //         dto?.languagePreference === Locale.HEBREW
+  //           ? HebrewTemplate.VoucherConfirmationNonLoggedIn
+  //           : EnglishTemplate.VoucherConfirmationNonLoggedIn,
+  //       mergeVars: {
+  //         BUYERNAME: dto?.name,
+  //         VOUCHERCODE,
+  //         VOUCHERAMOUNT: dto?.amount,
+  //       },
+  //     });
 
-      return vouchers;
-    } catch (err) {
-      this.logger.error('[VOUCHERS]: FAILED TO CREATE VOUCHERS BY SUPERADMIN', {
-        err: err.message,
-      });
-      exceptionHandling(err);
-    }
-  }
+  //     return vouchers;
+  //   } catch (err) {
+  //     this.logger.error('[VOUCHERS]: FAILED TO CREATE VOUCHERS BY SUPERADMIN', {
+  //       err: err.message,
+  //     });
+  //     exceptionHandling(err);
+  //   }
+  // }
 
-  async createdBySuperadminNewTemplate(
-    user: LoggedInUserInterface,
-    dto: CreateVoucherDto,
-    identifierId?: string,
-  ) {
-    try {
-      const campaignId = (
-        await this.campaignService.findCampaignAndReturn('code', dto.campCode)
-      )._id;
-      const createdByUserId
-        = user?.email === dto.email
-          ? user?.id
-          : (await this.usersService.findByEmailOrNull(dto.email))?._id;
+  // async createdBySuperadminNewTemplate(
+  //   user: LoggedInUserInterface,
+  //   dto: CreateVoucherDto,
+  //   identifierId?: string,
+  // ) {
+  //   try {
+  //     const campaignId = (
+  //       await this.campaignService.findCampaignAndReturn('code', dto.campCode)
+  //     )._id;
+  //     const createdByUserId
+  //       = user?.email === dto.email
+  //         ? user?.id
+  //         : (await this.usersService.findByEmailOrNull(dto.email))?._id;
 
-      const vouchers: any = [];
-      const voucherCodes: any = [];
+  //     const vouchers: any = [];
+  //     const voucherCodes: any = [];
 
-      const externalApiId = (
-        await this.externalApiServices.findByFieldName(
-          'identifierId',
-          identifierId,
-        )
-      )._id;
+  //     const externalApiId = (
+  //       await this.externalApiServices.findByFieldName(
+  //         'identifierId',
+  //         identifierId,
+  //       )
+  //     )._id;
 
-      await Promise.all(
-        Array.from({ length: dto.noOfVoucher }).map(async () => {
-          const randomCode = generateRandomCode(12);
-          const code = dto.campCode + randomCode;
-          const newVoucher = new this.VoucherModel({
-            ...dto,
-            code,
-            remainingAmount: dto.amount,
-            campId: campaignId,
-            createdBy: createdByUserId,
-            createdAt: new Date(),
-            createdByEmail: createdByUserId ? null : dto.email,
-            paymentStatus: VoucherPaymentStatus.PAID,
-            externalApiId,
-          });
-          await newVoucher.save();
-          await vouchers.push(newVoucher);
-          await voucherCodes.push(code);
-        }),
-      );
+  //     await Promise.all(
+  //       Array.from({ length: dto.noOfVoucher }).map(async () => {
+  //         const randomCode = generateRandomCode(12);
+  //         const code = dto.campCode + randomCode;
+  //         const newVoucher = new this.VoucherModel({
+  //           ...dto,
+  //           code,
+  //           remainingAmount: dto.amount,
+  //           campId: campaignId,
+  //           createdBy: createdByUserId,
+  //           createdAt: new Date(),
+  //           createdByEmail: createdByUserId ? null : dto.email,
+  //           paymentStatus: VoucherPaymentStatus.PAID,
+  //           externalApiId,
+  //         });
+  //         await newVoucher.save();
+  //         await vouchers.push(newVoucher);
+  //         await voucherCodes.push(code);
+  //       }),
+  //     );
 
-      this.logger.info(
-        '[EXTERNAL_API_VOUCHERS]: CREATED BY SUPERADMIN NEW TEMPLATE',
-        {
-          message: voucherCodes,
-        },
-      );
+  //     this.logger.info(
+  //       '[EXTERNAL_API_VOUCHERS]: CREATED BY SUPERADMIN NEW TEMPLATE',
+  //       {
+  //         message: voucherCodes,
+  //       },
+  //     );
 
-      // send emails?
-      const VOUCHERCODE = await voucherCodes
-        .map(code => `\n${code}`)
-        ?.toString();
-      await this.mailchimpService.sendTransactionalEmail({
-        to: dto?.email,
-        templatedId:
-          dto?.languagePreference === Locale.HEBREW
-            ? HebrewTemplate.VoucherConfirmationNonLoggedInNewTemplate
-            : EnglishTemplate.VoucherConfirmationNonLoggedInNewTemplate,
-        mergeVars: {
-          BUYERNAME: dto?.name,
-          VOUCHERCODE,
-          VOUCHERAMOUNT: dto?.amount,
-        },
-      });
+  //     // send emails?
+  //     const VOUCHERCODE = await voucherCodes
+  //       .map(code => `\n${code}`)
+  //       ?.toString();
+  //     await this.mailchimpService.sendTransactionalEmail({
+  //       to: dto?.email,
+  //       templatedId:
+  //         dto?.languagePreference === Locale.HEBREW
+  //           ? HebrewTemplate.VoucherConfirmationNonLoggedInNewTemplate
+  //           : EnglishTemplate.VoucherConfirmationNonLoggedInNewTemplate,
+  //       mergeVars: {
+  //         BUYERNAME: dto?.name,
+  //         VOUCHERCODE,
+  //         VOUCHERAMOUNT: dto?.amount,
+  //       },
+  //     });
 
-      return vouchers;
-    } catch (err) {
-      this.logger.error(
-        '[EXTERNAL_API_VOUCHERS]: FAILED TO CREATE VOUCHERS BY SUPERADMIN NEW TEMPLATE',
-        {
-          err: err.message,
-        },
-      );
-      exceptionHandling(err);
-    }
-  }
+  //     return vouchers;
+  //   } catch (err) {
+  //     this.logger.error(
+  //       '[EXTERNAL_API_VOUCHERS]: FAILED TO CREATE VOUCHERS BY SUPERADMIN NEW TEMPLATE',
+  //       {
+  //         err: err.message,
+  //       },
+  //     );
+  //     exceptionHandling(err);
+  //   }
+  // }
 
-  async createVouchersByCampaign(
-    loggedInUser: LoggedInUserInterface,
-    body: RewardVouchersByCampaignDto,
-    identifierId: string,
-  ) {
-    try {
-      const assignedUserEmail = await this.usersService.findByEmailOrNull(
-        body.email,
-      );
+  // async createVouchersByCampaign(
+  //   loggedInUser: LoggedInUserInterface,
+  //   body: RewardVouchersByCampaignDto,
+  //   identifierId: string,
+  // ) {
+  //   try {
+  //     const assignedUserEmail = await this.usersService.findByEmailOrNull(
+  //       body.email,
+  //     );
 
-      const campaignReward: any = await this.campaignService.findRewardByCampId(
-        body.campId,
-      );
+  //     const campaignReward: any = await this.campaignService.findRewardByCampId(
+  //       body.campId,
+  //     );
 
-      if (!campaignReward?.rewardId) {
-        throw new BadRequestException(
-          ServerErrors.CAMPAIGN.EXPIRED_OR_REWARD_DONT_EXIST,
-        );
-      }
+  //     if (!campaignReward?.rewardId) {
+  //       throw new BadRequestException(
+  //         ServerErrors.CAMPAIGN.EXPIRED_OR_REWARD_DONT_EXIST,
+  //       );
+  //     }
 
-      if (
-        campaignReward.rewardId.totalVoucherCreated
-          >= campaignReward.rewardId.voucherLimit
-        || campaignReward.rewardId.totalVoucherCreated + body.noOfVoucher
-          > campaignReward.rewardId.voucherLimit
-      ) {
-        throw new UnprocessableEntityException(
-          ServerErrors.VOUCHER.LIMIT_EXCEEDED,
-        );
-      }
+  //     if (
+  //       campaignReward.rewardId.totalVoucherCreated
+  //         >= campaignReward.rewardId.voucherLimit
+  //       || campaignReward.rewardId.totalVoucherCreated + body.noOfVoucher
+  //         > campaignReward.rewardId.voucherLimit
+  //     ) {
+  //       throw new UnprocessableEntityException(
+  //         ServerErrors.VOUCHER.LIMIT_EXCEEDED,
+  //       );
+  //     }
 
-      const externalApiId = (
-        await this.externalApiServices.findByFieldName(
-          'identifierId',
-          identifierId,
-        )
-      )._id;
+  //     const externalApiId = (
+  //       await this.externalApiServices.findByFieldName(
+  //         'identifierId',
+  //         identifierId,
+  //       )
+  //     )._id;
 
-      const voucherCodes: any = [];
-      const vouchers: any = [];
+  //     const voucherCodes: any = [];
+  //     const vouchers: any = [];
 
-      await Promise.all(
-        Array.from({ length: body.noOfVoucher }).map(async () => {
-          const randomCode = generateRandomCode(12);
-          const code = campaignReward.code + randomCode;
-          const newVoucher = new this.VoucherModel({
-            name: body.name,
-            createdBy: loggedInUser.id,
-            createdAt: new Date(),
-            amount: campaignReward?.rewardId?.amount,
-            code,
-            remainingAmount: campaignReward?.rewardId?.amount,
-            paymentStatus: VoucherPaymentStatus.PAID,
-            status: VoucherStatus.ASSIGNED,
-            waitingUserEmail: assignedUserEmail?._id ? null : body.email,
-            externalApiId,
-            assignedTo: assignedUserEmail?._id ? assignedUserEmail._id : null,
-            campId: body.campId,
-            assignedAt: new Date(),
-          });
-          await newVoucher.save();
-          await voucherCodes.push(code);
-          await vouchers.push(newVoucher);
-        }),
-      );
+  //     await Promise.all(
+  //       Array.from({ length: body.noOfVoucher }).map(async () => {
+  //         const randomCode = generateRandomCode(12);
+  //         const code = campaignReward.code + randomCode;
+  //         const newVoucher = new this.VoucherModel({
+  //           name: body.name,
+  //           createdBy: loggedInUser.id,
+  //           createdAt: new Date(),
+  //           amount: campaignReward?.rewardId?.amount,
+  //           code,
+  //           remainingAmount: campaignReward?.rewardId?.amount,
+  //           paymentStatus: VoucherPaymentStatus.PAID,
+  //           status: VoucherStatus.ASSIGNED,
+  //           waitingUserEmail: assignedUserEmail?._id ? null : body.email,
+  //           externalApiId,
+  //           assignedTo: assignedUserEmail?._id ? assignedUserEmail._id : null,
+  //           campId: body.campId,
+  //           assignedAt: new Date(),
+  //         });
+  //         await newVoucher.save();
+  //         await voucherCodes.push(code);
+  //         await vouchers.push(newVoucher);
+  //       }),
+  //     );
 
-      this.logger.info('[EXTERNAL_API_REWARD_VOUCHER_BY_CAMPAIGN]: CREATED', {
-        message: voucherCodes,
-      });
+  //     this.logger.info('[EXTERNAL_API_REWARD_VOUCHER_BY_CAMPAIGN]: CREATED', {
+  //       message: voucherCodes,
+  //     });
 
-      // updateRewardLimit
-      await this.rewardService.updateUsage(
-        campaignReward.rewardId._id,
-        body.noOfVoucher,
-      );
+  //     // updateRewardLimit
+  //     await this.rewardService.updateUsage(
+  //       campaignReward.rewardId._id,
+  //       body.noOfVoucher,
+  //     );
 
-      // send emails?
-      const VOUCHERCODE = await voucherCodes
-        .map(code => `\n${code}`)
-        ?.toString();
-      await this.mailchimpService.sendTransactionalEmail({
-        to: body?.email,
-        templatedId:
-          body.languagePreference === Locale.HEBREW
-            ? DynamicHebrewTemplate.VOUCHER_FOR_CAMPAIGN
-            : DynamicHebrewTemplate.VOUCHER_FOR_CAMPAIGN,
-        mergeVars: {
-          FNAME: body?.name,
-          CAMPAIGN: campaignReward?.name,
-          SLOGAN: campaignReward?.slogan,
-          VOUCHERCODE,
-          VOUCHERAMOUNT: campaignReward?.rewardId?.amount,
-          WEBSITE: campaignReward?.link,
-          LOGO1:
-            campaignReward?.dmoIds[0]?.logoPath
-            || emailDefaultTemplate.SIDE_LOGO,
-          LOGO2: emailDefaultTemplate.MAIN_LOGO,
-          LOGO3: campaignReward?.logoPath || emailDefaultTemplate.SIDE_LOGO,
-          PRIMARY_BG_COLOR: emailDefaultTemplate.PRIMARY_BG_COLOR,
-          PRIMARY_TEXT_COLOR: emailDefaultTemplate.PRIMARY_TEXT_COLOR,
-          IMAGE1: emailDefaultTemplate.IMAGE1,
-          IMAGE2:
-            campaignReward?.dmoIds[0]?.imagePath || emailDefaultTemplate.IMAGE2,
-          IMAGE3: campaignReward?.imagePath || emailDefaultTemplate.IMAGE3,
-        },
-      });
+  //     // send emails?
+  //     const VOUCHERCODE = await voucherCodes
+  //       .map(code => `\n${code}`)
+  //       ?.toString();
+  //     await this.mailchimpService.sendTransactionalEmail({
+  //       to: body?.email,
+  //       templatedId:
+  //         body.languagePreference === Locale.HEBREW
+  //           ? DynamicHebrewTemplate.VOUCHER_FOR_CAMPAIGN
+  //           : DynamicHebrewTemplate.VOUCHER_FOR_CAMPAIGN,
+  //       mergeVars: {
+  //         FNAME: body?.name,
+  //         CAMPAIGN: campaignReward?.name,
+  //         SLOGAN: campaignReward?.slogan,
+  //         VOUCHERCODE,
+  //         VOUCHERAMOUNT: campaignReward?.rewardId?.amount,
+  //         WEBSITE: campaignReward?.link,
+  //         LOGO1:
+  //           campaignReward?.dmoIds[0]?.logoPath
+  //           || emailDefaultTemplate.SIDE_LOGO,
+  //         LOGO2: emailDefaultTemplate.MAIN_LOGO,
+  //         LOGO3: campaignReward?.logoPath || emailDefaultTemplate.SIDE_LOGO,
+  //         PRIMARY_BG_COLOR: emailDefaultTemplate.PRIMARY_BG_COLOR,
+  //         PRIMARY_TEXT_COLOR: emailDefaultTemplate.PRIMARY_TEXT_COLOR,
+  //         IMAGE1: emailDefaultTemplate.IMAGE1,
+  //         IMAGE2:
+  //           campaignReward?.dmoIds[0]?.imagePath || emailDefaultTemplate.IMAGE2,
+  //         IMAGE3: campaignReward?.imagePath || emailDefaultTemplate.IMAGE3,
+  //       },
+  //     });
 
-      return vouchers;
-    } catch (err) {
-      this.logger.error(
-        '[EXTERNAL_API_REWARD_VOUCHER_BY_CAMPAIGN]: FAILED TO CREATE',
-        {
-          err: err.message,
-        },
-      );
-      exceptionHandling(err);
-    }
-  }
+  //     return vouchers;
+  //   } catch (err) {
+  //     this.logger.error(
+  //       '[EXTERNAL_API_REWARD_VOUCHER_BY_CAMPAIGN]: FAILED TO CREATE',
+  //       {
+  //         err: err.message,
+  //       },
+  //     );
+  //     exceptionHandling(err);
+  //   }
+  // }
 
   async getOneByCodeAndProduct(query: GetOneVoucherInterface) {
     try {
@@ -816,107 +807,107 @@ export class VoucherService {
   //   return voucher;
   // }
 
-  async assignVoucher(command: AssignVoucherCommand) {
-    try {
-      const { loggedInUser, body } = command;
-      const select = disSelect;
+  // async assignVoucher(command: AssignVoucherCommand) {
+  //   try {
+  //     const { loggedInUser, body } = command;
+  //     const select = disSelect;
 
-      const populate = {
-        path: 'campId',
-        select: `${disSelect}`,
-        populate: {
-          path: 'dmoIds',
-          select: `${disSelect}`,
-        },
-      };
+  //     const populate = {
+  //       path: 'campId',
+  //       select: `${disSelect}`,
+  //       populate: {
+  //         path: 'dmoIds',
+  //         select: `${disSelect}`,
+  //       },
+  //     };
 
-      const [availableVoucher, assignedUser] = await Promise.all([
-        this.VoucherModel.findOne({
-          code: body.code,
-          paymentStatus: VoucherPaymentStatus.PAID,
-          $and: [
-            {
-              $or: [{ expireDate: null }, { expireDate: { $gte: new Date() } }],
-            },
-            {
-              $or: [
-                {
-                  createdBy: loggedInUser.id,
-                  assignedTo: null,
-                  waitingUserEmail: null,
-                },
-                { assignedTo: loggedInUser.id },
-              ],
-            },
-          ],
-        })
-          .select(select)
-          .populate(populate)
-          .exec(),
-        this.usersService.findByEmailOrNull(body.email),
-      ]);
+  //     const [availableVoucher, assignedUser] = await Promise.all([
+  //       this.VoucherModel.findOne({
+  //         code: body.code,
+  //         paymentStatus: VoucherPaymentStatus.PAID,
+  //         $and: [
+  //           {
+  //             $or: [{ expireDate: null }, { expireDate: { $gte: new Date() } }],
+  //           },
+  //           {
+  //             $or: [
+  //               {
+  //                 createdBy: loggedInUser.id,
+  //                 assignedTo: null,
+  //                 waitingUserEmail: null,
+  //               },
+  //               { assignedTo: loggedInUser.id },
+  //             ],
+  //           },
+  //         ],
+  //       })
+  //         .select(select)
+  //         .populate(populate)
+  //         .exec(),
+  //       this.usersService.findByEmailOrNull(body.email),
+  //     ]);
 
-      if (!availableVoucher) {
-        throw new NotFoundException(ServerErrors.VOUCHER.CANNOT_ASSIGN);
-      }
+  //     if (!availableVoucher) {
+  //       throw new NotFoundException(ServerErrors.VOUCHER.CANNOT_ASSIGN);
+  //     }
 
-      const updateField = {
-        assignedTo: assignedUser ? assignedUser._id : null,
-        assignedAt: new Date(),
-        waitingUserEmail: assignedUser ? null : body.email,
-        status: VoucherStatus.ASSIGNED,
-        updatedBy: loggedInUser.id,
-        expireDate: availableVoucher.expireDate
-          ? availableVoucher.expireDate
-          : twoYearExpireDate(),
-      };
+  //     const updateField = {
+  //       assignedTo: assignedUser ? assignedUser._id : null,
+  //       assignedAt: new Date(),
+  //       waitingUserEmail: assignedUser ? null : body.email,
+  //       status: VoucherStatus.ASSIGNED,
+  //       updatedBy: loggedInUser.id,
+  //       expireDate: availableVoucher.expireDate
+  //         ? availableVoucher.expireDate
+  //         : twoYearExpireDate(),
+  //     };
 
-      const assignedVoucher = await updateById<Voucher>(
-        this.VoucherModel,
-        availableVoucher._id,
-        updateField,
-      );
+  //     const assignedVoucher = await updateById<Voucher>(
+  //       this.VoucherModel,
+  //       availableVoucher._id,
+  //       updateField,
+  //     );
 
-      if (!assignedVoucher) {
-        throw new NotFoundException(ServerErrors.VOUCHER.CANNOT_ASSIGN);
-      }
-      this.logger.info('[VOUCHER]: ASSIGNED', {
-        message: assignedVoucher,
-      });
+  //     if (!assignedVoucher) {
+  //       throw new NotFoundException(ServerErrors.VOUCHER.CANNOT_ASSIGN);
+  //     }
+  //     this.logger.info('[VOUCHER]: ASSIGNED', {
+  //       message: assignedVoucher,
+  //     });
 
-      const campaign: any = availableVoucher?.campId;
+  //     const campaign: any = availableVoucher?.campId;
 
-      await this.mailchimpService.sendTransactionalEmail({
-        to: body?.email,
-        templatedId: DynamicHebrewTemplate.VoucherAssignedToYou,
-        mergeVars: {
-          CAMPAIGN: campaign?.name,
-          FNAME: `${loggedInUser?.firstName} ${loggedInUser?.lastName}`,
-          ENTITY: campaign?.dmoIds[0]?.name,
-          WEBSITE: campaign?.link,
-          SLOGAN: campaign?.slogan,
-          VOUCHERCODE: body?.code,
-          VOUCHERAMOUNT: assignedVoucher?.remainingAmount,
-          LOGO1:
-            campaign?.dmoIds[0]?.logoPath || emailDefaultTemplate.SIDE_LOGO,
-          LOGO2: emailDefaultTemplate.MAIN_LOGO,
-          LOGO3: campaign?.logoPath || emailDefaultTemplate.SIDE_LOGO,
-          PRIMARY_BG_COLOR: emailDefaultTemplate.PRIMARY_BG_COLOR,
-          PRIMARY_TEXT_COLOR: emailDefaultTemplate.PRIMARY_TEXT_COLOR,
-          IMAGE1: emailDefaultTemplate.IMAGE1,
-          IMAGE2: campaign?.dmoIds[0]?.imagePath || emailDefaultTemplate.IMAGE2,
-          IMAGE3: campaign?.imagePath || emailDefaultTemplate.IMAGE3,
-        },
-      });
+  //     await this.mailchimpService.sendTransactionalEmail({
+  //       to: body?.email,
+  //       templatedId: DynamicHebrewTemplate.VoucherAssignedToYou,
+  //       mergeVars: {
+  //         CAMPAIGN: campaign?.name,
+  //         FNAME: `${loggedInUser?.firstName} ${loggedInUser?.lastName}`,
+  //         ENTITY: campaign?.dmoIds[0]?.name,
+  //         WEBSITE: campaign?.link,
+  //         SLOGAN: campaign?.slogan,
+  //         VOUCHERCODE: body?.code,
+  //         VOUCHERAMOUNT: assignedVoucher?.remainingAmount,
+  //         LOGO1:
+  //           campaign?.dmoIds[0]?.logoPath || emailDefaultTemplate.SIDE_LOGO,
+  //         LOGO2: emailDefaultTemplate.MAIN_LOGO,
+  //         LOGO3: campaign?.logoPath || emailDefaultTemplate.SIDE_LOGO,
+  //         PRIMARY_BG_COLOR: emailDefaultTemplate.PRIMARY_BG_COLOR,
+  //         PRIMARY_TEXT_COLOR: emailDefaultTemplate.PRIMARY_TEXT_COLOR,
+  //         IMAGE1: emailDefaultTemplate.IMAGE1,
+  //         IMAGE2: campaign?.dmoIds[0]?.imagePath || emailDefaultTemplate.IMAGE2,
+  //         IMAGE3: campaign?.imagePath || emailDefaultTemplate.IMAGE3,
+  //       },
+  //     });
 
-      return assignedVoucher;
-    } catch (err) {
-      this.logger.error('[VOUCHER]: FAILED TO ASSIGN VOUCHER', {
-        err: err.message,
-      });
-      exceptionHandling(err);
-    }
-  }
+  //     return assignedVoucher;
+  //   } catch (err) {
+  //     this.logger.error('[VOUCHER]: FAILED TO ASSIGN VOUCHER', {
+  //       err: err.message,
+  //     });
+  //     exceptionHandling(err);
+  //   }
+  // }
 
   async update(id: mongoose.Types.ObjectId[], updateField: object) {
     try {
@@ -956,6 +947,13 @@ export class VoucherService {
       });
       // send emails
 
+      const campaign = await this.queryBus.execute(
+        new FindByIdAndPopulateQuery(voucherDetails[0].campId.toString(), {
+          externalApi: true,
+        }),
+      );
+
+      const voucherCodesForEmail = voucherDetails.map(doc => doc.code);
       const voucherCodes = voucherDetails
         .map(doc => `\n${doc.code}`)
         ?.toString();
@@ -966,20 +964,15 @@ export class VoucherService {
           : `https://tav8.metgo.app/product?utm_source=sms&utm_medium=tav8&voucherId=${voucherDetails[0]?.code}`;
 
       if (voucherDetails[0]?.assigneeInfo?.email) {
-        await this.mailchimpService.sendTransactionalEmail({
-          to: voucherDetails[0]?.assigneeInfo?.email,
-          templatedId:
-            command?.languagePreference === Locale.HEBREW
-              ? HebrewTemplate.VoucherConfirmationNonLoggedIn
-              : EnglishTemplate.VoucherConfirmationNonLoggedIn,
-          mergeVars: {
-            BUYERNAME: voucherDetails[0]?.assigneeInfo?.name,
-            VOUCHERCODE: voucherCodes,
-            VOUCHERAMOUNT: voucherDetails[0]?.amount,
-            MESSAGE: voucherDetails[0]?.message,
-            REDIRECT_LINK: link,
-          },
-        });
+        await this.sendVoucherPurchaseEmail(
+          voucherDetails[0]?.assigneeInfo?.email,
+          voucherDetails[0]?.assigneeInfo?.name,
+          voucherDetails[0].amount,
+          voucherCodesForEmail,
+          campaign,
+          link,
+          voucherDetails[0].message || '',
+        );
       }
 
       if (voucherDetails[0]?.assigneeInfo?.phone) {
@@ -1676,190 +1669,48 @@ export class VoucherService {
     return unGroupedVouchers;
   }
 
-  async scheduledEmailToRedeemableVoucherOwners() {
-    const ENV_NAME = this.configService.get('ENV_NAME');
-
-    if (ENV_NAME === 'prod') {
-      const currentDate = new Date();
-
-      const vouchers = await this.VoucherModel.find({
-        paymentStatus: VoucherPaymentStatus.PAID,
-        remainingAmount: { $gt: 0 },
-        deletedAt: null,
-        deletedBy: null,
-        waitingUserEmail: { $exists: true, $ne: null },
-        status: VoucherStatus.ASSIGNED,
-        $or: [
-          { expireDate: { $exists: false } },
-          { expireDate: null },
-          { expireDate: { $gte: currentDate } },
-        ],
-      });
-
-      let noOfEmailSent: number = 0;
-
-      await Promise.all(
-        vouchers.map(async voucher => {
-          const createdDate = new Date(voucher.createdAt);
-
-          if (currentDate.getDate() === createdDate.getDate()) {
-            const emailSent
-              = await this.mailchimpService.sendTransactionalEmail({
-                to: voucher?.waitingUserEmail,
-                templatedId: HebrewTemplate.REEDEMABLE_VOUCHER_REMINDER,
-                mergeVars: {
-                  BUYERNAME: voucher?.name,
-                  VOUCHERCODE: voucher?.code,
-                  VOUCHERAMOUNT: voucher?.remainingAmount,
-                  VOUCHERACTUALAMOUNT: voucher?.amount,
-                },
-              });
-
-            if (emailSent[0].status === 'sent') {
-              await this.VoucherModel.findOneAndUpdate(
-                { _id: voucher.id },
-                { $inc: { reminderCount: 1 } },
-                { new: true },
-              );
-            }
-
-            noOfEmailSent += 1;
-          }
-        }),
-      );
-
-      const message = `${noOfEmailSent} emails were sent successfully`;
-      console.log(message);
-
-      return {
-        message,
-      };
-    }
-  }
-
-  async sendVoucherDetailEmail(id: string) {
-    try {
-      const populate = {
-        path: 'assignedTo',
-        select: `${disSelect}`,
-      };
-
-      const voucher = await this.VoucherModel.findOne({
-        _id: id,
-        deletedAt: null,
-        deletedBy: null,
-      }).populate(populate);
-
-      const assignedTo: any = voucher?.assignedTo;
-
-      const emailRecipient = assignedTo?.email || voucher?.waitingUserEmail;
-
-      if (emailRecipient) {
-        await this.mailchimpService.sendTransactionalEmail({
-          to: emailRecipient,
-          templatedId: HebrewTemplate.REEDEMABLE_VOUCHER_REMINDER,
-          mergeVars: {
-            BUYERNAME: voucher?.name,
-            VOUCHERCODE: voucher?.code,
-            VOUCHERAMOUNT: voucher?.remainingAmount,
-            VOUCHERACTUALAMOUNT: voucher?.amount,
-          },
-        });
-      }
-
-      this.logger.info('[VOUCHER]: SENT EMAIL OF VOUCHER DETAIL', {
-        message: voucher,
-      });
-      return voucher;
-    } catch (err) {
-      this.logger.error('[VOUCHER]: FAILED TO SEND EMAIL OF VOUCHER DETAIL', {
-        err: err.message,
-      });
-      exceptionHandling(err);
-    }
-  }
-
-  async sendPromotionalEmailToVoucherOwner(
-    body: PromoDetailDto,
-    amount?: number,
-    campIds?: string[],
+  private async sendVoucherPurchaseEmail(
+    email: string,
+    BUYERNAME: string,
+    VOUCHERAMOUNT: number,
+    VOUCHERCODE: string[],
+    campaign: any,
+    link: string,
+    GREETINGS?: string,
   ) {
-    try {
-      const populate = {
-        path: 'assignedTo',
-        select: `${disSelect}`,
-      };
+    const { bucketUrl, emailFields } = getCommonEmailFields(
+      campaign?.externalApiId?.identifierId,
+      campaign?.externalApiId?.themeId,
+    );
 
-      let query: any = {
-        deletedAt: null,
-        deletedBy: null,
-        remainingAmount: { $gte: amount || 20 },
-      };
+    const emailColor
+      = campaign?.externalApiId?.themeId?.secondaryColor || '#F4F7F5';
+    const formattedExpiryDate = twoYearExpireDate()
+      .toLocaleDateString('en-GB')
+      .replace(/(\d{4})/, year => year.slice(-2));
+    const VOUCHER_LIST = VOUCHERCODE.map(
+      voucher => `
+        <div style="background-color: ${emailColor}; padding: 4px; border-radius: 10px; margin-bottom: 10px;">
+          <strong>סך השובר:</strong> ${VOUCHERAMOUNT} ₪<br />
+          <strong>מקבל התו:</strong> ${voucher} <br />
+          <span>תוקף השובר <strong>${formattedExpiryDate}</strong> ( כשנתיים מהיום) </span>
+        </div>
+        `,
+    ).join('');
 
-      if (campIds && campIds?.length > 0) {
-        query = {
-          ...query,
-          campId: { $in: campIds },
-        };
-      }
-
-      const vouchers = await this.VoucherModel.find(query).populate(populate);
-
-      const eligibleVouchers = vouchers.map(async voucher => {
-        const assignedTo: any = voucher?.assignedTo;
-
-        const emailRecipient = assignedTo?.email || voucher?.waitingUserEmail;
-
-        if (emailRecipient) {
-          await this.mailchimpService.sendTransactionalEmail({
-            to: emailRecipient,
-            templatedId: HebrewTemplate.VOUCHER_PROMOTIONAL,
-            mergeVars: {
-              NAME: voucher?.name,
-              VOUCHERCODE: voucher?.code,
-              VOUCHERACTUALAMOUNT: voucher?.amount,
-              VOUCHERAMOUNT: voucher?.remainingAmount,
-            },
-          });
-
-          const promoDetails = {
-            promoName: body.promoName,
-            date: new Date(),
-          };
-
-          await this.VoucherModel.updateOne(
-            { _id: voucher._id },
-            {
-              $push: { promoDetails },
-            },
-          );
-
-          this.logger.info('[VOUCHER]: SPECIAL OFFER EMAIL SENT TO VOUCHER', {
-            message: voucher,
-          });
-        }
-
-        return voucher;
-      });
-
-      const results = await Promise.allSettled(eligibleVouchers);
-
-      this.logger.info(
-        '[VOUCHER]: All emails sent successfully for special event',
-        {
-          count: results.length,
-        },
-      );
-
-      return { message: 'Emails sent successfully', count: results?.length };
-    } catch (err) {
-      this.logger.error(
-        '[VOUCHER]: FAILED TO SEND EMAIL SPECIAL OFFER TO VOUCHERS',
-        {
-          err: err.message,
-        },
-      );
-      exceptionHandling(err);
-    }
+    await this.mailchimpService.sendTransactionalEmail({
+      to: email,
+      templatedId: DynamicEmailTemplate.VoucherPurchase,
+      mergeVars: {
+        ...emailFields,
+        USER_NAME: BUYERNAME,
+        VOUCHER_LIST,
+        BUTTON_LINK: link,
+        CHANGE_SETTINGS_LINK: link,
+        BANNER_IMG: `${bucketUrl}Gift%20card.png`,
+        FOOTER_LINK1: campaign?.link,
+        GREETINGS,
+      },
+    });
   }
 }

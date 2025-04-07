@@ -77,4 +77,11 @@ export class CreateOrderDto {
   @IsNotEmpty()
   @ApiProperty()
     deliveryFee: number;
+
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty({
+    required: true,
+  })
+    identifierId: string;
 }

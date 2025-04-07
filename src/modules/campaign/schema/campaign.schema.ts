@@ -9,6 +9,7 @@ import { DMO } from 'src/modules/dmo/schema/dmo.schema';
 import { ExternalApi } from 'src/modules/external-api/schema/external-api.schema';
 import { Product } from 'src/modules/products/schema/products.schema';
 import { Rewards } from 'src/modules/rewards/schema/rewards.schema';
+import { Theme } from 'src/modules/themes/schema/theme.schema';
 
 @Schema({})
 export class Campaign extends AuditableSchema {
@@ -62,28 +63,21 @@ export class Campaign extends AuditableSchema {
 
   @Prop({
     type: [{ type: mongoose.Schema.Types.ObjectId, ref: DMO.name }],
+    ref: DMO.name,
     required: false,
   })
     dmoIds: mongoose.Types.ObjectId[];
 
   @Prop({
-    type: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: Business ? Business.name : 'Business',
-      },
-    ],
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: Business.name }],
+    ref: Business.name,
     required: false,
   })
     businessIds: mongoose.Types.ObjectId[];
 
   @Prop({
-    type: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: Product ? Product.name : 'Product',
-      },
-    ],
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: Product.name }],
+    ref: Product.name,
     required: false,
   })
     productIds: mongoose.Types.ObjectId[];
@@ -97,9 +91,17 @@ export class Campaign extends AuditableSchema {
 
   @Prop({
     type: [{ type: mongoose.Schema.Types.ObjectId, ref: BussCategory.name }],
+    ref: BussCategory.name,
     required: false,
   })
     categoryIds: mongoose.Types.ObjectId[];
+
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    ref: Theme.name,
+    required: false,
+  })
+    themeId: mongoose.Types.ObjectId;
 }
 export type CampaignDocument = HydratedDocument<Campaign>;
 export const CampaignSchema = SchemaFactory.createForClass(Campaign);
