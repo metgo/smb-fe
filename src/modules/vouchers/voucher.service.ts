@@ -51,10 +51,9 @@ import {
 } from 'src/modules/vouchers/queries';
 import { ConfigService } from 'src/services/config/config.service';
 import { RewardsService } from 'src/modules/rewards/rewards.service';
-import { ExternalApiServices } from 'src/modules/external-api/external-api.service';
 import { CartService } from 'src/modules/cart/cart.service';
 import { SmsService } from 'src/services/sms/sms.service';
-import { FindByIdAndPopulateQuery } from '../campaign/queries/find-by-id-and-populate.query';
+import { FindByIdAndPopulateQuery } from '../external-api/queries/find-by-id-and-populate.query';
 import { getCommonEmailFields } from 'src/common/utils/email/common-fields';
 
 @Injectable()
@@ -66,7 +65,6 @@ export class VoucherService {
     private readonly VoucherModel: Model<Voucher>,
     private readonly configService: ConfigService,
     private readonly campaignService: CampaignService,
-    private readonly externalApiServices: ExternalApiServices,
     private readonly orderService: OrdersService,
     private readonly smsService: SmsService,
     private readonly rewardService: RewardsService,
@@ -947,10 +945,13 @@ export class VoucherService {
       });
       // send emails
 
-      const campaign = await this.queryBus.execute(
-        new FindByIdAndPopulateQuery(voucherDetails[0].campId.toString(), {
-          externalApi: true,
-        }),
+      const externalApi = await this.queryBus.execute(
+        new FindByIdAndPopulateQuery(
+          voucherDetails[0]?.externalApiId?.toString(),
+          {
+            theme: true,
+          },
+        ),
       );
 
       const voucherCodesForEmail = voucherDetails.map(doc => doc.code);
@@ -969,7 +970,7 @@ export class VoucherService {
           voucherDetails[0]?.assigneeInfo?.name,
           voucherDetails[0].amount,
           voucherCodesForEmail,
-          campaign,
+          externalApi,
           link,
           voucherDetails[0].message || '',
         );
@@ -1669,38 +1670,43 @@ export class VoucherService {
     return unGroupedVouchers;
   }
 
-  private async sendVoucherPurchaseEmail(
+  async sendVoucherPurchaseEmail(
     email: string,
     BUYERNAME: string,
     VOUCHERAMOUNT: number,
     VOUCHERCODE: string[],
-    campaign: any,
+    externalApi: any,
     link: string,
     GREETINGS?: string,
   ) {
     const { bucketUrl, emailFields } = getCommonEmailFields(
-      campaign?.externalApiId?.identifierId,
-      campaign?.externalApiId?.themeId,
+      externalApi?.identifierId,
+      externalApi?.themeId,
     );
 
-    const emailColor
-      = campaign?.externalApiId?.themeId?.secondaryColor || '#F4F7F5';
+    const emailColor = externalApi?.themeId?.secondaryColor || '#F4F7F5';
     const formattedExpiryDate = twoYearExpireDate()
       .toLocaleDateString('en-GB')
       .replace(/(\d{4})/, year => year.slice(-2));
     const VOUCHER_LIST = VOUCHERCODE.map(
       voucher => `
-        <div style="background-color: ${emailColor}; padding: 4px; border-radius: 10px; margin-bottom: 10px;">
-          <strong>סך השובר:</strong> ${VOUCHERAMOUNT} ₪<br />
-          <strong>מקבל התו:</strong> ${voucher} <br />
-          <span>תוקף השובר <strong>${formattedExpiryDate}</strong> ( כשנתיים מהיום) </span>
-        </div>
+      <div style="background-color: ${emailColor}; padding: 10px; border-radius: 10px; margin-bottom: 10px;">
+      <span style="display: block; margin-bottom: 10px;">
+        <strong>קוד שובר:</strong> ${voucher}
+      </span>
+      <span style="display: block; margin-bottom: 10px;">
+        <strong>סך השובר:</strong> ₪${VOUCHERAMOUNT}
+      </span>
+      <span style="display: block; margin-bottom: 10px;">
+        תוקף השובר <strong>${formattedExpiryDate}</strong> (כשנתיים מהיום)
+      </span>
+    </div>
         `,
     ).join('');
 
     await this.mailchimpService.sendTransactionalEmail({
       to: email,
-      templatedId: DynamicEmailTemplate.VoucherPurchase,
+      templatedId: DynamicEmailTemplate.PurchaseVoucher,
       mergeVars: {
         ...emailFields,
         USER_NAME: BUYERNAME,
@@ -1708,7 +1714,7 @@ export class VoucherService {
         BUTTON_LINK: link,
         CHANGE_SETTINGS_LINK: link,
         BANNER_IMG: `${bucketUrl}Gift%20card.png`,
-        FOOTER_LINK1: campaign?.link,
+        FOOTER_LINK1: externalApi?.themeId?.websiteUrl,
         GREETINGS,
       },
     });

@@ -54,7 +54,8 @@ export const DynamicHebrewTemplate = {
 export const DynamicEmailTemplate = {
   CreateBusiness: 'create-a-new-business-email',
   CancelOrderForCustomer: 'order-cancellation-in-client-side',
-  VoucherPurchase: 'offline-voucher',
+  OfflineVoucherPurchase: 'offline-voucher',
+  PurchaseVoucher: 'purchasing-multiple-vouchers',
   OrderConfirmationForClient: 'order-confirmation-client-side-en',
   OrderConfirmationForVendor: 'order-sent-to-business-owner',
 };
