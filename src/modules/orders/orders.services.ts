@@ -903,6 +903,26 @@ export class OrdersService {
       businessIds,
     );
 
+    const { bucketUrl, emailFields } = getCommonEmailFields(
+      externalApi.identifierId,
+      externalApi.themeId,
+    );
+
+    const orderEmailFields = {
+      ...emailFields,
+      BUTTON_LINK: externalApi?.themeId?.websiteUrl,
+      BANNER_IMG: `${bucketUrl}footer/banner-web.png`,
+      MOBILE_BANNER_IMG: `${bucketUrl}footer/banner-mobile.png`,
+      FOOTER_LINK1: externalApi?.themeId?.websiteUrl,
+      BUSINESSNAME: businessDetails[0]?.name || '',
+      BUSINESSPHONE:
+        `${businessDetails[0]?.countryCode}-${businessDetails[0]?.phoneNumber}`
+        || '',
+      BUSINESSEMAIL: businessDetails[0]?.busiEmail || '',
+      TOTALAMOUNT: order?.totalAmount,
+      BUYERNAME: order?.firstName,
+    };
+
     const productsHtml = productInfo
       .map(product => {
         const matchingProduct = orderProduct.find(
@@ -941,56 +961,73 @@ export class OrdersService {
         `;
       })
       .join('');
-
-    const { bucketUrl, emailFields } = getCommonEmailFields(
-      externalApi.identifierId,
-      externalApi.themeId,
-    );
-
-    const orderEmailFields = {
-      ...emailFields,
-      BUTTON_LINK: externalApi?.themeId?.websiteUrl,
-      CHANGE_SETTINGS_LINK: externalApi?.themeId?.websiteUrl,
-      BANNER_IMG: `${bucketUrl}footer/banner-web.png`,
-      MOBILE_BANNER_IMG: `${bucketUrl}footer/banner-mobile.png`,
-      FOOTER_LINK1: externalApi?.themeId?.websiteUrl,
-      BUSINESSNAME: businessDetails[0]?.name || '',
-      BUSINESSPHONE:
-        `${businessDetails[0]?.countryCode}-${businessDetails[0]?.phoneNumber}`
-        || '',
-      BUSINESSEMAIL: businessDetails[0]?.busiEmail || '',
-      PRODUCTS_HTML: productsHtml,
-    };
     await this.mailchimpService.sendTransactionalEmail({
       to: order?.email,
       templatedId: DynamicEmailTemplate.OrderConfirmationForClient,
       mergeVars: {
         ...orderEmailFields,
-        BUYERNAME: order?.firstName,
-        TOTALAMOUNT: order?.totalAmount,
+        PRODUCTS_HTML: productsHtml,
+        CHANGE_SETTINGS_LINK: externalApi?.themeId?.websiteUrl,
         BUSINESSADDRESS: businessDetails[0]?.address?.location || '',
         QRCODEURL: order?.qrCodeUrl || '',
       },
     });
 
-    const DATE_A_WEEK_FROM_TODAY = new Date(
-      Date.now() + 7 * 24 * 60 * 60 * 1000,
-    )
-      .toLocaleDateString('en-GB')
-      .replace(/(\d{4})/, year => year.slice(-2));
-
     // SEND TO BUSINESS OWNER
     await Promise.all(
       businessDetails.map(async business => {
-        if (!business?.busiEmail) return;
+        const relevantProducts = productInfo.filter(
+          product => product.businessId.toString() === business._id.toString(),
+        );
+
+        const productsHtmlForEchBusiness = relevantProducts
+          .map(product => {
+            const matchingProduct = orderProduct.find(
+              p => p.productId.toString() === product._id.toString(),
+            );
+            return `
+            <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom: 20px;">
+            <tr>
+              <td style="padding: 10px; background: #f3f8f5; direction: rtl; border-radius: 20px;">
+                <table cellpadding="0" cellspacing="0" border="0" width="100%">
+                  <tr>
+                    <td style="padding: 0; vertical-align: middle;">
+                      <img src="${product.images?.[0]?.image || ''}" alt="${
+  product?.name
+}"
+                        style="max-width: 100px; height: 100px; margin-left: 10px; display: block;">
+                    </td>
+                    <td style="padding: 0 10px; vertical-align: middle;" width="100%">
+                      <span
+                        style="display: block; font-size: 16px; color: #333333;">${
+  product?.name
+}</span>
+                      <span style="display: block; font-size: 14px; color: #666666;">כמות:
+                        ${matchingProduct?.quantity || 1}</span>
+                    </td>
+                    <td style="padding: 0; vertical-align: middle; white-space: nowrap;">
+                      <span dir="rtl" style="font-size: 16px; color: #333333;">₪${
+  product?.price?.sellingPrice || ''
+}</span>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+            `;
+          })
+          .join('');
+
         await this.mailchimpService.sendTransactionalEmail({
           to: business?.busiEmail,
           templatedId: DynamicEmailTemplate.OrderConfirmationForVendor,
           mergeVars: {
             ...orderEmailFields,
-            ORDER_NUMBER: order?._id,
-            DATE_A_WEEK_FROM_TODAY,
-            TOTAL_ORDER_AMOUNT: order?.totalAmount,
+            PRODUCTS_HTML: productsHtmlForEchBusiness,
+            PLATFORM_NAME: externalApi?.name,
+            BUYER_PHONE_NUMBER: order.phone,
+            BUYER_ORDER_EMAIL: order.email,
           },
         });
       }),

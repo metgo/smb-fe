@@ -23,6 +23,9 @@ export class ExternalApi extends AuditableSchema {
     address: string;
   };
 
+  @Prop({ default: null })
+    name: string;
+
   @Prop({ unique: true, type: String, required: true })
     identifierId: string;
 

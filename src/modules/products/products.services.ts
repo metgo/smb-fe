@@ -218,31 +218,33 @@ export class ProductsService {
       };
     }
 
-    if (businessId) {
-      findQuery = {
-        ...findQuery,
-        businessId,
-      };
-    }
+    const orConditions = [];
 
     if (campDetails?.dmoIds?.length) {
-      findQuery = {
-        ...findQuery,
-        dmoId: { $in: campDetails.dmoIds },
-      };
+      orConditions.push({ dmoId: { $in: campDetails.dmoIds } });
     }
 
     if (campDetails?.businessIds?.length) {
-      findQuery = {
-        ...findQuery,
-        businessId: { $in: campDetails.businessIds },
-      };
+      orConditions.push({ businessId: { $in: campDetails.businessIds } });
     }
 
     if (campDetails?.productIds?.length) {
+      orConditions.push({ _id: { $in: campDetails.productIds } });
+    }
+
+    if (orConditions.length) {
       findQuery = {
         ...findQuery,
-        _id: { $in: campDetails.productIds },
+        $or: orConditions,
+      };
+    }
+
+    if (businessId) {
+      const businessIds = Array.isArray(businessId) ? businessId : [businessId];
+
+      findQuery = {
+        ...findQuery,
+        businessId: { $in: businessIds },
       };
     }
 

@@ -56,5 +56,5 @@ export const DynamicEmailTemplate = {
   CancelOrderForCustomer: 'order-cancellation-in-client-side',
   VoucherPurchase: 'offline-voucher',
   OrderConfirmationForClient: 'order-confirmation-client-side-en',
-  OrderConfirmationForVendor: 'order-sent-to-purchaser',
+  OrderConfirmationForVendor: 'order-sent-to-business-owner',
 };
