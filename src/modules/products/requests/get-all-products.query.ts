@@ -11,10 +11,13 @@ export class GetAllProductsQuery extends CommonFilterQuery {
   @IsNotEmpty()
     campCode: string;
 
-  @ApiProperty({ type: String, required: false })
-  @IsString()
+  @ApiProperty({
+    required: false,
+    isArray: true,
+    type: String,
+  })
   @IsOptional()
-    businessId: string;
+    businessId: string[];
 
   @ApiProperty({
     required: false,
