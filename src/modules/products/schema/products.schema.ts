@@ -200,3 +200,5 @@ export class Product extends AuditableSchema {
 export type Products = HydratedDocument<Product>;
 
 export const ProductSchema = SchemaFactory.createForClass(Product);
+
+ProductSchema.index({ subCategories: 1, status: 1 });

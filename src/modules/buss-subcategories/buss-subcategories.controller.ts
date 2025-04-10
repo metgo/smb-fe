@@ -6,16 +6,19 @@ import {
   Param,
   Query,
 } from '@nestjs/common';
+import { QueryBus } from '@nestjs/cqrs';
 
 import { ServerSuccess } from 'src/common/constant';
 import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
 import { BussSubCategoriesService } from './buss-subcategories.service';
-import { GetAllSubCategoriesQuery } from './queries/get-all-subcategories.query';
 import { GetSubCategoryQuery } from './queries/get-subcategory.query';
+import { GetAllSubCategoriesRequest } from './requests/get-all-subcategories.request';
+import { GetAllSubCategoriesQuery } from './queries/get-all-subcategories.query';
 
 @Controller()
 export class BussSubCategoriesController {
   constructor(
+    private readonly queryBus: QueryBus,
     private readonly bussSubCategoriesService: BussSubCategoriesService,
   ) {}
 
@@ -29,8 +32,10 @@ export class BussSubCategoriesController {
   })
   @HttpCode(HttpStatus.OK)
   @Get('subcategory')
-  async getAll(@Query() query: GetAllSubCategoriesQuery) {
-    const bussSubCategories = await this.bussSubCategoriesService.getAll(query);
+  async getAll(@Query() query: GetAllSubCategoriesRequest) {
+    const bussSubCategories = await this.queryBus.execute(
+      new GetAllSubCategoriesQuery(query),
+    );
 
     return bussSubCategories;
   }
