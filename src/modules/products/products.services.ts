@@ -205,9 +205,13 @@ export class ProductsService {
     let findQuery: any = {
       status: ProductStatus.ACTIVE,
       isDeleted: false,
-      $or: [
-        { 'quantity.remaining': { $gt: 0 } },
-        { 'quantity.isUnlimited': true },
+      $and: [
+        {
+          $or: [
+            { 'quantity.remaining': { $gt: 0 } },
+            { 'quantity.isUnlimited': true },
+          ],
+        },
       ],
     };
 
@@ -235,7 +239,12 @@ export class ProductsService {
     if (orConditions.length) {
       findQuery = {
         ...findQuery,
-        $or: orConditions,
+        $and: [
+          ...findQuery.$and,
+          {
+            $or: orConditions,
+          },
+        ],
       };
     }
 
@@ -334,11 +343,16 @@ export class ProductsService {
 
       findQuery = {
         ...findQuery,
-        $or: [
-          { name: { $regex: search, $options: 'i' } },
-          { description: { $regex: search, $options: 'i' } },
-          { authorityId: { $in: matchingAuthorityIds } },
-          { businessId: { $in: matchingBusinessIds } },
+        $and: [
+          ...findQuery.$and,
+          {
+            $or: [
+              { name: { $regex: search, $options: 'i' } },
+              { description: { $regex: search, $options: 'i' } },
+              { authorityId: { $in: matchingAuthorityIds } },
+              { businessId: { $in: matchingBusinessIds } },
+            ],
+          },
         ],
       };
     }
