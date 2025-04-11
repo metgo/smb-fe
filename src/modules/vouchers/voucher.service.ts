@@ -1402,7 +1402,7 @@ export class VoucherService {
     const orderDetail = await this.orderService.findOneById(orderId);
 
     const rewardDetail = await this.campaignService.findRewardByCampId(
-      orderDetail.campId,
+      orderDetail.campId.toString(),
     );
 
     // create voucher

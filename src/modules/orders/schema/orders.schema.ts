@@ -3,6 +3,7 @@ import mongoose, { HydratedDocument } from 'mongoose';
 
 import { PaymentStatus } from 'src/common/enum';
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
+import { Campaign } from 'src/modules/campaign/schema/campaign.schema';
 import { ExternalApi } from 'src/modules/external-api/schema/external-api.schema';
 import { OrderStatus, PaymentMode } from 'src/modules/orders/orders.type';
 import { Product } from 'src/modules/products/schema/products.schema';
@@ -94,8 +95,12 @@ export class Order extends AuditableSchema {
   @Prop({ type: Number, default: 0 })
     deliveryFee: number;
 
-  @Prop({ default: null })
-    campId: string;
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    ref: Campaign.name,
+    required: false,
+  })
+    campId: mongoose.Types.ObjectId;
 
   @Prop({
     type: String,
