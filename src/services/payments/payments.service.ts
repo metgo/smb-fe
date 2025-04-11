@@ -318,7 +318,7 @@ export class PaymentsService {
         message: payments,
       });
 
-      if (payments.purpose === PaymentPurpose.VOUCHER) {
+      if (payments?.purpose === PaymentPurpose.VOUCHER) {
         await this.voucherService.updateAfterPaymentFailure({
           ids: payments.voucherId,
           updateField: { paymentStatus: VoucherPaymentStatus.FAILED },
@@ -326,7 +326,7 @@ export class PaymentsService {
         });
       }
 
-      if (payments.purpose === PaymentPurpose.ORDER) {
+      if (payments?.purpose === PaymentPurpose.ORDER) {
         await this.ordersService.updateAfterPaymentFailure(payments.orderId);
       }
     } catch (err) {
@@ -344,7 +344,7 @@ export class PaymentsService {
     const { API_NAME, API_PASSWORD, INVOICE_URL } = this.configService.cardCom;
 
     const invoiceLines = [];
-    if (command.purpose === PaymentPurpose.VOUCHER) {
+    if (command?.purpose === PaymentPurpose.VOUCHER) {
       command.voucherDetails.forEach(voucher => {
         invoiceLines.push({
           Description: voucher?.code,
@@ -356,7 +356,7 @@ export class PaymentsService {
         });
       });
     }
-    if (command.purpose === PaymentPurpose.ORDER) {
+    if (command?.purpose === PaymentPurpose.ORDER) {
       command.product.forEach(product => {
         invoiceLines.push({
           Description: product?.name,

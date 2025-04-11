@@ -238,6 +238,7 @@ export class OrdersService {
   ) {
     const orderWithQR = new this.OrderModel({
       ...command,
+      externalApiId: command?.externalApi?._id,
       paymentStatus: PaymentStatus.PENDING,
       paymentMode:
         totalAmount === actualAmountOfProduct
@@ -456,9 +457,6 @@ export class OrdersService {
       });
 
       const cart = await this.cartService.updateCartPostPayment(orderId);
-      const externalApi = await this.externalApiService.findByIdentifierId(
-        updateOrder.externalApiId.toString(),
-      );
 
       const findCartProducts = cart?.product;
 
@@ -468,6 +466,7 @@ export class OrdersService {
         = await this.productsService.getProductInformationForOrders(
           updateOrder.products,
         );
+
       const orderProduct = await Promise.all(
         updateOrder.products.map(async product => {
           const cartItem = findCartProducts.find(
@@ -500,6 +499,10 @@ export class OrdersService {
             orderId: updateOrder.id,
           });
         }),
+      );
+
+      const externalApi = await this.externalApiService.findByIdentifierId(
+        updateOrder?.externalApiId?.toString(),
       );
 
       await this.sendEmailPostOrderPayment(
