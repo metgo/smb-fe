@@ -66,6 +66,14 @@ implements ICommandHandler<GetAllSubCategoriesQuery> {
         return [];
       }
 
+      if (
+        !campDetails.categoryIds.includes(
+          new mongoose.Types.ObjectId(bussCategoryId),
+        )
+      ) {
+        return [];
+      }
+
       let findQueryProduct: any = {
         subCategories: { $exists: true, $ne: [] },
         status: ProductStatus.ACTIVE,
@@ -177,43 +185,36 @@ implements ICommandHandler<GetAllSubCategoriesQuery> {
         };
       }
 
-      const subCategoryIds = await this.ProductModel.distinct('subCategories', {
-        ...findQueryProduct,
+      const rawSubCategoryIds = await this.ProductModel.distinct(
+        'subCategories',
+        {
+          ...findQueryProduct,
+        },
+      );
+
+      const subCategoryIds = rawSubCategoryIds.map(item => {
+        if (item && typeof item === 'object' && '$oid' in item) {
+          return new mongoose.Types.ObjectId(item.$oid);
+        }
+        return new mongoose.Types.ObjectId(item);
       });
 
       if (!subCategoryIds) {
         return [];
       }
 
-      let findQuery: any = { _id: { $in: subCategoryIds } };
-
-      let categoryIds = campDetails?.categoryIds;
-
-      if (bussCategoryId) {
-        if (
-          !campDetails.categoryIds.includes(
-            new mongoose.Types.ObjectId(bussCategoryId),
-          )
-        ) {
-          return [];
-        }
-        categoryIds = [new mongoose.Types.ObjectId(bussCategoryId)];
-      }
-
-      findQuery = {
-        ...findQuery,
-        bussCategoryId: { $in: categoryIds },
+      const findQuery: any = {
+        _id: { $in: subCategoryIds },
+        bussCategoryId: { $in: bussCategoryId },
       };
 
       const queryPage = page ? Number(page) : null;
       const queryLimit = limit ? Number(limit) : null;
 
       const select = '_id name hebrewName';
-      // eslint-disable-next-line prefer-const
       const populate = {
         path: 'bussCategoryId',
         select,
-        match: { delatedAt: { $in: [false, null] } },
       };
 
       const bussSubCategory = await queryhandler<BussSubCategory>(
