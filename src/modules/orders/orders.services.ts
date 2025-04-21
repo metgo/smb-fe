@@ -501,9 +501,10 @@ export class OrdersService {
         }),
       );
 
-      const externalApi = await this.externalApiService.findByIdentifierId(
-        updateOrder?.externalApiId?.toString(),
-      );
+      const externalApi
+        = await this.externalApiService.findByIdAndPopulateTheme(
+          updateOrder?.externalApiId?.toString(),
+        );
 
       await this.sendEmailPostOrderPayment(
         getProductInformation,

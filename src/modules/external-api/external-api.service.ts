@@ -209,7 +209,7 @@ export class ExternalApiServices {
     }
   }
 
-  async findByIdAndPopulateThem(id: string) {
+  async findByIdAndPopulateTheme(id: string) {
     try {
       const populate = {
         path: 'themeId',
