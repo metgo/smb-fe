@@ -158,7 +158,15 @@ export class PaymentsService {
 
   async paymentSucess(query, languagePreference) {
     try {
-      const pageRequestUid = query?.LowProfileId;
+      const paymentRequestId = query?.LowProfileId;
+
+      const existingPayment = await this.PaymentModel.findOne({
+        paymentRequestId,
+      });
+
+      if (existingPayment.status === PaymentStatus.SUCCESS) {
+        return;
+      }
 
       const updateField = {
         status: PaymentStatus.SUCCESS,
@@ -168,7 +176,7 @@ export class PaymentsService {
       const payments = await update<Payment>(
         this.PaymentModel,
         'paymentRequestId',
-        pageRequestUid,
+        paymentRequestId,
         updateField,
       );
 
@@ -201,7 +209,7 @@ export class PaymentsService {
           customerEmail: payments?.customerEmail,
           invoiceType: 3,
           voucherDetails,
-          transactionId: pageRequestUid,
+          transactionId: paymentRequestId,
           purpose: PaymentPurpose.VOUCHER,
           sumPaid: payments?.amount,
           languagePreference,
@@ -234,7 +242,7 @@ export class PaymentsService {
                 name: getProductInformation[0]?.name,
               },
             ],
-            transactionId: pageRequestUid,
+            transactionId: paymentRequestId,
             purpose: PaymentPurpose.ORDER,
             sumPaid: payments?.amount,
             languagePreference,
@@ -277,7 +285,7 @@ export class PaymentsService {
             customerEmail: payments?.customerEmail,
             invoiceType: 101,
             product,
-            transactionId: pageRequestUid,
+            transactionId: paymentRequestId,
             purpose: PaymentPurpose.ORDER,
             sumPaid: updateOrder?.totalAmount,
             languagePreference,
@@ -301,7 +309,7 @@ export class PaymentsService {
 
   async PaymentFailure(query) {
     try {
-      const pageRequestUid = query?.lowprofilecode;
+      const pageRequestUid = query?.LowProfileId;
 
       const updateField = {
         status: PaymentStatus.FAILURE,
