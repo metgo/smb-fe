@@ -22,6 +22,9 @@ import {
   AuthoritySchema,
 } from '../authority/schema/authority.schema';
 import { GetAllProductsForMapHandler } from './queries/handler/get-all-products-for-map.handler';
+import { GetAllProductsRawQueryHandler } from './queries/handler/get-all-products-raw-query.handler';
+import { GetAllProductsHandler } from './queries/handler/get-all-products.handler';
+import { GetProductsDeliveryHandler } from './queries/handler/get-products-delivery.handler';
 
 @Module({
   imports: [
@@ -49,7 +52,13 @@ import { GetAllProductsForMapHandler } from './queries/handler/get-all-products-
     forwardRef(() => CampaignModule),
     forwardRef(() => ExternalApiModule),
   ],
-  providers: [ProductsService, GetAllProductsForMapHandler],
+  providers: [
+    ProductsService,
+    GetAllProductsHandler,
+    GetAllProductsForMapHandler,
+    GetAllProductsRawQueryHandler,
+    GetProductsDeliveryHandler,
+  ],
   controllers: [ProductsController],
   exports: [ProductsService],
 })

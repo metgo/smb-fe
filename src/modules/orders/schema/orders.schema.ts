@@ -26,6 +26,7 @@ export class Order extends AuditableSchema {
         id: { type: mongoose.Schema.Types.ObjectId, ref: Product.name },
       },
     ],
+    _id: false,
     default: null,
   })
     products: {

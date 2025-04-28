@@ -13,15 +13,20 @@ import { ApiNotFoundResponse } from '@nestjs/swagger';
 import { ServerErrors, ServerSuccess } from 'src/common/constant';
 import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
 import { ProductsService } from 'src/modules/products/products.services';
-import { GetAllProductsQuery } from 'src/modules/products/requests/get-all-products.query';
-import { GetProductsQuery } from 'src/modules/products/queries/get-product.query';
-import { GetAllProductsForMapQuery } from './queries/get-all-products-for-map.query';
+import { GetAllProductsRequest } from 'src/modules/products/requests/get-all-products.query';
+import {
+  GetProductsQuery,
+  GetAllProductsQuery,
+  GetAllProductsForMapQuery,
+} from 'src/modules/products/queries';
+import { GetProductsDeliveryRequest } from './requests/get-products-delivery.query';
+import { GetProductsDeliveryQuery } from './queries/get-products-delivery-info.query';
 
 @Controller()
 export class ProductsController {
   constructor(
-    private productsService: ProductsService,
     private readonly queryBus: QueryBus,
+    private productsService: ProductsService,
   ) {}
 
   @ApiEndpoint({
@@ -62,9 +67,12 @@ export class ProductsController {
   })
   @HttpCode(HttpStatus.OK)
   @Get('/products')
-  async getAllProducts(@Query() query: GetAllProductsQuery) {
-    const product = await this.productsService.getAllProducts(query);
-    return product;
+  async getAllProducts(@Query() query: GetAllProductsRequest) {
+    const products = await this.queryBus.execute(
+      new GetAllProductsQuery(query),
+    );
+
+    return products;
   }
 
   @ApiEndpoint({
@@ -78,9 +86,28 @@ export class ProductsController {
   })
   @HttpCode(HttpStatus.OK)
   @Get('/map-products')
-  async getAllProductsForMap(@Query() query: GetAllProductsQuery) {
+  async getAllProductsForMap(@Query() query: GetAllProductsRequest) {
     const products = await this.queryBus.execute(
       new GetAllProductsForMapQuery(query),
+    );
+
+    return products;
+  }
+
+  @ApiEndpoint({
+    tags: ['Products'],
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.PRODUCTS.LISTED,
+    },
+    operation: 'Get all products delivery info',
+    softBlockExtraDtoFields: true,
+  })
+  @HttpCode(HttpStatus.OK)
+  @Get('/products-delivery')
+  async getAllProductsDelivery(@Query() query: GetProductsDeliveryRequest) {
+    const products = await this.queryBus.execute(
+      new GetProductsDeliveryQuery(query),
     );
 
     return products;

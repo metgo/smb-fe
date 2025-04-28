@@ -81,6 +81,9 @@ export class OrdersService {
     loggedInUser?: LoggedInUserInterface,
   ): Promise<any> {
     try {
+      if (!body.email && !body.phone) {
+        throw new BadRequestException('Please enter email or phone');
+      }
       const cartDetails = await this.cartService.findOneById(body.cartId);
 
       if (
@@ -923,59 +926,103 @@ export class OrdersService {
         `${businessDetails[0]?.countryCode}-${businessDetails[0]?.phoneNumber}`
         || '',
       BUSINESSEMAIL: businessDetails[0]?.busiEmail || '',
-      TOTALAMOUNT: order?.totalAmount,
-      BUYERNAME: order?.firstName,
     };
 
-    const productsHtml = productInfo
-      .map(product => {
-        const matchingProduct = orderProduct.find(
-          p => p.productId.toString() === product._id.toString(),
-        );
-        return `
-        <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom: 20px;">
-        <tr>
-          <td style="padding: 10px; background: #f3f8f5; direction: rtl; border-radius: 20px;">
-            <table cellpadding="0" cellspacing="0" border="0" width="100%">
+    type EmailOrderGroup = {
+      buyerName: string;
+      products: {
+        quantity: number;
+        image?: any;
+        name: string;
+        price: number;
+      }[];
+      totalAmount: number;
+    };
+
+    const emailToProductsMap: { [email: string]: EmailOrderGroup } = {};
+
+    orderProduct.forEach(orderItem => {
+      const { email } = orderItem;
+      const product = productInfo.find(
+        p => p._id.toString() === orderItem.productId.toString(),
+      );
+
+      if (!product) return;
+
+      if (!emailToProductsMap[email]) {
+        emailToProductsMap[email] = {
+          buyerName: orderItem.firstName,
+          products: [],
+          totalAmount: 0,
+        };
+      }
+
+      const price = orderItem?.amount || product?.price?.sellingPrice;
+      const quantity = orderItem?.quantity || 1;
+
+      emailToProductsMap[email].products.push({
+        quantity,
+        image: product?.images[0]?.image,
+        name: product?.name,
+        price,
+      });
+
+      emailToProductsMap[email].totalAmount += price * quantity;
+    });
+
+    await Promise.all(
+      Object.entries(emailToProductsMap).map(async ([email, group]) => {
+        const productsHtml = group.products
+          .map(
+            product => `
+            <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom: 20px;">
               <tr>
-                <td style="padding: 0; vertical-align: middle;">
-                  <img src="${product.images?.[0]?.image || ''}" alt="${
+                <td style="padding: 10px; background: #f3f8f5; direction: rtl; border-radius: 20px;">
+                  <table cellpadding="0" cellspacing="0" border="0" width="100%">
+                    <tr>
+                      <td style="padding: 0; vertical-align: middle;">
+                        <img src="${product?.image || ''}" alt="${
   product?.name
 }"
-                    style="max-width: 100px; height: 100px; margin-left: 10px; display: block;">
-                </td>
-                <td style="padding: 0 10px; vertical-align: middle;" width="100%">
-                  <span
-                    style="display: block; font-size: 16px; color: #333333;">${
+                          style="max-width: 100px; height: 100px; margin-left: 10px; display: block;">
+                      </td>
+                      <td style="padding: 0 10px; vertical-align: middle;" width="100%">
+                        <span style="display: block; font-size: 16px; color: #333333;">${
   product?.name
 }</span>
-                  <span style="display: block; font-size: 14px; color: #666666;">כמות:
-                    ${matchingProduct?.quantity || 1}</span>
-                </td>
-                <td style="padding: 0; vertical-align: middle; white-space: nowrap;">
-                  <span dir="rtl" style="font-size: 16px; color: #333333;">₪${
-  product?.price?.sellingPrice || ''
+                        <span style="display: block; font-size: 14px; color: #666666;">כמות: ${
+  product?.quantity
 }</span>
+                      </td>
+                      <td style="padding: 0; vertical-align: middle; white-space: nowrap;">
+                        <span dir="rtl" style="font-size: 16px; color: #333333;">₪${
+  product?.price
+}</span>
+                      </td>
+                    </tr>
+                  </table>
                 </td>
               </tr>
             </table>
-          </td>
-        </tr>
-      </table>
-        `;
-      })
-      .join('');
-    await this.mailchimpService.sendTransactionalEmail({
-      to: order?.email,
-      templatedId: DynamicEmailTemplate.OrderConfirmationForClient,
-      mergeVars: {
-        ...orderEmailFields,
-        PRODUCTS_HTML: productsHtml,
-        CHANGE_SETTINGS_LINK: externalApi?.themeId?.websiteUrl,
-        BUSINESSADDRESS: businessDetails[0]?.address?.location || '',
-        QRCODEURL: order?.qrCodeUrl || '',
-      },
-    });
+            `,
+          )
+          .join('');
+
+        await this.mailchimpService.sendTransactionalEmail({
+          to: email,
+          templatedId: DynamicEmailTemplate.OrderConfirmationForClient,
+          mergeVars: {
+            ...orderEmailFields,
+            PRODUCTS_HTML: productsHtml,
+            BUYERNAME: group.buyerName,
+            TOTALAMOUNT: group.totalAmount,
+            CHANGE_SETTINGS_LINK: externalApi?.themeId?.websiteUrl,
+            BUSINESSADDRESS: businessDetails[0]?.address?.location || '',
+            QRCODEURL: order?.qrCodeUrl || '',
+          },
+        });
+      }),
+    );
 
     // SEND TO BUSINESS OWNER
     await Promise.all(
@@ -984,11 +1031,23 @@ export class OrdersService {
           product => product.businessId.toString() === business._id.toString(),
         );
 
+        let businessTotalAmount = 0;
+
         const productsHtmlForEchBusiness = relevantProducts
           .map(product => {
             const matchingProduct = orderProduct.find(
               p => p.productId.toString() === product._id.toString(),
             );
+
+            if (!matchingProduct) return '';
+
+            const quantity = matchingProduct.quantity || 1;
+            const price
+              = matchingProduct.amount || product.price?.sellingPrice || 0;
+            const totalPriceForThisProduct = quantity * price;
+
+            businessTotalAmount += totalPriceForThisProduct;
+
             return `
             <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom: 20px;">
             <tr>
@@ -1007,12 +1066,10 @@ export class OrdersService {
   product?.name
 }</span>
                       <span style="display: block; font-size: 14px; color: #666666;">כמות:
-                        ${matchingProduct?.quantity || 1}</span>
+                          ${quantity}</span>
                     </td>
                     <td style="padding: 0; vertical-align: middle; white-space: nowrap;">
-                      <span dir="rtl" style="font-size: 16px; color: #333333;">₪${
-  product?.price?.sellingPrice || ''
-}</span>
+                      <span dir="rtl" style="font-size: 16px; color: #333333;">₪${price}</span>
                     </td>
                   </tr>
                 </table>
@@ -1028,6 +1085,8 @@ export class OrdersService {
           templatedId: DynamicEmailTemplate.OrderConfirmationForVendor,
           mergeVars: {
             ...orderEmailFields,
+            TOTALAMOUNT: businessTotalAmount,
+            BUYERNAME: order?.firstName,
             PRODUCTS_HTML: productsHtmlForEchBusiness,
             PLATFORM_NAME: externalApi?.name,
             BUYER_PHONE_NUMBER: order.phone,

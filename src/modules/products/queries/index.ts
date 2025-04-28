@@ -1,2 +1,4 @@
-export * from './get-all-products-for-non-loggedIn.query';
-export * from './get-all-products-for-loggedIn.query';
+export * from './get-all-products-for-map.query';
+export * from './get-all-products-rawquery.query';
+export * from './get-all-products.query';
+export * from './get-product.query';

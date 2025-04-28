@@ -27,17 +27,17 @@ export class createVoucherDto {
     creatorCountryCode: string;
 
   @ApiProperty({
-    required: true,
+    required: false,
   })
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
     creatorPhone: string;
 
   @ApiProperty({
-    required: true,
+    required: false,
   })
   @IsEmail()
-  @IsNotEmpty()
+  @IsOptional()
     creatorEmail: string;
 
   @ApiProperty({

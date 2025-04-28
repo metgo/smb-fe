@@ -13,13 +13,11 @@ import { ObjectId } from 'typeorm';
 import { Logger } from 'winston';
 
 import { ServerErrors } from 'src/common/constant';
-import { SortOrder } from 'src/common/enum';
 import { getRandomNumberBetween } from 'src/common/utils/random-number-range';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { disSelect } from 'src/common/utils/select.handling';
 import {
   queryhandler,
-  updateManyByIds,
   updateOneByManyFields,
 } from 'src/core/helper/query-helper';
 import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interface';
@@ -27,12 +25,9 @@ import { CampaignService } from 'src/modules/campaign/campaign.service';
 import { Product } from 'src/modules/products/schema/products.schema';
 import { UploadMediaCommand } from 'src/modules/products/interface';
 import { ProductStatus } from 'src/modules/products/products.type';
-import { GetAllProductsQuery } from 'src/modules/products/requests/get-all-products.query';
 import { UserType } from 'src/modules/users/users.type';
 import { CartService } from 'src/modules/cart/cart.service';
-import { GetProductsQuery } from 'src/modules/products/queries/get-product.query';
-import { Business } from '../business/schema/business.schema';
-import { Authority } from '../authority/schema/authority.schema';
+import { GetProductsQuery } from 'src/modules/products/queries';
 
 @Injectable()
 export class ProductsService {
@@ -41,10 +36,6 @@ export class ProductsService {
     private readonly logger: Logger,
     @InjectModel(Product.name)
     private ProductModel: Model<Product>,
-    @InjectModel(Business.name)
-    private BusinessModel: Model<Business>,
-    @InjectModel(Authority.name)
-    private AuthorityModel: Model<Authority>,
     private campaignService: CampaignService,
     private cartService: CartService,
   ) {}
@@ -121,7 +112,8 @@ export class ProductsService {
 
       const populate = {
         path: 'businessId',
-        select: '_id logo name address geoLocation location openingHrs',
+        select:
+          '_id logo name address geoLocation location openingHrs isAlwaysOpen',
       };
 
       const select
@@ -169,226 +161,6 @@ export class ProductsService {
     } catch (err) {
       exceptionHandling(err);
     }
-  }
-
-  async getAllProducts(queries: GetAllProductsQuery) {
-    const {
-      campCode,
-      businessId,
-      categoriesId,
-      subCategoriesId,
-      groupTypesId,
-      accessibilitiesId,
-      priceMin,
-      priceMax,
-      search,
-      page,
-      limit,
-      sortBy,
-      sortOrder,
-      vendorDelivers,
-    } = queries;
-
-    const campDetails = await this.campaignService.findCampaignAndReturn(
-      'code',
-      campCode,
-    );
-
-    if (
-      !campDetails?.productIds?.length
-      && !campDetails?.dmoIds?.length
-      && !campDetails?.businessIds?.length
-    ) {
-      return { data: [] };
-    }
-
-    let findQuery: any = {
-      status: ProductStatus.ACTIVE,
-      isDeleted: false,
-      $and: [
-        {
-          $or: [
-            { 'quantity.remaining': { $gt: 0 } },
-            { 'quantity.isUnlimited': true },
-          ],
-        },
-      ],
-    };
-
-    if (vendorDelivers) {
-      findQuery = {
-        ...findQuery,
-        deliveryArea: { $exists: true, $ne: [], $not: { $size: 0 } },
-      };
-    }
-
-    const orConditions = [];
-
-    if (campDetails?.dmoIds?.length) {
-      orConditions.push({ dmoId: { $in: campDetails.dmoIds } });
-    }
-
-    if (campDetails?.businessIds?.length) {
-      orConditions.push({ businessId: { $in: campDetails.businessIds } });
-    }
-
-    if (campDetails?.productIds?.length) {
-      orConditions.push({ _id: { $in: campDetails.productIds } });
-    }
-
-    if (orConditions.length) {
-      findQuery = {
-        ...findQuery,
-        $and: [
-          ...findQuery.$and,
-          {
-            $or: orConditions,
-          },
-        ],
-      };
-    }
-
-    if (businessId) {
-      const businessIds = Array.isArray(businessId) ? businessId : [businessId];
-
-      findQuery = {
-        ...findQuery,
-        businessId: { $in: businessIds },
-      };
-    }
-
-    if (categoriesId) {
-      const categoriesIds = Array.isArray(categoriesId)
-        ? categoriesId
-        : [categoriesId];
-
-      findQuery = {
-        ...findQuery,
-        categories: { $in: categoriesIds },
-      };
-    }
-
-    if (subCategoriesId) {
-      const subCategoriesIds = Array.isArray(subCategoriesId)
-        ? subCategoriesId
-        : [subCategoriesId];
-
-      findQuery = {
-        ...findQuery,
-        subCategories: { $in: subCategoriesIds },
-      };
-    }
-
-    if (groupTypesId) {
-      const groupTypeIds = Array.isArray(groupTypesId)
-        ? groupTypesId
-        : [groupTypesId];
-
-      findQuery = {
-        ...findQuery,
-        groupTypesId: { $in: groupTypeIds },
-      };
-    }
-
-    if (accessibilitiesId) {
-      const accessibilitiesIds = Array.isArray(accessibilitiesId)
-        ? accessibilitiesId
-        : [accessibilitiesId];
-
-      findQuery = {
-        ...findQuery,
-        accessibilitiesId: { $in: accessibilitiesIds },
-      };
-    }
-
-    if (priceMin && priceMax) {
-      const minPrice = Number(priceMin);
-      const maxPrice = Number(priceMax);
-
-      if (maxPrice < minPrice) {
-        throw new BadRequestException('Invalid Price Range');
-      }
-
-      findQuery = {
-        ...findQuery,
-        'price.sellingPrice': {
-          $gte: minPrice,
-          $lte: maxPrice,
-        },
-      };
-    }
-
-    if (search) {
-      const [matchingBusinessIds, matchingAuthorityIds] = await Promise.all([
-        this.BusinessModel.find({
-          $or: [
-            { name: { $regex: search, $options: 'i' } },
-            { description: { $regex: search, $options: 'i' } },
-            { 'address.country': { $regex: search, $options: 'i' } },
-            { 'address.city': { $regex: search, $options: 'i' } },
-            { 'address.location': { $regex: search, $options: 'i' } },
-            {
-              'address.additional_information': {
-                $regex: search,
-                $options: 'i',
-              },
-            },
-            { 'contactDetails.address': { $regex: search, $options: 'i' } },
-          ],
-        }).select('_id'),
-        this.AuthorityModel.find({
-          name: { $regex: search, $options: 'i' },
-        }).select('_id'),
-      ]);
-
-      findQuery = {
-        ...findQuery,
-        $and: [
-          ...findQuery.$and,
-          {
-            $or: [
-              { name: { $regex: search, $options: 'i' } },
-              { description: { $regex: search, $options: 'i' } },
-              { authorityId: { $in: matchingAuthorityIds } },
-              { businessId: { $in: matchingBusinessIds } },
-            ],
-          },
-        ],
-      };
-    }
-
-    const select
-      = '_id name description images price quantity businessId categories subCategories';
-
-    const populate = [
-      {
-        path: 'businessId',
-        select: '_id logo name address geoLocation location openingHrs',
-      },
-      {
-        path: 'categories subCategories',
-        select: '_id name hebrewName',
-      },
-    ];
-
-    const productsList = await queryhandler<Product>(this.ProductModel, {
-      findQuery,
-      select,
-      page: Number(page),
-      limit: Number(limit),
-      sort: sortBy || 'createdAt',
-      sortOrder: sortOrder || SortOrder.DESC,
-      populate,
-    });
-
-    if (!productsList?.data || !productsList.data?.length) {
-      return {
-        totalData: 0,
-        products: [],
-      };
-    }
-
-    return productsList;
   }
 
   async findManyById(ids: string[]): Promise<Product[]> {
@@ -502,37 +274,6 @@ export class ProductsService {
     }
 
     return updateProduct;
-  }
-
-  async assignUserToProducts(
-    businessIds: string[],
-    assignUserId: string,
-    loggedInUserId: string,
-  ) {
-    try {
-      const productIds = await this.ProductModel.distinct('_id', {
-        businessId: { $in: businessIds },
-      });
-
-      const updatedField = {
-        primaryUserId: assignUserId,
-        updatedBy: loggedInUserId,
-      };
-      const updateProducts = await updateManyByIds<Product>(
-        this.ProductModel,
-        '_id',
-        productIds,
-        updatedField,
-      );
-
-      if (!updateProducts) {
-        throw new BadRequestException(ServerErrors.BUSINESS_NOT_FOUND);
-      }
-
-      return updateProducts;
-    } catch (err) {
-      exceptionHandling(err);
-    }
   }
 
   async getProductInformationForOrders(productInfo) {
@@ -791,5 +532,24 @@ export class ProductsService {
     }));
 
     await this.ProductModel.bulkWrite(bulkOps);
+  }
+
+  async findProductsByField(field: keyof Product, id: ObjectId[]) {
+    const products = await this.ProductModel.find({
+      [field]: { $in: id },
+      status: ProductStatus.ACTIVE,
+      deletedAt: null,
+      deletedBy: null,
+      isDeleted: false,
+      $or: [
+        { 'quantity.remaining': { $gt: 0 } },
+        { 'quantity.isUnlimited': true },
+      ],
+    }).select('_id');
+
+    if (!products) {
+      throw new NotFoundException(ServerErrors.PRODUCT.NOT_FOUND);
+    }
+    return products;
   }
 }

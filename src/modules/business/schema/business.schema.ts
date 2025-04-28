@@ -284,9 +284,6 @@ export class Business extends AuditableSchema {
   @Prop({ type: Boolean, default: false })
     isAlwaysOpen: boolean;
 
-  @Prop({ type: Boolean, default: false })
-    isOpenOnWeekends: boolean;
-
   @Prop({
     type: [{ type: mongoose.Schema.Types.ObjectId, ref: Product.name }],
     required: false,

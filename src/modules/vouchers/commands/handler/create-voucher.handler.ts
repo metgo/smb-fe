@@ -40,6 +40,12 @@ implements ICommandHandler<CreateVouchersCommand> {
         );
       }
 
+      if (!body.creatorEmail && !body.creatorPhone) {
+        throw new BadRequestException(
+          'Please enter email or phone number of sender',
+        );
+      }
+
       const campId = (
         await this.campaignService.findAndReturn('code', body.campCode)
       )._id;

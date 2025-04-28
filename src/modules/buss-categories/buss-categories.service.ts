@@ -9,12 +9,16 @@ import { GetAllCategoriesQuery } from 'src/modules/buss-categories/queries/get-a
 import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.schema';
 import { CampaignService } from 'src/modules/campaign/campaign.service';
 import { GetCategoryQuery } from 'src/modules/buss-categories/queries/get-category-query';
+import { ProductStatus } from '../products/products.type';
+import { Product } from '../products/schema/products.schema';
 
 @Injectable()
 export class BussCategoriesService {
   constructor(
     @InjectModel('BussCategory')
     private BussCategoryModel: Model<BussCategory>,
+    @InjectModel('Product')
+    private ProductModel: Model<Product>,
     private campaignService: CampaignService,
   ) {}
 
@@ -63,10 +67,27 @@ export class BussCategoriesService {
     );
 
     categories.data = await Promise.all(
-      categories?.data?.map(cat => ({
-        id: cat.id,
-        name: cat.name,
-      })),
+      categories?.data?.map(async cat => {
+        const productCount = await this.ProductModel.countDocuments({
+          status: ProductStatus.ACTIVE,
+          isDeleted: false,
+          $and: [
+            {
+              $or: [
+                { 'quantity.remaining': { $gt: 0 } },
+                { 'quantity.isUnlimited': true },
+              ],
+            },
+          ],
+          categories: cat.id,
+        });
+
+        return {
+          id: cat.id,
+          name: cat.name,
+          productCount,
+        };
+      }),
     );
 
     return categories;

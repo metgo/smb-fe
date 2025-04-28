@@ -47,11 +47,20 @@ export class ExternalApi extends AuditableSchema {
     authorityId: mongoose.Types.ObjectId;
 
   @Prop({
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Campaign' }],
+    required: false,
+  })
+    campIds: mongoose.Types.ObjectId[];
+
+  @Prop({
     type: mongoose.Schema.Types.ObjectId,
     ref: Theme.name,
     required: false,
   })
     themeId: mongoose.Types.ObjectId;
+
+  @Prop({ default: null })
+    welcomeBanner: string;
 }
 
 export type ExternalApiDocument = HydratedDocument<ExternalApi>;

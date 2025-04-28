@@ -45,6 +45,18 @@ export class Theme extends AuditableSchema {
 
   @Prop()
     whatsappNo: string;
+
+  @Prop()
+    metaTitle: string;
+
+  @Prop()
+    metaDescription: string;
+
+  @Prop()
+    metaKeywords: string;
+
+  @Prop()
+    ogName: string;
 }
 
 export type Themes = HydratedDocument<Theme>;

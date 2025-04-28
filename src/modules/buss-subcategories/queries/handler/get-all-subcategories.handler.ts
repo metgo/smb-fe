@@ -1,5 +1,5 @@
-import { ICommandHandler, QueryHandler } from '@nestjs/cqrs';
-import { BadRequestException, Inject } from '@nestjs/common';
+import { ICommandHandler, QueryBus, QueryHandler } from '@nestjs/cqrs';
+import { Inject } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
@@ -11,25 +11,20 @@ import { queryhandler } from 'src/core/helper/query-helper';
 import { CampaignService } from 'src/modules/campaign/campaign.service';
 import { GetAllSubCategoriesQuery } from '../get-all-subcategories.query';
 import { BussSubCategory } from '../../schema/buss-subCategory.schema';
-import { ProductStatus } from 'src/modules/products/products.type';
 import { Product } from 'src/modules/products/schema/products.schema';
-import { Business } from 'src/modules/business/schema/business.schema';
-import { Authority } from 'src/modules/authority/schema/authority.schema';
+import { GetAllProductsRawQuery } from 'src/modules/products/queries/get-all-products-rawquery.query';
 
 @QueryHandler(GetAllSubCategoriesQuery)
 export class GetAllSubCategoriesHandler
 implements ICommandHandler<GetAllSubCategoriesQuery> {
   constructor(
+    private queryBus: QueryBus,
     @Inject(WINSTON_MODULE_PROVIDER)
     private readonly logger: Logger,
     @InjectModel('BussSubCategory')
     private readonly BussSubCategoryModel: Model<BussSubCategory>,
     @InjectModel(Product.name)
     private readonly ProductModel: Model<Product>,
-    @InjectModel(Business.name)
-    private readonly BusinessModel: Model<Business>,
-    @InjectModel(Authority.name)
-    private readonly AuthorityModel: Model<Authority>,
     private readonly campaignService: CampaignService,
   ) {}
 
@@ -74,129 +69,24 @@ implements ICommandHandler<GetAllSubCategoriesQuery> {
         return [];
       }
 
-      let findQueryProduct: any = {
-        subCategories: { $exists: true, $ne: [] },
-        status: ProductStatus.ACTIVE,
-        isDeleted: false,
-        $or: [
-          { 'quantity.remaining': { $gt: 0 } },
-          { 'quantity.isUnlimited': true },
-        ],
-      };
-
-      if (vendorDelivers) {
-        findQueryProduct = {
-          ...findQueryProduct,
-          deliveryArea: { $exists: true, $ne: [], $not: { $size: 0 } },
-        };
-      }
-
-      const orConditions = [];
-
-      if (campDetails?.dmoIds?.length) {
-        orConditions.push({ dmoId: { $in: campDetails.dmoIds } });
-      }
-
-      if (campDetails?.businessIds?.length) {
-        orConditions.push({ businessId: { $in: campDetails.businessIds } });
-      }
-
-      if (campDetails?.productIds?.length) {
-        orConditions.push({ _id: { $in: campDetails.productIds } });
-      }
-
-      if (orConditions.length) {
-        findQueryProduct = {
-          ...findQueryProduct,
-          $or: orConditions,
-        };
-      }
-
-      if (groupTypesId) {
-        const groupTypeIds = Array.isArray(groupTypesId)
-          ? groupTypesId
-          : [groupTypesId];
-
-        findQueryProduct = {
-          ...findQueryProduct,
-          groupTypesId: { $in: groupTypeIds },
-        };
-      }
-
-      if (accessibilitiesId) {
-        const accessibilitiesIds = Array.isArray(accessibilitiesId)
-          ? accessibilitiesId
-          : [accessibilitiesId];
-
-        findQueryProduct = {
-          ...findQueryProduct,
-          accessibilitiesId: { $in: accessibilitiesIds },
-        };
-      }
-
-      if (priceMin && priceMax) {
-        const minPrice = Number(priceMin);
-        const maxPrice = Number(priceMax);
-
-        if (maxPrice < minPrice) {
-          throw new BadRequestException('Invalid Price Range');
-        }
-
-        findQueryProduct = {
-          ...findQueryProduct,
-          'price.sellingPrice': {
-            $gte: minPrice,
-            $lte: maxPrice,
-          },
-        };
-      }
-
-      if (search) {
-        const [matchingBusinessIds, matchingAuthorityIds] = await Promise.all([
-          this.BusinessModel.find({
-            $or: [
-              { name: { $regex: search, $options: 'i' } },
-              { description: { $regex: search, $options: 'i' } },
-              { 'address.country': { $regex: search, $options: 'i' } },
-              { 'address.city': { $regex: search, $options: 'i' } },
-              { 'address.location': { $regex: search, $options: 'i' } },
-              {
-                'address.additional_information': {
-                  $regex: search,
-                  $options: 'i',
-                },
-              },
-              { 'contactDetails.address': { $regex: search, $options: 'i' } },
-            ],
-          }).select('_id'),
-          this.AuthorityModel.find({
-            name: { $regex: search, $options: 'i' },
-          }).select('_id'),
-        ]);
-
-        findQueryProduct = {
-          ...findQueryProduct,
-          $or: [
-            { name: { $regex: search, $options: 'i' } },
-            { description: { $regex: search, $options: 'i' } },
-            { authorityId: { $in: matchingAuthorityIds } },
-            { businessId: { $in: matchingBusinessIds } },
-          ],
-        };
-      }
-
-      const rawSubCategoryIds = await this.ProductModel.distinct(
-        'subCategories',
-        {
-          ...findQueryProduct,
-        },
+      const findQueryProduct = await this.queryBus.execute(
+        new GetAllProductsRawQuery(
+          campCode,
+          null,
+          bussCategoryId,
+          null,
+          groupTypesId,
+          accessibilitiesId,
+          priceMin,
+          priceMax,
+          search,
+          vendorDelivers,
+        ),
       );
 
-      const subCategoryIds = rawSubCategoryIds.map(item => {
-        if (item && typeof item === 'object' && '$oid' in item) {
-          return new mongoose.Types.ObjectId(item.$oid);
-        }
-        return new mongoose.Types.ObjectId(item);
+      const subCategoryIds = await this.ProductModel.distinct('subCategories', {
+        ...findQueryProduct,
+        subCategories: { $exists: true, $ne: [] },
       });
 
       if (!subCategoryIds) {
@@ -237,10 +127,16 @@ implements ICommandHandler<GetAllSubCategoriesQuery> {
               subCat.bussCategoryId.map(cat => (locale === Locale.ENGLISH ? cat.name : cat.hebrewName)),
             )
             : [];
+
+          const productCount = await this.ProductModel.countDocuments({
+            ...findQueryProduct,
+            subCategories: subCat._id,
+          });
           return {
-            id: subCat.id,
+            id: subCat._id,
             name: subCat.name,
             parent,
+            productCount,
           };
         }),
       );

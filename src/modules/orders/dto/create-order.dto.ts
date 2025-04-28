@@ -28,17 +28,17 @@ export class CreateOrderDto {
     voucher: Voucher[];
 
   @IsEmail()
-  @IsNotEmpty()
+  @IsOptional()
   @ApiProperty()
     email: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   @ApiProperty()
     countryCode: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   @ApiProperty()
     phone: string;
 
@@ -48,7 +48,7 @@ export class CreateOrderDto {
     firstName: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   @ApiProperty()
     lastName: string;
 

@@ -60,12 +60,11 @@ export class CartController {
     @Param('cartId') cartId: string,
     @Req() req,
   ) {
-    const updatedCart = await this.cartService.updateCart(
-      cartId,
-      body,
-      req?.user,
-    );
-    return updatedCart;
+    await this.cartService.updateCart(cartId, body, req?.user);
+
+    return {
+      message: ServerSuccess.CART.UPDATED,
+    };
   }
 
   @ApiEndpoint({

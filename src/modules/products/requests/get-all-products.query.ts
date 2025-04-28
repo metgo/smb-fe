@@ -5,7 +5,7 @@ import {
 import { SortOrder } from 'src/common/enum';
 import { CommonFilterQuery } from 'src/common/query-handler/common-filter-query';
 
-export class GetAllProductsQuery extends CommonFilterQuery {
+export class GetAllProductsRequest extends CommonFilterQuery {
   @ApiProperty({ type: String, required: true })
   @IsString()
   @IsNotEmpty()

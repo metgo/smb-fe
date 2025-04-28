@@ -14,11 +14,13 @@ import { BussSubCategoriesModule } from '../buss-subcategories/buss-subcategorie
 import { DMOModule } from 'src/modules/dmo/dmo.module';
 import { ExternalApiModule } from 'src/modules/external-api/external-api.module';
 import { ConfigModule } from 'src/services/config/config.module';
+import { Product, ProductSchema } from '../products/schema/products.schema';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: BussCategory.name, schema: BussCategorySchema },
+      { name: Product.name, schema: ProductSchema },
     ]),
     AuthorityModule,
     BussSubCategoriesModule,
