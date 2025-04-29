@@ -4,94 +4,17 @@ import mongoose, { Model } from 'mongoose';
 
 import { Locale } from 'src/common/enum';
 import { disSelect } from 'src/common/utils/select.handling';
-import { queryhandler } from 'src/core/helper/query-helper';
-import { GetAllCategoriesQuery } from 'src/modules/buss-categories/queries/get-all-categories.query';
 import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.schema';
 import { CampaignService } from 'src/modules/campaign/campaign.service';
 import { GetCategoryQuery } from 'src/modules/buss-categories/queries/get-category-query';
-import { ProductStatus } from '../products/products.type';
-import { Product } from '../products/schema/products.schema';
 
 @Injectable()
 export class BussCategoriesService {
   constructor(
     @InjectModel('BussCategory')
     private BussCategoryModel: Model<BussCategory>,
-    @InjectModel('Product')
-    private ProductModel: Model<Product>,
     private campaignService: CampaignService,
   ) {}
-
-  async getAllCategories(query: GetAllCategoriesQuery) {
-    const {
-      page, limit, search, locale, campCode,
-    } = query;
-
-    const campDetails = await this.campaignService.findCampaignAndReturn(
-      'code',
-      campCode,
-    );
-
-    if (!campDetails?.categoryIds?.length) {
-      return [];
-    }
-
-    const queryPage = page ? Number(page) : null;
-    const queryLimit = limit ? Number(limit) : null;
-
-    let findQuery: any = {
-      deletedAt: { $in: [null] },
-      isDeleted: false,
-      deletedBy: null,
-      _id: { $in: campDetails.categoryIds },
-    };
-    const select = '_id name hebrewName';
-
-    if (search) {
-      findQuery = {
-        ...findQuery,
-        name: { $regex: search, $options: 'i' },
-      };
-    }
-
-    const categories = await queryhandler<BussCategory>(
-      this.BussCategoryModel,
-      {
-        findQuery,
-        select,
-        page: queryPage,
-        limit: queryLimit,
-        sort: 'createdAt',
-        languageQuery: locale || Locale.HEBREW,
-      },
-    );
-
-    categories.data = await Promise.all(
-      categories?.data?.map(async cat => {
-        const productCount = await this.ProductModel.countDocuments({
-          status: ProductStatus.ACTIVE,
-          isDeleted: false,
-          $and: [
-            {
-              $or: [
-                { 'quantity.remaining': { $gt: 0 } },
-                { 'quantity.isUnlimited': true },
-              ],
-            },
-          ],
-          categories: cat.id,
-        });
-
-        return {
-          id: cat.id,
-          name: cat.name,
-          productCount,
-        };
-      }),
-    );
-
-    return categories;
-  }
 
   async getOne(id: string, query: GetCategoryQuery) {
     const campDetails = await this.campaignService.findCampaignAndReturn(

@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { CqrsModule } from '@nestjs/cqrs';
 import { MongooseModule } from '@nestjs/mongoose';
 
 import { AuthorityModule } from 'src/modules/authority/authority.module';
@@ -15,9 +16,11 @@ import { DMOModule } from 'src/modules/dmo/dmo.module';
 import { ExternalApiModule } from 'src/modules/external-api/external-api.module';
 import { ConfigModule } from 'src/services/config/config.module';
 import { Product, ProductSchema } from '../products/schema/products.schema';
+import { GetAllCategoriesHandler } from './queries/handler/get-all-categories.handler';
 
 @Module({
   imports: [
+    CqrsModule,
     MongooseModule.forFeature([
       { name: BussCategory.name, schema: BussCategorySchema },
       { name: Product.name, schema: ProductSchema },
@@ -32,6 +35,6 @@ import { Product, ProductSchema } from '../products/schema/products.schema';
   ],
 
   controllers: [BussCategoriesController],
-  providers: [BussCategoriesService],
+  providers: [BussCategoriesService, GetAllCategoriesHandler],
 })
 export class BussCategoriesModule {}
