@@ -2,7 +2,6 @@ import {
   IsEmail,
   IsEnum,
   IsNotEmpty,
-  IsNumber,
   IsOptional,
   IsString,
 } from 'class-validator';
@@ -72,11 +71,6 @@ export class CreateOrderDto {
     required: true,
   })
     campCode: string;
-
-  @IsNumber()
-  @IsNotEmpty()
-  @ApiProperty()
-    deliveryFee: number;
 
   @IsString()
   @IsNotEmpty()

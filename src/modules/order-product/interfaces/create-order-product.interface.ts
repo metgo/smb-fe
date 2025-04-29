@@ -9,6 +9,7 @@ export interface CreateOrderProductCommand {
   phone: string;
   firstName: string;
   lastName: string;
+  deliveryFee: number;
   deliveryMethod: DeliveryMethod;
   deliveryArea: string;
   deliveryPickupLocation: string;

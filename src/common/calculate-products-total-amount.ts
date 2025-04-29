@@ -1,15 +1,21 @@
 import { BadRequestException } from '@nestjs/common';
 import { ServerErrors } from 'src/common/constant';
+import {
+  CartProductPayload,
+  CartProductResponse,
+} from 'src/modules/cart/cart.types';
 
 export async function calculateProductsTotalAmount(
-  productsPayload: any,
+  productsPayload: CartProductPayload[],
   productsFromDB: any,
-) {
+): Promise<{
+  payableAmount: number;
+  totalDeliveryFee: number;
+  cartItems: CartProductResponse[];
+}> {
   try {
-    const cartItems = [];
-    // Calculate the total amount based on the quantity in the payload and the price in the database
-    const actualAmountOfProduct = productsPayload.reduce(
-      (sum: number, payloadProduct: any) => {
+    const cartItems: CartProductResponse[] = productsPayload
+      .map((payloadProduct: CartProductPayload) => {
         const dbProduct = productsFromDB.find(
           (dbProd: any) => dbProd._id?.toString() === payloadProduct.id.toString(),
         );
@@ -22,15 +28,15 @@ export async function calculateProductsTotalAmount(
           && !dbProduct?.quantity?.isUnlimited
         ) {
           throw new BadRequestException(
-            'There is less quantity then you request',
+            'There is less quantity than you requested',
           );
         }
 
         if (dbProduct) {
-          cartItems.push({
+          return {
             id: payloadProduct.id,
             quantity: payloadProduct.quantity,
-            amount: dbProduct?.price?.sellingPrice,
+            amount: dbProduct.price.sellingPrice,
             email: payloadProduct.email,
             countryCode: payloadProduct.countryCode,
             phone: payloadProduct.phone,
@@ -45,16 +51,25 @@ export async function calculateProductsTotalAmount(
             street: payloadProduct.street,
             isGift: payloadProduct.isGift,
             additionalInfo: payloadProduct.additionalInfo,
-          });
-          return sum + payloadProduct.quantity * dbProduct.price.sellingPrice;
+            deliveryFee: payloadProduct?.deliveryFee || 0,
+          };
         }
 
-        return sum;
-      },
+        return null;
+      })
+      .filter(Boolean);
+
+    const payableAmount = cartItems.reduce(
+      (sum, item) => sum + item.quantity * item.amount + item.deliveryFee,
       0,
     );
 
-    return { actualAmountOfProduct, cartItems };
+    const totalDeliveryFee = cartItems.reduce(
+      (sum, item) => sum + item.deliveryFee,
+      0,
+    );
+
+    return { payableAmount, cartItems, totalDeliveryFee };
   } catch (error) {
     throw new BadRequestException(error);
   }

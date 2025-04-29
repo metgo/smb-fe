@@ -94,4 +94,11 @@ export class UpdateCartDto {
   @IsOptional()
   @ApiProperty()
     additionalInfo: string;
+
+  @IsOptional()
+  @ApiProperty({
+    description: 'Delivery fee for the order',
+    required: false,
+  })
+    deliveryFee?: number;
 }

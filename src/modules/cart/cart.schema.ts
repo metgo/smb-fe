@@ -2,7 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
 
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
-import { CartStatus } from 'src/modules/cart/cart.types';
+import { CartProductPayload, CartStatus } from 'src/modules/cart/cart.types';
 import { DeliveryMethod } from '../orders/orders.type';
 
 @Schema({})
@@ -26,6 +26,7 @@ export class Cart extends AuditableSchema {
         phone: String,
         firstName: String,
         lastName: String,
+        deliveryFee: Number,
         deliveryMethod: { type: String, enum: Object.values(DeliveryMethod) },
         deliveryArea: String,
         deliveryPickupLocation: String,
@@ -38,26 +39,7 @@ export class Cart extends AuditableSchema {
       },
     ],
   })
-    product: [
-    {
-      id: mongoose.Types.ObjectId;
-      quantity: number;
-      email: string;
-      countryCode: string;
-      phone: string;
-      firstName: string;
-      lastName: string;
-      deliveryMethod: DeliveryMethod;
-      deliveryArea: string;
-      deliveryPickupLocation: string;
-      houseNo: string;
-      apartment: string;
-      city: string;
-      street: string;
-      isGift: boolean;
-      additionalInfo: string;
-    }
-  ];
+    product: CartProductPayload[];
 
   @Prop()
     totalAmount: number;

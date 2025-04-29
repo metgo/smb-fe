@@ -32,7 +32,7 @@ import {
 import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interface';
 import { BusinessService } from 'src/modules/business/services/business.service';
 import { CartService } from 'src/modules/cart/cart.service';
-import { CartStatus } from 'src/modules/cart/cart.types';
+import { CartProductResponse, CartStatus } from 'src/modules/cart/cart.types';
 import { UpdateOrderDto } from 'src/modules/orders/dto/update-order.dto';
 import { GetAllOrdersInterface } from 'src/modules/orders/interface/get-all-orders.interface';
 import { Order } from 'src/modules/orders/schema/orders.schema';
@@ -101,13 +101,13 @@ export class OrdersService {
         productIds,
       );
 
-      const { actualAmountOfProduct, cartItems }
+      const { payableAmount, cartItems, totalDeliveryFee }
         = await calculateProductsTotalAmount(
           cartDetails?.product,
           productsFromDB,
         );
 
-      let totalAmountToPay = actualAmountOfProduct + body.deliveryFee;
+      let totalAmountToPay = payableAmount;
 
       let redeemedVouchers;
       if (body?.voucher?.length) {
@@ -145,10 +145,11 @@ export class OrdersService {
         body,
         redeemedVouchers,
         totalAmount: totalAmountToPay,
-        actualAmountOfProduct,
+        payableAmount,
         products,
         productDetails: productsFromDB,
         cartItems,
+        totalDeliveryFee,
       });
 
       return order;
@@ -166,10 +167,11 @@ export class OrdersService {
       body,
       redeemedVouchers,
       totalAmount,
-      actualAmountOfProduct,
+      payableAmount,
       products,
       productDetails,
       cartItems,
+      totalDeliveryFee,
     } = orderCommand;
 
     try {
@@ -205,7 +207,8 @@ export class OrdersService {
         createdBy: loggedInUser?.id ?? null,
         createdAt: new Date(),
         creditCardPayment: totalAmount,
-        totalAmount: actualAmountOfProduct,
+        totalAmount: payableAmount,
+        deliveryFee: totalDeliveryFee,
         qrCodeUrl,
         campId: campDetails._id,
       };
@@ -222,7 +225,7 @@ export class OrdersService {
       return await this.createOrderWithCardComPayment(
         command,
         totalAmount,
-        actualAmountOfProduct,
+        payableAmount,
         loggedInUser,
       );
     } catch (error) {
@@ -236,7 +239,7 @@ export class OrdersService {
   async createOrderWithCardComPayment(
     command,
     totalAmount,
-    actualAmountOfProduct,
+    payableAmount,
     loggedInUser,
   ) {
     const orderWithQR = new this.OrderModel({
@@ -244,7 +247,7 @@ export class OrdersService {
       externalApiId: command?.externalApi?._id,
       paymentStatus: PaymentStatus.PENDING,
       paymentMode:
-        totalAmount === actualAmountOfProduct
+        totalAmount === payableAmount
           ? [PaymentMode.CARD]
           : [PaymentMode.CARD, PaymentMode.VOUCHER],
     });
@@ -280,7 +283,7 @@ export class OrdersService {
   async createOrderWithNoCardComPayment(
     command,
     productInfo: Product[],
-    cartItems,
+    cartItems: CartProductResponse[],
     loggedInUser: LoggedInUserInterface | null,
   ) {
     const orderWithQR = new this.OrderModel({
@@ -311,6 +314,7 @@ export class OrdersService {
           phone: cartItem?.phone,
           firstName: cartItem?.firstName,
           lastName: cartItem?.lastName,
+          deliveryFee: cartItem?.deliveryFee,
           deliveryMethod: cartItem?.deliveryMethod,
           deliveryArea: cartItem?.deliveryArea,
           deliveryPickupLocation: cartItem?.deliveryPickupLocation,
@@ -482,21 +486,22 @@ export class OrdersService {
 
           return await this.orderProductService.create({
             productId: new mongoose.Types.ObjectId(cartItem.id),
-            quantity: cartItem.quantity,
-            email: cartItem.email,
-            countryCode: cartItem.countryCode,
-            phone: cartItem.phone,
-            firstName: cartItem.firstName,
-            lastName: cartItem.lastName,
-            deliveryMethod: cartItem.deliveryMethod,
-            deliveryArea: cartItem.deliveryArea,
-            deliveryPickupLocation: cartItem.deliveryPickupLocation,
-            houseNo: cartItem.houseNo,
-            apartment: cartItem.apartment,
+            quantity: cartItem?.quantity,
+            email: cartItem?.email,
+            countryCode: cartItem?.countryCode,
+            phone: cartItem?.phone,
+            firstName: cartItem?.firstName,
+            lastName: cartItem?.lastName,
+            deliveryFee: cartItem?.deliveryFee,
+            deliveryMethod: cartItem?.deliveryMethod,
+            deliveryArea: cartItem?.deliveryArea,
+            deliveryPickupLocation: cartItem?.deliveryPickupLocation,
+            houseNo: cartItem?.houseNo,
+            apartment: cartItem?.apartment,
             city: cartItem?.city,
             street: cartItem?.street,
             isGift: cartItem?.isGift,
-            additionalInfo: cartItem.additionalInfo,
+            additionalInfo: cartItem?.additionalInfo,
             amount: productsInfo.price.sellingPrice,
             loggedInUserId: updateOrder.userId,
             orderId: updateOrder.id,
@@ -935,6 +940,7 @@ export class OrdersService {
         image?: any;
         name: string;
         price: number;
+        deliveryFee: number;
       }[];
       totalAmount: number;
     };
@@ -959,15 +965,17 @@ export class OrdersService {
 
       const price = orderItem?.amount || product?.price?.sellingPrice;
       const quantity = orderItem?.quantity || 1;
+      const deliveryFee = orderItem?.deliveryFee || 0;
 
       emailToProductsMap[email].products.push({
         quantity,
         image: product?.images[0]?.image,
         name: product?.name,
         price,
+        deliveryFee,
       });
 
-      emailToProductsMap[email].totalAmount += price * quantity;
+      emailToProductsMap[email].totalAmount += price * quantity + deliveryFee;
     });
 
     await Promise.all(
@@ -993,6 +1001,8 @@ export class OrdersService {
                         <span style="display: block; font-size: 14px; color: #666666;">כמות: ${
   product?.quantity
 }</span>
+<span style="display: block; font-size: 14px; color: #666666;">
+דמי משלוח: ₪${product?.deliveryFee}</span>
                       </td>
                       <td style="padding: 0; vertical-align: middle; white-space: nowrap;">
                         <span dir="rtl" style="font-size: 16px; color: #333333;">₪${
@@ -1044,7 +1054,9 @@ export class OrdersService {
             const quantity = matchingProduct.quantity || 1;
             const price
               = matchingProduct.amount || product.price?.sellingPrice || 0;
-            const totalPriceForThisProduct = quantity * price;
+            const deliveryFee = matchingProduct.deliveryFee || 0;
+
+            const totalPriceForThisProduct = quantity * price + deliveryFee;
 
             businessTotalAmount += totalPriceForThisProduct;
 
@@ -1067,6 +1079,8 @@ export class OrdersService {
 }</span>
                       <span style="display: block; font-size: 14px; color: #666666;">כמות:
                           ${quantity}</span>
+                      <span style="display: block; font-size: 14px; color: #666666;">
+דמי משלוח: ₪${deliveryFee}</span>
                     </td>
                     <td style="padding: 0; vertical-align: middle; white-space: nowrap;">
                       <span dir="rtl" style="font-size: 16px; color: #333333;">₪${price}</span>

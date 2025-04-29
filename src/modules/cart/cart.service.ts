@@ -138,6 +138,7 @@ export class CartService {
           = command?.deliveryArea;
         existingProductInCart[productIndex].deliveryPickupLocation
           = command?.deliveryPickupLocation;
+        existingProductInCart[productIndex].deliveryFee = command?.deliveryFee;
         existingProductInCart[productIndex].houseNo = command?.houseNo;
         existingProductInCart[productIndex].apartment = command?.apartment;
         existingProductInCart[productIndex].city = command?.city;
@@ -155,6 +156,7 @@ export class CartService {
           phone: command?.phone,
           firstName: command?.firstName,
           lastName: command?.lastName,
+          deliveryFee: command?.deliveryFee,
           deliveryMethod: command?.deliveryMethod,
           deliveryArea: command?.deliveryArea,
           deliveryPickupLocation: command?.deliveryPickupLocation,
