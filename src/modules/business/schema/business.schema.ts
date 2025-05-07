@@ -38,6 +38,14 @@ export class DeliveryArea {
 }
 @Schema()
 export class Business extends AuditableSchema {
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    index: true,
+    required: true,
+    auto: true,
+  })
+    _id: mongoose.Types.ObjectId;
+
   @Prop({ required: false, default: null })
     name: string;
 

@@ -9,6 +9,7 @@ import { GetProductsDeliveryQuery } from '../get-products-delivery-info.query';
 import { CampaignService } from 'src/modules/campaign/campaign.service';
 import { ProductStatus } from '../../products.type';
 import { ProductsService } from '../../products.services';
+import { Business } from 'src/modules/business/schema/business.schema';
 
 @QueryHandler(GetProductsDeliveryQuery)
 export class GetProductsDeliveryHandler
@@ -83,7 +84,7 @@ implements IQueryHandler<GetProductsDeliveryQuery> {
         {
           path: 'businessId',
           select:
-            '_id name deliveryInfoSameAsBusiness deliveryArea deliveryAdditionalInfo isPickUpAvailable',
+            '_id name deliveryArea deliveryAdditionalInfo isPickUpAvailable',
         },
       ];
 
@@ -101,21 +102,37 @@ implements IQueryHandler<GetProductsDeliveryQuery> {
       }
 
       const productsDeliveryInfo = await Promise.all(
-        productsList.data.map(product => ({
-          _id: product._id,
-          name: product.name,
-          images: product.images[0],
-          price: product.price.sellingPrice,
-          businessId: product.businessId,
-          quantity: {
-            remaining: product.quantity.remaining,
-            isUnlimited: product.quantity.isUnlimited,
-          },
-          deliveryInfoSameAsBusiness: product.deliveryInfoSameAsBusiness,
-          deliveryArea: product.deliveryArea,
-          deliveryAdditionalInfo: product.deliveryAdditionalInfo,
-          isPickUpAvailable: product.isPickUpAvailable,
-        })),
+        productsList.data.map(product => {
+          const useBusinessInfo: Business = product?.deliveryInfoSameAsBusiness
+            ? product?.businessId
+            : {
+              ...product?.businessId,
+              deliveryArea: [],
+              deliveryAdditionalInfo: '',
+              isPickUpAvailable: false,
+            };
+
+          return {
+            _id: product?._id,
+            name: product?.name,
+            images: product?.images[0],
+            price: product?.price?.sellingPrice,
+            businessId: product?.businessId,
+            quantity: {
+              remaining: product?.quantity?.remaining,
+              isUnlimited: product?.quantity?.isUnlimited,
+            },
+            deliveryArea: product?.deliveryArea?.length
+              ? product.deliveryArea
+              : useBusinessInfo?.deliveryArea,
+
+            deliveryAdditionalInfo:
+              product?.deliveryAdditionalInfo
+              ?? useBusinessInfo?.deliveryAdditionalInfo,
+            isPickUpAvailable:
+              product?.isPickUpAvailable ?? useBusinessInfo?.isPickUpAvailable,
+          };
+        }),
       );
 
       return productsDeliveryInfo;

@@ -28,6 +28,7 @@ import { ProductStatus } from 'src/modules/products/products.type';
 import { UserType } from 'src/modules/users/users.type';
 import { CartService } from 'src/modules/cart/cart.service';
 import { GetProductsQuery } from 'src/modules/products/queries';
+import { Business } from '../business/schema/business.schema';
 
 @Injectable()
 export class ProductsService {
@@ -110,16 +111,10 @@ export class ProductsService {
         return {};
       }
 
-      const populate = {
-        path: 'businessId',
-        select:
-          '_id logo name address geoLocation location openingHrs isAlwaysOpen',
-      };
-
       const select
-        = '_id name dmoId description images price quantity businessId deliveryArea deliverySpecificSellerInfo isPickUpAvailable categories subCategories';
+        = '_id name dmoId description images price quantity businessId deliveryArea deliverySpecificSellerInfo isPickUpAvailable categories subCategories deliveryInfoSameAsBusiness';
 
-      const populate1 = {
+      const populate = {
         path: 'categories subCategories',
         select: '_id name hebrewName',
       };
@@ -135,8 +130,11 @@ export class ProductsService {
           { 'quantity.isUnlimited': true },
         ],
       })
+        .populate<{ businessId: Business }>(
+          'businessId',
+          '_id logo name address geoLocation location openingHrs isAlwaysOpen deliveryArea deliveryAdditionalInfo isPickUpAvailable',
+        )
         .populate(populate)
-        .populate(populate1)
         .select(select);
 
       if (!product) {
@@ -151,13 +149,43 @@ export class ProductsService {
           new mongoose.Types.ObjectId(productId),
         )
         && !campDetails.businessIds.includes(
-          new mongoose.Types.ObjectId(product.businessId),
+          new mongoose.Types.ObjectId(product?.businessId?._id),
         )
       ) {
         throw new NotFoundException(ServerErrors.PRODUCT.NOT_FOUND);
       }
 
-      return product;
+      const useBusinessInfo: Business = product?.deliveryInfoSameAsBusiness
+        ? product?.businessId
+        : {
+          ...product?.businessId,
+          deliveryArea: [],
+          deliveryAdditionalInfo: '',
+          isPickUpAvailable: false,
+        };
+
+      return {
+        _id: product._id,
+        name: product?.name,
+        dmoId: product?.dmoId,
+        description: product?.description,
+        images: product?.images,
+        price: product?.price,
+        quantity: product?.quantity,
+        businessId: product?.businessId,
+        deliveryArea: product?.deliveryArea?.length
+          ? product.deliveryArea
+          : useBusinessInfo?.deliveryArea,
+
+        deliveryAdditionalInfo:
+          product?.deliveryAdditionalInfo
+          ?? useBusinessInfo?.deliveryAdditionalInfo,
+        isPickUpAvailable:
+          product?.isPickUpAvailable ?? useBusinessInfo?.isPickUpAvailable,
+        deliverySpecificSellerInfo: product?.deliverySpecificSellerInfo,
+        categories: product?.categories,
+        subCategories: product?.subCategories,
+      };
     } catch (err) {
       exceptionHandling(err);
     }
