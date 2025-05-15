@@ -244,7 +244,7 @@ export async function queryhandler<T>(
     .collation({ locale: 'en', strength: 2 })
     .skip((page - 1) * limit)
     .limit(limit)
-    .sort({ [sort]: sortOrder === SortOrder.ASC ? 1 : -1 })
+    .sort({ [sort]: sortOrder === SortOrder.ASC ? 1 : -1, _id: 1 })
     .populate(populate)
     .populate(populate1);
 
