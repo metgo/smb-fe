@@ -9,15 +9,20 @@ import {
   Param,
   Query,
 } from '@nestjs/common';
+import { QueryBus } from '@nestjs/cqrs';
 
 import { ServerSuccess } from 'src/common/constant';
 import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
-import { GetAllUnpaginatedBusinessQuery } from 'src/modules/business/queries';
 import { BusinessService } from 'src/modules/business/services/business.service';
+import { GetAllBusinessForMapQuery } from '../queries/get-all-business-for-map.query';
+import { GetAllBusinessesForMapRequest } from '../request/get-all-business-for-map.request';
 
 @Controller()
 export class BusinessController {
-  constructor(private readonly businessServices: BusinessService) {}
+  constructor(
+    private readonly queryBus: QueryBus,
+    private readonly businessServices: BusinessService,
+  ) {}
 
   @ApiEndpoint({
     tags: ['Business'],
@@ -55,9 +60,9 @@ export class BusinessController {
   })
   @Get('map-businesses')
   @HttpCode(HttpStatus.OK)
-  async getAllBusinessForMap(@Query() query?: GetAllUnpaginatedBusinessQuery) {
-    const businesses = await this.businessServices.getAllBusinessesForMap(
-      query,
+  async getAllBusinessForMap(@Query() query?: GetAllBusinessesForMapRequest) {
+    const businesses = await this.queryBus.execute(
+      new GetAllBusinessForMapQuery(query),
     );
 
     return businesses;
