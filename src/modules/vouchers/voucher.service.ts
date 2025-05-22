@@ -293,7 +293,7 @@ export class VoucherService {
         .map(doc => `\n${doc.code}`)
         ?.toString();
 
-      const link = `${externalApi?.theme?.websiteUrl}/product?utm_source=sms&utm_medium=tav8&voucherId=${voucherDetails[0]?.code}`;
+      const link = `${externalApi?.themeId?.websiteUrl}/product?utm_source=sms&utm_medium=tav8&voucherId=${voucherDetails[0]?.code}`;
 
       if (voucherDetails[0]?.assigneeInfo?.email) {
         await this.sendVoucherPurchaseEmail(
