@@ -1,6 +1,6 @@
 import { EightImageLayout, ElevenImageLayout, FiveImageLayout, FourImageLayout, NineImageLayout, OneImageLayout, SevenImageLayout, SixImageLayout, TenImageLayout, ThirteenImageLayout, ThreeImageLayout, TwelveImageLayout, TwoImageLayout } from "@/components/layouts"
 
-const imageCount: number = 1;
+const imageCount: number = 13;
 
 const page = () => {
   const renderLayout = () => {
