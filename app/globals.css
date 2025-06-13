@@ -6,29 +6,34 @@
   --color-theme: #7C7C7C;
 
   --color-ctg-eat-dark: #F09984;
+  --color-ctg-eat-dim: #F7BCAC;
   --color-ctg-eat-light: #F8CBBF;
 
   --color-ctg-local-dark: #FFBE3B;
-  --color-ctg-local-light: #F9D48A;
+  --color-ctg-local-dim: #F9D385;
+  --color-ctg-local-light: #F9DEA7;
 
   --color-ctg-lodge-dark: #4C95D8;
-  --color-ctg-lodge-light: #90BBE3;
+  --color-ctg-lodge-dim: #90BBE3;
+  --color-ctg-lodge-light: #A2C6E6;
 
   --color-ctg-culture-dark: #F174AE;
-  --color-ctg-culture-light: #F2ABCC;
+  --color-ctg-culture-dim: #F1A7C9;
+  --color-ctg-culture-light: #F3BDD6;
 
   --color-ctg-attract-dark: #B571B4;
   --color-ctg-attract-dim: #CEA7CE;
   --color-ctg-attract-light: #D9BCD9;
 
-  --color-ctg-tours-dark: #00A5A8;
-  --color-ctg-tours-light: #61C4C6;
+  --color-ctg-tour-dark: #00A5A8;
+  --color-ctg-tour-dim: #64C5C6;
+  --color-ctg-tour-light: #8ED4D5;
 }
 
 
 @layer utilities {
   .skeleton {
-    @apply relative overflow-hidden bg-gradient-to-br from-ctg-attract-dim from-0% via-ctg-attract-light via-50% to-ctg-attract-dim to-100% rounded-md;
+    @apply relative overflow-hidden bg-gradient-to-br from-0% via-50% to-100%;
   }
 
 
@@ -53,4 +58,19 @@
       transform: translate(100%, 100%);
     }
   }
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.filter-tab {
+  border-radius: 8px;
+  background: #F1F1F1;
+  box-shadow: 0px 3px 4px 0px rgba(0, 0, 0, 0.03) inset;
 }

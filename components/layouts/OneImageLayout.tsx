@@ -10,16 +10,13 @@ const layout = [
 const OneImageLayout = () => {
   const businesses = getBusinessList(1);
 
-
   return (
-    <div className="flex gap-5">
-      <BusinessCard
-        key={businesses[0].id}
-        width={layout[0].width}
-        height={layout[0].height}
-        imageUrl={businesses[0].image}
-      />
-    </div>
+    <BusinessCard
+      key={businesses[0].id}
+      width={layout[0].width}
+      height={layout[0].height}
+      imageUrl={businesses[0].image}
+    />
   );
 };
 

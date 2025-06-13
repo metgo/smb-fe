@@ -1,3 +1,10 @@
 import BusinessCard from "./BusinessCard";
+import CategoryPanel from "./CategoryPanel";
+import SubcategoryFilterPanel from "./SubcategoryFilterPanel";
 
-export { BusinessCard }
+
+export { 
+  BusinessCard,
+  CategoryPanel,
+  SubcategoryFilterPanel,
+ }

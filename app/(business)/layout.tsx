@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import Navbar from "@/components/navbar";
-import CategoryPanel from "@/components/category-panel";
+import { CategoryPanel, SubcategoryFilterPanel } from "@/components/cards";
 
 
 export default function BusinessLayout({ children }: { children: ReactNode }) {
@@ -9,7 +9,10 @@ export default function BusinessLayout({ children }: { children: ReactNode }) {
       <Navbar />
       <div className="px-20 py-10 flex items-center justify-center w-full bg-primary">
         {children}
-        <CategoryPanel />
+        <div className="w-full fixed bottom-4 right-0 flex flex-col items-center justify-center gap-2">
+          <SubcategoryFilterPanel />
+          <CategoryPanel />
+        </div>
       </div>
     </>
   )

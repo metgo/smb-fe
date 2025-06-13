@@ -2,6 +2,7 @@ import EightImageLayout from "./EightImageLayout";
 import ElevenImageLayout from "./ElevenImageLayout";
 import FiveImageLayout from "./FiveImageLayout";
 import FourImageLayout from "./FourImageLayout";
+import MapBusinessIntegratedLayout from "./MapBusinessIntegratedLayout";
 import NineImageLayout from "./NineImageLayout";
 import OneImageLayout from "./OneImageLayout";
 import SevenImageLayout from "./SevenImageLayout";
@@ -11,7 +12,6 @@ import ThirteenImageLayout from "./ThirteenImageLayout";
 import ThreeImageLayout from "./ThreeImageLayout";
 import TwelveImageLayout from "./TwelveImageLayout";
 import TwoImageLayout from "./TwoImageLayout";
-
 
 export {
   OneImageLayout,
@@ -26,5 +26,7 @@ export {
   TenImageLayout,
   ElevenImageLayout,
   TwelveImageLayout,
-  ThirteenImageLayout
+  ThirteenImageLayout,
+  
+  MapBusinessIntegratedLayout
 }

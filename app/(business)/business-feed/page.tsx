@@ -1,12 +1,12 @@
-import { EightImageLayout, ElevenImageLayout, FiveImageLayout, FourImageLayout, NineImageLayout, OneImageLayout, SevenImageLayout, SixImageLayout, TenImageLayout, ThirteenImageLayout, ThreeImageLayout, TwelveImageLayout, TwoImageLayout } from "@/components/layouts"
+import { EightImageLayout, ElevenImageLayout, FiveImageLayout, FourImageLayout, MapBusinessIntegratedLayout, NineImageLayout, OneImageLayout, SevenImageLayout, SixImageLayout, TenImageLayout, ThirteenImageLayout, ThreeImageLayout, TwelveImageLayout, TwoImageLayout } from "@/components/layouts"
 
-const imageCount: number = 13;
+const imageCount: number = 5;
 
 const page = () => {
   const renderLayout = () => {
     switch (imageCount) {
       case 1:
-        return <OneImageLayout/>
+        return <OneImageLayout />
       case 2:
         return <TwoImageLayout />
       case 3:
@@ -38,7 +38,8 @@ const page = () => {
     }
   };
 
-  return <>{renderLayout()}</>;
+  // return <>{renderLayout()}</>;
+  return <MapBusinessIntegratedLayout />
 };
 
 export default page;
