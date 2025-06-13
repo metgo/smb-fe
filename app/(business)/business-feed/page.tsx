@@ -38,8 +38,8 @@ const page = () => {
     }
   };
 
-  // return <>{renderLayout()}</>;
-  return <MapBusinessIntegratedLayout />
+  return <>{renderLayout()}</>;
+  // return <MapBusinessIntegratedLayout />
 };
 
 export default page;
