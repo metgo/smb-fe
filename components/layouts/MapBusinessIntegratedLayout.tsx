@@ -1,5 +1,6 @@
 import { getBusinessList } from "@/lib/helpers";
 import { BusinessCard } from "../cards";
+import BusinessPinMap from "../maps/BusinessPinMap";
 
 type LayoutItem = { width: number; height: number };
 
@@ -76,7 +77,7 @@ const columns: Record<string, Record<string, number[]>> = {
   layout9: { col1: [0, 1], col2: [2, 3, 4], col3: [5, 6, 7] },
 };
 
-const imageCount = 7;
+const imageCount = 1;
 
 const MapBusinessIntegratedLayout = () => {
   const businesses = getBusinessList(imageCount);
@@ -128,7 +129,12 @@ const MapBusinessIntegratedLayout = () => {
     );
   };
 
-  return <div>{renderLayout()}</div>;
+  return (
+    <div className="w-full h-full flex items-center gap-5 ps-80">
+      {renderLayout()}
+      <BusinessPinMap />
+    </div>
+  );
 };
 
 export default MapBusinessIntegratedLayout;

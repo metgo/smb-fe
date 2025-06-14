@@ -7,7 +7,7 @@ export default function BusinessLayout({ children }: { children: ReactNode }) {
   return (
     <>
       <Navbar />
-      <div className="px-20 py-10 flex items-center justify-center w-full bg-primary">
+      <div className=" bg-primary">
         {children}
         <div className="w-full fixed bottom-4 right-0 flex flex-col items-center justify-center gap-2">
           <SubcategoryFilterPanel />
