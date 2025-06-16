@@ -11,3 +11,33 @@ export function getBusinessList(length: number): { id: number; image: string }[]
 
   return business;
 }
+
+
+export const handleCropAll = async (
+  imageUrl: string,
+  aspect: number,
+  setIsLoading: (isLoading: boolean) => void,
+  setCroppedImageUrl: (url: string) => void
+) => {
+  const encodedImageUrl = encodeURIComponent(imageUrl);
+  const xMin = 0.44285714285714284
+  const yMin = 0.41630901287553645
+  const xMax = 0.76
+  const yMax = 0.7140557939914163
+
+  const query = `url=${encodedImageUrl}&xMin=${xMin}&yMin=${yMin}&xMax=${xMax}&yMax=${yMax}&aspect=${aspect}`;
+  setIsLoading(true)
+  try {
+    const res = await fetch(`/api/crop-image?${query}`);
+    if (!res.ok) throw new Error("Failed to crop image");
+
+    const blob = await res.blob();
+    const objectUrl = URL.createObjectURL(blob);
+    setCroppedImageUrl(objectUrl);
+  } catch (error) {
+    console.error(`Error cropping image`, error);
+  } finally {
+    setIsLoading(false)
+  }
+
+};

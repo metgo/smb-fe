@@ -5,14 +5,15 @@ import { features } from '@/lib/utils'
 import { navbar } from '@/constant/hebrew'
 import { Logo, SearchIcon, ShopbagIcon, SunIcon, ThreeLineIcon, UserIcon } from '@/components/ui/icons'
 import BusinessPageFilterTabs from './BusinessPageFilterTabs'
+import HamburgerMenu from './HamburgerMenu'
 
 const Navbar = () => {
   return (
-    <nav className="px-70 py-2.5 bg-white shadow-md">
+    <nav className="px-70 py-2.5 bg-white shadow-md fixed z-50 w-full mb-40">
       <div className="flex items-center justify-between">
         {/* Hamburger, Logo, Text */}
         <div className="flex items-center gap-4">
-          <ThreeLineIcon />
+          <HamburgerMenu/>
           <Logo />
           <Link
             href={"/"}
@@ -25,7 +26,7 @@ const Navbar = () => {
         <div className="flex gap-4">
           <BusinessPageFilterTabs />
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 ms-5">
             {features.map(item => (
               <div
                 key={item.key}

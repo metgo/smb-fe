@@ -3,11 +3,11 @@ import Navbar from "@/components/navbar";
 import { CategoryPanel, SubcategoryFilterPanel } from "@/components/cards";
 
 
-export default function BusinessLayout({ children }: { children: ReactNode }) {
+export default function BusinessLayout({ children }: ReactChildNode) {
   return (
     <>
       <Navbar />
-      <div className=" bg-primary">
+      <div className=" bg-primary pt-14">
         {children}
         <div className="w-full fixed bottom-4 right-0 flex flex-col items-center justify-center gap-2">
           <SubcategoryFilterPanel />

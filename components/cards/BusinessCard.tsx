@@ -1,10 +1,11 @@
 "use client"
 
-import { tempCardInfo } from '@/constant/hebrew';
-import { categoryGradientClasses } from '@/lib/utils';
-import useGeneralStore from '@/stores/generalStore';
 import Image from 'next/image'
 import { useEffect, useState } from 'react';
+
+import { tempCardInfo } from '@/constant/hebrew';
+import useGeneralStore from '@/stores/generalStore';
+import { categoryGradientClasses } from '@/lib/utils';
 import { LocationPinIcon } from '../ui/icons';
 
 const BusinessCard = ({
@@ -19,11 +20,6 @@ const BusinessCard = ({
 
   const handleCropAll = async () => {
     const encodedImageUrl = encodeURIComponent(imageUrl);
-    // const xMax = 0.765625;
-    // const xMin = 0.58984375;
-    // const yMax = 0.5234375;
-    // const yMin = 0.203125;
-
     const xMin = 0.44285714285714284
     const yMin = 0.41630901287553645
     const xMax = 0.76

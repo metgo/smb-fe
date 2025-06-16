@@ -1,8 +1,6 @@
 import { getBusinessList } from "@/lib/helpers";
 import { BusinessCard } from "../cards";
 
-type LayoutItem = { width: number; height: number };
-
 const layouts: Record<string, LayoutItem[]> = {
   layout1: [
     { width: 1280, height: 886 },
@@ -227,54 +225,100 @@ const columns: Record<string, Record<string, number[]>> = {
   layout16: { col1: [0, 1, 2, 3], col2: [4, 5, 6], col3: [7, 8, 9], col4: [10, 11, 12], col5: [13, 14, 15] }
 };
 
-const imageCount = 15;
 
-const OnlyBusinessCardsLayout = () => {
+const OnlyBusinessCardsLayout = ({ imageCount }: { imageCount: number }) => {
   const businesses = getBusinessList(imageCount);
-  const layoutKey = `layout${imageCount}`;
-  const layout = layouts[layoutKey];
-  const columnLayout = columns[layoutKey];
 
-  if (!layout || businesses.length < layout.length) {
-    return <div>No matching layout found or not enough businesses</div>;
+  if (businesses.length < 1) {
+    return <div>No businesses available</div>;
   }
 
-  const renderCards = (indexes: number[]) => (
+  const layout16 = layouts["layout16"];
+  const column16 = columns["layout16"];
+
+  const sections: {
+    layout: LayoutItem[];
+    columnLayout: Record<string, number[]> | null;
+    offset: number;
+  }[] = [];
+
+  let offset = 0;
+  while (offset < businesses.length) {
+    const remaining = businesses.length - offset;
+    let layoutKey: string;
+    let layout: LayoutItem[];
+    let columnLayout: Record<string, number[]> | null;
+
+    if (remaining >= 16) {
+      layoutKey = "layout16";
+      layout = layout16;
+      columnLayout = column16 ?? null;
+    } else {
+      layoutKey = `layout${remaining}`;
+      layout = layouts[layoutKey];
+      columnLayout = columns[layoutKey] ?? null;
+    }
+
+    if (!layout) break;
+
+    sections.push({
+      layout,
+      columnLayout,
+      offset,
+    });
+
+    offset += layout.length;
+  }
+
+  const renderCards = (indexes: number[], layout: LayoutItem[], offset: number) => (
     <div className="space-y-5">
-      {indexes.map(i => (
-        <BusinessCard
-          key={businesses[i].id}
-          width={layout[i].width}
-          height={layout[i].height}
-          imageUrl={businesses[i].image}
-        />
-      ))}
+      {indexes.map(i => {
+        const business = businesses[i + offset];
+        const cardLayout = layout[i];
+        return (
+          <BusinessCard
+            key={business.id}
+            width={cardLayout.width}
+            height={cardLayout.height}
+            imageUrl={business.image}
+          />
+        );
+      })}
     </div>
   );
 
-  const renderHorizontalCards = (indexes: number[]) => (
+  const renderHorizontalCards = (indexes: number[], layout: LayoutItem[], offset: number) => (
     <div className="flex gap-5 pt-5">
-      {indexes.map(i => (
-        <BusinessCard
-          key={businesses[i].id}
-          width={layout[i].width}
-          height={layout[i].height}
-          imageUrl={businesses[i].image}
-        />
-      ))}
+      {indexes.map(i => {
+        const business = businesses[i + offset];
+        const cardLayout = layout[i];
+        return (
+          <BusinessCard
+            key={business.id}
+            width={cardLayout.width}
+            height={cardLayout.height}
+            imageUrl={business.image}
+          />
+        );
+      })}
     </div>
   );
 
-  const renderLayout = () => {
-    if (!columnLayout) {
+  const renderLayoutSection = (
+    layoutData: LayoutItem[],
+    columnLayoutData: Record<string, number[]> | null,
+    offset: number,
+    index: number
+  ) => {
+    if (!columnLayoutData) {
       return (
-        <div className="space-y-5">
-          {layout.map((item, i) => (
+        <div className="space-y-5" key={index}>
+          {layoutData.map((item, i) => (
             <BusinessCard
-              key={businesses[i].id}
+              key={businesses[i + offset].id}
               width={item.width}
               height={item.height}
-              imageUrl={businesses[i].image}
+              imageUrl={businesses[i + offset].image}
             />
           ))}
         </div>
@@ -282,18 +326,18 @@ const OnlyBusinessCardsLayout = () => {
     }
 
     return (
-      <div className="flex gap-5">
-        {Object.keys(columnLayout)
+      <div className="flex gap-5" key={index}>
+        {Object.keys(columnLayoutData)
           .filter(key => !key.startsWith("sub"))
           .map((colKey, idx) => {
-            const subKey = `sub${colKey[0].toUpperCase()}${colKey.slice(1)}`; // e.g., col1 -> subCol1
-            const mainIndexes = columnLayout[colKey];
-            const subIndexes = columnLayout[subKey];
+            const subKey = `sub${colKey[0].toUpperCase()}${colKey.slice(1)}`;
+            const mainIndexes = columnLayoutData[colKey];
+            const subIndexes = columnLayoutData[subKey];
 
             return (
-              <div key={idx} className="flex flex-col">
-                {renderCards(mainIndexes)}
-                {subIndexes && renderHorizontalCards(subIndexes)}
+              <div key={`${colKey}-${idx}`} className="flex flex-col">
+                {renderCards(mainIndexes, layoutData, offset)}
+                {subIndexes && renderHorizontalCards(subIndexes, layoutData, offset)}
               </div>
             );
           })}
@@ -302,10 +346,14 @@ const OnlyBusinessCardsLayout = () => {
   };
 
   return (
-    <div className="px-20 py-10 flex items-center justify-center w-full">
-      {renderLayout()}
+    <div className="px-20 py-10 flex flex-col gap-10 items-center justify-center w-full">
+      {sections.map((section, i) =>
+        renderLayoutSection(section.layout, section.columnLayout, section.offset, i)
+      )}
     </div>
   );
 };
+
+
 
 export default OnlyBusinessCardsLayout;

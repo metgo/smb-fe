@@ -32,6 +32,9 @@
 
 
 @layer utilities {
+  .glass{
+    @apply bg-white/80 backdrop-blur-md border border-white/20 shadow-md;
+  }
   .skeleton {
     @apply relative overflow-hidden bg-gradient-to-br from-0% via-50% to-100%;
   }
