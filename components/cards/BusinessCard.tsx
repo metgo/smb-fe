@@ -7,6 +7,7 @@ import { tempCardInfo } from '@/constant/hebrew';
 import useGeneralStore from '@/stores/generalStore';
 import { categoryGradientClasses } from '@/lib/utils';
 import { LocationPinIcon } from '../ui/icons';
+import { handleCropImage } from '@/lib/helpers';
 
 const BusinessCard = ({
   height,
@@ -14,51 +15,30 @@ const BusinessCard = ({
   imageUrl,
 }: BusinessCardProps) => {
   const { activeCategoryKey } = useGeneralStore()
+  const aspectRatio = width / height;
+  const aspectString = `${Math.round(width)}/${Math.round(height)}`
 
   const [isLoading, setIsLoading] = useState(false)
   const [croppedImageUrl, setCroppedImageUrl] = useState("")
 
-  const handleCropAll = async () => {
-    const encodedImageUrl = encodeURIComponent(imageUrl);
-    const xMin = 0.44285714285714284
-    const yMin = 0.41630901287553645
-    const xMax = 0.76
-    const yMax = 0.7140557939914163
-
-    const query = `url=${encodedImageUrl}&xMin=${xMin}&yMin=${yMin}&xMax=${xMax}&yMax=${yMax}&aspect=${width / height}`;
-    setIsLoading(true)
-    try {
-      const res = await fetch(`/api/crop-image?${query}`);
-      if (!res.ok) throw new Error("Failed to crop image");
-
-      const blob = await res.blob();
-      const objectUrl = URL.createObjectURL(blob);
-      setCroppedImageUrl(objectUrl);
-    } catch (error) {
-      console.error(`Error cropping image`, error);
-    } finally {
-      setIsLoading(false)
-    }
-
-  };
-
   useEffect(() => {
     if (activeCategoryKey)
-      handleCropAll()
+      handleCropImage(imageUrl, aspectRatio, setIsLoading, setCroppedImageUrl)
   }, [activeCategoryKey])
 
 
 
-
   return (
-    <div style={{ height, width }}>
+    <div
+      style={{ width, height }}
+      // className={`aspect-[${aspectRatio}] w-full`}
+    >
       {(isLoading || croppedImageUrl === "") ?
         <div className={` rounded-2xl skeleton w-full h-full ${categoryGradientClasses[activeCategoryKey]}`} /> :
         <div className="w-full h-full relative">
           <Image
             alt='abc'
-            width={"100"}
-            height={"100"}
+            fill
             unoptimized
             priority
             quality={100}

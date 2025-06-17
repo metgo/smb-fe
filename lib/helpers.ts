@@ -12,8 +12,16 @@ export function getBusinessList(length: number): { id: number; image: string }[]
   return business;
 }
 
+// Function to scale layout dimensions based on screen width
+export const scaleLayout = (layout: LayoutItem[], scale: number): LayoutItem[] => {
+  return layout.map((item) => ({
+    width: Math.round(item.width * scale),
+    height: Math.round(item.height * scale),
+  }));
+};
 
-export const handleCropAll = async (
+
+export const handleCropImage = async (
   imageUrl: string,
   aspect: number,
   setIsLoading: (isLoading: boolean) => void,

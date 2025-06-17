@@ -3,13 +3,13 @@ import Link from 'next/link'
 
 import { features } from '@/lib/utils'
 import { navbar } from '@/constant/hebrew'
-import { Logo, SearchIcon, ShopbagIcon, SunIcon, ThreeLineIcon, UserIcon } from '@/components/ui/icons'
+import { Logo, SearchIcon, ShopbagIcon, SunIcon, UserIcon } from '@/components/ui/icons'
 import BusinessPageFilterTabs from './BusinessPageFilterTabs'
 import HamburgerMenu from './HamburgerMenu'
 
 const Navbar = () => {
   return (
-    <nav className="px-70 py-2.5 bg-white shadow-md fixed z-50 w-full mb-40">
+    <nav className="px-20 py-2.5 bg-white shadow-md fixed z-50 w-full mb-40">
       <div className="flex items-center justify-between">
         {/* Hamburger, Logo, Text */}
         <div className="flex items-center gap-4">
@@ -30,7 +30,7 @@ const Navbar = () => {
             {features.map(item => (
               <div
                 key={item.key}
-                className="flex flex-col items-center"
+                className="flex flex-col items-center px-1"
               >
                 <item.icon />
                 <div className="text-sm font-normal text-theme">{item.label}</div>

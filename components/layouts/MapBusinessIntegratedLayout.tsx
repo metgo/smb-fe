@@ -1,92 +1,33 @@
-import { getBusinessList } from "@/lib/helpers";
+import { useEffect, useState } from "react";
+
 import { BusinessCard } from "../cards";
 import BusinessPinMap from "../maps/BusinessPinMap";
-
-
-const layouts: Record<string, LayoutItem[]> = {
-  layout1: [{ width: 758, height: 886 }],
-  layout2: [
-    { width: 760, height: 433 },
-    { width: 760, height: 433 },
-  ],
-  layout3: [
-    { width: 370, height: 433 },
-    { width: 370, height: 433 },
-    { width: 760, height: 433 },
-  ],
-  layout4: [
-    { width: 370, height: 646 },
-    { width: 370, height: 220 },
-    { width: 370, height: 220 },
-    { width: 370, height: 646 },
-  ],
-  layout5: [
-    { width: 370, height: 406 },
-    { width: 370, height: 220 },
-    { width: 370, height: 220 },
-    { width: 370, height: 220 },
-    { width: 370, height: 646 },
-  ],
-  layout6: [
-    { width: 240, height: 408 },
-    { width: 240, height: 458 },
-    { width: 240, height: 458 },
-    { width: 240, height: 408 },
-    { width: 240, height: 408 },
-    { width: 240, height: 458 },
-  ],
-  layout7: [
-    { width: 240, height: 408 },
-    { width: 240, height: 458 },
-    { width: 240, height: 220 },
-    { width: 240, height: 406 },
-    { width: 240, height: 220 },
-    { width: 240, height: 408 },
-    { width: 240, height: 458 },
-  ],
-  layout8: [
-    { width: 240, height: 408 },
-    { width: 240, height: 458 },
-    { width: 240, height: 220 },
-    { width: 240, height: 406 },
-    { width: 240, height: 220 },
-    { width: 240, height: 190 },
-    { width: 240, height: 258 },
-    { width: 240, height: 371 },
-  ],
-  layout9: [
-    { width: 240, height: 220 },
-    { width: 240, height: 406 },
-    { width: 240, height: 220 },
-
-    { width: 240, height: 190 },
-    { width: 240, height: 285 },
-    { width: 240, height: 371 },
-
-    { width: 240, height: 408 },
-    { width: 240, height: 218 },
-    { width: 240, height: 220 },
-  ],
-};
-
-const columns: Record<string, Record<string, number[]>> = {
-  layout3: { col1: [0, 1], col2: [2] },
-  layout4: { col1: [0, 1], col2: [2, 3] },
-  layout5: { col1: [0, 1, 2], col2: [3, 4] },
-  layout6: { col1: [0, 1], col2: [2, 3], col3: [4, 5] },
-  layout7: { col1: [0, 1], col2: [2, 3, 4], col3: [5, 6] },
-  layout8: { col1: [0, 1], col2: [2, 3, 4], col3: [5, 6, 7] },
-  layout9: { col1: [0, 1, 2], col2: [3, 4, 5], col3: [6, 7, 8] },
-};
+import { getBusinessList, scaleLayout } from "@/lib/helpers";
+import { mapIntegratedCardsColumns, mapIntegratedCardsLayouts, REFERENCE_SCREEN_WIDTH } from "@/constant/collageLayouts";
 
 
 const MapBusinessIntegratedLayout = ({ imageCount }: { imageCount: number }) => {
+  const [scale, setScale] = useState(1);
+
+  // Update scale based on window width
+  useEffect(() => {
+    const updateScale = () => {
+      const currentWidth = window.innerWidth;
+      const newScale = currentWidth / REFERENCE_SCREEN_WIDTH;
+      setScale(newScale);
+    };
+
+    updateScale(); // Initial scale calculation
+    window.addEventListener("resize", updateScale);
+    return () => window.removeEventListener("resize", updateScale);
+  }, []);
+
   const businesses = getBusinessList(imageCount);
-  const layoutOptions = Object.entries(layouts)
+  const layoutOptions = Object.entries(mapIntegratedCardsLayouts)
     .map(([key, value]) => ({ key, length: value.length }))
     .sort((a, b) => b.length - a.length); // Start from the biggest layout
 
-  const layoutChunks: { key: string; offset: number }[] = [];
+  const layoutChunks: { key: string; offset: number; scaledLayout: LayoutItem[] }[] = [];
   let remaining = imageCount;
   let offset = 0;
 
@@ -94,18 +35,24 @@ const MapBusinessIntegratedLayout = ({ imageCount }: { imageCount: number }) => 
     const layout = layoutOptions.find(l => l.length <= remaining);
     if (!layout) break;
 
-    layoutChunks.push({ key: layout.key, offset });
+    layoutChunks.push({
+      key: layout.key,
+      offset,
+      scaledLayout: scaleLayout(mapIntegratedCardsLayouts[layout.key], scale),
+    });
     offset += layout.length;
     remaining -= layout.length;
   }
 
-  const renderCards = (layoutKey: string, layoutOffset: number, indexes: number[]) => {
-    const layout = layouts[layoutKey];
+  const renderCards = (layoutKey: string, layoutOffset: number, indexes: number[], scaledLayout: LayoutItem[]) => {
     return (
-      <div className="space-y-5">
+      <div
+        key={layoutKey}
+        className="space-y-5"
+      >
         {indexes.map(i => {
           const business = businesses[layoutOffset + i];
-          const layoutItem = layout[i];
+          const layoutItem = scaledLayout[i];
           return (
             <BusinessCard
               key={business.id}
@@ -119,14 +66,13 @@ const MapBusinessIntegratedLayout = ({ imageCount }: { imageCount: number }) => 
     );
   };
 
-  const renderLayout = (layoutKey: string, layoutOffset: number) => {
-    const layout = layouts[layoutKey];
-    const columnLayout = columns[layoutKey];
+  const renderLayout = (layoutKey: string, layoutOffset: number, scaledLayout: LayoutItem[]) => {
+    const columnLayout = mapIntegratedCardsColumns[layoutKey];
 
     if (!columnLayout) {
       return (
         <div className="space-y-5">
-          {layout.map((item, i) => (
+          {scaledLayout.map((item, i) => (
             <BusinessCard
               key={businesses[layoutOffset + i].id}
               width={item.width}
@@ -142,7 +88,7 @@ const MapBusinessIntegratedLayout = ({ imageCount }: { imageCount: number }) => 
       <div className="flex gap-5">
         {Object.values(columnLayout).map((indexes, idx) => (
           <div className="space-y-5" key={`${layoutKey}-col-${idx}`}>
-            {renderCards(layoutKey, layoutOffset, indexes)}
+            {renderCards(layoutKey, layoutOffset, indexes, scaledLayout)}
           </div>
         ))}
       </div>
@@ -150,13 +96,13 @@ const MapBusinessIntegratedLayout = ({ imageCount }: { imageCount: number }) => 
   };
 
   return (
-    <div className="w-full h-full flex items-center ps-70">
-      <div className="flex flex-col gap-10 max-h-[95vh] w-[95%] overflow-y-auto hide-scrollbar py-10">
-        {layoutChunks.map(({ key, offset }, idx) => (
-          <div key={`${key}-${offset}-${idx}`}>{renderLayout(key, offset)}</div>
+    <div className="w-full h-full flex items-center ps-20">
+      <div className="flex flex-col col-span-8 gap-10 max-h-[95vh] overflow-y-auto hide-scrollbar py-10">
+        {layoutChunks.map(({ key, offset, scaledLayout }, idx) => (
+          <div key={`${key}-${offset}-${idx}`}>{renderLayout(key, offset, scaledLayout)}</div>
         ))}
       </div>
-      <BusinessPinMap />
+      <BusinessPinMap className="w-[45%]" />
     </div>
   );
 };
