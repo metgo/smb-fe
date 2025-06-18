@@ -1,17 +1,15 @@
 import { useState, useEffect } from "react";
 import { getBusinessList, scaleLayout } from "@/lib/helpers";
-
 import { BusinessCard } from "../cards";
-import { onlyCardsColumns, onlyCardsLayouts, REFERENCE_SCREEN_WIDTH } from "@/constant/collageLayouts";
-
-
-
+import {
+  onlyCardsColumns,
+  onlyCardsLayouts,
+  REFERENCE_SCREEN_WIDTH,
+} from "@/constant/collageLayouts";
 
 const OnlyBusinessCardsLayout = ({ imageCount }: { imageCount: number }) => {
-  // State to store the scaling factor
   const [scale, setScale] = useState(1);
 
-  // Update scale based on window width
   useEffect(() => {
     const updateScale = () => {
       const currentWidth = window.innerWidth;
@@ -19,58 +17,14 @@ const OnlyBusinessCardsLayout = ({ imageCount }: { imageCount: number }) => {
       setScale(newScale);
     };
 
-    // Initial scale calculation
     updateScale();
-
-    // Add event listener for window resize
     window.addEventListener("resize", updateScale);
-
-    // Cleanup event listener on component unmount
     return () => window.removeEventListener("resize", updateScale);
   }, []);
 
   const businesses = getBusinessList(imageCount);
 
-  if (businesses.length < 1) {
-    return <div>No businesses available</div>;
-  }
-
-  const layout16 = scaleLayout(onlyCardsLayouts["layout16"], scale);
-  const column16 = onlyCardsColumns["layout16"];
-
-  const sections: {
-    layout: LayoutItem[];
-    columnLayout: Record<string, number[]> | null;
-    offset: number;
-  }[] = [];
-
-  let offset = 0;
-  while (offset < businesses.length) {
-    const remaining = businesses.length - offset;
-    let layoutKey: string;
-    let layout: LayoutItem[];
-    let columnLayout: Record<string, number[]> | null;
-
-    if (remaining >= 16) {
-      layoutKey = "layout16";
-      layout = layout16;
-      columnLayout = column16 ?? null;
-    } else {
-      layoutKey = `layout${remaining}`;
-      layout = scaleLayout(onlyCardsLayouts[layoutKey], scale);
-      columnLayout = onlyCardsColumns[layoutKey] ?? null;
-    }
-
-    if (!layout) break;
-
-    sections.push({
-      layout,
-      columnLayout,
-      offset,
-    });
-
-    offset += layout.length;
-  }
+  if (businesses.length < 1) return <div>No businesses available</div>;
 
   const renderCards = (indexes: number[], layout: LayoutItem[], offset: number) => (
     <div className="space-y-5">
@@ -147,11 +101,75 @@ const OnlyBusinessCardsLayout = ({ imageCount }: { imageCount: number }) => {
     );
   };
 
+  const renderExtraCards = (extraBusinesses: any[]) => {
+    if (extraBusinesses.length === 0) return null;
+
+    const layout16 = scaleLayout(onlyCardsLayouts["layout16"], scale);
+    const columnCount = 5;
+
+    // Shuffle layout16 to avoid repeating the same shape
+    const shuffledLayouts = [...layout16].sort(() => Math.random() - 0.5);
+
+    // Distribute businesses into columns
+    const columns: any[][] = Array.from({ length: columnCount }, () => []);
+    extraBusinesses.forEach((biz, i) => {
+      const columnIndex = i % columnCount;
+      columns[columnIndex].push(biz);
+    });
+
+    return (
+      <div className="flex w-full gap-5">
+        {columns.map((column, colIdx) => (
+          <div key={`column-${colIdx}`} className="flex flex-col gap-5">
+            {column.map((biz, bizIdx) => {
+              const layoutIndex = (colIdx + bizIdx * columnCount) % shuffledLayouts.length;
+              const layout = shuffledLayouts[layoutIndex];
+
+              return (
+                <BusinessCard
+                  key={biz.id}
+                  width={layout.width}
+                  height={layout.height}
+                  imageUrl={biz.image}
+                />
+              );
+            })}
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+
+
+
+  const renderFullLayout = () => {
+    if (imageCount <= 16) {
+      const layoutKey = `layout${imageCount}`;
+      const layout = scaleLayout(onlyCardsLayouts[layoutKey], scale);
+      const columnLayout = onlyCardsColumns[layoutKey] ?? null;
+
+      return renderLayoutSection(layout, columnLayout, 0, 0);
+    }
+
+    // For imageCount > 16
+    const layout16 = scaleLayout(onlyCardsLayouts["layout16"], scale);
+    const column16 = onlyCardsColumns["layout16"];
+    const extraBusinesses = businesses.slice(16);
+
+    return (
+      <>
+        {renderLayoutSection(layout16, column16 ?? null, 0, 0)}
+        {renderExtraCards(extraBusinesses)}
+      </>
+    );
+  };
+
   return (
-    <div className="px-20 py-10 flex flex-col gap-5 items-center justify-center w-full h-full">
-      {sections.map((section, i) =>
-        renderLayoutSection(section.layout, section.columnLayout, section.offset, i)
-      )}
+    <div className="px-20 py-10 flex items-center justify-center w-full h-full">
+      <div className="flex flex-col gap-5 items-start justify-start ">
+        {renderFullLayout()}
+      </div>
     </div>
   );
 };

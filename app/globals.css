@@ -32,9 +32,10 @@
 
 
 @layer utilities {
-  .glass{
+  .glass {
     @apply bg-white/80 backdrop-blur-md border border-white/20 shadow-md;
   }
+
   .skeleton {
     @apply relative overflow-hidden bg-gradient-to-br from-0% via-50% to-100%;
   }
@@ -76,4 +77,15 @@
   border-radius: 8px;
   background: #F1F1F1;
   box-shadow: 0px 3px 4px 0px rgba(0, 0, 0, 0.03) inset;
+}
+
+@font-face {
+  font-family: 'Ploni Bold';
+  src: url('/public/fonts/ploni-regular-aaa.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+body {
+  font-family: 'Ploni', sans-serif;
 }

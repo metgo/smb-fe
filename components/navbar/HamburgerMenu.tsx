@@ -47,7 +47,7 @@ const HamburgerMenu = () => {
         onClick={() => setIsOpen(prev => !prev)}
         className="focus:outline-none cursor-pointer"
       >
-        {isOpen ? <div className="text-[2rem] font-extralight">X</div> : <ThreeLineIcon />}
+        {isOpen ? <div className="text-[2rem] font-extralight">x</div> : <ThreeLineIcon />}
       </button>
 
       {/* Dropdown Menu with Animation */}

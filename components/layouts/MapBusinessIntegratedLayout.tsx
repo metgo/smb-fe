@@ -96,13 +96,13 @@ const MapBusinessIntegratedLayout = ({ imageCount }: { imageCount: number }) => 
   };
 
   return (
-    <div className="w-full h-full flex items-center ps-20">
+    <div className="w-full h-full flex items-center ps-20 gap-2">
       <div className="flex flex-col col-span-8 gap-10 max-h-[95vh] overflow-y-auto hide-scrollbar py-10">
         {layoutChunks.map(({ key, offset, scaledLayout }, idx) => (
           <div key={`${key}-${offset}-${idx}`}>{renderLayout(key, offset, scaledLayout)}</div>
         ))}
       </div>
-      <BusinessPinMap className="w-[45%]" />
+      <BusinessPinMap className="w-[43%]" />
     </div>
   );
 };

@@ -49,3 +49,17 @@ export const handleCropImage = async (
   }
 
 };
+
+
+export const getBrowserLocation = (): Promise<GeolocationPosition | null> => {
+  return new Promise((resolve, reject) => {
+    if (!navigator.geolocation) {
+      reject("Geolocation not supported");
+    }
+
+    navigator.geolocation.getCurrentPosition(resolve, error => {
+      console.error("Geolocation error:", error);
+      resolve(null);
+    });
+  });
+};

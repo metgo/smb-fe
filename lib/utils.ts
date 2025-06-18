@@ -1,5 +1,5 @@
 import { category, navbar } from "@/constant/hebrew";
-import { CalenderIcon, CtgAttractionIcon, CtgCultureIcon, CtgEatIcon, CtgLocalIcon, CtgLodgeIcon, CtgTourIcon, GalleryIcon, IntegratedIcon, KiteIcon, MapIcon, RoadmapArrowIcon, UserGroupIcon } from "@/components/ui/icons";
+import { CtgAttractionIcon, CtgCultureIcon, CtgEatIcon, CtgLocalIcon, CtgLodgeIcon, CtgTourIcon, GalleryIcon, IntegratedIcon, KiteIcon, MapIcon, RoadmapArrowIcon, UserGroupIcon } from "@/components/ui/icons";
 
 export const categoryGradientClasses: any = {
   eat: 'from-ctg-eat-dim via-ctg-eat-light to-ctg-eat-dim',
@@ -72,7 +72,8 @@ export const features = [
   {
     key: 3,
     label: navbar.events,
-    icon: CalenderIcon,
+    icon: null,
+    iconImg: '/images/icons/events.svg'
   },
   {
     key: 4,

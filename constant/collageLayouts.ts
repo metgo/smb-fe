@@ -1,5 +1,5 @@
 // Define the reference screen width
-export const REFERENCE_SCREEN_WIDTH = 1440;
+export const REFERENCE_SCREEN_WIDTH = 1400;
 
 
 export const onlyCardsLayouts: Record<string, LayoutItem[]> = {
@@ -188,7 +188,7 @@ export const onlyCardsLayouts: Record<string, LayoutItem[]> = {
     { width: 240, height: 190 },
     { width: 240, height: 190 },
     { width: 240, height: 220 },
-    { width: 240, height: 228 },
+    { width: 240, height: 235 },
 
     { width: 240, height: 220 },
     { width: 240, height: 220 },
