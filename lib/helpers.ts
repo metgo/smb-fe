@@ -22,6 +22,36 @@ export const scaleLayout = (layout: LayoutItem[], scale: number): LayoutItem[] =
 
 
 export const handleCropImage = async (
+  imageItem: ImageItem,
+  aspect: number,
+  setIsLoading: (isLoading: boolean) => void,
+  setCroppedImageUrl: (url: string) => void
+) => {
+  if (imageItem?.subCoordinates) {
+    const encodedImageUrl = encodeURIComponent(imageItem?.image);
+    const { xMin, yMin, xMax, yMax } = imageItem?.subCoordinates;
+
+    const query = `url=${encodedImageUrl}&xMin=${xMin}&yMin=${yMin}&xMax=${xMax}&yMax=${yMax}&aspect=${aspect}`;
+    setIsLoading(true)
+    try {
+      const res = await fetch(`/api/crop-image?${query}`);
+      if (!res.ok) throw new Error("Failed to crop image");
+
+      const blob = await res.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      setCroppedImageUrl(objectUrl);
+    } catch (error) {
+      console.error(`Error cropping image`, error);
+    } finally {
+      setIsLoading(false)
+    }
+  } else {
+    setCroppedImageUrl(imageItem?.image);
+  }
+
+};
+
+export const handleCropImagedraft = async (
   imageUrl: string,
   aspect: number,
   setIsLoading: (isLoading: boolean) => void,
@@ -48,18 +78,4 @@ export const handleCropImage = async (
     setIsLoading(false)
   }
 
-};
-
-
-export const getBrowserLocation = (): Promise<GeolocationPosition | null> => {
-  return new Promise((resolve, reject) => {
-    if (!navigator.geolocation) {
-      reject("Geolocation not supported");
-    }
-
-    navigator.geolocation.getCurrentPosition(resolve, error => {
-      console.error("Geolocation error:", error);
-      resolve(null);
-    });
-  });
 };

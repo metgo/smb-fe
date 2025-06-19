@@ -1,12 +1,12 @@
 "use client"
 
 import clsx from "clsx";
-import { categories } from "@/lib/utils";
 import useGeneralStore from "@/stores/generalStore";
+import { categories } from "@/lib/utils";
 
 const CategoryPanel = () => {
   const { activeCategoryKey, setActiveCategoryKey } = useGeneralStore()
-
+  console.log("categories", categories)
   return (
     <div className="bg-white/80 backdrop-blur-md border border-white/20 shadow-md flex items-center justify-center gap-2.5 p-2.5 rounded-2xl">
 

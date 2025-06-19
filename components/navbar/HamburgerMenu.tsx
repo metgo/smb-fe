@@ -3,35 +3,35 @@
 import Link from "next/link";
 import { useState } from "react";
 
-import { hamburgerMenuItems } from "@/constant/hebrew";
-import { ThreeLineIcon } from "../ui/icons";
+import { ThreeLineIcon } from "@/components/ui/icons";
+import { menuItems } from "@/constant/hebrew";
 
 const navItems = [
   {
     col1: [
-      { id: 1, label: hamburgerMenuItems.welcome, href: "#" },
-      { id: 2, label: hamburgerMenuItems.businessPage, href: "#" },
-      { id: 3, label: hamburgerMenuItems.visitorCenter, href: "#" },
-      { id: 4, label: hamburgerMenuItems.blogArticle, href: "#" },
-      { id: 5, label: hamburgerMenuItems.joinBusiness, href: "#" },
-      { id: 6, label: hamburgerMenuItems.contactUs, href: "#" },
+      { id: 1, label: menuItems.welcome, href: "#" },
+      { id: 2, label: menuItems.businessPage, href: "#" },
+      { id: 3, label: menuItems.visitorCenter, href: "#" },
+      { id: 4, label: menuItems.blogArticle, href: "#" },
+      { id: 5, label: menuItems.joinBusiness, href: "#" },
+      { id: 6, label: menuItems.contactUs, href: "#" },
     ],
     col2: [
-      { id: 1, label: hamburgerMenuItems.eventGeneralPublic, href: "#" },
-      { id: 2, label: hamburgerMenuItems.eventCompaniesOrg, href: "#" },
-      { id: 3, label: hamburgerMenuItems.routes, href: "#" },
+      { id: 1, label: menuItems.eventGeneralPublic, href: "#" },
+      { id: 2, label: menuItems.eventCompaniesOrg, href: "#" },
+      { id: 3, label: menuItems.routes, href: "#" },
     ],
     col3: [
-      { id: 1, label: hamburgerMenuItems.mySavedOnes, href: "#" },
-      { id: 2, label: hamburgerMenuItems.checkBalance, href: "#" },
-      { id: 3, label: hamburgerMenuItems.purchasingCharacters, href: "#" },
-      { id: 4, label: hamburgerMenuItems.shoppingCart, href: "#" },
-      { id: 5, label: hamburgerMenuItems.exit, href: "#" },
+      { id: 1, label: menuItems.mySavedOnes, href: "#" },
+      { id: 2, label: menuItems.checkBalance, href: "#" },
+      { id: 3, label: menuItems.purchasingCharacters, href: "#" },
+      { id: 4, label: menuItems.shoppingCart, href: "#" },
+      { id: 5, label: menuItems.exit, href: "#" },
     ],
     col4: [
-      { id: 1, label: hamburgerMenuItems.termsConditions, href: "#" },
-      { id: 2, label: hamburgerMenuItems.privacyPolicy, href: "#" },
-      { id: 3, label: hamburgerMenuItems.hebrew, href: "#" },
+      { id: 1, label: menuItems.termsConditions, href: "#" },
+      { id: 2, label: menuItems.privacyPolicy, href: "#" },
+      { id: 3, label: menuItems.hebrew, href: "#" },
     ],
   },
 ];
@@ -52,11 +52,11 @@ const HamburgerMenu = () => {
 
       {/* Dropdown Menu with Animation */}
       <div
-        className={`absolute top-20 right-0 w-screen h-screen shadow-lg flex px-70 bg-black/60 backdrop-blur-sm overflow-y-auto transition-all duration-500 ease-in-out ${isOpen ? "max-h-[96vh] opacity-100 translate-y-0" : "max-h-0 opacity-0 -translate-y-10 pointer-events-none"
+        className={`absolute top-20 right-0 w-screen h-screen shadow-lg flex px-70 bg-black/20 backdrop-blur-sm overflow-y-auto transition-all duration-500 ease-in-out ${isOpen ? "max-h-[96vh] opacity-100 translate-y-0" : "max-h-0 opacity-0 -translate-y-10 pointer-events-none"
           }`}
       >
 
-        <div className="w-full h-[max-content] py-10 px-12 flex gap-10 rounded-b-xl bg-white backdrop-blur-2xl">
+        <div className="w-full h-[max-content] py-10 px-12 flex gap-10 rounded-b-xl bg-white/90 backdrop-blur-xl">
           {Object.entries(navItems[0]).map(([colKey, items]) => (
             <div key={colKey} className="flex gap-2.75">
               <div className="w-0.25 h-70 bg-theme" />

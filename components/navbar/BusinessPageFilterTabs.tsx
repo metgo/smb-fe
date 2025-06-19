@@ -13,7 +13,7 @@ const BusinessPageFilterTabs = () => {
           key={item.key}
           type="button"
           onClick={() => setActiveFilterTab(item.key)}
-          className={`${activeFilterTab === item.key ? "flex items-center gap-1.5 px-2.5 py-1.75 bg-white" : "px-5 py-2"} rounded-lg cursor-pointer`}
+          className={`${activeFilterTab === item.key ? "flex items-center gap-1.5 px-2.5 py-1.75 bg-white font-bold" : "px-5 py-2  font-normal"} rounded-lg cursor-pointer text-sm text-theme`}
         >
           {activeFilterTab === item.key && <item.icon />}
           <span>{item.label}</span>

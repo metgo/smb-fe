@@ -1,13 +1,14 @@
+import { getAllBusinesses } from "@/actions/businessActions";
 import FilterBusinessLayout from "@/components/layouts/FilterBusinessLayout";
 
-const page = () => {
+interface Props {
+  searchParams: Promise<{ page: string }>;
+}
 
-  return <FilterBusinessLayout />
-  // return (
-  //   <div className="px-20 py-10 flex items-center justify-center w-full">
-  //     <OnlyBusinessCardsLayout />
-  //   </div>
-  // )
+const page = async ({ searchParams }: Props) => {
+  const { page = 1 } = await searchParams;
+  const businesses: BusinessesProps = await getAllBusinesses(Number(page));
+  return <FilterBusinessLayout {...businesses} />
 };
 
 export default page;

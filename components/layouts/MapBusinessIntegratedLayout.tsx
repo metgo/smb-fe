@@ -2,11 +2,11 @@ import { useEffect, useState } from "react";
 
 import { BusinessCard } from "../cards";
 import BusinessPinMap from "../maps/BusinessPinMap";
-import { getBusinessList, scaleLayout } from "@/lib/helpers";
+import { scaleLayout } from "@/lib/helpers";
 import { mapIntegratedCardsColumns, mapIntegratedCardsLayouts, REFERENCE_SCREEN_WIDTH } from "@/constant/collageLayouts";
 
 
-const MapBusinessIntegratedLayout = ({ imageCount }: { imageCount: number }) => {
+const MapBusinessIntegratedLayout = ({ data, meta }: BusinessesProps) => {
   const [scale, setScale] = useState(1);
 
   // Update scale based on window width
@@ -22,13 +22,12 @@ const MapBusinessIntegratedLayout = ({ imageCount }: { imageCount: number }) => 
     return () => window.removeEventListener("resize", updateScale);
   }, []);
 
-  const businesses = getBusinessList(imageCount);
   const layoutOptions = Object.entries(mapIntegratedCardsLayouts)
     .map(([key, value]) => ({ key, length: value.length }))
     .sort((a, b) => b.length - a.length); // Start from the biggest layout
 
   const layoutChunks: { key: string; offset: number; scaledLayout: LayoutItem[] }[] = [];
-  let remaining = imageCount;
+  let remaining = data.length;
   let offset = 0;
 
   while (remaining > 0) {
@@ -51,14 +50,14 @@ const MapBusinessIntegratedLayout = ({ imageCount }: { imageCount: number }) => 
         className="space-y-5"
       >
         {indexes.map(i => {
-          const business = businesses[layoutOffset + i];
+          const business = data[layoutOffset + i];
           const layoutItem = scaledLayout[i];
           return (
             <BusinessCard
-              key={business.id}
+              key={business._id}
               width={layoutItem.width}
               height={layoutItem.height}
-              imageUrl={business.image}
+              business={business}
             />
           );
         })}
@@ -74,10 +73,10 @@ const MapBusinessIntegratedLayout = ({ imageCount }: { imageCount: number }) => 
         <div className="space-y-5">
           {scaledLayout.map((item, i) => (
             <BusinessCard
-              key={businesses[layoutOffset + i].id}
+              key={data[layoutOffset + i]._id}
               width={item.width}
               height={item.height}
-              imageUrl={businesses[layoutOffset + i].image}
+              business={data[layoutOffset + i]}
             />
           ))}
         </div>

@@ -21,7 +21,7 @@ export const navbar = {
   tracks: "מסלולים",
 }
 
-export const hamburgerMenuItems = {
+export const menuItems = {
   welcome: "ברוכים הבאים",
   businessPage: "עמוד עסקים",
   visitorCenter: "מרכז המבקרים",
@@ -33,6 +33,7 @@ export const hamburgerMenuItems = {
   routes: "מסלולים",
   mySavedOnes: "השמורים שלי",
   checkBalance: "בדיקת יתרת תווים",
+  addMyBusiness: "לצרף את העסק שלי",
   purchasingCharacters: "רכישת תווים",
   shoppingCart: "סל הקניות",
   exit: "יציאה",
@@ -41,8 +42,12 @@ export const hamburgerMenuItems = {
   hebrew: "עברית",
 }
 
-
 export const tempCardInfo = {
   title: "בית קפה הנגב הפורח",
   location: "קיבוץ נופים"
+}
+
+
+export const emptyStateText = {
+  noBusiness: "לא נמצאו תוצאות – אבל תמיד אפשר לנסות כיוון חדש.עדכן את הסינון ונצא לחיפוש מחדש!"
 }

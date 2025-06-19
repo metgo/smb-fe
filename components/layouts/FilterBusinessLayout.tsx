@@ -1,27 +1,40 @@
 "use client"
 
-import { useParams } from 'next/navigation'
 import useGeneralStore from '@/stores/generalStore'
+
+import NoBusinessLayout from './NoBusinessLayout'
+import OnlyBusinessMapLayout from './OnlyBusinessMapLayout'
 import OnlyBusinessCardsLayout from './OnlyBusinessCardsLayout'
 import MapBusinessIntegratedLayout from './MapBusinessIntegratedLayout'
-import OnlyBusinessMapLayout from './OnlyBusinessMapLayout'
 
-const FilterBusinessLayout = () => {
+
+const FilterBusinessLayout = (businesses: BusinessesProps) => {
   const { activeFilterTab } = useGeneralStore()
-  const params = useParams();
-  const imageCount = Number(params.imageCount);
 
+  const totalBusiness = businesses?.totalData;
+
+
+  if (totalBusiness === 0) {
+    return <NoBusinessLayout />
+  }
 
   const renderLayout = () => {
     switch (activeFilterTab) {
       case "gallery":
-        return <OnlyBusinessCardsLayout imageCount={imageCount} />
+        return <OnlyBusinessCardsLayout
+          data={businesses.data}
+          meta={businesses.meta}
+          totalData={businesses.totalData}
+        />
       case "integrated":
-        return <MapBusinessIntegratedLayout imageCount={imageCount} />
+        return <MapBusinessIntegratedLayout
+          data={businesses.data}
+          meta={businesses.meta}
+        />
       case "map":
         return <OnlyBusinessMapLayout />
       default:
-        return <div>No layout</div>
+        return <NoBusinessLayout />
     }
   }
   return renderLayout()

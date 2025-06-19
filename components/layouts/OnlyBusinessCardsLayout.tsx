@@ -1,14 +1,56 @@
+import Image from "next/image";
+import { scaleLayout } from "@/lib/helpers";
 import { useState, useEffect } from "react";
-import { getBusinessList, scaleLayout } from "@/lib/helpers";
-import { BusinessCard } from "../cards";
+import { useSearchParams, useRouter } from "next/navigation";
+
+import { BusinessCard } from "@/components/cards";
 import {
   onlyCardsColumns,
   onlyCardsLayouts,
   REFERENCE_SCREEN_WIDTH,
 } from "@/constant/collageLayouts";
 
-const OnlyBusinessCardsLayout = ({ imageCount }: { imageCount: number }) => {
+interface DebounceFunction<T extends (...args: any[]) => void> {
+  (...args: Parameters<T>): void;
+}
+
+const debounce = <T extends (...args: any[]) => void>(func: T, wait: number): DebounceFunction<T> => {
+  let timeout: ReturnType<typeof setTimeout>;
+  return (...args: Parameters<T>) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func(...args), wait);
+  };
+};
+
+const OnlyBusinessCardsLayout = ({ data, meta, totalData }: BusinessesProps) => {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const businessCount = data.length;
   const [scale, setScale] = useState(1);
+  const [pageCount, setPageCount] = useState(1);
+
+  useEffect(() => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('page', pageCount.toString());
+    router.replace(`?${params.toString()}`, { scroll: false });
+  }, [pageCount, searchParams, router]);
+
+  // Handle scroll for infinite loading
+  useEffect(() => {
+    const handleScroll = debounce(() => {
+      const scrolled = window.scrollY + window.innerHeight;
+      const totalHeight = document.documentElement.scrollHeight;
+      const buffer = 100; // Pixels before reaching the bottom to trigger next page
+
+      if (scrolled >= totalHeight - buffer && pageCount < 100 && meta.hasNextPage) { // Optional: cap max pages
+        setPageCount((prev) => prev + 1);
+      }
+    }, 200); // Debounce delay in ms
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [pageCount, setPageCount]);
+
 
   useEffect(() => {
     const updateScale = () => {
@@ -22,21 +64,20 @@ const OnlyBusinessCardsLayout = ({ imageCount }: { imageCount: number }) => {
     return () => window.removeEventListener("resize", updateScale);
   }, []);
 
-  const businesses = getBusinessList(imageCount);
 
-  if (businesses.length < 1) return <div>No businesses available</div>;
+  if (data.length < 1) return <div>No businesses available</div>;
 
   const renderCards = (indexes: number[], layout: LayoutItem[], offset: number) => (
     <div className="space-y-5">
       {indexes.map((i) => {
-        const business = businesses[i + offset];
+        const business = data[i + offset];
         const cardLayout = layout[i];
         return (
           <BusinessCard
-            key={business.id}
+            key={i}
             width={cardLayout.width}
             height={cardLayout.height}
-            imageUrl={business.image}
+            business={business}
           />
         );
       })}
@@ -46,14 +87,14 @@ const OnlyBusinessCardsLayout = ({ imageCount }: { imageCount: number }) => {
   const renderHorizontalCards = (indexes: number[], layout: LayoutItem[], offset: number) => (
     <div className="flex gap-5 pt-5">
       {indexes.map((i) => {
-        const business = businesses[i + offset];
+        const business = data[i + offset];
         const cardLayout = layout[i];
         return (
           <BusinessCard
-            key={business.id}
+            key={business?._id}
             width={cardLayout.width}
             height={cardLayout.height}
-            imageUrl={business.image}
+            business={business}
           />
         );
       })}
@@ -71,10 +112,10 @@ const OnlyBusinessCardsLayout = ({ imageCount }: { imageCount: number }) => {
         <div className="space-y-5" key={index}>
           {layoutData.map((item, i) => (
             <BusinessCard
-              key={businesses[i + offset].id}
+              key={data[i + offset]?._id}
               width={item.width}
               height={item.height}
-              imageUrl={businesses[i + offset].image}
+              business={data[i + offset]}
             />
           ))}
         </div>
@@ -130,7 +171,7 @@ const OnlyBusinessCardsLayout = ({ imageCount }: { imageCount: number }) => {
                   key={biz.id}
                   width={layout.width}
                   height={layout.height}
-                  imageUrl={biz.image}
+                  business={biz}
                 />
               );
             })}
@@ -144,8 +185,8 @@ const OnlyBusinessCardsLayout = ({ imageCount }: { imageCount: number }) => {
 
 
   const renderFullLayout = () => {
-    if (imageCount <= 16) {
-      const layoutKey = `layout${imageCount}`;
+    if (businessCount <= 16) {
+      const layoutKey = `layout${businessCount}`;
       const layout = scaleLayout(onlyCardsLayouts[layoutKey], scale);
       const columnLayout = onlyCardsColumns[layoutKey] ?? null;
 
@@ -155,7 +196,7 @@ const OnlyBusinessCardsLayout = ({ imageCount }: { imageCount: number }) => {
     // For imageCount > 16
     const layout16 = scaleLayout(onlyCardsLayouts["layout16"], scale);
     const column16 = onlyCardsColumns["layout16"];
-    const extraBusinesses = businesses.slice(16);
+    const extraBusinesses = data.slice(16);
 
     return (
       <>
@@ -166,10 +207,18 @@ const OnlyBusinessCardsLayout = ({ imageCount }: { imageCount: number }) => {
   };
 
   return (
-    <div className="px-20 py-10 flex items-center justify-center w-full h-full">
+    <div className="px-20 py-10 flex items-center justify-center w-full h-full relative">
       <div className="flex flex-col gap-5 items-start justify-start ">
         {renderFullLayout()}
       </div>
+
+      <Image
+        width={300}
+        height={300}
+        alt="Yellow image"
+        src={"/images/yellow.png"}
+        className="fixed -bottom-12 -left-24 rotate-30"
+      />
     </div>
   );
 };
