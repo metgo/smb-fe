@@ -41,6 +41,8 @@ declare interface BusinessProps {
   geoLocation: GeoLocation;
   images: ImageItem[];
   logo: Logo;
+  location: string;
+  imageUrl: string;
 }
 
 declare interface BusinessesProps {
@@ -61,3 +63,12 @@ declare type BusinessCardProps = {
   height: number;
   business: BusinessProps;
 }
+
+declare type FaviouriteBusinessProps = {
+  _id: string;
+  name: string;
+  height: number;
+  width: number;
+  imageUrl: string;
+  location: string;
+};

@@ -5,6 +5,9 @@ import { useState } from "react";
 
 import { ThreeLineIcon } from "@/components/ui/icons";
 import { menuItems } from "@/constant/hebrew";
+import { IoReorderThree } from "react-icons/io5";
+import { GrClose } from "react-icons/gr";
+import { IconImage } from "../ui";
 
 const navItems = [
   {
@@ -45,9 +48,9 @@ const HamburgerMenu = () => {
       <button
         type="button"
         onClick={() => setIsOpen(prev => !prev)}
-        className="focus:outline-none cursor-pointer"
+        className="focus:outline-none cursor-pointer text-theme"
       >
-        {isOpen ? <div className="text-[2rem] font-extralight">x</div> : <ThreeLineIcon />}
+        {isOpen ? <IconImage icon="close" /> : <IconImage icon="threeline"/>}
       </button>
 
       {/* Dropdown Menu with Animation */}

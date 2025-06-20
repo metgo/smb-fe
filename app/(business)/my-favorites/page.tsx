@@ -1,8 +1,8 @@
-import React from 'react'
+import FavoriteItemLayout from './_components/FavoriteItemLayout'
 
 const page = () => {
   return (
-    <div>page</div>
+    <FavoriteItemLayout/>
   )
 }
 

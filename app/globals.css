@@ -80,12 +80,13 @@
 }
 
 @font-face {
-  font-family: 'Ploni Bold';
+  /* font-family: 'Ploni Bold'; */
+  font-family: 'Ploni ML v2 AAA';
   src: url('/public/fonts/ploni-regular-aaa.otf') format('opentype');
   font-weight: normal;
   font-style: normal;
 }
 
 body {
-  font-family: 'Ploni', sans-serif;
+  font-family: 'Ploni Bold', sans-serif;
 }

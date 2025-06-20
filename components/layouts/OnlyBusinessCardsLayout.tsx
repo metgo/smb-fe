@@ -168,7 +168,7 @@ const OnlyBusinessCardsLayout = ({ data, meta, totalData }: BusinessesProps) => 
 
               return (
                 <BusinessCard
-                  key={biz.id}
+                  key={biz._id}
                   width={layout.width}
                   height={layout.height}
                   business={biz}

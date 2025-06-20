@@ -1,6 +1,5 @@
 import React from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
 
 import { features } from '@/lib/utils'
 import { navbar } from '@/constant/hebrew'
@@ -9,6 +8,7 @@ import UserIconHoverCard from './UserIconHoverCard'
 import CurrentTempOfYourCity from './CurrentTempOfYourCity'
 import BusinessPageFilterTabs from './BusinessPageFilterTabs'
 import { Logo, SearchIcon, ShopbagIcon } from '@/components/ui/icons'
+import { IconImage } from '@/components/ui'
 
 const Navbar = async () => {
 
@@ -36,9 +36,7 @@ const Navbar = async () => {
                 key={item.key}
                 className="flex flex-col items-center px-1"
               >
-                {item.icon ? <item.icon /> :
-                  <Image width={30} height={30} src={item.iconImg} alt='Calender' />
-                }
+                <IconImage width={30} height={30} icon={item.icon} />
                 <div className="text-sm font-normal text-theme">{item.label}</div>
               </div>
             ))}
@@ -56,8 +54,8 @@ const Navbar = async () => {
               </div>
               <ShopbagIcon />
             </div>
-            <UserIconHoverCard/>
-            <CurrentTempOfYourCity/>
+            <UserIconHoverCard />
+            <CurrentTempOfYourCity />
           </div>
         </div>
       </div>

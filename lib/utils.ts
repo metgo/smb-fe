@@ -1,5 +1,7 @@
 import { category, navbar } from "@/constant/hebrew";
 import { CtgAttractionIcon, CtgCultureIcon, CtgEatIcon, CtgLocalIcon, CtgLodgeIcon, CtgTourIcon, GalleryIcon, IntegratedIcon, KiteIcon, MapIcon, RoadmapArrowIcon, UserGroupIcon } from "@/components/ui/icons";
+import { MdOutlineDashboard } from "react-icons/md";
+import { FaRegMap } from "react-icons/fa6";
 
 export const categoryGradientClasses: any = {
   eat: 'from-ctg-eat-dim via-ctg-eat-light to-ctg-eat-dim',
@@ -62,23 +64,22 @@ export const features = [
   {
     key: 1,
     label: navbar.funDays,
-    icon: KiteIcon,
+    icon: 'kite',
   },
   {
     key: 2,
     label: navbar.toGroups,
-    icon: UserGroupIcon,
+    icon: 'user-group',
   },
   {
     key: 3,
     label: navbar.events,
-    icon: null,
-    iconImg: '/images/icons/events.svg'
+    icon: 'events'
   },
   {
     key: 4,
     label: navbar.tracks,
-    icon: RoadmapArrowIcon
+    icon: 'trail'
   }
 ]
 
@@ -86,17 +87,17 @@ export const filterTabs = [
   {
     key: "gallery",
     label: navbar.gallery,
-    icon: GalleryIcon
+    icon: "dashboard"
   },
   {
     key: "integrated",
     label: navbar.integrated,
-    icon: IntegratedIcon
+    icon: "dashboard-space"
   },
   {
     key: "map",
     label: navbar.map,
-    icon: MapIcon
+    icon: "map-fold"
   },
 ]
 
