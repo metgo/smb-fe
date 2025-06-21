@@ -14,9 +14,9 @@ const FilterBusinessLayout = (businesses: BusinessesProps) => {
   const totalBusiness = businesses?.totalData;
 
 
-  if (totalBusiness === 0) {
-    return <NoBusinessLayout />
-  }
+  // if (totalBusiness === 0) {
+  //   return <NoBusinessLayout />
+  // }
 
   const renderLayout = () => {
     switch (activeFilterTab) {

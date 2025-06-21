@@ -1,19 +1,22 @@
-import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
+import { slides } from "@/constant/placeholderData";
+import useGeneralStore from "@/stores/generalStore";
+import { getAllBusinessLocation } from "@/actions/businessActions";
+import { googlePointOfInterest } from "@/constant/googlePoi";
+import { GOOGLE_API_KEY } from "@/constant/envConstants";
 
-
-import { customMapStyle, googlePointOfInterest } from "@/constant/googlePoi";
-import { addMapTypeControl } from "@/lib/utils";
-
+declare global {
+  interface Window {
+    prevSlide: () => void;
+    nextSlide: () => void;
+  }
+}
 
 const googleMapsScriptLoaded = {
   loaded: false,
   callbacks: [] as (() => void)[],
 };
-
-
-const GOOGLE_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAP_API_KEY
 
 export const loadGoogleMapsScript = (callback: () => void) => {
   if (googleMapsScriptLoaded.loaded) {
@@ -41,139 +44,172 @@ export const loadGoogleMapsScript = (callback: () => void) => {
 
 const center = { lat: 31.0461, lng: 34.8516 };
 
+
+
 export const useGoogleMap = () => {
-  const searchParams = useSearchParams();
-
-  const mapRef = useRef<HTMLDivElement | null>(null);
+  const mapRef = useRef(null);
+  const { activeFilterTab } = useGeneralStore();
   const [map, setMap] = useState<google.maps.Map | null>(null);
-  const [isMapLoaded, setIsMapLoaded] = useState(false);
-  const markersRef = useRef<{ [key: string]: google.maps.Marker }>({});
   const infoWindowRef = useRef<google.maps.InfoWindow | null>(null);
-  const [isMarkerLoading, setIsMarkerLoading] = useState(false);
-  const previousPopupMarkerRef = useRef<google.maps.Marker | null>(null);
-
+  const activeMarkerRef = useRef<google.maps.Marker | null>(null);
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [businesses, setBusinesses] = useState<any[]>([]);
+  const hasFetchedRef = useRef(false);
 
   useEffect(() => {
-    loadGoogleMapsScript(() => {
-      setIsMapLoaded(true);
-      initializeMap();
+    if (!hasFetchedRef.current && activeFilterTab === "map") {
+      hasFetchedRef.current = true;
+      getAllBusinessLocation().then((locations) => {
+        setBusinesses(locations);
+      });
+    }
+  }, [activeFilterTab]);
 
-      const style = document.createElement("style");
-      style.textContent = customMapStyle;
-      document.head.appendChild(style);
-    });
-
-    return () => {
-      if (infoWindowRef.current) {
-        infoWindowRef.current.close();
-      }
+  useEffect(() => {
+    window.prevSlide = () => {
+      setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
+    };
+    window.nextSlide = () => {
+      setCurrentSlide((prev) => (prev + 1) % slides.length);
     };
   }, []);
 
-  const initializeMap = () => {
-    if (!window.google || !mapRef.current) return;
 
-    const googleMap = new window.google.maps.Map(mapRef.current, {
-      center,
-      zoom: 10,
-      mapTypeControl: false,
-      streetViewControl: false,
-      gestureHandling: "greedy",
-      zoomControl: false,
-      fullscreenControl: false,
-      keyboardShortcuts: false,
-      rotateControl: false,
-      scaleControl: false,
-      styles: googlePointOfInterest,
-    });
-    setMap(googleMap);
+  const generateContent = () => {
+    const slide = slides[currentSlide];
+    console.log("--------slide", slide)
+    const indicators = slides.map((_, i) => {
+      return `<div style="
+      width: ${i === currentSlide ? "12px" : "6px"};
+      height: ${i === currentSlide ? "12px" : "6px"};
+      border-radius: 50%;
+      margin: 0 3px;
+      background-color: ${i === currentSlide ? "white" : "rgba(255,255,255,0.4)"};
+      display: inline-block;
+    "></div>`;
+    }).join("");
 
-    infoWindowRef.current = new google.maps.InfoWindow({
-      maxWidth: 200,
-      disableAutoPan: true,
-    });
-    addMapTypeControl(googleMap);
-
-    // Add map click event listener to close info window
-    googleMap.addListener("click", () => {
-      if (infoWindowRef.current) {
-        infoWindowRef.current.close();
-        // Reset all markers to original icon
-        Object.values(markersRef.current).forEach((marker) => {
-          marker.setIcon((marker as any).originalIcon);
-        });
-        previousPopupMarkerRef.current = null;
-      }
-    });
+    return `
+    <div style="width: 240px; height: 240px; border:2px solid white; border-radius: 8px; overflow: hidden; position: relative; box-shadow: 0 4px 12px rgba(0,0,0,0.3); font-family: sans-serif;">
+      <img src="${slide?.imageUrl}" style="width: 100%; height: 100%; object-fit: cover;" />
+      
+      <div style="position: absolute; top: 16px; right: 16px; left: 16px; color: white;">
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+          <div>logo</div>
+          <div style="display: flex; align-items: center; gap:10px">
+            <img src="/images/icons/pin.svg" style="cursor: pointer;" onclick="window.nextSlide()" />
+            <img src="/images/icons/circular-heart.svg" style="cursor: pointer;" onclick="window.prevSlide()" />
+          </div>
+        </div>
+      </div>
+      
+      <div style="position: absolute; bottom: 16px; right: 16px; left: 16px; color: white;">
+        <h1 style="font-size: 16px; font-weight: bold; margin: 0;">${slide.name}</h1>
+        <p style="font-size: 12px; margin: 4px 0 8px;">${slide.desc}</p>
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+          <img src="/images/icons/next.svg" style="cursor: pointer;" onclick="window.prevSlide()" />
+          <div>${indicators}</div>
+          <img src="/images/icons/prev.svg" style="cursor: pointer;" onclick="window.nextSlide()" />
+        </div>
+      </div>
+    </div>
+  `;
   };
 
   const addMarkers = () => {
-    if (!map || !infoWindowRef.current || !mapRef.current) return;
+    if (!map || !infoWindowRef.current || !mapRef.current || businesses.length === 0) return;
 
-    // Clear existing markers
-    Object.values(markersRef.current).forEach((marker) => marker.setMap(null));
-    markersRef.current = {};
-    infoWindowRef.current.close();
+    const uniqueLocations = new Set();
 
+    businesses.forEach((business, index) => {
+      const coords = business?.businessId?.geoLocation;
+      if (!coords) return;
 
+      const lat = parseFloat(coords.lat);
+      const lng = parseFloat(coords.long);
 
-    const locationMap = new Map<string, any[]>();
+      const key = `${lat.toFixed(6)}_${lng.toFixed(6)}`;
+      if (uniqueLocations.has(key)) return;
+      uniqueLocations.add(key);
 
-
-    locationMap.forEach((locations) => {
-      const firstLocation = locations[0];
-      const lat = parseFloat(firstLocation?.businessId?.geoLocation?.lat);
-      const lng = parseFloat(firstLocation?.businessId?.geoLocation?.long);
-
-    
-
-      const marker = new google.maps.Marker({
+      const marker = new window.google.maps.Marker({
         position: { lat, lng },
-        map: map,
+        map,
+        icon: {
+          url: "/images/markers/travel.svg",
+          scaledSize: new window.google.maps.Size(60, 60),
+        },
       });
 
-      const content = `<div class="custom-popup"><h2>${firstLocation?.businessId?.name}</h2></div>`;
-      const markerKey = firstLocation?.businessId?._id;
-      markersRef.current[markerKey] = marker;
-
-      // Store original and hover/click icons in marker's custom properties
-
-      // Click: Open info window and set hoverClickIcon
+      
       marker.addListener("click", () => {
-        Object.values(markersRef.current).forEach((m) => {
-          if (m !== marker) {
-            m.setIcon((m as any).originalIcon);
-          }
-        });
+        const isSameMarker = activeMarkerRef.current === marker;
+        console.log("isSameMarker", isSameMarker)
+        const isOpen = infoWindowRef.current?.get("map") != null;
 
-        infoWindowRef.current!.close();
-        infoWindowRef.current!.setContent(content);
-        infoWindowRef.current!.open(map, marker);
+        if (isSameMarker && isOpen) {
+          infoWindowRef.current?.close();
+          activeMarkerRef.current = null;
+        } else {
+          activeMarkerRef.current = marker;
+          infoWindowRef.current?.setContent(generateContent());
+          infoWindowRef.current?.open(map, marker);
+
+          // Hide the close button after a slight delay to ensure the InfoWindow is rendered
+          setTimeout(() => {
+            const iw = document.querySelector(".gm-style-iw");
+            const closeButton = iw?.parentElement?.querySelector('button[aria-label="Close"]');
+            if (closeButton) (closeButton as HTMLElement).style.display = "none";
+          }, 0);
+        }
       });
     });
-
   };
 
-  // Handle window resize to update zoom and bounds
   useEffect(() => {
-    if (!map || !isMapLoaded) return;
+    loadGoogleMapsScript(() => {
+      if (!window.google || !mapRef.current) return;
 
-    const handleResize = () => {
-      addMarkers(); // Re-run addMarkers to adjust zoom and bounds
-    };
+      const googleMap = new window.google.maps.Map(mapRef.current, {
+        center,
+        zoom: 10,
+        mapTypeControl: false,
+        streetViewControl: false,
+        gestureHandling: "greedy",
+        zoomControl: false,
+        fullscreenControl: false,
+        keyboardShortcuts: false,
+        rotateControl: false,
+        scaleControl: false,
+        styles: googlePointOfInterest,
+      });
 
-    window.addEventListener("resize", handleResize);
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    };
-  }, [map, isMapLoaded]);
+      setMap(googleMap);
+      infoWindowRef.current = new window.google.maps.InfoWindow({
+        maxWidth: 420,
+        disableAutoPan: true,
+        pixelOffset: new window.google.maps.Size(0, -10),
+      });
+
+      addMarkers(); // Call addMarkers immediately after map initialization
+
+      googleMap.addListener("click", () => {
+        infoWindowRef.current?.close();
+        activeMarkerRef.current = null;
+      });
+    });
+  }, []);
 
   useEffect(() => {
-    if (map && isMapLoaded) {
-      addMarkers();
+    if (businesses.length > 0)
+      addMarkers()
+  }, [businesses])
+
+  useEffect(() => {
+    if (map && infoWindowRef.current && activeMarkerRef.current) {
+      infoWindowRef.current.setContent(generateContent());
     }
-  }, [map, isMapLoaded]);
+  }, [currentSlide]);
 
-
-  return { mapRef, isMarkerLoading };
+  return { mapRef };
 };

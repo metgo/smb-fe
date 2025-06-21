@@ -1,3 +1,5 @@
+import { urls } from "@/lib/endpoints";
+
 const base_url = process.env.NEXT_PUBLIC_BASE_URL;
 const pageCache = new Map<number, BusinessProps[]>(); // Cache only the data array
 const metaCache = new Map<number, BusinessesProps['meta']>(); // Cache meta per page
@@ -49,12 +51,23 @@ export const getAllBusinesses = async (pageCount: number): Promise<BusinessesPro
 
 export const getAllCategory = async () => {
   try {
-    const res = await fetch(`${base_url}/categories?campCode=TAV8DL`,);
+    const res = await fetch(urls.categories);
     if (!res.ok) throw new Error('Failed to fetch categories');
     const data = await res.json();
     return data;
   } catch (err) {
     console.error('Error fetching categories:', err);
     return [];
+  }
+}
+
+export const getAllBusinessLocation = async () => {
+  try {
+    const res = await fetch(urls.locations)
+    if (!res.ok) throw new Error('Failed to fetch categories');
+    const data = await res.json();
+    return data.data;
+  } catch (error) {
+    console.error('Error fetching categories:', error);
   }
 }

@@ -1,7 +1,5 @@
 import { category, navbar } from "@/constant/hebrew";
-import { CtgAttractionIcon, CtgCultureIcon, CtgEatIcon, CtgLocalIcon, CtgLodgeIcon, CtgTourIcon, GalleryIcon, IntegratedIcon, KiteIcon, MapIcon, RoadmapArrowIcon, UserGroupIcon } from "@/components/ui/icons";
-import { MdOutlineDashboard } from "react-icons/md";
-import { FaRegMap } from "react-icons/fa6";
+import { CtgAttractionIcon, CtgCultureIcon, CtgEatIcon, CtgLocalIcon, CtgLodgeIcon, CtgTourIcon } from "@/components/ui/icons";
 
 export const categoryGradientClasses: any = {
   eat: 'from-ctg-eat-dim via-ctg-eat-light to-ctg-eat-dim',
