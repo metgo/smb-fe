@@ -1,5 +1,25 @@
-import { category, navbar } from "@/constant/hebrew";
+import {  navbar } from "@/constant/hebrew";
 import { CtgAttractionIcon, CtgCultureIcon, CtgEatIcon, CtgLocalIcon, CtgLodgeIcon, CtgTourIcon } from "@/components/ui/icons";
+
+
+
+const categoryId: any = {
+  sleep: "6566fcd4a77d2a477266d3b9",
+  attraction: "6566e31ca77d2a477266d2d6",
+  culture: "6566e36ba77d2a477266d2f4",
+  tour: "6566e256a77d2a477266d2c0",
+  eat: "6566e3aaa77d2a477266d314",
+  local: "6566fd7fa77d2a477266d3ca",
+};
+
+export const businessMarkers = {
+  [categoryId.eat]: "food.svg",
+  [categoryId.local]: "local.svg",
+  [categoryId.sleep]: "sleep.svg",
+  [categoryId.culture]: "culture.svg",
+  [categoryId.attraction]: "attractions.svg",
+  [categoryId.tour]: "travel.svg"
+}
 
 export const categoryGradientClasses: any = {
   eat: 'from-ctg-eat-dim via-ctg-eat-light to-ctg-eat-dim',
@@ -11,52 +31,42 @@ export const categoryGradientClasses: any = {
 };
 
 export const categoryBgClasses: any = {
-  eat: 'bg-ctg-eat-dark',
-  local: 'bg-ctg-local-dark',
-  lodge: 'bg-ctg-lodge-dark',
-  culture: 'bg-ctg-culture-dark',
-  attraction: 'bg-ctg-attract-dark',
-  tour: 'bg-ctg-tour-dark',
+  [categoryId.eat]: 'bg-ctg-eat-dark',
+  [categoryId.local]: 'bg-ctg-local-dark',
+  [categoryId.sleep]: 'bg-ctg-lodge-dark',
+  [categoryId.culture]: 'bg-ctg-culture-dark',
+  [categoryId.attraction]: 'bg-ctg-attract-dark',
+  [categoryId.tour]: 'bg-ctg-tour-dark',
 };
 
-export const categories = [
-  {
-    key: "tour",
+
+export const categoryIcons = {
+  [categoryId.tour]: {
     icon: CtgTourIcon,
-    label: category.tours,
     bg: "bg-ctg-tour-dark"
   },
-  {
-    key: "attraction",
+  [categoryId.attraction]: {
     icon: CtgAttractionIcon,
-    label: category.attractions,
     bg: "bg-ctg-attract-dark"
   },
-  {
-    key: "eat",
+  [categoryId.eat]: {
     icon: CtgEatIcon,
-    label: category.eater,
     bg: "bg-ctg-eat-dark"
   },
-  {
-    key: "culture",
+  [categoryId.culture]: {
     icon: CtgCultureIcon,
-    label: category.culture,
     bg: "bg-ctg-culture-dark"
   },
-  {
-    key: "lodge",
+  [categoryId.sleep]: {
     icon: CtgLodgeIcon,
-    label: category.lodge,
     bg: "bg-ctg-lodge-dark"
   },
-  {
-    key: "local",
+  [categoryId.local]: {
     icon: CtgLocalIcon,
-    label: category.local,
     bg: "bg-ctg-local-dark"
   }
-]
+}
+
 
 export const features = [
   {
@@ -98,20 +108,6 @@ export const filterTabs = [
     icon: "map-fold"
   },
 ]
-
-export const foodSubCategories = [
-  { id: 1, label: "מסעדות" },        // Restaurants  
-  { id: 2, label: "בתי קפה" },       // Cafés  
-  { id: 3, label: "מאפיות" },        // Bakeries  
-  { id: 4, label: "דוכני רחוב" },    // Street Food  
-  { id: 5, label: "גלידריות" },       // Ice Cream Shops  
-  { id: 6, label: "מסעדות טבעוניות" }, // Vegan Restaurants  
-  { id: 7, label: "מסעדות כשרות" },  // Kosher Restaurants  
-  { id: 8, label: "ברים ופאבים" },    // Bars & Pubs  
-  { id: 9, label: "מסעדות אסיאתיות" }, // Asian Restaurants  
-  { id: 10, label: "פוד טראקס" }     // Food Trucks
-];
-
 
 
 const selectedTheme = { colors: { primary: "#fff" } }

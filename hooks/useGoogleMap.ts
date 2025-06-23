@@ -2,9 +2,10 @@ import { useEffect, useRef, useState } from "react";
 
 import { slides } from "@/constant/placeholderData";
 import useGeneralStore from "@/stores/generalStore";
-import { getAllBusinessLocation } from "@/actions/businessActions";
+import { getAllBusinessLocation, getBusinessById } from "@/actions/businessActions";
 import { googlePointOfInterest } from "@/constant/googlePoi";
 import { GOOGLE_API_KEY } from "@/constant/envConstants";
+import { businessMarkers } from "@/lib/utils";
 
 declare global {
   interface Window {
@@ -48,13 +49,26 @@ const center = { lat: 31.0461, lng: 34.8516 };
 
 export const useGoogleMap = () => {
   const mapRef = useRef(null);
-  const { activeFilterTab } = useGeneralStore();
-  const [map, setMap] = useState<google.maps.Map | null>(null);
-  const infoWindowRef = useRef<google.maps.InfoWindow | null>(null);
-  const activeMarkerRef = useRef<google.maps.Marker | null>(null);
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [businesses, setBusinesses] = useState<any[]>([]);
   const hasFetchedRef = useRef(false);
+  const markersRef = useRef<google.maps.Marker[]>([]);
+  const activeMarkerRef = useRef<google.maps.Marker | null>(null);
+  const infoWindowRef = useRef<google.maps.InfoWindow | null>(null);
+  const [activeBusinessData, setActiveBusinessData] = useState<any>()
+  console.log("activeBusinessData", activeBusinessData)
+
+  const { activeFilterTab, activeCategoryKey } = useGeneralStore();
+
+  const [map, setMap] = useState<google.maps.Map | null>(null);
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [businesses, setBusinesses] = useState<BusinessMakerProps[]>([]);
+
+
+  async function getBusinessData(businessId: string) {
+    console.log("getBusiessData", businessId)
+    const res = await getBusinessById(businessId)
+    setActiveBusinessData(res)
+  }
+
 
   useEffect(() => {
     if (!hasFetchedRef.current && activeFilterTab === "map") {
@@ -75,10 +89,10 @@ export const useGoogleMap = () => {
   }, []);
 
 
+
   const generateContent = () => {
-    const slide = slides[currentSlide];
-    console.log("--------slide", slide)
-    const indicators = slides.map((_, i) => {
+    const item = activeBusinessData?.images[currentSlide];
+    const indicators = activeBusinessData?.images?.map((_: any, i: number) => {
       return `<div style="
       width: ${i === currentSlide ? "12px" : "6px"};
       height: ${i === currentSlide ? "12px" : "6px"};
@@ -91,7 +105,7 @@ export const useGoogleMap = () => {
 
     return `
     <div style="width: 240px; height: 240px; border:2px solid white; border-radius: 8px; overflow: hidden; position: relative; box-shadow: 0 4px 12px rgba(0,0,0,0.3); font-family: sans-serif;">
-      <img src="${slide?.imageUrl}" style="width: 100%; height: 100%; object-fit: cover;" />
+      <img src="${item?.image}" style="width: 100%; height: 100%; object-fit: cover;" />
       
       <div style="position: absolute; top: 16px; right: 16px; left: 16px; color: white;">
         <div style="display: flex; align-items: center; justify-content: space-between;">
@@ -104,8 +118,8 @@ export const useGoogleMap = () => {
       </div>
       
       <div style="position: absolute; bottom: 16px; right: 16px; left: 16px; color: white;">
-        <h1 style="font-size: 16px; font-weight: bold; margin: 0;">${slide.name}</h1>
-        <p style="font-size: 12px; margin: 4px 0 8px;">${slide.desc}</p>
+        <h1 style="font-size: 16px; font-weight: bold; margin: 0;">${activeBusinessData.name}</h1>
+        <p style="font-size: 12px; margin: 4px 0 8px;">${activeBusinessData.description}</p>
         <div style="display: flex; align-items: center; justify-content: space-between;">
           <img src="/images/icons/next.svg" style="cursor: pointer;" onclick="window.prevSlide()" />
           <div>${indicators}</div>
@@ -119,10 +133,16 @@ export const useGoogleMap = () => {
   const addMarkers = () => {
     if (!map || !infoWindowRef.current || !mapRef.current || businesses.length === 0) return;
 
+    // Clear previous markers
+    markersRef.current.forEach((marker) => marker.setMap(null));
+    markersRef.current = [];
+
     const uniqueLocations = new Set();
 
-    businesses.forEach((business, index) => {
-      const coords = business?.businessId?.geoLocation;
+    const filteredBusiness = activeCategoryKey ? businesses.filter(item => item.primaryCategoryId === activeCategoryKey) : businesses;
+
+    filteredBusiness.forEach((business) => {
+      const coords = business?.geoLocation;
       if (!coords) return;
 
       const lat = parseFloat(coords.lat);
@@ -136,35 +156,94 @@ export const useGoogleMap = () => {
         position: { lat, lng },
         map,
         icon: {
-          url: "/images/markers/travel.svg",
+          url: `./images/markers/${businessMarkers[business.primaryCategoryId as any]}`,
           scaledSize: new window.google.maps.Size(60, 60),
         },
       });
+      (marker as any).businessId = business._id;
 
-      
       marker.addListener("click", () => {
         const isSameMarker = activeMarkerRef.current === marker;
-        console.log("isSameMarker", isSameMarker)
         const isOpen = infoWindowRef.current?.get("map") != null;
 
         if (isSameMarker && isOpen) {
           infoWindowRef.current?.close();
           activeMarkerRef.current = null;
+          console.log("Closed InfoWindow. Cleared active marker.");
         } else {
+          const businessId = (marker as any).businessId;
+          console.log("Clicked Marker ID:", businessId);
+          getBusinessData(businessId)
           activeMarkerRef.current = marker;
           infoWindowRef.current?.setContent(generateContent());
           infoWindowRef.current?.open(map, marker);
-
-          // Hide the close button after a slight delay to ensure the InfoWindow is rendered
-          setTimeout(() => {
-            const iw = document.querySelector(".gm-style-iw");
-            const closeButton = iw?.parentElement?.querySelector('button[aria-label="Close"]');
-            if (closeButton) (closeButton as HTMLElement).style.display = "none";
-          }, 0);
         }
       });
+
+      markersRef.current.push(marker);
     });
+
+    // Dynamic zoom based on screen size
+    if (businesses.length > 0) {
+      if (businesses.length === 1) {
+        const location = businesses?.[0]?.geoLocation
+        const lat = parseFloat(location?.lat)
+        const lng = parseFloat(location?.long)
+        map.setCenter({ lat, lng })
+
+        const screenWidth = window.innerWidth;
+        let zoomLevel;
+        if (screenWidth < 640)
+          zoomLevel = 15;
+        else if (screenWidth < 1024)
+          zoomLevel = 14
+        else
+          zoomLevel = 13
+        map.setZoom(zoomLevel)
+      } else {
+        const bounds = new google.maps.LatLngBounds();
+        businesses.forEach(location => {
+          const coords = location?.geoLocation;
+          if (coords) {
+            bounds.extend({
+              lat: parseFloat(coords.lat),
+              lng: parseFloat(coords.long),
+            })
+          }
+        })
+
+        // Calculate dynamic padding based on screen size
+        const basePadding = 40
+        const screenWidth = window.innerWidth;
+
+        // Scale padding based on screen size
+        const paddingScale = screenWidth < 640 ? 0.5 : screenWidth < 1024 ? 0.75 : 1;
+        const padding = {
+          top: basePadding * paddingScale,
+          bottom: basePadding * paddingScale,
+          left: basePadding * paddingScale,
+          right: basePadding * paddingScale,
+        }
+
+        // Fit bounds with dynamic padding
+        map.fitBounds(bounds, padding)
+
+        // Adjust zoom to prevent excessive zoom-in on small screens
+        const listner = google.maps.event.addListenerOnce(
+          map,
+          "bounds_changed",
+          () => {
+            const currentZoom = map.getZoom();
+            const maxZoom = screenWidth < 640 ? 16 : screenWidth < 1024 ? 15 : 14;
+            if (currentZoom && currentZoom > maxZoom)
+              map.setZoom(maxZoom)
+            google.maps.event.removeListener(listner)
+          }
+        )
+      }
+    }
   };
+
 
   useEffect(() => {
     loadGoogleMapsScript(() => {
@@ -191,8 +270,6 @@ export const useGoogleMap = () => {
         pixelOffset: new window.google.maps.Size(0, -10),
       });
 
-      addMarkers(); // Call addMarkers immediately after map initialization
-
       googleMap.addListener("click", () => {
         infoWindowRef.current?.close();
         activeMarkerRef.current = null;
@@ -203,7 +280,7 @@ export const useGoogleMap = () => {
   useEffect(() => {
     if (businesses.length > 0)
       addMarkers()
-  }, [businesses])
+  }, [businesses, activeCategoryKey])
 
   useEffect(() => {
     if (map && infoWindowRef.current && activeMarkerRef.current) {

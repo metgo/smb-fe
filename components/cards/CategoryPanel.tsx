@@ -1,28 +1,34 @@
-"use client"
+"use client";
 
 import clsx from "clsx";
-import useGeneralStore from "@/stores/generalStore";
-import { categories } from "@/lib/utils";
+import { categoryIcons } from "@/lib/utils";
+import { useCtgSubctg } from "@/hooks/useCtgSubctg";
 
-const CategoryPanel = () => {
-  const { activeCategoryKey, setActiveCategoryKey } = useGeneralStore()
-  console.log("categories", categories)
+const CategoryPanel = ({ categories }: { categories: BusienssCategoryProps }) => {
+
+  const {handleCategoryChange,activeCategoryKey }=useCtgSubctg()
+
   return (
-    <div className="bg-white/80 backdrop-blur-md border border-white/20 shadow-md flex items-center justify-center gap-2.5 p-2.5 rounded-2xl">
+    <div className="bg-white/80 backdrop-blur-md border border-white/20 shadow-md flex items-center justify-center gap-2.5 p-2.5 rounded-2xl z-50">
+      {categories?.map((item) => {
+        const category = categoryIcons[item.id as any];
+        const IconComponent = category?.icon;
+        const isActive = activeCategoryKey === item.id;
 
-      {categories.map(item => (
-        <div
-          key={item.key}
-          onClick={() => setActiveCategoryKey(item.key)}
-          className={clsx(
-            "w-16.5 h-16.5 flex items-center flex-col gap-2 p-1 cursor-pointer rounded-lg transition-colors",
-            `${activeCategoryKey === item.key ? `${item.bg} text-white font-bold` : " font-normal"}`
-          )}
-        >
-          <item.icon fill={activeCategoryKey === item.key ? "#fff" : undefined} />
-          <div className="text-sm">{item.label}</div>
-        </div>
-      ))}
+        return (
+          <div
+            key={item.id}
+            onClick={() => handleCategoryChange(item.id)}
+            className={clsx(
+              "w-16.5 h-16.5 flex items-center flex-col gap-2 p-1 rounded-lg transition-colors cursor-pointer",
+              isActive ? `${category?.bg} text-white font-bold` : " font-normal"
+            )}
+          >
+            {IconComponent && <IconComponent fill={isActive ? "#fff" : undefined} />}
+            <div className="text-sm">{item.name}</div>
+          </div>
+        );
+      })}
     </div>
   );
 };

@@ -92,13 +92,17 @@ body {
 }
 
 
-.gm-style-iw-tc, .gm-style-iw-ch, .gm-style-iw{
+.gm-style-iw-tc,
+.gm-style-iw-ch,
+.gm-style-iw-chr {
   display: none !important;
 }
-.gm-style-iw-d{
-  overflow:  hidden !important;
+
+.gm-style-iw-d {
+  overflow: hidden !important;
 }
-.gm-style .gm-style-iw-c{
+
+.gm-style .gm-style-iw-c {
   padding: 0 !important;
   top: 25px !important;
 }

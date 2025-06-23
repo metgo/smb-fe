@@ -1,11 +1,10 @@
-import { ReactNode } from "react";
 import Navbar from "@/components/navbar";
-import { CategoryPanel, SubcategoryFilterPanel } from "@/components/cards";
 import { getAllCategory } from "@/actions/businessActions";
+import { CategoryPanel, SubcategoryFilterPanel } from "@/components/cards";
 
 
 export default async function BusinessLayout({ children }: ReactChildNode) {
-  const categories = await getAllCategory()
+  const { data } = await getAllCategory()
   return (
     <>
       <Navbar />
@@ -13,7 +12,7 @@ export default async function BusinessLayout({ children }: ReactChildNode) {
         {children}
         <div className="w-full fixed bottom-4 right-0 flex flex-col items-center justify-center gap-2">
           <SubcategoryFilterPanel />
-          <CategoryPanel {...categories} />
+          <CategoryPanel categories={data} />
         </div>
       </div>
     </>

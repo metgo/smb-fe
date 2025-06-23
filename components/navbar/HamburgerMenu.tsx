@@ -3,11 +3,8 @@
 import Link from "next/link";
 import { useState } from "react";
 
-import { ThreeLineIcon } from "@/components/ui/icons";
+import { IconImage } from "@/components/ui";
 import { menuItems } from "@/constant/hebrew";
-import { IoReorderThree } from "react-icons/io5";
-import { GrClose } from "react-icons/gr";
-import { IconImage } from "../ui";
 
 const navItems = [
   {
@@ -34,7 +31,7 @@ const navItems = [
     col4: [
       { id: 1, label: menuItems.termsConditions, href: "#" },
       { id: 2, label: menuItems.privacyPolicy, href: "#" },
-      { id: 3, label: menuItems.hebrew, href: "#" },
+      { id: 3, label: menuItems.hebrew, href: "#", rightIcon: "/images" },
     ],
   },
 ];
@@ -50,7 +47,7 @@ const HamburgerMenu = () => {
         onClick={() => setIsOpen(prev => !prev)}
         className="focus:outline-none cursor-pointer text-theme"
       >
-        {isOpen ? <IconImage icon="close" /> : <IconImage icon="threeline"/>}
+        {isOpen ? <IconImage icon="close" /> : <IconImage icon="threeline" />}
       </button>
 
       {/* Dropdown Menu with Animation */}

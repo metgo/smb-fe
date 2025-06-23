@@ -9,7 +9,7 @@ interface GeneralStoreState {
 
 
 const useGeneralStore = create<GeneralStoreState>((set) => ({
-  activeCategoryKey: "tour",
+  activeCategoryKey: "",
   setActiveCategoryKey: (activeCategoryKey) => set({ activeCategoryKey }),
   activeFilterTab: "gallery",
   setActiveFilterTab: (activeFilterTab) => set({ activeFilterTab })

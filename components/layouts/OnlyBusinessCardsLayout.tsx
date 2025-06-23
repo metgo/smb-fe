@@ -217,7 +217,7 @@ const OnlyBusinessCardsLayout = ({ data, meta, totalData }: BusinessesProps) => 
         height={300}
         alt="Yellow image"
         src={"/images/yellow.png"}
-        className="fixed -bottom-12 -left-24 rotate-30"
+        className="fixed -bottom-12 -left-24 rotate-30 z-50"
       />
     </div>
   );

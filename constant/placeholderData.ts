@@ -36,3 +36,17 @@ export const slides = [
     imageUrl: "https://images.pexels.com/photos/848573/pexels-photo-848573.jpeg"
   }
 ];
+
+
+export const foodSubCategories = [
+  { id: 1, label: "מסעדות" },        // Restaurants  
+  { id: 2, label: "בתי קפה" },       // Cafés  
+  { id: 3, label: "מאפיות" },        // Bakeries  
+  { id: 4, label: "דוכני רחוב" },    // Street Food  
+  { id: 5, label: "גלידריות" },       // Ice Cream Shops  
+  { id: 6, label: "מסעדות טבעוניות" }, // Vegan Restaurants  
+  { id: 7, label: "מסעדות כשרות" },  // Kosher Restaurants  
+  { id: 8, label: "ברים ופאבים" },    // Bars & Pubs  
+  { id: 9, label: "מסעדות אסיאתיות" }, // Asian Restaurants  
+  { id: 10, label: "פוד טראקס" }     // Food Trucks
+];

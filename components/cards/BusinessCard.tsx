@@ -72,14 +72,14 @@ const BusinessCard = ({
           />
           <div className="relative w-full h-full overflow-hidden">
             {/* Overlay (only bottom 50%) */}
-            <div className="absolute bottom-0 right-0 h-1/2 w-full bg-gradient-to-t from-black/40 to-transparent z-10" />
+            <div className="absolute bottom-0 right-0 h-1/2 w-full bg-gradient-to-t from-black/40 to-transparent" />
 
             {/* Text Content */}
             <div className="absolute bottom-0 right-0 ps-4 pb-4 text-white font-bold w-full z-20">
               <h3 className="lg:text-[1rem] 3xl:text-[1.5rem]">{business?.name}</h3>
               <div className="flex items-center gap-2">
                 <IconImage icon="location" width={20} height={20} />
-                <span className="md:text-sm">{tempCardInfo.location}</span>
+                <span className="md:text-sm">{business.address.city ? business.address.city : "Tel Aviv"}</span>
               </div>
             </div>
           </div>
@@ -87,7 +87,7 @@ const BusinessCard = ({
 
           <div className="hidden absolute top-4 right-4 group-hover:flex items-center gap-2.5">
             <IconImage width={30} height={30} icon='circular-heart' onClick={addWishlistHandler} />
-            <IconImage width={30} height={30} icon='circular-map-fold' onClick={()=>setActiveFilterTab("map")} />
+            <IconImage width={30} height={30} icon='circular-map-fold' onClick={() => setActiveFilterTab("map")} />
           </div>
         </div>
       }

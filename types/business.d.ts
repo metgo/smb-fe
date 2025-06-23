@@ -41,7 +41,12 @@ declare interface BusinessProps {
   geoLocation: GeoLocation;
   images: ImageItem[];
   logo: Logo;
-  location: string;
+  address: {
+    _id: string;
+    city: string;
+    country: string;
+    location: string;
+  };
   imageUrl: string;
 }
 
@@ -72,3 +77,26 @@ declare type FaviouriteBusinessProps = {
   imageUrl: string;
   location: string;
 };
+
+declare type BusinessMakerProps = {
+  _id: string;
+  primaryCategoryId: string;
+  geoLocation: {
+    _id: string;
+    lat: string;
+    long: string
+  }
+}
+
+declare type BusienssCategoryProps = {
+  id: string;
+  name: string;
+  productCount: number;
+}[]
+
+declare type BusienssSubcategoryProps = {
+  id: string;
+  name: string;
+  productCount: number;
+  parent: string[]
+}[]
