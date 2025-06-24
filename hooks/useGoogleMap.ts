@@ -69,7 +69,7 @@ export const useGoogleMap = () => {
 
 
   useEffect(() => {
-    if (!hasFetchedRef.current && activeFilterTab === "map") {
+    if (!hasFetchedRef.current && (activeFilterTab === "map" || activeFilterTab === "integrated")) {
       hasFetchedRef.current = true;
       getAllBusinessLocation().then((locations) => {
         setBusinesses(locations);
@@ -80,7 +80,7 @@ export const useGoogleMap = () => {
   useEffect(() => {
     const count = gallery?.length;
 
-    if (!count || count < 2) return; 
+    if (!count || count < 2) return;
 
     window.prevSlide = () => {
       setCurrentSlide((prev) => (prev - 1 + count) % count);
@@ -96,8 +96,8 @@ export const useGoogleMap = () => {
     const item = activeBusinessData?.images[currentSlide];
     const indicators = gallery?.map((_: any, i: number) => {
       return `<div style="
-      width: ${i === currentSlide ? "12px" : "9px"};
-      height: ${i === currentSlide ? "12px" : "9px"};
+      width: ${i === currentSlide ? "8px" : "8px"};
+      height: ${i === currentSlide ? "8px" : "8px"};
       border-radius: 50%;
       margin: 0 3px;
       background-color: ${i === currentSlide ? "white" : "rgba(255,255,255,0.4)"};
@@ -111,10 +111,12 @@ export const useGoogleMap = () => {
       
       <div style="position: absolute; top: 16px; right: 16px; left: 16px; color: white;">
         <div style="display: flex; align-items: center; justify-content: space-between;">
-          <div>logo</div>
+          <div style="width:40px; height:40px; border:2px solid #D3D3D3; border-radius:12px; overflow:hidden">
+            <img src="${activeBusinessData?.logo?.image || "/images/image-placeholder.jpg"}" style="object-fit:cover; width:100%; height:100%" />
+          </div>
           <div style="display: flex; align-items: center; gap:10px">
-            <img src="/images/icons/pin.svg" style="cursor: pointer;" onclick="window.nextSlide()" />
-            <img src="/images/icons/circular-heart.svg" style="cursor: pointer;" onclick="window.prevSlide()" />
+            <img src="/images/icons/pin.svg" style="cursor: pointer;"  />
+            <img src="/images/icons/circular-heart.svg" style="cursor: pointer;" />
           </div>
         </div>
       </div>

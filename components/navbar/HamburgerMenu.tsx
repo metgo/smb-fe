@@ -59,7 +59,7 @@ const HamburgerMenu = () => {
         <div className="w-full h-[max-content] py-10 px-12 flex gap-10 rounded-b-xl bg-white/90 backdrop-blur-xl">
           {Object.entries(navItems[0]).map(([colKey, items]) => (
             <div key={colKey} className="flex gap-2.75">
-              <div className="w-0.25 h-70 bg-theme" />
+              <div className="w-0.25 h-70 bg-[#D3D3D3]" />
 
               <div className="flex flex-col w-[14.5rem]">
                 {items.map(item => (

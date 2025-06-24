@@ -37,6 +37,7 @@ const OnlyBusinessCardsLayout = ({ data, meta, totalData }: BusinessesProps) => 
 
   // Handle scroll for infinite loading
   useEffect(() => {
+    console.log("-----------infinite scrolling")
     const handleScroll = debounce(() => {
       const scrolled = window.scrollY + window.innerHeight;
       const totalHeight = document.documentElement.scrollHeight;
@@ -45,7 +46,7 @@ const OnlyBusinessCardsLayout = ({ data, meta, totalData }: BusinessesProps) => 
       if (scrolled >= totalHeight - buffer && pageCount < 100 && meta.hasNextPage) { // Optional: cap max pages
         setPageCount((prev) => prev + 1);
       }
-    }, 200); // Debounce delay in ms
+    }, 100); // Debounce delay in ms
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);

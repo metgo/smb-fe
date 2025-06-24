@@ -57,7 +57,7 @@ const BusinessCard = ({
 
 
   return (
-    <div style={{ width, height }}>
+    <div style={{ width:`${width}px`, height:`${height}px` }}>
       {(isLoading) ?
         <div className={` rounded-2xl skeleton w-full h-full ${categoryGradientClasses[activeCategoryKey]}`} /> :
         <div className="w-full h-full relative group rounded-xl overflow-hidden">
@@ -75,7 +75,7 @@ const BusinessCard = ({
             <div className="absolute bottom-0 right-0 h-1/2 w-full bg-gradient-to-t from-black/40 to-transparent" />
 
             {/* Text Content */}
-            <div className="absolute bottom-0 right-0 ps-4 pb-4 text-white font-bold w-full z-20">
+            <div className="absolute bottom-0 right-0 ps-4 pb-4 text-white font-bold w-full">
               <h3 className="lg:text-[1rem] 3xl:text-[1.5rem]">{business?.name}</h3>
               <div className="flex items-center gap-2">
                 <IconImage icon="location" width={20} height={20} />

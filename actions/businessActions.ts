@@ -6,34 +6,54 @@ const metaCache = new Map<number, BusinessesProps['meta']>();
 
 // export const getAllBusinesses = async (
 //   pageCount: number,
-//   categoryId: string): Promise<BusinessesProps> => {
-//   const combinedData: BusinessProps[] = [];
-//   // pageCache.clear();
-//   // metaCache.clear();
+//   subCategoryId: string,
+//   categoryId: string
+// ): Promise<any> => {
+//   try {
+//     const res = await fetch(`${urls.tourismBusinesses}?page=${pageCount}&limit=16&bussCategoriesId=${categoryId}&bussSubCategoriesId=${subCategoryId}&campCode=${CODE}`);
 
-//   // Fetch or get from cache all data from page 1 to current
+//     if (!res.ok) throw new Error(`Failed to fetch page ${pageCount}`);
+//     const json: BusinessesProps = await res.json();
+//     return json;
+
+//   } catch (err) {
+//     console.error(`Error fetching page:`, err);
+//   }
+// };
+
+// export const getAllBusinesses = async (
+//   pageCount: number,
+//   categoryId: string,
+//   subCategoryId: string,
+// ): Promise<BusinessesProps> => {
+//   const combinedData: BusinessProps[] = [];
+
+//   const skipCache = pageCount === 1 && !!categoryId;
+
 //   for (let i = 1; i <= pageCount; i++) {
-//     if (pageCache.has(i)) {
+//     const isCached = pageCache.has(i);
+
+//     if (isCached && !skipCache) {
 //       combinedData.push(...pageCache.get(i)!);
 //     } else {
 //       try {
-//         const res = await fetch(`${urls.tourismBusinesses}?page=${i}&limit=16&bussCategoriesId=${categoryId}&campCode=${CODE}`);
+//         const res = await fetch(`${urls.tourismBusinesses}?page=${i}&limit=16&bussCategoriesId=${categoryId}&bussSubCategoriesId=${subCategoryId}&campCode=${CODE}`);
 //         if (!res.ok) throw new Error(`Failed to fetch page ${i}`);
 //         const json: BusinessesProps = await res.json();
 
-//         // Cache only `data` and `meta`
-//         pageCache.set(i, json.data);
-//         metaCache.set(i, json.meta);
+//         // Only cache if not skipping
+//         if (!skipCache) {
+//           pageCache.set(i, json.data);
+//           metaCache.set(i, json.meta);
+//         }
 
 //         combinedData.push(...json.data);
 //       } catch (err) {
 //         console.error(`Error fetching page ${i}:`, err);
-//         // Optional: return early or continue
 //       }
 //     }
 //   }
 
-//   // Use meta and totalData from current pageCount (latest one)
 //   const latestMeta = metaCache.get(pageCount) || {
 //     page: pageCount,
 //     limit: '16',
@@ -45,10 +65,13 @@ const metaCache = new Map<number, BusinessesProps['meta']>();
 
 //   return {
 //     data: combinedData,
-//     totalData: combinedData.length, // or get from backend if available
+//     totalData: combinedData.length,
 //     meta: latestMeta,
 //   };
 // };
+
+let previousCategoryId: string | null = null;
+let previousSubCategoryId: string | null = null;
 
 export const getAllBusinesses = async (
   pageCount: number,
@@ -57,24 +80,29 @@ export const getAllBusinesses = async (
 ): Promise<BusinessesProps> => {
   const combinedData: BusinessProps[] = [];
 
-  const skipCache = pageCount === 1 && !!categoryId;
+  const isCategoryChanged = previousCategoryId !== categoryId;
+  const isSubCategoryChanged = previousSubCategoryId !== subCategoryId;
+
+  if (isCategoryChanged || isSubCategoryChanged) {
+    pageCache.clear();
+    metaCache.clear();
+    previousCategoryId = categoryId;
+    previousSubCategoryId = subCategoryId;
+  }
 
   for (let i = 1; i <= pageCount; i++) {
     const isCached = pageCache.has(i);
 
-    if (isCached && !skipCache) {
+    if (isCached) {
       combinedData.push(...pageCache.get(i)!);
     } else {
       try {
-        const res = await fetch(`${urls.tourismBusinesses}?page=${i}&limit=16&bussCategoriesId=${categoryId}&bussSubCategoriesId=${subCategoryId}&campCode=${CODE}`);
+        const res = await fetch(`${urls.tourismBusinesses}?page=${i}&limit=16&bussCategoriesId=${categoryId}&bussSubCategoriesId=${subCategoryId}&sortBy=createdAt&sortOrder=DESC&campCode=${CODE}`);
         if (!res.ok) throw new Error(`Failed to fetch page ${i}`);
         const json: BusinessesProps = await res.json();
 
-        // Only cache if not skipping
-        if (!skipCache) {
-          pageCache.set(i, json.data);
-          metaCache.set(i, json.meta);
-        }
+        pageCache.set(i, json.data);
+        metaCache.set(i, json.meta);
 
         combinedData.push(...json.data);
       } catch (err) {

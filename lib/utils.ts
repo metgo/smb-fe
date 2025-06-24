@@ -22,12 +22,12 @@ export const businessMarkers = {
 }
 
 export const categoryGradientClasses: any = {
-  eat: 'from-ctg-eat-dim via-ctg-eat-light to-ctg-eat-dim',
-  local: 'from-ctg-local-dim via-ctg-local-light to-ctg-local-dim',
-  lodge: 'from-ctg-lodge-dim via-ctg-lodge-light to-ctg-lodge-dim',
-  culture: 'from-ctg-culture-dim via-ctg-culture-light to-ctg-culture-dim',
-  attraction: 'from-ctg-attract-dim via-ctg-attract-light to-ctg-attract-dim',
-  tour: 'from-ctg-tour-dim via-ctg-tour-light to-ctg-tour-dim',
+  [categoryId.eat]: 'from-ctg-eat-dim via-ctg-eat-light to-ctg-eat-dim',
+  [categoryId.local]: 'from-ctg-local-dim via-ctg-local-light to-ctg-local-dim',
+  [categoryId.sleep]: 'from-ctg-lodge-dim via-ctg-lodge-light to-ctg-lodge-dim',
+  [categoryId.culture]: 'from-ctg-culture-dim via-ctg-culture-light to-ctg-culture-dim',
+  [categoryId.attraction]: 'from-ctg-attract-dim via-ctg-attract-light to-ctg-attract-dim',
+  [categoryId.tour]: 'from-ctg-tour-dim via-ctg-tour-light to-ctg-tour-dim',
 };
 
 export const categoryBgClasses: any = {
