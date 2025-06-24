@@ -23,12 +23,21 @@ const BusinessCard = ({
   const [isLoading, setIsLoading] = useState(false)
   const [croppedImageUrl, setCroppedImageUrl] = useState("")
 
-  console.log("--------primaryCategoryId", business.primaryCategoryId)
   useEffect(() => {
-    if (activeCategoryKey)
-      handleCropImage(business?.images[0], aspectRatio, setIsLoading, setCroppedImageUrl)
-  }, [activeCategoryKey])
+    let timer: NodeJS.Timeout;
 
+    if (activeCategoryKey) {
+      setIsLoading(true);
+      handleCropImage(business?.images[0], aspectRatio, setIsLoading, (croppedUrl: string) => {
+        timer = setTimeout(() => {
+          setCroppedImageUrl(croppedUrl);
+          setIsLoading(false);
+        }, 1000);
+      });
+    }
+
+    return () => clearTimeout(timer); // cleanup on unmount
+  }, [activeCategoryKey]);
 
   function addWishlistHandler() {
     LocalStorageService.remove("favorite-business");
@@ -55,12 +64,13 @@ const BusinessCard = ({
     LocalStorageService.set<FaviouriteBusinessProps[]>("favorite-business", updated);
   }
 
+  const primaryCategoryId = activeCategoryKey ? activeCategoryKey : business.primaryCategoryId
 
 
   return (
     <div style={{ width: `${width}px`, height: `${height}px` }}>
       {(isLoading) ?
-        <div className={` rounded-2xl skeleton w-full h-full ${categoryGradientClasses[business.primaryCategoryId !==null ? business.primaryCategoryId : "6566e36ba77d2a477266d2f4"]}`} /> :
+        <div className={` rounded-2xl skeleton w-full h-full ${categoryGradientClasses[primaryCategoryId]}`} /> :
         <div className="w-full h-full relative group rounded-xl overflow-hidden">
           <Image
             fill

@@ -1,7 +1,6 @@
 import Image from "next/image";
 import { scaleLayout } from "@/lib/helpers";
 import { useState, useEffect } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
 
 import { BusinessCard } from "@/components/cards";
 import {
@@ -10,48 +9,10 @@ import {
   REFERENCE_SCREEN_WIDTH,
 } from "@/constant/collageLayouts";
 
-interface DebounceFunction<T extends (...args: any[]) => void> {
-  (...args: Parameters<T>): void;
-}
-
-const debounce = <T extends (...args: any[]) => void>(func: T, wait: number): DebounceFunction<T> => {
-  let timeout: ReturnType<typeof setTimeout>;
-  return (...args: Parameters<T>) => {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => func(...args), wait);
-  };
-};
 
 const OnlyBusinessCardsLayout = ({ data, meta, totalData }: BusinessesProps) => {
-  const searchParams = useSearchParams();
-  const router = useRouter();
   const businessCount = data.length;
   const [scale, setScale] = useState(1);
-  const [pageCount, setPageCount] = useState(1);
-
-  useEffect(() => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set('page', pageCount.toString());
-    router.replace(`?${params.toString()}`, { scroll: false });
-  }, [pageCount, searchParams, router]);
-
-  // Handle scroll for infinite loading
-  useEffect(() => {
-    console.log("-----------infinite scrolling")
-    const handleScroll = debounce(() => {
-      const scrolled = window.scrollY + window.innerHeight;
-      const totalHeight = document.documentElement.scrollHeight;
-      const buffer = 100; // Pixels before reaching the bottom to trigger next page
-
-      if (scrolled >= totalHeight - buffer && pageCount < 100 && meta.hasNextPage) { // Optional: cap max pages
-        setPageCount((prev) => prev + 1);
-      }
-    }, 100); // Debounce delay in ms
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [pageCount, setPageCount]);
-
 
   useEffect(() => {
     const updateScale = () => {
@@ -209,8 +170,11 @@ const OnlyBusinessCardsLayout = ({ data, meta, totalData }: BusinessesProps) => 
 
   return (
     <div className="px-20 py-10 flex items-center justify-center w-full h-full relative">
-      <div className="flex flex-col gap-5 items-start justify-start ">
-        {renderFullLayout()}
+      <div>
+        <div className="flex flex-col gap-5 items-start justify-start ">
+          {renderFullLayout()}
+        </div>
+
       </div>
 
       <Image
