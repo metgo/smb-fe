@@ -48,6 +48,7 @@ declare interface BusinessProps {
     location: string;
   };
   imageUrl: string;
+  primaryCategoryId: string;
 }
 
 declare interface BusinessesProps {

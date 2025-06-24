@@ -23,6 +23,7 @@ const BusinessCard = ({
   const [isLoading, setIsLoading] = useState(false)
   const [croppedImageUrl, setCroppedImageUrl] = useState("")
 
+  console.log("--------primaryCategoryId", business.primaryCategoryId)
   useEffect(() => {
     if (activeCategoryKey)
       handleCropImage(business?.images[0], aspectRatio, setIsLoading, setCroppedImageUrl)
@@ -57,9 +58,9 @@ const BusinessCard = ({
 
 
   return (
-    <div style={{ width:`${width}px`, height:`${height}px` }}>
+    <div style={{ width: `${width}px`, height: `${height}px` }}>
       {(isLoading) ?
-        <div className={` rounded-2xl skeleton w-full h-full ${categoryGradientClasses[activeCategoryKey]}`} /> :
+        <div className={` rounded-2xl skeleton w-full h-full ${categoryGradientClasses[business.primaryCategoryId !==null ? business.primaryCategoryId : "6566e36ba77d2a477266d2f4"]}`} /> :
         <div className="w-full h-full relative group rounded-xl overflow-hidden">
           <Image
             fill
@@ -79,7 +80,7 @@ const BusinessCard = ({
               <h3 className="lg:text-[1rem] 3xl:text-[1.5rem]">{business?.name}</h3>
               <div className="flex items-center gap-2">
                 <IconImage icon="location" width={20} height={20} />
-                <span className="md:text-sm">{business.address.city ? business.address.city : "Tel Aviv"}</span>
+                <span className="md:text-sm">{business?.address?.city ? business?.address?.city : "Tel Aviv"}</span>
               </div>
             </div>
           </div>
