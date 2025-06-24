@@ -11,7 +11,10 @@ import {
   StatisticsMockData,
   StatisticsMockDataSchema,
 } from 'src/modules/mock-data/schema/impression-engagement.schema';
-import { Business, BusinessSchema } from '../business/schema/business.schema';
+import {
+  Business,
+  BusinessSchema,
+} from '../business/shared/schema/business.schema';
 import { Product, ProductSchema } from '../products/schema/products.schema';
 
 @Module({

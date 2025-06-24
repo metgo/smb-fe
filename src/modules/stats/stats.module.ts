@@ -2,7 +2,10 @@ import { forwardRef, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 
 import { AuthorityModule } from 'src/modules/authority/authority.module';
-import { Business, BusinessSchema } from '../business/schema/business.schema';
+import {
+  Business,
+  BusinessSchema,
+} from '../business/shared/schema/business.schema';
 import { DMOModule } from '../dmo/dmo.module';
 import { Product, ProductSchema } from '../products/schema/products.schema';
 import { UsersModule } from '../users/users.module';

@@ -8,7 +8,7 @@ import { ServerErrors } from 'src/common/constant';
 import { PaymentStatus, VoucherPaymentStatus } from 'src/common/enum';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { LoggedInUserInterface } from '../auth/interface/login.interface';
-import { Business } from '../business/schema/business.schema';
+import { Business } from '../business/shared/schema/business.schema';
 import { Campaign } from 'src/modules/campaign/schema/campaign.schema';
 import { Product } from '../products/schema/products.schema';
 import { UserType } from '../users/users.type';

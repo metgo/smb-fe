@@ -35,7 +35,7 @@ import { RegisterRequest } from 'src/modules/auth/requests/register.request';
 import { RegisterStep1Request } from 'src/modules/auth/requests/register-step1.request';
 import { RegisterStep2Request } from 'src/modules/auth/requests/register-step2.request';
 import { AuthorityService } from 'src/modules/authority/authority.service';
-import { BusinessService } from 'src/modules/business/services/business.service';
+import { BusinessService } from 'src/modules/business/shared/services/business.service';
 import { CampaignService } from 'src/modules/campaign/campaign.service';
 import { DMOService } from 'src/modules/dmo/dmo.service';
 import { UpdateUserRequest } from 'src/modules/users/requests/update-user.request';

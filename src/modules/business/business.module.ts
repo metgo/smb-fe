@@ -2,21 +2,26 @@ import { Module, forwardRef } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { MongooseModule } from '@nestjs/mongoose';
 
-import { BusinessController } from 'src/modules/business/controllers/business.controller';
-import { BusinessService } from 'src/modules/business/services/business.service';
-import { BusinessSchema } from './schema/business.schema';
+import { BusinessMarketplaceController } from 'src/modules/business/marketplace/business-marketplace.controller';
+import { BusinessService } from 'src/modules/business/shared/services/business.service';
+import { BusinessSchema } from './shared/schema/business.schema';
 import { DMOModule } from 'src/modules/dmo/dmo.module';
 import { ConfigModule } from 'src/services/config/config.module';
 import { HashModule } from 'src/services/hash/hash.module';
 import { Product, ProductSchema } from '../products/schema/products.schema';
 import { VoucherModule } from 'src/modules/vouchers/voucher.module';
 import { BankAccountModule } from 'src/modules/bank-account/bank-account.module';
-import { BusinessAuditSchema } from 'src/modules/business/schema/business-audit.schema';
-import { EventsService } from 'src/modules/business/services/event.service';
+import { BusinessAuditSchema } from 'src/modules/business/shared/schema/business-audit.schema';
+import { EventsService } from 'src/modules/business/shared/services/event.service';
 import { MediaModule } from 'src/modules/media/media.module';
 import { ProductsModule } from 'src/modules/products/products.module';
 import { UsersModule } from 'src/modules/users/users.module';
-import { GetAllBusinessForMapHandler } from './queries/handler/get-all-business-for-map.handler';
+import { GetAllBusinessForMapHandler } from './marketplace/queries/handler/get-all-business-for-map.handler';
+import { GetAllApprovedBusinessesHandler } from './tourism/queries/handler/get-all-approved-businesses.handler';
+import { CampaignModule } from 'src/modules/campaign/campaign.module';
+import { BusinessTourismController } from './tourism/business-tourism.controller';
+import { GetAllBusinessForMapTourismHandler } from './tourism/queries/handler/get-all-businesses-for-map.handler';
+import { GetBusinessDetailForMapTourismHandler } from './tourism/queries/handler/get-business-detail-for-map.handler';
 
 @Module({
   imports: [
@@ -30,13 +35,21 @@ import { GetAllBusinessForMapHandler } from './queries/handler/get-all-business-
     HashModule,
     MediaModule,
     BankAccountModule,
+    forwardRef(() => CampaignModule),
     forwardRef(() => VoucherModule),
     forwardRef(() => UsersModule),
     forwardRef(() => DMOModule),
     forwardRef(() => ProductsModule),
   ],
-  controllers: [BusinessController],
-  providers: [BusinessService, EventsService, GetAllBusinessForMapHandler],
+  controllers: [BusinessMarketplaceController, BusinessTourismController],
+  providers: [
+    BusinessService,
+    EventsService,
+    GetAllBusinessForMapHandler,
+    GetAllApprovedBusinessesHandler,
+    GetAllBusinessForMapTourismHandler,
+    GetBusinessDetailForMapTourismHandler,
+  ],
   exports: [BusinessService],
 })
 export class BusinessModule {}

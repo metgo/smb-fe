@@ -16,7 +16,7 @@ import {
   BusinessStatus,
   GetBusinessByIdOrSlug,
 } from 'src/modules/business/business.type';
-import { Business } from 'src/modules/business/schema/business.schema';
+import { Business } from 'src/modules/business/shared/schema/business.schema';
 import { UserType } from 'src/modules/users/users.type';
 
 @Injectable()

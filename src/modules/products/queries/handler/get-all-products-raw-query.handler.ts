@@ -6,7 +6,7 @@ import { Model } from 'mongoose';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { CampaignService } from 'src/modules/campaign/campaign.service';
 import { ProductStatus } from '../../products.type';
-import { Business } from 'src/modules/business/schema/business.schema';
+import { Business } from 'src/modules/business/shared/schema/business.schema';
 import { Authority } from 'src/modules/authority/schema/authority.schema';
 import { GetAllProductsRawQuery } from '../get-all-products-rawquery.query';
 

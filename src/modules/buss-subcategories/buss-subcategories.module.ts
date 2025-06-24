@@ -12,7 +12,7 @@ import { UsersModule } from 'src/modules/users/users.module';
 import { CampaignModule } from 'src/modules/campaign/campaign.module';
 import { GetAllSubCategoriesHandler } from './queries/handler/get-all-subcategories.handler';
 import { Product } from '../products/schema/products.schema';
-import { Business } from '../business/schema/business.schema';
+import { Business } from '../business/shared/schema/business.schema';
 import { Authority } from '../authority/schema/authority.schema';
 
 @Module({

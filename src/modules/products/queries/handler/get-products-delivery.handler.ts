@@ -9,7 +9,7 @@ import { GetProductsDeliveryQuery } from '../get-products-delivery-info.query';
 import { CampaignService } from 'src/modules/campaign/campaign.service';
 import { ProductStatus } from '../../products.type';
 import { ProductsService } from '../../products.services';
-import { Business } from 'src/modules/business/schema/business.schema';
+import { Business } from 'src/modules/business/shared/schema/business.schema';
 
 @QueryHandler(GetProductsDeliveryQuery)
 export class GetProductsDeliveryHandler

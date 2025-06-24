@@ -9,7 +9,7 @@ import {
 import {
   Business,
   BusinessSchema,
-} from 'src/modules/business/schema/business.schema';
+} from 'src/modules/business/shared/schema/business.schema';
 import { BaseFactory } from 'test/factories/base.factory';
 
 const BusinessModel = mongoose.model(Business.name, BusinessSchema);

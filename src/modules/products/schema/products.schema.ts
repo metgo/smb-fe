@@ -4,7 +4,7 @@ import mongoose, { HydratedDocument } from 'mongoose';
 import { getRandomNumberBetween } from 'src/common/utils/random-number-range';
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
 import { Authority } from 'src/modules/authority/schema/authority.schema';
-import { DeliveryArea } from 'src/modules/business/schema/business.schema';
+import { DeliveryArea } from 'src/modules/business/shared/schema/business.schema';
 import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.schema';
 import { BussSubCategory } from 'src/modules/buss-subcategories/schema/buss-subCategory.schema';
 import { Cart } from 'src/modules/cart/cart.schema';

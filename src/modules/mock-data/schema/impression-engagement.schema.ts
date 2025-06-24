@@ -2,7 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
 
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
-import { Business } from 'src/modules/business/schema/business.schema';
+import { Business } from 'src/modules/business/shared/schema/business.schema';
 import { Product } from 'src/modules/products/schema/products.schema';
 
 @Schema()

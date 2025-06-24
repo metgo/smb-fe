@@ -28,7 +28,7 @@ import { ProductStatus } from 'src/modules/products/products.type';
 import { UserType } from 'src/modules/users/users.type';
 import { CartService } from 'src/modules/cart/cart.service';
 import { GetProductsQuery } from 'src/modules/products/queries';
-import { Business } from '../business/schema/business.schema';
+import { Business } from '../business/shared/schema/business.schema';
 
 @Injectable()
 export class ProductsService {

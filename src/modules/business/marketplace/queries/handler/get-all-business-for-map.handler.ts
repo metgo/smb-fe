@@ -8,7 +8,7 @@ import { queryhandler } from 'src/core/helper/query-helper';
 import { GetAllProductsRawQuery } from 'src/modules/products/queries';
 import { Product } from 'src/modules/products/schema/products.schema';
 import { GetAllBusinessForMapQuery } from '../get-all-business-for-map.query';
-import { Business } from '../../schema/business.schema';
+import { Business } from '../../../shared/schema/business.schema';
 
 @QueryHandler(GetAllBusinessForMapQuery)
 export class GetAllBusinessForMapHandler

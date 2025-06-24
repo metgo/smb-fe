@@ -30,7 +30,7 @@ import {
 } from 'src/core/helper/query-helper';
 
 import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interface';
-import { BusinessService } from 'src/modules/business/services/business.service';
+import { BusinessService } from 'src/modules/business/shared/services/business.service';
 import { CartService } from 'src/modules/cart/cart.service';
 import { CartProductResponse, CartStatus } from 'src/modules/cart/cart.types';
 import { UpdateOrderDto } from 'src/modules/orders/dto/update-order.dto';

@@ -16,7 +16,10 @@ import { ProductsController } from 'src/modules/products/products.controller';
 import { UsersModule } from 'src/modules/users/users.module';
 import { MediaModule } from 'src/modules/media/media.module';
 import { CartModule } from '../cart/cart.modules';
-import { Business, BusinessSchema } from '../business/schema/business.schema';
+import {
+  Business,
+  BusinessSchema,
+} from '../business/shared/schema/business.schema';
 import {
   Authority,
   AuthoritySchema,

@@ -26,8 +26,8 @@ import {
   GeoServicesTypes,
 } from 'src/modules/business/business.type';
 
-import { Business } from 'src/modules/business/schema/business.schema';
-import { BusinessAudit } from 'src/modules/business/schema/business-audit.schema';
+import { Business } from 'src/modules/business/shared/schema/business.schema';
+import { BusinessAudit } from 'src/modules/business/shared/schema/business-audit.schema';
 import { Product } from 'src/modules/products/schema/products.schema';
 import { UserType } from 'src/modules/users/users.type';
 import { ProductsService } from 'src/modules/products/products.services';

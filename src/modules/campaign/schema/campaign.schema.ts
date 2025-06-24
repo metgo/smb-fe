@@ -3,7 +3,7 @@ import mongoose, { HydratedDocument } from 'mongoose';
 
 import { CampaignStatus, CampaignType } from 'src/common/enum';
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
-import { Business } from 'src/modules/business/schema/business.schema';
+import { Business } from 'src/modules/business/shared/schema/business.schema';
 import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.schema';
 import { DMO } from 'src/modules/dmo/schema/dmo.schema';
 import { ExternalApi } from 'src/modules/external-api/schema/external-api.schema';

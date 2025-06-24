@@ -10,7 +10,7 @@ import { CreateImpressionEngagementInterface } from 'src/modules/mock-data/inter
 import { GetMockDataQuery } from 'src/modules/mock-data/queries/get-mock-data.query';
 import { UsersMockData } from 'src/modules/mock-data/schema/active-users.schema';
 import { StatisticsMockData } from 'src/modules/mock-data/schema/impression-engagement.schema';
-import { Business } from '../business/schema/business.schema';
+import { Business } from '../business/shared/schema/business.schema';
 import { Product } from '../products/schema/products.schema';
 
 @Injectable()

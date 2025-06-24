@@ -13,12 +13,12 @@ import { QueryBus } from '@nestjs/cqrs';
 
 import { ServerSuccess } from 'src/common/constant';
 import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
-import { BusinessService } from 'src/modules/business/services/business.service';
-import { GetAllBusinessForMapQuery } from '../queries/get-all-business-for-map.query';
-import { GetAllBusinessesForMapRequest } from '../request/get-all-business-for-map.request';
+import { GetAllBusinessesForMapRequest } from 'src/modules/business/shared/request';
+import { GetAllBusinessForMapQuery } from 'src/modules/business/marketplace/queries/get-all-business-for-map.query';
+import { BusinessService } from 'src/modules/business/shared/services/business.service';
 
 @Controller()
-export class BusinessController {
+export class BusinessMarketplaceController {
   constructor(
     private readonly queryBus: QueryBus,
     private readonly businessServices: BusinessService,
