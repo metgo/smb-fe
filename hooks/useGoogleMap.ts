@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 
-import { slides } from "@/constant/placeholderData";
 import useGeneralStore from "@/stores/generalStore";
 import { getAllBusinessLocation, getBusinessById } from "@/actions/businessActions";
 import { googlePointOfInterest } from "@/constant/googlePoi";
@@ -53,18 +52,17 @@ export const useGoogleMap = () => {
   const markersRef = useRef<google.maps.Marker[]>([]);
   const activeMarkerRef = useRef<google.maps.Marker | null>(null);
   const infoWindowRef = useRef<google.maps.InfoWindow | null>(null);
-  const [activeBusinessData, setActiveBusinessData] = useState<any>()
-  console.log("activeBusinessData", activeBusinessData)
 
   const { activeFilterTab, activeCategoryKey } = useGeneralStore();
 
-  const [map, setMap] = useState<google.maps.Map | null>(null);
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [map, setMap] = useState<google.maps.Map | null>(null);
+  const [activeBusinessData, setActiveBusinessData] = useState<any>()
   const [businesses, setBusinesses] = useState<BusinessMakerProps[]>([]);
 
+  const gallery = activeBusinessData?.images
 
   async function getBusinessData(businessId: string) {
-    console.log("getBusiessData", businessId)
     const res = await getBusinessById(businessId)
     setActiveBusinessData(res)
   }
@@ -80,22 +78,26 @@ export const useGoogleMap = () => {
   }, [activeFilterTab]);
 
   useEffect(() => {
+    const count = gallery?.length;
+
+    if (!count || count < 2) return; 
+
     window.prevSlide = () => {
-      setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
+      setCurrentSlide((prev) => (prev - 1 + count) % count);
     };
     window.nextSlide = () => {
-      setCurrentSlide((prev) => (prev + 1) % slides.length);
+      setCurrentSlide((prev) => (prev + 1) % count);
     };
-  }, []);
+  }, [gallery]);
 
 
 
   const generateContent = () => {
     const item = activeBusinessData?.images[currentSlide];
-    const indicators = activeBusinessData?.images?.map((_: any, i: number) => {
+    const indicators = gallery?.map((_: any, i: number) => {
       return `<div style="
-      width: ${i === currentSlide ? "12px" : "6px"};
-      height: ${i === currentSlide ? "12px" : "6px"};
+      width: ${i === currentSlide ? "12px" : "9px"};
+      height: ${i === currentSlide ? "12px" : "9px"};
       border-radius: 50%;
       margin: 0 3px;
       background-color: ${i === currentSlide ? "white" : "rgba(255,255,255,0.4)"};
@@ -105,7 +107,7 @@ export const useGoogleMap = () => {
 
     return `
     <div style="width: 240px; height: 240px; border:2px solid white; border-radius: 8px; overflow: hidden; position: relative; box-shadow: 0 4px 12px rgba(0,0,0,0.3); font-family: sans-serif;">
-      <img src="${item?.image}" style="width: 100%; height: 100%; object-fit: cover;" />
+      <img src="${item?.image || "/images/image-placeholder.jpg"}" style="width: 100%; height: 100%; object-fit: cover;" />
       
       <div style="position: absolute; top: 16px; right: 16px; left: 16px; color: white;">
         <div style="display: flex; align-items: center; justify-content: space-between;">
@@ -118,12 +120,44 @@ export const useGoogleMap = () => {
       </div>
       
       <div style="position: absolute; bottom: 16px; right: 16px; left: 16px; color: white;">
-        <h1 style="font-size: 16px; font-weight: bold; margin: 0;">${activeBusinessData.name}</h1>
-        <p style="font-size: 12px; margin: 4px 0 8px;">${activeBusinessData.description}</p>
+       <h1 style="
+          font-size: 16px;
+          font-weight: bold;
+          margin: 0;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        ">
+          ${activeBusinessData?.name}
+        </h1>
+
+        <p style="
+          font-size: 12px;
+          margin: 4px 0 8px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          display: -webkit-box;
+          -webkit-line-clamp: 1;
+          -webkit-box-orient: vertical;
+        ">
+          ${activeBusinessData?.description}
+        </p>
         <div style="display: flex; align-items: center; justify-content: space-between;">
-          <img src="/images/icons/next.svg" style="cursor: pointer;" onclick="window.prevSlide()" />
-          <div>${indicators}</div>
-          <img src="/images/icons/prev.svg" style="cursor: pointer;" onclick="window.nextSlide()" />
+         <button
+            style="cursor: ${gallery?.length > 1 ? 'pointer' : 'not-allowed'};"
+            ${gallery?.length === 1 ? 'disabled' : ''}
+            ${gallery?.length > 1 ? 'onclick="window.prevSlide()"' : ''}
+          >
+            <img src="/images/icons/next.svg" />
+          </button>
+          <div style="display:flex; align-items:center; justify-content:center; gap:2">${indicators}</div>
+          <button
+            style="cursor: ${gallery?.length > 1 ? 'pointer' : 'not-allowed'};"
+            ${gallery?.length === 1 ? 'disabled' : ''}
+            ${gallery?.length > 1 ? 'onclick="window.nextSlide()"' : ''}
+          >
+            <img src="/images/icons/prev.svg" />
+          </button>
         </div>
       </div>
     </div>
@@ -165,14 +199,13 @@ export const useGoogleMap = () => {
       marker.addListener("click", () => {
         const isSameMarker = activeMarkerRef.current === marker;
         const isOpen = infoWindowRef.current?.get("map") != null;
+        setCurrentSlide(0)
 
         if (isSameMarker && isOpen) {
           infoWindowRef.current?.close();
           activeMarkerRef.current = null;
-          console.log("Closed InfoWindow. Cleared active marker.");
         } else {
           const businessId = (marker as any).businessId;
-          console.log("Clicked Marker ID:", businessId);
           getBusinessData(businessId)
           activeMarkerRef.current = marker;
           infoWindowRef.current?.setContent(generateContent());
@@ -287,6 +320,14 @@ export const useGoogleMap = () => {
       infoWindowRef.current.setContent(generateContent());
     }
   }, [currentSlide]);
+
+
+  useEffect(() => {
+    if (map && infoWindowRef.current && activeMarkerRef.current && activeBusinessData) {
+      infoWindowRef.current.setContent(generateContent());
+      infoWindowRef.current.open(map, activeMarkerRef.current);
+    }
+  }, [activeBusinessData]);
 
   return { mapRef };
 };

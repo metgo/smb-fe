@@ -24,10 +24,10 @@ export const useCtgSubctg = () => {
       params.set("categoryId", newCategoryId);
     else{
       params.delete("categoryId");
-      params.delete("subCategoryId");
     }
-
+    
     params.set("page", "1");
+    params.delete("subCategoryId");
 
     router.push(`?${params.toString()}`);
   };

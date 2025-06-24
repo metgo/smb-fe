@@ -57,7 +57,7 @@ const SubcategoryFilterPanel = () => {
           <button
             type="button"
             onClick={scrollLeft}
-            className="border border-theme rounded-full p-1"
+            className="border border-theme rounded-full p-1 cursor-pointer"
           >
             <RightAngleArrow />
           </button>
@@ -84,7 +84,7 @@ const SubcategoryFilterPanel = () => {
           <button
             type="button"
             onClick={scrollRight}
-            className="border border-theme rounded-full p-1"
+            className="border border-theme rounded-full p-1 cursor-pointer"
           >
             <LeftAngleArrow />
           </button>
