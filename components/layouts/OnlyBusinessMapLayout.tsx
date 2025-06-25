@@ -1,12 +1,7 @@
-import React from 'react'
 import BusinessPinMap from '../maps/BusinessPinMap'
 
 const OnlyBusinessMapLayout = () => {
-  return (
-    <div>
-      <BusinessPinMap/>
-    </div>
-  )
+  return <BusinessPinMap />
 }
 
 export default OnlyBusinessMapLayout

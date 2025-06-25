@@ -24,31 +24,57 @@ const MapBusinessIntegratedLayout = ({ data, meta }: BusinessesProps) => {
     return () => window.removeEventListener("resize", updateScale);
   }, []);
 
-  // 1. Build layout chunks using predefined layouts
-  const layoutOptions = Object.entries(mapIntegratedCardsLayouts)
-    .map(([key, value]) => ({ key, length: value.length }))
-    .sort((a, b) => b.length - a.length);
-
-  const layoutChunks: { key: string; offset: number; scaledLayout: LayoutItem[] }[] = [];
-  let remaining = data.length;
+  // Layout preparation
+  let layoutChunks: { key: string; offset: number; scaledLayout: LayoutItem[] }[] = [];
+  let remainingData: typeof data = [];
   let offset = 0;
 
-  while (remaining > 0) {
-    const layout = layoutOptions.find((l) => l.length <= remaining);
-    if (!layout) break;
+  if (data.length <= 9) {
+    const exactLayoutEntry = Object.entries(mapIntegratedCardsLayouts).find(
+      ([_, layout]) => layout.length === data.length
+    );
 
-    layoutChunks.push({
-      key: layout.key,
-      offset,
-      scaledLayout: scaleLayout(mapIntegratedCardsLayouts[layout.key], scale),
-    });
+    if (exactLayoutEntry) {
+      const [key, layout] = exactLayoutEntry;
+      layoutChunks.push({
+        key,
+        offset: 0,
+        scaledLayout: scaleLayout(layout, scale),
+      });
+    } else {
+      // fallback if no exact match — use first N from layout9
+      layoutChunks.push({
+        key: "layout9",
+        offset: 0,
+        scaledLayout: scaleLayout(mapIntegratedCardsLayouts.layout9.slice(0, data.length), scale),
+      });
+    }
+  } else {
+    const layoutOptions = Object.entries(mapIntegratedCardsLayouts)
+      .filter(([key]) => key !== "layout9")
+      .map(([key, value]) => ({ key, length: value.length }))
+      .sort((a, b) => b.length - a.length);
 
-    offset += layout.length;
-    remaining -= layout.length;
+    let remaining = data.length;
+
+    while (remaining > 0) {
+      const layout = layoutOptions.find((l) => l.length <= remaining);
+      if (!layout) break;
+
+      layoutChunks.push({
+        key: layout.key,
+        offset,
+        scaledLayout: scaleLayout(mapIntegratedCardsLayouts[layout.key], scale),
+      });
+
+      offset += layout.length;
+      remaining -= layout.length;
+    }
+
+    remainingData = data.slice(offset);
   }
 
-  // 2. Handle any extra items using layout9
-  const remainingData = data.slice(offset);
+  // For remaining data, assign random layout9 items
   const layout9 = mapIntegratedCardsLayouts.layout9;
   const scaledLayout9 = scaleLayout(layout9, scale);
   const extraChunks = [[], [], []] as { business: any; layout: LayoutItem }[][];
@@ -59,7 +85,6 @@ const MapBusinessIntegratedLayout = ({ data, meta }: BusinessesProps) => {
     extraChunks[colIndex].push({ business, layout: randomLayout });
   });
 
-  // 3. Render helpers
   const renderCards = (
     layoutKey: string,
     layoutOffset: number,
@@ -120,12 +145,12 @@ const MapBusinessIntegratedLayout = ({ data, meta }: BusinessesProps) => {
   return (
     <div className="w-full h-full flex items-center ps-20 gap-2">
       <div className="flex flex-col col-span-8 gap-10 max-h-[95vh] overflow-y-auto hide-scrollbar py-10">
-        {/* Predefined layout chunks */}
+        {/* Render layout chunks */}
         {layoutChunks.map(({ key, offset, scaledLayout }, idx) => (
           <div key={`${key}-${offset}-${idx}`}>{renderLayout(key, offset, scaledLayout)}</div>
         ))}
 
-        {/* Extra cards rendered using layout9 randomly */}
+        {/* Render extra cards in 3 columns */}
         {remainingData.length > 0 && (
           <div className="flex gap-5">
             {extraChunks.map((column, colIdx) => (

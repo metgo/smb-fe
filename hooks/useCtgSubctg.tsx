@@ -28,15 +28,16 @@ export const useCtgSubctg = () => {
 
     params.set("page", "1");
     params.delete("subCategoryId");
-    window.scrollTo(0, 0)
-    router.push(`?${params.toString()}`, { scroll: true });
+
+    window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+    router.push(`?${params.toString()}`);
   };
 
   const handleSubcategoryChange = (subCtgId: string) => {
     const isSameCategory = activeSubCategory === subCtgId;
     const newSubcategoryId = isSameCategory ? "" : subCtgId;
 
-    setActiveSubCategory(subCtgId);
+    setActiveSubCategory(newSubcategoryId);
 
     const params = new URLSearchParams(searchParams.toString());
 
@@ -47,7 +48,7 @@ export const useCtgSubctg = () => {
 
     params.set("page", "1");
     params.set("categoryId", activeCategoryKey);
-    window.scrollTo(0, 0)
+    window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
     router.push(`?${params.toString()}`);
   };
 

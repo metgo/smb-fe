@@ -1,4 +1,4 @@
-import {  navbar } from "@/constant/hebrew";
+import { navbar } from "@/constant/hebrew";
 import { CtgAttractionIcon, CtgCultureIcon, CtgEatIcon, CtgLocalIcon, CtgLodgeIcon, CtgTourIcon } from "@/components/ui/icons";
 
 
@@ -29,6 +29,15 @@ export const categoryGradientClasses: any = {
   [categoryId.attraction]: 'from-ctg-attract-dim via-ctg-attract-light to-ctg-attract-dim',
   [categoryId.tour]: 'from-ctg-tour-dim via-ctg-tour-light to-ctg-tour-dim',
 };
+
+export const categoryGradinteColor: any = {
+  [categoryId.eat]: { dim: "#F7BCAC", light: "#F8CBBF" },
+  [categoryId.local]: { dim: "#F9D385", light: "#F9DEA7" },
+  [categoryId.sleep]: { dim: "#90BBE3", light: "#A2C6E6" },
+  [categoryId.culture]: { dim: "#F1A7C9", light: "#F3BDD6" },
+  [categoryId.attraction]: { dim: "#CEA7CE", light: "#D9BCD9" },
+  [categoryId.tour]: { dim: "#64C5C6", light: "#8ED4D5" }
+}
 
 export const categoryBgClasses: any = {
   [categoryId.eat]: 'bg-ctg-eat-dark',

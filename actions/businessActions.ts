@@ -4,71 +4,6 @@ import { CODE } from "@/constant/envConstants";
 const pageCache = new Map<number, BusinessProps[]>();
 const metaCache = new Map<number, BusinessesProps['meta']>();
 
-// export const getAllBusinesses = async (
-//   pageCount: number,
-//   subCategoryId: string,
-//   categoryId: string
-// ): Promise<any> => {
-//   try {
-//     const res = await fetch(`${urls.tourismBusinesses}?page=${pageCount}&limit=16&bussCategoriesId=${categoryId}&bussSubCategoriesId=${subCategoryId}&campCode=${CODE}`);
-
-//     if (!res.ok) throw new Error(`Failed to fetch page ${pageCount}`);
-//     const json: BusinessesProps = await res.json();
-//     return json;
-
-//   } catch (err) {
-//     console.error(`Error fetching page:`, err);
-//   }
-// };
-
-// export const getAllBusinesses = async (
-//   pageCount: number,
-//   categoryId: string,
-//   subCategoryId: string,
-// ): Promise<BusinessesProps> => {
-//   const combinedData: BusinessProps[] = [];
-
-//   const skipCache = pageCount === 1 && !!categoryId;
-
-//   for (let i = 1; i <= pageCount; i++) {
-//     const isCached = pageCache.has(i);
-
-//     if (isCached && !skipCache) {
-//       combinedData.push(...pageCache.get(i)!);
-//     } else {
-//       try {
-//         const res = await fetch(`${urls.tourismBusinesses}?page=${i}&limit=16&bussCategoriesId=${categoryId}&bussSubCategoriesId=${subCategoryId}&campCode=${CODE}`);
-//         if (!res.ok) throw new Error(`Failed to fetch page ${i}`);
-//         const json: BusinessesProps = await res.json();
-
-//         // Only cache if not skipping
-//         if (!skipCache) {
-//           pageCache.set(i, json.data);
-//           metaCache.set(i, json.meta);
-//         }
-
-//         combinedData.push(...json.data);
-//       } catch (err) {
-//         console.error(`Error fetching page ${i}:`, err);
-//       }
-//     }
-//   }
-
-//   const latestMeta = metaCache.get(pageCount) || {
-//     page: pageCount,
-//     limit: '16',
-//     data: combinedData.length,
-//     pageCount: pageCount,
-//     hasPreviousPage: pageCount > 1,
-//     hasNextPage: true,
-//   };
-
-//   return {
-//     data: combinedData,
-//     totalData: combinedData.length,
-//     meta: latestMeta,
-//   };
-// };
 
 let previousCategoryId: string | null = null;
 let previousSubCategoryId: string | null = null;
@@ -126,6 +61,78 @@ export const getAllBusinesses = async (
     meta: latestMeta,
   };
 };
+
+
+
+// let previousCategoryId: string | null = null;
+// let previousSubCategoryId: string | null = null;
+
+// function shuffleArray<T>(array: T[]): T[] {
+//   const shuffled = [...array];
+//   for (let i = shuffled.length - 1; i > 0; i--) {
+//     const j = Math.floor(Math.random() * (i + 1));
+//     [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+//   }
+//   return shuffled;
+// }
+
+// export const getAllBusinesses = async (
+//   pageCount: number,
+//   categoryId: string,
+//   subCategoryId: string,
+// ): Promise<BusinessesProps> => {
+//   const combinedData: BusinessProps[] = [];
+
+//   const isCategoryChanged = previousCategoryId !== categoryId;
+//   const isSubCategoryChanged = previousSubCategoryId !== subCategoryId;
+
+//   if (isCategoryChanged || isSubCategoryChanged) {
+//     pageCache.clear();
+//     metaCache.clear();
+//     previousCategoryId = categoryId;
+//     previousSubCategoryId = subCategoryId;
+//   }
+
+//   for (let i = 1; i <= pageCount; i++) {
+//     const isCached = pageCache.has(i);
+
+//     if (isCached) {
+//       combinedData.push(...pageCache.get(i)!);
+//     } else {
+//       try {
+//         const res = await fetch(`${urls.tourismBusinesses}?page=${i}&limit=16&bussCategoriesId=${categoryId}&bussSubCategoriesId=${subCategoryId}&sortBy=images&sortOrder=DESC&campCode=${CODE}`);
+//         if (!res.ok) throw new Error(`Failed to fetch page ${i}`);
+//         const json: BusinessesProps = await res.json();
+
+//         pageCache.set(i, json.data);
+//         metaCache.set(i, json.meta);
+
+//         combinedData.push(...json.data);
+//       } catch (err) {
+//         console.error(`Error fetching page ${i}:`, err);
+//       }
+//     }
+//   }
+
+//   const latestMeta = metaCache.get(pageCount) || {
+//     page: pageCount,
+//     limit: '16',
+//     data: combinedData.length,
+//     pageCount: pageCount,
+//     hasPreviousPage: pageCount > 1,
+//     hasNextPage: true,
+//   };
+
+//   // 🔀 Shuffle the combined data before returning
+//   const shuffledData = shuffleArray(combinedData);
+
+//   return {
+//     data: shuffledData,
+//     totalData: shuffledData.length,
+//     meta: latestMeta,
+//   };
+// };
+
 
 
 export const getAllCategory = async () => {

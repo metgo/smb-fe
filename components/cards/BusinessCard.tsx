@@ -9,30 +9,49 @@ import useGeneralStore from '@/stores/generalStore';
 import { categoryGradientClasses } from '@/lib/utils';
 import LocalStorageService from '@/lib/localStorage';
 import { IconImage } from '@/components/ui';
+import { useSearchParams } from 'next/navigation';
 
+const placeholderImage = "/images/image-placeholder.jpg"
 
 const BusinessCard = ({
   height,
   width,
   business,
 }: BusinessCardProps) => {
-  const { activeCategoryKey, setActiveFilterTab } = useGeneralStore()
   const aspectRatio = width / height;
+
+  const searchParams = useSearchParams();
+  const {
+    categoryId = '',
+    subCategoryId = ''
+  } = Object.fromEntries(searchParams.entries());
+  const { activeCategoryKey, setActiveFilterTab } = useGeneralStore()
+
   const existingFaviourtBusiness = LocalStorageService.get<FaviouriteBusinessProps[]>("favorite-business") || [];
 
   const [isLoading, setIsLoading] = useState(false)
-  const [croppedImageUrl, setCroppedImageUrl] = useState("")
+  const [updatedImage, setUpdatedImage] = useState({ imageUrl: placeholderImage, alt: "abc" })
+
   useEffect(() => {
-    let timer: NodeJS.Timeout;
-    setIsLoading(false);
-    handleCropImage(business?.images[0], aspectRatio, setIsLoading, (croppedUrl: string) => {
-      timer = setTimeout(() => {
-        setCroppedImageUrl(croppedUrl);
+    const timer = setTimeout(() => {
+      const primaryImageObj = business?.images?.find(item => item?.isPrimary);
+
+      if (primaryImageObj) {
+        if (primaryImageObj?.subCoordinates) {
+          handleCropImage(primaryImageObj, aspectRatio, setIsLoading, setUpdatedImage);
+        } else {
+          setUpdatedImage({ imageUrl: primaryImageObj?.image, alt: primaryImageObj?.alt });
+          setIsLoading(false);
+        }
+      } else {
+        setUpdatedImage({ imageUrl: business?.logo?.image, alt: business.name });
         setIsLoading(false);
-      }, 4000);
-    });
+      }
+    }, 3000);
+    setIsLoading(true);
     return () => clearTimeout(timer);
-  }, []);
+  }, [categoryId, subCategoryId]);
+
 
   function addWishlistHandler() {
     LocalStorageService.remove("favorite-business");
@@ -41,7 +60,7 @@ const BusinessCard = ({
       width,
       _id: business._id,
       name: business.name,
-      imageUrl: croppedImageUrl,
+      imageUrl: updatedImage.imageUrl,
       location: tempCardInfo.location,
     };
 
@@ -71,9 +90,10 @@ const BusinessCard = ({
             priority
             unoptimized
             quality={100}
-            alt={business?.images[0]?.alt || "Business Image"}
-            src={croppedImageUrl || business?.images[0]?.image || "/images/image-placeholder.jpg"}
-            className="object-cover h-full w-full rounded-xl"
+            alt={updatedImage.alt}
+            src={updatedImage.imageUrl || placeholderImage}
+            className=" object-cover h-full w-full rounded-xl"
+            onError={() => setUpdatedImage({ imageUrl: placeholderImage, alt: "abc" })}
           />
           <div className="relative w-full h-full overflow-hidden">
             {/* Overlay (only bottom 50%) */}

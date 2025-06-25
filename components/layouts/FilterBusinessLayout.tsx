@@ -23,7 +23,6 @@ const FilterBusinessLayout = (businesses: BusinessesProps) => {
   const totalBusiness = businesses?.totalData;
   const metaData = businesses?.meta
 
-  // console.log("------businesses", businesses.data)
 
   const [prevCategoryId, setPrevCategoryId] = useState(categoryId);
   const [prevSubCategoryId, setPrevSubCategoryId] = useState(subCategoryId);
@@ -87,7 +86,7 @@ const FilterBusinessLayout = (businesses: BusinessesProps) => {
   }
   return (
     <div>
-      <div className='text-2xl mb-8 font-black fixed right-0 top-20 z-50'>{totalBusiness}</div>
+      {/* <div className='text-2xl mb-8 font-black fixed right-0 top-20 z-50'>{totalBusiness}</div> */}
       {renderLayout()}
       {(businesses.meta.hasNextPage || loading) && (
         <div ref={sentryRef} />

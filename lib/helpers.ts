@@ -25,6 +25,32 @@ export const handleCropImage = async (
   imageItem: ImageItem,
   aspect: number,
   setIsLoading: (isLoading: boolean) => void,
+  setCroppedImageUrl: ({ imageUrl, alt }: { imageUrl: string, alt: string }) => void
+) => {
+  const encodedImageUrl = encodeURIComponent(imageItem?.image);
+  const { xMin, yMin, xMax, yMax } = imageItem?.subCoordinates;
+
+  const query = `url=${encodedImageUrl}&xMin=${xMin}&yMin=${yMin}&xMax=${xMax}&yMax=${yMax}&aspect=${aspect}`;
+  setIsLoading(true)
+  try {
+    const res = await fetch(`/api/crop-image?${query}`);
+    if (!res.ok) throw new Error("Failed to crop image");
+
+    const blob = await res.blob();
+    const objectUrl = URL.createObjectURL(blob);
+    setCroppedImageUrl({ imageUrl: objectUrl, alt: imageItem.alt });
+  } catch (error) {
+    console.error(`Error cropping image`, error);
+  } finally {
+    setIsLoading(false)
+  }
+};
+
+
+export const handleCropImagedraft = async (
+  imageItem: ImageItem,
+  aspect: number,
+  setIsLoading: (isLoading: boolean) => void,
   setCroppedImageUrl: (url: string) => void
 ) => {
   if (imageItem?.subCoordinates) {
@@ -51,31 +77,3 @@ export const handleCropImage = async (
 
 };
 
-export const handleCropImagedraft = async (
-  imageUrl: string,
-  aspect: number,
-  setIsLoading: (isLoading: boolean) => void,
-  setCroppedImageUrl: (url: string) => void
-) => {
-  const encodedImageUrl = encodeURIComponent(imageUrl);
-  const xMin = 0.44285714285714284
-  const yMin = 0.41630901287553645
-  const xMax = 0.76
-  const yMax = 0.7140557939914163
-
-  const query = `url=${encodedImageUrl}&xMin=${xMin}&yMin=${yMin}&xMax=${xMax}&yMax=${yMax}&aspect=${aspect}`;
-  setIsLoading(true)
-  try {
-    const res = await fetch(`/api/crop-image?${query}`);
-    if (!res.ok) throw new Error("Failed to crop image");
-
-    const blob = await res.blob();
-    const objectUrl = URL.createObjectURL(blob);
-    setCroppedImageUrl(objectUrl);
-  } catch (error) {
-    console.error(`Error cropping image`, error);
-  } finally {
-    setIsLoading(false)
-  }
-
-};
