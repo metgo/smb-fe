@@ -35,7 +35,7 @@ const CurrentTempOfYourCity = () => {
 
   return (
     <div className="flex items-center">
-      <span className="font-normal text-2xl text-theme">{weather?.temperature}°C</span>
+      <span className="font-normal text-2xl text-theme">{Math.trunc(weather?.temperature)}°C</span>
       <Image
         width={40}
         height={40}

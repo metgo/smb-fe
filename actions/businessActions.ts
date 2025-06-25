@@ -18,7 +18,7 @@ export const getAllBusinesses = async (
   const isCategoryChanged = previousCategoryId !== categoryId;
   const isSubCategoryChanged = previousSubCategoryId !== subCategoryId;
 
-  if (isCategoryChanged || isSubCategoryChanged) {
+  if (isCategoryChanged || isSubCategoryChanged || pageCount) {
     pageCache.clear();
     metaCache.clear();
     previousCategoryId = categoryId;

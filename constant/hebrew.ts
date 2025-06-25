@@ -15,8 +15,8 @@ export const navbar = {
   gallery: "גלריה",
   integrated: "משולב",
 
-  funDays: "ימי כיף",
-  toGroups: "לקבוצות",
+  funDays: "ימי גיבוש",
+  toGroups: "קבוצות",
   events: "אירועים",
   tracks: "מסלולים",
 }

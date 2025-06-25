@@ -44,7 +44,7 @@ const BusinessCard = ({
           setIsLoading(false);
         }
       } else {
-        setUpdatedImage({ imageUrl: business?.logo?.image, alt: business.name });
+        setUpdatedImage({ imageUrl: business?.images[0]?.image, alt: business.name });
         setIsLoading(false);
       }
     }, 3000);

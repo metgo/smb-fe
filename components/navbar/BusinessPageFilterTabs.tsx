@@ -8,15 +8,15 @@ const BusinessPageFilterTabs = () => {
   const { setActiveFilterTab, activeFilterTab } = useGeneralStore()
 
   return (
-    <div className="flex items-center gap-2 py-0.5 px-1.5 bg-[#EAEAEA] rounded-lg">
+    <div className="flex items-center gap-2 px-0.5 bg-[#EAEAEA] rounded-lg mx-32 h-9 py-1 mt-1.5">
       {filterTabs.map(item => (
         <button
           key={item.key}
           type="button"
           onClick={() => setActiveFilterTab(item.key)}
-          className={`${activeFilterTab === item.key ? "flex items-center gap-1.5 px-2.5 py-1.75 bg-white font-bold" : "px-5 py-2  font-normal"} rounded-lg cursor-pointer text-sm text-theme`}
+          className={`${activeFilterTab === item.key ? "flex items-center gap-1.5 px-2.5 py-1.5 bg-white font-bold h-8 border-[1px] border-[#EAEAEA]" : "px-2 py-2  font-normal"} rounded-lg cursor-pointer text-sm text-theme`}
         >
-          {activeFilterTab === item.key && <IconImage icon={item.icon} />}
+          {activeFilterTab === item.key && <IconImage icon={item.icon} width={20} height={20} />}
           <span>{item.label}</span>
         </button>
       ))}

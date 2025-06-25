@@ -19,6 +19,7 @@ const FilterBusinessLayout = (businesses: BusinessesProps) => {
 
   const [loading, setLoading] = useState(false);
   const [pageCount, setPageCount] = useState(1);
+  const [initialLoadDone, setInitialLoadDone] = useState(false);
 
   const totalBusiness = businesses?.totalData;
   const metaData = businesses?.meta
@@ -26,6 +27,12 @@ const FilterBusinessLayout = (businesses: BusinessesProps) => {
 
   const [prevCategoryId, setPrevCategoryId] = useState(categoryId);
   const [prevSubCategoryId, setPrevSubCategoryId] = useState(subCategoryId);
+
+
+  useEffect(() => {
+    // Set after initial render
+    setInitialLoadDone(true);
+  }, []);
 
   useEffect(() => {
     if (categoryId !== prevCategoryId || subCategoryId !== prevSubCategoryId) {
@@ -35,9 +42,8 @@ const FilterBusinessLayout = (businesses: BusinessesProps) => {
     }
   }, [categoryId, subCategoryId, prevCategoryId, prevSubCategoryId]);
 
-  // Fetch data when pageCount changes
   const loadMore = useCallback(async () => {
-    if (loading || !metaData.hasNextPage) return;
+    if (!initialLoadDone || loading || !metaData.hasNextPage) return;
 
     setLoading(true);
     try {
@@ -52,7 +58,7 @@ const FilterBusinessLayout = (businesses: BusinessesProps) => {
     } finally {
       setLoading(false);
     }
-  }, [loading, metaData, pageCount, searchParams, router]);
+  }, [initialLoadDone, loading, metaData, pageCount, searchParams, router]);
 
   const [sentryRef] = useInfiniteScroll({
     loading,
@@ -88,9 +94,10 @@ const FilterBusinessLayout = (businesses: BusinessesProps) => {
     <div>
       {/* <div className='text-2xl mb-8 font-black fixed right-0 top-20 z-50'>{totalBusiness}</div> */}
       {renderLayout()}
-      {(businesses.meta.hasNextPage || loading) && (
+      {initialLoadDone && (businesses.meta.hasNextPage || loading) && (
         <div ref={sentryRef} />
       )}
+
     </div>
   )
 }
