@@ -22,22 +22,17 @@ const BusinessCard = ({
 
   const [isLoading, setIsLoading] = useState(false)
   const [croppedImageUrl, setCroppedImageUrl] = useState("")
-
   useEffect(() => {
     let timer: NodeJS.Timeout;
-
-    if (activeCategoryKey) {
-      setIsLoading(true);
-      handleCropImage(business?.images[0], aspectRatio, setIsLoading, (croppedUrl: string) => {
-        timer = setTimeout(() => {
-          setCroppedImageUrl(croppedUrl);
-          setIsLoading(false);
-        }, 1000);
-      });
-    }
-
-    return () => clearTimeout(timer); // cleanup on unmount
-  }, [activeCategoryKey]);
+    setIsLoading(false);
+    handleCropImage(business?.images[0], aspectRatio, setIsLoading, (croppedUrl: string) => {
+      timer = setTimeout(() => {
+        setCroppedImageUrl(croppedUrl);
+        setIsLoading(false);
+      }, 4000);
+    });
+    return () => clearTimeout(timer);
+  }, []);
 
   function addWishlistHandler() {
     LocalStorageService.remove("favorite-business");
@@ -64,8 +59,7 @@ const BusinessCard = ({
     LocalStorageService.set<FaviouriteBusinessProps[]>("favorite-business", updated);
   }
 
-  const primaryCategoryId = activeCategoryKey ? activeCategoryKey : business.primaryCategoryId
-
+  const primaryCategoryId = activeCategoryKey ? activeCategoryKey : business?.primaryCategoryId ? business?.primaryCategoryId : "6566e36ba77d2a477266d2f4"
 
   return (
     <div style={{ width: `${width}px`, height: `${height}px` }}>
@@ -78,7 +72,7 @@ const BusinessCard = ({
             unoptimized
             quality={100}
             alt={business?.images[0]?.alt || "Business Image"}
-            src={croppedImageUrl || "/images/image-placeholder.jpg"}
+            src={croppedImageUrl || business?.images[0]?.image || "/images/image-placeholder.jpg"}
             className="object-cover h-full w-full rounded-xl"
           />
           <div className="relative w-full h-full overflow-hidden">

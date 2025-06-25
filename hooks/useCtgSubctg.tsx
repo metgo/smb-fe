@@ -22,14 +22,14 @@ export const useCtgSubctg = () => {
 
     if (newCategoryId)
       params.set("categoryId", newCategoryId);
-    else{
+    else {
       params.delete("categoryId");
     }
-    
+
     params.set("page", "1");
     params.delete("subCategoryId");
-
-    router.push(`?${params.toString()}`);
+    window.scrollTo(0, 0)
+    router.push(`?${params.toString()}`, { scroll: true });
   };
 
   const handleSubcategoryChange = (subCtgId: string) => {
@@ -47,7 +47,7 @@ export const useCtgSubctg = () => {
 
     params.set("page", "1");
     params.set("categoryId", activeCategoryKey);
-
+    window.scrollTo(0, 0)
     router.push(`?${params.toString()}`);
   };
 

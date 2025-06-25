@@ -32,7 +32,7 @@ export const handleCropImage = async (
     const { xMin, yMin, xMax, yMax } = imageItem?.subCoordinates;
 
     const query = `url=${encodedImageUrl}&xMin=${xMin}&yMin=${yMin}&xMax=${xMax}&yMax=${yMax}&aspect=${aspect}`;
-    setIsLoading(true)
+    setIsLoading(false)
     try {
       const res = await fetch(`/api/crop-image?${query}`);
       if (!res.ok) throw new Error("Failed to crop image");
@@ -46,7 +46,7 @@ export const handleCropImage = async (
       setIsLoading(false)
     }
   } else {
-    setCroppedImageUrl(imageItem?.image);
+    setCroppedImageUrl(imageItem?.image || "/images/image-placeholder.jpg");
   }
 
 };

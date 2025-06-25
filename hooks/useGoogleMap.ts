@@ -60,9 +60,18 @@ export const useGoogleMap = () => {
   const [activeBusinessData, setActiveBusinessData] = useState<any>()
   const [businesses, setBusinesses] = useState<BusinessMakerProps[]>([]);
 
+
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => setIsLoading(false), 3000); // delay 3s
+    return () => clearTimeout(timeout);
+  }, [ activeBusinessData]);
+
   const gallery = activeBusinessData?.images
 
   async function getBusinessData(businessId: string) {
+    setActiveBusinessData(null)
     const res = await getBusinessById(businessId)
     setActiveBusinessData(res)
   }
@@ -93,6 +102,21 @@ export const useGoogleMap = () => {
 
 
   const generateContent = () => {
+    if (isLoading) {
+      return `
+      <div style="width: 240px; height: 240px; border-radius: 8px; background: #ccc; position: relative; box-shadow: 0 4px 12px rgba(0,0,0,0.3); overflow: hidden;">
+        <div style="background: #e0e0e0; height: 100%; width: 100%; animation: pulse 1.5s infinite;"></div>
+        <style>
+          @keyframes pulse {
+            0% { background-color: #e0e0e0; }
+            50% { background-color: #f0f0f0; }
+            100% { background-color: #e0e0e0; }
+          }
+        </style>
+      </div>
+    `;
+    }
+
     const item = activeBusinessData?.images[currentSlide];
     const indicators = gallery?.map((_: any, i: number) => {
       return `<div style="
@@ -137,6 +161,7 @@ export const useGoogleMap = () => {
           font-size: 12px;
           margin: 4px 0 8px;
           overflow: hidden;
+          hight:20px;
           text-overflow: ellipsis;
           display: -webkit-box;
           -webkit-line-clamp: 1;

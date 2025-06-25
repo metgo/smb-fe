@@ -10,7 +10,7 @@ export default async function BusinessLayout({ children }: ReactChildNode) {
       <Navbar />
       <div className=" bg-primary pt-14">
         {children}
-        <div className="w-full fixed bottom-4 right-0 flex flex-col items-center justify-center gap-2">
+        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 flex flex-col items-center justify-center gap-2 w-max">
           <SubcategoryFilterPanel />
           <CategoryPanel categories={data} />
         </div>

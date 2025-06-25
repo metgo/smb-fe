@@ -23,6 +23,8 @@ const FilterBusinessLayout = (businesses: BusinessesProps) => {
   const totalBusiness = businesses?.totalData;
   const metaData = businesses?.meta
 
+  // console.log("------businesses", businesses.data)
+
   const [prevCategoryId, setPrevCategoryId] = useState(categoryId);
   const [prevSubCategoryId, setPrevSubCategoryId] = useState(subCategoryId);
 
@@ -57,7 +59,7 @@ const FilterBusinessLayout = (businesses: BusinessesProps) => {
     loading,
     hasNextPage: businesses.meta.hasNextPage,
     onLoadMore: loadMore,
-    rootMargin: '0px 0px 200px 0px',
+    rootMargin: '0px 0px 600px 0px',
   });
 
   if (totalBusiness === 0) {
@@ -85,11 +87,10 @@ const FilterBusinessLayout = (businesses: BusinessesProps) => {
   }
   return (
     <div>
+      <div className='text-2xl mb-8 font-black fixed right-0 top-20 z-50'>{totalBusiness}</div>
       {renderLayout()}
       {(businesses.meta.hasNextPage || loading) && (
-        <div ref={sentryRef} style={{ textAlign: 'center', padding: '1rem' }}>
-          {loading ? 'Loading more...' : 'Scroll to load more'}
-        </div>
+        <div ref={sentryRef} />
       )}
     </div>
   )
