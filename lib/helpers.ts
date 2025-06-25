@@ -30,6 +30,11 @@ export const handleCropImage = async (
   const encodedImageUrl = encodeURIComponent(imageItem?.image);
   const { xMin, yMin, xMax, yMax } = imageItem?.subCoordinates;
 
+  if (!xMin && !yMin && !xMax && !yMax) {
+    setCroppedImageUrl({ imageUrl: imageItem?.image, alt: imageItem.alt });
+    return;
+  }
+
   const query = `url=${encodedImageUrl}&xMin=${xMin}&yMin=${yMin}&xMax=${xMax}&yMax=${yMax}&aspect=${aspect}`;
   setIsLoading(true)
   try {
