@@ -4,7 +4,7 @@ import useGeneralStore from "@/stores/generalStore";
 import { getAllBusinessLocation, getBusinessById } from "@/actions/businessActions";
 import { googlePointOfInterest } from "@/constant/googlePoi";
 import { GOOGLE_API_KEY } from "@/constant/envConstants";
-import { businessMarkers } from "@/lib/utils";
+import { businessMarkers, categoryGradinteColor } from "@/lib/utils";
 
 declare global {
   interface Window {
@@ -59,14 +59,14 @@ export const useGoogleMap = () => {
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [activeBusinessData, setActiveBusinessData] = useState<any>()
   const [businesses, setBusinesses] = useState<BusinessMakerProps[]>([]);
-
+  const [activeCategoryId, setActiveCategoryId] = useState<string>("")
 
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const timeout = setTimeout(() => setIsLoading(false), 3000); // delay 3s
     return () => clearTimeout(timeout);
-  }, [ activeBusinessData]);
+  }, [activeBusinessData]);
 
   const gallery = activeBusinessData?.images
 
@@ -99,7 +99,8 @@ export const useGoogleMap = () => {
     };
   }, [gallery]);
 
-
+  const dimColor = categoryGradinteColor[activeCategoryId]?.dim
+  const lightColor = categoryGradinteColor[activeCategoryId]?.light
 
   const generateContent = () => {
     if (isLoading) {
@@ -108,9 +109,9 @@ export const useGoogleMap = () => {
         <div style="background: #e0e0e0; height: 100%; width: 100%; animation: pulse 1.5s infinite;"></div>
         <style>
           @keyframes pulse {
-            0% { background-color: #e0e0e0; }
-            50% { background-color: #f0f0f0; }
-            100% { background-color: #e0e0e0; }
+            0% { background-color: ${dimColor}; }
+            50% { background-color: ${lightColor}; }
+            100% { background-color: ${dimColor}; }
           }
         </style>
       </div>
@@ -131,12 +132,12 @@ export const useGoogleMap = () => {
 
     return `
     <div style="width: 240px; height: 240px; border:2px solid white; border-radius: 8px; overflow: hidden; position: relative; box-shadow: 0 4px 12px rgba(0,0,0,0.3); font-family: sans-serif;">
-      <img src="${item?.image || "/images/image-placeholder.jpg"}" style="width: 100%; height: 100%; object-fit: cover;" />
+      <img src="${item?.image || "./images/image-placeholder.jpg"}" style="width: 100%; height: 100%; object-fit: cover;" />
       
       <div style="position: absolute; top: 16px; right: 16px; left: 16px; color: white;">
         <div style="display: flex; align-items: center; justify-content: space-between;">
           <div style="width:40px; height:40px; border:2px solid #D3D3D3; border-radius:12px; overflow:hidden">
-            <img src="${activeBusinessData?.logo?.image || "/images/image-placeholder.jpg"}" style="object-fit:cover; width:100%; height:100%" />
+            <img src="${activeBusinessData?.logo?.image || "./images/image-placeholder.jpg"}" style="object-fit:cover; width:100%; height:100%" />
           </div>
           <div style="display: flex; align-items: center; gap:10px">
             <img src="/images/icons/pin.svg" style="cursor: pointer;"  />
@@ -222,18 +223,20 @@ export const useGoogleMap = () => {
         },
       });
       (marker as any).businessId = business._id;
+      (marker as any).categoryId = business.primaryCategoryId;
 
       marker.addListener("click", () => {
         const isSameMarker = activeMarkerRef.current === marker;
         const isOpen = infoWindowRef.current?.get("map") != null;
         setCurrentSlide(0)
-
         if (isSameMarker && isOpen) {
           infoWindowRef.current?.close();
           activeMarkerRef.current = null;
         } else {
           const businessId = (marker as any).businessId;
+          const categoryId = (marker as any).categoryId;
           getBusinessData(businessId)
+          setActiveCategoryId(categoryId)
           activeMarkerRef.current = marker;
           infoWindowRef.current?.setContent(generateContent());
           infoWindowRef.current?.open(map, marker);

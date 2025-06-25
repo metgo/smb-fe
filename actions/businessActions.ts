@@ -32,7 +32,13 @@ export const getAllBusinesses = async (
       combinedData.push(...pageCache.get(i)!);
     } else {
       try {
-        const res = await fetch(`${urls.tourismBusinesses}?page=${i}&limit=16&bussCategoriesId=${categoryId}&bussSubCategoriesId=${subCategoryId}&sortBy=createdAt&sortOrder=DESC&campCode=${CODE}`);
+        const res = await fetch(
+          `${urls.tourismBusinesses}?page=${i}&limit=16&bussCategoriesId=${categoryId}&bussSubCategoriesId=${subCategoryId}&sortBy=createdAt&sortOrder=DESC&campCode=${CODE}`,
+          {
+            cache: 'no-store',
+          }
+        );
+
         if (!res.ok) throw new Error(`Failed to fetch page ${i}`);
         const json: BusinessesProps = await res.json();
 
@@ -61,6 +67,7 @@ export const getAllBusinesses = async (
     meta: latestMeta,
   };
 };
+
 
 
 
