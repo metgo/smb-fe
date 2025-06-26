@@ -13,6 +13,12 @@ declare global {
   }
 }
 
+function isRichText(content: string): boolean {
+  const doc = new DOMParser().parseFromString(content, 'text/html');
+  // check if the body contains any element nodes
+  return Array.from(doc.body.childNodes).some(node => node.nodeType === 1);
+}
+
 const googleMapsScriptLoaded = {
   loaded: false,
   callbacks: [] as (() => void)[],
@@ -53,14 +59,12 @@ export const useGoogleMap = () => {
   const activeMarkerRef = useRef<google.maps.Marker | null>(null);
   const infoWindowRef = useRef<google.maps.InfoWindow | null>(null);
 
-  const { activeFilterTab, activeCategoryKey } = useGeneralStore();
-
+  const { activeFilterTab, activeCategoryKey, clickedBusinessId, setClickedBusinessId } = useGeneralStore();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [activeBusinessData, setActiveBusinessData] = useState<any>()
   const [businesses, setBusinesses] = useState<BusinessMakerProps[]>([]);
   const [activeCategoryId, setActiveCategoryId] = useState<string>("")
-
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -72,7 +76,7 @@ export const useGoogleMap = () => {
 
   async function getBusinessData(businessId: string) {
     setActiveBusinessData(null)
-    const res = await getBusinessById(businessId)
+    const res = await getBusinessById(businessId, setIsLoading)
     setActiveBusinessData(res)
   }
 
@@ -119,6 +123,11 @@ export const useGoogleMap = () => {
     }
 
     const item = activeBusinessData?.images[currentSlide];
+
+    const wrappedDescription = isRichText(activeBusinessData?.description)
+      ? activeBusinessData?.description
+      : `<span>${activeBusinessData?.description}</span>`;
+
     const indicators = gallery?.map((_: any, i: number) => {
       return `<div style="
       width: ${i === currentSlide ? "8px" : "8px"};
@@ -131,65 +140,80 @@ export const useGoogleMap = () => {
     }).join("");
 
     return `
-    <div style="width: 240px; height: 240px; border:2px solid white; border-radius: 8px; overflow: hidden; position: relative; box-shadow: 0 4px 12px rgba(0,0,0,0.3); font-family: sans-serif;">
-      <img src="${item?.image || "./images/image-placeholder.jpg"}" style="width: 100%; height: 100%; object-fit: cover;" />
-      
-      <div style="position: absolute; top: 16px; right: 16px; left: 16px; color: white;">
-        <div style="display: flex; align-items: center; justify-content: space-between;">
-          <div style="width:40px; height:40px; border:2px solid #D3D3D3; border-radius:12px; overflow:hidden">
-            <img src="${activeBusinessData?.logo?.image || "./images/image-placeholder.jpg"}" style="object-fit:cover; width:100%; height:100%" />
-          </div>
-          <div style="display: flex; align-items: center; gap:10px">
-            <img src="/images/icons/pin.svg" style="cursor: pointer;"  />
-            <img src="/images/icons/circular-heart.svg" style="cursor: pointer;" />
-          </div>
-        </div>
-      </div>
-      
-      <div style="position: absolute; bottom: 16px; right: 16px; left: 16px; color: white;">
-       <h1 style="
-          font-size: 16px;
-          font-weight: bold;
-          margin: 0;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-        ">
-          ${activeBusinessData?.name}
-        </h1>
+  <div style="width: 240px; height: 240px; border:2px solid white; border-radius: 8px; overflow: hidden; position: relative; box-shadow: 0 4px 12px rgba(0,0,0,0.3); font-family: sans-serif;">
+    <img src="${item?.image || "./images/image-placeholder.jpg"}" style="width: 100%; height: 100%; object-fit: cover; position: absolute;" />
+    
+    <!-- Gradient Overlay -->
+    <div style="
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(to top, rgba(0, 0, 0, 0.5), transparent 75%);
+      z-index: 1;
+    "></div>
 
-        <p style="
-          font-size: 12px;
-          margin: 4px 0 8px;
-          overflow: hidden;
-          hight:20px;
-          text-overflow: ellipsis;
-          display: -webkit-box;
-          -webkit-line-clamp: 1;
-          -webkit-box-orient: vertical;
-        ">
-          ${activeBusinessData?.description}
-        </p>
-        <div style="display: flex; align-items: center; justify-content: space-between;">
-         <button
-            style="cursor: ${gallery?.length > 1 ? 'pointer' : 'not-allowed'};"
-            ${gallery?.length === 1 ? 'disabled' : ''}
-            ${gallery?.length > 1 ? 'onclick="window.prevSlide()"' : ''}
-          >
-            <img src="/images/icons/next.svg" />
-          </button>
-          <div style="display:flex; align-items:center; justify-content:center; gap:2">${indicators}</div>
-          <button
-            style="cursor: ${gallery?.length > 1 ? 'pointer' : 'not-allowed'};"
-            ${gallery?.length === 1 ? 'disabled' : ''}
-            ${gallery?.length > 1 ? 'onclick="window.nextSlide()"' : ''}
-          >
-            <img src="/images/icons/prev.svg" />
-          </button>
+    <!-- Top content -->
+    <div style="position: absolute; top: 16px; right: 16px; left: 16px; color: white; z-index: 2;">
+      <div style="display: flex; align-items: center; justify-content: space-between;">
+        <div style="width:40px; height:40px; border:2px solid #D3D3D3; border-radius:12px; overflow:hidden">
+          <img src="${activeBusinessData?.logo?.image || "./images/image-placeholder.jpg"}" style="object-fit:cover; width:100%; height:100%" />
+        </div>
+        <div style="display: flex; align-items: center; gap:10px">
+          <img src="/images/icons/pin.svg" style="cursor: pointer;"  />
+          <img src="/images/icons/circular-heart.svg" style="cursor: pointer;" />
         </div>
       </div>
     </div>
-  `;
+    
+    <!-- Bottom content -->
+    <div style="position: absolute; bottom: 16px; right: 16px; left: 16px; color: white; z-index: 2;">
+      <h1 style="
+        font-size: 16px;
+        font-weight: 800;
+        line-hight:16px;
+        margin: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        color:#fff;
+        text-overflow: ellipsis;
+      ">
+        ${activeBusinessData?.name}
+      </h1>
+      <p style="
+        font-size: 12px;
+        overflow: hidden;
+        height: 14px;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        font-weight: 800;
+        color: #fff;
+        -webkit-line-clamp: 1;
+        -webkit-box-orient: vertical;
+      "
+       dangerouslySetInnerHTML={{ __html: ${wrappedDescription} || '' }}
+      />
+
+      <div style="display: flex; align-items: center; justify-content: space-between; margin-top:10px">
+        <button
+          style="cursor: ${gallery?.length > 1 ? 'pointer' : 'not-allowed'};"
+          ${gallery?.length === 1 ? 'disabled' : ''}
+          ${gallery?.length > 1 ? 'onclick="window.prevSlide()"' : ''}
+        >
+          <img src="/images/icons/next.svg" />
+        </button>
+        <div style="display:flex; align-items:center; justify-content:center; gap:2">${indicators}</div>
+        <button
+          style="cursor: ${gallery?.length > 1 ? 'pointer' : 'not-allowed'};"
+          ${gallery?.length === 1 ? 'disabled' : ''}
+          ${gallery?.length > 1 ? 'onclick="window.nextSlide()"' : ''}
+        >
+          <img src="/images/icons/prev.svg" />
+        </button>
+      </div>
+    </div>
+  </div>
+`;
+
   };
 
   const addMarkers = () => {
@@ -246,6 +270,14 @@ export const useGoogleMap = () => {
       markersRef.current.push(marker);
     });
 
+    // Auto-open marker if clickedBusinessId matches
+    if (clickedBusinessId) {
+      const targetMarker = markersRef.current.find(marker => (marker as any).businessId === clickedBusinessId);
+      if (targetMarker) {
+        google.maps.event.trigger(targetMarker, "click");
+      }
+    }
+
     // Dynamic zoom based on screen size
     if (businesses.length > 0) {
       if (businesses.length === 1) {
@@ -276,7 +308,7 @@ export const useGoogleMap = () => {
         })
 
         // Calculate dynamic padding based on screen size
-        const basePadding = 40
+        const basePadding = 20
         const screenWidth = window.innerWidth;
 
         // Scale padding based on screen size

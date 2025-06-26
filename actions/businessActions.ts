@@ -177,7 +177,8 @@ export const getAllBusinessLocation = async () => {
   }
 }
 
-export async function getBusinessById(businessId: string) {
+export async function getBusinessById(businessId: string, setIsLoading: (isBoolean: boolean) => void) {
+  setIsLoading(true)
   try {
     const res = await fetch(`${urls.locationData}/${businessId}?campCode=${CODE}`)
     if (!res.ok) throw new Error('Failed to fetch categories');
@@ -185,5 +186,7 @@ export async function getBusinessById(businessId: string) {
     return data;
   } catch (error) {
     console.error('Error fetching categories:', error);
+  } finally {
+    setIsLoading(false)
   }
 }

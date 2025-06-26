@@ -4,11 +4,11 @@ import Link from 'next/link'
 import { features } from '@/lib/utils'
 import { navbar } from '@/constant/hebrew'
 import HamburgerMenu from './HamburgerMenu'
+import { IconImage } from '@/components/ui'
 import UserIconHoverCard from './UserIconHoverCard'
 import CurrentTempOfYourCity from './CurrentTempOfYourCity'
 import BusinessPageFilterTabs from './BusinessPageFilterTabs'
 import { Logo, SearchIcon, ShopbagIcon } from '@/components/ui/icons'
-import { IconImage } from '@/components/ui'
 
 const Navbar = async () => {
 
@@ -27,23 +27,24 @@ const Navbar = async () => {
           </Link>
         </div>
 
-        <div className="flex gap-4">
-          <BusinessPageFilterTabs />
 
-          <div className="flex items-center gap-4 ms-10">
+        <div className='flex items-center justify-end'>
+          <BusinessPageFilterTabs />
+          <div className="flex items-center gap-2 ms-9">
             {features.map(item => (
               <div
                 key={item.key}
-                className="flex flex-col items-center px-1"
+                className="flex flex-col items-center px-1 w-14"
               >
-                <IconImage width={30} height={30} icon={item.icon} />
-                <div className="text-sm font-normal text-theme">{item.label}</div>
+                <IconImage width={24} height={24} icon={item.icon} />
+                <div className="text-sm font-normal text-theme w-14">{item.label}</div>
               </div>
             ))}
           </div>
 
 
-          <div className="w-[1px] h-10 bg-[#D3D3D3]" />
+          <div className="w-[1px] h-10 bg-[#D3D3D3] mx-4" />
+
           <div className="flex items-center gap-2.5">
             <div className="p-2">
               <SearchIcon />

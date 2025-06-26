@@ -54,14 +54,14 @@ declare interface BusinessProps {
 declare interface BusinessesProps {
   data: BusinessProps[];
   totalData?: number,
-  meta: {
+  meta?: {
     page: number,
     limit: string,
     data: number,
     pageCount: number,
     hasPreviousPage: boolean,
     hasNextPage: boolean
-  }
+  } | any
 }
 
 declare type BusinessCardProps = {

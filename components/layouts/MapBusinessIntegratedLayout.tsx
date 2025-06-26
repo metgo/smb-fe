@@ -1,15 +1,16 @@
-import { useEffect, useState } from "react";
-
 import { scaleLayout } from "@/lib/helpers";
+import { useState, useEffect } from "react";
+
 import { BusinessCard } from "@/components/cards";
-import BusinessPinMap from "@/components/maps/BusinessPinMap";
 import {
-  mapIntegratedCardsColumns,
   mapIntegratedCardsLayouts,
+  mapIntegratedCardsColumns,
   REFERENCE_SCREEN_WIDTH,
 } from "@/constant/collageLayouts";
+import BusinessPinMap from "../maps/BusinessPinMap";
 
-const MapBusinessIntegratedLayout = ({ data, meta }: BusinessesProps) => {
+const MapBusinessIntegratedLayout = ({ data }: BusinessesProps) => {
+  const businessCount = data.length;
   const [scale, setScale] = useState(1);
 
   useEffect(() => {
@@ -24,152 +25,144 @@ const MapBusinessIntegratedLayout = ({ data, meta }: BusinessesProps) => {
     return () => window.removeEventListener("resize", updateScale);
   }, []);
 
-  // Layout preparation
-  let layoutChunks: { key: string; offset: number; scaledLayout: LayoutItem[] }[] = [];
-  let remainingData: typeof data = [];
-  let offset = 0;
+  if (data.length < 1) return <div>No businesses available</div>;
 
-  if (data.length <= 9) {
-    const exactLayoutEntry = Object.entries(mapIntegratedCardsLayouts).find(
-      ([_, layout]) => layout.length === data.length
-    );
+  const renderCards = (indexes: number[], layout: LayoutItem[], offset: number) => (
+    <div className="space-y-5">
+      {indexes.map((i) => {
+        const business = data[i + offset];
+        const cardLayout = layout[i];
+        return (
+          <BusinessCard
+            key={business?._id || i}
+            width={cardLayout.width}
+            height={cardLayout.height}
+            business={business}
+          />
+        );
+      })}
+    </div>
+  );
 
-    if (exactLayoutEntry) {
-      const [key, layout] = exactLayoutEntry;
-      layoutChunks.push({
-        key,
-        offset: 0,
-        scaledLayout: scaleLayout(layout, scale),
-      });
-    } else {
-      // fallback if no exact match — use first N from layout9
-      layoutChunks.push({
-        key: "layout9",
-        offset: 0,
-        scaledLayout: scaleLayout(mapIntegratedCardsLayouts.layout9.slice(0, data.length), scale),
-      });
-    }
-  } else {
-    const layoutOptions = Object.entries(mapIntegratedCardsLayouts)
-      .filter(([key]) => key !== "layout9")
-      .map(([key, value]) => ({ key, length: value.length }))
-      .sort((a, b) => b.length - a.length);
-
-    let remaining = data.length;
-
-    while (remaining > 0) {
-      const layout = layoutOptions.find((l) => l.length <= remaining);
-      if (!layout) break;
-
-      layoutChunks.push({
-        key: layout.key,
-        offset,
-        scaledLayout: scaleLayout(mapIntegratedCardsLayouts[layout.key], scale),
-      });
-
-      offset += layout.length;
-      remaining -= layout.length;
-    }
-
-    remainingData = data.slice(offset);
-  }
-
-  // For remaining data, assign random layout9 items
-  const layout9 = mapIntegratedCardsLayouts.layout9;
-  const scaledLayout9 = scaleLayout(layout9, scale);
-  const extraChunks = [[], [], []] as { business: any; layout: LayoutItem }[][];
-
-  remainingData.forEach((business, index) => {
-    const colIndex = index % 3;
-    const randomLayout = scaledLayout9[Math.floor(Math.random() * scaledLayout9.length)];
-    extraChunks[colIndex].push({ business, layout: randomLayout });
-  });
-
-  const renderCards = (
-    layoutKey: string,
-    layoutOffset: number,
-    indexes: number[],
-    scaledLayout: LayoutItem[]
+  const renderLayoutSection = (
+    layoutData: LayoutItem[],
+    columnLayoutData: Record<string, number[]> | null,
+    offset: number,
+    index: number
   ) => {
-    return (
-      <div key={layoutKey} className="space-y-5">
-        {indexes.map((i) => {
-          const business = data[layoutOffset + i];
-          const layoutItem = scaledLayout[i];
-          return (
-            <BusinessCard
-              key={business._id}
-              width={layoutItem.width}
-              height={layoutItem.height}
-              business={business}
-            />
-          );
-        })}
-      </div>
-    );
-  };
-
-  const renderLayout = (
-    layoutKey: string,
-    layoutOffset: number,
-    scaledLayout: LayoutItem[]
-  ) => {
-    const columnLayout = mapIntegratedCardsColumns[layoutKey];
-
-    if (!columnLayout) {
+    if (!columnLayoutData) {
       return (
-        <div className="space-y-5">
-          {scaledLayout.map((item, i) => (
+        <div className="space-y-5" key={index}>
+          {layoutData.map((item, i) => (
             <BusinessCard
-              key={data[layoutOffset + i]._id}
+              key={data[i + offset]?._id || i}
               width={item.width}
               height={item.height}
-              business={data[layoutOffset + i]}
+              business={data[i + offset]}
             />
           ))}
         </div>
       );
     }
 
+    if (layoutData.length === 3) {
+      return (
+        <div className="space-y-5">
+          <div className="flex gap-5">
+            {layoutData.slice(0, 2).map((item, i) => (
+              <BusinessCard
+                key={data[i + offset]?._id || i}
+                width={item.width}
+                height={item.height}
+                business={data[i + offset]}
+              />
+            ))}
+          </div>
+          <BusinessCard
+            width={layoutData[2].width}
+            height={layoutData[2].height}
+            business={data[2]}
+          />
+        </div>
+      )
+    }
+
     return (
-      <div className="flex gap-5">
-        {Object.values(columnLayout).map((indexes, idx) => (
-          <div className="space-y-5" key={`${layoutKey}-col-${idx}`}>
-            {renderCards(layoutKey, layoutOffset, indexes, scaledLayout)}
+      <div className="flex gap-5" key={index}>
+        {Object.keys(columnLayoutData).map((colKey, idx) => {
+          const indexes = columnLayoutData[colKey];
+          return (
+            <div key={`${colKey}-${idx}`} className="flex flex-col">
+              {renderCards(indexes, layoutData, offset)}
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
+  const renderExtraCards = (extraBusinesses: any[]) => {
+    if (extraBusinesses.length === 0) return null;
+
+    const layout9 = scaleLayout(mapIntegratedCardsLayouts["layout9"], scale);
+    const columnKeys = Object.keys(mapIntegratedCardsColumns["layout9"]);
+
+    const columns = columnKeys.map((key) => [] as any[]);
+    extraBusinesses.forEach((biz, i) => {
+      const columnIndex = i % columns.length;
+      columns[columnIndex].push(biz);
+    });
+
+    return (
+      <div className="flex w-full gap-5">
+        {columns.map((column, colIdx) => (
+          <div key={`column-${colIdx}`} className="flex flex-col gap-5">
+            {column.map((biz, bizIdx) => {
+              const layoutIndex = (colIdx + bizIdx * columns.length) % layout9.length;
+              const layout = layout9[layoutIndex];
+              return (
+                <BusinessCard
+                  key={biz._id}
+                  width={layout.width}
+                  height={layout.height}
+                  business={biz}
+                />
+              );
+            })}
           </div>
         ))}
       </div>
     );
   };
 
-  return (
-    <div className="w-full h-full flex items-center ps-20 gap-2">
-      <div className="flex flex-col col-span-8 gap-10 max-h-[95vh] overflow-y-auto hide-scrollbar py-10">
-        {/* Render layout chunks */}
-        {layoutChunks.map(({ key, offset, scaledLayout }, idx) => (
-          <div key={`${key}-${offset}-${idx}`}>{renderLayout(key, offset, scaledLayout)}</div>
-        ))}
+  const renderFullLayout = () => {
+    if (businessCount <= 9) {
+      const layoutKey = `layout${businessCount}`;
+      const layout = scaleLayout(mapIntegratedCardsLayouts[layoutKey], scale);
+      const columnLayout = mapIntegratedCardsColumns[layoutKey] ?? null;
+      return renderLayoutSection(layout, columnLayout, 0, 0);
+    }
 
-        {/* Render extra cards in 3 columns */}
-        {remainingData.length > 0 && (
-          <div className="flex gap-5">
-            {extraChunks.map((column, colIdx) => (
-              <div key={`extra-col-${colIdx}`} className="space-y-5">
-                {column.map(({ business, layout }) => (
-                  <BusinessCard
-                    key={business._id}
-                    width={layout.width}
-                    height={layout.height}
-                    business={business}
-                  />
-                ))}
-              </div>
-            ))}
-          </div>
-        )}
+    const layout9 = scaleLayout(mapIntegratedCardsLayouts["layout9"], scale);
+    const column9 = mapIntegratedCardsColumns["layout9"];
+    const extraBusinesses = data.slice(9);
+
+    return (
+      <div className="space-y-5">
+        {renderLayoutSection(layout9, column9 ?? null, 0, 0)}
+        {renderExtraCards(extraBusinesses)}
+      </div>
+    );
+  };
+
+  return (
+    <div className="w-full h-full flex items-start ps-20 gap-2">
+      {/* Business Cards Section */}
+      <div className="flex flex-col flex-[6] max-h-[95vh] overflow-y-auto hide-scrollbar py-10">
+        {renderFullLayout()}
       </div>
 
-      <BusinessPinMap className="w-[43%]" />
+      <BusinessPinMap className="w-full flex-[4.3]" />
     </div>
   );
 };

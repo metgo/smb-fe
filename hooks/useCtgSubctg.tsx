@@ -17,6 +17,7 @@ export const useCtgSubctg = () => {
     const newCategoryId = isSameCategory ? "" : categoryId;
 
     setActiveCategoryKey(newCategoryId);
+    setActiveSubCategory("")
 
     const params = new URLSearchParams(searchParams.toString());
 

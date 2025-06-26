@@ -64,7 +64,7 @@ const FilterBusinessLayout = (businesses: BusinessesProps) => {
     loading,
     hasNextPage: businesses.meta.hasNextPage,
     onLoadMore: loadMore,
-    rootMargin: '0px 0px 600px 0px',
+    rootMargin: '0px 0px 800px 0px',
   });
 
   if (totalBusiness === 0) {
@@ -80,10 +80,7 @@ const FilterBusinessLayout = (businesses: BusinessesProps) => {
           totalData={businesses.totalData}
         />
       case "integrated":
-        return <MapBusinessIntegratedLayout
-          data={businesses.data}
-          meta={businesses.meta}
-        />
+        return <MapBusinessIntegratedLayout data={businesses.data} />
       case "map":
         return <OnlyBusinessMapLayout />
       default:
@@ -92,10 +89,13 @@ const FilterBusinessLayout = (businesses: BusinessesProps) => {
   }
   return (
     <div>
-      {/* <div className='text-2xl mb-8 font-black fixed right-0 top-20 z-50'>{totalBusiness}</div> */}
       {renderLayout()}
-      {initialLoadDone && (businesses.meta.hasNextPage || loading) && (
-        <div ref={sentryRef} />
+      {initialLoadDone && (businesses.meta.hasNextPage) && (
+        <div
+          ref={sentryRef}
+        >
+
+        </div>
       )}
 
     </div>

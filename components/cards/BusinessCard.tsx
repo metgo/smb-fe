@@ -25,7 +25,7 @@ const BusinessCard = ({
     categoryId = '',
     subCategoryId = ''
   } = Object.fromEntries(searchParams.entries());
-  const { activeCategoryKey, setActiveFilterTab } = useGeneralStore()
+  const { activeCategoryKey, setActiveFilterTab, setClickedBusinessId } = useGeneralStore()
 
   const existingFaviourtBusiness = LocalStorageService.get<FaviouriteBusinessProps[]>("favorite-business") || [];
 
@@ -80,6 +80,11 @@ const BusinessCard = ({
 
   const primaryCategoryId = activeCategoryKey ? activeCategoryKey : business?.primaryCategoryId ? business?.primaryCategoryId : "6566e36ba77d2a477266d2f4"
 
+
+  function handleMapIconClick(id: string) {
+    setClickedBusinessId(id)
+    setActiveFilterTab("map")
+  }
   return (
     <div style={{ width: `${width}px`, height: `${height}px` }}>
       {(isLoading) ?
@@ -93,7 +98,7 @@ const BusinessCard = ({
             alt={updatedImage.alt}
             src={updatedImage.imageUrl || placeholderImage}
             className=" object-cover h-full w-full rounded-xl"
-            onError={() => setUpdatedImage({ imageUrl: placeholderImage, alt: "abc" })}
+            // onError={() => setUpdatedImage({ imageUrl: placeholderImage, alt: "abc" })}
           />
           <div className="relative w-full h-full overflow-hidden">
             {/* Overlay (only bottom 50%) */}
@@ -112,7 +117,7 @@ const BusinessCard = ({
 
           <div className="hidden absolute top-4 right-4 group-hover:flex items-center gap-2.5">
             <IconImage width={30} height={30} icon='circular-heart' onClick={addWishlistHandler} />
-            <IconImage width={30} height={30} icon='circular-map-fold' onClick={() => setActiveFilterTab("map")} />
+            <IconImage width={30} height={30} icon='circular-map-fold' onClick={() => handleMapIconClick(business._id)} />
           </div>
         </div>
       }
