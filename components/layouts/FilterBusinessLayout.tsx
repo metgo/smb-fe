@@ -94,7 +94,6 @@ const FilterBusinessLayout = (businesses: BusinessesProps) => {
         <div
           ref={sentryRef}
         >
-
         </div>
       )}
 

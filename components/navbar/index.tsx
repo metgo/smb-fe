@@ -13,7 +13,8 @@ import { Logo, SearchIcon, ShopbagIcon } from '@/components/ui/icons'
 const Navbar = async () => {
 
   return (
-    <nav className="px-20 py-2.5 bg-white shadow-md fixed z-50 w-full mb-40">
+    // <nav className="px-20 py-2.5 bg-white shadow-md fixed z-50 w-full mb-40">
+    <nav className="px-20 py-2.5 bg-white shadow-md w-full sticky to-0%">
       <div className="flex items-center justify-between">
         {/* Hamburger, Logo, Text */}
         <div className="flex items-center gap-4">
