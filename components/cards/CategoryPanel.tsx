@@ -4,7 +4,7 @@ import clsx from "clsx";
 import { categoryIcons } from "@/lib/utils";
 import { useCtgSubctg } from "@/hooks/useCtgSubctg";
 
-const CategoryPanel = ({ categories }: { categories: BusienssCategoryProps }) => {
+const CategoryPanel = ({ categories }: { categories: BusinessCategoryProps }) => {
 
   const {handleCategoryChange,activeCategoryKey }=useCtgSubctg()
 

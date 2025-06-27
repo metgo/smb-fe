@@ -1,10 +1,11 @@
-import EventDetailsImagesLayout from '@/components/layouts/EventDetailsImagesLayout'
-import React from 'react'
+import { eventDetils } from "@/constant/placeholderData"
+import { ImageGallery, Title } from "../../_components"
 
 const page = () => {
   return (
     <div className="px-80 py-20">
-      <EventDetailsImagesLayout />
+      <Title title={eventDetils.title} />
+      <ImageGallery />
     </div>
   )
 }

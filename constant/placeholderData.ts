@@ -50,3 +50,9 @@ export const foodSubCategories = [
   { id: 9, label: "מסעדות אסיאתיות" }, // Asian Restaurants  
   { id: 10, label: "פוד טראקס" }     // Food Trucks
 ];
+
+
+export const eventDetils = {
+  title: "מסיבת קצב לילית בנגב",
+  
+}

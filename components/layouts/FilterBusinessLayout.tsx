@@ -1,17 +1,24 @@
 "use client"
 
+import Image from 'next/image';
 import useGeneralStore from '@/stores/generalStore'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import useInfiniteScroll from "react-infinite-scroll-hook";
+import { useSearchParams, useRouter } from 'next/navigation';
 
 import NoBusinessLayout from './NoBusinessLayout'
 import OnlyBusinessMapLayout from './OnlyBusinessMapLayout'
 import OnlyBusinessCardsLayout from './OnlyBusinessCardsLayout'
 import MapBusinessIntegratedLayout from './MapBusinessIntegratedLayout'
-import { useCallback, useEffect, useState } from 'react'
-import { useSearchParams, useRouter } from 'next/navigation';
+import { CategoryPanel, SubcategoryFilterPanel } from '../cards';
 
+interface Props {
+  businesses: BusinessesProps,
+  categories: BusinessCategoryProps
+  subCategories: BusienssSubcategoryProps
+}
 
-const FilterBusinessLayout = (businesses: BusinessesProps) => {
+const FilterBusinessLayout = ({ businesses, categories, subCategories }: Props) => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { activeFilterTab } = useGeneralStore()
@@ -28,9 +35,23 @@ const FilterBusinessLayout = (businesses: BusinessesProps) => {
   const [prevCategoryId, setPrevCategoryId] = useState(categoryId);
   const [prevSubCategoryId, setPrevSubCategoryId] = useState(subCategoryId);
 
+  const triggerRef = useRef(null);
+  const [showStickyPanel, setShowStickyPanel] = useState(false);
 
   useEffect(() => {
-    // Set after initial render
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY;
+      const scrollThreshold = 820;
+      setShowStickyPanel(scrollPosition >= scrollThreshold);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+
+
+  useEffect(() => {
     setInitialLoadDone(true);
   }, []);
 
@@ -62,23 +83,16 @@ const FilterBusinessLayout = (businesses: BusinessesProps) => {
 
   const [sentryRef] = useInfiniteScroll({
     loading,
-    hasNextPage: businesses.meta.hasNextPage,
+    hasNextPage: businesses?.meta?.hasNextPage,
     onLoadMore: loadMore,
     rootMargin: '0px 0px 800px 0px',
   });
 
-  if (totalBusiness === 0) {
-    return <NoBusinessLayout />
-  }
 
   const renderLayout = () => {
     switch (activeFilterTab) {
       case "gallery":
-        return <OnlyBusinessCardsLayout
-          data={businesses.data}
-          meta={businesses.meta}
-          totalData={businesses.totalData}
-        />
+        return <OnlyBusinessCardsLayout data={businesses.data} />
       case "integrated":
         return <MapBusinessIntegratedLayout data={businesses.data} />
       case "map":
@@ -89,16 +103,38 @@ const FilterBusinessLayout = (businesses: BusinessesProps) => {
   }
   return (
     <div>
-      {renderLayout()}
-      {initialLoadDone && (businesses.meta.hasNextPage) && (
-        <div
-          ref={sentryRef}
-        >
+      {totalBusiness ? <div className="bg-primary">
+        {renderLayout()}
+        <div style={{ height: "10px", position: "relative" }}>
+          <div ref={triggerRef} style={{ position: "absolute", top: 0, height: 1 }} />
         </div>
-      )}
 
+        {initialLoadDone && businesses?.meta?.hasNextPage && (
+          <div ref={sentryRef} />
+        )}
+      </div> :
+        <NoBusinessLayout />
+      }
+
+      {showStickyPanel && (
+        <>
+          <div className="fixed bottom-4 left-1/2 -translate-x-1/2 flex flex-col items-center justify-center gap-2 w-max">
+            <SubcategoryFilterPanel subCategories={subCategories} />
+            <CategoryPanel categories={categories} />
+          </div>
+          {activeFilterTab === "gallery" &&
+            <Image
+              width={300}
+              height={300}
+              alt="Yellow image"
+              src="/images/yellow.png"
+              className="fixed -bottom-12 -left-30 rotate-[40deg] z-50"
+            />}
+        </>
+      )}
     </div>
-  )
+  );
+
 }
 
 export default FilterBusinessLayout

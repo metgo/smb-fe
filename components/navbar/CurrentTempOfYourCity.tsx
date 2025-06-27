@@ -34,14 +34,15 @@ const CurrentTempOfYourCity = () => {
     return
 
   return (
-    <div className="flex items-center">
+    <div className={`flex items-center bg-white rounded-[12px] px-2`}>
       <span className="font-normal text-2xl text-theme">{Math.trunc(weather?.temperature)}°C</span>
-      <Image
-        width={40}
-        height={40}
-        src={`https:${weather?.icon}`}
-        alt={weather?.condition}
-      />
+        <Image
+          width={40}
+          height={40}
+          src={`https:${weather?.icon}`}
+          alt={weather?.condition}
+          className="block"
+        />
     </div>
   );
 };

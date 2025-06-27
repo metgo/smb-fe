@@ -10,11 +10,10 @@ import CurrentTempOfYourCity from './CurrentTempOfYourCity'
 import BusinessPageFilterTabs from './BusinessPageFilterTabs'
 import { Logo, SearchIcon, ShopbagIcon } from '@/components/ui/icons'
 
-const Navbar = async () => {
+const Navbar = async ({ showFilterTab = true }: { showFilterTab?: boolean }) => {
 
   return (
-    // <nav className="px-20 py-2.5 bg-white shadow-md fixed z-50 w-full mb-40">
-    <nav className="px-20 py-2.5 bg-white shadow-md w-full sticky to-0%">
+    <nav className="ps-20 pe-19 py-2.5 bg-white sticky top-0 z-50 border-b border-[#F5F5F5]">
       <div className="flex items-center justify-between">
         {/* Hamburger, Logo, Text */}
         <div className="flex items-center gap-4">
@@ -30,7 +29,7 @@ const Navbar = async () => {
 
 
         <div className='flex items-center justify-end'>
-          <BusinessPageFilterTabs />
+          {showFilterTab && <BusinessPageFilterTabs />}
           <div className="flex items-center gap-2 ms-9">
             {features.map(item => (
               <div

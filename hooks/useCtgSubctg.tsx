@@ -30,8 +30,9 @@ export const useCtgSubctg = () => {
     params.set("page", "1");
     params.delete("subCategoryId");
 
-    window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
-    router.push(`?${params.toString()}`);
+    window.scrollTo({ top: 842, left: 0, behavior: "smooth" });
+    router.push(`?${params.toString()}`, { scroll: false });
+
   };
 
   const handleSubcategoryChange = (subCtgId: string) => {
@@ -49,8 +50,8 @@ export const useCtgSubctg = () => {
 
     params.set("page", "1");
     params.set("categoryId", activeCategoryKey);
-    window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
-    router.push(`?${params.toString()}`);
+    window.scrollTo({ top: 842, left: 0, behavior: "smooth" });
+    router.push(`?${params.toString()}`, { scroll: false });
   };
 
   return {

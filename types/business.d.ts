@@ -89,7 +89,7 @@ declare type BusinessMakerProps = {
   }
 }
 
-declare type BusienssCategoryProps = {
+declare type BusinessCategoryProps = {
   id: string;
   name: string;
   productCount: number;

@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { scaleLayout } from "@/lib/helpers";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 import { BusinessCard } from "@/components/cards";
 import {
@@ -10,7 +10,7 @@ import {
 } from "@/constant/collageLayouts";
 
 
-const OnlyBusinessCardsLayout = ({ data, meta, totalData }: BusinessesProps) => {
+const OnlyBusinessCardsLayout = ({ data }: BusinessesProps) => {
   const businessCount = data.length;
   const [scale, setScale] = useState(1);
 
@@ -170,20 +170,9 @@ const OnlyBusinessCardsLayout = ({ data, meta, totalData }: BusinessesProps) => 
 
   return (
     <div className="px-20 py-10 flex items-center justify-center w-full h-full relative">
-      <div>
-        <div className="flex flex-col gap-5 items-start justify-start ">
-          {renderFullLayout()}
-        </div>
-
+      <div className="flex flex-col gap-5 items-start justify-start ">
+        {renderFullLayout()}
       </div>
-
-      <Image
-        width={300}
-        height={300}
-        alt="Yellow image"
-        src={"/images/yellow.png"}
-        className="fixed -bottom-12 -left-24 rotate-30 z-50"
-      />
     </div>
   );
 };

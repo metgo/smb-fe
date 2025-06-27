@@ -31,6 +31,13 @@ const BusinessCard = ({
 
   const [isLoading, setIsLoading] = useState(false)
   const [updatedImage, setUpdatedImage] = useState({ imageUrl: placeholderImage, alt: "abc" })
+  const [hasMounted, setHasMounted] = useState(false);
+
+
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
+
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -87,7 +94,7 @@ const BusinessCard = ({
   }
   return (
     <div style={{ width: `${width}px`, height: `${height}px` }}>
-      {(isLoading) ?
+      {(isLoading || !hasMounted) ?
         <div className={` rounded-2xl skeleton w-full h-full ${categoryGradientClasses[primaryCategoryId]}`} /> :
         <div className="w-full h-full relative group rounded-xl overflow-hidden">
           <Image
@@ -98,7 +105,7 @@ const BusinessCard = ({
             alt={updatedImage.alt}
             src={updatedImage.imageUrl || placeholderImage}
             className=" object-cover h-full w-full rounded-xl"
-            // onError={() => setUpdatedImage({ imageUrl: placeholderImage, alt: "abc" })}
+            onError={() => setUpdatedImage({ imageUrl: placeholderImage, alt: "abc" })}
           />
           <div className="relative w-full h-full overflow-hidden">
             {/* Overlay (only bottom 50%) */}

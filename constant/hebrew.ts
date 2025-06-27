@@ -1,4 +1,12 @@
 
+
+export const misc = {
+  possibilities: "עולם של אפשרויות",
+  navigation: "ניווט",
+  keeping: "שמירה",
+  sharing: "שיתוף",
+}
+
 export const category = {
   tours: "טיולים",
   attractions: "אטרקציות",
