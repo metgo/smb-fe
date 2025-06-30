@@ -13,6 +13,7 @@
   "dependencies": {
     "clsx": "^2.1.1",
     "dompurify": "^3.2.6",
+    "eslint-config-prettier": "^10.1.5",
     "husky": "^9.1.7",
     "lint-staged": "^16.1.2",
     "motion": "^12.19.2",

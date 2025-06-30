@@ -1,10 +1,14 @@
 import { events, misc, navbar } from "@/constant/hebrew";
-import { CtgAttractionIcon, CtgCultureIcon, CtgEatIcon, CtgLocalIcon, CtgLodgeIcon, CtgTourIcon } from "@/components/ui/icons";
-import { label } from "motion/react-client";
+import {
+  CtgAttractionIcon,
+  CtgCultureIcon,
+  CtgEatIcon,
+  CtgLocalIcon,
+  CtgLodgeIcon,
+  CtgTourIcon,
+} from "@/components/ui/icons";
 
-
-
-const categoryId: any = {
+const categoryId = {
   sleep: "6566fcd4a77d2a477266d3b9",
   attraction: "6566e31ca77d2a477266d2d6",
   culture: "6566e36ba77d2a477266d2f4",
@@ -19,163 +23,163 @@ export const businessMarkers = {
   [categoryId.sleep]: "sleep.svg",
   [categoryId.culture]: "culture.svg",
   [categoryId.attraction]: "attractions.svg",
-  [categoryId.tour]: "travel.svg"
-}
-
-export const categoryGradientClasses: any = {
-  [categoryId.eat]: 'from-ctg-eat-dim via-ctg-eat-light to-ctg-eat-dim',
-  [categoryId.local]: 'from-ctg-local-dim via-ctg-local-light to-ctg-local-dim',
-  [categoryId.sleep]: 'from-ctg-lodge-dim via-ctg-lodge-light to-ctg-lodge-dim',
-  [categoryId.culture]: 'from-ctg-culture-dim via-ctg-culture-light to-ctg-culture-dim',
-  [categoryId.attraction]: 'from-ctg-attract-dim via-ctg-attract-light to-ctg-attract-dim',
-  [categoryId.tour]: 'from-ctg-tour-dim via-ctg-tour-light to-ctg-tour-dim',
+  [categoryId.tour]: "travel.svg",
 };
 
-export const categoryGradinteColor: any = {
+export const categoryGradientClasses = {
+  [categoryId.eat]: "from-ctg-eat-dim via-ctg-eat-light to-ctg-eat-dim",
+  [categoryId.local]: "from-ctg-local-dim via-ctg-local-light to-ctg-local-dim",
+  [categoryId.sleep]: "from-ctg-lodge-dim via-ctg-lodge-light to-ctg-lodge-dim",
+  [categoryId.culture]:
+    "from-ctg-culture-dim via-ctg-culture-light to-ctg-culture-dim",
+  [categoryId.attraction]:
+    "from-ctg-attract-dim via-ctg-attract-light to-ctg-attract-dim",
+  [categoryId.tour]: "from-ctg-tour-dim via-ctg-tour-light to-ctg-tour-dim",
+};
+
+export const categoryGradinteColor = {
   [categoryId.eat]: { dim: "#F7BCAC", light: "#F8CBBF" },
   [categoryId.local]: { dim: "#F9D385", light: "#F9DEA7" },
   [categoryId.sleep]: { dim: "#90BBE3", light: "#A2C6E6" },
   [categoryId.culture]: { dim: "#F1A7C9", light: "#F3BDD6" },
   [categoryId.attraction]: { dim: "#CEA7CE", light: "#D9BCD9" },
-  [categoryId.tour]: { dim: "#64C5C6", light: "#8ED4D5" }
-}
+  [categoryId.tour]: { dim: "#64C5C6", light: "#8ED4D5" },
+};
 
-export const categoryBgClasses: any = {
-  [categoryId.eat]: 'bg-ctg-eat-dark',
-  [categoryId.local]: 'bg-ctg-local-dark',
-  [categoryId.sleep]: 'bg-ctg-lodge-dark',
-  [categoryId.culture]: 'bg-ctg-culture-dark',
-  [categoryId.attraction]: 'bg-ctg-attract-dark',
-  [categoryId.tour]: 'bg-ctg-tour-dark',
+export const categoryBgClasses = {
+  [categoryId.eat]: "bg-ctg-eat-dark",
+  [categoryId.local]: "bg-ctg-local-dark",
+  [categoryId.sleep]: "bg-ctg-lodge-dark",
+  [categoryId.culture]: "bg-ctg-culture-dark",
+  [categoryId.attraction]: "bg-ctg-attract-dark",
+  [categoryId.tour]: "bg-ctg-tour-dark",
 };
 
 export const shareKeepNavigate = [
   {
     id: 1,
     label: misc.navigation,
-    icon: 'navigation'
+    icon: "navigation",
   },
   {
     id: 2,
     label: misc.keeping,
-    icon: 'heart',
+    icon: "heart",
   },
   {
     id: 3,
     label: misc.sharing,
-    icon: 'share'
-  }
-]
+    icon: "share",
+  },
+];
 
 export const eventFeatures = [
   {
     id: 1,
     label: events.evening,
-    icon: ''
+    icon: "",
   },
   {
     id: 2,
     label: events.couples,
-    icon: ''
+    icon: "",
   },
   {
     id: 3,
     label: events.accessible,
-    icon: ''
+    icon: "",
   },
   {
     id: 4,
     label: events.paid,
-    icon: ''
+    icon: "",
   },
   {
     id: 5,
     label: events.families,
-    icon: ''
+    icon: "",
   },
   {
     id: 6,
     label: events.children,
-    icon: ''
+    icon: "",
   },
   {
     id: 7,
     label: events.kosher,
-    icon: ''
+    icon: "",
   },
-]
+];
 
 export const categoryIcons = {
   [categoryId.tour]: {
     icon: CtgTourIcon,
-    bg: "bg-ctg-tour-dark"
+    bg: "bg-ctg-tour-dark",
   },
   [categoryId.attraction]: {
     icon: CtgAttractionIcon,
-    bg: "bg-ctg-attract-dark"
+    bg: "bg-ctg-attract-dark",
   },
   [categoryId.eat]: {
     icon: CtgEatIcon,
-    bg: "bg-ctg-eat-dark"
+    bg: "bg-ctg-eat-dark",
   },
   [categoryId.culture]: {
     icon: CtgCultureIcon,
-    bg: "bg-ctg-culture-dark"
+    bg: "bg-ctg-culture-dark",
   },
   [categoryId.sleep]: {
     icon: CtgLodgeIcon,
-    bg: "bg-ctg-lodge-dark"
+    bg: "bg-ctg-lodge-dark",
   },
   [categoryId.local]: {
     icon: CtgLocalIcon,
-    bg: "bg-ctg-local-dark"
-  }
-}
-
+    bg: "bg-ctg-local-dark",
+  },
+};
 
 export const features = [
   {
     key: 1,
     label: navbar.funDays,
-    icon: 'kite',
+    icon: "kite",
   },
   {
     key: 2,
     label: navbar.toGroups,
-    icon: 'user-group',
+    icon: "user-group",
   },
   {
     key: 3,
     label: navbar.events,
-    icon: 'events'
+    icon: "events",
   },
   {
     key: 4,
     label: navbar.tracks,
-    icon: 'trail'
-  }
-]
+    icon: "trail",
+  },
+];
 
 export const filterTabs = [
   {
     key: "gallery",
     label: navbar.gallery,
-    icon: "dashboard"
+    icon: "dashboard",
   },
   {
     key: "integrated",
     label: navbar.integrated,
-    icon: "dashboard-space"
+    icon: "dashboard-space",
   },
   {
     key: "map",
     label: navbar.map,
-    icon: "map-fold"
+    icon: "map-fold",
   },
-]
+];
 
-
-const selectedTheme = { colors: { primary: "#fff" } }
+const selectedTheme = { colors: { primary: "#fff" } };
 
 export const addMapTypeControl = (googleMap: google.maps.Map) => {
   const mapTypeControlDiv = document.createElement("div");

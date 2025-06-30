@@ -27,7 +27,11 @@ const MapBusinessIntegratedLayout = ({ data }: BusinessesProps) => {
 
   if (data.length < 1) return <div>No businesses available</div>;
 
-  const renderCards = (indexes: number[], layout: LayoutItem[], offset: number) => (
+  const renderCards = (
+    indexes: number[],
+    layout: LayoutItem[],
+    offset: number,
+  ) => (
     <div className="space-y-5">
       {indexes.map((i) => {
         const business = data[i + offset];
@@ -48,7 +52,7 @@ const MapBusinessIntegratedLayout = ({ data }: BusinessesProps) => {
     layoutData: LayoutItem[],
     columnLayoutData: Record<string, number[]> | null,
     offset: number,
-    index: number
+    index: number,
   ) => {
     if (!columnLayoutData) {
       return (
@@ -84,7 +88,7 @@ const MapBusinessIntegratedLayout = ({ data }: BusinessesProps) => {
             business={data[2]}
           />
         </div>
-      )
+      );
     }
 
     return (
@@ -107,7 +111,7 @@ const MapBusinessIntegratedLayout = ({ data }: BusinessesProps) => {
     const layout9 = scaleLayout(mapIntegratedCardsLayouts["layout9"], scale);
     const columnKeys = Object.keys(mapIntegratedCardsColumns["layout9"]);
 
-    const columns = columnKeys.map((key) => [] as any[]);
+    const columns = columnKeys.map(() => [] as any[]);
     extraBusinesses.forEach((biz, i) => {
       const columnIndex = i % columns.length;
       columns[columnIndex].push(biz);
@@ -118,7 +122,8 @@ const MapBusinessIntegratedLayout = ({ data }: BusinessesProps) => {
         {columns.map((column, colIdx) => (
           <div key={`column-${colIdx}`} className="flex flex-col gap-5">
             {column.map((biz, bizIdx) => {
-              const layoutIndex = (colIdx + bizIdx * columns.length) % layout9.length;
+              const layoutIndex =
+                (colIdx + bizIdx * columns.length) % layout9.length;
               const layout = layout9[layoutIndex];
               return (
                 <BusinessCard

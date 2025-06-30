@@ -1,24 +1,32 @@
-"use client"
+"use client";
 
-import Image from "next/image"
-import { useEffect, useState } from "react"
-import { REFERENCE_SCREEN_WIDTH } from "@/constant/collageLayouts"
+import Image from "next/image";
+import { useEffect, useState } from "react";
+import { REFERENCE_SCREEN_WIDTH } from "@/constant/collageLayouts";
 
-const col1 = [0]
-const col2 = [1, 2]
-const col3 = [3, 4]
+// const col1 = [0]
+// const col2 = [1, 2]
+// const col3 = [3, 4]
 
+// const layout = [
+//   { width: 635, height: 450 },
+//   { width: 312.5, height: 220 },
+//   { width: 312.5, height: 220 },
+//   { width: 312.5, height: 220 },
+//   { width: 312.5, height: 220 },
+// ]
 
-const layout = [
-  { width: 635, height: 450 },
-  { width: 312.5, height: 220 },
-  { width: 312.5, height: 220 },
-  { width: 312.5, height: 220 },
-  { width: 312.5, height: 220 },
-]
-
-
-const ImageCard = ({ width = 312.5, height = 220, scale, className = "" }: { width?: number, height?: number, scale: number; className?: string }) => (
+const ImageCard = ({
+  width = 312.5,
+  height = 220,
+  scale,
+  className = "",
+}: {
+  width?: number;
+  height?: number;
+  scale: number;
+  className?: string;
+}) => (
   <div>
     <Image
       src={"/images/video-thumbnail.png"}
@@ -28,7 +36,7 @@ const ImageCard = ({ width = 312.5, height = 220, scale, className = "" }: { wid
       className={className}
     />
   </div>
-)
+);
 const ImageGallery = () => {
   const [scale, setScale] = useState(1);
 
@@ -46,7 +54,6 @@ const ImageGallery = () => {
 
   return (
     <div>
-
       <div className="flex items-center gap-2.5">
         <ImageCard
           width={635}
@@ -64,7 +71,7 @@ const ImageGallery = () => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default ImageGallery
+export default ImageGallery;

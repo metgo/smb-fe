@@ -1,7 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 
 import useGeneralStore from "@/stores/generalStore";
-import { getAllBusinessLocation, getBusinessById } from "@/actions/businessActions";
+import {
+  getAllBusinessLocation,
+  getBusinessById,
+} from "@/actions/businessActions";
 import { googlePointOfInterest } from "@/constant/googlePoi";
 import { GOOGLE_API_KEY } from "@/constant/envConstants";
 import { businessMarkers, categoryGradinteColor } from "@/lib/utils";
@@ -14,9 +17,9 @@ declare global {
 }
 
 function isRichText(content: string): boolean {
-  const doc = new DOMParser().parseFromString(content, 'text/html');
+  const doc = new DOMParser().parseFromString(content, "text/html");
   // check if the body contains any element nodes
-  return Array.from(doc.body.childNodes).some(node => node.nodeType === 1);
+  return Array.from(doc.body.childNodes).some((node) => node.nodeType === 1);
 }
 
 const googleMapsScriptLoaded = {
@@ -50,8 +53,6 @@ export const loadGoogleMapsScript = (callback: () => void) => {
 
 const center = { lat: 31.0461, lng: 34.8516 };
 
-
-
 export const useGoogleMap = () => {
   const mapRef = useRef(null);
   const hasFetchedRef = useRef(false);
@@ -59,12 +60,13 @@ export const useGoogleMap = () => {
   const activeMarkerRef = useRef<google.maps.Marker | null>(null);
   const infoWindowRef = useRef<google.maps.InfoWindow | null>(null);
 
-  const { activeFilterTab, activeCategoryKey, clickedBusinessId, setClickedBusinessId } = useGeneralStore();
+  const { activeFilterTab, activeCategoryKey, clickedBusinessId } =
+    useGeneralStore();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [map, setMap] = useState<google.maps.Map | null>(null);
-  const [activeBusinessData, setActiveBusinessData] = useState<any>()
+  const [activeBusinessData, setActiveBusinessData] = useState<any>();
   const [businesses, setBusinesses] = useState<BusinessMakerProps[]>([]);
-  const [activeCategoryId, setActiveCategoryId] = useState<string>("")
+  const [activeCategoryId, setActiveCategoryId] = useState<string>("");
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -72,17 +74,19 @@ export const useGoogleMap = () => {
     return () => clearTimeout(timeout);
   }, [activeBusinessData]);
 
-  const gallery = activeBusinessData?.images
+  const gallery = activeBusinessData?.images;
 
   async function getBusinessData(businessId: string) {
-    setActiveBusinessData(null)
-    const res = await getBusinessById(businessId, setIsLoading)
-    setActiveBusinessData(res)
+    setActiveBusinessData(null);
+    const res = await getBusinessById(businessId, setIsLoading);
+    setActiveBusinessData(res);
   }
 
-
   useEffect(() => {
-    if (!hasFetchedRef.current && (activeFilterTab === "map" || activeFilterTab === "integrated")) {
+    if (
+      !hasFetchedRef.current &&
+      (activeFilterTab === "map" || activeFilterTab === "integrated")
+    ) {
       hasFetchedRef.current = true;
       getAllBusinessLocation().then((locations) => {
         setBusinesses(locations);
@@ -103,8 +107,8 @@ export const useGoogleMap = () => {
     };
   }, [gallery]);
 
-  const dimColor = categoryGradinteColor[activeCategoryId]?.dim
-  const lightColor = categoryGradinteColor[activeCategoryId]?.light
+  const dimColor = categoryGradinteColor[activeCategoryId]?.dim;
+  const lightColor = categoryGradinteColor[activeCategoryId]?.light;
 
   const generateContent = () => {
     if (isLoading) {
@@ -128,8 +132,9 @@ export const useGoogleMap = () => {
       ? activeBusinessData?.description
       : `<span>${activeBusinessData?.description}</span>`;
 
-    const indicators = gallery?.map((_: any, i: number) => {
-      return `<div style="
+    const indicators = gallery
+      ?.map((_: any, i: number) => {
+        return `<div style="
       width: ${i === currentSlide ? "8px" : "8px"};
       height: ${i === currentSlide ? "8px" : "8px"};
       border-radius: 50%;
@@ -137,7 +142,8 @@ export const useGoogleMap = () => {
       background-color: ${i === currentSlide ? "white" : "rgba(255,255,255,0.4)"};
       display: inline-block;
     "></div>`;
-    }).join("");
+      })
+      .join("");
 
     return `
   <div style="width: 240px; height: 240px; border:2px solid white; border-radius: 8px; overflow: hidden; position: relative; box-shadow: 0 4px 12px rgba(0,0,0,0.3); font-family: sans-serif;">
@@ -195,17 +201,17 @@ export const useGoogleMap = () => {
 
       <div style="display: flex; align-items: center; justify-content: space-between; margin-top:10px">
         <button
-          style="cursor: ${gallery?.length > 1 ? 'pointer' : 'not-allowed'};"
-          ${gallery?.length === 1 ? 'disabled' : ''}
-          ${gallery?.length > 1 ? 'onclick="window.prevSlide()"' : ''}
+          style="cursor: ${gallery?.length > 1 ? "pointer" : "not-allowed"};"
+          ${gallery?.length === 1 ? "disabled" : ""}
+          ${gallery?.length > 1 ? 'onclick="window.prevSlide()"' : ""}
         >
           <img src="/images/icons/next.svg" />
         </button>
         <div style="display:flex; align-items:center; justify-content:center; gap:2">${indicators}</div>
         <button
-          style="cursor: ${gallery?.length > 1 ? 'pointer' : 'not-allowed'};"
-          ${gallery?.length === 1 ? 'disabled' : ''}
-          ${gallery?.length > 1 ? 'onclick="window.nextSlide()"' : ''}
+          style="cursor: ${gallery?.length > 1 ? "pointer" : "not-allowed"};"
+          ${gallery?.length === 1 ? "disabled" : ""}
+          ${gallery?.length > 1 ? 'onclick="window.nextSlide()"' : ""}
         >
           <img src="/images/icons/prev.svg" />
         </button>
@@ -213,11 +219,16 @@ export const useGoogleMap = () => {
     </div>
   </div>
 `;
-
   };
 
   const addMarkers = () => {
-    if (!map || !infoWindowRef.current || !mapRef.current || businesses.length === 0) return;
+    if (
+      !map ||
+      !infoWindowRef.current ||
+      !mapRef.current ||
+      businesses.length === 0
+    )
+      return;
 
     // Clear previous markers
     markersRef.current.forEach((marker) => marker.setMap(null));
@@ -225,7 +236,11 @@ export const useGoogleMap = () => {
 
     const uniqueLocations = new Set();
 
-    const filteredBusiness = activeCategoryKey ? businesses.filter(item => item.primaryCategoryId === activeCategoryKey) : businesses;
+    const filteredBusiness = activeCategoryKey
+      ? businesses.filter(
+          (item) => item.primaryCategoryId === activeCategoryKey,
+        )
+      : businesses;
 
     filteredBusiness.forEach((business) => {
       const coords = business?.geoLocation;
@@ -252,15 +267,15 @@ export const useGoogleMap = () => {
       marker.addListener("click", () => {
         const isSameMarker = activeMarkerRef.current === marker;
         const isOpen = infoWindowRef.current?.get("map") != null;
-        setCurrentSlide(0)
+        setCurrentSlide(0);
         if (isSameMarker && isOpen) {
           infoWindowRef.current?.close();
           activeMarkerRef.current = null;
         } else {
           const businessId = (marker as any).businessId;
           const categoryId = (marker as any).categoryId;
-          getBusinessData(businessId)
-          setActiveCategoryId(categoryId)
+          getBusinessData(businessId);
+          setActiveCategoryId(categoryId);
           activeMarkerRef.current = marker;
           infoWindowRef.current?.setContent(generateContent());
           infoWindowRef.current?.open(map, marker);
@@ -272,7 +287,9 @@ export const useGoogleMap = () => {
 
     // Auto-open marker if clickedBusinessId matches
     if (clickedBusinessId) {
-      const targetMarker = markersRef.current.find(marker => (marker as any).businessId === clickedBusinessId);
+      const targetMarker = markersRef.current.find(
+        (marker) => (marker as any).businessId === clickedBusinessId,
+      );
       if (targetMarker) {
         google.maps.event.trigger(targetMarker, "click");
       }
@@ -281,47 +298,45 @@ export const useGoogleMap = () => {
     // Dynamic zoom based on screen size
     if (businesses.length > 0) {
       if (businesses.length === 1) {
-        const location = businesses?.[0]?.geoLocation
-        const lat = parseFloat(location?.lat)
-        const lng = parseFloat(location?.long)
-        map.setCenter({ lat, lng })
+        const location = businesses?.[0]?.geoLocation;
+        const lat = parseFloat(location?.lat);
+        const lng = parseFloat(location?.long);
+        map.setCenter({ lat, lng });
 
         const screenWidth = window.innerWidth;
         let zoomLevel;
-        if (screenWidth < 640)
-          zoomLevel = 15;
-        else if (screenWidth < 1024)
-          zoomLevel = 14
-        else
-          zoomLevel = 13
-        map.setZoom(zoomLevel)
+        if (screenWidth < 640) zoomLevel = 15;
+        else if (screenWidth < 1024) zoomLevel = 14;
+        else zoomLevel = 13;
+        map.setZoom(zoomLevel);
       } else {
         const bounds = new google.maps.LatLngBounds();
-        businesses.forEach(location => {
+        businesses.forEach((location) => {
           const coords = location?.geoLocation;
           if (coords) {
             bounds.extend({
               lat: parseFloat(coords.lat),
               lng: parseFloat(coords.long),
-            })
+            });
           }
-        })
+        });
 
         // Calculate dynamic padding based on screen size
-        const basePadding = 20
+        const basePadding = 20;
         const screenWidth = window.innerWidth;
 
         // Scale padding based on screen size
-        const paddingScale = screenWidth < 640 ? 0.5 : screenWidth < 1024 ? 0.75 : 1;
+        const paddingScale =
+          screenWidth < 640 ? 0.5 : screenWidth < 1024 ? 0.75 : 1;
         const padding = {
           top: basePadding * paddingScale,
           bottom: basePadding * paddingScale,
           left: basePadding * paddingScale,
           right: basePadding * paddingScale,
-        }
+        };
 
         // Fit bounds with dynamic padding
-        map.fitBounds(bounds, padding)
+        map.fitBounds(bounds, padding);
 
         // Adjust zoom to prevent excessive zoom-in on small screens
         const listner = google.maps.event.addListenerOnce(
@@ -329,16 +344,15 @@ export const useGoogleMap = () => {
           "bounds_changed",
           () => {
             const currentZoom = map.getZoom();
-            const maxZoom = screenWidth < 640 ? 16 : screenWidth < 1024 ? 15 : 14;
-            if (currentZoom && currentZoom > maxZoom)
-              map.setZoom(maxZoom)
-            google.maps.event.removeListener(listner)
-          }
-        )
+            const maxZoom =
+              screenWidth < 640 ? 16 : screenWidth < 1024 ? 15 : 14;
+            if (currentZoom && currentZoom > maxZoom) map.setZoom(maxZoom);
+            google.maps.event.removeListener(listner);
+          },
+        );
       }
     }
   };
-
 
   useEffect(() => {
     loadGoogleMapsScript(() => {
@@ -373,9 +387,8 @@ export const useGoogleMap = () => {
   }, []);
 
   useEffect(() => {
-    if (businesses.length > 0)
-      addMarkers()
-  }, [businesses, activeCategoryKey])
+    if (businesses.length > 0) addMarkers();
+  }, [businesses, activeCategoryKey]);
 
   useEffect(() => {
     if (map && infoWindowRef.current && activeMarkerRef.current) {
@@ -383,9 +396,13 @@ export const useGoogleMap = () => {
     }
   }, [currentSlide]);
 
-
   useEffect(() => {
-    if (map && infoWindowRef.current && activeMarkerRef.current && activeBusinessData) {
+    if (
+      map &&
+      infoWindowRef.current &&
+      activeMarkerRef.current &&
+      activeBusinessData
+    ) {
       infoWindowRef.current.setContent(generateContent());
       infoWindowRef.current.open(map, activeMarkerRef.current);
     }
