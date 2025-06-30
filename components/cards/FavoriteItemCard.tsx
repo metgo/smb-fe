@@ -18,7 +18,7 @@ const FavoriteItemCard = ({ width, height, business }: BusinessCardProps) => {
           <h3 className=" lg:text-[1rem] xl:tetx-[1.5rem]">{business.name}</h3>
           <div className="flex items-center gap-2">
             <LocationPinIcon />
-            <span className="md:text-sm">{business.location}</span>
+            {/* <span className="md:text-sm">{business.location}</span> */}
           </div>
           <div className=" z-50 h-40 w-full absolute bottom-0 right-0" />
         </div>
