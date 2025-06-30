@@ -1,24 +1,26 @@
 "use client";
 
+import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState, useRef } from "react";
 import { motion, useInView, useAnimation } from "framer-motion";
 
+import { IconImage } from "@/components/ui";
 import { handleCropImage } from "@/lib/helpers";
 import { tempCardInfo } from "@/constant/hebrew";
 import useGeneralStore from "@/stores/generalStore";
-import { categoryGradientClasses } from "@/lib/utils";
 import LocalStorageService from "@/lib/localStorage";
-import { IconImage } from "@/components/ui";
-import { useSearchParams } from "next/navigation";
-import Link from "next/link";
+import { usePathname, useSearchParams } from "next/navigation";
+import { categoryGradientClasses, navigationPaths } from "@/lib/utils";
 
 const placeholderImage = "/images/image-placeholder.jpg";
 
 const BusinessCard = ({ height, width, business }: BusinessCardProps) => {
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+
   const aspectRatio = width / height;
 
-  const searchParams = useSearchParams();
   const { categoryId = "", subCategoryId = "" } = Object.fromEntries(
     searchParams.entries(),
   );
@@ -130,6 +132,7 @@ const BusinessCard = ({ height, width, business }: BusinessCardProps) => {
       initial={{ y: 50, opacity: 0 }}
       animate={controls}
       transition={{ duration: 0.5, ease: "easeOut" }}
+      className="overflow-hidden"
     >
       {isLoading || !hasMounted ? (
         <div
@@ -137,7 +140,7 @@ const BusinessCard = ({ height, width, business }: BusinessCardProps) => {
         />
       ) : (
         <Link
-          href={"/event-details/abc"}
+          href={`${navigationPaths[pathname]}/slug`}
           className="w-full h-full relative group rounded-xl overflow-hidden"
         >
           <Image
@@ -152,9 +155,9 @@ const BusinessCard = ({ height, width, business }: BusinessCardProps) => {
               setUpdatedImage({ imageUrl: placeholderImage, alt: "abc" })
             }
           />
-          <div className="relative w-full h-full overflow-hidden">
+          <div className="relative w-full h-full">
             {/* Overlay (only bottom 50%) */}
-            <div className="absolute bottom-0 right-0 h-1/2 w-full bg-gradient-to-t from-black/40 to-transparent" />
+            <div className="absolute bottom-0 right-0 h-1/2 w-full bg-gradient-to-t from-black/40 to-transparent rounded-b-xl" />
 
             {/* Text Content */}
             <div className="absolute bottom-0 right-0 ps-4 pb-4 text-white font-bold w-full">

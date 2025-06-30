@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { categoryBgClasses } from "@/lib/utils";
 import useGeneralStore from "@/stores/generalStore";
@@ -10,19 +10,30 @@ import {
   LeftAngleArrow,
   RightAngleArrow,
 } from "@/components/ui/icons";
+import { getAllSubCategory } from "@/actions/businessActions";
 
 const scrollAmount = 150;
 
-const SubcategoryFilterPanel = ({
-  subCategories,
-}: {
-  subCategories: BusienssSubcategoryProps;
-}) => {
+const SubcategoryFilterPanel = () => {
   const { activeCategoryKey } = useGeneralStore();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const { handleSubcategoryChange, activeSubCategory } = useCtgSubctg();
+  const [subCategories, setSubCategories] = useState<BusienssSubcategoryProps>(
+    [],
+  );
 
+  useEffect(() => {
+    if (activeCategoryKey !== "") {
+      async function fetchSubCategory() {
+        const res = await getAllSubCategory(activeCategoryKey);
+        setSubCategories(res);
+      }
+      fetchSubCategory();
+    }
+  }, [activeCategoryKey]);
+
+  console.log("---------subCategories", subCategories);
   const scrollLeft = () => {
     if (scrollContainerRef.current) {
       scrollContainerRef.current.scrollBy({

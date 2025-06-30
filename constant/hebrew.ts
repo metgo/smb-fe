@@ -4,6 +4,8 @@ export const misc = {
   keeping: "שמירה",
   sharing: "שיתוף",
   enrollment: "הרשמה",
+  return: "חזרה",
+  quickPurchase: "רכישה מהירה",
 };
 
 export const category = {
@@ -30,6 +32,9 @@ export const navbar = {
 
 export const menuItems = {
   welcome: "ברוכים הבאים",
+  ourStory: "הסיפור שלנו",
+  products: "מוצרים",
+  deliveries: "משלוחים",
   businessPage: "עמוד עסקים",
   visitorCenter: "מרכז המבקרים",
   blogArticle: "בלוג ומאמרים",
@@ -47,6 +52,9 @@ export const menuItems = {
   termsConditions: "תקנון האתר",
   privacyPolicy: "מדיניות פרטיות",
   hebrew: "עברית",
+  registerLogin: "הרשמה/התחברות",
+  blog: "בלוג",
+  termsOfUse: "תקנון שימוש",
 };
 
 export const events = {

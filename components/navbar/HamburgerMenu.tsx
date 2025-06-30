@@ -10,7 +10,7 @@ const navItems = [
   {
     col1: [
       { id: 1, label: menuItems.welcome, href: "#" },
-      { id: 2, label: menuItems.businessPage, href: "#" },
+      { id: 2, label: menuItems.businessPage, href: "/businesses" },
       { id: 3, label: menuItems.visitorCenter, href: "#" },
       { id: 4, label: menuItems.blogArticle, href: "#" },
       { id: 5, label: menuItems.joinBusiness, href: "#" },
