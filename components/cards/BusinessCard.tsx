@@ -11,7 +11,6 @@ import { categoryGradientClasses } from "@/lib/utils";
 import LocalStorageService from "@/lib/localStorage";
 import { IconImage } from "@/components/ui";
 import { useSearchParams } from "next/navigation";
-import Link from "next/link";
 
 const placeholderImage = "/images/image-placeholder.jpg";
 
@@ -136,8 +135,8 @@ const BusinessCard = ({ height, width, business }: BusinessCardProps) => {
           className={`rounded-2xl skeleton w-full h-full ${categoryGradientClasses[primaryCategoryId]}`}
         />
       ) : (
-        <Link
-          href={"/event-details/abc"}
+        <div
+          // href={"/event-details/abc"}
           className="w-full h-full relative group rounded-xl overflow-hidden"
         >
           <Image
@@ -186,7 +185,7 @@ const BusinessCard = ({ height, width, business }: BusinessCardProps) => {
               onClick={() => handleMapIconClick(business._id)}
             />
           </div>
-        </Link>
+        </div>
       )}
     </motion.div>
   );

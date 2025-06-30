@@ -1,40 +1,40 @@
 "use client";
 
-import Link from "next/link";
+// import Link from "next/link";
 import { useState } from "react";
 
 import { IconImage } from "@/components/ui";
-import { menuItems } from "@/constant/hebrew";
+// import { menuItems } from "@/constant/hebrew";
 
-const navItems = [
-  {
-    col1: [
-      { id: 1, label: menuItems.welcome, href: "#" },
-      { id: 2, label: menuItems.businessPage, href: "#" },
-      { id: 3, label: menuItems.visitorCenter, href: "#" },
-      { id: 4, label: menuItems.blogArticle, href: "#" },
-      { id: 5, label: menuItems.joinBusiness, href: "#" },
-      { id: 6, label: menuItems.contactUs, href: "#" },
-    ],
-    col2: [
-      { id: 1, label: menuItems.eventGeneralPublic, href: "#" },
-      { id: 2, label: menuItems.eventCompaniesOrg, href: "#" },
-      { id: 3, label: menuItems.routes, href: "#" },
-    ],
-    col3: [
-      { id: 1, label: menuItems.mySavedOnes, href: "#" },
-      { id: 2, label: menuItems.checkBalance, href: "#" },
-      { id: 3, label: menuItems.purchasingCharacters, href: "#" },
-      { id: 4, label: menuItems.shoppingCart, href: "#" },
-      { id: 5, label: menuItems.exit, href: "#" },
-    ],
-    col4: [
-      { id: 1, label: menuItems.termsConditions, href: "#" },
-      { id: 2, label: menuItems.privacyPolicy, href: "#" },
-      { id: 3, label: menuItems.hebrew, href: "#", rightIcon: "/images" },
-    ],
-  },
-];
+// const navItems = [
+//   {
+//     col1: [
+//       { id: 1, label: menuItems.welcome, href: "#" },
+//       { id: 2, label: menuItems.businessPage, href: "#" },
+//       { id: 3, label: menuItems.visitorCenter, href: "#" },
+//       { id: 4, label: menuItems.blogArticle, href: "#" },
+//       { id: 5, label: menuItems.joinBusiness, href: "#" },
+//       { id: 6, label: menuItems.contactUs, href: "#" },
+//     ],
+//     col2: [
+//       { id: 1, label: menuItems.eventGeneralPublic, href: "#" },
+//       { id: 2, label: menuItems.eventCompaniesOrg, href: "#" },
+//       { id: 3, label: menuItems.routes, href: "#" },
+//     ],
+//     col3: [
+//       { id: 1, label: menuItems.mySavedOnes, href: "#" },
+//       { id: 2, label: menuItems.checkBalance, href: "#" },
+//       { id: 3, label: menuItems.purchasingCharacters, href: "#" },
+//       { id: 4, label: menuItems.shoppingCart, href: "#" },
+//       { id: 5, label: menuItems.exit, href: "#" },
+//     ],
+//     col4: [
+//       { id: 1, label: menuItems.termsConditions, href: "#" },
+//       { id: 2, label: menuItems.privacyPolicy, href: "#" },
+//       { id: 3, label: menuItems.hebrew, href: "#", rightIcon: "/images" },
+//     ],
+//   },
+// ];
 
 const HamburgerMenu = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -51,7 +51,7 @@ const HamburgerMenu = () => {
       </button>
 
       {/* Dropdown Menu with Animation */}
-      <div
+      {/* <div
         className={`absolute top-20 right-0 w-screen h-screen shadow-lg flex px-70 bg-black/20 backdrop-blur-sm overflow-y-auto transition-all duration-500 ease-in-out ${
           isOpen
             ? "max-h-[96vh] opacity-100 translate-y-0"
@@ -81,7 +81,7 @@ const HamburgerMenu = () => {
             </div>
           ))}
         </div>
-      </div>
+      </div> */}
     </>
   );
 };
