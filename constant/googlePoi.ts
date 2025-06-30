@@ -1,4 +1,3 @@
-
 export const googlePointOfInterest = [
   {
     featureType: "poi",

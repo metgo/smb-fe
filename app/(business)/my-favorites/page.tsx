@@ -1,9 +1,7 @@
-import FavoriteItemLayout from './_components/FavoriteItemLayout'
+import FavoriteItemLayout from "./_components/FavoriteItemLayout";
 
 const page = () => {
-  return (
-    <FavoriteItemLayout/>
-  )
-}
+  return <FavoriteItemLayout />;
+};
 
-export default page
+export default page;

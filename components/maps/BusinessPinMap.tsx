@@ -1,14 +1,14 @@
-"use client"
+"use client";
 
-import { useGoogleMap } from "@/hooks/useGoogleMap"
+import { useGoogleMap } from "@/hooks/useGoogleMap";
 
 const BusinessPinMap = ({ className = "w-full" }: { className?: string }) => {
-  const { mapRef } = useGoogleMap()
+  const { mapRef } = useGoogleMap();
   return (
     <div className={`${className} h-[95vh]`}>
       <div ref={mapRef} className="w-full h-full rounded-md" />
     </div>
-  )
-}
+  );
+};
 
-export default BusinessPinMap
+export default BusinessPinMap;

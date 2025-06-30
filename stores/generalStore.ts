@@ -9,14 +9,13 @@ interface GeneralStoreState {
   setClickedBusinessId: (key: string) => void;
 }
 
-
 const useGeneralStore = create<GeneralStoreState>((set) => ({
   activeCategoryKey: "",
   setActiveCategoryKey: (activeCategoryKey) => set({ activeCategoryKey }),
   activeFilterTab: "gallery",
   setActiveFilterTab: (activeFilterTab) => set({ activeFilterTab }),
   clickedBusinessId: "",
-  setClickedBusinessId: (clickedBusinessId) => set({ clickedBusinessId })
-}))
+  setClickedBusinessId: (clickedBusinessId) => set({ clickedBusinessId }),
+}));
 
-export default useGeneralStore
+export default useGeneralStore;

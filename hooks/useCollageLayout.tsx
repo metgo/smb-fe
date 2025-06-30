@@ -1,10 +1,16 @@
 import { scaleLayout } from "@/lib/helpers";
 import { useEffect, useState } from "react";
 import { BusinessCard, FavoriteItemCard } from "@/components/cards";
-import { onlyCardsColumns, onlyCardsLayouts, REFERENCE_SCREEN_WIDTH } from "@/constant/collageLayouts";
+import {
+  onlyCardsColumns,
+  onlyCardsLayouts,
+  REFERENCE_SCREEN_WIDTH,
+} from "@/constant/collageLayouts";
 
-
-export const useCollageLayout = (items: BusinessProps[], isFav: boolean = false) => {
+export const useCollageLayout = (
+  items: BusinessProps[],
+  isFav: boolean = false,
+) => {
   const [scale, setScale] = useState(1);
 
   useEffect(() => {
@@ -19,10 +25,13 @@ export const useCollageLayout = (items: BusinessProps[], isFav: boolean = false)
     return () => window.removeEventListener("resize", updateScale);
   }, []);
 
-
   if (items.length < 1) return <div>No businesses available</div>;
 
-  const renderCards = (indexes: number[], layout: LayoutItem[], offset: number) => (
+  const renderCards = (
+    indexes: number[],
+    layout: LayoutItem[],
+    offset: number,
+  ) => (
     <div className="space-y-5">
       {indexes.map((i) => {
         const business = items[i + offset];
@@ -36,7 +45,7 @@ export const useCollageLayout = (items: BusinessProps[], isFav: boolean = false)
               height={cardLayout.height}
               business={business}
             />
-          )
+          );
         return (
           <BusinessCard
             key={i}
@@ -47,9 +56,13 @@ export const useCollageLayout = (items: BusinessProps[], isFav: boolean = false)
         );
       })}
     </div>
-  )
+  );
 
-  const renderHorizontalCards = (indexes: number[], layout: LayoutItem[], offset: number) => (
+  const renderHorizontalCards = (
+    indexes: number[],
+    layout: LayoutItem[],
+    offset: number,
+  ) => (
     <div className="flex gap-5 pt-5">
       {indexes.map((i) => {
         const business = items[i + offset];
@@ -70,7 +83,7 @@ export const useCollageLayout = (items: BusinessProps[], isFav: boolean = false)
     layoutData: LayoutItem[],
     columnLayoutData: Record<string, number[]> | null,
     offset: number,
-    index: number
+    index: number,
   ) => {
     if (!columnLayoutData) {
       return (
@@ -99,7 +112,8 @@ export const useCollageLayout = (items: BusinessProps[], isFav: boolean = false)
             return (
               <div key={`${colKey}-${idx}`} className="flex flex-col">
                 {renderCards(mainIndexes, layoutData, offset)}
-                {subIndexes && renderHorizontalCards(subIndexes, layoutData, offset)}
+                {subIndexes &&
+                  renderHorizontalCards(subIndexes, layoutData, offset)}
               </div>
             );
           })}
@@ -128,7 +142,8 @@ export const useCollageLayout = (items: BusinessProps[], isFav: boolean = false)
         {columns.map((column, colIdx) => (
           <div key={`column-${colIdx}`} className="flex flex-col gap-5">
             {column.map((biz, bizIdx) => {
-              const layoutIndex = (colIdx + bizIdx * columnCount) % shuffledLayouts.length;
+              const layoutIndex =
+                (colIdx + bizIdx * columnCount) % shuffledLayouts.length;
               const layout = shuffledLayouts[layoutIndex];
 
               return (
@@ -169,6 +184,6 @@ export const useCollageLayout = (items: BusinessProps[], isFav: boolean = false)
   };
 
   return {
-    renderFullLayout
-  }
-}
+    renderFullLayout,
+  };
+};

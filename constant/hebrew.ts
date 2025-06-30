@@ -1,12 +1,10 @@
-
-
 export const misc = {
   possibilities: "עולם של אפשרויות",
   navigation: "ניווט",
   keeping: "שמירה",
   sharing: "שיתוף",
   enrollment: "הרשמה",
-}
+};
 
 export const category = {
   tours: "טיולים",
@@ -14,8 +12,8 @@ export const category = {
   eater: "אוכל",
   culture: "תרבות",
   lodge: "לינה",
-  local: "מקומי"
-}
+  local: "מקומי",
+};
 
 export const navbar = {
   toJoinAsaBusiness: "להצטרפות כעסק",
@@ -28,7 +26,7 @@ export const navbar = {
   toGroups: "קבוצות",
   events: "אירועים",
   tracks: "מסלולים",
-}
+};
 
 export const menuItems = {
   welcome: "ברוכים הבאים",
@@ -49,24 +47,24 @@ export const menuItems = {
   termsConditions: "תקנון האתר",
   privacyPolicy: "מדיניות פרטיות",
   hebrew: "עברית",
-}
+};
 
 export const events = {
-  evening: 'ערב',
-  couples: 'זוגות',
-  accessible: 'נגיש',
-  paid: 'בתשלום',
-  families: 'משפחות',
-  children: 'ילדים',
-  kosher: 'כשר',
-}
+  evening: "ערב",
+  couples: "זוגות",
+  accessible: "נגיש",
+  paid: "בתשלום",
+  families: "משפחות",
+  children: "ילדים",
+  kosher: "כשר",
+};
 
 export const tempCardInfo = {
   title: "בית קפה הנגב הפורח",
-  location: "קיבוץ נופים"
-}
-
+  location: "קיבוץ נופים",
+};
 
 export const emptyStateText = {
-  noBusiness: "לא נמצאו תוצאות – אבל תמיד אפשר לנסות כיוון חדש.עדכן את הסינון ונצא לחיפוש מחדש!"
-}
+  noBusiness:
+    "לא נמצאו תוצאות – אבל תמיד אפשר לנסות כיוון חדש.עדכן את הסינון ונצא לחיפוש מחדש!",
+};

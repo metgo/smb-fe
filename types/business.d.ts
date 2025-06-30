@@ -1,10 +1,7 @@
-
-
 declare type LayoutItem = {
   width: number;
-  height: number
+  height: number;
 };
-
 
 interface SubCoordinates {
   xMax: number;
@@ -53,22 +50,24 @@ declare interface BusinessProps {
 
 declare interface BusinessesProps {
   data: BusinessProps[];
-  totalData?: number,
-  meta?: {
-    page: number,
-    limit: string,
-    data: number,
-    pageCount: number,
-    hasPreviousPage: boolean,
-    hasNextPage: boolean
-  } | any
+  totalData?: number;
+  meta?:
+    | {
+        page: number;
+        limit: string;
+        data: number;
+        pageCount: number;
+        hasPreviousPage: boolean;
+        hasNextPage: boolean;
+      }
+    | any;
 }
 
 declare type BusinessCardProps = {
   width: number;
   height: number;
   business: BusinessProps;
-}
+};
 
 declare type FaviouriteBusinessProps = {
   _id: string;
@@ -85,19 +84,19 @@ declare type BusinessMakerProps = {
   geoLocation: {
     _id: string;
     lat: string;
-    long: string
-  }
-}
+    long: string;
+  };
+};
 
 declare type BusinessCategoryProps = {
   id: string;
   name: string;
   productCount: number;
-}[]
+}[];
 
 declare type BusienssSubcategoryProps = {
   id: string;
   name: string;
   productCount: number;
-  parent: string[]
-}[]
+  parent: string[];
+}[];

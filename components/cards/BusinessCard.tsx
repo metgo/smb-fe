@@ -1,38 +1,39 @@
-"use client"
+"use client";
 
-import Image from 'next/image'
-import { useEffect, useState, useRef } from 'react';
-import { motion, useInView, useAnimation } from 'framer-motion';
+import Image from "next/image";
+import { useEffect, useState, useRef } from "react";
+import { motion, useInView, useAnimation } from "framer-motion";
 
-import { handleCropImage } from '@/lib/helpers';
-import { tempCardInfo } from '@/constant/hebrew';
-import useGeneralStore from '@/stores/generalStore';
-import { categoryGradientClasses } from '@/lib/utils';
-import LocalStorageService from '@/lib/localStorage';
-import { IconImage } from '@/components/ui';
-import { useSearchParams } from 'next/navigation';
-import Link from 'next/link';
+import { handleCropImage } from "@/lib/helpers";
+import { tempCardInfo } from "@/constant/hebrew";
+import useGeneralStore from "@/stores/generalStore";
+import { categoryGradientClasses } from "@/lib/utils";
+import LocalStorageService from "@/lib/localStorage";
+import { IconImage } from "@/components/ui";
+import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 
-const placeholderImage = "/images/image-placeholder.jpg"
+const placeholderImage = "/images/image-placeholder.jpg";
 
-const BusinessCard = ({
-  height,
-  width,
-  business,
-}: BusinessCardProps) => {
+const BusinessCard = ({ height, width, business }: BusinessCardProps) => {
   const aspectRatio = width / height;
 
   const searchParams = useSearchParams();
-  const {
-    categoryId = '',
-    subCategoryId = ''
-  } = Object.fromEntries(searchParams.entries());
-  const { activeCategoryKey, setActiveFilterTab, setClickedBusinessId } = useGeneralStore()
+  const { categoryId = "", subCategoryId = "" } = Object.fromEntries(
+    searchParams.entries(),
+  );
+  const { activeCategoryKey, setActiveFilterTab, setClickedBusinessId } =
+    useGeneralStore();
 
-  const existingFaviourtBusiness = LocalStorageService.get<FaviouriteBusinessProps[]>("favorite-business") || [];
+  const existingFaviourtBusiness =
+    LocalStorageService.get<FaviouriteBusinessProps[]>("favorite-business") ||
+    [];
 
-  const [isLoading, setIsLoading] = useState(false)
-  const [updatedImage, setUpdatedImage] = useState({ imageUrl: placeholderImage, alt: "abc" })
+  const [isLoading, setIsLoading] = useState(false);
+  const [updatedImage, setUpdatedImage] = useState({
+    imageUrl: placeholderImage,
+    alt: "abc",
+  });
   const [hasMounted, setHasMounted] = useState(false);
 
   // Framer Motion setup
@@ -52,17 +53,28 @@ const BusinessCard = ({
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      const primaryImageObj = business?.images?.find(item => item?.isPrimary);
+      const primaryImageObj = business?.images?.find((item) => item?.isPrimary);
 
       if (primaryImageObj) {
         if (primaryImageObj?.subCoordinates) {
-          handleCropImage(primaryImageObj, aspectRatio, setIsLoading, setUpdatedImage);
+          handleCropImage(
+            primaryImageObj,
+            aspectRatio,
+            setIsLoading,
+            setUpdatedImage,
+          );
         } else {
-          setUpdatedImage({ imageUrl: primaryImageObj?.image, alt: primaryImageObj?.alt });
+          setUpdatedImage({
+            imageUrl: primaryImageObj?.image,
+            alt: primaryImageObj?.alt,
+          });
           setIsLoading(false);
         }
       } else {
-        setUpdatedImage({ imageUrl: business?.images[0]?.image, alt: business?.name });
+        setUpdatedImage({
+          imageUrl: business?.images[0]?.image,
+          alt: business?.name,
+        });
         setIsLoading(false);
       }
     }, 3000);
@@ -82,7 +94,9 @@ const BusinessCard = ({
     };
 
     // Check if it's already in favorites
-    const isAlreadyAdded = existingFaviourtBusiness.some(b => b._id === item._id);
+    const isAlreadyAdded = existingFaviourtBusiness.some(
+      (b) => b._id === item._id,
+    );
     if (isAlreadyAdded) {
       console.log("Item already in wishlist");
       return;
@@ -92,14 +106,21 @@ const BusinessCard = ({
     const updated = [...existingFaviourtBusiness, item];
 
     // Save updated list
-    LocalStorageService.set<FaviouriteBusinessProps[]>("favorite-business", updated);
+    LocalStorageService.set<FaviouriteBusinessProps[]>(
+      "favorite-business",
+      updated,
+    );
   }
 
-  const primaryCategoryId = activeCategoryKey ? activeCategoryKey : business?.primaryCategoryId ? business?.primaryCategoryId : "6566e36ba77d2a477266d2f4"
+  const primaryCategoryId = activeCategoryKey
+    ? activeCategoryKey
+    : business?.primaryCategoryId
+      ? business?.primaryCategoryId
+      : "6566e36ba77d2a477266d2f4";
 
   function handleMapIconClick(id: string) {
-    setClickedBusinessId(id)
-    setActiveFilterTab("map")
+    setClickedBusinessId(id);
+    setActiveFilterTab("map");
   }
 
   return (
@@ -110,8 +131,10 @@ const BusinessCard = ({
       animate={controls}
       transition={{ duration: 0.5, ease: "easeOut" }}
     >
-      {(isLoading || !hasMounted) ? (
-        <div className={`rounded-2xl skeleton w-full h-full ${categoryGradientClasses[primaryCategoryId]}`} />
+      {isLoading || !hasMounted ? (
+        <div
+          className={`rounded-2xl skeleton w-full h-full ${categoryGradientClasses[primaryCategoryId]}`}
+        />
       ) : (
         <Link
           href={"/event-details/abc"}
@@ -125,7 +148,9 @@ const BusinessCard = ({
             alt={updatedImage.alt || "Business"}
             src={updatedImage.imageUrl || placeholderImage}
             className="object-cover h-full w-full rounded-xl"
-            onError={() => setUpdatedImage({ imageUrl: placeholderImage, alt: "abc" })}
+            onError={() =>
+              setUpdatedImage({ imageUrl: placeholderImage, alt: "abc" })
+            }
           />
           <div className="relative w-full h-full overflow-hidden">
             {/* Overlay (only bottom 50%) */}
@@ -133,22 +158,38 @@ const BusinessCard = ({
 
             {/* Text Content */}
             <div className="absolute bottom-0 right-0 ps-4 pb-4 text-white font-bold w-full">
-              <h3 className="lg:text-[1rem] 3xl:text-[1.5rem]">{business?.name}</h3>
+              <h3 className="lg:text-[1rem] 3xl:text-[1.5rem]">
+                {business?.name}
+              </h3>
               <div className="flex items-center gap-2">
                 <IconImage icon="location" width={20} height={20} />
-                <span className="md:text-sm">{business?.address?.city ? business?.address?.city : "Tel Aviv"}</span>
+                <span className="md:text-sm">
+                  {business?.address?.city
+                    ? business?.address?.city
+                    : "Tel Aviv"}
+                </span>
               </div>
             </div>
           </div>
 
           <div className="hidden absolute top-4 right-4 group-hover:flex items-center gap-2.5">
-            <IconImage width={30} height={30} icon='circular-heart' onClick={addWishlistHandler} />
-            <IconImage width={30} height={30} icon='circular-map-fold' onClick={() => handleMapIconClick(business._id)} />
+            <IconImage
+              width={30}
+              height={30}
+              icon="circular-heart"
+              onClick={addWishlistHandler}
+            />
+            <IconImage
+              width={30}
+              height={30}
+              icon="circular-map-fold"
+              onClick={() => handleMapIconClick(business._id)}
+            />
           </div>
         </Link>
       )}
     </motion.div>
-  )
-}
+  );
+};
 
-export default BusinessCard
+export default BusinessCard;

@@ -2,27 +2,31 @@ import Image from "next/image";
 
 import Navbar from "@/components/navbar";
 import ScrollIndicator from "@/components/ScrollIndicator";
-import { getAllBusinesses, getAllCategory, getAllSubCategory } from "@/actions/businessActions";
+import {
+  getAllBusinesses,
+  getAllCategory,
+  getAllSubCategory,
+} from "@/actions/businessActions";
 import FilterBusinessLayout from "@/components/layouts/FilterBusinessLayout";
 import CurrentTempOfYourCity from "@/components/navbar/CurrentTempOfYourCity";
 import { IconImage } from "@/components/ui";
 
 interface Props {
   searchParams: Promise<{
-    page: string,
+    page: string;
     categoryId: string;
     subCategoryId: string;
   }>;
 }
 
 const page = async ({ searchParams }: Props) => {
-  const {
-    page = 1,
-    categoryId = "",
-    subCategoryId = ""
-  } = await searchParams;
+  const { page = 1, categoryId = "", subCategoryId = "" } = await searchParams;
 
-  const businesses: BusinessesProps = await getAllBusinesses(Number(page), categoryId, subCategoryId);
+  const businesses: BusinessesProps = await getAllBusinesses(
+    Number(page),
+    categoryId,
+    subCategoryId,
+  );
   const categories = await getAllCategory();
   const subCategories = categoryId ? await getAllSubCategory(categoryId) : null;
 
@@ -73,7 +77,7 @@ const page = async ({ searchParams }: Props) => {
         />
       </section>
     </div>
-  )
+  );
 };
 
 export default page;

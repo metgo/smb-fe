@@ -1,42 +1,40 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary: #F1F1F1;
-  --color-secondary: #D8D8D8;
-  --color-theme: #7C7C7C;
-  --color-drak: #0D0D0D;
+  --color-primary: #f1f1f1;
+  --color-secondary: #d8d8d8;
+  --color-theme: #7c7c7c;
+  --color-drak: #0d0d0d;
 
-  --color-ctg-eat-dark: #F09984;
-  --color-ctg-eat-dim: #F7BCAC;
-  --color-ctg-eat-light: #F8CBBF;
+  --color-ctg-eat-dark: #f09984;
+  --color-ctg-eat-dim: #f7bcac;
+  --color-ctg-eat-light: #f8cbbf;
 
-  --color-ctg-local-dark: #FFBE3B;
-  --color-ctg-local-dim: #F9D385;
-  --color-ctg-local-light: #F9DEA7;
+  --color-ctg-local-dark: #ffbe3b;
+  --color-ctg-local-dim: #f9d385;
+  --color-ctg-local-light: #f9dea7;
 
-  --color-ctg-lodge-dark: #4C95D8;
-  --color-ctg-lodge-dim: #90BBE3;
-  --color-ctg-lodge-light: #A2C6E6;
+  --color-ctg-lodge-dark: #4c95d8;
+  --color-ctg-lodge-dim: #90bbe3;
+  --color-ctg-lodge-light: #a2c6e6;
 
-  --color-ctg-culture-dark: #F174AE;
-  --color-ctg-culture-dim: #F1A7C9;
-  --color-ctg-culture-light: #F3BDD6;
+  --color-ctg-culture-dark: #f174ae;
+  --color-ctg-culture-dim: #f1a7c9;
+  --color-ctg-culture-light: #f3bdd6;
 
-  --color-ctg-attract-dark: #B571B4;
-  --color-ctg-attract-dim: #CEA7CE;
-  --color-ctg-attract-light: #D9BCD9;
+  --color-ctg-attract-dark: #b571b4;
+  --color-ctg-attract-dim: #cea7ce;
+  --color-ctg-attract-light: #d9bcd9;
 
-  --color-ctg-tour-dark: #00A5A8;
-  --color-ctg-tour-dim: #64C5C6;
-  --color-ctg-tour-light: #8ED4D5;
+  --color-ctg-tour-dark: #00a5a8;
+  --color-ctg-tour-dim: #64c5c6;
+  --color-ctg-tour-light: #8ed4d5;
 }
 
-
 @layer utilities {
-
   /* Debug purpose */
   .db1 {
-    @apply border border-red-400
+    @apply border border-red-400;
   }
 
   .glass {
@@ -47,15 +45,16 @@
     @apply relative overflow-hidden bg-gradient-to-br from-0% via-50% to-100%;
   }
 
-
   .skeleton::before {
     content: "";
     position: absolute;
     inset: 0;
-    background-image: linear-gradient(135deg,
-        rgba(255, 255, 255, 0) 0%,
-        rgba(255, 255, 255, 0.3) 50%,
-        rgba(255, 255, 255, 0) 100%);
+    background-image: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.3) 50%,
+      rgba(255, 255, 255, 0) 100%
+    );
     background-size: 200% 200%;
     animation: shimmer-diagonal 1.5s infinite;
   }
@@ -82,22 +81,21 @@
 
 .filter-tab {
   border-radius: 8px;
-  background: #F1F1F1;
+  background: #f1f1f1;
   box-shadow: 0px 3px 4px 0px rgba(0, 0, 0, 0.03) inset;
 }
 
 @font-face {
   /* font-family: 'Ploni Bold'; */
-  font-family: 'Ploni ML v2 AAA';
-  src: url('/public/fonts/ploni-regular-aaa.otf') format('opentype');
+  font-family: "Ploni ML v2 AAA";
+  src: url("/public/fonts/ploni-regular-aaa.otf") format("opentype");
   font-weight: normal;
   font-style: normal;
 }
 
 body {
-  font-family: 'Ploni Bold', sans-serif;
+  font-family: "Ploni Bold", sans-serif;
 }
-
 
 .gm-style-iw-tc,
 .gm-style-iw-ch,

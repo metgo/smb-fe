@@ -23,20 +23,16 @@ const DIMENSIONS = {
 
 // Helper to create an array of LayoutItems
 const createItems = (item: LayoutItem, count: number): LayoutItem[] =>
-  Array(count).fill(item).map((item) => ({ ...item }));
-
-
+  Array(count)
+    .fill(item)
+    .map((item) => ({ ...item }));
 
 export const onlyCardsLayouts: Record<string, LayoutItem[]> = (() => {
-
   // Helper to generate layouts with patterns
   const layouts: Record<string, LayoutItem[]> = {
     layout1: [DIMENSIONS.large],
     layout2: createItems(DIMENSIONS.medium, 2),
-    layout3: [
-      DIMENSIONS.medium,
-      ...createItems(DIMENSIONS.mediumHalf, 2),
-    ],
+    layout3: [DIMENSIONS.medium, ...createItems(DIMENSIONS.mediumHalf, 2)],
     layout4: [
       DIMENSIONS.medium,
       ...createItems(DIMENSIONS.small, 2),
@@ -222,10 +218,10 @@ export const onlyCardsLayouts: Record<string, LayoutItem[]> = (() => {
       DIMENSIONS.gridTall,
       DIMENSIONS.grid,
       DIMENSIONS.grid,
-      
+
       DIMENSIONS.gridTall,
       ...createItems(DIMENSIONS.grid, 2),
-      
+
       ...createItems(DIMENSIONS.grid, 2),
       DIMENSIONS.gridTall,
       DIMENSIONS.gridTall,
@@ -246,14 +242,48 @@ export const onlyCardsColumns: Record<string, Record<string, number[]>> = {
   layout8: { col1: [0, 1], col2: [2, 3, 4], col3: [5, 6, 7] },
   layout9: { col1: [0, 1], col2: [2, 3, 4], col3: [5, 6, 7, 8] },
   layout10: { col1: [0], subCol1: [1, 2], col2: [3, 4, 5], col3: [6, 7, 8, 9] },
-  layout11: { col1: [0, 1], col2: [2, 3, 4], col3: [5, 6, 7], col4: [8, 9, 10] },
-  layout12: { col1: [0], subCol1: [1, 2], col2: [3, 4, 5], col3: [6, 7, 8], col4: [9, 10, 11] },
-  layout13: { col1: [0, 1], col2: [2, 3, 4], col3: [5, 6, 7], col4: [8, 9, 10], col5: [11, 12] },
-  layout14: { col1: [0, 1, 2], col2: [3, 4, 5], col3: [6, 7, 8], col4: [9, 10, 11], col5: [12, 13] },
-  layout15: { col1: [0, 1, 2], col2: [3, 4, 5], col3: [6, 7, 8], col4: [9, 10, 11], col5: [12, 13, 14] },
-  layout16: { col1: [0, 1, 2, 3], col2: [4, 5, 6], col3: [7, 8, 9], col4: [10, 11, 12], col5: [13, 14, 15] },
+  layout11: {
+    col1: [0, 1],
+    col2: [2, 3, 4],
+    col3: [5, 6, 7],
+    col4: [8, 9, 10],
+  },
+  layout12: {
+    col1: [0],
+    subCol1: [1, 2],
+    col2: [3, 4, 5],
+    col3: [6, 7, 8],
+    col4: [9, 10, 11],
+  },
+  layout13: {
+    col1: [0, 1],
+    col2: [2, 3, 4],
+    col3: [5, 6, 7],
+    col4: [8, 9, 10],
+    col5: [11, 12],
+  },
+  layout14: {
+    col1: [0, 1, 2],
+    col2: [3, 4, 5],
+    col3: [6, 7, 8],
+    col4: [9, 10, 11],
+    col5: [12, 13],
+  },
+  layout15: {
+    col1: [0, 1, 2],
+    col2: [3, 4, 5],
+    col3: [6, 7, 8],
+    col4: [9, 10, 11],
+    col5: [12, 13, 14],
+  },
+  layout16: {
+    col1: [0, 1, 2, 3],
+    col2: [4, 5, 6],
+    col3: [7, 8, 9],
+    col4: [10, 11, 12],
+    col5: [13, 14, 15],
+  },
 };
-
 
 export const mapIntegratedCardsLayouts: Record<string, LayoutItem[]> = {
   layout1: [{ width: 758, height: 886 }],
@@ -321,7 +351,10 @@ export const mapIntegratedCardsLayouts: Record<string, LayoutItem[]> = {
   ],
 };
 
-export const mapIntegratedCardsColumns: Record<string, Record<string, number[]>> = {
+export const mapIntegratedCardsColumns: Record<
+  string,
+  Record<string, number[]>
+> = {
   layout3: { col1: [0, 1], col2: [2] },
   layout4: { col1: [0, 1], col2: [2, 3] },
   layout5: { col1: [0, 1, 2], col2: [3, 4] },

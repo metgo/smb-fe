@@ -2,7 +2,6 @@ import { useState } from "react";
 import useGeneralStore from "@/stores/generalStore";
 import { useRouter, useSearchParams } from "next/navigation";
 
-
 export const useCtgSubctg = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -11,18 +10,16 @@ export const useCtgSubctg = () => {
 
   const [activeSubCategory, setActiveSubCategory] = useState<string>();
 
-
   const handleCategoryChange = (categoryId: string) => {
     const isSameCategory = activeCategoryKey === categoryId;
     const newCategoryId = isSameCategory ? "" : categoryId;
 
     setActiveCategoryKey(newCategoryId);
-    setActiveSubCategory("")
+    setActiveSubCategory("");
 
     const params = new URLSearchParams(searchParams.toString());
 
-    if (newCategoryId)
-      params.set("categoryId", newCategoryId);
+    if (newCategoryId) params.set("categoryId", newCategoryId);
     else {
       params.delete("categoryId");
     }
@@ -32,7 +29,6 @@ export const useCtgSubctg = () => {
 
     window.scrollTo({ top: 842, left: 0, behavior: "smooth" });
     router.push(`?${params.toString()}`, { scroll: false });
-
   };
 
   const handleSubcategoryChange = (subCtgId: string) => {
@@ -43,10 +39,8 @@ export const useCtgSubctg = () => {
 
     const params = new URLSearchParams(searchParams.toString());
 
-    if (newSubcategoryId)
-      params.set("subCategoryId", newSubcategoryId);
-    else
-      params.delete("subCategoryId");
+    if (newSubcategoryId) params.set("subCategoryId", newSubcategoryId);
+    else params.delete("subCategoryId");
 
     params.set("page", "1");
     params.set("categoryId", activeCategoryKey);
@@ -58,6 +52,6 @@ export const useCtgSubctg = () => {
     handleCategoryChange,
     handleSubcategoryChange,
     activeSubCategory,
-    activeCategoryKey
-  }
-}
+    activeCategoryKey,
+  };
+};

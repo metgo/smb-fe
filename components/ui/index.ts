@@ -1,3 +1,3 @@
 import IconImage from "./IconImage";
 
-export { IconImage }
+export { IconImage };

@@ -3,9 +3,9 @@ import CategoryPanel from "./CategoryPanel";
 import FavoriteItemCard from "./FavoriteItemCard";
 import SubcategoryFilterPanel from "./SubcategoryFilterPanel";
 
-export { 
+export {
   BusinessCard,
   CategoryPanel,
   FavoriteItemCard,
   SubcategoryFilterPanel,
- }
+};

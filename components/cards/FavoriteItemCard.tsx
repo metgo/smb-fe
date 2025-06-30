@@ -1,5 +1,5 @@
-import Image from "next/image"
-import { LocationPinIcon } from "@/components/ui/icons"
+import Image from "next/image";
+import { LocationPinIcon } from "@/components/ui/icons";
 
 const FavoriteItemCard = ({ width, height, business }: BusinessCardProps) => {
   return (
@@ -32,7 +32,7 @@ const FavoriteItemCard = ({ width, height, business }: BusinessCardProps) => {
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default FavoriteItemCard
+export default FavoriteItemCard;

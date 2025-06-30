@@ -3,4 +3,4 @@ declare type WeatherProps = {
   condition: string;
   icon: string;
   location: string;
-}
+};

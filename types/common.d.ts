@@ -1,3 +1,3 @@
 declare type ReactChildNode = {
-  children: React.ReactNode
-}
+  children: React.ReactNode;
+};

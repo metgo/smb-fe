@@ -26,7 +26,11 @@ const OnlyBusinessCardsLayout = ({ data }: BusinessesProps) => {
 
   if (data.length < 1) return <div>No businesses available</div>;
 
-  const renderCards = (indexes: number[], layout: LayoutItem[], offset: number) => (
+  const renderCards = (
+    indexes: number[],
+    layout: LayoutItem[],
+    offset: number,
+  ) => (
     <div className="space-y-5">
       {indexes.map((i) => {
         const business = data[i + offset];
@@ -43,7 +47,11 @@ const OnlyBusinessCardsLayout = ({ data }: BusinessesProps) => {
     </div>
   );
 
-  const renderHorizontalCards = (indexes: number[], layout: LayoutItem[], offset: number) => (
+  const renderHorizontalCards = (
+    indexes: number[],
+    layout: LayoutItem[],
+    offset: number,
+  ) => (
     <div className="flex gap-5 pt-5">
       {indexes.map((i) => {
         const business = data[i + offset];
@@ -64,7 +72,7 @@ const OnlyBusinessCardsLayout = ({ data }: BusinessesProps) => {
     layoutData: LayoutItem[],
     columnLayoutData: Record<string, number[]> | null,
     offset: number,
-    index: number
+    index: number,
   ) => {
     if (!columnLayoutData) {
       return (
@@ -93,7 +101,8 @@ const OnlyBusinessCardsLayout = ({ data }: BusinessesProps) => {
             return (
               <div key={`${colKey}-${idx}`} className="flex flex-col">
                 {renderCards(mainIndexes, layoutData, offset)}
-                {subIndexes && renderHorizontalCards(subIndexes, layoutData, offset)}
+                {subIndexes &&
+                  renderHorizontalCards(subIndexes, layoutData, offset)}
               </div>
             );
           })}
@@ -101,7 +110,11 @@ const OnlyBusinessCardsLayout = ({ data }: BusinessesProps) => {
     );
   };
 
-  const renderBatch = (batchData: any[], batchIndex: number, batchOffset: number) => {
+  const renderBatch = (
+    batchData: any[],
+    batchIndex: number,
+    batchOffset: number,
+  ) => {
     // Cycle through layout16 to layout20 (16, 17, 18, 19, 20)
     const layoutIndex = 16 + (batchIndex % 5); // Cycle through 16 to 20
     const layoutKey = `layout${layoutIndex}`;

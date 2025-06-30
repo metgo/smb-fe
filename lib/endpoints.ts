@@ -1,6 +1,5 @@
 import { CODE, BASE_URL } from "@/constant/envConstants";
 
-
 export const urls = {
   accessibilities: `${BASE_URL}/accessibilities`,
   tourismBusinesses: `${BASE_URL}/tourism/businesses`,

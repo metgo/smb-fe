@@ -1,16 +1,17 @@
-import { onlyCardsColumns, onlyCardsLayouts, REFERENCE_SCREEN_WIDTH } from "@/constant/collageLayouts";
+import {
+  onlyCardsColumns,
+  onlyCardsLayouts,
+  REFERENCE_SCREEN_WIDTH,
+} from "@/constant/collageLayouts";
 import { scaleLayout } from "@/lib/helpers";
-import { categoryGradientClasses } from "@/lib/utils"
+import { categoryGradientClasses } from "@/lib/utils";
 import { useEffect, useState } from "react";
 
-
-
 const Layout16Skeleton = ({
-  primaryCategoryId = "6566e31ca77d2a477266d2d6"
-}:
-  { primaryCategoryId?: string }
-) => {
-
+  primaryCategoryId = "6566e31ca77d2a477266d2d6",
+}: {
+  primaryCategoryId?: string;
+}) => {
   const [scale, setScale] = useState(1);
 
   useEffect(() => {
@@ -32,19 +33,19 @@ const Layout16Skeleton = ({
       {Object.values(onlyCardsColumns.layout16).map((indexes, colIdx) => (
         <div key={colIdx} className="flex flex-col gap-5">
           {indexes.map((i) => {
-            const { width, height } = layout16[i]
+            const { width, height } = layout16[i];
             return (
               <div
                 key={i}
                 className={`rounded-2xl skeleton ${categoryGradientClasses[primaryCategoryId]}`}
                 style={{ width, height }}
               />
-            )
+            );
           })}
         </div>
       ))}
     </div>
-  )
-}
+  );
+};
 
-export default Layout16Skeleton
+export default Layout16Skeleton;

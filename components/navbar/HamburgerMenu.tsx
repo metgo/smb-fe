@@ -44,7 +44,7 @@ const HamburgerMenu = () => {
       {/* Toggle Button */}
       <button
         type="button"
-        onClick={() => setIsOpen(prev => !prev)}
+        onClick={() => setIsOpen((prev) => !prev)}
         className="focus:outline-none cursor-pointer text-theme"
       >
         {isOpen ? <IconImage icon="close" /> : <IconImage icon="threeline" />}
@@ -52,17 +52,19 @@ const HamburgerMenu = () => {
 
       {/* Dropdown Menu with Animation */}
       <div
-        className={`absolute top-20 right-0 w-screen h-screen shadow-lg flex px-70 bg-black/20 backdrop-blur-sm overflow-y-auto transition-all duration-500 ease-in-out ${isOpen ? "max-h-[96vh] opacity-100 translate-y-0" : "max-h-0 opacity-0 -translate-y-10 pointer-events-none"
-          }`}
+        className={`absolute top-20 right-0 w-screen h-screen shadow-lg flex px-70 bg-black/20 backdrop-blur-sm overflow-y-auto transition-all duration-500 ease-in-out ${
+          isOpen
+            ? "max-h-[96vh] opacity-100 translate-y-0"
+            : "max-h-0 opacity-0 -translate-y-10 pointer-events-none"
+        }`}
       >
-
         <div className="w-full h-[max-content] py-10 px-12 flex gap-10 rounded-b-xl bg-white/90 backdrop-blur-xl">
           {Object.entries(navItems[0]).map(([colKey, items]) => (
             <div key={colKey} className="flex gap-2.75">
               <div className="w-0.25 h-70 bg-[#D3D3D3]" />
 
               <div className="flex flex-col w-[14.5rem]">
-                {items.map(item => (
+                {items.map((item) => (
                   <div
                     key={item.id}
                     className="mb-2 hover:bg-primary py-2 ps-3"

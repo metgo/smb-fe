@@ -1,7 +1,7 @@
-import BusinessPinMap from '../maps/BusinessPinMap'
+import BusinessPinMap from "../maps/BusinessPinMap";
 
 const OnlyBusinessMapLayout = () => {
-  return <BusinessPinMap />
-}
+  return <BusinessPinMap />;
+};
 
-export default OnlyBusinessMapLayout
+export default OnlyBusinessMapLayout;

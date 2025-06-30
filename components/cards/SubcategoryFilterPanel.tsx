@@ -5,30 +5,43 @@ import { useRef } from "react";
 import { categoryBgClasses } from "@/lib/utils";
 import useGeneralStore from "@/stores/generalStore";
 import { useCtgSubctg } from "@/hooks/useCtgSubctg";
-import { FilterIcon, LeftAngleArrow, RightAngleArrow } from "@/components/ui/icons";
+import {
+  FilterIcon,
+  LeftAngleArrow,
+  RightAngleArrow,
+} from "@/components/ui/icons";
 
 const scrollAmount = 150;
 
-const SubcategoryFilterPanel = ({ subCategories }: { subCategories: BusienssSubcategoryProps }) => {
+const SubcategoryFilterPanel = ({
+  subCategories,
+}: {
+  subCategories: BusienssSubcategoryProps;
+}) => {
   const { activeCategoryKey } = useGeneralStore();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  const { handleSubcategoryChange, activeSubCategory } = useCtgSubctg()
+  const { handleSubcategoryChange, activeSubCategory } = useCtgSubctg();
 
   const scrollLeft = () => {
     if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollBy({ left: -scrollAmount, behavior: "smooth" });
+      scrollContainerRef.current.scrollBy({
+        left: -scrollAmount,
+        behavior: "smooth",
+      });
     }
   };
 
   const scrollRight = () => {
     if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollBy({ left: scrollAmount, behavior: "smooth" });
+      scrollContainerRef.current.scrollBy({
+        left: scrollAmount,
+        behavior: "smooth",
+      });
     }
   };
 
-  if (activeCategoryKey === "" || subCategories?.length === 0)
-    return
+  if (activeCategoryKey === "" || subCategories?.length === 0) return;
 
   return (
     <div className="max-w-5xl bg-white/80 backdrop-blur-md border border-white/20 shadow-md p-2.5 rounded-2xl z-50">
@@ -51,15 +64,16 @@ const SubcategoryFilterPanel = ({ subCategories }: { subCategories: BusienssSubc
               ref={scrollContainerRef}
               className="flex items-center gap-2.5 overflow-x-auto flex-nowrap hide-scrollbar scroll-smooth"
             >
-              {subCategories?.map(item => (
+              {subCategories?.map((item) => (
                 <button
                   key={item.id}
                   type="button"
                   onClick={() => handleSubcategoryChange(item.id)}
-                  className={`${activeSubCategory === item.id
-                    ? `${categoryBgClasses[activeCategoryKey]} text-white`
-                    : "bg-white"
-                    } cursor-pointer px-5 py-3 rounded-4xl font-bold text-sm whitespace-nowrap shrink-0`}
+                  className={`${
+                    activeSubCategory === item.id
+                      ? `${categoryBgClasses[activeCategoryKey]} text-white`
+                      : "bg-white"
+                  } cursor-pointer px-5 py-3 rounded-4xl font-bold text-sm whitespace-nowrap shrink-0`}
                 >
                   <span>{item.name}</span>
                 </button>
