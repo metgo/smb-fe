@@ -1,212 +1,240 @@
 // Define the reference screen width
 export const REFERENCE_SCREEN_WIDTH = 1400;
 
+// Common dimension constants
+const DIMENSIONS = {
+  large: { width: 1280, height: 886 },
+  medium: { width: 630, height: 886 },
+  mediumHalf: { width: 630, height: 433 },
+  small: { width: 305, height: 433 },
+  smallShort: { width: 305, height: 298 },
+  smallTall: { width: 305, height: 566 },
+  tiny: { width: 305, height: 250 },
+  tinyShort: { width: 305, height: 190 },
+  tinyMedium: { width: 305, height: 346 },
+  tinyLong: { width: 305, height: 466 },
+  grid: { width: 240, height: 220 },
+  gridTall: { width: 240, height: 408 },
+  gridTaller: { width: 240, height: 466 },
+  gridShort: { width: 240, height: 190 },
+  gridMedium: { width: 240, height: 235 },
+  mediumWide: { width: 500, height: 433 },
+};
 
-export const onlyCardsLayouts: Record<string, LayoutItem[]> = {
-  layout1: [
-    { width: 1280, height: 886 },
-  ],
-  layout2: [
-    { width: 630, height: 886 },
-    { width: 630, height: 886 }
-  ],
-  layout3: [
-    { width: 630, height: 886 },
+// Helper to create an array of LayoutItems
+const createItems = (item: LayoutItem, count: number): LayoutItem[] =>
+  Array(count).fill(item).map((item) => ({ ...item }));
 
-    { width: 630, height: 433 },
-    { width: 630, height: 433 },
-  ],
-  layout4: [
-    { width: 630, height: 886 },
 
-    { width: 305, height: 433 },
-    { width: 305, height: 433 },
 
-    { width: 630, height: 433 },
-  ],
-  layout5: [
-    { width: 630, height: 886 },
+export const onlyCardsLayouts: Record<string, LayoutItem[]> = (() => {
 
-    { width: 305, height: 566 },
-    { width: 305, height: 298 },
+  // Helper to generate layouts with patterns
+  const layouts: Record<string, LayoutItem[]> = {
+    layout1: [DIMENSIONS.large],
+    layout2: createItems(DIMENSIONS.medium, 2),
+    layout3: [
+      DIMENSIONS.medium,
+      ...createItems(DIMENSIONS.mediumHalf, 2),
+    ],
+    layout4: [
+      DIMENSIONS.medium,
+      ...createItems(DIMENSIONS.small, 2),
+      DIMENSIONS.mediumHalf,
+    ],
+    layout5: [
+      DIMENSIONS.medium,
+      DIMENSIONS.smallTall,
+      DIMENSIONS.smallShort,
+      DIMENSIONS.smallShort,
+      DIMENSIONS.smallTall,
+    ],
+    layout6: [
+      DIMENSIONS.medium,
+      ...createItems(DIMENSIONS.tiny, 2),
+      DIMENSIONS.tinyMedium,
+      DIMENSIONS.smallShort,
+      DIMENSIONS.smallTall,
+    ],
+    layout7: [
+      DIMENSIONS.medium,
+      ...createItems(DIMENSIONS.tiny, 2),
+      DIMENSIONS.tinyMedium,
+      DIMENSIONS.tinyLong,
+      ...createItems(DIMENSIONS.tinyShort, 2),
+    ],
+    layout8: [
+      ...createItems(DIMENSIONS.mediumHalf, 2),
+      ...createItems(DIMENSIONS.tiny, 2),
+      DIMENSIONS.tinyMedium,
+      DIMENSIONS.tinyLong,
+      ...createItems(DIMENSIONS.tinyShort, 2),
+    ],
+    layout9: [
+      ...createItems(DIMENSIONS.mediumHalf, 2),
+      DIMENSIONS.tinyMedium,
+      ...createItems(DIMENSIONS.tiny, 2),
+      ...createItems(DIMENSIONS.tinyShort, 2),
+      DIMENSIONS.tinyShort,
+      { width: 305, height: 256 },
+    ],
+    layout10: [
+      DIMENSIONS.mediumHalf,
+      ...createItems(DIMENSIONS.small, 2),
+      DIMENSIONS.tinyMedium,
+      ...createItems(DIMENSIONS.tiny, 2),
+      ...createItems(DIMENSIONS.tinyShort, 2),
+      DIMENSIONS.tinyShort,
+      { width: 305, height: 256 },
+    ],
+    layout11: [
+      ...createItems(DIMENSIONS.mediumWide, 2),
+      ...createItems(DIMENSIONS.gridShort, 2),
+      DIMENSIONS.gridTaller,
+      DIMENSIONS.gridTaller,
+      ...createItems(DIMENSIONS.gridShort, 2),
+      ...createItems(DIMENSIONS.gridShort, 2),
+      DIMENSIONS.gridTaller,
+    ],
+    layout12: [
+      DIMENSIONS.mediumWide,
+      ...createItems(DIMENSIONS.small, 2),
+      ...createItems(DIMENSIONS.gridShort, 2),
+      DIMENSIONS.gridTaller,
+      DIMENSIONS.gridTaller,
+      ...createItems(DIMENSIONS.gridShort, 2),
+      ...createItems(DIMENSIONS.gridShort, 2),
+      DIMENSIONS.gridTaller,
+    ],
+    layout13: [
+      DIMENSIONS.gridTall,
+      DIMENSIONS.gridTaller,
+      ...createItems(DIMENSIONS.gridShort, 2),
+      DIMENSIONS.gridTaller,
+      ...createItems(DIMENSIONS.gridShort, 2),
+      DIMENSIONS.gridTaller,
+      DIMENSIONS.gridTaller,
+      ...createItems(DIMENSIONS.gridShort, 2),
+      DIMENSIONS.gridTall,
+      DIMENSIONS.gridTaller,
+    ],
+    layout14: [
+      DIMENSIONS.gridTaller,
+      ...createItems(DIMENSIONS.gridShort, 2),
+      DIMENSIONS.gridTall,
+      ...createItems(DIMENSIONS.grid, 2),
+      ...createItems(DIMENSIONS.grid, 2),
+      DIMENSIONS.gridTall,
+      DIMENSIONS.gridTaller,
+      ...createItems(DIMENSIONS.gridShort, 2),
+      DIMENSIONS.gridTall,
+      DIMENSIONS.gridTaller,
+    ],
+    layout15: [
+      DIMENSIONS.gridTall,
+      ...createItems(DIMENSIONS.grid, 2),
+      ...createItems(DIMENSIONS.grid, 2),
+      DIMENSIONS.gridTall,
+      DIMENSIONS.gridTall,
+      ...createItems(DIMENSIONS.grid, 2),
+      ...createItems(DIMENSIONS.grid, 2),
+      DIMENSIONS.gridTall,
+      DIMENSIONS.gridTall,
+      ...createItems(DIMENSIONS.grid, 2),
+    ],
+    layout16: [
+      ...createItems(DIMENSIONS.gridShort, 2),
+      DIMENSIONS.grid,
+      DIMENSIONS.gridMedium,
+      ...createItems(DIMENSIONS.grid, 2),
+      DIMENSIONS.gridTall,
+      DIMENSIONS.grid,
+      DIMENSIONS.gridTall,
+      DIMENSIONS.grid,
+      DIMENSIONS.gridTall,
+      ...createItems(DIMENSIONS.grid, 2),
+      ...createItems(DIMENSIONS.grid, 2),
+      DIMENSIONS.gridTall,
+    ],
+    layout17: [
+      DIMENSIONS.gridShort,
+      DIMENSIONS.grid,
+      DIMENSIONS.gridShort,
+      DIMENSIONS.gridMedium,
 
-    { width: 305, height: 298 },
-    { width: 305, height: 566 },
-  ],
-  layout6: [
-    { width: 630, height: 886 },
+      DIMENSIONS.grid,
+      DIMENSIONS.gridTall,
+      DIMENSIONS.grid,
 
-    { width: 305, height: 250 },
-    { width: 305, height: 346 },
-    { width: 305, height: 250 },
+      DIMENSIONS.gridTall,
+      ...createItems(DIMENSIONS.grid, 2),
 
-    { width: 305, height: 298 },
-    { width: 305, height: 566 },
-  ],
-  layout7: [
-    { width: 630, height: 886 },
+      ...createItems(DIMENSIONS.grid, 2),
+      DIMENSIONS.gridTall,
 
-    { width: 305, height: 250 },
-    { width: 305, height: 346 },
-    { width: 305, height: 250 },
+      DIMENSIONS.gridTall,
+      ...createItems(DIMENSIONS.grid, 2),
+    ],
+    layout18: [
+      DIMENSIONS.gridShort,
+      DIMENSIONS.grid,
+      DIMENSIONS.gridMedium,
+      DIMENSIONS.gridShort,
 
-    { width: 305, height: 466 },
-    { width: 305, height: 190 },
-    { width: 305, height: 190 },
-  ],
-  layout8: [
-    { width: 630, height: 433 },
-    { width: 630, height: 433 },
-    { width: 305, height: 250 },
-    { width: 305, height: 346 },
-    { width: 305, height: 250 },
-    { width: 305, height: 466 },
-    { width: 305, height: 190 },
-    { width: 305, height: 190 },
-  ],
-  layout9: [
-    { width: 630, height: 433 },
-    { width: 630, height: 433 },
-    { width: 305, height: 346 },
-    { width: 305, height: 250 },
-    { width: 305, height: 250 },
-    { width: 305, height: 190 },
-    { width: 305, height: 256 },
-    { width: 305, height: 190 },
-    { width: 305, height: 190 },
-  ],
-  layout10: [
-    { width: 630, height: 433 },
+      DIMENSIONS.gridTall,
+      DIMENSIONS.grid,
+      DIMENSIONS.grid,
 
-    { width: 305, height: 433 },
-    { width: 305, height: 433 },
+      ...createItems(DIMENSIONS.grid, 2),
+      DIMENSIONS.gridTall,
 
-    { width: 305, height: 346 },
-    { width: 305, height: 250 },
-    { width: 305, height: 250 },
+      DIMENSIONS.gridTall,
+      ...createItems(DIMENSIONS.grid, 2),
 
-    { width: 305, height: 190 },
-    { width: 305, height: 256 },
-    { width: 305, height: 190 },
-    { width: 305, height: 190 },
-  ],
-  layout11: [
-    { width: 500, height: 433 },
-    { width: 500, height: 433 },
+      DIMENSIONS.gridTall,
+      ...createItems(DIMENSIONS.grid, 2),
+    ],
+    layout19: [
+      DIMENSIONS.gridShort,
+      DIMENSIONS.grid,
+      DIMENSIONS.gridMedium,
+      DIMENSIONS.gridShort,
 
-    { width: 240, height: 190 },
-    { width: 240, height: 466 },
-    { width: 240, height: 190 },
+      DIMENSIONS.gridTall,
+      DIMENSIONS.grid,
+      DIMENSIONS.grid,
 
-    { width: 240, height: 466 },
-    { width: 240, height: 190 },
-    { width: 240, height: 190 },
+      ...createItems(DIMENSIONS.grid, 2),
+      DIMENSIONS.gridTall,
 
-    { width: 240, height: 190 },
-    { width: 240, height: 190 },
-    { width: 240, height: 466 },
-  ],
-  layout12: [
-    { width: 500, height: 433 },
+      DIMENSIONS.gridTall,
+      ...createItems(DIMENSIONS.grid, 2),
 
-    { width: 240, height: 433 },
-    { width: 240, height: 433 },
+      DIMENSIONS.gridTall,
+      ...createItems(DIMENSIONS.grid, 2),
+    ],
+    layout20: [
+      DIMENSIONS.gridShort,
+      DIMENSIONS.grid,
+      DIMENSIONS.gridMedium,
+      DIMENSIONS.gridShort,
 
-    { width: 240, height: 190 },
-    { width: 240, height: 466 },
-    { width: 240, height: 190 },
+      DIMENSIONS.gridTall,
+      DIMENSIONS.grid,
+      DIMENSIONS.grid,
+      
+      DIMENSIONS.gridTall,
+      ...createItems(DIMENSIONS.grid, 2),
+      
+      ...createItems(DIMENSIONS.grid, 2),
+      DIMENSIONS.gridTall,
+      DIMENSIONS.gridTall,
+      ...createItems(DIMENSIONS.grid, 2),
+    ],
+  };
 
-    { width: 240, height: 466 },
-    { width: 240, height: 190 },
-    { width: 240, height: 190 },
-
-    { width: 240, height: 190 },
-    { width: 240, height: 190 },
-    { width: 240, height: 466 },
-  ],
-  layout13: [
-    { width: 240, height: 400 },
-    { width: 240, height: 466 },
-
-    { width: 240, height: 190 },
-    { width: 240, height: 466 },
-    { width: 240, height: 190 },
-
-    { width: 240, height: 190 },
-    { width: 240, height: 190 },
-    { width: 240, height: 466 },
-
-    { width: 240, height: 466 },
-    { width: 240, height: 190 },
-    { width: 240, height: 190 },
-
-    { width: 240, height: 400 },
-    { width: 240, height: 466 },
-  ],
-  layout14: [
-    { width: 240, height: 466 },
-    { width: 240, height: 190 },
-    { width: 240, height: 190 },
-
-    { width: 240, height: 408 },
-    { width: 240, height: 220 },
-    { width: 240, height: 220 },
-
-    { width: 240, height: 220 },
-    { width: 240, height: 220 },
-    { width: 240, height: 408 },
-
-    { width: 240, height: 466 },
-    { width: 240, height: 190 },
-    { width: 240, height: 190 },
-
-    { width: 240, height: 408 },
-    { width: 240, height: 466 },
-  ],
-  layout15: [
-    { width: 240, height: 408 },
-    { width: 240, height: 220 },
-    { width: 240, height: 220 },
-
-    { width: 240, height: 220 },
-    { width: 240, height: 408 },
-    { width: 240, height: 220 },
-
-    { width: 240, height: 408 },
-    { width: 240, height: 220 },
-    { width: 240, height: 220 },
-
-    { width: 240, height: 220 },
-    { width: 240, height: 220 },
-    { width: 240, height: 408 },
-
-    { width: 240, height: 408 },
-    { width: 240, height: 220 },
-    { width: 240, height: 220 },
-  ],
-  layout16: [
-    { width: 240, height: 190 },
-    { width: 240, height: 190 },
-    { width: 240, height: 220 },
-    { width: 240, height: 235 },
-
-    { width: 240, height: 220 },
-    { width: 240, height: 220 },
-    { width: 240, height: 408 },
-
-    { width: 240, height: 220 },
-    { width: 240, height: 408 },
-    { width: 240, height: 220 },
-
-    { width: 240, height: 408 },
-    { width: 240, height: 220 },
-    { width: 240, height: 220 },
-
-    { width: 240, height: 220 },
-    { width: 240, height: 220 },
-    { width: 240, height: 408 },
-  ]
-}
+  return layouts;
+})();
 
 export const onlyCardsColumns: Record<string, Record<string, number[]>> = {
   layout2: { col1: [0], col2: [1] },

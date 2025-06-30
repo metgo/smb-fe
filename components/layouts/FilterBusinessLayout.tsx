@@ -110,7 +110,7 @@ const FilterBusinessLayout = ({ businesses, categories, subCategories }: Props) 
         </div>
 
         {initialLoadDone && businesses?.meta?.hasNextPage && (
-          <div ref={sentryRef} />
+          <div ref={sentryRef} ></div>
         )}
       </div> :
         <NoBusinessLayout />

@@ -5,6 +5,7 @@ export const misc = {
   navigation: "ניווט",
   keeping: "שמירה",
   sharing: "שיתוף",
+  enrollment: "הרשמה",
 }
 
 export const category = {
@@ -48,6 +49,16 @@ export const menuItems = {
   termsConditions: "תקנון האתר",
   privacyPolicy: "מדיניות פרטיות",
   hebrew: "עברית",
+}
+
+export const events = {
+  evening: 'ערב',
+  couples: 'זוגות',
+  accessible: 'נגיש',
+  paid: 'בתשלום',
+  families: 'משפחות',
+  children: 'ילדים',
+  kosher: 'כשר',
 }
 
 export const tempCardInfo = {

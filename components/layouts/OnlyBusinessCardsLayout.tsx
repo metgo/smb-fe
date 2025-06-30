@@ -1,6 +1,5 @@
-import Image from "next/image";
 import { scaleLayout } from "@/lib/helpers";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 
 import { BusinessCard } from "@/components/cards";
 import {
@@ -8,7 +7,6 @@ import {
   onlyCardsLayouts,
   REFERENCE_SCREEN_WIDTH,
 } from "@/constant/collageLayouts";
-
 
 const OnlyBusinessCardsLayout = ({ data }: BusinessesProps) => {
   const businessCount = data.length;
@@ -25,7 +23,6 @@ const OnlyBusinessCardsLayout = ({ data }: BusinessesProps) => {
     window.addEventListener("resize", updateScale);
     return () => window.removeEventListener("resize", updateScale);
   }, []);
-
 
   if (data.length < 1) return <div>No businesses available</div>;
 
@@ -104,50 +101,19 @@ const OnlyBusinessCardsLayout = ({ data }: BusinessesProps) => {
     );
   };
 
-  const renderExtraCards = (extraBusinesses: any[]) => {
-    if (extraBusinesses.length === 0) return null;
+  const renderBatch = (batchData: any[], batchIndex: number, batchOffset: number) => {
+    // Cycle through layout16 to layout20 (16, 17, 18, 19, 20)
+    const layoutIndex = 16 + (batchIndex % 5); // Cycle through 16 to 20
+    const layoutKey = `layout${layoutIndex}`;
+    const layout = scaleLayout(onlyCardsLayouts[layoutKey], scale);
+    // Always use layout16's column layout for batches
+    const columnLayout = onlyCardsColumns["layout16"] ?? null;
 
-    const layout16 = scaleLayout(onlyCardsLayouts["layout16"], scale);
-    const columnCount = 5;
-
-    // Shuffle layout16 to avoid repeating the same shape
-    const shuffledLayouts = [...layout16].sort(() => Math.random() - 0.5);
-
-    // Distribute businesses into columns
-    const columns: any[][] = Array.from({ length: columnCount }, () => []);
-    extraBusinesses.forEach((biz, i) => {
-      const columnIndex = i % columnCount;
-      columns[columnIndex].push(biz);
-    });
-
-    return (
-      <div className="flex w-full gap-5">
-        {columns.map((column, colIdx) => (
-          <div key={`column-${colIdx}`} className="flex flex-col gap-5">
-            {column.map((biz, bizIdx) => {
-              const layoutIndex = (colIdx + bizIdx * columnCount) % shuffledLayouts.length;
-              const layout = shuffledLayouts[layoutIndex];
-
-              return (
-                <BusinessCard
-                  key={biz._id}
-                  width={layout.width}
-                  height={layout.height}
-                  business={biz}
-                />
-              );
-            })}
-          </div>
-        ))}
-      </div>
-    );
+    return renderLayoutSection(layout, columnLayout, batchOffset, batchIndex);
   };
 
-
-
-
   const renderFullLayout = () => {
-    if (businessCount <= 16) {
+    if (businessCount <= 20) {
       const layoutKey = `layout${businessCount}`;
       const layout = scaleLayout(onlyCardsLayouts[layoutKey], scale);
       const columnLayout = onlyCardsColumns[layoutKey] ?? null;
@@ -155,22 +121,28 @@ const OnlyBusinessCardsLayout = ({ data }: BusinessesProps) => {
       return renderLayoutSection(layout, columnLayout, 0, 0);
     }
 
-    // For imageCount > 16
-    const layout16 = scaleLayout(onlyCardsLayouts["layout16"], scale);
-    const column16 = onlyCardsColumns["layout16"];
-    const extraBusinesses = data.slice(16);
+    // Split businesses into batches of up to 16
+    const batches: any[][] = [];
+    for (let i = 0; i < businessCount; i += 16) {
+      batches.push(data.slice(i, i + 16));
+    }
 
     return (
-      <>
-        {renderLayoutSection(layout16, column16 ?? null, 0, 0)}
-        {renderExtraCards(extraBusinesses)}
-      </>
+      <div>
+        <div className="flex flex-col gap-5">
+          {batches.map((batch, index) => (
+            <div key={`batch-${index}`}>
+              {renderBatch(batch, index, index * 16)}
+            </div>
+          ))}
+        </div>
+      </div>
     );
   };
 
   return (
     <div className="px-20 py-10 flex items-center justify-center w-full h-full relative">
-      <div className="flex flex-col gap-5 items-start justify-start ">
+      <div className="flex flex-col gap-5 items-start justify-start">
         {renderFullLayout()}
       </div>
     </div>

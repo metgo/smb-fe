@@ -1,5 +1,6 @@
-import { navbar } from "@/constant/hebrew";
+import { events, misc, navbar } from "@/constant/hebrew";
 import { CtgAttractionIcon, CtgCultureIcon, CtgEatIcon, CtgLocalIcon, CtgLodgeIcon, CtgTourIcon } from "@/components/ui/icons";
+import { label } from "motion/react-client";
 
 
 
@@ -48,6 +49,61 @@ export const categoryBgClasses: any = {
   [categoryId.tour]: 'bg-ctg-tour-dark',
 };
 
+export const shareKeepNavigate = [
+  {
+    id: 1,
+    label: misc.navigation,
+    icon: 'navigation'
+  },
+  {
+    id: 2,
+    label: misc.keeping,
+    icon: 'heart',
+  },
+  {
+    id: 3,
+    label: misc.sharing,
+    icon: 'share'
+  }
+]
+
+export const eventFeatures = [
+  {
+    id: 1,
+    label: events.evening,
+    icon: ''
+  },
+  {
+    id: 2,
+    label: events.couples,
+    icon: ''
+  },
+  {
+    id: 3,
+    label: events.accessible,
+    icon: ''
+  },
+  {
+    id: 4,
+    label: events.paid,
+    icon: ''
+  },
+  {
+    id: 5,
+    label: events.families,
+    icon: ''
+  },
+  {
+    id: 6,
+    label: events.children,
+    icon: ''
+  },
+  {
+    id: 7,
+    label: events.kosher,
+    icon: ''
+  },
+]
 
 export const categoryIcons = {
   [categoryId.tour]: {

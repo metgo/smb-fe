@@ -1,4 +1,8 @@
+"use client"
+
 import Image from "next/image"
+import { useEffect, useState } from "react"
+import { REFERENCE_SCREEN_WIDTH } from "@/constant/collageLayouts"
 
 const col1 = [0]
 const col2 = [1, 2]
@@ -14,19 +18,31 @@ const layout = [
 ]
 
 
-const ImageCard = ({ width = 312.5, height = 220, className = "" }: { width?: number, height?: number, className?: string }) => (
+const ImageCard = ({ width = 312.5, height = 220, scale, className = "" }: { width?: number, height?: number, scale: number; className?: string }) => (
   <div>
     <Image
       src={"/images/video-thumbnail.png"}
       alt="abc"
-      width={width}
-      height={height}
+      width={Math.round(width * scale)}
+      height={Math.round(height * scale)}
       className={className}
     />
   </div>
 )
 const ImageGallery = () => {
+  const [scale, setScale] = useState(1);
 
+  useEffect(() => {
+    const updateScale = () => {
+      const currentWidth = window.innerWidth;
+      const newScale = currentWidth / REFERENCE_SCREEN_WIDTH;
+      setScale(newScale);
+    };
+
+    updateScale();
+    window.addEventListener("resize", updateScale);
+    return () => window.removeEventListener("resize", updateScale);
+  }, []);
 
   return (
     <div>
@@ -35,15 +51,16 @@ const ImageGallery = () => {
         <ImageCard
           width={635}
           height={450}
+          scale={scale}
           className=" rounded-tr-[10px] rounded-br-[10px]"
         />
         <div className="space-y-2.5">
-          <ImageCard />
-          <ImageCard />
+          <ImageCard scale={scale} />
+          <ImageCard scale={scale} />
         </div>
         <div className="space-y-2.5">
-          <ImageCard className=" rounded-tl-[10px]" />
-          <ImageCard className=" rounded-bl-[10px]" />
+          <ImageCard scale={scale} className=" rounded-tl-[10px]" />
+          <ImageCard scale={scale} className=" rounded-bl-[10px]" />
         </div>
       </div>
     </div>

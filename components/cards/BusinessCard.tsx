@@ -1,7 +1,8 @@
 "use client"
 
 import Image from 'next/image'
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
+import { motion, useInView, useAnimation } from 'framer-motion';
 
 import { handleCropImage } from '@/lib/helpers';
 import { tempCardInfo } from '@/constant/hebrew';
@@ -10,6 +11,7 @@ import { categoryGradientClasses } from '@/lib/utils';
 import LocalStorageService from '@/lib/localStorage';
 import { IconImage } from '@/components/ui';
 import { useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 
 const placeholderImage = "/images/image-placeholder.jpg"
 
@@ -33,11 +35,20 @@ const BusinessCard = ({
   const [updatedImage, setUpdatedImage] = useState({ imageUrl: placeholderImage, alt: "abc" })
   const [hasMounted, setHasMounted] = useState(false);
 
+  // Framer Motion setup
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, margin: "0px 0px -50px 0px" });
+  const controls = useAnimation();
 
   useEffect(() => {
     setHasMounted(true);
   }, []);
 
+  useEffect(() => {
+    if (isInView) {
+      controls.start({ y: 0, opacity: 1 });
+    }
+  }, [isInView, controls]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -51,14 +62,13 @@ const BusinessCard = ({
           setIsLoading(false);
         }
       } else {
-        setUpdatedImage({ imageUrl: business?.images[0]?.image, alt: business.name });
+        setUpdatedImage({ imageUrl: business?.images[0]?.image, alt: business?.name });
         setIsLoading(false);
       }
     }, 3000);
     setIsLoading(true);
     return () => clearTimeout(timer);
   }, [categoryId, subCategoryId]);
-
 
   function addWishlistHandler() {
     LocalStorageService.remove("favorite-business");
@@ -71,40 +81,50 @@ const BusinessCard = ({
       location: tempCardInfo.location,
     };
 
-    // Step 2: Check if it's already in favorites (optional)
+    // Check if it's already in favorites
     const isAlreadyAdded = existingFaviourtBusiness.some(b => b._id === item._id);
     if (isAlreadyAdded) {
       console.log("Item already in wishlist");
       return;
     }
 
-    // Step 3: Add the new item
+    // Add the new item
     const updated = [...existingFaviourtBusiness, item];
 
-    // Step 4: Save updated list
+    // Save updated list
     LocalStorageService.set<FaviouriteBusinessProps[]>("favorite-business", updated);
   }
 
   const primaryCategoryId = activeCategoryKey ? activeCategoryKey : business?.primaryCategoryId ? business?.primaryCategoryId : "6566e36ba77d2a477266d2f4"
 
-
   function handleMapIconClick(id: string) {
     setClickedBusinessId(id)
     setActiveFilterTab("map")
   }
+
   return (
-    <div style={{ width: `${width}px`, height: `${height}px` }}>
-      {(isLoading || !hasMounted) ?
-        <div className={` rounded-2xl skeleton w-full h-full ${categoryGradientClasses[primaryCategoryId]}`} /> :
-        <div className="w-full h-full relative group rounded-xl overflow-hidden">
+    <motion.div
+      ref={ref}
+      style={{ width, height }}
+      initial={{ y: 50, opacity: 0 }}
+      animate={controls}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+    >
+      {(isLoading || !hasMounted) ? (
+        <div className={`rounded-2xl skeleton w-full h-full ${categoryGradientClasses[primaryCategoryId]}`} />
+      ) : (
+        <Link
+          href={"/event-details/abc"}
+          className="w-full h-full relative group rounded-xl overflow-hidden"
+        >
           <Image
             fill
             priority
             unoptimized
             quality={100}
-            alt={updatedImage.alt}
+            alt={updatedImage.alt || "Business"}
             src={updatedImage.imageUrl || placeholderImage}
-            className=" object-cover h-full w-full rounded-xl"
+            className="object-cover h-full w-full rounded-xl"
             onError={() => setUpdatedImage({ imageUrl: placeholderImage, alt: "abc" })}
           />
           <div className="relative w-full h-full overflow-hidden">
@@ -121,14 +141,13 @@ const BusinessCard = ({
             </div>
           </div>
 
-
           <div className="hidden absolute top-4 right-4 group-hover:flex items-center gap-2.5">
             <IconImage width={30} height={30} icon='circular-heart' onClick={addWishlistHandler} />
             <IconImage width={30} height={30} icon='circular-map-fold' onClick={() => handleMapIconClick(business._id)} />
           </div>
-        </div>
-      }
-    </div>
+        </Link>
+      )}
+    </motion.div>
   )
 }
 
