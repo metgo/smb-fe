@@ -2,73 +2,24 @@
 
 import Image from "next/image";
 import useGeneralStore from "@/stores/generalStore";
-import { useCallback, useEffect, useState } from "react";
-import useInfiniteScroll from "react-infinite-scroll-hook";
-import { useSearchParams, useRouter } from "next/navigation";
 
 import NoBusinessLayout from "./NoBusinessLayout";
 import OnlyBusinessMapLayout from "./OnlyBusinessMapLayout";
 import OnlyBusinessCardsLayout from "./OnlyBusinessCardsLayout";
 import MapBusinessIntegratedLayout from "./MapBusinessIntegratedLayout";
+import { useLoadMore } from "@/hooks/useLoadMore";
 
 interface Props {
   businesses: BusinessesProps;
 }
 
 const FilterBusinessLayout = ({ businesses }: Props) => {
-  const router = useRouter();
-  const searchParams = useSearchParams();
   const { activeFilterTab } = useGeneralStore();
-  const { categoryId = "", subCategoryId = "" } = Object.fromEntries(
-    searchParams.entries(),
+
+  const { sentryRef, loading, initialLoadDone, canLoadMore } = useLoadMore(
+    businesses?.meta?.hasNextPage,
   );
-
-  const [loading, setLoading] = useState(false);
-  const [pageCount, setPageCount] = useState(1);
-  const [initialLoadDone, setInitialLoadDone] = useState(false);
-
   const totalBusiness = businesses?.totalData;
-  const metaData = businesses?.meta;
-
-  const [prevCategoryId, setPrevCategoryId] = useState(categoryId);
-  const [prevSubCategoryId, setPrevSubCategoryId] = useState(subCategoryId);
-
-  useEffect(() => {
-    setInitialLoadDone(true);
-  }, []);
-
-  useEffect(() => {
-    if (categoryId !== prevCategoryId || subCategoryId !== prevSubCategoryId) {
-      setPageCount(1);
-      setPrevCategoryId(categoryId);
-      setPrevSubCategoryId(subCategoryId);
-    }
-  }, [categoryId, subCategoryId, prevCategoryId, prevSubCategoryId]);
-
-  const loadMore = useCallback(async () => {
-    if (!initialLoadDone || loading || !metaData.hasNextPage) return;
-
-    setLoading(true);
-    try {
-      const nextPage = pageCount + 1;
-      const params = new URLSearchParams(searchParams.toString());
-      params.set("page", nextPage.toString());
-
-      router.replace(`?${params.toString()}`, { scroll: false });
-      setPageCount(nextPage);
-    } catch (error) {
-      console.error("Error loading more data:", error);
-    } finally {
-      setLoading(false);
-    }
-  }, [initialLoadDone, loading, metaData, pageCount, searchParams, router]);
-
-  const [sentryRef] = useInfiniteScroll({
-    loading,
-    hasNextPage: businesses?.meta?.hasNextPage,
-    onLoadMore: loadMore,
-    rootMargin: "0px 0px 800px 0px",
-  });
 
   if (!totalBusiness) return <NoBusinessLayout />;
 
@@ -84,13 +35,14 @@ const FilterBusinessLayout = ({ businesses }: Props) => {
         return <NoBusinessLayout />;
     }
   };
+
   return (
     <div>
       <div className="bg-primary">
         {renderLayout()}
-        {initialLoadDone && businesses?.meta?.hasNextPage && (
-          <div ref={sentryRef}>
-            <span>Loading...</span>
+        {initialLoadDone && canLoadMore && businesses?.meta?.hasNextPage && (
+          <div ref={sentryRef} className="h-4">
+            {loading && <span>Loading...</span>}
           </div>
         )}
       </div>

@@ -64,7 +64,7 @@ const page = async ({ searchParams }: Props) => {
 
       {/* Second Section */}
       <section className="relative z-10 bg-white">
-        <Navbar />
+        <Navbar showFilterTab />
         <BusinessFeedLayout businesses={businesses} categories={categories} />
       </section>
     </div>
