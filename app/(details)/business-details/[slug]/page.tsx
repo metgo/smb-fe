@@ -1,40 +1,47 @@
-import { misc } from "@/constant/hebrew";
-import { IconImage } from "@/components/ui";
+import { IconImage, NextImage } from "@/components/ui";
 import { eventFeatures, shareKeepNavigate } from "@/lib/utils";
-import { eventDetils } from "@/constant/placeholderData";
+import { businessDetails } from "@/constant/placeholderData";
 import {
   BusinessDetailsFilterTab,
   ImageGallery,
   Location,
+  ReturnToPrevPageBtn,
   Title,
 } from "../../_components";
 
 const page = () => {
   return (
     <div className="">
-      <div className="flex items-center gap-1.25 px-20 my-2.5 cursor-pointer">
-        <IconImage icon="return-arrow" />
-        <span className="text-dark ">{misc.return}</span>
-      </div>
-      <hr className="h-[1px] text-primary" />
+      <ReturnToPrevPageBtn />
 
       <div className="mx-20 py-12">
-        <Title title={eventDetils.title} />
+        <div className="flex items-center gap-7.5 w-full mb-4.5">
+          <NextImage
+            imgSrc={businessDetails.logo}
+            alt="logo"
+            width={80}
+            height={80}
+            className="rounded-lg border border-theme h-20 w-20 object-cover"
+          />
+          <div className="w-full">
+            <Title title={businessDetails.businessName} />
 
-        <div className="mb-4.5 mt-2.5 flex items-center justify-between">
-          <Location city="באר-שבע" address="פארק לורם אימפסום" />
-          <div className="flex items-center gap-2.5">
-            {shareKeepNavigate.map((item) => (
-              <div
-                key={item.id}
-                className="flex items-center gap-1.25 ps-2.5 pe-4 py-1 cursor-pointer"
-              >
-                <IconImage icon={item.icon} />
-                <span className="font-bold text-theme text-sm">
-                  {item.label}
-                </span>
+            <div className=" flex items-center justify-between w-full">
+              <Location city="באר-שבע" address="פארק לורם אימפסום" />
+              <div className="flex items-center gap-2.5">
+                {shareKeepNavigate.map((item) => (
+                  <div
+                    key={item.id}
+                    className="flex items-center gap-1.25 ps-2.5 pe-4 py-1 cursor-pointer"
+                  >
+                    <IconImage icon={item.icon} />
+                    <span className="font-bold text-theme text-sm">
+                      {item.label}
+                    </span>
+                  </div>
+                ))}
               </div>
-            ))}
+            </div>
           </div>
         </div>
 

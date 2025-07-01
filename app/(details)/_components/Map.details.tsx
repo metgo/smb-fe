@@ -2,12 +2,12 @@
 
 import { useGoogleMap } from "@/hooks/useGoogleMap";
 
-const Map = () => {
+const Map = ({ className = "w-[91vw] h-[30vh]" }: { className?: string }) => {
   const { mapRef } = useGoogleMap();
 
   return (
-    <div className={`w-[91vw] h-[30vh]`}>
-      <div ref={mapRef} className="w-full h-full rounded-md" />
+    <div className={`${className}`}>
+      <div ref={mapRef} className="w-full h-full rounded-2xl" />
     </div>
   );
 };

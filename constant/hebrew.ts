@@ -6,8 +6,17 @@ export const misc = {
   enrollment: "הרשמה",
   return: "חזרה",
   quickPurchase: "רכישה מהירה",
+  showMoreProducts: "להציג עוד מוצרים",
+  hours: "שעות פעילות",
+  openNow: "פתוח עכשיו",
 };
 
+export const deliveries = {
+  homeDelivery: "משלוח עד הבית",
+  selfPickupPoint: "נקודת איסוף עצמי",
+  pickupFromTheStore: "איסוף מהחנות",
+  exchangeAndReturns: "החלפות והחזרות",
+};
 export const category = {
   tours: "טיולים",
   attractions: "אטרקציות",

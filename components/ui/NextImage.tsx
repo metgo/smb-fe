@@ -6,6 +6,7 @@ import React, { useState } from "react";
 interface NextImageProps {
   imgSrc?: string;
   alt: string;
+  scale?: number;
   width?: number;
   height?: number;
   quality?: number;
@@ -14,12 +15,14 @@ interface NextImageProps {
   className?: string;
   skeletonClassName?: string;
 }
+const placeholderImage = "/images/image-placeholder.jpg";
 
 const NextImage: React.FC<NextImageProps> = ({
   imgSrc,
   alt = "",
   width,
   height,
+  scale = 1,
   quality = 75,
   isFill = false,
   isOptimized = false,
@@ -29,7 +32,7 @@ const NextImage: React.FC<NextImageProps> = ({
   const [isImageLoaded, setIsImageLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
 
-  const src = hasError || !imgSrc ? "" : imgSrc;
+  const src = hasError || !imgSrc ? placeholderImage : imgSrc;
 
   return (
     <>
@@ -42,8 +45,8 @@ const NextImage: React.FC<NextImageProps> = ({
         alt={alt}
         src={src}
         fill={isFill}
-        width={isFill ? undefined : width}
-        height={isFill ? undefined : height}
+        width={isFill ? undefined : width! * scale}
+        height={isFill ? undefined : height! * scale}
         quality={quality}
         className={className}
         unoptimized={isOptimized}

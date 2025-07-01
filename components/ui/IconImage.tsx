@@ -4,7 +4,7 @@ type IconImageProps = {
   icon: string;
   width?: number;
   height?: number;
-  onClick?: () => void;
+  onClick?: (e: React.MouseEvent<HTMLImageElement>) => void;
 };
 
 const IconImage = ({

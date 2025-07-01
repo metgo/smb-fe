@@ -104,7 +104,7 @@ declare type BusienssSubcategoryProps = {
 declare type ProductProps = {
   _id: number;
   name: string;
-  desc: string;
+  desc?: string;
   price: string;
   images: ImageItem[];
 };

@@ -1,5 +1,11 @@
 import { eventDates, eventDetils } from "@/constant/placeholderData";
-import { ImageGallery, Location, Map, Title } from "../../_components";
+import {
+  ImageGallery,
+  Location,
+  Map,
+  ReturnToPrevPageBtn,
+  Title,
+} from "../../_components";
 import { eventFeatures, shareKeepNavigate } from "@/lib/utils";
 import { IconImage } from "@/components/ui";
 import { misc } from "@/constant/hebrew";
@@ -7,12 +13,7 @@ import { misc } from "@/constant/hebrew";
 const page = () => {
   return (
     <div className="">
-      <div className="flex items-center gap-1.25 px-20 my-2.5 cursor-pointer">
-        <IconImage icon="return-arrow" />
-        <span className="text-dark ">{misc.return}</span>
-      </div>
-      <hr className="h-[1px] text-primary" />
-
+      <ReturnToPrevPageBtn />
       <div className="mx-20 py-12">
         <Title title={eventDetils.title} />
 
@@ -73,7 +74,7 @@ const page = () => {
             <div className="space-y-2.5">
               <button
                 type="button"
-                className="bg-drak rounded-2xl ps-15 pe-16.5 py-2 text-white flex items-center gap-1.25 cursor-pointer"
+                className="bg-dark rounded-2xl ps-15 pe-16.5 py-2 text-white flex items-center gap-1.25 cursor-pointer"
               >
                 <IconImage icon="external-link" />
                 <span>{misc.enrollment}</span>

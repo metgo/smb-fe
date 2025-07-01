@@ -28,6 +28,12 @@ const BusinessDetailsFilterTab = () => {
         return null;
     }
   };
+
+  function handleTabChange(id: number) {
+    setActiveTab(id);
+    window.scrollTo({ top: 650, left: 0, behavior: "smooth" });
+  }
+
   return (
     <div className="mt-15">
       <div className="flex items-center gap-12 relative">
@@ -37,8 +43,8 @@ const BusinessDetailsFilterTab = () => {
           return (
             <div
               key={item.id}
-              onClick={() => setActiveTab(item.id)}
-              className="cursor-pointer text-drak w-max mb-2.5"
+              onClick={() => handleTabChange(item.id)}
+              className="cursor-pointer text-dark w-max mb-2.5"
             >
               <div
                 className={`relative inline-block ${isActive ? "font-bold" : "font-normal"}`}
@@ -47,7 +53,7 @@ const BusinessDetailsFilterTab = () => {
                 {isActive && (
                   <motion.div
                     layoutId="underline"
-                    className="absolute left-0 -bottom-2.5 h-[3px] w-full bg-drak rounded-sm"
+                    className="absolute left-0 -bottom-2.5 h-[3px] w-full bg-dark rounded-sm"
                     transition={{ type: "spring", stiffness: 500, damping: 30 }}
                   />
                 )}
@@ -56,7 +62,7 @@ const BusinessDetailsFilterTab = () => {
           );
         })}
       </div>
-      <hr className="w-full h-[1px] text-primary mb-15" />
+      <hr className="w-full h-[1px] text-secondary mb-15" />
 
       {rederTabContent()}
     </div>

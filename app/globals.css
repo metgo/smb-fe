@@ -4,7 +4,7 @@
   --color-primary: #f1f1f1;
   --color-secondary: #d8d8d8;
   --color-theme: #7c7c7c;
-  --color-drak: #0d0d0d;
+  --color-dark: #0d0d0d;
 
   --color-ctg-eat-dark: #f09984;
   --color-ctg-eat-dim: #f7bcac;
@@ -34,7 +34,10 @@
 @layer utilities {
   /* Debug purpose */
   .db1 {
-    @apply border border-red-400;
+    @apply border border-red-600;
+  }
+  .db2 {
+    @apply border border-blue-500;
   }
 
   .glass {

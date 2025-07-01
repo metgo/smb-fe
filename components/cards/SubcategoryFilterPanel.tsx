@@ -33,7 +33,6 @@ const SubcategoryFilterPanel = () => {
     }
   }, [activeCategoryKey]);
 
-  console.log("---------subCategories", subCategories);
   const scrollLeft = () => {
     if (scrollContainerRef.current) {
       scrollContainerRef.current.scrollBy({

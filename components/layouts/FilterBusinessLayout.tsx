@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import useGeneralStore from "@/stores/generalStore";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import useInfiniteScroll from "react-infinite-scroll-hook";
 import { useSearchParams, useRouter } from "next/navigation";
 
@@ -32,8 +32,6 @@ const FilterBusinessLayout = ({ businesses }: Props) => {
 
   const [prevCategoryId, setPrevCategoryId] = useState(categoryId);
   const [prevSubCategoryId, setPrevSubCategoryId] = useState(subCategoryId);
-
-  const triggerRef = useRef(null);
 
   useEffect(() => {
     setInitialLoadDone(true);
@@ -72,6 +70,8 @@ const FilterBusinessLayout = ({ businesses }: Props) => {
     rootMargin: "0px 0px 800px 0px",
   });
 
+  if (!totalBusiness) return <NoBusinessLayout />;
+
   const renderLayout = () => {
     switch (activeFilterTab) {
       case "gallery":
@@ -86,23 +86,14 @@ const FilterBusinessLayout = ({ businesses }: Props) => {
   };
   return (
     <div>
-      {totalBusiness ? (
-        <div className="bg-primary">
-          {renderLayout()}
-          <div style={{ height: "10px", position: "relative" }}>
-            <div
-              ref={triggerRef}
-              style={{ position: "absolute", top: 0, height: 1 }}
-            />
+      <div className="bg-primary">
+        {renderLayout()}
+        {initialLoadDone && businesses?.meta?.hasNextPage && (
+          <div ref={sentryRef}>
+            <span>Loading...</span>
           </div>
-
-          {initialLoadDone && businesses?.meta?.hasNextPage && (
-            <div ref={sentryRef}></div>
-          )}
-        </div>
-      ) : (
-        <NoBusinessLayout />
-      )}
+        )}
+      </div>
 
       {activeFilterTab === "gallery" && (
         <Image

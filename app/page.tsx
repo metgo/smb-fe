@@ -28,7 +28,7 @@ const page = async ({ searchParams }: Props) => {
   return (
     <div>
       {/* Hero Section */}
-      <section className="width-screen h-[834px] relative overflow-hidden">
+      <section className="width-screen h-screen relative overflow-hidden">
         <div className="z-50 absolute top-2.5 right-0 w-full flex items-center justify-between ps-20 pe-19">
           <div className="flex items-center gap-5">
             <IconImage icon="white-threeline" />

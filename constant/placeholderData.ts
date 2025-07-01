@@ -95,12 +95,26 @@ export const eventDates = [
   },
 ];
 
+export const businessDetails = {
+  businessName: "עיינות בר",
+  logo: "/images/video-thumbnail.png",
+  image: "/images/video-thumbnail.png",
+  title: "מתחם אירוח מדברי",
+  para1: `מתחם אירוח מדברי לצד חוויות וטיפולים במים בישוב גבעות בר בצפון הנגב
+אל מול מרחבי הנגב הציוריים, ביישוב גבעות בר השליו, שוכן מתחם "עינות בר" המציע לכם וילת נופש מפנקת ו 2 סוויטות בוטיק, ארוחות עשירות וטריות ממיטב מטעמי הנגב, מתחם הכולל בריכה חמה המציעה טיפולי מים ונופי מדבר מהפנטים שישרו בכם את השלווה לה חיכיתם`,
+  para2: `
+סוויטת מדבר – סוויטה הממוקמת על קצה הגבעה ומשקיפה היישר אל שיפולי המדבר. בחורף, ממש אל מול הסוויטה מתמלא אגם קטן וקסום. מהסוויטה תיהנו משקיעות שממלאות את האופק מקצה אל קצה בשלל צבעי השמש.הסוויטה מעוצבת בסגנון כפרי ופשוט ובה מיטה זוגית ומזרן בריאות, פינת זולה שיכולה להפוך למתחם שינה לילדים, חדר רחצה, פינת קפה עשירה, מקרר, מיקרו, נטפליקס, משחקי לוח, וספרים, מיזוג אוויר, חצר נפלאה ובריכת שכשוך מפנקת וחמה. הסוויטה מתאימה לזוג (לינת ילדים על מזרנים).`,
+  phone: "02-8835634",
+  mail: "abc@gmail.com",
+  whatsapp: "052-6789546",
+};
+
 export const products: ProductProps[] = [
   {
     _id: 1,
     name: "Eco Bamboo Toothbrush",
     desc: "Sustainable and biodegradable bamboo toothbrush for a clean smile.",
-    price: "$4.99",
+    price: "₪4.99",
     images: [
       {
         image:
@@ -132,7 +146,7 @@ export const products: ProductProps[] = [
     _id: 2,
     name: "Reusable Water Bottle",
     desc: "Stainless steel insulated bottle to keep drinks hot or cold.",
-    price: "$19.99",
+    price: "₪19.99",
     images: [
       {
         image:
@@ -164,7 +178,7 @@ export const products: ProductProps[] = [
     _id: 3,
     name: "Minimalist Wooden Clock",
     desc: "A simple, elegant wooden clock for any room décor.",
-    price: "$29.00",
+    price: "₪29.00",
     images: [
       {
         image:
@@ -197,7 +211,7 @@ export const products: ProductProps[] = [
     _id: i + 4,
     name: `Product ${i + 4}`,
     desc: `This is a description for product ${i + 4}. It’s a great item for modern lifestyle.`,
-    price: `$${(Math.random() * 100 + 10).toFixed(2)}`,
+    price: `₪${(Math.random() * 100 + 10).toFixed(2)}`,
     images: [
       {
         image: `https://images.pexels.com/photos/103${i + 1}8/pexels-photo-103${i + 1}8.jpeg`,

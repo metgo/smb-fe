@@ -84,7 +84,9 @@ const BusinessCard = ({ height, width, business }: BusinessCardProps) => {
     return () => clearTimeout(timer);
   }, [categoryId, subCategoryId]);
 
-  function addWishlistHandler() {
+  function addWishlistHandler(e: any) {
+    e.stopPropagation();
+    e.preventDefault();
     LocalStorageService.remove("favorite-business");
     const item: FaviouriteBusinessProps = {
       height,
@@ -132,7 +134,6 @@ const BusinessCard = ({ height, width, business }: BusinessCardProps) => {
       initial={{ y: 50, opacity: 0 }}
       animate={controls}
       transition={{ duration: 0.5, ease: "easeOut" }}
-      className="overflow-hidden"
     >
       {isLoading || !hasMounted ? (
         <div
@@ -180,13 +181,17 @@ const BusinessCard = ({ height, width, business }: BusinessCardProps) => {
               width={30}
               height={30}
               icon="circular-heart"
-              onClick={addWishlistHandler}
+              onClick={() => addWishlistHandler}
             />
             <IconImage
               width={30}
               height={30}
               icon="circular-map-fold"
-              onClick={() => handleMapIconClick(business._id)}
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                handleMapIconClick(business._id);
+              }}
             />
           </div>
         </Link>
