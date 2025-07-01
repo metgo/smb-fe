@@ -1,8 +1,4 @@
-import {
-  getAllBusinesses,
-  getAllCategory,
-  getAllSubCategory,
-} from "@/actions/businessActions";
+import { getAllBusinesses } from "@/actions/businessActions";
 import FilterBusinessLayout from "@/components/layouts/FilterBusinessLayout";
 
 interface Props {
@@ -21,16 +17,8 @@ const page = async ({ searchParams }: Props) => {
     categoryId,
     subCategoryId,
   );
-  const categories = await getAllCategory();
-  const subCategories = categoryId ? await getAllSubCategory(categoryId) : null;
 
-  return (
-    <FilterBusinessLayout
-      businesses={businesses}
-      categories={categories}
-      subCategories={subCategories}
-    />
-  );
+  return <FilterBusinessLayout businesses={businesses} />;
 };
 
 export default page;

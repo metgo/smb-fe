@@ -4,7 +4,7 @@ import { misc } from "@/constant/hebrew";
 
 const ScrollIndicator = () => {
   const handleScroll = () => {
-    const targetScroll = window.innerHeight * 0.83;
+    const targetScroll = window.innerHeight;
     window.scrollTo({
       top: targetScroll,
       behavior: "smooth",

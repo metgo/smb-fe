@@ -1,17 +1,16 @@
 import React from "react";
 import Link from "next/link";
 
-import { features } from "@/lib/utils";
 import { navbar } from "@/constant/hebrew";
 import HamburgerMenu from "./HamburgerMenu";
-import { IconImage } from "@/components/ui";
 import UserIconHoverCard from "./UserIconHoverCard";
 import CurrentTempOfYourCity from "./CurrentTempOfYourCity";
 import BusinessPageFilterTabs from "./BusinessPageFilterTabs";
 import { Logo, SearchIcon, ShopbagIcon } from "@/components/ui/icons";
+import MenuItems from "./MenuItems";
 
 const Navbar = async ({
-  showFilterTab = true,
+  showFilterTab = false,
 }: {
   showFilterTab?: boolean;
 }) => {
@@ -29,19 +28,7 @@ const Navbar = async ({
 
         <div className="flex items-center justify-end">
           {showFilterTab && <BusinessPageFilterTabs />}
-          <div className="flex items-center gap-2 ms-9">
-            {features.map((item) => (
-              <div
-                key={item.key}
-                className="flex flex-col items-center px-1 w-14"
-              >
-                <IconImage width={24} height={24} icon={item.icon} />
-                <div className="text-sm font-normal text-theme w-14">
-                  {item.label}
-                </div>
-              </div>
-            ))}
-          </div>
+          <MenuItems />
 
           <div className="w-[1px] h-10 bg-[#D3D3D3] mx-4" />
 

@@ -40,7 +40,7 @@ export const handleCropImage = async (
   const { xMin, yMin, xMax, yMax } = imageItem?.subCoordinates;
 
   if (!xMin && !yMin && !xMax && !yMax) {
-    setCroppedImageUrl({ imageUrl: imageItem?.image, alt: imageItem.alt });
+    setCroppedImageUrl({ imageUrl: imageItem?.image, alt: imageItem?.alt });
     return;
   }
 

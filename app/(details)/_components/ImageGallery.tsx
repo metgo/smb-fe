@@ -1,20 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useState } from "react";
-import { REFERENCE_SCREEN_WIDTH } from "@/constant/collageLayouts";
-
-// const col1 = [0]
-// const col2 = [1, 2]
-// const col3 = [3, 4]
-
-// const layout = [
-//   { width: 635, height: 450 },
-//   { width: 312.5, height: 220 },
-//   { width: 312.5, height: 220 },
-//   { width: 312.5, height: 220 },
-//   { width: 312.5, height: 220 },
-// ]
+import { useImageScale } from "@/hooks/useImageScale";
 
 const ImageCard = ({
   width = 312.5,
@@ -37,20 +24,9 @@ const ImageCard = ({
     />
   </div>
 );
+
 const ImageGallery = () => {
-  const [scale, setScale] = useState(1);
-
-  useEffect(() => {
-    const updateScale = () => {
-      const currentWidth = window.innerWidth;
-      const newScale = currentWidth / REFERENCE_SCREEN_WIDTH;
-      setScale(newScale);
-    };
-
-    updateScale();
-    window.addEventListener("resize", updateScale);
-    return () => window.removeEventListener("resize", updateScale);
-  }, []);
+  const { scale } = useImageScale();
 
   return (
     <div>

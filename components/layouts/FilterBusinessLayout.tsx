@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import useGeneralStore from "@/stores/generalStore";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import useInfiniteScroll from "react-infinite-scroll-hook";
 import { useSearchParams, useRouter } from "next/navigation";
 
@@ -10,19 +10,12 @@ import NoBusinessLayout from "./NoBusinessLayout";
 import OnlyBusinessMapLayout from "./OnlyBusinessMapLayout";
 import OnlyBusinessCardsLayout from "./OnlyBusinessCardsLayout";
 import MapBusinessIntegratedLayout from "./MapBusinessIntegratedLayout";
-import { CategoryPanel, SubcategoryFilterPanel } from "../cards";
 
 interface Props {
   businesses: BusinessesProps;
-  categories: BusinessCategoryProps;
-  subCategories: BusienssSubcategoryProps;
 }
 
-const FilterBusinessLayout = ({
-  businesses,
-  categories,
-  subCategories,
-}: Props) => {
+const FilterBusinessLayout = ({ businesses }: Props) => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { activeFilterTab } = useGeneralStore();
@@ -39,20 +32,6 @@ const FilterBusinessLayout = ({
 
   const [prevCategoryId, setPrevCategoryId] = useState(categoryId);
   const [prevSubCategoryId, setPrevSubCategoryId] = useState(subCategoryId);
-
-  const triggerRef = useRef(null);
-  const [showStickyPanel, setShowStickyPanel] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const scrollPosition = window.scrollY;
-      const scrollThreshold = 820;
-      setShowStickyPanel(scrollPosition >= scrollThreshold);
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
 
   useEffect(() => {
     setInitialLoadDone(true);
@@ -91,6 +70,8 @@ const FilterBusinessLayout = ({
     rootMargin: "0px 0px 800px 0px",
   });
 
+  if (!totalBusiness) return <NoBusinessLayout />;
+
   const renderLayout = () => {
     switch (activeFilterTab) {
       case "gallery":
@@ -105,40 +86,23 @@ const FilterBusinessLayout = ({
   };
   return (
     <div>
-      {totalBusiness ? (
-        <div className="bg-primary">
-          {renderLayout()}
-          <div style={{ height: "10px", position: "relative" }}>
-            <div
-              ref={triggerRef}
-              style={{ position: "absolute", top: 0, height: 1 }}
-            />
+      <div className="bg-primary">
+        {renderLayout()}
+        {initialLoadDone && businesses?.meta?.hasNextPage && (
+          <div ref={sentryRef}>
+            <span>Loading...</span>
           </div>
+        )}
+      </div>
 
-          {initialLoadDone && businesses?.meta?.hasNextPage && (
-            <div ref={sentryRef}></div>
-          )}
-        </div>
-      ) : (
-        <NoBusinessLayout />
-      )}
-
-      {showStickyPanel && (
-        <>
-          <div className="fixed bottom-4 left-1/2 -translate-x-1/2 flex flex-col items-center justify-center gap-2 w-max">
-            <SubcategoryFilterPanel subCategories={subCategories} />
-            <CategoryPanel categories={categories} />
-          </div>
-          {activeFilterTab === "gallery" && (
-            <Image
-              width={300}
-              height={300}
-              alt="Yellow image"
-              src="/images/yellow.png"
-              className="fixed -bottom-12 -left-30 rotate-[40deg] z-50"
-            />
-          )}
-        </>
+      {activeFilterTab === "gallery" && (
+        <Image
+          width={300}
+          height={300}
+          alt="Yellow image"
+          src="/images/yellow.png"
+          className="fixed -bottom-12 -left-30 rotate-[40deg] z-50"
+        />
       )}
     </div>
   );
