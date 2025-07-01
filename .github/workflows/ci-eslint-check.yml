@@ -1,0 +1,53 @@
+# This workflow checks eslint in all projects using a reusable workflow.
+
+name: Lint
+
+on:
+  workflow_call:
+    inputs:
+      project:
+        required: true
+        type: string
+  push:
+    branches:
+      - main
+      - release/*
+      - instance/*
+  pull_request:
+    branches:
+      - main
+      - release/*
+      - instance/*
+
+env: # environment variables (available in any part of the action)
+  NODE_VERSION: 22.14.0
+
+jobs: # list of things to do
+  linting:
+    name: Linting # job name (unique id)
+    runs-on: ubuntu-latest # on which machine to run
+    steps: # list of steps
+      - name: Install NodeJS
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      # install yarn
+      - name: Run install
+        uses: borales/actions-yarn@v4
+        with:
+          cmd: install
+
+      - name: Code Checkout
+        uses: actions/checkout@v3
+
+      - name: Install Node.js dependencies `${{ inputs.project }}`
+        run: yarn
+
+      - name: Code Linting
+        run: yarn lint
+
+      - name: Fail if eslint made any changes
+        run: |
+          git --no-pager diff
+          [[ -z $(git status --untracked-files=no --porcelain) ]] && echo "running eslint made no changes"

@@ -1,134 +1,175 @@
-import { getBusinessList } from "@/lib/helpers";
-import { BusinessCard } from "../cards";
+import { scaleLayout } from "@/lib/helpers";
+import { useState, useEffect } from "react";
 
-type LayoutItem = { width: number; height: number };
+import { BusinessCard } from "@/components/cards";
+import {
+  mapIntegratedCardsLayouts,
+  mapIntegratedCardsColumns,
+  REFERENCE_SCREEN_WIDTH,
+} from "@/constant/collageLayouts";
+import BusinessPinMap from "../maps/BusinessPinMap";
 
-const layouts: Record<string, LayoutItem[]> = {
-  layout1: [{ width: 758, height: 886 }],
-  layout2: [
-    { width: 760, height: 433 },
-    { width: 760, height: 433 },
-  ],
-  layout3: [
-    { width: 370, height: 433 },
-    { width: 370, height: 433 },
-    { width: 760, height: 433 },
-  ],
-  layout4: [
-    { width: 370, height: 646 },
-    { width: 370, height: 220 },
-    { width: 370, height: 220 },
-    { width: 370, height: 646 },
-  ],
-  layout5: [
-    { width: 370, height: 406 },
-    { width: 370, height: 220 },
-    { width: 370, height: 220 },
-    { width: 370, height: 220 },
-    { width: 370, height: 646 },
-  ],
-  layout6: [
-    { width: 240, height: 408 },
-    { width: 240, height: 458 },
-    { width: 240, height: 458 },
-    { width: 240, height: 408 },
-    { width: 240, height: 408 },
-    { width: 240, height: 458 },
-  ],
-  layout7: [
-    { width: 240, height: 408 },
-    { width: 240, height: 458 },
-    { width: 240, height: 220 },
-    { width: 240, height: 406 },
-    { width: 240, height: 220 },
-    { width: 240, height: 408 },
-    { width: 240, height: 458 },
-  ],
-  layout8: [
-    { width: 240, height: 408 },
-    { width: 240, height: 458 },
-    { width: 240, height: 220 },
-    { width: 240, height: 406 },
-    { width: 240, height: 220 },
-    { width: 240, height: 190 },
-    { width: 240, height: 258 },
-    { width: 240, height: 371 },
-  ],
-  layout9: [
-    { width: 240, height: 408 },
-    { width: 240, height: 458 },
-    { width: 240, height: 220 },
-    { width: 240, height: 406 },
-    { width: 240, height: 220 },
-    { width: 240, height: 190 },
-    { width: 240, height: 258 },
-    { width: 240, height: 371 },
-  ],
-};
+const MapBusinessIntegratedLayout = ({ data }: BusinessesProps) => {
+  const businessCount = data.length;
+  const [scale, setScale] = useState(1);
 
-const columns: Record<string, Record<string, number[]>> = {
-  layout3: { col1: [0, 1], col2: [2] },
-  layout4: { col1: [0, 1], col2: [2, 3] },
-  layout5: { col1: [0, 1, 2], col2: [3, 4] },
-  layout6: { col1: [0, 1], col2: [2, 3], col3: [4, 5] },
-  layout7: { col1: [0, 1], col2: [2, 3, 4], col3: [5, 6] },
-  layout8: { col1: [0, 1], col2: [2, 3, 4], col3: [5, 6, 7] },
-  layout9: { col1: [0, 1], col2: [2, 3, 4], col3: [5, 6, 7] },
-};
+  useEffect(() => {
+    const updateScale = () => {
+      const currentWidth = window.innerWidth;
+      const newScale = currentWidth / REFERENCE_SCREEN_WIDTH;
+      setScale(newScale);
+    };
 
-const imageCount = 7;
+    updateScale();
+    window.addEventListener("resize", updateScale);
+    return () => window.removeEventListener("resize", updateScale);
+  }, []);
 
-const MapBusinessIntegratedLayout = () => {
-  const businesses = getBusinessList(imageCount);
-  const layoutKey = `layout${imageCount}`;
-  const layout = layouts[layoutKey];
-  const columnLayout = columns[layoutKey];
+  if (data.length < 1) return <div>No businesses available</div>;
 
-  if (!layout || businesses.length < layout.length) {
-    return <div>No matching layout found or not enough businesses.</div>;
-  }
-
-  const renderCards = (indexes: number[]) => (
+  const renderCards = (
+    indexes: number[],
+    layout: LayoutItem[],
+    offset: number,
+  ) => (
     <div className="space-y-5">
-      {indexes.map(i => (
-        <BusinessCard
-          key={businesses[i].id}
-          width={layout[i].width}
-          height={layout[i].height}
-          imageUrl={businesses[i].image}
-        />
-      ))}
+      {indexes.map((i) => {
+        const business = data[i + offset];
+        const cardLayout = layout[i];
+        return (
+          <BusinessCard
+            key={business?._id || i}
+            width={cardLayout.width}
+            height={cardLayout.height}
+            business={business}
+          />
+        );
+      })}
     </div>
   );
 
-  const renderLayout = () => {
-    if (!columnLayout) {
+  const renderLayoutSection = (
+    layoutData: LayoutItem[],
+    columnLayoutData: Record<string, number[]> | null,
+    offset: number,
+    index: number,
+  ) => {
+    if (!columnLayoutData) {
       return (
-        <div className="space-y-5">
-          {layout.map((item, i) => (
+        <div className="space-y-5" key={index}>
+          {layoutData.map((item, i) => (
             <BusinessCard
-              key={businesses[i].id}
+              key={data[i + offset]?._id || i}
               width={item.width}
               height={item.height}
-              imageUrl={businesses[i].image}
+              business={data[i + offset]}
             />
           ))}
         </div>
       );
     }
 
+    if (layoutData.length === 3) {
+      return (
+        <div className="space-y-5">
+          <div className="flex gap-5">
+            {layoutData.slice(0, 2).map((item, i) => (
+              <BusinessCard
+                key={data[i + offset]?._id || i}
+                width={item.width}
+                height={item.height}
+                business={data[i + offset]}
+              />
+            ))}
+          </div>
+          <BusinessCard
+            width={layoutData[2].width}
+            height={layoutData[2].height}
+            business={data[2]}
+          />
+        </div>
+      );
+    }
+
     return (
-      <div className="flex gap-5">
-        {Object.values(columnLayout).map((indexes, idx) => (
-          <div className="space-y-5" key={idx}>
-            {renderCards(indexes)}
+      <div className="flex gap-5" key={index}>
+        {Object.keys(columnLayoutData).map((colKey, idx) => {
+          const indexes = columnLayoutData[colKey];
+          return (
+            <div key={`${colKey}-${idx}`} className="flex flex-col">
+              {renderCards(indexes, layoutData, offset)}
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
+  const renderExtraCards = (extraBusinesses: any[]) => {
+    if (extraBusinesses.length === 0) return null;
+
+    const layout9 = scaleLayout(mapIntegratedCardsLayouts["layout9"], scale);
+    const columnKeys = Object.keys(mapIntegratedCardsColumns["layout9"]);
+
+    const columns = columnKeys.map(() => [] as any[]);
+    extraBusinesses.forEach((biz, i) => {
+      const columnIndex = i % columns.length;
+      columns[columnIndex].push(biz);
+    });
+
+    return (
+      <div className="flex w-full gap-5">
+        {columns.map((column, colIdx) => (
+          <div key={`column-${colIdx}`} className="flex flex-col gap-5">
+            {column.map((biz, bizIdx) => {
+              const layoutIndex =
+                (colIdx + bizIdx * columns.length) % layout9.length;
+              const layout = layout9[layoutIndex];
+              return (
+                <BusinessCard
+                  key={biz._id}
+                  width={layout.width}
+                  height={layout.height}
+                  business={biz}
+                />
+              );
+            })}
           </div>
         ))}
       </div>
     );
   };
 
-  return <div>{renderLayout()}</div>;
+  const renderFullLayout = () => {
+    if (businessCount <= 9) {
+      const layoutKey = `layout${businessCount}`;
+      const layout = scaleLayout(mapIntegratedCardsLayouts[layoutKey], scale);
+      const columnLayout = mapIntegratedCardsColumns[layoutKey] ?? null;
+      return renderLayoutSection(layout, columnLayout, 0, 0);
+    }
+
+    const layout9 = scaleLayout(mapIntegratedCardsLayouts["layout9"], scale);
+    const column9 = mapIntegratedCardsColumns["layout9"];
+    const extraBusinesses = data.slice(9);
+
+    return (
+      <div className="space-y-5">
+        {renderLayoutSection(layout9, column9 ?? null, 0, 0)}
+        {renderExtraCards(extraBusinesses)}
+      </div>
+    );
+  };
+
+  return (
+    <div className="w-full h-full flex items-start ps-20 gap-2">
+      {/* Business Cards Section */}
+      <div className="flex flex-col flex-[6] max-h-[95vh] overflow-y-auto hide-scrollbar py-10">
+        {renderFullLayout()}
+      </div>
+
+      <BusinessPinMap className="w-full flex-[4.3]" />
+    </div>
+  );
 };
 
 export default MapBusinessIntegratedLayout;

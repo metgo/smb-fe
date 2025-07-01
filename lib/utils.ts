@@ -1,113 +1,256 @@
-import { category, navbar } from "@/constant/hebrew";
-import { CalenderIcon, CtgAttractionIcon, CtgCultureIcon, CtgEatIcon, CtgLocalIcon, CtgLodgeIcon, CtgTourIcon, GalleryIcon, IntegratedIcon, KiteIcon, MapIcon, RoadmapArrowIcon, UserGroupIcon } from "@/components/ui/icons";
+import { events, misc, navbar } from "@/constant/hebrew";
+import {
+  CtgAttractionIcon,
+  CtgCultureIcon,
+  CtgEatIcon,
+  CtgLocalIcon,
+  CtgLodgeIcon,
+  CtgTourIcon,
+} from "@/components/ui/icons";
 
-export const categoryGradientClasses: any = {
-  eat: 'from-ctg-eat-dim via-ctg-eat-light to-ctg-eat-dim',
-  local: 'from-ctg-local-dim via-ctg-local-light to-ctg-local-dim',
-  lodge: 'from-ctg-lodge-dim via-ctg-lodge-light to-ctg-lodge-dim',
-  culture: 'from-ctg-culture-dim via-ctg-culture-light to-ctg-culture-dim',
-  attraction: 'from-ctg-attract-dim via-ctg-attract-light to-ctg-attract-dim',
-  tour: 'from-ctg-tour-dim via-ctg-tour-light to-ctg-tour-dim',
+const categoryId = {
+  sleep: "6566fcd4a77d2a477266d3b9",
+  attraction: "6566e31ca77d2a477266d2d6",
+  culture: "6566e36ba77d2a477266d2f4",
+  tour: "6566e256a77d2a477266d2c0",
+  eat: "6566e3aaa77d2a477266d314",
+  local: "6566fd7fa77d2a477266d3ca",
 };
 
-export const categoryBgClasses: any = {
-  eat: 'bg-ctg-eat-dark',
-  local: 'bg-ctg-local-dark',
-  lodge: 'bg-ctg-lodge-dark',
-  culture: 'bg-ctg-culture-dark',
-  attraction: 'bg-ctg-attract-dark',
-  tour: 'bg-ctg-tour-dark',
+export const businessMarkers = {
+  [categoryId.eat]: "food.svg",
+  [categoryId.local]: "local.svg",
+  [categoryId.sleep]: "sleep.svg",
+  [categoryId.culture]: "culture.svg",
+  [categoryId.attraction]: "attractions.svg",
+  [categoryId.tour]: "travel.svg",
 };
 
-export const categories = [
+export const categoryGradientClasses = {
+  [categoryId.eat]: "from-ctg-eat-dim via-ctg-eat-light to-ctg-eat-dim",
+  [categoryId.local]: "from-ctg-local-dim via-ctg-local-light to-ctg-local-dim",
+  [categoryId.sleep]: "from-ctg-lodge-dim via-ctg-lodge-light to-ctg-lodge-dim",
+  [categoryId.culture]:
+    "from-ctg-culture-dim via-ctg-culture-light to-ctg-culture-dim",
+  [categoryId.attraction]:
+    "from-ctg-attract-dim via-ctg-attract-light to-ctg-attract-dim",
+  [categoryId.tour]: "from-ctg-tour-dim via-ctg-tour-light to-ctg-tour-dim",
+};
+
+export const categoryGradinteColor = {
+  [categoryId.eat]: { dim: "#F7BCAC", light: "#F8CBBF" },
+  [categoryId.local]: { dim: "#F9D385", light: "#F9DEA7" },
+  [categoryId.sleep]: { dim: "#90BBE3", light: "#A2C6E6" },
+  [categoryId.culture]: { dim: "#F1A7C9", light: "#F3BDD6" },
+  [categoryId.attraction]: { dim: "#CEA7CE", light: "#D9BCD9" },
+  [categoryId.tour]: { dim: "#64C5C6", light: "#8ED4D5" },
+};
+
+export const categoryBgClasses = {
+  [categoryId.eat]: "bg-ctg-eat-dark",
+  [categoryId.local]: "bg-ctg-local-dark",
+  [categoryId.sleep]: "bg-ctg-lodge-dark",
+  [categoryId.culture]: "bg-ctg-culture-dark",
+  [categoryId.attraction]: "bg-ctg-attract-dark",
+  [categoryId.tour]: "bg-ctg-tour-dark",
+};
+
+export const shareKeepNavigate = [
   {
-    key: "tour",
+    id: 1,
+    label: misc.navigation,
+    icon: "navigation",
+  },
+  {
+    id: 2,
+    label: misc.keeping,
+    icon: "heart",
+  },
+  {
+    id: 3,
+    label: misc.sharing,
+    icon: "share",
+  },
+];
+
+export const eventFeatures = [
+  {
+    id: 1,
+    label: events.evening,
+    icon: "",
+  },
+  {
+    id: 2,
+    label: events.couples,
+    icon: "",
+  },
+  {
+    id: 3,
+    label: events.accessible,
+    icon: "",
+  },
+  {
+    id: 4,
+    label: events.paid,
+    icon: "",
+  },
+  {
+    id: 5,
+    label: events.families,
+    icon: "",
+  },
+  {
+    id: 6,
+    label: events.children,
+    icon: "",
+  },
+  {
+    id: 7,
+    label: events.kosher,
+    icon: "",
+  },
+];
+
+export const categoryIcons = {
+  [categoryId.tour]: {
     icon: CtgTourIcon,
-    label: category.tours,
-    bg: "bg-ctg-tour-dark"
+    bg: "bg-ctg-tour-dark",
   },
-  {
-    key: "attraction",
+  [categoryId.attraction]: {
     icon: CtgAttractionIcon,
-    label: category.attractions,
-    bg: "bg-ctg-attract-dark"
+    bg: "bg-ctg-attract-dark",
   },
-  {
-    key: "eat",
+  [categoryId.eat]: {
     icon: CtgEatIcon,
-    label: category.eater,
-    bg: "bg-ctg-eat-dark"
+    bg: "bg-ctg-eat-dark",
   },
-  {
-    key: "culture",
+  [categoryId.culture]: {
     icon: CtgCultureIcon,
-    label: category.culture,
-    bg: "bg-ctg-culture-dark"
+    bg: "bg-ctg-culture-dark",
   },
-  {
-    key: "lodge",
+  [categoryId.sleep]: {
     icon: CtgLodgeIcon,
-    label: category.lodge,
-    bg: "bg-ctg-lodge-dark"
+    bg: "bg-ctg-lodge-dark",
   },
-  {
-    key: "local",
+  [categoryId.local]: {
     icon: CtgLocalIcon,
-    label: category.local,
-    bg: "bg-ctg-local-dark"
-  }
-]
+    bg: "bg-ctg-local-dark",
+  },
+};
 
 export const features = [
   {
     key: 1,
     label: navbar.funDays,
-    icon: KiteIcon,
+    icon: "kite",
   },
   {
     key: 2,
     label: navbar.toGroups,
-    icon: UserGroupIcon,
+    icon: "user-group",
   },
   {
     key: 3,
     label: navbar.events,
-    icon: CalenderIcon,
+    icon: "events",
   },
   {
     key: 4,
     label: navbar.tracks,
-    icon: RoadmapArrowIcon
-  }
-]
+    icon: "trail",
+  },
+];
 
 export const filterTabs = [
   {
     key: "gallery",
     label: navbar.gallery,
-    icon: GalleryIcon
+    icon: "dashboard",
   },
   {
     key: "integrated",
     label: navbar.integrated,
-    icon: IntegratedIcon
+    icon: "dashboard-space",
   },
   {
     key: "map",
     label: navbar.map,
-    icon: MapIcon
+    icon: "map-fold",
   },
-]
-
-export const foodSubCategories = [
-  { id: 1, label: "מסעדות" },        // Restaurants  
-  { id: 2, label: "בתי קפה" },       // Cafés  
-  { id: 3, label: "מאפיות" },        // Bakeries  
-  { id: 4, label: "דוכני רחוב" },    // Street Food  
-  { id: 5, label: "גלידריות" },       // Ice Cream Shops  
-  { id: 6, label: "מסעדות טבעוניות" }, // Vegan Restaurants  
-  { id: 7, label: "מסעדות כשרות" },  // Kosher Restaurants  
-  { id: 8, label: "ברים ופאבים" },    // Bars & Pubs  
-  { id: 9, label: "מסעדות אסיאתיות" }, // Asian Restaurants  
-  { id: 10, label: "פוד טראקס" }     // Food Trucks
 ];
+
+const selectedTheme = { colors: { primary: "#fff" } };
+
+export const addMapTypeControl = (googleMap: google.maps.Map) => {
+  const mapTypeControlDiv = document.createElement("div");
+  mapTypeControlDiv.style.backgroundColor = "#fff";
+  mapTypeControlDiv.style.border = "2px solid #fff";
+  mapTypeControlDiv.style.borderRadius = "3px";
+  mapTypeControlDiv.style.boxShadow = "0 2px 6px rgba(0,0,0,.3)";
+  mapTypeControlDiv.style.margin = "10px";
+  mapTypeControlDiv.style.textAlign = "center";
+  mapTypeControlDiv.style.display = "flex";
+
+  const streetButton = document.createElement("button");
+  streetButton.textContent = "רְחוֹב";
+  streetButton.style.padding = "8px 15px";
+  streetButton.style.fontSize = "16px";
+  streetButton.style.border = "none";
+  streetButton.style.cursor = "pointer";
+  streetButton.style.backgroundColor =
+    googleMap.getMapTypeId() === google.maps.MapTypeId.ROADMAP
+      ? selectedTheme.colors.primary
+      : "#fff";
+  streetButton.style.color =
+    googleMap.getMapTypeId() === google.maps.MapTypeId.ROADMAP
+      ? "#fff"
+      : "#000";
+  streetButton.style.transition = "background-color 0.3s, color 0.3s";
+
+  const satelliteButton = document.createElement("button");
+  satelliteButton.textContent = "לוויין";
+  satelliteButton.style.padding = "8px 15px";
+  satelliteButton.style.fontSize = "16px";
+  satelliteButton.style.border = "none";
+  satelliteButton.style.cursor = "pointer";
+  satelliteButton.style.backgroundColor =
+    googleMap.getMapTypeId() === google.maps.MapTypeId.HYBRID
+      ? selectedTheme.colors.primary
+      : "#fff";
+  satelliteButton.style.color =
+    googleMap.getMapTypeId() === google.maps.MapTypeId.HYBRID ? "#fff" : "#000";
+  satelliteButton.style.transition = "background-color 0.3s, color 0.3s";
+
+  const updateButtonStyles = () => {
+    const isRoadmap =
+      googleMap.getMapTypeId() === google.maps.MapTypeId.ROADMAP;
+    streetButton.style.backgroundColor = isRoadmap
+      ? selectedTheme.colors.primary
+      : "#fff";
+    streetButton.style.color = isRoadmap ? "#fff" : "#000";
+    satelliteButton.style.backgroundColor = !isRoadmap
+      ? selectedTheme.colors.primary
+      : "#fff";
+    satelliteButton.style.color = !isRoadmap ? "#fff" : "#000";
+  };
+
+  streetButton.addEventListener("click", (e) => {
+    e.preventDefault();
+    googleMap.setMapTypeId(google.maps.MapTypeId.ROADMAP);
+    updateButtonStyles();
+  });
+
+  satelliteButton.addEventListener("click", (e) => {
+    e.preventDefault();
+    googleMap.setMapTypeId(google.maps.MapTypeId.HYBRID);
+    updateButtonStyles();
+  });
+
+  googleMap.addListener("maptypeid_changed", updateButtonStyles);
+
+  mapTypeControlDiv.appendChild(streetButton);
+  mapTypeControlDiv.appendChild(satelliteButton);
+
+  const controlPosition = google.maps.ControlPosition.LEFT_BOTTOM;
+  googleMap.controls[controlPosition].push(mapTypeControlDiv);
+};

@@ -1,55 +1,67 @@
-import React from 'react'
-import Link from 'next/link'
+import React from "react";
+import Link from "next/link";
 
-import { features } from '@/lib/utils'
-import { navbar } from '@/constant/hebrew'
-import { Logo, SearchIcon, ShopbagIcon, SunIcon, ThreeLineIcon, UserIcon } from '@/components/ui/icons'
-import BusinessPageFilterTabs from './BusinessPageFilterTabs'
+import { features } from "@/lib/utils";
+import { navbar } from "@/constant/hebrew";
+import HamburgerMenu from "./HamburgerMenu";
+import { IconImage } from "@/components/ui";
+import UserIconHoverCard from "./UserIconHoverCard";
+import CurrentTempOfYourCity from "./CurrentTempOfYourCity";
+import BusinessPageFilterTabs from "./BusinessPageFilterTabs";
+import { Logo, SearchIcon, ShopbagIcon } from "@/components/ui/icons";
 
-const Navbar = () => {
+const Navbar = async ({
+  showFilterTab = true,
+}: {
+  showFilterTab?: boolean;
+}) => {
   return (
-    <nav className="px-70 py-2.5 bg-white shadow-md">
+    <nav className="ps-20 pe-19 py-2.5 bg-white sticky top-0 z-50 border-b border-[#F5F5F5]">
       <div className="flex items-center justify-between">
         {/* Hamburger, Logo, Text */}
         <div className="flex items-center gap-4">
-          <ThreeLineIcon />
+          <HamburgerMenu />
           <Logo />
-          <Link
-            href={"/"}
-            className="text-theme font-bold"
-          >
+          <Link href={"/"} className="text-theme font-bold ms-8">
             {navbar.toJoinAsaBusiness}
           </Link>
         </div>
 
-        <div className="flex gap-4">
-          <BusinessPageFilterTabs />
-
-          <div className="flex items-center gap-2">
-            {features.map(item => (
+        <div className="flex items-center justify-end">
+          {showFilterTab && <BusinessPageFilterTabs />}
+          <div className="flex items-center gap-2 ms-9">
+            {features.map((item) => (
               <div
                 key={item.key}
-                className="flex flex-col items-center"
+                className="flex flex-col items-center px-1 w-14"
               >
-                <item.icon />
-                <div className="text-sm font-normal text-theme">{item.label}</div>
+                <IconImage width={24} height={24} icon={item.icon} />
+                <div className="text-sm font-normal text-theme w-14">
+                  {item.label}
+                </div>
               </div>
             ))}
           </div>
-          <div className="w-[1px] h-10 bg-[#D3D3D3]" />
+
+          <div className="w-[1px] h-10 bg-[#D3D3D3] mx-4" />
+
           <div className="flex items-center gap-2.5">
-            <SearchIcon />
-            <ShopbagIcon />
-            <UserIcon />
-            <div className="flex items-center">
-              <span>19 C</span>
-              <SunIcon />
+            <div className="p-2">
+              <SearchIcon />
             </div>
+            <div className="p-2 relative">
+              <div className="absolute -top-1 -left-0 bg-[#28C268] rounded-full text-center h-[14px] w-[14px]  flex justify-center items-center">
+                <span className="text-[12px] text-white font-bold">3</span>
+              </div>
+              <ShopbagIcon />
+            </div>
+            <UserIconHoverCard />
+            <CurrentTempOfYourCity />
           </div>
         </div>
       </div>
     </nav>
-  )
-}
+  );
+};
 
-export default Navbar
+export default Navbar;

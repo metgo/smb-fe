@@ -1,85 +1,194 @@
-"use client"
+"use client";
 
-import { tempCardInfo } from '@/constant/hebrew';
-import { categoryGradientClasses } from '@/lib/utils';
-import useGeneralStore from '@/stores/generalStore';
-import Image from 'next/image'
-import { useEffect, useState } from 'react';
-import { LocationPinIcon } from '../ui/icons';
+import Image from "next/image";
+import { useEffect, useState, useRef } from "react";
+import { motion, useInView, useAnimation } from "framer-motion";
 
-const BusinessCard = ({
-  height,
-  width,
-  imageUrl,
-}: BusinessCardProps) => {
-  const { activeCategoryKey } = useGeneralStore()
+import { handleCropImage } from "@/lib/helpers";
+import { tempCardInfo } from "@/constant/hebrew";
+import useGeneralStore from "@/stores/generalStore";
+import { categoryGradientClasses } from "@/lib/utils";
+import LocalStorageService from "@/lib/localStorage";
+import { IconImage } from "@/components/ui";
+import { useSearchParams } from "next/navigation";
 
-  const [isLoading, setIsLoading] = useState(false)
-  const [croppedImageUrl, setCroppedImageUrl] = useState("")
+const placeholderImage = "/images/image-placeholder.jpg";
 
-  const handleCropAll = async () => {
-    const encodedImageUrl = encodeURIComponent(imageUrl);
-    // const xMax = 0.765625;
-    // const xMin = 0.58984375;
-    // const yMax = 0.5234375;
-    // const yMin = 0.203125;
+const BusinessCard = ({ height, width, business }: BusinessCardProps) => {
+  const aspectRatio = width / height;
 
-    const xMin = 0.44285714285714284
-    const yMin = 0.41630901287553645
-    const xMax = 0.76
-    const yMax = 0.7140557939914163
+  const searchParams = useSearchParams();
+  const { categoryId = "", subCategoryId = "" } = Object.fromEntries(
+    searchParams.entries(),
+  );
+  const { activeCategoryKey, setActiveFilterTab, setClickedBusinessId } =
+    useGeneralStore();
 
-    const query = `url=${encodedImageUrl}&xMin=${xMin}&yMin=${yMin}&xMax=${xMax}&yMax=${yMax}&aspect=${width / height}`;
-    setIsLoading(true)
-    try {
-      const res = await fetch(`/api/crop-image?${query}`);
-      if (!res.ok) throw new Error("Failed to crop image");
+  const existingFaviourtBusiness =
+    LocalStorageService.get<FaviouriteBusinessProps[]>("favorite-business") ||
+    [];
 
-      const blob = await res.blob();
-      const objectUrl = URL.createObjectURL(blob);
-      setCroppedImageUrl(objectUrl);
-    } catch (error) {
-      console.error(`Error cropping image`, error);
-    } finally {
-      setIsLoading(false)
-    }
+  const [isLoading, setIsLoading] = useState(false);
+  const [updatedImage, setUpdatedImage] = useState({
+    imageUrl: placeholderImage,
+    alt: "abc",
+  });
+  const [hasMounted, setHasMounted] = useState(false);
 
-  };
+  // Framer Motion setup
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, margin: "0px 0px -50px 0px" });
+  const controls = useAnimation();
 
   useEffect(() => {
-    if (activeCategoryKey)
-      handleCropAll()
-  }, [activeCategoryKey])
+    setHasMounted(true);
+  }, []);
 
+  useEffect(() => {
+    if (isInView) {
+      controls.start({ y: 0, opacity: 1 });
+    }
+  }, [isInView, controls]);
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const primaryImageObj = business?.images?.find((item) => item?.isPrimary);
 
+      if (primaryImageObj) {
+        if (primaryImageObj?.subCoordinates) {
+          handleCropImage(
+            primaryImageObj,
+            aspectRatio,
+            setIsLoading,
+            setUpdatedImage,
+          );
+        } else {
+          setUpdatedImage({
+            imageUrl: primaryImageObj?.image,
+            alt: primaryImageObj?.alt,
+          });
+          setIsLoading(false);
+        }
+      } else {
+        setUpdatedImage({
+          imageUrl: business?.images[0]?.image,
+          alt: business?.name,
+        });
+        setIsLoading(false);
+      }
+    }, 3000);
+    setIsLoading(true);
+    return () => clearTimeout(timer);
+  }, [categoryId, subCategoryId]);
+
+  function addWishlistHandler() {
+    LocalStorageService.remove("favorite-business");
+    const item: FaviouriteBusinessProps = {
+      height,
+      width,
+      _id: business._id,
+      name: business.name,
+      imageUrl: updatedImage.imageUrl,
+      location: tempCardInfo.location,
+    };
+
+    // Check if it's already in favorites
+    const isAlreadyAdded = existingFaviourtBusiness.some(
+      (b) => b._id === item._id,
+    );
+    if (isAlreadyAdded) {
+      console.log("Item already in wishlist");
+      return;
+    }
+
+    // Add the new item
+    const updated = [...existingFaviourtBusiness, item];
+
+    // Save updated list
+    LocalStorageService.set<FaviouriteBusinessProps[]>(
+      "favorite-business",
+      updated,
+    );
+  }
+
+  const primaryCategoryId = activeCategoryKey
+    ? activeCategoryKey
+    : business?.primaryCategoryId
+      ? business?.primaryCategoryId
+      : "6566e36ba77d2a477266d2f4";
+
+  function handleMapIconClick(id: string) {
+    setClickedBusinessId(id);
+    setActiveFilterTab("map");
+  }
 
   return (
-    <div style={{ height, width }}>
-      {(isLoading || croppedImageUrl === "") ?
-        <div className={` rounded-2xl skeleton w-full h-full ${categoryGradientClasses[activeCategoryKey]}`} /> :
-        <div className="w-full h-full relative">
+    <motion.div
+      ref={ref}
+      style={{ width, height }}
+      initial={{ y: 50, opacity: 0 }}
+      animate={controls}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+    >
+      {isLoading || !hasMounted ? (
+        <div
+          className={`rounded-2xl skeleton w-full h-full ${categoryGradientClasses[primaryCategoryId]}`}
+        />
+      ) : (
+        <div
+          // href={"/event-details/abc"}
+          className="w-full h-full relative group rounded-xl overflow-hidden"
+        >
           <Image
-            alt='abc'
-            width={"100"}
-            height={"100"}
-            unoptimized
+            fill
             priority
+            unoptimized
             quality={100}
-            src={croppedImageUrl}
+            alt={updatedImage.alt || "Business"}
+            src={updatedImage.imageUrl || placeholderImage}
             className="object-cover h-full w-full rounded-xl"
+            onError={() =>
+              setUpdatedImage({ imageUrl: placeholderImage, alt: "abc" })
+            }
           />
-          <div className="absolute bottom-0 right-0 ps-4 pb-4 text-white font-bold">
-            <h3 className="">{tempCardInfo.title}</h3>
-            <div className="flex items-center gap-2">
-              <LocationPinIcon />
-              <span className="text-[0.9rem]">{tempCardInfo.location}</span>
+          <div className="relative w-full h-full overflow-hidden">
+            {/* Overlay (only bottom 50%) */}
+            <div className="absolute bottom-0 right-0 h-1/2 w-full bg-gradient-to-t from-black/40 to-transparent" />
+
+            {/* Text Content */}
+            <div className="absolute bottom-0 right-0 ps-4 pb-4 text-white font-bold w-full">
+              <h3 className="lg:text-[1rem] 3xl:text-[1.5rem]">
+                {business?.name}
+              </h3>
+              <div className="flex items-center gap-2">
+                <IconImage icon="location" width={20} height={20} />
+                <span className="md:text-sm">
+                  {business?.address?.city
+                    ? business?.address?.city
+                    : "Tel Aviv"}
+                </span>
+              </div>
             </div>
           </div>
-        </div>
-      }
-    </div>
-  )
-}
 
-export default BusinessCard
+          <div className="hidden absolute top-4 right-4 group-hover:flex items-center gap-2.5">
+            <IconImage
+              width={30}
+              height={30}
+              icon="circular-heart"
+              onClick={addWishlistHandler}
+            />
+            <IconImage
+              width={30}
+              height={30}
+              icon="circular-map-fold"
+              onClick={() => handleMapIconClick(business._id)}
+            />
+          </div>
+        </div>
+      )}
+    </motion.div>
+  );
+};
+
+export default BusinessCard;

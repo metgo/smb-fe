@@ -5,14 +5,17 @@ interface GeneralStoreState {
   setActiveCategoryKey: (key: string) => void;
   activeFilterTab: string;
   setActiveFilterTab: (key: string) => void;
+  clickedBusinessId: string;
+  setClickedBusinessId: (key: string) => void;
 }
 
-
 const useGeneralStore = create<GeneralStoreState>((set) => ({
-  activeCategoryKey: "tour",
+  activeCategoryKey: "",
   setActiveCategoryKey: (activeCategoryKey) => set({ activeCategoryKey }),
   activeFilterTab: "gallery",
-  setActiveFilterTab: (activeFilterTab) => set({ activeFilterTab })
-}))
+  setActiveFilterTab: (activeFilterTab) => set({ activeFilterTab }),
+  clickedBusinessId: "",
+  setClickedBusinessId: (clickedBusinessId) => set({ clickedBusinessId }),
+}));
 
-export default useGeneralStore
+export default useGeneralStore;
