@@ -6,17 +6,26 @@ on:
   push:
     branches:
       - main
+      - dev
       - release/*
       - instance/*
   pull_request:
     branches:
       - main
+      - dev
       - release/*
       - instance/*
 
+  workflow_dispatch:
+    inputs:
+      project:
+        description: 'Travel'
+        required: true
+        default: 'travel'
+
 jobs:
   check:
-    name: Build `${{ inputs.project }}`
+    name: Build `${{ github.event.inputs.project }}`
     runs-on: ubuntu-latest
 
     strategy:
@@ -37,7 +46,7 @@ jobs:
         with:
           cmd: install
 
-      - name: Install Node.js dependencies `${{ inputs.project }}`
+      - name: Install Node.js dependencies `${{ github.event.inputs.project }}`
         run: yarn
 
       - name: Create .env file
