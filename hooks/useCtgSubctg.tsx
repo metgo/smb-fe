@@ -1,15 +1,18 @@
 import { useState } from "react";
 
 import useGeneralStore from "@/stores/generalStore";
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 export const useCtgSubctg = () => {
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
 
   const { activeCategoryKey, setActiveCategoryKey } = useGeneralStore();
 
   const [activeSubCategory, setActiveSubCategory] = useState<string>();
+
+  const isHomepage = pathname === "/";
 
   const handleCategoryChange = (categoryId: string) => {
     const isSameCategory = activeCategoryKey === categoryId;
@@ -28,7 +31,11 @@ export const useCtgSubctg = () => {
     params.set("page", "1");
     params.delete("subCategoryId");
 
-    window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+    window.scrollTo({
+      top: isHomepage ? window.innerHeight : 0,
+      left: 0,
+      behavior: "smooth",
+    });
     router.push(`?${params.toString()}`, { scroll: false });
   };
 
@@ -45,7 +52,11 @@ export const useCtgSubctg = () => {
 
     params.set("page", "1");
     params.set("categoryId", activeCategoryKey);
-    window.scrollTo({ top: 0, left: 0, behavior: "smooth" });
+    window.scrollTo({
+      top: isHomepage ? window.innerHeight : 0,
+      left: 0,
+      behavior: "smooth",
+    });
     router.push(`?${params.toString()}`, { scroll: false });
   };
 

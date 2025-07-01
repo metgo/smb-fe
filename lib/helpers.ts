@@ -37,7 +37,10 @@ export const handleCropImage = async (
   }) => void,
 ) => {
   const encodedImageUrl = encodeURIComponent(imageItem?.image);
-  const { xMin, yMin, xMax, yMax } = imageItem?.subCoordinates;
+  const xMin = imageItem?.subCoordinates?.xMin || 0;
+  const yMin = imageItem?.subCoordinates?.xMin || 0;
+  const xMax = imageItem?.subCoordinates?.xMax || 0;
+  const yMax = imageItem?.subCoordinates?.yMax || 0;
 
   if (!xMin && !yMin && !xMax && !yMax) {
     setCroppedImageUrl({ imageUrl: imageItem?.image, alt: imageItem?.alt });

@@ -6,29 +6,33 @@ const metaCache = new Map<number, BusinessesProps["meta"]>();
 
 let previousCategoryId: string | null = null;
 let previousSubCategoryId: string | null = null;
+let allBusinessData: BusinessProps[] = []; // Store all accumulated data
+let lastFetchedPage = 0; // Track the last fetched page
 
 export const getAllBusinesses = async (
   pageCount: number,
   categoryId: string,
   subCategoryId: string,
 ): Promise<BusinessesProps> => {
-  const combinedData: BusinessProps[] = [];
-
   const isCategoryChanged = previousCategoryId !== categoryId;
   const isSubCategoryChanged = previousSubCategoryId !== subCategoryId;
 
-  if (isCategoryChanged || isSubCategoryChanged || pageCount) {
+  // Clear cache and reset data when category/subcategory changes
+  if (isCategoryChanged || isSubCategoryChanged) {
     pageCache.clear();
     metaCache.clear();
+    allBusinessData = [];
+    lastFetchedPage = 0;
     previousCategoryId = categoryId;
     previousSubCategoryId = subCategoryId;
   }
 
-  for (let i = 1; i <= pageCount; i++) {
+  // Only fetch pages that haven't been fetched yet
+  for (let i = lastFetchedPage + 1; i <= pageCount; i++) {
     const isCached = pageCache.has(i);
 
     if (isCached) {
-      combinedData.push(...pageCache.get(i)!);
+      allBusinessData.push(...pageCache.get(i)!);
     } else {
       try {
         const res = await fetch(
@@ -43,26 +47,29 @@ export const getAllBusinesses = async (
 
         pageCache.set(i, json.data);
         metaCache.set(i, json.meta);
-
-        combinedData.push(...json.data);
+        allBusinessData.push(...json.data);
       } catch (err) {
         console.error(`Error fetching page ${i}:`, err);
+        break; // Stop fetching if there's an error
       }
     }
   }
 
+  // Update the last fetched page
+  lastFetchedPage = pageCount;
+
   const latestMeta = metaCache.get(pageCount) || {
     page: pageCount,
     limit: "16",
-    data: combinedData.length,
+    data: allBusinessData.length,
     pageCount: pageCount,
     hasPreviousPage: pageCount > 1,
     hasNextPage: true,
   };
 
   return {
-    data: combinedData,
-    totalData: combinedData.length,
+    data: allBusinessData,
+    totalData: allBusinessData.length,
     meta: latestMeta,
   };
 };
