@@ -7,6 +7,9 @@ interface GeneralStoreState {
   setActiveFilterTab: (key: string) => void;
   clickedBusinessId: string;
   setClickedBusinessId: (key: string) => void;
+  // not used yet
+  navigationPath: string;
+  setNevigationPath: (path: string) => void;
 }
 
 const useGeneralStore = create<GeneralStoreState>((set) => ({
@@ -16,6 +19,8 @@ const useGeneralStore = create<GeneralStoreState>((set) => ({
   setActiveFilterTab: (activeFilterTab) => set({ activeFilterTab }),
   clickedBusinessId: "",
   setClickedBusinessId: (clickedBusinessId) => set({ clickedBusinessId }),
+  navigationPath: "",
+  setNevigationPath: (navigationPath) => set({ navigationPath }),
 }));
 
 export default useGeneralStore;
