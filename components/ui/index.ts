@@ -1,3 +1,4 @@
 import IconImage from "./IconImage";
+import NextImage from "./NextImage";
 
-export { IconImage };
+export { IconImage, NextImage };

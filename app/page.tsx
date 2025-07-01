@@ -2,14 +2,10 @@ import Image from "next/image";
 
 import Navbar from "@/components/navbar";
 import ScrollIndicator from "@/components/ScrollIndicator";
-import {
-  getAllBusinesses,
-  getAllCategory,
-  getAllSubCategory,
-} from "@/actions/businessActions";
-import FilterBusinessLayout from "@/components/layouts/FilterBusinessLayout";
-import CurrentTempOfYourCity from "@/components/navbar/CurrentTempOfYourCity";
+import { getAllBusinesses, getAllCategory } from "@/actions/businessActions";
 import { IconImage } from "@/components/ui";
+import CurrentTempOfYourCity from "@/components/navbar/CurrentTempOfYourCity";
+import BusinessFeedLayout from "@/components/layouts/BusinessFeedLayout";
 
 interface Props {
   searchParams: Promise<{
@@ -28,12 +24,11 @@ const page = async ({ searchParams }: Props) => {
     subCategoryId,
   );
   const categories = await getAllCategory();
-  const subCategories = categoryId ? await getAllSubCategory(categoryId) : null;
 
   return (
     <div>
       {/* Hero Section */}
-      <section className="width-screen h-[834px] relative overflow-hidden">
+      <section className="width-screen h-screen relative overflow-hidden">
         <div className="z-50 absolute top-2.5 right-0 w-full flex items-center justify-between ps-20 pe-19">
           <div className="flex items-center gap-5">
             <IconImage icon="white-threeline" />
@@ -70,11 +65,7 @@ const page = async ({ searchParams }: Props) => {
       {/* Second Section */}
       <section className="relative z-10 bg-white">
         <Navbar />
-        <FilterBusinessLayout
-          businesses={businesses}
-          categories={categories}
-          subCategories={subCategories}
-        />
+        <BusinessFeedLayout businesses={businesses} categories={categories} />
       </section>
     </div>
   );

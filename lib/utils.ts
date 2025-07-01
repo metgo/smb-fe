@@ -17,6 +17,12 @@ const categoryId = {
   local: "6566fd7fa77d2a477266d3ca",
 };
 
+const navigationKey = {
+  home: "/",
+  events: "/events",
+  businesses: "/businesses",
+};
+
 export const businessMarkers = {
   [categoryId.eat]: "food.svg",
   [categoryId.local]: "local.svg",
@@ -143,21 +149,29 @@ export const features = [
     key: 1,
     label: navbar.funDays,
     icon: "kite",
+    activeIcon: "",
+    link: "",
   },
   {
     key: 2,
     label: navbar.toGroups,
     icon: "user-group",
+    activeIcon: "",
+    link: "",
   },
   {
     key: 3,
     label: navbar.events,
     icon: "events",
+    activeIcon: "events-dark",
+    link: "/events",
   },
   {
     key: 4,
     label: navbar.tracks,
     icon: "trail",
+    activeIcon: "",
+    link: "",
   },
 ];
 
@@ -181,6 +195,13 @@ export const filterTabs = [
 
 const selectedTheme = { colors: { primary: "#fff" } };
 
+export const navigationPaths = {
+  [navigationKey.home]: "/business-details",
+  [navigationKey.businesses]: "/business-details",
+  [navigationKey.events]: "/event-details",
+};
+
+// ----------- Google map ------------------------
 export const addMapTypeControl = (googleMap: google.maps.Map) => {
   const mapTypeControlDiv = document.createElement("div");
   mapTypeControlDiv.style.backgroundColor = "#fff";

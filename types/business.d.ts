@@ -14,7 +14,7 @@ declare interface ImageItem {
   image: string;
   caption: string;
   alt: string;
-  subCoordinates: SubCoordinates;
+  subCoordinates?: SubCoordinates;
   isPrimary?: boolean;
 }
 
@@ -100,3 +100,11 @@ declare type BusienssSubcategoryProps = {
   productCount: number;
   parent: string[];
 }[];
+
+declare type ProductProps = {
+  _id: number;
+  name: string;
+  desc?: string;
+  price: string;
+  images: ImageItem[];
+};
