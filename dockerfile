@@ -1,5 +1,5 @@
 # Step 1: Build the app with yarn
-FROM node:20.17.1 AS builder
+FROM node:22.14.0 AS builder
 
 
 # Set working directory
@@ -18,7 +18,7 @@ COPY . .
 RUN yarn build
 
 # Step 2: Prepare the final image (runtime)
-FROM node:20.17.1 AS runner
+FROM node:22.14.0 AS runner
 
 
 # Set working directory
