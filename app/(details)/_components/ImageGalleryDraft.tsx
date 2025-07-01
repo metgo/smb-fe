@@ -1,51 +1,97 @@
 "use client";
 
 import Image from "next/image";
+import clsx from "clsx";
 import { useImageScale } from "@/hooks/useImageScale";
 
+// Layout definitions (image sizes)
+const layouts = {
+  layout1: [{ width: 1280, height: 450 }],
+  layout2: [
+    { width: 603, height: 450 },
+    { width: 603, height: 450 },
+  ],
+  layout3: [
+    { width: 603, height: 450 },
+    { width: 312.5, height: 450 },
+    { width: 312.5, height: 450 },
+  ],
+  layout4: [
+    { width: 603, height: 450 },
+    { width: 312.5, height: 450 },
+    { width: 312.5, height: 220 },
+    { width: 312.5, height: 220 },
+  ],
+  layout5: [
+    { width: 635, height: 450 },
+    { width: 312.5, height: 220 },
+    { width: 312.5, height: 220 },
+    { width: 312.5, height: 220 },
+    { width: 312.5, height: 220 },
+  ],
+};
+
+// Row layout represents images grouped **by column**
+const rowsLayout = {
+  row1: [[0]],
+  row2: [[0], [1]],
+  row3: [[0], [1], [2]],
+  row4: [[0], [1], [2, 3]],
+  row5: [[0], [1, 2], [3, 4]],
+};
+
+// Single image card
 const ImageCard = ({
-  width = 312.5,
-  height = 220,
+  width,
+  height,
   scale,
   className = "",
 }: {
-  width?: number;
-  height?: number;
+  width: number;
+  height: number;
   scale: number;
   className?: string;
 }) => (
-  <div>
-    <Image
-      src={"/images/video-thumbnail.png"}
-      alt="abc"
-      width={Math.round(width * scale)}
-      height={Math.round(height * scale)}
-      className={className}
-    />
-  </div>
+  <Image
+    src="/images/video-thumbnail.png"
+    alt="thumbnail"
+    width={Math.round(width * scale)}
+    height={height}
+    className={clsx("object-cover", className)}
+  />
 );
 
 const ImageGallery = () => {
   const { scale } = useImageScale();
+  const imageCount = 5;
+
+  const layout = layouts[`layout${imageCount}` as keyof typeof layouts];
+  const columns = rowsLayout[`row${imageCount}` as keyof typeof rowsLayout];
 
   return (
-    <div>
-      <div className="flex items-center gap-2.5">
-        <ImageCard
-          width={635}
-          height={450}
-          scale={scale}
-          className=" rounded-tr-[10px] rounded-br-[10px]"
-        />
-        <div className="space-y-2.5">
-          <ImageCard scale={scale} />
-          <ImageCard scale={scale} />
+    <div className="flex gap-2.5">
+      {columns.map((column, colIdx) => (
+        <div key={colIdx} className="flex flex-col gap-2.5">
+          {column.map((imgIdx, innerIdx) => {
+            const { width, height } = layout[imgIdx];
+            const isFirst = innerIdx === 0;
+            const isLast = innerIdx === column.length - 1;
+
+            return (
+              <ImageCard
+                key={imgIdx}
+                width={width}
+                height={height}
+                scale={scale}
+                className={clsx({
+                  "rounded-t-[10px]": isFirst,
+                  "rounded-b-[10px]": isLast,
+                })}
+              />
+            );
+          })}
         </div>
-        <div className="space-y-2.5">
-          <ImageCard scale={scale} className=" rounded-tl-[10px]" />
-          <ImageCard scale={scale} className=" rounded-bl-[10px]" />
-        </div>
-      </div>
+      ))}
     </div>
   );
 };
