@@ -16,9 +16,10 @@ on:
       - release/*
       - instance/*
 
-inputs:
-  project: 'travel'
+
 jobs:
+  inputs:
+    project: 'travel'
   check:
     name: Build `${{ inputs.project }}`
     runs-on: ubuntu-latest
