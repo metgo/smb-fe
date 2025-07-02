@@ -22,6 +22,7 @@ const page = async ({ searchParams }: Props) => {
     Number(page),
     categoryId,
     subCategoryId,
+    "/",
   );
   const categories = await getAllCategory();
 
