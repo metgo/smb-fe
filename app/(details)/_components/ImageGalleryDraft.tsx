@@ -3,7 +3,6 @@
 import clsx from "clsx";
 import Image from "next/image";
 
-import { IconImage } from "@/components/ui";
 import { useImageScale } from "@/hooks/useImageScale";
 
 // Layout definitions (image sizes)
@@ -96,25 +95,15 @@ const ImageCard = ({
       src="/images/video-thumbnail.png"
       className="object-cover w-full h-full"
     />
-    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+    {/* <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
       <IconImage icon="play-button" width={40} height={40} />
-    </div>
-    {/* <video width="320" height="240" controls preload="none">
-      <source src="/path/to/video.mp4" type="video/mp4" />
-      <track
-        src="/path/to/captions.vtt"
-        kind="subtitles"
-        srcLang="en"
-        label="English"
-      />
-      Your browser does not support the video tag.
-    </video> */}
+    </div> */}
   </div>
 );
 
 const ImageGalleryDraft = () => {
   const { scale } = useImageScale();
-  const imageCount = 3;
+  const imageCount = 5;
 
   const layoutName = `layout${imageCount}`;
   const layout = layouts[layoutName as keyof typeof layouts];

@@ -91,3 +91,22 @@ export const handleCropImagedraft = async (
     setCroppedImageUrl(imageItem?.image || "/images/image-placeholder.jpg");
   }
 };
+
+export function shuffleArray<T>(array: T[]): T[] {
+  const arr = [...array];
+  // Use crypto.getRandomValues if available, otherwise fall back to Math.random
+  const random = () => {
+    if (typeof crypto !== "undefined" && crypto.getRandomValues) {
+      const buf = new Uint32Array(1);
+      crypto.getRandomValues(buf);
+      return buf[0] / (0xffffffff + 1);
+    }
+    return Math.random();
+  };
+
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
