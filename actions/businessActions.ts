@@ -2,6 +2,7 @@
 
 import { urls } from "@/lib/endpoints";
 import { CODE } from "@/constant/envConstants";
+import { shuffleArray } from "@/lib/helpers";
 
 // Create separate cache and state for each context
 const contextStates = new Map<
@@ -35,8 +36,6 @@ export const getAllBusinesses = async (
   subCategoryId: string,
   contextId: string = "default",
 ): Promise<BusinessesProps> => {
-  console.log("-------------contextId", contextId, "pageCount", pageCount);
-
   // Get state for this specific context
   const state = getContextState(contextId);
 
@@ -56,13 +55,11 @@ export const getAllBusinesses = async (
   // Only fetch pages that haven't been fetched yet
   for (let i = state.lastFetchedPage + 1; i <= pageCount; i++) {
     const isCached = state.pageCache.has(i);
-    console.log(`Page ${i} - isCached: ${isCached}`);
-
     if (!isCached) {
       try {
         console.log(`Fetching page ${i} from API`);
         const res = await fetch(
-          `${urls.tourismBusinesses}?page=${i}&limit=16&bussCategoriesId=${categoryId}&bussSubCategoriesId=${subCategoryId}&sortBy=createdAt&sortOrder=DESC&campCode=${CODE}`,
+          `${urls.tourismBusinesses}?page=${i}&limit=50&bussCategoriesId=${categoryId}&bussSubCategoriesId=${subCategoryId}&sortBy=createdAt&sortOrder=ASC&campCode=${CODE}`,
           {
             cache: "no-store",
           },
@@ -71,7 +68,9 @@ export const getAllBusinesses = async (
         if (!res.ok) throw new Error(`Failed to fetch page ${i}`);
         const json: BusinessesProps = await res.json();
 
-        state.pageCache.set(i, json.data);
+        const randomizedData = shuffleArray(json.data);
+
+        state.pageCache.set(i, randomizedData);
         state.metaCache.set(i, json.meta);
 
         console.log(`Page ${i} fetched and cached, ${json.data.length} items`);
@@ -102,10 +101,6 @@ export const getAllBusinesses = async (
     hasNextPage: true,
   };
 
-  console.log(
-    `Returning ${allBusinessData.length} total items for ${pageCount} pages`,
-  );
-
   return {
     data: allBusinessData,
     totalData: allBusinessData.length,
@@ -115,7 +110,6 @@ export const getAllBusinesses = async (
 
 // Optional: Clear specific context when component unmounts
 export const clearBusinessContext = async (contextId: string) => {
-  console.log("Clearing context:", contextId);
   await contextStates.delete(contextId);
 };
 // ------------------------------------------------------------------------------------------
@@ -157,11 +151,7 @@ export const getAllBusinessLocation = async () => {
   }
 };
 
-export async function getBusinessById(
-  businessId: string,
-  setIsLoading: (isBoolean: boolean) => void,
-) {
-  setIsLoading(true);
+export async function getBusinessById(businessId: string) {
   try {
     const res = await fetch(
       `${urls.locationData}/${businessId}?campCode=${CODE}`,
@@ -171,7 +161,5 @@ export async function getBusinessById(
     return data;
   } catch (error) {
     console.error("Error fetching categories:", error);
-  } finally {
-    setIsLoading(false);
   }
 }

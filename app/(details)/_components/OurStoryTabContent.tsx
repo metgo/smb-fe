@@ -19,6 +19,8 @@ const OpeningDayHours = () => (
     <span className="">{"08:00-18:00"}</span>
   </div>
 );
+
+// Main component
 const OurStoryTabContent = () => {
   const { scale } = useImageScale();
 
@@ -31,7 +33,7 @@ const OurStoryTabContent = () => {
           width={438}
           height={360}
           scale={scale}
-          className=" rounded-3xl"
+          className=" rounded-xl"
         />
         <div>
           <h2 className=" text-2xl font-bold text-dark">

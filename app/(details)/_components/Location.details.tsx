@@ -1,5 +1,4 @@
 import { IconImage } from "@/components/ui";
-import React from "react";
 
 const Location = ({ city, address }: { city: string; address: string }) => {
   return (

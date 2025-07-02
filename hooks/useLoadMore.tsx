@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 import useInfiniteScroll from "react-infinite-scroll-hook";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import useGeneralStore from "@/stores/generalStore";
@@ -21,13 +21,14 @@ export const useLoadMore = (hasNextPage: boolean = false) => {
 
   const [prevCategoryId, setPrevCategoryId] = useState(categoryId);
   const [prevSubCategoryId, setPrevSubCategoryId] = useState(subCategoryId);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     // Delay enabling infinite scroll to prevent immediate triggering
     const timer = setTimeout(() => {
       setInitialLoadDone(true);
       setCanLoadMore(true);
-    }, 500); // 500ms delay to ensure content is rendered
+    }, 100); // 500ms delay to ensure content is rendered
 
     return () => clearTimeout(timer);
   }, []);
@@ -53,7 +54,7 @@ export const useLoadMore = (hasNextPage: boolean = false) => {
       // Re-enable loading after category change
       setTimeout(() => {
         setCanLoadMore(true);
-      }, 500);
+      }, 100);
     }
   }, [categoryId, subCategoryId, prevCategoryId, prevSubCategoryId, pathname]);
 
@@ -96,8 +97,10 @@ export const useLoadMore = (hasNextPage: boolean = false) => {
     loading,
     hasNextPage: initialLoadDone && canLoadMore && hasNextPage,
     onLoadMore: loadMore,
-    rootMargin: "0px 0px 200px 0px", // Reduced from 800px to 200px
-    disabled: !initialLoadDone || !canLoadMore, // Explicitly disable when not ready
+    // Adjust rootMargin to trigger when user scrolls to 50% of the viewport height
+    // This means it will trigger when the sentry is 50% of viewport height away from the bottom
+    rootMargin: "0px 0px 80% 0px",
+    disabled: !initialLoadDone || !canLoadMore,
   });
 
   return {
@@ -105,5 +108,6 @@ export const useLoadMore = (hasNextPage: boolean = false) => {
     loading,
     initialLoadDone,
     canLoadMore,
+    containerRef,
   };
 };
