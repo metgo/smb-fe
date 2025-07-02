@@ -1,14 +1,18 @@
 import { useCallback, useEffect, useState } from "react";
 import useInfiniteScroll from "react-infinite-scroll-hook";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import useGeneralStore from "@/stores/generalStore";
+import { clearBusinessContext } from "@/actions/businessActions";
 
 export const useLoadMore = (hasNextPage: boolean = false) => {
   const router = useRouter();
-
+  const pathname = usePathname();
   const searchParams = useSearchParams();
+
   const { categoryId = "", subCategoryId = "" } = Object.fromEntries(
     searchParams.entries(),
   );
+  const { activeFilterTab } = useGeneralStore();
 
   const [loading, setLoading] = useState(false);
   const [pageCount, setPageCount] = useState(1);
@@ -29,7 +33,18 @@ export const useLoadMore = (hasNextPage: boolean = false) => {
   }, []);
 
   useEffect(() => {
-    if (categoryId !== prevCategoryId || subCategoryId !== prevSubCategoryId) {
+    window.scrollTo(0, 0);
+    return () => {
+      clearBusinessContext(pathname);
+    };
+  }, [pathname]);
+
+  useEffect(() => {
+    if (
+      categoryId !== prevCategoryId ||
+      subCategoryId !== prevSubCategoryId ||
+      pathname
+    ) {
       setPageCount(1);
       setCanLoadMore(false); // Disable loading during category change
       setPrevCategoryId(categoryId);
@@ -40,10 +55,16 @@ export const useLoadMore = (hasNextPage: boolean = false) => {
         setCanLoadMore(true);
       }, 500);
     }
-  }, [categoryId, subCategoryId, prevCategoryId, prevSubCategoryId]);
+  }, [categoryId, subCategoryId, prevCategoryId, prevSubCategoryId, pathname]);
 
   const loadMore = useCallback(async () => {
-    if (!initialLoadDone || !canLoadMore || loading || !hasNextPage) {
+    if (
+      !initialLoadDone ||
+      !canLoadMore ||
+      loading ||
+      !hasNextPage ||
+      activeFilterTab === "map"
+    ) {
       return;
     }
 
@@ -68,6 +89,7 @@ export const useLoadMore = (hasNextPage: boolean = false) => {
     pageCount,
     searchParams,
     router,
+    activeFilterTab,
   ]);
 
   const [sentryRef] = useInfiniteScroll({

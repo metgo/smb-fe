@@ -16,6 +16,7 @@ const page = async ({ searchParams }: Props) => {
     Number(page),
     categoryId,
     subCategoryId,
+    "/events",
   );
 
   return <FilterBusinessLayout businesses={businesses} />;

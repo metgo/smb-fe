@@ -1,40 +1,66 @@
+"use server";
+
 import { urls } from "@/lib/endpoints";
 import { CODE } from "@/constant/envConstants";
 
-const pageCache = new Map<number, BusinessProps[]>();
-const metaCache = new Map<number, BusinessesProps["meta"]>();
+// Create separate cache and state for each context
+const contextStates = new Map<
+  string,
+  {
+    previousCategoryId: string | null;
+    previousSubCategoryId: string | null;
+    lastFetchedPage: number;
+    pageCache: Map<number, BusinessProps[]>;
+    metaCache: Map<number, any>;
+  }
+>();
 
-let previousCategoryId: string | null = null;
-let previousSubCategoryId: string | null = null;
-let allBusinessData: BusinessProps[] = []; // Store all accumulated data
-let lastFetchedPage = 0; // Track the last fetched page
+// Helper function to get or create context state
+const getContextState = (contextId: string) => {
+  if (!contextStates.has(contextId)) {
+    contextStates.set(contextId, {
+      previousCategoryId: null,
+      previousSubCategoryId: null,
+      lastFetchedPage: 0,
+      pageCache: new Map(),
+      metaCache: new Map(),
+    });
+  }
+  return contextStates.get(contextId)!;
+};
 
 export const getAllBusinesses = async (
   pageCount: number,
   categoryId: string,
   subCategoryId: string,
+  contextId: string = "default",
 ): Promise<BusinessesProps> => {
-  const isCategoryChanged = previousCategoryId !== categoryId;
-  const isSubCategoryChanged = previousSubCategoryId !== subCategoryId;
+  console.log("-------------contextId", contextId, "pageCount", pageCount);
+
+  // Get state for this specific context
+  const state = getContextState(contextId);
+
+  const isCategoryChanged = state.previousCategoryId !== categoryId;
+  const isSubCategoryChanged = state.previousSubCategoryId !== subCategoryId;
 
   // Clear cache and reset data when category/subcategory changes
   if (isCategoryChanged || isSubCategoryChanged) {
-    pageCache.clear();
-    metaCache.clear();
-    allBusinessData = [];
-    lastFetchedPage = 0;
-    previousCategoryId = categoryId;
-    previousSubCategoryId = subCategoryId;
+    console.log("Category/SubCategory changed, clearing cache");
+    state.pageCache.clear();
+    state.metaCache.clear();
+    state.lastFetchedPage = 0;
+    state.previousCategoryId = categoryId;
+    state.previousSubCategoryId = subCategoryId;
   }
 
   // Only fetch pages that haven't been fetched yet
-  for (let i = lastFetchedPage + 1; i <= pageCount; i++) {
-    const isCached = pageCache.has(i);
+  for (let i = state.lastFetchedPage + 1; i <= pageCount; i++) {
+    const isCached = state.pageCache.has(i);
+    console.log(`Page ${i} - isCached: ${isCached}`);
 
-    if (isCached) {
-      allBusinessData.push(...pageCache.get(i)!);
-    } else {
+    if (!isCached) {
       try {
+        console.log(`Fetching page ${i} from API`);
         const res = await fetch(
           `${urls.tourismBusinesses}?page=${i}&limit=16&bussCategoriesId=${categoryId}&bussSubCategoriesId=${subCategoryId}&sortBy=createdAt&sortOrder=DESC&campCode=${CODE}`,
           {
@@ -45,20 +71,29 @@ export const getAllBusinesses = async (
         if (!res.ok) throw new Error(`Failed to fetch page ${i}`);
         const json: BusinessesProps = await res.json();
 
-        pageCache.set(i, json.data);
-        metaCache.set(i, json.meta);
-        allBusinessData.push(...json.data);
+        state.pageCache.set(i, json.data);
+        state.metaCache.set(i, json.meta);
+
+        console.log(`Page ${i} fetched and cached, ${json.data.length} items`);
       } catch (err) {
         console.error(`Error fetching page ${i}:`, err);
-        break; // Stop fetching if there's an error
+        break;
       }
     }
   }
 
   // Update the last fetched page
-  lastFetchedPage = pageCount;
+  state.lastFetchedPage = Math.max(state.lastFetchedPage, pageCount);
 
-  const latestMeta = metaCache.get(pageCount) || {
+  // Reconstruct allBusinessData from cached pages in correct order
+  const allBusinessData: BusinessProps[] = [];
+  for (let i = 1; i <= pageCount; i++) {
+    if (state.pageCache.has(i)) {
+      allBusinessData.push(...state.pageCache.get(i)!);
+    }
+  }
+
+  const latestMeta = state.metaCache.get(pageCount) || {
     page: pageCount,
     limit: "16",
     data: allBusinessData.length,
@@ -67,12 +102,23 @@ export const getAllBusinesses = async (
     hasNextPage: true,
   };
 
+  console.log(
+    `Returning ${allBusinessData.length} total items for ${pageCount} pages`,
+  );
+
   return {
     data: allBusinessData,
     totalData: allBusinessData.length,
     meta: latestMeta,
   };
 };
+
+// Optional: Clear specific context when component unmounts
+export const clearBusinessContext = async (contextId: string) => {
+  console.log("Clearing context:", contextId);
+  await contextStates.delete(contextId);
+};
+// ------------------------------------------------------------------------------------------
 
 export const getAllCategory = async () => {
   try {
