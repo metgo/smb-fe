@@ -78,7 +78,7 @@ export const useGoogleMap = () => {
 
   async function getBusinessData(businessId: string) {
     setActiveBusinessData(null);
-    const res = await getBusinessById(businessId, setIsLoading);
+    const res = await getBusinessById(businessId);
     setActiveBusinessData(res);
   }
 

@@ -26,18 +26,49 @@ const OnlyBusinessCardsLayout = ({ data }: BusinessesProps) => {
 
   if (data.length < 1) return <div>No businesses available</div>;
 
+  // Fisher-Yates shuffle algorithm to randomize array
+  const shuffleArray = <T,>(array: T[]): T[] => {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  };
+
+  // Get random layout16 configuration
+  const getRandomLayout16Config = () => {
+    const layout16Keys = Object.keys(onlyCardsLayouts).filter(
+      (key) => key.startsWith("layout16") || key === "layout16",
+    );
+
+    // If there are multiple layout16 variants, pick randomly
+    // Otherwise, just use layout16
+    const randomKey =
+      layout16Keys.length > 1
+        ? layout16Keys[Math.floor(Math.random() * layout16Keys.length)]
+        : "layout16";
+
+    return {
+      layout: onlyCardsLayouts[randomKey],
+      columnLayout: onlyCardsColumns[randomKey] || onlyCardsColumns["layout16"],
+    };
+  };
+
   const renderCards = (
     indexes: number[],
     layout: LayoutItem[],
-    offset: number,
+    dataSlice: any[],
   ) => (
     <div className="space-y-5">
       {indexes.map((i) => {
-        const business = data[i + offset];
+        const business = dataSlice[i];
         const cardLayout = layout[i];
+        if (!business) return null;
+
         return (
           <BusinessCard
-            key={i}
+            key={business._id}
             width={cardLayout.width}
             height={cardLayout.height}
             business={business}
@@ -50,15 +81,17 @@ const OnlyBusinessCardsLayout = ({ data }: BusinessesProps) => {
   const renderHorizontalCards = (
     indexes: number[],
     layout: LayoutItem[],
-    offset: number,
+    dataSlice: any[],
   ) => (
     <div className="flex gap-5 pt-5">
       {indexes.map((i) => {
-        const business = data[i + offset];
+        const business = dataSlice[i];
         const cardLayout = layout[i];
+        if (!business) return null;
+
         return (
           <BusinessCard
-            key={business?._id}
+            key={business._id}
             width={cardLayout.width}
             height={cardLayout.height}
             business={business}
@@ -71,20 +104,25 @@ const OnlyBusinessCardsLayout = ({ data }: BusinessesProps) => {
   const renderLayoutSection = (
     layoutData: LayoutItem[],
     columnLayoutData: Record<string, number[]> | null,
-    offset: number,
+    dataSlice: any[],
     index: number,
   ) => {
     if (!columnLayoutData) {
       return (
         <div className="space-y-5" key={index}>
-          {layoutData.map((item, i) => (
-            <BusinessCard
-              key={data[i + offset]?._id}
-              width={item.width}
-              height={item.height}
-              business={data[i + offset]}
-            />
-          ))}
+          {layoutData.map((item, i) => {
+            const business = dataSlice[i];
+            if (!business) return null;
+
+            return (
+              <BusinessCard
+                key={business._id}
+                width={item.width}
+                height={item.height}
+                business={business}
+              />
+            );
+          })}
         </div>
       );
     }
@@ -100,9 +138,9 @@ const OnlyBusinessCardsLayout = ({ data }: BusinessesProps) => {
 
             return (
               <div key={`${colKey}-${idx}`} className="flex flex-col">
-                {renderCards(mainIndexes, layoutData, offset)}
+                {renderCards(mainIndexes, layoutData, dataSlice)}
                 {subIndexes &&
-                  renderHorizontalCards(subIndexes, layoutData, offset)}
+                  renderHorizontalCards(subIndexes, layoutData, dataSlice)}
               </div>
             );
           })}
@@ -110,45 +148,76 @@ const OnlyBusinessCardsLayout = ({ data }: BusinessesProps) => {
     );
   };
 
-  const renderBatch = (
-    batchData: any[],
-    batchIndex: number,
-    batchOffset: number,
-  ) => {
-    // Cycle through layout16 to layout20 (16, 17, 18, 19, 20)
-    const layoutIndex = 16 + (batchIndex % 5); // Cycle through 16 to 20
-    const layoutKey = `layout${layoutIndex}`;
-    const layout = scaleLayout(onlyCardsLayouts[layoutKey], scale);
-    // Always use layout16's column layout for batches
-    const columnLayout = onlyCardsColumns["layout16"] ?? null;
+  const renderSequentialLayouts = () => {
+    const layouts = [];
+    let currentIndex = 0;
 
-    return renderLayoutSection(layout, columnLayout, batchOffset, batchIndex);
-  };
+    // Render layouts 1 through current data length (up to 16)
+    for (let i = 1; i <= Math.min(businessCount, 16); i++) {
+      if (currentIndex >= businessCount) break;
 
-  const renderFullLayout = () => {
-    if (businessCount <= 20) {
-      const layoutKey = `layout${businessCount}`;
+      const layoutKey = `layout${i}`;
       const layout = scaleLayout(onlyCardsLayouts[layoutKey], scale);
       const columnLayout = onlyCardsColumns[layoutKey] ?? null;
 
-      return renderLayoutSection(layout, columnLayout, 0, 0);
+      // Take only the items needed for this layout
+      const itemsNeeded = Math.min(i, businessCount - currentIndex);
+      const dataSlice = data.slice(currentIndex, currentIndex + itemsNeeded);
+
+      layouts.push(renderLayoutSection(layout, columnLayout, dataSlice, i));
+
+      currentIndex += itemsNeeded;
     }
 
-    // Split businesses into batches of up to 16
-    const batches: any[][] = [];
-    for (let i = 0; i < businessCount; i += 16) {
-      batches.push(data.slice(i, i + 16));
+    return layouts;
+  };
+
+  const renderRandomBatches = (startIndex: number) => {
+    const remainingData = data.slice(startIndex);
+    const batches = [];
+
+    // Split remaining data into batches of 16
+    for (let i = 0; i < remainingData.length; i += 16) {
+      const batchData = remainingData.slice(i, i + 16);
+      const shuffledBatchData = shuffleArray(batchData);
+
+      // Get random layout16 configuration
+      const { layout: randomLayout, columnLayout } = getRandomLayout16Config();
+      const layout = scaleLayout(randomLayout, scale);
+
+      batches.push(
+        <div key={`random-batch-${Math.floor(i / 16)}`}>
+          {renderLayoutSection(
+            layout,
+            columnLayout,
+            shuffledBatchData,
+            Math.floor(i / 16) + 100,
+          )}
+        </div>,
+      );
     }
+
+    return batches;
+  };
+
+  const renderFullLayout = () => {
+    if (businessCount <= 16) {
+      // For 16 or fewer items, render sequential layouts
+      return (
+        <div className="flex flex-col gap-5">{renderSequentialLayouts()}</div>
+      );
+    }
+
+    // For more than 16 items:
+    // 1. First render layouts 1-16 with first 16 items
+    // 2. Then render remaining items in random batches using random layout16 configs
+    const sequentialLayouts = renderSequentialLayouts();
+    const randomBatches = renderRandomBatches(16);
 
     return (
-      <div>
-        <div className="flex flex-col gap-5">
-          {batches.map((batch, index) => (
-            <div key={`batch-${index}`}>
-              {renderBatch(batch, index, index * 16)}
-            </div>
-          ))}
-        </div>
+      <div className="flex flex-col gap-5">
+        {sequentialLayouts}
+        {randomBatches}
       </div>
     );
   };

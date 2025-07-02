@@ -3,8 +3,8 @@ import { eventFeatures, shareKeepNavigate } from "@/lib/utils";
 import { businessDetails } from "@/constant/placeholderData";
 import {
   BusinessDetailsFilterTab,
-  ImageGallery,
-  Location,
+  ImageGalleryDraft,
+  RatingReviewLocation,
   ReturnToPrevPageBtn,
   Title,
 } from "../../_components";
@@ -27,7 +27,12 @@ const page = () => {
             <Title title={businessDetails.businessName} />
 
             <div className=" flex items-center justify-between w-full">
-              <Location city="באר-שבע" address="פארק לורם אימפסום" />
+              <RatingReviewLocation
+                city="נווה מדבר 4"
+                address="להבים"
+                ratingCount={12}
+                reviewCount={34}
+              />
               <div className="flex items-center gap-2.5">
                 {shareKeepNavigate.map((item) => (
                   <div
@@ -45,7 +50,7 @@ const page = () => {
           </div>
         </div>
 
-        <ImageGallery />
+        <ImageGalleryDraft />
 
         <div className="flex items-center gap-2.5 mt-4.5">
           {eventFeatures.map((item) => (

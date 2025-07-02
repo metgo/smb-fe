@@ -115,7 +115,6 @@ export const getAllBusinesses = async (
 
 // Optional: Clear specific context when component unmounts
 export const clearBusinessContext = async (contextId: string) => {
-  console.log("Clearing context:", contextId);
   await contextStates.delete(contextId);
 };
 // ------------------------------------------------------------------------------------------
@@ -157,11 +156,7 @@ export const getAllBusinessLocation = async () => {
   }
 };
 
-export async function getBusinessById(
-  businessId: string,
-  setIsLoading: (isBoolean: boolean) => void,
-) {
-  setIsLoading(true);
+export async function getBusinessById(businessId: string) {
   try {
     const res = await fetch(
       `${urls.locationData}/${businessId}?campCode=${CODE}`,
@@ -171,7 +166,5 @@ export async function getBusinessById(
     return data;
   } catch (error) {
     console.error("Error fetching categories:", error);
-  } finally {
-    setIsLoading(false);
   }
 }

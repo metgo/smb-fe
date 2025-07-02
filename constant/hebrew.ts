@@ -9,6 +9,7 @@ export const misc = {
   showMoreProducts: "להציג עוד מוצרים",
   hours: "שעות פעילות",
   openNow: "פתוח עכשיו",
+  opinion: "חוות דעת",
 };
 
 export const deliveries = {

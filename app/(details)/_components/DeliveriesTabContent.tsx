@@ -7,16 +7,20 @@ const DeliveryTitleLayout = ({
   icon,
   title,
   desc,
+  hasExtension = false,
+  className = "py-7.5",
   children,
 }: {
   icon: string;
   title: string;
   desc: string;
+  hasExtension?: boolean;
   children?: ReactNode;
+  className?: string;
 }) => (
-  <div className="border border-secondary rounded-[10px] px-6.5 py-7.5">
+  <div className={`border border-secondary rounded-[10px] px-6.5 ${className}`}>
     <div className="flex items-center gap-2.5">
-      <IconImage icon={icon} />
+      <IconImage icon={icon} hasExtension={hasExtension} />
       <h2 className="font-bold text-sm text-dark">{title}</h2>
     </div>
     <div
@@ -92,11 +96,13 @@ const DeliveriesTabContent = () => {
       </div>
       <div className="col-span-1">
         <DeliveryTitleLayout
-          icon="shopping-bag"
+          icon="shopping-bag.png"
+          hasExtension
           title={deliveries.selfPickupPoint}
           desc="לאחר אישור ההזמנה ניתן לאסוף תוך יום עסקים"
+          className="pt-7.5 pb-0"
         >
-          <div className="mt-5 max-h-[210px] overflow-y-scroll">
+          <div className="mt-5 max-h-[240px] overflow-y-scroll">
             <DeliveryLocationTime
               location="בן יהודה 17, תל אביב"
               timeStr="א׳-ה׳ 8:00-2:00 ו׳ 9:00-12:00"
