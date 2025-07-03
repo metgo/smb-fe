@@ -25,7 +25,7 @@ export class BusinessMarketplaceController {
   ) {}
 
   @ApiEndpoint({
-    tags: ['Business'],
+    tags: ['MarketPlace-Business'],
     response: {
       status: HttpStatus.OK,
       description: ServerSuccess.BUSINESS_LISTED,
@@ -50,7 +50,7 @@ export class BusinessMarketplaceController {
   }
 
   @ApiEndpoint({
-    tags: ['Business'],
+    tags: ['MarketPlace-Business'],
     response: {
       status: HttpStatus.OK,
       description: ServerSuccess.BUSINESS_LISTED,
