@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-
 import { NextImage } from "@/components/ui";
 import { getWeatherInfo } from "@/actions/getWether";
 
