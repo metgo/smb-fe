@@ -43,7 +43,7 @@ const DeliveryLocationPrice = ({
   <div>
     <div className="flex items-center justify-between text-sm py-4 px-2">
       <span className="text-theme">{location}</span>
-      <span className="text-[#343434]">₪{price}</span>
+      <span className="text-charcoal">₪{price}</span>
     </div>
     {!isLast && <hr className="text-secondary" />}
   </div>
@@ -66,7 +66,7 @@ const DeliveryLocationTime = ({
         <div>{location}</div>
         <div>{timeStr}</div>
       </div>
-      <span className="text-[#343434]">₪{price}</span>
+      <span className="text-charcoal">₪{price}</span>
     </div>
     {!isLast && <hr className="text-secondary" />}
   </div>

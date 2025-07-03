@@ -11,6 +11,7 @@
     "lint": "eslint . --fix"
   },
   "dependencies": {
+    "@hello-pangea/dnd": "^18.0.1",
     "clsx": "^2.1.1",
     "dompurify": "^3.2.6",
     "eslint-config-prettier": "^10.1.5",

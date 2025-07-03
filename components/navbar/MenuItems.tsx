@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 import { features } from "@/lib/utils";
-import { IconImage } from "../ui";
-import { usePathname } from "next/navigation";
+import { IconImage } from "@/components/ui";
 
 const MenuItems = () => {
   const pathname = usePathname();
@@ -22,7 +22,9 @@ const MenuItems = () => {
             height={24}
             icon={item.link === pathname ? item.activeIcon : item.icon}
           />
-          <div className="text-sm font-normal text-theme w-14">
+          <div
+            className={`text-sm w-14 ${item.link === pathname ? "text-charcoal font-bold" : "text-theme font-normal"}`}
+          >
             {item.label}
           </div>
         </Link>

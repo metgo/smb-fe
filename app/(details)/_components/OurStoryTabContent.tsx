@@ -43,7 +43,7 @@ const OurStoryTabContent = () => {
             <p>{businessDetails.para1}</p>
             <p>{businessDetails.para2}</p>
           </div>
-          <div className="flex items-center gap-7.5 text-[#343434]">
+          <div className="flex items-center gap-7.5 text-charcoal">
             <span>{menuItems.contactUs}</span>
             <ConstatUsInfo icon="phone" text={businessDetails.phone} />
             <ConstatUsInfo icon="mail" text={businessDetails.mail} />
@@ -60,7 +60,7 @@ const OurStoryTabContent = () => {
         <Map className="w-full h-[30vh]" />
         <div className="border-2 border-primary rounded-xl px-14.5 py-7.5 w-[480px]">
           <div className="flex justify-between gap-24 text-sm font-normal mb-2.5">
-            <span className="text-[#343434]">{misc.hours}</span>
+            <span className="text-charcoal">{misc.hours}</span>
             <span className="text-[#28C268]">{misc.openNow}</span>
           </div>
           <div className="space-y-1.5">
