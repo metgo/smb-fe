@@ -1,11 +1,11 @@
 import { IconImage } from "@/components/ui";
-import { misc } from "@/constant/hebrew";
+// import { misc } from "@/constant/hebrew";
 
 const RatingReviewLocation = ({
   city,
   address,
-  ratingCount,
-  reviewCount,
+  // ratingCount,
+  // reviewCount,
 }: {
   city: string;
   address: string;
@@ -18,12 +18,12 @@ const RatingReviewLocation = ({
       <div className=" text-sm font-bold flex items-center gap-2">
         <span>{city}</span>,<span>{address}</span>
       </div>
-      <div className="w-0.5 h-3.5 bg-theme" />
+      {/* <div className="w-0.5 h-3.5 bg-theme" />
       <IconImage icon="star-rating" />
       <span className="font-bold">{ratingCount}</span>
       <div className="underline">
         <span>{reviewCount + " " + misc.opinion}</span>
-      </div>
+      </div> */}
     </div>
   );
 };

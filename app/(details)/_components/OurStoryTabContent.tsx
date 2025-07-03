@@ -13,10 +13,16 @@ const ConstatUsInfo = ({ icon, text }: { icon: string; text: string }) => (
   </div>
 );
 
-const OpeningDayHours = () => (
+const OpeningDayHours = ({
+  day,
+  timeRange,
+}: {
+  day: string;
+  timeRange: string;
+}) => (
   <div className="flex justify-between gap-24 font-normal  text-theme">
-    <span className="text-sm">{"ראשון"}</span>
-    <span className="">{"08:00-18:00"}</span>
+    <span className="text-sm">{day}</span>
+    <span className="">{timeRange}</span>
   </div>
 );
 
@@ -64,13 +70,13 @@ const OurStoryTabContent = () => {
             <span className="text-[#28C268]">{misc.openNow}</span>
           </div>
           <div className="space-y-1.5">
-            <OpeningDayHours />
-            <OpeningDayHours />
-            <OpeningDayHours />
-            <OpeningDayHours />
-            <OpeningDayHours />
-            <OpeningDayHours />
-            <OpeningDayHours />
+            <OpeningDayHours day="ראשון" timeRange="08:00-18:00" />
+            <OpeningDayHours day="שני" timeRange="08:00-18:00" />
+            <OpeningDayHours day="שלישי" timeRange="08:00-18:00" />
+            <OpeningDayHours day="רביעי" timeRange="08:00-18:00" />
+            <OpeningDayHours day="חמישי" timeRange="08:00-18:00" />
+            <OpeningDayHours day="שישי" timeRange="08:00-14:00" />
+            <OpeningDayHours day="שבת" timeRange="סגור" />
           </div>
         </div>
       </section>

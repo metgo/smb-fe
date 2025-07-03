@@ -20,8 +20,10 @@ const Navbar = async ({
         {/* Hamburger, Logo, Text */}
         <div className="flex items-center gap-4">
           <HamburgerMenu />
-          <Logo />
-          <Link href={"/"} className="text-theme font-bold ms-8">
+          <Link href={"/"} className="cursor-pointer">
+            <Logo />
+          </Link>
+          <Link href={"#"} className="text-theme font-bold ms-8">
             {navbar.toJoinAsaBusiness}
           </Link>
         </div>
