@@ -1,3 +1,4 @@
+import Head from "next/head";
 import "./globals.css";
 import type { Metadata } from "next";
 
@@ -10,6 +11,14 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: ReactChildNode) {
   return (
     <html lang="he" dir="rtl">
+      <Head>
+        <link
+          rel="preload"
+          as="video"
+          href="/videos/intro.mp4"
+          type="video/mp4"
+        />
+      </Head>
       <body>{children}</body>
     </html>
   );

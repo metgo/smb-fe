@@ -1,8 +1,9 @@
 "use client";
 
-import { getWeatherInfo } from "@/actions/getWether";
-import Image from "next/image";
 import React, { useEffect, useState } from "react";
+
+import { NextImage } from "@/components/ui";
+import { getWeatherInfo } from "@/actions/getWether";
 
 const getUserCity = async () => {
   try {
@@ -30,17 +31,18 @@ const CurrentTempOfYourCity = () => {
     })();
   }, []);
 
-  if (!weather) return;
-
+  if (!weather) {
+    return <div className="w-24"></div>;
+  }
   return (
-    <div className={`flex items-center bg-white rounded-[12px] px-2`}>
+    <div className={`flex items-center bg-white rounded-[12px] px-2 w-24`}>
       <span className="font-normal text-2xl text-theme">
-        {Math.trunc(weather?.temperature)}°C
+        {Math.trunc(weather?.temperature) || 0.0}°C
       </span>
-      <Image
+      <NextImage
         width={40}
         height={40}
-        src={`https:${weather?.icon}`}
+        imgSrc={`https:${weather?.icon}`}
         alt={weather?.condition}
         className="block"
       />

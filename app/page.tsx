@@ -44,13 +44,6 @@ const page = async ({ searchParams }: Props) => {
         </div>
         <div className="w-full h-[40vh] bg-black z-40" />
         <div className="absolute inset-0 bg-black/20 bg-opacity-40 z-20" />
-        {/* <Image
-          fill
-          unoptimized
-          alt="thumbnail image"
-          className="object-cover z-10"
-          src={"/images/video-thumbnail.png"}
-        /> */}
         <video
           className="object-cover absolute inset-0 w-full h-full z-10"
           src="/videos/intro.mp4"
@@ -58,6 +51,7 @@ const page = async ({ searchParams }: Props) => {
           muted
           loop
           playsInline
+          preload="true"
         />
         <ScrollIndicator />
 
