@@ -1,12 +1,13 @@
+import { Suspense } from "react";
 import TrailMapIntegratedLayout from "@/components/layouts/TrailMapIntegratedLayout";
 // import OnlyTrailCardLayout from "@/components/layouts/OnlyTrailCardLayout"
 
 const page = () => {
   return (
-    <div>
+    <Suspense>
       {/* <OnlyTrailCardLayout /> */}
       <TrailMapIntegratedLayout />
-    </div>
+    </Suspense>
   );
 };
 
