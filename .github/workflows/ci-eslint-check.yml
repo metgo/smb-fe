@@ -23,9 +23,9 @@ on:
   workflow_dispatch:
     inputs:
       project:
-        description: 'Travel'
+        description: "Travel"
         required: true
-        default: 'travel'
+        default: "travel"
 
 env: # environment variables (available in any part of the action)
   NODE_VERSION: 22.14.0
@@ -49,7 +49,7 @@ jobs: # list of things to do
       - name: Code Checkout
         uses: actions/checkout@v3
 
-      - name: Install Node.js dependencies `${{ github.event.inputs.project }}`  
+      - name: Install Node.js dependencies `${{ github.event.inputs.project }}`
         run: yarn
 
       - name: Code Linting

@@ -19,9 +19,9 @@ on:
   workflow_dispatch:
     inputs:
       project:
-        description: 'Travel'
+        description: "Travel"
         required: true
-        default: 'travel'
+        default: "travel"
 
 jobs:
   check:
