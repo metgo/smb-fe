@@ -6,6 +6,7 @@ import { getAllBusinesses, getAllCategory } from "@/actions/businessActions";
 import { IconImage } from "@/components/ui";
 import CurrentTempOfYourCity from "@/components/navbar/CurrentTempOfYourCity";
 import BusinessFeedLayout from "@/components/layouts/BusinessFeedLayout";
+import IntroVideo from "@/components/IntroVideo";
 
 interface Props {
   searchParams: Promise<{
@@ -44,15 +45,7 @@ const page = async ({ searchParams }: Props) => {
         </div>
         <div className="w-full h-[40vh] bg-black z-40" />
         <div className="absolute inset-0 bg-black/20 bg-opacity-40 z-20" />
-        <video
-          className="object-cover absolute inset-0 w-full h-full z-10"
-          src="/videos/intro.mp4"
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="true"
-        />
+        <IntroVideo />
         <ScrollIndicator />
 
         <Image
