@@ -170,8 +170,8 @@ export const features = [
     key: 4,
     label: navbar.tracks,
     icon: "trail",
-    activeIcon: "",
-    link: "",
+    activeIcon: "trail-dark",
+    link: "/trails",
   },
 ];
 

@@ -6,9 +6,10 @@ import {
   ReturnToPrevPageBtn,
   Title,
 } from "../../_components";
-import { eventFeatures, shareKeepNavigate } from "@/lib/utils";
+import { shareKeepNavigate } from "@/lib/utils";
 import { IconImage } from "@/components/ui";
 import { misc } from "@/constant/hebrew";
+import AttributePills from "@/components/AttributePills";
 
 const page = () => {
   return (
@@ -36,16 +37,7 @@ const page = () => {
 
         <ImageGallery />
 
-        <div className="flex items-center gap-2.5 mt-4.5">
-          {eventFeatures.map((item) => (
-            <div
-              key={item.id}
-              className="ps-4 pe-5 border border-theme rounded-4xl h-10 flex items-center justify-center"
-            >
-              <span className="font-bold text-sm text-theme">{item.label}</span>
-            </div>
-          ))}
-        </div>
+        <AttributePills />
 
         <div className="grid grid-cols-12  mt-15 w-full">
           <div className="col-span-6 text-dark">
@@ -62,7 +54,7 @@ const page = () => {
                 >
                   <span>{item.title}</span>
                   <div
-                    className={`font-bold text-[2.5rem] leading-none ${item.isActive ? "text-[#E89900]" : "text-[#343434]"}`}
+                    className={`font-bold text-[2.5rem] leading-none ${item.isActive ? "text-[#E89900]" : "text-charcoal"}`}
                   >
                     {item.day}
                   </div>

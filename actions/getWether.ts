@@ -1,10 +1,9 @@
-const BASE_URL = process.env.NEXT_PUBLIC_WEATHER_BASE_URL;
 const API_KEY = process.env.NEXT_PUBLIC_WEATHER_API_KEY;
 
 export const getWeatherInfo = async (location: string = "Kathmandu") => {
   try {
     const response = await fetch(
-      `${BASE_URL}/current.json?key=${API_KEY}&q=${location}&aqi=no`,
+      `https://api.weatherapi.com/v1/current.json?key=${API_KEY}&q=${location}&aqi=no`,
     );
 
     if (!response.ok) {

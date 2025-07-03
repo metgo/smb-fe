@@ -1,12 +1,29 @@
 "use client";
 
+import { usePathname } from "next/navigation";
+
 import { filterTabs } from "@/lib/utils";
+import { IconImage } from "@/components/ui";
 import useGeneralStore from "@/stores/generalStore";
-import { IconImage } from "../ui";
+import { useEffect, useState } from "react";
 
 const BusinessPageFilterTabs = () => {
+  const pathname = usePathname();
+
   const { setActiveFilterTab, activeFilterTab, setClickedBusinessId } =
     useGeneralStore();
+
+  const [filteredTabs, setFilteredTabs] = useState<
+    { key: string; label: string; icon: string }[]
+  >([]);
+
+  useEffect(() => {
+    if (pathname === "/trails") {
+      setFilteredTabs(filterTabs.slice(0, 2));
+    } else {
+      setFilteredTabs(filterTabs);
+    }
+  }, [pathname]);
 
   function handleTabSwitch(key: string) {
     setActiveFilterTab(key);
@@ -15,7 +32,7 @@ const BusinessPageFilterTabs = () => {
   return (
     <div className="flex items-center justify-center w-full">
       <div className="flex items-center gap-2 px-0.5 bg-[#EAEAEA] rounded-lg h-9 py-1">
-        {filterTabs.map((item) => (
+        {filteredTabs.map((item) => (
           <button
             key={item.key}
             type="button"

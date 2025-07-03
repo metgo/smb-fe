@@ -10,6 +10,7 @@ export const misc = {
   hours: "שעות פעילות",
   openNow: "פתוח עכשיו",
   opinion: "חוות דעת",
+  addAllStationOnCart: "הוספת כל התחנות לסל",
 };
 
 export const deliveries = {
