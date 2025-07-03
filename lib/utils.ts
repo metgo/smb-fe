@@ -67,11 +67,11 @@ export const shareKeepNavigate = [
     label: misc.navigation,
     icon: "navigation",
   },
-  {
-    id: 2,
-    label: misc.keeping,
-    icon: "heart",
-  },
+  // {
+  //   id: 2,
+  //   label: misc.keeping,
+  //   icon: "heart",
+  // },
   {
     id: 3,
     label: misc.sharing,

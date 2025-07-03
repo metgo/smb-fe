@@ -30,7 +30,7 @@ const BusinessFeedLayout = ({ businesses, categories }: Props) => {
   useEffect(() => {
     const handleScroll = () => {
       const scrollPosition = window.scrollY;
-      const scrollThreshold = 820;
+      const scrollThreshold = window.innerHeight;
       setShowStickyPanel(scrollPosition >= scrollThreshold);
     };
 
