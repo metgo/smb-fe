@@ -11,7 +11,8 @@ import { tempCardInfo } from "@/constant/hebrew";
 import useGeneralStore from "@/stores/generalStore";
 import LocalStorageService from "@/lib/localStorage";
 import { usePathname, useSearchParams } from "next/navigation";
-import { categoryGradientClasses, navigationPaths } from "@/lib/utils";
+import { navigationPaths } from "@/lib/utils";
+import { CardSkeleton } from "../skeletons";
 
 const placeholderImage = "/images/image-placeholder.jpg";
 
@@ -136,12 +137,10 @@ const BusinessCard = ({ height, width, business }: BusinessCardProps) => {
       transition={{ duration: 0.5, ease: "easeOut" }}
     >
       {isLoading || !hasMounted ? (
-        <div
-          className={`rounded-2xl skeleton w-full h-full ${categoryGradientClasses[primaryCategoryId]}`}
-        />
+        <CardSkeleton primaryCategoryId={primaryCategoryId} />
       ) : (
         <Link
-          href={`${navigationPaths[pathname]}/slug`}
+          href={`${navigationPaths[pathname]}/${business.slug}`}
           className="w-full h-full relative group rounded-xl overflow-hidden"
         >
           <Image

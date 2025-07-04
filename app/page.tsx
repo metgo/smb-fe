@@ -43,8 +43,8 @@ const page = async ({ searchParams }: Props) => {
           </div>
           <CurrentTempOfYourCity />
         </div>
-        <div className="w-full h-[40vh] bg-black z-40" />
-        <div className="absolute inset-0 bg-black/20 bg-opacity-40 z-20" />
+        {/* <div className="w-full h-[40vh] bg-black z-40" /> */}
+        {/* <div className="absolute inset-0 bg-black/20 bg-opacity-40 z-20" /> */}
         <IntroVideo />
         <ScrollIndicator />
 

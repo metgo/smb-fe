@@ -2,7 +2,6 @@
 
 import { IconImage, NextImage } from "@/components/ui";
 import { menuItems, misc } from "@/constant/hebrew";
-import { businessDetails } from "@/constant/placeholderData";
 import { useImageScale } from "@/hooks/useImageScale";
 import Map from "./Map.details";
 
@@ -27,15 +26,15 @@ const OpeningDayHours = ({
 );
 
 // Main component
-const OurStoryTabContent = () => {
+const OurStoryTabContent = ({ ...businessDetails }: BusinessDetailsProps) => {
   const { scale } = useImageScale();
-
+  const primaryImage = businessDetails.images?.find((item) => item.isPrimary);
   return (
     <div className="space-y-12.5">
       <div className="flex gap-10.5">
         <NextImage
-          alt={businessDetails.title}
-          imgSrc={businessDetails.image}
+          alt={primaryImage?.alt || "Primary Image"}
+          imgSrc={primaryImage?.image}
           width={438}
           height={360}
           scale={scale}
@@ -43,19 +42,31 @@ const OurStoryTabContent = () => {
         />
         <div>
           <h2 className=" text-2xl font-bold text-dark">
-            {businessDetails.title}
+            {businessDetails.name}
           </h2>
           <div className="text-dark font-normal space-y-4 mt-3 mb-10">
-            <p>{businessDetails.para1}</p>
-            <p>{businessDetails.para2}</p>
+            <div
+              dangerouslySetInnerHTML={{ __html: businessDetails?.description }}
+            />
+            <div
+              dangerouslySetInnerHTML={{
+                __html: businessDetails?.shortDescription,
+              }}
+            />
           </div>
           <div className="flex items-center gap-7.5 text-charcoal">
             <span>{menuItems.contactUs}</span>
-            <ConstatUsInfo icon="phone" text={businessDetails.phone} />
-            <ConstatUsInfo icon="mail" text={businessDetails.mail} />
+            <ConstatUsInfo
+              icon="phone"
+              text={businessDetails?.contactDetails?.phone}
+            />
+            <ConstatUsInfo
+              icon="mail"
+              text={businessDetails?.contactDetails?.email}
+            />
             <ConstatUsInfo
               icon="whatsapp-outlined"
-              text={businessDetails.whatsapp}
+              text={businessDetails?.contactDetails?.whatsAppNumber}
             />
           </div>
         </div>

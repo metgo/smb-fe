@@ -13,13 +13,17 @@ const tabs = [
   { id: 3, label: menuItems.deliveries },
 ];
 
-const BusinessDetailsFilterTab = () => {
+const BusinessDetailsFilterTab = ({
+  businessDetails,
+}: {
+  businessDetails: BusinessDetailsProps;
+}) => {
   const [activeTab, setActiveTab] = useState<number>(1);
 
   const rederTabContent = () => {
     switch (activeTab) {
       case 1:
-        return <OurStoryTabContent />;
+        return <OurStoryTabContent {...businessDetails} />;
       case 2:
         return <ProductsTabContent />;
       case 3:

@@ -42,10 +42,10 @@ export const handleCropImage = async (
   const xMax = imageItem?.subCoordinates?.xMax || 0;
   const yMax = imageItem?.subCoordinates?.yMax || 0;
 
-  if (!xMin && !yMin && !xMax && !yMax) {
-    setCroppedImageUrl({ imageUrl: imageItem?.image, alt: imageItem?.alt });
-    return;
-  }
+  // if (!xMin && !yMin && !xMax && !yMax) {
+  //   setCroppedImageUrl({ imageUrl: imageItem?.image, alt: imageItem?.alt });
+  //   return;
+  // }
 
   const query = `url=${encodedImageUrl}&xMin=${xMin}&yMin=${yMin}&xMax=${xMax}&yMax=${yMax}&aspect=${aspect}`;
   setIsLoading(true);

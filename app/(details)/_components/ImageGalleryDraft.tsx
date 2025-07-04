@@ -1,8 +1,11 @@
 "use client";
 
 import clsx from "clsx";
-import Image from "next/image";
 
+import { useEffect, useState } from "react";
+import { NextImage } from "@/components/ui";
+import { handleCropImage } from "@/lib/helpers";
+import { CardSkeleton } from "@/components/skeletons";
 import { useImageScale } from "@/hooks/useImageScale";
 
 // Layout definitions (image sizes)
@@ -74,36 +77,72 @@ const ImageCard = ({
   width,
   height,
   scale,
+  imageItem,
   className = "",
+  primaryCategoryId,
 }: {
   width: number;
   height: number;
   scale: number;
+  primaryCategoryId: string;
+  imageItem: ImageItem;
   className?: string;
-}) => (
-  <div
-    style={{
-      width: Math.round(width * scale),
-      height: height > 450 ? 450 : height,
-      overflow: "hidden",
-    }}
-    className={clsx("relative", className)}
-  >
-    <Image
-      fill
-      alt="thumbnail"
-      src="/images/video-thumbnail.png"
-      className="object-cover w-full h-full"
-    />
-    {/* <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-      <IconImage icon="play-button" width={40} height={40} />
-    </div> */}
-  </div>
-);
+}) => {
+  const aspectRatio = width / height;
+  const [isLoading, setIsLoading] = useState(false);
+  const [updatedImage, setUpdatedImage] = useState({
+    imageUrl: "",
+    alt: "placeholder",
+  });
 
-const ImageGalleryDraft = () => {
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (imageItem?.subCoordinates) {
+        handleCropImage(imageItem, aspectRatio, setIsLoading, setUpdatedImage);
+      } else {
+        setUpdatedImage({
+          imageUrl: imageItem?.image,
+          alt: imageItem?.alt,
+        });
+        setIsLoading(false);
+      }
+    }, 3000);
+    setIsLoading(true);
+    return () => clearTimeout(timer);
+  }, [imageItem]);
+
+  return (
+    <div
+      style={{
+        width: Math.round(width * scale),
+        height: height > 450 ? 450 : height,
+        overflow: "hidden",
+      }}
+      className={clsx("relative", className)}
+    >
+      {isLoading ? (
+        <CardSkeleton primaryCategoryId={primaryCategoryId} />
+      ) : (
+        <NextImage
+          isFill
+          alt={updatedImage.alt}
+          imgSrc={updatedImage.imageUrl}
+          className="object-cover w-full h-full"
+        />
+      )}
+    </div>
+  );
+};
+
+const ImageGalleryDraft = ({
+  images,
+  primaryCategoryId,
+}: {
+  images: ImageItem[];
+  primaryCategoryId: string;
+}) => {
   const { scale } = useImageScale();
-  const imageCount = 5;
+  const imageCount = images?.length;
 
   const layoutName = `layout${imageCount}`;
   const layout = layouts[layoutName as keyof typeof layouts];
@@ -123,6 +162,8 @@ const ImageGalleryDraft = () => {
                 width={width}
                 height={height}
                 scale={scale}
+                primaryCategoryId={primaryCategoryId}
+                imageItem={images[imgIdx]}
                 className={rounded}
               />
             );

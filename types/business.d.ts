@@ -34,6 +34,7 @@ interface Logo {
 
 declare interface BusinessProps {
   _id: string;
+  slug?: string;
   name: string;
   geoLocation: GeoLocation;
   images: ImageItem[];
@@ -108,3 +109,93 @@ declare type ProductProps = {
   price: string;
   images: ImageItem[];
 };
+
+// ------------------------------------------------------
+
+interface Address {
+  country: string;
+  city: string;
+  location: string;
+  _id: string;
+}
+
+interface ContactDetails {
+  name: string;
+  countryCode: string;
+  phone: string;
+  address: string;
+  email: string;
+  whatsAppCountryCode: string | null;
+  whatsAppNumber: string;
+  prefferedChannel: string;
+  _id: string;
+}
+
+interface GeoLocation {
+  lat: string;
+  long: string;
+  _id: string;
+}
+
+interface Location {
+  type: string;
+  coordinates: [number, number];
+}
+
+interface Price {
+  markedPrice: number;
+  discountAmount: number;
+  discountPercent: number;
+  sellingPrice: number;
+  _id: string;
+}
+
+interface Product {
+  _id: string;
+  name: string;
+  description: string;
+  businessId: string;
+  images: ImageData[];
+  price: Price;
+}
+interface LogoCover {
+  image: string;
+  caption: string;
+  alt: string;
+  subCoordinates: SubCoordinates;
+}
+
+interface Accessibilities {
+  _id: string;
+  name: string;
+  hebrewName: string;
+}
+
+declare interface BusinessDetailsProps {
+  _id: string;
+  name: string;
+  address: Address;
+  phoneNumber: string;
+  busiEmail: string;
+  shortDescription: string;
+  description: string;
+  contactDetails: ContactDetails;
+  dmoId: string;
+  geoLocation: GeoLocation;
+  location: Location;
+  images: ImageItem[];
+  groupTypesId: Accessibilities[];
+  accessibilitiesId: Accessibilities[];
+  primaryCategoryId: string;
+  bussCategoriesId: string[];
+  bussSubCategoriesId: string[];
+  openingHrs: any[];
+  isAlwaysOpen: boolean;
+  slug: string;
+  impact: number;
+  socialMedia: any[];
+  logo: LogoCover;
+  cover: LogoCover;
+  countryCode: string | null;
+  products: Product[];
+}

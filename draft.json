@@ -1,66 +1,194 @@
-[
-  {
-    "width": 240,
-    "height": 190
+{
+  "_id": "683d744532a842f26761915e",
+  "name": "Clothing",
+  "address": {
+    "country": "Palestinian Territories",
+    "city": "Gaza",
+    "location": "Gaza, Gaza Governorate, Palestinian Territories",
+    "_id": "6867b181d98d2c5b95add892"
   },
-  {
-    "width": 240,
-    "height": 220
+  "phoneNumber": "",
+  "busiEmail": "metgo_business@mailinator.com",
+  "shortDescription": "<p>Clothing.\t</p>",
+  "description": "<p>Business</p>",
+  "contactDetails": {
+    "name": "Karma Lama",
+    "countryCode": "972",
+    "phone": "987654345",
+    "address": "",
+    "email": "pc.karmalamaabc@gmail.com",
+    "whatsAppCountryCode": null,
+    "whatsAppNumber": "",
+    "prefferedChannel": "whatsApp",
+    "_id": "6867b181d98d2c5b95add894"
   },
-  {
-    "width": 240,
-    "height": 408
+  "dmoId": "61dc551b1fd34e871d6abf0d",
+  "geoLocation": {
+    "lat": "31.499558808161115",
+    "long": "34.489704661132805",
+    "_id": "6867b181d98d2c5b95add893"
   },
-  {
-    "width": 240,
-    "height": 408
+  "location": {
+    "type": "Point",
+    "coordinates": [34.489704661132805, 31.499558808161115]
   },
-  {
-    "width": 240,
-    "height": 220
+  "images": [
+    {
+      "image": "https://storage.googleapis.com/metgo_dev/2025/5/GHMGOyrOYuAKJTVh.jpg",
+      "caption": "metgoBusinessPrimaryImageIncoming.jpg",
+      "alt": "istockphoto-1065043970-612x612.jpg",
+      "subCoordinates": {
+        "xMax": 0.7734375,
+        "xMin": 0.6484375,
+        "yMax": 0.91796875,
+        "yMin": 0.431640625
+      },
+      "isPrimary": true
+    },
+    {
+      "image": "https://storage.googleapis.com/metgo_dev/2025/5/vlJyVVypOU_WppOh.jpg",
+      "caption": "78d8d060-21ce-11f0-89a9-cb5ed9bbefd9.jpg",
+      "alt": "78d8d060-21ce-11f0-89a9-cb5ed9bbefd9.jpg",
+      "subCoordinates": {
+        "xMax": 0.82421875,
+        "xMin": 0.1484375,
+        "yMax": 0.7734375,
+        "yMin": 0.3828125
+      }
+    },
+    {
+      "image": "https://storage.googleapis.com/metgo_dev/2025/5/qMmrQG-JwxWxQ2SU.jpg",
+      "caption": "metgoBusinessPrimaryImageIncoming.jpg",
+      "alt": "blog-8.jpg",
+      "subCoordinates": {
+        "xMax": 0,
+        "xMin": 0,
+        "yMax": 0,
+        "yMin": 0
+      }
+    }
+  ],
+  "groupTypesId": [
+    {
+      "_id": "656c4f91a835f8bf39f58a53",
+      "name": "Childrens",
+      "hebrewName": "ילדים"
+    },
+    {
+      "_id": "656c5020a835f8bf39f58a6a",
+      "name": "Men",
+      "hebrewName": "גברים"
+    },
+    {
+      "_id": "656c508da835f8bf39f58a77",
+      "name": "Groups",
+      "hebrewName": "קבוצות"
+    },
+    {
+      "_id": "656c5098a835f8bf39f58a7c",
+      "name": "Adults",
+      "hebrewName": "בוגרים"
+    }
+  ],
+  "accessibilitiesId": [
+    {
+      "_id": "6566fee4a77d2a477266d3f2",
+      "name": "Small Kids",
+      "hebrewName": "ילדים קטנים"
+    },
+    {
+      "_id": "65670014a77d2a477266d415",
+      "name": "Gluten Free",
+      "hebrewName": "ללא גלוטן"
+    },
+    {
+      "_id": "65670045a77d2a477266d435",
+      "name": "Lactose Free",
+      "hebrewName": "ללא לקטוז"
+    },
+    {
+      "_id": "65670096a77d2a477266d43f",
+      "name": "Free Entry",
+      "hebrewName": "הכניסה בחינם"
+    },
+    {
+      "_id": "6567013aa77d2a477266d475",
+      "name": "Adults",
+      "hebrewName": "בוגרים"
+    }
+  ],
+  "primaryCategoryId": "6566fcd4a77d2a477266d3b9",
+  "bussCategoriesId": ["6566fcd4a77d2a477266d3b9"],
+  "bussSubCategoriesId": [
+    "65672245e91479847b2bd342",
+    "65672279e91479847b2bd34f",
+    "6567228be91479847b2bd35f"
+  ],
+  "openingHrs": [],
+  "isAlwaysOpen": true,
+  "slug": "clothing-60B",
+  "impact": 200,
+  "socialMedia": [],
+  "logo": {
+    "image": "https://storage.googleapis.com/metgo_dev/2025/5/ZyPruEBSI-4eK83f.jpg",
+    "caption": "288408911.jpg",
+    "alt": "288408911.jpg",
+    "subCoordinates": {
+      "xMax": 0.6796875,
+      "xMin": 0.435546875,
+      "yMax": 0.91015625,
+      "yMin": 0.33203125
+    }
   },
-  {
-    "width": 240,
-    "height": 220
+  "cover": {
+    "image": "https://storage.googleapis.com/metgo_dev/2025/5/y3RApht4KvHz0_2A.jpg",
+    "caption": "78d8d060-21ce-11f0-89a9-cb5ed9bbefd9.jpg",
+    "alt": "78d8d060-21ce-11f0-89a9-cb5ed9bbefd9.jpg",
+    "subCoordinates": {
+      "xMax": 0.82421875,
+      "xMin": 0.1484375,
+      "yMax": 0.7734375,
+      "yMin": 0.3828125
+    }
   },
-  {
-    "width": 240,
-    "height": 220
-  },
-  {
-    "width": 240,
-    "height": 408
-  },
-  {
-    "width": 240,
-    "height": 220
-  },
-  {
-    "width": 240,
-    "height": 408
-  },
-  {
-    "width": 240,
-    "height": 190
-  },
-  {
-    "width": 240,
-    "height": 235
-  },
-  {
-    "width": 240,
-    "height": 220
-  },
-  {
-    "width": 240,
-    "height": 220
-  },
-  {
-    "width": 240,
-    "height": 220
-  },
-  {
-    "width": 240,
-    "height": 220
-  }
-]
+  "countryCode": null,
+  "products": [
+    {
+      "_id": "683d749532a842f267619191",
+      "name": "T-shirt",
+      "description": "<p>Description</p>",
+      "businessId": "683d744532a842f26761915e",
+      "images": [
+        {
+          "image": "https://storage.googleapis.com/metgo_dev/2025/5/E6e0Q9a8ANRQIG6f.jpg",
+          "caption": "metgoBusinessPrimaryImageIncoming.jpg",
+          "alt": "metgoBusinessPrimaryImageIncoming.jpg",
+          "subCoordinates": {
+            "xMax": 0.94921875,
+            "xMin": 0.0003528594970703125,
+            "yMax": 0.99609375,
+            "yMin": 0.034912109375
+          }
+        },
+        {
+          "image": "https://storage.googleapis.com/metgo_dev/2025/5/4ihWKpyGd1TqeDHF.jpg",
+          "caption": "288408911.jpg",
+          "alt": "288408911.jpg",
+          "subCoordinates": {
+            "xMax": 0.6796875,
+            "xMin": 0.435546875,
+            "yMax": 0.91015625,
+            "yMin": 0.33203125
+          }
+        }
+      ],
+      "price": {
+        "markedPrice": 3443,
+        "discountAmount": 0,
+        "discountPercent": 0,
+        "sellingPrice": 3443,
+        "_id": "683d749532a842f267619192"
+      }
+    }
+  ]
+}
