@@ -1,17 +1,12 @@
 "use client";
 
-import { IconImage, NextImage } from "@/components/ui";
-import { menuItems, misc } from "@/constant/hebrew";
+import { misc } from "@/constant/hebrew";
+import { NextImage } from "@/components/ui";
 import { businessDetails } from "@/constant/placeholderData";
 import { useImageScale } from "@/hooks/useImageScale";
-import Map from "./Map.details";
 
-const ConstatUsInfo = ({ icon, text }: { icon: string; text: string }) => (
-  <div className=" flex items-center gap-2.5">
-    <IconImage icon={icon} />
-    <span>{text}</span>
-  </div>
-);
+import Map from "./Map.details";
+import ContactInfo from "./ContactInfo";
 
 const OpeningDayHours = ({
   day,
@@ -49,15 +44,7 @@ const OurStoryTabContent = () => {
             <p>{businessDetails.para1}</p>
             <p>{businessDetails.para2}</p>
           </div>
-          <div className="flex items-center gap-7.5 text-charcoal">
-            <span>{menuItems.contactUs}</span>
-            <ConstatUsInfo icon="phone" text={businessDetails.phone} />
-            <ConstatUsInfo icon="mail" text={businessDetails.mail} />
-            <ConstatUsInfo
-              icon="whatsapp-outlined"
-              text={businessDetails.whatsapp}
-            />
-          </div>
+          <ContactInfo />
         </div>
       </div>
 

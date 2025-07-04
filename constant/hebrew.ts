@@ -87,3 +87,18 @@ export const emptyStateText = {
   noBusiness:
     "לא נמצאו תוצאות – אבל תמיד אפשר לנסות כיוון חדש.עדכן את הסינון ונצא לחיפוש מחדש!",
 };
+
+export const contactUsText = {
+  contactUs: "יצירת קשר",
+  title: "נשמח לשמוע מכם",
+  desc: "אנחנו כאן בשבילכם – שלחו לנו הודעה ונחזור אליכם בהקדם",
+  fullName: "שם מלא",
+  mobile: "נייד",
+  mail: "מייל",
+  referralReason: "סיבת הפניה",
+  referralDetails: "פרטי הפניה",
+  sending: "שליחה",
+  messageSuccess: "פנייתך נשלחה בהצלחה!",
+  thankYou: "תודה שפניתם אלינו. נחזור אליכם בהקדם האפשרי",
+  backToMainPage: "חזרה לעמוד הראשי",
+};

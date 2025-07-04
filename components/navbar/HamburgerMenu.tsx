@@ -48,7 +48,7 @@ const navItems = [
       {
         id: 6,
         label: menuItems.contactUs,
-        href: "#",
+        href: "/contact-us",
         leftIcon: "",
         rightIcon: "",
       },
