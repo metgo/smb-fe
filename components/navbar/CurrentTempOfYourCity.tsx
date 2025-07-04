@@ -33,6 +33,7 @@ const CurrentTempOfYourCity = () => {
   if (!weather) {
     return <div className="w-24"></div>;
   }
+
   return (
     <div className={`flex items-center bg-white rounded-[12px] px-2`}>
       <span className="font-normal text-2xl text-theme">
