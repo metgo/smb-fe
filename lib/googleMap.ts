@@ -1,6 +1,34 @@
 import { GOOGLE_API_KEY } from "@/constant/envConstants";
 import { googlePointOfInterest } from "@/constant/googlePoi";
 
+export async function getAddressFromLatLng(
+  lat: string,
+  lng: string,
+): Promise<string | null> {
+  const geoLat = Number(lat);
+  const geoLng = Number(lng);
+
+  try {
+    const response = await fetch(
+      `https://maps.googleapis.com/maps/api/geocode/json?latlng=${geoLat},${geoLng}&key=${GOOGLE_API_KEY}`,
+    );
+
+    if (!response.ok) throw new Error("Failed to fetch location");
+
+    const data = await response.json();
+
+    if (data.status === "OK" && data.results.length > 0) {
+      return data.results[0].formatted_address; // Plain address
+    } else {
+      console.warn("No address found for the given coordinates.");
+      return null;
+    }
+  } catch (error) {
+    console.error("Geocoding error:", error);
+    return null;
+  }
+}
+
 const googleMapsScriptLoaded = {
   loaded: false,
   callbacks: [] as (() => void)[],

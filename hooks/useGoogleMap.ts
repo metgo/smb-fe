@@ -49,8 +49,15 @@ export const useGoogleMap = () => {
 
   async function getBusinessData(businessId: string) {
     setActiveBusinessData(null);
-    const res = await getBusinessById(businessId);
-    setActiveBusinessData(res);
+    setIsLoading(true);
+    try {
+      const res = await getBusinessById(businessId);
+      setActiveBusinessData(res);
+    } catch (e) {
+      console.log("---------error:", e);
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   useEffect(() => {

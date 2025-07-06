@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 
 import { navItems } from "@/lib/utils";
@@ -11,9 +11,30 @@ const HamburgerMenu = () => {
   const [isOpen, setIsOpen] = useState(false);
   const pathname = usePathname();
 
+  const menuRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     if (pathname) setIsOpen(false);
   }, [pathname]);
+
+  // Close modal on outside click
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen]);
 
   return (
     <>
@@ -26,19 +47,22 @@ const HamburgerMenu = () => {
         {isOpen ? <IconImage icon="close" /> : <IconImage icon="threeline" />}
       </button>
 
-      {/* Dropdown Menu with Animation */}
+      {/* Dropdown Menu */}
       <div
-        className={` absolute top-20 right-0 w-full h-screen shadow-lg flex px-20 bg-black/20 backdrop-blur-sm overflow-y-auto overflow-x-hidden transition-all duration-500 ease-in-out ${
+        className={`absolute top-20 right-0 w-full h-screen shadow-lg flex px-20 bg-black/20 backdrop-blur-sm overflow-y-auto overflow-x-hidden transition-all duration-500 ease-in-out ${
           isOpen
             ? "max-h-[96vh] opacity-100 translate-y-0"
             : "max-h-0 opacity-0 -translate-y-10 pointer-events-none"
         }`}
       >
-        <div className="w-full mx-auto h-[max-content] py-10 px-12 flex gap-10 rounded-b-xl bg-white/90 backdrop-blur-xl">
+        {/* Modal Content */}
+        <div
+          ref={menuRef}
+          className="w-full mx-auto h-[max-content] py-10 px-12 flex gap-10 rounded-b-xl bg-white/90 backdrop-blur-xl"
+        >
           {Object.entries(navItems[0]).map(([colKey, items]) => (
             <div key={colKey} className="flex gap-2.75">
               <div className="w-0.25 h-70 bg-[#D3D3D3]" />
-
               <div className="flex flex-col w-[14.5rem]">
                 {items.map((item) => (
                   <div
@@ -47,7 +71,7 @@ const HamburgerMenu = () => {
                   >
                     <Link
                       href={item.href}
-                      className="text-theme hover:text-dark transition font-bold text-smm flex items-center gap-2.5 hover:text"
+                      className="text-theme hover:text-dark transition font-bold text-smm flex items-center gap-2.5"
                     >
                       {item.rightIcon && <IconImage icon={item.rightIcon} />}
                       {item.label}

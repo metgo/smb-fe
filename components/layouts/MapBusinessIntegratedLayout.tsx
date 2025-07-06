@@ -163,11 +163,11 @@ const MapBusinessIntegratedLayout = ({ data }: BusinessesProps) => {
   return (
     <div className="w-full h-full flex items-start ps-20 gap-2">
       {/* Business Cards Section */}
-      <div className="flex flex-col flex-[6] max-h-[95vh] overflow-y-auto hide-scrollbar py-10">
+      <div className="flex flex-col w-[70%] max-h-[95vh] overflow-y-auto hide-scrollbar py-10">
         {renderFullLayout()}
       </div>
 
-      <BusinessPinMap className="w-full flex-[4.3]" />
+      <BusinessPinMap className="w-[calc(51%-0.5rem)]" />
     </div>
   );
 };

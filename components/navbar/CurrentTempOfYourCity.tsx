@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { NextImage } from "@/components/ui";
 import { getWeatherInfo } from "@/actions/getWether";
+import { usePathname } from "next/navigation";
 
 const getUserCity = async () => {
   try {
@@ -20,11 +21,15 @@ const getUserCity = async () => {
 };
 
 const CurrentTempOfYourCity = () => {
+  const pathname = usePathname();
   const [weather, setWeather] = useState<any>(null);
 
   useEffect(() => {
     (async () => {
-      const city = await getUserCity();
+      let city;
+      if (!city) {
+        city = await getUserCity();
+      }
       const data = await getWeatherInfo(city);
       setWeather(data);
     })();
@@ -34,6 +39,7 @@ const CurrentTempOfYourCity = () => {
     return <div className="w-24"></div>;
   }
 
+  const isFeedPage = pathname === "/events" || pathname === "/businesses";
   return (
     <div className={`flex items-center bg-white rounded-[12px] px-2`}>
       <span className="font-normal text-2xl text-theme">
@@ -46,6 +52,7 @@ const CurrentTempOfYourCity = () => {
         alt={weather?.condition}
         className="block"
       />
+      {isFeedPage && <div className="w-8" />}
     </div>
   );
 };

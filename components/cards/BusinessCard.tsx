@@ -14,14 +14,15 @@ import { CardSkeleton } from "@/components/skeletons";
 import { useImagePresent } from "@/hooks/useImagePresent";
 
 const BusinessCard = ({ height, width, business }: BusinessCardProps) => {
-  const searchParams = useSearchParams();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   const aspectRatio = width / height;
 
   const { categoryId = "", subCategoryId = "" } = Object.fromEntries(
     searchParams.entries(),
   );
+
   const { activeCategoryKey, setActiveFilterTab, setClickedBusinessId } =
     useGeneralStore();
   const { isLoading, updatedImage, isImageLoaded, setIsImageLoaded } =
@@ -32,7 +33,6 @@ const BusinessCard = ({ height, width, business }: BusinessCardProps) => {
     [];
 
   const [hasMounted, setHasMounted] = useState(false);
-
   // Framer Motion setup
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "0px 0px -50px 0px" });
@@ -94,7 +94,7 @@ const BusinessCard = ({ height, width, business }: BusinessCardProps) => {
   return (
     <motion.div
       ref={ref}
-      style={{ width, height }}
+      style={{ width: `${width}px`, height: `${height}px` }}
       initial={{ y: 50, opacity: 0 }}
       animate={controls}
       transition={{ duration: 0.5, ease: "easeOut" }}

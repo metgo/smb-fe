@@ -135,9 +135,9 @@ const ImageGalleryDraft = ({
 
   return (
     <div style={{ height: 450 }} className="flex gap-2.5 overflow-hidden">
-      {columns.map((column, colIdx) => (
+      {columns?.map((column, colIdx) => (
         <div key={colIdx} className="flex flex-col gap-2.5">
-          {column.map((imgIdx) => {
+          {column?.map((imgIdx) => {
             const { width, height } = layout[imgIdx];
             const rounded = getRoundedClass(layoutName, imgIdx);
 

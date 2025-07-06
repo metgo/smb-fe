@@ -36,19 +36,19 @@ export const useGoogleSinglePinMap = (
       position: { lat, lng },
       map,
       icon: {
-        url: `./images/markers/${businessMarkers[primaryCategoryId]}`,
+        url: `/images/markers/${businessMarkers[primaryCategoryId]}`,
         scaledSize: new window.google.maps.Size(60, 60),
       },
     });
 
     markersRef.current.push(marker);
 
-    marker.addListener("click", () => {
-      if (infoWindowRef.current) {
-        infoWindowRef.current.setContent("Business info here");
-        infoWindowRef.current.open(map, marker);
-      }
-    });
+    // marker.addListener("click", () => {
+    //   if (infoWindowRef.current) {
+    //     infoWindowRef.current.setContent("Business info here");
+    //     infoWindowRef.current.open(map, marker);
+    //   }
+    // });
 
     map.setCenter({ lat, lng });
 

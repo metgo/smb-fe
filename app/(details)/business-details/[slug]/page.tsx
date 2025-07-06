@@ -20,16 +20,16 @@ const page = async ({ params }: { params: { slug: string } }) => {
     await getBusinessDetailsBySlug(slug);
 
   return (
-    <div className="">
+    <div>
       <ReturnToPrevPageBtn />
 
       <div className="mx-20 py-12">
         <div className="flex items-center gap-7.5 w-full mb-4.5">
           <NextImage
-            imgSrc={businessDetails.logo.image}
-            alt="logo"
             width={80}
             height={80}
+            alt={businessDetails?.logo?.alt}
+            imgSrc={businessDetails?.logo?.image}
             className="rounded-lg border border-theme h-20 w-20 object-cover"
           />
           <div className="w-full">
