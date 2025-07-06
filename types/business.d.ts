@@ -102,17 +102,9 @@ declare type BusienssSubcategoryProps = {
   parent: string[];
 }[];
 
-declare type ProductProps = {
-  _id: number;
-  name: string;
-  desc?: string;
-  price: string;
-  images: ImageItem[];
-};
-
 // ------------------------------------------------------
 
-interface Address {
+declare interface Address {
   country: string;
   city: string;
   location: string;
@@ -131,7 +123,7 @@ interface ContactDetails {
   _id: string;
 }
 
-interface GeoLocation {
+declare interface GeoLocation {
   lat: string;
   long: string;
   _id: string;
@@ -150,12 +142,12 @@ interface Price {
   _id: string;
 }
 
-interface Product {
+declare interface Product {
   _id: string;
   name: string;
   description: string;
   businessId: string;
-  images: ImageData[];
+  images: ImageItem[];
   price: Price;
 }
 interface LogoCover {
@@ -165,10 +157,11 @@ interface LogoCover {
   subCoordinates: SubCoordinates;
 }
 
-interface Accessibilities {
+declare interface Attributes {
   _id: string;
   name: string;
   hebrewName: string;
+  icon?: string;
 }
 
 declare interface BusinessDetailsProps {
@@ -184,8 +177,8 @@ declare interface BusinessDetailsProps {
   geoLocation: GeoLocation;
   location: Location;
   images: ImageItem[];
-  groupTypesId: Accessibilities[];
-  accessibilitiesId: Accessibilities[];
+  groupTypesId: Attributes[];
+  accessibilitiesId: Attributes[];
   primaryCategoryId: string;
   bussCategoriesId: string[];
   bussSubCategoriesId: string[];

@@ -1,9 +1,22 @@
+import clsx from "clsx";
 import { categoryGradientClasses } from "@/lib/utils";
 
-const CardSkeleton = ({ primaryCategoryId }: { primaryCategoryId: string }) => {
+interface CardSkeletonProps {
+  primaryCategoryId: string;
+  className?: string | null;
+}
+
+const CardSkeleton = ({
+  primaryCategoryId,
+  className = "w-full h-full rounded-2xl",
+}: CardSkeletonProps) => {
   return (
     <div
-      className={`rounded-2xl skeleton w-full h-full ${categoryGradientClasses[primaryCategoryId]}`}
+      className={clsx(
+        "skeleton",
+        className,
+        categoryGradientClasses[primaryCategoryId],
+      )}
     />
   );
 };

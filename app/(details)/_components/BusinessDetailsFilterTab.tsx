@@ -25,7 +25,7 @@ const BusinessDetailsFilterTab = ({
       case 1:
         return <OurStoryTabContent {...businessDetails} />;
       case 2:
-        return <ProductsTabContent />;
+        return <ProductsTabContent {...businessDetails} />;
       case 3:
         return <DeliveriesTabContent />;
       default:

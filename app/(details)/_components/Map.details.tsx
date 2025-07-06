@@ -1,9 +1,17 @@
 "use client";
 
-import { useGoogleMap } from "@/hooks/useGoogleMap";
+import { useGoogleSinglePinMap } from "@/hooks/useGoogleSinglePinMap";
 
-const Map = ({ className = "w-[91vw] h-[30vh]" }: { className?: string }) => {
-  const { mapRef } = useGoogleMap();
+const Map = ({
+  className = "w-[91vw] h-[30vh]",
+  primaryCategoryId,
+  geoLocation,
+}: {
+  className?: string;
+  geoLocation: GeoLocation;
+  primaryCategoryId: string;
+}) => {
+  const { mapRef } = useGoogleSinglePinMap(primaryCategoryId, geoLocation);
 
   return (
     <div className={`${className}`}>

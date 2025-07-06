@@ -1,3 +1,5 @@
+import { events } from "./hebrew";
+
 export const slides = [
   {
     id: 1,
@@ -109,134 +111,6 @@ export const businessDetails = {
   whatsapp: "052-6789546",
 };
 
-export const products: ProductProps[] = [
-  {
-    _id: 1,
-    name: "Eco Bamboo Toothbrush",
-    desc: "Sustainable and biodegradable bamboo toothbrush for a clean smile.",
-    price: "₪4.99",
-    images: [
-      {
-        image:
-          "https://images.pexels.com/photos/3735206/pexels-photo-3735206.jpeg",
-        caption: "Top view of bamboo toothbrush",
-        alt: "Eco bamboo toothbrush",
-      },
-      {
-        image:
-          "https://images.pexels.com/photos/3735211/pexels-photo-3735211.jpeg",
-        caption: "Toothbrush in eco packaging",
-        alt: "Eco toothbrush in box",
-      },
-      {
-        image:
-          "https://images.pexels.com/photos/3735212/pexels-photo-3735212.jpeg",
-        caption: "Toothbrush bristles close-up",
-        alt: "Bristles of bamboo toothbrush",
-      },
-      {
-        image:
-          "https://images.pexels.com/photos/3735213/pexels-photo-3735213.jpeg",
-        caption: "Set of eco brushes",
-        alt: "Multiple eco-friendly toothbrushes",
-      },
-    ],
-  },
-  {
-    _id: 2,
-    name: "Reusable Water Bottle",
-    desc: "Stainless steel insulated bottle to keep drinks hot or cold.",
-    price: "₪19.99",
-    images: [
-      {
-        image:
-          "https://images.pexels.com/photos/267669/pexels-photo-267669.jpeg",
-        caption: "Stainless bottle on rock",
-        alt: "Reusable water bottle",
-      },
-      {
-        image:
-          "https://images.pexels.com/photos/1556704/pexels-photo-1556704.jpeg",
-        caption: "Bottle in backpack pocket",
-        alt: "Bottle with hiker gear",
-      },
-      {
-        image:
-          "https://images.pexels.com/photos/3757420/pexels-photo-3757420.jpeg",
-        caption: "Hydration in nature",
-        alt: "Water bottle in wild",
-      },
-      {
-        image:
-          "https://images.pexels.com/photos/1235691/pexels-photo-1235691.jpeg",
-        caption: "Bottles lined up",
-        alt: "Multiple reusable bottles",
-      },
-    ],
-  },
-  {
-    _id: 3,
-    name: "Minimalist Wooden Clock",
-    desc: "A simple, elegant wooden clock for any room décor.",
-    price: "₪29.00",
-    images: [
-      {
-        image:
-          "https://images.pexels.com/photos/276528/pexels-photo-276528.jpeg",
-        caption: "Wooden clock close-up",
-        alt: "Minimal wooden clock",
-      },
-      {
-        image:
-          "https://images.pexels.com/photos/210581/pexels-photo-210581.jpeg",
-        caption: "Clock on wooden table",
-        alt: "Modern wooden clock decor",
-      },
-      {
-        image:
-          "https://images.pexels.com/photos/105008/pexels-photo-105008.jpeg",
-        caption: "Clock in living room",
-        alt: "Wall clock interior design",
-      },
-      {
-        image:
-          "https://images.pexels.com/photos/3965542/pexels-photo-3965542.jpeg",
-        caption: "Detail of clock face",
-        alt: "Clock face minimal style",
-      },
-    ],
-  },
-  // 🛒 Repeat and vary similarly for next 22 items:
-  ...Array.from({ length: 22 }, (_, i) => ({
-    _id: i + 4,
-    name: `Product ${i + 4}`,
-    desc: `This is a description for product ${i + 4}. It’s a great item for modern lifestyle.`,
-    price: `₪${(Math.random() * 100 + 10).toFixed(2)}`,
-    images: [
-      {
-        image: `https://images.pexels.com/photos/103${i + 1}8/pexels-photo-103${i + 1}8.jpeg`,
-        caption: `Main view of product ${i + 4}`,
-        alt: `Main image of product ${i + 4}`,
-      },
-      {
-        image: `https://images.pexels.com/photos/103${i + 1}9/pexels-photo-103${i + 1}9.jpeg`,
-        caption: `Side view of product ${i + 4}`,
-        alt: `Side image of product ${i + 4}`,
-      },
-      {
-        image: `https://images.pexels.com/photos/103${i + 2}0/pexels-photo-103${i + 2}0.jpeg`,
-        caption: `Detail of product ${i + 4}`,
-        alt: `Close-up image of product ${i + 4}`,
-      },
-      {
-        image: `https://images.pexels.com/photos/103${i + 2}1/pexels-photo-103${i + 2}1.jpeg`,
-        caption: `Lifestyle shot of product ${i + 4}`,
-        alt: `In-use image of product ${i + 4}`,
-      },
-    ],
-  })),
-];
-
 export const trailsDetails = {
   title: "מסלול חווייתי לכל המשפחה",
   desc: `הצטרפו אלינו לטיול מרתק בו נגלה את סיפורם המרתק של החולות הצבעוניים ואת התעשייה שהייתה כאן בעבר.
@@ -283,3 +157,48 @@ export const trailsDetails = {
     },
   ],
 };
+
+export const eventFeatures = [
+  {
+    _id: "1",
+    name: "",
+    hebrewName: events.evening,
+    icon: "",
+  },
+  {
+    _id: "2",
+    name: "",
+    hebrewName: events.couples,
+    icon: "",
+  },
+  {
+    _id: "3",
+    name: "",
+    hebrewName: events.accessible,
+    icon: "",
+  },
+  {
+    _id: "4",
+    name: "",
+    hebrewName: events.paid,
+    icon: "",
+  },
+  {
+    _id: "5",
+    name: "",
+    hebrewName: events.families,
+    icon: "",
+  },
+  {
+    _id: "6",
+    name: "",
+    hebrewName: events.children,
+    icon: "",
+  },
+  {
+    _id: "7",
+    name: "",
+    hebrewName: events.kosher,
+    icon: "",
+  },
+];

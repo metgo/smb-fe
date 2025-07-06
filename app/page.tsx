@@ -2,11 +2,11 @@ import Image from "next/image";
 
 import Navbar from "@/components/navbar";
 import ScrollIndicator from "@/components/ScrollIndicator";
-import { getAllBusinesses, getAllCategory } from "@/actions/businessActions";
-import { IconImage } from "@/components/ui";
+import { getAllBusinesses } from "@/actions/businessActions";
 import CurrentTempOfYourCity from "@/components/navbar/CurrentTempOfYourCity";
 import BusinessFeedLayout from "@/components/layouts/BusinessFeedLayout";
 import IntroVideo from "@/components/IntroVideo";
+import HamburgerMenu from "@/components/navbar/HamburgerMenu";
 
 interface Props {
   searchParams: Promise<{
@@ -25,7 +25,6 @@ const page = async ({ searchParams }: Props) => {
     subCategoryId,
     "/",
   );
-  const categories = await getAllCategory();
 
   return (
     <div>
@@ -33,7 +32,8 @@ const page = async ({ searchParams }: Props) => {
       <section className="width-screen h-screen relative overflow-hidden">
         <div className="z-50 absolute top-2.5 right-0 w-full flex items-center justify-between ps-20 pe-19">
           <div className="flex items-center gap-5">
-            <IconImage icon="white-threeline" />
+            {/* <IconImage icon="white-threeline" /> */}
+            <HamburgerMenu />
             <Image
               alt="Logo"
               src={"/images/logo/white-logo.svg"}
@@ -61,7 +61,7 @@ const page = async ({ searchParams }: Props) => {
       {/* Second Section */}
       <section className="relative z-10 bg-white">
         <Navbar showFilterTab />
-        <BusinessFeedLayout businesses={businesses} categories={categories} />
+        <BusinessFeedLayout businesses={businesses} />
       </section>
     </div>
   );

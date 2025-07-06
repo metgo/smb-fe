@@ -6,13 +6,62 @@ import { motion, AnimatePresence } from "framer-motion";
 import { misc } from "@/constant/hebrew";
 import { IconImage, NextImage } from "@/components/ui";
 import { useImageScale } from "@/hooks/useImageScale";
+import { useImagePresent } from "@/hooks/useImagePresent";
+import { CardSkeleton } from "../skeletons";
 
-const ProductCard = ({ images, name, price }: ProductProps) => {
+const ImageCard = ({
+  imageItem,
+  scale,
+  primaryCategoryId,
+}: {
+  imageItem: ImageItem;
+  scale: number;
+  primaryCategoryId: string;
+}) => {
+  const aspectRatio = 242 / 224;
+  const { isLoading, updatedImage, setIsImageLoaded, isImageLoaded } =
+    useImagePresent(aspectRatio, imageItem, [imageItem]);
+
+  if (isLoading || !isImageLoaded)
+    return (
+      <CardSkeleton
+        className={"rounded-t-2xl w-full h-full"}
+        primaryCategoryId={primaryCategoryId}
+      />
+    );
+
+  return (
+    <motion.div
+      initial={{ x: "100%" }}
+      animate={{ x: 0 }}
+      exit={{ x: "-100%" }}
+      transition={{ duration: 0.5, ease: "easeInOut" }}
+      className="absolute top-0 left-0 h-full w-full"
+    >
+      <NextImage
+        isFill
+        scale={scale}
+        alt={updatedImage.alt}
+        imgSrc={updatedImage.imageUrl}
+        setIsImageLoaded={setIsImageLoaded}
+        className="w-full object-cover"
+      />
+    </motion.div>
+  );
+};
+
+const ProductCard = ({
+  product,
+  primaryCategoryId,
+}: {
+  product: Product;
+  primaryCategoryId: string;
+}) => {
   const { scale } = useImageScale();
   const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   function handleImageIndexChange() {
-    setActiveImageIndex((prev) => (prev + 1) % images.length);
+    setActiveImageIndex((prev) => (prev + 1) % product?.images?.length);
   }
 
   return (
@@ -23,54 +72,47 @@ const ProductCard = ({ images, name, price }: ProductProps) => {
           className="relative"
         >
           <AnimatePresence mode="sync" initial={false}>
-            {images.map((img, index) =>
+            {product?.images?.map((imageItem, index) =>
               index === activeImageIndex ? (
-                <motion.div
+                <ImageCard
                   key={index}
-                  initial={{ x: "100%" }}
-                  animate={{ x: 0 }}
-                  exit={{ x: "-100%" }}
-                  transition={{ duration: 0.5, ease: "easeInOut" }}
-                  className="absolute top-0 left-0 h-full w-full"
-                >
-                  <NextImage
-                    isFill
-                    scale={scale}
-                    alt={img.alt}
-                    imgSrc={img.image}
-                    className="w-full object-cover"
-                  />
-                </motion.div>
+                  scale={scale}
+                  imageItem={imageItem}
+                  primaryCategoryId={primaryCategoryId}
+                />
               ) : null,
             )}
           </AnimatePresence>
         </div>
 
         {/* Controls & indicators */}
-        <div className="absolute bottom-1 left-0 flex items-center justify-between px-4 mb-3.5 w-full">
-          <div className="w-10" />
-          <div className="flex items-center gap-1">
-            {images?.map((_: any, index: number) => (
-              <div
-                key={index}
-                className={`transition-all duration-300 rounded-full bg-white ${index === activeImageIndex ? "w-2 h-2" : "w-2 h-2 opacity-50"}`}
-              />
-            ))}
+        {product?.images?.length > 1 && (
+          <div className="absolute bottom-1 left-0 flex items-center justify-between px-4 mb-3.5 w-full">
+            <div className="w-10" />
+            <div className="flex items-center gap-1">
+              {product?.images?.map((_: any, index: number) => (
+                <div
+                  key={index}
+                  className={`transition-all duration-300 rounded-full bg-white ${index === activeImageIndex ? "w-2 h-2" : "w-2 h-2 opacity-50"}`}
+                />
+              ))}
+            </div>
+            <div onClick={handleImageIndexChange} className="cursor-pointer">
+              <IconImage width={30} height={30} icon="prev" />
+            </div>
           </div>
-          <div onClick={handleImageIndexChange} className="cursor-pointer">
-            <IconImage width={30} height={30} icon="prev" />
-          </div>
-        </div>
+        )}
       </div>
 
       <div className="m-4">
-        <h3 className="text-dark font-bold">{name}</h3>
-        <p className="line-clamp-2 text-theme text-[12px]">
-          {
-            "סוויטת מדבר – סוויטה הממוקמת על קצה הגבעה ומשקיפה היישר אל שיפולי המדבר..."
-          }
-        </p>
-        <div className="text-[32px] text-dark font-normal my-2.5">{price}</div>
+        <h3 className="text-dark font-bold">{product?.name}</h3>
+        <div
+          className="line-clamp-2 text-theme text-[12px]"
+          dangerouslySetInnerHTML={{ __html: product?.description }}
+        />
+        <div className="text-[32px] text-dark font-normal my-2.5">
+          <span>₪{product?.price?.sellingPrice}</span>
+        </div>
 
         <div className="flex items-center justify-between gap-2.5">
           <button

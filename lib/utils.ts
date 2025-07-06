@@ -1,4 +1,4 @@
-import { events, misc, navbar } from "@/constant/hebrew";
+import { menuItems, misc, navbar } from "@/constant/hebrew";
 import {
   CtgAttractionIcon,
   CtgCultureIcon,
@@ -79,44 +79,6 @@ export const shareKeepNavigate = [
   },
 ];
 
-export const eventFeatures = [
-  {
-    id: 1,
-    label: events.evening,
-    icon: "",
-  },
-  {
-    id: 2,
-    label: events.couples,
-    icon: "",
-  },
-  {
-    id: 3,
-    label: events.accessible,
-    icon: "",
-  },
-  {
-    id: 4,
-    label: events.paid,
-    icon: "",
-  },
-  {
-    id: 5,
-    label: events.families,
-    icon: "",
-  },
-  {
-    id: 6,
-    label: events.children,
-    icon: "",
-  },
-  {
-    id: 7,
-    label: events.kosher,
-    icon: "",
-  },
-];
-
 export const categoryIcons = {
   [categoryId.tour]: {
     icon: CtgTourIcon,
@@ -193,85 +155,140 @@ export const filterTabs = [
   },
 ];
 
-const selectedTheme = { colors: { primary: "#fff" } };
-
 export const navigationPaths = {
   [navigationKey.home]: "/business-details",
   [navigationKey.businesses]: "/business-details",
   [navigationKey.events]: "/event-details",
 };
 
-// ----------- Google map ------------------------
-export const addMapTypeControl = (googleMap: google.maps.Map) => {
-  const mapTypeControlDiv = document.createElement("div");
-  mapTypeControlDiv.style.backgroundColor = "#fff";
-  mapTypeControlDiv.style.border = "2px solid #fff";
-  mapTypeControlDiv.style.borderRadius = "3px";
-  mapTypeControlDiv.style.boxShadow = "0 2px 6px rgba(0,0,0,.3)";
-  mapTypeControlDiv.style.margin = "10px";
-  mapTypeControlDiv.style.textAlign = "center";
-  mapTypeControlDiv.style.display = "flex";
-
-  const streetButton = document.createElement("button");
-  streetButton.textContent = "רְחוֹב";
-  streetButton.style.padding = "8px 15px";
-  streetButton.style.fontSize = "16px";
-  streetButton.style.border = "none";
-  streetButton.style.cursor = "pointer";
-  streetButton.style.backgroundColor =
-    googleMap.getMapTypeId() === google.maps.MapTypeId.ROADMAP
-      ? selectedTheme.colors.primary
-      : "#fff";
-  streetButton.style.color =
-    googleMap.getMapTypeId() === google.maps.MapTypeId.ROADMAP
-      ? "#fff"
-      : "#000";
-  streetButton.style.transition = "background-color 0.3s, color 0.3s";
-
-  const satelliteButton = document.createElement("button");
-  satelliteButton.textContent = "לוויין";
-  satelliteButton.style.padding = "8px 15px";
-  satelliteButton.style.fontSize = "16px";
-  satelliteButton.style.border = "none";
-  satelliteButton.style.cursor = "pointer";
-  satelliteButton.style.backgroundColor =
-    googleMap.getMapTypeId() === google.maps.MapTypeId.HYBRID
-      ? selectedTheme.colors.primary
-      : "#fff";
-  satelliteButton.style.color =
-    googleMap.getMapTypeId() === google.maps.MapTypeId.HYBRID ? "#fff" : "#000";
-  satelliteButton.style.transition = "background-color 0.3s, color 0.3s";
-
-  const updateButtonStyles = () => {
-    const isRoadmap =
-      googleMap.getMapTypeId() === google.maps.MapTypeId.ROADMAP;
-    streetButton.style.backgroundColor = isRoadmap
-      ? selectedTheme.colors.primary
-      : "#fff";
-    streetButton.style.color = isRoadmap ? "#fff" : "#000";
-    satelliteButton.style.backgroundColor = !isRoadmap
-      ? selectedTheme.colors.primary
-      : "#fff";
-    satelliteButton.style.color = !isRoadmap ? "#fff" : "#000";
-  };
-
-  streetButton.addEventListener("click", (e) => {
-    e.preventDefault();
-    googleMap.setMapTypeId(google.maps.MapTypeId.ROADMAP);
-    updateButtonStyles();
-  });
-
-  satelliteButton.addEventListener("click", (e) => {
-    e.preventDefault();
-    googleMap.setMapTypeId(google.maps.MapTypeId.HYBRID);
-    updateButtonStyles();
-  });
-
-  googleMap.addListener("maptypeid_changed", updateButtonStyles);
-
-  mapTypeControlDiv.appendChild(streetButton);
-  mapTypeControlDiv.appendChild(satelliteButton);
-
-  const controlPosition = google.maps.ControlPosition.LEFT_BOTTOM;
-  googleMap.controls[controlPosition].push(mapTypeControlDiv);
-};
+export const navItems = [
+  {
+    col1: [
+      {
+        id: 1,
+        label: menuItems.welcome,
+        href: "#",
+        leftIcon: "",
+        rightIcon: "",
+      },
+      {
+        id: 2,
+        label: menuItems.businessPage,
+        href: "/businesses",
+        leftIcon: "",
+        rightIcon: "",
+      },
+      {
+        id: 3,
+        label: menuItems.visitorCenter,
+        href: "#",
+        leftIcon: "",
+        rightIcon: "",
+      },
+      {
+        id: 4,
+        label: menuItems.blogArticle,
+        href: "#",
+        leftIcon: "",
+        rightIcon: "",
+      },
+      {
+        id: 5,
+        label: menuItems.joinBusiness,
+        href: "#",
+        leftIcon: "",
+        rightIcon: "",
+      },
+      {
+        id: 6,
+        label: menuItems.contactUs,
+        href: "#",
+        leftIcon: "",
+        rightIcon: "",
+      },
+    ],
+    col2: [
+      {
+        id: 1,
+        label: menuItems.eventGeneralPublic,
+        href: "#",
+        leftIcon: "",
+        rightIcon: "",
+      },
+      {
+        id: 2,
+        label: menuItems.eventCompaniesOrg,
+        href: "#",
+        leftIcon: "",
+        rightIcon: "",
+      },
+      {
+        id: 3,
+        label: menuItems.routes,
+        href: "#",
+        leftIcon: "",
+        rightIcon: "",
+      },
+    ],
+    col3: [
+      {
+        id: 1,
+        label: menuItems.mySavedOnes,
+        href: "#",
+        leftIcon: "",
+        rightIcon: "",
+      },
+      {
+        id: 2,
+        label: menuItems.checkBalance,
+        href: "#",
+        leftIcon: "",
+        rightIcon: "",
+      },
+      {
+        id: 3,
+        label: menuItems.purchasingCharacters,
+        href: "#",
+        leftIcon: "",
+        rightIcon: "",
+      },
+      {
+        id: 4,
+        label: menuItems.shoppingCart,
+        href: "#",
+        leftIcon: "",
+        rightIcon: "",
+      },
+      {
+        id: 5,
+        label: menuItems.exit,
+        href: "#",
+        leftIcon: "",
+        rightIcon: "exit",
+      },
+    ],
+    col4: [
+      {
+        id: 1,
+        label: menuItems.termsConditions,
+        href: "#",
+        leftIcon: "",
+        rightIcon: "",
+      },
+      {
+        id: 2,
+        label: menuItems.privacyPolicy,
+        href: "#",
+        leftIcon: "",
+        rightIcon: "",
+      },
+      {
+        id: 3,
+        label: menuItems.hebrew,
+        href: "#",
+        rightIcon: "globe",
+        leftIcon: "down-arrow",
+      },
+    ],
+  },
+];

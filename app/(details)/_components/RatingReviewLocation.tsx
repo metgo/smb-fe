@@ -2,13 +2,11 @@ import { IconImage } from "@/components/ui";
 // import { misc } from "@/constant/hebrew";
 
 const RatingReviewLocation = ({
-  city,
   address,
   // ratingCount,
   // reviewCount,
 }: {
-  city: string;
-  address: string;
+  address: Address;
   ratingCount: number;
   reviewCount: number;
 }) => {
@@ -16,7 +14,7 @@ const RatingReviewLocation = ({
     <div className="flex gap-1.25 items-center text-theme">
       <IconImage icon="location-gray" />
       <div className=" text-sm font-bold flex items-center gap-2">
-        <span>{city}</span>,<span>{address}</span>
+        <span>{address?.city}</span>,<span>{address?.country}</span>
       </div>
       {/* <div className="w-0.5 h-3.5 bg-theme" />
       <IconImage icon="star-rating" />

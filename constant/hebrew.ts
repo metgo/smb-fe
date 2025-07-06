@@ -84,6 +84,7 @@ export const tempCardInfo = {
 };
 
 export const emptyStateText = {
+  noDetails: "לא נמצאו פרטים!",
   noBusiness:
     "לא נמצאו תוצאות – אבל תמיד אפשר לנסות כיוון חדש.עדכן את הסינון ונצא לחיפוש מחדש!",
 };

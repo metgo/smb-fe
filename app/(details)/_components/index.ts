@@ -4,6 +4,7 @@ import ImageGallery from "./ImageGallery";
 import ImageGalleryDraft from "./ImageGalleryDraft";
 import Location from "./Location.details";
 import Map from "./Map.details";
+import NoDetailsFound from "./NoDetailsFound";
 import RatingReviewLocation from "./RatingReviewLocation";
 import ReturnToPrevPageBtn from "./ReturnToPrevPageBtn";
 import Title from "./Title.details";
@@ -14,6 +15,7 @@ export {
   Footer,
   Location,
   ImageGallery,
+  NoDetailsFound,
   ImageGalleryDraft,
   RatingReviewLocation,
   BusinessDetailsFilterTab,

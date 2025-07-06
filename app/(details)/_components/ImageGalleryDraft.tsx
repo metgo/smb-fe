@@ -2,11 +2,10 @@
 
 import clsx from "clsx";
 
-import { useEffect, useState } from "react";
 import { NextImage } from "@/components/ui";
-import { handleCropImage } from "@/lib/helpers";
 import { CardSkeleton } from "@/components/skeletons";
 import { useImageScale } from "@/hooks/useImageScale";
+import { useImagePresent } from "@/hooks/useImagePresent";
 
 // Layout definitions (image sizes)
 const layouts = {
@@ -88,28 +87,10 @@ const ImageCard = ({
   imageItem: ImageItem;
   className?: string;
 }) => {
-  const aspectRatio = width / height;
-  const [isLoading, setIsLoading] = useState(false);
-  const [updatedImage, setUpdatedImage] = useState({
-    imageUrl: "",
-    alt: "placeholder",
-  });
+  const aspectRatio = (width * scale) / 450;
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (imageItem?.subCoordinates) {
-        handleCropImage(imageItem, aspectRatio, setIsLoading, setUpdatedImage);
-      } else {
-        setUpdatedImage({
-          imageUrl: imageItem?.image,
-          alt: imageItem?.alt,
-        });
-        setIsLoading(false);
-      }
-    }, 3000);
-    setIsLoading(true);
-    return () => clearTimeout(timer);
-  }, [imageItem]);
+  const { isLoading, updatedImage, isImageLoaded, setIsImageLoaded } =
+    useImagePresent(aspectRatio, imageItem, [imageItem]);
 
   return (
     <div
@@ -120,11 +101,15 @@ const ImageCard = ({
       }}
       className={clsx("relative", className)}
     >
-      {isLoading ? (
-        <CardSkeleton primaryCategoryId={primaryCategoryId} />
+      {isLoading || !isImageLoaded ? (
+        <CardSkeleton
+          className={"w-full h-full"}
+          primaryCategoryId={primaryCategoryId}
+        />
       ) : (
         <NextImage
           isFill
+          setIsImageLoaded={setIsImageLoaded}
           alt={updatedImage.alt}
           imgSrc={updatedImage.imageUrl}
           className="object-cover w-full h-full"

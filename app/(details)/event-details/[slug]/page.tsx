@@ -1,8 +1,12 @@
-import { eventDates, eventDetils } from "@/constant/placeholderData";
+import {
+  eventDates,
+  eventDetils,
+  eventFeatures,
+} from "@/constant/placeholderData";
 import {
   ImageGallery,
   Location,
-  Map,
+  // Map,
   ReturnToPrevPageBtn,
   Title,
 } from "../../_components";
@@ -37,7 +41,7 @@ const page = () => {
 
         <ImageGallery />
 
-        <AttributePills />
+        <AttributePills items={eventFeatures} />
 
         <div className="grid grid-cols-12  mt-15 w-full">
           <div className="col-span-6 text-dark">
@@ -77,9 +81,7 @@ const page = () => {
             </div>
           </section>
 
-          <div className="mt-22.5">
-            <Map />
-          </div>
+          <div className="mt-22.5">{/* <Map /> */}</div>
         </div>
       </div>
     </div>

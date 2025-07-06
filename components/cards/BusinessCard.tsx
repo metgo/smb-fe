@@ -1,20 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { useEffect, useState, useRef } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
 import { motion, useInView, useAnimation } from "framer-motion";
 
-import { IconImage } from "@/components/ui";
-import { handleCropImage } from "@/lib/helpers";
+import { IconImage, NextImage } from "@/components/ui";
+import { navigationPaths } from "@/lib/utils";
 import { tempCardInfo } from "@/constant/hebrew";
 import useGeneralStore from "@/stores/generalStore";
 import LocalStorageService from "@/lib/localStorage";
-import { usePathname, useSearchParams } from "next/navigation";
-import { navigationPaths } from "@/lib/utils";
-import { CardSkeleton } from "../skeletons";
-
-const placeholderImage = "/images/image-placeholder.jpg";
+import { CardSkeleton } from "@/components/skeletons";
+import { useImagePresent } from "@/hooks/useImagePresent";
 
 const BusinessCard = ({ height, width, business }: BusinessCardProps) => {
   const searchParams = useSearchParams();
@@ -27,16 +24,13 @@ const BusinessCard = ({ height, width, business }: BusinessCardProps) => {
   );
   const { activeCategoryKey, setActiveFilterTab, setClickedBusinessId } =
     useGeneralStore();
+  const { isLoading, updatedImage, isImageLoaded, setIsImageLoaded } =
+    useImagePresent(aspectRatio, business?.images, [categoryId, subCategoryId]);
 
   const existingFaviourtBusiness =
     LocalStorageService.get<FaviouriteBusinessProps[]>("favorite-business") ||
     [];
 
-  const [isLoading, setIsLoading] = useState(false);
-  const [updatedImage, setUpdatedImage] = useState({
-    imageUrl: placeholderImage,
-    alt: "abc",
-  });
   const [hasMounted, setHasMounted] = useState(false);
 
   // Framer Motion setup
@@ -53,37 +47,6 @@ const BusinessCard = ({ height, width, business }: BusinessCardProps) => {
       controls.start({ y: 0, opacity: 1 });
     }
   }, [isInView, controls]);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      const primaryImageObj = business?.images?.find((item) => item?.isPrimary);
-
-      if (primaryImageObj) {
-        if (primaryImageObj?.subCoordinates) {
-          handleCropImage(
-            primaryImageObj,
-            aspectRatio,
-            setIsLoading,
-            setUpdatedImage,
-          );
-        } else {
-          setUpdatedImage({
-            imageUrl: primaryImageObj?.image,
-            alt: primaryImageObj?.alt,
-          });
-          setIsLoading(false);
-        }
-      } else {
-        setUpdatedImage({
-          imageUrl: business?.images[0]?.image,
-          alt: business?.name,
-        });
-        setIsLoading(false);
-      }
-    }, 3000);
-    setIsLoading(true);
-    return () => clearTimeout(timer);
-  }, [categoryId, subCategoryId]);
 
   function addWishlistHandler(e: any) {
     e.stopPropagation();
@@ -136,24 +99,21 @@ const BusinessCard = ({ height, width, business }: BusinessCardProps) => {
       animate={controls}
       transition={{ duration: 0.5, ease: "easeOut" }}
     >
-      {isLoading || !hasMounted ? (
+      {isLoading || !hasMounted || !isImageLoaded ? (
         <CardSkeleton primaryCategoryId={primaryCategoryId} />
       ) : (
         <Link
           href={`${navigationPaths[pathname]}/${business.slug}`}
           className="w-full h-full relative group rounded-xl overflow-hidden"
         >
-          <Image
-            fill
-            priority
-            unoptimized
+          <NextImage
+            isFill
+            isOptimized
             quality={100}
-            alt={updatedImage.alt || "Business"}
-            src={updatedImage.imageUrl || placeholderImage}
+            alt={updatedImage.alt}
+            imgSrc={updatedImage.imageUrl}
+            setIsImageLoaded={setIsImageLoaded}
             className="object-cover h-full w-full rounded-xl"
-            onError={() =>
-              setUpdatedImage({ imageUrl: placeholderImage, alt: "abc" })
-            }
           />
           <div className="relative w-full h-full">
             {/* Overlay (only bottom 50%) */}

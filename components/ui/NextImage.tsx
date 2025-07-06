@@ -1,7 +1,9 @@
 "use client";
 
 import Image from "next/image";
-import React, { useState } from "react";
+import { useState } from "react";
+
+import { staticImages } from "@/constant/staticImages";
 
 interface NextImageProps {
   imgSrc?: string;
@@ -13,9 +15,8 @@ interface NextImageProps {
   isFill?: boolean;
   isOptimized?: boolean;
   className?: string;
-  skeletonClassName?: string;
+  setIsImageLoaded?: (isLoaded: boolean) => void;
 }
-const placeholderImage = "/images/image-placeholder.jpg";
 
 const NextImage: React.FC<NextImageProps> = ({
   imgSrc,
@@ -26,38 +27,30 @@ const NextImage: React.FC<NextImageProps> = ({
   quality = 75,
   isFill = false,
   isOptimized = false,
+  setIsImageLoaded,
   className = "rounded-xl object-cover",
-  skeletonClassName = null,
 }) => {
-  const [isImageLoaded, setIsImageLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
 
-  const src = hasError || !imgSrc ? placeholderImage : imgSrc;
+  const src = hasError || !imgSrc ? staticImages.placeholder : imgSrc;
 
   return (
-    <>
-      {!isImageLoaded && !hasError && (
-        <div
-          className={`absolute inset-0 shimmer ${skeletonClassName || className}`}
-        />
-      )}
-      <Image
-        alt={alt}
-        src={src}
-        fill={isFill}
-        width={isFill ? undefined : width! * scale}
-        height={isFill ? undefined : height! * scale}
-        quality={quality}
-        className={className}
-        unoptimized={isOptimized}
-        priority={false}
-        onLoad={() => setIsImageLoaded(true)}
-        onError={() => {
-          setHasError(true);
-          setIsImageLoaded(true);
-        }}
-      />
-    </>
+    <Image
+      alt={alt}
+      src={src}
+      fill={isFill}
+      width={isFill ? undefined : width! * scale}
+      height={isFill ? undefined : height! * scale}
+      quality={quality}
+      className={className}
+      unoptimized={isOptimized}
+      priority={false}
+      onLoad={() => setIsImageLoaded?.(true)}
+      onError={() => {
+        setHasError(true);
+        setIsImageLoaded?.(false);
+      }}
+    />
   );
 };
 
