@@ -1,15 +1,16 @@
 "use client";
 
+import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import { contactUsText } from "@/constant/hebrew";
-import { ContactFormData, contactFormSchema } from "@/schema/contact";
-import { Dialog, IconImage } from "@/components/ui";
 import ContactInfo from "./ContactInfo";
-import Link from "next/link";
-import Image from "next/image";
+import { contactUsText } from "@/constant/hebrew";
+import { Dialog, IconImage } from "@/components/ui";
+import { ContactFormData, contactFormSchema } from "@/schema/contact";
+import { sendEmail } from "@/actions/contactUsAction";
 
 const reasonOptions = [
   { value: "characters", label: "תווים" },
@@ -74,7 +75,7 @@ const SelectField = ({ control, name, error }: any) => (
 
 const ContactForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  // const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [isSubmitSuccess, setIsSubmitSuccess] = useState(true);
 
   const {
     register,
@@ -87,7 +88,6 @@ const ContactForm = () => {
     defaultValues: {
       reason: "",
       name: "",
-      orgName: "",
       phone: "",
       email: "",
       message: "",
@@ -95,26 +95,22 @@ const ContactForm = () => {
   });
 
   const onSubmit = async (data: ContactFormData) => {
-    console.log("----data", data);
-    // try {
-    setIsSubmitting(true);
+    try {
+      setIsSubmitting(true);
 
-    //   const response = await sendEmail({
-    //     ...data,
-    //     businessEmail: data.email,
-    //   });
-    //   if (response.success) {
-    //     setSubmitSuccess(true);
-    reset();
-    //   } else {
-    //     console.error(response.errors || response.message);
-    //   }
-    //   setIsSubmitting(false);
-    // } catch (error) {
-    //   console.error("Error submitting form:", error);
-    // } finally {
-    //   setIsSubmitting(false);
-    // }
+      const response = await sendEmail(data);
+      if (response.success) {
+        setIsSubmitSuccess(true);
+        reset();
+      } else {
+        console.error(response.errors || response.message);
+      }
+      setIsSubmitting(false);
+    } catch (error) {
+      console.error("Error submitting form:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -159,15 +155,15 @@ const ContactForm = () => {
 
               <textarea
                 rows={4}
-                placeholder={contactUsText.referralDetails}
                 {...register("message")}
+                placeholder={contactUsText.referralDetails}
                 className="p-3 rounded-lg border border-lightGray resize-none"
               />
 
               <button
                 type="submit"
-                className="mx-auto h-12 w-52 mt-10 bg-dark text-white font-bold rounded-xl cursor-pointer"
                 disabled={isSubmitting}
+                className="mx-auto h-12 w-52 mt-10 bg-dark text-white font-bold rounded-xl cursor-pointer"
               >
                 {isSubmitting ? contactUsText.contactUs : "שליחה"}
               </button>
@@ -178,32 +174,34 @@ const ContactForm = () => {
       </section>
 
       {/* Success Dialog */}
-      <Dialog
-        isOpen
-        onClose={() => {}}
-        modalClassName="w-[430px] py-16 overflow-hidden"
-      >
-        <div className="flex flex-col items-center">
-          <h1 className="text-2xl font-bold text-dark">
-            {contactUsText.messageSuccess}
-          </h1>
-          <p className="text-dark">{contactUsText.thankYou}</p>
+      {isSubmitSuccess && (
+        <Dialog
+          isOpen={isSubmitSuccess}
+          onClose={() => setIsSubmitSuccess(false)}
+          modalClassName="w-[430px] py-16"
+        >
+          <div className="flex flex-col items-center">
+            <h1 className="text-2xl font-bold text-dark">
+              {contactUsText.messageSuccess}
+            </h1>
+            <p className="text-dark">{contactUsText.thankYou}</p>
 
-          <Link
-            href={"/"}
-            className="bg-dark text-white rounded-2xl px-4 py-2.75 mt-6.5"
-          >
-            {contactUsText.backToMainPage}
-          </Link>
-        </div>
-        <Image
-          width={180}
-          height={184}
-          alt="Yellow Chrysanthemum"
-          src={"/images/yellow-chrysanthemum.png"}
-          className="absolute -left-16 -bottom-20"
-        />
-      </Dialog>
+            <Link
+              href={"/"}
+              className="bg-dark text-white rounded-2xl px-4 py-2.75 mt-6.5"
+            >
+              {contactUsText.backToMainPage}
+            </Link>
+          </div>
+          <Image
+            width={180}
+            height={184}
+            alt="Yellow Chrysanthemum"
+            src={"/images/yellow-chrysanthemum.png"}
+            className="absolute -left-16 -bottom-20"
+          />
+        </Dialog>
+      )}
     </>
   );
 };
