@@ -105,7 +105,7 @@ const ProductCard = ({
       </div>
 
       <div className="m-4">
-        <h3 className="text-dark font-bold">{product?.name}</h3>
+        <h3 className="text-dark font-bold line-clamp-1">{product?.name}</h3>
         <div
           className="line-clamp-2 text-theme text-[12px]"
           dangerouslySetInnerHTML={{ __html: product?.description }}

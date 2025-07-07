@@ -1,7 +1,8 @@
 import BusinessDetailsFilterTab from "./BusinessDetailsFilterTab";
+import EventDateRange from "./EventDateRange";
+import EventLocationMap from "./EventLocationMap";
 import Footer from "./Footer.details";
 import ImageGallery from "./ImageGallery";
-import ImageGalleryDraft from "./ImageGalleryDraft";
 import Location from "./Location.details";
 import Map from "./Map.details";
 import NoDetailsFound from "./NoDetailsFound";
@@ -16,7 +17,8 @@ export {
   Location,
   ImageGallery,
   NoDetailsFound,
-  ImageGalleryDraft,
+  EventDateRange,
+  EventLocationMap,
   RatingReviewLocation,
   BusinessDetailsFilterTab,
   ReturnToPrevPageBtn,

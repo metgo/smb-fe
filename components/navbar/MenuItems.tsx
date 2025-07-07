@@ -15,7 +15,7 @@ const MenuItems = () => {
         <Link
           key={item.key}
           href={item.link}
-          className="flex flex-col items-center px-1 w-14"
+          className="flex flex-col items-center justify-center px-1 w-14"
         >
           <IconImage
             width={24}
@@ -23,7 +23,7 @@ const MenuItems = () => {
             icon={item.link === pathname ? item.activeIcon : item.icon}
           />
           <div
-            className={`text-sm w-14 ${item.link === pathname ? "text-charcoal font-bold" : "text-theme font-normal"}`}
+            className={`text-sm w-14 text-center ${item.link === pathname ? "text-charcoal font-bold" : "text-theme font-normal"}`}
           >
             {item.label}
           </div>

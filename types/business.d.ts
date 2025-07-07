@@ -1,29 +1,3 @@
-declare type LayoutItem = {
-  width: number;
-  height: number;
-};
-
-interface SubCoordinates {
-  xMax: number;
-  xMin: number;
-  yMax: number;
-  yMin: number;
-}
-
-declare interface ImageItem {
-  image: string;
-  caption: string;
-  alt: string;
-  subCoordinates?: SubCoordinates;
-  isPrimary?: boolean;
-}
-
-interface GeoLocation {
-  lat: string;
-  long: string;
-  _id: string;
-}
-
 interface Logo {
   image: string;
   caption: string;
@@ -123,12 +97,6 @@ interface ContactDetails {
   _id: string;
 }
 
-declare interface GeoLocation {
-  lat: string;
-  long: string;
-  _id: string;
-}
-
 interface Location {
   type: string;
   coordinates: [number, number];
@@ -150,18 +118,11 @@ declare interface Product {
   images: ImageItem[];
   price: Price;
 }
-interface LogoCover {
-  image: string;
-  caption: string;
-  alt: string;
-  subCoordinates: SubCoordinates;
-}
 
-declare interface Attributes {
-  _id: string;
-  name: string;
-  hebrewName: string;
-  icon?: string;
+declare interface OpeningHrs {
+  days: string;
+  open: string;
+  close: string;
 }
 
 declare interface BusinessDetailsProps {
@@ -182,7 +143,7 @@ declare interface BusinessDetailsProps {
   primaryCategoryId: string;
   bussCategoriesId: string[];
   bussSubCategoriesId: string[];
-  openingHrs: any[];
+  openingHrs: OpeningHrs[];
   isAlwaysOpen: boolean;
   slug: string;
   impact: number;

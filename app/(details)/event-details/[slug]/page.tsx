@@ -1,29 +1,36 @@
 import {
-  eventDates,
-  eventDetils,
-  eventFeatures,
-} from "@/constant/placeholderData";
-import {
+  EventDateRange,
+  EventLocationMap,
   ImageGallery,
   Location,
-  // Map,
+  NoDetailsFound,
   ReturnToPrevPageBtn,
   Title,
 } from "../../_components";
-import { shareKeepNavigate } from "@/lib/utils";
+import { events } from "@/constant/hebrew";
 import { IconImage } from "@/components/ui";
-import { misc } from "@/constant/hebrew";
+import { shareKeepNavigate } from "@/lib/utils";
 import AttributePills from "@/components/AttributePills";
+import { getEventDetailsBySlug } from "@/actions/eventActions";
 
-const page = () => {
+const page = async ({ params }: { params: { slug: string } }) => {
+  const { slug } = await params;
+
+  if (slug === "undefined") return <NoDetailsFound />;
+
+  const eventDetails: EventDetailsProps = await getEventDetailsBySlug(slug);
+
   return (
     <div className="">
       <ReturnToPrevPageBtn />
       <div className="mx-20 py-12">
-        <Title title={eventDetils.title} />
+        <Title title={eventDetails?.name} />
 
         <div className="mb-4.5 mt-2.5 flex items-center justify-between">
-          <Location city="באר-שבע" address="פארק לורם אימפסום" />
+          <Location
+            city={eventDetails?.address?.city}
+            address={eventDetails?.address?.country}
+          />
           <div className="flex items-center gap-2.5">
             {shareKeepNavigate.map((item) => (
               <div
@@ -39,49 +46,25 @@ const page = () => {
           </div>
         </div>
 
-        <ImageGallery />
+        <ImageGallery images={eventDetails?.images} />
 
-        <AttributePills items={eventFeatures} />
+        <div className="flex items-center gap-2.5 mt-4.5">
+          <AttributePills items={eventDetails?.accessibilitiesId} />
+          <AttributePills items={eventDetails?.groupTypesId} />
+        </div>
 
         <div className="grid grid-cols-12  mt-15 w-full">
           <div className="col-span-6 text-dark">
-            <h2 className="font-bold  text-2xl mb-3">{eventDetils.header}</h2>
-            <p className="font-normal">{eventDetils.desc}</p>
+            <h2 className="font-bold  text-2xl mb-3">{events.eventDetails}</h2>
+            <p className="font-normal">{eventDetails.description}</p>
           </div>
           <div className="col-span-2" />
-          <section className="col-span-4 flex flex-col items-center  gap-6">
-            <div className=" flex items-center gap-2.5">
-              {eventDates.map((item) => (
-                <div
-                  key={item.id}
-                  className={` w-23.5 h-27 border rounded-[5px] flex flex-col items-center justify-center ${item.isActive ? " border-[#E89900] bg-[#FDF5E6] text-[#E89900]" : "border-[#D3D3D3] text-theme"}`}
-                >
-                  <span>{item.title}</span>
-                  <div
-                    className={`font-bold text-[2.5rem] leading-none ${item.isActive ? "text-[#E89900]" : "text-charcoal"}`}
-                  >
-                    {item.day}
-                  </div>
-                  <span>{item.month}</span>
-                </div>
-              ))}
-            </div>
 
-            <div className="space-y-2.5">
-              <button
-                type="button"
-                className="bg-dark rounded-2xl ps-15 pe-16.5 py-2 text-white flex items-center gap-1.25 cursor-pointer"
-              >
-                <IconImage icon="external-link" />
-                <span>{misc.enrollment}</span>
-              </button>
-              <p className="text-theme font-normal text-[12px] text-center">
-                {eventDetils.dateline}
-              </p>
-            </div>
-          </section>
+          <EventDateRange dayDescription={eventDetails.dayDescription} />
 
-          <div className="mt-22.5">{/* <Map /> */}</div>
+          <div className="mt-22.5">
+            <EventLocationMap geoLocation={eventDetails.geoLocation} />
+          </div>
         </div>
       </div>
     </div>

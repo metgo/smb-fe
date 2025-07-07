@@ -12,23 +12,28 @@ const HamburgerMenu = () => {
   const pathname = usePathname();
 
   const menuRef = useRef<HTMLDivElement>(null);
+  const toggleButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (pathname) setIsOpen(false);
   }, [pathname]);
 
-  // Close modal on outside click
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+      const target = event.target as Node;
+
+      if (
+        menuRef.current &&
+        !menuRef.current.contains(target) &&
+        toggleButtonRef.current &&
+        !toggleButtonRef.current.contains(target)
+      ) {
         setIsOpen(false);
       }
     };
 
     if (isOpen) {
       document.addEventListener("mousedown", handleClickOutside);
-    } else {
-      document.removeEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
@@ -41,6 +46,7 @@ const HamburgerMenu = () => {
       {/* Toggle Button */}
       <button
         type="button"
+        ref={toggleButtonRef}
         onClick={() => setIsOpen((prev) => !prev)}
         className="focus:outline-none cursor-pointer text-theme"
       >

@@ -76,6 +76,7 @@ export const events = {
   families: "משפחות",
   children: "ילדים",
   kosher: "כשר",
+  eventDetails: "פרטי האירוע",
 };
 
 export const tempCardInfo = {

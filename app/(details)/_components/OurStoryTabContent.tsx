@@ -1,11 +1,11 @@
 "use client";
 
-import { IconImage, NextImage } from "@/components/ui";
+import Map from "./Map.details";
 import { menuItems, misc } from "@/constant/hebrew";
 import { useImageScale } from "@/hooks/useImageScale";
-import Map from "./Map.details";
-import { useImagePresent } from "@/hooks/useImagePresent";
+import { IconImage, NextImage } from "@/components/ui";
 import { CardSkeleton } from "@/components/skeletons";
+import { useImagePresent } from "@/hooks/useImagePresent";
 
 const ConstatUsInfo = ({ icon, text }: { icon: string; text: string }) => {
   if (!text) return;
@@ -17,16 +17,10 @@ const ConstatUsInfo = ({ icon, text }: { icon: string; text: string }) => {
   );
 };
 
-const OpeningDayHours = ({
-  day,
-  timeRange,
-}: {
-  day: string;
-  timeRange: string;
-}) => (
+const OpeningDayHours = ({ days, open, close }: OpeningHrs) => (
   <div className="flex justify-between gap-24 font-normal  text-theme">
-    <span className="text-sm">{day}</span>
-    <span className="">{timeRange}</span>
+    <span className="text-sm">{days}</span>
+    <span className="">{open + "-" + close}</span>
   </div>
 );
 
@@ -39,6 +33,7 @@ const OurStoryTabContent = ({
   description,
   shortDescription,
   name,
+  openingHrs,
 }: BusinessDetailsProps) => {
   const aspectRatio = 438 / 360;
   const { scale } = useImageScale();
@@ -90,25 +85,23 @@ const OurStoryTabContent = ({
       {/* Map & Opening ours */}
       <section className="flex items-center gap-7.5">
         <Map
-          className="w-full h-[30vh]"
+          className="w-[70%] flex-initial h-[35vh]"
           primaryCategoryId={primaryCategoryId}
           geoLocation={geoLocation}
         />
-        <div className="border-2 border-primary rounded-xl px-14.5 py-7.5 w-[480px]">
-          <div className="flex justify-between gap-24 text-sm font-normal mb-2.5">
-            <span className="text-charcoal">{misc.hours}</span>
-            <span className="text-[#28C268]">{misc.openNow}</span>
+        {openingHrs?.length > 0 && (
+          <div className="border-2 border-primary rounded-xl px-14.5 py-7.5 w-[30%] flex-initial">
+            <div className="flex justify-between gap-24 text-sm font-normal mb-2.5">
+              <span className="text-charcoal">{misc.hours}</span>
+              <span className="text-[#28C268]">{misc.openNow}</span>
+            </div>
+            <div className="space-y-1.5">
+              {openingHrs?.map((item, index) => (
+                <OpeningDayHours key={index} {...item} />
+              ))}
+            </div>
           </div>
-          <div className="space-y-1.5">
-            <OpeningDayHours day="ראשון" timeRange="08:00-18:00" />
-            <OpeningDayHours day="שני" timeRange="08:00-18:00" />
-            <OpeningDayHours day="שלישי" timeRange="08:00-18:00" />
-            <OpeningDayHours day="רביעי" timeRange="08:00-18:00" />
-            <OpeningDayHours day="חמישי" timeRange="08:00-18:00" />
-            <OpeningDayHours day="שישי" timeRange="08:00-14:00" />
-            <OpeningDayHours day="שבת" timeRange="סגור" />
-          </div>
-        </div>
+        )}
       </section>
     </div>
   );

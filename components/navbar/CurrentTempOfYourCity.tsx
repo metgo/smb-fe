@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
+
 import { NextImage } from "@/components/ui";
 import { getWeatherInfo } from "@/actions/getWether";
-import { usePathname } from "next/navigation";
 
 const getUserCity = async () => {
   try {
@@ -39,7 +40,7 @@ const CurrentTempOfYourCity = () => {
     return <div className="w-24"></div>;
   }
 
-  const isFeedPage = pathname === "/events" || pathname === "/businesses";
+  const isFeedPage = pathname === "/businesses";
   return (
     <div className={`flex items-center bg-white rounded-[12px] px-2`}>
       <span className="font-normal text-2xl text-theme">

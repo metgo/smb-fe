@@ -1,0 +1,113 @@
+{
+  "_id": "6867ba07ff779ad5a7994f08",
+  "name": "Concert",
+  "address": {
+    "country": "Egypt",
+    "city": "Rafah",
+    "location": "45, Rafah, North Sinai, Egypt",
+    "_id": "6867ba07ff779ad5a7994f09"
+  },
+  "description": "fved",
+  "payment": {
+    "ticketIds": []
+  },
+  "dmoId": "61d2eb2df58fa2f89374dbb7",
+  "geoLocation": {
+    "lat": "31.017430793252977",
+    "long": "34.27478461718749",
+    "_id": "6867ba07ff779ad5a7994f0c"
+  },
+  "images": [
+    {
+      "image": "https://storage.googleapis.com/metgo_dev/2025/6/EVVtgI3l0l1caDwX.jpg",
+      "caption": "metgoBusinessPrimaryImageIncoming.jpg",
+      "alt": "metgoBusinessPrimaryImageIncoming.jpg",
+      "subCoordinates": {
+        "xMax": 0.670723530783582,
+        "xMin": 0.1707235307835821,
+        "yMax": 0.6146951687116564,
+        "yMin": 0.4091736963190184
+      }
+    }
+  ],
+  "cover": {
+    "image": "https://storage.googleapis.com/metgo_dev/2025/6/uU_y3E7cvIFSPIJf.png",
+    "caption": "61f2b8b59325a6bd4ddc9b95.png",
+    "alt": "61f2b8b59325a6bd4ddc9b95.png",
+    "_id": "6867ba07ff779ad5a7994f0d"
+  },
+  "groupTypesId": [
+    {
+      "_id": "65699c1b4b1f43d99f7bdd6c",
+      "name": "Youth",
+      "hebrewName": "נוער"
+    }
+  ],
+  "accessibilitiesId": [
+    {
+      "_id": "65670045a77d2a477266d435",
+      "name": "Lactose Free",
+      "hebrewName": "ללא לקטוז"
+    }
+  ],
+  "subCategoriesId": ["6567194ce91479847b2bd17b"],
+  "slug": "Concert",
+  "dayDescription": [
+    {
+      "ticketIds": [
+        {
+          "_id": "6867b97bff779ad5a7994f00",
+          "name": "Eatly bird",
+          "images": [
+            {
+              "image": "https://storage.googleapis.com/metgo_dev/2025/6/LgUB3PKMzD4CO9eo.jpg",
+              "caption": "metgoBusinessPrimaryImageIncoming.jpg",
+              "alt": "metgoBusinessPrimaryImageIncoming.jpg",
+              "subCoordinates": {
+                "xMax": 0.996919014084507,
+                "xMin": -0.07350352112676056,
+                "yMax": 0.9799107142857143,
+                "yMin": -1.2819940476190477
+              }
+            }
+          ],
+          "userId": "659649e04267dd2b02174cc3",
+          "price": {
+            "markedPrice": 3,
+            "sellingPrice": 3,
+            "_id": "6867b97bff779ad5a7994f01"
+          },
+          "status": "active"
+        }
+      ]
+    },
+    {
+      "ticketIds": [
+        {
+          "_id": "6867b97bff779ad5a7994f00",
+          "name": "Eatly bird",
+          "images": [
+            {
+              "image": "https://storage.googleapis.com/metgo_dev/2025/6/LgUB3PKMzD4CO9eo.jpg",
+              "caption": "metgoBusinessPrimaryImageIncoming.jpg",
+              "alt": "metgoBusinessPrimaryImageIncoming.jpg",
+              "subCoordinates": {
+                "xMax": 0.996919014084507,
+                "xMin": -0.07350352112676056,
+                "yMax": 0.9799107142857143,
+                "yMin": -1.2819940476190477
+              }
+            }
+          ],
+          "userId": "659649e04267dd2b02174cc3",
+          "price": {
+            "markedPrice": 3,
+            "sellingPrice": 3,
+            "_id": "6867b97bff779ad5a7994f01"
+          },
+          "status": "active"
+        }
+      ]
+    }
+  ]
+}

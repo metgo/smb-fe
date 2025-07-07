@@ -142,16 +142,18 @@ const BusinessCard = ({ height, width, business }: BusinessCardProps) => {
               icon="circular-heart"
               onClick={() => addWishlistHandler}
             />
-            <IconImage
-              width={30}
-              height={30}
-              icon="circular-map-fold"
-              onClick={(e) => {
-                e.stopPropagation();
-                e.preventDefault();
-                handleMapIconClick(business._id);
-              }}
-            />
+            {pathname !== "/events" && (
+              <IconImage
+                width={30}
+                height={30}
+                icon="circular-map-fold"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  handleMapIconClick(business._id);
+                }}
+              />
+            )}
           </div>
         </Link>
       )}

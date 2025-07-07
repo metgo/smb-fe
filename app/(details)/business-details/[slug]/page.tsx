@@ -2,7 +2,7 @@ import { shareKeepNavigate } from "@/lib/utils";
 import { IconImage, NextImage } from "@/components/ui";
 import {
   BusinessDetailsFilterTab,
-  ImageGalleryDraft,
+  ImageGallery,
   NoDetailsFound,
   RatingReviewLocation,
   ReturnToPrevPageBtn,
@@ -58,7 +58,7 @@ const page = async ({ params }: { params: { slug: string } }) => {
           </div>
         </div>
 
-        <ImageGalleryDraft
+        <ImageGallery
           images={businessDetails.images}
           primaryCategoryId={businessDetails.primaryCategoryId}
         />
