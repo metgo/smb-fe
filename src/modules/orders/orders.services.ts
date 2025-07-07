@@ -1055,6 +1055,7 @@ export class OrdersService {
             const price
               = matchingProduct.amount || product.price?.sellingPrice || 0;
             const deliveryFee = matchingProduct.deliveryFee || 0;
+            const address = matchingProduct?.deliveryPickupLocation || '';
 
             const totalPriceForThisProduct = quantity * price + deliveryFee;
 
@@ -1081,6 +1082,9 @@ export class OrdersService {
                           ${quantity}</span>
                       <span style="display: block; font-size: 14px; color: #666666;">
 דמי משלוח: ₪${deliveryFee}</span>
+<span style="display: block; font-size: 14px; color: #666666;">כְּתוֹבֶת: ${
+  address || 'לא ישים'
+}</span>
                     </td>
                     <td style="padding: 0; vertical-align: middle; white-space: nowrap;">
                       <span dir="rtl" style="font-size: 16px; color: #333333;">₪${price}</span>
