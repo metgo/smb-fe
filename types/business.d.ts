@@ -125,6 +125,18 @@ declare interface OpeningHrs {
   close: string;
 }
 
+interface PickUpLocation {
+  address: string;
+  isAlwasyOpen: boolean;
+  openingHrs: OpeningHrs[];
+}
+
+declare interface DeliveryArea {
+  area: string;
+  price: string;
+  pickUpLocation: PickUpLocation[];
+}
+
 declare interface BusinessDetailsProps {
   _id: string;
   name: string;
@@ -152,4 +164,8 @@ declare interface BusinessDetailsProps {
   cover: LogoCover;
   countryCode: string | null;
   products: Product[];
+  deliveryArea: DeliveryArea[];
+  deliverySpecificSellerInfo: string[];
+  deliveryReturnExchange: string[];
+  deliveryAdditionalInfo: string;
 }

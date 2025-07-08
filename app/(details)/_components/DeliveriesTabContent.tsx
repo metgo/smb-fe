@@ -1,6 +1,6 @@
+import { ReactNode } from "react";
 import { IconImage } from "@/components/ui";
 import { deliveries } from "@/constant/hebrew";
-import React, { ReactNode } from "react";
 
 // Helper components
 const DeliveryTitleLayout = ({
@@ -13,7 +13,7 @@ const DeliveryTitleLayout = ({
 }: {
   icon: string;
   title: string;
-  desc: string;
+  desc?: string;
   hasExtension?: boolean;
   children?: ReactNode;
   className?: string;
@@ -25,7 +25,7 @@ const DeliveryTitleLayout = ({
     </div>
     <div
       className="text-sm font-normal text-theme mt-2.5"
-      dangerouslySetInnerHTML={{ __html: desc }}
+      dangerouslySetInnerHTML={{ __html: desc! }}
     />
     {children}
   </div>
@@ -37,7 +37,7 @@ const DeliveryLocationPrice = ({
   isLast = false,
 }: {
   location: string;
-  price: number;
+  price: string;
   isLast?: boolean;
 }) => (
   <div>
@@ -73,7 +73,11 @@ const DeliveryLocationTime = ({
 );
 
 // Main component
-const DeliveriesTabContent = () => {
+const DeliveriesTabContent = ({
+  deliveryArea,
+  deliveryReturnExchange,
+  deliverySpecificSellerInfo,
+}: BusinessDetailsProps) => {
   return (
     <div className="grid grid-cols-3 gap-7.25">
       <div className="col-span-1">
@@ -83,14 +87,13 @@ const DeliveriesTabContent = () => {
           desc="שליח עד הבית 3-7 ימי עסקים"
         >
           <div className="mt-5">
-            <DeliveryLocationPrice location="תל אביב יפו" price={19.9} />
-            <DeliveryLocationPrice location="חיפה והקריות" price={19.9} />
-            <DeliveryLocationPrice location="ירושלים והסביבה" price={19.9} />
-            <DeliveryLocationPrice
-              location="אילת והמערבה"
-              price={19.9}
-              isLast
-            />
+            {deliveryArea?.map((item, index) => (
+              <DeliveryLocationPrice
+                location={item.area}
+                price={item.price}
+                isLast={deliveryArea.length - 1 === index}
+              />
+            ))}
           </div>
         </DeliveryTitleLayout>
       </div>
@@ -128,23 +131,24 @@ const DeliveriesTabContent = () => {
         </DeliveryTitleLayout>
       </div>
       <div className="col-span-1 space-y-6.75">
-        <DeliveryTitleLayout
-          icon="shop"
-          title={deliveries.pickupFromTheStore}
-          desc={`<p>
-            לאחר אישור ההזמנה ובתיאום עם החנות<br/>
-            ללא תשלום נוסף
-            </p>`}
-        />
+        <DeliveryTitleLayout icon="shop" title={deliveries.pickupFromTheStore}>
+          {deliverySpecificSellerInfo?.map((str, index) => (
+            <div key={index} className="text-sm font-normal text-theme">
+              {str}
+            </div>
+          ))}
+        </DeliveryTitleLayout>
 
         <DeliveryTitleLayout
           icon="packag-return"
           title={deliveries.exchangeAndReturns}
-          desc={`<p>
-            החלפה עד 30 ימי עסקים<br/>
-            החזר כספי עד 14 ימי עסקים
-            </p>`}
-        />
+        >
+          {deliveryReturnExchange?.map((str, index) => (
+            <div key={index} className="text-sm font-normal text-theme">
+              {str}
+            </div>
+          ))}
+        </DeliveryTitleLayout>
       </div>
     </div>
   );

@@ -33,7 +33,7 @@ const page = async ({ searchParams }: Props) => {
         <div className="z-20 fixed top-2.5 right-0 w-full flex items-center justify-between ps-20 pe-18.5">
           <div className="flex items-center gap-5">
             {/* <IconImage icon="white-threeline" /> */}
-            <HamburgerMenu />
+            <HamburgerMenu openIcon="white-threeline" closeIcon="" />
             <Image
               alt="Logo"
               src={"/images/logo/white-logo.svg"}
@@ -47,15 +47,6 @@ const page = async ({ searchParams }: Props) => {
         {/* <div className="absolute inset-0 bg-black/20 bg-opacity-40 z-20" /> */}
         <IntroVideo />
         <ScrollIndicator />
-
-        <Image
-          unoptimized
-          width={375}
-          height={300}
-          alt="Yellow image"
-          src="/images/yellow.png"
-          className="absolute -bottom-12 -left-2 rotate-[25deg] z-20"
-        />
       </section>
 
       {/* Second Section */}

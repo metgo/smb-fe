@@ -76,16 +76,16 @@ const BusinessFeedLayout = ({
             <SubcategoryFilterPanel />
             <CategoryPanel />
           </div>
-          {activeFilterTab === "gallery" && (
-            <Image
-              width={300}
-              height={300}
-              alt="Yellow image"
-              src="/images/yellow.png"
-              className="fixed -bottom-12 -left-30 rotate-[40deg] z-50"
-            />
-          )}
         </>
+      )}
+      {activeFilterTab === "gallery" && (
+        <Image
+          width={300}
+          height={300}
+          alt="Yellow image"
+          src="/images/yellow.png"
+          className="fixed -bottom-12 -left-30 rotate-[40deg] z-50"
+        />
       )}
     </div>
   );

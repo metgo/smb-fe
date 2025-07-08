@@ -1,15 +1,21 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 
 import { navItems } from "@/lib/utils";
 import { IconImage } from "@/components/ui";
 
-const HamburgerMenu = () => {
-  const [isOpen, setIsOpen] = useState(false);
+const HamburgerMenu = ({
+  openIcon = "threeline",
+  closeIcon = "close",
+}: {
+  openIcon?: string;
+  closeIcon?: string;
+}) => {
   const pathname = usePathname();
+  const [isOpen, setIsOpen] = useState(false);
 
   const menuRef = useRef<HTMLDivElement>(null);
   const toggleButtonRef = useRef<HTMLButtonElement>(null);
@@ -50,7 +56,11 @@ const HamburgerMenu = () => {
         onClick={() => setIsOpen((prev) => !prev)}
         className="focus:outline-none cursor-pointer text-theme"
       >
-        {isOpen ? <IconImage icon="close" /> : <IconImage icon="threeline" />}
+        {isOpen ? (
+          <IconImage icon={closeIcon} />
+        ) : (
+          <IconImage icon={openIcon} />
+        )}
       </button>
 
       {/* Dropdown Menu */}
