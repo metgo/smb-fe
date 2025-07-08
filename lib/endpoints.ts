@@ -18,6 +18,7 @@ export const urls = {
   externalApi: `${BASE_URL}/external-api`,
   siteInfo: `${BASE_URL}/external-api/site-info`,
   businessDetails: `${BASE_URL}/tourism/businesses`,
+  sendContactInfo: `${BASE_URL}/contact-us`,
 
   events: `${BASE_URL}/events`,
   eventDetails: `${BASE_URL}/events`,

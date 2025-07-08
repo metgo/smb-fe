@@ -182,7 +182,7 @@ const ContactForm = () => {
           modalClassName="w-[430px]"
         >
           {/* This div should be relative and overflow-hidden */}
-          <div className="relative overflow-hidden w-full flex flex-col items-center py-16">
+          <div className="relative overflow-hidden w-full flex flex-col items-center py-16 z-50">
             <h1 className="text-2xl font-bold text-dark">
               {contactUsText.messageSuccess}
             </h1>
