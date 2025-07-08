@@ -13,11 +13,11 @@ import { ContactFormData, contactFormSchema } from "@/schema/contact";
 import { sendEmail } from "@/actions/contactUsAction";
 
 const reasonOptions = [
-  { value: "characters", label: "תווים" },
-  { value: "business", label: "עסקים" },
-  { value: "employers", label: "מעסיקים" },
-  { value: "technical support", label: "תמיכה טכנית" },
-  { value: "cancellation of tansaction", label: "ביטול עסקה" },
+  { value: "תווים", label: "תווים" },
+  { value: "עסקים", label: "עסקים" },
+  { value: "מעסיקים", label: "מעסיקים" },
+  { value: "תמיכה טכנית", label: "תמיכה טכנית" },
+  { value: "ביטול עסקה", label: "ביטול עסקה" },
 ];
 
 const InputField = ({ type = "text", placeholder, register, error }: any) => (
@@ -86,12 +86,12 @@ const ContactForm = () => {
   } = useForm<ContactFormData>({
     resolver: zodResolver(contactFormSchema),
     defaultValues: {
-      websiteIdentity: "negevTime",
-      reason: "",
       name: "",
       phone: "",
       email: "",
       message: "",
+      reason: "",
+      websiteIdentity: "negevTime",
     },
   });
 
@@ -104,7 +104,7 @@ const ContactForm = () => {
         reset();
         setIsSubmitSuccess(true);
       } else {
-        console.error(response.errors || response.message);
+        console.error("Something went wrong");
       }
       setIsSubmitting(false);
     } catch (error) {

@@ -10,5 +10,15 @@ export const sendEmail = async (formData: ContactFormData) => {
     body: JSON.stringify(formData),
   });
 
-  return res.json();
+  if (res.ok) {
+    return { success: true, data: await res.json() };
+  } else {
+    let error;
+    try {
+      error = await res.json();
+    } catch {
+      error = { message: "Unknown error" };
+    }
+    return { success: false, error };
+  }
 };
