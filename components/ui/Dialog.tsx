@@ -37,9 +37,7 @@ const Dialog: React.FC<DialogProps> = ({
 
   return (
     <div className="fixed top-0 left-0 w-screen h-screen bg-black/40 backdrop-blur-sm sm:flex items-center justify-center max-sm:p-0 p-4 z-[999]">
-      <div
-        className={clsx(modalClassName, "bg-white relative rounded-xl px-7.5")}
-      >
+      <div className={clsx(modalClassName, "bg-white relative rounded-xl")}>
         <div
           onClick={onClose}
           className="absolute cursor-pointer -top-12  right-0 z-50 w-10 h-10 flex items-center justify-center rounded-full bg-white sm:shadow-lg"

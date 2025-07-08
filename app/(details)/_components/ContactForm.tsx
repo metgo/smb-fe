@@ -75,7 +75,7 @@ const SelectField = ({ control, name, error }: any) => (
 
 const ContactForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSubmitSuccess, setIsSubmitSuccess] = useState(true);
+  const [isSubmitSuccess, setIsSubmitSuccess] = useState(false);
 
   const {
     register,
@@ -86,6 +86,7 @@ const ContactForm = () => {
   } = useForm<ContactFormData>({
     resolver: zodResolver(contactFormSchema),
     defaultValues: {
+      websiteIdentity: "negevTime",
       reason: "",
       name: "",
       phone: "",
@@ -100,8 +101,8 @@ const ContactForm = () => {
 
       const response = await sendEmail(data);
       if (response.success) {
-        setIsSubmitSuccess(true);
         reset();
+        setIsSubmitSuccess(true);
       } else {
         console.error(response.errors || response.message);
       }
@@ -116,7 +117,7 @@ const ContactForm = () => {
   return (
     <>
       <section className="relative h-[60vh] flex items-center justify-center">
-        <div className=" absolute -top-80 space-y-9.5">
+        <div className=" absolute -top-64 space-y-9.5">
           <div className="bg-white border border-lightGray w-xl rounded-2xl p-10">
             <div className="flex flex-col items-center justify-center mb-10 text-dark text-center">
               <h2 className="font-bold text-2xl">{contactUsText.title}</h2>
@@ -178,28 +179,30 @@ const ContactForm = () => {
         <Dialog
           isOpen={isSubmitSuccess}
           onClose={() => setIsSubmitSuccess(false)}
-          modalClassName="w-[430px] py-16"
+          modalClassName="w-[430px]"
         >
-          <div className="flex flex-col items-center">
+          {/* This div should be relative and overflow-hidden */}
+          <div className="relative overflow-hidden w-full flex flex-col items-center py-16">
             <h1 className="text-2xl font-bold text-dark">
               {contactUsText.messageSuccess}
             </h1>
             <p className="text-dark">{contactUsText.thankYou}</p>
 
             <Link
-              href={"/"}
+              href="/"
               className="bg-dark text-white rounded-2xl px-4 py-2.75 mt-6.5"
             >
               {contactUsText.backToMainPage}
             </Link>
+
+            <Image
+              width={180}
+              height={184}
+              alt="Yellow Chrysanthemum"
+              src="/images/yellow-chrysanthemum.png"
+              className="absolute -left-16 -bottom-20"
+            />
           </div>
-          <Image
-            width={180}
-            height={184}
-            alt="Yellow Chrysanthemum"
-            src={"/images/yellow-chrysanthemum.png"}
-            className="absolute -left-16 -bottom-20"
-          />
         </Dialog>
       )}
     </>

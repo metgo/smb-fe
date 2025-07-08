@@ -7,6 +7,7 @@ export const contactFormSchema = z.object({
   phone: z.string().min(9, { message: "מספר טלפון אינו תקין" }),
   email: z.string().email({ message: "כתובת מייל אינה תקינה" }),
   message: z.string().optional(),
+  websiteIdentity: z.string(),
 });
 
 export type ContactFormData = z.infer<typeof contactFormSchema>;
