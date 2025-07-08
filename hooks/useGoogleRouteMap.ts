@@ -3,44 +3,8 @@ import { useEffect, useRef, useState } from "react";
 import useGeneralStore from "@/stores/generalStore";
 import { getBusinessById } from "@/actions/businessActions";
 import { googlePointOfInterest } from "@/constant/googlePoi";
-import { GOOGLE_API_KEY } from "@/constant/envConstants";
 import { businessMarkers } from "@/lib/utils";
-
-declare global {
-  interface Window {
-    prevSlide: () => void;
-    nextSlide: () => void;
-  }
-}
-
-const googleMapsScriptLoaded = {
-  loaded: false,
-  callbacks: [] as (() => void)[],
-};
-
-export const loadGoogleMapsScript = (callback: () => void) => {
-  if (googleMapsScriptLoaded.loaded) {
-    callback();
-    return;
-  }
-
-  if (googleMapsScriptLoaded.callbacks.length === 0) {
-    const script = document.createElement("script");
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_API_KEY}&language=he&v=3.54`;
-    script.async = true;
-    script.onload = () => {
-      googleMapsScriptLoaded.loaded = true;
-      googleMapsScriptLoaded.callbacks.forEach((cb) => cb());
-      googleMapsScriptLoaded.callbacks = [];
-    };
-    script.onerror = () => {
-      console.error("Failed to load Google Maps script");
-    };
-    document.body.appendChild(script);
-  }
-
-  googleMapsScriptLoaded.callbacks.push(callback);
-};
+import { loadGoogleMapsScript } from "@/lib/googleMap";
 
 const center = { lat: 31.0461, lng: 34.8516 };
 

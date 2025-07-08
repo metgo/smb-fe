@@ -110,3 +110,38 @@ export function shuffleArray<T>(array: T[]): T[] {
   }
   return arr;
 }
+
+export function getHebrewDateInfo(isoDate: string) {
+  const date = new Date(isoDate);
+
+  const hebrewDays = [
+    "ראשון", // Sunday
+    "שני", // Monday
+    "שלישי", // Tuesday
+    "רביעי", // Wednesday
+    "חמישי", // Thursday
+    "שישי", // Friday
+    "שבת", // Saturday
+  ];
+
+  const hebrewMonths = [
+    "ינואר",
+    "פברואר",
+    "מרץ",
+    "אפריל",
+    "מאי",
+    "יוני",
+    "יולי",
+    "אוגוסט",
+    "ספטמבר",
+    "אוקטובר",
+    "נובמבר",
+    "דצמבר",
+  ];
+
+  return {
+    day: date.getDate().toString().padStart(2, "0"),
+    days: hebrewDays[date.getDay()],
+    month: hebrewMonths[date.getMonth()],
+  };
+}

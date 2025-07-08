@@ -11,7 +11,7 @@ import {
 import { misc } from "@/constant/hebrew";
 import { IconImage, NextImage } from "@/components/ui";
 import AttributePills from "@/components/AttributePills";
-import { trailsDetails } from "@/constant/placeholderData";
+import { eventFeatures, trailsDetails } from "@/constant/placeholderData";
 import { useGoogleRouteMap } from "@/hooks/useGoogleRouteMap";
 
 const TrailMapIntegratedLayout = () => {
@@ -49,7 +49,7 @@ const TrailMapIntegratedLayout = () => {
             <p className="font-normal">{trailsDetails.desc}</p>
           </div>
           <div className="my-7">
-            <AttributePills />
+            <AttributePills items={eventFeatures} />
           </div>
           <div className="w-full flex justify-end">
             <button

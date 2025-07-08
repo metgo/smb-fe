@@ -5,9 +5,11 @@ import { IoIosArrowDown } from "react-icons/io";
 
 import { misc } from "@/constant/hebrew";
 import { ProductCard } from "@/components/cards";
-import { products } from "@/constant/placeholderData";
 
-const ProductsTabContent = () => {
+const ProductsTabContent = ({
+  products,
+  primaryCategoryId,
+}: BusinessDetailsProps) => {
   const [productCount, setProductCount] = useState(10);
   const nextProductRef = useRef<HTMLDivElement | null>(null);
 
@@ -34,7 +36,10 @@ const ProductsTabContent = () => {
           const isFirstNew = index === productCount - 10;
           return (
             <div key={product._id} ref={isFirstNew ? nextProductRef : null}>
-              <ProductCard {...product} />
+              <ProductCard
+                product={product}
+                primaryCategoryId={primaryCategoryId}
+              />
             </div>
           );
         })}

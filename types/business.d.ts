@@ -1,29 +1,3 @@
-declare type LayoutItem = {
-  width: number;
-  height: number;
-};
-
-interface SubCoordinates {
-  xMax: number;
-  xMin: number;
-  yMax: number;
-  yMin: number;
-}
-
-declare interface ImageItem {
-  image: string;
-  caption: string;
-  alt: string;
-  subCoordinates?: SubCoordinates;
-  isPrimary?: boolean;
-}
-
-interface GeoLocation {
-  lat: string;
-  long: string;
-  _id: string;
-}
-
 interface Logo {
   image: string;
   caption: string;
@@ -34,6 +8,7 @@ interface Logo {
 
 declare interface BusinessProps {
   _id: string;
+  slug?: string;
   name: string;
   geoLocation: GeoLocation;
   images: ImageItem[];
@@ -101,10 +76,96 @@ declare type BusienssSubcategoryProps = {
   parent: string[];
 }[];
 
-declare type ProductProps = {
-  _id: number;
+// ------------------------------------------------------
+
+declare interface Address {
+  country: string;
+  city: string;
+  location: string;
+  _id: string;
+}
+
+interface ContactDetails {
   name: string;
-  desc?: string;
-  price: string;
+  countryCode: string;
+  phone: string;
+  address: string;
+  email: string;
+  whatsAppCountryCode: string | null;
+  whatsAppNumber: string;
+  prefferedChannel: string;
+  _id: string;
+}
+
+interface Location {
+  type: string;
+  coordinates: [number, number];
+}
+
+interface Price {
+  markedPrice: number;
+  discountAmount: number;
+  discountPercent: number;
+  sellingPrice: number;
+  _id: string;
+}
+
+declare interface Product {
+  _id: string;
+  name: string;
+  description: string;
+  businessId: string;
   images: ImageItem[];
-};
+  price: Price;
+}
+
+declare interface OpeningHrs {
+  days: string;
+  open: string;
+  close: string;
+}
+
+interface PickUpLocation {
+  address: string;
+  isAlwasyOpen: boolean;
+  openingHrs: OpeningHrs[];
+}
+
+declare interface DeliveryArea {
+  area: string;
+  price: string;
+  pickUpLocation: PickUpLocation[];
+}
+
+declare interface BusinessDetailsProps {
+  _id: string;
+  name: string;
+  address: Address;
+  phoneNumber: string;
+  busiEmail: string;
+  shortDescription: string;
+  description: string;
+  contactDetails: ContactDetails;
+  dmoId: string;
+  geoLocation: GeoLocation;
+  location: Location;
+  images: ImageItem[];
+  groupTypesId: Attributes[];
+  accessibilitiesId: Attributes[];
+  primaryCategoryId: string;
+  bussCategoriesId: string[];
+  bussSubCategoriesId: string[];
+  openingHrs: OpeningHrs[];
+  isAlwaysOpen: boolean;
+  slug: string;
+  impact: number;
+  socialMedia: any[];
+  logo: LogoCover;
+  cover: LogoCover;
+  countryCode: string | null;
+  products: Product[];
+  deliveryArea: DeliveryArea[];
+  deliverySpecificSellerInfo: string[];
+  deliveryReturnExchange: string[];
+  deliveryAdditionalInfo: string;
+}

@@ -1,8 +1,10 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+
 import { NextImage } from "@/components/ui";
 import { getWeatherInfo } from "@/actions/getWether";
+import { weatherIcons } from "@/lib/utils";
 
 const getUserCity = async () => {
   try {
@@ -24,7 +26,10 @@ const CurrentTempOfYourCity = () => {
 
   useEffect(() => {
     (async () => {
-      const city = await getUserCity();
+      let city;
+      if (!city) {
+        city = await getUserCity();
+      }
       const data = await getWeatherInfo(city);
       setWeather(data);
     })();
@@ -35,14 +40,14 @@ const CurrentTempOfYourCity = () => {
   }
 
   return (
-    <div className={`flex items-center bg-white rounded-[12px] px-2`}>
+    <div className={`flex items-center gap-1 bg-white rounded-[12px] px-2`}>
       <span className="font-normal text-2xl text-theme">
         {Math.trunc(weather?.temperature) || 0.0}°C
       </span>
       <NextImage
-        width={40}
-        height={40}
-        imgSrc={`https:${weather?.icon}`}
+        width={20}
+        height={20}
+        imgSrc={`/images/weather/${weatherIcons[weather.code]}.svg`}
         alt={weather?.condition}
         className="block"
       />

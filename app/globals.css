@@ -49,6 +49,8 @@
 
   .skeleton {
     @apply relative overflow-hidden bg-gradient-to-br from-0% via-50% to-100%;
+    border-radius: 1rem;
+    /* Softens the outer container */
   }
 
   .skeleton::before {
@@ -63,6 +65,8 @@
     );
     background-size: 200% 200%;
     animation: shimmer-diagonal 1.5s infinite;
+    filter: blur(12px);
+    border-radius: 9999px;
   }
 
   @keyframes shimmer-diagonal {

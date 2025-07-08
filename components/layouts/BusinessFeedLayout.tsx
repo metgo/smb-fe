@@ -5,18 +5,17 @@ import useGeneralStore from "@/stores/generalStore";
 import { useEffect, useRef, useState } from "react";
 
 import NoBusinessLayout from "./NoBusinessLayout";
+import { useLoadMore } from "@/hooks/useLoadMore";
 import OnlyBusinessMapLayout from "./OnlyBusinessMapLayout";
 import OnlyBusinessCardsLayout from "./OnlyBusinessCardsLayout";
 import MapBusinessIntegratedLayout from "./MapBusinessIntegratedLayout";
 import { CategoryPanel, SubcategoryFilterPanel } from "../cards";
-import { useLoadMore } from "@/hooks/useLoadMore";
 
-interface Props {
+const BusinessFeedLayout = ({
+  businesses,
+}: {
   businesses: BusinessesProps;
-  categories: BusinessCategoryProps;
-}
-
-const BusinessFeedLayout = ({ businesses, categories }: Props) => {
+}) => {
   const { activeFilterTab } = useGeneralStore();
   const { sentryRef, loading, initialLoadDone, canLoadMore } = useLoadMore(
     businesses?.meta?.hasNextPage,
@@ -75,18 +74,18 @@ const BusinessFeedLayout = ({ businesses, categories }: Props) => {
         <>
           <div className="fixed bottom-4 left-1/2 -translate-x-1/2 flex flex-col items-center justify-center gap-2 w-max">
             <SubcategoryFilterPanel />
-            <CategoryPanel categories={categories} />
+            <CategoryPanel />
           </div>
-          {activeFilterTab === "gallery" && (
-            <Image
-              width={300}
-              height={300}
-              alt="Yellow image"
-              src="/images/yellow.png"
-              className="fixed -bottom-12 -left-30 rotate-[40deg] z-50"
-            />
-          )}
         </>
+      )}
+      {activeFilterTab === "gallery" && (
+        <Image
+          width={300}
+          height={300}
+          alt="Yellow image"
+          src="/images/yellow.png"
+          className="fixed -bottom-12 -left-30 rotate-[40deg] z-50"
+        />
       )}
     </div>
   );

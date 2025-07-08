@@ -1,35 +1,43 @@
+import { shareKeepNavigate } from "@/lib/utils";
 import { IconImage, NextImage } from "@/components/ui";
-import { eventFeatures, shareKeepNavigate } from "@/lib/utils";
-import { businessDetails } from "@/constant/placeholderData";
 import {
   BusinessDetailsFilterTab,
-  ImageGalleryDraft,
+  ImageGallery,
+  NoDetailsFound,
   RatingReviewLocation,
   ReturnToPrevPageBtn,
   Title,
 } from "../../_components";
+import { getBusinessDetailsBySlug } from "@/actions/businessActions";
+import AttributePills from "@/components/AttributePills";
 
-const page = () => {
+const page = async ({ params }: { params: { slug: string } }) => {
+  const { slug } = await params;
+
+  if (slug === "undefined") return <NoDetailsFound />;
+
+  const businessDetails: BusinessDetailsProps =
+    await getBusinessDetailsBySlug(slug);
+
   return (
-    <div className="">
+    <div>
       <ReturnToPrevPageBtn />
 
       <div className="mx-20 py-12">
         <div className="flex items-center gap-7.5 w-full mb-4.5">
           <NextImage
-            imgSrc={businessDetails.logo}
-            alt="logo"
             width={80}
             height={80}
+            alt={businessDetails?.logo?.alt}
+            imgSrc={businessDetails?.logo?.image}
             className="rounded-lg border border-theme h-20 w-20 object-cover"
           />
           <div className="w-full">
-            <Title title={businessDetails.businessName} />
+            <Title title={businessDetails.name} />
 
             <div className=" flex items-center justify-between w-full">
               <RatingReviewLocation
-                city="נווה מדבר 4"
-                address="להבים"
+                address={businessDetails?.address}
                 ratingCount={12}
                 reviewCount={34}
               />
@@ -50,20 +58,17 @@ const page = () => {
           </div>
         </div>
 
-        <ImageGalleryDraft />
+        <ImageGallery
+          images={businessDetails.images}
+          primaryCategoryId={businessDetails.primaryCategoryId}
+        />
 
         <div className="flex items-center gap-2.5 mt-4.5">
-          {eventFeatures.map((item) => (
-            <div
-              key={item.id}
-              className="ps-4 pe-5 border border-theme rounded-4xl h-10 flex items-center justify-center"
-            >
-              <span className="font-bold text-sm text-theme">{item.label}</span>
-            </div>
-          ))}
+          <AttributePills items={businessDetails?.accessibilitiesId} />
+          <AttributePills items={businessDetails?.groupTypesId} />
         </div>
 
-        <BusinessDetailsFilterTab />
+        <BusinessDetailsFilterTab businessDetails={businessDetails} />
       </div>
     </div>
   );

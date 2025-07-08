@@ -58,7 +58,7 @@ const Footer = () => {
           <div key={colKey} className="flex gap-2">
             <div className="flex flex-col">
               {items.map((item) => (
-                <div key={item.id} className="mb-2 hover:bg-primary">
+                <div key={item.id} className="mb-2 hover:underline">
                   <Link
                     href={item.href}
                     className="text-theme transition text-sm font-normal"

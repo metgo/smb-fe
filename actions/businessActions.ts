@@ -59,7 +59,7 @@ export const getAllBusinesses = async (
       try {
         console.log(`Fetching page ${i} from API`);
         const res = await fetch(
-          `${urls.tourismBusinesses}?page=${i}&limit=50&bussCategoriesId=${categoryId}&bussSubCategoriesId=${subCategoryId}&sortBy=createdAt&sortOrder=ASC&campCode=${CODE}`,
+          `${urls.tourismBusinesses}?page=${i}&limit=50&bussCategoriesId=${categoryId}&bussSubCategoriesId=${subCategoryId}&sortBy=createdAt&sortOrder=DESC&campCode=${CODE}`,
           {
             cache: "no-store",
           },
@@ -156,6 +156,17 @@ export async function getBusinessById(businessId: string) {
     const res = await fetch(
       `${urls.locationData}/${businessId}?campCode=${CODE}`,
     );
+    if (!res.ok) throw new Error("Failed to fetch categories");
+    const data = await res.json();
+    return data;
+  } catch (error) {
+    console.error("Error fetching categories:", error);
+  }
+}
+
+export async function getBusinessDetailsBySlug(slug: string) {
+  try {
+    const res = await fetch(`${urls.businessDetails}/${slug}?campCode=${CODE}`);
     if (!res.ok) throw new Error("Failed to fetch categories");
     const data = await res.json();
     return data;

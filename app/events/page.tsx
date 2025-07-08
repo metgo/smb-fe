@@ -1,5 +1,6 @@
-import { getAllBusinesses } from "@/actions/businessActions";
+import { getAllEvents } from "@/actions/eventActions";
 import FilterBusinessLayout from "@/components/layouts/FilterBusinessLayout";
+import Navbar from "@/components/navbar";
 
 interface Props {
   searchParams: Promise<{
@@ -12,14 +13,19 @@ interface Props {
 const page = async ({ searchParams }: Props) => {
   const { page = 1, categoryId = "", subCategoryId = "" } = await searchParams;
 
-  const businesses: BusinessesProps = await getAllBusinesses(
+  const businesses: BusinessesProps = await getAllEvents(
     Number(page),
     categoryId,
     subCategoryId,
     "/events",
   );
 
-  return <FilterBusinessLayout businesses={businesses} />;
+  return (
+    <>
+      <Navbar />
+      <FilterBusinessLayout businesses={businesses} />
+    </>
+  );
 };
 
 export default page;

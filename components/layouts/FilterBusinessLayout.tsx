@@ -8,13 +8,16 @@ import OnlyBusinessMapLayout from "./OnlyBusinessMapLayout";
 import OnlyBusinessCardsLayout from "./OnlyBusinessCardsLayout";
 import MapBusinessIntegratedLayout from "./MapBusinessIntegratedLayout";
 import { useLoadMore } from "@/hooks/useLoadMore";
+import { usePathname } from "next/navigation";
+import { useEffect } from "react";
 
 interface Props {
   businesses: BusinessesProps;
 }
 
 const FilterBusinessLayout = ({ businesses }: Props) => {
-  const { activeFilterTab } = useGeneralStore();
+  const { activeFilterTab, setActiveFilterTab } = useGeneralStore();
+  const pathname = usePathname();
 
   const { sentryRef, loading, initialLoadDone, canLoadMore } = useLoadMore(
     businesses?.meta?.hasNextPage,
@@ -22,6 +25,10 @@ const FilterBusinessLayout = ({ businesses }: Props) => {
   const totalBusiness = businesses?.totalData;
 
   if (!totalBusiness) return <NoBusinessLayout />;
+
+  useEffect(() => {
+    if (pathname === "/events") setActiveFilterTab("gallery");
+  }, [pathname]);
 
   const renderLayout = () => {
     switch (activeFilterTab) {
