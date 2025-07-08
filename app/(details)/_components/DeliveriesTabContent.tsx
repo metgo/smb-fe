@@ -18,7 +18,7 @@ const DeliveryTitleLayout = ({
   children?: ReactNode;
   className?: string;
 }) => (
-  <div className={`border border-secondary rounded-[10px] px-6.5 ${className}`}>
+  <div className={`border border-secondary rounded-[10px] ${className}`}>
     <div className="flex items-center gap-2.5">
       <IconImage icon={icon} hasExtension={hasExtension} />
       <h2 className="font-bold text-sm text-dark">{title}</h2>
@@ -76,79 +76,108 @@ const DeliveryLocationTime = ({
 const DeliveriesTabContent = ({
   deliveryArea,
   deliveryReturnExchange,
+  deliveryAdditionalInfo,
   deliverySpecificSellerInfo,
 }: BusinessDetailsProps) => {
   return (
     <div className="grid grid-cols-3 gap-7.25">
-      <div className="col-span-1">
-        <DeliveryTitleLayout
-          icon="delivery-truck"
-          title={deliveries.homeDelivery}
-          desc="שליח עד הבית 3-7 ימי עסקים"
-        >
-          <div className="mt-5">
-            {deliveryArea?.map((item, index) => (
-              <DeliveryLocationPrice
-                location={item.area}
-                price={item.price}
-                isLast={deliveryArea.length - 1 === index}
-              />
-            ))}
-          </div>
-        </DeliveryTitleLayout>
-      </div>
-      <div className="col-span-1">
-        <DeliveryTitleLayout
-          icon="shopping-bag.png"
-          hasExtension
-          title={deliveries.selfPickupPoint}
-          desc="לאחר אישור ההזמנה ניתן לאסוף תוך יום עסקים"
-          className="pt-7.5 pb-0"
-        >
-          <div className="mt-5 max-h-[240px] overflow-y-scroll">
-            <DeliveryLocationTime
-              location="בן יהודה 17, תל אביב"
-              timeStr="א׳-ה׳ 8:00-2:00 ו׳ 9:00-12:00"
-              price={1}
-            />
-            <DeliveryLocationTime
-              location="ארלוזורוב 56, תל אביב"
-              timeStr="א׳-ה׳ 8:00-2:00 ו׳ 9:00-12:00"
-              price={0}
-            />
-            <DeliveryLocationTime
-              location="שד ירושלים 34, תל אביב"
-              timeStr="א׳-ה׳ 8:00-2:00 ו׳ 9:00-12:00"
-              price={2}
-            />
-            <DeliveryLocationTime
-              location="נס ציונה 355, תל אביב"
-              timeStr="א׳-ה׳ 8:00-2:00 ו׳ 9:00-12:00"
-              price={5}
-              isLast
-            />
-          </div>
-        </DeliveryTitleLayout>
-      </div>
-      <div className="col-span-1 space-y-6.75">
-        <DeliveryTitleLayout icon="shop" title={deliveries.pickupFromTheStore}>
-          {deliverySpecificSellerInfo?.map((str, index) => (
-            <div key={index} className="text-sm font-normal text-theme">
-              {str}
+      {deliveryArea?.length > 0 && (
+        <div className="col-span-1">
+          <DeliveryTitleLayout
+            icon="delivery-truck"
+            title={deliveries.homeDelivery}
+            desc="שליח עד הבית 3-7 ימי עסקים"
+            className="px-6.5 py-7.5 h-[26rem]"
+          >
+            <div className="mt-5">
+              {deliveryArea?.map((item, index) => (
+                <DeliveryLocationPrice
+                  location={item.area}
+                  price={item.price}
+                  isLast={deliveryArea.length - 1 === index}
+                />
+              ))}
             </div>
-          ))}
-        </DeliveryTitleLayout>
+          </DeliveryTitleLayout>
+        </div>
+      )}
 
-        <DeliveryTitleLayout
-          icon="packag-return"
-          title={deliveries.exchangeAndReturns}
-        >
-          {deliveryReturnExchange?.map((str, index) => (
-            <div key={index} className="text-sm font-normal text-theme">
-              {str}
+      {
+        <div className="col-span-1">
+          <DeliveryTitleLayout
+            icon="shopping-bag.png"
+            hasExtension
+            title={deliveries.selfPickupPoint}
+            desc="לאחר אישור ההזמנה ניתן לאסוף תוך יום עסקים"
+            className="pt-7.5 pb-0 ps-6.5 pe-0 h-[26rem]"
+          >
+            <div className="mt-5 max-h-70 overflow-y-scroll">
+              <DeliveryLocationTime
+                location="בן יהודה 17, תל אביב"
+                timeStr="א׳-ה׳ 8:00-2:00 ו׳ 9:00-12:00"
+                price={1}
+              />
+              <DeliveryLocationTime
+                location="ארלוזורוב 56, תל אביב"
+                timeStr="א׳-ה׳ 8:00-2:00 ו׳ 9:00-12:00"
+                price={0}
+              />
+              <DeliveryLocationTime
+                location="שד ירושלים 34, תל אביב"
+                timeStr="א׳-ה׳ 8:00-2:00 ו׳ 9:00-12:00"
+                price={2}
+              />
+              <DeliveryLocationTime
+                location="נס ציונה 355, תל אביב"
+                timeStr="א׳-ה׳ 8:00-2:00 ו׳ 9:00-12:00"
+                price={5}
+                isLast
+              />
             </div>
-          ))}
-        </DeliveryTitleLayout>
+          </DeliveryTitleLayout>
+        </div>
+      }
+
+      <div className="col-span-1 space-y-2.5 text-sm font-normal text-theme">
+        {deliverySpecificSellerInfo?.length > 0 && (
+          <DeliveryTitleLayout
+            icon="shop"
+            title={deliveries.pickupFromTheStore}
+            className="pt-7.5 pb-0 ps-6.5 pe-0 h-37"
+          >
+            <div className="max-h-20 overflow-y-scroll">
+              {deliverySpecificSellerInfo?.map((str, index) => (
+                <div key={index}>{str}</div>
+              ))}
+            </div>
+          </DeliveryTitleLayout>
+        )}
+
+        {deliveryReturnExchange?.length > 0 && (
+          <DeliveryTitleLayout
+            icon="packag-return"
+            title={deliveries.exchangeAndReturns}
+            className="pt-7.5 pb-0 ps-6.5 pe-0 h-37"
+          >
+            <div className="max-h-20 overflow-y-scroll">
+              {deliveryReturnExchange?.map((str, index) => (
+                <div key={index}>{str}</div>
+              ))}
+            </div>
+          </DeliveryTitleLayout>
+        )}
+
+        {deliveryAdditionalInfo && (
+          <DeliveryTitleLayout
+            icon="packag-return"
+            title={deliveries.additionalInformation}
+            className="pt-7.5 pb-0 ps-6.5 pe-0 h-30"
+          >
+            <div className="max-h-40 overflow-y-scroll">
+              <p>{deliveryAdditionalInfo}</p>
+            </div>
+          </DeliveryTitleLayout>
+        )}
       </div>
     </div>
   );

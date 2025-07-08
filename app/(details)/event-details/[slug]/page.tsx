@@ -7,11 +7,11 @@ import {
   ReturnToPrevPageBtn,
   Title,
 } from "../../_components";
-import { events } from "@/constant/hebrew";
 import { IconImage } from "@/components/ui";
-import { shareKeepNavigate } from "@/lib/utils";
+import { events, misc } from "@/constant/hebrew";
 import AttributePills from "@/components/AttributePills";
 import { getEventDetailsBySlug } from "@/actions/eventActions";
+import Link from "next/link";
 
 const page = async ({ params }: PageProps) => {
   const { slug } = await params;
@@ -32,17 +32,23 @@ const page = async ({ params }: PageProps) => {
             address={eventDetails?.address?.country}
           />
           <div className="flex items-center gap-2.5">
-            {shareKeepNavigate.map((item) => (
-              <div
-                key={item.id}
-                className="flex items-center gap-1.25 ps-2.5 pe-4 py-1 cursor-pointer"
-              >
-                <IconImage icon={item.icon} />
-                <span className="font-bold text-theme text-sm">
-                  {item.label}
-                </span>
-              </div>
-            ))}
+            <Link
+              target="_blank"
+              rel="noopener noreferrer"
+              href={`https://www.google.com/maps/search/?api=1&query=${eventDetails?.geoLocation?.lat + "," + eventDetails?.geoLocation?.long}`}
+              className="flex items-center gap-1.25 ps-2.5 pe-4 py-1 cursor-pointer"
+            >
+              <IconImage icon={"navigation"} />
+              <span className="font-bold text-theme text-sm">
+                {misc.navigation}
+              </span>
+            </Link>
+            <div className="flex items-center gap-1.25 ps-2.5 pe-4 py-1 cursor-pointer">
+              <IconImage icon={"share"} />
+              <span className="font-bold text-theme text-sm">
+                {misc.sharing}
+              </span>
+            </div>
           </div>
         </div>
 

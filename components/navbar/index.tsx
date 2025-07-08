@@ -35,14 +35,14 @@ const Navbar = async ({
         <div className="flex items-center justify-end">
           <MenuItems />
 
-          <div className="w-[2px] h-10 bg-black mx-4" />
+          <div className="w-[1px] h-10 bg-theme mx-4" />
 
           <div className="flex items-center gap-2.5">
             <SearchIcon />
             <div className="p-2 relative">
-              <div className="absolute -top-1 -left-0 bg-[#28C268] rounded-full text-center h-[14px] w-[14px]  flex justify-center items-center">
+              {/* <div className="absolute -top-1 -left-0 bg-[#28C268] rounded-full text-center h-[14px] w-[14px]  flex justify-center items-center">
                 <span className="text-[12px] text-white font-bold">3</span>
-              </div>
+              </div> */}
               <ShopbagIcon />
             </div>
             <UserIconHoverCard />
