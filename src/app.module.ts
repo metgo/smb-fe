@@ -46,6 +46,8 @@ import { CartModule } from 'src/modules/cart/cart.modules';
 import { SmsModule } from 'src/services/sms/sms.module';
 import { QRCodeModule } from 'src/services/qr-code/qr-code.module';
 import { ThemeModule } from './modules/themes/theme.module';
+import { GoogleSheetsModule } from './services/google-sheets/google-sheets.module';
+import { ContactUsModule } from './modules/contact-us/contact-us.module';
 
 @Module({
   imports: [
@@ -91,6 +93,8 @@ import { ThemeModule } from './modules/themes/theme.module';
     SmsModule,
     QRCodeModule,
     ThemeModule,
+    GoogleSheetsModule,
+    ContactUsModule,
   ],
   providers: [
     {
