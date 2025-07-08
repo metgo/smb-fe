@@ -8,8 +8,6 @@ import { shuffleArray } from "@/lib/helpers";
 const contextStates = new Map<
   string,
   {
-    previousCategoryId: string | null;
-    previousSubCategoryId: string | null;
     lastFetchedPage: number;
     pageCache: Map<number, BusinessProps[]>;
     metaCache: Map<number, any>;
@@ -20,8 +18,6 @@ const contextStates = new Map<
 const getContextState = (contextId: string) => {
   if (!contextStates.has(contextId)) {
     contextStates.set(contextId, {
-      previousCategoryId: null,
-      previousSubCategoryId: null,
       lastFetchedPage: 0,
       pageCache: new Map(),
       metaCache: new Map(),
@@ -32,25 +28,10 @@ const getContextState = (contextId: string) => {
 
 export const getAllEvents = async (
   pageCount: number,
-  categoryId: string,
-  subCategoryId: string,
   contextId: string = "default",
 ): Promise<BusinessesProps> => {
   // Get state for this specific context
   const state = getContextState(contextId);
-
-  const isCategoryChanged = state.previousCategoryId !== categoryId;
-  const isSubCategoryChanged = state.previousSubCategoryId !== subCategoryId;
-
-  // Clear cache and reset data when category/subcategory changes
-  if (isCategoryChanged || isSubCategoryChanged) {
-    console.log("Category/SubCategory changed, clearing cache");
-    state.pageCache.clear();
-    state.metaCache.clear();
-    state.lastFetchedPage = 0;
-    state.previousCategoryId = categoryId;
-    state.previousSubCategoryId = subCategoryId;
-  }
 
   // Only fetch pages that haven't been fetched yet
   for (let i = state.lastFetchedPage + 1; i <= pageCount; i++) {
@@ -59,7 +40,7 @@ export const getAllEvents = async (
       try {
         console.log(`Fetching page ${i} from API`);
         const res = await fetch(
-          `${urls.events}?page=${i}&limit=16&bussCategoriesId=${categoryId}&bussSubCategoriesId=${subCategoryId}&sortBy=createdAt&sortOrder=DESC&campCode=${CODE}`,
+          `${urls.events}?page=${i}&limit=16&sortBy=createdAt&sortOrder=DESC&campCode=${CODE}`,
           {
             cache: "no-store",
           },

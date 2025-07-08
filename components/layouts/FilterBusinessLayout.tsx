@@ -1,15 +1,15 @@
 "use client";
 
 import Image from "next/image";
-import useGeneralStore from "@/stores/generalStore";
+import { useEffect } from "react";
+import { usePathname } from "next/navigation";
 
+import { useLoadMore } from "@/hooks/useLoadMore";
 import NoBusinessLayout from "./NoBusinessLayout";
+import useGeneralStore from "@/stores/generalStore";
 import OnlyBusinessMapLayout from "./OnlyBusinessMapLayout";
 import OnlyBusinessCardsLayout from "./OnlyBusinessCardsLayout";
 import MapBusinessIntegratedLayout from "./MapBusinessIntegratedLayout";
-import { useLoadMore } from "@/hooks/useLoadMore";
-import { usePathname } from "next/navigation";
-import { useEffect } from "react";
 
 interface Props {
   businesses: BusinessesProps;

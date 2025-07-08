@@ -65,10 +65,8 @@ const HamburgerMenu = ({
 
       {/* Dropdown Menu */}
       <div
-        className={`absolute top-20 right-0 w-full h-screen shadow-lg flex px-20 bg-black/20 backdrop-blur-sm overflow-y-auto overflow-x-hidden transition-all duration-500 ease-in-out ${
-          isOpen
-            ? "max-h-[96vh] opacity-100 translate-y-0"
-            : "max-h-0 opacity-0 -translate-y-10 pointer-events-none"
+        className={`absolute top-20 right-0 w-full h-screen shadow-lg flex px-20 bg-black/20 backdrop-blur-sm overflow-y-auto overflow-x-hidden  ${
+          isOpen ? "max-h-[96vh] " : "max-h-0 pointer-events-none"
         }`}
       >
         {/* Modal Content */}

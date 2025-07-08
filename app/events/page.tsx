@@ -12,12 +12,10 @@ interface Props {
 }
 
 const page = async ({ searchParams }: Props | any) => {
-  const { page = 1, categoryId = "", subCategoryId = "" } = await searchParams;
+  const { page = 1 } = await searchParams;
 
   const businesses: BusinessesProps = await getAllEvents(
     Number(page),
-    categoryId,
-    subCategoryId,
     "/events",
   );
 
