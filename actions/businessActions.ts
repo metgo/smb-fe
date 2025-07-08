@@ -44,7 +44,6 @@ export const getAllBusinesses = async (
 
   // Clear cache and reset data when category/subcategory changes
   if (isCategoryChanged || isSubCategoryChanged) {
-    console.log("Category/SubCategory changed, clearing cache");
     state.pageCache.clear();
     state.metaCache.clear();
     state.lastFetchedPage = 0;
@@ -57,7 +56,6 @@ export const getAllBusinesses = async (
     const isCached = state.pageCache.has(i);
     if (!isCached) {
       try {
-        console.log(`Fetching page ${i} from API`);
         const res = await fetch(
           `${urls.tourismBusinesses}?page=${i}&limit=50&bussCategoriesId=${categoryId}&bussSubCategoriesId=${subCategoryId}&sortBy=createdAt&sortOrder=DESC&campCode=${CODE}`,
           {

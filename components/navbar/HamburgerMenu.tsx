@@ -72,7 +72,7 @@ const HamburgerMenu = ({
         {/* Modal Content */}
         <div
           ref={menuRef}
-          className="w-full mx-auto h-[max-content] py-10 px-12 flex gap-10 rounded-b-xl bg-white/90 backdrop-blur-xl"
+          className="w-full mx-auto h-[max-content] py-10 px-12 flex gap-10 rounded-b-xl bg-white backdrop-blur-[34px]"
         >
           {Object.entries(navItems[0]).map(([colKey, items]) => (
             <div key={colKey} className="flex gap-2.75">
@@ -85,7 +85,7 @@ const HamburgerMenu = ({
                   >
                     <Link
                       href={item.href}
-                      className="text-theme hover:text-dark transition font-bold text-smm flex items-center gap-2.5"
+                      className="text-theme hover:text-dark transition font-bold text-sm flex items-center gap-2.5"
                     >
                       {item.rightIcon && <IconImage icon={item.rightIcon} />}
                       {item.label}

@@ -54,7 +54,7 @@ const SubcategoryFilterPanel = () => {
   if (activeCategoryKey === "" || subCategories?.length === 0) return;
 
   return (
-    <div className="max-w-5xl bg-white/80 backdrop-blur-md border border-white/20 shadow-md p-2.5 rounded-2xl z-50">
+    <div className="max-w-5xl bg-[#FAFAFA]/80 backdrop-blur border border-white/20 shadow-md p-2.5 rounded-2xl z-50">
       <div className="flex items-center gap-2.5">
         <div className="px-4 py-2.5 rounded-xl border border-theme flex items-center gap-2">
           <FilterIcon />
@@ -65,7 +65,7 @@ const SubcategoryFilterPanel = () => {
           <button
             type="button"
             onClick={scrollLeft}
-            className="border border-theme rounded-full p-1 cursor-pointer"
+            className="border border-theme rounded-full cursor-pointer"
           >
             <RightAngleArrow />
           </button>
@@ -83,7 +83,7 @@ const SubcategoryFilterPanel = () => {
                     activeSubCategory === item.id
                       ? `${categoryBgClasses[activeCategoryKey]} text-white`
                       : "bg-white"
-                  } cursor-pointer px-5 py-3 rounded-4xl font-bold text-sm whitespace-nowrap shrink-0`}
+                  } cursor-pointer px-5 py-3 rounded-[34px] font-bold text-sm whitespace-nowrap shrink-0`}
                 >
                   <span>{item.name}</span>
                 </button>

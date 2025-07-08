@@ -18,6 +18,7 @@ export const deliveries = {
   selfPickupPoint: "נקודת איסוף עצמי",
   pickupFromTheStore: "איסוף מהחנות",
   exchangeAndReturns: "החלפות והחזרות",
+  additionalInformation: "מידע נוסף",
 };
 export const category = {
   tours: "טיולים",
