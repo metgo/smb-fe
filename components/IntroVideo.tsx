@@ -38,7 +38,7 @@ const IntroVideo = () => {
     <video
       ref={videoRef}
       loop
-      muted
+      // muted
       playsInline
       preload="auto"
       src="/videos/intro.mp4"
