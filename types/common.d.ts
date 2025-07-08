@@ -2,6 +2,10 @@ declare type ReactChildNode = {
   children: React.ReactNode;
 };
 
+declare type PageProps = {
+  params: { slug: string };
+};
+
 declare type LayoutItem = {
   width: number;
   height: number;

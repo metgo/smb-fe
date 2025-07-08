@@ -13,10 +13,10 @@ import { shareKeepNavigate } from "@/lib/utils";
 import AttributePills from "@/components/AttributePills";
 import { getEventDetailsBySlug } from "@/actions/eventActions";
 
-const page = async ({ params }: { params: { slug: string } }) => {
+const page = async ({ params }: PageProps) => {
   const { slug } = await params;
 
-  if (slug === "undefined") return <NoDetailsFound />;
+  if (slug === "undefined" || !slug) return <NoDetailsFound />;
 
   const eventDetails: EventDetailsProps = await getEventDetailsBySlug(slug);
 

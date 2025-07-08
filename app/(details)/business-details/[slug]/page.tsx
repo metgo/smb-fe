@@ -8,13 +8,13 @@ import {
   ReturnToPrevPageBtn,
   Title,
 } from "../../_components";
-import { getBusinessDetailsBySlug } from "@/actions/businessActions";
 import AttributePills from "@/components/AttributePills";
+import { getBusinessDetailsBySlug } from "@/actions/businessActions";
 
-const page = async ({ params }: { params: { slug: string } }) => {
+const page = async ({ params }: PageProps) => {
   const { slug } = await params;
 
-  if (slug === "undefined") return <NoDetailsFound />;
+  if (!slug || slug === "undefined") return <NoDetailsFound />;
 
   const businessDetails: BusinessDetailsProps =
     await getBusinessDetailsBySlug(slug);
