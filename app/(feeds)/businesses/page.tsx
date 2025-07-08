@@ -1,16 +1,16 @@
 import { getAllBusinesses } from "@/actions/businessActions";
 import FilterBusinessLayout from "@/components/layouts/FilterBusinessLayout";
 
-interface Props {
-  searchParams: Promise<{
-    page: string;
-    categoryId: string;
-    subCategoryId: string;
-  }>;
+interface PageProps {
+  searchParams: {
+    page?: string;
+    categoryId?: string;
+    subCategoryId?: string;
+  };
 }
 
-const page = async ({ searchParams }: Props) => {
-  const { page = 1, categoryId = "", subCategoryId = "" } = await searchParams;
+const Page = async ({ searchParams }: PageProps | any) => {
+  const { page = "1", categoryId = "", subCategoryId = "" } = searchParams;
 
   const businesses: BusinessesProps = await getAllBusinesses(
     Number(page),
@@ -22,4 +22,4 @@ const page = async ({ searchParams }: Props) => {
   return <FilterBusinessLayout businesses={businesses} />;
 };
 
-export default page;
+export default Page;

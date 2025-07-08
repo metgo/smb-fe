@@ -1,6 +1,7 @@
 import { getAllEvents } from "@/actions/eventActions";
 import FilterBusinessLayout from "@/components/layouts/FilterBusinessLayout";
 import Navbar from "@/components/navbar";
+import { Suspense } from "react";
 
 interface Props {
   searchParams: Promise<{
@@ -10,7 +11,7 @@ interface Props {
   }>;
 }
 
-const page = async ({ searchParams }: Props) => {
+const page = async ({ searchParams }: Props | any) => {
   const { page = 1, categoryId = "", subCategoryId = "" } = await searchParams;
 
   const businesses: BusinessesProps = await getAllEvents(
@@ -21,10 +22,10 @@ const page = async ({ searchParams }: Props) => {
   );
 
   return (
-    <>
+    <Suspense>
       <Navbar />
       <FilterBusinessLayout businesses={businesses} />
-    </>
+    </Suspense>
   );
 };
 

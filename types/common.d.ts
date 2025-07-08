@@ -3,7 +3,7 @@ declare type ReactChildNode = {
 };
 
 declare type PageProps = {
-  params: { slug: string };
+  params: { slug: string } | any;
 };
 
 declare type LayoutItem = {
