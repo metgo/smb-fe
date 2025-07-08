@@ -9,7 +9,7 @@ const NoDetailsFound = () => {
   const router = useRouter();
 
   return (
-    <section className="w-full h-[60vh] flex items-center justify-center bg-primary">
+    <section className="w-full h-[72vh] flex items-center justify-center bg-primary">
       <div className="flex flex-col items-center gap-8">
         <h1 className="text-4xl">{emptyStateText.noDetails}</h1>
         <button

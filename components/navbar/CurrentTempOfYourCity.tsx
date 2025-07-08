@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { usePathname } from "next/navigation";
 
 import { NextImage } from "@/components/ui";
 import { getWeatherInfo } from "@/actions/getWether";
+import { weatherIcons } from "@/lib/utils";
 
 const getUserCity = async () => {
   try {
@@ -22,7 +22,6 @@ const getUserCity = async () => {
 };
 
 const CurrentTempOfYourCity = () => {
-  const pathname = usePathname();
   const [weather, setWeather] = useState<any>(null);
 
   useEffect(() => {
@@ -40,20 +39,18 @@ const CurrentTempOfYourCity = () => {
     return <div className="w-24"></div>;
   }
 
-  const isFeedPage = pathname === "/businesses";
   return (
-    <div className={`flex items-center bg-white rounded-[12px] px-2`}>
+    <div className={`flex items-center gap-1 bg-white rounded-[12px] px-2`}>
       <span className="font-normal text-2xl text-theme">
         {Math.trunc(weather?.temperature) || 0.0}°C
       </span>
       <NextImage
-        width={40}
-        height={40}
-        imgSrc={`https:${weather?.icon}`}
+        width={20}
+        height={20}
+        imgSrc={`/images/weather/${weatherIcons[weather.code]}.svg`}
         alt={weather?.condition}
         className="block"
       />
-      {isFeedPage && <div className="w-8" />}
     </div>
   );
 };

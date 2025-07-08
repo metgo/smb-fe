@@ -9,10 +9,10 @@ import { useImagePresent } from "@/hooks/useImagePresent";
 
 // Layout definitions (image sizes)
 const layouts = {
-  layout1: [{ width: 1268, height: 450 }],
+  layout1: [{ width: 1240, height: 450 }],
   layout2: [
-    { width: 630, height: 450 },
-    { width: 630, height: 450 },
+    { width: 620, height: 450 },
+    { width: 620, height: 450 },
   ],
   layout3: [
     { width: 630, height: 450 },
@@ -82,9 +82,9 @@ const ImageCard = ({
 }: {
   width: number;
   height: number;
-  scale: number;
   primaryCategoryId: string;
   imageItem: ImageItem;
+  scale: number;
   className?: string;
 }) => {
   const aspectRatio = (width * scale) / 450;
@@ -99,7 +99,7 @@ const ImageCard = ({
         height: height > 450 ? 450 : height,
         overflow: "hidden",
       }}
-      className={clsx("relative", className)}
+      className={clsx("relative flex-initial", className)}
     >
       {isLoading || !isImageLoaded ? (
         <CardSkeleton
@@ -134,9 +134,9 @@ const ImageGallery = ({
   const columns = rowsLayout[`row${imageCount}` as keyof typeof rowsLayout];
 
   return (
-    <div style={{ height: 450 }} className="flex gap-2.5 overflow-hidden">
+    <div style={{ height: 450 }} className="flex gap-2.5">
       {columns?.map((column, colIdx) => (
-        <div key={colIdx} className="flex flex-col gap-2.5">
+        <div key={colIdx} className="flex flex-col gap-2.5 w-full">
           {column?.map((imgIdx) => {
             const { width, height } = layout[imgIdx];
             const rounded = getRoundedClass(layoutName, imgIdx);

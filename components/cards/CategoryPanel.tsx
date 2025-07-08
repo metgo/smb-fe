@@ -22,7 +22,7 @@ const CategoryPanel = () => {
   }, [categories]);
 
   return (
-    <div className="bg-white/80 backdrop-blur-md border border-white/20 shadow-md flex items-center justify-center gap-2.5 p-2.5 rounded-2xl">
+    <div className="bg-[#FAFAFAE6] backdrop-blur-md border border-white/20 shadow-md flex items-center justify-center gap-2.5 p-2.5 rounded-2xl">
       {categories?.map((item) => {
         const category = categoryIcons[item.id as any];
         const IconComponent = category?.icon;

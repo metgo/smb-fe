@@ -23,7 +23,7 @@ const page = async ({ searchParams }: Props) => {
   return (
     <>
       <Navbar />
-      <FilterBusinessLayout businesses={businesses} />;
+      <FilterBusinessLayout businesses={businesses} />
     </>
   );
 };

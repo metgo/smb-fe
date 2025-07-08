@@ -30,7 +30,7 @@ const IntroVideo = () => {
         videoId: "_wwHCpjA5O0",
         playerVars: {
           autoplay: 1,
-          mute: 0,
+          mute: 1,
           controls: 0,
           modestbranding: 1,
           rel: 1,

@@ -1,11 +1,11 @@
 import Image from "next/image";
 
 import Navbar from "@/components/navbar";
+import IntroVideo from "@/components/IntroVideo";
 import ScrollIndicator from "@/components/ScrollIndicator";
 import { getAllBusinesses } from "@/actions/businessActions";
 import CurrentTempOfYourCity from "@/components/navbar/CurrentTempOfYourCity";
 import BusinessFeedLayout from "@/components/layouts/BusinessFeedLayout";
-import IntroVideo from "@/components/IntroVideo";
 import HamburgerMenu from "@/components/navbar/HamburgerMenu";
 
 interface Props {
@@ -30,7 +30,7 @@ const page = async ({ searchParams }: Props) => {
     <div>
       {/* Hero Section */}
       <section className="width-screen h-screen relative overflow-hidden">
-        <div className="z-50 absolute top-2.5 right-0 w-full flex items-center justify-between ps-20 pe-19">
+        <div className="z-20 fixed top-2.5 right-0 w-full flex items-center justify-between ps-20 pe-18.5">
           <div className="flex items-center gap-5">
             {/* <IconImage icon="white-threeline" /> */}
             <HamburgerMenu />
@@ -59,7 +59,7 @@ const page = async ({ searchParams }: Props) => {
       </section>
 
       {/* Second Section */}
-      <section className="relative z-10 bg-white">
+      <section className="relative z-50 bg-white">
         <Navbar showFilterTab />
         <BusinessFeedLayout businesses={businesses} />
       </section>
