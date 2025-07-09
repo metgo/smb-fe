@@ -7,20 +7,18 @@ const DeliveryTitleLayout = ({
   icon,
   title,
   desc,
-  hasExtension = false,
   className = "py-7.5",
   children,
 }: {
   icon: string;
   title: string;
   desc?: string;
-  hasExtension?: boolean;
   children?: ReactNode;
   className?: string;
 }) => (
   <div className={`border border-secondary rounded-[10px] ${className}`}>
     <div className="flex items-center gap-2.5">
-      <IconImage icon={icon} hasExtension={hasExtension} />
+      <IconImage icon={icon} />
       <h2 className="font-bold text-sm text-dark">{title}</h2>
     </div>
     <div
@@ -105,8 +103,7 @@ const DeliveriesTabContent = ({
       {
         <div className="col-span-1">
           <DeliveryTitleLayout
-            icon="shopping-bag.png"
-            hasExtension
+            icon="shopping-bag"
             title={deliveries.selfPickupPoint}
             desc="לאחר אישור ההזמנה ניתן לאסוף תוך יום עסקים"
             className="pt-7.5 pb-0 ps-6.5 pe-0 h-[26rem]"

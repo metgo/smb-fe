@@ -1,13 +1,14 @@
 import React from "react";
 import Link from "next/link";
 
+import { IconImage } from "../ui";
 import MenuItems from "./MenuItems";
 import { navbar } from "@/constant/hebrew";
 import HamburgerMenu from "./HamburgerMenu";
 import UserIconHoverCard from "./UserIconHoverCard";
 import CurrentTempOfYourCity from "./CurrentTempOfYourCity";
 import BusinessPageFilterTabs from "./BusinessPageFilterTabs";
-import { Logo, SearchIcon, ShopbagIcon } from "@/components/ui/icons";
+import { Logo, ShopbagIcon } from "@/components/ui/icons";
 
 const Navbar = async ({
   showFilterTab = false,
@@ -15,7 +16,7 @@ const Navbar = async ({
   showFilterTab?: boolean;
 }) => {
   return (
-    <nav className="ps-19 pe-18.5 py-2.5 bg-white sticky top-0 z-50 border-b border-[#F5F5F5]">
+    <nav className="ps-19 pe-26 py-2.5 bg-white sticky top-0 z-50 border-b border-[#F5F5F5]">
       <div className="grid grid-cols-3 items-center">
         {/* Hamburger, Logo, Text */}
         <div className="flex items-center gap-4">
@@ -38,7 +39,7 @@ const Navbar = async ({
           <div className="w-[1px] h-10 bg-theme mx-4" />
 
           <div className="flex items-center gap-2.5">
-            <SearchIcon />
+            <IconImage icon="search" />
             <div className="p-2 relative">
               {/* <div className="absolute -top-1 -left-0 bg-[#28C268] rounded-full text-center h-[14px] w-[14px]  flex justify-center items-center">
                 <span className="text-[12px] text-white font-bold">3</span>

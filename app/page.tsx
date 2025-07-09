@@ -30,10 +30,9 @@ const page = async ({ searchParams }: Props) => {
     <div>
       {/* Hero Section */}
       <section className="width-screen h-screen relative overflow-hidden">
-        <div className="z-20 fixed top-2.5 right-0 w-full flex items-center justify-between ps-20 pe-18.5">
+        <div className="z-20 fixed top-2.5 right-0 w-full flex items-center justify-between ps-20 pe-16">
           <div className="flex items-center gap-5">
-            {/* <IconImage icon="white-threeline" /> */}
-            <HamburgerMenu openIcon="white-threeline" closeIcon="" />
+            <HamburgerMenu openIcon="white-threeline" closeIcon="close-white" />
             <Image
               alt="Logo"
               src={"/images/logo/white-logo.svg"}

@@ -4,10 +4,10 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 import { misc } from "@/constant/hebrew";
+import { CardSkeleton } from "../skeletons";
 import { IconImage, NextImage } from "@/components/ui";
 import { useImageScale } from "@/hooks/useImageScale";
 import { useImagePresent } from "@/hooks/useImagePresent";
-import { CardSkeleton } from "../skeletons";
 
 const ImageCard = ({
   imageItem,
