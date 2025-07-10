@@ -12,6 +12,7 @@ const PopularBusinessCard = ({
   images,
   logo,
   slug,
+  navPath,
 }: GeneralProductCardProps) => {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const imageCount = images?.length;
@@ -41,7 +42,7 @@ const PopularBusinessCard = ({
       </div>
 
       <Link
-        href={`business-details/${slug}`}
+        href={`/${navPath}/${slug}`}
         className="text-white text-sm font-bold px-4 py-2.25 bg-dark/50 rounded-lg absolute left-4 top-4 cursor-pointer hidden group-hover:block z-50"
       >
         {searchText.moreDetails}

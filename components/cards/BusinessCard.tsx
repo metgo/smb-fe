@@ -91,6 +91,8 @@ const BusinessCard = ({ height, width, business }: BusinessCardProps) => {
     setActiveFilterTab("map");
   }
 
+  if (!hasMounted) return;
+
   return (
     <motion.div
       ref={ref}

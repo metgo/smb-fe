@@ -113,4 +113,6 @@ export const searchText = {
   popularBusinesses: "בתי עסק פופלרים",
   recommendedSearches: "חיפושים מומלצים",
   noResultFound: "לא מצאנו תוצאות למה שחיפשת.",
+  events: "אירועים",
+  businesses: "עסקים",
 };
