@@ -1,5 +1,6 @@
 "use client";
 
+import clsx from "clsx";
 import { useDebounce } from "use-debounce";
 import { useEffect, useState } from "react";
 
@@ -15,6 +16,33 @@ import {
 const SectionTitle = ({ title }: { title: string }) => (
   <h3 className="font-bold text-[#2B2D2A]">{title}</h3>
 );
+
+const CardList = ({
+  items,
+  title,
+  navPath = "/business-details",
+}: {
+  title: string;
+  navPath?: string;
+  items: GeneralProductCardProps[];
+}) => {
+  if (!items?.length) return null;
+
+  return (
+    <div className="space-y-4">
+      <SectionTitle title={title} />
+      <div className="overflow-x-auto hide-scrollbar">
+        <div className="flex gap-4 w-max pr-2">
+          {items.map((item) => (
+            <div key={item._id} className="flex-shrink-0">
+              <PopularBusinessCard navPath={navPath} {...item} />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const SearchFlow = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -65,6 +93,15 @@ const SearchFlow = () => {
     fetchSearchItem();
   }, [debounceSearchKeyword]);
 
+  function handleKeywordSelect(word: string) {
+    if (word === selectedSearchKeyword) {
+      setSelectedSearchKeyword("");
+      setSearchItems({});
+    } else {
+      setSelectedSearchKeyword(word);
+    }
+  }
+
   if (!hasMounted) return null;
 
   const hasResults =
@@ -73,7 +110,7 @@ const SearchFlow = () => {
 
   return (
     <>
-      <div onClick={() => setIsOpen(true)}>
+      <div className=" cursor-pointer" onClick={() => setIsOpen(true)}>
         <IconImage icon="search" />
       </div>
 
@@ -81,7 +118,7 @@ const SearchFlow = () => {
         <Dialog
           isOpen={isOpen}
           onClose={() => setIsOpen(false)}
-          modalClassName="w-full mx-20 backdrop-blur-2xl"
+          modalClassName="w-[94%] h-[max-content] backdrop-blur-2xl"
         >
           <div>
             {/* Search box */}
@@ -117,59 +154,47 @@ const SearchFlow = () => {
                   {recommendedSearchKeywords.map((item, index) => (
                     <div
                       key={index}
-                      onClick={() => setSelectedSearchKeyword(item)}
-                      className="ps-4 pe-5 border border-lightGray rounded-4xl h-10.5 flex items-center justify-center cursor-pointer"
+                      onClick={() => handleKeywordSelect(item)}
+                      className={clsx(
+                        item === selectedSearchKeyword
+                          ? "bg-lightGray text-white"
+                          : "text-theme",
+                        "ps-4 pe-5 border border-lightGray rounded-4xl h-10.5 flex items-center justify-center cursor-pointer",
+                      )}
                     >
-                      <span className="font-bold text-sm text-theme">
-                        {item}
-                      </span>
+                      <span className="font-bold text-sm">{item}</span>
                     </div>
                   ))}
                 </div>
               </div>
 
-              {/* Popular Businesses (default view) */}
-              {!searchKeyword && recommendedBusinesses.length > 0 && (
-                <div>
-                  <SectionTitle title={searchText.popularBusinesses} />
-                  <div className="flex items-center gap-4 mt-4">
-                    {recommendedBusinesses.map((item) => (
-                      <PopularBusinessCard key={item._id} {...item} />
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Search results */}
-              {(searchKeyword || selectedSearchKeyword) && !hasResults ? (
-                <SectionTitle title={searchText.noResultFound} />
-              ) : (
-                <>
-                  {/* Businesses */}
-                  {(searchItems.businesses?.length ?? 0) > 0 && (
-                    <div>
-                      <SectionTitle title={searchText.popularBusinesses} />
-                      <div className="flex items-center gap-4 mt-4">
-                        {searchItems.businesses!.map((item) => (
-                          <PopularBusinessCard key={item._id} {...item} />
-                        ))}
-                      </div>
-                    </div>
+              <div>
+                {/* Popular Businesses (default view) */}
+                {!(searchKeyword || selectedSearchKeyword) &&
+                  recommendedBusinesses.length > 0 && (
+                    <CardList
+                      items={recommendedBusinesses}
+                      title={searchText.popularBusinesses}
+                    />
                   )}
 
-                  {/* Events */}
-                  {(searchItems.events?.length ?? 0) > 0 && (
-                    <div>
-                      <SectionTitle title={searchText.popularBusinesses} />
-                      <div className="flex items-center gap-4 mt-4">
-                        {searchItems.events!.map((item) => (
-                          <PopularBusinessCard key={item._id} {...item} />
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </>
-              )}
+                {/* Search results */}
+                {(searchKeyword || selectedSearchKeyword) && !hasResults ? (
+                  <SectionTitle title={searchText.noResultFound} />
+                ) : (
+                  <>
+                    <CardList
+                      items={searchItems.businesses!}
+                      title={searchText.businesses}
+                    />
+                    <CardList
+                      items={searchItems.events!}
+                      title={searchText.events}
+                      navPath="events-details"
+                    />
+                  </>
+                )}
+              </div>
             </div>
           </div>
         </Dialog>

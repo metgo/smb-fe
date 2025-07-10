@@ -54,6 +54,7 @@ declare interface GeneralProductCardProps {
   dmoId: string;
   images: ImageItem[];
   logo: LogoCover;
+  navPath?: string;
 }
 
 declare interface SearchResultProps {
