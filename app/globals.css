@@ -89,6 +89,12 @@
   display: none;
 }
 
+.no-scrollbar-arrows::-webkit-scrollbar-button {
+  height: 0;
+  width: 0;
+  display: none;
+}
+
 .filter-tab {
   border-radius: 8px;
   background: #f1f1f1;

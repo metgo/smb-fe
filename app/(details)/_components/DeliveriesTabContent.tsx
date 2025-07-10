@@ -85,7 +85,7 @@ const DeliveriesTabContent = ({
             icon="delivery-truck"
             title={deliveries.homeDelivery}
             desc="שליח עד הבית 3-7 ימי עסקים"
-            className="px-6.5 py-7.5 h-[26rem]"
+            className="px-6.5 py-7.5 h-[29rem]"
           >
             <div className="mt-5">
               {deliveryArea?.map((item, index) => (
@@ -106,9 +106,9 @@ const DeliveriesTabContent = ({
             icon="shopping-bag"
             title={deliveries.selfPickupPoint}
             desc="לאחר אישור ההזמנה ניתן לאסוף תוך יום עסקים"
-            className="pt-7.5 pb-0 ps-6.5 pe-0 h-[26rem]"
+            className="pt-7.5 pb-0 ps-6.5 pe-0 h-[29rem]"
           >
-            <div className="mt-5 max-h-70 overflow-y-scroll">
+            <div className="mt-5">
               <DeliveryLocationTime
                 location="בן יהודה 17, תל אביב"
                 timeStr="א׳-ה׳ 8:00-2:00 ו׳ 9:00-12:00"
@@ -156,7 +156,7 @@ const DeliveriesTabContent = ({
             title={deliveries.exchangeAndReturns}
             className="pt-7.5 pb-0 ps-6.5 pe-0 h-37"
           >
-            <div className="max-h-20 overflow-y-scroll">
+            <div className="max-h-20 overflow-y-scroll no-scrollbar-arrows">
               {deliveryReturnExchange?.map((str, index) => (
                 <div key={index}>{str}</div>
               ))}
@@ -168,9 +168,9 @@ const DeliveriesTabContent = ({
           <DeliveryTitleLayout
             icon="packag-return"
             title={deliveries.additionalInformation}
-            className="pt-7.5 pb-0 ps-6.5 pe-0 h-30"
+            className="pt-7.5 pb-0 ps-6.5 pe-0 h-37"
           >
-            <div className="max-h-40 overflow-y-scroll">
+            <div className="max-h-80 overflow-y-scroll no-scrollbar-arrows">
               <p>{deliveryAdditionalInfo}</p>
             </div>
           </DeliveryTitleLayout>

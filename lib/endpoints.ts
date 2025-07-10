@@ -22,4 +22,6 @@ export const urls = {
 
   events: `${BASE_URL}/events`,
   eventDetails: `${BASE_URL}/events`,
+  searchRecommendation: `${BASE_URL}/tourism/search-recommendation?campCode=${CODE}`,
+  tourismSearch: `${BASE_URL}/tourism-search?campCode=${CODE}`,
 };

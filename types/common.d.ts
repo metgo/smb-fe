@@ -45,3 +45,12 @@ declare interface LogoCover {
   alt: string;
   subCoordinates: SubCoordinates;
 }
+
+declare interface GeneralProductCardProps {
+  _id: string;
+  name: string;
+  description: string;
+  dmoId: string;
+  images: ImageItem[];
+  logo: LogoCover;
+}

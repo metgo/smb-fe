@@ -9,8 +9,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import ContactInfo from "./ContactInfo";
 import { contactUsText } from "@/constant/hebrew";
 import { Dialog, IconImage } from "@/components/ui";
-import { ContactFormData, contactFormSchema } from "@/schema/contact";
 import { sendEmail } from "@/actions/contactUsAction";
+import { ContactFormData, contactFormSchema } from "@/schema/contact";
 
 const reasonOptions = [
   { value: "תווים", label: "תווים" },
@@ -179,7 +179,7 @@ const ContactForm = () => {
         <Dialog
           isOpen={isSubmitSuccess}
           onClose={() => setIsSubmitSuccess(false)}
-          modalClassName="w-[430px]"
+          modalClassName="w-[430px] top-60"
         >
           {/* This div should be relative and overflow-hidden */}
           <div className="relative overflow-hidden w-full flex flex-col items-center py-16 z-50">

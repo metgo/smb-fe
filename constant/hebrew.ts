@@ -105,3 +105,12 @@ export const contactUsText = {
   thankYou: "תודה שפניתם אלינו. נחזור אליכם בהקדם האפשרי",
   backToMainPage: "חזרה לעמוד הראשי",
 };
+
+export const searchText = {
+  search: "חיפוש...",
+  moreDetails: "פרטים נוספים",
+  searchResults: "תוצאות חיפוש",
+  popularBusinesses: "בתי עסק פופלרים",
+  recommendedSearches: "חיפושים מומלצים",
+  noResultFound: "לא מצאנו תוצאות למה שחיפשת.",
+};
