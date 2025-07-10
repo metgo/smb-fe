@@ -9,7 +9,7 @@ interface PageProps {
   };
 }
 
-const Page = async ({ searchParams }: PageProps) => {
+const Page = async ({ searchParams }: PageProps | any) => {
   const { page = "1", categoryId = "", subCategoryId = "" } = searchParams;
 
   const businesses: BusinessesProps = await getAllBusinesses(
