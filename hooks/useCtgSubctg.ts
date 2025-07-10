@@ -65,5 +65,6 @@ export const useCtgSubctg = () => {
     handleSubcategoryChange,
     activeSubCategory,
     activeCategoryKey,
+    setActiveCategoryKey,
   };
 };

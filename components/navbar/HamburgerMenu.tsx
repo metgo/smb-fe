@@ -79,19 +79,17 @@ const HamburgerMenu = ({
               <div className="w-0.25 h-70 bg-[#D3D3D3]" />
               <div className="flex flex-col w-[14.5rem]">
                 {items.map((item) => (
-                  <div
+                  <Link
                     key={item.id}
-                    className="mb-2 hover:bg-primary  py-2 ps-3 flex items-center justify-between"
+                    href={item.href}
+                    className="text-theme hover:text-dark transition font-bold text-sm gap-2.5 mb-2 hover:bg-primary group  py-2 ps-3 flex items-center justify-between"
                   >
-                    <Link
-                      href={item.href}
-                      className="text-theme hover:text-dark transition font-bold text-sm flex items-center gap-2.5"
-                    >
+                    <div className="flex items-center gap-2.5">
                       {item.rightIcon && <IconImage icon={item.rightIcon} />}
                       {item.label}
-                    </Link>
+                    </div>
                     {item.leftIcon && <IconImage icon={item.leftIcon} />}
-                  </div>
+                  </Link>
                 ))}
               </div>
             </div>

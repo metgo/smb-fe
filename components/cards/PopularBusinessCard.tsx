@@ -1,6 +1,9 @@
-import Link from "next/link";
+"use client";
 
-import { NextImage } from "../ui";
+import Link from "next/link";
+import { useState } from "react";
+
+import { IconImage, NextImage } from "../ui";
 import { searchText } from "@/constant/hebrew";
 
 const PopularBusinessCard = ({
@@ -8,16 +11,20 @@ const PopularBusinessCard = ({
   description,
   images,
   logo,
+  slug,
 }: GeneralProductCardProps) => {
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const imageCount = images?.length;
+
   return (
-    <div style={{ width: 240, height: 240 }} className="relative">
+    <div style={{ width: 240, height: 240 }} className="relative group">
       <NextImage
         isFill
-        alt="Popular"
-        imgSrc={images[0].image}
+        alt={images[imageCount]?.alt}
+        imgSrc={images[activeImageIndex]?.image}
         width={240}
         height={240}
-        className="rounded-xl"
+        className="rounded-xl object-cover"
       />
 
       <div
@@ -34,20 +41,49 @@ const PopularBusinessCard = ({
       </div>
 
       <Link
-        href={"/"}
-        className="text-white text-sm font-bold px-4 py-2.25 bg-dark/50 rounded-lg absolute left-4 top-4"
+        href={`business-details/${slug}`}
+        className="text-white text-sm font-bold px-4 py-2.25 bg-dark/50 rounded-lg absolute left-4 top-4 cursor-pointer hidden group-hover:block z-50"
       >
         {searchText.moreDetails}
       </Link>
 
       <div className="w-full h-full relative">
         <div className="absolute bottom-0 right-0 h-1/2 w-full bg-gradient-to-t from-black/40 to-transparent rounded-b-xl" />
-        <div className="text-white font-bold absolute right-4 bottom-4">
+
+        <div className="text-white font-bold absolute right-4 bottom-4 w-[87%]">
           <h4 className="line-clamp-1">{name}</h4>
           <div
             className="text-[12px] line-clamp-1"
             dangerouslySetInnerHTML={{ __html: description }}
           />
+          <div className="hidden group-hover:flex items-center justify-between mt-2.5">
+            <IconImage
+              width={30}
+              height={30}
+              icon="next"
+              onClick={() =>
+                setActiveImageIndex(
+                  (prev) => (prev - 1 + imageCount) % imageCount,
+                )
+              }
+            />
+            <div className="flex items-center gap-1.5">
+              {images?.map((_, index) => (
+                <div
+                  key={index}
+                  className={`bg-theme rounded-full ${activeImageIndex === index ? "w-2 h-2 bg-white" : "w-1.5 h-1.5"}`}
+                />
+              ))}
+            </div>
+            <IconImage
+              width={30}
+              height={30}
+              icon="prev"
+              onClick={() =>
+                setActiveImageIndex((prev) => (prev + 1) % imageCount)
+              }
+            />
+          </div>
         </div>
       </div>
     </div>

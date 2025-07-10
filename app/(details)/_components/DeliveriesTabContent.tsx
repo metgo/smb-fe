@@ -47,30 +47,31 @@ const DeliveryLocationPrice = ({
   </div>
 );
 
-const DeliveryLocationTime = ({
-  location,
-  timeStr,
-  price,
-  isLast,
-}: {
-  location: string;
-  timeStr: string;
-  price: number;
-  isLast?: boolean;
-}) => (
-  <div>
-    <div className="flex items-center justify-between text-sm py-4 px-2">
-      <div className="text-theme">
-        <div>{location}</div>
-        <div>{timeStr}</div>
-      </div>
-      <span className="text-charcoal">₪{price}</span>
-    </div>
-    {!isLast && <hr className="text-secondary" />}
-  </div>
-);
+// const DeliveryLocationTime = ({
+//   location,
+//   timeStr,
+//   price,
+//   isLast,
+// }: {
+//   location: string;
+//   timeStr: string;
+//   price: number;
+//   isLast?: boolean;
+// }) => (
+//   <div>
+//     <div className="flex items-center justify-between text-sm py-4 px-2">
+//       <div className="text-theme">
+//         <div>{location}</div>
+//         <div>{timeStr}</div>
+//       </div>
+//       <span className="text-charcoal">₪{price}</span>
+//     </div>
+//     {!isLast && <hr className="text-secondary" />}
+//   </div>
+// );
 
 // Main component
+
 const DeliveriesTabContent = ({
   deliveryArea,
   deliveryReturnExchange,
@@ -101,38 +102,38 @@ const DeliveriesTabContent = ({
       )}
 
       {
-        <div className="col-span-1">
-          <DeliveryTitleLayout
-            icon="shopping-bag"
-            title={deliveries.selfPickupPoint}
-            desc="לאחר אישור ההזמנה ניתן לאסוף תוך יום עסקים"
-            className="pt-7.5 pb-0 ps-6.5 pe-0 h-[29rem]"
-          >
-            <div className="mt-5">
-              <DeliveryLocationTime
-                location="בן יהודה 17, תל אביב"
-                timeStr="א׳-ה׳ 8:00-2:00 ו׳ 9:00-12:00"
-                price={1}
-              />
-              <DeliveryLocationTime
-                location="ארלוזורוב 56, תל אביב"
-                timeStr="א׳-ה׳ 8:00-2:00 ו׳ 9:00-12:00"
-                price={0}
-              />
-              <DeliveryLocationTime
-                location="שד ירושלים 34, תל אביב"
-                timeStr="א׳-ה׳ 8:00-2:00 ו׳ 9:00-12:00"
-                price={2}
-              />
-              <DeliveryLocationTime
-                location="נס ציונה 355, תל אביב"
-                timeStr="א׳-ה׳ 8:00-2:00 ו׳ 9:00-12:00"
-                price={5}
-                isLast
-              />
-            </div>
-          </DeliveryTitleLayout>
-        </div>
+        // <div className="col-span-1">
+        //   <DeliveryTitleLayout
+        //     icon="shopping-bag"
+        //     title={deliveries.selfPickupPoint}
+        //     desc="לאחר אישור ההזמנה ניתן לאסוף תוך יום עסקים"
+        //     className="pt-7.5 pb-0 ps-6.5 pe-0 h-[29rem]"
+        //   >
+        //     <div className="mt-5">
+        //       <DeliveryLocationTime
+        //         location="בן יהודה 17, תל אביב"
+        //         timeStr="א׳-ה׳ 8:00-2:00 ו׳ 9:00-12:00"
+        //         price={1}
+        //       />
+        //       <DeliveryLocationTime
+        //         location="ארלוזורוב 56, תל אביב"
+        //         timeStr="א׳-ה׳ 8:00-2:00 ו׳ 9:00-12:00"
+        //         price={0}
+        //       />
+        //       <DeliveryLocationTime
+        //         location="שד ירושלים 34, תל אביב"
+        //         timeStr="א׳-ה׳ 8:00-2:00 ו׳ 9:00-12:00"
+        //         price={2}
+        //       />
+        //       <DeliveryLocationTime
+        //         location="נס ציונה 355, תל אביב"
+        //         timeStr="א׳-ה׳ 8:00-2:00 ו׳ 9:00-12:00"
+        //         price={5}
+        //         isLast
+        //       />
+        //     </div>
+        //   </DeliveryTitleLayout>
+        // </div>
       }
 
       <div className="col-span-1 space-y-2.5 text-sm font-normal text-theme">

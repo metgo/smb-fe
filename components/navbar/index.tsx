@@ -36,7 +36,7 @@ const Navbar = async ({
         <div className="flex items-center justify-end col-span-4">
           <MenuItems />
 
-          <div className="w-[1px] h-10 bg-theme mx-4" />
+          <div className="w-[1px] h-10 bg-lightGray mx-4" />
 
           <div className="flex items-center gap-2.5">
             <SearchFlow />

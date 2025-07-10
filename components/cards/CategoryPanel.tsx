@@ -1,21 +1,23 @@
 "use client";
 
 import clsx from "clsx";
+import Image from "next/image";
 import { useEffect } from "react";
+import { usePathname } from "next/navigation";
 
 import { categoryIcons } from "@/lib/utils";
 import { useCtgSubctg } from "@/hooks/useCtgSubctg";
 import { getAllCategory } from "@/actions/businessActions";
 import useCategoryStore from "@/stores/categoriesStore";
-import Image from "next/image";
 
 const CategoryPanel = () => {
-  const { handleCategoryChange, activeCategoryKey } = useCtgSubctg();
+  const pathname = usePathname();
+  const { handleCategoryChange, activeCategoryKey, setActiveCategoryKey } =
+    useCtgSubctg();
   const { categories, setCategories } = useCategoryStore();
   const hasEmptyName = categories.some((cat) => cat.name === "");
 
   useEffect(() => {
-    console.log("hasEmptyName", hasEmptyName);
     if (hasEmptyName) {
       async function fetchCategories() {
         const res = await getAllCategory();
@@ -35,6 +37,10 @@ const CategoryPanel = () => {
       fetchCategories();
     }
   }, [hasEmptyName]);
+
+  useEffect(() => {
+    if (pathname) setActiveCategoryKey("");
+  }, [pathname]);
 
   if (hasEmptyName) return;
 

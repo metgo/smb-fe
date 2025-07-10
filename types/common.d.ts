@@ -49,8 +49,15 @@ declare interface LogoCover {
 declare interface GeneralProductCardProps {
   _id: string;
   name: string;
+  slug: string;
   description: string;
   dmoId: string;
   images: ImageItem[];
   logo: LogoCover;
+}
+
+declare interface SearchResultProps {
+  events?: GeneralProductCardProps[];
+  products?: GeneralProductCardProps[];
+  businesses?: GeneralProductCardProps[];
 }
