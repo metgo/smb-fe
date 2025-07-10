@@ -13,7 +13,7 @@ const EventLocationMap = ({
 
   return (
     <div className={`${className}`}>
-      <div ref={mapRef} className="w-full h-full rounded-2xl" />
+      <div ref={mapRef} className="w-[98%] h-full rounded-2xl" />
     </div>
   );
 };

@@ -80,7 +80,7 @@ export const useImagePresent = (
         });
         setIsLoading(false);
       }
-    }, 100);
+    }, 500);
     setIsLoading(true);
 
     return () => clearTimeout(timer);

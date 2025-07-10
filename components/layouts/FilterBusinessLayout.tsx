@@ -1,8 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect } from "react";
-import { usePathname } from "next/navigation";
 
 import { useLoadMore } from "@/hooks/useLoadMore";
 import NoBusinessLayout from "./NoBusinessLayout";
@@ -16,8 +14,7 @@ interface Props {
 }
 
 const FilterBusinessLayout = ({ businesses }: Props) => {
-  const { activeFilterTab, setActiveFilterTab } = useGeneralStore();
-  const pathname = usePathname();
+  const { activeFilterTab } = useGeneralStore();
 
   const { sentryRef, loading, initialLoadDone, canLoadMore } = useLoadMore(
     businesses?.meta?.hasNextPage,
@@ -26,9 +23,9 @@ const FilterBusinessLayout = ({ businesses }: Props) => {
 
   if (!totalBusiness) return <NoBusinessLayout />;
 
-  useEffect(() => {
-    if (pathname === "/events") setActiveFilterTab("gallery");
-  }, [pathname]);
+  // useEffect(() => {
+  //   if (pathname === "/events") setActiveFilterTab("gallery");
+  // }, [pathname]);
 
   const renderLayout = () => {
     switch (activeFilterTab) {
@@ -60,7 +57,7 @@ const FilterBusinessLayout = ({ businesses }: Props) => {
           height={300}
           alt="Yellow image"
           src="/images/yellow.png"
-          className="fixed -bottom-12 -left-30 rotate-[40deg] z-50"
+          className="fixed -bottom-12 -left-30 rotate-[40deg] z-30"
         />
       )}
     </div>

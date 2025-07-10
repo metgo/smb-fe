@@ -7,18 +7,21 @@ import {
   ReturnToPrevPageBtn,
   Title,
 } from "../../_components";
+import Link from "next/link";
 import { IconImage } from "@/components/ui";
 import { events, misc } from "@/constant/hebrew";
 import AttributePills from "@/components/AttributePills";
 import { getEventDetailsBySlug } from "@/actions/eventActions";
-import Link from "next/link";
 
 const page = async ({ params }: PageProps) => {
   const { slug } = await params;
 
   if (slug === "undefined" || !slug) return <NoDetailsFound />;
 
-  const eventDetails: EventDetailsProps = await getEventDetailsBySlug(slug);
+  const eventDetails: EventDetailsProps | any =
+    await getEventDetailsBySlug(slug);
+
+  if (eventDetails?.statusCode === 404) return <NoDetailsFound />;
 
   return (
     <div className="">

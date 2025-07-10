@@ -1,33 +1,55 @@
 "use client";
 
 import clsx from "clsx";
-import { useEffect, useState } from "react";
+import Image from "next/image";
+import { useEffect } from "react";
+import { usePathname } from "next/navigation";
 
 import { categoryIcons } from "@/lib/utils";
 import { useCtgSubctg } from "@/hooks/useCtgSubctg";
 import { getAllCategory } from "@/actions/businessActions";
+import useCategoryStore from "@/stores/categoriesStore";
 
 const CategoryPanel = () => {
-  const { handleCategoryChange, activeCategoryKey } = useCtgSubctg();
-  const [categories, setCategories] = useState<BusinessCategoryProps>([]);
+  const pathname = usePathname();
+  const { handleCategoryChange, activeCategoryKey, setActiveCategoryKey } =
+    useCtgSubctg();
+  const { categories, setCategories } = useCategoryStore();
+  const hasEmptyName = categories.some((cat) => cat.name === "");
 
   useEffect(() => {
-    if (categories.length === 0) {
+    if (hasEmptyName) {
       async function fetchCategories() {
         const res = await getAllCategory();
-        setCategories(res);
+        const apiCategories = res;
+        const updatedCategories = categories?.map((cat) => {
+          const match = apiCategories?.find(
+            (apiCat: any) => apiCat.id === cat.id,
+          );
+          return {
+            ...cat,
+            name: match ? match.name : cat.name,
+          };
+        });
+        setCategories(updatedCategories);
       }
+
       fetchCategories();
     }
-  }, [categories]);
+  }, [hasEmptyName]);
+
+  useEffect(() => {
+    if (pathname) setActiveCategoryKey("");
+  }, [pathname]);
+
+  if (hasEmptyName) return;
 
   return (
     <div className="bg-[#FAFAFAE6] backdrop-blur-md border border-white/20 shadow-md flex items-center justify-center gap-2.5 p-2.5 rounded-2xl">
       {categories?.map((item) => {
         const category = categoryIcons[item.id as any];
-        const IconComponent = category?.icon;
         const isActive = activeCategoryKey === item.id;
-
+        const iconSrc = isActive ? item.activeIcon : item.icon;
         return (
           <div
             key={item.id}
@@ -39,9 +61,13 @@ const CategoryPanel = () => {
                 : " font-normal",
             )}
           >
-            {IconComponent && (
-              <IconComponent fill={isActive ? "#fff" : undefined} />
-            )}
+            <Image
+              alt={item.name}
+              width={30}
+              height={30}
+              src={`/images/category/${iconSrc}.svg`}
+              className="cursor-pointer hover:opacity-80 transition-opacity duration-200"
+            />
             <div className="text-sm">{item.name}</div>
           </div>
         );

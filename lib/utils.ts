@@ -293,6 +293,15 @@ export const navItems = [
   },
 ];
 
+export const recommendedSearchKeywords = [
+  "אירוע קיץ",
+  "מסעדה עם נוף",
+  "טיול יום",
+  "פיקניק",
+  "פתוח בשבת",
+  "ימי כיף",
+];
+
 const weatherIconsMap = {
   [1000]: "sunny",
   [1003]: "cloudy",

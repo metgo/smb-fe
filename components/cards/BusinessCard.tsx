@@ -121,7 +121,7 @@ const BusinessCard = ({ height, width, business }: BusinessCardProps) => {
 
             {/* Text Content */}
             <div className="absolute bottom-0 right-0 ps-4 pb-4 text-white font-bold w-full">
-              <h3 className="lg:text-[1rem] 3xl:text-[1.5rem]">
+              <h3 className="lg:text-[1rem] 3xl:text-[1.5rem] line-clamp-1">
                 {business?.name}
               </h3>
               <div className="flex items-center gap-2">

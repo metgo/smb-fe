@@ -1,7 +1,8 @@
+import ProductCard from "./ProductCard";
 import BusinessCard from "./BusinessCard";
 import CategoryPanel from "./CategoryPanel";
 import FavoriteItemCard from "./FavoriteItemCard";
-import ProductCard from "./ProductCard";
+import PopularBusinessCard from "./PopularBusinessCard";
 import SubcategoryFilterPanel from "./SubcategoryFilterPanel";
 
 export {
@@ -9,5 +10,6 @@ export {
   CategoryPanel,
   ProductCard,
   FavoriteItemCard,
+  PopularBusinessCard,
   SubcategoryFilterPanel,
 };
