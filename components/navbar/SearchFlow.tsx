@@ -110,7 +110,7 @@ const SearchFlow = () => {
 
   return (
     <>
-      <div onClick={() => setIsOpen(true)}>
+      <div className=" cursor-pointer" onClick={() => setIsOpen(true)}>
         <IconImage icon="search" />
       </div>
 
