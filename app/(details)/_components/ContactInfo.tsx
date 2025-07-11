@@ -1,6 +1,6 @@
 import { IconImage } from "@/components/ui";
 import { menuItems } from "@/constant/hebrew";
-import { businessDetails } from "@/constant/placeholderData";
+import { siteInfo } from "@/constant/siteInfo";
 
 const ConstatUsInfo = ({ icon, text }: { icon: string; text: string }) => (
   <div className=" flex items-center gap-2.5">
@@ -10,12 +10,13 @@ const ConstatUsInfo = ({ icon, text }: { icon: string; text: string }) => (
 );
 
 const ContactInfo = () => {
+  const { contactInfo } = siteInfo["negevTime"];
   return (
     <div className="flex items-center gap-7.5 text-charcoal">
       <span>{menuItems.contactUs}</span>
-      <ConstatUsInfo icon="phone" text={businessDetails.phone} />
-      <ConstatUsInfo icon="mail" text={businessDetails.mail} />
-      <ConstatUsInfo icon="whatsapp-outlined" text={businessDetails.whatsapp} />
+      <ConstatUsInfo icon="phone" text={contactInfo.phone} />
+      <ConstatUsInfo icon="mail" text={contactInfo.mail} />
+      <ConstatUsInfo icon="whatsapp-outlined" text={contactInfo.whatsapp} />
     </div>
   );
 };

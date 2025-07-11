@@ -15,6 +15,15 @@ export const contactFormReasonOptions = [
   { value: "תמיכה טכנית", label: "תמיכה טכנית" },
   { value: "ביטול עסקה", label: "ביטול עסקה" },
 ];
+export const daysMapping = {
+  Sun: "ראשון",
+  Mon: "שני",
+  Tues: "שלישי",
+  Wed: "רביעי",
+  Thurs: "חמישי",
+  Fri: "שישי",
+  Sat: "שבת",
+};
 
 const categoryId = {
   sleep: "6566fcd4a77d2a477266d3b9",
