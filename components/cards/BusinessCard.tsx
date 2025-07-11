@@ -108,7 +108,6 @@ const BusinessCard = ({ height, width, business }: BusinessCardProps) => {
         >
           <NextImage
             isFill
-            isOptimized
             quality={100}
             alt={updatedImage.alt}
             imgSrc={updatedImage.imageUrl}

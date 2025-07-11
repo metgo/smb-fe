@@ -58,7 +58,7 @@ const CategoryPanel = () => {
               "w-16.5 h-16.5 flex items-center flex-col gap-2 p-1 rounded-lg transition-colors cursor-pointer",
               isActive
                 ? `${category?.bg} text-white font-bold`
-                : " font-normal",
+                : " font-normal text-theme",
             )}
           >
             <Image

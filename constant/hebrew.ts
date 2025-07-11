@@ -10,6 +10,7 @@ export const misc = {
   hours: "שעות פעילות",
   openNow: "פתוח עכשיו",
   opinion: "חוות דעת",
+  filter: "מסננים",
   addAllStationOnCart: "הוספת כל התחנות לסל",
 };
 
@@ -88,7 +89,7 @@ export const tempCardInfo = {
 export const emptyStateText = {
   noDetails: "לא נמצאו פרטים!",
   noBusiness:
-    "לא נמצאו תוצאות – אבל תמיד אפשר לנסות כיוון חדש.עדכן את הסינון ונצא לחיפוש מחדש!",
+    "לא נמצאו תוצאות – אבל תמיד אפשר לנסות כיוון חדש. עדכן את הסינון ונצא לחיפוש מחדש!",
 };
 
 export const contactUsText = {

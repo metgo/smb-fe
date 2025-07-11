@@ -8,6 +8,14 @@ import {
   CtgTourIcon,
 } from "@/components/ui/icons";
 
+export const contactFormReasonOptions = [
+  { value: "תווים", label: "תווים" },
+  { value: "עסקים", label: "עסקים" },
+  { value: "מעסיקים", label: "מעסיקים" },
+  { value: "תמיכה טכנית", label: "תמיכה טכנית" },
+  { value: "ביטול עסקה", label: "ביטול עסקה" },
+];
+
 const categoryId = {
   sleep: "6566fcd4a77d2a477266d3b9",
   attraction: "6566e31ca77d2a477266d2d6",

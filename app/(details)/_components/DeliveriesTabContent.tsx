@@ -91,6 +91,7 @@ const DeliveriesTabContent = ({
             <div className="mt-5">
               {deliveryArea?.map((item, index) => (
                 <DeliveryLocationPrice
+                  key={index}
                   location={item.area}
                   price={item.price}
                   isLast={deliveryArea.length - 1 === index}
@@ -167,7 +168,7 @@ const DeliveriesTabContent = ({
 
         {deliveryAdditionalInfo && (
           <DeliveryTitleLayout
-            icon="packag-return"
+            icon="circular-plus"
             title={deliveries.additionalInformation}
             className="pt-7.5 pb-0 ps-6.5 pe-0 h-37"
           >

@@ -6,31 +6,44 @@ const IntroVideo = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
+    const video = videoRef.current;
+
+    // Try autoplay on mount using requestAnimationFrame to ensure DOM is ready
+    const tryAutoplay = () => {
+      if (video) {
+        video
+          .play()
+          .then(() => {
+            // console.log("Autoplay successful");
+          })
+          .catch((err) => {
+            console.warn("Initial autoplay failed", err);
+          });
+      }
+    };
+
+    requestAnimationFrame(tryAutoplay);
+
     const observer = new IntersectionObserver(
       ([entry]) => {
-        const video = videoRef.current;
         if (!video) return;
-
         if (entry.isIntersecting) {
           video.play().catch((e) => {
-            // Silent catch if autoplay fails
-            console.warn("Autoplay failed", e);
+            console.warn("Autoplay on scroll failed", e);
           });
         } else {
           video.pause();
         }
       },
-      { threshold: 0.5 }, // play/pause when 50% visible
+      { threshold: 0.5 },
     );
 
-    if (videoRef.current) {
-      observer.observe(videoRef.current);
+    if (video) {
+      observer.observe(video);
     }
 
     return () => {
-      if (videoRef.current) {
-        observer.unobserve(videoRef.current);
-      }
+      if (video) observer.unobserve(video);
     };
   }, []);
 
@@ -38,7 +51,7 @@ const IntroVideo = () => {
     <video
       ref={videoRef}
       loop
-      // muted
+      muted
       playsInline
       preload="auto"
       src="/videos/intro.mp4"
