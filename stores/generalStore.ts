@@ -1,6 +1,8 @@
 import { create } from "zustand";
 
 interface GeneralStoreState {
+  zIndex: string;
+  setZIndex: (value: string) => void;
   activeCategoryKey: string;
   setActiveCategoryKey: (key: string) => void;
   activeFilterTab: string;
@@ -13,6 +15,8 @@ interface GeneralStoreState {
 }
 
 const useGeneralStore = create<GeneralStoreState>((set) => ({
+  zIndex: "20",
+  setZIndex: (zIndex) => set({ zIndex }),
   activeCategoryKey: "",
   setActiveCategoryKey: (activeCategoryKey) => set({ activeCategoryKey }),
   activeFilterTab: "gallery",

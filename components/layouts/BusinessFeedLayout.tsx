@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import useGeneralStore from "@/stores/generalStore";
 import { useEffect, useRef, useState } from "react";
 
@@ -8,8 +7,9 @@ import NoBusinessLayout from "./NoBusinessLayout";
 import { useLoadMore } from "@/hooks/useLoadMore";
 import OnlyBusinessMapLayout from "./OnlyBusinessMapLayout";
 import OnlyBusinessCardsLayout from "./OnlyBusinessCardsLayout";
-import MapBusinessIntegratedLayout from "./MapBusinessIntegratedLayout";
 import { CategoryPanel, SubcategoryFilterPanel } from "../cards";
+import StickyYellowRibbonImage from "../StickyYellowRibbonImage";
+import MapBusinessIntegratedLayout from "./MapBusinessIntegratedLayout";
 
 const BusinessFeedLayout = ({
   businesses,
@@ -78,15 +78,7 @@ const BusinessFeedLayout = ({
           </div>
         </>
       )}
-      {activeFilterTab === "gallery" && (
-        <Image
-          width={300}
-          height={300}
-          alt="Yellow image"
-          src="/images/yellow.png"
-          className="fixed -bottom-12 -left-30 rotate-[40deg] z-20"
-        />
-      )}
+      <StickyYellowRibbonImage activeFilterTab={activeFilterTab} />
     </div>
   );
 };

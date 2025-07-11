@@ -1,17 +1,11 @@
 "use client";
-
 import clsx from "clsx";
-import { useDebounce } from "use-debounce";
-import { useEffect, useState } from "react";
 
-import { searchText } from "@/constant/hebrew";
+import { misc, searchText } from "@/constant/hebrew";
 import { Dialog, IconImage } from "@/components/ui";
+import { useSearchFlow } from "@/hooks/useSearchFlow";
 import { recommendedSearchKeywords } from "@/lib/utils";
 import { PopularBusinessCard } from "@/components/cards";
-import {
-  tourismSearch,
-  getAllRecommendedBusiness,
-} from "@/actions/searchActions";
 
 const SectionTitle = ({ title }: { title: string }) => (
   <h3 className="font-bold text-[#2B2D2A]">{title}</h3>
@@ -45,62 +39,21 @@ const CardList = ({
 };
 
 const SearchFlow = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [hasMounted, setHasMounted] = useState(false);
-  const [searchKeyword, setSearchKeyword] = useState("");
-  const [searchItems, setSearchItems] = useState<SearchResultProps>({});
-  const [debounceSearchKeyword] = useDebounce(searchKeyword, 1000);
-  const [recommendedBusinesses, setRecommendedBusinesses] = useState<
-    GeneralProductCardProps[]
-  >([]);
-
-  useEffect(() => setHasMounted(true), []);
-
-  useEffect(() => {
-    if (!isOpen) {
-      setSearchItems({});
-      setSearchKeyword("");
-      return;
-    }
-
-    const fetchRecommendedBusiness = async () => {
-      const res = await getAllRecommendedBusiness();
-      setRecommendedBusinesses(res?.data ?? []);
-    };
-
-    fetchRecommendedBusiness();
-  }, [isOpen]);
-
-  useEffect(() => {
-    if (!debounceSearchKeyword) return;
-
-    const fetchSearchItem = async () => {
-      const res = await tourismSearch(debounceSearchKeyword);
-      setSearchItems(res);
-    };
-
-    fetchSearchItem();
-  }, [debounceSearchKeyword]);
-
-  function handleKeywordSelect(word: string) {
-    if (word === searchKeyword) {
-      setSearchKeyword("");
-      setSearchItems({});
-    } else {
-      setSearchKeyword(word);
-    }
-  }
-
-  function handleClearInputText() {
-    setSearchKeyword("");
-    setSearchItems({});
-  }
+  const {
+    hasResults,
+    isLoading,
+    hasMounted,
+    isOpen,
+    setIsOpen,
+    handleClearInputText,
+    handleKeywordSelect,
+    recommendedBusinesses,
+    searchItems,
+    searchKeyword,
+    setSearchKeyword,
+  } = useSearchFlow();
 
   if (!hasMounted) return null;
-
-  const hasResults =
-    (searchItems?.businesses?.length ?? 0) > 0 ||
-    (searchItems?.events?.length ?? 0) > 0;
 
   return (
     <>
@@ -162,32 +115,36 @@ const SearchFlow = () => {
                 </div>
               </div>
 
-              <div>
-                {/* Popular Businesses (default view) */}
-                {!searchKeyword && recommendedBusinesses.length > 0 && (
-                  <CardList
-                    items={recommendedBusinesses}
-                    title={searchText.popularBusinesses}
-                  />
-                )}
+              {isLoading ? (
+                <SectionTitle title={misc.pleaseWaitLoading} />
+              ) : (
+                <div className="h-100 overflow-hidden overflow-y-auto space-y-4">
+                  {/* Popular Businesses (default view) */}
+                  {!searchKeyword && recommendedBusinesses?.length > 0 && (
+                    <CardList
+                      items={recommendedBusinesses}
+                      title={searchText.popularBusinesses}
+                    />
+                  )}
 
-                {/* Search results */}
-                {searchKeyword && !hasResults ? (
-                  <SectionTitle title={searchText.noResultFound} />
-                ) : (
-                  <>
-                    <CardList
-                      items={searchItems.businesses!}
-                      title={searchText.businesses}
-                    />
-                    <CardList
-                      items={searchItems.events!}
-                      title={searchText.events}
-                      navPath="event-details"
-                    />
-                  </>
-                )}
-              </div>
+                  {/* Search results */}
+                  {searchKeyword && !hasResults ? (
+                    <SectionTitle title={searchText.noResultFound} />
+                  ) : (
+                    <>
+                      <CardList
+                        items={searchItems.businesses!}
+                        title={searchText.businesses}
+                      />
+                      <CardList
+                        items={searchItems.events!}
+                        title={searchText.events}
+                        navPath="event-details"
+                      />
+                    </>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </Dialog>

@@ -127,3 +127,37 @@ body {
   padding: 0 !important;
   top: 25px !important;
 }
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  /* Thin scrollbar */
+  height: 6px;
+  /* For horizontal scroll */
+}
+
+/* Track (background of scrollbar) */
+::-webkit-scrollbar-track {
+  background: transparent;
+  /* Hide when not used */
+}
+
+/* Thumb (draggable scrollbar part) */
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.3);
+  /* Light dark shade */
+  border-radius: 10px;
+  transition:
+    background 0.3s ease-in-out,
+    opacity 0.3s ease-in-out;
+  /* Smooth transition */
+  opacity: 0;
+  /* Hide initially */
+}
+
+/* Thumb hover effect */
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.6);
+  opacity: 1;
+  /* Fully visible when hovering */
+}

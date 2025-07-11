@@ -144,7 +144,7 @@ const DeliveriesTabContent = ({
             title={deliveries.pickupFromTheStore}
             className="pt-7.5 pb-0 ps-6.5 pe-0 h-37"
           >
-            <div className="max-h-20 overflow-y-scroll">
+            <div className="h-20 overflow-y-auto">
               {deliverySpecificSellerInfo?.map((str, index) => (
                 <div key={index}>{str}</div>
               ))}
@@ -158,7 +158,7 @@ const DeliveriesTabContent = ({
             title={deliveries.exchangeAndReturns}
             className="pt-7.5 pb-0 ps-6.5 pe-0 h-37"
           >
-            <div className="max-h-20 overflow-y-scroll no-scrollbar-arrows">
+            <div className="h-20 overflow-y-auto no-scrollbar-arrows">
               {deliveryReturnExchange?.map((str, index) => (
                 <div key={index}>{str}</div>
               ))}

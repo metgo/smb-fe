@@ -1,6 +1,6 @@
 "use client";
 
-import Image from "next/image";
+import { usePathname } from "next/navigation";
 
 import { useLoadMore } from "@/hooks/useLoadMore";
 import NoBusinessLayout from "./NoBusinessLayout";
@@ -8,7 +8,7 @@ import useGeneralStore from "@/stores/generalStore";
 import OnlyBusinessMapLayout from "./OnlyBusinessMapLayout";
 import OnlyBusinessCardsLayout from "./OnlyBusinessCardsLayout";
 import MapBusinessIntegratedLayout from "./MapBusinessIntegratedLayout";
-import { usePathname } from "next/navigation";
+import StickyYellowRibbonImage from "../StickyYellowRibbonImage";
 
 interface Props {
   businesses: BusinessesProps;
@@ -52,15 +52,7 @@ const FilterBusinessLayout = ({ businesses }: Props) => {
         )}
       </div>
 
-      {activeFilterTab === "gallery" && (
-        <Image
-          width={300}
-          height={300}
-          alt="Yellow image"
-          src="/images/yellow.png"
-          className="fixed -bottom-12 -left-30 rotate-[40deg] z-30"
-        />
-      )}
+      <StickyYellowRibbonImage activeFilterTab={activeFilterTab} />
     </div>
   );
 };

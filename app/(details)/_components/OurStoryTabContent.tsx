@@ -6,6 +6,7 @@ import { useImageScale } from "@/hooks/useImageScale";
 import { IconImage, NextImage } from "@/components/ui";
 import { CardSkeleton } from "@/components/skeletons";
 import { useImagePresent } from "@/hooks/useImagePresent";
+import { daysMapping } from "@/lib/utils";
 
 const ConstatUsInfo = ({ icon, text }: { icon: string; text: string }) => {
   if (!text) return;
@@ -19,7 +20,9 @@ const ConstatUsInfo = ({ icon, text }: { icon: string; text: string }) => {
 
 const OpeningDayHours = ({ days, open, close }: OpeningHrs) => (
   <div className="flex justify-between gap-24 font-normal  text-theme">
-    <span className="text-sm">{days}</span>
+    <span className="text-sm">
+      {daysMapping[days as keyof typeof daysMapping]}
+    </span>
     <span className="">{open + "-" + close}</span>
   </div>
 );
