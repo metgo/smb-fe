@@ -56,6 +56,7 @@ implements ICommandHandler<GetAllSubCategoriesQuery> {
       if (
         !campDetails?.productIds?.length
         && !campDetails?.dmoIds?.length
+        && !campDetails?.authorityIds?.length
         && !campDetails?.businessIds?.length
       ) {
         return [];

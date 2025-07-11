@@ -106,13 +106,14 @@ export class ProductsService {
       if (
         !campDetails?.productIds?.length
         && !campDetails?.dmoIds?.length
+        && !campDetails?.authorityIds?.length
         && !campDetails?.businessIds?.length
       ) {
         return {};
       }
 
       const select
-        = '_id name dmoId description images price quantity businessId deliveryArea deliverySpecificSellerInfo isPickUpAvailable categories subCategories deliveryInfoSameAsBusiness';
+        = '_id name dmoId authorityId description images price quantity businessId deliveryArea deliverySpecificSellerInfo isPickUpAvailable categories subCategories deliveryInfoSameAsBusiness';
 
       const populate = {
         path: 'categories subCategories',
@@ -147,6 +148,9 @@ export class ProductsService {
         )
         && !campDetails.productIds.includes(
           new mongoose.Types.ObjectId(productId),
+        )
+        && !campDetails.authorityIds.includes(
+          new mongoose.Types.ObjectId(product.authorityId),
         )
         && !campDetails.businessIds.includes(
           new mongoose.Types.ObjectId(product?.businessId?._id),

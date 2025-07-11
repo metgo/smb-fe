@@ -26,7 +26,7 @@ export class GroupTypeController {
   })
   @HttpCode(HttpStatus.OK)
   @Get('group-types')
-  async getAll(@Query() query: LocaleFilterQuery) {
+  async getAllGroupTypes(@Query() query: LocaleFilterQuery) {
     const groupTypes = await this.groupTypeService.getAll(query);
     return groupTypes;
   }
@@ -40,7 +40,10 @@ export class GroupTypeController {
   })
   @HttpCode(HttpStatus.OK)
   @Get('group-types/:id')
-  async getOne(@Param('id') id: string, @Query('locale') locale: Locale) {
+  async getOneGroupType(
+    @Param('id') id: string,
+    @Query('locale') locale: Locale,
+  ) {
     const groupType = await this.groupTypeService.getOne(id, locale);
     return groupType;
   }

@@ -39,7 +39,11 @@ implements IQueryHandler<GetAllApprovedBusinessesQuery> {
         campCode,
       );
 
-      if (!campDetails?.dmoIds?.length && !campDetails?.businessIds?.length) {
+      if (
+        !campDetails?.dmoIds?.length
+        && !campDetails?.authorityIds?.length
+        && !campDetails?.businessIds?.length
+      ) {
         return {
           totalData: 0,
           data: [],
@@ -54,6 +58,10 @@ implements IQueryHandler<GetAllApprovedBusinessesQuery> {
 
       if (campDetails?.dmoIds?.length) {
         orConditions.push({ dmoId: { $in: campDetails.dmoIds } });
+      }
+
+      if (campDetails?.authorityIds?.length) {
+        orConditions.push({ authorityId: { $in: campDetails.authorityIds } });
       }
 
       if (campDetails?.businessIds?.length) {
@@ -122,7 +130,7 @@ implements IQueryHandler<GetAllApprovedBusinessesQuery> {
       }
 
       const select
-        = '_id name description geoLocation images logo primaryCategoryId address';
+        = '_id name description geoLocation images logo primaryCategoryId address slug';
 
       const allBusiness = await queryhandler<Business>(this.BusinessModel, {
         findQuery,

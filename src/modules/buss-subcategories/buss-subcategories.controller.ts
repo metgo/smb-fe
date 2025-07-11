@@ -32,7 +32,7 @@ export class BussSubCategoriesController {
   })
   @HttpCode(HttpStatus.OK)
   @Get('subcategory')
-  async getAll(@Query() query: GetAllSubCategoriesRequest) {
+  async getAllSubCategories(@Query() query: GetAllSubCategoriesRequest) {
     const bussSubCategories = await this.queryBus.execute(
       new GetAllSubCategoriesQuery(query),
     );
@@ -50,7 +50,10 @@ export class BussSubCategoriesController {
   })
   @HttpCode(HttpStatus.OK)
   @Get('subcategory/:id')
-  async getOne(@Param('id') id: string, @Query() query: GetSubCategoryQuery) {
+  async getOneSubCategory(
+    @Param('id') id: string,
+    @Query() query: GetSubCategoryQuery,
+  ) {
     const bussSubCategory = await this.bussSubCategoriesService.getOne(
       id,
       query,

@@ -3,6 +3,7 @@ import mongoose, { HydratedDocument } from 'mongoose';
 
 import { CampaignStatus, CampaignType } from 'src/common/enum';
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
+import { Authority } from 'src/modules/authority/schema/authority.schema';
 import { Business } from 'src/modules/business/shared/schema/business.schema';
 import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.schema';
 import { DMO } from 'src/modules/dmo/schema/dmo.schema';
@@ -60,6 +61,13 @@ export class Campaign extends AuditableSchema {
     required: false,
   })
     externalApiId: mongoose.Types.ObjectId;
+
+  @Prop({
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: Authority.name }],
+    ref: Authority.name,
+    required: false,
+  })
+    authorityIds: mongoose.Types.ObjectId[];
 
   @Prop({
     type: [{ type: mongoose.Schema.Types.ObjectId, ref: DMO.name }],

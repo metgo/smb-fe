@@ -46,6 +46,9 @@ import { CartModule } from 'src/modules/cart/cart.modules';
 import { SmsModule } from 'src/services/sms/sms.module';
 import { QRCodeModule } from 'src/services/qr-code/qr-code.module';
 import { ThemeModule } from './modules/themes/theme.module';
+import { EventsModule } from './modules/events/events.module';
+import { TicketModule } from './modules/tickets/tickets.module';
+import { SearchModule } from './modules/search/search.module';
 import { GoogleSheetsModule } from './services/google-sheets/google-sheets.module';
 import { ContactUsModule } from './modules/contact-us/contact-us.module';
 
@@ -93,6 +96,9 @@ import { ContactUsModule } from './modules/contact-us/contact-us.module';
     SmsModule,
     QRCodeModule,
     ThemeModule,
+    EventsModule,
+    TicketModule,
+    SearchModule,
     GoogleSheetsModule,
     ContactUsModule,
   ],

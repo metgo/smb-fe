@@ -44,6 +44,7 @@ implements IQueryHandler<GetAllProductsRawQuery> {
       if (
         !campDetails?.productIds?.length
         && !campDetails?.dmoIds?.length
+        && !campDetails?.authorityIds?.length
         && !campDetails?.businessIds?.length
       ) {
         return { data: [] };
@@ -73,6 +74,10 @@ implements IQueryHandler<GetAllProductsRawQuery> {
 
       if (campDetails?.dmoIds?.length) {
         orConditions.push({ dmoId: { $in: campDetails.dmoIds } });
+      }
+
+      if (campDetails?.authorityIds?.length) {
+        orConditions.push({ authorityId: { $in: campDetails.authorityIds } });
       }
 
       if (campDetails?.businessIds?.length) {

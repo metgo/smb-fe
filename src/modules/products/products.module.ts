@@ -28,6 +28,7 @@ import { GetAllProductsForMapHandler } from './queries/handler/get-all-products-
 import { GetAllProductsRawQueryHandler } from './queries/handler/get-all-products-raw-query.handler';
 import { GetAllProductsHandler } from './queries/handler/get-all-products.handler';
 import { GetProductsDeliveryHandler } from './queries/handler/get-products-delivery.handler';
+import { GetAllProductsByBusinessIdHandler } from './queries/handler/get-all-product-by-businessId.handler';
 
 @Module({
   imports: [
@@ -61,6 +62,7 @@ import { GetProductsDeliveryHandler } from './queries/handler/get-products-deliv
     GetAllProductsForMapHandler,
     GetAllProductsRawQueryHandler,
     GetProductsDeliveryHandler,
+    GetAllProductsByBusinessIdHandler,
   ],
   controllers: [ProductsController],
   exports: [ProductsService],

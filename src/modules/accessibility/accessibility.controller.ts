@@ -26,7 +26,7 @@ export class AccessibilityController {
   })
   @HttpCode(HttpStatus.OK)
   @Get('accessibilities')
-  async getAll(@Query() query: LocaleFilterQuery) {
+  async getAllAccessibilities(@Query() query: LocaleFilterQuery) {
     const accessibilities = await this.accessibilityService.getAll(query);
     return accessibilities;
   }
@@ -40,7 +40,10 @@ export class AccessibilityController {
   })
   @HttpCode(HttpStatus.OK)
   @Get('admin/accessibility/:id')
-  async getOne(@Param('id') id: string, @Query() query: LocaleQuery) {
+  async getOneAccessibility(
+    @Param('id') id: string,
+    @Query() query: LocaleQuery,
+  ) {
     const accessibility = await this.accessibilityService.getOne(id, query);
     return accessibility;
   }

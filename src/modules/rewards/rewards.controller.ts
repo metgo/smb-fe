@@ -42,7 +42,7 @@ export class RewardController {
     params: [{ name: 'rewardId', type: 'string', required: true }],
   })
   @Patch('admin/rewards/:rewardId')
-  async create(
+  async createReward(
     @Body() dto: UpdateRewardDto,
     @Param('rewardId') rewardId: string,
     @Req() request,

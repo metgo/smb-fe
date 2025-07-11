@@ -33,6 +33,7 @@ implements IQueryHandler<GetProductsDeliveryQuery> {
       if (
         !campDetails?.productIds?.length
         && !campDetails?.dmoIds?.length
+        && !campDetails?.authorityIds?.length
         && !campDetails?.businessIds?.length
       ) {
         return { data: [] };
@@ -59,6 +60,14 @@ implements IQueryHandler<GetProductsDeliveryQuery> {
           campDetails.dmoIds,
         );
         dmoProducts.forEach(prod => validProductIdsSet.add(prod._id.toString()));
+      }
+
+      if (campDetails.authorityIds?.length) {
+        const authorityProducts = await this.productService.findProductsByField(
+          'authorityId',
+          campDetails.authorityIds,
+        );
+        authorityProducts.forEach(prod => validProductIdsSet.add(prod._id.toString()));
       }
 
       const filteredProductIds = productIds.filter(prodId => validProductIdsSet.has(prodId.toString()));

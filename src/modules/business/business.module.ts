@@ -22,6 +22,8 @@ import { CampaignModule } from 'src/modules/campaign/campaign.module';
 import { BusinessTourismController } from './tourism/business-tourism.controller';
 import { GetAllBusinessForMapTourismHandler } from './tourism/queries/handler/get-all-businesses-for-map.handler';
 import { GetBusinessDetailForMapTourismHandler } from './tourism/queries/handler/get-business-detail-for-map.handler';
+import { GetBusinessDetailForTourismHandler } from './tourism/queries/handler/get-business-detail.handler';
+import { GetSearchRecommendationTourismHandler } from './tourism/queries/handler/get-search-recommendation.handler';
 
 @Module({
   imports: [
@@ -49,6 +51,8 @@ import { GetBusinessDetailForMapTourismHandler } from './tourism/queries/handler
     GetAllApprovedBusinessesHandler,
     GetAllBusinessForMapTourismHandler,
     GetBusinessDetailForMapTourismHandler,
+    GetBusinessDetailForTourismHandler,
+    GetSearchRecommendationTourismHandler,
   ],
   exports: [BusinessService],
 })

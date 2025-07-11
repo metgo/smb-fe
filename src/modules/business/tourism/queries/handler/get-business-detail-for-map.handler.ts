@@ -5,7 +5,7 @@ import mongoose, { Model } from 'mongoose';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { Business } from '../../../shared/schema/business.schema';
 import { BusinessStatus } from '../../../business.type';
-import { GetBusinessDetailForMapTourismQuery } from '../get-business-detail.query';
+import { GetBusinessDetailForMapTourismQuery } from '../get-business-detail-for-map.query';
 import { ServerErrors } from 'src/common/constant';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { CampaignService } from 'src/modules/campaign/campaign.service';
@@ -30,7 +30,11 @@ implements IQueryHandler<GetBusinessDetailForMapTourismQuery> {
         query.campCode,
       );
 
-      if (!campDetails?.dmoIds?.length && !campDetails?.businessIds?.length) {
+      if (
+        !campDetails?.dmoIds?.length
+        && !campDetails?.authorityIds?.length
+        && !campDetails?.businessIds?.length
+      ) {
         return {};
       }
 
@@ -47,6 +51,9 @@ implements IQueryHandler<GetBusinessDetailForMapTourismQuery> {
         if (
           !campDetails.dmoIds.includes(
             new mongoose.Types.ObjectId(business.dmoId),
+          )
+          && !campDetails.authorityIds.includes(
+            new mongoose.Types.ObjectId(business?.authorityId),
           )
           && !campDetails.businessIds.includes(
             new mongoose.Types.ObjectId(business?._id),
