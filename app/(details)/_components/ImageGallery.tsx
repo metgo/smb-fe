@@ -6,6 +6,7 @@ import { NextImage } from "@/components/ui";
 import { CardSkeleton } from "@/components/skeletons";
 import { useImageScale } from "@/hooks/useImageScale";
 import { useImagePresent } from "@/hooks/useImagePresent";
+import { staticImages } from "@/constant/staticImages";
 
 // Layout definitions (image sizes)
 const layouts = {
@@ -111,7 +112,7 @@ const ImageCard = ({
           isFill
           setIsImageLoaded={setIsImageLoaded}
           alt={updatedImage.alt}
-          imgSrc={updatedImage.imageUrl}
+          imgSrc={updatedImage.imageUrl || staticImages.placeholder}
           className="object-cover w-full h-full"
         />
       )}

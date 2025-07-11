@@ -107,7 +107,7 @@ const ProductCard = ({
       <div className="m-4">
         <h3 className="text-dark font-bold line-clamp-1">{product?.name}</h3>
         <div
-          className="line-clamp-2 text-theme text-[12px]"
+          className="line-clamp-2 text-theme text-[12px] h-8.5"
           dangerouslySetInnerHTML={{ __html: product?.description }}
         />
         <div className="text-[32px] text-dark font-normal my-2.5">

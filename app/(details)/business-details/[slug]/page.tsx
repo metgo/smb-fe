@@ -70,9 +70,13 @@ const page = async ({ params }: PageProps) => {
           primaryCategoryId={businessDetails.primaryCategoryId}
         />
 
-        <div className="flex items-center gap-2.5 mt-4.5">
-          <AttributePills items={businessDetails?.accessibilitiesId} />
-          <AttributePills items={businessDetails?.groupTypesId} />
+        <div className=" mt-4.5">
+          <AttributePills
+            items={[
+              ...businessDetails?.accessibilitiesId,
+              ...businessDetails?.groupTypesId,
+            ]}
+          />
         </div>
 
         <BusinessDetailsFilterTab businessDetails={businessDetails} />
