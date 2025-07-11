@@ -57,9 +57,13 @@ const page = async ({ params }: PageProps) => {
 
         <ImageGallery images={eventDetails?.images} />
 
-        <div className="flex items-center gap-2.5 mt-4.5">
-          <AttributePills items={eventDetails?.accessibilitiesId} />
-          <AttributePills items={eventDetails?.groupTypesId} />
+        <div className=" mt-4.5">
+          <AttributePills
+            items={[
+              ...eventDetails?.accessibilitiesId,
+              ...eventDetails?.groupTypesId,
+            ]}
+          />
         </div>
 
         <div className="grid grid-cols-12  mt-15 w-full">

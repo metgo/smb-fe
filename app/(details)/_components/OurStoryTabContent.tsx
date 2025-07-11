@@ -92,7 +92,7 @@ const OurStoryTabContent = ({
           primaryCategoryId={primaryCategoryId}
           geoLocation={geoLocation}
         />
-        {openingHrs?.length > 0 && (
+        {openingHrs?.length > 0 && openingHrs?.[0]?.close !== null && (
           <div className="border-2 border-primary rounded-xl px-14.5 py-7.5 w-[30%] flex-initial">
             <div className="flex justify-between gap-24 text-sm font-normal mb-2.5">
               <span className="text-charcoal">{misc.hours}</span>
