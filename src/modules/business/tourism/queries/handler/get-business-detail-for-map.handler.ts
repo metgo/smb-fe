@@ -23,7 +23,7 @@ implements IQueryHandler<GetBusinessDetailForMapTourismQuery> {
     try {
       const { id, query } = queries;
 
-      const select = '_id name description images logo primaryCategoryId dmoId';
+      const select = '_id name description images logo primaryCategoryId dmoId authorityId';
 
       const campDetails = await this.campaignService.findCampaignAndReturn(
         'code',
