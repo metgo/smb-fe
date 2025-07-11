@@ -10,11 +10,12 @@ const page = () => {
         <span className="font-bold text-dark">{contactUsText.contactUs}</span>
       </div>
       <Image
-        src={"/images/contact-us.png"}
-        alt="contact form"
         width={417}
         height={417}
+        unoptimized
+        alt="contact form"
         className="w-full"
+        src={"/images/contact-us.png"}
       />
       <ContactForm />
     </div>

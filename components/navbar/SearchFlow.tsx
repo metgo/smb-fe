@@ -20,7 +20,7 @@ const SectionTitle = ({ title }: { title: string }) => (
 const CardList = ({
   items,
   title,
-  navPath = "/business-details",
+  navPath = "business-details",
 }: {
   title: string;
   navPath?: string;
@@ -49,7 +49,6 @@ const SearchFlow = () => {
   const [hasMounted, setHasMounted] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState("");
   const [searchItems, setSearchItems] = useState<SearchResultProps>({});
-  const [selectedSearchKeyword, setSelectedSearchKeyword] = useState("");
   const [debounceSearchKeyword] = useDebounce(searchKeyword, 1000);
   const [recommendedBusinesses, setRecommendedBusinesses] = useState<
     GeneralProductCardProps[]
@@ -60,6 +59,7 @@ const SearchFlow = () => {
   useEffect(() => {
     if (!isOpen) {
       setSearchItems({});
+      setSearchKeyword("");
       return;
     }
 
@@ -70,17 +70,6 @@ const SearchFlow = () => {
 
     fetchRecommendedBusiness();
   }, [isOpen]);
-
-  useEffect(() => {
-    if (!selectedSearchKeyword) return;
-
-    const fetchSearchItem = async () => {
-      const res = await tourismSearch(selectedSearchKeyword);
-      setSearchItems(res);
-    };
-
-    fetchSearchItem();
-  }, [selectedSearchKeyword]);
 
   useEffect(() => {
     if (!debounceSearchKeyword) return;
@@ -94,12 +83,17 @@ const SearchFlow = () => {
   }, [debounceSearchKeyword]);
 
   function handleKeywordSelect(word: string) {
-    if (word === selectedSearchKeyword) {
-      setSelectedSearchKeyword("");
+    if (word === searchKeyword) {
+      setSearchKeyword("");
       setSearchItems({});
     } else {
-      setSelectedSearchKeyword(word);
+      setSearchKeyword(word);
     }
+  }
+
+  function handleClearInputText() {
+    setSearchKeyword("");
+    setSearchItems({});
   }
 
   if (!hasMounted) return null;
@@ -137,7 +131,7 @@ const SearchFlow = () => {
                     height={18}
                     width={18}
                     icon="circular-close-white"
-                    onClick={() => setSearchKeyword("")}
+                    onClick={handleClearInputText}
                   />
                 )}
               </div>
@@ -151,12 +145,12 @@ const SearchFlow = () => {
               <div>
                 <SectionTitle title={searchText.recommendedSearches} />
                 <div className="flex items-center gap-2.5 mt-4">
-                  {recommendedSearchKeywords.map((item, index) => (
+                  {recommendedSearchKeywords?.map((item, index) => (
                     <div
                       key={index}
                       onClick={() => handleKeywordSelect(item)}
                       className={clsx(
-                        item === selectedSearchKeyword
+                        item === searchKeyword
                           ? "bg-lightGray text-white"
                           : "text-theme",
                         "ps-4 pe-5 border border-lightGray rounded-4xl h-10.5 flex items-center justify-center cursor-pointer",
@@ -170,16 +164,15 @@ const SearchFlow = () => {
 
               <div>
                 {/* Popular Businesses (default view) */}
-                {!(searchKeyword || selectedSearchKeyword) &&
-                  recommendedBusinesses.length > 0 && (
-                    <CardList
-                      items={recommendedBusinesses}
-                      title={searchText.popularBusinesses}
-                    />
-                  )}
+                {!searchKeyword && recommendedBusinesses.length > 0 && (
+                  <CardList
+                    items={recommendedBusinesses}
+                    title={searchText.popularBusinesses}
+                  />
+                )}
 
                 {/* Search results */}
-                {(searchKeyword || selectedSearchKeyword) && !hasResults ? (
+                {searchKeyword && !hasResults ? (
                   <SectionTitle title={searchText.noResultFound} />
                 ) : (
                   <>
@@ -190,7 +183,7 @@ const SearchFlow = () => {
                     <CardList
                       items={searchItems.events!}
                       title={searchText.events}
-                      navPath="events-details"
+                      navPath="event-details"
                     />
                   </>
                 )}

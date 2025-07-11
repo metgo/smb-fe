@@ -21,28 +21,30 @@ const PopularBusinessCard = ({
     <div style={{ width: 240, height: 240 }} className="relative group">
       <NextImage
         isFill
-        alt={images[imageCount]?.alt}
-        imgSrc={images[activeImageIndex]?.image}
         width={240}
         height={240}
+        alt={images?.[imageCount]?.alt}
+        imgSrc={images?.[activeImageIndex]?.image}
         className="rounded-xl object-cover"
       />
 
-      <div
-        style={{ width: 40, height: 40 }}
-        className="absolute right-4 top-4 rounded-lg overflow-hidden border border-lightGray "
-      >
-        <NextImage
-          isFill
-          alt={logo?.alt}
-          imgSrc={logo?.image}
-          width={40}
-          height={40}
-        />
-      </div>
+      {navPath !== "event-details" && (
+        <div
+          style={{ width: 40, height: 40 }}
+          className="absolute right-4 top-4 rounded-lg overflow-hidden border border-lightGray "
+        >
+          <NextImage
+            isFill
+            alt={logo?.alt}
+            imgSrc={logo?.image}
+            width={40}
+            height={40}
+          />
+        </div>
+      )}
 
       <Link
-        href={`/${navPath}/${slug}`}
+        href={`${navPath}/${slug}`}
         className="text-white text-sm font-bold px-4 py-2.25 bg-dark/50 rounded-lg absolute left-4 top-4 cursor-pointer hidden group-hover:block z-50"
       >
         {searchText.moreDetails}

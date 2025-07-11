@@ -11,14 +11,8 @@ import { contactUsText } from "@/constant/hebrew";
 import { Dialog, IconImage } from "@/components/ui";
 import { sendEmail } from "@/actions/contactUsAction";
 import { ContactFormData, contactFormSchema } from "@/schema/contact";
-
-const reasonOptions = [
-  { value: "תווים", label: "תווים" },
-  { value: "עסקים", label: "עסקים" },
-  { value: "מעסיקים", label: "מעסיקים" },
-  { value: "תמיכה טכנית", label: "תמיכה טכנית" },
-  { value: "ביטול עסקה", label: "ביטול עסקה" },
-];
+import { contactFormReasonOptions } from "@/lib/utils";
+import clsx from "clsx";
 
 const InputField = ({ type = "text", placeholder, register, error }: any) => (
   <div className="flex flex-col w-full">
@@ -49,9 +43,9 @@ const SelectField = ({ control, name, error }: any) => (
               ${!field.value ? "text-gray-500" : "text-black"}`}
           >
             <option value="" disabled>
-              *{contactUsText.referralReason}
+              {contactUsText.referralReason}
             </option>
-            {reasonOptions.map((option) => (
+            {contactFormReasonOptions.map((option) => (
               <option
                 key={option.value}
                 value={option.value}
@@ -82,9 +76,10 @@ const ContactForm = () => {
     handleSubmit,
     control,
     reset,
-    formState: { errors },
+    formState: { errors, isValid },
   } = useForm<ContactFormData>({
     resolver: zodResolver(contactFormSchema),
+    mode: "onChange",
     defaultValues: {
       name: "",
       phone: "",
@@ -163,8 +158,13 @@ const ContactForm = () => {
 
               <button
                 type="submit"
-                disabled={isSubmitting}
-                className="mx-auto h-12 w-52 mt-10 bg-dark text-white font-bold rounded-xl cursor-pointer"
+                disabled={isSubmitting || !isValid}
+                className={clsx(
+                  isSubmitting || !isValid
+                    ? "bg-lightGray cursor-not-allowed"
+                    : "bg-dark cursor-pointer",
+                  "mx-auto h-12 w-52 mt-10 text-white font-bold rounded-xl ",
+                )}
               >
                 {isSubmitting ? contactUsText.contactUs : "שליחה"}
               </button>
@@ -182,7 +182,7 @@ const ContactForm = () => {
           modalClassName="w-[430px] top-60"
         >
           {/* This div should be relative and overflow-hidden */}
-          <div className="relative overflow-hidden w-full flex flex-col items-center py-16 z-50 rounded-2xl">
+          <div className="relative overflow-hidden w-full flex flex-col items-center py-16 z-50 rounded-xl">
             <h1 className="text-2xl font-bold text-dark">
               {contactUsText.messageSuccess}
             </h1>
@@ -200,7 +200,7 @@ const ContactForm = () => {
               height={184}
               alt="Yellow Chrysanthemum"
               src="/images/yellow-chrysanthemum.png"
-              className="absolute -left-16 -bottom-20"
+              className="absolute -left-15 -bottom-20"
             />
           </div>
         </Dialog>
