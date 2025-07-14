@@ -9,6 +9,7 @@ import UserIconHoverCard from "./UserIconHoverCard";
 import { Logo, ShopbagIcon } from "@/components/ui/icons";
 import CurrentTempOfYourCity from "./CurrentTempOfYourCity";
 import BusinessPageFilterTabs from "./BusinessPageFilterTabs";
+import { CONSOLE_URL } from "@/constant/envConstants";
 
 const Navbar = async ({
   showFilterTab = false,
@@ -24,7 +25,11 @@ const Navbar = async ({
           <Link href={"/"} className="cursor-pointer">
             <Logo />
           </Link>
-          <Link href={"#"} className="text-theme font-bold ms-8">
+          <Link
+            href={CONSOLE_URL}
+            target="_blank"
+            className="text-theme font-bold ms-8"
+          >
             {navbar.toJoinAsaBusiness}
           </Link>
         </div>
