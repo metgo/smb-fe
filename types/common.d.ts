@@ -62,3 +62,9 @@ declare interface SearchResultProps {
   products?: GeneralProductCardProps[];
   businesses?: GeneralProductCardProps[];
 }
+declare interface DeliveryProps {
+  deliveryArea: DeliveryArea[];
+  deliverySpecificSellerInfo: string[];
+  deliveryReturnExchange: string[];
+  deliveryAdditionalInfo: string;
+}

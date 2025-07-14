@@ -8,6 +8,7 @@ import { CardSkeleton } from "../skeletons";
 import { IconImage, NextImage } from "@/components/ui";
 import { useImageScale } from "@/hooks/useImageScale";
 import { useImagePresent } from "@/hooks/useImagePresent";
+import Link from "next/link";
 
 const ImageCard = ({
   imageItem,
@@ -66,67 +67,69 @@ const ProductCard = ({
 
   return (
     <div className=" rounded-2xl overflow-hidden border border-[#D3D3D3]">
-      <div className="relative w-full overflow-hidden">
-        <div
-          style={{ width: 242 * scale, height: 224 * scale }}
-          className="relative"
-        >
-          <AnimatePresence mode="sync" initial={false}>
-            {product?.images?.map((imageItem, index) =>
-              index === activeImageIndex ? (
-                <ImageCard
-                  key={index}
-                  scale={scale}
-                  imageItem={imageItem}
-                  primaryCategoryId={primaryCategoryId}
-                />
-              ) : null,
-            )}
-          </AnimatePresence>
-        </div>
-
-        {/* Controls & indicators */}
-        {product?.images?.length > 1 && (
-          <div className="absolute bottom-1 left-0 flex items-center justify-between px-4 mb-3.5 w-full">
-            <div className="w-10" />
-            <div className="flex items-center gap-1">
-              {product?.images?.map((_: any, index: number) => (
-                <div
-                  key={index}
-                  className={`transition-all duration-300 rounded-full bg-white ${index === activeImageIndex ? "w-2 h-2" : "w-2 h-2 opacity-50"}`}
-                />
-              ))}
-            </div>
-            <div onClick={handleImageIndexChange} className="cursor-pointer">
-              <IconImage width={30} height={30} icon="prev" />
-            </div>
-          </div>
-        )}
-      </div>
-
-      <div className="m-4">
-        <h3 className="text-dark font-bold line-clamp-1">{product?.name}</h3>
-        <div
-          className="line-clamp-2 text-theme text-[12px] h-8.5"
-          dangerouslySetInnerHTML={{ __html: product?.description }}
-        />
-        <div className="text-[32px] text-dark font-normal my-2.5">
-          <span>₪{product?.price?.sellingPrice}</span>
-        </div>
-
-        <div className="flex items-center justify-between gap-2.5">
-          <button
-            type="button"
-            onClick={() => {}}
-            className="h-10 rounded-xl bg-dark text-white flex-auto cursor-pointer"
+      <Link href={`/product-details/${product._id}`}>
+        <div className="relative w-full overflow-hidden">
+          <div
+            style={{ width: 242 * scale, height: 224 * scale }}
+            className="relative"
           >
-            {misc.quickPurchase}
-          </button>
-          <div className="flex-none">
-            <IconImage width={40} height={40} icon="circular-cart" />
+            <AnimatePresence mode="sync" initial={false}>
+              {product?.images?.map((imageItem, index) =>
+                index === activeImageIndex ? (
+                  <ImageCard
+                    key={index}
+                    scale={scale}
+                    imageItem={imageItem}
+                    primaryCategoryId={primaryCategoryId}
+                  />
+                ) : null,
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Controls & indicators */}
+          {product?.images?.length > 1 && (
+            <div className="absolute bottom-1 left-0 flex items-center justify-between px-4 mb-3.5 w-full">
+              <div className="w-10" />
+              <div className="flex items-center gap-1">
+                {product?.images?.map((_: any, index: number) => (
+                  <div
+                    key={index}
+                    className={`transition-all duration-300 rounded-full bg-white ${index === activeImageIndex ? "w-2 h-2" : "w-2 h-2 opacity-50"}`}
+                  />
+                ))}
+              </div>
+              <div onClick={handleImageIndexChange} className="cursor-pointer">
+                <IconImage width={30} height={30} icon="prev" />
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="m-4">
+          <h3 className="text-dark font-bold line-clamp-1">{product?.name}</h3>
+          <div
+            className="line-clamp-2 text-theme text-[12px] h-8.5"
+            dangerouslySetInnerHTML={{ __html: product?.description }}
+          />
+          <div className="text-[32px] text-dark font-normal my-2.5">
+            <span>₪{product?.price?.sellingPrice}</span>
+          </div>
+
+          <div className="flex items-center justify-between gap-2.5">
+            <button
+              type="button"
+              onClick={() => {}}
+              className="h-10 rounded-xl bg-dark text-white flex-auto cursor-pointer"
+            >
+              {misc.quickPurchase}
+            </button>
+            <div className="flex-none">
+              <IconImage width={40} height={40} icon="circular-cart" />
+            </div>
           </div>
         </div>
-      </div>
+      </Link>
     </div>
   );
 };

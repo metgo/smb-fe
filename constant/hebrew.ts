@@ -49,6 +49,7 @@ export const menuItems = {
   ourStory: "הסיפור שלנו",
   products: "מוצרים",
   deliveries: "משלוחים",
+  productDescription: "תיאור המוצר",
   businessPage: "עמוד עסקים",
   visitorCenter: "מרכז המבקרים",
   blogArticle: "בלוג ומאמרים",
@@ -117,4 +118,10 @@ export const searchText = {
   noResultFound: "לא מצאנו תוצאות למה שחיפשת.",
   events: "אירועים",
   businesses: "עסקים",
+};
+
+export const productDetailsText = {
+  continuePlaceOrder: "המשך לביצוע הזמנה",
+  addToCart: "הוספה לסל",
+  mayInterestYou: "יכול לעניין אתכם",
 };
