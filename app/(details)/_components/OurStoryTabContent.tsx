@@ -92,14 +92,14 @@ const OurStoryTabContent = ({
           primaryCategoryId={primaryCategoryId}
           geoLocation={geoLocation}
         />
-        {openingHrs?.length > 0 && openingHrs?.[0]?.close !== null && (
+        {openingHrs?.some((item) => item?.open && item?.close) && (
           <div className="border-2 border-primary rounded-xl px-14.5 py-7.5 w-[30%] flex-initial">
             <div className="flex justify-between gap-24 text-sm font-normal mb-2.5">
               <span className="text-charcoal">{misc.hours}</span>
               <span className="text-[#28C268]">{misc.openNow}</span>
             </div>
             <div className="space-y-1.5">
-              {openingHrs?.map((item, index) => (
+              {openingHrs.map((item, index) => (
                 <OpeningDayHours key={index} {...item} />
               ))}
             </div>
