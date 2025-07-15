@@ -1,6 +1,7 @@
 const API_KEY = process.env.NEXT_PUBLIC_WEATHER_API_KEY;
 
-export const getWeatherInfo = async (location: string = "Kathmandu") => {
+export const getWeatherInfo = async () => {
+  const location = "31.4095,34.8032";
   try {
     const response = await fetch(
       `https://api.weatherapi.com/v1/current.json?key=${API_KEY}&q=${location}&aqi=no`,
