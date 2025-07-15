@@ -35,6 +35,7 @@ implements IQueryHandler<GetProductsDeliveryQuery> {
         && !campDetails?.dmoIds?.length
         && !campDetails?.authorityIds?.length
         && !campDetails?.businessIds?.length
+        && !campDetails?.categoryIds?.length
       ) {
         return { data: [] };
       }
@@ -76,6 +77,7 @@ implements IQueryHandler<GetProductsDeliveryQuery> {
         status: ProductStatus.ACTIVE,
         isDeleted: false,
         _id: { $in: filteredProductIds },
+        categories: { $in: campDetails?.categoryIds },
         $and: [
           {
             $or: [

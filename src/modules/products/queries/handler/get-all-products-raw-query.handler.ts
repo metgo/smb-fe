@@ -122,6 +122,15 @@ implements IQueryHandler<GetAllProductsRawQuery> {
         };
       }
 
+      if (
+        !categoriesId
+      ) {
+        findQuery = {
+          ...findQuery,
+          categories: { $in: campDetails?.categoryIds },
+        };
+      }
+
       if (subCategoriesId) {
         const subCategoriesIds = Array.isArray(subCategoriesId)
           ? subCategoriesId

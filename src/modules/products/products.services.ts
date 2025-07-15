@@ -108,6 +108,7 @@ export class ProductsService {
         && !campDetails?.dmoIds?.length
         && !campDetails?.authorityIds?.length
         && !campDetails?.businessIds?.length
+        && !campDetails?.categoryIds?.length
       ) {
         return {};
       }
@@ -126,6 +127,7 @@ export class ProductsService {
         deletedAt: null,
         deletedBy: null,
         isDeleted: false,
+        categories: { $in: campDetails?.categoryIds },
         $or: [
           { 'quantity.remaining': { $gt: 0 } },
           { 'quantity.isUnlimited': true },

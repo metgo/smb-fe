@@ -125,7 +125,7 @@ implements IQueryHandler<GetAllBusinessForMapTourismQuery> {
       }
 
       const select
-        = '_id geoLocation primaryCategoryId bussCategoriesId bussSubCategoriesId';
+        = '_id geoLocation primaryCategoryId bussCategoriesId bussSubCategoriesId slug';
 
       const allBusiness = await queryhandler<Business>(this.BusinessModel, {
         findQuery,

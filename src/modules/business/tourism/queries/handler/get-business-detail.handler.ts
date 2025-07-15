@@ -39,7 +39,7 @@ implements IQueryHandler<GetBusinessDetailForTourismQuery> {
       }
 
       const select
-        = '_id dmoId authorityId location cover logo images name address countryCode phoneNumber busiEmail shortDescription description contactDetails geoLocation  groupTypesId accessibilitiesId primaryCategoryId bussCategoriesId bussSubCategoriesId openingHrs isAlwaysOpen slug impact socialMedia  deliveryArea deliverySpecificSellerInfo deliveryReturnExchange deliveryAdditionalInfo isPickUpAvailable';
+        = '_id dmoId slug authorityId location cover logo images name address countryCode phoneNumber busiEmail shortDescription description contactDetails geoLocation  groupTypesId accessibilitiesId primaryCategoryId bussCategoriesId bussSubCategoriesId openingHrs isAlwaysOpen slug impact socialMedia  deliveryArea deliverySpecificSellerInfo deliveryReturnExchange deliveryAdditionalInfo isPickUpAvailable';
 
       const populate = [
         {
