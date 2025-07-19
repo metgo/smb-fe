@@ -174,8 +174,7 @@ export const useGoogleMap = () => {
         -webkit-line-clamp: 1;
         -webkit-box-orient: vertical;
       "
-       dangerouslySetInnerHTML={{ __html: ${wrappedDescription} || '' }}
-      />
+       dangerouslySetInnerHTML=__html: ${wrappedDescription}
 
       <div style="display: flex; align-items: center; justify-content: space-between; margin-top:10px">
         <button
