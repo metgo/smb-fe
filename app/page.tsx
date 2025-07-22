@@ -2,11 +2,12 @@ import Image from "next/image";
 
 import Navbar from "@/components/navbar";
 import IntroVideo from "@/components/IntroVideo";
+import { ScrollSnapWrapper } from "@/components/wrappers";
 import ScrollIndicator from "@/components/ScrollIndicator";
 import { getAllBusinesses } from "@/actions/businessActions";
-import CurrentTempOfYourCity from "@/components/navbar/CurrentTempOfYourCity";
-import BusinessFeedLayout from "@/components/layouts/BusinessFeedLayout";
 import HamburgerMenu from "@/components/navbar/HamburgerMenu";
+import BusinessFeedLayout from "@/components/layouts/BusinessFeedLayout";
+import CurrentTempOfYourCity from "@/components/navbar/CurrentTempOfYourCity";
 
 interface Props {
   searchParams: Promise<{
@@ -28,31 +29,34 @@ const page = async ({ searchParams }: Props) => {
 
   return (
     <div>
-      {/* Hero Section */}
-      <section className="width-screen h-screen relative overflow-hidden">
-        <div className="z-20 fixed top-2.5 right-0 w-full flex items-center justify-between ps-20 pe-16">
-          <div className="flex items-center gap-5">
-            <HamburgerMenu openIcon="white-threeline" closeIcon="close-white" />
-            <Image
-              alt="Logo"
-              src={"/images/logo/white-logo.svg"}
-              width={88}
-              height={60}
-            />
+      <ScrollSnapWrapper>
+        {/* Hero Section */}
+        <section className="width-screen h-screen relative overflow-hidden">
+          <div className="z-20 fixed top-2.5 right-0 w-full flex items-center justify-between ps-20 pe-16">
+            <div className="flex items-center gap-5">
+              <HamburgerMenu
+                openIcon="white-threeline"
+                closeIcon="close-white"
+              />
+              <Image
+                alt="Logo"
+                src={"/images/logo/white-logo.svg"}
+                width={88}
+                height={60}
+              />
+            </div>
+            <CurrentTempOfYourCity />
           </div>
-          <CurrentTempOfYourCity />
-        </div>
-        {/* <div className="w-full h-[40vh] bg-black z-40" /> */}
-        {/* <div className="absolute inset-0 bg-black/20 bg-opacity-40 z-20" /> */}
-        <IntroVideo />
-        <ScrollIndicator />
-      </section>
+          <IntroVideo />
+          <ScrollIndicator />
+        </section>
 
-      {/* Second Section */}
-      <section className="relative z-50 bg-white">
-        <Navbar showFilterTab />
-        <BusinessFeedLayout businesses={businesses} />
-      </section>
+        {/* Second Section */}
+        <section className="relative z-50 bg-white">
+          <Navbar showFilterTab />
+          <BusinessFeedLayout businesses={businesses} />
+        </section>
+      </ScrollSnapWrapper>
     </div>
   );
 };

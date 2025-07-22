@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import Link from "next/link";
 
@@ -11,11 +13,7 @@ import CurrentTempOfYourCity from "./CurrentTempOfYourCity";
 import BusinessPageFilterTabs from "./BusinessPageFilterTabs";
 import { CONSOLE_URL } from "@/constant/envConstants";
 
-const Navbar = async ({
-  showFilterTab = false,
-}: {
-  showFilterTab?: boolean;
-}) => {
+const Navbar = ({ showFilterTab = false }: { showFilterTab?: boolean }) => {
   return (
     <nav className="ps-19 pe-16 py-2.5 bg-white sticky top-0 z-20 border-b border-[#F5F5F5]">
       <div className="grid grid-cols-10 items-center">
