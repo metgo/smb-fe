@@ -7,9 +7,7 @@ import { motion, useInView, useAnimation } from "framer-motion";
 
 import { IconImage, NextImage } from "@/components/ui";
 import { navigationPaths } from "@/lib/utils";
-import { tempCardInfo } from "@/constant/hebrew";
 import useGeneralStore from "@/stores/generalStore";
-import LocalStorageService from "@/lib/localStorage";
 import { CardSkeleton } from "@/components/skeletons";
 import { useImagePresent } from "@/hooks/useImagePresent";
 
@@ -25,12 +23,15 @@ const BusinessCard = ({ height, width, business }: BusinessCardProps) => {
 
   const { activeCategoryKey, setActiveFilterTab, setClickedBusinessId } =
     useGeneralStore();
-  const { isLoading, updatedImage, isImageLoaded, setIsImageLoaded } =
-    useImagePresent(aspectRatio, business?.images, [categoryId, subCategoryId]);
+  const { isLoading, updatedImage, isImageLoaded } = useImagePresent(
+    aspectRatio,
+    business?.images,
+    [categoryId, subCategoryId],
+  );
 
-  const existingFaviourtBusiness =
-    LocalStorageService.get<FaviouriteBusinessProps[]>("favorite-business") ||
-    [];
+  // const existingFaviourtBusiness =
+  //   LocalStorageService.get<FaviouriteBusinessProps[]>("favorite-business") ||
+  //   [];
 
   const [hasMounted, setHasMounted] = useState(false);
   // Framer Motion setup
@@ -48,37 +49,37 @@ const BusinessCard = ({ height, width, business }: BusinessCardProps) => {
     }
   }, [isInView, controls]);
 
-  function addWishlistHandler(e: any) {
-    e.stopPropagation();
-    e.preventDefault();
-    LocalStorageService.remove("favorite-business");
-    const item: FaviouriteBusinessProps = {
-      height,
-      width,
-      _id: business._id,
-      name: business.name,
-      imageUrl: updatedImage.imageUrl,
-      location: tempCardInfo.location,
-    };
+  // function addWishlistHandler(e: any) {
+  //   e.stopPropagation();
+  //   e.preventDefault();
+  //   LocalStorageService.remove("favorite-business");
+  //   const item: FaviouriteBusinessProps = {
+  //     height,
+  //     width,
+  //     _id: business._id,
+  //     name: business.name,
+  //     imageUrl: updatedImage.imageUrl,
+  //     location: tempCardInfo.location,
+  //   };
 
-    // Check if it's already in favorites
-    const isAlreadyAdded = existingFaviourtBusiness.some(
-      (b) => b._id === item._id,
-    );
-    if (isAlreadyAdded) {
-      console.log("Item already in wishlist");
-      return;
-    }
+  //   // Check if it's already in favorites
+  //   const isAlreadyAdded = existingFaviourtBusiness.some(
+  //     (b) => b._id === item._id,
+  //   );
+  //   if (isAlreadyAdded) {
+  //     console.log("Item already in wishlist");
+  //     return;
+  //   }
 
-    // Add the new item
-    const updated = [...existingFaviourtBusiness, item];
+  //   // Add the new item
+  //   const updated = [...existingFaviourtBusiness, item];
 
-    // Save updated list
-    LocalStorageService.set<FaviouriteBusinessProps[]>(
-      "favorite-business",
-      updated,
-    );
-  }
+  //   // Save updated list
+  //   LocalStorageService.set<FaviouriteBusinessProps[]>(
+  //     "favorite-business",
+  //     updated,
+  //   );
+  // }
 
   const primaryCategoryId = activeCategoryKey
     ? activeCategoryKey
@@ -91,6 +92,7 @@ const BusinessCard = ({ height, width, business }: BusinessCardProps) => {
     setActiveFilterTab("map");
   }
 
+  // if(!hasMounted) return null;
   return (
     <motion.div
       ref={ref}
@@ -109,10 +111,11 @@ const BusinessCard = ({ height, width, business }: BusinessCardProps) => {
           <NextImage
             isFill
             quality={100}
+            width={width}
+            height={height}
             alt={updatedImage.alt}
             imgSrc={updatedImage.imageUrl}
-            setIsImageLoaded={setIsImageLoaded}
-            className="object-cover h-full w-full rounded-xl"
+            className=" h-full w-full rounded-xl"
           />
           <div className="relative w-full h-full">
             {/* Overlay (only bottom 50%) */}
@@ -139,7 +142,7 @@ const BusinessCard = ({ height, width, business }: BusinessCardProps) => {
               width={30}
               height={30}
               icon="circular-heart"
-              onClick={() => addWishlistHandler}
+              // onClick={() => addWishlistHandler(business._id)}
             />
             {pathname !== "/events" && (
               <IconImage

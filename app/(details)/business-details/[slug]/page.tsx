@@ -66,7 +66,7 @@ const page = async ({ params }: PageProps) => {
         </div>
 
         <ImageGallery
-          images={businessDetails.images}
+          images={businessDetails?.images?.slice(0, 5)}
           primaryCategoryId={businessDetails.primaryCategoryId}
         />
 

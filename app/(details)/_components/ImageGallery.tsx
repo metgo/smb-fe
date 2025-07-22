@@ -90,8 +90,11 @@ const ImageCard = ({
 }) => {
   const aspectRatio = (width * scale) / 450;
 
-  const { isLoading, updatedImage, isImageLoaded, setIsImageLoaded } =
-    useImagePresent(aspectRatio, imageItem, [imageItem]);
+  const { isLoading, updatedImage, isImageLoaded } = useImagePresent(
+    aspectRatio,
+    imageItem,
+    [imageItem],
+  );
 
   return (
     <div
@@ -109,8 +112,8 @@ const ImageCard = ({
         />
       ) : (
         <NextImage
-          isFill
-          setIsImageLoaded={setIsImageLoaded}
+          width={width}
+          height={height}
           alt={updatedImage.alt}
           imgSrc={updatedImage.imageUrl || staticImages.placeholder}
           className="object-cover w-full h-full"

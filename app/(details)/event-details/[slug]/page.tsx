@@ -55,7 +55,7 @@ const page = async ({ params }: PageProps) => {
           </div>
         </div>
 
-        <ImageGallery images={eventDetails?.images} />
+        <ImageGallery images={eventDetails?.images?.slice(0, 5)} />
 
         <div className=" mt-4.5">
           <AttributePills

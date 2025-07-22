@@ -25,19 +25,37 @@ export async function GET(request: Request) {
   }
 
   try {
-    const response = await fetch(url);
+    // Fetch with timeout and stream handling
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5s timeout
+
+    const response = await fetch(url, {
+      signal: controller.signal,
+      headers: {
+        Accept: "image/*",
+      },
+    });
+    clearTimeout(timeoutId);
+
     if (!response.ok) throw new Error("Failed to fetch image");
+
     const buffer = Buffer.from(await response.arrayBuffer());
 
-    const image = sharp(buffer);
-    const metadata = await image.metadata();
+    // Pre-calculate all crop dimensions before Sharp operations
+    const centerX = (xMin + xMax) / 2;
+    const centerY = (yMin + yMax) / 2;
 
+    // Create Sharp instance with performance optimizations
+    const image = sharp(buffer, {
+      failOn: "none", // Don't fail on warnings
+      density: 72, // Lower DPI for faster processing
+      limitInputPixels: 268402689, // ~16k x 16k limit
+    });
+
+    const metadata = await image.metadata();
     const displayWidth = metadata.width ?? 0;
     const displayHeight = metadata.height ?? 0;
 
-    // Compute mergedBox-based crop using same logic from client
-    const centerX = (xMin + xMax) / 2;
-    const centerY = (yMin + yMax) / 2;
     const cropCenterX = centerX * displayWidth;
     const cropCenterY = centerY * displayHeight;
 
@@ -73,7 +91,7 @@ export async function GET(request: Request) {
     const finalWidth = Math.round(cropWidth);
     const finalHeight = Math.round(cropHeight);
 
-    // Validate final dimensions before calling .extract()
+    // Validate dimensions
     if (
       finalWidth <= 0 ||
       finalHeight <= 0 ||
@@ -88,6 +106,7 @@ export async function GET(request: Request) {
       );
     }
 
+    // Optimized Sharp pipeline - single operation chain
     const croppedImage = await image
       .extract({
         left,
@@ -95,12 +114,23 @@ export async function GET(request: Request) {
         width: finalWidth,
         height: finalHeight,
       })
-      .jpeg()
-      .toBuffer();
+      .webp({
+        quality: 85, // Good balance of quality/speed
+        effort: 2, // Lower effort = faster processing (0-6)
+        smartSubsample: true, // Better quality at lower effort
+        nearLossless: false, // Faster than lossless
+        alphaQuality: 85, // If image has transparency
+        // reductionEffort: 2     // Lower effort for size reduction
+      })
+      .toBuffer({
+        resolveWithObject: false, // Skip metadata object for speed
+      });
 
     return new NextResponse(croppedImage, {
       headers: {
-        "Content-Type": "image/jpeg",
+        "Content-Type": "image/webp",
+        "Cache-Control": "public, max-age=31536000, immutable",
+        "Content-Length": croppedImage.length.toString(),
       },
     });
   } catch (error) {
