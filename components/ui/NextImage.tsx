@@ -11,6 +11,7 @@ interface NextImageProps {
   height?: number;
   quality?: number;
   isFill?: boolean;
+  scale?: number;
   isOptimized?: boolean;
   className?: string;
   preserveTextQuality?: boolean;
@@ -22,6 +23,7 @@ const NextImage: React.FC<NextImageProps> = ({
   alt = "",
   width,
   height,
+  scale = 1,
   quality = 100,
   isFill = false,
   isOptimized = false,
@@ -74,9 +76,9 @@ const NextImage: React.FC<NextImageProps> = ({
       alt={alt}
       src={src}
       fill={isFill}
-      width={isFill ? undefined : width}
-      height={isFill ? undefined : height}
-      quality={preserveTextQuality ? 100 : quality} // Higher quality for text
+      width={isFill ? undefined : width! * scale}
+      height={isFill ? undefined : height! * scale}
+      quality={preserveTextQuality ? 100 : quality}
       className={finalClassName}
       unoptimized={isOptimized}
       priority={false}

@@ -19,8 +19,11 @@ const ImageCard = ({
   primaryCategoryId: string;
 }) => {
   const aspectRatio = 242 / 224;
-  const { isLoading, updatedImage, setIsImageLoaded, isImageLoaded } =
-    useImagePresent(aspectRatio, imageItem, [imageItem]);
+  const { isLoading, updatedImage, isImageLoaded } = useImagePresent(
+    aspectRatio,
+    imageItem,
+    [imageItem],
+  );
 
   if (isLoading || !isImageLoaded)
     return (
@@ -43,7 +46,6 @@ const ImageCard = ({
         scale={scale}
         alt={updatedImage.alt}
         imgSrc={updatedImage.imageUrl}
-        setIsImageLoaded={setIsImageLoaded}
         className="w-full object-cover"
       />
     </motion.div>

@@ -115,7 +115,8 @@ const BusinessCard = ({ height, width, business }: BusinessCardProps) => {
             height={height}
             alt={updatedImage.alt}
             imgSrc={updatedImage.imageUrl}
-            className=" h-full w-full rounded-xl"
+            objectFit="cover"
+            className=" h-full w-full rounded-xl object-cover"
           />
           <div className="relative w-full h-full">
             {/* Overlay (only bottom 50%) */}

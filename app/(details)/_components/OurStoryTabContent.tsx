@@ -40,8 +40,11 @@ const OurStoryTabContent = ({
 }: BusinessDetailsProps) => {
   const aspectRatio = 438 / 360;
   const { scale } = useImageScale();
-  const { isLoading, updatedImage, isImageLoaded, setIsImageLoaded } =
-    useImagePresent(aspectRatio, images, [images]);
+  const { isLoading, updatedImage, isImageLoaded } = useImagePresent(
+    aspectRatio,
+    images,
+    [images],
+  );
 
   return (
     <div className="space-y-12.5">
@@ -59,7 +62,6 @@ const OurStoryTabContent = ({
             className="rounded-xl  h-[360px] w-[638px] object-cover"
             alt={updatedImage?.alt}
             imgSrc={updatedImage?.imageUrl}
-            setIsImageLoaded={setIsImageLoaded}
           />
         )}
 
