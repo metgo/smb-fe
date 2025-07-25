@@ -12,6 +12,8 @@ const OnlyBusinessCardsLayout = ({ data }: BusinessesProps) => {
   const businessCount = data.length;
   const [scale, setScale] = useState(1);
 
+  const randomizedData = shuffleArray(data);
+
   useEffect(() => {
     const updateScale = () => {
       const currentWidth = window.innerWidth;
@@ -24,7 +26,7 @@ const OnlyBusinessCardsLayout = ({ data }: BusinessesProps) => {
     return () => window.removeEventListener("resize", updateScale);
   }, []);
 
-  if (data.length < 1) return <div>No businesses available</div>;
+  if (randomizedData.length < 1) return <div>No businesses available</div>;
 
   const renderCards = (
     indexes: number[],
@@ -33,7 +35,7 @@ const OnlyBusinessCardsLayout = ({ data }: BusinessesProps) => {
   ) => (
     <div className="space-y-5">
       {indexes.map((i) => {
-        const business = data[i + offset];
+        const business = randomizedData[i + offset];
         const cardLayout = layout[i];
         return (
           <BusinessCard
@@ -54,7 +56,7 @@ const OnlyBusinessCardsLayout = ({ data }: BusinessesProps) => {
   ) => (
     <div className="flex gap-5 pt-5">
       {indexes.map((i) => {
-        const business = data[i + offset];
+        const business = randomizedData[i + offset];
         const cardLayout = layout[i];
         return (
           <BusinessCard
@@ -79,10 +81,10 @@ const OnlyBusinessCardsLayout = ({ data }: BusinessesProps) => {
         <div className="space-y-5" key={index}>
           {layoutData.map((item, i) => (
             <BusinessCard
-              key={data[i + offset]?._id}
+              key={randomizedData[i + offset]?._id}
               width={item.width}
               height={item.height}
-              business={data[i + offset]}
+              business={randomizedData[i + offset]}
             />
           ))}
         </div>
@@ -162,7 +164,7 @@ const OnlyBusinessCardsLayout = ({ data }: BusinessesProps) => {
     // For imageCount > 16
     const layout16 = scaleLayout(onlyCardsLayouts["layout16"], scale);
     const column16 = onlyCardsColumns["layout16"];
-    const extraBusinesses = data.slice(16);
+    const extraBusinesses = randomizedData?.slice(16);
 
     return (
       <>

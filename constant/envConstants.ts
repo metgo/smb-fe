@@ -2,7 +2,7 @@ const CODE = process.env.NEXT_PUBLIC_CAMP_CODE;
 const IdentifierId = process.env.NEXT_PUBLIC_IDENTIFIER_ID;
 const GOOGLE_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAP_API_KEY;
 const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL;
-const BUCKET = process.env.NEXT_PUBLIC_BUCKET_URL;
+const BUCKET_URL = "https://storage.googleapis.com/travel01";
 const THEME = process.env.NEXT_PUBLIC_THEME;
 const EMAIL_HOST = process.env.EMAIL_HOST;
 const FROM_NAME = process.env.FROM_NAME;
@@ -26,7 +26,7 @@ export {
   FROM_EMAIL,
   FROM_NAME,
   PASSWORD,
-  BUCKET,
+  BUCKET_URL,
   THEME,
   GOOGLE_ANALYTIC_ID,
   GOOGLE_TAG_MANAGER_ID,
