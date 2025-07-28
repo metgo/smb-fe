@@ -150,7 +150,7 @@ export const features = [
     label: navbar.tracks,
     icon: "trail",
     activeIcon: "trail-dark",
-    link: "#",
+    link: "/trails",
   },
 ];
 

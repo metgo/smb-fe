@@ -52,7 +52,7 @@ const IntroVideo = () => {
     <video
       ref={videoRef}
       loop
-      muted
+      // muted
       playsInline
       preload="auto"
       src={`${BUCKET_URL}/video/intro-video.mp4`}
