@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { IconImage, NextImage } from "@/components/ui";
+
+import { misc } from "@/constant/hebrew";
 import {
   BusinessDetailsFilterTab,
   ImageGallery,
@@ -10,7 +12,6 @@ import {
 } from "../../_components";
 import AttributePills from "@/components/AttributePills";
 import { getBusinessDetailsBySlug } from "@/actions/businessActions";
-import { misc } from "@/constant/hebrew";
 
 const page = async ({ params }: PageProps) => {
   const { slug } = await params;
