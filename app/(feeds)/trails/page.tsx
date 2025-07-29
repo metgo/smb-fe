@@ -1,12 +1,16 @@
 import { Suspense } from "react";
-import TrailMapIntegratedLayout from "@/components/layouts/TrailMapIntegratedLayout";
-// import OnlyTrailCardLayout from "@/components/layouts/OnlyTrailCardLayout"
+import { getAllTrails } from "@/actions/trailActions";
 
-const page = () => {
+import FilterTrailsLayout from "./_components/FilterTrailsLayout";
+
+const page = async ({ searchParams }: SearchParamsProps | any) => {
+  const { page = 1 } = await searchParams;
+
+  const trails: TrailsFeedProps = await getAllTrails(Number(page), "/trails");
+
   return (
     <Suspense>
-      {/* <OnlyTrailCardLayout /> */}
-      <TrailMapIntegratedLayout />
+      <FilterTrailsLayout {...trails} />
     </Suspense>
   );
 };

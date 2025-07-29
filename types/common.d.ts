@@ -2,6 +2,22 @@ declare type ReactChildNode = {
   children: React.ReactNode;
 };
 
+interface RouteResponse {
+  routes: Array<{
+    polyline: {
+      encodedPolyline: string;
+    };
+  }>;
+}
+
+interface SearchParamsProps {
+  searchParams: Promise<{
+    page: string;
+    categoryId: string;
+    subCategoryId: string;
+  }>;
+}
+
 declare type PageProps = {
   params: { slug: string } | any;
 };
@@ -61,4 +77,33 @@ declare interface SearchResultProps {
   events?: GeneralProductCardProps[];
   products?: GeneralProductCardProps[];
   businesses?: GeneralProductCardProps[];
+}
+
+declare interface paginationMeta {
+  page: number;
+  limit: number;
+  data: number;
+  pageCount: number;
+  hasPreviousPage: boolean;
+  hasNextPage: boolean;
+}
+
+declare interface FeedItem {
+  _id: string;
+  name: string;
+  slug: string;
+  description: string;
+  images: ImageItem[];
+  primaryCategoryId?: string;
+  address: {
+    city: string;
+    address: string;
+  };
+}
+declare type FeedItemList = FeedItem[];
+
+declare interface FeedCardProps {
+  height: number;
+  width: number;
+  feedItem: FeedItem;
 }

@@ -1,10 +1,10 @@
-import { useGoogleMap } from "@/hooks/useGoogleMap";
+import { useGoogleRouteMap } from "@/hooks/useGoogleRouteMap";
 
-const TrailRouteMap = () => {
-  const { mapRef } = useGoogleMap();
+const TrailRouteMap = ({ className }: { className: string }) => {
+  const { mapRef } = useGoogleRouteMap();
 
   return (
-    <div className={`w-full h-[95vh]`}>
+    <div className={`${className} h-[95vh]`}>
       <div ref={mapRef} className="w-full h-full" />
     </div>
   );
