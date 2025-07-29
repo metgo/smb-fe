@@ -43,6 +43,7 @@ const OurStoryTabContent = ({
   const { isLoading, updatedImage, isImageLoaded } = useImagePresent(
     aspectRatio,
     images,
+    0,
     [images],
   );
 

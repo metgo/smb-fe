@@ -14,6 +14,7 @@ import { useImagePresent } from "@/hooks/useImagePresent";
 const BusinessCard = ({ height, width, business }: BusinessCardProps) => {
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   const aspectRatio = width / height;
 
@@ -23,9 +24,10 @@ const BusinessCard = ({ height, width, business }: BusinessCardProps) => {
 
   const { activeCategoryKey, setActiveFilterTab, setClickedBusinessId } =
     useGeneralStore();
-  const { isLoading, updatedImage, isImageLoaded } = useImagePresent(
+  const { isLoading, isImageLoaded, updatedImageList } = useImagePresent(
     aspectRatio,
     business?.images,
+    activeImageIndex,
     [categoryId, subCategoryId],
   );
 
@@ -92,7 +94,6 @@ const BusinessCard = ({ height, width, business }: BusinessCardProps) => {
     setActiveFilterTab("map");
   }
 
-  // if(!hasMounted) return null;
   return (
     <motion.div
       ref={ref}
@@ -113,8 +114,8 @@ const BusinessCard = ({ height, width, business }: BusinessCardProps) => {
             quality={100}
             width={width}
             height={height}
-            alt={updatedImage.alt}
-            imgSrc={updatedImage.imageUrl}
+            alt={updatedImageList?.[activeImageIndex]?.alt}
+            imgSrc={updatedImageList?.[activeImageIndex]?.imageUrl}
             objectFit="cover"
             className=" h-full w-full rounded-xl object-cover"
           />
@@ -123,7 +124,7 @@ const BusinessCard = ({ height, width, business }: BusinessCardProps) => {
             <div className="absolute bottom-0 right-0 h-1/2 w-full bg-gradient-to-t from-black/40 to-transparent rounded-b-xl" />
 
             {/* Text Content */}
-            <div className="absolute bottom-0 right-0 ps-4 pb-4 text-white font-bold w-full">
+            <div className="absolute bottom-0 right-0 p-4 text-white font-bold w-full">
               <h3 className="lg:text-[1rem] 3xl:text-[1.5rem] line-clamp-1">
                 {business?.name}
               </h3>
@@ -135,16 +136,67 @@ const BusinessCard = ({ height, width, business }: BusinessCardProps) => {
                     : "Tel Aviv"}
                 </span>
               </div>
+              <div className="hidden group-hover:block">
+                <div
+                  dangerouslySetInnerHTML={{ __html: business?.description }}
+                  className=" line-clamp-2 font-bold text-[12px] text-white mt-1"
+                />
+                <div
+                  className={`flex items-center justify-between w-full mt-2 `}
+                >
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      if (activeImageIndex > 0) {
+                        setActiveImageIndex((prev) => prev - 1);
+                      }
+                    }}
+                    className=" cursor-pointer"
+                    disabled={activeImageIndex === 0}
+                  >
+                    <IconImage icon="next" />
+                  </button>
+                  <div className="flex items-center gap-2">
+                    {business?.images?.map((_, index) => {
+                      const isActive = index === activeImageIndex;
+                      return (
+                        <span
+                          key={index}
+                          className={`${
+                            isActive
+                              ? "w-2.5 h-2.5 bg-white"
+                              : "w-2 h-2 bg-gray-400"
+                          } rounded-full transition-all duration-300`}
+                        />
+                      );
+                    })}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      if (
+                        activeImageIndex <
+                        (business?.images?.length ?? 0) - 1
+                      ) {
+                        setActiveImageIndex((prev) => prev + 1);
+                      }
+                    }}
+                    disabled={activeImageIndex === business?.images?.length - 1}
+                    className=" cursor-pointer"
+                  >
+                    <IconImage icon="prev" />
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
 
           <div className="hidden absolute top-4 right-4 group-hover:flex items-center gap-2.5">
-            <IconImage
-              width={30}
-              height={30}
-              icon="circular-heart"
-              // onClick={() => addWishlistHandler(business._id)}
-            />
+            <IconImage width={30} height={30} icon="circular-heart" />
             {pathname !== "/events" && (
               <IconImage
                 width={30}

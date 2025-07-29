@@ -93,6 +93,7 @@ const ImageCard = ({
   const { isLoading, updatedImage, isImageLoaded } = useImagePresent(
     aspectRatio,
     imageItem,
+    0,
     [imageItem],
   );
 

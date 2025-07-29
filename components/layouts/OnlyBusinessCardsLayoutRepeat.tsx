@@ -37,7 +37,7 @@ const OnlyBusinessCardsLayout = ({ data }: BusinessesProps) => {
         const cardLayout = layout[i];
         return (
           <BusinessCard
-            key={i}
+            key={i + business._id}
             width={cardLayout.width}
             height={cardLayout.height}
             business={business}
@@ -58,7 +58,7 @@ const OnlyBusinessCardsLayout = ({ data }: BusinessesProps) => {
         const cardLayout = layout[i];
         return (
           <BusinessCard
-            key={business?._id}
+            key={business?._id + i}
             width={cardLayout.width}
             height={cardLayout.height}
             business={business}
@@ -79,7 +79,7 @@ const OnlyBusinessCardsLayout = ({ data }: BusinessesProps) => {
         <div className="space-y-5" key={index}>
           {layoutData.map((item, i) => (
             <BusinessCard
-              key={data[i + offset]?._id}
+              key={data[i + offset]?._id + i}
               width={item.width}
               height={item.height}
               business={data[i + offset]}
