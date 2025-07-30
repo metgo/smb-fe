@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
+import useGeneralStore from "@/stores/generalStore";
 
 export default function ScrollSnapWrapper({
   children,
@@ -10,8 +11,7 @@ export default function ScrollSnapWrapper({
   const isScrolling = useRef(false);
   const firstSectionRef = useRef<HTMLDivElement>(null);
   const secondSectionRef = useRef<HTMLDivElement>(null);
-  const [isOnSection2, setIsOnSection2] = useState(false);
-  console.log("----------isOnSection2", isOnSection2);
+  const { isOnSection2, setIsOnSection2 } = useGeneralStore();
 
   useEffect(() => {
     const handleWheel = (e: WheelEvent) => {

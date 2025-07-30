@@ -16,11 +16,10 @@ const BusinessFeedLayout = ({
 }: {
   businesses: BusinessesProps;
 }) => {
-  const { activeFilterTab } = useGeneralStore();
+  const { activeFilterTab, isOnSection2 } = useGeneralStore();
   const { sentryRef, loading, initialLoadDone, canLoadMore } = useLoadMore(
     businesses?.meta?.hasNextPage,
   );
-
   const totalBusiness = businesses?.totalData;
 
   const triggerRef = useRef(null);
@@ -30,12 +29,16 @@ const BusinessFeedLayout = ({
     const handleScroll = () => {
       const scrollPosition = window.scrollY;
       const scrollThreshold = window.innerHeight;
-      setShowStickyPanel(scrollPosition >= scrollThreshold);
+      if (isOnSection2) {
+        setShowStickyPanel(true);
+      } else {
+        setShowStickyPanel(scrollPosition >= scrollThreshold);
+      }
     };
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [isOnSection2]);
 
   const renderLayout = () => {
     switch (activeFilterTab) {
@@ -49,6 +52,7 @@ const BusinessFeedLayout = ({
         return <NoBusinessLayout />;
     }
   };
+
   return (
     <div>
       {totalBusiness ? (
@@ -78,6 +82,7 @@ const BusinessFeedLayout = ({
           </div>
         </>
       )}
+
       <StickyYellowRibbonImage activeFilterTab={activeFilterTab} />
     </div>
   );
