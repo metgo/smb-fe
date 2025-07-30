@@ -1,15 +1,17 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export default function ScrollSnapWrapper({
   children,
 }: {
   children: React.ReactNode[];
 }) {
+  const isScrolling = useRef(false);
   const firstSectionRef = useRef<HTMLDivElement>(null);
   const secondSectionRef = useRef<HTMLDivElement>(null);
-  const isScrolling = useRef(false);
+  const [isOnSection2, setIsOnSection2] = useState(false);
+  console.log("----------isOnSection2", isOnSection2);
 
   useEffect(() => {
     const handleWheel = (e: WheelEvent) => {
@@ -25,6 +27,7 @@ export default function ScrollSnapWrapper({
       if (direction === "down" && scrollY < viewportHeight - 10) {
         e.preventDefault();
         isScrolling.current = true;
+        setIsOnSection2(true);
         secondSection?.scrollIntoView({ behavior: "smooth" });
         setTimeout(() => (isScrolling.current = false), 700);
         return;
@@ -38,6 +41,7 @@ export default function ScrollSnapWrapper({
       ) {
         e.preventDefault();
         isScrolling.current = true;
+        setIsOnSection2(true);
         firstSectionRef.current?.scrollIntoView({ behavior: "smooth" });
         setTimeout(() => (isScrolling.current = false), 700);
       }
@@ -52,9 +56,11 @@ export default function ScrollSnapWrapper({
 
   return (
     <>
-      <div ref={firstSectionRef} className="h-screen">
-        {children[0]}
-      </div>
+      {!isOnSection2 && (
+        <div ref={firstSectionRef} className="h-screen">
+          {children[0]}
+        </div>
+      )}
       <div
         ref={secondSectionRef}
         className="min-h-screen"
