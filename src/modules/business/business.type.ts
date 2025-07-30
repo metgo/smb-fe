@@ -17,6 +17,5 @@ export interface GetBusinessByIdOrSlug {
 // eslint-disable-next-line no-shadow
 export enum GeoServicesTypes {
   BUSINESS = 'business',
-  EVENT = 'event',
   POINT_OF_INTEREST = 'point_of_interest',
 }
