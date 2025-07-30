@@ -18,39 +18,35 @@ declare interface TrailsFeedProps {
   meta: paginationMeta;
 }
 
-declare interface TrailStation {
+declare interface TrailStationProps {
   _id: string;
   name: string;
   description: string;
-  geoLocaton: Geolocation;
+  geoLocation: GeoLocation;
   bussSubCategoriesId: Attributes[];
   bussCategoriesId: Attributes[];
-  groupTypesId: Attributes[];
-  accessibilitiesId: Attributes[];
   images: ImageItem[];
   primaryCategoryId: Attributes;
   logo: ImageItem;
+  order: number;
+  type: string;
 }
 
-declare interface TrailDetails {
+declare type TrailStationListProps = TrailStationProps[];
+
+declare interface TrailDetailsProps {
   _id: string;
   name: string;
   description: string;
-  stations: TrailStation[];
+  stations: TrailStationProps[];
+  groupTypesId: Attributes[];
+  accessibilitiesId: Attributes[];
 }
 
-declare interface TrailStationRoute {
+declare interface TrailStationRouteProps {
   _id: string;
   name: string;
   slug: string;
   description: string;
-  stations: {
-    _id: string;
-    name: string;
-    description: string;
-    geoLocation: GeoLocation;
-    primaryCategoryId: string;
-    order: number;
-    type: string;
-  }[];
+  stations: TrailStationListProps;
 }

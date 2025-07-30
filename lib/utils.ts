@@ -37,6 +37,7 @@ const categoryId = {
 const navigationKey = {
   home: "/",
   events: "/events",
+  trails: "/trails",
   businesses: "/businesses",
 };
 
@@ -47,6 +48,15 @@ export const businessMarkers = {
   [categoryId.culture]: "culture.svg",
   [categoryId.attraction]: "attractions.svg",
   [categoryId.tour]: "travel.svg",
+};
+
+export const stationCategory = {
+  [categoryId.eat]: "trail-food.svg",
+  [categoryId.local]: "trail-local.svg",
+  [categoryId.sleep]: "trail-sleep.svg",
+  [categoryId.culture]: "trail-culture.svg",
+  [categoryId.attraction]: "trail-attractions.svg",
+  [categoryId.tour]: "trail-travel.svg",
 };
 
 export const categoryGradientClasses = {
@@ -176,6 +186,7 @@ export const navigationPaths = {
   [navigationKey.home]: "/business-details",
   [navigationKey.businesses]: "/business-details",
   [navigationKey.events]: "/event-details",
+  [navigationKey.trails]: "/trail-details",
 };
 
 export const navItems = [

@@ -23,8 +23,12 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
     searchParams.entries(),
   );
 
-  const { activeCategoryKey, setActiveFilterTab, setClickedBusinessId } =
-    useGeneralStore();
+  const {
+    activeCategoryKey,
+    activeFilterTab,
+    setActiveFilterTab,
+    setClickedBusinessId,
+  } = useGeneralStore();
   const { isLoading, isImageLoaded, updatedImageList } = useImagePresent(
     aspectRatio,
     feedItem?.images,
@@ -60,15 +64,19 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
   }
 
   const handleMouseEnter = () => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("slug", feedItem.slug);
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    if (activeFilterTab === "integrated") {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("slug", feedItem.slug);
+      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    }
   };
 
   const handleMouseLeave = () => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.delete("hoveredSlug");
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    if (activeFilterTab === "integrated") {
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete("slug");
+      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    }
   };
 
   return (
@@ -110,8 +118,8 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
               <div className="flex items-center gap-2">
                 <IconImage icon="location" width={20} height={20} />
                 <span className="md:text-sm">
-                  {feedItem?.address?.city
-                    ? feedItem?.address?.city
+                  {feedItem?.address?.location
+                    ? feedItem?.address?.location
                     : "Tel Aviv"}
                 </span>
               </div>

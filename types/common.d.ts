@@ -96,8 +96,9 @@ declare interface FeedItem {
   images: ImageItem[];
   primaryCategoryId?: string;
   address: {
-    city: string;
-    address: string;
+    city?: string;
+    address?: string;
+    location?: string;
   };
 }
 declare type FeedItemList = FeedItem[];
