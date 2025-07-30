@@ -141,56 +141,60 @@ const BusinessCard = ({ height, width, business }: BusinessCardProps) => {
                   dangerouslySetInnerHTML={{ __html: business?.description }}
                   className=" line-clamp-2 font-bold text-[12px] text-white mt-1"
                 />
-                <div
-                  className={`flex items-center justify-between w-full mt-2 `}
-                >
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      if (activeImageIndex > 0) {
-                        setActiveImageIndex((prev) => prev - 1);
-                      }
-                    }}
-                    className=" cursor-pointer"
-                    disabled={activeImageIndex === 0}
+                {business?.images?.length > 1 && (
+                  <div
+                    className={`flex items-center justify-between w-full mt-2 `}
                   >
-                    <IconImage icon="next" />
-                  </button>
-                  <div className="flex items-center gap-2">
-                    {business?.images?.map((_, index) => {
-                      const isActive = index === activeImageIndex;
-                      return (
-                        <span
-                          key={index}
-                          className={`${
-                            isActive
-                              ? "w-2.5 h-2.5 bg-white"
-                              : "w-2 h-2 bg-gray-400"
-                          } rounded-full transition-all duration-300`}
-                        />
-                      );
-                    })}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (activeImageIndex > 0) {
+                          setActiveImageIndex((prev) => prev - 1);
+                        }
+                      }}
+                      className=" cursor-pointer"
+                      disabled={activeImageIndex === 0}
+                    >
+                      <IconImage icon="next" />
+                    </button>
+                    <div className="flex items-center gap-2">
+                      {business?.images?.map((_, index) => {
+                        const isActive = index === activeImageIndex;
+                        return (
+                          <span
+                            key={index}
+                            className={`${
+                              isActive
+                                ? "w-2.5 h-2.5 bg-white"
+                                : "w-2 h-2 bg-gray-400"
+                            } rounded-full transition-all duration-300`}
+                          />
+                        );
+                      })}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (
+                          activeImageIndex <
+                          (business?.images?.length ?? 0) - 1
+                        ) {
+                          setActiveImageIndex((prev) => prev + 1);
+                        }
+                      }}
+                      disabled={
+                        activeImageIndex === business?.images?.length - 1
+                      }
+                      className=" cursor-pointer"
+                    >
+                      <IconImage icon="prev" />
+                    </button>
                   </div>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      if (
-                        activeImageIndex <
-                        (business?.images?.length ?? 0) - 1
-                      ) {
-                        setActiveImageIndex((prev) => prev + 1);
-                      }
-                    }}
-                    disabled={activeImageIndex === business?.images?.length - 1}
-                    className=" cursor-pointer"
-                  >
-                    <IconImage icon="prev" />
-                  </button>
-                </div>
+                )}
               </div>
             </div>
           </div>
