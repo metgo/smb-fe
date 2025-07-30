@@ -3,15 +3,7 @@ import FilterBusinessLayout from "@/components/layouts/FilterBusinessLayout";
 import Navbar from "@/components/navbar";
 import { Suspense } from "react";
 
-interface Props {
-  searchParams: Promise<{
-    page: string;
-    categoryId: string;
-    subCategoryId: string;
-  }>;
-}
-
-const page = async ({ searchParams }: Props | any) => {
+const page = async ({ searchParams }: SearchParamsProps | any) => {
   const { page = 1 } = await searchParams;
 
   const businesses: BusinessesProps = await getAllEvents(

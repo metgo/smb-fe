@@ -11,6 +11,8 @@ export const misc = {
   openNow: "פתוח עכשיו",
   opinion: "חוות דעת",
   filter: "מסננים",
+  start: "התחלה",
+  end: "סיום",
   pleaseWaitLoading: "אנא המתן. טוען...",
   addAllStationOnCart: "הוספת כל התחנות לסל",
 };

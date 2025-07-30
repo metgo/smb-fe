@@ -1,0 +1,200 @@
+{
+  "_id": "6889d0fd3ae312cbba1cd137",
+  "name": "Kalinchowk Tour",
+  "description": "Auto-opened InfoWindow for the first and last stations.\nStyled the InfoWindow using inline CSS (black background, white text).\nOnly other markers show info on click, as before.",
+  "slug": "kalinchowk-tour",
+  "stations": [
+    {
+      "_id": "62b024045f87b1032f364c8f",
+      "name": "חניון רוכבי הדרום",
+      "description": "חניון פיקניק בצל עצי אקליפטוס עם שולחנות קק\"ל, עמדות מנגל ופחים.\\n\\nמומלץ לרדת לערוץ הנחל וליהנות ממחשוף כורכר קטן.",
+      "geoLocation": {
+        "lat": "31.3420125",
+        "long": "34.6277969",
+        "_id": "6889d860bd97f0d9fd282b97"
+      },
+      "bussSubCategoriesId": [
+        {
+          "_id": "656720eae91479847b2bd2b4",
+          "name": "Trail",
+          "hebrewName": "מסלול"
+        },
+        {
+          "_id": "6567207fe91479847b2bd29b",
+          "name": "Scenery",
+          "hebrewName": "נוף"
+        },
+        {
+          "_id": "65cdc599706676bdaad6f2aa",
+          "name": "Bicycle",
+          "hebrewName": "אופניים"
+        },
+        {
+          "_id": "656720d7e91479847b2bd2aa",
+          "name": "Picnic",
+          "hebrewName": "פיקניק"
+        }
+      ],
+      "bussCategoriesId": [
+        {
+          "_id": "6566e256a77d2a477266d2c0",
+          "name": "Travel",
+          "hebrewName": "לטייל"
+        }
+      ],
+      "images": [
+        {
+          "image": "https://storage.googleapis.com/metgo_dev/metro/62b024045f87b1032f364c8f/1655710765797_imageFile_",
+          "caption": "1655710765797_imageFile_",
+          "alt": "1655710765797_imageFile_"
+        }
+      ],
+      "primaryCategoryId": {
+        "_id": "6566e256a77d2a477266d2c0",
+        "name": "Travel",
+        "hebrewName": "לטייל"
+      },
+      "logo": {
+        "image": "https://storage.googleapis.com/metgo_dev/metro/62b024045f87b1032f364c8f/1655710765797_imageFile_",
+        "caption": "1655710765797_imageFile_",
+        "alt": "1655710765797_imageFile_"
+      },
+      "order": 1,
+      "type": "BUSINESS"
+    },
+    {
+      "_id": "62b2232b8a408723c1fb4878",
+      "name": "חניון האקליפטוס בפארק שרשרת",
+      "description": "6 שולחנות פיקניק בצל עצי אקליפטוס",
+      "geoLocation": {
+        "lat": "31.3753125",
+        "long": "34.6139375",
+        "_id": "6889d860bd97f0d9fd282b99"
+      },
+      "bussSubCategoriesId": [
+        {
+          "_id": "656720d7e91479847b2bd2aa",
+          "name": "Picnic",
+          "hebrewName": "פיקניק"
+        },
+        {
+          "_id": "6567207fe91479847b2bd29b",
+          "name": "Scenery",
+          "hebrewName": "נוף"
+        }
+      ],
+      "bussCategoriesId": [
+        {
+          "_id": "6566e256a77d2a477266d2c0",
+          "name": "Travel",
+          "hebrewName": "לטייל"
+        }
+      ],
+      "images": [
+        {
+          "image": "https://storage.googleapis.com/metgo_dev/metro/62b2232b8a408723c1fb4878/1655841643920_imageFile_",
+          "caption": "1655841643920_imageFile_",
+          "alt": "1655841643920_imageFile_"
+        },
+        {
+          "image": "https://storage.googleapis.com/metgo_dev/metro/62b2232b8a408723c1fb4878/1655841631838_imageFile_",
+          "caption": "1655841631838_imageFile_",
+          "alt": "1655841631838_imageFile_"
+        },
+        {
+          "image": "https://storage.googleapis.com/metgo_dev/metro/62b2232b8a408723c1fb4878/1655841657027_imageFile_",
+          "caption": "1655841657027_imageFile_",
+          "alt": "1655841657027_imageFile_"
+        }
+      ],
+      "primaryCategoryId": {
+        "_id": "6566e256a77d2a477266d2c0",
+        "name": "Travel",
+        "hebrewName": "לטייל"
+      },
+      "logo": {
+        "image": "https://storage.googleapis.com/metgo_dev/metro/62b2232b8a408723c1fb4878/1655841643920_imageFile_",
+        "caption": "1655841643920_imageFile_",
+        "alt": "1655841643920_imageFile_"
+      },
+      "order": 2,
+      "type": "BUSINESS"
+    },
+    {
+      "_id": "62b0278b5f87b1032f36a860",
+      "name": "מצפה שביל השובלים",
+      "description": "נקודת תצפית על הגבעות הפסטורליות עם מקומות ישיבה מאבן",
+      "geoLocation": {
+        "lat": "31.4663125",
+        "long": "34.6765156",
+        "_id": "6889d860bd97f0d9fd282b98"
+      },
+      "bussSubCategoriesId": [
+        {
+          "_id": "65671b86e91479847b2bd21d",
+          "name": "History",
+          "hebrewName": "היסטוריה"
+        },
+        {
+          "_id": "6567207fe91479847b2bd29b",
+          "name": "Scenery",
+          "hebrewName": "נוף"
+        },
+        {
+          "_id": "65cdc599706676bdaad6f2aa",
+          "name": "Bicycle",
+          "hebrewName": "אופניים"
+        },
+        {
+          "_id": "65671b9ce91479847b2bd227",
+          "name": "Heritage",
+          "hebrewName": "מורשת"
+        }
+      ],
+      "bussCategoriesId": [
+        {
+          "_id": "6566e31ca77d2a477266d2d6",
+          "name": "Attraction",
+          "hebrewName": "אטרקציה"
+        },
+        {
+          "_id": "6566e256a77d2a477266d2c0",
+          "name": "Travel",
+          "hebrewName": "לטייל"
+        }
+      ],
+      "images": [
+        {
+          "image": "https://storage.googleapis.com/metgo_dev/metro/62b0278b5f87b1032f36a860/1655711706516_imageFile_",
+          "caption": "1655711706516_imageFile_",
+          "alt": "1655711706516_imageFile_"
+        },
+        {
+          "image": "https://storage.googleapis.com/metgo_dev/metro/62b0278b5f87b1032f36a860/1655711718509_imageFile_",
+          "caption": "1655711718509_imageFile_",
+          "alt": "1655711718509_imageFile_"
+        },
+        {
+          "image": "https://storage.googleapis.com/metgo_dev/metro/62b0278b5f87b1032f36a860/1655711729785_imageFile_",
+          "caption": "1655711729785_imageFile_",
+          "alt": "1655711729785_imageFile_"
+        }
+      ],
+      "primaryCategoryId": {
+        "_id": "6566e31ca77d2a477266d2d6",
+        "name": "Attraction",
+        "hebrewName": "אטרקציה"
+      },
+      "logo": {
+        "image": "https://storage.googleapis.com/metgo_dev/metro/62b0278b5f87b1032f36a860/1655711706516_imageFile_",
+        "caption": "1655711706516_imageFile_",
+        "alt": "1655711706516_imageFile_"
+      },
+      "order": 3,
+      "type": "BUSINESS"
+    }
+  ],
+  "estimatedDuration": 4,
+  "groupTypesId": [],
+  "accessibilitiesId": []
+}
