@@ -8,11 +8,9 @@ import {
   REFERENCE_SCREEN_WIDTH,
 } from "@/constant/collageLayouts";
 
-const OnlyBusinessCardsLayout = ({ data }: BusinessesProps) => {
-  const businessCount = data.length;
+const OnlyBusinessCardsLayout = ({ data: randomizedData }: BusinessesProps) => {
+  const businessCount = randomizedData.length;
   const [scale, setScale] = useState(1);
-
-  const randomizedData = shuffleArray(data);
 
   useEffect(() => {
     const updateScale = () => {

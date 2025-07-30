@@ -8,10 +8,11 @@ import SearchFlow from "./SearchFlow";
 import { navbar } from "@/constant/hebrew";
 import HamburgerMenu from "./HamburgerMenu";
 import UserIconHoverCard from "./UserIconHoverCard";
-import { Logo, ShopbagIcon } from "@/components/ui/icons";
+import { ShopbagIcon } from "@/components/ui/icons";
 import CurrentTempOfYourCity from "./CurrentTempOfYourCity";
 import BusinessPageFilterTabs from "./BusinessPageFilterTabs";
 import { CONSOLE_URL } from "@/constant/envConstants";
+import NavLogo from "./NavLogo";
 
 const Navbar = ({ showFilterTab = false }: { showFilterTab?: boolean }) => {
   return (
@@ -20,9 +21,7 @@ const Navbar = ({ showFilterTab = false }: { showFilterTab?: boolean }) => {
         {/* Hamburger, Logo, Text */}
         <div className="flex items-center gap-4 col-span-4">
           <HamburgerMenu />
-          <Link href={"/"} className="cursor-pointer">
-            <Logo />
-          </Link>
+          <NavLogo />
           <Link
             href={CONSOLE_URL}
             target="_blank"
