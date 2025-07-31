@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
+import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.schema';
 import { Theme } from 'src/modules/themes/schema/theme.schema';
 import { User } from 'src/modules/users/schema/users.schema';
 
@@ -34,6 +35,13 @@ export class DMO extends AuditableSchema {
 
   @Prop()
     imagePath: string;
+
+  @Prop({
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: BussCategory.name }],
+    ref: BussCategory.name,
+    required: false,
+  })
+    categoryIds: mongoose.Types.ObjectId[];
 
   @Prop({
     type: mongoose.Schema.Types.ObjectId,

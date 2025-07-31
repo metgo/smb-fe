@@ -11,6 +11,7 @@ import { User } from 'src/modules/users/schema/users.schema';
 import { EventPaymentMethod, EventStatus } from '../events.type';
 import { Ticket } from 'src/modules/tickets/schema/tickets.schema';
 import { Business } from 'src/modules/business/shared/schema/business.schema';
+import { DMO } from 'src/modules/dmo/schema/dmo.schema';
 
 @Schema()
 export class Event extends AuditableSchema {
@@ -109,6 +110,14 @@ export class Event extends AuditableSchema {
     authorityId: mongoose.Types.ObjectId;
 
   @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    ref: DMO.name,
+    required: false,
+    default: null,
+  })
+    dmoId: mongoose.Types.ObjectId;
+
+  @Prop({
     type: {
       lat: { type: String, default: null },
       long: { type: String, default: null },
@@ -190,6 +199,9 @@ export class Event extends AuditableSchema {
     startTime?: string;
     endTime?: string;
   }[];
+
+  @Prop({ default: 200, required: false })
+    impact: number;
 
   @Prop({
     type: mongoose.Schema.Types.ObjectId,

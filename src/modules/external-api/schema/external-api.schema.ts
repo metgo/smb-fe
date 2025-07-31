@@ -61,6 +61,9 @@ export class ExternalApi extends AuditableSchema {
 
   @Prop({ default: null })
     welcomeBanner: string;
+
+  @Prop({ default: null })
+    privacyPolicy: string;
 }
 
 export type ExternalApiDocument = HydratedDocument<ExternalApi>;

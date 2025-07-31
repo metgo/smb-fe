@@ -3,7 +3,6 @@ import mongoose, { HydratedDocument } from 'mongoose';
 import { VoucherPaymentStatus, VoucherStatus } from 'src/common/enum';
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
 import { Campaign } from 'src/modules/campaign/schema/campaign.schema';
-import { Cart } from 'src/modules/cart/cart.schema';
 import { ExternalApi } from 'src/modules/external-api/schema/external-api.schema';
 import { User } from 'src/modules/users/schema/users.schema';
 
@@ -124,19 +123,6 @@ export class Voucher extends AuditableSchema {
     phone: string;
     email: string;
   };
-
-  @Prop({
-    type: [
-      {
-        amount: Number,
-        cartId: { type: mongoose.Schema.Types.ObjectId, ref: Cart.name },
-      },
-    ],
-  })
-    freeze: {
-    amount: number;
-    cartId: mongoose.Types.ObjectId;
-  }[];
 
   @Prop()
     message: string;

@@ -9,7 +9,6 @@ import { AuthModule } from 'src/modules/auth/auth.module';
 import { CityModule } from 'src/modules/city/city.module';
 import { ExternalApiModule } from 'src/modules/external-api/external-api.module';
 import { JwtAuthModule } from 'src/modules/jwt-auth/jwt-auth.module';
-import { MapPointModule } from './modules/mapPoint/mappoint.module';
 import { BankAccountModule } from 'src/modules/bank-account/bank-account.module';
 import { BusinessModule } from './modules/business/business.module';
 import { UsersModule } from 'src/modules/users/users.module';
@@ -51,6 +50,7 @@ import { TicketModule } from './modules/tickets/tickets.module';
 import { SearchModule } from './modules/search/search.module';
 import { GoogleSheetsModule } from './services/google-sheets/google-sheets.module';
 import { ContactUsModule } from './modules/contact-us/contact-us.module';
+import { TripModule } from './modules/trips/trips.module';
 
 @Module({
   imports: [
@@ -63,7 +63,6 @@ import { ContactUsModule } from './modules/contact-us/contact-us.module';
     ConfigModule,
     CityModule,
     GcpBucketModule,
-    MapPointModule,
     OrdersModule,
     OrderProductModule,
     BusinessModule,
@@ -101,6 +100,7 @@ import { ContactUsModule } from './modules/contact-us/contact-us.module';
     SearchModule,
     GoogleSheetsModule,
     ContactUsModule,
+    TripModule,
   ],
   providers: [
     {

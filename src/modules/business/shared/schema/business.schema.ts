@@ -2,7 +2,6 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
 
 import { Currency } from 'src/common/enum';
-import { getRandomNumberBetween } from 'src/common/utils/random-number-range';
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
 import { Accessibility } from 'src/modules/accessibility/schema/accessibility.schema';
 import { Authority } from 'src/modules/authority/schema/authority.schema';
@@ -36,6 +35,20 @@ export class DeliveryArea {
     }[];
   }[];
 }
+
+export class Image {
+  image: string;
+  caption: string;
+  alt: string;
+  isPrimary: boolean;
+  subCoordinates: {
+    xMax: number;
+    xMin: number;
+    yMax: number;
+    yMin: number;
+  };
+}
+
 @Schema()
 export class Business extends AuditableSchema {
   @Prop({
@@ -88,6 +101,19 @@ export class Business extends AuditableSchema {
 
   @Prop({ default: true })
     isPreview: boolean;
+
+  @Prop({
+    type: {
+      url: { type: String, default: null },
+      qrImage: { type: String, default: null },
+    },
+    _id: false,
+    default: null,
+  })
+    website: {
+    url: string;
+    qrImage: string;
+  };
 
   @Prop({
     type: {
@@ -174,42 +200,13 @@ export class Business extends AuditableSchema {
   };
 
   @Prop()
-    images: [
-    {
-      image: string;
-      caption: string;
-      alt: string;
-      isPrimary: boolean;
-    }
-  ];
+    images: Image[];
 
-  @Prop({
-    type: {
-      image: String,
-      caption: String,
-      alt: String,
-    },
-    default: null,
-  })
-    logo: {
-    image: { type: string; default: null };
-    caption: { type: string; default: null };
-    alt: { type: string; default: null };
-  };
+  @Prop()
+    logo: Image;
 
-  @Prop({
-    type: {
-      image: String,
-      caption: String,
-      alt: String,
-    },
-    default: null,
-  })
-    cover: {
-    image: { type: string; default: null };
-    caption: { type: string; default: null };
-    alt: { type: string; default: null };
-  };
+  @Prop()
+    cover: Image;
 
   @Prop({
     required: false,
@@ -337,7 +334,7 @@ export class Business extends AuditableSchema {
   @Prop({ type: Boolean, default: false })
     isPickUpAvailable: boolean;
 
-  @Prop({ default: getRandomNumberBetween(17, 93), required: false })
+  @Prop({ default: 200, required: false })
     impact: number;
 
   @Prop({ default: 0 })

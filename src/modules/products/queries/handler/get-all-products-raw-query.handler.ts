@@ -122,9 +122,7 @@ implements IQueryHandler<GetAllProductsRawQuery> {
         };
       }
 
-      if (
-        !categoriesId
-      ) {
+      if (!categoriesId) {
         findQuery = {
           ...findQuery,
           categories: { $in: campDetails?.categoryIds },

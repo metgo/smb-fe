@@ -1,16 +1,27 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
 
-import { getRandomNumberBetween } from 'src/common/utils/random-number-range';
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
 import { Authority } from 'src/modules/authority/schema/authority.schema';
 import { DeliveryArea } from 'src/modules/business/shared/schema/business.schema';
 import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.schema';
 import { BussSubCategory } from 'src/modules/buss-subcategories/schema/buss-subCategory.schema';
-import { Cart } from 'src/modules/cart/cart.schema';
 import { DMO } from 'src/modules/dmo/schema/dmo.schema';
 import { ProductStatus } from 'src/modules/products/products.type';
 import { User } from 'src/modules/users/schema/users.schema';
+
+export class Image {
+  image: { type: string; required: true };
+  caption: string;
+  alt: string;
+  isPrimary: boolean;
+  subCoordinates: {
+    xMax: number;
+    xMin: number;
+    yMax: number;
+    yMin: number;
+  };
+}
 
 @Schema()
 export class Product extends AuditableSchema {
@@ -26,6 +37,9 @@ export class Product extends AuditableSchema {
     name: string;
 
   @Prop()
+    slug: string;
+
+  @Prop()
     description: string;
 
   @Prop({
@@ -36,14 +50,7 @@ export class Product extends AuditableSchema {
     businessId: mongoose.Types.ObjectId;
 
   @Prop()
-    images: [
-    {
-      image: { type: String; required: true };
-      caption: string;
-      alt: string;
-      isPrimary: boolean;
-    }
-  ];
+    images: Image[];
 
   @Prop({
     type: [{ type: mongoose.Schema.Types.ObjectId, ref: User.name }],
@@ -124,7 +131,7 @@ export class Product extends AuditableSchema {
   @Prop({ enum: ProductStatus, default: ProductStatus.ACTIVE })
     status: ProductStatus;
 
-  @Prop({ default: getRandomNumberBetween(9, 73), required: false })
+  @Prop({ default: 200, required: false })
     impact: number;
 
   @Prop({
@@ -182,19 +189,6 @@ export class Product extends AuditableSchema {
     ],
   })
     features: mongoose.Schema.Types.ObjectId[];
-
-  @Prop({
-    type: [
-      {
-        quantity: Number,
-        cartId: { type: mongoose.Schema.Types.ObjectId, ref: Cart.name },
-      },
-    ],
-  })
-    freeze: {
-    quantity: number;
-    cartId: mongoose.Types.ObjectId;
-  }[];
 }
 
 export type Products = HydratedDocument<Product>;
