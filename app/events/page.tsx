@@ -1,7 +1,8 @@
+import { Suspense } from "react";
+import Navbar from "@/components/navbar";
+
 import { getAllEvents } from "@/actions/eventActions";
 import FilterBusinessLayout from "@/components/layouts/FilterBusinessLayout";
-import Navbar from "@/components/navbar";
-import { Suspense } from "react";
 
 const page = async ({ searchParams }: SearchParamsProps | any) => {
   const { page = 1 } = await searchParams;
