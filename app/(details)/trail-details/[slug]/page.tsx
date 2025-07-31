@@ -1,10 +1,10 @@
 import { misc } from "@/constant/hebrew";
 import { IconImage } from "@/components/ui";
 import { NoDetailsFound } from "../../_components";
-import TripStations from "../_components/TripStations";
 import AttributePills from "@/components/AttributePills";
 import { getTrailDetailsBySlug } from "@/actions/trailActions";
 import TrailDetailsRouteMap from "../_components/TrailDetailsRouteMap";
+import TrailStations from "../_components/TrailStations";
 
 const page = async ({ params }: PageProps) => {
   const { slug } = await params;
@@ -50,7 +50,7 @@ const page = async ({ params }: PageProps) => {
             </button>
           </div>
         </div>
-        <TripStations {...trailsDetails} />
+        <TrailStations {...trailsDetails} />
       </section>
     </div>
   );

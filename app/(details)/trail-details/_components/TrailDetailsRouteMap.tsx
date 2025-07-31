@@ -1,6 +1,7 @@
 "use client";
-import { useGoogleRouteMap } from "@/hooks/useGoogleRouteMap";
 import { useEffect, useState } from "react";
+import { useGoogleRouteMap } from "@/hooks/useGoogleRouteMap";
+import useTrailStationStore from "@/stores/trailStationStore";
 
 const TrailDetailsRouteMap = ({
   _id,
@@ -9,34 +10,51 @@ const TrailDetailsRouteMap = ({
   stations,
 }: TrailDetailsProps) => {
   const [updatedTripStations, setUpdatedTripStations] = useState<
-    TrailStationRouteProps | any
+    TrailStationRouteProps | undefined
   >();
 
   const { mapRef } = useGoogleRouteMap(true, updatedTripStations);
+  const { getStationIdsByTrailId } = useTrailStationStore();
+  const stationIds = getStationIdsByTrailId(_id);
 
   useEffect(() => {
-    if (stations?.length > 0) {
-      const updatedStations = stations?.map((station) => {
-        return {
-          _id: station?._id,
-          name: station?.name,
-          description: station?.description,
-          geoLocation: station?.geoLocation,
-          primaryCategoryId: station?.primaryCategoryId?._id,
-          order: station?.order,
-          type: station?.type,
-        };
-      });
+    if (!stations || stations.length === 0) return;
 
-      const updatedTripStations = {
-        _id,
-        name,
-        description,
-        stations: updatedStations,
-      };
-      setUpdatedTripStations(updatedTripStations);
+    const flatStations = stations.map((station) => ({
+      _id: station._id,
+      name: station.name,
+      description: station.description,
+      geoLocation: station.geoLocation,
+      primaryCategoryId: station.primaryCategoryId?._id,
+      order: station.order,
+      type: station.type,
+    }));
+
+    let reorderedStations = flatStations;
+
+    if (stationIds && stationIds.length > 0) {
+      reorderedStations = stationIds
+        .map((id, index) => {
+          const matched = flatStations.find((s) => s._id === id);
+          return matched ? { ...matched, order: index + 1 } : null;
+        })
+        .filter(Boolean) as typeof flatStations;
     }
-  }, [stations]);
+
+    const newTripStations = {
+      _id,
+      name,
+      description,
+      stations: reorderedStations,
+    };
+
+    // Prevent unnecessary state updates
+    setUpdatedTripStations((prev) => {
+      const hasChanged =
+        JSON.stringify(prev) !== JSON.stringify(newTripStations);
+      return hasChanged ? newTripStations : prev;
+    });
+  }, [stations, stationIds, _id, name, description]);
 
   return <div ref={mapRef} className="w-full h-full" />;
 };

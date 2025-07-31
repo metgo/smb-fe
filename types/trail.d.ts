@@ -46,7 +46,14 @@ declare interface TrailDetailsProps {
 declare interface TrailStationRouteProps {
   _id: string;
   name: string;
-  slug: string;
   description: string;
-  stations: TrailStationListProps;
+  stations: {
+    _id: string;
+    name: string;
+    description: string;
+    geoLocation: GeoLocation;
+    primaryCategoryId: string;
+    order: number;
+    type: string;
+  }[];
 }

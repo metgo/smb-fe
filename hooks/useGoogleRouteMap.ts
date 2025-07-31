@@ -13,6 +13,7 @@ export const useGoogleRouteMap = (
   isDetailsPage: boolean = false,
   routeStation?: TrailStationRouteProps,
 ) => {
+  console.log("------------routeStation", routeStation);
   const mapRef = useRef(null);
   const searchParams = useSearchParams();
   const slug = searchParams.get("slug");
