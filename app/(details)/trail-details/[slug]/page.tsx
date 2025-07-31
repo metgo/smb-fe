@@ -18,7 +18,7 @@ const page = async ({ params }: PageProps) => {
       <TrailDetailsRouteMap {...trailsDetails} />
 
       {/* Trail's Details */}
-      <section className="p-5 space-y-7 absolute right-2 top-2 bottom-2 w-[31.5rem] rounded-xl shadow-md bg-white">
+      <section className="p-5 space-y-7 absolute right-2 top-2 bottom-2 w-[31.5rem] rounded-xl shadow-md bg-white h-[90vh] overflow-auto hide-scrollbar">
         <div>
           <div className="w-full flex items-center justify-end gap-6 mb-4.5">
             <IconImage icon="share" />

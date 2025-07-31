@@ -150,10 +150,9 @@ export const useGoogleMap = () => {
     </div>
     
     <!-- Bottom content -->
-    <div style="position: absolute; bottom: 16px; right: 16px; left: 16px; color: white; z-index: 2;">
+    <div style="position: absolute; bottom: 16px; right: 16px; left: 16px; color: white; z-index: 2; font-family: Ploni Bold">
       <h1 style="
         font-size: 16px;
-        font-weight: 800;
         line-hight:16px;
         margin: 0;
         white-space: nowrap;
@@ -169,7 +168,6 @@ export const useGoogleMap = () => {
         height: 14px;
         text-overflow: ellipsis;
         display: -webkit-box;
-        font-weight: 800;
         color: #fff;
         -webkit-line-clamp: 1;
         -webkit-box-orient: vertical;

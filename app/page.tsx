@@ -31,7 +31,7 @@ const page = async ({ searchParams }: Props) => {
     <div>
       <ScrollSnapWrapper>
         {/* Hero Section */}
-        <section className="width-screen h-[99vh] relative overflow-hidden">
+        <section className="width-screen h-screen relative overflow-hidden">
           <div className="z-20 fixed top-2.5 right-0 w-full flex items-center justify-between ps-20 pe-16">
             <div className="flex items-center gap-5">
               <HamburgerMenu

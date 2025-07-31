@@ -4,8 +4,8 @@ import { urls } from "@/lib/endpoints";
 import { CODE } from "@/constant/envConstants";
 import { shuffleArray } from "@/lib/helpers";
 
-// Create separate cache and state for each context
-const contextStates = new Map<
+// Cache in-memory only during the current session or lifetime of the serverless function
+let contextStates = new Map<
   string,
   {
     lastFetchedPage: number;
@@ -14,7 +14,12 @@ const contextStates = new Map<
   }
 >();
 
-// Helper function to get or create context state
+// Reset context state when page reloads
+export const resetTrailContext = async () => {
+  contextStates = new Map();
+};
+
+// Get or initialize state per context
 const getContextState = (contextId: string) => {
   if (!contextStates.has(contextId)) {
     contextStates.set(contextId, {
@@ -30,46 +35,43 @@ export const getAllTrails = async (
   pageCount: number,
   contextId: string = "default",
 ): Promise<TrailsFeedProps> => {
-  // Get state for this specific context
+  // Always reset state per request to force re-fetch on reload
+  resetTrailContext();
   const state = getContextState(contextId);
 
-  // Only fetch pages that haven't been fetched yet
-  for (let i = state.lastFetchedPage + 1; i <= pageCount; i++) {
-    const isCached = state.pageCache.has(i);
-    if (!isCached) {
-      try {
-        console.log(`Fetching page ${i} from API`);
-        const res = await fetch(
-          `${urls.trails}?page=${i}&limit=16&sortBy=createdAt&sortOrder=DESC&campCode=${CODE}`,
-          {
-            cache: "no-store",
-          },
-        );
+  for (let i = 1; i <= pageCount; i++) {
+    try {
+      console.log(`Fetching page ${i} from API`);
+      const res = await fetch(
+        `${urls.trails}?page=${i}&limit=16&sortBy=createdAt&sortOrder=DESC&campCode=${CODE}`,
+        {
+          cache: "no-store", // Always fetch fresh data
+        },
+      );
 
-        if (!res.ok) throw new Error(`Failed to fetch page ${i}`);
-        const json: TrailsFeedProps = await res.json();
+      if (!res.ok) throw new Error(`Failed to fetch page ${i}`);
+      const json: TrailsFeedProps = await res.json();
 
-        const randomizedData = shuffleArray(json.data) as TrailFeedList;
+      const randomizedData = shuffleArray(json.data) as TrailFeedList;
 
-        state.pageCache.set(i, randomizedData);
-        state.metaCache.set(i, json.meta);
+      state.pageCache.set(i, randomizedData);
+      state.metaCache.set(i, json.meta);
 
-        console.log(`Page ${i} fetched and cached, ${json.data.length} items`);
-      } catch (err) {
-        console.error(`Error fetching page ${i}:`, err);
-        break;
-      }
+      console.log(`Page ${i} fetched and cached, ${json.data.length} items`);
+    } catch (err) {
+      console.error(`Error fetching page ${i}:`, err);
+      break;
     }
   }
 
-  // Update the last fetched page
-  state.lastFetchedPage = Math.max(state.lastFetchedPage, pageCount);
+  // Store latest fetched page
+  state.lastFetchedPage = pageCount;
 
-  // Reconstruct allFeedData from cached pages in correct order
   const allFeedData: TrailFeedList = [];
   for (let i = 1; i <= pageCount; i++) {
-    if (state.pageCache.has(i)) {
-      allFeedData.push(...state.pageCache.get(i)!);
+    const cached = state.pageCache.get(i);
+    if (cached) {
+      allFeedData.push(...cached);
     }
   }
 
@@ -89,9 +91,8 @@ export const getAllTrails = async (
   };
 };
 
-// Optional: Clear specific context when component unmounts
 export const clearBusinessContext = async (contextId: string) => {
-  await contextStates.delete(contextId);
+  contextStates.delete(contextId);
 };
 
 export async function getTrailDetailsBySlug(

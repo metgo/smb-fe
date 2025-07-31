@@ -14,11 +14,11 @@ export const getWeatherInfo = async () => {
     const data = await response.json();
 
     return {
-      temperature: data.current.temp_c,
+      temperature: data.current?.temp_c,
       condition: data.current.condition?.text,
-      icon: data.current.condition.icon,
-      location: data.location.name,
-      code: data.current.condition.code,
+      icon: data.current.condition?.icon,
+      location: data.location?.name,
+      code: data.current.condition?.code,
     };
   } catch (error) {
     console.error("Weather API error:", error);

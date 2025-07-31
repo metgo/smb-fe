@@ -130,6 +130,7 @@ export const useGoogleRouteMap = (
           padding: 8px 12px;
           border-radius: 6px;
           font-size: 14px;
+          font-family: 'Ploni Bold'
         ">${label}</div>
       `;
 
