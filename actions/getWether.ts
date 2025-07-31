@@ -12,10 +12,10 @@ export const getWeatherInfo = async () => {
     }
 
     const data = await response.json();
-    // Example: return only temperature in Celsius
+
     return {
       temperature: data.current.temp_c,
-      condition: data.current.condition.text,
+      condition: data.current.condition?.text,
       icon: data.current.condition.icon,
       location: data.location.name,
       code: data.current.condition.code,

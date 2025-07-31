@@ -26,8 +26,6 @@ const TripStations = ({ stations }: TrailDetailsProps) => {
     setTripStation(reordered);
   };
 
-  console.log("----stations", stations);
-
   return (
     <DragDropContext onDragEnd={handleDragEnd}>
       <Droppable droppableId="products-list">

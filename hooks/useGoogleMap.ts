@@ -163,7 +163,7 @@ export const useGoogleMap = () => {
       ">
         ${activeBusinessData?.name}
       </h1>
-      <p style="
+      <div style="
         font-size: 12px;
         overflow: hidden;
         height: 14px;
@@ -174,8 +174,9 @@ export const useGoogleMap = () => {
         -webkit-line-clamp: 1;
         -webkit-box-orient: vertical;
       "
-       dangerouslySetInnerHTML={{ __html: ${wrappedDescription} || '' }}
-      />
+      >
+      ${wrappedDescription}
+      </div>
 
       <div style="display: flex; align-items: center; justify-content: space-between; margin-top:10px">
         <button

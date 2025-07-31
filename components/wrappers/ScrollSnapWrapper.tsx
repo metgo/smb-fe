@@ -23,27 +23,20 @@ export default function ScrollSnapWrapper({
 
       const secondSection = secondSectionRef.current;
 
-      // Going down from first section
-      if (direction === "down" && scrollY < viewportHeight - 10) {
-        e.preventDefault();
-        isScrolling.current = true;
-        setIsOnSection2(true);
-        secondSection?.scrollIntoView({ behavior: "smooth" });
-        setTimeout(() => (isScrolling.current = false), 700);
-        return;
-      }
-
-      // Going up from top of second section
+      // Going down from first section to second section
       if (
-        direction === "up" &&
-        secondSection &&
-        secondSection.getBoundingClientRect().top >= 0
+        direction === "down" &&
+        !isOnSection2 &&
+        scrollY < viewportHeight - 10
       ) {
         e.preventDefault();
         isScrolling.current = true;
-        setIsOnSection2(true);
-        firstSectionRef.current?.scrollIntoView({ behavior: "smooth" });
-        setTimeout(() => (isScrolling.current = false), 700);
+        secondSection?.scrollIntoView({ behavior: "smooth" });
+        setTimeout(() => {
+          isScrolling.current = false;
+          setIsOnSection2(true);
+        }, 800);
+        return;
       }
     };
 
@@ -52,7 +45,7 @@ export default function ScrollSnapWrapper({
     return () => {
       window.removeEventListener("wheel", handleWheel);
     };
-  }, []);
+  }, [isOnSection2, setIsOnSection2]);
 
   return (
     <>
