@@ -95,8 +95,7 @@ export class GetTripBySlugHandler implements IQueryHandler<GetTripBySlugQuery> {
       const tripObj = trip.toObject();
       tripObj.stations.sort((a, b) => a.order - b.order);
 
-      let groupTypesMap = [];
-      let accessibilitiesMap = [];
+      let groupTypesAndAccessibilitesMap = [];
 
       const stations = tripObj.stations.map((station: any) => {
         const stationData = station._id;
@@ -107,8 +106,11 @@ export class GetTripBySlugHandler implements IQueryHandler<GetTripBySlugQuery> {
           ...rest
         } = stationData;
 
-        groupTypesMap = [...groupTypesMap, ...groupTypesId];
-        accessibilitiesMap = [...accessibilitiesMap, ...accessibilitiesId];
+        groupTypesAndAccessibilitesMap = [
+          ...groupTypesAndAccessibilitesMap,
+          ...groupTypesId,
+          ...accessibilitiesId,
+        ];
 
         return {
           ...rest,
@@ -118,8 +120,15 @@ export class GetTripBySlugHandler implements IQueryHandler<GetTripBySlugQuery> {
         };
       });
 
-      const groupTypesId = [...new Set([...groupTypesMap])];
-      const accessibilitiesId = [...new Set([...accessibilitiesMap])];
+      const uniqueByNameMap = new Map();
+
+      groupTypesAndAccessibilitesMap.forEach(item => {
+        if (!uniqueByNameMap.has(item.name)) {
+          uniqueByNameMap.set(item.name, item);
+        }
+      });
+
+      const groupTypesAndAccessibilities = Array.from(uniqueByNameMap.values());
 
       return {
         ...tripObj,
@@ -127,8 +136,7 @@ export class GetTripBySlugHandler implements IQueryHandler<GetTripBySlugQuery> {
         ...(query.isMap && /true/.test(query.isMap)
           ? {}
           : {
-            groupTypesId,
-            accessibilitiesId,
+            groupTypesAndAccessibilities,
           }),
       };
     } catch (err) {
