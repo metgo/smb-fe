@@ -145,3 +145,19 @@ export function getHebrewDateInfo(isoDate: string) {
     month: hebrewMonths[date.getMonth()],
   };
 }
+
+export function getUniqueLocations(locations: BusinessMakerProps[]) {
+  const uniqueLocations = new Set();
+  locations?.forEach((location) => {
+    const coords = location?.geoLocation;
+    if (!coords) return;
+
+    const lat = parseFloat(coords.lat);
+    const lng = parseFloat(coords.long);
+
+    const key = `${lat.toFixed(6)}_${lng.toFixed(6)}`;
+    if (uniqueLocations.has(key)) return;
+    uniqueLocations.add(key);
+  });
+  return uniqueLocations;
+}

@@ -1,19 +1,20 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useGoogleRouteMap } from "@/hooks/useGoogleRouteMap";
 import useTrailStationStore from "@/stores/trailStationStore";
+import { useGoogleRouteDetailsMap } from "@/hooks/useGoogleRouteDetailsMap";
 
 const TrailDetailsRouteMap = ({
   _id,
   name,
   description,
   stations,
-}: TrailDetailsProps) => {
+  locations,
+}: TrailDetailsRouteProps) => {
   const [updatedTripStations, setUpdatedTripStations] = useState<
     TrailStationRouteProps | undefined
   >();
 
-  const { mapRef } = useGoogleRouteMap(true, updatedTripStations);
+  const { mapRef } = useGoogleRouteDetailsMap(locations, updatedTripStations!);
   const { getStationIdsByTrailId } = useTrailStationStore();
   const stationIds = getStationIdsByTrailId(_id);
 

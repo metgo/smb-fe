@@ -43,6 +43,14 @@ declare interface TrailDetailsProps {
   accessibilitiesId: Attributes[];
 }
 
+declare interface TrailDetailsRouteProps {
+  _id: string;
+  name: string;
+  description: string;
+  stations: TrailStationProps[];
+  locations: LocationListProps;
+}
+
 declare interface TrailStationRouteProps {
   _id: string;
   name: string;

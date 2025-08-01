@@ -50,6 +50,15 @@ export const businessMarkers = {
   [categoryId.tour]: "travel.svg",
 };
 
+export const stationMarkers = {
+  [categoryId.eat]: "bw-food.svg",
+  [categoryId.local]: "bw-local.svg",
+  [categoryId.sleep]: "bw-sleep.svg",
+  [categoryId.culture]: "bw-culture.svg",
+  [categoryId.attraction]: "bw-attraction.svg",
+  [categoryId.tour]: "bw-travel.svg",
+};
+
 export const stationCategory = {
   [categoryId.eat]: "trail-food.svg",
   [categoryId.local]: "trail-local.svg",

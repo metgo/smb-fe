@@ -1,13 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 
 import useGeneralStore from "@/stores/generalStore";
-import {
-  getAllBusinessLocation,
-  getBusinessById,
-} from "@/actions/businessActions";
+
 import { googlePointOfInterest } from "@/constant/googlePoi";
 import { businessMarkers, categoryGradinteColor } from "@/lib/utils";
 import { loadGoogleMapsScript } from "@/lib/googleMap";
+import {
+  getAllLocations,
+  getLocationDetailsById,
+} from "@/actions/commonActions";
 
 declare global {
   interface Window {
@@ -51,7 +52,7 @@ export const useGoogleMap = () => {
     setActiveBusinessData(null);
     setIsLoading(true);
     try {
-      const res = await getBusinessById(businessId);
+      const res = await getLocationDetailsById(businessId);
       setActiveBusinessData(res);
     } catch (e) {
       console.log("---------error:", e);
@@ -66,7 +67,7 @@ export const useGoogleMap = () => {
       (activeFilterTab === "map" || activeFilterTab === "integrated")
     ) {
       hasFetchedRef.current = true;
-      getAllBusinessLocation().then((locations) => {
+      getAllLocations().then((locations) => {
         setBusinesses(locations);
       });
     }

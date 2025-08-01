@@ -57,6 +57,7 @@ declare type FaviouriteBusinessProps = {
 declare type BusinessMakerProps = {
   _id: string;
   primaryCategoryId: string;
+  slug: string;
   geoLocation: {
     _id: string;
     lat: string;
