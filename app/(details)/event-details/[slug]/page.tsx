@@ -7,8 +7,7 @@ import {
   ReturnToPrevPageBtn,
   Title,
 } from "../../_components";
-import Link from "next/link";
-import { IconImage } from "@/components/ui";
+import { IconImage, MapNavButton } from "@/components/ui";
 import { events, misc } from "@/constant/hebrew";
 import AttributePills from "@/components/AttributePills";
 import { getEventDetailsBySlug } from "@/actions/eventActions";
@@ -35,17 +34,10 @@ const page = async ({ params }: PageProps) => {
             address={eventDetails?.address?.country}
           />
           <div className="flex items-center gap-2.5">
-            <Link
-              target="_blank"
-              rel="noopener noreferrer"
-              href={`https://www.google.com/maps/search/?api=1&query=${eventDetails?.geoLocation?.lat + "," + eventDetails?.geoLocation?.long}`}
-              className="flex items-center gap-1.25 ps-2.5 pe-4 py-1 cursor-pointer"
-            >
-              <IconImage icon={"navigation"} />
-              <span className="font-bold text-theme text-sm">
-                {misc.navigation}
-              </span>
-            </Link>
+            <MapNavButton
+              lat={eventDetails?.geoLocation?.lat}
+              lng={eventDetails?.geoLocation?.long}
+            />
             <div className="flex items-center gap-1.25 ps-2.5 pe-4 py-1 cursor-pointer">
               <IconImage icon={"share"} />
               <span className="font-bold text-theme text-sm">

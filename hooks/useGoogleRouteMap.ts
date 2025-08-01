@@ -13,7 +13,6 @@ export const useGoogleRouteMap = (
   isDetailsPage: boolean = false,
   routeStation?: TrailStationRouteProps,
 ) => {
-  console.log("------------routeStation", routeStation);
   const mapRef = useRef(null);
   const searchParams = useSearchParams();
   const slug = searchParams.get("slug");
@@ -140,18 +139,19 @@ export const useGoogleRouteMap = (
           });
 
           infoWindow.open(map, marker);
-        } else {
-          marker.addListener("click", () => {
-            infoWindowRef.current?.setContent(
-              `<div style="max-width: 200px">
-            <h3 style="margin:0">${station.name}</h3>
-            <p style="margin:0">${station.description}</p>
-          </div>`,
-            );
-            infoWindowRef.current?.open(map, marker);
-            activeMarkerRef.current = marker;
-          });
         }
+        // else {
+        //   marker.addListener("click", () => {
+        //     infoWindowRef.current?.setContent(
+        //       `<div style="max-width: 200px">
+        //     <h3 style="margin:0">${station.name}</h3>
+        //     <p style="margin:0">${station.description}</p>
+        //   </div>`,
+        //     );
+        //     infoWindowRef.current?.open(map, marker);
+        //     activeMarkerRef.current = marker;
+        //   });
+        // }
 
         if (i < stations.length - 1) {
           const nextStation = stations[i + 1];

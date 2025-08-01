@@ -1,5 +1,4 @@
-import Link from "next/link";
-import { IconImage, NextImage } from "@/components/ui";
+import { IconImage, MapNavButton, NextImage } from "@/components/ui";
 
 import { misc } from "@/constant/hebrew";
 import {
@@ -44,17 +43,10 @@ const page = async ({ params }: PageProps) => {
                 reviewCount={34}
               />
               <div className="flex items-center gap-2.5">
-                <Link
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  href={`https://www.google.com/maps/search/?api=1&query=${businessDetails?.location?.coordinates?.reverse()}`}
-                  className="flex items-center gap-1.25 ps-2.5 pe-4 py-1 cursor-pointer"
-                >
-                  <IconImage icon={"navigation"} />
-                  <span className="font-bold text-theme text-sm">
-                    {misc.navigation}
-                  </span>
-                </Link>
+                <MapNavButton
+                  lat={businessDetails?.geoLocation?.lat}
+                  lng={businessDetails?.geoLocation?.long}
+                />
                 <div className="flex items-center gap-1.25 ps-2.5 pe-4 py-1 cursor-pointer">
                   <IconImage icon={"share"} />
                   <span className="font-bold text-theme text-sm">

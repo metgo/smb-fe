@@ -1,7 +1,9 @@
 import Link from "next/link";
+import Image from "next/image";
+import { headers } from "next/headers";
+
 import { menuItems } from "@/constant/hebrew";
 import { IconImage } from "@/components/ui";
-import Image from "next/image";
 
 const navItems = [
   {
@@ -49,7 +51,17 @@ const socialMedias = [
   },
 ];
 
-const Footer = () => {
+const Footer = async () => {
+  const headersList = await headers();
+  const fullUrl = headersList.get("x-url") || headersList.get("referer") || "";
+  const pathname = new URL(fullUrl, "http://localhost:3000").pathname;
+
+  // Extract first segment from the pathname
+  const segments = pathname.split("/").filter(Boolean);
+  const basePath = `/${segments[0]}`;
+
+  if (basePath === "/trail-details") return null;
+
   return (
     <div className="mx-20 relative h-[156px] overflow-hidden">
       <hr className="h-[1px] text-primary" />

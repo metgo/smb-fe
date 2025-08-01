@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { IconImage } from "@/components/ui";
 import { misc } from "@/constant/hebrew";
 
-const ReturnToPrevPageBtn = () => {
+const ReturnToPrevPageBtn = ({ label = misc.return }: { label?: string }) => {
   const router = useRouter();
 
   return (
@@ -15,7 +15,7 @@ const ReturnToPrevPageBtn = () => {
         className="flex items-center gap-1.25 px-20 my-2.5 cursor-pointer"
       >
         <IconImage icon="return-arrow" />
-        <span className="text-dark ">{misc.return}</span>
+        <span className="text-dark font-normal">{label}</span>
       </div>
       <hr className="h-[1px] text-primary" />
     </>

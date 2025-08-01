@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 import { IconImage } from "@/components/ui";
 import { deliveries } from "@/constant/hebrew";
+import { devlieryInfoMapData } from "@/lib/utils";
 
 // Helper components
 const DeliveryTitleLayout = ({
@@ -146,7 +147,9 @@ const DeliveriesTabContent = ({
           >
             <div className="h-20 overflow-y-auto">
               {deliverySpecificSellerInfo?.map((str, index) => (
-                <div key={index}>{str}</div>
+                <div key={index}>
+                  {devlieryInfoMapData[str as keyof typeof devlieryInfoMapData]}
+                </div>
               ))}
             </div>
           </DeliveryTitleLayout>
@@ -160,7 +163,9 @@ const DeliveriesTabContent = ({
           >
             <div className="h-20 overflow-y-auto no-scrollbar-arrows">
               {deliveryReturnExchange?.map((str, index) => (
-                <div key={index}>{str}</div>
+                <div key={index}>
+                  {devlieryInfoMapData[str as keyof typeof devlieryInfoMapData]}
+                </div>
               ))}
             </div>
           </DeliveryTitleLayout>

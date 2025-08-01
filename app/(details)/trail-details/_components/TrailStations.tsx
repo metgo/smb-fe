@@ -2,14 +2,13 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { misc } from "@/constant/hebrew";
 import {
   DragDropContext,
   Droppable,
   Draggable,
   DropResult,
 } from "@hello-pangea/dnd";
-import { IconImage, NextImage } from "@/components/ui";
+import { IconImage, MapNavButton, NextImage } from "@/components/ui";
 import { stationCategory } from "@/lib/utils";
 import useTrailStationStore from "@/stores/trailStationStore";
 
@@ -98,15 +97,11 @@ const TrailStations = ({ stations, _id }: TrailDetailsProps) => {
                         />
 
                         <div className="flex items-center justify-end gap-2 w-full mt-1.75">
-                          <button
-                            type="button"
-                            className="border border-theme rounded-lg flex items-center gap-1.25 ps-2 pe-4 py-1 cursor-pointer"
-                          >
-                            <IconImage icon="navigation" />
-                            <span className="text-theme font-bold text-sm">
-                              {misc.navigation}
-                            </span>
-                          </button>
+                          <MapNavButton
+                            lat={station?.geoLocation?.lat}
+                            lng={station?.geoLocation?.long}
+                            clssName="border border-theme rounded-lg"
+                          />
                           <button
                             type="button"
                             className="bg-dark rounded-lg p-1"
