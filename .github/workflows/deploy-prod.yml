@@ -16,15 +16,15 @@ jobs:
 
       - name: Create .env file
         run: |
-          echo -n "${{ secrets.ENV_FILE_BNEI_PROD }}" | base64 -d > .env
+          echo -n "${{ secrets.ENV_FILE_DEV }}" | base64 -d > .env
 
       # Log in to Docker Hub
 
       - name: Login to Docker Hub, Build and Push Docker Image
         run: |
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/travel:prod .
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/travel:develop .
           docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/travel:prod
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/travel:develop
           docker image prune -f
 
   deploy:
@@ -43,10 +43,10 @@ jobs:
             echo ${{ secrets.SUDO_PASSWORD }} | sudo -S docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
 
             # Pull docker image
-            echo ${{ secrets.SUDO_PASSWORD }} | sudo -S docker-compose pull prod_travel
+            echo ${{ secrets.SUDO_PASSWORD }} | sudo -S docker-compose pull
 
             # Run docker-compose
-            echo ${{ secrets.SUDO_PASSWORD }} | sudo -S docker-compose up -d prod_travel
+            echo ${{ secrets.SUDO_PASSWORD }} | sudo -S docker-compose up -d dev_travel
 
             # Removing dangling images
             echo ${{ secrets.SUDO_PASSWORD }} | sudo -S docker image prune -f
