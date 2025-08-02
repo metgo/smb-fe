@@ -16,6 +16,7 @@ export const misc = {
   pleaseWaitLoading: "אנא המתן. טוען...",
   addAllStationOnCart: "הוספת כל התחנות לסל",
   toAllTracks: "לכל המסלולים",
+  addToRoute: "הוספה למסלול",
 };
 
 export const deliveries = {

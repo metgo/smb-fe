@@ -4,15 +4,11 @@ import { useEffect, useRef, useState } from "react";
 import { misc } from "@/constant/hebrew";
 import { businessMarkers } from "@/lib/utils";
 import useGeneralStore from "@/stores/generalStore";
-import { loadGoogleMapsScript } from "@/lib/googleMap";
-import { googlePointOfInterest } from "@/constant/googlePoi";
+import { useGoogleMapInit } from "./useGoogleMapInit";
+import { fetchSegmentRoute } from "@/lib/googleMapUtils";
 import { getTrailDetailsBySlug } from "@/actions/trailActions";
-import { centerIseral, fetchSegmentRoute } from "@/lib/mapUtils";
 
-export const useGoogleRouteMap = (
-  isDetailsPage: boolean = false,
-  routeStation?: TrailStationRouteProps,
-) => {
+export const useGoogleRouteMap = () => {
   const mapRef = useRef(null);
   const searchParams = useSearchParams();
   const slug = searchParams.get("slug");
@@ -27,12 +23,11 @@ export const useGoogleRouteMap = (
   const [activeTrailRoute, setActiveTrailRoute] =
     useState<TrailStationRouteProps | null>(null);
 
+  // 1. Load Map
+  useGoogleMapInit({ mapRef, setMap, infoWindowRef, activeMarkerRef });
+
   useEffect(() => {
-    if (
-      slug !== undefined &&
-      activeFilterTab === "integrated" &&
-      !isDetailsPage
-    ) {
+    if (slug !== undefined && activeFilterTab === "integrated") {
       const timeoutId = setTimeout(() => {
         async function getTrailRouteData() {
           setActiveTrailRoute(null);
@@ -43,43 +38,8 @@ export const useGoogleRouteMap = (
       }, 300);
 
       return () => clearTimeout(timeoutId);
-    } else {
-      setActiveTrailRoute(routeStation ? routeStation : null);
     }
-  }, [slug, activeFilterTab, routeStation, isDetailsPage]);
-
-  useEffect(() => {
-    loadGoogleMapsScript(() => {
-      if (!window.google || !mapRef.current) return;
-
-      const googleMap = new window.google.maps.Map(mapRef.current, {
-        center: centerIseral,
-        zoom: 10,
-        mapTypeControl: false,
-        streetViewControl: false,
-        gestureHandling: "greedy",
-        zoomControl: false,
-        fullscreenControl: false,
-        keyboardShortcuts: false,
-        rotateControl: false,
-        scaleControl: false,
-        styles: googlePointOfInterest,
-      });
-
-      setMap(googleMap);
-
-      infoWindowRef.current = new window.google.maps.InfoWindow({
-        maxWidth: 420,
-        disableAutoPan: true,
-        pixelOffset: new window.google.maps.Size(0, -10),
-      });
-
-      googleMap.addListener("click", () => {
-        infoWindowRef.current?.close();
-        activeMarkerRef.current = null;
-      });
-    });
-  }, []);
+  }, [slug, activeFilterTab]);
 
   useEffect(() => {
     if (!map || !activeTrailRoute || !window.google) return;
@@ -140,18 +100,6 @@ export const useGoogleRouteMap = (
 
           infoWindow.open(map, marker);
         }
-        // else {
-        //   marker.addListener("click", () => {
-        //     infoWindowRef.current?.setContent(
-        //       `<div style="max-width: 200px">
-        //     <h3 style="margin:0">${station.name}</h3>
-        //     <p style="margin:0">${station.description}</p>
-        //   </div>`,
-        //     );
-        //     infoWindowRef.current?.open(map, marker);
-        //     activeMarkerRef.current = marker;
-        //   });
-        // }
 
         if (i < stations.length - 1) {
           const nextStation = stations[i + 1];

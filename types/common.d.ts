@@ -117,3 +117,15 @@ declare interface LocationProps {
 }
 
 declare type LocationListProps = LocationProps[];
+
+declare interface LocationStationDetailsProps {
+  _id: string;
+  name: string;
+  description: string;
+  authorityId: string;
+  dmo: string;
+  images: ImageItem[];
+  logo: ImageItem;
+  primaryCategoryId: string;
+  slug: string;
+}

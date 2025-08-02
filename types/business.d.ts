@@ -8,7 +8,7 @@ interface Logo {
 
 declare interface BusinessProps {
   _id: string;
-  slug?: string;
+  slug: string;
   name: string;
   geoLocation: GeoLocation;
   images: ImageItem[];

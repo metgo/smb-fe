@@ -4,7 +4,7 @@ import useGeneralStore from "@/stores/generalStore";
 
 import { googlePointOfInterest } from "@/constant/googlePoi";
 import { businessMarkers, categoryGradinteColor } from "@/lib/utils";
-import { loadGoogleMapsScript } from "@/lib/googleMap";
+import { loadGoogleMapsScript } from "@/lib/googleMapUtils";
 import {
   getAllLocations,
   getLocationDetailsById,

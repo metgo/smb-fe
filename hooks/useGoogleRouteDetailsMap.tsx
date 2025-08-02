@@ -1,12 +1,11 @@
-import React from "react";
 import { useEffect, useRef, useState } from "react";
-import { createRoot } from "react-dom/client";
+
 import { misc } from "@/constant/hebrew";
-import { businessMarkers, stationMarkers } from "@/lib/utils";
-import { loadGoogleMapsScript } from "@/lib/googleMap";
-import { googlePointOfInterest } from "@/constant/googlePoi";
-import { centerIseral, fetchSegmentRoute } from "@/lib/mapUtils";
+import { createRoot } from "react-dom/client";
+import { useGoogleMapInit } from "./useGoogleMapInit";
+import { fetchSegmentRoute } from "@/lib/googleMapUtils";
 import CustomInfoWindow from "@/components/CustomInfoWindow";
+import { businessMarkers, stationMarkers } from "@/lib/utils";
 
 export const useGoogleRouteDetailsMap = (
   locations: LocationListProps,
@@ -17,92 +16,12 @@ export const useGoogleRouteDetailsMap = (
   const polylinesRef = useRef<google.maps.Polyline[]>([]);
   const infoWindowRef = useRef<google.maps.InfoWindow | null>(null);
   const [map, setMap] = useState<google.maps.Map | null>(null);
+  const activeMarkerRef = useRef<google.maps.Marker | null>(null);
 
   // 1. Load Map
-  useEffect(() => {
-    loadGoogleMapsScript(() => {
-      if (!window.google || !mapRef.current) return;
-
-      const googleMap = new window.google.maps.Map(mapRef.current, {
-        center: centerIseral,
-        zoom: 10,
-        mapTypeControl: false,
-        streetViewControl: false,
-        gestureHandling: "greedy",
-        zoomControl: false,
-        fullscreenControl: false,
-        keyboardShortcuts: false,
-        rotateControl: false,
-        scaleControl: false,
-        styles: googlePointOfInterest,
-      });
-
-      setMap(googleMap);
-
-      infoWindowRef.current = new google.maps.InfoWindow({
-        maxWidth: 420,
-        disableAutoPan: true,
-        pixelOffset: new google.maps.Size(0, -10),
-      });
-
-      googleMap.addListener("click", () => {
-        infoWindowRef.current?.close();
-      });
-    });
-  }, []);
+  useGoogleMapInit({ mapRef, setMap, infoWindowRef, activeMarkerRef });
 
   // 2. Add all location markers
-  // useEffect(() => {
-  //   if (!map || !locations?.length) return;
-
-  //   markersRef.current.forEach((marker) => marker.setMap(null));
-  //   markersRef.current = [];
-
-  //   const bounds = new google.maps.LatLngBounds();
-
-  //   locations.forEach((location) => {
-  //     const coords = location?.geoLocation;
-  //     if (!coords) return;
-
-  //     const lat = parseFloat(coords.lat);
-  //     const lng = parseFloat(coords.long);
-  //     const position = { lat, lng };
-
-  //     // Check if the current location is part of routeStation
-  //     const isInRouteStation = routeStation?.stations.some((s) => s._id === location._id);
-
-  //     const iconUrl = isInRouteStation
-  //       ? `/images/markers/${businessMarkers[location.primaryCategoryId as any]}`
-  //       : `/images/markers/${stationMarkers[location.primaryCategoryId as any]}`;
-
-  //     const iconSize = isInRouteStation ? new window.google.maps.Size(60, 60) : new window.google.maps.Size(35, 35)
-
-  //     const marker = new window.google.maps.Marker({
-  //       position,
-  //       map,
-  //       icon: {
-  //         url: iconUrl,
-  //         scaledSize: iconSize,
-  //       },
-  //     });
-
-  //     (marker as any).businessId = location._id;
-  //     markersRef.current.push(marker);
-  //     bounds.extend(position);
-  //   });
-
-  //   // Fit map to all locations
-  //   const screenWidth = window.innerWidth;
-  //   const padding = screenWidth < 640 ? 30 : 60;
-
-  //   map.fitBounds(bounds, {
-  //     top: padding,
-  //     bottom: padding,
-  //     left: padding,
-  //     right: padding,
-  //   });
-  // }, [map, locations]);
-
   useEffect(() => {
     if (!map || !locations?.length) return;
 
@@ -142,13 +61,57 @@ export const useGoogleRouteDetailsMap = (
         },
       });
 
-      // 🟡 Attach InfoWindow with React component
+      // marker.addListener("click", () => {
+      //   const container = document.createElement("div");
+      //   createRoot(container).render(
+      //     <CustomInfoWindow
+      //       isTrailMap
+      //       stationId={location._id}
+      //     />,
+      //   );
+
+      //   if (!infoWindowRef.current) {
+      //     infoWindowRef.current = new google.maps.InfoWindow();
+      //   }
+
+      //   infoWindowRef.current.setContent(container);
+      //   infoWindowRef.current.open(map, marker);
+      // });
+
       marker.addListener("click", () => {
         const container = document.createElement("div");
         createRoot(container).render(
-          <CustomInfoWindow stationId={location._id} />,
+          <CustomInfoWindow isTrailMap stationId={location._id} />,
         );
 
+        // Reset previous active marker icon
+        if (activeMarkerRef.current && activeMarkerRef.current !== marker) {
+          const previousMarker = activeMarkerRef.current;
+          const previousCategoryId = (previousMarker as any).categoryId;
+          const isPrevInRoute = routeStation?.stations.some(
+            (s) => s._id === (previousMarker as any).businessId,
+          );
+
+          previousMarker.setIcon({
+            url: isPrevInRoute
+              ? `/images/markers/${businessMarkers[previousCategoryId]}`
+              : `/images/markers/${stationMarkers[previousCategoryId]}`,
+            scaledSize: isPrevInRoute
+              ? new google.maps.Size(60, 60)
+              : new google.maps.Size(35, 35),
+          });
+        }
+
+        // Highlight clicked marker
+        marker.setIcon({
+          url: `/images/markers/${businessMarkers[location.primaryCategoryId as any]}`,
+          scaledSize: new google.maps.Size(70, 70), // slightly larger
+        });
+
+        // Set current as active
+        activeMarkerRef.current = marker;
+
+        // Show info window
         if (!infoWindowRef.current) {
           infoWindowRef.current = new google.maps.InfoWindow();
         }
@@ -214,7 +177,8 @@ export const useGoogleRouteDetailsMap = (
               padding: 8px 12px;
               border-radius: 6px;
               font-size: 14px;
-              font-family: 'Ploni Bold'
+              font-family: 'Ploni Bold';
+              z-index:50;
             ">${label}</div>
           `;
 

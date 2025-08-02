@@ -3,7 +3,7 @@
 import { useLoadMore } from "@/hooks/useLoadMore";
 import useGeneralStore from "@/stores/generalStore";
 
-import NoBusinessLayout from "@/components/layouts/NoBusinessLayout";
+import NoBusinessLayout from "@/components/layouts/NoFeedItemLayout";
 import OnlyFeedCardsLayout from "@/components/layouts/OnlyFeedCardsLayout";
 import MapFeedIntegratedLayout from "@/components/layouts/MapFeedIntegratedLayout";
 

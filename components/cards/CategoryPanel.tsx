@@ -12,7 +12,7 @@ import useCategoryStore from "@/stores/categoriesStore";
 
 const CategoryPanel = () => {
   const pathname = usePathname();
-  const { handleCategoryChange, activeCategoryKey, setActiveCategoryKey } =
+  const { handleCategoryChange, activeCategoryId, setActiveCategoryKey } =
     useCtgSubctg();
   const { categories, setCategories } = useCategoryStore();
   const hasEmptyName = categories.some((cat) => cat.name === "");
@@ -48,7 +48,7 @@ const CategoryPanel = () => {
     <div className="bg-[#FAFAFAE6] backdrop-blur-md border border-white/20 shadow-md flex items-center justify-center gap-2.5 p-2.5 rounded-2xl">
       {categories?.map((item) => {
         const category = categoryIcons[item.id as any];
-        const isActive = activeCategoryKey === item.id;
+        const isActive = activeCategoryId === item.id;
         const iconSrc = isActive ? item.activeIcon : item.icon;
         return (
           <div
