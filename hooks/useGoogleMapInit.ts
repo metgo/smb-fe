@@ -8,7 +8,7 @@ import {
 interface UseGoogleMapInitOptions {
   mapRef: React.RefObject<HTMLDivElement | any>;
   setMap: (map: google.maps.Map) => void;
-  infoWindowRef: React.MutableRefObject<google.maps.InfoWindow | null>;
+  infoWindowRef: React.MutableRefObject<google.maps.InfoWindow | null | any>;
   activeMarkerRef?: React.MutableRefObject<google.maps.Marker | null>;
 }
 

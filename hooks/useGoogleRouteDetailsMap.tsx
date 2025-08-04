@@ -129,10 +129,7 @@ export const useGoogleRouteDetailsMap = (
 
         // Listen for when CustomInfoWindow closes to reopen start/end labels
         const checkInfoWindowClosed = () => {
-          if (
-            infoWindowRef.current &&
-            infoWindowRef.current.getMap() === null
-          ) {
+          if (infoWindowRef.current && infoWindowRef.current === null) {
             // CustomInfoWindow was closed, reopen start/end labels
             setTimeout(() => {
               const startMarker = markersRef.current.find(
@@ -239,7 +236,7 @@ export const useGoogleRouteDetailsMap = (
           );
           if (marker) {
             // Only open if no CustomInfoWindow is currently active
-            if (!activeMarkerRef.current || !infoWindowRef.current?.getMap()) {
+            if (!activeMarkerRef.current || !infoWindowRef?.current) {
               infoWindow.open(map, marker);
             }
 

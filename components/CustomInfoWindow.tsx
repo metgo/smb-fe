@@ -11,7 +11,7 @@ import useTrailStationStore from "@/stores/trailStationStore";
 
 interface CustomInfoWindowProps {
   stationId: string;
-  trailId: string;
+  trailId?: string;
   isTrailMap?: boolean;
   geoLocation?: GeoLocation;
   primaryCategoryId?: string;
@@ -50,7 +50,7 @@ const CustomInfoWindow = ({
   }, [isTrailMap]);
 
   function handleAddStationToRoute() {
-    if (geoLocation && primaryCategoryId) {
+    if (geoLocation && primaryCategoryId && trailId) {
       const trailStaionInfo = stationDetails && {
         _id: stationDetails._id,
         name: stationDetails.name,
