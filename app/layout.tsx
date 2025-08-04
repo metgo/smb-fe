@@ -2,7 +2,6 @@ import "./globals.css";
 
 import Head from "next/head";
 import type { Metadata } from "next";
-import AppLoaderWrapper from "@/components/wrappers/AppLoaderWrapper";
 import { BUCKET_URL } from "@/constant/envConstants";
 
 export const metadata: Metadata = {
@@ -22,9 +21,7 @@ export default function RootLayout({ children }: ReactChildNode) {
           type="video/mp4"
         />
       </Head>
-      <body>
-        <AppLoaderWrapper>{children}</AppLoaderWrapper>
-      </body>
+      <body>{children}</body>
     </html>
   );
 }
