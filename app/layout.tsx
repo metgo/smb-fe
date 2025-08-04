@@ -3,6 +3,7 @@ import "./globals.css";
 import Head from "next/head";
 import type { Metadata } from "next";
 import AppLoaderWrapper from "@/components/wrappers/AppLoaderWrapper";
+import { BUCKET_URL } from "@/constant/envConstants";
 
 export const metadata: Metadata = {
   title: "תיירות בני שמעון – חוויות, טבע ותוצרת מהנגב הפורח",
@@ -17,7 +18,7 @@ export default function RootLayout({ children }: ReactChildNode) {
         <link
           rel="preload"
           as="video"
-          href="/videos/intro.mp4"
+          href={`${BUCKET_URL}/video/intro-video.mp4`}
           type="video/mp4"
         />
       </Head>

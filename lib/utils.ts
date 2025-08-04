@@ -88,6 +88,15 @@ export const categoryGradinteColor = {
   [categoryId.tour]: { dim: "#64C5C6", light: "#8ED4D5" },
 };
 
+export const categoryColors = {
+  [categoryId.eat]: "#f09984",
+  [categoryId.local]: "#ffbe3b",
+  [categoryId.sleep]: "#4c95d8",
+  [categoryId.culture]: "#f174ae",
+  [categoryId.attraction]: "#b571b4",
+  [categoryId.tour]: "#00a5a8",
+};
+
 export const categoryBgClasses = {
   [categoryId.eat]: "bg-ctg-eat-dark",
   [categoryId.local]: "bg-ctg-local-dark",

@@ -1,4 +1,4 @@
 import CardSkeleton from "./CardSkeleton";
-import Layout16Skeleton from "./Layout16Skeleton";
+import ScreenSkeleton from "./ScreenSkeleton";
 
-export { CardSkeleton, Layout16Skeleton };
+export { CardSkeleton, ScreenSkeleton };

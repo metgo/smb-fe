@@ -1,24 +1,36 @@
 "use client";
 
+import clsx from "clsx";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { misc } from "@/constant/hebrew";
 import { getLocationDetailsById } from "@/actions/commonActions";
 import { IconImage, ImageCarouselControls, NextImage } from "./ui";
+import useTrailStationStore from "@/stores/trailStationStore";
 
 interface CustomInfoWindowProps {
   stationId: string;
+  trailId: string;
   isTrailMap?: boolean;
+  geoLocation?: GeoLocation;
+  primaryCategoryId?: string;
+  setIsModalClose?: (isClose: boolean) => void;
 }
 
 const CustomInfoWindow = ({
   stationId,
+  trailId,
+  geoLocation,
+  primaryCategoryId,
   isTrailMap = false,
+  setIsModalClose,
 }: CustomInfoWindowProps) => {
+  const { addTrailStation, isAreadyExistStation } = useTrailStationStore();
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [isAddBtnDisabled, setIsAddBtnDisabled] = useState(false);
   const [stationDetails, setStationDetails] =
     useState<LocationStationDetailsProps>();
-  const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   const imageCount = stationDetails?.images?.length || 0;
   useEffect(() => {
@@ -31,8 +43,29 @@ const CustomInfoWindow = ({
     }
   }, [stationId]);
 
+  useEffect(() => {
+    if (isTrailMap && trailId && stationId) {
+      setIsAddBtnDisabled(isAreadyExistStation(trailId, stationId));
+    }
+  }, [isTrailMap]);
+
+  function handleAddStationToRoute() {
+    if (geoLocation && primaryCategoryId) {
+      const trailStaionInfo = stationDetails && {
+        _id: stationDetails._id,
+        name: stationDetails.name,
+        description: stationDetails.description,
+        image: stationDetails?.images?.[0]?.image,
+        geoLocation,
+        primaryCategoryId,
+      };
+      addTrailStation(trailId, trailStaionInfo!);
+      setIsModalClose?.(true);
+    }
+  }
+
   return (
-    <div className="w-[240px] h-[240px] rounded-md bg-white border-2 border-white relative">
+    <div className="w-[240px] h-[240px] rounded-md bg-white border-2 border-white relative z-50">
       <NextImage
         width={240}
         height={240}
@@ -54,8 +87,14 @@ const CustomInfoWindow = ({
           {isTrailMap ? (
             <button
               type="button"
-              onClick={() => {}}
-              className="cursor-pointer font-bold text-white bg-black/60 rounded-lg px-4 py-2.25"
+              onClick={handleAddStationToRoute}
+              disabled={isAddBtnDisabled}
+              className={clsx(
+                isAddBtnDisabled
+                  ? "cursor-not-allowed bg-gray-400"
+                  : "bg-black/60 cursor-pointer",
+                "font-bold text-white  rounded-lg px-4 py-2.25",
+              )}
             >
               <span>{misc.addToRoute}</span>
             </button>

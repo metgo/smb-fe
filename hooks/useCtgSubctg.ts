@@ -7,7 +7,6 @@ export const useCtgSubctg = () => {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const activeCategoryId = searchParams.get("categoryId");
 
   const { activeCategoryKey, setActiveCategoryKey } = useGeneralStore();
 
@@ -16,10 +15,10 @@ export const useCtgSubctg = () => {
   const isHomepage = pathname === "/";
 
   const handleCategoryChange = (categoryId: string) => {
-    const isSameCategory = activeCategoryId === categoryId;
+    const isSameCategory = activeCategoryKey === categoryId;
     const newCategoryId = isSameCategory ? "" : categoryId;
 
-    setActiveCategoryKey(categoryId || "");
+    setActiveCategoryKey(newCategoryId);
     setActiveSubCategory("");
 
     const params = new URLSearchParams(searchParams.toString());
@@ -65,7 +64,7 @@ export const useCtgSubctg = () => {
     handleCategoryChange,
     handleSubcategoryChange,
     activeSubCategory,
-    activeCategoryId,
+    activeCategoryKey,
     setActiveCategoryKey,
   };
 };

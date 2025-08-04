@@ -1,4 +1,5 @@
 import { createRoot } from "react-dom/client";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 import { businessMarkers } from "@/lib/utils";
@@ -13,9 +14,10 @@ export const useGoogleMap = () => {
   const markersRef = useRef<google.maps.Marker[]>([]);
   const activeMarkerRef = useRef<google.maps.Marker | null>(null);
   const infoWindowRef = useRef<google.maps.InfoWindow | null>(null);
+  const searchParams = useSearchParams();
+  const activeCategoryId = searchParams.get("categoryId") || "";
 
-  const { activeFilterTab, activeCategoryKey, clickedBusinessId } =
-    useGeneralStore();
+  const { activeFilterTab, clickedBusinessId } = useGeneralStore();
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [businesses, setBusinesses] = useState<BusinessMakerProps[]>([]);
 
@@ -49,10 +51,8 @@ export const useGoogleMap = () => {
 
     const uniqueLocations = new Set();
 
-    const filteredBusiness = activeCategoryKey
-      ? businesses.filter(
-          (item) => item.primaryCategoryId === activeCategoryKey,
-        )
+    const filteredBusiness = activeCategoryId
+      ? businesses.filter((item) => item.primaryCategoryId === activeCategoryId)
       : businesses;
 
     filteredBusiness.forEach((business) => {
@@ -188,7 +188,7 @@ export const useGoogleMap = () => {
 
   useEffect(() => {
     if (businesses.length > 0) addMarkers();
-  }, [businesses, activeCategoryKey]);
+  }, [businesses, activeCategoryId]);
 
   return { mapRef };
 };

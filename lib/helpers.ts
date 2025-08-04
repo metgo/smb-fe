@@ -161,3 +161,18 @@ export function getUniqueLocations(locations: BusinessMakerProps[]) {
   });
   return uniqueLocations;
 }
+
+export function flatStationDetails(station: TrailStationProps) {
+  const flatStationInfo = {
+    _id: station._id,
+    name: station.name,
+    description: station.description,
+    image: station.images?.[0]?.image,
+    geoLocation: station.geoLocation,
+    primaryCategoryId: station.primaryCategoryId._id,
+    order: station.order,
+    type: station.type,
+  };
+
+  return flatStationInfo;
+}

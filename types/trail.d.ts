@@ -51,17 +51,28 @@ declare interface TrailDetailsRouteProps {
   locations: LocationListProps;
 }
 
+declare interface TrailStaionsProps {
+  _id: string;
+  name: string;
+  description: string;
+  geoLocation: GeoLocation;
+  primaryCategoryId: string;
+  order: number;
+  type: string;
+}
+
+declare interface LocalstoreTrailStaionsProps {
+  _id: string;
+  name: string;
+  description: string;
+  geoLocation: GeoLocation;
+  primaryCategoryId: string;
+  image: string;
+}
+
 declare interface TrailStationRouteProps {
   _id: string;
   name: string;
   description: string;
-  stations: {
-    _id: string;
-    name: string;
-    description: string;
-    geoLocation: GeoLocation;
-    primaryCategoryId: string;
-    order: number;
-    type: string;
-  }[];
+  stations: TrailStaionsProps[];
 }

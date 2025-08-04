@@ -3,33 +3,74 @@ import { persist } from "zustand/middleware";
 
 interface TrailStation {
   trailId: string;
-  stationIds: string[];
+  stations: LocalstoreTrailStaionsProps[];
 }
 
 interface TrailStationStoreState {
   trailStations: TrailStation[];
-  setTrailStations: (trailId: string, stationIds: string[]) => void;
   clearTrailStations: () => void;
-  getStationIdsByTrailId: (trailId: string) => string[]; // ✅ New selector
+  getStationsByTrailId: (trailId: string) => LocalstoreTrailStaionsProps[];
+  setTrailStations: (
+    trailId: string,
+    stations: LocalstoreTrailStaionsProps[],
+  ) => void;
+  addTrailStation: (
+    trailId: string,
+    station: LocalstoreTrailStaionsProps,
+  ) => void;
+  isAreadyExistStation: (trailId: string, stationId: string) => boolean;
 }
 
 const useTrailStationStore = create<TrailStationStoreState>()(
   persist(
     (set, get) => ({
       trailStations: [],
-      setTrailStations: (trailId, stationIds) => {
+
+      setTrailStations: (trailId, stations) => {
         const updated = [
           ...get().trailStations.filter((t) => t.trailId !== trailId),
-          { trailId, stationIds },
+          { trailId, stations },
         ];
         set({ trailStations: updated });
       },
+
       clearTrailStations: () => set({ trailStations: [] }),
 
-      // ✅ Selector to get only stationIds for a given trailId
-      getStationIdsByTrailId: (trailId) => {
+      getStationsByTrailId: (trailId) => {
         const trail = get().trailStations.find((t) => t.trailId === trailId);
-        return trail ? trail.stationIds : [];
+        return trail ? trail.stations : [];
+      },
+
+      addTrailStation: (trailId, newStation) => {
+        const currentTrails = get().trailStations;
+        const trailIndex = currentTrails.findIndex(
+          (t) => t.trailId === trailId,
+        );
+
+        if (trailIndex === -1) {
+          // Add new trail with this station
+          set({
+            trailStations: [
+              ...currentTrails,
+              { trailId, stations: [newStation] },
+            ],
+          });
+        } else {
+          const updatedTrail = {
+            ...currentTrails[trailIndex],
+            stations: [...currentTrails[trailIndex].stations, newStation],
+          };
+          const updatedTrails = [...currentTrails];
+          updatedTrails[trailIndex] = updatedTrail;
+
+          set({ trailStations: updatedTrails });
+        }
+      },
+
+      isAreadyExistStation: (trailId: string, stationId: string) => {
+        const trail = get().trailStations.find((t) => t.trailId === trailId);
+        if (!trail) return false;
+        return trail.stations.some((station) => station._id === stationId);
       },
     }),
     {
