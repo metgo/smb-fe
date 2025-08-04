@@ -35,7 +35,6 @@ export class DeliveryArea {
     }[];
   }[];
 }
-
 export class Image {
   image: string;
   caption: string;
@@ -105,14 +104,12 @@ export class Business extends AuditableSchema {
   @Prop({
     type: {
       url: { type: String, default: null },
-      qrImage: { type: String, default: null },
     },
     _id: false,
     default: null,
   })
     website: {
     url: string;
-    qrImage: string;
   };
 
   @Prop({

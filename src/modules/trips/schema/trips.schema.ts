@@ -6,7 +6,7 @@ import { Authority } from 'src/modules/authority/schema/authority.schema';
 import { User } from 'src/modules/users/schema/users.schema';
 import { DMO } from 'src/modules/dmo/schema/dmo.schema';
 import { Business } from 'src/modules/business/shared/schema/business.schema';
-import { TripTypes } from '../trips.types';
+import { TripStatus, TripTypes } from '../trips.types';
 
 @Schema({ _id: false })
 class Station {
@@ -37,6 +37,9 @@ export class Trip extends AuditableSchema {
 
   @Prop({ required: true })
     name: string;
+
+  @Prop({ enum: TripStatus, default: TripStatus.PENDING })
+    status: TripStatus;
 
   @Prop()
     description: string;

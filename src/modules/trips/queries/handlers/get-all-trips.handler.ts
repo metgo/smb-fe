@@ -7,6 +7,7 @@ import { paginateData } from 'src/common/pagination';
 import { CampaignService } from 'src/modules/campaign/campaign.service';
 import { GetAllTripsQuery } from '../get-all-trips.query';
 import { Trip } from '../../schema/trips.schema';
+import { TripStatus } from '../../trips.types';
 
 @QueryHandler(GetAllTripsQuery)
 export class GetAllTripsHandler implements IQueryHandler<GetAllTripsQuery> {
@@ -68,6 +69,7 @@ export class GetAllTripsHandler implements IQueryHandler<GetAllTripsQuery> {
 
     // Build base match query for Trips based on user role and filters
     const matchQuery: Record<string, any> = {
+      status: TripStatus.APPROVED,
       ...((estimatedDurationMin || estimatedDurationMax) && {
         estimatedDuration: {
           ...(estimatedDurationMin && { $gte: Number(estimatedDurationMin) }),

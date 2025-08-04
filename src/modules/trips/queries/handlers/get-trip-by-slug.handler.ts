@@ -10,6 +10,7 @@ import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { CampaignService } from 'src/modules/campaign/campaign.service';
 import { Trip } from '../../schema/trips.schema';
 import { GetTripBySlugQuery } from '../get-trip-by-slug.query';
+import { TripStatus } from '../../trips.types';
 
 @QueryHandler(GetTripBySlugQuery)
 export class GetTripBySlugHandler implements IQueryHandler<GetTripBySlugQuery> {
@@ -35,6 +36,7 @@ export class GetTripBySlugHandler implements IQueryHandler<GetTripBySlugQuery> {
 
       let findQuery: any = {
         slug,
+        status: TripStatus.APPROVED,
       };
 
       const orConditions = [];
