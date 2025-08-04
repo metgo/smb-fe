@@ -1,11 +1,10 @@
 import { misc } from "@/constant/hebrew";
 import { IconImage } from "@/components/ui";
 import { NoDetailsFound, ReturnToPrevPageBtn } from "../../_components";
-// import AttributePills from "@/components/AttributePills";
+import AttributePills from "@/components/AttributePills";
 import { getTrailDetailsBySlug } from "@/actions/trailActions";
 import TrailDetailsRouteMap from "../_components/TrailDetailsRouteMap";
 import TrailStations from "../_components/TrailStations";
-import { getAllLocations } from "@/actions/commonActions";
 
 const page = async ({ params }: PageProps) => {
   const { slug } = await params;
@@ -13,19 +12,12 @@ const page = async ({ params }: PageProps) => {
   if (slug === "undefined" || !slug) return <NoDetailsFound />;
 
   const trailsDetails = await getTrailDetailsBySlug(slug);
-  const locations: LocationListProps = await getAllLocations();
 
   return (
     <>
       <ReturnToPrevPageBtn label={misc.toAllTracks} />
       <div className="w-full h-[87vh] relative">
-        <TrailDetailsRouteMap
-          _id={trailsDetails?._id}
-          name={trailsDetails?.name}
-          description={trailsDetails?.description}
-          stations={trailsDetails?.stations}
-          locations={locations}
-        />
+        <TrailDetailsRouteMap {...trailsDetails} />
 
         {/* Trail's Details */}
         <section className="p-5 space-y-7 absolute right-2 top-2 bottom-2 w-[31.5rem] rounded-xl shadow-md bg-white h-[86vh] overflow-auto hide-scrollbar">
@@ -40,11 +32,11 @@ const page = async ({ params }: PageProps) => {
               <div className="font-bold my-1.5">{trailsDetails?.distance}</div>
               <p className="font-normal">{trailsDetails?.description}</p>
             </div>
-            {/* <div className="my-7">
+            <div className="my-7">
               <AttributePills
                 items={trailsDetails?.groupTypesAndAccessibilities}
               />
-            </div> */}
+            </div>
             <div className="w-full flex justify-end">
               <button
                 type="button"
