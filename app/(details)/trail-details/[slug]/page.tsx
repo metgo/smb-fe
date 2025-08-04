@@ -31,15 +31,12 @@ const page = async ({ params }: PageProps) => {
 
             <div className="text-dark">
               <h1 className="text-2xl font-bold">{trailsDetails?.name}</h1>
-              <div className="font-bold my-1.5">{trailsDetails.distance}</div>
+              <div className="font-bold my-1.5">{trailsDetails?.distance}</div>
               <p className="font-normal">{trailsDetails?.description}</p>
             </div>
             <div className="my-7">
               <AttributePills
-                items={[
-                  ...trailsDetails?.accessibilitiesId,
-                  ...trailsDetails?.groupTypesId,
-                ]}
+                items={trailsDetails?.groupTypesAndAccessibilities}
               />
             </div>
             <div className="w-full flex justify-end">
