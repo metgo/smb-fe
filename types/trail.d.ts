@@ -44,9 +44,6 @@ declare interface TrailDetailsProps {
 
 declare interface TrailDetailsRouteProps {
   _id: string;
-  name: string;
-  description: string;
-  stations: TrailStationProps[];
   locations: LocationListProps;
 }
 

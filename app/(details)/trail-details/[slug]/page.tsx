@@ -5,6 +5,7 @@ import AttributePills from "@/components/AttributePills";
 import { getTrailDetailsBySlug } from "@/actions/trailActions";
 import TrailDetailsRouteMap from "../_components/TrailDetailsRouteMap";
 import TrailStations from "../_components/TrailStations";
+import { getAllLocations } from "@/actions/commonActions";
 
 const page = async ({ params }: PageProps) => {
   const { slug } = await params;
@@ -12,12 +13,13 @@ const page = async ({ params }: PageProps) => {
   if (slug === "undefined" || !slug) return <NoDetailsFound />;
 
   const trailsDetails = await getTrailDetailsBySlug(slug);
+  const locations = await getAllLocations();
 
   return (
     <>
       <ReturnToPrevPageBtn label={misc.toAllTracks} />
       <div className="w-full h-[87vh] relative">
-        <TrailDetailsRouteMap {...trailsDetails} />
+        <TrailDetailsRouteMap _id={trailsDetails?._id} locations={locations} />
 
         {/* Trail's Details */}
         <section className="p-5 space-y-7 absolute right-2 top-2 bottom-2 w-[31.5rem] rounded-xl shadow-md bg-white h-[86vh] overflow-auto hide-scrollbar">
