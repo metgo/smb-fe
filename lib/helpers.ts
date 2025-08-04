@@ -145,3 +145,13 @@ export function getHebrewDateInfo(isoDate: string) {
     month: hebrewMonths[date.getMonth()],
   };
 }
+
+export function removeInlineStylesFromHTML(html: string): string {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, "text/html");
+
+  const elementsWithStyle = doc.querySelectorAll("[style]");
+  elementsWithStyle.forEach((el) => el.removeAttribute("style"));
+
+  return doc.body.innerHTML;
+}
