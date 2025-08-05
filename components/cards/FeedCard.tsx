@@ -10,6 +10,7 @@ import useGeneralStore from "@/stores/generalStore";
 import { CardSkeleton } from "@/components/skeletons";
 import { IconImage, NextImage } from "@/components/ui";
 import { useImagePresent } from "@/hooks/useImagePresent";
+import { removeInlineStylesFromHTML } from "@/lib/helpers";
 
 const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
   const router = useRouter();
@@ -125,7 +126,9 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
               </div>
               <div className="hidden group-hover:block">
                 <div
-                  dangerouslySetInnerHTML={{ __html: feedItem?.description }}
+                  dangerouslySetInnerHTML={{
+                    __html: removeInlineStylesFromHTML(feedItem?.description),
+                  }}
                   className=" line-clamp-2 font-bold text-[12px] text-white mt-1"
                 />
                 <div
