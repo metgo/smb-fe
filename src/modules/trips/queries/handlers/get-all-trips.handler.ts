@@ -70,6 +70,9 @@ export class GetAllTripsHandler implements IQueryHandler<GetAllTripsQuery> {
     // Build base match query for Trips based on user role and filters
     const matchQuery: Record<string, any> = {
       status: TripStatus.APPROVED,
+      isDeleted: false,
+      deletedAt: null,
+      deletedBy: null,
       ...((estimatedDurationMin || estimatedDurationMax) && {
         estimatedDuration: {
           ...(estimatedDurationMin && { $gte: Number(estimatedDurationMin) }),
