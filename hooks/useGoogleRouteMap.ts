@@ -2,11 +2,11 @@ import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 import { misc } from "@/constant/hebrew";
-import { businessMarkers } from "@/lib/utils";
 import useGeneralStore from "@/stores/generalStore";
 import { useGoogleMapInit } from "./useGoogleMapInit";
-import { fetchSegmentRoute } from "@/lib/googleMapUtils";
+import { businessMarkers, categoryColors } from "@/lib/utils";
 import { getTrailDetailsBySlug } from "@/actions/trailActions";
+import { createGradientRoute, fetchSegmentRoute } from "@/lib/googleMapUtils";
 
 export const useGoogleRouteMap = () => {
   const mapRef = useRef(null);
@@ -110,12 +110,20 @@ export const useGoogleRouteMap = () => {
           );
 
           if (pathPoints.length) {
+            const currentStationColor =
+              categoryColors[stations[i].primaryCategoryId] || "#1976D2"; // fallback to blue
+            const nextStationColor =
+              categoryColors[stations[i + 1].primaryCategoryId] || "#4CAF50"; // fallback to green
+
             const polyline = new google.maps.Polyline({
               path: pathPoints,
               geodesic: true,
-              strokeColor: "#1976D2",
+              strokeColor: await createGradientRoute(
+                currentStationColor,
+                nextStationColor,
+              ),
               strokeOpacity: 1.0,
-              strokeWeight: 3,
+              strokeWeight: 6,
             });
 
             polyline.setMap(map);

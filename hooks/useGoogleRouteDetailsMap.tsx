@@ -3,7 +3,7 @@ import { createRoot } from "react-dom/client";
 
 import { useGoogleMapInit } from "./useGoogleMapInit";
 import CustomInfoWindow from "@/components/CustomInfoWindow";
-import { fetchSegmentRoute } from "@/lib/googleMapUtils";
+import { createGradientRoute, fetchSegmentRoute } from "@/lib/googleMapUtils";
 import { businessMarkers, categoryColors, stationMarkers } from "@/lib/utils";
 import { misc } from "@/constant/hebrew";
 
@@ -268,40 +268,13 @@ export const useGoogleRouteDetailsMap = (
               categoryColors[routeStation[i + 1].primaryCategoryId] ||
               "#4CAF50"; // fallback to green
 
-            // Convert hex to RGB
-            const hexToRgb = (hex: string) => {
-              const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(
-                hex,
-              );
-              return result
-                ? {
-                    r: parseInt(result[1], 16),
-                    g: parseInt(result[2], 16),
-                    b: parseInt(result[3], 16),
-                  }
-                : { r: 25, g: 118, b: 210 }; // fallback
-            };
-
-            const startColor = hexToRgb(currentStationColor);
-            const endColor = hexToRgb(nextStationColor);
-
-            // Create gradient in the middle of the segment (50% blend)
-            const r = Math.round(
-              startColor.r + (endColor.r - startColor.r) * 0.5,
-            );
-            const g = Math.round(
-              startColor.g + (endColor.g - startColor.g) * 0.5,
-            );
-            const b = Math.round(
-              startColor.b + (endColor.b - startColor.b) * 0.5,
-            );
-
-            const segmentColor = `rgb(${r}, ${g}, ${b})`;
-
             const polyline = new google.maps.Polyline({
               path: pathPoints,
               geodesic: true,
-              strokeColor: segmentColor,
+              strokeColor: await createGradientRoute(
+                currentStationColor,
+                nextStationColor,
+              ),
               strokeOpacity: 1.0,
               strokeWeight: 6,
             });
