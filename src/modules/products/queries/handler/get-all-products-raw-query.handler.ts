@@ -122,10 +122,12 @@ implements IQueryHandler<GetAllProductsRawQuery> {
         };
       }
 
+      const categoryIds = campDetails.category.map(cat => cat.id);
+
       if (!categoriesId) {
         findQuery = {
           ...findQuery,
-          categories: { $in: campDetails?.categoryIds },
+          categories: { $in: categoryIds },
         };
       }
 

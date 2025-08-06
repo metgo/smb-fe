@@ -108,7 +108,7 @@ export class ProductsService {
         && !campDetails?.dmoIds?.length
         && !campDetails?.authorityIds?.length
         && !campDetails?.businessIds?.length
-        && !campDetails?.categoryIds?.length
+        && !campDetails?.category?.length
       ) {
         return {};
       }
@@ -121,13 +121,15 @@ export class ProductsService {
         select: '_id name hebrewName',
       };
 
+      const categoryIds = campDetails.category.map(cat => cat.id);
+
       const product = await this.ProductModel.findOne({
         _id: productId,
         status: ProductStatus.ACTIVE,
         deletedAt: null,
         deletedBy: null,
         isDeleted: false,
-        categories: { $in: campDetails?.categoryIds },
+        categories: { $in: categoryIds },
         $or: [
           { 'quantity.remaining': { $gt: 0 } },
           { 'quantity.isUnlimited': true },

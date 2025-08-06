@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import mongoose, { Model } from 'mongoose';
+import { Model } from 'mongoose';
 
 import { Locale } from 'src/common/enum';
 import { disSelect } from 'src/common/utils/select.handling';
@@ -22,11 +22,13 @@ export class BussCategoriesService {
       query.campCode,
     );
 
-    if (!campDetails?.categoryIds?.length) {
+    if (!campDetails?.category?.length) {
       return {};
     }
 
-    if (!campDetails.categoryIds.includes(new mongoose.Types.ObjectId(id))) {
+    const categoryIds = campDetails.category.map(cat => cat.id.toString());
+
+    if (!categoryIds.includes(id.toString())) {
       return {};
     }
 

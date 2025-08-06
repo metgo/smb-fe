@@ -22,7 +22,7 @@ implements ICommandHandler<GetAllCategoriesQuery> {
     private readonly logger: Logger,
     @InjectModel(Product.name)
     private readonly ProductModel: Model<Product>,
-    @InjectModel('BussCategory')
+    @InjectModel(BussCategory.name)
     private BussCategoryModel: Model<BussCategory>,
     private readonly campaignService: CampaignService,
   ) {}
@@ -38,9 +38,11 @@ implements ICommandHandler<GetAllCategoriesQuery> {
         campCode,
       );
 
-      if (!campDetails?.categoryIds?.length) {
+      if (!campDetails?.category?.length) {
         return [];
       }
+
+      const categoryIds = campDetails.category.map(cat => cat.id);
 
       const queryPage = page ? Number(page) : null;
       const queryLimit = limit ? Number(limit) : null;
@@ -49,33 +51,54 @@ implements ICommandHandler<GetAllCategoriesQuery> {
         deletedAt: null,
         isDeleted: false,
         deletedBy: null,
-        _id: { $in: campDetails.categoryIds },
+        _id: { $in: categoryIds },
         ...(search && { name: { $regex: search, $options: 'i' } }),
       };
-      const select = '_id name hebrewName';
+      const select = '_id name hebrewName icon description';
 
       const categories = await queryhandler<BussCategory>(
         this.BussCategoryModel,
         {
           findQuery,
           select,
+          populate: 'icon',
           page: queryPage,
           limit: queryLimit,
-          sort: 'createdAt',
           languageQuery: locale || Locale.HEBREW,
         },
       );
+
+      // Create a map of category id to order
+      const orderMap = new Map(
+        (campDetails?.category || []).map(cat => [
+          cat.id.toString(),
+          cat.order,
+        ]),
+      );
+      categories.data = categories.data.sort((a, b) => {
+        const orderA = orderMap.get(a.id.toString()) ?? 9999;
+        const orderB = orderMap.get(b.id.toString()) ?? 9999;
+        return orderA - orderB;
+      });
 
       if (
         !campDetails?.productIds?.length
         && !campDetails?.dmoIds?.length
         && !campDetails?.businessIds?.length
       ) {
-        return await categories.data.map(cat => ({
-          id: cat.id,
-          name: cat.name,
-          productCount: 0,
-        }));
+        return await categories.data.map(cat => {
+          const matchingCategory = campDetails.category.find(
+            c => c.id.toString() === cat.id.toString(),
+          );
+          return {
+            id: cat.id,
+            name: matchingCategory?.name || cat.name,
+            icon: matchingCategory?.icon || cat.icon.iconPath,
+            color: matchingCategory?.color,
+            productCount: 0,
+            description: matchingCategory?.description || '',
+          };
+        });
       }
 
       const productCountQuery: any = {
@@ -101,14 +124,23 @@ implements ICommandHandler<GetAllCategoriesQuery> {
       };
 
       categories.data = await Promise.all(
-        categories?.data?.map(async cat => ({
-          id: cat.id,
-          name: cat.name,
-          productCount: await this.ProductModel.countDocuments({
-            ...productCountQuery,
-            categories: cat.id,
-          }),
-        })),
+        categories?.data?.map(async cat => {
+          const matchingCategory = campDetails.category.find(
+            c => c.id.toString() === cat.id.toString(),
+          );
+
+          return {
+            id: cat.id,
+            name: matchingCategory?.name || cat.name,
+            icon: matchingCategory?.icon || cat.icon.iconPath,
+            color: matchingCategory?.color,
+            description: matchingCategory?.description || '',
+            productCount: await this.ProductModel.countDocuments({
+              ...productCountQuery,
+              categories: cat.id,
+            }),
+          };
+        }),
       );
 
       return categories;

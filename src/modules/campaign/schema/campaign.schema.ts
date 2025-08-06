@@ -12,6 +12,32 @@ import { Product } from 'src/modules/products/schema/products.schema';
 import { Rewards } from 'src/modules/rewards/schema/rewards.schema';
 import { Theme } from 'src/modules/themes/schema/theme.schema';
 
+@Schema({ _id: false })
+class Category {
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    required: true,
+    ref: BussCategory.name,
+  })
+    id: mongoose.Types.ObjectId;
+
+  @Prop({ required: false })
+    name: string;
+
+  @Prop({ required: false })
+    icon: string;
+
+  @Prop({ required: false })
+    color: string;
+
+  @Prop({ required: false })
+    description: string;
+
+  @Prop({ required: true })
+    order: number;
+}
+const CategorySchema = SchemaFactory.createForClass(Category);
+
 @Schema({})
 export class Campaign extends AuditableSchema {
   @Prop({
@@ -97,12 +123,8 @@ export class Campaign extends AuditableSchema {
   })
     rewardId: mongoose.Types.ObjectId;
 
-  @Prop({
-    type: [{ type: mongoose.Schema.Types.ObjectId, ref: BussCategory.name }],
-    ref: BussCategory.name,
-    required: false,
-  })
-    categoryIds: mongoose.Types.ObjectId[];
+  @Prop({ type: [CategorySchema], default: [] })
+    category: Category[];
 
   @Prop({
     type: mongoose.Schema.Types.ObjectId,

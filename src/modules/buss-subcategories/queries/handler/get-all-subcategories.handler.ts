@@ -1,7 +1,7 @@
 import { ICommandHandler, QueryBus, QueryHandler } from '@nestjs/cqrs';
 import { Inject } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import mongoose, { Model } from 'mongoose';
+import { Model } from 'mongoose';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 
@@ -49,7 +49,7 @@ implements ICommandHandler<GetAllSubCategoriesQuery> {
         campCode,
       );
 
-      if (!campDetails?.categoryIds?.length) {
+      if (!campDetails?.category?.length) {
         return [];
       }
 
@@ -62,11 +62,9 @@ implements ICommandHandler<GetAllSubCategoriesQuery> {
         return [];
       }
 
-      if (
-        !campDetails.categoryIds.includes(
-          new mongoose.Types.ObjectId(bussCategoryId),
-        )
-      ) {
+      const categoryIds = campDetails.category.map(cat => cat.id.toString());
+
+      if (!categoryIds.includes(bussCategoryId.toString())) {
         return [];
       }
 

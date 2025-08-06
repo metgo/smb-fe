@@ -35,7 +35,7 @@ implements IQueryHandler<GetProductsDeliveryQuery> {
         && !campDetails?.dmoIds?.length
         && !campDetails?.authorityIds?.length
         && !campDetails?.businessIds?.length
-        && !campDetails?.categoryIds?.length
+        && !campDetails?.category?.length
       ) {
         return { data: [] };
       }
@@ -73,11 +73,13 @@ implements IQueryHandler<GetProductsDeliveryQuery> {
 
       const filteredProductIds = productIds.filter(prodId => validProductIdsSet.has(prodId.toString()));
 
+      const categoryIds = campDetails.category.map(cat => cat.id);
+
       const findQuery = {
         status: ProductStatus.ACTIVE,
         isDeleted: false,
         _id: { $in: filteredProductIds },
-        categories: { $in: campDetails?.categoryIds },
+        categories: { $in: categoryIds },
         $and: [
           {
             $or: [

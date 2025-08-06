@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import mongoose, { Model } from 'mongoose';
+import { Model } from 'mongoose';
 
 import { Locale } from 'src/common/enum';
 import { disSelect } from 'src/common/utils/select.handling';
@@ -22,7 +22,7 @@ export class BussSubCategoriesService {
       query.campCode,
     );
 
-    if (!campDetails?.categoryIds?.length) {
+    if (!campDetails?.category?.length) {
       return {};
     }
 
@@ -41,9 +41,11 @@ export class BussSubCategoriesService {
       .populate(populate1)
       .exec();
 
+    const categoryIds = campDetails.category.map(cat => cat.id.toString());
+
     if (
       bussCategory?.bussCategoryId?.some(
-        catId => !campDetails.categoryIds.includes(new mongoose.Types.ObjectId(catId)),
+        catId => !categoryIds.includes(catId.toString()),
       )
     ) {
       return {};
