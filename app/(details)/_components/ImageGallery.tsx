@@ -10,28 +10,28 @@ import { staticImages } from "@/constant/staticImages";
 
 // Layout definitions (image sizes)
 const layouts = {
-  layout1: [{ width: 1240, height: 450 }],
+  layout1: [{ width: 1280, height: 450 }],
   layout2: [
-    { width: 620, height: 450 },
-    { width: 620, height: 450 },
+    { width: 635, height: 450 },
+    { width: 635, height: 450 },
   ],
   layout3: [
     { width: 630, height: 450 },
-    { width: 310.5, height: 450 },
-    { width: 310.5, height: 450 },
+    { width: 314.5, height: 450 },
+    { width: 314.5, height: 450 },
   ],
   layout4: [
     { width: 630, height: 450 },
-    { width: 310.5, height: 450 },
-    { width: 310.5, height: 220 },
-    { width: 310.5, height: 220 },
+    { width: 314.5, height: 450 },
+    { width: 314.5, height: 220 },
+    { width: 314.5, height: 220 },
   ],
   layout5: [
     { width: 630, height: 450 },
-    { width: 310.5, height: 220 },
-    { width: 310.5, height: 220 },
-    { width: 310.5, height: 220 },
-    { width: 310.5, height: 220 },
+    { width: 314.5, height: 220 },
+    { width: 314.5, height: 220 },
+    { width: 314.5, height: 220 },
+    { width: 314.5, height: 220 },
   ],
 };
 
@@ -90,8 +90,12 @@ const ImageCard = ({
 }) => {
   const aspectRatio = (width * scale) / 450;
 
-  const { isLoading, updatedImage, isImageLoaded, setIsImageLoaded } =
-    useImagePresent(aspectRatio, imageItem, [imageItem]);
+  const { isLoading, updatedImage, isImageLoaded } = useImagePresent(
+    aspectRatio,
+    imageItem,
+    0,
+    [imageItem],
+  );
 
   return (
     <div
@@ -109,8 +113,8 @@ const ImageCard = ({
         />
       ) : (
         <NextImage
-          isFill
-          setIsImageLoaded={setIsImageLoaded}
+          width={width}
+          height={height}
           alt={updatedImage.alt}
           imgSrc={updatedImage.imageUrl || staticImages.placeholder}
           className="object-cover w-full h-full"

@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import Link from "next/link";
 
@@ -6,25 +8,20 @@ import SearchFlow from "./SearchFlow";
 import { navbar } from "@/constant/hebrew";
 import HamburgerMenu from "./HamburgerMenu";
 import UserIconHoverCard from "./UserIconHoverCard";
-import { Logo, ShopbagIcon } from "@/components/ui/icons";
+import { ShopbagIcon } from "@/components/ui/icons";
 import CurrentTempOfYourCity from "./CurrentTempOfYourCity";
 import BusinessPageFilterTabs from "./BusinessPageFilterTabs";
 import { CONSOLE_URL } from "@/constant/envConstants";
+import NavLogo from "./NavLogo";
 
-const Navbar = async ({
-  showFilterTab = false,
-}: {
-  showFilterTab?: boolean;
-}) => {
+const Navbar = ({ showFilterTab = false }: { showFilterTab?: boolean }) => {
   return (
     <nav className="ps-19 pe-16 py-2.5 bg-white sticky top-0 z-20 border-b border-[#F5F5F5]">
       <div className="grid grid-cols-10 items-center">
         {/* Hamburger, Logo, Text */}
         <div className="flex items-center gap-4 col-span-4">
           <HamburgerMenu />
-          <Link href={"/"} className="cursor-pointer">
-            <Logo />
-          </Link>
+          <NavLogo />
           <Link
             href={CONSOLE_URL}
             target="_blank"

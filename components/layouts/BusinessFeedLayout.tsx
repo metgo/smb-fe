@@ -1,7 +1,7 @@
 "use client";
 
+import { useRef } from "react";
 import useGeneralStore from "@/stores/generalStore";
-import { useEffect, useRef, useState } from "react";
 
 import NoBusinessLayout from "./NoBusinessLayout";
 import { useLoadMore } from "@/hooks/useLoadMore";
@@ -16,26 +16,13 @@ const BusinessFeedLayout = ({
 }: {
   businesses: BusinessesProps;
 }) => {
-  const { activeFilterTab } = useGeneralStore();
+  const { activeFilterTab, isOnSection2 } = useGeneralStore();
   const { sentryRef, loading, initialLoadDone, canLoadMore } = useLoadMore(
     businesses?.meta?.hasNextPage,
   );
-
   const totalBusiness = businesses?.totalData;
 
   const triggerRef = useRef(null);
-  const [showStickyPanel, setShowStickyPanel] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const scrollPosition = window.scrollY;
-      const scrollThreshold = window.innerHeight;
-      setShowStickyPanel(scrollPosition >= scrollThreshold);
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
 
   const renderLayout = () => {
     switch (activeFilterTab) {
@@ -49,6 +36,7 @@ const BusinessFeedLayout = ({
         return <NoBusinessLayout />;
     }
   };
+
   return (
     <div>
       {totalBusiness ? (
@@ -70,7 +58,7 @@ const BusinessFeedLayout = ({
         <NoBusinessLayout />
       )}
 
-      {showStickyPanel && (
+      {isOnSection2 && (
         <>
           <div className="fixed bottom-4 left-1/2 -translate-x-1/2 flex flex-col items-center justify-center gap-2 w-max">
             <SubcategoryFilterPanel />
@@ -78,6 +66,7 @@ const BusinessFeedLayout = ({
           </div>
         </>
       )}
+
       <StickyYellowRibbonImage activeFilterTab={activeFilterTab} />
     </div>
   );

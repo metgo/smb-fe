@@ -94,7 +94,7 @@ export const onlyCardsLayouts: Record<string, LayoutItem[]> = (() => {
     ],
     layout12: [
       DIMENSIONS.mediumWide,
-      ...createItems(DIMENSIONS.small, 2),
+      ...createItems(DIMENSIONS.gridTall, 2),
       ...createItems(DIMENSIONS.gridShort, 2),
       DIMENSIONS.gridTaller,
       DIMENSIONS.gridTaller,

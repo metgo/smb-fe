@@ -1,5 +1,19 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: "Ploni Regular";
+  src: url("/fonts/ploni-regular-aaa.otf") format("opentype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Ploni Bold";
+  src: url("/fonts/ploni-bold-aaa.otf") format("opentype");
+  font-weight: normal;
+  font-style: normal;
+}
+
 @theme {
   --color-primary: #f1f1f1;
   --color-secondary: #d8d8d8;
@@ -31,6 +45,13 @@
   --color-ctg-tour-dark: #00a5a8;
   --color-ctg-tour-dim: #64c5c6;
   --color-ctg-tour-light: #8ed4d5;
+
+  --font-bold: "Ploni Bold", "sans-serif";
+  --font-normal: "Ploni Regular", "sans-serif";
+}
+
+body {
+  font-family: "Ploni Regular" sans-serif;
 }
 
 @layer utilities {
@@ -99,18 +120,6 @@
   border-radius: 8px;
   background: #f1f1f1;
   box-shadow: 0px 3px 4px 0px rgba(0, 0, 0, 0.03) inset;
-}
-
-@font-face {
-  /* font-family: 'Ploni Bold'; */
-  font-family: "Ploni ML v2 AAA";
-  src: url("/public/fonts/ploni-regular-aaa.otf") format("opentype");
-  font-weight: normal;
-  font-style: normal;
-}
-
-body {
-  font-family: "Ploni Bold", sans-serif;
 }
 
 .gm-style-iw-tc,

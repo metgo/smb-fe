@@ -21,7 +21,7 @@ const CategoryPanel = () => {
     if (hasEmptyName) {
       async function fetchCategories() {
         const res = await getAllCategory();
-        const apiCategories = res;
+        const apiCategories = res?.data ? res?.data : res;
         const updatedCategories = categories?.map((cat) => {
           const match = apiCategories?.find(
             (apiCat: any) => apiCat.id === cat.id,

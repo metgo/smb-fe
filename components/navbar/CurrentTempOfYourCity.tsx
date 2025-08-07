@@ -6,31 +6,12 @@ import { NextImage } from "@/components/ui";
 import { getWeatherInfo } from "@/actions/getWether";
 import { weatherIcons } from "@/lib/utils";
 
-const getUserCity = async () => {
-  try {
-    const response = await fetch("https://ipapi.co/json/");
-    if (!response.ok) {
-      throw new Error("Failed to fetch location");
-    }
-
-    const data = await response.json();
-    return data.city || "Tel Aviv";
-  } catch (error) {
-    console.error("Location API error:", error);
-    return "Tel Aviv"; // Fallback city on error
-  }
-};
-
 const CurrentTempOfYourCity = () => {
   const [weather, setWeather] = useState<any>(null);
 
   useEffect(() => {
     (async () => {
-      let city;
-      if (!city) {
-        city = await getUserCity();
-      }
-      const data = await getWeatherInfo(city);
+      const data = await getWeatherInfo();
       setWeather(data);
     })();
   }, []);

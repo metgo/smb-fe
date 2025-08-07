@@ -37,6 +37,7 @@ const categoryId = {
 const navigationKey = {
   home: "/",
   events: "/events",
+  trails: "/trails",
   businesses: "/businesses",
 };
 
@@ -47,6 +48,15 @@ export const businessMarkers = {
   [categoryId.culture]: "culture.svg",
   [categoryId.attraction]: "attractions.svg",
   [categoryId.tour]: "travel.svg",
+};
+
+export const stationCategory = {
+  [categoryId.eat]: "trail-food.svg",
+  [categoryId.local]: "trail-local.svg",
+  [categoryId.sleep]: "trail-sleep.svg",
+  [categoryId.culture]: "trail-culture.svg",
+  [categoryId.attraction]: "trail-attractions.svg",
+  [categoryId.tour]: "trail-travel.svg",
 };
 
 export const categoryGradientClasses = {
@@ -150,7 +160,7 @@ export const features = [
     label: navbar.tracks,
     icon: "trail",
     activeIcon: "trail-dark",
-    link: "#",
+    link: "/trails",
   },
 ];
 
@@ -176,6 +186,7 @@ export const navigationPaths = {
   [navigationKey.home]: "/business-details",
   [navigationKey.businesses]: "/business-details",
   [navigationKey.events]: "/event-details",
+  [navigationKey.trails]: "/trail-details",
 };
 
 export const navItems = [
@@ -373,3 +384,32 @@ export interface WeatherIconsMap {
 }
 
 export const weatherIcons: WeatherIconsMap = weatherIconsMap;
+
+export const devlieryInfoMapData = {
+  ["The price covers delivery to all regions nationwide"]:
+    "המחיר כולל משלוח לכל חלקי הארץ",
+  ["Due to current circumstances, delivery times may experience delays"]:
+    "בשל המצב יתכנו עיכובים בזמני המשלוח",
+  ["Shipping is not included in the price and will be arranged separately with the business after purchase"]:
+    "המחיר לא כולל משלוח. משלוח יוסדר בנפרד למול בית העסק לאחר הרכישה",
+  ["Products are available for self-collection from the business location only"]:
+    "קבלת המוצר באיסוף עצמי מבית העסק בלבד",
+  ["The price does not cover international shipping"]:
+    'המחיר לא כולל משלוח לחו"ל',
+  ["Sales on the website are subject to the available stock at the listed businesses. The company does not guarantee the availability of all products displayed on the website at all times"]:
+    "המכירה דרך האתר הינה בכפוף למלאי הקיים בקרב בתי העסק בו. החברה אינה מתחייבת להחזיק בכל עת מלאי של כל המוצרים שתמונותיהם מופיעות באתר",
+  ["Select delivery type"]: "יש לבחור את שיטת המשלוח",
+  ["Products cannot be exchanged after purchase"]:
+    "לא ניתן להחליף את המוצר לאחר הרכישה",
+  ["Products are non-returnable once purchased"]:
+    "לא ניתן להחזיר את המוצר לאחר הרכישה",
+  ["If the requested product is out of stock, it can be exchanged for another product from the business, with coordination prior to receiving the item"]:
+    "ניתן להחליף את המוצר במוצר אחר של בית העסק במידה והמוצר המבוקש לא נמצא במלאי. הדבר יעשה בתיאום למול בית העסק ובטרם קבלת מוצר",
+  ["Items from the order can only be returned or exchanged once, in coordination with the business"]:
+    "ניתן לבצע החזרה ו/ או החלפה של פריטים מהזמנה פעם אחת בלבד. הדבר יעשה בתיאום בית העסק",
+  ["Customers are responsible for returning the product directly to the business"]:
+    "באחריות הלקוחות המזמינים לבצע החזרה של המוצר לבית העסק",
+  ["Customers are responsible for returning the product to designated collection points prearranged with the business"]:
+    "באחריות הלקוחות המזמינים לבצע החזרה של המוצר לנקודות האיסוף שיוסכמו מראש למול בית העסק",
+  ["Select return and exchange type"]: "יש לבחור את מדיניות ההחזרות וההחלפות",
+};

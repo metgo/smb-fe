@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { staticImages } from "@/constant/staticImages";
 
 function getPrimaryImgObj(images: ImageItem[]): ImageItem | undefined {
@@ -46,7 +46,8 @@ type ImageInput = ImageItem[] | ImageItem;
 export const useImagePresent = (
   aspectRatio: number,
   imagesInput: ImageInput,
-  dependencies: any[] = [], // optional dynamic deps
+  activeImageIndex: number,
+  dependencies: any[] = [],
 ) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isImageLoaded, setIsImageLoaded] = useState(true);
@@ -54,6 +55,65 @@ export const useImagePresent = (
     imageUrl: staticImages.placeholder,
     alt: "Business",
   });
+  const [updatedImageList, setUpdatedImageList] = useState<
+    { _id: number; imageUrl: string; alt: string }[]
+  >([]);
+
+  const processedIndexesRef = useRef<Set<number>>(new Set());
+
+  useEffect(() => {
+    if (
+      !Array.isArray(imagesInput) ||
+      imagesInput.length === 0 ||
+      activeImageIndex == null
+    ) {
+      return;
+    }
+
+    // Skip if index has already been processed
+    if (processedIndexesRef.current.has(activeImageIndex)) {
+      return;
+    }
+
+    const imageToProcess = imagesInput[activeImageIndex];
+    if (!imageToProcess) return;
+
+    setIsLoading(true);
+
+    const timer = setTimeout(() => {
+      const handleProcessed = (resultImage: {
+        imageUrl: string;
+        alt: string;
+      }) => {
+        setUpdatedImageList((prev) => [
+          ...prev,
+          {
+            _id: activeImageIndex,
+            imageUrl: resultImage.imageUrl,
+            alt: resultImage.alt || "Business",
+          },
+        ]);
+        processedIndexesRef.current.add(activeImageIndex);
+        setIsLoading(false);
+      };
+
+      if (imageToProcess?.subCoordinates) {
+        handleCropImage(
+          imageToProcess,
+          aspectRatio,
+          () => {}, // no-op for loading; we already set it
+          (cropped) => handleProcessed(cropped),
+        );
+      } else {
+        handleProcessed({
+          imageUrl: imageToProcess.image,
+          alt: imageToProcess.alt,
+        });
+      }
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [activeImageIndex, aspectRatio, imagesInput]);
 
   useEffect(() => {
     if (
@@ -80,7 +140,7 @@ export const useImagePresent = (
         });
         setIsLoading(false);
       }
-    }, 500);
+    }, 100);
     setIsLoading(true);
 
     return () => clearTimeout(timer);
@@ -92,5 +152,6 @@ export const useImagePresent = (
     setUpdatedImage,
     isImageLoaded,
     setIsImageLoaded,
+    updatedImageList,
   };
 };

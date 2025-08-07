@@ -38,7 +38,7 @@ const MapBusinessIntegratedLayout = ({ data }: BusinessesProps) => {
         const cardLayout = layout[i];
         return (
           <BusinessCard
-            key={business?._id || i}
+            key={business?._id + i}
             width={cardLayout.width}
             height={cardLayout.height}
             business={business}
@@ -59,7 +59,7 @@ const MapBusinessIntegratedLayout = ({ data }: BusinessesProps) => {
         <div className="space-y-5" key={index}>
           {layoutData.map((item, i) => (
             <BusinessCard
-              key={data[i + offset]?._id || i}
+              key={data[i + offset]?._id + i}
               width={item.width}
               height={item.height}
               business={data[i + offset]}
@@ -75,7 +75,7 @@ const MapBusinessIntegratedLayout = ({ data }: BusinessesProps) => {
           <div className="flex gap-5">
             {layoutData.slice(0, 2).map((item, i) => (
               <BusinessCard
-                key={data[i + offset]?._id || i}
+                key={data[i + offset]?._id + i}
                 width={item.width}
                 height={item.height}
                 business={data[i + offset]}
@@ -83,6 +83,7 @@ const MapBusinessIntegratedLayout = ({ data }: BusinessesProps) => {
             ))}
           </div>
           <BusinessCard
+            key={data[offset]?._id}
             width={layoutData[2].width}
             height={layoutData[2].height}
             business={data[2]}
@@ -127,7 +128,7 @@ const MapBusinessIntegratedLayout = ({ data }: BusinessesProps) => {
               const layout = layout9[layoutIndex];
               return (
                 <BusinessCard
-                  key={biz._id}
+                  key={biz._id + bizIdx}
                   width={layout.width}
                   height={layout.height}
                   business={biz}

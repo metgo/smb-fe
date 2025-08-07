@@ -19,6 +19,7 @@ declare interface BusinessProps {
     country: string;
     location: string;
   };
+  description: string;
   imageUrl: string;
   primaryCategoryId: string;
 }

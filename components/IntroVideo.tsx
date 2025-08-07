@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { BUCKET_URL } from "@/constant/envConstants";
 
 const IntroVideo = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -54,7 +55,7 @@ const IntroVideo = () => {
       muted
       playsInline
       preload="auto"
-      src="/videos/intro.mp4"
+      src={`${BUCKET_URL}/video/intro-video.mp4`}
       className="object-cover absolute inset-0 w-full h-full z-10"
     />
   );
