@@ -1,6 +1,7 @@
 import Dialog from "./Dialog";
 import IconImage from "./IconImage";
-import MapNavButton from "./MapNavButton";
 import NextImage from "./NextImage";
+import MapNavButton from "./MapNavButton";
+import ImageCarouselControls from "./ImageCarouselControls";
 
-export { MapNavButton, IconImage, NextImage, Dialog };
+export { MapNavButton, IconImage, NextImage, Dialog, ImageCarouselControls };

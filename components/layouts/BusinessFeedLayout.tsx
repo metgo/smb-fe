@@ -3,13 +3,14 @@
 import { useRef } from "react";
 import useGeneralStore from "@/stores/generalStore";
 
-import NoBusinessLayout from "./NoBusinessLayout";
+import NoFeedItemLayout from "./NoFeedItemLayout";
 import { useLoadMore } from "@/hooks/useLoadMore";
-import OnlyBusinessMapLayout from "./OnlyBusinessMapLayout";
-import OnlyBusinessCardsLayout from "./OnlyBusinessCardsLayout";
-import { CategoryPanel, SubcategoryFilterPanel } from "../cards";
+
+import BusinessPinMap from "../maps/BusinessPinMap";
+import OnlyFeedCardsLayout from "./OnlyFeedCardsLayout";
+import MapFeedIntegratedLayout from "./MapFeedIntegratedLayout";
 import StickyYellowRibbonImage from "../StickyYellowRibbonImage";
-import MapBusinessIntegratedLayout from "./MapBusinessIntegratedLayout";
+import { CategoryPanel, SubcategoryFilterPanel } from "../cards";
 
 const BusinessFeedLayout = ({
   businesses,
@@ -27,13 +28,13 @@ const BusinessFeedLayout = ({
   const renderLayout = () => {
     switch (activeFilterTab) {
       case "gallery":
-        return <OnlyBusinessCardsLayout data={businesses.data} />;
+        return <OnlyFeedCardsLayout data={businesses.data} />;
       case "integrated":
-        return <MapBusinessIntegratedLayout data={businesses.data} />;
+        return <MapFeedIntegratedLayout data={businesses.data} />;
       case "map":
-        return <OnlyBusinessMapLayout />;
+        return <BusinessPinMap />;
       default:
-        return <NoBusinessLayout />;
+        return <NoFeedItemLayout />;
     }
   };
 
@@ -55,7 +56,7 @@ const BusinessFeedLayout = ({
           )}
         </div>
       ) : (
-        <NoBusinessLayout />
+        <NoFeedItemLayout />
       )}
 
       {isOnSection2 && (

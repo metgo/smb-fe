@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
 import { businessMarkers } from "@/lib/utils";
-import { goolgeMapControlers, loadGoogleMapsScript } from "@/lib/googleMap";
+import { useGoogleMapInit } from "./useGoogleMapInit";
 
 declare global {
   interface Window {
@@ -9,8 +9,6 @@ declare global {
     nextSlide: () => void;
   }
 }
-
-const center = { lat: 31.0461, lng: 34.8516 };
 
 export const useGoogleSinglePinMap = (
   primaryCategoryId: string = "6566e31ca77d2a477266d2d6",
@@ -57,29 +55,8 @@ export const useGoogleSinglePinMap = (
     map.setZoom(zoomLevel);
   };
 
-  useEffect(() => {
-    loadGoogleMapsScript(() => {
-      if (!window.google || !mapRef.current) return;
-
-      const googleMap = new window.google.maps.Map(mapRef.current, {
-        center,
-        ...goolgeMapControlers,
-      });
-
-      setMap(googleMap);
-
-      infoWindowRef.current = new window.google.maps.InfoWindow({
-        maxWidth: 420,
-        disableAutoPan: true,
-        pixelOffset: new window.google.maps.Size(0, -10),
-      });
-
-      googleMap.addListener("click", () => {
-        infoWindowRef.current?.close();
-        activeMarkerRef.current = null;
-      });
-    });
-  }, []);
+  // 1. Load Map
+  useGoogleMapInit({ mapRef, setMap, infoWindowRef, activeMarkerRef });
 
   useEffect(() => {
     if (map && geoLocation) {

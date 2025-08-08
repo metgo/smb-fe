@@ -108,3 +108,24 @@ declare interface FeedCardProps {
   width: number;
   feedItem: FeedItem;
 }
+
+declare interface LocationProps {
+  _id: string;
+  slug: string;
+  geoLocation: GeoLocation;
+  primaryCategoryId: string;
+}
+
+declare type LocationListProps = LocationProps[];
+
+declare interface LocationStationDetailsProps {
+  _id: string;
+  name: string;
+  description: string;
+  authorityId: string;
+  dmo: string;
+  images: ImageItem[];
+  logo: ImageItem;
+  primaryCategoryId: string;
+  slug: string;
+}

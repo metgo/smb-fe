@@ -1,9 +1,11 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
-import { headers } from "next/headers";
 
 import { menuItems } from "@/constant/hebrew";
 import { IconImage } from "@/components/ui";
+import { usePathname } from "next/navigation";
 
 const navItems = [
   {
@@ -51,10 +53,8 @@ const socialMedias = [
   },
 ];
 
-const Footer = async () => {
-  const headersList = await headers();
-  const fullUrl = headersList.get("x-url") || headersList.get("referer") || "";
-  const pathname = new URL(fullUrl, "http://localhost:3000").pathname;
+const Footer = () => {
+  const pathname = usePathname();
 
   // Extract first segment from the pathname
   const segments = pathname.split("/").filter(Boolean);

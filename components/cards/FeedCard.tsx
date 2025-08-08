@@ -8,7 +8,7 @@ import { motion, useInView, useAnimation } from "framer-motion";
 import { navigationPaths } from "@/lib/utils";
 import useGeneralStore from "@/stores/generalStore";
 import { CardSkeleton } from "@/components/skeletons";
-import { IconImage, NextImage } from "@/components/ui";
+import { IconImage, ImageCarouselControls, NextImage } from "@/components/ui";
 import { useImagePresent } from "@/hooks/useImagePresent";
 import { removeInlineStylesFromHTML } from "@/lib/helpers";
 
@@ -65,7 +65,7 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
   }
 
   const handleMouseEnter = () => {
-    if (activeFilterTab === "integrated") {
+    if (activeFilterTab === "integrated" && pathname === "/trails") {
       const params = new URLSearchParams(searchParams.toString());
       params.set("slug", feedItem.slug);
       router.replace(`${pathname}?${params.toString()}`, { scroll: false });
@@ -73,7 +73,7 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
   };
 
   const handleMouseLeave = () => {
-    if (activeFilterTab === "integrated") {
+    if (activeFilterTab === "integrated" && pathname === "/trails") {
       const params = new URLSearchParams(searchParams.toString());
       params.delete("slug");
       router.replace(`${pathname}?${params.toString()}`, { scroll: false });
@@ -131,56 +131,11 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
                   }}
                   className=" line-clamp-2 font-bold text-[12px] text-white mt-1"
                 />
-                <div
-                  className={`flex items-center justify-between w-full mt-2 `}
-                >
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      if (activeImageIndex > 0) {
-                        setActiveImageIndex((prev) => prev - 1);
-                      }
-                    }}
-                    className=" cursor-pointer"
-                    disabled={activeImageIndex === 0}
-                  >
-                    <IconImage icon="next" />
-                  </button>
-                  <div className="flex items-center gap-2">
-                    {feedItem?.images?.map((_, index) => {
-                      const isActive = index === activeImageIndex;
-                      return (
-                        <span
-                          key={index}
-                          className={`${
-                            isActive
-                              ? "w-2.5 h-2.5 bg-white"
-                              : "w-2 h-2 bg-gray-400"
-                          } rounded-full transition-all duration-300`}
-                        />
-                      );
-                    })}
-                  </div>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      if (
-                        activeImageIndex <
-                        (feedItem?.images?.length ?? 0) - 1
-                      ) {
-                        setActiveImageIndex((prev) => prev + 1);
-                      }
-                    }}
-                    disabled={activeImageIndex === feedItem?.images?.length - 1}
-                    className=" cursor-pointer"
-                  >
-                    <IconImage icon="prev" />
-                  </button>
-                </div>
+                <ImageCarouselControls
+                  totalImages={feedItem?.images?.length}
+                  activeIndex={activeImageIndex}
+                  setActiveImageIndex={setActiveImageIndex}
+                />
               </div>
             </div>
           </div>
