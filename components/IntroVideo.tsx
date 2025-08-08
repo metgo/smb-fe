@@ -1,21 +1,27 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { BUCKET_URL } from "@/constant/envConstants";
+import { GoUnmute, GoMute } from "react-icons/go";
 
 const IntroVideo = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [isMuted, setIsMuted] = useState(true);
 
   useEffect(() => {
     const video = videoRef.current;
 
-    // Try autoplay on mount using requestAnimationFrame to ensure DOM is ready
+    // Ensure muted state is synced with video
+    if (video) {
+      video.muted = isMuted;
+    }
+
     const tryAutoplay = () => {
       if (video) {
         video
           .play()
           .then(() => {
-            // console.log("Autoplay successful");
+            // Autoplay success
           })
           .catch((err) => {
             console.warn("Initial autoplay failed", err);
@@ -46,18 +52,36 @@ const IntroVideo = () => {
     return () => {
       if (video) observer.unobserve(video);
     };
-  }, []);
+  }, [isMuted]);
+
+  const toggleMute = () => {
+    setIsMuted((prev) => !prev);
+    if (videoRef.current) {
+      videoRef.current.muted = !isMuted;
+    }
+  };
 
   return (
-    <video
-      ref={videoRef}
-      loop
-      muted
-      playsInline
-      preload="auto"
-      src={`${BUCKET_URL}/video/intro-video.mp4`}
-      className="object-cover absolute inset-0 w-full h-full z-10"
-    />
+    <div className="relative w-full h-full">
+      <video
+        ref={videoRef}
+        loop
+        muted={isMuted}
+        playsInline
+        preload="auto"
+        src={`${BUCKET_URL}/video/intro-video.mp4`}
+        className="object-cover absolute inset-0 w-full h-full z-10"
+      />
+
+      {/* Mute/Unmute Button */}
+      <button
+        onClick={toggleMute}
+        className="absolute bottom-10 right-10 z-20 text-white bg-black/50 hover:bg-black/70 border-[2px] border-white rounded-full p-2 transition cursor-pointer"
+        aria-label="Toggle Mute"
+      >
+        {isMuted ? <GoMute size={24} /> : <GoUnmute size={24} />}
+      </button>
+    </div>
   );
 };
 
