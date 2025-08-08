@@ -10,7 +10,7 @@ import ContactInfo from "./ContactInfo";
 import { contactUsText } from "@/constant/hebrew";
 import { Dialog, IconImage } from "@/components/ui";
 import { sendEmail } from "@/actions/contactUsAction";
-import { ContactFormData, contactFormSchema } from "@/schema/contact";
+import { ContactFormData, contactFormSchema } from "@/schemas/contact";
 import { contactFormReasonOptions } from "@/lib/utils";
 import clsx from "clsx";
 

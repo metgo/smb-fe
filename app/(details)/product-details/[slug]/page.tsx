@@ -14,6 +14,7 @@ const page = async ({ params }: PageProps) => {
   const productDetails: ProductDetailsProps =
     await getProductDetailsBySlug(slug);
 
+  // const relatedProducts = getAllProducts()
   return (
     <div>
       <ReturnToPrevPageBtn />
@@ -36,9 +37,9 @@ const page = async ({ params }: PageProps) => {
             })}
           </div>
           <div className="col-span-1">
-            <h1>{productDetails.name}</h1>
+            <h1 className="font-bold text-[40px]">{productDetails.name}</h1>
             <div
-              className=""
+              className="font-normal"
               dangerouslySetInnerHTML={{ __html: productDetails?.description }}
             />
             <div>{productDetails?.price?.markedPrice}</div>
@@ -62,6 +63,9 @@ const page = async ({ params }: PageProps) => {
 
         <ProductDetailsFilterTab {...productDetails} />
       </div>
+
+      {/* Related Products */}
+      <div></div>
     </div>
   );
 };

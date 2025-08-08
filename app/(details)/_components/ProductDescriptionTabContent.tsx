@@ -1,7 +1,7 @@
 import React from "react";
 
 const ProductDescriptionTabContent = () => {
-  return <div>ProductDescriptionTabContent</div>;
+  return <div></div>;
 };
 
 export default ProductDescriptionTabContent;

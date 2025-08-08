@@ -1,5 +1,5 @@
 import { urls } from "@/lib/endpoints";
-import { ContactFormData } from "@/schema/contact";
+import { ContactFormData } from "@/schemas/contact";
 
 export const sendEmail = async (formData: ContactFormData) => {
   const res = await fetch(urls.sendContactInfo, {

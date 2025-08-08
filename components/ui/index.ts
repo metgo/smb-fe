@@ -1,7 +1,17 @@
 import Dialog from "./Dialog";
 import IconImage from "./IconImage";
+import InputField from "./InputField";
 import MapNavButton from "./MapNavButton";
 import NextImage from "./NextImage";
 import Tabs from "./Tabs";
+import TextAreaField from "./TextAreaField";
 
-export { MapNavButton, IconImage, NextImage, Dialog, Tabs };
+export {
+  InputField,
+  TextAreaField,
+  MapNavButton,
+  IconImage,
+  NextImage,
+  Dialog,
+  Tabs,
+};
