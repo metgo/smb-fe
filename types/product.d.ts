@@ -13,10 +13,32 @@ declare interface ProductDetailsProps {
     isUnlimited: boolean;
   };
   businessId: {
+    _id: string;
     openingHrs: OpeningHrs[];
     deliveryArea: DeliveryArea[];
     deliverySpecificSellerInfo: string[];
     deliveryReturnExchange: string[];
     deliveryAdditionalInfo: string;
   };
+}
+
+interface ProductInfoProps {
+  _id: string;
+  name: string;
+  images: ImageItem[];
+  price: {
+    markedPrice: number;
+    sellingPrice: number;
+  };
+  quantity: {
+    initial: number;
+    remaining: number;
+    description: string;
+    isUnlimited: boolean;
+  };
+  businessId: productBusiness;
+  description: string;
+  deliveryArea: DeliveryArea[];
+  deliverySpecificSellerInfo: string[];
+  categories: categoires[];
 }

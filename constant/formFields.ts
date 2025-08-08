@@ -214,8 +214,8 @@ export const deliveryAddressFields: FieldConfig[] = [
     className: "max-sm:w-full w-[320px]",
   },
   {
-    id: "receiverMessage",
-    label: formLabels.receiverMessage,
+    id: "greeting",
+    label: formLabels.greeting,
     type: "textarea",
     rows: 4,
     required: true,

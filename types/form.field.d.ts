@@ -10,8 +10,8 @@ declare interface FieldConfig {
   containerClassName?: string;
 }
 
-declare interface InputFieldProps {
+interface InputFieldProps {
   field: FieldConfig;
-  register: any;
-  errors: any;
+  value: string;
+  onChange: (id: string, value: string) => void;
 }

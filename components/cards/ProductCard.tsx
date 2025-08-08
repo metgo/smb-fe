@@ -45,6 +45,8 @@ const ImageCard = ({
     >
       <NextImage
         isFill
+        width={242}
+        height={224}
         scale={scale}
         alt={updatedImage.alt}
         imgSrc={updatedImage.imageUrl}
@@ -112,7 +114,7 @@ const ProductCard = ({
         <div className="m-4">
           <h3 className="text-dark font-bold line-clamp-1">{product?.name}</h3>
           <div
-            className="line-clamp-2 text-theme text-[12px] h-8.5"
+            className="line-clamp-2 text-theme text-[12px] h-8.5 font-normal"
             dangerouslySetInnerHTML={{ __html: product?.description }}
           />
           <div className="text-[32px] text-dark font-normal my-2.5">

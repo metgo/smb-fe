@@ -9,6 +9,7 @@ interface DeliveryInfoProps {
   handleToggle: (value: "first" | "second" | "third" | "product") => void;
   setErrorType: (errorType: "first" | "second" | "cart") => void;
   className?: string;
+  products: ProductInfoProps[];
 }
 
 interface PaymentInfoProps {
@@ -49,4 +50,32 @@ interface VoucherDetailsState {
   removeVoucher: (code: string) => void;
   createVoucher: (item: VoucherDetails) => void;
   clearVoucher: () => void;
+}
+
+interface DeliveryProductsInfoProps {
+  isSelected: boolean;
+  _id: string;
+  name: string;
+  imageSrc: string;
+  alt: string;
+  quantity: number;
+  deliveryMethod: string;
+  deliveryPickupLocation: string;
+  deliveryFee: string;
+  activeTab: number;
+  selectedDeliveryArea: string;
+  deliveryToHome: DeliveryArea[];
+  deliveryToPoint: DeliveryArea[];
+  giftReceiverInfo: {
+    receiverPhone: string;
+    receiverEmail: string;
+    receiverMessage: string;
+  };
+  deliveryAddress: {
+    city: string;
+    street: string;
+    houseNo: string;
+    apartment: string;
+    greeting: string;
+  };
 }

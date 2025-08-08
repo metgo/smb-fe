@@ -20,6 +20,8 @@ export const urls = {
   sendContactInfo: `${BASE_URL}/contact-us`,
 
   productsDetails: `${BASE_URL}/products`,
+  productsList: `${BASE_URL}/products`,
+
   events: `${BASE_URL}/events`,
   eventDetails: `${BASE_URL}/events`,
   searchRecommendation: `${BASE_URL}/tourism/search-recommendation?campCode=${CODE}`,

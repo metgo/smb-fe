@@ -13,20 +13,43 @@ interface InputFieldProps {
   };
   register: any;
   errors: FieldErrors<FormData>;
+  value?: string;
+  onChange?: (value: string) => void;
 }
 
-const InputField: React.FC<InputFieldProps> = ({ field, register, errors }) => {
+const InputField: React.FC<InputFieldProps> = ({
+  field,
+  register,
+  errors,
+  value,
+  onChange,
+}) => {
   const hasError = !!errors[field.id as keyof FormData];
   const isTextarea = field.type === "textarea";
+  const isControlled = value !== undefined && onChange !== undefined;
+
+  // Combine react-hook-form registration with custom onChange handler
+  const inputProps = isControlled
+    ? {
+        value,
+        onChange: (
+          e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+        ) => {
+          onChange(e.target.value);
+        },
+      }
+    : {
+        ...register(field.id as keyof FormData, {
+          required: field.required,
+        }),
+      };
 
   return (
     <div className={`relative font-normal ${field.className}`}>
       {isTextarea ? (
         <textarea
           id={field.id}
-          {...register(field.id as keyof FormData, {
-            required: field.required,
-          })}
+          {...inputProps}
           rows={field.rows || 3}
           placeholder=" "
           className={`${hasError ? "border-secondary" : "border-lightgray"} w-full text-[14px] font-semibold peer border bg-transparent rounded-md px-2 pt-2 pb-2 focus:outline-none`}
@@ -37,9 +60,7 @@ const InputField: React.FC<InputFieldProps> = ({ field, register, errors }) => {
             dir="rtl"
             type={field.type}
             id={field.id}
-            {...register(field.id as keyof FormData, {
-              required: field.required,
-            })}
+            {...inputProps}
             placeholder=" "
             className={`${hasError ? "border-red-500 shake" : "border-lightgray"} w-full text-[14px] font-semibold peer border bg-transparent rounded-md px-2 pt-2 pb-2 focus:outline-none`}
           />
