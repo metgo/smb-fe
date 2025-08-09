@@ -1,27 +1,24 @@
-import Image from "next/image";
-import { useState } from "react";
-
 import { paymentPageLabels } from "@/constant/hebrew";
 import VoucherIdInputField from "./VoucherIdInputField";
-
-const isLoading = false;
-const remainingAmount = 12;
+import { IconImage } from "@/components/ui";
+import PaymentModal from "./PaymentModal";
+import { usePayment } from "@/hooks/usePayment";
 
 const PaymentInfo = ({ handleToggle, thirdInfo }: PaymentInfoProps) => {
-  const [voucherInputs, setVoucherInputs] = useState<
-    { code: string; id?: string }[]
-  >([{ code: "" }]);
-
-  function handleCodeChange(index: number, newCode: string) {
-    setVoucherInputs((prev) => {
-      const updated = [...prev];
-      updated[index] = { ...updated[index], code: newCode };
-      return updated;
-    });
-  }
-
-  function checkVoucher() {}
-  function addVoucherInput() {}
+  const {
+    isLoading,
+    handelPlaceOrder,
+    handleIframeLoad,
+    paymentUrl,
+    handleClose,
+    isPaymentModalOpen,
+    setSelectMethod,
+    addVoucherInput,
+    checkVoucher,
+    handleCodeChange,
+    voucherInputs,
+    remainingAmount,
+  } = usePayment();
 
   return (
     <div className="bg-white p-4 max-sm:mx-3 max-sm:mb-20 rounded-md flex flex-col gap-4 shadow">
@@ -48,32 +45,26 @@ const PaymentInfo = ({ handleToggle, thirdInfo }: PaymentInfoProps) => {
 
           {remainingAmount > 0 ? (
             <>
-              <span className="border-b border-lightgray" />
+              <span className="border-b border-black/20" />
               <div className="flex flex-col gap-3">
                 <div className="text-[16px] font-bold text-black">
                   {paymentPageLabels.orChooseAnotherPaymentMethod}
                 </div>
                 <div className="flex gap-3 items-center flex-wrap">
                   <div
-                    // onClick={
-                    //   !isLoading
-                    //     ? () => {
-                    //       handelOrders();
-                    //       setSelectMethod("card");
-                    //     }
-                    //     : undefined
-                    // }
+                    onClick={
+                      !isLoading
+                        ? () => {
+                            handelPlaceOrder();
+                            setSelectMethod("card");
+                          }
+                        : undefined
+                    }
                     className={`cursor-pointer flex gap-3 items-center justify-between border-[1px] border-lightgray rounded-md px-3 py-3 ${
                       isLoading ? "opacity-50 cursor-not-allowed" : ""
                     }`}
                   >
-                    <Image
-                      className="w-10 h-8"
-                      width={30}
-                      height={30}
-                      src={""}
-                      alt="card"
-                    />
+                    <IconImage icon="credit-card.png" hasExtension />
                     <div className="text-[14px] font-semibold text-black">
                       {paymentPageLabels.creditCard}
                     </div>
@@ -89,15 +80,15 @@ const PaymentInfo = ({ handleToggle, thirdInfo }: PaymentInfoProps) => {
         </div>
       )}
 
-      {/* {paymentUrl && (
-        <PaymentModal isOpen={isOpen} onClose={handleClose}>
+      {paymentUrl && (
+        <PaymentModal isOpen={isPaymentModalOpen} onClose={handleClose}>
           <iframe
             onLoad={handleIframeLoad}
             src={paymentUrl}
             className="min-w-full  rounded-md min-h-[80vh]"
           />
         </PaymentModal>
-      )} */}
+      )}
     </div>
   );
 };

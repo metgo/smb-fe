@@ -131,6 +131,7 @@ export const productDetailsText = {
 };
 
 export const paymentPageLabels = {
+  totalPaid: "סה״כ לתשלום",
   justMomentWerDone: " עוד רגע וסיימנו...",
   personalDetails: "פרטים אישיים",
   continueAsGuest: "המשך כאורח",

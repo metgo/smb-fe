@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -6,8 +6,10 @@ import { InputField } from "@/components/ui";
 import { orderInfoFields } from "@/constant/formFields";
 import { buttonLabels, paymentPageLabels } from "@/constant/hebrew";
 import { PurchaserInfo, purchaserSchema } from "@/schemas/payment";
+import useCheckoutStore from "@/stores/checkoutStore";
 
 const OrderInfo = ({ handleToggle, firstInfo, className }: OrderInfoProps) => {
+  const { setCustomerInfo } = useCheckoutStore();
   const {
     register,
     handleSubmit,
@@ -33,12 +35,11 @@ const OrderInfo = ({ handleToggle, firstInfo, className }: OrderInfoProps) => {
   }, [className, trigger]);
 
   const onSubmit = async (data: PurchaserInfo) => {
-    console.log("---------data", data);
-    // updateCustomerDetails({
-    //   firstName: data.firstName,
-    //   email: data.email,
-    //   phone: data.phone,
-    // });
+    setCustomerInfo({
+      firstName: data.firstName,
+      email: data.email || "",
+      phone: data.phone || "",
+    });
     handleToggle("second");
   };
 
@@ -48,9 +49,9 @@ const OrderInfo = ({ handleToggle, firstInfo, className }: OrderInfoProps) => {
     >
       <div
         role="button"
+        aria-expanded={firstInfo}
         onClick={() => handleToggle("first")}
         className="flex justify-between cursor-pointer"
-        aria-expanded={firstInfo}
       >
         <h2
           className={`font-bold text-[16px] ${

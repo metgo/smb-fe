@@ -1,3 +1,9 @@
+type CustomerInfoProps = {
+  firstName: string;
+  phone: string;
+  email: string;
+};
+
 interface OrderInfoProps {
   handleToggle: (value: "first" | "second" | "third" | "product") => void;
   firstInfo: boolean;
@@ -9,7 +15,6 @@ interface DeliveryInfoProps {
   handleToggle: (value: "first" | "second" | "third" | "product") => void;
   setErrorType: (errorType: "first" | "second" | "cart") => void;
   className?: string;
-  products: ProductInfoProps[];
 }
 
 interface PaymentInfoProps {
@@ -61,7 +66,7 @@ interface DeliveryProductsInfoProps {
   quantity: number;
   deliveryMethod: string;
   deliveryPickupLocation: string;
-  deliveryFee: string;
+  deliveryFee: number;
   activeTab: number;
   selectedDeliveryArea: string;
   deliveryToHome: DeliveryArea[];
@@ -78,4 +83,33 @@ interface DeliveryProductsInfoProps {
     apartment: string;
     greeting: string;
   };
+}
+
+type CartTypeProps = {
+  productId: string;
+  firstName: string;
+  email?: string | null;
+  phone?: string | null;
+  quantity: number;
+  deliveryFee: number;
+  deliveryMethod: string;
+  deliveryPickupLocation: string;
+  houseNo?: string;
+  apartment?: string;
+  additionalInfo?: string;
+  street?: string;
+  city?: string;
+  isGift: boolean;
+};
+
+interface PlaceOrderProps {
+  cartId: string;
+  firstName: string;
+  campCode: string;
+  languagePreference: string;
+  voucher: { id: string | undefined }[];
+  identifierId: string;
+  email?: string;
+  phone?: string;
+  cuntryCode?: string;
 }

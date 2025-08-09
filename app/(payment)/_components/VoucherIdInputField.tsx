@@ -34,7 +34,7 @@ const VoucherIdInputField = ({
                     onClick={() => checkVoucher(index)}
                     className={`
                       ${input?.code && input?.code?.length > 0 ? "" : "cursor-not-allowed opacity-50"}
-                      text-white bg-primary py-[0.4rem] ml-[0.15rem] px-3 rounded-md font-bold h-full
+                      text-white bg-black py-[0.4rem] ml-[0.15rem] px-3 rounded-md font-bold h-full
                     `}
                   >
                     אישור
