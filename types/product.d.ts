@@ -42,3 +42,10 @@ interface ProductInfoProps {
   deliverySpecificSellerInfo: string[];
   categories: categoires[];
 }
+
+interface DeliverySectionProps {
+  deliveryArea: DeliveryArea[];
+  deliverySpecificSellerInfo: string[];
+  deliveryReturnExchange: string[];
+  deliveryAdditionalInfo: string;
+}
