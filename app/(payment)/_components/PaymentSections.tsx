@@ -27,18 +27,13 @@ const PaymentSections = ({
   } = useCheckoutStore();
 
   const {
-    // handleClose,
     triggerError,
     handleToggle,
     errors,
     activeStep,
-    // setActiveStep,
     orderStatus,
     setOrderStatus,
   } = usePayment();
-
-  console.log("-----------isStepOneComplete", isStepOneComplete);
-  console.log("----------isStepTwoComplete", isStepTwoComplete);
 
   useEffect(() => {
     if (cartDetails) {

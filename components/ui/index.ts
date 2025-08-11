@@ -5,12 +5,10 @@ import MapNavButton from "./MapNavButton";
 import NextImage from "./NextImage";
 import SubmitButton from "./SubmitButton";
 import Tabs from "./Tabs";
-import TextAreaField from "./TextAreaField";
 import ImageCarouselControls from "./ImageCarouselControls";
 
 export {
   InputField,
-  TextAreaField,
   MapNavButton,
   IconImage,
   NextImage,

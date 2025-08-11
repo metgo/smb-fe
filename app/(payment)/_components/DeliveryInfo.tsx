@@ -120,7 +120,8 @@ const DeliveryInfo = memo(
           return true;
         }
 
-        if (item.isDeliveryToPointSelect) return false;
+        if (item.isDeliveryToPointSelect && !item.deliveryPickupLocation)
+          return false;
 
         return false;
       });
@@ -489,6 +490,8 @@ const DeliveryInfo = memo(
                           selectedDeliveryArea: "pick_up",
                           deliveryMethod: "pick_up",
                           deliveryPickupLocation: "pick_up",
+                          isDeliveryToPointSelect: false,
+                          isDeliveryToHomeSelect: false,
                         })
                       }
                     >

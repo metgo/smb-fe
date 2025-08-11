@@ -65,7 +65,7 @@ const SearchFlow = () => {
         <Dialog
           isOpen={isOpen}
           onClose={() => setIsOpen(false)}
-          modalClassName="w-[94%] h-[max-content] backdrop-blur-2xl"
+          className="w-[94%] h-[max-content] backdrop-blur-2xl"
         >
           <div>
             {/* Search box */}
