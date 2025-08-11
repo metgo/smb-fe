@@ -2,7 +2,7 @@ import PaymentModal from "./PaymentModal";
 import { IconImage } from "@/components/ui";
 import { usePayment } from "@/hooks/usePayment";
 import useCheckoutStore from "@/stores/checkoutStore";
-import { paymentPageLabels } from "@/constant/hebrew";
+import { buttonLabels, paymentPageLabels } from "@/constant/hebrew";
 import VoucherIdInputField from "./VoucherIdInputField";
 
 const PaymentInfo = ({ handleToggle, thirdInfo }: PaymentInfoProps) => {
@@ -83,7 +83,26 @@ const PaymentInfo = ({ handleToggle, thirdInfo }: PaymentInfoProps) => {
             </>
           ) : (
             <div className="flex items-center justify-end">
-              <button>{"אישור הזמנה"}</button>
+              <button
+                type="button"
+                onClick={() => {
+                  handelPlaceOrder();
+                }}
+                disabled={
+                  isStepOneSubmitBtnDisabled ||
+                  isStepTwoSubmitBtnDisabled ||
+                  isLoading
+                }
+                className={`flex gap-3 items-center justify-between border-[1px] border-lightgray rounded-md px-3 py-3 ${
+                  isLoading ||
+                  isStepOneSubmitBtnDisabled ||
+                  isStepTwoSubmitBtnDisabled
+                    ? "opacity-50 cursor-not-allowed"
+                    : "cursor-pointer"
+                }`}
+              >
+                {buttonLabels.orderConfirmation}
+              </button>
             </div>
           )}
         </div>

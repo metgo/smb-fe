@@ -36,13 +36,13 @@ const page = async ({ params }: PageProps) => {
             <NextImage
               width={575}
               height={533}
-              alt={productDetails.images[0].alt}
-              imgSrc={productDetails.images[0].image}
+              alt={productDetails?.images?.[0]?.alt}
+              imgSrc={productDetails?.images?.[0]?.image}
               className="w-full rounded-2xl"
             />
           </div>
           <div className="col-span-1">
-            <h1 className="font-bold text-[40px]">{productDetails.name}</h1>
+            <h1 className="font-bold text-[40px]">{productDetails?.name}</h1>
             <div
               className="font-normal"
               dangerouslySetInnerHTML={{ __html: productDetails?.description }}

@@ -6,7 +6,7 @@ import { useVoucherStore } from "@/stores/voucherStore";
 
 const ProductInfo = ({ className }: { className: string }) => {
   const { orderProducts, totalDeliveryFee } = useCheckoutStore();
-  const { voucherDetails } = useVoucherStore();
+  const { voucherDetails, removeVoucher } = useVoucherStore();
 
   const totalProductCost = orderProducts.reduce(
     (sum, item) => sum + item.price * (item?.quantity || 1),
@@ -103,8 +103,8 @@ const ProductInfo = ({ className }: { className: string }) => {
                 className="text-[14px] font-semibold text-black"
               />
               <button
-                // onClick={() => removeVoucher(voucher.code)}
-                className="text-secondary hover:text-red-700 text-[16px] font-bold"
+                onClick={() => removeVoucher(voucher.code)}
+                className="text-secondary hover:text-red-700 text-[24px] font-bold cursor-pointer"
                 aria-label={`הסר שובר ${voucher.name}`}
               >
                 ×

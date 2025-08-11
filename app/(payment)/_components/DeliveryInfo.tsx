@@ -43,7 +43,7 @@ const DeliveryInfo = memo(
       DeliveryProductsInfoProps[]
     >([]);
     const [isSubmitSuccess, setIsSubmitSuccess] = useState(false);
-    const [isSubmitting, setIsSbumitting] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const {
       register,
@@ -159,8 +159,8 @@ const DeliveryInfo = memo(
 
     useEffect(() => {
       if (isSubmitSuccess) {
-        console.log("k vako yo");
         handleToggle("third");
+        setIsSubmitSuccess(false);
       }
     }, [isSubmitSuccess]);
 
@@ -197,7 +197,7 @@ const DeliveryInfo = memo(
     );
 
     const onSubmit = useCallback(async () => {
-      setIsSbumitting(true);
+      setIsSubmitting(true);
       try {
         for (const item of deliveryInfos) {
           const { receiverEmail, receiverMessage, receiverPhone } =
@@ -238,7 +238,7 @@ const DeliveryInfo = memo(
       } catch {
         console.log("something went wrong");
       } finally {
-        setIsSbumitting(false);
+        setIsSubmitting(false);
       }
     }, [deliveryInfos, cartedProduct, customerInfo, handleToggle]);
 

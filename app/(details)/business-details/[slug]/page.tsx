@@ -11,6 +11,7 @@ import {
 } from "../../_components";
 import AttributePills from "@/components/AttributePills";
 import { getBusinessDetailsBySlug } from "@/actions/businessActions";
+import { getProducts } from "@/actions/productActions";
 
 const page = async ({ params }: PageProps) => {
   const { slug } = await params;
@@ -19,7 +20,7 @@ const page = async ({ params }: PageProps) => {
 
   const businessDetails: BusinessDetailsProps =
     await getBusinessDetailsBySlug(slug);
-
+  const products: Product[] = await getProducts(businessDetails._id);
   return (
     <div>
       <ReturnToPrevPageBtn />
@@ -72,7 +73,10 @@ const page = async ({ params }: PageProps) => {
           />
         </div>
 
-        <BusinessDetailsFilterTab businessDetails={businessDetails} />
+        <BusinessDetailsFilterTab
+          products={products}
+          businessDetails={businessDetails}
+        />
       </div>
     </div>
   );
