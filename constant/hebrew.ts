@@ -16,6 +16,7 @@ export const misc = {
   pleaseWaitLoading: "אנא המתן. טוען...",
   addAllStationOnCart: "הוספת כל התחנות לסל",
   toAllTracks: "לכל המסלולים",
+  mayInterestYou: "יכול לעניין אתכם",
   addToRoute: "הוספה למסלול",
 };
 
@@ -53,6 +54,7 @@ export const menuItems = {
   ourStory: "הסיפור שלנו",
   products: "מוצרים",
   deliveries: "משלוחים",
+  productDescription: "תיאור המוצר",
   businessPage: "עמוד עסקים",
   visitorCenter: "מרכז המבקרים",
   blogArticle: "בלוג ומאמרים",
@@ -121,4 +123,101 @@ export const searchText = {
   noResultFound: "לא מצאנו תוצאות למה שחיפשת.",
   events: "אירועים",
   businesses: "עסקים",
+};
+
+export const productDetailsText = {
+  continuePlaceOrder: "המשך לביצוע הזמנה",
+  addToCart: "הוספה לסל",
+  mayInterestYou: "יכול לעניין אתכם",
+};
+
+export const paymentPageLabels = {
+  shippingPrice: "מחיר משלוח",
+  orderSummary: "סיכום הזמנה",
+  totalPaid: "סה״כ לתשלום",
+  justMomentWerDone: " עוד רגע וסיימנו...",
+  personalDetails: "פרטים אישיים",
+  continueAsGuest: "המשך כאורח",
+  forMe: "בשבילי",
+  forGift: "למתנה",
+  sending: "משלוח",
+  senderDetails: "פרטי השולח",
+  creditCard: "כרטיס אשראי",
+  selectPickupPoint: "בחר נקודת איסוף",
+  choosePickupPoint: "בחר נקודת איסוף",
+  pickupFromBranchFree: "איסוף מהסניף - חינם",
+  choosingPaymentMethod: "בחירת אמצעי תשלום",
+  orChooseAnotherPaymentMethod: "או בחר אמצעי תשלום אחר",
+  addressForTheGiftRecipient: "כתובת למקבל המתנה",
+  whoIsTheGiftFor: "למי המתנה?",
+  giftRecipientDetails: "פרטי מקבל המתנה",
+  howToSend: "איך לשלוח?",
+  thePrintOfTheNoteWillBeAvailableAfterPurchase:
+    "ההדפסה של התו תהיה זמינה לאחר הרכישה.",
+  addAnotherCharecter: "הוסף תו נוסף",
+  oopsSeemToHaveAProblem: "אופס, נראה שיש לנו בעיה",
+  paymentFailureMessage:
+    "חברת האשראי החזירה לנו הודעה שיש תקלה עם התשלום. נשמח אם תוכלו לבדוק את זה מולם. מוזמנים ליצור איתנו קשר לפרטים נוספים.",
+  yourGiftIsOnItsWay: "המתנה שלך בדרך!",
+  toMyPersonalArea: "לאיזור האישי שלי",
+  shareAndHelpStrengthLocalBusiness: "שתפו ועזרו לחזק את העסקים המקומיים",
+  paymentSuccessMessage:
+    " הזמנה התקבלה בהצלחה פרטי ההזמנה נשלחו במייל וזמינים להדפסה. יחד נחזק את העסקים המקומיים ונתרום לחוסן הקהילתי!",
+};
+
+export const formLabels = {
+  receiverName: "שם מקבל המתנה",
+  receiverMessage: "הודעה למקבל המתנה",
+  receiverPhone: "שליחה",
+  receiverEmail: "שליחה במייל",
+
+  fullName: "שם מלא",
+  phone: "טלפון",
+  email: "אימייל",
+  mobile: "נייד",
+
+  city: "עיר",
+  street: "רחוב",
+  houseNo: "מספר בית",
+  apartment: "דירה",
+  area: "אזור",
+  additionalInfo: "הערות",
+  greeting: "הוספת ברכה",
+
+  pickUpFromBranch: " איסוף מהסניף - חינם",
+};
+
+export const buttonLabels = {
+  show: "הצג",
+  readMore: "קרא עוד",
+  approval: "אישור",
+  readLess: "קרא פחות",
+  installation: "התקנה",
+  moreDetails: "פרטים נוספים",
+  navigateToMap: "הצג על המפה",
+  toggleSwitch: {
+    map: "מפה",
+    list: "רשימה",
+  },
+  toWatch: "לצפייה",
+  toAllArticles: "לכל הכתבות",
+  forAllRecomendation: "לכל ההמלצות",
+  toTheProductStoreFromThEnvelop: "לחנות המוצרים ",
+  purchasingNotesAndPackages: "רכישת תווים ומארזים",
+  clearEverything: "ניקוי הכל",
+  navigation: "ניווט",
+  shareBusiness: "שיתוף",
+  movingToBusiness: "מעבר לבית העסק",
+  backToProduct: "חזרה לגלרית מוצרים",
+  forPurchase: "לרכישה",
+  updating: "מעדכן...",
+  backToHomePage: "חזרה לעמוד הבית",
+  orderConfirmation: "אישור הזמנה",
+  continueToPayment: "המשך לתשלום",
+  continueToPlaceOrder: "המשך לביצוע הזמנה",
+  continueToPurchase: "המשך לרכישה",
+  continueToSenderDetails: "המשך לפרטי השולח",
+  continueToSelectDelivery: "המשך לבחירת משלוח",
+  paymentIsOnGoing: "המשך לתשלום",
+  continueShopping: "המשך בקניות",
 };

@@ -11,7 +11,6 @@ export const urls = {
   orders: `${BASE_URL}/orders`,
   paymentFailure: `${BASE_URL}/payment/failure`,
   paymentSuccess: `${BASE_URL}/payment/success`,
-  products: `${BASE_URL}/products`,
   subcategory: `${BASE_URL}/subcategory`,
   voucherByCode: `${BASE_URL}/voucher-by-code`,
   vouchers: `${BASE_URL}/vouchers`,
@@ -19,6 +18,9 @@ export const urls = {
   siteInfo: `${BASE_URL}/external-api/site-info`,
   businessDetails: `${BASE_URL}/tourism/businesses`,
   sendContactInfo: `${BASE_URL}/contact-us`,
+
+  productsDetails: `${BASE_URL}/products`,
+  productsList: `${BASE_URL}/products`,
 
   events: `${BASE_URL}/events`,
   eventDetails: `${BASE_URL}/events`,
