@@ -9,6 +9,7 @@ import { IconImage, NextImage } from "@/components/ui";
 import { useImageScale } from "@/hooks/useImageScale";
 import { useImagePresent } from "@/hooks/useImagePresent";
 import Link from "next/link";
+import PriceTag from "../PriceTag";
 
 const ImageCard = ({
   imageItem,
@@ -117,18 +118,18 @@ const ProductCard = ({
             className="line-clamp-2 text-theme text-[12px] h-8.5 font-normal"
             dangerouslySetInnerHTML={{ __html: product?.description }}
           />
-          <div className="text-[32px] text-dark font-normal my-2.5">
-            <span>₪{product?.price?.sellingPrice}</span>
-          </div>
+          <PriceTag
+            price={product?.price?.sellingPrice}
+            className="text-[32px] text-dark font-normal my-2.5"
+          />
 
           <div className="flex items-center justify-between gap-2.5">
-            <button
-              type="button"
-              onClick={() => {}}
-              className="h-10 rounded-xl bg-dark text-white flex-auto cursor-pointer"
+            <Link
+              href={`/check-out?productId=${product._id}`}
+              className="h-10 rounded-xl bg-dark text-white flex items-center justify-center w-full flex-auto cursor-pointer font-normal text-lg"
             >
-              {misc.quickPurchase}
-            </button>
+              <span>{misc.quickPurchase}</span>
+            </Link>
             <div className="flex-none">
               <IconImage width={40} height={40} icon="circular-cart" />
             </div>

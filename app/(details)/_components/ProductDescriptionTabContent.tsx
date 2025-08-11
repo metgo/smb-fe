@@ -1,7 +1,14 @@
-import React from "react";
-
-const ProductDescriptionTabContent = () => {
-  return <div></div>;
+const ProductDescriptionTabContent = ({
+  description,
+}: {
+  description: string;
+}) => {
+  return (
+    <div
+      className="font-normal"
+      dangerouslySetInnerHTML={{ __html: description }}
+    />
+  );
 };
 
 export default ProductDescriptionTabContent;

@@ -1,4 +1,4 @@
-import { TickIcon } from "@/components/ui/icons";
+import { FaCircleCheck } from "react-icons/fa6";
 import { paymentPageLabels } from "@/constant/hebrew";
 import { useVoucherStore } from "@/stores/voucherStore";
 
@@ -28,7 +28,7 @@ const VoucherIdInputField = ({
               />
               <div className="absolute top-1/2 left-0 -translate-y-1/2 h-full">
                 {voucherDetails?.some((voucher) => voucher.id === input.id) ? (
-                  <TickIcon size={45} color={""} />
+                  <FaCircleCheck size={45} />
                 ) : (
                   <button
                     type="button"

@@ -32,6 +32,7 @@ const DeliveryInfo = memo(
       orderProducts,
       setTotalDeliveryFee,
       setIsStepTwoSubmitBtnDisabled,
+      isStepOneSubmitBtnDisabled,
     } = useCheckoutStore();
 
     const selectRef = useRef<HTMLDivElement>(null);
@@ -109,8 +110,6 @@ const DeliveryInfo = memo(
 
         // If deliveryMethod is "deliver" and it's from deliveryToHome
         if (
-          // item.deliveryMethod === "deliver" &&
-          // item.deliveryToHome.length > 0 &&
           item.isDeliveryToHomeSelect &&
           (!item.deliveryAddress.city ||
             !item.deliveryAddress.street ||
@@ -130,11 +129,7 @@ const DeliveryInfo = memo(
     }, [deliveryInfos]);
 
     useEffect(() => {
-      if (isButtonDisabled) {
-        setIsStepTwoSubmitBtnDisabled(true);
-      } else {
-        setIsStepTwoSubmitBtnDisabled(false);
-      }
+      setIsStepTwoSubmitBtnDisabled(isButtonDisabled ? true : false);
     }, [isButtonDisabled]);
 
     // Handle click outside for dropdown
@@ -245,47 +240,6 @@ const DeliveryInfo = memo(
         setIsSbumitting(false);
       }
     }, [deliveryInfos, cartedProduct, customerInfo, handleToggle]);
-
-    // const onSubmited = useCallback(async () => {
-    //   setIsSbumitting(true)
-    //   try {
-    //     for (const item of deliveryInfos) {
-    //       const { receiverEmail, receiverMessage, receiverPhone } =
-    //         item.giftReceiverInfo;
-    //       const { city, houseNo, street, apartment, greeting } =
-    //         item.deliveryAddress;
-
-    //       const payloadBody = {
-    //         productId: item._id,
-    //         quantity: item.quantity,
-    //         deliveryFee: item.deliveryFee,
-    //         deliveryMethod: item.deliveryMethod,
-    //         deliveryPickupLocation: item.deliveryPickupLocation,
-    //         firstName: customerInfo?.firstName || "",
-    //         email:
-    //           item.activeTab === 1 ? receiverEmail : customerInfo?.email || null,
-    //         phone:
-    //           item.activeTab === 1 ? receiverPhone : customerInfo?.phone || null,
-    //         isGift: item.activeTab === 1,
-    //         ...(city && { city }),
-    //         ...(street && { street }),
-    //         ...(houseNo && { houseNo }),
-    //         ...(apartment && { apartment }),
-    //         ...(greeting && { additionalInfo: greeting }),
-    //         ...(item.activeTab === 1 &&
-    //           receiverMessage && { additionalInfo: receiverMessage }),
-    //       };
-
-    //       const res = await postDeliveryInfo(cartedProduct.cartId, payloadBody);
-    //       setIsSubmitSuccess(!!res.message)
-    //     }
-    //   } catch {
-    //     console.log("sothing went wrong")
-    //   } finally {
-    //     setIsSbumitting(false)
-    //   }
-
-    // }, [deliveryInfos, cartedProduct, customerInfo, handleToggle]);
 
     const handleProductClick = useCallback((productId: string) => {
       setClickedProductId(productId);
@@ -561,7 +515,9 @@ const DeliveryInfo = memo(
               className="flex justify-end"
             >
               <SubmitButton
-                isDisabled={isButtonDisabled || isSubmitting}
+                isDisabled={
+                  isButtonDisabled || isSubmitting || isStepOneSubmitBtnDisabled
+                }
                 label={buttonLabels.paymentIsOnGoing}
               />
             </form>

@@ -1,12 +1,16 @@
 import Link from "next/link";
 
+import PriceTag from "@/components/PriceTag";
 import { ProductCard } from "@/components/cards";
 import { IconImage, NextImage } from "@/components/ui";
 import { misc, productDetailsText } from "@/constant/hebrew";
-
-import { NoDetailsFound, ReturnToPrevPageBtn } from "../../_components";
 import { getProductDetailsBySlug, getProducts } from "@/actions/productActions";
 import ProductDetailsFilterTab from "../../_components/ProductDetailsFilterTab";
+import {
+  NoDetailsFound,
+  QuantityUpdateBtns,
+  ReturnToPrevPageBtn,
+} from "../../_components";
 
 const page = async ({ params }: PageProps) => {
   const { slug } = await params;
@@ -19,6 +23,9 @@ const page = async ({ params }: PageProps) => {
     productDetails.businessId._id,
   );
 
+  const filteredRelatedProducts = relatedProducts?.filter?.(
+    (item) => item._id !== productDetails?._id,
+  );
   return (
     <div>
       <ReturnToPrevPageBtn />
@@ -40,7 +47,12 @@ const page = async ({ params }: PageProps) => {
               className="font-normal"
               dangerouslySetInnerHTML={{ __html: productDetails?.description }}
             />
-            <div>{productDetails?.price?.markedPrice}</div>
+
+            <PriceTag
+              price={productDetails?.price?.sellingPrice}
+              className="text-[32px] text-dark font-normal my-2.5"
+            />
+            <QuantityUpdateBtns />
             <div className=" flex items-center gap-2.5">
               <Link
                 href={`/check-out?productId=${productDetails._id}`}
@@ -50,9 +62,9 @@ const page = async ({ params }: PageProps) => {
               </Link>
               <button
                 type="button"
-                className="border border-theme text-theme rounded-xl py-2 flex items-center gap-1"
+                className="border border-theme text-theme rounded-xl py-2 flex items-center gap-1 font-bold px-4"
               >
-                <IconImage icon="circular-cart" />
+                <IconImage icon="basket-gray" />
                 <span>{productDetailsText.addToCart}</span>
               </button>
             </div>
@@ -62,23 +74,25 @@ const page = async ({ params }: PageProps) => {
         <ProductDetailsFilterTab {...productDetails} />
 
         {/* Related Products */}
-        <div>
-          <h2 className="text-center font-bold text-2xl mb-4">
-            {misc.mayInterestYou}
-          </h2>
+        {filteredRelatedProducts?.length > 0 && (
+          <div>
+            <h2 className="text-center font-bold text-2xl mb-4">
+              {misc.mayInterestYou}
+            </h2>
 
-          <div className="flex flex-col items-center justify-center gap-4">
-            <div className="grid grid-cols-5 gap-5 w-full">
-              {relatedProducts?.map((product) => (
-                <ProductCard
-                  key={product._id}
-                  product={product}
-                  primaryCategoryId={""}
-                />
-              ))}
+            <div className="flex flex-col items-center justify-center gap-4">
+              <div className="grid grid-cols-5 gap-5 w-full">
+                {filteredRelatedProducts?.map((product) => (
+                  <ProductCard
+                    key={product._id}
+                    product={product}
+                    primaryCategoryId={""}
+                  />
+                ))}
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

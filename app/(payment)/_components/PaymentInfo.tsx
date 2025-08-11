@@ -1,9 +1,9 @@
-import { paymentPageLabels } from "@/constant/hebrew";
-import VoucherIdInputField from "./VoucherIdInputField";
-import { IconImage } from "@/components/ui";
 import PaymentModal from "./PaymentModal";
+import { IconImage } from "@/components/ui";
 import { usePayment } from "@/hooks/usePayment";
 import useCheckoutStore from "@/stores/checkoutStore";
+import { paymentPageLabels } from "@/constant/hebrew";
+import VoucherIdInputField from "./VoucherIdInputField";
 
 const PaymentInfo = ({ handleToggle, thirdInfo }: PaymentInfoProps) => {
   const {
@@ -12,13 +12,13 @@ const PaymentInfo = ({ handleToggle, thirdInfo }: PaymentInfoProps) => {
     handleIframeLoad,
     paymentUrl,
     isPaymentModalOpen,
-    setIsPaymentModalOpen,
     setSelectMethod,
     addVoucherInput,
     checkVoucher,
     handleCodeChange,
     voucherInputs,
     remainingAmount,
+    handlePaymentModalClose,
   } = usePayment();
   const { isStepOneSubmitBtnDisabled, isStepTwoSubmitBtnDisabled } =
     useCheckoutStore();
@@ -92,7 +92,7 @@ const PaymentInfo = ({ handleToggle, thirdInfo }: PaymentInfoProps) => {
       {paymentUrl && (
         <PaymentModal
           isOpen={isPaymentModalOpen}
-          onClose={() => setIsPaymentModalOpen(false)}
+          onClose={handlePaymentModalClose}
         >
           <iframe
             onLoad={handleIframeLoad}

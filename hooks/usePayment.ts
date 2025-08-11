@@ -28,6 +28,7 @@ export const usePayment = () => {
     isStepOneSubmitBtnDisabled,
     isStepTwoSubmitBtnDisabled,
   } = useCheckoutStore();
+  const { firstName, phone, email } = customerInfo;
 
   // ------------------- State -------------------
   const [isLoading, setIsLoading] = useState(false);
@@ -78,7 +79,6 @@ export const usePayment = () => {
   };
 
   const isCustomerInfoValid = () => {
-    const { firstName, phone, email } = customerInfo;
     return firstName && (phone || email);
   };
 
@@ -97,6 +97,10 @@ export const usePayment = () => {
 
   const handleClose = () => setIsPaymentModalOpen(false);
 
+  const handlePaymentModalClose = () => {
+    setIsPaymentModalOpen(false);
+    setPaymentUrl(null);
+  };
   // ------------------- Payment Flow -------------------
   const handelPlaceOrder = async () => {
     setIsLoading(true);
@@ -112,7 +116,6 @@ export const usePayment = () => {
       }
 
       const payload = {
-        email: customerInfo.email,
         firstName: customerInfo.firstName,
         campCode: CODE!,
         languagePreference: "he",
@@ -123,6 +126,7 @@ export const usePayment = () => {
           phone: customerInfo.phone,
           countryCode: "972",
         }),
+        ...(email && { email }),
       };
 
       const data = await placeOrder(payload);
@@ -267,6 +271,7 @@ export const usePayment = () => {
     // Payment
     handelPlaceOrder,
     handleIframeLoad,
+    handlePaymentModalClose,
     remainingAmount: calculateRemainingAmount(),
 
     // Voucher

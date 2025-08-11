@@ -12,13 +12,16 @@ const tabs = [
   { id: 2, label: menuItems.deliveries },
 ];
 
-const ProductDetailsFilterTab = ({ businessId }: ProductDetailsProps) => {
+const ProductDetailsFilterTab = ({
+  businessId,
+  description,
+}: ProductDetailsProps) => {
   const [activeTab, setActiveTab] = useState<number>(1);
 
   const rederTabContent = () => {
     switch (activeTab) {
       case 1:
-        return <ProductDescriptionTabContent />;
+        return <ProductDescriptionTabContent description={description} />;
       case 2:
         return <DeliveriesTabContent {...businessId} />;
       default:
