@@ -3,6 +3,7 @@ import VoucherIdInputField from "./VoucherIdInputField";
 import { IconImage } from "@/components/ui";
 import PaymentModal from "./PaymentModal";
 import { usePayment } from "@/hooks/usePayment";
+import useCheckoutStore from "@/stores/checkoutStore";
 
 const PaymentInfo = ({ handleToggle, thirdInfo }: PaymentInfoProps) => {
   const {
@@ -10,8 +11,8 @@ const PaymentInfo = ({ handleToggle, thirdInfo }: PaymentInfoProps) => {
     handelPlaceOrder,
     handleIframeLoad,
     paymentUrl,
-    handleClose,
     isPaymentModalOpen,
+    setIsPaymentModalOpen,
     setSelectMethod,
     addVoucherInput,
     checkVoucher,
@@ -19,6 +20,8 @@ const PaymentInfo = ({ handleToggle, thirdInfo }: PaymentInfoProps) => {
     voucherInputs,
     remainingAmount,
   } = usePayment();
+  const { isStepOneSubmitBtnDisabled, isStepTwoSubmitBtnDisabled } =
+    useCheckoutStore();
 
   return (
     <div className="bg-white p-4 max-sm:mx-3 max-sm:mb-20 rounded-md flex flex-col gap-4 shadow">
@@ -51,24 +54,30 @@ const PaymentInfo = ({ handleToggle, thirdInfo }: PaymentInfoProps) => {
                   {paymentPageLabels.orChooseAnotherPaymentMethod}
                 </div>
                 <div className="flex gap-3 items-center flex-wrap">
-                  <div
-                    onClick={
-                      !isLoading
-                        ? () => {
-                            handelPlaceOrder();
-                            setSelectMethod("card");
-                          }
-                        : undefined
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handelPlaceOrder();
+                      setSelectMethod("card");
+                    }}
+                    disabled={
+                      isStepOneSubmitBtnDisabled ||
+                      isStepTwoSubmitBtnDisabled ||
+                      isLoading
                     }
-                    className={`cursor-pointer flex gap-3 items-center justify-between border-[1px] border-lightgray rounded-md px-3 py-3 ${
-                      isLoading ? "opacity-50 cursor-not-allowed" : ""
+                    className={`flex gap-3 items-center justify-between border-[1px] border-lightgray rounded-md px-3 py-3 ${
+                      isLoading ||
+                      isStepOneSubmitBtnDisabled ||
+                      isStepTwoSubmitBtnDisabled
+                        ? "opacity-50 cursor-not-allowed"
+                        : "cursor-pointer"
                     }`}
                   >
                     <IconImage icon="credit-card.png" hasExtension />
-                    <div className="text-[14px] font-semibold text-black">
+                    <span className="text-[14px] font-semibold text-black">
                       {paymentPageLabels.creditCard}
-                    </div>
-                  </div>
+                    </span>
+                  </button>
                 </div>
               </div>
             </>
@@ -81,7 +90,10 @@ const PaymentInfo = ({ handleToggle, thirdInfo }: PaymentInfoProps) => {
       )}
 
       {paymentUrl && (
-        <PaymentModal isOpen={isPaymentModalOpen} onClose={handleClose}>
+        <PaymentModal
+          isOpen={isPaymentModalOpen}
+          onClose={() => setIsPaymentModalOpen(false)}
+        >
           <iframe
             onLoad={handleIframeLoad}
             src={paymentUrl}

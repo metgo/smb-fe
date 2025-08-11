@@ -131,6 +131,8 @@ export const productDetailsText = {
 };
 
 export const paymentPageLabels = {
+  shippingPrice: "מחיר משלוח",
+  orderSummary: "סיכום הזמנה",
   totalPaid: "סה״כ לתשלום",
   justMomentWerDone: " עוד רגע וסיימנו...",
   personalDetails: "פרטים אישיים",
@@ -151,6 +153,15 @@ export const paymentPageLabels = {
   howToSend: "איך לשלוח?",
   thePrintOfTheNoteWillBeAvailableAfterPurchase:
     "ההדפסה של התו תהיה זמינה לאחר הרכישה.",
+  addAnotherCharecter: "הוסף תו נוסף",
+  oopsSeemToHaveAProblem: "אופס, נראה שיש לנו בעיה",
+  paymentFailureMessage:
+    "חברת האשראי החזירה לנו הודעה שיש תקלה עם התשלום. נשמח אם תוכלו לבדוק את זה מולם. מוזמנים ליצור איתנו קשר לפרטים נוספים.",
+  yourGiftIsOnItsWay: "המתנה שלך בדרך!",
+  toMyPersonalArea: "לאיזור האישי שלי",
+  shareAndHelpStrengthLocalBusiness: "שתפו ועזרו לחזק את העסקים המקומיים",
+  paymentSuccessMessage:
+    " הזמנה התקבלה בהצלחה פרטי ההזמנה נשלחו במייל וזמינים להדפסה. יחד נחזק את העסקים המקומיים ונתרום לחוסן הקהילתי!",
 };
 
 export const formLabels = {
@@ -207,4 +218,5 @@ export const buttonLabels = {
   continueToSenderDetails: "המשך לפרטי השולח",
   continueToSelectDelivery: "המשך לבחירת משלוח",
   paymentIsOnGoing: "המשך לתשלום",
+  continueShopping: "המשך בקניות",
 };

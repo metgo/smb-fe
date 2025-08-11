@@ -69,6 +69,8 @@ interface DeliveryProductsInfoProps {
   deliveryFee: number;
   activeTab: number;
   selectedDeliveryArea: string;
+  isDeliveryToPointSelect: boolean;
+  isDeliveryToHomeSelect: boolean;
   deliveryToHome: DeliveryArea[];
   deliveryToPoint: DeliveryArea[];
   giftReceiverInfo: {
@@ -112,4 +114,9 @@ interface PlaceOrderProps {
   email?: string;
   phone?: string;
   cuntryCode?: string;
+}
+
+interface PaymentSuccessFailureModalProps {
+  isOpen: boolean;
+  onClose: () => void;
 }

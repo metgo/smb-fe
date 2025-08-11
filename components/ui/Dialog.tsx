@@ -9,14 +9,14 @@ interface DialogProps {
   isOpen: boolean;
   onClose: () => void;
   children: ReactNode;
-  modalClassName: string;
+  className: string;
 }
 
 const Dialog: React.FC<DialogProps> = ({
   isOpen,
   onClose,
   children,
-  modalClassName,
+  className,
 }) => {
   useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {
@@ -40,7 +40,7 @@ const Dialog: React.FC<DialogProps> = ({
     <div className="fixed top-0 left-0 w-screen h-screen bg-black/50 backdrop-blur-sm sm:flex items-start justify-center max-sm:p-0 p-4 z-[999]">
       <div
         className={clsx(
-          modalClassName,
+          className,
           "bg-white relative rounded-xl z-[999] mt-22",
         )}
       >

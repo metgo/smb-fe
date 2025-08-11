@@ -31,14 +31,16 @@ const ProductInfo = ({ className }: { className: string }) => {
         <div>
           <div className="flex justify-between items-center">
             <div className="flex gap-2 items-center">
-              <h2 className="text-2xl font-bold mb-4">סיכום הזמנה</h2>
+              <h2 className="text-2xl font-bold mb-4">
+                {paymentPageLabels.orderSummary}
+              </h2>
             </div>
           </div>
           <div>
             {orderProducts?.map((item) => (
               <div
                 key={item._id}
-                className="grid grid-cols-5 gap-2 items-center  justify-between"
+                className="grid grid-cols-5 gap-2 items-center justify-between"
               >
                 <NextImage
                   imgSrc={item.image}
@@ -48,7 +50,7 @@ const ProductInfo = ({ className }: { className: string }) => {
                   className="rounded-md col-span-1 "
                 />
                 <div className="col-span-3 font-normal">{item.name}</div>
-                <div className="col-span-1">{item.price}</div>
+                <PriceTag price={item.price} className="" />
               </div>
             ))}
           </div>
@@ -67,7 +69,9 @@ const ProductInfo = ({ className }: { className: string }) => {
               className="w-12 h-12"
               imgSrc={images.icons.deliveryTruck}
             /> */}
-            <span className="text-[14px] font-bold text-black">מחיר משלוח</span>
+            <span className="text-[14px] font-bold text-black">
+              {paymentPageLabels.shippingPrice}
+            </span>
           </div>
           <PriceTag
             price={totalDeliveryFee}

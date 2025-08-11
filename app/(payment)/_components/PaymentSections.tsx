@@ -1,13 +1,16 @@
 "use client";
 
+import { useEffect } from "react";
+
+import { usePayment } from "@/hooks/usePayment";
+import useCheckoutStore from "@/stores/checkoutStore";
+
 import OrderInfo from "./OrderInfo";
 import DeliveryInfo from "./DeliveryInfo";
 import PaymentInfo from "./PaymentInfo";
 import ProductInfo from "./ProductInfo";
-
-import { usePayment } from "@/hooks/usePayment";
-import { useEffect } from "react";
-import useCheckoutStore from "@/stores/checkoutStore";
+import PaymentSuccessModal from "./PaymentSuccessModal";
+import PaymentFailureModal from "./PaymentFailureModal";
 
 const PaymentSections = ({
   cartDetails,
@@ -16,19 +19,26 @@ const PaymentSections = ({
   cartDetails: any;
   productDetails: ProductInfoProps;
 }) => {
-  const { setCartedProduct, setOrderProducts } = useCheckoutStore();
+  const {
+    setCartedProduct,
+    setOrderProducts,
+    isStepOneComplete,
+    isStepTwoComplete,
+  } = useCheckoutStore();
 
   const {
     // handleClose,
     triggerError,
     handleToggle,
     errors,
-    // setErrors,
     activeStep,
     // setActiveStep,
-    // orderStatus,
+    orderStatus,
     setOrderStatus,
   } = usePayment();
+
+  console.log("-----------isStepOneComplete", isStepOneComplete);
+  console.log("----------isStepTwoComplete", isStepTwoComplete);
 
   useEffect(() => {
     if (cartDetails) {
@@ -60,13 +70,13 @@ const PaymentSections = ({
         <OrderInfo
           handleToggle={handleToggle}
           firstInfo={activeStep === "first"}
-          className={errors.first ? "border border-red-500 shake" : ""}
+          className={!isStepOneComplete ? "border border-red-500 shake" : ""}
         />
         <DeliveryInfo
           setErrorType={triggerError}
           handleToggle={handleToggle}
           secondInfo={activeStep === "second"}
-          className={errors.second ? "border border-red-500 shake" : ""}
+          className={!isStepTwoComplete ? "border border-red-500 shake" : ""}
         />
         <PaymentInfo
           setPaymentStatus={(value: string) =>
@@ -81,6 +91,19 @@ const PaymentSections = ({
       <ProductInfo
         className={errors.cart ? "border border-red-500 shake" : ""}
       />
+
+      {orderStatus === "success" && (
+        <PaymentSuccessModal
+          isOpen={orderStatus === "success"}
+          onClose={() => {}}
+        />
+      )}
+      {orderStatus === "failure" && (
+        <PaymentFailureModal
+          isOpen={orderStatus === "failure"}
+          onClose={() => {}}
+        />
+      )}
     </div>
   );
 };

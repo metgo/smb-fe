@@ -72,7 +72,7 @@ const InputField: React.FC<InputFieldProps> = ({
 
       <label
         htmlFor={field.id}
-        className="absolute right-4 top-[-2px] text-darkgray text-[0.75rem] transition-all peer-placeholder-shown:top-[5px] peer-placeholder-shown:text-base peer-placeholder-shown:text-darkgray peer-focus:top-[-2px] peer-focus:text-[0.75rem]"
+        className="absolute right-2 top-[-2px] text-darkgray text-[0.75rem] transition-all peer-placeholder-shown:top-[5px] peer-placeholder-shown:text-base peer-placeholder-shown:text-darkgray peer-focus:top-[-2px] peer-focus:text-[0.75rem]"
       >
         {field.required && <span className="mr-1">*</span>}
         {field.label}

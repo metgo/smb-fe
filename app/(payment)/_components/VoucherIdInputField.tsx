@@ -1,4 +1,5 @@
 import { TickIcon } from "@/components/ui/icons";
+import { paymentPageLabels } from "@/constant/hebrew";
 import { useVoucherStore } from "@/stores/voucherStore";
 
 const VoucherIdInputField = ({
@@ -53,7 +54,7 @@ const VoucherIdInputField = ({
           onClick={addVoucherInput}
           className="text-primary underline hover:text-primary-dark font-bold"
         >
-          הוסף תו נוסף
+          {paymentPageLabels.addAnotherCharecter}
         </button>
       )}
     </div>

@@ -888,7 +888,7 @@ export function Logo() {
 }
 
 export const TickIcon = ({
-  size = 24,
+  size = 60,
   color = "currentColor",
 }: {
   size?: number;

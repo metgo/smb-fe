@@ -7,35 +7,41 @@ import { CODE, IdentifierId } from "@/constant/envConstants";
 import { checkVoucherAmount, placeOrder } from "@/actions/paymentActions";
 import { useVoucherStore } from "@/stores/voucherStore";
 
-const errorInitialState = {
-  id: -1,
-  msg: "",
-};
+type Step = "first" | "second" | "third" | "product";
+type PaymentStatus = "none" | "success" | "failure";
+type ErrorType = Step | "cart" | "server";
+
+const errorInitialState = { id: -1, msg: "" };
 
 export const usePayment = () => {
   const router = useRouter();
-
   const { voucherDetails, createVoucher } = useVoucherStore();
-  const { customerInfo, cartedProduct, orderProducts, totalDeliveryFee } =
-    useCheckoutStore();
+  const {
+    customerInfo,
+    cartedProduct,
+    orderProducts,
+    totalDeliveryFee,
+    setIsStepOneComplete,
+    setIsStepTwoComplete,
+    isStepOneComplete,
+    isStepTwoComplete,
+    isStepOneSubmitBtnDisabled,
+    isStepTwoSubmitBtnDisabled,
+  } = useCheckoutStore();
 
+  // ------------------- State -------------------
   const [isLoading, setIsLoading] = useState(false);
-  const [paymentUrl, setPaymentUrl] = useState<null | string>(null);
+  const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
   const [selectMethod, setSelectMethod] = useState<string | null>(null);
-  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState<boolean>(false);
-  const [paymentStatus, setPaymentStatus] = useState<
-    "none" | "success" | "failure"
-  >("none");
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>("none");
   const [voucherInputs, setVoucherInputs] = useState<
     { code: string; id?: string }[]
   >([{ code: "" }]);
   const [error, setError] = useState<{ id: number; msg: string } | null>(
     errorInitialState,
   );
-  console.log("--------error", error);
-  const [activeStep, setActiveStep] = useState<
-    "first" | "second" | "third" | "product" | null
-  >("first");
+  const [activeStep, setActiveStep] = useState<Step | null>("first");
   const [errors, setErrors] = useState<{
     first: boolean;
     second: boolean;
@@ -45,151 +51,141 @@ export const usePayment = () => {
     second: false,
     cart: false,
   });
+  const [orderStatus, setOrderStatus] = useState<PaymentStatus>("none");
 
-  const [orderStatus, setOrderStatus] = useState<
-    "none" | "success" | "failure"
-  >("none");
-
-  const handleToggle = (step: "first" | "second" | "third" | "product") => {
-    setActiveStep((prev) => (prev === step ? null : step));
+  // ------------------- Helpers -------------------
+  const resetErrors = () =>
     setErrors({ first: false, second: false, cart: false });
-  };
 
-  const triggerError = (type: "first" | "second" | "cart" | "server") => {
-    setErrors({ first: false, second: false, cart: false });
+  const triggerError = (type: ErrorType) => {
+    resetErrors();
     if (type !== "server") {
       setTimeout(() => setErrors((prev) => ({ ...prev, [type]: true })), 300);
     }
   };
 
-  function handleClose() {
-    setIsPaymentModalOpen(false);
-  }
+  const calculateRemainingAmount = () => {
+    if (!orderProducts?.length) return 0;
+    const productsTotal = orderProducts.reduce(
+      (sum, item) => sum + item.price,
+      0,
+    );
+    const vouchersTotal = voucherDetails.reduce(
+      (sum, item) => sum + item.remainingAmount,
+      0,
+    );
+    return productsTotal - vouchersTotal + totalDeliveryFee;
+  };
 
-  const remainingAmount =
-    orderProducts?.length > 0
-      ? orderProducts?.reduce((sum, item) => sum + item?.price, 0) -
-        (voucherDetails?.length > 0
-          ? voucherDetails?.reduce(
-              (sum, item) => sum + item?.remainingAmount,
-              0,
-            )
-          : 0) +
-        totalDeliveryFee
-      : 0;
+  const isCustomerInfoValid = () => {
+    const { firstName, phone, email } = customerInfo;
+    return firstName && (phone || email);
+  };
 
-  async function handelPlaceOrder() {
-    const { email, phone, firstName } = customerInfo;
+  // ------------------- Step UI -------------------
+  const handleToggle = (step: Step) => {
+    setActiveStep((prev) => (prev === step ? null : step));
+    if (step === "second") {
+      setIsStepOneComplete(isStepOneSubmitBtnDisabled ? false : true);
+    }
+    if (step === "third") {
+      setIsStepOneComplete(isStepOneSubmitBtnDisabled ? false : true);
+      setIsStepTwoComplete(isStepTwoSubmitBtnDisabled ? false : true);
+    }
+    resetErrors();
+  };
+
+  const handleClose = () => setIsPaymentModalOpen(false);
+
+  // ------------------- Payment Flow -------------------
+  const handelPlaceOrder = async () => {
     setIsLoading(true);
+
     try {
       if (!cartedProduct.cartId) {
         triggerError("cart");
         return;
       }
-
-      if (
-        customerInfo.firstName === "" ||
-        (customerInfo.phone === "" && customerInfo.email === "")
-      ) {
+      if (!isCustomerInfoValid()) {
         triggerError("first");
         return;
       }
 
-      const placeOrderPayload = {
-        email,
-        firstName,
+      const payload = {
+        email: customerInfo.email,
+        firstName: customerInfo.firstName,
         campCode: CODE!,
         languagePreference: "he",
         identifierId: IdentifierId!,
         cartId: cartedProduct.cartId,
         voucher: voucherDetails.map((v) => ({ id: v.id })),
-        ...(phone && { phone, countryCode: "972" }),
+        ...(customerInfo.phone && {
+          phone: customerInfo.phone,
+          countryCode: "972",
+        }),
       };
-      // Make API request
-      const data = await placeOrder(placeOrderPayload);
+
+      const data = await placeOrder(payload);
 
       if (!data[0]?.UrlToBit) {
         setPaymentStatus("success");
       }
 
-      if (selectMethod === "bit") {
-        setPaymentUrl(data?.[0]?.UrlToBit);
-      } else {
-        setPaymentUrl(data?.[0]?.Url);
-      }
-
+      setPaymentUrl(
+        selectMethod === "bit" ? data?.[0]?.UrlToBit : data?.[0]?.Url,
+      );
       setIsPaymentModalOpen(true);
       setSelectMethod(null);
     } catch (error) {
-      console.error("Error in handelOrders:", error);
+      console.error("Error placing order:", error);
       triggerError("server");
     } finally {
       setIsLoading(false);
     }
-  }
-
-  function handleIframeLoad(event: React.SyntheticEvent<HTMLIFrameElement>) {
-    const iframe = event.currentTarget;
-    const iframeWindow = iframe.contentWindow;
-
-    // Create a flag to ensure we only process each payment result once
-    let isProcessed = false;
-
-    if (iframeWindow) {
-      const messageHandler = (event: MessageEvent) => {
-        const { data } = event;
-
-        if (isProcessed) return;
-
-        if (
-          data?.value?.includes(urls.paymentSuccess) ||
-          data?.value?.includes(urls.paymentFailure)
-        ) {
-          isProcessed = true;
-
-          window.removeEventListener("message", messageHandler);
-
-          setIsPaymentModalOpen(false);
-          setPaymentUrl(null);
-
-          if (data?.value?.includes(urls.paymentSuccess)) {
-            router.refresh();
-
-            setTimeout(() => {
-              setPaymentStatus("success");
-            }, 100);
-          } else if (data?.value?.includes(urls.paymentFailure)) {
-            router.refresh();
-
-            setTimeout(() => {
-              setPaymentStatus("failure");
-            }, 100);
-          }
-        }
-      };
-
-      window.addEventListener("message", messageHandler);
-
-      return () => {
-        window.removeEventListener("message", messageHandler);
-      };
-    }
-  }
-
-  // ------------------- Voucher Hadler ---------------------
-  const addVoucherInput = () => {
-    setVoucherInputs([...voucherInputs, { code: "" }]);
   };
 
-  const isCodeDuplicate = (code: string, currentIndex: number) => {
+  const handleIframeLoad = (event: React.SyntheticEvent<HTMLIFrameElement>) => {
+    const iframeWindow = event.currentTarget.contentWindow;
+    let isProcessed = false;
+
+    if (!iframeWindow) return;
+
+    const messageHandler = (event: MessageEvent) => {
+      const { data } = event;
+      if (isProcessed) return;
+
+      if (
+        data?.value?.includes(urls.paymentSuccess) ||
+        data?.value?.includes(urls.paymentFailure)
+      ) {
+        isProcessed = true;
+        window.removeEventListener("message", messageHandler);
+        setIsPaymentModalOpen(false);
+        setPaymentUrl(null);
+
+        const status = data?.value?.includes(urls.paymentSuccess)
+          ? "success"
+          : "failure";
+        router.refresh();
+        setTimeout(() => setPaymentStatus(status), 100);
+      }
+    };
+
+    window.addEventListener("message", messageHandler);
+    return () => window.removeEventListener("message", messageHandler);
+  };
+
+  // ------------------- Voucher Logic -------------------
+  const addVoucherInput = () =>
+    setVoucherInputs((prev) => [...prev, { code: "" }]);
+
+  const isCodeDuplicate = (code: string, index: number) => {
     if (!code) return false;
-    const localDuplicate = voucherInputs.some(
-      (input, index) => index !== currentIndex && input.code === code,
+    const localDup = voucherInputs.some(
+      (v, i) => i !== index && v.code === code,
     );
-    const storeDuplicate = voucherDetails?.some(
-      (voucher) => voucher.code === code,
-    );
-    return localDuplicate || storeDuplicate;
+    const storeDup = voucherDetails.some((v) => v.code === code);
+    return localDup || storeDup;
   };
 
   const handleCodeChange = (index: number, value: string) => {
@@ -197,48 +193,41 @@ export const usePayment = () => {
       triggerError("cart");
       return;
     }
-
-    // Allow clearing the input even if it’s a duplicate when empty
     if (value === "" || !isCodeDuplicate(value, index)) {
       setError(null);
-      const updatedInputs = [...voucherInputs];
-      updatedInputs[index].code = value;
-      if (value === "") {
-        delete updatedInputs[index].id; // Reset id when cleared
-      }
-      setVoucherInputs(updatedInputs);
+      setVoucherInputs((prev) => {
+        const updated = [...prev];
+        updated[index].code = value;
+        if (value === "") delete updated[index].id;
+        return updated;
+      });
     } else {
       setError({ id: index, msg: `השובר ${value} כבר קיים` });
-
-      const timer = setTimeout(() => {
-        setError((prev) => (prev?.id === index ? null : prev));
-      }, 2000);
-
-      return () => clearTimeout(timer);
+      setTimeout(
+        () => setError((prev) => (prev?.id === index ? null : prev)),
+        2000,
+      );
     }
   };
 
   const checkVoucher = async (index: number = 0) => {
     const code = voucherInputs[index]?.code;
-    if (!code) return;
-
-    if (isCodeDuplicate(code, index)) {
+    if (!code || isCodeDuplicate(code, index)) {
       setError({ id: index, msg: `השובר ${code} כבר קיים` });
       return;
     }
 
     try {
       const data = await checkVoucherAmount(code, cartedProduct.productId);
-
       if (data.error) {
         setError({ id: index, msg: `השובר לא נמצא` });
         return;
       }
-
-      const updatedInputs = [...voucherInputs];
-      updatedInputs[index].id = data._id;
-      setVoucherInputs(updatedInputs);
-
+      setVoucherInputs((prev) => {
+        const updated = [...prev];
+        updated[index].id = data._id;
+        return updated;
+      });
       createVoucher({
         name: data.name,
         code: data.code,
@@ -246,49 +235,51 @@ export const usePayment = () => {
         id: data._id,
       });
     } catch (error) {
-      console.log("Error checking voucher:", error);
+      console.error("Error checking voucher:", error);
       setError({ id: index, msg: "שגיאה בבדיקת השובר" });
     }
   };
 
-  // useEffect(() => {
-  //   if (voucherId !== null) {
-  //     setVoucherInputs([{ code: voucherId }]);
-  //     if (voucherInputs?.[0].code) checkVoucher();
-  //   }
-  // }, [voucherId]);
-
   useEffect(() => {
     if (voucherDetails.length === 0) {
-      setError({ id: -1, msg: "" });
+      setError(errorInitialState);
     }
   }, [voucherDetails]);
 
   return {
-    handleClose,
-    triggerError,
-    handleToggle,
-    errors,
-    setErrors,
+    // UI
     activeStep,
-    setActiveStep,
+    handleToggle,
+    handleClose,
+    errors,
+    triggerError,
     orderStatus,
     setOrderStatus,
+    isLoading,
     paymentUrl,
-    handleIframeLoad,
-    handelPlaceOrder,
+    paymentStatus,
+    setPaymentStatus,
     isPaymentModalOpen,
     setIsPaymentModalOpen,
     selectMethod,
     setSelectMethod,
-    paymentStatus,
-    isLoading,
-    setPaymentStatus,
 
+    // Payment
+    handelPlaceOrder,
+    handleIframeLoad,
+    remainingAmount: calculateRemainingAmount(),
+
+    // Voucher
     voucherInputs,
     addVoucherInput,
     checkVoucher,
     handleCodeChange,
-    remainingAmount,
+    error,
+
+    // Step completion
+    setIsStepOneComplete,
+    setIsStepTwoComplete,
+    isStepOneComplete,
+    isStepTwoComplete,
   };
 };

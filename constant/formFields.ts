@@ -27,21 +27,21 @@ export const orderInfoFields: FieldConfig[] = [
     label: formLabels.fullName,
     type: "text",
     required: true,
-    className: "min-w-[16rem] w-[650px]",
+    className: "max-sm:w-full w-[650px]",
   },
   {
     id: "phone",
     label: formLabels.phone,
     type: "number",
     required: false,
-    className: "min-w-[16rem] w-[650px]",
+    className: "max-sm:w-full w-[650px]",
   },
   {
     id: "email",
     label: formLabels.email,
     type: "email",
     required: false,
-    className: "min-w-[16rem] w-[650px]",
+    className: "max-sm:w-full w-[650px]",
   },
 ];
 
@@ -74,14 +74,14 @@ export const deliveryAddressFields: FieldConfig[] = [
   {
     id: "city",
     label: formLabels.city,
-    type: "tel",
+    type: "text",
     required: true,
     className: "max-sm:w-full w-[320px] text-right",
   },
   {
     id: "street",
     label: formLabels.street,
-    type: "number",
+    type: "text",
     required: true,
     className: "max-sm:w-full w-[320px]",
   },

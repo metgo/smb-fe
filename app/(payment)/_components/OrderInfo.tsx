@@ -2,19 +2,19 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import { InputField } from "@/components/ui";
+import { InputField, SubmitButton } from "@/components/ui";
 import { orderInfoFields } from "@/constant/formFields";
 import { buttonLabels, paymentPageLabels } from "@/constant/hebrew";
 import { PurchaserInfo, purchaserSchema } from "@/schemas/payment";
 import useCheckoutStore from "@/stores/checkoutStore";
 
 const OrderInfo = ({ handleToggle, firstInfo, className }: OrderInfoProps) => {
-  const { setCustomerInfo } = useCheckoutStore();
+  const { setCustomerInfo, setIsStepOneSubmitBtnComplete } = useCheckoutStore();
+
   const {
     register,
     handleSubmit,
     watch,
-    // reset,
     trigger,
     formState: { errors },
   } = useForm<PurchaserInfo>({
@@ -27,10 +27,10 @@ const OrderInfo = ({ handleToggle, firstInfo, className }: OrderInfoProps) => {
     mode: "onChange",
   });
 
-  // Trigger validation when className is defined and not empty
+  // Validate all fields if className changes
   useEffect(() => {
     if (className && className.trim() !== "") {
-      trigger(); // Validate all fields
+      trigger();
     }
   }, [className, trigger]);
 
@@ -42,6 +42,14 @@ const OrderInfo = ({ handleToggle, firstInfo, className }: OrderInfoProps) => {
     });
     handleToggle("second");
   };
+
+  // Button disabled rule: firstName must be filled AND (phone OR email must be filled)
+  const isButtonDisabled =
+    !watch("firstName") || (!watch("phone") && !watch("email"));
+
+  useEffect(() => {
+    setIsStepOneSubmitBtnComplete(isButtonDisabled ? true : false);
+  }, [isButtonDisabled]);
 
   return (
     <div
@@ -63,18 +71,20 @@ const OrderInfo = ({ handleToggle, firstInfo, className }: OrderInfoProps) => {
         {!firstInfo &&
           watch("firstName") &&
           (watch("phone") || watch("email")) && (
-            <div className="flex gap-2 text-sm text-gray-600">
+            <div className="flex gap-2 text-sm text-gray-600 font-normal">
               <span>{watch("firstName")}</span>
               {watch("phone") && <span>{watch("phone")}</span>}
               {watch("email") && <span>{watch("email")}</span>}
             </div>
           )}
       </div>
+
       {firstInfo && (
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
           <div className="text-[14px] font-semibold">
             {paymentPageLabels.continueAsGuest}
           </div>
+
           {orderInfoFields.map((field) => (
             <InputField
               key={field.id}
@@ -83,16 +93,12 @@ const OrderInfo = ({ handleToggle, firstInfo, className }: OrderInfoProps) => {
               errors={errors}
             />
           ))}
+
           <div className="flex justify-end">
-            <button
-              type="submit"
-              disabled={
-                !watch("firstName") || (!watch("phone") && !watch("email"))
-              }
-              className="px-4 py-2 bg-black text-white font-normal rounded-md cursor-pointer"
-            >
-              {buttonLabels.continueToSelectDelivery}
-            </button>
+            <SubmitButton
+              isDisabled={isButtonDisabled}
+              label={buttonLabels.continueToSelectDelivery}
+            />
           </div>
         </form>
       )}

@@ -1,12 +1,12 @@
 import clsx from "clsx";
 import Image from "next/image";
 import { useForm } from "react-hook-form";
+import { FaCircleCheck } from "react-icons/fa6";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 
 import PriceTag from "@/components/PriceTag";
-import { InputField } from "@/components/ui";
-import { TickIcon } from "@/components/ui/icons";
 import useCheckoutStore from "@/stores/checkoutStore";
+import { InputField, SubmitButton } from "@/components/ui";
 import { postDeliveryInfo } from "@/actions/paymentActions";
 import { buttonLabels, formLabels, paymentPageLabels } from "@/constant/hebrew";
 import {
@@ -20,23 +20,30 @@ const RadioButton = memo(({ isSelected }: { isSelected: boolean }) => (
   <div
     className={`w-5 h-5 rounded-full flex items-center justify-center border ${isSelected ? "border-0" : "bg-white"}`}
   >
-    {isSelected && <TickIcon />}
+    {isSelected && <FaCircleCheck size={30} />}
   </div>
 ));
 
 const DeliveryInfo = memo(
   ({ secondInfo, handleToggle, className }: DeliveryInfoProps) => {
-    const { customerInfo, cartedProduct, orderProducts, setTotalDeliveryFee } =
-      useCheckoutStore();
+    const {
+      customerInfo,
+      cartedProduct,
+      orderProducts,
+      setTotalDeliveryFee,
+      setIsStepTwoSubmitBtnDisabled,
+    } = useCheckoutStore();
 
     const selectRef = useRef<HTMLDivElement>(null);
     const [isOpen, setIsOpen] = useState<string>("");
-    const [clickedProductId, setClickedProductId] = useState<string>(
-      orderProducts[0]?._id || "",
-    );
+    const [isButtonDisabled, setIsButtonDisabled] = useState(false);
+    const [clickedProductId, setClickedProductId] = useState<string>();
     const [deliveryInfos, setDeliveryInfos] = useState<
       DeliveryProductsInfoProps[]
     >([]);
+    const [isSubmitSuccess, setIsSubmitSuccess] = useState(false);
+    const [isSubmitting, setIsSbumitting] = useState(false);
+
     const {
       register,
       formState: { errors },
@@ -58,6 +65,8 @@ const DeliveryInfo = memo(
           deliveryFee: 0,
           activeTab: 0,
           selectedDeliveryArea: "",
+          isDeliveryToPointSelect: false,
+          isDeliveryToHomeSelect: false,
           deliveryToHome: item.deliveryArea.filter(
             (area) => !area.pickUpLocation || area.pickUpLocation.length === 0,
           ),
@@ -78,7 +87,55 @@ const DeliveryInfo = memo(
           },
         })),
       );
+      setClickedProductId(orderProducts?.[0]?._id);
     }, [orderProducts]);
+
+    useEffect(() => {
+      const shouldDisable = deliveryInfos.some((item) => {
+        // Must be selected and have a selectedDeliveryArea
+        if (!item.isSelected || !item.selectedDeliveryArea) {
+          return true;
+        }
+
+        // If activeTab === 1, all giftReceiverInfo fields must be filled
+        if (
+          item.activeTab === 1 &&
+          (!item.giftReceiverInfo.receiverPhone ||
+            !item.giftReceiverInfo.receiverEmail ||
+            !item.giftReceiverInfo.receiverMessage)
+        ) {
+          return true;
+        }
+
+        // If deliveryMethod is "deliver" and it's from deliveryToHome
+        if (
+          // item.deliveryMethod === "deliver" &&
+          // item.deliveryToHome.length > 0 &&
+          item.isDeliveryToHomeSelect &&
+          (!item.deliveryAddress.city ||
+            !item.deliveryAddress.street ||
+            !item.deliveryAddress.houseNo ||
+            !item.deliveryAddress.apartment ||
+            !item.deliveryAddress.greeting)
+        ) {
+          return true;
+        }
+
+        if (item.isDeliveryToPointSelect) return false;
+
+        return false;
+      });
+
+      setIsButtonDisabled(shouldDisable);
+    }, [deliveryInfos]);
+
+    useEffect(() => {
+      if (isButtonDisabled) {
+        setIsStepTwoSubmitBtnDisabled(true);
+      } else {
+        setIsStepTwoSubmitBtnDisabled(false);
+      }
+    }, [isButtonDisabled]);
 
     // Handle click outside for dropdown
     useEffect(() => {
@@ -103,6 +160,13 @@ const DeliveryInfo = memo(
       );
       setTotalDeliveryFee(totalFee);
     }, [deliveryInfos, setTotalDeliveryFee]);
+
+    useEffect(() => {
+      if (isSubmitSuccess) {
+        console.log("k vako yo");
+        handleToggle("third");
+      }
+    }, [isSubmitSuccess]);
 
     const updateDeliveryInfo = useCallback(
       (productId: string, updates: Partial<DeliveryProductsInfoProps>) => {
@@ -137,37 +201,91 @@ const DeliveryInfo = memo(
     );
 
     const onSubmit = useCallback(async () => {
-      for (const item of deliveryInfos) {
-        const { receiverEmail, receiverMessage, receiverPhone } =
-          item.giftReceiverInfo;
-        const { city, houseNo, street, apartment, greeting } =
-          item.deliveryAddress;
+      setIsSbumitting(true);
+      try {
+        for (const item of deliveryInfos) {
+          const { receiverEmail, receiverMessage, receiverPhone } =
+            item.giftReceiverInfo;
+          const { city, houseNo, street, apartment, greeting } =
+            item.deliveryAddress;
 
-        const payloadBody = {
-          productId: item._id,
-          quantity: item.quantity,
-          deliveryFee: item.deliveryFee,
-          deliveryMethod: item.deliveryMethod,
-          deliveryPickupLocation: item.deliveryPickupLocation,
-          firstName: customerInfo?.firstName || "",
-          email:
-            item.activeTab === 1 ? receiverEmail : customerInfo?.email || null,
-          phone:
-            item.activeTab === 1 ? receiverPhone : customerInfo?.phone || null,
-          isGift: item.activeTab === 1,
-          ...(city && { city }),
-          ...(street && { street }),
-          ...(houseNo && { houseNo }),
-          ...(apartment && { apartment }),
-          ...(greeting && { additionalInfo: greeting }),
-          ...(item.activeTab === 1 &&
-            receiverMessage && { additionalInfo: receiverMessage }),
-        };
+          const payloadBody = {
+            productId: item._id,
+            quantity: item.quantity,
+            deliveryFee: item.deliveryFee,
+            deliveryMethod: item.deliveryMethod,
+            deliveryPickupLocation: item.deliveryPickupLocation,
+            firstName: customerInfo?.firstName || "",
+            email:
+              item.activeTab === 1
+                ? receiverEmail
+                : customerInfo?.email || null,
+            phone:
+              item.activeTab === 1
+                ? receiverPhone
+                : customerInfo?.phone || null,
+            isGift: item.activeTab === 1,
+            // Only include delivery address fields if isDeliveryToPointSelect is false
+            ...(!item.isDeliveryToPointSelect && city && { city }),
+            ...(!item.isDeliveryToPointSelect && street && { street }),
+            ...(!item.isDeliveryToPointSelect && houseNo && { houseNo }),
+            ...(!item.isDeliveryToPointSelect && apartment && { apartment }),
+            ...(!item.isDeliveryToPointSelect &&
+              greeting && { additionalInfo: greeting }),
+            ...(item.activeTab === 1 &&
+              receiverMessage && { additionalInfo: receiverMessage }),
+          };
 
-        const res = await postDeliveryInfo(cartedProduct.cartId, payloadBody);
-        if (res.status) handleToggle("third");
+          const res = await postDeliveryInfo(cartedProduct.cartId, payloadBody);
+          setIsSubmitSuccess(!!res.message);
+        }
+      } catch {
+        console.log("something went wrong");
+      } finally {
+        setIsSbumitting(false);
       }
     }, [deliveryInfos, cartedProduct, customerInfo, handleToggle]);
+
+    // const onSubmited = useCallback(async () => {
+    //   setIsSbumitting(true)
+    //   try {
+    //     for (const item of deliveryInfos) {
+    //       const { receiverEmail, receiverMessage, receiverPhone } =
+    //         item.giftReceiverInfo;
+    //       const { city, houseNo, street, apartment, greeting } =
+    //         item.deliveryAddress;
+
+    //       const payloadBody = {
+    //         productId: item._id,
+    //         quantity: item.quantity,
+    //         deliveryFee: item.deliveryFee,
+    //         deliveryMethod: item.deliveryMethod,
+    //         deliveryPickupLocation: item.deliveryPickupLocation,
+    //         firstName: customerInfo?.firstName || "",
+    //         email:
+    //           item.activeTab === 1 ? receiverEmail : customerInfo?.email || null,
+    //         phone:
+    //           item.activeTab === 1 ? receiverPhone : customerInfo?.phone || null,
+    //         isGift: item.activeTab === 1,
+    //         ...(city && { city }),
+    //         ...(street && { street }),
+    //         ...(houseNo && { houseNo }),
+    //         ...(apartment && { apartment }),
+    //         ...(greeting && { additionalInfo: greeting }),
+    //         ...(item.activeTab === 1 &&
+    //           receiverMessage && { additionalInfo: receiverMessage }),
+    //       };
+
+    //       const res = await postDeliveryInfo(cartedProduct.cartId, payloadBody);
+    //       setIsSubmitSuccess(!!res.message)
+    //     }
+    //   } catch {
+    //     console.log("sothing went wrong")
+    //   } finally {
+    //     setIsSbumitting(false)
+    //   }
+
+    // }, [deliveryInfos, cartedProduct, customerInfo, handleToggle]);
 
     const handleProductClick = useCallback((productId: string) => {
       setClickedProductId(productId);
@@ -264,18 +382,20 @@ const DeliveryInfo = memo(
                     )}
 
                     <div className="space-y-2">
-                      {product.deliveryToHome.map((deliveryArea) => {
+                      {product?.deliveryToHome?.map((deliveryArea) => {
                         const isSelected =
                           product.selectedDeliveryArea === deliveryArea.area;
                         return (
                           <div key={deliveryArea.area}>
                             <button
-                              className="flex gap-3 items-center cursor-pointer"
+                              className="flex gap-3 items-center cursor-pointer mb-2"
                               onClick={() =>
                                 updateDeliveryInfo(product._id, {
+                                  deliveryMethod: "deliver",
                                   selectedDeliveryArea: deliveryArea.area,
                                   deliveryFee: Number(deliveryArea.price),
-                                  deliveryMethod: "deliver",
+                                  isDeliveryToHomeSelect: true,
+                                  isDeliveryToPointSelect: false,
                                 })
                               }
                             >
@@ -330,9 +450,9 @@ const DeliveryInfo = memo(
                               className="flex gap-3 items-center cursor-pointer"
                               onClick={() =>
                                 updateDeliveryInfo(product._id, {
-                                  selectedDeliveryArea: item.area,
                                   deliveryMethod: "deliver",
                                   deliveryFee: Number(item.price),
+                                  selectedDeliveryArea: item.area,
                                 })
                               }
                             >
@@ -380,6 +500,8 @@ const DeliveryInfo = memo(
                                                 deliveryPickupLocation:
                                                   location.address,
                                                 deliveryFee: Number(item.price),
+                                                isDeliveryToPointSelect: true,
+                                                isDeliveryToHomeSelect: false,
                                               });
                                               setIsOpen("");
                                             }}
@@ -438,12 +560,10 @@ const DeliveryInfo = memo(
               onSubmit={handleSubmit(onSubmit)}
               className="flex justify-end"
             >
-              <button
-                type="submit"
-                className="px-4 py-2 bg-black text-white font-normal rounded-md cursor-pointer"
-              >
-                {buttonLabels.paymentIsOnGoing}
-              </button>
+              <SubmitButton
+                isDisabled={isButtonDisabled || isSubmitting}
+                label={buttonLabels.paymentIsOnGoing}
+              />
             </form>
           </>
         )}
