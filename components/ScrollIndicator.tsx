@@ -19,10 +19,10 @@ const ScrollIndicator = () => {
   return (
     <div
       onClick={handleScroll}
-      className="absolute bottom-24.5 left-1/2 transform -translate-x-1/2 cursor-pointer z-50"
+      className="absolute bottom-10.5 left-1/2 transform -translate-x-1/2 cursor-pointer z-50"
     >
       <div className="flex flex-col items-center justify-center gap-2.5">
-        <IconImage width={30} height={30} icon="scroll-mouse" />
+        <IconImage width={60} height={60} icon="scroll-down.gif" hasExtension />
       </div>
     </div>
   );

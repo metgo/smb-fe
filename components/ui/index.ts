@@ -6,6 +6,8 @@ import NextImage from "./NextImage";
 import SubmitButton from "./SubmitButton";
 import Tabs from "./Tabs";
 import TextAreaField from "./TextAreaField";
+import ImageCarouselControls from "./ImageCarouselControls";
+
 export {
   InputField,
   TextAreaField,
@@ -15,4 +17,5 @@ export {
   Dialog,
   Tabs,
   SubmitButton,
+  ImageCarouselControls,
 };

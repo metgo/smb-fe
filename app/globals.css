@@ -136,7 +136,9 @@ body {
   padding: 0 !important;
   top: 25px !important;
 }
-
+.custom-info-window {
+  z-index: auto !important;
+}
 /* Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;

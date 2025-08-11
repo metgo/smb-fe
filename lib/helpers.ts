@@ -146,6 +146,37 @@ export function getHebrewDateInfo(isoDate: string) {
   };
 }
 
+export function getUniqueLocations(locations: BusinessMakerProps[]) {
+  const uniqueLocations = new Set();
+  locations?.forEach((location) => {
+    const coords = location?.geoLocation;
+    if (!coords) return;
+
+    const lat = parseFloat(coords.lat);
+    const lng = parseFloat(coords.long);
+
+    const key = `${lat.toFixed(6)}_${lng.toFixed(6)}`;
+    if (uniqueLocations.has(key)) return;
+    uniqueLocations.add(key);
+  });
+  return uniqueLocations;
+}
+
+export function flatStationDetails(station: TrailStationProps) {
+  const flatStationInfo = {
+    _id: station._id,
+    name: station.name,
+    description: station.description,
+    image: station.images?.[0]?.image,
+    geoLocation: station.geoLocation,
+    primaryCategoryId: station.primaryCategoryId._id,
+    order: station.order,
+    type: station.type,
+  };
+
+  return flatStationInfo;
+}
+
 export function removeInlineStylesFromHTML(html: string): string {
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, "text/html");

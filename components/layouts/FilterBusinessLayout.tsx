@@ -3,12 +3,13 @@
 import { usePathname } from "next/navigation";
 
 import { useLoadMore } from "@/hooks/useLoadMore";
-import NoBusinessLayout from "./NoBusinessLayout";
+import NoFeedItemLayout from "./NoFeedItemLayout";
 import useGeneralStore from "@/stores/generalStore";
-import OnlyBusinessMapLayout from "./OnlyBusinessMapLayout";
-import OnlyBusinessCardsLayout from "./OnlyBusinessCardsLayout";
-import MapBusinessIntegratedLayout from "./MapBusinessIntegratedLayout";
+
+import OnlyFeedCardsLayout from "./OnlyFeedCardsLayout";
+import MapFeedIntegratedLayout from "./MapFeedIntegratedLayout";
 import StickyYellowRibbonImage from "../StickyYellowRibbonImage";
+import BusinessPinMap from "../maps/BusinessPinMap";
 
 interface Props {
   businesses: BusinessesProps;
@@ -23,21 +24,21 @@ const FilterBusinessLayout = ({ businesses }: Props) => {
   );
   const totalBusiness = businesses?.totalData;
 
-  if (!totalBusiness) return <NoBusinessLayout />;
+  if (!totalBusiness) return <NoFeedItemLayout />;
 
   const renderLayout = () => {
     if (pathname === "/events")
-      return <OnlyBusinessCardsLayout data={businesses.data} />;
+      return <OnlyFeedCardsLayout data={businesses.data} />;
 
     switch (activeFilterTab) {
       case "gallery":
-        return <OnlyBusinessCardsLayout data={businesses.data} />;
+        return <OnlyFeedCardsLayout data={businesses.data} />;
       case "integrated":
-        return <MapBusinessIntegratedLayout data={businesses.data} />;
+        return <MapFeedIntegratedLayout data={businesses.data} />;
       case "map":
-        return <OnlyBusinessMapLayout />;
+        return <BusinessPinMap />;
       default:
-        return <NoBusinessLayout />;
+        return <NoFeedItemLayout />;
     }
   };
 

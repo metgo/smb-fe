@@ -50,6 +50,15 @@ export const businessMarkers = {
   [categoryId.tour]: "travel.svg",
 };
 
+export const stationMarkers = {
+  [categoryId.eat]: "bw-food.svg",
+  [categoryId.local]: "bw-local.svg",
+  [categoryId.sleep]: "bw-sleep.svg",
+  [categoryId.culture]: "bw-culture.svg",
+  [categoryId.attraction]: "bw-attraction.svg",
+  [categoryId.tour]: "bw-travel.svg",
+};
+
 export const stationCategory = {
   [categoryId.eat]: "trail-food.svg",
   [categoryId.local]: "trail-local.svg",
@@ -77,6 +86,15 @@ export const categoryGradinteColor = {
   [categoryId.culture]: { dim: "#F1A7C9", light: "#F3BDD6" },
   [categoryId.attraction]: { dim: "#CEA7CE", light: "#D9BCD9" },
   [categoryId.tour]: { dim: "#64C5C6", light: "#8ED4D5" },
+};
+
+export const categoryColors = {
+  [categoryId.eat]: "#f09984",
+  [categoryId.local]: "#ffbe3b",
+  [categoryId.sleep]: "#4c95d8",
+  [categoryId.culture]: "#f174ae",
+  [categoryId.attraction]: "#b571b4",
+  [categoryId.tour]: "#00a5a8",
 };
 
 export const categoryBgClasses = {

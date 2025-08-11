@@ -17,6 +17,7 @@ export const misc = {
   addAllStationOnCart: "הוספת כל התחנות לסל",
   toAllTracks: "לכל המסלולים",
   mayInterestYou: "יכול לעניין אתכם",
+  addToRoute: "הוספה למסלול",
 };
 
 export const deliveries = {

@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 
-import { goolgeMapControlers, loadGoogleMapsScript } from "@/lib/googleMap";
+import {
+  goolgeMapControlers,
+  loadGoogleMapsScript,
+} from "@/lib/googleMapUtils";
 
 declare global {
   interface Window {
@@ -8,8 +11,6 @@ declare global {
     nextSlide: () => void;
   }
 }
-
-const center = { lat: 31.0461, lng: 34.8516 };
 
 export const useEventPinMap = (geoLocation: GeoLocation) => {
   const mapRef = useRef(null);
@@ -49,10 +50,10 @@ export const useEventPinMap = (geoLocation: GeoLocation) => {
     loadGoogleMapsScript(() => {
       if (!window.google || !mapRef.current) return;
 
-      const googleMap = new window.google.maps.Map(mapRef.current, {
-        center,
-        ...goolgeMapControlers,
-      });
+      const googleMap = new window.google.maps.Map(
+        mapRef.current,
+        goolgeMapControlers,
+      );
 
       setMap(googleMap);
 

@@ -8,7 +8,7 @@ interface Logo {
 
 declare interface BusinessProps {
   _id: string;
-  slug?: string;
+  slug: string;
   name: string;
   geoLocation: GeoLocation;
   images: ImageItem[];
@@ -57,6 +57,7 @@ declare type FaviouriteBusinessProps = {
 declare type BusinessMakerProps = {
   _id: string;
   primaryCategoryId: string;
+  slug: string;
   geoLocation: {
     _id: string;
     lat: string;
