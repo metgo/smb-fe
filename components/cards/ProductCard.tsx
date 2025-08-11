@@ -1,6 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 
 import { misc } from "@/constant/hebrew";
@@ -8,7 +10,6 @@ import { CardSkeleton } from "../skeletons";
 import { IconImage, NextImage } from "@/components/ui";
 import { useImageScale } from "@/hooks/useImageScale";
 import { useImagePresent } from "@/hooks/useImagePresent";
-import Link from "next/link";
 import PriceTag from "../PriceTag";
 
 const ImageCard = ({
@@ -41,7 +42,7 @@ const ImageCard = ({
       initial={{ x: "100%" }}
       animate={{ x: 0 }}
       exit={{ x: "-100%" }}
-      transition={{ duration: 0.5, ease: "easeInOut" }}
+      transition={{ duration: 0, ease: "easeInOut" }}
       className="absolute top-0 left-0 h-full w-full"
     >
       <NextImage
@@ -64,12 +65,9 @@ const ProductCard = ({
   product: Product;
   primaryCategoryId: string;
 }) => {
+  const router = useRouter();
   const { scale } = useImageScale();
   const [activeImageIndex, setActiveImageIndex] = useState(0);
-
-  function handleImageIndexChange() {
-    setActiveImageIndex((prev) => (prev + 1) % product?.images?.length);
-  }
 
   return (
     <div className=" rounded-2xl overflow-hidden border border-[#D3D3D3]">
@@ -105,7 +103,16 @@ const ProductCard = ({
                   />
                 ))}
               </div>
-              <div onClick={handleImageIndexChange} className="cursor-pointer">
+              <div
+                onClick={(e) => {
+                  e.stopPropagation();
+                  e.preventDefault();
+                  setActiveImageIndex(
+                    (prev) => (prev + 1) % product?.images?.length,
+                  );
+                }}
+                className="cursor-pointer"
+              >
                 <IconImage width={30} height={30} icon="prev" />
               </div>
             </div>
@@ -124,12 +131,17 @@ const ProductCard = ({
           />
 
           <div className="flex items-center justify-between gap-2.5">
-            <Link
-              href={`/check-out?productId=${product._id}`}
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                router.push(`/check-out?productId=${product._id}`);
+              }}
               className="h-10 rounded-xl bg-dark text-white flex items-center justify-center w-full flex-auto cursor-pointer font-normal text-lg"
             >
               <span>{misc.quickPurchase}</span>
-            </Link>
+            </button>
             <div className="flex-none">
               <IconImage width={40} height={40} icon="circular-cart" />
             </div>

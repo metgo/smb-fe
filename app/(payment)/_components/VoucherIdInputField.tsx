@@ -1,5 +1,5 @@
 import { FaCircleCheck } from "react-icons/fa6";
-import { paymentPageLabels } from "@/constant/hebrew";
+import { buttonLabels, paymentPageLabels } from "@/constant/hebrew";
 import { useVoucherStore } from "@/stores/voucherStore";
 
 const VoucherIdInputField = ({
@@ -28,31 +28,31 @@ const VoucherIdInputField = ({
               />
               <div className="absolute top-1/2 left-0 -translate-y-1/2 h-full">
                 {voucherDetails?.some((voucher) => voucher.id === input.id) ? (
-                  <FaCircleCheck size={45} />
+                  <div className="mt-2 ml-1">
+                    <FaCircleCheck size={30} color="green" />
+                  </div>
                 ) : (
                   <button
                     type="button"
                     onClick={() => checkVoucher(index)}
                     className={`
-                      ${input?.code && input?.code?.length > 0 ? "" : "cursor-not-allowed opacity-50"}
+                      ${input?.code && input?.code?.length > 0 ? " cursor-pointer" : "cursor-not-allowed bg-black/50 w-full"}
                       text-white bg-black py-[0.4rem] ml-[0.15rem] px-3 rounded-md font-bold h-full
                     `}
                   >
-                    אישור
+                    {buttonLabels.approval}
                   </button>
                 )}
               </div>
             </div>
-            {error?.id === index && (
-              <p className="text-secondary">{error.msg}</p>
-            )}
+            {error?.id === index && <p className="text-red-500">{error.msg}</p>}
           </div>
         ))}
       </div>
       {voucherDetails?.length === voucherInputs.length && (
         <button
           onClick={addVoucherInput}
-          className="text-primary underline hover:text-primary-dark font-bold"
+          className="text-black underline hover:text-primary-dark font-bold"
         >
           {paymentPageLabels.addAnotherCharecter}
         </button>

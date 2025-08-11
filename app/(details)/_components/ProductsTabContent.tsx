@@ -9,7 +9,10 @@ import { ProductCard } from "@/components/cards";
 const ProductsTabContent = ({
   products,
   primaryCategoryId,
-}: BusinessDetailsProps) => {
+}: {
+  products: Product[];
+  primaryCategoryId: string;
+}) => {
   const [productCount, setProductCount] = useState(10);
   const nextProductRef = useRef<HTMLDivElement | null>(null);
 
@@ -45,7 +48,7 @@ const ProductsTabContent = ({
         })}
       </div>
 
-      {products.length > productCount && (
+      {products?.length > productCount && (
         <button
           type="button"
           onClick={handleShowMoreProducts}

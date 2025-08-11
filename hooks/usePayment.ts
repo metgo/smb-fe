@@ -42,6 +42,7 @@ export const usePayment = () => {
   const [error, setError] = useState<{ id: number; msg: string } | null>(
     errorInitialState,
   );
+
   const [activeStep, setActiveStep] = useState<Step | null>("first");
   const [errors, setErrors] = useState<{
     first: boolean;
@@ -94,6 +95,11 @@ export const usePayment = () => {
     }
     resetErrors();
   };
+
+  useEffect(() => {
+    setIsStepOneComplete(true);
+    setIsStepTwoComplete(true);
+  }, []);
 
   const handleClose = () => setIsPaymentModalOpen(false);
 
@@ -216,7 +222,7 @@ export const usePayment = () => {
 
   const checkVoucher = async (index: number = 0) => {
     const code = voucherInputs[index]?.code;
-    if (!code || isCodeDuplicate(code, index)) {
+    if (isCodeDuplicate(code, index)) {
       setError({ id: index, msg: `השובר ${code} כבר קיים` });
       return;
     }

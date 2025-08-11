@@ -20,6 +20,11 @@ declare interface ProductDetailsProps {
     deliveryReturnExchange: string[];
     deliveryAdditionalInfo: string;
   };
+  openingHrs: OpeningHrs[];
+  deliveryArea: DeliveryArea[];
+  deliverySpecificSellerInfo: string[];
+  deliveryReturnExchange: string[];
+  deliveryAdditionalInfo: string;
 }
 
 interface ProductInfoProps {

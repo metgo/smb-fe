@@ -13,7 +13,10 @@ const tabs = [
 ];
 
 const ProductDetailsFilterTab = ({
-  businessId,
+  deliveryArea,
+  deliverySpecificSellerInfo,
+  deliveryReturnExchange,
+  deliveryAdditionalInfo,
   description,
 }: ProductDetailsProps) => {
   const [activeTab, setActiveTab] = useState<number>(1);
@@ -23,7 +26,14 @@ const ProductDetailsFilterTab = ({
       case 1:
         return <ProductDescriptionTabContent description={description} />;
       case 2:
-        return <DeliveriesTabContent {...businessId} />;
+        return (
+          <DeliveriesTabContent
+            deliveryArea={deliveryArea}
+            deliveryAdditionalInfo={deliveryAdditionalInfo}
+            deliverySpecificSellerInfo={deliverySpecificSellerInfo}
+            deliveryReturnExchange={deliveryReturnExchange}
+          />
+        );
       default:
         return null;
     }

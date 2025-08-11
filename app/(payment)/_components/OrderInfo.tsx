@@ -2,11 +2,11 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
+import useCheckoutStore from "@/stores/checkoutStore";
 import { InputField, SubmitButton } from "@/components/ui";
 import { orderInfoFields } from "@/constant/formFields";
 import { buttonLabels, paymentPageLabels } from "@/constant/hebrew";
 import { PurchaserInfo, purchaserSchema } from "@/schemas/payment";
-import useCheckoutStore from "@/stores/checkoutStore";
 
 const OrderInfo = ({ handleToggle, firstInfo, className }: OrderInfoProps) => {
   const { setCustomerInfo, setIsStepOneSubmitBtnComplete } = useCheckoutStore();
@@ -15,7 +15,6 @@ const OrderInfo = ({ handleToggle, firstInfo, className }: OrderInfoProps) => {
     register,
     handleSubmit,
     watch,
-    trigger,
     formState: { errors },
   } = useForm<PurchaserInfo>({
     resolver: zodResolver(purchaserSchema),
@@ -27,13 +26,6 @@ const OrderInfo = ({ handleToggle, firstInfo, className }: OrderInfoProps) => {
     mode: "onChange",
   });
 
-  // Validate all fields if className changes
-  useEffect(() => {
-    if (className && className.trim() !== "") {
-      trigger();
-    }
-  }, [className, trigger]);
-
   const onSubmit = async (data: PurchaserInfo) => {
     setCustomerInfo({
       firstName: data.firstName,
@@ -43,7 +35,6 @@ const OrderInfo = ({ handleToggle, firstInfo, className }: OrderInfoProps) => {
     handleToggle("second");
   };
 
-  // Button disabled rule: firstName must be filled AND (phone OR email must be filled)
   const isButtonDisabled =
     !watch("firstName") || (!watch("phone") && !watch("email"));
 
