@@ -1,25 +1,26 @@
 import PaymentModal from "./PaymentModal";
 import { IconImage } from "@/components/ui";
-import { usePayment } from "@/hooks/usePayment";
 import useCheckoutStore from "@/stores/checkoutStore";
-import { buttonLabels, paymentPageLabels } from "@/constant/hebrew";
 import VoucherIdInputField from "./VoucherIdInputField";
+import { buttonLabels, paymentPageLabels } from "@/constant/hebrew";
 
-const PaymentInfo = ({ handleToggle, thirdInfo }: PaymentInfoProps) => {
-  const {
-    isLoading,
-    handelPlaceOrder,
-    handleIframeLoad,
-    paymentUrl,
-    isPaymentModalOpen,
-    setSelectMethod,
-    addVoucherInput,
-    checkVoucher,
-    handleCodeChange,
-    voucherInputs,
-    remainingAmount,
-    handlePaymentModalClose,
-  } = usePayment();
+const PaymentInfo = ({
+  handleToggle,
+  thirdInfo,
+  error,
+  isLoading,
+  handelPlaceOrder,
+  handleIframeLoad,
+  paymentUrl,
+  isPaymentModalOpen,
+  setSelectMethod,
+  addVoucherInput,
+  checkVoucher,
+  handleCodeChange,
+  voucherInputs,
+  remainingAmount,
+  handlePaymentModalClose,
+}: PaymentInfoProps) => {
   const { isStepOneSubmitBtnDisabled, isStepTwoSubmitBtnDisabled } =
     useCheckoutStore();
 
@@ -39,7 +40,7 @@ const PaymentInfo = ({ handleToggle, thirdInfo }: PaymentInfoProps) => {
         <div className="flex flex-col gap-3">
           <div className="text-[16px] font-bold text-black">יש לי תו</div>
           <VoucherIdInputField
-            error={{ id: 0, msg: "" }}
+            error={error}
             handleCodeChange={handleCodeChange}
             voucherInputs={voucherInputs}
             checkVoucher={checkVoucher}

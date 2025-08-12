@@ -22,6 +22,25 @@ interface PaymentInfoProps {
   handleToggle: (value: "first" | "second" | "third" | "product") => void;
   setErrorType: (value: "cart" | "first" | "second" | "server") => void;
   setPaymentStatus: (value: string) => void;
+  error: {
+    id: number;
+    msg: string;
+  } | null;
+  isLoading: boolean;
+  handelPlaceOrder: () => void;
+  handleIframeLoad: (e) => void | any;
+  paymentUrl: string | null;
+  isPaymentModalOpen: boolean;
+  setSelectMethod: (method: string) => void;
+  addVoucherInput: () => void;
+  checkVoucher: () => void;
+  handleCodeChange: (index: number, value: string) => void;
+  voucherInputs: {
+    id?: string;
+    code: string;
+  }[];
+  remainingAmount: number;
+  handlePaymentModalClose: () => void;
 }
 
 interface PaymentHookProps {

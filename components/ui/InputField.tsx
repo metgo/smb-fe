@@ -52,7 +52,7 @@ const InputField: React.FC<InputFieldProps> = ({
           {...inputProps}
           rows={field.rows || 3}
           placeholder=" "
-          className={`${hasError ? "border-secondary" : "border-lightgray"} w-full text-[14px] font-semibold peer border bg-transparent rounded-md px-2 pt-2 pb-2 focus:outline-none`}
+          className={`${hasError ? "border-secondary" : "border-black/30"} w-full text-[14px] font-semibold peer border bg-transparent rounded-md px-2 pt-2 pb-2 focus:outline-none`}
         />
       ) : (
         <>
@@ -62,7 +62,7 @@ const InputField: React.FC<InputFieldProps> = ({
             id={field.id}
             {...inputProps}
             placeholder=" "
-            className={`${hasError ? "border-red-500 shake" : "border-lightgray"} w-full text-[14px] font-semibold peer border bg-transparent rounded-md px-2 pt-2 pb-2 focus:outline-none`}
+            className={`${hasError ? "border-red-500 shake" : "border-black/30"} w-full text-[14px] font-semibold peer border bg-transparent rounded-md px-2 pt-2 pb-2 focus:outline-none`}
           />
           {field.isPriceField && (
             <p className="absolute left-[5%] top-2 text-lg font-semibold">₪</p>

@@ -273,3 +273,68 @@ body {
 .shake {
   animation: shake 0.5s ease-in-out;
 }
+
+::-webkit-scrollbar {
+  width: 6px;
+  /* Thin scrollbar */
+  height: 6px;
+  /* For horizontal scroll */
+}
+
+/* Track (background of scrollbar) */
+::-webkit-scrollbar-track {
+  background: transparent;
+  /* Hide when not used */
+}
+
+/* Thumb (draggable scrollbar part) */
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.3);
+  /* Light dark shade */
+  border-radius: 10px;
+  transition:
+    background 0.3s ease-in-out,
+    opacity 0.3s ease-in-out;
+  /* Smooth transition */
+  opacity: 0;
+  /* Hide initially */
+}
+
+/* Thumb hover effect */
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.6);
+  opacity: 1;
+  /* Fully visible when hovering */
+}
+
+input[type="range"]:active::-moz-range-thumb {
+  box-shadow: 0 0 0 13px rgba(255, 85, 0, 0.2);
+}
+
+input[type="range"]:focus::-moz-range-thumb {
+  box-shadow: 0 0 0 13px rgba(255, 85, 0, 0.2);
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  box-shadow: 0 0 0 10px rgba(255, 85, 0, 0.1);
+}
+
+input[type="range"]:active::-webkit-slider-thumb {
+  box-shadow: 0 0 0 13px rgba(255, 85, 0, 0.2);
+}
+
+input[type="range"]:focus::-webkit-slider-thumb {
+  box-shadow: 0 0 0 13px rgba(255, 85, 0, 0.2);
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  border-radius: 8px !important;
+  width: 20px !important;
+  height: 20px !important;
+}
+
+input[type="range"]::-moz-range-thumb {
+  border-radius: 8px !important;
+  width: 20px !important;
+  height: 20px !important;
+}

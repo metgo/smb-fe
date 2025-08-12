@@ -11,11 +11,11 @@ type Step = "first" | "second" | "third" | "product";
 type PaymentStatus = "none" | "success" | "failure";
 type ErrorType = Step | "cart" | "server";
 
-const errorInitialState = { id: -1, msg: "" };
+const voucherErrorInitialState = { id: -1, msg: "" };
 
 export const usePayment = () => {
   const router = useRouter();
-  const { voucherDetails, createVoucher } = useVoucherStore();
+  const { voucherDetails, createVoucher, clearVoucher } = useVoucherStore();
   const {
     customerInfo,
     cartedProduct,
@@ -40,8 +40,10 @@ export const usePayment = () => {
     { code: string; id?: string }[]
   >([{ code: "" }]);
   const [error, setError] = useState<{ id: number; msg: string } | null>(
-    errorInitialState,
+    voucherErrorInitialState,
   );
+
+  console.log("--------------paymentStatus", paymentStatus);
 
   const [activeStep, setActiveStep] = useState<Step | null>("first");
   const [errors, setErrors] = useState<{
@@ -136,8 +138,9 @@ export const usePayment = () => {
       };
 
       const data = await placeOrder(payload);
-
-      if (!data[0]?.UrlToBit) {
+      console.log("-----data", data);
+      if (!data[0]?.UrlToBit || data?.qrCodeUrl) {
+        clearVoucher();
         setPaymentStatus("success");
       }
 
@@ -213,10 +216,12 @@ export const usePayment = () => {
       });
     } else {
       setError({ id: index, msg: `השובר ${value} כבר קיים` });
-      setTimeout(
+      const timer = setTimeout(
         () => setError((prev) => (prev?.id === index ? null : prev)),
         2000,
       );
+
+      return () => clearTimeout(timer);
     }
   };
 
@@ -252,7 +257,7 @@ export const usePayment = () => {
 
   useEffect(() => {
     if (voucherDetails.length === 0) {
-      setError(errorInitialState);
+      setError(voucherErrorInitialState);
     }
   }, [voucherDetails]);
 
