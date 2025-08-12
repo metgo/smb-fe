@@ -15,7 +15,7 @@ const OrderInfo = ({ handleToggle, firstInfo, className }: OrderInfoProps) => {
     register,
     handleSubmit,
     watch,
-    formState: { errors },
+    formState: { errors, isValid },
   } = useForm<PurchaserInfo>({
     resolver: zodResolver(purchaserSchema),
     defaultValues: {
@@ -35,8 +35,8 @@ const OrderInfo = ({ handleToggle, firstInfo, className }: OrderInfoProps) => {
     handleToggle("second");
   };
 
-  const isButtonDisabled =
-    !watch("firstName") || (!watch("phone") && !watch("email"));
+  const isButtonDisabled = !isValid;
+  // !watch("firstName") || (!watch("phone") && !watch("email"));
 
   useEffect(() => {
     setIsStepOneSubmitBtnComplete(isButtonDisabled ? true : false);

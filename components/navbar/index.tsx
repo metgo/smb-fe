@@ -13,8 +13,10 @@ import CurrentTempOfYourCity from "./CurrentTempOfYourCity";
 import BusinessPageFilterTabs from "./BusinessPageFilterTabs";
 import { CONSOLE_URL } from "@/constant/envConstants";
 import NavLogo from "./NavLogo";
+import useCartStore from "@/stores/cartStore";
 
 const Navbar = ({ showFilterTab = false }: { showFilterTab?: boolean }) => {
+  const { getTotalQuantity } = useCartStore();
   return (
     <nav className="ps-19 pe-16 py-2.5 bg-white sticky top-0 z-20 border-b border-[#F5F5F5]">
       <div className="grid grid-cols-10 items-center">
@@ -43,9 +45,11 @@ const Navbar = ({ showFilterTab = false }: { showFilterTab?: boolean }) => {
           <div className="flex items-center gap-2.5">
             <SearchFlow />
             <div className="p-2 relative">
-              {/* <div className="absolute -top-1 -left-0 bg-[#28C268] rounded-full text-center h-[14px] w-[14px]  flex justify-center items-center">
-                <span className="text-[12px] text-white font-bold">3</span>
-              </div> */}
+              <div className="absolute -top-1 -left-0 bg-[#28C268] rounded-full text-center h-[14px] w-[14px]  flex justify-center items-center">
+                <span className="text-[12px] text-white font-bold">
+                  {getTotalQuantity()}
+                </span>
+              </div>
               <ShopbagIcon />
             </div>
             <UserIconHoverCard />

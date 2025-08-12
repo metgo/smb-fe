@@ -11,6 +11,7 @@ import { IconImage, NextImage } from "@/components/ui";
 import { useImageScale } from "@/hooks/useImageScale";
 import { useImagePresent } from "@/hooks/useImagePresent";
 import PriceTag from "../PriceTag";
+import useCartStore from "@/stores/cartStore";
 
 const ImageCard = ({
   imageItem,
@@ -67,7 +68,30 @@ const ProductCard = ({
 }) => {
   const router = useRouter();
   const { scale } = useImageScale();
+  const { setCartProduct } = useCartStore();
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+
+  function handleAddToCart(e: React.MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const cartProduct = {
+      _id: product._id,
+      name: product.name,
+      image: product.images[0].image,
+      desc: product.description,
+      price: product.price.sellingPrice,
+      quantity: 1,
+    };
+    setCartProduct(cartProduct);
+  }
+
+  function handleQuickPurchase(e: React.MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    router.push(`/check-out?productId=${product._id}`);
+  }
 
   return (
     <div className=" rounded-2xl overflow-hidden border border-[#D3D3D3]">
@@ -133,16 +157,12 @@ const ProductCard = ({
           <div className="flex items-center justify-between gap-2.5">
             <button
               type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                e.preventDefault();
-                router.push(`/check-out?productId=${product._id}`);
-              }}
+              onClick={handleQuickPurchase}
               className="h-10 rounded-xl bg-dark text-white flex items-center justify-center w-full flex-auto cursor-pointer font-normal text-lg"
             >
               <span>{misc.quickPurchase}</span>
             </button>
-            <div className="flex-none">
+            <div className="flex-none" onClick={handleAddToCart}>
               <IconImage width={40} height={40} icon="circular-cart" />
             </div>
           </div>
