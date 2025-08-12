@@ -31,8 +31,21 @@ const PaymentSections = ({
     handleToggle,
     errors,
     activeStep,
-    orderStatus,
+    paymentStatus,
     setOrderStatus,
+    error,
+    isLoading,
+    handelPlaceOrder,
+    handleIframeLoad,
+    paymentUrl,
+    isPaymentModalOpen,
+    setSelectMethod,
+    addVoucherInput,
+    checkVoucher,
+    handleCodeChange,
+    voucherInputs,
+    remainingAmount,
+    handlePaymentModalClose,
   } = usePayment();
 
   useEffect(() => {
@@ -80,6 +93,19 @@ const PaymentSections = ({
           setErrorType={triggerError}
           thirdInfo={activeStep === "third"}
           handleToggle={handleToggle}
+          error={error}
+          isLoading={isLoading}
+          handelPlaceOrder={handelPlaceOrder}
+          handleIframeLoad={handleIframeLoad}
+          paymentUrl={paymentUrl}
+          isPaymentModalOpen={isPaymentModalOpen}
+          setSelectMethod={setSelectMethod}
+          addVoucherInput={addVoucherInput}
+          checkVoucher={checkVoucher}
+          handleCodeChange={handleCodeChange}
+          voucherInputs={voucherInputs}
+          remainingAmount={remainingAmount}
+          handlePaymentModalClose={handlePaymentModalClose}
         />
       </div>
 
@@ -87,15 +113,15 @@ const PaymentSections = ({
         className={errors.cart ? "border border-red-500 shake" : ""}
       />
 
-      {orderStatus === "success" && (
+      {paymentStatus === "success" && (
         <PaymentSuccessModal
-          isOpen={orderStatus === "success"}
+          isOpen={paymentStatus === "success"}
           onClose={() => {}}
         />
       )}
-      {orderStatus === "failure" && (
+      {paymentStatus === "failure" && (
         <PaymentFailureModal
-          isOpen={orderStatus === "failure"}
+          isOpen={paymentStatus === "failure"}
           onClose={() => {}}
         />
       )}

@@ -36,8 +36,8 @@ const VoucherIdInputField = ({
                     type="button"
                     onClick={() => checkVoucher(index)}
                     className={`
-                      ${input?.code && input?.code?.length > 0 ? " cursor-pointer" : "cursor-not-allowed bg-black/50 w-full"}
-                      text-white bg-black py-[0.4rem] ml-[0.15rem] px-3 rounded-md font-bold h-full
+                      ${input?.code && input?.code?.length > 0 ? " cursor-pointer" : "cursor-not-allowed bg-black/50"}
+                      text-white bg-black py-[0.4rem] ml-[0.15rem] px-3 rounded-md font-bold w-full h-full
                     `}
                   >
                     {buttonLabels.approval}
