@@ -12,6 +12,8 @@ export function getCommonEmailFields(identifierId: string, theme) {
       FOOTER2: `${bucketUrl}footer/footer-image-2.png`,
       FOOTER3: `${bucketUrl}footer/footer-image-3.png`,
       FOOTER4: `${bucketUrl}footer/footer-image-4.png`,
+      FOOTER5: `${bucketUrl}footer/footer-image-5.png`,
+      FOOTER_BADGE: `${bucketUrl}footer/yellow-ribbon.png`,
       FOOTER_LINK2: theme?.websiteUrl,
       FOOTER_LINK3: theme?.websiteUrl,
       FOOTER_LINK4: 'https://console.metgo.app/',
