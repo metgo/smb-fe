@@ -3,15 +3,15 @@ import { Suspense } from "react";
 import { paymentPageLabels } from "@/constant/hebrew";
 import PaymentSections from "../_components/PaymentSections";
 import {
-  getProductDetailsById,
+  getProductDetailsByIds,
   postProductToCart,
 } from "@/actions/productActions";
 
 const page = async ({ searchParams }: SearchParamsProps | any) => {
-  const productId = searchParams.productId;
-
-  const cartDetails = await postProductToCart(productId as string);
-  const productDetails = await getProductDetailsById(productId as string);
+  const productIdParam = searchParams.productId;
+  const productIds = productIdParam.split(",");
+  const cartDetails = await postProductToCart(productIds[0] as string);
+  const productDetails = await getProductDetailsByIds(productIds);
 
   return (
     <Suspense fallback={<div></div>}>
@@ -23,7 +23,7 @@ const page = async ({ searchParams }: SearchParamsProps | any) => {
 
           <PaymentSections
             cartDetails={cartDetails}
-            productDetails={productDetails}
+            productDetailsList={productDetails}
           />
         </div>
       </div>

@@ -1,5 +1,6 @@
+import Image from "next/image";
+
 import PriceTag from "@/components/PriceTag";
-import { NextImage } from "@/components/ui";
 import { paymentPageLabels } from "@/constant/hebrew";
 import useCheckoutStore from "@/stores/checkoutStore";
 import { useVoucherStore } from "@/stores/voucherStore";
@@ -42,11 +43,11 @@ const ProductInfo = ({ className }: { className: string }) => {
                 key={item._id}
                 className="grid grid-cols-5 gap-2 items-center justify-between"
               >
-                <NextImage
-                  imgSrc={item.image}
-                  alt={item.alt}
+                <Image
                   width={100}
                   height={100}
+                  alt={item.alt}
+                  src={item.image}
                   className="rounded-md col-span-1 "
                 />
                 <div className="col-span-3 font-normal">{item.name}</div>

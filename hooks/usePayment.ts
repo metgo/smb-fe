@@ -43,8 +43,6 @@ export const usePayment = () => {
     voucherErrorInitialState,
   );
 
-  console.log("--------------paymentStatus", paymentStatus);
-
   const [activeStep, setActiveStep] = useState<Step | null>("first");
   const [errors, setErrors] = useState<{
     first: boolean;
@@ -138,7 +136,6 @@ export const usePayment = () => {
       };
 
       const data = await placeOrder(payload);
-      console.log("-----data", data);
       if (!data[0]?.UrlToBit || data?.qrCodeUrl) {
         clearVoucher();
         setPaymentStatus("success");

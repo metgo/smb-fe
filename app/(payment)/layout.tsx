@@ -5,7 +5,7 @@ export default function CheckoutLayout({ children }: ReactChildNode) {
   return (
     <>
       <Navbar />
-      <div className="bg-[#f4f4f4] min-h-[75vh]">{children}</div>
+      <div className="bg-[#fafafa] min-h-[75vh]">{children}</div>
       <Footer />
     </>
   );

@@ -14,10 +14,10 @@ import PaymentFailureModal from "./PaymentFailureModal";
 
 const PaymentSections = ({
   cartDetails,
-  productDetails,
+  productDetailsList,
 }: {
   cartDetails: any;
-  productDetails: ProductInfoProps;
+  productDetailsList: ProductInfoProps[];
 }) => {
   const {
     setCartedProduct,
@@ -58,19 +58,20 @@ const PaymentSections = ({
   }, [cartDetails]);
 
   useEffect(() => {
-    if (productDetails) {
-      const modifiedProductDetails = {
-        _id: productDetails._id,
-        name: productDetails.name,
+    if (Array.isArray(productDetailsList) && productDetailsList.length > 0) {
+      const modifiedProductDetails = productDetailsList?.map((product) => ({
+        _id: product._id,
+        name: product.name,
         quantity: 1,
-        image: productDetails.images[0].image,
-        alt: productDetails.images[0].alt,
-        price: productDetails.price.sellingPrice,
-        deliveryArea: productDetails.deliveryArea,
-      };
-      setOrderProducts([modifiedProductDetails]);
+        image: product.images[0]?.image ?? "",
+        alt: product.images[0]?.alt ?? "",
+        price: product.price.sellingPrice,
+        deliveryArea: product.deliveryArea,
+      }));
+
+      setOrderProducts(modifiedProductDetails);
     }
-  }, [productDetails]);
+  }, [productDetailsList]);
 
   return (
     <div className="flex gap-4 justify-center max-md:flex-wrap max-md:flex-col-reverse">

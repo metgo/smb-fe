@@ -17,6 +17,7 @@ interface CartStoreState {
   removeCartProduct: (id: string) => void;
   clearCart: () => void;
   getTotalQuantity: () => number;
+  getTotalPaidAmount: () => number;
 }
 
 const useCartStore = create<CartStoreState>()(
@@ -76,6 +77,14 @@ const useCartStore = create<CartStoreState>()(
       getTotalQuantity: () => {
         return get().cartProducts.reduce(
           (total, product) => total + product.quantity,
+          0,
+        );
+      },
+
+      // Get total paid amount
+      getTotalPaidAmount: () => {
+        return get().cartProducts.reduce(
+          (total, product) => total + product.price * product.quantity,
           0,
         );
       },

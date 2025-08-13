@@ -77,11 +77,11 @@ const ProductCard = ({
 
     const cartProduct = {
       _id: product._id,
+      quantity: 1,
       name: product.name,
       image: product.images[0].image,
       desc: product.description,
       price: product.price.sellingPrice,
-      quantity: 1,
     };
     setCartProduct(cartProduct);
   }

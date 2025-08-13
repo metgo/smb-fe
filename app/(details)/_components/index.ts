@@ -1,3 +1,4 @@
+import AddToCartBuyNowBtns from "./AddToCartBuyNowBtns";
 import BusinessDetailsFilterTab from "./BusinessDetailsFilterTab";
 import EventDateRange from "./EventDateRange";
 import EventLocationMap from "./EventLocationMap";
@@ -24,4 +25,5 @@ export {
   BusinessDetailsFilterTab,
   ReturnToPrevPageBtn,
   QuantityUpdateBtns,
+  AddToCartBuyNowBtns,
 };
