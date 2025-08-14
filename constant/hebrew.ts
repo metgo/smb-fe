@@ -221,3 +221,14 @@ export const buttonLabels = {
   paymentIsOnGoing: "המשך לתשלום",
   continueShopping: "המשך בקניות",
 };
+
+export const cartLabels = {
+  addToCart: "הוסף לסל",
+  myShoppingCart: "סל הקניות שלי",
+  yourCartIsEmptyYet: "הסל שלך ריק...עדיין!",
+  emptyCartText: "זה הזמן למלא אותו במוצרים מעולים ולתמוך בעסקים המקומיים.",
+  toViewProduct: "לצפייה במוצרים",
+  proceedToSecurePayment: "המשיכו לתשלום מאובטח",
+  toViewMyShoppingCart: "לצפייה בעגלת הקניות שלי",
+  youMayAlsoLike: "מוצרים שחשבנו שתאהבו גם",
+};

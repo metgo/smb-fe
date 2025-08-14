@@ -1,14 +1,12 @@
-import Link from "next/link";
-
 import PriceTag from "@/components/PriceTag";
 import { ProductCard } from "@/components/cards";
-import { IconImage, NextImage } from "@/components/ui";
-import { misc, productDetailsText } from "@/constant/hebrew";
+import { NextImage } from "@/components/ui";
+import { misc } from "@/constant/hebrew";
 import { getProductDetailsBySlug, getProducts } from "@/actions/productActions";
 import ProductDetailsFilterTab from "../../_components/ProductDetailsFilterTab";
 import {
+  AddToCartBuyNowBtns,
   NoDetailsFound,
-  QuantityUpdateBtns,
   ReturnToPrevPageBtn,
 } from "../../_components";
 
@@ -52,22 +50,7 @@ const page = async ({ params }: PageProps) => {
               price={productDetails?.price?.sellingPrice}
               className="text-[32px] text-dark font-normal my-2.5"
             />
-            <QuantityUpdateBtns />
-            <div className=" flex items-center gap-2.5">
-              <Link
-                href={`/check-out?productId=${productDetails._id}`}
-                className="bg-dark rounded-xl px-6 py-2.75 font-bold text-white"
-              >
-                {productDetailsText.continuePlaceOrder}
-              </Link>
-              <button
-                type="button"
-                className="border border-theme text-theme rounded-xl py-2 flex items-center gap-1 font-bold px-4"
-              >
-                <IconImage icon="basket-gray" />
-                <span>{productDetailsText.addToCart}</span>
-              </button>
-            </div>
+            <AddToCartBuyNowBtns product={productDetails} />
           </div>
         </section>
 

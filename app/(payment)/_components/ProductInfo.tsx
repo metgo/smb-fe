@@ -1,5 +1,6 @@
+import Image from "next/image";
+
 import PriceTag from "@/components/PriceTag";
-import { NextImage } from "@/components/ui";
 import { paymentPageLabels } from "@/constant/hebrew";
 import useCheckoutStore from "@/stores/checkoutStore";
 import { useVoucherStore } from "@/stores/voucherStore";
@@ -25,10 +26,10 @@ const ProductInfo = ({ className }: { className: string }) => {
 
   return (
     <div
-      className={`flex flex-col justify-between bg-white p-4 max-sm:rounded-none rounded-md min-w-[20rem] shadow ${className}`}
+      className={`col-span-4 flex flex-col justify-between bg-white p-4 max-sm:rounded-none rounded-md max-w shadow ${className}`}
     >
-      <section className="flex items-center justify-between flex-col h-full">
-        <div>
+      <section className="flex items-center justify-between flex-col h-full ">
+        <div className=" w-full">
           <div className="flex justify-between items-center">
             <div className="flex gap-2 items-center">
               <h2 className="text-2xl font-bold mb-4">
@@ -38,19 +39,22 @@ const ProductInfo = ({ className }: { className: string }) => {
           </div>
           <div>
             {orderProducts?.map((item) => (
-              <div
-                key={item._id}
-                className="grid grid-cols-5 gap-2 items-center justify-between"
-              >
-                <NextImage
-                  imgSrc={item.image}
-                  alt={item.alt}
-                  width={100}
-                  height={100}
-                  className="rounded-md col-span-1 "
-                />
-                <div className="col-span-3 font-normal">{item.name}</div>
-                <PriceTag price={item.price} className="" />
+              <div key={item._id}>
+                <div className="flex gap-2 items-center justify-between">
+                  <Image
+                    width={100}
+                    height={100}
+                    alt={item.alt}
+                    src={item.image}
+                    className="rounded w-[60px] h-[50px] "
+                  />
+                  <div className="md:w-60 font-bold">{item.name}</div>
+                  <div>
+                    <span className="font-bold">{item.quantity}x</span>
+                    <PriceTag price={item.price} className="font-bold ml-1" />
+                  </div>
+                </div>
+                <div className="w-full h-[1px] bg-secondary my-1" />
               </div>
             ))}
           </div>

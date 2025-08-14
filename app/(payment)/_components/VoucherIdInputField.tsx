@@ -21,7 +21,7 @@ const VoucherIdInputField = ({
                 type="text"
                 placeholder="הזן מספר תו"
                 value={input.code}
-                className={`h-full max-md:w-full md:min-w-[450px] font-semibold peer border border-lightgray bg-transparent rounded-md px-3 py-2 focus:outline-none ${
+                className={`h-full max-md:w-full md:min-w-[450px] font-semibold peer border border-lightGray bg-transparent rounded-md px-3 py-2 focus:outline-none ${
                   error?.id === index && "border-secondary shake"
                 }`}
                 onChange={(e) => handleCodeChange(index, e.target.value)}

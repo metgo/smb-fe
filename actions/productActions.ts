@@ -40,6 +40,25 @@ export async function getProductDetailsById(productId: string) {
   }
 }
 
+export async function getProductDetailsByIds(productIds: string[]) {
+  try {
+    const results = await Promise.all(
+      productIds.map(async (id) => {
+        const res = await fetch(
+          `${urls.productsDetails}/${id}?campCode=${CODE}`,
+        );
+        if (!res.ok) throw new Error(`Failed to fetch product ${id}`);
+        return res.json();
+      }),
+    );
+
+    return results; // Array of product details
+  } catch (error) {
+    console.error("Error fetching product details:", error);
+    return [];
+  }
+}
+
 export async function postProductToCart(productId: string, qty: number = 1) {
   const response = await fetch(urls.carts, {
     method: "POST",

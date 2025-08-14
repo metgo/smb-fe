@@ -1,4 +1,4 @@
-import { useGoogleRouteMap } from "@/hooks/useGoogleRouteMap";
+import { useGoogleRouteMap } from "@/hooks/map/useGoogleRouteMap";
 
 const TrailRouteMap = ({ className }: { className: string }) => {
   const { mapRef } = useGoogleRouteMap();

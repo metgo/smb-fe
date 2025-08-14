@@ -5,12 +5,13 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 
-import { misc } from "@/constant/hebrew";
+import PriceTag from "../PriceTag";
+import { cartLabels, misc } from "@/constant/hebrew";
 import { CardSkeleton } from "../skeletons";
 import { IconImage, NextImage } from "@/components/ui";
 import { useImageScale } from "@/hooks/useImageScale";
 import { useImagePresent } from "@/hooks/useImagePresent";
-import PriceTag from "../PriceTag";
+import useCartStore from "@/stores/cartStore";
 
 const ImageCard = ({
   imageItem,
@@ -60,14 +61,40 @@ const ImageCard = ({
 
 const ProductCard = ({
   product,
+  isCartPage = false,
   primaryCategoryId,
 }: {
   product: Product;
+  isCartPage?: boolean;
   primaryCategoryId: string;
 }) => {
   const router = useRouter();
   const { scale } = useImageScale();
+  const { setCartProduct } = useCartStore();
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+
+  function handleAddToCart(e: React.MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const cartProduct = {
+      _id: product._id,
+      quantity: 1,
+      name: product.name,
+      image: product.images[0].image,
+      desc: product.description,
+      price: product.price.sellingPrice,
+      parentId: product.businessId._id,
+    };
+    setCartProduct(cartProduct);
+  }
+
+  function handleQuickPurchase(e: React.MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    router.push(`/check-out?isCart=false&productId=${product._id}`);
+  }
 
   return (
     <div className=" rounded-2xl overflow-hidden border border-[#D3D3D3]">
@@ -130,22 +157,28 @@ const ProductCard = ({
             className="text-[32px] text-dark font-normal my-2.5"
           />
 
-          <div className="flex items-center justify-between gap-2.5">
+          {isCartPage ? (
             <button
               type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                e.preventDefault();
-                router.push(`/check-out?productId=${product._id}`);
-              }}
+              onClick={handleAddToCart}
               className="h-10 rounded-xl bg-dark text-white flex items-center justify-center w-full flex-auto cursor-pointer font-normal text-lg"
             >
-              <span>{misc.quickPurchase}</span>
+              <span>{cartLabels.addToCart}</span>
             </button>
-            <div className="flex-none">
-              <IconImage width={40} height={40} icon="circular-cart" />
+          ) : (
+            <div className="flex items-center justify-between gap-2.5">
+              <button
+                type="button"
+                onClick={handleQuickPurchase}
+                className="h-10 rounded-xl bg-dark text-white flex items-center justify-center w-full flex-auto cursor-pointer font-normal text-lg"
+              >
+                <span>{misc.quickPurchase}</span>
+              </button>
+              <div className="flex-none" onClick={handleAddToCart}>
+                <IconImage width={40} height={40} icon="circular-cart" />
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </Link>
     </div>

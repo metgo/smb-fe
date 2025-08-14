@@ -6,18 +6,21 @@ import { usePayment } from "@/hooks/usePayment";
 import useCheckoutStore from "@/stores/checkoutStore";
 
 import OrderInfo from "./OrderInfo";
-import DeliveryInfo from "./DeliveryInfo";
 import PaymentInfo from "./PaymentInfo";
 import ProductInfo from "./ProductInfo";
 import PaymentSuccessModal from "./PaymentSuccessModal";
 import PaymentFailureModal from "./PaymentFailureModal";
+import useCartStore from "@/stores/cartStore";
+import DeliveryInfo from "./delivery-info";
 
 const PaymentSections = ({
+  isCart,
   cartDetails,
-  productDetails,
+  productDetailsList,
 }: {
+  isCart: boolean;
   cartDetails: any;
-  productDetails: ProductInfoProps;
+  productDetailsList: ProductInfoProps[];
 }) => {
   const {
     setCartedProduct,
@@ -25,6 +28,7 @@ const PaymentSections = ({
     isStepOneComplete,
     isStepTwoComplete,
   } = useCheckoutStore();
+  const { cartProducts } = useCartStore();
 
   const {
     triggerError,
@@ -58,23 +62,37 @@ const PaymentSections = ({
   }, [cartDetails]);
 
   useEffect(() => {
-    if (productDetails) {
-      const modifiedProductDetails = {
-        _id: productDetails._id,
-        name: productDetails.name,
-        quantity: 1,
-        image: productDetails.images[0].image,
-        alt: productDetails.images[0].alt,
-        price: productDetails.price.sellingPrice,
-        deliveryArea: productDetails.deliveryArea,
-      };
-      setOrderProducts([modifiedProductDetails]);
+    if (Array.isArray(productDetailsList) && productDetailsList.length > 0) {
+      const modifiedProductDetails = productDetailsList.map((product) => {
+        let quantity = 1;
+
+        if (isCart && Array.isArray(cartProducts)) {
+          const cartItem = cartProducts.find(
+            (cart) => cart._id === product._id,
+          );
+          if (cartItem) {
+            quantity = cartItem.quantity ?? 1;
+          }
+        }
+
+        return {
+          _id: product._id,
+          name: product.name,
+          quantity,
+          image: product?.images?.[0]?.image ?? "",
+          alt: product?.images?.[0]?.alt ?? "",
+          price: product?.price?.sellingPrice,
+          deliveryArea: product?.deliveryArea,
+        };
+      });
+
+      setOrderProducts(modifiedProductDetails);
     }
-  }, [productDetails]);
+  }, [productDetailsList, isCart, cartProducts]);
 
   return (
-    <div className="flex gap-4 justify-center max-md:flex-wrap max-md:flex-col-reverse">
-      <div className="flex flex-col gap-4 md:w-[60%] w-full">
+    <div className="flex md:grid grid-cols-12 gap-4 justify-center max-md:flex-wrap max-md:flex-col-reverse">
+      <div className="flex flex-col gap-4 w-full col-span-8">
         <OrderInfo
           handleToggle={handleToggle}
           firstInfo={activeStep === "first"}

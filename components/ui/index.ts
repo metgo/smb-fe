@@ -6,6 +6,7 @@ import NextImage from "./NextImage";
 import SubmitButton from "./SubmitButton";
 import Tabs from "./Tabs";
 import ImageCarouselControls from "./ImageCarouselControls";
+import { MotionDialogDiv } from "./MotionDialogDiv";
 
 export {
   InputField,
@@ -15,5 +16,6 @@ export {
   Dialog,
   Tabs,
   SubmitButton,
+  MotionDialogDiv,
   ImageCarouselControls,
 };

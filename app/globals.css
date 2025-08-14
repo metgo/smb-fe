@@ -63,6 +63,9 @@ body {
   .db2 {
     @apply border border-blue-500;
   }
+  .qtyBtn {
+    @apply size-9 rounded-full border border-secondary flex items-center justify-center;
+  }
 
   .glass {
     @apply bg-white/80 backdrop-blur-md border border-white/20 shadow-md;

@@ -4,23 +4,26 @@ type CustomerInfoProps = {
   email: string;
 };
 
+type StepType = "first" | "second" | "third" | "product";
+type ErrorType = "cart" | "first" | "second" | "server";
+
 interface OrderInfoProps {
-  handleToggle: (value: "first" | "second" | "third" | "product") => void;
+  handleToggle: (value: StepType) => void;
   firstInfo: boolean;
   className?: string;
 }
 
 interface DeliveryInfoProps {
   secondInfo: boolean;
-  handleToggle: (value: "first" | "second" | "third" | "product") => void;
+  handleToggle: (value: StepType) => void;
   setErrorType: (errorType: "first" | "second" | "cart") => void;
   className?: string;
 }
 
 interface PaymentInfoProps {
   thirdInfo: boolean;
-  handleToggle: (value: "first" | "second" | "third" | "product") => void;
-  setErrorType: (value: "cart" | "first" | "second" | "server") => void;
+  handleToggle: (value: StepType) => void;
+  setErrorType: (value: ErrorType) => void;
   setPaymentStatus: (value: string) => void;
   error: {
     id: number;
@@ -45,7 +48,7 @@ interface PaymentInfoProps {
 
 interface PaymentHookProps {
   thirdInfo: boolean;
-  setErrorType: (value: "cart" | "first" | "second" | "server") => void;
+  setErrorType: (value: ErrorType) => void;
   setPaymentStatus: (value: string) => void;
   cartId: string;
   products: CartItem[];
@@ -138,4 +141,34 @@ interface PlaceOrderProps {
 interface PaymentSuccessFailureModalProps {
   isOpen: boolean;
   onClose: () => void;
+}
+
+interface DeliveryProductInfo {
+  _id: string;
+  name: string;
+  imageSrc: string;
+  alt: string;
+  quantity: number;
+  deliveryMethod: string;
+  deliveryPickupLocation: string;
+  deliveryFee: number;
+  activeTab: number;
+  selectedDeliveryArea: string;
+  isDeliveryToPointSelect: boolean;
+  isDeliveryToHomeSelect: boolean;
+  deliveryToHome: any[];
+  deliveryToPoint: any[];
+  giftReceiverInfo: {
+    receiverPhone: string;
+    receiverEmail: string;
+    receiverMessage: string;
+  };
+  deliveryAddress: {
+    city: string;
+    street: string;
+    houseNo: string;
+    apartment: string;
+    greeting: string;
+  };
+  isSelected: boolean;
 }

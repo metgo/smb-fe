@@ -84,7 +84,7 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
     <motion.div
       ref={ref}
       style={{ width: `${width}px`, height: `${height}px` }}
-      initial={{ y: 50, opacity: 0 }}
+      initial={{ y: 50, opacity: 1 }}
       animate={controls}
       transition={{ duration: 0.5, ease: "easeOut" }}
     >
