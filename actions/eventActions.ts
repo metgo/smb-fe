@@ -15,7 +15,7 @@ let contextStates = new Map<
 >();
 
 // Reset context state when page reloads
-export const resetEventsContext = () => {
+export const resetEventsContext = async () => {
   contextStates = new Map();
 };
 
