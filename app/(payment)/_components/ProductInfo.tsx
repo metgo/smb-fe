@@ -39,22 +39,22 @@ const ProductInfo = ({ className }: { className: string }) => {
           </div>
           <div>
             {orderProducts?.map((item) => (
-              <div
-                key={item._id}
-                className="flex gap-2 items-center justify-between mb-2"
-              >
-                <Image
-                  width={80}
-                  height={150}
-                  alt={item.alt}
-                  src={item.image}
-                  className="rounded "
-                />
-                <div className="w-60 font-bold">{item.name}</div>
-                <div>
-                  <span className="font-bold"> x {item.quantity}</span>
-                  <PriceTag price={item.price} className="font-bold ml-1" />
+              <div key={item._id}>
+                <div className="flex gap-2 items-center justify-between">
+                  <Image
+                    width={100}
+                    height={100}
+                    alt={item.alt}
+                    src={item.image}
+                    className="rounded w-[60px] h-[50px] "
+                  />
+                  <div className="md:w-60 font-bold">{item.name}</div>
+                  <div>
+                    <span className="font-bold">{item.quantity}x</span>
+                    <PriceTag price={item.price} className="font-bold ml-1" />
+                  </div>
                 </div>
+                <div className="w-full h-[1px] bg-secondary my-1" />
               </div>
             ))}
           </div>

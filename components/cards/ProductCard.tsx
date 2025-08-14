@@ -5,12 +5,12 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 
-import { misc } from "@/constant/hebrew";
+import PriceTag from "../PriceTag";
+import { cartLabels, misc } from "@/constant/hebrew";
 import { CardSkeleton } from "../skeletons";
 import { IconImage, NextImage } from "@/components/ui";
 import { useImageScale } from "@/hooks/useImageScale";
 import { useImagePresent } from "@/hooks/useImagePresent";
-import PriceTag from "../PriceTag";
 import useCartStore from "@/stores/cartStore";
 
 const ImageCard = ({
@@ -61,9 +61,11 @@ const ImageCard = ({
 
 const ProductCard = ({
   product,
+  isCartPage = false,
   primaryCategoryId,
 }: {
   product: Product;
+  isCartPage?: boolean;
   primaryCategoryId: string;
 }) => {
   const router = useRouter();
@@ -82,6 +84,7 @@ const ProductCard = ({
       image: product.images[0].image,
       desc: product.description,
       price: product.price.sellingPrice,
+      parentId: product.businessId._id,
     };
     setCartProduct(cartProduct);
   }
@@ -154,18 +157,28 @@ const ProductCard = ({
             className="text-[32px] text-dark font-normal my-2.5"
           />
 
-          <div className="flex items-center justify-between gap-2.5">
+          {isCartPage ? (
             <button
               type="button"
-              onClick={handleQuickPurchase}
+              onClick={handleAddToCart}
               className="h-10 rounded-xl bg-dark text-white flex items-center justify-center w-full flex-auto cursor-pointer font-normal text-lg"
             >
-              <span>{misc.quickPurchase}</span>
+              <span>{cartLabels.addToCart}</span>
             </button>
-            <div className="flex-none" onClick={handleAddToCart}>
-              <IconImage width={40} height={40} icon="circular-cart" />
+          ) : (
+            <div className="flex items-center justify-between gap-2.5">
+              <button
+                type="button"
+                onClick={handleQuickPurchase}
+                className="h-10 rounded-xl bg-dark text-white flex items-center justify-center w-full flex-auto cursor-pointer font-normal text-lg"
+              >
+                <span>{misc.quickPurchase}</span>
+              </button>
+              <div className="flex-none" onClick={handleAddToCart}>
+                <IconImage width={40} height={40} icon="circular-cart" />
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </Link>
     </div>

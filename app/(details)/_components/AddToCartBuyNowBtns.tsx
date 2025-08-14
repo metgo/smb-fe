@@ -31,6 +31,7 @@ const AddToCartBuyNowBtns = ({ product }: { product: ProductDetailsProps }) => {
       desc: product.description,
       price: product.price.sellingPrice,
       quantity: qty,
+      parentId: product.businessId._id,
     };
     setCartProduct(cartProduct);
   }

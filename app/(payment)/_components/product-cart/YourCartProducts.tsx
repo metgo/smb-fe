@@ -10,7 +10,7 @@ import { cartLabels, paymentPageLabels } from "@/constant/hebrew";
 import QtyIncrementDecrementBtns from "@/components/QtyIncrementDecrementBtns";
 import { useRouter } from "next/navigation";
 
-const CartProductsSection = () => {
+const YourCartProducts = () => {
   const router = useRouter();
   const {
     cartProducts,
@@ -114,4 +114,4 @@ const CartProductsSection = () => {
   );
 };
 
-export default CartProductsSection;
+export default YourCartProducts;

@@ -3,13 +3,13 @@ import { useRouter } from "next/navigation";
 
 import { urls } from "@/lib/endpoints";
 import useCheckoutStore from "@/stores/checkoutStore";
+import { useVoucherStore } from "@/stores/voucherStore";
 import { CODE, IdentifierId } from "@/constant/envConstants";
 import { checkVoucherAmount, placeOrder } from "@/actions/paymentActions";
-import { useVoucherStore } from "@/stores/voucherStore";
 
+type ErrorType = Step | "cart" | "server";
 type Step = "first" | "second" | "third" | "product";
 type PaymentStatus = "none" | "success" | "failure";
-type ErrorType = Step | "cart" | "server";
 
 const voucherErrorInitialState = { id: -1, msg: "" };
 

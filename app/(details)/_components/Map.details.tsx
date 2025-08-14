@@ -1,6 +1,6 @@
 "use client";
 
-import { useGoogleSinglePinMap } from "@/hooks/useGoogleSinglePinMap";
+import { useGoogleSinglePinMap } from "@/hooks/map/useGoogleSinglePinMap";
 
 const Map = ({
   className = "w-[91vw] h-[30vh]",

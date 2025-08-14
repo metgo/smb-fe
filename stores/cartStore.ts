@@ -8,6 +8,7 @@ type CartProduct = {
   image: string;
   price: number;
   quantity: number;
+  parentId: string;
 };
 
 interface CartStoreState {
@@ -18,6 +19,7 @@ interface CartStoreState {
   clearCart: () => void;
   getTotalQuantity: () => number;
   getTotalPaidAmount: () => number;
+  getUniqueParentIds: () => string[];
 }
 
 const useCartStore = create<CartStoreState>()(
@@ -87,6 +89,11 @@ const useCartStore = create<CartStoreState>()(
           (total, product) => total + product.price * product.quantity,
           0,
         );
+      },
+
+      getUniqueParentIds: () => {
+        const parentIds = get().cartProducts.map((product) => product.parentId);
+        return Array.from(new Set(parentIds));
       },
     }),
     {

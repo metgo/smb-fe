@@ -23,6 +23,8 @@ const PaymentInfo = ({
 }: PaymentInfoProps) => {
   const { isStepOneSubmitBtnDisabled, isStepTwoSubmitBtnDisabled } =
     useCheckoutStore();
+  const isDisabled =
+    isStepOneSubmitBtnDisabled || isStepTwoSubmitBtnDisabled || isLoading;
 
   return (
     <div className="bg-white p-4 max-sm:mx-3 max-sm:mb-20 rounded-md flex flex-col gap-4 shadow">
@@ -61,15 +63,9 @@ const PaymentInfo = ({
                       handelPlaceOrder();
                       setSelectMethod("card");
                     }}
-                    disabled={
-                      isStepOneSubmitBtnDisabled ||
-                      isStepTwoSubmitBtnDisabled ||
-                      isLoading
-                    }
+                    disabled={isDisabled}
                     className={`flex gap-3 items-center justify-between border-[1px] border-lightgray rounded-md px-3 py-3 ${
-                      isLoading ||
-                      isStepOneSubmitBtnDisabled ||
-                      isStepTwoSubmitBtnDisabled
+                      isDisabled
                         ? "opacity-50 cursor-not-allowed"
                         : "cursor-pointer"
                     }`}
@@ -89,15 +85,9 @@ const PaymentInfo = ({
                 onClick={() => {
                   handelPlaceOrder();
                 }}
-                disabled={
-                  isStepOneSubmitBtnDisabled ||
-                  isStepTwoSubmitBtnDisabled ||
-                  isLoading
-                }
+                disabled={isDisabled}
                 className={`flex gap-3 items-center justify-between border-[1px] border-lightgray rounded-md px-3 py-3 ${
-                  isLoading ||
-                  isStepOneSubmitBtnDisabled ||
-                  isStepTwoSubmitBtnDisabled
+                  isDisabled
                     ? "opacity-50 cursor-not-allowed"
                     : "cursor-pointer"
                 }`}

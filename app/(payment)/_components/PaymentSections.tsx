@@ -6,11 +6,12 @@ import { usePayment } from "@/hooks/usePayment";
 import useCheckoutStore from "@/stores/checkoutStore";
 
 import OrderInfo from "./OrderInfo";
-import DeliveryInfo from "./DeliveryInfo";
 import PaymentInfo from "./PaymentInfo";
 import ProductInfo from "./ProductInfo";
 import PaymentSuccessModal from "./PaymentSuccessModal";
 import PaymentFailureModal from "./PaymentFailureModal";
+import useCartStore from "@/stores/cartStore";
+import DeliveryInfo from "./delivery-info";
 
 const PaymentSections = ({
   isCart,
@@ -27,7 +28,7 @@ const PaymentSections = ({
     isStepOneComplete,
     isStepTwoComplete,
   } = useCheckoutStore();
-  // const { cartProducts } = useCartStore()
+  const { cartProducts } = useCartStore();
 
   const {
     triggerError,
@@ -62,23 +63,35 @@ const PaymentSections = ({
 
   useEffect(() => {
     if (Array.isArray(productDetailsList) && productDetailsList.length > 0) {
-      const modifiedProductDetails = productDetailsList?.map((product) => ({
-        _id: product._id,
-        name: product.name,
-        quantity: 1,
-        image: product?.images?.[0]?.image ?? "",
-        alt: product?.images?.[0]?.alt ?? "",
-        price: product?.price?.sellingPrice,
-        deliveryArea: product?.deliveryArea,
-      }));
-      console.log(isCart);
+      const modifiedProductDetails = productDetailsList.map((product) => {
+        let quantity = 1;
+
+        if (isCart && Array.isArray(cartProducts)) {
+          const cartItem = cartProducts.find(
+            (cart) => cart._id === product._id,
+          );
+          if (cartItem) {
+            quantity = cartItem.quantity ?? 1;
+          }
+        }
+
+        return {
+          _id: product._id,
+          name: product.name,
+          quantity,
+          image: product?.images?.[0]?.image ?? "",
+          alt: product?.images?.[0]?.alt ?? "",
+          price: product?.price?.sellingPrice,
+          deliveryArea: product?.deliveryArea,
+        };
+      });
 
       setOrderProducts(modifiedProductDetails);
     }
-  }, [productDetailsList]);
+  }, [productDetailsList, isCart, cartProducts]);
 
   return (
-    <div className="grid grid-cols-12 gap-4 justify-center max-md:flex-wrap max-md:flex-col-reverse">
+    <div className="flex md:grid grid-cols-12 gap-4 justify-center max-md:flex-wrap max-md:flex-col-reverse">
       <div className="flex flex-col gap-4 w-full col-span-8">
         <OrderInfo
           handleToggle={handleToggle}

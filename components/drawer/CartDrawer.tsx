@@ -92,7 +92,7 @@ const CartDrawer = ({ setIsOpen }: CartDrawerProps) => {
                   );
                 })}
               </div>
-              <div className="flex items-center justify-center flex-col gap-6.25">
+              <div className="flex items-center justify-center flex-col">
                 <div className="bg-primary flex items-center justify-between px-4 py-3 w-full">
                   <span className="font-bold">
                     {paymentPageLabels.totalPaid}
@@ -101,7 +101,7 @@ const CartDrawer = ({ setIsOpen }: CartDrawerProps) => {
                 </div>
                 <Link
                   href={`/check-out?isCart=true&productId=${cartProducts.map((item) => item._id).join(",")}`}
-                  className="font-bold text-white bg-black rounded-md py-2.5 px-16 cursor-pointer"
+                  className="font-bold text-white bg-black rounded-md py-2.5 px-16 cursor-pointer mt-6 mb-4"
                 >
                   {cartLabels.proceedToSecurePayment}
                 </Link>

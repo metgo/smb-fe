@@ -1,6 +1,6 @@
 "use client";
 
-import { useGoogleMap } from "@/hooks/useGoogleMap";
+import { useGoogleMap } from "@/hooks/map/useGoogleMap";
 
 const BusinessPinMap = ({ className = "w-full" }: { className?: string }) => {
   const { mapRef } = useGoogleMap();
