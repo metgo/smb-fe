@@ -90,7 +90,7 @@ const ProductCard = ({
     e.preventDefault();
     e.stopPropagation();
 
-    router.push(`/check-out?productId=${product._id}`);
+    router.push(`/check-out?isCart=false&productId=${product._id}`);
   }
 
   return (

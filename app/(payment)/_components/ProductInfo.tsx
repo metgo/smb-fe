@@ -26,10 +26,10 @@ const ProductInfo = ({ className }: { className: string }) => {
 
   return (
     <div
-      className={`flex flex-col justify-between bg-white p-4 max-sm:rounded-none rounded-md min-w-[20rem] shadow ${className}`}
+      className={`col-span-4 flex flex-col justify-between bg-white p-4 max-sm:rounded-none rounded-md max-w shadow ${className}`}
     >
-      <section className="flex items-center justify-between flex-col h-full">
-        <div>
+      <section className="flex items-center justify-between flex-col h-full ">
+        <div className=" w-full">
           <div className="flex justify-between items-center">
             <div className="flex gap-2 items-center">
               <h2 className="text-2xl font-bold mb-4">
@@ -41,17 +41,20 @@ const ProductInfo = ({ className }: { className: string }) => {
             {orderProducts?.map((item) => (
               <div
                 key={item._id}
-                className="grid grid-cols-5 gap-2 items-center justify-between"
+                className="flex gap-2 items-center justify-between mb-2"
               >
                 <Image
-                  width={100}
-                  height={100}
+                  width={80}
+                  height={150}
                   alt={item.alt}
                   src={item.image}
-                  className="rounded-md col-span-1 "
+                  className="rounded "
                 />
-                <div className="col-span-3 font-normal">{item.name}</div>
-                <PriceTag price={item.price} className="" />
+                <div className="w-60 font-bold">{item.name}</div>
+                <div>
+                  <span className="font-bold"> x {item.quantity}</span>
+                  <PriceTag price={item.price} className="font-bold ml-1" />
+                </div>
               </div>
             ))}
           </div>

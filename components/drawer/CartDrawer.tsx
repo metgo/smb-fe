@@ -43,7 +43,7 @@ const CartDrawer = ({ setIsOpen }: CartDrawerProps) => {
         <section className="mt-4">
           {cartProducts?.length > 0 ? (
             <div>
-              <div className="min-h-[74vh] overscroll-auto">
+              <div className="min-h-[69vh] overscroll-auto">
                 {cartProducts?.map((product, index) => {
                   const isThresholdQty = product.quantity === 1;
                   return (
@@ -100,10 +100,13 @@ const CartDrawer = ({ setIsOpen }: CartDrawerProps) => {
                   <PriceTag price={getTotalPaidAmount()} />
                 </div>
                 <Link
-                  href={`/check-out?productId=${cartProducts.map((item) => item._id).join(",")}`}
+                  href={`/check-out?isCart=true&productId=${cartProducts.map((item) => item._id).join(",")}`}
                   className="font-bold text-white bg-black rounded-md py-2.5 px-16 cursor-pointer"
                 >
                   {cartLabels.proceedToSecurePayment}
+                </Link>
+                <Link href={`/cart`} className="font-bold underline">
+                  {cartLabels.toViewMyShoppingCart}
                 </Link>
               </div>
             </div>

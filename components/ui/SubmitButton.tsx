@@ -11,7 +11,7 @@ const SubmitButton = ({ isDisabled, label }: SubmitButtonProps) => {
       className={`px-4 py-2 font-normal rounded-md 
                    ${
                      isDisabled
-                       ? "bg-gray-400 text-white cursor-not-allowed"
+                       ? "bg-black/20 text-white cursor-not-allowed"
                        : "bg-black text-white cursor-pointer"
                    }`}
     >

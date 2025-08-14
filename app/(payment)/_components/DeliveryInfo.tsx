@@ -286,7 +286,7 @@ const DeliveryInfo = memo(
                     height={20}
                     className="rounded h-12 w-20 object-cover"
                   />
-                  <span className="line-clamp-1">{product.name}</span>
+                  <span className="line-clamp-1 font-bold">{product.name}</span>
                 </button>
               ))}
             </div>

@@ -13,9 +13,11 @@ import PaymentSuccessModal from "./PaymentSuccessModal";
 import PaymentFailureModal from "./PaymentFailureModal";
 
 const PaymentSections = ({
+  isCart,
   cartDetails,
   productDetailsList,
 }: {
+  isCart: boolean;
   cartDetails: any;
   productDetailsList: ProductInfoProps[];
 }) => {
@@ -25,6 +27,7 @@ const PaymentSections = ({
     isStepOneComplete,
     isStepTwoComplete,
   } = useCheckoutStore();
+  // const { cartProducts } = useCartStore()
 
   const {
     triggerError,
@@ -63,19 +66,20 @@ const PaymentSections = ({
         _id: product._id,
         name: product.name,
         quantity: 1,
-        image: product.images[0]?.image ?? "",
-        alt: product.images[0]?.alt ?? "",
-        price: product.price.sellingPrice,
-        deliveryArea: product.deliveryArea,
+        image: product?.images?.[0]?.image ?? "",
+        alt: product?.images?.[0]?.alt ?? "",
+        price: product?.price?.sellingPrice,
+        deliveryArea: product?.deliveryArea,
       }));
+      console.log(isCart);
 
       setOrderProducts(modifiedProductDetails);
     }
   }, [productDetailsList]);
 
   return (
-    <div className="flex gap-4 justify-center max-md:flex-wrap max-md:flex-col-reverse">
-      <div className="flex flex-col gap-4 md:w-[60%] w-full">
+    <div className="grid grid-cols-12 gap-4 justify-center max-md:flex-wrap max-md:flex-col-reverse">
+      <div className="flex flex-col gap-4 w-full col-span-8">
         <OrderInfo
           handleToggle={handleToggle}
           firstInfo={activeStep === "first"}

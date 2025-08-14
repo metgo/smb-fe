@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import clsx from "clsx";
 import Image from "next/image";
 import { IoMdClose } from "react-icons/io";
 
@@ -8,10 +8,22 @@ import PriceTag from "@/components/PriceTag";
 import useCartStore from "@/stores/cartStore";
 import { cartLabels, paymentPageLabels } from "@/constant/hebrew";
 import QtyIncrementDecrementBtns from "@/components/QtyIncrementDecrementBtns";
+import { useRouter } from "next/navigation";
 
 const CartProductsSection = () => {
-  const { cartProducts, removeCartProduct, getTotalPaidAmount } =
-    useCartStore();
+  const router = useRouter();
+  const {
+    cartProducts,
+    removeCartProduct,
+    getTotalPaidAmount,
+    getTotalQuantity,
+  } = useCartStore();
+
+  function handleRedirectToCheckout() {
+    router.push(
+      `/check-out?isCart=true&productId=${cartProducts.map((item) => item._id).join(",")}`,
+    );
+  }
 
   return (
     <div>
@@ -83,12 +95,18 @@ const CartProductsSection = () => {
               <span className="font-bold">{paymentPageLabels.totalPaid}</span>
               <PriceTag price={getTotalPaidAmount()} />
             </div>
-            <Link
-              href={`/check-out?productId=${cartProducts.map((item) => item._id).join(",")}`}
-              className="font-bold text-white bg-black rounded-md py-2.5 px-16 cursor-pointer"
+            <button
+              onClick={handleRedirectToCheckout}
+              disabled={getTotalQuantity() < 1}
+              className={clsx(
+                "font-bold text-white rounded-md py-2.5 px-16",
+                getTotalQuantity() > 0
+                  ? "cursor-pointer bg-black"
+                  : "cursor-not-allowed bg-black/40",
+              )}
             >
               {cartLabels.proceedToSecurePayment}
-            </Link>
+            </button>
           </div>
         </section>
       </div>

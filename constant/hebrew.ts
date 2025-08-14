@@ -228,4 +228,5 @@ export const cartLabels = {
   emptyCartText: "זה הזמן למלא אותו במוצרים מעולים ולתמוך בעסקים המקומיים.",
   toViewProduct: "לצפייה במוצרים",
   proceedToSecurePayment: "המשיכו לתשלום מאובטח",
+  toViewMyShoppingCart: "לצפייה בעגלת הקניות שלי",
 };
