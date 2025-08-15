@@ -9,7 +9,7 @@ import { IconImage, NextImage } from "@/components/ui";
 import { navigationPaths } from "@/lib/utils";
 import useGeneralStore from "@/stores/generalStore";
 import { CardSkeleton } from "@/components/skeletons";
-import { useImagePresent } from "@/hooks/useImagePresent";
+import { useImagePresent } from "@/hooks/image/useImagePresent";
 
 const BusinessCard = ({ height, width, business }: BusinessCardProps) => {
   const pathname = usePathname();

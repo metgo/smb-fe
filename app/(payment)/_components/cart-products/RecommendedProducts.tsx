@@ -1,14 +1,14 @@
-"use client";
+import { useEffect, useRef, useState } from "react";
 
-import { ProductCard } from "@/components/cards";
-import { CODE } from "@/constant/envConstants";
 import { urls } from "@/lib/endpoints";
 import useCartStore from "@/stores/cartStore";
-import { useEffect, useRef, useState } from "react";
+import { CODE } from "@/constant/envConstants";
+import { ProductCard } from "@/components/cards";
+import { cartLabels } from "@/constant/hebrew";
 
 const RecommendedProducts = () => {
   const loadingRef = useRef(null);
-  // const initialCheckDone = useRef(false);
+  const initialCheckDone = useRef(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const { getUniqueParentIds } = useCartStore();
@@ -122,19 +122,43 @@ const RecommendedProducts = () => {
     };
   }, [fetchMore, hasMore, isLoading]);
 
+  useEffect(() => {
+    if (
+      !scrollContainerRef.current ||
+      isLoading ||
+      !hasMore ||
+      products.length === 0 ||
+      initialCheckDone.current
+    )
+      return;
+    const timer = setTimeout(() => {
+      const { scrollWidth, clientWidth } = scrollContainerRef.current!;
+
+      if (scrollWidth <= clientWidth) {
+        fetchMore();
+      }
+      initialCheckDone.current = true;
+    }, 200);
+
+    return () => clearTimeout(timer);
+  }, [products.length, fetchMore, hasMore, isLoading]);
+
   return (
-    <div>
-      <div className="flex gap-4">
+    <section>
+      <h1 className="text-2xl font-bold text-center mt-20 mb-4">
+        {cartLabels.youMayAlsoLike}
+      </h1>
+      <div
+        ref={scrollContainerRef}
+        className="flex flex-auto gap-4 overflow-x-auto hide-scrollbar"
+      >
         {products.map((product) => (
-          <ProductCard
-            isCartPage
-            key={product._id}
-            product={product}
-            primaryCategoryId=""
-          />
+          <div key={product._id} className="flex-1">
+            <ProductCard isCartPage product={product} primaryCategoryId="" />
+          </div>
         ))}
       </div>
-    </div>
+    </section>
   );
 };
 

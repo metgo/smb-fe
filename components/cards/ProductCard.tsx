@@ -6,12 +6,12 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 
 import PriceTag from "../PriceTag";
+import useCartStore from "@/stores/cartStore";
 import { cartLabels, misc } from "@/constant/hebrew";
 import { CardSkeleton } from "../skeletons";
 import { IconImage, NextImage } from "@/components/ui";
-import { useImageScale } from "@/hooks/useImageScale";
-import { useImagePresent } from "@/hooks/useImagePresent";
-import useCartStore from "@/stores/cartStore";
+import { useImageScale } from "@/hooks/image/useImageScale";
+import { useImagePresent } from "@/hooks/image/useImagePresent";
 
 const ImageCard = ({
   imageItem,
@@ -93,7 +93,7 @@ const ProductCard = ({
     e.preventDefault();
     e.stopPropagation();
 
-    router.push(`/check-out?isCart=false&productId=${product._id}`);
+    router.push(`/check-out?isCart=false&qty=1&productId=${product._id}`);
   }
 
   return (

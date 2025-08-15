@@ -10,6 +10,7 @@ import {
 const page = async ({ searchParams }: SearchParamsProps | any) => {
   const productIdParam = searchParams.productId;
   const isCart = searchParams?.isCart || false;
+  const productQty = searchParams?.qty || 1;
   const productIds = productIdParam.split(",");
   const cartDetails = await postProductToCart(productIds[0] as string);
   const productDetails = await getProductDetailsByIds(productIds);
@@ -24,6 +25,7 @@ const page = async ({ searchParams }: SearchParamsProps | any) => {
 
           <PaymentSections
             isCart={isCart}
+            productQty={productQty}
             cartDetails={cartDetails}
             productDetailsList={productDetails}
           />

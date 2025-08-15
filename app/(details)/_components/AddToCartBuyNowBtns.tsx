@@ -1,15 +1,15 @@
 "use client";
 
-import { useState } from "react";
-import { MinusIcon, PlusIcon } from "@/components/ui/icons";
 import clsx from "clsx";
 import Link from "next/link";
-import { productDetailsText } from "@/constant/hebrew";
+import { useState } from "react";
+
 import { IconImage } from "@/components/ui";
 import useCartStore from "@/stores/cartStore";
+import { FaMinus, FaPlus } from "react-icons/fa6";
+import { productDetailsText } from "@/constant/hebrew";
 
 const AddToCartBuyNowBtns = ({ product }: { product: ProductDetailsProps }) => {
-  const canIncrease = true;
   const { setCartProduct } = useCartStore();
   const [qty, setQty] = useState(1);
 
@@ -38,35 +38,31 @@ const AddToCartBuyNowBtns = ({ product }: { product: ProductDetailsProps }) => {
 
   return (
     <>
-      <div className="flex items-center border h-[40px] rounded-lg bg-white border-gray w-max my-6">
+      <div className="flex items-center gap-3 mb-4">
         <button
           type="button"
+          className="size-9 rounded-full border border-secondary flex items-center justify-center cursor-pointer"
           onClick={handleIncrease}
-          className={clsx(
-            "w-10 h-[36px] mr-1 flex items-center justify-center text-gray-700 font-bold rounded-full hover:bg-gray-200 transition",
-            !canIncrease ? "cursor-not-allowed" : "cursor-pointer",
-          )}
         >
-          <PlusIcon />
+          <FaPlus />
         </button>
-        <div className="flex items-center justify-center w-[36px] h-[36px] text-[18px] rounded-full font-semibold">
-          {qty}
-        </div>
+        <span>{qty}</span>
         <button
           type="button"
-          onClick={handleDecrease}
           disabled={qty === 1}
           className={clsx(
-            "w-10 h-[36px] flex items-center justify-center text-gray-700 font-bold rounded-full hover:bg-gray-200 transition",
             qty === 1 ? "cursor-not-allowed" : "cursor-pointer",
+            "size-9 rounded-full border border-secondary flex items-center justify-center",
           )}
+          onClick={handleDecrease}
         >
-          <MinusIcon />
+          <FaMinus />
         </button>
       </div>
+
       <div className=" flex items-center gap-2.5">
         <Link
-          href={`/check-out?productId=${product._id}`}
+          href={`/check-out?qty=${qty}&productId=${product._id}`}
           className="bg-dark rounded-xl px-6 py-2.75 font-bold text-white"
         >
           {productDetailsText.continuePlaceOrder}

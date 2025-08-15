@@ -34,6 +34,7 @@ const VoucherIdInputField = ({
                 ) : (
                   <button
                     type="button"
+                    disabled={!!!input?.code && input?.code?.length === 0}
                     onClick={() => checkVoucher(index)}
                     className={`
                       ${input?.code && input?.code?.length > 0 ? " cursor-pointer" : "cursor-not-allowed bg-black/50"}
