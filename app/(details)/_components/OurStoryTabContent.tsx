@@ -2,10 +2,10 @@
 
 import Map from "./Map.details";
 import { menuItems, misc } from "@/constant/hebrew";
-import { useImageScale } from "@/hooks/useImageScale";
+import { useImageScale } from "@/hooks/image/useImageScale";
 import { IconImage, NextImage } from "@/components/ui";
 import { CardSkeleton } from "@/components/skeletons";
-import { useImagePresent } from "@/hooks/useImagePresent";
+import { useImagePresent } from "@/hooks/image/useImagePresent";
 import { daysMapping } from "@/lib/utils";
 
 const ConstatUsInfo = ({ icon, text }: { icon: string; text: string }) => {

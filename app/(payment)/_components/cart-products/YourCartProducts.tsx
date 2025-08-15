@@ -1,5 +1,3 @@
-"use client";
-
 import clsx from "clsx";
 import Image from "next/image";
 import { IoMdClose } from "react-icons/io";
@@ -53,7 +51,7 @@ const YourCartProducts = () => {
                           {product.name}
                         </h3>
                         <div
-                          className="line-clamp-2 font-normal"
+                          className="line-clamp-2 font-normal w-1/2 text-[12px] text-theme"
                           dangerouslySetInnerHTML={{ __html: product.desc }}
                         />
                       </div>

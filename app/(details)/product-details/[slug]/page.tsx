@@ -30,13 +30,13 @@ const page = async ({ params }: PageProps) => {
 
       <div className="mx-20 py-12">
         <section className="grid grid-cols-2 gap-10">
-          <div className="col-span-1">
+          <div className="col-span-1 h-[533px]">
             <NextImage
               width={575}
               height={533}
               alt={productDetails?.images?.[0]?.alt}
               imgSrc={productDetails?.images?.[0]?.image}
-              className="w-full rounded-2xl"
+              className="w-full h-full rounded-2xl object-cover"
             />
           </div>
           <div className="col-span-1">
@@ -64,7 +64,7 @@ const page = async ({ params }: PageProps) => {
             </h2>
 
             <div className="flex flex-col items-center justify-center gap-4">
-              <div className="grid grid-cols-5 gap-5 w-full">
+              <div className="grid grid-cols-5 gap-5 w-full overflow-x-auto">
                 {filteredRelatedProducts?.map((product) => (
                   <ProductCard
                     key={product._id}

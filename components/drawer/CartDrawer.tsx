@@ -1,11 +1,12 @@
+import Link from "next/link";
 import Image from "next/image";
 import { IoMdClose } from "react-icons/io";
 
 import PriceTag from "../PriceTag";
+import EmptyCart from "../EmptyCart";
 import { MotionDialogDiv } from "../ui";
 import useCartStore from "@/stores/cartStore";
 import { cartLabels, paymentPageLabels } from "@/constant/hebrew";
-import Link from "next/link";
 import QtyIncrementDecrementBtns from "../QtyIncrementDecrementBtns";
 
 interface CartDrawerProps {
@@ -111,20 +112,7 @@ const CartDrawer = ({ setIsOpen }: CartDrawerProps) => {
               </div>
             </div>
           ) : (
-            <div className="flex items-center justify-center flex-col gap-3 h-[80vh] w-full">
-              <h3 className="text-2xl font-bold">
-                {cartLabels.yourCartIsEmptyYet}
-              </h3>
-              <p className="max-w-60 text-center font-normal">
-                {cartLabels.emptyCartText}
-              </p>
-              <button
-                type="button"
-                className="font-bold text-white bg-black rounded-md py-2.5 px-16 cursor-pointer"
-              >
-                {cartLabels.toViewProduct}
-              </button>
-            </div>
+            <EmptyCart />
           )}
         </section>
       </MotionDialogDiv>

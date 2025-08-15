@@ -9,7 +9,7 @@ import { navigationPaths } from "@/lib/utils";
 import useGeneralStore from "@/stores/generalStore";
 import { CardSkeleton } from "@/components/skeletons";
 import { IconImage, ImageCarouselControls, NextImage } from "@/components/ui";
-import { useImagePresent } from "@/hooks/useImagePresent";
+import { useImagePresent } from "@/hooks/image/useImagePresent";
 import { removeInlineStylesFromHTML } from "@/lib/helpers";
 
 const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {

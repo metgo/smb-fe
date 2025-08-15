@@ -1,13 +1,6 @@
 import OrderInfo from "./OrderInfo";
 import PaymentInfo from "./PaymentInfo";
-import RecommendedProducts from "./product-cart/RecommendedProducts";
-import YourCartProducts from "./product-cart/YourCartProducts";
 import ProductInfo from "./ProductInfo";
+import CartProducts from "./cart-products";
 
-export {
-  OrderInfo,
-  PaymentInfo,
-  ProductInfo,
-  YourCartProducts,
-  RecommendedProducts,
-};
+export { OrderInfo, PaymentInfo, ProductInfo, CartProducts };

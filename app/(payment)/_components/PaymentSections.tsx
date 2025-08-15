@@ -2,23 +2,25 @@
 
 import { useEffect } from "react";
 
-import { usePayment } from "@/hooks/usePayment";
+import useCartStore from "@/stores/cartStore";
 import useCheckoutStore from "@/stores/checkoutStore";
+import { usePayment } from "@/hooks/payment/usePayment";
 
 import OrderInfo from "./OrderInfo";
 import PaymentInfo from "./PaymentInfo";
 import ProductInfo from "./ProductInfo";
+import DeliveryInfo from "./delivery-info";
 import PaymentSuccessModal from "./PaymentSuccessModal";
 import PaymentFailureModal from "./PaymentFailureModal";
-import useCartStore from "@/stores/cartStore";
-import DeliveryInfo from "./delivery-info";
 
 const PaymentSections = ({
   isCart,
+  productQty,
   cartDetails,
   productDetailsList,
 }: {
   isCart: boolean;
+  productQty: number;
   cartDetails: any;
   productDetailsList: ProductInfoProps[];
 }) => {
@@ -64,7 +66,7 @@ const PaymentSections = ({
   useEffect(() => {
     if (Array.isArray(productDetailsList) && productDetailsList.length > 0) {
       const modifiedProductDetails = productDetailsList.map((product) => {
-        let quantity = 1;
+        let quantity = productQty;
 
         if (isCart && Array.isArray(cartProducts)) {
           const cartItem = cartProducts.find(

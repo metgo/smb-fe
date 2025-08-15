@@ -75,3 +75,5 @@ export async function postProductToCart(productId: string, qty: number = 1) {
   });
   return await response.json();
 }
+
+export async function getRecommendedProducts() {}

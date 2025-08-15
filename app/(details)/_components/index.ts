@@ -7,7 +7,6 @@ import ImageGallery from "./ImageGallery";
 import Location from "./Location.details";
 import Map from "./Map.details";
 import NoDetailsFound from "./NoDetailsFound";
-import QuantityUpdateBtns from "./QuantityUpdateBtns";
 import RatingReviewLocation from "./RatingReviewLocation";
 import ReturnToPrevPageBtn from "./ReturnToPrevPageBtn";
 import Title from "./Title.details";
@@ -24,6 +23,5 @@ export {
   RatingReviewLocation,
   BusinessDetailsFilterTab,
   ReturnToPrevPageBtn,
-  QuantityUpdateBtns,
   AddToCartBuyNowBtns,
 };
