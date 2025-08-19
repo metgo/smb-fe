@@ -31,6 +31,7 @@ export const useDeliveryInfo = (handleToggle: (step: StepType) => void) => {
       imageSrc: item.image || "",
       alt: item.alt || "",
       quantity: 1,
+      itemType: item.itemType,
       deliveryMethod: "",
       deliveryPickupLocation: "",
       deliveryFee: 0,
@@ -145,6 +146,7 @@ export const useDeliveryInfo = (handleToggle: (step: StepType) => void) => {
         const payload = {
           productId: item._id,
           quantity: item.quantity,
+          itemType: item.itemType,
           deliveryFee: item.deliveryFee,
           deliveryMethod: item.deliveryMethod,
           deliveryPickupLocation: item.deliveryPickupLocation,

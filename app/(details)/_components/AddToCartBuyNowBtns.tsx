@@ -1,23 +1,24 @@
 "use client";
 
 import clsx from "clsx";
-import Link from "next/link";
 import { useState } from "react";
 
 import { IconImage } from "@/components/ui";
 import useCartStore from "@/stores/cartStore";
 import { FaMinus, FaPlus } from "react-icons/fa6";
 import { productDetailsText } from "@/constant/hebrew";
+import { itemType } from "@/lib/utils";
+import { useRouter } from "next/navigation";
 
 const AddToCartBuyNowBtns = ({ product }: { product: ProductDetailsProps }) => {
-  const { setCartProduct } = useCartStore();
+  const router = useRouter();
   const [qty, setQty] = useState(1);
 
-  function handleIncrease() {
-    setQty((prev) => prev + 1);
-  }
-  function handleDecrease() {
-    setQty((prev) => prev - 1);
+  const { setCartProduct, setBuyNowProduct } = useCartStore();
+
+  function handleQtyChange(operator: string) {
+    if (operator === "increment") setQty((prev) => prev + 1);
+    else setQty((prev) => prev - 1);
   }
 
   function handleAddToCart(e: React.MouseEvent) {
@@ -31,9 +32,22 @@ const AddToCartBuyNowBtns = ({ product }: { product: ProductDetailsProps }) => {
       desc: product.description,
       price: product.price.sellingPrice,
       quantity: qty,
+      itemType: itemType.product,
       parentId: product.businessId._id,
     };
     setCartProduct(cartProduct);
+  }
+
+  function handleQuickPurchase(e: React.MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    const buyNowProduct = {
+      _id: product._id,
+      qty: 1,
+      type: itemType.product,
+    };
+    setBuyNowProduct(buyNowProduct);
+    router.push(`/check-out?isCart=false`);
   }
 
   return (
@@ -42,7 +56,7 @@ const AddToCartBuyNowBtns = ({ product }: { product: ProductDetailsProps }) => {
         <button
           type="button"
           className="size-9 rounded-full border border-secondary flex items-center justify-center cursor-pointer"
-          onClick={handleIncrease}
+          onClick={() => handleQtyChange("increment")}
         >
           <FaPlus />
         </button>
@@ -54,19 +68,20 @@ const AddToCartBuyNowBtns = ({ product }: { product: ProductDetailsProps }) => {
             qty === 1 ? "cursor-not-allowed" : "cursor-pointer",
             "size-9 rounded-full border border-secondary flex items-center justify-center",
           )}
-          onClick={handleDecrease}
+          onClick={() => handleQtyChange("decrement")}
         >
           <FaMinus />
         </button>
       </div>
 
       <div className=" flex items-center gap-2.5">
-        <Link
-          href={`/check-out?qty=${qty}&productId=${product._id}`}
+        <button
+          type="button"
+          onClick={handleQuickPurchase}
           className="bg-dark rounded-xl px-6 py-2.75 font-bold text-white"
         >
           {productDetailsText.continuePlaceOrder}
-        </Link>
+        </button>
         <button
           type="button"
           onClick={handleAddToCart}

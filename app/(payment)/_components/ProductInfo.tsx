@@ -5,7 +5,7 @@ import { paymentPageLabels } from "@/constant/hebrew";
 import useCheckoutStore from "@/stores/checkoutStore";
 import { useVoucherStore } from "@/stores/voucherStore";
 
-const ProductInfo = ({ className }: { className: string }) => {
+const ProductInfo = () => {
   const { orderProducts, totalDeliveryFee } = useCheckoutStore();
   const { voucherDetails, removeVoucher } = useVoucherStore();
 
@@ -26,7 +26,7 @@ const ProductInfo = ({ className }: { className: string }) => {
 
   return (
     <div
-      className={`col-span-4 flex flex-col justify-between bg-white p-4 max-sm:rounded-none rounded-md max-w shadow ${className}`}
+      className={`col-span-4 flex flex-col justify-between bg-white p-4 max-sm:rounded-none rounded-md max-w shadow`}
     >
       <section className="flex items-center justify-between flex-col h-full ">
         <div className=" w-full">

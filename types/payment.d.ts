@@ -22,6 +22,7 @@ interface DeliveryInfoProps {
 
 interface PaymentInfoProps {
   thirdInfo: boolean;
+  className?: string;
   handleToggle: (value: StepType) => void;
   setErrorType: (value: ErrorType) => void;
   setPaymentStatus: (value: string) => void;
@@ -30,7 +31,7 @@ interface PaymentInfoProps {
     msg: string;
   } | null;
   isLoading: boolean;
-  handelPlaceOrder: () => void;
+  handlePlaceOrder: () => void;
   handleIframeLoad: (e) => void | any;
   paymentUrl: string | null;
   isPaymentModalOpen: boolean;
@@ -111,6 +112,7 @@ interface DeliveryProductsInfoProps {
 
 type CartTypeProps = {
   productId: string;
+  itemType: string;
   firstName: string;
   email?: string | null;
   phone?: string | null;
@@ -149,6 +151,7 @@ interface DeliveryProductInfo {
   imageSrc: string;
   alt: string;
   quantity: number;
+  itemType: string;
   deliveryMethod: string;
   deliveryPickupLocation: string;
   deliveryFee: number;

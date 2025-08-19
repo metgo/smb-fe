@@ -86,6 +86,7 @@ export const events = {
   children: "ילדים",
   kosher: "כשר",
   eventDetails: "פרטי האירוע",
+  eventTicketTitle: "רכישת כרטיסים למסיבת קצב לילית בנגב",
 };
 
 export const tempCardInfo = {
@@ -189,6 +190,7 @@ export const formLabels = {
 
 export const buttonLabels = {
   show: "הצג",
+  continue: "להמשיך",
   readMore: "קרא עוד",
   approval: "אישור",
   readLess: "קרא פחות",

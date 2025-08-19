@@ -8,6 +8,16 @@ import {
   CtgTourIcon,
 } from "@/components/ui/icons";
 
+export const itemType = {
+  product: "PRODUCT",
+  ticket: "TICKET",
+};
+
+export const paymentMethodType = {
+  externalLink: "EXTERNAL_LINK",
+  ticket: "TICKET",
+};
+
 export const contactFormReasonOptions = [
   { value: "תווים", label: "תווים" },
   { value: "עסקים", label: "עסקים" },

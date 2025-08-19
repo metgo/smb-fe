@@ -59,7 +59,31 @@ export async function getProductDetailsByIds(productIds: string[]) {
   }
 }
 
-export async function postProductToCart(productId: string, qty: number = 1) {
+export async function postProductToCart6(
+  id: string,
+  itemType: string = "PRODUCT",
+  quantity: number = 1,
+) {
+  const response = await fetch(urls.carts, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      product: { id, quantity, itemType },
+      campCode: CODE,
+    }),
+  });
+  return await response.json();
+}
+
+export async function postProductToCart(
+  cartInfo: { _id: string; qty: number; itemType: string }[],
+) {
+  if (!cartInfo.length) throw new Error("cartInfo cannot be empty");
+
+  // First item -> POST
+  const firstItem = cartInfo[0];
   const response = await fetch(urls.carts, {
     method: "POST",
     headers: {
@@ -67,13 +91,41 @@ export async function postProductToCart(productId: string, qty: number = 1) {
     },
     body: JSON.stringify({
       product: {
-        id: productId,
-        quantity: qty,
+        id: firstItem._id,
+        quantity: firstItem.qty,
+        itemType: firstItem.itemType ?? "PRODUCT",
       },
       campCode: CODE,
     }),
   });
-  return await response.json();
-}
 
-export async function getRecommendedProducts() {}
+  const postResult = await response.json();
+
+  if (!response.ok) {
+    throw new Error(postResult?.message || "Failed to create cart");
+  }
+
+  const cartId = postResult?.data?.id || postResult?.cartId; // adjust based on API shape
+
+  // Remaining items -> PATCH
+  if (cartInfo.length > 1 && cartId) {
+    const restItems = cartInfo.slice(1);
+
+    await fetch(`${urls.carts}/${cartId}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        products: restItems.map((item) => ({
+          id: item._id,
+          quantity: item.qty,
+          itemType: item.itemType ?? "PRODUCT",
+        })),
+        campCode: CODE,
+      }),
+    });
+  }
+
+  return postResult;
+}

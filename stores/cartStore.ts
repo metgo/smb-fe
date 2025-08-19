@@ -7,8 +7,15 @@ type CartProduct = {
   desc: string;
   image: string;
   price: number;
+  itemType: string; // e.g., "PRODUCT", "TICKET"
   quantity: number;
   parentId: string;
+};
+
+type BuyNowProduct = {
+  _id: string;
+  qty: number;
+  type: string;
 };
 
 interface CartStoreState {
@@ -20,6 +27,9 @@ interface CartStoreState {
   getTotalQuantity: () => number;
   getTotalPaidAmount: () => number;
   getUniqueParentIds: () => string[];
+
+  buyNowProduct: BuyNowProduct;
+  setBuyNowProduct: (buyNowProduct: BuyNowProduct) => void;
 }
 
 const useCartStore = create<CartStoreState>()(
@@ -35,13 +45,11 @@ const useCartStore = create<CartStoreState>()(
           );
 
           if (existingIndex >= 0) {
-            // Update quantity if product exists
             const updatedProducts = [...state.cartProducts];
             updatedProducts[existingIndex].quantity += product.quantity;
             return { cartProducts: updatedProducts };
           }
 
-          // Add new product
           return { cartProducts: [...state.cartProducts, product] };
         });
       },
@@ -49,7 +57,6 @@ const useCartStore = create<CartStoreState>()(
       // Update quantity directly
       updateQuantity: (id, quantity) => {
         if (quantity <= 0) {
-          // Remove if quantity is 0 or negative
           set((state) => ({
             cartProducts: state.cartProducts.filter((p) => p._id !== id),
           }));
@@ -76,28 +83,39 @@ const useCartStore = create<CartStoreState>()(
       },
 
       // Get all quantity
-      getTotalQuantity: () => {
-        return get().cartProducts.reduce(
+      getTotalQuantity: () =>
+        get().cartProducts.reduce(
           (total, product) => total + product.quantity,
           0,
-        );
-      },
+        ),
 
       // Get total paid amount
-      getTotalPaidAmount: () => {
-        return get().cartProducts.reduce(
+      getTotalPaidAmount: () =>
+        get().cartProducts.reduce(
           (total, product) => total + product.price * product.quantity,
           0,
-        );
-      },
+        ),
 
+      // Get unique parent IDs
       getUniqueParentIds: () => {
         const parentIds = get().cartProducts.map((product) => product.parentId);
         return Array.from(new Set(parentIds));
       },
+
+      // These two won't persist
+      buyNowProduct: {
+        _id: "",
+        qty: 1,
+        type: "PRODUCT",
+      },
+      setBuyNowProduct: (buyNowProduct: BuyNowProduct) =>
+        set({ buyNowProduct }),
     }),
     {
       name: "cart-storage",
+      partialize: (state) => ({
+        cartProducts: state.cartProducts,
+      }),
     },
   ),
 );

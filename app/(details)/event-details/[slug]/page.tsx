@@ -65,7 +65,7 @@ const page = async ({ params }: PageProps) => {
           </div>
           <div className="col-span-2" />
 
-          <EventDateRange dayDescription={eventDetails.dayDescription} />
+          <EventDateRange {...eventDetails} />
 
           <div className="mt-22.5">
             <EventLocationMap geoLocation={eventDetails.geoLocation} />
