@@ -100,7 +100,7 @@ export const getAllBusinesses = async (
   };
 
   return {
-    data: shuffleArray(allBusinessData),
+    data: allBusinessData,
     totalData: allBusinessData.length,
     meta: latestMeta,
   };

@@ -12,9 +12,9 @@ import UserIconHoverCard from "./UserIconHoverCard";
 import { ShopbagIcon } from "@/components/ui/icons";
 import CurrentTempOfYourCity from "./CurrentTempOfYourCity";
 import BusinessPageFilterTabs from "./BusinessPageFilterTabs";
-import { CONSOLE_URL } from "@/constant/envConstants";
 import useCartStore from "@/stores/cartStore";
 import { CartDrawer } from "../drawer";
+import { pathNames } from "@/lib/endpoints";
 
 const Navbar = ({ showFilterTab = false }: { showFilterTab?: boolean }) => {
   const { getTotalQuantity } = useCartStore();
@@ -29,7 +29,7 @@ const Navbar = ({ showFilterTab = false }: { showFilterTab?: boolean }) => {
             <HamburgerMenu />
             <NavLogo />
             <Link
-              href={CONSOLE_URL}
+              href={pathNames.joinBusiness}
               target="_blank"
               className="text-theme font-bold ms-8"
             >

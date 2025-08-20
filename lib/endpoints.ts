@@ -1,4 +1,4 @@
-import { CODE, BASE_URL } from "@/constant/envConstants";
+import { CODE, BASE_URL, SITE_ENVIRONMENT } from "@/constant/envConstants";
 
 export const urls = {
   accessibilities: `${BASE_URL}/accessibilities`,
@@ -32,13 +32,19 @@ export const urls = {
 };
 
 export const pathNames = {
-  carts: "carts",
-  businessDetails: "business-details",
-  businesses: "businesses",
-  productsDetails: "products-details",
-  events: "events",
-  eventDetails: "event-details",
-  trails: "trails",
-  trailDetails: "trail-details",
-  checkout: "checkout",
+  home: "/",
+  cart: "/cart",
+  businessDetails: "/business-details",
+  businesses: "/businesses",
+  productsDetails: "/product-details",
+  events: "/events",
+  eventDetails: "/event-details",
+  trails: "/trails",
+  trailDetails: "/trail-details",
+  checkout: "/check-out",
+  contactUs: "/contact-us",
+  joinBusiness:
+    SITE_ENVIRONMENT === "prod"
+      ? "https://console.metgo.app"
+      : "https://stg.console.metgo.app",
 };

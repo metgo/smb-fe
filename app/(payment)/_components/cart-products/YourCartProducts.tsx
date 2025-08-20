@@ -1,12 +1,13 @@
 import clsx from "clsx";
 import Image from "next/image";
 import { IoMdClose } from "react-icons/io";
+import { useRouter } from "next/navigation";
 
+import { pathNames } from "@/lib/endpoints";
 import PriceTag from "@/components/PriceTag";
 import useCartStore from "@/stores/cartStore";
 import { cartLabels, paymentPageLabels } from "@/constant/hebrew";
 import QtyIncrementDecrementBtns from "@/components/QtyIncrementDecrementBtns";
-import { useRouter } from "next/navigation";
 
 const YourCartProducts = () => {
   const router = useRouter();
@@ -19,7 +20,7 @@ const YourCartProducts = () => {
 
   function handleRedirectToCheckout() {
     router.push(
-      `/check-out?isCart=true&productId=${cartProducts.map((item) => item._id).join(",")}`,
+      `${pathNames.checkout}?isCart=true&productId=${cartProducts.map((item) => item._id).join(",")}`,
     );
   }
 

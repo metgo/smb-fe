@@ -78,7 +78,7 @@ const AddToCartBuyNowBtns = ({ product }: { product: ProductDetailsProps }) => {
         <button
           type="button"
           onClick={handleQuickPurchase}
-          className="bg-dark rounded-xl px-6 py-2.75 font-bold text-white"
+          className="bg-dark rounded-xl px-6 py-2.75 font-bold text-white cursor-pointer"
         >
           {productDetailsText.continuePlaceOrder}
         </button>

@@ -8,6 +8,7 @@ import { MotionDialogDiv } from "../ui";
 import useCartStore from "@/stores/cartStore";
 import { cartLabels, paymentPageLabels } from "@/constant/hebrew";
 import QtyIncrementDecrementBtns from "../QtyIncrementDecrementBtns";
+import { pathNames } from "@/lib/endpoints";
 
 interface CartDrawerProps {
   setIsOpen: (isOpen: boolean) => void;
@@ -101,12 +102,12 @@ const CartDrawer = ({ setIsOpen }: CartDrawerProps) => {
                   <PriceTag price={getTotalPaidAmount()} />
                 </div>
                 <Link
-                  href={`/check-out?isCart=true&productId=${cartProducts.map((item) => item._id).join(",")}`}
+                  href={`${pathNames.checkout}?isCart=true&productId=${cartProducts.map((item) => item._id).join(",")}`}
                   className="font-bold text-white bg-black rounded-md py-2.5 px-16 cursor-pointer mt-6 mb-4"
                 >
                   {cartLabels.proceedToSecurePayment}
                 </Link>
-                <Link href={`/cart`} className="font-bold underline">
+                <Link href={pathNames.cart} className="font-bold underline">
                   {cartLabels.toViewMyShoppingCart}
                 </Link>
               </div>

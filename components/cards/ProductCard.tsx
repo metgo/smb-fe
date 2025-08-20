@@ -13,6 +13,7 @@ import { cartLabels, misc } from "@/constant/hebrew";
 import { IconImage, NextImage } from "@/components/ui";
 import { useImageScale } from "@/hooks/image/useImageScale";
 import { useImagePresent } from "@/hooks/image/useImagePresent";
+import { pathNames } from "@/lib/endpoints";
 
 const ImageCard = ({
   imageItem,
@@ -100,12 +101,12 @@ const ProductCard = ({
       type: itemType.product,
     };
     setBuyNowProduct(buyNowProduct);
-    router.push(`/check-out?isCart=false`);
+    router.push(`${pathNames.checkout}?isCart=false`);
   }
 
   return (
     <div className=" rounded-2xl overflow-hidden border border-[#D3D3D3]">
-      <Link href={`/product-details/${product._id}`}>
+      <Link href={`${pathNames.productsDetails}/${product._id}`}>
         <div className="relative w-full overflow-hidden">
           <div
             style={{ width: 242 * scale, height: 224 * scale }}
