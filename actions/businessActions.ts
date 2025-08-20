@@ -57,7 +57,7 @@ export const getAllBusinesses = async (
     if (!isCached) {
       try {
         const res = await fetch(
-          `${urls.tourismBusinesses}?page=${i}&limit=50&bussCategoriesId=${categoryId}&bussSubCategoriesId=${subCategoryId}&sortBy=createdAt&sortOrder=DESC&campCode=${CODE}`,
+          `${urls.tourismBusinesses}?page=${i}&limit=16&bussCategoriesId=${categoryId}&bussSubCategoriesId=${subCategoryId}&sortBy=createdAt&sortOrder=DESC&campCode=${CODE}`,
           {
             cache: "no-store",
           },

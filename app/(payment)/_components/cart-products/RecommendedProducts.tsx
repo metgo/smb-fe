@@ -143,6 +143,8 @@ const RecommendedProducts = () => {
     return () => clearTimeout(timer);
   }, [products.length, fetchMore, hasMore, isLoading]);
 
+  if (products.length === 0) return null;
+
   return (
     <section>
       <h1 className="text-2xl font-bold text-center mt-20 mb-4">

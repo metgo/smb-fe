@@ -31,15 +31,14 @@ export const urls = {
   trailDetails: `${BASE_URL}/trips`,
 };
 
-// export const urls = {
-//   tourismBusinesses: `${BASE_URL}/tourism/businesses`,
-//   categories: `${BASE_URL}/categories?campCode=${CODE}`,
-//   locations: `${BASE_URL}/tourism/map-businesses?campCode=${CODE}`,
-//   locationData: `${BASE_URL}/tourism/map-businesses`,
-//   subcategory: `${BASE_URL}/subcategory`,
-//   businessDetails: `${BASE_URL}/tourism/businesses`,
-//   events: `${BASE_URL}/events`,
-//   eventDetails: `${BASE_URL}/events`,
-//   searchRecommendation: `${BASE_URL}/tourism/search-recommendation?campCode=${CODE}`,
-//   tourismSearch: `${BASE_URL}/tourism-search?campCode=${CODE}`,
-// };
+export const pathNames = {
+  carts: "carts",
+  businessDetails: "business-details",
+  businesses: "businesses",
+  productsDetails: "products-details",
+  events: "events",
+  eventDetails: "event-details",
+  trails: "trails",
+  trailDetails: "trail-details",
+  checkout: "checkout",
+};

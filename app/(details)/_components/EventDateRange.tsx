@@ -10,11 +10,11 @@ import TicketListModal from "./TicketListModal";
 
 const EventDateRange = ({ dayDescription, payment }: EventDetailsProps) => {
   const [openTicketModal, setOpenTicketModal] = useState(false);
-  const [clickedDay, setClickedDay] = useState({
-    day: "",
-    days: "",
-    month: "",
-  });
+  // const [clickedDay, setClickedDay] = useState({
+  //   day: "",
+  //   days: "",
+  //   month: "",
+  // });
 
   function handleOpenTicketModal() {
     setOpenTicketModal(true);
@@ -26,13 +26,14 @@ const EventDateRange = ({ dayDescription, payment }: EventDetailsProps) => {
         <div className=" flex items-center gap-2.5">
           {dayDescription?.map((item) => {
             const eventInfo = getHebrewDateInfo(item.date);
-            const isActive = clickedDay.day === eventInfo.day;
+            // const isActive = clickedDay.day === eventInfo.day;
+            const isActive = false;
 
             return (
               <div
                 key={item._id}
-                onClick={() => setClickedDay(eventInfo)}
-                className={` w-23.5 h-27 border rounded-[5px] flex flex-col items-center justify-center cursor-pointer ${isActive ? " border-[#E89900] bg-[#FDF5E6] text-[#E89900]" : "border-[#D3D3D3] text-theme"}`}
+                // onClick={() => setClickedDay(eventInfo)}
+                className={` w-23.5 h-27 border rounded-[5px] flex flex-col items-center justify-center ${isActive ? " border-[#E89900] bg-[#FDF5E6] text-[#E89900]" : "border-[#D3D3D3] text-theme"}`}
               >
                 <span>{eventInfo.days}</span>
                 <div

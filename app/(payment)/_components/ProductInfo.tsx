@@ -4,6 +4,7 @@ import PriceTag from "@/components/PriceTag";
 import { paymentPageLabels } from "@/constant/hebrew";
 import useCheckoutStore from "@/stores/checkoutStore";
 import { useVoucherStore } from "@/stores/voucherStore";
+import { IconImage } from "@/components/ui";
 
 const ProductInfo = () => {
   const { orderProducts, totalDeliveryFee } = useCheckoutStore();
@@ -65,14 +66,9 @@ const ProductInfo = () => {
       >
         <div className="flex justify-between items-center">
           <div className="flex gap-2 items-center relative">
-            {/* <NextImage
-              alt="משלוח"
-              width={24}
-              height={24}
-              isOptimized
-              className="w-12 h-12"
-              imgSrc={images.icons.deliveryTruck}
-            /> */}
+            <div className="rounded-md w-12  h-12 border-[1.5px] flex items-center justify-center">
+              <IconImage width={38} height={38} icon={"delivery-truck"} />
+            </div>
             <span className="text-[14px] font-bold text-black">
               {paymentPageLabels.shippingPrice}
             </span>

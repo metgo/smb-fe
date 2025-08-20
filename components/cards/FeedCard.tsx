@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useState, useRef } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { motion, useInView, useAnimation } from "framer-motion";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import { navigationPaths } from "@/lib/utils";
 import useGeneralStore from "@/stores/generalStore";
