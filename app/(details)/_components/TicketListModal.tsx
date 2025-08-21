@@ -49,7 +49,7 @@ const TicketListModal = ({
           quantity: 0,
           _id: ticket._id,
           name: ticket.name,
-          desc: "",
+          desc: ticket.description,
           isSelected: false,
           image: ticket.images[0].image,
           price: ticket.price.markedPrice,
@@ -165,18 +165,18 @@ const TicketListModal = ({
                   </span>
                   <IoIosArrowDown />
                 </div>
-                <div className="">
+                <div>
                   {eventDays?.tickets?.map((ticket) => (
                     <div
                       key={`${eventDays._id}-${ticket._id}`}
                       className={clsx(
-                        "flex items-center justify-between px-3 py-1 rounded-md transition-colors mt-2",
+                        "grid grid-cols-12 items-center justify-between py-1 px-2 rounded-md transition-colors mt-2",
                         ticket.isSelected
                           ? "bg-primary border-2 border-secondary"
                           : "hover:bg-prmary border-2 border-transparent",
                       )}
                     >
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 col-span-8">
                         <Image
                           src={ticket.image}
                           alt={ticket.name}
@@ -186,10 +186,14 @@ const TicketListModal = ({
                         />
                         <div>
                           <h2 className={"font-bold"}>{ticket.name}</h2>
+                          <div
+                            dangerouslySetInnerHTML={{ __html: ticket.desc }}
+                            className="line-clamp-1 font-normal"
+                          />
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-4">
+                      <div className="flex items-center gap-4 col-span-3">
                         <div className="flex items-center gap-1">
                           <button
                             type="button"
@@ -219,8 +223,11 @@ const TicketListModal = ({
                             <FaMinus />
                           </button>
                         </div>
-                        <PriceTag price={ticket.price} className="" />
                       </div>
+                      <PriceTag
+                        price={ticket.price}
+                        className="col-span-1 text-end"
+                      />
                     </div>
                   ))}
                 </div>

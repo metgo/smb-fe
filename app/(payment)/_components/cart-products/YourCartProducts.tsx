@@ -54,8 +54,8 @@ const YourCartProducts = () => {
               const isThresholdQty = item.quantity === 1;
               return (
                 <div key={item._id + index}>
-                  <div className="flex gap-4 items-center justify-between">
-                    <div className="flex gap-4 items-center w-full">
+                  <div className="grid grid-cols-18 items-center justify-between">
+                    <div className="flex gap-4 items-center w-full col-span-13">
                       <div className="w-[60px] flex-shrink-0 h-[60px] bg-gray-200 relative rounded-md">
                         <Image
                           width={60}
@@ -86,19 +86,21 @@ const YourCartProducts = () => {
                       </div>
                     </div>
 
-                    <div className="flex gap-12 items-center justify-between">
+                    <div className="col-span-2">
                       <QtyIncrementDecrementBtns
                         item={item}
                         quantity={item.quantity}
                         isThresholdQty={isThresholdQty}
                       />
-                      <PriceTag
-                        price={item?.price}
-                        className=" text-2xl font-normal"
-                      />
+                    </div>
+                    <PriceTag
+                      price={item?.price}
+                      className=" text-2xl font-normal col-span-2 text-end"
+                    />
+                    <div className="col-span-1 flex items-center justify-end">
                       <div
                         onClick={() => removeCartItem(item)}
-                        className="cursor-pointer size-[16px] bg-black rounded-full flex items-center justify-center text-white p-[1px] font-bold"
+                        className="cursor-pointer size-[16px] bg-black rounded-full text-white p-[1px] font-bold"
                       >
                         <IoMdClose />
                       </div>
