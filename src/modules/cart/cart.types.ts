@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { DeliveryMethod } from '../orders/orders.type';
+import { DeliveryMethod, OrderItemType } from '../orders/orders.type';
 
 /* eslint-disable no-shadow */
 export enum CartStatus {
@@ -27,6 +27,7 @@ export interface CartProductPayload {
   street: string;
   isGift: boolean;
   additionalInfo: string;
+  itemType: OrderItemType;
 }
 
 export interface CartProductResponse extends CartProductPayload {

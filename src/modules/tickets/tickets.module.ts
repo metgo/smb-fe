@@ -8,6 +8,8 @@ import { Ticket, TicketSchema } from './schema/tickets.schema';
 import { AuthorityModule } from '../authority/authority.module';
 import { DMOModule } from '../dmo/dmo.module';
 import { GcpBucketModule } from 'src/services/gcp-bucket/gcp-bucket.module';
+import { GetTicketByIdsHandler } from './queries/handler/get-ticket-by-ids.handler';
+import { GetTicketByIdHandler } from './queries/handler/get-ticket-by-id.handler';
 
 @Module({
   imports: [
@@ -19,5 +21,6 @@ import { GcpBucketModule } from 'src/services/gcp-bucket/gcp-bucket.module';
     GcpBucketModule,
   ],
   controllers: [TicketController],
+  providers: [GetTicketByIdHandler, GetTicketByIdsHandler],
 })
 export class TicketModule {}

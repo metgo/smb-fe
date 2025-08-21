@@ -1,10 +1,11 @@
 /* eslint-disable no-shadow */
 export enum OrderStatus {
   PENDING = 'pending',
-  PROCESSING = 'processing',
-  SHIPPED = 'shipped',
+  PROCESSING = 'processing', // AFTER PAID
+  SHIPPED = 'shipped', // BEGIN TO SHIP
+  COMPLETED = 'completed', // PACKAGE RECEIVED BY CUSTOMER
   CANCELED = 'canceled',
-  RETURNED = 'returned',
+  // RETURNED = 'returned',
 }
 
 export enum PaymentMode {
@@ -15,4 +16,9 @@ export enum PaymentMode {
 export enum DeliveryMethod {
   PICK_UP = 'pick_up',
   DELIVER = 'deliver',
+}
+
+export enum OrderItemType {
+  PRODUCT = 'PRODUCT',
+  TICKET = 'TICKET',
 }

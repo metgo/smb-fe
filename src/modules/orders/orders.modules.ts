@@ -18,9 +18,11 @@ import { ConfigModule } from 'src/services/config/config.module';
 import { PaymentsModule } from 'src/services/payments/payments.module';
 import { MailChimpModule } from 'src/services/mailchimp/mailchimp.module';
 import { QRCodeModule } from 'src/services/qr-code/qr-code.module';
+import { CqrsModule } from '@nestjs/cqrs';
 
 @Module({
   imports: [
+    CqrsModule,
     MongooseModule.forFeature([{ name: Order.name, schema: OrderSchema }]),
     forwardRef(() => AuthorityModule),
     BusinessModule,

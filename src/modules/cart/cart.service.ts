@@ -5,6 +5,7 @@ import {
   NotFoundException,
   forwardRef,
 } from '@nestjs/common';
+import { QueryBus } from '@nestjs/cqrs';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
@@ -21,12 +22,15 @@ import { CartStatus } from 'src/modules/cart/cart.types';
 import { AddToCartDto } from 'src/modules/cart/dto/add-to-cart.dto';
 import { UpdateCartDto } from 'src/modules/cart/dto/update-cart.dto';
 import { ProductsService } from 'src/modules/products/products.services';
+import { OrderItemType } from '../orders/orders.type';
+import { GetTicketByIdQuery } from '../tickets/queries/get-ticket-by-id.query';
 
 @Injectable()
 export class CartService {
   constructor(
     @Inject(WINSTON_MODULE_PROVIDER)
     private readonly logger: Logger,
+    private readonly queryBus: QueryBus,
     @InjectModel(Cart.name)
     private CartModel: Model<Cart>,
     private campaignService: CampaignService,
@@ -47,6 +51,10 @@ export class CartService {
         throw new BadRequestException('Enter quantity');
       }
 
+      if (!command?.product?.itemType) {
+        throw new BadRequestException('Enter type of item');
+      }
+
       let campId;
       if (command?.campCode) {
         campId = (
@@ -57,13 +65,22 @@ export class CartService {
         )?._id;
       }
 
-      const productInformation
-        = await this.productsService.getProductInformationForCart(
+      let itemInfo;
+
+      if (command.product.itemType === OrderItemType.PRODUCT) {
+        itemInfo = await this.productsService.getProductInformationForCart(
           command.product,
         );
+      }
+
+      if (command.product.itemType === OrderItemType.TICKET) {
+        itemInfo = await this.queryBus.execute(
+          new GetTicketByIdQuery(command.product.id),
+        );
+      }
 
       const totalAmount
-        = productInformation?.price?.sellingPrice * command.product.quantity;
+        = itemInfo?.price?.sellingPrice * command.product.quantity;
 
       const newCart = new this.CartModel({
         product: command?.product,
@@ -119,6 +136,15 @@ export class CartService {
     try {
       const existingCart = await this.findOneById(cartId);
 
+      if (
+        existingCart?.status === CartStatus.TIME_OUT
+        || existingCart?.status === CartStatus.ORDER_PLACED
+      ) {
+        throw new BadRequestException(
+          'This cart is no longer available to update',
+        );
+      }
+
       const productIndex = existingCart?.product.findIndex(
         product => product.id.toString() === command.productId.toString(),
       );
@@ -146,6 +172,7 @@ export class CartService {
         existingProductInCart[productIndex].isGift = command?.isGift;
         existingProductInCart[productIndex].additionalInfo
           = command?.additionalInfo;
+        existingProductInCart[productIndex].itemType = command?.itemType;
       } else {
         // Add new product item to the cart if it doesn't exist
         existingProductInCart.push({
@@ -166,6 +193,7 @@ export class CartService {
           isGift: command?.isGift,
           apartment: command?.apartment,
           additionalInfo: command?.additionalInfo,
+          itemType: command?.itemType,
         });
       }
 
@@ -173,15 +201,38 @@ export class CartService {
         product => product.quantity > 0,
       );
 
-      const productInformation = await Promise.all(
-        existingProductInCart?.map(product => this.productsService.getProductInformationForCart(product)),
+      const productIds = existingProductInCart.filter(
+        op => op.itemType === OrderItemType.PRODUCT,
       );
 
-      const totalAmount = productInformation.reduce(
-        (total, pro, index) => total
-          + pro.price.sellingPrice * existingProductInCart[index].quantity,
-        0,
+      const ticketIds = existingProductInCart.filter(
+        op => op.itemType === OrderItemType.TICKET,
       );
+
+      let totalAmount;
+      if (productIds?.length) {
+        const productInformation = await Promise.all(
+          productIds?.map(product => this.productsService.getProductInformationForCart(product)),
+        );
+
+        totalAmount = productInformation.reduce(
+          (total, pro, index) => total + pro.price.sellingPrice * productIds[index].quantity,
+          0,
+        );
+      }
+
+      if (ticketIds?.length) {
+        const ticketInformation = await Promise.all(
+          ticketIds?.map(
+            async ticket => await this.queryBus.execute(new GetTicketByIdQuery(ticket.id)),
+          ),
+        );
+
+        totalAmount = ticketInformation.reduce(
+          (total, ticket, index) => total + ticket.price.sellingPrice * ticketIds[index].quantity,
+          totalAmount || 0,
+        );
+      }
 
       const updatedField = {
         updatedBy: loggedInUser?.id,
@@ -254,20 +305,6 @@ export class CartService {
         err: error.message,
       });
       exceptionHandling(error);
-    }
-  }
-
-  async findOneByIdAndPopulate(id: string) {
-    try {
-      const cart = await this.CartModel.findById(id);
-
-      if (!cart) {
-        throw new NotFoundException(ServerErrors.CART.NOT_FOUND);
-      }
-
-      return cart;
-    } catch (err) {
-      exceptionHandling(err);
     }
   }
 

@@ -1,8 +1,8 @@
 import mongoose from 'mongoose';
-import { DeliveryMethod } from 'src/modules/orders/orders.type';
+import { DeliveryMethod, OrderItemType } from 'src/modules/orders/orders.type';
 
 export interface CreateOrderProductCommand {
-  productId: mongoose.Types.ObjectId;
+  itemId: mongoose.Types.ObjectId;
   quantity: number;
   email: string;
   countryCode: string;
@@ -22,4 +22,5 @@ export interface CreateOrderProductCommand {
   amount: number;
   loggedInUserId?: mongoose.Types.ObjectId | string;
   orderId: string;
+  itemType: OrderItemType;
 }

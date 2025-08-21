@@ -3,7 +3,7 @@ import mongoose, { HydratedDocument } from 'mongoose';
 
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
 import { CartProductPayload, CartStatus } from 'src/modules/cart/cart.types';
-import { DeliveryMethod } from '../orders/orders.type';
+import { DeliveryMethod, OrderItemType } from '../orders/orders.type';
 
 @Schema({})
 export class Cart extends AuditableSchema {
@@ -36,6 +36,7 @@ export class Cart extends AuditableSchema {
         street: String,
         isGift: Boolean,
         additionalInfo: String,
+        itemType: { type: String, enum: Object.values(OrderItemType) },
       },
     ],
   })

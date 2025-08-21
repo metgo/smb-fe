@@ -7,9 +7,11 @@ import { Cart, CartSchema } from 'src/modules/cart/cart.schema';
 import { CartController } from 'src/modules/cart/cart.controller';
 import { CartService } from 'src/modules/cart/cart.service';
 import { ProductsModule } from 'src/modules/products/products.module';
+import { CqrsModule } from '@nestjs/cqrs';
 
 @Module({
   imports: [
+    CqrsModule,
     MongooseModule.forFeature([{ name: Cart.name, schema: CartSchema }]),
     forwardRef(() => UsersModule),
     forwardRef(() => ProductsModule),

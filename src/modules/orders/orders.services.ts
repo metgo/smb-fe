@@ -6,6 +6,7 @@ import {
   NotFoundException,
   forwardRef,
 } from '@nestjs/common';
+import { QueryBus } from '@nestjs/cqrs';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
@@ -13,19 +14,14 @@ import { Logger } from 'winston';
 
 import { calculateProductsTotalAmount } from 'src/common/calculate-products-total-amount';
 import { ServerErrors } from 'src/common/constant';
-import {
-  Currency, Locale, PaymentStatus, SortOrder,
-} from 'src/common/enum';
+import { Currency, Locale, PaymentStatus } from 'src/common/enum';
 import { DynamicEmailTemplate } from 'src/common/mailchimp/templateId';
-import { paginationConfig } from 'src/common/pagination.config';
 import { sortByPriorityAndHighest } from 'src/common/sort-priority-and-highest';
 import { getCommonEmailFields } from 'src/common/utils/email/common-fields';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
-import { disSelect } from 'src/common/utils/select.handling';
 import {
   findOneByFieldNames,
   findOneById,
-  queryhandler,
   updateById,
 } from 'src/core/helper/query-helper';
 
@@ -33,14 +29,16 @@ import { LoggedInUserInterface } from 'src/modules/auth/interface/login.interfac
 import { BusinessService } from 'src/modules/business/shared/services/business.service';
 import { CartService } from 'src/modules/cart/cart.service';
 import { CartProductResponse, CartStatus } from 'src/modules/cart/cart.types';
-import { UpdateOrderDto } from 'src/modules/orders/dto/update-order.dto';
-import { GetAllOrdersInterface } from 'src/modules/orders/interface/get-all-orders.interface';
 import { Order } from 'src/modules/orders/schema/orders.schema';
 import { ProductsService } from 'src/modules/products/products.services';
 import { UserType } from 'src/modules/users/users.type';
 import { VoucherService } from 'src/modules/vouchers/voucher.service';
 import { CreateOrderDto } from 'src/modules/orders/dto';
-import { OrderStatus, PaymentMode } from 'src/modules/orders/orders.type';
+import {
+  OrderItemType,
+  OrderStatus,
+  PaymentMode,
+} from 'src/modules/orders/orders.type';
 import { OrderProductService } from 'src/modules/order-product/order-product.services';
 
 import { PaymentsService } from 'src/services/payments/payments.service';
@@ -53,12 +51,15 @@ import { ConfigService } from 'src/services/config/config.service';
 import { OrderProduct } from 'src/modules/order-product/schema/order-product.schema';
 import { Product } from 'src/modules/products/schema/products.schema';
 import { CampaignService } from 'src/modules/campaign/campaign.service';
+import { GetTicketByIdsQuery } from '../tickets/queries/get-ticket-by-ids.query';
+import { Ticket } from '../tickets/schema/tickets.schema';
 
 @Injectable()
 export class OrdersService {
   constructor(
     @Inject(WINSTON_MODULE_PROVIDER)
     private readonly logger: Logger,
+    private readonly queryBus: QueryBus,
     @InjectModel(Order.name)
     private OrderModel: Model<Order>,
     private readonly businessService: BusinessService,
@@ -95,17 +96,27 @@ export class OrdersService {
         );
       }
 
-      const productIds = cartDetails.product.map(product => product.id.toString());
+      const cartProducts = cartDetails.product
+        .filter(product => product.itemType === OrderItemType.PRODUCT)
+        .map(product => product.id.toString());
 
-      const productsFromDB = await this.productsService.findManyById(
-        productIds,
-      );
+      const cartTickets = cartDetails.product
+        .filter(ticket => ticket.itemType === OrderItemType.TICKET)
+        .map(ticket => ticket.id.toString());
+
+      const [productsFromDB, ticketsFromDB] = await Promise.all([
+        cartProducts?.length
+          ? this.productsService.findManyById(cartProducts)
+          : [],
+        cartTickets?.length
+          ? this.queryBus.execute(new GetTicketByIdsQuery(cartTickets))
+          : [],
+      ]);
+
+      const combinedItems = [...productsFromDB, ...ticketsFromDB];
 
       const { payableAmount, cartItems, totalDeliveryFee }
-        = await calculateProductsTotalAmount(
-          cartDetails?.product,
-          productsFromDB,
-        );
+        = await calculateProductsTotalAmount(cartDetails?.product, combinedItems);
 
       let totalAmountToPay = payableAmount;
 
@@ -138,7 +149,17 @@ export class OrdersService {
         }
       }
 
-      const products = productIds.map(id => ({ id }));
+      const products = cartDetails.product.map(pro => ({
+        id: pro.id.toString(),
+      }));
+
+      const cartItemsProduct = cartItems.filter(
+        product => product.itemType === OrderItemType.PRODUCT,
+      );
+
+      const cartItemsTicket = cartItems.filter(
+        ticket => ticket.itemType === OrderItemType.TICKET,
+      );
 
       const order = await this.createOrder({
         loggedInUser,
@@ -148,7 +169,9 @@ export class OrdersService {
         payableAmount,
         products,
         productDetails: productsFromDB,
-        cartItems,
+        ticketDetails: ticketsFromDB,
+        cartItemsProduct,
+        cartItemsTicket,
         totalDeliveryFee,
       });
 
@@ -168,10 +191,12 @@ export class OrdersService {
       redeemedVouchers,
       totalAmount,
       payableAmount,
+      totalDeliveryFee,
       products,
       productDetails,
-      cartItems,
-      totalDeliveryFee,
+      ticketDetails,
+      cartItemsProduct,
+      cartItemsTicket,
     } = orderCommand;
 
     try {
@@ -217,7 +242,9 @@ export class OrdersService {
         return await this.createOrderWithNoCardComPayment(
           command,
           productDetails,
-          cartItems,
+          ticketDetails,
+          cartItemsProduct,
+          cartItemsTicket,
           loggedInUser,
         );
       }
@@ -238,9 +265,9 @@ export class OrdersService {
 
   async createOrderWithCardComPayment(
     command,
-    totalAmount,
-    payableAmount,
-    loggedInUser,
+    totalAmount: number,
+    payableAmount: number,
+    loggedInUser?: LoggedInUserInterface,
   ) {
     const orderWithQR = new this.OrderModel({
       ...command,
@@ -283,7 +310,9 @@ export class OrdersService {
   async createOrderWithNoCardComPayment(
     command,
     productInfo: Product[],
-    cartItems: CartProductResponse[],
+    ticketInfo: Ticket[],
+    cartItemsProduct: CartProductResponse[],
+    cartItemsTicket: CartProductResponse[],
     loggedInUser: LoggedInUserInterface | null,
   ) {
     const orderWithQR = new this.OrderModel({
@@ -301,13 +330,15 @@ export class OrdersService {
       message: order,
     });
 
+    // create order products
+    const cartItems = [...cartItemsProduct, ...cartItemsTicket];
     const orderProduct = await Promise.all(
       order.products.map(async product => {
         const cartItem = cartItems.find(
           item => item.id.toString() === product.id.toString(),
         );
         return await this.orderProductService.create({
-          productId: cartItem?.id,
+          itemId: cartItem?.id,
           quantity: cartItem?.quantity,
           email: cartItem?.email,
           countryCode: cartItem?.countryCode,
@@ -327,26 +358,33 @@ export class OrdersService {
           amount: cartItem?.amount,
           orderId: order.id,
           loggedInUserId: loggedInUser?.id,
+          itemType: cartItem.itemType,
         });
       }),
     );
-    await Promise.all([
-      this.productsService.deductQuantity(cartItems),
-      // update cart status
-      this.cartService.updateCartPostCheckout(
-        command.cartId,
-        order._id,
-        loggedInUser,
-      ),
-    ]);
 
-    await this.sendEmailPostOrderPayment(
-      productInfo,
-      order,
-      orderProduct,
-      command?.externalApi,
-      command?.languagePreference,
+    if (cartItemsProduct?.length) {
+      await this.productsService.deductQuantity(cartItemsProduct);
+    }
+
+    await this.cartService.updateCartPostCheckout(
+      command.cartId,
+      order._id,
+      loggedInUser,
     );
+
+    if (cartItemsProduct?.length) {
+      await this.sendEmailPostOrderPayment(
+        productInfo,
+        order,
+        orderProduct,
+        command?.externalApi,
+        command?.languagePreference,
+      );
+    }
+
+    // need to send emails for products
+
     // send invoice
 
     const productInvoice = await Promise.all(
@@ -356,12 +394,19 @@ export class OrdersService {
         name: pro?.name,
       })),
     );
+    const ticketInvoice = await Promise.all(
+      ticketInfo?.map(ticket => ({
+        id: ticket._id.toString(),
+        price: ticket?.price?.sellingPrice,
+        name: ticket?.name,
+      })),
+    );
 
     await this.paymentService.sendInvoice({
       customerName: order?.firstName,
       customerEmail: order?.email,
       invoiceType: 101,
-      product: productInvoice,
+      product: [...productInvoice, ...ticketInvoice],
       transactionId: parseInt(order._id?.toString(), 10),
       purpose: PaymentPurpose.ORDER,
       sumPaid: order?.totalAmount,
@@ -371,76 +416,6 @@ export class OrdersService {
 
     return order;
   }
-
-  // shaleev
-  // async processCheckout(
-  //   body: StartCheckoutDto,
-  //   loggedInUser?: LoggedInUserInterface,
-  // ): Promise<any> {
-  //   try {
-  //     const { cartId, ...command } = body;
-
-  //     const externalApiId = (
-  //       await this.externalApiService.findByIdentifierId(command.identifierId)
-  //     )._id;
-
-  //     if (!cartId) {
-  //       throw new BadRequestException('Please enter valid cart details');
-  //     }
-
-  //     let businessId = [];
-
-  //     const cartDetail = await this.cartService.findOneByIdAndPopulate(cartId);
-
-  //     await Promise.all(
-  //       command.products?.map(async (product: any) => {
-  //         if (!product.id) {
-  //           return;
-  //         }
-
-  //         const productDetail = await this.productsService.findOne(product.id);
-
-  //         businessId = [...businessId, productDetail?.businessId?._id];
-  //       }),
-  //     );
-
-  //     // freeze the voucher
-  //     //  calling a api instead we need to freeze voucher here instead
-  //     const newOrder = new this.OrderModel({
-  //       ...command,
-  //       businessId,
-  //       userId: loggedInUser?.id,
-  //       status: OrderStatus.PENDING,
-  //       paymentStatus: PaymentStatus.PENDING,
-  //       totalAmount: cartDetail.totalAmount,
-  //       externalApiId,
-  //       createdBy: loggedInUser?.id,
-  //       createdAt: new Date(),
-  //     });
-
-  //     const order = await newOrder.save();
-
-  //     await this.cartService.updateCartPostCheckout(
-  //       cartId,
-  //       order._id,
-  //       loggedInUser,
-  //     );
-
-  //     this.logger.info(`[${externalApiId} - ORDERS]: Start to create order`, {
-  //       message: order,
-  //     });
-
-  //     return order;
-  //   } catch (error) {
-  //     this.logger.error(
-  //       `[${body.identifierId} - ORDERS]:  FAILED TO CREATE ORDER WHILE STARTING TO CHECKOUT`,
-  //       {
-  //         err: error.message,
-  //       },
-  //     );
-  //     exceptionHandling(error);
-  //   }
-  // }
 
   async updateAfterPaymentSuccess(
     orderId: string,
@@ -463,68 +438,137 @@ export class OrdersService {
         message: updateOrder,
       });
 
-      const cart = await this.cartService.updateCartPostPayment(orderId);
-
-      const findCartProducts = cart?.product;
-
-      await this.productsService.deductQuantity(findCartProducts);
-
-      const getProductInformation
-        = await this.productsService.getProductInformationForOrders(
-          updateOrder.products,
-        );
-
-      const orderProduct = await Promise.all(
-        updateOrder.products.map(async product => {
-          const cartItem = findCartProducts.find(
-            item => item.id.toString() === product.id.toString(),
-          );
-
-          const productsInfo = getProductInformation.find(
-            item => item._id.toString() === product.id.toString(),
-          );
-
-          return await this.orderProductService.create({
-            productId: new mongoose.Types.ObjectId(cartItem.id),
-            quantity: cartItem?.quantity,
-            email: cartItem?.email,
-            countryCode: cartItem?.countryCode,
-            phone: cartItem?.phone,
-            firstName: cartItem?.firstName,
-            lastName: cartItem?.lastName,
-            deliveryFee: cartItem?.deliveryFee,
-            deliveryMethod: cartItem?.deliveryMethod,
-            deliveryArea: cartItem?.deliveryArea,
-            deliveryPickupLocation: cartItem?.deliveryPickupLocation,
-            houseNo: cartItem?.houseNo,
-            apartment: cartItem?.apartment,
-            city: cartItem?.city,
-            street: cartItem?.street,
-            isGift: cartItem?.isGift,
-            additionalInfo: cartItem?.additionalInfo,
-            amount: productsInfo.price.sellingPrice,
-            loggedInUserId: updateOrder.userId,
-            orderId: updateOrder.id,
-          });
-        }),
-      );
-
       const externalApi
         = await this.externalApiService.findByIdAndPopulateTheme(
           updateOrder?.externalApiId?.toString(),
         );
 
-      await this.sendEmailPostOrderPayment(
-        getProductInformation,
-        updateOrder,
-        orderProduct,
-        externalApi,
-        languagePreference,
+      const cart = await this.cartService.updateCartPostPayment(orderId);
+
+      const findCartProducts = cart?.product?.filter(
+        item => item.itemType === OrderItemType.PRODUCT,
       );
+
+      const findCartTickets = cart?.product?.filter(
+        item => item.itemType === OrderItemType.TICKET,
+      );
+
+      let getProductsInformation;
+      let getTicketsInformation;
+
+      if (findCartProducts?.length) {
+        await this.productsService.deductQuantity(findCartProducts);
+        getProductsInformation
+          = await this.productsService.getProductInformationForOrders(
+            findCartProducts,
+          );
+
+        const orderProduct = await Promise.all(
+          updateOrder.products.map(async product => {
+            const cartItem = findCartProducts.find(
+              item => item.id.toString() === product.id.toString(),
+            );
+
+            const productsInfo = getProductsInformation.find(
+              item => item._id.toString() === product.id.toString(),
+            );
+
+            return await this.orderProductService.create({
+              itemId: new mongoose.Types.ObjectId(cartItem.id),
+              quantity: cartItem?.quantity,
+              email: cartItem?.email,
+              countryCode: cartItem?.countryCode,
+              phone: cartItem?.phone,
+              firstName: cartItem?.firstName,
+              lastName: cartItem?.lastName,
+              deliveryFee: cartItem?.deliveryFee,
+              deliveryMethod: cartItem?.deliveryMethod,
+              deliveryArea: cartItem?.deliveryArea,
+              deliveryPickupLocation: cartItem?.deliveryPickupLocation,
+              houseNo: cartItem?.houseNo,
+              apartment: cartItem?.apartment,
+              city: cartItem?.city,
+              street: cartItem?.street,
+              isGift: cartItem?.isGift,
+              additionalInfo: cartItem?.additionalInfo,
+              amount: productsInfo.price.sellingPrice,
+              loggedInUserId: updateOrder.userId,
+              orderId: updateOrder.id,
+              itemType: cartItem.itemType,
+            });
+          }),
+        );
+
+        await this.sendEmailPostOrderPayment(
+          getProductsInformation,
+          updateOrder,
+          orderProduct,
+          externalApi,
+          languagePreference,
+        );
+      }
+
+      if (findCartTickets?.length) {
+        const cartTickets = findCartTickets
+          .filter(ticket => ticket.itemType === OrderItemType.TICKET)
+          .map(ticket => ticket.id.toString());
+
+        // await this.productsService.deductQuantity(findCartProducts);
+        getTicketsInformation = await this.queryBus.execute(
+          new GetTicketByIdsQuery(cartTickets),
+        );
+
+        await Promise.all(
+          updateOrder.products.map(async product => {
+            const cartItem = findCartTickets.find(
+              item => item.id.toString() === product.id.toString(),
+            );
+
+            const ticketInfo = getTicketsInformation.find(
+              item => item._id.toString() === product.id.toString(),
+            );
+
+            return await this.orderProductService.create({
+              itemId: new mongoose.Types.ObjectId(cartItem.id),
+              quantity: cartItem?.quantity,
+              email: cartItem?.email,
+              countryCode: cartItem?.countryCode,
+              phone: cartItem?.phone,
+              firstName: cartItem?.firstName,
+              lastName: cartItem?.lastName,
+              deliveryFee: cartItem?.deliveryFee,
+              deliveryMethod: cartItem?.deliveryMethod,
+              deliveryArea: cartItem?.deliveryArea,
+              deliveryPickupLocation: cartItem?.deliveryPickupLocation,
+              houseNo: cartItem?.houseNo,
+              apartment: cartItem?.apartment,
+              city: cartItem?.city,
+              street: cartItem?.street,
+              isGift: cartItem?.isGift,
+              additionalInfo: cartItem?.additionalInfo,
+              amount: ticketInfo.price.sellingPrice,
+              loggedInUserId: updateOrder.userId,
+              orderId: updateOrder.id,
+              itemType: cartItem.itemType,
+            });
+          }),
+        );
+
+        // await this.sendEmailPostOrderPayment(
+        //   getProductInformation,
+        //   updateOrder,
+        //   orderProduct,
+        //   externalApi,
+        //   languagePreference,
+        // );
+      }
 
       return {
         updateOrder,
-        getProductInformation,
+        getProductInformation: [
+          ...getProductsInformation,
+          ...getTicketsInformation,
+        ],
       };
     } catch (err) {
       this.logger.error('[ORDER]: FAILED TO UPDATE AFTER PAYMENT SUCCESS', {
@@ -568,38 +612,6 @@ export class OrdersService {
     }
   }
 
-  async update(
-    id: string,
-    body: UpdateOrderDto,
-    loggedInUserId?: string,
-  ): Promise<Order> {
-    try {
-      const updatedField = {
-        ...body,
-        updatedBy: loggedInUserId,
-        updatedAt: new Date(),
-      };
-      const updateOrder = await this.OrderModel.findOneAndUpdate(
-        { _id: id },
-        updatedField,
-        { new: true },
-      );
-
-      if (!updateOrder) {
-        throw new NotFoundException(ServerErrors.ORDERS.NOT_FOUND);
-      }
-
-      this.logger.info('[ORDER]: UPDATED', { message: updateOrder });
-
-      return updateOrder;
-    } catch (err) {
-      this.logger.error('[ORDER]: FAILED TO UPDATE', {
-        err: err.message,
-      });
-      exceptionHandling(err);
-    }
-  }
-
   async findOneById(id: string): Promise<Order> {
     try {
       const order = await findOneByFieldNames<Order>(this.OrderModel, {
@@ -626,154 +638,6 @@ export class OrdersService {
     } catch (error) {
       exceptionHandling(error);
     }
-  }
-
-  async updateOrder(
-    orderId: string,
-    body: UpdateOrderDto,
-    loggedInUser?: LoggedInUserInterface,
-  ): Promise<Order> {
-    try {
-      const order = await this.findOneById(orderId);
-
-      if (!order) {
-        throw new ForbiddenException(ServerErrors.FORBIDDEN);
-      }
-
-      // update vouchers
-      // update products
-      const updatedOrder = await this.update(orderId, body, loggedInUser?.id);
-
-      this.logger.info('[ORDER]: UPDATED', { message: order });
-      return updatedOrder;
-    } catch (error) {
-      this.logger.error('[ORDER]: FAILED TO UPDATE', {
-        err: error.message,
-      });
-      exceptionHandling(error);
-    }
-  }
-
-  // async updateOrderPostSuccessPayment(
-  //   orderId: string,
-  //   loggedInUser?: LoggedInUserInterface,
-  // ): Promise<Order> {
-  //   try {
-  //     const updatedField = {
-  //       paymentStatus: PaymentStatus.SUCCESS,
-  //       status: OrderStatus.PROCESSING,
-  //       updatedAt: new Date(),
-  //       updatedBy: loggedInUser?.id,
-  //     };
-
-  //     const updateOrder = await updateById<Order>(
-  //       this.OrderModel,
-  //       orderId,
-  //       updatedField,
-  //     );
-
-  //     this.logger.info('[ORDER]: UPDATED AFTER PAYMENT SUCCESS', {
-  //       message: updateOrder,
-  //     });
-
-  //     await Promise.all(
-  //       updateOrder.products.map(async product => {
-  //         await this.orderProductService.create({
-  //           productId: product.id,
-  //           quantity: product.quantity,
-  //           loggedInUserId: updateOrder.userId,
-  //           orderId: updateOrder.id,
-  //         });
-  //       }),
-  //     );
-
-  //     return updateOrder;
-  //   } catch (err) {
-  //     this.logger.error('[ORDER]: FAILED TO UPDATE AFTER PAYMENT SUCCESS', {
-  //       err: err.message,
-  //     });
-  //     exceptionHandling(err);
-  //   }
-  // }
-
-  async updateOrderPostFailurePayment(
-    orderId: string,
-    loggedInUser: LoggedInUserInterface,
-  ): Promise<Order> {
-    try {
-      const updatedField = {
-        paymentStatus: PaymentStatus.FAILURE,
-        status: OrderStatus.CANCELED,
-        updatedAt: new Date(),
-        updatedBy: loggedInUser?.id,
-      };
-
-      const updateOrder = await updateById<Order>(
-        this.OrderModel,
-        orderId,
-        updatedField,
-      );
-
-      this.logger.info('[ORDER]: UPDATED AFTER PAYMENT FAILED', {
-        message: updateOrder,
-      });
-
-      return updateOrder;
-    } catch (err) {
-      this.logger.error('[ORDER]: FAILED TO UPDATE AFTER PAYMENT FAILURE', {
-        err: err.message,
-      });
-      exceptionHandling(err);
-    }
-  }
-
-  async findAll(queries: GetAllOrdersInterface) {
-    const {
-      search, page, limit, ...query
-    } = queries.query;
-
-    const queryPage = page ? Number(page) : paginationConfig.page;
-    const queryLimit = limit ? Number(limit) : paginationConfig.limit;
-
-    let findQuery: any = query;
-    const select = `${disSelect}`;
-
-    if (search) {
-      findQuery = {
-        ...findQuery,
-        $text: {
-          $search: search,
-          $caseSensitive: false,
-          $diacriticSensitive: false,
-        },
-      };
-    }
-
-    if (queries.myOrder) {
-      findQuery = { ...findQuery, userId: queries.loggedInUser.id };
-    }
-
-    if (queries.loggedInUser.role === UserType.DMOADMIN) {
-      const dmoId = new mongoose.Types.ObjectId(queries.loggedInUser.dmo.id);
-
-      const orders = await this.orderProductService.findAllForDmo(
-        findQuery,
-        dmoId,
-        queryPage,
-        queryLimit,
-      );
-      return orders;
-    }
-
-    const orders = await queryhandler<Order>(this.OrderModel, {
-      findQuery,
-      select,
-      page: queryPage,
-      limit: queryLimit,
-      sort: 'createdAt',
-      sortOrder: SortOrder.DESC,
-    });
-    return orders;
   }
 
   private async checkIfAllowed(
@@ -850,56 +714,6 @@ export class OrdersService {
     }
   }
 
-  async findOneByIdAndPopulate(id: string) {
-    try {
-      const populate = {
-        path: 'externalApiId',
-        select: '_id, identifierId',
-      };
-      const order = await this.OrderModel.findById(id).populate(populate);
-
-      if (!order) {
-        throw new NotFoundException(ServerErrors.ORDERS.NOT_FOUND);
-      }
-
-      return order;
-    } catch (err) {
-      exceptionHandling(err);
-    }
-  }
-
-  async updatePostPaymentStart(
-    id: string,
-    body: any,
-    loggedInUserId?: string,
-  ): Promise<Order> {
-    try {
-      const updatedField = {
-        ...body,
-        updatedBy: loggedInUserId,
-        updatedAt: new Date(),
-      };
-      const updateOrder = await this.OrderModel.findOneAndUpdate(
-        { _id: id },
-        updatedField,
-        { new: true },
-      );
-
-      if (!updateOrder) {
-        throw new NotFoundException(ServerErrors.ORDERS.NOT_FOUND);
-      }
-
-      this.logger.info('[ORDER]: UPDATED', { message: updateOrder });
-
-      return updateOrder;
-    } catch (err) {
-      this.logger.error('[ORDER]: FAILED TO UPDATE', {
-        err: err.message,
-      });
-      exceptionHandling(err);
-    }
-  }
-
   async sendEmailPostOrderPayment(
     productInfo: Product[],
     order: Order,
@@ -950,7 +764,7 @@ export class OrdersService {
     orderProduct.forEach(orderItem => {
       const { email } = orderItem;
       const product = productInfo.find(
-        p => p._id.toString() === orderItem.productId.toString(),
+        p => p._id.toString() === orderItem.itemId.toString(),
       );
 
       if (!product) return;
@@ -1046,7 +860,7 @@ export class OrdersService {
         const productsHtmlForEchBusiness = relevantProducts
           .map(product => {
             const matchingProduct = orderProduct.find(
-              p => p.productId.toString() === product._id.toString(),
+              p => p.itemId.toString() === product._id.toString(),
             );
 
             if (!matchingProduct) return '';

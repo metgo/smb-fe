@@ -3,6 +3,7 @@ import { Product } from 'src/modules/products/schema/products.schema';
 
 import { CreateOrderDto } from 'src/modules/orders/dto';
 import { CartProductResponse } from 'src/modules/cart/cart.types';
+import { Ticket } from 'src/modules/tickets/schema/tickets.schema';
 
 export interface CreateOrderCommand {
   loggedInUser: LoggedInUserInterface | null;
@@ -13,5 +14,7 @@ export interface CreateOrderCommand {
   totalDeliveryFee: number;
   products: { id: string }[];
   productDetails: Product[];
-  cartItems: CartProductResponse[];
+  ticketDetails: Ticket[];
+  cartItemsProduct: CartProductResponse[];
+  cartItemsTicket: CartProductResponse[];
 }

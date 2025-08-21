@@ -52,6 +52,7 @@ export async function calculateProductsTotalAmount(
             isGift: payloadProduct.isGift,
             additionalInfo: payloadProduct.additionalInfo,
             deliveryFee: payloadProduct?.deliveryFee || 0,
+            itemType: payloadProduct?.itemType,
           };
         }
 

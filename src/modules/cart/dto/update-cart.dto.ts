@@ -8,7 +8,7 @@ import {
   IsString,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { DeliveryMethod } from 'src/modules/orders/orders.type';
+import { DeliveryMethod, OrderItemType } from 'src/modules/orders/orders.type';
 
 export class UpdateCartDto {
   @IsNumber()
@@ -97,8 +97,17 @@ export class UpdateCartDto {
 
   @IsOptional()
   @ApiProperty({
-    description: 'Delivery fee for the order',
+    description: 'Delivery fee for the product',
     required: false,
   })
     deliveryFee?: number;
+
+  @ApiProperty({
+    type: 'enum',
+    enum: OrderItemType,
+    required: true,
+  })
+  @IsNotEmpty()
+  @IsEnum(OrderItemType)
+    itemType: OrderItemType;
 }

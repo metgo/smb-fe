@@ -2,19 +2,21 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
 
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
-import { DeliveryMethod, OrderStatus } from 'src/modules/orders/orders.type';
+import {
+  DeliveryMethod,
+  OrderItemType,
+  OrderStatus,
+} from 'src/modules/orders/orders.type';
 import { Order } from 'src/modules/orders/schema/orders.schema';
-import { Product } from 'src/modules/products/schema/products.schema';
 import { User } from 'src/modules/users/schema/users.schema';
 
 @Schema()
 export class OrderProduct extends AuditableSchema {
   @Prop({
     type: mongoose.Schema.Types.ObjectId,
-    ref: Product.name,
     required: true,
   })
-    productId: mongoose.Types.ObjectId;
+    itemId: mongoose.Types.ObjectId;
 
   @Prop({ type: Number, default: 1 })
     quantity: number;
@@ -38,6 +40,9 @@ export class OrderProduct extends AuditableSchema {
 
   @Prop({ default: null })
     email: string;
+
+  @Prop({ enum: OrderItemType, default: OrderItemType.PRODUCT })
+    itemType: OrderItemType;
 
   @Prop({ default: null })
     countryCode: string;
