@@ -78,7 +78,7 @@ const DeliveriesTabContent = ({
   deliveryReturnExchange,
   deliveryAdditionalInfo,
   deliverySpecificSellerInfo,
-}: BusinessDetailsProps) => {
+}: DeliverySectionProps) => {
   return (
     <div className="grid grid-cols-3 gap-7.25">
       {deliveryArea?.length > 0 && (

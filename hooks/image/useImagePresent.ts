@@ -110,7 +110,7 @@ export const useImagePresent = (
           alt: imageToProcess.alt,
         });
       }
-    }, 100);
+    }, 1);
 
     return () => clearTimeout(timer);
   }, [activeImageIndex, aspectRatio, imagesInput]);
@@ -140,7 +140,7 @@ export const useImagePresent = (
         });
         setIsLoading(false);
       }
-    }, 100);
+    }, 1);
     setIsLoading(true);
 
     return () => clearTimeout(timer);

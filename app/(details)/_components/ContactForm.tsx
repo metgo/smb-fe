@@ -1,5 +1,6 @@
 "use client";
 
+import clsx from "clsx";
 import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
@@ -10,12 +11,11 @@ import ContactInfo from "./ContactInfo";
 import { contactUsText } from "@/constant/hebrew";
 import { Dialog, IconImage } from "@/components/ui";
 import { sendEmail } from "@/actions/contactUsAction";
-import { ContactFormData, contactFormSchema } from "@/schema/contact";
+import { ContactFormData, contactFormSchema } from "@/schemas/contact";
 import { contactFormReasonOptions } from "@/lib/utils";
-import clsx from "clsx";
 
 const InputField = ({ type = "text", placeholder, register, error }: any) => (
-  <div className="flex flex-col w-full">
+  <div className="flex flex-col w-full font-normal">
     <input
       type={type}
       placeholder={placeholder}
@@ -29,7 +29,7 @@ const InputField = ({ type = "text", placeholder, register, error }: any) => (
 );
 
 const SelectField = ({ control, name, error }: any) => (
-  <div className="relative w-full">
+  <div className="relative w-full font-normal">
     <Controller
       name={name}
       control={control}
@@ -38,7 +38,7 @@ const SelectField = ({ control, name, error }: any) => (
         <div className="relative">
           <select
             {...field}
-            className={`rounded-lg p-2 px-3 h-12 w-full cursor-pointer bg-white appearance-none border
+            className={`rounded-lg p-2 px-3 h-12 w-full cursor-pointer font-normal bg-white appearance-none border
               ${error ? "border-red-500" : "border-lightGray"}
               ${!field.value ? "text-gray-500" : "text-black"}`}
           >
@@ -153,7 +153,7 @@ const ContactForm = () => {
                 rows={4}
                 {...register("message")}
                 placeholder={contactUsText.referralDetails}
-                className="p-3 rounded-lg border border-lightGray resize-none"
+                className="p-3 rounded-lg border border-lightGray resize-none font-normal"
               />
 
               <button
@@ -179,7 +179,7 @@ const ContactForm = () => {
         <Dialog
           isOpen={isSubmitSuccess}
           onClose={() => setIsSubmitSuccess(false)}
-          modalClassName="w-[430px] top-60"
+          className="w-[430px] top-60"
         >
           {/* This div should be relative and overflow-hidden */}
           <div className="relative overflow-hidden w-full flex flex-col items-center py-16 z-50 rounded-xl">

@@ -21,6 +21,9 @@ declare interface DayDescription {
 }
 
 interface Payment {
+  _id: string;
+  method: string;
+  isFree: boolean;
   ticketIds: string[];
 }
 
@@ -39,4 +42,22 @@ declare interface EventDetailsProps {
   cover: LogoCover;
   payment: Payment;
   dayDescription: DayDescription[];
+}
+
+interface UpdatedTicketItem {
+  quantity: number;
+  _id: string;
+  name: string;
+  desc: string;
+  isSelected: boolean;
+  image: string;
+  price: number;
+}
+
+interface UpdatedTicketsListProps {
+  _id: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  tickets: UpdatedTicketItem[];
 }

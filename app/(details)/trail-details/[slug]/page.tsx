@@ -1,11 +1,11 @@
 import { misc } from "@/constant/hebrew";
 import { IconImage } from "@/components/ui";
-import { NoDetailsFound, ReturnToPrevPageBtn } from "../../_components";
+import TrailStations from "../_components/TrailStations";
 import AttributePills from "@/components/AttributePills";
+import { getAllLocations } from "@/actions/commonActions";
 import { getTrailDetailsBySlug } from "@/actions/trailActions";
 import TrailDetailsRouteMap from "../_components/TrailDetailsRouteMap";
-import TrailStations from "../_components/TrailStations";
-import { getAllLocations } from "@/actions/commonActions";
+import { NoDetailsFound, ReturnToPrevPageBtn } from "../../_components";
 
 const page = async ({ params }: PageProps) => {
   const { slug } = await params;

@@ -116,9 +116,11 @@ declare interface Product {
   _id: string;
   name: string;
   description: string;
-  businessId: string;
   images: ImageItem[];
   price: Price;
+  businessId: {
+    _id: string;
+  };
 }
 
 declare interface OpeningHrs {

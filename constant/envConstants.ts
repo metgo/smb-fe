@@ -11,11 +11,7 @@ const PASSWORD = process.env.PASSWORD;
 const GOOGLE_TAG_MANAGER_ID = process.env.NEXT_PUBLIC_GOOGLE_TAG_MANAGER;
 const GOOGLE_ANALYTIC_ID = process.env.NEXT_PUBLIC_GOOGLE_ANALYTIC;
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL;
-
-const CONSOLE_URL =
-  process.env.NEXT_PUBLIC_ENV === "prod"
-    ? "https://console.metgo.app"
-    : "https://stg.console.metgo.app";
+const SITE_ENVIRONMENT = process.env.NEXT_PUBLIC_ENV;
 
 export {
   CODE,
@@ -31,5 +27,5 @@ export {
   GOOGLE_ANALYTIC_ID,
   GOOGLE_TAG_MANAGER_ID,
   SITE_URL,
-  CONSOLE_URL,
+  SITE_ENVIRONMENT,
 };

@@ -4,8 +4,8 @@ import clsx from "clsx";
 
 import { NextImage } from "@/components/ui";
 import { CardSkeleton } from "@/components/skeletons";
-import { useImageScale } from "@/hooks/useImageScale";
-import { useImagePresent } from "@/hooks/useImagePresent";
+import { useImageScale } from "@/hooks/image/useImageScale";
+import { useImagePresent } from "@/hooks/image/useImagePresent";
 import { staticImages } from "@/constant/staticImages";
 
 // Layout definitions (image sizes)

@@ -1,0 +1,56 @@
+declare interface ProductDetailsProps {
+  _id: string;
+  name: string;
+  dmoId: string;
+  description: string;
+  images: ImageItem[];
+  price: Price;
+  quantity: {
+    _id: string;
+    initila: number;
+    sold: number;
+    remaining: number;
+    isUnlimited: boolean;
+  };
+  businessId: {
+    _id: string;
+    openingHrs: OpeningHrs[];
+    deliveryArea: DeliveryArea[];
+    deliverySpecificSellerInfo: string[];
+    deliveryReturnExchange: string[];
+    deliveryAdditionalInfo: string;
+  };
+  openingHrs: OpeningHrs[];
+  deliveryArea: DeliveryArea[];
+  deliverySpecificSellerInfo: string[];
+  deliveryReturnExchange: string[];
+  deliveryAdditionalInfo: string;
+}
+
+interface ProductInfoProps {
+  _id: string;
+  name: string;
+  images: ImageItem[];
+  price: {
+    markedPrice: number;
+    sellingPrice: number;
+  };
+  quantity: {
+    initial: number;
+    remaining: number;
+    description: string;
+    isUnlimited: boolean;
+  };
+  businessId: productBusiness;
+  description: string;
+  deliveryArea: DeliveryArea[];
+  deliverySpecificSellerInfo: string[];
+  categories: categoires[];
+}
+
+interface DeliverySectionProps {
+  deliveryArea: DeliveryArea[];
+  deliverySpecificSellerInfo: string[];
+  deliveryReturnExchange: string[];
+  deliveryAdditionalInfo: string;
+}

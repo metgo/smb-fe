@@ -15,6 +15,7 @@ interface SearchParamsProps {
     page: string;
     categoryId: string;
     subCategoryId: string;
+    productId: string;
   }>;
 }
 

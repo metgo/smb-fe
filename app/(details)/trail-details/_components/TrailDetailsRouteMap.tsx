@@ -1,7 +1,7 @@
 "use client";
 
 import useTrailStationStore from "@/stores/trailStationStore";
-import { useGoogleRouteDetailsMap } from "@/hooks/useGoogleRouteDetailsMap";
+import { useGoogleRouteDetailsMap } from "@/hooks/map/useGoogleRouteDetailsMap";
 
 const TrailDetailsRouteMap = ({ _id, locations }: TrailDetailsRouteProps) => {
   const { getStationsByTrailId } = useTrailStationStore();

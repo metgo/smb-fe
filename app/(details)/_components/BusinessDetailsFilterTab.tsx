@@ -15,8 +15,10 @@ const tabs = [
 
 const BusinessDetailsFilterTab = ({
   businessDetails,
+  products,
 }: {
   businessDetails: BusinessDetailsProps;
+  products: Product[];
 }) => {
   const [activeTab, setActiveTab] = useState<number>(1);
   const [updatedTabs, setUpdatedTabs] = useState<typeof tabs>([]);
@@ -26,7 +28,12 @@ const BusinessDetailsFilterTab = ({
       case 1:
         return <OurStoryTabContent {...businessDetails} />;
       case 2:
-        return <ProductsTabContent {...businessDetails} />;
+        return (
+          <ProductsTabContent
+            products={products}
+            primaryCategoryId={businessDetails.primaryCategoryId}
+          />
+        );
       case 3:
         return <DeliveriesTabContent {...businessDetails} />;
       default:
@@ -40,7 +47,7 @@ const BusinessDetailsFilterTab = ({
   }
 
   useEffect(() => {
-    const hasProducts = businessDetails?.products?.length > 0;
+    const hasProducts = products?.length > 0;
     const hasDeliveryInfo =
       businessDetails?.deliveryAdditionalInfo ||
       businessDetails?.deliveryArea?.length > 0 ||
@@ -60,7 +67,7 @@ const BusinessDetailsFilterTab = ({
     }
 
     setUpdatedTabs(updatedTabItems);
-  }, [businessDetails]);
+  }, [businessDetails, products]);
 
   return (
     <div className="mt-15">
