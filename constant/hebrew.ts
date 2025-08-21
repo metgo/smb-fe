@@ -85,7 +85,9 @@ export const events = {
   families: "משפחות",
   children: "ילדים",
   kosher: "כשר",
+  chooseCard: "בחרו כרטיס",
   eventDetails: "פרטי האירוע",
+  eventTicketTitle: "רכישת כרטיסים למסיבת קצב לילית בנגב",
 };
 
 export const tempCardInfo = {
@@ -189,6 +191,7 @@ export const formLabels = {
 
 export const buttonLabels = {
   show: "הצג",
+  continue: "להמשיך",
   readMore: "קרא עוד",
   approval: "אישור",
   readLess: "קרא פחות",
@@ -228,6 +231,7 @@ export const cartLabels = {
   yourCartIsEmptyYet: "הסל שלך ריק...עדיין!",
   emptyCartText: "זה הזמן למלא אותו במוצרים מעולים ולתמוך בעסקים המקומיים.",
   toViewProduct: "לצפייה במוצרים",
+  toViewBusinesses: "כדי לצפות בעסקים",
   proceedToSecurePayment: "המשיכו לתשלום מאובטח",
   toViewMyShoppingCart: "לצפייה בעגלת הקניות שלי",
   youMayAlsoLike: "מוצרים שחשבנו שתאהבו גם",

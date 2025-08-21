@@ -1,3 +1,5 @@
+import clsx from "clsx";
+
 import PaymentModal from "./PaymentModal";
 import { IconImage } from "@/components/ui";
 import useCheckoutStore from "@/stores/checkoutStore";
@@ -9,7 +11,7 @@ const PaymentInfo = ({
   thirdInfo,
   error,
   isLoading,
-  handelPlaceOrder,
+  handlePlaceOrder,
   handleIframeLoad,
   paymentUrl,
   isPaymentModalOpen,
@@ -20,6 +22,7 @@ const PaymentInfo = ({
   voucherInputs,
   remainingAmount,
   handlePaymentModalClose,
+  className,
 }: PaymentInfoProps) => {
   const { isStepOneSubmitBtnDisabled, isStepTwoSubmitBtnDisabled } =
     useCheckoutStore();
@@ -27,7 +30,12 @@ const PaymentInfo = ({
     isStepOneSubmitBtnDisabled || isStepTwoSubmitBtnDisabled || isLoading;
 
   return (
-    <div className="bg-white p-4 max-sm:mx-3 max-sm:mb-20 rounded-md flex flex-col gap-4 shadow">
+    <div
+      className={clsx(
+        className,
+        "bg-white p-4 max-sm:mx-3 max-sm:mb-20 rounded-md flex flex-col gap-4 shadow",
+      )}
+    >
       <div
         onClick={() => handleToggle("third")}
         className="flex justify-between cursor-pointer"
@@ -60,7 +68,7 @@ const PaymentInfo = ({
                   <button
                     type="button"
                     onClick={() => {
-                      handelPlaceOrder();
+                      handlePlaceOrder();
                       setSelectMethod("card");
                     }}
                     disabled={isDisabled}
@@ -83,7 +91,7 @@ const PaymentInfo = ({
               <button
                 type="button"
                 onClick={() => {
-                  handelPlaceOrder();
+                  handlePlaceOrder();
                 }}
                 disabled={isDisabled}
                 className={`flex gap-3 items-center justify-between border-[1px] border-lightgray rounded-md px-3 py-3 ${

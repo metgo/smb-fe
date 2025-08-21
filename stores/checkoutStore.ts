@@ -12,13 +12,28 @@ type OrderProducts = {
   image: string;
   price: number;
   quantity: number;
+  itemType: string;
   deliveryArea: DeliveryArea[];
 };
+
+type BuyNowProduct = {
+  _id: string;
+  quantity: number;
+  type: string;
+};
+
+type PlaceOrderItems = { _id: string; quantity: number; itemType: string };
 
 const initilaCustomerInfo = {
   firstName: "",
   phone: "",
   email: "",
+};
+
+const initalBuyNowProductInfo = {
+  _id: "",
+  quantity: 1,
+  type: "PRODUCT",
 };
 
 interface CheckoutStoreState {
@@ -43,6 +58,12 @@ interface CheckoutStoreState {
   isStepTwoSubmitBtnDisabled: boolean;
   setIsStepTwoComplete: (isComplete: boolean) => void;
   setIsStepTwoSubmitBtnDisabled: (isDisabled: boolean) => void;
+
+  buyNowProduct: BuyNowProduct;
+  setBuyNowProduct: (buyNowProduct: BuyNowProduct) => void;
+
+  placeOrderItems: PlaceOrderItems[];
+  setPlaceOrderItems: (items: PlaceOrderItems[]) => void;
 }
 
 const useCheckoutStore = create<CheckoutStoreState>((set) => ({
@@ -71,6 +92,12 @@ const useCheckoutStore = create<CheckoutStoreState>((set) => ({
   isStepTwoSubmitBtnDisabled: false,
   setIsStepTwoSubmitBtnDisabled: (isStepTwoSubmitBtnDisabled) =>
     set({ isStepTwoSubmitBtnDisabled }),
+
+  buyNowProduct: initalBuyNowProductInfo,
+  setBuyNowProduct: (buyNowProduct) => set({ buyNowProduct }),
+
+  placeOrderItems: [],
+  setPlaceOrderItems: (items) => set({ placeOrderItems: items }),
 }));
 
 export default useCheckoutStore;

@@ -1,14 +1,15 @@
+import clsx from "clsx";
 import Link from "next/link";
 
 import IconImage from "./IconImage";
 import { misc } from "@/constant/hebrew";
-import clsx from "clsx";
 
 interface MapNavButtonProps {
   lat: string;
   lng: string;
   clssName?: string;
 }
+
 const MapNavButton = ({ lat, lng, clssName = "" }: MapNavButtonProps) => {
   return (
     <Link

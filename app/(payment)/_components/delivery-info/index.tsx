@@ -1,14 +1,16 @@
 "use client";
 
 import { memo } from "react";
+
+import { itemTypeEnum } from "@/lib/utils";
+import { useDeliveryInfo } from "@/hooks";
+import { TabSelector } from "./TabSelector";
 import { SubmitButton } from "@/components/ui";
-import { buttonLabels, paymentPageLabels } from "@/constant/hebrew";
 import useCheckoutStore from "@/stores/checkoutStore";
 import { ProductSelector } from "./ProductSelector";
-import { TabSelector } from "./TabSelector";
 import { GiftReceiverForm } from "./GiftReceiverForm";
 import { DeliveryOptions } from "./DeliveryOptions";
-import { useDeliveryInfo } from "@/hooks";
+import { buttonLabels, paymentPageLabels } from "@/constant/hebrew";
 
 const tabs = [paymentPageLabels.forMe, paymentPageLabels.forGift];
 
@@ -61,25 +63,25 @@ const DeliveryInfo = memo(
             />
 
             {deliveryInfos.map(
-              (product) =>
-                clickedProductId === product._id && (
-                  <section key={product._id} className="space-y-4">
+              (item) =>
+                clickedProductId === item._id && (
+                  <section key={item._id} className="space-y-4">
                     <TabSelector
                       tabs={tabs}
-                      activeTab={product.activeTab}
+                      activeTab={item.activeTab}
                       onTabChange={(index) =>
-                        updateDeliveryInfo(product._id, { activeTab: index })
+                        updateDeliveryInfo(item._id, { activeTab: index })
                       }
                     />
 
-                    {product.activeTab === 1 && (
+                    {item.activeTab === 1 && (
                       <GiftReceiverForm
-                        giftReceiverInfo={product.giftReceiverInfo}
+                        giftReceiverInfo={item.giftReceiverInfo}
                         register={register}
                         errors={errors}
                         onInputChange={(fieldId, value) =>
                           handleInputChange(
-                            product._id,
+                            item._id,
                             "giftReceiverInfo",
                             fieldId,
                             value,
@@ -88,22 +90,24 @@ const DeliveryInfo = memo(
                       />
                     )}
 
-                    <DeliveryOptions
-                      product={product}
-                      onUpdateDeliveryInfo={(updates) =>
-                        updateDeliveryInfo(product._id, updates)
-                      }
-                      register={register}
-                      errors={errors}
-                      onInputChange={(fieldType, fieldId, value) =>
-                        handleInputChange(
-                          product._id,
-                          fieldType as any,
-                          fieldId,
-                          value,
-                        )
-                      }
-                    />
+                    {item.itemType === itemTypeEnum.product && (
+                      <DeliveryOptions
+                        product={item}
+                        onUpdateDeliveryInfo={(updates) =>
+                          updateDeliveryInfo(item._id, updates)
+                        }
+                        register={register}
+                        errors={errors}
+                        onInputChange={(fieldType, fieldId, value) =>
+                          handleInputChange(
+                            item._id,
+                            fieldType as any,
+                            fieldId,
+                            value,
+                          )
+                        }
+                      />
+                    )}
                   </section>
                 ),
             )}

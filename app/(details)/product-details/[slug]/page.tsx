@@ -1,7 +1,7 @@
+import { misc } from "@/constant/hebrew";
+import { NextImage } from "@/components/ui";
 import PriceTag from "@/components/PriceTag";
 import { ProductCard } from "@/components/cards";
-import { NextImage } from "@/components/ui";
-import { misc } from "@/constant/hebrew";
 import { getProductDetailsBySlug, getProducts } from "@/actions/productActions";
 import ProductDetailsFilterTab from "../../_components/ProductDetailsFilterTab";
 import {

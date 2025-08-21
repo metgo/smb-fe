@@ -143,6 +143,8 @@ const RecommendedProducts = () => {
     return () => clearTimeout(timer);
   }, [products.length, fetchMore, hasMore, isLoading]);
 
+  if (products.length === 0) return null;
+
   return (
     <section>
       <h1 className="text-2xl font-bold text-center mt-20 mb-4">
@@ -153,7 +155,7 @@ const RecommendedProducts = () => {
         className="flex flex-auto gap-4 overflow-x-auto hide-scrollbar"
       >
         {products.map((product) => (
-          <div key={product._id} className="flex-1">
+          <div key={product._id} className="flex shrink-0">
             <ProductCard isCartPage product={product} primaryCategoryId="" />
           </div>
         ))}

@@ -13,24 +13,15 @@ import DeliveryInfo from "./delivery-info";
 import PaymentSuccessModal from "./PaymentSuccessModal";
 import PaymentFailureModal from "./PaymentFailureModal";
 
-const PaymentSections = ({
-  isCart,
-  productQty,
-  cartDetails,
-  productDetailsList,
-}: {
-  isCart: boolean;
-  productQty: number;
-  cartDetails: any;
-  productDetailsList: ProductInfoProps[];
-}) => {
+const PaymentSections = () => {
   const {
     setCartedProduct,
     setOrderProducts,
     isStepOneComplete,
     isStepTwoComplete,
+    placeOrderItems,
   } = useCheckoutStore();
-  const { cartProducts } = useCartStore();
+  const { cartItems, buyNowProduct } = useCartStore();
 
   const {
     triggerError,
@@ -41,7 +32,7 @@ const PaymentSections = ({
     setOrderStatus,
     error,
     isLoading,
-    handelPlaceOrder,
+    handlePlaceOrder,
     handleIframeLoad,
     paymentUrl,
     isPaymentModalOpen,
@@ -52,6 +43,9 @@ const PaymentSections = ({
     voucherInputs,
     remainingAmount,
     handlePaymentModalClose,
+    isCart,
+    cartDetails,
+    productDetailsList,
   } = usePayment();
 
   useEffect(() => {
@@ -65,15 +59,17 @@ const PaymentSections = ({
 
   useEffect(() => {
     if (Array.isArray(productDetailsList) && productDetailsList.length > 0) {
-      const modifiedProductDetails = productDetailsList.map((product) => {
-        let quantity = productQty;
+      const modifiedProductDetails = productDetailsList?.map((product) => {
+        let quantity = buyNowProduct.quantity;
+        let itemType = buyNowProduct.itemType;
 
-        if (isCart && Array.isArray(cartProducts)) {
-          const cartItem = cartProducts.find(
+        if (isCart && Array.isArray(placeOrderItems)) {
+          const cartItem = placeOrderItems.find(
             (cart) => cart._id === product._id,
           );
           if (cartItem) {
             quantity = cartItem.quantity ?? 1;
+            itemType = cartItem.itemType;
           }
         }
 
@@ -81,16 +77,17 @@ const PaymentSections = ({
           _id: product._id,
           name: product.name,
           quantity,
+          itemType,
           image: product?.images?.[0]?.image ?? "",
           alt: product?.images?.[0]?.alt ?? "",
           price: product?.price?.sellingPrice,
-          deliveryArea: product?.deliveryArea,
+          deliveryArea: product?.deliveryArea ?? [],
         };
       });
 
       setOrderProducts(modifiedProductDetails);
     }
-  }, [productDetailsList, isCart, cartProducts]);
+  }, [productDetailsList, isCart, cartItems]);
 
   return (
     <div className="flex md:grid grid-cols-12 gap-4 justify-center max-md:flex-wrap max-md:flex-col-reverse">
@@ -115,7 +112,7 @@ const PaymentSections = ({
           handleToggle={handleToggle}
           error={error}
           isLoading={isLoading}
-          handelPlaceOrder={handelPlaceOrder}
+          handlePlaceOrder={handlePlaceOrder}
           handleIframeLoad={handleIframeLoad}
           paymentUrl={paymentUrl}
           isPaymentModalOpen={isPaymentModalOpen}
@@ -126,12 +123,11 @@ const PaymentSections = ({
           voucherInputs={voucherInputs}
           remainingAmount={remainingAmount}
           handlePaymentModalClose={handlePaymentModalClose}
+          className={errors.cart ? "border border-red-500 shake" : ""}
         />
       </div>
 
-      <ProductInfo
-        className={errors.cart ? "border border-red-500 shake" : ""}
-      />
+      <ProductInfo />
 
       {paymentStatus === "success" && (
         <PaymentSuccessModal

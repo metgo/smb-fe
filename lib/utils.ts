@@ -7,6 +7,17 @@ import {
   CtgLodgeIcon,
   CtgTourIcon,
 } from "@/components/ui/icons";
+import { pathNames } from "./endpoints";
+
+export const itemTypeEnum = {
+  product: "PRODUCT",
+  ticket: "TICKET",
+};
+
+export const paymentMethodType = {
+  externalLink: "EXTERNAL_LINK",
+  ticket: "TICKET",
+};
 
 export const contactFormReasonOptions = [
   { value: "תווים", label: "תווים" },
@@ -35,10 +46,10 @@ const categoryId = {
 };
 
 const navigationKey = {
-  home: "/",
-  events: "/events",
-  trails: "/trails",
-  businesses: "/businesses",
+  home: pathNames.home,
+  events: pathNames.events,
+  trails: pathNames.trails,
+  businesses: pathNames.businesses,
 };
 
 export const businessMarkers = {
@@ -171,14 +182,14 @@ export const features = [
     label: navbar.events,
     icon: "events",
     activeIcon: "events-dark",
-    link: "/events",
+    link: pathNames.events,
   },
   {
     key: 4,
     label: navbar.tracks,
     icon: "trail",
     activeIcon: "trail-dark",
-    link: "/trails",
+    link: pathNames.trails,
   },
 ];
 
@@ -201,10 +212,10 @@ export const filterTabs = [
 ];
 
 export const navigationPaths = {
-  [navigationKey.home]: "/business-details",
-  [navigationKey.businesses]: "/business-details",
-  [navigationKey.events]: "/event-details",
-  [navigationKey.trails]: "/trail-details",
+  [navigationKey.home]: pathNames.businessDetails,
+  [navigationKey.businesses]: pathNames.businessDetails,
+  [navigationKey.events]: pathNames.eventDetails,
+  [navigationKey.trails]: pathNames.trailDetails,
 };
 
 export const navItems = [
@@ -220,7 +231,7 @@ export const navItems = [
       {
         id: 2,
         label: menuItems.businessPage,
-        href: "/businesses",
+        href: pathNames.businesses,
         leftIcon: "",
         rightIcon: "",
       },
@@ -241,14 +252,14 @@ export const navItems = [
       {
         id: 5,
         label: menuItems.joinBusiness,
-        href: "#",
+        href: pathNames.joinBusiness,
         leftIcon: "",
         rightIcon: "",
       },
       {
         id: 6,
         label: menuItems.contactUs,
-        href: "/contact-us",
+        href: pathNames.contactUs,
         leftIcon: "",
         rightIcon: "",
       },
@@ -271,7 +282,7 @@ export const navItems = [
       {
         id: 3,
         label: menuItems.routes,
-        href: "#",
+        href: pathNames.trails,
         leftIcon: "",
         rightIcon: "",
       },
@@ -301,7 +312,7 @@ export const navItems = [
       {
         id: 4,
         label: menuItems.shoppingCart,
-        href: "#",
+        href: pathNames.cart,
         leftIcon: "",
         rightIcon: "",
       },

@@ -1,5 +1,6 @@
 import { useRouter } from "next/navigation";
 
+import Image from "next/image";
 import { Dialog } from "@/components/ui";
 import { buttonLabels, paymentPageLabels } from "@/constant/hebrew";
 
@@ -36,13 +37,14 @@ const PaymentSuccessModal = ({
         </div>
         <div className="w-full rounded-b-[20px] overflow-hidden">
           <div className="relative max-h-[19.59rem] w-full z-[999] max-sm:mt-16 rounded-b-[20px]">
-            {/* <Image
+            <Image
               className="w-full hidden md:block rounded-b-[20px] object-cover"
-              src={images.successFooter}
+              src="/images/yellow-chrysanthemum.png"
               width={1275}
               height={412}
               alt="success"
             />
+            {/*
             <Image
               className="w-full md:hidden rounded-b-[20px] object-cover"
               src={images.mobileSuccess}

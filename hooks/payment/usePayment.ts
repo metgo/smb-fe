@@ -1,11 +1,16 @@
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import { urls } from "@/lib/endpoints";
 import useCheckoutStore from "@/stores/checkoutStore";
 import { useVoucherStore } from "@/stores/voucherStore";
 import { CODE, IdentifierId } from "@/constant/envConstants";
 import { checkVoucherAmount, placeOrder } from "@/actions/paymentActions";
+import useCartStore from "@/stores/cartStore";
+import {
+  getProductDetailsByIds,
+  postProductToCart,
+} from "@/actions/productActions";
 
 type ErrorType = Step | "cart" | "server";
 type Step = "first" | "second" | "third" | "product";
@@ -15,6 +20,10 @@ const voucherErrorInitialState = { id: -1, msg: "" };
 
 export const usePayment = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const hasFetchedRef = useRef(false);
+
+  const isCart = searchParams.get("isCart") === "true";
   const { voucherDetails, createVoucher, clearVoucher } = useVoucherStore();
   const {
     customerInfo,
@@ -27,14 +36,19 @@ export const usePayment = () => {
     isStepTwoComplete,
     isStepOneSubmitBtnDisabled,
     isStepTwoSubmitBtnDisabled,
+    placeOrderItems,
   } = useCheckoutStore();
   const { firstName, phone, email } = customerInfo;
+  const { clearCart, buyNowProduct } = useCartStore();
 
   // ------------------- State -------------------
   const [isLoading, setIsLoading] = useState(false);
   const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
   const [selectMethod, setSelectMethod] = useState<string | null>(null);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [cartDetails, setCartDetails] = useState<any>(null);
+  const [productDetailsList, setProductDetailsList] = useState<any[]>([]);
+
   const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>("none");
   const [voucherInputs, setVoucherInputs] = useState<
     { code: string; id?: string }[]
@@ -83,6 +97,38 @@ export const usePayment = () => {
     return firstName && (phone || email);
   };
 
+  // ------------------- Cart and Product Details  api call-------------------
+  async function fetchCartDetails() {
+    const cartInfo = isCart ? placeOrderItems : [buyNowProduct];
+
+    try {
+      const res = await postProductToCart(cartInfo);
+      setCartDetails(res);
+    } catch (error) {
+      console.error("Failed to fetch cart details:", error);
+    }
+  }
+
+  async function fetchProductDetailsList() {
+    const productIds = isCart
+      ? placeOrderItems.map((item) => ({
+          id: item._id,
+          itemType: item.itemType,
+        }))
+      : [{ id: buyNowProduct._id, itemType: buyNowProduct.itemType }];
+    if (productIds.length === 0) return;
+    const res = await getProductDetailsByIds(productIds);
+    setProductDetailsList(res);
+  }
+
+  useEffect(() => {
+    if (hasFetchedRef.current) return;
+    hasFetchedRef.current = true;
+
+    fetchCartDetails();
+    fetchProductDetailsList();
+  }, []);
+
   // ------------------- Step UI -------------------
   const handleToggle = (step: Step) => {
     setActiveStep((prev) => (prev === step ? null : step));
@@ -108,7 +154,7 @@ export const usePayment = () => {
     setPaymentUrl(null);
   };
   // ------------------- Payment Flow -------------------
-  const handelPlaceOrder = async () => {
+  const handlePlaceOrder = async () => {
     setIsLoading(true);
 
     try {
@@ -138,6 +184,7 @@ export const usePayment = () => {
       const data = await placeOrder(payload);
       if (!data[0]?.UrlToBit || data?.qrCodeUrl) {
         clearVoucher();
+        clearCart();
         setPaymentStatus("success");
       }
 
@@ -176,6 +223,10 @@ export const usePayment = () => {
         const status = data?.value?.includes(urls.paymentSuccess)
           ? "success"
           : "failure";
+        if (status === "success") {
+          clearCart();
+          clearVoucher();
+        }
         router.refresh();
         setTimeout(() => setPaymentStatus(status), 100);
       }
@@ -259,6 +310,10 @@ export const usePayment = () => {
   }, [voucherDetails]);
 
   return {
+    isCart,
+    cartDetails,
+    productDetailsList,
+
     // UI
     activeStep,
     handleToggle,
@@ -277,7 +332,7 @@ export const usePayment = () => {
     setSelectMethod,
 
     // Payment
-    handelPlaceOrder,
+    handlePlaceOrder,
     handleIframeLoad,
     handlePaymentModalClose,
     remainingAmount: calculateRemainingAmount(),

@@ -6,6 +6,7 @@ import Image from "next/image";
 import { menuItems } from "@/constant/hebrew";
 import { IconImage } from "@/components/ui";
 import { usePathname } from "next/navigation";
+import { pathNames } from "@/lib/endpoints";
 
 const navItems = [
   {
@@ -17,11 +18,11 @@ const navItems = [
     col2: [
       { id: 1, label: menuItems.eventGeneralPublic, href: "#" },
       { id: 2, label: menuItems.eventCompaniesOrg, href: "#" },
-      { id: 3, label: menuItems.routes, href: "#" },
+      { id: 3, label: menuItems.routes, href: pathNames.trails },
     ],
     col3: [
       { id: 1, label: menuItems.registerLogin, href: "#" },
-      { id: 2, label: menuItems.joinBusiness, href: "#" },
+      { id: 2, label: menuItems.joinBusiness, href: pathNames.joinBusiness },
       { id: 3, label: menuItems.blog, href: "#" },
     ],
     col4: [
@@ -30,7 +31,7 @@ const navItems = [
     ],
     col5: [
       { id: 1, label: menuItems.hebrew, href: "#", rightIcon: "/images" },
-      { id: 2, label: menuItems.contactUs, href: "#" },
+      { id: 2, label: menuItems.contactUs, href: pathNames.contactUs },
     ],
   },
 ];
@@ -60,7 +61,7 @@ const Footer = () => {
   const segments = pathname.split("/").filter(Boolean);
   const basePath = `/${segments[0]}`;
 
-  if (basePath === "/trail-details") return null;
+  if (basePath === pathNames.trailDetails) return null;
 
   return (
     <div className="mx-20 relative h-[156px] overflow-hidden">

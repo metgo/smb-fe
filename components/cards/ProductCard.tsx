@@ -6,12 +6,14 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 
 import PriceTag from "../PriceTag";
+import { itemTypeEnum } from "@/lib/utils";
+import { CardSkeleton } from "../skeletons";
 import useCartStore from "@/stores/cartStore";
 import { cartLabels, misc } from "@/constant/hebrew";
-import { CardSkeleton } from "../skeletons";
 import { IconImage, NextImage } from "@/components/ui";
 import { useImageScale } from "@/hooks/image/useImageScale";
 import { useImagePresent } from "@/hooks/image/useImagePresent";
+import { pathNames } from "@/lib/endpoints";
 
 const ImageCard = ({
   imageItem,
@@ -70,7 +72,7 @@ const ProductCard = ({
 }) => {
   const router = useRouter();
   const { scale } = useImageScale();
-  const { setCartProduct } = useCartStore();
+  const { setCartItem, setBuyNowProduct } = useCartStore();
   const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   function handleAddToCart(e: React.MouseEvent) {
@@ -85,20 +87,26 @@ const ProductCard = ({
       desc: product.description,
       price: product.price.sellingPrice,
       parentId: product.businessId._id,
+      itemType: itemTypeEnum.product,
     };
-    setCartProduct(cartProduct);
+    setCartItem(cartProduct);
   }
 
   function handleQuickPurchase(e: React.MouseEvent) {
     e.preventDefault();
     e.stopPropagation();
-
-    router.push(`/check-out?isCart=false&qty=1&productId=${product._id}`);
+    const buyNowProduct = {
+      _id: product._id,
+      quantity: 1,
+      itemType: itemTypeEnum.product,
+    };
+    setBuyNowProduct(buyNowProduct);
+    router.push(`${pathNames.checkout}?isCart=false`);
   }
 
   return (
     <div className=" rounded-2xl overflow-hidden border border-[#D3D3D3]">
-      <Link href={`/product-details/${product._id}`}>
+      <Link href={`${pathNames.productsDetails}/${product._id}`}>
         <div className="relative w-full overflow-hidden">
           <div
             style={{ width: 242 * scale, height: 224 * scale }}

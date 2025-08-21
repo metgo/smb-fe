@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { cartLabels } from "@/constant/hebrew";
+import { pathNames } from "@/lib/endpoints";
 
 const EmptyCart = () => {
   return (
@@ -9,10 +10,10 @@ const EmptyCart = () => {
         {cartLabels.emptyCartText}
       </p>
       <Link
-        href={"/businesses"}
+        href={pathNames.businesses}
         className="font-bold text-white bg-black rounded-md py-2.5 px-16 cursor-pointer"
       >
-        {cartLabels.toViewProduct}
+        {cartLabels.toViewBusinesses}
       </Link>
     </div>
   );
