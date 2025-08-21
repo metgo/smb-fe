@@ -7,7 +7,7 @@ import {
   REFERENCE_SCREEN_WIDTH,
 } from "@/constant/collageLayouts";
 import FeedCard from "../cards/FeedCard";
-import TrailRouteMap from "../maps/TrailRouteMap";
+import BusinessPinMap from "../maps/BusinessPinMap";
 
 const MapFeedIntegratedLayout = ({ data }: { data: FeedItemList }) => {
   const feedItemCount = data.length;
@@ -168,7 +168,7 @@ const MapFeedIntegratedLayout = ({ data }: { data: FeedItemList }) => {
         {renderFullLayout()}
       </div>
 
-      <TrailRouteMap className="w-[calc(51%-0.5rem)]" />
+      <BusinessPinMap className="w-[calc(51%-0.5rem)]" />
     </div>
   );
 };

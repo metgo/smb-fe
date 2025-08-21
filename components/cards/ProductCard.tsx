@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 
 import PriceTag from "../PriceTag";
-import { itemType } from "@/lib/utils";
+import { itemTypeEnum } from "@/lib/utils";
 import { CardSkeleton } from "../skeletons";
 import useCartStore from "@/stores/cartStore";
 import { cartLabels, misc } from "@/constant/hebrew";
@@ -72,7 +72,7 @@ const ProductCard = ({
 }) => {
   const router = useRouter();
   const { scale } = useImageScale();
-  const { setCartProduct, setBuyNowProduct } = useCartStore();
+  const { setCartItem, setBuyNowProduct } = useCartStore();
   const [activeImageIndex, setActiveImageIndex] = useState(0);
 
   function handleAddToCart(e: React.MouseEvent) {
@@ -87,9 +87,9 @@ const ProductCard = ({
       desc: product.description,
       price: product.price.sellingPrice,
       parentId: product.businessId._id,
-      itemType: itemType.product,
+      itemType: itemTypeEnum.product,
     };
-    setCartProduct(cartProduct);
+    setCartItem(cartProduct);
   }
 
   function handleQuickPurchase(e: React.MouseEvent) {
@@ -97,8 +97,8 @@ const ProductCard = ({
     e.stopPropagation();
     const buyNowProduct = {
       _id: product._id,
-      qty: 1,
-      type: itemType.product,
+      quantity: 1,
+      itemType: itemTypeEnum.product,
     };
     setBuyNowProduct(buyNowProduct);
     router.push(`${pathNames.checkout}?isCart=false`);

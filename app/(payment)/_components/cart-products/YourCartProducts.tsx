@@ -8,20 +8,40 @@ import PriceTag from "@/components/PriceTag";
 import useCartStore from "@/stores/cartStore";
 import { cartLabels, paymentPageLabels } from "@/constant/hebrew";
 import QtyIncrementDecrementBtns from "@/components/QtyIncrementDecrementBtns";
+import { startLoading } from "@/components/wrappers/ProgressBar";
+import useCheckoutStore from "@/stores/checkoutStore";
 
 const YourCartProducts = () => {
   const router = useRouter();
-  const {
-    cartProducts,
-    removeCartProduct,
-    getTotalPaidAmount,
-    getTotalQuantity,
-  } = useCartStore();
+  const { cartItems, removeCartItem, getTotalPaidAmount, getTotalQuantity } =
+    useCartStore();
+  const { setPlaceOrderItems } = useCheckoutStore();
 
   function handleRedirectToCheckout() {
-    router.push(
-      `${pathNames.checkout}?isCart=true&productId=${cartProducts.map((item) => item._id).join(",")}`,
+    startLoading();
+
+    const orderPlaceItems = Object.values(
+      cartItems.reduce(
+        (acc, item) => {
+          if (!acc[item._id]) {
+            acc[item._id] = {
+              _id: item._id,
+              quantity: 0,
+              itemType: item.itemType,
+            };
+          }
+          acc[item._id].quantity += item.quantity;
+          return acc;
+        },
+        {} as Record<
+          string,
+          { _id: string; quantity: number; itemType: string }
+        >,
+      ),
     );
+
+    setPlaceOrderItems(orderPlaceItems);
+    router.push(`${pathNames.checkout}?isCart=true`);
   }
 
   return (
@@ -30,10 +50,10 @@ const YourCartProducts = () => {
       <div className="grid grid-cols-12 gap-4">
         <section className="col-span-8 border border-secondary bg-white p-4 rounded-xl">
           <div className=" overscroll-auto">
-            {cartProducts?.map((product, index) => {
-              const isThresholdQty = product.quantity === 1;
+            {cartItems?.map((item, index) => {
+              const isThresholdQty = item.quantity === 1;
               return (
-                <div key={product._id}>
+                <div key={item._id + index}>
                   <div className="flex gap-4 items-center justify-between">
                     <div className="flex gap-4 items-center w-full">
                       <div className="w-[60px] flex-shrink-0 h-[60px] bg-gray-200 relative rounded-md">
@@ -42,41 +62,49 @@ const YourCartProducts = () => {
                           height={60}
                           quality={100}
                           unoptimized
-                          alt={product.name}
-                          src={product.image}
+                          alt={item.name}
+                          src={item.image}
                           className="rounded-lg object-cover w-full h-full"
                         />
                       </div>
                       <div className="flex justify-start w-full flex-col">
-                        <h3 className="line-clamp-1 font-bold">
-                          {product.name}
-                        </h3>
+                        <div className="flex items-center gap-2 ">
+                          <h3 className="line-clamp-1 font-bold">
+                            {item.name}
+                          </h3>
+                          {item?.eventDate && (
+                            <span className="font-normal">
+                              {" "}
+                              - {item.eventDate}
+                            </span>
+                          )}
+                        </div>
                         <div
                           className="line-clamp-2 font-normal w-1/2 text-[12px] text-theme"
-                          dangerouslySetInnerHTML={{ __html: product.desc }}
+                          dangerouslySetInnerHTML={{ __html: item.desc }}
                         />
                       </div>
                     </div>
 
                     <div className="flex gap-12 items-center justify-between">
                       <QtyIncrementDecrementBtns
-                        _id={product._id}
-                        quantity={product.quantity}
+                        item={item}
+                        quantity={item.quantity}
                         isThresholdQty={isThresholdQty}
                       />
                       <PriceTag
-                        price={product?.price}
+                        price={item?.price}
                         className=" text-2xl font-normal"
                       />
                       <div
-                        onClick={() => removeCartProduct(product._id)}
+                        onClick={() => removeCartItem(item)}
                         className="cursor-pointer size-[16px] bg-black rounded-full flex items-center justify-center text-white p-[1px] font-bold"
                       >
                         <IoMdClose />
                       </div>
                     </div>
                   </div>
-                  {index < cartProducts.length - 1 && (
+                  {index < cartItems.length - 1 && (
                     <div className="border-b my-2.5 border-lightGray" />
                   )}
                 </div>

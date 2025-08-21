@@ -29,6 +29,8 @@ export const urls = {
 
   trails: `${BASE_URL}/trips`,
   trailDetails: `${BASE_URL}/trips`,
+
+  ticketDetails: `${BASE_URL}/tickets`,
 };
 
 export const pathNames = {

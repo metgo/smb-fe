@@ -9,12 +9,20 @@ import { Dialog } from "@/components/ui";
 import PriceTag from "@/components/PriceTag";
 import { buttonLabels, events } from "@/constant/hebrew";
 import useCartStore from "@/stores/cartStore";
-import { itemType } from "@/lib/utils";
+import { itemTypeEnum } from "@/lib/utils";
 
 interface TicketListModalProps {
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
   dayDescription: DayDescription[];
+}
+
+function formatDate(date: string) {
+  return new Date(date).toLocaleDateString("he-IL", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
 }
 
 const TicketListModal = ({
@@ -23,7 +31,7 @@ const TicketListModal = ({
   dayDescription,
 }: TicketListModalProps) => {
   const router = useRouter();
-  const { setCartProduct } = useCartStore();
+  const { setCartItem } = useCartStore();
 
   const [isTicketSelected, setIsTicketSelected] = useState(false);
   const [updatedTickets, setUpdatedTickets] = useState<
@@ -34,7 +42,7 @@ const TicketListModal = ({
     if (dayDescription.length > 0) {
       const tickets = dayDescription.map((eventDays) => ({
         _id: eventDays._id,
-        date: eventDays.date,
+        date: formatDate(eventDays.date),
         startTime: eventDays.startTime,
         endTime: eventDays.endTime,
         tickets: eventDays.ticketIds.map((ticket) => ({
@@ -120,13 +128,16 @@ const TicketListModal = ({
           desc: ticket.desc,
           image: ticket.image,
           price: ticket.price,
-          itemType: itemType.ticket,
+          itemType: itemTypeEnum.ticket,
           quantity: ticket.quantity,
           parentId: eventDay._id,
+          eventDate: eventDay.date,
+          startTime: eventDay.startTime,
+          endTime: eventDay.endTime,
         })),
     );
 
-    selectedTickets.forEach((ticket) => setCartProduct(ticket));
+    selectedTickets.forEach((ticket) => setCartItem(ticket));
     setIsOpen(false);
     router.push("/cart");
   }
@@ -148,13 +159,7 @@ const TicketListModal = ({
               <div key={eventDays._id}>
                 <div className="border-[2px] border-black/80 rounded-lg px-3 py-2 flex items-center justify-between">
                   <span className="font-bold">{events.chooseCard}</span>
-                  <span className="text-gray-600">
-                    {new Date(eventDays.date).toLocaleDateString("he-IL", {
-                      day: "numeric",
-                      month: "long",
-                      year: "numeric",
-                    })}
-                  </span>
+                  <span className="text-gray-600">{eventDays.date}</span>
                   <span>
                     {eventDays.startTime} - {eventDays.endTime}
                   </span>

@@ -231,6 +231,7 @@ export const cartLabels = {
   yourCartIsEmptyYet: "הסל שלך ריק...עדיין!",
   emptyCartText: "זה הזמן למלא אותו במוצרים מעולים ולתמוך בעסקים המקומיים.",
   toViewProduct: "לצפייה במוצרים",
+  toViewBusinesses: "כדי לצפות בעסקים",
   proceedToSecurePayment: "המשיכו לתשלום מאובטח",
   toViewMyShoppingCart: "לצפייה בעגלת הקניות שלי",
   youMayAlsoLike: "מוצרים שחשבנו שתאהבו גם",

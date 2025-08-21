@@ -1,25 +1,58 @@
-import Link from "next/link";
 import Image from "next/image";
 import { IoMdClose } from "react-icons/io";
+import { useRouter } from "next/navigation";
 
 import PriceTag from "../PriceTag";
 import EmptyCart from "../EmptyCart";
 import { MotionDialogDiv } from "../ui";
+import { pathNames } from "@/lib/endpoints";
 import useCartStore from "@/stores/cartStore";
 import { cartLabels, paymentPageLabels } from "@/constant/hebrew";
 import QtyIncrementDecrementBtns from "../QtyIncrementDecrementBtns";
-import { pathNames } from "@/lib/endpoints";
+import { startLoading } from "../wrappers/ProgressBar";
+import useCheckoutStore from "@/stores/checkoutStore";
 
 interface CartDrawerProps {
   setIsOpen: (isOpen: boolean) => void;
 }
 
 const CartDrawer = ({ setIsOpen }: CartDrawerProps) => {
-  const { cartProducts, removeCartProduct, getTotalPaidAmount } =
-    useCartStore();
+  const router = useRouter();
+  const { setPlaceOrderItems } = useCheckoutStore();
+  const { cartItems, removeCartItem, getTotalPaidAmount } = useCartStore();
 
   function onClose() {
     setIsOpen(false);
+  }
+
+  function handleNavigation(isCart: boolean = true) {
+    startLoading();
+    setIsOpen(false);
+    if (isCart) {
+      router.push(`${pathNames.cart}`);
+    } else {
+      const orderPlaceItems = Object.values(
+        cartItems.reduce(
+          (acc, item) => {
+            if (!acc[item._id]) {
+              acc[item._id] = {
+                _id: item._id,
+                quantity: 0,
+                itemType: item.itemType,
+              };
+            }
+            acc[item._id].quantity += item.quantity;
+            return acc;
+          },
+          {} as Record<
+            string,
+            { _id: string; quantity: number; itemType: string }
+          >,
+        ),
+      );
+      setPlaceOrderItems(orderPlaceItems);
+      router.push(`${pathNames.checkout}?isCart=true`);
+    }
   }
 
   return (
@@ -43,13 +76,13 @@ const CartDrawer = ({ setIsOpen }: CartDrawerProps) => {
         </div>
 
         <section className="mt-4">
-          {cartProducts?.length > 0 ? (
+          {cartItems?.length > 0 ? (
             <div>
               <div className="min-h-[69vh] overscroll-auto">
-                {cartProducts?.map((product, index) => {
-                  const isThresholdQty = product.quantity === 1;
+                {cartItems?.map((item, index) => {
+                  const isThresholdQty = item.quantity === 1;
                   return (
-                    <div key={product._id}>
+                    <div key={item._id + index}>
                       <div className="flex gap-4 items-center justify-between">
                         <div className="flex gap-4 items-center w-full">
                           <div className="w-[60px] flex-shrink-0 h-[60px] bg-gray-200 relative rounded-md">
@@ -58,36 +91,36 @@ const CartDrawer = ({ setIsOpen }: CartDrawerProps) => {
                               height={60}
                               quality={100}
                               unoptimized
-                              alt={product.name}
-                              src={product.image}
+                              alt={item.name}
+                              src={item.image}
                               className="rounded-lg object-cover w-full h-full"
                             />
                           </div>
                           <div className="flex justify-start w-full flex-col">
                             <h3 className=" font-normal line-clamp-1">
-                              {product.name}
+                              {item.name}
                             </h3>
                             <PriceTag
-                              price={product?.price}
+                              price={item?.price}
                               className=" text-sm font-normal"
                             />
                           </div>
                         </div>
                         <div className="flex gap-2 items-center justify-between">
                           <QtyIncrementDecrementBtns
-                            _id={product._id}
-                            quantity={product.quantity}
+                            item={item}
+                            quantity={item.quantity}
                             isThresholdQty={isThresholdQty}
                           />
                           <div
-                            onClick={() => removeCartProduct(product._id)}
+                            onClick={() => removeCartItem(item)}
                             className="cursor-pointer size-[16px] bg-black rounded-full flex items-center justify-center text-white p-[1px] font-bold"
                           >
                             <IoMdClose />
                           </div>
                         </div>
                       </div>
-                      {index < cartProducts.length - 1 && (
+                      {index < cartItems.length - 1 && (
                         <div className="border-b my-2.5 border-lightGray" />
                       )}
                     </div>
@@ -101,15 +134,20 @@ const CartDrawer = ({ setIsOpen }: CartDrawerProps) => {
                   </span>
                   <PriceTag price={getTotalPaidAmount()} />
                 </div>
-                <Link
-                  href={`${pathNames.checkout}?isCart=true&productId=${cartProducts.map((item) => item._id).join(",")}`}
+                <button
+                  type="button"
+                  onClick={() => handleNavigation(false)}
                   className="font-bold text-white bg-black rounded-md py-2.5 px-16 cursor-pointer mt-6 mb-4"
                 >
                   {cartLabels.proceedToSecurePayment}
-                </Link>
-                <Link href={pathNames.cart} className="font-bold underline">
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleNavigation(true)}
+                  className="font-bold underline cursor-pointer"
+                >
                   {cartLabels.toViewMyShoppingCart}
-                </Link>
+                </button>
               </div>
             </div>
           ) : (

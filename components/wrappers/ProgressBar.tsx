@@ -6,24 +6,27 @@ import { useEffect } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 
 // Custom CSS for color change and RTL direction
-// background: linear-gradient(to right, #667eea 0%, #764ba2 100%) !important; /* Or use gradient */
 const progressBarStyles = `
+
   #nprogress .bar {
-    background: #FE333E !important; /* Change this color to your preference */
-  }
-  
-  #nprogress .peg {
-    box-shadow: 0 0 10px #29d, 0 0 5px #29d !important;
-  }
-  
-  /* RTL Direction */
-  #nprogress .bar {
+    right: 0;              
+    left: auto;            
+    transform-origin: right;
+    background: #FE333E !important;
+    height: 3.5px !important;
+    transform: scaleX(-1);
+    right: 0 !important;
+    left: auto !important;
     transform-origin: right !important;
   }
   
-  #nprogress {
-    direction: rtl !important;
+  #nprogress .peg {
+   right: auto !important;
+  left: 0 !important;
+  transform: scaleX(-1);
+    box-shadow: 0 0 10px #29d, 0 0 5px #29d !important;
   }
+
 `;
 
 // Inject custom styles
@@ -33,9 +36,11 @@ if (typeof document !== "undefined") {
   document.head.appendChild(styleSheet);
 }
 
-NProgress.configure({
-  showSpinner: false,
-});
+NProgress.configure({ showSpinner: false });
+
+export function startLoading() {
+  NProgress.start();
+}
 
 export default function ProgressBar() {
   const pathname = usePathname();

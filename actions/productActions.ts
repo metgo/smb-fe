@@ -40,7 +40,7 @@ export async function getProductDetailsById(productId: string) {
   }
 }
 
-export async function getProductDetailsByIds(productIds: string[]) {
+export async function getProductDetailsByIds6(productIds: string[]) {
   try {
     const results = await Promise.all(
       productIds.map(async (id) => {
@@ -59,30 +59,42 @@ export async function getProductDetailsByIds(productIds: string[]) {
   }
 }
 
-export async function postProductToCart6(
-  id: string,
-  itemType: string = "PRODUCT",
-  quantity: number = 1,
+export async function getProductDetailsByIds(
+  products: { id: string; itemType: string }[],
 ) {
-  const response = await fetch(urls.carts, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      product: { id, quantity, itemType },
-      campCode: CODE,
-    }),
-  });
-  return await response.json();
+  try {
+    const results = await Promise.all(
+      products.map(async ({ id, itemType }) => {
+        let url = "";
+
+        if (itemType === "PRODUCT") {
+          url = `${urls.productsDetails}/${id}?campCode=${CODE}`;
+        } else if (itemType === "TICKET") {
+          url = `${urls.ticketDetails}/${id}`;
+        } else {
+          throw new Error(`Unknown itemType: ${itemType}`);
+        }
+
+        const res = await fetch(url);
+        if (!res.ok) throw new Error(`Failed to fetch ${itemType} ${id}`);
+
+        return res.json();
+      }),
+    );
+
+    return results;
+  } catch (error) {
+    console.error("Error fetching product/package details:", error);
+    return [];
+  }
 }
 
 export async function postProductToCart(
-  cartInfo: { _id: string; qty: number; itemType: string }[],
+  cartInfo: { _id: string; quantity: number; itemType: string }[],
 ) {
   if (!cartInfo.length) throw new Error("cartInfo cannot be empty");
 
-  // First item -> POST
+  // --- 1. First item -> POST ---
   const firstItem = cartInfo[0];
   const response = await fetch(urls.carts, {
     method: "POST",
@@ -92,8 +104,8 @@ export async function postProductToCart(
     body: JSON.stringify({
       product: {
         id: firstItem._id,
-        quantity: firstItem.qty,
-        itemType: firstItem.itemType ?? "PRODUCT",
+        quantity: firstItem.quantity,
+        itemType: firstItem.itemType,
       },
       campCode: CODE,
     }),
@@ -105,27 +117,39 @@ export async function postProductToCart(
     throw new Error(postResult?.message || "Failed to create cart");
   }
 
-  const cartId = postResult?.data?.id || postResult?.cartId; // adjust based on API shape
-
-  // Remaining items -> PATCH
-  if (cartInfo.length > 1 && cartId) {
-    const restItems = cartInfo.slice(1);
-
-    await fetch(`${urls.carts}/${cartId}`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        products: restItems.map((item) => ({
-          id: item._id,
-          quantity: item.qty,
-          itemType: item.itemType ?? "PRODUCT",
-        })),
-        campCode: CODE,
-      }),
-    });
+  const cartId = postResult?._id;
+  if (!cartId) {
+    throw new Error("Cart ID not found in POST response");
   }
 
+  // --- 2. Remaining items -> PATCH one by one ---
+  const patchResults: any[] = [];
+  if (cartInfo.length > 1) {
+    const restItems = cartInfo.slice(1);
+
+    for (const item of restItems) {
+      const patchRes = await fetch(`${urls.carts}/${cartId}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          productId: item._id,
+          quantity: item.quantity,
+          itemType: item.itemType,
+        }),
+      });
+
+      const patchResult = await patchRes.json();
+
+      if (!patchRes.ok) {
+        throw new Error(patchResult?.message || "Failed to update cart");
+      }
+
+      patchResults.push(patchResult);
+    }
+  }
+
+  // --- 3. Return merged result ---
   return postResult;
 }

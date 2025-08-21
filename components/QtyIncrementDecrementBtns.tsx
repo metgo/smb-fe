@@ -4,19 +4,19 @@ import { FaMinus, FaPlus } from "react-icons/fa6";
 import useCartStore from "@/stores/cartStore";
 
 interface Props {
-  _id: string;
+  item: any;
   quantity: number;
   isThresholdQty: boolean;
 }
 const QtyIncrementDecrementBtns = ({
-  _id,
+  item,
   quantity,
   isThresholdQty,
 }: Props) => {
-  const { cartProducts, updateQuantity } = useCartStore();
+  const { cartItems, updateQuantity } = useCartStore();
 
-  function handleChangeQuantity(productId: string, delta: number) {
-    const product = cartProducts.find((p) => p._id === productId);
+  function handleChangeQuantity(delta: number) {
+    const product = cartItems.find((p) => p._id === item._id);
     if (!product) return;
 
     const newQty = quantity + delta;
@@ -24,7 +24,7 @@ const QtyIncrementDecrementBtns = ({
     // Prevent quantity going below 1
     if (newQty < 1) return;
 
-    updateQuantity(productId, newQty);
+    updateQuantity(item, newQty);
   }
 
   return (
@@ -32,7 +32,7 @@ const QtyIncrementDecrementBtns = ({
       <button
         type="button"
         className="size-9 rounded-full border border-secondary flex items-center justify-center cursor-pointer"
-        onClick={() => handleChangeQuantity(_id, +1)}
+        onClick={() => handleChangeQuantity(+1)}
       >
         <FaPlus />
       </button>
@@ -46,7 +46,7 @@ const QtyIncrementDecrementBtns = ({
           isThresholdQty ? "cursor-not-allowed" : "cursor-pointer",
           "size-9 rounded-full border border-secondary flex items-center justify-center",
         )}
-        onClick={() => handleChangeQuantity(_id, -1)}
+        onClick={() => handleChangeQuantity(-1)}
       >
         <FaMinus />
       </button>

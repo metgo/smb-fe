@@ -12,7 +12,6 @@ import ProductInfo from "./ProductInfo";
 import DeliveryInfo from "./delivery-info";
 import PaymentSuccessModal from "./PaymentSuccessModal";
 import PaymentFailureModal from "./PaymentFailureModal";
-import { itemType } from "@/lib/utils";
 
 const PaymentSections = () => {
   const {
@@ -20,8 +19,9 @@ const PaymentSections = () => {
     setOrderProducts,
     isStepOneComplete,
     isStepTwoComplete,
+    placeOrderItems,
   } = useCheckoutStore();
-  const { cartProducts, buyNowProduct } = useCartStore();
+  const { cartItems, buyNowProduct } = useCartStore();
 
   const {
     triggerError,
@@ -59,15 +59,17 @@ const PaymentSections = () => {
 
   useEffect(() => {
     if (Array.isArray(productDetailsList) && productDetailsList.length > 0) {
-      const modifiedProductDetails = productDetailsList.map((product) => {
-        let quantity = buyNowProduct.qty;
+      const modifiedProductDetails = productDetailsList?.map((product) => {
+        let quantity = buyNowProduct.quantity;
+        let itemType = buyNowProduct.itemType;
 
-        if (isCart && Array.isArray(cartProducts)) {
-          const cartItem = cartProducts.find(
+        if (isCart && Array.isArray(placeOrderItems)) {
+          const cartItem = placeOrderItems.find(
             (cart) => cart._id === product._id,
           );
           if (cartItem) {
             quantity = cartItem.quantity ?? 1;
+            itemType = cartItem.itemType;
           }
         }
 
@@ -75,17 +77,17 @@ const PaymentSections = () => {
           _id: product._id,
           name: product.name,
           quantity,
-          itemType: itemType.product,
+          itemType,
           image: product?.images?.[0]?.image ?? "",
           alt: product?.images?.[0]?.alt ?? "",
           price: product?.price?.sellingPrice,
-          deliveryArea: product?.deliveryArea,
+          deliveryArea: product?.deliveryArea ?? [],
         };
       });
 
       setOrderProducts(modifiedProductDetails);
     }
-  }, [productDetailsList, isCart, cartProducts]);
+  }, [productDetailsList, isCart, cartItems]);
 
   return (
     <div className="flex md:grid grid-cols-12 gap-4 justify-center max-md:flex-wrap max-md:flex-col-reverse">

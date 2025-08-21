@@ -5,6 +5,7 @@ import { paymentPageLabels } from "@/constant/hebrew";
 import useCheckoutStore from "@/stores/checkoutStore";
 import { useVoucherStore } from "@/stores/voucherStore";
 import { IconImage } from "@/components/ui";
+import { IoMdCloseCircle } from "react-icons/io";
 
 const ProductInfo = () => {
   const { orderProducts, totalDeliveryFee } = useCheckoutStore();
@@ -61,8 +62,9 @@ const ProductInfo = () => {
           </div>
         </div>
       </section>
+
       <section
-        className={`flex flex-col gap-4 ${true ? "block" : "hidden md:block"}`}
+        className={`flex flex-col gap-4 ${true ? "block" : "hidden md:block"} mt-8`}
       >
         <div className="flex justify-between items-center">
           <div className="flex gap-2 items-center relative">
@@ -85,14 +87,15 @@ const ProductInfo = () => {
             className="flex justify-between items-center border-b border-lightgray py-2"
           >
             <div className="flex gap-2 items-center relative">
-              {/* <NextImage
-                width={24}
-                height={24}
-                isOptimized
-                className="w-12 h-12"
-                alt={voucher.name || "שובר"}
-                imgSrc={images.voucherFlower}
-              /> */}
+              <div className="w-10 h-10 bg-amber-400 rounded-md">
+                <Image
+                  width={100}
+                  height={100}
+                  className="w-full h-full"
+                  alt={voucher.name || "שובר"}
+                  src={"/images/voucher-image.svg"}
+                />
+              </div>
               <span className="text-[14px] font-bold text-black">
                 {voucher.name}
               </span>
@@ -107,11 +110,12 @@ const ProductInfo = () => {
                 className="text-secondary hover:text-red-700 text-[24px] font-bold cursor-pointer"
                 aria-label={`הסר שובר ${voucher.name}`}
               >
-                ×
+                <IoMdCloseCircle />
               </button>
             </div>
           </div>
         ))}
+
         <div className="bg-lightPrimary rounded-md py-4 hidden sm:flex">
           <div className="flex justify-between w-full text-[18px] font-bold text-black">
             <span>{paymentPageLabels.totalPaid}</span>

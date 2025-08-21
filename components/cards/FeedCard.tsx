@@ -1,16 +1,17 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState, useRef } from "react";
 import { motion, useInView, useAnimation } from "framer-motion";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
+import { pathNames } from "@/lib/endpoints";
 import { navigationPaths } from "@/lib/utils";
 import useGeneralStore from "@/stores/generalStore";
 import { CardSkeleton } from "@/components/skeletons";
-import { IconImage, ImageCarouselControls, NextImage } from "@/components/ui";
-import { useImagePresent } from "@/hooks/image/useImagePresent";
 import { removeInlineStylesFromHTML } from "@/lib/helpers";
+import { useImagePresent } from "@/hooks/image/useImagePresent";
+import { IconImage, ImageCarouselControls, NextImage } from "@/components/ui";
+import { startLoading } from "../wrappers/ProgressBar";
 
 const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
   const router = useRouter();
@@ -65,7 +66,7 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
   }
 
   const handleMouseEnter = () => {
-    if (activeFilterTab === "integrated" && pathname === "/trails") {
+    if (activeFilterTab === "integrated" && pathname === pathNames.trails) {
       const params = new URLSearchParams(searchParams.toString());
       params.set("slug", feedItem.slug);
       router.replace(`${pathname}?${params.toString()}`, { scroll: false });
@@ -73,12 +74,17 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
   };
 
   const handleMouseLeave = () => {
-    if (activeFilterTab === "integrated" && pathname === "/trails") {
+    if (activeFilterTab === "integrated" && pathname === pathNames.trails) {
       const params = new URLSearchParams(searchParams.toString());
       params.delete("slug");
       router.replace(`${pathname}?${params.toString()}`, { scroll: false });
     }
   };
+
+  function handleNavigation() {
+    startLoading();
+    router.push(`${navigationPaths[pathname]}/${feedItem.slug}`);
+  }
 
   return (
     <motion.div
@@ -91,11 +97,11 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
       {isLoading || !hasMounted || !isImageLoaded ? (
         <CardSkeleton primaryCategoryId={primaryCategoryId} />
       ) : (
-        <Link
+        <div
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
-          href={`${navigationPaths[pathname]}/${feedItem.slug}`}
-          className="w-full h-full relative group rounded-xl overflow-hidden"
+          onClick={handleNavigation}
+          className="w-full h-full relative group rounded-xl overflow-hidden cursor-pointer"
         >
           <NextImage
             isFill
@@ -155,7 +161,7 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
               />
             )}
           </div>
-        </Link>
+        </div>
       )}
     </motion.div>
   );

@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/icons";
 import { pathNames } from "./endpoints";
 
-export const itemType = {
+export const itemTypeEnum = {
   product: "PRODUCT",
   ticket: "TICKET",
 };

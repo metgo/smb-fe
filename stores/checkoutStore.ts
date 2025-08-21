@@ -18,9 +18,11 @@ type OrderProducts = {
 
 type BuyNowProduct = {
   _id: string;
-  qty: number;
+  quantity: number;
   type: string;
 };
+
+type PlaceOrderItems = { _id: string; quantity: number; itemType: string };
 
 const initilaCustomerInfo = {
   firstName: "",
@@ -30,7 +32,7 @@ const initilaCustomerInfo = {
 
 const initalBuyNowProductInfo = {
   _id: "",
-  qty: 1,
+  quantity: 1,
   type: "PRODUCT",
 };
 
@@ -59,6 +61,9 @@ interface CheckoutStoreState {
 
   buyNowProduct: BuyNowProduct;
   setBuyNowProduct: (buyNowProduct: BuyNowProduct) => void;
+
+  placeOrderItems: PlaceOrderItems[];
+  setPlaceOrderItems: (items: PlaceOrderItems[]) => void;
 }
 
 const useCheckoutStore = create<CheckoutStoreState>((set) => ({
@@ -90,6 +95,9 @@ const useCheckoutStore = create<CheckoutStoreState>((set) => ({
 
   buyNowProduct: initalBuyNowProductInfo,
   setBuyNowProduct: (buyNowProduct) => set({ buyNowProduct }),
+
+  placeOrderItems: [],
+  setPlaceOrderItems: (items) => set({ placeOrderItems: items }),
 }));
 
 export default useCheckoutStore;

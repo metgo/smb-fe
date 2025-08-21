@@ -155,7 +155,7 @@ const RecommendedProducts = () => {
         className="flex flex-auto gap-4 overflow-x-auto hide-scrollbar"
       >
         {products.map((product) => (
-          <div key={product._id} className="flex-1">
+          <div key={product._id} className="flex shrink-0">
             <ProductCard isCartPage product={product} primaryCategoryId="" />
           </div>
         ))}

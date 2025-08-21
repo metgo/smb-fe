@@ -4,6 +4,7 @@ import Head from "next/head";
 import type { Metadata } from "next";
 import { BUCKET_URL } from "@/constant/envConstants";
 import { ProgressBar } from "@/components/wrappers";
+import { Suspense } from "react";
 
 export const metadata: Metadata = {
   title: "תיירות בני שמעון – חוויות, טבע ותוצרת מהנגב הפורח",
@@ -23,8 +24,10 @@ export default function RootLayout({ children }: ReactChildNode) {
         />
       </Head>
       <body>
-        <ProgressBar />
-        {children}
+        <Suspense>
+          <ProgressBar />
+          {children}
+        </Suspense>
       </body>
     </html>
   );

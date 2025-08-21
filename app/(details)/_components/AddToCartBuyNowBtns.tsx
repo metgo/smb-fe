@@ -7,14 +7,14 @@ import { IconImage } from "@/components/ui";
 import useCartStore from "@/stores/cartStore";
 import { FaMinus, FaPlus } from "react-icons/fa6";
 import { productDetailsText } from "@/constant/hebrew";
-import { itemType } from "@/lib/utils";
+import { itemTypeEnum } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 
 const AddToCartBuyNowBtns = ({ product }: { product: ProductDetailsProps }) => {
   const router = useRouter();
   const [qty, setQty] = useState(1);
 
-  const { setCartProduct, setBuyNowProduct } = useCartStore();
+  const { setCartItem, setBuyNowProduct } = useCartStore();
 
   function handleQtyChange(operator: string) {
     if (operator === "increment") setQty((prev) => prev + 1);
@@ -32,10 +32,10 @@ const AddToCartBuyNowBtns = ({ product }: { product: ProductDetailsProps }) => {
       desc: product.description,
       price: product.price.sellingPrice,
       quantity: qty,
-      itemType: itemType.product,
+      itemType: itemTypeEnum.product,
       parentId: product.businessId._id,
     };
-    setCartProduct(cartProduct);
+    setCartItem(cartProduct);
   }
 
   function handleQuickPurchase(e: React.MouseEvent) {
@@ -43,8 +43,8 @@ const AddToCartBuyNowBtns = ({ product }: { product: ProductDetailsProps }) => {
     e.stopPropagation();
     const buyNowProduct = {
       _id: product._id,
-      qty: 1,
-      type: itemType.product,
+      quantity: 1,
+      itemType: itemTypeEnum.product,
     };
     setBuyNowProduct(buyNowProduct);
     router.push(`/check-out?isCart=false`);

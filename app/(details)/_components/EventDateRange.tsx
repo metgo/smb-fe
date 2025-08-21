@@ -33,7 +33,7 @@ const EventDateRange = ({ dayDescription, payment }: EventDetailsProps) => {
               <div
                 key={item._id}
                 // onClick={() => setClickedDay(eventInfo)}
-                className={` w-23.5 h-27 border rounded-[5px] flex flex-col items-center justify-center ${isActive ? " border-[#E89900] bg-[#FDF5E6] text-[#E89900]" : "border-[#D3D3D3] text-theme"}`}
+                className={` w-23.5 h-27 border rounded-[5px] flex flex-col items-center justify-center font-normal ${isActive ? " border-[#E89900] bg-[#FDF5E6] text-[#E89900]" : "border-[#D3D3D3] text-theme"}`}
               >
                 <span>{eventInfo.days}</span>
                 <div
@@ -51,7 +51,7 @@ const EventDateRange = ({ dayDescription, payment }: EventDetailsProps) => {
           <button
             type="button"
             onClick={handleOpenTicketModal}
-            className="bg-dark rounded-2xl ps-15 pe-16.5 py-2 text-white flex items-center gap-1.25 cursor-pointer"
+            className="bg-dark rounded-2xl ps-15 pe-16.5 py-2 text-white flex items-center gap-1.25 font-bold cursor-pointer"
           >
             {payment.method === paymentMethodType.externalLink && (
               <IconImage icon="external-link" />

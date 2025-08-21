@@ -1,14 +1,14 @@
-import { useRouter } from "next/navigation";
+import Link from "next/link";
+import Image from "next/image";
 
 import { Dialog } from "@/components/ui";
+import { pathNames } from "@/lib/endpoints";
 import { buttonLabels, paymentPageLabels } from "@/constant/hebrew";
 
 const PaymentFailureModal = ({
   isOpen,
   onClose,
 }: PaymentSuccessFailureModalProps) => {
-  const router = useRouter();
-
   return (
     <Dialog
       isOpen={isOpen}
@@ -23,22 +23,22 @@ const PaymentFailureModal = ({
           <p className="text-[16px] text-center text-black w-full font-normal text-3xl">
             {paymentPageLabels.paymentFailureMessage}
           </p>
-          <button
-            type="button"
-            onClick={() => router.back()}
-            className="min-w-[225px] mt-[38px] bg-black rounded-md text-white py-3"
+          <Link
+            href={pathNames.businesses}
+            className="bg-black rounded-md text-white py-3 px-8 mt-6"
           >
             {buttonLabels.continueShopping}
-          </button>
+          </Link>
         </div>
         <div className="w-full relative rounded-b-[20px] overflow-hidden">
           <div className="max-h-[18rem] w-full rounded-b-[20px]">
-            {/* <Image
-              className="w-full rounded-b-[20px] object-cover"
-              src={images.successFooter}
+            <Image
+              width={200}
+              height={200}
               alt="failure"
-              fill
-            /> */}
+              src="/images/yellow-chrysanthemum.png"
+              className="w-full rounded-b-[20px] object-cover"
+            />
           </div>
         </div>
       </div>

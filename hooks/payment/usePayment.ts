@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { urls } from "@/lib/endpoints";
@@ -21,6 +21,8 @@ const voucherErrorInitialState = { id: -1, msg: "" };
 export const usePayment = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const hasFetchedRef = useRef(false);
+
   const isCart = searchParams.get("isCart") === "true";
   const { voucherDetails, createVoucher, clearVoucher } = useVoucherStore();
   const {
@@ -34,9 +36,10 @@ export const usePayment = () => {
     isStepTwoComplete,
     isStepOneSubmitBtnDisabled,
     isStepTwoSubmitBtnDisabled,
+    placeOrderItems,
   } = useCheckoutStore();
   const { firstName, phone, email } = customerInfo;
-  const { cartProducts, buyNowProduct } = useCartStore();
+  const { clearCart, buyNowProduct } = useCartStore();
 
   // ------------------- State -------------------
   const [isLoading, setIsLoading] = useState(false);
@@ -94,20 +97,9 @@ export const usePayment = () => {
     return firstName && (phone || email);
   };
 
+  // ------------------- Cart and Product Details  api call-------------------
   async function fetchCartDetails() {
-    const cartInfo = isCart
-      ? cartProducts.map((item) => ({
-          _id: item._id,
-          qty: item.quantity,
-          itemType: item.itemType,
-        }))
-      : [
-          {
-            _id: buyNowProduct._id,
-            qty: buyNowProduct.qty,
-            itemType: buyNowProduct.type,
-          },
-        ];
+    const cartInfo = isCart ? placeOrderItems : [buyNowProduct];
 
     try {
       const res = await postProductToCart(cartInfo);
@@ -119,17 +111,23 @@ export const usePayment = () => {
 
   async function fetchProductDetailsList() {
     const productIds = isCart
-      ? cartProducts.map((item) => item._id)
-      : [buyNowProduct._id];
+      ? placeOrderItems.map((item) => ({
+          id: item._id,
+          itemType: item.itemType,
+        }))
+      : [{ id: buyNowProduct._id, itemType: buyNowProduct.itemType }];
     if (productIds.length === 0) return;
     const res = await getProductDetailsByIds(productIds);
     setProductDetailsList(res);
   }
-  // ------------------- Cart and Product Details  api call-------------------
+
   useEffect(() => {
+    if (hasFetchedRef.current) return;
+    hasFetchedRef.current = true;
+
     fetchCartDetails();
     fetchProductDetailsList();
-  }, [isCart]);
+  }, []);
 
   // ------------------- Step UI -------------------
   const handleToggle = (step: Step) => {
@@ -186,6 +184,7 @@ export const usePayment = () => {
       const data = await placeOrder(payload);
       if (!data[0]?.UrlToBit || data?.qrCodeUrl) {
         clearVoucher();
+        clearCart();
         setPaymentStatus("success");
       }
 
@@ -224,6 +223,10 @@ export const usePayment = () => {
         const status = data?.value?.includes(urls.paymentSuccess)
           ? "success"
           : "failure";
+        if (status === "success") {
+          clearCart();
+          clearVoucher();
+        }
         router.refresh();
         setTimeout(() => setPaymentStatus(status), 100);
       }

@@ -1,5 +1,7 @@
 import { useForm } from "react-hook-form";
 import { useCallback, useEffect, useState } from "react";
+
+import { itemTypeEnum } from "@/lib/utils";
 import useCheckoutStore from "@/stores/checkoutStore";
 import { postDeliveryInfo } from "@/actions/paymentActions";
 
@@ -24,40 +26,44 @@ export const useDeliveryInfo = (handleToggle: (step: StepType) => void) => {
 
   // Initialize delivery infos
   useEffect(() => {
-    const initialDeliveryInfos = orderProducts.map((item) => ({
-      isSelected: false,
-      _id: item._id,
-      name: item.name,
-      imageSrc: item.image || "",
-      alt: item.alt || "",
-      quantity: 1,
-      itemType: item.itemType,
-      deliveryMethod: "",
-      deliveryPickupLocation: "",
-      deliveryFee: 0,
-      activeTab: 0,
-      selectedDeliveryArea: "",
-      isDeliveryToPointSelect: false,
-      isDeliveryToHomeSelect: false,
-      deliveryToHome: item.deliveryArea.filter(
-        (area) => !area.pickUpLocation || area.pickUpLocation.length === 0,
-      ),
-      deliveryToPoint: item.deliveryArea.filter(
-        (area) => area.pickUpLocation && area.pickUpLocation.length > 0,
-      ),
-      giftReceiverInfo: {
-        receiverPhone: "",
-        receiverEmail: "",
-        receiverMessage: "",
-      },
-      deliveryAddress: {
-        city: "",
-        street: "",
-        houseNo: "",
-        apartment: "",
-        greeting: "",
-      },
-    }));
+    const initialDeliveryInfos = orderProducts.map((item) => {
+      const isTicket = item.itemType === itemTypeEnum.ticket;
+
+      return {
+        isSelected: isTicket ? true : false,
+        _id: item._id,
+        name: item.name,
+        imageSrc: item.image || "",
+        alt: item.alt || "",
+        quantity: 1,
+        itemType: item.itemType,
+        deliveryMethod: isTicket ? "pick_up" : "",
+        deliveryPickupLocation: isTicket ? "pick_up" : "",
+        deliveryFee: 0,
+        activeTab: 0,
+        selectedDeliveryArea: isTicket ? "pick_up" : "",
+        isDeliveryToPointSelect: isTicket ? true : false,
+        isDeliveryToHomeSelect: false,
+        deliveryToHome: item.deliveryArea.filter(
+          (area) => !area.pickUpLocation || area.pickUpLocation.length === 0,
+        ),
+        deliveryToPoint: item.deliveryArea.filter(
+          (area) => area.pickUpLocation && area.pickUpLocation.length > 0,
+        ),
+        giftReceiverInfo: {
+          receiverPhone: "",
+          receiverEmail: "",
+          receiverMessage: "",
+        },
+        deliveryAddress: {
+          city: "",
+          street: "",
+          houseNo: "",
+          apartment: "",
+          greeting: "",
+        },
+      };
+    });
 
     setDeliveryInfos(initialDeliveryInfos);
     setClickedProductId(orderProducts?.[0]?._id);
@@ -75,7 +81,7 @@ export const useDeliveryInfo = (handleToggle: (step: StepType) => void) => {
     }
 
     // Home delivery validation
-    if (item.isDeliveryToHomeSelect) {
+    if (item.isDeliveryToHomeSelect && item.itemType !== itemTypeEnum.ticket) {
       const { city, street, houseNo, apartment, greeting } =
         item.deliveryAddress;
       if (!city || !street || !houseNo || !apartment || !greeting) return false;
