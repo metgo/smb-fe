@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
 import Link from "next/link";
+import { useState } from "react";
 
 import NavLogo from "./NavLogo";
 import MenuItems from "./MenuItems";
@@ -53,7 +53,7 @@ const Navbar = ({ showFilterTab = false }: { showFilterTab?: boolean }) => {
                 className="p-2 relative cursor-pointer"
               >
                 <div className="absolute -top-1 -left-0 bg-[#28C268] rounded-full h-[14px] w-[14px] flex items-center justify-center">
-                  <span className="text-[10px] text-white font-bold mt-1">
+                  <span className="text-[10px] text-white font-bold mt-[1px]">
                     {getTotalQuantity()}
                   </span>
                 </div>
