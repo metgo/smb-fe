@@ -12,6 +12,7 @@ import ProductInfo from "./ProductInfo";
 import DeliveryInfo from "./delivery-info";
 import PaymentSuccessModal from "./PaymentSuccessModal";
 import PaymentFailureModal from "./PaymentFailureModal";
+import { ScreenSkeleton } from "@/components/skeletons";
 
 const PaymentSections = () => {
   const {
@@ -32,6 +33,7 @@ const PaymentSections = () => {
     setOrderStatus,
     error,
     isLoading,
+    isOrderPlacing,
     handlePlaceOrder,
     handleIframeLoad,
     paymentUrl,
@@ -90,58 +92,55 @@ const PaymentSections = () => {
   }, [productDetailsList, isCart, cartItems]);
 
   return (
-    <div className="flex md:grid grid-cols-12 gap-4 justify-center max-md:flex-wrap max-md:flex-col-reverse">
-      <div className="flex flex-col gap-4 w-full col-span-8">
-        <OrderInfo
-          handleToggle={handleToggle}
-          firstInfo={activeStep === "first"}
-          className={!isStepOneComplete ? "border border-red-500 shake" : ""}
-        />
-        <DeliveryInfo
-          setErrorType={triggerError}
-          handleToggle={handleToggle}
-          secondInfo={activeStep === "second"}
-          className={!isStepTwoComplete ? "border border-red-500 shake" : ""}
-        />
-        <PaymentInfo
-          setPaymentStatus={(value: string) =>
-            setOrderStatus(value as "none" | "success" | "failure")
-          }
-          setErrorType={triggerError}
-          thirdInfo={activeStep === "third"}
-          handleToggle={handleToggle}
-          error={error}
-          isLoading={isLoading}
-          handlePlaceOrder={handlePlaceOrder}
-          handleIframeLoad={handleIframeLoad}
-          paymentUrl={paymentUrl}
-          isPaymentModalOpen={isPaymentModalOpen}
-          setSelectMethod={setSelectMethod}
-          addVoucherInput={addVoucherInput}
-          checkVoucher={checkVoucher}
-          handleCodeChange={handleCodeChange}
-          voucherInputs={voucherInputs}
-          remainingAmount={remainingAmount}
-          handlePaymentModalClose={handlePaymentModalClose}
-          className={errors.cart ? "border border-red-500 shake" : ""}
-        />
+    <>
+      <ScreenSkeleton isLoading={isLoading} />
+      <div className="flex md:grid grid-cols-12 gap-4 justify-center max-md:flex-wrap max-md:flex-col-reverse">
+        <div className="flex flex-col gap-4 w-full col-span-8">
+          <OrderInfo
+            handleToggle={handleToggle}
+            firstInfo={activeStep === "first"}
+            className={!isStepOneComplete ? "border border-red-500 shake" : ""}
+          />
+          <DeliveryInfo
+            setErrorType={triggerError}
+            handleToggle={handleToggle}
+            secondInfo={activeStep === "second"}
+            className={!isStepTwoComplete ? "border border-red-500 shake" : ""}
+          />
+          <PaymentInfo
+            setPaymentStatus={(value: string) =>
+              setOrderStatus(value as "none" | "success" | "failure")
+            }
+            setErrorType={triggerError}
+            thirdInfo={activeStep === "third"}
+            handleToggle={handleToggle}
+            error={error}
+            isLoading={isOrderPlacing}
+            handlePlaceOrder={handlePlaceOrder}
+            handleIframeLoad={handleIframeLoad}
+            paymentUrl={paymentUrl}
+            isPaymentModalOpen={isPaymentModalOpen}
+            setSelectMethod={setSelectMethod}
+            addVoucherInput={addVoucherInput}
+            checkVoucher={checkVoucher}
+            handleCodeChange={handleCodeChange}
+            voucherInputs={voucherInputs}
+            remainingAmount={remainingAmount}
+            handlePaymentModalClose={handlePaymentModalClose}
+            className={errors.cart ? "border border-red-500 shake" : ""}
+          />
+        </div>
+
+        <ProductInfo />
+
+        {paymentStatus === "success" && (
+          <PaymentSuccessModal isOpen={paymentStatus === "success"} />
+        )}
+        {paymentStatus === "failure" && (
+          <PaymentFailureModal isOpen={paymentStatus === "failure"} />
+        )}
       </div>
-
-      <ProductInfo />
-
-      {paymentStatus === "success" && (
-        <PaymentSuccessModal
-          isOpen={paymentStatus === "success"}
-          onClose={() => {}}
-        />
-      )}
-      {paymentStatus === "failure" && (
-        <PaymentFailureModal
-          isOpen={paymentStatus === "failure"}
-          onClose={() => {}}
-        />
-      )}
-    </div>
+    </>
   );
 };
 

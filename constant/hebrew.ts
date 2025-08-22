@@ -18,6 +18,7 @@ export const misc = {
   toAllTracks: "לכל המסלולים",
   mayInterestYou: "יכול לעניין אתכם",
   addToRoute: "הוספה למסלול",
+  pleaseWait: "אנא המתן",
 };
 
 export const deliveries = {

@@ -42,15 +42,17 @@ const ProductInfo = () => {
           <div>
             {orderProducts?.map((item) => (
               <div key={item._id}>
-                <div className="flex gap-2 items-center justify-between">
-                  <Image
-                    width={100}
-                    height={100}
-                    alt={item.alt}
-                    src={item.image}
-                    className="rounded w-[60px] h-[50px] "
-                  />
-                  <div className="md:w-60 font-bold">{item.name}</div>
+                <div className="flex gap-1 items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Image
+                      width={100}
+                      height={100}
+                      alt={item.alt}
+                      src={item.image}
+                      className="rounded w-[60px] h-[50px] "
+                    />
+                    <div className="md:w-60 font-bold">{item.name}</div>
+                  </div>
                   <div>
                     <span className="font-bold">{item.quantity}x</span>
                     <PriceTag price={item.price} className="font-bold ml-1" />

@@ -1,16 +1,17 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-import { urls } from "@/lib/endpoints";
+import { pathNames, urls } from "@/lib/endpoints";
+import useCartStore from "@/stores/cartStore";
 import useCheckoutStore from "@/stores/checkoutStore";
 import { useVoucherStore } from "@/stores/voucherStore";
 import { CODE, IdentifierId } from "@/constant/envConstants";
 import { checkVoucherAmount, placeOrder } from "@/actions/paymentActions";
-import useCartStore from "@/stores/cartStore";
 import {
-  getProductDetailsByIds,
   postProductToCart,
+  getProductDetailsByIds,
 } from "@/actions/productActions";
+import { startLoading } from "@/components/wrappers/ProgressBar";
 
 type ErrorType = Step | "cart" | "server";
 type Step = "first" | "second" | "third" | "product";
@@ -43,6 +44,8 @@ export const usePayment = () => {
 
   // ------------------- State -------------------
   const [isLoading, setIsLoading] = useState(false);
+  const [isOrderPlacing, setIsOrderPlacing] = useState(false);
+
   const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
   const [selectMethod, setSelectMethod] = useState<string | null>(null);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
@@ -100,12 +103,14 @@ export const usePayment = () => {
   // ------------------- Cart and Product Details  api call-------------------
   async function fetchCartDetails() {
     const cartInfo = isCart ? placeOrderItems : [buyNowProduct];
-
+    setIsLoading(true);
     try {
       const res = await postProductToCart(cartInfo);
       setCartDetails(res);
     } catch (error) {
       console.error("Failed to fetch cart details:", error);
+    } finally {
+      setIsLoading(false);
     }
   }
 
@@ -117,13 +122,23 @@ export const usePayment = () => {
         }))
       : [{ id: buyNowProduct._id, itemType: buyNowProduct.itemType }];
     if (productIds.length === 0) return;
-    const res = await getProductDetailsByIds(productIds);
-    setProductDetailsList(res);
+    setIsLoading(true);
+    try {
+      const res = await getProductDetailsByIds(productIds);
+      setProductDetailsList(res);
+    } catch (error) {
+      console.log("Somthing went wrong", error);
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   useEffect(() => {
     if (hasFetchedRef.current) return;
     hasFetchedRef.current = true;
+    setIsPaymentModalOpen(false);
+    setPaymentUrl(null);
+    setPaymentStatus("none");
 
     fetchCartDetails();
     fetchProductDetailsList();
@@ -150,12 +165,14 @@ export const usePayment = () => {
   const handleClose = () => setIsPaymentModalOpen(false);
 
   const handlePaymentModalClose = () => {
-    setIsPaymentModalOpen(false);
+    startLoading();
     setPaymentUrl(null);
+    setIsPaymentModalOpen(false);
+    router.push(pathNames.businesses);
   };
   // ------------------- Payment Flow -------------------
   const handlePlaceOrder = async () => {
-    setIsLoading(true);
+    setIsOrderPlacing(true);
 
     try {
       if (!cartedProduct.cartId) {
@@ -197,18 +214,21 @@ export const usePayment = () => {
       console.error("Error placing order:", error);
       triggerError("server");
     } finally {
-      setIsLoading(false);
+      setIsOrderPlacing(false);
     }
   };
 
   const handleIframeLoad = (event: React.SyntheticEvent<HTMLIFrameElement>) => {
-    const iframeWindow = event.currentTarget.contentWindow;
+    const iframe = event.currentTarget;
+    const iframeWindow = iframe.contentWindow;
+
     let isProcessed = false;
 
     if (!iframeWindow) return;
 
     const messageHandler = (event: MessageEvent) => {
       const { data } = event;
+      console.log("-----data", data);
       if (isProcessed) return;
 
       if (
@@ -226,6 +246,7 @@ export const usePayment = () => {
         if (status === "success") {
           clearCart();
           clearVoucher();
+          setIsPaymentModalOpen(false);
         }
         router.refresh();
         setTimeout(() => setPaymentStatus(status), 100);
@@ -323,6 +344,7 @@ export const usePayment = () => {
     orderStatus,
     setOrderStatus,
     isLoading,
+    isOrderPlacing,
     paymentUrl,
     paymentStatus,
     setPaymentStatus,

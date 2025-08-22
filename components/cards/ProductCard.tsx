@@ -95,6 +95,8 @@ const ProductCard = ({
   function handleQuickPurchase(e: React.MouseEvent) {
     e.preventDefault();
     e.stopPropagation();
+    startLoading();
+
     const buyNowProduct = {
       _id: product._id,
       quantity: 1,

@@ -12,8 +12,8 @@ const progressBarStyles = `
     right: 0;              
     left: auto;            
     transform-origin: right;
-    background: #FE333E !important;
-    height: 3.5px !important;
+    background: #00A5A8 !important;
+    height: 3px !important;
     transform: scaleX(-1);
     right: 0 !important;
     left: auto !important;
