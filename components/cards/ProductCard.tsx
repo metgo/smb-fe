@@ -191,7 +191,10 @@ const ProductCard = ({
             >
               <span>{misc.quickPurchase}</span>
             </button>
-            <div onClick={handleAddToCart} className="flex-none cursor-pointer">
+            <div
+              onClick={handleAddToCart}
+              className="flex-none cursor-pointer hover:shadow-md rounded-xl"
+            >
               <IconImage width={40} height={40} icon="circular-cart" />
             </div>
           </div>

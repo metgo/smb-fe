@@ -77,7 +77,7 @@ const HamburgerMenu = ({
           {Object.entries(navItems[0]).map(([colKey, items]) => (
             <div key={colKey} className="flex gap-2.75">
               <div className="w-0.25 h-70 bg-[#D3D3D3]" />
-              <div className="flex flex-col w-[14.5rem]">
+              <div className="flex flex-col sm:w-full md:w-[8rem] lg:w-[10rem] xl:w-[14.5rem]">
                 {items.map((item) => (
                   <Link
                     key={item.id}

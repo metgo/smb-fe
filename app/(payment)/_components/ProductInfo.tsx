@@ -70,8 +70,8 @@ const ProductInfo = () => {
       >
         <div className="flex justify-between items-center">
           <div className="flex gap-2 items-center relative">
-            <div className="rounded-md w-12  h-12 border-[1.5px] flex items-center justify-center">
-              <IconImage width={38} height={38} icon={"delivery-truck"} />
+            <div className="rounded-md w-10  h-10 border-[1.8px] flex items-center justify-center">
+              <IconImage width={30} height={30} icon={"delivery-truck"} />
             </div>
             <span className="text-[14px] font-bold text-black">
               {paymentPageLabels.shippingPrice}

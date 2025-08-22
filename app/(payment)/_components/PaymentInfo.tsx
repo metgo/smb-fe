@@ -94,10 +94,10 @@ const PaymentInfo = ({
                   handlePlaceOrder();
                 }}
                 disabled={isDisabled}
-                className={`flex gap-3 items-center justify-between border-[1px] border-lightgray rounded-md px-3 py-3 ${
+                className={`flex gap-3 items-center justify-between text-white rounded-md px-3 py-2 ${
                   isDisabled
-                    ? "opacity-50 cursor-not-allowed"
-                    : "cursor-pointer"
+                    ? "opacity-50 cursor-not-allowed bg-black/50"
+                    : "cursor-pointer bg-black"
                 }`}
               >
                 {buttonLabels.orderConfirmation}

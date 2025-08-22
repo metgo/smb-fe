@@ -2,13 +2,15 @@
 
 import clsx from "clsx";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { FaMinus, FaPlus } from "react-icons/fa6";
 
 import { IconImage } from "@/components/ui";
-import useCartStore from "@/stores/cartStore";
-import { FaMinus, FaPlus } from "react-icons/fa6";
-import { productDetailsText } from "@/constant/hebrew";
 import { itemTypeEnum } from "@/lib/utils";
-import { useRouter } from "next/navigation";
+import { pathNames } from "@/lib/endpoints";
+import useCartStore from "@/stores/cartStore";
+import { productDetailsText } from "@/constant/hebrew";
+import { startLoading } from "@/components/wrappers/ProgressBar";
 
 const AddToCartBuyNowBtns = ({ product }: { product: ProductDetailsProps }) => {
   const router = useRouter();
@@ -39,6 +41,7 @@ const AddToCartBuyNowBtns = ({ product }: { product: ProductDetailsProps }) => {
   }
 
   function handleQuickPurchase(e: React.MouseEvent) {
+    startLoading();
     e.preventDefault();
     e.stopPropagation();
     const buyNowProduct = {
@@ -47,7 +50,7 @@ const AddToCartBuyNowBtns = ({ product }: { product: ProductDetailsProps }) => {
       itemType: itemTypeEnum.product,
     };
     setBuyNowProduct(buyNowProduct);
-    router.push(`/check-out?isCart=false`);
+    router.push(`${pathNames.checkout}?isCart=false`);
   }
 
   return (

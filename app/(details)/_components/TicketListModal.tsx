@@ -166,70 +166,76 @@ const TicketListModal = ({
                   <IoIosArrowDown />
                 </div>
                 <div>
-                  {eventDays?.tickets?.map((ticket) => (
-                    <div
-                      key={`${eventDays._id}-${ticket._id}`}
-                      className={clsx(
-                        "grid grid-cols-12 items-center justify-between py-1 px-2 rounded-md transition-colors mt-2",
-                        ticket.isSelected
-                          ? "bg-primary border-2 border-secondary"
-                          : "hover:bg-prmary border-2 border-transparent",
-                      )}
-                    >
-                      <div className="flex items-center gap-2 col-span-8">
-                        <Image
-                          src={ticket.image}
-                          alt={ticket.name}
-                          width={100}
-                          height={100}
-                          className="h-10 w-10 rounded-md"
-                        />
-                        <div>
-                          <h2 className={"font-bold"}>{ticket.name}</h2>
-                          <div
-                            dangerouslySetInnerHTML={{ __html: ticket.desc }}
-                            className="line-clamp-1 font-normal"
+                  {eventDays?.tickets?.length > 0 ? (
+                    eventDays?.tickets?.map((ticket) => (
+                      <div
+                        key={`${eventDays._id}-${ticket._id}`}
+                        className={clsx(
+                          "grid grid-cols-12 items-center justify-between py-1 px-2 rounded-md transition-colors mt-2",
+                          ticket.isSelected
+                            ? "bg-primary border-2 border-secondary"
+                            : "hover:bg-prmary border-2 border-transparent",
+                        )}
+                      >
+                        <div className="flex items-center gap-2 col-span-8">
+                          <Image
+                            src={ticket.image}
+                            alt={ticket.name}
+                            width={100}
+                            height={100}
+                            className="h-10 w-10 rounded-md"
                           />
+                          <div>
+                            <h2 className={"font-bold"}>{ticket.name}</h2>
+                            <div
+                              dangerouslySetInnerHTML={{ __html: ticket.desc }}
+                              className="line-clamp-1 font-normal"
+                            />
+                          </div>
                         </div>
-                      </div>
 
-                      <div className="flex items-center gap-4 col-span-3">
-                        <div className="flex items-center gap-1">
-                          <button
-                            type="button"
-                            className="size-9 rounded-full border border-secondary flex items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors"
-                            onClick={(e) =>
-                              incrementQuantity(e, eventDays._id, ticket._id)
-                            }
-                          >
-                            <FaPlus />
-                          </button>
-                          <span className="min-w-[2rem] text-center font-medium">
-                            {ticket.quantity}
-                          </span>
-                          <button
-                            type="button"
-                            disabled={ticket.quantity === 0}
-                            className={clsx(
-                              "size-9 rounded-full border border-secondary flex items-center justify-center transition-colors",
-                              ticket.quantity === 0
-                                ? "cursor-not-allowed opacity-50"
-                                : "cursor-pointer hover:bg-gray-50",
-                            )}
-                            onClick={(e) =>
-                              decrementQuantity(e, eventDays._id, ticket._id)
-                            }
-                          >
-                            <FaMinus />
-                          </button>
+                        <div className="flex items-center gap-4 col-span-3">
+                          <div className="flex items-center gap-1">
+                            <button
+                              type="button"
+                              className="size-9 rounded-full border border-secondary flex items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors"
+                              onClick={(e) =>
+                                incrementQuantity(e, eventDays._id, ticket._id)
+                              }
+                            >
+                              <FaPlus />
+                            </button>
+                            <span className="min-w-[2rem] text-center font-medium">
+                              {ticket.quantity}
+                            </span>
+                            <button
+                              type="button"
+                              disabled={ticket.quantity === 0}
+                              className={clsx(
+                                "size-9 rounded-full border border-secondary flex items-center justify-center transition-colors",
+                                ticket.quantity === 0
+                                  ? "cursor-not-allowed opacity-50"
+                                  : "cursor-pointer hover:bg-gray-50",
+                              )}
+                              onClick={(e) =>
+                                decrementQuantity(e, eventDays._id, ticket._id)
+                              }
+                            >
+                              <FaMinus />
+                            </button>
+                          </div>
                         </div>
+                        <PriceTag
+                          price={ticket.price}
+                          className="col-span-1 text-end"
+                        />
                       </div>
-                      <PriceTag
-                        price={ticket.price}
-                        className="col-span-1 text-end"
-                      />
+                    ))
+                  ) : (
+                    <div className="font-normal text-xl mt-3 text-center text-secondary">
+                      {events.eventTicketNotFound}
                     </div>
-                  ))}
+                  )}
                 </div>
               </div>
             );

@@ -89,6 +89,7 @@ export const events = {
   chooseCard: "בחרו כרטיס",
   eventDetails: "פרטי האירוע",
   eventTicketTitle: "רכישת כרטיסים למסיבת קצב לילית בנגב",
+  eventTicketNotFound: "כרטיס האירוע לא נמצא",
 };
 
 export const tempCardInfo = {

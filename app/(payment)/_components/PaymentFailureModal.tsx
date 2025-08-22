@@ -1,18 +1,24 @@
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 import { Dialog } from "@/components/ui";
 import { pathNames } from "@/lib/endpoints";
 import { buttonLabels, paymentPageLabels } from "@/constant/hebrew";
+import { startLoading } from "@/components/wrappers/ProgressBar";
 
-const PaymentFailureModal = ({
-  isOpen,
-  onClose,
-}: PaymentSuccessFailureModalProps) => {
+const PaymentFailureModal = ({ isOpen }: PaymentSuccessFailureModalProps) => {
+  const router = useRouter();
+
+  function handleClose() {
+    startLoading();
+    router.push(pathNames.businesses);
+  }
+
   return (
     <Dialog
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={handleClose}
       className="max-h-[85vh] max-w-[660px] w-full  overflow-hidden no-scrollbar relative p-20"
     >
       <div className="flex w-full flex-col gap-4 items-center relative">
