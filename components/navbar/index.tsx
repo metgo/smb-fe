@@ -15,8 +15,11 @@ import BusinessPageFilterTabs from "./BusinessPageFilterTabs";
 import useCartStore from "@/stores/cartStore";
 import { CartDrawer } from "../drawer";
 import { pathNames } from "@/lib/endpoints";
+import { usePathname } from "next/navigation";
 
 const Navbar = ({ showFilterTab = false }: { showFilterTab?: boolean }) => {
+  const pathname = usePathname();
+
   const { getTotalQuantity } = useCartStore();
   const [isCartDrawerOpen, setIsCartDrawerOpen] = useState(false);
 
@@ -48,19 +51,22 @@ const Navbar = ({ showFilterTab = false }: { showFilterTab?: boolean }) => {
 
             <div className="flex items-center gap-2.5">
               <SearchFlow />
-              <div
-                onClick={() => setIsCartDrawerOpen(true)}
-                className="p-2 relative cursor-pointer"
-              >
-                {getTotalQuantity() > 0 && (
-                  <div className="absolute -top-1 -left-0 bg-[#28C268] rounded-full h-[16px] w-[16px] flex items-center justify-center">
-                    <span className="text-[10px] text-white font-bold mt-[1px]">
-                      {getTotalQuantity()}
-                    </span>
+              {pathname !== pathNames.checkout &&
+                pathname !== pathNames.cart && (
+                  <div
+                    onClick={() => setIsCartDrawerOpen(true)}
+                    className="p-2 relative cursor-pointer"
+                  >
+                    {getTotalQuantity() > 0 && (
+                      <div className="absolute -top-1 -left-0 bg-[#28C268] rounded-full h-[16px] w-[16px] flex items-center justify-center">
+                        <span className="text-[10px] text-white font-bold mt-[1px]">
+                          {getTotalQuantity()}
+                        </span>
+                      </div>
+                    )}
+                    <ShopbagIcon />
                   </div>
                 )}
-                <ShopbagIcon />
-              </div>
               <UserIconHoverCard />
               <CurrentTempOfYourCity />
             </div>

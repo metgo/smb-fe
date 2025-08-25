@@ -1,13 +1,20 @@
+import Spinner from "./Spinner";
+
 type SubmitButtonProps = {
   label: string;
   isDisabled: boolean;
+  isLoading?: boolean;
 };
 
-const SubmitButton = ({ isDisabled, label }: SubmitButtonProps) => {
+const SubmitButton = ({
+  isDisabled,
+  label,
+  isLoading = false,
+}: SubmitButtonProps) => {
   return (
     <button
       type="submit"
-      disabled={isDisabled}
+      disabled={isDisabled || isLoading}
       className={`px-4 py-2 font-normal rounded-md 
                    ${
                      isDisabled
@@ -15,7 +22,7 @@ const SubmitButton = ({ isDisabled, label }: SubmitButtonProps) => {
                        : "bg-black text-white cursor-pointer"
                    }`}
     >
-      {label}
+      {isLoading ? <Spinner /> : label}
     </button>
   );
 };

@@ -49,7 +49,7 @@ const ProductInfo = () => {
                       height={100}
                       alt={item.alt}
                       src={item.image}
-                      className="rounded w-[60px] h-[50px] "
+                      className="rounded w-[60px] h-[50px] object-cover "
                     />
                     <div className="md:w-60 font-bold">{item.name}</div>
                   </div>
@@ -70,8 +70,8 @@ const ProductInfo = () => {
       >
         <div className="flex justify-between items-center">
           <div className="flex gap-2 items-center relative">
-            <div className="rounded-md w-10  h-10 border-[1.8px] flex items-center justify-center">
-              <IconImage width={30} height={30} icon={"delivery-truck"} />
+            <div className="rounded-md w-10 h-10 border-[1.8px] flex items-center justify-center">
+              <IconImage width={30} height={30} icon={"truck"} />
             </div>
             <span className="text-[14px] font-bold text-black">
               {paymentPageLabels.shippingPrice}

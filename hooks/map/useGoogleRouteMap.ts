@@ -27,7 +27,7 @@ export const useGoogleRouteMap = () => {
   useGoogleMapInit({ mapRef, setMap, infoWindowRef, activeMarkerRef });
 
   useEffect(() => {
-    if (slug !== undefined && activeFilterTab === "integrated") {
+    if (slug !== null && activeFilterTab === "integrated") {
       const timeoutId = setTimeout(() => {
         async function getTrailRouteData() {
           setActiveTrailRoute(null);

@@ -117,9 +117,8 @@ const DeliveryInfo = memo(
               className="flex justify-end"
             >
               <SubmitButton
-                isDisabled={
-                  isButtonDisabled || isSubmitting || isStepOneSubmitBtnDisabled
-                }
+                isDisabled={isButtonDisabled || isStepOneSubmitBtnDisabled}
+                isLoading={isSubmitting}
                 label={buttonLabels.paymentIsOnGoing}
               />
             </form>

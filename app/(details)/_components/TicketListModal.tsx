@@ -1,7 +1,7 @@
 import clsx from "clsx";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { IoIosArrowDown } from "react-icons/io";
+import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
 import { FaMinus, FaPlus } from "react-icons/fa6";
 import { useCallback, useEffect, useState } from "react";
 
@@ -142,6 +142,18 @@ const TicketListModal = ({
     router.push("/cart");
   }
 
+  // Toggle handler
+  const [openEventDayIds, setOpenEventDayIds] = useState<string[]>([]);
+
+  function handleToggleTicketList(eventDayId: string) {
+    setOpenEventDayIds(
+      (prev) =>
+        prev.includes(eventDayId)
+          ? prev.filter((id) => id !== eventDayId) // close if already open
+          : [...prev, eventDayId], // open alongside others
+    );
+  }
+
   return (
     <Dialog
       isOpen={isOpen}
@@ -155,88 +167,106 @@ const TicketListModal = ({
 
         <div className="mt-4 p-10 shadow-md rounded-xl flex flex-col gap-8">
           {updatedTickets.map((eventDays) => {
+            const isOpen = openEventDayIds.includes(eventDays._id);
+
             return (
               <div key={eventDays._id}>
-                <div className="border-[2px] border-black/80 rounded-lg px-3 py-2 flex items-center justify-between">
+                <div
+                  onClick={() => handleToggleTicketList(eventDays._id)}
+                  className="border-[2px] border-black/80 rounded-lg px-3 py-2 flex items-center justify-between cursor-pointer"
+                >
                   <span className="font-bold">{events.chooseCard}</span>
                   <span className="text-gray-600">{eventDays.date}</span>
                   <span>
                     {eventDays.startTime} - {eventDays.endTime}
                   </span>
-                  <IoIosArrowDown />
+                  {isOpen ? <IoIosArrowUp /> : <IoIosArrowDown />}
                 </div>
-                <div>
-                  {eventDays?.tickets?.length > 0 ? (
-                    eventDays?.tickets?.map((ticket) => (
-                      <div
-                        key={`${eventDays._id}-${ticket._id}`}
-                        className={clsx(
-                          "grid grid-cols-12 items-center justify-between py-1 px-2 rounded-md transition-colors mt-2",
-                          ticket.isSelected
-                            ? "bg-primary border-2 border-secondary"
-                            : "hover:bg-prmary border-2 border-transparent",
-                        )}
-                      >
-                        <div className="flex items-center gap-2 col-span-8">
-                          <Image
-                            src={ticket.image}
-                            alt={ticket.name}
-                            width={100}
-                            height={100}
-                            className="h-10 w-10 rounded-md"
-                          />
-                          <div>
-                            <h2 className={"font-bold"}>{ticket.name}</h2>
-                            <div
-                              dangerouslySetInnerHTML={{ __html: ticket.desc }}
-                              className="line-clamp-1 font-normal"
-                            />
-                          </div>
-                        </div>
 
-                        <div className="flex items-center gap-4 col-span-3">
-                          <div className="flex items-center gap-1">
-                            <button
-                              type="button"
-                              className="size-9 rounded-full border border-secondary flex items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors"
-                              onClick={(e) =>
-                                incrementQuantity(e, eventDays._id, ticket._id)
-                              }
-                            >
-                              <FaPlus />
-                            </button>
-                            <span className="min-w-[2rem] text-center font-medium">
-                              {ticket.quantity}
-                            </span>
-                            <button
-                              type="button"
-                              disabled={ticket.quantity === 0}
-                              className={clsx(
-                                "size-9 rounded-full border border-secondary flex items-center justify-center transition-colors",
-                                ticket.quantity === 0
-                                  ? "cursor-not-allowed opacity-50"
-                                  : "cursor-pointer hover:bg-gray-50",
-                              )}
-                              onClick={(e) =>
-                                decrementQuantity(e, eventDays._id, ticket._id)
-                              }
-                            >
-                              <FaMinus />
-                            </button>
+                {isOpen && (
+                  <div>
+                    {eventDays?.tickets?.length > 0 ? (
+                      eventDays.tickets.map((ticket) => (
+                        <div
+                          key={`${eventDays._id}-${ticket._id}`}
+                          className={clsx(
+                            "grid grid-cols-12 items-center justify-between py-1 px-2 rounded-md transition-colors mt-2",
+                            ticket.isSelected
+                              ? "bg-primary border-2 border-secondary"
+                              : "hover:bg-prmary border-2 border-transparent",
+                          )}
+                        >
+                          <div className="flex items-center gap-2 col-span-8">
+                            <Image
+                              src={ticket.image}
+                              alt={ticket.name}
+                              width={100}
+                              height={100}
+                              className="h-10 w-10 rounded-md"
+                            />
+                            <div>
+                              <h2 className={"font-bold"}>{ticket.name}</h2>
+                              <div
+                                dangerouslySetInnerHTML={{
+                                  __html: ticket.desc,
+                                }}
+                                className="line-clamp-1 font-normal"
+                              />
+                            </div>
                           </div>
+
+                          <div className="flex items-center gap-4 col-span-3">
+                            <div className="flex items-center gap-1">
+                              <button
+                                type="button"
+                                className="size-9 rounded-full border border-secondary flex items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors"
+                                onClick={(e) =>
+                                  incrementQuantity(
+                                    e,
+                                    eventDays._id,
+                                    ticket._id,
+                                  )
+                                }
+                              >
+                                <FaPlus />
+                              </button>
+                              <span className="min-w-[2rem] text-center font-medium">
+                                {ticket.quantity}
+                              </span>
+                              <button
+                                type="button"
+                                disabled={ticket.quantity === 0}
+                                className={clsx(
+                                  "size-9 rounded-full border border-secondary flex items-center justify-center transition-colors",
+                                  ticket.quantity === 0
+                                    ? "cursor-not-allowed opacity-50"
+                                    : "cursor-pointer hover:bg-gray-50",
+                                )}
+                                onClick={(e) =>
+                                  decrementQuantity(
+                                    e,
+                                    eventDays._id,
+                                    ticket._id,
+                                  )
+                                }
+                              >
+                                <FaMinus />
+                              </button>
+                            </div>
+                          </div>
+                          <PriceTag
+                            price={ticket.price}
+                            className="col-span-1 text-end"
+                          />
                         </div>
-                        <PriceTag
-                          price={ticket.price}
-                          className="col-span-1 text-end"
-                        />
+                      ))
+                    ) : (
+                      <div className="font-normal text-xl mt-3 text-center text-secondary">
+                        {events.eventTicketNotFound}
                       </div>
-                    ))
-                  ) : (
-                    <div className="font-normal text-xl mt-3 text-center text-secondary">
-                      {events.eventTicketNotFound}
-                    </div>
-                  )}
-                </div>
+                    )}
+                  </div>
+                )}
               </div>
             );
           })}
