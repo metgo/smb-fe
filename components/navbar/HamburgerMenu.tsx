@@ -56,11 +56,7 @@ const HamburgerMenu = ({
         onClick={() => setIsOpen((prev) => !prev)}
         className="focus:outline-none cursor-pointer text-theme"
       >
-        {isOpen ? (
-          <IconImage icon={closeIcon} />
-        ) : (
-          <IconImage icon={openIcon} />
-        )}
+        <IconImage icon={isOpen ? closeIcon : openIcon} />
       </button>
 
       {/* Dropdown Menu */}
