@@ -18,6 +18,7 @@ export const misc = {
   toAllTracks: "לכל המסלולים",
   mayInterestYou: "יכול לעניין אתכם",
   addToRoute: "הוספה למסלול",
+  pleaseWait: "אנא המתן",
 };
 
 export const deliveries = {
@@ -88,6 +89,7 @@ export const events = {
   chooseCard: "בחרו כרטיס",
   eventDetails: "פרטי האירוע",
   eventTicketTitle: "רכישת כרטיסים למסיבת קצב לילית בנגב",
+  eventTicketNotFound: "כרטיס האירוע לא נמצא",
 };
 
 export const tempCardInfo = {

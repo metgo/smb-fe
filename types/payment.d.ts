@@ -142,7 +142,6 @@ interface PlaceOrderProps {
 
 interface PaymentSuccessFailureModalProps {
   isOpen: boolean;
-  onClose: () => void;
 }
 
 interface DeliveryProductInfo {

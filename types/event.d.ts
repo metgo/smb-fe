@@ -9,6 +9,7 @@ interface TicketIds {
     sellingPrice: number;
   };
   status: string;
+  description: string;
 }
 
 declare interface DayDescription {

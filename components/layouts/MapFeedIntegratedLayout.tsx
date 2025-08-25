@@ -8,8 +8,12 @@ import {
 } from "@/constant/collageLayouts";
 import FeedCard from "../cards/FeedCard";
 import BusinessPinMap from "../maps/BusinessPinMap";
+import { usePathname } from "next/navigation";
+import TrailRouteMap from "../maps/TrailRouteMap";
+import { pathNames } from "@/lib/endpoints";
 
 const MapFeedIntegratedLayout = ({ data }: { data: FeedItemList }) => {
+  const pathname = usePathname();
   const feedItemCount = data.length;
   const [scale, setScale] = useState(1);
 
@@ -168,7 +172,11 @@ const MapFeedIntegratedLayout = ({ data }: { data: FeedItemList }) => {
         {renderFullLayout()}
       </div>
 
-      <BusinessPinMap className="w-[calc(51%-0.5rem)]" />
+      {pathname === pathNames.trails ? (
+        <TrailRouteMap className="w-[calc(51%-0.5rem)]" />
+      ) : (
+        <BusinessPinMap className="w-[calc(51%-0.5rem)]" />
+      )}
     </div>
   );
 };

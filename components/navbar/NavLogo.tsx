@@ -1,14 +1,17 @@
 "use client";
 
-import useGeneralStore from "@/stores/generalStore";
-import { Logo } from "../ui/icons";
 import { useRouter } from "next/navigation";
+
+import { Logo } from "../ui/icons";
+import useGeneralStore from "@/stores/generalStore";
+import { startLoading } from "../wrappers/ProgressBar";
 
 const NavLogo = () => {
   const router = useRouter();
   const { setIsOnSection2 } = useGeneralStore();
 
   function handleNavigation() {
+    startLoading();
     setIsOnSection2(false);
     router.push("/");
   }

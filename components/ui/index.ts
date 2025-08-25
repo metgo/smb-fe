@@ -7,7 +7,7 @@ import SubmitButton from "./SubmitButton";
 import Tabs from "./Tabs";
 import ImageCarouselControls from "./ImageCarouselControls";
 import { MotionDialogDiv } from "./MotionDialogDiv";
-
+import Spinner from "./Spinner";
 export {
   InputField,
   MapNavButton,
@@ -15,6 +15,7 @@ export {
   NextImage,
   Dialog,
   Tabs,
+  Spinner,
   SubmitButton,
   MotionDialogDiv,
   ImageCarouselControls,

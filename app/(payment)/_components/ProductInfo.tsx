@@ -42,15 +42,17 @@ const ProductInfo = () => {
           <div>
             {orderProducts?.map((item) => (
               <div key={item._id}>
-                <div className="flex gap-2 items-center justify-between">
-                  <Image
-                    width={100}
-                    height={100}
-                    alt={item.alt}
-                    src={item.image}
-                    className="rounded w-[60px] h-[50px] "
-                  />
-                  <div className="md:w-60 font-bold">{item.name}</div>
+                <div className="flex gap-1 items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Image
+                      width={100}
+                      height={100}
+                      alt={item.alt}
+                      src={item.image}
+                      className="rounded w-[60px] h-[50px] object-cover "
+                    />
+                    <div className="md:w-60 font-bold">{item.name}</div>
+                  </div>
                   <div>
                     <span className="font-bold">{item.quantity}x</span>
                     <PriceTag price={item.price} className="font-bold ml-1" />
@@ -68,8 +70,8 @@ const ProductInfo = () => {
       >
         <div className="flex justify-between items-center">
           <div className="flex gap-2 items-center relative">
-            <div className="rounded-md w-12  h-12 border-[1.5px] flex items-center justify-center">
-              <IconImage width={38} height={38} icon={"delivery-truck"} />
+            <div className="rounded-md w-10 h-10 border-[1.8px] flex items-center justify-center">
+              <IconImage width={30} height={30} icon={"truck"} />
             </div>
             <span className="text-[14px] font-bold text-black">
               {paymentPageLabels.shippingPrice}
