@@ -10,7 +10,11 @@ interface PageProps {
 }
 
 const Page = async ({ searchParams }: PageProps | any) => {
-  const { page = "1", categoryId = "", subCategoryId = "" } = searchParams;
+  const {
+    page = "1",
+    categoryId = "",
+    subCategoryId = "",
+  } = await searchParams;
 
   const businesses: BusinessesProps = await getAllBusinesses(
     Number(page),

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { staticImages } from "@/constant/staticImages";
 
 function getPrimaryImgObj(images: ImageItem[]): ImageItem | undefined {
@@ -8,9 +8,7 @@ function getPrimaryImgObj(images: ImageItem[]): ImageItem | undefined {
 export const handleCropImage = async (
   imageItem: ImageItem,
   aspect: number,
-  setIsLoading: (isLoading: boolean) => void,
-  setCroppedImageUrl: (value: { imageUrl: string; alt: string }) => void,
-) => {
+): Promise<{ imageUrl: string; alt: string }> => {
   const encodedImageUrl = encodeURIComponent(imageItem?.image);
   const {
     xMin = 0,
@@ -20,25 +18,17 @@ export const handleCropImage = async (
   } = imageItem?.subCoordinates || {};
 
   if (!xMin && !yMin && !xMax && !yMax) {
-    setCroppedImageUrl({ imageUrl: imageItem.image, alt: imageItem.alt });
-    setIsLoading(false);
-    return;
+    return { imageUrl: imageItem.image, alt: imageItem.alt };
   }
 
   const query = `url=${encodedImageUrl}&xMin=${xMin}&yMin=${yMin}&xMax=${xMax}&yMax=${yMax}&aspect=${aspect}`;
-  setIsLoading(true);
-  try {
-    const res = await fetch(`/api/crop-image?${query}`);
-    if (!res.ok) throw new Error("Failed to crop image");
+  const res = await fetch(`/api/crop-image?${query}`);
+  if (!res.ok) throw new Error("Failed to crop image");
 
-    const blob = await res.blob();
-    const objectUrl = URL.createObjectURL(blob);
-    setCroppedImageUrl({ imageUrl: objectUrl, alt: imageItem.alt });
-  } catch (error) {
-    console.error("Error cropping image", error);
-  } finally {
-    setIsLoading(false);
-  }
+  const blob = await res.blob();
+  const objectUrl = URL.createObjectURL(blob);
+
+  return { imageUrl: objectUrl, alt: imageItem.alt };
 };
 
 type ImageInput = ImageItem[] | ImageItem;
@@ -50,7 +40,7 @@ export const useImagePresent = (
   dependencies: any[] = [],
 ) => {
   const [isLoading, setIsLoading] = useState(false);
-  const [isImageLoaded, setIsImageLoaded] = useState(true);
+  const [isImageLoaded, setIsImageLoaded] = useState(false);
   const [updatedImage, setUpdatedImage] = useState({
     imageUrl: staticImages.placeholder,
     alt: "Business",
@@ -60,61 +50,83 @@ export const useImagePresent = (
   >([]);
 
   const processedIndexesRef = useRef<Set<number>>(new Set());
+  const imageCacheRef = useRef<Map<string, { imageUrl: string; alt: string }>>(
+    new Map(),
+  );
 
+  // Utility: wait until an image URL is fully loaded
+  const waitForImageLoad = (src: string): Promise<void> =>
+    new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve();
+      img.onerror = (err) => reject(err);
+      img.src = src;
+    });
+
+  const processImage = useCallback(
+    async (image: ImageItem, idx?: number) => {
+      const cacheKey = `${image.image}-${aspectRatio}`;
+      if (imageCacheRef.current.has(cacheKey)) {
+        return imageCacheRef.current.get(cacheKey)!;
+      }
+
+      let result = image?.subCoordinates
+        ? await handleCropImage(image, aspectRatio)
+        : { imageUrl: image.image, alt: image.alt };
+
+      setIsImageLoaded(false);
+      try {
+        await waitForImageLoad(result.imageUrl);
+        setIsImageLoaded(true);
+      } catch (err) {
+        console.error("Image failed to load:", result.imageUrl, err);
+        result = {
+          imageUrl: staticImages.placeholder,
+          alt: image.alt || "Business",
+        };
+        setIsImageLoaded(false);
+      }
+
+      imageCacheRef.current.set(cacheKey, result);
+
+      if (typeof idx === "number") {
+        setUpdatedImageList((prev) => {
+          if (prev.some((i) => i._id === idx)) return prev;
+          return [...prev, { _id: idx, ...result }];
+        });
+        processedIndexesRef.current.add(idx);
+      }
+
+      return result;
+    },
+    [aspectRatio],
+  );
+
+  // Handle active image switching
   useEffect(() => {
+    if (!Array.isArray(imagesInput) || imagesInput.length === 0) return;
     if (
-      !Array.isArray(imagesInput) ||
-      imagesInput.length === 0 ||
-      activeImageIndex == null
-    ) {
+      activeImageIndex == null ||
+      processedIndexesRef.current.has(activeImageIndex)
+    )
       return;
-    }
-
-    // Skip if index has already been processed
-    if (processedIndexesRef.current.has(activeImageIndex)) {
-      return;
-    }
 
     const imageToProcess = imagesInput[activeImageIndex];
     if (!imageToProcess) return;
 
+    let cancelled = false;
     setIsLoading(true);
 
-    const timer = setTimeout(() => {
-      const handleProcessed = (resultImage: {
-        imageUrl: string;
-        alt: string;
-      }) => {
-        setUpdatedImageList((prev) => [
-          ...prev,
-          {
-            _id: activeImageIndex,
-            imageUrl: resultImage.imageUrl,
-            alt: resultImage.alt || "Business",
-          },
-        ]);
-        processedIndexesRef.current.add(activeImageIndex);
-        setIsLoading(false);
-      };
+    processImage(imageToProcess, activeImageIndex).finally(
+      () => !cancelled && setIsLoading(false),
+    );
 
-      if (imageToProcess?.subCoordinates) {
-        handleCropImage(
-          imageToProcess,
-          aspectRatio,
-          () => {}, // no-op for loading; we already set it
-          (cropped) => handleProcessed(cropped),
-        );
-      } else {
-        handleProcessed({
-          imageUrl: imageToProcess.image,
-          alt: imageToProcess.alt,
-        });
-      }
-    }, 1);
+    return () => {
+      cancelled = true;
+    };
+  }, [activeImageIndex, imagesInput, processImage]);
 
-    return () => clearTimeout(timer);
-  }, [activeImageIndex, aspectRatio, imagesInput]);
-
+  // Handle initial primary/default image
   useEffect(() => {
     if (
       !imagesInput ||
@@ -125,26 +137,18 @@ export const useImagePresent = (
     const imageToProcess = Array.isArray(imagesInput)
       ? getPrimaryImgObj(imagesInput) || imagesInput[0]
       : imagesInput;
-    const timer = setTimeout(() => {
-      if (imageToProcess?.subCoordinates) {
-        handleCropImage(
-          imageToProcess,
-          aspectRatio,
-          setIsLoading,
-          setUpdatedImage,
-        );
-      } else {
-        setUpdatedImage({
-          imageUrl: imageToProcess?.image,
-          alt: imageToProcess?.alt,
-        });
-        setIsLoading(false);
-      }
-    }, 1);
+
+    let cancelled = false;
     setIsLoading(true);
 
-    return () => clearTimeout(timer);
-  }, [aspectRatio, ...dependencies]);
+    processImage(imageToProcess)
+      .then((result) => !cancelled && setUpdatedImage(result))
+      .finally(() => !cancelled && setIsLoading(false));
+
+    return () => {
+      cancelled = true;
+    };
+  }, [imagesInput, processImage, ...dependencies]);
 
   return {
     isLoading,

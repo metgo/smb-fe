@@ -7,6 +7,7 @@ import { CardSkeleton } from "@/components/skeletons";
 import { useImageScale } from "@/hooks/image/useImageScale";
 import { useImagePresent } from "@/hooks/image/useImagePresent";
 import { staticImages } from "@/constant/staticImages";
+import { categoryIds } from "@/lib/utils";
 
 // Layout definitions (image sizes)
 const layouts = {
@@ -97,6 +98,8 @@ const ImageCard = ({
     [imageItem],
   );
 
+  console.log("------isImageLoaded", isImageLoaded);
+
   return (
     <div
       style={{
@@ -126,7 +129,7 @@ const ImageCard = ({
 
 const ImageGallery = ({
   images,
-  primaryCategoryId = "",
+  primaryCategoryId = categoryIds.attraction,
 }: {
   images: ImageItem[];
   primaryCategoryId?: string;

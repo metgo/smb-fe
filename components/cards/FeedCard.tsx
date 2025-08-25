@@ -5,7 +5,7 @@ import { motion, useInView, useAnimation } from "framer-motion";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import { pathNames } from "@/lib/endpoints";
-import { navigationPaths } from "@/lib/utils";
+import { categoryIds, navigationPaths } from "@/lib/utils";
 import useGeneralStore from "@/stores/generalStore";
 import { CardSkeleton } from "@/components/skeletons";
 import { removeInlineStylesFromHTML } from "@/lib/helpers";
@@ -54,11 +54,14 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
     }
   }, [isInView, controls]);
 
-  const primaryCategoryId = activeCategoryKey
-    ? activeCategoryKey
-    : feedItem?.primaryCategoryId
-      ? feedItem?.primaryCategoryId
-      : "6566e36ba77d2a477266d2f4";
+  const primaryCategoryId =
+    pathname === pathNames.events
+      ? categoryIds.attraction
+      : activeCategoryKey
+        ? activeCategoryKey
+        : feedItem?.primaryCategoryId
+          ? feedItem?.primaryCategoryId
+          : "6566e36ba77d2a477266d2f4";
 
   function handleMapIconClick(id: string) {
     setClickedBusinessId(id);
@@ -95,7 +98,11 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
       transition={{ duration: 0.5, ease: "easeOut" }}
     >
       {isLoading || !hasMounted || !isImageLoaded ? (
-        <CardSkeleton primaryCategoryId={primaryCategoryId} />
+        <CardSkeleton
+          width={width}
+          height={height}
+          primaryCategoryId={primaryCategoryId}
+        />
       ) : (
         <div
           onMouseEnter={handleMouseEnter}
