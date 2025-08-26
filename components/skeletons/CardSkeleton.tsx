@@ -20,7 +20,7 @@ const CardSkeleton = ({
     <div
       style={{ width, height }}
       className={clsx(
-        "skeleton rounded-2xl",
+        "skeleton",
         className,
         categoryGradientClasses[primaryCategoryId],
       )}

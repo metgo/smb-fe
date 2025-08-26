@@ -1,11 +1,15 @@
 import { Suspense } from "react";
+import { getAllTrails } from "@/actions/trailActions";
 
 import FilterTrailsLayout from "./_components/FilterTrailsLayout";
 
-const page = async () => {
+const page = async ({ searchParams }: SearchParamsProps | any) => {
+  const { page = 1 } = await searchParams;
+  const trails: TrailsFeedProps = await getAllTrails(Number(page), "/trails");
+
   return (
     <Suspense>
-      <FilterTrailsLayout />
+      <FilterTrailsLayout {...trails} />
     </Suspense>
   );
 };

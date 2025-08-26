@@ -4,7 +4,6 @@ import { misc } from "@/constant/hebrew";
 import {
   BusinessDetailsFilterTab,
   ImageGallery,
-  NoDetailsFound,
   RatingReviewLocation,
   ReturnToPrevPageBtn,
   Title,
@@ -12,14 +11,18 @@ import {
 import AttributePills from "@/components/AttributePills";
 import { getBusinessDetailsBySlug } from "@/actions/businessActions";
 import { getProducts } from "@/actions/productActions";
+import NoFeedItemLayout from "@/components/layouts/NoFeedItemLayout";
 
 const page = async ({ params }: PageProps) => {
   const { slug } = await params;
 
-  if (!slug || slug === "undefined") return <NoDetailsFound />;
+  if (!slug || slug === "undefined") return <NoFeedItemLayout />;
 
   const businessDetails: BusinessDetailsProps =
     await getBusinessDetailsBySlug(slug);
+
+  if (businessDetails === undefined) return <NoFeedItemLayout />;
+
   const products: Product[] = await getProducts(businessDetails._id);
   return (
     <div>

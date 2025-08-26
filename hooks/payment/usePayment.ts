@@ -202,7 +202,7 @@ export const usePayment = () => {
       if (!data[0]?.UrlToBit || data?.qrCodeUrl) {
         clearVoucher();
         clearCart();
-        setPaymentStatus("success");
+        // setPaymentStatus("success");
         setIsPaymentModalOpen(true);
       }
       setPaymentUrl(

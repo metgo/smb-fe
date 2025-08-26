@@ -1,43 +1,28 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
 import { useLoadMore } from "@/hooks/useLoadMore";
 import useGeneralStore from "@/stores/generalStore";
-import { getAllTrails } from "@/actions/trailActions";
 
 import NoBusinessLayout from "@/components/layouts/NoFeedItemLayout";
 import OnlyFeedCardsLayout from "@/components/layouts/OnlyFeedCardsLayout";
 import MapFeedIntegratedLayout from "@/components/layouts/MapFeedIntegratedLayout";
 
-const FilterTrailsLayout = () => {
-  const hasFetchedRef = useRef(false);
+const FilterTrailsLayout = ({ meta, totalData, data }: TrailsFeedProps) => {
   const { activeFilterTab } = useGeneralStore();
-  const [trails, setTrails] = useState<TrailsFeedProps>();
-
-  useEffect(() => {
-    async function fetchTrails() {
-      const res = await getAllTrails(1, "/trails");
-      setTrails(res);
-    }
-
-    if (hasFetchedRef.current) return;
-    hasFetchedRef.current = true;
-    fetchTrails();
-  }, []);
 
   const { sentryRef, loading, initialLoadDone, canLoadMore } = useLoadMore(
-    trails?.meta?.hasNextPage,
+    meta?.hasNextPage,
   );
-  const totalBusiness = trails?.totalData;
+  const totalBusiness = totalData;
 
   if (!totalBusiness) return <NoBusinessLayout />;
 
   const renderLayout = () => {
     switch (activeFilterTab) {
       case "gallery":
-        return <OnlyFeedCardsLayout data={trails?.data} />;
+        return <OnlyFeedCardsLayout data={data} />;
       case "integrated":
-        return <MapFeedIntegratedLayout data={trails?.data} />;
+        return <MapFeedIntegratedLayout data={data} />;
       default:
         return <NoBusinessLayout />;
     }
@@ -47,7 +32,7 @@ const FilterTrailsLayout = () => {
     <div>
       <div className="bg-primary">
         {renderLayout()}
-        {initialLoadDone && canLoadMore && trails?.meta?.hasNextPage && (
+        {initialLoadDone && canLoadMore && meta?.hasNextPage && (
           <div ref={sentryRef} className="h-4">
             {loading && <span>Loading...</span>}
           </div>

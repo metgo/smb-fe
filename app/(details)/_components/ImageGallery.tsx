@@ -98,8 +98,6 @@ const ImageCard = ({
     [imageItem],
   );
 
-  console.log("------isImageLoaded", isImageLoaded);
-
   return (
     <div
       style={{

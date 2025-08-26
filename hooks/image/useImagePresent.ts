@@ -23,7 +23,10 @@ export const handleCropImage = async (
 
   const query = `url=${encodedImageUrl}&xMin=${xMin}&yMin=${yMin}&xMax=${xMax}&yMax=${yMax}&aspect=${aspect}`;
   const res = await fetch(`/api/crop-image?${query}`);
-  if (!res.ok) throw new Error("Failed to crop image");
+  // if (!res.ok) throw new Error("Failed to crop image");
+  if (!res.ok) {
+    return { imageUrl: imageItem.image, alt: imageItem.alt };
+  }
 
   const blob = await res.blob();
   const objectUrl = URL.createObjectURL(blob);
@@ -40,7 +43,7 @@ export const useImagePresent = (
   dependencies: any[] = [],
 ) => {
   const [isLoading, setIsLoading] = useState(false);
-  const [isImageLoaded, setIsImageLoaded] = useState(false);
+  const [isImageLoaded, setIsImageLoaded] = useState(true);
   const [updatedImage, setUpdatedImage] = useState({
     imageUrl: staticImages.placeholder,
     alt: "Business",
@@ -84,7 +87,10 @@ export const useImagePresent = (
           imageUrl: staticImages.placeholder,
           alt: image.alt || "Business",
         };
-        setIsImageLoaded(false);
+        // Set isImageLoaded to true after a timeout to show placeholder
+        setTimeout(() => {
+          setIsImageLoaded(true);
+        }, 5000); // 5-second timeout
       }
 
       imageCacheRef.current.set(cacheKey, result);

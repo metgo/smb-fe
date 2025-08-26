@@ -11,12 +11,14 @@ import OnlyFeedCardsLayout from "./OnlyFeedCardsLayout";
 import MapFeedIntegratedLayout from "./MapFeedIntegratedLayout";
 import StickyYellowRibbonImage from "../StickyYellowRibbonImage";
 import { CategoryPanel, SubcategoryFilterPanel } from "../cards";
+import { useIsHydrated } from "@/hooks";
 
 const BusinessFeedLayout = ({
   businesses,
 }: {
   businesses: BusinessesProps;
 }) => {
+  const isHydrated = useIsHydrated();
   const { activeFilterTab, isOnSection2 } = useGeneralStore();
   const { sentryRef, loading, initialLoadDone, canLoadMore } = useLoadMore(
     businesses?.meta?.hasNextPage,
@@ -24,6 +26,8 @@ const BusinessFeedLayout = ({
   const totalBusiness = businesses?.totalData;
 
   const triggerRef = useRef(null);
+
+  if (!isHydrated) return null;
 
   const renderLayout = () => {
     switch (activeFilterTab) {
