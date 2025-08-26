@@ -1,6 +1,5 @@
-import { IconImage, MapNavButton, NextImage } from "@/components/ui";
+import { MapNavButton, NextImage } from "@/components/ui";
 
-import { misc } from "@/constant/hebrew";
 import {
   BusinessDetailsFilterTab,
   ImageGallery,
@@ -12,6 +11,7 @@ import AttributePills from "@/components/AttributePills";
 import { getBusinessDetailsBySlug } from "@/actions/businessActions";
 import { getProducts } from "@/actions/productActions";
 import NoFeedItemLayout from "@/components/layouts/NoFeedItemLayout";
+import ShareUrlBtnModal from "@/components/ShareUrlBtnModal";
 
 const page = async ({ params }: PageProps) => {
   const { slug } = await params;
@@ -25,7 +25,7 @@ const page = async ({ params }: PageProps) => {
 
   const products: Product[] = await getProducts(businessDetails._id);
   return (
-    <div>
+    <>
       <ReturnToPrevPageBtn />
 
       <div className="mx-20 py-12">
@@ -51,12 +51,7 @@ const page = async ({ params }: PageProps) => {
                   lat={businessDetails?.geoLocation?.lat}
                   lng={businessDetails?.geoLocation?.long}
                 />
-                <div className="flex items-center gap-1.25 ps-2.5 pe-4 py-1 cursor-pointer">
-                  <IconImage icon={"share"} />
-                  <span className="font-bold text-theme text-sm">
-                    {misc.sharing}
-                  </span>
-                </div>
+                <ShareUrlBtnModal />
               </div>
             </div>
           </div>
@@ -81,7 +76,7 @@ const page = async ({ params }: PageProps) => {
           businessDetails={businessDetails}
         />
       </div>
-    </div>
+    </>
   );
 };
 

@@ -13,12 +13,15 @@ export const misc = {
   filter: "מסננים",
   start: "התחלה",
   end: "סיום",
+  close: "לִסְגוֹר",
   pleaseWaitLoading: "אנא המתן. טוען...",
   addAllStationOnCart: "הוספת כל התחנות לסל",
   toAllTracks: "לכל המסלולים",
   mayInterestYou: "יכול לעניין אתכם",
   addToRoute: "הוספה למסלול",
   pleaseWait: "אנא המתן",
+  linkCopied: "הקישר לדף הועתק",
+  shareLink: "ניתן לשתף עם חברים ומשפחה על ידי הדבקת הקישור",
 };
 
 export const deliveries = {
