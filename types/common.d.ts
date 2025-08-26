@@ -95,6 +95,7 @@ declare interface FeedItem {
   slug: string;
   description: string;
   images: ImageItem[];
+  cover: ImageItem;
   primaryCategoryId?: string;
   address: {
     city?: string;

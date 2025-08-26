@@ -341,13 +341,13 @@ export const navItems = [
         leftIcon: "",
         rightIcon: "",
       },
-      {
-        id: 3,
-        label: menuItems.hebrew,
-        href: "#",
-        rightIcon: "globe",
-        leftIcon: "down-arrow",
-      },
+      // {
+      //   id: 3,
+      //   label: menuItems.hebrew,
+      //   href: "#",
+      //   rightIcon: "globe",
+      //   leftIcon: "down-arrow",
+      // },
     ],
   },
 ];

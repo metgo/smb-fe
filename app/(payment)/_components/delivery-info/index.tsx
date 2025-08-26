@@ -114,7 +114,7 @@ const DeliveryInfo = memo(
 
             <form
               onSubmit={handleSubmit(submitDeliveryInfo)}
-              className="flex justify-end"
+              className="flex justify-start"
             >
               <SubmitButton
                 isDisabled={isButtonDisabled || isStepOneSubmitBtnDisabled}

@@ -222,9 +222,9 @@ export const buttonLabels = {
   continueToPlaceOrder: "המשך לביצוע הזמנה",
   continueToPurchase: "המשך לרכישה",
   continueToSenderDetails: "המשך לפרטי השולח",
-  continueToSelectDelivery: "המשך לבחירת משלוח",
   paymentIsOnGoing: "המשך לתשלום",
   continueShopping: "המשך בקניות",
+  continueToSelectDelivery: "המשיכו לבחירת משלוח",
 };
 
 export const cartLabels = {

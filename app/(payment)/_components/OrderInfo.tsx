@@ -87,7 +87,7 @@ const OrderInfo = ({ handleToggle, firstInfo, className }: OrderInfoProps) => {
             />
           ))}
 
-          <div className="flex justify-end">
+          <div className="flex justify-start">
             <SubmitButton
               isDisabled={isButtonDisabled}
               label={buttonLabels.continueToSelectDelivery}
