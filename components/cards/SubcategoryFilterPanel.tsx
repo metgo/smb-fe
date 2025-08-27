@@ -2,13 +2,14 @@
 
 import { useEffect, useRef, useState } from "react";
 
+import { IconImage } from "../ui";
+import { misc } from "@/constant/hebrew";
 import { categoryBgClasses } from "@/lib/utils";
 import useGeneralStore from "@/stores/generalStore";
 import { useCtgSubctg } from "@/hooks/useCtgSubctg";
-import { LeftAngleArrow, RightAngleArrow } from "@/components/ui/icons";
 import { getAllSubCategory } from "@/actions/businessActions";
-import { misc } from "@/constant/hebrew";
-import { IconImage } from "../ui";
+import { LeftAngleArrow, RightAngleArrow } from "@/components/ui/icons";
+import { googleSendGtmEvent, triggerName } from "@/lib/googleEventsConfig";
 
 const scrollAmount = 150;
 
@@ -76,7 +77,13 @@ const SubcategoryFilterPanel = () => {
                 <button
                   key={item.id}
                   type="button"
-                  onClick={() => handleSubcategoryChange(item.id)}
+                  onClick={() => {
+                    handleSubcategoryChange(item.id);
+                    googleSendGtmEvent(triggerName.clickToSubCategory, {
+                      subCategoryId: item.id,
+                      subCategoryName: item.name,
+                    });
+                  }}
                   className={`${
                     activeSubCategory === item.id
                       ? `${categoryBgClasses[activeCategoryKey]} text-white`

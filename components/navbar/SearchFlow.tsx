@@ -6,6 +6,7 @@ import { Dialog, IconImage } from "@/components/ui";
 import { useSearchFlow } from "@/hooks/useSearchFlow";
 import { recommendedSearchKeywords } from "@/lib/utils";
 import { PopularBusinessCard } from "@/components/cards";
+import { pathNames } from "@/lib/endpoints";
 
 const SectionTitle = ({ title }: { title: string }) => (
   <h3 className="font-bold text-[#2B2D2A]">{title}</h3>
@@ -139,7 +140,7 @@ const SearchFlow = () => {
                       <CardList
                         items={searchItems.events!}
                         title={searchText.events}
-                        navPath="event-details"
+                        navPath={pathNames.eventDetails}
                       />
                     </>
                   )}

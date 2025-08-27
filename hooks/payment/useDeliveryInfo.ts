@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { itemTypeEnum } from "@/lib/utils";
 import useCheckoutStore from "@/stores/checkoutStore";
 import { postDeliveryInfo } from "@/actions/paymentActions";
+import { googleSendGtmEvent, triggerName } from "@/lib/googleEventsConfig";
 
 export const useDeliveryInfo = (handleToggle: (step: StepType) => void) => {
   const {
@@ -181,7 +182,9 @@ export const useDeliveryInfo = (handleToggle: (step: StepType) => void) => {
               additionalInfo: item.giftReceiverInfo.receiverMessage,
             }),
         };
-
+        googleSendGtmEvent(triggerName.orderCheckoutDeliveryInfoBtn, {
+          formStep: "second_deliveryInfo",
+        });
         return postDeliveryInfo(cartedProduct.cartId, payload);
       });
 
