@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import { motion, useInView, useAnimation } from "framer-motion";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
@@ -35,11 +35,22 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
     setActiveFilterTab,
     setClickedBusinessId,
   } = useGeneralStore();
+
+  const images = useMemo(
+    () => (isEventPage ? [feedItem.cover] : (feedItem?.images ?? [])),
+    [isEventPage, feedItem.cover, feedItem?.images],
+  );
+
+  const deps = useMemo(
+    () => (isEventPage ? [feedItem] : [categoryId, subCategoryId]),
+    [isEventPage, feedItem, categoryId, subCategoryId],
+  );
+
   const { isLoading, isImageLoaded, updatedImageList } = useImagePresent(
     aspectRatio,
-    isEventPage ? [feedItem.cover] : feedItem?.images,
+    images,
     activeImageIndex,
-    [categoryId, subCategoryId],
+    deps,
   );
   const [hasMounted, setHasMounted] = useState(false);
 
@@ -94,7 +105,7 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
     <motion.div
       ref={ref}
       style={{ width: `${width}px`, height: `${height}px` }}
-      initial={{ y: 0, opacity: 1 }}
+      initial={{ y: 50, opacity: 1 }}
       animate={controls}
       transition={{ duration: 0.5, ease: "easeOut" }}
     >

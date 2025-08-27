@@ -6,15 +6,18 @@ import useGeneralStore from "@/stores/generalStore";
 import NoBusinessLayout from "@/components/layouts/NoFeedItemLayout";
 import OnlyFeedCardsLayout from "@/components/layouts/OnlyFeedCardsLayout";
 import MapFeedIntegratedLayout from "@/components/layouts/MapFeedIntegratedLayout";
+import { useIsHydrated } from "@/hooks";
 
 const FilterTrailsLayout = ({ meta, totalData, data }: TrailsFeedProps) => {
   const { activeFilterTab } = useGeneralStore();
+  const isHydrate = useIsHydrated();
 
   const { sentryRef, loading, initialLoadDone, canLoadMore } = useLoadMore(
     meta?.hasNextPage,
   );
   const totalBusiness = totalData;
 
+  if (!isHydrate) return null;
   if (!totalBusiness) return <NoBusinessLayout />;
 
   const renderLayout = () => {
