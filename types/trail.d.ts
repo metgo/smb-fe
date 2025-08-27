@@ -15,7 +15,7 @@ declare type TrailFeedList = TrailFeed[];
 declare interface TrailsFeedProps {
   data: TrailList;
   totalData: number;
-  meta: paginationMeta;
+  meta: PaginationMeta;
 }
 
 declare interface TrailStationProps {

@@ -62,3 +62,25 @@ interface UpdatedTicketsListProps {
   endTime: string;
   tickets: UpdatedTicketItem[];
 }
+
+interface EventListProps {
+  _id: string;
+  name: string;
+  address: {
+    country: string;
+    city: string;
+    location: string;
+    _id: string;
+  };
+  description: string;
+  geoLocation: GeoLocation;
+  images: ImageItem[];
+  cover: ImageItem;
+  slug: string;
+}
+
+interface EventListResponseProps {
+  data: EventListProps;
+  totalData: number;
+  meta: PaginationMeta;
+}
