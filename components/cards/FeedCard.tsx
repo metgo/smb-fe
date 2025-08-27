@@ -21,6 +21,7 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const isEventPage = pathname === pathNames.events;
 
   const aspectRatio = width / height;
 
@@ -36,12 +37,12 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
   } = useGeneralStore();
   const { isLoading, isImageLoaded, updatedImageList } = useImagePresent(
     aspectRatio,
-    feedItem?.images,
+    isEventPage ? [feedItem.cover] : feedItem?.images,
     activeImageIndex,
     [categoryId, subCategoryId],
   );
-
   const [hasMounted, setHasMounted] = useState(false);
+
   // Framer Motion setup
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "0px 0px -50px 0px" });
@@ -144,28 +145,29 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
                   }}
                   className=" line-clamp-2 font-bold text-[12px] text-white mt-1"
                 />
-                <ImageCarouselControls
-                  totalImages={feedItem?.images?.length}
-                  activeIndex={activeImageIndex}
-                  setActiveImageIndex={setActiveImageIndex}
-                />
+                {!isEventPage && (
+                  <ImageCarouselControls
+                    totalImages={feedItem?.images?.length}
+                    activeIndex={activeImageIndex}
+                    setActiveImageIndex={setActiveImageIndex}
+                  />
+                )}
               </div>
             </div>
           </div>
 
           <div className="hidden absolute top-4 right-4 group-hover:flex items-center gap-2.5">
             <IconImage width={30} height={30} icon="circular-heart" />
-            {pathname !== "/events" && pathname !== "/trails" && (
-              <IconImage
-                width={30}
-                height={30}
-                icon="circular-map-fold"
+            {!isEventPage && pathname !== "/trails" && (
+              <div
                 onClick={(e) => {
                   e.stopPropagation();
                   e.preventDefault();
                   handleMapIconClick(feedItem._id);
                 }}
-              />
+              >
+                <IconImage width={30} height={30} icon="circular-map-fold" />
+              </div>
             )}
           </div>
         </div>
