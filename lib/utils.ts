@@ -36,7 +36,7 @@ export const daysMapping = {
   Sat: "שבת",
 };
 
-const categoryId = {
+export const categoryIds = {
   sleep: "6566fcd4a77d2a477266d3b9",
   attraction: "6566e31ca77d2a477266d2d6",
   culture: "6566e36ba77d2a477266d2f4",
@@ -53,68 +53,70 @@ const navigationKey = {
 };
 
 export const businessMarkers = {
-  [categoryId.eat]: "food.svg",
-  [categoryId.local]: "local.svg",
-  [categoryId.sleep]: "sleep.svg",
-  [categoryId.culture]: "culture.svg",
-  [categoryId.attraction]: "attractions.svg",
-  [categoryId.tour]: "travel.svg",
+  [categoryIds.eat]: "food.svg",
+  [categoryIds.local]: "local.svg",
+  [categoryIds.sleep]: "sleep.svg",
+  [categoryIds.culture]: "culture.svg",
+  [categoryIds.attraction]: "attractions.svg",
+  [categoryIds.tour]: "travel.svg",
 };
 
 export const stationMarkers = {
-  [categoryId.eat]: "bw-food.svg",
-  [categoryId.local]: "bw-local.svg",
-  [categoryId.sleep]: "bw-sleep.svg",
-  [categoryId.culture]: "bw-culture.svg",
-  [categoryId.attraction]: "bw-attraction.svg",
-  [categoryId.tour]: "bw-travel.svg",
+  [categoryIds.eat]: "bw-food.svg",
+  [categoryIds.local]: "bw-local.svg",
+  [categoryIds.sleep]: "bw-sleep.svg",
+  [categoryIds.culture]: "bw-culture.svg",
+  [categoryIds.attraction]: "bw-attraction.svg",
+  [categoryIds.tour]: "bw-travel.svg",
 };
 
 export const stationCategory = {
-  [categoryId.eat]: "trail-food.svg",
-  [categoryId.local]: "trail-local.svg",
-  [categoryId.sleep]: "trail-sleep.svg",
-  [categoryId.culture]: "trail-culture.svg",
-  [categoryId.attraction]: "trail-attractions.svg",
-  [categoryId.tour]: "trail-travel.svg",
+  [categoryIds.eat]: "trail-food.svg",
+  [categoryIds.local]: "trail-local.svg",
+  [categoryIds.sleep]: "trail-sleep.svg",
+  [categoryIds.culture]: "trail-culture.svg",
+  [categoryIds.attraction]: "trail-attractions.svg",
+  [categoryIds.tour]: "trail-travel.svg",
 };
 
 export const categoryGradientClasses = {
-  [categoryId.eat]: "from-ctg-eat-dim via-ctg-eat-light to-ctg-eat-dim",
-  [categoryId.local]: "from-ctg-local-dim via-ctg-local-light to-ctg-local-dim",
-  [categoryId.sleep]: "from-ctg-lodge-dim via-ctg-lodge-light to-ctg-lodge-dim",
-  [categoryId.culture]:
+  [categoryIds.eat]: "from-ctg-eat-dim via-ctg-eat-light to-ctg-eat-dim",
+  [categoryIds.local]:
+    "from-ctg-local-dim via-ctg-local-light to-ctg-local-dim",
+  [categoryIds.sleep]:
+    "from-ctg-lodge-dim via-ctg-lodge-light to-ctg-lodge-dim",
+  [categoryIds.culture]:
     "from-ctg-culture-dim via-ctg-culture-light to-ctg-culture-dim",
-  [categoryId.attraction]:
+  [categoryIds.attraction]:
     "from-ctg-attract-dim via-ctg-attract-light to-ctg-attract-dim",
-  [categoryId.tour]: "from-ctg-tour-dim via-ctg-tour-light to-ctg-tour-dim",
+  [categoryIds.tour]: "from-ctg-tour-dim via-ctg-tour-light to-ctg-tour-dim",
 };
 
 export const categoryGradinteColor = {
-  [categoryId.eat]: { dim: "#F7BCAC", light: "#F8CBBF" },
-  [categoryId.local]: { dim: "#F9D385", light: "#F9DEA7" },
-  [categoryId.sleep]: { dim: "#90BBE3", light: "#A2C6E6" },
-  [categoryId.culture]: { dim: "#F1A7C9", light: "#F3BDD6" },
-  [categoryId.attraction]: { dim: "#CEA7CE", light: "#D9BCD9" },
-  [categoryId.tour]: { dim: "#64C5C6", light: "#8ED4D5" },
+  [categoryIds.eat]: { dim: "#F7BCAC", light: "#F8CBBF" },
+  [categoryIds.local]: { dim: "#F9D385", light: "#F9DEA7" },
+  [categoryIds.sleep]: { dim: "#90BBE3", light: "#A2C6E6" },
+  [categoryIds.culture]: { dim: "#F1A7C9", light: "#F3BDD6" },
+  [categoryIds.attraction]: { dim: "#CEA7CE", light: "#D9BCD9" },
+  [categoryIds.tour]: { dim: "#64C5C6", light: "#8ED4D5" },
 };
 
 export const categoryColors = {
-  [categoryId.eat]: "#f09984",
-  [categoryId.local]: "#ffbe3b",
-  [categoryId.sleep]: "#4c95d8",
-  [categoryId.culture]: "#f174ae",
-  [categoryId.attraction]: "#b571b4",
-  [categoryId.tour]: "#00a5a8",
+  [categoryIds.eat]: "#f09984",
+  [categoryIds.local]: "#ffbe3b",
+  [categoryIds.sleep]: "#4c95d8",
+  [categoryIds.culture]: "#f174ae",
+  [categoryIds.attraction]: "#b571b4",
+  [categoryIds.tour]: "#00a5a8",
 };
 
 export const categoryBgClasses = {
-  [categoryId.eat]: "bg-ctg-eat-dark",
-  [categoryId.local]: "bg-ctg-local-dark",
-  [categoryId.sleep]: "bg-ctg-lodge-dark",
-  [categoryId.culture]: "bg-ctg-culture-dark",
-  [categoryId.attraction]: "bg-ctg-attract-dark",
-  [categoryId.tour]: "bg-ctg-tour-dark",
+  [categoryIds.eat]: "bg-ctg-eat-dark",
+  [categoryIds.local]: "bg-ctg-local-dark",
+  [categoryIds.sleep]: "bg-ctg-lodge-dark",
+  [categoryIds.culture]: "bg-ctg-culture-dark",
+  [categoryIds.attraction]: "bg-ctg-attract-dark",
+  [categoryIds.tour]: "bg-ctg-tour-dark",
 };
 
 export const shareKeepNavigate = [
@@ -136,27 +138,27 @@ export const shareKeepNavigate = [
 ];
 
 export const categoryIcons = {
-  [categoryId.tour]: {
+  [categoryIds.tour]: {
     icon: CtgTourIcon,
     bg: "bg-ctg-tour-dark",
   },
-  [categoryId.attraction]: {
+  [categoryIds.attraction]: {
     icon: CtgAttractionIcon,
     bg: "bg-ctg-attract-dark",
   },
-  [categoryId.eat]: {
+  [categoryIds.eat]: {
     icon: CtgEatIcon,
     bg: "bg-ctg-eat-dark",
   },
-  [categoryId.culture]: {
+  [categoryIds.culture]: {
     icon: CtgCultureIcon,
     bg: "bg-ctg-culture-dark",
   },
-  [categoryId.sleep]: {
+  [categoryIds.sleep]: {
     icon: CtgLodgeIcon,
     bg: "bg-ctg-lodge-dark",
   },
-  [categoryId.local]: {
+  [categoryIds.local]: {
     icon: CtgLocalIcon,
     bg: "bg-ctg-local-dark",
   },
@@ -339,13 +341,13 @@ export const navItems = [
         leftIcon: "",
         rightIcon: "",
       },
-      {
-        id: 3,
-        label: menuItems.hebrew,
-        href: "#",
-        rightIcon: "globe",
-        leftIcon: "down-arrow",
-      },
+      // {
+      //   id: 3,
+      //   label: menuItems.hebrew,
+      //   href: "#",
+      //   rightIcon: "globe",
+      //   leftIcon: "down-arrow",
+      // },
     ],
   },
 ];

@@ -45,7 +45,7 @@ export const getAllTrails = async (
       const res = await fetch(
         `${urls.trails}?page=${i}&limit=16&sortBy=createdAt&sortOrder=DESC&campCode=${CODE}`,
         {
-          cache: "no-store", // Always fetch fresh data
+          cache: "no-store",
         },
       );
 

@@ -14,10 +14,10 @@ function getIconUrl(categoryId: string, isInRoute: boolean) {
 }
 
 function getIconSize(isInRoute: boolean, isActive = false) {
-  if (isActive) return new google.maps.Size(70, 70);
+  if (isActive) return new google.maps.Size(70, 71);
   return isInRoute
-    ? new google.maps.Size(60, 60)
-    : new google.maps.Size(35, 35);
+    ? new google.maps.Size(68, 69)
+    : new google.maps.Size(40, 41);
 }
 
 export const useGoogleRouteDetailsMap = (

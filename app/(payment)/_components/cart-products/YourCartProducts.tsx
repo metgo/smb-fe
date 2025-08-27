@@ -1,6 +1,5 @@
 import clsx from "clsx";
 import Image from "next/image";
-import { IoMdClose } from "react-icons/io";
 import { useRouter } from "next/navigation";
 
 import { pathNames } from "@/lib/endpoints";
@@ -10,6 +9,7 @@ import { cartLabels, paymentPageLabels } from "@/constant/hebrew";
 import QtyIncrementDecrementBtns from "@/components/QtyIncrementDecrementBtns";
 import { startLoading } from "@/components/wrappers/ProgressBar";
 import useCheckoutStore from "@/stores/checkoutStore";
+import { IoIosCloseCircle } from "react-icons/io";
 
 const YourCartProducts = () => {
   const router = useRouter();
@@ -98,12 +98,11 @@ const YourCartProducts = () => {
                       className=" text-2xl font-normal col-span-2 text-end"
                     />
                     <div className="col-span-1 flex items-center justify-end">
-                      <div
+                      <IoIosCloseCircle
+                        size={24}
+                        className="cursor-pointer"
                         onClick={() => removeCartItem(item)}
-                        className="cursor-pointer size-[16px] bg-black rounded-full text-white p-[1px] font-bold"
-                      >
-                        <IoMdClose />
-                      </div>
+                      />
                     </div>
                   </div>
                   {index < cartItems.length - 1 && (
