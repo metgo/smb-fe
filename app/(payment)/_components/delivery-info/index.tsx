@@ -43,7 +43,7 @@ const DeliveryInfo = memo(
         <button
           aria-expanded={secondInfo}
           onClick={() => handleToggle("second")}
-          className="flex justify-between cursor-pointer"
+          className="flex justify-between custom-cursor"
         >
           <span
             className={`font-bold text-[16px] ${

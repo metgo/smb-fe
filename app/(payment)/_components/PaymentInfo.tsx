@@ -38,7 +38,7 @@ const PaymentInfo = ({
     >
       <div
         onClick={() => handleToggle("third")}
-        className="flex justify-between cursor-pointer"
+        className="flex justify-between custom-cursor"
       >
         <div
           className={`font-bold text-[16px] ${thirdInfo ? "text-black" : "text-darkPrimary"}`}
@@ -75,7 +75,7 @@ const PaymentInfo = ({
                     className={`flex gap-3 items-center justify-between border-[1px] border-lightgray rounded-md px-3 py-3 ${
                       isDisabled
                         ? "opacity-50 cursor-not-allowed"
-                        : "cursor-pointer"
+                        : "custom-cursor"
                     }`}
                   >
                     <IconImage icon="credit-card.png" hasExtension />
@@ -97,7 +97,7 @@ const PaymentInfo = ({
                 className={`flex gap-3 items-center justify-between text-white rounded-md px-3 py-2 ${
                   isDisabled
                     ? "opacity-50 cursor-not-allowed bg-black/50"
-                    : "cursor-pointer bg-black"
+                    : "custom-cursor bg-black"
                 }`}
               >
                 {buttonLabels.orderConfirmation}

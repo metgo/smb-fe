@@ -100,7 +100,7 @@ const YourCartProducts = () => {
                     <div className="col-span-1 flex items-center justify-end">
                       <div
                         onClick={() => removeCartItem(item)}
-                        className="cursor-pointer size-[16px] bg-black rounded-full text-white p-[1px] font-bold"
+                        className="custom-cursor size-[16px] bg-black rounded-full text-white p-[1px] font-bold"
                       >
                         <IoMdClose />
                       </div>
@@ -130,7 +130,7 @@ const YourCartProducts = () => {
               className={clsx(
                 "font-bold text-white rounded-md py-2.5 px-16",
                 getTotalQuantity() > 0
-                  ? "cursor-pointer bg-black"
+                  ? "custom-cursor bg-black"
                   : "cursor-not-allowed bg-black/40",
               )}
             >

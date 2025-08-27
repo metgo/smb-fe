@@ -57,7 +57,7 @@ export const PickupLocationSelector = ({
   return (
     <div className="flex flex-col gap-2">
       <button
-        className="flex gap-3 items-center cursor-pointer"
+        className="flex gap-3 items-center custom-cursor"
         onClick={handleAreaSelect}
       >
         <RadioButton isSelected={isSelected} />

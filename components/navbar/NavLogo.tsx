@@ -17,7 +17,7 @@ const NavLogo = () => {
   }
 
   return (
-    <div className="cursor-pointer" onClick={handleNavigation}>
+    <div className="custom-cursor" onClick={handleNavigation}>
       <Logo />
     </div>
   );

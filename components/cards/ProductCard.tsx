@@ -114,7 +114,7 @@ const ProductCard = ({
   return (
     <div
       onClick={handleNavigation}
-      className=" cursor-pointer rounded-2xl overflow-hidden border border-[#D3D3D3]"
+      className=" custom-cursor rounded-2xl overflow-hidden border border-[#D3D3D3]"
     >
       <div className="relative w-full overflow-hidden">
         <div
@@ -155,7 +155,7 @@ const ProductCard = ({
                   (prev) => (prev + 1) % product?.images?.length,
                 );
               }}
-              className="cursor-pointer"
+              className="custom-cursor"
             >
               <IconImage width={30} height={30} icon="prev" />
             </div>
@@ -178,7 +178,7 @@ const ProductCard = ({
           <button
             type="button"
             onClick={handleAddToCart}
-            className="h-10 rounded-xl bg-dark text-white flex items-center justify-center w-full flex-auto cursor-pointer font-normal text-lg"
+            className="h-10 rounded-xl bg-dark text-white flex items-center justify-center w-full flex-auto custom-cursor font-normal text-lg"
           >
             <span>{cartLabels.addToCart}</span>
           </button>
@@ -187,13 +187,13 @@ const ProductCard = ({
             <button
               type="button"
               onClick={handleQuickPurchase}
-              className="h-10 rounded-xl bg-dark text-white flex items-center justify-center w-full flex-auto cursor-pointer font-normal text-lg"
+              className="h-10 rounded-xl bg-dark text-white flex items-center justify-center w-full flex-auto custom-cursor font-normal text-lg"
             >
               <span>{misc.quickPurchase}</span>
             </button>
             <div
               onClick={handleAddToCart}
-              className="flex-none cursor-pointer hover:shadow-md rounded-xl"
+              className="flex-none custom-cursor hover:shadow-md rounded-xl"
             >
               <IconImage width={40} height={40} icon="circular-cart" />
             </div>

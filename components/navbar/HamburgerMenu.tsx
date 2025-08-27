@@ -54,7 +54,7 @@ const HamburgerMenu = ({
         type="button"
         ref={toggleButtonRef}
         onClick={() => setIsOpen((prev) => !prev)}
-        className="focus:outline-none cursor-pointer text-theme"
+        className="focus:outline-none custom-cursor text-theme"
       >
         <IconImage icon={isOpen ? closeIcon : openIcon} />
       </button>
@@ -78,7 +78,7 @@ const HamburgerMenu = ({
                   <Link
                     key={item.id}
                     href={item.href}
-                    className="text-theme hover:text-dark transition font-bold text-sm gap-2.5 mb-2 hover:bg-primary group  py-2 ps-3 flex items-center justify-between"
+                    className="text-theme hover:text-dark transition font-bold text-sm gap-2.5 mb-2 hover:bg-primary group  py-2 ps-3 flex items-center justify-between custom-cursor"
                   >
                     <div className="flex items-center gap-2.5">
                       {item.rightIcon && <IconImage icon={item.rightIcon} />}

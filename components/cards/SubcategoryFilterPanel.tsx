@@ -53,7 +53,7 @@ const SubcategoryFilterPanel = () => {
 
   return (
     <div className="max-w-[1008px] bg-[#FAFAFA]/80 backdrop-blur border border-white/20 shadow-md p-2.5 rounded-2xl z-50">
-      <div className="flex items-center gap-2.5 cursor-pointer">
+      <div className="flex items-center gap-2.5 custom-cursor">
         <div className="px-4 py-2.5 rounded-xl border border-theme flex items-center gap-2">
           <IconImage icon="filter" />
           <span className="text-theme font-bold">{misc.filter}</span>
@@ -63,7 +63,7 @@ const SubcategoryFilterPanel = () => {
           <button
             type="button"
             onClick={scrollLeft}
-            className="border border-theme bg-white p-1 rounded-full cursor-pointer"
+            className="border border-theme bg-white p-1 rounded-full custom-cursor"
           >
             <RightAngleArrow />
           </button>
@@ -81,7 +81,7 @@ const SubcategoryFilterPanel = () => {
                     activeSubCategory === item.id
                       ? `${categoryBgClasses[activeCategoryKey]} text-white`
                       : "bg-white text-theme"
-                  } cursor-pointer px-5 py-3 rounded-[34px] font-bold text-sm whitespace-nowrap shrink-0 h-[36px] flex items-center justify-center`}
+                  } custom-cursor px-5 py-3 rounded-[34px] font-bold text-sm whitespace-nowrap shrink-0 h-[36px] flex items-center justify-center`}
                 >
                   <span>{item.name}</span>
                 </button>
@@ -91,7 +91,7 @@ const SubcategoryFilterPanel = () => {
           <button
             type="button"
             onClick={scrollRight}
-            className="border border-theme bg-white rounded-full p-1 cursor-pointer -ms-4"
+            className="border border-theme bg-white rounded-full p-1 custom-cursor -ms-4"
           >
             <LeftAngleArrow />
           </button>

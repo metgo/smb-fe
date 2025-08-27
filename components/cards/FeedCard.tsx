@@ -101,7 +101,7 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
           onClick={handleNavigation}
-          className="w-full h-full relative group rounded-xl overflow-hidden cursor-pointer"
+          className="w-full h-full relative group rounded-xl overflow-hidden custom-cursor"
         >
           <NextImage
             isFill

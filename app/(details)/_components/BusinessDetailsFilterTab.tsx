@@ -79,7 +79,7 @@ const BusinessDetailsFilterTab = ({
             <div
               key={item.id}
               onClick={() => handleTabChange(item.id)}
-              className="cursor-pointer text-dark w-max mb-2.5"
+              className="custom-cursor text-dark w-max mb-2.5"
             >
               <div
                 className={`relative inline-block ${isActive ? "font-bold" : "font-normal"}`}

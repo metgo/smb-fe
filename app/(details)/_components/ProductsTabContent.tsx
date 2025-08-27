@@ -52,7 +52,7 @@ const ProductsTabContent = ({
         <button
           type="button"
           onClick={handleShowMoreProducts}
-          className="h-10 px-4 border border-theme text-theme rounded-xl w-max cursor-pointer font-bold flex items-center gap-1.25"
+          className="h-10 px-4 border border-theme text-theme rounded-xl w-max custom-cursor font-bold flex items-center gap-1.25"
         >
           <span>{misc.showMoreProducts}</span>
           <IoIosArrowDown size={24} />

@@ -42,7 +42,7 @@ const page = async ({ params }: PageProps) => {
             <div className="w-full flex justify-end">
               <button
                 type="button"
-                className=" cursor-pointer bg-dark rounded-xl ps-2.5 pe-4 py-2 flex items-center gap-1.25"
+                className=" custom-cursor bg-dark rounded-xl ps-2.5 pe-4 py-2 flex items-center gap-1.25"
               >
                 <IconImage icon="basket-white" />
                 <span className="text-white font-bold">

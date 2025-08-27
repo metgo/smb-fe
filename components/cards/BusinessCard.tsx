@@ -154,7 +154,7 @@ const BusinessCard = ({ height, width, business }: BusinessCardProps) => {
                           setActiveImageIndex((prev) => prev - 1);
                         }
                       }}
-                      className=" cursor-pointer"
+                      className=" custom-cursor"
                       disabled={activeImageIndex === 0}
                     >
                       <IconImage icon="next" />
@@ -189,7 +189,7 @@ const BusinessCard = ({ height, width, business }: BusinessCardProps) => {
                       disabled={
                         activeImageIndex === business?.images?.length - 1
                       }
-                      className=" cursor-pointer"
+                      className=" custom-cursor"
                     >
                       <IconImage icon="prev" />
                     </button>

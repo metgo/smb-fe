@@ -48,7 +48,7 @@ const page = async ({ params }: PageProps) => {
                   lat={businessDetails?.geoLocation?.lat}
                   lng={businessDetails?.geoLocation?.long}
                 />
-                <div className="flex items-center gap-1.25 ps-2.5 pe-4 py-1 cursor-pointer">
+                <div className="flex items-center gap-1.25 ps-2.5 pe-4 py-1 custom-cursor">
                   <IconImage icon={"share"} />
                   <span className="font-bold text-theme text-sm">
                     {misc.sharing}

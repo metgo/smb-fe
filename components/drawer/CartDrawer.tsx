@@ -67,7 +67,7 @@ const CartDrawer = ({ setIsOpen }: CartDrawerProps) => {
       >
         <div>
           <div
-            className="absolute cursor-pointer top-[20px] left-[20px] z-50 w-10 h-10 flex items-center justify-center rounded-full bg-primary"
+            className="absolute custom-cursor top-[20px] left-[20px] z-50 w-10 h-10 flex items-center justify-center rounded-full bg-primary"
             onClick={onClose}
           >
             <IoMdClose size={24} />
@@ -114,7 +114,7 @@ const CartDrawer = ({ setIsOpen }: CartDrawerProps) => {
                           />
                           <div
                             onClick={() => removeCartItem(item)}
-                            className="cursor-pointer size-[16px] bg-black rounded-full flex items-center justify-center text-white p-[1px] font-bold"
+                            className="custom-cursor size-[16px] bg-black rounded-full flex items-center justify-center text-white p-[1px] font-bold"
                           >
                             <IoMdClose />
                           </div>
@@ -137,14 +137,14 @@ const CartDrawer = ({ setIsOpen }: CartDrawerProps) => {
                 <button
                   type="button"
                   onClick={() => handleNavigation(false)}
-                  className="font-bold text-white bg-black rounded-md py-2.5 px-16 cursor-pointer mt-6 mb-4"
+                  className="font-bold text-white bg-black rounded-md py-2.5 px-16 custom-cursor mt-6 mb-4"
                 >
                   {cartLabels.proceedToSecurePayment}
                 </button>
                 <button
                   type="button"
                   onClick={() => handleNavigation(true)}
-                  className="font-bold underline cursor-pointer"
+                  className="font-bold underline custom-cursor"
                 >
                   {cartLabels.toViewMyShoppingCart}
                 </button>

@@ -46,7 +46,7 @@ const Dialog: React.FC<DialogProps> = ({
       >
         <div
           onClick={onClose}
-          className="absolute cursor-pointer -top-12  right-0 z-50 w-10 h-10 flex items-center justify-center rounded-full bg-white sm:shadow-lg"
+          className="absolute custom-cursor -top-12  right-0 z-50 w-10 h-10 flex items-center justify-center rounded-full bg-white sm:shadow-lg"
         >
           <IconImage icon="close-black" />
         </div>

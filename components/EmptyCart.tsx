@@ -11,7 +11,7 @@ const EmptyCart = () => {
       </p>
       <Link
         href={pathNames.businesses}
-        className="font-bold text-white bg-black rounded-md py-2.5 px-16 cursor-pointer"
+        className="font-bold text-white bg-black rounded-md py-2.5 px-16 custom-cursor"
       >
         {cartLabels.toViewBusinesses}
       </Link>

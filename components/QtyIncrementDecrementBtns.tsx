@@ -31,7 +31,7 @@ const QtyIncrementDecrementBtns = ({
     <div className="flex items-center gap-3">
       <button
         type="button"
-        className="size-9 rounded-full border border-secondary flex items-center justify-center cursor-pointer"
+        className="size-9 rounded-full border border-secondary flex items-center justify-center custom-cursor"
         onClick={() => handleChangeQuantity(+1)}
       >
         <FaPlus />
@@ -43,7 +43,7 @@ const QtyIncrementDecrementBtns = ({
         type="button"
         disabled={isThresholdQty}
         className={clsx(
-          isThresholdQty ? "cursor-not-allowed" : "cursor-pointer",
+          isThresholdQty ? "cursor-not-allowed" : "custom-cursor",
           "size-9 rounded-full border border-secondary flex items-center justify-center",
         )}
         onClick={() => handleChangeQuantity(-1)}

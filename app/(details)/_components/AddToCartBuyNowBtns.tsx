@@ -58,7 +58,7 @@ const AddToCartBuyNowBtns = ({ product }: { product: ProductDetailsProps }) => {
       <div className="flex items-center gap-3 mb-4">
         <button
           type="button"
-          className="size-9 rounded-full border border-secondary flex items-center justify-center cursor-pointer"
+          className="size-9 rounded-full border border-secondary flex items-center justify-center custom-cursor"
           onClick={() => handleQtyChange("increment")}
         >
           <FaPlus />
@@ -68,7 +68,7 @@ const AddToCartBuyNowBtns = ({ product }: { product: ProductDetailsProps }) => {
           type="button"
           disabled={qty === 1}
           className={clsx(
-            qty === 1 ? "cursor-not-allowed" : "cursor-pointer",
+            qty === 1 ? "cursor-not-allowed" : "custom-cursor",
             "size-9 rounded-full border border-secondary flex items-center justify-center",
           )}
           onClick={() => handleQtyChange("decrement")}
@@ -81,14 +81,14 @@ const AddToCartBuyNowBtns = ({ product }: { product: ProductDetailsProps }) => {
         <button
           type="button"
           onClick={handleQuickPurchase}
-          className="bg-dark rounded-xl px-6 py-2.75 font-bold text-white cursor-pointer"
+          className="bg-dark rounded-xl px-6 py-2.75 font-bold text-white custom-cursor"
         >
           {productDetailsText.continuePlaceOrder}
         </button>
         <button
           type="button"
           onClick={handleAddToCart}
-          className="border border-theme text-theme rounded-xl py-2 flex items-center gap-1 font-bold px-4 cursor-pointer"
+          className="border border-theme text-theme rounded-xl py-2 flex items-center gap-1 font-bold px-4 custom-cursor"
         >
           <IconImage icon="basket-gray" />
           <span>{productDetailsText.addToCart}</span>
