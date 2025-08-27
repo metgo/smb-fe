@@ -5,13 +5,16 @@ import { motion, useInView, useAnimation } from "framer-motion";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import { pathNames } from "@/lib/endpoints";
-import { categoryIds, navigationPaths } from "@/lib/utils";
+import { navigationPaths } from "@/lib/utils";
 import useGeneralStore from "@/stores/generalStore";
 import { CardSkeleton } from "@/components/skeletons";
-import { removeInlineStylesFromHTML } from "@/lib/helpers";
+import { startLoading } from "../wrappers/ProgressBar";
 import { useImagePresent } from "@/hooks/image/useImagePresent";
 import { IconImage, ImageCarouselControls, NextImage } from "@/components/ui";
-import { startLoading } from "../wrappers/ProgressBar";
+import {
+  getPrimaryCategoryId,
+  removeInlineStylesFromHTML,
+} from "@/lib/helpers";
 
 const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
   const router = useRouter();
@@ -54,14 +57,11 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
     }
   }, [isInView, controls]);
 
-  const primaryCategoryId =
-    pathname === pathNames.events
-      ? categoryIds.attraction
-      : activeCategoryKey
-        ? activeCategoryKey
-        : feedItem?.primaryCategoryId
-          ? feedItem?.primaryCategoryId
-          : "6566e36ba77d2a477266d2f4";
+  const primaryCategoryId = getPrimaryCategoryId(
+    pathname,
+    activeCategoryKey,
+    feedItem.primaryCategoryId ?? "",
+  );
 
   function handleMapIconClick(id: string) {
     setClickedBusinessId(id);
