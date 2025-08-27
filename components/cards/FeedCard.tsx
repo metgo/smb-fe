@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import { motion, useInView, useAnimation } from "framer-motion";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
@@ -22,6 +22,7 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const isEventPage = pathname === pathNames.events;
 
   const aspectRatio = width / height;
 
@@ -35,14 +36,25 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
     setActiveFilterTab,
     setClickedBusinessId,
   } = useGeneralStore();
-  const { isLoading, isImageLoaded, updatedImageList } = useImagePresent(
-    aspectRatio,
-    feedItem?.images,
-    activeImageIndex,
-    [categoryId, subCategoryId],
+
+  const images = useMemo(
+    () => (isEventPage ? [feedItem.cover] : (feedItem?.images ?? [])),
+    [isEventPage, feedItem.cover, feedItem?.images],
   );
 
+  const deps = useMemo(
+    () => (isEventPage ? [feedItem] : [categoryId, subCategoryId]),
+    [isEventPage, feedItem, categoryId, subCategoryId],
+  );
+
+  const { isLoading, isImageLoaded, updatedImageList } = useImagePresent(
+    aspectRatio,
+    images,
+    activeImageIndex,
+    deps,
+  );
   const [hasMounted, setHasMounted] = useState(false);
+
   // Framer Motion setup
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "0px 0px -50px 0px" });
@@ -98,7 +110,7 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
     <motion.div
       ref={ref}
       style={{ width: `${width}px`, height: `${height}px` }}
-      initial={{ y: 0, opacity: 1 }}
+      initial={{ y: 50, opacity: 1 }}
       animate={controls}
       transition={{ duration: 0.5, ease: "easeOut" }}
     >
@@ -149,28 +161,29 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
                   }}
                   className=" line-clamp-2 font-bold text-[12px] text-white mt-1"
                 />
-                <ImageCarouselControls
-                  totalImages={feedItem?.images?.length}
-                  activeIndex={activeImageIndex}
-                  setActiveImageIndex={setActiveImageIndex}
-                />
+                {!isEventPage && (
+                  <ImageCarouselControls
+                    totalImages={feedItem?.images?.length}
+                    activeIndex={activeImageIndex}
+                    setActiveImageIndex={setActiveImageIndex}
+                  />
+                )}
               </div>
             </div>
           </div>
 
           <div className="hidden absolute top-4 right-4 group-hover:flex items-center gap-2.5">
             <IconImage width={30} height={30} icon="circular-heart" />
-            {pathname !== "/events" && pathname !== "/trails" && (
-              <IconImage
-                width={30}
-                height={30}
-                icon="circular-map-fold"
+            {!isEventPage && pathname !== "/trails" && (
+              <div
                 onClick={(e) => {
                   e.stopPropagation();
                   e.preventDefault();
                   handleMapIconClick(feedItem._id);
                 }}
-              />
+              >
+                <IconImage width={30} height={30} icon="circular-map-fold" />
+              </div>
             )}
           </div>
         </div>

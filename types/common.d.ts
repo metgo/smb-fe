@@ -80,7 +80,7 @@ declare interface SearchResultProps {
   businesses?: GeneralProductCardProps[];
 }
 
-declare interface paginationMeta {
+declare interface PaginationMeta {
   page: number;
   limit: number;
   data: number;

@@ -13,7 +13,7 @@ export const misc = {
   filter: "מסננים",
   start: "התחלה",
   end: "סיום",
-  close: "לִסְגוֹר",
+  close: "תודה",
   pleaseWaitLoading: "אנא המתן. טוען...",
   addAllStationOnCart: "הוספת כל התחנות לסל",
   toAllTracks: "לכל המסלולים",
