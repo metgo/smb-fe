@@ -74,7 +74,7 @@ export class GetAllEventsHandler implements IQueryHandler<GetAllEventsQuery> {
       };
     }
 
-    const select = '_id name description geoLocation images logo address slug';
+    const select = '_id name description geoLocation images cover address slug';
 
     if (search) {
       findQuery = {

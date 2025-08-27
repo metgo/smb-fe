@@ -71,7 +71,7 @@ implements IQueryHandler<GetEventBySlugQuery> {
       ];
 
       const select
-        = '_id location cover images logo name address countryCode phoneNumber shortDescription description contactDetails geoLocation groupTypesId accessibilitiesId subCategoriesId slug dayDescription payment';
+        = '_id location cover images cover name address countryCode phoneNumber shortDescription description contactDetails geoLocation groupTypesId accessibilitiesId subCategoriesId slug dayDescription payment';
 
       const event = await this.EventModel.findOne(findQuery)
         .populate(populate)

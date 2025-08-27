@@ -23,7 +23,7 @@ implements IQueryHandler<GetSearchRecommendationQuery> {
     try {
       const { campCode } = queries.query;
 
-      const select = '_id name description images logo dmoId slug';
+      const select = '_id name description images cover dmoId slug';
 
       const campDetails = await this.campaignService.findCampaignAndReturn(
         'code',
