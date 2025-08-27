@@ -5,9 +5,8 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 
 import PriceTag from "../PriceTag";
-import { itemTypeEnum } from "@/lib/utils";
+import { useItemBuyCart } from "@/hooks";
 import { CardSkeleton } from "../skeletons";
-import useCartStore from "@/stores/cartStore";
 import { cartLabels, misc } from "@/constant/hebrew";
 import { IconImage, NextImage } from "@/components/ui";
 import { useImageScale } from "@/hooks/image/useImageScale";
@@ -72,39 +71,8 @@ const ProductCard = ({
 }) => {
   const router = useRouter();
   const { scale } = useImageScale();
-  const { setCartItem, setBuyNowProduct } = useCartStore();
   const [activeImageIndex, setActiveImageIndex] = useState(0);
-
-  function handleAddToCart(e: React.MouseEvent) {
-    e.preventDefault();
-    e.stopPropagation();
-
-    const cartProduct = {
-      _id: product._id,
-      quantity: 1,
-      name: product.name,
-      image: product.images[0].image,
-      desc: product.description,
-      price: product.price.sellingPrice,
-      parentId: product.businessId._id,
-      itemType: itemTypeEnum.product,
-    };
-    setCartItem(cartProduct);
-  }
-
-  function handleQuickPurchase(e: React.MouseEvent) {
-    e.preventDefault();
-    e.stopPropagation();
-    startLoading();
-
-    const buyNowProduct = {
-      _id: product._id,
-      quantity: 1,
-      itemType: itemTypeEnum.product,
-    };
-    setBuyNowProduct(buyNowProduct);
-    router.push(`${pathNames.checkout}?isCart=false`);
-  }
+  const { addToCart, quickPurchase } = useItemBuyCart();
 
   function handleNavigation() {
     startLoading();
@@ -177,7 +145,7 @@ const ProductCard = ({
         {isCartPage ? (
           <button
             type="button"
-            onClick={handleAddToCart}
+            onClick={(e) => addToCart(e, product)}
             className="h-10 rounded-xl bg-dark text-white flex items-center justify-center w-full flex-auto custom-cursor font-normal text-lg"
           >
             <span>{cartLabels.addToCart}</span>
@@ -186,13 +154,13 @@ const ProductCard = ({
           <div className="flex items-center justify-between gap-2.5">
             <button
               type="button"
-              onClick={handleQuickPurchase}
+              onClick={(e) => quickPurchase(e, product)}
               className="h-10 rounded-xl bg-dark text-white flex items-center justify-center w-full flex-auto custom-cursor font-normal text-lg"
             >
               <span>{misc.quickPurchase}</span>
             </button>
             <div
-              onClick={handleAddToCart}
+              onClick={(e) => addToCart(e, product)}
               className="flex-none custom-cursor hover:shadow-md rounded-xl"
             >
               <IconImage width={40} height={40} icon="circular-cart" />
