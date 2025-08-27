@@ -8,6 +8,7 @@ import { Ticket, TicketSchema } from './schema/tickets.schema';
 import { AuthorityModule } from '../authority/authority.module';
 import { DMOModule } from '../dmo/dmo.module';
 import { GcpBucketModule } from 'src/services/gcp-bucket/gcp-bucket.module';
+import { CampaignModule } from '../campaign/campaign.module';
 import { GetTicketByIdsHandler } from './queries/handler/get-ticket-by-ids.handler';
 import { GetTicketByIdHandler } from './queries/handler/get-ticket-by-id.handler';
 
@@ -19,6 +20,7 @@ import { GetTicketByIdHandler } from './queries/handler/get-ticket-by-id.handler
     AuthorityModule,
     DMOModule,
     GcpBucketModule,
+    CampaignModule,
   ],
   controllers: [TicketController],
   providers: [GetTicketByIdHandler, GetTicketByIdsHandler],

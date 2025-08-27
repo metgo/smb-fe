@@ -35,9 +35,11 @@ implements IQueryHandler<GetEventBySlugQuery> {
         return {};
       }
 
+      const today = new Date();
       let findQuery: any = {
         slug,
         status: EventStatus.APPROVED,
+        endDate: { $gte: today },
       };
 
       const orConditions = [];
@@ -60,7 +62,7 @@ implements IQueryHandler<GetEventBySlugQuery> {
       const populate = [
         {
           path: 'dayDescription.ticketIds payment.ticketIds',
-          select: 'name images price status userId',
+          select: 'name images price status userId description',
         },
         {
           path: 'groupTypesId accessibilitiesId',

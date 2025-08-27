@@ -175,10 +175,10 @@ export class Event extends AuditableSchema {
     slug: string;
 
   @Prop({ required: false, default: null })
-    startDate: string;
+    startDate: Date;
 
   @Prop({ required: false, default: null })
-    endDate: string;
+    endDate: Date;
 
   @Prop({
     type: [
