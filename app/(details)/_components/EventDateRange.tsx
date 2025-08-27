@@ -51,7 +51,7 @@ const EventDateRange = ({ dayDescription, payment }: EventDetailsProps) => {
           <button
             type="button"
             onClick={handleOpenTicketModal}
-            className="bg-dark rounded-2xl ps-15 pe-16.5 py-2 text-white flex items-center gap-1.25 font-bold cursor-pointer"
+            className="bg-dark rounded-2xl ps-15 pe-16.5 py-2 text-white flex items-center gap-1.25 font-bold custom-cursor"
           >
             {payment.method === paymentMethodType.externalLink && (
               <IconImage icon="external-link" />

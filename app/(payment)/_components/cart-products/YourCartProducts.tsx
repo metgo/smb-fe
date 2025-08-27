@@ -129,7 +129,7 @@ const YourCartProducts = () => {
               className={clsx(
                 "font-bold text-white rounded-md py-2.5 px-16",
                 getTotalQuantity() > 0
-                  ? "cursor-pointer bg-black"
+                  ? "custom-cursor bg-black"
                   : "cursor-not-allowed bg-black/40",
               )}
             >

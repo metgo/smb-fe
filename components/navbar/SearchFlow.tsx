@@ -57,7 +57,7 @@ const SearchFlow = () => {
 
   return (
     <>
-      <div className=" cursor-pointer" onClick={() => setIsOpen(true)}>
+      <div className=" custom-cursor" onClick={() => setIsOpen(true)}>
         <IconImage icon="search" />
       </div>
 
@@ -106,7 +106,7 @@ const SearchFlow = () => {
                         item === searchKeyword
                           ? "bg-lightGray text-white"
                           : "text-theme",
-                        "ps-4 pe-5 border border-lightGray rounded-4xl h-10.5 flex items-center justify-center cursor-pointer",
+                        "ps-4 pe-5 border border-lightGray rounded-4xl h-10.5 flex items-center justify-center custom-cursor",
                       )}
                     >
                       <span className="font-bold text-sm">{item}</span>

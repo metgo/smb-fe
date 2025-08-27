@@ -38,7 +38,7 @@ const SelectField = ({ control, name, error }: any) => (
         <div className="relative">
           <select
             {...field}
-            className={`rounded-lg p-2 px-3 h-12 w-full cursor-pointer font-normal bg-white appearance-none border
+            className={`rounded-lg p-2 px-3 h-12 w-full custom-cursor font-normal bg-white appearance-none border
               ${error ? "border-red-500" : "border-lightGray"}
               ${!field.value ? "text-gray-500" : "text-black"}`}
           >
@@ -49,7 +49,7 @@ const SelectField = ({ control, name, error }: any) => (
               <option
                 key={option.value}
                 value={option.value}
-                className="text-black cursor-pointer"
+                className="text-black custom-cursor"
               >
                 {option.label}
               </option>
@@ -162,7 +162,7 @@ const ContactForm = () => {
                 className={clsx(
                   isSubmitting || !isValid
                     ? "bg-lightGray cursor-not-allowed"
-                    : "bg-dark cursor-pointer",
+                    : "bg-dark custom-cursor",
                   "mx-auto h-12 w-52 mt-10 text-white font-bold rounded-xl ",
                 )}
               >

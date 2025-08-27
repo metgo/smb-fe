@@ -44,7 +44,7 @@ export const DeliveryOptions = ({
         {product.deliveryToHome?.map((deliveryArea) => (
           <div key={deliveryArea.area}>
             <button
-              className="flex gap-3 items-center cursor-pointer mb-2"
+              className="flex gap-3 items-center custom-cursor mb-2"
               onClick={() =>
                 onUpdateDeliveryInfo({
                   deliveryMethod: "deliver",
@@ -98,7 +98,7 @@ export const DeliveryOptions = ({
 
       {/* Branch Pickup Option */}
       <button
-        className="flex gap-2 items-center cursor-pointer"
+        className="flex gap-2 items-center custom-cursor"
         onClick={() =>
           onUpdateDeliveryInfo({
             deliveryFee: 0,

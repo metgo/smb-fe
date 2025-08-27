@@ -52,7 +52,7 @@ const OrderInfo = ({ handleToggle, firstInfo, className }: OrderInfoProps) => {
         role="button"
         aria-expanded={firstInfo}
         onClick={() => handleToggle("first")}
-        className="flex justify-between cursor-pointer"
+        className="flex justify-between custom-cursor"
       >
         <h2
           className={`font-bold text-[16px] ${

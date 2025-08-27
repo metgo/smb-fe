@@ -33,7 +33,7 @@ export default function PaymentModal({
     <div className="fixed inset-0 bg-black  bg-opacity-70 z-50 flex items-center justify-center">
       <div className="relative w-[80vw] max-sm:max-h-[85vh]  min-h-[70vh] bg-white rounded-xl">
         <button
-          className="absolute -top-12 left-0 w-10 h-10 flex items-center justify-center rounded-full bg-white shadow-lg cursor-pointer"
+          className="absolute -top-12 left-0 w-10 h-10 flex items-center justify-center rounded-full bg-white shadow-lg custom-cursor"
           onClick={onClose}
         >
           {/* <LightClose /> */}

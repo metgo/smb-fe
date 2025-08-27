@@ -18,7 +18,7 @@ const MapNavButton = ({ lat, lng, clssName = "" }: MapNavButtonProps) => {
       href={`https://www.google.com/maps/search/?api=1&query=${lat + "," + lng}`}
       className={clsx(
         clssName,
-        "flex items-center gap-1.25 ps-2.5 pe-4 py-1 cursor-pointer",
+        "flex items-center gap-1.25 ps-2.5 pe-4 py-1 custom-cursor",
       )}
     >
       <IconImage icon={"navigation"} />

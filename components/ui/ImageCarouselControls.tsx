@@ -23,7 +23,7 @@ const ImageCarouselControls: React.FC<ImageCarouselControlsProps> = ({
           e.stopPropagation();
           if (activeIndex > 0) setActiveImageIndex((prev) => prev - 1);
         }}
-        className="cursor-pointer"
+        className="custom-cursor"
         disabled={activeIndex === 0}
       >
         <IconImage icon="next" width={30} height={30} />
@@ -53,7 +53,7 @@ const ImageCarouselControls: React.FC<ImageCarouselControlsProps> = ({
           if (activeIndex < totalImages - 1)
             setActiveImageIndex((prev) => prev + 1);
         }}
-        className="cursor-pointer"
+        className="custom-cursor"
         disabled={activeIndex === totalImages - 1}
       >
         <IconImage icon="prev" width={30} height={30} />

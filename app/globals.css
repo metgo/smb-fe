@@ -54,6 +54,12 @@ body {
   font-family: "Ploni Regular" sans-serif;
 }
 
+.custom-cursor {
+  cursor:
+    url("/images/icons/hand-gesture.png") 16 16,
+    pointer;
+}
+
 @layer utilities {
   /* Debug purpose */
   .db1 {

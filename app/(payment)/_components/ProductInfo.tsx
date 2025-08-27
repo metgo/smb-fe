@@ -111,7 +111,7 @@ const ProductInfo = () => {
               />
               <button
                 onClick={() => removeVoucher(voucher.code)}
-                className="text-secondary hover:text-red-700 text-[24px] font-bold cursor-pointer"
+                className="text-secondary hover:text-red-700 text-[24px] font-bold custom-cursor"
                 aria-label={`הסר שובר ${voucher.name}`}
               >
                 <IoMdCloseCircle />

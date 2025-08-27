@@ -92,7 +92,7 @@ const CustomInfoWindow = ({
               className={clsx(
                 isAddBtnDisabled
                   ? "cursor-not-allowed bg-gray-400"
-                  : "bg-black/60 cursor-pointer",
+                  : "bg-black/60 custom-cursor",
                 "font-bold text-white  rounded-lg px-4 py-2.25",
               )}
             >

@@ -37,7 +37,7 @@ const BusinessPageFilterTabs = () => {
             key={item.key}
             type="button"
             onClick={() => handleTabSwitch(item.key)}
-            className={`${activeFilterTab === item.key ? "flex items-center gap-1.5 px-2.5 py-1.5 bg-white font-bold h-8 border-[1px] border-[#EAEAEA]" : "px-2 py-2  font-normal"} rounded-lg cursor-pointer text-sm text-theme`}
+            className={`${activeFilterTab === item.key ? "flex items-center gap-1.5 px-2.5 py-1.5 bg-white font-bold h-8 border-[1px] border-[#EAEAEA]" : "px-2 py-2  font-normal"} rounded-lg custom-cursor text-sm text-theme`}
           >
             {activeFilterTab === item.key && (
               <IconImage icon={item.icon} width={20} height={20} />
