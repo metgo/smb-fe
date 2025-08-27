@@ -1,17 +1,17 @@
 "use client";
 
 import { useRef } from "react";
+
+import { useIsHydrated } from "@/hooks";
+import { useLoadMore } from "@/hooks/useLoadMore";
 import useGeneralStore from "@/stores/generalStore";
 
 import NoFeedItemLayout from "./NoFeedItemLayout";
-import { useLoadMore } from "@/hooks/useLoadMore";
-
 import BusinessPinMap from "../maps/BusinessPinMap";
 import OnlyFeedCardsLayout from "./OnlyFeedCardsLayout";
 import MapFeedIntegratedLayout from "./MapFeedIntegratedLayout";
 import StickyYellowRibbonImage from "../StickyYellowRibbonImage";
 import { CategoryPanel, SubcategoryFilterPanel } from "../cards";
-import { useIsHydrated } from "@/hooks";
 
 const BusinessFeedLayout = ({
   businesses,
