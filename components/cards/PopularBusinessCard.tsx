@@ -45,7 +45,7 @@ const PopularBusinessCard = ({
 
       <Link
         href={`${navPath}/${slug}`}
-        className="text-white text-sm font-bold px-4 py-2.25 bg-dark/50 rounded-lg absolute left-4 top-4 cursor-pointer hidden group-hover:block z-50"
+        className="text-white text-sm font-bold px-4 py-2.25 bg-dark/50 rounded-lg absolute left-4 top-4 custom-cursor hidden group-hover:block z-50"
       >
         {searchText.moreDetails}
       </Link>

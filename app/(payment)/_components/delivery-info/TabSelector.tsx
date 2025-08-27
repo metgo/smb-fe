@@ -17,7 +17,7 @@ export const TabSelector = ({
         onClick={() => onTabChange(index)}
         className={`${
           activeTab === index ? "bg-white font-bold" : "font-normal"
-        } px-4 py-2 cursor-pointer rounded-md`}
+        } px-4 py-2 custom-cursor rounded-md`}
       >
         {item}
       </button>

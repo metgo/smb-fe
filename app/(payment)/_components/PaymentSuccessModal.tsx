@@ -30,7 +30,7 @@ const PaymentSuccessModal = ({ isOpen }: PaymentSuccessFailureModalProps) => {
           <button
             type="button"
             onClick={handleClose}
-            className="px-8 min-h-[48px] mt-[12px] bg-black text-white rounded-xl cursor-pointer hover:shadow-md"
+            className="px-8 min-h-[48px] mt-[12px] bg-black text-white rounded-xl custom-cursor hover:shadow-md"
           >
             {buttonLabels.continueShopping}
           </button>

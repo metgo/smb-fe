@@ -14,7 +14,7 @@ const NoDetailsFound = () => {
         <h1 className="text-4xl">{emptyStateText.noDetails}</h1>
         <button
           onClick={() => router.back()}
-          className="px-6 py-2 rounded-lg border bg-dark text-white cursor-pointer flex items-center gap-2.5"
+          className="px-6 py-2 rounded-lg border bg-dark text-white custom-cursor flex items-center gap-2.5"
         >
           <FaArrowRightLong />
           <span>{misc.return}</span>

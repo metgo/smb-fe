@@ -14,7 +14,7 @@ const UserIconHoverCard = () => {
   return (
     <div className="relative group">
       {/* User Icon (triggers hover) */}
-      <div className="peer cursor-pointer">
+      <div className="peer custom-cursor">
         <UserIcon />
       </div>
 

@@ -19,7 +19,7 @@ const SubmitButton = ({
                    ${
                      isDisabled
                        ? "bg-black/20 text-white cursor-not-allowed"
-                       : "bg-black text-white cursor-pointer"
+                       : "bg-black text-white custom-cursor"
                    }`}
     >
       {isLoading ? <Spinner /> : label}

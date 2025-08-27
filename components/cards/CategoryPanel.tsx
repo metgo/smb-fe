@@ -55,7 +55,7 @@ const CategoryPanel = () => {
             key={item.id}
             onClick={() => handleCategoryChange(item.id)}
             className={clsx(
-              "w-16.5 h-16.5 flex items-center flex-col gap-2 p-1 rounded-lg transition-colors cursor-pointer",
+              "w-16.5 h-16.5 flex items-center flex-col gap-2 p-1 rounded-lg transition-colors custom-cursor",
               isActive
                 ? `${category?.bg} text-white font-bold`
                 : " font-normal text-theme",
@@ -66,7 +66,7 @@ const CategoryPanel = () => {
               width={30}
               height={30}
               src={`/images/category/${iconSrc}.svg`}
-              className="cursor-pointer hover:opacity-80 transition-opacity duration-200"
+              className="custom-cursor hover:opacity-80 transition-opacity duration-200"
             />
             <div className="text-sm">{item.name}</div>
           </div>

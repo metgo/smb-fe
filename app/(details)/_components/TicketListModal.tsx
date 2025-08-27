@@ -173,7 +173,7 @@ const TicketListModal = ({
               <div key={eventDays._id}>
                 <div
                   onClick={() => handleToggleTicketList(eventDays._id)}
-                  className="border-[2px] border-black/80 rounded-lg px-3 py-2 flex items-center justify-between cursor-pointer"
+                  className="border-[2px] border-black/80 rounded-lg px-3 py-2 flex items-center justify-between custom-cursor"
                 >
                   <span className="font-bold">{events.chooseCard}</span>
                   <span className="text-gray-600">{eventDays.date}</span>
@@ -219,7 +219,7 @@ const TicketListModal = ({
                             <div className="flex items-center gap-1">
                               <button
                                 type="button"
-                                className="size-9 rounded-full border border-secondary flex items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors"
+                                className="size-9 rounded-full border border-secondary flex items-center justify-center custom-cursor hover:bg-gray-50 transition-colors"
                                 onClick={(e) =>
                                   incrementQuantity(
                                     e,
@@ -240,7 +240,7 @@ const TicketListModal = ({
                                   "size-9 rounded-full border border-secondary flex items-center justify-center transition-colors",
                                   ticket.quantity === 0
                                     ? "cursor-not-allowed opacity-50"
-                                    : "cursor-pointer hover:bg-gray-50",
+                                    : "custom-cursor hover:bg-gray-50",
                                 )}
                                 onClick={(e) =>
                                   decrementQuantity(
@@ -280,7 +280,7 @@ const TicketListModal = ({
             onClick={handleTicketAddToCart}
             className={clsx(
               isTicketSelected
-                ? "bg-black cursor-pointer"
+                ? "bg-black custom-cursor"
                 : "bg-black/50 cursor-not-allowed",
               " px-8 py-2 rounded-md text-white font-bold hover:shadow-md",
             )}

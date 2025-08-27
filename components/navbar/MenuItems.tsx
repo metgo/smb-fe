@@ -13,7 +13,7 @@ const MenuItems = () => {
         <Link
           key={item.key}
           href={item.link}
-          className="flex flex-col items-center justify-center px-1 w-14"
+          className="flex flex-col items-center justify-center px-1 w-14 custom-cursor"
         >
           <IconImage
             width={24}

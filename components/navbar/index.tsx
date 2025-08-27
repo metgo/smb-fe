@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { usePathname } from "next/navigation";
 
 import NavLogo from "./NavLogo";
 import MenuItems from "./MenuItems";
@@ -15,7 +16,6 @@ import BusinessPageFilterTabs from "./BusinessPageFilterTabs";
 import useCartStore from "@/stores/cartStore";
 import { CartDrawer } from "../drawer";
 import { pathNames } from "@/lib/endpoints";
-import { usePathname } from "next/navigation";
 
 const Navbar = ({ showFilterTab = false }: { showFilterTab?: boolean }) => {
   const pathname = usePathname();
@@ -34,7 +34,7 @@ const Navbar = ({ showFilterTab = false }: { showFilterTab?: boolean }) => {
             <Link
               href={pathNames.joinBusiness}
               target="_blank"
-              className="text-theme font-bold ms-8"
+              className="text-theme font-bold ms-8 custom-cursor"
             >
               {navbar.toJoinAsaBusiness}
             </Link>
@@ -55,7 +55,7 @@ const Navbar = ({ showFilterTab = false }: { showFilterTab?: boolean }) => {
                 pathname !== pathNames.cart && (
                   <div
                     onClick={() => setIsCartDrawerOpen(true)}
-                    className="p-2 relative cursor-pointer"
+                    className="p-2 relative custom-cursor"
                   >
                     {getTotalQuantity() > 0 && (
                       <div className="absolute -top-1 -left-0 bg-[#28C268] rounded-full h-[16px] w-[16px] flex items-center justify-center">

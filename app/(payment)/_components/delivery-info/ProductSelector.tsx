@@ -17,7 +17,7 @@ export const ProductSelector = ({
       <button
         key={product._id}
         onClick={() => onProductClick(product._id)}
-        className={`relative flex items-center gap-2 w-48 rounded-md cursor-pointer bg-primary ${
+        className={`relative flex items-center gap-2 w-48 rounded-md custom-cursor bg-primary ${
           clickedProductId === product._id
             ? "border border-black/40 shadow-md"
             : ""
