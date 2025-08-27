@@ -5,6 +5,7 @@ import {
 
 import { CommonFilterQuery } from 'src/common/query-handler/common-filter-query';
 import { SortOrder } from 'src/common/enum';
+import { GeoServicesTypes } from '../../business.type';
 
 export class GetAllApprovedBusinessesRequest extends CommonFilterQuery {
   @ApiProperty({ type: String, required: true })
@@ -56,4 +57,12 @@ export class GetAllApprovedBusinessesRequest extends CommonFilterQuery {
   @IsEnum(SortOrder)
   @IsOptional()
     sortOrder: SortOrder;
+
+  @ApiProperty({
+    enum: GeoServicesTypes,
+    required: false,
+  })
+  @IsEnum(GeoServicesTypes)
+  @IsOptional()
+    serviceType: GeoServicesTypes;
 }

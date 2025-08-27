@@ -32,6 +32,7 @@ implements IQueryHandler<GetAllApprovedBusinessesQuery> {
         sortBy,
         sortOrder,
         campCode,
+        serviceType,
       } = queries.query;
 
       const campDetails = await this.campaignService.findCampaignAndReturn(
@@ -52,6 +53,7 @@ implements IQueryHandler<GetAllApprovedBusinessesQuery> {
 
       let findQuery: any = {
         status: BusinessStatus.APPROVED,
+        ...(serviceType && { serviceType }),
       };
 
       const orConditions = [];

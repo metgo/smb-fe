@@ -27,6 +27,7 @@ implements IQueryHandler<GetAllBusinessForMapTourismQuery> {
         bussCategoriesId,
         bussSubCategoriesId,
         campCode,
+        serviceType,
       } = queries.query;
 
       const campDetails = await this.campaignService.findCampaignAndReturn(
@@ -47,6 +48,7 @@ implements IQueryHandler<GetAllBusinessForMapTourismQuery> {
 
       let findQuery: any = {
         status: BusinessStatus.APPROVED,
+        ...(serviceType && { serviceType }),
       };
 
       const orConditions = [];
