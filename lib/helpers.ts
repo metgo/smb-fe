@@ -1,3 +1,6 @@
+import { pathNames } from "./endpoints";
+import { categoryIds } from "./utils";
+
 // Function to scale layout dimensions based on screen width
 export const scaleLayout = (
   layout: LayoutItem[],
@@ -141,4 +144,13 @@ export function removeInlineStylesFromHTML(html: string): string {
   elementsWithStyle.forEach((el) => el.removeAttribute("style"));
 
   return doc.body.innerHTML;
+}
+
+export function getPrimaryCategoryId(
+  pathname: string,
+  activeCategoryKey: string,
+  primaryCategoryId: string,
+) {
+  if (pathname === pathNames.events) return categoryIds.attraction;
+  return activeCategoryKey || primaryCategoryId || "6566e36ba77d2a477266d2f4";
 }
