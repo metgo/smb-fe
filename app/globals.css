@@ -63,6 +63,7 @@ body {
   .db2 {
     @apply border border-blue-500;
   }
+
   .qtyBtn {
     @apply size-9 rounded-full border border-secondary flex items-center justify-center;
   }
@@ -139,9 +140,11 @@ body {
   padding: 0 !important;
   top: 25px !important;
 }
+
 .custom-info-window {
   z-index: auto !important;
 }
+
 /* Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
