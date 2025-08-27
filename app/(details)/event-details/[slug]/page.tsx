@@ -7,10 +7,11 @@ import {
   ReturnToPrevPageBtn,
   Title,
 } from "../../_components";
-import { IconImage, MapNavButton } from "@/components/ui";
-import { events, misc } from "@/constant/hebrew";
+import { events } from "@/constant/hebrew";
+import { MapNavButton } from "@/components/ui";
 import AttributePills from "@/components/AttributePills";
 import { getEventDetailsBySlug } from "@/actions/eventActions";
+import ShareUrlBtnModal from "@/components/ShareUrlBtnModal";
 
 const page = async ({ params }: PageProps) => {
   const { slug } = await params;
@@ -38,12 +39,7 @@ const page = async ({ params }: PageProps) => {
               lat={eventDetails?.geoLocation?.lat}
               lng={eventDetails?.geoLocation?.long}
             />
-            <div className="flex items-center gap-1.25 ps-2.5 pe-4 py-1 custom-cursor">
-              <IconImage icon={"share"} />
-              <span className="font-bold text-theme text-sm">
-                {misc.sharing}
-              </span>
-            </div>
+            <ShareUrlBtnModal />
           </div>
         </div>
 

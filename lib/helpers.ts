@@ -1,17 +1,5 @@
-export function getBusinessList(
-  length: number,
-): { id: number; image: string }[] {
-  // const imageUrl = "https://images.pexels.com/photos/2325447/pexels-photo-2325447.jpeg?auto=compress&cs=tinysrgb&dpr=1&w=500";
-  const imageUrl =
-    "https://images.pexels.com/photos/12961190/pexels-photo-12961190.jpeg";
-
-  const business = Array.from({ length }, (_, i) => ({
-    id: i + 1,
-    image: imageUrl,
-  }));
-
-  return business;
-}
+import { pathNames } from "./endpoints";
+import { categoryIds } from "./utils";
 
 // Function to scale layout dimensions based on screen width
 export const scaleLayout = (
@@ -60,35 +48,6 @@ export const handleCropImage = async (
     console.error(`Error cropping image`, error);
   } finally {
     setIsLoading(false);
-  }
-};
-
-export const handleCropImagedraft = async (
-  imageItem: ImageItem,
-  aspect: number,
-  setIsLoading: (isLoading: boolean) => void,
-  setCroppedImageUrl: (url: string) => void,
-) => {
-  if (imageItem?.subCoordinates) {
-    const encodedImageUrl = encodeURIComponent(imageItem?.image);
-    const { xMin, yMin, xMax, yMax } = imageItem?.subCoordinates;
-
-    const query = `url=${encodedImageUrl}&xMin=${xMin}&yMin=${yMin}&xMax=${xMax}&yMax=${yMax}&aspect=${aspect}`;
-    setIsLoading(false);
-    try {
-      const res = await fetch(`/api/crop-image?${query}`);
-      if (!res.ok) throw new Error("Failed to crop image");
-
-      const blob = await res.blob();
-      const objectUrl = URL.createObjectURL(blob);
-      setCroppedImageUrl(objectUrl);
-    } catch (error) {
-      console.error(`Error cropping image`, error);
-    } finally {
-      setIsLoading(false);
-    }
-  } else {
-    setCroppedImageUrl(imageItem?.image || "/images/image-placeholder.jpg");
   }
 };
 
@@ -185,4 +144,13 @@ export function removeInlineStylesFromHTML(html: string): string {
   elementsWithStyle.forEach((el) => el.removeAttribute("style"));
 
   return doc.body.innerHTML;
+}
+
+export function getPrimaryCategoryId(
+  pathname: string,
+  activeCategoryKey: string,
+  primaryCategoryId: string,
+) {
+  if (pathname === pathNames.events) return categoryIds.attraction;
+  return activeCategoryKey || primaryCategoryId || "6566e36ba77d2a477266d2f4";
 }

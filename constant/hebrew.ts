@@ -13,12 +13,15 @@ export const misc = {
   filter: "מסננים",
   start: "התחלה",
   end: "סיום",
+  close: "לִסְגוֹר",
   pleaseWaitLoading: "אנא המתן. טוען...",
   addAllStationOnCart: "הוספת כל התחנות לסל",
   toAllTracks: "לכל המסלולים",
   mayInterestYou: "יכול לעניין אתכם",
   addToRoute: "הוספה למסלול",
   pleaseWait: "אנא המתן",
+  linkCopied: "הקישר לדף הועתק",
+  shareLink: "ניתן לשתף עם חברים ומשפחה על ידי הדבקת הקישור",
 };
 
 export const deliveries = {
@@ -222,9 +225,9 @@ export const buttonLabels = {
   continueToPlaceOrder: "המשך לביצוע הזמנה",
   continueToPurchase: "המשך לרכישה",
   continueToSenderDetails: "המשך לפרטי השולח",
-  continueToSelectDelivery: "המשך לבחירת משלוח",
   paymentIsOnGoing: "המשך לתשלום",
   continueShopping: "המשך בקניות",
+  continueToSelectDelivery: "המשיכו לבחירת משלוח",
 };
 
 export const cartLabels = {

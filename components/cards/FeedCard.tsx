@@ -8,10 +8,13 @@ import { pathNames } from "@/lib/endpoints";
 import { navigationPaths } from "@/lib/utils";
 import useGeneralStore from "@/stores/generalStore";
 import { CardSkeleton } from "@/components/skeletons";
-import { removeInlineStylesFromHTML } from "@/lib/helpers";
+import { startLoading } from "../wrappers/ProgressBar";
 import { useImagePresent } from "@/hooks/image/useImagePresent";
 import { IconImage, ImageCarouselControls, NextImage } from "@/components/ui";
-import { startLoading } from "../wrappers/ProgressBar";
+import {
+  getPrimaryCategoryId,
+  removeInlineStylesFromHTML,
+} from "@/lib/helpers";
 
 const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
   const router = useRouter();
@@ -54,11 +57,11 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
     }
   }, [isInView, controls]);
 
-  const primaryCategoryId = activeCategoryKey
-    ? activeCategoryKey
-    : feedItem?.primaryCategoryId
-      ? feedItem?.primaryCategoryId
-      : "6566e36ba77d2a477266d2f4";
+  const primaryCategoryId = getPrimaryCategoryId(
+    pathname,
+    activeCategoryKey,
+    feedItem.primaryCategoryId ?? "",
+  );
 
   function handleMapIconClick(id: string) {
     setClickedBusinessId(id);
@@ -90,12 +93,16 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
     <motion.div
       ref={ref}
       style={{ width: `${width}px`, height: `${height}px` }}
-      initial={{ y: 50, opacity: 1 }}
+      initial={{ y: 0, opacity: 1 }}
       animate={controls}
       transition={{ duration: 0.5, ease: "easeOut" }}
     >
       {isLoading || !hasMounted || !isImageLoaded ? (
-        <CardSkeleton primaryCategoryId={primaryCategoryId} />
+        <CardSkeleton
+          width={width}
+          height={height}
+          primaryCategoryId={primaryCategoryId}
+        />
       ) : (
         <div
           onMouseEnter={handleMouseEnter}

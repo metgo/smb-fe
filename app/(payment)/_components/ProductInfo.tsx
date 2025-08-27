@@ -42,23 +42,23 @@ const ProductInfo = () => {
           <div>
             {orderProducts?.map((item) => (
               <div key={item._id}>
-                <div className="flex gap-1 items-center justify-between">
-                  <div className="flex items-center gap-2">
+                <div className="grid grid-cols-12 gap-1 items-center justify-between w-full pe-5.25">
+                  <div className="flex items-center gap-2 col-span-8">
                     <Image
                       width={100}
                       height={100}
                       alt={item.alt}
                       src={item.image}
-                      className="rounded w-[60px] h-[50px] object-cover "
+                      className="rounded w-[60px] h-[60px] object-cover "
                     />
-                    <div className="md:w-60 font-bold">{item.name}</div>
+                    <div className="md:w-60 font-normal">{item.name}</div>
                   </div>
-                  <div>
-                    <span className="font-bold">{item.quantity}x</span>
-                    <PriceTag price={item.price} className="font-bold ml-1" />
+                  <div className="font-normal col-span-2">{item.quantity}x</div>
+                  <div className="col-span-2 text-end">
+                    <PriceTag price={item.price} className="font-bold" />
                   </div>
                 </div>
-                <div className="w-full h-[1px] bg-secondary my-1" />
+                <div className="w-full h-[1px] bg-secondary my-5.25" />
               </div>
             ))}
           </div>
@@ -68,20 +68,22 @@ const ProductInfo = () => {
       <section
         className={`flex flex-col gap-4 ${true ? "block" : "hidden md:block"} mt-8`}
       >
-        <div className="flex justify-between items-center">
-          <div className="flex gap-2 items-center relative">
-            <div className="rounded-md w-10 h-10 border-[1.8px] flex items-center justify-center">
-              <IconImage width={30} height={30} icon={"truck"} />
+        {totalDeliveryFee > 0 && (
+          <div className="flex justify-between items-center">
+            <div className="flex gap-2 items-center relative">
+              <div className="rounded-md w-10 h-10 border-[1.8px] flex items-center justify-center">
+                <IconImage width={30} height={30} icon={"truck"} />
+              </div>
+              <span className="text-[14px] font-bold text-black">
+                {paymentPageLabels.shippingPrice}
+              </span>
             </div>
-            <span className="text-[14px] font-bold text-black">
-              {paymentPageLabels.shippingPrice}
-            </span>
+            <PriceTag
+              price={totalDeliveryFee}
+              className="text-[14px] font-semibold text-black"
+            />
           </div>
-          <PriceTag
-            price={totalDeliveryFee}
-            className="text-[14px] font-semibold text-black"
-          />
-        </div>
+        )}
 
         {voucherDetails?.map((voucher) => (
           <div
@@ -119,7 +121,7 @@ const ProductInfo = () => {
         ))}
 
         <div className="bg-lightPrimary rounded-md py-4 hidden sm:flex">
-          <div className="flex justify-between w-full text-[18px] font-bold text-black">
+          <div className="flex justify-between w-full text-[18px] font-bold text-black bg-primary py-5 px-6.25 rounded-lg">
             <span>{paymentPageLabels.totalPaid}</span>
             <PriceTag price={totalAmount} noStyle />
           </div>

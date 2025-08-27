@@ -12,6 +12,7 @@ declare interface BusinessProps {
   name: string;
   geoLocation: GeoLocation;
   images: ImageItem[];
+  cover: ImageItem;
   logo: Logo;
   address: {
     _id: string;

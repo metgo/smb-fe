@@ -202,13 +202,12 @@ export const usePayment = () => {
       if (!data[0]?.UrlToBit || data?.qrCodeUrl) {
         clearVoucher();
         clearCart();
-        setPaymentStatus("success");
+        // setPaymentStatus("success");
+        setIsPaymentModalOpen(true);
       }
-
       setPaymentUrl(
         selectMethod === "bit" ? data?.[0]?.UrlToBit : data?.[0]?.Url,
       );
-      setIsPaymentModalOpen(true);
       setSelectMethod(null);
     } catch (error) {
       console.error("Error placing order:", error);
@@ -228,7 +227,6 @@ export const usePayment = () => {
 
     const messageHandler = (event: MessageEvent) => {
       const { data } = event;
-      console.log("-----data", data);
       if (isProcessed) return;
 
       if (

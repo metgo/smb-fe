@@ -97,7 +97,7 @@ body {
     background-size: 200% 200%;
     animation: shimmer-diagonal 1.5s infinite;
     filter: blur(12px);
-    border-radius: 9999px;
+    /* border-radius: 9999px; */
   }
 
   @keyframes shimmer-diagonal {

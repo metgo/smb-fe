@@ -6,6 +6,7 @@ import { getAllLocations } from "@/actions/commonActions";
 import { getTrailDetailsBySlug } from "@/actions/trailActions";
 import TrailDetailsRouteMap from "../_components/TrailDetailsRouteMap";
 import { NoDetailsFound, ReturnToPrevPageBtn } from "../../_components";
+import ShareUrlBtnModal from "@/components/ShareUrlBtnModal";
 
 const page = async ({ params }: PageProps) => {
   const { slug } = await params;
@@ -25,7 +26,7 @@ const page = async ({ params }: PageProps) => {
         <section className="p-5 space-y-7 absolute right-2 top-2 bottom-2 w-[31.5rem] rounded-xl shadow-md bg-white h-[86vh] overflow-auto hide-scrollbar">
           <div>
             <div className="w-full flex items-center justify-end gap-6 mb-4.5">
-              <IconImage icon="share" />
+              <ShareUrlBtnModal hideShareText />
               <IconImage icon="navigation" />
             </div>
 

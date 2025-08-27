@@ -33,6 +33,7 @@ const NextImage: React.FC<NextImageProps> = ({
 }) => {
   const [isImageLoaded, setIsImageLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
+
   const [imageAspectRatio, setImageAspectRatio] = useState<number | null>(null);
   const imgRef = useRef<HTMLImageElement>(null);
 
