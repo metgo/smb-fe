@@ -14,6 +14,12 @@ export const itemTypeEnum = {
   ticket: "TICKET",
 };
 
+export const purposeTypeEnum = {
+  business: "BUSINESS",
+  trip: "TRIP",
+  event: "EVENT",
+};
+
 export const paymentMethodType = {
   externalLink: "EXTERNAL_LINK",
   ticket: "TICKET",

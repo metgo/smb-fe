@@ -10,10 +10,13 @@ import { useCtgSubctg } from "@/hooks/useCtgSubctg";
 import { getAllSubCategory } from "@/actions/businessActions";
 import { LeftAngleArrow, RightAngleArrow } from "@/components/ui/icons";
 import { googleSendGtmEvent, triggerName } from "@/lib/googleEventsConfig";
+import { usePathname } from "next/navigation";
+import { getPurposeType } from "@/lib/helpers";
 
 const scrollAmount = 150;
 
 const SubcategoryFilterPanel = () => {
+  const pathname = usePathname();
   const { activeCategoryKey } = useGeneralStore();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -24,13 +27,15 @@ const SubcategoryFilterPanel = () => {
 
   useEffect(() => {
     if (activeCategoryKey !== "") {
+      const purposeType = getPurposeType(pathname);
+
       async function fetchSubCategory() {
-        const res = await getAllSubCategory(activeCategoryKey);
+        const res = await getAllSubCategory(activeCategoryKey, purposeType);
         setSubCategories(res);
       }
       fetchSubCategory();
     }
-  }, [activeCategoryKey]);
+  }, [activeCategoryKey, pathname]);
 
   const scrollLeft = () => {
     if (scrollContainerRef.current) {
