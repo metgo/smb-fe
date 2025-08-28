@@ -7,8 +7,14 @@ import { getHebrewDateInfo } from "@/lib/helpers";
 import { useState } from "react";
 import { paymentMethodType } from "@/lib/utils";
 import TicketListModal from "./TicketListModal";
+import { googleSendGtmEvent, triggerName } from "@/lib/googleEventsConfig";
 
-const EventDateRange = ({ dayDescription, payment }: EventDetailsProps) => {
+const EventDateRange = ({
+  _id,
+  name,
+  dayDescription,
+  payment,
+}: EventDetailsProps) => {
   const [openTicketModal, setOpenTicketModal] = useState(false);
   // const [clickedDay, setClickedDay] = useState({
   //   day: "",
@@ -18,6 +24,10 @@ const EventDateRange = ({ dayDescription, payment }: EventDetailsProps) => {
 
   function handleOpenTicketModal() {
     setOpenTicketModal(true);
+    googleSendGtmEvent(triggerName.clickToViewTicket, {
+      eventId: _id,
+      eventName: name,
+    });
   }
 
   return (

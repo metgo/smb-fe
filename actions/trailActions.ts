@@ -85,7 +85,7 @@ export const getAllTrails = async (
   };
 
   return {
-    data: allFeedData,
+    data: shuffleArray(allFeedData),
     totalData: allFeedData.length,
     meta: latestMeta,
   };

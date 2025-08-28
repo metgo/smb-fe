@@ -6,6 +6,7 @@ import { useState } from "react";
 
 import { Dialog, IconImage } from "./ui";
 import { misc } from "@/constant/hebrew";
+import { googleSendGtmEvent, triggerName } from "@/lib/googleEventsConfig";
 
 const ShareUrlBtnModal = ({
   hideShareText = false,
@@ -17,6 +18,7 @@ const ShareUrlBtnModal = ({
   const handleCopy = async () => {
     const url = window.location.href;
     try {
+      googleSendGtmEvent(triggerName.clickToShareUrl, { shareUrl: url });
       await navigator.clipboard.writeText(url);
       setIsOpen(true);
     } catch (err) {
@@ -29,7 +31,7 @@ const ShareUrlBtnModal = ({
         onClick={handleCopy}
         className={clsx(
           hideShareText ? "" : "flex items-center gap-1.25 ps-2.5 pe-4 py-1",
-          "cursor-pointer",
+          "custom-cursor",
         )}
       >
         <IconImage icon={"share"} />
