@@ -124,10 +124,13 @@ export const getAllCategory = async () => {
   }
 };
 
-export const getAllSubCategory = async (categoryId: string) => {
+export const getAllSubCategory = async (
+  categoryId: string,
+  purpose: string = "BUSINESS",
+) => {
   try {
     const res = await fetch(
-      `${urls.subcategory}?bussCategoryId=${categoryId}&campCode=${CODE}`,
+      `${urls.subcategory}?purpose=${purpose}&bussCategoryId=${categoryId}&campCode=${CODE}`,
     );
     if (!res.ok) throw new Error("Failed to fetch categories");
     const data = await res.json();
