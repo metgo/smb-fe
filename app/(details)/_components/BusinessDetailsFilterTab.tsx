@@ -31,7 +31,7 @@ const BusinessDetailsFilterTab = ({
         return (
           <ProductsTabContent
             products={products}
-            primaryCategoryId={businessDetails.primaryCategoryId}
+            primaryCategoryId={businessDetails?.primaryCategoryId}
           />
         );
       case 3:
