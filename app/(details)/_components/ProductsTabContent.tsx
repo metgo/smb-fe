@@ -35,7 +35,7 @@ const ProductsTabContent = ({
   return (
     <div className="flex flex-col items-center justify-center gap-4">
       <div className="grid grid-cols-5 gap-5 w-full">
-        {products?.slice(0, productCount).map((product, index) => {
+        {products?.slice(0, productCount)?.map((product, index) => {
           const isFirstNew = index === productCount - 10;
           return (
             <div key={product._id} ref={isFirstNew ? nextProductRef : null}>

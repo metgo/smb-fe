@@ -1,5 +1,5 @@
 import { pathNames } from "./endpoints";
-import { categoryIds } from "./utils";
+import { categoryIds, purposeTypeEnum } from "./utils";
 
 // Function to scale layout dimensions based on screen width
 export const scaleLayout = (
@@ -153,4 +153,10 @@ export function getPrimaryCategoryId(
 ) {
   if (pathname === pathNames.events) return categoryIds.attraction;
   return activeCategoryKey || primaryCategoryId || "6566e36ba77d2a477266d2f4";
+}
+
+export function getPurposeType(pathname: string) {
+  if (pathname === pathNames.home || pathname === pathNames.businesses)
+    return purposeTypeEnum.business;
+  return purposeTypeEnum.trip;
 }

@@ -18,11 +18,10 @@ const page = async ({ params }: PageProps) => {
 
   if (!slug || slug === "undefined") return <NoFeedItemLayout />;
 
-  const businessDetails: BusinessDetailsProps =
-    await getBusinessDetailsBySlug(slug);
+  const businessDetails = await getBusinessDetailsBySlug(slug);
 
   if (businessDetails === undefined) return <NoFeedItemLayout />;
-
+  const { groupTypesId = [], accessibilitiesId = [] } = businessDetails;
   const products: Product[] = await getProducts(businessDetails._id);
   return (
     <>
@@ -38,7 +37,7 @@ const page = async ({ params }: PageProps) => {
             className="rounded-lg border border-theme h-20 w-20 object-cover"
           />
           <div className="w-full">
-            <Title title={businessDetails.name} />
+            <Title title={businessDetails?.name} />
 
             <div className=" flex items-center justify-between w-full">
               <RatingReviewLocation
@@ -59,16 +58,11 @@ const page = async ({ params }: PageProps) => {
 
         <ImageGallery
           images={businessDetails?.images?.slice(0, 5)}
-          primaryCategoryId={businessDetails.primaryCategoryId}
+          primaryCategoryId={businessDetails?.primaryCategoryId}
         />
 
         <div className=" mt-4.5">
-          <AttributePills
-            items={[
-              ...businessDetails?.accessibilitiesId,
-              ...businessDetails?.groupTypesId,
-            ]}
-          />
+          <AttributePills items={[...accessibilitiesId, ...groupTypesId]} />
         </div>
 
         <BusinessDetailsFilterTab
