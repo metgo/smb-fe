@@ -11,18 +11,28 @@ import { ExternalApiModule } from 'src/modules/external-api/external-api.module'
 import { UsersModule } from 'src/modules/users/users.module';
 import { CampaignModule } from 'src/modules/campaign/campaign.module';
 import { GetAllSubCategoriesHandler } from './queries/handler/get-all-subcategories.handler';
-import { Product } from '../products/schema/products.schema';
-import { Business } from '../business/shared/schema/business.schema';
-import { Authority } from '../authority/schema/authority.schema';
+import { Product, ProductSchema } from '../products/schema/products.schema';
+import {
+  Business,
+  BusinessSchema,
+} from '../business/shared/schema/business.schema';
+import {
+  Authority,
+  AuthoritySchema,
+} from '../authority/schema/authority.schema';
+import { Trip, TripSchema } from '../trips/schema/trips.schema';
+import { Event, EventSchema } from '../events/schema/events.schema';
 
 @Module({
   imports: [
     CqrsModule,
     MongooseModule.forFeature([
       { name: 'BussSubCategory', schema: BussSubCategorySchema },
-      { name: Product.name, schema: Product },
-      { name: Business.name, schema: Business },
-      { name: Authority.name, schema: Authority },
+      { name: Product.name, schema: ProductSchema },
+      { name: Business.name, schema: BusinessSchema },
+      { name: Event.name, schema: EventSchema },
+      { name: Trip.name, schema: TripSchema },
+      { name: Authority.name, schema: AuthoritySchema },
     ]),
     AuthorityModule,
     DMOModule,

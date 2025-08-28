@@ -21,7 +21,7 @@ implements IQueryHandler<GetAllProductsRawQuery> {
     private campaignService: CampaignService,
   ) {}
 
-  async execute(queries: any): Promise<any> {
+  async execute(queries: GetAllProductsRawQuery): Promise<any> {
     try {
       const {
         campCode,

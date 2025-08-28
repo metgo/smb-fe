@@ -1,7 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import {
+  IsEnum, IsNotEmpty, IsOptional, IsString,
+} from 'class-validator';
 
 import { LocaleFilterQuery } from 'src/common/query-handler/locale-filter.query';
+import { Purpose } from '../buss-subcategories.type';
 
 export class GetAllSubCategoriesRequest extends LocaleFilterQuery {
   @ApiProperty({ type: String, required: true })
@@ -40,4 +43,13 @@ export class GetAllSubCategoriesRequest extends LocaleFilterQuery {
   @IsString()
   @IsNotEmpty()
     campCode: string;
+
+  @ApiProperty({
+    type: 'enum',
+    enum: Purpose,
+    required: true,
+  })
+  @IsNotEmpty()
+  @IsEnum(Purpose)
+    purpose: Purpose;
 }

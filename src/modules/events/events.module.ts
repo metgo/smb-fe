@@ -13,6 +13,7 @@ import { GcpBucketModule } from 'src/services/gcp-bucket/gcp-bucket.module';
 import { GetEventBySlugHandler } from './queries/handler/get-event-by-slug.handler';
 import { CampaignModule } from '../campaign/campaign.module';
 import { GetSearchRecommendationTourismHandler } from './queries/handler/get-search-recommendation.handler';
+import { GetAllEventsRawQueryHandler } from './queries/handler/get-all-events-rawquery.handler';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { GetSearchRecommendationTourismHandler } from './queries/handler/get-sea
     GetAllEventsHandler,
     GetEventBySlugHandler,
     GetSearchRecommendationTourismHandler,
+    GetAllEventsRawQueryHandler,
   ],
 })
 export class EventsModule {}

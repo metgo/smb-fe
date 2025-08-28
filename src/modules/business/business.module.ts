@@ -24,6 +24,7 @@ import { GetAllBusinessForMapTourismHandler } from './tourism/queries/handler/ge
 import { GetBusinessDetailForMapTourismHandler } from './tourism/queries/handler/get-business-detail-for-map.handler';
 import { GetBusinessDetailForTourismHandler } from './tourism/queries/handler/get-business-detail.handler';
 import { GetSearchRecommendationTourismHandler } from './tourism/queries/handler/get-search-recommendation.handler';
+import { GetAllBusinessesRawQueryHandler } from './tourism/queries/handler/get-all-businesses-rawquery.handler';
 
 @Module({
   imports: [
@@ -53,6 +54,7 @@ import { GetSearchRecommendationTourismHandler } from './tourism/queries/handler
     GetBusinessDetailForMapTourismHandler,
     GetBusinessDetailForTourismHandler,
     GetSearchRecommendationTourismHandler,
+    GetAllBusinessesRawQueryHandler,
   ],
   exports: [BusinessService],
 })
