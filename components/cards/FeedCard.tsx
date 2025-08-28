@@ -15,6 +15,7 @@ import {
   getPrimaryCategoryId,
   removeInlineStylesFromHTML,
 } from "@/lib/helpers";
+import { googleSendGtmEvent, triggerName } from "@/lib/googleEventsConfig";
 
 const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
   const router = useRouter();
@@ -98,6 +99,10 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
 
   function handleNavigation() {
     startLoading();
+    googleSendGtmEvent(triggerName.navigateToBusiness, {
+      bussinessId: feedItem._id,
+      bussinessName: feedItem.name,
+    });
     router.push(`${navigationPaths[pathname]}/${feedItem.slug}`);
   }
 

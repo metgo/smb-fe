@@ -12,6 +12,7 @@ import {
   getProductDetailsByIds,
 } from "@/actions/productActions";
 import { startLoading } from "@/components/wrappers/ProgressBar";
+import { googleSendGtmEvent, triggerName } from "@/lib/googleEventsConfig";
 
 type ErrorType = Step | "cart" | "server";
 type Step = "first" | "second" | "third" | "product";
@@ -172,6 +173,10 @@ export const usePayment = () => {
   };
   // ------------------- Payment Flow -------------------
   const handlePlaceOrder = async () => {
+    googleSendGtmEvent(triggerName.orderPlaceBtn, {
+      cartId: cartedProduct.cartId,
+    });
+
     setIsOrderPlacing(true);
 
     try {
@@ -218,6 +223,9 @@ export const usePayment = () => {
   };
 
   const handleIframeLoad = (event: React.SyntheticEvent<HTMLIFrameElement>) => {
+    googleSendGtmEvent(triggerName.orderCheckoutCardcomWindow, {
+      customerAction: "Customer trigger the payment window",
+    });
     const iframe = event.currentTarget;
     const iframeWindow = iframe.contentWindow;
 
@@ -245,6 +253,13 @@ export const usePayment = () => {
           clearCart();
           clearVoucher();
           setIsPaymentModalOpen(false);
+          googleSendGtmEvent(triggerName.orderCheckoutCardcomSuccess, {
+            customerAction: "Customer successfully completed the payment",
+          });
+        } else {
+          googleSendGtmEvent(triggerName.orderCheckoutCardcomFailure, {
+            customerAction: "Customer failed to complete the payment",
+          });
         }
         router.refresh();
         setTimeout(() => setPaymentStatus(status), 100);
