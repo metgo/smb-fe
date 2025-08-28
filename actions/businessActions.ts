@@ -126,7 +126,7 @@ export const getAllCategory = async () => {
 
 export const getAllSubCategory = async (
   categoryId: string,
-  purpose: string = "BUSINESS",
+  purpose: string,
 ) => {
   try {
     const res = await fetch(
