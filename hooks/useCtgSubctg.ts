@@ -1,31 +1,46 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-import useGeneralStore from "@/stores/generalStore";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { startLoading } from "@/components/wrappers/ProgressBar";
+import { getPurposeType } from "@/lib/helpers";
+import { getAllSubCategory } from "@/actions/businessActions";
 
 export const useCtgSubctg = () => {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-
-  const { activeCategoryKey, setActiveCategoryKey } = useGeneralStore();
+  const activeCategoryKey = searchParams.get("categoryId");
 
   const [activeSubCategory, setActiveSubCategory] = useState<string>();
-
+  const [subCategories, setSubCategories] = useState<BusienssSubcategoryProps>(
+    [],
+  );
   const isHomepage = pathname === "/";
 
-  const handleCategoryChange = (categoryId: string) => {
+  useEffect(() => {
+    if (activeCategoryKey) {
+      async function fetchSubcategory() {
+        const purposeType = getPurposeType(pathname);
+        const res = await getAllSubCategory(activeCategoryKey!, purposeType);
+        setSubCategories(res);
+      }
+      fetchSubcategory();
+    }
+  }, [activeCategoryKey]);
+
+  const handleCategoryChange = async (categoryId: string) => {
     const isSameCategory = activeCategoryKey === categoryId;
     const newCategoryId = isSameCategory ? "" : categoryId;
 
-    setActiveCategoryKey(newCategoryId);
     setActiveSubCategory("");
 
     const params = new URLSearchParams(searchParams.toString());
 
-    if (newCategoryId) params.set("categoryId", newCategoryId);
-    else {
+    if (newCategoryId) {
+      params.set("categoryId", newCategoryId);
+    } else {
       params.delete("categoryId");
+      setSubCategories([]);
     }
 
     params.set("page", "1");
@@ -36,6 +51,7 @@ export const useCtgSubctg = () => {
       left: 0,
       behavior: "smooth",
     });
+    startLoading();
     router.push(`?${params.toString()}`, { scroll: false });
   };
 
@@ -51,12 +67,17 @@ export const useCtgSubctg = () => {
     else params.delete("subCategoryId");
 
     params.set("page", "1");
-    params.set("categoryId", activeCategoryKey);
+    if (activeCategoryKey) {
+      params.set("categoryId", activeCategoryKey);
+    } else {
+      params.delete("categoryId");
+    }
     window.scrollTo({
       top: isHomepage ? window.innerHeight : 0,
       left: 0,
       behavior: "smooth",
     });
+    startLoading();
     router.push(`?${params.toString()}`, { scroll: false });
   };
 
@@ -65,6 +86,6 @@ export const useCtgSubctg = () => {
     handleSubcategoryChange,
     activeSubCategory,
     activeCategoryKey,
-    setActiveCategoryKey,
+    subCategories,
   };
 };

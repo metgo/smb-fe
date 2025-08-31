@@ -1,41 +1,25 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef } from "react";
 
 import { IconImage } from "../ui";
 import { misc } from "@/constant/hebrew";
 import { categoryBgClasses } from "@/lib/utils";
-import useGeneralStore from "@/stores/generalStore";
 import { useCtgSubctg } from "@/hooks/useCtgSubctg";
-import { getAllSubCategory } from "@/actions/businessActions";
 import { LeftAngleArrow, RightAngleArrow } from "@/components/ui/icons";
 import { googleSendGtmEvent, triggerName } from "@/lib/googleEventsConfig";
-import { usePathname } from "next/navigation";
-import { getPurposeType } from "@/lib/helpers";
 
 const scrollAmount = 150;
 
 const SubcategoryFilterPanel = () => {
-  const pathname = usePathname();
-  const { activeCategoryKey } = useGeneralStore();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  const { handleSubcategoryChange, activeSubCategory } = useCtgSubctg();
-  const [subCategories, setSubCategories] = useState<BusienssSubcategoryProps>(
-    [],
-  );
-
-  useEffect(() => {
-    if (activeCategoryKey !== "") {
-      const purposeType = getPurposeType(pathname);
-
-      async function fetchSubCategory() {
-        const res = await getAllSubCategory(activeCategoryKey, purposeType);
-        setSubCategories(res);
-      }
-      fetchSubCategory();
-    }
-  }, [activeCategoryKey, pathname]);
+  const {
+    subCategories,
+    activeSubCategory,
+    activeCategoryKey,
+    handleSubcategoryChange,
+  } = useCtgSubctg();
 
   const scrollLeft = () => {
     if (scrollContainerRef.current) {
@@ -91,7 +75,7 @@ const SubcategoryFilterPanel = () => {
                   }}
                   className={`${
                     activeSubCategory === item.id
-                      ? `${categoryBgClasses[activeCategoryKey]} text-white`
+                      ? `${categoryBgClasses[activeCategoryKey!]} text-white`
                       : "bg-white text-theme"
                   } custom-cursor px-5 py-3 rounded-[34px] font-bold text-sm whitespace-nowrap shrink-0 h-[36px] flex items-center justify-center`}
                 >
