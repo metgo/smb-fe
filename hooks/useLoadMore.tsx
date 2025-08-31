@@ -100,7 +100,7 @@ export const useLoadMore = (hasNextPage: boolean = false) => {
     onLoadMore: loadMore,
     // Adjust rootMargin to trigger when user scrolls to 50% of the viewport height
     // This means it will trigger when the sentry is 50% of viewport height away from the bottom
-    rootMargin: "0px 0px 80% 0px",
+    rootMargin: "0px 0px 0px 0px",
     disabled: !initialLoadDone || !canLoadMore,
   });
 

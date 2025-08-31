@@ -1,49 +1,42 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { staticImages } from "@/constant/staticImages";
+import { handleCropImage } from "@/lib/helpers";
 
 function getPrimaryImgObj(images: ImageItem[]): ImageItem | undefined {
   return images?.find((item) => item?.isPrimary);
 }
 
-export const handleCropImage = async (
-  imageItem: ImageItem,
-  aspect: number,
-): Promise<{ imageUrl: string; alt: string }> => {
-  const encodedImageUrl = encodeURIComponent(imageItem?.image);
-  const {
-    xMin = 0,
-    yMin = 0,
-    xMax = 0,
-    yMax = 0,
-  } = imageItem?.subCoordinates || {};
-
-  if (!xMin && !yMin && !xMax && !yMax) {
-    return { imageUrl: imageItem.image, alt: imageItem.alt };
-  }
-
-  const query = `url=${encodedImageUrl}&xMin=${xMin}&yMin=${yMin}&xMax=${xMax}&yMax=${yMax}&aspect=${aspect}`;
-  const res = await fetch(`/api/crop-image?${query}`);
-  // if (!res.ok) throw new Error("Failed to crop image");
-  if (!res.ok) {
-    return { imageUrl: imageItem.image, alt: imageItem.alt };
-  }
-
-  const blob = await res.blob();
-  const objectUrl = URL.createObjectURL(blob);
-
-  return { imageUrl: objectUrl, alt: imageItem.alt };
-};
-
 type ImageInput = ImageItem[] | ImageItem;
+
+interface UseImagePresentReturn {
+  isLoading: boolean;
+  isImageLoaded: boolean;
+  updatedImage: { imageUrl: string; alt: string };
+  updatedImageList: { _id: number; imageUrl: string; alt: string }[];
+  setUpdatedImage: React.Dispatch<
+    React.SetStateAction<{ imageUrl: string; alt: string }>
+  >;
+  setIsImageLoaded: React.Dispatch<React.SetStateAction<boolean>>;
+  inView: boolean;
+  containerRef: React.RefObject<HTMLDivElement | null>;
+}
 
 export const useImagePresent = (
   aspectRatio: number,
   imagesInput: ImageInput,
   activeImageIndex: number,
   dependencies: any[] = [],
-) => {
+  options: {
+    threshold?: number;
+    rootMargin?: string;
+    enabled?: boolean;
+  } = {},
+): UseImagePresentReturn => {
+  const { threshold = 0.1, rootMargin = "50px", enabled = true } = options;
+
   const [isLoading, setIsLoading] = useState(false);
-  const [isImageLoaded, setIsImageLoaded] = useState(true);
+  const [isImageLoaded, setIsImageLoaded] = useState(false);
+  const [inView, setInView] = useState(!enabled); // If lazy loading disabled, consider in view immediately
   const [updatedImage, setUpdatedImage] = useState({
     imageUrl: staticImages.placeholder,
     alt: "Business",
@@ -52,25 +45,65 @@ export const useImagePresent = (
     { _id: number; imageUrl: string; alt: string }[]
   >([]);
 
+  const containerRef = useRef<HTMLDivElement>(null);
   const processedIndexesRef = useRef<Set<number>>(new Set());
   const imageCacheRef = useRef<Map<string, { imageUrl: string; alt: string }>>(
     new Map(),
   );
+  const observerRef = useRef<IntersectionObserver | null>(null);
+
+  // Setup Intersection Observer
+  useEffect(() => {
+    if (!enabled) {
+      // If lazy loading is disabled, immediately set inView to true
+      setInView(true);
+      return;
+    }
+
+    if (!containerRef.current) return;
+
+    observerRef.current = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries;
+        if (entry.isIntersecting) {
+          setInView(true);
+          observerRef.current?.disconnect();
+        }
+      },
+      {
+        threshold,
+        rootMargin,
+      },
+    );
+
+    observerRef.current.observe(containerRef.current);
+
+    return () => {
+      observerRef.current?.disconnect();
+    };
+  }, [enabled, threshold, rootMargin]);
 
   // Utility: wait until an image URL is fully loaded
-  const waitForImageLoad = (src: string): Promise<void> =>
-    new Promise((resolve, reject) => {
-      const img = new Image();
-      img.onload = () => resolve();
-      img.onerror = (err) => reject(err);
-      img.src = src;
-    });
+  const waitForImageLoad = useCallback(
+    (src: string): Promise<void> =>
+      new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve();
+        img.onerror = (err) => reject(err);
+        img.src = src;
+      }),
+    [],
+  );
 
   const processImage = useCallback(
     async (image: ImageItem, idx?: number) => {
       const cacheKey = `${image.image}-${aspectRatio}`;
       if (imageCacheRef.current.has(cacheKey)) {
-        return imageCacheRef.current.get(cacheKey)!;
+        const cached = imageCacheRef.current.get(cacheKey)!;
+
+        // For cached images, just return them - they've already been validated
+        setIsImageLoaded(true);
+        return cached;
       }
 
       let result = image?.subCoordinates
@@ -82,17 +115,15 @@ export const useImagePresent = (
         await waitForImageLoad(result.imageUrl);
         setIsImageLoaded(true);
       } catch (err) {
-        console.error("Image failed to load:", result.imageUrl, err);
         result = {
           imageUrl: staticImages.placeholder,
           alt: image.alt || "Business",
         };
-        // Set isImageLoaded to true after a timeout to show placeholder
-        setTimeout(() => {
-          setIsImageLoaded(true);
-        }, 5000); // 5-second timeout
+        console.error("Image failed to load:", result.imageUrl, err);
+        setIsImageLoaded(true);
       }
 
+      // Cache the result (whether successful or placeholder)
       imageCacheRef.current.set(cacheKey, result);
 
       if (typeof idx === "number") {
@@ -105,11 +136,12 @@ export const useImagePresent = (
 
       return result;
     },
-    [aspectRatio],
+    [aspectRatio, waitForImageLoad],
   );
 
-  // Handle active image switching
+  // Handle active image switching (only when in view)
   useEffect(() => {
+    if (!inView) return;
     if (!Array.isArray(imagesInput) || imagesInput.length === 0) return;
     if (
       activeImageIndex == null ||
@@ -130,10 +162,11 @@ export const useImagePresent = (
     return () => {
       cancelled = true;
     };
-  }, [activeImageIndex, imagesInput, processImage]);
+  }, [activeImageIndex, imagesInput, processImage, inView]);
 
-  // Handle initial primary/default image
+  // Handle initial primary/default image (only when in view)
   useEffect(() => {
+    if (!inView) return;
     if (
       !imagesInput ||
       (Array.isArray(imagesInput) && imagesInput.length === 0)
@@ -154,7 +187,18 @@ export const useImagePresent = (
     return () => {
       cancelled = true;
     };
-  }, [imagesInput, processImage, ...dependencies]);
+  }, [imagesInput, processImage, inView, ...dependencies]);
+
+  // Cleanup object URLs on unmount
+  useEffect(() => {
+    return () => {
+      imageCacheRef.current.forEach((cached) => {
+        if (cached.imageUrl.startsWith("blob:")) {
+          URL.revokeObjectURL(cached.imageUrl);
+        }
+      });
+    };
+  }, []);
 
   return {
     isLoading,
@@ -163,5 +207,7 @@ export const useImagePresent = (
     isImageLoaded,
     setIsImageLoaded,
     updatedImageList,
+    inView,
+    containerRef,
   };
 };
