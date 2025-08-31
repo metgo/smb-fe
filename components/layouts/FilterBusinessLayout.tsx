@@ -18,6 +18,7 @@ interface Props {
 
 const FilterBusinessLayout = ({ businesses }: Props) => {
   const pathname = usePathname();
+
   const isHydrated = useIsHydrated();
   const { activeFilterTab } = useGeneralStore();
 

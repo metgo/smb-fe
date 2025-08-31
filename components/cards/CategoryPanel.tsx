@@ -3,7 +3,6 @@
 import clsx from "clsx";
 import Image from "next/image";
 import { useEffect } from "react";
-import { usePathname } from "next/navigation";
 
 import { categoryIcons } from "@/lib/utils";
 import { useCtgSubctg } from "@/hooks/useCtgSubctg";
@@ -12,9 +11,7 @@ import useCategoryStore from "@/stores/categoriesStore";
 import { triggerName, googleSendGtmEvent } from "@/lib/googleEventsConfig";
 
 const CategoryPanel = () => {
-  const pathname = usePathname();
-  const { handleCategoryChange, activeCategoryKey, setActiveCategoryKey } =
-    useCtgSubctg();
+  const { handleCategoryChange, activeCategoryKey } = useCtgSubctg();
   const { categories, setCategories } = useCategoryStore();
   const hasEmptyName = categories.some((cat) => cat.name === "");
 
@@ -38,10 +35,6 @@ const CategoryPanel = () => {
       fetchCategories();
     }
   }, [hasEmptyName]);
-
-  useEffect(() => {
-    if (pathname) setActiveCategoryKey("");
-  }, [pathname]);
 
   if (hasEmptyName) return;
 

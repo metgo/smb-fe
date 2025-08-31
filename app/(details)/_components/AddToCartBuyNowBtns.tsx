@@ -28,7 +28,7 @@ const AddToCartBuyNowBtns = ({ product }: { product: ProductDetailsProps }) => {
         >
           <FaPlus />
         </button>
-        <span>{qty}</span>
+        <span className="text-xl font-bold">{qty}</span>
         <button
           type="button"
           disabled={qty === 1}

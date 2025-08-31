@@ -1,16 +1,21 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import { filterTabs } from "@/lib/utils";
 import { IconImage } from "@/components/ui";
 import useGeneralStore from "@/stores/generalStore";
 import { useEffect, useState } from "react";
+import { startLoading } from "../wrappers/ProgressBar";
 
 const BusinessPageFilterTabs = () => {
+  const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
 
-  const { setActiveFilterTab, activeFilterTab, setClickedBusinessId } =
+  const isHomepage = pathname === "/";
+
+  const { setClickedBusinessId, activeFilterTab, setActiveFilterTab } =
     useGeneralStore();
 
   const [filteredTabs, setFilteredTabs] = useState<
@@ -28,6 +33,15 @@ const BusinessPageFilterTabs = () => {
   function handleTabSwitch(key: string) {
     setActiveFilterTab(key);
     setClickedBusinessId("");
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("filterTab", key);
+    window.scrollTo({
+      top: isHomepage ? window.innerHeight : 0,
+      left: 0,
+      behavior: "smooth",
+    });
+    startLoading();
+    router.push(`?${params.toString()}`, { scroll: false });
   }
   return (
     <div className="flex items-center justify-center w-full">

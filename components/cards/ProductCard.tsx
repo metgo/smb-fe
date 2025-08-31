@@ -29,6 +29,11 @@ const ImageCard = ({
     imageItem,
     0,
     [imageItem],
+    {
+      threshold: 0.1,
+      rootMargin: "50px",
+      enabled: true,
+    },
   );
 
   if (isLoading || !isImageLoaded)
