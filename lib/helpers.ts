@@ -15,40 +15,30 @@ export const scaleLayout = (
 export const handleCropImage = async (
   imageItem: ImageItem,
   aspect: number,
-  setIsLoading: (isLoading: boolean) => void,
-  setCroppedImageUrl: ({
-    imageUrl,
-    alt,
-  }: {
-    imageUrl: string;
-    alt: string;
-  }) => void,
-) => {
+): Promise<{ imageUrl: string; alt: string }> => {
   const encodedImageUrl = encodeURIComponent(imageItem?.image);
-  const xMin = imageItem?.subCoordinates?.xMin || 0;
-  const yMin = imageItem?.subCoordinates?.xMin || 0;
-  const xMax = imageItem?.subCoordinates?.xMax || 0;
-  const yMax = imageItem?.subCoordinates?.yMax || 0;
+  const {
+    xMin = 0,
+    yMin = 0,
+    xMax = 0,
+    yMax = 0,
+  } = imageItem?.subCoordinates || {};
 
   if (!xMin && !yMin && !xMax && !yMax) {
-    setCroppedImageUrl({ imageUrl: imageItem?.image, alt: imageItem?.alt });
-    return;
+    return { imageUrl: imageItem.image, alt: imageItem.alt };
   }
 
   const query = `url=${encodedImageUrl}&xMin=${xMin}&yMin=${yMin}&xMax=${xMax}&yMax=${yMax}&aspect=${aspect}`;
-  setIsLoading(true);
-  try {
-    const res = await fetch(`/api/crop-image?${query}`);
-    if (!res.ok) throw new Error("Failed to crop image");
+  const res = await fetch(`/api/crop-image?${query}`);
 
-    const blob = await res.blob();
-    const objectUrl = URL.createObjectURL(blob);
-    setCroppedImageUrl({ imageUrl: objectUrl, alt: imageItem.alt });
-  } catch (error) {
-    console.error(`Error cropping image`, error);
-  } finally {
-    setIsLoading(false);
+  if (!res.ok) {
+    return { imageUrl: imageItem.image, alt: imageItem.alt };
   }
+
+  const blob = await res.blob();
+  const objectUrl = URL.createObjectURL(blob);
+
+  return { imageUrl: objectUrl, alt: imageItem.alt };
 };
 
 export function shuffleArray<T>(array: T[]): T[] {

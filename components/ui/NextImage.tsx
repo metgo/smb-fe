@@ -1,6 +1,7 @@
 "use client";
 
 import { staticImages } from "@/constant/staticImages";
+import clsx from "clsx";
 import Image from "next/image";
 import React, { useState, useRef } from "react";
 
@@ -80,7 +81,7 @@ const NextImage: React.FC<NextImageProps> = ({
       width={isFill ? undefined : width! * scale}
       height={isFill ? undefined : height! * scale}
       quality={preserveTextQuality ? 100 : quality}
-      className={finalClassName}
+      className={clsx(finalClassName)}
       unoptimized={isOptimized}
       priority={false}
       onLoad={handleImageLoad}
