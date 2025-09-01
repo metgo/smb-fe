@@ -64,7 +64,7 @@ const OurStoryTabContent = ({
             <Image
               width={838}
               height={360}
-              className="rounded-xl  h-[360px] w-[838px] object-cover"
+              className="rounded-xl  h-[360px] w-[838px] object-cover ultra-sharp"
               alt={updatedImage?.alt}
               src={updatedImage?.imageUrl}
             />

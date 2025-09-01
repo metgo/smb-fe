@@ -106,7 +106,7 @@ const ImageCard = ({
           height={height}
           alt={croppedImage?.alt || "Gallery image"}
           src={finalImageSrc}
-          className="object-cover w-full h-full"
+          className="object-cover w-full h-full enhanced-image"
           onLoad={handleImageLoad}
           onError={handleImageError}
         />

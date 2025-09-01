@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { IconImage } from "../ui";
 import { misc } from "@/constant/hebrew";
@@ -8,18 +8,31 @@ import { categoryBgClasses } from "@/lib/utils";
 import { useCtgSubctg } from "@/hooks/useCtgSubctg";
 import { LeftAngleArrow, RightAngleArrow } from "@/components/ui/icons";
 import { googleSendGtmEvent, triggerName } from "@/lib/googleEventsConfig";
+import { getPurposeType } from "@/lib/helpers";
+import { getAllSubCategory } from "@/actions/businessActions";
+import { usePathname } from "next/navigation";
 
 const scrollAmount = 150;
 
 const SubcategoryFilterPanel = () => {
+  const pathname = usePathname();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [subCategories, setSubCategories] = useState<BusienssSubcategoryProps>(
+    [],
+  );
+  const { activeSubCategory, activeCategoryKey, handleSubcategoryChange } =
+    useCtgSubctg();
 
-  const {
-    subCategories,
-    activeSubCategory,
-    activeCategoryKey,
-    handleSubcategoryChange,
-  } = useCtgSubctg();
+  useEffect(() => {
+    if (activeCategoryKey) {
+      async function fetchSubcategory() {
+        const purposeType = getPurposeType(pathname);
+        const res = await getAllSubCategory(activeCategoryKey!, purposeType);
+        setSubCategories(res);
+      }
+      fetchSubcategory();
+    }
+  }, [activeCategoryKey]);
 
   const scrollLeft = () => {
     if (scrollContainerRef.current) {
@@ -39,7 +52,7 @@ const SubcategoryFilterPanel = () => {
     }
   };
 
-  if (activeCategoryKey === "" || subCategories?.length === 0) return;
+  if (activeCategoryKey === null || subCategories?.length === 0) return;
 
   return (
     <div className="max-w-[1008px] bg-[#FAFAFA]/80 backdrop-blur border border-white/20 shadow-md p-2.5 rounded-2xl z-50">
