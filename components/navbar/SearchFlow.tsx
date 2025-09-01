@@ -15,7 +15,7 @@ const SectionTitle = ({ title }: { title: string }) => (
 const CardList = ({
   items,
   title,
-  navPath = "business-details",
+  navPath = pathNames.businessDetails,
 }: {
   title: string;
   navPath?: string;
