@@ -20,6 +20,7 @@ import { googleSendGtmEvent, triggerName } from "@/lib/googleEventsConfig";
 import { CardSkeleton } from "../skeletons";
 import { staticImages } from "@/constant/staticImages";
 
+// Main Components
 const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
   const router = useRouter();
   const pathname = usePathname();
@@ -32,13 +33,9 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
   const { categoryId = "", subCategoryId = "" } = Object.fromEntries(
     searchParams.entries(),
   );
-
-  const {
-    activeCategoryKey,
-    activeFilterTab,
-    setActiveFilterTab,
-    setClickedBusinessId,
-  } = useGeneralStore();
+  const activeCategoryKey = searchParams.get("categoryId");
+  const { activeFilterTab, setActiveFilterTab, setClickedBusinessId } =
+    useGeneralStore();
 
   const images = useMemo(
     () => (isEventPage ? [feedItem.cover] : (feedItem?.images ?? [])),
@@ -83,8 +80,8 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
 
   const primaryCategoryId = getPrimaryCategoryId(
     pathname,
-    activeCategoryKey,
-    feedItem.primaryCategoryId ?? "",
+    activeCategoryKey || "",
+    feedItem.primaryCategoryId!,
   );
 
   const currentImage = updatedImageList?.[activeImageIndex];
