@@ -32,7 +32,7 @@ const ImageCard = ({
     {
       threshold: 0.1,
       rootMargin: "50px",
-      enabled: true,
+      enabled: false,
     },
   );
 

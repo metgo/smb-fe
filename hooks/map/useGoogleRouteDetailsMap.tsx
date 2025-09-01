@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 
+import { misc } from "@/constant/hebrew";
 import { useGoogleMapInit } from "./useGoogleMapInit";
 import CustomInfoWindow from "@/components/CustomInfoWindow";
 import { createGradientRoute, fetchSegmentRoute } from "@/lib/googleMapUtils";
 import { businessMarkers, categoryColors, stationMarkers } from "@/lib/utils";
-import { misc } from "@/constant/hebrew";
 
 function getIconUrl(categoryId: string, isInRoute: boolean) {
   return isInRoute

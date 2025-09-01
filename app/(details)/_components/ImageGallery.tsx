@@ -2,10 +2,8 @@
 
 import clsx from "clsx";
 import Image from "next/image";
-import { useEffect, useState } from "react";
 
 import { categoryIds } from "@/lib/utils";
-import { staticImages } from "@/constant/staticImages";
 import { CardSkeleton } from "@/components/skeletons";
 import { useImageScale } from "@/hooks/image/useImageScale";
 import {
@@ -13,7 +11,7 @@ import {
   layouts,
   rowsLayout,
 } from "@/constant/collageLayouts";
-import { handleCropImage } from "@/lib/helpers";
+import { useImageCrop } from "@/hooks";
 
 // ImageCard component
 const ImageCard = ({
@@ -32,50 +30,13 @@ const ImageCard = ({
   className?: string;
 }) => {
   const aspectRatio = (width * scale) / 450;
-  const [imageError, setImageError] = useState(false);
-  const [isImageTransitionComplete, setIsImageTransitionComplete] =
-    useState(false);
-
-  const [croppedImage, setCroppedImage] = useState<{
-    imageUrl: string;
-    alt: string;
-  } | null>(null);
-  const [loading, setLoading] = useState(false);
-
-  const cropImage = async () => {
-    setLoading(true);
-    const result = await handleCropImage(imageItem, aspectRatio);
-    setCroppedImage(result);
-    setLoading(false);
-  };
-
-  useEffect(() => {
-    cropImage();
-  }, [imageItem]);
-
-  // Reset states when imageItem changes
-  useEffect(() => {
-    setImageError(false);
-    setIsImageTransitionComplete(false);
-  }, [imageItem]);
-
-  // Determine when to show skeleton
-
-  const handleImageLoad = () => {
-    setImageError(false);
-    // Small delay to ensure image is fully rendered
-    setTimeout(() => setIsImageTransitionComplete(true), 50);
-  };
-
-  const handleImageError = () => {
-    setImageError(true);
-    setIsImageTransitionComplete(true);
-  };
-
-  const finalImageSrc =
-    imageError || !croppedImage?.imageUrl
-      ? staticImages.placeholder
-      : croppedImage?.imageUrl;
+  const {
+    finalImageSrc,
+    handleImageLoad,
+    handleImageError,
+    isImageTransitionComplete,
+    shouldShowSkeleton,
+  } = useImageCrop(imageItem, aspectRatio);
 
   return (
     <div
@@ -87,7 +48,7 @@ const ImageCard = ({
       className={clsx("relative flex-initial", className)}
     >
       {/* Skeleton shown while cropping OR image still loading */}
-      {(loading || !isImageTransitionComplete) && (
+      {shouldShowSkeleton && (
         <CardSkeleton
           className="w-full h-full absolute inset-0"
           primaryCategoryId={primaryCategoryId}
@@ -104,7 +65,7 @@ const ImageCard = ({
         <Image
           width={width}
           height={height}
-          alt={croppedImage?.alt || "Gallery image"}
+          alt={imageItem?.alt || "Gallery image"}
           src={finalImageSrc}
           className="object-cover w-full h-full enhanced-image"
           onLoad={handleImageLoad}

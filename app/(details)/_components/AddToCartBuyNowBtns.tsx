@@ -20,7 +20,7 @@ const AddToCartBuyNowBtns = ({ product }: { product: ProductDetailsProps }) => {
 
   return (
     <>
-      <div className="flex items-center gap-3 mb-4">
+      <div className="flex items-center gap-3 my-4">
         <button
           type="button"
           className="size-9 rounded-full border border-secondary flex items-center justify-center custom-cursor"
@@ -28,7 +28,7 @@ const AddToCartBuyNowBtns = ({ product }: { product: ProductDetailsProps }) => {
         >
           <FaPlus />
         </button>
-        <span className="text-xl font-bold">{qty}</span>
+        <span className="text-2xl font-normal">{qty}</span>
         <button
           type="button"
           disabled={qty === 1}

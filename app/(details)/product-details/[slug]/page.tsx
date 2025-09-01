@@ -1,14 +1,15 @@
 import { misc } from "@/constant/hebrew";
-import { NextImage } from "@/components/ui";
 import PriceTag from "@/components/PriceTag";
 import { ProductCard } from "@/components/cards";
 import { getProductDetailsBySlug, getProducts } from "@/actions/productActions";
 import ProductDetailsFilterTab from "../../_components/ProductDetailsFilterTab";
 import {
   AddToCartBuyNowBtns,
+  MainProductImage,
   NoDetailsFound,
   ReturnToPrevPageBtn,
 } from "../../_components";
+import { categoryIds } from "@/lib/utils";
 
 const page = async ({ params }: PageProps) => {
   const { slug } = await params;
@@ -30,15 +31,10 @@ const page = async ({ params }: PageProps) => {
 
       <div className="mx-20 py-12">
         <section className="grid grid-cols-2 gap-10">
-          <div className="col-span-1 h-[533px]">
-            <NextImage
-              width={575}
-              height={533}
-              alt={productDetails?.images?.[0]?.alt}
-              imgSrc={productDetails?.images?.[0]?.image}
-              className="w-full h-full rounded-2xl object-cover"
-            />
-          </div>
+          <MainProductImage
+            imageItem={productDetails?.images?.[0]}
+            primaryCategoryId={categoryIds.culture}
+          />
           <div className="col-span-1">
             <h1 className="font-bold text-[40px]">{productDetails?.name}</h1>
             <div

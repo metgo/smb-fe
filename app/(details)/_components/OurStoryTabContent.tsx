@@ -1,12 +1,14 @@
 "use client";
 
+import Image from "next/image";
+
 import Map from "./Map.details";
-import { menuItems, misc } from "@/constant/hebrew";
+import { useImageCrop } from "@/hooks";
+import { daysMapping } from "@/lib/utils";
 import { IconImage } from "@/components/ui";
 import { CardSkeleton } from "@/components/skeletons";
-import { useImagePresent } from "@/hooks/image/useImagePresent";
-import { daysMapping } from "@/lib/utils";
-import Image from "next/image";
+import { menuItems, misc } from "@/constant/hebrew";
+import clsx from "clsx";
 
 const ConstatUsInfo = ({ icon, text }: { icon: string; text: string }) => {
   if (!text) return;
@@ -39,35 +41,41 @@ const OurStoryTabContent = ({
   openingHrs,
 }: BusinessDetailsProps) => {
   const aspectRatio = 438 / 360;
-  const { isLoading, updatedImage, isImageLoaded } = useImagePresent(
-    aspectRatio,
-    images,
-    0,
-    [images],
-    {
-      threshold: 0.1,
-      rootMargin: "50px",
-      enabled: false,
-    },
-  );
+
+  const {
+    loading,
+    isImageTransitionComplete,
+    handleImageError,
+    handleImageLoad,
+    finalImageSrc,
+  } = useImageCrop(images[0], aspectRatio);
 
   return (
     <div className="space-y-12.5">
       <div className="grid grid-cols-12 gap-10.5">
         <div className="w-[638px] h-[360px] col-span-5 ">
-          {isLoading || !isImageLoaded ? (
+          {loading ? (
             <CardSkeleton
               className={"w-[638px] h-[360px] rounded-xl"}
               primaryCategoryId={primaryCategoryId}
             />
           ) : (
-            <Image
-              width={838}
-              height={360}
-              className="rounded-xl  h-[360px] w-[838px] object-cover ultra-sharp"
-              alt={updatedImage?.alt}
-              src={updatedImage?.imageUrl}
-            />
+            <div
+              className={clsx(
+                "relative w-full h-full transition-opacity duration-300",
+                isImageTransitionComplete ? "opacity-100" : "opacity-0",
+              )}
+            >
+              <Image
+                width={838}
+                height={360}
+                className="rounded-xl  h-[360px] w-[838px] object-cover ultra-sharp"
+                alt={images[0]?.alt}
+                src={finalImageSrc}
+                onLoad={handleImageLoad}
+                onError={handleImageError}
+              />
+            </div>
           )}
         </div>
 
