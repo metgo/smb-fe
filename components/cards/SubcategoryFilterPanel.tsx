@@ -5,37 +5,34 @@ import { useEffect, useRef, useState } from "react";
 import { IconImage } from "../ui";
 import { misc } from "@/constant/hebrew";
 import { categoryBgClasses } from "@/lib/utils";
-import useGeneralStore from "@/stores/generalStore";
 import { useCtgSubctg } from "@/hooks/useCtgSubctg";
-import { getAllSubCategory } from "@/actions/businessActions";
 import { LeftAngleArrow, RightAngleArrow } from "@/components/ui/icons";
 import { googleSendGtmEvent, triggerName } from "@/lib/googleEventsConfig";
-import { usePathname } from "next/navigation";
 import { getPurposeType } from "@/lib/helpers";
+import { getAllSubCategory } from "@/actions/businessActions";
+import { usePathname } from "next/navigation";
 
 const scrollAmount = 150;
 
 const SubcategoryFilterPanel = () => {
   const pathname = usePathname();
-  const { activeCategoryKey } = useGeneralStore();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-
-  const { handleSubcategoryChange, activeSubCategory } = useCtgSubctg();
   const [subCategories, setSubCategories] = useState<BusienssSubcategoryProps>(
     [],
   );
+  const { activeSubCategory, activeCategoryKey, handleSubcategoryChange } =
+    useCtgSubctg();
 
   useEffect(() => {
-    if (activeCategoryKey !== "") {
-      const purposeType = getPurposeType(pathname);
-
-      async function fetchSubCategory() {
-        const res = await getAllSubCategory(activeCategoryKey, purposeType);
+    if (activeCategoryKey) {
+      async function fetchSubcategory() {
+        const purposeType = getPurposeType(pathname);
+        const res = await getAllSubCategory(activeCategoryKey!, purposeType);
         setSubCategories(res);
       }
-      fetchSubCategory();
+      fetchSubcategory();
     }
-  }, [activeCategoryKey, pathname]);
+  }, [activeCategoryKey]);
 
   const scrollLeft = () => {
     if (scrollContainerRef.current) {
@@ -55,7 +52,7 @@ const SubcategoryFilterPanel = () => {
     }
   };
 
-  if (activeCategoryKey === "" || subCategories?.length === 0) return;
+  if (activeCategoryKey === null || subCategories?.length === 0) return;
 
   return (
     <div className="max-w-[1008px] bg-[#FAFAFA]/80 backdrop-blur border border-white/20 shadow-md p-2.5 rounded-2xl z-50">
@@ -91,7 +88,7 @@ const SubcategoryFilterPanel = () => {
                   }}
                   className={`${
                     activeSubCategory === item.id
-                      ? `${categoryBgClasses[activeCategoryKey]} text-white`
+                      ? `${categoryBgClasses[activeCategoryKey!]} text-white`
                       : "bg-white text-theme"
                   } custom-cursor px-5 py-3 rounded-[34px] font-bold text-sm whitespace-nowrap shrink-0 h-[36px] flex items-center justify-center`}
                 >

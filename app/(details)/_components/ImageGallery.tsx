@@ -1,77 +1,17 @@
 "use client";
 
 import clsx from "clsx";
+import Image from "next/image";
 
-import { NextImage } from "@/components/ui";
+import { categoryIds } from "@/lib/utils";
 import { CardSkeleton } from "@/components/skeletons";
 import { useImageScale } from "@/hooks/image/useImageScale";
-import { useImagePresent } from "@/hooks/image/useImagePresent";
-import { staticImages } from "@/constant/staticImages";
-import { categoryIds } from "@/lib/utils";
-
-// Layout definitions (image sizes)
-const layouts = {
-  layout1: [{ width: 1280, height: 450 }],
-  layout2: [
-    { width: 635, height: 450 },
-    { width: 635, height: 450 },
-  ],
-  layout3: [
-    { width: 630, height: 450 },
-    { width: 314.5, height: 450 },
-    { width: 314.5, height: 450 },
-  ],
-  layout4: [
-    { width: 630, height: 450 },
-    { width: 314.5, height: 450 },
-    { width: 314.5, height: 220 },
-    { width: 314.5, height: 220 },
-  ],
-  layout5: [
-    { width: 630, height: 450 },
-    { width: 314.5, height: 220 },
-    { width: 314.5, height: 220 },
-    { width: 314.5, height: 220 },
-    { width: 314.5, height: 220 },
-  ],
-};
-
-// Row layout represents images grouped **by column**
-const rowsLayout = {
-  row1: [[0]],
-  row2: [[0], [1]],
-  row3: [[0], [1], [2]],
-  row4: [[0], [1], [2, 3]],
-  row5: [[0], [1, 2], [3, 4]],
-};
-
-// Helper to compute border radius classes
-function getRoundedClass(layout: string, index: number) {
-  switch (layout) {
-    case "layout1":
-      return "rounded-[10px]";
-    case "layout2":
-      if (index === 0) return "rounded-tr-[10px] rounded-br-[10px]";
-      if (index === 1) return "rounded-tl-[10px] rounded-bl-[10px]";
-      break;
-    case "layout3":
-      if (index === 0) return "rounded-tr-[10px] rounded-br-[10px]";
-      if (index === 2) return "rounded-tl-[10px] rounded-bl-[10px]";
-      break;
-    case "layout4":
-      if (index === 0) return "rounded-tr-[10px] rounded-br-[10px]";
-      if (index === 2) return "rounded-tl-[10px]";
-      if (index === 3) return "rounded-bl-[10px]";
-      break;
-    case "layout5":
-      if (index === 0) return "rounded-tr-[10px] rounded-br-[10px]";
-      if (index === 3) return "rounded-tl-[10px]";
-      if (index === 4) return "rounded-bl-[10px]";
-      break;
-    default:
-      return "";
-  }
-}
+import {
+  getRoundedClass,
+  layouts,
+  rowsLayout,
+} from "@/constant/collageLayouts";
+import { useImageCrop } from "@/hooks";
 
 // ImageCard component
 const ImageCard = ({
@@ -90,13 +30,13 @@ const ImageCard = ({
   className?: string;
 }) => {
   const aspectRatio = (width * scale) / 450;
-
-  const { isLoading, updatedImage, isImageLoaded } = useImagePresent(
-    aspectRatio,
-    imageItem,
-    0,
-    [imageItem],
-  );
+  const {
+    finalImageSrc,
+    handleImageLoad,
+    handleImageError,
+    isImageTransitionComplete,
+    shouldShowSkeleton,
+  } = useImageCrop(imageItem, aspectRatio);
 
   return (
     <div
@@ -107,20 +47,31 @@ const ImageCard = ({
       }}
       className={clsx("relative flex-initial", className)}
     >
-      {isLoading || !isImageLoaded ? (
+      {/* Skeleton shown while cropping OR image still loading */}
+      {shouldShowSkeleton && (
         <CardSkeleton
-          className={"w-full h-full"}
+          className="w-full h-full absolute inset-0"
           primaryCategoryId={primaryCategoryId}
         />
-      ) : (
-        <NextImage
+      )}
+
+      {/* Image container */}
+      <div
+        className={clsx(
+          "relative w-full h-full transition-opacity duration-300",
+          isImageTransitionComplete ? "opacity-100" : "opacity-0",
+        )}
+      >
+        <Image
           width={width}
           height={height}
-          alt={updatedImage.alt}
-          imgSrc={updatedImage.imageUrl || staticImages.placeholder}
-          className="object-cover w-full h-full"
+          alt={imageItem?.alt || "Gallery image"}
+          src={finalImageSrc}
+          className="object-cover w-full h-full enhanced-image"
+          onLoad={handleImageLoad}
+          onError={handleImageError}
         />
-      )}
+      </div>
     </div>
   );
 };
@@ -139,6 +90,17 @@ const ImageGallery = ({
   const layout = layouts[layoutName as keyof typeof layouts];
   const columns = rowsLayout[`row${imageCount}` as keyof typeof rowsLayout];
 
+  if (!images || images.length === 0) {
+    return (
+      <div style={{ height: 450 }} className="flex gap-2.5">
+        <CardSkeleton
+          className="w-full h-full"
+          primaryCategoryId={primaryCategoryId}
+        />
+      </div>
+    );
+  }
+
   return (
     <div style={{ height: 450 }} className="flex gap-2.5">
       {columns?.map((column, colIdx) => (
@@ -149,7 +111,7 @@ const ImageGallery = ({
 
             return (
               <ImageCard
-                key={imgIdx}
+                key={`${imgIdx}-${images[imgIdx]?.image || imgIdx}`}
                 width={width}
                 height={height}
                 scale={scale}

@@ -287,3 +287,68 @@ export const mapIntegratedCardsColumns: Record<
   layout8: { col1: [0, 1], col2: [2, 3, 4], col3: [5, 6, 7] },
   layout9: { col1: [0, 1, 2], col2: [3, 4, 5], col3: [6, 7, 8] },
 };
+
+// ============= Image Gallery ===============
+// Layout definitions (image sizes)
+export const layouts = {
+  layout1: [{ width: 1280, height: 450 }],
+  layout2: [
+    { width: 635, height: 450 },
+    { width: 635, height: 450 },
+  ],
+  layout3: [
+    { width: 630, height: 450 },
+    { width: 314.5, height: 450 },
+    { width: 314.5, height: 450 },
+  ],
+  layout4: [
+    { width: 630, height: 450 },
+    { width: 314.5, height: 450 },
+    { width: 314.5, height: 220 },
+    { width: 314.5, height: 220 },
+  ],
+  layout5: [
+    { width: 630, height: 450 },
+    { width: 314.5, height: 220 },
+    { width: 314.5, height: 220 },
+    { width: 314.5, height: 220 },
+    { width: 314.5, height: 220 },
+  ],
+};
+
+// Row layout represents images grouped **by column**
+export const rowsLayout = {
+  row1: [[0]],
+  row2: [[0], [1]],
+  row3: [[0], [1], [2]],
+  row4: [[0], [1], [2, 3]],
+  row5: [[0], [1, 2], [3, 4]],
+};
+
+// Helper to compute border radius classes
+export function getRoundedClass(layout: string, index: number) {
+  switch (layout) {
+    case "layout1":
+      return "rounded-[10px]";
+    case "layout2":
+      if (index === 0) return "rounded-tr-[10px] rounded-br-[10px]";
+      if (index === 1) return "rounded-tl-[10px] rounded-bl-[10px]";
+      break;
+    case "layout3":
+      if (index === 0) return "rounded-tr-[10px] rounded-br-[10px]";
+      if (index === 2) return "rounded-tl-[10px] rounded-bl-[10px]";
+      break;
+    case "layout4":
+      if (index === 0) return "rounded-tr-[10px] rounded-br-[10px]";
+      if (index === 2) return "rounded-tl-[10px]";
+      if (index === 3) return "rounded-bl-[10px]";
+      break;
+    case "layout5":
+      if (index === 0) return "rounded-tr-[10px] rounded-br-[10px]";
+      if (index === 3) return "rounded-tl-[10px]";
+      if (index === 4) return "rounded-bl-[10px]";
+      break;
+    default:
+      return "";
+  }
+}

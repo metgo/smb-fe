@@ -5,6 +5,7 @@ import EventLocationMap from "./EventLocationMap";
 import Footer from "./Footer.details";
 import ImageGallery from "./ImageGallery";
 import Location from "./Location.details";
+import MainProductImage from "./MainProductImage";
 import Map from "./Map.details";
 import NoDetailsFound from "./NoDetailsFound";
 import RatingReviewLocation from "./RatingReviewLocation";
@@ -24,4 +25,5 @@ export {
   BusinessDetailsFilterTab,
   ReturnToPrevPageBtn,
   AddToCartBuyNowBtns,
+  MainProductImage,
 };
