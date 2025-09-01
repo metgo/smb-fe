@@ -350,3 +350,77 @@ input[type="range"]::-moz-range-thumb {
   width: 20px !important;
   height: 20px !important;
 }
+
+/* Enhanced Image Styles - Add to global.css */
+.enhanced-image {
+  /* Core enhancement */
+  image-rendering: crisp-edges;
+  image-rendering: -webkit-optimize-contrast;
+
+  /* Multi-layer filtering for 4K-like quality */
+  filter: contrast(110%) brightness(103%) saturate(108%) blur(0px)
+    drop-shadow(0 0 0.5px rgba(0, 0, 0, 0.1));
+
+  /* Hardware acceleration */
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+
+  /* Smooth transitions */
+  transition: filter 0.3s ease;
+
+  /* Smooth loading animation */
+  opacity: 0;
+  animation: fadeInSharp 0.5s ease-out forwards;
+}
+
+.enhanced-image:hover {
+  filter: contrast(115%) brightness(105%) saturate(112%) blur(0px)
+    drop-shadow(0 0 1px rgba(0, 0, 0, 0.15));
+}
+
+/* High DPI display optimizations */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .enhanced-image {
+    image-rendering: -webkit-optimize-contrast;
+    filter: contrast(112%) brightness(102%) saturate(110%) blur(0px)
+      drop-shadow(0 0 0.3px rgba(0, 0, 0, 0.08));
+  }
+}
+
+/* 4K display specific enhancements */
+@media (min-width: 3840px) {
+  .enhanced-image {
+    filter: contrast(115%) brightness(101%) saturate(112%) blur(0px)
+      drop-shadow(0 0 0.2px rgba(0, 0, 0, 0.05));
+  }
+}
+
+/* Ultra-sharp variant for important images */
+.ultra-sharp {
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+  filter: contrast(118%) brightness(102%) saturate(115%) blur(0px)
+    drop-shadow(0 0 0.5px rgba(255, 255, 255, 0.1));
+
+  /* Advanced GPU acceleration */
+  transform: translate3d(0, 0, 0) scale(1);
+  will-change: transform, filter;
+
+  /* Smooth loading animation */
+  opacity: 0;
+  animation: fadeInSharp 0.5s ease-out forwards;
+}
+
+/* Keyframe animation for smooth loading */
+@keyframes fadeInSharp {
+  from {
+    opacity: 0;
+    filter: blur(2px);
+  }
+
+  to {
+    opacity: 1;
+    filter: contrast(110%) brightness(103%) saturate(108%) blur(0px);
+  }
+}

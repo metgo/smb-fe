@@ -154,7 +154,7 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
             quality={100}
             sizes={`${width}px`}
             className={clsx(
-              "object-cover transition-opacity duration-1000",
+              "object-cover transition-opacity duration-400 ultra-sharp",
               shouldShowSkeleton ? "opacity-0" : "opacity-100",
             )}
             priority={false}
