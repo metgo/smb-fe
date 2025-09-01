@@ -27,7 +27,6 @@ const MainProductImage = ({
 
   return (
     <div className="col-span-1 h-[533px]">
-      {/* Skeleton shown while cropping OR image still loading */}
       {shouldShowSkeleton && (
         <CardSkeleton
           className="w-full h-full absolute inset-0"
@@ -35,7 +34,6 @@ const MainProductImage = ({
         />
       )}
 
-      {/* Image container */}
       <div
         className={clsx(
           "relative w-full h-full transition-opacity duration-300",
@@ -45,9 +43,9 @@ const MainProductImage = ({
         <Image
           width={width}
           height={height}
-          alt={imageItem?.alt || "Gallery image"}
           src={finalImageSrc}
-          className="object-cover w-full h-full enhanced-image"
+          alt={imageItem?.alt || "Gallery image"}
+          className="object-cover w-full h-full rounded-xl ultra-sharp"
           onLoad={handleImageLoad}
           onError={handleImageError}
         />
