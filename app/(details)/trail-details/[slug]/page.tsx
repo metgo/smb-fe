@@ -40,17 +40,6 @@ const page = async ({ params }: PageProps) => {
                 items={trailsDetails?.groupTypesAndAccessibilities}
               />
             </div>
-            <div className="w-full flex justify-end">
-              <button
-                type="button"
-                className=" custom-cursor bg-dark rounded-xl ps-2.5 pe-4 py-2 flex items-center gap-1.25"
-              >
-                <IconImage icon="basket-white" />
-                <span className="text-white font-bold">
-                  {misc.addAllStationOnCart}
-                </span>
-              </button>
-            </div>
           </div>
           <TrailStations {...trailsDetails} />
         </section>

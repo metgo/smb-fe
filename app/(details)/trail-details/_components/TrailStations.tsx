@@ -1,63 +1,175 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo } from "react";
+import { IoIosCloseCircle } from "react-icons/io";
 import {
   DragDropContext,
   Droppable,
   Draggable,
   DropResult,
 } from "@hello-pangea/dnd";
-import { IconImage, MapNavButton, NextImage } from "@/components/ui";
+
+import { misc } from "@/constant/hebrew";
 import { stationCategory } from "@/lib/utils";
 import useTrailStationStore from "@/stores/trailStationStore";
+import { IconImage, MapNavButton, NextImage } from "@/components/ui";
+
+// Helper to flatten stations
+const flattenStations = (stations: TrailDetailsProps["stations"]) =>
+  stations?.map((station) => ({
+    _id: station._id,
+    name: station.name,
+    description: station.description,
+    image: station.images?.[0]?.image,
+    geoLocation: station.geoLocation,
+    primaryCategoryId: station.primaryCategoryId._id,
+  })) || [];
+
+// Station Card Component
+const StationCard = ({
+  station,
+  index,
+  onRemove,
+  canRemove,
+}: {
+  station: LocalstoreTrailStaionsProps;
+  index: number;
+  onRemove: (id: string) => void;
+  canRemove: boolean;
+}) => (
+  <Draggable draggableId={station._id} index={index}>
+    {(provided) => (
+      <div
+        ref={provided.innerRef}
+        {...provided.draggableProps}
+        {...provided.dragHandleProps}
+        className="group grid grid-cols-6 items-center gap-2.5 p-2.5 border-t border-primary bg-white"
+      >
+        {/* Image */}
+        <div className="col-span-2 h-[118px] relative">
+          <NextImage
+            width={140}
+            height={118}
+            alt={station.name}
+            imgSrc={station?.image}
+            className="rounded-md object-cover h-full"
+          />
+          <div className="h-7.5 w-7.5 rounded-full bg-white absolute top-1 right-1">
+            <Image
+              width={30}
+              height={30}
+              alt="category icon"
+              src={`/images/category/${stationCategory[station.primaryCategoryId]}`}
+              className="object-cover"
+            />
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="col-span-4">
+          <div className="flex items-start justify-between">
+            <h2 className="font-bold text-dark max-w-68">{station.name}</h2>
+            {canRemove && (
+              <IoIosCloseCircle
+                size={24}
+                className="hidden group-hover:block custom-cursor"
+                onClick={() => onRemove(station._id)}
+              />
+            )}
+          </div>
+          <div
+            className="font-normal text-theme text-sm line-clamp-2"
+            dangerouslySetInnerHTML={{ __html: station?.description }}
+          />
+          <div className="flex items-center justify-end gap-2 w-full mt-1.75">
+            <MapNavButton
+              lat={station?.geoLocation?.lat}
+              lng={station?.geoLocation?.long}
+              clssName="border border-theme rounded-lg"
+            />
+            <button
+              type="button"
+              className="bg-dark rounded-lg p-1 custom-cursor"
+            >
+              <IconImage icon="basket-white" />
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+  </Draggable>
+);
 
 const TrailStations = ({ stations, _id }: TrailDetailsProps) => {
-  const { setTrailStations, getStationsByTrailId } = useTrailStationStore();
-  const [tripStation, setTripStation] = useState<LocalstoreTrailStaionsProps[]>(
-    [],
-  );
-  const localStorageStations = getStationsByTrailId(_id);
-
-  useEffect(() => {
-    if (!localStorageStations || localStorageStations.length === 0) {
-      const flatStations =
-        stations?.map((station) => ({
-          _id: station._id,
-          name: station.name,
-          description: station.description,
-          image: station.images?.[0]?.image,
-          geoLocation: station.geoLocation,
-          primaryCategoryId: station.primaryCategoryId._id,
-        })) || [];
-
-      setTrailStations(_id, flatStations);
-      setTripStation(flatStations);
-    } else {
-      setTripStation(localStorageStations);
-    }
-  }, [
-    stations,
-    _id,
-    getStationsByTrailId,
+  const {
     setTrailStations,
-    localStorageStations,
-  ]);
+    getStationsByTrailId,
+    removeTrailStation,
+    getRemovedStationsByTrailId,
+    resetTrailStation,
+  } = useTrailStationStore();
+
+  const localStations = getStationsByTrailId(_id);
+  const removedStations = getRemovedStationsByTrailId(_id);
+
+  // Setup initial stations
+  useEffect(() => {
+    if (!localStations || localStations.length === 0) {
+      setTrailStations(_id, flattenStations(stations));
+    }
+  }, [stations, _id, localStations, setTrailStations]);
+
+  // Get visible stations (memoized)
+  const visibleStations = useMemo(
+    () =>
+      (localStations || []).filter((s) => !removedStations?.includes(s._id)),
+    [localStations, removedStations],
+  );
+
+  // Handlers
+  const handleRemove = (stationId: string) =>
+    removeTrailStation(_id, stationId);
+
+  const handleReset = () => {
+    resetTrailStation(_id); // clears
+    setTrailStations(_id, flattenStations(stations)); // restores
+  };
 
   const handleDragEnd = (result: DropResult) => {
     const { source, destination } = result;
     if (!destination) return;
 
-    const reordered = [...tripStation];
+    const reordered = [...visibleStations];
     const [removed] = reordered.splice(source.index, 1);
     reordered.splice(destination.index, 0, removed);
 
-    setTripStation(reordered);
     setTrailStations(_id, reordered);
   };
 
   return (
     <div>
+      {/* Header */}
+      <div className="w-full flex justify-between items-center mb-4">
+        <button
+          type="button"
+          onClick={handleReset}
+          className="border-2 border-black/60 rounded-xl px-4 pt-2 pb-1 custom-cursor font-bold"
+        >
+          {misc.reset}
+        </button>
+        <button
+          type="button"
+          className="custom-cursor bg-dark rounded-xl ps-2.5 pe-4 py-2 flex items-center gap-1.25"
+        >
+          <IconImage icon="basket-white" />
+          <span className="text-white font-bold">
+            {misc.addAllStationOnCart}
+          </span>
+        </button>
+      </div>
+
+      {/* Drag & Drop List */}
       <DragDropContext onDragEnd={handleDragEnd}>
         <Droppable droppableId="stations-list">
           {(provided) => (
@@ -66,71 +178,15 @@ const TrailStations = ({ stations, _id }: TrailDetailsProps) => {
               ref={provided.innerRef}
               {...provided.droppableProps}
             >
-              {tripStation?.map((station, index) => {
-                if (!station || !station._id) return null;
-
-                return (
-                  <Draggable
-                    key={station._id}
-                    draggableId={station._id}
-                    index={index}
-                  >
-                    {(provided) => (
-                      <div
-                        ref={provided.innerRef}
-                        {...provided.draggableProps}
-                        {...provided.dragHandleProps}
-                        className="grid grid-cols-6 items-center gap-2.5 p-2.5 border-t border-primary bg-white"
-                      >
-                        <div className="col-span-2 h-[118px] relative">
-                          <NextImage
-                            width={140}
-                            height={118}
-                            alt={station.name}
-                            imgSrc={station?.image}
-                            className="rounded-md object-cover h-full"
-                          />
-                          <div className="h-7.5 w-7.5 rounded-full bg-white absolute top-1 right-1">
-                            <Image
-                              width={30}
-                              height={30}
-                              alt="category icon"
-                              src={`/images/category/${stationCategory[station.primaryCategoryId]}`}
-                              className="object-cover"
-                            />
-                          </div>
-                        </div>
-
-                        <div className="col-span-4">
-                          <h2 className="font-bold text-dark">
-                            {station.name}
-                          </h2>
-                          <div
-                            className="font-normal text-theme text-sm line-clamp-2"
-                            dangerouslySetInnerHTML={{
-                              __html: station?.description,
-                            }}
-                          />
-                          <div className="flex items-center justify-end gap-2 w-full mt-1.75">
-                            <MapNavButton
-                              lat={station?.geoLocation?.lat}
-                              lng={station?.geoLocation?.long}
-                              clssName="border border-theme rounded-lg"
-                            />
-                            <button
-                              type="button"
-                              className="bg-dark rounded-lg p-1"
-                            >
-                              <IconImage icon="basket-white" />
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </Draggable>
-                );
-              })}
-
+              {visibleStations?.map((station, index) => (
+                <StationCard
+                  key={station._id}
+                  station={station}
+                  index={index}
+                  onRemove={handleRemove}
+                  canRemove={visibleStations.length > 2}
+                />
+              ))}
               {provided.placeholder}
             </div>
           )}
