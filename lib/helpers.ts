@@ -25,7 +25,7 @@ export const handleCropImage = async (
   } = imageItem?.subCoordinates || {};
 
   if (!xMin && !yMin && !xMax && !yMax) {
-    return { imageUrl: imageItem.image, alt: imageItem.alt };
+    return { imageUrl: imageItem?.image, alt: imageItem?.alt };
   }
 
   const query = `url=${encodedImageUrl}&xMin=${xMin}&yMin=${yMin}&xMax=${xMax}&yMax=${yMax}&aspect=${aspect}`;

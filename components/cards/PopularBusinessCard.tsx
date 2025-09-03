@@ -1,10 +1,12 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 import { IconImage, NextImage } from "../ui";
 import { searchText } from "@/constant/hebrew";
+import useGeneralStore from "@/stores/generalStore";
+import { startLoading } from "../wrappers/ProgressBar";
 
 const PopularBusinessCard = ({
   name,
@@ -14,8 +16,16 @@ const PopularBusinessCard = ({
   slug,
   navPath,
 }: GeneralProductCardProps) => {
+  const router = useRouter();
+  const { setIsSerachModalOpen } = useGeneralStore();
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const imageCount = images?.length;
+
+  function handleNavigation() {
+    startLoading();
+    router.push(`${navPath}/${slug}`);
+    setIsSerachModalOpen(false);
+  }
 
   return (
     <div style={{ width: 240, height: 240 }} className="relative group">
@@ -43,12 +53,12 @@ const PopularBusinessCard = ({
         </div>
       )}
 
-      <Link
-        href={`${navPath}/${slug}`}
+      <div
+        onClick={handleNavigation}
         className="text-white text-sm font-bold px-4 py-2.25 bg-dark/50 rounded-lg absolute left-4 top-4 custom-cursor hidden group-hover:block z-50"
       >
         {searchText.moreDetails}
-      </Link>
+      </div>
 
       <div className="w-full h-full relative">
         <div className="absolute bottom-0 right-0 h-1/2 w-full bg-gradient-to-t from-black/40 to-transparent rounded-b-xl" />
