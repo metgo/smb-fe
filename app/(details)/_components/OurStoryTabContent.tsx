@@ -1,5 +1,6 @@
 "use client";
 
+import clsx from "clsx";
 import Image from "next/image";
 
 import Map from "./Map.details";
@@ -8,7 +9,6 @@ import { daysMapping } from "@/lib/utils";
 import { IconImage } from "@/components/ui";
 import { CardSkeleton } from "@/components/skeletons";
 import { menuItems, misc } from "@/constant/hebrew";
-import clsx from "clsx";
 
 const ConstatUsInfo = ({ icon, text }: { icon: string; text: string }) => {
   if (!text) return;
@@ -43,7 +43,7 @@ const OurStoryTabContent = ({
   const aspectRatio = 438 / 360;
 
   const {
-    loading,
+    shouldShowSkeleton,
     isImageTransitionComplete,
     handleImageError,
     handleImageLoad,
@@ -53,8 +53,8 @@ const OurStoryTabContent = ({
   return (
     <div className="space-y-12.5">
       <div className="grid grid-cols-12 gap-10.5">
-        <div className="col-span-5 ">
-          {loading ? (
+        <div className="w-[638px] h-[360px] col-span-5 ">
+          {shouldShowSkeleton ? (
             <CardSkeleton
               className={"w-[638px] h-[360px] rounded-xl"}
               primaryCategoryId={primaryCategoryId}
@@ -70,7 +70,7 @@ const OurStoryTabContent = ({
                 width={838}
                 height={360}
                 className="rounded-xl  h-[360px] w-[838px] object-cover ultra-sharp"
-                alt={images[0]?.alt}
+                alt={images[0]?.alt || "Main image"}
                 src={finalImageSrc}
                 onLoad={handleImageLoad}
                 onError={handleImageError}

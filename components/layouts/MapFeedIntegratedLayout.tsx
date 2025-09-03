@@ -1,3 +1,4 @@
+import clsx from "clsx";
 import { scaleLayout } from "@/lib/helpers";
 import { useState, useEffect } from "react";
 
@@ -8,12 +9,15 @@ import {
 } from "@/constant/collageLayouts";
 import FeedCard from "../cards/FeedCard";
 import BusinessPinMap from "../maps/BusinessPinMap";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import TrailRouteMap from "../maps/TrailRouteMap";
 import { pathNames } from "@/lib/endpoints";
 
 const MapFeedIntegratedLayout = ({ data }: { data: FeedItemList }) => {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const activeCategoryKey = searchParams.get("categoryId");
+
   const feedItemCount = data.length;
   const [scale, setScale] = useState(1);
 
@@ -168,7 +172,12 @@ const MapFeedIntegratedLayout = ({ data }: { data: FeedItemList }) => {
   return (
     <div className="w-full h-full flex items-start ps-20 gap-2">
       {/* Business Cards Section */}
-      <div className="flex flex-col w-[70%] max-h-[95vh] overflow-y-auto hide-scrollbar py-10">
+      <div
+        className={clsx(
+          activeCategoryKey ? "pb-48" : "pb-30",
+          "flex flex-col w-[70%] max-h-[95vh] overflow-y-auto hide-scrollbar py-10",
+        )}
+      >
         {renderFullLayout()}
       </div>
 

@@ -8,11 +8,9 @@ import {
 } from "@/actions/searchActions";
 
 interface UseSearchFlowResult {
-  isOpen: boolean;
   isLoading: boolean;
   hasResults: boolean;
   hasMounted: boolean;
-  setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
   handleClearInputText: () => void;
   handleKeywordSelect: (word: string) => void;
   recommendedBusinesses: GeneralProductCardProps[];
@@ -22,8 +20,7 @@ interface UseSearchFlowResult {
 }
 
 export const useSearchFlow = (): UseSearchFlowResult => {
-  const { setZIndex } = useGeneralStore();
-  const [isOpen, setIsOpen] = useState(false);
+  const { setZIndex, isSearchModalOpen } = useGeneralStore();
   const [isLoading, setIsLoading] = useState(false);
 
   const [hasMounted, setHasMounted] = useState(false);
@@ -38,7 +35,7 @@ export const useSearchFlow = (): UseSearchFlowResult => {
   useEffect(() => setHasMounted(true), []);
 
   useEffect(() => {
-    if (!isOpen) {
+    if (!isSearchModalOpen) {
       setZIndex("20");
       setSearchItems({});
       setSearchKeyword("");
@@ -51,7 +48,7 @@ export const useSearchFlow = (): UseSearchFlowResult => {
     };
     setZIndex("10");
     fetchRecommendedBusiness();
-  }, [isOpen]);
+  }, [isSearchModalOpen]);
 
   useEffect(() => {
     if (!debounceSearchKeyword) return;
@@ -93,8 +90,6 @@ export const useSearchFlow = (): UseSearchFlowResult => {
     hasResults,
     isLoading,
     hasMounted,
-    isOpen,
-    setIsOpen,
     handleClearInputText,
     handleKeywordSelect,
     recommendedBusinesses,
