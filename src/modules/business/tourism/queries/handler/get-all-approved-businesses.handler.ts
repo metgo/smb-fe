@@ -132,7 +132,7 @@ implements IQueryHandler<GetAllApprovedBusinessesQuery> {
       }
 
       const select
-        = '_id name description geoLocation images logo primaryCategoryId address slug';
+        = '_id name description geoLocation images logo primaryCategoryId address slug serviceType';
 
       const allBusiness = await queryhandler<Business>(this.BusinessModel, {
         findQuery,
