@@ -170,9 +170,9 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
               <div className="flex items-center gap-2">
                 <IconImage icon="location" width={20} height={20} />
                 <span className="md:text-sm">
-                  {feedItem?.address?.location
-                    ? feedItem?.address?.location
-                    : "Tel Aviv"}
+                  {feedItem?.address?.city
+                    ? feedItem?.address?.city
+                    : "תל אביב"}
                 </span>
               </div>
               <div className="hidden group-hover:block">
