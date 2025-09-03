@@ -15,10 +15,18 @@ export const useImageCrop = (imageItem: ImageItem, aspectRatio: number) => {
 
   const cropImage = async () => {
     setLoading(true);
-    const result = await handleCropImage(imageItem, aspectRatio);
-    setCroppedImage(result);
-    setLoading(false);
+    try {
+      const result = await handleCropImage(imageItem, aspectRatio);
+      setCroppedImage(result);
+    } catch (error) {
+      setImageError(true);
+      setCroppedImage(null);
+      console.log("-----error", error);
+    } finally {
+      setLoading(false);
+    }
   };
+
   // Reset states when imageItem changes
   useEffect(() => {
     cropImage();
@@ -26,16 +34,15 @@ export const useImageCrop = (imageItem: ImageItem, aspectRatio: number) => {
     setIsImageTransitionComplete(false);
   }, [imageItem]);
 
-  // Determine when to show skeleton
-
   const handleImageLoad = () => {
     setImageError(false);
-    // Small delay to ensure image is fully rendered
+    setLoading(false);
     setTimeout(() => setIsImageTransitionComplete(true), 50);
   };
 
   const handleImageError = () => {
     setImageError(true);
+    setLoading(false);
     setIsImageTransitionComplete(true);
   };
 

@@ -12,8 +12,8 @@ interface GeneralStoreState {
   isOnSection2: boolean;
   setIsOnSection2: (isOnSection2: boolean) => void;
   // not used yet
-  navigationPath: string;
-  setNevigationPath: (path: string) => void;
+  isSearchModalOpen: boolean;
+  setIsSerachModalOpen: (isOpen: boolean) => void;
 }
 
 const useGeneralStore = create<GeneralStoreState>((set) => ({
@@ -25,8 +25,8 @@ const useGeneralStore = create<GeneralStoreState>((set) => ({
   setActiveFilterTab: (activeFilterTab) => set({ activeFilterTab }),
   clickedBusinessId: "",
   setClickedBusinessId: (clickedBusinessId) => set({ clickedBusinessId }),
-  navigationPath: "",
-  setNevigationPath: (navigationPath) => set({ navigationPath }),
+  isSearchModalOpen: false,
+  setIsSerachModalOpen: (isOpen) => set({ isSearchModalOpen: isOpen }),
   isOnSection2: false,
   setIsOnSection2: (isOnSection2) => set({ isOnSection2 }),
 }));
