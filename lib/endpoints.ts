@@ -45,6 +45,8 @@ export const pathNames = {
   trailDetails: "/trail-details",
   checkout: "/check-out",
   contactUs: "/contact-us",
+  blogArticles: "/blogs-articles",
+  blogArticleDetails: "/blog-article-details",
   joinBusiness:
     SITE_ENVIRONMENT === "prod"
       ? "https://console.metgo.app"
