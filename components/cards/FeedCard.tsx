@@ -2,9 +2,11 @@
 
 import clsx from "clsx";
 import Image from "next/image";
-import { useEffect, useState, useMemo } from "react";
+import Link from "next/link";
+import { IoIosArrowBack } from "react-icons/io";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion, useInView, useAnimation } from "framer-motion";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState, useMemo, useCallback } from "react";
 
 import { pathNames } from "@/lib/endpoints";
 import { navigationPaths } from "@/lib/utils";
@@ -19,199 +21,341 @@ import {
 import { googleSendGtmEvent, triggerName } from "@/lib/googleEventsConfig";
 import { CardSkeleton } from "../skeletons";
 import { staticImages } from "@/constant/staticImages";
+import { useCommonHook } from "@/hooks";
+import { blogLabels } from "@/constant/hebrew";
 
-// Main Components
+// Animation variants for better performance
+const cardVariants = {
+  hidden: { y: 50, opacity: 0 },
+  visible: { y: 0, opacity: 1 },
+};
+
+const ANIMATION_CONFIG = {
+  duration: 0.5,
+  ease: "easeOut" as const,
+};
+
+const INTERSECTION_CONFIG = {
+  threshold: 0.1,
+  rootMargin: "50px",
+  enabled: true,
+};
+
+const MOTION_CONFIG = {
+  once: true,
+  margin: "0px 0px -50px 0px",
+};
+
+interface FeedCardProps {
+  height: number;
+  width: number;
+  feedItem: any; // Replace with proper type
+}
+
 const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
   const router = useRouter();
-  const pathname = usePathname();
   const searchParams = useSearchParams();
   const [activeImageIndex, setActiveImageIndex] = useState(0);
-  const isEventPage = pathname === pathNames.events;
+  const [hasMounted, setHasMounted] = useState(false);
 
-  const aspectRatio = width / height;
-
-  const { categoryId = "", subCategoryId = "" } = Object.fromEntries(
-    searchParams.entries(),
-  );
-  const activeCategoryKey = searchParams.get("categoryId");
+  const { isCurrentPage } = useCommonHook();
   const { activeFilterTab, setActiveFilterTab, setClickedBusinessId } =
     useGeneralStore();
 
-  const images = useMemo(
-    () => (isEventPage ? [feedItem.cover] : (feedItem?.images ?? [])),
-    [isEventPage, feedItem.cover, feedItem?.images],
+  // Memoized page type checks
+  const pageTypes = useMemo(
+    () => ({
+      isEventPage: isCurrentPage(pathNames.events),
+      isBlogArticlePage: isCurrentPage(pathNames.blogArticles),
+      isTrailPage: isCurrentPage(pathNames.trails),
+    }),
+    [isCurrentPage],
   );
 
-  const deps = useMemo(
-    () => (isEventPage ? [feedItem] : [categoryId, subCategoryId]),
-    [isEventPage, feedItem, categoryId, subCategoryId],
+  // Memoized search params
+  const urlParams = useMemo(() => {
+    const params = Object.fromEntries(searchParams.entries());
+    return {
+      categoryId: params.categoryId || "",
+      subCategoryId: params.subCategoryId || "",
+      activeCategoryKey: searchParams.get("categoryId"),
+    };
+  }, [searchParams]);
+
+  // Optimized image and dependency arrays
+  const { images, deps } = useMemo(
+    () => ({
+      images: pageTypes.isEventPage
+        ? [feedItem.cover]
+        : (feedItem?.images ?? []),
+      deps: pageTypes.isEventPage
+        ? [feedItem]
+        : [urlParams.categoryId, urlParams.subCategoryId],
+    }),
+    [
+      pageTypes.isEventPage,
+      feedItem,
+      urlParams.categoryId,
+      urlParams.subCategoryId,
+    ],
   );
 
+  // Image loading hook
   const { isLoading, updatedImageList, inView, containerRef } = useImagePresent(
-    aspectRatio,
+    width / height, // aspectRatio
     images,
     activeImageIndex,
     deps,
-    {
-      threshold: 0.1, // Trigger when 10% visible
-      rootMargin: "50px", // Start loading 50px before entering viewport
-      enabled: true, // Enable/disable lazy loading
-    },
+    INTERSECTION_CONFIG,
   );
 
-  const [hasMounted, setHasMounted] = useState(false);
-
-  // Framer Motion setup
+  // Animation controls
   const animationControls = useAnimation();
-  const isCardInView = useInView(containerRef, {
-    once: true,
-    margin: "0px 0px -50px 0px",
-  });
+  const isCardInView = useInView(containerRef, MOTION_CONFIG as any);
 
+  // Mount effect
   useEffect(() => {
     setHasMounted(true);
   }, []);
 
+  // Animation effect
   useEffect(() => {
     if (isCardInView) {
-      animationControls.start({ y: 0, opacity: 1 });
+      animationControls.start("visible");
     }
   }, [isCardInView, animationControls]);
 
-  const primaryCategoryId = getPrimaryCategoryId(
-    pathname,
-    activeCategoryKey || "",
-    feedItem.primaryCategoryId!,
+  // Memoized computed values
+  const computedValues = useMemo(
+    () => ({
+      primaryCategoryId: getPrimaryCategoryId(
+        window.location.pathname,
+        urlParams.activeCategoryKey || "",
+        feedItem.primaryCategoryId!,
+      ),
+      currentImage: updatedImageList?.[activeImageIndex],
+      shouldShowSkeleton: !hasMounted || !inView || isLoading,
+      locationText: feedItem?.address?.location || "Tel Aviv",
+    }),
+    [
+      urlParams.activeCategoryKey,
+      feedItem.primaryCategoryId,
+      feedItem?.address?.location,
+      updatedImageList,
+      activeImageIndex,
+      hasMounted,
+      inView,
+      isLoading,
+    ],
   );
 
-  const currentImage = updatedImageList?.[activeImageIndex];
-  const shouldShowSkeleton = !hasMounted || !inView || isLoading;
+  // Event handlers
+  const handleMapIconClick = useCallback(
+    (e: React.MouseEvent, id: string) => {
+      e.stopPropagation();
+      e.preventDefault();
+      setClickedBusinessId(id);
+      setActiveFilterTab("map");
+    },
+    [setClickedBusinessId, setActiveFilterTab],
+  );
 
-  function handleMapIconClick(id: string) {
-    setClickedBusinessId(id);
-    setActiveFilterTab("map");
-  }
+  const handleTrailMouseActions = useCallback(
+    (action: "enter" | "leave") => {
+      if (activeFilterTab !== "integrated" || !pageTypes.isTrailPage) return;
 
-  const handleMouseEnter = () => {
-    if (activeFilterTab === "integrated" && pathname === pathNames.trails) {
       const params = new URLSearchParams(searchParams.toString());
-      params.set("slug", feedItem.slug);
-      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-    }
-  };
+      if (action === "enter") {
+        params.set("slug", feedItem.slug);
+      } else {
+        params.delete("slug");
+      }
+      router.replace(`${window.location.pathname}?${params.toString()}`, {
+        scroll: false,
+      });
+    },
+    [
+      activeFilterTab,
+      pageTypes.isTrailPage,
+      searchParams,
+      feedItem.slug,
+      router,
+    ],
+  );
 
-  const handleMouseLeave = () => {
-    if (activeFilterTab === "integrated" && pathname === pathNames.trails) {
-      const params = new URLSearchParams(searchParams.toString());
-      params.delete("slug");
-      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-    }
-  };
-
-  function handleNavigation() {
+  const handleNavigation = useCallback(() => {
     startLoading();
     googleSendGtmEvent(triggerName.navigateToBusiness, {
       bussinessId: feedItem._id,
       bussinessName: feedItem.name,
     });
-    router.push(`${navigationPaths[pathname]}/${feedItem.slug}`);
+    router.push(
+      `${navigationPaths[window.location.pathname]}/${feedItem.slug}`,
+    );
+  }, [feedItem._id, feedItem.name, feedItem.slug, router]);
+
+  // Render skeleton
+  if (computedValues.shouldShowSkeleton) {
+    return (
+      <motion.div
+        ref={containerRef}
+        style={{ width: `${width}px`, height: `${height}px` }}
+        initial="hidden"
+        animate="visible"
+        variants={cardVariants}
+        transition={ANIMATION_CONFIG}
+      >
+        <CardSkeleton
+          width={width}
+          height={height}
+          primaryCategoryId={computedValues.primaryCategoryId}
+        />
+      </motion.div>
+    );
   }
 
   return (
     <motion.div
       ref={containerRef}
       style={{ width: `${width}px`, height: `${height}px` }}
-      initial={{ y: 50, opacity: 1 }}
+      initial="hidden"
       animate={animationControls}
-      transition={{ duration: 0.5, ease: "easeOut" }}
+      variants={cardVariants}
+      transition={ANIMATION_CONFIG}
     >
-      {shouldShowSkeleton ? (
-        <CardSkeleton
-          width={width}
-          height={height}
-          primaryCategoryId={primaryCategoryId}
+      <div
+        onMouseEnter={() => handleTrailMouseActions("enter")}
+        onMouseLeave={() => handleTrailMouseActions("leave")}
+        {...(!pageTypes.isBlogArticlePage && { onClick: handleNavigation })}
+        className={clsx(
+          !pageTypes.isBlogArticlePage && "custom-cursor",
+          "w-full h-full relative group rounded-xl overflow-hidden",
+        )}
+      >
+        {/* Main Image */}
+        <Image
+          src={
+            computedValues.currentImage?.imageUrl || staticImages.placeholder
+          }
+          alt={computedValues.currentImage?.alt || ""}
+          fill
+          unoptimized
+          quality={100}
+          sizes={`${width}px`}
+          className="object-cover transition-opacity duration-400 ultra-sharp opacity-100"
+          priority={false}
         />
-      ) : (
-        <div
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
-          onClick={handleNavigation}
-          className="w-full h-full relative group rounded-xl overflow-hidden custom-cursor"
-        >
-          {/* Main Image */}
-          <Image
-            src={
-              currentImage?.imageUrl
-                ? currentImage?.imageUrl
-                : staticImages.placeholder
-            }
-            alt={currentImage?.alt || ""}
-            fill
-            unoptimized
-            quality={100}
-            sizes={`${width}px`}
-            className={clsx(
-              "object-cover transition-opacity duration-400 ultra-sharp",
-              shouldShowSkeleton ? "opacity-0" : "opacity-100",
-            )}
-            priority={false}
+
+        {/* Content Overlay */}
+        <FeedCardContent
+          feedItem={feedItem}
+          pageTypes={pageTypes}
+          images={images}
+          activeImageIndex={activeImageIndex}
+          setActiveImageIndex={setActiveImageIndex}
+          locationText={computedValues.locationText}
+        />
+
+        {/* Action Icons */}
+        {!pageTypes.isBlogArticlePage && (
+          <FeedCardActions
+            feedItem={feedItem}
+            pageTypes={pageTypes}
+            onMapIconClick={handleMapIconClick}
           />
-
-          {/* Content Overlay */}
-          <div className="relative w-full h-full">
-            {/* Gradient Overlay (only bottom 50%) */}
-            <div className="absolute bottom-0 right-0 h-1/2 w-full bg-gradient-to-t from-black/40 to-transparent rounded-b-xl" />
-
-            {/* Text Content */}
-            <div className="absolute bottom-0 right-0 p-4 text-white font-bold w-full">
-              <h3 className="lg:text-[1rem] 3xl:text-[1.5rem] line-clamp-1">
-                {feedItem?.name}
-              </h3>
-              <div className="flex items-center gap-2">
-                <IconImage icon="location" width={20} height={20} />
-                <span className="md:text-sm">
-                  {feedItem?.address?.location
-                    ? feedItem?.address?.location
-                    : "Tel Aviv"}
-                </span>
-              </div>
-              <div className="hidden group-hover:block">
-                <div
-                  dangerouslySetInnerHTML={{
-                    __html: removeInlineStylesFromHTML(feedItem?.description),
-                  }}
-                  className="line-clamp-2 font-bold text-[12px] text-white mt-1"
-                />
-                {!isEventPage && images.length > 1 && (
-                  <ImageCarouselControls
-                    totalImages={feedItem?.images?.length}
-                    activeIndex={activeImageIndex}
-                    setActiveImageIndex={setActiveImageIndex}
-                  />
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Action Icons */}
-          <div className="hidden absolute top-4 right-4 group-hover:flex items-center gap-2.5">
-            <IconImage width={30} height={30} icon="circular-heart" />
-            {!isEventPage && pathname !== "/trails" && (
-              <div
-                onClick={(e) => {
-                  e.stopPropagation();
-                  e.preventDefault();
-                  handleMapIconClick(feedItem._id);
-                }}
-              >
-                <IconImage width={30} height={30} icon="circular-map-fold" />
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+        )}
+      </div>
     </motion.div>
   );
 };
+
+// Extracted sub-components for better organization
+const FeedCardContent = ({
+  feedItem,
+  pageTypes,
+  images,
+  activeImageIndex,
+  setActiveImageIndex,
+  locationText,
+}: {
+  feedItem: any;
+  pageTypes: {
+    isEventPage: boolean;
+    isBlogArticlePage: boolean;
+    isTrailPage: boolean;
+  };
+  images: any[];
+  activeImageIndex: number;
+  setActiveImageIndex: React.Dispatch<React.SetStateAction<number>>;
+
+  locationText: string;
+}) => (
+  <div className="relative w-full h-full">
+    {/* Gradient Overlay */}
+    <div className="absolute bottom-0 right-0 h-1/2 w-full bg-gradient-to-t from-black/40 to-transparent rounded-b-xl" />
+
+    {/* Text Content */}
+    <div className="absolute bottom-0 right-0 p-4 text-white font-bold w-full">
+      <h3 className="lg:text-[1rem] 3xl:text-[1.5rem] line-clamp-1">
+        {feedItem?.name}
+      </h3>
+
+      <div className="flex items-center gap-2">
+        <IconImage icon="location" width={20} height={20} />
+        <span className="md:text-sm">{locationText}</span>
+      </div>
+
+      <div className="hidden group-hover:block">
+        <div
+          dangerouslySetInnerHTML={{
+            __html: removeInlineStylesFromHTML(feedItem?.description),
+          }}
+          className="line-clamp-2 font-bold text-[12px] text-white mt-1"
+        />
+
+        {!pageTypes.isEventPage && images.length > 1 && (
+          <ImageCarouselControls
+            totalImages={feedItem?.images?.length}
+            activeIndex={activeImageIndex}
+            setActiveImageIndex={setActiveImageIndex}
+          />
+        )}
+
+        {pageTypes.isBlogArticlePage && (
+          <Link
+            href={`${pathNames.blogArticleDetails}/${feedItem.slug}`}
+            className="py-2.5 px-4 rounded-xl custom-cursor bg-black/40 mt-4 flex items-center gap-2 w-max"
+          >
+            <span>{blogLabels.toTheFullBlog}</span>
+            <IoIosArrowBack size={20} />
+          </Link>
+        )}
+      </div>
+    </div>
+  </div>
+);
+
+const FeedCardActions = ({
+  feedItem,
+  pageTypes,
+  onMapIconClick,
+}: {
+  feedItem: any;
+  pageTypes: {
+    isEventPage: boolean;
+    isBlogArticlePage: boolean;
+    isTrailPage: boolean;
+  };
+  onMapIconClick: (e: React.MouseEvent, id: string) => void;
+}) => (
+  <div className="hidden absolute top-4 right-4 group-hover:flex items-center gap-2.5">
+    <IconImage width={30} height={30} icon="circular-heart" />
+    {!pageTypes.isEventPage && !pageTypes.isTrailPage && (
+      <div onClick={(e) => onMapIconClick(e, feedItem._id)}>
+        <IconImage width={30} height={30} icon="circular-map-fold" />
+      </div>
+    )}
+  </div>
+);
 
 export default FeedCard;

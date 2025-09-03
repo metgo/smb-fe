@@ -242,3 +242,9 @@ export const cartLabels = {
   toViewMyShoppingCart: "לצפייה בעגלת הקניות שלי",
   youMayAlsoLike: "מוצרים שחשבנו שתאהבו גם",
 };
+
+export const blogLabels = {
+  theFlourishingBlog: "הבלוג הפורח",
+  desc: "רשמים, מחשבות ודברים טובים מהאיזור",
+  toTheFullBlog: "לבלוג המלא",
+};

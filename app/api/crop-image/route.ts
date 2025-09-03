@@ -126,7 +126,7 @@ export async function GET(request: Request) {
         resolveWithObject: false, // Skip metadata object for speed
       });
 
-    return new NextResponse(croppedImage, {
+    return new NextResponse(new Uint8Array(croppedImage), {
       headers: {
         "Content-Type": "image/webp",
         "Cache-Control": "public, max-age=31536000, immutable",

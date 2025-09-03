@@ -56,6 +56,7 @@ const navigationKey = {
   events: pathNames.events,
   trails: pathNames.trails,
   businesses: pathNames.businesses,
+  blogArticles: pathNames.blogArticles,
 };
 
 export const businessMarkers = {
@@ -224,6 +225,7 @@ export const navigationPaths = {
   [navigationKey.businesses]: pathNames.businessDetails,
   [navigationKey.events]: pathNames.eventDetails,
   [navigationKey.trails]: pathNames.trailDetails,
+  [navigationKey.blogArticles]: pathNames.blogArticleDetails,
 };
 
 export const navItems = [
@@ -253,7 +255,7 @@ export const navItems = [
       {
         id: 4,
         label: menuItems.blogArticle,
-        href: "#",
+        href: pathNames.blogArticles,
         leftIcon: "",
         rightIcon: "",
       },
