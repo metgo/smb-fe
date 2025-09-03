@@ -46,12 +46,6 @@ const MOTION_CONFIG = {
   margin: "0px 0px -50px 0px",
 };
 
-interface FeedCardProps {
-  height: number;
-  width: number;
-  feedItem: any; // Replace with proper type
-}
-
 const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -135,7 +129,7 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
       ),
       currentImage: updatedImageList?.[activeImageIndex],
       shouldShowSkeleton: !hasMounted || !inView || isLoading,
-      locationText: feedItem?.address?.location || "Tel Aviv",
+      locationText: feedItem?.address?.city || "תל אביב",
     }),
     [
       urlParams.activeCategoryKey,
