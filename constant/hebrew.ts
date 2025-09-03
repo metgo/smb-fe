@@ -14,6 +14,7 @@ export const misc = {
   start: "התחלה",
   end: "סיום",
   close: "תודה",
+  reset: "אִתחוּל",
   pleaseWaitLoading: "אנא המתן. טוען...",
   addAllStationOnCart: "הוספת כל התחנות לסל",
   toAllTracks: "לכל המסלולים",

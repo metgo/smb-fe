@@ -25,7 +25,7 @@ export const useGoogleRouteDetailsMap = (
   locations: LocationListProps,
   routeStation: LocalstoreTrailStaionsProps[],
 ) => {
-  const mapRef = useRef(null);
+  const mapRef = useRef<HTMLDivElement | null>(null);
   const markersRef = useRef<google.maps.Marker[]>([]);
   const polylinesRef = useRef<google.maps.Polyline[]>([]);
   const infoWindowRef = useRef<google.maps.InfoWindow | null>(null);
@@ -37,7 +37,7 @@ export const useGoogleRouteDetailsMap = (
 
   useGoogleMapInit({ mapRef, setMap, infoWindowRef, activeMarkerRef });
 
-  // Add markers
+  // --- Add markers ---
   useEffect(() => {
     if (!map || !locations?.length) return;
 
@@ -47,28 +47,24 @@ export const useGoogleRouteDetailsMap = (
     const bounds = new google.maps.LatLngBounds();
 
     locations.forEach((location) => {
-      const coords = location?.geoLocation;
+      const coords = location.geoLocation;
       if (!coords) return;
 
       const position = {
         lat: parseFloat(coords.lat),
         lng: parseFloat(coords.long),
       };
-
       const isInRoute = routeStation?.some((s) => s?._id === location?._id);
-      const iconUrl = getIconUrl(location.primaryCategoryId, isInRoute);
-      const iconSize = getIconSize(isInRoute);
 
       const marker = new google.maps.Marker({
         position,
         map,
         icon: {
-          url: iconUrl,
-          scaledSize: iconSize,
+          url: getIconUrl(location.primaryCategoryId, isInRoute),
+          scaledSize: getIconSize(isInRoute),
         },
       });
 
-      // Store custom data on marker
       (marker as any).stationId = location._id;
       (marker as any).categoryId = location.primaryCategoryId;
       (marker as any).isInRoute = isInRoute;
@@ -77,42 +73,23 @@ export const useGoogleRouteDetailsMap = (
         const isSameMarker = activeMarkerRef.current === marker;
         const isOpen = infoWindowRef.current?.get("map") != null;
 
-        // If the same marker is clicked again and the info window is open → close it
+        // Toggle info window
         if (isSameMarker && isOpen) {
           infoWindowRef.current?.close();
           activeMarkerRef.current = null;
 
-          // Reset the marker icon to its original state
-          const isStillInRoute = routeStation?.some(
-            (s) => s._id === location._id,
+          const stillInRoute = routeStation?.some(
+            (s) => s?._id === location?._id,
           );
           marker.setIcon({
-            url: getIconUrl(location.primaryCategoryId, isStillInRoute),
-            scaledSize: getIconSize(isStillInRoute),
+            url: getIconUrl(location.primaryCategoryId, stillInRoute),
+            scaledSize: getIconSize(stillInRoute),
           });
-
-          // Reopen Start/End info windows
-          const startMarker = markersRef.current.find(
-            (m) => (m as any).stationId === routeStation[0]?._id,
-          );
-          const endMarker = markersRef.current.find(
-            (m) =>
-              (m as any).stationId ===
-              routeStation[routeStation.length - 1]?._id,
-          );
-
-          if (startInfoWindowRef.current && startMarker) {
-            startInfoWindowRef.current.open(map, startMarker);
-          }
-
-          if (endInfoWindowRef.current && endMarker) {
-            endInfoWindowRef.current.open(map, endMarker);
-          }
-
+          openStartEndInfoWindows();
           return;
         }
 
-        // Otherwise, proceed as normal
+        // Close previous info windows
         startInfoWindowRef.current?.close();
         endInfoWindowRef.current?.close();
 
@@ -128,21 +105,18 @@ export const useGoogleRouteDetailsMap = (
           />,
         );
 
-        // Reset all other marker icons
+        // Reset all other markers
         markersRef.current.forEach((m) => {
           if (m !== marker) {
             const markerStationId = (m as any).stationId;
-            const markerCategoryId = (m as any).categoryId;
-            const isStillInRoute = routeStation?.some(
+            const stillInRoute = routeStation?.some(
               (s) => s._id === markerStationId,
             );
-
             m.setIcon({
-              url: getIconUrl(markerCategoryId, isStillInRoute),
-              scaledSize: getIconSize(isStillInRoute),
+              url: getIconUrl((m as any).categoryId, stillInRoute),
+              scaledSize: getIconSize(stillInRoute),
             });
-
-            (m as any).isInRoute = isStillInRoute;
+            (m as any).isInRoute = stillInRoute;
           }
         });
 
@@ -151,66 +125,30 @@ export const useGoogleRouteDetailsMap = (
           url: getIconUrl(location.primaryCategoryId, true),
           scaledSize: getIconSize(true, true),
         });
-
         activeMarkerRef.current = marker;
 
-        if (!infoWindowRef.current) {
-          infoWindowRef.current = new google.maps.InfoWindow({
-            content: container,
-          });
-        }
-
+        if (!infoWindowRef.current)
+          infoWindowRef.current = new google.maps.InfoWindow();
         infoWindowRef.current.setContent(container);
         infoWindowRef.current.open(map, marker);
 
-        // Check for when info window closes
-        const checkInfoWindowClosed = () => {
-          if (
-            infoWindowRef.current &&
-            (infoWindowRef.current as any).getMap() === null
-          ) {
-            setTimeout(() => {
-              const startMarker = markersRef.current.find(
-                (m) => (m as any).stationId === routeStation[0]?._id,
-              );
-              const endMarker = markersRef.current.find(
-                (m) =>
-                  (m as any).stationId ===
-                  routeStation[routeStation.length - 1]?._id,
-              );
-
-              if (startInfoWindowRef.current && startMarker) {
-                startInfoWindowRef.current.open(map, startMarker);
-              }
-
-              if (endInfoWindowRef.current && endMarker) {
-                endInfoWindowRef.current.open(map, endMarker);
-              }
-            }, 50);
-            return;
-          }
-
-          setTimeout(checkInfoWindowClosed, 100);
-        };
-
-        setTimeout(checkInfoWindowClosed, 100);
+        checkInfoWindowClosed();
       });
 
       markersRef.current.push(marker);
       bounds.extend(position);
     });
 
-    const screenWidth = window.innerWidth;
-    const padding = screenWidth < 640 ? 30 : 60;
-
+    const padding = window.innerWidth < 640 ? 30 : 60;
     map.fitBounds(bounds, {
       top: padding,
       bottom: padding,
       left: padding,
       right: padding,
     });
-  }, [map, locations]);
+  }, [map, locations, routeStation]);
 
+  // --- Modal close ---
   useEffect(() => {
     if (isModalClose && infoWindowRef.current) {
       infoWindowRef.current.close();
@@ -219,117 +157,106 @@ export const useGoogleRouteDetailsMap = (
     }
   }, [isModalClose]);
 
-  // Draw route
+  // --- Draw route ---
   useEffect(() => {
     if (!map || !routeStation || !window.google || !locations?.length) return;
-
     const controller = new AbortController();
     const signal = controller.signal;
 
     const drawRoute = async () => {
-      // Clear old polylines
       polylinesRef.current.forEach((line) => line.setMap(null));
       polylinesRef.current = [];
-
-      // Close previous Start and End InfoWindows
       startInfoWindowRef.current?.close();
       endInfoWindowRef.current?.close();
       startInfoWindowRef.current = null;
       endInfoWindowRef.current = null;
 
-      if (routeStation?.length < 2) return;
+      if (routeStation.length < 2) return;
 
       const bounds = new google.maps.LatLngBounds();
 
-      for (let i = 0; i < routeStation?.length; i++) {
-        const station = routeStation?.[i];
+      for (let i = 0; i < routeStation.length; i++) {
+        const station = routeStation[i];
         const pos = {
           lat: parseFloat(station.geoLocation.lat),
           lng: parseFloat(station.geoLocation.long),
         };
-
         bounds.extend(pos);
 
-        // Show "Start" and "End" info windows using index
-        if (i === 0 || i === routeStation?.length - 1) {
+        // Show Start/End info windows only once
+        if (i === 0 || i === routeStation.length - 1) {
           const label = i === 0 ? misc.start : misc.end;
-          const infoDiv = `
-            <div style="
-              background-color: black;
-              color: white;
-              padding: 8px 12px;
-              border-radius: 6px;
-              font-size: 14px;
-              font-family: 'Ploni Bold';
-            ">${label}</div>
-          `;
-
-          const infoWindow = new google.maps.InfoWindow({
-            content: infoDiv,
-          });
-
           const marker = markersRef.current.find(
-            (m: any) => m.stationId === station._id,
+            (m) => (m as any).stationId === station._id,
           );
           if (marker) {
-            // Only open if no CustomInfoWindow is currently active
-            if (
-              !activeMarkerRef.current ||
-              !(infoWindowRef.current as any).getMap()
-            ) {
-              infoWindow.open(map, marker);
-            }
-
+            const infoWindow = new google.maps.InfoWindow({
+              content: `<div style="background:black;color:white;padding:8px 12px;border-radius:6px;font-size:14px;font-family:'Ploni Bold';">${label}</div>`,
+            });
+            infoWindow.open(map, marker);
             if (i === 0) startInfoWindowRef.current = infoWindow;
             if (i === routeStation.length - 1)
               endInfoWindowRef.current = infoWindow;
           }
         }
 
+        // Draw segments
         if (i < routeStation.length - 1) {
           const next = routeStation[i + 1]!;
           const pathPoints = await fetchSegmentRoute(
-            station.geoLocation,
-            next.geoLocation,
+            station?.geoLocation,
+            next?.geoLocation,
             signal,
           );
+          if (!pathPoints.length) continue;
 
-          if (pathPoints.length) {
-            // Get hex colors from current station and next station
-            const currentStationColor =
-              categoryColors[routeStation[i].primaryCategoryId] || "#1976D2"; // fallback to blue
-            const nextStationColor =
-              categoryColors[routeStation[i + 1].primaryCategoryId] ||
-              "#4CAF50"; // fallback to green
+          const polyline = new google.maps.Polyline({
+            path: pathPoints,
+            geodesic: true,
+            strokeColor: await createGradientRoute(
+              categoryColors[station.primaryCategoryId] || "#1976D2",
+              categoryColors[next.primaryCategoryId] || "#4CAF50",
+            ),
+            strokeOpacity: 1.0,
+            strokeWeight: 6,
+          });
 
-            const polyline = new google.maps.Polyline({
-              path: pathPoints,
-              geodesic: true,
-              strokeColor: await createGradientRoute(
-                currentStationColor,
-                nextStationColor,
-              ),
-              strokeOpacity: 1.0,
-              strokeWeight: 6,
-            });
-
-            polyline.setMap(map);
-            polylinesRef.current.push(polyline);
-          }
+          polyline.setMap(map);
+          polylinesRef.current.push(polyline);
         }
       }
 
-      map.fitBounds(bounds, {
-        top: 60,
-        bottom: 60,
-        left: 60,
-        right: 60,
-      });
+      map.fitBounds(bounds, { top: 60, bottom: 60, left: 60, right: 60 });
     };
 
     drawRoute();
     return () => controller.abort();
   }, [map, routeStation, locations]);
+
+  // --- Helpers ---
+  const openStartEndInfoWindows = () => {
+    const startMarker = markersRef.current.find(
+      (m) => (m as any).stationId === routeStation[0]?._id,
+    );
+    const endMarker = markersRef.current.find(
+      (m) =>
+        (m as any).stationId === routeStation[routeStation.length - 1]?._id,
+    );
+
+    if (startInfoWindowRef.current && startMarker)
+      startInfoWindowRef.current.open(map, startMarker);
+    if (endInfoWindowRef.current && endMarker)
+      endInfoWindowRef.current.open(map, endMarker);
+  };
+
+  const checkInfoWindowClosed = () => {
+    const interval = setInterval(() => {
+      if (!infoWindowRef.current || infoWindowRef.current.get("map") != null)
+        return;
+      openStartEndInfoWindows();
+      clearInterval(interval);
+    }, 100);
+  };
 
   return { mapRef };
 };
