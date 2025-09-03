@@ -43,7 +43,7 @@ const OurStoryTabContent = ({
   const aspectRatio = 438 / 360;
 
   const {
-    shouldShowSkeleton,
+    loading,
     isImageTransitionComplete,
     handleImageError,
     handleImageLoad,
@@ -53,8 +53,8 @@ const OurStoryTabContent = ({
   return (
     <div className="space-y-12.5">
       <div className="grid grid-cols-12 gap-10.5">
-        <div className="w-[638px] h-[360px] col-span-5 ">
-          {shouldShowSkeleton ? (
+        <div className=" col-span-5 ">
+          {loading ? (
             <CardSkeleton
               className={"w-[638px] h-[360px] rounded-xl"}
               primaryCategoryId={primaryCategoryId}
