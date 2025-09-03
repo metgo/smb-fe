@@ -7,6 +7,7 @@ import { useSearchFlow } from "@/hooks/useSearchFlow";
 import { recommendedSearchKeywords } from "@/lib/utils";
 import { PopularBusinessCard } from "@/components/cards";
 import { pathNames } from "@/lib/endpoints";
+import useGeneralStore from "@/stores/generalStore";
 
 const SectionTitle = ({ title }: { title: string }) => (
   <h3 className="font-bold text-[#2B2D2A]">{title}</h3>
@@ -44,8 +45,6 @@ const SearchFlow = () => {
     hasResults,
     isLoading,
     hasMounted,
-    isOpen,
-    setIsOpen,
     handleClearInputText,
     handleKeywordSelect,
     recommendedBusinesses,
@@ -53,19 +52,22 @@ const SearchFlow = () => {
     searchKeyword,
     setSearchKeyword,
   } = useSearchFlow();
-
+  const { isSearchModalOpen, setIsSerachModalOpen } = useGeneralStore();
   if (!hasMounted) return null;
 
   return (
     <>
-      <div className=" custom-cursor" onClick={() => setIsOpen(true)}>
+      <div
+        className=" custom-cursor"
+        onClick={() => setIsSerachModalOpen(true)}
+      >
         <IconImage icon="search" />
       </div>
 
-      {isOpen && (
+      {isSearchModalOpen && (
         <Dialog
-          isOpen={isOpen}
-          onClose={() => setIsOpen(false)}
+          isOpen={isSearchModalOpen}
+          onClose={() => setIsSerachModalOpen(false)}
           className="w-[94%] h-[max-content] backdrop-blur-2xl"
         >
           <div>
