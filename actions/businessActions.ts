@@ -50,12 +50,12 @@ export const getAllBusinesses = async (
 
   // Compare arrays for changes
   const isGroupTypesChanged =
-    state.previousGroupTypes.length !== groupTypesIds.length ||
-    state.previousGroupTypes.some((id, idx) => id !== groupTypesIds[idx]);
+    state?.previousGroupTypes?.length !== groupTypesIds?.length ||
+    state?.previousGroupTypes?.some((id, idx) => id !== groupTypesIds[idx]);
 
   const isAccessibilitiesChanged =
-    state.previousAccessibilities.length !== accessibilitiesIds.length ||
-    state.previousAccessibilities.some(
+    state?.previousAccessibilities?.length !== accessibilitiesIds?.length ||
+    state?.previousAccessibilities?.some(
       (id, idx) => id !== accessibilitiesIds[idx],
     );
 
@@ -80,9 +80,9 @@ export const getAllBusinesses = async (
   if (categoryId) query.append("bussCategoriesId", categoryId);
   if (subCategoryId) query.append("bussSubCategoriesId", subCategoryId);
   if (accessibilitiesIds?.length > 0)
-    accessibilitiesIds.forEach((id) => query.append("accessibilitiesId", id));
+    accessibilitiesIds?.forEach((id) => query.append("accessibilitiesId", id));
   if (groupTypesIds?.length > 0)
-    groupTypesIds.forEach((id) => query.append("groupTypesId", id));
+    groupTypesIds?.forEach((id) => query.append("groupTypesId", id));
 
   // Only fetch pages that haven't been fetched yet
   for (let i = state.lastFetchedPage + 1; i <= pageCount; i++) {
