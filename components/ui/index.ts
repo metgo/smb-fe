@@ -8,6 +8,8 @@ import Tabs from "./Tabs";
 import ImageCarouselControls from "./ImageCarouselControls";
 import { MotionDialogDiv } from "./MotionDialogDiv";
 import Spinner from "./Spinner";
+import FilterTypeHeader from "./FilterTypeHeader";
+
 export {
   InputField,
   MapNavButton,
@@ -19,4 +21,5 @@ export {
   SubmitButton,
   MotionDialogDiv,
   ImageCarouselControls,
+  FilterTypeHeader,
 };
