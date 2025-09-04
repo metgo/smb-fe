@@ -1,14 +1,16 @@
 "use client";
 
+import clsx from "clsx";
 import { createPortal } from "react-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import { urls } from "@/lib/endpoints";
 import { filterLabels } from "@/constant/hebrew";
 import useGeneralStore from "@/stores/generalStore";
+import { getFilterTypes } from "@/actions/businessActions";
 import { FilterTypeHeader, IconImage, MotionDialogDiv } from "../ui";
-import clsx from "clsx";
+import { startLoading } from "../wrappers/ProgressBar";
 
 const parseCommaParam = (param: string | null): string[] =>
   param ? param.split(",").filter(Boolean) : [];
@@ -19,72 +21,91 @@ const toggleIdInList = (list: string[], id: string): string[] =>
 const FilterDrawer = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { groupTypes, setGroupTypes, accessibilities, setAccessibilities } =
-    useGeneralStore();
+  const {
+    groupTypes,
+    setGroupTypes,
+    accessibilities,
+    setAccessibilities,
+    appliedFilterCount,
+    setAppliedFilterCount,
+  } = useGeneralStore();
 
   const [isOpen, setIsOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isFilterApplied, setIsFilerApplied] = useState(false);
+
   const [activePreference, setActivePreference] = useState(false);
-  const [activeTargetAudiace, setActiveTargetAudiance] = useState(false);
+  const [activeTargetAudience, setActiveTargetAudience] = useState(false);
 
   const [selectedGroupTypeIds, setSelectedGroupTypeIds] = useState<string[]>(
-    parseCommaParam(searchParams.get("groupTypesId")),
+    parseCommaParam(searchParams.get("groupTypesIds")),
   );
   const [selectedAccessibilityIds, setSelectedAccessibilityIds] = useState<
     string[]
-  >(parseCommaParam(searchParams.get("accessibilitiesId")));
+  >(parseCommaParam(searchParams.get("accessibilitiesIds")));
 
-  const fetchFiltersData = async () => {
-    try {
-      const [groupRes, accessRes] = await Promise.all([
-        fetch(urls.groupTypes),
-        fetch(urls.accessibilities),
-      ]);
-
-      const [groupData, accessData] = await Promise.all([
-        groupRes.json(),
-        accessRes.json(),
-      ]);
-      const formattedGroupTypes = groupData?.data?.map((item: any) => ({
-        _id: item._id,
-        name: item.name,
-      }));
-      const formattedAccessibilities = accessData?.data?.map((item: any) => ({
-        _id: item._id,
-        name: item.name,
-      }));
-
-      setGroupTypes(formattedGroupTypes);
-      setAccessibilities(formattedAccessibilities);
-    } catch (error) {
-      console.error("Failed to fetch filter data:", error);
-    }
-  };
+  const totalAppliedFilters = useMemo(
+    () => selectedGroupTypeIds.length + selectedAccessibilityIds.length,
+    [selectedGroupTypeIds, selectedAccessibilityIds],
+  );
 
   useEffect(() => {
-    if (accessibilities.length === 0 || groupTypes.length === 0)
-      fetchFiltersData();
-  }, [accessibilities, groupTypes, isOpen]);
+    if (!isOpen) return;
 
-  function handleGroupToggle(id: string) {
+    async function fetchData() {
+      if (groupTypes.length === 0) {
+        const res = await getFilterTypes(urls.groupTypes);
+        setGroupTypes(res);
+      }
+      if (accessibilities.length === 0) {
+        const res = await getFilterTypes(urls.accessibilities);
+        setAccessibilities(res);
+      }
+    }
+    fetchData();
+  }, [isOpen, groupTypes, accessibilities, setGroupTypes, setAccessibilities]);
+
+  const handleGroupToggle = (id: string) =>
     setSelectedGroupTypeIds((prev) => toggleIdInList(prev, id));
-  }
 
-  function handleAccessToggle(id: string) {
+  const handleAccessToggle = (id: string) =>
     setSelectedAccessibilityIds((prev) => toggleIdInList(prev, id));
-  }
 
-  function handleResetFilters() {
-    setSelectedGroupTypeIds([]);
-    setSelectedAccessibilityIds([]);
-    // Reset searchParams
+  const updateQueryParams = (params: Record<string, string[]>) => {
     const current = new URLSearchParams(searchParams.toString());
-    current.delete("groupTypesId");
-    current.delete("accessibilitiesId");
-    current.delete("vendorDelivery");
-    current.delete("minPrice");
-    current.delete("maxPrice");
+
+    Object.entries(params).forEach(([key, value]) => {
+      if (value.length > 0) {
+        current.set(key, value.join(","));
+      } else {
+        current.delete(key);
+      }
+    });
 
     router.push(`?${current.toString()}`);
+  };
+
+  function handleResetFilters() {
+    if (isFilterApplied) startLoading();
+    setIsFilerApplied(false);
+    setSelectedGroupTypeIds([]);
+    setSelectedAccessibilityIds([]);
+    setAppliedFilterCount(0);
+    updateQueryParams({ groupTypesIds: [], accessibilitiesIds: [] });
+  }
+
+  function handleApplyFilter() {
+    startLoading();
+    setIsLoading(true);
+    setAppliedFilterCount(totalAppliedFilters);
+    updateQueryParams({
+      groupTypesIds: selectedGroupTypeIds,
+      accessibilitiesIds: selectedAccessibilityIds,
+    });
+
+    setIsOpen(false);
+    setIsLoading(false);
+    setIsFilerApplied(true);
   }
 
   return (
@@ -95,102 +116,119 @@ const FilterDrawer = () => {
         className="px-4 py-2.5 rounded-xl border border-theme flex items-center gap-2 custom-cursor"
       >
         <IconImage icon="filter" />
-        <span className="text-theme font-bold">{filterLabels.filter}</span>
+        <span className="text-theme font-bold">
+          {filterLabels.filter}
+          {appliedFilterCount > 0 && ` (${appliedFilterCount})`}
+        </span>
       </div>
 
-      {/* Drawer via portal */}
+      {/* Drawer */}
       {isOpen &&
         createPortal(
           <MotionDialogDiv
             type="drawer-bottom"
-            className="fixed inset-0 z-[9999] w-[395px] h-full bg-white shadow-xl px-5 py-7.5 overflow-y-auto dialog-scrollbar"
+            className="fixed inset-0 z-[9999] w-[395px] bg-white shadow-xl px-5 py-7.5 overflow-y-auto dialog-scrollbar"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex justify-between items-center mb-4">
+            {/* Header */}
+            <div className="flex justify-between items-center">
               <h2 className="text-lg font-bold">{filterLabels.filter}</h2>
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
                 className="text-black bg-primary rounded-full p-2 text-2xl custom-cursor w-10 h-10 flex items-center justify-center"
               >
-                <span>x</span>
+                <IconImage icon="close-black" />
               </button>
             </div>
 
-            <div>
-              {/* Preferences */}
-              <div className="border-b border-primary pb-3">
-                <FilterTypeHeader
-                  activeTitle={activePreference}
-                  title={filterLabels.preferences}
-                  setActiveTitle={setActivePreference}
-                />
-                {activePreference && (
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {accessibilities.map((item) => (
-                      <span
-                        key={item._id}
-                        onClick={() => handleAccessToggle(item._id)}
-                        className={`custom-cursor py-2 px-4 rounded-3xl ${
-                          selectedAccessibilityIds.includes(item._id)
-                            ? "bg-black text-white font-bold"
-                            : "bg-primary text-black font-normal"
-                        }`}
-                      >
-                        {item.name}
-                      </span>
-                    ))}
-                  </div>
-                )}
+            <section className="flex flex-col items-center justify-between h-[84vh] w-full mt-4">
+              <div className="overflow-y-scroll h-[80vh] w-full">
+                {/* Preferences */}
+                <div className="border-b border-primary pb-3 w-full">
+                  <FilterTypeHeader
+                    activeTitle={activePreference}
+                    title={filterLabels.preferences}
+                    setActiveTitle={setActivePreference}
+                  />
+                  {activePreference && (
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {accessibilities.map((item) => (
+                        <span
+                          key={item._id}
+                          onClick={() => handleAccessToggle(item._id)}
+                          className={`custom-cursor py-1.5 px-4 rounded-3xl text-sm ${
+                            selectedAccessibilityIds.includes(item._id)
+                              ? "bg-black text-white font-bold"
+                              : "bg-primary text-black font-normal"
+                          }`}
+                        >
+                          {item.name}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Target Audience */}
+                <div className="border-b border-primary py-3 w-full">
+                  <FilterTypeHeader
+                    activeTitle={activeTargetAudience}
+                    title={filterLabels.targetAudiences}
+                    setActiveTitle={setActiveTargetAudience}
+                  />
+                  {activeTargetAudience && (
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {groupTypes.map((item) => (
+                        <span
+                          key={item._id}
+                          onClick={() => handleGroupToggle(item._id)}
+                          className={`custom-cursor py-1.5 px-4 rounded-3xl text-sm ${
+                            selectedGroupTypeIds.includes(item._id)
+                              ? "bg-black text-white font-bold"
+                              : "bg-primary text-black font-normal"
+                          }`}
+                        >
+                          {item.name}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
 
-              {/* Traget Audience */}
-              <div className="border-b border-primary py-3">
-                <FilterTypeHeader
-                  activeTitle={activeTargetAudiace}
-                  title={filterLabels.targetAudiences}
-                  setActiveTitle={setActiveTargetAudiance}
-                />
-                {activeTargetAudiace && (
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {groupTypes.map((item) => (
-                      <span
-                        key={item._id}
-                        onClick={() => handleGroupToggle(item._id)}
-                        className={`custom-cursor py-2 px-4 rounded-3xl ${
-                          selectedGroupTypeIds.includes(item._id)
-                            ? "bg-black text-white font-bold"
-                            : "bg-primary text-black font-normal"
-                        }`}
-                      >
-                        {item.name}
-                      </span>
-                    ))}
-                  </div>
-                )}
-              </div>
-
+              {/* Footer */}
               <div className="w-full">
-                <div className="w-full h-1 bg-gray mb-4" />
-                <div className="px-8 text-center pb-8">
+                <div className="px-8 text-center">
                   <button
                     type="button"
-                    onClick={() => {}}
+                    onClick={handleApplyFilter}
+                    disabled={isLoading || totalAppliedFilters === 0}
                     className={clsx(
-                      "bg-lightGray text-white font-bold px-34 py-2 rounded-xl custom-cursor",
+                      isLoading || totalAppliedFilters === 0
+                        ? "bg-lightGray cursor-not-allowed"
+                        : "bg-black  custom-cursor",
+                      "text-white font-bold px-34 py-2 rounded-xl",
                     )}
                   >
                     {filterLabels.show}
                   </button>
-                  <div
+                  <button
+                    type="button"
                     onClick={handleResetFilters}
-                    className="custom-cursor hover:underline hover:bg-gray w-full items-center py-3 font-bold text-lightGray"
+                    disabled={isLoading || totalAppliedFilters === 0}
+                    className={clsx(
+                      isLoading || totalAppliedFilters === 0
+                        ? "cursor-not-allowed "
+                        : "custom-cursor ",
+                      "hover:underline hover:text-black w-full items-center py-3 font-bold text-lightGray",
+                    )}
                   >
                     {filterLabels.clearEverything}
-                  </div>
+                  </button>
                 </div>
               </div>
-            </div>
+            </section>
           </MotionDialogDiv>,
           document.body,
         )}

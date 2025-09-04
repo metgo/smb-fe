@@ -1,5 +1,5 @@
 import { FC } from "react";
-import { UpArrow } from "./icons";
+import { RiArrowDownSLine, RiArrowUpSLine } from "react-icons/ri";
 
 interface FilterTypeHeaderProps {
   title: string;
@@ -15,12 +15,14 @@ const FilterTypeHeader: FC<FilterTypeHeaderProps> = ({
   return (
     <div
       onClick={() => setActiveTitle(!activeTitle)}
-      className="flex justify-between items-center cursor-pointer pb-4"
+      className="flex justify-between items-center custom-cursor pb-4 w-full mt-4"
     >
       <div className="text-[16px] font-bold text-black">{title}</div>
-      <UpArrow
-        className={`${!activeTitle ? "-rotate-180" : ""} text-black opacity-50 text-xl`}
-      />
+      {activeTitle ? (
+        <RiArrowUpSLine size={24} className="text-theme" />
+      ) : (
+        <RiArrowDownSLine size={24} className="text-theme" />
+      )}
     </div>
   );
 };
