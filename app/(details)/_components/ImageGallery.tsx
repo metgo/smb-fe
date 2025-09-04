@@ -90,16 +90,16 @@ const ImageGallery = ({
   const layout = layouts[layoutName as keyof typeof layouts];
   const columns = rowsLayout[`row${imageCount}` as keyof typeof rowsLayout];
 
-  if (!images || images.length === 0) {
-    return (
-      <div style={{ height: 450 }} className="flex gap-2.5">
-        <CardSkeleton
-          className="w-full h-full"
-          primaryCategoryId={primaryCategoryId}
-        />
-      </div>
-    );
-  }
+  // if (!images || images.length === 0) {
+  //   return (
+  //     <div style={{ height: 450 }} className="flex gap-2.5">
+  //       <CardSkeleton
+  //         className="w-full h-full"
+  //         primaryCategoryId={primaryCategoryId}
+  //       />
+  //     </div>
+  //   );
+  // }
 
   return (
     <div style={{ height: 450 }} className="flex gap-2.5">

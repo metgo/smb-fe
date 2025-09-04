@@ -167,14 +167,12 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
               <h3 className="lg:text-[1rem] 3xl:text-[1.5rem] line-clamp-1">
                 {feedItem?.name}
               </h3>
-              <div className="flex items-center gap-2">
-                <IconImage icon="location" width={20} height={20} />
-                <span className="md:text-sm">
-                  {feedItem?.address?.city
-                    ? feedItem?.address?.city
-                    : "תל אביב"}
-                </span>
-              </div>
+              {feedItem?.address?.city && (
+                <div className="flex items-center gap-2">
+                  <IconImage icon="location" width={20} height={20} />
+                  <span className="md:text-sm">{feedItem?.address?.city}</span>
+                </div>
+              )}
               <div className="hidden group-hover:block">
                 <div
                   dangerouslySetInnerHTML={{

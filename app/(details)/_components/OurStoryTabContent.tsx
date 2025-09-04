@@ -48,7 +48,7 @@ const OurStoryTabContent = ({
     handleImageError,
     handleImageLoad,
     finalImageSrc,
-  } = useImageCrop(images[0], aspectRatio);
+  } = useImageCrop(images?.[0], aspectRatio);
 
   return (
     <div className="space-y-12.5">
@@ -70,7 +70,7 @@ const OurStoryTabContent = ({
                 width={838}
                 height={360}
                 className="rounded-xl  h-[360px] w-[838px] object-cover ultra-sharp"
-                alt={images[0]?.alt || "Main image"}
+                alt={images?.[0]?.alt || "Main image"}
                 src={finalImageSrc}
                 onLoad={handleImageLoad}
                 onError={handleImageError}

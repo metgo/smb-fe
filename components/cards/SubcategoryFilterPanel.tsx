@@ -1,16 +1,15 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
-import { IconImage } from "../ui";
-import { misc } from "@/constant/hebrew";
+import { FilterDrawer } from "../drawer";
+import { getPurposeType } from "@/lib/helpers";
 import { categoryBgClasses } from "@/lib/utils";
 import { useCtgSubctg } from "@/hooks/useCtgSubctg";
+import { getAllSubCategory } from "@/actions/businessActions";
 import { LeftAngleArrow, RightAngleArrow } from "@/components/ui/icons";
 import { googleSendGtmEvent, triggerName } from "@/lib/googleEventsConfig";
-import { getPurposeType } from "@/lib/helpers";
-import { getAllSubCategory } from "@/actions/businessActions";
-import { usePathname } from "next/navigation";
 
 const scrollAmount = 150;
 
@@ -56,11 +55,8 @@ const SubcategoryFilterPanel = () => {
 
   return (
     <div className="max-w-[1008px] bg-[#FAFAFA]/80 backdrop-blur border border-white/20 shadow-md p-2.5 rounded-2xl z-50">
-      <div className="flex items-center gap-2.5 custom-cursor">
-        <div className="px-4 py-2.5 rounded-xl border border-theme flex items-center gap-2">
-          <IconImage icon="filter" />
-          <span className="text-theme font-bold">{misc.filter}</span>
-        </div>
+      <div className="flex items-center gap-2.5">
+        <FilterDrawer />
 
         <div className="flex items-center">
           <button

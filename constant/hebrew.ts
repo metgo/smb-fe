@@ -10,7 +10,6 @@ export const misc = {
   hours: "שעות פעילות",
   openNow: "פתוח עכשיו",
   opinion: "חוות דעת",
-  filter: "מסננים",
   start: "התחלה",
   end: "סיום",
   close: "תודה",
@@ -241,4 +240,12 @@ export const cartLabels = {
   proceedToSecurePayment: "המשיכו לתשלום מאובטח",
   toViewMyShoppingCart: "לצפייה בעגלת הקניות שלי",
   youMayAlsoLike: "מוצרים שחשבנו שתאהבו גם",
+};
+
+export const filterLabels = {
+  show: "הצג",
+  filter: "מסננים",
+  preferences: "העדפות",
+  targetAudiences: "קהל יעד",
+  clearEverything: "ניקוי הכל",
 };
