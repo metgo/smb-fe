@@ -71,10 +71,8 @@ export const getAllBusinesses = async (
     state.lastFetchedPage = 0;
     state.previousCategoryId = categoryId;
     state.previousSubCategoryId = subCategoryId;
-    state.previousGroupTypes = groupTypesIds ? [...groupTypesIds] : [];
-    state.previousAccessibilities = accessibilitiesIds
-      ? [...accessibilitiesIds]
-      : [];
+    state.previousGroupTypes = [...groupTypesIds];
+    state.previousAccessibilities = [...accessibilitiesIds];
   }
 
   const query = new URLSearchParams();
@@ -82,9 +80,9 @@ export const getAllBusinesses = async (
   if (categoryId) query.append("bussCategoriesId", categoryId);
   if (subCategoryId) query.append("bussSubCategoriesId", subCategoryId);
   if (accessibilitiesIds?.length > 0)
-    accessibilitiesIds.forEach((id) => query.append("accessibilitiesId", id));
+    accessibilitiesIds?.forEach((id) => query.append("accessibilitiesId", id));
   if (groupTypesIds?.length > 0)
-    groupTypesIds.forEach((id) => query.append("groupTypesId", id));
+    groupTypesIds?.forEach((id) => query.append("groupTypesId", id));
 
   // Only fetch pages that haven't been fetched yet
   for (let i = state.lastFetchedPage + 1; i <= pageCount; i++) {
