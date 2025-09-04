@@ -50,12 +50,12 @@ export const getAllBusinesses = async (
 
   // Compare arrays for changes
   const isGroupTypesChanged =
-    state.previousGroupTypes.length !== groupTypesIds.length ||
-    state.previousGroupTypes.some((id, idx) => id !== groupTypesIds[idx]);
+    state?.previousGroupTypes?.length !== groupTypesIds?.length ||
+    state?.previousGroupTypes?.some((id, idx) => id !== groupTypesIds[idx]);
 
   const isAccessibilitiesChanged =
-    state.previousAccessibilities.length !== accessibilitiesIds.length ||
-    state.previousAccessibilities.some(
+    state?.previousAccessibilities?.length !== accessibilitiesIds?.length ||
+    state?.previousAccessibilities?.some(
       (id, idx) => id !== accessibilitiesIds[idx],
     );
 
@@ -71,8 +71,10 @@ export const getAllBusinesses = async (
     state.lastFetchedPage = 0;
     state.previousCategoryId = categoryId;
     state.previousSubCategoryId = subCategoryId;
-    state.previousGroupTypes = [...groupTypesIds];
-    state.previousAccessibilities = [...accessibilitiesIds];
+    state.previousGroupTypes = groupTypesIds ? [...groupTypesIds] : [];
+    state.previousAccessibilities = accessibilitiesIds
+      ? [...accessibilitiesIds]
+      : [];
   }
 
   const query = new URLSearchParams();
