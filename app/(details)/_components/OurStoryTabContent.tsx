@@ -48,7 +48,7 @@ const OurStoryTabContent = ({
     handleImageError,
     handleImageLoad,
     finalImageSrc,
-  } = useImageCrop(images[0], aspectRatio);
+  } = useImageCrop(images?.[0], aspectRatio);
 
   return (
     <div className="space-y-12.5">
