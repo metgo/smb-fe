@@ -18,10 +18,10 @@ const FilterTrailsLayout = ({ meta, totalData, data }: TrailsFeedProps) => {
   );
   const totalBusiness = totalData;
 
+  useMemo(() => setAppliedFilterItemCount(data?.length), [data]);
+
   if (!isHydrate) return null;
   if (!totalBusiness) return <NoBusinessLayout />;
-
-  useMemo(() => setAppliedFilterItemCount(data.length), [data]);
 
   const renderLayout = () => {
     switch (activeFilterTab) {
