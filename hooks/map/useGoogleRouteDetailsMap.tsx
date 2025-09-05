@@ -139,12 +139,12 @@ export const useGoogleRouteDetailsMap = (
       bounds.extend(position);
     });
 
-    const padding = window.innerWidth < 640 ? 30 : 60;
+    // const padding = window.innerWidth < 640 ? 30 : 60;
     map.fitBounds(bounds, {
-      top: padding,
-      bottom: padding,
-      left: padding,
-      right: padding,
+      top: 40,
+      bottom: 40,
+      left: 40,
+      right: 800,
     });
   }, [map, locations, routeStation]);
 
@@ -226,7 +226,7 @@ export const useGoogleRouteDetailsMap = (
         }
       }
 
-      map.fitBounds(bounds, { top: 60, bottom: 60, left: 60, right: 60 });
+      map.fitBounds(bounds, { top: 60, bottom: 60, left: 60, right: 600 });
     };
 
     drawRoute();
