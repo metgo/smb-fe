@@ -11,6 +11,8 @@ import MapFeedIntegratedLayout from "./MapFeedIntegratedLayout";
 import StickyYellowRibbonImage from "../StickyYellowRibbonImage";
 import BusinessPinMap from "../maps/BusinessPinMap";
 import { useIsHydrated } from "@/hooks";
+import { useMemo } from "react";
+import { pathNames } from "@/lib/endpoints";
 
 interface Props {
   businesses: BusinessesProps;
@@ -20,18 +22,22 @@ const FilterBusinessLayout = ({ businesses }: Props) => {
   const pathname = usePathname();
 
   const isHydrated = useIsHydrated();
-  const { activeFilterTab } = useGeneralStore();
+  const { activeFilterTab, setAppliedFilterItemCount } = useGeneralStore();
 
   const { sentryRef, loading, initialLoadDone, canLoadMore } = useLoadMore(
     businesses?.meta?.hasNextPage,
   );
   const totalBusiness = businesses?.totalData;
+  useMemo(
+    () => setAppliedFilterItemCount(businesses?.data?.length),
+    [businesses.data],
+  );
 
   if (!isHydrated) return null;
   if (!totalBusiness) return <NoFeedItemLayout />;
 
   const renderLayout = () => {
-    if (pathname === "/events")
+    if (pathname === pathNames.events)
       return <OnlyFeedCardsLayout data={businesses.data} />;
 
     switch (activeFilterTab) {

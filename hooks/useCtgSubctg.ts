@@ -22,7 +22,8 @@ export const useCtgSubctg = () => {
     setActiveSubCategory("");
 
     const params = new URLSearchParams(searchParams.toString());
-
+    params.delete("groupTypesIds");
+    params.delete("accessibilitiesIds");
     if (newCategoryId) {
       params.set("categoryId", newCategoryId);
     } else {
@@ -51,7 +52,9 @@ export const useCtgSubctg = () => {
     const params = new URLSearchParams(searchParams.toString());
 
     if (newSubcategoryId) params.set("subCategoryId", newSubcategoryId);
-    else params.delete("subCategoryId");
+    else {
+      params.delete("subCategoryId");
+    }
 
     params.set("page", "1");
     if (activeCategoryKey) {
@@ -59,6 +62,8 @@ export const useCtgSubctg = () => {
     } else {
       params.delete("categoryId");
     }
+    params.delete("groupTypesIds");
+    params.delete("accessibilitiesIds");
     window.scrollTo({
       top: isHomepage ? 10 : 0,
       left: 0,

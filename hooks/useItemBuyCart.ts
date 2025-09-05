@@ -1,9 +1,10 @@
-import { startLoading } from "@/components/wrappers/ProgressBar";
-import { pathNames } from "@/lib/endpoints";
-import { googleSendGtmEvent, triggerName } from "@/lib/googleEventsConfig";
-import { itemTypeEnum } from "@/lib/utils";
-import useCartStore from "@/stores/cartStore";
 import { useRouter } from "next/navigation";
+
+import { itemTypeEnum } from "@/lib/utils";
+import { pathNames } from "@/lib/endpoints";
+import useCartStore from "@/stores/cartStore";
+import { startLoading } from "@/components/wrappers/ProgressBar";
+import { googleSendGtmEvent, triggerName } from "@/lib/googleEventsConfig";
 
 export const useItemBuyCart = () => {
   const router = useRouter();
