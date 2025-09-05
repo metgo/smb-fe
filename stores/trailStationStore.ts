@@ -71,7 +71,7 @@ const useTrailStationStore = create<TrailStationStoreState>()(
         } else {
           const updatedTrail = {
             ...currentTrails[trailIndex],
-            stations: [...currentTrails[trailIndex].stations, newStation],
+            stations: [...currentTrails[trailIndex]?.stations, newStation],
           };
           const updatedTrails = [...currentTrails];
           updatedTrails[trailIndex] = updatedTrail;
@@ -80,7 +80,7 @@ const useTrailStationStore = create<TrailStationStoreState>()(
         }
 
         // if station was previously removed, clear it from removed list
-        get().clearRemovedStation(trailId, newStation._id);
+        get().clearRemovedStation(trailId, newStation?._id);
       },
 
       isAreadyExistStation: (trailId: string, stationId: string) => {
@@ -139,13 +139,10 @@ const useTrailStationStore = create<TrailStationStoreState>()(
       resetTrailStation: (trailId: string) => {
         set((state) => ({
           trailStations: state.trailStations.map((trail) =>
-            trail.trailId === trailId
-              ? {
-                  ...trail,
-                  trailStations: [],
-                  removedStations: [],
-                }
-              : trail,
+            trail.trailId === trailId ? { ...trail, stations: [] } : trail,
+          ),
+          removedStations: state.removedStations.filter(
+            (r) => r.trailId !== trailId,
           ),
         }));
       },

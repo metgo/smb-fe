@@ -8,9 +8,9 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { urls } from "@/lib/endpoints";
 import { filterLabels } from "@/constant/hebrew";
 import useGeneralStore from "@/stores/generalStore";
+import { startLoading } from "../wrappers/ProgressBar";
 import { getFilterTypes } from "@/actions/businessActions";
 import { FilterTypeHeader, IconImage, MotionDialogDiv } from "../ui";
-import { startLoading } from "../wrappers/ProgressBar";
 
 const parseCommaParam = (param: string | null): string[] =>
   param ? param.split(",").filter(Boolean) : [];
@@ -21,21 +21,15 @@ const toggleIdInList = (list: string[], id: string): string[] =>
 const FilterDrawer = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const {
-    groupTypes,
-    setGroupTypes,
-    accessibilities,
-    setAccessibilities,
-    appliedFilterCount,
-    setAppliedFilterCount,
-  } = useGeneralStore();
+  const { groupTypes, setGroupTypes, accessibilities, setAccessibilities } =
+    useGeneralStore();
 
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isFilterApplied, setIsFilerApplied] = useState(false);
-
-  const [activePreference, setActivePreference] = useState(false);
-  const [activeTargetAudience, setActiveTargetAudience] = useState(false);
+  const [appliedFilterCount, setAppliedFilterCount] = useState(0);
+  const [activePreference, setActivePreference] = useState(true);
+  const [activeTargetAudience, setActiveTargetAudience] = useState(true);
 
   const [selectedGroupTypeIds, setSelectedGroupTypeIds] = useState<string[]>(
     parseCommaParam(searchParams.get("groupTypesIds")),
