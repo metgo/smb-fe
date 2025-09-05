@@ -22,8 +22,8 @@ interface GeneralStoreState {
   setGroupTypes: (item: FilterType[]) => void;
   accessibilities: FilterType[];
   setAccessibilities: (item: FilterType[]) => void;
-  appliedFilterCount: number;
-  setAppliedFilterCount: (count: number) => void;
+  appliedFilterItemCount: number;
+  setAppliedFilterItemCount: (count: number) => void;
 }
 
 const useGeneralStore = create<GeneralStoreState>((set) => ({
@@ -43,8 +43,8 @@ const useGeneralStore = create<GeneralStoreState>((set) => ({
   setGroupTypes: (item) => set({ groupTypes: item }),
   accessibilities: [],
   setAccessibilities: (item) => set({ accessibilities: item }),
-  appliedFilterCount: 0,
-  setAppliedFilterCount: (count) => set({ appliedFilterCount: count }),
+  appliedFilterItemCount: 0,
+  setAppliedFilterItemCount: (count) => set({ appliedFilterItemCount: count }),
 }));
 
 export default useGeneralStore;
