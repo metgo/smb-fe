@@ -19,6 +19,7 @@ const FilterTrailsLayout = ({ meta, totalData, data }: TrailsFeedProps) => {
   const totalBusiness = totalData;
 
   useEffect(() => {
+    if (!isHydrate) return;
     setAppliedFilterItemCount(data?.length);
   }, [data, setAppliedFilterItemCount]);
 

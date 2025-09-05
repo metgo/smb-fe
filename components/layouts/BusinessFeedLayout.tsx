@@ -28,11 +28,12 @@ const BusinessFeedLayout = ({
 
   const triggerRef = useRef(null);
 
-  if (!isHydrated) return null;
-
   useEffect(() => {
+    if (!isHydrated) return;
     setAppliedFilterItemCount(businesses?.data?.length);
   }, [businesses, setAppliedFilterItemCount]);
+
+  if (!isHydrated) return null;
 
   const renderLayout = () => {
     switch (activeFilterTab) {
