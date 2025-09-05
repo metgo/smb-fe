@@ -1,18 +1,18 @@
 "use client";
 
+import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 
 import { useLoadMore } from "@/hooks/useLoadMore";
 import NoFeedItemLayout from "./NoFeedItemLayout";
 import useGeneralStore from "@/stores/generalStore";
 
+import { useIsHydrated } from "@/hooks";
+import { pathNames } from "@/lib/endpoints";
 import OnlyFeedCardsLayout from "./OnlyFeedCardsLayout";
 import MapFeedIntegratedLayout from "./MapFeedIntegratedLayout";
 import StickyYellowRibbonImage from "../StickyYellowRibbonImage";
 import BusinessPinMap from "../maps/BusinessPinMap";
-import { useIsHydrated } from "@/hooks";
-import { useMemo } from "react";
-import { pathNames } from "@/lib/endpoints";
 
 interface Props {
   businesses: BusinessesProps;
@@ -28,10 +28,10 @@ const FilterBusinessLayout = ({ businesses }: Props) => {
     businesses?.meta?.hasNextPage,
   );
   const totalBusiness = businesses?.totalData;
-  useMemo(
-    () => setAppliedFilterItemCount(businesses?.data?.length),
-    [businesses.data],
-  );
+
+  useEffect(() => {
+    setAppliedFilterItemCount(businesses?.data?.length);
+  }, [businesses, setAppliedFilterItemCount]);
 
   if (!isHydrated) return null;
   if (!totalBusiness) return <NoFeedItemLayout />;

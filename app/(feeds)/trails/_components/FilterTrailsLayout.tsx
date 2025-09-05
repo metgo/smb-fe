@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect } from "react";
 
 import { useIsHydrated } from "@/hooks";
 import { useLoadMore } from "@/hooks/useLoadMore";
@@ -18,7 +18,9 @@ const FilterTrailsLayout = ({ meta, totalData, data }: TrailsFeedProps) => {
   );
   const totalBusiness = totalData;
 
-  useMemo(() => setAppliedFilterItemCount(data?.length), [data]);
+  useEffect(() => {
+    setAppliedFilterItemCount(data?.length);
+  }, [data, setAppliedFilterItemCount]);
 
   if (!isHydrate) return null;
   if (!totalBusiness) return <NoBusinessLayout />;

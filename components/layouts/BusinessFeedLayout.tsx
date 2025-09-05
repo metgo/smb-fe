@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef } from "react";
+import { useEffect, useRef } from "react";
 
 import { useIsHydrated } from "@/hooks";
 import { useLoadMore } from "@/hooks/useLoadMore";
@@ -30,10 +30,9 @@ const BusinessFeedLayout = ({
 
   if (!isHydrated) return null;
 
-  useMemo(
-    () => setAppliedFilterItemCount(businesses?.data?.length),
-    [businesses.data],
-  );
+  useEffect(() => {
+    setAppliedFilterItemCount(businesses?.data?.length);
+  }, [businesses, setAppliedFilterItemCount]);
 
   const renderLayout = () => {
     switch (activeFilterTab) {
