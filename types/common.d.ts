@@ -93,6 +93,7 @@ declare interface FeedItem {
   _id: string;
   name: string;
   slug: string;
+  serviceType: string;
   description: string;
   images: ImageItem[];
   cover: ImageItem;

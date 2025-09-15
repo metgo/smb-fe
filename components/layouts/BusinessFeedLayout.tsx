@@ -25,6 +25,10 @@ const BusinessFeedLayout = ({
     businesses?.meta?.hasNextPage,
   );
   const totalBusiness = businesses?.totalData;
+  useEffect(() => {
+    if (businesses?.data?.length > 0)
+      setAppliedFilterItemCount(businesses?.data?.length);
+  }, [businesses]);
 
   const triggerRef = useRef(null);
 
@@ -32,8 +36,6 @@ const BusinessFeedLayout = ({
     if (!isHydrated) return;
     setAppliedFilterItemCount(businesses?.data?.length);
   }, [businesses, setAppliedFilterItemCount]);
-
-  if (!isHydrated) return null;
 
   const renderLayout = () => {
     switch (activeFilterTab) {
