@@ -41,7 +41,7 @@ const StationCard = ({
   onRemove: (id: string) => void;
   canRemove: boolean;
 }) => (
-  <Draggable draggableId={station._id} index={index}>
+  <Draggable draggableId={station?._id} index={index}>
     {(provided) => (
       <div
         ref={provided.innerRef}
@@ -54,7 +54,7 @@ const StationCard = ({
           <NextImage
             width={140}
             height={118}
-            alt={station.name}
+            alt={station?.name || "station image"}
             imgSrc={station?.image}
             className="rounded-md object-cover h-full"
           />
@@ -63,7 +63,7 @@ const StationCard = ({
               width={30}
               height={30}
               alt="category icon"
-              src={`/images/category/${stationCategory[station.primaryCategoryId]}`}
+              src={`/images/category/${stationCategory[station?.primaryCategoryId]}`}
               className="object-cover"
             />
           </div>
@@ -72,14 +72,14 @@ const StationCard = ({
         {/* Content */}
         <div className="col-span-4">
           <div className="flex items-start justify-between">
-            <h2 className="font-bold text-dark max-w-68">{station.name}</h2>
+            <h2 className="font-bold text-dark max-w-68">{station?.name}</h2>
             {canRemove && (
               <>
                 <IoIosCloseCircle
                   size={24}
                   data-tooltip-id="remove-info"
                   className="hidden group-hover:block custom-cursor"
-                  onClick={() => onRemove(station._id)}
+                  onClick={() => onRemove(station?._id)}
                 />
                 {createPortal(
                   <Tooltip
@@ -158,7 +158,7 @@ const TrailStations = ({ stations, _id }: TrailDetailsProps) => {
 
   const visibleStations = useMemo(
     () =>
-      (localStations || []).filter((s) => !removedStations?.includes(s._id)),
+      (localStations || []).filter((s) => !removedStations?.includes(s?._id)),
     [localStations, removedStations],
   );
 
@@ -230,11 +230,11 @@ const TrailStations = ({ stations, _id }: TrailDetailsProps) => {
             >
               {visibleStations?.map((station, index) => (
                 <StationCard
-                  key={station._id}
+                  key={station?._id || index}
                   station={station}
                   index={index}
                   onRemove={handleRemove}
-                  canRemove={visibleStations.length > 2}
+                  canRemove={visibleStations?.length > 2}
                 />
               ))}
               {provided.placeholder}
