@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useMemo, useRef } from "react";
 
 import { useIsHydrated } from "@/hooks";
 import { useLoadMore } from "@/hooks/useLoadMore";
@@ -19,7 +19,8 @@ const BusinessFeedLayout = ({
   businesses: BusinessesProps;
 }) => {
   const isHydrated = useIsHydrated();
-  const { activeFilterTab, isOnSection2 } = useGeneralStore();
+  const { activeFilterTab, isOnSection2, setAppliedFilterItemCount } =
+    useGeneralStore();
   const { sentryRef, loading, initialLoadDone, canLoadMore } = useLoadMore(
     businesses?.meta?.hasNextPage,
   );
@@ -28,6 +29,11 @@ const BusinessFeedLayout = ({
   const triggerRef = useRef(null);
 
   if (!isHydrated) return null;
+
+  useMemo(
+    () => setAppliedFilterItemCount(businesses?.data?.length),
+    [businesses.data],
+  );
 
   const renderLayout = () => {
     switch (activeFilterTab) {

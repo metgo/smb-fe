@@ -21,8 +21,16 @@ const toggleIdInList = (list: string[], id: string): string[] =>
 const FilterDrawer = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { groupTypes, setGroupTypes, accessibilities, setAccessibilities } =
-    useGeneralStore();
+
+  const categoryId = searchParams.get("categoryId");
+
+  const {
+    groupTypes,
+    setGroupTypes,
+    accessibilities,
+    setAccessibilities,
+    appliedFilterItemCount,
+  } = useGeneralStore();
 
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -58,6 +66,12 @@ const FilterDrawer = () => {
     }
     fetchData();
   }, [isOpen, groupTypes, accessibilities, setGroupTypes, setAccessibilities]);
+
+  useEffect(() => {
+    setAppliedFilterCount(0);
+    setSelectedAccessibilityIds([]);
+    setSelectedGroupTypeIds([]);
+  }, [categoryId]);
 
   const handleGroupToggle = (id: string) =>
     setSelectedGroupTypeIds((prev) => toggleIdInList(prev, id));
@@ -202,10 +216,12 @@ const FilterDrawer = () => {
                       isLoading || totalAppliedFilters === 0
                         ? "bg-lightGray cursor-not-allowed"
                         : "bg-black  custom-cursor",
-                      "text-white font-bold px-34 py-2 rounded-xl",
+                      "text-white font-bold w-68 py-2 rounded-xl",
                     )}
                   >
-                    {filterLabels.show}
+                    {appliedFilterCount
+                      ? `הצג ${appliedFilterItemCount} תוצאות`
+                      : filterLabels.show}
                   </button>
                   <button
                     type="button"
@@ -215,7 +231,7 @@ const FilterDrawer = () => {
                       isLoading || totalAppliedFilters === 0
                         ? "cursor-not-allowed "
                         : "custom-cursor ",
-                      "hover:underline hover:text-black w-full items-center py-3 font-bold text-lightGray",
+                      "hover:underline hover:text-black w-full items-center font-bold text-lightGray mt-4",
                     )}
                   >
                     {filterLabels.clearEverything}
