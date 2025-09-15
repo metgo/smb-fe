@@ -192,17 +192,24 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
           </div>
 
           {/* Action Icons */}
-          <div className="hidden absolute top-4 right-4 group-hover:flex items-center gap-2.5">
-            <IconImage width={30} height={30} icon="circular-heart" />
-            {!isEventPage && pathname !== "/trails" && (
-              <div
-                onClick={(e) => {
-                  e.stopPropagation();
-                  e.preventDefault();
-                  handleMapIconClick(feedItem._id);
-                }}
-              >
-                <IconImage width={30} height={30} icon="circular-map-fold" />
+          <div className="hidden absolute top-4 group-hover:flex items-center justify-between  w-full px-4">
+            <div className="flex gap-2.5">
+              <IconImage width={30} height={30} icon="circular-heart" />
+              {!isEventPage && pathname !== "/trails" && (
+                <div
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    handleMapIconClick(feedItem._id);
+                  }}
+                >
+                  <IconImage width={30} height={30} icon="circular-map-fold" />
+                </div>
+              )}
+            </div>
+            {feedItem.serviceType === "point_of_interest" && (
+              <div className="bg-black/35 rounded-full p-1 flex items-center justify-center">
+                <IconImage width={23} height={23} icon="global-white" />
               </div>
             )}
           </div>
