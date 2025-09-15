@@ -31,6 +31,7 @@ export const urls = {
   trailDetails: `${BASE_URL}/trips`,
 
   ticketDetails: `${BASE_URL}/tickets`,
+  marketing: `${BASE_URL}/marketing`,
 };
 
 export const pathNames = {

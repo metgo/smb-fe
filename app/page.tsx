@@ -8,6 +8,8 @@ import { getAllBusinesses } from "@/actions/businessActions";
 import HamburgerMenu from "@/components/navbar/HamburgerMenu";
 import BusinessFeedLayout from "@/components/layouts/BusinessFeedLayout";
 import CurrentTempOfYourCity from "@/components/navbar/CurrentTempOfYourCity";
+import { getMarketing } from "@/actions/marketingAction";
+import Marketing from "@/components/layouts/Marketing";
 
 interface Props {
   searchParams: Promise<{
@@ -43,6 +45,7 @@ const page = async ({ searchParams }: Props) => {
     accessibilitiesArray,
     "/",
   );
+  const marketing = await getMarketing();
 
   return (
     <div>
@@ -67,6 +70,9 @@ const page = async ({ searchParams }: Props) => {
           <IntroVideo />
           <ScrollIndicator />
         </section>
+
+        {/* Marketing Section */}
+        <Marketing marketing={marketing?.[0]} />
 
         {/* Second Section */}
         <section className="relative z-50 bg-white">
