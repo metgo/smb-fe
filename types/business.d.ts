@@ -10,6 +10,7 @@ declare interface BusinessProps {
   _id: string;
   slug: string;
   name: string;
+  serviceType: string;
   geoLocation: GeoLocation;
   images: ImageItem[];
   cover: ImageItem;
