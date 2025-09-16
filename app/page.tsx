@@ -76,7 +76,7 @@ const page = async ({ searchParams }: Props) => {
 
         {/* Feed Section */}
         <section className="relative z-50 bg-white">
-          {marketing?.playType === imagePlayTypeEnum.arrow ? (
+          {marketing?.playType === imagePlayTypeEnum.manual ? (
             <ArrowImage images={marketing?.items} />
           ) : (
             <CarouselImage
