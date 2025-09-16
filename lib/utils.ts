@@ -25,6 +25,11 @@ export const paymentMethodType = {
   ticket: "TICKET",
 };
 
+export const imagePlayTypeEnum = {
+  arrow: "ARROW",
+  carousel: "CAROUSEL",
+};
+
 export const contactFormReasonOptions = [
   { value: "תווים", label: "תווים" },
   { value: "עסקים", label: "עסקים" },

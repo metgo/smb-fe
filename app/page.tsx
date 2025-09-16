@@ -1,15 +1,17 @@
 import Image from "next/image";
 
 import Navbar from "@/components/navbar";
+import { imagePlayTypeEnum } from "@/lib/utils";
 import IntroVideo from "@/components/IntroVideo";
+import { getMarketing } from "@/actions/marketingAction";
 import { ScrollSnapWrapper } from "@/components/wrappers";
 import ScrollIndicator from "@/components/ScrollIndicator";
 import { getAllBusinesses } from "@/actions/businessActions";
 import HamburgerMenu from "@/components/navbar/HamburgerMenu";
+import { ArrowImage, CarouselImage } from "@/components/marketing";
 import BusinessFeedLayout from "@/components/layouts/BusinessFeedLayout";
 import CurrentTempOfYourCity from "@/components/navbar/CurrentTempOfYourCity";
-import { getMarketing } from "@/actions/marketingAction";
-import Marketing from "@/components/layouts/Marketing";
+import { getSiteInfo } from "@/actions/commonActions";
 
 interface Props {
   searchParams: Promise<{
@@ -46,6 +48,7 @@ const page = async ({ searchParams }: Props) => {
     "/",
   );
   const marketing = await getMarketing();
+  const siteInfo = await getSiteInfo();
 
   return (
     <div>
@@ -67,15 +70,20 @@ const page = async ({ searchParams }: Props) => {
             </div>
             <CurrentTempOfYourCity />
           </div>
-          <IntroVideo />
+          <IntroVideo siteInfo={siteInfo} />
           <ScrollIndicator />
         </section>
 
-        {/* Marketing Section */}
-        <Marketing marketing={marketing?.[0]} />
-
-        {/* Second Section */}
+        {/* Feed Section */}
         <section className="relative z-50 bg-white">
+          {marketing?.playType === imagePlayTypeEnum.arrow ? (
+            <ArrowImage images={marketing?.items} />
+          ) : (
+            <CarouselImage
+              images={marketing?.items}
+              timeInterval={marketing?.timeInterval}
+            />
+          )}
           <Navbar showFilterTab />
           <BusinessFeedLayout businesses={businesses} />
         </section>
