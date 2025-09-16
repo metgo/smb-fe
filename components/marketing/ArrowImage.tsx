@@ -19,11 +19,11 @@ const ArrowImage = ({ images }: ArrowImageProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
 
   const handlePrev = () => {
-    setCurrentIndex((prev) => (prev + 1) % images.length);
+    setCurrentIndex((prev) => (prev + 1) % images?.length);
   };
 
   const handleNext = () => {
-    setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
+    setCurrentIndex((prev) => (prev - 1 + images?.length) % images?.length);
   };
 
   useEffect(() => {
@@ -56,7 +56,7 @@ const ArrowImage = ({ images }: ArrowImageProps) => {
         <div className="relative h-full w-full">
           <Image
             fill
-            src={images[currentIndex].url}
+            src={images?.[currentIndex]?.url}
             alt={`slide-${currentIndex}`}
             className="object-cover rounded-md transition-all duration-700 ease-in-out"
           />
@@ -68,7 +68,7 @@ const ArrowImage = ({ images }: ArrowImageProps) => {
 
       <div className="absolute top-2/3 right-20 -translate-y-1/2 z-30">
         <Link
-          href={images[currentIndex].link}
+          href={images?.[currentIndex]?.link}
           target="_blank"
           className="custom-cursor  border border-lightGray bg-white/90 backdrop-blur-sm px-8 py-3 rounded-lg font-semibold text-gray-800 hover:bg-white hover:scale-105 transition-all duration-300 shadow-xl font-bold"
         >
@@ -82,7 +82,7 @@ const ArrowImage = ({ images }: ArrowImageProps) => {
           <IconImage icon="next" width={30} height={30} />
         </button>
         <div className="flex gap-2">
-          {images.map((_, idx) => (
+          {images?.map((_, idx) => (
             <button
               key={idx}
               onClick={() => setCurrentIndex(idx)}

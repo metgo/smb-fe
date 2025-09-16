@@ -1,8 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import React, { useEffect, useRef, useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
+import React, { useEffect, useRef, useState } from "react";
 import { Navigation, Pagination, Autoplay, EffectFade } from "swiper/modules";
 
 // Import Swiper styles
@@ -77,7 +77,7 @@ const CarouselImage = ({ images, timeInterval }: CarouselImageProps) => {
             <div className="absolute inset-2">
               <Image
                 fill
-                src={img.url}
+                src={img?.url}
                 alt={`slide-${index}`}
                 className="object-cover rounded-lg shadow-2xl"
                 priority={index === 0}
@@ -85,7 +85,7 @@ const CarouselImage = ({ images, timeInterval }: CarouselImageProps) => {
               />
               <div className="absolute top-2/3 right-20 -translate-y-1/2 z-30">
                 <Link
-                  href={img.link}
+                  href={img?.link}
                   target="_blank"
                   className="custom-cursor  border border-lightGray bg-white/90 backdrop-blur-sm px-8 py-3 rounded-lg font-semibold text-gray-800 hover:bg-white hover:scale-105 transition-all duration-300 shadow-xl font-bold"
                 >
@@ -104,7 +104,7 @@ const CarouselImage = ({ images, timeInterval }: CarouselImageProps) => {
 
       {/* Custom pagination dots */}
       <div className="absolute bottom-12 left-1/2 -translate-x-1/2 z-20 flex space-x-3">
-        {images.map((_, idx) => (
+        {images?.map((_, idx) => (
           <button
             key={idx}
             onClick={() => setCurrentIndex(idx)}
