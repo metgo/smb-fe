@@ -1,19 +1,28 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 import { Logo } from "../ui/icons";
 import useGeneralStore from "@/stores/generalStore";
 import { startLoading } from "../wrappers/ProgressBar";
+import { pathNames } from "@/lib/endpoints";
 
 const NavLogo = () => {
   const router = useRouter();
+  const pathname = usePathname();
   const { setIsOnSection2 } = useGeneralStore();
 
   function handleNavigation() {
-    startLoading();
+    if (pathname === pathNames.home) {
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+    } else {
+      startLoading();
+      router.push("/");
+    }
     setIsOnSection2(false);
-    router.push("/");
   }
 
   return (

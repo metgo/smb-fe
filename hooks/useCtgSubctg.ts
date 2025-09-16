@@ -34,7 +34,7 @@ export const useCtgSubctg = () => {
     params.delete("subCategoryId");
 
     window.scrollTo({
-      top: isHomepage ? 10 : 0,
+      top: isHomepage ? 940 : 0,
       left: 0,
       behavior: "smooth",
     });
@@ -65,7 +65,7 @@ export const useCtgSubctg = () => {
     params.delete("groupTypesIds");
     params.delete("accessibilitiesIds");
     window.scrollTo({
-      top: isHomepage ? 10 : 0,
+      top: isHomepage ? 940 : 0,
       left: 0,
       behavior: "smooth",
     });
