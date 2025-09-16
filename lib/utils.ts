@@ -26,8 +26,8 @@ export const paymentMethodType = {
 };
 
 export const imagePlayTypeEnum = {
-  arrow: "ARROW",
-  carousel: "CAROUSEL",
+  manual: "MANUAL",
+  automate: "AUTOMATE",
 };
 
 export const contactFormReasonOptions = [

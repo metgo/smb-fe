@@ -1,7 +1,7 @@
 "use server";
 
 import { urls } from "@/lib/endpoints";
-import { CODE } from "@/constant/envConstants";
+import { CODE, IdentifierId } from "@/constant/envConstants";
 
 export async function getAllLocations() {
   try {
@@ -50,7 +50,7 @@ export async function getLocationDetailsById(locationId: string) {
 
 export async function getSiteInfo() {
   try {
-    const res = await fetch(`${urls.siteInfo}/BNEI-FO5%24GZ%294%253XD%3DB6I5T`);
+    const res = await fetch(`${urls.siteInfo}/${IdentifierId}`);
     if (!res.ok) throw new Error("Failed to fetch categories");
     const data = await res.json();
     return data;
