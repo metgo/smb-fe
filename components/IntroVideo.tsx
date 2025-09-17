@@ -61,7 +61,7 @@ const IntroVideo = ({ siteInfo }: { siteInfo: any }) => {
   };
 
   return (
-    <div className="relative w-full h-full">
+    <div className="relative w-full h-screen">
       <video
         ref={videoRef}
         loop

@@ -1,16 +1,17 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
 import { IconImage } from "../ui";
-import { misc } from "@/constant/hebrew";
+import MarketingContent from "./MarketingContent";
 
 interface ArrowImageProps {
   images: {
     url: string;
     link: string;
+    title: string;
+    description: string;
   }[];
 }
 
@@ -66,15 +67,7 @@ const ArrowImage = ({ images }: ArrowImageProps) => {
       {/* White border 10px from edge */}
       <div className="absolute top-6 left-6 right-6 bottom-6 border-4 border-white pointer-events-none z-20" />
 
-      <div className="absolute top-2/3 right-20 -translate-y-1/2 z-30">
-        <Link
-          href={images?.[currentIndex]?.link}
-          target="_blank"
-          className="custom-cursor  border border-lightGray bg-white/90 backdrop-blur-sm px-8 py-3 rounded-lg font-semibold text-gray-800 hover:bg-white hover:scale-105 transition-all duration-300 shadow-xl font-bold"
-        >
-          {misc.forMoreDetails}
-        </Link>
-      </div>
+      <MarketingContent content={images?.[currentIndex]} />
 
       {/* Circle indicators */}
       <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex gap-4 z-30 items-center">
