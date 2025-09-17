@@ -54,7 +54,7 @@ const page = async ({ searchParams }: Props) => {
     <div>
       <ScrollSnapWrapper>
         {/* Hero Section */}
-        <section className="width-screen h-screen relative overflow-hidden">
+        <section className="relative">
           <div className="z-20 fixed top-2.5 right-0 w-full flex items-center justify-between ps-20 pe-16">
             <div className="flex items-center gap-5">
               <HamburgerMenu
@@ -76,14 +76,16 @@ const page = async ({ searchParams }: Props) => {
 
         {/* Feed Section */}
         <section className="relative z-50 bg-white">
-          {marketing?.playType === imagePlayTypeEnum.manual ? (
-            <ArrowImage images={marketing?.items} />
-          ) : (
-            <CarouselImage
-              images={marketing?.items}
-              timeInterval={marketing?.timeInterval}
-            />
-          )}
+          <div>
+            {marketing?.playType === imagePlayTypeEnum.manual ? (
+              <ArrowImage images={marketing?.items} />
+            ) : (
+              <CarouselImage
+                images={marketing?.items}
+                timeInterval={marketing?.timeInterval}
+              />
+            )}
+          </div>
           <Navbar showFilterTab />
           <BusinessFeedLayout businesses={businesses} />
         </section>

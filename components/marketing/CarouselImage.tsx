@@ -1,22 +1,24 @@
 "use client";
 
-import Image from "next/image";
-import { Swiper, SwiperSlide } from "swiper/react";
-import React, { useEffect, useRef, useState } from "react";
-import { Navigation, Pagination, Autoplay, EffectFade } from "swiper/modules";
-
 // Import Swiper styles
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
 import "swiper/css/effect-fade";
-import Link from "next/link";
-import { misc } from "@/constant/hebrew";
+
+import Image from "next/image";
+import { Swiper, SwiperSlide } from "swiper/react";
+import React, { useEffect, useRef, useState } from "react";
+import { Navigation, Pagination, Autoplay, EffectFade } from "swiper/modules";
+
+import MarketingContent from "./MarketingContent";
 
 interface CarouselImageProps {
   images: {
     url: string;
     link: string;
+    title: string;
+    description: string;
   }[];
   timeInterval: string;
 }
@@ -83,15 +85,7 @@ const CarouselImage = ({ images, timeInterval }: CarouselImageProps) => {
                 priority={index === 0}
                 sizes="100vw"
               />
-              <div className="absolute top-2/3 right-20 -translate-y-1/2 z-30">
-                <Link
-                  href={img?.link}
-                  target="_blank"
-                  className="custom-cursor  border border-lightGray bg-white/90 backdrop-blur-sm px-8 py-3 rounded-lg font-semibold text-gray-800 hover:bg-white hover:scale-105 transition-all duration-300 shadow-xl font-bold"
-                >
-                  {misc.forMoreDetails}
-                </Link>
-              </div>
+              <MarketingContent content={img} />
               {/* Gradient overlay for better text visibility */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent rounded-lg" />
             </div>
