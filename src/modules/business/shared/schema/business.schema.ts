@@ -124,6 +124,7 @@ export class Business extends AuditableSchema {
       prefferedChannel: String,
     },
     default: null,
+    _id: false,
   })
     contactDetails: {
     name: { type: string; default: null };

@@ -3,6 +3,16 @@ import mongoose, { HydratedDocument } from 'mongoose';
 
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
 
+@Schema({ _id: false })
+export class Video {
+  @Prop({ required: true })
+    url: string;
+
+  @Prop({ default: true })
+    isActive: boolean;
+}
+const VideoSchema = SchemaFactory.createForClass(Video);
+
 @Schema()
 export class Theme extends AuditableSchema {
   @Prop({
@@ -57,6 +67,9 @@ export class Theme extends AuditableSchema {
 
   @Prop()
     ogName: string;
+
+  @Prop({ type: [VideoSchema], default: [] })
+    homeVideos: Video[];
 }
 
 export type Themes = HydratedDocument<Theme>;

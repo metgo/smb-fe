@@ -51,6 +51,8 @@ import { SearchModule } from './modules/search/search.module';
 import { GoogleSheetsModule } from './services/google-sheets/google-sheets.module';
 import { ContactUsModule } from './modules/contact-us/contact-us.module';
 import { TripModule } from './modules/trips/trips.module';
+import { BlogModule } from './modules/blog/blog.module';
+import { MarketingModule } from './modules/marketing/marketing.module';
 
 @Module({
   imports: [
@@ -101,6 +103,8 @@ import { TripModule } from './modules/trips/trips.module';
     GoogleSheetsModule,
     ContactUsModule,
     TripModule,
+    BlogModule,
+    MarketingModule,
   ],
   providers: [
     {

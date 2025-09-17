@@ -12,6 +12,8 @@ import { disSelect } from 'src/common/utils/select.handling';
 import { findOneByFieldName } from 'src/core/helper/query-helper';
 import { ExternalApi } from 'src/modules/external-api/schema/external-api.schema';
 import { Theme } from '../themes/schema/theme.schema';
+import { Blog } from '../blog/schema/blog.schema';
+import { Marketing } from '../marketing/schema/marketing.schema';
 
 @Injectable()
 export class ExternalApiServices {
@@ -104,7 +106,7 @@ export class ExternalApiServices {
         identifierId,
       }).populate<{ themeId: Theme }>(
         'themeId',
-        'homeHeader homeDescription faceBookUrl instagramUrl twitterUrl threadsUrl websiteUrl youtubeUrl whatsappNo primaryColor secondaryColor metaTitle metaDescription metaKeywords ogName',
+        'homeHeader homeDescription faceBookUrl instagramUrl twitterUrl threadsUrl websiteUrl youtubeUrl whatsappNo primaryColor secondaryColor metaTitle metaDescription metaKeywords ogName homeVideos',
       );
       if (!externalApi) {
         throw new ForbiddenException(ServerErrors.EXTERNAL_API.IDENTIFIER_ID);
@@ -137,13 +139,58 @@ export class ExternalApiServices {
     }
   }
 
+  async findByIdentifierIdAndPopulateMarketing(identifierId: string) {
+    try {
+      const externalApi = await this.ExternalApiModel.findOne({
+        identifierId,
+      }).populate<{ marketingIds: Marketing[] }>('marketingIds', '_id images');
+      if (!externalApi) {
+        throw new ForbiddenException(ServerErrors.EXTERNAL_API.IDENTIFIER_ID);
+      }
+
+      return externalApi;
+    } catch (err) {
+      this.logger.error(
+        `[EXTERNAL_API-${identifierId}]: FAILED TO GET EXTERNAL API'`,
+        {
+          err: err.message,
+        },
+      );
+      exceptionHandling(err);
+    }
+  }
+
+  async findByIdentifierIdAndPopulateBlog(identifierId: string) {
+    try {
+      const externalApi = await this.ExternalApiModel.findOne({
+        identifierId,
+      }).populate<{ blogIds: Blog[] }>(
+        'blogIds',
+        '_id status title subTitle content images',
+      );
+      if (!externalApi) {
+        throw new ForbiddenException(ServerErrors.EXTERNAL_API.IDENTIFIER_ID);
+      }
+
+      return externalApi;
+    } catch (err) {
+      this.logger.error(
+        `[EXTERNAL_API-${identifierId}]: FAILED TO GET EXTERNAL API'`,
+        {
+          err: err.message,
+        },
+      );
+      exceptionHandling(err);
+    }
+  }
+
   async getSiteInfoByIdentifierId(identifierId: string) {
     try {
       const externalApi = await this.ExternalApiModel.findOne({
         identifierId,
       }).populate<{ themeId: Theme }>(
         'themeId',
-        'metaTitle metaDescription metaKeywords ogName',
+        'metaTitle metaDescription metaKeywords ogName homeVideos',
       );
       if (!externalApi) {
         throw new ForbiddenException(ServerErrors.EXTERNAL_API.IDENTIFIER_ID);
@@ -156,6 +203,7 @@ export class ExternalApiServices {
         metaKeywords: externalApi?.themeId?.metaKeywords,
         siteName: externalApi?.themeId?.ogName,
         siteUrl: externalApi?.themeId?.websiteUrl,
+        homeVideos: externalApi?.themeId?.homeVideos?.filter(v => v.isActive),
       };
     } catch (err) {
       this.logger.error(

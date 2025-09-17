@@ -2,6 +2,8 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
 
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
+import { Blog } from 'src/modules/blog/schema/blog.schema';
+import { Marketing } from 'src/modules/marketing/schema/marketing.schema';
 import { Theme } from 'src/modules/themes/schema/theme.schema';
 
 @Schema()
@@ -58,6 +60,20 @@ export class ExternalApi extends AuditableSchema {
     required: false,
   })
     themeId: mongoose.Types.ObjectId;
+
+  @Prop({
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: Marketing.name }],
+    ref: Marketing.name,
+    required: false,
+  })
+    marketingIds: mongoose.Types.ObjectId[];
+
+  @Prop({
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: Blog.name }],
+    ref: Blog.name,
+    required: false,
+  })
+    blogIds: mongoose.Types.ObjectId[];
 
   @Prop({ default: null })
     welcomeBanner: string;

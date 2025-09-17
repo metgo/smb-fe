@@ -39,6 +39,7 @@ export class Cart extends AuditableSchema {
         itemType: { type: String, enum: Object.values(OrderItemType) },
       },
     ],
+    _id: false,
   })
     product: CartProductPayload[];
 

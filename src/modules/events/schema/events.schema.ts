@@ -184,7 +184,7 @@ export class Event extends AuditableSchema {
     type: [
       {
         ticketIds: [{ type: mongoose.Schema.Types.ObjectId, ref: Ticket.name }],
-        date: { type: String, required: true },
+        date: { type: Date, required: true },
         description: { type: String, required: false, default: null },
         startTime: { type: String, required: false, default: null },
         endTime: { type: String, required: false, default: null },
@@ -194,7 +194,7 @@ export class Event extends AuditableSchema {
   })
     dayDescription: {
     ticketIds: mongoose.Types.ObjectId[];
-    date: string;
+    date: Date;
     description?: string;
     startTime?: string;
     endTime?: string;

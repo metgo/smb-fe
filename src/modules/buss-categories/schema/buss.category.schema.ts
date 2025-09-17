@@ -17,6 +17,9 @@ export class BussCategory extends AuditableSchema {
 
   @Prop()
     hebrewName: string;
+
+  @Prop({ default: true })
+    isVisible: boolean;
 }
 export type BussCategoryDocument = HydratedDocument<BussCategory>;
 
