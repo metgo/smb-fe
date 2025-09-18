@@ -1,14 +1,17 @@
 "use client";
 
+import clsx from "clsx";
 import Image from "next/image";
-import { useEffect, useMemo } from "react";
+import { createPortal } from "react-dom";
 import { IoIosCloseCircle } from "react-icons/io";
+import { useEffect, useMemo, useState } from "react";
 import {
   DragDropContext,
   Droppable,
   Draggable,
   DropResult,
 } from "@hello-pangea/dnd";
+import { Tooltip } from "react-tooltip";
 
 import { misc } from "@/constant/hebrew";
 import { stationCategory } from "@/lib/utils";
@@ -38,7 +41,7 @@ const StationCard = ({
   onRemove: (id: string) => void;
   canRemove: boolean;
 }) => (
-  <Draggable draggableId={station._id} index={index}>
+  <Draggable draggableId={station?._id} index={index}>
     {(provided) => (
       <div
         ref={provided.innerRef}
@@ -51,7 +54,7 @@ const StationCard = ({
           <NextImage
             width={140}
             height={118}
-            alt={station.name}
+            alt={station?.name || "station image"}
             imgSrc={station?.image}
             className="rounded-md object-cover h-full"
           />
@@ -60,7 +63,7 @@ const StationCard = ({
               width={30}
               height={30}
               alt="category icon"
-              src={`/images/category/${stationCategory[station.primaryCategoryId]}`}
+              src={`/images/category/${stationCategory[station?.primaryCategoryId]}`}
               className="object-cover"
             />
           </div>
@@ -69,13 +72,25 @@ const StationCard = ({
         {/* Content */}
         <div className="col-span-4">
           <div className="flex items-start justify-between">
-            <h2 className="font-bold text-dark max-w-68">{station.name}</h2>
+            <h2 className="font-bold text-dark max-w-68">{station?.name}</h2>
             {canRemove && (
-              <IoIosCloseCircle
-                size={24}
-                className="hidden group-hover:block custom-cursor"
-                onClick={() => onRemove(station._id)}
-              />
+              <>
+                <IoIosCloseCircle
+                  size={24}
+                  data-tooltip-id="remove-info"
+                  className="hidden group-hover:block custom-cursor"
+                  onClick={() => onRemove(station?._id)}
+                />
+                {createPortal(
+                  <Tooltip
+                    id="remove-info"
+                    place="left"
+                    offset={10}
+                    content={misc.statingRemoving}
+                  />,
+                  document.body,
+                )}
+              </>
             )}
           </div>
           <div
@@ -110,30 +125,53 @@ const TrailStations = ({ stations, _id }: TrailDetailsProps) => {
     resetTrailStation,
   } = useTrailStationStore();
 
+  const [isTrailModified, setIsTrailModified] = useState(false);
   const localStations = getStationsByTrailId(_id);
   const removedStations = getRemovedStationsByTrailId(_id);
+  const originalStations = useMemo(() => flattenStations(stations), [stations]);
 
-  // Setup initial stations
+  // Check if stations are modified
+  const checkIfModified = useMemo(() => {
+    if (!localStations || localStations.length === 0) return false;
+
+    // Check if any stations are removed
+    if (removedStations && removedStations.length > 0) return true;
+
+    // Check if the length or order of stations has changed
+    if (localStations.length !== originalStations.length) return true;
+
+    // Check if the order or IDs are different
+    return localStations.some(
+      (station, index) => station._id !== originalStations[index]._id,
+    );
+  }, [localStations, removedStations, originalStations]);
+
+  // Setup initial stations and update isTrailModified
   useEffect(() => {
     if (!localStations || localStations.length === 0) {
-      setTrailStations(_id, flattenStations(stations));
+      setTrailStations(_id, originalStations);
+      setIsTrailModified(false);
+    } else {
+      setIsTrailModified(checkIfModified);
     }
-  }, [stations, _id, localStations, setTrailStations]);
+  }, [_id, localStations, originalStations, setTrailStations, checkIfModified]);
 
-  // Get visible stations (memoized)
   const visibleStations = useMemo(
     () =>
-      (localStations || []).filter((s) => !removedStations?.includes(s._id)),
+      (localStations || []).filter((s) => !removedStations?.includes(s?._id)),
     [localStations, removedStations],
   );
 
   // Handlers
-  const handleRemove = (stationId: string) =>
+  const handleRemove = (stationId: string) => {
     removeTrailStation(_id, stationId);
+    setIsTrailModified(true);
+  };
 
   const handleReset = () => {
-    resetTrailStation(_id); // clears
-    setTrailStations(_id, flattenStations(stations)); // restores
+    resetTrailStation(_id);
+    setTrailStations(_id, originalStations);
+    setIsTrailModified(false);
   };
 
   const handleDragEnd = (result: DropResult) => {
@@ -145,6 +183,11 @@ const TrailStations = ({ stations, _id }: TrailDetailsProps) => {
     reordered.splice(destination.index, 0, removed);
 
     setTrailStations(_id, reordered);
+    // Check if the new order differs from original
+    const isOrderModified = reordered.some(
+      (station, index) => station._id !== originalStations[index]._id,
+    );
+    setIsTrailModified(isOrderModified || removedStations?.length > 0);
   };
 
   return (
@@ -153,10 +196,17 @@ const TrailStations = ({ stations, _id }: TrailDetailsProps) => {
       <div className="w-full flex justify-between items-center mb-4">
         <button
           type="button"
+          disabled={!isTrailModified}
           onClick={handleReset}
-          className="border-2 border-black/60 rounded-xl px-4 pt-2 pb-1 custom-cursor font-bold"
+          className={clsx(
+            !isTrailModified
+              ? "cursor-not-allowed bg-secondary"
+              : "custom-cursor bg-black",
+            "rounded-xl px-4 py-2 font-bold text-white flex items-center gap-2",
+          )}
         >
-          {misc.reset}
+          <IconImage icon="reset" />
+          {misc.cancelChanges}
         </button>
         <button
           type="button"
@@ -180,11 +230,11 @@ const TrailStations = ({ stations, _id }: TrailDetailsProps) => {
             >
               {visibleStations?.map((station, index) => (
                 <StationCard
-                  key={station._id}
+                  key={station?._id || index}
                   station={station}
                   index={index}
                   onRemove={handleRemove}
-                  canRemove={visibleStations.length > 2}
+                  canRemove={visibleStations?.length > 2}
                 />
               ))}
               {provided.placeholder}

@@ -10,11 +10,12 @@ export const misc = {
   hours: "שעות פעילות",
   openNow: "פתוח עכשיו",
   opinion: "חוות דעת",
-  filter: "מסננים",
   start: "התחלה",
   end: "סיום",
   close: "תודה",
   reset: "אִתחוּל",
+  statingRemoving: "הסרת תחנה",
+  cancelChanges: "ביטול שינויים",
   pleaseWaitLoading: "אנא המתן. טוען...",
   addAllStationOnCart: "הוספת כל התחנות לסל",
   toAllTracks: "לכל המסלולים",
@@ -247,4 +248,12 @@ export const blogLabels = {
   theFlourishingBlog: "הבלוג הפורח",
   desc: "רשמים, מחשבות ודברים טובים מהאיזור",
   toTheFullBlog: "לבלוג המלא",
+};
+
+export const filterLabels = {
+  show: "הצג",
+  filter: "מסננים",
+  preferences: "העדפות",
+  targetAudiences: "קהל יעד",
+  clearEverything: "ניקוי הכל",
 };

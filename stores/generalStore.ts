@@ -1,5 +1,10 @@
 import { create } from "zustand";
 
+type FilterType = {
+  _id: string;
+  name: string;
+};
+
 interface GeneralStoreState {
   zIndex: string;
   setZIndex: (value: string) => void;
@@ -11,9 +16,14 @@ interface GeneralStoreState {
   setClickedBusinessId: (key: string) => void;
   isOnSection2: boolean;
   setIsOnSection2: (isOnSection2: boolean) => void;
-  // not used yet
   isSearchModalOpen: boolean;
   setIsSerachModalOpen: (isOpen: boolean) => void;
+  groupTypes: FilterType[];
+  setGroupTypes: (item: FilterType[]) => void;
+  accessibilities: FilterType[];
+  setAccessibilities: (item: FilterType[]) => void;
+  appliedFilterItemCount: number;
+  setAppliedFilterItemCount: (count: number) => void;
 }
 
 const useGeneralStore = create<GeneralStoreState>((set) => ({
@@ -29,6 +39,12 @@ const useGeneralStore = create<GeneralStoreState>((set) => ({
   setIsSerachModalOpen: (isOpen) => set({ isSearchModalOpen: isOpen }),
   isOnSection2: false,
   setIsOnSection2: (isOnSection2) => set({ isOnSection2 }),
+  groupTypes: [],
+  setGroupTypes: (item) => set({ groupTypes: item }),
+  accessibilities: [],
+  setAccessibilities: (item) => set({ accessibilities: item }),
+  appliedFilterItemCount: 0,
+  setAppliedFilterItemCount: (count) => set({ appliedFilterItemCount: count }),
 }));
 
 export default useGeneralStore;

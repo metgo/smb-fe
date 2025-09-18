@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 
 import { useIsHydrated } from "@/hooks";
 import { useLoadMore } from "@/hooks/useLoadMore";
@@ -19,11 +19,16 @@ const BusinessFeedLayout = ({
   businesses: BusinessesProps;
 }) => {
   const isHydrated = useIsHydrated();
-  const { activeFilterTab, isOnSection2 } = useGeneralStore();
+  const { activeFilterTab, isOnSection2, setAppliedFilterItemCount } =
+    useGeneralStore();
   const { sentryRef, loading, initialLoadDone, canLoadMore } = useLoadMore(
     businesses?.meta?.hasNextPage,
   );
   const totalBusiness = businesses?.totalData;
+  useEffect(() => {
+    if (businesses?.data?.length > 0)
+      setAppliedFilterItemCount(businesses?.data?.length);
+  }, [businesses]);
 
   const triggerRef = useRef(null);
 

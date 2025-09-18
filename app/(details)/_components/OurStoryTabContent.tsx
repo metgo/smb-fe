@@ -43,18 +43,18 @@ const OurStoryTabContent = ({
   const aspectRatio = 438 / 360;
 
   const {
-    shouldShowSkeleton,
+    loading,
     isImageTransitionComplete,
     handleImageError,
     handleImageLoad,
     finalImageSrc,
-  } = useImageCrop(images[0], aspectRatio);
+  } = useImageCrop(images?.[0], aspectRatio);
 
   return (
     <div className="space-y-12.5">
       <div className="grid grid-cols-12 gap-10.5">
-        <div className="w-[638px] h-[360px] col-span-5 ">
-          {shouldShowSkeleton ? (
+        <div className=" col-span-5 ">
+          {loading ? (
             <CardSkeleton
               className={"w-[638px] h-[360px] rounded-xl"}
               primaryCategoryId={primaryCategoryId}
@@ -70,7 +70,7 @@ const OurStoryTabContent = ({
                 width={838}
                 height={360}
                 className="rounded-xl  h-[360px] w-[838px] object-cover ultra-sharp"
-                alt={images[0]?.alt || "Main image"}
+                alt={images?.[0]?.alt || "Main image"}
                 src={finalImageSrc}
                 onLoad={handleImageLoad}
                 onError={handleImageError}

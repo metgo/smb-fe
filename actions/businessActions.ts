@@ -10,6 +10,8 @@ const contextStates = new Map<
   {
     previousCategoryId: string | null;
     previousSubCategoryId: string | null;
+    previousGroupTypes: string[];
+    previousAccessibilities: string[];
     lastFetchedPage: number;
     pageCache: Map<number, BusinessProps[]>;
     metaCache: Map<number, any>;
@@ -22,6 +24,8 @@ const getContextState = (contextId: string) => {
     contextStates.set(contextId, {
       previousCategoryId: null,
       previousSubCategoryId: null,
+      previousGroupTypes: [],
+      previousAccessibilities: [],
       lastFetchedPage: 0,
       pageCache: new Map(),
       metaCache: new Map(),
@@ -34,6 +38,8 @@ export const getAllBusinesses = async (
   pageCount: number,
   categoryId: string,
   subCategoryId: string,
+  groupTypesIds: string[],
+  accessibilitiesIds: string[],
   contextId: string = "default",
 ): Promise<BusinessesProps> => {
   // Get state for this specific context
@@ -42,14 +48,41 @@ export const getAllBusinesses = async (
   const isCategoryChanged = state.previousCategoryId !== categoryId;
   const isSubCategoryChanged = state.previousSubCategoryId !== subCategoryId;
 
-  // Clear cache and reset data when category/subcategory changes
-  if (isCategoryChanged || isSubCategoryChanged) {
+  // Compare arrays for changes
+  const isGroupTypesChanged =
+    state?.previousGroupTypes?.length !== groupTypesIds?.length ||
+    state?.previousGroupTypes?.some((id, idx) => id !== groupTypesIds[idx]);
+
+  const isAccessibilitiesChanged =
+    state?.previousAccessibilities?.length !== accessibilitiesIds?.length ||
+    state?.previousAccessibilities?.some(
+      (id, idx) => id !== accessibilitiesIds[idx],
+    );
+
+  // Clear cache and reset data when category/subcategory/groupTypes/accessibilities change
+  if (
+    isCategoryChanged ||
+    isSubCategoryChanged ||
+    isGroupTypesChanged ||
+    isAccessibilitiesChanged
+  ) {
     state.pageCache.clear();
     state.metaCache.clear();
     state.lastFetchedPage = 0;
     state.previousCategoryId = categoryId;
     state.previousSubCategoryId = subCategoryId;
+    state.previousGroupTypes = [...groupTypesIds];
+    state.previousAccessibilities = [...accessibilitiesIds];
   }
+
+  const query = new URLSearchParams();
+
+  if (categoryId) query.append("bussCategoriesId", categoryId);
+  if (subCategoryId) query.append("bussSubCategoriesId", subCategoryId);
+  if (accessibilitiesIds?.length > 0)
+    accessibilitiesIds?.forEach((id) => query.append("accessibilitiesId", id));
+  if (groupTypesIds?.length > 0)
+    groupTypesIds?.forEach((id) => query.append("groupTypesId", id));
 
   // Only fetch pages that haven't been fetched yet
   for (let i = state.lastFetchedPage + 1; i <= pageCount; i++) {
@@ -57,7 +90,7 @@ export const getAllBusinesses = async (
     if (!isCached) {
       try {
         const res = await fetch(
-          `${urls.tourismBusinesses}?page=${i}&limit=100&bussCategoriesId=${categoryId}&bussSubCategoriesId=${subCategoryId}&sortBy=createdAt&sortOrder=DESC&campCode=${CODE}`,
+          `${urls.tourismBusinesses}?page=${i}&limit=100&sortBy=createdAt&sortOrder=DESC&campCode=${CODE}&${query.toString()}`,
           {
             cache: "no-store",
           },
@@ -71,7 +104,9 @@ export const getAllBusinesses = async (
         state.pageCache.set(i, randomizedData);
         state.metaCache.set(i, json.meta);
 
-        console.log(`Page ${i} fetched and cached, ${json.data.length} items`);
+        console.log(
+          `Page ${i} fetched and cached, ${json.data.length} items (ctx: ${contextId})`,
+        );
       } catch (err) {
         console.error(`Error fetching page ${i}:`, err);
         break;
@@ -110,6 +145,7 @@ export const getAllBusinesses = async (
 export const clearBusinessContext = async (contextId: string) => {
   await contextStates.delete(contextId);
 };
+
 // ------------------------------------------------------------------------------------------
 
 export const getAllCategory = async () => {
@@ -171,6 +207,21 @@ export async function getBusinessDetailsBySlug(slug: string) {
     if (!res.ok) throw new Error("Failed to fetch categories");
     const data = await res.json();
     return data;
+  } catch (error) {
+    console.error("Error fetching categories:", error);
+  }
+}
+
+export async function getFilterTypes(url: string) {
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error("Failed to fetch categories");
+    const data = await res.json();
+    const formattedData = data?.data?.map((item: any) => ({
+      _id: item._id,
+      name: item.name,
+    }));
+    return formattedData;
   } catch (error) {
     console.error("Error fetching categories:", error);
   }
