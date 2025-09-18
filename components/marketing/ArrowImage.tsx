@@ -68,11 +68,12 @@ const ArrowImage = ({ images }: ArrowImageProps) => {
       <div className="absolute top-6 left-6 right-6 bottom-6 border-4 border-white pointer-events-none z-20" />
 
       <MarketingContent content={images?.[currentIndex]} />
+      <div className="absolute inset-0 rounded-lg bg-gradient-to-tl from-black/80 via-black/20 to-transparent" />
 
       {/* Circle indicators */}
-      <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex gap-4 z-30 items-center">
+      <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex gap-8 z-30 items-center">
         <button type="button" onClick={handleNext} className="custom-cursor">
-          <IconImage icon="next" width={30} height={30} />
+          <IconImage icon="next" width={40} height={40} />
         </button>
         <div className="flex gap-2">
           {images?.map((_, idx) => (
@@ -88,7 +89,7 @@ const ArrowImage = ({ images }: ArrowImageProps) => {
           ))}
         </div>
         <button type="button" onClick={handlePrev} className="custom-cursor">
-          <IconImage icon="prev" width={30} height={30} />
+          <IconImage icon="prev" width={40} height={40} />
         </button>
       </div>
     </div>
