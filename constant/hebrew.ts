@@ -23,6 +23,7 @@ export const misc = {
   addToRoute: "הוספה למסלול",
   pleaseWait: "אנא המתן",
   linkCopied: "הקישר לדף הועתק",
+  forMoreDetails: "לפרטים נוספים",
   shareLink: "ניתן לשתף עם חברים ומשפחה על ידי הדבקת הקישור",
 };
 

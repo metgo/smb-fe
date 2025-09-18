@@ -9,7 +9,6 @@ import MenuItems from "./MenuItems";
 import SearchFlow from "./SearchFlow";
 import { navbar } from "@/constant/hebrew";
 import HamburgerMenu from "./HamburgerMenu";
-import UserIconHoverCard from "./UserIconHoverCard";
 import { ShopbagIcon } from "@/components/ui/icons";
 import CurrentTempOfYourCity from "./CurrentTempOfYourCity";
 import BusinessPageFilterTabs from "./BusinessPageFilterTabs";
@@ -67,7 +66,7 @@ const Navbar = ({ showFilterTab = false }: { showFilterTab?: boolean }) => {
                     <ShopbagIcon />
                   </div>
                 )}
-              <UserIconHoverCard />
+              {/* <UserIconHoverCard /> */}
               <CurrentTempOfYourCity />
             </div>
           </div>

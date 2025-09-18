@@ -1,9 +1,9 @@
 "use server";
 
 import { urls } from "@/lib/endpoints";
-import { CODE } from "@/constant/envConstants";
+import { CODE, IdentifierId } from "@/constant/envConstants";
 
-export const getAllLocations = async () => {
+export async function getAllLocations() {
   try {
     const res = await fetch(urls.locations);
     if (!res.ok) throw new Error("Failed to fetch categories");
@@ -33,13 +33,24 @@ export const getAllLocations = async () => {
   } catch (error) {
     console.error("Error fetching categories:", error);
   }
-};
+}
 
 export async function getLocationDetailsById(locationId: string) {
   try {
     const res = await fetch(
       `${urls.locationData}/${locationId}?campCode=${CODE}`,
     );
+    if (!res.ok) throw new Error("Failed to fetch categories");
+    const data = await res.json();
+    return data;
+  } catch (error) {
+    console.error("Error fetching categories:", error);
+  }
+}
+
+export async function getSiteInfo() {
+  try {
+    const res = await fetch(`${urls.siteInfo}/${IdentifierId}`);
     if (!res.ok) throw new Error("Failed to fetch categories");
     const data = await res.json();
     return data;
