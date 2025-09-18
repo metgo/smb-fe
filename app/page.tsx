@@ -1,8 +1,7 @@
-import Image from "next/image";
-
 import Navbar from "@/components/navbar";
 import { imagePlayTypeEnum } from "@/lib/utils";
 import IntroVideo from "@/components/IntroVideo";
+import MainLogo from "@/components/navbar/MainLogo";
 import { getSiteInfo } from "@/actions/commonActions";
 import { getMarketing } from "@/actions/marketingAction";
 import { ScrollSnapWrapper } from "@/components/wrappers";
@@ -60,13 +59,7 @@ const page = async ({ searchParams }: Props) => {
                 openIcon="white-threeline"
                 closeIcon="close-white"
               />
-              <Image
-                alt="Logo"
-                src={"/images/logo/white-logo.svg"}
-                width={88}
-                height={60}
-                className="z-50"
-              />
+              <MainLogo />
             </div>
             <CurrentTempOfYourCity />
           </div>

@@ -19,9 +19,8 @@ const FilterTrailsLayout = ({ meta, totalData, data }: TrailsFeedProps) => {
   const totalBusiness = totalData;
 
   useEffect(() => {
-    if (!isHydrate) return;
-    setAppliedFilterItemCount(data?.length);
-  }, [data, setAppliedFilterItemCount]);
+    if (data?.length > 0) setAppliedFilterItemCount(data?.length);
+  }, [data]);
 
   if (!isHydrate) return null;
   if (!totalBusiness) return <NoBusinessLayout />;
