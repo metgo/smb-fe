@@ -1,17 +1,12 @@
 import { Suspense } from "react";
 import Navbar from "@/components/navbar";
 
-import { getAllEvents } from "@/actions/eventActions";
 import FilterBusinessLayout from "@/components/layouts/FilterBusinessLayout";
 import { blogLabels } from "@/constant/hebrew";
+import { getAllBlogs } from "@/actions/blogActions";
 
-const page = async ({ searchParams }: SearchParamsProps | any) => {
-  const { page = 1 } = await searchParams;
-
-  const businesses: BusinessesProps = await getAllEvents(
-    Number(page),
-    "/events",
-  );
+const page = async () => {
+  const businesses: BusinessesProps = await getAllBlogs();
 
   return (
     <Suspense>
