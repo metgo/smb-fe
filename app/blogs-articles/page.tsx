@@ -1,12 +1,12 @@
 import { Suspense } from "react";
 import Navbar from "@/components/navbar";
 
-import FilterBusinessLayout from "@/components/layouts/FilterBusinessLayout";
 import { blogLabels } from "@/constant/hebrew";
 import { getAllBlogs } from "@/actions/blogActions";
+import BlogFeedCardsLayout from "@/components/layouts/BlogFeedCardsLayout";
 
 const page = async () => {
-  const businesses: BusinessesProps = await getAllBlogs();
+  const blogs = await getAllBlogs();
 
   return (
     <Suspense>
@@ -18,7 +18,7 @@ const page = async () => {
           </h1>
           <p className="font-normal">{blogLabels.desc}</p>
         </div>
-        <FilterBusinessLayout businesses={businesses} />
+        <BlogFeedCardsLayout blogs={blogs} />
       </div>
     </Suspense>
   );

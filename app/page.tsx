@@ -1,11 +1,14 @@
 import Image from "next/image";
 
 import Navbar from "@/components/navbar";
+import { imagePlayTypeEnum } from "@/lib/utils";
 import IntroVideo from "@/components/IntroVideo";
+import { getSiteInfo } from "@/actions/commonActions";
+import { getMarketing } from "@/actions/marketingAction";
 import { ScrollSnapWrapper } from "@/components/wrappers";
-import ScrollIndicator from "@/components/ScrollIndicator";
 import { getAllBusinesses } from "@/actions/businessActions";
 import HamburgerMenu from "@/components/navbar/HamburgerMenu";
+import { ArrowImage, CarouselImage } from "@/components/marketing";
 import BusinessFeedLayout from "@/components/layouts/BusinessFeedLayout";
 import CurrentTempOfYourCity from "@/components/navbar/CurrentTempOfYourCity";
 
@@ -43,12 +46,14 @@ const page = async ({ searchParams }: Props) => {
     accessibilitiesArray,
     "/",
   );
+  const marketing = await getMarketing();
+  const siteInfo = await getSiteInfo();
 
   return (
     <div>
-      <ScrollSnapWrapper>
+      <ScrollSnapWrapper hasMarketing={marketing?.items?.length > 0}>
         {/* Hero Section */}
-        <section className="width-screen h-screen relative overflow-hidden">
+        <section className="relative">
           <div className="z-20 fixed top-2.5 right-0 w-full flex items-center justify-between ps-20 pe-16">
             <div className="flex items-center gap-5">
               <HamburgerMenu
@@ -60,15 +65,28 @@ const page = async ({ searchParams }: Props) => {
                 src={"/images/logo/white-logo.svg"}
                 width={88}
                 height={60}
+                className="z-50"
               />
             </div>
             <CurrentTempOfYourCity />
           </div>
-          <IntroVideo />
-          <ScrollIndicator />
+          <IntroVideo siteInfo={siteInfo} />
         </section>
 
-        {/* Second Section */}
+        {marketing?.items?.length > 0 && (
+          <>
+            {marketing?.playType === imagePlayTypeEnum.manual ? (
+              <ArrowImage images={marketing?.items} />
+            ) : (
+              <CarouselImage
+                images={marketing?.items}
+                timeInterval={marketing?.timeInterval}
+              />
+            )}
+          </>
+        )}
+
+        {/* Feed Section */}
         <section className="relative z-50 bg-white">
           <Navbar showFilterTab />
           <BusinessFeedLayout businesses={businesses} />

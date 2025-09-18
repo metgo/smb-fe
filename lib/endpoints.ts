@@ -33,6 +33,9 @@ export const urls = {
   ticketDetails: `${BASE_URL}/tickets`,
 
   blogs: `${BASE_URL}/blogs`,
+  marketing: `${BASE_URL}/marketing`,
+
+  themes: `${BASE_URL}/themes`,
 };
 
 export const pathNames = {

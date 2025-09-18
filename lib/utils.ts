@@ -25,6 +25,11 @@ export const paymentMethodType = {
   ticket: "TICKET",
 };
 
+export const imagePlayTypeEnum = {
+  manual: "MANUAL",
+  automate: "AUTOMATE",
+};
+
 export const contactFormReasonOptions = [
   { value: "תווים", label: "תווים" },
   { value: "עסקים", label: "עסקים" },
@@ -172,20 +177,20 @@ export const categoryIcons = {
 };
 
 export const features = [
-  {
-    key: 1,
-    label: navbar.funDays,
-    icon: "kite",
-    activeIcon: "",
-    link: "",
-  },
-  {
-    key: 2,
-    label: navbar.toGroups,
-    icon: "user-group",
-    activeIcon: "",
-    link: "",
-  },
+  // {
+  //   key: 1,
+  //   label: navbar.funDays,
+  //   icon: "kite",
+  //   activeIcon: "",
+  //   link: "",
+  // },
+  // {
+  //   key: 2,
+  //   label: navbar.toGroups,
+  //   icon: "user-group",
+  //   activeIcon: "",
+  //   link: "",
+  // },
   {
     key: 3,
     label: navbar.events,
