@@ -1,19 +1,16 @@
 import { useRef, useState } from "react";
 
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { startLoading } from "@/components/wrappers/ProgressBar";
 
 export const useCtgSubctg = () => {
   const router = useRouter();
-  const pathname = usePathname();
   const searchParams = useSearchParams();
   const hasFetchedRef = useRef(false);
 
   const activeCategoryKey = searchParams.get("categoryId");
 
   const [activeSubCategory, setActiveSubCategory] = useState<string>();
-
-  const isHomepage = pathname === "/";
 
   const handleCategoryChange = async (categoryId: string) => {
     const isSameCategory = activeCategoryKey === categoryId;
@@ -34,7 +31,7 @@ export const useCtgSubctg = () => {
     params.delete("subCategoryId");
 
     window.scrollTo({
-      top: isHomepage ? 940 : 0,
+      top: 0,
       left: 0,
       behavior: "smooth",
     });
@@ -65,7 +62,7 @@ export const useCtgSubctg = () => {
     params.delete("groupTypesIds");
     params.delete("accessibilitiesIds");
     window.scrollTo({
-      top: isHomepage ? 940 : 0,
+      top: 0,
       left: 0,
       behavior: "smooth",
     });

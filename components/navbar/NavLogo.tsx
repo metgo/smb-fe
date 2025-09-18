@@ -10,7 +10,7 @@ import { pathNames } from "@/lib/endpoints";
 const NavLogo = () => {
   const router = useRouter();
   const pathname = usePathname();
-  const { setIsOnSection2 } = useGeneralStore();
+  const { setIsOnSection2, setHideFirstTwoSection } = useGeneralStore();
 
   function handleNavigation() {
     if (pathname === pathNames.home) {
@@ -22,6 +22,7 @@ const NavLogo = () => {
       startLoading();
       router.push("/");
     }
+    setHideFirstTwoSection(false);
     setIsOnSection2(false);
   }
 

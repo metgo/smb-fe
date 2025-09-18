@@ -3,15 +3,14 @@ import Image from "next/image";
 import Navbar from "@/components/navbar";
 import { imagePlayTypeEnum } from "@/lib/utils";
 import IntroVideo from "@/components/IntroVideo";
+import { getSiteInfo } from "@/actions/commonActions";
 import { getMarketing } from "@/actions/marketingAction";
 import { ScrollSnapWrapper } from "@/components/wrappers";
-import ScrollIndicator from "@/components/ScrollIndicator";
 import { getAllBusinesses } from "@/actions/businessActions";
 import HamburgerMenu from "@/components/navbar/HamburgerMenu";
 import { ArrowImage, CarouselImage } from "@/components/marketing";
 import BusinessFeedLayout from "@/components/layouts/BusinessFeedLayout";
 import CurrentTempOfYourCity from "@/components/navbar/CurrentTempOfYourCity";
-import { getSiteInfo } from "@/actions/commonActions";
 
 interface Props {
   searchParams: Promise<{
@@ -52,7 +51,7 @@ const page = async ({ searchParams }: Props) => {
 
   return (
     <div>
-      <ScrollSnapWrapper>
+      <ScrollSnapWrapper hasMarketing={marketing?.items?.length > 0}>
         {/* Hero Section */}
         <section className="relative">
           <div className="z-20 fixed top-2.5 right-0 w-full flex items-center justify-between ps-20 pe-16">
@@ -66,17 +65,16 @@ const page = async ({ searchParams }: Props) => {
                 src={"/images/logo/white-logo.svg"}
                 width={88}
                 height={60}
+                className="z-50"
               />
             </div>
             <CurrentTempOfYourCity />
           </div>
           <IntroVideo siteInfo={siteInfo} />
-          <ScrollIndicator />
         </section>
 
-        {/* Feed Section */}
-        <section className="relative z-50 bg-white">
-          <div>
+        {marketing?.items?.length > 0 && (
+          <>
             {marketing?.playType === imagePlayTypeEnum.manual ? (
               <ArrowImage images={marketing?.items} />
             ) : (
@@ -85,7 +83,11 @@ const page = async ({ searchParams }: Props) => {
                 timeInterval={marketing?.timeInterval}
               />
             )}
-          </div>
+          </>
+        )}
+
+        {/* Feed Section */}
+        <section className="relative z-50 bg-white">
           <Navbar showFilterTab />
           <BusinessFeedLayout businesses={businesses} />
         </section>
