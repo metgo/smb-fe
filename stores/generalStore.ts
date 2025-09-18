@@ -24,6 +24,8 @@ interface GeneralStoreState {
   setAccessibilities: (item: FilterType[]) => void;
   appliedFilterItemCount: number;
   setAppliedFilterItemCount: (count: number) => void;
+  hideFirstTwoSection: boolean;
+  setHideFirstTwoSection: (v: boolean) => void;
 }
 
 const useGeneralStore = create<GeneralStoreState>((set) => ({
@@ -45,6 +47,8 @@ const useGeneralStore = create<GeneralStoreState>((set) => ({
   setAccessibilities: (item) => set({ accessibilities: item }),
   appliedFilterItemCount: 0,
   setAppliedFilterItemCount: (count) => set({ appliedFilterItemCount: count }),
+  hideFirstTwoSection: false,
+  setHideFirstTwoSection: (v) => set({ hideFirstTwoSection: v }),
 }));
 
 export default useGeneralStore;
