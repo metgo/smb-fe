@@ -20,7 +20,6 @@ import { staticImages } from "@/constant/staticImages";
 import { useCommonHook } from "@/hooks";
 import { blogLabels } from "@/constant/hebrew";
 
-// Animation variants for better performance
 const cardVariants = {
   hidden: { y: 50, opacity: 0 },
   visible: { y: 0, opacity: 1 },

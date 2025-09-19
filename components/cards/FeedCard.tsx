@@ -2,8 +2,6 @@
 
 import clsx from "clsx";
 import Image from "next/image";
-import Link from "next/link";
-import { IoIosArrowBack } from "react-icons/io";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion, useInView, useAnimation } from "framer-motion";
 import { useEffect, useState, useMemo, useCallback } from "react";
@@ -22,7 +20,6 @@ import { googleSendGtmEvent, triggerName } from "@/lib/googleEventsConfig";
 import { CardSkeleton } from "../skeletons";
 import { staticImages } from "@/constant/staticImages";
 import { useCommonHook } from "@/hooks";
-import { blogLabels } from "@/constant/hebrew";
 
 // Animation variants for better performance
 const cardVariants = {
@@ -66,7 +63,6 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
   const pageTypes = useMemo(
     () => ({
       isEventPage: isCurrentPage(pathNames.events),
-      isBlogArticlePage: isCurrentPage(pathNames.blogArticles),
       isTrailPage: isCurrentPage(pathNames.trails),
     }),
     [isCurrentPage],
@@ -226,10 +222,9 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
       <div
         onMouseEnter={() => handleTrailMouseActions("enter")}
         onMouseLeave={() => handleTrailMouseActions("leave")}
-        {...(!pageTypes.isBlogArticlePage && { onClick: handleNavigation })}
+        onClick={handleNavigation}
         className={clsx(
-          !pageTypes.isBlogArticlePage && "custom-cursor",
-          "w-full h-full relative group rounded-xl overflow-hidden",
+          "w-full h-full relative group rounded-xl overflow-hidden custom-cursor",
         )}
       >
         {/* Main Image */}
@@ -257,13 +252,11 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
         />
 
         {/* Action Icons */}
-        {!pageTypes.isBlogArticlePage && (
-          <FeedCardActions
-            feedItem={feedItem}
-            pageTypes={pageTypes}
-            onMapIconClick={handleMapIconClick}
-          />
-        )}
+        <FeedCardActions
+          feedItem={feedItem}
+          pageTypes={pageTypes}
+          onMapIconClick={handleMapIconClick}
+        />
       </div>
     </motion.div>
   );
@@ -281,7 +274,6 @@ const FeedCardContent = ({
   feedItem: any;
   pageTypes: {
     isEventPage: boolean;
-    isBlogArticlePage: boolean;
     isTrailPage: boolean;
   };
   images: any[];
@@ -320,16 +312,6 @@ const FeedCardContent = ({
             setActiveImageIndex={setActiveImageIndex}
           />
         )}
-
-        {pageTypes.isBlogArticlePage && (
-          <Link
-            href={`${pathNames.blogArticleDetails}/${feedItem.slug}`}
-            className="py-2.5 px-4 rounded-xl custom-cursor bg-black/40 mt-4 flex items-center gap-2 w-max"
-          >
-            <span>{blogLabels.toTheFullBlog}</span>
-            <IoIosArrowBack size={20} />
-          </Link>
-        )}
       </div>
     </div>
   </div>
@@ -343,7 +325,6 @@ const FeedCardActions = ({
   feedItem: any;
   pageTypes: {
     isEventPage: boolean;
-    isBlogArticlePage: boolean;
     isTrailPage: boolean;
   };
   onMapIconClick: (e: React.MouseEvent, id: string) => void;
