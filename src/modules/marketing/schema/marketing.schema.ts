@@ -2,7 +2,6 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
 
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
-import { PlayType } from 'src/modules/marketing/marketing.type';
 
 @Schema({ _id: false })
 export class SubCoordinates {
@@ -33,6 +32,12 @@ export class ImageUrl {
   @Prop({ required: true })
     link: string;
 
+  @Prop({ required: false })
+    title: string;
+
+  @Prop({ required: false })
+    description: string;
+
   @Prop({ default: true })
     isActive: boolean;
 }
@@ -46,8 +51,8 @@ export class Image {
   @Prop({ required: true })
     timeInterval: string;
 
-  @Prop({ enum: PlayType, required: true, default: PlayType.CAROUSEL })
-    playType: PlayType;
+  @Prop({ required: true })
+    playType: string;
 }
 
 const ImageSchema = SchemaFactory.createForClass(Image);

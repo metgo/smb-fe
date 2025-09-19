@@ -11,12 +11,20 @@ export class GetAllBlogsHandler implements IQueryHandler<GetAllBlogsQuery> {
 
   async execute(query: GetAllBlogsQuery): Promise<any> {
     try {
-      const data
-        = await this.externalApiService.findByIdentifierIdAndPopulateBlog(
-          query.request.identifierId,
-        );
+      const data = await this.externalApiService.findByIdentifierIdAndPopulateBlog(
+        query.request.identifierId,
+      );
 
-      return data.blogIds.filter(blog => blog.status === BlogStatus.ACTIVE);
+      return await Promise.all(
+        data.blogIds
+          .filter(blog => blog.status === BlogStatus.ACTIVE)
+          .map(blog => ({
+            _id: blog._id,
+            title: blog.title,
+            subTitle: blog.subTitle,
+            images: blog.images,
+          })),
+      );
     } catch (error) {
       exceptionHandling(error);
     }

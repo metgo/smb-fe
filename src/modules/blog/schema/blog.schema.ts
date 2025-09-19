@@ -25,13 +25,19 @@ export const SubCoordinatesSchema
 @Schema({ _id: false })
 export class Image {
   @Prop({ required: true })
-    url: string;
+    image: string;
+
+  @Prop({ required: true })
+    caption: string;
+
+  @Prop({ required: true })
+    alt: string;
+
+  @Prop({ default: false })
+    isPrimary: boolean;
 
   @Prop({ type: SubCoordinatesSchema, required: false })
     subCoordinates?: SubCoordinates;
-
-  @Prop({ default: false })
-    isActive: boolean;
 }
 const ImageSchema = SchemaFactory.createForClass(Image);
 
