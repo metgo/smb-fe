@@ -11,6 +11,7 @@ import {
 } from "@/constant/collageLayouts";
 import BlogFeedCard from "../cards/BlogFeedCard";
 import { useSearchParams } from "next/navigation";
+import NoFeedItemLayout from "./NoFeedItemLayout";
 
 const BlogFeedCardsLayout = ({ blogs }: BlogFeedItems) => {
   const feedItemCount = blogs.length;
@@ -31,7 +32,7 @@ const BlogFeedCardsLayout = ({ blogs }: BlogFeedItems) => {
     return () => window.removeEventListener("resize", updateScale);
   }, []);
 
-  if (blogs.length < 1) return <div>No businesses available</div>;
+  if (blogs.length < 1) return <NoFeedItemLayout />;
 
   const renderCards = (
     indexes: number[],
