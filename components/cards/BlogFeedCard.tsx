@@ -174,7 +174,10 @@ const BlogFeedCard = ({ height, width, feedItem }: BlogFeedCardProps) => {
           src={
             computedValues.currentImage?.imageUrl || staticImages.placeholder
           }
-          className="object-cover transition-opacity duration-400 ultra-sharp opacity-100"
+          className={clsx(
+            "object-cover transition-transform duration-500 ease-in-out ultra-sharp",
+            "group-hover:scale-140",
+          )}
           priority={false}
         />
 

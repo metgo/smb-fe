@@ -237,7 +237,10 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
           unoptimized
           quality={100}
           sizes={`${width}px`}
-          className="object-cover transition-opacity duration-400 ultra-sharp opacity-100"
+          className={clsx(
+            "object-cover transition-transform duration-500 ease-in-out ultra-sharp",
+            "group-hover:scale-140",
+          )}
           priority={false}
         />
 

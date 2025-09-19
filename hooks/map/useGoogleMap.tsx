@@ -36,6 +36,34 @@ export const useGoogleMap = () => {
     }
   }, [activeFilterTab]);
 
+  const centerMapOnMarker = (marker: google.maps.Marker) => {
+    if (!map) return;
+
+    const position = marker.getPosition();
+    if (position) {
+      const screenWidth = window.innerWidth;
+      const screenHeight = window.innerHeight;
+
+      // Offset upward so InfoWindow isn’t cut off
+      const offsetLat = screenHeight < 600 ? 0.001 : 0.002;
+      const offsetLng = 0;
+
+      const newCenter = {
+        lat: position.lat() - offsetLat,
+        lng: position.lng() + offsetLng,
+      };
+
+      map.panTo(newCenter);
+
+      const currentZoom = map.getZoom();
+      if (currentZoom && currentZoom < 14) {
+        const targetZoom =
+          screenWidth < 640 ? 15 : screenWidth < 1024 ? 14 : 13;
+        map.setZoom(targetZoom);
+      }
+    }
+  };
+
   const addMarkers = () => {
     if (
       !map ||
@@ -111,6 +139,9 @@ export const useGoogleMap = () => {
           infoWindowRef.current?.setContent(container);
           infoWindowRef.current?.open(map, marker);
           activeMarkerRef.current = marker;
+
+          // Center the map on the clicked marker with info window
+          centerMapOnMarker(marker);
         }
       });
 
