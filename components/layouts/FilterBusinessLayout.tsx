@@ -37,7 +37,7 @@ const FilterBusinessLayout = ({ businesses }: Props) => {
   if (!totalBusiness) return <NoFeedItemLayout />;
 
   const renderLayout = () => {
-    if (pathname === pathNames.events)
+    if (pathname === pathNames.events || pathname === pathNames.blogArticles)
       return <OnlyFeedCardsLayout data={businesses.data} />;
 
     switch (activeFilterTab) {
@@ -54,7 +54,7 @@ const FilterBusinessLayout = ({ businesses }: Props) => {
 
   return (
     <div>
-      <div className="bg-primary">
+      <div>
         {renderLayout()}
         {initialLoadDone && canLoadMore && businesses?.meta?.hasNextPage && (
           <div ref={sentryRef} className="h-4">

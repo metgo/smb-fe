@@ -245,6 +245,12 @@ export const cartLabels = {
   youMayAlsoLike: "מוצרים שחשבנו שתאהבו גם",
 };
 
+export const blogLabels = {
+  theFlourishingBlog: "הבלוג הפורח",
+  desc: "רשמים, מחשבות ודברים טובים מהאיזור",
+  toTheFullBlog: "לבלוג המלא",
+};
+
 export const filterLabels = {
   show: "הצג",
   filter: "מסננים",

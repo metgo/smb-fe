@@ -37,7 +37,7 @@ declare interface SubCoordinates {
 
 declare interface ImageItem {
   image: string;
-  caption: string;
+  caption?: string;
   alt: string;
   subCoordinates?: SubCoordinates;
   isPrimary?: boolean;

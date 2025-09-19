@@ -31,6 +31,8 @@ export const urls = {
   trailDetails: `${BASE_URL}/trips`,
 
   ticketDetails: `${BASE_URL}/tickets`,
+
+  blogs: `${BASE_URL}/blogs`,
   marketing: `${BASE_URL}/marketing`,
 
   themes: `${BASE_URL}/themes`,
@@ -48,6 +50,8 @@ export const pathNames = {
   trailDetails: "/trail-details",
   checkout: "/check-out",
   contactUs: "/contact-us",
+  blogArticles: "/blogs-articles",
+  blogArticleDetails: "/blog-article-details",
   joinBusiness:
     SITE_ENVIRONMENT === "prod"
       ? "https://console.metgo.app"
