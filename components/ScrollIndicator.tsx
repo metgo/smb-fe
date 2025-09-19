@@ -27,7 +27,7 @@ const ScrollIndicator = ({ isSecond = false }: { isSecond?: boolean }) => {
     <div
       onClick={handleScroll}
       className={clsx(
-        isSecond ? " bottom-18" : " bottom-10.5",
+        isSecond ? " bottom-24" : " bottom-10.5",
         "absolute left-1/2 transform -translate-x-1/2 custom-cursor z-50",
       )}
     >

@@ -87,7 +87,7 @@ const CarouselImage = ({ images, timeInterval }: CarouselImageProps) => {
               />
               <MarketingContent content={img} />
               {/* Gradient overlay for better text visibility */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent rounded-lg" />
+              <div className="absolute inset-0 rounded-lg bg-gradient-to-tl from-black/80 via-black/20 to-transparent" />
             </div>
           </SwiperSlide>
         ))}
