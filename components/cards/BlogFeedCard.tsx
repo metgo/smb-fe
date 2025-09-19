@@ -4,20 +4,17 @@ import clsx from "clsx";
 import Image from "next/image";
 import Link from "next/link";
 import { IoIosArrowBack } from "react-icons/io";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { motion, useInView, useAnimation } from "framer-motion";
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useMemo } from "react";
 
 import { pathNames } from "@/lib/endpoints";
-import { navigationPaths } from "@/lib/utils";
-import { startLoading } from "../wrappers/ProgressBar";
 import { ImageCarouselControls } from "@/components/ui";
 import { useImagePresent } from "@/hooks/image/useImagePresent";
 import {
   getPrimaryCategoryId,
   removeInlineStylesFromHTML,
 } from "@/lib/helpers";
-import { googleSendGtmEvent, triggerName } from "@/lib/googleEventsConfig";
 import { CardSkeleton } from "../skeletons";
 import { staticImages } from "@/constant/staticImages";
 import { useCommonHook } from "@/hooks";
@@ -52,7 +49,6 @@ interface BlogFeedCardProps {
 }
 
 const BlogFeedCard = ({ height, width, feedItem }: BlogFeedCardProps) => {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [hasMounted, setHasMounted] = useState(false);
@@ -86,12 +82,7 @@ const BlogFeedCard = ({ height, width, feedItem }: BlogFeedCardProps) => {
         ? [feedItem]
         : [urlParams.categoryId, urlParams.subCategoryId],
     }),
-    [
-      pageTypes.isEventPage,
-      feedItem,
-      urlParams.categoryId,
-      urlParams.subCategoryId,
-    ],
+    [feedItem],
   );
 
   // Image loading hook
@@ -140,15 +131,6 @@ const BlogFeedCard = ({ height, width, feedItem }: BlogFeedCardProps) => {
     ],
   );
 
-  const handleNavigation = useCallback(() => {
-    startLoading();
-    googleSendGtmEvent(triggerName.navigateToBusiness, {
-      bussinessId: feedItem._id,
-      bussinessName: feedItem.title,
-    });
-    router.push(`${navigationPaths[window.location.pathname]}/${feedItem._id}`);
-  }, [feedItem._id, feedItem.title, router]);
-
   // Render skeleton
   if (computedValues.shouldShowSkeleton) {
     return (
@@ -179,9 +161,7 @@ const BlogFeedCard = ({ height, width, feedItem }: BlogFeedCardProps) => {
       transition={ANIMATION_CONFIG}
     >
       <div
-        {...(!pageTypes.isBlogArticlePage && { onClick: handleNavigation })}
         className={clsx(
-          !pageTypes.isBlogArticlePage && "custom-cursor",
           "w-full h-full relative group rounded-xl overflow-hidden",
         )}
       >
@@ -233,14 +213,13 @@ const BlogFeedCardContent = ({
         {feedItem?.title}
       </h3>
 
+      <div
+        dangerouslySetInnerHTML={{
+          __html: removeInlineStylesFromHTML(feedItem?.subTitle),
+        }}
+        className="line-clamp-2 font-bold text-[12px] text-white mt-1"
+      />
       <div className="hidden group-hover:block">
-        <div
-          dangerouslySetInnerHTML={{
-            __html: removeInlineStylesFromHTML(feedItem?.subTitle),
-          }}
-          className="line-clamp-2 font-bold text-[12px] text-white mt-1"
-        />
-
         {images.length > 1 && (
           <ImageCarouselControls
             totalImages={feedItem?.images?.length}

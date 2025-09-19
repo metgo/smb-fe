@@ -16,7 +16,9 @@ export async function getAllBlogs() {
 
 export async function getBlogById(blogId: string) {
   try {
-    const res = await fetch(`${urls.locationData}/${blogId}`);
+    const res = await fetch(
+      `${urls.blogs}/${blogId}?identifierId=${IdentifierId}`,
+    );
     if (!res.ok) throw new Error("Failed to fetch categories");
     const data = await res.json();
     return data;
