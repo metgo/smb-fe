@@ -20,7 +20,7 @@ const NavLogo = () => {
       });
     } else {
       startLoading();
-      router.push("/");
+      router.push(pathNames.home);
     }
     setHideFirstTwoSection(false);
     setIsOnSection2(false);

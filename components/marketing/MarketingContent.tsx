@@ -9,7 +9,7 @@ type ContentType = {
 
 const MarketingContent = ({ content }: { content: ContentType }) => {
   return (
-    <div className="absolute top-[45%] right-40 -translate-y-1/2 z-30 w-1/2">
+    <div className="absolute top-[55%] right-32 -translate-y-1/2 z-30 w-1/2">
       <div className="text-white font-bold mb-10">
         <h1 className=" text-[80px] leading-19 mb-3">{content?.title}</h1>
         <p className="">{content?.description}</p>

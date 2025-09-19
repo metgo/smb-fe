@@ -21,7 +21,6 @@ const BusinessFeedLayout = ({
   const isHydrated = useIsHydrated();
   const { activeFilterTab, isOnSection2, setAppliedFilterItemCount } =
     useGeneralStore();
-  console.log("---------isOnSection2", isOnSection2);
 
   const { sentryRef, loading, initialLoadDone, canLoadMore } = useLoadMore(
     businesses?.meta?.hasNextPage,

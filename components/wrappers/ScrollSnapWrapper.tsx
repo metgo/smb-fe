@@ -38,45 +38,31 @@ export default function ScrollSnapWrapper({
 
       // If first two sections are hidden, handle feed section scrolling
       if (hideFirstTwoSection) {
-        setIsOnSection2(true);
         const feedElement = feedSectionRef.current;
-        if (feedElement) {
-          const feedRect = feedElement.getBoundingClientRect();
-          // Check if the wheel event target is within a scrollable container inside the feed section
-          const target = e.target as HTMLElement;
-          const isInsideScrollable = target.closest("[data-scrollable]");
+        if (!feedElement) return;
 
-          // If the event is inside a scrollable container, allow default scrolling
-          if (isInsideScrollable) {
-            // Check if the scrollable container is at its scroll boundaries
-            const scrollableElement = isInsideScrollable as HTMLElement;
-            const { scrollTop, scrollHeight, clientHeight } = scrollableElement;
+        const target = e.target as HTMLElement;
+        const scrollableContainer = target.closest(
+          "[data-scrollable]",
+        ) as HTMLElement;
 
-            if (direction === "up" && scrollTop === 0) {
-              // At the top of the scrollable container, prevent scrolling up to previous sections
-              e.preventDefault();
-              smoothScroll(feedSectionRef.current);
-              return;
-            } else if (
-              direction === "down" &&
-              scrollTop + clientHeight >= scrollHeight - 1
-            ) {
-              // At the bottom of the scrollable container, allow window-level scrolling
-              return;
-            }
-            // Allow default scrolling within the scrollable container
-            return;
-          }
-
-          // If at the top of the feed section and scrolling up, prevent leaving the feed
-          if (direction === "up" && feedRect.top >= 0) {
-            e.preventDefault();
-            smoothScroll(feedSectionRef.current);
-            return;
-          }
-          // Allow normal window scrolling within the feed section
+        if (scrollableContainer) {
+          // Allow normal scrolling inside scrollable container
           return;
         }
+
+        const scrollTop = window.scrollY;
+        const feedOffsetTop = feedElement.offsetTop;
+
+        if (direction === "up" && scrollTop <= feedOffsetTop) {
+          e.preventDefault();
+          // Snap back to feed section top only if window is above feed
+          smoothScroll(feedSectionRef.current);
+          return;
+        }
+
+        // Allow normal scrolling down inside feed
+        return;
       }
 
       // First → Second
