@@ -118,31 +118,42 @@ const MapFeedIntegratedLayout = ({ data }: { data: FeedItemList }) => {
     if (extraBusinesses.length === 0) return null;
 
     const layout9 = scaleLayout(mapIntegratedCardsLayouts["layout9"], scale);
-    const columnKeys = Object.keys(mapIntegratedCardsColumns["layout9"]);
+    const columnLayout = mapIntegratedCardsColumns["layout9"];
+    const columnKeys = Object.keys(columnLayout);
 
+    // Create columns array to hold cards
     const columns = columnKeys.map(() => [] as any[]);
-    extraBusinesses.forEach((biz, i) => {
-      const columnIndex = i % columns.length;
-      columns[columnIndex].push(biz);
+
+    // Distribute extra businesses across columns following layout9 pattern
+    extraBusinesses.forEach((business, index) => {
+      const columnIndex = index % columns.length;
+
+      // Use random layout from layout9 for each card
+      const randomLayoutIndex = Math.floor(Math.random() * layout9.length);
+      const randomLayout = layout9[randomLayoutIndex];
+
+      columns[columnIndex].push({
+        business,
+        layout: randomLayout,
+        originalIndex: index,
+      });
     });
 
     return (
-      <div className="flex w-full gap-5">
+      <div className="flex gap-5">
         {columns.map((column, colIdx) => (
-          <div key={`column-${colIdx}`} className="flex flex-col gap-5">
-            {column.map((biz, bizIdx) => {
-              const layoutIndex =
-                (colIdx + bizIdx * columns.length) % layout9.length;
-              const layout = layout9[layoutIndex];
-              return (
-                <FeedCard
-                  key={biz._id + bizIdx}
-                  width={layout.width}
-                  height={layout.height}
-                  feedItem={biz}
-                />
-              );
-            })}
+          <div
+            key={`extra-column-${colIdx}`}
+            className="flex flex-col space-y-5"
+          >
+            {column.map((item) => (
+              <FeedCard
+                key={item.business._id + item.originalIndex}
+                width={item.layout.width}
+                height={item.layout.height}
+                feedItem={item.business}
+              />
+            ))}
           </div>
         ))}
       </div>

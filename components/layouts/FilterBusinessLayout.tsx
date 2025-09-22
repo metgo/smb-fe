@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 
 import { useLoadMore } from "@/hooks/useLoadMore";
@@ -11,7 +12,6 @@ import MapFeedIntegratedLayout from "./MapFeedIntegratedLayout";
 import StickyYellowRibbonImage from "../StickyYellowRibbonImage";
 import BusinessPinMap from "../maps/BusinessPinMap";
 import { useIsHydrated } from "@/hooks";
-import { useMemo } from "react";
 import { pathNames } from "@/lib/endpoints";
 
 interface Props {
@@ -28,10 +28,11 @@ const FilterBusinessLayout = ({ businesses }: Props) => {
     businesses?.meta?.hasNextPage,
   );
   const totalBusiness = businesses?.totalData;
-  useMemo(
-    () => setAppliedFilterItemCount(businesses?.data?.length),
-    [businesses.data],
-  );
+
+  useEffect(() => {
+    if (businesses?.data?.length > 0)
+      setAppliedFilterItemCount(businesses?.data?.length);
+  }, [businesses?.data]);
 
   if (!isHydrated) return null;
   if (!totalBusiness) return <NoFeedItemLayout />;

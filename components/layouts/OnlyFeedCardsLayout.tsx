@@ -1,6 +1,8 @@
 "use client";
 
+import clsx from "clsx";
 import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { scaleLayout, shuffleArray } from "@/lib/helpers";
 
 import {
@@ -9,8 +11,6 @@ import {
   REFERENCE_SCREEN_WIDTH,
 } from "@/constant/collageLayouts";
 import FeedCard from "../cards/FeedCard";
-import { useSearchParams } from "next/navigation";
-import clsx from "clsx";
 
 const OnlyFeedCardsLayout = ({ data }: { data: FeedItemList }) => {
   const feedItemCount = data.length;
