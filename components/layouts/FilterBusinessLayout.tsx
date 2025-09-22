@@ -30,9 +30,9 @@ const FilterBusinessLayout = ({ businesses }: Props) => {
   const totalBusiness = businesses?.totalData;
 
   useEffect(() => {
-    if (!isHydrated) return;
-    setAppliedFilterItemCount(businesses?.data?.length);
-  }, [businesses, setAppliedFilterItemCount]);
+    if (businesses?.data?.length > 0)
+      setAppliedFilterItemCount(businesses?.data?.length);
+  }, [businesses?.data]);
 
   if (!isHydrated) return null;
   if (!totalBusiness) return <NoFeedItemLayout />;
