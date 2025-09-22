@@ -13,30 +13,25 @@ import { triggerName, googleSendGtmEvent } from "@/lib/googleEventsConfig";
 const CategoryPanel = () => {
   const { handleCategoryChange, activeCategoryKey } = useCtgSubctg();
   const { categories, setCategories } = useCategoryStore();
-  const hasEmptyName = categories.some((cat) => cat.name === "");
 
   useEffect(() => {
-    if (hasEmptyName) {
-      async function fetchCategories() {
-        const res = await getAllCategory();
-        const apiCategories = res?.data ? res?.data : res;
-        const updatedCategories = categories?.map((cat) => {
-          const match = apiCategories?.find(
-            (apiCat: any) => apiCat.id === cat.id,
-          );
-          return {
-            ...cat,
-            name: match ? match.name : cat.name,
-          };
-        });
-        setCategories(updatedCategories);
-      }
-
-      fetchCategories();
+    async function fetchCategories() {
+      const res = await getAllCategory();
+      const apiCategories = res?.data ? res?.data : res;
+      const updatedCategories = categories?.map((cat) => {
+        const match = apiCategories?.find(
+          (apiCat: any) => apiCat.id === cat.id,
+        );
+        return {
+          ...cat,
+          name: match ? match.name : cat.name,
+        };
+      });
+      setCategories(updatedCategories);
     }
-  }, [hasEmptyName]);
 
-  if (hasEmptyName) return;
+    fetchCategories();
+  }, []);
 
   return (
     <div className="bg-[#FAFAFAE6] backdrop-blur-md border border-white/20 shadow-md flex items-center justify-center gap-2.5 p-2.5 rounded-2xl">

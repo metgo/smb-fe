@@ -37,6 +37,34 @@ export const useGoogleRouteDetailsMap = (
 
   useGoogleMapInit({ mapRef, setMap, infoWindowRef, activeMarkerRef });
 
+  const centerMapOnMarker = (marker: google.maps.Marker) => {
+    if (!map) return;
+
+    const position = marker.getPosition();
+    if (position) {
+      const screenWidth = window.innerWidth;
+      const screenHeight = window.innerHeight;
+
+      // Offset upward so InfoWindow isn’t cut off
+      const offsetLat = screenHeight < 600 ? 0.001 : 0.002;
+      const offsetLng = 0;
+
+      const newCenter = {
+        lat: position.lat() - offsetLat,
+        lng: position.lng() + offsetLng,
+      };
+
+      map.panTo(newCenter);
+
+      const currentZoom = map.getZoom();
+      if (currentZoom && currentZoom < 14) {
+        const targetZoom =
+          screenWidth < 640 ? 15 : screenWidth < 1024 ? 14 : 13;
+        map.setZoom(targetZoom);
+      }
+    }
+  };
+
   // --- Add markers ---
   useEffect(() => {
     if (!map || !locations?.length) return;
@@ -126,6 +154,8 @@ export const useGoogleRouteDetailsMap = (
           scaledSize: getIconSize(true, true),
         });
         activeMarkerRef.current = marker;
+
+        centerMapOnMarker(marker);
 
         if (!infoWindowRef.current)
           infoWindowRef.current = new google.maps.InfoWindow();
