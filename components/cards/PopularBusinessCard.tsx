@@ -7,6 +7,7 @@ import { IconImage, NextImage } from "../ui";
 import { searchText } from "@/constant/hebrew";
 import useGeneralStore from "@/stores/generalStore";
 import { startLoading } from "../wrappers/ProgressBar";
+import { pathNames } from "@/lib/endpoints";
 
 const PopularBusinessCard = ({
   name,
@@ -38,17 +39,17 @@ const PopularBusinessCard = ({
         className="rounded-xl object-cover"
       />
 
-      {navPath !== "event-details" && (
+      {navPath !== pathNames.eventDetails && (
         <div
           style={{ width: 40, height: 40 }}
           className="absolute right-4 top-4 rounded-lg overflow-hidden border border-lightGray "
         >
           <NextImage
-            isFill
             alt={logo?.alt}
             imgSrc={logo?.image}
             width={40}
             height={40}
+            className="rounded-lg object-cover"
           />
         </div>
       )}
