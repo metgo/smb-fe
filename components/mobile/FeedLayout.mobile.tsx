@@ -133,7 +133,7 @@ const MobileFeedLayout = ({ businesses }: { businesses: BusinessesProps }) => {
   };
 
   return (
-    <div className="flex flex-col h-screen mobile">
+    <div className="flex flex-col h-screen max-sm:block md:hidden">
       <MobileNavbar showFilterTab />
 
       {/* Image Section - Takes remaining height after subtracting 400px */}
