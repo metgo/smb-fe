@@ -16,26 +16,20 @@ const BusinessPageFilterTabs = () => {
 
   const isHomepage = pathname === "/";
 
-  const {
-    isMobile,
-    setClickedBusinessId,
-    activeFilterTab,
-    setActiveFilterTab,
-  } = useGeneralStore();
+  const { setClickedBusinessId, activeFilterTab, setActiveFilterTab } =
+    useGeneralStore();
 
   const [filteredTabs, setFilteredTabs] = useState<
     { key: string; label: string; icon: string }[]
   >([]);
 
   useEffect(() => {
-    if (isMobile) {
-      setFilteredTabs([filterTabs[0], filterTabs[2]]);
-    } else if (pathname === pathNames.trails) {
+    if (pathname === pathNames.trails) {
       setFilteredTabs(filterTabs.slice(0, 2));
     } else {
       setFilteredTabs(filterTabs);
     }
-  }, [pathname, isMobile]);
+  }, [pathname]);
 
   function handleTabSwitch(key: string) {
     setActiveFilterTab(key);
@@ -66,7 +60,7 @@ const BusinessPageFilterTabs = () => {
             } rounded-lg custom-cursor text-sm text-theme`}
           >
             <IconImage icon={item.icon} width={30} height={30} />
-            {!isMobile && <span>{item.label}</span>}
+            <span>{item.label}</span>
           </button>
         ))}
       </div>

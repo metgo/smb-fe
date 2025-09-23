@@ -1,13 +1,13 @@
 "use client";
 
+import clsx from "clsx";
 import { useEffect, useState } from "react";
 
-import { CartDrawer } from "../drawer";
 import NavLogo from "../navbar/NavLogo";
 import SearchFlow from "../navbar/SearchFlow";
 import HamburgerMenu from "../navbar/HamburgerMenu";
-import BusinessPageFilterTabs from "../navbar/BusinessPageFilterTabs";
 import useGeneralStore from "@/stores/generalStore";
+import MobileFilterTab from "./FilterTab.mobile";
 
 const MobileNavbar = ({
   showFilterTab = false,
@@ -15,7 +15,9 @@ const MobileNavbar = ({
   showFilterTab?: boolean;
 }) => {
   const { setIsMobile } = useGeneralStore();
-  const [isCartDrawerOpen, setIsCartDrawerOpen] = useState(false);
+
+  const [isVisible, setIsVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
 
   useEffect(() => {
     if (showFilterTab) {
@@ -23,9 +25,33 @@ const MobileNavbar = ({
     }
   }, [showFilterTab]);
 
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+
+      if (currentScrollY > lastScrollY && currentScrollY > 50) {
+        // scrolling down → hide navbar
+        setIsVisible(false);
+      } else {
+        // scrolling up → show navbar
+        setIsVisible(true);
+      }
+
+      setLastScrollY(currentScrollY);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [lastScrollY]);
+
   return (
     <>
-      <nav className="px-4 py-2.5 bg-white sticky top-0 z-20 border-b border-[#F5F5F5] max-sm:block md:hidden">
+      <nav
+        className={clsx(
+          "px-4 py-2.5 bg-white border-b border-[#F5F5F5] max-sm:block md:hidden sticky top-0 z-30 transition-transform duration-300",
+          isVisible ? "translate-y-0" : "-translate-y-full",
+        )}
+      >
         <div className="grid grid-cols-10 items-center">
           {/* Hamburger, Logo, Text */}
           <div className="flex items-center gap-4 col-span-4">
@@ -34,7 +60,7 @@ const MobileNavbar = ({
           </div>
 
           <div className="flex justify-center col-span-2">
-            {showFilterTab && <BusinessPageFilterTabs />}
+            {showFilterTab && <MobileFilterTab />}
           </div>
 
           <div className="flex items-center justify-end col-span-4">
@@ -44,8 +70,6 @@ const MobileNavbar = ({
           </div>
         </div>
       </nav>
-
-      {isCartDrawerOpen && <CartDrawer setIsOpen={setIsCartDrawerOpen} />}
     </>
   );
 };
