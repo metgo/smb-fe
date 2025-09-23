@@ -1,15 +1,18 @@
 import Link from "next/link";
+import { featureMenus } from "@/lib/utils";
 import { usePathname } from "next/navigation";
 
-import { features } from "@/lib/utils";
-import { IconImage } from "@/components/ui";
+import { IconImage } from "../ui";
+import useGeneralStore from "@/stores/generalStore";
 
 const MenuItems = () => {
   const pathname = usePathname();
+  const { aminitiesInfo } = useGeneralStore();
+  const visibleMenus = featureMenus.filter((menu) => aminitiesInfo[menu.key]);
 
   return (
     <div className="flex items-center gap-2 ms-9">
-      {features.map((item) => (
+      {visibleMenus.map((item) => (
         <Link
           key={item.key}
           href={item.link}
@@ -21,7 +24,11 @@ const MenuItems = () => {
             icon={item.link === pathname ? item.activeIcon : item.icon}
           />
           <div
-            className={`text-sm w-14 text-center ${item.link === pathname ? "text-charcoal font-bold" : "text-theme font-normal"}`}
+            className={`text-sm w-14 text-center ${
+              item.link === pathname
+                ? "text-charcoal font-bold"
+                : "text-theme font-normal"
+            }`}
           >
             {item.label}
           </div>

@@ -9,6 +9,15 @@ import {
 } from "@/components/ui/icons";
 import { pathNames } from "./endpoints";
 
+interface MenuItem {
+  key: string;
+  status: boolean;
+  label: string;
+  icon: string;
+  activeIcon: string;
+  link: string;
+}
+
 export const itemTypeEnum = {
   product: "PRODUCT",
   ticket: "TICKET",
@@ -200,6 +209,25 @@ export const features = [
   },
   {
     key: 4,
+    label: navbar.tracks,
+    icon: "trail",
+    activeIcon: "trail-dark",
+    link: pathNames.trails,
+  },
+];
+
+export const featureMenus: MenuItem[] = [
+  {
+    key: "event",
+    status: true,
+    label: navbar.events,
+    icon: "events",
+    activeIcon: "events-dark",
+    link: pathNames.events,
+  },
+  {
+    key: "trip",
+    status: true,
     label: navbar.tracks,
     icon: "trail",
     activeIcon: "trail-dark",

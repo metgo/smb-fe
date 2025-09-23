@@ -5,6 +5,10 @@ type FilterType = {
   name: string;
 };
 
+interface AminitiesInfoType {
+  [key: string]: boolean;
+}
+
 interface GeneralStoreState {
   zIndex: string;
   setZIndex: (value: string) => void;
@@ -28,6 +32,8 @@ interface GeneralStoreState {
   setHideFirstTwoSection: (v: boolean) => void;
   isMobile: boolean;
   setIsMobile: (v: boolean) => void;
+  aminitiesInfo: AminitiesInfoType;
+  setAminitiesInfo: (v: AminitiesInfoType) => void;
 }
 
 const useGeneralStore = create<GeneralStoreState>((set) => ({
@@ -53,6 +59,9 @@ const useGeneralStore = create<GeneralStoreState>((set) => ({
   setHideFirstTwoSection: (v) => set({ hideFirstTwoSection: v }),
   isMobile: false,
   setIsMobile: (v) => set({ isMobile: v }),
+
+  aminitiesInfo: { event: true, trip: true, business: true },
+  setAminitiesInfo: (v) => set({ aminitiesInfo: v }),
 }));
 
 export default useGeneralStore;

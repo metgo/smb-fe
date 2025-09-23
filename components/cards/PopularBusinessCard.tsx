@@ -45,6 +45,7 @@ const PopularBusinessCard = ({
           className="absolute right-4 top-4 rounded-lg overflow-hidden border border-lightGray "
         >
           <NextImage
+            isFill
             alt={logo?.alt}
             imgSrc={logo?.image}
             width={40}
