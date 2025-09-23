@@ -10,6 +10,7 @@ import HamburgerMenu from "@/components/navbar/HamburgerMenu";
 import { ArrowImage, CarouselImage } from "@/components/marketing";
 import BusinessFeedLayout from "@/components/layouts/BusinessFeedLayout";
 import CurrentTempOfYourCity from "@/components/navbar/CurrentTempOfYourCity";
+import MobileNavbar from "@/components/mobile/Navbar.mobile";
 
 interface Props {
   searchParams: Promise<{
@@ -82,6 +83,7 @@ const page = async ({ searchParams }: Props) => {
         {/* Feed Section */}
         <section className="relative z-50 bg-white">
           <Navbar showFilterTab />
+          <MobileNavbar showFilterTab />
           <BusinessFeedLayout businesses={businesses} />
         </section>
       </ScrollSnapWrapper>

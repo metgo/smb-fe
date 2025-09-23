@@ -26,6 +26,8 @@ interface GeneralStoreState {
   setAppliedFilterItemCount: (count: number) => void;
   hideFirstTwoSection: boolean;
   setHideFirstTwoSection: (v: boolean) => void;
+  isMobile: boolean;
+  setIsMobile: (v: boolean) => void;
 }
 
 const useGeneralStore = create<GeneralStoreState>((set) => ({
@@ -49,6 +51,8 @@ const useGeneralStore = create<GeneralStoreState>((set) => ({
   setAppliedFilterItemCount: (count) => set({ appliedFilterItemCount: count }),
   hideFirstTwoSection: false,
   setHideFirstTwoSection: (v) => set({ hideFirstTwoSection: v }),
+  isMobile: false,
+  setIsMobile: (v) => set({ isMobile: v }),
 }));
 
 export default useGeneralStore;
