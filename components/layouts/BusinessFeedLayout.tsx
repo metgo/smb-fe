@@ -52,7 +52,7 @@ const BusinessFeedLayout = ({
   };
 
   return (
-    <div>
+    <div className="md:block max-sm:hidden">
       {totalBusiness ? (
         <div className="bg-primary">
           {renderLayout()}

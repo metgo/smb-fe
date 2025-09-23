@@ -9,10 +9,10 @@ import useGeneralStore from "@/stores/generalStore";
 
 import { useIsHydrated } from "@/hooks";
 import { pathNames } from "@/lib/endpoints";
+import BusinessPinMap from "../maps/BusinessPinMap";
 import OnlyFeedCardsLayout from "./OnlyFeedCardsLayout";
 import MapFeedIntegratedLayout from "./MapFeedIntegratedLayout";
 import StickyYellowRibbonImage from "../StickyYellowRibbonImage";
-import BusinessPinMap from "../maps/BusinessPinMap";
 
 interface Props {
   businesses: BusinessesProps;

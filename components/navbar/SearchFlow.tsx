@@ -52,7 +52,8 @@ const SearchFlow = () => {
     searchKeyword,
     setSearchKeyword,
   } = useSearchFlow();
-  const { isSearchModalOpen, setIsSerachModalOpen } = useGeneralStore();
+  const { isSearchModalOpen, setIsSerachModalOpen, isMobile } =
+    useGeneralStore();
   if (!hasMounted) return null;
 
   return (
@@ -64,7 +65,7 @@ const SearchFlow = () => {
         <IconImage icon="search" />
       </div>
 
-      {isSearchModalOpen && (
+      {isSearchModalOpen && !isMobile && (
         <Dialog
           isOpen={isSearchModalOpen}
           onClose={() => setIsSerachModalOpen(false)}

@@ -24,7 +24,7 @@ const Navbar = ({ showFilterTab = false }: { showFilterTab?: boolean }) => {
 
   return (
     <>
-      <nav className="ps-19 pe-16 py-2.5 bg-white sticky top-0 z-20 border-b border-[#F5F5F5]">
+      <nav className="ps-19 pe-16 py-2.5 bg-white sticky top-0 z-20 border-b border-[#F5F5F5] max-sm:hidden md:block">
         <div className="grid grid-cols-10 items-center">
           {/* Hamburger, Logo, Text */}
           <div className="flex items-center gap-4 col-span-4">
