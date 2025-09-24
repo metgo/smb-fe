@@ -30,7 +30,8 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
   const pathname = usePathname();
 
   const { isCurrentPage } = useCommonHook();
-  const { hideFirstTwoSection, activeFilterTab } = useGeneralStore();
+  const { hideFirstTwoSection, activeFilterTab, setClickedBusinessId } =
+    useGeneralStore();
   const feedItems = businesses.data;
 
   // Active index
@@ -127,11 +128,6 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
     setActiveImageIndex(0);
   }, [activeIndex]);
 
-  // Handle item click
-  const handleItemClick = (index: number) => {
-    setActiveIndex(index);
-  };
-
   // Calculate side padding for centering
   const ACTIVE_SIZE = 100;
   const screenWidth = typeof window !== "undefined" ? window.innerWidth : 430;
@@ -143,6 +139,10 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
     containerRef.current = el;
   };
 
+  function handleActiveItem(index: number, id: string) {
+    setActiveIndex(index);
+    if (activeFilterTab === "map") setClickedBusinessId(id);
+  }
   return (
     <div className="flex flex-col h-screen mobile">
       {(hideFirstTwoSection || pathname !== pathNames.home) && (
@@ -153,7 +153,32 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
       <div className="relative flex-1" style={{ height: "calc(100vh - 80px)" }}>
         {/* Background Image */}
         {activeFilterTab === "gallery" && (
-          <section className="">
+          <section
+            className="relative w-full h-full"
+            onTouchStart={(e) => {
+              const touchStartX = e.touches[0].clientX;
+              e.currentTarget.dataset.touchStartX = touchStartX.toString();
+            }}
+            onTouchEnd={(e) => {
+              const touchStartX = Number(
+                e.currentTarget.dataset.touchStartX || 0,
+              );
+              const touchEndX = e.changedTouches[0].clientX;
+              const deltaX = touchEndX - touchStartX;
+
+              if (Math.abs(deltaX) > 50) {
+                setActiveImageIndex((prev) => {
+                  if (deltaX > 0) {
+                    // Swipe right → previous image
+                    return prev === 0 ? images.length - 1 : prev - 1;
+                  } else {
+                    // Swipe left → next image
+                    return prev === images.length - 1 ? 0 : prev + 1;
+                  }
+                });
+              }
+            }}
+          >
             <Image
               unoptimized
               fill
@@ -164,7 +189,8 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
               className={clsx("object-cover ultra-sharp")}
             />
 
-            <div className=" w-[88%] absolute top-30 right-5 flex justify-between text-white z-20">
+            {/* Top right actions */}
+            <div className="w-[88%] absolute top-30 right-5 flex justify-between text-white z-20">
               <BsThreeDotsVertical size={30} />
               <div className="flex items-center flex-col">
                 <BiSolidNavigation size={28} />
@@ -172,12 +198,12 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
               </div>
             </div>
 
-            {/* Overlay (bottom-right to top-left) */}
+            {/* Overlay */}
             <div className="absolute inset-0 bg-gradient-to-tl from-black/70 via-black/30 to-transparent z-10" />
 
             {/* Foreground Text */}
             <div className="absolute top-60 right-10 left-10 z-20 text-white">
-              <h1 className="text-6xl  font-bold line-clamp-2">
+              <h1 className="text-6xl font-bold line-clamp-2">
                 {activeFeedItem?.name}
               </h1>
               <div
@@ -186,7 +212,7 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
                     activeFeedItem?.description,
                   ),
                 }}
-                className="line-clamp-3 font-bold text-2xl  mt-1"
+                className="line-clamp-3 font-bold text-2xl mt-1"
               />
               {activeFeedItem?.address?.city && (
                 <div className="flex items-center gap-2 mt-4">
@@ -203,7 +229,7 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
               <div className="absolute bottom-40 left-0 right-0 px-4 z-20">
                 <ImageCarouselControls
                   iconSize={60}
-                  totalImages={activeFeedItem?.images?.length || 1}
+                  totalImages={images.length}
                   activeIndex={activeImageIndex}
                   setActiveImageIndex={setActiveImageIndex}
                 />
@@ -235,7 +261,7 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
                     itemRefs.current[idx] = el;
                   }}
                   style={{ border: `3px solid ${borderColor}` }}
-                  onClick={() => handleItemClick(idx)}
+                  onClick={() => handleActiveItem(idx, item._id)}
                   className={clsx(
                     "flex-shrink-0 cursor-pointer transition-all duration-300 rounded-lg overflow-hidden",
                     isActive ? "w-[100px] h-[100px]" : "w-[60px] h-[60px]",

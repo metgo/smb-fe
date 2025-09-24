@@ -1,13 +1,23 @@
 "use client";
-import clsx from "clsx";
 
-import { misc, searchText } from "@/constant/hebrew";
-import { Dialog, IconImage } from "@/components/ui";
-import { useSearchFlow } from "@/hooks/useSearchFlow";
-import { recommendedSearchKeywords } from "@/lib/utils";
-import { PopularBusinessCard } from "@/components/cards";
+import clsx from "clsx";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+
 import { pathNames } from "@/lib/endpoints";
 import useGeneralStore from "@/stores/generalStore";
+import { misc, searchText } from "@/constant/hebrew";
+import { useSearchFlow } from "@/hooks/useSearchFlow";
+import { startLoading } from "../wrappers/ProgressBar";
+import { recommendedSearchKeywords } from "@/lib/utils";
+import { PopularBusinessCard } from "@/components/cards";
+import { Dialog, IconImage, NextImage } from "@/components/ui";
+
+interface CardListProps {
+  title?: string;
+  navPath?: string;
+  items: GeneralProductCardProps[];
+}
 
 const SectionTitle = ({ title }: { title: string }) => (
   <h3 className="font-bold text-[#2B2D2A]">{title}</h3>
@@ -15,13 +25,9 @@ const SectionTitle = ({ title }: { title: string }) => (
 
 const CardList = ({
   items,
-  title,
+  title = "",
   navPath = pathNames.businessDetails,
-}: {
-  title: string;
-  navPath?: string;
-  items: GeneralProductCardProps[];
-}) => {
+}: CardListProps) => {
   if (!items?.length) return null;
 
   return (
@@ -40,6 +46,48 @@ const CardList = ({
   );
 };
 
+const MobileCardList = ({
+  items,
+  navPath = pathNames.businessDetails,
+}: CardListProps) => {
+  const router = useRouter();
+  const { setIsSerachModalOpen } = useGeneralStore();
+
+  function handleNavigation(slug: string) {
+    startLoading();
+    router.push(`${navPath}/${slug}`);
+    setIsSerachModalOpen(false);
+  }
+  return (
+    <section className="px-4">
+      <div className="space-y-2">
+        {items?.map((item) => (
+          <div
+            key={item._id}
+            onClick={() => handleNavigation(item.slug)}
+            className="flex items-center gap-2"
+          >
+            <NextImage
+              width={60}
+              height={60}
+              alt={item.images?.[0]?.alt}
+              imgSrc={item.images?.[0]?.image}
+              className="rounded-md object-cover h-[60px] w-[60px]"
+            />
+            <div>
+              <h4 className="line-clamp-1 font-bold">{item.name}</h4>
+              <div
+                className=" line-clamp-1 font-normal text-theme"
+                dangerouslySetInnerHTML={{ __html: item.description }}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+};
+
 const SearchFlow = () => {
   const {
     hasResults,
@@ -52,8 +100,7 @@ const SearchFlow = () => {
     searchKeyword,
     setSearchKeyword,
   } = useSearchFlow();
-  const { isSearchModalOpen, setIsSerachModalOpen, isMobile } =
-    useGeneralStore();
+  const { isSearchModalOpen, setIsSerachModalOpen } = useGeneralStore();
   if (!hasMounted) return null;
 
   return (
@@ -65,16 +112,16 @@ const SearchFlow = () => {
         <IconImage icon="search" width={40} height={40} />
       </div>
 
-      {isSearchModalOpen && !isMobile && (
+      {isSearchModalOpen && (
         <Dialog
           isOpen={isSearchModalOpen}
           onClose={() => setIsSerachModalOpen(false)}
-          className="w-[94%] h-[max-content] backdrop-blur-2xl"
+          className=" max-sm:w-[92%] max-sm:mx-4 md:w-[94%] h-[max-content] backdrop-blur-2xl"
         >
           <div>
             {/* Search box */}
             <div className="flex items-start justify-center py-7.5">
-              <div className="w-[546px] h-10 rounded-3xl border border-lightGray flex items-center gap-2 px-4 py-2">
+              <div className="max-sm:mx-4 max-sm:w-full md:w-[546px] h-10 rounded-3xl border border-lightGray flex items-center gap-2 px-4 py-2">
                 <IconImage icon="search" />
                 <input
                   type="text"
@@ -94,10 +141,11 @@ const SearchFlow = () => {
               </div>
             </div>
 
-            <hr className="text-lightGray" />
+            <hr className="text-lightGray max-sm:hidden md:block" />
 
             {/* Result section */}
-            <div className="px-11 py-7.5 space-y-10">
+            {/* Desktop view */}
+            <div className="px-11 py-7.5 space-y-10 max-sm:hidden md:block">
               {/* Recommended searches */}
               <div>
                 <SectionTitle title={searchText.recommendedSearches} />
@@ -146,6 +194,48 @@ const SearchFlow = () => {
                         navPath={pathNames.eventDetails}
                       />
                     </>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Mobile view */}
+            <div className=" space-y-10 max-sm:block md:hidden">
+              {isLoading ? (
+                <div className="h-[200px] px-4 py-7.5">
+                  <SectionTitle title={misc.pleaseWaitLoading} />
+                </div>
+              ) : (
+                <div className="overflow-hidden overflow-y-auto space-y-4">
+                  {/* Popular Businesses (default view) */}
+                  {!searchKeyword && recommendedBusinesses?.length > 0 && (
+                    <div className="pt-4">
+                      <MobileCardList items={recommendedBusinesses} />
+                    </div>
+                  )}
+
+                  {/* Search results */}
+                  {!isLoading && searchKeyword && !hasResults ? (
+                    <div className="relative h-60 w-full flex items-center justify-center">
+                      <div className="font-bold text-theme text-2xl w-60 text-center">
+                        {misc.searchItemNotFoundText}
+                      </div>
+                      <Image
+                        width={180}
+                        height={184}
+                        alt="Yellow Chrysanthemum"
+                        src="/images/yellow-chrysanthemum.png"
+                        className="absolute -left-14 -bottom-10"
+                      />
+                    </div>
+                  ) : (
+                    <div className="pb-7.5">
+                      <MobileCardList items={searchItems.businesses!} />
+                      <MobileCardList
+                        items={searchItems.events!}
+                        navPath={pathNames.eventDetails}
+                      />
+                    </div>
                   )}
                 </div>
               )}
