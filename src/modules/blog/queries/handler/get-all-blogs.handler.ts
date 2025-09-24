@@ -11,9 +11,10 @@ export class GetAllBlogsHandler implements IQueryHandler<GetAllBlogsQuery> {
 
   async execute(query: GetAllBlogsQuery): Promise<any> {
     try {
-      const data = await this.externalApiService.findByIdentifierIdAndPopulateBlog(
-        query.request.identifierId,
-      );
+      const data
+        = await this.externalApiService.findByIdentifierIdAndPopulateBlog(
+          query.request.identifierId,
+        );
 
       return await Promise.all(
         data.blogIds
