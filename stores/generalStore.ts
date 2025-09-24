@@ -34,6 +34,8 @@ interface GeneralStoreState {
   setIsMobile: (v: boolean) => void;
   aminitiesInfo: AminitiesInfoType;
   setAminitiesInfo: (v: AminitiesInfoType) => void;
+  homePageSectionState: string;
+  setHomePageSectionState: (v: string) => void;
 }
 
 const useGeneralStore = create<GeneralStoreState>((set) => ({
@@ -62,6 +64,8 @@ const useGeneralStore = create<GeneralStoreState>((set) => ({
 
   aminitiesInfo: { event: true, trip: true, business: true },
   setAminitiesInfo: (v) => set({ aminitiesInfo: v }),
+  homePageSectionState: "first",
+  setHomePageSectionState: (v) => set({ homePageSectionState: v }),
 }));
 
 export default useGeneralStore;

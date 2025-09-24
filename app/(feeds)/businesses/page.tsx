@@ -1,5 +1,6 @@
 import { getAllBusinesses } from "@/actions/businessActions";
 import FilterBusinessLayout from "@/components/layouts/FilterBusinessLayout";
+import MobileFeedLayout from "@/components/mobile/FeedLayout.mobile";
 
 interface PageProps {
   searchParams: {
@@ -36,7 +37,12 @@ const Page = async ({ searchParams }: PageProps | any) => {
     "/businesses",
   );
 
-  return <FilterBusinessLayout businesses={businesses} />;
+  return (
+    <>
+      <FilterBusinessLayout businesses={businesses} />
+      <MobileFeedLayout businesses={businesses} />
+    </>
+  );
 };
 
 export default Page;

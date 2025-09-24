@@ -54,7 +54,7 @@ const FilterBusinessLayout = ({ businesses }: Props) => {
   };
 
   return (
-    <div>
+    <div className="max-sm:hidden md:block">
       <div>
         {renderLayout()}
         {initialLoadDone && canLoadMore && businesses?.meta?.hasNextPage && (
