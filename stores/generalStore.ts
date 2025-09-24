@@ -28,6 +28,8 @@ interface GeneralStoreState {
   setHideFirstTwoSection: (v: boolean) => void;
   isMobile: boolean;
   setIsMobile: (v: boolean) => void;
+  homePageSectionState: string;
+  setHomePageSectionState: (v: string) => void;
 }
 
 const useGeneralStore = create<GeneralStoreState>((set) => ({
@@ -53,6 +55,8 @@ const useGeneralStore = create<GeneralStoreState>((set) => ({
   setHideFirstTwoSection: (v) => set({ hideFirstTwoSection: v }),
   isMobile: false,
   setIsMobile: (v) => set({ isMobile: v }),
+  homePageSectionState: "first",
+  setHomePageSectionState: (v) => set({ homePageSectionState: v }),
 }));
 
 export default useGeneralStore;

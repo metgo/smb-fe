@@ -2,25 +2,35 @@
 
 import clsx from "clsx";
 import Image from "next/image";
+import { BiSolidNavigation } from "react-icons/bi";
+import { BsThreeDotsVertical } from "react-icons/bs";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
 
-import { useCommonHook, useHorizontalLoadMore } from "@/hooks";
 import MobileNavbar from "./Navbar.mobile";
 import { pathNames } from "@/lib/endpoints";
 import { categoryColors } from "@/lib/utils";
-import { useSearchParams } from "next/navigation";
 import { staticImages } from "@/constant/staticImages";
-import { ImageCarouselControls, NextImage } from "../ui";
+import { useCommonHook, useHorizontalLoadMore } from "@/hooks";
+import { IconImage, ImageCarouselControls, NextImage } from "../ui";
 import {
   getPrimaryCategoryId,
   removeInlineStylesFromHTML,
 } from "@/lib/helpers";
 import MobileCategoryPanel from "./CategoryPanel.mobile";
+import useGeneralStore from "@/stores/generalStore";
+import BusinessPinMap from "../maps/BusinessPinMap";
 
-const MobileFeedLayout = ({ businesses }: { businesses: BusinessesProps }) => {
+interface MobileFeedLayoutProps {
+  businesses: BusinessesProps;
+}
+
+const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
   const searchParams = useSearchParams();
-  const { isCurrentPage } = useCommonHook();
+  const pathname = usePathname();
 
+  const { isCurrentPage } = useCommonHook();
+  const { hideFirstTwoSection, activeFilterTab } = useGeneralStore();
   const feedItems = businesses.data;
 
   // Active index
@@ -36,6 +46,7 @@ const MobileFeedLayout = ({ businesses }: { businesses: BusinessesProps }) => {
 
   // Mounted check for SSR safety
   const [hasMounted, setHasMounted] = useState(false);
+
   useEffect(() => setHasMounted(true), []);
 
   // Page type flags
@@ -134,45 +145,75 @@ const MobileFeedLayout = ({ businesses }: { businesses: BusinessesProps }) => {
 
   return (
     <div className="flex flex-col h-screen mobile">
-      <MobileNavbar showFilterTab />
+      {(hideFirstTwoSection || pathname !== pathNames.home) && (
+        <MobileNavbar showFilterTab />
+      )}
 
       {/* Image Section - Takes remaining height after subtracting 400px */}
       <div className="relative flex-1" style={{ height: "calc(100vh - 80px)" }}>
         {/* Background Image */}
-        <Image
-          unoptimized
-          fill
-          src={computedValues.currentImage?.image || staticImages.placeholder}
-          alt={computedValues.currentImage?.alt || ""}
-          className={clsx("object-cover  ultra-sharp")}
-        />
-
-        {/* Overlay (bottom-right to top-left) */}
-        <div className="absolute inset-0 bg-gradient-to-tl from-black/70 via-black/30 to-transparent z-10" />
-
-        {/* Foreground Text */}
-        <div className="absolute top-60 right-10 left-10 z-20">
-          <h1 className="text-6xl text-white font-bold line-clamp-2">
-            {activeFeedItem?.name}
-          </h1>
-          <div
-            dangerouslySetInnerHTML={{
-              __html: removeInlineStylesFromHTML(activeFeedItem?.description),
-            }}
-            className="line-clamp-3 font-bold text-2xl text-white mt-1"
-          />
-        </div>
-
-        {/* Image carousel controls */}
-        {!pageTypes.isEventPage && images.length > 1 && (
-          <div className="absolute bottom-40 left-0 right-0 px-4 z-20">
-            <ImageCarouselControls
-              totalImages={activeFeedItem?.images?.length || 1}
-              activeIndex={activeImageIndex}
-              setActiveImageIndex={setActiveImageIndex}
+        {activeFilterTab === "gallery" && (
+          <section className="">
+            <Image
+              unoptimized
+              fill
+              src={
+                computedValues.currentImage?.image || staticImages.placeholder
+              }
+              alt={computedValues.currentImage?.alt || ""}
+              className={clsx("object-cover ultra-sharp")}
             />
-          </div>
+
+            <div className=" w-[88%] absolute top-30 right-5 flex justify-between text-white z-20">
+              <BsThreeDotsVertical size={30} />
+              <div className="flex items-center flex-col">
+                <BiSolidNavigation size={28} />
+                <span className="font-bold">31 ק״מ</span>
+              </div>
+            </div>
+
+            {/* Overlay (bottom-right to top-left) */}
+            <div className="absolute inset-0 bg-gradient-to-tl from-black/70 via-black/30 to-transparent z-10" />
+
+            {/* Foreground Text */}
+            <div className="absolute top-60 right-10 left-10 z-20 text-white">
+              <h1 className="text-6xl  font-bold line-clamp-2">
+                {activeFeedItem?.name}
+              </h1>
+              <div
+                dangerouslySetInnerHTML={{
+                  __html: removeInlineStylesFromHTML(
+                    activeFeedItem?.description,
+                  ),
+                }}
+                className="line-clamp-3 font-bold text-2xl  mt-1"
+              />
+              {activeFeedItem?.address?.city && (
+                <div className="flex items-center gap-2 mt-4">
+                  <IconImage icon="location" width={30} height={30} />
+                  <span className="text-xl font-bold">
+                    {activeFeedItem?.address?.city}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* Image carousel controls */}
+            {!pageTypes.isEventPage && images.length > 1 && (
+              <div className="absolute bottom-40 left-0 right-0 px-4 z-20">
+                <ImageCarouselControls
+                  iconSize={60}
+                  totalImages={activeFeedItem?.images?.length || 1}
+                  activeIndex={activeImageIndex}
+                  setActiveImageIndex={setActiveImageIndex}
+                />
+              </div>
+            )}
+          </section>
         )}
+
+        {/* Map */}
+        {activeFilterTab === "map" && <BusinessPinMap mapHeight="90vh" />}
 
         {/* Horizontal Image List */}
         <section className="absolute bottom-4 w-full z-20">
