@@ -1,0 +1,57 @@
+name: Deploy to Docker Hub
+
+on:
+  push:
+    branches:
+      - dev # Trigger this workflow only on pushes to the main branch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Create .env file
+        run: |
+          echo -n "${{ secrets.ENV_FILE_HOFAS_DEV }}" | base64 -d > .env
+
+      # Log in to Docker Hub
+
+      - name: Login to Docker Hub, Build and Push Docker Image
+        run: |
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/hofas:staging .
+          docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/hofas:staging
+          docker image prune -f
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: SSH into the Ubuntu server and pull the Docker image
+        uses: fifsky/ssh-action@master
+        with:
+          command: |
+            # move to working directory
+            cd travel
+
+            # Login to DockerHub to pull images
+            echo ${{ secrets.SUDO_PASSWORD }} | sudo -S docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
+
+            # Pull docker image
+            echo ${{ secrets.SUDO_PASSWORD }} | sudo -S docker-compose pull staging_hofas
+
+            # Run docker-compose
+            echo ${{ secrets.SUDO_PASSWORD }} | sudo -S docker-compose up -d staging_hofas
+
+            # Removing dangling images
+            echo ${{ secrets.SUDO_PASSWORD }} | sudo -S docker image prune -f
+
+          host: ${{ secrets.HOFAS_SERVER_IP }}
+          user: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          options: "-T -o StrictHostKeyChecking=no"
