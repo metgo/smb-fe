@@ -53,4 +53,3 @@ jobs:
 
             # Removing dangling images
             echo ${{ secrets.SUDO_PASSWORD }} | sudo -S docker image prune -f
-
