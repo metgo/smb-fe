@@ -2,10 +2,12 @@
 
 import { usePathname, useRouter } from "next/navigation";
 
-import { Logo } from "../ui/icons";
 import useGeneralStore from "@/stores/generalStore";
 import { startLoading } from "../wrappers/ProgressBar";
 import { pathNames } from "@/lib/endpoints";
+import Image from "next/image";
+import { getLogo } from "@/constant/images";
+import { CODE } from "@/constant/envConstants";
 
 const NavLogo = () => {
   const router = useRouter();
@@ -26,9 +28,16 @@ const NavLogo = () => {
     setIsOnSection2(false);
   }
 
+  const logo = getLogo(CODE);
   return (
     <div className="custom-cursor" onClick={handleNavigation}>
-      <Logo />
+      <Image
+        alt="Logo"
+        src={logo?.image.black || ""}
+        width={logo?.size.width}
+        height={logo?.size.height}
+        className="z-50 custom-cursor"
+      />
     </div>
   );
 };
