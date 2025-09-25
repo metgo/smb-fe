@@ -22,9 +22,9 @@ jobs:
 
       - name: Login to Docker Hub, Build and Push Docker Image
         run: |
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/travel:staging .
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/hofas:staging .
           docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/travel:staging
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/hofas:staging
           docker image prune -f
 
   deploy:
@@ -32,26 +32,25 @@ jobs:
     needs: build
 
     steps:
-      - name: SSH into the Ubuntu server and pull the Docker image
-        uses: fifsky/ssh-action@master
+      - name: SSH into the Ubuntu server and deploy
+        uses: appleboy/ssh-action@v1.2.0
         with:
-          command: |
-            # move to working directory
+          host: ${{ secrets.HOFAS_SERVER_IP }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
             cd travel
 
             # Login to DockerHub to pull images
             echo ${{ secrets.SUDO_PASSWORD }} | sudo -S docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
 
             # Pull docker image
-            echo ${{ secrets.SUDO_PASSWORD }} | sudo -S docker-compose pull staging_travel
+            echo ${{ secrets.SUDO_PASSWORD }} | sudo -S docker-compose pull staging_hofas
 
             # Run docker-compose
-            echo ${{ secrets.SUDO_PASSWORD }} | sudo -S docker-compose up -d staging_travel
+            echo ${{ secrets.SUDO_PASSWORD }} | sudo -S docker-compose up -d staging_hofas
 
             # Removing dangling images
             echo ${{ secrets.SUDO_PASSWORD }} | sudo -S docker image prune -f
 
-          host: ${{ secrets.SERVER_IP }}
-          user: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          options: "-T -o StrictHostKeyChecking=no"
