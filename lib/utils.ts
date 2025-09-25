@@ -8,15 +8,20 @@ import {
   CtgTourIcon,
 } from "@/components/ui/icons";
 import { pathNames } from "./endpoints";
+import { CODE } from "@/constant/envConstants";
 
 interface MenuItem {
   key: string;
-  status: boolean;
   label: string;
   icon: string;
   activeIcon: string;
   link: string;
 }
+
+export const siteStatus = {
+  isNegevTime: CODE === "BNEI" || CODE === "TAV8DL",
+  isHofash: CODE === "HOFASH",
+};
 
 export const itemTypeEnum = {
   product: "PRODUCT",
@@ -219,7 +224,6 @@ export const features = [
 export const featureMenus: MenuItem[] = [
   {
     key: "event",
-    status: true,
     label: navbar.events,
     icon: "events",
     activeIcon: "events-dark",
@@ -227,7 +231,6 @@ export const featureMenus: MenuItem[] = [
   },
   {
     key: "trip",
-    status: true,
     label: navbar.tracks,
     icon: "trail",
     activeIcon: "trail-dark",
@@ -261,7 +264,7 @@ export const navigationPaths = {
   [navigationKey.blogArticles]: pathNames.blogArticleDetails,
 };
 
-export const navItems = [
+export const navItemsDraft = [
   {
     col1: [
       {
@@ -310,20 +313,23 @@ export const navItems = [
     col2: [
       {
         id: 1,
+        key: "event",
         label: menuItems.eventGeneralPublic,
-        href: "#",
+        href: pathNames.events,
         leftIcon: "",
         rightIcon: "",
       },
-      {
-        id: 2,
-        label: menuItems.eventCompaniesOrg,
-        href: "#",
-        leftIcon: "",
-        rightIcon: "",
-      },
+      // {
+      //   id: 2,
+      //  key: "org",
+      //   label: menuItems.eventCompaniesOrg,
+      //   href: "#",
+      //   leftIcon: "",
+      //   rightIcon: "",
+      // },
       {
         id: 3,
+        key: "trip",
         label: menuItems.routes,
         href: pathNames.trails,
         leftIcon: "",
@@ -389,6 +395,107 @@ export const navItems = [
       //   rightIcon: "globe",
       //   leftIcon: "down-arrow",
       // },
+    ],
+  },
+];
+
+export const navItems = [
+  {
+    col1: [
+      {
+        id: 1,
+        key: "",
+        label: menuItems.welcome,
+        href: "#",
+        leftIcon: "",
+        rightIcon: "",
+      },
+      {
+        id: 2,
+        key: "",
+        label: menuItems.businessPage,
+        href: pathNames.businesses,
+        leftIcon: "",
+        rightIcon: "",
+      },
+      {
+        id: 4,
+        key: "",
+        label: menuItems.blogArticle,
+        href: pathNames.blogArticles,
+        leftIcon: "",
+        rightIcon: "",
+      },
+      {
+        id: 5,
+        key: "",
+        label: menuItems.joinBusiness,
+        href: pathNames.joinBusiness,
+        leftIcon: "",
+        rightIcon: "",
+      },
+      {
+        id: 6,
+        key: "",
+        label: menuItems.contactUs,
+        href: pathNames.contactUs,
+        leftIcon: "",
+        rightIcon: "",
+      },
+    ],
+    col2: [
+      {
+        id: 1,
+        key: "event",
+        label: menuItems.eventGeneralPublic,
+        href: pathNames.events,
+        leftIcon: "",
+        rightIcon: "",
+      },
+      {
+        id: 3,
+        key: "trip",
+        label: menuItems.routes,
+        href: pathNames.trails,
+        leftIcon: "",
+        rightIcon: "",
+      },
+    ],
+    col3: [
+      {
+        id: 4,
+        key: "",
+        label: menuItems.shoppingCart,
+        href: pathNames.cart,
+        leftIcon: "",
+        rightIcon: "",
+      },
+      {
+        id: 5,
+        key: "",
+        label: menuItems.exit,
+        href: "#",
+        leftIcon: "",
+        rightIcon: "exit",
+      },
+    ],
+    col4: [
+      {
+        id: 1,
+        key: "",
+        label: menuItems.termsConditions,
+        href: "#",
+        leftIcon: "",
+        rightIcon: "",
+      },
+      {
+        id: 2,
+        key: "",
+        label: menuItems.privacyPolicy,
+        href: "#",
+        leftIcon: "",
+        rightIcon: "",
+      },
     ],
   },
 ];
