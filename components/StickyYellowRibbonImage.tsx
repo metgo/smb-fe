@@ -4,6 +4,7 @@ import clsx from "clsx";
 import Image from "next/image";
 
 import useGeneralStore from "@/stores/generalStore";
+import { siteStatus } from "@/lib/utils";
 
 const StickyYellowRibbonImage = ({
   activeFilterTab,
@@ -11,7 +12,7 @@ const StickyYellowRibbonImage = ({
   activeFilterTab: string;
 }) => {
   const { zIndex } = useGeneralStore();
-  if (activeFilterTab !== "gallery") return;
+  if (activeFilterTab !== "gallery" || siteStatus.isHofash) return;
 
   return (
     <Image
