@@ -18,6 +18,7 @@ export const useGoogleMap = () => {
   const activeCategoryId = searchParams.get("categoryId") || "";
 
   const { activeFilterTab, clickedBusinessId } = useGeneralStore();
+  console.log("------√clickedBusinessId", clickedBusinessId);
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [businesses, setBusinesses] = useState<BusinessMakerProps[]>([]);
 

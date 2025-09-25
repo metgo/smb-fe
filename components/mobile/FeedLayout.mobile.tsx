@@ -11,7 +11,11 @@ import MobileNavbar from "./Navbar.mobile";
 import { pathNames } from "@/lib/endpoints";
 import { categoryColors } from "@/lib/utils";
 import { staticImages } from "@/constant/staticImages";
-import { useCommonHook, useHorizontalLoadMore } from "@/hooks";
+import {
+  useCommonHook,
+  useHorizontalLoadMore,
+  useMobileGoogleMap,
+} from "@/hooks";
 import { IconImage, ImageCarouselControls, NextImage } from "../ui";
 import {
   getPrimaryCategoryId,
@@ -19,7 +23,6 @@ import {
 } from "@/lib/helpers";
 import MobileCategoryPanel from "./CategoryPanel.mobile";
 import useGeneralStore from "@/stores/generalStore";
-import BusinessPinMap from "../maps/BusinessPinMap";
 
 interface MobileFeedLayoutProps {
   businesses: BusinessesProps;
@@ -32,6 +35,7 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
   const { isCurrentPage } = useCommonHook();
   const { hideFirstTwoSection, activeFilterTab, setClickedBusinessId } =
     useGeneralStore();
+  const { mapRef, Overlay } = useMobileGoogleMap();
   const feedItems = businesses.data;
 
   // Active index
@@ -239,7 +243,13 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
         )}
 
         {/* Map */}
-        {activeFilterTab === "map" && <BusinessPinMap mapHeight="90vh" />}
+        {activeFilterTab === "map" && (
+          <div className={`w-full h-[90vh]`}>
+            <div ref={mapRef} className="relative w-full h-full rounded-md">
+              <Overlay />
+            </div>
+          </div>
+        )}
 
         {/* Horizontal Image List */}
         <section className="absolute bottom-4 w-full z-20">

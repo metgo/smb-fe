@@ -109,7 +109,7 @@ const SearchFlow = () => {
         className=" custom-cursor"
         onClick={() => setIsSerachModalOpen(true)}
       >
-        <IconImage icon="search" width={40} height={40} />
+        <IconImage icon="search" width={30} height={30} />
       </div>
 
       {isSearchModalOpen && (

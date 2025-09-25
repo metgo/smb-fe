@@ -1,4 +1,5 @@
 import { useImageCrop } from "./image/useImageCrop";
+import { useMobileGoogleMap } from "./map/useMobileGoogleMap";
 import { useDeliveryInfo } from "./payment/useDeliveryInfo";
 import { useCommonHook } from "./useCommonHooks";
 import { useHorizontalLoadMore } from "./useHorizontalLoadMore";
@@ -12,4 +13,5 @@ export {
   useItemBuyCart,
   useImageCrop,
   useHorizontalLoadMore,
+  useMobileGoogleMap,
 };
