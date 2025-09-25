@@ -4,6 +4,8 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 
 import { pathNames } from "@/lib/endpoints";
+import { getLogo } from "@/constant/images";
+import { CODE } from "@/constant/envConstants";
 
 const MainLogo = () => {
   const router = useRouter();
@@ -16,12 +18,14 @@ const MainLogo = () => {
     router.push(pathNames.home);
   }
 
+  const logo = getLogo(CODE);
+
   return (
     <Image
       alt="Logo"
-      src={"/images/logo/white-logo.svg"}
-      width={88}
-      height={60}
+      src={logo?.image.white || ""}
+      width={logo?.size.width}
+      height={logo?.size.height}
       className="z-50 custom-cursor"
       onClick={handleClick}
     />
