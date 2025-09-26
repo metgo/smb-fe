@@ -70,7 +70,7 @@ const DeliveriesContent = ({
         className="px-6.5 py-7.5 h-max"
       >
         <div className="mt-5">
-          {deliveryArea?.map((item, index) => (
+          {deliveryArea.map((item, index) => (
             <DeliveryLocationPrice
               key={index}
               location={item.area}
@@ -92,7 +92,7 @@ const DeliveriesContent = ({
         className="pt-7.5 pb-0 ps-6.5 pe-0 h-37"
       >
         <div className="h-20 overflow-y-auto">
-          {deliverySpecificSellerInfo?.map((str, index) => (
+          {deliverySpecificSellerInfo.map((str, index) => (
             <div key={index}>
               {devlieryInfoMapData[str as keyof typeof devlieryInfoMapData]}
             </div>
@@ -111,7 +111,7 @@ const DeliveriesContent = ({
         className="pt-7.5 pb-0 ps-6.5 pe-0 h-37"
       >
         <div className="h-20 overflow-y-auto no-scrollbar-arrows">
-          {deliveryReturnExchange?.map((str, index) => (
+          {deliveryReturnExchange.map((str, index) => (
             <div key={index}>
               {devlieryInfoMapData[str as keyof typeof devlieryInfoMapData]}
             </div>
@@ -140,7 +140,6 @@ const DeliveriesContent = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(0);
 
-  // Update width on mount & resize
   useEffect(() => {
     if (containerRef.current) {
       setWidth(containerRef.current.offsetWidth);
@@ -154,13 +153,16 @@ const DeliveriesContent = ({
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  const isSwipeable = sections.length > 1 && width <= 400;
+
   return (
     <div className="sm:hidden" ref={containerRef}>
       <motion.div
         className="flex overflow-hidden"
-        drag="x"
+        drag={isSwipeable ? "x" : false}
         dragElastic={0.2}
         onDragEnd={(e, info) => {
+          if (!isSwipeable) return;
           if (info.offset.x < -50 && activeIndex < sections.length - 1) {
             setActiveIndex((prev) => prev + 1);
           } else if (info.offset.x > 50 && activeIndex > 0) {
@@ -178,16 +180,19 @@ const DeliveriesContent = ({
       </motion.div>
 
       {/* indicator */}
-      <div className="flex justify-center mt-4 gap-2">
-        {sections.map((_, i) => (
-          <span
-            key={i}
-            className={`h-2 w-2 rounded-full ${
-              i === activeIndex ? "bg-dark" : "bg-gray-300"
-            }`}
-          />
-        ))}
-      </div>
+      {sections.length > 1 && (
+        <div className="flex justify-center mt-4 gap-2">
+          {sections.map((_, i) => (
+            <span
+              key={i}
+              onClick={() => setActiveIndex(i)}
+              className={` rounded-full ${
+                i === activeIndex ? "bg-dark h-3 w-3" : "bg-gray-300 h-2 w-2"
+              }`}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 };

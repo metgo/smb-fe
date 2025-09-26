@@ -48,7 +48,6 @@ const HamburgerMenu = ({
     };
   }, [isOpen]);
 
-  // ✅ Pre-filter navItems
   const filteredNavItems = useMemo(() => {
     const nav = navItems[0];
 
@@ -77,58 +76,53 @@ const HamburgerMenu = ({
         <IconImage icon={isOpen ? closeIcon : openIcon} />
       </button>
 
-      {/* Dropdown Menu */}
-      {
+      <div
+        className={`absolute top-20 right-0 w-full h-screen shadow-lg flex max-sm:px-0 md:px-20 bg-black/20 backdrop-blur-sm overflow-y-auto overflow-x-hidden ${
+          isOpen ? "max-h-[96vh] " : "max-h-0 pointer-events-none"
+        }`}
+      >
+        {/* Modal Content */}
         <div
-          className={`absolute top-20 right-0 w-full h-screen shadow-lg flex max-sm:px-0 md:px-20 bg-black/20 backdrop-blur-sm overflow-y-auto overflow-x-hidden ${
-            isOpen ? "max-h-[96vh] " : "max-h-0 pointer-events-none"
-          }`}
-        >
-          {/* Modal Content */}
-          <div
-            ref={menuRef}
-            className="w-full max-sm:pt-12 max-sm:mx-0 md:mx-auto max-sm:h-screen md:h-[max-content] 
+          ref={menuRef}
+          className="w-full max-sm:pt-12 max-sm:mx-0 md:mx-auto max-sm:h-screen md:h-[max-content] 
              max-sm:px-0 md:py-10 md:px-12 flex flex-col md:flex-row max-sm:gap-0 md:gap-10 
              rounded-b-xl max-sm:bg-white/90 bg-white backdrop-blur-[34px]"
-          >
-            {Object.entries(filteredNavItems).map(([colKey, items]) => {
-              if (colKey === "col2" && items.length === 0) return null;
+        >
+          {Object.entries(filteredNavItems).map(([colKey, items]) => {
+            if (colKey === "col2" && items.length === 0) return null;
 
-              return (
-                <div
-                  key={colKey}
-                  className="flex flex-col md:flex-row md:gap-2.75 w-full max-sm:px-11"
-                >
-                  <div className="hidden md:block w-0.25 h-70 bg-[#D3D3D3]" />
+            return (
+              <div
+                key={colKey}
+                className="flex flex-col md:flex-row md:gap-2.75 w-full max-sm:px-11"
+              >
+                <div className="hidden md:block w-0.25 h-70 bg-[#D3D3D3]" />
 
-                  <div className="flex flex-col w-full md:w-[8rem] lg:w-[10rem] xl:w-[14.5rem]">
-                    {items.map((item) => (
-                      <Link
-                        key={item.id}
-                        href={item.href}
-                        className="text-theme hover:text-dark transition font-bold text-sm gap-2.5 mb-2 
+                <div className="flex flex-col w-full md:w-[8rem] lg:w-[10rem] xl:w-[14.5rem]">
+                  {items.map((item) => (
+                    <Link
+                      key={item.id}
+                      href={item.href}
+                      className="text-theme hover:text-dark transition font-bold text-sm gap-2.5 mb-2 
                        hover:bg-primary group py-2 ps-3 flex items-center justify-between 
                        custom-cursor w-full"
-                      >
-                        <div className="flex items-center gap-2.5 max-sm:text-xl">
-                          {item.rightIcon && (
-                            <IconImage icon={item.rightIcon} />
-                          )}
-                          {item.label}
-                        </div>
-                        {item.leftIcon && <IconImage icon={item.leftIcon} />}
-                      </Link>
-                    ))}
-                  </div>
+                    >
+                      <div className="flex items-center gap-2.5 max-sm:text-xl">
+                        {item.rightIcon && <IconImage icon={item.rightIcon} />}
+                        {item.label}
+                      </div>
+                      {item.leftIcon && <IconImage icon={item.leftIcon} />}
+                    </Link>
+                  ))}
                 </div>
-              );
-            })}
+              </div>
+            );
+          })}
 
-            {/* Divider at the end only for desktop */}
-            <div className="hidden md:block w-0.25 h-70 bg-[#D3D3D3]" />
-          </div>
+          {/* Divider at the end only for desktop */}
+          <div className="hidden md:block w-0.25 h-70 bg-[#D3D3D3]" />
         </div>
-      }
+      </div>
     </>
   );
 };

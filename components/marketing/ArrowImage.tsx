@@ -50,7 +50,7 @@ const ArrowImage = ({ images }: ArrowImageProps) => {
   return (
     <div
       ref={containerRef}
-      className="h-screen w-full relative overflow-hidden bg-white"
+      className=" max-sm:h-full md:h-screen w-full relative overflow-hidden bg-white"
     >
       {/* Image inset 5px from screen edge */}
       <div className="absolute top-2 left-2 right-2 bottom-2">

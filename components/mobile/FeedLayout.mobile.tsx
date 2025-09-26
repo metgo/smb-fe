@@ -155,7 +155,7 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
   return (
     <div className="flex flex-col h-screen max-sm:block md:hidden">
       {(hideFirstTwoSection || pathname !== pathNames.home) && (
-        <MobileNavbar showFilterTab showFilterIcon />
+        <MobileNavbar showFilterTab />
       )}
 
       <div className="relative flex-1" style={{ height: "calc(100vh - 80px)" }}>

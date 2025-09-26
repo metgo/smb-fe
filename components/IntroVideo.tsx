@@ -80,6 +80,8 @@ const IntroVideo = ({ siteInfo }: { siteInfo: any }) => {
       {/* Mute/Unmute Button */}
       <button
         onClick={toggleMute}
+        onTouchStart={(e) => e.stopPropagation()}
+        onTouchMove={(e) => e.preventDefault()}
         className="absolute max-sm:bottom-20 md:bottom-10 right-10 z-10 text-white bg-black/50 hover:bg-black/70 border-[2px] border-white rounded-full p-2 transition custom-cursor"
         aria-label="Toggle Mute"
       >
