@@ -12,7 +12,7 @@ const ConstatUsInfo = ({ icon, text }: { icon: string; text: string }) => (
 const ContactInfo = () => {
   const { contactInfo } = siteInfo["negevTime"];
   return (
-    <div className="flex items-center gap-7.5 text-charcoal">
+    <div className="items-center gap-7.5 text-charcoal max-sm:hidden md:flex">
       <span>{menuItems.contactUs}</span>
       <ConstatUsInfo icon="phone" text={contactInfo.phone} />
       <ConstatUsInfo icon="mail" text={contactInfo.mail} />

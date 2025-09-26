@@ -9,13 +9,9 @@ import { usePathname, useSearchParams } from "next/navigation";
 
 import MobileNavbar from "./Navbar.mobile";
 import { pathNames } from "@/lib/endpoints";
-import { categoryColors } from "@/lib/utils";
+import { categoryColors, navigationPaths } from "@/lib/utils";
 import { staticImages } from "@/constant/staticImages";
-import {
-  useCommonHook,
-  useHorizontalLoadMore,
-  useMobileGoogleMap,
-} from "@/hooks";
+import { useCommonHook, useHorizontalLoadMore } from "@/hooks";
 import { IconImage, ImageCarouselControls, NextImage } from "../ui";
 import {
   getPrimaryCategoryId,
@@ -23,6 +19,8 @@ import {
 } from "@/lib/helpers";
 import MobileCategoryPanel from "./CategoryPanel.mobile";
 import useGeneralStore from "@/stores/generalStore";
+import BusinessPinMap from "../maps/BusinessPinMap";
+import Link from "next/link";
 
 interface MobileFeedLayoutProps {
   businesses: BusinessesProps;
@@ -35,7 +33,6 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
   const { isCurrentPage } = useCommonHook();
   const { hideFirstTwoSection, activeFilterTab, setClickedBusinessId } =
     useGeneralStore();
-  const { mapRef, Overlay } = useMobileGoogleMap();
   const feedItems = businesses.data;
 
   // Active index
@@ -147,42 +144,21 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
     setActiveIndex(index);
     if (activeFilterTab === "map") setClickedBusinessId(id);
   }
+
   return (
-    <div className="flex flex-col h-screen mobile">
+    <div className="flex flex-col h-screen max-sm:block md:hidden">
       {(hideFirstTwoSection || pathname !== pathNames.home) && (
         <MobileNavbar showFilterTab />
       )}
 
-      {/* Image Section - Takes remaining height after subtracting 400px */}
       <div className="relative flex-1" style={{ height: "calc(100vh - 80px)" }}>
         {/* Background Image */}
         {activeFilterTab === "gallery" && (
-          <section
-            className="relative w-full h-full"
-            onTouchStart={(e) => {
-              const touchStartX = e.touches[0].clientX;
-              e.currentTarget.dataset.touchStartX = touchStartX.toString();
-            }}
-            onTouchEnd={(e) => {
-              const touchStartX = Number(
-                e.currentTarget.dataset.touchStartX || 0,
-              );
-              const touchEndX = e.changedTouches[0].clientX;
-              const deltaX = touchEndX - touchStartX;
-
-              if (Math.abs(deltaX) > 50) {
-                setActiveImageIndex((prev) => {
-                  if (deltaX > 0) {
-                    // Swipe right → previous image
-                    return prev === 0 ? images.length - 1 : prev - 1;
-                  } else {
-                    // Swipe left → next image
-                    return prev === images.length - 1 ? 0 : prev + 1;
-                  }
-                });
-              }
-            }}
+          <Link
+            className="custom-cursor block relative w-full h-full"
+            href={`${navigationPaths[pathname]}/${activeFeedItem.slug}`}
           >
+            {/* Background Image */}
             <Image
               unoptimized
               fill
@@ -197,8 +173,17 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
             <div className="w-[88%] absolute top-30 right-5 flex justify-between text-white z-20">
               <BsThreeDotsVertical size={30} />
               <div className="flex items-center flex-col">
-                <BiSolidNavigation size={28} />
-                <span className="font-bold">31 ק״מ</span>
+                <Link
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  href={`https://www.google.com/maps/search/?api=1&query=${activeFeedItem?.geoLocation?.lat + "," + activeFeedItem?.geoLocation?.long}`}
+                  className={clsx(
+                    "flex items-center gap-1.25 ps-2.5 pe-4 py-1 custom-cursor",
+                  )}
+                >
+                  <BiSolidNavigation size={28} />
+                  {/* <span className="font-bold">31 ק״מ</span> */}
+                </Link>
               </div>
             </div>
 
@@ -239,17 +224,11 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
                 />
               </div>
             )}
-          </section>
+          </Link>
         )}
 
         {/* Map */}
-        {activeFilterTab === "map" && (
-          <div className={`w-full h-[90vh]`}>
-            <div ref={mapRef} className="relative w-full h-full rounded-md">
-              <Overlay />
-            </div>
-          </div>
-        )}
+        {activeFilterTab === "map" && <BusinessPinMap mapHeight="90vh" />}
 
         {/* Horizontal Image List */}
         <section className="absolute bottom-4 w-full z-20">
@@ -297,7 +276,6 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
         </section>
       </div>
 
-      {/* Category Panel - Fixed 400px height */}
       <MobileCategoryPanel />
     </div>
   );

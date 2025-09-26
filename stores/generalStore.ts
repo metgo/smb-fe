@@ -32,10 +32,10 @@ interface GeneralStoreState {
   setHideFirstTwoSection: (v: boolean) => void;
   isMobile: boolean;
   setIsMobile: (v: boolean) => void;
-  aminitiesInfo: AminitiesInfoType;
-  setAminitiesInfo: (v: AminitiesInfoType) => void;
   homePageSectionState: string;
   setHomePageSectionState: (v: string) => void;
+  aminitiesInfo: AminitiesInfoType;
+  setAminitiesInfo: (v: AminitiesInfoType) => void;
 }
 
 const useGeneralStore = create<GeneralStoreState>((set) => ({
@@ -61,11 +61,11 @@ const useGeneralStore = create<GeneralStoreState>((set) => ({
   setHideFirstTwoSection: (v) => set({ hideFirstTwoSection: v }),
   isMobile: false,
   setIsMobile: (v) => set({ isMobile: v }),
+  homePageSectionState: "first",
+  setHomePageSectionState: (v) => set({ homePageSectionState: v }),
 
   aminitiesInfo: { event: true, trip: true, business: true },
   setAminitiesInfo: (v) => set({ aminitiesInfo: v }),
-  homePageSectionState: "first",
-  setHomePageSectionState: (v) => set({ homePageSectionState: v }),
 }));
 
 export default useGeneralStore;

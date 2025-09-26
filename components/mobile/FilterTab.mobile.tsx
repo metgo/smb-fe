@@ -7,7 +7,6 @@ import { filterTabs } from "@/lib/utils";
 import { IconImage } from "@/components/ui";
 import { pathNames } from "@/lib/endpoints";
 import useGeneralStore from "@/stores/generalStore";
-import { startLoading } from "../wrappers/ProgressBar";
 
 const MobileFilterTab = () => {
   const router = useRouter();
@@ -47,7 +46,6 @@ const MobileFilterTab = () => {
       left: 0,
       behavior: "smooth",
     });
-    startLoading();
     router.push(`?${params.toString()}`, { scroll: false });
   }
 
