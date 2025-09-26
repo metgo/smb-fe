@@ -1,7 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
 import { GoUnmute, GoMute } from "react-icons/go";
+import { useEffect, useRef, useState } from "react";
+
+import { BUCKET_URL } from "@/constant/envConstants";
 
 const IntroVideo = ({ siteInfo }: { siteInfo: any }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -68,7 +70,10 @@ const IntroVideo = ({ siteInfo }: { siteInfo: any }) => {
         muted={isMuted}
         playsInline
         preload="auto"
-        src={siteInfo?.homeVideos?.[0]?.url}
+        src={
+          siteInfo?.homeVideos?.[0]?.url ??
+          `${BUCKET_URL}/video/intro-video.mp4`
+        }
         className="object-cover absolute inset-0 w-full h-full z-10"
       />
 
