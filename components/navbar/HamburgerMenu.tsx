@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 
 import { navItems } from "@/lib/utils";
 import { IconImage } from "@/components/ui";
+import useGeneralStore from "@/stores/generalStore";
 
 const HamburgerMenu = ({
   openIcon = "threeline",
@@ -16,6 +17,7 @@ const HamburgerMenu = ({
 }) => {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
+  const { aminitiesInfo } = useGeneralStore();
 
   const menuRef = useRef<HTMLDivElement>(null);
   const toggleButtonRef = useRef<HTMLButtonElement>(null);
@@ -41,11 +43,27 @@ const HamburgerMenu = ({
     if (isOpen) {
       document.addEventListener("mousedown", handleClickOutside);
     }
-
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isOpen]);
+
+  // ✅ Pre-filter navItems
+  const filteredNavItems = useMemo(() => {
+    const nav = navItems[0];
+
+    return Object.fromEntries(
+      Object.entries(nav).map(([colKey, items]) => {
+        if (colKey === "col2") {
+          const filtered = items.filter(
+            (item) => item.key && aminitiesInfo[item.key],
+          );
+          return [colKey, filtered];
+        }
+        return [colKey, items];
+      }),
+    );
+  }, [aminitiesInfo]);
 
   return (
     <>
@@ -62,7 +80,7 @@ const HamburgerMenu = ({
       {/* Dropdown Menu */}
       <div
         className={`absolute top-20 right-0 w-full h-screen shadow-lg flex px-20 bg-black/20 backdrop-blur-sm overflow-y-auto overflow-x-hidden  ${
-          isOpen ? "max-h-[96vh] " : "max-h-0 pointer-events-none"
+          isOpen ? "max-h-[96vh]" : "max-h-0 pointer-events-none"
         }`}
       >
         {/* Modal Content */}
@@ -70,26 +88,31 @@ const HamburgerMenu = ({
           ref={menuRef}
           className="w-full mx-auto h-[max-content] py-10 px-12 flex gap-10 rounded-b-xl bg-white backdrop-blur-[34px]"
         >
-          {Object.entries(navItems[0]).map(([colKey, items]) => (
-            <div key={colKey} className="flex gap-2.75">
-              <div className="w-0.25 h-70 bg-[#D3D3D3]" />
-              <div className="flex flex-col sm:w-full md:w-[8rem] lg:w-[10rem] xl:w-[14.5rem]">
-                {items.map((item) => (
-                  <Link
-                    key={item.id}
-                    href={item.href}
-                    className="text-theme hover:text-dark transition font-bold text-sm gap-2.5 mb-2 hover:bg-primary group  py-2 ps-3 flex items-center justify-between custom-cursor"
-                  >
-                    <div className="flex items-center gap-2.5">
-                      {item.rightIcon && <IconImage icon={item.rightIcon} />}
-                      {item.label}
-                    </div>
-                    {item.leftIcon && <IconImage icon={item.leftIcon} />}
-                  </Link>
-                ))}
+          {Object.entries(filteredNavItems).map(([colKey, items]) => {
+            // ❌ Skip column if col2 has no items
+            if (colKey === "col2" && items.length === 0) return null;
+
+            return (
+              <div key={colKey} className="flex gap-2.75">
+                <div className="w-0.25 h-70 bg-[#D3D3D3]" />
+                <div className="flex flex-col sm:w-full md:w-[8rem] lg:w-[10rem] xl:w-[14.5rem]">
+                  {items.map((item) => (
+                    <Link
+                      key={item.id}
+                      href={item.href}
+                      className="text-theme hover:text-dark transition font-bold text-sm gap-2.5 mb-2 hover:bg-primary group  py-2 ps-3 flex items-center justify-between custom-cursor"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        {item.rightIcon && <IconImage icon={item.rightIcon} />}
+                        {item.label}
+                      </div>
+                      {item.leftIcon && <IconImage icon={item.leftIcon} />}
+                    </Link>
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
           <div className="w-0.25 h-70 bg-[#D3D3D3]" />
         </div>
       </div>

@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 
 import { pathNames } from "@/lib/endpoints";
 import { getLogo } from "@/constant/images";
-import { CODE } from "@/constant/envConstants";
 
 const MainLogo = () => {
   const router = useRouter();
@@ -18,7 +17,7 @@ const MainLogo = () => {
     router.push(pathNames.home);
   }
 
-  const logo = getLogo(CODE);
+  const logo = getLogo();
 
   return (
     <Image

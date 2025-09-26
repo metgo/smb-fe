@@ -56,7 +56,7 @@ const ImageCarouselControls: React.FC<ImageCarouselControlsProps> = ({
         className="custom-cursor"
         disabled={activeIndex === totalImages - 1}
       >
-        <IconImage icon="prev" width={30} height={30} />
+        <IconImage icon="prev" width={36} height={36} />
       </button>
     </div>
   );

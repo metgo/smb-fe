@@ -1,13 +1,12 @@
 "use client";
 
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 
 import useGeneralStore from "@/stores/generalStore";
 import { startLoading } from "../wrappers/ProgressBar";
 import { pathNames } from "@/lib/endpoints";
-import Image from "next/image";
 import { getLogo } from "@/constant/images";
-import { CODE } from "@/constant/envConstants";
 
 const NavLogo = () => {
   const router = useRouter();
@@ -28,7 +27,7 @@ const NavLogo = () => {
     setIsOnSection2(false);
   }
 
-  const logo = getLogo(CODE);
+  const logo = getLogo();
   return (
     <div className="custom-cursor" onClick={handleNavigation}>
       <Image

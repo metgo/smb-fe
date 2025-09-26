@@ -150,3 +150,30 @@ export function getPurposeType(pathname: string) {
     return purposeTypeEnum.business;
   return purposeTypeEnum.trip;
 }
+
+type Address = {
+  country?: string;
+  city?: string;
+  location?: string;
+  _id?: string;
+};
+
+export function getCityOrCenter(address: Address): string | undefined {
+  if (!address) return undefined;
+
+  // if city has a value, return it
+  if (address.city && address.city.trim().length > 0) {
+    return address.city;
+  }
+
+  // otherwise, try to extract the center part from location
+  if (address.location) {
+    const parts = address.location.split(",").map((p) => p.trim());
+    if (parts.length >= 2) {
+      return parts[1]; // middle part
+    }
+    return parts[0]; // fallback if only one part exists
+  }
+
+  return undefined;
+}

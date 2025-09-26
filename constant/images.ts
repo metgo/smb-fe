@@ -1,3 +1,5 @@
+import { CODE } from "./envConstants";
+
 export const images = {
   BENI: {
     logo: {
@@ -10,6 +12,7 @@ export const images = {
         width: 80,
       },
     },
+    favicon: "/images/favicon/negevtime.ico",
   },
   TAV8DL: {
     logo: {
@@ -22,6 +25,7 @@ export const images = {
         width: 80,
       },
     },
+    favicon: "/images/favicon/negevtime.ico",
   },
   HOFASH: {
     logo: {
@@ -34,13 +38,17 @@ export const images = {
         width: 56,
       },
     },
+    favicon: "/images/favicon/hofash.ico",
   },
 } as const;
 
-export function getLogo(key: string | undefined) {
-  if (!key || !(key in images)) return undefined;
-
-  const logo = images[key as keyof typeof images].logo;
+export function getLogo() {
+  const logo = images[CODE as keyof typeof images].logo;
 
   return logo;
+}
+
+export function getFavicon() {
+  const faviconUrl = images[CODE as keyof typeof images].favicon;
+  return faviconUrl;
 }
