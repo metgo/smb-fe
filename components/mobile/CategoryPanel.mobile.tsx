@@ -2,36 +2,15 @@
 
 import clsx from "clsx";
 import Image from "next/image";
-import { useEffect } from "react";
 
 import { categoryIcons } from "@/lib/utils";
 import { useCtgSubctg } from "@/hooks/useCtgSubctg";
-import { getAllCategory } from "@/actions/businessActions";
 import useCategoryStore from "@/stores/categoriesStore";
 import { triggerName, googleSendGtmEvent } from "@/lib/googleEventsConfig";
 
 const MobileCategoryPanel = () => {
+  const { categories } = useCategoryStore();
   const { handleCategoryChange, activeCategoryKey } = useCtgSubctg();
-  const { categories, setCategories } = useCategoryStore();
-
-  useEffect(() => {
-    async function fetchCategories() {
-      const res = await getAllCategory();
-      const apiCategories = res?.data ? res?.data : res;
-      const updatedCategories = categories?.map((cat) => {
-        const match = apiCategories?.find(
-          (apiCat: any) => apiCat.id === cat.id,
-        );
-        return {
-          ...cat,
-          name: match ? match.name : cat.name,
-        };
-      });
-      setCategories(updatedCategories);
-    }
-
-    fetchCategories();
-  }, []);
 
   return (
     <div className="shadow-md flex items-center justify-center gap-2.5 p-2.5 bg-white h-20">

@@ -13,6 +13,7 @@ import { startLoading } from "../wrappers/ProgressBar";
 import { useImagePresent } from "@/hooks/image/useImagePresent";
 import { IconImage, ImageCarouselControls } from "@/components/ui";
 import {
+  getCityOrCenter,
   getPrimaryCategoryId,
   removeInlineStylesFromHTML,
 } from "@/lib/helpers";
@@ -131,12 +132,12 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
       ),
       currentImage: updatedImageList?.[activeImageIndex],
       shouldShowSkeleton: !hasMounted || !inView || isLoading,
-      locationText: feedItem?.address?.location || "Tel Aviv",
+      locationText: getCityOrCenter(feedItem?.address),
     }),
     [
       urlParams.activeCategoryKey,
       feedItem.primaryCategoryId,
-      feedItem?.address?.location,
+      feedItem?.address,
       updatedImageList,
       activeImageIndex,
       hasMounted,
@@ -283,11 +284,11 @@ const FeedCardContent = ({
   activeImageIndex: number;
   setActiveImageIndex: React.Dispatch<React.SetStateAction<number>>;
 
-  locationText: string;
+  locationText: string | undefined;
 }) => (
   <div className="relative w-full h-full">
     {/* Gradient Overlay */}
-    <div className="absolute bottom-0 right-0 h-1/2 w-full bg-gradient-to-t from-black/40 to-transparent rounded-b-xl" />
+    <div className="absolute bottom-0 right-0 h-1/2 w-full bg-gradient-to-t from-black/50 to-transparent rounded-b-xl" />
 
     {/* Text Content */}
     <div className="absolute bottom-0 right-0 p-4 text-white font-bold w-full">
@@ -332,11 +333,24 @@ const FeedCardActions = ({
   };
   onMapIconClick: (e: React.MouseEvent, id: string) => void;
 }) => (
-  <div className="hidden absolute top-4 right-4 group-hover:flex items-center gap-2.5">
-    <IconImage width={30} height={30} icon="circular-heart" />
-    {!pageTypes.isEventPage && !pageTypes.isTrailPage && (
-      <div onClick={(e) => onMapIconClick(e, feedItem._id)}>
-        <IconImage width={30} height={30} icon="circular-map-fold" />
+  <div className="hidden absolute top-4 group-hover:flex items-center justify-between  w-full px-4">
+    <div className="flex gap-2.5">
+      <IconImage width={30} height={30} icon="circular-heart" />
+      {!pageTypes.isEventPage && !pageTypes.isTrailPage && (
+        <div
+          onClick={(e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            onMapIconClick(e, feedItem._id);
+          }}
+        >
+          <IconImage width={30} height={30} icon="circular-map-fold" />
+        </div>
+      )}
+    </div>
+    {feedItem.serviceType === "point_of_interest" && (
+      <div className="bg-black/35 rounded-full p-1 flex items-center justify-center">
+        <IconImage width={23} height={23} icon="global-white" />
       </div>
     )}
   </div>

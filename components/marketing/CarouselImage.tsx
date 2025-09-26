@@ -94,7 +94,7 @@ const CarouselImage = ({ images, timeInterval }: CarouselImageProps) => {
       </Swiper>
 
       {/* White border frame */}
-      <div className="absolute top-6 left-6 right-6 bottom-6 border-4 border-white pointer-events-none z-10" />
+      {/* <div className="absolute top-6 left-6 right-6 bottom-6 border-4 border-white pointer-events-none z-10" /> */}
 
       {/* Custom pagination dots */}
       <div className="absolute bottom-12 left-1/2 -translate-x-1/2 z-20 flex space-x-3">

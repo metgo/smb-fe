@@ -58,3 +58,14 @@ export async function getSiteInfo() {
     console.error("Error fetching categories:", error);
   }
 }
+
+export async function getAminitiesInfo() {
+  try {
+    const res = await fetch(`${urls.aminitiesInfo}/${CODE}`);
+    if (!res.ok) throw new Error("Failed to fetch categories");
+    const data = await res.json();
+    return data;
+  } catch (error) {
+    console.error("Error fetching categories:", error);
+  }
+}

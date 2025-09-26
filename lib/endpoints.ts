@@ -36,6 +36,7 @@ export const urls = {
   marketing: `${BASE_URL}/marketing`,
 
   themes: `${BASE_URL}/themes`,
+  aminitiesInfo: `${BASE_URL}/amenities-info`,
 };
 
 export const pathNames = {

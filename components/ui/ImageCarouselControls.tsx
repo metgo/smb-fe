@@ -10,7 +10,7 @@ type ImageCarouselControlsProps = {
 const ImageCarouselControls: React.FC<ImageCarouselControlsProps> = ({
   totalImages,
   activeIndex,
-  iconSize = 30,
+  iconSize = 36,
   setActiveImageIndex,
 }) => {
   if (totalImages < 2) return null;

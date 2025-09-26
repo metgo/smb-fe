@@ -173,8 +173,17 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
             <div className="w-[88%] absolute top-30 right-5 flex justify-between text-white z-20">
               <BsThreeDotsVertical size={30} />
               <div className="flex items-center flex-col">
-                <BiSolidNavigation size={28} />
-                <span className="font-bold">31 ק״מ</span>
+                <Link
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  href={`https://www.google.com/maps/search/?api=1&query=${activeFeedItem?.geoLocation?.lat + "," + activeFeedItem?.geoLocation?.long}`}
+                  className={clsx(
+                    "flex items-center gap-1.25 ps-2.5 pe-4 py-1 custom-cursor",
+                  )}
+                >
+                  <BiSolidNavigation size={28} />
+                  {/* <span className="font-bold">31 ק״מ</span> */}
+                </Link>
               </div>
             </div>
 

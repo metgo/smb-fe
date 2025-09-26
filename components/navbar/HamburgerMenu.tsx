@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 
 import { navItems } from "@/lib/utils";
 import { IconImage } from "@/components/ui";
+import useGeneralStore from "@/stores/generalStore";
 
 const HamburgerMenu = ({
   openIcon = "threeline",
@@ -16,6 +17,7 @@ const HamburgerMenu = ({
 }) => {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
+  const { aminitiesInfo } = useGeneralStore();
 
   const menuRef = useRef<HTMLDivElement>(null);
   const toggleButtonRef = useRef<HTMLButtonElement>(null);
@@ -41,11 +43,27 @@ const HamburgerMenu = ({
     if (isOpen) {
       document.addEventListener("mousedown", handleClickOutside);
     }
-
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isOpen]);
+
+  // ✅ Pre-filter navItems
+  const filteredNavItems = useMemo(() => {
+    const nav = navItems[0];
+
+    return Object.fromEntries(
+      Object.entries(nav).map(([colKey, items]) => {
+        if (colKey === "col2") {
+          const filtered = items.filter(
+            (item) => item.key && aminitiesInfo[item.key],
+          );
+          return [colKey, filtered];
+        }
+        return [colKey, items];
+      }),
+    );
+  }, [aminitiesInfo]);
 
   return (
     <>
@@ -73,33 +91,38 @@ const HamburgerMenu = ({
              max-sm:px-0 md:py-10 md:px-12 flex flex-col md:flex-row max-sm:gap-0 md:gap-10 
              rounded-b-xl max-sm:bg-white/90 bg-white backdrop-blur-[34px]"
           >
-            {Object.entries(navItems[0]).map(([colKey, items]) => (
-              <div
-                key={colKey}
-                className="flex flex-col md:flex-row md:gap-2.75 w-full max-sm:px-11"
-              >
-                {/* Vertical divider only on md+ */}
-                <div className="hidden md:block w-0.25 h-70 bg-[#D3D3D3]" />
+            {Object.entries(filteredNavItems).map(([colKey, items]) => {
+              if (colKey === "col2" && items.length === 0) return null;
 
-                <div className="flex flex-col w-full md:w-[8rem] lg:w-[10rem] xl:w-[14.5rem]">
-                  {items.map((item) => (
-                    <Link
-                      key={item.id}
-                      href={item.href}
-                      className="text-theme hover:text-dark transition font-bold text-sm gap-2.5 mb-2 
+              return (
+                <div
+                  key={colKey}
+                  className="flex flex-col md:flex-row md:gap-2.75 w-full max-sm:px-11"
+                >
+                  <div className="hidden md:block w-0.25 h-70 bg-[#D3D3D3]" />
+
+                  <div className="flex flex-col w-full md:w-[8rem] lg:w-[10rem] xl:w-[14.5rem]">
+                    {items.map((item) => (
+                      <Link
+                        key={item.id}
+                        href={item.href}
+                        className="text-theme hover:text-dark transition font-bold text-sm gap-2.5 mb-2 
                        hover:bg-primary group py-2 ps-3 flex items-center justify-between 
                        custom-cursor w-full"
-                    >
-                      <div className="flex items-center gap-2.5 max-sm:text-xl">
-                        {item.rightIcon && <IconImage icon={item.rightIcon} />}
-                        {item.label}
-                      </div>
-                      {item.leftIcon && <IconImage icon={item.leftIcon} />}
-                    </Link>
-                  ))}
+                      >
+                        <div className="flex items-center gap-2.5 max-sm:text-xl">
+                          {item.rightIcon && (
+                            <IconImage icon={item.rightIcon} />
+                          )}
+                          {item.label}
+                        </div>
+                        {item.leftIcon && <IconImage icon={item.leftIcon} />}
+                      </Link>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
 
             {/* Divider at the end only for desktop */}
             <div className="hidden md:block w-0.25 h-70 bg-[#D3D3D3]" />

@@ -6,7 +6,6 @@ import { filterTabs } from "@/lib/utils";
 import { IconImage } from "@/components/ui";
 import useGeneralStore from "@/stores/generalStore";
 import { useEffect, useState } from "react";
-import { startLoading } from "../wrappers/ProgressBar";
 
 const BusinessPageFilterTabs = () => {
   const router = useRouter();
@@ -40,7 +39,6 @@ const BusinessPageFilterTabs = () => {
       left: 0,
       behavior: "smooth",
     });
-    startLoading();
     router.push(`?${params.toString()}`, { scroll: false });
   }
   return (
