@@ -63,7 +63,7 @@ const MobileFilterTab = () => {
                 : "flex items-center gap-1.5 px-2 py-2 font-normal"
             } rounded-lg custom-cursor text-sm text-theme`}
           >
-            <IconImage icon={item.icon} width={30} height={30} />
+            <IconImage icon={item.icon} width={24} height={24} />
             {!isMobile && <span>{item.label}</span>}
           </button>
         ))}

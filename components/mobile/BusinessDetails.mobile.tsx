@@ -29,7 +29,7 @@ const MobileBusinessDetails = ({
   return (
     <div className="md:hidden max-sm:block">
       <div className="flex items-center justify-end gap-4 mt-8 px-4">
-        <IconImage width={34} height={34} icon="share" />
+        <IconImage width={30} height={30} icon="share" />
         <Link
           target="_blank"
           rel="noopener noreferrer"
@@ -63,7 +63,7 @@ const MobileBusinessDetails = ({
             height={380}
             imgSrc={businessDetails?.images?.[0]?.image}
             alt={businessDetails?.images?.[0]?.alt}
-            className="object-cover w-[380px] h-[380px] rounded-2xl"
+            className="object-cover w-full h-[380px] rounded-2xl"
           />
           {businessDetails?.images?.length > 1 && (
             <div className="flex gap-2 mt-4 overflow-hidden">
@@ -90,7 +90,7 @@ const MobileBusinessDetails = ({
       </section>
 
       {products?.length > 0 && (
-        <section className="flex gap-4 overflow-x-auto max-sm:px-4 max-sm:scroll-smooth max-sm:snap-x max-sm:snap-mandatory scrollbar-hide">
+        <section className="flex gap-4 mt-4 overflow-x-auto max-sm:px-4 max-sm:scroll-smooth max-sm:snap-x max-sm:snap-mandatory scrollbar-hide">
           {products?.map((product) => (
             <div
               key={product._id}
@@ -105,7 +105,7 @@ const MobileBusinessDetails = ({
         </section>
       )}
 
-      <section className="relative">
+      <section className="relative mt-4">
         <DeliveriesContent {...businessDetails} />
       </section>
 

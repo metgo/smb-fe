@@ -48,7 +48,7 @@ const CarouselImage = ({ images, timeInterval }: CarouselImageProps) => {
   }, []);
 
   return (
-    <div className="h-screen w-full relative overflow-hidden bg-white">
+    <div className="max-sm:h-full md:h-screen w-full relative overflow-hidden bg-white">
       <Swiper
         modules={[Navigation, Pagination, Autoplay, EffectFade]}
         spaceBetween={0}
