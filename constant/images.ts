@@ -1,7 +1,7 @@
 import { CODE } from "./envConstants";
 
 export const images = {
-  BENI: {
+  BNEI: {
     logo: {
       image: {
         black: "/images/logo/negevtime-logo-black.svg",
@@ -43,12 +43,11 @@ export const images = {
 } as const;
 
 export function getLogo() {
-  const logo = images[CODE as keyof typeof images].logo;
-
+  const logo = images[CODE as keyof typeof images]?.logo;
   return logo;
 }
 
 export function getFavicon() {
-  const faviconUrl = images[CODE as keyof typeof images].favicon;
+  const faviconUrl = images[CODE as keyof typeof images]?.favicon;
   return faviconUrl;
 }
