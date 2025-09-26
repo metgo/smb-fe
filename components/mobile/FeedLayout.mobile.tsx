@@ -9,7 +9,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 
 import MobileNavbar from "./Navbar.mobile";
 import { pathNames } from "@/lib/endpoints";
-import { categoryColors } from "@/lib/utils";
+import { categoryColors, navigationPaths } from "@/lib/utils";
 import { staticImages } from "@/constant/staticImages";
 import { useCommonHook, useHorizontalLoadMore } from "@/hooks";
 import { IconImage, ImageCarouselControls, NextImage } from "../ui";
@@ -20,6 +20,7 @@ import {
 import MobileCategoryPanel from "./CategoryPanel.mobile";
 import useGeneralStore from "@/stores/generalStore";
 import BusinessPinMap from "../maps/BusinessPinMap";
+import Link from "next/link";
 
 interface MobileFeedLayoutProps {
   businesses: BusinessesProps;
@@ -143,42 +144,21 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
     setActiveIndex(index);
     if (activeFilterTab === "map") setClickedBusinessId(id);
   }
+
   return (
     <div className="flex flex-col h-screen mobile">
       {(hideFirstTwoSection || pathname !== pathNames.home) && (
         <MobileNavbar showFilterTab />
       )}
 
-      {/* Image Section - Takes remaining height after subtracting 400px */}
       <div className="relative flex-1" style={{ height: "calc(100vh - 80px)" }}>
         {/* Background Image */}
         {activeFilterTab === "gallery" && (
-          <section
-            className="relative w-full h-full"
-            onTouchStart={(e) => {
-              const touchStartX = e.touches[0].clientX;
-              e.currentTarget.dataset.touchStartX = touchStartX.toString();
-            }}
-            onTouchEnd={(e) => {
-              const touchStartX = Number(
-                e.currentTarget.dataset.touchStartX || 0,
-              );
-              const touchEndX = e.changedTouches[0].clientX;
-              const deltaX = touchEndX - touchStartX;
-
-              if (Math.abs(deltaX) > 50) {
-                setActiveImageIndex((prev) => {
-                  if (deltaX > 0) {
-                    // Swipe right → previous image
-                    return prev === 0 ? images.length - 1 : prev - 1;
-                  } else {
-                    // Swipe left → next image
-                    return prev === images.length - 1 ? 0 : prev + 1;
-                  }
-                });
-              }
-            }}
+          <Link
+            className="custom-cursor block relative w-full h-full"
+            href={`${navigationPaths[pathname]}/${activeFeedItem.slug}`}
           >
+            {/* Background Image */}
             <Image
               unoptimized
               fill
@@ -235,7 +215,7 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
                 />
               </div>
             )}
-          </section>
+          </Link>
         )}
 
         {/* Map */}
@@ -287,7 +267,6 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
         </section>
       </div>
 
-      {/* Category Panel - Fixed 400px height */}
       <MobileCategoryPanel />
     </div>
   );
