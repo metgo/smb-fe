@@ -12,6 +12,7 @@ import { getBusinessDetailsBySlug } from "@/actions/businessActions";
 import { getProducts } from "@/actions/productActions";
 import NoFeedItemLayout from "@/components/layouts/NoFeedItemLayout";
 import ShareUrlBtnModal from "@/components/ShareUrlBtnModal";
+import MobileBusinessDetails from "@/components/mobile/BusinessDetails.mobile";
 
 const page = async ({ params }: PageProps) => {
   const { slug } = await params;
@@ -27,7 +28,7 @@ const page = async ({ params }: PageProps) => {
     <>
       <ReturnToPrevPageBtn />
 
-      <div className="mx-20 py-12">
+      <div className="mx-20 py-12 max-sm:hidden md:block">
         <div className="flex items-center gap-7.5 w-full mb-4.5">
           <NextImage
             width={80}
@@ -70,6 +71,10 @@ const page = async ({ params }: PageProps) => {
           businessDetails={businessDetails}
         />
       </div>
+      <MobileBusinessDetails
+        products={products}
+        businessDetails={businessDetails}
+      />
     </>
   );
 };

@@ -146,7 +146,7 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
   }
 
   return (
-    <div className="flex flex-col h-screen mobile">
+    <div className="flex flex-col h-screen max-sm:block md:hidden">
       {(hideFirstTwoSection || pathname !== pathNames.home) && (
         <MobileNavbar showFilterTab />
       )}
