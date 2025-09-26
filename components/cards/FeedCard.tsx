@@ -296,10 +296,12 @@ const FeedCardContent = ({
         {feedItem?.name}
       </h3>
 
-      <div className="flex items-center gap-2">
-        <IconImage icon="location" width={20} height={20} />
-        <span className="md:text-sm">{locationText}</span>
-      </div>
+      {feedItem?.serviceType !== "point_of_interest" && (
+        <div className="flex items-center gap-2">
+          <IconImage icon="location" width={20} height={20} />
+          <span className="md:text-sm">{locationText}</span>
+        </div>
+      )}
 
       <div className="hidden group-hover:block">
         <div

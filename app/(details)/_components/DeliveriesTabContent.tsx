@@ -24,7 +24,7 @@ const DeliveryTitleLayout = ({
     </div>
     <div
       className="text-sm font-normal text-theme mt-2.5"
-      dangerouslySetInnerHTML={{ __html: desc! }}
+      dangerouslySetInnerHTML={{ __html: desc || "" }}
     />
     {children}
   </div>

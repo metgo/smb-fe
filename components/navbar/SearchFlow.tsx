@@ -88,7 +88,7 @@ const MobileCardList = ({
   );
 };
 
-const SearchFlow = () => {
+const SearchFlow = ({ iconSize = 30 }: { iconSize?: number }) => {
   const {
     hasResults,
     isLoading,
@@ -109,7 +109,7 @@ const SearchFlow = () => {
         className=" custom-cursor"
         onClick={() => setIsSerachModalOpen(true)}
       >
-        <IconImage icon="search" width={30} height={30} />
+        <IconImage icon="search" width={iconSize} height={iconSize} />
       </div>
 
       {isSearchModalOpen && (
