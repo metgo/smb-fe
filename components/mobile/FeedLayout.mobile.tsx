@@ -5,7 +5,7 @@ import Image from "next/image";
 import { BiSolidNavigation } from "react-icons/bi";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import MobileNavbar from "./Navbar.mobile";
 import { pathNames } from "@/lib/endpoints";
@@ -21,14 +21,16 @@ import MobileCategoryPanel from "./CategoryPanel.mobile";
 import useGeneralStore from "@/stores/generalStore";
 import BusinessPinMap from "../maps/BusinessPinMap";
 import Link from "next/link";
+import { startLoading } from "../wrappers/ProgressBar";
 
 interface MobileFeedLayoutProps {
   businesses: BusinessesProps;
 }
 
 const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
-  const searchParams = useSearchParams();
   const pathname = usePathname();
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   const { isCurrentPage } = useCommonHook();
   const { hideFirstTwoSection, activeFilterTab, setClickedBusinessId } =
@@ -145,18 +147,23 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
     if (activeFilterTab === "map") setClickedBusinessId(id);
   }
 
+  function handleNavigation() {
+    startLoading();
+    router.push(`${navigationPaths[pathname]}/${activeFeedItem.slug}`);
+  }
+
   return (
     <div className="flex flex-col h-screen max-sm:block md:hidden">
       {(hideFirstTwoSection || pathname !== pathNames.home) && (
-        <MobileNavbar showFilterTab />
+        <MobileNavbar showFilterTab showFilterIcon />
       )}
 
       <div className="relative flex-1" style={{ height: "calc(100vh - 80px)" }}>
         {/* Background Image */}
         {activeFilterTab === "gallery" && (
-          <Link
+          <div
+            onClick={handleNavigation}
             className="custom-cursor block relative w-full h-full"
-            href={`${navigationPaths[pathname]}/${activeFeedItem.slug}`}
           >
             {/* Background Image */}
             <Image
@@ -203,14 +210,15 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
                 }}
                 className="line-clamp-3 font-bold text-2xl mt-1"
               />
-              {activeFeedItem?.address?.city && (
-                <div className="flex items-center gap-2 mt-4">
-                  <IconImage icon="location" width={30} height={30} />
-                  <span className="text-xl font-bold">
-                    {activeFeedItem?.address?.city}
-                  </span>
-                </div>
-              )}
+              {activeFeedItem?.serviceType !== "point_of_interest" &&
+                activeFeedItem?.address?.city && (
+                  <div className="flex items-center gap-2 mt-4">
+                    <IconImage icon="location" width={30} height={30} />
+                    <span className="text-xl font-bold">
+                      {activeFeedItem?.address?.city}
+                    </span>
+                  </div>
+                )}
             </div>
 
             {/* Image carousel controls */}
@@ -224,7 +232,7 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
                 />
               </div>
             )}
-          </Link>
+          </div>
         )}
 
         {/* Map */}
