@@ -35,7 +35,7 @@ jobs:
       - name: SSH into the Ubuntu server and deploy
         uses: appleboy/ssh-action@v1.2.0
         with:
-          host: ${{ secrets.HOFAS_SERVER_IP }}
+          host: ${{ secrets.SERVER_IP }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
