@@ -30,6 +30,10 @@ interface GeneralStoreState {
   setAppliedFilterItemCount: (count: number) => void;
   hideFirstTwoSection: boolean;
   setHideFirstTwoSection: (v: boolean) => void;
+  isMobile: boolean;
+  setIsMobile: (v: boolean) => void;
+  homePageSectionState: string;
+  setHomePageSectionState: (v: string) => void;
   aminitiesInfo: AminitiesInfoType;
   setAminitiesInfo: (v: AminitiesInfoType) => void;
 }
@@ -55,6 +59,10 @@ const useGeneralStore = create<GeneralStoreState>((set) => ({
   setAppliedFilterItemCount: (count) => set({ appliedFilterItemCount: count }),
   hideFirstTwoSection: false,
   setHideFirstTwoSection: (v) => set({ hideFirstTwoSection: v }),
+  isMobile: false,
+  setIsMobile: (v) => set({ isMobile: v }),
+  homePageSectionState: "first",
+  setHomePageSectionState: (v) => set({ homePageSectionState: v }),
 
   aminitiesInfo: { event: true, trip: true, business: true },
   setAminitiesInfo: (v) => set({ aminitiesInfo: v }),

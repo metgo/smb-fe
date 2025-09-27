@@ -84,6 +84,14 @@ body {
     /* Softens the outer container */
   }
 
+  .mobile {
+    @apply max-sm:block md:hidden;
+  }
+
+  .desktop {
+    @apply max-sm:hidden md:block;
+  }
+
   .skeleton::before {
     content: "";
     position: absolute;

@@ -13,7 +13,7 @@ const CategoryPanel = () => {
   const { categories } = useCategoryStore();
 
   return (
-    <div className="bg-[#FAFAFAE6] backdrop-blur-md border border-white/20 shadow-md flex items-center justify-center gap-2.5 p-2.5 rounded-2xl">
+    <div className="bg-[#FAFAFAE6] backdrop-blur-md border border-white/20 shadow-md items-center justify-center gap-2.5 p-2.5 rounded-2xl max-sm:hidden md:flex">
       {categories?.map((item) => {
         const category = categoryIcons[item.id as any];
         const isActive = activeCategoryKey === item.id;

@@ -13,6 +13,7 @@ import { Dialog, IconImage } from "@/components/ui";
 import { sendEmail } from "@/actions/contactUsAction";
 import { ContactFormData, contactFormSchema } from "@/schemas/contact";
 import { contactFormReasonOptions } from "@/lib/utils";
+import ReturnToPrevPageBtn from "./ReturnToPrevPageBtn";
 
 const InputField = ({ type = "text", placeholder, register, error }: any) => (
   <div className="flex flex-col w-full font-normal">
@@ -111,17 +112,20 @@ const ContactForm = () => {
 
   return (
     <>
-      <section className="relative h-[60vh] flex items-center justify-center">
-        <div className=" absolute -top-64 space-y-9.5">
-          <div className="bg-white border border-lightGray w-xl rounded-2xl p-10">
-            <div className="flex flex-col items-center justify-center mb-10 text-dark text-center">
+      <section className="relative h-40 md:h-[60vh] flex items-center justify-center">
+        <div className="max-sm:relative md:absolute max-sm:top-30 md:-top-64 space-y-9.5">
+          <div className="bg-white md:border border-lightGray max-sm:w-full md:w-xl rounded-2xl max-sm:p-4 md:p-10">
+            <div className="md:hidden max-sm:block mt-8">
+              <ReturnToPrevPageBtn />
+            </div>
+            <div className="flex flex-col items-center justify-center max-sm:my-10 md:mb-10 text-dark text-center w-full">
               <h2 className="font-bold text-2xl">{contactUsText.title}</h2>
-              <p className="font-normal">{contactUsText.desc}</p>
+              <p className="font-normal max-sm:w-90">{contactUsText.desc}</p>
             </div>
 
             <form
               onSubmit={handleSubmit(onSubmit)}
-              className="flex flex-col gap-3 mt-4 px-10"
+              className="flex flex-col gap-3 mt-4 max-sm:px-4 md:px-10"
             >
               <InputField
                 placeholder={contactUsText.fullName}
@@ -179,14 +183,14 @@ const ContactForm = () => {
         <Dialog
           isOpen={isSubmitSuccess}
           onClose={() => setIsSubmitSuccess(false)}
-          className="w-[430px] top-60"
+          className="max-sm:w-[84%] max-sm:mx-8 md:w-[430px] top-60"
         >
           {/* This div should be relative and overflow-hidden */}
           <div className="relative overflow-hidden w-full flex flex-col items-center py-16 z-50 rounded-xl">
             <h1 className="text-2xl font-bold text-dark">
               {contactUsText.messageSuccess}
             </h1>
-            <p className="text-dark">{contactUsText.thankYou}</p>
+            <p className="text-dark text-center">{contactUsText.thankYou}</p>
 
             <Link
               href="/"

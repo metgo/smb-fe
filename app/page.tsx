@@ -10,6 +10,7 @@ import HamburgerMenu from "@/components/navbar/HamburgerMenu";
 import { ArrowImage, CarouselImage } from "@/components/marketing";
 import BusinessFeedLayout from "@/components/layouts/BusinessFeedLayout";
 import CurrentTempOfYourCity from "@/components/navbar/CurrentTempOfYourCity";
+import MobileFeedLayout from "@/components/mobile/FeedLayout.mobile";
 
 interface Props {
   searchParams: Promise<{
@@ -53,7 +54,7 @@ const page = async ({ searchParams }: Props) => {
       <ScrollSnapWrapper hasMarketing={marketing?.items?.length > 0}>
         {/* Hero Section */}
         <section className="relative">
-          <div className="z-20 fixed top-2.5 right-0 w-full flex items-center justify-between ps-20 pe-16">
+          <div className="z-20 fixed top-2.5 right-0 w-full flex items-center justify-between max-sm:px-4 md:ps-20 md:pe-16">
             <div className="flex items-center gap-5">
               <HamburgerMenu
                 openIcon="white-threeline"
@@ -82,6 +83,7 @@ const page = async ({ searchParams }: Props) => {
         {/* Feed Section */}
         <section className="relative z-50 bg-white">
           <Navbar showFilterTab />
+          <MobileFeedLayout businesses={businesses} />
           <BusinessFeedLayout businesses={businesses} />
         </section>
       </ScrollSnapWrapper>

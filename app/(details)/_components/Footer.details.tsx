@@ -64,7 +64,7 @@ const Footer = () => {
   if (basePath === pathNames.trailDetails) return null;
 
   return (
-    <div className="mx-20 relative h-[156px] overflow-hidden">
+    <div className="mx-20 relative h-[156px] overflow-hidden max-sm:hidden md:block">
       <hr className="h-[1px] text-primary" />
       <div className="w-full py-10 flex items-baseline gap-18.5">
         {Object.entries(navItems[0]).map(([colKey, items]) => (

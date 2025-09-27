@@ -25,6 +25,7 @@ export const misc = {
   linkCopied: "הקישר לדף הועתק",
   forMoreDetails: "לפרטים נוספים",
   shareLink: "ניתן לשתף עם חברים ומשפחה על ידי הדבקת הקישור",
+  searchItemNotFoundText: "לא מצאנו את מה שחיפשת :(",
 };
 
 export const deliveries = {

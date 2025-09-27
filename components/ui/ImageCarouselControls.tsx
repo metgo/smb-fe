@@ -3,12 +3,14 @@ import IconImage from "./IconImage";
 type ImageCarouselControlsProps = {
   totalImages: number;
   activeIndex: number;
+  iconSize?: number;
   setActiveImageIndex: React.Dispatch<React.SetStateAction<number>>;
 };
 
 const ImageCarouselControls: React.FC<ImageCarouselControlsProps> = ({
   totalImages,
   activeIndex,
+  iconSize = 36,
   setActiveImageIndex,
 }) => {
   if (totalImages < 2) return null;
@@ -26,7 +28,7 @@ const ImageCarouselControls: React.FC<ImageCarouselControlsProps> = ({
         className="custom-cursor"
         disabled={activeIndex === 0}
       >
-        <IconImage icon="next" width={30} height={30} />
+        <IconImage icon="next" width={iconSize} height={iconSize} />
       </button>
 
       {/* Dots Indicator */}
@@ -56,7 +58,7 @@ const ImageCarouselControls: React.FC<ImageCarouselControlsProps> = ({
         className="custom-cursor"
         disabled={activeIndex === totalImages - 1}
       >
-        <IconImage icon="prev" width={36} height={36} />
+        <IconImage icon="prev" width={iconSize} height={iconSize} />
       </button>
     </div>
   );

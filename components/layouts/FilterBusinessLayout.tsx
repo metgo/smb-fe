@@ -7,12 +7,12 @@ import { useLoadMore } from "@/hooks/useLoadMore";
 import NoFeedItemLayout from "./NoFeedItemLayout";
 import useGeneralStore from "@/stores/generalStore";
 
+import { useIsHydrated } from "@/hooks";
+import { pathNames } from "@/lib/endpoints";
+import BusinessPinMap from "../maps/BusinessPinMap";
 import OnlyFeedCardsLayout from "./OnlyFeedCardsLayout";
 import MapFeedIntegratedLayout from "./MapFeedIntegratedLayout";
 import StickyYellowRibbonImage from "../StickyYellowRibbonImage";
-import BusinessPinMap from "../maps/BusinessPinMap";
-import { useIsHydrated } from "@/hooks";
-import { pathNames } from "@/lib/endpoints";
 
 interface Props {
   businesses: BusinessesProps;
@@ -54,7 +54,7 @@ const FilterBusinessLayout = ({ businesses }: Props) => {
   };
 
   return (
-    <div>
+    <div className="max-sm:hidden md:block">
       <div>
         {renderLayout()}
         {initialLoadDone && canLoadMore && businesses?.meta?.hasNextPage && (

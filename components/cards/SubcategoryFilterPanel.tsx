@@ -54,7 +54,7 @@ const SubcategoryFilterPanel = () => {
   if (activeCategoryKey === null || subCategories?.length === 0) return;
 
   return (
-    <div className="max-w-[1008px] bg-[#FAFAFA]/80 backdrop-blur border border-white/20 shadow-md p-2.5 rounded-2xl z-50">
+    <div className="max-w-[1008px] bg-[#FAFAFA]/80 backdrop-blur border border-white/20 shadow-md p-2.5 rounded-2xl z-50 max-sm:hidden md:block">
       <div className="flex items-center gap-2.5">
         <FilterDrawer />
 

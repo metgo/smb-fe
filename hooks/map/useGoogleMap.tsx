@@ -43,10 +43,23 @@ export const useGoogleMap = () => {
     if (position) {
       const screenWidth = window.innerWidth;
       const screenHeight = window.innerHeight;
+      const isMobile = screenWidth < 768; // Consider mobile breakpoint
 
-      // Offset upward so InfoWindow isn’t cut off
-      const offsetLat = screenHeight < 600 ? 0.001 : 0.002;
-      const offsetLng = 0;
+      let offsetLat: number;
+      let offsetLng = 0;
+
+      if (isMobile) {
+        // Mobile: Center the InfoWindow in the middle of the screen
+        // Calculate offset to position marker so InfoWindow appears in center
+        const infoWindowHeight = 200; // Approximate InfoWindow height
+        const mapCenterToInfoWindowCenter = infoWindowHeight / 12;
+
+        // Convert pixel offset to lat/lng offset
+        offsetLat = (mapCenterToInfoWindowCenter / screenHeight) * 0.008; // Adjust multiplier as needed
+      } else {
+        // Desktop: Keep original behavior - offset upward to prevent cutoff
+        offsetLat = screenHeight < 600 ? 0.001 : 0.002;
+      }
 
       const newCenter = {
         lat: position.lat() - offsetLat,
@@ -57,8 +70,15 @@ export const useGoogleMap = () => {
 
       const currentZoom = map.getZoom();
       if (currentZoom && currentZoom < 14) {
-        const targetZoom =
-          screenWidth < 640 ? 15 : screenWidth < 1024 ? 14 : 13;
+        const targetZoom = isMobile
+          ? screenWidth < 640
+            ? 12
+            : 10 // Slightly higher zoom for mobile
+          : screenWidth < 640
+            ? 15
+            : screenWidth < 1024
+              ? 14
+              : 13;
         map.setZoom(targetZoom);
       }
     }
@@ -141,7 +161,10 @@ export const useGoogleMap = () => {
           activeMarkerRef.current = marker;
 
           // Center the map on the clicked marker with info window
-          centerMapOnMarker(marker);
+          // Use setTimeout to allow InfoWindow to render first
+          setTimeout(() => {
+            centerMapOnMarker(marker);
+          }, 100);
         }
       });
 
@@ -167,10 +190,14 @@ export const useGoogleMap = () => {
         map.setCenter({ lat, lng });
 
         const screenWidth = window.innerWidth;
+        const isMobile = screenWidth < 768;
         let zoomLevel;
-        if (screenWidth < 640) zoomLevel = 15;
-        else if (screenWidth < 1024) zoomLevel = 14;
-        else zoomLevel = 13;
+
+        if (isMobile) {
+          zoomLevel = screenWidth < 640 ? 16 : 15; // Higher zoom for mobile
+        } else {
+          zoomLevel = screenWidth < 640 ? 15 : screenWidth < 1024 ? 14 : 13;
+        }
         map.setZoom(zoomLevel);
       } else {
         const bounds = new google.maps.LatLngBounds();
@@ -187,10 +214,19 @@ export const useGoogleMap = () => {
         // Calculate dynamic padding based on screen size
         const basePadding = 20;
         const screenWidth = window.innerWidth;
+        const isMobile = screenWidth < 768;
 
         // Scale padding based on screen size
-        const paddingScale =
-          screenWidth < 640 ? 0.5 : screenWidth < 1024 ? 0.75 : 1;
+        const paddingScale = isMobile
+          ? screenWidth < 640
+            ? 0.3
+            : 0.4 // Less padding for mobile
+          : screenWidth < 640
+            ? 0.5
+            : screenWidth < 1024
+              ? 0.75
+              : 1;
+
         const padding = {
           top: basePadding * paddingScale,
           bottom: basePadding * paddingScale,
@@ -202,15 +238,23 @@ export const useGoogleMap = () => {
         map.fitBounds(bounds, padding);
 
         // Adjust zoom to prevent excessive zoom-in on small screens
-        const listner = google.maps.event.addListenerOnce(
+        const listener = google.maps.event.addListenerOnce(
           map,
           "bounds_changed",
           () => {
             const currentZoom = map.getZoom();
-            const maxZoom =
-              screenWidth < 640 ? 16 : screenWidth < 1024 ? 15 : 14;
+            const maxZoom = isMobile
+              ? screenWidth < 640
+                ? 17
+                : 16 // Allow higher zoom on mobile
+              : screenWidth < 640
+                ? 16
+                : screenWidth < 1024
+                  ? 15
+                  : 14;
+
             if (currentZoom && currentZoom > maxZoom) map.setZoom(maxZoom);
-            google.maps.event.removeListener(listner);
+            google.maps.event.removeListener(listener);
           },
         );
       }
