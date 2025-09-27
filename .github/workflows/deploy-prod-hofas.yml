@@ -3,7 +3,7 @@ name: Deploy to Docker Hub Hofas PROD
 on:
   push:
     branches:
-      - main # Trigger this workflow only on pushes to the main branch
+      - dev # Trigger this workflow only on pushes to the main branch
 
 jobs:
   build:
