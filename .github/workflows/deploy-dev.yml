@@ -1,4 +1,4 @@
-name: Deploy to Docker Hub
+name: Deploy to Docker Hub NegevTime DEV
 
 on:
   push:
@@ -22,9 +22,9 @@ jobs:
 
       - name: Login to Docker Hub, Build and Push Docker Image
         run: |
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/hofas:staging .
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/travel:staging .
           docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/hofas:staging
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/travel:staging
           docker image prune -f
 
   deploy:
@@ -46,10 +46,10 @@ jobs:
             echo ${{ secrets.SUDO_PASSWORD }} | sudo -S docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
 
             # Pull docker image
-            echo ${{ secrets.SUDO_PASSWORD }} | sudo -S docker-compose pull staging_hofas
+            echo ${{ secrets.SUDO_PASSWORD }} | sudo -S docker-compose pull staging_travel
 
             # Run docker-compose
-            echo ${{ secrets.SUDO_PASSWORD }} | sudo -S docker-compose up -d staging_hofas
+            echo ${{ secrets.SUDO_PASSWORD }} | sudo -S docker-compose up -d staging_travel
 
             # Removing dangling images
             echo ${{ secrets.SUDO_PASSWORD }} | sudo -S docker image prune -f
