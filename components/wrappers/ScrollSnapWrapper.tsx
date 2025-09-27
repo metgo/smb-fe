@@ -72,6 +72,7 @@ export default function ScrollSnapWrapper({
       if (currentSection === "first") {
         setIsOnSection2(false);
         if (!hasMarketing) {
+          setIsOnSection2(true);
           setHideFirstTwoSection(true);
           smoothScroll(feedSectionRef.current);
         } else {
