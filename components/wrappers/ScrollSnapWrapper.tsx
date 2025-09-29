@@ -174,9 +174,8 @@ export default function ScrollSnapWrapper({
       }
     };
 
-    const handleTouchEnd = (e: TouchEvent) => {
+    const handleTouchEnd = () => {
       if (!isTouching.current) return;
-
       isTouching.current = false;
 
       const touchDelta = touchStartY.current - touchEndY.current;
@@ -184,7 +183,6 @@ export default function ScrollSnapWrapper({
       const minSwipeDistance = 50;
       const maxSwipeTime = 500;
 
-      // Check if this is a valid swipe
       if (
         Math.abs(touchDelta) < minSwipeDistance ||
         touchDuration > maxSwipeTime
@@ -192,15 +190,13 @@ export default function ScrollSnapWrapper({
         return;
       }
 
-      // Check if we're in a scrollable container
-      const target = e.target as HTMLElement;
-      const scrollableContainer = target.closest(
-        "[data-scrollable]",
-      ) as HTMLElement;
-      if (scrollableContainer) return;
-
+      // Only allow swipe UP transition, not down
       const direction = touchDelta > 0 ? "down" : "up";
-      handleSectionTransition(direction);
+
+      if (direction === "up") {
+        handleSectionTransition("up");
+      }
+      // for down, user must click the ScrollIndicator
     };
 
     // Only add touch events on mobile devices

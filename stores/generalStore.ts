@@ -5,6 +5,11 @@ type FilterType = {
   name: string;
 };
 
+type LatLngType = {
+  lat: number;
+  lng: number;
+};
+
 interface AminitiesInfoType {
   [key: string]: boolean;
 }
@@ -36,6 +41,9 @@ interface GeneralStoreState {
   setHomePageSectionState: (v: string) => void;
   aminitiesInfo: AminitiesInfoType;
   setAminitiesInfo: (v: AminitiesInfoType) => void;
+
+  userLiveLocation: LatLngType | null;
+  setUserLiveLocation: (v: LatLngType | null) => void;
 }
 
 const useGeneralStore = create<GeneralStoreState>((set) => ({
@@ -66,6 +74,9 @@ const useGeneralStore = create<GeneralStoreState>((set) => ({
 
   aminitiesInfo: { event: true, trip: true, business: true },
   setAminitiesInfo: (v) => set({ aminitiesInfo: v }),
+
+  userLiveLocation: null,
+  setUserLiveLocation: (v) => set({ userLiveLocation: v }),
 }));
 
 export default useGeneralStore;

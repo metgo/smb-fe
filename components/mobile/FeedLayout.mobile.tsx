@@ -1,6 +1,7 @@
 "use client";
 
 import clsx from "clsx";
+import Link from "next/link";
 import Image from "next/image";
 import { BiSolidNavigation } from "react-icons/bi";
 import { BsThreeDotsVertical } from "react-icons/bs";
@@ -20,7 +21,6 @@ import {
 import MobileCategoryPanel from "./CategoryPanel.mobile";
 import useGeneralStore from "@/stores/generalStore";
 import BusinessPinMap from "../maps/BusinessPinMap";
-import Link from "next/link";
 import { startLoading } from "../wrappers/ProgressBar";
 
 interface MobileFeedLayoutProps {
@@ -28,13 +28,18 @@ interface MobileFeedLayoutProps {
 }
 
 const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
-  const pathname = usePathname();
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const { isCurrentPage } = useCommonHook();
-  const { hideFirstTwoSection, activeFilterTab, setClickedBusinessId } =
-    useGeneralStore();
+  const { isCurrentPage, calculateDistanceTo, deviceHeight } = useCommonHook();
+  const {
+    hideFirstTwoSection,
+    activeFilterTab,
+    setClickedBusinessId,
+    userLiveLocation,
+  } = useGeneralStore();
+
   const feedItems = businesses.data;
 
   // Active index
@@ -152,13 +157,19 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
     router.push(`${navigationPaths[pathname]}/${activeFeedItem.slug}`);
   }
 
+  const apiLat = activeFeedItem?.geoLocation?.lat;
+  const apiLng = activeFeedItem?.geoLocation?.long;
+
   return (
-    <div className="flex flex-col h-screen max-sm:block md:hidden">
+    <div className="flex flex-col max-sm:block md:hidden">
       {(hideFirstTwoSection || pathname !== pathNames.home) && (
         <MobileNavbar showFilterTab />
       )}
 
-      <div className="relative flex-1" style={{ height: "calc(100vh - 80px)" }}>
+      <div
+        className="relative flex-1"
+        style={{ height: `calc(${deviceHeight}px - 100px)` }}
+      >
         {/* Background Image */}
         {activeFilterTab === "gallery" && (
           <div
@@ -183,13 +194,17 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
                 <Link
                   target="_blank"
                   rel="noopener noreferrer"
-                  href={`https://www.google.com/maps/search/?api=1&query=${activeFeedItem?.geoLocation?.lat + "," + activeFeedItem?.geoLocation?.long}`}
+                  href={`https://www.google.com/maps/search/?api=1&query=${apiLat + "," + apiLng}`}
                   className={clsx(
-                    "flex items-center gap-1.25 ps-2.5 pe-4 py-1 custom-cursor",
+                    "flex flex-col items-center gap-1.25 ps-2.5 pe-4 py-1 custom-cursor",
                   )}
                 >
                   <BiSolidNavigation size={28} />
-                  {/* <span className="font-bold">31 ק״מ</span> */}
+                  {userLiveLocation && (
+                    <span className="font-bold">
+                      ק״מ {calculateDistanceTo(Number(apiLat), Number(apiLng))}
+                    </span>
+                  )}
                 </Link>
               </div>
             </div>

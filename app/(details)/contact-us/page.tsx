@@ -14,7 +14,7 @@ const page = () => {
         height={417}
         unoptimized
         alt="contact form"
-        className="w-full"
+        className="w-full max-sm:hidden md:block"
         src={"/images/contact-us.png"}
       />
       <ContactForm />
