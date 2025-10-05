@@ -10,10 +10,10 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import MobileNavbar from "./Navbar.mobile";
 import { pathNames } from "@/lib/endpoints";
-import { categoryColors, navigationPaths } from "@/lib/utils";
 import { staticImages } from "@/constant/staticImages";
-import { useCommonHook, useHorizontalLoadMore } from "@/hooks";
+import { categoryColors, navigationPaths } from "@/lib/utils";
 import { IconImage, ImageCarouselControls, NextImage } from "../ui";
+import { useCommonHook, useHorizontalLoadMore } from "@/hooks";
 import {
   getPrimaryCategoryId,
   removeInlineStylesFromHTML,
@@ -32,6 +32,7 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
+  // const isHydrate =useIsHydrated()
   const { isCurrentPage, calculateDistanceTo, deviceHeight } = useCommonHook();
   const {
     hideFirstTwoSection,
@@ -39,6 +40,8 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
     setClickedBusinessId,
     userLiveLocation,
   } = useGeneralStore();
+
+  // if (!isHydrate) return null;
 
   const feedItems = businesses.data;
 
