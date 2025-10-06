@@ -32,7 +32,6 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  // const isHydrate =useIsHydrated()
   const { isCurrentPage, calculateDistanceTo, deviceHeight } = useCommonHook();
   const {
     hideFirstTwoSection,
@@ -40,8 +39,6 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
     setClickedBusinessId,
     userLiveLocation,
   } = useGeneralStore();
-
-  // if (!isHydrate) return null;
 
   const feedItems = businesses.data;
 
@@ -113,6 +110,11 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
   const horizontalScrollRef = useRef<HTMLDivElement>(null);
 
+  // Touch handling refs for image swipe
+  const touchStartX = useRef<number>(0);
+  const touchEndX = useRef<number>(0);
+  const imageContainerRef = useRef<HTMLDivElement>(null);
+
   // Function to handle centering the active item
   const centerActiveItem = (index: number) => {
     const scrollContainer = horizontalScrollRef.current;
@@ -160,6 +162,40 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
     router.push(`${navigationPaths[pathname]}/${activeFeedItem.slug}`);
   }
 
+  // Handle image swipe gestures
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (images.length <= 1) return;
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (images.length <= 1) return;
+    touchEndX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = () => {
+    if (images.length <= 1) return;
+
+    const swipeThreshold = 50; // Minimum swipe distance
+    const swipeDistance = touchStartX.current - touchEndX.current;
+
+    if (Math.abs(swipeDistance) > swipeThreshold) {
+      if (swipeDistance > 0) {
+        // Swiped left - go to next image (circular)
+        setActiveImageIndex((prev) =>
+          prev === 0 ? images.length - 1 : prev - 1,
+        );
+      } else {
+        // Swiped right - go to previous image (circular)
+        setActiveImageIndex((prev) => (prev + 1) % images.length);
+      }
+    }
+
+    // Reset values
+    touchStartX.current = 0;
+    touchEndX.current = 0;
+  };
+
   const apiLat = activeFeedItem?.geoLocation?.lat;
   const apiLng = activeFeedItem?.geoLocation?.long;
 
@@ -176,6 +212,10 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
         {/* Background Image */}
         {activeFilterTab === "gallery" && (
           <div
+            ref={imageContainerRef}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
             onClick={handleNavigation}
             className="custom-cursor block relative w-full h-full"
           >
@@ -201,6 +241,7 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
                   className={clsx(
                     "flex flex-col items-center gap-1.25 ps-2.5 pe-4 py-1 custom-cursor",
                   )}
+                  onClick={(e) => e.stopPropagation()}
                 >
                   <BiSolidNavigation size={28} />
                   {userLiveLocation && (
@@ -241,7 +282,10 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
 
             {/* Image carousel controls */}
             {!pageTypes.isEventPage && images.length > 1 && (
-              <div className="absolute bottom-40 left-0 right-0 px-4 z-20">
+              <div
+                className="absolute bottom-40 left-0 right-0 px-4 z-20"
+                onClick={(e) => e.stopPropagation()}
+              >
                 <ImageCarouselControls
                   iconSize={60}
                   totalImages={images.length}
@@ -254,7 +298,9 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
         )}
 
         {/* Map */}
-        {activeFilterTab === "map" && <BusinessPinMap mapHeight="90vh" />}
+        {activeFilterTab === "map" && (
+          <BusinessPinMap mapHeight={`calc(${deviceHeight}px - 100px)`} />
+        )}
 
         {/* Horizontal Image List */}
         <section className="absolute bottom-4 w-full z-20">

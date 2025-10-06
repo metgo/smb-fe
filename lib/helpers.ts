@@ -147,7 +147,8 @@ export function flatStationDetails(station: TrailStationProps) {
 // }
 
 export function removeInlineStylesFromHTML(html: string): string {
-  return html.replace(/\s*style="[^"]*"/gi, "");
+  if (html) return html?.replace(/\s*style="[^"]*"/gi, "");
+  return "";
 }
 
 export function getPrimaryCategoryId(

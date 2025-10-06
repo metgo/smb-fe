@@ -52,7 +52,7 @@ const CarouselImage = ({ images, timeInterval }: CarouselImageProps) => {
   return (
     <div
       style={{ height: deviceHeight }}
-      className=" md:h-screen w-full relative overflow-hidden bg-black"
+      className="h-screen w-full relative overflow-hidden bg-black"
     >
       <Swiper
         modules={[Navigation, Pagination, Autoplay, EffectFade]}
@@ -102,7 +102,7 @@ const CarouselImage = ({ images, timeInterval }: CarouselImageProps) => {
       {/* <div className="absolute top-6 left-6 right-6 bottom-6 border-4 border-white pointer-events-none z-10" /> */}
 
       {/* Custom pagination dots */}
-      <div className="absolute bottom-12 left-1/2 -translate-x-1/2 z-20 flex space-x-3">
+      <div className="absolute max-sm:bottom-20 md:bottom-12 left-1/2 -translate-x-1/2 z-20 flex space-x-3">
         {images?.map((_, idx) => (
           <button
             key={idx}

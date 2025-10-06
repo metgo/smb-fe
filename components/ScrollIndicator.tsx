@@ -5,13 +5,30 @@ import clsx from "clsx";
 
 const ScrollIndicator = ({ isSecond = false }: { isSecond?: boolean }) => {
   const { setIsOnSection2, setHideFirstTwoSection } = useGeneralStore();
+
   const handleScroll = () => {
-    const targetScroll = window.innerHeight;
+    // Use document.documentElement.clientHeight for more reliable viewport height
+    const vh = Math.max(
+      document.documentElement.clientHeight || 0,
+      window.innerHeight || 0,
+    );
+
+    // Scroll to exact viewport height
+    const targetScroll = isSecond ? vh * 2 : vh;
+
+    // Force scroll to exact position
     window.scrollTo({
-      top: isSecond ? targetScroll * 2 : targetScroll,
+      top: targetScroll,
       behavior: "smooth",
     });
-    const timeout = setTimeout(() => {
+
+    // Small delay to ensure scroll completes, then snap to exact position
+    setTimeout(() => {
+      window.scrollTo({
+        top: targetScroll,
+        behavior: "auto", // Instant snap to fix any drift
+      });
+
       if (isSecond) {
         setIsOnSection2(true);
         setHideFirstTwoSection(true);
@@ -20,14 +37,13 @@ const ScrollIndicator = ({ isSecond = false }: { isSecond?: boolean }) => {
         setHideFirstTwoSection(false);
       }
     }, 800);
-    return () => clearTimeout(timeout);
   };
 
   return (
     <div
       onClick={handleScroll}
       className={clsx(
-        isSecond ? " bottom-24" : " bottom-10.5",
+        isSecond ? "md:bottom-24 max-sm:bottom-40" : "bottom-10.5",
         "absolute left-1/2 transform -translate-x-1/2 custom-cursor z-50",
       )}
     >
