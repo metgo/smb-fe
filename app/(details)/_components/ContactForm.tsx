@@ -112,12 +112,20 @@ const ContactForm = () => {
 
   return (
     <>
-      <section className="relative h-40 md:h-[60vh] flex items-center justify-center">
-        <div className="max-sm:relative md:absolute max-sm:top-30 md:-top-64 space-y-9.5 w-full">
-          <div className="bg-white md:border border-lightGray max-sm:w-full md:w-xl rounded-2xl max-sm:p-4 md:p-10">
+      <section className="relative max-sm:h-96 md:h-[60vh] flex items-center justify-center">
+        <div
+          className="
+      max-sm:relative md:absolute 
+      max-sm:top-30 md:-top-64 
+      md:left-1/2 md:-translate-x-1/2  /* ✅ Center horizontally for md devices */
+      space-y-9.5 w-full md:w-2xl
+    "
+        >
+          <div className="bg-white md:border border-lightGray rounded-2xl max-sm:w-full max-sm:p-4 md:p-10">
             <div className="md:hidden max-sm:block mt-8">
               <ReturnToPrevPageBtn />
             </div>
+
             <div className="flex flex-col items-center justify-center max-sm:my-10 md:mb-10 text-dark text-center w-full">
               <h2 className="font-bold text-2xl">{contactUsText.title}</h2>
               <p className="font-normal max-sm:w-90">{contactUsText.desc}</p>
@@ -167,13 +175,14 @@ const ContactForm = () => {
                   isSubmitting || !isValid
                     ? "bg-lightGray cursor-not-allowed"
                     : "bg-dark custom-cursor",
-                  "mx-auto h-12 w-52 mt-10 text-white font-bold rounded-xl ",
+                  "mx-auto h-12 w-52 mt-10 text-white font-bold rounded-xl",
                 )}
               >
                 {isSubmitting ? contactUsText.contactUs : "שליחה"}
               </button>
             </form>
           </div>
+
           <ContactInfo />
         </div>
       </section>
