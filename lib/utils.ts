@@ -377,14 +377,14 @@ export const navItemsDraft = [
       {
         id: 1,
         label: menuItems.termsConditions,
-        href: "#",
+        href: pathNames.termsConditions,
         leftIcon: "",
         rightIcon: "",
       },
       {
         id: 2,
         label: menuItems.privacyPolicy,
-        href: "#",
+        href: pathNames.privacyPolicy,
         leftIcon: "",
         rightIcon: "",
       },
@@ -482,20 +482,25 @@ export const navItems = [
     col4: [
       {
         id: 1,
-        key: "",
         label: menuItems.termsConditions,
-        href: "#",
+        href: pathNames.termsConditions,
         leftIcon: "",
         rightIcon: "",
       },
       {
         id: 2,
-        key: "",
         label: menuItems.privacyPolicy,
-        href: "#",
+        href: pathNames.privacyPolicy,
         leftIcon: "",
         rightIcon: "",
       },
+      // {
+      //   id: 3,
+      //   label: menuItems.hebrew,
+      //   href: "#",
+      //   rightIcon: "globe",
+      //   leftIcon: "down-arrow",
+      // },
     ],
   },
 ];

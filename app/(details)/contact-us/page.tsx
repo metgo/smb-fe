@@ -5,7 +5,7 @@ import { contactUsText } from "@/constant/hebrew";
 
 const page = () => {
   return (
-    <div className="">
+    <div className="relative">
       <div className="px-20 py-7">
         <span className="font-bold text-dark">{contactUsText.contactUs}</span>
       </div>
