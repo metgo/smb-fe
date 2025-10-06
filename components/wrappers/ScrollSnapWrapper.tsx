@@ -295,7 +295,7 @@ export default function ScrollSnapWrapper({
         <>
           <div ref={firstSectionRef} className="h-screen">
             {children[0]}
-            <ScrollIndicator />
+            <ScrollIndicator hasMarketing={hasMarketing} />
           </div>
           {hasMarketing && (
             <div ref={secondSectionRef} className="h-screen relative">

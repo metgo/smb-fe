@@ -35,7 +35,7 @@ export const purposeTypeEnum = {
 };
 
 export const paymentMethodType = {
-  externalLink: "EXTERNAL_LINK",
+  externalLink: "EXTERNAL",
   ticket: "TICKET",
 };
 

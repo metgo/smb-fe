@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { misc } from "@/constant/hebrew";
 import { IconImage } from "@/components/ui";
 import { eventDetils } from "@/constant/placeholderData";
@@ -58,16 +59,25 @@ const EventDateRange = ({
         </div>
 
         <div className="space-y-2.5">
-          <button
-            type="button"
-            onClick={handleOpenTicketModal}
-            className="bg-dark rounded-2xl ps-15 pe-16.5 py-2 text-white flex items-center gap-1.25 font-bold custom-cursor"
-          >
-            {payment.method === paymentMethodType.externalLink && (
+          {payment?.method === paymentMethodType.externalLink ? (
+            <Link
+              href={payment?.externalLink}
+              target="_blank"
+              className="bg-dark rounded-2xl ps-15 pe-16.5 py-2 text-white flex items-center gap-1.25 font-bold custom-cursor"
+            >
               <IconImage icon="external-link" />
-            )}
-            <span>{misc.enrollment}</span>
-          </button>
+              <span>{misc.enrollment}</span>
+            </Link>
+          ) : (
+            <button
+              type="button"
+              onClick={handleOpenTicketModal}
+              className="bg-dark rounded-2xl ps-15 pe-16.5 py-2 text-white flex items-center gap-1.25 font-bold custom-cursor"
+            >
+              <span>{misc.enrollment}</span>
+            </button>
+          )}
+
           <p className="text-theme font-normal text-[12px] text-center">
             {eventDetils.dateline}
           </p>
