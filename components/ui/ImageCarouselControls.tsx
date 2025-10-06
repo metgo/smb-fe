@@ -16,7 +16,12 @@ const ImageCarouselControls: React.FC<ImageCarouselControlsProps> = ({
   if (totalImages < 2) return null;
 
   return (
-    <div className="flex items-center justify-between mt-2">
+    <div
+      onTouchStart={(e) => e.stopPropagation()}
+      onTouchMove={(e) => e.stopPropagation()}
+      onTouchEnd={(e) => e.stopPropagation()}
+      className="flex items-center justify-between mt-2"
+    >
       {/* Prev Button */}
       <button
         type="button"

@@ -80,6 +80,7 @@ export default function ScrollSnapWrapper({
       if (currentSection === "first") {
         setIsOnSection2(false);
         if (!hasMarketing) {
+          setIsOnSection2(true);
           setHideFirstTwoSection(true);
           smoothScroll(feedSectionRef.current);
         } else {
@@ -294,7 +295,7 @@ export default function ScrollSnapWrapper({
         <>
           <div ref={firstSectionRef} className="h-screen">
             {children[0]}
-            <ScrollIndicator />
+            <ScrollIndicator hasMarketing={hasMarketing} />
           </div>
           {hasMarketing && (
             <div ref={secondSectionRef} className="h-screen relative">
