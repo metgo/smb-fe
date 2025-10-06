@@ -1,6 +1,7 @@
 "use client";
 
 import clsx from "clsx";
+import Link from "next/link";
 import Image from "next/image";
 import { BiSolidNavigation } from "react-icons/bi";
 import { BsThreeDotsVertical } from "react-icons/bs";
@@ -9,10 +10,10 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import MobileNavbar from "./Navbar.mobile";
 import { pathNames } from "@/lib/endpoints";
-import { categoryColors, navigationPaths } from "@/lib/utils";
 import { staticImages } from "@/constant/staticImages";
-import { useCommonHook, useHorizontalLoadMore } from "@/hooks";
+import { categoryColors, navigationPaths } from "@/lib/utils";
 import { IconImage, ImageCarouselControls, NextImage } from "../ui";
+import { useCommonHook, useHorizontalLoadMore } from "@/hooks";
 import {
   getPrimaryCategoryId,
   removeInlineStylesFromHTML,
@@ -20,7 +21,6 @@ import {
 import MobileCategoryPanel from "./CategoryPanel.mobile";
 import useGeneralStore from "@/stores/generalStore";
 import BusinessPinMap from "../maps/BusinessPinMap";
-import Link from "next/link";
 import { startLoading } from "../wrappers/ProgressBar";
 
 interface MobileFeedLayoutProps {
@@ -28,13 +28,18 @@ interface MobileFeedLayoutProps {
 }
 
 const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
-  const pathname = usePathname();
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const { isCurrentPage } = useCommonHook();
-  const { hideFirstTwoSection, activeFilterTab, setClickedBusinessId } =
-    useGeneralStore();
+  const { isCurrentPage, calculateDistanceTo, deviceHeight } = useCommonHook();
+  const {
+    hideFirstTwoSection,
+    activeFilterTab,
+    setClickedBusinessId,
+    userLiveLocation,
+  } = useGeneralStore();
+
   const feedItems = businesses.data;
 
   // Active index
@@ -105,6 +110,11 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
   const horizontalScrollRef = useRef<HTMLDivElement>(null);
 
+  // Touch handling refs for image swipe
+  const touchStartX = useRef<number>(0);
+  const touchEndX = useRef<number>(0);
+  const imageContainerRef = useRef<HTMLDivElement>(null);
+
   // Function to handle centering the active item
   const centerActiveItem = (index: number) => {
     const scrollContainer = horizontalScrollRef.current;
@@ -152,16 +162,60 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
     router.push(`${navigationPaths[pathname]}/${activeFeedItem.slug}`);
   }
 
+  // Handle image swipe gestures
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (images.length <= 1) return;
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (images.length <= 1) return;
+    touchEndX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = () => {
+    if (images.length <= 1) return;
+
+    const swipeThreshold = 50; // Minimum swipe distance
+    const swipeDistance = touchStartX.current - touchEndX.current;
+
+    if (Math.abs(swipeDistance) > swipeThreshold) {
+      if (swipeDistance > 0) {
+        // Swiped left - go to next image (circular)
+        setActiveImageIndex((prev) =>
+          prev === 0 ? images.length - 1 : prev - 1,
+        );
+      } else {
+        // Swiped right - go to previous image (circular)
+        setActiveImageIndex((prev) => (prev + 1) % images.length);
+      }
+    }
+
+    // Reset values
+    touchStartX.current = 0;
+    touchEndX.current = 0;
+  };
+
+  const apiLat = activeFeedItem?.geoLocation?.lat;
+  const apiLng = activeFeedItem?.geoLocation?.long;
+
   return (
-    <div className="flex flex-col h-screen max-sm:block md:hidden">
+    <div className="flex flex-col max-sm:block md:hidden">
       {(hideFirstTwoSection || pathname !== pathNames.home) && (
         <MobileNavbar showFilterTab />
       )}
 
-      <div className="relative flex-1" style={{ height: "calc(100vh - 80px)" }}>
+      <div
+        className="relative flex-1"
+        style={{ height: `calc(${deviceHeight}px - 100px)` }}
+      >
         {/* Background Image */}
         {activeFilterTab === "gallery" && (
           <div
+            ref={imageContainerRef}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
             onClick={handleNavigation}
             className="custom-cursor block relative w-full h-full"
           >
@@ -183,13 +237,18 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
                 <Link
                   target="_blank"
                   rel="noopener noreferrer"
-                  href={`https://www.google.com/maps/search/?api=1&query=${activeFeedItem?.geoLocation?.lat + "," + activeFeedItem?.geoLocation?.long}`}
+                  href={`https://www.google.com/maps/search/?api=1&query=${apiLat + "," + apiLng}`}
                   className={clsx(
-                    "flex items-center gap-1.25 ps-2.5 pe-4 py-1 custom-cursor",
+                    "flex flex-col items-center gap-1.25 ps-2.5 pe-4 py-1 custom-cursor",
                   )}
+                  onClick={(e) => e.stopPropagation()}
                 >
                   <BiSolidNavigation size={28} />
-                  {/* <span className="font-bold">31 ק״מ</span> */}
+                  {userLiveLocation && (
+                    <span className="font-bold">
+                      ק״מ {calculateDistanceTo(Number(apiLat), Number(apiLng))}
+                    </span>
+                  )}
                 </Link>
               </div>
             </div>
@@ -223,7 +282,10 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
 
             {/* Image carousel controls */}
             {!pageTypes.isEventPage && images.length > 1 && (
-              <div className="absolute bottom-40 left-0 right-0 px-4 z-20">
+              <div
+                className="absolute bottom-40 left-0 right-0 px-4 z-20"
+                onClick={(e) => e.stopPropagation()}
+              >
                 <ImageCarouselControls
                   iconSize={60}
                   totalImages={images.length}
@@ -236,7 +298,9 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
         )}
 
         {/* Map */}
-        {activeFilterTab === "map" && <BusinessPinMap mapHeight="90vh" />}
+        {activeFilterTab === "map" && (
+          <BusinessPinMap mapHeight={`calc(${deviceHeight}px - 100px)`} />
+        )}
 
         {/* Horizontal Image List */}
         <section className="absolute bottom-4 w-full z-20">

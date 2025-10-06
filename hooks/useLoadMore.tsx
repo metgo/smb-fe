@@ -1,3 +1,5 @@
+"use client";
+
 import useInfiniteScroll from "react-infinite-scroll-hook";
 import { useCallback, useEffect, useState, useRef } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";

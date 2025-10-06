@@ -1,3 +1,5 @@
+"use client";
+
 import { useCallback, useEffect, useState, useRef } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import useGeneralStore from "@/stores/generalStore";

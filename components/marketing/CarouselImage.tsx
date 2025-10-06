@@ -12,6 +12,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Navigation, Pagination, Autoplay, EffectFade } from "swiper/modules";
 
 import MarketingContent from "./MarketingContent";
+import { useCommonHook } from "@/hooks";
 
 interface CarouselImageProps {
   images: {
@@ -26,6 +27,7 @@ interface CarouselImageProps {
 const CarouselImage = ({ images, timeInterval }: CarouselImageProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const { deviceHeight } = useCommonHook();
 
   useEffect(() => {
     const handleWheel = (e: WheelEvent) => {
@@ -48,7 +50,10 @@ const CarouselImage = ({ images, timeInterval }: CarouselImageProps) => {
   }, []);
 
   return (
-    <div className="max-sm:h-full md:h-screen w-full relative overflow-hidden bg-white">
+    <div
+      style={{ height: deviceHeight }}
+      className="h-screen w-full relative overflow-hidden bg-black"
+    >
       <Swiper
         modules={[Navigation, Pagination, Autoplay, EffectFade]}
         spaceBetween={0}
@@ -97,7 +102,7 @@ const CarouselImage = ({ images, timeInterval }: CarouselImageProps) => {
       {/* <div className="absolute top-6 left-6 right-6 bottom-6 border-4 border-white pointer-events-none z-10" /> */}
 
       {/* Custom pagination dots */}
-      <div className="absolute bottom-12 left-1/2 -translate-x-1/2 z-20 flex space-x-3">
+      <div className="absolute max-sm:bottom-20 md:bottom-12 left-1/2 -translate-x-1/2 z-20 flex space-x-3">
         {images?.map((_, idx) => (
           <button
             key={idx}

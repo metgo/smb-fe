@@ -88,7 +88,7 @@ const MobileCardList = ({
   );
 };
 
-const SearchFlow = ({ iconSize = 30 }: { iconSize?: number }) => {
+const SearchFlow = ({ iconSize = 24 }: { iconSize?: number }) => {
   const {
     hasResults,
     isLoading,

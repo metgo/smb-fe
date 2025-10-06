@@ -25,10 +25,18 @@ export default function ScrollSnapWrapper({
   const { setIsOnSection2, setHideFirstTwoSection, hideFirstTwoSection } =
     useGeneralStore();
 
+  // Get reliable viewport height
+  const getViewportHeight = () => {
+    return Math.max(
+      document.documentElement.clientHeight || 0,
+      window.innerHeight || 0,
+    );
+  };
+
   const smoothScroll = (target: HTMLElement | null, after?: () => void) => {
     if (!target) return;
     isScrolling.current = true;
-    target.scrollIntoView({ behavior: "smooth" });
+    target.scrollIntoView({ behavior: "smooth", block: "start" });
     setTimeout(() => {
       isScrolling.current = false;
       after?.();
@@ -37,11 +45,11 @@ export default function ScrollSnapWrapper({
 
   const getCurrentSection = () => {
     const scrollY = window.scrollY;
-    const vh = window.innerHeight;
+    const vh = getViewportHeight();
 
     if (hideFirstTwoSection) return "feed";
     if (scrollY < vh * 0.5) return "first";
-    if (scrollY < vh * 1.5) return "second";
+    if (hasMarketing && scrollY < vh * 1.5) return "second";
     return "feed";
   };
 
@@ -175,9 +183,8 @@ export default function ScrollSnapWrapper({
       }
     };
 
-    const handleTouchEnd = (e: TouchEvent) => {
+    const handleTouchEnd = () => {
       if (!isTouching.current) return;
-
       isTouching.current = false;
 
       const touchDelta = touchStartY.current - touchEndY.current;
@@ -185,7 +192,6 @@ export default function ScrollSnapWrapper({
       const minSwipeDistance = 50;
       const maxSwipeTime = 500;
 
-      // Check if this is a valid swipe
       if (
         Math.abs(touchDelta) < minSwipeDistance ||
         touchDuration > maxSwipeTime
@@ -193,15 +199,13 @@ export default function ScrollSnapWrapper({
         return;
       }
 
-      // Check if we're in a scrollable container
-      const target = e.target as HTMLElement;
-      const scrollableContainer = target.closest(
-        "[data-scrollable]",
-      ) as HTMLElement;
-      if (scrollableContainer) return;
-
+      // Only allow swipe UP transition, not down
       const direction = touchDelta > 0 ? "down" : "up";
-      handleSectionTransition(direction);
+
+      if (direction === "up") {
+        handleSectionTransition("up");
+      }
+      // for down, user must click the ScrollIndicator
     };
 
     // Only add touch events on mobile devices
@@ -233,7 +237,7 @@ export default function ScrollSnapWrapper({
       if (isScrolling.current || isTouching.current) return;
 
       const scrollY = window.scrollY;
-      const vh = window.innerHeight;
+      const vh = getViewportHeight();
 
       // Auto-snap to nearest section on scroll end
       const snapTimeout = setTimeout(() => {
@@ -245,13 +249,21 @@ export default function ScrollSnapWrapper({
             smoothScroll(feedElement);
           }
         } else {
+          // Snap to first section if in upper half
           if (scrollY < vh * 0.5) {
             smoothScroll(firstSectionRef.current);
-          } else if (scrollY < vh * 1.5 && hasMarketing) {
+          }
+          // Snap to second section if marketing exists and in that range
+          else if (hasMarketing && scrollY >= vh * 0.5 && scrollY < vh * 1.5) {
             smoothScroll(secondSectionRef.current);
-          } else if (scrollY >= vh * 1.5) {
+          }
+          // Snap to feed section if scrolled past the visible sections
+          else if (scrollY >= (hasMarketing ? vh * 1.5 : vh * 0.5)) {
             smoothScroll(feedSectionRef.current);
             setHideFirstTwoSection(true);
+            if (hasMarketing) {
+              setIsOnSection2(true);
+            }
           }
         }
       }, 150);
@@ -270,7 +282,12 @@ export default function ScrollSnapWrapper({
       window.removeEventListener("scroll", debouncedHandleScroll);
       clearTimeout(scrollTimeout);
     };
-  }, [hideFirstTwoSection, hasMarketing]);
+  }, [
+    hideFirstTwoSection,
+    hasMarketing,
+    setHideFirstTwoSection,
+    setIsOnSection2,
+  ]);
 
   return (
     <>

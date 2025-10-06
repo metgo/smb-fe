@@ -1,14 +1,19 @@
-import { Map } from "@/app/(details)/_components";
-import AttributePills from "../AttributePills";
+"use client";
+
+import Link from "next/link";
+import { IoLocationSharp } from "react-icons/io5";
+import { BiSolidNavigation } from "react-icons/bi";
+
 import { ProductCard } from "../cards";
-import { IconImage, NextImage } from "../ui";
 import { daysMapping } from "@/lib/utils";
 import { misc } from "@/constant/hebrew";
-import DeliveriesContent from "./DeliveriesContent.mobile ";
-import Link from "next/link";
-import { BiSolidNavigation } from "react-icons/bi";
-import { IoLocationSharp } from "react-icons/io5";
+import { useCommonHook } from "@/hooks";
+import { IconImage, NextImage } from "../ui";
+import AttributePills from "../AttributePills";
 import { getCityOrCenter } from "@/lib/helpers";
+import { Map } from "@/app/(details)/_components";
+import useGeneralStore from "@/stores/generalStore";
+import DeliveriesContent from "./DeliveriesContent.mobile ";
 
 const OpeningDayHours = ({ days, open, close }: OpeningHrs) => (
   <div className="flex justify-between gap-24 font-normal  text-theme">
@@ -26,20 +31,29 @@ const MobileBusinessDetails = ({
   businessDetails: BusinessDetailsProps;
   products: Product[];
 }) => {
+  const { calculateDistanceTo } = useCommonHook();
+  const { userLiveLocation } = useGeneralStore();
+  const apiLat = businessDetails?.geoLocation?.lat;
+  const apiLng = businessDetails?.geoLocation?.long;
+
   return (
     <div className="md:hidden max-sm:block">
-      <div className="flex items-center justify-end gap-4 mt-8 px-4">
+      <div className="flex items-start justify-end gap-1 mt-8 px-4">
         <IconImage width={30} height={30} icon="share" />
         <Link
           target="_blank"
           rel="noopener noreferrer"
-          href={`https://www.google.com/maps/search/?api=1&query=${businessDetails?.geoLocation?.lat + "," + businessDetails?.geoLocation?.long}`}
+          href={`https://www.google.com/maps/search/?api=1&query=${apiLat + "," + apiLng}`}
           className={
-            "flex items-center gap-1.25 ps-2.5 pe-4 py-1 custom-cursor"
+            "flex items-center flex-col gap-1.25 ps-2.5 pe-4 py-1 custom-cursor"
           }
         >
           <BiSolidNavigation size={34} color="#4C94D9" />
-          {/* <span className="font-bold">31 ק״מ</span> */}
+          {userLiveLocation && (
+            <span className="font-bold">
+              ק״מ {calculateDistanceTo(Number(apiLat), Number(apiLng))}
+            </span>
+          )}
         </Link>
       </div>
 
@@ -90,7 +104,7 @@ const MobileBusinessDetails = ({
       </section>
 
       {products?.length > 0 && (
-        <section className="flex gap-4 mt-4 overflow-x-auto max-sm:px-4 max-sm:scroll-smooth max-sm:snap-x max-sm:snap-mandatory scrollbar-hide">
+        <section className="flex gap-4 mt-4 ms-4 overflow-x-auto max-sm:px-4 max-sm:scroll-smooth max-sm:snap-x max-sm:snap-mandatory scrollbar-hide">
           {products?.map((product) => (
             <div
               key={product._id}

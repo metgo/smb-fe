@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useRef, useState, useCallback } from "react";
 import { staticImages } from "@/constant/staticImages";
 import { handleCropImage } from "@/lib/helpers";

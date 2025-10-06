@@ -1,3 +1,5 @@
+"use client";
+
 import { createRoot } from "react-dom/client";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
