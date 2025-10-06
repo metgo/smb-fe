@@ -482,6 +482,7 @@ export const navItems = [
     col4: [
       {
         id: 1,
+        key: "",
         label: menuItems.termsConditions,
         href: pathNames.termsConditions,
         leftIcon: "",
@@ -489,18 +490,12 @@ export const navItems = [
       },
       {
         id: 2,
+        key: "",
         label: menuItems.privacyPolicy,
         href: pathNames.privacyPolicy,
         leftIcon: "",
         rightIcon: "",
       },
-      // {
-      //   id: 3,
-      //   label: menuItems.hebrew,
-      //   href: "#",
-      //   rightIcon: "globe",
-      //   leftIcon: "down-arrow",
-      // },
     ],
   },
 ];
