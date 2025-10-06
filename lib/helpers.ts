@@ -126,14 +126,29 @@ export function flatStationDetails(station: TrailStationProps) {
   return flatStationInfo;
 }
 
+// export function removeInlineStylesFromHTML(html: string): string {
+//   const parser = new DOMParser();
+//   const doc = parser.parseFromString(html, "text/html");
+
+//   const elementsWithStyle = doc.querySelectorAll("[style]");
+//   elementsWithStyle.forEach((el) => el.removeAttribute("style"));
+
+//   return doc.body.innerHTML;
+// }
+
+// export function removeInlineStylesFromHTML(html: string): string {
+//   const dom = new JSDOM(html);
+//   const doc = dom.window.document;
+
+//   const elementsWithStyle = doc.querySelectorAll("[style]");
+//   elementsWithStyle.forEach((el: any) => el.removeAttribute("style"));
+
+//   return doc.body.innerHTML;
+// }
+
 export function removeInlineStylesFromHTML(html: string): string {
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(html, "text/html");
-
-  const elementsWithStyle = doc.querySelectorAll("[style]");
-  elementsWithStyle.forEach((el) => el.removeAttribute("style"));
-
-  return doc.body.innerHTML;
+  if (html) return html?.replace(/\s*style="[^"]*"/gi, "");
+  return "";
 }
 
 export function getPrimaryCategoryId(
@@ -176,4 +191,30 @@ export function getCityOrCenter(address: Address): string | undefined {
   }
 
   return undefined;
+}
+
+export function getDistanceFromLatLng(
+  lat1: number,
+  lng1: number,
+  lat2: number,
+  lng2: number,
+): number {
+  const toRad = (value: number) => (value * Math.PI) / 180;
+
+  const R = 6371; // Earth radius in km
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(lat1)) *
+      Math.cos(toRad(lat2)) *
+      Math.sin(dLng / 2) *
+      Math.sin(dLng / 2);
+
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  const distanceInKm = R * c;
+
+  // return as number rounded to 2 decimal places
+  return Number(distanceInKm.toFixed(2));
 }

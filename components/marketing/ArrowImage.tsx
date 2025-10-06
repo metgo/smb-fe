@@ -71,7 +71,7 @@ const ArrowImage = ({ images }: ArrowImageProps) => {
       <div className="absolute inset-0 rounded-lg bg-gradient-to-tl from-black/80 via-black/20 to-transparent" />
 
       {/* Circle indicators */}
-      <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex gap-8 z-30 items-center">
+      <div className="absolute max-sm:bottom-16 md:bottom-12 left-1/2 -translate-x-1/2 flex gap-8 z-30 items-center">
         <button type="button" onClick={handleNext} className="custom-cursor">
           <IconImage icon="next" width={40} height={40} />
         </button>

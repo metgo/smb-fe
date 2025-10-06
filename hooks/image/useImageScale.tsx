@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useState } from "react";
 
 import { REFERENCE_SCREEN_WIDTH } from "@/constant/collageLayouts";

@@ -113,7 +113,7 @@ const ContactForm = () => {
   return (
     <>
       <section className="relative h-40 md:h-[60vh] flex items-center justify-center">
-        <div className="max-sm:relative md:absolute max-sm:top-30 md:-top-64 space-y-9.5">
+        <div className="max-sm:relative md:absolute max-sm:top-30 md:-top-64 space-y-9.5 w-full">
           <div className="bg-white md:border border-lightGray max-sm:w-full md:w-xl rounded-2xl max-sm:p-4 md:p-10">
             <div className="md:hidden max-sm:block mt-8">
               <ReturnToPrevPageBtn />
