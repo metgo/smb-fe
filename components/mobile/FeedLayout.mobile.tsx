@@ -63,7 +63,7 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
       setActiveIndex(0);
       setFeedItems(shuffleArray(businesses.data));
     }
-  }, [hideFirstTwoSection]);
+  }, [hideFirstTwoSection, businesses]);
 
   const pageTypes = useMemo(
     () => ({
