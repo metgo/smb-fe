@@ -12,7 +12,7 @@ import MobileNavbar from "./Navbar.mobile";
 import { pathNames } from "@/lib/endpoints";
 import { staticImages } from "@/constant/staticImages";
 import { categoryColors, navigationPaths } from "@/lib/utils";
-import { IconImage, ImageCarouselControls, NextImage } from "../ui";
+import { IconImage, NextImage } from "../ui";
 import { useCommonHook, useHorizontalLoadMore } from "@/hooks";
 import {
   getPrimaryCategoryId,
@@ -31,6 +31,7 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const isNavigating = useRef(false);
 
   const { isCurrentPage, calculateDistanceTo, deviceHeight } = useCommonHook();
   const {
@@ -106,31 +107,52 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
   // --- SWIPE HANDLING ---
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
+  const isSwiping = useRef(false); // 👈 New flag
 
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
+    touchEndX.current = e.touches[0].clientX;
+    isSwiping.current = false;
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
     touchEndX.current = e.touches[0].clientX;
+
+    // If movement exceeds small threshold, consider it a swipe
+    const distance = Math.abs(touchEndX.current - touchStartX.current);
+    if (distance > 10) {
+      // 👈 threshold to differentiate tap vs swipe
+      isSwiping.current = true;
+    }
   };
 
   const handleTouchEnd = () => {
-    const swipeThreshold = 50; // Minimum distance to trigger
+    // If navigation was triggered, skip
+    if (isNavigating.current) {
+      setTimeout(() => (isNavigating.current = false), 300);
+      return;
+    }
+
+    // If it's a tap (not swipe), do nothing here
+    if (!isSwiping.current) return;
+
+    const swipeThreshold = 50;
     const distance = touchStartX.current - touchEndX.current;
 
     if (Math.abs(distance) > swipeThreshold) {
       if (distance > 0) {
-        // Swiped left → previous item (reversed direction)
-        setActiveIndex((prev) => Math.max(prev - 1, 0)); // stop at 0
+        // Swiped left
+        setActiveIndex((prev) => Math.max(prev - 1, 0));
       } else {
-        // Swiped right → next item
-        setActiveIndex((prev) => Math.min(prev + 1, feedItems.length - 1)); // stop at last
+        // Swiped right
+        setActiveIndex((prev) => Math.min(prev + 1, feedItems.length - 1));
       }
     }
 
+    // Reset
     touchStartX.current = 0;
     touchEndX.current = 0;
+    isSwiping.current = false;
   };
 
   // Scroll center logic
@@ -166,8 +188,13 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
     setActiveIndex(index);
     if (activeFilterTab === "map") setClickedBusinessId(id);
   }
+  function handleNavigation(e: any) {
+    e.stopPropagation();
 
-  function handleNavigation() {
+    // If user was swiping, skip navigation
+    if (isSwiping.current) return;
+
+    isNavigating.current = true;
     startLoading();
     router.push(`${navigationPaths[pathname]}/${activeFeedItem.slug}`);
   }
@@ -212,6 +239,7 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
               <div className="flex items-center flex-col">
                 <Link
                   target="_blank"
+                  data-no-swipe
                   rel="noopener noreferrer"
                   href={`https://www.google.com/maps/search/?api=1&query=${apiLat + "," + apiLng}`}
                   className="flex flex-col items-center gap-1.25 ps-2.5 pe-4 py-1 custom-cursor"
@@ -253,21 +281,6 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
                   </div>
                 )}
             </div>
-
-            {/* Image carousel */}
-            {!pageTypes.isEventPage && images.length > 1 && (
-              <div
-                className="absolute bottom-40 left-0 right-0 px-4 z-20"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <ImageCarouselControls
-                  iconSize={60}
-                  totalImages={images.length}
-                  activeIndex={activeImageIndex}
-                  setActiveImageIndex={setActiveImageIndex}
-                />
-              </div>
-            )}
           </div>
         )}
 
@@ -328,3 +341,22 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
 };
 
 export default MobileFeedLayout;
+
+{
+  /* Image carousel */
+}
+{
+  /* {!pageTypes.isEventPage && images.length > 1 && (
+              <div
+                className="absolute bottom-40 left-0 right-0 px-4 z-20"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <ImageCarouselControls
+                  iconSize={60}
+                  totalImages={images.length}
+                  activeIndex={activeImageIndex}
+                  setActiveImageIndex={setActiveImageIndex}
+                />
+              </div>
+            )} */
+}
