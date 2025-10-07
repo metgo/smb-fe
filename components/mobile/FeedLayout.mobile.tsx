@@ -12,7 +12,7 @@ import MobileNavbar from "./Navbar.mobile";
 import { pathNames } from "@/lib/endpoints";
 import { staticImages } from "@/constant/staticImages";
 import { categoryColors, navigationPaths } from "@/lib/utils";
-import { IconImage, ImageCarouselControls, NextImage } from "../ui";
+import { IconImage, NextImage } from "../ui";
 import { useCommonHook, useHorizontalLoadMore } from "@/hooks";
 import {
   getPrimaryCategoryId,
@@ -31,6 +31,7 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const isNavigating = useRef(false);
 
   const { isCurrentPage, calculateDistanceTo, deviceHeight } = useCommonHook();
   const {
@@ -42,23 +43,18 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
 
   const feedItems = businesses.data;
 
-  // Active index
   const [activeIndex, setActiveIndex] = useState(0);
   const activeFeedItem = feedItems[activeIndex];
 
-  // Updated hook call with required parameters
   const { containerRef, loading } = useHorizontalLoadMore(
     businesses?.meta?.hasNextPage,
     feedItems.length,
     activeIndex,
   );
 
-  // Mounted check for SSR safety
   const [hasMounted, setHasMounted] = useState(false);
-
   useEffect(() => setHasMounted(true), []);
 
-  // Page type flags
   const pageTypes = useMemo(
     () => ({
       isEventPage: isCurrentPage(pathNames.events),
@@ -67,7 +63,6 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
     [isCurrentPage],
   );
 
-  // URL params
   const urlParams = useMemo(() => {
     const params = Object.fromEntries(searchParams.entries());
     return {
@@ -77,13 +72,12 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
     };
   }, [searchParams]);
 
-  // Select images depending on page type
   const images = pageTypes.isEventPage
     ? [activeFeedItem?.cover]
     : (activeFeedItem?.images ?? []);
 
-  // Derived values
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+
   const computedValues = useMemo(() => {
     const pathname =
       typeof window !== "undefined" ? window.location.pathname : "";
@@ -106,16 +100,62 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
     hasMounted,
   ]);
 
-  // Scroll handling - refs for horizontal list items
-  const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
+  // Horizontal scroll and swipe handling
+  const itemRefs = useRef<(HTMLDivElement | null | any)[]>([]);
   const horizontalScrollRef = useRef<HTMLDivElement>(null);
 
-  // Touch handling refs for image swipe
-  const touchStartX = useRef<number>(0);
-  const touchEndX = useRef<number>(0);
-  const imageContainerRef = useRef<HTMLDivElement>(null);
+  // --- SWIPE HANDLING ---
+  const touchStartX = useRef(0);
+  const touchEndX = useRef(0);
+  const isSwiping = useRef(false); // 👈 New flag
 
-  // Function to handle centering the active item
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchEndX.current = e.touches[0].clientX;
+    isSwiping.current = false;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    touchEndX.current = e.touches[0].clientX;
+
+    // If movement exceeds small threshold, consider it a swipe
+    const distance = Math.abs(touchEndX.current - touchStartX.current);
+    if (distance > 10) {
+      // 👈 threshold to differentiate tap vs swipe
+      isSwiping.current = true;
+    }
+  };
+
+  const handleTouchEnd = () => {
+    // If navigation was triggered, skip
+    if (isNavigating.current) {
+      setTimeout(() => (isNavigating.current = false), 300);
+      return;
+    }
+
+    // If it's a tap (not swipe), do nothing here
+    if (!isSwiping.current) return;
+
+    const swipeThreshold = 50;
+    const distance = touchStartX.current - touchEndX.current;
+
+    if (Math.abs(distance) > swipeThreshold) {
+      if (distance > 0) {
+        // Swiped left
+        setActiveIndex((prev) => Math.max(prev - 1, 0));
+      } else {
+        // Swiped right
+        setActiveIndex((prev) => Math.min(prev + 1, feedItems.length - 1));
+      }
+    }
+
+    // Reset
+    touchStartX.current = 0;
+    touchEndX.current = 0;
+    isSwiping.current = false;
+  };
+
+  // Scroll center logic
   const centerActiveItem = (index: number) => {
     const scrollContainer = horizontalScrollRef.current;
     const activeElement = itemRefs.current[index];
@@ -124,29 +164,21 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
       const containerWidth = scrollContainer.offsetWidth;
       const elementLeft = activeElement.offsetLeft;
       const elementWidth = activeElement.offsetWidth;
-
-      // Calculate the scroll position to center the element
       const scrollLeft = elementLeft - containerWidth / 2 + elementWidth / 2;
 
-      scrollContainer.scrollTo({
-        left: scrollLeft,
-        behavior: "smooth",
-      });
+      scrollContainer.scrollTo({ left: scrollLeft, behavior: "smooth" });
     }
   };
 
-  // Center active item when activeIndex changes
   useEffect(() => {
     centerActiveItem(activeIndex);
     setActiveImageIndex(0);
   }, [activeIndex]);
 
-  // Calculate side padding for centering
   const ACTIVE_SIZE = 100;
   const screenWidth = typeof window !== "undefined" ? window.innerWidth : 430;
   const sidePadding = (screenWidth - ACTIVE_SIZE) / 2;
 
-  // Merge refs into one function
   const setRefs = (el: HTMLDivElement | null) => {
     horizontalScrollRef.current = el;
     containerRef.current = el;
@@ -156,51 +188,27 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
     setActiveIndex(index);
     if (activeFilterTab === "map") setClickedBusinessId(id);
   }
+  function handleNavigation(e: any) {
+    e.stopPropagation();
 
-  function handleNavigation() {
+    // If user was swiping, skip navigation
+    if (isSwiping.current) return;
+
+    isNavigating.current = true;
     startLoading();
     router.push(`${navigationPaths[pathname]}/${activeFeedItem.slug}`);
   }
-
-  // Handle image swipe gestures
-  const handleTouchStart = (e: React.TouchEvent) => {
-    if (images.length <= 1) return;
-    touchStartX.current = e.touches[0].clientX;
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (images.length <= 1) return;
-    touchEndX.current = e.touches[0].clientX;
-  };
-
-  const handleTouchEnd = () => {
-    if (images.length <= 1) return;
-
-    const swipeThreshold = 50; // Minimum swipe distance
-    const swipeDistance = touchStartX.current - touchEndX.current;
-
-    if (Math.abs(swipeDistance) > swipeThreshold) {
-      if (swipeDistance > 0) {
-        // Swiped left - go to next image (circular)
-        setActiveImageIndex((prev) =>
-          prev === 0 ? images.length - 1 : prev - 1,
-        );
-      } else {
-        // Swiped right - go to previous image (circular)
-        setActiveImageIndex((prev) => (prev + 1) % images.length);
-      }
-    }
-
-    // Reset values
-    touchStartX.current = 0;
-    touchEndX.current = 0;
-  };
 
   const apiLat = activeFeedItem?.geoLocation?.lat;
   const apiLng = activeFeedItem?.geoLocation?.long;
 
   return (
-    <div className="flex flex-col max-sm:block md:hidden">
+    <div
+      className="flex flex-col max-sm:block md:hidden"
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+    >
       {(hideFirstTwoSection || pathname !== pathNames.home) && (
         <MobileNavbar showFilterTab />
       )}
@@ -209,17 +217,12 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
         className="relative flex-1"
         style={{ height: `calc(${deviceHeight}px - 100px)` }}
       >
-        {/* Background Image */}
+        {/* Gallery */}
         {activeFilterTab === "gallery" && (
           <div
-            ref={imageContainerRef}
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
-            onClick={handleNavigation}
             className="custom-cursor block relative w-full h-full"
+            onClick={handleNavigation}
           >
-            {/* Background Image */}
             <Image
               unoptimized
               fill
@@ -227,20 +230,19 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
                 computedValues.currentImage?.image || staticImages.placeholder
               }
               alt={computedValues.currentImage?.alt || ""}
-              className={clsx("object-cover ultra-sharp")}
+              className="object-cover ultra-sharp"
             />
 
-            {/* Top right actions */}
+            {/* Top Right */}
             <div className="w-[88%] absolute top-30 right-5 flex justify-between text-white z-20">
               <BsThreeDotsVertical size={30} />
               <div className="flex items-center flex-col">
                 <Link
                   target="_blank"
+                  data-no-swipe
                   rel="noopener noreferrer"
                   href={`https://www.google.com/maps/search/?api=1&query=${apiLat + "," + apiLng}`}
-                  className={clsx(
-                    "flex flex-col items-center gap-1.25 ps-2.5 pe-4 py-1 custom-cursor",
-                  )}
+                  className="flex flex-col items-center gap-1.25 ps-2.5 pe-4 py-1 custom-cursor"
                   onClick={(e) => e.stopPropagation()}
                 >
                   <BiSolidNavigation size={28} />
@@ -279,21 +281,6 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
                   </div>
                 )}
             </div>
-
-            {/* Image carousel controls */}
-            {!pageTypes.isEventPage && images.length > 1 && (
-              <div
-                className="absolute bottom-40 left-0 right-0 px-4 z-20"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <ImageCarouselControls
-                  iconSize={60}
-                  totalImages={images.length}
-                  activeIndex={activeImageIndex}
-                  setActiveImageIndex={setActiveImageIndex}
-                />
-              </div>
-            )}
           </div>
         )}
 
@@ -302,7 +289,7 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
           <BusinessPinMap mapHeight={`calc(${deviceHeight}px - 100px)`} />
         )}
 
-        {/* Horizontal Image List */}
+        {/* Horizontal Thumbnails */}
         <section className="absolute bottom-4 w-full z-20">
           <div
             ref={setRefs}
@@ -354,3 +341,22 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
 };
 
 export default MobileFeedLayout;
+
+{
+  /* Image carousel */
+}
+{
+  /* {!pageTypes.isEventPage && images.length > 1 && (
+              <div
+                className="absolute bottom-40 left-0 right-0 px-4 z-20"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <ImageCarouselControls
+                  iconSize={60}
+                  totalImages={images.length}
+                  activeIndex={activeImageIndex}
+                  setActiveImageIndex={setActiveImageIndex}
+                />
+              </div>
+            )} */
+}

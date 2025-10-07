@@ -25,6 +25,7 @@ interface Payment {
   _id: string;
   method: string;
   isFree: boolean;
+  externalLink: string;
   ticketIds: string[];
 }
 

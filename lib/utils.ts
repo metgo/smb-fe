@@ -35,7 +35,7 @@ export const purposeTypeEnum = {
 };
 
 export const paymentMethodType = {
-  externalLink: "EXTERNAL_LINK",
+  externalLink: "EXTERNAL",
   ticket: "TICKET",
 };
 
@@ -484,7 +484,7 @@ export const navItems = [
         id: 1,
         key: "",
         label: menuItems.termsConditions,
-        href: pathNames.termsConditions,
+        href: CODE === "HOFASH" ? "#" : pathNames.termsConditions,
         leftIcon: "",
         rightIcon: "",
       },
@@ -492,7 +492,7 @@ export const navItems = [
         id: 2,
         key: "",
         label: menuItems.privacyPolicy,
-        href: pathNames.privacyPolicy,
+        href: CODE === "HOFASH" ? "#" : pathNames.privacyPolicy,
         leftIcon: "",
         rightIcon: "",
       },
