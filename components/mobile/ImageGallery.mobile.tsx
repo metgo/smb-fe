@@ -11,7 +11,7 @@ const MobileImageGallery = ({ images }: { images: ImageItem[] }) => {
   const visibleImages = images.slice(0, maxVisibleThumbnails);
 
   return (
-    <div className="px-2">
+    <div className="px-4">
       <NextImage
         width={380}
         height={380}
