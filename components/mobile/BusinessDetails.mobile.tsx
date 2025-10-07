@@ -4,16 +4,17 @@ import Link from "next/link";
 import { IoLocationSharp } from "react-icons/io5";
 import { BiSolidNavigation } from "react-icons/bi";
 
-import { ProductCard } from "../cards";
 import { daysMapping } from "@/lib/utils";
 import { misc } from "@/constant/hebrew";
 import { useCommonHook } from "@/hooks";
-import { IconImage, NextImage } from "../ui";
+import { IconImage } from "../ui";
 import AttributePills from "../AttributePills";
 import { getCityOrCenter } from "@/lib/helpers";
 import { Map } from "@/app/(details)/_components";
 import useGeneralStore from "@/stores/generalStore";
-import DeliveriesContent from "./DeliveriesContent.mobile ";
+import MobileImageGallery from "./ImageGallery.mobile";
+import MobileProductList from "./ProductList.mobile";
+import MobileDeliveriesContent from "./DeliveriesContent.mobile ";
 
 const OpeningDayHours = ({ days, open, close }: OpeningHrs) => (
   <div className="flex justify-between gap-24 font-normal  text-theme">
@@ -71,30 +72,7 @@ const MobileBusinessDetails = ({
         </div>
       </section>
       <section className="px-4 py-2 ">
-        <div>
-          <NextImage
-            width={380}
-            height={380}
-            imgSrc={businessDetails?.images?.[0]?.image}
-            alt={businessDetails?.images?.[0]?.alt}
-            className="object-cover w-full h-[380px] rounded-2xl"
-          />
-          {businessDetails?.images?.length > 1 && (
-            <div className="flex gap-2 mt-4 overflow-hidden">
-              {businessDetails?.images?.slice(1, 5)?.map((item, index) => (
-                <div key={index} className="col-span-4">
-                  <NextImage
-                    width={90}
-                    height={90}
-                    imgSrc={item?.image}
-                    alt={item?.alt}
-                    className="object-cover w-[90] h-[90] rounded-lg"
-                  />
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        <MobileImageGallery images={businessDetails?.images} />
         <AttributePills
           items={[
             ...businessDetails?.accessibilitiesId,
@@ -104,24 +82,13 @@ const MobileBusinessDetails = ({
       </section>
 
       {products?.length > 0 && (
-        <section className="flex gap-4 mt-4 ms-4 overflow-x-auto max-sm:px-4 max-sm:scroll-smooth max-sm:snap-x max-sm:snap-mandatory scrollbar-hide">
-          {products?.map((product) => (
-            <div
-              key={product._id}
-              className="flex-shrink-0 snap-start max-sm:w-[80%] sm:w-auto relative"
-            >
-              <ProductCard
-                product={product}
-                primaryCategoryId={businessDetails?.primaryCategoryId}
-              />
-            </div>
-          ))}
-        </section>
+        <MobileProductList
+          products={products}
+          primaryCategoryId={businessDetails?.primaryCategoryId}
+        />
       )}
 
-      <section className="relative mt-4">
-        <DeliveriesContent {...businessDetails} />
-      </section>
+      <MobileDeliveriesContent {...businessDetails} />
 
       <section className="px-10 py-8">
         {businessDetails?.openingHrs?.some(
