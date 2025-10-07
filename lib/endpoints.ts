@@ -49,6 +49,8 @@ export const pathNames = {
   eventDetails: "/event-details",
   trails: "/trails",
   trailDetails: "/trail-details",
+  termsConditions: "/terms-conditions",
+  privacyPolicy: "/privacy-policy",
   checkout: "/check-out",
   contactUs: "/contact-us",
   blogArticles: "/blogs-articles",
