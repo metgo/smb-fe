@@ -2,11 +2,11 @@ import React from "react";
 
 const page = () => {
   return (
-    <div className="px-40 font-normal py-20">
+    <div className="max-sm:px-8 md:px-40 py-20 font-normal">
       <h1 className="text-center font-bold text-2xl underline mb-4">
         מדיניות פרטיות
       </h1>
-      <div>
+      <div className="mb-4">
         מטגו בע"מ (להלן: "החברה") הינה בעלת המפעילה של: אתר אינטרנט בכתובת
         https://negevtime.co.il (להלן: "האתר") וכן פלטפורמה ייעודית באתר ו/או
         באפליקציה ("הפלטפורמה") אשר נועד לספק מידע ולרכז שירותים, מוצרים ובתי
@@ -22,7 +22,7 @@ const page = () => {
       </div>
 
       <div>
-        <ol className="list-decimal pr-12 space-y-4">
+        <ol className="list-decimal max-sm:pr-4 md:pr-12 space-y-4">
           <li>
             מדיניות פרטיות זו מנוסחת בלשון זכר מטעמי נוחות בלבד והיא חלה באופן
             זהה על שני המינים. כל האמור במדיניות פרטיות זו בלשון יחיד - אף רבים
