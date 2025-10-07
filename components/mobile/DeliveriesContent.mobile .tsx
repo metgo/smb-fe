@@ -1,7 +1,6 @@
 "use client";
 
-import { ReactNode, useRef, useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { ReactNode, useEffect, useRef, useState } from "react";
 import { IconImage } from "@/components/ui";
 import { deliveries } from "@/constant/hebrew";
 import { devlieryInfoMapData } from "@/lib/utils";
@@ -20,7 +19,9 @@ const DeliveryTitleLayout = ({
   children?: ReactNode;
   className?: string;
 }) => (
-  <div className={`border border-secondary rounded-[10px] ${className}`}>
+  <div
+    className={`border border-secondary rounded-[10px] ${className} bg-white w-full flex-shrink-0`}
+  >
     <div className="flex items-center gap-2.5">
       <IconImage icon={icon} />
       <h2 className="font-bold text-sm text-dark">{title}</h2>
@@ -51,8 +52,7 @@ const DeliveryLocationPrice = ({
   </div>
 );
 
-// Main component
-const DeliveriesContent = ({
+const MobileDeliveriesContent = ({
   deliveryArea,
   deliveryReturnExchange,
   deliveryAdditionalInfo,
@@ -60,6 +60,7 @@ const DeliveriesContent = ({
 }: DeliverySectionProps) => {
   const sections: ReactNode[] = [];
 
+  // 🧩 Build sections dynamically
   if (deliveryArea?.length > 0) {
     sections.push(
       <DeliveryTitleLayout
@@ -136,65 +137,54 @@ const DeliveriesContent = ({
     );
   }
 
-  const [activeIndex, setActiveIndex] = useState(0);
+  // 🧭 Active indicator logic
   const containerRef = useRef<HTMLDivElement>(null);
-  const [width, setWidth] = useState(0);
+  const [activeIndex, setActiveIndex] = useState(0);
 
   useEffect(() => {
-    if (containerRef.current) {
-      setWidth(containerRef.current.offsetWidth);
-    }
-    const handleResize = () => {
-      if (containerRef.current) {
-        setWidth(containerRef.current.offsetWidth);
-      }
+    const el = containerRef.current;
+    if (!el) return;
+
+    const handleScroll = () => {
+      const scrollLeft = el.scrollLeft;
+      const width = el.offsetWidth;
+      const newIndex = Math.round(scrollLeft / width);
+      setActiveIndex(newIndex);
     };
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+
+    el.addEventListener("scroll", handleScroll, { passive: true });
+    return () => el.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const isSwipeable = sections.length > 1 && width <= 400;
-
   return (
-    <div className="sm:hidden" ref={containerRef}>
-      <motion.div
-        className="flex overflow-hidden"
-        drag={isSwipeable ? "x" : false}
-        dragElastic={0.2}
-        onDragEnd={(e, info) => {
-          if (!isSwipeable) return;
-          if (info.offset.x < -50 && activeIndex < sections.length - 1) {
-            setActiveIndex((prev) => prev + 1);
-          } else if (info.offset.x > 50 && activeIndex > 0) {
-            setActiveIndex((prev) => prev - 1);
-          }
-        }}
-        animate={{ x: -activeIndex * width }}
-        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+    <section className="relative my-8 sm:hidden">
+      {/* Scrollable Cards */}
+      <div
+        ref={containerRef}
+        className="flex overflow-x-auto gap-4 snap-x snap-mandatory scroll-smooth px-4 hide-scrollbar"
       >
         {sections.map((section, index) => (
-          <div key={index} className="min-w-full flex-shrink-0 px-4">
+          <div key={index} className="min-w-full snap-center">
             {section}
           </div>
         ))}
-      </motion.div>
+      </div>
 
-      {/* indicator */}
+      {/* Indicator Dots */}
       {sections.length > 1 && (
         <div className="flex justify-center mt-4 gap-2">
           {sections.map((_, i) => (
             <span
               key={i}
-              onClick={() => setActiveIndex(i)}
-              className={` rounded-full ${
+              className={`transition-all duration-300 rounded-full cursor-pointer ${
                 i === activeIndex ? "bg-dark h-3 w-3" : "bg-gray-300 h-2 w-2"
               }`}
             />
           ))}
         </div>
       )}
-    </div>
+    </section>
   );
 };
 
-export default DeliveriesContent;
+export default MobileDeliveriesContent;
