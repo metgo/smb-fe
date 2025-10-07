@@ -71,6 +71,7 @@ const page = async ({ params }: PageProps) => {
           businessDetails={businessDetails}
         />
       </div>
+
       <MobileBusinessDetails
         products={products}
         businessDetails={businessDetails}

@@ -10,6 +10,7 @@ import {
   ReturnToPrevPageBtn,
 } from "../../_components";
 import { categoryIds } from "@/lib/utils";
+import MobileProductDetails from "@/components/mobile/ProductDetails.mobile";
 
 const page = async ({ params }: PageProps) => {
   const { slug } = await params;
@@ -26,10 +27,10 @@ const page = async ({ params }: PageProps) => {
     (item) => item._id !== productDetails?._id,
   );
   return (
-    <div>
+    <>
       <ReturnToPrevPageBtn />
 
-      <div className="mx-20 py-12">
+      <div className="mx-20 py-12 max-sm:hidden md:block">
         <section className="grid grid-cols-2 gap-10">
           <MainProductImage
             imageItem={productDetails?.images?.[0]}
@@ -73,7 +74,13 @@ const page = async ({ params }: PageProps) => {
           </div>
         )}
       </div>
-    </div>
+
+      <MobileProductDetails
+        productDetails={productDetails}
+        relatedProducts={filteredRelatedProducts}
+        // attributes={[...productDetails., ...groupTypesId]}
+      />
+    </>
   );
 };
 
