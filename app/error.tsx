@@ -56,25 +56,20 @@ export default function Error({
           <div className="flex flex-col sm:flex-row gap-3">
             <button
               onClick={reset}
-              className="flex-1 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-xl transition-colors duration-200"
+              className=" custom-cursor flex-1 flex items-center justify-center gap-2 bg-black/50 hover:bg-black/90 text-white font-semibold py-3 px-6 rounded-xl transition-colors duration-200"
             >
               <HiRefresh className="w-5 h-5" />
               נסה שוב
             </button>
             <button
               onClick={() => (window.location.href = "/")}
-              className="flex-1 flex items-center justify-center gap-2 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-3 px-6 rounded-xl transition-colors duration-200"
+              className="flex-1 custom-cursor flex items-center justify-center gap-2 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-3 px-6 rounded-xl transition-colors duration-200"
             >
               <AiFillHome className="w-5 h-5" />
               דף הבית
             </button>
           </div>
         </div>
-
-        {/* Decorative Elements */}
-        {/* <div className="mt-8 text-center text-xs text-gray-400">
-          <p>קוד שגיאה: {error.digest || "UNKNOWN"}</p>
-        </div> */}
       </div>
     </div>
   );
