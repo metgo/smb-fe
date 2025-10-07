@@ -17,6 +17,7 @@ import { useCommonHook, useHorizontalLoadMore } from "@/hooks";
 import {
   getPrimaryCategoryId,
   removeInlineStylesFromHTML,
+  shuffleArray,
 } from "@/lib/helpers";
 import MobileCategoryPanel from "./CategoryPanel.mobile";
 import useGeneralStore from "@/stores/generalStore";
@@ -41,9 +42,10 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
     userLiveLocation,
   } = useGeneralStore();
 
-  const feedItems = businesses.data;
+  // const feedItems = shuffleArray(businesses.data);
 
   const [activeIndex, setActiveIndex] = useState(0);
+  const [feedItems, setFeedItems] = useState<BusinessProps[]>([]);
   const activeFeedItem = feedItems[activeIndex];
 
   const { containerRef, loading } = useHorizontalLoadMore(
@@ -53,7 +55,15 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
   );
 
   const [hasMounted, setHasMounted] = useState(false);
+
   useEffect(() => setHasMounted(true), []);
+
+  useEffect(() => {
+    if (hideFirstTwoSection) {
+      setActiveIndex(0);
+      setFeedItems(shuffleArray(businesses.data));
+    }
+  }, [hideFirstTwoSection, businesses]);
 
   const pageTypes = useMemo(
     () => ({

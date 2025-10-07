@@ -146,21 +146,29 @@ const RecommendedProducts = () => {
   if (products.length === 0) return null;
 
   return (
-    <section>
+    <div>
       <h1 className="text-2xl font-bold text-center mt-20 mb-4">
         {cartLabels.youMayAlsoLike}
       </h1>
-      <div
+
+      <section
         ref={scrollContainerRef}
-        className="flex flex-auto gap-4 overflow-x-auto hide-scrollbar"
+        className="flex gap-4 mt-4 ms-4 overflow-x-auto max-sm:scroll-smooth max-sm:snap-x max-sm:snap-mandatory scrollbar-hide"
       >
-        {products.map((product) => (
-          <div key={product._id} className="flex shrink-0">
-            <ProductCard isCartPage product={product} primaryCategoryId="" />
+        {products?.map((product) => (
+          <div
+            key={product._id}
+            className="flex-shrink-0 snap-start md:w-[250px] max-sm:w-[220px] sm:w-auto relative"
+          >
+            <ProductCard
+              // isCartPage
+              product={product}
+              primaryCategoryId={""}
+            />
           </div>
         ))}
-      </div>
-    </section>
+      </section>
+    </div>
   );
 };
 

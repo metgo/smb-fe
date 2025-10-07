@@ -92,7 +92,7 @@ const ProductCard = ({
       <div className="relative w-full overflow-hidden">
         <div
           // style={{ width: 242 * scale, height: 224 * scale }}
-          className="relative h-[242px] w-full"
+          className="relative max-sm:h-[142px] md:h-[242px] w-full"
         >
           <AnimatePresence mode="sync" initial={false}>
             {product?.images?.map((imageItem, index) =>
