@@ -218,3 +218,14 @@ export function getDistanceFromLatLng(
   // return as number rounded to 2 decimal places
   return Number(distanceInKm.toFixed(2));
 }
+
+// import mammoth from "mammoth";
+// import fs from "fs";
+// import path from "path";
+
+// export async function getDocxAsHtml() {
+//   const filePath = path.join(process.cwd(), "public/docs/negevtime-privacy-policy.docx");
+//   const buffer = fs.readFileSync(filePath);
+//   const { value: html } = await mammoth.convertToHtml({ buffer });
+//   return html;
+// }

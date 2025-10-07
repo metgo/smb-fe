@@ -26,8 +26,8 @@ const navItems = [
       { id: 3, label: menuItems.blog, href: "#" },
     ],
     col4: [
-      { id: 1, label: menuItems.termsOfUse, href: "#" },
-      { id: 2, label: menuItems.privacyPolicy, href: "#" },
+      { id: 1, label: menuItems.termsOfUse, href: pathNames.termsConditions },
+      { id: 2, label: menuItems.privacyPolicy, href: pathNames.privacyPolicy },
     ],
     col5: [
       { id: 1, label: menuItems.hebrew, href: "#", rightIcon: "/images" },

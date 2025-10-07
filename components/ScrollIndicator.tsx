@@ -3,7 +3,13 @@ import { IconImage } from "@/components/ui";
 import useGeneralStore from "@/stores/generalStore";
 import clsx from "clsx";
 
-const ScrollIndicator = ({ isSecond = false }: { isSecond?: boolean }) => {
+const ScrollIndicator = ({
+  isSecond = false,
+  hasMarketing = false,
+}: {
+  isSecond?: boolean;
+  hasMarketing?: boolean;
+}) => {
   const { setIsOnSection2, setHideFirstTwoSection } = useGeneralStore();
 
   const handleScroll = () => {
@@ -33,7 +39,8 @@ const ScrollIndicator = ({ isSecond = false }: { isSecond?: boolean }) => {
         setIsOnSection2(true);
         setHideFirstTwoSection(true);
       } else {
-        setIsOnSection2(false);
+        if (hasMarketing) setIsOnSection2(false);
+        else setIsOnSection2(true);
         setHideFirstTwoSection(false);
       }
     }, 800);

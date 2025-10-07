@@ -351,8 +351,8 @@ const FeedCardActions = ({
       )}
     </div>
     {feedItem.serviceType === "point_of_interest" && (
-      <div className="bg-black/35 rounded-full p-1 flex items-center justify-center">
-        <IconImage width={23} height={23} icon="global-white" />
+      <div className="bg-black/25 rounded-full p-1 flex items-center justify-center">
+        <IconImage width={24} height={24} icon="location-solid" />
       </div>
     )}
   </div>

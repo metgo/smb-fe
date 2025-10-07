@@ -25,3 +25,19 @@ export const getWeatherInfo = async () => {
     return null;
   }
 };
+
+export async function getApproxUserLocation() {
+  try {
+    const res = await fetch("https://ipapi.co/json/");
+    const data = await res.json();
+    return {
+      lat: data.latitude || 0,
+      lng: data.longitude || 0,
+      city: data.city || "",
+      country: data.country_name || "",
+    };
+  } catch (err) {
+    console.error("Failed to get approximate location:", err);
+    return null;
+  }
+}
