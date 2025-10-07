@@ -8,7 +8,7 @@ const page = async () => {
     <Suspense fallback={<div></div>}>
       <div className="container mx-auto py-4">
         <div className="flex flex-col gap-4">
-          <h1 className="text-[28px] max-sm:mr-4 text-black font-extrabold">
+          <h1 className="text-[28px] max-sm:mr-4 max-sm:mt-20 text-black font-extrabold">
             {paymentPageLabels.justMomentWerDone}
           </h1>
 

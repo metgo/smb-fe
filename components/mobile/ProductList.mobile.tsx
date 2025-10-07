@@ -10,7 +10,7 @@ const MobileProductList = ({
   primaryCategoryId,
 }: MobileProductListProps) => {
   return (
-    <section className="flex gap-4 mt-4 ms-4 overflow-x-auto max-sm:px-4 max-sm:scroll-smooth max-sm:snap-x max-sm:snap-mandatory scrollbar-hide">
+    <section className="flex gap-4 mt-4 ms-4 overflow-x-auto md:hidden max-sm:block max-sm:scroll-smooth max-sm:snap-x max-sm:snap-mandatory scrollbar-hide">
       {products?.map((product) => (
         <div
           key={product._id}

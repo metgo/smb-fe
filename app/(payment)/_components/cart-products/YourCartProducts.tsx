@@ -45,7 +45,7 @@ const YourCartProducts = () => {
   }
 
   return (
-    <div>
+    <div className="max-sm:hidden md:block">
       <h1 className="font-bold text-2xl mb-4">{cartLabels.myShoppingCart}</h1>
       <div className="grid grid-cols-12 gap-4">
         <section className="col-span-8 border border-secondary bg-white p-4 rounded-xl">
@@ -55,7 +55,7 @@ const YourCartProducts = () => {
               return (
                 <div key={item._id + index}>
                   <div className="grid grid-cols-18 items-center justify-between">
-                    <div className="flex gap-4 items-center w-full col-span-13">
+                    <div className="flex gap-4 items-center w-full col-span-11">
                       <div className="w-[60px] flex-shrink-0 h-[60px] bg-gray-200 relative rounded-md">
                         <Image
                           width={60}
@@ -86,7 +86,7 @@ const YourCartProducts = () => {
                       </div>
                     </div>
 
-                    <div className="col-span-2">
+                    <div className="col-span-4">
                       <QtyIncrementDecrementBtns
                         item={item}
                         quantity={item.quantity}
