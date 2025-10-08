@@ -102,7 +102,7 @@ const ImageGallery = ({
   // }
 
   return (
-    <div style={{ height: 450 }} className="flex gap-2.5">
+    <div style={{ height: 450 }} className="flex gap-2.5 max-sm:hidden md:flex">
       {columns?.map((column, colIdx) => (
         <div key={colIdx} className="flex flex-col gap-2.5 w-full">
           {column?.map((imgIdx) => {
