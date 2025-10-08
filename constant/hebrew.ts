@@ -1,4 +1,8 @@
 export const misc = {
+  copy: "העתק",
+  copied: "הועתק",
+  share: "שתף",
+  shareToSocialMedia: "שתף ברשתות החברתיות",
   possibilities: "עולם של אפשרויות",
   navigation: "ניווט",
   keeping: "שמירה",
