@@ -214,7 +214,7 @@ export default function MobileLinkShareBottomDrawer({
           </div>
         </div>
         {/* Safe area for mobile devices */}
-        <div className="pb-safe-bottom bg-white rounded-b-2xl"></div>
+        <div className="pb-safe-bottom bg-white rounded-b-2xl" />
       </div>
 
       {/* Add safe area CSS */}
