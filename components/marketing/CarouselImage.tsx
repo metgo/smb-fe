@@ -50,79 +50,85 @@ const CarouselImage = ({ images, timeInterval }: CarouselImageProps) => {
   }, []);
 
   return (
-    <div
-      style={{ height: deviceHeight }}
-      className="h-screen w-full relative overflow-hidden bg-black"
-    >
-      <Swiper
-        modules={[Navigation, Pagination, Autoplay, EffectFade]}
-        spaceBetween={0}
-        slidesPerView={1}
-        navigation={{
-          nextEl: ".swiper-button-next-custom",
-          prevEl: ".swiper-button-prev-custom",
-        }}
-        pagination={{
-          clickable: true,
-          bulletClass: "swiper-pagination-bullet-custom",
-          bulletActiveClass: "swiper-pagination-bullet-active-custom",
-        }}
-        autoplay={{
-          delay: Number(timeInterval) * 1000,
-          disableOnInteraction: false,
-        }}
-        loop={true}
-        effect="fade"
-        fadeEffect={{
-          crossFade: true,
-        }}
-        className="h-full w-full bg-white"
-        onSlideChange={(swiper) => setCurrentIndex(swiper.realIndex)}
+    <>
+      <div
+        style={{ height: deviceHeight }}
+        className="h-screen w-full relative overflow-hidden bg-black"
       >
-        {images?.map((img, index) => (
-          <SwiperSlide key={index} className="relative">
-            <div className="absolute inset-2">
-              <Image
-                fill
-                src={img?.url}
-                alt={`slide-${index}`}
-                className="object-cover rounded-lg shadow-2xl"
-                priority={index === 0}
-                sizes="100vw"
-              />
-              <MarketingContent content={img} />
-              {/* Gradient overlay for better text visibility */}
-              <div className="absolute inset-0 rounded-lg bg-gradient-to-tl from-black/80 via-black/20 to-transparent" />
-            </div>
-          </SwiperSlide>
-        ))}
-      </Swiper>
+        <Swiper
+          modules={[Navigation, Pagination, Autoplay, EffectFade]}
+          spaceBetween={0}
+          slidesPerView={1}
+          navigation={{
+            nextEl: ".swiper-button-next-custom",
+            prevEl: ".swiper-button-prev-custom",
+          }}
+          pagination={{
+            clickable: true,
+            bulletClass: "swiper-pagination-bullet-custom",
+            bulletActiveClass: "swiper-pagination-bullet-active-custom",
+          }}
+          autoplay={{
+            delay: Number(timeInterval) * 1000,
+            disableOnInteraction: false,
+          }}
+          loop={true}
+          effect="fade"
+          fadeEffect={{
+            crossFade: true,
+          }}
+          className="h-full w-full bg-white"
+          onSlideChange={(swiper) => setCurrentIndex(swiper.realIndex)}
+        >
+          {images?.map((img, index) => (
+            <SwiperSlide key={index} className="relative">
+              <div className="absolute inset-2">
+                <Image
+                  fill
+                  src={img?.url}
+                  alt={`slide-${index}`}
+                  className="object-cover rounded-lg shadow-2xl"
+                  priority={index === 0}
+                  sizes="100vw"
+                />
+                <MarketingContent content={img} />
+                {/* Gradient overlay for better text visibility */}
+                <div className="absolute inset-0 rounded-lg bg-gradient-to-tl from-black/80 via-black/20 to-transparent" />
+              </div>
+            </SwiperSlide>
+          ))}
+        </Swiper>
 
-      {/* White border frame */}
-      {/* <div className="absolute top-6 left-6 right-6 bottom-6 border-4 border-white pointer-events-none z-10" /> */}
+        {/* White border frame */}
+        {/* <div className="absolute top-6 left-6 right-6 bottom-6 border-4 border-white pointer-events-none z-10" /> */}
 
-      {/* Custom pagination dots */}
-      <div className="absolute max-sm:bottom-20 md:bottom-12 left-1/2 -translate-x-1/2 z-20 flex space-x-3">
-        {images?.map((_, idx) => (
-          <button
-            key={idx}
-            onClick={() => setCurrentIndex(idx)}
-            className={`w-3 h-3 rounded-full transition-all duration-300 ${
-              idx === currentIndex
-                ? "bg-white scale-125 shadow-md"
-                : "bg-gray-400/70 hover:bg-gray-300"
-            }`}
-          />
-        ))}
+        {/* Custom pagination dots */}
+        <div className="absolute max-sm:bottom-20 md:bottom-12 left-1/2 -translate-x-1/2 z-20 flex space-x-3">
+          {images?.map((_, idx) => (
+            <button
+              key={idx}
+              onClick={() => setCurrentIndex(idx)}
+              className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                idx === currentIndex
+                  ? "bg-white scale-125 shadow-md"
+                  : "bg-gray-400/70 hover:bg-gray-300"
+              }`}
+            />
+          ))}
+        </div>
+        <div className="pb-safe-bottom bg-white rounded-b-2xl" />
       </div>
 
       <style jsx>{`
+        .pb-safe-bottom {
+          padding-bottom: env(safe-area-inset-bottom);
+        }
         .swiper-pagination-bullet-active-custom {
           background: white !important;
           transform: scale(1.2);
         }
       `}</style>
-    </div>
+    </>
   );
 };
 
