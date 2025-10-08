@@ -4,6 +4,7 @@ import { AddToCartBuyNowBtns } from "@/app/(details)/_components";
 import MobileImageGallery from "./ImageGallery.mobile";
 import MobileProductList from "./ProductList.mobile";
 import MobileDeliveriesContent from "./DeliveriesContent.mobile ";
+import MobileActionIcons from "./ActionIcons.mobile";
 
 interface MobileProductDetailsProps {
   productDetails: ProductDetailsProps;
@@ -16,7 +17,8 @@ const MobileProductDetails = ({
   relatedProducts,
 }: MobileProductDetailsProps) => {
   return (
-    <div className="md:hidden max-sm:block">
+    <div className="md:hidden max-sm:block pt-6">
+      <MobileActionIcons />
       <section className="mb-15 px-8">
         <h1 className="font-bold text-6xl mb-4">{productDetails?.name}</h1>
         <div
