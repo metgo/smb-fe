@@ -29,10 +29,10 @@ const MobileCategoryPanel = () => {
               });
             }}
             className={clsx(
-              "w-16.5 h-16.5 flex items-center flex-col gap-2 p-1 rounded-lg transition-colors custom-cursor",
+              "w-16.5 h-16.5 flex items-center flex-col pt-2.5 rounded-lg transition-colors custom-cursor",
               isActive
                 ? `${category?.bg} text-white font-bold`
-                : " font-normal text-theme",
+                : " font-normal",
             )}
           >
             <Image

@@ -2,6 +2,7 @@ import "./globals.css";
 
 import { Suspense } from "react";
 import type { Metadata } from "next";
+import { Toaster } from "react-hot-toast";
 import { GoogleAnalytics, GoogleTagManager } from "@next/third-parties/google";
 
 import { ProgressBar } from "@/components/wrappers";
@@ -74,6 +75,7 @@ export default function RootLayout({ children }: ReactChildNode) {
           <GoogleTagManager gtmId={GOOGLE_TAG_MANAGER_ID!} />
           <Suspense>
             <ProgressBar />
+            <Toaster />
             {children}
           </Suspense>
         </SiteInfoClientProvider>
