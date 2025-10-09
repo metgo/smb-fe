@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { BiSolidNavigation } from "react-icons/bi";
 import { BsThreeDotsVertical } from "react-icons/bs";
+import { useRef, useEffect, useCallback } from "react";
 
 import MobileNavbar from "./Navbar.mobile";
 import { staticImages } from "@/constant/staticImages";
@@ -18,9 +19,6 @@ import BusinessPinMap from "../maps/BusinessPinMap";
 interface MobileFeedLayoutProps {
   businesses: BusinessesProps;
 }
-
-const ACTIVE_THUMBNAIL_SIZE = 100;
-const INACTIVE_THUMBNAIL_SIZE = 60;
 
 const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
   const {
@@ -39,7 +37,6 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
     setRefs,
 
     shouldShowNavbar,
-    containerHeight,
     activeFilterTab,
     activeFeedItem,
     feedItems,
@@ -57,9 +54,8 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
       >
         {shouldShowNavbar && <MobileNavbar showFilterTab />}
 
-        <div className="relative flex-1" style={{ height: containerHeight }}>
-          {/* Gallery View */}
-          {activeFilterTab === "gallery" && (
+        {activeFilterTab === "gallery" && (
+          <div className="relative flex-1 h-screen">
             <GalleryView
               currentImage={computedValues.currentImage}
               activeFeedItem={activeFeedItem}
@@ -68,26 +64,32 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
               calculateDistanceTo={calculateDistanceTo}
               onNavigate={handleNavigation}
             />
-          )}
+          </div>
+        )}
 
-          {/* Map View */}
-          {activeFilterTab === "map" && (
-            <BusinessPinMap mapHeight={containerHeight} />
-          )}
+        {activeFilterTab === "map" && (
+          <div className="relative">
+            <BusinessPinMap mapHeight="140vh" />
+          </div>
+        )}
 
-          {/* Thumbnail Carousel */}
-          <ThumbnailCarousel
-            feedItems={feedItems}
-            activeIndex={activeIndex}
-            loading={loading}
-            sidePadding={sidePadding}
-            itemRefs={itemRefs}
-            setRefs={setRefs}
-            onItemClick={handleActiveItem}
-          />
-        </div>
+        {shouldShowNavbar && (
+          <div className="fixed bottom-0 right-0 w-full z-20 space-y-4">
+            <ThumbnailCarousel
+              feedItems={feedItems}
+              activeIndex={activeIndex}
+              loading={loading}
+              sidePadding={sidePadding}
+              itemRefs={itemRefs}
+              setRefs={setRefs}
+              onItemClick={handleActiveItem}
+              isMap
+            />
+            <MobileCategoryPanel />
+          </div>
+        )}
 
-        <MobileCategoryPanel />
+        {/* ✅ Safe bottom spacing */}
         <div className="pb-safe-bottom bg-white rounded-b-2xl" />
       </div>
 
@@ -103,7 +105,7 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
 // Sub-components
 interface GalleryViewProps {
   currentImage: any;
-  activeFeedItem: BusinessProps;
+  activeFeedItem: BusinessProps | null;
   geoLocation: { lat: number; lng: number };
   userLiveLocation: any;
   calculateDistanceTo: (lat: number, lng: number) => number | null;
@@ -157,7 +159,7 @@ const GalleryView = ({
     </div>
 
     {/* Gradient Overlay */}
-    <div className="absolute inset-0 bg-gradient-to-tl from-black/70 via-black/30 to-transparent z-10" />
+    <div className="absolute inset-0 bg-gradient-to-t from-black/100 via-black/30 to-black/10 z-10" />
 
     {/* Content */}
     <div className="absolute top-60 right-10 left-10 z-20 text-white">
@@ -166,7 +168,7 @@ const GalleryView = ({
       </h1>
       <div
         dangerouslySetInnerHTML={{
-          __html: removeInlineStylesFromHTML(activeFeedItem?.description),
+          __html: removeInlineStylesFromHTML(activeFeedItem?.description || ""),
         }}
         className="line-clamp-3 font-bold text-2xl mt-1"
       />
@@ -184,8 +186,9 @@ const GalleryView = ({
 );
 
 interface ThumbnailCarouselProps {
+  isMap?: boolean;
   feedItems: BusinessProps[];
-  activeIndex: number;
+  activeIndex: number | null;
   loading: boolean;
   sidePadding: number;
   itemRefs: React.MutableRefObject<(HTMLDivElement | null)[]>;
@@ -193,7 +196,11 @@ interface ThumbnailCarouselProps {
   onItemClick: (index: number, id: string) => void;
 }
 
+const ACTIVE_THUMBNAIL_SIZE = 80;
+const INACTIVE_THUMBNAIL_SIZE = 60;
+
 const ThumbnailCarousel = ({
+  isMap = false,
   feedItems,
   activeIndex,
   loading,
@@ -202,13 +209,101 @@ const ThumbnailCarousel = ({
   setRefs,
   onItemClick,
 }: ThumbnailCarouselProps) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const isScrollingRef = useRef(false);
+  const scrollTimeoutRef = useRef<NodeJS.Timeout>(null);
+
+  // Center the active item
+  const centerActiveItem = useCallback(() => {
+    if (
+      activeIndex === -1 ||
+      !containerRef.current ||
+      !itemRefs.current[activeIndex!]
+    )
+      return;
+
+    const scrollContainer = containerRef.current;
+    const activeItem = activeIndex !== null && itemRefs.current[activeIndex];
+
+    if (!activeItem) return;
+
+    const containerWidth = scrollContainer.clientWidth;
+    const itemWidth = activeItem.clientWidth;
+    const itemOffsetLeft = activeItem.offsetLeft;
+
+    // Calculate the scroll position to center the item
+    const targetScrollLeft =
+      itemOffsetLeft - containerWidth / 2 + itemWidth / 2;
+
+    scrollContainer.scrollTo({
+      left: targetScrollLeft,
+      behavior: "smooth",
+    });
+  }, [activeIndex, itemRefs]);
+
+  // Center active item when index changes
+  useEffect(() => {
+    if (activeIndex !== -1) {
+      // Small delay to ensure DOM is updated
+      setTimeout(centerActiveItem, 100);
+    }
+  }, [activeIndex, centerActiveItem]);
+
+  // Handle scroll events - prevent auto-activation
+  const handleScroll = () => {
+    isScrollingRef.current = true;
+
+    // Clear timeout if user is still scrolling
+    if (scrollTimeoutRef.current) {
+      clearTimeout(scrollTimeoutRef.current);
+    }
+
+    // Set timeout to mark scrolling as finished
+    scrollTimeoutRef.current = setTimeout(() => {
+      isScrollingRef.current = false;
+    }, 150);
+  };
+
+  // Enhanced click handler that prevents accidental activation during scroll
+  const handleItemClick = (idx: number, itemId: string) => {
+    // Don't trigger click if we're currently scrolling
+    if (isScrollingRef.current) return;
+
+    onItemClick(idx, itemId);
+  };
+
+  // Cleanup
+  useEffect(() => {
+    return () => {
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+    };
+  }, []);
+
   return (
-    <section className="absolute bottom-4 w-full z-20">
+    <section
+      onTouchStart={(e) => e.stopPropagation()}
+      onTouchMove={(e) => e.stopPropagation()}
+      onTouchEnd={(e) => e.stopPropagation()}
+      className={clsx(isMap ? "bottom-24" : "bottom-4", "absolute w-full z-20")}
+    >
       <div
-        ref={setRefs}
+        ref={(el) => {
+          containerRef.current = el;
+          setRefs?.(el);
+        }}
         className="flex flex-row items-center gap-3 overflow-x-auto scrollbar-hide"
-        style={{ paddingLeft: sidePadding, paddingRight: sidePadding }}
+        style={{
+          paddingLeft: sidePadding,
+          paddingRight: sidePadding,
+          scrollBehavior: "smooth",
+        }}
+        onScroll={handleScroll}
       >
+        {/* Left spacer for centering */}
+        <div className="flex-shrink-0" style={{ width: "50%" }} />
+
         {feedItems.map((item, idx) => {
           const isActive = activeIndex === idx;
           const borderColor = isActive
@@ -224,14 +319,16 @@ const ThumbnailCarousel = ({
               ref={(el) => {
                 itemRefs.current[idx] = el;
               }}
-              onClick={() => onItemClick(idx, item._id)}
+              onClick={() => handleItemClick(idx, item._id)}
               className={clsx(
                 "flex-shrink-0 cursor-pointer transition-all duration-300 rounded-lg overflow-hidden",
+                isActive && "ring-4 ring-opacity-100",
               )}
               style={{
                 width: size,
                 height: size,
                 border: `3px solid ${borderColor}`,
+                boxShadow: isActive ? "0 4px 12px rgba(0,0,0,0.15)" : "none",
               }}
             >
               <NextImage
@@ -250,6 +347,9 @@ const ThumbnailCarousel = ({
             <div className="text-xs">Loading...</div>
           </div>
         )}
+
+        {/* Right spacer for centering */}
+        <div className="flex-shrink-0" style={{ width: "50%" }} />
       </div>
     </section>
   );

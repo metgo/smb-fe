@@ -137,7 +137,12 @@ const ThumbnailCarousel = ({
   onItemClick,
 }: ThumbnailCarouselProps) => {
   return (
-    <section className="absolute bottom-4 w-full z-20">
+    <section
+      onTouchStart={(e) => e.stopPropagation()}
+      onTouchMove={(e) => e.stopPropagation()}
+      onTouchEnd={(e) => e.stopPropagation()}
+      className="absolute bottom-12 w-full z-20"
+    >
       <div
         ref={setRefs}
         className="flex flex-row items-center gap-3 overflow-x-auto scrollbar-hide"

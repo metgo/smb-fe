@@ -216,7 +216,7 @@ export function getDistanceFromLatLng(
   const distanceInKm = R * c;
 
   // return as number rounded to 2 decimal places
-  return Number(distanceInKm.toFixed(2));
+  return Number(distanceInKm.toFixed(0));
 }
 
 // import mammoth from "mammoth";

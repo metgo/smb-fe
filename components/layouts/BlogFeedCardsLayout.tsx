@@ -2,6 +2,7 @@
 
 import clsx from "clsx";
 import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { scaleLayout, shuffleArray } from "@/lib/helpers";
 
 import {
@@ -10,8 +11,6 @@ import {
   REFERENCE_SCREEN_WIDTH,
 } from "@/constant/collageLayouts";
 import BlogFeedCard from "../cards/BlogFeedCard";
-import { useSearchParams } from "next/navigation";
-import NoFeedItemLayout from "./NoFeedItemLayout";
 
 const BlogFeedCardsLayout = ({ blogs }: BlogFeedItems) => {
   const feedItemCount = blogs.length;
@@ -31,8 +30,6 @@ const BlogFeedCardsLayout = ({ blogs }: BlogFeedItems) => {
     window.addEventListener("resize", updateScale);
     return () => window.removeEventListener("resize", updateScale);
   }, []);
-
-  if (blogs.length < 1) return <NoFeedItemLayout />;
 
   const renderCards = (
     indexes: number[],

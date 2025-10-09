@@ -6,10 +6,11 @@ import { getAllBlogs } from "@/actions/blogActions";
 import MobileNavbar from "@/components/mobile/Navbar.mobile";
 import BlogFeedCardsLayout from "@/components/layouts/BlogFeedCardsLayout";
 import MobileBlogFeedLayout from "@/components/mobile/BlogFeedLayout.mobile";
+import NoFeedItemLayout from "@/components/layouts/NoFeedItemLayout";
 
 const page = async () => {
   const blogs = await getAllBlogs();
-
+  if (blogs?.length < 1) return <NoFeedItemLayout />;
   return (
     <Suspense>
       <Navbar />
