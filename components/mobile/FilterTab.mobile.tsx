@@ -18,8 +18,8 @@ const MobileFilterTab = () => {
   const {
     isMobile,
     setClickedBusinessId,
-    activeFilterTab,
-    setActiveFilterTab,
+    activeFilterTabMobile,
+    setActiveFilterTabMobile,
   } = useGeneralStore();
 
   const [filteredTabs, setFilteredTabs] = useState<
@@ -37,7 +37,7 @@ const MobileFilterTab = () => {
   }, [pathname, isMobile]);
 
   function handleTabSwitch(key: string) {
-    setActiveFilterTab(key);
+    setActiveFilterTabMobile(key);
     setClickedBusinessId("");
     const params = new URLSearchParams(searchParams.toString());
     params.set("filterTab", key);
@@ -58,7 +58,7 @@ const MobileFilterTab = () => {
             type="button"
             onClick={() => handleTabSwitch(item.key)}
             className={`${
-              activeFilterTab === item.key
+              activeFilterTabMobile === item.key
                 ? "flex items-center gap-1.5 px-2.5 py-1.5 bg-white font-bold h-8 border border-[#EAEAEA]"
                 : "flex items-center gap-1.5 px-2 py-2 font-normal"
             } rounded-lg custom-cursor text-sm text-theme`}

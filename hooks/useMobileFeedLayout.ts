@@ -25,7 +25,7 @@ export const useMobileFeedLayout = (businesses: BusinessesProps) => {
   const { isCurrentPage, calculateDistanceTo, deviceHeight } = useCommonHook();
   const {
     hideFirstTwoSection,
-    activeFilterTab,
+    activeFilterTabMobile,
     setClickedBusinessId,
     userLiveLocation,
   } = useGeneralStore();
@@ -188,7 +188,7 @@ export const useMobileFeedLayout = (businesses: BusinessesProps) => {
 
   const handleActiveItem = (index: number, id: string) => {
     setActiveIndex(index);
-    if (activeFilterTab === "map") {
+    if (activeFilterTabMobile === "map") {
       setClickedBusinessId(id);
     }
   };
@@ -228,7 +228,7 @@ export const useMobileFeedLayout = (businesses: BusinessesProps) => {
     setRefs,
     shouldShowNavbar,
     containerHeight,
-    activeFilterTab,
+    activeFilterTabMobile,
     activeFeedItem,
     feedItems,
     itemRefs,

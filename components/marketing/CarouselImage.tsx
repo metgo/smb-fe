@@ -92,15 +92,11 @@ const CarouselImage = ({ images, timeInterval }: CarouselImageProps) => {
                   sizes="100vw"
                 />
                 <MarketingContent content={img} />
-                {/* Gradient overlay for better text visibility */}
                 <div className="absolute inset-0 rounded-lg bg-gradient-to-tl from-black/80 via-black/20 to-transparent" />
               </div>
             </SwiperSlide>
           ))}
         </Swiper>
-
-        {/* White border frame */}
-        {/* <div className="absolute top-6 left-6 right-6 bottom-6 border-4 border-white pointer-events-none z-10" /> */}
 
         {/* Custom pagination dots */}
         <div className="absolute max-sm:bottom-20 md:bottom-12 left-1/2 -translate-x-1/2 z-20 flex space-x-3">

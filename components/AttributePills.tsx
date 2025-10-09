@@ -6,7 +6,7 @@ const AttributePills = ({ items }: { items: Attributes[] }) => {
       {items?.map((item) => (
         <div
           key={item._id}
-          className="ps-4 pe-5 border border-theme rounded-4xl max-sm:h-8 md:h-10.5 flex items-center justify-center"
+          className="px-4 border border-theme rounded-4xl max-sm:h-8 md:h-10.5 flex items-center justify-center"
         >
           <span className="font-bold text-sm text-theme">
             {item.hebrewName}
