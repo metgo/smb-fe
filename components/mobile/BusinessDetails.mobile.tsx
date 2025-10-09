@@ -5,7 +5,7 @@ import { useState } from "react";
 import { IoLocationSharp } from "react-icons/io5";
 import { BiSolidNavigation } from "react-icons/bi";
 
-import { daysMapping } from "@/lib/utils";
+import { categoryColors, daysMapping } from "@/lib/utils";
 import { misc } from "@/constant/hebrew";
 import { useCommonHook } from "@/hooks";
 import { IconImage } from "../ui";
@@ -46,10 +46,10 @@ const MobileBusinessDetails = ({
       <div className="md:hidden max-sm:block">
         <div className="flex items-start justify-end gap-1 mt-8 px-4">
           <IconImage
-            onClick={() => setIsDrawerOpen(true)}
             width={30}
             height={30}
             icon="share"
+            onClick={() => setIsDrawerOpen(true)}
           />
           <Link
             target="_blank"
@@ -59,7 +59,10 @@ const MobileBusinessDetails = ({
               "flex items-center flex-col gap-1.25 ps-2.5 pe-4 py-1 custom-cursor"
             }
           >
-            <BiSolidNavigation size={34} color="#4C94D9" />
+            <BiSolidNavigation
+              size={34}
+              color={categoryColors[businessDetails.primaryCategoryId]}
+            />
             {userLiveLocation && (
               <span className="font-bold">
                 ק״מ {calculateDistanceTo(Number(apiLat), Number(apiLng))}
@@ -77,7 +80,10 @@ const MobileBusinessDetails = ({
             }}
           />
           <div className="flex items-center gap-2 mt-2">
-            <IoLocationSharp size={34} color="#4C94D9" />
+            <IoLocationSharp
+              size={34}
+              color={categoryColors[businessDetails.primaryCategoryId]}
+            />
             <span>{getCityOrCenter(businessDetails?.address)}</span>
           </div>
         </section>

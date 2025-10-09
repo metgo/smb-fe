@@ -20,9 +20,6 @@ interface MobileFeedLayoutProps {
   businesses: BusinessesProps;
 }
 
-// const ACTIVE_THUMBNAIL_SIZE = 100;
-// const INACTIVE_THUMBNAIL_SIZE = 60;
-
 const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
   const {
     calculateDistanceTo,
@@ -55,10 +52,8 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
-        {/* ✅ Navbar */}
         {shouldShowNavbar && <MobileNavbar showFilterTab />}
 
-        {/* ✅ Main Content */}
         {activeFilterTab === "gallery" && (
           <div className="relative flex-1 h-screen">
             <GalleryView
@@ -78,7 +73,6 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
           </div>
         )}
 
-        {/* ✅ Common bottom section */}
         {shouldShowNavbar && (
           <div className="fixed bottom-0 right-0 w-full z-20 space-y-4">
             <ThumbnailCarousel
