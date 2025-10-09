@@ -87,7 +87,7 @@ const ProductCard = ({
   return (
     <div
       onClick={handleNavigation}
-      className=" custom-cursor rounded-2xl overflow-hidden border border-[#D3D3D3]"
+      className="h-[330px] custom-cursor rounded-2xl overflow-hidden border border-[#D3D3D3]"
     >
       <div className="relative w-full overflow-hidden">
         <div
@@ -151,7 +151,7 @@ const ProductCard = ({
           <button
             type="button"
             onClick={(e) => addToCart(e, product)}
-            className="h-10 rounded-xl bg-dark text-white flex items-center justify-center w-full flex-auto custom-cursor font-normal text-lg"
+            className="h-10 rounded-xl bg-dark text-white flex items-center justify-center w-full flex-auto custom-cursor font-bold text-lg"
           >
             <span>{cartLabels.addToCart}</span>
           </button>
@@ -160,7 +160,7 @@ const ProductCard = ({
             <button
               type="button"
               onClick={(e) => quickPurchase(e, product)}
-              className="h-10 rounded-xl bg-dark text-white flex items-center justify-center w-full flex-auto custom-cursor font-normal text-lg"
+              className="h-10 rounded-xl bg-dark text-white flex items-center justify-center w-full flex-auto custom-cursor font-bold text-lg"
             >
               <span>{misc.quickPurchase}</span>
             </button>

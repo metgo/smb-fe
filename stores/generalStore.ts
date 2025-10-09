@@ -21,8 +21,12 @@ interface GeneralStoreState {
   setActiveCategoryKey: (key: string) => void;
   activeFilterTab: string;
   setActiveFilterTab: (key: string) => void;
+  activeFilterTabMobile: string;
+  setActiveFilterTabMobile: (key: string) => void;
+
   clickedBusinessId: string;
   setClickedBusinessId: (key: string) => void;
+
   isOnSection2: boolean;
   setIsOnSection2: (isOnSection2: boolean) => void;
   isSearchModalOpen: boolean;
@@ -51,10 +55,16 @@ const useGeneralStore = create<GeneralStoreState>((set) => ({
   setZIndex: (zIndex) => set({ zIndex }),
   activeCategoryKey: "",
   setActiveCategoryKey: (activeCategoryKey) => set({ activeCategoryKey }),
+
   activeFilterTab: "gallery",
   setActiveFilterTab: (activeFilterTab) => set({ activeFilterTab }),
+  activeFilterTabMobile: "gallery",
+  setActiveFilterTabMobile: (activeFilterTabMobile) =>
+    set({ activeFilterTabMobile }),
+
   clickedBusinessId: "",
   setClickedBusinessId: (clickedBusinessId) => set({ clickedBusinessId }),
+
   isSearchModalOpen: false,
   setIsSerachModalOpen: (isOpen) => set({ isSearchModalOpen: isOpen }),
   isOnSection2: false,

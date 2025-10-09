@@ -3,18 +3,18 @@
 import clsx from "clsx";
 import Link from "next/link";
 import Image from "next/image";
-import { BiSolidNavigation } from "react-icons/bi";
+import { BiNavigation } from "react-icons/bi";
 import { BsThreeDotsVertical } from "react-icons/bs";
-import { useRef, useEffect, useCallback } from "react";
+import { useRef, useEffect, useCallback, useState } from "react";
 
 import MobileNavbar from "./Navbar.mobile";
-import { staticImages } from "@/constant/staticImages";
 import { categoryColors } from "@/lib/utils";
 import { IconImage, NextImage } from "../ui";
-import { useMobileFeedLayout } from "@/hooks";
+import { useImageCrop, useMobileFeedLayout } from "@/hooks";
 import { removeInlineStylesFromHTML } from "@/lib/helpers";
 import MobileCategoryPanel from "./CategoryPanel.mobile";
-import BusinessPinMap from "../maps/BusinessPinMap";
+import { CardSkeleton } from "../skeletons";
+import MobileBusinessPinMap from "../maps/BusinessPinMap.mobile";
 
 interface MobileFeedLayoutProps {
   businesses: BusinessesProps;
@@ -37,25 +37,35 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
     setRefs,
 
     shouldShowNavbar,
-    activeFilterTab,
+    activeFilterTabMobile,
     activeFeedItem,
     feedItems,
     itemRefs,
     activeIndex,
   } = useMobileFeedLayout(businesses);
 
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 5000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <>
       <div
-        className="flex flex-col max-sm:block md:hidden"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
+        className="flex flex-col max-sm:block md:hidden relative"
       >
         {shouldShowNavbar && <MobileNavbar showFilterTab />}
 
-        {activeFilterTab === "gallery" && (
-          <div className="relative flex-1 h-screen">
+        {activeFilterTabMobile === "gallery" && (
+          <div className="relative flex-1 h-[90vh]">
             <GalleryView
               currentImage={computedValues.currentImage}
               activeFeedItem={activeFeedItem}
@@ -63,13 +73,14 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
               userLiveLocation={userLiveLocation}
               calculateDistanceTo={calculateDistanceTo}
               onNavigate={handleNavigation}
+              isFackLoading={isLoading}
             />
           </div>
         )}
 
-        {activeFilterTab === "map" && (
+        {activeFilterTabMobile === "map" && (
           <div className="relative">
-            <BusinessPinMap mapHeight="140vh" />
+            <MobileBusinessPinMap mapHeight="140vh" />
           </div>
         )}
 
@@ -108,6 +119,7 @@ interface GalleryViewProps {
   activeFeedItem: BusinessProps | null;
   geoLocation: { lat: number; lng: number };
   userLiveLocation: any;
+  isFackLoading: boolean;
   calculateDistanceTo: (lat: number, lng: number) => number | null;
   onNavigate: (e: React.MouseEvent) => void;
 }
@@ -119,71 +131,101 @@ const GalleryView = ({
   userLiveLocation,
   calculateDistanceTo,
   onNavigate,
-}: GalleryViewProps) => (
-  <div
-    className="custom-cursor block relative w-full h-full"
-    onClick={onNavigate}
-  >
-    <Image
-      unoptimized
-      fill
-      src={currentImage?.image || staticImages.placeholder}
-      alt={currentImage?.alt || ""}
-      className="object-cover ultra-sharp"
-    />
+  isFackLoading,
+}: GalleryViewProps) => {
+  const {
+    finalImageSrc,
+    handleImageLoad,
+    handleImageError,
+    isImageTransitionComplete,
+    shouldShowSkeleton,
+  } = useImageCrop(currentImage, 390 / 840);
 
-    {/* Top Right Controls */}
-    <div className="w-[88%] absolute top-30 right-5 flex justify-between text-white z-20">
-      <BsThreeDotsVertical size={30} />
-      <div className="flex items-center flex-col">
-        <Link
-          target="_blank"
-          data-no-swipe
-          rel="noopener noreferrer"
-          href={`https://www.google.com/maps/search/?api=1&query=${geoLocation.lat},${geoLocation.lng}`}
-          className="flex flex-col items-center gap-1.25 ps-2.5 pe-4 py-1 custom-cursor"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <BiSolidNavigation size={28} />
-          {userLiveLocation && (
-            <span className="font-bold">
-              ק״מ{" "}
-              {calculateDistanceTo(
-                Number(geoLocation.lat),
-                Number(geoLocation.lng),
-              )}
-            </span>
+  return (
+    <>
+      {shouldShowSkeleton || isFackLoading ? (
+        <CardSkeleton
+          className="w-full h-full absolute inset-0"
+          primaryCategoryId={
+            activeFeedItem?.primaryCategoryId || "6566e31ca77d2a477266d2d6"
+          }
+        />
+      ) : (
+        <div
+          onClick={onNavigate}
+          className={clsx(
+            "custom-cursor block relative w-full h-full transition-opacity duration-300",
+            isImageTransitionComplete ? "opacity-100" : "opacity-80",
           )}
-        </Link>
-      </div>
-    </div>
+        >
+          <Image
+            unoptimized
+            fill
+            src={finalImageSrc}
+            alt={currentImage?.alt || "Feed active image"}
+            className="object-cover ultra-sharp"
+            onLoad={handleImageLoad}
+            onError={handleImageError}
+            priority
+          />
 
-    {/* Gradient Overlay */}
-    <div className="absolute inset-0 bg-gradient-to-t from-black/100 via-black/30 to-black/10 z-10" />
-
-    {/* Content */}
-    <div className="absolute top-60 right-10 left-10 z-20 text-white">
-      <h1 className="text-6xl font-bold line-clamp-2">
-        {activeFeedItem?.name}
-      </h1>
-      <div
-        dangerouslySetInnerHTML={{
-          __html: removeInlineStylesFromHTML(activeFeedItem?.description || ""),
-        }}
-        className="line-clamp-3 font-bold text-2xl mt-1"
-      />
-      {activeFeedItem?.serviceType !== "point_of_interest" &&
-        activeFeedItem?.address?.city && (
-          <div className="flex items-center gap-2 mt-4">
-            <IconImage icon="location" width={30} height={30} />
-            <span className="text-xl font-bold">
-              {activeFeedItem?.address?.city}
-            </span>
+          {/* Top Right Controls */}
+          <div className="w-[94%] absolute top-30 right-4 flex justify-between text-white z-20">
+            <BsThreeDotsVertical size={30} />
+            <div className="flex items-center flex-col">
+              <Link
+                target="_blank"
+                data-no-swipe
+                rel="noopener noreferrer"
+                href={`https://www.google.com/maps/search/?api=1&query=${geoLocation.lat},${geoLocation.lng}`}
+                className="flex flex-col items-center gap-1.25 ps-2.5 pe-4 py-1 custom-cursor"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <BiNavigation size={36} />
+                {userLiveLocation && (
+                  <span className="font-bold">
+                    ק״מ{" "}
+                    {calculateDistanceTo(
+                      Number(geoLocation.lat),
+                      Number(geoLocation.lng),
+                    )}
+                  </span>
+                )}
+              </Link>
+            </div>
           </div>
-        )}
-    </div>
-  </div>
-);
+
+          {/* Gradient Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/100 via-black/30 to-black/10 z-10" />
+
+          {/* Content */}
+          <div className="absolute top-60 right-10 left-10 z-20 text-white">
+            <h1 className="text-6xl font-bold line-clamp-2">
+              {activeFeedItem?.name}
+            </h1>
+            <div
+              dangerouslySetInnerHTML={{
+                __html: removeInlineStylesFromHTML(
+                  activeFeedItem?.description || "",
+                ),
+              }}
+              className="line-clamp-3 font-bold text-2xl mt-1"
+            />
+            {activeFeedItem?.serviceType !== "point_of_interest" &&
+              activeFeedItem?.address?.city && (
+                <div className="flex items-center gap-2 mt-4">
+                  <IconImage icon="location" width={30} height={30} />
+                  <span className="text-xl font-bold">
+                    {activeFeedItem?.address?.city}
+                  </span>
+                </div>
+              )}
+          </div>
+        </div>
+      )}
+    </>
+  );
+};
 
 interface ThumbnailCarouselProps {
   isMap?: boolean;
