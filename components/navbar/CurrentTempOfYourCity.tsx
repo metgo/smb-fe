@@ -22,12 +22,12 @@ const CurrentTempOfYourCity = () => {
 
   return (
     <div className={`flex items-center gap-1 bg-white rounded-[12px] px-2`}>
-      <span className="font-normal text-2xl text-theme">
+      <div className="font-normal text-2xl text-theme text-center pt-1">
         {Math.trunc(weather?.temperature) || 0.0}°C
-      </span>
+      </div>
       <NextImage
-        width={20}
-        height={20}
+        width={24}
+        height={24}
         imgSrc={`/images/weather/${weatherIcons[weather.code]}.svg`}
         alt={weather?.condition}
         className="block"

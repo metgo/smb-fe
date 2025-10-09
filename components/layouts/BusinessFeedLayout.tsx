@@ -42,7 +42,7 @@ const BusinessFeedLayout = ({
       case "integrated":
         return <MapFeedIntegratedLayout data={businesses.data} />;
       case "map":
-        return <BusinessPinMap />;
+        return <BusinessPinMap mapHeight="120vh" />;
       default:
         return <NoFeedItemLayout />;
     }

@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCommonHook } from "./useCommonHooks";
@@ -20,7 +22,6 @@ export const useMobileFeedLayout = (businesses: BusinessesProps) => {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  // Hooks
   const { isCurrentPage, calculateDistanceTo, deviceHeight } = useCommonHook();
   const {
     hideFirstTwoSection,
@@ -29,13 +30,13 @@ export const useMobileFeedLayout = (businesses: BusinessesProps) => {
     userLiveLocation,
   } = useGeneralStore();
 
-  // State
-  const [activeIndex, setActiveIndex] = useState(0);
+  // --- State ---
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [feedItems, setFeedItems] = useState<BusinessProps[]>([]);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [hasMounted, setHasMounted] = useState(false);
 
-  // Refs
+  // --- Refs ---
   const isNavigating = useRef(false);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
   const horizontalScrollRef = useRef<HTMLDivElement>(null);
@@ -43,13 +44,13 @@ export const useMobileFeedLayout = (businesses: BusinessesProps) => {
   const touchEndX = useRef(0);
   const isSwiping = useRef(false);
 
-  // Computed values
-  const activeFeedItem = feedItems[activeIndex];
+  // --- Computed values ---
+  const activeFeedItem = activeIndex !== null ? feedItems[activeIndex] : null;
 
   const { containerRef, loading } = useHorizontalLoadMore(
     businesses?.meta?.hasNextPage,
     feedItems.length,
-    activeIndex,
+    activeIndex ?? 0,
   );
 
   const pageTypes = useMemo(
@@ -100,8 +101,8 @@ export const useMobileFeedLayout = (businesses: BusinessesProps) => {
 
   const geoLocation = useMemo(
     () => ({
-      lat: Number(activeFeedItem?.geoLocation?.lat),
-      lng: Number(activeFeedItem?.geoLocation?.long),
+      lat: Number(activeFeedItem?.geoLocation?.lat) || 0,
+      lng: Number(activeFeedItem?.geoLocation?.long) || 0,
     }),
     [activeFeedItem?.geoLocation],
   );
@@ -110,7 +111,7 @@ export const useMobileFeedLayout = (businesses: BusinessesProps) => {
     typeof window !== "undefined" ? window.innerWidth : DEFAULT_SCREEN_WIDTH;
   const sidePadding = (screenWidth - ACTIVE_THUMBNAIL_SIZE) / 2;
 
-  // Effects
+  // --- Effects ---
   useEffect(() => setHasMounted(true), []);
 
   useEffect(() => {
@@ -121,12 +122,16 @@ export const useMobileFeedLayout = (businesses: BusinessesProps) => {
   }, [hideFirstTwoSection, businesses]);
 
   useEffect(() => {
-    centerActiveItem(activeIndex);
-    setActiveImageIndex(0);
+    if (activeIndex !== null) {
+      centerActiveItem(activeIndex);
+      setActiveImageIndex(0);
+    }
   }, [activeIndex]);
 
-  // Handlers
-  const centerActiveItem = (index: number) => {
+  // --- Handlers ---
+  const centerActiveItem = (index: number | null) => {
+    if (index === null) return;
+
     const scrollContainer = horizontalScrollRef.current;
     const activeElement = itemRefs.current[index];
 
@@ -161,16 +166,19 @@ export const useMobileFeedLayout = (businesses: BusinessesProps) => {
       return;
     }
 
-    if (!isSwiping.current) return;
+    if (!isSwiping.current || activeIndex === null) return;
 
     const distance = touchStartX.current - touchEndX.current;
 
     if (Math.abs(distance) > SWIPE_THRESHOLD) {
-      if (distance > 0) {
-        setActiveIndex((prev) => Math.max(prev - 1, 0));
-      } else {
-        setActiveIndex((prev) => Math.min(prev + 1, feedItems.length - 1));
-      }
+      setActiveIndex((prev) => {
+        if (prev === null) return 0;
+        if (distance > 0) {
+          return Math.max(prev - 1, 0);
+        } else {
+          return Math.min(prev + 1, feedItems.length - 1);
+        }
+      });
     }
 
     touchStartX.current = 0;
@@ -188,7 +196,7 @@ export const useMobileFeedLayout = (businesses: BusinessesProps) => {
   const handleNavigation = (e: React.MouseEvent) => {
     e.stopPropagation();
 
-    if (isSwiping.current) return;
+    if (isSwiping.current || activeFeedItem === null) return;
 
     isNavigating.current = true;
     startLoading();
@@ -215,14 +223,11 @@ export const useMobileFeedLayout = (businesses: BusinessesProps) => {
     handleTouchStart,
     handleTouchMove,
     handleTouchEnd,
-
     handleActiveItem,
     handleNavigation,
     setRefs,
-
     shouldShowNavbar,
     containerHeight,
-
     activeFilterTab,
     activeFeedItem,
     feedItems,
