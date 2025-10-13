@@ -79,9 +79,7 @@ const CustomInfoWindow = ({
       <div className="w-[240px] h-[240px] rounded-md bg-gray-200 animate-pulse flex items-center justify-center border-2 border-white">
         <CardSkeleton
           className={"rounded w-full h-full"}
-          primaryCategoryId={
-            stationDetails?.primaryCategoryId ?? "6566fcd4a77d2a477266d3b9"
-          }
+          primaryCategoryId={primaryCategoryId!}
         />
       </div>
     );
@@ -138,7 +136,7 @@ const CustomInfoWindow = ({
       </div>
 
       {/* Bottom Section */}
-      <div className="absolute bottom-0 right-0 z-20 w-full">
+      <div className="absolute bottom-2 right-0 z-20 w-full">
         <div className="px-2 pb-2 max-sm:space-y-0 md:space-y-2">
           <div className="font-bold text-white">
             <h3 className="md:text-lg max-sm:text-xl max-sm:-mb-1 ">

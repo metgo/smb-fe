@@ -77,7 +77,7 @@ const HamburgerMenu = ({
       </button>
 
       <div
-        className={`absolute max-sm:top-18 md:top-20 right-0 w-full h-screen shadow-lg flex max-sm:px-0 md:px-20 bg-black/20 backdrop-blur-sm overflow-y-auto overflow-x-hidden ${
+        className={`absolute z-50 max-sm:top-18 md:top-20 right-0 w-full h-screen shadow-lg flex max-sm:px-0 md:px-20 bg-black/20 backdrop-blur-sm overflow-y-auto overflow-x-hidden ${
           isOpen ? "max-h-[96vh] " : "max-h-0 pointer-events-none"
         }`}
       >

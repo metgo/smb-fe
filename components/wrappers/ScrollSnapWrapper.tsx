@@ -199,13 +199,10 @@ export default function ScrollSnapWrapper({
         return;
       }
 
-      // Only allow swipe UP transition, not down
-      const direction = touchDelta > 0 ? "down" : "up";
-
-      if (direction === "up") {
-        handleSectionTransition("up");
-      }
-      // for down, user must click the ScrollIndicator
+      // Swipe UP → go to next section
+      // if (touchDelta > 0) {
+      //   handleSectionTransition("down");
+      // }
     };
 
     // Only add touch events on mobile devices

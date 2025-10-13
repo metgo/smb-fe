@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 
 import { filterTabs } from "@/lib/utils";
 import { IconImage } from "@/components/ui";
@@ -9,18 +9,9 @@ import { pathNames } from "@/lib/endpoints";
 import useGeneralStore from "@/stores/generalStore";
 
 const MobileFilterTab = () => {
-  const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
-
-  const isHomepage = pathname === "/";
-
-  const {
-    isMobile,
-    setClickedBusinessId,
-    activeFilterTab,
-    setActiveFilterTab,
-  } = useGeneralStore();
+  const { isMobile, activeFilterTabMobile, setActiveFilterTabMobile } =
+    useGeneralStore();
 
   const [filteredTabs, setFilteredTabs] = useState<
     { key: string; label: string; icon: string }[]
@@ -37,16 +28,7 @@ const MobileFilterTab = () => {
   }, [pathname, isMobile]);
 
   function handleTabSwitch(key: string) {
-    setActiveFilterTab(key);
-    setClickedBusinessId("");
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("filterTab", key);
-    window.scrollTo({
-      top: isHomepage ? window.innerHeight : 0,
-      left: 0,
-      behavior: "smooth",
-    });
-    router.push(`?${params.toString()}`, { scroll: false });
+    setActiveFilterTabMobile(key);
   }
 
   return (
@@ -58,7 +40,7 @@ const MobileFilterTab = () => {
             type="button"
             onClick={() => handleTabSwitch(item.key)}
             className={`${
-              activeFilterTab === item.key
+              activeFilterTabMobile === item.key
                 ? "flex items-center gap-1.5 px-2.5 py-1.5 bg-white font-bold h-8 border border-[#EAEAEA]"
                 : "flex items-center gap-1.5 px-2 py-2 font-normal"
             } rounded-lg custom-cursor text-sm text-theme`}

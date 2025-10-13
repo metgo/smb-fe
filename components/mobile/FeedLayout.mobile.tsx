@@ -3,18 +3,18 @@
 import clsx from "clsx";
 import Link from "next/link";
 import Image from "next/image";
-import { BiSolidNavigation } from "react-icons/bi";
+import { BiNavigation } from "react-icons/bi";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { useRef, useEffect, useCallback } from "react";
 
 import MobileNavbar from "./Navbar.mobile";
-import { staticImages } from "@/constant/staticImages";
+import { CardSkeleton } from "../skeletons";
 import { categoryColors } from "@/lib/utils";
 import { IconImage, NextImage } from "../ui";
-import { useMobileFeedLayout } from "@/hooks";
-import { removeInlineStylesFromHTML } from "@/lib/helpers";
 import MobileCategoryPanel from "./CategoryPanel.mobile";
-import BusinessPinMap from "../maps/BusinessPinMap";
+import { removeInlineStylesFromHTML } from "@/lib/helpers";
+import { useImageCrop, useMobileFeedLayout } from "@/hooks";
+import MobileBusinessPinMap from "../maps/BusinessPinMap.mobile";
 
 interface MobileFeedLayoutProps {
   businesses: BusinessesProps;
@@ -37,25 +37,29 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
     setRefs,
 
     shouldShowNavbar,
-    activeFilterTab,
+    activeFilterTabMobile,
     activeFeedItem,
     feedItems,
     itemRefs,
     activeIndex,
+    isPanelVisible,
+
+    categories,
+    activeCategoryKey,
   } = useMobileFeedLayout(businesses);
 
   return (
     <>
-      <div
-        className="flex flex-col max-sm:block md:hidden"
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-      >
+      <div className="flex flex-col max-sm:block md:hidden relative">
         {shouldShowNavbar && <MobileNavbar showFilterTab />}
 
-        {activeFilterTab === "gallery" && (
-          <div className="relative flex-1 h-screen">
+        {activeFilterTabMobile === "gallery" && (
+          <div
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+            className="relative flex-1 h-screen"
+          >
             <GalleryView
               currentImage={computedValues.currentImage}
               activeFeedItem={activeFeedItem}
@@ -63,17 +67,14 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
               userLiveLocation={userLiveLocation}
               calculateDistanceTo={calculateDistanceTo}
               onNavigate={handleNavigation}
+              isFackLoading={loading}
             />
           </div>
         )}
 
-        {activeFilterTab === "map" && (
-          <div className="relative">
-            <BusinessPinMap mapHeight="140vh" />
-          </div>
-        )}
+        {activeFilterTabMobile === "map" && <MobileBusinessPinMap />}
 
-        {shouldShowNavbar && (
+        {shouldShowNavbar && activeFilterTabMobile === "map" && (
           <div className="fixed bottom-0 right-0 w-full z-20 space-y-4">
             <ThumbnailCarousel
               feedItems={feedItems}
@@ -83,13 +84,60 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
               itemRefs={itemRefs}
               setRefs={setRefs}
               onItemClick={handleActiveItem}
+              isPanelVisible={isPanelVisible}
+              activeFeedItem={activeFeedItem}
               isMap
             />
             <MobileCategoryPanel />
           </div>
         )}
+        {shouldShowNavbar && activeFilterTabMobile === "gallery" && (
+          <div className="fixed bottom-0 right-0 w-full z-20">
+            <div
+              className={`transition-transform duration-300 ease-in-out space-y-4 ${
+                isPanelVisible ? "translate-y-0" : "translate-y-20"
+              }`}
+            >
+              <ThumbnailCarousel
+                feedItems={businesses?.data}
+                activeIndex={activeIndex}
+                loading={loading}
+                sidePadding={sidePadding}
+                itemRefs={itemRefs}
+                setRefs={setRefs}
+                onItemClick={handleActiveItem}
+                isPanelVisible={isPanelVisible}
+                activeFeedItem={activeFeedItem}
+                isMap={false}
+                activeCategoryId={activeCategoryKey}
+              />
 
-        {/* ✅ Safe bottom spacing */}
+              {!isPanelVisible && activeCategoryKey && (
+                <div className="flex justify-center my-4">
+                  <div className="flex w-[125px] h-[10px] justify-between items-center rounded-lg p-1 bg-white ">
+                    {categories.map((item, index) => {
+                      const isActive = item.id === activeCategoryKey;
+                      const activeColor = isActive
+                        ? categoryColors[item.id]
+                        : "#FBFBFB";
+
+                      return (
+                        <div
+                          key={index}
+                          style={{ backgroundColor: activeColor }}
+                          className={`w-[25px] h-[8px] transition-colors duration-200 ${isActive ? " rounded-md" : ""} `}
+                        />
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              <MobileCategoryPanel />
+            </div>
+          </div>
+        )}
+
         <div className="pb-safe-bottom bg-white rounded-b-2xl" />
       </div>
 
@@ -108,6 +156,7 @@ interface GalleryViewProps {
   activeFeedItem: BusinessProps | null;
   geoLocation: { lat: number; lng: number };
   userLiveLocation: any;
+  isFackLoading: boolean;
   calculateDistanceTo: (lat: number, lng: number) => number | null;
   onNavigate: (e: React.MouseEvent) => void;
 }
@@ -119,88 +168,117 @@ const GalleryView = ({
   userLiveLocation,
   calculateDistanceTo,
   onNavigate,
-}: GalleryViewProps) => (
-  <div
-    className="custom-cursor block relative w-full h-full"
-    onClick={onNavigate}
-  >
-    <Image
-      unoptimized
-      fill
-      src={currentImage?.image || staticImages.placeholder}
-      alt={currentImage?.alt || ""}
-      className="object-cover ultra-sharp"
-    />
+  isFackLoading,
+}: GalleryViewProps) => {
+  const {
+    finalImageSrc,
+    handleImageLoad,
+    handleImageError,
+    isImageTransitionComplete,
+    shouldShowSkeleton,
+  } = useImageCrop(currentImage, 390 / 840);
 
-    {/* Top Right Controls */}
-    <div className="w-[88%] absolute top-30 right-5 flex justify-between text-white z-20">
-      <BsThreeDotsVertical size={30} />
-      <div className="flex items-center flex-col">
-        <Link
-          target="_blank"
-          data-no-swipe
-          rel="noopener noreferrer"
-          href={`https://www.google.com/maps/search/?api=1&query=${geoLocation.lat},${geoLocation.lng}`}
-          className="flex flex-col items-center gap-1.25 ps-2.5 pe-4 py-1 custom-cursor"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <BiSolidNavigation size={28} />
-          {userLiveLocation && (
-            <span className="font-bold">
-              ק״מ{" "}
-              {calculateDistanceTo(
-                Number(geoLocation.lat),
-                Number(geoLocation.lng),
-              )}
-            </span>
+  return (
+    <>
+      {shouldShowSkeleton || isFackLoading ? (
+        <CardSkeleton
+          className="w-full h-full absolute inset-0"
+          primaryCategoryId={
+            activeFeedItem?.primaryCategoryId || "6566e31ca77d2a477266d2d6"
+          }
+        />
+      ) : (
+        <div
+          onClick={onNavigate}
+          className={clsx(
+            "custom-cursor block relative w-full h-full transition-opacity duration-300",
+            isImageTransitionComplete ? "opacity-100" : "opacity-80",
           )}
-        </Link>
-      </div>
-    </div>
+        >
+          <Image
+            unoptimized
+            fill
+            src={finalImageSrc}
+            alt={currentImage?.alt || "Feed active image"}
+            className="object-cover ultra-sharp"
+            onLoad={handleImageLoad}
+            onError={handleImageError}
+            priority
+          />
 
-    {/* Gradient Overlay */}
-    <div className="absolute inset-0 bg-gradient-to-t from-black/100 via-black/30 to-black/10 z-10" />
-
-    {/* Content */}
-    <div className="absolute top-60 right-10 left-10 z-20 text-white">
-      <h1 className="text-6xl font-bold line-clamp-2">
-        {activeFeedItem?.name}
-      </h1>
-      <div
-        dangerouslySetInnerHTML={{
-          __html: removeInlineStylesFromHTML(activeFeedItem?.description || ""),
-        }}
-        className="line-clamp-3 font-bold text-2xl mt-1"
-      />
-      {activeFeedItem?.serviceType !== "point_of_interest" &&
-        activeFeedItem?.address?.city && (
-          <div className="flex items-center gap-2 mt-4">
-            <IconImage icon="location" width={30} height={30} />
-            <span className="text-xl font-bold">
-              {activeFeedItem?.address?.city}
-            </span>
+          {/* Top Right Controls */}
+          <div className="w-[94%] absolute top-30 right-4 flex justify-between text-white z-20">
+            <BsThreeDotsVertical size={30} />
+            <div className="flex items-center flex-col">
+              <Link
+                target="_blank"
+                data-no-swipe
+                rel="noopener noreferrer"
+                href={`https://www.google.com/maps/search/?api=1&query=${geoLocation.lat},${geoLocation.lng}`}
+                className="flex flex-col items-center gap-1.25 ps-2.5 pe-4 py-1 custom-cursor"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <BiNavigation size={36} />
+                {userLiveLocation && (
+                  <span className="font-bold">
+                    ק״מ{" "}
+                    {calculateDistanceTo(
+                      Number(geoLocation.lat),
+                      Number(geoLocation.lng),
+                    )}
+                  </span>
+                )}
+              </Link>
+            </div>
           </div>
-        )}
-    </div>
-  </div>
-);
+
+          {/* Gradient Overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/100 via-black/30 to-black/10 z-10" />
+
+          {/* Content */}
+          <div className="absolute top-60 right-10 left-10 z-20 text-white">
+            <h1 className="text-6xl font-bold line-clamp-2">
+              {activeFeedItem?.name}
+            </h1>
+            <div
+              dangerouslySetInnerHTML={{
+                __html: removeInlineStylesFromHTML(
+                  activeFeedItem?.description || "",
+                ),
+              }}
+              className="line-clamp-3 font-bold text-2xl mt-1"
+            />
+            {activeFeedItem?.serviceType !== "point_of_interest" &&
+              activeFeedItem?.address?.city && (
+                <div className="flex items-center gap-2 mt-4">
+                  <IconImage icon="location" width={30} height={30} />
+                  <span className="text-xl font-bold">
+                    {activeFeedItem?.address?.city}
+                  </span>
+                </div>
+              )}
+          </div>
+        </div>
+      )}
+    </>
+  );
+};
 
 interface ThumbnailCarouselProps {
   isMap?: boolean;
   feedItems: BusinessProps[];
-  activeIndex: number | null;
+  activeIndex: number;
   loading: boolean;
   sidePadding: number;
+  activeFeedItem: BusinessProps;
   itemRefs: React.MutableRefObject<(HTMLDivElement | null)[]>;
   setRefs: (el: HTMLDivElement | null) => void;
   onItemClick: (index: number, id: string) => void;
+  isPanelVisible: boolean;
+  activeCategoryId?: string | null;
 }
 
-const ACTIVE_THUMBNAIL_SIZE = 80;
-const INACTIVE_THUMBNAIL_SIZE = 60;
-
 const ThumbnailCarousel = ({
-  isMap = false,
   feedItems,
   activeIndex,
   loading,
@@ -208,6 +286,10 @@ const ThumbnailCarousel = ({
   itemRefs,
   setRefs,
   onItemClick,
+  isPanelVisible,
+  isMap = false,
+  activeFeedItem,
+  activeCategoryId = "",
 }: ThumbnailCarouselProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const isScrollingRef = useRef(false);
@@ -268,7 +350,6 @@ const ThumbnailCarousel = ({
   const handleItemClick = (idx: number, itemId: string) => {
     // Don't trigger click if we're currently scrolling
     if (isScrollingRef.current) return;
-
     onItemClick(idx, itemId);
   };
 
@@ -282,18 +363,13 @@ const ThumbnailCarousel = ({
   }, []);
 
   return (
-    <section
-      onTouchStart={(e) => e.stopPropagation()}
-      onTouchMove={(e) => e.stopPropagation()}
-      onTouchEnd={(e) => e.stopPropagation()}
-      className={clsx(isMap ? "bottom-24" : "bottom-4", "absolute w-full z-20")}
-    >
+    <section className="relative mb-6">
       <div
         ref={(el) => {
           containerRef.current = el;
           setRefs?.(el);
         }}
-        className="flex flex-row items-center gap-3 overflow-x-auto scrollbar-hide"
+        className="relative flex flex-row items-center gap-3 overflow-x-auto scrollbar-hide"
         style={{
           paddingLeft: sidePadding,
           paddingRight: sidePadding,
@@ -304,15 +380,8 @@ const ThumbnailCarousel = ({
         {/* Left spacer for centering */}
         <div className="flex-shrink-0" style={{ width: "50%" }} />
 
-        {feedItems.map((item, idx) => {
+        {feedItems?.map((item, idx) => {
           const isActive = activeIndex === idx;
-          const borderColor = isActive
-            ? categoryColors[item.primaryCategoryId]
-            : "#fff";
-          const size = isActive
-            ? ACTIVE_THUMBNAIL_SIZE
-            : INACTIVE_THUMBNAIL_SIZE;
-
           return (
             <div
               key={item._id}
@@ -322,17 +391,16 @@ const ThumbnailCarousel = ({
               onClick={() => handleItemClick(idx, item._id)}
               className={clsx(
                 "flex-shrink-0 cursor-pointer transition-all duration-300 rounded-lg overflow-hidden",
-                isActive && "ring-4 ring-opacity-100",
+                isActive && "mx-3",
               )}
               style={{
-                width: size,
-                height: size,
-                border: `3px solid ${borderColor}`,
-                boxShadow: isActive ? "0 4px 12px rgba(0,0,0,0.15)" : "none",
+                width: 60,
+                height: 60,
+                border: `3px solid #fff`,
               }}
             >
               <NextImage
-                alt={item.name}
+                alt={item?.name}
                 imgSrc={item?.images?.[0]?.image}
                 width={200}
                 height={200}
@@ -350,6 +418,28 @@ const ThumbnailCarousel = ({
 
         {/* Right spacer for centering */}
         <div className="flex-shrink-0" style={{ width: "50%" }} />
+      </div>
+      <div
+        className={clsx(
+          isMap || isPanelVisible || activeCategoryId === null
+            ? "bottom-24"
+            : "bottom-30",
+          "fixed right-0 left-0 mx-auto w-[80px] h-80px] rounded-lg overflow-hidden",
+        )}
+        style={{
+          width: 80,
+          height: 80,
+          border: `3px solid ${categoryColors[activeFeedItem?.primaryCategoryId]}`,
+          boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+        }}
+      >
+        <NextImage
+          alt={activeFeedItem?.name || "Active feed item"}
+          imgSrc={activeFeedItem?.images?.[0]?.image}
+          width={100}
+          height={100}
+          className="object-cover w-[80px] h-[80px] overflow-hidden"
+        />
       </div>
     </section>
   );

@@ -9,8 +9,14 @@ const MobileProductList = ({
   products,
   primaryCategoryId,
 }: MobileProductListProps) => {
+  const isSingleItem = products?.length === 1;
+
   return (
-    <section className="flex gap-4 mt-4 mx-4 overflow-x-auto  max-sm:scroll-smooth max-sm:snap-x max-sm:snap-mandatory scrollbar-hide">
+    <section
+      className={`flex gap-4 mt-4 mx-4 overflow-x-auto max-sm:scroll-smooth max-sm:snap-x max-sm:snap-mandatory scrollbar-hide ${
+        isSingleItem ? "justify-center" : ""
+      }`}
+    >
       {products?.map((product) => (
         <div
           key={product._id}

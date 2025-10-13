@@ -53,7 +53,7 @@ const ArrowImage = ({ images }: ArrowImageProps) => {
       className=" max-sm:h-full md:h-screen w-full relative overflow-hidden bg-white"
     >
       {/* Image inset 5px from screen edge */}
-      <div className="absolute top-2 left-2 right-2 bottom-2">
+      <div className="absolute md:inset-2 max-sm:inset-0">
         <div className="relative h-full w-full">
           <Image
             fill

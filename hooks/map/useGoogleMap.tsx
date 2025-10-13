@@ -28,7 +28,6 @@ export const useGoogleMap = () => {
   const activeCategoryId = searchParams.get("categoryId") || "";
 
   const { activeFilterTab, clickedBusinessId } = useGeneralStore();
-
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [businesses, setBusinesses] = useState<BusinessMakerProps[]>([]);
 
@@ -66,15 +65,15 @@ export const useGoogleMap = () => {
     const { screenHeight } = getScreenDimensions();
 
     // Calculate offset to position InfoWindow at 20% from the bottom
-    const infoWindowHeight = 240; // Approximate height of InfoWindow in pixels
-    const targetPosition = 0.8; // 80% from top (20% from bottom)
-    const pixelsFromTop = screenHeight * targetPosition;
-    const pixelsToCenter =
-      pixelsFromTop - screenHeight / 2 + infoWindowHeight / 2;
-    const latOffset = (pixelsToCenter / screenHeight) * 0.008; // Convert pixels to approximate latitude degrees
+    // const infoWindowHeight = 240; // Approximate height of InfoWindow in pixels
+    // const targetPosition = 0.8; // 80% from top (20% from bottom)
+    // const pixelsFromTop = screenHeight * targetPosition;
+    // const pixelsToCenter =pixelsFromTop - screenHeight / 2 + infoWindowHeight / 2;
+    // const latOffset = (pixelsToCenter / screenHeight) * 0.008; // Convert pixels to approximate latitude degrees
+    const latOffset = (500 / screenHeight) * 0.01;
 
     const newCenter = {
-      lat: position.lat() - latOffset,
+      lat: position.lat() + latOffset,
       lng: position.lng(),
     };
 
@@ -106,7 +105,7 @@ export const useGoogleMap = () => {
     createRoot(container).render(
       <CustomInfoWindow
         stationId={business._id}
-        primaryCategoryId={activeCategoryId}
+        primaryCategoryId={business.primaryCategoryId}
       />,
     );
 

@@ -51,7 +51,7 @@ const ScrollIndicator = ({
       onClick={handleScroll}
       className={clsx(
         isSecond ? "md:bottom-24 max-sm:bottom-40" : "bottom-10.5",
-        "absolute left-1/2 transform -translate-x-1/2 custom-cursor z-50",
+        "absolute left-1/2 transform -translate-x-1/2 custom-cursor z-10",
       )}
     >
       <div className="flex flex-col items-center justify-center gap-2.5">

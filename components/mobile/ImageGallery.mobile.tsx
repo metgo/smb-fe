@@ -6,12 +6,25 @@ import { NextImage } from "../ui";
 
 const MobileImageGallery = ({ images }: { images: ImageItem[] }) => {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [showAllThumbnails, setShowAllThumbnails] = useState(false);
+
   const maxVisibleThumbnails = 4;
   const remainingCount = images.length - maxVisibleThumbnails;
-  const visibleImages = images.slice(0, maxVisibleThumbnails);
+  const visibleImages = showAllThumbnails
+    ? images
+    : images.slice(0, maxVisibleThumbnails);
+
+  const handleThumbnailClick = (index: number) => {
+    setActiveIndex(index);
+  };
+
+  const handleOverlayClick = () => {
+    setShowAllThumbnails(true);
+  };
 
   return (
-    <div className="px-4 max-sm:block md:hidden">
+    <div className="max-sm:block md:hidden">
+      {/* Main Image */}
       <NextImage
         width={380}
         height={380}
@@ -19,27 +32,39 @@ const MobileImageGallery = ({ images }: { images: ImageItem[] }) => {
         alt={images?.[activeIndex]?.alt}
         className="object-cover w-full h-[380px] rounded-2xl"
       />
+
+      {/* Thumbnails */}
       {images?.length > 1 && (
-        <div className="flex gap-2 mt-4 overflow-hidden">
+        <div
+          className={clsx(
+            "flex flex-wrap items-center my-4 gap-2 overflow-hidden",
+            showAllThumbnails ? "flex-wrap" : "flex-nowrap",
+          )}
+        >
           {visibleImages?.map((item, index) => {
-            const isLastVisibleItem = index === maxVisibleThumbnails - 1;
+            const isLastVisibleItem =
+              !showAllThumbnails && index === maxVisibleThumbnails - 1;
             const showOverlay = isLastVisibleItem && remainingCount > 0;
 
             return (
               <div
                 key={index}
-                onClick={() => setActiveIndex(index)}
+                onClick={() =>
+                  showOverlay
+                    ? handleOverlayClick()
+                    : handleThumbnailClick(index)
+                }
                 className={clsx(
                   activeIndex === index ? "border-3 border-black" : "",
-                  "col-span-4 rounded-lg overflow-hidden relative cursor-pointer",
+                  "rounded-lg overflow-hidden relative cursor-pointer",
                 )}
               >
                 <NextImage
-                  width={90}
-                  height={90}
+                  width={80}
+                  height={80}
                   imgSrc={item?.image}
                   alt={item?.alt}
-                  className="object-cover w-[90px] h-[90px] rounded-md"
+                  className="object-cover w-[80px] h-[80px] rounded-md"
                 />
                 {showOverlay && (
                   <div className="absolute inset-0 bg-black/50 rounded-lg flex items-center justify-center">

@@ -43,7 +43,7 @@ const MobileBusinessDetails = ({
 
   return (
     <>
-      <div className="md:hidden max-sm:block">
+      <div className="md:hidden max-sm:block pb-12">
         <div className="flex items-start justify-end gap-1 mt-8 px-4">
           <IconImage
             width={30}
@@ -71,10 +71,10 @@ const MobileBusinessDetails = ({
           </Link>
         </div>
 
-        <section className="px-10 py-4 font-bold">
-          <h1 className="text-6xl">{businessDetails.name}</h1>
+        <section className="px-10 py-4">
+          <h1 className="text-6xl font-bold">{businessDetails.name}</h1>
           <div
-            className=" text-2xl line-clamp-3 mt-4"
+            className="font-normal text-theme line-clamp-3 mt-4 mb-8"
             dangerouslySetInnerHTML={{
               __html: businessDetails?.shortDescription || "",
             }}
@@ -84,10 +84,13 @@ const MobileBusinessDetails = ({
               size={34}
               color={categoryColors[businessDetails.primaryCategoryId]}
             />
-            <span>{getCityOrCenter(businessDetails?.address)}</span>
+            <span className="font-bold text-xl">
+              {getCityOrCenter(businessDetails?.address)}
+            </span>
           </div>
         </section>
-        <section className="px-4 py-2 ">
+
+        <section className="px-6 py-2 ">
           <MobileImageGallery images={businessDetails?.images} />
           <AttributePills
             items={[
@@ -106,7 +109,7 @@ const MobileBusinessDetails = ({
 
         <MobileDeliveriesContent {...businessDetails} />
 
-        <section className="px-10 py-8">
+        <section className="px-6 py-4">
           {businessDetails?.openingHrs?.some(
             (item) => item?.open && item?.close,
           ) && (

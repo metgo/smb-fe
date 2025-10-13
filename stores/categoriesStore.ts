@@ -44,13 +44,15 @@ const initialCategory = [
     icon: "sleep",
     activeIcon: "sleep-active",
   },
-  // {
-  //   id: "6566fd7fa77d2a477266d3ca",
-  //   name: "",
-  //   icon: "local",
-  //   activeIcon: "local-active",
-  // },
 ];
+
+// {
+//   id: "6566fd7fa77d2a477266d3ca",
+//   name: "",
+//   icon: "local",
+//   activeIcon: "local-active",
+// },
+
 const useCategoryStore = create<CategoryStoreState>((set) => ({
   categories: initialCategory,
   setCategories: (categories: Category[]) => set({ categories }),
