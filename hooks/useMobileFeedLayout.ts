@@ -9,6 +9,8 @@ import { pathNames } from "@/lib/endpoints";
 import { getPrimaryCategoryId, shuffleArray } from "@/lib/helpers";
 import { startLoading } from "@/components/wrappers/ProgressBar";
 import { navigationPaths } from "@/lib/utils";
+import useCategoryStore from "@/stores/categoriesStore";
+import { useCtgSubctg } from "./useCtgSubctg";
 
 // Constants
 const SWIPE_THRESHOLD = 50;
@@ -29,17 +31,21 @@ export const useMobileFeedLayout = (businesses: BusinessesProps) => {
     setClickedBusinessId,
     userLiveLocation,
   } = useGeneralStore();
+  const { categories } = useCategoryStore();
+  const { activeCategoryKey } = useCtgSubctg();
 
   // --- State ---
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [feedItems, setFeedItems] = useState<BusinessProps[]>([]);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [hasMounted, setHasMounted] = useState(false);
+  const touchStartYRef = useRef<number | null>(null);
 
   // --- Refs ---
   const isNavigating = useRef(false);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
   const horizontalScrollRef = useRef<HTMLDivElement>(null);
+  const [isPanelVisible, setIsPanelVisible] = useState(true);
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
   const isSwiping = useRef(false);
@@ -115,11 +121,11 @@ export const useMobileFeedLayout = (businesses: BusinessesProps) => {
   useEffect(() => setHasMounted(true), []);
 
   useEffect(() => {
-    if (hideFirstTwoSection) {
+    if (hideFirstTwoSection || pathname === pathNames.businesses) {
       setActiveIndex(0);
       setFeedItems(shuffleArray(businesses.data));
     }
-  }, [hideFirstTwoSection, businesses]);
+  }, [hideFirstTwoSection, businesses, pathname]);
 
   useEffect(() => {
     if (activeIndex !== null) {
@@ -149,6 +155,7 @@ export const useMobileFeedLayout = (businesses: BusinessesProps) => {
     touchStartX.current = e.touches[0].clientX;
     touchEndX.current = e.touches[0].clientX;
     isSwiping.current = false;
+    touchStartYRef.current = e.touches[0].clientY;
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
@@ -160,7 +167,7 @@ export const useMobileFeedLayout = (businesses: BusinessesProps) => {
     }
   };
 
-  const handleTouchEnd = () => {
+  const handleTouchEnd = (e: React.TouchEvent) => {
     if (isNavigating.current) {
       setTimeout(() => (isNavigating.current = false), 300);
       return;
@@ -184,6 +191,23 @@ export const useMobileFeedLayout = (businesses: BusinessesProps) => {
     touchStartX.current = 0;
     touchEndX.current = 0;
     isSwiping.current = false;
+
+    if (touchStartYRef.current === null) return;
+
+    const touchEndY = e.changedTouches[0].clientY;
+    const deltaY = touchEndY - touchStartYRef.current;
+
+    // Swipe down
+    if (deltaY > 30) {
+      setIsPanelVisible(false);
+    }
+
+    // Swipe up
+    if (deltaY < -30) {
+      setIsPanelVisible(true);
+    }
+
+    touchStartYRef.current = null;
   };
 
   const handleActiveItem = (index: number, id: string) => {
@@ -232,5 +256,8 @@ export const useMobileFeedLayout = (businesses: BusinessesProps) => {
     activeFeedItem,
     feedItems,
     itemRefs,
+    isPanelVisible,
+    categories,
+    activeCategoryKey,
   };
 };

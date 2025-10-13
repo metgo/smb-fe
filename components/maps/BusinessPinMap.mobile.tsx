@@ -2,17 +2,11 @@
 
 import { useGoogleMapMobile } from "@/hooks";
 
-const MobileBusinessPinMap = ({
-  className = "w-full",
-  mapHeight = "95vh",
-}: {
-  className?: string;
-  mapHeight?: string;
-}) => {
-  const { mapRef } = useGoogleMapMobile();
+const MobileBusinessPinMap = () => {
+  const { mapRef, getMapContainerStyles } = useGoogleMapMobile();
   return (
-    <div style={{ height: mapHeight }} className={`${className}`}>
-      <div ref={mapRef} className="w-full h-full rounded-md" />
+    <div className="w-full h-screen">
+      <div ref={mapRef} style={getMapContainerStyles()} />
     </div>
   );
 };
