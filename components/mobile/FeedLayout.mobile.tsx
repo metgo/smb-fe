@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { BiNavigation } from "react-icons/bi";
 import { BsThreeDotsVertical } from "react-icons/bs";
-import { useRef, useEffect, useCallback, useState } from "react";
+import { useRef, useEffect, useCallback } from "react";
 
 import MobileNavbar from "./Navbar.mobile";
 import { CardSkeleton } from "../skeletons";
@@ -48,18 +48,6 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
     activeCategoryKey,
   } = useMobileFeedLayout(businesses);
 
-  const [isLoading, setIsLoading] = useState(false);
-
-  useEffect(() => {
-    if (shouldShowNavbar) {
-      const timer = setTimeout(() => {
-        setIsLoading(false);
-      }, 2000);
-
-      return () => clearTimeout(timer);
-    }
-  }, [shouldShowNavbar]);
-
   return (
     <>
       <div className="flex flex-col max-sm:block md:hidden relative">
@@ -79,7 +67,7 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
               userLiveLocation={userLiveLocation}
               calculateDistanceTo={calculateDistanceTo}
               onNavigate={handleNavigation}
-              isFackLoading={isLoading}
+              isFackLoading={loading}
             />
           </div>
         )}
@@ -96,6 +84,8 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
               itemRefs={itemRefs}
               setRefs={setRefs}
               onItemClick={handleActiveItem}
+              isPanelVisible={isPanelVisible}
+              activeFeedItem={activeFeedItem}
               isMap
             />
             <MobileCategoryPanel />
@@ -104,19 +94,22 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
         {shouldShowNavbar && activeFilterTabMobile === "gallery" && (
           <div className="fixed bottom-0 right-0 w-full z-20">
             <div
-              className={`transition-transform duration-300 ease-in-out space-y-3 ${
+              className={`transition-transform duration-300 ease-in-out space-y-4 ${
                 isPanelVisible ? "translate-y-0" : "translate-y-20"
               }`}
             >
               <ThumbnailCarousel
-                feedItems={feedItems}
+                feedItems={businesses?.data}
                 activeIndex={activeIndex}
                 loading={loading}
                 sidePadding={sidePadding}
                 itemRefs={itemRefs}
                 setRefs={setRefs}
                 onItemClick={handleActiveItem}
-                isMap
+                isPanelVisible={isPanelVisible}
+                activeFeedItem={activeFeedItem}
+                isMap={false}
+                activeCategoryId={activeCategoryKey}
               />
 
               {!isPanelVisible && activeCategoryKey && (
@@ -145,7 +138,6 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
           </div>
         )}
 
-        {/* ✅ Safe bottom spacing */}
         <div className="pb-safe-bottom bg-white rounded-b-2xl" />
       </div>
 
@@ -275,16 +267,16 @@ const GalleryView = ({
 interface ThumbnailCarouselProps {
   isMap?: boolean;
   feedItems: BusinessProps[];
-  activeIndex: number | null;
+  activeIndex: number;
   loading: boolean;
   sidePadding: number;
+  activeFeedItem: BusinessProps;
   itemRefs: React.MutableRefObject<(HTMLDivElement | null)[]>;
   setRefs: (el: HTMLDivElement | null) => void;
   onItemClick: (index: number, id: string) => void;
+  isPanelVisible: boolean;
+  activeCategoryId?: string | null;
 }
-
-const ACTIVE_THUMBNAIL_SIZE = 80;
-const INACTIVE_THUMBNAIL_SIZE = 60;
 
 const ThumbnailCarousel = ({
   feedItems,
@@ -294,6 +286,10 @@ const ThumbnailCarousel = ({
   itemRefs,
   setRefs,
   onItemClick,
+  isPanelVisible,
+  isMap = false,
+  activeFeedItem,
+  activeCategoryId = "",
 }: ThumbnailCarouselProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const isScrollingRef = useRef(false);
@@ -354,7 +350,6 @@ const ThumbnailCarousel = ({
   const handleItemClick = (idx: number, itemId: string) => {
     // Don't trigger click if we're currently scrolling
     if (isScrollingRef.current) return;
-
     onItemClick(idx, itemId);
   };
 
@@ -368,15 +363,13 @@ const ThumbnailCarousel = ({
   }, []);
 
   return (
-    <section
-    // className={clsx(isMap ? "bottom-24" : "bottom-4", "absolute w-full z-20")}
-    >
+    <section className="relative mb-6">
       <div
         ref={(el) => {
           containerRef.current = el;
           setRefs?.(el);
         }}
-        className="flex flex-row items-center gap-3 overflow-x-auto scrollbar-hide"
+        className="relative flex flex-row items-center gap-3 overflow-x-auto scrollbar-hide"
         style={{
           paddingLeft: sidePadding,
           paddingRight: sidePadding,
@@ -387,15 +380,8 @@ const ThumbnailCarousel = ({
         {/* Left spacer for centering */}
         <div className="flex-shrink-0" style={{ width: "50%" }} />
 
-        {feedItems.map((item, idx) => {
+        {feedItems?.map((item, idx) => {
           const isActive = activeIndex === idx;
-          const borderColor = isActive
-            ? categoryColors[item.primaryCategoryId]
-            : "#fff";
-          const size = isActive
-            ? ACTIVE_THUMBNAIL_SIZE
-            : INACTIVE_THUMBNAIL_SIZE;
-
           return (
             <div
               key={item._id}
@@ -405,17 +391,16 @@ const ThumbnailCarousel = ({
               onClick={() => handleItemClick(idx, item._id)}
               className={clsx(
                 "flex-shrink-0 cursor-pointer transition-all duration-300 rounded-lg overflow-hidden",
-                isActive && "ring-4 ring-opacity-100",
+                isActive && "mx-3",
               )}
               style={{
-                width: size,
-                height: size,
-                border: `3px solid ${borderColor}`,
-                boxShadow: isActive ? "0 4px 12px rgba(0,0,0,0.15)" : "none",
+                width: 60,
+                height: 60,
+                border: `3px solid #fff`,
               }}
             >
               <NextImage
-                alt={item.name}
+                alt={item?.name}
                 imgSrc={item?.images?.[0]?.image}
                 width={200}
                 height={200}
@@ -433,6 +418,28 @@ const ThumbnailCarousel = ({
 
         {/* Right spacer for centering */}
         <div className="flex-shrink-0" style={{ width: "50%" }} />
+      </div>
+      <div
+        className={clsx(
+          isMap || isPanelVisible || activeCategoryId === null
+            ? "bottom-24"
+            : "bottom-30",
+          "fixed right-0 left-0 mx-auto w-[80px] h-80px] rounded-lg overflow-hidden",
+        )}
+        style={{
+          width: 80,
+          height: 80,
+          border: `3px solid ${categoryColors[activeFeedItem?.primaryCategoryId]}`,
+          boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+        }}
+      >
+        <NextImage
+          alt={activeFeedItem?.name || "Active feed item"}
+          imgSrc={activeFeedItem?.images?.[0]?.image}
+          width={100}
+          height={100}
+          className="object-cover w-[80px] h-[80px] overflow-hidden"
+        />
       </div>
     </section>
   );
