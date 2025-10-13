@@ -1,7 +1,6 @@
 "use client";
 
 import { createRoot } from "react-dom/client";
-import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 import { businessMarkers } from "@/lib/utils";
@@ -29,10 +28,9 @@ export const useGoogleMapMobile = () => {
   const markersRef = useRef<google.maps.Marker[]>([]);
   const activeMarkerRef = useRef<google.maps.Marker | null>(null);
   const infoWindowRef = useRef<google.maps.InfoWindow | null>(null);
-  const searchParams = useSearchParams();
-  const activeCategoryId = searchParams.get("categoryId") || "";
 
-  const { activeFilterTabMobile, clickedBusinessId } = useGeneralStore();
+  const { activeFilterTabMobile, clickedBusinessId, activeCategoryKey } =
+    useGeneralStore();
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [businesses, setBusinesses] = useState<BusinessMakerProps[]>([]);
   const [mapDimensions, setMapDimensions] = useState<MapDimensions>({
@@ -40,6 +38,7 @@ export const useGoogleMapMobile = () => {
     padding: 20,
     infoWindowOffset: 0,
   });
+  const pendingBusinessIdRef = useRef<string | null>(null);
 
   // Load Map
   useGoogleMapInit({ mapRef, setMap, infoWindowRef, activeMarkerRef });
@@ -255,8 +254,10 @@ export const useGoogleMapMobile = () => {
     markersRef.current = [];
 
     const uniqueLocations = new Set();
-    const filteredBusiness = activeCategoryId
-      ? businesses.filter((item) => item.primaryCategoryId === activeCategoryId)
+    const filteredBusiness = activeCategoryKey
+      ? businesses.filter(
+          (item) => item.primaryCategoryId === activeCategoryKey,
+        )
       : businesses;
 
     filteredBusiness.forEach((business) => {
@@ -416,14 +417,17 @@ export const useGoogleMapMobile = () => {
     if (businesses.length > 0) {
       addMarkers();
     }
-  }, [businesses, activeCategoryId, mapDimensions.padding]);
+  }, [businesses, activeCategoryKey, mapDimensions.padding]);
 
   // Separate effect to handle clickedBusinessId changes
   useEffect(() => {
-    if (clickedBusinessId && markersRef.current.length > 0) {
+    if (!clickedBusinessId) return;
+
+    if (markersRef.current.length > 0 && businesses?.length > 0) {
       triggerMarkerClick(clickedBusinessId);
+      pendingBusinessIdRef.current = null;
     }
-  }, [clickedBusinessId, markersRef.current.length]);
+  }, [clickedBusinessId, markersRef.current.length, businesses]);
 
   // Cleanup markers when component unmounts
   useEffect(() => {

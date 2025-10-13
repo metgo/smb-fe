@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 
 import { filterTabs } from "@/lib/utils";
 import { IconImage } from "@/components/ui";
@@ -9,18 +9,9 @@ import { pathNames } from "@/lib/endpoints";
 import useGeneralStore from "@/stores/generalStore";
 
 const MobileFilterTab = () => {
-  const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
-
-  const isHomepage = pathname === "/";
-
-  const {
-    isMobile,
-    setClickedBusinessId,
-    activeFilterTabMobile,
-    setActiveFilterTabMobile,
-  } = useGeneralStore();
+  const { isMobile, activeFilterTabMobile, setActiveFilterTabMobile } =
+    useGeneralStore();
 
   const [filteredTabs, setFilteredTabs] = useState<
     { key: string; label: string; icon: string }[]
@@ -38,15 +29,6 @@ const MobileFilterTab = () => {
 
   function handleTabSwitch(key: string) {
     setActiveFilterTabMobile(key);
-    setClickedBusinessId("");
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("filterTab", key);
-    window.scrollTo({
-      top: isHomepage ? window.innerHeight : 0,
-      left: 0,
-      behavior: "smooth",
-    });
-    router.push(`?${params.toString()}`, { scroll: false });
   }
 
   return (

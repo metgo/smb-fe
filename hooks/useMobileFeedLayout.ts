@@ -6,7 +6,7 @@ import { useCommonHook } from "./useCommonHooks";
 import useGeneralStore from "@/stores/generalStore";
 import { useHorizontalLoadMore } from "./useHorizontalLoadMore";
 import { pathNames } from "@/lib/endpoints";
-import { getPrimaryCategoryId, shuffleArray } from "@/lib/helpers";
+import { getPrimaryCategoryId } from "@/lib/helpers";
 import { startLoading } from "@/components/wrappers/ProgressBar";
 import { navigationPaths } from "@/lib/utils";
 import useCategoryStore from "@/stores/categoriesStore";
@@ -35,7 +35,7 @@ export const useMobileFeedLayout = (businesses: BusinessesProps) => {
   const { activeCategoryKey } = useCtgSubctg();
 
   // --- State ---
-  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const [activeIndex, setActiveIndex] = useState<number>(0);
   const [feedItems, setFeedItems] = useState<BusinessProps[]>([]);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [hasMounted, setHasMounted] = useState(false);
@@ -51,7 +51,7 @@ export const useMobileFeedLayout = (businesses: BusinessesProps) => {
   const isSwiping = useRef(false);
 
   // --- Computed values ---
-  const activeFeedItem = activeIndex !== null ? feedItems[activeIndex] : null;
+  const activeFeedItem = feedItems[activeIndex];
 
   const { containerRef, loading } = useHorizontalLoadMore(
     businesses?.meta?.hasNextPage,
@@ -121,11 +121,10 @@ export const useMobileFeedLayout = (businesses: BusinessesProps) => {
   useEffect(() => setHasMounted(true), []);
 
   useEffect(() => {
-    if (hideFirstTwoSection || pathname === pathNames.businesses) {
-      setActiveIndex(0);
-      setFeedItems(shuffleArray(businesses.data));
+    if (businesses.data.length > 0) {
+      setFeedItems(businesses?.data);
     }
-  }, [hideFirstTwoSection, businesses, pathname]);
+  }, [businesses]);
 
   useEffect(() => {
     if (activeIndex !== null) {
@@ -212,9 +211,7 @@ export const useMobileFeedLayout = (businesses: BusinessesProps) => {
 
   const handleActiveItem = (index: number, id: string) => {
     setActiveIndex(index);
-    if (activeFilterTabMobile === "map") {
-      setClickedBusinessId(id);
-    }
+    setClickedBusinessId(id);
   };
 
   const handleNavigation = (e: React.MouseEvent) => {

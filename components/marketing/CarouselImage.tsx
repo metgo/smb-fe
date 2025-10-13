@@ -82,7 +82,7 @@ const CarouselImage = ({ images, timeInterval }: CarouselImageProps) => {
         >
           {images?.map((img, index) => (
             <SwiperSlide key={index} className="relative">
-              <div className="absolute inset-2">
+              <div className="absolute max-sm:inset-0 md:inset-2">
                 <Image
                   fill
                   src={img?.url}
