@@ -8,12 +8,12 @@ import { BsThreeDotsVertical } from "react-icons/bs";
 import { useRef, useEffect, useCallback, useState } from "react";
 
 import MobileNavbar from "./Navbar.mobile";
+import { CardSkeleton } from "../skeletons";
 import { categoryColors } from "@/lib/utils";
 import { IconImage, NextImage } from "../ui";
-import { useImageCrop, useMobileFeedLayout } from "@/hooks";
-import { removeInlineStylesFromHTML } from "@/lib/helpers";
 import MobileCategoryPanel from "./CategoryPanel.mobile";
-import { CardSkeleton } from "../skeletons";
+import { removeInlineStylesFromHTML } from "@/lib/helpers";
+import { useImageCrop, useMobileFeedLayout } from "@/hooks";
 import MobileBusinessPinMap from "../maps/BusinessPinMap.mobile";
 
 interface MobileFeedLayoutProps {
@@ -42,30 +42,36 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
     feedItems,
     itemRefs,
     activeIndex,
+    isPanelVisible,
+
+    categories,
+    activeCategoryKey,
   } = useMobileFeedLayout(businesses);
 
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 5000);
+    if (shouldShowNavbar) {
+      const timer = setTimeout(() => {
+        setIsLoading(false);
+      }, 2000);
 
-    return () => clearTimeout(timer);
-  }, []);
+      return () => clearTimeout(timer);
+    }
+  }, [shouldShowNavbar]);
 
   return (
     <>
-      <div
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-        className="flex flex-col max-sm:block md:hidden relative"
-      >
+      <div className="flex flex-col max-sm:block md:hidden relative">
         {shouldShowNavbar && <MobileNavbar showFilterTab />}
 
         {activeFilterTabMobile === "gallery" && (
-          <div className="relative flex-1 h-[90vh]">
+          <div
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+            className="relative flex-1 h-screen"
+          >
             <GalleryView
               currentImage={computedValues.currentImage}
               activeFeedItem={activeFeedItem}
@@ -78,13 +84,9 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
           </div>
         )}
 
-        {activeFilterTabMobile === "map" && (
-          <div className="relative">
-            <MobileBusinessPinMap mapHeight="140vh" />
-          </div>
-        )}
+        {activeFilterTabMobile === "map" && <MobileBusinessPinMap />}
 
-        {shouldShowNavbar && (
+        {shouldShowNavbar && activeFilterTabMobile === "map" && (
           <div className="fixed bottom-0 right-0 w-full z-20 space-y-4">
             <ThumbnailCarousel
               feedItems={feedItems}
@@ -97,6 +99,49 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
               isMap
             />
             <MobileCategoryPanel />
+          </div>
+        )}
+        {shouldShowNavbar && activeFilterTabMobile === "gallery" && (
+          <div className="fixed bottom-0 right-0 w-full z-20">
+            <div
+              className={`transition-transform duration-300 ease-in-out space-y-3 ${
+                isPanelVisible ? "translate-y-0" : "translate-y-20"
+              }`}
+            >
+              <ThumbnailCarousel
+                feedItems={feedItems}
+                activeIndex={activeIndex}
+                loading={loading}
+                sidePadding={sidePadding}
+                itemRefs={itemRefs}
+                setRefs={setRefs}
+                onItemClick={handleActiveItem}
+                isMap
+              />
+
+              {!isPanelVisible && activeCategoryKey && (
+                <div className="flex justify-center my-4">
+                  <div className="flex w-[125px] h-[10px] justify-between items-center rounded-lg p-1 bg-white ">
+                    {categories.map((item, index) => {
+                      const isActive = item.id === activeCategoryKey;
+                      const activeColor = isActive
+                        ? categoryColors[item.id]
+                        : "#FBFBFB";
+
+                      return (
+                        <div
+                          key={index}
+                          style={{ backgroundColor: activeColor }}
+                          className={`w-[25px] h-[8px] transition-colors duration-200 ${isActive ? " rounded-md" : ""} `}
+                        />
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              <MobileCategoryPanel />
+            </div>
           </div>
         )}
 
@@ -242,7 +287,6 @@ const ACTIVE_THUMBNAIL_SIZE = 80;
 const INACTIVE_THUMBNAIL_SIZE = 60;
 
 const ThumbnailCarousel = ({
-  isMap = false,
   feedItems,
   activeIndex,
   loading,
@@ -325,10 +369,7 @@ const ThumbnailCarousel = ({
 
   return (
     <section
-      onTouchStart={(e) => e.stopPropagation()}
-      onTouchMove={(e) => e.stopPropagation()}
-      onTouchEnd={(e) => e.stopPropagation()}
-      className={clsx(isMap ? "bottom-24" : "bottom-4", "absolute w-full z-20")}
+    // className={clsx(isMap ? "bottom-24" : "bottom-4", "absolute w-full z-20")}
     >
       <div
         ref={(el) => {
