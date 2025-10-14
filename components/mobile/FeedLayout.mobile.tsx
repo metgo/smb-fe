@@ -44,6 +44,7 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
 
     categories,
     activeCategoryKey,
+    isFackLoading,
   } = useMobileFeedLayout(businesses);
 
   return (
@@ -63,7 +64,7 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
               activeFeedItem={activeFeedItem}
               geoLocation={geoLocation}
               onNavigate={handleNavigation}
-              isFackLoading={loading}
+              isFackLoading={isFackLoading}
             />
           </div>
         )}
@@ -75,7 +76,7 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
             <ThumbnailCarousel
               feedItems={feedItems}
               activeIndex={activeIndex}
-              loading={loading}
+              loading={loading || isFackLoading}
               sidePadding={sidePadding}
               itemRefs={itemRefs}
               setRefs={setRefs}
@@ -97,7 +98,7 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
               <ThumbnailCarousel
                 feedItems={businesses?.data}
                 activeIndex={activeIndex}
-                loading={loading}
+                loading={loading || isFackLoading}
                 sidePadding={sidePadding}
                 itemRefs={itemRefs}
                 setRefs={setRefs}
@@ -265,7 +266,6 @@ const ThumbnailCarousel = ({
   feedItems,
   activeIndex,
   loading,
-  sidePadding,
   itemRefs,
   setRefs,
   onItemClick,
@@ -354,20 +354,15 @@ const ThumbnailCarousel = ({
         }}
         className="relative flex flex-row items-center gap-3 overflow-x-auto scrollbar-hide"
         style={{
-          paddingLeft: sidePadding,
-          paddingRight: sidePadding,
           scrollBehavior: "smooth",
         }}
         onScroll={handleScroll}
       >
-        {/* Left spacer for centering */}
-        <div className="flex-shrink-0" style={{ width: "50%" }} />
-
         {feedItems?.map((item, idx) => {
           const isActive = activeIndex === idx;
           return (
             <div
-              key={item._id}
+              key={item._id + idx}
               ref={(el) => {
                 itemRefs.current[idx] = el;
               }}
@@ -392,8 +387,6 @@ const ThumbnailCarousel = ({
             </div>
           );
         })}
-        {/* Right spacer for centering */}
-        <div className="flex-shrink-0" style={{ width: "50%" }} />
       </div>
       <div
         className={clsx(
