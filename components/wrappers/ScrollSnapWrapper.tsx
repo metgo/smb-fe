@@ -145,10 +145,98 @@ export default function ScrollSnapWrapper({
   ]);
 
   // Mobile touch event handlers
+  // useEffect(() => {
+  //   const handleTouchStart = (e: TouchEvent) => {
+  //     isTouching.current = true;
+  //     touchStartY.current = e.touches[0].clientY;
+  //     lastTouchTime.current = Date.now();
+  //   };
+
+  //   const handleTouchMove = (e: TouchEvent) => {
+  //     if (!isTouching.current) return;
+
+  //     touchEndY.current = e.touches[0].clientY;
+
+  //     // Check if we're in a scrollable container
+  //     const target = e.target as HTMLElement;
+  //     const scrollableContainer = target.closest(
+  //       "[data-scrollable]",
+  //     ) as HTMLElement;
+  //     if (scrollableContainer) return;
+
+  //     // Only prevent default for section transitions
+  //     const scrollY = window.scrollY;
+
+  //     if (!hideFirstTwoSection) {
+  //       // Prevent default scrolling in first two sections
+  //       e.preventDefault();
+  //     } else if (
+  //       hideFirstTwoSection &&
+  //       scrollY <= (feedSectionRef.current?.offsetTop || 0) + 50
+  //     ) {
+  //       // Prevent scrolling up from feed section top
+  //       const deltaY = touchStartY.current - touchEndY.current;
+  //       if (deltaY < 0) {
+  //         // Swiping down (going up)
+  //         e.preventDefault();
+  //       }
+  //     }
+  //   };
+
+  //   const handleTouchEnd = () => {
+  //     if (!isTouching.current) return;
+  //     isTouching.current = false;
+
+  //     const touchDelta = touchStartY.current - touchEndY.current;
+  //     const touchDuration = Date.now() - lastTouchTime.current;
+  //     const minSwipeDistance = 50;
+  //     const maxSwipeTime = 500;
+
+  //     if (
+  //       Math.abs(touchDelta) < minSwipeDistance ||
+  //       touchDuration > maxSwipeTime
+  //     ) {
+  //       return;
+  //     }
+
+  //     // Swipe UP → go to next section
+  //     // if (touchDelta > 0) {
+  //     //   handleSectionTransition("down");
+  //     // }
+  //   };
+
+  //   // Only add touch events on mobile devices
+  //   if ("ontouchstart" in window) {
+  //     document.addEventListener("touchstart", handleTouchStart, {
+  //       passive: false,
+  //     });
+  //     document.addEventListener("touchmove", handleTouchMove, {
+  //       passive: false,
+  //     });
+  //     document.addEventListener("touchend", handleTouchEnd, { passive: true });
+
+  //     return () => {
+  //       document.removeEventListener("touchstart", handleTouchStart);
+  //       document.removeEventListener("touchmove", handleTouchMove);
+  //       document.removeEventListener("touchend", handleTouchEnd);
+  //     };
+  //   }
+  // }, [
+  //   setIsOnSection2,
+  //   setHideFirstTwoSection,
+  //   hideFirstTwoSection,
+  //   hasMarketing,
+  // ]);
+
+  // Mobile touch event handlers
   useEffect(() => {
+    const minSwipeDistance = 50;
+    const maxSwipeTime = 500;
+
     const handleTouchStart = (e: TouchEvent) => {
       isTouching.current = true;
       touchStartY.current = e.touches[0].clientY;
+      touchEndY.current = e.touches[0].clientY; // initialize
       lastTouchTime.current = Date.now();
     };
 
@@ -157,29 +245,22 @@ export default function ScrollSnapWrapper({
 
       touchEndY.current = e.touches[0].clientY;
 
-      // Check if we're in a scrollable container
       const target = e.target as HTMLElement;
       const scrollableContainer = target.closest(
         "[data-scrollable]",
       ) as HTMLElement;
       if (scrollableContainer) return;
 
-      // Only prevent default for section transitions
       const scrollY = window.scrollY;
 
       if (!hideFirstTwoSection) {
-        // Prevent default scrolling in first two sections
+        // Prevent default in fullpage sections
         e.preventDefault();
       } else if (
-        hideFirstTwoSection &&
-        scrollY <= (feedSectionRef.current?.offsetTop || 0) + 50
+        scrollY <= (feedSectionRef.current?.offsetTop || 0) + 50 &&
+        touchStartY.current - touchEndY.current < 0 // swiping down
       ) {
-        // Prevent scrolling up from feed section top
-        const deltaY = touchStartY.current - touchEndY.current;
-        if (deltaY < 0) {
-          // Swiping down (going up)
-          e.preventDefault();
-        }
+        e.preventDefault();
       }
     };
 
@@ -187,25 +268,21 @@ export default function ScrollSnapWrapper({
       if (!isTouching.current) return;
       isTouching.current = false;
 
-      const touchDelta = touchStartY.current - touchEndY.current;
-      const touchDuration = Date.now() - lastTouchTime.current;
-      const minSwipeDistance = 50;
-      const maxSwipeTime = 500;
+      const deltaY = touchStartY.current - touchEndY.current;
+      const swipeDuration = Date.now() - lastTouchTime.current;
 
-      if (
-        Math.abs(touchDelta) < minSwipeDistance ||
-        touchDuration > maxSwipeTime
-      ) {
+      const isSwipe =
+        Math.abs(deltaY) > minSwipeDistance && swipeDuration < maxSwipeTime;
+
+      if (!isSwipe) {
+        // It's a tap or slow movement — don't transition
         return;
       }
 
-      // Swipe UP → go to next section
-      // if (touchDelta > 0) {
-      //   handleSectionTransition("down");
-      // }
+      const direction = deltaY > 0 ? "down" : "up";
+      handleSectionTransition(direction);
     };
 
-    // Only add touch events on mobile devices
     if ("ontouchstart" in window) {
       document.addEventListener("touchstart", handleTouchStart, {
         passive: false,
@@ -221,12 +298,7 @@ export default function ScrollSnapWrapper({
         document.removeEventListener("touchend", handleTouchEnd);
       };
     }
-  }, [
-    setIsOnSection2,
-    setHideFirstTwoSection,
-    hideFirstTwoSection,
-    hasMarketing,
-  ]);
+  }, [hideFirstTwoSection, hasMarketing, handleSectionTransition]);
 
   // Handle initial scroll position and browser back/forward
   useEffect(() => {

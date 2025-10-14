@@ -22,8 +22,6 @@ interface MobileFeedLayoutProps {
 
 const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
   const {
-    calculateDistanceTo,
-    userLiveLocation,
     loading,
     computedValues,
     geoLocation,
@@ -46,6 +44,7 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
 
     categories,
     activeCategoryKey,
+    isFackLoading,
   } = useMobileFeedLayout(businesses);
 
   return (
@@ -64,10 +63,8 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
               currentImage={computedValues.currentImage}
               activeFeedItem={activeFeedItem}
               geoLocation={geoLocation}
-              userLiveLocation={userLiveLocation}
-              calculateDistanceTo={calculateDistanceTo}
               onNavigate={handleNavigation}
-              isFackLoading={loading}
+              isFackLoading={isFackLoading}
             />
           </div>
         )}
@@ -79,7 +76,7 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
             <ThumbnailCarousel
               feedItems={feedItems}
               activeIndex={activeIndex}
-              loading={loading}
+              loading={loading || isFackLoading}
               sidePadding={sidePadding}
               itemRefs={itemRefs}
               setRefs={setRefs}
@@ -101,7 +98,7 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
               <ThumbnailCarousel
                 feedItems={businesses?.data}
                 activeIndex={activeIndex}
-                loading={loading}
+                loading={loading || isFackLoading}
                 sidePadding={sidePadding}
                 itemRefs={itemRefs}
                 setRefs={setRefs}
@@ -155,9 +152,7 @@ interface GalleryViewProps {
   currentImage: any;
   activeFeedItem: BusinessProps | null;
   geoLocation: { lat: number; lng: number };
-  userLiveLocation: any;
   isFackLoading: boolean;
-  calculateDistanceTo: (lat: number, lng: number) => number | null;
   onNavigate: (e: React.MouseEvent) => void;
 }
 
@@ -165,8 +160,6 @@ const GalleryView = ({
   currentImage,
   activeFeedItem,
   geoLocation,
-  userLiveLocation,
-  calculateDistanceTo,
   onNavigate,
   isFackLoading,
 }: GalleryViewProps) => {
@@ -182,7 +175,7 @@ const GalleryView = ({
     <>
       {shouldShowSkeleton || isFackLoading ? (
         <CardSkeleton
-          className="w-full h-full absolute inset-0"
+          className="w-full h-screen absolute inset-0"
           primaryCategoryId={
             activeFeedItem?.primaryCategoryId || "6566e31ca77d2a477266d2d6"
           }
@@ -219,15 +212,6 @@ const GalleryView = ({
                 onClick={(e) => e.stopPropagation()}
               >
                 <BiNavigation size={36} />
-                {userLiveLocation && (
-                  <span className="font-bold">
-                    ק״מ{" "}
-                    {calculateDistanceTo(
-                      Number(geoLocation.lat),
-                      Number(geoLocation.lng),
-                    )}
-                  </span>
-                )}
               </Link>
             </div>
           </div>
@@ -282,7 +266,6 @@ const ThumbnailCarousel = ({
   feedItems,
   activeIndex,
   loading,
-  sidePadding,
   itemRefs,
   setRefs,
   onItemClick,
@@ -371,20 +354,15 @@ const ThumbnailCarousel = ({
         }}
         className="relative flex flex-row items-center gap-3 overflow-x-auto scrollbar-hide"
         style={{
-          paddingLeft: sidePadding,
-          paddingRight: sidePadding,
           scrollBehavior: "smooth",
         }}
         onScroll={handleScroll}
       >
-        {/* Left spacer for centering */}
-        <div className="flex-shrink-0" style={{ width: "50%" }} />
-
         {feedItems?.map((item, idx) => {
           const isActive = activeIndex === idx;
           return (
             <div
-              key={item._id}
+              key={item._id + idx}
               ref={(el) => {
                 itemRefs.current[idx] = el;
               }}
@@ -409,22 +387,13 @@ const ThumbnailCarousel = ({
             </div>
           );
         })}
-
-        {loading && (
-          <div className="flex-shrink-0 w-[60px] h-[60px] flex items-center justify-center text-white border-2 border-white rounded-md">
-            <div className="text-xs">Loading...</div>
-          </div>
-        )}
-
-        {/* Right spacer for centering */}
-        <div className="flex-shrink-0" style={{ width: "50%" }} />
       </div>
       <div
         className={clsx(
           isMap || isPanelVisible || activeCategoryId === null
             ? "bottom-24"
             : "bottom-30",
-          "fixed right-0 left-0 mx-auto w-[80px] h-80px] rounded-lg overflow-hidden",
+          "fixed right-0 left-0 mx-auto w-[80px] h-80px] rounded-lg overflow-hidden bg-white",
         )}
         style={{
           width: 80,
@@ -433,13 +402,20 @@ const ThumbnailCarousel = ({
           boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
         }}
       >
-        <NextImage
-          alt={activeFeedItem?.name || "Active feed item"}
-          imgSrc={activeFeedItem?.images?.[0]?.image}
-          width={100}
-          height={100}
-          className="object-cover w-[80px] h-[80px] overflow-hidden"
-        />
+        {loading ? (
+          <CardSkeleton
+            className={"rounded-none w-full h-full"}
+            primaryCategoryId={activeFeedItem?.primaryCategoryId}
+          />
+        ) : (
+          <NextImage
+            alt={activeFeedItem?.name || "Active feed item"}
+            imgSrc={activeFeedItem?.images?.[0]?.image}
+            width={100}
+            height={100}
+            className="object-cover w-[80px] h-[80px] overflow-hidden"
+          />
+        )}
       </div>
     </section>
   );

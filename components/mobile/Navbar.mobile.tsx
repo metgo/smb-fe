@@ -31,14 +31,14 @@ const MobileNavbar = ({
       <div className="grid grid-cols-12 items-center">
         {/* Hamburger, Logo, Text */}
         <div className="flex items-center gap-4 col-span-6">
-          <HamburgerMenu />
+          <HamburgerMenu isMobile />
           <NavLogo />
         </div>
 
-        <div className="flex items-center justify-end gap-2 col-span-6">
+        <div className="flex items-center justify-end gap-4 col-span-6">
           {showFilterTab && <MobileFilterTab />}
           <div className="w-12">
-            <SearchFlow iconSize={36} />
+            <SearchFlow isMobile />
           </div>
           {/* {showFilterIcon && <IconImage icon="filter" />} */}
         </div>

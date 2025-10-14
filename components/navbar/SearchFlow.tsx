@@ -12,6 +12,7 @@ import { startLoading } from "../wrappers/ProgressBar";
 import { recommendedSearchKeywords } from "@/lib/utils";
 import { PopularBusinessCard } from "@/components/cards";
 import { Dialog, IconImage, NextImage } from "@/components/ui";
+import { SearchIcon } from "../ui/svgIcons";
 
 interface CardListProps {
   title?: string;
@@ -88,7 +89,13 @@ const MobileCardList = ({
   );
 };
 
-const SearchFlow = ({ iconSize = 24 }: { iconSize?: number }) => {
+const SearchFlow = ({
+  iconSize = 24,
+  isMobile,
+}: {
+  iconSize?: number;
+  isMobile?: boolean;
+}) => {
   const {
     hasResults,
     isLoading,
@@ -109,7 +116,11 @@ const SearchFlow = ({ iconSize = 24 }: { iconSize?: number }) => {
         className=" custom-cursor"
         onClick={() => setIsSerachModalOpen(true)}
       >
-        <IconImage icon="search" width={iconSize} height={iconSize} />
+        {isMobile ? (
+          <SearchIcon />
+        ) : (
+          <IconImage icon="search" width={iconSize} height={iconSize} />
+        )}
       </div>
 
       {isSearchModalOpen && (

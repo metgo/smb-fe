@@ -40,6 +40,7 @@ export const useMobileFeedLayout = (businesses: BusinessesProps) => {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [hasMounted, setHasMounted] = useState(false);
   const touchStartYRef = useRef<number | null>(null);
+  const [isFackLoading, setIsFackLoading] = useState(true);
 
   // --- Refs ---
   const isNavigating = useRef(false);
@@ -125,6 +126,14 @@ export const useMobileFeedLayout = (businesses: BusinessesProps) => {
       setFeedItems(businesses?.data);
     }
   }, [businesses]);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setIsFackLoading(false);
+    }, 3000);
+
+    return () => clearTimeout(timeout);
+  }, []);
 
   useEffect(() => {
     if (activeIndex !== null) {
@@ -256,5 +265,6 @@ export const useMobileFeedLayout = (businesses: BusinessesProps) => {
     isPanelVisible,
     categories,
     activeCategoryKey,
+    isFackLoading,
   };
 };
