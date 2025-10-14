@@ -85,6 +85,9 @@ const IntroVideo = ({ siteInfo }: { siteInfo: any }) => {
             e.stopPropagation();
             toggleMute();
           }}
+          onTouchStart={(e) => e.stopPropagation()}
+          onTouchMove={(e) => e.stopPropagation()}
+          onTouchEnd={(e) => e.stopPropagation()}
           className="absolute max-sm:bottom-26 md:bottom-10 right-10 z-10 text-white bg-black/50 hover:bg-black/70 border-[3px] border-white rounded-full p-3 transition custom-cursor"
           aria-label="Toggle Mute"
         >

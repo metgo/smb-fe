@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { RxHamburgerMenu } from "react-icons/rx";
 import { useEffect, useRef, useState, useMemo } from "react";
 
 import { navItems } from "@/lib/utils";
@@ -11,9 +12,11 @@ import useGeneralStore from "@/stores/generalStore";
 const HamburgerMenu = ({
   openIcon = "threeline",
   closeIcon = "close",
+  isMobile = false,
 }: {
   openIcon?: string;
   closeIcon?: string;
+  isMobile?: boolean;
 }) => {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
@@ -71,9 +74,13 @@ const HamburgerMenu = ({
         type="button"
         ref={toggleButtonRef}
         onClick={() => setIsOpen((prev) => !prev)}
-        className="focus:outline-none custom-cursor text-theme"
+        className="focus:outline-none custom-cursor"
       >
-        <IconImage icon={isOpen ? closeIcon : openIcon} />
+        {isMobile ? (
+          <RxHamburgerMenu size={24} />
+        ) : (
+          <IconImage icon={isOpen ? closeIcon : openIcon} />
+        )}
       </button>
 
       <div

@@ -48,6 +48,9 @@ interface GeneralStoreState {
 
   userLiveLocation: LatLngType | null;
   setUserLiveLocation: (v: LatLngType | null) => void;
+
+  clickedOnSoundButton: boolean;
+  setClickedOnSoundButton: (v: boolean) => void;
 }
 
 const useGeneralStore = create<GeneralStoreState>((set) => ({
@@ -87,6 +90,9 @@ const useGeneralStore = create<GeneralStoreState>((set) => ({
 
   userLiveLocation: null,
   setUserLiveLocation: (v) => set({ userLiveLocation: v }),
+
+  clickedOnSoundButton: false,
+  setClickedOnSoundButton: (v) => set({ clickedOnSoundButton: v }),
 }));
 
 export default useGeneralStore;

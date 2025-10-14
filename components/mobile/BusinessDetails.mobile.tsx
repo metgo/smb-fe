@@ -7,12 +7,10 @@ import { BiSolidNavigation } from "react-icons/bi";
 
 import { categoryColors, daysMapping } from "@/lib/utils";
 import { misc } from "@/constant/hebrew";
-import { useCommonHook } from "@/hooks";
 import { IconImage } from "../ui";
 import AttributePills from "../AttributePills";
 import { getCityOrCenter } from "@/lib/helpers";
 import { Map } from "@/app/(details)/_components";
-import useGeneralStore from "@/stores/generalStore";
 import MobileImageGallery from "./ImageGallery.mobile";
 import MobileProductList from "./ProductList.mobile";
 import MobileDeliveriesContent from "./DeliveriesContent.mobile ";
@@ -34,8 +32,6 @@ const MobileBusinessDetails = ({
   businessDetails: BusinessDetailsProps;
   products: Product[];
 }) => {
-  const { calculateDistanceTo } = useCommonHook();
-  const { userLiveLocation } = useGeneralStore();
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   const apiLat = businessDetails?.geoLocation?.lat;
@@ -63,11 +59,11 @@ const MobileBusinessDetails = ({
               size={34}
               color={categoryColors[businessDetails.primaryCategoryId]}
             />
-            {userLiveLocation && (
+            {/* {userLiveLocation && (
               <span className="font-bold">
                 ק״מ {calculateDistanceTo(Number(apiLat), Number(apiLng))}
               </span>
-            )}
+            )} */}
           </Link>
         </div>
 
