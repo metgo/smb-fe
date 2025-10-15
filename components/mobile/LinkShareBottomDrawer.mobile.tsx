@@ -18,6 +18,7 @@ import { IoIosShareAlt } from "react-icons/io";
 interface ShareModalProps {
   isOpen: boolean;
   setIsOpen: (v: boolean) => void;
+  trailInfo?: string;
   url?: string;
   title?: string;
 }
@@ -25,11 +26,13 @@ interface ShareModalProps {
 export default function MobileLinkShareBottomDrawer({
   isOpen,
   setIsOpen,
+  trailInfo,
   url = typeof window !== "undefined" ? window.location.href : "",
   title = typeof window !== "undefined" ? document.title : "",
 }: ShareModalProps) {
   // const [isCopied, setIsCopied] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
+  const [fullUrl, setFullUrl] = useState(url);
 
   useEffect(() => {
     if (isOpen) {
@@ -38,6 +41,13 @@ export default function MobileLinkShareBottomDrawer({
       setIsVisible(false);
     }
   }, [isOpen]);
+
+  useEffect(() => {
+    if (trailInfo) {
+      const upadatedUrl = url + trailInfo;
+      setFullUrl(upadatedUrl);
+    }
+  }, [trailInfo]);
 
   const handleClose = () => {
     setIsVisible(false);
@@ -63,31 +73,31 @@ export default function MobileLinkShareBottomDrawer({
       name: "פייסבוק",
       icon: FaFacebookF,
       color: "bg-[#1877F2]",
-      shareUrl: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
+      shareUrl: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(fullUrl)}`,
     },
     {
       name: "X (טוויטר)",
       icon: FaXTwitter,
       color: "bg-black",
-      shareUrl: `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`,
+      shareUrl: `https://twitter.com/intent/tweet?url=${encodeURIComponent(fullUrl)}&text=${encodeURIComponent(title)}`,
     },
     {
       name: "לינקדאין",
       icon: FaLinkedinIn,
       color: "bg-[#0A66C2]",
-      shareUrl: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`,
+      shareUrl: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(fullUrl)}`,
     },
     {
       name: "וואטסאפ",
       icon: FaWhatsapp,
       color: "bg-[#25D366]",
-      shareUrl: `https://wa.me/?text=${encodeURIComponent(title + " " + url)}`,
+      shareUrl: `https://wa.me/?text=${encodeURIComponent(title + " " + fullUrl)}`,
     },
     {
       name: "טלגרם",
       icon: FaTelegram,
       color: "bg-[#0088CC]",
-      shareUrl: `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`,
+      shareUrl: `https://t.me/share/url?url=${encodeURIComponent(fullUrl)}&text=${encodeURIComponent(title)}`,
     },
     // {
     //   name: 'אימייל',
@@ -99,13 +109,13 @@ export default function MobileLinkShareBottomDrawer({
       name: "רדיט",
       icon: FaReddit,
       color: "bg-[#FF4500]",
-      shareUrl: `https://reddit.com/submit?url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}`,
+      shareUrl: `https://reddit.com/submit?url=${encodeURIComponent(fullUrl)}&title=${encodeURIComponent(title)}`,
     },
     {
       name: "פינטרסט",
       icon: FaPinterest,
       color: "bg-[#E60023]",
-      shareUrl: `https://pinterest.com/pin/create/button/?url=${encodeURIComponent(url)}&description=${encodeURIComponent(title)}`,
+      shareUrl: `https://pinterest.com/pin/create/button/?url=${encodeURIComponent(fullUrl)}&description=${encodeURIComponent(title)}`,
     },
     {
       name: "אינסטגרם",
@@ -118,7 +128,7 @@ export default function MobileLinkShareBottomDrawer({
       name: "מסנג׳ר",
       icon: FaFacebookMessenger,
       color: "bg-[#0084FF]",
-      shareUrl: `https://www.facebook.com/dialog/send?link=${encodeURIComponent(url)}&app_id=YOUR_APP_ID&redirect_uri=${encodeURIComponent(url)}`,
+      shareUrl: `https://www.facebook.com/dialog/send?link=${encodeURIComponent(fullUrl)}&app_id=YOUR_APP_ID&redirect_uri=${encodeURIComponent(url)}`,
     },
   ];
 
@@ -170,7 +180,7 @@ export default function MobileLinkShareBottomDrawer({
                 <FaLink className="h-4 w-4 text-blue-600 flex-shrink-0" />
               </div>
               <p className="text-sm text-gray-600 flex-1 font-normal truncate">
-                {url}
+                {fullUrl}
               </p>
             </div>
             {/* <button
@@ -197,7 +207,11 @@ export default function MobileLinkShareBottomDrawer({
               return (
                 <button
                   key={platform.name}
-                  onClick={() => handleShare(platform.shareUrl)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleShare(platform.shareUrl);
+                  }}
                   className=" custom-cursor flex flex-col items-center space-y-3 px-4 py-2 rounded-lg hover:bg-gray-50 active:bg-gray-100 transition-all duration-200 active:scale-95"
                 >
                   <div
