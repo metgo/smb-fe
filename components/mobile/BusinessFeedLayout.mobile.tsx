@@ -5,47 +5,53 @@ import Link from "next/link";
 import Image from "next/image";
 import { BiNavigation } from "react-icons/bi";
 import { BsThreeDotsVertical } from "react-icons/bs";
-import { useRef, useEffect, useCallback } from "react";
 
 import MobileNavbar from "./Navbar.mobile";
 import { CardSkeleton } from "../skeletons";
 import { categoryColors } from "@/lib/utils";
-import { IconImage, NextImage } from "../ui";
+import { IconImage } from "../ui";
 import MobileCategoryPanel from "./CategoryPanel.mobile";
-import { removeInlineStylesFromHTML } from "@/lib/helpers";
-import { useImageCrop, useMobileFeedLayout } from "@/hooks";
+import { getCityOrCenter, removeInlineStylesFromHTML } from "@/lib/helpers";
+import { useImageCrop, useMobileFeedLayout, useSwipeHooks } from "@/hooks";
 import MobileBusinessPinMap from "../maps/BusinessPinMap.mobile";
+import MobileFeedsThumbnailCarousel from "./FeedsThumbnailCarousel.mobile";
+import { useState } from "react";
 
 interface MobileFeedLayoutProps {
   businesses: BusinessesProps;
 }
 
-const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
+const MobileBusinessFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
+  const [isPanelVisible, setIsPanelVisible] = useState(true);
+
   const {
-    loading,
     computedValues,
     geoLocation,
-    sidePadding,
-    handleTouchStart,
-    handleTouchMove,
-    handleTouchEnd,
-
-    handleActiveItem,
-    handleNavigation,
-    setRefs,
 
     shouldShowNavbar,
     activeFilterTabMobile,
     activeFeedItem,
     feedItems,
-    itemRefs,
     activeIndex,
-    isPanelVisible,
+    setActiveIndex,
 
     categories,
     activeCategoryKey,
     isFackLoading,
   } = useMobileFeedLayout(businesses);
+
+  const {
+    handleTouchEnd,
+    handleTouchMove,
+    handleTouchStart,
+    handleNavigation,
+  } = useSwipeHooks(
+    feedItems.length,
+    activeIndex,
+    setActiveIndex,
+    activeFeedItem?.slug,
+    setIsPanelVisible,
+  );
 
   return (
     <>
@@ -73,17 +79,23 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
 
         {shouldShowNavbar && activeFilterTabMobile === "map" && (
           <div className="fixed bottom-0 right-0 w-full z-20 space-y-4">
-            <ThumbnailCarousel
-              feedItems={feedItems}
+            <MobileFeedsThumbnailCarousel
+              shouldSetItemId
+              posBottom="bottom-24"
+              items={feedItems?.map((item) => {
+                return {
+                  id: item?._id,
+                  name: item?.name,
+                  image: item?.images?.[0]?.image,
+                  categoryId: item?.primaryCategoryId,
+                };
+              })}
+              setActiveIndex={setActiveIndex}
               activeIndex={activeIndex}
-              loading={loading || isFackLoading}
-              sidePadding={sidePadding}
-              itemRefs={itemRefs}
-              setRefs={setRefs}
-              onItemClick={handleActiveItem}
-              isPanelVisible={isPanelVisible}
-              activeFeedItem={activeFeedItem}
-              isMap
+              loading={isFackLoading}
+              primaryBoderColor={
+                categoryColors[activeFeedItem?.primaryCategoryId]
+              }
             />
             <MobileCategoryPanel />
           </div>
@@ -95,18 +107,26 @@ const MobileFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
                 isPanelVisible ? "translate-y-0" : "translate-y-20"
               }`}
             >
-              <ThumbnailCarousel
-                feedItems={businesses?.data}
+              <MobileFeedsThumbnailCarousel
+                items={feedItems?.map((item) => {
+                  return {
+                    id: item._id,
+                    name: item?.name,
+                    image: item?.images?.[0]?.image,
+                    categoryId: item?.primaryCategoryId,
+                  };
+                })}
+                posBottom={
+                  isPanelVisible || !activeCategoryKey
+                    ? "bottom-24"
+                    : "bottom-30"
+                }
+                setActiveIndex={setActiveIndex}
                 activeIndex={activeIndex}
-                loading={loading || isFackLoading}
-                sidePadding={sidePadding}
-                itemRefs={itemRefs}
-                setRefs={setRefs}
-                onItemClick={handleActiveItem}
-                isPanelVisible={isPanelVisible}
-                activeFeedItem={activeFeedItem}
-                isMap={false}
-                activeCategoryId={activeCategoryKey}
+                loading={isFackLoading}
+                primaryBoderColor={
+                  categoryColors[activeFeedItem?.primaryCategoryId]
+                }
               />
 
               {!isPanelVisible && activeCategoryKey && (
@@ -237,7 +257,7 @@ const GalleryView = ({
                 <div className="flex items-center gap-2 mt-4">
                   <IconImage icon="location" width={30} height={30} />
                   <span className="text-xl font-bold">
-                    {activeFeedItem?.address?.city}
+                    {getCityOrCenter(activeFeedItem?.address)}
                   </span>
                 </div>
               )}
@@ -248,177 +268,4 @@ const GalleryView = ({
   );
 };
 
-interface ThumbnailCarouselProps {
-  isMap?: boolean;
-  feedItems: BusinessProps[];
-  activeIndex: number;
-  loading: boolean;
-  sidePadding: number;
-  activeFeedItem: BusinessProps;
-  itemRefs: React.MutableRefObject<(HTMLDivElement | null)[]>;
-  setRefs: (el: HTMLDivElement | null) => void;
-  onItemClick: (index: number, id: string) => void;
-  isPanelVisible: boolean;
-  activeCategoryId?: string | null;
-}
-
-const ThumbnailCarousel = ({
-  feedItems,
-  activeIndex,
-  loading,
-  itemRefs,
-  setRefs,
-  onItemClick,
-  isPanelVisible,
-  isMap = false,
-  activeFeedItem,
-  activeCategoryId = "",
-}: ThumbnailCarouselProps) => {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const isScrollingRef = useRef(false);
-  const scrollTimeoutRef = useRef<NodeJS.Timeout>(null);
-
-  // Center the active item
-  const centerActiveItem = useCallback(() => {
-    if (
-      activeIndex === -1 ||
-      !containerRef.current ||
-      !itemRefs.current[activeIndex!]
-    )
-      return;
-
-    const scrollContainer = containerRef.current;
-    const activeItem = activeIndex !== null && itemRefs.current[activeIndex];
-
-    if (!activeItem) return;
-
-    const containerWidth = scrollContainer.clientWidth;
-    const itemWidth = activeItem.clientWidth;
-    const itemOffsetLeft = activeItem.offsetLeft;
-
-    // Calculate the scroll position to center the item
-    const targetScrollLeft =
-      itemOffsetLeft - containerWidth / 2 + itemWidth / 2;
-
-    scrollContainer.scrollTo({
-      left: targetScrollLeft,
-      behavior: "smooth",
-    });
-  }, [activeIndex, itemRefs]);
-
-  // Center active item when index changes
-  useEffect(() => {
-    if (activeIndex !== -1) {
-      // Small delay to ensure DOM is updated
-      setTimeout(centerActiveItem, 100);
-    }
-  }, [activeIndex, centerActiveItem]);
-
-  // Handle scroll events - prevent auto-activation
-  const handleScroll = () => {
-    isScrollingRef.current = true;
-
-    // Clear timeout if user is still scrolling
-    if (scrollTimeoutRef.current) {
-      clearTimeout(scrollTimeoutRef.current);
-    }
-
-    // Set timeout to mark scrolling as finished
-    scrollTimeoutRef.current = setTimeout(() => {
-      isScrollingRef.current = false;
-    }, 150);
-  };
-
-  // Enhanced click handler that prevents accidental activation during scroll
-  const handleItemClick = (idx: number, itemId: string) => {
-    // Don't trigger click if we're currently scrolling
-    if (isScrollingRef.current) return;
-    onItemClick(idx, itemId);
-  };
-
-  // Cleanup
-  useEffect(() => {
-    return () => {
-      if (scrollTimeoutRef.current) {
-        clearTimeout(scrollTimeoutRef.current);
-      }
-    };
-  }, []);
-
-  return (
-    <section className="relative mb-6">
-      <div
-        ref={(el) => {
-          containerRef.current = el;
-          setRefs?.(el);
-        }}
-        className="relative flex flex-row items-center gap-3 overflow-x-auto scrollbar-hide"
-        style={{
-          scrollBehavior: "smooth",
-        }}
-        onScroll={handleScroll}
-      >
-        {feedItems?.map((item, idx) => {
-          const isActive = activeIndex === idx;
-          return (
-            <div
-              key={item._id + idx}
-              ref={(el) => {
-                itemRefs.current[idx] = el;
-              }}
-              onClick={() => handleItemClick(idx, item._id)}
-              className={clsx(
-                "flex-shrink-0 cursor-pointer transition-all duration-300 rounded-lg overflow-hidden",
-                isActive && "mx-3",
-              )}
-              style={{
-                width: 60,
-                height: 60,
-                border: `3px solid #fff`,
-              }}
-            >
-              <NextImage
-                alt={item?.name}
-                imgSrc={item?.images?.[0]?.image}
-                width={200}
-                height={200}
-                className="object-cover w-full h-full rounded"
-              />
-            </div>
-          );
-        })}
-      </div>
-      <div
-        className={clsx(
-          isMap || isPanelVisible || activeCategoryId === null
-            ? "bottom-24"
-            : "bottom-30",
-          "fixed right-0 left-0 mx-auto w-[80px] h-80px] rounded-lg overflow-hidden bg-white",
-        )}
-        style={{
-          width: 80,
-          height: 80,
-          border: `3px solid ${categoryColors[activeFeedItem?.primaryCategoryId]}`,
-          boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-        }}
-      >
-        {loading ? (
-          <CardSkeleton
-            className={"rounded-none w-full h-full"}
-            primaryCategoryId={activeFeedItem?.primaryCategoryId}
-          />
-        ) : (
-          <NextImage
-            alt={activeFeedItem?.name || "Active feed item"}
-            imgSrc={activeFeedItem?.images?.[0]?.image}
-            width={100}
-            height={100}
-            className="object-cover w-[80px] h-[80px] overflow-hidden"
-          />
-        )}
-      </div>
-    </section>
-  );
-};
-
-export default MobileFeedLayout;
+export default MobileBusinessFeedLayout;
