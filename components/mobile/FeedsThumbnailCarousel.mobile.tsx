@@ -7,6 +7,7 @@ import Carousel from "react-multi-carousel";
 import { NextImage } from "@/components/ui";
 import { CardSkeleton } from "@/components/skeletons";
 import useGeneralStore from "@/stores/generalStore";
+import { categoryColors } from "@/lib/utils";
 
 interface FeedsThumbnailCarouselProps {
   items: {
@@ -21,8 +22,10 @@ interface FeedsThumbnailCarouselProps {
   activeIndex: number;
   setActiveIndex: (v: number) => void;
 
+  isInfinite?: boolean;
   posBottom?: string;
   loading: boolean;
+  isStation?: boolean;
   shouldSetItemId?: boolean;
 }
 
@@ -56,6 +59,8 @@ const MobileFeedsThumbnailCarousel = ({
   activeIndex,
   setActiveIndex,
   shouldSetItemId,
+  isStation = false,
+  isInfinite = true,
   posBottom = "bottom-3",
   primaryBoderColor = "#fff",
   secondaryBoderColor = "#fff",
@@ -80,7 +85,7 @@ const MobileFeedsThumbnailCarousel = ({
         <Carousel
           ref={carouselRef}
           responsive={responsive}
-          infinite
+          infinite={isInfinite}
           centerMode
           arrows={false}
           swipeable
@@ -111,11 +116,11 @@ const MobileFeedsThumbnailCarousel = ({
             return (
               <div
                 key={item.id}
-                className={` rounded-md overflow-hidden flex items-center justify-center transition-all duration-300 select-none custom-cursor`}
+                className={` rounded-md overflow-hidden flex items-center max-sm:mx-0.5 justify-center transition-all duration-300 select-none custom-cursor`}
                 style={{
                   height: "60px",
                   width: "60px",
-                  border: `1px solid ${secondaryBoderColor}`,
+                  border: `1px solid ${isStation ? categoryColors[item.categoryId || ""] : secondaryBoderColor}`,
                 }}
                 onClick={() => handleCardClick(idx, item.id)}
               >

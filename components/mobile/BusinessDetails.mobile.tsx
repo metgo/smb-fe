@@ -5,14 +5,14 @@ import { useState } from "react";
 import { IoLocationSharp } from "react-icons/io5";
 import { BiSolidNavigation } from "react-icons/bi";
 
-import { categoryColors, daysMapping } from "@/lib/utils";
-import { misc } from "@/constant/hebrew";
 import { IconImage } from "../ui";
+import { misc } from "@/constant/hebrew";
 import AttributePills from "../AttributePills";
 import { getCityOrCenter } from "@/lib/helpers";
 import { Map } from "@/app/(details)/_components";
-import MobileImageGallery from "./ImageGallery.mobile";
 import MobileProductList from "./ProductList.mobile";
+import MobileImageGallery from "./ImageGallery.mobile";
+import { categoryColors, daysMapping } from "@/lib/utils";
 import MobileDeliveriesContent from "./DeliveriesContent.mobile ";
 import MobileLinkShareBottomDrawer from "./LinkShareBottomDrawer.mobile";
 
@@ -40,7 +40,7 @@ const MobileBusinessDetails = ({
   return (
     <>
       <div className="md:hidden max-sm:block pb-12">
-        <div className="flex items-start justify-end gap-1 mt-8 px-4">
+        <div className="flex items-center justify-end gap-1 mt-8 px-4">
           <IconImage
             width={30}
             height={30}

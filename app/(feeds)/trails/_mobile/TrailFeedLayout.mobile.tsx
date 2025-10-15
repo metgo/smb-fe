@@ -140,6 +140,7 @@ const GalleryView = ({
           />
 
           <MobileFeedScreenActionIcons
+            hideThreedotIcon
             trailInfo={`?trailId=${activeFeedItem?._id}&slug=${activeFeedItem?.slug}`}
           />
 

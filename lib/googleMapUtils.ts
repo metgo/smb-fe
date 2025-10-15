@@ -275,3 +275,51 @@ export const createGradientRoute = async (
   const segmentColor = `rgb(${r}, ${g}, ${b})`;
   return segmentColor;
 };
+
+// -------Mobile ------
+const MOBILE_BREAKPOINT = 768;
+const SMALL_MOBILE_BREAKPOINT = 640;
+
+export const getScreenDimensions = () => {
+  const screenWidth = window.innerWidth;
+  const screenHeight = window.innerHeight;
+  const isMobile = screenWidth < MOBILE_BREAKPOINT;
+  const isSmallMobile = screenWidth < SMALL_MOBILE_BREAKPOINT;
+
+  return { screenWidth, screenHeight, isMobile, isSmallMobile };
+};
+
+export const centerMapOnMarker = (
+  marker: google.maps.Marker,
+  map: google.maps.Map | null,
+) => {
+  if (!map) return;
+
+  const position = marker.getPosition();
+  if (!position) return;
+
+  const { screenHeight } = getScreenDimensions();
+  const latOffset = (3000 / screenHeight) * 0.01;
+
+  const newCenter = {
+    lat: position.lat() + latOffset, // Shift DOWN (positive) to center info window
+    lng: position.lng(),
+  };
+
+  map.panTo(newCenter);
+
+  const currentZoom = map.getZoom();
+  if (currentZoom && currentZoom < 14) {
+    const { screenWidth, isMobile, isSmallMobile } = getScreenDimensions();
+    const targetZoom = isMobile
+      ? isSmallMobile
+        ? 12
+        : 10
+      : isSmallMobile
+        ? 15
+        : screenWidth < 1024
+          ? 14
+          : 13;
+    map.setZoom(targetZoom);
+  }
+};
