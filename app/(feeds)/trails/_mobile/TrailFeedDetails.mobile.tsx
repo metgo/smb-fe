@@ -2,15 +2,14 @@
 
 import clsx from "clsx";
 import Image from "next/image";
-import { BsThreeDotsVertical } from "react-icons/bs";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { NextImage } from "@/components/ui";
 import { categoryColors } from "@/lib/utils";
 import { CardSkeleton } from "@/components/skeletons";
-import MobileNavbar from "@/components/mobile/Navbar.mobile";
 import { removeInlineStylesFromHTML } from "@/lib/helpers";
 import { useImageCrop, useSwipeHooks } from "@/hooks";
+import MobileFeedScreenActionIcons from "@/components/mobile/FeedScreenActionIcons.mobile";
 
 const MobileTrailFeedDetails = ({ stations }: TrailDetailsProps) => {
   const [activeIndex, setActiveIndex] = useState<number>(0);
@@ -48,8 +47,6 @@ const MobileTrailFeedDetails = ({ stations }: TrailDetailsProps) => {
   return (
     <>
       <div className="flex flex-col max-sm:block md:hidden relative">
-        <MobileNavbar />
-
         <div
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
@@ -134,10 +131,9 @@ const GalleryView = ({
             priority
           />
 
-          {/* Top Right Controls */}
-          <div className="w-[94%] absolute top-30 right-4 flex justify-between text-white z-20">
-            <BsThreeDotsVertical size={30} />
-          </div>
+          <MobileFeedScreenActionIcons
+            geoLocation={activeFeedItem.geoLocation}
+          />
 
           {/* Gradient Overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/100 via-black/30 to-black/10 z-10" />

@@ -1,10 +1,7 @@
 "use client";
 
 import clsx from "clsx";
-import Link from "next/link";
 import Image from "next/image";
-import { BiNavigation } from "react-icons/bi";
-import { BsThreeDotsVertical } from "react-icons/bs";
 
 import MobileNavbar from "./Navbar.mobile";
 import { CardSkeleton } from "../skeletons";
@@ -16,6 +13,7 @@ import { useImageCrop, useMobileFeedLayout, useSwipeHooks } from "@/hooks";
 import MobileBusinessPinMap from "../maps/BusinessPinMap.mobile";
 import MobileFeedsThumbnailCarousel from "./FeedsThumbnailCarousel.mobile";
 import { useState } from "react";
+import MobileFeedScreenActionIcons from "./FeedScreenActionIcons.mobile";
 
 interface MobileFeedLayoutProps {
   businesses: BusinessesProps;
@@ -171,7 +169,7 @@ const MobileBusinessFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
 interface GalleryViewProps {
   currentImage: any;
   activeFeedItem: BusinessProps | null;
-  geoLocation: { lat: number; lng: number };
+  geoLocation: { lat: number; long: number };
   isFackLoading: boolean;
   onNavigate: (e: React.MouseEvent) => void;
 }
@@ -219,22 +217,10 @@ const GalleryView = ({
             priority
           />
 
-          {/* Top Right Controls */}
-          <div className="w-[94%] absolute top-30 right-4 flex justify-between text-white z-20">
-            <BsThreeDotsVertical size={30} />
-            <div className="flex items-center flex-col">
-              <Link
-                target="_blank"
-                data-no-swipe
-                rel="noopener noreferrer"
-                href={`https://www.google.com/maps/search/?api=1&query=${geoLocation.lat},${geoLocation.lng}`}
-                className="flex flex-col items-center gap-1.25 ps-2.5 pe-4 py-1 custom-cursor"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <BiNavigation size={36} />
-              </Link>
-            </div>
-          </div>
+          <MobileFeedScreenActionIcons
+            trailInfo={`?businessId=${activeFeedItem?._id}&slug=${activeFeedItem?.slug}`}
+            geoLocation={geoLocation}
+          />
 
           {/* Gradient Overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/100 via-black/30 to-black/10 z-10" />

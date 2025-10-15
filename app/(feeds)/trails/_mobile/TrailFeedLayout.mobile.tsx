@@ -3,7 +3,6 @@
 import clsx from "clsx";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { BsThreeDotsVertical } from "react-icons/bs";
 
 import { CardSkeleton } from "@/components/skeletons";
 import { IconImage } from "@/components/ui";
@@ -11,6 +10,7 @@ import MobileNavbar from "@/components/mobile/Navbar.mobile";
 import { getCityOrCenter, removeInlineStylesFromHTML } from "@/lib/helpers";
 import { useImageCrop, useSwipeHooks } from "@/hooks";
 import MobileFeedsThumbnailCarousel from "@/components/mobile/FeedsThumbnailCarousel.mobile";
+import MobileFeedScreenActionIcons from "@/components/mobile/FeedScreenActionIcons.mobile";
 
 const MobileTrailFeedLayout = ({ data }: TrailsFeedProps) => {
   const [activeIndex, setActiveIndex] = useState<number>(0);
@@ -139,10 +139,9 @@ const GalleryView = ({
             priority
           />
 
-          {/* Top Right Controls */}
-          <div className="w-[94%] absolute top-30 right-4 flex justify-between text-white z-20">
-            <BsThreeDotsVertical size={30} />
-          </div>
+          <MobileFeedScreenActionIcons
+            trailInfo={`?trailId=${activeFeedItem?._id}&slug=${activeFeedItem?.slug}`}
+          />
 
           {/* Gradient Overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/100 via-black/30 to-black/10 z-10" />

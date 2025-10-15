@@ -83,7 +83,7 @@ export const useMobileFeedLayout = (businesses: BusinessesProps) => {
   const geoLocation = useMemo(
     () => ({
       lat: Number(activeFeedItem?.geoLocation?.lat) || 0,
-      lng: Number(activeFeedItem?.geoLocation?.long) || 0,
+      long: Number(activeFeedItem?.geoLocation?.long) || 0,
     }),
     [activeFeedItem?.geoLocation],
   );
