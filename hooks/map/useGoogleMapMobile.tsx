@@ -8,6 +8,7 @@ import useGeneralStore from "@/stores/generalStore";
 import { useGoogleMapInit } from "./useGoogleMapInit";
 import { getAllLocations } from "@/actions/commonActions";
 import CustomInfoWindow from "@/components/CustomInfoWindow";
+import { centerMapOnMarker, getScreenDimensions } from "@/lib/googleMapUtils";
 
 // Constants
 const MOBILE_BREAKPOINT = 768;
@@ -114,58 +115,6 @@ export const useGoogleMapMobile = () => {
     }
   }, [activeFilterTabMobile]);
 
-  const getScreenDimensions = () => {
-    const screenWidth = window.innerWidth;
-    const screenHeight = window.innerHeight;
-    const isMobile = screenWidth < MOBILE_BREAKPOINT;
-    const isSmallMobile = screenWidth < SMALL_MOBILE_BREAKPOINT;
-
-    return { screenWidth, screenHeight, isMobile, isSmallMobile };
-  };
-
-  const centerMapOnMarker = (marker: google.maps.Marker) => {
-    if (!map) return;
-
-    const position = marker.getPosition();
-    if (!position) return;
-
-    const { screenHeight } = getScreenDimensions();
-    // const { infoWindowOffset } = mapDimensions;
-
-    // Calculate offset to center the InfoWindow vertically on screen
-    // const infoWindowHeight = 240; // Approximate height of InfoWindow in pixels
-    // const markerHeight = MARKER_SIZE_ACTIVE; // Height of the marker
-
-    // Use dynamic offset based on screen size
-    // const totalHeight = infoWindowHeight + markerHeight;
-    // const pixelsToShift = (totalHeight / 2) + infoWindowOffset;
-
-    // Convert pixels to latitude offset (approximate)
-    const latOffset = (3000 / screenHeight) * 0.01;
-
-    const newCenter = {
-      lat: position.lat() + latOffset, // Shift DOWN (positive) to center info window
-      lng: position.lng(),
-    };
-
-    map.panTo(newCenter);
-
-    const currentZoom = map.getZoom();
-    if (currentZoom && currentZoom < 14) {
-      const { screenWidth, isMobile, isSmallMobile } = getScreenDimensions();
-      const targetZoom = isMobile
-        ? isSmallMobile
-          ? 12
-          : 10
-        : isSmallMobile
-          ? 15
-          : screenWidth < 1024
-            ? 14
-            : 13;
-      map.setZoom(targetZoom);
-    }
-  };
-
   const openInfoWindow = (
     marker: google.maps.Marker,
     business: BusinessMakerProps,
@@ -209,7 +158,7 @@ export const useGoogleMapMobile = () => {
 
     // Center the map on the clicked marker with proper offset
     setTimeout(() => {
-      centerMapOnMarker(marker);
+      centerMapOnMarker(marker, map);
     }, INFO_WINDOW_RENDER_DELAY);
   };
 

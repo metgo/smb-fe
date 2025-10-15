@@ -7,7 +7,7 @@ import { getTrailDetailsBySlug } from "@/actions/trailActions";
 import TrailDetailsRouteMap from "../_components/TrailDetailsRouteMap";
 import { NoDetailsFound, ReturnToPrevPageBtn } from "../../_components";
 import ShareUrlBtnModal from "@/components/ShareUrlBtnModal";
-import MobileTrailFeedDetails from "@/app/(feeds)/trails/_mobile/TrailFeedDetails.mobile";
+import MobileTrailFeedDetails from "../_mobile/TrailFeedDetails.mobile";
 
 const page = async ({ params }: PageProps) => {
   const { slug } = await params;
@@ -45,7 +45,11 @@ const page = async ({ params }: PageProps) => {
           <TrailStations {...trailsDetails} />
         </section>
       </div>
-      <MobileTrailFeedDetails {...trailsDetails} />
+      <MobileTrailFeedDetails
+        _id={trailsDetails?._id}
+        locations={locations}
+        stations={trailsDetails?.stations}
+      />
     </>
   );
 };

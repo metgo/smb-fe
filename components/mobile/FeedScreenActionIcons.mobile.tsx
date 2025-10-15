@@ -1,3 +1,4 @@
+import clsx from "clsx";
 import Link from "next/link";
 import { useState } from "react";
 import { BsThreeDotsVertical } from "react-icons/bs";
@@ -7,19 +8,26 @@ import MobileLinkShareBottomDrawer from "./LinkShareBottomDrawer.mobile";
 
 interface MobileFeedScreenActionIconsProps {
   trailInfo?: string;
+  hideThreedotIcon?: boolean;
   geoLocation?: { lat: number | string; long: number | string };
 }
 
 const MobileFeedScreenActionIcons = ({
   geoLocation,
   trailInfo,
+  hideThreedotIcon = false,
 }: MobileFeedScreenActionIconsProps) => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   return (
     <>
-      <div className=" absolute top-40 right-4 left-4 mx-auto flex justify-between text-white z-20">
-        <BsThreeDotsVertical size={30} />
+      <div
+        className={clsx(
+          " absolute top-40 right-4 left-4 mx-auto flex justify-between text-white z-20",
+          hideThreedotIcon && "flex-row-reverse",
+        )}
+      >
+        {!hideThreedotIcon && <BsThreeDotsVertical size={30} />}
         <div className="flex items-center gap-4">
           <button
             type="button"

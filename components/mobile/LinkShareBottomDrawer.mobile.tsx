@@ -1,16 +1,16 @@
 import { misc } from "@/constant/hebrew";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   FaFacebookF,
+  FaFacebookMessenger,
+  FaInstagram,
   FaLinkedinIn,
-  FaWhatsapp,
-  FaTelegram,
+  FaPinterest,
   // FaEnvelope,
   FaReddit,
-  FaPinterest,
-  FaInstagram,
-  FaFacebookMessenger,
+  FaTelegram,
   FaTimes,
+  FaWhatsapp,
 } from "react-icons/fa";
 import { FaLink, FaXTwitter } from "react-icons/fa6";
 import { IoIosShareAlt } from "react-icons/io";
@@ -144,7 +144,11 @@ export default function MobileLinkShareBottomDrawer({
         className={`fixed inset-0 z-50 bg-black/50 transition-opacity duration-300 max-sm:block md:hidden ${
           isVisible ? "bg-opacity-50" : "bg-opacity-0"
         }`}
-        onClick={handleClose}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          handleClose();
+        }}
       />
 
       {/* Bottom Sheet */}
