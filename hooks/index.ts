@@ -9,7 +9,10 @@ import { useItemBuyCart } from "./useItemBuyCart";
 import { useMobileBlogFeedLayout } from "./useMobileBlogFeedLayout";
 
 import { useMobileFeedLayout } from "./useMobileFeedLayout";
+import { useSwipeHooks } from "./useSwipeHooks";
+
 export {
+  useSwipeHooks,
   useCommonHook,
   useDeliveryInfo,
   useIsHydrated,
