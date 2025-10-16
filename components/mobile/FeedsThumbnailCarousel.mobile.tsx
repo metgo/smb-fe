@@ -1,12 +1,8 @@
-import "react-multi-carousel/lib/styles.css";
-
 import clsx from "clsx";
-import { useRef, useEffect } from "react";
-import Carousel from "react-multi-carousel";
+import { useRef, useEffect, useCallback } from "react";
 
 import { NextImage } from "@/components/ui";
 import { CardSkeleton } from "@/components/skeletons";
-import useGeneralStore from "@/stores/generalStore";
 import { categoryColors } from "@/lib/utils";
 
 interface FeedsThumbnailCarouselProps {
@@ -20,121 +16,145 @@ interface FeedsThumbnailCarouselProps {
   secondaryBoderColor?: string;
   activeIndex: number;
   setActiveIndex: (v: number) => void;
-  isInfinite?: boolean;
   posBottom?: string;
   loading: boolean;
   isStation?: boolean;
   shouldSetItemId?: boolean;
 }
 
-const responsive = {
-  desktop: { breakpoint: { max: 3000, min: 1024 }, items: 5 },
-  tablet: { breakpoint: { max: 1024, min: 640 }, items: 3 },
-  mobile: { breakpoint: { max: 640, min: 0 }, items: 5 },
-};
+const ACTIVE_THUMBNAIL_SIZE = 100;
+const DEFAULT_SCREEN_WIDTH = 430;
 
 const MobileFeedsThumbnailCarousel = ({
   items,
   loading,
   activeIndex,
   setActiveIndex,
-  shouldSetItemId,
   isStation = false,
-  isInfinite = true,
   posBottom = "bottom-3",
   primaryBoderColor = "#fff",
   secondaryBoderColor = "#fff",
 }: FeedsThumbnailCarouselProps) => {
-  const carouselRef = useRef<Carousel>(null);
-  const isDraggingRef = useRef(false);
-  const hasInitializedRef = useRef(false);
-  const { setClickedBusinessId } = useGeneralStore();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const isScrollingRef = useRef(false);
+  const scrollTimeoutRef = useRef<NodeJS.Timeout>(null);
+  const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
 
-  // Center the first item on mount
+  const screenWidth =
+    typeof window !== "undefined" ? window.innerWidth : DEFAULT_SCREEN_WIDTH;
+  const sidePadding = (screenWidth - ACTIVE_THUMBNAIL_SIZE) / 2;
+
+  // Center the active item
+  const centerActiveItem = useCallback(() => {
+    if (
+      activeIndex === -1 ||
+      !containerRef.current ||
+      !itemRefs.current[activeIndex!]
+    )
+      return;
+
+    const scrollContainer = containerRef.current;
+    const activeItem = activeIndex !== null && itemRefs.current[activeIndex];
+
+    if (!activeItem) return;
+
+    const containerWidth = scrollContainer.clientWidth;
+    const itemWidth = activeItem.clientWidth;
+    const itemOffsetLeft = activeItem.offsetLeft;
+
+    // Calculate the scroll position to center the item
+    const targetScrollLeft =
+      itemOffsetLeft - containerWidth / 2 + itemWidth / 2;
+
+    scrollContainer.scrollTo({
+      left: targetScrollLeft,
+      behavior: "smooth",
+    });
+  }, [activeIndex, itemRefs]);
+
+  // Center active item when index changes
   useEffect(() => {
-    if (!hasInitializedRef.current && carouselRef.current && items.length > 0) {
-      hasInitializedRef.current = true;
-      // Small delay to ensure carousel is fully rendered
-      setTimeout(() => {
-        if (activeIndex === 0) {
-          carouselRef.current?.goToSlide(0, false);
-        }
-      }, 6000);
+    if (activeIndex !== -1) {
+      // Small delay to ensure DOM is updated
+      setTimeout(centerActiveItem, 100);
     }
-  }, [items.length, activeIndex]);
+  }, [activeIndex, centerActiveItem]);
 
-  const handleCardClick = (idx: number, itemId: string): void => {
-    if (isDraggingRef.current) return;
+  // Handle scroll events - prevent auto-activation
+  const handleScroll = () => {
+    isScrollingRef.current = true;
 
-    setActiveIndex(idx);
-    if (shouldSetItemId) setClickedBusinessId(itemId);
+    // Clear timeout if user is still scrolling
+    if (scrollTimeoutRef.current) {
+      clearTimeout(scrollTimeoutRef.current);
+    }
 
-    // Center the clicked item
-    carouselRef.current?.goToSlide(idx, true);
+    // Set timeout to mark scrolling as finished
+    scrollTimeoutRef.current = setTimeout(() => {
+      isScrollingRef.current = false;
+    }, 150);
   };
+
+  const setRefs = (el: HTMLDivElement | null) => {
+    // horizontalScrollRef.current = el;
+    containerRef.current = el;
+  };
+
+  // Cleanup
+  useEffect(() => {
+    return () => {
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+    };
+  }, []);
 
   return (
     <div className="w-full relative mb-6">
-      <Carousel
-        ref={carouselRef}
-        responsive={responsive}
-        infinite={isInfinite}
-        centerMode
-        arrows={false}
-        swipeable
-        draggable
-        showDots={false}
-        keyBoardControl
-        customTransition="transform 300ms ease-in-out"
-        transitionDuration={300}
-        containerClass="carousel-container"
-        sliderClass="carousel-slider"
-        itemClass="carousel-item"
-        beforeChange={() => {
-          isDraggingRef.current = true;
+      <div
+        ref={(el) => {
+          containerRef.current = el;
+          setRefs?.(el);
         }}
-        afterChange={(previousSlide, { currentSlide }) => {
-          // Update active index based on carousel's current slide
-          if (!isDraggingRef.current) {
-            setActiveIndex(currentSlide);
-          }
-
-          setTimeout(() => {
-            isDraggingRef.current = false;
-          }, 300);
+        className="relative flex flex-row items-center gap-3 overflow-x-auto scrollbar-hide"
+        style={{
+          paddingLeft: sidePadding,
+          paddingRight: sidePadding,
+          scrollBehavior: "smooth",
         }}
+        onScroll={handleScroll}
       >
-        {items.map((item, idx) => {
-          const isActive = idx === activeIndex;
+        {/* Left spacer for centering */}
+        <div className="flex-shrink-0" style={{ width: "50%" }} />
 
+        {items?.map((item, idx) => {
+          const isActive = activeIndex === idx;
           return (
             <div
               key={item.id}
+              ref={(el) => {
+                itemRefs.current[idx] = el;
+              }}
+              onClick={() => setActiveIndex(idx)}
               className={clsx(
-                "relative rounded-md overflow-hidden flex items-center justify-center transition-all duration-300 select-none cursor-pointer",
+                "flex-shrink-0 cursor-pointer transition-all duration-300 rounded-lg overflow-hidden",
+                isActive && "mx-3",
               )}
               style={{
-                height: "60px",
-                width: "60px",
-                border: `2px solid ${
+                width: 60,
+                height: 60,
+                border: `1px solid ${
                   isActive
                     ? isStation
                       ? categoryColors[item.categoryId || ""]
                       : primaryBoderColor
                     : secondaryBoderColor
                 }`,
-                transform: isActive ? "scale(1.05)" : "scale(0.95)",
-                opacity: isActive ? 1 : 0.6,
-                zIndex: isActive ? 10 : 1,
               }}
-              onClick={() => handleCardClick(idx, item.id)}
             >
-              <div className="absolute left-0 right-0 mx-auto text-2xl text-white z-50">
-                {idx}
-              </div>
               <NextImage
-                alt={item.name}
-                imgSrc={item.image}
+                alt={item?.name}
+                imgSrc={item?.image}
                 width={200}
                 height={200}
                 className="object-cover w-full h-full rounded"
@@ -142,7 +162,9 @@ const MobileFeedsThumbnailCarousel = ({
             </div>
           );
         })}
-      </Carousel>
+        {/* Right spacer for centering */}
+        <div className="flex-shrink-0" style={{ width: "50%" }} />
+      </div>
 
       {/* Floating preview centered at bottom */}
       {activeIndex >= 0 && items[activeIndex] && (
@@ -178,37 +200,6 @@ const MobileFeedsThumbnailCarousel = ({
           )}
         </div>
       )}
-
-      <style jsx>{`
-        :global(.carousel-container) {
-          width: 100%;
-          padding: 0 !important;
-          overflow: hidden;
-        }
-
-        :global(.carousel-slider) {
-          display: flex;
-          align-items: center;
-          justify-content: flex-start;
-        }
-
-        :global(.carousel-item) {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          padding: 0 4px;
-        }
-
-        /* Add padding to center the first item */
-        :global(.carousel-slider > *:first-child) {
-          margin-left: calc(50vw - 54px);
-        }
-
-        /* Add padding to allow last item to be centered */
-        :global(.carousel-slider > *:last-child) {
-          margin-right: calc(50vw - 35px);
-        }
-      `}</style>
     </div>
   );
 };

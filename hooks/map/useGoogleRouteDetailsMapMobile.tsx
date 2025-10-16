@@ -266,14 +266,5 @@ export const useGoogleRouteDetailsMapMobile = (
     }, 100);
   };
 
-  return {
-    mapRef,
-    getMapContainerStyles: () => ({
-      height: "100vh",
-      width: "100%",
-      position: "relative" as const,
-      borderRadius: "0",
-      overflow: "hidden",
-    }),
-  };
+  return { mapRef };
 };

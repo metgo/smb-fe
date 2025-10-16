@@ -75,7 +75,7 @@ export function FoldMapIcon() {
 
 // --------------- Used icons --------------
 
-export function HeartIcon() {
+export function HeartIcon({ strokColor = "white" }: { strokColor?: string }) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -86,14 +86,14 @@ export function HeartIcon() {
     >
       <path
         d="M22.4188 1.54349C25.0979 2.70533 26.8367 5.52062 26.8822 8.3829L26.8824 8.39953C26.8824 12.5454 24.2375 16.1893 21.4814 18.7218C20.0858 20.0039 18.6123 21.0481 17.3246 21.7782C16.6811 22.1432 16.0687 22.4384 15.5227 22.6457C15.005 22.8423 14.4453 23 13.9412 23C13.437 23 12.8773 22.8423 12.3597 22.6457C11.8136 22.4384 11.2012 22.1432 10.5578 21.7784C9.27004 21.0481 7.79654 20.0041 6.40094 18.7219C3.64473 16.1896 1 12.5457 1 8.39983L1.00013 8.3832C1.0456 5.52092 2.78436 2.70558 5.46363 1.54367C6.8275 0.952189 8.40747 0.806069 10.0509 1.29155C11.3686 1.68081 12.68 2.46109 13.9412 3.66741C15.2024 2.46107 16.5138 1.68079 17.8314 1.29151C19.4748 0.805997 21.0548 0.952066 22.4188 1.54349Z"
-        stroke="white"
+        stroke={strokColor}
         stroke-width="1.5"
       />
     </svg>
   );
 }
 
-export function NavIcon() {
+export function NavIcon({ strokColor = "white" }: { strokColor?: string }) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -104,14 +104,14 @@ export function NavIcon() {
     >
       <path
         d="M21.7993 1.0065L21.9141 1L22.0548 1.00866L22.1523 1.02598L22.2854 1.06388L22.4013 1.11368L22.5095 1.17539L22.607 1.24793L22.6958 1.32913L22.7521 1.39301L22.8408 1.5186L22.8971 1.62254C22.948 1.73081 22.9805 1.84557 22.9946 1.96466L23 2.07943C23 2.16063 22.9913 2.24075 22.974 2.31762L22.9361 2.45079L15.8641 22.0223C15.73 22.3142 15.515 22.5614 15.2446 22.7347C14.9742 22.908 14.6598 23.0001 14.3386 23C14.0493 23.0009 13.7648 22.9269 13.5126 22.7852C13.2604 22.6434 13.0493 22.4388 12.8997 22.1912L12.8293 22.0537L9.2002 14.7976L1.97874 11.1858C1.71154 11.0636 1.4811 10.8734 1.31048 10.6342C1.13986 10.395 1.03504 10.1152 1.0065 9.82273L1 9.66141C1 9.05511 1.32589 8.50078 1.91053 8.17815L2.06211 8.10236L21.5687 1.05846L21.6835 1.02598L21.7993 1.0065Z"
-        stroke="white"
+        stroke={strokColor}
         stroke-width="1.5"
       />
     </svg>
   );
 }
 
-export function ShareIcon() {
+export function ShareIcon({ strokColor = "white" }: { strokColor?: string }) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -122,21 +122,21 @@ export function ShareIcon() {
     >
       <path
         d="M22.9536 9.56841C23.0347 13.1574 22.9536 10.8419 23.0347 15.601V15.7516C23.0347 20.9273 20.962 23 15.7863 23H8.2484C3.07263 23 1 20.9273 1 15.7516V15.601C1 10.8411 0.999638 12.5779 1.00035 9.56787"
-        stroke="white"
+        stroke={strokColor}
         stroke-width="1.5"
         stroke-linecap="round"
         stroke-linejoin="round"
       />
       <path
         d="M12.0229 15.4727V2.2959"
-        stroke="white"
+        stroke={strokColor}
         stroke-width="1.5"
         stroke-linecap="round"
         stroke-linejoin="round"
       />
       <path
         d="M15.9026 4.87894L12.0237 1L8.14478 4.87894"
-        stroke="white"
+        stroke={strokColor}
         stroke-width="1.5"
         stroke-linecap="round"
         stroke-linejoin="round"
@@ -145,7 +145,11 @@ export function ShareIcon() {
   );
 }
 
-export function SearchIcon() {
+export function SearchIcon({
+  strokColor = "#090909",
+}: {
+  strokColor?: string;
+}) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -156,14 +160,14 @@ export function SearchIcon() {
     >
       <path
         d="M13.75 23.75C19.2728 23.75 23.75 19.2728 23.75 13.75C23.75 8.22715 19.2728 3.75 13.75 3.75C8.22715 3.75 3.75 8.22715 3.75 13.75C3.75 19.2728 8.22715 23.75 13.75 23.75Z"
-        stroke="#090909"
+        stroke={strokColor}
         stroke-width="1.25"
         stroke-linecap="round"
         stroke-linejoin="round"
       />
       <path
         d="M26.25 26.25L22.5 22.5"
-        stroke="#090909"
+        stroke={strokColor}
         stroke-width="1.25"
         stroke-linecap="round"
         stroke-linejoin="round"

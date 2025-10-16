@@ -47,6 +47,8 @@ const page = async ({ params }: PageProps) => {
       </div>
       <MobileTrailFeedDetails
         _id={trailsDetails?._id}
+        name={trailsDetails?.name}
+        description={trailsDetails?.description}
         locations={locations}
         stations={trailsDetails?.stations}
       />

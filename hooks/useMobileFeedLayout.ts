@@ -139,6 +139,7 @@ export const useMobileFeedLayout = (businesses: BusinessesProps) => {
   const containerHeight = `calc(${deviceHeight}px - 100px)`;
 
   return {
+    itemRefs,
     computedValues,
     geoLocation,
     shouldShowNavbar,
