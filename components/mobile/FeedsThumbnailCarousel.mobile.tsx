@@ -1,12 +1,8 @@
-import "react-multi-carousel/lib/styles.css";
-
 import clsx from "clsx";
-import { useRef, useState } from "react";
-import Carousel from "react-multi-carousel";
+import { useRef, useEffect, useCallback } from "react";
 
 import { NextImage } from "@/components/ui";
 import { CardSkeleton } from "@/components/skeletons";
-import useGeneralStore from "@/stores/generalStore";
 import { categoryColors } from "@/lib/utils";
 
 interface FeedsThumbnailCarouselProps {
@@ -18,174 +14,193 @@ interface FeedsThumbnailCarouselProps {
   }[];
   primaryBoderColor?: string;
   secondaryBoderColor?: string;
-
   activeIndex: number;
   setActiveIndex: (v: number) => void;
-
-  isInfinite?: boolean;
   posBottom?: string;
   loading: boolean;
   isStation?: boolean;
   shouldSetItemId?: boolean;
 }
 
-const responsive = {
-  desktop: {
-    breakpoint: { max: 3000, min: 1024 },
-    items: 5,
-    slidesToSlide: 1,
-  },
-  tablet: {
-    breakpoint: { max: 1024, min: 640 },
-    items: 3,
-    slidesToSlide: 1,
-  },
-  mobile: {
-    breakpoint: { max: 640, min: 0 },
-    items: 5,
-    slidesToSlide: 1,
-  },
-};
-
-// function getCategoryColor(categoryId: string) {
-//   if (categoryId)
-//     return categoryColors[categoryId]
-//   return "#fff"
-// }
+const ACTIVE_THUMBNAIL_SIZE = 100;
+const DEFAULT_SCREEN_WIDTH = 430;
 
 const MobileFeedsThumbnailCarousel = ({
   items,
   loading,
   activeIndex,
   setActiveIndex,
-  shouldSetItemId,
   isStation = false,
-  isInfinite = true,
   posBottom = "bottom-3",
   primaryBoderColor = "#fff",
   secondaryBoderColor = "#fff",
 }: FeedsThumbnailCarouselProps) => {
-  const carouselRef = useRef<Carousel>(null);
-  const isDraggingRef = useRef<boolean>(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const isScrollingRef = useRef(false);
+  const scrollTimeoutRef = useRef<NodeJS.Timeout>(null);
+  const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
 
-  const { setClickedBusinessId } = useGeneralStore();
+  const screenWidth =
+    typeof window !== "undefined" ? window.innerWidth : DEFAULT_SCREEN_WIDTH;
+  const sidePadding = (screenWidth - ACTIVE_THUMBNAIL_SIZE) / 2;
 
-  const [hiddenIndex, setHiddenIndex] = useState<number | null>(0);
+  // Center the active item
+  const centerActiveItem = useCallback(() => {
+    if (
+      activeIndex === -1 ||
+      !containerRef.current ||
+      !itemRefs.current[activeIndex!]
+    )
+      return;
 
-  const handleCardClick = (idx: number, itemId: string): void => {
-    if (isDraggingRef.current) return; // Prevent activation on drag
-    setActiveIndex(idx);
-    setHiddenIndex(idx);
-    if (shouldSetItemId) setClickedBusinessId(itemId);
+    const scrollContainer = containerRef.current;
+    const activeItem = activeIndex !== null && itemRefs.current[activeIndex];
+
+    if (!activeItem) return;
+
+    const containerWidth = scrollContainer.clientWidth;
+    const itemWidth = activeItem.clientWidth;
+    const itemOffsetLeft = activeItem.offsetLeft;
+
+    // Calculate the scroll position to center the item
+    const targetScrollLeft =
+      itemOffsetLeft - containerWidth / 2 + itemWidth / 2;
+
+    scrollContainer.scrollTo({
+      left: targetScrollLeft,
+      behavior: "smooth",
+    });
+  }, [activeIndex, itemRefs]);
+
+  // Center active item when index changes
+  useEffect(() => {
+    if (activeIndex !== -1) {
+      // Small delay to ensure DOM is updated
+      setTimeout(centerActiveItem, 100);
+    }
+  }, [activeIndex, centerActiveItem]);
+
+  // Handle scroll events - prevent auto-activation
+  const handleScroll = () => {
+    isScrollingRef.current = true;
+
+    // Clear timeout if user is still scrolling
+    if (scrollTimeoutRef.current) {
+      clearTimeout(scrollTimeoutRef.current);
+    }
+
+    // Set timeout to mark scrolling as finished
+    scrollTimeoutRef.current = setTimeout(() => {
+      isScrollingRef.current = false;
+    }, 150);
   };
 
+  const setRefs = (el: HTMLDivElement | null) => {
+    // horizontalScrollRef.current = el;
+    containerRef.current = el;
+  };
+
+  // Cleanup
+  useEffect(() => {
+    return () => {
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+    };
+  }, []);
+
   return (
-    <>
-      <div className="w-full relative mb-6">
-        <Carousel
-          ref={carouselRef}
-          responsive={responsive}
-          infinite={isInfinite}
-          centerMode
-          arrows={false}
-          swipeable
-          draggable
-          showDots={false}
-          keyBoardControl
-          customTransition="transform 300ms ease-in-out"
-          transitionDuration={300}
-          containerClass="carousel-container"
-          sliderClass="carousel-slider"
-          itemClass="carousel-item"
-          beforeChange={() => {
-            isDraggingRef.current = true;
-          }}
-          afterChange={() => {
-            // Reset drag flag after scroll ends
-            setTimeout(() => {
-              isDraggingRef.current = false;
-            }, 100);
-          }}
-        >
-          {items.map((item, idx) => {
-            const isCenter = idx === activeIndex;
-            const shouldHide = idx === hiddenIndex && isCenter;
+    <div className="w-full relative mb-6">
+      <div
+        ref={(el) => {
+          containerRef.current = el;
+          setRefs?.(el);
+        }}
+        className="relative flex flex-row items-center gap-3 overflow-x-auto scrollbar-hide"
+        style={{
+          paddingLeft: sidePadding,
+          paddingRight: sidePadding,
+          scrollBehavior: "smooth",
+        }}
+        onScroll={handleScroll}
+      >
+        {/* Left spacer for centering */}
+        <div className="flex-shrink-0" style={{ width: "50%" }} />
 
-            if (shouldHide) return null;
-
-            return (
-              <div
-                key={item.id}
-                className={` rounded-md overflow-hidden flex items-center max-sm:mx-0.5 justify-center transition-all duration-300 select-none custom-cursor`}
-                style={{
-                  height: "60px",
-                  width: "60px",
-                  border: `1px solid ${isStation ? categoryColors[item.categoryId || ""] : secondaryBoderColor}`,
-                }}
-                onClick={() => handleCardClick(idx, item.id)}
-              >
-                <NextImage
-                  alt={item?.name}
-                  imgSrc={item?.image}
-                  width={200}
-                  height={200}
-                  className="object-cover w-full h-full rounded"
-                />
-              </div>
-            );
-          })}
-        </Carousel>
-
-        {/* Active card preview (if one is active) */}
-        {activeIndex !== null && (
-          <div
-            className={clsx(
-              posBottom,
-              "fixed right-0 left-0 mx-auto w-[80px] h-[80px] rounded-lg overflow-hidden bg-white",
-            )}
-            style={{
-              width: 80,
-              height: 80,
-              border: `3px solid ${primaryBoderColor}`,
-              boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-            }}
-          >
-            {loading ? (
-              <CardSkeleton
-                className={"rounded-none w-full h-full"}
-                primaryCategoryId={
-                  items[activeIndex]?.categoryId || "6566e31ca77d2a477266d2d6"
-                }
-              />
-            ) : (
+        {items?.map((item, idx) => {
+          const isActive = activeIndex === idx;
+          return (
+            <div
+              key={item.id}
+              ref={(el) => {
+                itemRefs.current[idx] = el;
+              }}
+              onClick={() => setActiveIndex(idx)}
+              className={clsx(
+                "flex-shrink-0 cursor-pointer transition-all duration-300 rounded-lg overflow-hidden",
+                isActive && "mx-3",
+              )}
+              style={{
+                width: 60,
+                height: 60,
+                border: `1px solid ${
+                  isActive
+                    ? isStation
+                      ? categoryColors[item.categoryId || ""]
+                      : primaryBoderColor
+                    : secondaryBoderColor
+                }`,
+              }}
+            >
               <NextImage
-                alt={items[activeIndex]?.name || "Active feed item"}
-                imgSrc={items[activeIndex]?.image}
-                width={100}
-                height={100}
-                className="object-cover w-[80px] h-[80px] overflow-hidden"
+                alt={item?.name}
+                imgSrc={item?.image}
+                width={200}
+                height={200}
+                className="object-cover w-full h-full rounded"
               />
-            )}
-          </div>
-        )}
+            </div>
+          );
+        })}
+        {/* Right spacer for centering */}
+        <div className="flex-shrink-0" style={{ width: "50%" }} />
       </div>
 
-      <style jsx>{`
-        :global(.carousel-container) {
-          width: 100%;
-          padding: 0 !important;
-        }
-        :global(.carousel-slider) {
-          display: flex;
-          align-items: center;
-        }
-        :global(.carousel-item) {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-        }
-      `}</style>
-    </>
+      {/* Floating preview centered at bottom */}
+      {activeIndex >= 0 && items[activeIndex] && (
+        <div
+          className={clsx(
+            "fixed left-1/2 transform -translate-x-1/2 z-20",
+            posBottom,
+          )}
+          style={{
+            width: 80,
+            height: 80,
+            border: `3px solid ${primaryBoderColor}`,
+            boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+            borderRadius: "0.5rem",
+            overflow: "hidden",
+          }}
+        >
+          {loading ? (
+            <CardSkeleton
+              className="w-full h-full rounded-none"
+              primaryCategoryId={
+                items[activeIndex].categoryId || "6566e31ca77d2a477266d2d6"
+              }
+            />
+          ) : (
+            <NextImage
+              alt={items[activeIndex].name || "Active item"}
+              imgSrc={items[activeIndex].image}
+              width={100}
+              height={100}
+              className="object-cover w-full h-full rounded"
+            />
+          )}
+        </div>
+      )}
+    </div>
   );
 };
 

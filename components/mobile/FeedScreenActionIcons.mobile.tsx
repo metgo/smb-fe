@@ -9,12 +9,14 @@ import MobileLinkShareBottomDrawer from "./LinkShareBottomDrawer.mobile";
 interface MobileFeedScreenActionIconsProps {
   trailInfo?: string;
   hideThreedotIcon?: boolean;
+  strokColor?: string;
   geoLocation?: { lat: number | string; long: number | string };
 }
 
 const MobileFeedScreenActionIcons = ({
   geoLocation,
   trailInfo,
+  strokColor,
   hideThreedotIcon = false,
 }: MobileFeedScreenActionIconsProps) => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -36,7 +38,7 @@ const MobileFeedScreenActionIcons = ({
               e.stopPropagation();
             }}
           >
-            <HeartIcon />
+            <HeartIcon strokColor={strokColor} />
           </button>
           <button
             type="button"
@@ -46,7 +48,7 @@ const MobileFeedScreenActionIcons = ({
               setIsDrawerOpen(true);
             }}
           >
-            <ShareIcon />
+            <ShareIcon strokColor={strokColor} />
           </button>
           {geoLocation && (
             <Link
@@ -57,7 +59,7 @@ const MobileFeedScreenActionIcons = ({
               className="custom-cursor"
               onClick={(e) => e.stopPropagation()}
             >
-              <NavIcon />
+              <NavIcon strokColor={strokColor} />
             </Link>
           )}
         </div>

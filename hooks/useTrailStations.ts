@@ -1,6 +1,7 @@
 import useTrailStationStore from "@/stores/trailStationStore";
 import { DropResult } from "@hello-pangea/dnd";
 import { useEffect, useMemo, useState } from "react";
+import toast from "react-hot-toast";
 
 // Helper to flatten stations
 const flattenStations = (stations: TrailDetailsProps["stations"]) =>
@@ -66,6 +67,13 @@ export const useTrailStations = (
   const handleRemove = (stationId: string) => {
     removeTrailStation(_id, stationId);
     setIsTrailModified(true);
+    toast.success("התחנה הוסרה מהמסלול", {
+      style: {
+        color: "#fff",
+        background: "#111",
+        marginTop: "120px",
+      },
+    });
   };
 
   const handleReset = () => {

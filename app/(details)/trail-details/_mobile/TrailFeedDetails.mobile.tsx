@@ -14,20 +14,27 @@ import MobileTrailDetailsRouteMap from "./TrailDetailsRouteMap.mobile";
 import MobileFeedsThumbnailCarousel from "@/components/mobile/FeedsThumbnailCarousel.mobile";
 
 interface MobileTrailFeedDetailsProps {
-  stations: TrailStationProps[];
   _id: string;
+  name: string;
+  description: string;
+  stations: TrailStationProps[];
   locations: LocationListProps;
 }
 
 const MobileTrailFeedDetails = ({
-  stations,
   _id,
+  name,
+  description,
+  stations,
   locations,
 }: MobileTrailFeedDetailsProps) => {
   const [activeIndex, setActiveIndex] = useState<number>(0);
   const [isFackLoading, setIsFackLoading] = useState(true);
 
-  const { visibleStations } = useTrailStations(_id, stations);
+  const { visibleStations, handleDragEnd, handleRemove } = useTrailStations(
+    _id,
+    stations,
+  );
 
   const { handleTouchEnd, handleTouchMove, handleTouchStart } = useSwipeHooks(
     visibleStations.length,
@@ -48,9 +55,9 @@ const MobileTrailFeedDetails = ({
   }, []);
 
   return (
-    <>
+    <div className="max-sm:block md:hidden">
       {activeFilterTabMobile === "gallery" && (
-        <div className="flex flex-col max-sm:block md:hidden relative">
+        <div className="flex flex-col relative">
           <div
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
@@ -67,7 +74,6 @@ const MobileTrailFeedDetails = ({
           <div className="fixed bottom-0 right-0 w-full z-20 space-y-4">
             <MobileFeedsThumbnailCarousel
               isStation
-              isInfinite={false}
               items={visibleStations?.map((item) => {
                 return {
                   id: item?._id,
@@ -90,7 +96,15 @@ const MobileTrailFeedDetails = ({
       )}
 
       {activeFilterTabMobile === "map" && (
-        <MobileTrailDetailsRouteMap _id={_id} locations={locations} />
+        <MobileTrailDetailsRouteMap
+          _id={_id}
+          name={name}
+          description={description}
+          handleDragEnd={handleDragEnd}
+          handleRemove={handleRemove}
+          locations={locations}
+          visibleStations={visibleStations}
+        />
       )}
 
       <style jsx>{`
@@ -98,7 +112,7 @@ const MobileTrailFeedDetails = ({
           padding-bottom: env(safe-area-inset-bottom);
         }
       `}</style>
-    </>
+    </div>
   );
 };
 
