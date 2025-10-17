@@ -84,8 +84,13 @@ export const useTrailStations = (
 
   const handleDragEnd = (result: DropResult) => {
     const { source, destination } = result;
-    if (!destination) return;
-
+    if (
+      !destination ||
+      (destination.droppableId === source.droppableId &&
+        destination.index === source.index)
+    ) {
+      return;
+    }
     const reordered = [...visibleStations];
     const [removed] = reordered.splice(source.index, 1);
     reordered.splice(destination.index, 0, removed);
