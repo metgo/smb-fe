@@ -31,10 +31,7 @@ const MobileTrailFeedDetails = ({
   const [activeIndex, setActiveIndex] = useState<number>(0);
   const [isFackLoading, setIsFackLoading] = useState(true);
 
-  const { visibleStations, handleDragEnd, handleRemove } = useTrailStations(
-    _id,
-    stations,
-  );
+  const { visibleStations, handleRemove } = useTrailStations(_id, stations);
 
   const { handleTouchEnd, handleTouchMove, handleTouchStart } = useSwipeHooks(
     visibleStations.length,
@@ -100,7 +97,7 @@ const MobileTrailFeedDetails = ({
           _id={_id}
           name={name}
           description={description}
-          handleDragEnd={handleDragEnd}
+          // handleDragEnd={handleDragEnd}
           handleRemove={handleRemove}
           locations={locations}
           visibleStations={visibleStations}
