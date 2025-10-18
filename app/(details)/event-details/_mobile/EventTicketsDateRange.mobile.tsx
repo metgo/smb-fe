@@ -7,13 +7,14 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useItemBuyCart } from "@/hooks";
 import { misc } from "@/constant/hebrew";
 import PriceTag from "@/components/PriceTag";
-import { paymentMethodType } from "@/lib/utils";
+import { itemTypeEnum, paymentMethodType } from "@/lib/utils";
 import { getHebrewDateInfo } from "@/lib/helpers";
 import { CardSkeleton } from "@/components/skeletons";
 import { IconImage, NextImage } from "@/components/ui";
 import { eventDetils } from "@/constant/placeholderData";
 import { useImageScale } from "@/hooks/image/useImageScale";
 import { useImagePresent } from "@/hooks/image/useImagePresent";
+import toast from "react-hot-toast";
 
 const MobileEventTicketsDateRange = ({
   dayDescription,
@@ -167,13 +168,24 @@ const MobileEventTicketsDateRange = ({
                     <div className="flex items-center justify-between gap-2.5">
                       <button
                         type="button"
-                        onClick={(e) => quickPurchase(e, product)}
+                        onClick={(e) =>
+                          quickPurchase(e, product, itemTypeEnum.ticket)
+                        }
                         className="h-10 rounded-xl bg-dark text-white flex items-center justify-center w-full flex-auto custom-cursor font-bold text-lg"
                       >
                         <span>{misc.quickPurchase}</span>
                       </button>
                       <div
-                        onClick={(e) => addToCart(e, product)}
+                        onClick={(e) => {
+                          addToCart(e, product, 1, itemTypeEnum.ticket);
+                          toast.success("הכרטיס נוסף בהצלחה", {
+                            style: {
+                              color: "#fff",
+                              background: "#111",
+                              marginTop: "60px",
+                            },
+                          });
+                        }}
                         className="flex-none custom-cursor hover:shadow-md rounded-xl"
                       >
                         <IconImage

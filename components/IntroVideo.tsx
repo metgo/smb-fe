@@ -4,8 +4,10 @@ import { GoUnmute, GoMute } from "react-icons/go";
 import { useEffect, useRef, useState } from "react";
 
 import { BUCKET_URL } from "@/constant/envConstants";
+import useGeneralStore from "@/stores/generalStore";
 
-const IntroVideo = ({ siteInfo }: { siteInfo: any }) => {
+const IntroVideo = () => {
+  const { siteInfo } = useGeneralStore();
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isMuted, setIsMuted] = useState(true);
 

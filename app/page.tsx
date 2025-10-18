@@ -2,7 +2,6 @@ import Navbar from "@/components/navbar";
 import { imagePlayTypeEnum } from "@/lib/utils";
 import IntroVideo from "@/components/IntroVideo";
 import MainLogo from "@/components/navbar/MainLogo";
-import { getSiteInfo } from "@/actions/commonActions";
 import { getMarketing } from "@/actions/marketingAction";
 import { ScrollSnapWrapper } from "@/components/wrappers";
 import { getAllBusinesses } from "@/actions/businessActions";
@@ -47,7 +46,6 @@ const page = async ({ searchParams }: Props) => {
     "/",
   );
   const marketing = await getMarketing();
-  const siteInfo = await getSiteInfo();
 
   return (
     <div>
@@ -64,7 +62,7 @@ const page = async ({ searchParams }: Props) => {
             </div>
             <CurrentTempOfYourCity />
           </div>
-          <IntroVideo siteInfo={siteInfo} />
+          <IntroVideo />
         </section>
 
         {marketing?.items?.length > 0 && (

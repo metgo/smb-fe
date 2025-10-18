@@ -106,6 +106,7 @@ export const usePayment = () => {
   // ------------------- Cart and Product Details  api call-------------------
   async function fetchCartDetails() {
     const cartInfo = isCart ? placeOrderItems : [buyNowProduct];
+    console.log("🚀 ~ fetchCartDetails ~ buyNowProduct:", buyNowProduct);
     setIsLoading(true);
     try {
       const res = await postProductToCart(cartInfo);

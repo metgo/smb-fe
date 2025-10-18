@@ -47,7 +47,7 @@ const MOTION_CONFIG = {
 interface FeedCardProps {
   height: number;
   width: number;
-  feedItem: any; // Replace with proper type
+  feedItem: any;
 }
 
 const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
@@ -57,8 +57,7 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
   const [hasMounted, setHasMounted] = useState(false);
 
   const { isCurrentPage } = useCommonHook();
-  const { activeFilterTab, setActiveFilterTab, setClickedBusinessId } =
-    useGeneralStore();
+  const { setActiveFilterTab, setClickedBusinessId } = useGeneralStore();
 
   // Memoized page type checks
   const pageTypes = useMemo(
@@ -99,7 +98,7 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
 
   // Image loading hook
   const { isLoading, updatedImageList, inView, containerRef } = useImagePresent(
-    width / height, // aspectRatio
+    width / height,
     images,
     activeImageIndex,
     deps,
@@ -143,42 +142,17 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
       hasMounted,
       inView,
       isLoading,
+      feedItem,
     ],
   );
 
   // Event handlers
-  const handleMapIconClick = useCallback(
-    (e: React.MouseEvent, id: string) => {
-      e.stopPropagation();
-      e.preventDefault();
-      setClickedBusinessId(id);
-      setActiveFilterTab("map");
-    },
-    [setClickedBusinessId, setActiveFilterTab],
-  );
-
-  const handleTrailMouseActions = useCallback(
-    (action: "enter" | "leave") => {
-      if (activeFilterTab !== "integrated" || !pageTypes.isTrailPage) return;
-
-      const params = new URLSearchParams(searchParams.toString());
-      if (action === "enter") {
-        params.set("slug", feedItem.slug);
-      } else {
-        params.delete("slug");
-      }
-      router.replace(`${window.location.pathname}?${params.toString()}`, {
-        scroll: false,
-      });
-    },
-    [
-      activeFilterTab,
-      pageTypes.isTrailPage,
-      searchParams,
-      feedItem.slug,
-      router,
-    ],
-  );
+  const handleMapIconClick = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    e.preventDefault();
+    setClickedBusinessId(id);
+    setActiveFilterTab("map");
+  };
 
   const handleNavigation = useCallback(() => {
     startLoading();
@@ -221,17 +195,17 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
       transition={ANIMATION_CONFIG}
     >
       <div
-        onMouseEnter={() => handleTrailMouseActions("enter")}
-        onMouseLeave={() => handleTrailMouseActions("leave")}
-        onClick={handleNavigation}
         className={clsx(
-          "w-full h-full relative group rounded-xl overflow-hidden custom-cursor",
+          "w-full h-full relative group rounded-xl overflow-hidden",
         )}
       >
         {/* Main Image */}
         <Image
           src={
-            computedValues.currentImage?.imageUrl || staticImages.placeholder
+            pageTypes.isEventPage
+              ? feedItem?.images?.[0]?.image
+              : computedValues.currentImage?.imageUrl ||
+                staticImages.placeholder
           }
           alt={computedValues.currentImage?.alt || ""}
           fill
@@ -260,6 +234,16 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
           feedItem={feedItem}
           pageTypes={pageTypes}
           onMapIconClick={handleMapIconClick}
+        />
+        <button
+          type="button"
+          onClick={handleNavigation}
+          className={clsx(
+            "custom-cursor absolute bottom-0 left-0 w-full",
+            pageTypes.isEventPage || pageTypes.isTrailPage
+              ? "h-full"
+              : "h-[70%",
+          )}
         />
       </div>
     </motion.div>
@@ -334,28 +318,45 @@ const FeedCardActions = ({
     isTrailPage: boolean;
   };
   onMapIconClick: (e: React.MouseEvent, id: string) => void;
-}) => (
-  <div className="hidden absolute top-4 group-hover:flex items-center justify-between  w-full px-4">
-    <div className="flex gap-2.5">
-      <IconImage width={30} height={30} icon="circular-heart" />
-      {!pageTypes.isEventPage && !pageTypes.isTrailPage && (
-        <div
-          onClick={(e) => {
-            e.stopPropagation();
-            e.preventDefault();
-            onMapIconClick(e, feedItem._id);
-          }}
+}) => {
+  const handleMapClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onMapIconClick(e, feedItem._id);
+  };
+
+  return (
+    <div className="hidden absolute top-4 group-hover:flex items-center justify-between w-full px-4">
+      <div className="flex gap-2.5">
+        <button
+          type="button"
+          className="custom-cursor hover:border border-white rounded-full"
+          aria-label="Circular heart"
         >
-          <IconImage width={30} height={30} icon="circular-map-fold" />
-        </div>
+          <IconImage width={30} height={30} icon="circular-heart" />
+        </button>
+
+        {!pageTypes.isEventPage && !pageTypes.isTrailPage && (
+          <button
+            type="button"
+            onClick={handleMapClick}
+            className="custom-cursor hover:border border-white rounded-full"
+            aria-label="Show on map"
+          >
+            <IconImage width={30} height={30} icon="circular-map-fold" />
+          </button>
+        )}
+      </div>
+      {feedItem.serviceType === "point_of_interest" && (
+        <button
+          type="button"
+          className="bg-black/25 rounded-full p-1 flex items-center justify-center hover:border border-white"
+        >
+          <IconImage width={24} height={24} icon="location-solid" />
+        </button>
       )}
     </div>
-    {feedItem.serviceType === "point_of_interest" && (
-      <div className="bg-black/25 rounded-full p-1 flex items-center justify-center">
-        <IconImage width={24} height={24} icon="location-solid" />
-      </div>
-    )}
-  </div>
-);
+  );
+};
 
 export default FeedCard;

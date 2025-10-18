@@ -152,15 +152,7 @@ const MobileBusinessFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
             </div>
           </div>
         )}
-
-        <div className="pb-safe-bottom bg-white rounded-b-2xl" />
       </div>
-
-      <style jsx>{`
-        .pb-safe-bottom {
-          padding-bottom: env(safe-area-inset-bottom);
-        }
-      `}</style>
     </>
   );
 };
