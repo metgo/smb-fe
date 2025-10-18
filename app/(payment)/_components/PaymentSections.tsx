@@ -50,7 +50,6 @@ const PaymentSections = () => {
     productDetailsList,
   } = usePayment();
 
-  console.log("-----paymentStatus", paymentStatus);
   useEffect(() => {
     if (cartDetails) {
       setCartedProduct({

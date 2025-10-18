@@ -1,12 +1,12 @@
 import clsx from "clsx";
 import Link from "next/link";
 import { useState } from "react";
-import { BsThreeDotsVertical } from "react-icons/bs";
 
-import { HeartIcon, NavIcon, ShareIcon } from "../ui/svgIcons";
+import { HeartIcon, NavIcon, ShareIcon, ThreeDotsIcon } from "../ui/svgIcons";
 import MobileLinkShareBottomDrawer from "./LinkShareBottomDrawer.mobile";
 
 interface MobileFeedScreenActionIconsProps {
+  posTop?: string;
   trailInfo?: string;
   hideThreedotIcon?: boolean;
   strokColor?: string;
@@ -14,6 +14,7 @@ interface MobileFeedScreenActionIconsProps {
 }
 
 const MobileFeedScreenActionIcons = ({
+  posTop = "top-40",
   geoLocation,
   trailInfo,
   strokColor,
@@ -25,11 +26,12 @@ const MobileFeedScreenActionIcons = ({
     <>
       <div
         className={clsx(
-          " absolute top-40 right-4 left-4 mx-auto flex justify-between text-white z-20",
+          " absolute right-4 left-4 mx-auto flex justify-between text-white z-20 px-4",
           hideThreedotIcon && "flex-row-reverse",
+          posTop,
         )}
       >
-        {!hideThreedotIcon && <BsThreeDotsVertical size={30} />}
+        {!hideThreedotIcon && <ThreeDotsIcon strokColor={strokColor} />}
         <div className="flex items-center gap-4">
           <button
             type="button"

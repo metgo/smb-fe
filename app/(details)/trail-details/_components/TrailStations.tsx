@@ -2,15 +2,15 @@
 
 import clsx from "clsx";
 import Image from "next/image";
+import { Tooltip } from "react-tooltip";
 import { createPortal } from "react-dom";
 import { IoIosCloseCircle } from "react-icons/io";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
-import { Tooltip } from "react-tooltip";
 
 import { misc } from "@/constant/hebrew";
+import { useTrailStations } from "@/hooks";
 import { stationCategory } from "@/lib/utils";
 import { IconImage, MapNavButton, NextImage } from "@/components/ui";
-import { useTrailStations } from "@/hooks";
 
 // Station Card Component
 const StationCard = ({
@@ -84,7 +84,7 @@ const StationCard = ({
             <MapNavButton
               lat={station?.geoLocation?.lat}
               lng={station?.geoLocation?.long}
-              clssName="border border-theme rounded-lg"
+              clssName="border border-theme rounded-lg flex"
             />
             <button
               type="button"

@@ -1,13 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { misc } from "@/constant/hebrew";
 import { IconImage } from "@/components/ui";
-import { eventDetils } from "@/constant/placeholderData";
-import { getHebrewDateInfo } from "@/lib/helpers";
-import { useState } from "react";
 import { paymentMethodType } from "@/lib/utils";
 import TicketListModal from "./TicketListModal";
+import { getHebrewDateInfo } from "@/lib/helpers";
+import { eventDetils } from "@/constant/placeholderData";
 import { googleSendGtmEvent, triggerName } from "@/lib/googleEventsConfig";
 
 const EventDateRange = ({

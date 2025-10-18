@@ -5,9 +5,8 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 
 import { CardSkeleton } from "@/components/skeletons";
-import { IconImage } from "@/components/ui";
 import MobileNavbar from "@/components/mobile/Navbar.mobile";
-import { getCityOrCenter, removeInlineStylesFromHTML } from "@/lib/helpers";
+import { removeInlineStylesFromHTML } from "@/lib/helpers";
 import { useImageCrop, useSwipeHooks } from "@/hooks";
 import MobileFeedsThumbnailCarousel from "@/components/mobile/FeedsThumbnailCarousel.mobile";
 import MobileFeedScreenActionIcons from "@/components/mobile/FeedScreenActionIcons.mobile";
@@ -57,6 +56,7 @@ const MobileTrailFeedLayout = ({ data }: TrailsFeedProps) => {
           className="relative flex-1 h-screen"
         >
           <GalleryView
+            stationCount={1}
             currentImage={activeFeedItem?.images[0]}
             activeFeedItem={activeFeedItem}
             onNavigate={handleNavigation}
@@ -93,6 +93,7 @@ const MobileTrailFeedLayout = ({ data }: TrailsFeedProps) => {
 
 // Sub-components
 interface GalleryViewProps {
+  stationCount: number;
   currentImage: any;
   activeFeedItem: TrailFeed | null;
   isFackLoading: boolean;
@@ -100,6 +101,7 @@ interface GalleryViewProps {
 }
 
 const GalleryView = ({
+  // stationCount,
   currentImage,
   activeFeedItem,
   onNavigate,
@@ -117,14 +119,14 @@ const GalleryView = ({
     <>
       {shouldShowSkeleton || isFackLoading ? (
         <CardSkeleton
-          className="w-full h-screen absolute inset-0"
+          className="w-full h-[100dvh] absolute inset-0"
           primaryCategoryId={"6566e31ca77d2a477266d2d6"}
         />
       ) : (
         <div
           onClick={onNavigate}
           className={clsx(
-            "custom-cursor block relative w-full h-full transition-opacity duration-300",
+            "custom-cursor block relative w-full h-[100dvh] transition-opacity duration-300",
             isImageTransitionComplete ? "opacity-100" : "opacity-80",
           )}
         >
@@ -141,6 +143,7 @@ const GalleryView = ({
 
           <MobileFeedScreenActionIcons
             hideThreedotIcon
+            posTop="top-30"
             trailInfo={`?trailId=${activeFeedItem?._id}&slug=${activeFeedItem?.slug}`}
           />
 
@@ -160,14 +163,10 @@ const GalleryView = ({
               }}
               className="line-clamp-3 font-bold text-2xl mt-1"
             />
-            {activeFeedItem?.address && (
-              <div className="flex items-center gap-2 mt-4">
-                <IconImage icon="location" width={30} height={30} />
-                <span className="text-xl font-bold">
-                  {getCityOrCenter(activeFeedItem?.address)}
-                </span>
-              </div>
-            )}
+            {/* <div className="mt-4 flex items-center font-bold">
+              <IconImage icon="location" width={30} height={30} />
+              <span className="text-xl">{stationCount} תחנות</span>
+            </div> */}
           </div>
         </div>
       )}

@@ -1,17 +1,17 @@
 "use client";
 
 import clsx from "clsx";
-import Image from "next/image";
 import { useEffect, useState } from "react";
 
 import { categoryColors } from "@/lib/utils";
 import { CardSkeleton } from "@/components/skeletons";
 import { removeInlineStylesFromHTML } from "@/lib/helpers";
-import { useImageCrop, useSwipeHooks, useTrailStations } from "@/hooks";
+import { useSwipeHooks, useTrailStations } from "@/hooks";
 import MobileFeedScreenActionIcons from "@/components/mobile/FeedScreenActionIcons.mobile";
 import useGeneralStore from "@/stores/generalStore";
 import MobileTrailDetailsRouteMap from "./TrailDetailsRouteMap.mobile";
 import MobileFeedsThumbnailCarousel from "@/components/mobile/FeedsThumbnailCarousel.mobile";
+import { NextImage } from "@/components/ui";
 
 interface MobileTrailFeedDetailsProps {
   _id: string;
@@ -54,12 +54,12 @@ const MobileTrailFeedDetails = ({
   return (
     <div className="max-sm:block md:hidden">
       {activeFilterTabMobile === "gallery" && (
-        <div className="flex flex-col relative">
+        <div className="flex flex-col relative h-[86dvh]">
           <div
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
-            className="relative flex-1 h-screen"
+            className="relative flex-1"
           >
             <GalleryView
               currentImage={activeFeedItem?.image}
@@ -97,9 +97,9 @@ const MobileTrailFeedDetails = ({
           _id={_id}
           name={name}
           description={description}
-          // handleDragEnd={handleDragEnd}
           handleRemove={handleRemove}
           locations={locations}
+          stations={stations}
           visibleStations={visibleStations}
         />
       )}
@@ -125,43 +125,39 @@ const GalleryView = ({
   activeFeedItem,
   isFackLoading,
 }: GalleryViewProps) => {
-  const {
-    finalImageSrc,
-    handleImageLoad,
-    handleImageError,
-    isImageTransitionComplete,
-    shouldShowSkeleton,
-  } = useImageCrop(currentImage, 390 / 840);
+  // const {
+  //   finalImageSrc,
+  //   handleImageLoad,
+  //   handleImageError,
+  //   isImageTransitionComplete,
+  //   shouldShowSkeleton,
+  // } = useImageCrop(currentImage, 390 / 840);
 
   return (
     <>
-      {shouldShowSkeleton || isFackLoading ? (
+      {isFackLoading ? (
         <CardSkeleton
-          className="w-full h-screen absolute inset-0"
+          className="w-full h-[100dvh] absolute inset-0"
           primaryCategoryId={
-            categoryColors[activeFeedItem?.primaryCategoryId] ||
-            "6566e31ca77d2a477266d2d6"
+            activeFeedItem?.primaryCategoryId || "6566e31ca77d2a477266d2d6"
           }
         />
       ) : (
         <div
           className={clsx(
             "custom-cursor block relative w-full h-full transition-opacity duration-300",
-            isImageTransitionComplete ? "opacity-100" : "opacity-80",
           )}
         >
-          <Image
-            unoptimized
-            fill
-            src={finalImageSrc}
+          <NextImage
+            width={100}
+            height={100}
+            imgSrc={activeFeedItem.image}
             alt={currentImage?.alt || "Feed active image"}
-            className="object-cover ultra-sharp"
-            onLoad={handleImageLoad}
-            onError={handleImageError}
-            priority
+            className="object-cover ultra-sharp w-full h-full"
           />
 
           <MobileFeedScreenActionIcons
+            posTop="top-20"
             hideThreedotIcon
             geoLocation={activeFeedItem?.geoLocation}
           />
@@ -170,7 +166,7 @@ const GalleryView = ({
           <div className="absolute inset-0 bg-gradient-to-t from-black/100 via-black/30 to-black/10 z-10" />
 
           {/* Content */}
-          <div className="absolute top-60 right-10 left-10 z-20 text-white">
+          <div className="absolute top-40 right-10 left-10 z-20 text-white">
             <h1 className="text-6xl font-bold line-clamp-2">
               {activeFeedItem?.name}
             </h1>

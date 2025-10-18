@@ -10,7 +10,11 @@ interface MapNavButtonProps {
   clssName?: string;
 }
 
-const MapNavButton = ({ lat, lng, clssName = "" }: MapNavButtonProps) => {
+const MapNavButton = ({
+  lat,
+  lng,
+  clssName = "flex-col",
+}: MapNavButtonProps) => {
   return (
     <Link
       target="_blank"
@@ -18,7 +22,7 @@ const MapNavButton = ({ lat, lng, clssName = "" }: MapNavButtonProps) => {
       href={`https://www.google.com/maps/search/?api=1&query=${lat + "," + lng}`}
       className={clsx(
         clssName,
-        "flex flex-col items-center gap-1.25 ps-2.5 pe-4 py-1 custom-cursor",
+        "flex  items-center gap-1.25 ps-2.5 pe-4 py-1 custom-cursor",
       )}
     >
       <IconImage icon={"navigation"} />
