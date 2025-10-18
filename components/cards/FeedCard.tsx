@@ -242,7 +242,7 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
             "custom-cursor absolute bottom-0 left-0 w-full",
             pageTypes.isEventPage || pageTypes.isTrailPage
               ? "h-full"
-              : "h-[70%",
+              : "h-[70%]",
           )}
         />
       </div>
