@@ -36,10 +36,10 @@ declare type TrailStationListProps = TrailStationProps[];
 
 declare interface TrailDetailsProps {
   _id: string;
-  name: string;
-  description: string;
+  name?: string;
+  description?: string;
   stations: TrailStationProps[];
-  groupTypesAndAccessibilities: Attributes[];
+  groupTypesAndAccessibilities?: Attributes[];
 }
 
 declare interface TrailDetailsRouteProps {

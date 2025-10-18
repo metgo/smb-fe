@@ -26,7 +26,7 @@ interface Payment {
   method: string;
   isFree: boolean;
   externalLink: string;
-  ticketIds: string[];
+  ticketIds: string[] | TicketIds[];
 }
 
 declare interface EventDetailsProps {

@@ -5,7 +5,7 @@ import MobileNavbar from "@/components/mobile/Navbar.mobile";
 export default function DetailsLayout({ children }: ReactChildNode) {
   return (
     <div>
-      <MobileNavbar showFilterTab />
+      <MobileNavbar />
       <Navbar />
       {children}
       <Footer />

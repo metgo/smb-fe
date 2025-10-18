@@ -54,7 +54,7 @@ const MobileBusinessFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
   return (
     <>
       <div className="flex flex-col max-sm:block md:hidden relative">
-        {shouldShowNavbar && <MobileNavbar showFilterTab />}
+        {shouldShowNavbar && <MobileNavbar />}
 
         {activeFilterTabMobile === "gallery" && (
           <div

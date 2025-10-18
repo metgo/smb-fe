@@ -12,6 +12,7 @@ import { MapNavButton } from "@/components/ui";
 import AttributePills from "@/components/AttributePills";
 import { getEventDetailsBySlug } from "@/actions/eventActions";
 import ShareUrlBtnModal from "@/components/ShareUrlBtnModal";
+import MobileEventDetails from "../_mobile/EventDetails.mobile";
 
 const page = async ({ params }: PageProps) => {
   const { slug } = await params;
@@ -24,9 +25,10 @@ const page = async ({ params }: PageProps) => {
   if (eventDetails?.statusCode === 404) return <NoDetailsFound />;
 
   return (
-    <div className="">
+    <>
       <ReturnToPrevPageBtn />
-      <div className="mx-20 py-12">
+
+      <div className="mx-20 py-12 max-sm:hidden md:block">
         <Title title={eventDetails?.name} />
 
         <div className="mb-4.5 mt-2.5 flex items-center justify-between">
@@ -68,7 +70,9 @@ const page = async ({ params }: PageProps) => {
           </div>
         </div>
       </div>
-    </div>
+
+      <MobileEventDetails eventDetails={eventDetails} />
+    </>
   );
 };
 

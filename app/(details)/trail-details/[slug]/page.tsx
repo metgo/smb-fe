@@ -1,13 +1,13 @@
-import { misc } from "@/constant/hebrew";
 import { IconImage } from "@/components/ui";
 import TrailStations from "../_components/TrailStations";
 import AttributePills from "@/components/AttributePills";
 import { getAllLocations } from "@/actions/commonActions";
 import { getTrailDetailsBySlug } from "@/actions/trailActions";
-import TrailDetailsRouteMap from "../_components/TrailDetailsRouteMap";
-import { NoDetailsFound, ReturnToPrevPageBtn } from "../../_components";
+
 import ShareUrlBtnModal from "@/components/ShareUrlBtnModal";
+import TrailDetailsRouteMap from "../_components/TrailDetailsRouteMap";
 import MobileTrailFeedDetails from "../_mobile/TrailFeedDetails.mobile";
+import { NoDetailsFound, ReturnToPrevPageBtn } from "../../_components";
 
 const page = async ({ params }: PageProps) => {
   const { slug } = await params;
@@ -19,7 +19,7 @@ const page = async ({ params }: PageProps) => {
 
   return (
     <>
-      <ReturnToPrevPageBtn label={misc.toAllTracks} />
+      <ReturnToPrevPageBtn />
       <div className="w-full h-[87vh] relative max-sm:hidden md:block">
         <TrailDetailsRouteMap _id={trailsDetails?._id} locations={locations} />
 
