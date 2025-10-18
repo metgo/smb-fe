@@ -15,8 +15,7 @@ export const useMobileFeedLayout = (businesses: BusinessesProps) => {
   const searchParams = useSearchParams();
 
   const { isCurrentPage, deviceHeight } = useCommonHook();
-  const { hideFirstTwoSection, activeFilterTabMobile, setClickedBusinessId } =
-    useGeneralStore();
+  const { hideFirstTwoSection, activeFilterTabMobile } = useGeneralStore();
   const { categories } = useCategoryStore();
   const { activeCategoryKey } = useCtgSubctg();
 
@@ -111,12 +110,6 @@ export const useMobileFeedLayout = (businesses: BusinessesProps) => {
       setActiveImageIndex(0);
     }
   }, [activeIndex]);
-
-  useEffect(() => {
-    if (activeFeedItem) {
-      setClickedBusinessId(activeFeedItem?._id);
-    }
-  }, [activeFeedItem]);
 
   // --- Handlers ---
   const centerActiveItem = (index: number | null) => {

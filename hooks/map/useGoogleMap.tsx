@@ -64,13 +64,13 @@ export const useGoogleMap = () => {
     const { screenHeight } = getScreenDimensions();
 
     // Calculate offset to position InfoWindow at 20% from the bottom
-    const infoWindowHeight = 240; // Approximate height of InfoWindow in pixels
-    const targetPosition = 0.8; // 80% from top (20% from bottom)
-    const pixelsFromTop = screenHeight * targetPosition;
-    const pixelsToCenter =
-      pixelsFromTop - screenHeight / 2 + infoWindowHeight / 2;
-    const latOffset = (pixelsToCenter / screenHeight) * 0.008; // Convert pixels to approximate latitude degrees
-    // const latOffset = (200 / screenHeight) * 0.01;
+    // const infoWindowHeight = 240; // Approximate height of InfoWindow in pixels
+    // const targetPosition = 0.8; // 80% from top (20% from bottom)
+    // const pixelsFromTop = screenHeight * targetPosition;
+    // const pixelsToCenter =
+    //   pixelsFromTop - screenHeight / 2 + infoWindowHeight / 2;
+    // const latOffset = (pixelsToCenter / screenHeight) * 0.008; // Convert pixels to approximate latitude degrees
+    const latOffset = (400 / screenHeight) * 0.01;
 
     const newCenter = {
       lat: position.lat() + latOffset,
@@ -322,10 +322,11 @@ export const useGoogleMap = () => {
 
   // Separate effect to handle clickedBusinessId changes
   useEffect(() => {
-    if (clickedBusinessId && markersRef.current.length > 0) {
+    if (!clickedBusinessId) return;
+    if (businesses?.length > 0 && markersRef.current.length > 0) {
       triggerMarkerClick(clickedBusinessId);
     }
-  }, [clickedBusinessId, markersRef.current.length]);
+  }, [clickedBusinessId, markersRef.current.length, businesses]);
 
   return { mapRef };
 };

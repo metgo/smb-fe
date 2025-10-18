@@ -4,6 +4,7 @@ import { useRef, useEffect, useCallback } from "react";
 import { NextImage } from "@/components/ui";
 import { CardSkeleton } from "@/components/skeletons";
 import { categoryColors } from "@/lib/utils";
+import useGeneralStore from "@/stores/generalStore";
 
 interface FeedsThumbnailCarouselProps {
   items: {
@@ -34,11 +35,13 @@ const MobileFeedsThumbnailCarousel = ({
   posBottom = "bottom-3",
   primaryBoderColor = "#fff",
   secondaryBoderColor = "#fff",
+  shouldSetItemId = false,
 }: FeedsThumbnailCarouselProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const isScrollingRef = useRef(false);
   const scrollTimeoutRef = useRef<NodeJS.Timeout>(null);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const { setClickedBusinessId } = useGeneralStore();
 
   const screenWidth =
     typeof window !== "undefined" ? window.innerWidth : DEFAULT_SCREEN_WIDTH;
@@ -109,6 +112,11 @@ const MobileFeedsThumbnailCarousel = ({
     };
   }, []);
 
+  function handleActiveItem(idx: number, itemId: string) {
+    if (shouldSetItemId) setClickedBusinessId(itemId);
+    setActiveIndex(idx);
+  }
+
   return (
     <div className="w-full relative mb-6">
       <div
@@ -135,7 +143,7 @@ const MobileFeedsThumbnailCarousel = ({
               ref={(el) => {
                 itemRefs.current[idx] = el;
               }}
-              onClick={() => setActiveIndex(idx)}
+              onClick={() => handleActiveItem(idx, item.id)}
               className={clsx(
                 "flex-shrink-0 cursor-pointer transition-all duration-300 rounded-lg overflow-hidden",
                 isActive && "mx-3",
