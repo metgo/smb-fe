@@ -2,14 +2,14 @@
 
 import clsx from "clsx";
 import Link from "next/link";
+import toast from "react-hot-toast";
 import { useEffect, useRef, useState } from "react";
 
 import { misc } from "@/constant/hebrew";
+import { CardSkeleton } from "./skeletons";
+import useTrailStationStore from "@/stores/trailStationStore";
 import { getLocationDetailsById } from "@/actions/commonActions";
 import { IconImage, ImageCarouselControls, NextImage } from "./ui";
-import useTrailStationStore from "@/stores/trailStationStore";
-import { CardSkeleton } from "./skeletons";
-import toast from "react-hot-toast";
 
 interface CustomInfoWindowProps {
   stationId: string;

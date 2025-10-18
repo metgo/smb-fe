@@ -1,7 +1,7 @@
 "use client";
 
 import { ReactNode, useEffect } from "react";
-import { getAminitiesInfo } from "@/actions/commonActions";
+import { getAminitiesInfo, getSiteInfo } from "@/actions/commonActions";
 // import { getAllCategory } from "@/actions/businessActions";
 // import useCategoryStore from "@/stores/categoriesStore";
 import useGeneralStore from "@/stores/generalStore";
@@ -14,12 +14,18 @@ export const SiteInfoClientProvider = ({
 }: {
   children: ReactNode;
 }) => {
-  const { setAminitiesInfo, setUserLiveLocation } = useGeneralStore();
+  const { setAminitiesInfo, setUserLiveLocation, setSiteInfo } =
+    useGeneralStore();
   // const { categories, setCategories } = useCategoryStore();
 
   async function fetchAminitiesInfo() {
     const res = await getAminitiesInfo();
     setAminitiesInfo(res);
+  }
+
+  async function fetchSiteinfo() {
+    const res = await getSiteInfo();
+    setSiteInfo(res);
   }
 
   // async function fetchCategories() {
@@ -79,6 +85,7 @@ export const SiteInfoClientProvider = ({
 
   useEffect(() => {
     // fetchCategories();
+    fetchSiteinfo();
     fetchAminitiesInfo();
     fetchUserCurrentLocation();
     // getUserLiveLocation();

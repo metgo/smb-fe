@@ -2,7 +2,6 @@
 
 import { useRouter } from "next/navigation";
 
-import { itemTypeEnum } from "@/lib/utils";
 import { pathNames } from "@/lib/endpoints";
 import useCartStore from "@/stores/cartStore";
 import { startLoading } from "@/components/wrappers/ProgressBar";
@@ -12,7 +11,12 @@ export const useItemBuyCart = () => {
   const router = useRouter();
   const { setCartItem, setBuyNowProduct } = useCartStore();
 
-  function addToCart(e: React.MouseEvent, product: any, qty: number = 1) {
+  function addToCart(
+    e: React.MouseEvent,
+    product: any,
+    qty: number = 1,
+    itemType: string,
+  ) {
     e.preventDefault();
     e.stopPropagation();
 
@@ -24,7 +28,7 @@ export const useItemBuyCart = () => {
       price: product.price?.sellingPrice,
       quantity: qty,
       parentId: product.businessId?._id,
-      itemType: itemTypeEnum.product,
+      itemType: itemType,
     });
 
     googleSendGtmEvent(triggerName.addToCart, {
@@ -33,7 +37,7 @@ export const useItemBuyCart = () => {
     });
   }
 
-  function quickPurchase(e: React.MouseEvent, product: any) {
+  function quickPurchase(e: React.MouseEvent, product: any, itemType: string) {
     e.preventDefault();
     e.stopPropagation();
     startLoading();
@@ -41,7 +45,7 @@ export const useItemBuyCart = () => {
     setBuyNowProduct({
       _id: product._id,
       quantity: 1,
-      itemType: itemTypeEnum.product,
+      itemType: itemType,
     });
 
     googleSendGtmEvent(triggerName.buyNowBtn, {

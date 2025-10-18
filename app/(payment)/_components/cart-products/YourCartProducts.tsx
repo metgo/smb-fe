@@ -15,6 +15,7 @@ const YourCartProducts = () => {
   const router = useRouter();
   const { cartItems, removeCartItem, getTotalPaidAmount, getTotalQuantity } =
     useCartStore();
+  console.log("🚀 ~ YourCartProducts ~ cartItems:", cartItems);
   const { setPlaceOrderItems } = useCheckoutStore();
 
   function handleRedirectToCheckout() {

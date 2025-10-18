@@ -136,6 +136,10 @@ const TicketListModal = ({
           endTime: eventDay.endTime,
         })),
     );
+    console.log(
+      "🚀 ~ handleTicketAddToCart ~ selectedTickets:",
+      selectedTickets,
+    );
 
     selectedTickets.forEach((ticket) => setCartItem(ticket));
     setIsOpen(false);
@@ -165,7 +169,7 @@ const TicketListModal = ({
           {events.eventTicketTitle}
         </h1>
 
-        <div className="mt-4 p-10 shadow-md rounded-xl flex flex-col gap-8">
+        <div className="mt-4 p-10 max-h-[60vh] shadow-md rounded-xl flex flex-col gap-8 overflow-y-scroll ">
           {updatedTickets.map((eventDays) => {
             const isOpen = openEventDayIds.includes(eventDays._id);
 

@@ -33,8 +33,8 @@ const EventDateRange = ({
 
   return (
     <>
-      <section className="col-span-4 flex flex-col items-center  gap-6">
-        <div className=" flex items-center gap-2.5">
+      <section className="col-span-4 flex flex-col items-center gap-6">
+        <div className=" flex items-center gap-2.5 overflow-x-scroll w-full">
           {dayDescription?.map((item) => {
             const eventInfo = getHebrewDateInfo(item.date);
             // const isActive = clickedDay.day === eventInfo.day;
@@ -44,7 +44,7 @@ const EventDateRange = ({
               <div
                 key={item._id}
                 // onClick={() => setClickedDay(eventInfo)}
-                className={` w-23.5 h-27 border rounded-[5px] flex flex-col items-center justify-center font-normal ${isActive ? " border-[#E89900] bg-[#FDF5E6] text-[#E89900]" : "border-[#D3D3D3] text-theme"}`}
+                className={` w-23.5 h-27 border rounded-[5px] flex flex-col shrink-0 items-center justify-center font-normal ${isActive ? " border-[#E89900] bg-[#FDF5E6] text-[#E89900]" : "border-[#D3D3D3] text-theme"}`}
               >
                 <span>{eventInfo.days}</span>
                 <div

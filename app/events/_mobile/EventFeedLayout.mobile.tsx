@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import { IconImage } from "@/components/ui";
 import { CardSkeleton } from "@/components/skeletons";
 import MobileNavbar from "@/components/mobile/Navbar.mobile";
-import { removeInlineStylesFromHTML } from "@/lib/helpers";
+import { getCityOrCenter, removeInlineStylesFromHTML } from "@/lib/helpers";
 import { useImageCrop, useSwipeHooks } from "@/hooks";
 import MobileFeedsThumbnailCarousel from "@/components/mobile/FeedsThumbnailCarousel.mobile";
 import MobileFeedScreenActionIcons from "@/components/mobile/FeedScreenActionIcons.mobile";
@@ -57,7 +57,6 @@ const MobileEventFeedLayout = ({ data }: { data: BusinessProps[] }) => {
           className="relative flex-1 h-screen"
         >
           <GalleryView
-            stationCount={1}
             currentImage={activeFeedItem?.images[0]}
             activeFeedItem={activeFeedItem}
             onNavigate={handleNavigation}
@@ -94,7 +93,6 @@ const MobileEventFeedLayout = ({ data }: { data: BusinessProps[] }) => {
 
 // Sub-components
 interface GalleryViewProps {
-  stationCount: number;
   currentImage: any;
   activeFeedItem: TrailFeed | null;
   isFackLoading: boolean;
@@ -102,7 +100,6 @@ interface GalleryViewProps {
 }
 
 const GalleryView = ({
-  stationCount,
   currentImage,
   activeFeedItem,
   onNavigate,
@@ -149,7 +146,7 @@ const GalleryView = ({
           />
 
           {/* Gradient Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/100 via-black/30 to-black/10 z-10" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/30 to-black/40 z-10" />
 
           {/* Content */}
           <div className="absolute top-60 right-10 left-10 z-20 text-white">
@@ -166,7 +163,9 @@ const GalleryView = ({
             />
             <div className="mt-4 flex items-center font-bold">
               <IconImage icon="location" width={30} height={30} />
-              <span className="text-xl">{stationCount} תחנות</span>
+              <span className="text-xl">
+                {getCityOrCenter(activeFeedItem?.address)}
+              </span>
             </div>
           </div>
         </div>
