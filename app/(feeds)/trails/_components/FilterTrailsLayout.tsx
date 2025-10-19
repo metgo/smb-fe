@@ -37,15 +37,13 @@ const FilterTrailsLayout = ({ meta, totalData, data }: TrailsFeedProps) => {
   };
 
   return (
-    <div>
-      <div className="bg-primary">
-        {renderLayout()}
-        {initialLoadDone && canLoadMore && meta?.hasNextPage && (
-          <div ref={sentryRef} className="h-4">
-            {loading && <span>Loading...</span>}
-          </div>
-        )}
-      </div>
+    <div className="bg-primary max-sm:hidden md:block">
+      {renderLayout()}
+      {initialLoadDone && canLoadMore && meta?.hasNextPage && (
+        <div ref={sentryRef} className="h-4">
+          {loading && <span>Loading...</span>}
+        </div>
+      )}
     </div>
   );
 };

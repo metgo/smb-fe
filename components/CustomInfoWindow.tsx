@@ -2,13 +2,14 @@
 
 import clsx from "clsx";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
+import { useEffect, useRef, useState } from "react";
 
 import { misc } from "@/constant/hebrew";
+import { CardSkeleton } from "./skeletons";
+import useTrailStationStore from "@/stores/trailStationStore";
 import { getLocationDetailsById } from "@/actions/commonActions";
 import { IconImage, ImageCarouselControls, NextImage } from "./ui";
-import useTrailStationStore from "@/stores/trailStationStore";
-import { CardSkeleton } from "./skeletons";
 
 interface CustomInfoWindowProps {
   stationId: string;
@@ -36,20 +37,23 @@ const CustomInfoWindow = ({
 
   const imageCount = stationDetails?.images?.length || 0;
 
+  const loadedStationIdsRef = useRef<Set<string>>(new Set());
+
   useEffect(() => {
-    if (stationId) {
-      (async () => {
-        try {
-          setLoading(true);
-          const res = await getLocationDetailsById(stationId);
-          setStationDetails(res);
-        } catch (err) {
-          console.error("Failed to fetch station details:", err);
-        } finally {
-          setLoading(false);
-        }
-      })();
-    }
+    if (!stationId || loadedStationIdsRef.current.has(stationId)) return;
+
+    (async () => {
+      try {
+        setLoading(true);
+        const res = await getLocationDetailsById(stationId);
+        setStationDetails(res);
+        loadedStationIdsRef.current.add(stationId);
+      } catch (err) {
+        console.error("Failed to fetch station details:", err);
+      } finally {
+        setLoading(false);
+      }
+    })();
   }, [stationId]);
 
   useEffect(() => {
@@ -69,6 +73,13 @@ const CustomInfoWindow = ({
         primaryCategoryId,
       };
       addTrailStation(trailId, trailStaionInfo!);
+      toast.success("התחנה נוספה למסלול", {
+        style: {
+          color: "#fff",
+          background: "#111",
+          marginTop: "120px",
+        },
+      });
       setIsModalClose?.(true);
     }
   }
@@ -76,7 +87,7 @@ const CustomInfoWindow = ({
   // ✅ Loading State UI (skeleton or spinner)
   if (loading) {
     return (
-      <div className="w-[240px] h-[240px] rounded-md bg-gray-200 animate-pulse flex items-center justify-center border-2 border-white">
+      <div className="max-sm:w-[232px] max-sm:h-[232px] w-[240px] h-[240px] rounded-md bg-gray-200 animate-pulse flex items-center justify-center border-2 border-white">
         <CardSkeleton
           className={"rounded w-full h-full"}
           primaryCategoryId={primaryCategoryId!}
@@ -87,11 +98,12 @@ const CustomInfoWindow = ({
 
   // ✅ Main UI after data loaded
   return (
-    <div className="w-[240px] h-[240px] rounded-md bg-white border-2 border-white relative z-50 overflow-hidden">
+    <div className="max-sm:w-[232px] max-sm:h-[232px] w-[240px] h-[240px] rounded-md bg-white border-2 border-white relative z-50 overflow-hidden">
       {/* Background Image */}
       <NextImage
-        width={240}
-        height={240}
+        isFill
+        width={100}
+        height={100}
         imgSrc={stationDetails?.images?.[activeImageIndex]?.image}
         alt={stationDetails?.images?.[activeImageIndex]?.alt || "station image"}
         className="object-cover w-full h-full rounded-md overflow-hidden"

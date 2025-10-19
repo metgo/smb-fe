@@ -25,7 +25,7 @@ const IconImage = ({
       height={height}
       onClick={onClick}
       src={iconSrc}
-      className={`${onClick && "custom-cursor hover:opacity-80"}  transition-opacity duration-200`}
+      className={`${onClick && "custom-cursor hover:opacity-80"}  transition-opacity duration-200 custom-cursor`}
     />
   );
 };

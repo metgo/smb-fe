@@ -13,6 +13,7 @@ import { useImageScale } from "@/hooks/image/useImageScale";
 import { useImagePresent } from "@/hooks/image/useImagePresent";
 import { pathNames } from "@/lib/endpoints";
 import { startLoading } from "../wrappers/ProgressBar";
+import { itemTypeEnum } from "@/lib/utils";
 
 const ImageCard = ({
   imageItem,
@@ -87,12 +88,12 @@ const ProductCard = ({
   return (
     <div
       onClick={handleNavigation}
-      className="h-[330px] custom-cursor rounded-2xl overflow-hidden border border-[#D3D3D3]"
+      className=" custom-cursor rounded-2xl overflow-hidden border border-[#D3D3D3]"
     >
       <div className="relative w-full overflow-hidden">
         <div
           // style={{ width: 242 * scale, height: 224 * scale }}
-          className="relative max-sm:h-[142px] md:h-[242px] w-full"
+          className="relative max-sm:h-[142px] md:h-[224px] w-full"
         >
           <AnimatePresence mode="sync" initial={false}>
             {product?.images?.map((imageItem, index) =>
@@ -150,7 +151,7 @@ const ProductCard = ({
         {isCartPage ? (
           <button
             type="button"
-            onClick={(e) => addToCart(e, product)}
+            onClick={(e) => addToCart(e, product, 1, itemTypeEnum.product)}
             className="h-10 rounded-xl bg-dark text-white flex items-center justify-center w-full flex-auto custom-cursor font-bold text-lg"
           >
             <span>{cartLabels.addToCart}</span>
@@ -159,13 +160,13 @@ const ProductCard = ({
           <div className="flex items-center justify-between gap-2.5">
             <button
               type="button"
-              onClick={(e) => quickPurchase(e, product)}
+              onClick={(e) => quickPurchase(e, product, itemTypeEnum.product)}
               className="h-10 rounded-xl bg-dark text-white flex items-center justify-center w-full flex-auto custom-cursor font-bold text-lg"
             >
               <span>{misc.quickPurchase}</span>
             </button>
             <div
-              onClick={(e) => addToCart(e, product)}
+              onClick={(e) => addToCart(e, product, 1, itemTypeEnum.product)}
               className="flex-none custom-cursor hover:shadow-md rounded-xl"
             >
               <IconImage width={40} height={40} icon="circular-cart" />

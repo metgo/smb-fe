@@ -1,26 +1,31 @@
 "use client";
 
 import clsx from "clsx";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 
 import NavLogo from "../navbar/NavLogo";
+import { pathNames } from "@/lib/endpoints";
 import SearchFlow from "../navbar/SearchFlow";
 import HamburgerMenu from "../navbar/HamburgerMenu";
-import useGeneralStore from "@/stores/generalStore";
 import MobileFilterTab from "./FilterTab.mobile";
 
-const MobileNavbar = ({
-  showFilterTab = false,
-}: {
-  showFilterTab?: boolean;
-}) => {
-  const { setIsMobile } = useGeneralStore();
+const MobileNavbar = () => {
+  const pathname = usePathname();
+  const [isFilterTabShow, setIsFilterTabShow] = useState(false);
+
+  const basePagePath = pathname.split("/").slice(0, 2).join("/");
 
   useEffect(() => {
-    if (showFilterTab) {
-      setIsMobile(true);
+    setIsFilterTabShow(false);
+    if (
+      basePagePath === pathNames.home ||
+      basePagePath === pathNames.businesses ||
+      basePagePath === pathNames.trailDetails
+    ) {
+      setIsFilterTabShow(true);
     }
-  }, [showFilterTab]);
+  }, [pathname]);
 
   return (
     <nav
@@ -36,7 +41,7 @@ const MobileNavbar = ({
         </div>
 
         <div className="flex items-center justify-end gap-4 col-span-6">
-          {showFilterTab && <MobileFilterTab />}
+          {isFilterTabShow && <MobileFilterTab />}
           <div className="w-12">
             <SearchFlow isMobile />
           </div>

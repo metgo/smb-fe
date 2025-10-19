@@ -1,6 +1,5 @@
 "use client";
 
-// import { toast } from "react-hot-toast";
 import { createRoot } from "react-dom/client";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -68,9 +67,10 @@ export const useGoogleMap = () => {
     // const infoWindowHeight = 240; // Approximate height of InfoWindow in pixels
     // const targetPosition = 0.8; // 80% from top (20% from bottom)
     // const pixelsFromTop = screenHeight * targetPosition;
-    // const pixelsToCenter =pixelsFromTop - screenHeight / 2 + infoWindowHeight / 2;
+    // const pixelsToCenter =
+    //   pixelsFromTop - screenHeight / 2 + infoWindowHeight / 2;
     // const latOffset = (pixelsToCenter / screenHeight) * 0.008; // Convert pixels to approximate latitude degrees
-    const latOffset = (500 / screenHeight) * 0.01;
+    const latOffset = (400 / screenHeight) * 0.01;
 
     const newCenter = {
       lat: position.lat() + latOffset,
@@ -259,15 +259,7 @@ export const useGoogleMap = () => {
       });
 
       const basePadding = 20;
-      const paddingScale = isMobile
-        ? isSmallMobile
-          ? 0.3
-          : 0.4
-        : isSmallMobile
-          ? 0.5
-          : screenWidth < 1024
-            ? 0.75
-            : 1;
+      const paddingScale = screenWidth < 1024 ? 0.75 : 1;
 
       const padding = basePadding * paddingScale;
 
@@ -330,10 +322,11 @@ export const useGoogleMap = () => {
 
   // Separate effect to handle clickedBusinessId changes
   useEffect(() => {
-    if (clickedBusinessId && markersRef.current.length > 0) {
+    if (!clickedBusinessId) return;
+    if (businesses?.length > 0 && markersRef.current.length > 0) {
       triggerMarkerClick(clickedBusinessId);
     }
-  }, [clickedBusinessId, markersRef.current.length]);
+  }, [clickedBusinessId, markersRef.current.length, businesses]);
 
   return { mapRef };
 };

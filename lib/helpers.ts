@@ -173,7 +173,9 @@ type Address = {
   _id?: string;
 };
 
-export function getCityOrCenter(address: Address): string | undefined {
+export function getCityOrCenter(
+  address: Address | undefined,
+): string | undefined {
   if (!address) return undefined;
 
   // if city has a value, return it

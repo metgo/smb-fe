@@ -84,14 +84,14 @@ const HamburgerMenu = ({
       </button>
 
       <div
-        className={`absolute z-50 max-sm:top-18 md:top-20 right-0 w-full h-screen shadow-lg flex max-sm:px-0 md:px-20 bg-black/20 backdrop-blur-sm overflow-y-auto overflow-x-hidden ${
+        className={`absolute z-50 max-sm:top-18 md:top-18 right-0 w-full h-screen shadow-lg flex max-sm:px-0 md:px-20 bg-black/20 backdrop-blur-sm overflow-y-auto overflow-x-hidden ${
           isOpen ? "max-h-[96vh] " : "max-h-0 pointer-events-none"
         }`}
       >
         {/* Modal Content */}
         <div
           ref={menuRef}
-          className="w-full max-sm:pt-10 max-sm:mx-0 md:mx-auto max-sm:h-[90vh] md:h-[max-content] 
+          className="w-full max-sm:pt-10 max-sm:mx-0 md:mx-auto max-sm:h-[92dvh] md:h-[max-content] 
              max-sm:px-0 md:py-10 md:px-12 flex flex-col md:flex-row max-sm:gap-0 md:gap-10 
              rounded-b-xl max-sm:bg-white/90 bg-white backdrop-blur-[34px] hide-scrollbar"
         >

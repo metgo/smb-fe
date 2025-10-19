@@ -2,7 +2,6 @@ import Navbar from "@/components/navbar";
 import { imagePlayTypeEnum } from "@/lib/utils";
 import IntroVideo from "@/components/IntroVideo";
 import MainLogo from "@/components/navbar/MainLogo";
-import { getSiteInfo } from "@/actions/commonActions";
 import { getMarketing } from "@/actions/marketingAction";
 import { ScrollSnapWrapper } from "@/components/wrappers";
 import { getAllBusinesses } from "@/actions/businessActions";
@@ -10,7 +9,7 @@ import HamburgerMenu from "@/components/navbar/HamburgerMenu";
 import { ArrowImage, CarouselImage } from "@/components/marketing";
 import BusinessFeedLayout from "@/components/layouts/BusinessFeedLayout";
 import CurrentTempOfYourCity from "@/components/navbar/CurrentTempOfYourCity";
-import MobileFeedLayout from "@/components/mobile/FeedLayout.mobile";
+import MobileBusinessFeedLayout from "@/components/mobile/BusinessFeedLayout.mobile";
 
 interface Props {
   searchParams: Promise<{
@@ -47,7 +46,6 @@ const page = async ({ searchParams }: Props) => {
     "/",
   );
   const marketing = await getMarketing();
-  const siteInfo = await getSiteInfo();
 
   return (
     <div>
@@ -64,7 +62,7 @@ const page = async ({ searchParams }: Props) => {
             </div>
             <CurrentTempOfYourCity />
           </div>
-          <IntroVideo siteInfo={siteInfo} />
+          <IntroVideo />
         </section>
 
         {marketing?.items?.length > 0 && (
@@ -83,7 +81,7 @@ const page = async ({ searchParams }: Props) => {
         {/* Feed Section */}
         <section className="relative z-50 bg-white">
           <Navbar showFilterTab />
-          <MobileFeedLayout businesses={businesses} />
+          <MobileBusinessFeedLayout businesses={businesses} />
           <BusinessFeedLayout businesses={businesses} />
         </section>
       </ScrollSnapWrapper>

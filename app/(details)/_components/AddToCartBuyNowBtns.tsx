@@ -7,6 +7,7 @@ import { FaMinus, FaPlus } from "react-icons/fa6";
 import { useItemBuyCart } from "@/hooks";
 import { IconImage } from "@/components/ui";
 import { productDetailsText } from "@/constant/hebrew";
+import { itemTypeEnum } from "@/lib/utils";
 
 const AddToCartBuyNowBtns = ({ product }: { product: ProductDetailsProps }) => {
   const [qty, setQty] = useState(1);
@@ -45,14 +46,14 @@ const AddToCartBuyNowBtns = ({ product }: { product: ProductDetailsProps }) => {
       <div className=" flex items-center gap-2.5">
         <button
           type="button"
-          onClick={(e) => quickPurchase(e, product)}
+          onClick={(e) => quickPurchase(e, product, itemTypeEnum.product)}
           className="bg-dark rounded-xl px-6 py-2.75 font-bold text-white custom-cursor"
         >
           {productDetailsText.continuePlaceOrder}
         </button>
         <button
           type="button"
-          onClick={(e) => addToCart(e, product, qty)}
+          onClick={(e) => addToCart(e, product, qty, itemTypeEnum.product)}
           className="border border-theme text-theme rounded-xl py-2 flex items-center gap-1 font-bold px-4 custom-cursor"
         >
           <IconImage icon="basket-gray" />

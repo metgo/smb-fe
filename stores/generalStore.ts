@@ -17,10 +17,13 @@ interface AminitiesInfoType {
 interface GeneralStoreState {
   zIndex: string;
   setZIndex: (value: string) => void;
+
   activeCategoryKey: string;
   setActiveCategoryKey: (key: string) => void;
+
   activeFilterTab: string;
   setActiveFilterTab: (key: string) => void;
+
   activeFilterTabMobile: string;
   setActiveFilterTabMobile: (key: string) => void;
 
@@ -29,22 +32,33 @@ interface GeneralStoreState {
 
   isOnSection2: boolean;
   setIsOnSection2: (isOnSection2: boolean) => void;
+
   isSearchModalOpen: boolean;
   setIsSerachModalOpen: (isOpen: boolean) => void;
+
   groupTypes: FilterType[];
   setGroupTypes: (item: FilterType[]) => void;
+
   accessibilities: FilterType[];
   setAccessibilities: (item: FilterType[]) => void;
+
   appliedFilterItemCount: number;
   setAppliedFilterItemCount: (count: number) => void;
+
   hideFirstTwoSection: boolean;
   setHideFirstTwoSection: (v: boolean) => void;
+
   isMobile: boolean;
   setIsMobile: (v: boolean) => void;
+
   homePageSectionState: string;
   setHomePageSectionState: (v: string) => void;
+
   aminitiesInfo: AminitiesInfoType;
   setAminitiesInfo: (v: AminitiesInfoType) => void;
+
+  siteInfo: SiteConfig;
+  setSiteInfo: (v: SiteConfig) => void;
 
   userLiveLocation: LatLngType | null;
   setUserLiveLocation: (v: LatLngType | null) => void;
@@ -87,6 +101,15 @@ const useGeneralStore = create<GeneralStoreState>((set) => ({
 
   aminitiesInfo: { event: true, trip: true, business: true },
   setAminitiesInfo: (v) => set({ aminitiesInfo: v }),
+
+  siteInfo: {
+    name: "",
+    metaTitle: "",
+    metaDescription: "",
+    siteName: "",
+    homeVideos: [],
+  },
+  setSiteInfo: (v) => set({ siteInfo: v }),
 
   userLiveLocation: null,
   setUserLiveLocation: (v) => set({ userLiveLocation: v }),

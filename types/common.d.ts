@@ -2,6 +2,19 @@ declare type ReactChildNode = {
   children: React.ReactNode;
 };
 
+interface HomeVideo {
+  url: string;
+  isActive: boolean;
+}
+
+interface SiteConfig {
+  name: string;
+  metaTitle: string;
+  metaDescription: string;
+  siteName: string;
+  homeVideos: HomeVideo[];
+}
+
 interface RouteResponse {
   routes: Array<{
     polyline: {
