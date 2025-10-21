@@ -1,13 +1,14 @@
 "use client";
 
 import { ReactNode, useEffect } from "react";
-import { getAminitiesInfo, getSiteInfo } from "@/actions/commonActions";
-// import { getAllCategory } from "@/actions/businessActions";
-// import useCategoryStore from "@/stores/categoriesStore";
 import useGeneralStore from "@/stores/generalStore";
-// import { getAllCategory } from "@/actions/businessActions";
-// import useCategoryStore from "@/stores/categoriesStore";
+import useMarkersStore from "@/stores/markersStore";
 import { getApproxUserLocation } from "@/actions/getWether";
+import {
+  getAllLocations,
+  getAminitiesInfo,
+  getSiteInfo,
+} from "@/actions/commonActions";
 
 export const SiteInfoClientProvider = ({
   children,
@@ -16,7 +17,7 @@ export const SiteInfoClientProvider = ({
 }) => {
   const { setAminitiesInfo, setUserLiveLocation, setSiteInfo } =
     useGeneralStore();
-  // const { categories, setCategories } = useCategoryStore();
+  const { setBusinessMarkers } = useMarkersStore();
 
   async function fetchAminitiesInfo() {
     const res = await getAminitiesInfo();
@@ -28,18 +29,11 @@ export const SiteInfoClientProvider = ({
     setSiteInfo(res);
   }
 
-  // async function fetchCategories() {
-  //   const res = await getAllCategory();
-  //   const apiCategories = res?.data ? res?.data : res;
-  //   const updatedCategories = categories?.map((cat) => {
-  //     const match = apiCategories?.find((apiCat: any) => apiCat.id === cat.id);
-  //     return {
-  //       ...cat,
-  //       name: match ? match.name : cat.name,
-  //     };
-  //   });
-  //   setCategories(updatedCategories);
-  // }
+  async function fetchBusinessMarkers() {
+    const res = await getAllLocations();
+    setBusinessMarkers(res);
+  }
+
   async function fetchUserCurrentLocation() {
     try {
       const res = await getApproxUserLocation();
@@ -54,42 +48,54 @@ export const SiteInfoClientProvider = ({
     }
   }
 
-  // function getUserLiveLocation() {
-  //   if (!("geolocation" in navigator)) {
-  //     console.log("Geolocation not supported by this browser.");
-  //     return;
-  //   }
-
-  //   const watchId = navigator.geolocation.watchPosition(
-  //     (position) => {
-  //       setUserLiveLocation({
-  //         lat: position.coords.latitude,
-  //         lng: position.coords.longitude,
-  //       });
-  //     },
-  //     (err) => {
-  //       console.log(err.message);
-  //     },
-  //     {
-  //       enableHighAccuracy: true, // use GPS if available
-  //       timeout: 10000, // max time to wait for a position
-  //       maximumAge: 0, // don't use cached location
-  //     },
-  //   );
-
-  //   // cleanup: stop watching when component unmounts
-  //   return () => {
-  //     navigator.geolocation.clearWatch(watchId);
-  //   };
-  // }
-
   useEffect(() => {
-    // fetchCategories();
     fetchSiteinfo();
     fetchAminitiesInfo();
     fetchUserCurrentLocation();
-    // getUserLiveLocation();
+    fetchBusinessMarkers();
   }, []);
 
   return <div>{children}</div>;
 };
+
+// async function fetchCategories() {
+//   const res = await getAllCategory();
+//   const apiCategories = res?.data ? res?.data : res;
+//   const updatedCategories = categories?.map((cat) => {
+//     const match = apiCategories?.find((apiCat: any) => apiCat.id === cat.id);
+//     return {
+//       ...cat,
+//       name: match ? match.name : cat.name,
+//     };
+//   });
+//   setCategories(updatedCategories);
+// }
+
+// function getUserLiveLocation() {
+//   if (!("geolocation" in navigator)) {
+//     console.log("Geolocation not supported by this browser.");
+//     return;
+//   }
+
+//   const watchId = navigator.geolocation.watchPosition(
+//     (position) => {
+//       setUserLiveLocation({
+//         lat: position.coords.latitude,
+//         lng: position.coords.longitude,
+//       });
+//     },
+//     (err) => {
+//       console.log(err.message);
+//     },
+//     {
+//       enableHighAccuracy: true, // use GPS if available
+//       timeout: 10000, // max time to wait for a position
+//       maximumAge: 0, // don't use cached location
+//     },
+//   );
+
+//   // cleanup: stop watching when component unmounts
+//   return () => {
+//     navigator.geolocation.clearWatch(watchId);
+//   };
+// }

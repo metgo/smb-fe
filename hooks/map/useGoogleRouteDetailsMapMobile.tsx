@@ -30,6 +30,7 @@ export const useGoogleRouteDetailsMapMobile = (
   trailId: string,
   locations: LocationListProps,
   routeStation: LocalstoreTrailStaionsProps[],
+  isMarkerFiltered: boolean,
 ) => {
   const mapRef = useRef<HTMLDivElement | null>(null);
   const markersRef = useRef<google.maps.Marker[]>([]);
@@ -44,6 +45,118 @@ export const useGoogleRouteDetailsMapMobile = (
   useGoogleMapInit({ mapRef, setMap, infoWindowRef, activeMarkerRef });
 
   // --- Add markers ---
+  // useEffect(() => {
+  //   if (!map || !locations?.length) return;
+
+  //   markersRef.current.forEach((m) => m.setMap(null));
+  //   markersRef.current = [];
+
+  //   const bounds = new google.maps.LatLngBounds();
+
+  //   locations.forEach((location) => {
+  //     const coords = location.geoLocation;
+  //     if (!coords) return;
+
+  //     const position = {
+  //       lat: parseFloat(coords.lat),
+  //       lng: parseFloat(coords.long),
+  //     };
+  //     const isInRoute = routeStation?.some((s) => s?._id === location?._id);
+
+  //     const marker = new google.maps.Marker({
+  //       position,
+  //       map,
+  //       icon: {
+  //         url: getIconUrl(location.primaryCategoryId, isInRoute),
+  //         scaledSize: getIconSize(isInRoute),
+  //       },
+  //     });
+
+  //     (marker as any).stationId = location._id;
+  //     (marker as any).categoryId = location.primaryCategoryId;
+  //     (marker as any).isInRoute = isInRoute;
+
+  //     marker.addListener("click", () => {
+  //       const isSameMarker = activeMarkerRef.current === marker;
+  //       const isOpen = infoWindowRef.current?.get("map") != null;
+
+  //       // Toggle info window
+  //       if (isSameMarker && isOpen) {
+  //         infoWindowRef.current?.close();
+  //         activeMarkerRef.current = null;
+
+  //         const stillInRoute = routeStation?.some(
+  //           (s) => s?._id === location?._id,
+  //         );
+  //         marker.setIcon({
+  //           url: getIconUrl(location.primaryCategoryId, stillInRoute),
+  //           scaledSize: getIconSize(stillInRoute),
+  //         });
+  //         openStartEndInfoWindows();
+  //         return;
+  //       }
+
+  //       // Close previous info windows
+  //       startInfoWindowRef.current?.close();
+  //       endInfoWindowRef.current?.close();
+
+  //       const container = document.createElement("div");
+  //       createRoot(container).render(
+  //         <CustomInfoWindow
+  //           isTrailMap
+  //           stationId={location._id}
+  //           trailId={trailId}
+  //           geoLocation={location.geoLocation}
+  //           primaryCategoryId={location.primaryCategoryId}
+  //           setIsModalClose={setIsModalClose}
+  //         />,
+  //       );
+
+  //       // Reset all other markers
+  //       markersRef.current.forEach((m) => {
+  //         if (m !== marker) {
+  //           const markerStationId = (m as any).stationId;
+  //           const stillInRoute = routeStation?.some(
+  //             (s) => s._id === markerStationId,
+  //           );
+  //           m.setIcon({
+  //             url: getIconUrl((m as any).categoryId, stillInRoute),
+  //             scaledSize: getIconSize(stillInRoute),
+  //           });
+  //           (m as any).isInRoute = stillInRoute;
+  //         }
+  //       });
+
+  //       // Highlight clicked marker
+  //       marker.setIcon({
+  //         url: getIconUrl(location.primaryCategoryId, true),
+  //         scaledSize: getIconSize(true, true),
+  //       });
+  //       activeMarkerRef.current = marker;
+
+  //       centerMapOnMarker(marker, map);
+
+  //       if (!infoWindowRef.current)
+  //         infoWindowRef.current = new google.maps.InfoWindow();
+  //       infoWindowRef.current.setContent(container);
+  //       infoWindowRef.current.open(map, marker);
+
+  //       checkInfoWindowClosed();
+  //     });
+
+  //     markersRef.current.push(marker);
+  //     bounds.extend(position);
+  //   });
+
+  //   // const padding = window.innerWidth < 640 ? 30 : 60;
+  //   map.fitBounds(bounds, {
+  //     top: 10,
+  //     bottom: 10,
+  //     left: 10,
+  //     right: 10,
+  //   });
+  // }, [map, locations, routeStation]);
+
   useEffect(() => {
     if (!map || !locations?.length) return;
 
@@ -56,11 +169,15 @@ export const useGoogleRouteDetailsMapMobile = (
       const coords = location.geoLocation;
       if (!coords) return;
 
+      const isInRoute = routeStation?.some((s) => s?._id === location?._id);
+
+      // 👉 if isMarkerFiltered is false → show only route markers
+      if (!isMarkerFiltered && !isInRoute) return;
+
       const position = {
         lat: parseFloat(coords.lat),
         lng: parseFloat(coords.long),
       };
-      const isInRoute = routeStation?.some((s) => s?._id === location?._id);
 
       const marker = new google.maps.Marker({
         position,
@@ -79,11 +196,9 @@ export const useGoogleRouteDetailsMapMobile = (
         const isSameMarker = activeMarkerRef.current === marker;
         const isOpen = infoWindowRef.current?.get("map") != null;
 
-        // Toggle info window
         if (isSameMarker && isOpen) {
           infoWindowRef.current?.close();
           activeMarkerRef.current = null;
-
           const stillInRoute = routeStation?.some(
             (s) => s?._id === location?._id,
           );
@@ -95,7 +210,6 @@ export const useGoogleRouteDetailsMapMobile = (
           return;
         }
 
-        // Close previous info windows
         startInfoWindowRef.current?.close();
         endInfoWindowRef.current?.close();
 
@@ -111,7 +225,6 @@ export const useGoogleRouteDetailsMapMobile = (
           />,
         );
 
-        // Reset all other markers
         markersRef.current.forEach((m) => {
           if (m !== marker) {
             const markerStationId = (m as any).stationId;
@@ -126,7 +239,6 @@ export const useGoogleRouteDetailsMapMobile = (
           }
         });
 
-        // Highlight clicked marker
         marker.setIcon({
           url: getIconUrl(location.primaryCategoryId, true),
           scaledSize: getIconSize(true, true),
@@ -147,14 +259,13 @@ export const useGoogleRouteDetailsMapMobile = (
       bounds.extend(position);
     });
 
-    // const padding = window.innerWidth < 640 ? 30 : 60;
     map.fitBounds(bounds, {
       top: 10,
       bottom: 10,
       left: 10,
       right: 10,
     });
-  }, [map, locations, routeStation]);
+  }, [map, locations, routeStation, isMarkerFiltered]);
 
   // --- Modal close ---
   useEffect(() => {

@@ -4,6 +4,7 @@ import clsx from "clsx";
 import { useState, useEffect, useRef } from "react";
 import { IoIosCloseCircle } from "react-icons/io";
 import { useLongPress } from "use-long-press";
+import { TiLocation } from "react-icons/ti";
 
 import { NextImage } from "@/components/ui";
 import { useGoogleRouteDetailsMapMobile } from "@/hooks";
@@ -41,8 +42,12 @@ const MobileTrailDetailsRouteMap = ({
   stations,
   handleRemove,
 }: MobileTrailDetailsRouteMapProps) => {
+  // Maintain local order state
   const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [stationOrder, setStationOrder] = useState<string[]>([]);
+  const [isMarkerFiltered, setIsMarkerFiltered] = useState(false);
   const [activeStationId, setActiveStationId] = useState<string | null>(null);
+
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const { getStationsByTrailId, setTrailStations } = useTrailStationStore();
@@ -51,10 +56,8 @@ const MobileTrailDetailsRouteMap = ({
     _id,
     locations,
     localStorageStations,
+    isMarkerFiltered,
   );
-
-  // Maintain local order state
-  const [stationOrder, setStationOrder] = useState<string[]>([]);
 
   useEffect(() => {
     // Initialize the order from visibleStations
@@ -122,6 +125,16 @@ const MobileTrailDetailsRouteMap = ({
           <p className="text-theme font-normal line-clamp-2">{description}</p>
 
           <button type="button" onClick={() => setIsSheetOpen(true)}></button>
+
+          <div
+            onClick={() => setIsMarkerFiltered(!isMarkerFiltered)}
+            className={clsx(
+              isMarkerFiltered ? "bg-[#29C368]" : "bg-gray-400",
+              "absolute top-80 right-4 z-50 w-10 h-10 flex items-center justify-center rounded-md",
+            )}
+          >
+            <TiLocation size={36} className="text-white" />
+          </div>
         </div>
 
         <div
