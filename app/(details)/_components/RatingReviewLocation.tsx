@@ -1,4 +1,5 @@
 import { IconImage } from "@/components/ui";
+import { getCityOrCenter } from "@/lib/helpers";
 // import { misc } from "@/constant/hebrew";
 
 const RatingReviewLocation = ({
@@ -14,7 +15,7 @@ const RatingReviewLocation = ({
     <div className="flex gap-1.25 items-center text-theme">
       <IconImage icon="location-gray" />
       <div className=" text-sm font-bold flex items-center gap-2">
-        <span>{address?.city}</span>,<span>{address?.country}</span>
+        {getCityOrCenter(address)}
       </div>
       {/* <div className="w-0.5 h-3.5 bg-theme" />
       <IconImage icon="star-rating" />

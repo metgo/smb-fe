@@ -13,6 +13,7 @@ import AttributePills from "@/components/AttributePills";
 import { getEventDetailsBySlug } from "@/actions/eventActions";
 import ShareUrlBtnModal from "@/components/ShareUrlBtnModal";
 import MobileEventDetails from "../_mobile/EventDetails.mobile";
+import { shuffleArray } from "@/lib/helpers";
 
 const page = async ({ params }: PageProps) => {
   const { slug } = await params;
@@ -45,7 +46,7 @@ const page = async ({ params }: PageProps) => {
           </div>
         </div>
 
-        <ImageGallery images={eventDetails?.images?.slice(0, 5)} />
+        <ImageGallery images={shuffleArray(eventDetails?.images)} />
 
         <div className=" mt-4.5">
           <AttributePills
