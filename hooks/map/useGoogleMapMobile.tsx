@@ -1,6 +1,7 @@
 "use client";
 
 import { createRoot } from "react-dom/client";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 import { businessMarkers } from "@/lib/utils";
@@ -30,8 +31,10 @@ export const useGoogleMapMobile = () => {
   const activeMarkerRef = useRef<google.maps.Marker | null>(null);
   const infoWindowRef = useRef<google.maps.InfoWindow | null>(null);
 
-  const { activeFilterTabMobile, clickedBusinessId, activeCategoryKey } =
-    useGeneralStore();
+  const searchParams = useSearchParams();
+  const activeCategoryId = searchParams.get("categoryId") || "";
+
+  const { activeFilterTabMobile, clickedBusinessId } = useGeneralStore();
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [businesses, setBusinesses] = useState<BusinessMakerProps[]>([]);
   const [mapDimensions, setMapDimensions] = useState<MapDimensions>({
@@ -203,10 +206,8 @@ export const useGoogleMapMobile = () => {
     markersRef.current = [];
 
     const uniqueLocations = new Set();
-    const filteredBusiness = activeCategoryKey
-      ? businesses.filter(
-          (item) => item.primaryCategoryId === activeCategoryKey,
-        )
+    const filteredBusiness = activeCategoryId
+      ? businesses.filter((item) => item.primaryCategoryId === activeCategoryId)
       : businesses;
 
     filteredBusiness.forEach((business) => {
@@ -366,7 +367,7 @@ export const useGoogleMapMobile = () => {
     if (businesses.length > 0) {
       addMarkers();
     }
-  }, [businesses, activeCategoryKey, mapDimensions.padding]);
+  }, [businesses, activeCategoryId, mapDimensions.padding]);
 
   // Separate effect to handle clickedBusinessId changes
   useEffect(() => {

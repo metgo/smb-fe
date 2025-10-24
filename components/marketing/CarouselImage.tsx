@@ -99,7 +99,7 @@ const CarouselImage = ({ images, timeInterval }: CarouselImageProps) => {
         </Swiper>
 
         {/* Custom pagination dots */}
-        <div className="absolute max-sm:bottom-20 md:bottom-12 left-1/2 -translate-x-1/2 z-20 flex space-x-3">
+        <div className="absolute max-sm:bottom-20 md:bottom-12 left-1/2 -translate-x-1/2 z-10 flex space-x-3">
           {images?.map((_, idx) => (
             <button
               key={idx}

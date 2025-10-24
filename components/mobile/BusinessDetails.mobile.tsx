@@ -86,8 +86,8 @@ const MobileBusinessDetails = ({
           </div>
         </section>
 
+        <MobileImageGallery images={businessDetails?.images} />
         <section className="px-6 py-2 ">
-          <MobileImageGallery images={businessDetails?.images} />
           <AttributePills
             items={[
               ...businessDetails?.accessibilitiesId,
