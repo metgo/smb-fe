@@ -223,10 +223,10 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
           type="button"
           onClick={handleNavigation}
           className={clsx(
-            "custom-cursor absolute bottom-0 left-0 w-full",
-            pageTypes.isEventPage || pageTypes.isTrailPage
-              ? "h-full"
-              : "h-[70%]",
+            "custom-cursor absolute left-0 top-12 w-full",
+            images.length > 1 && !pageTypes.isEventPage
+              ? "bottom-14"
+              : "bottom-0 h-full",
           )}
         />
       </div>
