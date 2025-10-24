@@ -70,7 +70,7 @@ export const useGoogleMap = () => {
     // const pixelsToCenter =
     //   pixelsFromTop - screenHeight / 2 + infoWindowHeight / 2;
     // const latOffset = (pixelsToCenter / screenHeight) * 0.008; // Convert pixels to approximate latitude degrees
-    const latOffset = (400 / screenHeight) * 0.01;
+    const latOffset = (200 / screenHeight) * 0.01;
 
     const newCenter = {
       lat: position.lat() + latOffset,
@@ -290,7 +290,6 @@ export const useGoogleMap = () => {
   };
 
   // Trigger marker click when clickedBusinessId is set
-
   const triggerMarkerClick = (businessId: string) => {
     if (!businessId || markersRef.current.length === 0) {
       // toast("No markers found on the map.");

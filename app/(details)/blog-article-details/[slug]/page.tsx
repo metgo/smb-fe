@@ -4,6 +4,7 @@ import NoFeedItemLayout from "@/components/layouts/NoFeedItemLayout";
 import { getBlogById } from "@/actions/blogActions";
 import MobileImageGallery from "@/components/mobile/ImageGallery.mobile";
 import MobileActionIcons from "@/components/mobile/ActionIcons.mobile";
+import { shuffleArray } from "@/lib/helpers";
 
 const page = async ({ params }: PageProps) => {
   const { slug } = await params;
@@ -28,7 +29,10 @@ const page = async ({ params }: PageProps) => {
           </div>
         </div>
 
-        <ImageGallery images={articleDetails.images} primaryCategoryId="" />
+        <ImageGallery
+          images={shuffleArray(articleDetails.images)}
+          primaryCategoryId="6566e31ca77d2a477266d2d6"
+        />
         <MobileImageGallery images={articleDetails.images} />
 
         <div

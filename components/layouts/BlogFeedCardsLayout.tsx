@@ -2,7 +2,6 @@
 
 import clsx from "clsx";
 import { useState, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
 import { scaleLayout, shuffleArray } from "@/lib/helpers";
 
 import {
@@ -14,9 +13,6 @@ import BlogFeedCard from "../cards/BlogFeedCard";
 
 const BlogFeedCardsLayout = ({ blogs }: BlogFeedItems) => {
   const feedItemCount = blogs.length;
-  const searchParams = useSearchParams();
-  const activeCategoryKey = searchParams.get("categoryId");
-
   const [scale, setScale] = useState(1);
 
   useEffect(() => {
@@ -180,7 +176,6 @@ const BlogFeedCardsLayout = ({ blogs }: BlogFeedItems) => {
   return (
     <div
       className={clsx(
-        activeCategoryKey ? "pb-48" : "pb-30",
         "px-20 py-10 flex items-center justify-center w-full h-full relative",
       )}
     >

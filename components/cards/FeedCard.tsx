@@ -21,28 +21,12 @@ import { googleSendGtmEvent, triggerName } from "@/lib/googleEventsConfig";
 import { CardSkeleton } from "../skeletons";
 import { staticImages } from "@/constant/staticImages";
 import { useCommonHook } from "@/hooks";
-
-// Animation variants for better performance
-const cardVariants = {
-  hidden: { y: 50, opacity: 0 },
-  visible: { y: 0, opacity: 1 },
-};
-
-const ANIMATION_CONFIG = {
-  duration: 0.5,
-  ease: "easeOut" as const,
-};
-
-const INTERSECTION_CONFIG = {
-  threshold: 0.1,
-  rootMargin: "50px",
-  enabled: true,
-};
-
-const MOTION_CONFIG = {
-  once: true,
-  margin: "0px 0px -50px 0px",
-};
+import {
+  ANIMATION_CONFIG,
+  cardVariants,
+  INTERSECTION_CONFIG,
+  MOTION_CONFIG,
+} from "@/lib/animationConfig";
 
 interface FeedCardProps {
   height: number;
@@ -239,10 +223,10 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
           type="button"
           onClick={handleNavigation}
           className={clsx(
-            "custom-cursor absolute bottom-0 left-0 w-full",
-            pageTypes.isEventPage || pageTypes.isTrailPage
-              ? "h-full"
-              : "h-[70%]",
+            "custom-cursor absolute left-0 top-12 w-full",
+            images.length > 1 && !pageTypes.isEventPage
+              ? "bottom-14"
+              : "bottom-0 h-full",
           )}
         />
       </div>

@@ -13,6 +13,7 @@ import { getProducts } from "@/actions/productActions";
 import NoFeedItemLayout from "@/components/layouts/NoFeedItemLayout";
 import ShareUrlBtnModal from "@/components/ShareUrlBtnModal";
 import MobileBusinessDetails from "@/components/mobile/BusinessDetails.mobile";
+import { shuffleArray } from "@/lib/helpers";
 
 const page = async ({ params }: PageProps) => {
   const { slug } = await params;
@@ -58,7 +59,7 @@ const page = async ({ params }: PageProps) => {
         </div>
 
         <ImageGallery
-          images={businessDetails?.images?.slice(0, 5)}
+          images={shuffleArray(businessDetails?.images)}
           primaryCategoryId={businessDetails?.primaryCategoryId}
         />
 

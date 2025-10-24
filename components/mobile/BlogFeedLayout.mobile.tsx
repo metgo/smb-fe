@@ -33,42 +33,31 @@ const MobileBlogFeedLayout = ({ blogs }: { blogs: BlogFeed[] }) => {
   } = useMobileBlogFeedLayout(blogs);
 
   return (
-    <>
-      <div
-        className="flex flex-col max-sm:block md:hidden"
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-      >
-        <MobileNavbar />
+    <div
+      className="flex flex-col max-sm:block md:hidden"
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+    >
+      <MobileNavbar />
 
-        <div className="relative flex-1 h-screen">
-          <GalleryView
-            currentImage={computedValues.currentImage}
-            activeFeedItem={activeFeedItem}
-            onNavigate={handleNavigation}
-          />
-
-          {/* Thumbnail Carousel */}
-          <ThumbnailCarousel
-            feedItems={feedItems}
-            activeIndex={activeIndex}
-            loading={loading}
-            sidePadding={sidePadding}
-            itemRefs={itemRefs}
-            setRefs={setRefs}
-            onItemClick={handleActiveItem}
-          />
-        </div>
-        <div className="pb-safe-bottom bg-white rounded-b-2xl" />
+      <div className="relative flex-1 h-screen">
+        <GalleryView
+          currentImage={computedValues.currentImage}
+          activeFeedItem={activeFeedItem}
+          onNavigate={handleNavigation}
+        />
+        <ThumbnailCarousel
+          feedItems={feedItems}
+          activeIndex={activeIndex}
+          loading={loading}
+          sidePadding={sidePadding}
+          itemRefs={itemRefs}
+          setRefs={setRefs}
+          onItemClick={handleActiveItem}
+        />
       </div>
-
-      <style jsx>{`
-        .pb-safe-bottom {
-          padding-bottom: env(safe-area-inset-bottom);
-        }
-      `}</style>
-    </>
+    </div>
   );
 };
 

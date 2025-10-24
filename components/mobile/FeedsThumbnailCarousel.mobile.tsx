@@ -3,8 +3,8 @@ import { useRef, useEffect, useCallback } from "react";
 
 import { NextImage } from "@/components/ui";
 import { CardSkeleton } from "@/components/skeletons";
-import { categoryColors } from "@/lib/utils";
 import useGeneralStore from "@/stores/generalStore";
+import MobileFeedListCard from "./FeedListCard.mobile";
 
 interface FeedsThumbnailCarouselProps {
   items: {
@@ -47,7 +47,6 @@ const MobileFeedsThumbnailCarousel = ({
     typeof window !== "undefined" ? window.innerWidth : DEFAULT_SCREEN_WIDTH;
   const sidePadding = (screenWidth - ACTIVE_THUMBNAIL_SIZE) / 2;
 
-  // Center the active item
   const centerActiveItem = useCallback(() => {
     if (
       activeIndex === -1 ||
@@ -58,14 +57,11 @@ const MobileFeedsThumbnailCarousel = ({
 
     const scrollContainer = containerRef.current;
     const activeItem = activeIndex !== null && itemRefs.current[activeIndex];
-
     if (!activeItem) return;
 
     const containerWidth = scrollContainer.clientWidth;
     const itemWidth = activeItem.clientWidth;
     const itemOffsetLeft = activeItem.offsetLeft;
-
-    // Calculate the scroll position to center the item
     const targetScrollLeft =
       itemOffsetLeft - containerWidth / 2 + itemWidth / 2;
 
@@ -73,57 +69,39 @@ const MobileFeedsThumbnailCarousel = ({
       left: targetScrollLeft,
       behavior: "smooth",
     });
-  }, [activeIndex, itemRefs]);
+  }, [activeIndex]);
 
-  // Center active item when index changes
   useEffect(() => {
-    if (activeIndex !== -1) {
-      // Small delay to ensure DOM is updated
-      setTimeout(centerActiveItem, 100);
-    }
+    if (activeIndex !== -1) setTimeout(centerActiveItem, 100);
   }, [activeIndex, centerActiveItem]);
 
-  // Handle scroll events - prevent auto-activation
   const handleScroll = () => {
     isScrollingRef.current = true;
-
-    // Clear timeout if user is still scrolling
-    if (scrollTimeoutRef.current) {
-      clearTimeout(scrollTimeoutRef.current);
-    }
-
-    // Set timeout to mark scrolling as finished
+    if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
     scrollTimeoutRef.current = setTimeout(() => {
       isScrollingRef.current = false;
     }, 150);
   };
 
-  const setRefs = (el: HTMLDivElement | null) => {
-    // horizontalScrollRef.current = el;
-    containerRef.current = el;
-  };
-
-  // Cleanup
-  useEffect(() => {
-    return () => {
-      if (scrollTimeoutRef.current) {
-        clearTimeout(scrollTimeoutRef.current);
-      }
-    };
-  }, []);
-
-  function handleActiveItem(idx: number, itemId: string) {
+  const handleActiveItem = (idx: number, itemId: string) => {
     if (shouldSetItemId) setClickedBusinessId(itemId);
     setActiveIndex(idx);
-  }
+  };
+
+  const setItemRef = (el: HTMLDivElement | null, idx: number) => {
+    itemRefs.current[idx] = el;
+  };
+
+  useEffect(() => {
+    return () => {
+      if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+    };
+  }, []);
 
   return (
     <div className="w-full relative mb-6">
       <div
-        ref={(el) => {
-          containerRef.current = el;
-          setRefs?.(el);
-        }}
+        ref={containerRef}
         className="relative flex flex-row items-center gap-3 overflow-x-auto scrollbar-hide"
         style={{
           paddingLeft: sidePadding,
@@ -132,49 +110,25 @@ const MobileFeedsThumbnailCarousel = ({
         }}
         onScroll={handleScroll}
       >
-        {/* Left spacer for centering */}
         <div className="flex-shrink-0" style={{ width: "50%" }} />
 
-        {items?.map((item, idx) => {
-          const isActive = activeIndex === idx;
-          return (
-            <div
-              key={item.id}
-              ref={(el) => {
-                itemRefs.current[idx] = el;
-              }}
-              onClick={() => handleActiveItem(idx, item.id)}
-              className={clsx(
-                "flex-shrink-0 cursor-pointer transition-all duration-300 rounded-lg overflow-hidden",
-                isActive && "mx-3",
-              )}
-              style={{
-                width: 60,
-                height: 60,
-                border: `1px solid ${
-                  isActive
-                    ? isStation
-                      ? categoryColors[item.categoryId || ""]
-                      : primaryBoderColor
-                    : secondaryBoderColor
-                }`,
-              }}
-            >
-              <NextImage
-                alt={item?.name}
-                imgSrc={item?.image}
-                width={200}
-                height={200}
-                className="object-cover w-full h-full rounded"
-              />
-            </div>
-          );
-        })}
-        {/* Right spacer for centering */}
+        {items?.map((item, idx) => (
+          <MobileFeedListCard
+            key={item.id}
+            item={item}
+            idx={idx}
+            isActive={activeIndex === idx}
+            isStation={isStation}
+            primaryBorderColor={primaryBoderColor}
+            secondaryBorderColor={secondaryBoderColor}
+            handleActiveItem={handleActiveItem}
+            setItemRef={setItemRef}
+          />
+        ))}
+
         <div className="flex-shrink-0" style={{ width: "50%" }} />
       </div>
 
-      {/* Floating preview centered at bottom */}
       {activeIndex >= 0 && items[activeIndex] && (
         <div
           className={clsx(

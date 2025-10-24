@@ -19,27 +19,12 @@ import { CardSkeleton } from "../skeletons";
 import { staticImages } from "@/constant/staticImages";
 import { useCommonHook } from "@/hooks";
 import { blogLabels } from "@/constant/hebrew";
-
-const cardVariants = {
-  hidden: { y: 50, opacity: 0 },
-  visible: { y: 0, opacity: 1 },
-};
-
-const ANIMATION_CONFIG = {
-  duration: 0.5,
-  ease: "easeOut" as const,
-};
-
-const INTERSECTION_CONFIG = {
-  threshold: 0.1,
-  rootMargin: "50px",
-  enabled: true,
-};
-
-const MOTION_CONFIG = {
-  once: true,
-  margin: "0px 0px -50px 0px",
-};
+import {
+  ANIMATION_CONFIG,
+  cardVariants,
+  INTERSECTION_CONFIG,
+  MOTION_CONFIG,
+} from "@/lib/animationConfig";
 
 interface BlogFeedCardProps {
   height: number;
