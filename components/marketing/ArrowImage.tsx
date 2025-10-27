@@ -67,7 +67,7 @@ const ArrowImage = ({ images }: ArrowImageProps) => {
       {/* White border 10px from edge */}
       {/* <div className="absolute top-6 left-6 right-6 bottom-6 border-4 border-white pointer-events-none z-20" /> */}
 
-      <MarketingContent content={images?.[currentIndex]} />
+      <MarketingContent scale={1} content={images?.[currentIndex]} />
       <div className="absolute inset-0 rounded-lg bg-gradient-to-tl from-black/80 via-black/20 to-transparent" />
 
       {/* Circle indicators */}
