@@ -1,9 +1,9 @@
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
 import clsx from "clsx";
 import Image from "next/image";
 import { motion, useAnimation } from "framer-motion";
+import { useMemo, useState, useEffect } from "react";
 
 import { IconImage } from "../ui";
 import { CardSkeleton } from "../skeletons";
@@ -18,6 +18,7 @@ import {
 import { staticImages } from "@/constant/staticImages";
 
 interface GalleryViewProps {
+  scale: number;
   currentImage: any;
   activeFeedItem: BusinessProps | null;
   geoLocation: { lat: number; long: number };
@@ -25,6 +26,7 @@ interface GalleryViewProps {
 }
 
 const MobileBusinessFeedGalleryView = ({
+  scale,
   currentImage,
   activeFeedItem,
   geoLocation,
@@ -59,6 +61,10 @@ const MobileBusinessFeedGalleryView = ({
       shouldShowSkeleton: !inView || isLoading,
     }),
     [updatedImage, inView, isLoading, activeFeedItem],
+  );
+  console.log(
+    "🚀 ~ MobileBusinessFeedGalleryView ~ computedValues:",
+    computedValues?.currentImage?.imageUrl,
   );
 
   if (computedValues.shouldShowSkeleton) {
@@ -98,27 +104,31 @@ const MobileBusinessFeedGalleryView = ({
         )}
       >
         <Image
-          unoptimized
           fill
+          priority
+          unoptimized
           src={
             computedValues.currentImage?.imageUrl || staticImages.placeholder
           }
           alt={currentImage?.alt || "Feed active image"}
           className="object-cover ultra-sharp"
-          priority
         />
 
         <MobileFeedScreenActionIcons
           trailInfo={`?businessId=${activeFeedItem?._id}&slug=${activeFeedItem?.slug}`}
           geoLocation={geoLocation}
+          posTop={scale * 140}
         />
 
         {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/100 via-black/30 to-black/10 z-10" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-black/30 z-10" />
 
         {/* Content */}
-        <div className="absolute top-60 right-10 left-10 z-20 text-white">
-          <h1 className="text-6xl font-bold line-clamp-2">
+        <div className="absolute top-50 right-10 left-10 z-20 text-white">
+          <h1
+            style={{ fontSize: 60 * scale }}
+            className="font-bold line-clamp-2 leading-14"
+          >
             {activeFeedItem?.name}
           </h1>
           <div
@@ -127,13 +137,14 @@ const MobileBusinessFeedGalleryView = ({
                 activeFeedItem?.description || "",
               ),
             }}
-            className="line-clamp-3 font-bold text-2xl mt-1"
+            style={{ fontSize: 24 * scale }}
+            className="line-clamp-3 font-bold mt-1"
           />
           {activeFeedItem?.serviceType !== "point_of_interest" &&
             activeFeedItem?.address?.city && (
               <div className="flex items-center gap-2 mt-4">
                 <IconImage icon="location" width={30} height={30} />
-                <span className="text-xl font-bold">
+                <span style={{ fontSize: 20 * scale }} className="font-bold">
                   {getCityOrCenter(activeFeedItem?.address)}
                 </span>
               </div>

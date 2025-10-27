@@ -21,6 +21,7 @@ interface FeedsThumbnailCarouselProps {
   loading: boolean;
   isStation?: boolean;
   shouldSetItemId?: boolean;
+  activeFilterTabMobile?: string;
 }
 
 const ACTIVE_THUMBNAIL_SIZE = 100;
@@ -36,44 +37,57 @@ const MobileFeedsThumbnailCarousel = ({
   primaryBoderColor = "#fff",
   secondaryBoderColor = "#fff",
   shouldSetItemId = false,
+  activeFilterTabMobile,
 }: FeedsThumbnailCarouselProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const isScrollingRef = useRef(false);
   const scrollTimeoutRef = useRef<NodeJS.Timeout>(null);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const prevTabRef = useRef<string | null>(null); // 👈 track previous tab
   const { setClickedBusinessId } = useGeneralStore();
 
   const screenWidth =
     typeof window !== "undefined" ? window.innerWidth : DEFAULT_SCREEN_WIDTH;
   const sidePadding = (screenWidth - ACTIVE_THUMBNAIL_SIZE) / 2;
 
-  const centerActiveItem = useCallback(() => {
-    if (
-      activeIndex === -1 ||
-      !containerRef.current ||
-      !itemRefs.current[activeIndex!]
-    )
-      return;
+  const centerActiveItem = useCallback(
+    (instant: boolean) => {
+      if (
+        activeIndex === -1 ||
+        !containerRef.current ||
+        !itemRefs.current[activeIndex!]
+      )
+        return;
 
-    const scrollContainer = containerRef.current;
-    const activeItem = activeIndex !== null && itemRefs.current[activeIndex];
-    if (!activeItem) return;
+      const scrollContainer = containerRef.current;
+      const activeItem = activeIndex !== null && itemRefs.current[activeIndex];
+      if (!activeItem) return;
 
-    const containerWidth = scrollContainer.clientWidth;
-    const itemWidth = activeItem.clientWidth;
-    const itemOffsetLeft = activeItem.offsetLeft;
-    const targetScrollLeft =
-      itemOffsetLeft - containerWidth / 2 + itemWidth / 2;
+      const containerWidth = scrollContainer.clientWidth;
+      const itemWidth = activeItem.clientWidth;
+      const itemOffsetLeft = activeItem.offsetLeft;
+      const targetScrollLeft =
+        itemOffsetLeft - containerWidth / 2 + itemWidth / 2;
 
-    scrollContainer.scrollTo({
-      left: targetScrollLeft,
-      behavior: "smooth",
-    });
-  }, [activeIndex]);
+      if (instant) {
+        scrollContainer.scrollLeft = targetScrollLeft;
+      } else {
+        scrollContainer.scrollTo({
+          left: targetScrollLeft,
+          behavior: "smooth",
+        });
+      }
+    },
+    [activeIndex],
+  );
 
   useEffect(() => {
-    if (activeIndex !== -1) setTimeout(centerActiveItem, 100);
-  }, [activeIndex, centerActiveItem]);
+    if (activeIndex === -1) return;
+
+    const tabChanged = prevTabRef.current !== activeFilterTabMobile;
+    centerActiveItem(tabChanged);
+    prevTabRef.current = activeFilterTabMobile ?? null;
+  }, [activeIndex, centerActiveItem, activeFilterTabMobile]);
 
   const handleScroll = () => {
     isScrollingRef.current = true;
@@ -106,7 +120,6 @@ const MobileFeedsThumbnailCarousel = ({
         style={{
           paddingLeft: sidePadding,
           paddingRight: sidePadding,
-          scrollBehavior: "smooth",
         }}
         onScroll={handleScroll}
       >
@@ -114,11 +127,11 @@ const MobileFeedsThumbnailCarousel = ({
 
         {items?.map((item, idx) => (
           <MobileFeedListCard
-            key={item.id}
-            item={item}
             idx={idx}
-            isActive={activeIndex === idx}
+            item={item}
+            key={item.id + idx}
             isStation={isStation}
+            isActive={activeIndex === idx}
             primaryBorderColor={primaryBoderColor}
             secondaryBorderColor={secondaryBoderColor}
             handleActiveItem={handleActiveItem}
@@ -153,10 +166,11 @@ const MobileFeedsThumbnailCarousel = ({
             />
           ) : (
             <NextImage
-              alt={items[activeIndex].name || "Active item"}
-              imgSrc={items[activeIndex].image}
               width={100}
               height={100}
+              key={`${items[activeIndex].id}-${items[activeIndex].image || "undefined"}`}
+              alt={items[activeIndex].name || "Active item"}
+              imgSrc={items?.[activeIndex].image}
               className="object-cover w-full h-full rounded"
             />
           )}

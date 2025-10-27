@@ -1,4 +1,3 @@
-// components/FeedListCard.tsx
 import clsx from "clsx";
 import { NextImage } from "@/components/ui";
 import { categoryColors } from "@/lib/utils";
@@ -34,7 +33,7 @@ const MobileFeedListCard = ({
       ref={(el) => setItemRef(el, idx)}
       onClick={() => handleActiveItem(idx, item.id)}
       className={clsx(
-        "flex-shrink-0 cursor-pointer transition-all duration-300 rounded-lg overflow-hidden",
+        "flex-shrink-0 cursor-pointer transition-all duration-0 rounded-lg overflow-hidden",
         isActive && "mx-3",
       )}
       style={{

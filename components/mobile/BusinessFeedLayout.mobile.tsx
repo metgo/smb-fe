@@ -9,7 +9,7 @@ import MobileFeedsThumbnailCarousel from "./FeedsThumbnailCarousel.mobile";
 import MobileBusinessFeedGalleryView from "./BusinessFeedGalleryView.mobile";
 
 import { categoryColors } from "@/lib/utils";
-import { useMobileFeedLayout, useSwipeHooks } from "@/hooks";
+import { useDeviceHeight, useMobileFeedLayout, useSwipeHooks } from "@/hooks";
 
 interface MobileFeedLayoutProps {
   businesses: BusinessesProps;
@@ -31,6 +31,7 @@ const MobileBusinessFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
     activeCategoryKey,
     isFackLoading,
   } = useMobileFeedLayout(businesses);
+  const { height, scale } = useDeviceHeight();
 
   const {
     handleTouchEnd,
@@ -61,13 +62,14 @@ const MobileBusinessFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
 
   const renderThumbnailCarousel = (posBottom: string) => (
     <MobileFeedsThumbnailCarousel
+      shouldSetItemId
       items={carouselItems}
       posBottom={posBottom}
-      setActiveIndex={setActiveIndex}
-      activeIndex={activeIndex}
       loading={isFackLoading}
+      activeIndex={activeIndex}
+      setActiveIndex={setActiveIndex}
+      activeFilterTabMobile={activeFilterTabMobile}
       primaryBoderColor={categoryColors[activeFeedItem?.primaryCategoryId]}
-      shouldSetItemId={activeFilterTabMobile === "map"}
     />
   );
 
@@ -81,9 +83,11 @@ const MobileBusinessFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
-          className="relative flex-1 h-screen"
+          className="relative flex-1"
+          style={{ height }}
         >
           <MobileBusinessFeedGalleryView
+            scale={scale}
             currentImage={computedValues.currentImage}
             activeFeedItem={activeFeedItem}
             geoLocation={geoLocation}

@@ -42,9 +42,7 @@ const MobileNavbar = () => {
 
         <div className="flex items-center justify-end gap-4 col-span-6">
           {isFilterTabShow && <MobileFilterTab />}
-          <div className="w-12">
-            <SearchFlow isMobile />
-          </div>
+          <SearchFlow isMobile />
           {/* {showFilterIcon && <IconImage icon="filter" />} */}
         </div>
       </div>

@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import useGeneralStore from "@/stores/generalStore";
 import ScrollIndicator from "../ScrollIndicator";
+import { useDeviceHeight } from "@/hooks";
 
 export default function ScrollSnapWrapper({
   children,
@@ -24,6 +25,7 @@ export default function ScrollSnapWrapper({
 
   const { setIsOnSection2, setHideFirstTwoSection, hideFirstTwoSection } =
     useGeneralStore();
+  const { height } = useDeviceHeight();
 
   // Get reliable viewport height
   const getViewportHeight = () => {
@@ -367,14 +369,14 @@ export default function ScrollSnapWrapper({
             <ScrollIndicator hasMarketing={hasMarketing} />
           </div>
           {hasMarketing && (
-            <div ref={secondSectionRef} className="h-screen relative">
+            <div ref={secondSectionRef} className="relative h-screen">
               {children[1]}
-              <ScrollIndicator isSecond />
+              <ScrollIndicator isSecond height={height} />
             </div>
           )}
         </>
       )}
-      <div ref={feedSectionRef} className="min-h-screen">
+      <div ref={feedSectionRef} className="max-sm:h-screen  md:min-h-screen">
         {children[2]}
       </div>
     </>
