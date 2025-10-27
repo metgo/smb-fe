@@ -125,14 +125,6 @@ const GalleryView = ({
   activeFeedItem,
   isFackLoading,
 }: GalleryViewProps) => {
-  // const {
-  //   finalImageSrc,
-  //   handleImageLoad,
-  //   handleImageError,
-  //   isImageTransitionComplete,
-  //   shouldShowSkeleton,
-  // } = useImageCrop(currentImage, 390 / 840);
-
   return (
     <>
       {isFackLoading ? (

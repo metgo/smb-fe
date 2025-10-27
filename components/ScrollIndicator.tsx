@@ -1,12 +1,16 @@
 "use client";
+
+import clsx from "clsx";
+
 import { IconImage } from "@/components/ui";
 import useGeneralStore from "@/stores/generalStore";
-import clsx from "clsx";
 
 const ScrollIndicator = ({
   isSecond = false,
   hasMarketing = false,
+  height,
 }: {
+  height?: number;
   isSecond?: boolean;
   hasMarketing?: boolean;
 }) => {
@@ -50,9 +54,10 @@ const ScrollIndicator = ({
     <div
       onClick={handleScroll}
       className={clsx(
-        isSecond ? "md:bottom-24 max-sm:bottom-40" : "bottom-10.5",
+        isSecond ? "md:bottom-24" : "bottom-10.5",
         "absolute left-1/2 transform -translate-x-1/2 custom-cursor z-10",
       )}
+      style={{ bottom: isSecond && height && height < 700 ? "50px" : "40px" }}
     >
       <div className="flex flex-col items-center justify-center gap-2.5">
         <IconImage width={60} height={60} icon="scroll-down.gif" hasExtension />

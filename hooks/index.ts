@@ -12,6 +12,7 @@ import { useMobileBlogFeedLayout } from "./useMobileBlogFeedLayout";
 import { useSwipeHooks } from "./useSwipeHooks";
 import { useMobileFeedLayout } from "./useMobileFeedLayout";
 import { useTrailStations } from "./useTrailStations";
+import { useDeviceHeight } from "./useDeviceHeight";
 
 export {
   useSwipeHooks,
@@ -21,6 +22,7 @@ export {
   useItemBuyCart,
   useImageCrop,
   useGoogleMapMobile,
+  useDeviceHeight,
   useHorizontalLoadMore,
   useMobileGoogleMap,
   useMobileFeedLayout,

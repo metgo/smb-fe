@@ -169,7 +169,11 @@ export default function MobileLinkShareBottomDrawer({
             <h2 className="text-xl font-bold text-gray-900">{misc.share}</h2>
           </div>
           <button
-            onClick={handleClose}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleClose();
+            }}
             className="rounded-full p-2 hover:bg-gray-100 transition-colors duration-200"
           >
             <FaTimes className="h-5 w-5 text-gray-500" />
