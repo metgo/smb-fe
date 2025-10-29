@@ -35,14 +35,33 @@ export default function ScrollSnapWrapper({
     );
   };
 
-  const smoothScroll = (target: HTMLElement | null, after?: () => void) => {
-    if (!target) return;
+  /** ===================================
+   * Smooth scroll (custom, jitter-free)
+   * =================================== */
+  const smoothScrollTo = (targetY: number, after?: () => void) => {
     isScrolling.current = true;
-    target.scrollIntoView({ behavior: "smooth", block: "start" });
-    setTimeout(() => {
-      isScrolling.current = false;
-      after?.();
-    }, 800);
+    const startY = window.scrollY;
+    const distance = targetY - startY;
+    const duration = 600;
+    const startTime = performance.now();
+
+    const easeInOut = (t: number) =>
+      t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+
+    const animateScroll = (time: number) => {
+      const elapsed = time - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = easeInOut(progress);
+      window.scrollTo(0, startY + distance * eased);
+      if (progress < 1) {
+        requestAnimationFrame(animateScroll);
+      } else {
+        isScrolling.current = false;
+        after?.();
+      }
+    };
+
+    requestAnimationFrame(animateScroll);
   };
 
   const getCurrentSection = () => {
@@ -55,76 +74,72 @@ export default function ScrollSnapWrapper({
     return "feed";
   };
 
+  /** ===================================
+   * Handle section transitions
+   * =================================== */
   const handleSectionTransition = (direction: "up" | "down") => {
     if (isScrolling.current) return;
 
     const currentSection = getCurrentSection();
     const scrollY = window.scrollY;
 
-    // If first two sections are hidden, handle feed section scrolling
     if (hideFirstTwoSection) {
       const feedElement = feedSectionRef.current;
       if (!feedElement) return;
-
       const feedOffsetTop = feedElement.offsetTop;
 
       if (direction === "up" && scrollY <= feedOffsetTop + 50) {
-        // Snap back to feed section top
-        smoothScroll(feedSectionRef.current);
+        smoothScrollTo(feedOffsetTop);
         return;
       }
-      // Allow normal scrolling within feed
       return;
     }
 
-    // Handle transitions between sections
     if (direction === "down") {
       if (currentSection === "first") {
         setIsOnSection2(false);
         if (!hasMarketing) {
           setIsOnSection2(true);
           setHideFirstTwoSection(true);
-          smoothScroll(feedSectionRef.current);
+          smoothScrollTo(feedSectionRef.current?.offsetTop || 0);
         } else {
-          smoothScroll(secondSectionRef.current);
+          smoothScrollTo(secondSectionRef.current?.offsetTop || 0);
         }
       } else if (currentSection === "second" && hasMarketing) {
         setIsOnSection2(true);
         setHideFirstTwoSection(true);
-        smoothScroll(feedSectionRef.current);
+        smoothScrollTo(feedSectionRef.current?.offsetTop || 0);
       }
     } else if (direction === "up") {
       if (currentSection === "second" && hasMarketing) {
-        smoothScroll(firstSectionRef.current);
+        smoothScrollTo(firstSectionRef.current?.offsetTop || 0);
       } else if (currentSection === "feed" && hideFirstTwoSection) {
         setHideFirstTwoSection(false);
         setIsOnSection2(false);
-        smoothScroll(
-          hasMarketing ? secondSectionRef.current : firstSectionRef.current,
+        smoothScrollTo(
+          hasMarketing
+            ? secondSectionRef.current?.offsetTop || 0
+            : firstSectionRef.current?.offsetTop || 0,
         );
       }
     }
   };
 
-  // Desktop wheel event handler
+  /** ===================================
+   * Desktop wheel handler
+   * =================================== */
   useEffect(() => {
     const handleWheel = (e: WheelEvent) => {
-      // Skip if this is a mobile device
-      if ("ontouchstart" in window) return;
-
+      if ("ontouchstart" in window) return; // Skip mobile
       if (isScrolling.current) return;
 
       const direction = e.deltaY > 0 ? "down" : "up";
       const scrollY = window.scrollY;
 
-      // Check if we're in a scrollable container
       const target = e.target as HTMLElement;
-      const scrollableContainer = target.closest(
-        "[data-scrollable]",
-      ) as HTMLElement;
+      const scrollableContainer = target.closest("[data-scrollable]");
       if (scrollableContainer) return;
 
-      // Prevent default scrolling for section transitions
       if (
         !hideFirstTwoSection ||
         (hideFirstTwoSection &&
@@ -146,91 +161,9 @@ export default function ScrollSnapWrapper({
     hasMarketing,
   ]);
 
-  // Mobile touch event handlers
-  // useEffect(() => {
-  //   const handleTouchStart = (e: TouchEvent) => {
-  //     isTouching.current = true;
-  //     touchStartY.current = e.touches[0].clientY;
-  //     lastTouchTime.current = Date.now();
-  //   };
-
-  //   const handleTouchMove = (e: TouchEvent) => {
-  //     if (!isTouching.current) return;
-
-  //     touchEndY.current = e.touches[0].clientY;
-
-  //     // Check if we're in a scrollable container
-  //     const target = e.target as HTMLElement;
-  //     const scrollableContainer = target.closest(
-  //       "[data-scrollable]",
-  //     ) as HTMLElement;
-  //     if (scrollableContainer) return;
-
-  //     // Only prevent default for section transitions
-  //     const scrollY = window.scrollY;
-
-  //     if (!hideFirstTwoSection) {
-  //       // Prevent default scrolling in first two sections
-  //       e.preventDefault();
-  //     } else if (
-  //       hideFirstTwoSection &&
-  //       scrollY <= (feedSectionRef.current?.offsetTop || 0) + 50
-  //     ) {
-  //       // Prevent scrolling up from feed section top
-  //       const deltaY = touchStartY.current - touchEndY.current;
-  //       if (deltaY < 0) {
-  //         // Swiping down (going up)
-  //         e.preventDefault();
-  //       }
-  //     }
-  //   };
-
-  //   const handleTouchEnd = () => {
-  //     if (!isTouching.current) return;
-  //     isTouching.current = false;
-
-  //     const touchDelta = touchStartY.current - touchEndY.current;
-  //     const touchDuration = Date.now() - lastTouchTime.current;
-  //     const minSwipeDistance = 50;
-  //     const maxSwipeTime = 500;
-
-  //     if (
-  //       Math.abs(touchDelta) < minSwipeDistance ||
-  //       touchDuration > maxSwipeTime
-  //     ) {
-  //       return;
-  //     }
-
-  //     // Swipe UP → go to next section
-  //     // if (touchDelta > 0) {
-  //     //   handleSectionTransition("down");
-  //     // }
-  //   };
-
-  //   // Only add touch events on mobile devices
-  //   if ("ontouchstart" in window) {
-  //     document.addEventListener("touchstart", handleTouchStart, {
-  //       passive: false,
-  //     });
-  //     document.addEventListener("touchmove", handleTouchMove, {
-  //       passive: false,
-  //     });
-  //     document.addEventListener("touchend", handleTouchEnd, { passive: true });
-
-  //     return () => {
-  //       document.removeEventListener("touchstart", handleTouchStart);
-  //       document.removeEventListener("touchmove", handleTouchMove);
-  //       document.removeEventListener("touchend", handleTouchEnd);
-  //     };
-  //   }
-  // }, [
-  //   setIsOnSection2,
-  //   setHideFirstTwoSection,
-  //   hideFirstTwoSection,
-  //   hasMarketing,
-  // ]);
-
-  // Mobile touch event handlers
+  /** ===================================
+   * Mobile touch swipe handler
+   * =================================== */
   useEffect(() => {
     const minSwipeDistance = 50;
     const maxSwipeTime = 500;
@@ -238,7 +171,7 @@ export default function ScrollSnapWrapper({
     const handleTouchStart = (e: TouchEvent) => {
       isTouching.current = true;
       touchStartY.current = e.touches[0].clientY;
-      touchEndY.current = e.touches[0].clientY; // initialize
+      touchEndY.current = e.touches[0].clientY;
       lastTouchTime.current = Date.now();
     };
 
@@ -248,25 +181,22 @@ export default function ScrollSnapWrapper({
       touchEndY.current = e.touches[0].clientY;
 
       const target = e.target as HTMLElement;
-      const scrollableContainer = target.closest(
-        "[data-scrollable]",
-      ) as HTMLElement;
+      const scrollableContainer = target.closest("[data-scrollable]");
       if (scrollableContainer) return;
 
       const scrollY = window.scrollY;
 
       if (!hideFirstTwoSection) {
-        // Prevent default in fullpage sections
         e.preventDefault();
       } else if (
         scrollY <= (feedSectionRef.current?.offsetTop || 0) + 50 &&
-        touchStartY.current - touchEndY.current < 0 // swiping down
+        touchStartY.current - touchEndY.current < 0
       ) {
         e.preventDefault();
       }
     };
 
-    const handleTouchEnd = () => {
+    const handleTouchEnd = (e: TouchEvent) => {
       if (!isTouching.current) return;
       isTouching.current = false;
 
@@ -276,13 +206,17 @@ export default function ScrollSnapWrapper({
       const isSwipe =
         Math.abs(deltaY) > minSwipeDistance && swipeDuration < maxSwipeTime;
 
-      if (!isSwipe) {
-        // It's a tap or slow movement — don't transition
-        return;
-      }
+      if (!isSwipe) return;
 
+      e.preventDefault();
       const direction = deltaY > 0 ? "down" : "up";
+
+      // Lock scroll to prevent flicker
+      document.body.style.overflow = "hidden";
       handleSectionTransition(direction);
+      setTimeout(() => {
+        document.body.style.overflow = "";
+      }, 700);
     };
 
     if ("ontouchstart" in window) {
@@ -292,7 +226,7 @@ export default function ScrollSnapWrapper({
       document.addEventListener("touchmove", handleTouchMove, {
         passive: false,
       });
-      document.addEventListener("touchend", handleTouchEnd, { passive: true });
+      document.addEventListener("touchend", handleTouchEnd, { passive: false });
 
       return () => {
         document.removeEventListener("touchstart", handleTouchStart);
@@ -300,9 +234,11 @@ export default function ScrollSnapWrapper({
         document.removeEventListener("touchend", handleTouchEnd);
       };
     }
-  }, [hideFirstTwoSection, hasMarketing, handleSectionTransition]);
+  }, [hideFirstTwoSection, hasMarketing]);
 
-  // Handle initial scroll position and browser back/forward
+  /** ===================================
+   * Auto-snap logic on scroll stop
+   * =================================== */
   useEffect(() => {
     const handleScroll = () => {
       if (isScrolling.current || isTouching.current) return;
@@ -310,27 +246,25 @@ export default function ScrollSnapWrapper({
       const scrollY = window.scrollY;
       const vh = getViewportHeight();
 
-      // Auto-snap to nearest section on scroll end
       const snapTimeout = setTimeout(() => {
         if (isScrolling.current || isTouching.current) return;
 
         if (hideFirstTwoSection) {
           const feedElement = feedSectionRef.current;
           if (feedElement && scrollY < feedElement.offsetTop - 100) {
-            smoothScroll(feedElement);
+            smoothScrollTo(feedElement.offsetTop);
           }
         } else {
-          // Snap to first section if in upper half
           if (scrollY < vh * 0.5) {
-            smoothScroll(firstSectionRef.current);
-          }
-          // Snap to second section if marketing exists and in that range
-          else if (hasMarketing && scrollY >= vh * 0.5 && scrollY < vh * 1.5) {
-            smoothScroll(secondSectionRef.current);
-          }
-          // Snap to feed section if scrolled past the visible sections
-          else if (scrollY >= (hasMarketing ? vh * 1.5 : vh * 0.5)) {
-            smoothScroll(feedSectionRef.current);
+            smoothScrollTo(firstSectionRef.current?.offsetTop || 0);
+          } else if (
+            hasMarketing &&
+            scrollY >= vh * 0.5 &&
+            scrollY < vh * 1.5
+          ) {
+            smoothScrollTo(secondSectionRef.current?.offsetTop || 0);
+          } else if (scrollY >= (hasMarketing ? vh * 1.5 : vh * 0.5)) {
+            smoothScrollTo(feedSectionRef.current?.offsetTop || 0);
             setHideFirstTwoSection(true);
             if (hasMarketing) {
               setIsOnSection2(true);
@@ -360,6 +294,9 @@ export default function ScrollSnapWrapper({
     setIsOnSection2,
   ]);
 
+  /** ===================================
+   * JSX Layout
+   * =================================== */
   return (
     <>
       {!hideFirstTwoSection && (
@@ -376,7 +313,7 @@ export default function ScrollSnapWrapper({
           )}
         </>
       )}
-      <div ref={feedSectionRef} className="max-sm:h-screen  md:min-h-screen">
+      <div ref={feedSectionRef} className="max-sm:h-screen md:min-h-screen">
         {children[2]}
       </div>
     </>

@@ -35,10 +35,6 @@ export const useGoogleMapMobile = () => {
   const activeCategoryId = searchParams.get("categoryId") || "";
 
   const { activeFilterTabMobile, clickedBusinessId } = useGeneralStore();
-  console.log(
-    "🚀 ~ useGoogleMapMobile ~ clickedBusinessId:",
-    clickedBusinessId,
-  );
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [businesses, setBusinesses] = useState<BusinessMakerProps[]>([]);
   const [mapDimensions, setMapDimensions] = useState<MapDimensions>({

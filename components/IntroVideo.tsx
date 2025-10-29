@@ -5,14 +5,12 @@ import { useEffect, useRef, useState } from "react";
 
 import { BUCKET_URL } from "@/constant/envConstants";
 import useGeneralStore from "@/stores/generalStore";
-import { useDeviceHeight } from "@/hooks";
 
 const IntroVideo = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isMuted, setIsMuted] = useState(true);
 
   const { siteInfo } = useGeneralStore();
-  const { scale, group } = useDeviceHeight();
 
   useEffect(() => {
     const video = videoRef.current;
@@ -68,7 +66,7 @@ const IntroVideo = () => {
   };
 
   return (
-    <div className="relative w-full h-screen">
+    <div className="relative w-full h-screen max-sm:hidden md:block">
       <video
         ref={videoRef}
         loop
@@ -92,16 +90,8 @@ const IntroVideo = () => {
         onTouchStart={(e) => e.stopPropagation()}
         onTouchMove={(e) => e.stopPropagation()}
         onTouchEnd={(e) => e.stopPropagation()}
-        className="absolute  right-10 z-10 text-white bg-black/50 hover:bg-black/70 border-[3px] border-white rounded-full p-3 transition custom-cursor"
+        className="absolute bottom-10 right-10 z-10 text-white bg-black/50 hover:bg-black/70 border-[3px] border-white rounded-full p-3 transition custom-cursor"
         aria-label="Toggle Mute"
-        style={{
-          bottom:
-            group === "smallMobile"
-              ? 60 * scale
-              : group === "largeMobile"
-                ? 100 * scale
-                : 90 * scale,
-        }}
       >
         {/* max-sm:bottom-26 md:bottom-10 */}
         {isMuted ? <GoMute size={24} /> : <GoUnmute size={24} />}

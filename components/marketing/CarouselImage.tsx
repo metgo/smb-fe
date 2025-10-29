@@ -51,7 +51,7 @@ const CarouselImage = ({ images, timeInterval }: CarouselImageProps) => {
 
   return (
     <div
-      style={{ height }}
+      style={{ height: height ? height : "100vh" }}
       className=" w-full relative overflow-hidden bg-black"
     >
       <Swiper
@@ -99,7 +99,7 @@ const CarouselImage = ({ images, timeInterval }: CarouselImageProps) => {
 
       {/* Custom pagination dots */}
       <div
-        style={{ bottom: 18 * scale }}
+        style={{ bottom: 40 * scale }}
         className="absolute left-1/2 -translate-x-1/2 z-10 flex space-x-3"
       >
         {images?.map((_, idx) => (

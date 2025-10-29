@@ -2,9 +2,9 @@ import clsx from "clsx";
 import { useRef, useEffect, useCallback } from "react";
 
 import { NextImage } from "@/components/ui";
-import { CardSkeleton } from "@/components/skeletons";
 import useGeneralStore from "@/stores/generalStore";
 import MobileFeedListCard from "./FeedListCard.mobile";
+import { categoryGradientClasses } from "@/lib/utils";
 
 interface FeedsThumbnailCarouselProps {
   items: {
@@ -29,7 +29,6 @@ const DEFAULT_SCREEN_WIDTH = 430;
 
 const MobileFeedsThumbnailCarousel = ({
   items,
-  loading,
   activeIndex,
   setActiveIndex,
   isStation = false,
@@ -43,7 +42,7 @@ const MobileFeedsThumbnailCarousel = ({
   const isScrollingRef = useRef(false);
   const scrollTimeoutRef = useRef<NodeJS.Timeout>(null);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const prevTabRef = useRef<string | null>(null); // 👈 track previous tab
+  const prevTabRef = useRef<string | null>(null);
   const { setClickedBusinessId } = useGeneralStore();
 
   const screenWidth =
@@ -116,7 +115,7 @@ const MobileFeedsThumbnailCarousel = ({
     <div className="w-full relative mb-6">
       <div
         ref={containerRef}
-        className="relative flex flex-row items-center gap-3 overflow-x-auto scrollbar-hide"
+        className="relative flex flex-row items-center gap-1.75 overflow-x-auto scrollbar-hide"
         style={{
           paddingLeft: sidePadding,
           paddingRight: sidePadding,
@@ -143,38 +142,36 @@ const MobileFeedsThumbnailCarousel = ({
       </div>
 
       {activeIndex >= 0 && items[activeIndex] && (
-        <div
-          className={clsx(
-            "fixed left-1/2 transform -translate-x-1/2 z-20",
-            posBottom,
-          )}
-          style={{
-            width: 80,
-            height: 80,
-            border: `3px solid ${primaryBoderColor}`,
-            boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-            borderRadius: "0.5rem",
-            overflow: "hidden",
-          }}
-        >
-          {loading ? (
-            <CardSkeleton
-              className="w-full h-full rounded-none"
-              primaryCategoryId={
-                items[activeIndex].categoryId || "6566e31ca77d2a477266d2d6"
-              }
-            />
-          ) : (
+        <>
+          <div
+            className={clsx(
+              "fixed left-1/2 transform -translate-x-1/2 z-20",
+              posBottom,
+            )}
+            style={{
+              width: 80,
+              height: 80,
+              border: `3px solid ${primaryBoderColor}`,
+              boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+              borderRadius: "0.5rem",
+              overflow: "hidden",
+            }}
+          >
             <NextImage
               width={100}
               height={100}
               key={`${items[activeIndex].id}-${items[activeIndex].image || "undefined"}`}
               alt={items[activeIndex].name || "Active item"}
               imgSrc={items?.[activeIndex].image}
-              className="object-cover w-full h-full rounded"
+              className={clsx(
+                "skeleton object-cover w-full h-full rounded",
+                categoryGradientClasses[
+                  items[activeIndex].categoryId || "6566e31ca77d2a477266d2d6"
+                ],
+              )}
             />
-          )}
-        </div>
+          </div>
+        </>
       )}
     </div>
   );

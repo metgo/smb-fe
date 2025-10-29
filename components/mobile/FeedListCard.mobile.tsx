@@ -34,7 +34,7 @@ const MobileFeedListCard = ({
       onClick={() => handleActiveItem(idx, item.id)}
       className={clsx(
         "flex-shrink-0 cursor-pointer transition-all duration-0 rounded-lg overflow-hidden",
-        isActive && "mx-3",
+        isActive && "ml-2.75 ms-2",
       )}
       style={{
         width: 60,
@@ -53,7 +53,7 @@ const MobileFeedListCard = ({
         imgSrc={item?.image}
         width={200}
         height={200}
-        className="object-cover w-full h-full rounded"
+        className="object-cover w-full h-full rounded bg-white"
       />
     </div>
   );

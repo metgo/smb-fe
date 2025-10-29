@@ -54,10 +54,10 @@ const ScrollIndicator = ({
     <div
       onClick={handleScroll}
       className={clsx(
-        isSecond ? "md:bottom-24" : "bottom-10.5",
+        isSecond ? "md:bottom-24" : "md:bottom-10.5",
         "absolute left-1/2 transform -translate-x-1/2 custom-cursor z-10",
       )}
-      style={{ bottom: isSecond && height && height < 700 ? "50px" : "40px" }}
+      style={{ bottom: isSecond && height && height < 700 ? "80px" : "40px" }}
     >
       <div className="flex flex-col items-center justify-center gap-2.5">
         <IconImage width={60} height={60} icon="scroll-down.gif" hasExtension />
