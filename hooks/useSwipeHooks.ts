@@ -1,7 +1,7 @@
 import { startLoading } from "@/components/wrappers/ProgressBar";
 import { navigationPaths } from "@/lib/utils";
 import { usePathname, useRouter } from "next/navigation";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 
 const SWIPE_THRESHOLD = 50;
 const SWIPE_DETECTION_THRESHOLD = 10;
@@ -22,6 +22,12 @@ export const useSwipeHooks = (
   const isSwiping = useRef(false);
   const touchStartYRef = useRef<number | null>(null);
 
+  // New state for tracking swipe progress
+  const [swipeProgress, setSwipeProgress] = useState(0);
+  const [swipeDirection, setSwipeDirection] = useState<"left" | "right" | null>(
+    null,
+  );
+
   const handleNavigation = (e: React.MouseEvent) => {
     e.stopPropagation();
 
@@ -37,6 +43,10 @@ export const useSwipeHooks = (
     touchEndX.current = e.touches[0].clientX;
     isSwiping.current = false;
     touchStartYRef.current = e.touches[0].clientY;
+
+    // Reset swipe progress when starting new touch
+    setSwipeProgress(0);
+    setSwipeDirection(null);
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
@@ -46,6 +56,21 @@ export const useSwipeHooks = (
     if (distance > SWIPE_DETECTION_THRESHOLD) {
       isSwiping.current = true;
     }
+
+    // Calculate swipe progress for visual feedback
+    if (isSwiping.current && activeIndex !== null) {
+      const deltaX = touchEndX.current - touchStartX.current;
+      const screenWidth = window.innerWidth;
+
+      // Calculate progress as percentage (0% to 50%)
+      const progress = Math.min(
+        (Math.abs(deltaX) / (screenWidth * 0.5)) * 100,
+        100,
+      );
+
+      setSwipeProgress(progress);
+      setSwipeDirection(deltaX > 0 ? "right" : "left");
+    }
   };
 
   const handleTouchEnd = (e: React.TouchEvent) => {
@@ -54,7 +79,12 @@ export const useSwipeHooks = (
       return;
     }
 
-    if (!isSwiping.current || activeIndex === null) return;
+    if (!isSwiping.current || activeIndex === null) {
+      // Reset progress if not swiping
+      setSwipeProgress(0);
+      setSwipeDirection(null);
+      return;
+    }
 
     const distance = touchStartX.current - touchEndX.current;
 
@@ -72,6 +102,9 @@ export const useSwipeHooks = (
       });
     }
 
+    // Reset swipe progress after touch ends
+    setSwipeProgress(0);
+    setSwipeDirection(null);
     touchStartX.current = 0;
     touchEndX.current = 0;
     isSwiping.current = false;
@@ -99,5 +132,7 @@ export const useSwipeHooks = (
     handleTouchMove,
     handleTouchStart,
     handleNavigation,
+    swipeProgress,
+    swipeDirection,
   };
 };

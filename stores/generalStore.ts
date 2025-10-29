@@ -45,6 +45,9 @@ interface GeneralStoreState {
   appliedFilterItemCount: number;
   setAppliedFilterItemCount: (count: number) => void;
 
+  activeFeedItemIndex: number;
+  setActiveFeedItemIndex: (v: number) => void;
+
   hideFirstTwoSection: boolean;
   setHideFirstTwoSection: (v: boolean) => void;
 
@@ -116,6 +119,9 @@ const useGeneralStore = create<GeneralStoreState>((set) => ({
 
   clickedOnSoundButton: false,
   setClickedOnSoundButton: (v) => set({ clickedOnSoundButton: v }),
+
+  activeFeedItemIndex: 0,
+  setActiveFeedItemIndex: (v) => set({ activeFeedItemIndex: v }),
 }));
 
 export default useGeneralStore;
