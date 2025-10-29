@@ -13,7 +13,7 @@ const MobileCategoryPanel = () => {
   const { handleCategoryChange, activeCategoryKey } = useCtgSubctg();
 
   return (
-    <div className="bg-white shadow-md flex items-center justify-center gap-2.5 py-2 h-20">
+    <div className="bg-white shadow-md flex items-center justify-center gap-2.5 py-2 px-0 h-20">
       {categories?.map((item) => {
         const category = categoryIcons[item.id as any];
         const isActive = activeCategoryKey === item.id;
@@ -30,7 +30,7 @@ const MobileCategoryPanel = () => {
               });
             }}
             className={clsx(
-              "aspect-square w-17 h-16 flex-shrink-0 flex flex-col items-center justify-center rounded-lg transition-colors duration-200 custom-cursor",
+              "aspect-square w-15.5 h-14 flex-shrink-0 flex flex-col items-center justify-center rounded-lg transition-colors duration-200 custom-cursor",
               isActive
                 ? `${category?.bg} text-white font-bold`
                 : " font-normal",

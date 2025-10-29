@@ -7,11 +7,11 @@ import { LuLayoutDashboard } from "react-icons/lu";
 const filterItems = [
   {
     key: "gallery",
-    icon: <LuLayoutDashboard size={24} />,
+    icon: <LuLayoutDashboard color="#0F353A" size={24} />,
   },
   {
     key: "map",
-    icon: <FaRegMap size={24} />,
+    icon: <FaRegMap color="#0F353A" size={24} />,
   },
 ];
 
