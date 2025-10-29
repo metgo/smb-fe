@@ -97,7 +97,7 @@ const IntroVideoMobile = () => {
         style={{
           bottom:
             group === "mediumMobile"
-              ? 60 * scale
+              ? 166 * scale
               : group === "largeMobile"
                 ? 100 * scale
                 : 90 * scale,
