@@ -4,7 +4,7 @@ import clsx from "clsx";
 import { categoryGradientClasses } from "@/lib/utils";
 
 interface CardSkeletonProps {
-  width?: number;
+  width?: number | string;
   height?: number;
   primaryCategoryId: string;
   className?: string | null;
