@@ -1,7 +1,7 @@
 "use client";
 
+import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { usePathname, useSearchParams } from "next/navigation";
 
 import { pathNames } from "@/lib/endpoints";
 import { useCtgSubctg } from "./useCtgSubctg";
@@ -11,11 +11,10 @@ import { getPrimaryCategoryId } from "@/lib/helpers";
 import useCategoryStore from "@/stores/categoriesStore";
 
 export const useMobileFeedLayout = (businesses: BusinessesProps) => {
-  const pathname = usePathname();
   const searchParams = useSearchParams();
 
   const { isCurrentPage, deviceHeight } = useCommonHook();
-  const { hideFirstTwoSection, activeFilterTabMobile } = useGeneralStore();
+  const { activeFilterTabMobile } = useGeneralStore();
   const { categories } = useCategoryStore();
   const { activeCategoryKey } = useCtgSubctg();
 
@@ -128,14 +127,12 @@ export const useMobileFeedLayout = (businesses: BusinessesProps) => {
     scrollContainer.scrollTo({ left: scrollLeft, behavior: "smooth" });
   };
 
-  const shouldShowNavbar = hideFirstTwoSection || pathname !== pathNames.home;
   const containerHeight = `calc(${deviceHeight}px - 100px)`;
 
   return {
     itemRefs,
     computedValues,
     geoLocation,
-    shouldShowNavbar,
     activeFilterTabMobile,
     activeFeedItem,
     feedItems,

@@ -10,6 +10,7 @@ import { ArrowImage, CarouselImage } from "@/components/marketing";
 import BusinessFeedLayout from "@/components/layouts/BusinessFeedLayout";
 import CurrentTempOfYourCity from "@/components/navbar/CurrentTempOfYourCity";
 import MobileBusinessFeedLayout from "@/components/mobile/BusinessFeedLayout.mobile";
+import IntroVideoMobile from "@/components/IntroVideo.mobile";
 
 interface Props {
   searchParams: Promise<{
@@ -63,6 +64,7 @@ const page = async ({ searchParams }: Props) => {
             <CurrentTempOfYourCity />
           </div>
           <IntroVideo />
+          <IntroVideoMobile />
         </section>
 
         {marketing?.items?.length > 0 && (

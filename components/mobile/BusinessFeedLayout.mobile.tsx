@@ -1,49 +1,31 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useMemo } from "react";
 
 import MobileNavbar from "./Navbar.mobile";
 import MobileCategoryPanel from "./CategoryPanel.mobile";
 import MobileBusinessPinMap from "../maps/BusinessPinMap.mobile";
 import MobileFeedsThumbnailCarousel from "./FeedsThumbnailCarousel.mobile";
-import MobileBusinessFeedGalleryView from "./BusinessFeedGalleryView.mobile";
 
 import { categoryColors } from "@/lib/utils";
-import { useMobileFeedLayout, useSwipeHooks } from "@/hooks";
+import { useMobileFeedLayout } from "@/hooks";
+import OnlyFeedCardsLayoutMobile from "../layouts/OnlyFeedCardsLayout.mobile";
+import useGeneralStore from "@/stores/generalStore";
 
 interface MobileFeedLayoutProps {
   businesses: BusinessesProps;
 }
 
 const MobileBusinessFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
-  const [isPanelVisible, setIsPanelVisible] = useState(true);
-
   const {
-    computedValues,
-    geoLocation,
-    shouldShowNavbar,
     activeFilterTabMobile,
     activeFeedItem,
     feedItems,
     activeIndex,
     setActiveIndex,
-    categories,
-    activeCategoryKey,
     isFackLoading,
   } = useMobileFeedLayout(businesses);
-
-  const {
-    handleTouchEnd,
-    handleTouchMove,
-    handleTouchStart,
-    handleNavigation,
-  } = useSwipeHooks(
-    feedItems.length,
-    activeIndex,
-    setActiveIndex,
-    activeFeedItem?.slug,
-    setIsPanelVisible,
-  );
+  const { hideFirstTwoSection } = useGeneralStore();
 
   // Prepare feed items for carousel
   const carouselItems = useMemo(
@@ -57,90 +39,43 @@ const MobileBusinessFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
     [feedItems],
   );
 
-  if (!feedItems || feedItems.length === 0) return null;
-
-  const renderThumbnailCarousel = (posBottom: string) => (
-    <MobileFeedsThumbnailCarousel
-      items={carouselItems}
-      posBottom={posBottom}
-      setActiveIndex={setActiveIndex}
-      activeIndex={activeIndex}
-      loading={isFackLoading}
-      primaryBoderColor={categoryColors[activeFeedItem?.primaryCategoryId]}
-      shouldSetItemId={activeFilterTabMobile === "map"}
-    />
-  );
+  if (!feedItems?.length) return null;
 
   return (
     <div className="flex flex-col max-sm:block md:hidden relative">
-      {shouldShowNavbar && <MobileNavbar />}
+      {hideFirstTwoSection && <MobileNavbar />}
 
-      {/* Gallery View */}
       {activeFilterTabMobile === "gallery" && (
-        <div
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-          className="relative flex-1 h-screen"
-        >
-          <MobileBusinessFeedGalleryView
-            currentImage={computedValues.currentImage}
-            activeFeedItem={activeFeedItem}
-            geoLocation={geoLocation}
-            onNavigate={handleNavigation}
-          />
-        </div>
+        <OnlyFeedCardsLayoutMobile data={businesses.data} />
       )}
 
-      {/* Map View */}
-      {activeFilterTabMobile === "map" && <MobileBusinessPinMap />}
-
-      {/* Bottom Panel for Map */}
-      {shouldShowNavbar && activeFilterTabMobile === "map" && (
-        <div className="fixed bottom-0 right-0 w-full z-20 space-y-4">
-          {renderThumbnailCarousel("bottom-24")}
-          <MobileCategoryPanel />
-        </div>
+      {activeFilterTabMobile === "map" && (
+        <>
+          <MobileBusinessPinMap />
+          {hideFirstTwoSection && (
+            <div className="fixed bottom-0 right-0 w-full z-20 space-y-4">
+              <MobileFeedsThumbnailCarousel
+                shouldSetItemId
+                items={carouselItems}
+                posBottom={"bottom-24"}
+                loading={isFackLoading}
+                activeIndex={activeIndex}
+                setActiveIndex={setActiveIndex}
+                activeFilterTabMobile={activeFilterTabMobile}
+                primaryBoderColor={
+                  categoryColors[activeFeedItem?.primaryCategoryId]
+                }
+              />
+              <MobileCategoryPanel />
+            </div>
+          )}
+        </>
       )}
 
-      {/* Bottom Panel for Gallery */}
-      {shouldShowNavbar && activeFilterTabMobile === "gallery" && (
+      {/* Bottom Panels */}
+      {hideFirstTwoSection && activeFilterTabMobile === "gallery" && (
         <div className="fixed bottom-0 right-0 w-full z-20">
-          <div
-            className={`transition-transform duration-300 ease-in-out space-y-4 ${
-              isPanelVisible ? "translate-y-0" : "translate-y-20"
-            }`}
-          >
-            {renderThumbnailCarousel(
-              isPanelVisible || !activeCategoryKey ? "bottom-24" : "bottom-30",
-            )}
-
-            {/* Category dots when panel is hidden */}
-            {!isPanelVisible && activeCategoryKey && (
-              <div className="flex justify-center my-4">
-                <div className="flex w-[125px] h-[10px] justify-between items-center rounded-lg p-1 bg-white ">
-                  {categories.map((item) => {
-                    const isActive = item.id === activeCategoryKey;
-                    const activeColor = isActive
-                      ? categoryColors[item.id]
-                      : "#FBFBFB";
-
-                    return (
-                      <div
-                        key={item.id}
-                        style={{ backgroundColor: activeColor }}
-                        className={`w-[25px] h-[8px] transition-colors duration-200 ${
-                          isActive ? "rounded-md" : ""
-                        }`}
-                      />
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            <MobileCategoryPanel />
-          </div>
+          <MobileCategoryPanel />
         </div>
       )}
     </div>

@@ -12,7 +12,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Navigation, Pagination, Autoplay, EffectFade } from "swiper/modules";
 
 import MarketingContent from "./MarketingContent";
-import { useCommonHook } from "@/hooks";
+import { useDeviceHeight } from "@/hooks";
 
 interface CarouselImageProps {
   images: {
@@ -27,7 +27,7 @@ interface CarouselImageProps {
 const CarouselImage = ({ images, timeInterval }: CarouselImageProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const { deviceHeight } = useCommonHook();
+  const { height, scale } = useDeviceHeight();
 
   useEffect(() => {
     const handleWheel = (e: WheelEvent) => {
@@ -50,81 +50,71 @@ const CarouselImage = ({ images, timeInterval }: CarouselImageProps) => {
   }, []);
 
   return (
-    <>
-      <div
-        style={{ height: deviceHeight }}
-        className="h-screen w-full relative overflow-hidden bg-black"
+    <div
+      style={{ height: height ? height : "100vh" }}
+      className=" w-full relative overflow-hidden bg-black"
+    >
+      <Swiper
+        modules={[Navigation, Pagination, Autoplay, EffectFade]}
+        spaceBetween={0}
+        slidesPerView={1}
+        navigation={{
+          nextEl: ".swiper-button-next-custom",
+          prevEl: ".swiper-button-prev-custom",
+        }}
+        pagination={{
+          clickable: true,
+          bulletClass: "swiper-pagination-bullet-custom",
+          bulletActiveClass: "swiper-pagination-bullet-active-custom",
+        }}
+        autoplay={{
+          delay: Number(timeInterval) * 1000,
+          disableOnInteraction: false,
+        }}
+        loop={true}
+        effect="fade"
+        fadeEffect={{
+          crossFade: true,
+        }}
+        className="h-full w-full bg-white"
+        onSlideChange={(swiper) => setCurrentIndex(swiper.realIndex)}
       >
-        <Swiper
-          modules={[Navigation, Pagination, Autoplay, EffectFade]}
-          spaceBetween={0}
-          slidesPerView={1}
-          navigation={{
-            nextEl: ".swiper-button-next-custom",
-            prevEl: ".swiper-button-prev-custom",
-          }}
-          pagination={{
-            clickable: true,
-            bulletClass: "swiper-pagination-bullet-custom",
-            bulletActiveClass: "swiper-pagination-bullet-active-custom",
-          }}
-          autoplay={{
-            delay: Number(timeInterval) * 1000,
-            disableOnInteraction: false,
-          }}
-          loop={true}
-          effect="fade"
-          fadeEffect={{
-            crossFade: true,
-          }}
-          className="h-full w-full bg-white"
-          onSlideChange={(swiper) => setCurrentIndex(swiper.realIndex)}
-        >
-          {images?.map((img, index) => (
-            <SwiperSlide key={index} className="relative">
-              <div className="absolute max-sm:inset-0 md:inset-2">
-                <Image
-                  fill
-                  src={img?.url}
-                  alt={`slide-${index}`}
-                  className="object-cover rounded-lg shadow-2xl"
-                  priority={index === 0}
-                  sizes="100vw"
-                />
-                <MarketingContent content={img} />
-                <div className="absolute inset-0 rounded-lg bg-gradient-to-tl from-black/80 via-black/20 to-transparent" />
-              </div>
-            </SwiperSlide>
-          ))}
-        </Swiper>
+        {images?.map((img, index) => (
+          <SwiperSlide key={index} className="relative">
+            <div className="absolute max-sm:inset-0 md:inset-2">
+              <Image
+                fill
+                src={img?.url}
+                alt={`slide-${index}`}
+                className="object-cover md:rounded-lg shadow-2xl"
+                priority={index === 0}
+                sizes="100vw"
+              />
+              <MarketingContent scale={scale} content={img} />
+              <div className="absolute inset-0 md:rounded-lg bg-gradient-to-tl from-black/80 via-black/20 to-transparent" />
+            </div>
+          </SwiperSlide>
+        ))}
+      </Swiper>
 
-        {/* Custom pagination dots */}
-        <div className="absolute max-sm:bottom-20 md:bottom-12 left-1/2 -translate-x-1/2 z-10 flex space-x-3">
-          {images?.map((_, idx) => (
-            <button
-              key={idx}
-              onClick={() => setCurrentIndex(idx)}
-              className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                idx === currentIndex
-                  ? "bg-white scale-125 shadow-md"
-                  : "bg-gray-400/70 hover:bg-gray-300"
-              }`}
-            />
-          ))}
-        </div>
-        <div className="pb-safe-bottom bg-white rounded-b-2xl" />
+      {/* Custom pagination dots */}
+      <div
+        style={{ bottom: 40 * scale }}
+        className="absolute left-1/2 -translate-x-1/2 z-10 flex space-x-3"
+      >
+        {images?.map((_, idx) => (
+          <button
+            key={idx}
+            onClick={() => setCurrentIndex(idx)}
+            className={`w-3 h-3 rounded-full transition-all duration-300 ${
+              idx === currentIndex
+                ? "bg-white scale-125 shadow-md"
+                : "bg-gray-400/70 hover:bg-gray-300"
+            }`}
+          />
+        ))}
       </div>
-
-      <style jsx>{`
-        .pb-safe-bottom {
-          padding-bottom: env(safe-area-inset-bottom);
-        }
-        .swiper-pagination-bullet-active-custom {
-          background: white !important;
-          transform: scale(1.2);
-        }
-      `}</style>
-    </>
+    </div>
   );
 };
 

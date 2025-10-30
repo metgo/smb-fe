@@ -57,5 +57,5 @@ jobs: # list of things to do
 
       - name: Fail if eslint made any changes
         run: |
-          git --no-pager diff
+          git --no-pager diff || true
           [[ -z $(git status --untracked-files=no --porcelain) ]] && echo "running eslint made no changes"

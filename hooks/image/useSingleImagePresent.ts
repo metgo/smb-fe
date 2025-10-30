@@ -115,11 +115,19 @@ export const useSingleImagePresent = (
 
   /** ✅ Process when image or dependencies change */
   useEffect(() => {
-    if (!inView || !image) return;
+    if (!inView) return;
 
     let cancelled = false;
     setIsLoading(true);
 
+    if (!image) {
+      setIsLoading(false);
+      setUpdatedImage({
+        imageUrl: staticImages.placeholder,
+        alt: "Business Image",
+      });
+      return () => (cancelled = true);
+    }
     processImage(image)
       .then((result) => !cancelled && setUpdatedImage(result))
       .finally(() => !cancelled && setIsLoading(false));

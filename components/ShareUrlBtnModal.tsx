@@ -30,8 +30,8 @@ const ShareUrlBtnModal = ({
       <div
         onClick={handleCopy}
         className={clsx(
-          hideShareText ? "" : "flex items-center gap-1.25 ps-2.5 pe-4 py-1",
-          "custom-cursor max-sm:hidden md:block",
+          hideShareText ? "" : "flex items-center gap-1.25 ps-2.5 py-1",
+          "custom-cursor max-sm:hidden md:block ",
         )}
       >
         <IconImage icon={"share"} />

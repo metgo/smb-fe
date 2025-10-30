@@ -6,7 +6,7 @@ import { HeartIcon, NavIcon, ShareIcon, ThreeDotsIcon } from "../ui/svgIcons";
 import MobileLinkShareBottomDrawer from "./LinkShareBottomDrawer.mobile";
 
 interface MobileFeedScreenActionIconsProps {
-  posTop?: string;
+  posTop?: string | number;
   trailInfo?: string;
   hideThreedotIcon?: boolean;
   strokColor?: string;
@@ -28,8 +28,8 @@ const MobileFeedScreenActionIcons = ({
         className={clsx(
           " absolute right-4 left-4 mx-auto flex justify-between text-white z-20 px-4",
           hideThreedotIcon && "flex-row-reverse",
-          posTop,
         )}
+        style={{ top: posTop }}
       >
         {!hideThreedotIcon && <ThreeDotsIcon strokColor={strokColor} />}
         <div className="flex items-center gap-4">

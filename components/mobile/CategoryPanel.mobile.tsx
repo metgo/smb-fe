@@ -13,13 +13,14 @@ const MobileCategoryPanel = () => {
   const { handleCategoryChange, activeCategoryKey } = useCtgSubctg();
 
   return (
-    <div className="bg-white shadow-md flex items-center justify-center gap-2.5 px-2.5 py-4 h-20">
+    <div className="bg-white shadow-md flex items-center justify-center gap-2.5 py-2 px-0 h-20">
       {categories?.map((item) => {
         const category = categoryIcons[item.id as any];
         const isActive = activeCategoryKey === item.id;
         const iconSrc = isActive ? item.activeIcon : item.icon;
+
         return (
-          <div
+          <button
             key={item.id}
             onClick={() => {
               handleCategoryChange(item.id);
@@ -29,7 +30,7 @@ const MobileCategoryPanel = () => {
               });
             }}
             className={clsx(
-              "w-16.5 h-16.5 flex items-center flex-col pt-2.5 rounded-lg transition-colors custom-cursor",
+              "aspect-square w-15.5 h-14 flex-shrink-0 flex flex-col items-center justify-center rounded-lg transition-colors duration-200 custom-cursor",
               isActive
                 ? `${category?.bg} text-white font-bold`
                 : " font-normal",
@@ -40,13 +41,16 @@ const MobileCategoryPanel = () => {
               width={30}
               height={30}
               src={`/images/category/${iconSrc}.svg`}
-              className="custom-cursor hover:opacity-80 transition-opacity duration-200"
+              className="custom-cursor transition-opacity duration-204"
             />
-            <div className="text-sm">{item.name}</div>
-          </div>
+            <div className="text-xs mt-1 text-center leading-tight">
+              {item.name}
+            </div>
+          </button>
         );
       })}
     </div>
   );
 };
+
 export default MobileCategoryPanel;
