@@ -10,6 +10,7 @@ import MobileFeedsThumbnailCarousel from "./FeedsThumbnailCarousel.mobile";
 import { categoryColors } from "@/lib/utils";
 import { useMobileFeedLayout } from "@/hooks";
 import OnlyFeedCardsLayoutMobile from "../layouts/OnlyFeedCardsLayout.mobile";
+import useGeneralStore from "@/stores/generalStore";
 
 interface MobileFeedLayoutProps {
   businesses: BusinessesProps;
@@ -17,7 +18,6 @@ interface MobileFeedLayoutProps {
 
 const MobileBusinessFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
   const {
-    shouldShowNavbar,
     activeFilterTabMobile,
     activeFeedItem,
     feedItems,
@@ -25,6 +25,7 @@ const MobileBusinessFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
     setActiveIndex,
     isFackLoading,
   } = useMobileFeedLayout(businesses);
+  const { hideFirstTwoSection } = useGeneralStore();
 
   // Prepare feed items for carousel
   const carouselItems = useMemo(
@@ -40,22 +41,11 @@ const MobileBusinessFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
 
   if (!feedItems?.length) return null;
 
-  const renderCarousel = (posBottom: string) => (
-    <MobileFeedsThumbnailCarousel
-      shouldSetItemId
-      items={carouselItems}
-      posBottom={posBottom}
-      loading={isFackLoading}
-      activeIndex={activeIndex}
-      setActiveIndex={setActiveIndex}
-      activeFilterTabMobile={activeFilterTabMobile}
-      primaryBoderColor={categoryColors[activeFeedItem?.primaryCategoryId]}
-    />
-  );
+  if (!hideFirstTwoSection) return null;
 
   return (
     <div className="flex flex-col max-sm:block md:hidden relative">
-      {shouldShowNavbar && <MobileNavbar />}
+      {hideFirstTwoSection && <MobileNavbar />}
 
       {activeFilterTabMobile === "gallery" && (
         <OnlyFeedCardsLayoutMobile data={businesses.data} />
@@ -64,9 +54,20 @@ const MobileBusinessFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
       {activeFilterTabMobile === "map" && (
         <>
           <MobileBusinessPinMap />
-          {shouldShowNavbar && (
+          {hideFirstTwoSection && (
             <div className="fixed bottom-0 right-0 w-full z-20 space-y-4">
-              {renderCarousel("bottom-24")}
+              <MobileFeedsThumbnailCarousel
+                shouldSetItemId
+                items={carouselItems}
+                posBottom={"bottom-24"}
+                loading={isFackLoading}
+                activeIndex={activeIndex}
+                setActiveIndex={setActiveIndex}
+                activeFilterTabMobile={activeFilterTabMobile}
+                primaryBoderColor={
+                  categoryColors[activeFeedItem?.primaryCategoryId]
+                }
+              />
               <MobileCategoryPanel />
             </div>
           )}
@@ -74,7 +75,7 @@ const MobileBusinessFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
       )}
 
       {/* Bottom Panels */}
-      {shouldShowNavbar && activeFilterTabMobile === "gallery" && (
+      {hideFirstTwoSection && activeFilterTabMobile === "gallery" && (
         <div className="fixed bottom-0 right-0 w-full z-20">
           <MobileCategoryPanel />
         </div>

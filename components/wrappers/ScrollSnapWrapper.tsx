@@ -18,10 +18,10 @@ export default function ScrollSnapWrapper({
   const feedSectionRef = useRef<HTMLDivElement>(null);
 
   // Touch handling refs
-  const touchStartY = useRef<number>(0);
-  const touchEndY = useRef<number>(0);
+  //const touchStartY = useRef<number>(0);
+  //const touchEndY = useRef<number>(0);
+  //const lastTouchTime = useRef<number>(0);
   const isTouching = useRef<boolean>(false);
-  const lastTouchTime = useRef<number>(0);
 
   const { setIsOnSection2, setHideFirstTwoSection, hideFirstTwoSection } =
     useGeneralStore();
@@ -164,77 +164,77 @@ export default function ScrollSnapWrapper({
   /** ===================================
    * Mobile touch swipe handler
    * =================================== */
-  useEffect(() => {
-    const minSwipeDistance = 50;
-    const maxSwipeTime = 500;
+  // useEffect(() => {
+  //   const minSwipeDistance = 50;
+  //   const maxSwipeTime = 500;
 
-    const handleTouchStart = (e: TouchEvent) => {
-      isTouching.current = true;
-      touchStartY.current = e.touches[0].clientY;
-      touchEndY.current = e.touches[0].clientY;
-      lastTouchTime.current = Date.now();
-    };
+  //   const handleTouchStart = (e: TouchEvent) => {
+  //     isTouching.current = true;
+  //     touchStartY.current = e.touches[0].clientY;
+  //     touchEndY.current = e.touches[0].clientY;
+  //     lastTouchTime.current = Date.now();
+  //   };
 
-    const handleTouchMove = (e: TouchEvent) => {
-      if (!isTouching.current) return;
+  //   const handleTouchMove = (e: TouchEvent) => {
+  //     if (!isTouching.current) return;
 
-      touchEndY.current = e.touches[0].clientY;
+  //     touchEndY.current = e.touches[0].clientY;
 
-      const target = e.target as HTMLElement;
-      const scrollableContainer = target.closest("[data-scrollable]");
-      if (scrollableContainer) return;
+  //     const target = e.target as HTMLElement;
+  //     const scrollableContainer = target.closest("[data-scrollable]");
+  //     if (scrollableContainer) return;
 
-      const scrollY = window.scrollY;
+  //     const scrollY = window.scrollY;
 
-      if (!hideFirstTwoSection) {
-        e.preventDefault();
-      } else if (
-        scrollY <= (feedSectionRef.current?.offsetTop || 0) + 50 &&
-        touchStartY.current - touchEndY.current < 0
-      ) {
-        e.preventDefault();
-      }
-    };
+  //     if (!hideFirstTwoSection) {
+  //       e.preventDefault();
+  //     } else if (
+  //       scrollY <= (feedSectionRef.current?.offsetTop || 0) + 50 &&
+  //       touchStartY.current - touchEndY.current < 0
+  //     ) {
+  //       e.preventDefault();
+  //     }
+  //   };
 
-    const handleTouchEnd = (e: TouchEvent) => {
-      if (!isTouching.current) return;
-      isTouching.current = false;
+  //   const handleTouchEnd = (e: TouchEvent) => {
+  //     if (!isTouching.current) return;
+  //     isTouching.current = false;
 
-      const deltaY = touchStartY.current - touchEndY.current;
-      const swipeDuration = Date.now() - lastTouchTime.current;
+  //     const deltaY = touchStartY.current - touchEndY.current;
+  //     const swipeDuration = Date.now() - lastTouchTime.current;
 
-      const isSwipe =
-        Math.abs(deltaY) > minSwipeDistance && swipeDuration < maxSwipeTime;
+  //     const isSwipe =
+  //       Math.abs(deltaY) > minSwipeDistance && swipeDuration < maxSwipeTime;
 
-      if (!isSwipe) return;
+  //     if (!isSwipe) return;
 
-      e.preventDefault();
-      const direction = deltaY > 0 ? "down" : "up";
+  //     e.preventDefault();
+  //     const direction = deltaY > 0 ? "down" : "up";
 
-      // Lock scroll to prevent flicker
-      document.body.style.overflow = "hidden";
-      handleSectionTransition(direction);
-      setTimeout(() => {
-        document.body.style.overflow = "";
-      }, 700);
-    };
+  //     // Lock scroll to prevent flicker
+  //     document.body.style.overflow = "hidden";
+  //     handleSectionTransition(direction);
+  //     setTimeout(() => {
+  //       document.body.style.overflow = "";
+  //     }, 700);
+  //   };
 
-    if ("ontouchstart" in window) {
-      document.addEventListener("touchstart", handleTouchStart, {
-        passive: false,
-      });
-      document.addEventListener("touchmove", handleTouchMove, {
-        passive: false,
-      });
-      document.addEventListener("touchend", handleTouchEnd, { passive: false });
+  //   if ("ontouchstart" in window) {
+  //     document.addEventListener("touchstart", handleTouchStart, {
+  //       passive: false,
+  //     });
+  //     document.addEventListener("touchmove", handleTouchMove, {
+  //       passive: false,
+  //     });
+  //     document.addEventListener("touchend", handleTouchEnd, { passive: false });
 
-      return () => {
-        document.removeEventListener("touchstart", handleTouchStart);
-        document.removeEventListener("touchmove", handleTouchMove);
-        document.removeEventListener("touchend", handleTouchEnd);
-      };
-    }
-  }, [hideFirstTwoSection, hasMarketing]);
+  //     return () => {
+  //       document.removeEventListener("touchstart", handleTouchStart);
+  //       document.removeEventListener("touchmove", handleTouchMove);
+  //       document.removeEventListener("touchend", handleTouchEnd);
+  //     };
+  //   }
+  // }, [hideFirstTwoSection, hasMarketing]);
 
   /** ===================================
    * Auto-snap logic on scroll stop
@@ -313,7 +313,7 @@ export default function ScrollSnapWrapper({
           )}
         </>
       )}
-      <div ref={feedSectionRef} className="max-sm:h-screen md:min-h-screen">
+      <div ref={feedSectionRef} className="min-h-screen">
         {children[2]}
       </div>
     </>
