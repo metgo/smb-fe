@@ -41,8 +41,6 @@ const MobileBusinessFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
 
   if (!feedItems?.length) return null;
 
-  if (!hideFirstTwoSection) return null;
-
   return (
     <div className="flex flex-col max-sm:block md:hidden relative">
       {hideFirstTwoSection && <MobileNavbar />}

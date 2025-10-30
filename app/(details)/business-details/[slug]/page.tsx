@@ -47,7 +47,7 @@ const page = async ({ params }: PageProps) => {
                 ratingCount={12}
                 reviewCount={34}
               />
-              <div className="flex items-center gap-2.5">
+              <div className="flex items-center justify-end gap-2.5">
                 <MapNavButton
                   lat={businessDetails?.geoLocation?.lat}
                   lng={businessDetails?.geoLocation?.long}
