@@ -17,6 +17,10 @@ const OnlyFeedCardsLayoutMobile = ({ data }: { data: FeedItemList }) => {
   const activeCategoryKey = searchParams.get("categoryId");
 
   const [scale, setScale] = useState(1);
+  const [shuffledCols, setShuffledCols] = useState<{
+    col1: number[];
+    col2: number[];
+  }>({ col1: [], col2: [] });
 
   useEffect(() => {
     const updateScale = () => {
@@ -61,10 +65,18 @@ const OnlyFeedCardsLayoutMobile = ({ data }: { data: FeedItemList }) => {
   // ✅ Multi-card layout (2 columns)
   const layout = scaleLayout(layouts.mobileLayout2, scale);
   const columnLayout = columns.mobileLayout2;
-
   const totalCards = data.length;
-  const col1Indexes = columnLayout.col1.filter((i) => i < totalCards);
-  const col2Indexes = columnLayout.col2.filter((i) => i < totalCards);
+
+  // ✅ Shuffle indexes only when `data` changes
+  useEffect(() => {
+    const col1Indexes = columnLayout.col1.filter((i) => i < totalCards);
+    const col2Indexes = columnLayout.col2.filter((i) => i < totalCards);
+
+    setShuffledCols({
+      col1: shuffleArray(col1Indexes),
+      col2: shuffleArray(col2Indexes),
+    });
+  }, [data, totalCards]); // 👈 only runs when data changes
 
   const renderCards = (indexes: number[]) =>
     indexes.map((i) => {
@@ -89,10 +101,10 @@ const OnlyFeedCardsLayoutMobile = ({ data }: { data: FeedItemList }) => {
     >
       <div className="flex gap-3 items-start justify-center px-0">
         <div className="flex flex-col gap-3">
-          {renderCards(shuffleArray(col1Indexes))}
+          {renderCards(shuffledCols.col1)}
         </div>
         <div className="flex flex-col gap-3">
-          {renderCards(shuffleArray(col2Indexes))}
+          {renderCards(shuffledCols.col2)}
         </div>
       </div>
     </div>

@@ -290,7 +290,7 @@ export const mapIntegratedCardsColumns: Record<
 
 // ============= Image Gallery ===============
 // Layout definitions (image sizes)
-export const layouts = {
+export const layoutsNotUsed = {
   layout1: [{ width: 1280, height: 450 }],
   layout2: [
     { width: 635, height: 450 },
@@ -313,6 +313,32 @@ export const layouts = {
     { width: 314.5, height: 220 },
     { width: 314.5, height: 220 },
     { width: 314.5, height: 220 },
+  ],
+};
+
+export const layouts = {
+  layout1: [{ width: "100%", height: 550 }],
+  layout2: [
+    { width: "50%", height: 550 },
+    { width: "50%", height: 550 },
+  ],
+  layout3: [
+    { width: "49%", height: 550 },
+    { width: "25.5%", height: 550 },
+    { width: "25.5%", height: 550 },
+  ],
+  layout4: [
+    { width: "49%", height: 550 },
+    { width: "25.5%", height: 550 },
+    { width: "25.5%", height: 275 },
+    { width: "25.5%", height: 275 },
+  ],
+  layout5: [
+    { width: "49%", height: 550 },
+    { width: "25.5%", height: 275 },
+    { width: "25.5%", height: 275 },
+    { width: "25.5%", height: 275 },
+    { width: "25.5%", height: 275 },
   ],
 };
 
@@ -349,6 +375,160 @@ export function getRoundedClass(layout: string, index: number) {
       if (index === 4) return "rounded-bl-[10px]";
       break;
     default:
-      return "";
+      return "rounded-none";
   }
 }
+
+export const galleryPreviewLayouts = {
+  layout1: [{ width: "100%", height: 550 }],
+  layout2: [
+    { width: "50%", height: 550 },
+    { width: "50%", height: 550 },
+  ],
+  layout3: [
+    { width: "49%", height: 550 },
+    { width: "25.5%", height: 550 },
+    { width: "25.5%", height: 550 },
+  ],
+  layout4: [
+    { width: "49%", height: 550 },
+    { width: "25.5%", height: 550 },
+    { width: "25.5%", height: 270 },
+    { width: "25.5%", height: 270 },
+  ],
+  layout5: [
+    { width: "49%", height: 550 },
+    { width: "25.5%", height: 275 },
+    { width: "25.5%", height: 275 },
+    { width: "25.5%", height: 275 },
+    { width: "25.5%", height: 275 },
+  ],
+  layout6: [
+    { width: "49%", height: 550 },
+    { width: "25.5%", height: 275 },
+    { width: "25.5%", height: 275 },
+    { width: "25.5%", height: 270 },
+    { width: "25.5%", height: 270 },
+    { width: "25.5%", height: 275 },
+  ],
+  layout7: [
+    { width: "49%", height: 550 },
+    { width: "25.5%", height: 275 },
+    { width: "25.5%", height: 275 },
+    { width: "25.5%", height: 270 },
+    { width: "25.5%", height: 270 },
+    { width: "25.5%", height: 275 },
+    { width: "25.5%", height: 275 },
+  ],
+  layout8: [
+    { width: "49%", height: 275 },
+    { width: "49%", height: 275 },
+    { width: "25.5%", height: 270 },
+    { width: "25.5%", height: 270 },
+    { width: "25.5%", height: 275 },
+    { width: "25.5%", height: 275 },
+    { width: "25.5%", height: 270 },
+    { width: "25.5%", height: 270 },
+  ],
+  layout9: [
+    { width: "49%", height: 275 },
+    { width: "49%", height: 275 },
+    { width: "25.5%", height: 275 },
+    { width: "25.5%", height: 275 },
+    { width: "25.5%", height: 275 },
+    { width: "25.5%", height: 270 },
+    { width: "25.5%", height: 270 },
+    { width: "25.5%", height: 270 },
+    { width: "25.5%", height: 270 },
+  ],
+  layout10: [
+    { width: "49%", height: 275 },
+    { width: "25.5%", height: 275 },
+    { width: "25.5%", height: 275 },
+    { width: "25.5%", height: 275 },
+    { width: "25.5%", height: 270 },
+    { width: "25.5%", height: 270 },
+    { width: "25.5%", height: 270 },
+    { width: "25.5%", height: 270 },
+    { width: "25.5%", height: 270 },
+    { width: "25.5%", height: 270 },
+  ],
+  layout11: [
+    { width: "33%", height: 275 },
+    { width: "33%", height: 275 },
+    { width: "33%", height: 275 },
+    { width: "18.5%", height: 250 },
+    { width: "18.5%", height: 250 },
+    { width: "18.5%", height: 350 },
+    { width: "18.5%", height: 350 },
+    { width: "18.5%", height: 250 },
+    { width: "18.5%", height: 250 },
+    { width: "18.5%", height: 350 },
+  ],
+  layout12: [
+    { width: "33%", height: 275 },
+    { width: "33%", height: 275 },
+    { width: "18.5%", height: 350 },
+    { width: "18.5%", height: 250 },
+    { width: "18.5%", height: 250 },
+    { width: "18.5%", height: 350 },
+    { width: "18.5%", height: 350 },
+    { width: "18.5%", height: 250 },
+    { width: "18.5%", height: 250 },
+    { width: "18.5%", height: 350 },
+  ],
+  layout13: [
+    { width: "18.5%", height: 350 },
+    { width: "18.5%", height: 350 },
+    { width: "18.5%", height: 250 },
+    { width: "18.5%", height: 250 },
+    { width: "18.5%", height: 350 },
+    { width: "18.5%", height: 350 },
+    { width: "18.5%", height: 250 },
+    { width: "18.5%", height: 250 },
+    { width: "18.5%", height: 350 },
+    { width: "18.5%", height: 350 },
+  ],
+  layout14: [
+    { width: "18.5%", height: 350 },
+    { width: "18.5%", height: 250 },
+    { width: "18.5%", height: 250 },
+    { width: "18.5%", height: 275 },
+    { width: "18.5%", height: 275 },
+    { width: "18.5%", height: 275 },
+    { width: "18.5%", height: 350 },
+    { width: "18.5%", height: 350 },
+    { width: "18.5%", height: 250 },
+    { width: "18.5%", height: 250 },
+    { width: "18.5%", height: 350 },
+    { width: "18.5%", height: 350 },
+  ],
+  layout15: [
+    { width: "18.5%", height: 350 },
+    { width: "18.5%", height: 275 },
+    { width: "18.5%", height: 275 },
+    { width: "18.5%", height: 275 },
+    { width: "18.5%", height: 350 },
+    { width: "18.5%", height: 350 },
+    { width: "18.5%", height: 275 },
+    { width: "18.5%", height: 275 },
+    { width: "18.5%", height: 275 },
+    { width: "18.5%", height: 350 },
+  ],
+  layout16: [
+    { width: "18.5%", height: 250 },
+    { width: "18.5%", height: 250 },
+    { width: "18.5%", height: 275 },
+    { width: "18.5%", height: 275 },
+    { width: "18.5%", height: 275 },
+    { width: "18.5%", height: 350 },
+    { width: "18.5%", height: 275 },
+    { width: "18.5%", height: 350 },
+    { width: "18.5%", height: 275 },
+    { width: "18.5%", height: 350 },
+    { width: "18.5%", height: 275 },
+    { width: "18.5%", height: 275 },
+    { width: "18.5%", height: 275 },
+    { width: "18.5%", height: 350 },
+  ],
+};
