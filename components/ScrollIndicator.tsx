@@ -45,7 +45,7 @@ const ScrollIndicator = ({
       } else {
         if (hasMarketing) setIsOnSection2(false);
         else setIsOnSection2(true);
-        setHideFirstTwoSection(false);
+        // setHideFirstTwoSection(false);
       }
     }, 800);
   };
