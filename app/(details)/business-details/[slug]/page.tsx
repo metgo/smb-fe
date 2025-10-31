@@ -4,7 +4,6 @@ import {
   BusinessDetailsFilterTab,
   ImageGallery,
   RatingReviewLocation,
-  ReturnToPrevPageBtn,
   Title,
 } from "../../_components";
 import AttributePills from "@/components/AttributePills";
@@ -25,10 +24,9 @@ const page = async ({ params }: PageProps) => {
   if (businessDetails === undefined) return <NoFeedItemLayout />;
   const { groupTypesId = [], accessibilitiesId = [] } = businessDetails;
   const products: Product[] = await getProducts(businessDetails._id);
+
   return (
     <>
-      <ReturnToPrevPageBtn />
-
       <div className="mx-20 py-12 max-sm:hidden md:block">
         <div className="flex items-center gap-7.5 w-full mb-4.5">
           <NextImage

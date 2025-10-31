@@ -10,15 +10,27 @@ import { IconImage } from "@/components/ui";
 import { CardSkeleton } from "@/components/skeletons";
 import { menuItems, misc } from "@/constant/hebrew";
 
-const ConstatUsInfo = ({ icon, text }: { icon: string; text: string }) => {
-  if (!text) return;
-  return (
-    <div className=" flex items-center gap-2.5">
-      <IconImage icon={icon} />
-      <span>{text}</span>
-    </div>
-  );
-};
+const ContactUsInfo = ({
+  icon,
+  text,
+  href,
+}: {
+  icon: string;
+  text: string;
+  href: string;
+}) => (
+  <a
+    href={href}
+    className="flex items-center gap-2.5 hover:underline transition-colors custom-cursor"
+    target={
+      href.startsWith("http") || href.startsWith("mailto") ? "_blank" : "_self"
+    }
+    rel="noopener noreferrer"
+  >
+    <IconImage icon={icon} />
+    <span>{text}</span>
+  </a>
+);
 
 const OpeningDayHours = ({ days, open, close }: OpeningHrs) => (
   <div className="flex justify-between gap-24 font-normal  text-theme">
@@ -91,11 +103,25 @@ const OurStoryTabContent = ({
           </div>
           <div className="flex items-center gap-7.5 text-charcoal">
             <span>{menuItems.contactUs}</span>
-            <ConstatUsInfo icon="phone" text={contactDetails?.phone} />
-            <ConstatUsInfo icon="mail" text={contactDetails?.email} />
-            <ConstatUsInfo
+            {/* Phone */}
+            <ContactUsInfo
+              icon="phone"
+              text={contactDetails.phone}
+              href={`tel:${contactDetails.phone.replace(/\s+/g, "")}`}
+            />
+
+            {/* Email */}
+            <ContactUsInfo
+              icon="mail"
+              text={contactDetails.email}
+              href={`mailto:${contactDetails.email}`}
+            />
+
+            {/* WhatsApp */}
+            <ContactUsInfo
               icon="whatsapp-outlined"
-              text={contactDetails?.whatsAppNumber}
+              text={contactDetails.whatsAppNumber}
+              href={`https://wa.me/${contactDetails.whatsAppNumber.replace(/\D/g, "")}`}
             />
           </div>
         </div>

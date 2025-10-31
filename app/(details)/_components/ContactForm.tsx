@@ -13,7 +13,6 @@ import { Dialog, IconImage } from "@/components/ui";
 import { sendEmail } from "@/actions/contactUsAction";
 import { ContactFormData, contactFormSchema } from "@/schemas/contact";
 import { contactFormReasonOptions } from "@/lib/utils";
-import ReturnToPrevPageBtn from "./ReturnToPrevPageBtn";
 
 const InputField = ({ type = "text", placeholder, register, error }: any) => (
   <div className="flex flex-col w-full font-normal">
@@ -117,15 +116,11 @@ const ContactForm = () => {
           className="
       max-sm:relative md:absolute 
       max-sm:top-30 md:-top-64 
-      md:left-1/2 md:-translate-x-1/2  /* ✅ Center horizontally for md devices */
+      md:left-1/2 md:-translate-x-1/2  
       space-y-9.5 w-full md:w-2xl
     "
         >
           <div className="bg-white md:border border-lightGray rounded-2xl max-sm:w-full max-sm:p-4 md:p-10">
-            <div className="md:hidden max-sm:block mt-8">
-              <ReturnToPrevPageBtn />
-            </div>
-
             <div className="flex flex-col items-center justify-center max-sm:my-10 md:mb-10 text-dark text-center w-full">
               <h2 className="font-bold text-2xl">{contactUsText.title}</h2>
               <p className="font-normal max-sm:w-90">{contactUsText.desc}</p>

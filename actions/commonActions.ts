@@ -69,3 +69,16 @@ export async function getAminitiesInfo() {
     console.error("Error fetching categories:", error);
   }
 }
+
+export async function getPromotionsList() {
+  try {
+    const res = await fetch(
+      `${urls.promotional}/${IdentifierId}?isBusiness=false&isEvent=false&isTrip=false`,
+    );
+    if (!res.ok) throw new Error("Failed to fetch categories");
+    const data = await res.json();
+    return data;
+  } catch (error) {
+    console.error("Error fetching categories:", error);
+  }
+}

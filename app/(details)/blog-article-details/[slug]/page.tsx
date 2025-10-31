@@ -1,5 +1,5 @@
 import ShareUrlBtnModal from "@/components/ShareUrlBtnModal";
-import { ImageGallery, ReturnToPrevPageBtn } from "../../_components";
+import { ImageGallery } from "../../_components";
 import NoFeedItemLayout from "@/components/layouts/NoFeedItemLayout";
 import { getBlogById } from "@/actions/blogActions";
 import MobileImageGallery from "@/components/mobile/ImageGallery.mobile";
@@ -14,7 +14,6 @@ const page = async ({ params }: PageProps) => {
 
   return (
     <div>
-      <ReturnToPrevPageBtn />
       <div className="max-sm:mx-0 md:mx-20 py-12">
         <MobileActionIcons />
         <div className="mb-4.5 max-sm:px-12">
