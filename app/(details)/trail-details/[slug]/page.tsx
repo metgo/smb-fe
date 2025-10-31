@@ -7,7 +7,7 @@ import { getTrailDetailsBySlug } from "@/actions/trailActions";
 import ShareUrlBtnModal from "@/components/ShareUrlBtnModal";
 import TrailDetailsRouteMap from "../_components/TrailDetailsRouteMap";
 import MobileTrailFeedDetails from "../_mobile/TrailFeedDetails.mobile";
-import { NoDetailsFound, ReturnToPrevPageBtn } from "../../_components";
+import { NoDetailsFound } from "../../_components";
 
 const page = async ({ params }: PageProps) => {
   const { slug } = await params;
@@ -19,7 +19,6 @@ const page = async ({ params }: PageProps) => {
 
   return (
     <>
-      <ReturnToPrevPageBtn />
       <div className="w-full h-[87vh] relative max-sm:hidden md:block">
         <TrailDetailsRouteMap _id={trailsDetails?._id} locations={locations} />
 

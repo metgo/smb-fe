@@ -446,3 +446,34 @@ input[type="range"]::-moz-range-thumb {
     filter: contrast(110%) brightness(103%) saturate(108%) blur(0px);
   }
 }
+
+/* Seamless Infinite Scroll */
+@keyframes seamless-infinite-scroll {
+  0% {
+    transform: translateX(0); /* Start from right */
+  }
+  100% {
+    transform: translateX(-100%); /* Move left */
+  }
+}
+
+@media (max-width: 768px) {
+  @keyframes seamless-infinite-scroll {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+}
+
+.animate-seamless-infinite-scroll {
+  display: inline-flex;
+  direction: rtl; /* key part — right-to-left content flow */
+  animation: seamless-infinite-scroll 1200s linear infinite;
+}
+
+.animate-seamless-infinite-scroll:hover {
+  animation-play-state: paused;
+}

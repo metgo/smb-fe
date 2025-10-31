@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 
 import MobileNavbar from "./Navbar.mobile";
 import MobileCategoryPanel from "./CategoryPanel.mobile";
@@ -11,12 +11,15 @@ import { categoryColors } from "@/lib/utils";
 import { useMobileFeedLayout } from "@/hooks";
 import OnlyFeedCardsLayoutMobile from "../layouts/OnlyFeedCardsLayout.mobile";
 import useGeneralStore from "@/stores/generalStore";
+import { usePathname } from "next/navigation";
+import { pathNames } from "@/lib/endpoints";
 
 interface MobileFeedLayoutProps {
   businesses: BusinessesProps;
 }
 
 const MobileBusinessFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
+  const pathname = usePathname();
   const {
     activeFilterTabMobile,
     activeFeedItem,
@@ -25,7 +28,7 @@ const MobileBusinessFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
     setActiveIndex,
     isFackLoading,
   } = useMobileFeedLayout(businesses);
-  const { hideFirstTwoSection } = useGeneralStore();
+  const { hideFirstTwoSection, setHideFirstTwoSection } = useGeneralStore();
 
   // Prepare feed items for carousel
   const carouselItems = useMemo(
@@ -39,6 +42,11 @@ const MobileBusinessFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
     [feedItems],
   );
 
+  useEffect(() => {
+    if (pathname !== pathNames.home) {
+      setHideFirstTwoSection(true);
+    }
+  }, [pathname]);
   if (!feedItems?.length) return null;
 
   return (

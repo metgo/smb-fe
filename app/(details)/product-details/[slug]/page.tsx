@@ -7,7 +7,6 @@ import {
   AddToCartBuyNowBtns,
   MainProductImage,
   NoDetailsFound,
-  ReturnToPrevPageBtn,
 } from "../../_components";
 import { categoryIds } from "@/lib/utils";
 import MobileProductDetails from "@/components/mobile/ProductDetails.mobile";
@@ -28,8 +27,6 @@ const page = async ({ params }: PageProps) => {
   );
   return (
     <>
-      <ReturnToPrevPageBtn />
-
       <div className="mx-20 py-12 max-sm:hidden md:block">
         <section className="grid grid-cols-2 gap-10">
           <MainProductImage

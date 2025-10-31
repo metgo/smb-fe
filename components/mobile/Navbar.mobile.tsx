@@ -9,6 +9,7 @@ import { pathNames } from "@/lib/endpoints";
 import SearchFlow from "../navbar/SearchFlow";
 import HamburgerMenu from "../navbar/HamburgerMenu";
 import MobileFilterTab from "./FilterTab.mobile";
+import PromotionalCards from "../PromotionalCards";
 
 const MobileNavbar = () => {
   const pathname = usePathname();
@@ -30,7 +31,7 @@ const MobileNavbar = () => {
   return (
     <nav
       className={clsx(
-        "px-4 py-2 bg-white border-b border-[#F5F5F5] max-sm:block md:hidden fixed top-0 left-0 right-0 z-50 transition-transform duration-300",
+        " px-4 py-2 bg-white border-b border-[#F5F5F5] max-sm:block md:hidden fixed top-0 left-0 right-0 z-50 transition-transform duration-300",
       )}
     >
       <div className="grid grid-cols-12 items-center">
@@ -46,6 +47,7 @@ const MobileNavbar = () => {
           {/* {showFilterIcon && <IconImage icon="filter" />} */}
         </div>
       </div>
+      <PromotionalCards />
     </nav>
   );
 };
