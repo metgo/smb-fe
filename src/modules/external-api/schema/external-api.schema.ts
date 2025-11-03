@@ -5,6 +5,41 @@ import { AuditableSchema } from 'src/core/helper/auditable.schema';
 import { Blog } from 'src/modules/blog/schema/blog.schema';
 import { Marketing } from 'src/modules/marketing/schema/marketing.schema';
 import { Theme } from 'src/modules/themes/schema/theme.schema';
+import { ExternalApiPurpose } from '../external-api.types';
+import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.schema';
+import { BussSubCategory } from 'src/modules/buss-subcategories/schema/buss-subCategory.schema';
+import { GroupType } from 'src/modules/group-type/schema/group-type.schema';
+import { Accessibility } from 'src/modules/accessibility/schema/accessibility.schema';
+
+@Schema({ _id: false })
+export class PromotionalItem {
+  @Prop({
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: BussCategory.name }],
+    required: false,
+  })
+    categoryIds: mongoose.Types.ObjectId[];
+
+  @Prop({
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: BussSubCategory.name }],
+    required: false,
+  })
+    subCategoryIds: mongoose.Types.ObjectId[];
+
+  @Prop({
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: GroupType.name }],
+    required: false,
+  })
+    groupTypesId: mongoose.Types.ObjectId[];
+
+  @Prop({
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: Accessibility.name }],
+    required: false,
+  })
+    accesibilitiesId: mongoose.Types.ObjectId[];
+
+  @Prop({ type: Boolean, default: false })
+    isAll: boolean;
+}
 
 @Schema()
 export class ExternalApi extends AuditableSchema {
@@ -80,6 +115,21 @@ export class ExternalApi extends AuditableSchema {
 
   @Prop({ default: null })
     privacyPolicy: string;
+
+  @Prop({ default: ExternalApiPurpose.MARKETPLACE })
+    purpose: ExternalApiPurpose;
+
+  @Prop({ type: PromotionalItem, required: false })
+    promotionalBusinesses: PromotionalItem;
+
+  @Prop({ type: PromotionalItem, required: false })
+    promotionalEvents: PromotionalItem;
+
+  // @Prop({ type: PromotionalItem, required: false })
+  //   promotionalMarketing: PromotionalItem;
+
+  @Prop({ type: PromotionalItem, required: false })
+    promotionalTrips: PromotionalItem;
 }
 
 export type ExternalApiDocument = HydratedDocument<ExternalApi>;

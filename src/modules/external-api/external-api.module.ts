@@ -17,12 +17,22 @@ import { MailChimpModule } from 'src/services/mailchimp/mailchimp.module';
 import { PaymentsModule } from 'src/services/payments/payments.module';
 import { GcpBucketModule } from 'src/services/gcp-bucket/gcp-bucket.module';
 import { FindByIdAndPopulateHandler } from './queries/handler/find-by-id-and-populate.handler';
+import { GetSiteInfoHandler } from './queries/handler/get-site-info.handler';
+import { Business, BusinessSchema } from '../business/shared/schema/business.schema';
+import { EventSchema } from '../events/schema/events.schema';
+import { Trip, TripSchema } from '../trips/schema/trips.schema';
+import { Campaign, CampaignSchema } from '../campaign/schema/campaign.schema';
+import { GetPromotionalItemsHandler } from './queries/handler/get-promotional-items.handler';
 
 @Module({
   imports: [
     CqrsModule,
     MongooseModule.forFeature([
       { name: ExternalApi.name, schema: ExternalApiSchema },
+      { name: Business.name, schema: BusinessSchema },
+      { name: Campaign.name, schema: CampaignSchema },
+      { name: Event.name, schema: EventSchema },
+      { name: Trip.name, schema: TripSchema },
     ]),
     forwardRef(() => AuthorityModule),
     forwardRef(() => DMOModule),
@@ -32,7 +42,7 @@ import { FindByIdAndPopulateHandler } from './queries/handler/find-by-id-and-pop
     PaymentsModule,
   ],
   controllers: [ExternalApiController],
-  providers: [ExternalApiServices, FindByIdAndPopulateHandler],
+  providers: [ExternalApiServices, FindByIdAndPopulateHandler, GetSiteInfoHandler, GetPromotionalItemsHandler],
   exports: [ExternalApiServices],
 })
 export class ExternalApiModule {}

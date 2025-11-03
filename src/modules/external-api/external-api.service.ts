@@ -183,36 +183,4 @@ export class ExternalApiServices {
       exceptionHandling(err);
     }
   }
-
-  async getSiteInfoByIdentifierId(identifierId: string) {
-    try {
-      const externalApi = await this.ExternalApiModel.findOne({
-        identifierId,
-      }).populate<{ themeId: Theme }>(
-        'themeId',
-        'metaTitle metaDescription metaKeywords ogName homeVideos',
-      );
-      if (!externalApi) {
-        throw new ForbiddenException(ServerErrors.EXTERNAL_API.IDENTIFIER_ID);
-      }
-
-      return {
-        name: externalApi.name,
-        metaTitle: externalApi?.themeId?.metaTitle,
-        metaDescription: externalApi?.themeId?.metaDescription,
-        metaKeywords: externalApi?.themeId?.metaKeywords,
-        siteName: externalApi?.themeId?.ogName,
-        siteUrl: externalApi?.themeId?.websiteUrl,
-        homeVideos: externalApi?.themeId?.homeVideos?.filter(v => v.isActive),
-      };
-    } catch (err) {
-      this.logger.error(
-        `[EXTERNAL_API-${identifierId}]: FAILED TO GET EXTERNAL API's SITE INFO'`,
-        {
-          err: err.message,
-        },
-      );
-      exceptionHandling(err);
-    }
-  }
 }
