@@ -470,7 +470,6 @@ input[type="range"]::-moz-range-thumb {
 
 .animate-seamless-infinite-scroll {
   display: inline-flex;
-  direction: ltr;
   animation: seamless-infinite-scroll 800s linear infinite; /* default = desktop */
 }
 
