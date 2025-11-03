@@ -39,7 +39,7 @@ const MobileBusinessDetails = ({
 
   return (
     <>
-      <div className="md:hidden max-sm:block pb-12">
+      <div className="md:hidden max-sm:block pt-30 pb-12">
         <div className="flex items-center justify-end gap-1 mt-8 px-4">
           <IconImage
             width={30}

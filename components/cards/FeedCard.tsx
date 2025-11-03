@@ -314,7 +314,7 @@ const FeedCardActions = ({
       <div className="flex gap-2.5">
         <button
           type="button"
-          className="custom-cursor hover:border border-white rounded-full"
+          className="custom-cursor border border-transparent hover:border-white rounded-full"
           aria-label="Circular heart"
         >
           <IconImage width={30} height={30} icon="circular-heart" />
@@ -324,7 +324,7 @@ const FeedCardActions = ({
           <button
             type="button"
             onClick={handleMapClick}
-            className="custom-cursor hover:border border-white rounded-full"
+            className="custom-cursor border border-transparent hover:border-white rounded-full"
             aria-label="Show on map"
           >
             <IconImage width={30} height={30} icon="circular-map-fold" />
@@ -334,7 +334,7 @@ const FeedCardActions = ({
       {feedItem.serviceType === "point_of_interest" && (
         <button
           type="button"
-          className="bg-black/25 rounded-full p-1 flex items-center justify-center hover:border border-white"
+          className="bg-black/25 rounded-full p-1 flex items-center justify-center border border-transparent hover:border-white"
         >
           <IconImage width={24} height={24} icon="location-solid" />
         </button>

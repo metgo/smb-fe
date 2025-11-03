@@ -1,12 +1,13 @@
 import React from "react";
-import ContactForm from "../_components/ContactForm";
 import Image from "next/image";
+
+import ContactForm from "../_components/ContactForm";
 import { contactUsText } from "@/constant/hebrew";
 
 const page = () => {
   return (
-    <div className="relative">
-      <div className="px-20 py-7">
+    <div className="relative max-sm:pt-30">
+      <div className=" max-sm:px-8 md:px-20 py-7">
         <span className="font-bold text-dark">{contactUsText.contactUs}</span>
       </div>
       <Image

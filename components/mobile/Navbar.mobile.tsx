@@ -9,6 +9,7 @@ import { pathNames } from "@/lib/endpoints";
 import SearchFlow from "../navbar/SearchFlow";
 import HamburgerMenu from "../navbar/HamburgerMenu";
 import MobileFilterTab from "./FilterTab.mobile";
+import PromotionalCards from "../PromotionalCards";
 
 const MobileNavbar = () => {
   const pathname = usePathname();
@@ -46,6 +47,7 @@ const MobileNavbar = () => {
           {/* {showFilterIcon && <IconImage icon="filter" />} */}
         </div>
       </div>
+      <PromotionalCards />
     </nav>
   );
 };

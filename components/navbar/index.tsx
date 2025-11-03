@@ -15,6 +15,7 @@ import BusinessPageFilterTabs from "./BusinessPageFilterTabs";
 import useCartStore from "@/stores/cartStore";
 import { CartDrawer } from "../drawer";
 import { pathNames } from "@/lib/endpoints";
+import PromotionalCards from "../PromotionalCards";
 
 const Navbar = ({ showFilterTab = false }: { showFilterTab?: boolean }) => {
   const pathname = usePathname();
@@ -71,6 +72,7 @@ const Navbar = ({ showFilterTab = false }: { showFilterTab?: boolean }) => {
             </div>
           </div>
         </div>
+        <PromotionalCards />
       </nav>
 
       {isCartDrawerOpen && <CartDrawer setIsOpen={setIsCartDrawerOpen} />}

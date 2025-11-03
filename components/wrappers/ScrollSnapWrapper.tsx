@@ -116,11 +116,11 @@ export default function ScrollSnapWrapper({
       } else if (currentSection === "feed" && hideFirstTwoSection) {
         setHideFirstTwoSection(false);
         setIsOnSection2(false);
-        smoothScrollTo(
-          hasMarketing
-            ? secondSectionRef.current?.offsetTop || 0
-            : firstSectionRef.current?.offsetTop || 0,
-        );
+        // smoothScrollTo(
+        //   hasMarketing
+        //     ? secondSectionRef.current?.offsetTop || 0
+        //     : (firstSectionRef.current?.offsetTop || 0)+ 800,
+        // );
       }
     }
   };
@@ -264,7 +264,7 @@ export default function ScrollSnapWrapper({
           ) {
             smoothScrollTo(secondSectionRef.current?.offsetTop || 0);
           } else if (scrollY >= (hasMarketing ? vh * 1.5 : vh * 0.5)) {
-            smoothScrollTo(feedSectionRef.current?.offsetTop || 0);
+            // smoothScrollTo(feedSectionRef.current?.offsetTop || 0);
             setHideFirstTwoSection(true);
             if (hasMarketing) {
               setIsOnSection2(true);

@@ -446,3 +446,42 @@ input[type="range"]::-moz-range-thumb {
     filter: contrast(110%) brightness(103%) saturate(108%) blur(0px);
   }
 }
+
+/* Seamless Infinite Scroll */
+@keyframes seamless-infinite-scroll {
+  0% {
+    transform: translateX(-100%); /* Start from left */
+  }
+  100% {
+    transform: translateX(0); /* Move right */
+  }
+}
+
+@media (max-width: 768px) {
+  @keyframes seamless-infinite-scroll {
+    0% {
+      transform: translateX(-50%);
+    }
+    100% {
+      transform: translateX(0);
+    }
+  }
+}
+
+.animate-seamless-infinite-scroll {
+  display: inline-flex;
+  animation: seamless-infinite-scroll 800s linear infinite; /* default = desktop */
+}
+
+@media (max-width: 768px) {
+  .animate-seamless-infinite-scroll {
+    animation-duration: 400s; /* override for mobile */
+  }
+}
+
+/* ✅ Pause only on hover-capable (desktop) devices */
+@media (hover: hover) and (pointer: fine) {
+  .animate-seamless-infinite-scroll:hover {
+    animation-play-state: paused;
+  }
+}

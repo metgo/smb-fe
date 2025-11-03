@@ -4,7 +4,6 @@ import {
   ImageGallery,
   Location,
   NoDetailsFound,
-  ReturnToPrevPageBtn,
   Title,
 } from "../../_components";
 import { events } from "@/constant/hebrew";
@@ -27,8 +26,6 @@ const page = async ({ params }: PageProps) => {
 
   return (
     <>
-      <ReturnToPrevPageBtn />
-
       <div className="mx-20 py-12 max-sm:hidden md:block">
         <Title title={eventDetails?.name} />
 
