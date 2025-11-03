@@ -450,30 +450,39 @@ input[type="range"]::-moz-range-thumb {
 /* Seamless Infinite Scroll */
 @keyframes seamless-infinite-scroll {
   0% {
-    transform: translateX(0); /* Start from right */
+    transform: translateX(-100%); /* Start from left */
   }
   100% {
-    transform: translateX(-100%); /* Move left */
+    transform: translateX(0); /* Move right */
   }
 }
 
 @media (max-width: 768px) {
   @keyframes seamless-infinite-scroll {
     0% {
-      transform: translateX(0);
+      transform: translateX(-50%);
     }
     100% {
-      transform: translateX(-50%);
+      transform: translateX(0);
     }
   }
 }
 
 .animate-seamless-infinite-scroll {
   display: inline-flex;
-  direction: rtl; /* key part — right-to-left content flow */
-  animation: seamless-infinite-scroll 1200s linear infinite;
+  direction: ltr;
+  animation: seamless-infinite-scroll 800s linear infinite; /* default = desktop */
 }
 
-.animate-seamless-infinite-scroll:hover {
-  animation-play-state: paused;
+@media (max-width: 768px) {
+  .animate-seamless-infinite-scroll {
+    animation-duration: 400s; /* override for mobile */
+  }
+}
+
+/* ✅ Pause only on hover-capable (desktop) devices */
+@media (hover: hover) and (pointer: fine) {
+  .animate-seamless-infinite-scroll:hover {
+    animation-play-state: paused;
+  }
 }
