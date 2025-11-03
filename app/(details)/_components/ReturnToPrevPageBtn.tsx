@@ -11,7 +11,7 @@ const ReturnToPrevPageBtn = ({ label = misc.return }: { label?: string }) => {
   return (
     <div
       onClick={() => router.back()}
-      className="flex flex-shrink-0 items-center gap-1.25 max-sm:px-0 md:pe-14 my-2.5 custom-cursor hover:font-bold"
+      className="flex flex-shrink-0 items-center gap-1.25 max-sm:px-0 md:pe-4 my-2.5 custom-cursor hover:font-bold"
     >
       <IconImage icon="return-arrow" />
       <span className="text-dark font-normal">{label}</span>

@@ -112,10 +112,7 @@ const SearchFlow = ({
 
   return (
     <>
-      <div
-        className=" custom-cursor"
-        onClick={() => setIsSerachModalOpen(true)}
-      >
+      <div className="custom-cursor" onClick={() => setIsSerachModalOpen(true)}>
         {isMobile ? (
           <SearchIcon />
         ) : (

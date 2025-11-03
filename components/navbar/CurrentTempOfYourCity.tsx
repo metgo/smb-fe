@@ -21,7 +21,7 @@ const CurrentTempOfYourCity = () => {
   }
 
   return (
-    <div className={`flex items-center gap-1 bg-white rounded-[12px] px-2`}>
+    <div className={`flex items-center gap-1 bg-white rounded-[12px]`}>
       <div className="font-normal text-2xl text-theme text-center pt-1">
         {Math.trunc(weather?.temperature) || 0.0}°C
       </div>
