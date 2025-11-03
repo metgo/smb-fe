@@ -1,8 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useState } from "react";
-import { useParams, usePathname, useRouter } from "next/navigation";
+import { useEffect, useState, useRef } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { pathNames } from "@/lib/endpoints";
 import { staticImages } from "@/constant/staticImages";
 import { getPromotionsList } from "@/actions/commonActions";
@@ -12,11 +12,10 @@ import { ReturnToPrevPageBtn } from "@/app/(details)/_components";
 
 const PromotionalCards = () => {
   const router = useRouter();
-  const params = useParams();
   const pathname = usePathname();
-  const slug = params?.slug;
   const [promotions, setPromotions] = useState<any>([]);
-  const [filteredPromotions, setFilteredPromotions] = useState([]);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [animationDuration, setAnimationDuration] = useState(800);
 
   useEffect(() => {
     (async () => {
@@ -25,21 +24,26 @@ const PromotionalCards = () => {
     })();
   }, []);
 
+  // ✅ Calculate animation duration based on content width
   useEffect(() => {
-    if (slug && promotions) {
-      const filteredItems = promotions?.filter(
-        (item: any) => item.slug !== params?.slug,
-      );
-      setFilteredPromotions(filteredItems);
+    if (scrollRef.current && promotions?.length > 0) {
+      const scrollWidth = scrollRef.current.scrollWidth;
+      // const viewportWidth = window.innerWidth;
+
+      // ✅ Adjust this value to control speed (pixels per second)
+      // Higher = slower, Lower = faster
+      const PIXELS_PER_SECOND = 90; // Adjust this to tune speed
+
+      const duration = scrollWidth / PIXELS_PER_SECOND;
+      setAnimationDuration(duration);
     }
-  }, [slug, promotions]);
+  }, [promotions]);
 
   const handleNavigate = (slug: string) => {
     startLoading();
     router.push(`${pathNames.businessDetails}/${slug}`);
   };
 
-  //  pages where this component should show
   const shouldShow =
     pathname === pathNames.contactUs ||
     pathname.startsWith(pathNames.blogArticleDetails) ||
@@ -53,14 +57,20 @@ const PromotionalCards = () => {
   return (
     <section className="flex items-center max-sm:gap-3 z-50 bg-white mt-4 overflow-hidden">
       <ReturnToPrevPageBtn />
-      {filteredPromotions?.length > 0 && (
+      {promotions?.length > 0 && (
         <div
           dir="ltr"
           className="w-full flex-shrink-0 flex items-center justify-start overflow-hidden"
         >
-          <div className="flex gap-x-4 h-full animate-seamless-infinite-scroll whitespace-nowrap items-center">
+          <div
+            ref={scrollRef}
+            style={{
+              animationDuration: `${animationDuration}s`,
+            }}
+            className="flex gap-x-4 h-full animate-seamless-infinite-scroll whitespace-nowrap items-center"
+          >
             {Array(40)
-              .fill(filteredPromotions)
+              .fill(promotions)
               .flat()
               .map((item, idx) => (
                 <div
