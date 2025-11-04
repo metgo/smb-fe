@@ -185,7 +185,7 @@ const ImageCard = ({
           src={
             computedValues.currentImage?.imageUrl || staticImages.placeholder
           }
-          alt={computedValues.currentImage?.alt || ""}
+          alt={computedValues?.currentImage?.alt || ""}
           unoptimized
           quality={100}
           className={clsx(

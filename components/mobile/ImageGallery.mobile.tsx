@@ -9,10 +9,10 @@ const MobileImageGallery = ({ images }: { images: ImageItem[] }) => {
   const [showAllThumbnails, setShowAllThumbnails] = useState(false);
 
   const maxVisibleThumbnails = 4;
-  const remainingCount = images.length - maxVisibleThumbnails;
+  const remainingCount = images?.length - maxVisibleThumbnails;
   const visibleImages = showAllThumbnails
     ? images
-    : images.slice(0, maxVisibleThumbnails);
+    : images?.slice(0, maxVisibleThumbnails);
 
   const handleThumbnailClick = (index: number) => {
     setActiveIndex(index);

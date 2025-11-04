@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { useDeviceHeight } from "@/hooks";
+
 import useGeneralStore from "@/stores/generalStore";
 import ScrollIndicator from "../ScrollIndicator";
-import { useDeviceHeight } from "@/hooks";
 
 export default function ScrollSnapWrapper({
   children,
