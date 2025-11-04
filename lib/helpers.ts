@@ -41,9 +41,13 @@ export const handleCropImage = async (
   return { imageUrl: objectUrl, alt: imageItem.alt };
 };
 
-export function shuffleArray<T>(array: T[]): T[] {
+export function shuffleArray<T>(array?: T[] | null): T[] {
+  if (!Array.isArray(array) || array?.length === 0) {
+    return []; // return empty array safely
+  }
+
   const arr = [...array];
-  // Use crypto.getRandomValues if available, otherwise fall back to Math.random
+
   const random = () => {
     if (typeof crypto !== "undefined" && crypto.getRandomValues) {
       const buf = new Uint32Array(1);
@@ -57,6 +61,7 @@ export function shuffleArray<T>(array: T[]): T[] {
     const j = Math.floor(random() * (i + 1));
     [arr[i], arr[j]] = [arr[j], arr[i]];
   }
+
   return arr;
 }
 

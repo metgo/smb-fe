@@ -78,7 +78,7 @@ export const useLoadMore = (hasNextPage: boolean = false) => {
       const params = new URLSearchParams(searchParams.toString());
       params.set("page", nextPage.toString());
 
-      router.replace(`?${params.toString()}`, { scroll: false });
+      router?.replace(`?${params.toString()}`, { scroll: false });
       setPageCount(nextPage);
     } catch (error) {
       console.error("Error loading more data:", error);

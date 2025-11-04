@@ -35,21 +35,21 @@ const ContactInfo = () => {
       <ContactUsInfo
         icon="phone"
         text={contactInfo.phone}
-        href={`tel:${contactInfo.phone.replace(/\s+/g, "")}`}
+        href={`tel:${contactInfo?.phone?.replace(/\s+/g, "")}`}
       />
 
       {/* Email */}
       <ContactUsInfo
         icon="mail"
-        text={contactInfo.mail}
-        href={`mailto:${contactInfo.mail}`}
+        text={contactInfo?.mail}
+        href={`mailto:${contactInfo?.mail}`}
       />
 
       {/* WhatsApp */}
       <ContactUsInfo
         icon="whatsapp-outlined"
         text={contactInfo.whatsapp}
-        href={`https://wa.me/${contactInfo.whatsapp.replace(/\D/g, "")}`}
+        href={`https://wa.me/${contactInfo?.whatsapp?.replace(/\D/g, "")}`}
       />
     </div>
   );

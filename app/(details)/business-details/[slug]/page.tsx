@@ -23,7 +23,7 @@ const page = async ({ params }: PageProps) => {
 
   if (businessDetails === undefined) return <NoFeedItemLayout />;
   const { groupTypesId = [], accessibilitiesId = [] } = businessDetails;
-  const products: Product[] = await getProducts(businessDetails._id);
+  const products: Product[] = await getProducts(businessDetails?._id);
 
   return (
     <>

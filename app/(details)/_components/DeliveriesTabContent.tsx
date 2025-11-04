@@ -85,7 +85,7 @@ const DeliveriesTabContent = ({
         <div className="col-span-1">
           <DeliveryTitleLayout
             icon="delivery-truck"
-            title={deliveries.homeDelivery}
+            title={deliveries?.homeDelivery}
             desc="שליח עד הבית 3-7 ימי עסקים"
             className="px-6.5 py-7.5 h-[29rem]"
           >
@@ -142,7 +142,7 @@ const DeliveriesTabContent = ({
         {deliverySpecificSellerInfo?.length > 0 && (
           <DeliveryTitleLayout
             icon="shop"
-            title={deliveries.pickupFromTheStore}
+            title={deliveries?.pickupFromTheStore}
             className="pt-7.5 pb-0 ps-6.5 pe-0 h-37"
           >
             <div className="h-20 overflow-y-auto">
@@ -158,7 +158,7 @@ const DeliveriesTabContent = ({
         {deliveryReturnExchange?.length > 0 && (
           <DeliveryTitleLayout
             icon="packag-return"
-            title={deliveries.exchangeAndReturns}
+            title={deliveries?.exchangeAndReturns}
             className="pt-7.5 pb-0 ps-6.5 pe-0 h-37"
           >
             <div className="h-20 overflow-y-auto no-scrollbar-arrows">
@@ -174,7 +174,7 @@ const DeliveriesTabContent = ({
         {deliveryAdditionalInfo && (
           <DeliveryTitleLayout
             icon="circular-plus"
-            title={deliveries.additionalInformation}
+            title={deliveries?.additionalInformation}
             className="pt-7.5 pb-0 ps-6.5 pe-0 h-37"
           >
             <div className="max-h-80 overflow-y-scroll no-scrollbar-arrows">

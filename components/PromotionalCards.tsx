@@ -39,9 +39,29 @@ const PromotionalCards = () => {
     }
   }, [promotions]);
 
-  const handleNavigate = (slug: string) => {
+  const handleNavigate = (slug: string, itemType: string) => {
+    let path = pathNames.businessDetails;
+
+    switch (itemType) {
+      case "business":
+        path = pathNames.businessDetails;
+        break;
+
+      case "event":
+        path = pathNames.eventDetails;
+        break;
+
+      case "trip":
+        path = pathNames.trailDetails;
+        break;
+
+      default:
+        path = pathNames.businessDetails;
+        break;
+    }
+
     startLoading();
-    router.push(`${pathNames.businessDetails}/${slug}`);
+    router.push(`${path}/${slug}`);
   };
 
   const shouldShow =
@@ -75,7 +95,7 @@ const PromotionalCards = () => {
               .map((item, idx) => (
                 <div
                   key={`${item?._id}-${idx}`}
-                  onClick={() => handleNavigate(item?.slug)}
+                  onClick={() => handleNavigate(item?.slug, item?.itemType)}
                   className="flex items-center gap-2 whitespace-nowrap flex-shrink-0 custom-cursor border border-transparent hover:shadow-md hover:border-gray-200 px-2 py-1 rounded-md transition-colors"
                 >
                   <div dir="rtl" className=" max-w-[120px]">
