@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
+
 import { menuItems } from "@/constant/hebrew";
 import OurStoryTabContent from "./OurStoryTabContent";
 import ProductsTabContent from "./ProductsTabContent";
@@ -56,13 +57,13 @@ const BusinessDetailsFilterTab = ({
     let updatedTabItems = [...tabs];
 
     if (!hasProducts && !hasDeliveryInfo) {
-      updatedTabItems = tabs.filter((item) => item.id === 1);
+      updatedTabItems = tabs?.filter((item) => item.id === 1);
     } else {
       if (!hasProducts) {
-        updatedTabItems = updatedTabItems.filter((item) => item.id !== 2);
+        updatedTabItems = updatedTabItems?.filter((item) => item.id !== 2);
       }
       if (!hasDeliveryInfo) {
-        updatedTabItems = updatedTabItems.filter((item) => item.id !== 3);
+        updatedTabItems = updatedTabItems?.filter((item) => item.id !== 3);
       }
     }
 
@@ -84,7 +85,7 @@ const BusinessDetailsFilterTab = ({
               <div
                 className={`relative inline-block ${isActive ? "font-bold" : "font-normal"}`}
               >
-                {item.label}
+                {item?.label}
                 {isActive && (
                   <motion.div
                     layoutId="underline"

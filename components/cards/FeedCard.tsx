@@ -256,7 +256,7 @@ const FeedCardContent = ({
 }) => (
   <div className="relative w-full h-full">
     {/* Gradient Overlay */}
-    <div className="absolute bottom-0 right-0 h-1/2 w-full bg-gradient-to-t from-black/50 to-transparent rounded-b-xl" />
+    <div className="absolute  bottom-0 right-0 h-full w-full bg-gradient-to-t from-black/40 via-black/30 to-black/5 rounded-b-xl" />
 
     {/* Text Content */}
     <div className="absolute bottom-0 right-0 p-4 text-white font-bold w-full">
@@ -332,12 +332,9 @@ const FeedCardActions = ({
         )}
       </div>
       {feedItem.serviceType === "point_of_interest" && (
-        <button
-          type="button"
-          className="bg-black/25 rounded-full p-1 flex items-center justify-center border border-transparent hover:border-white"
-        >
+        <div className="bg-black/25 rounded-full p-1 flex items-center justify-center">
           <IconImage width={24} height={24} icon="location-solid" />
-        </button>
+        </div>
       )}
     </div>
   );
