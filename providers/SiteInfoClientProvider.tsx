@@ -7,6 +7,7 @@ import { getApproxUserLocation } from "@/actions/getWether";
 import {
   getAllLocations,
   getAminitiesInfo,
+  getPromotionsList,
   getSiteInfo,
 } from "@/actions/commonActions";
 
@@ -15,8 +16,12 @@ export const SiteInfoClientProvider = ({
 }: {
   children: ReactNode;
 }) => {
-  const { setAminitiesInfo, setUserLiveLocation, setSiteInfo } =
-    useGeneralStore();
+  const {
+    setAminitiesInfo,
+    setUserLiveLocation,
+    setSiteInfo,
+    setPromotionalItems,
+  } = useGeneralStore();
   const { setBusinessMarkers } = useMarkersStore();
 
   async function fetchAminitiesInfo() {
@@ -48,11 +53,21 @@ export const SiteInfoClientProvider = ({
     }
   }
 
+  async function fetchPromotionalItems() {
+    try {
+      const res = await getPromotionsList();
+      setPromotionalItems(res?.allPromotionalItems);
+    } catch (error) {
+      console.error("Failed to get user location:", error);
+    }
+  }
+
   useEffect(() => {
     fetchSiteinfo();
     fetchAminitiesInfo();
     fetchUserCurrentLocation();
     fetchBusinessMarkers();
+    fetchPromotionalItems();
   }, []);
 
   return <div>{children}</div>;

@@ -145,3 +145,16 @@ declare interface LocationStationDetailsProps {
   primaryCategoryId: string;
   slug: string;
 }
+
+interface PromotionalItem {
+  _id: string;
+  name: string;
+  description: string;
+  slug: string;
+  image?: ImageItem;
+  itemType: "business" | "event" | "product" | string; // extendable for flexibility
+}
+
+interface PromotionalItemsResponse {
+  allPromotionalItems: PromotionalItem[];
+}
