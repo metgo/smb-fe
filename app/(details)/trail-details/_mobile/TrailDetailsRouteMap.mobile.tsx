@@ -118,7 +118,7 @@ const MobileTrailDetailsRouteMap = ({
         enableKeyboardEvents: true,
       }}
     >
-      <div className="">
+      <div className="mt-36">
         <div className="p-6">
           <MobileFeedScreenActionIcons strokColor="black" hideThreedotIcon />
           <h1 className="text-3xl font-bold max-w-60">{name}</h1>
@@ -130,7 +130,7 @@ const MobileTrailDetailsRouteMap = ({
             onClick={() => setIsMarkerFiltered(!isMarkerFiltered)}
             className={clsx(
               isMarkerFiltered ? "bg-[#29C368]" : "bg-gray-400",
-              "absolute top-80 right-4 z-50 w-10 h-10 flex items-center justify-center rounded-md",
+              "absolute top-80 right-4 z-30 w-10 h-10 flex items-center justify-center rounded-md",
             )}
           >
             <TiLocation size={36} className="text-white" />
