@@ -93,7 +93,7 @@ const OurStoryTabContent = ({
 
         <div className="col-span-7">
           <h2 className=" text-2xl font-bold text-dark">{name}</h2>
-          <div className="text-dark font-normal space-y-4 mt-3 mb-10">
+          <div className="text-dark font-normal space-y-4 mt-3 mb-10 w-2/3">
             <div dangerouslySetInnerHTML={{ __html: description }} />
             <div
               dangerouslySetInnerHTML={{

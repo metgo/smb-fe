@@ -3,30 +3,25 @@
 import Image from "next/image";
 import { useEffect, useState, useRef } from "react";
 import { usePathname, useRouter } from "next/navigation";
+
 import { pathNames } from "@/lib/endpoints";
-import { staticImages } from "@/constant/staticImages";
-import { getPromotionsList } from "@/actions/commonActions";
+import useGeneralStore from "@/stores/generalStore";
 import { startLoading } from "./wrappers/ProgressBar";
+import { staticImages } from "@/constant/staticImages";
 import { removeInlineStylesFromHTML } from "@/lib/helpers";
 import { ReturnToPrevPageBtn } from "@/app/(details)/_components";
 
 const PromotionalCards = () => {
   const router = useRouter();
   const pathname = usePathname();
-  const [promotions, setPromotions] = useState<any>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [animationDuration, setAnimationDuration] = useState(800);
 
-  useEffect(() => {
-    (async () => {
-      const res = await getPromotionsList();
-      setPromotions(res?.allPromotionalItems);
-    })();
-  }, []);
+  const { promotionalItems } = useGeneralStore();
 
   // ✅ Calculate animation duration based on content width
   useEffect(() => {
-    if (scrollRef.current && promotions?.length > 0) {
+    if (scrollRef.current && promotionalItems?.length > 0) {
       const scrollWidth = scrollRef.current.scrollWidth;
       // const viewportWidth = window.innerWidth;
 
@@ -37,7 +32,7 @@ const PromotionalCards = () => {
       const duration = scrollWidth / PIXELS_PER_SECOND;
       setAnimationDuration(duration);
     }
-  }, [promotions]);
+  }, [promotionalItems]);
 
   const handleNavigate = (slug: string, itemType: string) => {
     let path = pathNames.businessDetails;
@@ -77,7 +72,7 @@ const PromotionalCards = () => {
   return (
     <section className="flex items-center max-sm:gap-3 z-50 bg-white mt-4 overflow-hidden">
       <ReturnToPrevPageBtn />
-      {promotions?.length > 0 && (
+      {promotionalItems?.length > 0 && (
         <div
           dir="ltr"
           className="w-full flex-shrink-0 flex items-center justify-start overflow-hidden"
@@ -90,7 +85,7 @@ const PromotionalCards = () => {
             className="flex gap-x-4 h-full animate-seamless-infinite-scroll whitespace-nowrap items-center"
           >
             {Array(40)
-              .fill(promotions)
+              .fill(promotionalItems)
               .flat()
               .map((item, idx) => (
                 <div
