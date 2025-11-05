@@ -17,6 +17,7 @@ import { useDrag, useDrop, DndProvider } from "react-dnd";
 
 import MobileTrailStationsSheet from "./TrailStationsSheet.mobile";
 import { categoryColors } from "@/lib/utils";
+import { ensureListStyles } from "@/lib/helpers";
 
 interface MobileTrailDetailsRouteMapProps {
   _id: string;
@@ -119,11 +120,18 @@ const MobileTrailDetailsRouteMap = ({
         enableKeyboardEvents: true,
       }}
     >
-      <div className="">
+      <div className="mt-36">
         <div className="p-6">
           <MobileFeedScreenActionIcons strokColor="black" hideThreedotIcon />
           <h1 className="text-3xl font-bold max-w-60">{name}</h1>
-          <p className="text-theme font-normal line-clamp-2">{description}</p>
+          {description && (
+            <div
+              className="text-theme font-normal line-clamp-2"
+              dangerouslySetInnerHTML={{
+                __html: ensureListStyles(description),
+              }}
+            />
+          )}
 
           <button type="button" onClick={() => setIsSheetOpen(true)}></button>
 
@@ -131,7 +139,7 @@ const MobileTrailDetailsRouteMap = ({
             onClick={() => setIsMarkerFiltered(!isMarkerFiltered)}
             className={clsx(
               isMarkerFiltered ? "bg-[#29C368]" : "bg-gray-400",
-              "absolute top-80 right-4 z-50 w-10 h-10 flex items-center justify-center rounded-md",
+              "absolute top-80 right-4 z-30 w-10 h-10 flex items-center justify-center rounded-md",
             )}
           >
             <TiLocation size={36} className="text-white" />
