@@ -17,6 +17,7 @@ import { useDrag, useDrop, DndProvider } from "react-dnd";
 
 import MobileTrailStationsSheet from "./TrailStationsSheet.mobile";
 import { categoryColors } from "@/lib/utils";
+import { ensureListStyles } from "@/lib/helpers";
 
 interface MobileTrailDetailsRouteMapProps {
   _id: string;
@@ -123,7 +124,14 @@ const MobileTrailDetailsRouteMap = ({
         <div className="p-6">
           <MobileFeedScreenActionIcons strokColor="black" hideThreedotIcon />
           <h1 className="text-3xl font-bold max-w-60">{name}</h1>
-          <p className="text-theme font-normal line-clamp-2">{description}</p>
+          {description && (
+            <div
+              className="text-theme font-normal line-clamp-2"
+              dangerouslySetInnerHTML={{
+                __html: ensureListStyles(description),
+              }}
+            />
+          )}
 
           <button type="button" onClick={() => setIsSheetOpen(true)}></button>
 
