@@ -236,3 +236,49 @@ export function getDistanceFromLatLng(
 //   const { value: html } = await mammoth.convertToHtml({ buffer });
 //   return html;
 // }
+
+/**
+ * Ensures <ul> and <ol> elements display proper bullets or numbers.
+ * Preserves existing inline styles if present.
+ * @param html - Raw HTML string
+ * @returns Cleaned and styled HTML string
+ */
+export function ensureListStyles(html: string = ""): string {
+  if (!html) return "";
+
+  // Add proper style for <ul>
+  html = html.replace(/<ul(?![^>]*list-style-type)[^>]*>/gi, (match) => {
+    // If <ul> already has inline styles
+    if (/style\s*=\s*"/i.test(match)) {
+      return match.replace(
+        /style\s*=\s*"(.*?)"/i,
+        (m, p1) =>
+          `style="${p1}; list-style-type: disc; margin-right: 2.5rem;"`,
+      );
+    } else {
+      // No style → add one
+      return match.replace(
+        /<ul/gi,
+        '<ul style="list-style-type: disc; margin-right: 2.5rem;"',
+      );
+    }
+  });
+
+  // Add proper style for <ol>
+  html = html.replace(/<ol(?![^>]*list-style-type)[^>]*>/gi, (match) => {
+    if (/style\s*=\s*"/i.test(match)) {
+      return match.replace(
+        /style\s*=\s*"(.*?)"/i,
+        (m, p1) =>
+          `style="${p1}; list-style-type: decimal; margin-right: 2.5rem;"`,
+      );
+    } else {
+      return match.replace(
+        /<ol/gi,
+        '<ol style="list-style-type: decimal; margin-right: 2.5rem;"',
+      );
+    }
+  });
+
+  return html;
+}
