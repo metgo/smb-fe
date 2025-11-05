@@ -12,7 +12,8 @@ interface SiteConfig {
   metaTitle: string;
   metaDescription: string;
   siteName: string;
-  homeVideos: HomeVideo[];
+  desktopHomeVideos: HomeVideo[];
+  mobileHomeVideos: HomeVideo[];
 }
 
 interface RouteResponse {

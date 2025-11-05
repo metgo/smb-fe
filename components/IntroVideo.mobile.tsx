@@ -76,8 +76,8 @@ const IntroVideoMobile = () => {
         playsInline
         preload="auto"
         src={
-          siteInfo?.homeVideos?.[0]?.url ??
-          `${BUCKET_URL}/video/intro-video.mp4`
+          siteInfo?.mobileHomeVideos?.[0]?.url ??
+          `${BUCKET_URL}/video/intro-video-mobile.mkv`
         }
         className="object-cover absolute inset-0 w-full h-full z-10"
       />
