@@ -113,7 +113,8 @@ const useGeneralStore = create<GeneralStoreState>((set) => ({
     metaTitle: "",
     metaDescription: "",
     siteName: "",
-    homeVideos: [],
+    desktopHomeVideos: [],
+    mobileHomeVideos: [],
   },
   setSiteInfo: (v) => set({ siteInfo: v }),
 
