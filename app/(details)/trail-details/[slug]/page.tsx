@@ -8,6 +8,7 @@ import ShareUrlBtnModal from "@/components/ShareUrlBtnModal";
 import TrailDetailsRouteMap from "../_components/TrailDetailsRouteMap";
 import MobileTrailFeedDetails from "../_mobile/TrailFeedDetails.mobile";
 import { NoDetailsFound } from "../../_components";
+import { ensureListStyles } from "@/lib/helpers";
 
 const page = async ({ params }: PageProps) => {
   const { slug } = await params;
@@ -33,10 +34,14 @@ const page = async ({ params }: PageProps) => {
             <div className="text-dark">
               <h1 className="text-2xl font-bold">{trailsDetails?.name}</h1>
               <div className="font-bold my-1.5">{trailsDetails?.distance}</div>
-              <div
-                className="font-normal"
-                dangerouslySetInnerHTML={{ __html: trailsDetails?.description }}
-              />
+              {trailsDetails?.description && (
+                <div
+                  className="font-normal prose block"
+                  dangerouslySetInnerHTML={{
+                    __html: ensureListStyles(trailsDetails?.description),
+                  }}
+                />
+              )}
             </div>
             <div className="my-7">
               <AttributePills
