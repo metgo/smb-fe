@@ -68,6 +68,9 @@ interface GeneralStoreState {
 
   clickedOnSoundButton: boolean;
   setClickedOnSoundButton: (v: boolean) => void;
+
+  promotionalItems: PromotionalItem[];
+  setPromotionalItems: (v: PromotionalItem[]) => void;
 }
 
 const useGeneralStore = create<GeneralStoreState>((set) => ({
@@ -122,6 +125,9 @@ const useGeneralStore = create<GeneralStoreState>((set) => ({
 
   activeFeedItemIndex: 0,
   setActiveFeedItemIndex: (v) => set({ activeFeedItemIndex: v }),
+
+  promotionalItems: [],
+  setPromotionalItems: (v) => set({ promotionalItems: v }),
 }));
 
 export default useGeneralStore;
