@@ -17,18 +17,21 @@ import { Campaign } from 'src/modules/campaign/schema/campaign.schema';
 import { Voucher } from '../../schema/voucher.schema';
 import { GetByCodeQuery } from '../get-by-code.query';
 import { GetByCodeInterface } from '../../interface/get-by-code.handler';
+import { ProductsService } from 'src/modules/products/products.services';
 
 @QueryHandler(GetByCodeQuery)
 export class GetByCodeHandler implements IQueryHandler<GetByCodeQuery> {
   constructor(
     @InjectModel('Voucher')
     private readonly VoucherModel: Model<Voucher>,
+    private productService: ProductsService,
   ) {}
 
-  async execute(query: GetByCodeQuery): Promise<GetByCodeInterface> {
+  async execute(queries: GetByCodeQuery): Promise<GetByCodeInterface> {
     try {
-      const { code, campCode, loggedInUser } = query;
+      const { queryData, code, loggedInUser } = queries;
 
+      const { campCode, productId } = queryData;
       const findQuery: any = {
         code: code.trim(),
         isDeleted: false,
@@ -63,6 +66,30 @@ export class GetByCodeHandler implements IQueryHandler<GetByCodeQuery> {
 
         if (!isAvailable) {
           throw new GoneException(ServerErrors.VOUCHER.EXPIRED);
+        }
+      }
+
+      if (productId) {
+        if (
+          !campDetails?.productIds?.length
+          && !campDetails?.businessIds?.length
+          && !campDetails?.dmoIds?.length
+        ) {
+          throw new ForbiddenException(
+            'This voucher cannot be used for this product',
+          );
+        }
+
+        const productDetail = await this.productService.findOne(productId);
+
+        if (
+          !campDetails.dmoIds.includes(productDetail?.dmoId?._id)
+          && !campDetails.businessIds.includes(productDetail?.businessId)
+          && !campDetails.productIds.includes(productDetail?._id)
+        ) {
+          throw new ForbiddenException(
+            'This voucher cannot be used for this product',
+          );
         }
       }
 

@@ -11,7 +11,10 @@ import { ServerErrors } from 'src/common/constant';
 import { Business } from 'src/modules/business/shared/schema/business.schema';
 import { Trip } from 'src/modules/trips/schema/trips.schema';
 import { TripStatus } from 'src/modules/trips/trips.types';
-import { BusinessStatus, GeoServicesTypes } from 'src/modules/business/business.type';
+import {
+  BusinessStatus,
+  GeoServicesTypes,
+} from 'src/modules/business/business.type';
 import { EventStatus } from 'src/modules/events/events.type';
 import { Campaign } from 'src/modules/campaign/schema/campaign.schema';
 import { GetPromotionalItemsQuery } from '../get-promotional-items.query';
@@ -24,13 +27,13 @@ implements IQueryHandler<GetPromotionalItemsQuery> {
     private readonly logger: Logger,
     @InjectModel(ExternalApi.name)
     private readonly ExternalApiModel: Model<ExternalApi>,
-      @InjectModel(Campaign.name)
+    @InjectModel(Campaign.name)
     private readonly CampaignModel: Model<Campaign>,
-     @InjectModel(Business.name)
+    @InjectModel(Business.name)
     private readonly BusinessModel: Model<Business>,
-     @InjectModel(Event.name)
+    @InjectModel(Event.name)
     private readonly EventModel: Model<Event>,
-     @InjectModel(Trip.name)
+    @InjectModel(Trip.name)
     private readonly TripModel: Model<Trip>,
   ) {}
 
@@ -73,24 +76,41 @@ implements IQueryHandler<GetPromotionalItemsQuery> {
         promotionalEvents = [];
         promotionalTrips = [];
       } else {
-        if (!/true/.test(query.isBusiness) && !/true/.test(query.isEvent) && !/true/.test(query.isTrip)) {
+        if (
+          !/true/.test(query.isBusiness)
+          && !/true/.test(query.isEvent)
+          && !/true/.test(query.isTrip)
+        ) {
           const [
             promotionalBusinessesData,
             promotionalEventsData,
             promotionalTripData,
           ] = await Promise.all([
-            this.getPromotionalBusinesses(promotionalBusinessItems, campDetails),
+            this.getPromotionalBusinesses(
+              promotionalBusinessItems,
+              campDetails,
+            ),
             this.getPromotionalEvents(promotionalEventsItems, campDetails),
             this.getPromotionalTrips(promotionalTripsItems, campDetails),
           ]);
 
-          const tagItems = (items: any[], type: 'business' | 'event' | 'trip') => items.map(item => ({ ...item, itemType: type }));
+          const tagItems = (
+            items: any[],
+            type: 'business' | 'event' | 'trip',
+          ) => items.map(item => ({ ...item, itemType: type }));
 
-          const taggedBusinesses = tagItems(promotionalBusinessesData, 'business');
+          const taggedBusinesses = tagItems(
+            promotionalBusinessesData,
+            'business',
+          );
           const taggedEvents = tagItems(promotionalEventsData, 'event');
           const taggedTrips = tagItems(promotionalTripData, 'trip');
 
-          const allItems = [...taggedBusinesses, ...taggedEvents, ...taggedTrips];
+          const allItems = [
+            ...taggedBusinesses,
+            ...taggedEvents,
+            ...taggedTrips,
+          ];
 
           const shuffle = <T>(array: T[]): T[] => {
             const arr = [...array];
@@ -105,15 +125,24 @@ implements IQueryHandler<GetPromotionalItemsQuery> {
         }
 
         if (/true/.test(query.isBusiness)) {
-          promotionalBusinesses = await this.getPromotionalBusinesses(promotionalBusinessItems, campDetails);
+          promotionalBusinesses = await this.getPromotionalBusinesses(
+            promotionalBusinessItems,
+            campDetails,
+          );
         }
 
         if (/true/.test(query.isEvent)) {
-          promotionalEvents = await this.getPromotionalEvents(promotionalEventsItems, campDetails);
+          promotionalEvents = await this.getPromotionalEvents(
+            promotionalEventsItems,
+            campDetails,
+          );
         }
 
         if (/true/.test(query.isTrip)) {
-          promotionalTrips = await this.getPromotionalTrips(promotionalTripsItems, campDetails);
+          promotionalTrips = await this.getPromotionalTrips(
+            promotionalTripsItems,
+            campDetails,
+          );
         }
 
         return {
@@ -139,7 +168,10 @@ implements IQueryHandler<GetPromotionalItemsQuery> {
     return orConds;
   }
 
-  private async getPromotionalBusinesses(promotionalBusinessItems, campDetails) {
+  private async getPromotionalBusinesses(
+    promotionalBusinessItems,
+    campDetails,
+  ) {
     const campaignOrConditionsBusiness = this.buildOrConditions(campDetails);
     const baseBusinessMatch = {
       status: BusinessStatus.APPROVED,
@@ -173,7 +205,9 @@ implements IQueryHandler<GetPromotionalItemsQuery> {
     if (promotionalBusinessItems?.categoryIds?.length) {
       orFilters.push({
         bussCategoriesId: {
-          $in: promotionalBusinessItems.categoryIds.map(id => new mongoose.Types.ObjectId(id)),
+          $in: promotionalBusinessItems.categoryIds.map(
+            id => new mongoose.Types.ObjectId(id),
+          ),
         },
       });
     }
@@ -181,7 +215,9 @@ implements IQueryHandler<GetPromotionalItemsQuery> {
     if (promotionalBusinessItems?.subCategoryIds?.length) {
       orFilters.push({
         bussSubCategoriesId: {
-          $in: promotionalBusinessItems.subCategoryIds.map(id => new mongoose.Types.ObjectId(id)),
+          $in: promotionalBusinessItems.subCategoryIds.map(
+            id => new mongoose.Types.ObjectId(id),
+          ),
         },
       });
     }
@@ -189,7 +225,9 @@ implements IQueryHandler<GetPromotionalItemsQuery> {
     if (promotionalBusinessItems?.groupTypesId?.length) {
       orFilters.push({
         groupTypesId: {
-          $in: promotionalBusinessItems.groupTypesId.map(id => new mongoose.Types.ObjectId(id)),
+          $in: promotionalBusinessItems.groupTypesId.map(
+            id => new mongoose.Types.ObjectId(id),
+          ),
         },
       });
     }
@@ -197,14 +235,22 @@ implements IQueryHandler<GetPromotionalItemsQuery> {
     if (promotionalBusinessItems?.accesibilitiesId?.length) {
       orFilters.push({
         accessibilitiesId: {
-          $in: promotionalBusinessItems.accesibilitiesId.map(id => new mongoose.Types.ObjectId(id)),
+          $in: promotionalBusinessItems.accesibilitiesId.map(
+            id => new mongoose.Types.ObjectId(id),
+          ),
         },
       });
     }
 
     if (orFilters.length === 0) return [];
 
-    const filters = { $and: [baseBusinessMatch, { $or: campaignOrConditionsBusiness }, { $or: orFilters }] };
+    const filters = {
+      $and: [
+        baseBusinessMatch,
+        { $or: campaignOrConditionsBusiness },
+        { $or: orFilters },
+      ],
+    };
 
     return await this.BusinessModel.aggregate([
       { $match: filters },
@@ -259,7 +305,9 @@ implements IQueryHandler<GetPromotionalItemsQuery> {
     if (promotionalEventsItems?.subCategoryIds?.length) {
       orFilters.push({
         subCategoriesId: {
-          $in: promotionalEventsItems.subCategoryIds.map(id => new mongoose.Types.ObjectId(id)),
+          $in: promotionalEventsItems.subCategoryIds.map(
+            id => new mongoose.Types.ObjectId(id),
+          ),
         },
       });
     }
@@ -267,7 +315,9 @@ implements IQueryHandler<GetPromotionalItemsQuery> {
     if (promotionalEventsItems?.groupTypesId?.length) {
       orFilters.push({
         groupTypesId: {
-          $in: promotionalEventsItems.groupTypesId.map(id => new mongoose.Types.ObjectId(id)),
+          $in: promotionalEventsItems.groupTypesId.map(
+            id => new mongoose.Types.ObjectId(id),
+          ),
         },
       });
     }
@@ -275,7 +325,9 @@ implements IQueryHandler<GetPromotionalItemsQuery> {
     if (promotionalEventsItems?.accesibilitiesId?.length) {
       orFilters.push({
         accessibilitiesId: {
-          $in: promotionalEventsItems.accesibilitiesId.map(id => new mongoose.Types.ObjectId(id)),
+          $in: promotionalEventsItems.accesibilitiesId.map(
+            id => new mongoose.Types.ObjectId(id),
+          ),
         },
       });
     }
@@ -283,9 +335,11 @@ implements IQueryHandler<GetPromotionalItemsQuery> {
     if (orFilters.length === 0) return [];
 
     const filters = {
-      $and: [baseEventMatch,
+      $and: [
+        baseEventMatch,
         { $or: campaignOrConditionsEvent },
-        { $or: orFilters }],
+        { $or: orFilters },
+      ],
     };
 
     return await this.EventModel.aggregate([

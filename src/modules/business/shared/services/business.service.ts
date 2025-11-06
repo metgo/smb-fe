@@ -1,10 +1,5 @@
 /* eslint-disable no-undef */
-import {
-  BadRequestException,
-  Inject,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import mongoose, { Model } from 'mongoose';
 import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
@@ -72,9 +67,15 @@ export class BusinessService {
       return business;
     } catch (error) {
       if (error?.name === 'CastError' && error?.kind === 'ObjectId') {
-        throw new BadRequestException(
-          `${error?.model?.modelName} ${ServerErrors.INVALID_ID}`,
-        );
+        const business = await this.BusinessModel.findOne({ slug: id })
+          .select(select)
+          .populate(populate);
+
+        if (!business || business?.status !== BusinessStatus.APPROVED) {
+          throw new NotFoundException(ServerErrors.BUSINESS_NOT_FOUND);
+        }
+
+        return business;
       }
       exceptionHandling(error);
     }

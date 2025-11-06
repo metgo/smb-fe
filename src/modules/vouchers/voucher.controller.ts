@@ -159,7 +159,7 @@ export class VoucherController {
     @Query() query: GetVoucherByCodeQuery,
   ) {
     const voucher = await this.queryBus.execute(
-      new GetByCodeQuery(code, query.campCode),
+      new GetByCodeQuery(code, query),
     );
 
     return voucher;

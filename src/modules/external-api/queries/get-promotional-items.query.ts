@@ -2,7 +2,7 @@ import { GetPromotionalItemsRequest } from '../request/get-promotional-items.req
 
 export class GetPromotionalItemsQuery {
   constructor(
-      public readonly identifierId: string,
-      public readonly query: GetPromotionalItemsRequest,
+    public readonly identifierId: string,
+    public readonly query: GetPromotionalItemsRequest,
   ) {}
 }

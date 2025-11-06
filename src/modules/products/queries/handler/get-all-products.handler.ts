@@ -59,7 +59,7 @@ implements IQueryHandler<GetAllProductsQuery> {
         {
           path: 'businessId',
           select:
-            '_id logo name address geoLocation location openingHrs isAlwaysOpen',
+            '_id logo name address geoLocation location openingHrs isAlwaysOpen slug',
         },
         {
           path: 'categories subCategories',

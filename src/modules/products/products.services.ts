@@ -137,7 +137,7 @@ export class ProductsService {
       })
         .populate<{ businessId: Business }>(
           'businessId',
-          '_id logo name address geoLocation location openingHrs isAlwaysOpen deliveryArea deliveryAdditionalInfo isPickUpAvailable',
+          '_id logo name address geoLocation location openingHrs isAlwaysOpen deliveryArea deliveryAdditionalInfo isPickUpAvailable slug',
         )
         .populate(populate)
         .select(select);

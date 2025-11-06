@@ -92,6 +92,7 @@ implements IQueryHandler<GetAllBusinessForMapQuery> {
           bussCategoriesId: business?.bussCategoriesId,
           bussSubCategoriesId: business?.bussSubCategoriesId,
           serviceType: business?.serviceType,
+          slug: business?.slug,
         })),
       );
 

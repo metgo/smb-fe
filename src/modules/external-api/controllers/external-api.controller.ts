@@ -1,5 +1,9 @@
 import {
-  Controller, Get, HttpCode, HttpStatus, Param,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
   Query,
 } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
@@ -51,17 +55,22 @@ export class ExternalApiController {
     return await this.queryBus.execute(new GetSiteInfoQuery(identifierId));
   }
 
-   @ApiEndpoint({
-     tags: ['External API'],
-     response: {
-       status: HttpStatus.OK,
-       description: ServerSuccess.EXTERNAL_API.LISTED,
-     },
-     softBlockExtraDtoFields: true,
-   })
+  @ApiEndpoint({
+    tags: ['External API'],
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.EXTERNAL_API.LISTED,
+    },
+    softBlockExtraDtoFields: true,
+  })
   @HttpCode(HttpStatus.OK)
   @Get('promotional-items/:identifierId')
-  async getPromotionalItems(@Param('identifierId') identifierId: string, @Query() query: GetPromotionalItemsRequest) {
-    return await this.queryBus.execute(new GetPromotionalItemsQuery(identifierId, query));
+  async getPromotionalItems(
+    @Param('identifierId') identifierId: string,
+    @Query() query: GetPromotionalItemsRequest,
+  ) {
+    return await this.queryBus.execute(
+      new GetPromotionalItemsQuery(identifierId, query),
+    );
   }
 }

@@ -18,7 +18,10 @@ import { PaymentsModule } from 'src/services/payments/payments.module';
 import { GcpBucketModule } from 'src/services/gcp-bucket/gcp-bucket.module';
 import { FindByIdAndPopulateHandler } from './queries/handler/find-by-id-and-populate.handler';
 import { GetSiteInfoHandler } from './queries/handler/get-site-info.handler';
-import { Business, BusinessSchema } from '../business/shared/schema/business.schema';
+import {
+  Business,
+  BusinessSchema,
+} from '../business/shared/schema/business.schema';
 import { EventSchema } from '../events/schema/events.schema';
 import { Trip, TripSchema } from '../trips/schema/trips.schema';
 import { Campaign, CampaignSchema } from '../campaign/schema/campaign.schema';
@@ -42,7 +45,12 @@ import { GetPromotionalItemsHandler } from './queries/handler/get-promotional-it
     PaymentsModule,
   ],
   controllers: [ExternalApiController],
-  providers: [ExternalApiServices, FindByIdAndPopulateHandler, GetSiteInfoHandler, GetPromotionalItemsHandler],
+  providers: [
+    ExternalApiServices,
+    FindByIdAndPopulateHandler,
+    GetSiteInfoHandler,
+    GetPromotionalItemsHandler,
+  ],
   exports: [ExternalApiServices],
 })
 export class ExternalApiModule {}

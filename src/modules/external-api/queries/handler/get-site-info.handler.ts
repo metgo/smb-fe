@@ -12,8 +12,7 @@ import { Theme } from 'src/modules/themes/schema/theme.schema';
 import { ServerErrors } from 'src/common/constant';
 
 @QueryHandler(GetSiteInfoQuery)
-export class GetSiteInfoHandler
-implements IQueryHandler<GetSiteInfoQuery> {
+export class GetSiteInfoHandler implements IQueryHandler<GetSiteInfoQuery> {
   constructor(
     @Inject(WINSTON_MODULE_PROVIDER)
     private readonly logger: Logger,
