@@ -70,6 +70,9 @@ export class Theme extends AuditableSchema {
 
   @Prop({ type: [VideoSchema], default: [] })
     homeVideos: Video[];
+
+  @Prop({ type: [VideoSchema], default: [] })
+    mobileHomeVideos: Video[];
 }
 
 export type Themes = HydratedDocument<Theme>;

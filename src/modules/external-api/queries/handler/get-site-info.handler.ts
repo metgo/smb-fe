@@ -27,7 +27,7 @@ export class GetSiteInfoHandler implements IQueryHandler<GetSiteInfoQuery> {
         identifierId,
       }).populate<{ themeId: Theme }>(
         'themeId',
-        'metaTitle metaDescription metaKeywords ogName homeVideos',
+        'metaTitle metaDescription metaKeywords ogName homeVideos mobileHomeVideos',
       );
       if (!externalApi) {
         throw new ForbiddenException(ServerErrors.EXTERNAL_API.IDENTIFIER_ID);
@@ -40,7 +40,10 @@ export class GetSiteInfoHandler implements IQueryHandler<GetSiteInfoQuery> {
         metaKeywords: externalApi?.themeId?.metaKeywords,
         siteName: externalApi?.themeId?.ogName,
         siteUrl: externalApi?.themeId?.websiteUrl,
-        homeVideos: externalApi?.themeId?.homeVideos?.filter(v => v.isActive),
+        desktopHomeVideos: externalApi?.themeId?.homeVideos?.filter(v => v.isActive),
+        mobileHomeVideos: externalApi?.themeId?.mobileHomeVideos?.filter(
+          v => v.isActive,
+        ),
       };
     } catch (err) {
       this.logger.error('[EXTERNAL_API]: FAILED TO  GET SITE INFO', {
