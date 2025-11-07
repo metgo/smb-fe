@@ -34,10 +34,49 @@ const CustomInfoWindow = ({
   const [stationDetails, setStationDetails] =
     useState<LocationStationDetailsProps>();
   const [loading, setLoading] = useState(true);
+  const [windowWidth, setWindowWidth] = useState(0);
 
   const imageCount = stationDetails?.images?.length || 0;
 
   const loadedStationIdsRef = useRef<Set<string>>(new Set());
+
+  // Get window width for responsive sizing
+  useEffect(() => {
+    const updateWindowWidth = () => {
+      setWindowWidth(window.innerWidth);
+    };
+
+    // Set initial width
+    updateWindowWidth();
+
+    window.addEventListener("resize", updateWindowWidth);
+    return () => window.removeEventListener("resize", updateWindowWidth);
+  }, []);
+
+  // Determine card size based on window width
+  const getCardDimensions = () => {
+    if (windowWidth <= 300) {
+      return {
+        width: "150px",
+        height: "150px",
+        isSmall: true,
+      };
+    } else if (windowWidth <= 360) {
+      return {
+        width: "180px",
+        height: "180px",
+        isSmall: false,
+      };
+    } else {
+      return {
+        width: "240px",
+        height: "240px",
+        isSmall: false,
+      };
+    }
+  };
+
+  const cardDimensions = getCardDimensions();
 
   useEffect(() => {
     if (!stationId || loadedStationIdsRef.current.has(stationId)) return;
@@ -84,10 +123,15 @@ const CustomInfoWindow = ({
     }
   }
 
-  // ✅ Loading State UI (skeleton or spinner)
   if (loading) {
     return (
-      <div className="max-sm:w-[232px] max-sm:h-[232px] w-[240px] h-[240px] rounded-md bg-gray-200 animate-pulse flex items-center justify-center border-2 border-white">
+      <div
+        className="rounded-md bg-gray-200 animate-pulse flex items-center justify-center border-2 border-white"
+        style={{
+          width: cardDimensions.width,
+          height: cardDimensions.height,
+        }}
+      >
         <CardSkeleton
           className={"rounded w-full h-full"}
           primaryCategoryId={primaryCategoryId!}
@@ -98,7 +142,13 @@ const CustomInfoWindow = ({
 
   // ✅ Main UI after data loaded
   return (
-    <div className="max-sm:w-[232px] max-sm:h-[232px] w-[240px] h-[240px] rounded-md bg-white border-2 border-white relative z-50 overflow-hidden">
+    <div
+      className="rounded-md bg-white border-2 border-white relative z-50 overflow-hidden"
+      style={{
+        width: cardDimensions.width,
+        height: cardDimensions.height,
+      }}
+    >
       {/* Background Image */}
       <NextImage
         isFill
@@ -114,14 +164,16 @@ const CustomInfoWindow = ({
 
       {/* Top Section */}
       <div className="absolute top-0 right-0 w-full z-20">
-        <div className="flex items-center justify-between w-full p-2">
+        <div
+          className={`flex items-center justify-between w-full ${cardDimensions.isSmall ? "p-1" : "p-2"}`}
+        >
           <Link href={`/business-details/${stationDetails?.slug}`}>
             <NextImage
-              width={40}
-              height={40}
+              width={cardDimensions.isSmall ? 30 : 40}
+              height={cardDimensions.isSmall ? 30 : 40}
               imgSrc={stationDetails?.logo?.image}
               alt={stationDetails?.logo?.alt || "Station logo"}
-              className="w-[40px] h-[40px] rounded-md shadow-md border border-white overflow-hidden"
+              className={`rounded-md shadow-md border border-white overflow-hidden ${cardDimensions.isSmall ? "w-[30px] h-[30px]" : "w-[40px] h-[40px]"}`}
             />
           </Link>
           {isTrailMap ? (
@@ -134,6 +186,7 @@ const CustomInfoWindow = ({
                   ? "cursor-not-allowed bg-gray-400"
                   : "bg-black/60 custom-cursor",
                 "font-bold text-white rounded-lg px-4 py-2.25",
+                cardDimensions.isSmall && "text-xs px-2 py-1",
               )}
             >
               <span>{misc.addToRoute}</span>
@@ -148,17 +201,23 @@ const CustomInfoWindow = ({
       </div>
 
       {/* Bottom Section */}
-      <div className="absolute bottom-2 right-0 z-20 w-full">
-        <div className="px-2 pb-2 max-sm:space-y-0 md:space-y-2">
+      <div
+        className={`absolute bottom-2 right-0 z-20 w-full ${cardDimensions.isSmall && "bottom-1"}`}
+      >
+        <div
+          className={`${cardDimensions.isSmall ? "px-1 pb-1 space-y-0" : "px-2 pb-2 max-sm:space-y-0 md:space-y-2"}`}
+        >
           <div className="font-bold text-white">
-            <h3 className="md:text-lg max-sm:text-xl max-sm:-mb-1 ">
+            <h3
+              className={`${cardDimensions.isSmall ? "text-sm -mb-1" : "md:text-lg max-sm:text-xl max-sm:-mb-1"}`}
+            >
               {stationDetails?.name}
             </h3>
             <div
               dangerouslySetInnerHTML={{
                 __html: stationDetails?.description || "",
               }}
-              className="max-sm:text-[12px] md:text-sm line-clamp-1"
+              className={`line-clamp-1 ${cardDimensions.isSmall ? "text-[10px]" : "max-sm:text-[12px] md:text-sm"}`}
             />
           </div>
           <ImageCarouselControls
