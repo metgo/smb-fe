@@ -299,7 +299,7 @@ export const centerMapOnMarker = (
   if (!position) return;
 
   const { screenHeight } = getScreenDimensions();
-  const latOffset = (3000 / screenHeight) * 0.01;
+  const latOffset = (1000 / screenHeight) * 0.01;
 
   const newCenter = {
     lat: position.lat() + latOffset, // Shift DOWN (positive) to center info window
