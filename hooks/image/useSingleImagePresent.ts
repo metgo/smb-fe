@@ -88,7 +88,14 @@ export const useSingleImagePresent = (
       //   return cached;
       // }
 
-      let result: ProcessedImage = img?.subCoordinates
+      const hasValidCoordinates =
+        image?.subCoordinates &&
+        (image.subCoordinates.xMax !== 0 ||
+          image.subCoordinates.xMin !== 0 ||
+          image.subCoordinates.yMax !== 0 ||
+          image.subCoordinates.yMin !== 0);
+
+      let result: ProcessedImage = hasValidCoordinates
         ? await handleCropImage(img, aspectRatio)
         : { imageUrl: img.image, alt: img.alt };
 
