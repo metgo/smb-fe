@@ -129,6 +129,7 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
       feedItem,
     ],
   );
+  // console.log("🚀 ~ FeedCard ~ computedValues:", computedValues)
 
   // Event handlers
   const handleMapIconClick = (e: React.MouseEvent, id: string) => {

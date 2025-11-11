@@ -1,7 +1,7 @@
 "use client";
 
 import clsx from "clsx";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import { scaleLayout, shuffleArray } from "@/lib/helpers";
 
@@ -30,6 +30,12 @@ const OnlyFeedCardsLayout = ({ data }: { data: FeedItemList }) => {
     window.addEventListener("resize", updateScale);
     return () => window.removeEventListener("resize", updateScale);
   }, []);
+
+  // Memoize shuffled layouts so they only shuffle once
+  const shuffledLayouts = useMemo(() => {
+    const layout16 = scaleLayout(onlyCardsLayouts["layout16"], scale);
+    return shuffleArray(layout16);
+  }, [scale]);
 
   if (data.length < 1) return <div>No businesses available</div>;
 
@@ -120,27 +126,42 @@ const OnlyFeedCardsLayout = ({ data }: { data: FeedItemList }) => {
   const renderExtraCards = (extraBusinesses: any[]) => {
     if (extraBusinesses.length === 0) return null;
 
-    const layout16 = scaleLayout(onlyCardsLayouts["layout16"], scale);
     const columnCount = 5;
 
-    // Shuffle layout16 to avoid repeating the same shape
-    const shuffledLayouts = shuffleArray(layout16);
+    // Track column heights for better distribution
+    const columns: {
+      businesses: any[];
+      layouts: LayoutItem[];
+      height: number;
+    }[] = Array.from({ length: columnCount }, () => ({
+      businesses: [],
+      layouts: [],
+      height: 0,
+    }));
 
-    // Distribute businesses into columns
-    const columns: any[][] = Array.from({ length: columnCount }, () => []);
+    // Distribute cards to the shortest column for visual balance
     extraBusinesses.forEach((biz, i) => {
-      const columnIndex = i % columnCount;
-      columns[columnIndex].push(biz);
+      const layoutIndex = i % shuffledLayouts.length;
+      const layout = shuffledLayouts[layoutIndex];
+
+      // Find the column with the least height
+      const shortestColumnIndex = columns.reduce(
+        (minIdx, col, idx) =>
+          col.height < columns[minIdx].height ? idx : minIdx,
+        0,
+      );
+
+      columns[shortestColumnIndex].businesses.push(biz);
+      columns[shortestColumnIndex].layouts.push(layout);
+      columns[shortestColumnIndex].height += layout.height;
     });
 
     return (
-      <div className="flex w-full gap-5">
+      <div className="flex w-full gap-5 items-start">
         {columns.map((column, colIdx) => (
           <div key={`column-${colIdx}`} className="flex flex-col gap-5">
-            {column.map((biz, bizIdx) => {
-              const layoutIndex =
-                (colIdx + bizIdx * columnCount) % shuffledLayouts.length;
-              const layout = shuffledLayouts[layoutIndex];
+            {column.businesses.map((biz, bizIdx) => {
+              const layout = column.layouts[bizIdx];
 
               return (
                 <FeedCard
