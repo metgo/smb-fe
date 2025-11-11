@@ -79,6 +79,19 @@ const IntroVideo = () => {
         }
         className="object-cover absolute inset-0 w-full h-full z-10"
       />
+      {/* <video
+        // ref={videoRef}
+        // loop
+        muted={true}
+        // autoPlay={true}
+        // controls
+        autoPlay
+        // playsInline
+        preload="auto"
+        src={`/api/video?id=${  siteInfo?.desktopHomeVideos?.[0]?.url ??
+          `${BUCKET_URL}/video/intro-video.mp4`}`}
+        className="object-cover absolute inset-0 w-full h-full z-10"
+      /> */}
 
       {/* Mute/Unmute Button */}
       <button
