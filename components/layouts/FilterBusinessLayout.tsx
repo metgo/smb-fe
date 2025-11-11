@@ -19,27 +19,31 @@ interface Props {
 }
 
 const FilterBusinessLayout = ({ businesses }: Props) => {
+  // ✅ ALL HOOKS MUST BE CALLED FIRST
   const pathname = usePathname();
-
   const isHydrated = useIsHydrated();
   const { activeFilterTab, setAppliedFilterItemCount } = useGeneralStore();
 
   const { sentryRef, loading, initialLoadDone, canLoadMore } = useLoadMore(
     businesses?.meta?.hasNextPage,
   );
+
   const totalBusiness = businesses?.totalData;
 
   useEffect(() => {
-    if (businesses?.data?.length > 0)
+    if (businesses?.data?.length > 0) {
       setAppliedFilterItemCount(businesses?.data?.length);
-  }, [businesses?.data]);
+    }
+  }, [businesses?.data, setAppliedFilterItemCount]);
 
+  // ✅ NOW it's safe to have early returns - all hooks called
   if (!isHydrated) return null;
   if (!totalBusiness) return <NoFeedItemLayout />;
 
   const renderLayout = () => {
-    if (pathname === pathNames.events || pathname === pathNames.blogArticles)
+    if (pathname === pathNames.events || pathname === pathNames.blogArticles) {
       return <OnlyFeedCardsLayout data={businesses.data} />;
+    }
 
     switch (activeFilterTab) {
       case "gallery":

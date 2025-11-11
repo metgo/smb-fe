@@ -1,7 +1,7 @@
 "use client";
 
 import clsx from "clsx";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import { scaleLayout, shuffleArray } from "@/lib/helpers";
 
@@ -11,6 +11,7 @@ import {
   REFERENCE_SCREEN_WIDTH,
 } from "@/constant/collageLayouts";
 import FeedCard from "../cards/FeedCard";
+import NoFeedItemLayout from "./NoFeedItemLayout";
 
 const OnlyFeedCardsLayout = ({ data }: { data: FeedItemList }) => {
   const feedItemCount = data.length;
@@ -31,7 +32,16 @@ const OnlyFeedCardsLayout = ({ data }: { data: FeedItemList }) => {
     return () => window.removeEventListener("resize", updateScale);
   }, []);
 
-  if (data.length < 1) return <div>No businesses available</div>;
+  // Memoize shuffled layouts so they only shuffle once
+  const shuffledLayouts = useMemo(() => {
+    const layout16 = scaleLayout(onlyCardsLayouts["layout16"], scale);
+    return shuffleArray(layout16);
+  }, [scale]);
+
+  // Early return BEFORE any complex rendering logic
+  if (!data || data.length < 1) {
+    return <NoFeedItemLayout />;
+  }
 
   const renderCards = (
     indexes: number[],
@@ -42,9 +52,13 @@ const OnlyFeedCardsLayout = ({ data }: { data: FeedItemList }) => {
       {indexes.map((i) => {
         const feedItem = data[i + offset];
         const cardLayout = layout[i];
+
+        // Skip if feedItem doesn't exist
+        if (!feedItem || !cardLayout) return null;
+
         return (
           <FeedCard
-            key={feedItem._id + i}
+            key={`feedcard-${feedItem?._id ?? "no-id"}-${i + offset}`}
             width={cardLayout.width}
             height={cardLayout.height}
             feedItem={feedItem}
@@ -63,9 +77,13 @@ const OnlyFeedCardsLayout = ({ data }: { data: FeedItemList }) => {
       {indexes.map((i) => {
         const feedItem = data[i + offset];
         const cardLayout = layout[i];
+
+        // Skip if feedItem doesn't exist
+        if (!feedItem || !cardLayout) return null;
+
         return (
           <FeedCard
-            key={feedItem?._id + i}
+            key={`feedcard-${feedItem?._id ?? "no-id"}-${i + offset}`}
             width={cardLayout.width}
             height={cardLayout.height}
             feedItem={feedItem}
@@ -84,14 +102,21 @@ const OnlyFeedCardsLayout = ({ data }: { data: FeedItemList }) => {
     if (!columnLayoutData) {
       return (
         <div className="space-y-5" key={index}>
-          {layoutData.map((item, i) => (
-            <FeedCard
-              key={data[i + offset]?._id + i}
-              width={item.width}
-              height={item.height}
-              feedItem={data[i + offset]}
-            />
-          ))}
+          {layoutData.map((item, i) => {
+            const feedItem = data[i + offset];
+
+            // Skip if feedItem doesn't exist
+            if (!feedItem) return null;
+
+            return (
+              <FeedCard
+                key={`feedcard-${feedItem?._id ?? "no-id"}-${i + offset}`}
+                width={item.width}
+                height={item.height}
+                feedItem={feedItem}
+              />
+            );
+          })}
         </div>
       );
     }
@@ -120,31 +145,50 @@ const OnlyFeedCardsLayout = ({ data }: { data: FeedItemList }) => {
   const renderExtraCards = (extraBusinesses: any[]) => {
     if (extraBusinesses.length === 0) return null;
 
-    const layout16 = scaleLayout(onlyCardsLayouts["layout16"], scale);
     const columnCount = 5;
 
-    // Shuffle layout16 to avoid repeating the same shape
-    const shuffledLayouts = shuffleArray(layout16);
+    // Track column heights for better distribution
+    const columns: {
+      businesses: any[];
+      layouts: LayoutItem[];
+      height: number;
+    }[] = Array.from({ length: columnCount }, () => ({
+      businesses: [],
+      layouts: [],
+      height: 0,
+    }));
 
-    // Distribute businesses into columns
-    const columns: any[][] = Array.from({ length: columnCount }, () => []);
+    // Distribute cards to the shortest column for visual balance
     extraBusinesses.forEach((biz, i) => {
-      const columnIndex = i % columnCount;
-      columns[columnIndex].push(biz);
+      if (!biz) return; // Skip undefined items
+
+      const layoutIndex = i % shuffledLayouts.length;
+      const layout = shuffledLayouts[layoutIndex];
+
+      // Find the column with the least height
+      const shortestColumnIndex = columns.reduce(
+        (minIdx, col, idx) =>
+          col.height < columns[minIdx].height ? idx : minIdx,
+        0,
+      );
+
+      columns[shortestColumnIndex].businesses.push(biz);
+      columns[shortestColumnIndex].layouts.push(layout);
+      columns[shortestColumnIndex].height += layout.height;
     });
 
     return (
-      <div className="flex w-full gap-5">
+      <div className="flex w-full gap-5 items-start">
         {columns.map((column, colIdx) => (
           <div key={`column-${colIdx}`} className="flex flex-col gap-5">
-            {column.map((biz, bizIdx) => {
-              const layoutIndex =
-                (colIdx + bizIdx * columnCount) % shuffledLayouts.length;
-              const layout = shuffledLayouts[layoutIndex];
+            {column.businesses.map((biz, bizIdx) => {
+              const layout = column.layouts[bizIdx];
+
+              if (!biz || !layout) return null;
 
               return (
                 <FeedCard
-                  key={biz._id + bizIdx}
+                  key={`${biz._id}-extra-${colIdx}-${bizIdx}`}
                   width={layout.width}
                   height={layout.height}
                   feedItem={biz}
@@ -158,24 +202,17 @@ const OnlyFeedCardsLayout = ({ data }: { data: FeedItemList }) => {
   };
 
   const renderFullLayout = () => {
-    if (feedItemCount <= 16) {
-      const layoutKey = `layout${feedItemCount}`;
-      const layout = scaleLayout(onlyCardsLayouts[layoutKey], scale);
-      const columnLayout = onlyCardsColumns[layoutKey] ?? null;
+    const safeLayoutKey = `layout${Math.min(feedItemCount, 16)}`;
+    const layout = scaleLayout(onlyCardsLayouts[safeLayoutKey], scale);
+    const columnLayout = onlyCardsColumns[safeLayoutKey] ?? null;
 
-      return renderLayoutSection(layout, columnLayout, 0, 0);
-    }
-
-    // For imageCount > 16
-    const layout16 = scaleLayout(onlyCardsLayouts["layout16"], scale);
-    const column16 = onlyCardsColumns["layout16"];
-    const extraBusinesses = data?.slice(16);
+    const extraBusinesses = feedItemCount > 16 ? data.slice(16) : [];
 
     return (
-      <>
-        {renderLayoutSection(layout16, column16 ?? null, 0, 0)}
-        {renderExtraCards(extraBusinesses)}
-      </>
+      <div key="layout-root">
+        {renderLayoutSection(layout, columnLayout, 0, 0)}
+        {feedItemCount > 16 && renderExtraCards(extraBusinesses)}
+      </div>
     );
   };
 

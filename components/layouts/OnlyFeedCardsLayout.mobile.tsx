@@ -36,11 +36,11 @@ const OnlyFeedCardsLayoutMobile = ({ data }: { data: FeedItemList }) => {
 
   if (feedItemCount < 1) return <div>No businesses available</div>;
 
-  // ✅ Get dynamic layout and columns
+  //  Get dynamic layout and columns
   const layouts = getMobileCardLayouts(feedItemCount);
   const columns = getMobileCardColumns(feedItemCount);
 
-  // ✅ Single card layout (full width)
+  //  Single card layout (full width)
   if (feedItemCount === 1) {
     const layout = scaleLayout(layouts.mobileLayout1, scale);
     const card = layout[0];
@@ -49,7 +49,7 @@ const OnlyFeedCardsLayoutMobile = ({ data }: { data: FeedItemList }) => {
       <div
         className={clsx(
           activeCategoryKey ? "pb-48" : "pb-30",
-          "px-4 py-4 flex items-center justify-center w-full h-full relative",
+          "px-4 pt-24 flex items-center justify-center w-full h-full relative ",
         )}
       >
         <FeedCardMobile
@@ -62,12 +62,12 @@ const OnlyFeedCardsLayoutMobile = ({ data }: { data: FeedItemList }) => {
     );
   }
 
-  // ✅ Multi-card layout (2 columns)
+  //  Multi-card layout (2 columns)
   const layout = scaleLayout(layouts.mobileLayout2, scale);
   const columnLayout = columns.mobileLayout2;
   const totalCards = data.length;
 
-  // ✅ Shuffle indexes only when `data` changes
+  //  Shuffle indexes only when `data` changes
   useEffect(() => {
     const col1Indexes = columnLayout.col1.filter((i) => i < totalCards);
     const col2Indexes = columnLayout.col2.filter((i) => i < totalCards);

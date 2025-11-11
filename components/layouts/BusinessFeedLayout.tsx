@@ -18,6 +18,7 @@ const BusinessFeedLayout = ({
 }: {
   businesses: BusinessesProps;
 }) => {
+  // ✅ ALL HOOKS MUST BE CALLED FIRST - BEFORE ANY EARLY RETURNS
   const isHydrated = useIsHydrated();
   const { activeFilterTab, isOnSection2, setAppliedFilterItemCount } =
     useGeneralStore();
@@ -25,14 +26,17 @@ const BusinessFeedLayout = ({
   const { sentryRef, loading, initialLoadDone, canLoadMore } = useLoadMore(
     businesses?.meta?.hasNextPage,
   );
-  const totalBusiness = businesses?.totalData;
-  useEffect(() => {
-    if (businesses?.data?.length > 0)
-      setAppliedFilterItemCount(businesses?.data?.length);
-  }, [businesses]);
 
   const triggerRef = useRef(null);
+  const totalBusiness = businesses?.totalData;
 
+  useEffect(() => {
+    if (businesses?.data?.length > 0) {
+      setAppliedFilterItemCount(businesses?.data?.length);
+    }
+  }, [businesses, setAppliedFilterItemCount]);
+
+  // ✅ NOW it's safe to have early returns - all hooks have been called
   if (!isHydrated) return null;
 
   const renderLayout = () => {
