@@ -178,7 +178,7 @@ const OnlyFeedCardsLayout = ({ data }: { data: FeedItemList }) => {
     });
 
     return (
-      <div className="flex w-full gap-5 items-start mt-5">
+      <div className="flex w-full gap-5 items-start mt-4">
         {columns.map((column, colIdx) => (
           <div key={`column-${colIdx}`} className="flex flex-col gap-5">
             {column.businesses.map((biz, bizIdx) => {

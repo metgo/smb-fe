@@ -30,7 +30,7 @@ const ImageCarouselControls: React.FC<ImageCarouselControlsProps> = ({
           e.stopPropagation();
           if (activeIndex > 0) setActiveImageIndex((prev) => prev - 1);
         }}
-        className="custom-cursor border border-transparent hover:border-white rounded-full"
+        className="custom-cursor border border-transparent hover:border-white rounded-full flex-shirnk-0"
         disabled={activeIndex === 0}
       >
         <IconImage icon="next" width={iconSize} height={iconSize} />
@@ -60,7 +60,7 @@ const ImageCarouselControls: React.FC<ImageCarouselControlsProps> = ({
           if (activeIndex < totalImages - 1)
             setActiveImageIndex((prev) => prev + 1);
         }}
-        className="custom-cursor border border-transparent hover:border-white rounded-full"
+        className="custom-cursor border border-transparent hover:border-white rounded-full flex-shirnk-0"
         disabled={activeIndex === totalImages - 1}
       >
         <IconImage icon="prev" width={iconSize} height={iconSize} />
