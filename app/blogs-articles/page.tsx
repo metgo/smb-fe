@@ -11,6 +11,7 @@ import NoFeedItemLayout from "@/components/layouts/NoFeedItemLayout";
 const page = async () => {
   const blogs = await getAllBlogs();
   if (blogs?.length < 1) return <NoFeedItemLayout />;
+
   return (
     <Suspense>
       <Navbar />
