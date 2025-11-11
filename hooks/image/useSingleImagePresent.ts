@@ -81,12 +81,12 @@ export const useSingleImagePresent = (
   /** ✅ Core image processor */
   const processImage = useCallback(
     async (img: ImageItem): Promise<ProcessedImage> => {
-      const cacheKey = `${img.image}-${aspectRatio}`;
-      if (imageCacheRef.current.has(cacheKey)) {
-        const cached = imageCacheRef.current.get(cacheKey)!;
-        setIsImageLoaded(true);
-        return cached;
-      }
+      // const cacheKey = `${img.image}-${aspectRatio}`;
+      // if (imageCacheRef.current.has(cacheKey)) {
+      //   const cached = imageCacheRef.current.get(cacheKey)!;
+      //   setIsImageLoaded(true);
+      //   return cached;
+      // }
 
       let result: ProcessedImage = img?.subCoordinates
         ? await handleCropImage(img, aspectRatio)
@@ -107,7 +107,7 @@ export const useSingleImagePresent = (
       }
 
       // Cache and return
-      imageCacheRef.current.set(cacheKey, result);
+      // imageCacheRef.current.set(cacheKey, result);
       return result;
     },
     [aspectRatio, waitForImageLoad],

@@ -99,16 +99,23 @@ export const useImagePresent = (
 
   const processImage = useCallback(
     async (image: ImageItem, idx?: number) => {
-      const cacheKey = `${image.image}-${aspectRatio}`;
-      if (imageCacheRef.current.has(cacheKey)) {
-        const cached = imageCacheRef.current.get(cacheKey)!;
+      // const cacheKey = `${image.image}-${aspectRatio}`;
+      // if (imageCacheRef.current.has(cacheKey)) {
+      //   const cached = imageCacheRef.current.get(cacheKey)!;
 
-        // For cached images, just return them - they've already been validated
-        setIsImageLoaded(true);
-        return cached;
-      }
+      //   // For cached images, just return them - they've already been validated
+      //   setIsImageLoaded(true);
+      //   return cached;
+      // }
 
-      let result = image?.subCoordinates
+      const hasValidCoordinates =
+        image?.subCoordinates &&
+        (image.subCoordinates.xMax !== 0 ||
+          image.subCoordinates.xMin !== 0 ||
+          image.subCoordinates.yMax !== 0 ||
+          image.subCoordinates.yMin !== 0);
+
+      let result = hasValidCoordinates
         ? await handleCropImage(image, aspectRatio)
         : { imageUrl: image.image, alt: image.alt };
 
@@ -126,7 +133,7 @@ export const useImagePresent = (
       }
 
       // Cache the result (whether successful or placeholder)
-      imageCacheRef.current.set(cacheKey, result);
+      // imageCacheRef.current.set(cacheKey, result);
 
       if (typeof idx === "number") {
         setUpdatedImageList((prev) => {
