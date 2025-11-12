@@ -18,6 +18,7 @@ import { Voucher } from '../../schema/voucher.schema';
 import { GetByCodeQuery } from '../get-by-code.query';
 import { GetByCodeInterface } from '../../interface/get-by-code.handler';
 import { ProductsService } from 'src/modules/products/products.services';
+import { ExternalApiServices } from 'src/modules/external-api/external-api.service';
 
 @QueryHandler(GetByCodeQuery)
 export class GetByCodeHandler implements IQueryHandler<GetByCodeQuery> {
@@ -25,13 +26,14 @@ export class GetByCodeHandler implements IQueryHandler<GetByCodeQuery> {
     @InjectModel('Voucher')
     private readonly VoucherModel: Model<Voucher>,
     private productService: ProductsService,
+    private externalApiService: ExternalApiServices,
   ) {}
 
   async execute(queries: GetByCodeQuery): Promise<GetByCodeInterface> {
     try {
       const { queryData, code, loggedInUser } = queries;
 
-      const { campCode, productId } = queryData;
+      const { identifierId, productId } = queryData;
       const findQuery: any = {
         code: code.trim(),
         isDeleted: false,
@@ -39,21 +41,30 @@ export class GetByCodeHandler implements IQueryHandler<GetByCodeQuery> {
 
       console.log(loggedInUser);
 
-      const voucher = await this.VoucherModel.findOne(findQuery)
-        .select('_id code remainingAmount expireDate paymentStatus campId')
-        .populate<{ campId: Campaign }>(
-          'campId',
-          'code name dmoIds productIds businessIds',
-        )
-        .exec();
+      const [voucher, externalApi] = await Promise.all([
+        this.VoucherModel.findOne(findQuery)
+          .select('_id code remainingAmount expireDate paymentStatus campId')
+          .populate<{ campId: Campaign }>(
+            'campId',
+            'code name dmoIds productIds businessIds',
+          )
+          .exec(),
+        this.externalApiService.findByFieldName('identifierId', identifierId),
+      ]);
 
       if (!voucher) {
         throw new UnprocessableEntityException(ServerErrors.VOUCHER.NOT_FOUND);
       }
 
+      if (!externalApi) {
+        throw new ForbiddenException(ServerErrors.EXTERNAL_API.IDENTIFIER_ID);
+      }
+
       const campDetails = voucher?.campId;
 
-      if (campDetails?.code !== campCode) {
+      const isAllowed = externalApi?.campIds.some(campId => campId.equals(campDetails._id));
+
+      if (!isAllowed) {
         throw new ForbiddenException(ServerErrors.VOUCHER.RESTRICTED_CAMPAIGN);
       }
 

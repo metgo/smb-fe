@@ -40,7 +40,9 @@ export class GetSiteInfoHandler implements IQueryHandler<GetSiteInfoQuery> {
         metaKeywords: externalApi?.themeId?.metaKeywords,
         siteName: externalApi?.themeId?.ogName,
         siteUrl: externalApi?.themeId?.websiteUrl,
-        desktopHomeVideos: externalApi?.themeId?.homeVideos?.filter(v => v.isActive),
+        desktopHomeVideos: externalApi?.themeId?.homeVideos?.filter(
+          v => v.isActive,
+        ),
         mobileHomeVideos: externalApi?.themeId?.mobileHomeVideos?.filter(
           v => v.isActive,
         ),
