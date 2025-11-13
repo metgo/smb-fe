@@ -150,7 +150,7 @@ export const useImagePresent = (
     [aspectRatio, waitForImageLoad],
   );
 
-  // Process all images at once
+  // Process all images - prioritize index 0
   const processAllImages = useCallback(async () => {
     if (!Array.isArray(imagesInput) || imagesInput.length === 0) return;
 
@@ -167,24 +167,39 @@ export const useImagePresent = (
     setIsImageLoaded(false);
 
     try {
-      // Process all images concurrently
-      const processingPromises = imagesInput.map((image, index) =>
-        processImage(image, index),
-      );
+      // Process primary image (index 0) first
+      const primaryImage = await processImage(imagesInput[0], 0);
 
-      const processedImages = await Promise.all(processingPromises);
+      // Update state immediately with primary image
+      setUpdatedImageList([primaryImage]);
+      setUpdatedImage({
+        imageUrl: primaryImage.imageUrl,
+        alt: primaryImage.alt,
+      });
 
-      // Update the image list with all processed images
-      setUpdatedImageList(processedImages);
+      // Set loading to false as soon as primary image is ready
+      setIsLoading(false);
+
+      // Continue processing remaining images in background
+      if (imagesInput.length > 1) {
+        const remainingPromises = imagesInput
+          .slice(1)
+          .map((image, index) => processImage(image, index + 1));
+
+        const remainingImages = await Promise.all(remainingPromises);
+
+        // Update the full list with all images
+        setUpdatedImageList([primaryImage, ...remainingImages]);
+      }
+
       setIsImageLoaded(true);
 
       // Mark as processed and store the hash
       hasProcessedRef.current = true;
       previousImagesHashRef.current = imagesHash;
     } catch (error) {
-      console.error("Error processing all images:", error);
+      console.error("Error processing images:", error);
       setIsImageLoaded(true);
-    } finally {
       setIsLoading(false);
     }
   }, [imagesInput, processImage, imagesHash]);
@@ -267,7 +282,7 @@ export const useImagePresent = (
       };
     }
 
-    // If it's an array of images, process all of them
+    // If it's an array of images, process all of them (primary first)
     processAllImages();
   }, [
     imagesInput,
