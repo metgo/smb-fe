@@ -118,8 +118,8 @@ const IntroVideo = () => {
       />
 
       {/* Loading Spinner */}
-      {!isVideoReady && !videoError && (
-        <div className="absolute inset-0 flex items-center justify-center z-20">
+      {isVideoReady && !videoError && (
+        <div className="absolute left-1/2 top-1/2 flex items-center justify-center z-20 ">
           <div className="animate-spin rounded-full h-12 w-12 border-4 border-white border-t-transparent" />
         </div>
       )}
@@ -146,7 +146,7 @@ const IntroVideo = () => {
             e.stopPropagation();
             toggleMute();
           }}
-          className="absolute right-10 z-30 text-white bg-black/50 hover:bg-black/70 border-[3px] border-white rounded-full p-3 transition custom-cursor"
+          className="absolute right-10 z-10 text-white bg-black/50 hover:bg-black/70 border-[3px] border-white rounded-full p-3 transition custom-cursor"
           aria-label={isMuted ? "Unmute" : "Mute"}
           style={{
             bottom: isMobile

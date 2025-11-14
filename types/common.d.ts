@@ -153,7 +153,7 @@ interface PromotionalItem {
   description: string;
   slug: string;
   image?: ImageItem;
-  itemType: "business" | "event" | "product" | string; // extendable for flexibility
+  itemType: "business" | "event" | "product" | "funDays" | string; // extendable for flexibility
 }
 
 interface PromotionalItemsResponse {

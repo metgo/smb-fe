@@ -34,6 +34,7 @@ const getContextState = (contextId: string) => {
 export const getAllTrails = async (
   pageCount: number,
   contextId: string = "default",
+  isTrip: boolean = true,
 ): Promise<TrailsFeedProps> => {
   // Always reset state per request to force re-fetch on reload
   resetTrailContext();
@@ -43,7 +44,7 @@ export const getAllTrails = async (
     try {
       console.log(`Fetching page ${i} from API`);
       const res = await fetch(
-        `${urls.trails}?page=${i}&limit=16&sortBy=createdAt&sortOrder=DESC&campCode=${CODE}`,
+        `${urls.trails}?page=${i}&limit=16&sortBy=createdAt&sortOrder=DESC&campCode=${CODE}&isTrip=${isTrip}`,
         {
           cache: "no-store",
         },
@@ -98,10 +99,11 @@ export const clearBusinessContext = async (contextId: string) => {
 export async function getTrailDetailsBySlug(
   slug: string,
   isMap: boolean = false,
+  isTrip: boolean = true,
 ) {
   try {
     const res = await fetch(
-      `${urls.trailDetails}/${slug}?campCode=${CODE}&isMap=${isMap}`,
+      `${urls.trailDetails}/${slug}?campCode=${CODE}&isMap=${isMap}&isTrip=${isTrip}`,
     );
     if (!res.ok) throw new Error("Failed to fetch categories");
     const data = await res.json();

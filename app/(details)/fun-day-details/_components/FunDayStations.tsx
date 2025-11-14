@@ -1,0 +1,136 @@
+"use client";
+
+import Image from "next/image";
+import { Tooltip } from "react-tooltip";
+import { createPortal } from "react-dom";
+import { IoIosCloseCircle } from "react-icons/io";
+import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
+
+import { misc } from "@/constant/hebrew";
+import { useTrailStations } from "@/hooks";
+import { stationCategory } from "@/lib/utils";
+import { IconImage, MapNavButton, NextImage } from "@/components/ui";
+
+// Station Card Component
+const StationCard = ({
+  station,
+  index,
+  onRemove,
+  canRemove,
+}: {
+  station: LocalstoreTrailStaionsProps;
+  index: number;
+  onRemove: (id: string) => void;
+  canRemove: boolean;
+}) => (
+  <Draggable draggableId={station?._id} index={index}>
+    {(provided) => (
+      <div
+        ref={provided.innerRef}
+        {...provided.draggableProps}
+        {...provided.dragHandleProps}
+        className="group grid grid-cols-6 items-center gap-2.5 p-2.5 border-t border-primary bg-white"
+      >
+        {/* Image */}
+        <div className="col-span-2 h-[118px] relative">
+          <NextImage
+            width={140}
+            height={118}
+            alt={station?.name || "station image"}
+            imgSrc={station?.image}
+            className="rounded-md object-cover h-full"
+          />
+          <div className="h-7.5 w-7.5 rounded-full bg-white absolute top-1 right-1">
+            <Image
+              width={30}
+              height={30}
+              alt="category icon"
+              src={`/images/category/${stationCategory[station?.primaryCategoryId]}`}
+              className="object-cover"
+            />
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="col-span-4">
+          <div className="flex items-start justify-between">
+            <h2 className="font-bold text-dark max-w-68">{station?.name}</h2>
+            {canRemove && (
+              <>
+                <IoIosCloseCircle
+                  size={24}
+                  data-tooltip-id="remove-info"
+                  className="hidden group-hover:block custom-cursor"
+                  onClick={() => onRemove(station?._id)}
+                />
+                {createPortal(
+                  <Tooltip
+                    id="remove-info"
+                    place="left"
+                    offset={10}
+                    content={misc.statingRemoving}
+                  />,
+                  document.body,
+                )}
+              </>
+            )}
+          </div>
+          <div
+            className="font-normal text-theme text-sm line-clamp-2"
+            dangerouslySetInnerHTML={{ __html: station?.description }}
+          />
+          <div className="flex items-center justify-end gap-2 w-full mt-1.75">
+            <MapNavButton
+              lat={station?.geoLocation?.lat}
+              lng={station?.geoLocation?.long}
+              clssName="border border-theme rounded-lg flex"
+            />
+            <button
+              type="button"
+              className="bg-dark rounded-lg p-1 custom-cursor"
+            >
+              <IconImage icon="basket-white" />
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+  </Draggable>
+);
+
+const FunDayStations = ({ stations, _id }: TrailDetailsProps) => {
+  const { handleDragEnd, handleRemove, visibleStations } = useTrailStations(
+    _id,
+    stations,
+  );
+
+  return (
+    <div>
+      {/* Drag & Drop List */}
+      <DragDropContext onDragEnd={handleDragEnd}>
+        <Droppable droppableId="stations-list">
+          {(provided) => (
+            <div
+              className="max-h-[55%] overflow-y-scroll"
+              ref={provided.innerRef}
+              {...provided.droppableProps}
+            >
+              {visibleStations?.map((station, index) => (
+                <StationCard
+                  key={station?._id || index}
+                  station={station}
+                  index={index}
+                  onRemove={handleRemove}
+                  canRemove={visibleStations?.length > 2}
+                />
+              ))}
+              {provided.placeholder}
+            </div>
+          )}
+        </Droppable>
+      </DragDropContext>
+    </div>
+  );
+};
+
+export default FunDayStations;

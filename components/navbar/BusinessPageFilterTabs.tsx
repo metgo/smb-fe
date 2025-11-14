@@ -6,6 +6,7 @@ import { filterTabs } from "@/lib/utils";
 import { IconImage } from "@/components/ui";
 import useGeneralStore from "@/stores/generalStore";
 import { useEffect, useState, useRef } from "react";
+import { pathNames } from "@/lib/endpoints";
 
 const BusinessPageFilterTabs = () => {
   const router = useRouter();
@@ -30,7 +31,7 @@ const BusinessPageFilterTabs = () => {
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    if (pathname === "/trails") {
+    if (pathname === pathNames.trails || pathname === pathNames.funDays) {
       setFilteredTabs(filterTabs.slice(0, 2));
     } else {
       setFilteredTabs(filterTabs);

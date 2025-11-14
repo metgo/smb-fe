@@ -96,7 +96,7 @@ const OnlyFeedCardsLayoutMobile = ({ data }: { data: FeedItemList }) => {
   return (
     <div
       className={clsx(
-        "px-2 py-20 flex items-center justify-center w-full h-full relative",
+        "px-2 py-20 flex items-center justify-center w-full h-full min-h-[100vh] relative",
       )}
     >
       <div className="flex gap-3 items-start justify-center px-0">
