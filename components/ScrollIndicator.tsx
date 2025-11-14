@@ -1,61 +1,53 @@
 "use client";
 
 import clsx from "clsx";
-
 import { IconImage } from "@/components/ui";
 import useGeneralStore from "@/stores/generalStore";
+
+type ScrollIndicatorProps = {
+  isSecond?: boolean;
+  hasMarketing?: boolean;
+  height?: number;
+  /** Called when user taps the indicator – parent handles smooth scroll */
+  onClick?: () => void;
+};
 
 const ScrollIndicator = ({
   isSecond = false,
   hasMarketing = false,
   height,
-}: {
-  height?: number;
-  isSecond?: boolean;
-  hasMarketing?: boolean;
-}) => {
+  onClick,
+}: ScrollIndicatorProps) => {
   const { setIsOnSection2, setHideFirstTwoSection } = useGeneralStore();
 
-  const handleScroll = () => {
-    // Use document.documentElement.clientHeight for more reliable viewport height
-    const vh = Math.max(
-      document.documentElement.clientHeight || 0,
-      window.innerHeight || 0,
-    );
+  const handleClick = () => {
+    // Let parent perform the smooth scroll
+    onClick?.();
 
-    // Scroll to exact viewport height
-    const targetScroll = isSecond ? vh * 2 : vh;
-
-    // Force scroll to exact position
-    window.scrollTo({
-      top: targetScroll,
-      behavior: "smooth",
-    });
-
-    // Small delay to ensure scroll completes, then snap to exact position
+    // We delay state updates until animation is done (~600ms)
     setTimeout(() => {
-      window.scrollTo({
-        top: targetScroll,
-        behavior: "auto", // Instant snap to fix any drift
-      });
-
       if (isSecond) {
+        // Second section → going to feed
         setIsOnSection2(true);
         setHideFirstTwoSection(true);
       } else {
-        if (hasMarketing) setIsOnSection2(false);
-        else setIsOnSection2(true);
-        // setHideFirstTwoSection(false);
+        // First section → going to second (or feed if no marketing)
+        if (hasMarketing) {
+          setIsOnSection2(false); // still on section 1 → 2 transition
+        } else {
+          setIsOnSection2(true);
+          setHideFirstTwoSection(true);
+        }
       }
-    }, 800);
+    }, 650); // matches smoothScrollTo duration (600ms) + buffer
   };
 
   return (
     <div
-      onClick={handleScroll}
+      onClick={handleClick}
       className={clsx(
         isSecond ? "md:bottom-24" : "md:bottom-10.5",
-        "absolute left-1/2 transform -translate-x-1/2 custom-cursor z-10",
+        "absolute left-1/2 transform -translate-x-1/2 custom-cursor z-10 select-none",
       )}
       style={{ bottom: isSecond && height && height < 700 ? "80px" : "40px" }}
     >
