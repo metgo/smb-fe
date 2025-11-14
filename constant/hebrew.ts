@@ -75,6 +75,7 @@ export const menuItems = {
   eventGeneralPublic: "אירועים לקהל הרחב",
   eventCompaniesOrg: "אירועים לחברות וארגונים",
   routes: "מסלולים",
+  funDays: "ימי גיבוש",
   mySavedOnes: "השמורים שלי",
   checkBalance: "בדיקת יתרת תווים",
   addMyBusiness: "לצרף את העסק שלי",
@@ -262,4 +263,9 @@ export const filterLabels = {
   preferences: "העדפות",
   targetAudiences: "קהל יעד",
   clearEverything: "ניקוי הכל",
+};
+
+export const funDaysLabels = {
+  whatsOnThePlan: "מה בתוכנית?",
+  hazel: "לו״ז",
 };

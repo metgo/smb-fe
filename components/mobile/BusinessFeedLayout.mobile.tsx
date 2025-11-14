@@ -61,7 +61,7 @@ const MobileBusinessFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
         <>
           <MobileBusinessPinMap />
           {hideFirstTwoSection && (
-            <div className="fixed bottom-0 right-0 w-full z-20 space-y-4">
+            <div className="fixed bottom-18 right-0 w-full z-20 space-y-4">
               <MobileFeedsThumbnailCarousel
                 shouldSetItemId
                 items={carouselItems}
@@ -74,18 +74,13 @@ const MobileBusinessFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
                   categoryColors[activeFeedItem?.primaryCategoryId]
                 }
               />
-              <MobileCategoryPanel />
             </div>
           )}
         </>
       )}
 
       {/* Bottom Panels */}
-      {hideFirstTwoSection && activeFilterTabMobile === "gallery" && (
-        <div className="fixed bottom-0 right-0 w-full z-20">
-          <MobileCategoryPanel />
-        </div>
-      )}
+      {hideFirstTwoSection && pathname === "/" && <MobileCategoryPanel />}
     </div>
   );
 };
