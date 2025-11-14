@@ -4,10 +4,6 @@ import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { staticImages } from "@/constant/staticImages";
 import { handleCropImage } from "@/lib/helpers";
 
-function getPrimaryImgObj(images: ImageItem[]): ImageItem | undefined {
-  return images?.find((item) => item?.isPrimary);
-}
-
 type ImageInput = ImageItem[] | ImageItem;
 
 interface UseImagePresentReturn {
@@ -54,6 +50,8 @@ export const useImagePresent = (
     new Map(),
   );
   const observerRef = useRef<IntersectionObserver | null>(null);
+  const hasProcessedRef = useRef(false);
+  const previousImagesHashRef = useRef<string>("");
 
   // Memoize dependencies to prevent unnecessary re-renders
   const depsKey = useMemo(() => {
@@ -63,6 +61,31 @@ export const useImagePresent = (
       return String(dependencies?.length || 0);
     }
   }, [dependencies]);
+
+  // Generate a hash for the images input to detect changes
+  const imagesHash = useMemo(() => {
+    if (!imagesInput) return "";
+
+    try {
+      if (Array.isArray(imagesInput)) {
+        return JSON.stringify(
+          imagesInput.map((img) => ({
+            image: img.image,
+            alt: img.alt,
+            subCoordinates: img.subCoordinates,
+          })),
+        );
+      } else {
+        return JSON.stringify({
+          image: imagesInput.image,
+          alt: imagesInput.alt,
+          subCoordinates: imagesInput.subCoordinates,
+        });
+      }
+    } catch {
+      return String(imagesInput);
+    }
+  }, [imagesInput]);
 
   // Utility: wait until an image URL is fully loaded
   const waitForImageLoad = useCallback(
@@ -77,12 +100,16 @@ export const useImagePresent = (
   );
 
   const processImage = useCallback(
-    async (image: ImageItem, idx?: number) => {
-      const cacheKey = `${image.image}-${aspectRatio}`;
+    async (
+      image: ImageItem,
+      idx?: number,
+    ): Promise<{ _id: number; imageUrl: string; alt: string }> => {
+      const cacheKey = `${image.image}_${aspectRatio}`;
+
+      // Check cache first
       if (imageCacheRef.current.has(cacheKey)) {
         const cached = imageCacheRef.current.get(cacheKey)!;
-        setIsImageLoaded(true);
-        return cached;
+        return { _id: idx ?? 0, ...cached };
       }
 
       const hasValidCoordinates =
@@ -96,31 +123,86 @@ export const useImagePresent = (
         ? await handleCropImage(image, aspectRatio)
         : { imageUrl: image.image, alt: image.alt };
 
-      setIsImageLoaded(false);
       try {
         await waitForImageLoad(result.imageUrl);
-        setIsImageLoaded(true);
       } catch (err) {
+        console.log(err);
         result = {
           imageUrl: staticImages.placeholder,
           alt: image.alt || "Business",
         };
-        console.error("Image failed to load:", result.imageUrl, err);
-        setIsImageLoaded(true);
       }
 
+      const processedImage = { _id: idx ?? 0, ...result };
+
+      // Cache the result
+      imageCacheRef.current.set(cacheKey, {
+        imageUrl: result.imageUrl,
+        alt: result.alt,
+      });
+
       if (typeof idx === "number") {
-        setUpdatedImageList((prev) => {
-          if (prev.some((i) => i._id === idx)) return prev;
-          return [...prev, { _id: idx, ...result }];
-        });
         processedIndexesRef.current.add(idx);
       }
 
-      return result;
+      return processedImage;
     },
     [aspectRatio, waitForImageLoad],
   );
+
+  // Process all images - prioritize index 0
+  const processAllImages = useCallback(async () => {
+    if (!Array.isArray(imagesInput) || imagesInput.length === 0) return;
+
+    // Skip processing if already processed the same images
+    if (
+      hasProcessedRef.current &&
+      previousImagesHashRef.current === imagesHash
+    ) {
+      setIsImageLoaded(true);
+      return;
+    }
+
+    setIsLoading(true);
+    setIsImageLoaded(false);
+
+    try {
+      // Process primary image (index 0) first
+      const primaryImage = await processImage(imagesInput[0], 0);
+
+      // Update state immediately with primary image
+      setUpdatedImageList([primaryImage]);
+      setUpdatedImage({
+        imageUrl: primaryImage.imageUrl,
+        alt: primaryImage.alt,
+      });
+
+      // Set loading to false as soon as primary image is ready
+      setIsLoading(false);
+
+      // Continue processing remaining images in background
+      if (imagesInput.length > 1) {
+        const remainingPromises = imagesInput
+          .slice(1)
+          .map((image, index) => processImage(image, index + 1));
+
+        const remainingImages = await Promise.all(remainingPromises);
+
+        // Update the full list with all images
+        setUpdatedImageList([primaryImage, ...remainingImages]);
+      }
+
+      setIsImageLoaded(true);
+
+      // Mark as processed and store the hash
+      hasProcessedRef.current = true;
+      previousImagesHashRef.current = imagesHash;
+    } catch (error) {
+      console.error("Error processing images:", error);
+      setIsImageLoaded(true);
+      setIsLoading(false);
+    }
+  }, [imagesInput, processImage, imagesHash]);
 
   // Setup Intersection Observer
   useEffect(() => {
@@ -153,37 +235,7 @@ export const useImagePresent = (
     };
   }, [enabled, threshold, rootMargin]);
 
-  // Handle active image switching (only when in view)
-  useEffect(() => {
-    if (!inView || !Array.isArray(imagesInput) || imagesInput.length === 0) {
-      return;
-    }
-
-    if (
-      activeImageIndex == null ||
-      processedIndexesRef.current.has(activeImageIndex)
-    ) {
-      return;
-    }
-
-    const imageToProcess = imagesInput[activeImageIndex];
-    if (!imageToProcess) return;
-
-    let cancelled = false;
-    setIsLoading(true);
-
-    processImage(imageToProcess, activeImageIndex).finally(() => {
-      if (!cancelled) {
-        setIsLoading(false);
-      }
-    });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [activeImageIndex, imagesInput, processImage, inView]);
-
-  // Handle primary/initial image processing
+  // Handle processing all images when in view
   useEffect(() => {
     if (!inView || !imagesInput) {
       return;
@@ -193,31 +245,76 @@ export const useImagePresent = (
       return;
     }
 
-    const imageToProcess = Array.isArray(imagesInput)
-      ? getPrimaryImgObj(imagesInput) || imagesInput[0]
-      : imagesInput;
+    // If it's a single image, process it normally
+    if (!Array.isArray(imagesInput)) {
+      // Check if already processed
+      if (
+        hasProcessedRef.current &&
+        previousImagesHashRef.current === imagesHash
+      ) {
+        setIsImageLoaded(true);
+        return;
+      }
 
-    if (!imageToProcess) return;
+      let cancelled = false;
+      setIsLoading(true);
 
-    let cancelled = false;
-    setIsLoading(true);
+      processImage(imagesInput)
+        .then((result) => {
+          if (!cancelled) {
+            setUpdatedImage(result);
+            setUpdatedImageList([result]);
+            setIsImageLoaded(true);
 
-    processImage(imageToProcess)
-      .then((result) => {
-        if (!cancelled) {
-          setUpdatedImage(result);
-        }
-      })
-      .finally(() => {
-        if (!cancelled) {
-          setIsLoading(false);
-        }
+            // Mark as processed and store the hash
+            hasProcessedRef.current = true;
+            previousImagesHashRef.current = imagesHash;
+          }
+        })
+        .finally(() => {
+          if (!cancelled) {
+            setIsLoading(false);
+          }
+        });
+
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    // If it's an array of images, process all of them (primary first)
+    processAllImages();
+  }, [
+    imagesInput,
+    processImage,
+    processAllImages,
+    inView,
+    depsKey,
+    imagesHash,
+    aspectRatio,
+  ]);
+
+  // Update active image when activeImageIndex changes (no processing needed)
+  useEffect(() => {
+    if (!Array.isArray(imagesInput) || !updatedImageList.length) return;
+
+    const activeImage = updatedImageList.find(
+      (img) => img._id === activeImageIndex,
+    );
+    if (activeImage) {
+      setUpdatedImage({
+        imageUrl: activeImage.imageUrl,
+        alt: activeImage.alt,
       });
+    }
+  }, [activeImageIndex, imagesInput, updatedImageList]);
 
-    return () => {
-      cancelled = true;
-    };
-  }, [imagesInput, processImage, inView, depsKey]);
+  // Reset processing state when images change significantly
+  useEffect(() => {
+    if (previousImagesHashRef.current !== imagesHash) {
+      hasProcessedRef.current = false;
+    }
+  }, [imagesHash]);
 
   // Cleanup object URLs on unmount
   useEffect(() => {

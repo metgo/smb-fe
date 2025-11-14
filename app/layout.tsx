@@ -14,6 +14,7 @@ import {
 import { SiteInfoClientProvider } from "@/providers/SiteInfoClientProvider";
 import { urls } from "@/lib/endpoints";
 import { getFavicon, getLogo } from "@/constant/images";
+import ServiceWorkerRegistrar from "@/components/ServiceWorkerRegistrar";
 
 // Dynamic metadata
 export async function generateMetadata(): Promise<Metadata> {
@@ -76,6 +77,7 @@ export default function RootLayout({ children }: ReactChildNode) {
           <Suspense>
             <ProgressBar />
             <Toaster />
+            <ServiceWorkerRegistrar />
             {children}
           </Suspense>
         </SiteInfoClientProvider>

@@ -1,320 +1,340 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useCallback } from "react";
 import { useDeviceHeight } from "@/hooks";
-
 import useGeneralStore from "@/stores/generalStore";
 import ScrollIndicator from "../ScrollIndicator";
 
-export default function ScrollSnapWrapper({
-  children,
-  hasMarketing,
-}: {
+type Props = {
   hasMarketing: boolean;
-  children: React.ReactNode[];
-}) {
-  const isScrolling = useRef(false);
-  const firstSectionRef = useRef<HTMLDivElement>(null);
-  const secondSectionRef = useRef<HTMLDivElement>(null);
-  const feedSectionRef = useRef<HTMLDivElement>(null);
+  children: React.ReactNode[]; // [first, marketing?, feed]
+};
 
-  // Touch handling refs
-  //const touchStartY = useRef<number>(0);
-  //const touchEndY = useRef<number>(0);
-  //const lastTouchTime = useRef<number>(0);
-  const isTouching = useRef<boolean>(false);
+/**
+ * Clean, unified ScrollSnap wrapper (Option B)
+ * - Smooth, easing-based transitions between sections
+ * - Locks feed content during the animation (no wheel/touch)
+ * - Unified wheel + touch handlers
+ * - Debounced auto-snap on scroll stop
+ */
+export default function ScrollSnapWrapper({ children, hasMarketing }: Props) {
+  const firstRef = useRef<HTMLDivElement | null>(null);
+  const secondRef = useRef<HTMLDivElement | null>(null);
+  const feedRef = useRef<HTMLDivElement | null>(null);
 
+  // state in global store
   const { setIsOnSection2, setHideFirstTwoSection, hideFirstTwoSection } =
     useGeneralStore();
+
   const { height } = useDeviceHeight();
 
-  // Get reliable viewport height
-  const getViewportHeight = () => {
+  // internal locks
+  const isAnimating = useRef(false);
+  const isTouching = useRef(false);
+  const touchStartY = useRef(0);
+
+  const getVh = useCallback(() => {
     return Math.max(
       document.documentElement.clientHeight || 0,
       window.innerHeight || 0,
     );
+  }, []);
+
+  // Simple ease in/out
+  const easeInOut = (t: number) => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t);
+
+  // Scroll lock helpers
+  const lockScroll = () => {
+    // lock scrolling and touch interactions as broadly as possible
+    document.body.style.overflow = "hidden";
+    // also add a class to freeze fixed/absolute children if project uses it (optional)
+    document.documentElement.style.touchAction = "none";
+    isAnimating.current = true;
+  };
+  const unlockScroll = () => {
+    document.body.style.overflow = "";
+    document.documentElement.style.touchAction = "auto";
+    isAnimating.current = false;
   };
 
-  /** ===================================
-   * Smooth scroll (custom, jitter-free)
-   * =================================== */
-  const smoothScrollTo = (targetY: number, after?: () => void) => {
-    isScrolling.current = true;
-    const startY = window.scrollY;
-    const distance = targetY - startY;
-    const duration = 600;
-    const startTime = performance.now();
+  // Core smooth scroll animator (cancellable only by internal guard)
+  const smoothScrollTo = useCallback((targetY: number, duration = 600) => {
+    if (isAnimating.current) return Promise.resolve();
+    lockScroll();
 
-    const easeInOut = (t: number) =>
-      t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+    return new Promise<void>((resolve) => {
+      const startY = window.scrollY;
+      const distance = targetY - startY;
+      const startTime = performance.now();
 
-    const animateScroll = (time: number) => {
-      const elapsed = time - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-      const eased = easeInOut(progress);
-      window.scrollTo(0, startY + distance * eased);
-      if (progress < 1) {
-        requestAnimationFrame(animateScroll);
-      } else {
-        isScrolling.current = false;
-        after?.();
-      }
-    };
+      const frame = (now: number) => {
+        const elapsed = now - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = easeInOut(progress);
+        window.scrollTo(0, startY + distance * eased);
+        if (progress < 1) {
+          requestAnimationFrame(frame);
+        } else {
+          // tiny timeout to allow browser to settle
+          setTimeout(() => {
+            unlockScroll();
+            resolve();
+          }, 0);
+        }
+      };
 
-    requestAnimationFrame(animateScroll);
-  };
+      requestAnimationFrame(frame);
+    });
+  }, []);
 
-  const getCurrentSection = () => {
+  // Determine current section based on scroll position
+  const currentSection = useCallback(() => {
     const scrollY = window.scrollY;
-    const vh = getViewportHeight();
-
+    const vh = getVh();
     if (hideFirstTwoSection) return "feed";
     if (scrollY < vh * 0.5) return "first";
     if (hasMarketing && scrollY < vh * 1.5) return "second";
     return "feed";
-  };
+  }, [getVh, hasMarketing, hideFirstTwoSection]);
 
-  /** ===================================
-   * Handle section transitions
-   * =================================== */
-  const handleSectionTransition = (direction: "up" | "down") => {
-    if (isScrolling.current) return;
+  // Core transition between sections
+  const goToSection = useCallback(
+    async (section: "first" | "second" | "feed") => {
+      if (isAnimating.current) return;
 
-    const currentSection = getCurrentSection();
-    const scrollY = window.scrollY;
-
-    if (hideFirstTwoSection) {
-      const feedElement = feedSectionRef.current;
-      if (!feedElement) return;
-      const feedOffsetTop = feedElement.offsetTop;
-
-      if (direction === "up" && scrollY <= feedOffsetTop + 50) {
-        smoothScrollTo(feedOffsetTop);
-        return;
-      }
-      return;
-    }
-
-    if (direction === "down") {
-      if (currentSection === "first") {
-        setIsOnSection2(false);
-        if (!hasMarketing) {
-          setIsOnSection2(true);
-          setHideFirstTwoSection(true);
-          smoothScrollTo(feedSectionRef.current?.offsetTop || 0);
-        } else {
-          smoothScrollTo(secondSectionRef.current?.offsetTop || 0);
-        }
-      } else if (currentSection === "second" && hasMarketing) {
-        setIsOnSection2(true);
-        setHideFirstTwoSection(true);
-        smoothScrollTo(feedSectionRef.current?.offsetTop || 0);
-      }
-    } else if (direction === "up") {
-      if (currentSection === "second" && hasMarketing) {
-        smoothScrollTo(firstSectionRef.current?.offsetTop || 0);
-      } else if (currentSection === "feed" && hideFirstTwoSection) {
+      if (section === "first") {
+        const top = firstRef.current?.offsetTop ?? 0;
+        await smoothScrollTo(top);
         setHideFirstTwoSection(false);
         setIsOnSection2(false);
-        // smoothScrollTo(
-        //   hasMarketing
-        //     ? secondSectionRef.current?.offsetTop || 0
-        //     : (firstSectionRef.current?.offsetTop || 0)+ 800,
-        // );
+      } else if (section === "second") {
+        const top = secondRef.current?.offsetTop ?? 0;
+        await smoothScrollTo(top);
+        setHideFirstTwoSection(false);
+        setIsOnSection2(false);
+      } else {
+        const top = feedRef.current?.offsetTop ?? 0;
+        await smoothScrollTo(top);
+        setHideFirstTwoSection(true);
+        if (hasMarketing) setIsOnSection2(true);
       }
-    }
-  };
+    },
+    [setHideFirstTwoSection, setIsOnSection2, hasMarketing, smoothScrollTo],
+  );
 
-  /** ===================================
-   * Desktop wheel handler
-   * =================================== */
+  // Unified wheel handler (desktop)
   useEffect(() => {
-    const handleWheel = (e: WheelEvent) => {
-      if ("ontouchstart" in window) return; // Skip mobile
-      if (isScrolling.current) return;
+    const onWheel = (e: WheelEvent) => {
+      // ignore on touch devices
+      if ("ontouchstart" in window) return;
 
-      const direction = e.deltaY > 0 ? "down" : "up";
-      const scrollY = window.scrollY;
-
-      const target = e.target as HTMLElement;
-      const scrollableContainer = target.closest("[data-scrollable]");
-      if (scrollableContainer) return;
-
-      if (
-        !hideFirstTwoSection ||
-        (hideFirstTwoSection &&
-          direction === "up" &&
-          scrollY <= (feedSectionRef.current?.offsetTop || 0) + 50)
-      ) {
+      if (isAnimating.current) {
         e.preventDefault();
+        return;
       }
 
-      handleSectionTransition(direction);
-    };
+      const delta = e.deltaY;
+      const dir = delta > 0 ? "down" : "up";
+      const section = currentSection();
 
-    window.addEventListener("wheel", handleWheel, { passive: false });
-    return () => window.removeEventListener("wheel", handleWheel);
-  }, [
-    setIsOnSection2,
-    setHideFirstTwoSection,
-    hideFirstTwoSection,
-    hasMarketing,
-  ]);
+      // TOP SECTIONS ACTIVE
+      if (!hideFirstTwoSection) {
+        e.preventDefault();
 
-  /** ===================================
-   * Mobile touch swipe handler
-   * =================================== */
-  // useEffect(() => {
-  //   const minSwipeDistance = 50;
-  //   const maxSwipeTime = 500;
-
-  //   const handleTouchStart = (e: TouchEvent) => {
-  //     isTouching.current = true;
-  //     touchStartY.current = e.touches[0].clientY;
-  //     touchEndY.current = e.touches[0].clientY;
-  //     lastTouchTime.current = Date.now();
-  //   };
-
-  //   const handleTouchMove = (e: TouchEvent) => {
-  //     if (!isTouching.current) return;
-
-  //     touchEndY.current = e.touches[0].clientY;
-
-  //     const target = e.target as HTMLElement;
-  //     const scrollableContainer = target.closest("[data-scrollable]");
-  //     if (scrollableContainer) return;
-
-  //     const scrollY = window.scrollY;
-
-  //     if (!hideFirstTwoSection) {
-  //       e.preventDefault();
-  //     } else if (
-  //       scrollY <= (feedSectionRef.current?.offsetTop || 0) + 50 &&
-  //       touchStartY.current - touchEndY.current < 0
-  //     ) {
-  //       e.preventDefault();
-  //     }
-  //   };
-
-  //   const handleTouchEnd = (e: TouchEvent) => {
-  //     if (!isTouching.current) return;
-  //     isTouching.current = false;
-
-  //     const deltaY = touchStartY.current - touchEndY.current;
-  //     const swipeDuration = Date.now() - lastTouchTime.current;
-
-  //     const isSwipe =
-  //       Math.abs(deltaY) > minSwipeDistance && swipeDuration < maxSwipeTime;
-
-  //     if (!isSwipe) return;
-
-  //     e.preventDefault();
-  //     const direction = deltaY > 0 ? "down" : "up";
-
-  //     // Lock scroll to prevent flicker
-  //     document.body.style.overflow = "hidden";
-  //     handleSectionTransition(direction);
-  //     setTimeout(() => {
-  //       document.body.style.overflow = "";
-  //     }, 700);
-  //   };
-
-  //   if ("ontouchstart" in window) {
-  //     document.addEventListener("touchstart", handleTouchStart, {
-  //       passive: false,
-  //     });
-  //     document.addEventListener("touchmove", handleTouchMove, {
-  //       passive: false,
-  //     });
-  //     document.addEventListener("touchend", handleTouchEnd, { passive: false });
-
-  //     return () => {
-  //       document.removeEventListener("touchstart", handleTouchStart);
-  //       document.removeEventListener("touchmove", handleTouchMove);
-  //       document.removeEventListener("touchend", handleTouchEnd);
-  //     };
-  //   }
-  // }, [hideFirstTwoSection, hasMarketing]);
-
-  /** ===================================
-   * Auto-snap logic on scroll stop
-   * =================================== */
-  useEffect(() => {
-    const handleScroll = () => {
-      if (isScrolling.current || isTouching.current) return;
-
-      const scrollY = window.scrollY;
-      const vh = getViewportHeight();
-
-      const snapTimeout = setTimeout(() => {
-        if (isScrolling.current || isTouching.current) return;
-
-        if (hideFirstTwoSection) {
-          const feedElement = feedSectionRef.current;
-          if (feedElement && scrollY < feedElement.offsetTop - 100) {
-            smoothScrollTo(feedElement.offsetTop);
+        if (dir === "down") {
+          if (section === "first") {
+            if (!hasMarketing) goToSection("feed");
+            else goToSection("second");
+          } else if (section === "second") {
+            goToSection("feed");
           }
         } else {
-          if (scrollY < vh * 0.5) {
-            smoothScrollTo(firstSectionRef.current?.offsetTop || 0);
-          } else if (
-            hasMarketing &&
-            scrollY >= vh * 0.5 &&
-            scrollY < vh * 1.5
-          ) {
-            smoothScrollTo(secondSectionRef.current?.offsetTop || 0);
-          } else if (scrollY >= (hasMarketing ? vh * 1.5 : vh * 0.5)) {
-            // smoothScrollTo(feedSectionRef.current?.offsetTop || 0);
-            setHideFirstTwoSection(true);
-            if (hasMarketing) {
-              setIsOnSection2(true);
-            }
-          }
+          // scrolling UP
+          if (section === "second") goToSection("first");
+          else if (section === "feed" && hideFirstTwoSection)
+            goToSection("second");
+        }
+
+        return;
+      }
+
+      // ============================
+      // FEED SECTION VISIBLE
+      // ============================
+
+      const feedTop = feedRef.current?.offsetTop ?? 0;
+      const atFeedTop = window.scrollY <= feedTop + 10;
+
+      const isDesktop = window.innerWidth >= 1024;
+
+      if (isAnimating.current) {
+        e.preventDefault();
+        return;
+      }
+
+      if (dir === "up" && atFeedTop) {
+        // 🔒 NEW: Desktop → Block upward navigation permanently
+        if (isDesktop) {
+          e.preventDefault();
+          return; // DO NOT go back to "second"
+        }
+
+        // 📱 Mobile fallback (unchanged)
+        e.preventDefault();
+        goToSection("second");
+      }
+    };
+
+    window.addEventListener("wheel", onWheel, { passive: false });
+    return () => window.removeEventListener("wheel", onWheel);
+  }, [currentSection, goToSection, hasMarketing, hideFirstTwoSection]);
+
+  // Touch handlers (mobile)
+  useEffect(() => {
+    let touchMoved = false;
+
+    const onTouchStart = (ev: TouchEvent) => {
+      if (!ev.touches || ev.touches.length === 0) return;
+      isTouching.current = true;
+      touchStartY.current = ev.touches[0].clientY;
+      touchMoved = false;
+    };
+
+    const onTouchMove = (ev: TouchEvent) => {
+      if (!isTouching.current) return;
+      touchMoved = true;
+
+      // if animating, block move
+      if (isAnimating.current) {
+        ev.preventDefault();
+        return;
+      }
+
+      // when top sections visible, block native scroll to keep UX consistent
+      if (!hideFirstTwoSection) {
+        ev.preventDefault();
+      } else {
+        // when in feed, if at top and swiping down (meaning content should go up) block to trigger transition
+        const feedTop = feedRef.current?.offsetTop ?? 0;
+        const atFeedTop = window.scrollY <= feedTop + 5;
+        const touchY = ev.touches[0].clientY;
+        const diff = touchStartY.current - touchY; // positive means swipe up
+
+        const isSwipingDown = diff < 0; // user moving finger down -> want to scroll up
+        if (atFeedTop && isSwipingDown) {
+          ev.preventDefault();
+        }
+      }
+    };
+
+    const onTouchEnd = (ev: TouchEvent) => {
+      if (!isTouching.current) return;
+      isTouching.current = false;
+
+      if (!touchMoved) return;
+
+      const endY = ev.changedTouches?.[0]?.clientY ?? touchStartY.current;
+      const diff = touchStartY.current - endY; // positive -> swipe up
+      const minSwipe = 50;
+      if (Math.abs(diff) < minSwipe) return;
+
+      const dir = diff > 0 ? "down" : "up";
+      const section = currentSection();
+
+      if (!hideFirstTwoSection) {
+        if (dir === "down") {
+          if (section === "first") {
+            if (!hasMarketing) goToSection("feed");
+            else goToSection("second");
+          } else if (section === "second") goToSection("feed");
+        } else {
+          // swipe down
+          if (section === "second") goToSection("first");
+          else if (section === "feed" && hideFirstTwoSection)
+            goToSection("second");
+        }
+      } else {
+        // feed visible
+        const feedTop = feedRef.current?.offsetTop ?? 0;
+        const atFeedTop = window.scrollY <= feedTop + 50;
+        if (dir === "up" && atFeedTop) goToSection("feed");
+      }
+    };
+
+    window.addEventListener("touchstart", onTouchStart, { passive: true });
+    window.addEventListener("touchmove", onTouchMove, { passive: false });
+    window.addEventListener("touchend", onTouchEnd, { passive: true });
+
+    return () => {
+      window.removeEventListener("touchstart", onTouchStart);
+      window.removeEventListener("touchmove", onTouchMove);
+      window.removeEventListener("touchend", onTouchEnd);
+    };
+  }, [currentSection, goToSection, hasMarketing, hideFirstTwoSection]);
+
+  // Auto-snap when user stops scrolling (keeps behavior consistent if user flicks)
+  useEffect(() => {
+    let timeout: number | null = null;
+    const onScroll = () => {
+      if (isAnimating.current || isTouching.current) return;
+      if (timeout) window.clearTimeout(timeout);
+      timeout = window.setTimeout(() => {
+        if (isAnimating.current || isTouching.current) return;
+        const vh = getVh();
+        const scrollY = window.scrollY;
+
+        if (hideFirstTwoSection) {
+          const feedTop = feedRef.current?.offsetTop ?? 0;
+          if (scrollY < feedTop - 100) goToSection("feed");
+        } else {
+          if (scrollY < vh * 0.5) goToSection("first");
+          else if (hasMarketing && scrollY < vh * 1.5) goToSection("second");
+          else goToSection("feed");
         }
       }, 150);
-
-      return () => clearTimeout(snapTimeout);
     };
 
-    let scrollTimeout: NodeJS.Timeout;
-    const debouncedHandleScroll = () => {
-      clearTimeout(scrollTimeout);
-      scrollTimeout = setTimeout(handleScroll, 100);
-    };
-
-    window.addEventListener("scroll", debouncedHandleScroll, { passive: true });
+    window.addEventListener("scroll", onScroll, { passive: true });
     return () => {
-      window.removeEventListener("scroll", debouncedHandleScroll);
-      clearTimeout(scrollTimeout);
+      window.removeEventListener("scroll", onScroll);
+      if (timeout) window.clearTimeout(timeout);
     };
-  }, [
-    hideFirstTwoSection,
-    hasMarketing,
-    setHideFirstTwoSection,
-    setIsOnSection2,
-  ]);
+  }, [getVh, goToSection, hasMarketing, hideFirstTwoSection]);
 
-  /** ===================================
-   * JSX Layout
-   * =================================== */
+  // JSX
   return (
     <>
       {!hideFirstTwoSection && (
         <>
-          <div ref={firstSectionRef} className="h-screen">
+          <div ref={firstRef} className="h-screen">
             {children[0]}
-            <ScrollIndicator hasMarketing={hasMarketing} />
+            <ScrollIndicator
+              hasMarketing={hasMarketing}
+              onClick={() => goToSection(hasMarketing ? "second" : "feed")}
+            />
           </div>
+
           {hasMarketing && (
-            <div ref={secondSectionRef} className="relative h-screen">
+            <div ref={secondRef} className="relative h-screen">
               {children[1]}
-              <ScrollIndicator isSecond height={height} />
+              <ScrollIndicator
+                isSecond
+                height={height}
+                onClick={() => goToSection("feed")}
+              />
             </div>
           )}
         </>
       )}
-      <div ref={feedSectionRef} className="min-h-screen">
+
+      <div
+        ref={feedRef}
+        className="min-h-screen"
+        style={{ overscrollBehavior: "none" }}
+        // while animating, pointer events are blocked to avoid accidental interactions
+        // we guard via inline style to affect only feed area
+        aria-hidden={isAnimating.current}
+      >
         {children[2]}
       </div>
     </>

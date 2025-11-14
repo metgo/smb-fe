@@ -80,7 +80,7 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
     ],
   );
 
-  // Image loading hook - ALWAYS CALLED, NO EARLY RETURNS BEFORE THIS
+  // Image loading hook
   const { isLoading, updatedImageList, inView, containerRef } = useImagePresent(
     width / height,
     images,
@@ -89,7 +89,7 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
     INTERSECTION_CONFIG,
   );
 
-  // Animation controls - ALWAYS CALLED
+  // Animation controls
   const animationControls = useAnimation();
   const isCardInView = useInView(containerRef, MOTION_CONFIG as any);
 
@@ -129,6 +129,7 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
       feedItem,
     ],
   );
+  // console.log("🚀 ~ FeedCard ~ computedValues:", computedValues)
 
   // Event handlers
   const handleMapIconClick = (e: React.MouseEvent, id: string) => {
@@ -149,78 +150,87 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
     );
   }, [feedItem._id, feedItem.name, feedItem.slug, router]);
 
-  // ✅ FIX: Render both states without early return
-  return (
-    <motion.div
-      ref={containerRef}
-      style={{ width: `${width}px`, height: `${height}px` }}
-      initial="hidden"
-      animate={
-        computedValues.shouldShowSkeleton ? "visible" : animationControls
-      }
-      variants={cardVariants}
-      transition={ANIMATION_CONFIG}
-    >
-      {computedValues.shouldShowSkeleton ? (
+  // Render skeleton
+  if (computedValues.shouldShowSkeleton) {
+    return (
+      <motion.div
+        ref={containerRef}
+        style={{ width: `${width}px`, height: `${height}px` }}
+        initial="hidden"
+        animate="visible"
+        variants={cardVariants}
+        transition={ANIMATION_CONFIG}
+      >
         <CardSkeleton
           width={width}
           height={height}
           primaryCategoryId={computedValues.primaryCategoryId}
         />
-      ) : (
-        <div
+      </motion.div>
+    );
+  }
+
+  return (
+    <motion.div
+      ref={containerRef}
+      style={{ width: `${width}px`, height: `${height}px` }}
+      initial="hidden"
+      animate={animationControls}
+      variants={cardVariants}
+      transition={ANIMATION_CONFIG}
+    >
+      <div
+        className={clsx(
+          "w-full h-full relative group rounded-xl overflow-hidden",
+        )}
+      >
+        {/* Main Image */}
+        <Image
+          src={
+            pageTypes.isEventPage
+              ? feedItem?.images?.[0]?.image
+              : computedValues.currentImage?.imageUrl ||
+                staticImages.placeholder
+          }
+          alt={computedValues.currentImage?.alt || ""}
+          fill
+          unoptimized
+          quality={100}
+          sizes={`${width}px`}
           className={clsx(
-            "w-full h-full relative group rounded-xl overflow-hidden",
+            "object-cover transition-transform duration-500 ease-in-out ultra-sharp",
+            "group-hover:scale-140",
           )}
-        >
-          {/* Main Image */}
-          <Image
-            src={
-              pageTypes.isEventPage
-                ? feedItem?.images?.[0]?.image
-                : computedValues.currentImage?.imageUrl ||
-                  staticImages.placeholder
-            }
-            alt={computedValues.currentImage?.alt || ""}
-            fill
-            unoptimized
-            quality={100}
-            sizes={`${width}px`}
-            className={clsx(
-              "object-cover transition-transform duration-500 ease-in-out ultra-sharp",
-              "group-hover:scale-140",
-            )}
-            priority={false}
-          />
+          priority={false}
+        />
 
-          {/* Content Overlay */}
-          <FeedCardContent
-            feedItem={feedItem}
-            pageTypes={pageTypes}
-            images={images}
-            activeImageIndex={activeImageIndex}
-            setActiveImageIndex={setActiveImageIndex}
-            locationText={computedValues.locationText}
-          />
+        {/* Content Overlay */}
+        <FeedCardContent
+          feedItem={feedItem}
+          pageTypes={pageTypes}
+          images={images}
+          activeImageIndex={activeImageIndex}
+          setActiveImageIndex={setActiveImageIndex}
+          locationText={computedValues.locationText}
+        />
 
-          {/* Action Icons */}
-          <FeedCardActions
-            feedItem={feedItem}
-            pageTypes={pageTypes}
-            onMapIconClick={handleMapIconClick}
-          />
-          <button
-            type="button"
-            onClick={handleNavigation}
-            className={clsx(
-              "custom-cursor absolute left-0 top-12 w-full",
-              images.length > 1 && !pageTypes.isEventPage
-                ? "bottom-14"
-                : "bottom-0 h-full",
-            )}
-          />
-        </div>
-      )}
+        {/* Action Icons */}
+        <FeedCardActions
+          feedItem={feedItem}
+          pageTypes={pageTypes}
+          onMapIconClick={handleMapIconClick}
+        />
+        <button
+          type="button"
+          onClick={handleNavigation}
+          className={clsx(
+            "custom-cursor absolute left-0 top-12 w-full",
+            images.length > 1 && !pageTypes.isEventPage
+              ? "bottom-14"
+              : "bottom-0 h-full",
+          )}
+        />
+      </div>
     </motion.div>
   );
 };
@@ -242,11 +252,12 @@ const FeedCardContent = ({
   images: any[];
   activeImageIndex: number;
   setActiveImageIndex: React.Dispatch<React.SetStateAction<number>>;
+
   locationText: string | undefined;
 }) => (
   <div className="relative w-full h-full">
     {/* Gradient Overlay */}
-    <div className="absolute bottom-0 right-0 h-full w-full bg-gradient-to-t from-black/40 via-black/30 to-black/5 rounded-b-xl" />
+    <div className="absolute  bottom-0 right-0 h-full w-full bg-gradient-to-t from-black/40 via-black/30 to-black/5 rounded-b-xl" />
 
     {/* Text Content */}
     <div className="absolute bottom-0 right-0 p-4 text-white font-bold w-full">
