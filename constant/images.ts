@@ -12,6 +12,10 @@ export const images = {
         width: 80,
       },
     },
+    thumbnail: {
+      desktop: "/images/thumbnail/negevtime-desktop-thumbnail.webp",
+      mobile: "/images/thumbnail/negevtime-mobile-thumbnail.webp",
+    },
     favicon: "/images/favicon/negevtime.ico",
   },
   TAV8DL: {
@@ -24,6 +28,10 @@ export const images = {
         height: 100,
         width: 80,
       },
+    },
+    thumbnail: {
+      desktop: "/images/thumbnail/negevtime-desktop-thumbnail.webp",
+      mobile: "/images/thumbnail/negevtime-mobile-thumbnail.webp",
     },
     favicon: "/images/favicon/negevtime.ico",
   },
@@ -38,9 +46,18 @@ export const images = {
         width: 56,
       },
     },
+    thumbnail: {
+      desktop: "/images/thumbnail/hofash-thumbnail.webp",
+      mobile: "/images/thumbnail/hofash-thumbnail.webp",
+    },
     favicon: "/images/favicon/hofash.ico",
   },
 } as const;
+
+export function getThumbnail() {
+  const thumbnail = images[CODE as keyof typeof images]?.thumbnail;
+  return thumbnail;
+}
 
 export function getLogo() {
   const logo = images[CODE as keyof typeof images]?.logo;
