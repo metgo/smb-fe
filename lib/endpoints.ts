@@ -30,6 +30,9 @@ export const urls = {
   trails: `${BASE_URL}/trips`,
   trailDetails: `${BASE_URL}/trips`,
 
+  funDays: `${BASE_URL}/fun-days`,
+  funDayDetails: `${BASE_URL}/fun-days`,
+
   ticketDetails: `${BASE_URL}/tickets`,
 
   blogs: `${BASE_URL}/blogs`,
@@ -50,6 +53,8 @@ export const pathNames = {
   eventDetails: "/event-details",
   trails: "/trails",
   trailDetails: "/trail-details",
+  funDays: "/fun-days",
+  funDayDetails: "/fun-day-details",
   termsConditions: "/terms-conditions",
   privacyPolicy: "/privacy-policy",
   checkout: "/check-out",

@@ -76,6 +76,7 @@ const navigationKey = {
   trails: pathNames.trails,
   businesses: pathNames.businesses,
   blogArticles: pathNames.blogArticles,
+  funDays: pathNames.funDays,
 };
 
 export const businessMarkers = {
@@ -191,20 +192,20 @@ export const categoryIcons = {
 };
 
 export const features = [
-  // {
-  //   key: 1,
-  //   label: navbar.funDays,
-  //   icon: "kite",
-  //   activeIcon: "",
-  //   link: "",
-  // },
-  // {
-  //   key: 2,
-  //   label: navbar.toGroups,
-  //   icon: "user-group",
-  //   activeIcon: "",
-  //   link: "",
-  // },
+  {
+    key: 1,
+    label: navbar.funDays,
+    icon: "kite",
+    activeIcon: "",
+    link: "",
+  },
+  {
+    key: 2,
+    label: navbar.toGroups,
+    icon: "user-group",
+    activeIcon: "",
+    link: "",
+  },
   {
     key: 3,
     label: navbar.events,
@@ -222,6 +223,13 @@ export const features = [
 ];
 
 export const featureMenus: MenuItem[] = [
+  {
+    key: "funday",
+    label: navbar.funDays,
+    icon: "kite",
+    activeIcon: "kite-dark",
+    link: pathNames.funDays,
+  },
   {
     key: "event",
     label: navbar.events,
@@ -262,6 +270,7 @@ export const navigationPaths = {
   [navigationKey.events]: pathNames.eventDetails,
   [navigationKey.trails]: pathNames.trailDetails,
   [navigationKey.blogArticles]: pathNames.blogArticleDetails,
+  [navigationKey.funDays]: pathNames.funDayDetails,
 };
 
 export const navItemsDraft = [
@@ -453,10 +462,18 @@ export const navItems = [
         rightIcon: "",
       },
       {
-        id: 3,
+        id: 2,
         key: "trip",
         label: menuItems.routes,
         href: pathNames.trails,
+        leftIcon: "",
+        rightIcon: "",
+      },
+      {
+        id: 4,
+        key: "funday",
+        label: menuItems.funDays,
+        href: pathNames.funDays,
         leftIcon: "",
         rightIcon: "",
       },

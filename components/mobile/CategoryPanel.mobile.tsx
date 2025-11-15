@@ -13,7 +13,7 @@ const MobileCategoryPanel = () => {
   const { handleCategoryChange, activeCategoryKey } = useCtgSubctg();
 
   return (
-    <div className="bg-white shadow-md flex items-center justify-center gap-2.5 py-2 px-0 h-20">
+    <div className="fixed bottom-0 right-0 w-full z-20 bg-white shadow-md max-sm:flex items-center justify-center gap-2.5 py-2 px-0 h-20 md:hidden">
       {categories?.map((item) => {
         const category = categoryIcons[item.id as any];
         const isActive = activeCategoryKey === item.id;
