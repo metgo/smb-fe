@@ -156,6 +156,21 @@ export class Order extends AuditableSchema {
     canceled_reason: string;
     isAutomatic: boolean;
   };
+
+  @Prop({
+    type: {
+      by: { type: mongoose.Schema.Types.ObjectId, ref: User.name },
+      initiatedAt: { type: Date },
+      completedAt: { type: Date },
+      isAutomatic: { type: Boolean, default: false },
+    },
+  })
+    refunded: {
+    by: mongoose.Types.ObjectId;
+    isAutomatic: boolean;
+    initiatedAt: Date;
+    completedAt: Date;
+  };
 }
 
 export type OrderDocument = HydratedDocument<Order>;

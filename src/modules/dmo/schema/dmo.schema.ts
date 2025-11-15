@@ -25,8 +25,8 @@ export class DMO extends AuditableSchema {
     adminIds: mongoose.Types.ObjectId[];
 
   @Prop({
-    type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Users' }],
-    ref: 'Users',
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: User.name }],
+    ref: User.name,
   })
     collaboratorsUser: mongoose.Types.ObjectId[];
 

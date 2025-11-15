@@ -1,6 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
 import {
-  IsEnum, IsNotEmpty, IsOptional, IsString,
+  IsBoolean,
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
 } from 'class-validator';
 
 import { SortOrder } from 'src/common/enum';
@@ -86,4 +91,10 @@ export class GetAllTripsRequest extends CommonFilterQuery {
   @IsString()
   @IsOptional()
     totalDistanceCoveredMax: string;
+
+  @ApiProperty({ required: true })
+  @IsNotEmpty()
+  @IsBoolean()
+  @Transform(({ value }) => value === 'true' || value === true)
+    isTrip?: boolean;
 }

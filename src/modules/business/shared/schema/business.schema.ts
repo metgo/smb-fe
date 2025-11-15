@@ -103,17 +103,6 @@ export class Business extends AuditableSchema {
 
   @Prop({
     type: {
-      url: { type: String, default: null },
-    },
-    _id: false,
-    default: null,
-  })
-    website: {
-    url: string;
-  };
-
-  @Prop({
-    type: {
       name: String,
       countryCode: String,
       phone: String,

@@ -34,20 +34,30 @@ export class CampaignController {
 
     const requestTrip = new GetAllTripsRequest();
     requestTrip.campCode = campCode;
+    requestTrip.isTrip = true;
+
+    const requestFunday = new GetAllTripsRequest();
+    requestFunday.campCode = campCode;
+    requestFunday.isTrip = false;
 
     const requestBusiness = new GetAllApprovedBusinessesRequest();
     requestBusiness.campCode = campCode;
 
-    const [eventResult, tripResult, businessResult] = await Promise.all([
-      this.queryBus.execute(new GetAllEventsQuery(requestEvent)),
-      this.queryBus.execute(new GetAllTripsQuery(requestTrip)),
-      this.queryBus.execute(new GetAllApprovedBusinessesQuery(requestBusiness)),
-    ]);
+    const [eventResult, tripResult, businessResult, fundayResult]
+      = await Promise.all([
+        this.queryBus.execute(new GetAllEventsQuery(requestEvent)),
+        this.queryBus.execute(new GetAllTripsQuery(requestTrip)),
+        this.queryBus.execute(
+          new GetAllApprovedBusinessesQuery(requestBusiness),
+        ),
+        this.queryBus.execute(new GetAllTripsQuery(requestFunday)),
+      ]);
 
     return {
       event: (eventResult.totalData ?? 0) > 0,
       trip: (tripResult.totalData ?? 0) > 0,
       business: (businessResult.totalData ?? 0) > 0,
+      funday: (fundayResult.totalData ?? 0) > 0,
     };
   }
 

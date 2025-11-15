@@ -6,7 +6,6 @@ import { WinstonModule } from 'nest-winston';
 
 import dbConfig from 'src/core/dbConfig';
 import { AuthModule } from 'src/modules/auth/auth.module';
-import { CityModule } from 'src/modules/city/city.module';
 import { ExternalApiModule } from 'src/modules/external-api/external-api.module';
 import { JwtAuthModule } from 'src/modules/jwt-auth/jwt-auth.module';
 import { BankAccountModule } from 'src/modules/bank-account/bank-account.module';
@@ -63,7 +62,6 @@ import { MarketingModule } from './modules/marketing/marketing.module';
     AuthorityModule,
     JwtAuthModule,
     ConfigModule,
-    CityModule,
     GcpBucketModule,
     OrdersModule,
     OrderProductModule,

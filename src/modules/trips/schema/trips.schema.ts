@@ -7,6 +7,29 @@ import { User } from 'src/modules/users/schema/users.schema';
 import { DMO } from 'src/modules/dmo/schema/dmo.schema';
 import { Business } from 'src/modules/business/shared/schema/business.schema';
 import { TripStatus, TripTypes } from '../trips.types';
+import { BussSubCategory } from 'src/modules/buss-subcategories/schema/buss-subCategory.schema';
+import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.schema';
+import { Accessibility } from 'src/modules/accessibility/schema/accessibility.schema';
+import { GroupType } from 'src/modules/group-type/schema/group-type.schema';
+
+@Schema({ _id: false })
+export class Image {
+  @Prop() image: string;
+  @Prop() caption: string;
+  @Prop() alt: string;
+  @Prop() isPrimary: boolean;
+  @Prop() stationId: string;
+  @Prop({
+    type: {
+      xMax: Number,
+      xMin: Number,
+      yMax: Number,
+      yMin: Number,
+    },
+  })
+    subCoordinates: Record<string, number>;
+}
+export const ImageSchema = SchemaFactory.createForClass(Image);
 
 @Schema({ _id: false })
 class Station {
@@ -20,10 +43,37 @@ class Station {
   @Prop({ required: true })
     order: number;
 
-  @Prop({ enum: TripTypes, default: TripTypes.BUSINESS, required: true })
+  @Prop({ enum: TripTypes, required: true })
     type: TripTypes;
 }
 const StationSchema = SchemaFactory.createForClass(Station);
+
+@Schema({ _id: false })
+export class Itenary {
+  @Prop({ required: true })
+    title: string;
+
+  @Prop({ required: true, match: /^([01]\d|2[0-3]):([0-5]\d)$/ })
+    startTime: string;
+
+  @Prop({ required: true, match: /^([01]\d|2[0-3]):([0-5]\d)$/ })
+    endTime: string;
+}
+export const ItenarySchema = SchemaFactory.createForClass(Itenary);
+
+@Schema({ _id: false })
+export class ContactDetails {
+  @Prop({ required: false })
+    name: string;
+
+  @Prop({ required: false })
+    phoneNumber: string;
+
+  @Prop({ required: false })
+    email: string;
+}
+export const ContactDetailsSchema
+  = SchemaFactory.createForClass(ContactDetails);
 
 @Schema()
 export class Trip extends AuditableSchema {
@@ -43,6 +93,9 @@ export class Trip extends AuditableSchema {
 
   @Prop()
     description: string;
+
+  @Prop({ type: ContactDetailsSchema })
+    contactDetails: ContactDetails;
 
   @Prop({
     type: mongoose.Schema.Types.ObjectId,
@@ -73,11 +126,44 @@ export class Trip extends AuditableSchema {
   @Prop({ type: [StationSchema], default: [] })
     stations: Station[];
 
+  @Prop({ type: [ImageSchema], default: [] })
+    images: Image[];
+
+  @Prop({ type: [ItenarySchema], default: [] })
+    itenary: Itenary[];
+
   @Prop()
     estimatedDuration?: number;
 
   @Prop()
     totalDistanceCovered?: number;
+
+  @Prop({
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: GroupType.name }],
+    required: false,
+  })
+    groupTypesId: mongoose.Types.ObjectId[];
+
+  @Prop({
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: Accessibility.name }],
+    required: false,
+  })
+    accessibilitiesId: mongoose.Types.ObjectId[];
+
+  @Prop({
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: BussCategory.name }],
+    required: false,
+  })
+    categoriesId: mongoose.Types.ObjectId[];
+
+  @Prop({
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: BussSubCategory.name }],
+    required: false,
+  })
+    subCategoriesId: mongoose.Types.ObjectId[];
+
+  @Prop({ default: true })
+    isTrip: boolean;
 }
 
 export type TripDocument = HydratedDocument<Trip>;

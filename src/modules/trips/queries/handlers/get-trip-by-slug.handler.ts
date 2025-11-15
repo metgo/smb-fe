@@ -59,7 +59,7 @@ export class GetTripBySlugHandler implements IQueryHandler<GetTripBySlugQuery> {
       let populate;
       let select;
 
-      if (query.isMap && /true/.test(query.isMap)) {
+      if (query.isMap) {
         populate = [
           {
             path: 'stations._id',
@@ -69,7 +69,7 @@ export class GetTripBySlugHandler implements IQueryHandler<GetTripBySlugQuery> {
         select = '_id name description slug stations';
       }
 
-      if (!query.isMap || (query.isMap && /false/.test(query.isMap))) {
+      if (!query.isMap) {
         populate = [
           {
             path: 'stations._id',
@@ -82,8 +82,14 @@ export class GetTripBySlugHandler implements IQueryHandler<GetTripBySlugQuery> {
           },
         ];
 
-        select
-          = '_id name description slug stations estimatedDuration totalDistanceCovered';
+        if (query.isTrip) {
+          select
+            = '_id name description slug stations estimatedDuration totalDistanceCovered';
+        }
+        if (!query.isTrip) {
+          select
+            = '_id name description contactDetails slug stations images itenary estimatedDuration totalDistanceCovered';
+        }
       }
 
       const trip = await this.tripModel
@@ -132,14 +138,21 @@ export class GetTripBySlugHandler implements IQueryHandler<GetTripBySlugQuery> {
 
       const groupTypesAndAccessibilities = Array.from(uniqueByNameMap.values());
 
+      if (!query.isTrip) {
+        tripObj.itenary.sort((a, b) => {
+          const toMinutes = (t: string) => {
+            const [h, m] = t.split(':').map(Number);
+            return h * 60 + m;
+          };
+
+          return toMinutes(a.startTime) - toMinutes(b.startTime);
+        });
+      }
+
       return {
         ...tripObj,
         stations,
-        ...(query.isMap && /true/.test(query.isMap)
-          ? {}
-          : {
-            groupTypesAndAccessibilities,
-          }),
+        groupTypesAndAccessibilities,
       };
     } catch (err) {
       this.logger.error('[EVENT]: FAILED TO FETCH Trip', {

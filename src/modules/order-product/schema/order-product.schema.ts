@@ -14,6 +14,14 @@ import { User } from 'src/modules/users/schema/users.schema';
 export class OrderProduct extends AuditableSchema {
   @Prop({
     type: mongoose.Schema.Types.ObjectId,
+    index: true,
+    required: true,
+    auto: true,
+  })
+    _id: mongoose.Types.ObjectId;
+
+  @Prop({
+    type: mongoose.Schema.Types.ObjectId,
     required: true,
   })
     itemId: mongoose.Types.ObjectId;
@@ -21,6 +29,7 @@ export class OrderProduct extends AuditableSchema {
   @Prop({ type: Number, default: 1 })
     quantity: number;
 
+  // amount of each item not total amount
   @Prop({ type: Number })
     amount: number;
 
@@ -135,6 +144,21 @@ export class OrderProduct extends AuditableSchema {
     date: Date;
     canceled_reason: string;
     isAutomatic: boolean;
+  };
+
+  @Prop({
+    type: {
+      by: { type: mongoose.Schema.Types.ObjectId, ref: User.name },
+      initiatedAt: { type: Date },
+      completedAt: { type: Date },
+      isAutomatic: { type: Boolean, default: false },
+    },
+  })
+    refunded: {
+    by: mongoose.Types.ObjectId;
+    isAutomatic: boolean;
+    initiatedAt: Date;
+    completedAt: Date;
   };
 }
 

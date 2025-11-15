@@ -43,6 +43,7 @@ export class GetAllTripsHandler implements IQueryHandler<GetAllTripsQuery> {
       search,
       page,
       limit,
+      isTrip,
     } = query;
 
     const campDetails = await this.campaignService.findCampaignAndReturn(
@@ -73,6 +74,7 @@ export class GetAllTripsHandler implements IQueryHandler<GetAllTripsQuery> {
       isDeleted: false,
       deletedAt: null,
       deletedBy: null,
+      ...(isTrip !== undefined && { isTrip }),
       ...((estimatedDurationMin || estimatedDurationMax) && {
         estimatedDuration: {
           ...(estimatedDurationMin && { $gte: Number(estimatedDurationMin) }),

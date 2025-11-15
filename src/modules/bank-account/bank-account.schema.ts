@@ -16,6 +16,9 @@ export class BankAccount extends AuditableSchema {
 
   @Prop({ required: false })
     businessNumberByGovt: string;
+
+  @Prop({ required: false })
+    invoiceName: string;
 }
 
 export type BankAccountDocument = HydratedDocument<BankAccount>;
