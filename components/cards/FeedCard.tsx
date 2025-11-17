@@ -310,8 +310,8 @@ const FeedCardActions = ({
   };
 
   return (
-    <div className="hidden absolute top-4 group-hover:flex items-center justify-between w-full px-4">
-      <div className="flex gap-2.5">
+    <div className="absolute top-4 flex items-center justify-between w-full px-4">
+      <div className="group-hover:flex gap-2.5 hidden">
         <button
           type="button"
           className="custom-cursor border border-transparent hover:border-white rounded-full"
@@ -332,8 +332,8 @@ const FeedCardActions = ({
         )}
       </div>
       {feedItem.serviceType === "point_of_interest" && (
-        <div className="bg-black/25 rounded-full p-1 flex items-center justify-center">
-          <IconImage width={24} height={24} icon="location-solid" />
+        <div className="bg-black/50 rounded-full p-1 flex items-center justify-start absolute left-[8px] top-[1px]">
+          <IconImage width={20} height={20} icon="location-solid" />
         </div>
       )}
     </div>
