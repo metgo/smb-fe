@@ -76,7 +76,7 @@ const OnlyFeedCardsLayoutMobile = ({ data }: { data: FeedItemList }) => {
       col1: shuffleArray(col1Indexes),
       col2: shuffleArray(col2Indexes),
     });
-  }, [data, totalCards]); // 👈 only runs when data changes
+  }, [data, totalCards]);
 
   const renderCards = (indexes: number[]) =>
     indexes.map((i) => {
@@ -96,10 +96,10 @@ const OnlyFeedCardsLayoutMobile = ({ data }: { data: FeedItemList }) => {
   return (
     <div
       className={clsx(
-        "px-2 py-20 flex items-center justify-center w-full h-full min-h-[100vh] relative",
+        "px-2 py-20 flex items-start w-full h-full min-h-[100vh] relative",
       )}
     >
-      <div className="flex gap-3 items-start justify-center px-0">
+      <div className="flex gap-3 items-start px-0">
         <div className="flex flex-col gap-3">
           {renderCards(shuffledCols.col1)}
         </div>

@@ -69,12 +69,6 @@ const MobileBusinessDetails = ({
 
         <section className="px-10 py-4">
           <h1 className="text-6xl font-bold">{businessDetails.name}</h1>
-          <div
-            className="font-normal text-theme line-clamp-3 mt-4 mb-8"
-            dangerouslySetInnerHTML={{
-              __html: businessDetails?.shortDescription || "",
-            }}
-          />
           <div className="flex items-center gap-2 mt-2">
             <IoLocationSharp
               size={34}
@@ -95,6 +89,13 @@ const MobileBusinessDetails = ({
             ]}
           />
         </section>
+
+        <div
+          className="font-normal text-theme line-clamp-3 mt-4 mb-8 px-10 py-4"
+          dangerouslySetInnerHTML={{
+            __html: businessDetails?.shortDescription || "",
+          }}
+        />
 
         {products?.length > 0 && (
           <MobileProductList
