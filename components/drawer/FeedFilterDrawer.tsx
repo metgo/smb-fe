@@ -317,7 +317,7 @@ const FilterChip: React.FC<{
   <span
     onClick={onClick}
     className={`custom-cursor px-5 h-[42px] flex items-center justify-center rounded-3xl text-[12px] font-bold border border-theme transition-all
-      ${active ? "bg-black text-white" : "text-black"}`}
+      ${active ? "bg-black text-white" : "text-theme"}`}
   >
     {label}
   </span>
