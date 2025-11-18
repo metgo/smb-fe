@@ -3,16 +3,13 @@ import { featureMenus } from "@/lib/utils";
 import { usePathname } from "next/navigation";
 
 import { IconImage } from "../ui";
-import useGeneralStore from "@/stores/generalStore";
 
 const MenuItems = () => {
   const pathname = usePathname();
-  const { aminitiesInfo } = useGeneralStore();
-  const visibleMenus = featureMenus.filter((menu) => aminitiesInfo[menu.key]);
 
   return (
     <div className="flex items-center gap-2 ms-9">
-      {visibleMenus.map((item) => (
+      {featureMenus.map((item) => (
         <Link
           key={item.key}
           href={item.link}

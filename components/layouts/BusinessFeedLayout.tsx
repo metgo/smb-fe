@@ -20,7 +20,7 @@ const BusinessFeedLayout = ({
   businesses: BusinessesProps;
 }) => {
   const isHydrated = useIsHydrated();
-  const { activeFilterTab, isOnSection2, setAppliedFilterItemCount } =
+  const { activeFilterTab, hideFirstTwoSection, setAppliedFilterItemCount } =
     useGeneralStore();
 
   const { sentryRef, loading, initialLoadDone, canLoadMore } = useLoadMore(
@@ -74,7 +74,7 @@ const BusinessFeedLayout = ({
         <NoFeedItemLayout />
       )}
 
-      {isOnSection2 && (
+      {hideFirstTwoSection && (
         <div
           onClick={() => setIsFilterDrawerOpen(true)}
           className="fixed bottom-40 right-1 custom-cursor max-sm:hidden md:block"
