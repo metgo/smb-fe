@@ -71,6 +71,9 @@ interface GeneralStoreState {
 
   promotionalItems: PromotionalItem[];
   setPromotionalItems: (v: PromotionalItem[]) => void;
+
+  filterItems: FiltersResponse;
+  setFilterItems: (v: FiltersResponse) => void;
 }
 
 const useGeneralStore = create<GeneralStoreState>((set) => ({
@@ -129,6 +132,19 @@ const useGeneralStore = create<GeneralStoreState>((set) => ({
 
   promotionalItems: [],
   setPromotionalItems: (v) => set({ promotionalItems: v }),
+
+  filterItems: {
+    groupTypes: [],
+    accessibilities: [],
+    categories: [],
+    subCategories: [],
+    displayBusinesses: false,
+    displayEvents: false,
+    displayFunday: false,
+    displayPOI: false,
+    displayTrips: false,
+  },
+  setFilterItems: (v) => set({ filterItems: v }),
 }));
 
 export default useGeneralStore;

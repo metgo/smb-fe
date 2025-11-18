@@ -16,7 +16,7 @@ const page = async ({ searchParams }: SearchParamsProps | any) => {
     <Suspense>
       <FilterTrailsLayout {...trails} />
       <div className="md:hidden max-sm:block">
-        <OnlyFeedCardsLayoutMobile data={trails.data} />
+        <OnlyFeedCardsLayoutMobile data={trails?.data} />
       </div>
     </Suspense>
   );

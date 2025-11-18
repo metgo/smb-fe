@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { useIsHydrated } from "@/hooks";
 import { useLoadMore } from "@/hooks/useLoadMore";
@@ -11,14 +11,14 @@ import BusinessPinMap from "../maps/BusinessPinMap";
 import OnlyFeedCardsLayout from "./OnlyFeedCardsLayout";
 import MapFeedIntegratedLayout from "./MapFeedIntegratedLayout";
 import StickyYellowRibbonImage from "../StickyYellowRibbonImage";
-import { CategoryPanel, SubcategoryFilterPanel } from "../cards";
+import { AiIcon } from "../ui/svgIcons";
+import FeedFilterDrawer from "../drawer/FeedFilterDrawer";
 
 const BusinessFeedLayout = ({
   businesses,
 }: {
   businesses: BusinessesProps;
 }) => {
-  // ✅ ALL HOOKS MUST BE CALLED FIRST - BEFORE ANY EARLY RETURNS
   const isHydrated = useIsHydrated();
   const { activeFilterTab, isOnSection2, setAppliedFilterItemCount } =
     useGeneralStore();
@@ -30,13 +30,14 @@ const BusinessFeedLayout = ({
   const triggerRef = useRef(null);
   const totalBusiness = businesses?.totalData;
 
+  const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
+
   useEffect(() => {
     if (businesses?.data?.length > 0) {
       setAppliedFilterItemCount(businesses?.data?.length);
     }
   }, [businesses, setAppliedFilterItemCount]);
 
-  // ✅ NOW it's safe to have early returns - all hooks have been called
   if (!isHydrated) return null;
 
   const renderLayout = () => {
@@ -74,15 +75,23 @@ const BusinessFeedLayout = ({
       )}
 
       {isOnSection2 && (
-        <>
-          <div className="fixed bottom-4 left-1/2 -translate-x-1/2 flex flex-col items-center justify-center gap-2 w-max">
-            <SubcategoryFilterPanel />
-            <CategoryPanel />
-          </div>
-        </>
+        <div
+          onClick={() => setIsFilterDrawerOpen(true)}
+          className="fixed bottom-40 right-1 custom-cursor max-sm:hidden md:block"
+        >
+          <AiIcon size={54} />
+        </div>
       )}
 
       <StickyYellowRibbonImage activeFilterTab={activeFilterTab} />
+
+      {isFilterDrawerOpen && (
+        <FeedFilterDrawer
+          itemCount={businesses?.data?.length}
+          isOpen={isFilterDrawerOpen}
+          setIsOpen={setIsFilterDrawerOpen}
+        />
+      )}
     </div>
   );
 };

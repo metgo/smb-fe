@@ -50,6 +50,7 @@ export const category = {
 
 export const navbar = {
   toJoinAsaBusiness: "להצטרפות כעסק",
+  souvenirShop: "חנות המזכרות",
 
   map: "מפה",
   gallery: "גלריה",
@@ -268,4 +269,22 @@ export const filterLabels = {
 export const funDaysLabels = {
   whatsOnThePlan: "מה בתוכנית?",
   hazel: "לו״ז",
+};
+
+export const filterPanelLabels = {
+  results: "תוצאות",
+  main: "ראשי",
+  second: "משני",
+  accessibility: "נגישות",
+  targetAudiences: "קהל יעד",
+
+  pointOfInterest: "נקודות עניין",
+  attractions: "אטרקציות",
+  food: "אוכל",
+  culture: "תרבות",
+  accommodation: "לינה",
+  groups: "קבוצות",
+  funDays: "ימי גיבוש",
+  events: "אירועים",
+  routes: "מסלולים",
 };

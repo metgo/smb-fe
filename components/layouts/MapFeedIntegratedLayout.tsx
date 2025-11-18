@@ -9,14 +9,12 @@ import {
 } from "@/constant/collageLayouts";
 import FeedCard from "../cards/FeedCard";
 import BusinessPinMap from "../maps/BusinessPinMap";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 import TrailRouteMap from "../maps/TrailRouteMap";
 import { pathNames } from "@/lib/endpoints";
 
 const MapFeedIntegratedLayout = ({ data }: { data: FeedItemList }) => {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const activeCategoryKey = searchParams.get("categoryId");
 
   const feedItemCount = data.length;
   const [scale, setScale] = useState(1);
@@ -185,8 +183,7 @@ const MapFeedIntegratedLayout = ({ data }: { data: FeedItemList }) => {
       {/* Business Cards Section */}
       <div
         className={clsx(
-          activeCategoryKey ? "pb-48" : "pb-30",
-          "flex flex-col w-[70%] max-h-[95vh] overflow-y-auto hide-scrollbar py-10",
+          "flex flex-col w-[70%] max-h-[95vh] overflow-y-auto hide-scrollbar pb-10 pt-20",
         )}
       >
         {renderFullLayout()}

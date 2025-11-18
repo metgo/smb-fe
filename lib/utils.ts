@@ -419,14 +419,14 @@ export const navItems = [
         leftIcon: "",
         rightIcon: "",
       },
-      {
-        id: 2,
-        key: "",
-        label: menuItems.businessPage,
-        href: pathNames.businesses,
-        leftIcon: "",
-        rightIcon: "",
-      },
+      // {
+      //   id: 2,
+      //   key: "",
+      //   label: menuItems.businessPage,
+      //   href: pathNames.businesses,
+      //   leftIcon: "",
+      //   rightIcon: "",
+      // },
       {
         id: 4,
         key: "",

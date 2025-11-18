@@ -54,7 +54,7 @@ const MobileBusinessFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
       {hideFirstTwoSection && <MobileNavbar />}
 
       {activeFilterTabMobile === "gallery" && (
-        <OnlyFeedCardsLayoutMobile data={businesses.data} />
+        <OnlyFeedCardsLayoutMobile data={businesses?.data} />
       )}
 
       {activeFilterTabMobile === "map" && (

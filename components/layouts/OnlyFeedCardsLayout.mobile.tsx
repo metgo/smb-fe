@@ -1,55 +1,74 @@
 "use client";
 
 import clsx from "clsx";
-import { useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { scaleLayout, shuffleArray } from "@/lib/helpers";
 import {
   MOBILE_REFERENCE_WIDTH,
   getMobileCardLayouts,
   getMobileCardColumns,
 } from "@/constant/collageLayouts.mobile";
+import { scaleLayout, shuffleArray } from "@/lib/helpers";
 import FeedCardMobile from "../cards/FeedCard.mobile";
+import NoFeedItemLayout from "./NoFeedItemLayout";
+import { useCommonHook } from "@/hooks";
 
 const OnlyFeedCardsLayoutMobile = ({ data }: { data: FeedItemList }) => {
-  const feedItemCount = data.length;
+  const { isMobile } = useCommonHook();
   const searchParams = useSearchParams();
   const activeCategoryKey = searchParams.get("categoryId");
 
-  const [scale, setScale] = useState(1);
-  const [shuffledCols, setShuffledCols] = useState<{
-    col1: number[];
-    col2: number[];
-  }>({ col1: [], col2: [] });
+  const feedItemCount = data?.length ?? 0;
 
+  // ── All hooks are called unconditionally (order never changes) ──
+  const [scale, setScale] = useState(1);
+
+  const layouts = useMemo(
+    () => getMobileCardLayouts(feedItemCount),
+    [feedItemCount],
+  );
+  const columns = useMemo(
+    () => getMobileCardColumns(feedItemCount),
+    [feedItemCount],
+  );
+
+  // Shuffle columns – only used when we have ≥2 items and we are on mobile
+  const shuffledCols = useMemo(() => {
+    if (feedItemCount < 2 || !columns.mobileLayout2) {
+      return { col1: [], col2: [] };
+    }
+    const { col1, col2 } = columns.mobileLayout2;
+    return {
+      col1: shuffleArray(col1.filter((i) => i < feedItemCount)),
+      col2: shuffleArray(col2.filter((i) => i < feedItemCount)),
+    };
+  }, [feedItemCount, columns.mobileLayout2]);
+
+  // Scale handling
   useEffect(() => {
     const updateScale = () => {
-      const currentWidth = window.innerWidth;
-      const newScale = currentWidth / MOBILE_REFERENCE_WIDTH;
-      setScale(newScale);
+      setScale(window.innerWidth / MOBILE_REFERENCE_WIDTH);
     };
-
     updateScale();
     window.addEventListener("resize", updateScale);
     return () => window.removeEventListener("resize", updateScale);
   }, []);
 
-  if (feedItemCount < 1) return <div>No businesses available</div>;
+  // ── Early returns AFTER all hooks ──
+  if (!isMobile) return null;
+  if (feedItemCount === 0) return <NoFeedItemLayout />;
 
-  //  Get dynamic layout and columns
-  const layouts = getMobileCardLayouts(feedItemCount);
-  const columns = getMobileCardColumns(feedItemCount);
-
-  //  Single card layout (full width)
+  // Single-card layout
   if (feedItemCount === 1) {
     const layout = scaleLayout(layouts.mobileLayout1, scale);
     const card = layout[0];
     const feedItem = data[0];
+
     return (
       <div
         className={clsx(
           activeCategoryKey ? "pb-48" : "pb-30",
-          "px-4 pt-24 flex items-center justify-center w-full h-full relative ",
+          "px-4 pt-24 flex items-center justify-center w-full min-h-screen",
         )}
       >
         <FeedCardMobile
@@ -62,30 +81,18 @@ const OnlyFeedCardsLayoutMobile = ({ data }: { data: FeedItemList }) => {
     );
   }
 
-  //  Multi-card layout (2 columns)
+  // Multi-card layout (2 columns)
   const layout = scaleLayout(layouts.mobileLayout2, scale);
-  const columnLayout = columns.mobileLayout2;
-  const totalCards = data.length;
-
-  //  Shuffle indexes only when `data` changes
-  useEffect(() => {
-    const col1Indexes = columnLayout.col1.filter((i) => i < totalCards);
-    const col2Indexes = columnLayout.col2.filter((i) => i < totalCards);
-
-    setShuffledCols({
-      col1: shuffleArray(col1Indexes),
-      col2: shuffleArray(col2Indexes),
-    });
-  }, [data, totalCards]);
 
   const renderCards = (indexes: number[]) =>
     indexes.map((i) => {
       const feedItem = data[i];
       const cardLayout = layout[i];
       if (!feedItem || !cardLayout) return null;
+
       return (
         <FeedCardMobile
-          key={feedItem._id + i}
+          key={`${feedItem._id}-${i}`}
           width={cardLayout.width}
           height={cardLayout.height}
           feedItem={feedItem}
@@ -94,16 +101,12 @@ const OnlyFeedCardsLayoutMobile = ({ data }: { data: FeedItemList }) => {
     });
 
   return (
-    <div
-      className={clsx(
-        "px-2 py-20 flex items-start w-full h-full min-h-[100vh] relative",
-      )}
-    >
-      <div className="flex gap-3 items-start px-0">
-        <div className="flex flex-col gap-3">
+    <div className="px-2 py-20 flex w-full min-h-screen">
+      <div className="flex gap-3 w-full">
+        <div className="flex flex-col gap-3 flex-1">
           {renderCards(shuffledCols.col1)}
         </div>
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-3 flex-1">
           {renderCards(shuffledCols.col2)}
         </div>
       </div>
