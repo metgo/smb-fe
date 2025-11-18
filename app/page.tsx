@@ -4,30 +4,32 @@ import IntroVideo from "@/components/IntroVideo";
 import MainLogo from "@/components/navbar/MainLogo";
 import { getMarketing } from "@/actions/marketingAction";
 import { ScrollSnapWrapper } from "@/components/wrappers";
-import { getAllBusinesses } from "@/actions/businessActions";
 import HamburgerMenu from "@/components/navbar/HamburgerMenu";
 import { ArrowImage, CarouselImage } from "@/components/marketing";
 import BusinessFeedLayout from "@/components/layouts/BusinessFeedLayout";
 import CurrentTempOfYourCity from "@/components/navbar/CurrentTempOfYourCity";
 import MobileBusinessFeedLayout from "@/components/mobile/BusinessFeedLayout.mobile";
+import { getAllFeeds } from "@/actions/feedActions";
 
 interface Props {
   searchParams: Promise<{
     page: string;
-    categoryId: string;
-    subCategoryId: string;
+    categoryIds: string;
+    subCategoryIds: string;
     accessibilitiesIds?: string;
     groupTypesIds?: string;
+    serviceTypes: string;
   }>;
 }
 
 const page = async ({ searchParams }: Props) => {
   const {
     page = "1",
-    categoryId = "",
-    subCategoryId = "",
+    categoryIds = "",
+    subCategoryIds = "",
     accessibilitiesIds = "",
     groupTypesIds = "",
+    serviceTypes = "",
   } = await searchParams;
 
   // Parse comma-separated values into arrays
@@ -35,14 +37,18 @@ const page = async ({ searchParams }: Props) => {
     ? accessibilitiesIds.split(",")
     : [];
 
+  const categoriesArray = categoryIds ? categoryIds.split(",") : [];
+  const subCategoriesArray = subCategoryIds ? subCategoryIds.split(",") : [];
   const groupTypesArray = groupTypesIds ? groupTypesIds.split(",") : [];
+  const serviceTypesArray = serviceTypes ? serviceTypes.split(",") : [];
 
-  const businesses: BusinessesProps = await getAllBusinesses(
+  const businesses: BusinessesProps = await getAllFeeds(
     Number(page),
-    categoryId,
-    subCategoryId,
+    categoriesArray,
+    subCategoriesArray,
     groupTypesArray,
     accessibilitiesArray,
+    serviceTypesArray,
     "/",
   );
   const marketing = await getMarketing();

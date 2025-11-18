@@ -159,3 +159,36 @@ interface PromotionalItem {
 interface PromotionalItemsResponse {
   allPromotionalItems: PromotionalItem[];
 }
+
+interface Category {
+  _id: string;
+  name: string;
+}
+
+interface SubCategory {
+  _id: string;
+  name: string;
+  categoryId: string;
+}
+
+interface GroupType {
+  _id: string;
+  name: string;
+}
+
+interface Accessibility {
+  _id: string;
+  name: string;
+}
+
+interface FiltersResponse {
+  categories: Category[];
+  subCategories: SubCategory[];
+  groupTypes: GroupType[];
+  accessibilities: Accessibility[];
+  displayBusinesses: boolean;
+  displayEvents: boolean;
+  displayFunday: boolean;
+  displayPOI: boolean;
+  displayTrips: boolean;
+}

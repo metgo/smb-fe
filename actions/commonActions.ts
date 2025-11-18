@@ -82,3 +82,14 @@ export async function getPromotionsList() {
     console.error("Error fetching categories:", error);
   }
 }
+
+export async function getFilters() {
+  try {
+    const res = await fetch(`${urls.filters}?identifierId=${IdentifierId}`);
+    if (!res.ok) throw new Error("Failed to fetch categories");
+    const data = await res.json();
+    return data;
+  } catch (error) {
+    console.error("Error fetching categories:", error);
+  }
+}

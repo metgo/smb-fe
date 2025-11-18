@@ -7,6 +7,7 @@ import { getApproxUserLocation } from "@/actions/getWether";
 import {
   getAllLocations,
   getAminitiesInfo,
+  getFilters,
   getPromotionsList,
   getSiteInfo,
 } from "@/actions/commonActions";
@@ -21,7 +22,9 @@ export const SiteInfoClientProvider = ({
     setUserLiveLocation,
     setSiteInfo,
     setPromotionalItems,
+    setFilterItems,
   } = useGeneralStore();
+
   const { setBusinessMarkers } = useMarkersStore();
 
   async function fetchAminitiesInfo() {
@@ -62,7 +65,17 @@ export const SiteInfoClientProvider = ({
     }
   }
 
+  async function fetchFilters() {
+    try {
+      const res = await getFilters();
+      setFilterItems(res);
+    } catch (error) {
+      console.error("Failed to get user location:", error);
+    }
+  }
+
   useEffect(() => {
+    fetchFilters();
     fetchSiteinfo();
     fetchAminitiesInfo();
     fetchUserCurrentLocation();

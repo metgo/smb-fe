@@ -9,7 +9,7 @@ import { urls } from "@/lib/endpoints";
 import { filterLabels } from "@/constant/hebrew";
 import useGeneralStore from "@/stores/generalStore";
 import { startLoading } from "../wrappers/ProgressBar";
-import { getFilterTypes } from "@/actions/businessActions";
+import { getFilterTypes } from "@/actions/feedActions";
 import { FilterTypeHeader, IconImage, MotionDialogDiv } from "../ui";
 
 const parseCommaParam = (param: string | null): string[] =>

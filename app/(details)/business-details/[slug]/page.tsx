@@ -7,7 +7,7 @@ import {
   Title,
 } from "../../_components";
 import AttributePills from "@/components/AttributePills";
-import { getBusinessDetailsBySlug } from "@/actions/businessActions";
+import { getBusinessDetailsBySlug } from "@/actions/feedActions";
 import { getProducts } from "@/actions/productActions";
 import NoFeedItemLayout from "@/components/layouts/NoFeedItemLayout";
 import ShareUrlBtnModal from "@/components/ShareUrlBtnModal";

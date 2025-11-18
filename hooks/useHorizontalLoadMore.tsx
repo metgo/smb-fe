@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState, useRef } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import useGeneralStore from "@/stores/generalStore";
-import { clearBusinessContext } from "@/actions/businessActions";
+import { clearBusinessContext } from "@/actions/feedActions";
 
 export const useHorizontalLoadMore = (
   hasNextPage: boolean = false,
