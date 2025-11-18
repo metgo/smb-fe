@@ -124,7 +124,7 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
   return createPortal(
     <MotionDialogDiv
       type="drawer-bottom"
-      className="fixed inset-0 z-[9999] w-[405px] bg-white shadow-xl flex flex-col"
+      className="fixed inset-0 z-[9999] w-[405px] bg-white s`hadow-xl flex flex-col"
       onClick={(e) => e.stopPropagation()}
     >
       {/* HEADER */}
