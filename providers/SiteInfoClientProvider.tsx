@@ -6,7 +6,6 @@ import useMarkersStore from "@/stores/markersStore";
 import { getApproxUserLocation } from "@/actions/getWether";
 import {
   getAllLocations,
-  getAminitiesInfo,
   getFilters,
   getPromotionsList,
   getSiteInfo,
@@ -18,7 +17,6 @@ export const SiteInfoClientProvider = ({
   children: ReactNode;
 }) => {
   const {
-    setAminitiesInfo,
     setUserLiveLocation,
     setSiteInfo,
     setPromotionalItems,
@@ -26,11 +24,6 @@ export const SiteInfoClientProvider = ({
   } = useGeneralStore();
 
   const { setBusinessMarkers } = useMarkersStore();
-
-  async function fetchAminitiesInfo() {
-    const res = await getAminitiesInfo();
-    setAminitiesInfo(res);
-  }
 
   async function fetchSiteinfo() {
     const res = await getSiteInfo();
@@ -77,7 +70,6 @@ export const SiteInfoClientProvider = ({
   useEffect(() => {
     fetchFilters();
     fetchSiteinfo();
-    fetchAminitiesInfo();
     fetchUserCurrentLocation();
     fetchBusinessMarkers();
     fetchPromotionalItems();

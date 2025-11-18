@@ -108,7 +108,7 @@ const useGeneralStore = create<GeneralStoreState>((set) => ({
   homePageSectionState: "first",
   setHomePageSectionState: (v) => set({ homePageSectionState: v }),
 
-  aminitiesInfo: { event: true, trip: true, business: true },
+  aminitiesInfo: { event: false, trip: false, business: false },
   setAminitiesInfo: (v) => set({ aminitiesInfo: v }),
 
   siteInfo: {
