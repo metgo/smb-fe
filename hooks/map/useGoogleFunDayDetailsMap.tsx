@@ -126,7 +126,6 @@ export const useGoogleFunDayDetailsMap = (
         const container = document.createElement("div");
         createRoot(container).render(
           <CustomInfoWindow
-            isTrailMap
             stationId={location._id}
             trailId={trailId}
             geoLocation={location.geoLocation}

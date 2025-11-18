@@ -23,7 +23,9 @@ const page = async ({ params }: PageProps) => {
     <>
       <div className="max-sm:mx-4 md:mx-20 py-12 relative space-y-12">
         <div className="flex items-center justify-between w-full max-sm:pt-30">
-          <h1 className="text-6xl font-bold">{funDayDetails?.name}</h1>
+          <h1 className="text-3xl md:text-6xl font-bold overflow-ellipsis w-full">
+            {funDayDetails?.name}
+          </h1>
           <div className=" flex items-center justify-end gap-6 mb-4.5">
             <ShareUrlBtnModal />
           </div>
