@@ -118,7 +118,7 @@ const IntroVideo = () => {
       />
 
       {/* Loading Spinner */}
-      {isVideoReady && !videoError && (
+      {!isVideoReady && !videoError && (
         <div className="absolute left-1/2 top-1/2 flex items-center justify-center z-20 ">
           <div className="animate-spin rounded-full h-12 w-12 border-4 border-white border-t-transparent" />
         </div>
