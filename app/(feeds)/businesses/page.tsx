@@ -34,7 +34,6 @@ const Page = async ({ searchParams }: PageProps | any) => {
     subCategoryId,
     groupTypesArray,
     accessibilitiesArray,
-    "/businesses",
   );
 
   return (
