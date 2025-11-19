@@ -43,7 +43,6 @@ const page = async ({ searchParams }: Props) => {
     subCategoryId,
     groupTypesArray,
     accessibilitiesArray,
-    "/",
   );
   const marketing = await getMarketing();
 
