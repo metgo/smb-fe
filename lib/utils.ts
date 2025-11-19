@@ -273,6 +273,15 @@ export const navigationPaths = {
   [navigationKey.funDays]: pathNames.funDayDetails,
 };
 
+export const navigationPathsByServiceType = {
+  ["business"]: pathNames.businessDetails,
+  ["point_of_interest"]: pathNames.businessDetails,
+  ["event"]: pathNames.eventDetails,
+  ["trip"]: pathNames.trailDetails,
+  ["/blogs-articles"]: pathNames.blogArticleDetails,
+  ["funday"]: pathNames.funDayDetails,
+};
+
 export const navItemsDraft = [
   {
     col1: [

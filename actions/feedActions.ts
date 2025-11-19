@@ -98,7 +98,7 @@ export const getAllFeeds = async (
     if (!isCached) {
       try {
         const res = await fetch(
-          `${urls.tourismBusinesses}?page=${i}&limit=100&sortBy=createdAt&sortOrder=DESC&campCode=${CODE}&${query.toString()}`,
+          `${urls.feeds}?page=${i}&limit=100&sortBy=createdAt&sortOrder=DESC&campCode=${CODE}&${query.toString()}`,
           {
             cache: "no-store",
           },

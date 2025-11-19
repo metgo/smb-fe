@@ -40,7 +40,9 @@ const page = async ({ searchParams }: Props) => {
   const categoriesArray = categoryIds ? categoryIds.split(",") : [];
   const subCategoriesArray = subCategoryIds ? subCategoryIds.split(",") : [];
   const groupTypesArray = groupTypesIds ? groupTypesIds.split(",") : [];
-  const serviceTypesArray = serviceTypes ? serviceTypes.split(",") : [];
+  const serviceTypesArray = serviceTypes
+    ? serviceTypes.split(",")
+    : ["point_of_interest", "business", "funday", "event", "trip"];
 
   const businesses: BusinessesProps = await getAllFeeds(
     Number(page),
