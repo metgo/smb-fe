@@ -22,6 +22,7 @@ export const urls = {
   productsDetails: `${BASE_URL}/products`,
   productsList: `${BASE_URL}/products`,
 
+  feeds: `${BASE_URL}/feed`,
   events: `${BASE_URL}/events`,
   eventDetails: `${BASE_URL}/events`,
   searchRecommendation: `${BASE_URL}/tourism/search-recommendation?campCode=${CODE}`,
