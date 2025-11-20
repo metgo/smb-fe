@@ -5,7 +5,7 @@ import { useCallback, useEffect, useState, useRef } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 
 import useGeneralStore from "@/stores/generalStore";
-import { clearBusinessContext } from "@/actions/feedActions";
+import { clearBusinessContext } from "@/actions/businessActions";
 
 export const useLoadMore = (hasNextPage: boolean = false) => {
   const router = useRouter();
@@ -76,7 +76,7 @@ export const useLoadMore = (hasNextPage: boolean = false) => {
     try {
       const nextPage = pageCount + 1;
       const params = new URLSearchParams(searchParams.toString());
-      params.set("page", nextPage.toString());
+      // params.set("page", nextPage.toString());
 
       router?.replace(`?${params.toString()}`, { scroll: false });
       setPageCount(nextPage);

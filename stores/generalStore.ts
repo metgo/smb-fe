@@ -137,7 +137,7 @@ const useGeneralStore = create<GeneralStoreState>((set) => ({
     groupTypes: [],
     accessibilities: [],
     categories: [],
-    subCategories: [],
+    subCategories: [{ _id: "", hebrewName: "", categoryId: "" }],
     displayBusinesses: false,
     displayEvents: false,
     displayFunday: false,

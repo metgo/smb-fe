@@ -1,5 +1,3 @@
-import { events } from "./hebrew";
-
 export const eventDetils = {
   title: "מסיבת קצב לילית בנגב",
   header: "פרטי האירוע",
@@ -8,47 +6,40 @@ export const eventDetils = {
   dateline: "*ההרשמה נסגרת ב10.6.25.",
 };
 
-export const eventFeatures = [
-  {
-    _id: "1",
-    name: "",
-    hebrewName: events.evening,
-    icon: "",
-  },
-  {
-    _id: "2",
-    name: "",
-    hebrewName: events.couples,
-    icon: "",
-  },
-  {
-    _id: "3",
-    name: "",
-    hebrewName: events.accessible,
-    icon: "",
-  },
-  {
-    _id: "4",
-    name: "",
-    hebrewName: events.paid,
-    icon: "",
-  },
-  {
-    _id: "5",
-    name: "",
-    hebrewName: events.families,
-    icon: "",
-  },
-  {
-    _id: "6",
-    name: "",
-    hebrewName: events.children,
-    icon: "",
-  },
-  {
-    _id: "7",
-    name: "",
-    hebrewName: events.kosher,
-    icon: "",
-  },
-];
+// ---------------- DEFAULT SELECTED FILTERS -----------------
+export const initialSelectedFiltersIds: {
+  categoryIds?: string[];
+  subCategoryIds?: string[];
+  groupTypeIds?: string[];
+  accessibilityIds?: string[];
+  serviceTypes?: string[];
+} = {
+  categoryIds: [
+    "6566e256a77d2a477266d2c0",
+    "6566e31ca77d2a477266d2d6",
+    "6566e3aaa77d2a477266d314",
+    "6566fcd4a77d2a477266d3b9",
+    "6566fd7fa77d2a477266d3ca",
+  ],
+  subCategoryIds: [
+    "656719a0e91479847b2bd1a0",
+    "65672111e91479847b2bd2c1",
+    "65672207e91479847b2bd326",
+    "65cdc33e706676bdaad6f2a7",
+    "65cdc436706676bdaad6f2a9",
+    "662a5037d9546d7e80b75806",
+  ],
+  groupTypeIds: [
+    "656c4fc9a835f8bf39f58a58",
+    "656c5010a835f8bf39f58a65",
+    "656c5074a835f8bf39f58a6f",
+  ],
+  accessibilityIds: [
+    "6566fe6aa77d2a477266d3e2",
+    "6566fee4a77d2a477266d3f2",
+    "6567013aa77d2a477266d475",
+    "6773a98b3fdf6c4652adbc26",
+    "68b93dcf556a0cbd382f0667",
+  ],
+  serviceTypes: ["business", "point_of_interest", "event", "funday", "trip"],
+};

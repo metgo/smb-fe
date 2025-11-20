@@ -2,7 +2,7 @@
 export const MOBILE_REFERENCE_WIDTH = 400;
 
 // Constant width for all cards
-const MOBILE_CARD_WIDTH = 180;
+const MOBILE_CARD_WIDTH = 185;
 
 // Varying card heights (150px → 300px)
 const MOBILE_CARD_HEIGHTS = Array.from({ length: 16 }, (_, i) => 150 + i * 10);

@@ -335,23 +335,23 @@ const FeedCardActions = ({
         )}
       </div>
       {feedItem.serviceType === "point_of_interest" && (
-        <div className="bg-black/50 rounded-full p-1 flex items-center justify-start absolute left-[8px] top-[1px]">
-          <IconImage width={20} height={20} icon="location-solid" />
+        <div className="bg-black/50 rounded-full p-1 flex items-center justify-center absolute left-[8px] top-[1px] w-8 h-8">
+          <IconImage width={24} height={24} icon="location-solid" />
         </div>
       )}
       {feedItem.serviceType === "event" && (
-        <div className="bg-black/50 rounded-full p-1 flex items-center justify-start absolute left-[8px] top-[1px]">
-          <IconImage width={20} height={20} icon="event" />
+        <div className="bg-black/50 rounded-full p-1 flex items-center justify-center absolute left-[8px] top-[1px] w-8 h-8">
+          <IconImage width={24} height={24} icon="event" />
         </div>
       )}
       {feedItem.serviceType === "trip" && (
-        <div className="bg-black/50 rounded-full p-1 flex items-center justify-start absolute left-[8px] top-[1px]">
+        <div className="bg-black/50 rounded-full p-1 flex items-center justify-center absolute left-[8px] top-[1px] w-8 h-8">
           <IconImage width={20} height={20} icon="trip" />
         </div>
       )}
       {feedItem.serviceType === "funday" && (
-        <div className="bg-black/50 rounded-full p-1 flex items-center justify-start absolute left-[8px] top-[1px] ">
-          <IconImage width={18} height={18} icon="kite-white" />
+        <div className="bg-black/50 rounded-full p-1 flex items-center justify-center absolute left-[8px] top-[1px] w-8 h-8">
+          <IconImage width={20} height={20} icon="kite-white" />
         </div>
       )}
     </div>

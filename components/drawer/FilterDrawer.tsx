@@ -135,8 +135,8 @@ const FilterDrawer = () => {
         createPortal(
           <MotionDialogDiv
             type="drawer-bottom"
-            className="fixed inset-0 z-[9999] w-[395px] bg-white shadow-xl px-5 py-7.5 overflow-y-auto dialog-scrollbar"
             onClick={(e) => e.stopPropagation()}
+            className=" fixed inset-x-0 bottom-0 z-[9999] w-full sm:max-w-[200px] md:max-w-[300px] lg:max-w-[400px] bg-white shadow-xl flex flex-col "
           >
             {/* Header */}
             <div className="flex justify-between items-center">

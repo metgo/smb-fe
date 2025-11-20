@@ -9,6 +9,14 @@ import {
 } from "@/components/ui/icons";
 import { pathNames } from "./endpoints";
 import { CODE } from "@/constant/envConstants";
+import {
+  AttractionIcon,
+  CultureIcon,
+  FoodIcon,
+  LocalIcon,
+  SleepIcon,
+  TravelIcon,
+} from "@/components/ui/svgIcons";
 
 interface MenuItem {
   key: string;
@@ -43,6 +51,25 @@ export const imagePlayTypeEnum = {
   manual: "MANUAL",
   automate: "AUTOMATE",
 };
+
+// ---------------- ICON MAP -----------------
+export const ICON_MAP: Record<string, React.FC<{ strokColor?: string }>> = {
+  "6566e31ca77d2a477266d2d6": AttractionIcon,
+  "6566e3aaa77d2a477266d314": FoodIcon,
+  "6566e36ba77d2a477266d2f4": CultureIcon,
+  "6566fcd4a77d2a477266d3b9": SleepIcon,
+  "6566fd7fa77d2a477266d3ca": LocalIcon,
+  "6566e256a77d2a477266d2c0": TravelIcon,
+};
+
+// ---------------- SERVICE TYPE MAPPING -----------------
+export const SERVICE_TYPE_MAP = {
+  poi: "point_of_interest",
+  group_user: "group_user",
+  fun_day: "funday",
+  event: "event",
+  route: "trip",
+} as const;
 
 export const contactFormReasonOptions = [
   { value: "תווים", label: "תווים" },

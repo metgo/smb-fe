@@ -103,10 +103,10 @@ const OnlyFeedCardsLayoutMobile = ({ data }: { data: FeedItemList }) => {
   return (
     <div className="px-2 py-20 flex w-full min-h-screen">
       <div className="flex gap-3 w-full">
-        <div className="flex flex-col gap-3 flex-1">
+        <div className="flex flex-col gap-y-3 flex-1">
           {renderCards(shuffledCols.col1)}
         </div>
-        <div className="flex flex-col gap-3 flex-1">
+        <div className="flex flex-col gap-y-3 flex-1">
           {renderCards(shuffledCols.col2)}
         </div>
       </div>
