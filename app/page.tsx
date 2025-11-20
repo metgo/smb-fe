@@ -6,53 +6,76 @@ import { getMarketing } from "@/actions/marketingAction";
 import { ScrollSnapWrapper } from "@/components/wrappers";
 import HamburgerMenu from "@/components/navbar/HamburgerMenu";
 import { ArrowImage, CarouselImage } from "@/components/marketing";
-import BusinessFeedLayout from "@/components/layouts/BusinessFeedLayout";
+import FeedLayout from "@/components/layouts/FeedLayout";
 import CurrentTempOfYourCity from "@/components/navbar/CurrentTempOfYourCity";
 import MobileBusinessFeedLayout from "@/components/mobile/BusinessFeedLayout.mobile";
-import { getAllFeeds } from "@/actions/feedActions";
+import { getAllFeeds, getAllFilters } from "@/actions/feedActions";
+import { initialSelectedFiltersIds } from "@/providers/SiteInfoClientProvider";
 
 interface Props {
   searchParams: Promise<{
-    page: string;
-    categoryIds: string;
-    subCategoryIds: string;
-    accessibilitiesIds?: string;
-    groupTypesIds?: string;
-    serviceTypes: string;
+    page?: string;
+    categoryIds?: string;
+    subCategoryIds?: string;
+    accessibilityIds?: string;
+    groupTypeIds?: string;
+    serviceTypes?: string;
+    isAllClear?: string;
   }>;
 }
 
 const page = async ({ searchParams }: Props) => {
+  const params = await searchParams;
+
   const {
-    page = "1",
-    categoryIds = "",
-    subCategoryIds = "",
-    accessibilitiesIds = "",
-    groupTypesIds = "",
-    serviceTypes = "",
-  } = await searchParams;
+    categoryIds,
+    subCategoryIds,
+    accessibilityIds,
+    groupTypeIds,
+    serviceTypes,
+    isAllClear,
+  } = params;
 
-  // Parse comma-separated values into arrays
-  const accessibilitiesArray = accessibilitiesIds
-    ? accessibilitiesIds.split(",")
-    : [];
+  // const initialSelectedFiltersIds:PresetFilterItems = await getPresetFilters()
+  //  Convert comma values → arrays only if URL values exist
+  const categoriesArray = categoryIds?.length
+    ? categoryIds.split(",")
+    : initialSelectedFiltersIds?.categoryIds;
 
-  const categoriesArray = categoryIds ? categoryIds.split(",") : [];
-  const subCategoriesArray = subCategoryIds ? subCategoryIds.split(",") : [];
-  const groupTypesArray = groupTypesIds ? groupTypesIds.split(",") : [];
-  const serviceTypesArray = serviceTypes
+  const subCategoriesArray = subCategoryIds?.length
+    ? subCategoryIds.split(",")
+    : initialSelectedFiltersIds?.subCategoryIds;
+
+  const accessibilitiesArray = accessibilityIds?.length
+    ? accessibilityIds.split(",")
+    : initialSelectedFiltersIds?.accessibilityIds;
+
+  const groupTypesArray = groupTypeIds?.length
+    ? groupTypeIds.split(",")
+    : initialSelectedFiltersIds?.groupTypeIds;
+
+  const serviceTypesArray = serviceTypes?.length
     ? serviceTypes.split(",")
-    : ["point_of_interest", "business", "funday", "event", "trip"];
+    : initialSelectedFiltersIds?.serviceTypes;
+
+  // 🔥 Unified object (now includes default fallback)
+  const selectedFiltersIds = {
+    categoryIds: categoriesArray || [],
+    subCategoryIds: subCategoriesArray || [],
+    groupTypesIds: groupTypesArray || [],
+    accessibilitiesIds: accessibilitiesArray || [],
+    serviceTypes: serviceTypesArray || ["business"],
+  };
+
+  // First API call includes all filters
+  const filters = await getAllFilters(selectedFiltersIds);
 
   const businesses: BusinessesProps = await getAllFeeds(
-    Number(page),
-    categoriesArray,
-    subCategoriesArray,
-    groupTypesArray,
-    accessibilitiesArray,
-    serviceTypesArray,
-    "/",
+    1,
+    selectedFiltersIds,
+    isAllClear === "true",
   );
+
   const marketing = await getMarketing();
 
   return (
@@ -70,9 +93,11 @@ const page = async ({ searchParams }: Props) => {
             </div>
             <CurrentTempOfYourCity />
           </div>
+
           <IntroVideo />
         </section>
 
+        {/* Marketing Section */}
         {marketing?.items?.length > 0 && (
           <>
             {marketing?.playType === imagePlayTypeEnum.manual ? (
@@ -89,8 +114,9 @@ const page = async ({ searchParams }: Props) => {
         {/* Feed Section */}
         <section className="relative z-50 bg-white">
           <Navbar showFilterTab />
+
           <MobileBusinessFeedLayout businesses={businesses} />
-          <BusinessFeedLayout businesses={businesses} />
+          <FeedLayout businesses={businesses} filters={filters} />
         </section>
       </ScrollSnapWrapper>
     </div>

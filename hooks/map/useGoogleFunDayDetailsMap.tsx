@@ -175,7 +175,7 @@ export const useGoogleFunDayDetailsMap = (
       top: 40,
       bottom: 40,
       left: 40,
-      right: 800,
+      right: 40,
     });
   }, [map, locations, routeStation]);
 
@@ -261,7 +261,7 @@ export const useGoogleFunDayDetailsMap = (
         }
       }
 
-      map.fitBounds(bounds, { top: 60, bottom: 60, left: 60, right: 600 });
+      map.fitBounds(bounds, { top: 10, bottom: 10, left: 10, right: 10 });
     };
 
     drawRoute();

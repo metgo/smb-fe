@@ -6,7 +6,6 @@ import { filterTabs } from "@/lib/utils";
 import { IconImage } from "@/components/ui";
 import useGeneralStore from "@/stores/generalStore";
 import { useEffect, useState, useRef } from "react";
-import { pathNames } from "@/lib/endpoints";
 
 const BusinessPageFilterTabs = () => {
   const router = useRouter();
@@ -18,25 +17,13 @@ const BusinessPageFilterTabs = () => {
   const { setClickedBusinessId, activeFilterTab, setActiveFilterTab } =
     useGeneralStore();
 
-  const [filteredTabs, setFilteredTabs] = useState<
-    { key: string; label: string; icon: string }[]
-  >([]);
-
   const [indicatorStyle, setIndicatorStyle] = useState({
-    left: 0,
+    left: 1,
     width: 0,
   });
 
   const tabRefs = useRef<{ [key: string]: HTMLButtonElement | null }>({});
   const containerRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    if (pathname === pathNames.trails || pathname === pathNames.funDays) {
-      setFilteredTabs(filterTabs.slice(0, 2));
-    } else {
-      setFilteredTabs(filterTabs);
-    }
-  }, [pathname]);
 
   useEffect(() => {
     // Update indicator position when active tab changes
@@ -52,7 +39,7 @@ const BusinessPageFilterTabs = () => {
         width: tabRect.width,
       });
     }
-  }, [activeFilterTab, filteredTabs]);
+  }, [activeFilterTab, filterTabs]);
 
   function handleTabSwitch(key: string) {
     setActiveFilterTab(key);
@@ -82,7 +69,7 @@ const BusinessPageFilterTabs = () => {
           }}
         />
 
-        {filteredTabs.map((item) => (
+        {filterTabs.map((item) => (
           <button
             key={item.key}
             ref={(el) => {

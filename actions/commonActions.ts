@@ -83,6 +83,17 @@ export async function getPromotionsList() {
   }
 }
 
+export async function getComboFilters() {
+  try {
+    const res = await fetch(urls.filters);
+    if (!res.ok) throw new Error("Failed to fetch combo filters");
+    const data = await res.json();
+    return data;
+  } catch (error) {
+    console.error("Error fetching combo filters:", error);
+  }
+}
+
 export async function getFilters() {
   try {
     const res = await fetch(`${urls.filters}?identifierId=${IdentifierId}`);
@@ -91,5 +102,29 @@ export async function getFilters() {
     return data;
   } catch (error) {
     console.error("Error fetching categories:", error);
+  }
+}
+
+export async function getSubcategories() {
+  try {
+    const res = await fetch(`${urls.subcategory}?identifierId=${IdentifierId}`);
+    if (!res.ok) throw new Error("Failed to fetch sub-categories");
+    const data = await res.json();
+    return data;
+  } catch (error) {
+    console.error("Error fetching sub-categories:", error);
+  }
+}
+
+export async function getPresetFilters() {
+  try {
+    const res = await fetch(
+      `${urls.defaultFilters}?identifierId=${IdentifierId}`,
+    );
+    if (!res.ok) throw new Error("Failed to fetch preset filters");
+    const data = await res.json();
+    return data;
+  } catch (error) {
+    console.error("Error fetching preset filters:", error);
   }
 }

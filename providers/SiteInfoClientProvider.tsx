@@ -6,22 +6,20 @@ import useMarkersStore from "@/stores/markersStore";
 import { getApproxUserLocation } from "@/actions/getWether";
 import {
   getAllLocations,
-  getFilters,
+  getPresetFilters,
   getPromotionsList,
   getSiteInfo,
 } from "@/actions/commonActions";
+
+export let initialSelectedFiltersIds: PresetFilterItems;
 
 export const SiteInfoClientProvider = ({
   children,
 }: {
   children: ReactNode;
 }) => {
-  const {
-    setUserLiveLocation,
-    setSiteInfo,
-    setPromotionalItems,
-    setFilterItems,
-  } = useGeneralStore();
+  const { setUserLiveLocation, setSiteInfo, setPromotionalItems } =
+    useGeneralStore();
 
   const { setBusinessMarkers } = useMarkersStore();
 
@@ -58,21 +56,21 @@ export const SiteInfoClientProvider = ({
     }
   }
 
-  async function fetchFilters() {
+  async function fetchPresetFilterItems() {
     try {
-      const res = await getFilters();
-      setFilterItems(res);
+      const res = await getPresetFilters();
+      initialSelectedFiltersIds = res;
     } catch (error) {
       console.error("Failed to get filters:", error);
     }
   }
 
   useEffect(() => {
-    fetchFilters();
     fetchSiteinfo();
     fetchUserCurrentLocation();
     fetchBusinessMarkers();
     fetchPromotionalItems();
+    fetchPresetFilterItems();
   }, []);
 
   return <div>{children}</div>;

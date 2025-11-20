@@ -162,23 +162,23 @@ interface PromotionalItemsResponse {
 
 interface Category {
   _id: string;
-  name: string;
+  hebrewName: string;
 }
 
 interface SubCategory {
   _id: string;
-  name: string;
+  hebrewName: string;
   categoryId: string;
 }
 
 interface GroupType {
   _id: string;
-  name: string;
+  hebrewName: string;
 }
 
 interface Accessibility {
   _id: string;
-  name: string;
+  hebrewName: string;
 }
 
 interface FiltersResponse {
@@ -186,9 +186,12 @@ interface FiltersResponse {
   subCategories: SubCategory[];
   groupTypes: GroupType[];
   accessibilities: Accessibility[];
-  displayBusinesses: boolean;
-  displayEvents: boolean;
-  displayFunday: boolean;
-  displayPOI: boolean;
-  displayTrips: boolean;
+}
+
+interface PresetFilterItems {
+  categoryIds: string[];
+  subCategoryIds: string[];
+  groupTypeIds: string[];
+  accessibilityIds: string[];
+  serviceTypes: string[];
 }

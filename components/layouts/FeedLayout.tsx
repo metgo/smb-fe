@@ -6,20 +6,30 @@ import { useIsHydrated } from "@/hooks";
 import { useLoadMore } from "@/hooks/useLoadMore";
 import useGeneralStore from "@/stores/generalStore";
 
+import { AiIcon } from "../ui/svgIcons";
 import NoFeedItemLayout from "./NoFeedItemLayout";
 import BusinessPinMap from "../maps/BusinessPinMap";
 import OnlyFeedCardsLayout from "./OnlyFeedCardsLayout";
 import MapFeedIntegratedLayout from "./MapFeedIntegratedLayout";
 import StickyYellowRibbonImage from "../StickyYellowRibbonImage";
-import { AiIcon } from "../ui/svgIcons";
 import FeedFilterDrawer from "../drawer/FeedFilterDrawer";
+import { useRouter, useSearchParams } from "next/navigation";
+import { initialSelectedFiltersIds } from "@/providers/SiteInfoClientProvider";
 
-const BusinessFeedLayout = ({
+const FeedLayout = ({
   businesses,
+  filters,
 }: {
   businesses: BusinessesProps;
+  filters: FiltersResponse;
 }) => {
+  const router = useRouter();
+
   const isHydrated = useIsHydrated();
+  const searchParams = useSearchParams();
+
+  const isAllClear = searchParams.get("isAllClear") === "true";
+
   const { activeFilterTab, hideFirstTwoSection, setAppliedFilterItemCount } =
     useGeneralStore();
 
@@ -31,12 +41,54 @@ const BusinessFeedLayout = ({
   const totalBusiness = businesses?.totalData;
 
   const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
+  const [appliedFilterCount, setAppliedFilterCount] = useState(0);
+
+  const getCurrentParams = () => {
+    if (typeof window === "undefined") {
+      return new URLSearchParams(searchParams.toString());
+    }
+    return new URLSearchParams(window.location.search);
+  };
+
+  const [paramsState, setParamsState] = useState<URLSearchParams>(() =>
+    getCurrentParams(),
+  );
 
   useEffect(() => {
     if (businesses?.data?.length > 0) {
       setAppliedFilterItemCount(businesses?.data?.length);
     }
   }, [businesses, setAppliedFilterItemCount]);
+
+  // ---- APPLY DEFAULT FILTERS ON FIRST LOAD ----
+  useEffect(() => {
+    try {
+      if (typeof window === "undefined" || isAllClear) return;
+
+      if (!initialSelectedFiltersIds) return;
+
+      const params = getCurrentParams();
+      let shouldUpdate = false;
+
+      Object.entries(initialSelectedFiltersIds).forEach(([key, values]) => {
+        if (!Array.isArray(values) || values.length === 0) return;
+
+        const existing = params.get(key);
+        if (!existing || existing.trim() === "") {
+          params.set(key, values.join(","));
+          shouldUpdate = true;
+        }
+      });
+
+      if (shouldUpdate) {
+        const nextParams = new URLSearchParams(params);
+        setParamsState(nextParams);
+        router.replace(`?${nextParams.toString()}`, { scroll: false });
+      }
+    } catch (error) {
+      console.error("Error applying default filters:", error);
+    }
+  }, [isAllClear, initialSelectedFiltersIds]);
 
   if (!isHydrated) return null;
 
@@ -49,7 +101,7 @@ const BusinessFeedLayout = ({
       case "map":
         return <BusinessPinMap mapHeight="120vh" />;
       default:
-        return <NoFeedItemLayout />;
+        return <NoFeedItemLayout isFilterDrawerOpen={isFilterDrawerOpen} />;
     }
   };
 
@@ -71,15 +123,20 @@ const BusinessFeedLayout = ({
           )}
         </div>
       ) : (
-        <NoFeedItemLayout />
+        <NoFeedItemLayout isFilterDrawerOpen={isFilterDrawerOpen} />
       )}
 
       {hideFirstTwoSection && (
         <div
           onClick={() => setIsFilterDrawerOpen(true)}
-          className="fixed bottom-40 right-1 custom-cursor max-sm:hidden md:block"
+          className="fixed top-2/3 right-1 custom-cursor max-sm:hidden md:block"
         >
-          <AiIcon size={54} />
+          {appliedFilterCount > 0 && (
+            <div className="bg-green-500 absolute left-1 top-1 rounded-full h-[18px] w-[18px] text-[10px] flex items-center justify-center text-white aspect-square border border-white">
+              {appliedFilterCount}
+            </div>
+          )}
+          <AiIcon size={68} />
         </div>
       )}
 
@@ -90,10 +147,15 @@ const BusinessFeedLayout = ({
           itemCount={businesses?.data?.length}
           isOpen={isFilterDrawerOpen}
           setIsOpen={setIsFilterDrawerOpen}
+          paramsState={paramsState}
+          setParamsState={setParamsState}
+          filters={filters}
+          appliedFilterCount={appliedFilterCount}
+          setAppliedFilterCount={setAppliedFilterCount}
         />
       )}
     </div>
   );
 };
 
-export default BusinessFeedLayout;
+export default FeedLayout;

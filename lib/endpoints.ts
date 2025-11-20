@@ -39,7 +39,9 @@ export const urls = {
   blogs: `${BASE_URL}/blogs`,
   marketing: `${BASE_URL}/marketing`,
 
-  filters: `${BASE_URL}/filter`,
+  filters: `${BASE_URL}/filters`,
+  defaultFilters: `${BASE_URL}/default-filters`,
+
   themes: `${BASE_URL}/themes`,
   aminitiesInfo: `${BASE_URL}/amenities-info`,
   promotional: `${BASE_URL}/external-api/promotional-items`,
