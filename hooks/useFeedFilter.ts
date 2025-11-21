@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { initialSelectedFiltersIds } from "@/providers/SiteInfoClientProvider";
@@ -42,7 +44,6 @@ export default function useFeedFilter(filters: FiltersResponse) {
   useEffect(() => {
     try {
       if (typeof window === "undefined") return;
-      // if (!initialSelectedFiltersIds) return;
 
       const params = getCurrentParams();
 
@@ -63,14 +64,11 @@ export default function useFeedFilter(filters: FiltersResponse) {
       if (urlHasFilters) {
         const urlFilterCount = getTotalAppliedFilters(params);
         setAppliedFilterCount(urlFilterCount);
-
-        // Sync paramsState with URL
         setParamsState(new URLSearchParams(params));
-
         return;
       }
 
-      // ➜ Apply initialSelectedFiltersIds normally
+      // Apply initialSelectedFiltersIds normally
       const { sanitized, totalCount } = sanitizeInitialFilters(
         initialSelectedFiltersIds,
         filters,
@@ -82,7 +80,6 @@ export default function useFeedFilter(filters: FiltersResponse) {
 
       Object.entries(sanitized).forEach(([key, values]) => {
         if (!Array.isArray(values) || values.length === 0) return;
-
         const existing = params.get(key);
         if (!existing || existing.trim() === "") {
           params.set(key, values.join(","));
@@ -110,7 +107,6 @@ export default function useFeedFilter(filters: FiltersResponse) {
   };
 
   const toggleParam = (key: string, value: string) => {
-    // Update params immediately in memory (fast UI)
     const params = new URLSearchParams(paramsState.toString());
     const current = params.get(key)?.split(",").filter(Boolean) ?? [];
 
@@ -142,6 +138,12 @@ export default function useFeedFilter(filters: FiltersResponse) {
       if (filteredSub.length > 0)
         nextParams.set("subCategoryIds", filteredSub.join(","));
       else nextParams.delete("subCategoryIds");
+
+      // ✅ If no categories selected, remove all groupTypes & accessibilities
+      if (selectedCats.length === 0) {
+        nextParams.delete("groupTypeIds");
+        nextParams.delete("accessibilityIds");
+      }
     }
 
     // Update local state immediately
@@ -150,7 +152,7 @@ export default function useFeedFilter(filters: FiltersResponse) {
     // Clear old timer
     if (applyTimer) clearTimeout(applyTimer);
 
-    // Debounce apply: wait 3 seconds after last click
+    // Debounce apply: wait 2 seconds after last click
     applyTimer = setTimeout(() => {
       const totalApplied = getTotalAppliedFilters(nextParams);
       setAppliedFilterCount(totalApplied);
@@ -174,6 +176,13 @@ export default function useFeedFilter(filters: FiltersResponse) {
       params.delete(key);
       const nextParams = new URLSearchParams(params);
       nextParams.delete("isAllClear");
+
+      // ✅ Remove groupTypes & accessibilities if categories cleared
+      if (key === "categoryIds") {
+        nextParams.delete("groupTypeIds");
+        nextParams.delete("accessibilityIds");
+      }
+
       setParamsState(nextParams);
 
       const totalApplied = getTotalAppliedFilters(nextParams);
