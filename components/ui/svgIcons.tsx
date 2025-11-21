@@ -666,3 +666,41 @@ export function GiftBoxIcon({}) {
     </svg>
   );
 }
+
+export function DownAngleArrowIcon({}) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="28"
+      height="15"
+      viewBox="0 0 28 15"
+      fill="none"
+    >
+      <path
+        d="M27 1L15.4142 12.5858C14.6332 13.3668 13.3668 13.3668 12.5858 12.5858L0.999999 1"
+        stroke="#CECECE"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+export function UpAngleArrowIcon({}) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="28"
+      height="15"
+      viewBox="0 0 28 15"
+      fill="none"
+    >
+      <path
+        d="M1 13.1719L12.5858 1.58609C13.3668 0.805041 14.6332 0.80504 15.4142 1.58609L27 13.1719"
+        stroke="#CECECE"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}

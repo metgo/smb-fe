@@ -139,7 +139,6 @@ export default function useFeedFilter(filters: FiltersResponse) {
         nextParams.set("subCategoryIds", filteredSub.join(","));
       else nextParams.delete("subCategoryIds");
 
-      // ✅ If no categories selected, remove all groupTypes & accessibilities
       if (selectedCats.length === 0) {
         nextParams.delete("groupTypeIds");
         nextParams.delete("accessibilityIds");
