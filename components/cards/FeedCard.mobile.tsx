@@ -7,7 +7,7 @@ import { motion, useInView, useAnimation } from "framer-motion";
 import { useEffect, useState, useMemo, useCallback } from "react";
 
 import { pathNames } from "@/lib/endpoints";
-import { navigationPaths } from "@/lib/utils";
+import { navigationPathsByServiceType } from "@/lib/utils";
 import { startLoading } from "../wrappers/ProgressBar";
 import { useImagePresent } from "@/hooks/image/useImagePresent";
 import { IconImage } from "@/components/ui";
@@ -122,17 +122,19 @@ const FeedCardMobile = ({ height, width, feedItem }: FeedCardProps) => {
     ],
   );
 
-  const handleNavigation = useCallback(() => {
-    startLoading();
-    googleSendGtmEvent(triggerName.navigateToBusiness, {
-      bussinessId: feedItem._id,
-      bussinessName: feedItem.name,
-    });
-    router.push(
-      `${navigationPaths[window.location.pathname]}/${feedItem.slug}`,
-    );
-  }, [feedItem._id, feedItem.name, feedItem.slug, router]);
-
+  const handleNavigation = useCallback(
+    (serviceType: keyof typeof navigationPathsByServiceType) => {
+      startLoading();
+      googleSendGtmEvent(triggerName.navigateToBusiness, {
+        bussinessId: feedItem._id,
+        bussinessName: feedItem.name,
+      });
+      router.push(
+        `${navigationPathsByServiceType[serviceType]}/${feedItem.slug}`,
+      );
+    },
+    [feedItem._id, feedItem.name, feedItem.slug, router],
+  );
   // Render skeleton
   if (computedValues.shouldShowSkeleton) {
     return (
@@ -194,7 +196,7 @@ const FeedCardMobile = ({ height, width, feedItem }: FeedCardProps) => {
         />
         <button
           type="button"
-          onClick={handleNavigation}
+          onClick={() => handleNavigation(feedItem.serviceType)}
           className={clsx(
             "custom-cursor absolute left-0 top-12 w-full",
             images.length > 1 && !pageTypes.isEventPage
@@ -215,7 +217,7 @@ const FeedCardContent = ({
   feedItem: any;
   locationText: string | undefined;
 }) => (
-  <div className="relative w-full h-full">
+  <div className="relative w-full h-full overflow-hidden">
     {/* Gradient Overlay */}
     <div className="absolute bottom-0 right-0 h-full w-full bg-gradient-to-tl from-black/80 via-black/40 to-black/20 rounded-b-xl" />
 
@@ -226,6 +228,29 @@ const FeedCardContent = ({
         <div className="flex items-center gap-2">
           <IconImage icon="location" width={16} height={16} />
           <span className="text-sm">{locationText}</span>
+        </div>
+      )}
+    </div>
+
+    <div className="absolute top-2 left-0">
+      {feedItem?.serviceType === "point_of_interest" && (
+        <div className="bg-black/50 rounded-full p-1 flex items-center justify-center absolute left-[8px] top-[1px] w-7 h-7">
+          <IconImage width={20} height={20} icon="location-solid" />
+        </div>
+      )}
+      {feedItem?.serviceType === "event" && (
+        <div className="bg-black/50 rounded-full p-1 flex items-center justify-center absolute left-[8px] top-[1px] w-7 h-7">
+          <IconImage width={20} height={20} icon="event" />
+        </div>
+      )}
+      {feedItem?.serviceType === "trip" && (
+        <div className="bg-black/50 rounded-full p-1 flex items-center justify-center absolute left-[8px] top-[1px] w-7 h-7">
+          <IconImage width={16} height={16} icon="trip" />
+        </div>
+      )}
+      {feedItem?.serviceType === "funday" && (
+        <div className="bg-black/50 rounded-full p-1 flex items-center justify-center absolute left-[8px] top-[1px] w-7 h-7">
+          <IconImage width={16} height={16} icon="kite-white" />
         </div>
       )}
     </div>

@@ -282,3 +282,49 @@ export function ensureListStyles(html: string = ""): string {
 
   return html;
 }
+
+export const sanitizeInitialFilters = (
+  presets: PresetFilterItems,
+  filters: FiltersResponse,
+): { sanitized: PresetFilterItems; totalCount: number } => {
+  const excludedCategoryId = "6566fd7fa77d2a477266d3ca";
+
+  // const validCategoryIds = new Set(
+  //   filters?.categories
+  //     .map((c) => c._id)
+  //     .filter((id) => id !== excludedCategoryId),
+  // );
+
+  const validSubCategoryIds = new Set(
+    filters?.subCategories
+      .filter((sc) => sc.categoryId !== excludedCategoryId)
+      .map((sc) => sc._id),
+  );
+
+  const validGroupTypeIds = new Set(filters?.groupTypes.map((gt) => gt._id));
+  const validAccessibilityIds = new Set(
+    filters?.accessibilities.map((a) => a._id),
+  );
+
+  const sanitized = {
+    categoryIds: presets?.categoryIds, // removed excluded category
+    subCategoryIds: presets?.subCategoryIds.filter((id) =>
+      validSubCategoryIds.has(id),
+    ),
+    groupTypeIds: presets?.groupTypeIds.filter((id) =>
+      validGroupTypeIds.has(id),
+    ),
+    accessibilityIds: presets?.accessibilityIds.filter((id) =>
+      validAccessibilityIds.has(id),
+    ),
+    serviceTypes: presets?.serviceTypes,
+  };
+
+  const totalCount =
+    sanitized.categoryIds.length +
+    sanitized.subCategoryIds.length +
+    sanitized.groupTypeIds.length +
+    sanitized.accessibilityIds.length +
+    sanitized.serviceTypes.length;
+  return { sanitized, totalCount };
+};

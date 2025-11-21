@@ -3,23 +3,27 @@
 import { useEffect, useMemo } from "react";
 
 import MobileNavbar from "./Navbar.mobile";
-import MobileCategoryPanel from "./CategoryPanel.mobile";
 import MobileBusinessPinMap from "../maps/BusinessPinMap.mobile";
 import MobileFeedsThumbnailCarousel from "./FeedsThumbnailCarousel.mobile";
 
 import { categoryColors } from "@/lib/utils";
-import { useMobileFeedLayout } from "@/hooks";
+import { useCommonHook, useFeedFilter, useMobileFeedLayout } from "@/hooks";
 import OnlyFeedCardsLayoutMobile from "../layouts/OnlyFeedCardsLayout.mobile";
 import useGeneralStore from "@/stores/generalStore";
 import { usePathname } from "next/navigation";
 import { pathNames } from "@/lib/endpoints";
+import { AiIcon } from "../ui/svgIcons";
+import MobileFeedFilterDrawer from "../drawer/FeedFilterDrawer.mobile";
 
 interface MobileFeedLayoutProps {
   businesses: BusinessesProps;
+  filters: FiltersResponse;
 }
 
-const MobileBusinessFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
+const MobileFeedLayout = ({ businesses, filters }: MobileFeedLayoutProps) => {
   const pathname = usePathname();
+  const { isMobile } = useCommonHook();
+
   const {
     activeFilterTabMobile,
     activeFeedItem,
@@ -28,7 +32,20 @@ const MobileBusinessFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
     setActiveIndex,
     isFackLoading,
   } = useMobileFeedLayout(businesses);
-  const { hideFirstTwoSection, setHideFirstTwoSection } = useGeneralStore();
+  const {
+    appliedFilterCount,
+    filteredSubCategories,
+    isSelected,
+    toggleParam,
+    handleResetFilters,
+  } = useFeedFilter(filters);
+
+  const {
+    hideFirstTwoSection,
+    setHideFirstTwoSection,
+    isFilterDrawerOpen,
+    setIsFilterDrawerOpen,
+  } = useGeneralStore();
 
   // Prepare feed items for carousel
   const carouselItems = useMemo(
@@ -47,6 +64,8 @@ const MobileBusinessFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
       setHideFirstTwoSection(true);
     }
   }, [pathname]);
+
+  if (!isMobile) return null;
   if (!feedItems?.length) return null;
 
   return (
@@ -54,7 +73,7 @@ const MobileBusinessFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
       {hideFirstTwoSection && <MobileNavbar />}
 
       {activeFilterTabMobile === "gallery" && (
-        <OnlyFeedCardsLayoutMobile data={businesses.data} />
+        <OnlyFeedCardsLayoutMobile data={businesses?.data} />
       )}
 
       {activeFilterTabMobile === "map" && (
@@ -80,9 +99,35 @@ const MobileBusinessFeedLayout = ({ businesses }: MobileFeedLayoutProps) => {
       )}
 
       {/* Bottom Panels */}
-      {hideFirstTwoSection && pathname === "/" && <MobileCategoryPanel />}
+      {hideFirstTwoSection && pathname === "/" && (
+        <div
+          onClick={() => setIsFilterDrawerOpen(true)}
+          className="fixed bottom-2 right-[42%]  custom-cursor"
+        >
+          {appliedFilterCount > 0 && (
+            <div className="bg-green-500 absolute left-1 top-1 rounded-full h-[18px] w-[18px] text-[10px] flex items-center justify-center text-white aspect-square border border-white">
+              {appliedFilterCount}
+            </div>
+          )}
+          <AiIcon size={68} />
+        </div>
+      )}
+
+      {isFilterDrawerOpen && (
+        <MobileFeedFilterDrawer
+          itemCount={businesses?.data?.length}
+          isOpen={isFilterDrawerOpen}
+          setIsOpen={setIsFilterDrawerOpen}
+          filters={filters}
+          appliedFilterCount={appliedFilterCount}
+          isSelected={isSelected}
+          toggleParam={toggleParam}
+          handleResetFilters={handleResetFilters}
+          filteredSubCategories={filteredSubCategories}
+        />
+      )}
     </div>
   );
 };
 
-export default MobileBusinessFeedLayout;
+export default MobileFeedLayout;

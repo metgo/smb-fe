@@ -7,7 +7,7 @@ import { FilterDrawer } from "../drawer";
 import { getPurposeType } from "@/lib/helpers";
 import { categoryBgClasses } from "@/lib/utils";
 import { useCtgSubctg } from "@/hooks/useCtgSubctg";
-import { getAllSubCategory } from "@/actions/businessActions";
+import { getAllSubCategory } from "@/actions/feedActions";
 import { LeftAngleArrow, RightAngleArrow } from "@/components/ui/icons";
 import { googleSendGtmEvent, triggerName } from "@/lib/googleEventsConfig";
 

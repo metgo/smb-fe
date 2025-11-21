@@ -7,7 +7,7 @@ import { motion, useInView, useAnimation } from "framer-motion";
 import { useEffect, useState, useMemo, useCallback } from "react";
 
 import { pathNames } from "@/lib/endpoints";
-import { navigationPaths } from "@/lib/utils";
+import { navigationPathsByServiceType } from "@/lib/utils";
 import useGeneralStore from "@/stores/generalStore";
 import { startLoading } from "../wrappers/ProgressBar";
 import { useImagePresent } from "@/hooks/image/useImagePresent";
@@ -138,16 +138,19 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
     setActiveFilterTab("map");
   };
 
-  const handleNavigation = useCallback(() => {
-    startLoading();
-    googleSendGtmEvent(triggerName.navigateToBusiness, {
-      bussinessId: feedItem._id,
-      bussinessName: feedItem.name,
-    });
-    router.push(
-      `${navigationPaths[window.location.pathname]}/${feedItem.slug}`,
-    );
-  }, [feedItem._id, feedItem.name, feedItem.slug, router]);
+  const handleNavigation = useCallback(
+    (serviceType: keyof typeof navigationPathsByServiceType) => {
+      startLoading();
+      googleSendGtmEvent(triggerName.navigateToBusiness, {
+        bussinessId: feedItem._id,
+        bussinessName: feedItem.name,
+      });
+      router.push(
+        `${navigationPathsByServiceType[serviceType]}/${feedItem.slug}`,
+      );
+    },
+    [feedItem._id, feedItem.name, feedItem.slug, router],
+  );
 
   // Render skeleton
   if (computedValues.shouldShowSkeleton) {
@@ -221,7 +224,7 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
         />
         <button
           type="button"
-          onClick={handleNavigation}
+          onClick={() => handleNavigation(feedItem.serviceType)}
           className={clsx(
             "custom-cursor absolute left-0 top-12 w-full",
             images.length > 1 && !pageTypes.isEventPage
@@ -332,8 +335,23 @@ const FeedCardActions = ({
         )}
       </div>
       {feedItem.serviceType === "point_of_interest" && (
-        <div className="bg-black/50 rounded-full p-1 flex items-center justify-start absolute left-[8px] top-[1px]">
-          <IconImage width={20} height={20} icon="location-solid" />
+        <div className="bg-black/50 rounded-full p-1 flex items-center justify-center absolute left-[8px] top-[1px] w-8 h-8">
+          <IconImage width={24} height={24} icon="location-solid" />
+        </div>
+      )}
+      {feedItem.serviceType === "event" && (
+        <div className="bg-black/50 rounded-full p-1 flex items-center justify-center absolute left-[8px] top-[1px] w-8 h-8">
+          <IconImage width={24} height={24} icon="event" />
+        </div>
+      )}
+      {feedItem.serviceType === "trip" && (
+        <div className="bg-black/50 rounded-full p-1 flex items-center justify-center absolute left-[8px] top-[1px] w-8 h-8">
+          <IconImage width={20} height={20} icon="trip" />
+        </div>
+      )}
+      {feedItem.serviceType === "funday" && (
+        <div className="bg-black/50 rounded-full p-1 flex items-center justify-center absolute left-[8px] top-[1px] w-8 h-8">
+          <IconImage width={20} height={20} icon="kite-white" />
         </div>
       )}
     </div>

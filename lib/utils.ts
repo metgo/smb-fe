@@ -1,4 +1,4 @@
-import { menuItems, misc, navbar } from "@/constant/hebrew";
+import { category, menuItems, misc, navbar } from "@/constant/hebrew";
 import {
   CtgAttractionIcon,
   CtgCultureIcon,
@@ -9,6 +9,13 @@ import {
 } from "@/components/ui/icons";
 import { pathNames } from "./endpoints";
 import { CODE } from "@/constant/envConstants";
+import {
+  AttractionIcon,
+  CultureIcon,
+  FoodIcon,
+  SleepIcon,
+  TravelIcon,
+} from "@/components/ui/svgIcons";
 
 interface MenuItem {
   key: string;
@@ -43,6 +50,47 @@ export const imagePlayTypeEnum = {
   manual: "MANUAL",
   automate: "AUTOMATE",
 };
+
+// ---------------- ICON MAP -----------------
+export const ICON_MAP: Record<string, React.FC<{ strokColor?: string }>> = {
+  "6566e31ca77d2a477266d2d6": AttractionIcon,
+  "6566e3aaa77d2a477266d314": FoodIcon,
+  "6566e36ba77d2a477266d2f4": CultureIcon,
+  "6566fcd4a77d2a477266d3b9": SleepIcon,
+  "6566e256a77d2a477266d2c0": TravelIcon,
+};
+
+export const filterCategories = [
+  {
+    _id: "6566e256a77d2a477266d2c0",
+    hebrewName: category.tours,
+  },
+  {
+    _id: "6566e31ca77d2a477266d2d6",
+    hebrewName: category.attractions,
+  },
+  {
+    _id: "6566e3aaa77d2a477266d314",
+    hebrewName: category.eater,
+  },
+  {
+    _id: "6566e36ba77d2a477266d2f4",
+    hebrewName: category.culture,
+  },
+  {
+    _id: "6566fcd4a77d2a477266d3b9",
+    hebrewName: category.lodge,
+  },
+];
+
+// ---------------- SERVICE TYPE MAPPING -----------------
+export const SERVICE_TYPE_MAP = {
+  poi: "point_of_interest",
+  group_user: "group_user",
+  fun_day: "funday",
+  event: "event",
+  route: "trip",
+} as const;
 
 export const contactFormReasonOptions = [
   { value: "תווים", label: "תווים" },
@@ -273,6 +321,15 @@ export const navigationPaths = {
   [navigationKey.funDays]: pathNames.funDayDetails,
 };
 
+export const navigationPathsByServiceType = {
+  ["business"]: pathNames.businessDetails,
+  ["point_of_interest"]: pathNames.businessDetails,
+  ["event"]: pathNames.eventDetails,
+  ["trip"]: pathNames.trailDetails,
+  ["/blogs-articles"]: pathNames.blogArticleDetails,
+  ["funday"]: pathNames.funDayDetails,
+};
+
 export const navItemsDraft = [
   {
     col1: [
@@ -419,14 +476,14 @@ export const navItems = [
         leftIcon: "",
         rightIcon: "",
       },
-      {
-        id: 2,
-        key: "",
-        label: menuItems.businessPage,
-        href: pathNames.businesses,
-        leftIcon: "",
-        rightIcon: "",
-      },
+      // {
+      //   id: 2,
+      //   key: "",
+      //   label: menuItems.businessPage,
+      //   href: pathNames.businesses,
+      //   leftIcon: "",
+      //   rightIcon: "",
+      // },
       {
         id: 4,
         key: "",

@@ -23,8 +23,12 @@ export default function ScrollSnapWrapper({ children, hasMarketing }: Props) {
   const feedRef = useRef<HTMLDivElement | null>(null);
 
   // state in global store
-  const { setIsOnSection2, setHideFirstTwoSection, hideFirstTwoSection } =
-    useGeneralStore();
+  const {
+    setIsOnSection2,
+    setHideFirstTwoSection,
+    hideFirstTwoSection,
+    isFilterDrawerOpen,
+  } = useGeneralStore();
 
   const { height } = useDeviceHeight();
 
@@ -45,6 +49,7 @@ export default function ScrollSnapWrapper({ children, hasMarketing }: Props) {
 
   // Scroll lock helpers
   const lockScroll = () => {
+    if (isFilterDrawerOpen) return;
     // lock scrolling and touch interactions as broadly as possible
     document.body.style.overflow = "hidden";
     // also add a class to freeze fixed/absolute children if project uses it (optional)
@@ -89,13 +94,15 @@ export default function ScrollSnapWrapper({ children, hasMarketing }: Props) {
 
   // Determine current section based on scroll position
   const currentSection = useCallback(() => {
+    if (isFilterDrawerOpen) return;
+
     const scrollY = window.scrollY;
     const vh = getVh();
     if (hideFirstTwoSection) return "feed";
     if (scrollY < vh * 0.5) return "first";
     if (hasMarketing && scrollY < vh * 1.5) return "second";
     return "feed";
-  }, [getVh, hasMarketing, hideFirstTwoSection]);
+  }, [getVh, hasMarketing, hideFirstTwoSection, isFilterDrawerOpen]);
 
   // Core transition between sections
   const goToSection = useCallback(
@@ -124,6 +131,8 @@ export default function ScrollSnapWrapper({ children, hasMarketing }: Props) {
 
   // Unified wheel handler (desktop)
   useEffect(() => {
+    if (isFilterDrawerOpen) return;
+
     const onWheel = (e: WheelEvent) => {
       // ignore on touch devices
       if ("ontouchstart" in window) return;
@@ -270,10 +279,18 @@ export default function ScrollSnapWrapper({ children, hasMarketing }: Props) {
       window.removeEventListener("touchmove", onTouchMove);
       window.removeEventListener("touchend", onTouchEnd);
     };
-  }, [currentSection, goToSection, hasMarketing, hideFirstTwoSection]);
+  }, [
+    currentSection,
+    goToSection,
+    hasMarketing,
+    hideFirstTwoSection,
+    isFilterDrawerOpen,
+  ]);
 
   // Auto-snap when user stops scrolling (keeps behavior consistent if user flicks)
   useEffect(() => {
+    if (!isFilterDrawerOpen) return;
+
     let timeout: number | null = null;
     const onScroll = () => {
       if (isAnimating.current || isTouching.current) return;
@@ -299,7 +316,13 @@ export default function ScrollSnapWrapper({ children, hasMarketing }: Props) {
       window.removeEventListener("scroll", onScroll);
       if (timeout) window.clearTimeout(timeout);
     };
-  }, [getVh, goToSection, hasMarketing, hideFirstTwoSection]);
+  }, [
+    getVh,
+    goToSection,
+    hasMarketing,
+    hideFirstTwoSection,
+    isFilterDrawerOpen,
+  ]);
 
   // JSX
   return (

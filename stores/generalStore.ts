@@ -71,6 +71,12 @@ interface GeneralStoreState {
 
   promotionalItems: PromotionalItem[];
   setPromotionalItems: (v: PromotionalItem[]) => void;
+
+  filterItems: FiltersResponse;
+  setFilterItems: (v: FiltersResponse) => void;
+
+  isFilterDrawerOpen: boolean;
+  setIsFilterDrawerOpen: (v: boolean) => void;
 }
 
 const useGeneralStore = create<GeneralStoreState>((set) => ({
@@ -105,7 +111,7 @@ const useGeneralStore = create<GeneralStoreState>((set) => ({
   homePageSectionState: "first",
   setHomePageSectionState: (v) => set({ homePageSectionState: v }),
 
-  aminitiesInfo: { event: true, trip: true, business: true },
+  aminitiesInfo: { event: false, trip: false, business: false },
   setAminitiesInfo: (v) => set({ aminitiesInfo: v }),
 
   siteInfo: {
@@ -129,6 +135,22 @@ const useGeneralStore = create<GeneralStoreState>((set) => ({
 
   promotionalItems: [],
   setPromotionalItems: (v) => set({ promotionalItems: v }),
+
+  filterItems: {
+    groupTypes: [],
+    accessibilities: [],
+    categories: [],
+    subCategories: [{ _id: "", hebrewName: "", categoryId: "" }],
+    displayBusinesses: false,
+    displayEvents: false,
+    displayFunday: false,
+    displayPOI: false,
+    displayTrips: false,
+  },
+  setFilterItems: (v) => set({ filterItems: v }),
+
+  isFilterDrawerOpen: false,
+  setIsFilterDrawerOpen: (v) => set({ isFilterDrawerOpen: v }),
 }));
 
 export default useGeneralStore;

@@ -2,14 +2,15 @@
 
 import { ReactNode, useEffect } from "react";
 import useGeneralStore from "@/stores/generalStore";
-import useMarkersStore from "@/stores/markersStore";
 import { getApproxUserLocation } from "@/actions/getWether";
 import {
-  getAllLocations,
   getAminitiesInfo,
+  getPresetFilters,
   getPromotionsList,
   getSiteInfo,
 } from "@/actions/commonActions";
+
+export let initialSelectedFiltersIds: PresetFilterItems;
 
 export const SiteInfoClientProvider = ({
   children,
@@ -17,26 +18,15 @@ export const SiteInfoClientProvider = ({
   children: ReactNode;
 }) => {
   const {
-    setAminitiesInfo,
     setUserLiveLocation,
     setSiteInfo,
     setPromotionalItems,
+    setAminitiesInfo,
   } = useGeneralStore();
-  const { setBusinessMarkers } = useMarkersStore();
-
-  async function fetchAminitiesInfo() {
-    const res = await getAminitiesInfo();
-    setAminitiesInfo(res);
-  }
 
   async function fetchSiteinfo() {
     const res = await getSiteInfo();
     setSiteInfo(res);
-  }
-
-  async function fetchBusinessMarkers() {
-    const res = await getAllLocations();
-    setBusinessMarkers(res);
   }
 
   async function fetchUserCurrentLocation() {
@@ -53,12 +43,45 @@ export const SiteInfoClientProvider = ({
     }
   }
 
+  async function fetchAminitiesInfo() {
+    try {
+      const res = await getAminitiesInfo();
+      setAminitiesInfo(res);
+    } catch (error) {
+      console.error("Failed to get amenities info:", error);
+    }
+  }
+
   async function fetchPromotionalItems() {
     try {
       const res = await getPromotionsList();
       setPromotionalItems(res?.allPromotionalItems);
     } catch (error) {
-      console.error("Failed to get user location:", error);
+      console.error("Failed to get promotional items:", error);
+    }
+  }
+
+  async function fetchPresetFilterItems() {
+    try {
+      const res = await getPresetFilters();
+
+      // Filter out 'business' and 'event' from serviceTypes
+      const filteredServiceTypes = res.serviceTypes.filter(
+        (type: string) => type !== "business" && type !== "event",
+      );
+
+      // Return the modified object
+      const sanitizedResponse = {
+        ...res,
+        serviceTypes: filteredServiceTypes,
+      };
+
+      initialSelectedFiltersIds = sanitizedResponse;
+
+      return sanitizedResponse; // optionally return it
+    } catch (error) {
+      console.error("Failed to get filters:", error);
+      return null;
     }
   }
 
@@ -66,51 +89,9 @@ export const SiteInfoClientProvider = ({
     fetchSiteinfo();
     fetchAminitiesInfo();
     fetchUserCurrentLocation();
-    fetchBusinessMarkers();
     fetchPromotionalItems();
+    fetchPresetFilterItems();
   }, []);
 
   return <div>{children}</div>;
 };
-
-// async function fetchCategories() {
-//   const res = await getAllCategory();
-//   const apiCategories = res?.data ? res?.data : res;
-//   const updatedCategories = categories?.map((cat) => {
-//     const match = apiCategories?.find((apiCat: any) => apiCat.id === cat.id);
-//     return {
-//       ...cat,
-//       name: match ? match.name : cat.name,
-//     };
-//   });
-//   setCategories(updatedCategories);
-// }
-
-// function getUserLiveLocation() {
-//   if (!("geolocation" in navigator)) {
-//     console.log("Geolocation not supported by this browser.");
-//     return;
-//   }
-
-//   const watchId = navigator.geolocation.watchPosition(
-//     (position) => {
-//       setUserLiveLocation({
-//         lat: position.coords.latitude,
-//         lng: position.coords.longitude,
-//       });
-//     },
-//     (err) => {
-//       console.log(err.message);
-//     },
-//     {
-//       enableHighAccuracy: true, // use GPS if available
-//       timeout: 10000, // max time to wait for a position
-//       maximumAge: 0, // don't use cached location
-//     },
-//   );
-
-//   // cleanup: stop watching when component unmounts
-//   return () => {
-//     navigator.geolocation.clearWatch(watchId);
-//   };
-// }

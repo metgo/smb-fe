@@ -22,6 +22,7 @@ export const urls = {
   productsDetails: `${BASE_URL}/products`,
   productsList: `${BASE_URL}/products`,
 
+  feeds: `${BASE_URL}/feed`,
   events: `${BASE_URL}/events`,
   eventDetails: `${BASE_URL}/events`,
   searchRecommendation: `${BASE_URL}/tourism/search-recommendation?campCode=${CODE}`,
@@ -37,6 +38,9 @@ export const urls = {
 
   blogs: `${BASE_URL}/blogs`,
   marketing: `${BASE_URL}/marketing`,
+
+  filters: `${BASE_URL}/filters`,
+  defaultFilters: `${BASE_URL}/default-filters`,
 
   themes: `${BASE_URL}/themes`,
   aminitiesInfo: `${BASE_URL}/amenities-info`,

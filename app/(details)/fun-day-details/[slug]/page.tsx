@@ -107,6 +107,7 @@ const page = async ({ params }: PageProps) => {
             <FunDayDetailsRouteMap
               _id={funDayDetails?._id}
               locations={locations}
+              routes={funDayDetails?.stations}
             />
           </div>
 

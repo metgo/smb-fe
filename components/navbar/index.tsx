@@ -5,17 +5,17 @@ import { useState } from "react";
 import { usePathname } from "next/navigation";
 
 import NavLogo from "./NavLogo";
-import MenuItems from "./MenuItems";
 import SearchFlow from "./SearchFlow";
 import { navbar } from "@/constant/hebrew";
 import HamburgerMenu from "./HamburgerMenu";
 import { ShopbagIcon } from "@/components/ui/icons";
 import CurrentTempOfYourCity from "./CurrentTempOfYourCity";
-import BusinessPageFilterTabs from "./BusinessPageFilterTabs";
 import useCartStore from "@/stores/cartStore";
 import { CartDrawer } from "../drawer";
 import { pathNames } from "@/lib/endpoints";
 import PromotionalCards from "../PromotionalCards";
+import FeedLyoutSwitcTabs from "./FeedFilterTabs";
+// import { GiftBoxIcon } from "../ui/svgIcons";
 
 const Navbar = ({ showFilterTab = false }: { showFilterTab?: boolean }) => {
   const pathname = usePathname();
@@ -41,11 +41,18 @@ const Navbar = ({ showFilterTab = false }: { showFilterTab?: boolean }) => {
           </div>
 
           <div className="flex justify-center col-span-2">
-            {showFilterTab && <BusinessPageFilterTabs />}
+            {showFilterTab && <FeedLyoutSwitcTabs />}
           </div>
 
           <div className="flex items-center justify-end col-span-4">
-            <MenuItems />
+            {/* <button
+              type="button"
+              onClick={() => {}}
+              className="text-theme border border-theme font-bold rounded-xl px-4 py-2 flex items-center gap-2 custom-cursor"
+            >
+              <GiftBoxIcon />
+              {navbar.souvenirShop}
+            </button> */}
 
             <div className="w-[1px] h-10 bg-lightGray mx-4" />
 

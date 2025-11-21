@@ -54,11 +54,11 @@ const HamburgerMenu = ({
   const filteredNavItems = useMemo(() => {
     const nav = navItems[0];
 
-    return Object.fromEntries(
-      Object.entries(nav).map(([colKey, items]) => {
+    return Object?.fromEntries(
+      Object?.entries(nav)?.map(([colKey, items]) => {
         if (colKey === "col2") {
-          const filtered = items.filter(
-            (item) => item.key && aminitiesInfo[item.key],
+          const filtered = items?.filter(
+            (item) => item?.key && aminitiesInfo?.[item?.key],
           );
           return [colKey, filtered];
         }

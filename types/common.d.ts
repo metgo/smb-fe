@@ -159,3 +159,39 @@ interface PromotionalItem {
 interface PromotionalItemsResponse {
   allPromotionalItems: PromotionalItem[];
 }
+
+interface Category {
+  _id: string;
+  hebrewName: string;
+}
+
+interface SubCategory {
+  _id: string;
+  hebrewName: string;
+  categoryId: string;
+}
+
+interface GroupType {
+  _id: string;
+  hebrewName: string;
+}
+
+interface Accessibility {
+  _id: string;
+  hebrewName: string;
+}
+
+interface FiltersResponse {
+  categories: Category[];
+  subCategories: SubCategory[];
+  groupTypes: GroupType[];
+  accessibilities: Accessibility[];
+}
+
+interface PresetFilterItems {
+  categoryIds: string[];
+  subCategoryIds: string[];
+  groupTypeIds: string[];
+  accessibilityIds: string[];
+  serviceTypes: string[];
+}
