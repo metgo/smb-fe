@@ -282,3 +282,41 @@ export function ensureListStyles(html: string = ""): string {
 
   return html;
 }
+
+export const sanitizeInitialFilters = (
+  presets: PresetFilterItems,
+  filters: FiltersResponse,
+): { sanitized: PresetFilterItems; totalCount: number } => {
+  const validCategoryIds = new Set(filters.categories.map((c) => c._id));
+  const validSubCategoryIds = new Set(
+    filters.subCategories.map((sc) => sc._id),
+  );
+  const validGroupTypeIds = new Set(filters.groupTypes.map((gt) => gt._id));
+  const validAccessibilityIds = new Set(
+    filters.accessibilities.map((a) => a._id),
+  );
+
+  const sanitized = {
+    categoryIds: presets.categoryIds.filter((id) => validCategoryIds.has(id)),
+    subCategoryIds: presets.subCategoryIds.filter((id) =>
+      validSubCategoryIds.has(id),
+    ),
+    groupTypeIds: presets.groupTypeIds.filter((id) =>
+      validGroupTypeIds.has(id),
+    ),
+    accessibilityIds: presets.accessibilityIds.filter((id) =>
+      validAccessibilityIds.has(id),
+    ),
+    serviceTypes: presets.serviceTypes,
+  };
+
+  const totalCount =
+    sanitized.categoryIds.length +
+    sanitized.subCategoryIds.length +
+    sanitized.groupTypeIds.length +
+    sanitized.accessibilityIds.length +
+    sanitized.serviceTypes.length -
+    1;
+
+  return { sanitized, totalCount };
+};

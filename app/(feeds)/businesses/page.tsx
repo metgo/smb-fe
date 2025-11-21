@@ -1,6 +1,6 @@
 import { getAllBusinesses } from "@/actions/businessActions";
 import FilterBusinessLayout from "@/components/layouts/FilterBusinessLayout";
-import MobileBusinessFeedLayout from "@/components/mobile/BusinessFeedLayout.mobile";
+import MobileBusinessFeedLayout from "@/components/mobile/FeedLayout.mobile";
 
 interface PageProps {
   searchParams: {

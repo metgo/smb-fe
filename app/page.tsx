@@ -8,9 +8,9 @@ import HamburgerMenu from "@/components/navbar/HamburgerMenu";
 import { ArrowImage, CarouselImage } from "@/components/marketing";
 import FeedLayout from "@/components/layouts/FeedLayout";
 import CurrentTempOfYourCity from "@/components/navbar/CurrentTempOfYourCity";
-import MobileBusinessFeedLayout from "@/components/mobile/BusinessFeedLayout.mobile";
 import { getAllFeeds, getAllFilters } from "@/actions/feedActions";
 import { initialSelectedFiltersIds } from "@/providers/SiteInfoClientProvider";
+import MobileFeedLayout from "@/components/mobile/FeedLayout.mobile";
 
 interface Props {
   searchParams: Promise<{
@@ -64,7 +64,7 @@ const page = async ({ searchParams }: Props) => {
     subCategoryIds: subCategoriesArray || [],
     groupTypesIds: groupTypesArray || [],
     accessibilitiesIds: accessibilitiesArray || [],
-    serviceTypes: serviceTypesArray || ["business"],
+    serviceTypes: serviceTypesArray || [],
   };
 
   // First API call includes all filters
@@ -115,7 +115,7 @@ const page = async ({ searchParams }: Props) => {
         <section className="relative z-50 bg-white">
           <Navbar showFilterTab />
 
-          <MobileBusinessFeedLayout businesses={businesses} />
+          <MobileFeedLayout businesses={businesses} filters={filters} />
           <FeedLayout businesses={businesses} filters={filters} />
         </section>
       </ScrollSnapWrapper>
