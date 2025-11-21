@@ -10,7 +10,7 @@ export class GetAllFeedItemsQuery {
     readonly subCategoriesId?: string[],
     readonly sortBy?: string,
     readonly sortOrder?: SortOrder,
-    readonly serviceType?: ServicesTypes,
+    readonly serviceType?: ServicesTypes[],
     readonly search?: string,
     readonly page?: number,
     readonly limit?: number,

@@ -59,10 +59,11 @@ export class GetAllFeedItemsRequest extends CommonFilterQuery {
     sortOrder: SortOrder;
 
   @ApiProperty({
-    enum: ServicesTypes,
+    isArray: true,
     required: false,
+    enum: ServicesTypes,
   })
-  @IsEnum(ServicesTypes)
   @IsOptional()
-    serviceType: ServicesTypes;
+  @IsEnum(ServicesTypes, { each: true })
+    serviceType?: ServicesTypes[];
 }

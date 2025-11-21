@@ -1,8 +1,8 @@
 // eslint-disable-next-line no-shadow
 export enum ServicesTypes {
-  BUSINESS = 'BUSINESS',
-  POINT_OF_INTEREST = 'POI',
-  EVENT = 'EVENT',
-  TRIPS = 'TRIP',
-  FUN_DAY = 'FUNDAY',
+  BUSINESS = 'business',
+  POINT_OF_INTEREST = 'point_of_interest',
+  EVENT = 'event',
+  TRIPS = 'trip',
+  FUNDAY = 'funday',
 }

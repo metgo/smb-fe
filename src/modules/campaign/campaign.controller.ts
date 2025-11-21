@@ -13,6 +13,7 @@ import { GetAllEventsRequest } from '../events/requests/get-all-events.request';
 import { GetAllTripsRequest } from '../trips/request/get-all-trips.request';
 import { GetAllApprovedBusinessesRequest } from '../business/tourism/request/get-all-approved-businesses.request';
 import { GetAllApprovedBusinessesQuery } from '../business/tourism/queries/get-all-approved-businesses.query';
+import { GeoServicesTypes } from '../business/business.type';
 
 @Controller()
 export class CampaignController {
@@ -42,21 +43,28 @@ export class CampaignController {
 
     const requestBusiness = new GetAllApprovedBusinessesRequest();
     requestBusiness.campCode = campCode;
+    requestBusiness.serviceType = GeoServicesTypes.BUSINESS;
 
-    const [eventResult, tripResult, businessResult, fundayResult]
+    const requestPOI = new GetAllApprovedBusinessesRequest();
+    requestPOI.campCode = campCode;
+    requestPOI.serviceType = GeoServicesTypes.POINT_OF_INTEREST;
+
+    const [businessResult, poiResult, eventResult, tripResult, fundayResult]
       = await Promise.all([
-        this.queryBus.execute(new GetAllEventsQuery(requestEvent)),
-        this.queryBus.execute(new GetAllTripsQuery(requestTrip)),
         this.queryBus.execute(
           new GetAllApprovedBusinessesQuery(requestBusiness),
         ),
+        this.queryBus.execute(new GetAllApprovedBusinessesQuery(requestPOI)),
+        this.queryBus.execute(new GetAllEventsQuery(requestEvent)),
+        this.queryBus.execute(new GetAllTripsQuery(requestTrip)),
         this.queryBus.execute(new GetAllTripsQuery(requestFunday)),
       ]);
 
     return {
+      business: (businessResult.totalData ?? 0) > 0,
+      poi: (poiResult.totalData ?? 0) > 0,
       event: (eventResult.totalData ?? 0) > 0,
       trip: (tripResult.totalData ?? 0) > 0,
-      business: (businessResult.totalData ?? 0) > 0,
       funday: (fundayResult.totalData ?? 0) > 0,
     };
   }

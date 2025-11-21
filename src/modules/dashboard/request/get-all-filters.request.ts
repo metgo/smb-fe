@@ -1,0 +1,58 @@
+import { ApiProperty } from '@nestjs/swagger';
+import {
+  IsEnum, IsNotEmpty, IsOptional, IsString,
+} from 'class-validator';
+
+import { ServicesTypes } from '../dashboard.type';
+
+export class GetAllFiltersRequest {
+  @ApiProperty({ type: String, required: true })
+  @IsString()
+  @IsNotEmpty()
+    campCode: string;
+
+  @ApiProperty({
+    required: false,
+    isArray: true,
+    type: String,
+  })
+  @IsOptional()
+    categoriesId: string[];
+
+  @ApiProperty({
+    required: false,
+    isArray: true,
+    type: String,
+  })
+  @IsOptional()
+    subCategoriesId: string[];
+
+  @ApiProperty({
+    required: false,
+    isArray: true,
+    type: String,
+  })
+  @IsOptional()
+    accessibilitiesId: string[];
+
+  @ApiProperty({
+    required: false,
+    isArray: true,
+    type: String,
+  })
+  @IsOptional()
+    groupTypesId: string[];
+
+  @ApiProperty({
+    isArray: true,
+    required: false,
+    enum: ServicesTypes,
+  })
+  @IsOptional()
+  @IsEnum(ServicesTypes, { each: true })
+    serviceType?: ServicesTypes[];
+
+  @ApiProperty({ type: String, required: false })
+  @IsOptional()
+    search: string;
+}

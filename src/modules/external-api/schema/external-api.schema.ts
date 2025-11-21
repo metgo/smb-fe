@@ -1,15 +1,15 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
 
-import { AuditableSchema } from 'src/core/helper/auditable.schema';
-import { Blog } from 'src/modules/blog/schema/blog.schema';
-import { Marketing } from 'src/modules/marketing/schema/marketing.schema';
-import { Theme } from 'src/modules/themes/schema/theme.schema';
-import { ExternalApiPurpose } from '../external-api.types';
 import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.schema';
 import { BussSubCategory } from 'src/modules/buss-subcategories/schema/buss-subCategory.schema';
 import { GroupType } from 'src/modules/group-type/schema/group-type.schema';
 import { Accessibility } from 'src/modules/accessibility/schema/accessibility.schema';
+import { Marketing } from 'src/modules/marketing/schema/marketing.schema';
+import { Blog } from 'src/modules/blog/schema/blog.schema';
+import { Theme } from 'src/modules/themes/schema/theme.schema';
+import { AuditableSchema } from 'src/core/helper/auditable.schema';
+import { ExternalApiPurpose } from '../external-api.types';
 
 @Schema({ _id: false })
 export class PromotionalItem {
@@ -98,14 +98,12 @@ export class ExternalApi extends AuditableSchema {
 
   @Prop({
     type: [{ type: mongoose.Schema.Types.ObjectId, ref: Marketing.name }],
-    ref: Marketing.name,
     required: false,
   })
     marketingIds: mongoose.Types.ObjectId[];
 
   @Prop({
     type: [{ type: mongoose.Schema.Types.ObjectId, ref: Blog.name }],
-    ref: Blog.name,
     required: false,
   })
     blogIds: mongoose.Types.ObjectId[];
@@ -125,11 +123,47 @@ export class ExternalApi extends AuditableSchema {
   @Prop({ type: PromotionalItem, required: false })
     promotionalEvents: PromotionalItem;
 
-  // @Prop({ type: PromotionalItem, required: false })
-  //   promotionalMarketing: PromotionalItem;
-
   @Prop({ type: PromotionalItem, required: false })
     promotionalTrips: PromotionalItem;
+
+  @Prop({ type: Boolean, default: false })
+    displayBusinesses: boolean;
+
+  @Prop({ type: Boolean, default: false })
+    displayEvents: boolean;
+
+  @Prop({ type: Boolean, required: false })
+    displayTrips: boolean;
+
+  @Prop({ type: Boolean, required: false })
+    displayPOI: boolean;
+
+  @Prop({ type: Boolean, required: false })
+    displayFunday: boolean;
+
+  @Prop({
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: BussCategory.name }],
+    required: false,
+  })
+    categoryIds: mongoose.Types.ObjectId[];
+
+  @Prop({
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: BussSubCategory.name }],
+    required: false,
+  })
+    subCategoryIds: mongoose.Types.ObjectId[];
+
+  @Prop({
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: GroupType.name }],
+    required: false,
+  })
+    groupTypesId: mongoose.Types.ObjectId[];
+
+  @Prop({
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: Accessibility.name }],
+    required: false,
+  })
+    accesibilitiesId: mongoose.Types.ObjectId[];
 }
 
 export type ExternalApiDocument = HydratedDocument<ExternalApi>;

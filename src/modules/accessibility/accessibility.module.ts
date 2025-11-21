@@ -1,23 +1,38 @@
 import { Module } from '@nestjs/common';
+import { CqrsModule } from '@nestjs/cqrs';
 import { MongooseModule } from '@nestjs/mongoose';
 
 import { AccessibilityController } from 'src/modules/accessibility/accessibility.controller';
 import { AccessibilityService } from 'src/modules/accessibility/accessibility.service';
-import { AccessibilitySchema } from 'src/modules/accessibility/schema/accessibility.schema';
+import {
+  Accessibility,
+  AccessibilitySchema,
+} from 'src/modules/accessibility/schema/accessibility.schema';
 import { AuthorityModule } from 'src/modules/authority/authority.module';
 import { DMOModule } from 'src/modules/dmo/dmo.module';
 import { UsersModule } from 'src/modules/users/users.module';
+import { GetAllAccessibilityHandler } from './queries/handler/get-all-accessibility.handler';
+import {
+  Business,
+  BusinessSchema,
+} from '../business/shared/schema/business.schema';
+import { Trip, TripSchema } from '../trips/schema/trips.schema';
+import { CampaignModule } from '../campaign/campaign.module';
 
 @Module({
   imports: [
+    CqrsModule,
     MongooseModule.forFeature([
-      { name: 'Accessibility', schema: AccessibilitySchema },
+      { name: Accessibility.name, schema: AccessibilitySchema },
+      { name: Business.name, schema: BusinessSchema },
+      { name: Trip.name, schema: TripSchema },
     ]),
     AuthorityModule,
     DMOModule,
     UsersModule,
+    CampaignModule,
   ],
   controllers: [AccessibilityController],
-  providers: [AccessibilityService],
+  providers: [AccessibilityService, GetAllAccessibilityHandler],
 })
 export class AccessibilityModule {}
