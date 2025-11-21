@@ -13,9 +13,9 @@ import useGeneralStore from "@/stores/generalStore";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { pathNames } from "@/lib/endpoints";
 import { AiIcon } from "../ui/svgIcons";
-import FeedFilterDrawer from "../drawer/FeedFilterDrawer";
 import { initialSelectedFiltersIds } from "@/providers/SiteInfoClientProvider";
 import { sanitizeInitialFilters } from "@/lib/helpers";
+import MobileFeedFilterDrawer from "../drawer/FeedFilterDrawer.mobile";
 
 interface MobileFeedLayoutProps {
   businesses: BusinessesProps;
@@ -142,7 +142,7 @@ const MobileFeedLayout = ({ businesses, filters }: MobileFeedLayoutProps) => {
       {hideFirstTwoSection && pathname === "/" && (
         <div
           onClick={() => setIsFilterDrawerOpen(true)}
-          className="fixed bottom-2 right-1 custom-cursor"
+          className="fixed bottom-2 right-[42%]  custom-cursor"
         >
           {appliedFilterCount > 0 && (
             <div className="bg-green-500 absolute left-1 top-1 rounded-full h-[18px] w-[18px] text-[10px] flex items-center justify-center text-white aspect-square border border-white">
@@ -154,7 +154,7 @@ const MobileFeedLayout = ({ businesses, filters }: MobileFeedLayoutProps) => {
       )}
 
       {isFilterDrawerOpen && (
-        <FeedFilterDrawer
+        <MobileFeedFilterDrawer
           itemCount={businesses?.data?.length}
           isOpen={isFilterDrawerOpen}
           setIsOpen={setIsFilterDrawerOpen}

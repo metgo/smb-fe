@@ -12,11 +12,13 @@ import { useSwipeHooks } from "./useSwipeHooks";
 import { useMobileFeedLayout } from "./useMobileFeedLayout";
 import { useTrailStations } from "./useTrailStations";
 import { useDeviceHeight } from "./useDeviceHeight";
+import useFeedFilter from "./useFeedFilter";
 
 export {
   useSwipeHooks,
   useCommonHook,
   useDeliveryInfo,
+  useFeedFilter,
   useIsHydrated,
   useItemBuyCart,
   useImageCrop,

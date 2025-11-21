@@ -10,11 +10,11 @@ import { navbar } from "@/constant/hebrew";
 import HamburgerMenu from "./HamburgerMenu";
 import { ShopbagIcon } from "@/components/ui/icons";
 import CurrentTempOfYourCity from "./CurrentTempOfYourCity";
-import BusinessPageFilterTabs from "./BusinessPageFilterTabs";
 import useCartStore from "@/stores/cartStore";
 import { CartDrawer } from "../drawer";
 import { pathNames } from "@/lib/endpoints";
 import PromotionalCards from "../PromotionalCards";
+import FeedLyoutSwitcTabs from "./FeedFilterTabs";
 // import { GiftBoxIcon } from "../ui/svgIcons";
 
 const Navbar = ({ showFilterTab = false }: { showFilterTab?: boolean }) => {
@@ -41,7 +41,7 @@ const Navbar = ({ showFilterTab = false }: { showFilterTab?: boolean }) => {
           </div>
 
           <div className="flex justify-center col-span-2">
-            {showFilterTab && <BusinessPageFilterTabs />}
+            {showFilterTab && <FeedLyoutSwitcTabs />}
           </div>
 
           <div className="flex items-center justify-end col-span-4">

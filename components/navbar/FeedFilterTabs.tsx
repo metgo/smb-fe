@@ -5,9 +5,9 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { filterTabs } from "@/lib/utils";
 import { IconImage } from "@/components/ui";
 import useGeneralStore from "@/stores/generalStore";
-import { useEffect, useState, useRef } from "react";
+import { useLayoutEffect, useState, useRef } from "react";
 
-const BusinessPageFilterTabs = () => {
+const FeedLyoutSwitcTabs = () => {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -18,39 +18,44 @@ const BusinessPageFilterTabs = () => {
     useGeneralStore();
 
   const [indicatorStyle, setIndicatorStyle] = useState({
-    left: -1,
+    left: 0,
     width: 0,
   });
 
   const tabRefs = useRef<{ [key: string]: HTMLButtonElement | null }>({});
   const containerRef = useRef<HTMLDivElement | null>(null);
 
-  useEffect(() => {
-    // Update indicator position when active tab changes
+  // ⭐ FIX: Always calculate correct indicator position on load & tab change
+  useLayoutEffect(() => {
     const activeTabElement = tabRefs.current[activeFilterTab];
     const container = containerRef.current;
 
     if (activeTabElement && container) {
-      const containerRect = container.getBoundingClientRect();
-      const tabRect = activeTabElement.getBoundingClientRect();
+      // wait for layout to fully stabilize
+      requestAnimationFrame(() => {
+        const containerRect = container.getBoundingClientRect();
+        const tabRect = activeTabElement.getBoundingClientRect();
 
-      setIndicatorStyle({
-        left: tabRect.left - containerRect.left,
-        width: tabRect.width,
+        setIndicatorStyle({
+          left: tabRect.left - containerRect.left,
+          width: tabRect.width,
+        });
       });
     }
-  }, [activeFilterTab, filterTabs]);
+  }, [activeFilterTab]);
 
   function handleTabSwitch(key: string) {
     setActiveFilterTab(key);
     setClickedBusinessId("");
     const params = new URLSearchParams(searchParams.toString());
     params.set("filterTab", key);
+
     window.scrollTo({
       top: isHomepage ? window.innerHeight : 0,
       left: 0,
       behavior: "smooth",
     });
+
     router.push(`?${params.toString()}`, { scroll: false });
   }
 
@@ -94,4 +99,4 @@ const BusinessPageFilterTabs = () => {
   );
 };
 
-export default BusinessPageFilterTabs;
+export default FeedLyoutSwitcTabs;

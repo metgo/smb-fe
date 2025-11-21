@@ -1,10 +1,8 @@
 "use client";
 
-import React, { useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { filterLabels, filterPanelLabels } from "@/constant/hebrew";
+import clsx from "clsx";
 import { MotionDialogDiv } from "../ui";
-import { startLoading } from "../wrappers/ProgressBar";
+import { filterPanelLabels } from "@/constant/hebrew";
 
 import {
   AiIcon,
@@ -13,167 +11,33 @@ import {
   PointOfInterestIcon,
   RouteIcon,
 } from "../ui/svgIcons";
-import { ICON_MAP, SERVICE_TYPE_MAP } from "@/lib/utils";
-import clsx from "clsx";
-import { initialSelectedFiltersIds } from "@/constant/placeholderData";
+import { filterCategories, ICON_MAP, SERVICE_TYPE_MAP } from "@/lib/utils";
+import useGeneralStore from "@/stores/generalStore";
 
 interface FeedFilterDrawerProps {
   isOpen: boolean;
+  setIsOpen: (v: boolean) => void;
   itemCount: number;
   filters: FiltersResponse;
-  paramsState: URLSearchParams;
-  setParamsState: (v: URLSearchParams) => void;
-  setIsOpen: (v: boolean) => void;
   appliedFilterCount: number;
-  setAppliedFilterCount: (v: number) => void;
+  isSelected: (key: string, value: string) => boolean;
+  toggleParam: (key: string, value: string) => void;
+  handleResetFilters: () => void;
+  filteredSubCategories: SubCategory[];
 }
-
-const getTotalAppliedFilters = (params: URLSearchParams) => {
-  const keys = [
-    "categoryIds",
-    "subCategoryIds",
-    "groupTypeIds",
-    "accessibilityIds",
-    "serviceTypes",
-  ];
-
-  return keys.reduce((total, key) => {
-    const arr = params.get(key)?.split(",").filter(Boolean) ?? [];
-    return total + arr.length;
-  }, 0);
-};
 
 const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
   isOpen,
   setIsOpen,
   itemCount,
   filters,
-  paramsState,
-  setParamsState,
   appliedFilterCount,
-  setAppliedFilterCount,
+  isSelected,
+  toggleParam,
+  handleResetFilters,
+  filteredSubCategories,
 }) => {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-
-  const categoryIds = searchParams.get("categoryIds");
-
-  // Always read current URL params (live, never stale)
-  const getCurrentParams = () => {
-    if (typeof window === "undefined") {
-      return new URLSearchParams(searchParams.toString());
-    }
-    return new URLSearchParams(window.location.search);
-  };
-
-  const getSelected = (key: string) => {
-    return paramsState.get(key)?.split(",").filter(Boolean) ?? [];
-  };
-
-  const isSelected = (key: string, value: string): boolean => {
-    return getSelected(key).includes(value);
-  };
-
-  const toggleParam = (key: string, value: string) => {
-    const params = new URLSearchParams(paramsState.toString());
-    const current = params.get(key)?.split(",").filter(Boolean) ?? [];
-
-    const next = current.includes(value)
-      ? current.filter((i) => i !== value)
-      : [...current, value];
-
-    if (next.length > 0) params.set(key, next.join(","));
-    else params.delete(key);
-
-    const nextParams = new URLSearchParams(params);
-    // Remove old isAllClear always
-    nextParams.delete("isAllClear");
-
-    // 🔥 Auto-remove child subCategoryIds when categoryIds change
-    if (key === "categoryIds") {
-      const selectedCategoryIds =
-        nextParams.get("categoryIds")?.split(",").filter(Boolean) ?? [];
-
-      const validSubIds =
-        filters.subCategories
-          ?.filter((sub) => selectedCategoryIds.includes(sub.categoryId))
-          .map((sub) => sub._id) ?? [];
-
-      const existingSub =
-        nextParams.get("subCategoryIds")?.split(",").filter(Boolean) ?? [];
-
-      const filteredSub = existingSub.filter((id) => validSubIds.includes(id));
-
-      if (filteredSub.length > 0) {
-        nextParams.set("subCategoryIds", filteredSub.join(","));
-      } else {
-        nextParams.delete("subCategoryIds");
-      }
-    }
-
-    setParamsState(nextParams);
-
-    const totalApplied = getTotalAppliedFilters(nextParams);
-    setAppliedFilterCount(totalApplied);
-
-    const isAllClear = totalApplied === 0;
-
-    if (isAllClear) {
-      router.push(`?isAllClear=true`, { scroll: false });
-    } else {
-      router.push(`?${nextParams.toString()}`, { scroll: false });
-    }
-
-    startLoading();
-  };
-
-  const clearParam = (key: string) => {
-    const params = getCurrentParams();
-
-    if (params.has(key)) {
-      params.delete(key);
-      const nextParams = new URLSearchParams(params);
-      nextParams.delete("isAllClear");
-      setParamsState(nextParams);
-
-      const totalApplied = getTotalAppliedFilters(nextParams);
-      setAppliedFilterCount(totalApplied);
-
-      if (totalApplied === 0) {
-        router.push(`?isAllClear=true`, { scroll: false });
-      } else {
-        router.push(`?isAllClear=false&${nextParams.toString()}`, {
-          scroll: false,
-        });
-      }
-
-      startLoading();
-    }
-  };
-
-  // Reset serviceTypes when main category changes
-  useEffect(() => {
-    if (categoryIds) {
-      clearParam("serviceTypes");
-    }
-  }, [categoryIds]);
-
-  // Filtered subcategories based on selected main categories
-  const selectedCategoryIds = getSelected("categoryIds");
-  const filteredSubCategories = React.useMemo(() => {
-    if (selectedCategoryIds?.length === 0) return [];
-    return filters?.subCategories?.filter((sub) =>
-      selectedCategoryIds?.includes(sub?.categoryId),
-    );
-  }, [selectedCategoryIds, filters?.subCategories]);
-
-  function handleResetFilters() {
-    const nextParams = new URLSearchParams();
-    setParamsState(nextParams);
-    setAppliedFilterCount(0);
-    router.push(`?isAllClear=true`, { scroll: false });
-    startLoading();
-  }
+  const { aminitiesInfo } = useGeneralStore();
 
   if (!isOpen) return null;
 
@@ -189,7 +53,7 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
         type="drawer-right"
         onClick={(e) => e.stopPropagation()}
         className="
-        fixed inset-x-0 bottom-0 z-10
+        fixed bottom-0 z-10
         w-full
         sm:max-w-[200px]
         md:max-w-[300px]
@@ -205,16 +69,14 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
         </div>
 
         {/* SCROLLABLE CONTENT */}
-        <div className="flex-1 overflow-y-auto max-h-[90vh] px-5 pb-20">
+        <div className="flex-1 overflow-y-auto max-h-[90vh] px-5 pb-20 z-50">
           {/* MAIN CATEGORIES & SERVICE TYPES */}
           <div className="border-b border-primary py-3">
             <div className="font-bold text-theme">{filterPanelLabels.main}</div>
             <div className="grid grid-cols-12 gap-x-1 gap-y-2 mt-2">
               {/* Point of Interest */}
 
-              {initialSelectedFiltersIds?.serviceTypes?.includes(
-                SERVICE_TYPE_MAP.poi,
-              ) && (
+              {aminitiesInfo?.poi && (
                 <FilterButton
                   active={isSelected("serviceTypes", SERVICE_TYPE_MAP.poi)}
                   onClick={() =>
@@ -227,7 +89,7 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
               )}
 
               {/* Main Categories */}
-              {filters?.categories?.slice(0, 4).map((menu) => {
+              {filterCategories?.map((menu) => {
                 const Icon = ICON_MAP[menu._id];
                 return (
                   <FilterButton
@@ -242,20 +104,20 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
               })}
 
               {/* Funday */}
-              <FilterButton
-                active={isSelected("serviceTypes", SERVICE_TYPE_MAP.fun_day)}
-                onClick={() =>
-                  toggleParam("serviceTypes", SERVICE_TYPE_MAP.fun_day)
-                }
-                icon={<FundayIcon strokColor="#7c7c7c" />}
-                activeIcon={<FundayIcon strokColor="#fff" />}
-                label={filterPanelLabels.funDays}
-              />
+              {aminitiesInfo?.funday && (
+                <FilterButton
+                  active={isSelected("serviceTypes", SERVICE_TYPE_MAP.fun_day)}
+                  onClick={() =>
+                    toggleParam("serviceTypes", SERVICE_TYPE_MAP.fun_day)
+                  }
+                  icon={<FundayIcon strokColor="#7c7c7c" />}
+                  activeIcon={<FundayIcon strokColor="#fff" />}
+                  label={filterPanelLabels.funDays}
+                />
+              )}
 
               {/* Events */}
-              {initialSelectedFiltersIds?.serviceTypes?.includes(
-                SERVICE_TYPE_MAP.event,
-              ) && (
+              {aminitiesInfo?.event && (
                 <FilterButton
                   active={isSelected("serviceTypes", SERVICE_TYPE_MAP.event)}
                   onClick={() =>
@@ -268,9 +130,7 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
               )}
 
               {/* Routes */}
-              {initialSelectedFiltersIds?.serviceTypes?.includes(
-                SERVICE_TYPE_MAP.route,
-              ) && (
+              {aminitiesInfo?.trip && (
                 <FilterButton
                   active={isSelected("serviceTypes", SERVICE_TYPE_MAP.route)}
                   onClick={() =>
@@ -339,10 +199,10 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
         </div>
 
         {/* CLOSE BUTTON */}
-        <div className="px-5 pb-4 flex-shrink-0">
+        <div className=" flex-shrink-0 flex items-center justify-between px-4">
           <button
             onClick={() => setIsOpen(false)}
-            className="absolute bottom-14 right-4 custom-cursor"
+            className="relative custom-cursor"
           >
             {appliedFilterCount > 0 && (
               <div className="bg-green-500 absolute left-1 top-1 rounded-full h-[18px] w-[18px] text-[10px] flex items-center justify-center text-white aspect-square border border-white">
@@ -358,11 +218,11 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
             className={clsx(
               appliedFilterCount === 0
                 ? "cursor-not-allowed text-black/30 "
-                : "custom-cursor bg-black/80 w-full text-white font-bold hover:bg-black ",
-              " border border-black/20 w-full items-center font-bold text-lightGray mt-4 rounded-xl py-2",
+                : "custom-cursor bg-black/80 text-white font-bold hover:bg-black ",
+              " border border-black/20 items-center font-bold text-lightGray rounded-xl px-12 py-2",
             )}
           >
-            {filterLabels.clearEverything}
+            {filterPanelLabels.clearAll}
           </button>
         </div>
       </MotionDialogDiv>

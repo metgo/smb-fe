@@ -11,7 +11,8 @@ import { getLogo } from "@/constant/images";
 const NavLogo = () => {
   const router = useRouter();
   const pathname = usePathname();
-  const { setIsOnSection2, setHideFirstTwoSection } = useGeneralStore();
+  const { setIsOnSection2, setHideFirstTwoSection, setIsFilterDrawerOpen } =
+    useGeneralStore();
 
   function handleNavigation() {
     if (pathname === pathNames.home) {
@@ -25,6 +26,7 @@ const NavLogo = () => {
     }
     setHideFirstTwoSection(false);
     setIsOnSection2(false);
+    setIsFilterDrawerOpen(false);
   }
 
   const logo = getLogo();

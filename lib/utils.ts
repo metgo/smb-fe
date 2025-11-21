@@ -1,4 +1,4 @@
-import { menuItems, misc, navbar } from "@/constant/hebrew";
+import { category, menuItems, misc, navbar } from "@/constant/hebrew";
 import {
   CtgAttractionIcon,
   CtgCultureIcon,
@@ -13,7 +13,6 @@ import {
   AttractionIcon,
   CultureIcon,
   FoodIcon,
-  LocalIcon,
   SleepIcon,
   TravelIcon,
 } from "@/components/ui/svgIcons";
@@ -58,9 +57,31 @@ export const ICON_MAP: Record<string, React.FC<{ strokColor?: string }>> = {
   "6566e3aaa77d2a477266d314": FoodIcon,
   "6566e36ba77d2a477266d2f4": CultureIcon,
   "6566fcd4a77d2a477266d3b9": SleepIcon,
-  "6566fd7fa77d2a477266d3ca": LocalIcon,
   "6566e256a77d2a477266d2c0": TravelIcon,
 };
+
+export const filterCategories = [
+  {
+    _id: "6566e256a77d2a477266d2c0",
+    hebrewName: category.tours,
+  },
+  {
+    _id: "6566e31ca77d2a477266d2d6",
+    hebrewName: category.attractions,
+  },
+  {
+    _id: "6566e3aaa77d2a477266d314",
+    hebrewName: category.eater,
+  },
+  {
+    _id: "6566e36ba77d2a477266d2f4",
+    hebrewName: category.culture,
+  },
+  {
+    _id: "6566fcd4a77d2a477266d3b9",
+    hebrewName: category.lodge,
+  },
+];
 
 // ---------------- SERVICE TYPE MAPPING -----------------
 export const SERVICE_TYPE_MAP = {
