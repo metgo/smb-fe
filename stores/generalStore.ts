@@ -74,6 +74,9 @@ interface GeneralStoreState {
 
   filterItems: FiltersResponse;
   setFilterItems: (v: FiltersResponse) => void;
+
+  isFilterDrawerOpen: boolean;
+  setIsFilterDrawerOpen: (v: boolean) => void;
 }
 
 const useGeneralStore = create<GeneralStoreState>((set) => ({
@@ -145,6 +148,9 @@ const useGeneralStore = create<GeneralStoreState>((set) => ({
     displayTrips: false,
   },
   setFilterItems: (v) => set({ filterItems: v }),
+
+  isFilterDrawerOpen: false,
+  setIsFilterDrawerOpen: (v) => set({ isFilterDrawerOpen: v }),
 }));
 
 export default useGeneralStore;

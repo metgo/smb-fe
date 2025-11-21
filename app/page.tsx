@@ -66,6 +66,7 @@ const page = async ({ searchParams }: Props) => {
     accessibilitiesIds: accessibilitiesArray || [],
     serviceTypes: serviceTypesArray || [],
   };
+  // ["business", "point_of_interest", "event", "funday", "trip"],
 
   // First API call includes all filters
   const filters = await getAllFilters(selectedFiltersIds);

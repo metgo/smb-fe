@@ -2,10 +2,9 @@
 
 import { ReactNode, useEffect } from "react";
 import useGeneralStore from "@/stores/generalStore";
-import useMarkersStore from "@/stores/markersStore";
 import { getApproxUserLocation } from "@/actions/getWether";
 import {
-  getAllLocations,
+  getAminitiesInfo,
   getPresetFilters,
   getPromotionsList,
   getSiteInfo,
@@ -18,19 +17,16 @@ export const SiteInfoClientProvider = ({
 }: {
   children: ReactNode;
 }) => {
-  const { setUserLiveLocation, setSiteInfo, setPromotionalItems } =
-    useGeneralStore();
-
-  const { setBusinessMarkers } = useMarkersStore();
+  const {
+    setUserLiveLocation,
+    setSiteInfo,
+    setPromotionalItems,
+    setAminitiesInfo,
+  } = useGeneralStore();
 
   async function fetchSiteinfo() {
     const res = await getSiteInfo();
     setSiteInfo(res);
-  }
-
-  async function fetchBusinessMarkers() {
-    const res = await getAllLocations();
-    setBusinessMarkers(res);
   }
 
   async function fetchUserCurrentLocation() {
@@ -47,6 +43,15 @@ export const SiteInfoClientProvider = ({
     }
   }
 
+  async function fetchAminitiesInfo() {
+    try {
+      const res = await getAminitiesInfo();
+      setAminitiesInfo(res);
+    } catch (error) {
+      console.error("Failed to get amenities info:", error);
+    }
+  }
+
   async function fetchPromotionalItems() {
     try {
       const res = await getPromotionsList();
@@ -59,16 +64,31 @@ export const SiteInfoClientProvider = ({
   async function fetchPresetFilterItems() {
     try {
       const res = await getPresetFilters();
-      initialSelectedFiltersIds = res;
+
+      // Filter out 'business' and 'event' from serviceTypes
+      const filteredServiceTypes = res.serviceTypes.filter(
+        (type: string) => type !== "business" && type !== "event",
+      );
+
+      // Return the modified object
+      const sanitizedResponse = {
+        ...res,
+        serviceTypes: filteredServiceTypes,
+      };
+
+      initialSelectedFiltersIds = sanitizedResponse;
+
+      return sanitizedResponse; // optionally return it
     } catch (error) {
       console.error("Failed to get filters:", error);
+      return null;
     }
   }
 
   useEffect(() => {
     fetchSiteinfo();
+    fetchAminitiesInfo();
     fetchUserCurrentLocation();
-    fetchBusinessMarkers();
     fetchPromotionalItems();
     fetchPresetFilterItems();
   }, []);

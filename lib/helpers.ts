@@ -287,17 +287,27 @@ export const sanitizeInitialFilters = (
   presets: PresetFilterItems,
   filters: FiltersResponse,
 ): { sanitized: PresetFilterItems; totalCount: number } => {
-  const validCategoryIds = new Set(filters.categories.map((c) => c._id));
-  const validSubCategoryIds = new Set(
-    filters.subCategories.map((sc) => sc._id),
+  const excludedCategoryId = "6566fd7fa77d2a477266d3ca";
+
+  const validCategoryIds = new Set(
+    filters.categories
+      .map((c) => c._id)
+      .filter((id) => id !== excludedCategoryId),
   );
+
+  const validSubCategoryIds = new Set(
+    filters.subCategories
+      .filter((sc) => sc.categoryId !== excludedCategoryId)
+      .map((sc) => sc._id),
+  );
+
   const validGroupTypeIds = new Set(filters.groupTypes.map((gt) => gt._id));
   const validAccessibilityIds = new Set(
     filters.accessibilities.map((a) => a._id),
   );
 
   const sanitized = {
-    categoryIds: presets.categoryIds.filter((id) => validCategoryIds.has(id)),
+    categoryIds: presets.categoryIds.filter((id) => validCategoryIds.has(id)), // removed excluded category
     subCategoryIds: presets.subCategoryIds.filter((id) =>
       validSubCategoryIds.has(id),
     ),
@@ -315,8 +325,6 @@ export const sanitizeInitialFilters = (
     sanitized.subCategoryIds.length +
     sanitized.groupTypeIds.length +
     sanitized.accessibilityIds.length +
-    sanitized.serviceTypes.length -
-    1;
-
+    sanitized.serviceTypes.length;
   return { sanitized, totalCount };
 };

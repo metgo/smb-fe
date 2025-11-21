@@ -22,16 +22,12 @@ export async function getAllFeeds(
     url = `${urls.feeds}?campCode=${CODE}`;
   } else {
     const {
-      categoryIds = [],
-      subCategoryIds = [],
-      groupTypesIds = [],
-      accessibilitiesIds = [],
-      serviceTypes = [],
+      categoryIds,
+      subCategoryIds,
+      groupTypesIds,
+      accessibilitiesIds,
+      serviceTypes,
     } = filters;
-
-    const normalizedServiceTypes = serviceTypes.includes("business")
-      ? serviceTypes
-      : [...serviceTypes, "business"];
 
     // Build URL query parameters
     const query = new URLSearchParams();
@@ -41,13 +37,11 @@ export async function getAllFeeds(
     query.append("sortOrder", "DESC");
     query.append("campCode", CODE!);
 
-    categoryIds.forEach((id) => query.append("categoriesId", id));
-    subCategoryIds.forEach((id) => query.append("subCategoriesId", id));
-    groupTypesIds.forEach((id) => query.append("groupTypesId", id));
-    accessibilitiesIds.forEach((id) => query.append("accessibilitiesId", id));
-
-    // ✅ Always include "business"
-    normalizedServiceTypes.forEach((type) => query.append("serviceType", type));
+    categoryIds?.forEach((id) => query.append("categoriesId", id));
+    subCategoryIds?.forEach((id) => query.append("subCategoriesId", id));
+    groupTypesIds?.forEach((id) => query.append("groupTypesId", id));
+    accessibilitiesIds?.forEach((id) => query.append("accessibilitiesId", id));
+    serviceTypes?.forEach((type) => query.append("serviceType", type));
 
     url = `${urls.feeds}?${query.toString()}`;
   }
@@ -95,6 +89,32 @@ export async function getAllFeeds(
 // ------------------------------------------------------------------------------------------
 
 export async function getAllFilters(filters?: FiltersProps) {
+  const query = new URLSearchParams();
+
+  query.append("campCode", CODE!);
+
+  // Safely append only if available
+  filters?.categoryIds?.forEach((id) => query.append("categoriesId", id));
+  filters?.subCategoryIds?.forEach((id) => query.append("subCategoriesId", id));
+  const url = `${urls.filters}?${query.toString()}`;
+
+  try {
+    const res = await fetch(url, {
+      method: "GET",
+      cache: "no-store",
+    });
+
+    if (!res.ok) {
+      throw new Error(`Failed to fetch feeds: ${res.statusText}`);
+    }
+
+    return await res.json();
+  } catch (error) {
+    console.error("Error in getAllFilters:", error);
+  }
+}
+
+export async function getAllFiltersOld(filters?: FiltersProps) {
   const query = new URLSearchParams();
 
   query.append("campCode", CODE!);

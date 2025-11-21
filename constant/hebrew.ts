@@ -272,6 +272,7 @@ export const funDaysLabels = {
 };
 
 export const filterPanelLabels = {
+  clearAll: "נקה הכל",
   results: "תוצאות",
   main: "ראשי",
   second: "משני",

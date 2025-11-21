@@ -329,7 +329,7 @@ export default function ScrollSnapWrapper({ children, hasMarketing }: Props) {
 
       <div
         ref={feedRef}
-        className="min-h-screen"
+        // className="min-h-screen"
         style={{ overscrollBehavior: "none" }}
         // while animating, pointer events are blocked to avoid accidental interactions
         // we guard via inline style to affect only feed area
