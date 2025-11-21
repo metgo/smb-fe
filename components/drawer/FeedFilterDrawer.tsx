@@ -13,6 +13,7 @@ import {
 } from "../ui/svgIcons";
 import { filterCategories, ICON_MAP, SERVICE_TYPE_MAP } from "@/lib/utils";
 import useGeneralStore from "@/stores/generalStore";
+import { useCommonHook } from "@/hooks";
 
 interface FeedFilterDrawerProps {
   isOpen: boolean;
@@ -37,9 +38,10 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
   handleResetFilters,
   filteredSubCategories,
 }) => {
+  const { isMobile } = useCommonHook();
   const { aminitiesInfo } = useGeneralStore();
 
-  if (!isOpen) return null;
+  if (!isOpen || isMobile) return null;
 
   return (
     <>

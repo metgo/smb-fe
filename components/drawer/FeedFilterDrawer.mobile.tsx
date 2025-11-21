@@ -1,180 +1,47 @@
 "use client";
 
 import clsx from "clsx";
-import { useEffect, useMemo } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-
 import { MotionDialogDiv } from "../ui";
-import { startLoading } from "../wrappers/ProgressBar";
-import { filterLabels, filterPanelLabels } from "@/constant/hebrew";
+import { filterPanelLabels } from "@/constant/hebrew";
 
 import {
   AiIcon,
+  DownAngleArrowIcon,
   EventIcon,
   FundayIcon,
   PointOfInterestIcon,
   RouteIcon,
+  UpAngleArrowIcon,
 } from "../ui/svgIcons";
-import { ICON_MAP, SERVICE_TYPE_MAP } from "@/lib/utils";
-import { initialSelectedFiltersIds } from "@/constant/placeholderData";
+import { filterCategories, ICON_MAP, SERVICE_TYPE_MAP } from "@/lib/utils";
+import useGeneralStore from "@/stores/generalStore";
+import { useState } from "react";
 
 interface MobileFeedFilterDrawerProps {
   isOpen: boolean;
+  setIsOpen: (v: boolean) => void;
   itemCount: number;
   filters: FiltersResponse;
-  paramsState: URLSearchParams;
-  setParamsState: (v: URLSearchParams) => void;
-  setIsOpen: (v: boolean) => void;
   appliedFilterCount: number;
-  setAppliedFilterCount: (v: number) => void;
+  isSelected: (key: string, value: string) => boolean;
+  toggleParam: (key: string, value: string) => void;
+  handleResetFilters: () => void;
+  filteredSubCategories: SubCategory[];
 }
-
-const getTotalAppliedFilters = (params: URLSearchParams) => {
-  const keys = [
-    "categoryIds",
-    "subCategoryIds",
-    "groupTypeIds",
-    "accessibilityIds",
-    "serviceTypes",
-  ];
-
-  return keys.reduce((total, key) => {
-    const arr = params.get(key)?.split(",").filter(Boolean) ?? [];
-    return total + arr.length;
-  }, 0);
-};
 
 const MobileFeedFilterDrawer: React.FC<MobileFeedFilterDrawerProps> = ({
   isOpen,
   setIsOpen,
   itemCount,
   filters,
-  paramsState,
-  setParamsState,
   appliedFilterCount,
-  setAppliedFilterCount,
+  isSelected,
+  toggleParam,
+  handleResetFilters,
+  filteredSubCategories,
 }) => {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-
-  const categoryIds = searchParams.get("categoryIds");
-
-  // Always read current URL params (live, never stale)
-  const getCurrentParams = () => {
-    if (typeof window === "undefined") {
-      return new URLSearchParams(searchParams.toString());
-    }
-    return new URLSearchParams(window.location.search);
-  };
-
-  const getSelected = (key: string) => {
-    return paramsState.get(key)?.split(",").filter(Boolean) ?? [];
-  };
-
-  const isSelected = (key: string, value: string): boolean => {
-    return getSelected(key).includes(value);
-  };
-
-  const toggleParam = (key: string, value: string) => {
-    const params = new URLSearchParams(paramsState.toString());
-    const current = params.get(key)?.split(",").filter(Boolean) ?? [];
-
-    const next = current.includes(value)
-      ? current.filter((i) => i !== value)
-      : [...current, value];
-
-    if (next.length > 0) params.set(key, next.join(","));
-    else params.delete(key);
-
-    const nextParams = new URLSearchParams(params);
-    // Remove old isAllClear always
-    nextParams.delete("isAllClear");
-
-    // 🔥 Auto-remove child subCategoryIds when categoryIds change
-    if (key === "categoryIds") {
-      const selectedCategoryIds =
-        nextParams.get("categoryIds")?.split(",").filter(Boolean) ?? [];
-
-      const validSubIds =
-        filters.subCategories
-          ?.filter((sub) => selectedCategoryIds.includes(sub.categoryId))
-          .map((sub) => sub._id) ?? [];
-
-      const existingSub =
-        nextParams.get("subCategoryIds")?.split(",").filter(Boolean) ?? [];
-
-      const filteredSub = existingSub.filter((id) => validSubIds.includes(id));
-
-      if (filteredSub.length > 0) {
-        nextParams.set("subCategoryIds", filteredSub.join(","));
-      } else {
-        nextParams.delete("subCategoryIds");
-      }
-    }
-
-    setParamsState(nextParams);
-
-    const totalApplied = getTotalAppliedFilters(nextParams);
-    setAppliedFilterCount(totalApplied);
-
-    const isAllClear = totalApplied === 0;
-
-    if (isAllClear) {
-      router.push(`?isAllClear=true`, { scroll: false });
-    } else {
-      router.push(`?${nextParams.toString()}`, { scroll: false });
-    }
-
-    startLoading();
-  };
-
-  const clearParam = (key: string) => {
-    const params = getCurrentParams();
-
-    if (params.has(key)) {
-      params.delete(key);
-      const nextParams = new URLSearchParams(params);
-      nextParams.delete("isAllClear");
-      setParamsState(nextParams);
-
-      const totalApplied = getTotalAppliedFilters(nextParams);
-      setAppliedFilterCount(totalApplied);
-
-      if (totalApplied === 0) {
-        router.push(`?isAllClear=true`, { scroll: false });
-      } else {
-        router.push(`?isAllClear=false&${nextParams.toString()}`, {
-          scroll: false,
-        });
-      }
-
-      startLoading();
-    }
-  };
-
-  // Reset serviceTypes when main category changes
-  useEffect(() => {
-    if (categoryIds) {
-      clearParam("serviceTypes");
-    }
-  }, [categoryIds]);
-
-  // Filtered subcategories based on selected main categories
-  const selectedCategoryIds = getSelected("categoryIds");
-  const filteredSubCategories = useMemo(() => {
-    if (selectedCategoryIds?.length === 0) return [];
-    return filters?.subCategories?.filter((sub) =>
-      selectedCategoryIds?.includes(sub?.categoryId),
-    );
-  }, [selectedCategoryIds, filters?.subCategories]);
-
-  function handleResetFilters() {
-    const nextParams = new URLSearchParams();
-    setParamsState(nextParams);
-    setAppliedFilterCount(0);
-    router.push(`?isAllClear=true`, { scroll: false });
-    startLoading();
-  }
+  const { aminitiesInfo } = useGeneralStore();
+  const [showAllFilters, setShowAllFilters] = useState(false);
 
   if (!isOpen) return null;
 
@@ -182,7 +49,7 @@ const MobileFeedFilterDrawer: React.FC<MobileFeedFilterDrawerProps> = ({
     <>
       <div
         onClick={() => setIsOpen(false)}
-        className="fixed inset-0 bg-black/10 z-10 custom-cursor"
+        className="fixed inset-0 bg-black/40 z-10 custom-cursor"
       />
 
       {/* DRAWER */}
@@ -191,28 +58,36 @@ const MobileFeedFilterDrawer: React.FC<MobileFeedFilterDrawerProps> = ({
         onClick={(e) => e.stopPropagation()}
         className="
         fixed inset-x-0 bottom-0 z-10
-        w-full rounded-t-2xl bg-white
-         shadow-xl flex flex-col h-[80vh]
+        w-full bg-white
+         shadow-t-2xl flex flex-col max-h-[90vh]
       "
       >
+        {/* SHEET HANDLER */}
+        <div className="w-full flex justify-center items-center pt-4">
+          <button
+            type="button"
+            onClick={() => setShowAllFilters(!showAllFilters)}
+          >
+            {showAllFilters ? <UpAngleArrowIcon /> : <DownAngleArrowIcon />}
+          </button>
+        </div>
+
         {/* HEADER */}
-        <div className="flex justify-end items-center pt-8 px-5 pb-2 flex-shrink-0">
+        <div className="flex justify-end items-center mt-2 px-5 flex-shrink-0">
           <h2 className="text-lg font-bold">
             <span>{itemCount}</span> <span>{filterPanelLabels.results}</span>
           </h2>
         </div>
 
         {/* SCROLLABLE CONTENT */}
-        <div className="flex-1 overflow-y-auto max-h-[90vh] px-5 pb-20">
+        <div className="flex-1 overflow-y-auto max-h-[80vh] px-5 z-50">
           {/* MAIN CATEGORIES & SERVICE TYPES */}
           <div className="border-b border-primary py-3">
             <div className="font-bold text-theme">{filterPanelLabels.main}</div>
             <div className="grid grid-cols-12 gap-x-1 gap-y-2 mt-2">
               {/* Point of Interest */}
 
-              {initialSelectedFiltersIds?.serviceTypes?.includes(
-                SERVICE_TYPE_MAP.poi,
-              ) && (
+              {aminitiesInfo?.poi && (
                 <FilterButton
                   active={isSelected("serviceTypes", SERVICE_TYPE_MAP.poi)}
                   onClick={() =>
@@ -225,7 +100,7 @@ const MobileFeedFilterDrawer: React.FC<MobileFeedFilterDrawerProps> = ({
               )}
 
               {/* Main Categories */}
-              {filters?.categories?.slice(0, 4).map((menu) => {
+              {filterCategories?.map((menu) => {
                 const Icon = ICON_MAP[menu._id];
                 return (
                   <FilterButton
@@ -240,20 +115,20 @@ const MobileFeedFilterDrawer: React.FC<MobileFeedFilterDrawerProps> = ({
               })}
 
               {/* Funday */}
-              <FilterButton
-                active={isSelected("serviceTypes", SERVICE_TYPE_MAP.fun_day)}
-                onClick={() =>
-                  toggleParam("serviceTypes", SERVICE_TYPE_MAP.fun_day)
-                }
-                icon={<FundayIcon strokColor="#7c7c7c" />}
-                activeIcon={<FundayIcon strokColor="#fff" />}
-                label={filterPanelLabels.funDays}
-              />
+              {aminitiesInfo?.funday && (
+                <FilterButton
+                  active={isSelected("serviceTypes", SERVICE_TYPE_MAP.fun_day)}
+                  onClick={() =>
+                    toggleParam("serviceTypes", SERVICE_TYPE_MAP.fun_day)
+                  }
+                  icon={<FundayIcon strokColor="#7c7c7c" />}
+                  activeIcon={<FundayIcon strokColor="#fff" />}
+                  label={filterPanelLabels.funDays}
+                />
+              )}
 
               {/* Events */}
-              {initialSelectedFiltersIds?.serviceTypes?.includes(
-                SERVICE_TYPE_MAP.event,
-              ) && (
+              {aminitiesInfo?.event && (
                 <FilterButton
                   active={isSelected("serviceTypes", SERVICE_TYPE_MAP.event)}
                   onClick={() =>
@@ -266,9 +141,7 @@ const MobileFeedFilterDrawer: React.FC<MobileFeedFilterDrawerProps> = ({
               )}
 
               {/* Routes */}
-              {initialSelectedFiltersIds?.serviceTypes?.includes(
-                SERVICE_TYPE_MAP.route,
-              ) && (
+              {aminitiesInfo?.trip && (
                 <FilterButton
                   active={isSelected("serviceTypes", SERVICE_TYPE_MAP.route)}
                   onClick={() =>
@@ -282,65 +155,69 @@ const MobileFeedFilterDrawer: React.FC<MobileFeedFilterDrawerProps> = ({
             </div>
           </div>
 
-          {/* SUBCATEGORIES */}
-          {filteredSubCategories && filteredSubCategories.length > 0 && (
-            <div className="border-b border-primary py-3">
-              <div className="font-bold text-theme">
-                {filterPanelLabels.second}
+          {showAllFilters && (
+            <>
+              {/* SUBCATEGORIES */}
+              {filteredSubCategories && filteredSubCategories?.length > 0 && (
+                <div className="border-b border-primary py-3">
+                  <div className="font-bold text-theme">
+                    {filterPanelLabels.second}
+                  </div>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {filteredSubCategories.map((item) => (
+                      <FilterChip
+                        key={item._id}
+                        active={isSelected("subCategoryIds", item._id)}
+                        onClick={() => toggleParam("subCategoryIds", item._id)}
+                        label={item.hebrewName}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* ACCESSIBILITY */}
+              <div className="border-b border-primary py-3">
+                <div className="font-bold text-theme">
+                  {filterPanelLabels.accessibility}
+                </div>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {filters?.accessibilities?.map((item) => (
+                    <FilterChip
+                      key={item._id}
+                      active={isSelected("accessibilityIds", item._id)}
+                      onClick={() => toggleParam("accessibilityIds", item._id)}
+                      label={item.hebrewName}
+                    />
+                  ))}
+                </div>
               </div>
-              <div className="flex flex-wrap gap-2 mt-2">
-                {filteredSubCategories.map((item) => (
-                  <FilterChip
-                    key={item._id}
-                    active={isSelected("subCategoryIds", item._id)}
-                    onClick={() => toggleParam("subCategoryIds", item._id)}
-                    label={item.hebrewName}
-                  />
-                ))}
+
+              {/* TARGET AUDIENCE (Group Types) */}
+              <div className="border-b border-primary py-3">
+                <div className="font-bold text-theme">
+                  {filterPanelLabels.targetAudiences}
+                </div>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {filters?.groupTypes?.map((item) => (
+                    <FilterChip
+                      key={item._id}
+                      active={isSelected("groupTypeIds", item._id)}
+                      onClick={() => toggleParam("groupTypeIds", item._id)}
+                      label={item.hebrewName}
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
+            </>
           )}
-
-          {/* ACCESSIBILITY */}
-          <div className="border-b border-primary py-3">
-            <div className="font-bold text-theme">
-              {filterPanelLabels.accessibility}
-            </div>
-            <div className="flex flex-wrap gap-2 mt-2">
-              {filters?.accessibilities?.map((item) => (
-                <FilterChip
-                  key={item._id}
-                  active={isSelected("accessibilityIds", item._id)}
-                  onClick={() => toggleParam("accessibilityIds", item._id)}
-                  label={item.hebrewName}
-                />
-              ))}
-            </div>
-          </div>
-
-          {/* TARGET AUDIENCE (Group Types) */}
-          <div className="border-b border-primary py-3">
-            <div className="font-bold text-theme">
-              {filterPanelLabels.targetAudiences}
-            </div>
-            <div className="flex flex-wrap gap-2 mt-2">
-              {filters?.groupTypes?.map((item) => (
-                <FilterChip
-                  key={item._id}
-                  active={isSelected("groupTypeIds", item._id)}
-                  onClick={() => toggleParam("groupTypeIds", item._id)}
-                  label={item.hebrewName}
-                />
-              ))}
-            </div>
-          </div>
         </div>
 
         {/* CLOSE BUTTON */}
-        <div className="px-5 pb-4 flex-shrink-0">
+        <div className=" flex-shrink-0 flex items-center justify-between px-4">
           <button
             onClick={() => setIsOpen(false)}
-            className="absolute bottom-14 right-[42%] custom-cursor"
+            className="relative custom-cursor"
           >
             {appliedFilterCount > 0 && (
               <div className="bg-green-500 absolute left-1 top-1 rounded-full h-[18px] w-[18px] text-[10px] flex items-center justify-center text-white aspect-square border border-white">
@@ -356,11 +233,11 @@ const MobileFeedFilterDrawer: React.FC<MobileFeedFilterDrawerProps> = ({
             className={clsx(
               appliedFilterCount === 0
                 ? "cursor-not-allowed text-black/30 "
-                : "custom-cursor bg-black/80 w-full text-white font-bold hover:bg-black ",
-              " border border-black/20 w-full items-center font-bold text-lightGray mt-4 rounded-xl py-2",
+                : "custom-cursor bg-black/80 text-white font-bold hover:bg-black ",
+              " border border-black/20 items-center font-bold text-lightGray rounded-xl  w-full py-2",
             )}
           >
-            {filterLabels.clearEverything}
+            {filterPanelLabels.clearAll}
           </button>
         </div>
       </MotionDialogDiv>

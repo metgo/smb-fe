@@ -1,20 +1,18 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 
 import MobileNavbar from "./Navbar.mobile";
 import MobileBusinessPinMap from "../maps/BusinessPinMap.mobile";
 import MobileFeedsThumbnailCarousel from "./FeedsThumbnailCarousel.mobile";
 
 import { categoryColors } from "@/lib/utils";
-import { useCommonHook, useMobileFeedLayout } from "@/hooks";
+import { useCommonHook, useFeedFilter, useMobileFeedLayout } from "@/hooks";
 import OnlyFeedCardsLayoutMobile from "../layouts/OnlyFeedCardsLayout.mobile";
 import useGeneralStore from "@/stores/generalStore";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { pathNames } from "@/lib/endpoints";
 import { AiIcon } from "../ui/svgIcons";
-import { initialSelectedFiltersIds } from "@/providers/SiteInfoClientProvider";
-import { sanitizeInitialFilters } from "@/lib/helpers";
 import MobileFeedFilterDrawer from "../drawer/FeedFilterDrawer.mobile";
 
 interface MobileFeedLayoutProps {
@@ -24,10 +22,7 @@ interface MobileFeedLayoutProps {
 
 const MobileFeedLayout = ({ businesses, filters }: MobileFeedLayoutProps) => {
   const pathname = usePathname();
-  const router = useRouter();
-
   const { isMobile } = useCommonHook();
-  const searchParams = useSearchParams();
 
   const {
     activeFilterTabMobile,
@@ -37,20 +32,20 @@ const MobileFeedLayout = ({ businesses, filters }: MobileFeedLayoutProps) => {
     setActiveIndex,
     isFackLoading,
   } = useMobileFeedLayout(businesses);
-  const { hideFirstTwoSection, setHideFirstTwoSection } = useGeneralStore();
-  const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
-  const [appliedFilterCount, setAppliedFilterCount] = useState(0);
+  const {
+    appliedFilterCount,
+    filteredSubCategories,
+    isSelected,
+    toggleParam,
+    handleResetFilters,
+  } = useFeedFilter(filters);
 
-  const getCurrentParams = () => {
-    if (typeof window === "undefined") {
-      return new URLSearchParams(searchParams.toString());
-    }
-    return new URLSearchParams(window.location.search);
-  };
-
-  const [paramsState, setParamsState] = useState<URLSearchParams>(() =>
-    getCurrentParams(),
-  );
+  const {
+    hideFirstTwoSection,
+    setHideFirstTwoSection,
+    isFilterDrawerOpen,
+    setIsFilterDrawerOpen,
+  } = useGeneralStore();
 
   // Prepare feed items for carousel
   const carouselItems = useMemo(
@@ -69,41 +64,6 @@ const MobileFeedLayout = ({ businesses, filters }: MobileFeedLayoutProps) => {
       setHideFirstTwoSection(true);
     }
   }, [pathname]);
-
-  // ---- APPLY DEFAULT FILTERS ON FIRST LOAD ----
-  useEffect(() => {
-    try {
-      if (typeof window === "undefined") return;
-
-      if (!initialSelectedFiltersIds) return;
-
-      const { sanitized, totalCount } = sanitizeInitialFilters(
-        initialSelectedFiltersIds,
-        filters,
-      );
-      setAppliedFilterCount(totalCount);
-      const params = getCurrentParams();
-      let shouldUpdate = false;
-
-      Object.entries(sanitized).forEach(([key, values]) => {
-        if (!Array.isArray(values) || values.length === 0) return;
-
-        const existing = params.get(key);
-        if (!existing || existing.trim() === "") {
-          params.set(key, values.join(","));
-          shouldUpdate = true;
-        }
-      });
-
-      if (shouldUpdate) {
-        const nextParams = new URLSearchParams(params);
-        setParamsState(nextParams);
-        router.replace(`?${nextParams.toString()}`, { scroll: false });
-      }
-    } catch (error) {
-      console.error("Error applying default filters:", error);
-    }
-  }, [initialSelectedFiltersIds]);
 
   if (!isMobile) return null;
   if (!feedItems?.length) return null;
@@ -158,11 +118,12 @@ const MobileFeedLayout = ({ businesses, filters }: MobileFeedLayoutProps) => {
           itemCount={businesses?.data?.length}
           isOpen={isFilterDrawerOpen}
           setIsOpen={setIsFilterDrawerOpen}
-          paramsState={paramsState}
-          setParamsState={setParamsState}
           filters={filters}
           appliedFilterCount={appliedFilterCount}
-          setAppliedFilterCount={setAppliedFilterCount}
+          isSelected={isSelected}
+          toggleParam={toggleParam}
+          handleResetFilters={handleResetFilters}
+          filteredSubCategories={filteredSubCategories}
         />
       )}
     </div>
