@@ -15,6 +15,7 @@ import StickyYellowRibbonImage from "../StickyYellowRibbonImage";
 import FeedFilterDrawer from "../drawer/FeedFilterDrawer";
 import { useRouter, useSearchParams } from "next/navigation";
 import { initialSelectedFiltersIds } from "@/providers/SiteInfoClientProvider";
+import { sanitizeInitialFilters } from "@/lib/helpers";
 
 const FeedLayout = ({
   businesses,
@@ -27,8 +28,6 @@ const FeedLayout = ({
 
   const isHydrated = useIsHydrated();
   const searchParams = useSearchParams();
-
-  const isAllClear = searchParams.get("isAllClear") === "true";
 
   const { activeFilterTab, hideFirstTwoSection, setAppliedFilterItemCount } =
     useGeneralStore();
@@ -63,14 +62,19 @@ const FeedLayout = ({
   // ---- APPLY DEFAULT FILTERS ON FIRST LOAD ----
   useEffect(() => {
     try {
-      if (typeof window === "undefined" || isAllClear) return;
+      if (typeof window === "undefined") return;
 
       if (!initialSelectedFiltersIds) return;
 
+      const { sanitized, totalCount } = sanitizeInitialFilters(
+        initialSelectedFiltersIds,
+        filters,
+      );
+      setAppliedFilterCount(totalCount);
       const params = getCurrentParams();
       let shouldUpdate = false;
 
-      Object.entries(initialSelectedFiltersIds).forEach(([key, values]) => {
+      Object.entries(sanitized).forEach(([key, values]) => {
         if (!Array.isArray(values) || values.length === 0) return;
 
         const existing = params.get(key);
@@ -88,7 +92,7 @@ const FeedLayout = ({
     } catch (error) {
       console.error("Error applying default filters:", error);
     }
-  }, [isAllClear, initialSelectedFiltersIds]);
+  }, [initialSelectedFiltersIds]);
 
   if (!isHydrated) return null;
 

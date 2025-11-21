@@ -15,6 +15,7 @@ import {
 } from "../ui/svgIcons";
 import { ICON_MAP, SERVICE_TYPE_MAP } from "@/lib/utils";
 import clsx from "clsx";
+import { initialSelectedFiltersIds } from "@/constant/placeholderData";
 
 interface FeedFilterDrawerProps {
   isOpen: boolean;
@@ -55,7 +56,7 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const categoryId = searchParams.get("categoryId");
+  const categoryIds = searchParams.get("categoryIds");
 
   // Always read current URL params (live, never stale)
   const getCurrentParams = () => {
@@ -85,7 +86,6 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
     else params.delete(key);
 
     const nextParams = new URLSearchParams(params);
-
     // Remove old isAllClear always
     nextParams.delete("isAllClear");
 
@@ -114,6 +114,7 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
     setParamsState(nextParams);
 
     const totalApplied = getTotalAppliedFilters(nextParams);
+    setAppliedFilterCount(totalApplied);
 
     const isAllClear = totalApplied === 0;
 
@@ -136,6 +137,7 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
       setParamsState(nextParams);
 
       const totalApplied = getTotalAppliedFilters(nextParams);
+      setAppliedFilterCount(totalApplied);
 
       if (totalApplied === 0) {
         router.push(`?isAllClear=true`, { scroll: false });
@@ -149,19 +151,12 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
     }
   };
 
-  useEffect(() => {
-    if (paramsState) {
-      const totalApplied = getTotalAppliedFilters(paramsState);
-      setAppliedFilterCount(totalApplied);
-    }
-  }, [paramsState, setAppliedFilterCount]);
-
   // Reset serviceTypes when main category changes
   useEffect(() => {
-    if (categoryId) {
+    if (categoryIds) {
       clearParam("serviceTypes");
     }
-  }, [categoryId]);
+  }, [categoryIds]);
 
   // Filtered subcategories based on selected main categories
   const selectedCategoryIds = getSelected("categoryIds");
@@ -216,15 +211,20 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
             <div className="font-bold text-theme">{filterPanelLabels.main}</div>
             <div className="grid grid-cols-12 gap-x-1 gap-y-2 mt-2">
               {/* Point of Interest */}
-              <FilterButton
-                active={isSelected("serviceTypes", SERVICE_TYPE_MAP.poi)}
-                onClick={() =>
-                  toggleParam("serviceTypes", SERVICE_TYPE_MAP.poi)
-                }
-                icon={<PointOfInterestIcon strokColor="#7c7c7c" />}
-                activeIcon={<PointOfInterestIcon strokColor="#fff" />}
-                label={filterPanelLabels.pointOfInterest}
-              />
+
+              {initialSelectedFiltersIds?.serviceTypes?.includes(
+                SERVICE_TYPE_MAP.poi,
+              ) && (
+                <FilterButton
+                  active={isSelected("serviceTypes", SERVICE_TYPE_MAP.poi)}
+                  onClick={() =>
+                    toggleParam("serviceTypes", SERVICE_TYPE_MAP.poi)
+                  }
+                  icon={<PointOfInterestIcon strokColor="#7c7c7c" />}
+                  activeIcon={<PointOfInterestIcon strokColor="#fff" />}
+                  label={filterPanelLabels.pointOfInterest}
+                />
+              )}
 
               {/* Main Categories */}
               {filters?.categories?.slice(0, 4).map((menu) => {
@@ -253,26 +253,34 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
               />
 
               {/* Events */}
-              <FilterButton
-                active={isSelected("serviceTypes", SERVICE_TYPE_MAP.event)}
-                onClick={() =>
-                  toggleParam("serviceTypes", SERVICE_TYPE_MAP.event)
-                }
-                icon={<EventIcon strokColor="#7c7c7c" />}
-                activeIcon={<EventIcon strokColor="#fff" />}
-                label={filterPanelLabels.events}
-              />
+              {initialSelectedFiltersIds?.serviceTypes?.includes(
+                SERVICE_TYPE_MAP.event,
+              ) && (
+                <FilterButton
+                  active={isSelected("serviceTypes", SERVICE_TYPE_MAP.event)}
+                  onClick={() =>
+                    toggleParam("serviceTypes", SERVICE_TYPE_MAP.event)
+                  }
+                  icon={<EventIcon strokColor="#7c7c7c" />}
+                  activeIcon={<EventIcon strokColor="#fff" />}
+                  label={filterPanelLabels.events}
+                />
+              )}
 
               {/* Routes */}
-              <FilterButton
-                active={isSelected("serviceTypes", SERVICE_TYPE_MAP.route)}
-                onClick={() =>
-                  toggleParam("serviceTypes", SERVICE_TYPE_MAP.route)
-                }
-                icon={<RouteIcon strokColor="#7c7c7c" />}
-                activeIcon={<RouteIcon strokColor="#fff" />}
-                label={filterPanelLabels.routes}
-              />
+              {initialSelectedFiltersIds?.serviceTypes?.includes(
+                SERVICE_TYPE_MAP.route,
+              ) && (
+                <FilterButton
+                  active={isSelected("serviceTypes", SERVICE_TYPE_MAP.route)}
+                  onClick={() =>
+                    toggleParam("serviceTypes", SERVICE_TYPE_MAP.route)
+                  }
+                  icon={<RouteIcon strokColor="#7c7c7c" />}
+                  activeIcon={<RouteIcon strokColor="#fff" />}
+                  label={filterPanelLabels.routes}
+                />
+              )}
             </div>
           </div>
 
@@ -372,7 +380,7 @@ const FilterButton: React.FC<{
 }> = ({ active, onClick, icon, activeIcon, label }) => (
   <div
     onClick={onClick}
-    className={`md:col-span-6 sm:col-span-12 lg:col-span-4 custom-cursor flex items-center justify-start gap-2 border border-theme rounded-3xl ps-3 h-[42px] transition-all
+    className={`md:col-span-6 max-sm:col-span-4 sm:col-span-12 lg:col-span-4 custom-cursor flex items-center justify-start gap-2 border border-theme rounded-3xl ps-3 h-[42px] transition-all
       ${active ? "bg-black text-white" : "text-theme"}`}
   >
     {active ? activeIcon : icon}

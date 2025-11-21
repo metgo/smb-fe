@@ -32,7 +32,7 @@ export const useGoogleMapMobile = () => {
   const infoWindowRef = useRef<google.maps.InfoWindow | null>(null);
 
   const searchParams = useSearchParams();
-  const activeCategoryId = searchParams.get("categoryId") || "";
+  const activeCategoryIds = searchParams.get("categoryIds") || "";
 
   const { activeFilterTabMobile, clickedBusinessId } = useGeneralStore();
   const [map, setMap] = useState<google.maps.Map | null>(null);
@@ -206,8 +206,10 @@ export const useGoogleMapMobile = () => {
     markersRef.current = [];
 
     const uniqueLocations = new Set();
-    const filteredBusiness = activeCategoryId
-      ? businesses.filter((item) => item.primaryCategoryId === activeCategoryId)
+    const filteredBusiness = activeCategoryIds
+      ? businesses.filter((item) =>
+          activeCategoryIds?.includes(item.primaryCategoryId),
+        )
       : businesses;
 
     filteredBusiness.forEach((business) => {
@@ -367,7 +369,7 @@ export const useGoogleMapMobile = () => {
     if (businesses.length > 0) {
       addMarkers();
     }
-  }, [businesses, activeCategoryId, mapDimensions.padding]);
+  }, [businesses, activeCategoryIds, mapDimensions.padding]);
 
   // Separate effect to handle clickedBusinessId changes
   useEffect(() => {

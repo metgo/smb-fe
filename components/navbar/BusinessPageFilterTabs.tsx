@@ -18,7 +18,7 @@ const BusinessPageFilterTabs = () => {
     useGeneralStore();
 
   const [indicatorStyle, setIndicatorStyle] = useState({
-    left: 1,
+    left: -1,
     width: 0,
   });
 
