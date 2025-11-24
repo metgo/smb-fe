@@ -25,6 +25,7 @@ const IconImage = ({
       height={height}
       onClick={onClick}
       src={iconSrc}
+      unoptimized
       className={`${onClick && " hover:opacity-80"}  transition-transform duration-400 ease-in-out custom-cursor`}
     />
   );

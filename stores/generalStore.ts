@@ -10,10 +10,6 @@ type LatLngType = {
   lng: number;
 };
 
-interface AminitiesInfoType {
-  [key: string]: boolean;
-}
-
 interface GeneralStoreState {
   zIndex: string;
   setZIndex: (value: string) => void;

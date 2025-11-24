@@ -2,19 +2,18 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { IoLocationSharp } from "react-icons/io5";
 import { BiSolidNavigation } from "react-icons/bi";
 
 import { IconImage } from "../ui";
 import { menuItems, misc } from "@/constant/hebrew";
 import AttributePills from "../AttributePills";
-import { getCityOrCenter } from "@/lib/helpers";
 import { Map } from "@/app/(details)/_components";
 import MobileProductList from "./ProductList.mobile";
 import MobileImageGallery from "./ImageGallery.mobile";
 import { categoryColors, daysMapping } from "@/lib/utils";
 import MobileDeliveriesContent from "./DeliveriesContent.mobile ";
 import MobileLinkShareBottomDrawer from "./LinkShareBottomDrawer.mobile";
+import { removeInlineStylesFromHTML } from "@/lib/helpers";
 
 const OpeningDayHours = ({ days, open, close }: OpeningHrs) => (
   <div className="flex justify-between gap-24 font-normal  text-theme">
@@ -72,19 +71,11 @@ const MobileBusinessDetails = ({
           <div
             className=" font-normal text-theme mb-4"
             dangerouslySetInnerHTML={{
-              __html: businessDetails?.shortDescription || "",
+              __html: removeInlineStylesFromHTML(
+                businessDetails?.shortDescription || "",
+              ),
             }}
           />
-
-          <div className="flex items-center gap-2 mt-2">
-            <IoLocationSharp
-              size={34}
-              color={categoryColors[businessDetails.primaryCategoryId]}
-            />
-            <span className="font-bold text-xl">
-              {getCityOrCenter(businessDetails?.address)}
-            </span>
-          </div>
         </section>
 
         <MobileImageGallery images={businessDetails?.images} />

@@ -11,7 +11,11 @@ import { navigationPathsByServiceType } from "@/lib/utils";
 import { startLoading } from "../wrappers/ProgressBar";
 import { useImagePresent } from "@/hooks/image/useImagePresent";
 import { IconImage } from "@/components/ui";
-import { getCityOrCenter, getPrimaryCategoryId } from "@/lib/helpers";
+import {
+  getCityOrCenter,
+  getPrimaryCategoryId,
+  removeInlineStylesFromHTML,
+} from "@/lib/helpers";
 import { googleSendGtmEvent, triggerName } from "@/lib/googleEventsConfig";
 import { CardSkeleton } from "../skeletons";
 import { staticImages } from "@/constant/staticImages";
@@ -190,10 +194,7 @@ const FeedCardMobile = ({ height, width, feedItem }: FeedCardProps) => {
         />
 
         {/* Content Overlay */}
-        <FeedCardContent
-          feedItem={feedItem}
-          locationText={computedValues.locationText}
-        />
+        <FeedCardContent feedItem={feedItem} />
         <button
           type="button"
           onClick={() => handleNavigation(feedItem.serviceType)}
@@ -210,26 +211,22 @@ const FeedCardMobile = ({ height, width, feedItem }: FeedCardProps) => {
 };
 
 // Extracted sub-components for better organization
-const FeedCardContent = ({
-  feedItem,
-  locationText,
-}: {
-  feedItem: any;
-  locationText: string | undefined;
-}) => (
+const FeedCardContent = ({ feedItem }: { feedItem: any }) => (
   <div className="relative w-full h-full overflow-hidden">
     {/* Gradient Overlay */}
     <div className="absolute bottom-0 right-0 h-full w-full bg-gradient-to-tl from-black/80 via-black/40 to-black/20 rounded-b-xl" />
 
     {/* Text Content */}
     <div className="absolute bottom-0 right-0 px-2 py-4 text-white font-bold w-full">
-      <h3 className="text-sm line-clamp-1">{feedItem?.name}</h3>
-      {feedItem?.serviceType !== "point_of_interest" && locationText && (
-        <div className="flex items-center gap-2">
-          <IconImage icon="location" width={16} height={16} />
-          <span className="text-sm">{locationText}</span>
-        </div>
-      )}
+      <div
+        className="line-clamp-1"
+        dangerouslySetInnerHTML={{
+          __html: removeInlineStylesFromHTML(
+            feedItem?.shortDescription || feedItem?.description,
+          ),
+        }}
+      />
+      <h3 className="line-clamp-1 font-normal text-[12px]">{feedItem?.name}</h3>
     </div>
 
     <div className="absolute top-2 left-0">
@@ -240,7 +237,7 @@ const FeedCardContent = ({
       )}
       {feedItem?.serviceType === "event" && (
         <div className="bg-black/50 rounded-full p-1 flex items-center justify-center absolute left-[8px] top-[1px] w-7 h-7">
-          <IconImage width={20} height={20} icon="event" />
+          <IconImage width={16} height={16} icon="event" />
         </div>
       )}
       {feedItem?.serviceType === "trip" && (

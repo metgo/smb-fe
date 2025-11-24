@@ -67,7 +67,7 @@ export const SiteInfoClientProvider = ({
 
       // Filter out 'business' and 'event' from serviceTypes
       const filteredServiceTypes = res.serviceTypes.filter(
-        (type: string) => type !== "business" && type !== "event",
+        (type: string) => type !== "business",
       );
 
       // Return the modified object
