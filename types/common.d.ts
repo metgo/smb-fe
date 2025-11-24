@@ -7,6 +7,10 @@ interface HomeVideo {
   isActive: boolean;
 }
 
+interface AminitiesInfoType {
+  [key: string]: boolean;
+}
+
 interface SiteConfig {
   name: string;
   metaTitle: string;
