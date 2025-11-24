@@ -27,12 +27,11 @@ const FeedLyoutSwitcTabs = () => {
 
   // ⭐ FIX: Always calculate correct indicator position on load & tab change
   useLayoutEffect(() => {
-    const activeTabElement = tabRefs.current[activeFilterTab];
-    const container = containerRef.current;
+    const calculateIndicator = () => {
+      const activeTabElement = tabRefs.current[activeFilterTab];
+      const container = containerRef.current;
 
-    if (activeTabElement && container) {
-      // wait for layout to fully stabilize
-      requestAnimationFrame(() => {
+      if (activeTabElement && container) {
         const containerRect = container.getBoundingClientRect();
         const tabRect = activeTabElement.getBoundingClientRect();
 
@@ -40,8 +39,20 @@ const FeedLyoutSwitcTabs = () => {
           left: tabRect.left - containerRect.left,
           width: tabRect.width,
         });
-      });
-    }
+      }
+    };
+
+    // Calculate immediately and after a short delay
+    calculateIndicator();
+    const timer = setTimeout(calculateIndicator, 10);
+
+    // Recalculate on window resize
+    window.addEventListener("resize", calculateIndicator);
+
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("resize", calculateIndicator);
+    };
   }, [activeFilterTab]);
 
   function handleTabSwitch(key: string) {
