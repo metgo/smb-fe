@@ -95,7 +95,7 @@ export default function useFeedFilter(filters: FiltersResponse) {
     } catch (error) {
       console.error("Error applying default filters:", error);
     }
-  }, []);
+  }, [initialSelectedFiltersIds]);
 
   // Always read current URL params (live, never stale)
   const getSelected = (key: string) => {
