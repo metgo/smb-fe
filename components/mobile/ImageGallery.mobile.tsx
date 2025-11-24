@@ -23,10 +23,10 @@ const MobileImageGallery = ({ images }: { images: ImageItem[] }) => {
   };
 
   return (
-    <div className="max-sm:block md:hidden px-4">
+    <div className="max-sm:block md:hidden px-4 w-full">
       {/* Main Image */}
       <NextImage
-        width={380}
+        width={100}
         height={380}
         imgSrc={images?.[activeIndex]?.image}
         alt={images?.[activeIndex]?.alt}
