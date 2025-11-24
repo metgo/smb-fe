@@ -152,8 +152,23 @@ export function flatStationDetails(station: TrailStationProps) {
 // }
 
 export function removeInlineStylesFromHTML(html: string): string {
-  if (html) return html?.replace(/\s*style="[^"]*"/gi, "");
-  return "";
+  if (!html) return "";
+
+  return (
+    html
+      // remove inline styles
+      .replace(/\s*style="[^"]*"/gi, "")
+      // remove bold tags
+      .replace(/<\/?b>/gi, "")
+      .replace(/<\/?strong>/gi, "")
+      // remove italic tags
+      .replace(/<\/?i>/gi, "")
+      .replace(/<\/?em>/gi, "")
+      // remove underline tags
+      .replace(/<\/?u>/gi, "")
+      // remove span tags (optional — spans often contain styling)
+      .replace(/<\/?span[^>]*>/gi, "")
+  );
 }
 
 export function getPrimaryCategoryId(

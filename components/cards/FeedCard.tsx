@@ -213,7 +213,6 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
           images={images}
           activeImageIndex={activeImageIndex}
           setActiveImageIndex={setActiveImageIndex}
-          locationText={computedValues.locationText}
         />
 
         {/* Action Icons */}
@@ -244,7 +243,6 @@ const FeedCardContent = ({
   images,
   activeImageIndex,
   setActiveImageIndex,
-  locationText,
 }: {
   feedItem: any;
   pageTypes: {
@@ -254,8 +252,6 @@ const FeedCardContent = ({
   images: any[];
   activeImageIndex: number;
   setActiveImageIndex: React.Dispatch<React.SetStateAction<number>>;
-
-  locationText: string | undefined;
 }) => (
   <div className="relative w-full h-full">
     {/* Gradient Overlay */}
@@ -263,25 +259,17 @@ const FeedCardContent = ({
 
     {/* Text Content */}
     <div className="absolute bottom-0 right-0 p-4 text-white font-bold w-full">
-      <h3 className="lg:text-[1rem] 3xl:text-[1.5rem] line-clamp-1">
-        {feedItem?.name}
-      </h3>
-
-      {feedItem?.serviceType !== "point_of_interest" && (
-        <div className="flex items-center gap-2">
-          <IconImage icon="location" width={20} height={20} />
-          <span className="md:text-sm">{locationText}</span>
-        </div>
-      )}
+      <div
+        className="line-clamp-1"
+        dangerouslySetInnerHTML={{
+          __html: removeInlineStylesFromHTML(
+            feedItem?.shortDescription || feedItem?.description,
+          ),
+        }}
+      />
+      <h3 className="line-clamp-1 font-normal text-[12px]">{feedItem?.name}</h3>
 
       <div className="hidden group-hover:block">
-        <div
-          dangerouslySetInnerHTML={{
-            __html: removeInlineStylesFromHTML(feedItem?.description),
-          }}
-          className="line-clamp-2 font-bold text-[12px] text-white mt-1"
-        />
-
         {!pageTypes.isEventPage && images.length > 1 && (
           <ImageCarouselControls
             totalImages={feedItem?.images?.length}
@@ -341,12 +329,12 @@ const FeedCardActions = ({
       )}
       {feedItem.serviceType === "event" && (
         <div className="bg-black/50 rounded-full p-1 flex items-center justify-center absolute left-[8px] top-[1px] w-8 h-8">
-          <IconImage width={24} height={24} icon="event" />
+          <IconImage width={19} height={19} icon="event" />
         </div>
       )}
       {feedItem.serviceType === "trip" && (
         <div className="bg-black/50 rounded-full p-1 flex items-center justify-center absolute left-[8px] top-[1px] w-8 h-8">
-          <IconImage width={20} height={20} icon="trip" />
+          <IconImage width={17} height={17} icon="trip" />
         </div>
       )}
       {feedItem.serviceType === "funday" && (

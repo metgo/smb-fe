@@ -3,7 +3,6 @@ import { MapNavButton, NextImage } from "@/components/ui";
 import {
   BusinessDetailsFilterTab,
   ImageGallery,
-  RatingReviewLocation,
   Title,
 } from "../../_components";
 import AttributePills from "@/components/AttributePills";
@@ -12,7 +11,7 @@ import { getProducts } from "@/actions/productActions";
 import NoFeedItemLayout from "@/components/layouts/NoFeedItemLayout";
 import ShareUrlBtnModal from "@/components/ShareUrlBtnModal";
 import MobileBusinessDetails from "@/components/mobile/BusinessDetails.mobile";
-import { shuffleArray } from "@/lib/helpers";
+import { removeInlineStylesFromHTML, shuffleArray } from "@/lib/helpers";
 
 const page = async ({ params }: PageProps) => {
   const { slug } = await params;
@@ -40,10 +39,13 @@ const page = async ({ params }: PageProps) => {
             <Title title={businessDetails?.name} />
 
             <div className=" flex items-center justify-between w-full">
-              <RatingReviewLocation
-                address={businessDetails?.address}
-                ratingCount={12}
-                reviewCount={34}
+              <div
+                className="line-clamp-1 text-theme text-[22px] font-bold"
+                dangerouslySetInnerHTML={{
+                  __html: removeInlineStylesFromHTML(
+                    businessDetails?.shortDescription,
+                  ),
+                }}
               />
               <div className="flex items-center justify-end gap-2.5">
                 <MapNavButton
