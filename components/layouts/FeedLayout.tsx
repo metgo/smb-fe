@@ -29,6 +29,7 @@ const FeedLayout = ({
     setAppliedFilterItemCount,
     setIsFilterDrawerOpen,
     isFilterDrawerOpen,
+    setHideFirstTwoSection,
   } = useGeneralStore();
 
   const { sentryRef, loading, initialLoadDone, canLoadMore } = useLoadMore(
@@ -51,7 +52,20 @@ const FeedLayout = ({
     }
   }, [businesses, setAppliedFilterItemCount]);
 
-  if (!isHydrated) return null;
+  useEffect(() => {
+    const navEntries = performance.getEntriesByType(
+      "navigation",
+    ) as PerformanceNavigationTiming[];
+    const isReload =
+      (navEntries && navEntries[0]?.type === "reload") ||
+      performance.navigation.type === 1;
+
+    if (isReload) {
+      setHideFirstTwoSection(true);
+    }
+  }, []);
+
+  if (!isHydrated || !hideFirstTwoSection) return null;
 
   const renderLayout = () => {
     switch (activeFilterTab) {

@@ -6,7 +6,7 @@ import { IoLocationSharp } from "react-icons/io5";
 import { BiSolidNavigation } from "react-icons/bi";
 
 import { IconImage } from "../ui";
-import { misc } from "@/constant/hebrew";
+import { menuItems, misc } from "@/constant/hebrew";
 import AttributePills from "../AttributePills";
 import { getCityOrCenter } from "@/lib/helpers";
 import { Map } from "@/app/(details)/_components";
@@ -69,6 +69,13 @@ const MobileBusinessDetails = ({
 
         <section className="px-10 py-4">
           <h1 className="text-6xl font-bold">{businessDetails.name}</h1>
+          <div
+            className=" font-normal text-theme mb-4"
+            dangerouslySetInnerHTML={{
+              __html: businessDetails?.shortDescription || "",
+            }}
+          />
+
           <div className="flex items-center gap-2 mt-2">
             <IoLocationSharp
               size={34}
@@ -81,7 +88,7 @@ const MobileBusinessDetails = ({
         </section>
 
         <MobileImageGallery images={businessDetails?.images} />
-        <section className="px-6 py-2 ">
+        <section className="px-4">
           <AttributePills
             items={[
               ...businessDetails?.accessibilitiesId,
@@ -89,13 +96,15 @@ const MobileBusinessDetails = ({
             ]}
           />
         </section>
-
-        <div
-          className="font-normal text-theme line-clamp-3 mt-4 mb-8 px-10 py-4"
-          dangerouslySetInnerHTML={{
-            __html: businessDetails?.shortDescription || "",
-          }}
-        />
+        <div className=" mt-4 mb-8 px-8 py-4">
+          <h2 className="text-3xl font-bold">{menuItems.ourStory}</h2>
+          <div
+            className="font-normal text-theme text-wrap"
+            dangerouslySetInnerHTML={{
+              __html: businessDetails?.description || "",
+            }}
+          />
+        </div>
 
         {products?.length > 0 && (
           <MobileProductList

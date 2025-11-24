@@ -1,13 +1,21 @@
 "use client";
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useLayoutEffect, useState, useRef, useEffect } from "react";
 
 import { filterTabs } from "@/lib/utils";
-import { IconImage } from "@/components/ui";
 import useGeneralStore from "@/stores/generalStore";
-import { useLayoutEffect, useState, useRef } from "react";
+import { IconImage } from "@/components/ui";
 
-const FeedLyoutSwitcTabs = () => {
+// Smooth scroll helper
+const scrollToFeed = (isHomepage: boolean) => {
+  window.scrollTo({
+    top: isHomepage ? window.innerHeight : 0,
+    behavior: "smooth",
+  });
+};
+
+export default function FeedLyoutSwitcTabs() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -17,86 +25,126 @@ const FeedLyoutSwitcTabs = () => {
   const { setClickedBusinessId, activeFilterTab, setActiveFilterTab } =
     useGeneralStore();
 
-  const [indicatorStyle, setIndicatorStyle] = useState({
-    left: 0,
-    width: 0,
-  });
-
-  const tabRefs = useRef<{ [key: string]: HTMLButtonElement | null }>({});
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const tabRefs = useRef<Record<string, HTMLButtonElement | null>>({});
 
-  // ⭐ FIX: Always calculate correct indicator position on load & tab change
-  useLayoutEffect(() => {
-    const activeTabElement = tabRefs.current[activeFilterTab];
-    const container = containerRef.current;
+  const [indicator, setIndicator] = useState({ left: 0, width: 0 });
 
-    if (activeTabElement && container) {
-      // wait for layout to fully stabilize
-      requestAnimationFrame(() => {
-        const containerRect = container.getBoundingClientRect();
-        const tabRect = activeTabElement.getBoundingClientRect();
+  /* -------------------------------------------------------------
+     01 — Initialize tab from URL on mount
+  ------------------------------------------------------------- */
+  useEffect(() => {
+    const urlTab = searchParams.get("filterTab");
 
-        setIndicatorStyle({
-          left: tabRect.left - containerRect.left,
-          width: tabRect.width,
-        });
-      });
+    if (urlTab && filterTabs.some((t) => t.key === urlTab)) {
+      setActiveFilterTab(urlTab);
+    } else {
+      setActiveFilterTab("gallery"); // default
     }
+  }, []);
+
+  /* -------------------------------------------------------------
+     02 — Recalculate indicator whenever tab changes
+  ------------------------------------------------------------- */
+  const calculateIndicator = () => {
+    const container = containerRef.current;
+    const activeEl = tabRefs.current[activeFilterTab || "gallery"];
+    if (!container || !activeEl) return;
+
+    const cr = container.getBoundingClientRect();
+    const tr = activeEl.getBoundingClientRect();
+
+    setIndicator({
+      left: tr.left - cr.left,
+      width: tr.width,
+    });
+  };
+
+  useLayoutEffect(() => {
+    calculateIndicator();
+
+    // Extra frame for font load / SSR hydration shift
+    const t = setTimeout(calculateIndicator, 20);
+
+    return () => clearTimeout(t);
   }, [activeFilterTab]);
 
-  function handleTabSwitch(key: string) {
+  /* -------------------------------------------------------------
+     03 — Debounced resize listener
+  ------------------------------------------------------------- */
+  useEffect(() => {
+    let t: NodeJS.Timeout | null = null;
+
+    const handleResize = () => {
+      if (t) clearTimeout(t);
+      t = setTimeout(calculateIndicator, 100);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => {
+      if (t) clearTimeout(t);
+      window.removeEventListener("resize", handleResize);
+    };
+  }, [activeFilterTab]);
+
+  /* -------------------------------------------------------------
+     04 — Handle tab switching cleanly
+  ------------------------------------------------------------- */
+  const handleTabSwitch = (key: string) => {
+    if (key === activeFilterTab) return;
+
     setActiveFilterTab(key);
     setClickedBusinessId("");
-    const params = new URLSearchParams(searchParams.toString());
+
+    const params = new URLSearchParams(searchParams);
     params.set("filterTab", key);
 
-    window.scrollTo({
-      top: isHomepage ? window.innerHeight : 0,
-      left: 0,
-      behavior: "smooth",
-    });
-
     router.push(`?${params.toString()}`, { scroll: false });
-  }
+    scrollToFeed(isHomepage);
+  };
 
+  /* -------------------------------------------------------------
+     05 — UI
+  ------------------------------------------------------------- */
   return (
     <div className="flex items-center justify-center w-full">
       <div
         ref={containerRef}
         className="relative flex items-center gap-2 px-0.5 bg-[#EAEAEA] rounded-lg h-9 py-1"
       >
-        {/* Animated indicator */}
+        {/* Indicator Bar */}
         <div
-          className="absolute top-[2px] h-8 bg-white rounded-lg border-[1px] border-[#EAEAEA] transition-all duration-400 ease-in-out"
+          className="absolute top-[2px] h-8 bg-white rounded-lg border border-[#EAEAEA] transition-all duration-300 ease-out"
           style={{
-            left: `${indicatorStyle.left}px`,
-            width: `${indicatorStyle.width}px`,
+            left: indicator.left,
+            width: indicator.width,
           }}
         />
 
-        {filterTabs.map((item) => (
-          <button
-            key={item.key}
-            ref={(el) => {
-              tabRefs.current[item.key] = el;
-            }}
-            type="button"
-            onClick={() => handleTabSwitch(item.key)}
-            className={`${
-              (activeFilterTab || "gallery") === item.key
-                ? "flex items-center gap-1.5 px-2.5 py-1.5 font-bold"
-                : "px-2 py-2 font-normal"
-            } relative z-10 rounded-lg custom-cursor text-sm text-theme transition-all duration-300`}
-          >
-            {(activeFilterTab || "gallery") === item.key && (
-              <IconImage icon={item.icon} width={20} height={20} />
-            )}
-            <span>{item.label}</span>
-          </button>
-        ))}
+        {filterTabs.map((item) => {
+          const isActive = (activeFilterTab || "gallery") === item.key;
+
+          return (
+            <button
+              key={item.key}
+              ref={(el) => {
+                tabRefs.current[item.key] = el;
+              }}
+              onClick={() => handleTabSwitch(item.key)}
+              className={`relative z-10 flex items-center gap-1.5 rounded-lg custom-cursor text-sm transition-all duration-300 ${
+                isActive
+                  ? "px-2.5 py-1.5 font-bold text-theme"
+                  : "px-2 py-2 font-normal text-theme"
+              }`}
+            >
+              {isActive && (
+                <IconImage icon={item.icon} width={20} height={20} />
+              )}
+              <span>{item.label}</span>
+            </button>
+          );
+        })}
       </div>
     </div>
   );
-};
-
-export default FeedLyoutSwitcTabs;
+}
