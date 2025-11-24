@@ -3,6 +3,7 @@
 import clsx from "clsx";
 import { MotionDialogDiv } from "../ui";
 import { filterPanelLabels } from "@/constant/hebrew";
+import { motion, AnimatePresence } from "framer-motion";
 
 import {
   AiIcon,
@@ -49,26 +50,26 @@ const MobileFeedFilterDrawer: React.FC<MobileFeedFilterDrawerProps> = ({
     <>
       <div
         onClick={() => setIsOpen(false)}
-        className="fixed inset-0 bg-black/40 z-10 custom-cursor"
+        className="fixed inset-0 z-50 custom-cursor"
       />
 
       {/* DRAWER */}
       <MotionDialogDiv
         type="drawer-bottom"
         onClick={(e) => e.stopPropagation()}
-        className="
-        fixed inset-x-0 bottom-0 z-10
-        w-full bg-white
-         shadow-t-2xl flex flex-col max-h-[90vh]
-      "
+        className={clsx(
+          "fixed inset-x-0 bottom-0 z-50 w-full bg-white flex flex-col shadow-2xl",
+          showAllFilters ? "h-[calc(100dvh-65px)]" : "max-h-max",
+        )}
       >
         {/* SHEET HANDLER */}
         <div className="w-full flex justify-center items-center pt-4">
           <button
             type="button"
-            onClick={() => setShowAllFilters(!showAllFilters)}
+            onClick={() => setShowAllFilters((prev) => !prev)}
+            className="transition-transform duration-300"
           >
-            {showAllFilters ? <UpAngleArrowIcon /> : <DownAngleArrowIcon />}
+            {showAllFilters ? <DownAngleArrowIcon /> : <UpAngleArrowIcon />}
           </button>
         </div>
 
@@ -155,62 +156,80 @@ const MobileFeedFilterDrawer: React.FC<MobileFeedFilterDrawerProps> = ({
             </div>
           </div>
 
-          {showAllFilters && (
-            <>
-              {/* SUBCATEGORIES */}
-              {filteredSubCategories && filteredSubCategories?.length > 0 && (
-                <div className="border-b border-primary py-3">
-                  <div className="font-bold text-theme">
-                    {filterPanelLabels.second}
-                  </div>
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {filteredSubCategories.map((item) => (
-                      <FilterChip
-                        key={item._id}
-                        active={isSelected("subCategoryIds", item._id)}
-                        onClick={() => toggleParam("subCategoryIds", item._id)}
-                        label={item.hebrewName}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
+          <AnimatePresence>
+            {showAllFilters && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{
+                  duration: 0,
+                  ease: "easeInOut",
+                }}
+                className="overflow-hidden"
+              >
+                <>
+                  {/* SUBCATEGORIES */}
+                  {filteredSubCategories &&
+                    filteredSubCategories?.length > 0 && (
+                      <div className="border-b border-primary py-3">
+                        <div className="font-bold text-theme">
+                          {filterPanelLabels.second}
+                        </div>
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {filteredSubCategories.map((item) => (
+                            <FilterChip
+                              key={item._id}
+                              active={isSelected("subCategoryIds", item._id)}
+                              onClick={() =>
+                                toggleParam("subCategoryIds", item._id)
+                              }
+                              label={item.hebrewName}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    )}
 
-              {/* ACCESSIBILITY */}
-              <div className="border-b border-primary py-3">
-                <div className="font-bold text-theme">
-                  {filterPanelLabels.accessibility}
-                </div>
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {filters?.accessibilities?.map((item) => (
-                    <FilterChip
-                      key={item._id}
-                      active={isSelected("accessibilityIds", item._id)}
-                      onClick={() => toggleParam("accessibilityIds", item._id)}
-                      label={item.hebrewName}
-                    />
-                  ))}
-                </div>
-              </div>
+                  {/* ACCESSIBILITY */}
+                  <div className="border-b border-primary py-3">
+                    <div className="font-bold text-theme">
+                      {filterPanelLabels.accessibility}
+                    </div>
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {filters?.accessibilities?.map((item) => (
+                        <FilterChip
+                          key={item._id}
+                          active={isSelected("accessibilityIds", item._id)}
+                          onClick={() =>
+                            toggleParam("accessibilityIds", item._id)
+                          }
+                          label={item.hebrewName}
+                        />
+                      ))}
+                    </div>
+                  </div>
 
-              {/* TARGET AUDIENCE (Group Types) */}
-              <div className="border-b border-primary py-3">
-                <div className="font-bold text-theme">
-                  {filterPanelLabels.targetAudiences}
-                </div>
-                <div className="flex flex-wrap gap-2 mt-2">
-                  {filters?.groupTypes?.map((item) => (
-                    <FilterChip
-                      key={item._id}
-                      active={isSelected("groupTypeIds", item._id)}
-                      onClick={() => toggleParam("groupTypeIds", item._id)}
-                      label={item.hebrewName}
-                    />
-                  ))}
-                </div>
-              </div>
-            </>
-          )}
+                  {/* TARGET AUDIENCE */}
+                  <div className="border-b border-primary py-3">
+                    <div className="font-bold text-theme">
+                      {filterPanelLabels.targetAudiences}
+                    </div>
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {filters?.groupTypes?.map((item) => (
+                        <FilterChip
+                          key={item._id}
+                          active={isSelected("groupTypeIds", item._id)}
+                          onClick={() => toggleParam("groupTypeIds", item._id)}
+                          label={item.hebrewName}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* CLOSE BUTTON */}

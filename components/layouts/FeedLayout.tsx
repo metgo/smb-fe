@@ -29,6 +29,7 @@ const FeedLayout = ({
     setAppliedFilterItemCount,
     setIsFilterDrawerOpen,
     isFilterDrawerOpen,
+    setHideFirstTwoSection,
   } = useGeneralStore();
 
   const { sentryRef, loading, initialLoadDone, canLoadMore } = useLoadMore(
@@ -50,6 +51,10 @@ const FeedLayout = ({
       setAppliedFilterItemCount(businesses?.data?.length);
     }
   }, [businesses, setAppliedFilterItemCount]);
+
+  useEffect(() => {
+    setHideFirstTwoSection(true);
+  }, []);
 
   if (!isHydrated) return null;
 
