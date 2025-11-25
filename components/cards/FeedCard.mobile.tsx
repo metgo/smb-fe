@@ -221,9 +221,7 @@ const FeedCardContent = ({ feedItem }: { feedItem: any }) => (
       <div
         className="line-clamp-1"
         dangerouslySetInnerHTML={{
-          __html: removeInlineStylesFromHTML(
-            feedItem?.shortDescription || feedItem?.description,
-          ),
+          __html: removeInlineStylesFromHTML(feedItem?.shortDescription),
         }}
       />
       <h3 className="line-clamp-1 font-normal text-[12px]">{feedItem?.name}</h3>
