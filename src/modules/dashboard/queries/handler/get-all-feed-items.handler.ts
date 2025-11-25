@@ -225,7 +225,7 @@ implements IQueryHandler<GetAllFeedItemsQuery> {
       });
 
       const mappedEvents = allEvents.data.map(event => ({
-        ...event,
+        ...event.toObject(),
         serviceType: ServicesTypes.EVENT,
         primaryCategoryId: '6566e208a77d2a477266d2b3',
       }));
