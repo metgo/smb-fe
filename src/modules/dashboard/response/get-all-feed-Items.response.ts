@@ -17,7 +17,7 @@ export class GetAllFeedItemResponse {
     name: string;
 
   @ApiProperty({ type: String, required: true })
-    description: string;
+    shortDescription: string;
 
   @ApiProperty({ type: GeoLocationDto, required: true })
     geoLocation?: GeoLocationDto;
