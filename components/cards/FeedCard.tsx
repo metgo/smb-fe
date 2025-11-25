@@ -35,6 +35,7 @@ interface FeedCardProps {
 }
 
 const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
+  console.log("🚀 ~ FeedCard ~ feedItem:", feedItem);
   const router = useRouter();
   const searchParams = useSearchParams();
   const [activeImageIndex, setActiveImageIndex] = useState(0);
@@ -262,9 +263,7 @@ const FeedCardContent = ({
       <div
         className="line-clamp-1"
         dangerouslySetInnerHTML={{
-          __html: removeInlineStylesFromHTML(
-            feedItem?.shortDescription || feedItem?.description,
-          ),
+          __html: removeInlineStylesFromHTML(feedItem?.shortDescription),
         }}
       />
       <h3 className="line-clamp-1 font-normal text-[12px]">{feedItem?.name}</h3>
