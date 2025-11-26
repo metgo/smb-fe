@@ -16,6 +16,8 @@ import { ApiEndpoint } from 'src/core/decorators/apiEndpoint.decorator';
 import { CartService } from 'src/modules/cart/cart.service';
 import { AddToCartDto } from 'src/modules/cart/dto/add-to-cart.dto';
 import { UpdateCartDto } from 'src/modules/cart/dto/update-cart.dto';
+import { DeleteItemFromCartDto } from './dto/delete-item-from-cart.dto';
+import { AddItemsToCartDto } from './dto/add-items-to-cart.dto';
 
 @Controller()
 export class CartController {
@@ -34,6 +36,25 @@ export class CartController {
   @Post('carts')
   async addToCart(@Body() body: AddToCartDto, @Req() req) {
     const cart = await this.cartService.createCart(body, req?.user);
+    return cart;
+  }
+
+  @ApiEndpoint({
+    tags: ['Cart'],
+    operation: 'Create cart with multiple products',
+    response: {
+      status: HttpStatus.CREATED,
+      description: ServerSuccess.CART.CREATED,
+    },
+    softBlockExtraDtoFields: true,
+  })
+  @HttpCode(HttpStatus.CREATED)
+  @Post('carts-items')
+  async addItemsToCart(@Body() body: AddItemsToCartDto, @Req() req) {
+    const cart = await this.cartService.createCartForMultipleProducts(
+      body,
+      req?.user,
+    );
     return cart;
   }
 
@@ -61,6 +82,36 @@ export class CartController {
     @Req() req,
   ) {
     await this.cartService.updateCart(cartId, body, req?.user);
+
+    return {
+      message: ServerSuccess.CART.UPDATED,
+    };
+  }
+
+  @ApiEndpoint({
+    tags: ['Cart'],
+    operation: 'Delete item of cart',
+    response: {
+      status: HttpStatus.OK,
+      description: ServerSuccess.CART.UPDATED,
+    },
+    params: [
+      {
+        name: 'cartId',
+        type: 'string',
+        required: true,
+      },
+    ],
+    softBlockExtraDtoFields: true,
+  })
+  @HttpCode(HttpStatus.OK)
+  @Patch('delete-item/:cartId')
+  async deleteItemFromCart(
+    @Body() body: DeleteItemFromCartDto,
+    @Param('cartId') cartId: string,
+    @Req() req,
+  ) {
+    await this.cartService.deleteItemFromCart(cartId, body, req?.user);
 
     return {
       message: ServerSuccess.CART.UPDATED,

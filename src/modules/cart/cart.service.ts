@@ -24,6 +24,8 @@ import { UpdateCartDto } from 'src/modules/cart/dto/update-cart.dto';
 import { ProductsService } from 'src/modules/products/products.services';
 import { OrderItemType } from '../orders/orders.type';
 import { GetTicketByIdQuery } from '../tickets/queries/get-ticket-by-id.query';
+import { DeleteItemFromCartDto } from './dto/delete-item-from-cart.dto';
+import { AddItemsToCartDto } from './dto/add-items-to-cart.dto';
 
 @Injectable()
 export class CartService {
@@ -120,6 +122,110 @@ export class CartService {
     } catch (error) {
       this.logger.error(
         `[${command.campCode} - CART]: FAILED TO ADD ITEM TO CART`,
+        {
+          err: error.message,
+        },
+      );
+      exceptionHandling(error);
+    }
+  }
+
+  async createCartForMultipleProducts(
+    command: AddItemsToCartDto,
+    loggedInUser?: LoggedInUserInterface,
+  ) {
+    try {
+      if (!command?.products || !command.products.length) {
+        throw new BadRequestException('Enter valid product details');
+      }
+
+      // Validate all products
+      // eslint-disable-next-line array-callback-return
+      command.products.map(product => {
+        if (!product?.quantity) {
+          throw new BadRequestException('Enter quantity for all product');
+        }
+
+        if (!product?.itemType) {
+          throw new BadRequestException('Enter type of item for all product');
+        }
+
+        if (!product?.id) {
+          throw new BadRequestException('Enter product id for all product');
+        }
+      });
+
+      let campId;
+      if (command?.campCode) {
+        campId = (
+          await this.campaignService.findCampaignAndReturn(
+            'code',
+            command?.campCode,
+          )
+        )?._id;
+      }
+
+      // Fetch information for all products
+      const productsWithInfo = await Promise.all(
+        command.products.map(async product => {
+          let itemInfo;
+
+          if (product.itemType === OrderItemType.PRODUCT) {
+            itemInfo = await this.productsService.getProductInformationForCart(
+              product,
+            );
+          }
+
+          if (product.itemType === OrderItemType.TICKET) {
+            itemInfo = await this.queryBus.execute(
+              new GetTicketByIdQuery(product.id),
+            );
+          }
+
+          if (!itemInfo) {
+            throw new NotFoundException(
+              `Product/Ticket with id ${product.id} not found`,
+            );
+          }
+
+          return {
+            id: product.id,
+            quantity: product.quantity,
+            itemType: product.itemType,
+            price: itemInfo?.price?.sellingPrice,
+          };
+        }),
+      );
+
+      const totalAmount = productsWithInfo.reduce(
+        (sum, product) => sum + product.price * product.quantity,
+        0,
+      );
+
+      const processedProducts = productsWithInfo.map(product => ({
+        id: product.id,
+        quantity: product.quantity,
+        itemType: product.itemType,
+      }));
+
+      const newCart = new this.CartModel({
+        product: processedProducts,
+        createdBy: loggedInUser?.id,
+        createdAt: new Date(),
+        totalAmount,
+        campId,
+      });
+
+      const cart = await newCart.save();
+
+      this.logger.info(`[${command.campCode} - CART]: Products added to cart`, {
+        message: cart,
+      });
+
+      return cart;
+    } catch (error) {
+      this.logger.error(
+        `[${command.campCode} - CART]: FAILED TO ADD ITEMS TO CART`,
         {
           err: error.message,
         },
@@ -421,6 +527,105 @@ export class CartService {
       return cart;
     } catch (err) {
       exceptionHandling(err);
+    }
+  }
+
+  async deleteItemFromCart(
+    cartId: string,
+    command: DeleteItemFromCartDto,
+    loggedInUser?: LoggedInUserInterface,
+  ) {
+    try {
+      const existingCart = await this.findOneById(cartId);
+
+      if (
+        existingCart?.status === CartStatus.TIME_OUT
+        || existingCart?.status === CartStatus.ORDER_PLACED
+      ) {
+        throw new BadRequestException(
+          'This cart is no longer available to update',
+        );
+      }
+
+      const productIndex = existingCart?.product.findIndex(
+        product => product.id.toString() === command.productId.toString(),
+      );
+
+      if (productIndex === -1) {
+        throw new NotFoundException('Product not found in cart');
+      }
+
+      // Remove the product from the cart
+      existingCart.product.splice(productIndex, 1);
+
+      // Recalculate total amount
+      const productIds = existingCart.product.filter(
+        op => op.itemType === OrderItemType.PRODUCT,
+      );
+
+      const ticketIds = existingCart.product.filter(
+        op => op.itemType === OrderItemType.TICKET,
+      );
+
+      let totalAmount = 0;
+
+      if (productIds?.length) {
+        const productInformation = await Promise.all(
+          productIds?.map(product => this.productsService.getProductInformationForCart(product)),
+        );
+
+        totalAmount = productInformation.reduce(
+          (total, pro, index) => total + pro.price.sellingPrice * productIds[index].quantity,
+          0,
+        );
+      }
+
+      if (ticketIds?.length) {
+        const ticketInformation = await Promise.all(
+          ticketIds?.map(
+            async ticket => await this.queryBus.execute(
+              new GetTicketByIdQuery(ticket.id.toString()),
+            ),
+          ),
+        );
+
+        totalAmount = ticketInformation.reduce(
+          (total, ticket, index) => total + ticket.price.sellingPrice * ticketIds[index].quantity,
+          totalAmount,
+        );
+      }
+
+      const updatedField = {
+        updatedBy: loggedInUser?.id,
+        updatedAt: new Date(),
+        product: existingCart.product,
+        totalAmount,
+      };
+
+      const updatedCart = await this.CartModel.findOneAndUpdate(
+        { _id: cartId },
+        updatedField,
+        { new: true },
+      );
+
+      if (!updatedCart?.product?.length) {
+        await this.deleteCart(updatedCart?._id.toString(), loggedInUser);
+        return;
+      }
+
+      this.logger.info('[EXTERNAL_API_CART]: Product removed from cart', {
+        message: updatedCart,
+      });
+
+      return updatedCart;
+    } catch (error) {
+      this.logger.error(
+        '[EXTERNAL_API_CART]: FAILED TO DELETE ITEM FROM CART',
+        {
+          err: error.message,
+        },
+      );
+      exceptionHandling(error);
     }
   }
 }
