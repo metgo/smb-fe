@@ -65,6 +65,7 @@ export const pathNames = {
   contactUs: "/contact-us",
   blogArticles: "/blogs-articles",
   blogArticleDetails: "/blog-article-details",
+  fundayEnquiry: "/funday-enquiry",
   joinBusiness:
     SITE_ENVIRONMENT === "prod"
       ? "https://console.metgo.app"
