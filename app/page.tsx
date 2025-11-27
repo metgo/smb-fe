@@ -34,6 +34,7 @@ const page = async ({ searchParams }: Props) => {
     groupTypeIds,
     serviceTypes,
     isAllClear,
+    page,
   } = params;
 
   // const initialSelectedFiltersIds:PresetFilterItems = await getPresetFilters()
@@ -58,7 +59,7 @@ const page = async ({ searchParams }: Props) => {
     ? serviceTypes.split(",")
     : initialSelectedFiltersIds?.serviceTypes;
 
-  // 🔥 Unified object (now includes default fallback)
+  // Unified object (now includes default fallback)
   const selectedFiltersIds = {
     categoryIds: categoriesArray || [],
     subCategoryIds: subCategoriesArray || [],
@@ -72,7 +73,7 @@ const page = async ({ searchParams }: Props) => {
   const filters = await getAllFilters(selectedFiltersIds);
 
   const businesses: BusinessesProps = await getAllFeeds(
-    1,
+    Number(page),
     selectedFiltersIds,
     isAllClear === "true",
   );

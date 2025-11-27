@@ -76,7 +76,7 @@ export const useLoadMore = (hasNextPage: boolean = false) => {
     try {
       const nextPage = pageCount + 1;
       const params = new URLSearchParams(searchParams.toString());
-      // params.set("page", nextPage.toString());
+      params.set("page", nextPage.toString());
 
       router?.replace(`?${params.toString()}`, { scroll: false });
       setPageCount(nextPage);
