@@ -176,7 +176,7 @@ export default function useFeedFilter(filters: FiltersResponse) {
       const nextParams = new URLSearchParams(params);
       nextParams.delete("isAllClear");
 
-      // ✅ Remove groupTypes & accessibilities if categories cleared
+      //  Remove groupTypes & accessibilities if categories cleared
       if (key === "categoryIds") {
         nextParams.delete("groupTypeIds");
         nextParams.delete("accessibilityIds");

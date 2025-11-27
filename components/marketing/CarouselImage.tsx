@@ -27,7 +27,7 @@ interface CarouselImageProps {
 const CarouselImage = ({ images, timeInterval }: CarouselImageProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const { height, scale } = useDeviceHeight();
+  const { scale } = useDeviceHeight();
 
   useEffect(() => {
     const handleWheel = (e: WheelEvent) => {
@@ -51,8 +51,8 @@ const CarouselImage = ({ images, timeInterval }: CarouselImageProps) => {
 
   return (
     <div
-      style={{ height: height ? height : "100vh" }}
-      className=" w-full relative overflow-hidden bg-black"
+      // style={{ height: height ? height : "100vh" }}
+      className=" w-full h-screen relative overflow-hidden bg-black"
     >
       <Swiper
         modules={[Navigation, Pagination, Autoplay, EffectFade]}
@@ -76,19 +76,18 @@ const CarouselImage = ({ images, timeInterval }: CarouselImageProps) => {
         fadeEffect={{
           crossFade: true,
         }}
-        className="h-full w-full bg-white"
+        className="h-screen w-full bg-white"
         onSlideChange={(swiper) => setCurrentIndex(swiper.realIndex)}
       >
         {images?.map((img, index) => (
           <SwiperSlide key={index} className="relative">
-            <div className="absolute max-sm:inset-0 md:inset-2">
+            <div className="absolute inset-0 h-screen">
               <Image
                 fill
                 src={img?.url}
                 alt={`slide-${index}`}
-                className="object-cover md:rounded-lg shadow-2xl"
+                className="object-cover h-screen shadow-2xl"
                 priority={index === 0}
-                sizes="100vw"
               />
               <MarketingContent scale={scale} content={img} />
               <div className="absolute inset-0 md:rounded-lg bg-gradient-to-tl from-black/80 via-black/20 to-transparent" />
@@ -99,7 +98,7 @@ const CarouselImage = ({ images, timeInterval }: CarouselImageProps) => {
 
       {/* Custom pagination dots */}
       <div
-        style={{ bottom: 40 * scale }}
+        style={{ bottom: 24 * scale }}
         className="absolute left-1/2 -translate-x-1/2 z-10 flex space-x-3"
       >
         {images?.map((_, idx) => (

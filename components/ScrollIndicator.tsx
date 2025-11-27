@@ -2,7 +2,7 @@
 
 import clsx from "clsx";
 import { IconImage } from "@/components/ui";
-import useGeneralStore from "@/stores/generalStore";
+// import useGeneralStore from "@/stores/generalStore";
 
 type ScrollIndicatorProps = {
   isSecond?: boolean;
@@ -14,37 +14,36 @@ type ScrollIndicatorProps = {
 
 const ScrollIndicator = ({
   isSecond = false,
-  hasMarketing = false,
   height,
   onClick,
 }: ScrollIndicatorProps) => {
-  const { setIsOnSection2, setHideFirstTwoSection } = useGeneralStore();
+  // const { setIsOnSection2, setHideFirstTwoSection } = useGeneralStore();
 
-  const handleClick = () => {
-    // Let parent perform the smooth scroll
-    onClick?.();
+  // const handleClick = () => {
+  //   // Let parent perform the smooth scroll
+  //   onClick?.();
 
-    // We delay state updates until animation is done (~600ms)
-    setTimeout(() => {
-      if (isSecond) {
-        // Second section → going to feed
-        setIsOnSection2(true);
-        setHideFirstTwoSection(true);
-      } else {
-        // First section → going to second (or feed if no marketing)
-        if (hasMarketing) {
-          setIsOnSection2(false); // still on section 1 → 2 transition
-        } else {
-          setIsOnSection2(true);
-          setHideFirstTwoSection(true);
-        }
-      }
-    }, 650); // matches smoothScrollTo duration (600ms) + buffer
-  };
+  //   // We delay state updates until animation is done (~600ms)
+  //   setTimeout(() => {
+  //     if (isSecond) {
+  //       // Second section → going to feed
+  //       setIsOnSection2(true);
+  //       setHideFirstTwoSection(true);
+  //     } else {
+  //       // First section → going to second (or feed if no marketing)
+  //       if (hasMarketing) {
+  //         setIsOnSection2(false); // still on section 1 → 2 transition
+  //       } else {
+  //         setIsOnSection2(true);
+  //         setHideFirstTwoSection(true);
+  //       }
+  //     }
+  //   }, 2000); // matches smoothScrollTo duration (600ms) + buffer
+  // };
 
   return (
     <div
-      onClick={handleClick}
+      onClick={onClick}
       className={clsx(
         isSecond ? "md:bottom-24" : "md:bottom-10.5",
         "absolute left-1/2 transform -translate-x-1/2 custom-cursor z-10 select-none",
