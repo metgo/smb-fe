@@ -16,7 +16,9 @@ const page = () => {
         unoptimized
         alt="contact form"
         className="w-full max-sm:hidden md:block"
-        src={"/images/contact-us.png"}
+        src={
+          "https://storage.googleapis.com/bnei-fo5gz43xdb6i5t/images/background/contact-us.png"
+        }
       />
       <ContactForm />
     </div>

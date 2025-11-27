@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 
 import NavLogo from "./NavLogo";
 import SearchFlow from "./SearchFlow";
-import { navbar } from "@/constant/hebrew";
+import { fundayEnquiryLables, navbar } from "@/constant/hebrew";
 import HamburgerMenu from "./HamburgerMenu";
 import { ShopbagIcon } from "@/components/ui/icons";
 import CurrentTempOfYourCity from "./CurrentTempOfYourCity";
@@ -15,6 +15,7 @@ import { CartDrawer } from "../drawer";
 import { pathNames } from "@/lib/endpoints";
 import PromotionalCards from "../PromotionalCards";
 import FeedLyoutSwitcTabs from "./FeedFilterTabs";
+import Image from "next/image";
 // import { GiftBoxIcon } from "../ui/svgIcons";
 
 const Navbar = ({ showFilterTab = false }: { showFilterTab?: boolean }) => {
@@ -53,6 +54,21 @@ const Navbar = ({ showFilterTab = false }: { showFilterTab?: boolean }) => {
               <GiftBoxIcon />
               {navbar.souvenirShop}
             </button> */}
+
+            <Link
+              href={pathNames.fundayEnquiry}
+              className="flex items-center border border-theme rounded-xl ps-4 pe-2 py-1 custom-cursor"
+            >
+              <span className="text-theme font-bold">
+                {fundayEnquiryLables.funAndBondingDays}
+              </span>
+              <Image
+                src={"/images/red-flower.png"}
+                width={30}
+                height={30}
+                alt="red-flower"
+              />
+            </Link>
 
             <div className="w-[1px] h-10 bg-lightGray mx-4" />
 

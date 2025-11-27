@@ -10,7 +10,6 @@ import { pathNames } from "@/lib/endpoints";
 import { navigationPathsByServiceType } from "@/lib/utils";
 import { startLoading } from "../wrappers/ProgressBar";
 import { useImagePresent } from "@/hooks/image/useImagePresent";
-import { IconImage } from "@/components/ui";
 import {
   getCityOrCenter,
   getPrimaryCategoryId,
@@ -227,25 +226,25 @@ const FeedCardContent = ({ feedItem }: { feedItem: any }) => (
       <h3 className="line-clamp-1 font-normal text-[12px]">{feedItem?.name}</h3>
     </div>
 
-    <div className="absolute top-2 left-0">
-      {feedItem?.serviceType === "point_of_interest" && (
-        <div className="bg-black/50 rounded-full p-1 flex items-center justify-center absolute left-[8px] top-[1px] w-7 h-7">
-          <IconImage width={20} height={20} icon="location-solid" />
+    <div className="absolute top-2 left-0 w-full">
+      {feedItem.serviceType === "point_of_interest" && (
+        <div className="bg-[#29C368] flex items-center justify-center absolute left-[8px] top-[1px] text-white text-[12px] font-bold px-3 py-1.5 rounded-md">
+          <span>{"נקודת עניין"}</span>
         </div>
       )}
-      {feedItem?.serviceType === "event" && (
-        <div className="bg-black/50 rounded-full p-1 flex items-center justify-center absolute left-[8px] top-[1px] w-7 h-7">
-          <IconImage width={16} height={16} icon="event" />
+      {feedItem.serviceType === "event" && (
+        <div className="bg-[#B471B5] flex items-center justify-center absolute left-[8px] top-[1px] text-white text-[12px] font-bold px-3 py-1.5 rounded-md">
+          <span>{"אירוע"}</span>
         </div>
       )}
-      {feedItem?.serviceType === "trip" && (
-        <div className="bg-black/50 rounded-full p-1 flex items-center justify-center absolute left-[8px] top-[1px] w-7 h-7">
-          <IconImage width={16} height={16} icon="trip" />
+      {feedItem.serviceType === "trip" && (
+        <div className="bg-[#FEBF3A] flex items-center justify-center absolute left-[8px] top-[1px] text-white text-[12px] font-bold px-3 py-1.5 rounded-md">
+          <span>{"מסלול"}</span>
         </div>
       )}
-      {feedItem?.serviceType === "funday" && (
-        <div className="bg-black/50 rounded-full p-1 flex items-center justify-center absolute left-[8px] top-[1px] w-7 h-7">
-          <IconImage width={16} height={16} icon="kite-white" />
+      {feedItem.serviceType === "funday" && (
+        <div className="bg-[#4C95D8] flex items-center justify-center absolute left-[8px] top-[1px] text-white text-[12px] font-bold px-3 py-1.5 rounded-md">
+          <span>{"יום גיבוש"}</span>
         </div>
       )}
     </div>

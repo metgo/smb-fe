@@ -323,23 +323,23 @@ const FeedCardActions = ({
         )}
       </div>
       {feedItem.serviceType === "point_of_interest" && (
-        <div className="bg-black/50 rounded-full p-1 flex items-center justify-center absolute left-[8px] top-[1px] w-8 h-8">
-          <IconImage width={24} height={24} icon="location-solid" />
+        <div className="bg-[#29C368] flex items-center justify-center absolute left-[8px] top-[1px] text-white text-[12px] font-bold px-3 py-1.5 rounded-md">
+          <span>{"נקודת עניין"}</span>
         </div>
       )}
       {feedItem.serviceType === "event" && (
-        <div className="bg-black/50 rounded-full p-1 flex items-center justify-center absolute left-[8px] top-[1px] w-8 h-8">
-          <IconImage width={19} height={19} icon="event" />
+        <div className="bg-[#B471B5] flex items-center justify-center absolute left-[8px] top-[1px] text-white text-[12px] font-bold px-3 py-1.5 rounded-md">
+          <span>{"אירוע"}</span>
         </div>
       )}
       {feedItem.serviceType === "trip" && (
-        <div className="bg-black/50 rounded-full p-1 flex items-center justify-center absolute left-[8px] top-[1px] w-8 h-8">
-          <IconImage width={17} height={17} icon="trip" />
+        <div className="bg-[#FEBF3A] flex items-center justify-center absolute left-[8px] top-[1px] text-white text-[12px] font-bold px-3 py-1.5 rounded-md">
+          <span>{"מסלול"}</span>
         </div>
       )}
       {feedItem.serviceType === "funday" && (
-        <div className="bg-black/50 rounded-full p-1 flex items-center justify-center absolute left-[8px] top-[1px] w-8 h-8">
-          <IconImage width={20} height={20} icon="kite-white" />
+        <div className="bg-[#4C95D8] flex items-center justify-center absolute left-[8px] top-[1px] text-white text-[12px] font-bold px-3 py-1.5 rounded-md">
+          <span>{"יום גיבוש"}</span>
         </div>
       )}
     </div>

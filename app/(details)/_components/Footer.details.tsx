@@ -64,42 +64,55 @@ const Footer = () => {
   if (basePath === pathNames.trailDetails) return null;
 
   return (
-    <div className="mx-20 relative h-[156px] overflow-hidden max-sm:hidden md:block">
-      <hr className="h-[1px] text-primary" />
-      <div className="w-full py-10 flex items-baseline gap-18.5">
-        {Object.entries(navItems[0]).map(([colKey, items]) => (
-          <div key={colKey} className="flex gap-2">
-            <div className="flex flex-col">
-              {items.map((item) => (
-                <div key={item.id} className="mb-2 hover:underline">
-                  <Link
-                    href={item.href}
-                    className="text-theme transition text-sm font-normal"
-                  >
-                    {item.label}
-                  </Link>
-                </div>
-              ))}
+    <div className="relative">
+      <div className="mx-20 relative h-[156px] overflow-hidden max-sm:hidden md:block">
+        <hr className="h-[1px] text-primary" />
+        <div className="w-full py-10 flex items-baseline gap-18.5">
+          {Object.entries(navItems[0]).map(([colKey, items]) => (
+            <div key={colKey} className="flex gap-2">
+              <div className="flex flex-col">
+                {items.map((item) => (
+                  <div key={item.id} className="mb-2 hover:underline">
+                    <Link
+                      href={item.href}
+                      className="text-theme transition text-sm font-normal"
+                    >
+                      {item.label}
+                    </Link>
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-        ))}
-
-        <div className="flex items-center gap-2">
-          {socialMedias.map((item) => (
-            <Link key={item.id} href={item.link} className="">
-              <IconImage icon={item.icon} />
-            </Link>
           ))}
-        </div>
-      </div>
 
-      <Image
-        src={"/images/yellow-inflorescence.png"}
-        alt="Yellow Inflorescence"
-        width={110}
-        height={156}
-        className=" absolute left-5 top-10 rotate-10"
-      />
+          <div className="flex items-center gap-2">
+            {socialMedias.map((item) => (
+              <Link key={item.id} href={item.link} className="">
+                <IconImage icon={item.icon} />
+              </Link>
+            ))}
+          </div>
+        </div>
+
+        {pathNames.fundayEnquiry !== pathname && (
+          <Image
+            src={"/images/yellow-inflorescence.png"}
+            alt="Yellow Inflorescence"
+            width={110}
+            height={156}
+            className=" absolute left-5 top-10 rotate-10"
+          />
+        )}
+      </div>
+      {pathNames.fundayEnquiry === pathname && (
+        <Image
+          src={"/images/red-inflorescence.png"}
+          alt="Yellow Inflorescence"
+          width={200}
+          height={156}
+          className=" absolute left-0 -top-2"
+        />
+      )}
     </div>
   );
 };
