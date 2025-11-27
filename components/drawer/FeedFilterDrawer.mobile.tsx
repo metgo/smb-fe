@@ -1,6 +1,7 @@
 "use client";
 
 import clsx from "clsx";
+import { useState } from "react";
 import { MotionDialogDiv } from "../ui";
 import { filterPanelLabels } from "@/constant/hebrew";
 import { motion, AnimatePresence } from "framer-motion";
@@ -15,8 +16,6 @@ import {
   UpAngleArrowIcon,
 } from "../ui/svgIcons";
 import { filterCategories, ICON_MAP, SERVICE_TYPE_MAP } from "@/lib/utils";
-import useGeneralStore from "@/stores/generalStore";
-import { useState } from "react";
 
 interface MobileFeedFilterDrawerProps {
   isOpen: boolean;
@@ -41,7 +40,6 @@ const MobileFeedFilterDrawer: React.FC<MobileFeedFilterDrawerProps> = ({
   handleResetFilters,
   filteredSubCategories,
 }) => {
-  const { aminitiesInfo } = useGeneralStore();
   const [showAllFilters, setShowAllFilters] = useState(false);
 
   if (!isOpen) return null;
@@ -88,17 +86,15 @@ const MobileFeedFilterDrawer: React.FC<MobileFeedFilterDrawerProps> = ({
             <div className="grid grid-cols-12 gap-x-1 gap-y-2 mt-2">
               {/* Point of Interest */}
 
-              {aminitiesInfo?.poi && (
-                <FilterButton
-                  active={isSelected("serviceTypes", SERVICE_TYPE_MAP.poi)}
-                  onClick={() =>
-                    toggleParam("serviceTypes", SERVICE_TYPE_MAP.poi)
-                  }
-                  icon={<PointOfInterestIcon strokColor="#7c7c7c" />}
-                  activeIcon={<PointOfInterestIcon strokColor="#fff" />}
-                  label={filterPanelLabels.pointOfInterest}
-                />
-              )}
+              <FilterButton
+                active={isSelected("serviceTypes", SERVICE_TYPE_MAP.poi)}
+                onClick={() =>
+                  toggleParam("serviceTypes", SERVICE_TYPE_MAP.poi)
+                }
+                icon={<PointOfInterestIcon strokColor="#7c7c7c" />}
+                activeIcon={<PointOfInterestIcon strokColor="#fff" />}
+                label={filterPanelLabels.pointOfInterest}
+              />
 
               {/* Main Categories */}
               {filterCategories?.map((menu) => {
@@ -116,43 +112,37 @@ const MobileFeedFilterDrawer: React.FC<MobileFeedFilterDrawerProps> = ({
               })}
 
               {/* Funday */}
-              {aminitiesInfo?.funday && (
-                <FilterButton
-                  active={isSelected("serviceTypes", SERVICE_TYPE_MAP.fun_day)}
-                  onClick={() =>
-                    toggleParam("serviceTypes", SERVICE_TYPE_MAP.fun_day)
-                  }
-                  icon={<FundayIcon strokColor="#7c7c7c" />}
-                  activeIcon={<FundayIcon strokColor="#fff" />}
-                  label={filterPanelLabels.funDays}
-                />
-              )}
+              <FilterButton
+                active={isSelected("serviceTypes", SERVICE_TYPE_MAP.fun_day)}
+                onClick={() =>
+                  toggleParam("serviceTypes", SERVICE_TYPE_MAP.fun_day)
+                }
+                icon={<FundayIcon strokColor="#7c7c7c" />}
+                activeIcon={<FundayIcon strokColor="#fff" />}
+                label={filterPanelLabels.funDays}
+              />
 
               {/* Events */}
-              {aminitiesInfo?.event && (
-                <FilterButton
-                  active={isSelected("serviceTypes", SERVICE_TYPE_MAP.event)}
-                  onClick={() =>
-                    toggleParam("serviceTypes", SERVICE_TYPE_MAP.event)
-                  }
-                  icon={<EventIcon strokColor="#7c7c7c" />}
-                  activeIcon={<EventIcon strokColor="#fff" />}
-                  label={filterPanelLabels.events}
-                />
-              )}
+              <FilterButton
+                active={isSelected("serviceTypes", SERVICE_TYPE_MAP.event)}
+                onClick={() =>
+                  toggleParam("serviceTypes", SERVICE_TYPE_MAP.event)
+                }
+                icon={<EventIcon strokColor="#7c7c7c" />}
+                activeIcon={<EventIcon strokColor="#fff" />}
+                label={filterPanelLabels.events}
+              />
 
               {/* Routes */}
-              {aminitiesInfo?.trip && (
-                <FilterButton
-                  active={isSelected("serviceTypes", SERVICE_TYPE_MAP.route)}
-                  onClick={() =>
-                    toggleParam("serviceTypes", SERVICE_TYPE_MAP.route)
-                  }
-                  icon={<RouteIcon strokColor="#7c7c7c" />}
-                  activeIcon={<RouteIcon strokColor="#fff" />}
-                  label={filterPanelLabels.routes}
-                />
-              )}
+              <FilterButton
+                active={isSelected("serviceTypes", SERVICE_TYPE_MAP.route)}
+                onClick={() =>
+                  toggleParam("serviceTypes", SERVICE_TYPE_MAP.route)
+                }
+                icon={<RouteIcon strokColor="#7c7c7c" />}
+                activeIcon={<RouteIcon strokColor="#fff" />}
+                label={filterPanelLabels.routes}
+              />
             </div>
           </div>
 

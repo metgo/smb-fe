@@ -454,6 +454,7 @@ input[type="range"]::-moz-range-thumb {
   0% {
     transform: translateX(-100%);
   }
+
   100% {
     transform: translateX(0);
   }
@@ -464,6 +465,7 @@ input[type="range"]::-moz-range-thumb {
     0% {
       transform: translateX(-50%);
     }
+
     100% {
       transform: translateX(0);
     }
@@ -480,4 +482,77 @@ input[type="range"]::-moz-range-thumb {
   .animate-seamless-infinite-scroll:hover {
     animation-play-state: paused;
   }
+}
+
+@keyframes gradient-3x {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+
+  33.33% {
+    background-position: 100% 50%;
+  }
+
+  66.66% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes zoom-3x {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  8.33% {
+    transform: scale(1.15);
+  }
+
+  16.66% {
+    transform: scale(1);
+  }
+
+  25% {
+    transform: scale(1.15);
+  }
+
+  33.33% {
+    transform: scale(1);
+  }
+
+  41.66% {
+    transform: scale(1.15);
+  }
+
+  50% {
+    transform: scale(1);
+  }
+}
+
+.animate-gradient-3x {
+  animation: gradient-3x 6s ease-in-out infinite;
+}
+
+.animate-spin-slow {
+  animation: spin-slow 8s linear infinite;
+}
+
+.animate-zoom-3x {
+  animation: zoom-3x 6s ease-in-out infinite;
+  transform-origin: center;
+}
+
+.custom-cursor {
+  cursor: pointer;
 }

@@ -32,7 +32,7 @@ export async function getAllFeeds(
     // Build URL query parameters
     const query = new URLSearchParams();
     query.append("page", page.toString());
-    query.append("limit", "100");
+    query.append("limit", "600");
     query.append("sortBy", "createdAt");
     query.append("sortOrder", "DESC");
     query.append("campCode", CODE!);
