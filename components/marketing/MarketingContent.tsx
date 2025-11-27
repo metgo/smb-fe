@@ -1,6 +1,8 @@
+"use client";
+
+import clsx from "clsx";
 import Link from "next/link";
 import { misc } from "@/constant/hebrew";
-import clsx from "clsx";
 
 type ContentType = {
   link: string;
