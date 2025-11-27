@@ -66,19 +66,19 @@ export const SiteInfoClientProvider = ({
       const res = await getPresetFilters();
 
       // Filter out 'business' and 'event' from serviceTypes
-      const filteredServiceTypes = res.serviceTypes.filter(
-        (type: string) => type !== "business",
-      );
+      // const filteredServiceTypes = res.serviceTypes.filter(
+      //   (type: string) => type !== "business",
+      // );
 
-      // Return the modified object
-      const sanitizedResponse = {
-        ...res,
-        serviceTypes: filteredServiceTypes,
-      };
+      // // Return the modified object
+      // const sanitizedResponse = {
+      //   ...res,
+      //   serviceTypes: filteredServiceTypes,
+      // };
 
-      initialSelectedFiltersIds = sanitizedResponse;
+      // initialSelectedFiltersIds = sanitizedResponse;
 
-      return sanitizedResponse; // optionally return it
+      return res.serviceTypes; // optionally return it
     } catch (error) {
       console.error("Failed to get filters:", error);
       return null;

@@ -6,13 +6,13 @@ import { useFeedFilter, useIsHydrated } from "@/hooks";
 import { useLoadMore } from "@/hooks/useLoadMore";
 import useGeneralStore from "@/stores/generalStore";
 
-import { AiIcon } from "../ui/svgIcons";
 import NoFeedItemLayout from "./NoFeedItemLayout";
 import BusinessPinMap from "../maps/BusinessPinMap";
 import OnlyFeedCardsLayout from "./OnlyFeedCardsLayout";
 import MapFeedIntegratedLayout from "./MapFeedIntegratedLayout";
 import StickyYellowRibbonImage from "../StickyYellowRibbonImage";
 import FeedFilterDrawer from "../drawer/FeedFilterDrawer";
+import { IconImage } from "../ui";
 
 const FeedLayout = ({
   businesses,
@@ -105,16 +105,21 @@ const FeedLayout = ({
         )}
 
         {hideFirstTwoSection && (
-          <div
-            onClick={() => setIsFilterDrawerOpen(true)}
-            className="fixed top-2/3 right-1 custom-cursor max-sm:hidden md:block"
-          >
-            {appliedFilterCount > 0 && (
-              <div className="bg-green-500 absolute left-1 top-1 rounded-full h-[18px] w-[18px] text-[10px] flex items-center justify-center text-white aspect-square border border-white">
-                {appliedFilterCount}
+          <div className="fixed bottom-1 right-4 custom-cursor max-sm:hidden md:block">
+            <div
+              onClick={() => setIsFilterDrawerOpen(true)}
+              className="relative inline-block"
+            >
+              {/* Icon Content with Zoom Animation */}
+              <div className="relative z-10 animate-zoom-3x border-2 border-white rounded-full shadow-2xl shadow-green-400">
+                {appliedFilterCount > 0 && (
+                  <div className="bg-green-500 absolute right-0 -top-1 rounded-full h-[25px] w-[25px] text-[10px] flex items-center justify-center text-white aspect-square border-2 border-white z-20">
+                    {appliedFilterCount}
+                  </div>
+                )}
+                <IconImage icon="ai" width={84} height={84} />
               </div>
-            )}
-            <AiIcon size={68} />
+            </div>
           </div>
         )}
 

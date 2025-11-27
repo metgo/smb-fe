@@ -13,7 +13,6 @@ import {
 } from "../ui/svgIcons";
 import { filterCategories, ICON_MAP, SERVICE_TYPE_MAP } from "@/lib/utils";
 import { useCommonHook } from "@/hooks";
-import { initialSelectedFiltersIds } from "@/providers/SiteInfoClientProvider";
 
 interface FeedFilterDrawerProps {
   isOpen: boolean;
@@ -77,19 +76,15 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
             <div className="grid grid-cols-12 gap-x-1 gap-y-2 mt-2">
               {/* Point of Interest */}
 
-              {initialSelectedFiltersIds?.serviceTypes.includes(
-                SERVICE_TYPE_MAP.poi,
-              ) && (
-                <FilterButton
-                  active={isSelected("serviceTypes", SERVICE_TYPE_MAP.poi)}
-                  onClick={() =>
-                    toggleParam("serviceTypes", SERVICE_TYPE_MAP.poi)
-                  }
-                  icon={<PointOfInterestIcon strokColor="#7c7c7c" />}
-                  activeIcon={<PointOfInterestIcon strokColor="#fff" />}
-                  label={filterPanelLabels.pointOfInterest}
-                />
-              )}
+              <FilterButton
+                active={isSelected("serviceTypes", SERVICE_TYPE_MAP.poi)}
+                onClick={() =>
+                  toggleParam("serviceTypes", SERVICE_TYPE_MAP.poi)
+                }
+                icon={<PointOfInterestIcon strokColor="#7c7c7c" />}
+                activeIcon={<PointOfInterestIcon strokColor="#fff" />}
+                label={filterPanelLabels.pointOfInterest}
+              />
 
               {/* Main Categories */}
               {filterCategories?.map((menu) => {
@@ -107,49 +102,37 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
               })}
 
               {/* Funday */}
-              {initialSelectedFiltersIds?.serviceTypes.includes(
-                SERVICE_TYPE_MAP.fun_day,
-              ) && (
-                <FilterButton
-                  active={isSelected("serviceTypes", SERVICE_TYPE_MAP.fun_day)}
-                  onClick={() =>
-                    toggleParam("serviceTypes", SERVICE_TYPE_MAP.fun_day)
-                  }
-                  icon={<FundayIcon strokColor="#7c7c7c" />}
-                  activeIcon={<FundayIcon strokColor="#fff" />}
-                  label={filterPanelLabels.funDays}
-                />
-              )}
+              <FilterButton
+                active={isSelected("serviceTypes", SERVICE_TYPE_MAP.fun_day)}
+                onClick={() =>
+                  toggleParam("serviceTypes", SERVICE_TYPE_MAP.fun_day)
+                }
+                icon={<FundayIcon strokColor="#7c7c7c" />}
+                activeIcon={<FundayIcon strokColor="#fff" />}
+                label={filterPanelLabels.funDays}
+              />
 
               {/* Events */}
-              {initialSelectedFiltersIds?.serviceTypes.includes(
-                SERVICE_TYPE_MAP.event,
-              ) && (
-                <FilterButton
-                  active={isSelected("serviceTypes", SERVICE_TYPE_MAP.event)}
-                  onClick={() =>
-                    toggleParam("serviceTypes", SERVICE_TYPE_MAP.event)
-                  }
-                  icon={<EventIcon strokColor="#7c7c7c" />}
-                  activeIcon={<EventIcon strokColor="#fff" />}
-                  label={filterPanelLabels.events}
-                />
-              )}
+              <FilterButton
+                active={isSelected("serviceTypes", SERVICE_TYPE_MAP.event)}
+                onClick={() =>
+                  toggleParam("serviceTypes", SERVICE_TYPE_MAP.event)
+                }
+                icon={<EventIcon strokColor="#7c7c7c" />}
+                activeIcon={<EventIcon strokColor="#fff" />}
+                label={filterPanelLabels.events}
+              />
 
               {/* Routes */}
-              {initialSelectedFiltersIds?.serviceTypes.includes(
-                SERVICE_TYPE_MAP.route,
-              ) && (
-                <FilterButton
-                  active={isSelected("serviceTypes", SERVICE_TYPE_MAP.route)}
-                  onClick={() =>
-                    toggleParam("serviceTypes", SERVICE_TYPE_MAP.route)
-                  }
-                  icon={<RouteIcon strokColor="#7c7c7c" />}
-                  activeIcon={<RouteIcon strokColor="#fff" />}
-                  label={filterPanelLabels.routes}
-                />
-              )}
+              <FilterButton
+                active={isSelected("serviceTypes", SERVICE_TYPE_MAP.route)}
+                onClick={() =>
+                  toggleParam("serviceTypes", SERVICE_TYPE_MAP.route)
+                }
+                icon={<RouteIcon strokColor="#7c7c7c" />}
+                activeIcon={<RouteIcon strokColor="#fff" />}
+                label={filterPanelLabels.routes}
+              />
             </div>
           </div>
 
@@ -214,7 +197,7 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
             className="relative custom-cursor"
           >
             {appliedFilterCount > 0 && (
-              <div className="bg-green-500 absolute left-1 top-1 rounded-full h-[18px] w-[18px] text-[10px] flex items-center justify-center text-white aspect-square border border-white">
+              <div className="bg-green-500 absolute right-1 top-1 rounded-full h-[18px] w-[18px] text-[10px] flex items-center justify-center text-white aspect-square border border-white">
                 {appliedFilterCount}
               </div>
             )}

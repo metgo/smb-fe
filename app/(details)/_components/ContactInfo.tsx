@@ -1,6 +1,6 @@
 import { IconImage } from "@/components/ui";
 import { menuItems } from "@/constant/hebrew";
-import { siteInfo } from "@/constant/siteInfo";
+import { getContactDetails } from "@/constant/siteInfo";
 
 const ContactUsInfo = ({
   icon,
@@ -25,8 +25,7 @@ const ContactUsInfo = ({
 );
 
 const ContactInfo = () => {
-  const { contactInfo } = siteInfo["negevTime"];
-
+  const contactInfo = getContactDetails();
   return (
     <div className="items-center gap-7.5 text-charcoal max-sm:hidden md:flex">
       <span>{menuItems.contactUs}</span>
