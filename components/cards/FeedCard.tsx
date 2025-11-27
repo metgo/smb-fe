@@ -7,7 +7,7 @@ import { motion, useInView, useAnimation } from "framer-motion";
 import { useEffect, useState, useMemo, useCallback } from "react";
 
 import { pathNames } from "@/lib/endpoints";
-import { navigationPathsByServiceType } from "@/lib/utils";
+import { categoryIds, navigationPathsByServiceType } from "@/lib/utils";
 import useGeneralStore from "@/stores/generalStore";
 import { startLoading } from "../wrappers/ProgressBar";
 import { useImagePresent } from "@/hooks/image/useImagePresent";
@@ -35,7 +35,6 @@ interface FeedCardProps {
 }
 
 const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
-  console.log("🚀 ~ FeedCard ~ feedItem:", feedItem);
   const router = useRouter();
   const searchParams = useSearchParams();
   const [activeImageIndex, setActiveImageIndex] = useState(0);
@@ -167,7 +166,9 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
         <CardSkeleton
           width={width}
           height={height}
-          primaryCategoryId={computedValues.primaryCategoryId}
+          primaryCategoryId={
+            computedValues.primaryCategoryId || categoryIds.attraction
+          }
         />
       </motion.div>
     );

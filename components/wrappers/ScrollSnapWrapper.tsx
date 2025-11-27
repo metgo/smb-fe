@@ -7,15 +7,16 @@ import ScrollIndicator from "../ScrollIndicator";
 
 type Props = {
   hasMarketing: boolean;
-  children: React.ReactNode[]; // [first, marketing?, feed]
+  children: React.ReactNode[];
 };
 
 /**
- * Clean, unified ScrollSnap wrapper (Option B)
+ * Clean, unified ScrollSnap wrapper with one-section-at-a-time navigation
  * - Smooth, easing-based transitions between sections
+ * - Always stops at the next/previous section (no skipping)
  * - Locks feed content during the animation (no wheel/touch)
  * - Unified wheel + touch handlers
- * - Debounced auto-snap on scroll stop
+ * - Resets feed to top when entering from above sections
  */
 export default function ScrollSnapWrapper({ children, hasMarketing }: Props) {
   const firstRef = useRef<HTMLDivElement | null>(null);
@@ -50,9 +51,7 @@ export default function ScrollSnapWrapper({ children, hasMarketing }: Props) {
   // Scroll lock helpers
   const lockScroll = () => {
     if (isFilterDrawerOpen) return;
-    // lock scrolling and touch interactions as broadly as possible
     document.body.style.overflow = "hidden";
-    // also add a class to freeze fixed/absolute children if project uses it (optional)
     document.documentElement.style.touchAction = "none";
     isAnimating.current = true;
   };
@@ -62,8 +61,8 @@ export default function ScrollSnapWrapper({ children, hasMarketing }: Props) {
     isAnimating.current = false;
   };
 
-  // Core smooth scroll animator (cancellable only by internal guard)
-  const smoothScrollTo = useCallback((targetY: number, duration = 600) => {
+  // Core smooth scroll animator
+  const smoothScrollTo = useCallback((targetY: number, duration = 800) => {
     if (isAnimating.current) return Promise.resolve();
     lockScroll();
 
@@ -80,7 +79,6 @@ export default function ScrollSnapWrapper({ children, hasMarketing }: Props) {
         if (progress < 1) {
           requestAnimationFrame(frame);
         } else {
-          // tiny timeout to allow browser to settle
           setTimeout(() => {
             unlockScroll();
             resolve();
@@ -120,8 +118,9 @@ export default function ScrollSnapWrapper({ children, hasMarketing }: Props) {
         setHideFirstTwoSection(false);
         setIsOnSection2(false);
       } else {
-        const top = feedRef.current?.offsetTop ?? 0;
-        await smoothScrollTo(top);
+        // FIXED: Always scroll to feed top, not current offset
+        const feedTop = feedRef.current?.offsetTop ?? 0;
+        await smoothScrollTo(feedTop);
         setHideFirstTwoSection(true);
         if (hasMarketing) setIsOnSection2(true);
       }
@@ -129,15 +128,29 @@ export default function ScrollSnapWrapper({ children, hasMarketing }: Props) {
     [setHideFirstTwoSection, setIsOnSection2, hasMarketing, smoothScrollTo],
   );
 
-  // Unified wheel handler (desktop)
+  // NEW: Unified wheel handler with proper debouncing
   useEffect(() => {
     if (isFilterDrawerOpen) return;
 
+    const scrollLockRef = { current: false };
+
+    const lockScroll = (duration = 1500) => {
+      scrollLockRef.current = true;
+      setTimeout(() => {
+        scrollLockRef.current = false;
+      }, duration);
+    };
+
     const onWheel = (e: WheelEvent) => {
-      // ignore on touch devices
       if ("ontouchstart" in window) return;
 
-      if (isAnimating.current) {
+      // Block default inside top sections or during animation
+      if (isAnimating.current || !hideFirstTwoSection) {
+        e.preventDefault();
+      }
+
+      // Hard block while locked (only when entering second section)
+      if (scrollLockRef.current || isAnimating.current) {
         e.preventDefault();
         return;
       }
@@ -146,57 +159,62 @@ export default function ScrollSnapWrapper({ children, hasMarketing }: Props) {
       const dir = delta > 0 ? "down" : "up";
       const section = currentSection();
 
+      // =====================================
       // TOP SECTIONS ACTIVE
+      // =====================================
       if (!hideFirstTwoSection) {
-        e.preventDefault();
-
         if (dir === "down") {
           if (section === "first") {
-            if (!hasMarketing) goToSection("feed");
-            else goToSection("second");
+            if (hasMarketing) {
+              goToSection("second");
+              lockScroll();
+            } else {
+              goToSection("feed");
+            }
           } else if (section === "second") {
             goToSection("feed");
           }
         } else {
-          // scrolling UP
-          if (section === "second") goToSection("first");
-          else if (section === "feed" && hideFirstTwoSection)
-            goToSection("second");
+          // GOING UP
+          if (section === "second") {
+            goToSection("first");
+          }
         }
-
         return;
       }
 
-      // ============================
-      // FEED SECTION VISIBLE
-      // ============================
-
+      // =====================================
+      // FEED SECTION BEHAVIOR
+      // =====================================
       const feedTop = feedRef.current?.offsetTop ?? 0;
       const atFeedTop = window.scrollY <= feedTop + 10;
-
       const isDesktop = window.innerWidth >= 1024;
 
-      if (isAnimating.current) {
-        e.preventDefault();
-        return;
-      }
-
       if (dir === "up" && atFeedTop) {
-        // 🔒 NEW: Desktop → Block upward navigation permanently
         if (isDesktop) {
           e.preventDefault();
-          return; // DO NOT go back to "second"
+          return;
         }
 
-        // 📱 Mobile fallback (unchanged)
         e.preventDefault();
-        goToSection("second");
+        if (hasMarketing) {
+          goToSection("second");
+          // optional: lockScroll()
+        } else {
+          goToSection("first");
+        }
       }
     };
 
     window.addEventListener("wheel", onWheel, { passive: false });
     return () => window.removeEventListener("wheel", onWheel);
-  }, [currentSection, goToSection, hasMarketing, hideFirstTwoSection]);
+  }, [
+    currentSection,
+    goToSection,
+    hasMarketing,
+    hideFirstTwoSection,
+    isFilterDrawerOpen,
+  ]);
 
   // Touch handlers (mobile)
   useEffect(() => {
@@ -213,23 +231,20 @@ export default function ScrollSnapWrapper({ children, hasMarketing }: Props) {
       if (!isTouching.current) return;
       touchMoved = true;
 
-      // if animating, block move
       if (isAnimating.current) {
         ev.preventDefault();
         return;
       }
 
-      // when top sections visible, block native scroll to keep UX consistent
       if (!hideFirstTwoSection) {
         ev.preventDefault();
       } else {
-        // when in feed, if at top and swiping down (meaning content should go up) block to trigger transition
         const feedTop = feedRef.current?.offsetTop ?? 0;
         const atFeedTop = window.scrollY <= feedTop + 5;
         const touchY = ev.touches[0].clientY;
-        const diff = touchStartY.current - touchY; // positive means swipe up
+        const diff = touchStartY.current - touchY;
 
-        const isSwipingDown = diff < 0; // user moving finger down -> want to scroll up
+        const isSwipingDown = diff < 0;
         if (atFeedTop && isSwipingDown) {
           ev.preventDefault();
         }
@@ -243,7 +258,7 @@ export default function ScrollSnapWrapper({ children, hasMarketing }: Props) {
       if (!touchMoved) return;
 
       const endY = ev.changedTouches?.[0]?.clientY ?? touchStartY.current;
-      const diff = touchStartY.current - endY; // positive -> swipe up
+      const diff = touchStartY.current - endY;
       const minSwipe = 50;
       if (Math.abs(diff) < minSwipe) return;
 
@@ -252,21 +267,40 @@ export default function ScrollSnapWrapper({ children, hasMarketing }: Props) {
 
       if (!hideFirstTwoSection) {
         if (dir === "down") {
+          // From first, go to second (if exists) or feed
           if (section === "first") {
-            if (!hasMarketing) goToSection("feed");
-            else goToSection("second");
-          } else if (section === "second") goToSection("feed");
+            if (hasMarketing) {
+              goToSection("second");
+            } else {
+              goToSection("feed");
+            }
+          }
+          // From second, go to feed
+          else if (section === "second") {
+            goToSection("feed");
+          }
         } else {
-          // swipe down
-          if (section === "second") goToSection("first");
-          else if (section === "feed" && hideFirstTwoSection)
-            goToSection("second");
+          // swipe down (scroll up)
+          if (section === "second") {
+            goToSection("first");
+          } else if (section === "feed" && hideFirstTwoSection) {
+            if (hasMarketing) {
+              goToSection("second");
+            } else {
+              goToSection("first");
+            }
+          }
         }
       } else {
-        // feed visible
         const feedTop = feedRef.current?.offsetTop ?? 0;
         const atFeedTop = window.scrollY <= feedTop + 50;
-        if (dir === "up" && atFeedTop) goToSection("feed");
+        if (dir === "up" && atFeedTop) {
+          if (hasMarketing) {
+            goToSection("second");
+          } else {
+            goToSection("first");
+          }
+        }
       }
     };
 
@@ -287,9 +321,9 @@ export default function ScrollSnapWrapper({ children, hasMarketing }: Props) {
     isFilterDrawerOpen,
   ]);
 
-  // Auto-snap when user stops scrolling (keeps behavior consistent if user flicks)
+  // Auto-snap when user stops scrolling
   useEffect(() => {
-    if (!isFilterDrawerOpen) return;
+    if (isFilterDrawerOpen) return;
 
     let timeout: number | null = null;
     const onScroll = () => {
@@ -304,9 +338,13 @@ export default function ScrollSnapWrapper({ children, hasMarketing }: Props) {
           const feedTop = feedRef.current?.offsetTop ?? 0;
           if (scrollY < feedTop - 100) goToSection("feed");
         } else {
-          if (scrollY < vh * 0.5) goToSection("first");
-          else if (hasMarketing && scrollY < vh * 1.5) goToSection("second");
-          else goToSection("feed");
+          if (scrollY < vh * 0.5) {
+            goToSection("first");
+          } else if (hasMarketing && scrollY < vh * 1.5) {
+            goToSection("second");
+          } else {
+            goToSection("feed");
+          }
         }
       }, 150);
     };
@@ -354,8 +392,6 @@ export default function ScrollSnapWrapper({ children, hasMarketing }: Props) {
         ref={feedRef}
         className="min-h-screen"
         style={{ overscrollBehavior: "none" }}
-        // while animating, pointer events are blocked to avoid accidental interactions
-        // we guard via inline style to affect only feed area
         aria-hidden={isAnimating.current}
       >
         {children[2]}
