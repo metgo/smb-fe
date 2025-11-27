@@ -15,7 +15,7 @@ export const siteInfo = {
       whatsapp: "052-6789546",
     },
   },
-  TAV8DL: {
+  TAV8: {
     contactInfo: {
       phone: "+972 54-777-6100",
       mail: "support@metgo.,app",

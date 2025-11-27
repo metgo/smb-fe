@@ -19,7 +19,7 @@ export const images = {
     favicon: "/images/favicon/negevtime.ico",
     contactPageBg: `${BUCKET_URL}/images/background/contact-us.png`,
   },
-  TAV8DL: {
+  TAV8: {
     logo: {
       image: {
         black: `${BUCKET_URL}/images/logo/white.svg`,
