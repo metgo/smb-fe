@@ -42,6 +42,8 @@ export const urls = {
   filters: `${BASE_URL}/filters`,
   defaultFilters: `${BASE_URL}/default-filters`,
 
+  fundayEnquiry: `${BASE_URL}/inquiry-funday`,
+
   themes: `${BASE_URL}/themes`,
   aminitiesInfo: `${BASE_URL}/amenities-info`,
   promotional: `${BASE_URL}/external-api/promotional-items`,

@@ -11,8 +11,8 @@ import ContactInfo from "./ContactInfo";
 import { contactUsText } from "@/constant/hebrew";
 import { Dialog, IconImage } from "@/components/ui";
 import { sendEmail } from "@/actions/contactUsAction";
-import { ContactFormData, contactFormSchema } from "@/schemas/contact";
 import { contactFormReasonOptions } from "@/lib/utils";
+import { ContactFormData, contactFormSchema } from "@/schemas/contact";
 
 const InputField = ({ type = "text", placeholder, register, error }: any) => (
   <div className="flex flex-col w-full font-normal">
