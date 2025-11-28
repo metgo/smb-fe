@@ -7,11 +7,13 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import { contactUsText, fundayEnquiryLables } from "@/constant/hebrew";
 import { Dialog } from "@/components/ui";
-import { sendEmail } from "@/actions/contactUsAction";
-import { ContactFormData, contactFormSchema } from "@/schemas/contact";
 import ContactInfo from "../../_components/ContactInfo";
+import { sendFundayEnquiryEmail } from "@/actions/contactUsAction";
+import { FundayFormData, fundayFormSchema } from "@/schemas/contact";
+import { contactUsText, fundayEnquiryLables } from "@/constant/hebrew";
+import { IdentifierId } from "@/constant/envConstants";
+import { getContactDetails } from "@/constant/siteInfo";
 
 const InputField = ({ type = "text", placeholder, register, error }: any) => (
   <div className="flex flex-col w-full font-normal">
@@ -30,31 +32,31 @@ const InputField = ({ type = "text", placeholder, register, error }: any) => (
 const ContactForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitSuccess, setIsSubmitSuccess] = useState(false);
+  const contactInfo = getContactDetails();
 
   const {
     register,
     handleSubmit,
     reset,
     formState: { errors, isValid },
-  } = useForm<ContactFormData>({
-    resolver: zodResolver(contactFormSchema),
+  } = useForm<FundayFormData>({
+    resolver: zodResolver(fundayFormSchema),
     mode: "onChange",
     defaultValues: {
       name: "",
       phone: "",
       email: "",
       message: "",
-      reason: "FunDays",
-      websiteIdentity: "negevTime",
+      identifierId: IdentifierId,
+      websiteEmail: contactInfo.mail,
     },
   });
 
-  const onSubmit = async (data: ContactFormData) => {
+  const onSubmit = async (data: FundayFormData) => {
     try {
       setIsSubmitting(true);
 
-      const response = await sendEmail(data);
-      console.log("🚀 ~ onSubmit ~ response:", response);
+      const response = await sendFundayEnquiryEmail(data);
       if (response.success) {
         reset();
         setIsSubmitSuccess(true);

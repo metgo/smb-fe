@@ -301,8 +301,8 @@ const FeedCardActions = ({
   };
 
   return (
-    <div className="absolute top-4 flex items-center justify-between w-full px-4">
-      <div className="group-hover:flex gap-2.5 hidden">
+    <div className="absolute top-2 flex items-center justify-between w-full px-4">
+      <div className="group-hover:flex gap-2.5 hidden mt-1">
         <button
           type="button"
           className="custom-cursor border border-transparent hover:border-white rounded-full"
@@ -323,22 +323,22 @@ const FeedCardActions = ({
         )}
       </div>
       {feedItem.serviceType === "point_of_interest" && (
-        <div className="bg-[#29C368] flex items-center justify-center absolute left-[11px] top-0 text-white text-[12px] font-bold px-3 py-1.5 rounded-md">
+        <div className="bg-[#29C368] flex items-center justify-center absolute left-[11px] top-1 text-white text-[12px] font-bold px-3 py-1.5 rounded-md">
           <span>{"נקודת עניין"}</span>
         </div>
       )}
       {feedItem.serviceType === "event" && (
-        <div className="bg-[#B471B5] flex items-center justify-center absolute left-[11px] top-0 text-white text-[12px] font-bold px-3 py-1.5 rounded-md">
+        <div className="bg-[#B471B5] flex items-center justify-center absolute left-[11px] top-1 text-white text-[12px] font-bold px-3 py-1.5 rounded-md">
           <span>{"אירוע"}</span>
         </div>
       )}
       {feedItem.serviceType === "trip" && (
-        <div className="bg-[#FEBF3A] flex items-center justify-center absolute left-[11px] top-0 text-white text-[12px] font-bold px-3 py-1.5 rounded-md">
+        <div className="bg-[#FEBF3A] flex items-center justify-center absolute left-[11px] top-1 text-white text-[12px] font-bold px-3 py-1.5 rounded-md">
           <span>{"מסלול"}</span>
         </div>
       )}
       {feedItem.serviceType === "funday" && (
-        <div className="bg-[#4C95D8] flex items-center justify-center absolute left-[11px] top-0 text-white text-[12px] font-bold px-3 py-1.5 rounded-md">
+        <div className="bg-[#4C95D8] flex items-center justify-center absolute left-[11px] top-1 text-white text-[12px] font-bold px-3 py-1.5 rounded-md">
           <span>{"יום גיבוש"}</span>
         </div>
       )}
