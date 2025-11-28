@@ -84,11 +84,15 @@ const ContactForm = () => {
         >
           <div className="bg-white md:border border-lightGray rounded-2xl max-sm:w-full max-sm:p-4 md:p-10">
             <div className="flex flex-col items-center justify-center max-sm:my-10 md:mb-10 text-dark text-center w-full">
-              <h2 className="font-bold text-2xl">
+              <h2 className="font-bold text-[40px]">
                 {fundayEnquiryLables.title}
               </h2>
               <p className="font-normal max-sm:w-90 md:w-74">
                 {fundayEnquiryLables.description}
+              </p>
+
+              <p className="font-bold text-xl w-84 mt-8">
+                {fundayEnquiryLables.greetings}
               </p>
             </div>
 
