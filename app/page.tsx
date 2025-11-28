@@ -9,8 +9,8 @@ import { ArrowImage, CarouselImage } from "@/components/marketing";
 import FeedLayout from "@/components/layouts/FeedLayout";
 import CurrentTempOfYourCity from "@/components/navbar/CurrentTempOfYourCity";
 import { getAllFeeds, getAllFilters } from "@/actions/feedActions";
-import { initialSelectedFiltersIds } from "@/providers/SiteInfoClientProvider";
 import MobileFeedLayout from "@/components/mobile/FeedLayout.mobile";
+import { getPresetFilters } from "@/actions/commonActions";
 
 interface Props {
   searchParams: Promise<{
@@ -37,36 +37,50 @@ const page = async ({ searchParams }: Props) => {
     page,
   } = params;
 
-  // const initialSelectedFiltersIds:PresetFilterItems = await getPresetFilters()
+  const initialSelectedFiltersIds: PresetFilterItems = await getPresetFilters();
+  console.log(
+    "🚀 ~ page ~ initialSelectedFiltersIds:",
+    initialSelectedFiltersIds,
+  );
+
   //  Convert comma values → arrays only if URL values exist
-  const categoriesArray = categoryIds?.length
-    ? categoryIds.split(",")
-    : initialSelectedFiltersIds?.categoryIds;
+  // const categoriesArray = categoryIds?.length
+  //   ? categoryIds.split(",")
+  //   : initialSelectedFiltersIds?.categoryIds;
 
-  const subCategoriesArray = subCategoryIds?.length
-    ? subCategoryIds.split(",")
-    : initialSelectedFiltersIds?.subCategoryIds;
+  // const subCategoriesArray = subCategoryIds?.length
+  //   ? subCategoryIds.split(",")
+  //   : initialSelectedFiltersIds?.subCategoryIds;
 
-  const accessibilitiesArray = accessibilityIds?.length
-    ? accessibilityIds.split(",")
-    : initialSelectedFiltersIds?.accessibilityIds;
+  // const accessibilitiesArray = accessibilityIds?.length
+  //   ? accessibilityIds.split(",")
+  //   : initialSelectedFiltersIds?.accessibilityIds;
 
-  const groupTypesArray = groupTypeIds?.length
-    ? groupTypeIds.split(",")
-    : initialSelectedFiltersIds?.groupTypeIds;
+  // const groupTypesArray = groupTypeIds?.length
+  //   ? groupTypeIds.split(",")
+  //   : initialSelectedFiltersIds?.groupTypeIds;
 
-  const serviceTypesArray = serviceTypes?.length
-    ? serviceTypes.split(",")
-    : initialSelectedFiltersIds?.serviceTypes;
+  // const serviceTypesArray = serviceTypes?.length
+  //   ? serviceTypes.split(",")
+  //   : initialSelectedFiltersIds?.serviceTypes;
 
   // Unified object (now includes default fallback)
+  // const selectedFiltersIds = {
+  //   categoryIds: categoriesArray || [],
+  //   subCategoryIds: subCategoriesArray || [],
+  //   groupTypesIds: groupTypesArray || [],
+  //   accessibilitiesIds: accessibilitiesArray || [],
+  //   serviceTypes: serviceTypesArray || [],
+  // };
+
   const selectedFiltersIds = {
-    categoryIds: categoriesArray || [],
-    subCategoryIds: subCategoriesArray || [],
-    groupTypesIds: groupTypesArray || [],
-    accessibilitiesIds: accessibilitiesArray || [],
-    serviceTypes: serviceTypesArray || [],
+    categoryIds: categoryIds?.split(",") || [],
+    subCategoryIds: subCategoryIds?.split(",") || [],
+    groupTypesIds: groupTypeIds?.split(",") || [],
+    accessibilitiesIds: accessibilityIds?.split(",") || [],
+    serviceTypes: serviceTypes?.split(",") || [],
   };
+
   // ["business", "point_of_interest", "event", "funday", "trip"],
 
   // First API call includes all filters
@@ -117,8 +131,16 @@ const page = async ({ searchParams }: Props) => {
         <section className="relative z-50 bg-white">
           <Navbar showFilterTab />
 
-          <MobileFeedLayout businesses={businesses} filters={filters} />
-          <FeedLayout businesses={businesses} filters={filters} />
+          <MobileFeedLayout
+            businesses={businesses}
+            filters={filters}
+            initialSelectedFiltersIds={initialSelectedFiltersIds}
+          />
+          <FeedLayout
+            businesses={businesses}
+            filters={filters}
+            initialSelectedFiltersIds={initialSelectedFiltersIds}
+          />
         </section>
       </ScrollSnapWrapper>
     </div>

@@ -18,9 +18,14 @@ import MobileFeedFilterDrawer from "../drawer/FeedFilterDrawer.mobile";
 interface MobileFeedLayoutProps {
   businesses: BusinessesProps;
   filters: FiltersResponse;
+  initialSelectedFiltersIds: PresetFilterItems;
 }
 
-const MobileFeedLayout = ({ businesses, filters }: MobileFeedLayoutProps) => {
+const MobileFeedLayout = ({
+  businesses,
+  filters,
+  initialSelectedFiltersIds,
+}: MobileFeedLayoutProps) => {
   const pathname = usePathname();
   const { isMobile } = useCommonHook();
 
@@ -38,7 +43,7 @@ const MobileFeedLayout = ({ businesses, filters }: MobileFeedLayoutProps) => {
     isSelected,
     toggleParam,
     handleResetFilters,
-  } = useFeedFilter(filters);
+  } = useFeedFilter(filters, initialSelectedFiltersIds);
 
   const {
     hideFirstTwoSection,

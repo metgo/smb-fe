@@ -2,13 +2,13 @@ import AttributePills from "@/components/AttributePills";
 import { getAllLocations } from "@/actions/commonActions";
 import { getTrailDetailsBySlug } from "@/actions/trailActions";
 
-import { ImageGallery, NoDetailsFound } from "../../_components";
-import { ensureListStyles, shuffleArray } from "@/lib/helpers";
-import { funDaysLabels, menuItems } from "@/constant/hebrew";
-import FunDayStations from "../_components/FunDayStations";
-import FunDayDetailsRouteMap from "../_components/FunDayDetailsRouteMap";
 import ContactUsInfo from "@/components/ContactUsInfo";
+import FunDayStations from "../_components/FunDayStations";
+import { funDaysLabels, menuItems } from "@/constant/hebrew";
 import ShareUrlBtnModal from "@/components/ShareUrlBtnModal";
+import { ensureListStyles, shuffleArray } from "@/lib/helpers";
+import { ImageGallery, NoDetailsFound } from "../../_components";
+import FunDayDetailsRouteMap from "../_components/FunDayDetailsRouteMap";
 import MobileImageGallery from "@/components/mobile/ImageGallery.mobile";
 
 const page = async ({ params }: PageProps) => {
@@ -82,22 +82,24 @@ const page = async ({ params }: PageProps) => {
               <h2 className="font-bold  max-sm:text-3xl md:text-[40px]">
                 {funDaysLabels.hazel}
               </h2>
-              <div className="border border-lightGray rounded-md p-4 space-y-3 w-full">
-                {funDayDetails?.itenary?.map((item: any, index: any) => (
-                  <div key={index} className="">
-                    <div className="grid grid-cols-12 items-center gap-2">
-                      <div className="text-xl text-theme font-normal col-span-4">
-                        <span>{item?.startTime}</span>
-                        <span>-</span>
-                        <span>{item?.endTime}</span>
-                      </div>
-                      <div className="text-theme text-xl font-bold col-span-8">
-                        {item?.title}
+              {funDayDetails?.itenary?.length > 0 && (
+                <div className="border border-lightGray rounded-md p-4 space-y-3 w-full">
+                  {funDayDetails?.itenary?.map((item: any, index: any) => (
+                    <div key={index} className="">
+                      <div className="grid grid-cols-12 items-center gap-2">
+                        <div className="text-xl text-theme font-normal col-span-4">
+                          <span>{item?.startTime}</span>
+                          <span>-</span>
+                          <span>{item?.endTime}</span>
+                        </div>
+                        <div className="text-theme text-xl font-bold col-span-8">
+                          {item?.title}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
           <div className="md:grid grid-cols-12 gap-6 max-sm:flex max-sm:flex-col">
