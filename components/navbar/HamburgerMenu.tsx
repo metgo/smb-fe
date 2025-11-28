@@ -58,7 +58,8 @@ const HamburgerMenu = ({
       Object?.entries(nav)?.map(([colKey, items]) => {
         if (colKey === "col2") {
           const filtered = items?.filter(
-            (item) => item?.key && aminitiesInfo?.[item?.key],
+            (item) =>
+              item?.key && (aminitiesInfo as Record<string, any>)?.[item.key],
           );
           return [colKey, filtered];
         }

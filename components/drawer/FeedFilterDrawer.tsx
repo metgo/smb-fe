@@ -13,7 +13,7 @@ import {
 } from "../ui/svgIcons";
 import { filterCategories, ICON_MAP, SERVICE_TYPE_MAP } from "@/lib/utils";
 import { useCommonHook } from "@/hooks";
-import { initialSelectedFiltersIds } from "@/providers/SiteInfoClientProvider";
+import useGeneralStore from "@/stores/generalStore";
 
 interface FeedFilterDrawerProps {
   isOpen: boolean;
@@ -39,6 +39,7 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
   filteredSubCategories,
 }) => {
   const { isMobile } = useCommonHook();
+  const { aminitiesInfo } = useGeneralStore();
 
   if (!isOpen || isMobile) return null;
 
@@ -77,9 +78,7 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
             <div className="grid grid-cols-12 gap-x-1 gap-y-2 mt-2">
               {/* Point of Interest */}
 
-              {initialSelectedFiltersIds?.serviceTypes.includes(
-                SERVICE_TYPE_MAP.poi,
-              ) && (
+              {aminitiesInfo?.poi && (
                 <FilterButton
                   active={isSelected("serviceTypes", SERVICE_TYPE_MAP.poi)}
                   onClick={() =>
@@ -107,9 +106,7 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
               })}
 
               {/* Funday */}
-              {initialSelectedFiltersIds?.serviceTypes.includes(
-                SERVICE_TYPE_MAP.fun_day,
-              ) && (
+              {aminitiesInfo?.funday && (
                 <FilterButton
                   active={isSelected("serviceTypes", SERVICE_TYPE_MAP.fun_day)}
                   onClick={() =>
@@ -122,9 +119,7 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
               )}
 
               {/* Events */}
-              {initialSelectedFiltersIds?.serviceTypes.includes(
-                SERVICE_TYPE_MAP.event,
-              ) && (
+              {aminitiesInfo?.event && (
                 <FilterButton
                   active={isSelected("serviceTypes", SERVICE_TYPE_MAP.event)}
                   onClick={() =>
@@ -137,9 +132,7 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
               )}
 
               {/* Routes */}
-              {initialSelectedFiltersIds?.serviceTypes.includes(
-                SERVICE_TYPE_MAP.route,
-              ) && (
+              {aminitiesInfo?.trip && (
                 <FilterButton
                   active={isSelected("serviceTypes", SERVICE_TYPE_MAP.route)}
                   onClick={() =>
@@ -214,7 +207,7 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
             className="relative custom-cursor"
           >
             {appliedFilterCount > 0 && (
-              <div className="bg-green-500 absolute left-1 top-1 rounded-full h-[18px] w-[18px] text-[10px] flex items-center justify-center text-white aspect-square border border-white">
+              <div className="bg-green-500 absolute right-1 top-1 rounded-full h-[18px] w-[18px] text-[10px] flex items-center justify-center text-white aspect-square border border-white">
                 {appliedFilterCount}
               </div>
             )}

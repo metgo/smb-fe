@@ -1,6 +1,7 @@
 "use client";
 
 import clsx from "clsx";
+import { useState } from "react";
 import { MotionDialogDiv } from "../ui";
 import { filterPanelLabels } from "@/constant/hebrew";
 import { motion, AnimatePresence } from "framer-motion";
@@ -16,7 +17,6 @@ import {
 } from "../ui/svgIcons";
 import { filterCategories, ICON_MAP, SERVICE_TYPE_MAP } from "@/lib/utils";
 import useGeneralStore from "@/stores/generalStore";
-import { useState } from "react";
 
 interface MobileFeedFilterDrawerProps {
   isOpen: boolean;

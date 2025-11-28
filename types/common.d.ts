@@ -8,7 +8,11 @@ interface HomeVideo {
 }
 
 interface AminitiesInfoType {
-  [key: string]: boolean;
+  business: boolean;
+  poi: boolean;
+  event: boolean;
+  trip: boolean;
+  funday: boolean;
 }
 
 interface SiteConfig {

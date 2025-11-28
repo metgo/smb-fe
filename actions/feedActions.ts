@@ -15,11 +15,13 @@ export async function getAllFeeds(
   page: number,
   filters: FiltersProps,
   isAllClear: boolean = false,
+  limit: number = 560,
 ): Promise<BusinessesProps> {
-  let url: string;
+  let baseUrl: string;
 
+  // Build base URL (without page param)
   if (isAllClear) {
-    url = `${urls.feeds}?campCode=${CODE}`;
+    baseUrl = `${urls.feeds}?campCode=${CODE}&limit=${limit}`;
   } else {
     const {
       categoryIds,
@@ -29,10 +31,8 @@ export async function getAllFeeds(
       serviceTypes,
     } = filters;
 
-    // Build URL query parameters
     const query = new URLSearchParams();
-    query.append("page", page.toString());
-    query.append("limit", "100");
+    query.append("limit", limit.toString());
     query.append("sortBy", "createdAt");
     query.append("sortOrder", "DESC");
     query.append("campCode", CODE!);
@@ -43,30 +43,39 @@ export async function getAllFeeds(
     accessibilitiesIds?.forEach((id) => query.append("accessibilitiesId", id));
     serviceTypes?.forEach((type) => query.append("serviceType", type));
 
-    url = `${urls.feeds}?${query.toString()}`;
+    baseUrl = `${urls.feeds}?${query.toString()}`;
   }
 
   try {
-    const res = await fetch(url, {
-      method: "GET",
-      cache: "no-store",
-    });
+    let allData: any[] = [];
+    let currentPage = page;
+    let hasNextPage = true;
 
-    if (!res.ok) {
-      throw new Error(`Failed to fetch feeds: ${res.statusText}`);
+    while (hasNextPage) {
+      const url = `${baseUrl}&page=${currentPage}`;
+
+      const res = await fetch(url, { method: "GET", cache: "no-store" });
+
+      if (!res.ok) throw new Error(`Failed to fetch feeds: ${res.statusText}`);
+
+      const json = await res.json();
+
+      allData = [...allData, ...(json.data || [])];
+      hasNextPage = json.meta?.hasNextPage;
+      currentPage++;
     }
 
-    const json = await res.json();
+    const finalData = shuffleArray(allData);
 
     return {
-      data: shuffleArray(json.data) || [],
-      totalData: json.data?.length || 0,
-      meta: json.meta || {
-        page,
-        limit: 100,
+      data: finalData,
+      totalData: finalData.length,
+      meta: {
+        page: 1,
+        limit,
         pageCount: 1,
-        hasPreviousPage: page > 1,
-        hasNextPage: true,
+        hasPreviousPage: false,
+        hasNextPage: false,
       },
     };
   } catch (error) {
@@ -76,8 +85,8 @@ export async function getAllFeeds(
       data: [],
       totalData: 0,
       meta: {
-        page,
-        limit: 100,
+        page: 1,
+        limit,
         pageCount: 1,
         hasPreviousPage: false,
         hasNextPage: false,

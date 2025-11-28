@@ -2,9 +2,9 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { initialSelectedFiltersIds } from "@/providers/SiteInfoClientProvider";
 import { sanitizeInitialFilters } from "@/lib/helpers";
 import { startLoading } from "@/components/wrappers/ProgressBar";
+import useGeneralStore from "@/stores/generalStore";
 
 let applyTimer: NodeJS.Timeout | null = null;
 
@@ -23,9 +23,13 @@ const getTotalAppliedFilters = (params: URLSearchParams) => {
   }, 0);
 };
 
-export default function useFeedFilter(filters: FiltersResponse) {
+export default function useFeedFilter(
+  filters: FiltersResponse,
+  initialSelectedFiltersIds: PresetFilterItems,
+) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { aminitiesInfo } = useGeneralStore();
 
   const [appliedFilterCount, setAppliedFilterCount] = useState(0);
 
@@ -72,8 +76,8 @@ export default function useFeedFilter(filters: FiltersResponse) {
       const { sanitized, totalCount } = sanitizeInitialFilters(
         initialSelectedFiltersIds,
         filters,
+        aminitiesInfo,
       );
-
       setAppliedFilterCount(totalCount);
 
       let shouldUpdate = false;
@@ -95,7 +99,7 @@ export default function useFeedFilter(filters: FiltersResponse) {
     } catch (error) {
       console.error("Error applying default filters:", error);
     }
-  }, [initialSelectedFiltersIds]);
+  }, []);
 
   // Always read current URL params (live, never stale)
   const getSelected = (key: string) => {
@@ -106,14 +110,93 @@ export default function useFeedFilter(filters: FiltersResponse) {
     return getSelected(key).includes(value);
   };
 
+  // const toggleParam = (key: string, value: string) => {
+  //   const params = new URLSearchParams(paramsState.toString());
+  //   const current = params.get(key)?.split(",").filter(Boolean) ?? [];
+
+  //   const next = current.includes(value)
+  //     ? current.filter((i) => i !== value)
+  //     : [...current, value];
+
+  //   if (next.length > 0) params.set(key, next.join(","));
+  //   else params.delete(key);
+
+  //   const nextParams = new URLSearchParams(params);
+  //   nextParams.delete("isAllClear");
+
+  //   // Auto-clean subcategories when categories change
+  //   if (key === "categoryIds") {
+  //     const selectedCats =
+  //       nextParams.get("categoryIds")?.split(",")?.filter(Boolean) ?? [];
+
+  //     const validSub =
+  //       filters?.subCategories
+  //         ?.filter((sub) => selectedCats?.includes(sub.categoryId))
+  //         .map((sub) => sub._id) ?? [];
+
+  //     const existingSub =
+  //       nextParams.get("subCategoryIds")?.split(",").filter(Boolean) ?? [];
+
+  //     const filteredSub = existingSub.filter((id) => validSub.includes(id));
+
+  //     if (filteredSub.length > 0)
+  //       nextParams.set("subCategoryIds", filteredSub.join(","));
+  //     else nextParams.delete("subCategoryIds");
+
+  //     if (selectedCats.length === 0) {
+  //       nextParams.delete("groupTypeIds");
+  //       nextParams.delete("accessibilityIds");
+  //     }
+  //   }
+
+  //   // Update local state immediately
+  //   setParamsState(nextParams);
+
+  //   // Clear old timer
+  //   if (applyTimer) clearTimeout(applyTimer);
+
+  //   // Debounce apply: wait 2 seconds after last click
+  //   applyTimer = setTimeout(() => {
+  //     const totalApplied = getTotalAppliedFilters(nextParams);
+  //     setAppliedFilterCount(totalApplied);
+
+  //     const isAllClear = totalApplied === 0;
+
+  //     if (isAllClear) {
+  //       router.push(`?isAllClear=true`, { scroll: false });
+  //     } else {
+  //       router.push(`?${nextParams.toString()}`, { scroll: false });
+  //     }
+
+  //     startLoading();
+  //   }, 2000);
+  // };
+
   const toggleParam = (key: string, value: string) => {
     const params = new URLSearchParams(paramsState.toString());
     const current = params.get(key)?.split(",").filter(Boolean) ?? [];
 
+    // Toggle logic
     const next = current.includes(value)
       ? current.filter((i) => i !== value)
       : [...current, value];
 
+    // ⭐ SPECIAL RULE: Remove "business" if any other serviceType is selected
+    if (key === "serviceTypes") {
+      const BUSINESS_ID = "business"; // update with your real ID if needed
+
+      const hasBusiness = next.includes(BUSINESS_ID);
+      const hasOther = next.some((id) => id !== BUSINESS_ID);
+
+      // If "business" + any another serviceType → remove "business"
+      if (hasBusiness && hasOther) {
+        const cleaned = next.filter((id) => id !== BUSINESS_ID);
+        next.length = 0;
+        next.push(...cleaned);
+      }
+    }
+
+    // Apply next values to params
     if (next.length > 0) params.set(key, next.join(","));
     else params.delete(key);
 
@@ -123,11 +206,11 @@ export default function useFeedFilter(filters: FiltersResponse) {
     // Auto-clean subcategories when categories change
     if (key === "categoryIds") {
       const selectedCats =
-        nextParams.get("categoryIds")?.split(",").filter(Boolean) ?? [];
+        nextParams.get("categoryIds")?.split(",")?.filter(Boolean) ?? [];
 
       const validSub =
-        filters.subCategories
-          ?.filter((sub) => selectedCats.includes(sub.categoryId))
+        filters?.subCategories
+          ?.filter((sub) => selectedCats?.includes(sub.categoryId))
           .map((sub) => sub._id) ?? [];
 
       const existingSub =
@@ -148,10 +231,10 @@ export default function useFeedFilter(filters: FiltersResponse) {
     // Update local state immediately
     setParamsState(nextParams);
 
-    // Clear old timer
+    // Clear old debounce timer
     if (applyTimer) clearTimeout(applyTimer);
 
-    // Debounce apply: wait 2 seconds after last click
+    // Debounced apply: wait 2 seconds after last click
     applyTimer = setTimeout(() => {
       const totalApplied = getTotalAppliedFilters(nextParams);
       setAppliedFilterCount(totalApplied);
