@@ -1,31 +1,32 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional } from 'class-validator';
+import { Transform } from 'class-transformer';
+import { IsBoolean, IsOptional } from 'class-validator';
 
 export class GetPromotionalItemsRequest {
   @IsOptional()
   @ApiProperty({
-    type: Boolean,
     required: false,
-    default: false,
     description: 'Whether to fetch promotional businesses',
   })
+  @IsBoolean()
+  @Transform(({ value }) => value === 'true' || value === true)
     isBusiness?: string;
 
   @IsOptional()
   @ApiProperty({
-    type: Boolean,
     required: false,
-    default: false,
     description: 'Whether to fetch promotional events',
   })
+  @IsBoolean()
+  @Transform(({ value }) => value === 'true' || value === true)
     isEvent?: string;
 
   @IsOptional()
   @ApiProperty({
-    type: Boolean,
     required: false,
-    default: false,
     description: 'Whether to fetch promotional trips',
   })
+  @IsBoolean()
+  @Transform(({ value }) => value === 'true' || value === true)
     isTrip?: string;
 }

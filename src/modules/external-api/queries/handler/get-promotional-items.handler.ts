@@ -76,11 +76,7 @@ implements IQueryHandler<GetPromotionalItemsQuery> {
         promotionalEvents = [];
         promotionalTrips = [];
       } else {
-        if (
-          !/true/.test(query.isBusiness)
-          && !/true/.test(query.isEvent)
-          && !/true/.test(query.isTrip)
-        ) {
+        if (!query.isBusiness && !query.isEvent && !query.isTrip) {
           const [
             promotionalBusinessesData,
             promotionalEventsData,
@@ -124,21 +120,21 @@ implements IQueryHandler<GetPromotionalItemsQuery> {
           allPromotionalItems = shuffle(allItems).slice(0, 10);
         }
 
-        if (/true/.test(query.isBusiness)) {
+        if (query.isBusiness) {
           promotionalBusinesses = await this.getPromotionalBusinesses(
             promotionalBusinessItems,
             campDetails,
           );
         }
 
-        if (/true/.test(query.isEvent)) {
+        if (query.isEvent) {
           promotionalEvents = await this.getPromotionalEvents(
             promotionalEventsItems,
             campDetails,
           );
         }
 
-        if (/true/.test(query.isTrip)) {
+        if (query.isTrip) {
           promotionalTrips = await this.getPromotionalTrips(
             promotionalTripsItems,
             campDetails,
@@ -363,21 +359,20 @@ implements IQueryHandler<GetPromotionalItemsQuery> {
       authorityIds: campDetails.authorityIds,
     });
 
-    const baseTripMatch = {
+    const baseTripMatch: any = {
       status: TripStatus.APPROVED,
       isDeleted: false,
       deletedAt: null,
       deletedBy: null,
-      $or: campaignOrConditionsTrip,
     };
+
+    if (campaignOrConditionsTrip?.length) {
+      baseTripMatch.$or = campaignOrConditionsTrip;
+    }
 
     if (promotionalTripsItems?.isAll) {
       return await this.TripModel.aggregate([
-        {
-          $match: {
-            baseTripMatch,
-          },
-        },
+        { $match: baseTripMatch },
         { $sample: { size: 10 } },
         {
           $project: {
@@ -391,7 +386,7 @@ implements IQueryHandler<GetPromotionalItemsQuery> {
       ]);
     }
 
-    const orConditions: Record<string, any>[] = [];
+    const orConditions: any[] = [];
 
     if (promotionalTripsItems?.groupTypesId?.length) {
       orConditions.push({
@@ -433,113 +428,51 @@ implements IQueryHandler<GetPromotionalItemsQuery> {
       });
     }
 
-    const combinedBusinessFilter: Record<string, any> = {};
+    const combinedBusinessFilter: any = {};
     if (orConditions.length > 0) {
       combinedBusinessFilter.$or = orConditions;
     }
 
-    const pipeline: any[] = [];
-
-    pipeline.push({ $match: baseTripMatch });
-
-    pipeline.push({
-      $lookup: {
-        from: 'businesses',
-        localField: 'stations._id',
-        foreignField: '_id',
-        pipeline: [
-          {
-            $project: {
-              image: {
-                $let: {
-                  vars: {
-                    primaryImages: {
-                      $filter: {
-                        input: '$images',
-                        as: 'img',
-                        cond: { $eq: ['$$img.isPrimary', true] },
-                      },
-                    },
-                  },
-                  in: {
-                    $cond: [
-                      { $gt: [{ $size: '$$primaryImages' }, 0] },
-                      { $arrayElemAt: ['$$primaryImages', 0] },
-                      { $arrayElemAt: ['$images', 0] },
-                    ],
-                  },
-                },
-              },
-              address: 1,
-            },
-          },
-        ],
-        as: 'stationImagesArray',
+    const pipeline: any[] = [
+      { $match: baseTripMatch },
+      {
+        $lookup: {
+          from: 'businesses',
+          localField: 'stations._id',
+          foreignField: '_id',
+          as: 'stationBusinessesAddress',
+          pipeline: [{ $project: { address: 1 } }],
+        },
       },
-    });
+    ];
 
     if (Object.keys(combinedBusinessFilter).length > 0) {
-      pipeline.push({ $unwind: '$stationBusinesses' });
       pipeline.push({ $match: combinedBusinessFilter });
-      pipeline.push({
-        $group: {
-          _id: '$_id',
-          doc: { $first: '$$ROOT' },
-          stationBusinesses: { $push: '$stationBusinesses' },
-        },
-      });
-      pipeline.push({
-        $addFields: {
-          'doc.stationBusinesses': '$stationBusinesses',
-        },
-      });
-      pipeline.push({
-        $replaceRoot: { newRoot: '$doc' },
-      });
     }
 
-    pipeline.push({
-      $addFields: {
-        images: {
-          $filter: {
-            input: {
-              $map: {
-                input: '$stationImagesArray',
-                as: 'station',
-                in: '$$station.image',
-              },
-            },
-            as: 'img',
-            cond: { $ne: ['$$img', null] },
+    pipeline.push(
+      {
+        $addFields: {
+          address: {
+            $ifNull: [
+              { $arrayElemAt: ['$stationBusinessesAddress.address', 0] },
+              null,
+            ],
           },
         },
-        address: {
-          $ifNull: [{ $arrayElemAt: ['$stationImagesArray.address', 0] }, null],
+      },
+      {
+        $project: {
+          _id: 1,
+          name: 1,
+          slug: 1,
+          description: 1,
+          images: 1,
+          address: 1,
         },
       },
-    });
-
-    pipeline.push({
-      $group: {
-        _id: '$_id',
-        doc: { $first: '$$ROOT' },
-      },
-    });
-
-    pipeline.push({ $replaceRoot: { newRoot: '$doc' } });
-
-    pipeline.push({
-      $project: {
-        _id: 1,
-        name: 1,
-        slug: 1,
-        description: 1,
-        images: 1,
-        address: 1,
-      },
-    });
-
-    pipeline.push({ $sample: { size: 10 } });
+      { $sample: { size: 10 } },
+    );
 
     return await this.TripModel.aggregate(pipeline);
   }
