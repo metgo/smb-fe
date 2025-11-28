@@ -19,6 +19,9 @@ export function getCommonEmailFields(identifierId: string, theme) {
       FOOTER_LINK4: 'https://console.metgo.app/',
       FACEBOOK_LINK: theme?.faceBookUrl,
       WHATSAPP_LINK: theme?.whatsappNo,
+      FOOTER_BANNER: `${bucketUrl}footer/footer-banner.png`,
+      FOOTER_BANNER_MOBILE: `${bucketUrl}footer/footer-banner-mobile.png`,
+      FOOTER_LINK1: theme?.websiteUrl,
     },
   };
 }

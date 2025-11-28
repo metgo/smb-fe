@@ -739,7 +739,7 @@ export class OrdersService {
       BUTTON_LINK: externalApi?.themeId?.websiteUrl,
       BANNER_IMG: `${bucketUrl}footer/banner-web.png`,
       MOBILE_BANNER_IMG: `${bucketUrl}footer/banner-mobile.png`,
-      FOOTER_LINK1: externalApi?.themeId?.websiteUrl,
+      WEBSITE_NAME: externalApi?.name,
       BUSINESSNAME: businessDetails[0]?.name || '',
       BUSINESSPHONE:
         `${businessDetails[0]?.countryCode}-${businessDetails[0]?.phoneNumber}`
@@ -799,7 +799,9 @@ export class OrdersService {
             product => `
             <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom: 20px;">
               <tr>
-                <td style="padding: 10px; background: #f3f8f5; direction: rtl; border-radius: 20px;">
+                <td style="padding: 10px; background: ${
+  externalApi?.themeId.secondaryColor
+}; direction: rtl; border-radius: 20px;">
                   <table cellpadding="0" cellspacing="0" border="0" width="100%">
                     <tr>
                       <td style="padding: 0; vertical-align: middle;">
@@ -835,6 +837,8 @@ export class OrdersService {
         await this.mailchimpService.sendTransactionalEmail({
           to: email,
           templatedId: DynamicEmailTemplate.OrderConfirmationForClient,
+          from_email: externalApi?.companyDetails?.email,
+          from_name: externalApi?.name,
           mergeVars: {
             ...orderEmailFields,
             PRODUCTS_HTML: productsHtml,
@@ -878,7 +882,9 @@ export class OrdersService {
             return `
             <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom: 20px;">
             <tr>
-              <td style="padding: 10px; background: #f3f8f5; direction: rtl; border-radius: 20px;">
+              <td style="padding: 10px; background: ${
+  externalApi?.themeId.secondaryColor
+}; direction: rtl; border-radius: 20px;">
                 <table cellpadding="0" cellspacing="0" border="0" width="100%">
                   <tr>
                     <td style="padding: 0; vertical-align: middle;">
@@ -915,12 +921,13 @@ export class OrdersService {
         await this.mailchimpService.sendTransactionalEmail({
           to: business?.busiEmail,
           templatedId: DynamicEmailTemplate.OrderConfirmationForVendor,
+          from_email: externalApi?.companyDetails?.email,
+          from_name: externalApi?.name,
           mergeVars: {
             ...orderEmailFields,
             TOTALAMOUNT: businessTotalAmount,
             BUYERNAME: order?.firstName,
             PRODUCTS_HTML: productsHtmlForEchBusiness,
-            PLATFORM_NAME: externalApi?.name,
             BUYER_PHONE_NUMBER: order.phone,
             BUYER_ORDER_EMAIL: order.email,
           },

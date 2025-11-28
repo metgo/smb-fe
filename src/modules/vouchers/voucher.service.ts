@@ -1037,9 +1037,12 @@ export class VoucherService {
 
     await this.mailchimpService.sendTransactionalEmail({
       to: email,
+      from_email: externalApi?.companyDetails?.email,
+      from_name: externalApi?.name,
       templatedId: DynamicEmailTemplate.PurchaseVoucher,
       mergeVars: {
         ...emailFields,
+        WEBSITE_NAME: externalApi?.name,
         USER_NAME: BUYERNAME,
         VOUCHER_LIST,
         BUTTON_LINK: link,
