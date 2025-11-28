@@ -177,6 +177,7 @@ export const ServerErrors = {
 export const ServerSuccess = {
   LISTED: 'Report listed successfully',
   CONTACT_US_EMAIL: 'Contact Us email saved successfully',
+  INQUIRY_FUNDAY: 'Inquiry funday saved successfully',
   SEARCH: 'Search data listed successfully',
   MAP_POINT_CREATED: 'Map Point was successfully created',
   MAP_POINT_CATEGORIES_CREATED: 'Map Point Categories was successfully created',

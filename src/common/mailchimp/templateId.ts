@@ -58,4 +58,6 @@ export const DynamicEmailTemplate = {
   PurchaseVoucher: 'purchasing-multiple-vouchers',
   OrderConfirmationForClient: 'order-confirmation-client-side-en',
   OrderConfirmationForVendor: 'order-sent-to-business-owner',
+  InquiryFundayToUser: 'inquiry-funday',
+  InquiryFundayToOwner: 'inquiry-funday-for-client',
 };
