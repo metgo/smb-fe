@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 
 import NavLogo from "./NavLogo";
 import SearchFlow from "./SearchFlow";
-import { navbar } from "@/constant/hebrew";
+import { fundayEnquiryLables, navbar } from "@/constant/hebrew";
 import HamburgerMenu from "./HamburgerMenu";
 import { ShopbagIcon } from "@/components/ui/icons";
 import CurrentTempOfYourCity from "./CurrentTempOfYourCity";
@@ -15,6 +15,8 @@ import { CartDrawer } from "../drawer";
 import { pathNames } from "@/lib/endpoints";
 import PromotionalCards from "../PromotionalCards";
 import FeedLyoutSwitcTabs from "./FeedFilterTabs";
+import { RedFlowerIcon } from "../ui/svgIcons";
+import { CODE } from "@/constant/envConstants";
 // import { GiftBoxIcon } from "../ui/svgIcons";
 
 const Navbar = ({ showFilterTab = false }: { showFilterTab?: boolean }) => {
@@ -53,6 +55,20 @@ const Navbar = ({ showFilterTab = false }: { showFilterTab?: boolean }) => {
               <GiftBoxIcon />
               {navbar.souvenirShop}
             </button> */}
+
+            {CODE === "BNEI" && (
+              <Link
+                href={pathNames.fundayEnquiry}
+                className="flex items-center border border-theme rounded-xl ps-4 pe-10 py-1 h-10 custom-cursor relative"
+              >
+                <span className="text-theme font-bold">
+                  {fundayEnquiryLables.funAndBondingDays}
+                </span>
+                <div className="absolute left-0 -bottom-[5px]">
+                  <RedFlowerIcon />
+                </div>
+              </Link>
+            )}
 
             <div className="w-[1px] h-10 bg-lightGray mx-4" />
 

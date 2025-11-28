@@ -751,3 +751,59 @@ export function EventBlackIcon() {
     </svg>
   );
 }
+
+export function RedFlowerIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="42"
+      height="42"
+      viewBox="0 0 42 42"
+      fill="none"
+    >
+      <g filter="url(#filter0_d_15887_197751)">
+        <path
+          d="M14.1886 10.748C13.0778 13.0529 12.6282 15.3344 12.7218 17.3888C13.5612 14.3387 14.798 11.9973 15.748 10.4667L21.04 13.7508C20.1663 15.1585 18.9817 17.4506 18.3846 20.491L18.4133 20.4615C20.5035 18.2196 21.6464 15.9389 22.2606 14.4255L28.8186 17.0874C28.126 18.794 26.9339 21.2283 24.9111 23.7578C26.9644 22.4056 29.0124 20.2485 30.6642 17.1922L36.1432 20.154C31.9299 27.9497 24.1931 33.1813 16.9369 31.428C12.8331 30.4371 10.3952 27.4719 9.84674 26.7997C5.68871 21.7039 5.53031 14.3691 8.57864 8.04431L14.1886 10.748Z"
+          fill="#FE333E"
+        />
+      </g>
+      <defs>
+        <filter
+          id="filter0_d_15887_197751"
+          x="-28.5163"
+          y="-26.957"
+          width="99.6595"
+          height="93.7227"
+          filterUnits="userSpaceOnUse"
+          color-interpolation-filters="sRGB"
+        >
+          <feFlood flood-opacity="0" result="BackgroundImageFix" />
+          <feColorMatrix
+            in="SourceAlpha"
+            type="matrix"
+            values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
+            result="hardAlpha"
+          />
+          <feOffset />
+          <feGaussianBlur stdDeviation="17.5" />
+          <feComposite in2="hardAlpha" operator="out" />
+          <feColorMatrix
+            type="matrix"
+            values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.08 0"
+          />
+          <feBlend
+            mode="normal"
+            in2="BackgroundImageFix"
+            result="effect1_dropShadow_15887_197751"
+          />
+          <feBlend
+            mode="normal"
+            in="SourceGraphic"
+            in2="effect1_dropShadow_15887_197751"
+            result="shape"
+          />
+        </filter>
+      </defs>
+    </svg>
+  );
+}

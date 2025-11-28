@@ -66,6 +66,7 @@ const PromotionalCards = () => {
     pathname.startsWith(pathNames.trailDetails) ||
     pathname.startsWith(pathNames.funDayDetails) ||
     pathname === pathNames.cart ||
+    pathname === pathNames.fundayEnquiry ||
     pathname.startsWith(pathNames.businessDetails);
 
   if (!shouldShow) return null;

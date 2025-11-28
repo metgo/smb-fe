@@ -3,9 +3,9 @@ import { CODE } from "./envConstants";
 export const siteInfo = {
   BNEI: {
     contactInfo: {
-      phone: "02-8835634",
-      mail: "ayanot@gmail.com",
-      whatsapp: "052-6789546",
+      phone: "052-238-2872",
+      mail: "tayarut@bns.org.il",
+      whatsapp: "050-553-6515",
     },
   },
   HOFASH: {
