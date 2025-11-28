@@ -85,7 +85,7 @@ const ContactForm = () => {
               <h2 className="font-bold text-2xl">
                 {fundayEnquiryLables.title}
               </h2>
-              <p className="font-normal max-sm:w-90">
+              <p className="font-normal max-sm:w-90 md:w-74">
                 {fundayEnquiryLables.description}
               </p>
             </div>
@@ -128,7 +128,7 @@ const ContactForm = () => {
                   isSubmitting || !isValid
                     ? "bg-lightGray cursor-not-allowed"
                     : "bg-dark custom-cursor",
-                  "mx-auto h-12 w-52 mt-10 text-white font-bold rounded-xl",
+                  "mx-auto h-12 w-38 mt-10 text-white font-bold rounded-xl",
                 )}
               >
                 {isSubmitting ? contactUsText.contactUs : "שליחה"}
