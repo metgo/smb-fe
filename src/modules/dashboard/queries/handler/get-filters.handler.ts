@@ -1,6 +1,6 @@
 import { IQueryHandler, QueryBus, QueryHandler } from '@nestjs/cqrs';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import mongoose, { Model, Types } from 'mongoose';
 
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { CampaignService } from 'src/modules/campaign/campaign.service';
@@ -149,21 +149,26 @@ export class GetFiltersHandler implements IQueryHandler<GetFiltersQuery> {
         });
       }
 
+      const cleanedCategories = this.cleanIds(listOfCategoriesIds);
+      const cleanedSubCategories = this.cleanIds(listOfSubCategoriesIds);
+      const cleanedAccessibilities = this.cleanIds(listOfAccessibilityIds);
+      const cleanedGroupTypes = this.cleanIds(listOfGroupTypeIds);
+
       const [categories, subCategories, accessibilities, groupTypes]
         = await Promise.all([
           this.getCategories({
-            _id: { $in: listOfCategoriesIds },
+            _id: { $in: cleanedCategories },
           }),
           this.getSubCategories({
-            _id: { $in: listOfSubCategoriesIds },
+            _id: { $in: cleanedSubCategories },
           }),
 
           this.getAccessibilities({
-            _id: { $in: listOfAccessibilityIds },
+            _id: { $in: cleanedAccessibilities },
           }),
 
           this.getGroupTypes({
-            _id: { $in: listOfGroupTypeIds },
+            _id: { $in: cleanedGroupTypes },
           }),
         ]);
 
@@ -285,7 +290,7 @@ export class GetFiltersHandler implements IQueryHandler<GetFiltersQuery> {
         this.getDistincts(this.EventModel, 'accessibilitiesId', findQuery),
         this.getDistincts(this.EventModel, 'groupTypesId', findQuery),
         this.getDistincts(this.EventModel, 'bussCategoriesId', findQuery),
-        this.getDistincts(this.EventModel, 'bussSubCategoriesId', findQuery),
+        this.getDistincts(this.EventModel, 'subCategoriesId', findQuery),
       ]);
 
       return {
@@ -321,8 +326,8 @@ export class GetFiltersHandler implements IQueryHandler<GetFiltersQuery> {
       ] = await Promise.all([
         this.getDistincts(this.TripModel, 'accessibilitiesId', matchQuery),
         this.getDistincts(this.TripModel, 'groupTypesId', matchQuery),
-        this.getDistincts(this.TripModel, 'bussCategoriesId', matchQuery),
-        this.getDistincts(this.TripModel, 'bussSubCategoriesId', matchQuery),
+        this.getDistincts(this.TripModel, 'categoriesId', matchQuery),
+        this.getDistincts(this.TripModel, 'subCategoriesId', matchQuery),
       ]);
 
       return {
@@ -342,6 +347,30 @@ export class GetFiltersHandler implements IQueryHandler<GetFiltersQuery> {
     target.listOfSubCategoriesIds.push(...from.subCategoriesIds);
     target.listOfAccessibilityIds.push(...from.accessibilitiesIds);
     target.listOfGroupTypeIds.push(...from.groupTypesIds);
+  }
+
+  private cleanIds(arr: any[]): Types.ObjectId[] {
+    if (!Array.isArray(arr)) return [];
+
+    return arr
+      .map(val => {
+        if (!val) return null;
+
+        if (typeof val === 'string') {
+          return new mongoose.Types.ObjectId(val);
+        }
+
+        if (val instanceof mongoose.Types.ObjectId) {
+          return val;
+        }
+
+        if (val.$oid) {
+          return new mongoose.Types.ObjectId(val.$oid);
+        }
+
+        return null;
+      })
+      .filter(Boolean); // remove nulls
   }
 
   private getDistincts(model, field, baseQuery) {
