@@ -272,14 +272,14 @@ export const funDaysLabels = {
 };
 
 export const fundayEnquiryLables = {
-  title: "ימי כייף וגיבוש",
+  title: "ימי כיף וגיבוש",
   description:
     "הנגב הפורח מציע לארגונים, חברות וקבוצות ימי כיף שתפורים בדיוק לצרכים שלכם.  דברו איתנו – ונבנה לכם יום חווייתי, מהנה ובלתי נשכח.",
   whatIsYourName: "מה שמך?",
   mobile: "נייד",
   mail: "מייל",
   whatIsImportantInYourDay: "מה חשוב לך שיהיה ביום שלך?",
-  funAndBondingDays: "ימי כייף וגיבוש",
+  funAndBondingDays: "ימי כיף וגיבוש",
 };
 
 export const filterPanelLabels = {

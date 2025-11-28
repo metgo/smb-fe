@@ -6,7 +6,6 @@ import { getApproxUserLocation } from "@/actions/getWether";
 import {
   getAminitiesInfo,
   getPresetFilters,
-  getPromotionsList,
   getSiteInfo,
 } from "@/actions/commonActions";
 
@@ -17,12 +16,8 @@ export const SiteInfoClientProvider = ({
 }: {
   children: ReactNode;
 }) => {
-  const {
-    setUserLiveLocation,
-    setSiteInfo,
-    setPromotionalItems,
-    setAminitiesInfo,
-  } = useGeneralStore();
+  const { setUserLiveLocation, setSiteInfo, setAminitiesInfo } =
+    useGeneralStore();
 
   async function fetchSiteinfo() {
     const res = await getSiteInfo();
@@ -52,33 +47,19 @@ export const SiteInfoClientProvider = ({
     }
   }
 
-  async function fetchPromotionalItems() {
-    try {
-      const res = await getPromotionsList();
-      setPromotionalItems(res?.allPromotionalItems);
-    } catch (error) {
-      console.error("Failed to get promotional items:", error);
-    }
-  }
+  // async function fetchPromotionalItems() {
+  //   try {
+  //     const res = await getPromotionsList();
+  //     setPromotionalItems(res?.allPromotionalItems);
+  //   } catch (error) {
+  //     console.error("Failed to get promotional items:", error);
+  //   }
+  // }
 
   async function fetchPresetFilterItems() {
     try {
       const res = await getPresetFilters();
-
-      // Filter out 'business' and 'event' from serviceTypes
-      const filteredServiceTypes = res.serviceTypes.filter(
-        (type: string) => type !== "business",
-      );
-
-      // Return the modified object
-      const sanitizedResponse = {
-        ...res,
-        serviceTypes: filteredServiceTypes,
-      };
-
-      initialSelectedFiltersIds = sanitizedResponse;
-
-      return sanitizedResponse; // optionally return it
+      return res.serviceTypes;
     } catch (error) {
       console.error("Failed to get filters:", error);
       return null;
@@ -89,7 +70,7 @@ export const SiteInfoClientProvider = ({
     fetchSiteinfo();
     fetchAminitiesInfo();
     fetchUserCurrentLocation();
-    fetchPromotionalItems();
+    // fetchPromotionalItems();
     fetchPresetFilterItems();
   }, []);
 

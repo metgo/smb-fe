@@ -1,12 +1,33 @@
+import { CODE } from "./envConstants";
+
 export const siteInfo = {
-  negevTime: {
+  BNEI: {
     contactInfo: {
       phone: "052-238-2872",
       mail: "tayarut@bns.org.il",
       whatsapp: "050-553-6515",
     },
   },
+  HOFASH: {
+    contactInfo: {
+      phone: "02-8835634",
+      mail: "ayanot@gmail.com",
+      whatsapp: "052-6789546",
+    },
+  },
+  TAV8: {
+    contactInfo: {
+      phone: "+972 54-777-6100",
+      mail: "support@metgo.,app",
+      whatsapp: "+972 54-777-6100",
+    },
+  },
 };
+
+export function getContactDetails() {
+  const contactInfo = siteInfo[CODE as keyof typeof siteInfo].contactInfo;
+  return contactInfo;
+}
 
 export const termsConditions = [
   {

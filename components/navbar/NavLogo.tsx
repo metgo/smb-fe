@@ -37,7 +37,7 @@ const NavLogo = () => {
         src={logo?.image.black || ""}
         width={logo?.size.width}
         height={logo?.size.height}
-        className="z-50 custom-cursor"
+        className={` z-50 custom-cursor w-[${logo.size.width}px] h-[${logo.size.height}px] `}
       />
     </div>
   );

@@ -1,11 +1,11 @@
-import { CODE } from "./envConstants";
+import { CODE, BUCKET_URL } from "./envConstants";
 
 export const images = {
   BNEI: {
     logo: {
       image: {
-        black: "/images/logo/negevtime-logo-black.svg",
-        white: "/images/logo/negevtime-logo-white.svg",
+        black: `${BUCKET_URL}/images/logo/black.svg`,
+        white: `${BUCKET_URL}/images/logo/white.svg`,
       },
       size: {
         height: 100,
@@ -13,33 +13,35 @@ export const images = {
       },
     },
     thumbnail: {
-      desktop: "/images/thumbnail/negevtime-desktop-thumbnail.webp",
-      mobile: "/images/thumbnail/negevtime-mobile-thumbnail.webp",
+      desktop: `${BUCKET_URL}/images/thumbnail/desktop.webp`,
+      mobile: `${BUCKET_URL}/images/thumbnail/mobile.webp`,
     },
     favicon: "/images/favicon/negevtime.ico",
+    contactPageBg: `${BUCKET_URL}/images/background/contact-us.png`,
   },
-  TAV8DL: {
+  TAV8: {
     logo: {
       image: {
-        black: "/images/logo/negevtime-logo-black.svg",
-        white: "/images/logo/negevtime-logo-white.svg",
+        black: `${BUCKET_URL}/images/logo/white.svg`,
+        white: `${BUCKET_URL}/images/logo/white.svg`,
       },
       size: {
-        height: 100,
-        width: 80,
+        height: 50,
+        width: 66,
       },
     },
     thumbnail: {
-      desktop: "/images/thumbnail/negevtime-desktop-thumbnail.webp",
-      mobile: "/images/thumbnail/negevtime-mobile-thumbnail.webp",
+      desktop: `${BUCKET_URL}/images/thumbnail/desktop.webp`,
+      mobile: `${BUCKET_URL}/images/thumbnail/mobile.webp`,
     },
-    favicon: "/images/favicon/negevtime.ico",
+    favicon: "/images/favicon/hataze.ico",
+    contactPageBg: `${BUCKET_URL}/images/background/contact-us.png`,
   },
   HOFASH: {
     logo: {
       image: {
-        white: "/images/logo/hofash-logo.svg",
-        black: "/images/logo/hofash-logo.svg",
+        black: `${BUCKET_URL}/images/logo/black.svg`,
+        white: `${BUCKET_URL}/images/logo/white.svg`,
       },
       size: {
         height: 45,
@@ -47,10 +49,11 @@ export const images = {
       },
     },
     thumbnail: {
-      desktop: "/images/thumbnail/hofash-thumbnail.webp",
-      mobile: "/images/thumbnail/hofash-thumbnail.webp",
+      desktop: `${BUCKET_URL}/images/thumbnail/desktop.webp`,
+      mobile: `${BUCKET_URL}/images/thumbnail/mobile.webp`,
     },
     favicon: "/images/favicon/hofash.ico",
+    contactPageBg: `${BUCKET_URL}/images/background/contact-us.png`,
   },
 } as const;
 
@@ -67,4 +70,8 @@ export function getLogo() {
 export function getFavicon() {
   const faviconUrl = images[CODE as keyof typeof images]?.favicon;
   return faviconUrl;
+}
+export function getContactPageBg() {
+  const contactUsBg = images[CODE as keyof typeof images]?.contactPageBg;
+  return contactUsBg;
 }
