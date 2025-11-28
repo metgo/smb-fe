@@ -552,7 +552,3 @@ input[type="range"]::-moz-range-thumb {
   animation: zoom-3x 6s ease-in-out infinite;
   transform-origin: center;
 }
-
-.custom-cursor {
-  cursor: pointer;
-}
