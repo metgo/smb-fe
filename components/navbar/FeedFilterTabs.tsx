@@ -1,6 +1,6 @@
 "use client";
 
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useLayoutEffect, useState, useRef, useEffect } from "react";
 
 import { filterTabs } from "@/lib/utils";
@@ -16,7 +16,6 @@ const scrollToFeed = (isHomepage: boolean) => {
 };
 
 export default function FeedLyoutSwitcTabs() {
-  const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
@@ -95,11 +94,6 @@ export default function FeedLyoutSwitcTabs() {
 
     setActiveFilterTab(key);
     setClickedBusinessId("");
-
-    const params = new URLSearchParams(searchParams);
-    params.set("filterTab", key);
-
-    router.push(`?${params.toString()}`, { scroll: false });
     scrollToFeed(isHomepage);
   };
 
@@ -122,8 +116,6 @@ export default function FeedLyoutSwitcTabs() {
         />
 
         {filterTabs.map((item) => {
-          const isActive = (activeFilterTab || "gallery") === item.key;
-
           return (
             <button
               key={item.key}
@@ -132,12 +124,12 @@ export default function FeedLyoutSwitcTabs() {
               }}
               onClick={() => handleTabSwitch(item.key)}
               className={`relative z-10 flex items-center gap-1.5 rounded-lg custom-cursor text-sm transition-all duration-300 ${
-                isActive
+                activeFilterTab
                   ? "px-2.5 py-1.5 font-bold text-theme"
                   : "px-2 py-2 font-normal text-theme"
               }`}
             >
-              {isActive && (
+              {activeFilterTab === item.key && (
                 <IconImage icon={item.icon} width={20} height={20} />
               )}
               <span>{item.label}</span>
