@@ -53,7 +53,6 @@ const MobileTrailDetailsRouteMap = ({
 
   const { getStationsByTrailId, setTrailStations } = useTrailStationStore();
   const localStorageStations = getStationsByTrailId(_id);
-
   const { mapRef } = useGoogleRouteDetailsMapMobile(
     _id,
     locations,

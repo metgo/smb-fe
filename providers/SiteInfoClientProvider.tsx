@@ -5,7 +5,7 @@ import useGeneralStore from "@/stores/generalStore";
 import { getApproxUserLocation } from "@/actions/getWether";
 import {
   getAminitiesInfo,
-  getPresetFilters,
+  getPromotionsList,
   getSiteInfo,
 } from "@/actions/commonActions";
 
@@ -16,8 +16,12 @@ export const SiteInfoClientProvider = ({
 }: {
   children: ReactNode;
 }) => {
-  const { setUserLiveLocation, setSiteInfo, setAminitiesInfo } =
-    useGeneralStore();
+  const {
+    setUserLiveLocation,
+    setSiteInfo,
+    setAminitiesInfo,
+    setPromotionalItems,
+  } = useGeneralStore();
 
   async function fetchSiteinfo() {
     const res = await getSiteInfo();
@@ -47,31 +51,31 @@ export const SiteInfoClientProvider = ({
     }
   }
 
-  // async function fetchPromotionalItems() {
-  //   try {
-  //     const res = await getPromotionsList();
-  //     setPromotionalItems(res?.allPromotionalItems);
-  //   } catch (error) {
-  //     console.error("Failed to get promotional items:", error);
-  //   }
-  // }
-
-  async function fetchPresetFilterItems() {
+  async function fetchPromotionalItems() {
     try {
-      const res = await getPresetFilters();
-      return res.serviceTypes;
+      const res = await getPromotionsList();
+      setPromotionalItems(res?.allPromotionalItems);
     } catch (error) {
-      console.error("Failed to get filters:", error);
-      return null;
+      console.error("Failed to get promotional items:", error);
     }
   }
+
+  // async function fetchPresetFilterItems() {
+  //   try {
+  //     const res = await getPresetFilters();
+  //     return res.serviceTypes;
+  //   } catch (error) {
+  //     console.error("Failed to get filters:", error);
+  //     return null;
+  //   }
+  // }
 
   useEffect(() => {
     fetchSiteinfo();
     fetchAminitiesInfo();
     fetchUserCurrentLocation();
-    // fetchPromotionalItems();
-    fetchPresetFilterItems();
+    fetchPromotionalItems();
+    // fetchPresetFilterItems();
   }, []);
 
   return <div>{children}</div>;

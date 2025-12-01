@@ -1,4 +1,5 @@
 import { useImageCrop } from "./image/useImageCrop";
+import { useMobileGoogleMap } from "./map/useMobileGoogleMap";
 import { useGoogleMapMobile } from "./map/useGoogleMapMobile";
 import { useGoogleRouteDetailsMapMobile } from "./map/useGoogleRouteDetailsMapMobile";
 import { useDeliveryInfo } from "./payment/useDeliveryInfo";
@@ -25,6 +26,7 @@ export {
   useGoogleMapMobile,
   useDeviceHeight,
   useHorizontalLoadMore,
+  useMobileGoogleMap,
   useMobileFeedLayout,
   useMobileBlogFeedLayout,
   useTrailStations,

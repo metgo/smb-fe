@@ -96,21 +96,20 @@ const PromotionalCards = () => {
                   className="flex items-center gap-2 whitespace-nowrap flex-shrink-0 custom-cursor border border-transparent hover:shadow-md hover:border-gray-200 px-2 py-1 rounded-md transition-colors"
                 >
                   <div dir="rtl" className=" max-w-[120px]">
+                    <div
+                      dangerouslySetInnerHTML={{
+                        __html: removeInlineStylesFromHTML(item?.description),
+                      }}
+                      className="font-bold text-gray-800 line-clamp-1"
+                    />
                     <h3
-                      className="font-bold text-gray-800 -mb-2 truncate"
+                      className="line-clamp-1 font-bold text-[12px] w-20 -mt-1"
                       title={item?.name}
                     >
                       {item?.name?.length > 20
                         ? `${item.name.slice(0, 20)}...`
                         : item.name}
                     </h3>
-
-                    <div
-                      dangerouslySetInnerHTML={{
-                        __html: removeInlineStylesFromHTML(item?.description),
-                      }}
-                      className="line-clamp-1 font-bold text-[12px] w-20"
-                    />
                   </div>
                   <div className="w-[36px] h-[36px]">
                     <Image
