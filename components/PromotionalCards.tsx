@@ -103,7 +103,7 @@ const PromotionalCards = () => {
                       className="font-bold text-gray-800 line-clamp-1"
                     />
                     <h3
-                      className="line-clamp-1 font-bold text-[12px] w-20"
+                      className="line-clamp-1 font-bold text-[12px] w-20 -mt-1"
                       title={item?.name}
                     >
                       {item?.name?.length > 20
