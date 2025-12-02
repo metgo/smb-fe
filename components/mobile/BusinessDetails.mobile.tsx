@@ -14,6 +14,7 @@ import { categoryColors, daysMapping } from "@/lib/utils";
 import MobileDeliveriesContent from "./DeliveriesContent.mobile ";
 import MobileLinkShareBottomDrawer from "./LinkShareBottomDrawer.mobile";
 import { removeInlineStylesFromHTML } from "@/lib/helpers";
+import ContactUsInfo from "../ContactUsInfo";
 
 const OpeningDayHours = ({ days, open, close }: OpeningHrs) => (
   <div className="flex justify-between gap-24 font-normal  text-theme">
@@ -35,6 +36,7 @@ const MobileBusinessDetails = ({
 
   const apiLat = businessDetails?.geoLocation?.lat;
   const apiLng = businessDetails?.geoLocation?.long;
+  const contactDetails = businessDetails?.contactDetails;
 
   return (
     <>
@@ -69,7 +71,7 @@ const MobileBusinessDetails = ({
         <section className="px-10 py-4">
           <h1 className="text-6xl font-bold">{businessDetails.name}</h1>
           <div
-            className=" font-normal text-theme mb-4"
+            className=" font-normal text-theme mb-2"
             dangerouslySetInnerHTML={{
               __html: removeInlineStylesFromHTML(
                 businessDetails?.shortDescription || "",
@@ -77,6 +79,34 @@ const MobileBusinessDetails = ({
             }}
           />
         </section>
+
+        <div className="flex flex-wrap items-center gap-3 text-charcoal px-8 mb-8">
+          {/* Email */}
+          {contactDetails?.email && (
+            <ContactUsInfo
+              icon="mail"
+              text={contactDetails.email}
+              href={`mailto:${contactDetails.email}`}
+            />
+          )}
+          {/* Phone */}
+          {contactDetails?.phone && (
+            <ContactUsInfo
+              icon="phone"
+              text={contactDetails?.phone}
+              href={`tel:${contactDetails?.phone?.replace(/\s+/g, "")}`}
+            />
+          )}
+
+          {/* WhatsApp */}
+          {contactDetails?.whatsAppNumber && (
+            <ContactUsInfo
+              icon="whatsapp-outlined"
+              text={contactDetails.whatsAppNumber}
+              href={`https://wa.me/${contactDetails?.whatsAppNumber?.replace(/\D/g, "")}`}
+            />
+          )}
+        </div>
 
         <MobileImageGallery images={businessDetails?.images} />
         <section className="px-4">
