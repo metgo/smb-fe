@@ -13,6 +13,7 @@ import MapFeedIntegratedLayout from "./MapFeedIntegratedLayout";
 import StickyYellowRibbonImage from "../StickyYellowRibbonImage";
 import FeedFilterDrawer from "../drawer/FeedFilterDrawer";
 import { IconImage } from "../ui";
+import useFavoriteFeedItemStore from "@/stores/favoriteFeedItemStore";
 
 const FeedLayout = ({
   businesses,
@@ -25,6 +26,7 @@ const FeedLayout = ({
 }) => {
   const isHydrated = useIsHydrated();
   const [shouldAnimate, setShouldAnimate] = useState(true);
+  const [visibleFeedItems, setVisibleFeedItems] = useState<FeedItemList>([]);
 
   const {
     activeFilterTab,
@@ -33,11 +35,16 @@ const FeedLayout = ({
     setIsFilterDrawerOpen,
     isFilterDrawerOpen,
     setHideFirstTwoSection,
+    showFavoriteFeedItems,
+    setShowFavoriteFeedItems,
   } = useGeneralStore();
+
+  const { favoriteFeedItemIds } = useFavoriteFeedItemStore();
 
   const { sentryRef, loading, initialLoadDone, canLoadMore } = useLoadMore(
     businesses?.meta?.hasNextPage,
   );
+
   const {
     appliedFilterCount,
     filteredSubCategories,
@@ -48,6 +55,18 @@ const FeedLayout = ({
 
   const triggerRef = useRef(null);
   const totalBusiness = businesses?.totalData;
+
+  useEffect(() => {
+    if (showFavoriteFeedItems && favoriteFeedItemIds.length > 0) {
+      const items = businesses?.data?.filter((item) =>
+        favoriteFeedItemIds?.includes(item._id),
+      );
+      setVisibleFeedItems(items);
+    } else {
+      setVisibleFeedItems(businesses?.data);
+      setShowFavoriteFeedItems(false);
+    }
+  }, [showFavoriteFeedItems, favoriteFeedItemIds]);
 
   useEffect(() => {
     if (businesses?.data?.length > 0) {
@@ -71,19 +90,20 @@ const FeedLayout = ({
   useEffect(() => {
     const timer = setTimeout(() => {
       setShouldAnimate(false);
-    }, 10000); // 2 seconds = animation duration
+    }, 10000);
 
     return () => clearTimeout(timer);
   }, []);
 
   if (!isHydrated || !hideFirstTwoSection) return null;
 
+  // ⭐ Layout selector works with filtered data
   const renderLayout = () => {
     switch (activeFilterTab) {
       case "gallery":
-        return <OnlyFeedCardsLayout data={businesses.data} />;
+        return <OnlyFeedCardsLayout data={visibleFeedItems} />;
       case "integrated":
-        return <MapFeedIntegratedLayout data={businesses.data} />;
+        return <MapFeedIntegratedLayout data={visibleFeedItems} />;
       case "map":
         return <BusinessPinMap mapHeight="120vh" />;
       default:
@@ -97,12 +117,14 @@ const FeedLayout = ({
         {totalBusiness ? (
           <div className="bg-primary">
             {renderLayout()}
+
             <div style={{ height: "10px", position: "relative" }}>
               <div
                 ref={triggerRef}
                 style={{ position: "absolute", top: 0, height: 1 }}
               />
             </div>
+
             {initialLoadDone &&
               canLoadMore &&
               businesses?.meta?.hasNextPage && (
@@ -121,7 +143,6 @@ const FeedLayout = ({
               onClick={() => setIsFilterDrawerOpen(true)}
               className="relative inline-block"
             >
-              {/* Icon Content with Zoom Animation */}
               <div
                 className={`relative z-10 border-2 border-white rounded-full shadow-2xl shadow-green-400
                   ${shouldAnimate ? "animate-zoom-3x" : ""}`}
@@ -131,6 +152,7 @@ const FeedLayout = ({
                     {appliedFilterCount}
                   </div>
                 )}
+
                 <IconImage icon="ai" width={84} height={84} />
               </div>
             </div>
@@ -142,7 +164,7 @@ const FeedLayout = ({
 
       {isFilterDrawerOpen && (
         <FeedFilterDrawer
-          itemCount={businesses?.data?.length}
+          itemCount={visibleFeedItems?.length}
           isOpen={isFilterDrawerOpen}
           setIsOpen={setIsFilterDrawerOpen}
           filters={filters}

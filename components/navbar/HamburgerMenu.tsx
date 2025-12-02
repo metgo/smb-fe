@@ -20,7 +20,8 @@ const HamburgerMenu = ({
 }) => {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
-  const { aminitiesInfo } = useGeneralStore();
+  const { aminitiesInfo, setShowFavoriteFeedItems, showFavoriteFeedItems } =
+    useGeneralStore();
 
   const menuRef = useRef<HTMLDivElement>(null);
   const toggleButtonRef = useRef<HTMLButtonElement>(null);
@@ -107,21 +108,42 @@ const HamburgerMenu = ({
                 <div className="hidden md:block w-0.25 h-70 bg-[#D3D3D3]" />
 
                 <div className="flex flex-col w-full md:w-[8rem] lg:w-[10rem] xl:w-[14.5rem]">
-                  {items.map((item) => (
-                    <Link
-                      key={item.id}
-                      href={item.href}
-                      className="text-theme hover:text-dark transition font-bold text-sm gap-2.5 mb-2 
-                       hover:bg-primary group py-2 ps-3 flex items-center justify-between 
-                       custom-cursor w-full"
-                    >
-                      <div className="flex items-center gap-2.5 max-sm:text-xl">
-                        {item.rightIcon && <IconImage icon={item.rightIcon} />}
-                        {item.label}
-                      </div>
-                      {item.leftIcon && <IconImage icon={item.leftIcon} />}
-                    </Link>
-                  ))}
+                  {items.map((item) =>
+                    item.href === "onClick" ? (
+                      <button
+                        key={item.id}
+                        onClick={() => {
+                          setIsOpen(false);
+                          setShowFavoriteFeedItems(!showFavoriteFeedItems);
+                        }}
+                        className="text-theme hover:text-dark transition font-bold text-sm gap-2.5 mb-2 hover:bg-primary group py-2 ps-3 flex items-center justify-between custom-cursor w-full text-left"
+                      >
+                        <div className="flex items-center gap-2.5 max-sm:text-xl">
+                          {item.rightIcon && (
+                            <IconImage icon={item.rightIcon} />
+                          )}
+                          {item.label}
+                        </div>
+                        {item.leftIcon && <IconImage icon={item.leftIcon} />}
+                      </button>
+                    ) : (
+                      <Link
+                        key={item.id}
+                        href={item.href}
+                        className="text-theme hover:text-dark transition font-bold text-sm gap-2.5 mb-2 
+                          hover:bg-primary group py-2 ps-3 flex items-center justify-between 
+                          custom-cursor w-full"
+                      >
+                        <div className="flex items-center gap-2.5 max-sm:text-xl">
+                          {item.rightIcon && (
+                            <IconImage icon={item.rightIcon} />
+                          )}
+                          {item.label}
+                        </div>
+                        {item.leftIcon && <IconImage icon={item.leftIcon} />}
+                      </Link>
+                    ),
+                  )}
                 </div>
               </div>
             );

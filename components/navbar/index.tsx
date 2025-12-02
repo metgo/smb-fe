@@ -15,14 +15,22 @@ import { CartDrawer } from "../drawer";
 import { pathNames } from "@/lib/endpoints";
 import PromotionalCards from "../PromotionalCards";
 import FeedLyoutSwitcTabs from "./FeedFilterTabs";
-import { RedFlowerIcon } from "../ui/svgIcons";
+import {
+  HeartFilledIcon,
+  HeartOutlineIcon,
+  RedFlowerIcon,
+} from "../ui/svgIcons";
 import { CODE } from "@/constant/envConstants";
+import useFavoriteFeedItemStore from "@/stores/favoriteFeedItemStore";
+import useGeneralStore from "@/stores/generalStore";
 // import { GiftBoxIcon } from "../ui/svgIcons";
 
 const Navbar = ({ showFilterTab = false }: { showFilterTab?: boolean }) => {
   const pathname = usePathname();
 
   const { getTotalQuantity } = useCartStore();
+  const { setShowFavoriteFeedItems, showFavoriteFeedItems } = useGeneralStore();
+  const { favoriteFeedItemIds } = useFavoriteFeedItemStore();
   const [isCartDrawerOpen, setIsCartDrawerOpen] = useState(false);
 
   return (
@@ -68,6 +76,22 @@ const Navbar = ({ showFilterTab = false }: { showFilterTab?: boolean }) => {
                   <RedFlowerIcon />
                 </div>
               </Link>
+            )}
+
+            {favoriteFeedItemIds.length > 0 && pathname === pathNames.home && (
+              <div
+                className="relative h-full ms-6 custom-cursor"
+                onClick={() => setShowFavoriteFeedItems(!showFavoriteFeedItems)}
+              >
+                {showFavoriteFeedItems ? (
+                  <HeartFilledIcon />
+                ) : (
+                  <HeartOutlineIcon />
+                )}
+                <div className="absolute -top-2 -right-3 text-[10px] bg-green-400 flex items-center justify-center rounded-full text-white border-2 border-white w-5 h-5">
+                  {favoriteFeedItemIds.length}
+                </div>
+              </div>
             )}
 
             <div className="w-[1px] h-10 bg-lightGray mx-4" />

@@ -63,6 +63,7 @@ export const navbar = {
 };
 
 export const menuItems = {
+  favorite: "מועדפים",
   welcome: "ברוכים הבאים",
   ourStory: "הסיפור שלנו",
   products: "מוצרים",
