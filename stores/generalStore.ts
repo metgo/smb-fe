@@ -73,6 +73,9 @@ interface GeneralStoreState {
 
   isFilterDrawerOpen: boolean;
   setIsFilterDrawerOpen: (v: boolean) => void;
+
+  showFavoriteFeedItems: boolean;
+  setShowFavoriteFeedItems: (v: boolean) => void;
 }
 
 const useGeneralStore = create<GeneralStoreState>((set) => ({
@@ -153,6 +156,9 @@ const useGeneralStore = create<GeneralStoreState>((set) => ({
 
   isFilterDrawerOpen: false,
   setIsFilterDrawerOpen: (v) => set({ isFilterDrawerOpen: v }),
+
+  showFavoriteFeedItems: false,
+  setShowFavoriteFeedItems: (v) => set({ showFavoriteFeedItems: v }),
 }));
 
 export default useGeneralStore;

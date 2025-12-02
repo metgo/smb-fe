@@ -2,6 +2,7 @@
 
 import clsx from "clsx";
 import Image from "next/image";
+import { FaHeart } from "react-icons/fa6";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion, useInView, useAnimation } from "framer-motion";
 import { useEffect, useState, useMemo, useCallback } from "react";
@@ -27,6 +28,7 @@ import {
   INTERSECTION_CONFIG,
   MOTION_CONFIG,
 } from "@/lib/animationConfig";
+import useFavoriteFeedItemStore from "@/stores/favoriteFeedItemStore";
 
 interface FeedCardProps {
   height: number;
@@ -42,6 +44,8 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
 
   const { isCurrentPage } = useCommonHook();
   const { setActiveFilterTab, setClickedBusinessId } = useGeneralStore();
+  const { favoriteFeedItemIds, addFavoriteFeedItemId } =
+    useFavoriteFeedItemStore();
 
   // Memoized page type checks
   const pageTypes = useMemo(
@@ -222,6 +226,8 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
           feedItem={feedItem}
           pageTypes={pageTypes}
           onMapIconClick={handleMapIconClick}
+          addFavoriteFeedItemId={addFavoriteFeedItemId}
+          favoriteFeedItemIds={favoriteFeedItemIds}
         />
         <button
           type="button"
@@ -286,12 +292,16 @@ const FeedCardActions = ({
   feedItem,
   pageTypes,
   onMapIconClick,
+  addFavoriteFeedItemId,
+  favoriteFeedItemIds,
 }: {
   feedItem: any;
   pageTypes: {
     isEventPage: boolean;
     isTrailPage: boolean;
   };
+  favoriteFeedItemIds: string[];
+  addFavoriteFeedItemId: (feedId: string) => void;
   onMapIconClick: (e: React.MouseEvent, id: string) => void;
 }) => {
   const handleMapClick = (e: React.MouseEvent) => {
@@ -307,8 +317,15 @@ const FeedCardActions = ({
           type="button"
           className="custom-cursor border border-transparent hover:border-white rounded-full"
           aria-label="Circular heart"
+          onClick={() => addFavoriteFeedItemId(feedItem._id)}
         >
-          <IconImage width={30} height={30} icon="circular-heart" />
+          {favoriteFeedItemIds.includes(feedItem._id) ? (
+            <div className=" h-7.5 w-7.5 p-1 bg-black/20 rounded-full flex items-center justify-center">
+              <FaHeart size={16} className="text-white" />
+            </div>
+          ) : (
+            <IconImage width={30} height={30} icon="circular-heart" />
+          )}
         </button>
 
         {!pageTypes.isEventPage && !pageTypes.isTrailPage && (
