@@ -537,6 +537,13 @@ export const navItems = [
     ],
     col3: [
       {
+        id: 1,
+        label: menuItems.favorite,
+        href: "onClick",
+        leftIcon: "",
+        rightIcon: "",
+      },
+      {
         id: 4,
         key: "",
         label: menuItems.shoppingCart,

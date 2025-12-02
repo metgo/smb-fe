@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import MobileNavbar from "./Navbar.mobile";
 import MobileBusinessPinMap from "../maps/BusinessPinMap.mobile";
@@ -14,6 +14,7 @@ import { usePathname } from "next/navigation";
 import { pathNames } from "@/lib/endpoints";
 import { AiIcon } from "../ui/svgIcons";
 import MobileFeedFilterDrawer from "../drawer/FeedFilterDrawer.mobile";
+import useFavoriteFeedItemStore from "@/stores/favoriteFeedItemStore";
 
 interface MobileFeedLayoutProps {
   businesses: BusinessesProps;
@@ -44,13 +45,30 @@ const MobileFeedLayout = ({
     toggleParam,
     handleResetFilters,
   } = useFeedFilter(filters, initialSelectedFiltersIds);
+  const { favoriteFeedItemIds } = useFavoriteFeedItemStore();
 
   const {
     hideFirstTwoSection,
     setHideFirstTwoSection,
     isFilterDrawerOpen,
     setIsFilterDrawerOpen,
+    showFavoriteFeedItems,
+    setShowFavoriteFeedItems,
   } = useGeneralStore();
+
+  const [visibleFeedItems, setVisibleFeedItems] = useState<FeedItemList>([]);
+
+  useEffect(() => {
+    if (showFavoriteFeedItems && favoriteFeedItemIds.length > 0) {
+      const items = businesses?.data?.filter((item) =>
+        favoriteFeedItemIds?.includes(item._id),
+      );
+      setVisibleFeedItems(items);
+    } else {
+      setVisibleFeedItems(businesses?.data);
+      setShowFavoriteFeedItems(false);
+    }
+  }, [showFavoriteFeedItems, favoriteFeedItemIds]);
 
   // Prepare feed items for carousel
   const carouselItems = useMemo(
@@ -78,7 +96,7 @@ const MobileFeedLayout = ({
       {hideFirstTwoSection && <MobileNavbar />}
 
       {activeFilterTabMobile === "gallery" && (
-        <OnlyFeedCardsLayoutMobile data={businesses?.data} />
+        <OnlyFeedCardsLayoutMobile data={visibleFeedItems} />
       )}
 
       {activeFilterTabMobile === "map" && (

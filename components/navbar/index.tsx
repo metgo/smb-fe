@@ -15,7 +15,11 @@ import { CartDrawer } from "../drawer";
 import { pathNames } from "@/lib/endpoints";
 import PromotionalCards from "../PromotionalCards";
 import FeedLyoutSwitcTabs from "./FeedFilterTabs";
-import { HeartOutlineIcon, RedFlowerIcon } from "../ui/svgIcons";
+import {
+  HeartFilledIcon,
+  HeartOutlineIcon,
+  RedFlowerIcon,
+} from "../ui/svgIcons";
 import { CODE } from "@/constant/envConstants";
 import useFavoriteFeedItemStore from "@/stores/favoriteFeedItemStore";
 import useGeneralStore from "@/stores/generalStore";
@@ -79,7 +83,11 @@ const Navbar = ({ showFilterTab = false }: { showFilterTab?: boolean }) => {
                 className="relative h-full ms-6 custom-cursor"
                 onClick={() => setShowFavoriteFeedItems(!showFavoriteFeedItems)}
               >
-                <HeartOutlineIcon />
+                {showFavoriteFeedItems ? (
+                  <HeartFilledIcon />
+                ) : (
+                  <HeartOutlineIcon />
+                )}
                 <div className="absolute -top-2 -right-3 text-[10px] bg-green-400 flex items-center justify-center rounded-full text-white border-2 border-white w-5 h-5">
                   {favoriteFeedItemIds.length}
                 </div>
