@@ -7,7 +7,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { motion, useInView, useAnimation } from "framer-motion";
 import { useEffect, useState, useMemo, useCallback } from "react";
 
-import { pathNames } from "@/lib/endpoints";
 import { categoryIds, navigationPathsByServiceType } from "@/lib/utils";
 import useGeneralStore from "@/stores/generalStore";
 import { startLoading } from "../wrappers/ProgressBar";
@@ -21,7 +20,6 @@ import {
 import { googleSendGtmEvent, triggerName } from "@/lib/googleEventsConfig";
 import { CardSkeleton } from "../skeletons";
 import { staticImages } from "@/constant/staticImages";
-import { useCommonHook } from "@/hooks";
 import {
   ANIMATION_CONFIG,
   cardVariants,
@@ -42,19 +40,9 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [hasMounted, setHasMounted] = useState(false);
 
-  const { isCurrentPage } = useCommonHook();
   const { setActiveFilterTab, setClickedBusinessId } = useGeneralStore();
   const { favoriteFeedItemIds, addFavoriteFeedItemId } =
     useFavoriteFeedItemStore();
-
-  // Memoized page type checks
-  const pageTypes = useMemo(
-    () => ({
-      isEventPage: isCurrentPage(pathNames.events),
-      isTrailPage: isCurrentPage(pathNames.trails),
-    }),
-    [isCurrentPage],
-  );
 
   // Memoized search params
   const urlParams = useMemo(() => {
@@ -69,19 +57,10 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
   // Optimized image and dependency arrays
   const { images, deps } = useMemo(
     () => ({
-      images: pageTypes.isEventPage
-        ? [feedItem.cover]
-        : (feedItem?.images ?? []),
-      deps: pageTypes.isEventPage
-        ? [feedItem]
-        : [urlParams.categoryId, urlParams.subCategoryId],
+      images: feedItem?.images ?? [],
+      deps: [urlParams.categoryId, urlParams.subCategoryId],
     }),
-    [
-      pageTypes.isEventPage,
-      feedItem,
-      urlParams.categoryId,
-      urlParams.subCategoryId,
-    ],
+    [feedItem, urlParams.categoryId, urlParams.subCategoryId],
   );
 
   // Image loading hook
@@ -195,10 +174,7 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
         {/* Main Image */}
         <Image
           src={
-            pageTypes.isEventPage
-              ? feedItem?.images?.[0]?.image
-              : computedValues.currentImage?.imageUrl ||
-                staticImages.placeholder
+            computedValues.currentImage?.imageUrl || staticImages.placeholder
           }
           alt={computedValues.currentImage?.alt || ""}
           fill
@@ -215,7 +191,6 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
         {/* Content Overlay */}
         <FeedCardContent
           feedItem={feedItem}
-          pageTypes={pageTypes}
           images={images}
           activeImageIndex={activeImageIndex}
           setActiveImageIndex={setActiveImageIndex}
@@ -224,7 +199,6 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
         {/* Action Icons */}
         <FeedCardActions
           feedItem={feedItem}
-          pageTypes={pageTypes}
           onMapIconClick={handleMapIconClick}
           addFavoriteFeedItemId={addFavoriteFeedItemId}
           favoriteFeedItemIds={favoriteFeedItemIds}
@@ -234,9 +208,7 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
           onClick={() => handleNavigation(feedItem.serviceType)}
           className={clsx(
             "custom-cursor absolute left-0 top-12 w-full",
-            images.length > 1 && !pageTypes.isEventPage
-              ? "bottom-14"
-              : "bottom-0 h-full",
+            images.length > 1 ? "bottom-14" : "bottom-0 h-full",
           )}
         />
       </div>
@@ -247,16 +219,11 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
 // Extracted sub-components for better organization
 const FeedCardContent = ({
   feedItem,
-  pageTypes,
   images,
   activeImageIndex,
   setActiveImageIndex,
 }: {
   feedItem: any;
-  pageTypes: {
-    isEventPage: boolean;
-    isTrailPage: boolean;
-  };
   images: any[];
   activeImageIndex: number;
   setActiveImageIndex: React.Dispatch<React.SetStateAction<number>>;
@@ -276,7 +243,7 @@ const FeedCardContent = ({
       <h3 className="line-clamp-1 font-normal text-[12px]">{feedItem?.name}</h3>
 
       <div className="hidden group-hover:block">
-        {!pageTypes.isEventPage && images.length > 1 && (
+        {images.length > 1 && (
           <ImageCarouselControls
             totalImages={feedItem?.images?.length}
             activeIndex={activeImageIndex}
@@ -290,16 +257,11 @@ const FeedCardContent = ({
 
 const FeedCardActions = ({
   feedItem,
-  pageTypes,
   onMapIconClick,
   addFavoriteFeedItemId,
   favoriteFeedItemIds,
 }: {
   feedItem: any;
-  pageTypes: {
-    isEventPage: boolean;
-    isTrailPage: boolean;
-  };
   favoriteFeedItemIds: string[];
   addFavoriteFeedItemId: (feedId: string) => void;
   onMapIconClick: (e: React.MouseEvent, id: string) => void;
@@ -328,16 +290,14 @@ const FeedCardActions = ({
           )}
         </button>
 
-        {!pageTypes.isEventPage && !pageTypes.isTrailPage && (
-          <button
-            type="button"
-            onClick={handleMapClick}
-            className="custom-cursor border border-transparent hover:border-white rounded-full"
-            aria-label="Show on map"
-          >
-            <IconImage width={30} height={30} icon="circular-map-fold" />
-          </button>
-        )}
+        <button
+          type="button"
+          onClick={handleMapClick}
+          className="custom-cursor border border-transparent hover:border-white rounded-full"
+          aria-label="Show on map"
+        >
+          <IconImage width={30} height={30} icon="circular-map-fold" />
+        </button>
       </div>
       {feedItem.serviceType === "point_of_interest" && (
         <div className="bg-[#29C368] flex items-center justify-center absolute left-[11px] top-1 text-white text-[12px] font-bold px-3 py-1.5 rounded-md">
