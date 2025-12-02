@@ -38,10 +38,6 @@ const page = async ({ searchParams }: Props) => {
   } = params;
 
   const initialSelectedFiltersIds: PresetFilterItems = await getPresetFilters();
-  console.log(
-    "🚀 ~ page ~ initialSelectedFiltersIds:",
-    initialSelectedFiltersIds,
-  );
 
   //  Convert comma values → arrays only if URL values exist
   // const categoriesArray = categoryIds?.length
