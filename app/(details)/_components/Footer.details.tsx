@@ -110,7 +110,7 @@ const Footer = () => {
           alt="Yellow Inflorescence"
           width={200}
           height={156}
-          className=" absolute left-0 -top-2"
+          className=" absolute left-0 -top-2 max-sm:hidden"
         />
       )}
     </div>

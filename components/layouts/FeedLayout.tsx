@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 
 import { useFeedFilter, useIsHydrated } from "@/hooks";
 import { useLoadMore } from "@/hooks/useLoadMore";
@@ -24,7 +24,6 @@ const FeedLayout = ({
   initialSelectedFiltersIds: PresetFilterItems;
 }) => {
   const isHydrated = useIsHydrated();
-  const [shouldAnimate, setShouldAnimate] = useState(true);
 
   const {
     activeFilterTab,
@@ -44,6 +43,7 @@ const FeedLayout = ({
     isSelected,
     toggleParam,
     handleResetFilters,
+    shouldAnimate,
   } = useFeedFilter(filters, initialSelectedFiltersIds);
 
   const triggerRef = useRef(null);
@@ -66,14 +66,6 @@ const FeedLayout = ({
     if (isReload) {
       setHideFirstTwoSection(true);
     }
-  }, []);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setShouldAnimate(false);
-    }, 10000); // 2 seconds = animation duration
-
-    return () => clearTimeout(timer);
   }, []);
 
   if (!isHydrated || !hideFirstTwoSection) return null;

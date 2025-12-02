@@ -5,9 +5,9 @@ import { useState } from "react";
 import { MotionDialogDiv } from "../ui";
 import { filterPanelLabels } from "@/constant/hebrew";
 import { motion, AnimatePresence } from "framer-motion";
-
 import {
   AiIcon,
+  CloseIcon,
   DownAngleArrowIcon,
   EventIcon,
   FundayIcon,
@@ -63,7 +63,7 @@ const MobileFeedFilterDrawer: React.FC<MobileFeedFilterDrawerProps> = ({
         )}
       >
         {/* SHEET HANDLER */}
-        <div className="w-full flex justify-center items-center pt-4">
+        <div className="w-full flex justify-center items-center pt-4 relative">
           <button
             type="button"
             onClick={() => setShowAllFilters((prev) => !prev)}
@@ -74,17 +74,29 @@ const MobileFeedFilterDrawer: React.FC<MobileFeedFilterDrawerProps> = ({
         </div>
 
         {/* HEADER */}
-        <div className="flex justify-end items-center mt-2 px-5 flex-shrink-0">
-          <h2 className="text-lg font-bold">
-            <span>{itemCount}</span> <span>{filterPanelLabels.results}</span>
-          </h2>
+        <div className="flex items-center justify-end pe-4 w-full relative mb-3">
+          <div
+            className=" absolute -top-4 custom-cursor"
+            onClick={() => setIsOpen(false)}
+          >
+            <CloseIcon />
+          </div>
         </div>
 
         {/* SCROLLABLE CONTENT */}
         <div className="flex-1 overflow-y-auto max-h-[80vh] px-5 z-50">
           {/* MAIN CATEGORIES & SERVICE TYPES */}
           <div className="border-b border-primary py-3">
-            <div className="font-bold text-theme">{filterPanelLabels.main}</div>
+            <div className="flex items-center justify-between">
+              <div className="font-bold text-theme">
+                {filterPanelLabels.main}
+              </div>
+              <h2 className="text-lg font-bold">
+                <span>{itemCount}</span>{" "}
+                <span>{filterPanelLabels.results}</span>
+              </h2>
+            </div>
+
             <div className="grid grid-cols-12 gap-x-1 gap-y-2 mt-2">
               {/* Point of Interest */}
 
@@ -239,7 +251,7 @@ const MobileFeedFilterDrawer: React.FC<MobileFeedFilterDrawerProps> = ({
             className="relative custom-cursor"
           >
             {appliedFilterCount > 0 && (
-              <div className="bg-green-500 absolute left-1 top-1 rounded-full h-[18px] w-[18px] text-[10px] flex items-center justify-center text-white aspect-square border border-white">
+              <div className="bg-green-500 absolute right-1 top-1 rounded-full h-[18px] w-[18px] text-[10px] flex items-center justify-center text-white aspect-square border border-white">
                 {appliedFilterCount}
               </div>
             )}

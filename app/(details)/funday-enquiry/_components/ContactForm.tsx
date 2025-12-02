@@ -14,6 +14,7 @@ import { FundayFormData, fundayFormSchema } from "@/schemas/contact";
 import { contactUsText, fundayEnquiryLables } from "@/constant/hebrew";
 import { IdentifierId } from "@/constant/envConstants";
 import { getContactDetails } from "@/constant/siteInfo";
+import MobileContactInfo from "../../_components/ContactInfo.mobile";
 
 const InputField = ({ type = "text", placeholder, register, error }: any) => (
   <div className="flex flex-col w-full font-normal">
@@ -77,17 +78,17 @@ const ContactForm = () => {
         <div
           className="
       max-sm:relative md:absolute 
-      max-sm:top-30 md:-top-64 
+      max-sm:top-44 md:-top-64 
       md:left-1/2 md:-translate-x-1/2  
       space-y-9.5 w-full md:w-2xl
     "
         >
           <div className="bg-white md:border border-lightGray rounded-2xl max-sm:w-full max-sm:p-4 md:p-10">
             <div className="flex flex-col items-center justify-center max-sm:my-10 md:mb-10 text-dark text-center w-full">
-              <h2 className="font-bold text-[40px]">
+              <h2 className="font-bold max-sm:text-3xl md:text-[40px]">
                 {fundayEnquiryLables.title}
               </h2>
-              <p className="font-normal max-sm:w-90 md:w-74">
+              <p className="font-normal max-sm:w-70 md:w-74">
                 {fundayEnquiryLables.description}
               </p>
 
@@ -127,6 +128,7 @@ const ContactForm = () => {
                 className="p-3 rounded-lg border border-lightGray resize-none font-normal"
               />
 
+              <MobileContactInfo />
               <button
                 type="submit"
                 disabled={isSubmitting || !isValid}
@@ -134,7 +136,7 @@ const ContactForm = () => {
                   isSubmitting || !isValid
                     ? "bg-lightGray cursor-not-allowed"
                     : "bg-dark custom-cursor",
-                  "mx-auto h-12 w-38 mt-10 text-white font-bold rounded-xl",
+                  "mx-auto h-12 w-38 max-sm:mt-2 md:mt-10 text-white font-bold rounded-xl",
                 )}
               >
                 {isSubmitting ? contactUsText.contactUs : "שליחה"}

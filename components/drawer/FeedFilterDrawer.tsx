@@ -6,6 +6,7 @@ import { filterPanelLabels } from "@/constant/hebrew";
 
 import {
   AiIcon,
+  CloseIcon,
   EventIcon,
   FundayIcon,
   PointOfInterestIcon,
@@ -63,18 +64,26 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
         bg-white shadow-xl flex flex-col h-screen
       "
       >
-        {/* HEADER */}
-        <div className="flex justify-end items-center mt-24 px-5 pb-2 flex-shrink-0">
-          <h2 className="text-lg font-bold">
-            <span>{itemCount}</span> <span>{filterPanelLabels.results}</span>
-          </h2>
-        </div>
-
         {/* SCROLLABLE CONTENT */}
         <div className="flex-1 overflow-y-auto max-h-[90vh] px-5 pb-20 z-50">
           {/* MAIN CATEGORIES & SERVICE TYPES */}
-          <div className="border-b border-primary py-3">
-            <div className="font-bold text-theme">{filterPanelLabels.main}</div>
+          <div className="border-b border-primary py-3 mt-20">
+            <div
+              className="w-full relative flex items-center justify-end mb-2 custom-cursor"
+              onClick={() => setIsOpen(false)}
+            >
+              <CloseIcon />
+            </div>
+
+            <div className="flex justify-between items-center px-2  pb-2 flex-shrink-0">
+              <div className="font-bold text-theme">
+                {filterPanelLabels.main}
+              </div>
+              <h2 className="text-lg font-bold">
+                <span>{itemCount}</span>{" "}
+                <span>{filterPanelLabels.results}</span>
+              </h2>
+            </div>
             <div className="grid grid-cols-12 gap-x-1 gap-y-2 mt-2">
               {/* Point of Interest */}
 
