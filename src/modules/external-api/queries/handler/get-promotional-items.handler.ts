@@ -467,7 +467,7 @@ implements IQueryHandler<GetPromotionalItemsQuery> {
           name: 1,
           slug: 1,
           shortDescription: 1,
-          images: 1,
+          image: { $arrayElemAt: ['$images', 0] },
           address: 1,
         },
       },
