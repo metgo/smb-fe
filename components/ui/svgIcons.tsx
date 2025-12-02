@@ -93,6 +93,24 @@ export function HeartIcon({ strokColor = "white" }: { strokColor?: string }) {
   );
 }
 
+export function HeartOutlineIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="20"
+      viewBox="0 0 24 20"
+      fill="none"
+    >
+      <path
+        d="M15.8164 0.985352C17.1711 0.593102 18.4585 0.713218 19.5674 1.18457C21.6969 2.08991 23.1212 4.26197 23.2422 6.50684L23.25 6.72363V6.72656C23.25 10.1757 20.9908 13.3011 18.4902 15.5537C17.2384 16.6812 15.9181 17.5971 14.7734 18.2334H14.7725C14.2005 18.5515 13.6678 18.8023 13.2051 18.9746C12.7521 19.1433 12.3329 19.25 12 19.25C11.6671 19.25 11.2478 19.1433 10.7949 18.9746C10.3323 18.8024 9.79937 18.5522 9.22754 18.2344C8.08264 17.5979 6.76169 16.6813 5.50977 15.5537C3.01063 13.3026 0.75274 10.18 0.75 6.7334V6.72461C0.787598 4.40392 2.23449 2.11913 4.43262 1.18457C5.54136 0.713186 6.82892 0.593128 8.18359 0.985352C9.27365 1.30105 10.3893 1.94208 11.4873 2.97168L12 3.45312L12.5127 2.97168C13.6107 1.94207 14.7264 1.30107 15.8164 0.985352Z"
+        stroke="#7C7C7C"
+        strokeWidth="1.5"
+      />
+    </svg>
+  );
+}
+
 export function NavIcon({ strokColor = "white" }: { strokColor?: string }) {
   return (
     <svg
@@ -775,7 +793,7 @@ export function RedFlowerIcon() {
           width="99.6595"
           height="93.7227"
           filterUnits="userSpaceOnUse"
-          color-interpolation-filters="sRGB"
+          colorInterpolationFilters="sRGB"
         >
           <feFlood floodOpacity="0" result="BackgroundImageFix" />
           <feColorMatrix
