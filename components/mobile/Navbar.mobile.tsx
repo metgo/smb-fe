@@ -10,6 +10,10 @@ import SearchFlow from "../navbar/SearchFlow";
 import HamburgerMenu from "../navbar/HamburgerMenu";
 import MobileFilterTab from "./FilterTab.mobile";
 import PromotionalCards from "../PromotionalCards";
+import { CODE } from "@/constant/envConstants";
+import Link from "next/link";
+import { fundayEnquiryLables } from "@/constant/hebrew";
+import { RedFlowerIcon } from "../ui/svgIcons";
 
 const MobileNavbar = () => {
   const pathname = usePathname();
@@ -36,12 +40,25 @@ const MobileNavbar = () => {
     >
       <div className="grid grid-cols-12 items-center">
         {/* Hamburger, Logo, Text */}
-        <div className="flex items-center gap-4 col-span-6">
+        <div className="flex items-center gap-4 col-span-4">
           <HamburgerMenu isMobile />
           <NavLogo />
         </div>
 
-        <div className="flex items-center justify-end gap-4 col-span-6">
+        <div className="flex items-center justify-end gap-4 col-span-8">
+          {CODE === "BNEI" && (
+            <Link
+              href={pathNames.fundayEnquiry}
+              className="flex items-center border border-black rounded-xl ps-2 pe-2 py-1 h-10 custom-cursor relative"
+            >
+              <span className="text-black font-bold leading-4 max-w-20">
+                {fundayEnquiryLables.funDayBondingDaysMobile}
+              </span>
+              <div className="absolute left-0 -bottom-[5px]">
+                <RedFlowerIcon />
+              </div>
+            </Link>
+          )}
           {isFilterTabShow && <MobileFilterTab />}
           <SearchFlow isMobile />
           {/* {showFilterIcon && <IconImage icon="filter" />} */}

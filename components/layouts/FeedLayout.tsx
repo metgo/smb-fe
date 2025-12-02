@@ -25,7 +25,6 @@ const FeedLayout = ({
   initialSelectedFiltersIds: PresetFilterItems;
 }) => {
   const isHydrated = useIsHydrated();
-  const [shouldAnimate, setShouldAnimate] = useState(true);
   const [visibleFeedItems, setVisibleFeedItems] = useState<FeedItemList>([]);
 
   const {
@@ -51,6 +50,7 @@ const FeedLayout = ({
     isSelected,
     toggleParam,
     handleResetFilters,
+    shouldAnimate,
   } = useFeedFilter(filters, initialSelectedFiltersIds);
 
   const triggerRef = useRef(null);
@@ -85,14 +85,6 @@ const FeedLayout = ({
     if (isReload) {
       setHideFirstTwoSection(true);
     }
-  }, []);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setShouldAnimate(false);
-    }, 10000);
-
-    return () => clearTimeout(timer);
   }, []);
 
   if (!isHydrated || !hideFirstTwoSection) return null;

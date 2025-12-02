@@ -44,6 +44,7 @@ const MobileFeedLayout = ({
     isSelected,
     toggleParam,
     handleResetFilters,
+    shouldAnimate,
   } = useFeedFilter(filters, initialSelectedFiltersIds);
   const { favoriteFeedItemIds } = useFavoriteFeedItemStore();
 
@@ -122,17 +123,27 @@ const MobileFeedLayout = ({
       )}
 
       {/* Bottom Panels */}
-      {hideFirstTwoSection && pathname === "/" && (
-        <div
-          onClick={() => setIsFilterDrawerOpen(true)}
-          className="fixed bottom-2 right-[42%]  custom-cursor"
-        >
-          {appliedFilterCount > 0 && (
-            <div className="bg-green-500 absolute left-1 top-1 rounded-full h-[18px] w-[18px] text-[10px] flex items-center justify-center text-white aspect-square border border-white">
-              {appliedFilterCount}
-            </div>
-          )}
-          <AiIcon size={68} />
+      {hideFirstTwoSection && (
+        <div className="fixed bottom-2 right-[42%] custom-cursor">
+          <div
+            onClick={() => setIsFilterDrawerOpen(true)}
+            className="relative inline-flex items-center justify-center"
+          >
+            {/* Circle with shadow behind icon */}
+            <div
+              className={`absolute top-3 w-12 h-12 rounded-full shadow-xl shadow-green-300
+              ${shouldAnimate ? "animate-zoom-3x" : ""}`}
+            />
+
+            {/* Icon stays centered */}
+            <AiIcon size={68} />
+
+            {appliedFilterCount > 0 && (
+              <div className="bg-green-500 absolute right-1 top-1 rounded-full h-[18px] w-[18px] text-[10px] flex items-center justify-center text-white border border-white">
+                {appliedFilterCount}
+              </div>
+            )}
+          </div>
         </div>
       )}
 

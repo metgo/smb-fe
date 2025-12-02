@@ -27,7 +27,7 @@ const ContactUsInfo = ({
 const ContactInfo = () => {
   const contactInfo = getContactDetails();
   return (
-    <div className="items-center gap-7.5 text-charcoal max-sm:hidden md:flex">
+    <div className="items-center gap-7.5 text-charcoal md:flex max-sm:hidden">
       <span>{menuItems.contactUs}</span>
 
       {/* Phone */}

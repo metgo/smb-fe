@@ -283,6 +283,8 @@ export const fundayEnquiryLables = {
   mail: "מייל",
   whatIsImportantInYourDay: "מה חשוב לך שיהיה ביום שלך?",
   funAndBondingDays: "ימי כיף וגיבוש",
+  funDayBondingDaysMobile: `ימי כייף
+וגיבוש`,
 };
 
 export const filterPanelLabels = {

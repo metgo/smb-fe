@@ -93,11 +93,10 @@ export const SERVICE_TYPE_MAP = {
 } as const;
 
 export const contactFormReasonOptions = [
-  { value: "תווים", label: "תווים" },
-  { value: "עסקים", label: "עסקים" },
-  { value: "מעסיקים", label: "מעסיקים" },
   { value: "תמיכה טכנית", label: "תמיכה טכנית" },
-  { value: "ביטול עסקה", label: "ביטול עסקה" },
+  { value: "פעילויות לקבוצות", label: "פעילויות לקבוצות" },
+  { value: "ימי גיבוש לחברות וארגונים", label: "ימי גיבוש לחברות וארגונים" },
+  { value: "אחר", label: "אחר" },
 ];
 export const daysMapping = {
   Sun: "ראשון",
@@ -476,14 +475,14 @@ export const navItems = [
         leftIcon: "",
         rightIcon: "",
       },
-      // {
-      //   id: 2,
-      //   key: "",
-      //   label: menuItems.businessPage,
-      //   href: pathNames.businesses,
-      //   leftIcon: "",
-      //   rightIcon: "",
-      // },
+      {
+        id: 2,
+        key: "",
+        label: menuItems.businessPage,
+        href: `${pathNames.home}?serviceTypes=business`,
+        leftIcon: "",
+        rightIcon: "",
+      },
       {
         id: 4,
         key: "",
@@ -514,7 +513,7 @@ export const navItems = [
         id: 1,
         key: "event",
         label: menuItems.eventGeneralPublic,
-        href: pathNames.events,
+        href: `${pathNames.home}?serviceTypes=event`,
         leftIcon: "",
         rightIcon: "",
       },
@@ -522,7 +521,7 @@ export const navItems = [
         id: 2,
         key: "trip",
         label: menuItems.routes,
-        href: pathNames.trails,
+        href: `${pathNames.home}?serviceTypes=trip`,
         leftIcon: "",
         rightIcon: "",
       },
@@ -530,7 +529,7 @@ export const navItems = [
         id: 4,
         key: "funday",
         label: menuItems.funDays,
-        href: pathNames.funDays,
+        href: `${pathNames.home}?serviceTypes=funday`,
         leftIcon: "",
         rightIcon: "",
       },

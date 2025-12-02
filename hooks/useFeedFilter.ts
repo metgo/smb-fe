@@ -32,6 +32,7 @@ export default function useFeedFilter(
   const { aminitiesInfo } = useGeneralStore();
 
   const [appliedFilterCount, setAppliedFilterCount] = useState(0);
+  const [shouldAnimate, setShouldAnimate] = useState(true);
 
   const getCurrentParams = () => {
     if (typeof window === "undefined") {
@@ -43,6 +44,14 @@ export default function useFeedFilter(
   const [paramsState, setParamsState] = useState<URLSearchParams>(() =>
     getCurrentParams(),
   );
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShouldAnimate(false);
+    }, 10000); // 2 seconds = animation duration
+
+    return () => clearTimeout(timer);
+  }, []);
 
   // ---- APPLY DEFAULT FILTERS ON FIRST LOAD ----
   useEffect(() => {
@@ -301,6 +310,7 @@ export default function useFeedFilter(
   }
 
   return {
+    shouldAnimate,
     appliedFilterCount,
     filteredSubCategories,
     getSelected,
