@@ -66,7 +66,7 @@ export class GetTripBySlugHandler implements IQueryHandler<GetTripBySlugQuery> {
             select: 'name description primaryCategoryId geoLocation',
           },
         ];
-        select = '_id name description slug stations';
+        select = '_id name description shortDescription slug stations';
       }
 
       if (!query.isMap) {
@@ -84,11 +84,11 @@ export class GetTripBySlugHandler implements IQueryHandler<GetTripBySlugQuery> {
 
         if (query.isTrip) {
           select
-            = '_id name description slug stations estimatedDuration totalDistanceCovered';
+            = '_id name description shortDescription slug stations estimatedDuration totalDistanceCovered';
         }
         if (!query.isTrip) {
           select
-            = '_id name description contactDetails slug stations images itenary estimatedDuration totalDistanceCovered';
+            = '_id name description shortDescription contactDetails slug stations images itenary estimatedDuration totalDistanceCovered';
         }
       }
 

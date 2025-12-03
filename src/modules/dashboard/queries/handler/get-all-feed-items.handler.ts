@@ -328,6 +328,7 @@ implements IQueryHandler<GetAllFeedItemsQuery> {
           _id: 1,
           name: 1,
           description: 1,
+          shortDescription: 1,
           slug: 1,
           images: 1,
           address: 1,
@@ -347,7 +348,7 @@ implements IQueryHandler<GetAllFeedItemsQuery> {
       const mappedTrips = allTrips.map(trip => ({
         _id: trip._id,
         name: trip.name,
-        shortDescription: trip.description,
+        shortDescription: trip.shortDescription,
         geoLocation: {
           lat: '',
           long: '',

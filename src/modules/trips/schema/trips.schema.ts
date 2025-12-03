@@ -92,6 +92,9 @@ export class Trip extends AuditableSchema {
     status: TripStatus;
 
   @Prop()
+    shortDescription: string;
+
+  @Prop()
     description: string;
 
   @Prop({ type: ContactDetailsSchema })

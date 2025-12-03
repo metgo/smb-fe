@@ -211,6 +211,7 @@ export class GetAllTripsHandler implements IQueryHandler<GetAllTripsQuery> {
         _id: 1,
         name: 1,
         description: 1,
+        shortDescription: 1,
         slug: 1,
         images: 1,
         address: 1,
