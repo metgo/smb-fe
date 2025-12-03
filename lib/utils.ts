@@ -164,6 +164,7 @@ export const categoryGradientClasses = {
   [categoryIds.attraction]:
     "from-ctg-attract-dim via-ctg-attract-light to-ctg-attract-dim",
   [categoryIds.tour]: "from-ctg-tour-dim via-ctg-tour-light to-ctg-tour-dim",
+  default: "from-ctg-attract-dim via-ctg-attract-light to-ctg-attract-dim",
 };
 
 export const categoryGradinteColor = {

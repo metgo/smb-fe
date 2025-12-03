@@ -2,7 +2,7 @@ const AttributePills = ({ items }: { items: Attributes[] }) => {
   if (items?.length === 0) return;
 
   return (
-    <div className="flex flex-wrap items-center gap-2.5 mt-4.5">
+    <div className="flex flex-wrap items-center max-sm:gap-2 md:gap-2.5 mt-4.5">
       {items?.map((item) => (
         <div
           key={item?._id}

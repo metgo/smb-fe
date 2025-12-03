@@ -66,7 +66,7 @@ const FeedLayout = ({
       setVisibleFeedItems(businesses?.data);
       setShowFavoriteFeedItems(false);
     }
-  }, [showFavoriteFeedItems, favoriteFeedItemIds]);
+  }, [showFavoriteFeedItems, favoriteFeedItemIds, businesses]);
 
   useEffect(() => {
     if (businesses?.data?.length > 0) {
