@@ -92,13 +92,13 @@ export const useTrailStations = (
       return;
     }
     const reordered = [...visibleStations];
-    const [removed] = reordered.splice(source.index, 1);
+    const [removed] = reordered?.splice(source.index, 1);
     reordered.splice(destination.index, 0, removed);
 
     setTrailStations(_id, reordered);
     // Check if the new order differs from original
-    const isOrderModified = reordered.some(
-      (station, index) => station._id !== originalStations[index]._id,
+    const isOrderModified = reordered?.some(
+      (station, index) => station?._id !== originalStations?.[index]?._id,
     );
     setIsTrailModified(isOrderModified || removedStations?.length > 0);
   };
