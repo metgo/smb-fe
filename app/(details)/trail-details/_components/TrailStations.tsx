@@ -77,7 +77,7 @@ const StationCard = ({
             )}
           </div>
           <div
-            className="font-normal text-theme text-sm line-clamp-2"
+            className="font-normal text-theme text-sm max-sm:line-clamp-3 md:line-clamp-2"
             dangerouslySetInnerHTML={{ __html: station?.description }}
           />
           <div className="flex items-center justify-end gap-2 w-full mt-1.75">
@@ -88,7 +88,7 @@ const StationCard = ({
             />
             <button
               type="button"
-              className="bg-dark rounded-lg p-1 custom-cursor"
+              className="bg-dark rounded-lg p-1 custom-cursor md:block max-sm:hidden"
             >
               <IconImage icon="basket-white" />
             </button>
@@ -111,7 +111,7 @@ const TrailStations = ({ stations, _id }: TrailDetailsProps) => {
   return (
     <div>
       {/* Header */}
-      <div className="w-full flex justify-between items-center mb-4">
+      <div className="w-full flex justify-between items-center mb-4 max-sm:px-4">
         <button
           type="button"
           disabled={!isTrailModified}
@@ -120,7 +120,7 @@ const TrailStations = ({ stations, _id }: TrailDetailsProps) => {
             !isTrailModified
               ? "cursor-not-allowed bg-secondary"
               : "custom-cursor bg-black",
-            "rounded-xl px-4 py-2 font-bold text-white flex items-center gap-2",
+            "rounded-xl px-4 py-2 font-bold text-white flex items-center gap-2 max-sm:text-sm",
           )}
         >
           <IconImage icon="reset" />
@@ -128,7 +128,7 @@ const TrailStations = ({ stations, _id }: TrailDetailsProps) => {
         </button>
         <button
           type="button"
-          className="custom-cursor bg-dark rounded-xl ps-2.5 pe-4 py-2 flex items-center gap-1.25"
+          className="custom-cursor bg-dark rounded-xl ps-2.5 pe-4 py-2 md:flex items-center gap-1.25 max-sm:hidden"
         >
           <IconImage icon="basket-white" />
           <span className="text-white font-bold">
@@ -142,7 +142,7 @@ const TrailStations = ({ stations, _id }: TrailDetailsProps) => {
         <Droppable droppableId="stations-list">
           {(provided) => (
             <div
-              className="max-h-[55%] overflow-y-scroll"
+              className="max-h-[55%] overflow-y-scroll max-sm:mb-4 md:mb-8"
               ref={provided.innerRef}
               {...provided.droppableProps}
             >
