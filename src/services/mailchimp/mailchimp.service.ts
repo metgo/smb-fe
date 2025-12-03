@@ -64,8 +64,7 @@ export class MailChimpService {
         = require('@mailchimp/mailchimp_transactional')(TRANSACTIONAL_API_KEY);
 
       const message: any = {
-        // from_email: body.from_email || FROM_EMAIL,
-        from_email: FROM_EMAIL,
+        from_email: body.from_email || FROM_EMAIL,
         from_name: body.from_name || 'MetGo',
         template: {
           name: body.templatedId,
