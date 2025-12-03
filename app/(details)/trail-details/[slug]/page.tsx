@@ -58,6 +58,7 @@ const page = async ({ params }: PageProps) => {
         description={trailsDetails?.description}
         locations={locations}
         stations={trailsDetails?.stations}
+        attributes={trailsDetails?.groupTypesAndAccessibilities}
       />
     </>
   );

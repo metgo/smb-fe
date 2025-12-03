@@ -93,7 +93,7 @@ const HamburgerMenu = ({
         {/* Modal Content */}
         <div
           ref={menuRef}
-          className="w-full max-sm:pt-10 max-sm:mx-0 md:mx-auto max-sm:h-[92dvh] md:h-[max-content] 
+          className="w-full max-sm:pt-10 max-sm:mx-0 md:mx-auto max-sm:h-screen md:h-[max-content] 
              max-sm:px-0 md:py-10 md:px-12 flex flex-col md:flex-row max-sm:gap-0 md:gap-10 
              rounded-b-xl max-sm:bg-white/90 bg-white backdrop-blur-[34px] hide-scrollbar"
         >
@@ -130,6 +130,7 @@ const HamburgerMenu = ({
                       <Link
                         key={item.id}
                         href={item.href}
+                        onClick={() => setIsOpen(false)}
                         className="text-theme hover:text-dark transition font-bold text-sm gap-2.5 mb-2 
                           hover:bg-primary group py-2 ps-3 flex items-center justify-between 
                           custom-cursor w-full"

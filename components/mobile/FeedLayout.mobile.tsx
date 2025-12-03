@@ -69,7 +69,7 @@ const MobileFeedLayout = ({
       setVisibleFeedItems(businesses?.data);
       setShowFavoriteFeedItems(false);
     }
-  }, [showFavoriteFeedItems, favoriteFeedItemIds]);
+  }, [showFavoriteFeedItems, favoriteFeedItemIds, businesses]);
 
   // Prepare feed items for carousel
   const carouselItems = useMemo(

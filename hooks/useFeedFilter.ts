@@ -110,6 +110,46 @@ export default function useFeedFilter(
     }
   }, []);
 
+  useEffect(() => {
+    const newParams = getCurrentParams();
+
+    const hasServiceType = newParams.get("serviceTypes");
+
+    if (hasServiceType) {
+      // 🔥 Clear ALL other filters when serviceTypes exists
+      const keysToClear = [
+        "categoryIds",
+        "subCategoryIds",
+        "groupTypeIds",
+        "accessibilityIds",
+      ];
+
+      let modified = false;
+
+      keysToClear.forEach((key) => {
+        if (newParams.has(key)) {
+          newParams.delete(key);
+          modified = true;
+        }
+      });
+
+      if (modified) {
+        setParamsState(new URLSearchParams(newParams));
+        setAppliedFilterCount(getTotalAppliedFilters(newParams));
+        router.replace(`?${newParams.toString()}`, { scroll: false });
+        return; // stop further state overwrite
+      }
+    }
+
+    // Sync normally when no serviceTypes override is needed
+    setParamsState((prev) => {
+      if (prev.toString() === newParams.toString()) return prev;
+      return new URLSearchParams(newParams);
+    });
+
+    setAppliedFilterCount(getTotalAppliedFilters(newParams));
+  }, [searchParams]);
+
   // Always read current URL params (live, never stale)
   const getSelected = (key: string) => {
     return paramsState.get(key)?.split(",").filter(Boolean) ?? [];
@@ -118,68 +158,6 @@ export default function useFeedFilter(
   const isSelected = (key: string, value: string): boolean => {
     return getSelected(key).includes(value);
   };
-
-  // const toggleParam = (key: string, value: string) => {
-  //   const params = new URLSearchParams(paramsState.toString());
-  //   const current = params.get(key)?.split(",").filter(Boolean) ?? [];
-
-  //   const next = current.includes(value)
-  //     ? current.filter((i) => i !== value)
-  //     : [...current, value];
-
-  //   if (next.length > 0) params.set(key, next.join(","));
-  //   else params.delete(key);
-
-  //   const nextParams = new URLSearchParams(params);
-  //   nextParams.delete("isAllClear");
-
-  //   // Auto-clean subcategories when categories change
-  //   if (key === "categoryIds") {
-  //     const selectedCats =
-  //       nextParams.get("categoryIds")?.split(",")?.filter(Boolean) ?? [];
-
-  //     const validSub =
-  //       filters?.subCategories
-  //         ?.filter((sub) => selectedCats?.includes(sub.categoryId))
-  //         .map((sub) => sub._id) ?? [];
-
-  //     const existingSub =
-  //       nextParams.get("subCategoryIds")?.split(",").filter(Boolean) ?? [];
-
-  //     const filteredSub = existingSub.filter((id) => validSub.includes(id));
-
-  //     if (filteredSub.length > 0)
-  //       nextParams.set("subCategoryIds", filteredSub.join(","));
-  //     else nextParams.delete("subCategoryIds");
-
-  //     if (selectedCats.length === 0) {
-  //       nextParams.delete("groupTypeIds");
-  //       nextParams.delete("accessibilityIds");
-  //     }
-  //   }
-
-  //   // Update local state immediately
-  //   setParamsState(nextParams);
-
-  //   // Clear old timer
-  //   if (applyTimer) clearTimeout(applyTimer);
-
-  //   // Debounce apply: wait 2 seconds after last click
-  //   applyTimer = setTimeout(() => {
-  //     const totalApplied = getTotalAppliedFilters(nextParams);
-  //     setAppliedFilterCount(totalApplied);
-
-  //     const isAllClear = totalApplied === 0;
-
-  //     if (isAllClear) {
-  //       router.push(`?isAllClear=true`, { scroll: false });
-  //     } else {
-  //       router.push(`?${nextParams.toString()}`, { scroll: false });
-  //     }
-
-  //     startLoading();
-  //   }, 2000);
-  // };
 
   const toggleParam = (key: string, value: string) => {
     const params = new URLSearchParams(paramsState.toString());
