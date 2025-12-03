@@ -111,7 +111,7 @@ const TrailStations = ({ stations, _id }: TrailDetailsProps) => {
   return (
     <div>
       {/* Header */}
-      <div className="w-full flex justify-between items-center mb-4 max-sm:px-4 ">
+      <div className="w-full flex justify-between items-center mb-4 max-sm:px-4">
         <button
           type="button"
           disabled={!isTrailModified}
@@ -142,7 +142,7 @@ const TrailStations = ({ stations, _id }: TrailDetailsProps) => {
         <Droppable droppableId="stations-list">
           {(provided) => (
             <div
-              className="max-h-[55%] overflow-y-scroll"
+              className="max-h-[55%] overflow-y-scroll max-sm:mb-4 md:mb-8"
               ref={provided.innerRef}
               {...provided.droppableProps}
             >

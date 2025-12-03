@@ -10,6 +10,8 @@ import { CardSkeleton } from "./skeletons";
 import useTrailStationStore from "@/stores/trailStationStore";
 import { getLocationDetailsById } from "@/actions/commonActions";
 import { IconImage, ImageCarouselControls, NextImage } from "./ui";
+import useFavoriteFeedItemStore from "@/stores/favoriteFeedItemStore";
+import { FaHeart } from "react-icons/fa6";
 
 interface CustomInfoWindowProps {
   stationId: string;
@@ -29,6 +31,9 @@ const CustomInfoWindow = ({
   setIsModalClose,
 }: CustomInfoWindowProps) => {
   const { addTrailStation, isAreadyExistStation } = useTrailStationStore();
+  const { favoriteFeedItemIds, addFavoriteFeedItemId } =
+    useFavoriteFeedItemStore();
+
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [isAddBtnDisabled, setIsAddBtnDisabled] = useState(false);
   const [stationDetails, setStationDetails] =
@@ -194,7 +199,21 @@ const CustomInfoWindow = ({
           ) : (
             <div className="flex items-center gap-2">
               <IconImage icon="pin" />
-              <IconImage icon="circular-heart" />
+              <button
+                type="button"
+                className="custom-cursor border border-transparent hover:border-white rounded-full"
+                aria-label="Circular heart"
+                onClick={() => addFavoriteFeedItemId(stationId)}
+              >
+                {favoriteFeedItemIds.includes(stationId) ? (
+                  <div className=" h-7.5 w-7.5 p-1 bg-black/20 rounded-full flex items-center justify-center">
+                    <FaHeart size={16} className="text-white" />
+                  </div>
+                ) : (
+                  <IconImage width={30} height={30} icon="circular-heart" />
+                )}
+              </button>
+              {/* <IconImage icon="circular-heart" /> */}
             </div>
           )}
         </div>
