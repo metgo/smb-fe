@@ -17,6 +17,7 @@ import {
 } from "../ui/svgIcons";
 import { filterCategories, ICON_MAP, SERVICE_TYPE_MAP } from "@/lib/utils";
 import useGeneralStore from "@/stores/generalStore";
+import SearchFlow from "../navbar/SearchFlow";
 
 interface MobileFeedFilterDrawerProps {
   isOpen: boolean;
@@ -74,11 +75,11 @@ const MobileFeedFilterDrawer: React.FC<MobileFeedFilterDrawerProps> = ({
         </div>
 
         {/* HEADER */}
-        <div className="flex items-center justify-end pe-4 w-full relative mb-3">
-          <div
-            className=" absolute -top-4 custom-cursor"
-            onClick={() => setIsOpen(false)}
-          >
+        <div className="flex items-center justify-between px-4 w-full -mt-2">
+          <div>
+            <SearchFlow isMobile />
+          </div>
+          <div className="  custom-cursor" onClick={() => setIsOpen(false)}>
             <CloseIcon />
           </div>
         </div>

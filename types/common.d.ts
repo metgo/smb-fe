@@ -159,6 +159,7 @@ interface PromotionalItem {
   _id: string;
   name: string;
   description: string;
+  shortDescription: string;
   slug: string;
   image?: ImageItem;
   itemType: "business" | "event" | "product" | "funDays" | string; // extendable for flexibility

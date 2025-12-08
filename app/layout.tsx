@@ -8,6 +8,7 @@ import { GoogleAnalytics, GoogleTagManager } from "@next/third-parties/google";
 import { ProgressBar } from "@/components/wrappers";
 import {
   GOOGLE_ANALYTIC_ID,
+  GOOGLE_SITE_VERIFICATION_CODE,
   GOOGLE_TAG_MANAGER_ID,
   IdentifierId,
 } from "@/constant/envConstants";
@@ -70,10 +71,17 @@ export async function generateMetadata(): Promise<Metadata> {
 export default function RootLayout({ children }: ReactChildNode) {
   return (
     <html lang="he" dir="rtl">
+      <head>
+        <meta
+          name="google-site-verification"
+          content={GOOGLE_SITE_VERIFICATION_CODE}
+        />
+      </head>
       <body>
         <SiteInfoClientProvider>
           <GoogleAnalytics gaId={GOOGLE_ANALYTIC_ID!} />
           <GoogleTagManager gtmId={GOOGLE_TAG_MANAGER_ID!} />
+
           <Suspense>
             <ProgressBar />
             <Toaster />

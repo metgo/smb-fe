@@ -14,6 +14,7 @@ import StickyYellowRibbonImage from "../StickyYellowRibbonImage";
 import FeedFilterDrawer from "../drawer/FeedFilterDrawer";
 import { IconImage } from "../ui";
 import useFavoriteFeedItemStore from "@/stores/favoriteFeedItemStore";
+import { misc } from "@/constant/hebrew";
 
 const FeedLayout = ({
   businesses,
@@ -38,7 +39,15 @@ const FeedLayout = ({
     setShowFavoriteFeedItems,
   } = useGeneralStore();
 
-  const { favoriteFeedItemIds } = useFavoriteFeedItemStore();
+  const {
+    favoriteFeedItemIds,
+    alreadyShownFilterTooltip,
+    handleFilterTooltipShown,
+  } = useFavoriteFeedItemStore();
+  console.log(
+    "🚀 ~ FeedLayout ~ alreadyShownFilterTooltip:",
+    alreadyShownFilterTooltip,
+  );
 
   const { sentryRef, loading, initialLoadDone, canLoadMore } = useLoadMore(
     businesses?.meta?.hasNextPage,
@@ -87,6 +96,11 @@ const FeedLayout = ({
     }
   }, []);
 
+  const handleFilterIconClick = () => {
+    setIsFilterDrawerOpen(true);
+    handleFilterTooltipShown(true);
+  };
+
   if (!isHydrated || !hideFirstTwoSection) return null;
 
   // ⭐ Layout selector works with filtered data
@@ -132,8 +146,8 @@ const FeedLayout = ({
         {hideFirstTwoSection && (
           <div className="fixed bottom-1 right-4 custom-cursor max-sm:hidden md:block">
             <div
-              onClick={() => setIsFilterDrawerOpen(true)}
-              className="relative inline-block"
+              onClick={handleFilterIconClick}
+              className="relative inline-block w-full"
             >
               <div
                 className={`relative z-10 border-2 border-white rounded-full shadow-2xl shadow-green-400
@@ -144,10 +158,14 @@ const FeedLayout = ({
                     {appliedFilterCount}
                   </div>
                 )}
-
                 <IconImage icon="ai" width={84} height={84} />
               </div>
             </div>
+            {!alreadyShownFilterTooltip && (
+              <div className="bg-[#28C368] px-4 py-2 rounded-md text-white absolute right-24 bottom-8 w-max font-bold ">
+                {misc.filterIconTooltip}
+              </div>
+            )}
           </div>
         )}
 
