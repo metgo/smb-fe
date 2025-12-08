@@ -148,7 +148,6 @@ const MobileFeedLayout = ({
 
               {/* Icon stays centered */}
               <AiIcon size={68} />
-
               {appliedFilterCount > 0 && (
                 <div className="bg-green-500 absolute right-1 top-1 rounded-full h-[18px] w-[18px] text-[10px] flex items-center justify-center text-white border border-white">
                   {appliedFilterCount}
