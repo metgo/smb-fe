@@ -59,10 +59,12 @@ const MobileNavbar = () => {
             </Link>
           )}
         </div>
-        <div className="flex items-center justify-end gap-2 col-span-8">
-          {isFilterTabShow && <MobileFilterTab />}
-          {/* {showFilterIcon && <IconImage icon="filter" />} */}
-        </div>
+        {isFilterTabShow && (
+          <div className="flex items-center justify-end gap-2 col-span-8">
+            <MobileFilterTab />
+            {/* {showFilterIcon && <IconImage icon="filter" />} */}
+          </div>
+        )}
       </div>
       <PromotionalCards />
     </nav>

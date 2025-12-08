@@ -214,10 +214,10 @@ const SearchFlow = ({
                   <SectionTitle title={misc.pleaseWaitLoading} />
                 </div>
               ) : (
-                <div className="overflow-hidden overflow-y-auto space-y-4">
+                <div className="overflow-hidden overflow-y-auto h-[70dvh] space-y-4">
                   {/* Popular Businesses (default view) */}
                   {!searchKeyword && recommendedBusinesses?.length > 0 && (
-                    <div className="pt-4">
+                    <div className="">
                       <MobileCardList items={recommendedBusinesses} />
                     </div>
                   )}
@@ -237,7 +237,7 @@ const SearchFlow = ({
                       />
                     </div>
                   ) : (
-                    <div className="pb-7.5">
+                    <div className="pb-7.5 space-y-4">
                       <MobileCardList items={searchItems.businesses!} />
                       <MobileCardList
                         items={searchItems.events!}
