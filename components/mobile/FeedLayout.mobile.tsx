@@ -6,15 +6,16 @@ import MobileNavbar from "./Navbar.mobile";
 import MobileBusinessPinMap from "../maps/BusinessPinMap.mobile";
 import MobileFeedsThumbnailCarousel from "./FeedsThumbnailCarousel.mobile";
 
-import { categoryColors } from "@/lib/utils";
-import { useCommonHook, useFeedFilter, useMobileFeedLayout } from "@/hooks";
-import OnlyFeedCardsLayoutMobile from "../layouts/OnlyFeedCardsLayout.mobile";
-import useGeneralStore from "@/stores/generalStore";
-import { usePathname } from "next/navigation";
-import { pathNames } from "@/lib/endpoints";
 import { AiIcon } from "../ui/svgIcons";
+import { misc } from "@/constant/hebrew";
+import { pathNames } from "@/lib/endpoints";
+import { categoryColors } from "@/lib/utils";
+import { usePathname } from "next/navigation";
+import useGeneralStore from "@/stores/generalStore";
 import MobileFeedFilterDrawer from "../drawer/FeedFilterDrawer.mobile";
 import useFavoriteFeedItemStore from "@/stores/favoriteFeedItemStore";
+import { useCommonHook, useFeedFilter, useMobileFeedLayout } from "@/hooks";
+import OnlyFeedCardsLayoutMobile from "../layouts/OnlyFeedCardsLayout.mobile";
 
 interface MobileFeedLayoutProps {
   businesses: BusinessesProps;
@@ -46,7 +47,11 @@ const MobileFeedLayout = ({
     handleResetFilters,
     shouldAnimate,
   } = useFeedFilter(filters, initialSelectedFiltersIds);
-  const { favoriteFeedItemIds } = useFavoriteFeedItemStore();
+  const {
+    favoriteFeedItemIds,
+    alreadyShownFilterTooltip,
+    handleFilterTooltipShown,
+  } = useFavoriteFeedItemStore();
 
   const {
     hideFirstTwoSection,
@@ -89,6 +94,11 @@ const MobileFeedLayout = ({
     }
   }, [pathname]);
 
+  const handleFilterIconClick = () => {
+    setIsFilterDrawerOpen(true);
+    handleFilterTooltipShown(true);
+  };
+
   if (!isMobile) return null;
   if (!feedItems?.length) return null;
 
@@ -124,29 +134,35 @@ const MobileFeedLayout = ({
 
       {/* Bottom Panels */}
       {hideFirstTwoSection && (
-        <div className="fixed bottom-2 right-[42%] custom-cursor">
-          <div
-            onClick={() => setIsFilterDrawerOpen(true)}
-            className="relative inline-flex items-center justify-center"
-          >
-            {/* Circle with shadow behind icon */}
+        <>
+          <div className="fixed bottom-2 right-[42%] custom-cursor">
             <div
-              className={`absolute top-3 w-12 h-12 rounded-full shadow-xl shadow-green-300
+              onClick={handleFilterIconClick}
+              className="relative inline-flex items-center justify-center"
+            >
+              {/* Circle with shadow behind icon */}
+              <div
+                className={`absolute top-3 w-12 h-12 rounded-full shadow-xl shadow-green-300
               ${shouldAnimate ? "animate-zoom-3x" : ""}`}
-            />
+              />
 
-            {/* Icon stays centered */}
-            <AiIcon size={68} />
+              {/* Icon stays centered */}
+              <AiIcon size={68} />
 
-            {appliedFilterCount > 0 && (
-              <div className="bg-green-500 absolute right-1 top-1 rounded-full h-[18px] w-[18px] text-[10px] flex items-center justify-center text-white border border-white">
-                {appliedFilterCount}
-              </div>
-            )}
+              {appliedFilterCount > 0 && (
+                <div className="bg-green-500 absolute right-1 top-1 rounded-full h-[18px] w-[18px] text-[10px] flex items-center justify-center text-white border border-white">
+                  {appliedFilterCount}
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+          {!alreadyShownFilterTooltip && (
+            <div className="bg-[#28C368] px-4 py-2 rounded-md text-white fixed bottom-16 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-max font-bold">
+              {misc.filterIconTooltip}
+            </div>
+          )}
+        </>
       )}
-
       {isFilterDrawerOpen && (
         <MobileFeedFilterDrawer
           itemCount={businesses?.data?.length}

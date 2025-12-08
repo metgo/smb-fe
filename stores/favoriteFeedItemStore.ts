@@ -1,28 +1,22 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-// type FeedItem = {
-//   _id: string;
-//   name: string;
-//   shortDescritption: string;
-//   images: ImageItem[];
-//   primaryCategoryId: string;
-//   slug: string;
-//   serviceType: string;
-// };
-
 interface FavoriteFeedItemStore {
-  // favoriteFeedItems: FeedItem[];
   favoriteFeedItemIds: string[];
-  // addFavoriteFeedItem: (feedItem: FeedItem) => void;
+  alreadyShownFilterTooltip: boolean;
   addFavoriteFeedItemId: (feedId: string) => void;
+  handleFilterTooltipShown: (v: boolean) => void;
 }
 
 const useFavoriteFeedItemStore = create<FavoriteFeedItemStore>()(
   persist(
     (set, get) => ({
-      // favoriteFeedItems: [],
       favoriteFeedItemIds: [],
+      alreadyShownFilterTooltip: false,
+
+      handleFilterTooltipShown: (v: boolean) => {
+        set({ alreadyShownFilterTooltip: v });
+      },
 
       addFavoriteFeedItemId: (feedId: string) => {
         const current = get().favoriteFeedItemIds;
@@ -39,33 +33,6 @@ const useFavoriteFeedItemStore = create<FavoriteFeedItemStore>()(
           });
         }
       },
-
-      // addFavoriteFeedItem: (feedItem: FeedItem) => {
-      //   const formattedFeedItem = {
-      //     _id: feedItem._id,
-      //     name: feedItem.name,
-      //     shortDescritption: feedItem.shortDescritption,
-      //     serviceType: feedItem.serviceType,
-      //     images: feedItem.images,
-      //     slug: feedItem.slug,
-      //     primaryCategoryId: feedItem.primaryCategoryId,
-      //   };
-
-      //   const current = get().favoriteFeedItems;
-      //   const exists = current.some((item) => item._id === feedItem._id);
-
-      //   if (exists) {
-      //     const newItems = current.filter((item) => item._id !== feedItem._id);
-      //     set({
-      //       favoriteFeedItemIds: newItems.map((item) => item._id),
-      //     });
-      //   } else {
-      //     const newItems = [...current, formattedFeedItem];
-      //     set({
-      //       favoriteFeedItems: newItems,
-      //     });
-      //   }
-      // },
     }),
     {
       name: "favorite-storage",

@@ -19,13 +19,13 @@ const PromotionalCards = () => {
 
   const { promotionalItems } = useGeneralStore();
 
-  // ✅ Calculate animation duration based on content width
+  //  Calculate animation duration based on content width
   useEffect(() => {
     if (scrollRef.current && promotionalItems?.length > 0) {
       const scrollWidth = scrollRef.current.scrollWidth;
       // const viewportWidth = window.innerWidth;
 
-      // ✅ Adjust this value to control speed (pixels per second)
+      //  Adjust this value to control speed (pixels per second)
       // Higher = slower, Lower = faster
       const PIXELS_PER_SECOND = 90; // Adjust this to tune speed
 
@@ -98,7 +98,9 @@ const PromotionalCards = () => {
                   <div dir="rtl" className=" max-w-[120px]">
                     <div
                       dangerouslySetInnerHTML={{
-                        __html: removeInlineStylesFromHTML(item?.description),
+                        __html: removeInlineStylesFromHTML(
+                          item?.shortDescription,
+                        ),
                       }}
                       className="font-bold text-gray-800 line-clamp-1"
                     />

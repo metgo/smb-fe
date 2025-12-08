@@ -30,6 +30,7 @@ export const misc = {
   forMoreDetails: "לפרטים נוספים",
   shareLink: "ניתן לשתף עם חברים ומשפחה על ידי הדבקת הקישור",
   searchItemNotFoundText: "לא מצאנו את מה שחיפשת :(",
+  filterIconTooltip: "לחצו כאן כדי להציג בפיד למה שמעניין אתכם",
 };
 
 export const deliveries = {
@@ -283,8 +284,6 @@ export const fundayEnquiryLables = {
   mail: "מייל",
   whatIsImportantInYourDay: "מה חשוב לך שיהיה ביום שלך?",
   funAndBondingDays: "ימי כיף וגיבוש",
-  funDayBondingDaysMobile: `ימי כייף
-וגיבוש`,
 };
 
 export const filterPanelLabels = {
