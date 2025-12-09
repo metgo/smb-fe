@@ -21,8 +21,8 @@ export class GetSiteInfoHandler implements IQueryHandler<GetSiteInfoQuery> {
   ) {}
 
   async execute(query: GetSiteInfoQuery) {
+    const { identifierId } = query;
     try {
-      const { identifierId } = query;
       const externalApi = await this.ExternalApiModel.findOne({
         identifierId,
       }).populate<{ themeId: Theme }>(
@@ -48,9 +48,12 @@ export class GetSiteInfoHandler implements IQueryHandler<GetSiteInfoQuery> {
         ),
       };
     } catch (err) {
-      this.logger.error('[EXTERNAL_API]: FAILED TO  GET SITE INFO', {
-        err: err.message,
-      });
+      this.logger.error(
+        `[EXTERNAL_API]: FAILED TO  GET SITE INFO FOR ${identifierId}`,
+        {
+          err: err.message,
+        },
+      );
       exceptionHandling(err);
     }
   }

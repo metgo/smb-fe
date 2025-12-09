@@ -69,7 +69,7 @@ export class ExternalApiServices {
       return externalApi;
     } catch (err) {
       this.logger.error(
-        `[EXTERNAL_API-${identifierId}]: FAILED TO GET EXTERNAL API'`,
+        `[EXTERNAL_API]: FAILED TO GET IDENTIFIER INFO BY ID: ENTERED IDENTIFIER='${identifierId}'`,
         {
           err: err.message,
         },
@@ -93,9 +93,12 @@ export class ExternalApiServices {
       }
       return externalApi;
     } catch (err) {
-      this.logger.error(`[EXTERNAL_API-${id}]: FAILED TO GET EXTERNAL API'`, {
-        err: err.message,
-      });
+      this.logger.error(
+        `[EXTERNAL_API]: FAILED TO GET THEME INFO BY ID: ENTERED ID='${id}'`,
+        {
+          err: err.message,
+        },
+      );
       exceptionHandling(err);
     }
   }
@@ -130,7 +133,7 @@ export class ExternalApiServices {
       };
     } catch (err) {
       this.logger.error(
-        `[EXTERNAL_API-${identifierId}]: FAILED TO GET EXTERNAL API'`,
+        `[EXTERNAL_API]: FAILED TO GET THEME INFO BY IDENTIFIER: ENTERED IDENTIFIER='${identifierId}'`,
         {
           err: err.message,
         },
@@ -151,7 +154,7 @@ export class ExternalApiServices {
       return externalApi;
     } catch (err) {
       this.logger.error(
-        `[EXTERNAL_API-${identifierId}]: FAILED TO GET EXTERNAL API'`,
+        `[EXTERNAL_API]: FAILED TO GET MARKETING INFO BY IDENTIFIER: ENTERED IDENTIFIER='${identifierId}'`,
         {
           err: err.message,
         },
@@ -175,7 +178,7 @@ export class ExternalApiServices {
       return externalApi;
     } catch (err) {
       this.logger.error(
-        `[EXTERNAL_API-${identifierId}]: FAILED TO GET EXTERNAL API'`,
+        `[EXTERNAL_API]: FAILED TO GET EXTERNAL API BY IDENTIFIER: ENTERED IDENTIFIER='${identifierId}'`,
         {
           err: err.message,
         },

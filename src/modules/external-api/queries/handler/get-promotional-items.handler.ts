@@ -38,8 +38,8 @@ implements IQueryHandler<GetPromotionalItemsQuery> {
   ) {}
 
   async execute(queries: GetPromotionalItemsQuery) {
+    const { identifierId, query } = queries;
     try {
-      const { identifierId, query } = queries;
       const externalApi = await this.ExternalApiModel.findOne({
         identifierId,
       });
@@ -149,9 +149,12 @@ implements IQueryHandler<GetPromotionalItemsQuery> {
         };
       }
     } catch (err) {
-      this.logger.error('[EXTERNAL_API]: FAILED TO  GET PROMOTIONAL INFO', {
-        err: err.message,
-      });
+      this.logger.error(
+        `[EXTERNAL_API]: FAILED TO GET PROMOTIONAL INFO BY IDENTIFIER: ENTERED IDENTIFIER='${identifierId}'`,
+        {
+          err: err.message,
+        },
+      );
       exceptionHandling(err);
     }
   }

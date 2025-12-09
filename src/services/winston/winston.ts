@@ -22,6 +22,9 @@ const filterRouterExplorer = winston.format(info => {
 export default {
   level: 'info',
   exitOnError: false,
+  defaultMeta: {
+    service: 'marketplace-travel-backend',
+  },
   format: winston.format.combine(
     filterRouterExplorer(),
     winston.format.timestamp(),
