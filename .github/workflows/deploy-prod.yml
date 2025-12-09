@@ -43,10 +43,10 @@ jobs:
             echo ${{ secrets.SUDO_PASSWORD }} | sudo -S docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
 
             # Pull docker image
-            echo ${{ secrets.SUDO_PASSWORD }} | sudo -S docker-compose pull dev_travel
+            echo ${{ secrets.SUDO_PASSWORD }} | sudo -S docker compose pull dev_travel
 
-            # Run docker-compose
-            echo ${{ secrets.SUDO_PASSWORD }} | sudo -S docker-compose up -d dev_travel
+            # Run docker compose
+            echo ${{ secrets.SUDO_PASSWORD }} | sudo -S docker compose up -d dev_travel
 
             # Removing dangling images
             echo ${{ secrets.SUDO_PASSWORD }} | sudo -S docker image prune -f
