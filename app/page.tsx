@@ -39,36 +39,6 @@ const page = async ({ searchParams }: Props) => {
 
   const initialSelectedFiltersIds: PresetFilterItems = await getPresetFilters();
 
-  //  Convert comma values → arrays only if URL values exist
-  // const categoriesArray = categoryIds?.length
-  //   ? categoryIds.split(",")
-  //   : initialSelectedFiltersIds?.categoryIds;
-
-  // const subCategoriesArray = subCategoryIds?.length
-  //   ? subCategoryIds.split(",")
-  //   : initialSelectedFiltersIds?.subCategoryIds;
-
-  // const accessibilitiesArray = accessibilityIds?.length
-  //   ? accessibilityIds.split(",")
-  //   : initialSelectedFiltersIds?.accessibilityIds;
-
-  // const groupTypesArray = groupTypeIds?.length
-  //   ? groupTypeIds.split(",")
-  //   : initialSelectedFiltersIds?.groupTypeIds;
-
-  // const serviceTypesArray = serviceTypes?.length
-  //   ? serviceTypes.split(",")
-  //   : initialSelectedFiltersIds?.serviceTypes;
-
-  // Unified object (now includes default fallback)
-  // const selectedFiltersIds = {
-  //   categoryIds: categoriesArray || [],
-  //   subCategoryIds: subCategoriesArray || [],
-  //   groupTypesIds: groupTypesArray || [],
-  //   accessibilitiesIds: accessibilitiesArray || [],
-  //   serviceTypes: serviceTypesArray || [],
-  // };
-
   const selectedFiltersIds = {
     categoryIds: categoryIds?.split(",") || [],
     subCategoryIds: subCategoryIds?.split(",") || [],
@@ -76,8 +46,6 @@ const page = async ({ searchParams }: Props) => {
     accessibilitiesIds: accessibilityIds?.split(",") || [],
     serviceTypes: serviceTypes?.split(",") || [],
   };
-
-  // ["business", "point_of_interest", "event", "funday", "trip"],
 
   // First API call includes all filters
   const filters = await getAllFilters(selectedFiltersIds);
@@ -95,7 +63,7 @@ const page = async ({ searchParams }: Props) => {
       <ScrollSnapWrapper hasMarketing={marketing?.items?.length > 0}>
         {/* Hero Section */}
         <section className="relative">
-          <div className="z-20 fixed top-2.5 right-0 w-full flex items-center justify-between max-sm:px-4 md:ps-20 md:pe-16">
+          <div className="z-20 fixed top-2.5 right-0 w-full flex items-center justify-between max-sm:px-4 lg:ps-20 lg:pe-16">
             <div className="flex items-center gap-5">
               <HamburgerMenu
                 openIcon="white-threeline"

@@ -389,3 +389,70 @@ export const sanitizeInitialFilters = (
 
   return { sanitized, totalCount };
 };
+
+type OpeningHour = {
+  days: string;
+  open: string; // "14:00"
+  close: string; // "04:00"
+  isHoliday: boolean;
+};
+
+const DAY_MAP: Record<string, number> = {
+  Sun: 0,
+  Mon: 1,
+  Tues: 2,
+  Wed: 3,
+  Thurs: 4,
+  Fri: 5,
+  Sat: 6,
+};
+
+export function isPlaceOpenNow(
+  schedule: OpeningHour[],
+  timezone: string = "Asia/Jerusalem",
+): boolean {
+  const now = new Date();
+
+  // Convert now → given timezone
+  const formatter = new Intl.DateTimeFormat("en-US", {
+    timeZone: timezone,
+    hour: "2-digit",
+    minute: "2-digit",
+    weekday: "short",
+    hour12: false,
+  });
+
+  const parts = formatter.formatToParts(now);
+  const dayStr = parts.find((p) => p.type === "weekday")?.value ?? "";
+  const hourStr = parts.find((p) => p.type === "hour")?.value ?? "00";
+  const minStr = parts.find((p) => p.type === "minute")?.value ?? "00";
+
+  const currentMinutes = parseInt(hourStr) * 60 + parseInt(minStr);
+
+  // Find today's schedule
+  const todaySchedule = schedule.find(
+    (s) => DAY_MAP[s.days] === DAY_MAP[dayStr],
+  );
+
+  if (!todaySchedule || todaySchedule.isHoliday) return false;
+
+  const [openHour, openMin] = todaySchedule.open.split(":").map(Number);
+  const [closeHour, closeMin] = todaySchedule.close.split(":").map(Number);
+
+  const openMinutes = openHour * 60 + openMin;
+  const closeMinutes = closeHour * 60 + closeMin;
+
+  // Case 1: Normal same-day hours ("10:00" → "22:00")
+  if (closeMinutes > openMinutes) {
+    return currentMinutes >= openMinutes && currentMinutes < closeMinutes;
+  }
+
+  // Case 2: Overnight ("14:00" → "04:00" next day)
+  // Open until midnight
+  if (currentMinutes >= openMinutes) return true;
+
+  // Still open early morning
+  if (currentMinutes < closeMinutes) return true;
+
+  return false;
+}

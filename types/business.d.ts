@@ -129,6 +129,7 @@ declare interface OpeningHrs {
   days: string;
   open: string;
   close: string;
+  isHoliday: boolean;
 }
 
 interface PickUpLocation {

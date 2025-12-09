@@ -44,10 +44,6 @@ const FeedLayout = ({
     alreadyShownFilterTooltip,
     handleFilterTooltipShown,
   } = useFavoriteFeedItemStore();
-  console.log(
-    "🚀 ~ FeedLayout ~ alreadyShownFilterTooltip:",
-    alreadyShownFilterTooltip,
-  );
 
   const { sentryRef, loading, initialLoadDone, canLoadMore } = useLoadMore(
     businesses?.meta?.hasNextPage,
@@ -103,7 +99,6 @@ const FeedLayout = ({
 
   if (!isHydrated || !hideFirstTwoSection) return null;
 
-  // ⭐ Layout selector works with filtered data
   const renderLayout = () => {
     switch (activeFilterTab) {
       case "gallery":
