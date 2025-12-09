@@ -68,7 +68,7 @@ const CarouselImage = ({ images, timeInterval }: CarouselImageProps) => {
           bulletActiveClass: "swiper-pagination-bullet-active-custom",
         }}
         autoplay={{
-          delay: Number(timeInterval) ? Number(timeInterval) : 1 * 1000,
+          delay: Number(timeInterval) ? Number(timeInterval) * 1000 : 1 * 1000,
           disableOnInteraction: false,
         }}
         loop={true}

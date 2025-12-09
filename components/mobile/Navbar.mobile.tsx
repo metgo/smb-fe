@@ -1,19 +1,18 @@
 "use client";
 
 import clsx from "clsx";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 
 import NavLogo from "../navbar/NavLogo";
 import { pathNames } from "@/lib/endpoints";
-import SearchFlow from "../navbar/SearchFlow";
-import HamburgerMenu from "../navbar/HamburgerMenu";
+import { CODE } from "@/constant/envConstants";
+import { RedFlowerIcon } from "../ui/svgIcons";
 import MobileFilterTab from "./FilterTab.mobile";
 import PromotionalCards from "../PromotionalCards";
-import { CODE } from "@/constant/envConstants";
-import Link from "next/link";
+import HamburgerMenu from "../navbar/HamburgerMenu";
 import { fundayEnquiryLables } from "@/constant/hebrew";
-import { RedFlowerIcon } from "../ui/svgIcons";
 
 const MobileNavbar = () => {
   const pathname = usePathname();
@@ -52,7 +51,7 @@ const MobileNavbar = () => {
               className="flex items-center border border-black rounded-xl ps-2 pe-2 py-1 h-10 custom-cursor relative"
             >
               <span className="text-black font-bold leading-4 max-w-20">
-                {fundayEnquiryLables.funDayBondingDaysMobile}
+                {fundayEnquiryLables.funAndBondingDays}
               </span>
               <div className="absolute left-0 -bottom-[5px]">
                 <RedFlowerIcon />
@@ -60,11 +59,12 @@ const MobileNavbar = () => {
             </Link>
           )}
         </div>
-        <div className="flex items-center justify-end gap-2 col-span-8">
-          {isFilterTabShow && <MobileFilterTab />}
-          <SearchFlow isMobile />
-          {/* {showFilterIcon && <IconImage icon="filter" />} */}
-        </div>
+        {isFilterTabShow && (
+          <div className="flex items-center justify-end gap-2 col-span-8">
+            <MobileFilterTab />
+            {/* {showFilterIcon && <IconImage icon="filter" />} */}
+          </div>
+        )}
       </div>
       <PromotionalCards />
     </nav>

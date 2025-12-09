@@ -65,7 +65,7 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
       "
       >
         {/* SCROLLABLE CONTENT */}
-        <div className="flex-1 overflow-y-auto max-h-[90vh] px-5 pb-20 z-50">
+        <div className="flex-1 overflow-y-auto max-h-[90vh] px-5 z-50">
           {/* MAIN CATEGORIES & SERVICE TYPES */}
           <div className="border-b border-primary py-3 mt-20">
             <div
