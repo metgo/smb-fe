@@ -78,17 +78,17 @@ export default function RootLayout({ children }: ReactChildNode) {
         />
       </head>
       <body>
-        <SiteInfoClientProvider>
-          <GoogleAnalytics gaId={GOOGLE_ANALYTIC_ID!} />
-          <GoogleTagManager gtmId={GOOGLE_TAG_MANAGER_ID!} />
+        <Suspense>
+          <SiteInfoClientProvider>
+            <GoogleAnalytics gaId={GOOGLE_ANALYTIC_ID!} />
+            <GoogleTagManager gtmId={GOOGLE_TAG_MANAGER_ID!} />
 
-          <Suspense>
             <ProgressBar />
             <Toaster />
             <ServiceWorkerRegistrar />
             {children}
-          </Suspense>
-        </SiteInfoClientProvider>
+          </SiteInfoClientProvider>
+        </Suspense>
       </body>
     </html>
   );
