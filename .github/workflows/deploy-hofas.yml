@@ -43,10 +43,10 @@ jobs:
             echo ${{ secrets.SUDO_PASSWORD }} | sudo -S docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
 
             # Pull docker image
-            echo ${{ secrets.SUDO_PASSWORD }} | sudo -S docker-compose pull staging_hofas
+            echo ${{ secrets.SUDO_PASSWORD }} | sudo -S docker compose pull staging_hofas
 
-            # Run docker-compose
-            echo ${{ secrets.SUDO_PASSWORD }} | sudo -S docker-compose up -d staging_hofas
+            # Run docker compose
+            echo ${{ secrets.SUDO_PASSWORD }} | sudo -S docker compose up -d staging_hofas
 
             # Removing dangling images
             echo ${{ secrets.SUDO_PASSWORD }} | sudo -S docker image prune -f
