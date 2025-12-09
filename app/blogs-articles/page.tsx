@@ -1,4 +1,3 @@
-import { Suspense } from "react";
 import Navbar from "@/components/navbar";
 
 import { blogLabels } from "@/constant/hebrew";
@@ -13,7 +12,7 @@ const page = async () => {
   if (blogs?.length < 1) return <NoFeedItemLayout />;
 
   return (
-    <Suspense>
+    <>
       <Navbar />
       <MobileNavbar />
       <div className="bg-primary max-sm:hidden md:block">
@@ -26,7 +25,7 @@ const page = async () => {
         <BlogFeedCardsLayout blogs={blogs} />
       </div>
       <MobileBlogFeedLayout blogs={blogs} />
-    </Suspense>
+    </>
   );
 };
 
