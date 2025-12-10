@@ -63,7 +63,7 @@ const page = async ({ searchParams }: Props) => {
       <ScrollSnapWrapper hasMarketing={marketing?.items?.length > 0}>
         {/* Hero Section */}
         <section className="relative">
-          <div className="z-20 fixed top-2.5 right-0 w-full flex items-center justify-between max-sm:px-4 lg:ps-20 lg:pe-16">
+          <div className="z-20 fixed top-2.5 right-0 w-full flex items-center justify-between px-4 md:px-16 lg:px-20 ">
             <div className="flex items-center gap-5">
               <HamburgerMenu
                 openIcon="white-threeline"
