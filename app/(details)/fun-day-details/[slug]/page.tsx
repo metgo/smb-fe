@@ -63,7 +63,7 @@ const page = async ({ params }: PageProps) => {
                   <ContactUsInfo
                     icon="phone"
                     text={funDayDetails?.contactDetails?.phoneNumber}
-                    href={`tel:${"+972 " + funDayDetails?.contactDetails?.phoneNumber?.replace(/\s+/g, "")}`}
+                    href={`tel:${"+972" + funDayDetails?.contactDetails?.phoneNumber?.replace(/\s+/g, "")}`}
                   />
                 )}
 

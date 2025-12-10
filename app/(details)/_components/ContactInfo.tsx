@@ -12,7 +12,7 @@ const ContactInfo = () => {
       <ContactUsInfo
         icon="phone"
         text={contactInfo.phone}
-        href={`tel:${"+972 " + contactInfo?.phone?.replace(/\s+/g, "")}`}
+        href={`tel:${"+972" + contactInfo?.phone?.replace(/\s+/g, "")}`}
       />
 
       {/* Email */}
@@ -27,7 +27,7 @@ const ContactInfo = () => {
       <ContactUsInfo
         icon="whatsapp-outlined"
         text={contactInfo.whatsapp}
-        href={`https://wa.me/${"+972 " + contactInfo?.whatsapp?.replace(/\D/g, "")}`}
+        href={`https://wa.me/${"+972" + contactInfo?.whatsapp?.replace(/\D/g, "")}`}
       />
     </div>
   );

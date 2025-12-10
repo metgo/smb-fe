@@ -85,7 +85,7 @@ const OurStoryTabContent = ({
               <ContactUsInfo
                 icon="phone"
                 text={contactDetails?.phone}
-                href={`tel:${"+972 " + contactDetails?.phone?.replace(/\s+/g, "")}`}
+                href={`tel:${"+972" + contactDetails?.phone?.replace(/\s+/g, "")}`}
               />
             )}
 
@@ -104,7 +104,7 @@ const OurStoryTabContent = ({
               <ContactUsInfo
                 icon="whatsapp-outlined"
                 text={contactDetails.whatsAppNumber}
-                href={`https://wa.me/${"+972 " + contactDetails?.whatsAppNumber?.replace(/\D/g, "")}`}
+                href={`https://wa.me/${"+972" + contactDetails?.whatsAppNumber?.replace(/\D/g, "")}`}
               />
             )}
           </div>
