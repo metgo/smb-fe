@@ -13,7 +13,7 @@ import MobileImageGallery from "./ImageGallery.mobile";
 import { categoryColors, daysMapping } from "@/lib/utils";
 import MobileDeliveriesContent from "./DeliveriesContent.mobile ";
 import MobileLinkShareBottomDrawer from "./LinkShareBottomDrawer.mobile";
-import { removeInlineStylesFromHTML } from "@/lib/helpers";
+import { isPlaceOpenNow, removeInlineStylesFromHTML } from "@/lib/helpers";
 import ContactUsInfo from "../ContactUsInfo";
 
 const OpeningDayHours = ({ days, open, close }: OpeningHrs) => (
@@ -143,7 +143,11 @@ const MobileBusinessDetails = ({
             <div className="border-2 border-primary rounded-xl px-4 py-7.5 w-full flex-initial mb-4">
               <div className="flex justify-between gap-4 text-sm font-normal mb-2.5">
                 <span className="text-charcoal">{misc.hours}</span>
-                <span className="text-[#28C268]">{misc.openNow}</span>
+                {isPlaceOpenNow(businessDetails?.openingHrs) ? (
+                  <span className="text-[#28C268]"> {misc.openNow}</span>
+                ) : (
+                  <span className="text-red-600"> {misc.closeNow}</span>
+                )}
               </div>
               <div className="space-y-1.5">
                 {businessDetails?.openingHrs.map((item, index) => (

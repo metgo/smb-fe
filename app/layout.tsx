@@ -89,6 +89,7 @@ export default function RootLayout({ children }: ReactChildNode) {
             {children}
           </SiteInfoClientProvider>
         </Suspense>
+        <script src="https://cdn.enable.co.il/licenses/enable-L51962b1rufewka6-1225-76847/init.js"></script>
       </body>
     </html>
   );

@@ -32,7 +32,7 @@ export const misc = {
   forMoreDetails: "לפרטים נוספים",
   shareLink: "ניתן לשתף עם חברים ומשפחה על ידי הדבקת הקישור",
   searchItemNotFoundText: "לא מצאנו את מה שחיפשת :(",
-  filterIconTooltip: "לחצו כאן כדי להציג בפיד למה שמעניין אתכם",
+  filterIconTooltip: "לחצו כאן כדי להציג בפיד את מה שמעניין אתכם",
 };
 
 export const deliveries = {
