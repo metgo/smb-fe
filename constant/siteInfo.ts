@@ -3,23 +3,23 @@ import { CODE } from "./envConstants";
 export const siteInfo = {
   BNEI: {
     contactInfo: {
-      phone: "052-238-2872",
+      phone: "52-238-2872",
       mail: "tayarut@bns.org.il",
-      whatsapp: "050-553-6515",
+      whatsapp: "50-553-6515",
     },
   },
   HOFASH: {
     contactInfo: {
-      phone: "02-8835634",
+      phone: "2-8835634",
       mail: "ayanot@gmail.com",
-      whatsapp: "052-6789546",
+      whatsapp: "52-6789546",
     },
   },
   TAV8: {
     contactInfo: {
-      phone: "+972 54-777-6100",
+      phone: "54-777-6100",
       mail: "support@metgo.,app",
-      whatsapp: "+972 54-777-6100",
+      whatsapp: "54-777-6100",
     },
   },
 };

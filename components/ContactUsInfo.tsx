@@ -4,10 +4,12 @@ const ContactUsInfo = ({
   icon,
   text,
   href,
+  isEmail = false,
 }: {
   icon: string;
   text: string;
   href: string;
+  isEmail?: boolean;
 }) => (
   <a
     href={href}
@@ -18,7 +20,7 @@ const ContactUsInfo = ({
     rel="noopener noreferrer"
   >
     <IconImage icon={icon} />
-    <span>{text}</span>
+    <span>{isEmail ? text : `0${text}`}</span>
   </a>
 );
 
