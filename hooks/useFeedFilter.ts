@@ -68,6 +68,8 @@ export default function useFeedFilter(
         "serviceTypes",
       ];
 
+      params.set("isFeed", "true");
+
       // Check if URL already has ANY filters
       const urlHasFilters = filterKeys.some((key) => {
         const val = params.get(key);
@@ -114,15 +116,18 @@ export default function useFeedFilter(
     const newParams = getCurrentParams();
 
     const hasServiceType = newParams.get("serviceTypes");
+    const redirectType = newParams.get("redirect");
 
-    if (hasServiceType) {
-      // 🔥 Clear ALL other filters when serviceTypes exists
+    if (hasServiceType && redirectType) {
+      //  Clear ALL other filters when serviceTypes exists
       const keysToClear = [
         "categoryIds",
         "subCategoryIds",
         "groupTypeIds",
         "accessibilityIds",
+        "redirect",
       ];
+      newParams.set("isFeed", "true");
 
       let modified = false;
 
@@ -151,6 +156,7 @@ export default function useFeedFilter(
   }, [searchParams]);
 
   // Always read current URL params (live, never stale)
+
   const getSelected = (key: string) => {
     return paramsState.get(key)?.split(",").filter(Boolean) ?? [];
   };
@@ -228,9 +234,14 @@ export default function useFeedFilter(
 
       const isAllClear = totalApplied === 0;
 
+      // Ensure isFeed=true is present exactly once
+      nextParams.set("isFeed", "true");
       if (isAllClear) {
-        router.push(`?isAllClear=true`, { scroll: false });
+        // When all filters are cleared, go to clean state but keep isFeed
+        router.push(`?isFeed=true&isAllClear=true`, { scroll: false });
       } else {
+        // Remove isAllClear if present, and push current params + isFeed=true
+        nextParams.delete("isAllClear");
         router.push(`?${nextParams.toString()}`, { scroll: false });
       }
 

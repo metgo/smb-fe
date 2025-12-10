@@ -78,17 +78,18 @@ export default function RootLayout({ children }: ReactChildNode) {
         />
       </head>
       <body>
-        <SiteInfoClientProvider>
-          <GoogleAnalytics gaId={GOOGLE_ANALYTIC_ID!} />
-          <GoogleTagManager gtmId={GOOGLE_TAG_MANAGER_ID!} />
+        <Suspense>
+          <SiteInfoClientProvider>
+            <GoogleAnalytics gaId={GOOGLE_ANALYTIC_ID!} />
+            <GoogleTagManager gtmId={GOOGLE_TAG_MANAGER_ID!} />
 
-          <Suspense>
             <ProgressBar />
             <Toaster />
             <ServiceWorkerRegistrar />
             {children}
-          </Suspense>
-        </SiteInfoClientProvider>
+          </SiteInfoClientProvider>
+        </Suspense>
+        <script src="https://cdn.enable.co.il/licenses/enable-L51962b1rufewka6-1225-76847/init.js"></script>
       </body>
     </html>
   );

@@ -2,21 +2,25 @@
 
 import clsx from "clsx";
 import Link from "next/link";
+import { FaRegMap } from "react-icons/fa6";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
+import { LuLayoutDashboard } from "react-icons/lu";
 
 import NavLogo from "../navbar/NavLogo";
 import { pathNames } from "@/lib/endpoints";
 import { CODE } from "@/constant/envConstants";
 import { RedFlowerIcon } from "../ui/svgIcons";
-import MobileFilterTab from "./FilterTab.mobile";
 import PromotionalCards from "../PromotionalCards";
 import HamburgerMenu from "../navbar/HamburgerMenu";
 import { fundayEnquiryLables } from "@/constant/hebrew";
+import SearchFlow from "../navbar/SearchFlow";
+import useGeneralStore from "@/stores/generalStore";
 
 const MobileNavbar = () => {
   const pathname = usePathname();
   const [isFilterTabShow, setIsFilterTabShow] = useState(false);
+  const { activeFilterTabMobile, setActiveFilterTabMobile } = useGeneralStore();
 
   const basePagePath = pathname.split("/").slice(0, 2).join("/");
 
@@ -61,7 +65,20 @@ const MobileNavbar = () => {
         </div>
         {isFilterTabShow && (
           <div className="flex items-center justify-end gap-2 col-span-8">
-            <MobileFilterTab />
+            <div className="flex items-center justify-center">
+              {activeFilterTabMobile === "gallery" && (
+                <button onClick={() => setActiveFilterTabMobile("map")}>
+                  <FaRegMap color="#0F353A" size={24} />
+                </button>
+              )}
+              {activeFilterTabMobile === "map" && (
+                <button onClick={() => setActiveFilterTabMobile("gallery")}>
+                  <LuLayoutDashboard color="#0F353A" size={24} />
+                </button>
+              )}
+            </div>
+
+            <SearchFlow />
             {/* {showFilterIcon && <IconImage icon="filter" />} */}
           </div>
         )}

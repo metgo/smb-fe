@@ -1,7 +1,7 @@
 import Image from "next/image";
 
 import PriceTag from "@/components/PriceTag";
-import { paymentPageLabels } from "@/constant/hebrew";
+import { misc, paymentPageLabels } from "@/constant/hebrew";
 import useCheckoutStore from "@/stores/checkoutStore";
 import { useVoucherStore } from "@/stores/voucherStore";
 import { IconImage } from "@/components/ui";
@@ -101,7 +101,8 @@ const ProductInfo = () => {
                 />
               </div>
               <span className="text-[14px] font-bold text-black">
-                {voucher.name}
+                {/* {voucher.name} */}
+                {misc.yourCharacter}
               </span>
             </div>
             <div className="flex items-center gap-2">

@@ -13,11 +13,13 @@ export const misc = {
   showMoreProducts: "להציג עוד מוצרים",
   hours: "שעות פעילות",
   openNow: "פתוח עכשיו",
+  closeNow: "סגור עכשיו",
   opinion: "חוות דעת",
   start: "התחלה",
   end: "סיום",
   close: "תודה",
   reset: "אִתחוּל",
+  yourCharacter: "התו שלך",
   statingRemoving: "הסרת תחנה",
   cancelChanges: "ביטול שינויים",
   pleaseWaitLoading: "אנא המתן. טוען...",
@@ -30,7 +32,7 @@ export const misc = {
   forMoreDetails: "לפרטים נוספים",
   shareLink: "ניתן לשתף עם חברים ומשפחה על ידי הדבקת הקישור",
   searchItemNotFoundText: "לא מצאנו את מה שחיפשת :(",
-  filterIconTooltip: "לחצו כאן כדי להציג בפיד למה שמעניין אתכם",
+  filterIconTooltip: "לחצו כאן כדי להציג בפיד את מה שמעניין אתכם",
 };
 
 export const deliveries = {
@@ -161,7 +163,7 @@ export const paymentPageLabels = {
   forGift: "למתנה",
   sending: "משלוח",
   senderDetails: "פרטי השולח",
-  creditCard: "כרטיס אשראי",
+  creditCard: "כרטיס אשראי/ביט",
   selectPickupPoint: "בחר נקודת איסוף",
   choosePickupPoint: "בחר נקודת איסוף",
   pickupFromBranchFree: "איסוף מהסניף - חינם",

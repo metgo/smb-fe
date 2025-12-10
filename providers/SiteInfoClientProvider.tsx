@@ -8,6 +8,7 @@ import {
   getPromotionsList,
   getSiteInfo,
 } from "@/actions/commonActions";
+import { useSearchParams } from "next/navigation";
 
 export let initialSelectedFiltersIds: PresetFilterItems;
 
@@ -16,11 +17,14 @@ export const SiteInfoClientProvider = ({
 }: {
   children: ReactNode;
 }) => {
+  const params = useSearchParams();
+  const isFeed = params.get("isFeed") || "false";
   const {
     setUserLiveLocation,
     setSiteInfo,
     setAminitiesInfo,
     setPromotionalItems,
+    setHideFirstTwoSection,
   } = useGeneralStore();
 
   async function fetchSiteinfo() {
@@ -69,6 +73,10 @@ export const SiteInfoClientProvider = ({
   //     return null;
   //   }
   // }
+
+  useEffect(() => {
+    if (isFeed === "true") setHideFirstTwoSection(true);
+  }, [params]);
 
   useEffect(() => {
     fetchSiteinfo();

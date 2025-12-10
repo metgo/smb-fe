@@ -20,11 +20,15 @@ const NavLogo = () => {
         top: 0,
         behavior: "smooth",
       });
+      const cleanedUrl = `${pathNames.home}`;
+      window.history.replaceState(null, "", cleanedUrl);
+      router.push(cleanedUrl);
     } else {
-      startLoading();
       router.push(pathNames.home);
+      startLoading();
     }
     setHideFirstTwoSection(false);
+    setIsFilterDrawerOpen(false);
     setIsOnSection2(false);
     setIsFilterDrawerOpen(false);
   }

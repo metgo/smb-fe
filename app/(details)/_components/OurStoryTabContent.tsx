@@ -9,6 +9,7 @@ import { daysMapping } from "@/lib/utils";
 import { CardSkeleton } from "@/components/skeletons";
 import { menuItems, misc } from "@/constant/hebrew";
 import ContactUsInfo from "@/components/ContactUsInfo";
+import { isPlaceOpenNow } from "@/lib/helpers";
 
 const OpeningDayHours = ({ days, open, close }: OpeningHrs) => (
   <div className="flex justify-between gap-24 font-normal  text-theme">
@@ -120,7 +121,11 @@ const OurStoryTabContent = ({
           <div className="border-2 border-primary rounded-xl px-14.5 py-7.5 w-[30%] flex-initial">
             <div className="flex justify-between gap-24 text-sm font-normal mb-2.5">
               <span className="text-charcoal">{misc.hours}</span>
-              <span className="text-[#28C268]">{misc.openNow}</span>
+              {isPlaceOpenNow(openingHrs) ? (
+                <span className="text-[#28C268]"> {misc.openNow}</span>
+              ) : (
+                <span className="text-red-600"> {misc.closeNow}</span>
+              )}
             </div>
             <div className="space-y-1.5">
               {openingHrs.map((item, index) => (
