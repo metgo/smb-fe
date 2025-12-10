@@ -1,27 +1,5 @@
-import { IconImage } from "@/components/ui";
+import ContactUsInfo from "@/components/ContactUsInfo";
 import { getContactDetails } from "@/constant/siteInfo";
-
-const ContactUsInfo = ({
-  icon,
-  text,
-  href,
-}: {
-  icon: string;
-  text: string;
-  href: string;
-}) => (
-  <a
-    href={href}
-    className="flex items-center gap-2.5 hover:underline transition-colors custom-cursor"
-    target={
-      href.startsWith("http") || href.startsWith("mailto") ? "_blank" : "_self"
-    }
-    rel="noopener noreferrer"
-  >
-    <IconImage icon={icon} />
-    <span className="text-sm">{text}</span>
-  </a>
-);
 
 const MobileContactInfo = () => {
   const contactInfo = getContactDetails();
@@ -29,6 +7,7 @@ const MobileContactInfo = () => {
     <div className="items-center justify-between text-charcoal max-sm:flex md:hidden">
       {/* Email */}
       <ContactUsInfo
+        isEmail
         icon="mail"
         text={contactInfo?.mail}
         href={`mailto:${contactInfo?.mail}`}
@@ -37,7 +16,7 @@ const MobileContactInfo = () => {
       <ContactUsInfo
         icon="whatsapp-outlined"
         text={contactInfo.whatsapp}
-        href={`https://wa.me/${contactInfo?.whatsapp?.replace(/\D/g, "")}`}
+        href={`https://wa.me/${"+972 " + contactInfo?.whatsapp?.replace(/\D/g, "")}`}
       />
     </div>
   );
