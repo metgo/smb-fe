@@ -33,6 +33,7 @@ export const misc = {
   shareLink: "ניתן לשתף עם חברים ומשפחה על ידי הדבקת הקישור",
   searchItemNotFoundText: "לא מצאנו את מה שחיפשת :(",
   filterIconTooltip: "לחצו כאן כדי להציג בפיד את מה שמעניין אתכם",
+  whatsappText: "הגעתי אליכם דרך אתר הנגב הפורח",
 };
 
 export const deliveries = {

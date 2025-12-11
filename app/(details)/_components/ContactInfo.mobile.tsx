@@ -1,4 +1,5 @@
 import ContactUsInfo from "@/components/ContactUsInfo";
+import { misc } from "@/constant/hebrew";
 import { getContactDetails } from "@/constant/siteInfo";
 
 const MobileContactInfo = () => {
@@ -16,7 +17,7 @@ const MobileContactInfo = () => {
       <ContactUsInfo
         icon="whatsapp-outlined"
         text={contactInfo.whatsapp}
-        href={`https://wa.me/${"+972" + contactInfo?.whatsapp?.replace(/\D/g, "")}`}
+        href={`https://wa.me/${"+972" + contactInfo?.whatsapp?.replace(/\D/g, "")}&text=${misc.whatsappText}`}
       />
     </div>
   );
