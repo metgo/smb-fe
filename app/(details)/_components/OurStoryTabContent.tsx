@@ -104,7 +104,7 @@ const OurStoryTabContent = ({
               <ContactUsInfo
                 icon="whatsapp-outlined"
                 text={contactDetails.whatsAppNumber}
-                href={`https://wa.me/${"+972" + contactDetails?.whatsAppNumber?.replace(/\D/g, "")}&text=${misc.whatsappText}`}
+                href={`https://wa.me/${"+972" + contactDetails?.whatsAppNumber?.replace(/\D/g, "")}/?text=${misc.whatsappText}&type=phone_number&app_absent=0`}
               />
             )}
           </div>
