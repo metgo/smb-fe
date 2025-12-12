@@ -1,28 +1,6 @@
-import { IconImage } from "@/components/ui";
-import { menuItems } from "@/constant/hebrew";
+import { menuItems, misc } from "@/constant/hebrew";
+import ContactUsInfo from "@/components/ContactUsInfo";
 import { getContactDetails } from "@/constant/siteInfo";
-
-const ContactUsInfo = ({
-  icon,
-  text,
-  href,
-}: {
-  icon: string;
-  text: string;
-  href: string;
-}) => (
-  <a
-    href={href}
-    className="flex items-center gap-2.5 hover:underline transition-colors custom-cursor"
-    target={
-      href.startsWith("http") || href.startsWith("mailto") ? "_blank" : "_self"
-    }
-    rel="noopener noreferrer"
-  >
-    <IconImage icon={icon} />
-    <span>{text}</span>
-  </a>
-);
 
 const ContactInfo = () => {
   const contactInfo = getContactDetails();
@@ -34,11 +12,12 @@ const ContactInfo = () => {
       <ContactUsInfo
         icon="phone"
         text={contactInfo.phone}
-        href={`tel:${contactInfo?.phone?.replace(/\s+/g, "")}`}
+        href={`tel:${"+972" + contactInfo?.phone?.replace(/\s+/g, "")}`}
       />
 
       {/* Email */}
       <ContactUsInfo
+        isEmail
         icon="mail"
         text={contactInfo?.mail}
         href={`mailto:${contactInfo?.mail}`}
@@ -48,7 +27,7 @@ const ContactInfo = () => {
       <ContactUsInfo
         icon="whatsapp-outlined"
         text={contactInfo.whatsapp}
-        href={`https://wa.me/${contactInfo?.whatsapp?.replace(/\D/g, "")}`}
+        href={`https://wa.me/${"+972" + contactInfo?.whatsapp?.replace(/\D/g, "")}&text=${misc.whatsappText}`}
       />
     </div>
   );

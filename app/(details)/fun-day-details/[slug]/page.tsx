@@ -63,13 +63,14 @@ const page = async ({ params }: PageProps) => {
                   <ContactUsInfo
                     icon="phone"
                     text={funDayDetails?.contactDetails?.phoneNumber}
-                    href={`tel:${funDayDetails?.contactDetails?.phoneNumber?.replace(/\s+/g, "")}`}
+                    href={`tel:${"+972" + funDayDetails?.contactDetails?.phoneNumber?.replace(/\s+/g, "")}`}
                   />
                 )}
 
                 {/* Email */}
                 {funDayDetails?.contactDetails?.email && (
                   <ContactUsInfo
+                    isEmail
                     icon="mail"
                     text={funDayDetails?.contactDetails.email}
                     href={`mailto:${funDayDetails?.contactDetails.email}`}
