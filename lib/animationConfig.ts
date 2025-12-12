@@ -1,6 +1,6 @@
 // Animation variants for subtle fade-in (no bounce)
 export const cardVariants = {
-  hidden: { opacity: 0, y: 0 }, // remove vertical offset
+  hidden: { opacity: 1, y: 1 },
   visible: { opacity: 1, y: 0 },
 };
 

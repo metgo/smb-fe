@@ -1,4 +1,5 @@
 "use server";
+import { unstable_cache } from "next/cache";
 import { urls } from "@/lib/endpoints";
 import { CODE } from "@/constant/envConstants";
 import { shuffleArray } from "@/lib/helpers";
@@ -11,6 +12,34 @@ interface FiltersProps {
   serviceTypes: string[];
 }
 
+// Create a cached version of the fetch function
+const getCachedFeeds = unstable_cache(
+  async (baseUrl: string, page: number) => {
+    let allData: any[] = [];
+    let currentPage = page;
+    let hasNextPage = true;
+
+    while (hasNextPage) {
+      const url = `${baseUrl}&page=${currentPage}`;
+      const res = await fetch(url, { method: "GET", cache: "force-cache" });
+
+      if (!res.ok) throw new Error(`Failed to fetch feeds: ${res.statusText}`);
+
+      const json = await res.json();
+      allData = [...allData, ...(json.data || [])];
+      hasNextPage = json.meta?.hasNextPage;
+      // currentPage++;
+    }
+
+    return allData;
+  },
+  ["feeds-cache"],
+  {
+    revalidate: false, // Cache indefinitely until page reload
+    tags: ["feeds"],
+  },
+);
+
 export async function getAllFeeds(
   page: number,
   filters: FiltersProps,
@@ -19,7 +48,6 @@ export async function getAllFeeds(
 ): Promise<BusinessesProps> {
   let baseUrl: string;
 
-  // Build base URL (without page param)
   if (isAllClear) {
     baseUrl = `${urls.feeds}?campCode=${CODE}&limit=${limit}`;
   } else {
@@ -47,24 +75,7 @@ export async function getAllFeeds(
   }
 
   try {
-    let allData: any[] = [];
-    let currentPage = page;
-    let hasNextPage = true;
-
-    while (hasNextPage) {
-      const url = `${baseUrl}&page=${currentPage}`;
-
-      const res = await fetch(url, { method: "GET", cache: "no-store" });
-
-      if (!res.ok) throw new Error(`Failed to fetch feeds: ${res.statusText}`);
-
-      const json = await res.json();
-
-      allData = [...allData, ...(json.data || [])];
-      hasNextPage = json.meta?.hasNextPage;
-      currentPage++;
-    }
-
+    const allData = await getCachedFeeds(baseUrl, page);
     const finalData = shuffleArray(allData);
 
     return {
