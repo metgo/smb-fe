@@ -17,7 +17,7 @@ const MobileContactInfo = () => {
       <ContactUsInfo
         icon="whatsapp-outlined"
         text={contactInfo.whatsapp}
-        href={`https://wa.me/${"+972" + contactInfo?.whatsapp?.replace(/\D/g, "")}&text=${misc.whatsappText}`}
+        href={`https://wa.me/${"+972" + contactInfo?.whatsapp?.replace(/\D/g, "")}/?text=${misc.whatsappText}&type=phone_number&app_absent=0`}
       />
     </div>
   );
