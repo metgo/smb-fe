@@ -34,7 +34,6 @@ const FeedLayout = ({
     setAppliedFilterItemCount,
     setIsFilterDrawerOpen,
     isFilterDrawerOpen,
-    setHideFirstTwoSection,
     showFavoriteFeedItems,
     setShowFavoriteFeedItems,
   } = useGeneralStore();
@@ -79,18 +78,18 @@ const FeedLayout = ({
     }
   }, [businesses, setAppliedFilterItemCount]);
 
-  useEffect(() => {
-    const navEntries = performance.getEntriesByType(
-      "navigation",
-    ) as PerformanceNavigationTiming[];
-    const isReload =
-      (navEntries && navEntries[0]?.type === "reload") ||
-      performance.navigation.type === 1;
+  // useEffect(() => {
+  //   const navEntries = performance.getEntriesByType(
+  //     "navigation",
+  //   ) as PerformanceNavigationTiming[];
+  //   const isReload =
+  //     (navEntries && navEntries[0]?.type === "reload") ||
+  //     performance.navigation.type === 1;
 
-    if (isReload) {
-      setHideFirstTwoSection(true);
-    }
-  }, []);
+  //   if (isReload) {
+  //     setHideFirstTwoSection(true);
+  //   }
+  // }, []);
 
   const handleFilterIconClick = () => {
     setIsFilterDrawerOpen(true);
