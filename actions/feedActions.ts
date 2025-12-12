@@ -44,7 +44,7 @@ export async function getAllFeeds(
   page: number,
   filters: FiltersProps,
   isAllClear: boolean = false,
-  limit: number = 1000,
+  limit: number = 100,
 ): Promise<BusinessesProps> {
   let baseUrl: string;
 
