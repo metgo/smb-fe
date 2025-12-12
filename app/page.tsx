@@ -11,20 +11,14 @@ import FeedSection from "@/components/layouts/FeedSection";
 import MarketingSection from "@/components/marketing/MarketingSection";
 import { getMarketing } from "@/actions/marketingAction";
 
-interface Props {
-  searchParams: {
-    page?: string;
-    categoryIds?: string;
-    subCategoryIds?: string;
-    accessibilityIds?: string;
-    groupTypeIds?: string;
-    serviceTypes?: string;
-    isAllClear?: string;
-  };
-}
-
-export default async function Page({ searchParams = {} }: Props) {
+export default async function Page({ searchParams }: any) {
   const marketing = await getMarketing();
+
+  // Convert URLSearchParams to plain object if necessary
+  const params =
+    searchParams instanceof URLSearchParams
+      ? Object.fromEntries(searchParams.entries())
+      : searchParams;
 
   return (
     <div>
@@ -53,7 +47,7 @@ export default async function Page({ searchParams = {} }: Props) {
             </section>
           }
         >
-          <FeedSection searchParams={searchParams} />
+          <FeedSection searchParams={params} />
         </Suspense>
       </ScrollSnapWrapper>
     </div>
