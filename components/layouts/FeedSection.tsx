@@ -6,16 +6,11 @@ import MobileFeedLayout from "../mobile/FeedLayout.mobile";
 import { getPresetFilters } from "@/actions/commonActions";
 import { getAllFilters, getAllFeeds } from "@/actions/feedActions";
 
-export async function getSearchParamsObject(
-  searchParams:
-    | Promise<Record<string, string | undefined>>
-    | Record<string, string | undefined>,
+export function getSearchParamsObject(
+  searchParams: Record<string, string | undefined>,
 ) {
-  // Await searchParams if it's a promise
-  const resolvedParams = await searchParams;
-
   const getArray = (key: string) =>
-    resolvedParams?.[key]?.split(",").filter(Boolean) || [];
+    searchParams?.[key]?.split(",").filter(Boolean) || [];
 
   return {
     categoryIds: getArray("categoryIds"),
@@ -23,8 +18,8 @@ export async function getSearchParamsObject(
     accessibilityIds: getArray("accessibilityIds"),
     groupTypeIds: getArray("groupTypeIds"),
     serviceTypes: getArray("serviceTypes"),
-    page: Number(resolvedParams?.page ?? 1),
-    isAllClear: resolvedParams?.isAllClear ?? "false",
+    page: Number(searchParams?.page ?? 1),
+    isAllClear: searchParams?.isAllClear ?? "false",
   };
 }
 
@@ -33,8 +28,13 @@ export default async function FeedSection({
 }: {
   searchParams: any;
 }) {
-  // Handle async searchParams properly
-  const params = await getSearchParamsObject(searchParams);
+  // Convert searchParams to object if it's URLSearchParams
+  const searchParamsObj =
+    searchParams instanceof URLSearchParams
+      ? Object.fromEntries(searchParams.entries())
+      : searchParams;
+
+  const params = getSearchParamsObject(searchParamsObj);
 
   const selectedFiltersIds = {
     categoryIds: params.categoryIds,
