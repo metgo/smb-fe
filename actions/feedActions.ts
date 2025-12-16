@@ -1,5 +1,4 @@
 "use server";
-import { unstable_cache } from "next/cache";
 import { urls } from "@/lib/endpoints";
 import { CODE } from "@/constant/envConstants";
 import { shuffleArray } from "@/lib/helpers";
@@ -12,33 +11,29 @@ interface FiltersProps {
   serviceTypes: string[];
 }
 
-// Create a cached version of the fetch function
-const getCachedFeeds = unstable_cache(
-  async (baseUrl: string, page: number) => {
-    let allData: any[] = [];
-    let currentPage = page;
-    let hasNextPage = true;
+// Direct fetch function without any caching
+const getCachedFeeds = async (baseUrl: string, page: number) => {
+  let allData: any[] = [];
+  let currentPage = page;
+  let hasNextPage = true;
 
-    while (hasNextPage) {
-      const url = `${baseUrl}&page=${currentPage}`;
-      const res = await fetch(url, { method: "GET", cache: "force-cache" });
+  while (hasNextPage) {
+    const url = `${baseUrl}&page=${currentPage}`;
+    const res = await fetch(url, {
+      method: "GET",
+      next: { revalidate: 60 }, // Cache for 1 minute
+    });
 
-      if (!res.ok) throw new Error(`Failed to fetch feeds: ${res.statusText}`);
+    if (!res.ok) throw new Error(`Failed to fetch feeds: ${res.statusText}`);
 
-      const json = await res.json();
-      allData = [...allData, ...(json.data || [])];
-      hasNextPage = json.meta?.hasNextPage;
-      // currentPage++;
-    }
+    const json = await res.json();
+    allData = [...allData, ...(json.data || [])];
+    hasNextPage = json.meta?.hasNextPage;
+    currentPage++; // Fix pagination
+  }
 
-    return allData;
-  },
-  ["feeds-cache"],
-  {
-    revalidate: false, // Cache indefinitely until page reload
-    tags: ["feeds"],
-  },
-);
+  return allData;
+};
 
 export async function getAllFeeds(
   page: number,
@@ -121,7 +116,7 @@ export async function getAllFilters(filters?: FiltersProps) {
   try {
     const res = await fetch(url, {
       method: "GET",
-      cache: "no-store",
+      next: { revalidate: 300 }, // Cache for 5 minutes
     });
 
     if (!res.ok) {
