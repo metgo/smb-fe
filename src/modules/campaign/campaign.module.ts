@@ -17,12 +17,16 @@ import { GcpBucketModule } from 'src/services/gcp-bucket/gcp-bucket.module';
 import { EncryptionModule } from 'src/services/encryption/encryption.module';
 import { ConfigModule } from 'src/services/config/config.module';
 import { FindByIdAndPopulateHandler } from './queries/handler/find-by-id-and-populate.handler';
+import { GetProductsByCampaignHandler } from './queries/handler/get-products-by-campaign.handler';
+import { MiniSiteController } from './mini-site.controller';
+import { Voucher, VoucherSchema } from '../vouchers/schema/voucher.schema';
 
 @Module({
   imports: [
     CqrsModule,
     MongooseModule.forFeature([
       { name: Campaign.name, schema: CampaignSchema },
+      { name: Voucher.name, schema: VoucherSchema },
     ]),
     forwardRef(() => AuthorityModule),
     forwardRef(() => ExternalApiModule),
@@ -33,8 +37,12 @@ import { FindByIdAndPopulateHandler } from './queries/handler/find-by-id-and-pop
     forwardRef(() => DMOModule),
     RewardsModule,
   ],
-  providers: [CampaignService, FindByIdAndPopulateHandler],
-  controllers: [CampaignController],
+  providers: [
+    CampaignService,
+    FindByIdAndPopulateHandler,
+    GetProductsByCampaignHandler,
+  ],
+  controllers: [CampaignController, MiniSiteController],
   exports: [CampaignService],
 })
 export class CampaignModule {}

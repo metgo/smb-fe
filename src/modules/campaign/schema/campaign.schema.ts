@@ -1,16 +1,17 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
 
-import { CampaignStatus, CampaignType } from 'src/common/enum';
+import { CampaignStatus } from 'src/common/enum';
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
 import { Authority } from 'src/modules/authority/schema/authority.schema';
 import { Business } from 'src/modules/business/shared/schema/business.schema';
 import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.schema';
 import { DMO } from 'src/modules/dmo/schema/dmo.schema';
-import { ExternalApi } from 'src/modules/external-api/schema/external-api.schema';
+import { CampaignType } from '../campaign.type';
 import { Product } from 'src/modules/products/schema/products.schema';
 import { Rewards } from 'src/modules/rewards/schema/rewards.schema';
 import { Theme } from 'src/modules/themes/schema/theme.schema';
+import { ExternalApi } from 'src/modules/external-api/schema/external-api.schema';
 
 @Schema({ _id: false })
 class Category {
@@ -132,6 +133,46 @@ export class Campaign extends AuditableSchema {
     required: false,
   })
     themeId: mongoose.Types.ObjectId;
+
+  @Prop({
+    type: {
+      name: String,
+      contactPerson: String,
+      countryCode: String,
+      phoneNumber: String,
+      email: String,
+    },
+    default: null,
+    _id: false,
+  })
+    companyInfo: {
+    name: string;
+    contactPerson: string;
+    countryCode: string;
+    phoneNumber: string;
+    email: string;
+  };
+
+  @Prop({
+    type: {
+      title: String,
+      subTitle: String,
+      greeting: String,
+      deliveryAddress: String,
+      isDeliveredToHome: Boolean,
+      amount: Number,
+    },
+    default: null,
+    _id: false,
+  })
+    miniSite: {
+    title: string;
+    subTitle: string;
+    greeting: string;
+    deliveryAddress?: string;
+    isDeliveredToHome?: boolean;
+    amount: number;
+  };
 }
 export type CampaignDocument = HydratedDocument<Campaign>;
 export const CampaignSchema = SchemaFactory.createForClass(Campaign);

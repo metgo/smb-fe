@@ -40,7 +40,6 @@ import { CampaignService } from 'src/modules/campaign/campaign.service';
 import { ProductsService } from 'src/modules/products/products.services';
 import { UsersService } from 'src/modules/users/users.services';
 import { UserType } from 'src/modules/users/users.type';
-import { FreezeVoucherDTO } from 'src/modules/vouchers/dto/freeze-voucher.dto';
 import {
   GetOneVoucherInterface,
   UpdateVoucherAfterPaymentInterface,
@@ -388,65 +387,65 @@ export class VoucherService {
     return voucherIds;
   }
 
-  async freezeVouchers(
-    command: FreezeVoucherDTO,
-    loggedInUser: LoggedInUserInterface,
-  ) {
-    try {
-      if (!command?.voucher?.length) {
-        throw new BadRequestException('Please enter vouchers');
-      }
+  // async freezeVouchers(
+  //   command: FreezeVoucherDTO,
+  //   loggedInUser: LoggedInUserInterface,
+  // ) {
+  //   try {
+  //     if (!command?.voucher?.length) {
+  //       throw new BadRequestException('Please enter vouchers');
+  //     }
 
-      const voucherIds = command.voucher?.map(voucher => voucher.id);
-      const vouchers = await this.findByValidIds(voucherIds);
+  //     const voucherIds = command.voucher?.map(voucher => voucher.id);
+  //     const vouchers = await this.findByValidIds(voucherIds);
 
-      if (!vouchers?.length) {
-        throw new BadRequestException('Please enter valid vouchers');
-      }
+  //     if (!vouchers?.length) {
+  //       throw new BadRequestException('Please enter valid vouchers');
+  //     }
 
-      const updatedVouchers = await Promise.all(
-        vouchers?.map(async voucher => {
-          const commandVoucher = command.voucher.find(
-            v => v.id.toString() === voucher._id.toString(),
-          );
-          if (voucher?.remainingAmount < commandVoucher?.amount) {
-            throw new BadRequestException(
-              'The provided amount is greater than available amount',
-            );
-          }
-          if (voucher?.remainingAmount >= commandVoucher?.amount) {
-            const updateField = {
-              remainingAmount:
-                voucher?.remainingAmount - commandVoucher?.amount,
-              $push: {
-                freeze: {
-                  cartId: command.cartId,
-                  amount: commandVoucher.amount,
-                },
-              },
-              updatedAt: new Date(),
-              updatedBy: loggedInUser?.id,
-            };
+  //     const updatedVouchers = await Promise.all(
+  //       vouchers?.map(async voucher => {
+  //         const commandVoucher = command.voucher.find(
+  //           v => v.id.toString() === voucher._id.toString(),
+  //         );
+  //         if (voucher?.remainingAmount < commandVoucher?.amount) {
+  //           throw new BadRequestException(
+  //             'The provided amount is greater than available amount',
+  //           );
+  //         }
+  //         if (voucher?.remainingAmount >= commandVoucher?.amount) {
+  //           const updateField = {
+  //             remainingAmount:
+  //               voucher?.remainingAmount - commandVoucher?.amount,
+  //             $push: {
+  //               freeze: {
+  //                 cartId: command.cartId,
+  //                 amount: commandVoucher.amount,
+  //               },
+  //             },
+  //             updatedAt: new Date(),
+  //             updatedBy: loggedInUser?.id,
+  //           };
 
-            const updatedVoucher = await this.VoucherModel.findByIdAndUpdate(
-              voucher._id,
-              updateField,
-              { new: true },
-            );
-            this.logger.info('[VOUCHER]: FREEZED', { message: updatedVoucher });
-            return updatedVoucher;
-          }
-        }),
-      );
+  //           const updatedVoucher = await this.VoucherModel.findByIdAndUpdate(
+  //             voucher._id,
+  //             updateField,
+  //             { new: true },
+  //           );
+  //           this.logger.info('[VOUCHER]: FREEZED', { message: updatedVoucher });
+  //           return updatedVoucher;
+  //         }
+  //       }),
+  //     );
 
-      return updatedVouchers;
-    } catch (err) {
-      this.logger.error('[VOUCHER]: FAILED TO FREEZE VOUCHER', {
-        err: err.message,
-      });
-      exceptionHandling(err);
-    }
-  }
+  //     return updatedVouchers;
+  //   } catch (err) {
+  //     this.logger.error('[VOUCHER]: FAILED TO FREEZE VOUCHER', {
+  //       err: err.message,
+  //     });
+  //     exceptionHandling(err);
+  //   }
+  // }
 
   async deleteFreezeVouchersPostSuccess(
     vouchers: { id: string; redeemedAmount: number }[],

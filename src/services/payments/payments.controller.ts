@@ -22,6 +22,7 @@ import { responseHelper } from 'src/core/helper/response.helper';
 import { UserType } from 'src/modules/users/users.type';
 import { LocaleQuery } from 'src/modules/accessibility/dto/locale-query.dto';
 import { PaymentsService } from 'src/services/payments/payments.service';
+import { Locale } from 'src/common/enum';
 
 @Controller('payment')
 export class PaymentsController {
@@ -34,8 +35,10 @@ export class PaymentsController {
   @HttpCode(HttpStatus.OK)
   @Get('success')
   async success(@Query() query) {
-    console.log(query);
-    // await this.paymentService.paymentSucess(query);
+    await this.paymentService.paymentSucess(
+      query,
+      query?.languagePreference || Locale.HEBREW,
+    );
     return {
       statusCode: HttpStatus.OK,
       message: ServerSuccess.PAYMENT.SUCCESS,

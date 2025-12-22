@@ -53,6 +53,7 @@ import { Product } from 'src/modules/products/schema/products.schema';
 import { CampaignService } from 'src/modules/campaign/campaign.service';
 import { GetTicketByIdsQuery } from '../tickets/queries/get-ticket-by-ids.query';
 import { Ticket } from '../tickets/schema/tickets.schema';
+import { GetEventByIdsQuery } from '../events/queries/get-by-ids.query';
 
 @Injectable()
 export class OrdersService {
@@ -124,6 +125,16 @@ export class OrdersService {
       if (body?.voucher?.length) {
         const voucherIds = body.voucher.map(voucher => voucher.id);
         const vouchers = await this.voucherService.findByValidIds(voucherIds);
+
+        // const expiredVoucher = vouchers.find(
+        //   voucher => voucher.status === 'EXPIRED',
+        // );
+
+        // if (expiredVoucher) {
+        //   throw new BadRequestException(
+        //     'One or more vouchers are expired and cannot be used.',
+        //   );
+        // }
 
         if (vouchers?.length) {
           const sortedVoucher = sortByPriorityAndHighest(
@@ -239,7 +250,7 @@ export class OrdersService {
       };
 
       if (totalAmount <= 0) {
-        return await this.createOrderWithNoCardComPayment(
+        return await this.createOrderWithOnlyVouchers(
           command,
           productDetails,
           ticketDetails,
@@ -247,6 +258,7 @@ export class OrdersService {
           cartItemsTicket,
           loggedInUser,
         );
+        // if voucher is mini site then expire
       }
 
       return await this.createOrderWithCardComPayment(
@@ -307,12 +319,12 @@ export class OrdersService {
     return [link];
   }
 
-  async createOrderWithNoCardComPayment(
+  async createOrderWithOnlyVouchers(
     command,
     productInfo: Product[],
     ticketInfo: Ticket[],
-    cartItemsProduct: CartProductResponse[],
-    cartItemsTicket: CartProductResponse[],
+    cartItemsProduct: CartProductResponse[] = [],
+    cartItemsTicket: CartProductResponse[] = [],
     loggedInUser: LoggedInUserInterface | null,
   ) {
     const orderWithQR = new this.OrderModel({
@@ -376,6 +388,16 @@ export class OrdersService {
     if (cartItemsProduct?.length) {
       await this.sendEmailPostOrderPayment(
         productInfo,
+        order,
+        orderProduct,
+        command?.externalApi,
+        command?.languagePreference,
+      );
+    }
+
+    if (cartItemsTicket?.length) {
+      await this.sendEmailPostTicketPayment(
+        ticketInfo,
         order,
         orderProduct,
         command?.externalApi,
@@ -453,8 +475,8 @@ export class OrdersService {
         item => item.itemType === OrderItemType.TICKET,
       );
 
-      let getProductsInformation;
-      let getTicketsInformation;
+      let getProductsInformation = [];
+      let getTicketsInformation = [];
 
       if (findCartProducts?.length) {
         await this.productsService.deductQuantity(findCartProducts);
@@ -518,7 +540,7 @@ export class OrdersService {
           new GetTicketByIdsQuery(cartTickets),
         );
 
-        await Promise.all(
+        const orderProduct = await Promise.all(
           updateOrder.products.map(async product => {
             const cartItem = findCartTickets.find(
               item => item.id.toString() === product.id.toString(),
@@ -554,13 +576,13 @@ export class OrdersService {
           }),
         );
 
-        // await this.sendEmailPostOrderPayment(
-        //   getProductInformation,
-        //   updateOrder,
-        //   orderProduct,
-        //   externalApi,
-        //   languagePreference,
-        // );
+        await this.sendEmailPostTicketPayment(
+          getTicketsInformation,
+          updateOrder,
+          orderProduct,
+          externalApi,
+          languagePreference,
+        );
       }
 
       return {
@@ -712,6 +734,225 @@ export class OrdersService {
       );
       exceptionHandling(err);
     }
+  }
+
+  async sendEmailPostTicketPayment(
+    productInfo: Ticket[],
+    order: Order,
+    orderProduct: OrderProduct[],
+    externalApi: any,
+    languagePreference?: Locale,
+  ) {
+    console.log(languagePreference);
+
+    const eventIds = productInfo.map(pro => pro.eventId);
+
+    const eventDetails = await this.queryBus.execute(
+      new GetEventByIdsQuery(eventIds),
+    );
+
+    const { bucketUrl, emailFields } = getCommonEmailFields(
+      externalApi.identifierId,
+      externalApi.themeId,
+    );
+
+    const orderEmailFields = {
+      ...emailFields,
+      BUTTON_LINK: externalApi?.themeId?.websiteUrl,
+      BANNER_IMG: `${bucketUrl}footer/banner-web.png`,
+      MOBILE_BANNER_IMG: `${bucketUrl}footer/banner-mobile.png`,
+      WEBSITE_NAME: externalApi?.name,
+      BUSINESSNAME: eventDetails[0].name || '',
+    };
+
+    type EmailOrderGroup = {
+      buyerName: string;
+      products: {
+        quantity: number;
+        image?: any;
+        name: string;
+        price: number;
+        deliveryFee: number;
+      }[];
+      totalAmount: number;
+    };
+
+    const emailToProductsMap: { [email: string]: EmailOrderGroup } = {};
+
+    orderProduct.forEach(orderItem => {
+      const { email } = orderItem;
+      const product = productInfo.find(
+        p => p._id.toString() === orderItem.itemId.toString(),
+      );
+
+      if (!product) return;
+
+      if (!emailToProductsMap[email]) {
+        emailToProductsMap[email] = {
+          buyerName: orderItem.firstName,
+          products: [],
+          totalAmount: 0,
+        };
+      }
+
+      const price = orderItem?.amount || product?.price?.sellingPrice;
+      const quantity = orderItem?.quantity || 1;
+      const deliveryFee = orderItem?.deliveryFee || 0;
+
+      emailToProductsMap[email].products.push({
+        quantity,
+        image: product?.images[0]?.image,
+        name: product?.name,
+        price,
+        deliveryFee,
+      });
+
+      emailToProductsMap[email].totalAmount += price * quantity + deliveryFee;
+    });
+
+    await Promise.all(
+      Object.entries(emailToProductsMap).map(async ([email, group]) => {
+        const productsHtml = group.products
+          .map(
+            product => `
+            <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom: 20px;">
+              <tr>
+                <td style="padding: 10px; background: ${
+  externalApi?.themeId.secondaryColor
+}; direction: rtl; border-radius: 20px;">
+                  <table cellpadding="0" cellspacing="0" border="0" width="100%">
+                    <tr>
+                      <td style="padding: 0; vertical-align: middle;">
+                        <img src="${product?.image || ''}" alt="${
+  product?.name
+}"
+                          style="max-width: 100px; height: 100px; margin-left: 10px; display: block;">
+                      </td>
+                      <td style="padding: 0 10px; vertical-align: middle;" width="100%">
+                        <span style="display: block; font-size: 16px; color: #333333;">${
+  product?.name
+}</span>
+                        <span style="display: block; font-size: 14px; color: #666666;">כמות: ${
+  product?.quantity
+}</span>
+<span style="display: block; font-size: 14px; color: #666666;">
+דמי משלוח: ₪${product?.deliveryFee}</span>
+                      </td>
+                      <td style="padding: 0; vertical-align: middle; white-space: nowrap;">
+                        <span dir="rtl" style="font-size: 16px; color: #333333;">₪${
+  product?.price
+}</span>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+            `,
+          )
+          .join('');
+
+        await this.mailchimpService.sendTransactionalEmail({
+          to: email,
+          templatedId: DynamicEmailTemplate.TicketConfirmationForCustomers,
+          from_email: externalApi?.companyDetails?.email,
+          from_name: externalApi?.name,
+          mergeVars: {
+            ...orderEmailFields,
+            EVENT_NAME: eventDetails[0].name || '',
+            PRODUCTS_HTML: productsHtml,
+            BUYERNAME: group.buyerName,
+            TOTALAMOUNT: group.totalAmount,
+            CHANGE_SETTINGS_LINK: externalApi?.themeId?.websiteUrl,
+            BUSINESSADDRESS: eventDetails[0]?.address?.location || '',
+            QRCODEURL: order?.qrCodeUrl || '',
+          },
+        });
+      }),
+    );
+
+    // SEND TO BUSINESS OWNER
+    //     await Promise.all(
+    //       businessDetails.map(async business => {
+    //         const relevantProducts = productInfo.filter(
+    //           product => product.businessId.toString() === business._id.toString(),
+    //         );
+
+    //         let businessTotalAmount = 0;
+
+    //         const productsHtmlForEchBusiness = relevantProducts
+    //           .map(product => {
+    //             const matchingProduct = orderProduct.find(
+    //               p => p.itemId.toString() === product._id.toString(),
+    //             );
+
+    //             if (!matchingProduct) return '';
+
+    //             const quantity = matchingProduct.quantity || 1;
+    //             const price
+    //               = matchingProduct.amount || product.price?.sellingPrice || 0;
+    //             const deliveryFee = matchingProduct.deliveryFee || 0;
+    //             const address = matchingProduct?.deliveryPickupLocation || '';
+
+    //             const totalPriceForThisProduct = quantity * price + deliveryFee;
+
+    //             businessTotalAmount += totalPriceForThisProduct;
+
+    //             return `
+    //             <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom: 20px;">
+    //             <tr>
+    //               <td style="padding: 10px; background: ${
+    //   externalApi?.themeId.secondaryColor
+    // }; direction: rtl; border-radius: 20px;">
+    //                 <table cellpadding="0" cellspacing="0" border="0" width="100%">
+    //                   <tr>
+    //                     <td style="padding: 0; vertical-align: middle;">
+    //                       <img src="${product.images?.[0]?.image || ''}" alt="${
+    //   product?.name
+    // }"
+    //                         style="max-width: 100px; height: 100px; margin-left: 10px; display: block;">
+    //                     </td>
+    //                     <td style="padding: 0 10px; vertical-align: middle;" width="100%">
+    //                       <span
+    //                         style="display: block; font-size: 16px; color: #333333;">${
+    //   product?.name
+    // }</span>
+    //                       <span style="display: block; font-size: 14px; color: #666666;">כמות:
+    //                           ${quantity}</span>
+    //                       <span style="display: block; font-size: 14px; color: #666666;">
+    // דמי משלוח: ₪${deliveryFee}</span>
+    // <span style="display: block; font-size: 14px; color: #666666;">כְּתוֹבֶת: ${
+    //   address || 'לא ישים'
+    // }</span>
+    //                     </td>
+    //                     <td style="padding: 0; vertical-align: middle; white-space: nowrap;">
+    //                       <span dir="rtl" style="font-size: 16px; color: #333333;">₪${price}</span>
+    //                     </td>
+    //                   </tr>
+    //                 </table>
+    //               </td>
+    //             </tr>
+    //           </table>
+    //             `;
+    //           })
+    //           .join('');
+
+    //         await this.mailchimpService.sendTransactionalEmail({
+    //           to: business?.busiEmail,
+    //           templatedId: DynamicEmailTemplate.OrderConfirmationForVendor,
+    //           from_email: externalApi?.companyDetails?.email,
+    //           from_name: externalApi?.name,
+    //           mergeVars: {
+    //             ...orderEmailFields,
+    //             TOTALAMOUNT: businessTotalAmount,
+    //             BUYERNAME: order?.firstName,
+    //             PRODUCTS_HTML: productsHtmlForEchBusiness,
+    //             BUYER_PHONE_NUMBER: order.phone,
+    //             BUYER_ORDER_EMAIL: order.email,
+    //           },
+    //         });
+    //       }),
+    //     );
   }
 
   async sendEmailPostOrderPayment(
@@ -929,7 +1170,7 @@ export class OrdersService {
             BUYERNAME: order?.firstName,
             PRODUCTS_HTML: productsHtmlForEchBusiness,
             BUYER_PHONE_NUMBER: order.phone,
-            BUYER_ORDER_EMAIL: order.email,
+            BUYER_ORDER_EMAIL: order?.email || '',
           },
         });
       }),

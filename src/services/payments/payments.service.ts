@@ -11,10 +11,7 @@ import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
 import { Logger } from 'winston';
 
 import { Locale, PaymentStatus, VoucherPaymentStatus } from 'src/common/enum';
-import {
-  EnglishTemplate,
-  HebrewTemplate,
-} from 'src/common/mailchimp/templateId';
+import { EnglishTemplate } from 'src/common/mailchimp/templateId';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { update, updateById } from 'src/core/helper/query-helper';
 
@@ -158,7 +155,7 @@ export class PaymentsService {
 
   async paymentSucess(query, languagePreference) {
     try {
-      const paymentRequestId = query?.LowProfileId;
+      const paymentRequestId = query?.LowProfileId || query?.lowprofilecode;
 
       const existingPayment = await this.PaymentModel.findOne({
         paymentRequestId,
@@ -184,17 +181,17 @@ export class PaymentsService {
         `[PAYMENT]: UPDATED AFTER PAID SUCCESSFULLY >> payments: ${payments}`,
       );
 
-      await this.mailchimpService.sendTransactionalEmail({
-        to: payments?.customerEmail,
-        templatedId:
-          languagePreference === Locale.ENGLISH
-            ? EnglishTemplate.PaymentSuccessful
-            : HebrewTemplate.PaymentSuccessful,
-        mergeVars: {
-          BUYERNAME: payments?.customerName,
-          TOTALAMOUNT: payments?.amount,
-        },
-      });
+      // await this.mailchimpService.sendTransactionalEmail({
+      //   to: payments?.customerEmail,
+      //   templatedId:
+      //     languagePreference === Locale.ENGLISH
+      //       ? EnglishTemplate.PaymentSuccessful
+      //       : HebrewTemplate.PaymentSuccessful,
+      //   mergeVars: {
+      //     BUYERNAME: payments?.customerName,
+      //     TOTALAMOUNT: payments?.amount,
+      //   },
+      // });
 
       if (payments?.purpose === PaymentPurpose.VOUCHER) {
         const voucherDetails

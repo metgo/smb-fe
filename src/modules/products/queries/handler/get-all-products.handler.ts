@@ -52,10 +52,10 @@ implements IQueryHandler<GetAllProductsQuery> {
         ),
       );
 
-      const select
+      let select
         = '_id name description images price quantity businessId categories subCategories';
 
-      const populate = [
+      let populate = [
         {
           path: 'businessId',
           select:
@@ -66,6 +66,11 @@ implements IQueryHandler<GetAllProductsQuery> {
           select: '_id name hebrewName',
         },
       ];
+
+      if (queries.customSelect) {
+        select = queries.customSelect;
+        populate = [];
+      }
 
       const productsList = await queryhandler<Product>(this.ProductModel, {
         findQuery,

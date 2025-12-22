@@ -124,7 +124,7 @@ implements IQueryHandler<GetAllProductsRawQuery> {
 
       const categoryIds = campDetails.category.map(cat => cat.id);
 
-      if (!categoriesId) {
+      if (!categoriesId && categoryIds.length) {
         findQuery = {
           ...findQuery,
           categories: { $in: categoryIds },

@@ -14,6 +14,7 @@ import { GetEventBySlugHandler } from './queries/handler/get-event-by-slug.handl
 import { CampaignModule } from '../campaign/campaign.module';
 import { GetSearchRecommendationTourismHandler } from './queries/handler/get-search-recommendation.handler';
 import { GetAllEventsRawQueryHandler } from './queries/handler/get-all-events-rawquery.handler';
+import { GetEventsByIdHandler } from './queries/handler/get-by-ids.handler';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { GetAllEventsRawQueryHandler } from './queries/handler/get-all-events-ra
     GetEventBySlugHandler,
     GetSearchRecommendationTourismHandler,
     GetAllEventsRawQueryHandler,
+    GetEventsByIdHandler,
   ],
 })
 export class EventsModule {}

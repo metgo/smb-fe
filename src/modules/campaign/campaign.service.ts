@@ -12,7 +12,7 @@ import { ObjectId } from 'typeorm';
 import { Logger } from 'winston';
 
 import { ServerErrors } from 'src/common/constant';
-import { CampaignStatus, CampaignType } from 'src/common/enum';
+import { CampaignStatus } from 'src/common/enum';
 import { paginationConfig } from 'src/common/pagination.config';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { disSelect } from 'src/common/utils/select.handling';
@@ -32,6 +32,7 @@ import { UserType } from 'src/modules/users/users.type';
 import { ConfigService } from 'src/services/config/config.service';
 import { EncryptionService } from 'src/services/encryption/encryption.service';
 import { GcpBucketService } from 'src/services/gcp-bucket/gcp-bucket.services';
+import { CampaignType } from './campaign.type';
 
 @Injectable()
 export class CampaignService {

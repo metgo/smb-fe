@@ -90,6 +90,12 @@ export class ExternalApi extends AuditableSchema {
     campIds: mongoose.Types.ObjectId[];
 
   @Prop({
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Campaign' }],
+    required: false,
+  })
+    primaryCampIds: mongoose.Types.ObjectId[];
+
+  @Prop({
     type: mongoose.Schema.Types.ObjectId,
     ref: Theme.name,
     required: false,

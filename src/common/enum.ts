@@ -6,11 +6,6 @@ export enum CampaignStatus {
   EXPIRED = 'EXPIRED',
 }
 
-export enum CampaignType {
-  CASH_IN = 'CASH_IN',
-  CASH_BACK = 'CASH_BACK',
-}
-
 export enum VoucherStatus {
   ASSIGNED = 'ASSIGNED',
   UNASSIGNED = 'UNASSIGNED',

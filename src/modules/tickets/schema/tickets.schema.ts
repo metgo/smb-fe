@@ -45,6 +45,13 @@ export class Ticket extends AuditableSchema {
     userId: mongoose.Types.ObjectId;
 
   @Prop({
+    type: mongoose.Schema.Types.ObjectId,
+    ref: Event.name,
+    required: true,
+  })
+    eventId: mongoose.Types.ObjectId;
+
+  @Prop({
     type: {
       markedPrice: Number,
       discountAmount: Number,
