@@ -2,6 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
 
 import { Currency } from 'src/common/enum';
+import { normalizePhone } from 'src/common/utils/normalise-phone';
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
 import { Accessibility } from 'src/modules/accessibility/schema/accessibility.schema';
 import { Authority } from 'src/modules/authority/schema/authority.schema';
@@ -116,14 +117,14 @@ export class Business extends AuditableSchema {
     _id: false,
   })
     contactDetails: {
-    name: { type: string; default: null };
-    countryCode: { type: string; default: null };
-    phone: { type: string; default: null };
-    address: { type: string; default: null };
-    email: { type: string; default: null };
-    whatsAppCountryCode: { type: string; default: null };
-    whatsAppNumber: { type: string; default: null };
-    prefferedChannel: { type: string; default: null };
+    name: string;
+    countryCode: string;
+    phone: string;
+    address: string;
+    email: string;
+    whatsAppCountryCode: string;
+    whatsAppNumber: string;
+    prefferedChannel: string;
   };
 
   @Prop({
@@ -340,3 +341,49 @@ BusinessSchema.index({ name: 'text', description: 'text', tags: 'text' });
 BusinessSchema.index({ location: '2dsphere' });
 
 export type BusinessDocument = HydratedDocument<Business>;
+
+BusinessSchema.pre('save', function (next) {
+  if (this?.phoneNumber) {
+    this.phoneNumber = normalizePhone(this.phoneNumber);
+  }
+
+  if (this?.contactDetails?.phone) {
+    this.contactDetails.phone = normalizePhone(this.contactDetails.phone);
+  }
+
+  if (this?.contactDetails?.whatsAppNumber) {
+    this.contactDetails.whatsAppNumber = normalizePhone(
+      this.contactDetails.whatsAppNumber,
+    );
+  }
+  next();
+});
+
+BusinessSchema.pre('findOneAndUpdate', function (next) {
+  const update: any = this.getUpdate();
+  if (!update) return next();
+
+  const $set = update.$set ?? update;
+
+  if ($set.phoneNumber) {
+    $set.phoneNumber = normalizePhone($set.phoneNumber);
+  }
+
+  if ($set.contactDetails?.phone) {
+    $set.contactDetails.phone = normalizePhone($set.contactDetails.phone);
+  }
+
+  if ($set.contactDetails?.whatsAppNumber) {
+    $set.contactDetails.whatsAppNumber = normalizePhone(
+      $set.contactDetails.whatsAppNumber,
+    );
+  }
+
+  if (!update.$set) {
+    Object.assign(update, $set);
+  } else {
+    update.$set = $set;
+  }
+
+  next();
+});

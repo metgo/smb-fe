@@ -2,6 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
 
 import { Locale } from 'src/common/enum';
+import { normalizePhone } from 'src/common/utils/normalise-phone';
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
 import { ExternalApi } from 'src/modules/external-api/schema/external-api.schema';
 import { UserType } from 'src/modules/users/users.type';
@@ -74,3 +75,20 @@ export type Users = HydratedDocument<User>;
 
 export const UserSchema = SchemaFactory.createForClass(User);
 UserSchema.index({ email: 1, externalApiId: 1 }, { unique: true });
+
+UserSchema.pre('save', function (next) {
+  if (this?.phoneNumber) {
+    this.phoneNumber = normalizePhone(this.phoneNumber);
+  }
+  next();
+});
+
+UserSchema.pre('findOneAndUpdate', function (next) {
+  const update: any = this.getUpdate();
+
+  if (update?.phoneNumber) {
+    update.phoneNumber = normalizePhone(update.phoneNumber);
+  }
+
+  next();
+});

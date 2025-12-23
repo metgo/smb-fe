@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
+import { normalizePhone } from 'src/common/utils/normalise-phone';
 
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
 import {
@@ -165,3 +166,20 @@ export class OrderProduct extends AuditableSchema {
 export type OrderProducts = HydratedDocument<OrderProduct>;
 
 export const OrderProductSchema = SchemaFactory.createForClass(OrderProduct);
+
+OrderProductSchema.pre('save', function (next) {
+  if (this?.phone) {
+    this.phone = normalizePhone(this.phone);
+  }
+  next();
+});
+
+OrderProductSchema.pre('findOneAndUpdate', function (next) {
+  const update: any = this.getUpdate();
+
+  if (update?.phone) {
+    update.phone = normalizePhone(update.phone);
+  }
+
+  next();
+});

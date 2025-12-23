@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
 import { VoucherPaymentStatus, VoucherStatus } from 'src/common/enum';
+import { normalizePhone } from 'src/common/utils/normalise-phone';
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
 import { Campaign } from 'src/modules/campaign/schema/campaign.schema';
 import { ExternalApi } from 'src/modules/external-api/schema/external-api.schema';
@@ -130,3 +131,40 @@ export class Voucher extends AuditableSchema {
 
 export type VoucherDocument = HydratedDocument<Voucher>;
 export const VoucherSchema = SchemaFactory.createForClass(Voucher);
+
+VoucherSchema.pre('save', function (next) {
+  if (this?.creatorInfo?.phone) {
+    this.creatorInfo.phone = normalizePhone(this.creatorInfo.phone);
+  }
+
+  if (this?.assigneeInfo?.phone) {
+    this.assigneeInfo.phone = normalizePhone(this.assigneeInfo.phone);
+  }
+
+  if (this?.purchaserInfo?.phone) {
+    this.purchaserInfo.phone = normalizePhone(this.purchaserInfo.phone);
+  }
+
+  next();
+});
+
+VoucherSchema.pre('findOneAndUpdate', function (next) {
+  const update: any = this.getUpdate();
+  if (!update) return next();
+
+  const $set = update.$set ?? update;
+
+  if ($set.creatorInfo?.phone) {
+    $set.creatorInfo.phone = normalizePhone($set.creatorInfo.phone);
+  }
+
+  if ($set.assigneeInfo?.phone) {
+    $set.assigneeInfo.phone = normalizePhone($set.assigneeInfo.phone);
+  }
+
+  if ($set.purchaserInfo?.phone) {
+    $set.purchaserInfo.phone = normalizePhone($set.purchaserInfo.phone);
+  }
+
+  next();
+});

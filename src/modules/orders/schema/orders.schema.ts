@@ -2,6 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import mongoose, { HydratedDocument } from 'mongoose';
 
 import { PaymentStatus } from 'src/common/enum';
+import { normalizePhone } from 'src/common/utils/normalise-phone';
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
 import { Campaign } from 'src/modules/campaign/schema/campaign.schema';
 import { ExternalApi } from 'src/modules/external-api/schema/external-api.schema';
@@ -177,3 +178,20 @@ export type OrderDocument = HydratedDocument<Order>;
 
 export const OrderSchema = SchemaFactory.createForClass(Order);
 OrderSchema.index({ name: 'text', description: 'text' });
+
+OrderSchema.pre('save', function (next) {
+  if (this?.phone) {
+    this.phone = normalizePhone(this.phone);
+  }
+  next();
+});
+
+OrderSchema.pre('findOneAndUpdate', function (next) {
+  const update: any = this.getUpdate();
+
+  if (update?.phone) {
+    update.phone = normalizePhone(update.phone);
+  }
+
+  next();
+});

@@ -10,6 +10,7 @@ import { Blog } from 'src/modules/blog/schema/blog.schema';
 import { Theme } from 'src/modules/themes/schema/theme.schema';
 import { AuditableSchema } from 'src/core/helper/auditable.schema';
 import { ExternalApiPurpose } from '../external-api.types';
+import { normalizePhone } from 'src/common/utils/normalise-phone';
 
 @Schema({ _id: false })
 export class PromotionalItem {
@@ -175,3 +176,20 @@ export class ExternalApi extends AuditableSchema {
 export type ExternalApiDocument = HydratedDocument<ExternalApi>;
 
 export const ExternalApiSchema = SchemaFactory.createForClass(ExternalApi);
+
+ExternalApiSchema.pre('save', function (next) {
+  if (this?.companyDetails?.phone) {
+    this.companyDetails.phone = normalizePhone(this.companyDetails.phone);
+  }
+  next();
+});
+
+ExternalApiSchema.pre('findOneAndUpdate', function (next) {
+  const update: any = this.getUpdate();
+
+  if (update?.companyDetails?.phone) {
+    update.companyDetails.phone = normalizePhone(update.companyDetails.phone);
+  }
+
+  next();
+});

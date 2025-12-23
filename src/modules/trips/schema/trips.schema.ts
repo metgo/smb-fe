@@ -11,6 +11,7 @@ import { BussSubCategory } from 'src/modules/buss-subcategories/schema/buss-subC
 import { BussCategory } from 'src/modules/buss-categories/schema/buss.category.schema';
 import { Accessibility } from 'src/modules/accessibility/schema/accessibility.schema';
 import { GroupType } from 'src/modules/group-type/schema/group-type.schema';
+import { normalizePhone } from 'src/common/utils/normalise-phone';
 
 @Schema({ _id: false })
 export class Image {
@@ -172,3 +173,24 @@ export class Trip extends AuditableSchema {
 export type TripDocument = HydratedDocument<Trip>;
 export const TripSchema = SchemaFactory.createForClass(Trip);
 TripSchema.index({ name: 'text', description: 'text' });
+
+TripSchema.pre('save', function (next) {
+  if (this?.contactDetails?.phoneNumber) {
+    this.contactDetails.phoneNumber = normalizePhone(
+      this.contactDetails.phoneNumber,
+    );
+  }
+  next();
+});
+
+TripSchema.pre('findOneAndUpdate', function (next) {
+  const update: any = this.getUpdate();
+
+  if (update?.contactDetails?.phoneNumber) {
+    update.contactDetails.phoneNumber = normalizePhone(
+      update.contactDetails.phoneNumber,
+    );
+  }
+
+  next();
+});
