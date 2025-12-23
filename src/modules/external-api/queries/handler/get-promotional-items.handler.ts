@@ -159,11 +159,16 @@ implements IQueryHandler<GetPromotionalItemsQuery> {
     }
   }
 
-  private buildOrConditions(idsObj: any) {
+  private buildOrConditions({
+    dmoIds = [],
+    authorityIds = [],
+    businessIds = [],
+  }) {
     const orConds: any[] = [];
-    if (idsObj.dmoIds?.length) orConds.push({ dmoId: { $in: idsObj.dmoIds } });
-    if (idsObj.authorityIds?.length) orConds.push({ authorityId: { $in: idsObj.authorityIds } });
-    if (idsObj.businessIds?.length) orConds.push({ _id: { $in: idsObj.businessIds } });
+
+    if (dmoIds.length) orConds.push({ dmoId: { $in: dmoIds } });
+    if (authorityIds.length) orConds.push({ authorityId: { $in: authorityIds } });
+    if (businessIds.length) orConds.push({ _id: { $in: businessIds } });
     return orConds;
   }
 
@@ -367,6 +372,9 @@ implements IQueryHandler<GetPromotionalItemsQuery> {
       isDeleted: false,
       deletedAt: null,
       deletedBy: null,
+      ...(campaignOrConditionsTrip.length > 0 && {
+        $or: campaignOrConditionsTrip,
+      }),
     };
 
     if (campaignOrConditionsTrip?.length) {
@@ -375,7 +383,11 @@ implements IQueryHandler<GetPromotionalItemsQuery> {
 
     if (promotionalTripsItems?.isAll) {
       return await this.TripModel.aggregate([
-        { $match: baseTripMatch },
+        {
+          $match: {
+            ...baseTripMatch,
+          },
+        },
         { $sample: { size: 10 } },
         {
           $project: {

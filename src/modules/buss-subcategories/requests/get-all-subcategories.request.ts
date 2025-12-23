@@ -7,8 +7,8 @@ import { LocaleFilterQuery } from 'src/common/query-handler/locale-filter.query'
 import { Purpose } from '../buss-subcategories.type';
 
 export class GetAllSubCategoriesRequest extends LocaleFilterQuery {
-  @ApiProperty({ type: String, required: true })
-  @IsNotEmpty()
+  @ApiProperty({ type: String, required: false })
+  @IsOptional()
     bussCategoryId: string;
 
   @ApiProperty({

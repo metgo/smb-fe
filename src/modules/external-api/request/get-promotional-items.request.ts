@@ -3,29 +3,20 @@ import { Transform } from 'class-transformer';
 import { IsBoolean, IsOptional } from 'class-validator';
 
 export class GetPromotionalItemsRequest {
+  @ApiProperty({ required: false })
   @IsOptional()
-  @ApiProperty({
-    required: false,
-    description: 'Whether to fetch promotional businesses',
-  })
   @IsBoolean()
   @Transform(({ value }) => value === 'true' || value === true)
     isBusiness?: string;
 
+  @ApiProperty({ required: false })
   @IsOptional()
-  @ApiProperty({
-    required: false,
-    description: 'Whether to fetch promotional events',
-  })
   @IsBoolean()
   @Transform(({ value }) => value === 'true' || value === true)
     isEvent?: string;
 
+  @ApiProperty({ required: false })
   @IsOptional()
-  @ApiProperty({
-    required: false,
-    description: 'Whether to fetch promotional trips',
-  })
   @IsBoolean()
   @Transform(({ value }) => value === 'true' || value === true)
     isTrip?: string;

@@ -75,9 +75,9 @@ implements ICommandHandler<GetAllSubCategoriesQuery> {
         return { data: [] };
       }
 
-      const categoryIds = campDetails.category.map(cat => cat.id.toString());
+      const categoryIds = campDetails.category.map(cat => cat?.id?.toString());
 
-      if (!categoryIds.includes(bussCategoryId.toString())) {
+      if (bussCategoryId && !categoryIds.includes(bussCategoryId.toString())) {
         return { data: [] };
       }
 
@@ -181,7 +181,7 @@ implements ICommandHandler<GetAllSubCategoriesQuery> {
 
       const findQuery: any = {
         _id: { $in: subCategoryIds },
-        bussCategoryId: { $in: bussCategoryId },
+        ...(bussCategoryId && { bussCategoryId: { $in: bussCategoryId } }),
       };
 
       const queryPage = page ? Number(page) : null;
@@ -239,6 +239,7 @@ implements ICommandHandler<GetAllSubCategoriesQuery> {
             id: subCat._id,
             name: subCat.name,
             parent,
+            bussCategoryId: subCat.bussCategoryId[0]._id,
             productCount,
           };
         }),
