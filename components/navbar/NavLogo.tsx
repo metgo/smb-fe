@@ -27,8 +27,8 @@ const NavLogo = () => {
       router.push(pathNames.home);
       startLoading();
     }
-    setIsFilterDrawerOpen(false);
     setIsOnSection2(false);
+    setIsFilterDrawerOpen(false);
     setHideFirstTwoSection(false);
   }
 

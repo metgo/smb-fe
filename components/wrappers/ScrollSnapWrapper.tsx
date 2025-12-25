@@ -5,24 +5,16 @@ import React, { useEffect, useRef, useCallback } from "react";
 import { useDeviceHeight } from "@/hooks";
 import useGeneralStore from "@/stores/generalStore";
 import ScrollIndicator from "../ScrollIndicator";
-import { useQuery } from "@tanstack/react-query";
-import { getMarketing } from "@/actions/marketingAction";
 
 type Props = {
   children: React.ReactNode[];
+  hasMarketing: boolean;
 };
 
-export default function ScrollSnapWrapper({ children }: Props) {
+export default function ScrollSnapWrapper({ children, hasMarketing }: Props) {
   const firstRef = useRef<HTMLDivElement | null>(null);
   const secondRef = useRef<HTMLDivElement | null>(null);
   const feedRef = useRef<HTMLDivElement | null>(null);
-
-  const { data: marketing } = useQuery({
-    queryKey: ["marketing"],
-    queryFn: getMarketing,
-  });
-
-  const hasMarketing = marketing?.items?.length > 0;
 
   // state in global store
   const {

@@ -293,11 +293,11 @@ export default function useFeedFilter(
   }, [selectedCategoryIds, filters?.subCategories]);
 
   function handleResetFilters() {
+    window.scrollTo({ behavior: "smooth", top: 0 });
     const nextParams = new URLSearchParams();
     setParamsState(nextParams);
     setAppliedFilterCount(0);
     router.push(`?isAllClear=true`, { scroll: false });
-    window.scrollTo({ behavior: "smooth", top: 0 });
     startLoading();
   }
 
