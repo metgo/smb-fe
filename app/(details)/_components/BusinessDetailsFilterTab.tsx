@@ -102,7 +102,7 @@ const BusinessDetailsFilterTab = ({
           );
         })}
       </div>
-      <hr className="w-full h-[1px] text-secondary mb-15" />
+      <hr className="w-full h-px text-secondary mb-15" />
 
       {rederTabContent()}
     </div>

@@ -86,7 +86,10 @@ export default async function Page({ searchParams }: any) {
           <Navbar showFilterTab />
 
           <Suspense>
-            <MobileFeedLayout selectedFiltersIds={selectedFiltersIds} />
+            <MobileFeedLayout
+              isAllClear={params.isAllClear === "true"}
+              selectedFiltersIds={selectedFiltersIds}
+            />
             <FeedLayout
               isAllClear={params.isAllClear === "true"}
               selectedFiltersIds={selectedFiltersIds}

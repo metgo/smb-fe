@@ -14,8 +14,8 @@ import { RedFlowerIcon } from "../ui/svgIcons";
 import PromotionalCards from "../PromotionalCards";
 import HamburgerMenu from "../navbar/HamburgerMenu";
 import { fundayEnquiryLables } from "@/constant/hebrew";
-import SearchFlow from "../navbar/SearchFlow";
 import useGeneralStore from "@/stores/generalStore";
+import SearchFlowMobile from "../navbar/SearchFlow.mobile";
 
 const MobileNavbar = () => {
   const pathname = usePathname();
@@ -78,7 +78,7 @@ const MobileNavbar = () => {
               )}
             </div>
 
-            <SearchFlow />
+            <SearchFlowMobile />
             {/* {showFilterIcon && <IconImage icon="filter" />} */}
           </div>
         )}

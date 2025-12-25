@@ -160,7 +160,7 @@ const FeedLayout = ({ selectedFiltersIds, isAllClear }: FeedLayoutProps) => {
                     {isFetchingNextPage ? (
                       <div className="flex justify-center items-center">
                         {/* <div className="animate-spin rounded-full h-10 w-10 border-t-4 border-b-4 border-orange-500"></div> */}
-                        <span className="ml-3 text-white">
+                        <span className="ml-3 text-charcoal">
                           {misc.feedItemsLoading}
                         </span>
                       </div>
@@ -171,7 +171,7 @@ const FeedLayout = ({ selectedFiltersIds, isAllClear }: FeedLayoutProps) => {
                 )}
 
                 {!hasNextPage && totalBusiness > 10 && (
-                  <div className="py-8 text-center text-white/70">
+                  <div className="py-8 text-center text-charcoal">
                     {misc.noMoreItems}
                   </div>
                 )}
