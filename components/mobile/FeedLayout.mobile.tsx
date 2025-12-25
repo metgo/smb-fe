@@ -22,9 +22,13 @@ import { getPresetFilters } from "@/actions/commonActions";
 
 interface MobileFeedLayoutProps {
   selectedFiltersIds: any;
+  isAllClear: boolean;
 }
 
-const MobileFeedLayout = ({ selectedFiltersIds }: MobileFeedLayoutProps) => {
+const MobileFeedLayout = ({
+  selectedFiltersIds,
+  isAllClear,
+}: MobileFeedLayoutProps) => {
   const observerTarget = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
   const { isMobile } = useCommonHook();
@@ -71,7 +75,7 @@ const MobileFeedLayout = ({ selectedFiltersIds }: MobileFeedLayoutProps) => {
   } = useInfiniteQuery({
     queryKey: ["feeds", selectedFiltersIds],
     queryFn: ({ pageParam = 1 }) =>
-      getFeedItems(pageParam, selectedFiltersIds, false),
+      getFeedItems(pageParam, selectedFiltersIds, isAllClear),
     initialPageParam: 1,
     getNextPageParam: (lastPage) =>
       lastPage.meta?.hasNextPage ? lastPage.meta.page + 1 : undefined,
@@ -123,18 +127,6 @@ const MobileFeedLayout = ({ selectedFiltersIds }: MobileFeedLayoutProps) => {
 
     return () => observer.disconnect();
   }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
-
-  // useEffect(() => {
-  //   if (showFavoriteFeedItems && favoriteFeedItemIds.length > 0) {
-  //     const items = businesses?.data?.filter((item) =>
-  //       favoriteFeedItemIds?.includes(item._id),
-  //     );
-  //     setVisibleFeedItems(items);
-  //   } else {
-  //     setVisibleFeedItems(businesses?.data);
-  //     setShowFavoriteFeedItems(false);
-  //   }
-  // }, [showFavoriteFeedItems, favoriteFeedItemIds, businesses]);
 
   // Prepare feed items for carousel
   const carouselItems = useMemo(
@@ -199,7 +191,7 @@ const MobileFeedLayout = ({ selectedFiltersIds }: MobileFeedLayoutProps) => {
               {isFetchingNextPage ? (
                 <div className="flex justify-center items-center">
                   {/* <div className="animate-spin rounded-full h-10 w-10 border-t-4 border-b-4 border-orange-500"></div> */}
-                  <span className="ml-3 text-white">
+                  <span className="ml-3 text-black/50">
                     {misc.feedItemsLoading}
                   </span>
                 </div>
@@ -210,7 +202,7 @@ const MobileFeedLayout = ({ selectedFiltersIds }: MobileFeedLayoutProps) => {
           )}
 
           {!hasNextPage && totalBusiness > 10 && (
-            <div className="py-8 text-center text-white/70">
+            <div className="py-8 text-center text-black/50">
               {misc.noMoreItems}
             </div>
           )}
@@ -234,7 +226,7 @@ const MobileFeedLayout = ({ selectedFiltersIds }: MobileFeedLayoutProps) => {
               {/* Icon stays centered */}
               <AiIcon size={68} />
               {appliedFilterCount > 0 && (
-                <div className="bg-green-500 absolute right-1 top-1 rounded-full h-[18px] w-[18px] text-[10px] flex items-center justify-center text-white border border-white">
+                <div className="bg-green-500 absolute right-1 top-1 rounded-full h-4.5 w-4.5 text-[10px] flex items-center justify-center text-white border border-white">
                   {appliedFilterCount}
                 </div>
               )}

@@ -64,16 +64,6 @@ export const SiteInfoClientProvider = ({
     }
   }
 
-  // async function fetchPresetFilterItems() {
-  //   try {
-  //     const res = await getPresetFilters();
-  //     return res.serviceTypes;
-  //   } catch (error) {
-  //     console.error("Failed to get filters:", error);
-  //     return null;
-  //   }
-  // }
-
   useEffect(() => {
     if (isFeed === "true") setHideFirstTwoSection(true);
   }, [params]);
@@ -83,7 +73,6 @@ export const SiteInfoClientProvider = ({
     fetchAminitiesInfo();
     fetchUserCurrentLocation();
     fetchPromotionalItems();
-    // fetchPresetFilterItems();
   }, []);
 
   return <div>{children}</div>;

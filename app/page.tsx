@@ -40,11 +40,8 @@ export default async function Page({ searchParams }: any) {
       : searchParams;
 
   const selectedFiltersIds = parseFeedFilters(params);
+  const marketing = await getMarketing();
 
-  await queryClient.prefetchQuery({
-    queryKey: ["marketing"],
-    queryFn: getMarketing,
-  });
   await queryClient.prefetchQuery({
     queryKey: ["preset-filters"],
     queryFn: getPresetFilters,
@@ -64,7 +61,7 @@ export default async function Page({ searchParams }: any) {
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <ScrollSnapWrapper>
+      <ScrollSnapWrapper hasMarketing={marketing?.items?.length > 0}>
         <section className="relative">
           <div className="z-20 fixed top-2.5 right-0 w-full flex items-center justify-between px-4 md:px-16 lg:px-20 ">
             <div className="flex items-center gap-5">
@@ -80,13 +77,16 @@ export default async function Page({ searchParams }: any) {
           <IntroVideo />
         </section>
 
-        <MarketingSection />
+        <MarketingSection marketing={marketing} />
 
         <section className="relative z-50 bg-white">
           <Navbar showFilterTab />
 
           <Suspense>
-            <MobileFeedLayout selectedFiltersIds={selectedFiltersIds} />
+            <MobileFeedLayout
+              isAllClear={params.isAllClear === "true"}
+              selectedFiltersIds={selectedFiltersIds}
+            />
             <FeedLayout
               isAllClear={params.isAllClear === "true"}
               selectedFiltersIds={selectedFiltersIds}

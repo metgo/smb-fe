@@ -1,15 +1,13 @@
-"use client";
-
+import React from "react";
 import { imagePlayTypeEnum } from "@/lib/utils";
 import { ArrowImage, CarouselImage } from "@/components/marketing";
-import { useQuery } from "@tanstack/react-query";
-import { getMarketing } from "@/actions/marketingAction";
 
-export default async function MarketingSection() {
-  const { data: marketing } = useQuery({
-    queryKey: ["marketing"],
-    queryFn: getMarketing,
-  });
+export default async function MarketingSection({
+  marketing,
+}: {
+  marketing: any;
+}) {
+  if (!marketing?.items?.length) return null;
 
   return (
     <>
