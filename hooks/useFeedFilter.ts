@@ -244,6 +244,7 @@ export default function useFeedFilter(
         nextParams.delete("isAllClear");
         router.push(`?${nextParams.toString()}`, { scroll: false });
       }
+      window.scrollTo({ behavior: "smooth", top: 0 });
 
       startLoading();
     }, 2000);
@@ -275,6 +276,7 @@ export default function useFeedFilter(
           scroll: false,
         });
       }
+      window.scrollTo({ behavior: "smooth", top: 0 });
 
       startLoading();
     }
@@ -295,6 +297,7 @@ export default function useFeedFilter(
     setParamsState(nextParams);
     setAppliedFilterCount(0);
     router.push(`?isAllClear=true`, { scroll: false });
+    window.scrollTo({ behavior: "smooth", top: 0 });
     startLoading();
   }
 

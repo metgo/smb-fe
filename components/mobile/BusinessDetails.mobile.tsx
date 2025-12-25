@@ -15,6 +15,8 @@ import MobileDeliveriesContent from "./DeliveriesContent.mobile ";
 import MobileLinkShareBottomDrawer from "./LinkShareBottomDrawer.mobile";
 import { isPlaceOpenNow, removeInlineStylesFromHTML } from "@/lib/helpers";
 import ContactUsInfo from "../ContactUsInfo";
+import { getProducts } from "@/actions/productActions";
+import { useQuery } from "@tanstack/react-query";
 
 const OpeningDayHours = ({ days, open, close }: OpeningHrs) => (
   <div className="flex justify-between gap-24 font-normal  text-theme">
@@ -27,11 +29,14 @@ const OpeningDayHours = ({ days, open, close }: OpeningHrs) => (
 
 const MobileBusinessDetails = ({
   businessDetails,
-  products,
 }: {
   businessDetails: BusinessDetailsProps;
-  products: Product[];
 }) => {
+  const { data: products } = useQuery({
+    queryKey: ["products", businessDetails?._id],
+    queryFn: () => getProducts(businessDetails?._id),
+  });
+
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   const apiLat = businessDetails?.geoLocation?.lat;

@@ -2,12 +2,12 @@
 
 import Link from "next/link";
 import { useState } from "react";
+
 import { misc } from "@/constant/hebrew";
 import { IconImage } from "@/components/ui";
 import { paymentMethodType } from "@/lib/utils";
 import TicketListModal from "./TicketListModal";
 import { getHebrewDateInfo } from "@/lib/helpers";
-import { eventDetils } from "@/constant/placeholderData";
 import { googleSendGtmEvent, triggerName } from "@/lib/googleEventsConfig";
 
 const EventDateRange = ({
@@ -34,10 +34,10 @@ const EventDateRange = ({
   return (
     <>
       <section className="col-span-4 flex flex-col items-center gap-6">
-        <div className=" flex items-center gap-2.5 overflow-x-scroll w-full">
+        <div className=" flex items-center justify-center gap-2.5  overflow-x-auto w-full ps-16">
           {dayDescription?.map((item) => {
             const eventInfo = getHebrewDateInfo(item.date);
-            // const isActive = clickedDay.day === eventInfo.day;
+            // const isActive = item.date === eventInfo.day;
             const isActive = false;
 
             return (
@@ -78,9 +78,9 @@ const EventDateRange = ({
             </button>
           )}
 
-          <p className="text-theme font-normal text-[12px] text-center">
+          {/* <p className="text-theme font-normal text-[12px] text-center db1">
             {eventDetils.dateline}
-          </p>
+          </p> */}
         </div>
       </section>
 

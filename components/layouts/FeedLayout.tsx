@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef } from "react";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 
-import { useFeedFilter, useIsHydrated } from "@/hooks";
-import { useLoadMore } from "@/hooks/useLoadMore";
+import { useFeedFilter } from "@/hooks";
 import useGeneralStore from "@/stores/generalStore";
+import useFavoriteFeedItemStore from "@/stores/favoriteFeedItemStore";
 
 import NoFeedItemLayout from "./NoFeedItemLayout";
 import BusinessPinMap from "../maps/BusinessPinMap";
@@ -13,25 +14,23 @@ import MapFeedIntegratedLayout from "./MapFeedIntegratedLayout";
 import StickyYellowRibbonImage from "../StickyYellowRibbonImage";
 import FeedFilterDrawer from "../drawer/FeedFilterDrawer";
 import { IconImage } from "../ui";
-import useFavoriteFeedItemStore from "@/stores/favoriteFeedItemStore";
+
+import { getFeedItems, getAllFilters } from "@/actions/feedActions";
+import { getPresetFilters } from "@/actions/commonActions";
 import { misc } from "@/constant/hebrew";
 
-const FeedLayout = ({
-  businesses,
-  filters,
-  initialSelectedFiltersIds,
-}: {
-  businesses: BusinessesProps;
-  filters: FiltersResponse;
-  initialSelectedFiltersIds: PresetFilterItems;
-}) => {
-  const isHydrated = useIsHydrated();
-  const [visibleFeedItems, setVisibleFeedItems] = useState<FeedItemList>([]);
+interface FeedLayoutProps {
+  isAllClear: boolean;
+  selectedFiltersIds: any;
+}
 
+const FeedLayout = ({ selectedFiltersIds, isAllClear }: FeedLayoutProps) => {
+  const observerTarget = useRef<HTMLDivElement>(null); // Element to observe
+
+  /* ---------------------- Global Stores ---------------------- */
   const {
     activeFilterTab,
     hideFirstTwoSection,
-    setAppliedFilterItemCount,
     setIsFilterDrawerOpen,
     isFilterDrawerOpen,
     showFavoriteFeedItems,
@@ -44,10 +43,52 @@ const FeedLayout = ({
     handleFilterTooltipShown,
   } = useFavoriteFeedItemStore();
 
-  const { sentryRef, loading, initialLoadDone, canLoadMore } = useLoadMore(
-    businesses?.meta?.hasNextPage,
-  );
+  /* ---------------------- Queries ---------------------- */
+  const { data: initialSelectedFiltersIds } = useQuery({
+    queryKey: ["preset-filters"],
+    queryFn: getPresetFilters,
+  });
 
+  const { data: filters } = useQuery({
+    queryKey: ["filters", selectedFiltersIds],
+    queryFn: () => getAllFilters(selectedFiltersIds),
+  });
+
+  const {
+    data: infiniteData,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    // isLoading,
+  } = useInfiniteQuery({
+    queryKey: ["feeds", selectedFiltersIds],
+    queryFn: ({ pageParam = 1 }) =>
+      getFeedItems(pageParam, selectedFiltersIds, isAllClear),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) =>
+      lastPage.meta?.hasNextPage ? lastPage.meta.page + 1 : undefined,
+  });
+
+  /* ---------------------- Memoized Data ---------------------- */
+  const businesses = useMemo<FeedItem[]>(() => {
+    return infiniteData?.pages.flatMap((page) => page.data) ?? [];
+  }, [infiniteData?.pages]);
+
+  const totalBusiness = businesses.length;
+
+  const visibleFeedItems = useMemo(() => {
+    if (businesses.length === 0) return [];
+
+    if (showFavoriteFeedItems && favoriteFeedItemIds?.length > 0) {
+      return businesses.filter((item) =>
+        favoriteFeedItemIds.includes(item._id),
+      );
+    }
+
+    return businesses;
+  }, [businesses, showFavoriteFeedItems, favoriteFeedItemIds]);
+
+  /* ---------------------- Filters Hook ---------------------- */
   const {
     appliedFilterCount,
     filteredSubCategories,
@@ -57,47 +98,36 @@ const FeedLayout = ({
     shouldAnimate,
   } = useFeedFilter(filters, initialSelectedFiltersIds);
 
-  const triggerRef = useRef(null);
-  const totalBusiness = businesses?.totalData;
-
+  /* ---------------------- Infinite Scroll Observer ---------------------- */
   useEffect(() => {
-    if (showFavoriteFeedItems && favoriteFeedItemIds.length > 0) {
-      const items = businesses?.data?.filter((item) =>
-        favoriteFeedItemIds?.includes(item._id),
-      );
-      setVisibleFeedItems(items);
-    } else {
-      setVisibleFeedItems(businesses?.data);
-      setShowFavoriteFeedItems(false);
-    }
-  }, [showFavoriteFeedItems, favoriteFeedItemIds, businesses]);
+    if (!observerTarget.current || isFetchingNextPage || !hasNextPage) return;
 
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          fetchNextPage();
+        }
+      },
+      { threshold: 0.1 },
+    );
+
+    observer.observe(observerTarget.current);
+
+    return () => observer.disconnect();
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
+
+  /* ---------------------- Reset favorites on filter change ---------------------- */
   useEffect(() => {
-    if (businesses?.data?.length > 0) {
-      setAppliedFilterItemCount(businesses?.data?.length);
-    }
-  }, [businesses, setAppliedFilterItemCount]);
+    setShowFavoriteFeedItems(false);
+  }, [selectedFiltersIds, setShowFavoriteFeedItems]);
 
-  // useEffect(() => {
-  //   const navEntries = performance.getEntriesByType(
-  //     "navigation",
-  //   ) as PerformanceNavigationTiming[];
-  //   const isReload =
-  //     (navEntries && navEntries[0]?.type === "reload") ||
-  //     performance.navigation.type === 1;
-
-  //   if (isReload) {
-  //     setHideFirstTwoSection(true);
-  //   }
-  // }, []);
-
+  /* ---------------------- Handlers ---------------------- */
   const handleFilterIconClick = () => {
     setIsFilterDrawerOpen(true);
     handleFilterTooltipShown(true);
   };
 
-  if (!isHydrated || !hideFirstTwoSection) return null;
-
+  /* ---------------------- Render Helpers ---------------------- */
   const renderLayout = () => {
     switch (activeFilterTab) {
       case "gallery":
@@ -111,32 +141,48 @@ const FeedLayout = ({
     }
   };
 
+  /* ---------------------- Guards ---------------------- */
+  // if (!isHydrated || !hideFirstTwoSection) return null;
+
+  /* ---------------------- JSX ---------------------- */
   return (
     <>
       <div className="md:block max-sm:hidden">
-        {totalBusiness ? (
+        {totalBusiness > 0 ? (
           <div className="bg-primary">
             {renderLayout()}
 
-            <div style={{ height: "10px", position: "relative" }}>
-              <div
-                ref={triggerRef}
-                style={{ position: "absolute", top: 0, height: 1 }}
-              />
-            </div>
+            {/* Infinite Scroll Trigger + Loading Indicator */}
+            {activeFilterTab === "gallery" && (
+              <>
+                {hasNextPage && (
+                  <div ref={observerTarget} className="py-8 text-center">
+                    {isFetchingNextPage ? (
+                      <div className="flex justify-center items-center">
+                        {/* <div className="animate-spin rounded-full h-10 w-10 border-t-4 border-b-4 border-orange-500"></div> */}
+                        <span className="ml-3 text-white">
+                          {misc.feedItemsLoading}
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="h-10" />
+                    )}
+                  </div>
+                )}
 
-            {initialLoadDone &&
-              canLoadMore &&
-              businesses?.meta?.hasNextPage && (
-                <div ref={sentryRef} className="h-4">
-                  {loading && <span>Loading...</span>}
-                </div>
-              )}
+                {!hasNextPage && totalBusiness > 10 && (
+                  <div className="py-8 text-center text-white/70">
+                    {misc.noMoreItems}
+                  </div>
+                )}
+              </>
+            )}
           </div>
         ) : (
           <NoFeedItemLayout isFilterDrawerOpen={isFilterDrawerOpen} />
         )}
 
+        {/* Filter Button */}
         {hideFirstTwoSection && (
           <div className="fixed bottom-1 right-4 custom-cursor max-sm:hidden md:block">
             <div
@@ -166,9 +212,10 @@ const FeedLayout = ({
         <StickyYellowRibbonImage activeFilterTab={activeFilterTab} />
       </div>
 
+      {/* Filter Drawer */}
       {isFilterDrawerOpen && (
         <FeedFilterDrawer
-          itemCount={visibleFeedItems?.length}
+          itemCount={visibleFeedItems.length}
           isOpen={isFilterDrawerOpen}
           setIsOpen={setIsFilterDrawerOpen}
           filters={filters}

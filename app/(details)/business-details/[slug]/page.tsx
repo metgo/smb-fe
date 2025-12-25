@@ -1,5 +1,4 @@
 import { MapNavButton, NextImage } from "@/components/ui";
-
 import {
   BusinessDetailsFilterTab,
   ImageGallery,
@@ -12,45 +11,64 @@ import NoFeedItemLayout from "@/components/layouts/NoFeedItemLayout";
 import ShareUrlBtnModal from "@/components/ShareUrlBtnModal";
 import MobileBusinessDetails from "@/components/mobile/BusinessDetails.mobile";
 import { removeInlineStylesFromHTML, shuffleArray } from "@/lib/helpers";
+import { getQueryClient } from "@/lib/getQueryClient";
+import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
+
+type PageProps = {
+  params: Promise<{ slug: string }>;
+};
 
 const page = async ({ params }: PageProps) => {
   const { slug } = await params;
+  const queryClient = getQueryClient();
 
-  if (!slug || slug === "undefined") return <NoFeedItemLayout />;
+  if (!slug || slug === "undefined") {
+    return <NoFeedItemLayout />;
+  }
 
+  // 1. Fetch business details synchronously (server component)
   const businessDetails = await getBusinessDetailsBySlug(slug);
 
-  if (businessDetails === undefined) return <NoFeedItemLayout />;
-  const { groupTypesId = [], accessibilitiesId = [] } = businessDetails;
-  const products: Product[] = await getProducts(businessDetails?._id);
+  if (!businessDetails) {
+    return <NoFeedItemLayout />;
+  }
+
+  // 2. Manually cache it so client can use it via useQuery
+  queryClient.setQueryData(["business-details", slug], businessDetails);
+
+  // 3. Prefetch products (now safe because we have _id)
+  await queryClient.prefetchQuery({
+    queryKey: ["products", businessDetails._id],
+    queryFn: () => getProducts(businessDetails._id),
+  });
 
   return (
-    <>
+    <HydrationBoundary state={dehydrate(queryClient)}>
       <div className="mx-20 py-12 max-sm:hidden md:block">
         <div className="flex items-center gap-7.5 w-full mb-4.5">
           <NextImage
             width={80}
             height={80}
-            alt={businessDetails?.logo?.alt}
-            imgSrc={businessDetails?.logo?.image}
+            alt={businessDetails.logo?.alt ?? "Business logo"}
+            imgSrc={businessDetails.logo?.image}
             className="rounded-lg border border-theme h-20 w-20 object-cover"
           />
           <div className="w-full">
-            <Title title={businessDetails?.name} />
+            <Title title={businessDetails.name} />
 
-            <div className=" flex items-center justify-between w-full">
+            <div className="flex items-center justify-between w-full">
               <div
                 className="line-clamp-1 text-theme text-[22px] font-bold"
                 dangerouslySetInnerHTML={{
                   __html: removeInlineStylesFromHTML(
-                    businessDetails?.shortDescription,
+                    businessDetails.shortDescription ?? "",
                   ),
                 }}
               />
               <div className="flex items-center justify-end gap-2.5">
                 <MapNavButton
-                  lat={businessDetails?.geoLocation?.lat}
-                  lng={businessDetails?.geoLocation?.long}
+                  lat={businessDetails.geoLocation?.lat}
+                  lng={businessDetails.geoLocation?.long}
                 />
                 <ShareUrlBtnModal />
               </div>
@@ -59,25 +77,24 @@ const page = async ({ params }: PageProps) => {
         </div>
 
         <ImageGallery
-          images={shuffleArray(businessDetails?.images)}
-          primaryCategoryId={businessDetails?.primaryCategoryId}
+          images={shuffleArray(businessDetails.images ?? [])}
+          primaryCategoryId={businessDetails.primaryCategoryId}
         />
 
-        <div className=" mt-4.5">
-          <AttributePills items={[...accessibilitiesId, ...groupTypesId]} />
+        <div className="mt-4.5">
+          <AttributePills
+            items={[
+              ...(businessDetails.accessibilitiesId ?? []),
+              ...(businessDetails.groupTypesId ?? []),
+            ]}
+          />
         </div>
 
-        <BusinessDetailsFilterTab
-          products={products}
-          businessDetails={businessDetails}
-        />
+        <BusinessDetailsFilterTab businessDetails={businessDetails} />
       </div>
 
-      <MobileBusinessDetails
-        products={products}
-        businessDetails={businessDetails}
-      />
-    </>
+      <MobileBusinessDetails businessDetails={businessDetails} />
+    </HydrationBoundary>
   );
 };
 
