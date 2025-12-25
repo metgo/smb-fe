@@ -115,6 +115,7 @@ export const categoryIds = {
   tour: "6566e256a77d2a477266d2c0",
   eat: "6566e3aaa77d2a477266d314",
   local: "6566fd7fa77d2a477266d3ca",
+  event: "6566e208a77d2a477266d2b3",
 };
 
 const navigationKey = {
@@ -162,6 +163,8 @@ export const categoryGradientClasses = {
   [categoryIds.culture]:
     "from-ctg-culture-dim via-ctg-culture-light to-ctg-culture-dim",
   [categoryIds.attraction]:
+    "from-ctg-attract-dim via-ctg-attract-light to-ctg-attract-dim",
+  [categoryIds.event]:
     "from-ctg-attract-dim via-ctg-attract-light to-ctg-attract-dim",
   [categoryIds.tour]: "from-ctg-tour-dim via-ctg-tour-light to-ctg-tour-dim",
   default: "from-ctg-attract-dim via-ctg-attract-light to-ctg-attract-dim",

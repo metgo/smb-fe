@@ -30,7 +30,6 @@ const NavLogo = () => {
     setHideFirstTwoSection(false);
     setIsFilterDrawerOpen(false);
     setIsOnSection2(false);
-    setIsFilterDrawerOpen(false);
   }
 
   const logo = getLogo();

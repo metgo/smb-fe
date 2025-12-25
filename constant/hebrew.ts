@@ -34,6 +34,8 @@ export const misc = {
   searchItemNotFoundText: "לא מצאנו את מה שחיפשת :(",
   filterIconTooltip: "לחצו כאן כדי להציג בפיד את מה שמעניין אתכם",
   whatsappText: "הגעתי אליכם דרך אתר הנגב הפורח",
+  noMoreItems: "אין עוד פריטים",
+  feedItemsLoading: "טעינת פריטי עדכון....",
 };
 
 export const deliveries = {

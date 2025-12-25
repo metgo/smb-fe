@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef } from "react";
 
 import MobileNavbar from "./Navbar.mobile";
 import MobileBusinessPinMap from "../maps/BusinessPinMap.mobile";
@@ -16,37 +16,27 @@ import MobileFeedFilterDrawer from "../drawer/FeedFilterDrawer.mobile";
 import useFavoriteFeedItemStore from "@/stores/favoriteFeedItemStore";
 import { useCommonHook, useFeedFilter, useMobileFeedLayout } from "@/hooks";
 import OnlyFeedCardsLayoutMobile from "../layouts/OnlyFeedCardsLayout.mobile";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { getAllFilters, getFeedItems } from "@/actions/feedActions";
+import { getPresetFilters } from "@/actions/commonActions";
 
 interface MobileFeedLayoutProps {
-  businesses: BusinessesProps;
-  filters: FiltersResponse;
-  initialSelectedFiltersIds: PresetFilterItems;
+  selectedFiltersIds: any;
 }
 
-const MobileFeedLayout = ({
-  businesses,
-  filters,
-  initialSelectedFiltersIds,
-}: MobileFeedLayoutProps) => {
+const MobileFeedLayout = ({ selectedFiltersIds }: MobileFeedLayoutProps) => {
+  const observerTarget = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
   const { isMobile } = useCommonHook();
 
   const {
     activeFilterTabMobile,
     activeFeedItem,
-    feedItems,
     activeIndex,
     setActiveIndex,
     isFackLoading,
-  } = useMobileFeedLayout(businesses);
-  const {
-    appliedFilterCount,
-    filteredSubCategories,
-    isSelected,
-    toggleParam,
-    handleResetFilters,
-    shouldAnimate,
-  } = useFeedFilter(filters, initialSelectedFiltersIds);
+  } = useMobileFeedLayout();
+
   const {
     favoriteFeedItemIds,
     alreadyShownFilterTooltip,
@@ -59,33 +49,103 @@ const MobileFeedLayout = ({
     isFilterDrawerOpen,
     setIsFilterDrawerOpen,
     showFavoriteFeedItems,
-    setShowFavoriteFeedItems,
   } = useGeneralStore();
 
-  const [visibleFeedItems, setVisibleFeedItems] = useState<FeedItemList>([]);
+  /* ---------------------- Queries ---------------------- */
+  const { data: initialSelectedFiltersIds } = useQuery({
+    queryKey: ["preset-filters"],
+    queryFn: getPresetFilters,
+  });
 
-  useEffect(() => {
-    if (showFavoriteFeedItems && favoriteFeedItemIds.length > 0) {
-      const items = businesses?.data?.filter((item) =>
-        favoriteFeedItemIds?.includes(item._id),
+  const { data: filters } = useQuery({
+    queryKey: ["filters", selectedFiltersIds],
+    queryFn: () => getAllFilters(selectedFiltersIds),
+  });
+
+  const {
+    data: infiniteData,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    // isLoading,
+  } = useInfiniteQuery({
+    queryKey: ["feeds", selectedFiltersIds],
+    queryFn: ({ pageParam = 1 }) =>
+      getFeedItems(pageParam, selectedFiltersIds, false),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) =>
+      lastPage.meta?.hasNextPage ? lastPage.meta.page + 1 : undefined,
+  });
+
+  /* ---------------------- Memoized Data ---------------------- */
+
+  const {
+    appliedFilterCount,
+    filteredSubCategories,
+    isSelected,
+    toggleParam,
+    handleResetFilters,
+    shouldAnimate,
+  } = useFeedFilter(filters, initialSelectedFiltersIds);
+
+  const businesses = useMemo<FeedItem[]>(() => {
+    return infiniteData?.pages.flatMap((page) => page.data) ?? [];
+  }, [infiniteData?.pages]);
+
+  const totalBusiness = businesses.length;
+
+  const visibleFeedItems = useMemo(() => {
+    if (businesses.length === 0) return [];
+
+    if (showFavoriteFeedItems && favoriteFeedItemIds?.length > 0) {
+      return businesses.filter((item) =>
+        favoriteFeedItemIds.includes(item._id),
       );
-      setVisibleFeedItems(items);
-    } else {
-      setVisibleFeedItems(businesses?.data);
-      setShowFavoriteFeedItems(false);
     }
-  }, [showFavoriteFeedItems, favoriteFeedItemIds, businesses]);
+
+    return businesses;
+  }, [businesses, showFavoriteFeedItems, favoriteFeedItemIds]);
+
+  /* ---------------------- Infinite Scroll Observer ---------------------- */
+  useEffect(() => {
+    if (!observerTarget.current || isFetchingNextPage || !hasNextPage) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          fetchNextPage();
+        }
+      },
+      { threshold: 0.1 },
+    );
+
+    observer.observe(observerTarget.current);
+
+    return () => observer.disconnect();
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
+
+  // useEffect(() => {
+  //   if (showFavoriteFeedItems && favoriteFeedItemIds.length > 0) {
+  //     const items = businesses?.data?.filter((item) =>
+  //       favoriteFeedItemIds?.includes(item._id),
+  //     );
+  //     setVisibleFeedItems(items);
+  //   } else {
+  //     setVisibleFeedItems(businesses?.data);
+  //     setShowFavoriteFeedItems(false);
+  //   }
+  // }, [showFavoriteFeedItems, favoriteFeedItemIds, businesses]);
 
   // Prepare feed items for carousel
   const carouselItems = useMemo(
     () =>
-      feedItems?.map((item) => ({
+      businesses?.map((item) => ({
         id: item._id,
         name: item?.name,
         image: item?.images?.[0]?.image,
         categoryId: item?.primaryCategoryId,
       })),
-    [feedItems],
+    [businesses],
   );
 
   useEffect(() => {
@@ -100,7 +160,7 @@ const MobileFeedLayout = ({
   };
 
   if (!isMobile) return null;
-  if (!feedItems?.length) return null;
+  if (!businesses?.length) return null;
 
   return (
     <div className="flex flex-col max-sm:block md:hidden relative">
@@ -127,6 +187,31 @@ const MobileFeedLayout = ({
                   categoryColors[activeFeedItem?.primaryCategoryId]
                 }
               />
+            </div>
+          )}
+        </>
+      )}
+
+      {activeFilterTabMobile === "gallery" && (
+        <>
+          {hasNextPage && (
+            <div ref={observerTarget} className="py-8 text-center">
+              {isFetchingNextPage ? (
+                <div className="flex justify-center items-center">
+                  {/* <div className="animate-spin rounded-full h-10 w-10 border-t-4 border-b-4 border-orange-500"></div> */}
+                  <span className="ml-3 text-white">
+                    {misc.feedItemsLoading}
+                  </span>
+                </div>
+              ) : (
+                <div className="h-10" />
+              )}
+            </div>
+          )}
+
+          {!hasNextPage && totalBusiness > 10 && (
+            <div className="py-8 text-center text-white/70">
+              {misc.noMoreItems}
             </div>
           )}
         </>
@@ -164,7 +249,7 @@ const MobileFeedLayout = ({
       )}
       {isFilterDrawerOpen && (
         <MobileFeedFilterDrawer
-          itemCount={businesses?.data?.length}
+          itemCount={businesses?.length}
           isOpen={isFilterDrawerOpen}
           setIsOpen={setIsFilterDrawerOpen}
           filters={filters}

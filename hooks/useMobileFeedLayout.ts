@@ -10,7 +10,7 @@ import useGeneralStore from "@/stores/generalStore";
 import { getPrimaryCategoryId } from "@/lib/helpers";
 import useCategoryStore from "@/stores/categoriesStore";
 
-export const useMobileFeedLayout = (businesses: BusinessesProps) => {
+export const useMobileFeedLayout = () => {
   const searchParams = useSearchParams();
 
   const { isCurrentPage, deviceHeight } = useCommonHook();
@@ -20,7 +20,7 @@ export const useMobileFeedLayout = (businesses: BusinessesProps) => {
 
   // --- State ---
   const [activeIndex, setActiveIndex] = useState<number>(0);
-  const [feedItems, setFeedItems] = useState<BusinessProps[]>([]);
+  const [feedItems] = useState<BusinessProps[]>([]);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [hasMounted, setHasMounted] = useState(false);
   const [isFackLoading, setIsFackLoading] = useState(true);
@@ -89,11 +89,11 @@ export const useMobileFeedLayout = (businesses: BusinessesProps) => {
   // --- Effects ---
   useEffect(() => setHasMounted(true), []);
 
-  useEffect(() => {
-    if (businesses.data.length > 0) {
-      setFeedItems(businesses?.data);
-    }
-  }, [businesses]);
+  // useEffect(() => {
+  //   if (businesses.data.length > 0) {
+  //     setFeedItems(businesses?.data);
+  //   }
+  // }, [businesses]);
 
   useEffect(() => {
     const timeout = setTimeout(() => {

@@ -1,5 +1,3 @@
-import React, { Suspense } from "react";
-
 import Navbar from "@/components/navbar";
 import IntroVideo from "@/components/IntroVideo";
 import MainLogo from "@/components/navbar/MainLogo";
@@ -7,12 +5,33 @@ import { ScrollSnapWrapper } from "@/components/wrappers";
 import HamburgerMenu from "@/components/navbar/HamburgerMenu";
 import CurrentTempOfYourCity from "@/components/navbar/CurrentTempOfYourCity";
 
-import FeedSection from "@/components/layouts/FeedSection";
 import MarketingSection from "@/components/marketing/MarketingSection";
 import { getMarketing } from "@/actions/marketingAction";
+import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
+import { getQueryClient } from "@/lib/getQueryClient";
+import { getPresetFilters } from "@/actions/commonActions";
+import { getAllFilters, getFeedItems } from "@/actions/feedActions";
+import FeedLayout from "@/components/layouts/FeedLayout";
+import { Suspense } from "react";
+import MobileFeedLayout from "@/components/mobile/FeedLayout.mobile";
+
+function parseFeedFilters(params: Record<string, any>): FiltersProps {
+  const toArray = (value?: string) =>
+    typeof value === "string" && value.length > 0
+      ? value.split(",").filter(Boolean)
+      : [];
+
+  return {
+    categoryIds: toArray(params.categoryIds),
+    subCategoryIds: toArray(params.subCategoryIds),
+    groupTypesIds: toArray(params.groupTypeIds),
+    accessibilitiesIds: toArray(params.accessibilityIds),
+    serviceTypes: toArray(params.serviceTypes),
+  };
+}
 
 export default async function Page({ searchParams }: any) {
-  const marketing = await getMarketing();
+  const queryClient = getQueryClient();
 
   // Convert URLSearchParams to plain object if necessary
   const params =
@@ -20,9 +39,32 @@ export default async function Page({ searchParams }: any) {
       ? Object.fromEntries(searchParams.entries())
       : searchParams;
 
+  const selectedFiltersIds = parseFeedFilters(params);
+
+  await queryClient.prefetchQuery({
+    queryKey: ["marketing"],
+    queryFn: getMarketing,
+  });
+  await queryClient.prefetchQuery({
+    queryKey: ["preset-filters"],
+    queryFn: getPresetFilters,
+  });
+
+  await queryClient.prefetchQuery({
+    queryKey: ["filters", selectedFiltersIds],
+    queryFn: () => getAllFilters(selectedFiltersIds),
+  });
+
+  await queryClient.prefetchInfiniteQuery({
+    queryKey: ["feeds", selectedFiltersIds],
+    queryFn: ({ pageParam = 1 }) =>
+      getFeedItems(pageParam, selectedFiltersIds, params.isAllClear === "true"),
+    initialPageParam: 1,
+  });
+
   return (
-    <div>
-      <ScrollSnapWrapper hasMarketing={marketing?.items?.length > 0}>
+    <HydrationBoundary state={dehydrate(queryClient)}>
+      <ScrollSnapWrapper>
         <section className="relative">
           <div className="z-20 fixed top-2.5 right-0 w-full flex items-center justify-between px-4 md:px-16 lg:px-20 ">
             <div className="flex items-center gap-5">
@@ -38,18 +80,20 @@ export default async function Page({ searchParams }: any) {
           <IntroVideo />
         </section>
 
-        <MarketingSection marketing={marketing} />
+        <MarketingSection />
 
-        <Suspense
-          fallback={
-            <section className="relative z-50 bg-white">
-              <Navbar showFilterTab />
-            </section>
-          }
-        >
-          <FeedSection searchParams={params} />
-        </Suspense>
+        <section className="relative z-50 bg-white">
+          <Navbar showFilterTab />
+
+          <Suspense>
+            <MobileFeedLayout selectedFiltersIds={selectedFiltersIds} />
+            <FeedLayout
+              isAllClear={params.isAllClear === "true"}
+              selectedFiltersIds={selectedFiltersIds}
+            />
+          </Suspense>
+        </section>
       </ScrollSnapWrapper>
-    </div>
+    </HydrationBoundary>
   );
 }
