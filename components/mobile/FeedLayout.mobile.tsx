@@ -93,39 +93,70 @@ const MobileFeedLayout = ({
   } = useFeedFilter(filters, initialSelectedFiltersIds);
 
   const businesses = useMemo<FeedItem[]>(() => {
-    return infiniteData?.pages.flatMap((page) => page.data) ?? [];
+    return infiniteData?.pages?.flatMap((page) => page.data) ?? [];
   }, [infiniteData?.pages]);
 
-  const totalBusiness = businesses.length;
+  const totalBusiness = businesses?.length || 0;
 
   const visibleFeedItems = useMemo(() => {
-    if (businesses.length === 0) return [];
+    if (businesses?.length === 0) return [];
 
     if (showFavoriteFeedItems && favoriteFeedItemIds?.length > 0) {
-      return businesses.filter((item) =>
-        favoriteFeedItemIds.includes(item._id),
+      return businesses?.filter((item) =>
+        favoriteFeedItemIds?.includes(item._id),
       );
     }
 
     return businesses;
   }, [businesses, showFavoriteFeedItems, favoriteFeedItemIds]);
 
+  /* ---------------------- Initial Load Effect ---------------------- */
+  useEffect(() => {
+    // Fetch more data initially if we have very few items
+    if (
+      businesses?.length > 0 &&
+      businesses?.length < 10 &&
+      hasNextPage &&
+      !isFetchingNextPage
+    ) {
+      fetchNextPage();
+    }
+  }, [businesses?.length, hasNextPage, isFetchingNextPage, fetchNextPage]);
+
   /* ---------------------- Infinite Scroll Observer ---------------------- */
   useEffect(() => {
-    if (!observerTarget.current || isFetchingNextPage || !hasNextPage) return;
+    const target = observerTarget.current;
+
+    if (!target || !hasNextPage) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting) {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
           fetchNextPage();
         }
       },
-      { threshold: 0.1 },
+      {
+        threshold: 0.1,
+        rootMargin: "200px", // Start loading 200px before the element is visible
+      },
     );
 
-    observer.observe(observerTarget.current);
+    // Check if already in view on mount
+    const rect = target.getBoundingClientRect();
+    const isInView = rect.top >= 0 && rect.bottom <= window.innerHeight;
 
-    return () => observer.disconnect();
+    if (isInView && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+
+    observer.observe(target);
+
+    return () => {
+      if (target) {
+        observer.unobserve(target);
+      }
+      observer.disconnect();
+    };
   }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
   // Prepare feed items for carousel
@@ -144,7 +175,7 @@ const MobileFeedLayout = ({
     if (pathname !== pathNames.home) {
       setHideFirstTwoSection(true);
     }
-  }, [pathname]);
+  }, [pathname, setHideFirstTwoSection]);
 
   const handleFilterIconClick = () => {
     setIsFilterDrawerOpen(true);
@@ -187,16 +218,20 @@ const MobileFeedLayout = ({
       {activeFilterTabMobile === "gallery" && (
         <>
           {hasNextPage && (
-            <div ref={observerTarget} className="py-8 text-center">
+            <div ref={observerTarget} className="pb-24 pt-10 text-center">
               {isFetchingNextPage ? (
                 <div className="flex justify-center items-center">
-                  {/* <div className="animate-spin rounded-full h-10 w-10 border-t-4 border-b-4 border-orange-500"></div> */}
                   <span className="ml-3 text-black/50">
                     {misc.feedItemsLoading}
                   </span>
                 </div>
               ) : (
-                <div className="h-10" />
+                <button
+                  onClick={() => fetchNextPage()}
+                  className="px-8 py-2 border border-black/60 hover:text-white rounded-lg hover:bg-black/80 transition-colors active:bg-green-700 font-medium"
+                >
+                  {"טען עוד"}
+                </button>
               )}
             </div>
           )}

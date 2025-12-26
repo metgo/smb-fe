@@ -78,7 +78,14 @@ export default function RootLayout({ children }: ReactChildNode) {
           content={GOOGLE_SITE_VERIFICATION_CODE}
         />
       </head>
-      <body>
+      <body
+        className="
+          enable-toolbar-RTL
+          trigger-position-left
+          quick-links-position-center
+          trigger-size-medium
+        "
+      >
         <Suspense>
           <Providers>
             <SiteInfoClientProvider>

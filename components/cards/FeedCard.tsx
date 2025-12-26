@@ -3,7 +3,7 @@
 import clsx from "clsx";
 import Image from "next/image";
 import { FaHeart } from "react-icons/fa6";
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { motion, useInView, useAnimation } from "framer-motion";
 import { useEffect, useState, useMemo, useCallback } from "react";
 
@@ -37,6 +37,7 @@ interface FeedCardProps {
 const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const pathname = usePathname();
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [hasMounted, setHasMounted] = useState(false);
 
@@ -92,7 +93,7 @@ const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
   const computedValues = useMemo(
     () => ({
       primaryCategoryId: getPrimaryCategoryId(
-        window.location.pathname,
+        pathname,
         urlParams.activeCategoryKey || "",
         feedItem.primaryCategoryId!,
       ),
