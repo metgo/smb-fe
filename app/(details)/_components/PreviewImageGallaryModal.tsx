@@ -1,6 +1,6 @@
 import clsx from "clsx";
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { IoCloseSharp } from "react-icons/io5";
 import { IoIosArrowForward } from "react-icons/io";
 import { motion, AnimatePresence } from "framer-motion";
@@ -201,11 +201,20 @@ const PreviewImageGallaryModal = ({
     }
   }
 
+  useEffect(() => {
+    if (!setIsOpen) return;
+
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [setIsOpen]);
+
   return (
     <div className="fixed top-0 left-0 w-screen h-screen bg-black/50 backdrop-blur-sm sm:flex items-start justify-center max-sm:p-0 p-4 z-[999]">
       <div
         className={clsx(
-          "bg-white relative rounded-xl z-[999] w-[1350] h-[94%] mt-10",
+          "bg-white relative rounded-xl z-999 w-[1350] h-[94%] mt-10",
         )}
       >
         <div

@@ -10,6 +10,7 @@ interface DialogProps {
   onClose: () => void;
   children: ReactNode;
   className: string;
+  hideCloseBtn?: boolean;
 }
 
 const Dialog: React.FC<DialogProps> = ({
@@ -17,6 +18,7 @@ const Dialog: React.FC<DialogProps> = ({
   onClose,
   children,
   className,
+  hideCloseBtn = false,
 }) => {
   useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {
@@ -37,22 +39,30 @@ const Dialog: React.FC<DialogProps> = ({
   }, [isOpen, onClose]);
 
   return (
-    <div className="fixed top-0 left-0 w-screen h-screen bg-black/50 backdrop-blur-sm sm:flex items-start justify-center max-sm:p-0 p-4 z-[999]">
+    <>
       <div
-        className={clsx(
-          className,
-          "bg-white relative rounded-xl z-[999] mt-22",
-        )}
+        onClick={onClose}
+        className="fixed top-0 left-0 w-screen h-screen bg-black/50 backdrop-blur-sm sm:flex items-start justify-center max-sm:p-0 p-4 z-999"
       >
         <div
-          onClick={onClose}
-          className="absolute custom-cursor -top-12  right-0 z-50 w-10 h-10 flex items-center justify-center rounded-full bg-white sm:shadow-lg"
+          onClick={(e) => e.stopPropagation()}
+          className={clsx(
+            className,
+            "bg-white relative rounded-xl z-999 mt-22",
+          )}
         >
-          <IconImage icon="close-black" />
+          {!hideCloseBtn && (
+            <div
+              onClick={onClose}
+              className="absolute custom-cursor -top-12  right-0 z-50 w-10 h-10 flex items-center justify-center rounded-full bg-white sm:shadow-lg"
+            >
+              <IconImage icon="close-black" />
+            </div>
+          )}
+          {children}
         </div>
-        {children}
       </div>
-    </div>
+    </>
   );
 };
 

@@ -53,7 +53,7 @@ export const pathNames = {
   home: "/",
   cart: "/cart",
   businessDetails: "/business-details",
-  businesses: "/businesses",
+  businesses: "/",
   productsDetails: "/product-details",
   events: "/events",
   eventDetails: "/event-details",

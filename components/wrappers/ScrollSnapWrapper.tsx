@@ -1,23 +1,16 @@
 "use client";
 
 import React, { useEffect, useRef, useCallback } from "react";
+
 import { useDeviceHeight } from "@/hooks";
 import useGeneralStore from "@/stores/generalStore";
 import ScrollIndicator from "../ScrollIndicator";
 
 type Props = {
-  hasMarketing: boolean;
   children: React.ReactNode[];
+  hasMarketing: boolean;
 };
 
-/**
- * Clean, unified ScrollSnap wrapper with one-section-at-a-time navigation
- * - Smooth, easing-based transitions between sections
- * - Always stops at the next/previous section (no skipping)
- * - Locks feed content during the animation (no wheel/touch)
- * - Unified wheel + touch handlers
- * - Resets feed to top when entering from above sections
- */
 export default function ScrollSnapWrapper({ children, hasMarketing }: Props) {
   const firstRef = useRef<HTMLDivElement | null>(null);
   const secondRef = useRef<HTMLDivElement | null>(null);

@@ -16,6 +16,7 @@ import { SiteInfoClientProvider } from "@/providers/SiteInfoClientProvider";
 import { urls } from "@/lib/endpoints";
 import { getFavicon, getLogo } from "@/constant/images";
 import ServiceWorkerRegistrar from "@/components/ServiceWorkerRegistrar";
+import Providers from "@/components/wrappers/Providers";
 
 // Dynamic metadata
 export async function generateMetadata(): Promise<Metadata> {
@@ -77,17 +78,26 @@ export default function RootLayout({ children }: ReactChildNode) {
           content={GOOGLE_SITE_VERIFICATION_CODE}
         />
       </head>
-      <body>
+      <body
+        className="
+          enable-toolbar-RTL
+          trigger-position-left
+          quick-links-position-center
+          trigger-size-medium
+        "
+      >
         <Suspense>
-          <SiteInfoClientProvider>
-            <GoogleAnalytics gaId={GOOGLE_ANALYTIC_ID!} />
-            <GoogleTagManager gtmId={GOOGLE_TAG_MANAGER_ID!} />
+          <Providers>
+            <SiteInfoClientProvider>
+              <GoogleAnalytics gaId={GOOGLE_ANALYTIC_ID!} />
+              <GoogleTagManager gtmId={GOOGLE_TAG_MANAGER_ID!} />
 
-            <ProgressBar />
-            <Toaster />
-            <ServiceWorkerRegistrar />
-            {children}
-          </SiteInfoClientProvider>
+              <ProgressBar />
+              <Toaster />
+              <ServiceWorkerRegistrar />
+              {children}
+            </SiteInfoClientProvider>
+          </Providers>
         </Suspense>
         <script src="https://cdn.enable.co.il/licenses/enable-L51962b1rufewka6-1225-76847/init.js"></script>
       </body>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef } from "react";
 
 import MobileNavbar from "./Navbar.mobile";
 import MobileBusinessPinMap from "../maps/BusinessPinMap.mobile";
@@ -16,37 +16,31 @@ import MobileFeedFilterDrawer from "../drawer/FeedFilterDrawer.mobile";
 import useFavoriteFeedItemStore from "@/stores/favoriteFeedItemStore";
 import { useCommonHook, useFeedFilter, useMobileFeedLayout } from "@/hooks";
 import OnlyFeedCardsLayoutMobile from "../layouts/OnlyFeedCardsLayout.mobile";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { getAllFilters, getFeedItems } from "@/actions/feedActions";
+import { getPresetFilters } from "@/actions/commonActions";
 
 interface MobileFeedLayoutProps {
-  businesses: BusinessesProps;
-  filters: FiltersResponse;
-  initialSelectedFiltersIds: PresetFilterItems;
+  selectedFiltersIds: any;
+  isAllClear: boolean;
 }
 
 const MobileFeedLayout = ({
-  businesses,
-  filters,
-  initialSelectedFiltersIds,
+  selectedFiltersIds,
+  isAllClear,
 }: MobileFeedLayoutProps) => {
+  const observerTarget = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
   const { isMobile } = useCommonHook();
 
   const {
     activeFilterTabMobile,
     activeFeedItem,
-    feedItems,
     activeIndex,
     setActiveIndex,
     isFackLoading,
-  } = useMobileFeedLayout(businesses);
-  const {
-    appliedFilterCount,
-    filteredSubCategories,
-    isSelected,
-    toggleParam,
-    handleResetFilters,
-    shouldAnimate,
-  } = useFeedFilter(filters, initialSelectedFiltersIds);
+  } = useMobileFeedLayout();
+
   const {
     favoriteFeedItemIds,
     alreadyShownFilterTooltip,
@@ -59,40 +53,129 @@ const MobileFeedLayout = ({
     isFilterDrawerOpen,
     setIsFilterDrawerOpen,
     showFavoriteFeedItems,
-    setShowFavoriteFeedItems,
   } = useGeneralStore();
 
-  const [visibleFeedItems, setVisibleFeedItems] = useState<FeedItemList>([]);
+  /* ---------------------- Queries ---------------------- */
+  const { data: initialSelectedFiltersIds } = useQuery({
+    queryKey: ["preset-filters"],
+    queryFn: getPresetFilters,
+  });
 
-  useEffect(() => {
-    if (showFavoriteFeedItems && favoriteFeedItemIds.length > 0) {
-      const items = businesses?.data?.filter((item) =>
+  const { data: filters } = useQuery({
+    queryKey: ["filters", selectedFiltersIds],
+    queryFn: () => getAllFilters(selectedFiltersIds),
+  });
+
+  const {
+    data: infiniteData,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    // isLoading,
+  } = useInfiniteQuery({
+    queryKey: ["feeds", selectedFiltersIds],
+    queryFn: ({ pageParam = 1 }) =>
+      getFeedItems(pageParam, selectedFiltersIds, isAllClear),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) =>
+      lastPage.meta?.hasNextPage ? lastPage.meta.page + 1 : undefined,
+  });
+
+  /* ---------------------- Memoized Data ---------------------- */
+
+  const {
+    appliedFilterCount,
+    filteredSubCategories,
+    isSelected,
+    toggleParam,
+    handleResetFilters,
+    shouldAnimate,
+  } = useFeedFilter(filters, initialSelectedFiltersIds);
+
+  const businesses = useMemo<FeedItem[]>(() => {
+    return infiniteData?.pages?.flatMap((page) => page.data) ?? [];
+  }, [infiniteData?.pages]);
+
+  const totalBusiness = businesses?.length || 0;
+
+  const visibleFeedItems = useMemo(() => {
+    if (businesses?.length === 0) return [];
+
+    if (showFavoriteFeedItems && favoriteFeedItemIds?.length > 0) {
+      return businesses?.filter((item) =>
         favoriteFeedItemIds?.includes(item._id),
       );
-      setVisibleFeedItems(items);
-    } else {
-      setVisibleFeedItems(businesses?.data);
-      setShowFavoriteFeedItems(false);
     }
-  }, [showFavoriteFeedItems, favoriteFeedItemIds, businesses]);
+
+    return businesses;
+  }, [businesses, showFavoriteFeedItems, favoriteFeedItemIds]);
+
+  /* ---------------------- Initial Load Effect ---------------------- */
+  useEffect(() => {
+    // Fetch more data initially if we have very few items
+    if (
+      businesses?.length > 0 &&
+      businesses?.length < 10 &&
+      hasNextPage &&
+      !isFetchingNextPage
+    ) {
+      fetchNextPage();
+    }
+  }, [businesses?.length, hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  /* ---------------------- Infinite Scroll Observer ---------------------- */
+  useEffect(() => {
+    const target = observerTarget.current;
+
+    if (!target || !hasNextPage) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      {
+        threshold: 0.1,
+        rootMargin: "200px", // Start loading 200px before the element is visible
+      },
+    );
+
+    // Check if already in view on mount
+    const rect = target.getBoundingClientRect();
+    const isInView = rect.top >= 0 && rect.bottom <= window.innerHeight;
+
+    if (isInView && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+
+    observer.observe(target);
+
+    return () => {
+      if (target) {
+        observer.unobserve(target);
+      }
+      observer.disconnect();
+    };
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
   // Prepare feed items for carousel
   const carouselItems = useMemo(
     () =>
-      feedItems?.map((item) => ({
+      businesses?.map((item) => ({
         id: item._id,
         name: item?.name,
         image: item?.images?.[0]?.image,
         categoryId: item?.primaryCategoryId,
       })),
-    [feedItems],
+    [businesses],
   );
 
   useEffect(() => {
     if (pathname !== pathNames.home) {
       setHideFirstTwoSection(true);
     }
-  }, [pathname]);
+  }, [pathname, setHideFirstTwoSection]);
 
   const handleFilterIconClick = () => {
     setIsFilterDrawerOpen(true);
@@ -100,7 +183,7 @@ const MobileFeedLayout = ({
   };
 
   if (!isMobile) return null;
-  if (!feedItems?.length) return null;
+  if (!businesses?.length) return null;
 
   return (
     <div className="flex flex-col max-sm:block md:hidden relative">
@@ -132,6 +215,35 @@ const MobileFeedLayout = ({
         </>
       )}
 
+      {activeFilterTabMobile === "gallery" && (
+        <>
+          {hasNextPage && (
+            <div ref={observerTarget} className="pb-24 pt-10 text-center">
+              {isFetchingNextPage ? (
+                <div className="flex justify-center items-center">
+                  <span className="ml-3 text-black/50">
+                    {misc.feedItemsLoading}
+                  </span>
+                </div>
+              ) : (
+                <button
+                  onClick={() => fetchNextPage()}
+                  className="px-8 py-2 border border-black/60 hover:text-white rounded-lg hover:bg-black/80 transition-colors active:bg-green-700 font-medium"
+                >
+                  {"טען עוד"}
+                </button>
+              )}
+            </div>
+          )}
+
+          {!hasNextPage && totalBusiness > 10 && (
+            <div className="py-8 text-center text-black/50">
+              {misc.noMoreItems}
+            </div>
+          )}
+        </>
+      )}
+
       {/* Bottom Panels */}
       {hideFirstTwoSection && (
         <>
@@ -149,7 +261,7 @@ const MobileFeedLayout = ({
               {/* Icon stays centered */}
               <AiIcon size={68} />
               {appliedFilterCount > 0 && (
-                <div className="bg-green-500 absolute right-1 top-1 rounded-full h-[18px] w-[18px] text-[10px] flex items-center justify-center text-white border border-white">
+                <div className="bg-green-500 absolute right-1 top-1 rounded-full h-4.5 w-4.5 text-[10px] flex items-center justify-center text-white border border-white">
                   {appliedFilterCount}
                 </div>
               )}
@@ -164,7 +276,7 @@ const MobileFeedLayout = ({
       )}
       {isFilterDrawerOpen && (
         <MobileFeedFilterDrawer
-          itemCount={businesses?.data?.length}
+          itemCount={businesses?.length}
           isOpen={isFilterDrawerOpen}
           setIsOpen={setIsFilterDrawerOpen}
           filters={filters}

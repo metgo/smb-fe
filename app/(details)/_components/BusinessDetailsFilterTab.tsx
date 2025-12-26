@@ -7,6 +7,8 @@ import { menuItems } from "@/constant/hebrew";
 import OurStoryTabContent from "./OurStoryTabContent";
 import ProductsTabContent from "./ProductsTabContent";
 import DeliveriesTabContent from "./DeliveriesTabContent";
+import { useQuery } from "@tanstack/react-query";
+import { getProducts } from "@/actions/productActions";
 
 const tabs = [
   { id: 1, label: menuItems.ourStory },
@@ -16,11 +18,13 @@ const tabs = [
 
 const BusinessDetailsFilterTab = ({
   businessDetails,
-  products,
 }: {
   businessDetails: BusinessDetailsProps;
-  products: Product[];
 }) => {
+  const { data: products } = useQuery({
+    queryKey: ["products", businessDetails?._id],
+    queryFn: () => getProducts(businessDetails?._id),
+  });
   const [activeTab, setActiveTab] = useState<number>(1);
   const [updatedTabs, setUpdatedTabs] = useState<typeof tabs>([]);
 
@@ -98,7 +102,7 @@ const BusinessDetailsFilterTab = ({
           );
         })}
       </div>
-      <hr className="w-full h-[1px] text-secondary mb-15" />
+      <hr className="w-full h-px text-secondary mb-15" />
 
       {rederTabContent()}
     </div>

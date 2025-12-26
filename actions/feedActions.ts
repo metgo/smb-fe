@@ -3,14 +3,6 @@ import { urls } from "@/lib/endpoints";
 import { CODE } from "@/constant/envConstants";
 import { shuffleArray } from "@/lib/helpers";
 
-interface FiltersProps {
-  categoryIds: string[];
-  subCategoryIds: string[];
-  groupTypesIds: string[];
-  accessibilitiesIds: string[];
-  serviceTypes: string[];
-}
-
 // Direct fetch function without any caching
 const getCachedFeeds = async (baseUrl: string, page: number) => {
   let allData: any[] = [];
@@ -83,6 +75,72 @@ export async function getAllFeeds(
         hasPreviousPage: false,
         hasNextPage: false,
       },
+    };
+  } catch (error) {
+    console.error("Error in getAllFeeds:", error);
+
+    return {
+      data: [],
+      totalData: 0,
+      meta: {
+        page: 1,
+        limit,
+        pageCount: 1,
+        hasPreviousPage: false,
+        hasNextPage: false,
+      },
+    };
+  }
+}
+
+export async function getFeedItems(
+  page: number = 1,
+  filters: FiltersProps,
+  isAllClear: boolean = false,
+): Promise<FeedItemResponse> {
+  let baseUrl: string;
+  const limit = 20;
+
+  if (isAllClear) {
+    baseUrl = `${urls.feeds}?campCode=${CODE}&limit=${limit}&page=${page}`;
+  } else {
+    const {
+      categoryIds,
+      subCategoryIds,
+      groupTypesIds,
+      accessibilitiesIds,
+      serviceTypes,
+    } = filters;
+
+    const query = new URLSearchParams();
+    query.append("limit", limit.toString());
+    query.append("sortBy", "createdAt");
+    query.append("sortOrder", "DESC");
+    query.append("campCode", CODE!);
+    query.append("page", page.toString());
+
+    categoryIds?.forEach((id) => query.append("categoriesId", id));
+    subCategoryIds?.forEach((id) => query.append("subCategoriesId", id));
+    groupTypesIds?.forEach((id) => query.append("groupTypesId", id));
+    accessibilitiesIds?.forEach((id) => query.append("accessibilitiesId", id));
+    serviceTypes?.forEach((type) => query.append("serviceType", type));
+
+    baseUrl = `${urls.feeds}?${query.toString()}`;
+  }
+
+  try {
+    const res = await fetch(baseUrl, {
+      method: "GET",
+      next: { revalidate: 600 }, // Cache for 1 minute
+    });
+
+    if (!res.ok) throw new Error(`Failed to fetch feeds: ${res.statusText}`);
+
+    const resData: FeedItemResponse = await res.json();
+    const finalData = shuffleArray(resData?.data);
+    return {
+      ...resData,
+      data: finalData,
     };
   } catch (error) {
     console.error("Error in getAllFeeds:", error);

@@ -124,7 +124,7 @@ const SearchFlow = ({
         <Dialog
           isOpen={isSearchModalOpen}
           onClose={() => setIsSerachModalOpen(false)}
-          className=" max-sm:w-[92%] max-sm:mx-4 md:w-[94%] h-[max-content] backdrop-blur-2xl"
+          className=" max-sm:w-[92%] max-sm:mx-4 md:w-[94%] h-max backdrop-blur-2xl"
         >
           <div>
             {/* Search box */}
@@ -210,7 +210,7 @@ const SearchFlow = ({
             {/* Mobile view */}
             <div className=" space-y-10 max-sm:block md:hidden">
               {isLoading ? (
-                <div className="h-[200px] px-4 py-7.5">
+                <div className="h-50 px-4 py-7.5">
                   <SectionTitle title={misc.pleaseWaitLoading} />
                 </div>
               ) : (
