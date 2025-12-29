@@ -19,6 +19,7 @@ import { PaymentsModule } from 'src/services/payments/payments.module';
 import { MailChimpModule } from 'src/services/mailchimp/mailchimp.module';
 import { QRCodeModule } from 'src/services/qr-code/qr-code.module';
 import { CqrsModule } from '@nestjs/cqrs';
+import { CreateMiniSiteOrderHandler } from './commands/handler/create-mini-site-order.handler';
 
 @Module({
   imports: [
@@ -40,7 +41,7 @@ import { CqrsModule } from '@nestjs/cqrs';
     forwardRef(() => CampaignModule),
   ],
   controllers: [OrdersController],
-  providers: [OrdersService],
+  providers: [OrdersService, CreateMiniSiteOrderHandler],
   exports: [OrdersService],
 })
 export class OrdersModule {}

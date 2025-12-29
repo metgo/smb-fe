@@ -14,9 +14,7 @@ import { Logger } from 'winston';
 
 import { calculateProductsTotalAmount } from 'src/common/calculate-products-total-amount';
 import { ServerErrors } from 'src/common/constant';
-import {
-  Currency, Locale, PaymentStatus, VoucherStatus,
-} from 'src/common/enum';
+import { Currency, Locale, PaymentStatus } from 'src/common/enum';
 import { DynamicEmailTemplate } from 'src/common/mailchimp/templateId';
 import { sortByPriorityAndHighest } from 'src/common/sort-priority-and-highest';
 import { getCommonEmailFields } from 'src/common/utils/email/common-fields';
@@ -46,7 +44,7 @@ import { OrderProductService } from 'src/modules/order-product/order-product.ser
 import { PaymentsService } from 'src/services/payments/payments.service';
 import { PaymentPurpose } from 'src/services/payments/payments.type';
 import { MailChimpService } from 'src/services/mailchimp/mailchimp.service';
-import { CreateMiniSiteOrderCommand, CreateOrderCommand } from 'src/modules/orders/interface/create-order.interface';
+import { CreateOrderCommand } from 'src/modules/orders/interface/create-order.interface';
 import { ExternalApiServices } from 'src/modules/external-api/external-api.service';
 import { QRCodeService } from 'src/services/qr-code/qr-code.service';
 import { ConfigService } from 'src/services/config/config.service';
@@ -56,7 +54,6 @@ import { CampaignService } from 'src/modules/campaign/campaign.service';
 import { GetTicketByIdsQuery } from '../tickets/queries/get-ticket-by-ids.query';
 import { Ticket } from '../tickets/schema/tickets.schema';
 import { GetEventByIdsQuery } from '../events/queries/get-by-ids.query';
-import { CampaignType } from '../campaign/campaign.type';
 
 @Injectable()
 export class OrdersService {
@@ -130,51 +127,6 @@ export class OrdersService {
         const voucherIds = body.voucher.map(voucher => voucher.id);
         const vouchers = await this.voucherService.findByValidIds(voucherIds);
 
-        if (vouchers.length === 1) {
-          const campaign:any = vouchers[0].campId;
-
-          if (campaign.type === CampaignType.MINI_SITE) {
-            const expiredVoucher = vouchers.find(
-              voucher => voucher.status === 'EXPIRED',
-            );
-
-            if (expiredVoucher) {
-              throw new BadRequestException(
-                'The voucher is expired and cannot be used.',
-              );
-            }
-
-            const products = cartDetails.product.map(pro => ({
-              id: pro.id.toString(),
-            }));
-
-            const cartItemsProduct = cartItems.filter(
-              product => product.itemType === OrderItemType.PRODUCT,
-            );
-
-            const cartItemsTicket = cartItems.filter(
-              ticket => ticket.itemType === OrderItemType.TICKET,
-            );
-
-            const order = await this.createOrderForMiniSite({
-              loggedInUser,
-              body,
-              redeemedVouchers,
-              totalAmount: totalAmountToPay,
-              payableAmount,
-              products,
-              productDetails: productsFromDB,
-              ticketDetails: ticketsFromDB,
-              cartItemsProduct,
-              cartItemsTicket,
-              totalDeliveryFee,
-              vouchers: vouchers[0],
-            });
-
-            return order;
-          }
-        }
-
         if (vouchers?.length) {
           const sortedVoucher = sortByPriorityAndHighest(
             totalAmountToPay,
@@ -232,203 +184,6 @@ export class OrdersService {
       });
       exceptionHandling(error);
     }
-  }
-
-  async createOrderForMiniSite(orderCommand: CreateMiniSiteOrderCommand): Promise<any> {
-    const {
-      loggedInUser,
-      body,
-      redeemedVouchers,
-      totalAmount,
-      payableAmount,
-      totalDeliveryFee,
-      products,
-      productDetails,
-      ticketDetails,
-      cartItemsProduct,
-      cartItemsTicket,
-      vouchers,
-    } = orderCommand;
-
-    try {
-      const campDetails = await this.campaignService.findCampaignAndReturn(
-        'code',
-        body.campCode,
-      );
-      const externalApi = await this.externalApiService.findByIdentifierId(
-        body.identifierId,
-      );
-      const newOrder = new this.OrderModel();
-
-      const baseUrl
-        = this.configService.get('ENV_NAME') === 'prod'
-          ? 'https://console.metgo.app/'
-          : 'https://stg.console.metgo.app/';
-
-      const orderUrlWithUTM = `${baseUrl}orders/${newOrder._id.toString()}?utm_source=qr_code&utm_medium=tav8`;
-
-      const qrCodeUrl = await this.qrCodeService.generateQRCode(
-        orderUrlWithUTM,
-        newOrder._id.toString(),
-        loggedInUser,
-      );
-
-      const command = {
-        ...body,
-        _id: newOrder._id,
-        externalApi,
-        products,
-        voucher: redeemedVouchers,
-        userId: loggedInUser?.id ?? null,
-        createdBy: loggedInUser?.id ?? null,
-        createdAt: new Date(),
-        creditCardPayment: totalAmount,
-        totalAmount: payableAmount,
-        deliveryFee: totalDeliveryFee,
-        qrCodeUrl,
-        campId: campDetails._id,
-      };
-
-      const ordersCreated = await this.createOrderWithOnlyVouchersForMiniSite(
-        command,
-        productDetails,
-        ticketDetails,
-        cartItemsProduct,
-        cartItemsTicket,
-        loggedInUser,
-      );
-
-      // if voucher is mini site then expire
-
-      await this.voucherService.update([vouchers._id], { status: VoucherStatus.EXPIRED });
-
-      return ordersCreated;
-    } catch (error) {
-      this.logger.error('[EXTERNAL_API_ORDERS]: FAILED TO CREATE ORDER', {
-        err: error.message,
-      });
-      exceptionHandling(error);
-    }
-  }
-
-  async createOrderWithOnlyVouchersForMiniSite(
-    command,
-    productInfo: Product[],
-    ticketInfo: Ticket[],
-    cartItemsProduct: CartProductResponse[] = [],
-    cartItemsTicket: CartProductResponse[] = [],
-    loggedInUser: LoggedInUserInterface | null,
-  ) {
-    const orderWithQR = new this.OrderModel({
-      ...command,
-      externalApiId: command?.externalApi?._id,
-      paymentDate: new Date(),
-      paymentStatus: PaymentStatus.SUCCESS,
-      status: OrderStatus.PROCESSING,
-      paymentMode: [PaymentMode.VOUCHER],
-    });
-
-    const order = await orderWithQR.save();
-
-    this.logger.info('[EXTERNAL_API_ORDERS]: CREATED-PAID BY VOUCHER', {
-      message: order,
-    });
-
-    // create order products
-    const cartItems = [...cartItemsProduct, ...cartItemsTicket];
-    const orderProduct = await Promise.all(
-      order.products.map(async product => {
-        const cartItem = cartItems.find(
-          item => item.id.toString() === product.id.toString(),
-        );
-        return await this.orderProductService.create({
-          itemId: cartItem?.id,
-          quantity: cartItem?.quantity,
-          email: cartItem?.email,
-          countryCode: cartItem?.countryCode,
-          phone: cartItem?.phone,
-          firstName: cartItem?.firstName,
-          lastName: cartItem?.lastName,
-          deliveryFee: cartItem?.deliveryFee,
-          deliveryMethod: cartItem?.deliveryMethod,
-          deliveryArea: cartItem?.deliveryArea,
-          deliveryPickupLocation: cartItem?.deliveryPickupLocation,
-          houseNo: cartItem?.houseNo,
-          apartment: cartItem?.apartment,
-          city: cartItem?.city,
-          street: cartItem?.street,
-          isGift: cartItem?.isGift,
-          additionalInfo: cartItem?.additionalInfo,
-          amount: cartItem?.amount,
-          orderId: order.id,
-          loggedInUserId: loggedInUser?.id,
-          itemType: cartItem.itemType,
-        });
-      }),
-    );
-
-    if (cartItemsProduct?.length) {
-      await this.productsService.deductQuantity(cartItemsProduct);
-    }
-
-    await this.cartService.updateCartPostCheckout(
-      command.cartId,
-      order._id,
-      loggedInUser,
-    );
-
-    if (cartItemsProduct?.length) {
-      await this.sendEmailForMiniSitePostOrderPayment(
-        productInfo,
-        order,
-        orderProduct,
-        command?.externalApi,
-        command?.languagePreference,
-      );
-    }
-
-    if (cartItemsTicket?.length) {
-      await this.sendEmailPostTicketPayment(
-        ticketInfo,
-        order,
-        orderProduct,
-        command?.externalApi,
-        command?.languagePreference,
-      );
-    }
-
-    // need to send emails for products
-
-    // send invoice
-
-    const productInvoice = await Promise.all(
-      productInfo?.map(pro => ({
-        id: pro._id.toString(),
-        price: pro?.price?.sellingPrice,
-        name: pro?.name,
-      })),
-    );
-    const ticketInvoice = await Promise.all(
-      ticketInfo?.map(ticket => ({
-        id: ticket._id.toString(),
-        price: ticket?.price?.sellingPrice,
-        name: ticket?.name,
-      })),
-    );
-
-    await this.paymentService.sendInvoice({
-      customerName: order?.firstName,
-      customerEmail: order?.email,
-      invoiceType: 101,
-      product: [...productInvoice, ...ticketInvoice],
-      transactionId: parseInt(order._id?.toString(), 10),
-      purpose: PaymentPurpose.ORDER,
-      sumPaid: order?.totalAmount,
-      languagePreference: command?.languagePreference,
-      additionalInformation: 'Paid via Voucher',
-    });
-
-    return order;
   }
 
   async createOrder(orderCommand: CreateOrderCommand): Promise<any> {
@@ -494,7 +249,6 @@ export class OrdersService {
           cartItemsTicket,
           loggedInUser,
         );
-        // if voucher is mini site then expire
       }
 
       return await this.createOrderWithCardComPayment(
@@ -1219,232 +973,9 @@ export class OrdersService {
       WEBSITE_NAME: externalApi?.name,
       BUSINESSNAME: businessDetails[0]?.name || '',
       BUSINESSPHONE:
-          `${businessDetails[0]?.countryCode}-${businessDetails[0]?.phoneNumber}`
-          || '',
-      BUSINESSEMAIL: businessDetails[0]?.busiEmail || '',
-    };
-
-      type EmailOrderGroup = {
-        buyerName: string;
-        products: {
-          quantity: number;
-          image?: any;
-          name: string;
-          price: number;
-          deliveryFee: number;
-        }[];
-        totalAmount: number;
-      };
-
-      const emailToProductsMap: { [email: string]: EmailOrderGroup } = {};
-
-      orderProduct.forEach(orderItem => {
-        const { email } = orderItem;
-        const product = productInfo.find(
-          p => p._id.toString() === orderItem.itemId.toString(),
-        );
-
-        if (!product) return;
-
-        if (!emailToProductsMap[email]) {
-          emailToProductsMap[email] = {
-            buyerName: orderItem.firstName,
-            products: [],
-            totalAmount: 0,
-          };
-        }
-
-        const price = orderItem?.amount || product?.price?.sellingPrice;
-        const quantity = orderItem?.quantity || 1;
-        const deliveryFee = orderItem?.deliveryFee || 0;
-
-        emailToProductsMap[email].products.push({
-          quantity,
-          image: product?.images[0]?.image,
-          name: product?.name,
-          price,
-          deliveryFee,
-        });
-
-        emailToProductsMap[email].totalAmount += price * quantity + deliveryFee;
-      });
-
-      await Promise.all(
-        Object.entries(emailToProductsMap).map(async ([email, group]) => {
-          const productsHtml = group.products
-            .map(
-              product => `
-              <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom: 20px;">
-                <tr>
-                  <td style="padding: 10px; background: ${
-  externalApi?.themeId.secondaryColor
-}; direction: rtl; border-radius: 20px;">
-                    <table cellpadding="0" cellspacing="0" border="0" width="100%">
-                      <tr>
-                        <td style="padding: 0; vertical-align: middle;">
-                          <img src="${product?.image || ''}" alt="${
-  product?.name
-}"
-                            style="max-width: 100px; height: 100px; margin-left: 10px; display: block;">
-                        </td>
-                        <td style="padding: 0 10px; vertical-align: middle;" width="100%">
-                          <span style="display: block; font-size: 16px; color: #333333;">${
-  product?.name
-}</span>
-                          <span style="display: block; font-size: 14px; color: #666666;">כמות: ${
-  product?.quantity
-}</span>
-  <span style="display: block; font-size: 14px; color: #666666;">
-  דמי משלוח: ₪${product?.deliveryFee}</span>
-                        </td>
-                        <td style="padding: 0; vertical-align: middle; white-space: nowrap;">
-                          <span dir="rtl" style="font-size: 16px; color: #333333;">₪${
-  product?.price
-}</span>
-                        </td>
-                      </tr>
-                    </table>
-                  </td>
-                </tr>
-              </table>
-              `,
-            )
-            .join('');
-
-          await this.mailchimpService.sendTransactionalEmail({
-            to: email,
-            templatedId: DynamicEmailTemplate.OrderConfirmationForClient,
-            from_email: externalApi?.companyDetails?.email,
-            from_name: externalApi?.name,
-            mergeVars: {
-              ...orderEmailFields,
-              PRODUCTS_HTML: productsHtml,
-              BUYERNAME: group.buyerName,
-              TOTALAMOUNT: group.totalAmount,
-              CHANGE_SETTINGS_LINK: externalApi?.themeId?.websiteUrl,
-              BUSINESSADDRESS: businessDetails[0]?.address?.location || '',
-              QRCODEURL: order?.qrCodeUrl || '',
-            },
-          });
-        }),
-      );
-
-      // SEND TO BUSINESS OWNER
-      await Promise.all(
-        businessDetails.map(async business => {
-          const relevantProducts = productInfo.filter(
-            product => product.businessId.toString() === business._id.toString(),
-          );
-
-          let businessTotalAmount = 0;
-
-          const productsHtmlForEchBusiness = relevantProducts
-            .map(product => {
-              const matchingProduct = orderProduct.find(
-                p => p.itemId.toString() === product._id.toString(),
-              );
-
-              if (!matchingProduct) return '';
-
-              const quantity = matchingProduct.quantity || 1;
-              const price
-                = matchingProduct.amount || product.price?.sellingPrice || 0;
-              const deliveryFee = matchingProduct.deliveryFee || 0;
-              const address = matchingProduct?.deliveryPickupLocation || '';
-
-              const totalPriceForThisProduct = quantity * price + deliveryFee;
-
-              businessTotalAmount += totalPriceForThisProduct;
-
-              return `
-              <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom: 20px;">
-              <tr>
-                <td style="padding: 10px; background: ${
-  externalApi?.themeId.secondaryColor
-}; direction: rtl; border-radius: 20px;">
-                  <table cellpadding="0" cellspacing="0" border="0" width="100%">
-                    <tr>
-                      <td style="padding: 0; vertical-align: middle;">
-                        <img src="${product.images?.[0]?.image || ''}" alt="${
-  product?.name
-}"
-                          style="max-width: 100px; height: 100px; margin-left: 10px; display: block;">
-                      </td>
-                      <td style="padding: 0 10px; vertical-align: middle;" width="100%">
-                        <span
-                          style="display: block; font-size: 16px; color: #333333;">${
-  product?.name
-}</span>
-                        <span style="display: block; font-size: 14px; color: #666666;">כמות:
-                            ${quantity}</span>
-                        <span style="display: block; font-size: 14px; color: #666666;">
-  דמי משלוח: ₪${deliveryFee}</span>
-  <span style="display: block; font-size: 14px; color: #666666;">כְּתוֹבֶת: ${
-  address || 'לא ישים'
-}</span>
-                      </td>
-                      <td style="padding: 0; vertical-align: middle; white-space: nowrap;">
-                        <span dir="rtl" style="font-size: 16px; color: #333333;">₪${price}</span>
-                      </td>
-                    </tr>
-                  </table>
-                </td>
-              </tr>
-            </table>
-              `;
-            })
-            .join('');
-
-          await this.mailchimpService.sendTransactionalEmail({
-            to: business?.busiEmail,
-            templatedId: DynamicEmailTemplate.OrderConfirmationForVendor,
-            from_email: externalApi?.companyDetails?.email,
-            from_name: externalApi?.name,
-            mergeVars: {
-              ...orderEmailFields,
-              TOTALAMOUNT: businessTotalAmount,
-              BUYERNAME: order?.firstName,
-              PRODUCTS_HTML: productsHtmlForEchBusiness,
-              BUYER_PHONE_NUMBER: order.phone,
-              BUYER_ORDER_EMAIL: order?.email || '',
-            },
-          });
-        }),
-      );
-  }
-
-  async sendEmailForMiniSitePostOrderPayment(
-    productInfo: Product[],
-    order: Order,
-    orderProduct: OrderProduct[],
-    externalApi: any,
-    languagePreference?: Locale,
-  ) {
-    console.log(languagePreference);
-
-    const businessIds = productInfo.map(pro => pro.businessId);
-
-    const businessDetails = await this.businessService.findBusinessEmailByIds(
-      businessIds,
-    );
-
-    const { bucketUrl, emailFields } = getCommonEmailFields(
-      externalApi.identifierId,
-      externalApi.themeId,
-    );
-
-    const orderEmailFields = {
-      ...emailFields,
-      BUTTON_LINK: externalApi?.themeId?.websiteUrl,
-      BANNER_IMG: `${bucketUrl}footer/banner-web.png`,
-      MOBILE_BANNER_IMG: `${bucketUrl}footer/banner-mobile.png`,
-      WEBSITE_NAME: externalApi?.name,
-      BUSINESSNAME: businessDetails[0]?.name || '',
-      BUSINESSPHONE:
         `${businessDetails[0]?.countryCode}-${businessDetails[0]?.phoneNumber}`
         || '',
       BUSINESSEMAIL: businessDetails[0]?.busiEmail || '',
-      FOOTER_BANNER_MINISITE_BANNER: `${bucketUrl}footer/footer-banner-mini-site.png`,
     };
 
     type EmailOrderGroup = {
@@ -1497,44 +1028,53 @@ export class OrdersService {
         const productsHtml = group.products
           .map(
             product => `
-            <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom: 20px;">
-              <tr>
-                <td style="padding: 10px; background: ${
+              <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom: 20px;">
+                <tr>
+                  <td style="padding: 10px; background: ${
   externalApi?.themeId.secondaryColor
 }; direction: rtl; border-radius: 20px;">
-                  <table cellpadding="0" cellspacing="0" border="0" width="100%">
-                    <tr>
-                      <td style="padding: 0; vertical-align: middle;">
-                        <img src="${product?.image || ''}" alt="${
+                    <table cellpadding="0" cellspacing="0" border="0" width="100%">
+                      <tr>
+                        <td style="padding: 0; vertical-align: middle;">
+                          <img src="${product?.image || ''}" alt="${
   product?.name
 }"
-                          style="max-width: 100px; height: 100px; margin-left: 10px; display: block;">
-                      </td>
-                      <td style="padding: 0 10px; vertical-align: middle;" width="100%">
-                        <span style="display: block; font-size: 16px; color: #333333;">${
+                            style="max-width: 100px; height: 100px; margin-left: 10px; display: block;">
+                        </td>
+                        <td style="padding: 0 10px; vertical-align: middle;" width="100%">
+                          <span style="display: block; font-size: 16px; color: #333333;">${
   product?.name
 }</span>
-                        
-                      </td>
-                    </tr>
-                  </table>
-                </td>
-              </tr>
-            </table>
-            `,
+                          <span style="display: block; font-size: 14px; color: #666666;">כמות: ${
+  product?.quantity
+}</span>
+  <span style="display: block; font-size: 14px; color: #666666;">
+  דמי משלוח: ₪${product?.deliveryFee}</span>
+                        </td>
+                        <td style="padding: 0; vertical-align: middle; white-space: nowrap;">
+                          <span dir="rtl" style="font-size: 16px; color: #333333;">₪${
+  product?.price
+}</span>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+              `,
           )
           .join('');
 
         await this.mailchimpService.sendTransactionalEmail({
           to: email,
-          templatedId: DynamicEmailTemplate.OrderConfirmationForClientMiniSite,
+          templatedId: DynamicEmailTemplate.OrderConfirmationForClient,
           from_email: externalApi?.companyDetails?.email,
           from_name: externalApi?.name,
           mergeVars: {
             ...orderEmailFields,
             PRODUCTS_HTML: productsHtml,
             BUYERNAME: group.buyerName,
-            // TOTALAMOUNT: group.totalAmount,
+            TOTALAMOUNT: group.totalAmount,
             CHANGE_SETTINGS_LINK: externalApi?.themeId?.websiteUrl,
             BUSINESSADDRESS: businessDetails[0]?.address?.location || '',
             QRCODEURL: order?.qrCodeUrl || '',
@@ -1571,41 +1111,41 @@ export class OrdersService {
             businessTotalAmount += totalPriceForThisProduct;
 
             return `
-            <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom: 20px;">
-            <tr>
-              <td style="padding: 10px; background: ${
+              <table cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom: 20px;">
+              <tr>
+                <td style="padding: 10px; background: ${
   externalApi?.themeId.secondaryColor
 }; direction: rtl; border-radius: 20px;">
-                <table cellpadding="0" cellspacing="0" border="0" width="100%">
-                  <tr>
-                    <td style="padding: 0; vertical-align: middle;">
-                      <img src="${product.images?.[0]?.image || ''}" alt="${
+                  <table cellpadding="0" cellspacing="0" border="0" width="100%">
+                    <tr>
+                      <td style="padding: 0; vertical-align: middle;">
+                        <img src="${product.images?.[0]?.image || ''}" alt="${
   product?.name
 }"
-                        style="max-width: 100px; height: 100px; margin-left: 10px; display: block;">
-                    </td>
-                    <td style="padding: 0 10px; vertical-align: middle;" width="100%">
-                      <span
-                        style="display: block; font-size: 16px; color: #333333;">${
+                          style="max-width: 100px; height: 100px; margin-left: 10px; display: block;">
+                      </td>
+                      <td style="padding: 0 10px; vertical-align: middle;" width="100%">
+                        <span
+                          style="display: block; font-size: 16px; color: #333333;">${
   product?.name
 }</span>
-                      <span style="display: block; font-size: 14px; color: #666666;">כמות:
-                          ${quantity}</span>
-                      <span style="display: block; font-size: 14px; color: #666666;">
-דמי משלוח: ₪${deliveryFee}</span>
-<span style="display: block; font-size: 14px; color: #666666;">כְּתוֹבֶת: ${
+                        <span style="display: block; font-size: 14px; color: #666666;">כמות:
+                            ${quantity}</span>
+                        <span style="display: block; font-size: 14px; color: #666666;">
+  דמי משלוח: ₪${deliveryFee}</span>
+  <span style="display: block; font-size: 14px; color: #666666;">כְּתוֹבֶת: ${
   address || 'לא ישים'
 }</span>
-                    </td>
-                    <td style="padding: 0; vertical-align: middle; white-space: nowrap;">
-                      <span dir="rtl" style="font-size: 16px; color: #333333;">₪${price}</span>
-                    </td>
-                  </tr>
-                </table>
-              </td>
-            </tr>
-          </table>
-            `;
+                      </td>
+                      <td style="padding: 0; vertical-align: middle; white-space: nowrap;">
+                        <span dir="rtl" style="font-size: 16px; color: #333333;">₪${price}</span>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+              `;
           })
           .join('');
 
