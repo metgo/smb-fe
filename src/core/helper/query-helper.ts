@@ -236,14 +236,17 @@ export async function queryhandler<T>(
     languageQuery,
   } = queries;
 
+  const numberedPage = Number(page);
+  const numberedLimit = Number(limit);
+
   const datas: any = {};
   const findQueries = { ...findQuery, deletedAt: { $in: [null] } };
   datas.data = await model
     .find(findQueries)
     .select(select)
     .collation({ locale: 'en', strength: 2 })
-    .skip((page - 1) * limit)
-    .limit(limit)
+    .skip((numberedPage - 1) * numberedLimit)
+    .limit(numberedLimit)
     .sort({ [sort]: sortOrder === SortOrder.ASC ? 1 : -1, _id: 1 })
     .populate(populate)
     .populate(populate1);
@@ -256,14 +259,14 @@ export async function queryhandler<T>(
     });
   }
   datas.totalData = await model.countDocuments(findQueries);
-  if (page && limit) {
+  if (numberedPage && numberedLimit) {
     const meta = {
-      page,
-      limit,
+      page: numberedPage,
+      limit: numberedLimit,
       data: datas.data.length,
-      pageCount: Math.ceil(datas.totalData / limit),
-      hasPreviousPage: page > 1,
-      hasNextPage: page < Math.ceil(datas.totalData / limit),
+      pageCount: Math.ceil(datas.totalData / numberedLimit),
+      hasPreviousPage: numberedPage > 1,
+      hasNextPage: numberedPage < Math.ceil(datas.totalData / numberedLimit),
     };
     datas.meta = meta;
   }

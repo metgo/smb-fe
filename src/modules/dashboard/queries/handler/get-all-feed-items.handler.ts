@@ -4,7 +4,6 @@ import { Model } from 'mongoose';
 
 import { SortOrder } from 'src/common/enum';
 import { shuffleArray } from 'src/common/utils/shuffle';
-import { paginateData } from 'src/common/pagination';
 import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { queryhandler } from 'src/core/helper/query-helper';
 import { CampaignService } from 'src/modules/campaign/campaign.service';
@@ -33,7 +32,7 @@ implements IQueryHandler<GetAllFeedItemsQuery> {
     private readonly queryBus: QueryBus,
   ) {}
 
-  async execute(queries: GetAllFeedItemsQuery): Promise<any> {
+  async execute(queries: GetAllFeedItemsQuery): Promise<GetAllFeedItemResponse> {
     try {
       const {
         campCode,
@@ -92,16 +91,24 @@ implements IQueryHandler<GetAllFeedItemsQuery> {
         = !hasServiceFilter
         || finalServiceType.some(t => [ServicesTypes.TRIPS, ServicesTypes.FUNDAY].includes(t));
 
+      let noOfServiceType: number = 0;
+
+      const numberedPage = Number(page);
+      const numberedLimit = Number(limit);
+      if (numberedPage && numberedLimit) {
+        noOfServiceType = Math.floor(numberedLimit / (finalServiceType?.length || 5));
+      }
+
       if (wantsBusiness) {
-        business = await this.getBusinessOrPoi(queries, campDetails);
+        business = await this.getBusinesses(queries, campDetails, numberedPage, noOfServiceType);
       }
 
       if (wantsPOI) {
-        poi = await this.getPoi(queries, campDetails);
+        poi = await this.getPoi(queries, campDetails, numberedPage, noOfServiceType);
       }
 
       if (wantsEvents) {
-        event = await this.getEvents(queries, campDetails);
+        event = await this.getEvents(queries, campDetails, numberedPage, noOfServiceType);
       }
 
       if (wantsTripsOrFunday) {
@@ -109,29 +116,49 @@ implements IQueryHandler<GetAllFeedItemsQuery> {
           queries,
           campDetails,
           finalServiceType,
+          numberedPage,
+          noOfServiceType,
         );
       }
 
       const allItems = [
-        ...(Array.isArray(business) ? business : []),
-        ...(Array.isArray(poi) ? poi : []),
-        ...(Array.isArray(event) ? event : []),
-        ...(Array.isArray(tripAndFunday) ? tripAndFunday : []),
+        ...(Array.isArray(business?.data) ? business.data : []),
+        ...(Array.isArray(poi?.data) ? poi.data : []),
+        ...(Array.isArray(event?.data) ? event.data : []),
+        ...(Array.isArray(tripAndFunday?.data) ? tripAndFunday.data : []),
       ];
 
       const shuffledItems = shuffleArray(allItems);
 
-      const paginatedItems = paginateData(page, limit, shuffledItems);
-      return paginatedItems;
+      const totalData
+        = (business?.totalData || 0)
+        + (poi?.totalData || 0)
+        + (event?.totalData || 0)
+        + (tripAndFunday?.totalData || 0);
+      const pageCount = Math.ceil(totalData / limit);
+      return {
+        data: shuffledItems,
+        totalData,
+        meta: {
+          page: numberedPage,
+          limit: numberedLimit,
+          data: shuffledItems?.length,
+          pageCount,
+          hasPreviousPage: numberedPage > 1,
+          hasNextPage: numberedPage < pageCount,
+        },
+      };
     } catch (err) {
       exceptionHandling(err);
     }
   }
 
-  private async getBusinessOrPoi(
+  private async getBusinesses(
     queries: GetAllFeedItemsQuery,
     campDetails: any,
-  ): Promise<GetAllFeedItemResponse[]> {
+    page: number | null,
+    limit: number | null,
+  ): Promise<GetAllFeedItemResponse> {
     try {
       const {
         groupTypesId,
@@ -162,9 +189,11 @@ implements IQueryHandler<GetAllFeedItemsQuery> {
         select,
         sort: sortBy || 'createdAt',
         sortOrder: sortOrder || SortOrder.DESC,
+        page,
+        limit,
       });
 
-      return allBusiness.data;
+      return allBusiness;
     } catch (err) {
       exceptionHandling(err);
     }
@@ -173,9 +202,13 @@ implements IQueryHandler<GetAllFeedItemsQuery> {
   private async getPoi(
     queries: GetAllFeedItemsQuery,
     campDetails: any,
-  ): Promise<GetAllFeedItemResponse[]> {
+    page: number | null,
+    limit: number | null,
+  ): Promise<GetAllFeedItemResponse> {
     try {
-      const { sortBy, sortOrder, search } = queries;
+      const {
+        sortBy, sortOrder, search,
+      } = queries;
 
       const findQuery = await this.queryBus.execute(
         new GetPOIRawQuery({
@@ -192,9 +225,11 @@ implements IQueryHandler<GetAllFeedItemsQuery> {
         select,
         sort: sortBy || 'createdAt',
         sortOrder: sortOrder || SortOrder.DESC,
+        page,
+        limit,
       });
 
-      return allPOI.data;
+      return allPOI;
     } catch (err) {
       exceptionHandling(err);
     }
@@ -203,9 +238,13 @@ implements IQueryHandler<GetAllFeedItemsQuery> {
   private async getEvents(
     queries: GetAllFeedItemsQuery,
     campDetails: any,
-  ): Promise<GetAllFeedItemResponse[]> {
+    page: number | null,
+    limit: number | null,
+  ): Promise<GetAllFeedItemResponse> {
     try {
-      const { sortBy, sortOrder, search } = queries;
+      const {
+        sortBy, sortOrder, search,
+      } = queries;
 
       const findQuery = await this.queryBus.execute(
         new GetEventRawQuery({
@@ -222,15 +261,17 @@ implements IQueryHandler<GetAllFeedItemsQuery> {
         select,
         sort: sortBy || 'createdAt',
         sortOrder: sortOrder || SortOrder.DESC,
+        page,
+        limit,
       });
 
-      const mappedEvents = allEvents.data.map(event => ({
+      allEvents.data = allEvents.data.map(event => ({
         ...event.toObject(),
         serviceType: ServicesTypes.EVENT,
         primaryCategoryId: '6566e208a77d2a477266d2b3',
       }));
 
-      return mappedEvents;
+      return allEvents;
     } catch (err) {
       exceptionHandling(err);
     }
@@ -240,9 +281,13 @@ implements IQueryHandler<GetAllFeedItemsQuery> {
     queries: GetAllFeedItemsQuery,
     campDetails: any,
     serviceType: ServicesTypes[],
-  ): Promise<GetAllFeedItemResponse[]> {
+    page: number | null,
+    limit: number | null,
+  ): Promise<GetAllFeedItemResponse> {
     try {
-      const { sortBy, sortOrder, search } = queries;
+      const {
+        sortBy, sortOrder, search,
+      } = queries;
 
       const matchQuery = await this.queryBus.execute(
         new GetTripRawQuery({
@@ -339,9 +384,47 @@ implements IQueryHandler<GetAllFeedItemsQuery> {
 
       pipeline.push({
         $sort: {
-          [sortBy || 'createdAt']: sortOrder === SortOrder.ASC ? 1 : -1,
+          [sortBy || 'createdAt']:
+            sortOrder === SortOrder.ASC ? 1 : -1,
+          _id: 1,
         },
       });
+
+      if (page && limit) {
+        pipeline.push({
+          $facet: {
+            metadata: [{ $count: 'total' }],
+            data: [
+              { $skip: (page - 1) * limit },
+              { $limit: limit },
+            ],
+          },
+        });
+
+        const result = await this.TripModel.aggregate(pipeline).exec();
+
+        const items = result[0].data;
+        const totalData = result[0].metadata[0]?.total || 0;
+        const mappedTrips = items.map(trip => ({
+          _id: trip._id,
+          name: trip.name,
+          shortDescription: trip.shortDescription,
+          geoLocation: {
+            lat: '',
+            long: '',
+          },
+          images: trip.images,
+          primaryCategoryId: '6566e31ca77d2a477266d2d6',
+          address: trip.address,
+          slug: trip.slug,
+          serviceType: trip.serviceType,
+        }));
+
+        return {
+          data: mappedTrips,
+          totalData,
+        };
+      }
 
       const allTrips = await this.TripModel.aggregate(pipeline).exec();
 
@@ -360,7 +443,10 @@ implements IQueryHandler<GetAllFeedItemsQuery> {
         serviceType: trip.serviceType,
       }));
 
-      return mappedTrips;
+      return {
+        data: mappedTrips,
+        totalData: mappedTrips.length,
+      };
     } catch (err) {
       exceptionHandling(err);
     }

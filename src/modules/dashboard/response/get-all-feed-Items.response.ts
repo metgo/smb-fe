@@ -9,7 +9,7 @@ class GeoLocationDto {
     long: string | null;
 }
 
-export class GetAllFeedItemResponse {
+export class GetAllItemsResponse {
   @ApiProperty({ type: String })
     _id: string;
 
@@ -36,4 +36,15 @@ export class GetAllFeedItemResponse {
 
   @ApiProperty({ enum: ServicesTypes })
     serviceType: ServicesTypes;
+}
+
+export class GetAllFeedItemResponse {
+  @ApiProperty({ type: [GetAllItemsResponse], required: true })
+    data: GetAllItemsResponse[];
+
+  @ApiProperty({ required: false })
+    meta?: any;
+
+  @ApiProperty({ required: true })
+    totalData: number;
 }
