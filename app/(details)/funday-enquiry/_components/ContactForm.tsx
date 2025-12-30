@@ -74,7 +74,7 @@ const ContactForm = () => {
 
   return (
     <>
-      <section className="relative max-sm:h-96 md:h-[60vh] flex items-center justify-center">
+      <section className="relative max-sm:h-96 md:h-[88dvh] flex items-center justify-center">
         <div
           className="
       max-sm:relative md:absolute 
