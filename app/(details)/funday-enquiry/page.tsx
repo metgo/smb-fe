@@ -10,7 +10,7 @@ const page = () => {
         height={300}
         unoptimized
         alt="contact form"
-        className="w-full h-[500px] max-sm:hidden md:block object-cover"
+        className="w-full h-125 max-sm:hidden md:block object-cover"
         src={
           "https://storage.googleapis.com/bnei-fo5gz43xdb6i5t/images/background/contact-us.png"
         }
