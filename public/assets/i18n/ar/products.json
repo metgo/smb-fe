@@ -1,0 +1,46 @@
+{
+  "products_management": "إدارة المنتجات",
+  "products_management_desc": "نظام شامل لإدارة كتالوج المنتجات",
+  "launch_products_view": "تشغيل عرض المنتجات",
+
+  "products_list": "قائمة المنتجات",
+  "product_details": "تفاصيل المنتج",
+
+  "create_product": "إنشاء منتج",
+  "edit_product": "تحرير المنتج",
+  "duplicate_product": "تكرار المنتج",
+
+  "product_name": "اسم المنتج",
+  "product_type": "نوع المنتج",
+  "physical_product": "منتج مادي",
+  "service": "خدمة",
+  "experience": "تجربة",
+
+  "marked_price": "السعر الأصلي",
+  "selling_price": "سعر البيع",
+  "quantity": "الكمية",
+  "unlimited": "غير محدود",
+
+  "availability": "التوفر",
+  "start_date": "تاريخ البدء",
+  "end_date": "تاريخ الانتهاء",
+
+  "product_media": "وسائط المنتج",
+  "upload_images": "تحميل الصور",
+
+  "short_description": "وصف قصير",
+  "full_description": "وصف كامل",
+
+  "delivery": "التوصيل",
+  "pickup_available": "الاستلام متاح",
+
+  "product_created": "تم إنشاء المنتج بنجاح",
+  "product_updated": "تم تحديث المنتج بنجاح",
+  "product_duplicated": "تم تكرار المنتج بنجاح",
+
+  "save_as_draft": "حفظ كمسودة",
+  "submit_for_approval": "إرسال للموافقة",
+
+  "no_products": "لم يتم العثور على منتجات",
+  "no_products_desc": "ابدأ بإنشاء منتجك الأول"
+}

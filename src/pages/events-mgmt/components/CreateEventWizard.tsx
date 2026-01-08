@@ -1,0 +1,578 @@
+import { useState, useEffect, Activity } from 'react';
+import {
+  X, Check, ArrowRight, ArrowLeft, Save, Calendar,
+  Users, Ticket, Image, FileText, CheckCircle, Loader,
+  Mail
+} from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { useAppSelector } from '@/hooks/hooks';
+
+import CreateTicketWizard from './sub-components/CreateTicketWizard';
+import { useThemeClasses } from '@/hooks/useThemeClasses';
+import NotificationsTimeline from './sub-components/NotificationsTimeline';
+import EventDateTimeFormat from './sub-components/EventDateTimeFormat';
+import EventRegistrationCapacity from './sub-components/EventRegistrationCapacity';
+import EventTickets from './sub-components/EventTickets';
+import EventMedia from './sub-components/EventMedia';
+import EventReviewPublish from './sub-components/EventReviewPublish';
+import EventBasicInformation from './sub-components/EventBasicInformation';
+
+interface CreateEventWizardProps {
+  isOpen: boolean;
+  onClose: () => void;
+  theme: Theme;
+  mode?: 'create' | 'edit' | 'duplicate';
+  existingEvent?: any;
+}
+
+export default function CreateEventWizard({
+  isOpen,
+  onClose,
+  theme,
+  mode = 'create',
+  existingEvent
+}: CreateEventWizardProps) {
+  const { t } = useTranslation('events');
+  const { isRTL } = useAppSelector((state) => state.settings)
+  const { cardClasses, textPrimary, textTertiary } = useThemeClasses();
+
+  const [isSaving, setIsSaving] = useState(false);
+  const [currentStep, setCurrentStep] = useState(1);
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
+
+  // Step 1: Basic Information
+  const [eventName, setEventName] = useState('');
+  const [shortDescription, setShortDescription] = useState('');
+  const [fullDescription, setFullDescription] = useState('');
+  const [eventLanguage, setEventLanguage] = useState<Language>('en');
+  const [slug, setSlug] = useState('');
+  const [eventStatus, setEventStatus] = useState<'draft' | 'pending' | 'approved'>('draft');
+  const [internalNotes, setInternalNotes] = useState('');
+
+  // Step 2: Date, Time & Format
+  const [isMultiDay, setIsMultiDay] = useState(false);
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [eventDays, setEventDays] = useState<EventDay[]>([
+    { id: '1', date: '', startTime: '09:00', endTime: '17:00', description: '' }
+  ]);
+  const [eventFormat, setEventFormat] = useState<'physical' | 'online' | 'hybrid'>('physical');
+  const [address, setAddress] = useState('');
+  const [onlineLink, setOnlineLink] = useState('');
+
+  // Step 3: Registration & Capacity
+  const [registrationRequired, setRegistrationRequired] = useState(true);
+  const [capacityType, setCapacityType] = useState<'unlimited' | 'limited'>('limited');
+  const [capacity, setCapacity] = useState(100);
+  const [customQuestions, setCustomQuestions] = useState<CustomQuestion[]>([]);
+
+  // Step 4: Tickets
+  const [tickets, setTickets] = useState<TicketData[]>([]);
+  const [showTicketModal, setShowTicketModal] = useState(false);
+  const [editingTicket, setEditingTicket] = useState<TicketData | null>(null);
+
+  // Step 5: Messaging
+  const [notifications, setNotifications] = useState<NotificationData[]>([]);
+  const [showNotificationForm, setShowNotificationForm] = useState(false);
+  const [editingNotification, setEditingNotification] = useState<NotificationData | null>(null);
+
+  // Step 6: Media
+  const [images, setImages] = useState<string[]>([]);
+  const [primaryImageIndex, setPrimaryImageIndex] = useState(0);
+
+  // Validation errors
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const steps = [
+    { id: 1, icon: FileText, label: t('step_1_basic_information') },
+    { id: 2, icon: Calendar, label: t('step_2_date_time') },
+    { id: 3, icon: Users, label: t('step_3_registration') },
+    { id: 4, icon: Ticket, label: t('step_4_tickets') },
+    { id: 5, icon: Mail, label: 'Messaging', labelKey: 'step_5_messaging' },
+    { id: 6, icon: Image, label: t('step_5_media') },
+    { id: 7, icon: CheckCircle, label: t('step_6_review') },
+  ];
+
+  // Reset all state when wizard closes or opens in create mode
+  useEffect(() => {
+    if (isOpen && mode === 'create') {
+      // Reset to initial state
+      setCurrentStep(1);
+      setEventName('');
+      setShortDescription('');
+      setFullDescription('');
+      setEventLanguage('en');
+      setSlug('');
+      setEventStatus('draft');
+      setInternalNotes('');
+      setIsMultiDay(false);
+      setStartDate('');
+      setEndDate('');
+      setEventDays([{ id: '1', date: '', startTime: '09:00', endTime: '17:00', description: '' }]);
+      setEventFormat('physical');
+      setAddress('');
+      setOnlineLink('');
+      setRegistrationRequired(true);
+      setCapacityType('limited');
+      setCapacity(100);
+      setCustomQuestions([]);
+      setTickets([]);
+      setImages([]);
+      setPrimaryImageIndex(0);
+      setErrors({});
+      setLastSaved(null);
+    }
+  }, [isOpen, mode]);
+
+  // Auto-generate slug from event name
+  useEffect(() => {
+    if (eventName && !slug) {
+      const generatedSlug = eventName
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)/g, '');
+      setSlug(generatedSlug);
+    }
+  }, [eventName, slug]);
+
+  // Auto-save functionality
+  useEffect(() => {
+    if (isOpen && eventName) {
+      const timer = setTimeout(() => {
+        handleAutoSave();
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [eventName, shortDescription, fullDescription, isOpen]);
+
+  const handleAutoSave = async () => {
+    setIsSaving(true);
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 500));
+    setLastSaved(new Date());
+    setIsSaving(false);
+  };
+
+  const validateStep = (step: number): boolean => {
+    const newErrors: Record<string, string> = {};
+
+    switch (step) {
+      case 1:
+        if (!eventName.trim()) newErrors.eventName = t('required_field');
+        if (!shortDescription.trim()) newErrors.shortDescription = t('required_field');
+        if (eventName.length < 3) newErrors.eventName = t('field_too_short');
+        break;
+      case 2:
+        if (!isMultiDay && !startDate) newErrors.startDate = t('required_field');
+        if (isMultiDay && eventDays.some(d => !d.date)) newErrors.dates = 'All dates required';
+        if (eventFormat !== 'online' && !address) newErrors.address = t('required_field');
+        if (eventFormat !== 'physical' && !onlineLink) newErrors.onlineLink = t('required_field');
+        break;
+      case 3:
+        if (capacityType === 'limited' && capacity <= 0) newErrors.capacity = 'Must be greater than 0';
+        break;
+      case 4:
+        if (tickets.length === 0 && registrationRequired) {
+          newErrors.tickets = t('at_least_one_ticket_required');
+        }
+        break;
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleNext = () => {
+    if (validateStep(currentStep)) {
+      setCurrentStep(prev => Math.min(prev + 1, 6));
+    }
+  };
+
+  const handlePrevious = () => {
+    setCurrentStep(prev => Math.max(prev - 1, 1));
+  };
+
+  const handleSaveDraft = async () => {
+    setIsSaving(true);
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    setIsSaving(false);
+    alert(t('event_saved_as_draft'));
+  };
+
+  const handlePublish = async () => {
+    // Validate all steps
+    let allValid = true;
+    for (let i = 1; i <= 5; i++) {
+      if (!validateStep(i)) {
+        allValid = false;
+        setCurrentStep(i);
+        break;
+      }
+    }
+
+    if (!allValid) {
+      alert(t('fix_errors_before_proceeding'));
+      return;
+    }
+
+    setIsPublishing(true);
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    setIsPublishing(false);
+    alert(t('event_published_success'));
+    onClose();
+  };
+
+  const addEventDay = () => {
+    setEventDays([
+      ...eventDays,
+      {
+        id: Date.now().toString(),
+        date: '',
+        startTime: '09:00',
+        endTime: '17:00',
+        description: ''
+      }
+    ]);
+  };
+
+  const removeEventDay = (id: string) => {
+    setEventDays(eventDays.filter(d => d.id !== id));
+  };
+
+  const addCustomQuestion = () => {
+    setCustomQuestions([
+      ...customQuestions,
+      {
+        id: Date.now().toString(),
+        label: '',
+        type: 'text',
+        required: false
+      }
+    ]);
+  };
+
+  const addTicket = () => {
+    setEditingTicket({
+      id: Date.now().toString(),
+      name: '',
+      description: '',
+      type: 'free',
+      markedPrice: 0,
+      sellingPrice: 0,
+      quantity: 100,
+      perUserLimit: 5,
+      saleStart: '',
+      saleEnd: '',
+      visibility: 'public',
+      assignedDays: []
+    });
+    setShowTicketModal(true);
+  };
+
+  const deleteTicket = (id: string) => {
+    if (confirm(t('delete_ticket_confirm'))) {
+      setTickets(tickets.filter(t => t.id !== id));
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+      <div
+        className={`w-full max-w-5xl h-[90vh] rounded-xl flex flex-col ${cardClasses} ${isRTL ? 'rtl' : 'ltr'
+          }`}
+      >
+        {/* Header */}
+        <div className={`flex items-center justify-between p-6 border-b ${theme === 'dark' ? 'border-gray-800' : 'border-gray-200'}`}>
+          <div className="flex-1">
+            <h2 className={`text-2xl ${textPrimary}`}>
+              {mode === 'create' ? t('create_new_event') : mode === 'edit' ? t('edit_event') : t('duplicate_event')}
+            </h2>
+            <p className={`text-sm mt-1 ${textTertiary}`}>
+              {t('step')} {currentStep} {t('step_of')} {steps.length}: {steps[currentStep - 1].label}
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            {lastSaved && (
+              <span className={`text-xs ${textTertiary}`}>
+                {isSaving ? (
+                  <span className="flex items-center gap-1">
+                    <Loader className="w-3 h-3 animate-spin" />
+                    {t('saving')}
+                  </span>
+                ) : (
+                  `${t('saved')} ${lastSaved.toLocaleTimeString()}`
+                )}
+              </span>
+            )}
+            <button
+              onClick={onClose}
+              className={`p-2 rounded-lg transition-colors ${theme === 'dark' ? 'hover:bg-gray-800' : 'hover:bg-gray-100'
+                }`}
+            >
+              <X className={`w-6 h-6 ${textTertiary}`} />
+            </button>
+          </div>
+        </div>
+
+        {/* Progress Bar */}
+        <div className={`px-6 py-4 border-b ${theme === 'dark' ? 'border-gray-800' : 'border-gray-200'}`}>
+          <div className="flex items-center justify-between">
+            {steps.map((step, index) => (
+              <div key={step.id} className="flex items-center flex-1">
+                <div className="flex flex-col items-center">
+                  <div
+                    className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${currentStep > step.id
+                      ? 'bg-green-500 text-white'
+                      : currentStep === step.id
+                        ? 'bg-teal-500 text-white'
+                        : theme === 'dark'
+                          ? 'bg-gray-800 text-gray-500'
+                          : 'bg-gray-200 text-gray-400'
+                      }`}
+                  >
+                    {currentStep > step.id ? (
+                      <Check className="w-5 h-5" />
+                    ) : (
+                      <step.icon className="w-5 h-5" />
+                    )}
+                  </div>
+                  <span className={`text-xs mt-1 hidden md:block ${textTertiary}`}>
+                    {step.label}
+                  </span>
+                </div>
+                {index < steps.length - 1 && (
+                  <div
+                    className={`flex-1 h-0.5 mx-2 ${currentStep > step.id
+                      ? 'bg-green-500'
+                      : theme === 'dark'
+                        ? 'bg-gray-800'
+                        : 'bg-gray-200'
+                      }`}
+                  />
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto p-6">
+          {/* Step 1: Basic Information */}
+          {currentStep === 1 && (
+            <EventBasicInformation
+              currentStep={currentStep}
+              eventName={eventName}
+              setEventName={setEventName}
+              shortDescription={shortDescription}
+              setShortDescription={setShortDescription}
+              fullDescription={fullDescription}
+              setFullDescription={setFullDescription}
+              eventStatus={eventStatus}
+              setEventStatus={setEventStatus}
+              internalNotes={internalNotes}
+              setInternalNotes={setInternalNotes}
+              errors={errors}
+            />
+          )}
+
+          {/* Step 2: Date, Time & Format */}
+          {currentStep === 2 && (
+            <EventDateTimeFormat
+              isMultiDay={isMultiDay}
+              setIsMultiDay={setIsMultiDay}
+              startDate={startDate}
+              setStartDate={setStartDate}
+              eventDays={eventDays}
+              setEventDays={setEventDays}
+              eventFormat={eventFormat}
+              setEventFormat={setEventFormat}
+              address={address}
+              setAddress={setAddress}
+              onlineLink={onlineLink}
+              setOnlineLink={setOnlineLink}
+              errors={errors}
+              addEventDay={addEventDay}
+              removeEventDay={removeEventDay}
+            />
+          )}
+
+          {/* Step 3: Registration & Capacity */}
+          {currentStep === 3 && (
+            <EventRegistrationCapacity
+              currentStep={currentStep}
+              registrationRequired={registrationRequired}
+              setRegistrationRequired={setRegistrationRequired}
+              capacityType={capacityType}
+              setCapacityType={setCapacityType}
+              capacity={capacity}
+              setCapacity={setCapacity}
+              customQuestions={customQuestions}
+              setCustomQuestions={setCustomQuestions}
+              addCustomQuestion={addCustomQuestion}
+            />
+          )}
+
+          {/* Step 4: Tickets */}
+          {currentStep === 4 && (
+            <EventTickets
+              currentStep={currentStep}
+              tickets={tickets}
+              setTickets={setTickets}
+              editingTicket={editingTicket}
+              setEditingTicket={setEditingTicket}
+              showTicketModal={showTicketModal}
+              setShowTicketModal={setShowTicketModal}
+              errors={errors}
+              addTicket={addTicket}
+              deleteTicket={deleteTicket}
+            />
+          )}
+
+          {/* Step 5: Ticket Holder Messaging */}
+          {currentStep === 5 && (
+            <NotificationsTimeline
+              notifications={notifications}
+              setNotifications={setNotifications}
+              editingNotification={editingNotification}
+              setEditingNotification={setEditingNotification}
+              showNotificationForm={showNotificationForm}
+              setShowNotificationForm={setShowNotificationForm}
+              eventLanguage={eventLanguage}
+              eventName={eventName}
+              startDate={startDate}
+              eventDays={eventDays}
+              address={address}
+              capacity={capacity}
+            />
+          )}
+
+
+          {/* Step 6: Media */}
+          {currentStep === 6 && (
+            <EventMedia
+              currentStep={currentStep}
+              images={images}
+              setImages={setImages}
+              primaryImageIndex={primaryImageIndex}
+              setPrimaryImageIndex={setPrimaryImageIndex}
+            />
+          )}
+
+          {/* Step 7: Review & Publish */}
+          {currentStep === 7 && (
+            <EventReviewPublish
+              currentStep={currentStep}
+              setCurrentStep={setCurrentStep}
+              eventName={eventName}
+              shortDescription={shortDescription}
+              eventLanguage={eventLanguage}
+              eventStatus={eventStatus}
+              isMultiDay={isMultiDay}
+              startDate={startDate}
+              eventFormat={eventFormat}
+              address={address}
+              onlineLink={onlineLink}
+              registrationRequired={registrationRequired}
+              capacityType={capacityType}
+              capacity={capacity}
+              customQuestions={customQuestions}
+              tickets={tickets}
+            />
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className={`flex items-center justify-between p-6 border-t ${theme === 'dark' ? 'border-gray-800' : 'border-gray-200'}`}>
+          <div className="flex items-center gap-3">
+            {currentStep > 1 && (
+              <button
+                onClick={handlePrevious}
+                className={`px-4 py-2 rounded-lg border transition-colors flex items-center gap-2 ${theme === 'dark'
+                  ? 'border-gray-700 hover:bg-gray-800'
+                  : 'border-gray-300 hover:bg-gray-100'
+                  }`}
+              >
+                {isRTL ? <ArrowRight className="w-4 h-4" /> : <ArrowLeft className="w-4 h-4" />}
+                {t('previous')}
+              </button>
+            )}
+          </div>
+
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleSaveDraft}
+              disabled={isSaving}
+              className={`px-4 py-2 rounded-lg border transition-colors ${theme === 'dark'
+                ? 'border-gray-700 hover:bg-gray-800'
+                : 'border-gray-300 hover:bg-gray-100'
+                }`}
+            >
+              {isSaving ? (
+                <span className="flex items-center gap-2">
+                  <Loader className="w-4 h-4 animate-spin" />
+                  {t('saving')}
+                </span>
+              ) : (
+                <span className="flex items-center gap-2">
+                  <Save className="w-4 h-4" />
+                  {t('save_draft')}
+                </span>
+              )}
+            </button>
+
+            {currentStep < 6 ? (
+              <button
+                onClick={handleNext}
+                className="px-6 py-2 rounded-lg bg-teal-600 hover:bg-teal-700 text-white transition-colors flex items-center gap-2"
+              >
+                {isRTL ? (
+                  <>
+                    {t('next')}
+                    <ArrowLeft className="w-4 h-4" />
+                  </>
+                ) : (
+                  <>
+                    {t('next')}
+                    <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
+              </button>
+            ) : (
+              <button
+                onClick={handlePublish}
+                disabled={isPublishing}
+                className="px-6 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white transition-colors flex items-center gap-2"
+              >
+                {isPublishing ? (
+                  <>
+                    <Loader className="w-4 h-4 animate-spin" />
+                    {t('publishing')}
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle className="w-4 h-4" />
+                    {t('publish_event')}
+                  </>
+                )}
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <Activity mode={(showTicketModal && editingTicket ? "visible" : "hidden")}>
+        <CreateTicketWizard
+          theme={theme}
+          editingTicket={editingTicket}
+          tickets={tickets}
+          setTickets={setTickets}
+          setShowTicketModal={setShowTicketModal}
+          setEditingTicket={setEditingTicket}
+        />
+      </Activity>
+    </div>
+  );
+}

@@ -1,0 +1,46 @@
+{
+  "products_management": "ניהול מוצרים",
+  "products_management_desc": "מערכת ניהול קטלוג מוצרים מקיפה",
+  "launch_products_view": "הפעל תצוגת מוצרים",
+
+  "products_list": "רשימת מוצרים",
+  "product_details": "פרטי מוצר",
+
+  "create_product": "צור מוצר",
+  "edit_product": "ערוך מוצר",
+  "duplicate_product": "שכפל מוצר",
+
+  "product_name": "שם מוצר",
+  "product_type": "סוג מוצר",
+  "physical_product": "מוצר פיזי",
+  "service": "שירות",
+  "experience": "חוויה",
+
+  "marked_price": "מחיר מקורי",
+  "selling_price": "מחיר מכירה",
+  "quantity": "כמות",
+  "unlimited": "ללא הגבלה",
+
+  "availability": "זמינות",
+  "start_date": "תאריך התחלה",
+  "end_date": "תאריך סיום",
+
+  "product_media": "מדיה של מוצר",
+  "upload_images": "העלה תמונות",
+
+  "short_description": "תיאור קצר",
+  "full_description": "תיאור מלא",
+
+  "delivery": "משלוח",
+  "pickup_available": "איסוף זמין",
+
+  "product_created": "המוצר נוצר בהצלחה",
+  "product_updated": "המוצר עודכן בהצלחה",
+  "product_duplicated": "המוצר שוכפל בהצלחה",
+
+  "save_as_draft": "שמור כטיוטה",
+  "submit_for_approval": "שלח לאישור",
+
+  "no_products": "לא נמצאו מוצרים",
+  "no_products_desc": "התחל ביצירת המוצר הראשון שלך"
+}

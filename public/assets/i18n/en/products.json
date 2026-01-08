@@ -1,0 +1,46 @@
+{
+  "products_management": "Products Management",
+  "products_management_desc": "Comprehensive product catalog management system for businesses across the Western Negev region",
+  "launch_products_view": "Launch Products View",
+
+  "products_list": "Products List",
+  "product_details": "Product Details",
+
+  "create_product": "Create Product",
+  "edit_product": "Edit Product",
+  "duplicate_product": "Duplicate Product",
+
+  "product_name": "Product Name",
+  "product_type": "Product Type",
+  "physical_product": "Physical Product",
+  "service": "Service",
+  "experience": "Experience",
+
+  "marked_price": "Original Price",
+  "selling_price": "Selling Price",
+  "quantity": "Quantity",
+  "unlimited": "Unlimited",
+
+  "availability": "Availability",
+  "start_date": "Start Date",
+  "end_date": "End Date",
+
+  "product_media": "Product Media",
+  "upload_images": "Upload Images",
+
+  "short_description": "Short Description",
+  "full_description": "Full Description",
+
+  "delivery": "Delivery",
+  "pickup_available": "Pickup Available",
+
+  "product_created": "Product created successfully",
+  "product_updated": "Product updated successfully",
+  "product_duplicated": "Product duplicated successfully",
+
+  "save_as_draft": "Save as Draft",
+  "submit_for_approval": "Submit for Approval",
+
+  "no_products": "No Products Found",
+  "no_products_desc": "Start by creating your first product"
+}

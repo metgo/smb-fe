@@ -1,0 +1,44 @@
+{
+  "businesses_management": "ניהול עסקים",
+  "businesses_management_desc": "נהל את כל העסקים באזור הנגב המערבי",
+
+  "total_businesses": "סך כל העסקים",
+  "add_business": "הוסף עסק",
+
+  "search_businesses_placeholder": "חפש עסקים לפי שם, אימייל או טלפון",
+
+  "business_name": "שם העסק",
+  "business_email": "אימייל עסק",
+  "phone_number": "מספר טלפון",
+
+  "products_count": "מוצרים",
+  "lifetime_sales": "מכירות לכל החיים",
+  "impact_score": "ציון השפעה",
+
+  "actions": "פעולות",
+  "approve": "אשר",
+  "reject": "דחה",
+  "archive": "העבר לארכיון",
+
+  "business_details": "פרטי עסק",
+  "overview": "סקירה כללית",
+  "contact_person": "איש קשר",
+  "preferred_contact_channel": "ערוץ קשר מועדף",
+
+  "location_map": "מיקום ומפה",
+  "images_branding": "תמונות ומיתוג",
+
+  "categories": "קטגוריות",
+  "tags": "תגיות",
+
+  "operating_hours": "שעות פעילות",
+  "always_open": "פתוח תמיד",
+
+  "create_new_business": "צור עסק חדש",
+  "edit_business": "ערוך עסק",
+
+  "missing_mandatory_fields": "שדות חובה חסרים",
+
+  "permission_denied": "הגישה נדחתה",
+  "permission_denied_desc": "אין לך הרשאה לצפות בתוכן זה"
+}

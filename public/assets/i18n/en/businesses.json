@@ -1,0 +1,45 @@
+{
+  "businesses_management": "Businesses Management",
+  "businesses_management_desc": "Manage all businesses across the western Negev region",
+
+  "total_businesses": "Total Businesses",
+  "add_business": "Add Business",
+
+  "search_businesses_placeholder": "Search businesses by name, email, or phone...",
+
+  "business_name": "Business Name",
+  "business_email": "Business Email",
+  "phone_number": "Phone Number",
+
+  "products_count": "Products",
+  "lifetime_sales": "Lifetime Sales",
+  "impact_score": "Impact Score",
+
+  "actions": "Actions",
+  "approve": "Approve",
+  "reject": "Reject",
+  "archive": "Archive",
+
+  "business_details": "Business Details",
+  "overview": "Overview",
+  "contact_person": "Contact Person",
+  "preferred_contact_channel": "Preferred Contact Channel",
+
+  "location_map": "Location & Map",
+  "images_branding": "Images & Branding",
+
+  "categories": "Categories",
+  "tags": "Tags",
+
+  "operating_hours": "Operating Hours",
+  "always_open": "Always Open",
+
+  "create_new_business": "Create New Business",
+  "edit_business": "Edit Business",
+
+  "submit_for_approval": "Submit for Approval",
+  "missing_mandatory_fields": "Missing Mandatory Fields",
+
+  "permission_denied": "Permission Denied",
+  "permission_denied_desc": "You do not have permission to view this content"
+}

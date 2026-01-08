@@ -1,0 +1,103 @@
+{
+  
+  "select_dashboard_view": "Select Dashboard View",
+
+  "desktop_dashboard": "Desktop Dashboard",
+  "desktop_dashboard_desc": "Full-featured scrollable dashboard for desktop use with detailed analytics and controls",
+  "launch_desktop_view": "Launch Desktop View",
+
+  "meeting_room_display": "Meeting Room Display",
+  "meeting_room_display_desc": "Single-screen overview optimized for large displays and presentations",
+  "launch_meeting_view": "Launch Meeting View",
+
+  "events_reporting_display": "Events Reporting Display",
+  "events_reporting_display_desc": "Single-screen overview optimized for large displays and presentations",
+  "launch_events_view": "Launch Events View",
+
+  "powered_by": "Powered by",
+  "contact_support": "Contact support at",
+
+  "switch_to_meeting_view": "Meeting View",
+  "switch_to_desktop_view": "Desktop View",
+
+  "edit_widgets": "Edit Widgets",
+  "done_editing": "Done Editing",
+  "edit_mode_active": "Edit Mode Active",
+  "edit_mode_instructions": "Drag the teal buttons to reorder widgets. Use the settings panel to show/hide widgets",
+  "edit_mode_instructions_meeting": "Use the settings panel to show/hide widgets",
+
+  "widget_settings": "Widget Settings",
+  "show_hide_widgets": "Show/Hide Widgets",
+  "reset_to_defaults": "Reset to Defaults",
+
+  
+  "google_analytics_overview": "Google Analytics Overview",
+  "users": "Users",
+  "sessions": "Sessions",
+  "page_views": "Page Views",
+  "avg_duration": "Avg. Duration",
+  "conversions": "Conversions",
+  
+  "google_analytics_overview_desc": "Real-time analytics from Google Analytics showing user engagement metrics including sessions, page views, average session duration, and conversion rates for your tourism websites.",
+  "distribution_overview_desc": "Distribution of businesses, products, and points of interest across different categories including sleep, eat, attractions, local services, travel, and cultural sites in the Western Negev region.",
+  "upcoming_events_desc": "Calendar of scheduled tourism events, festivals, and activities across the Western Negev region with dates, locations, and registration status.",
+  "financial_summary_desc": "Comprehensive financial metrics including voucher sales, online and offline orders, credit card transactions, and total revenue for the selected time period.",
+  "purchases_report_desc": "Detailed analysis of purchase trends showing the breakdown of vouchers and credit card payments that comprise total orders, with historical comparisons and averages.",
+  "popular_content_desc": "Top-performing businesses, products, and points of interest ranked by views, bookings, and engagement metrics with growth trends and podium rankings.",
+
+  "distribution_overview": "Distribution Overview",
+  "businesses": "Businesses",
+  "products": "Products",
+  "pois": "POIs",
+
+  "key_performance_indicators": "Key Performance Indicators",
+  "total_revenue": "Total Revenue",
+  "conversion_rate": "Conversion Rate",
+  "vs_last_month": "vs last month",
+
+  "sleep": "Sleep",
+  "eat": "Eat",
+  "attraction": "Attraction",
+  "local": "Local",
+  "travel": "Travel",
+  "culture": "Culture",
+
+  "upcoming_events": "Upcoming Events",
+  "view_all": "View All",
+
+  "financial_summary": "Financial Summary",
+  "last_month": "Last Month",
+  "vouchers": "Vouchers",
+  "created": "Created",
+  "value": "Value",
+  "online_orders": "Online Orders",
+  "total_amount": "Total Amount",
+  "credit_card": "Credit Card",
+  "offline_orders": "Offline Orders",
+  "monthly_report": "Monthly Report",
+
+  "purchases_report": "Purchases Report",
+  "avg_order": "Avg. Order",
+  "avg_voucher": "Avg. Voucher",
+  "voucher_sold": "Voucher Sold",
+  "total_orders": "Total Orders",
+  "total_vouchers": "Total Vouchers",
+  "orders": "Orders",
+
+  "popular_businesses": "Popular Businesses",
+  "popular_products": "Popular Products",
+  "popular_pois": "Popular POIs",
+
+  "jan": "Jan",
+  "feb": "Feb",
+  "mar": "Mar",
+  "apr": "Apr",
+  "may": "May",
+  "jun": "Jun",
+  "jul": "Jul",
+  "aug": "Aug",
+  "sep": "Sep",
+  "oct": "Oct",
+  "nov": "Nov",
+  "dec": "Dec"
+}
