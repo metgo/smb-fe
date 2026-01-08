@@ -10,6 +10,7 @@ import { exceptionHandling } from 'src/common/utils/exception-handling';
 import { GetEventBySlugQuery } from '../get-event-by-slug.query';
 import { CampaignService } from 'src/modules/campaign/campaign.service';
 import { EventStatus } from '../../events.type';
+import { TicketStatus } from 'src/modules/tickets/tickets.type';
 
 @QueryHandler(GetEventBySlugQuery)
 export class GetEventBySlugHandler
@@ -62,6 +63,7 @@ implements IQueryHandler<GetEventBySlugQuery> {
       const populate = [
         {
           path: 'dayDescription.ticketIds payment.ticketIds',
+          match: { status: TicketStatus.ACTIVE },
           select: 'name images price status userId description',
         },
         {
