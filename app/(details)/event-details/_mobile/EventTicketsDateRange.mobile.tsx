@@ -1,33 +1,37 @@
 "use client";
 
 import Link from "next/link";
+import toast from "react-hot-toast";
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 import { useItemBuyCart } from "@/hooks";
 import { misc } from "@/constant/hebrew";
 import PriceTag from "@/components/PriceTag";
-import { itemTypeEnum, paymentMethodType } from "@/lib/utils";
 import { getHebrewDateInfo } from "@/lib/helpers";
 import { CardSkeleton } from "@/components/skeletons";
 import { IconImage, NextImage } from "@/components/ui";
 import { eventDetils } from "@/constant/placeholderData";
 import { useImageScale } from "@/hooks/image/useImageScale";
+import { itemTypeEnum, paymentMethodType } from "@/lib/utils";
 import { useImagePresent } from "@/hooks/image/useImagePresent";
-import toast from "react-hot-toast";
 
 const MobileEventTicketsDateRange = ({
   dayDescription,
   payment,
 }: EventDetailsProps) => {
-  const [tickets, setTickets] = useState<DayDescription | undefined>();
+  const [tickets, setTickets] = useState<TicketIds[] | undefined>();
   const [selectedDate, setSelectedDate] = useState<string>(
     dayDescription?.[0]?.date,
   );
 
   useEffect(() => {
     if (dayDescription) {
-      setTickets(dayDescription?.[0]);
+      setTickets(
+        dayDescription?.[0]?.ticketIds?.filter(
+          (item) => item?.status !== "inactive",
+        ),
+      );
     }
   }, [dayDescription]);
 
@@ -36,7 +40,11 @@ const MobileEventTicketsDateRange = ({
     const associatedTickets = dayDescription?.find(
       (ticket) => ticket.date === date,
     );
-    setTickets(associatedTickets);
+    setTickets(
+      associatedTickets?.ticketIds?.filter(
+        (item) => item?.status !== "inactive",
+      ),
+    );
   }
 
   const { scale } = useImageScale();
@@ -96,10 +104,10 @@ const MobileEventTicketsDateRange = ({
         {payment?.method === paymentMethodType.ticket && (
           <section
             className={`flex gap-4 mt-1 px-4 overflow-x-auto max-sm:scroll-smooth  max-sm:snap-mandatory scrollbar-hide w-full ${
-              tickets?.ticketIds?.length === 1 ? "justify-center" : ""
+              tickets?.length === 1 ? "justify-center" : ""
             }`}
           >
-            {tickets?.ticketIds?.map((product) => (
+            {tickets?.map((product) => (
               <div
                 key={product._id}
                 className="flex-shrink-0 snap-start max-sm:w-[240px] sm:w-auto relative"

@@ -59,9 +59,9 @@ const FeedLayout = ({ selectedFiltersIds, isAllClear }: FeedLayoutProps) => {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-    // isLoading,
   } = useInfiniteQuery({
     queryKey: ["feeds", selectedFiltersIds],
+    staleTime: 0,
     queryFn: ({ pageParam = 1 }) =>
       getFeedItems(pageParam, selectedFiltersIds, isAllClear),
     initialPageParam: 1,
@@ -148,7 +148,9 @@ const FeedLayout = ({ selectedFiltersIds, isAllClear }: FeedLayoutProps) => {
   return (
     <>
       <div className="md:block max-sm:hidden">
-        {totalBusiness > 0 ? (
+        {totalBusiness === 0 ? (
+          <NoFeedItemLayout isFilterDrawerOpen />
+        ) : (
           <div className="bg-primary">
             {renderLayout()}
 
@@ -178,8 +180,6 @@ const FeedLayout = ({ selectedFiltersIds, isAllClear }: FeedLayoutProps) => {
               </>
             )}
           </div>
-        ) : (
-          <NoFeedItemLayout isFilterDrawerOpen={isFilterDrawerOpen} />
         )}
 
         {/* Filter Button */}

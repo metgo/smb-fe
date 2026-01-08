@@ -45,15 +45,17 @@ const TicketListModal = ({
         date: formatDate(eventDays.date),
         startTime: eventDays.startTime,
         endTime: eventDays.endTime,
-        tickets: eventDays.ticketIds.map((ticket) => ({
-          quantity: 0,
-          _id: ticket._id,
-          name: ticket.name,
-          desc: ticket.description,
-          isSelected: false,
-          image: ticket.images[0].image,
-          price: ticket.price.markedPrice,
-        })),
+        tickets: eventDays?.ticketIds
+          ?.filter((item) => item.status !== "inactive")
+          ?.map((ticket) => ({
+            quantity: 0,
+            _id: ticket._id,
+            name: ticket.name,
+            desc: ticket.description,
+            isSelected: false,
+            image: ticket.images[0].image,
+            price: ticket.price.markedPrice,
+          })),
       }));
       setUpdatedTickets(tickets);
     }
@@ -190,7 +192,7 @@ const TicketListModal = ({
                 {isOpen && (
                   <div>
                     {eventDays?.tickets?.length > 0 ? (
-                      eventDays.tickets.map((ticket) => (
+                      eventDays?.tickets?.map((ticket) => (
                         <div
                           key={`${eventDays._id}-${ticket._id}`}
                           className={clsx(
