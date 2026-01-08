@@ -1,5 +1,5 @@
-import { emptyStateText } from "@/constant/hebrew";
 import clsx from "clsx";
+import { emptyStateText } from "@/constant/hebrew";
 
 const NoFeedItemLayout = ({
   isFilterDrawerOpen = false,

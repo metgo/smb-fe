@@ -131,7 +131,7 @@ export async function getFeedItems(
   try {
     const res = await fetch(baseUrl, {
       method: "GET",
-      next: { revalidate: 600 }, // Cache for 1 minute
+      cache: "no-store",
     });
 
     if (!res.ok) throw new Error(`Failed to fetch feeds: ${res.statusText}`);

@@ -71,6 +71,7 @@ export default async function Page({
 
   await queryClient.prefetchInfiniteQuery({
     queryKey: ["feeds", selectedFiltersIds],
+    staleTime: 0,
     queryFn: ({ pageParam = 1 }) =>
       getFeedItems(pageParam, selectedFiltersIds, isAllClear),
     initialPageParam: 1,
