@@ -5,16 +5,16 @@ import {
   Loader, AlertCircle, Columns, ExternalLink, UtensilsCrossed, Plane,
   Landmark, Theater, BedDouble, Map
 } from 'lucide-react';
-import { type ColumnDef } from "@tanstack/react-table"
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 
 import { useAppSelector } from '@/hooks/hooks';
 import { generateMockBusinesses, type Business } from '@/constants/data';
-import { DataTable } from '@/components/shared/DataTable';
 import { FilterButton } from '@/components/btns';
-import { useThemeClasses } from '@/hooks/useThemeClasses';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { PageStats } from '@/components/shared/PageStats';
+import { ReordableDataTable } from '@/components/shared/ReordableDataTable';
+import clsx from 'clsx';
+import { useThemeClasses } from '@/hooks/useThemeClasses';
 
 interface BusinessesListProps {
   theme: Theme;
@@ -80,7 +80,7 @@ export default function BusinessesList({ theme, onBusinessClick, onCreateNew }: 
 
   const { t } = useTranslation("businesses");
   const { isRTL } = useAppSelector((state) => state.settings)
-  const themeColor = useThemeClasses()
+  const {textPrimary, textSecondary,}=useThemeClasses()
 
   const [error, setError] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -470,70 +470,6 @@ export default function BusinessesList({ theme, onBusinessClick, onCreateNew }: 
     );
   }
 
-
-  const businessColumns: ColumnDef<Business>[] = [
-    {
-      accessorKey: "impactScore",
-      header: "Impact Score",
-      cell: ({ row }) => {
-        const score = row.original.impactScore
-        return (
-          <span className="px-3 py-1 rounded-lg text-sm font-medium bg-muted">
-            {score}
-          </span>
-        )
-      },
-    },
-    {
-      accessorKey: "name",
-      header: "Business Name",
-      cell: ({ row }) => (
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-teal-50 flex items-center justify-center">
-            {getCategoryIcon(row.original.categories)}
-          </div>
-          <span>{row.original.name}</span>
-        </div>
-      ),
-    },
-    {
-      accessorKey: "shortDescription",
-      header: "Description",
-      cell: ({ row }) => (
-        <div className="max-w-xs truncate">
-          {row.original.shortDescription}
-        </div>
-      ),
-    },
-    {
-      accessorKey: "email",
-      header: "Email",
-    },
-    {
-      accessorKey: "phone",
-      header: "Phone",
-    },
-    {
-      accessorKey: "productsCount",
-      header: "Products",
-    },
-    {
-      accessorKey: "website",
-      header: "Website",
-      cell: ({ row }) => (
-        <a
-          href={row.original.website}
-          target="_blank"
-          onClick={(e) => e.stopPropagation()}
-          className="flex items-center gap-1 text-teal-500"
-        >
-          <ExternalLink className="w-4 h-4" />
-          {new URL(row.original.website).hostname}
-        </a>
-      ),
-    },
-  ]
-
   const businessStats = [
     {
       id: 1,
@@ -597,7 +533,7 @@ export default function BusinessesList({ theme, onBusinessClick, onCreateNew }: 
 
 
   return (
-    <div className="flex flex-col overflow-hidden">
+    <div className="flex flex-col overflow-hidden h-[calc(108vh-210px)] px-4 ">
       {/* Sticky Header */}
       <div
         className={`border-b ${theme === 'dark' ? 'bg-gray-900/50 border-gray-800' : 'bg-transparent border-gray-200'
@@ -912,16 +848,201 @@ export default function BusinessesList({ theme, onBusinessClick, onCreateNew }: 
           </div>
         ) : (
           <div className={`rounded-2xl ${theme === 'dark' ? 'bg-gray-900/50' : 'bg-white'}`}>
-            <DataTable
+            <ReordableDataTable
+              rowKey="id"
               data={displayedBusinesses}
-              columns={businessColumns}
-              enableSelection={canChangeStatus}
-              selectedRowIds={selectedBusinesses}
-              getRowId={(b) => b.id}
-              onToggleRow={toggleSelect}
-              onToggleAll={toggleSelectAll}
-              onRowClick={onBusinessClick}
+              selectedItems={selectedBusinesses}
+              onSelectionChange={setSelectedBusinesses}
+              onRowClick={(business) => onBusinessClick(business)}
+              storageKey="businessesTableColumnOrder"
+              columns={[
+                ...(canChangeStatus
+                  ? [{ key: 'checkbox', label: '', width: '50px' }]
+                  : []),
+
+                {
+                  key: 'impactScore',
+                  label: t('impact_score'),
+                  sortable: true,
+                  render: (business) => (
+                    <span
+                      className={clsx(
+                        "inline-flex items-center justify-center px-3 py-1 rounded-lg text-sm font-medium",
+                        business.impactScore >= 650
+                          ? theme === "dark"
+                            ? "bg-green-500/20 text-green-400"
+                            : "bg-green-100 text-green-700"
+                          : business.impactScore >= 450
+                            ? theme === "dark"
+                              ? "bg-yellow-500/20 text-yellow-400"
+                              : "bg-yellow-100 text-yellow-700"
+                            : theme === "dark"
+                              ? "bg-gray-700 text-gray-400"
+                              : "bg-gray-100 text-gray-600"
+                      )}
+                    >
+                      {business.impactScore}
+                    </span>
+                  ),
+                },
+
+                {
+                  key: 'businessName',
+                  label: t('business_name'),
+                  sortable: true,
+                  render: (business) => (
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={clsx(
+                          "w-10 h-10 rounded-lg flex items-center justify-center",
+                          theme === "dark" ? "bg-teal-500/10" : "bg-teal-50"
+                        )}
+                      >
+                        <span className="text-teal-500">
+                          {getCategoryIcon(business.categories)}
+                        </span>
+                      </div>
+                      <span className={textPrimary}>{business.name}</span>
+                    </div>
+                  ),
+                },
+
+                {
+                  key: 'shortDescription',
+                  label: t('short_description'),
+                  render: (business) => (
+                    <div className={clsx(textSecondary, "max-w-xs truncate")}>
+                      {business.shortDescription}
+                    </div>
+                  ),
+                },
+
+                {
+                  key: 'contactName',
+                  label: t('contact_name'),
+                  render: (business) => (
+                    <span className={textSecondary}>
+                      {business.contactPerson.name}
+                    </span>
+                  ),
+                },
+
+                {
+                  key: 'businessEmail',
+                  label: t('email'),
+                  render: (business) => (
+                    <span className={textSecondary}>{business.email}</span>
+                  ),
+                },
+
+                {
+                  key: 'phoneNumber',
+                  label: t('phone'),
+                  render: (business) => (
+                    <span className={clsx(textSecondary, "whitespace-nowrap")}>
+                      {business.phone}
+                    </span>
+                  ),
+                },
+
+                {
+                  key: 'productsCount',
+                  label: t('products'),
+                  sortable: true,
+                  render: (business) => (
+                    <span className={textPrimary}>{business.productsCount}</span>
+                  ),
+                },
+
+                {
+                  key: 'status',
+                  label: t('status'),
+                  sortable: true,
+                  render: (business) => (
+                    <span
+                      className={clsx(
+                        "inline-flex items-center px-3 py-1 rounded-lg text-sm font-medium",
+                        business.status === "approved"
+                          ? "bg-blue-500/20 text-blue-400"
+                          : business.status === "pending"
+                            ? "bg-yellow-500/20 text-yellow-400"
+                            : business.status === "rejected"
+                              ? "bg-red-500/20 text-red-400"
+                              : business.status === "draft"
+                                ? theme === "dark"
+                                  ? "bg-gray-700 text-gray-400"
+                                  : "bg-gray-100 text-gray-600"
+                                : "bg-gray-600/20 text-gray-400"
+                      )}
+                    >
+                      {business.status === "draft" && t('draft')}
+                      {business.status === "pending" && t('pending')}
+                      {business.status === "approved" && t('approved')}
+                      {business.status === "rejected" && t('rejected')}
+                      {business.status === "archived" && t('archived')}
+                    </span>
+                  ),
+                },
+
+                {
+                  key: 'lifetimeSales',
+                  label: t('lifetime_sales'),
+                  sortable: true,
+                  render: (business) => (
+                    <span className={clsx(textPrimary, "font-medium")}>
+                      ₪{business.lifetimeSales.toLocaleString()}
+                    </span>
+                  ),
+                },
+
+                {
+                  key: 'tripCount',
+                  label: t('trips'),
+                  sortable: true,
+                  render: (business) => (
+                    <span className={textPrimary}>{getTripCount(business)}</span>
+                  ),
+                },
+
+                {
+                  key: 'websiteUrl',
+                  label: t('website'),
+                  render: (business) => (
+                    <a
+                      href={business.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      className="flex items-center gap-1 text-teal-500 hover:text-teal-400 transition-colors"
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                      <span className="text-sm">
+                        {new URL(business.website).hostname}
+                      </span>
+                    </a>
+                  ),
+                },
+
+                {
+                  key: 'contactPhone',
+                  label: t('contact_phone'),
+                  render: (business) => (
+                    <span className={clsx(textSecondary, "whitespace-nowrap")}>
+                      {business.contactPerson.phone}
+                    </span>
+                  ),
+                },
+
+                {
+                  key: 'categories',
+                  label: t('categories'),
+                  render: (business) => (
+                    <CategoriesBadges categories={business.categories} />
+                  ),
+                },
+              ]}
             />
+
           </div>
         )}
 

@@ -1,11 +1,11 @@
 import React from "react";
-import { useAppSelector } from "@/hooks/hooks";
-import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useTranslation } from "react-i18next";
 
-interface EventBasicInformationProps {
-  currentStep: number;
+import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { useGetAccessibilityQuery, useGetGroupTypesQuery, useGetSubCategoriesQuery } from "@/store/api/masterDataApi";
+import clsx from "clsx";
 
+interface EventBasicInformationProps {
   // Basic fields
   eventName: string;
   setEventName: React.Dispatch<React.SetStateAction<string>>;
@@ -17,7 +17,12 @@ interface EventBasicInformationProps {
   setEventStatus: React.Dispatch<React.SetStateAction<"draft" | "pending" | "approved">>;
   internalNotes: string;
   setInternalNotes: React.Dispatch<React.SetStateAction<string>>;
-
+  selectedSubCategoriesId: string[];
+  setSubCategoriesId: (v: string[]) => void;
+  selectedGroupTypesId: string[];
+  setGroupTypesId: (v: string[]) => void;
+  selectedAccessiblitiesId: string[];
+  setAccessiblitiesId: (v: string[]) => void;
   // Errors
   errors: {
     eventName?: string;
@@ -25,7 +30,6 @@ interface EventBasicInformationProps {
 }
 
 const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
-  currentStep,
   eventName,
   setEventName,
   shortDescription,
@@ -37,20 +41,55 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
   internalNotes,
   setInternalNotes,
   errors,
+  selectedSubCategoriesId, setSubCategoriesId,
+  selectedAccessiblitiesId, setAccessiblitiesId,
+  selectedGroupTypesId, setGroupTypesId,
 }) => {
-  const { t } = useTranslation("events");
-  const { textSecondary, textTertiary } = useThemeClasses();
-  const { theme } = useAppSelector((state) => state.settings);
 
-  // Reusable input classes
-  const inputClasses = theme === "dark"
-    ? "bg-gray-800 border-gray-700 text-gray-100 focus:border-teal-500"
-    : "bg-white border-gray-300 text-gray-900 focus:border-teal-500";
+  const { t, i18n } = useTranslation("events");
+  const { textSecondary, textTertiary, inputClasses } = useThemeClasses();
+  const locale = i18n.language as Language;
 
-  if (currentStep !== 1) return null;
+  const { data: subCategories } = useGetSubCategoriesQuery({ bussCategoryId: "6566fcd4a77d2a477266d3b9", locale });
+  const { data: accessibility } = useGetAccessibilityQuery({ locale });
+  const { data: groupTypes } = useGetGroupTypesQuery({ locale });
+
+
+  const handleSubcategorySelect = (itemId: string) => {
+    const exists = selectedSubCategoriesId?.some((id) => id === itemId);
+
+    if (exists) {
+      const updated = selectedSubCategoriesId?.filter((id) => id !== itemId);
+      setSubCategoriesId(updated);
+    } else {
+      setSubCategoriesId([...selectedSubCategoriesId, itemId]);
+    }
+  }
+
+  const handleGroupTypeSelect = (itemId: string) => {
+    const exists = selectedGroupTypesId?.some((id) => id === itemId);
+
+    if (exists) {
+      const updated = selectedGroupTypesId?.filter((id) => id !== itemId);
+      setGroupTypesId(updated);
+    } else {
+      setGroupTypesId([...selectedGroupTypesId, itemId]);
+    }
+  }
+
+  const handleAccessibilitySelect = (itemId: string) => {
+    const exists = selectedAccessiblitiesId?.some((id) => id === itemId);
+
+    if (exists) {
+      const updated = selectedAccessiblitiesId?.filter((id) => id !== itemId);
+      setAccessiblitiesId(updated);
+    } else {
+      setAccessiblitiesId([...selectedAccessiblitiesId, itemId]);
+    }
+  }
 
   return (
-    <div className="space-y-10 max-w-3xl mx-auto">
+    <div className="space-y-4 max-w-3xl mx-auto">
       {/* Event Name */}
       <div>
         <label className={`block text-sm font-medium mb-3 ${textSecondary}`}>
@@ -61,9 +100,8 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
           value={eventName}
           onChange={(e) => setEventName(e.target.value)}
           placeholder={t("enter_event_name")}
-          className={`w-full px-5 py-3 rounded-xl border text-lg ${inputClasses} transition-all focus:ring-2 focus:ring-teal-500/20 ${
-            errors.eventName ? "border-red-500" : ""
-          }`}
+          className={`w-full px-5 py-3 rounded-xl border text-lg ${inputClasses} transition-all focus:ring-2 focus:ring-teal-500/20 ${errors.eventName ? "border-red-500" : ""
+            }`}
         />
         {errors.eventName && (
           <p className="text-red-500 text-sm mt-2 flex items-center gap-1">
@@ -128,6 +166,76 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
               </span>
             </label>
           ))}
+        </div>
+      </div>
+
+      {/* Event SubCategories */}
+      <div>
+        <label className={`block text-sm font-medium mb-4 ${textSecondary}`}>Sub Categories</label>
+        <div className="flex items-center flex-wrap gap-2">
+          {subCategories?.datas?.data.map((item: any) => {
+            const isSelected = selectedSubCategoriesId.some((id) => id === item._id);
+
+            return (
+              <div
+                key={item._id}
+                onClick={() => handleSubcategorySelect(item._id)}
+                className={clsx(
+                  "border border-teal-600 px-4 py-1.5 rounded-3xl cursor-pointer",
+                  isSelected ? "bg-teal-600 text-white" : ""
+                )}
+              >
+                <span>{item.name}</span>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+
+
+      {/* Event Accessiblities */}
+      <div>
+        <label className={`block text-sm font-medium mb-4 ${textSecondary}`}>Accessiblities</label>
+        <div className="flex items-center flex-wrap gap-2">
+          {accessibility?.datas?.data.map((item: any) => {
+            const isSelected = selectedAccessiblitiesId.some((id) => id === item._id);
+
+            return (
+              <div
+                key={item._id}
+                onClick={() => handleAccessibilitySelect(item._id)}
+                className={clsx(
+                  "border border-teal-600 px-4 py-1.5 rounded-3xl cursor-pointer",
+                  isSelected ? "bg-teal-600 text-white" : ""
+                )}
+              >
+                <span>{item.name}</span>
+              </div>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* Event Grouptypes */}
+      <div>
+        <label className={`block text-sm font-medium mb-4 ${textSecondary}`}>Group Types</label>
+        <div className="flex items-center flex-wrap gap-2">
+          {groupTypes?.datas?.data.map((item: any) => {
+            const isSelected = selectedGroupTypesId.some((id) => id === item._id);
+
+            return (
+              <div
+                key={item._id}
+                onClick={() => handleGroupTypeSelect(item._id)}
+                className={clsx(
+                  "border border-teal-600 px-4 py-1.5 rounded-3xl cursor-pointer",
+                  isSelected ? "bg-teal-600 text-white" : ""
+                )}
+              >
+                <span>{item.name}</span>
+              </div>
+            )
+          })}
         </div>
       </div>
 

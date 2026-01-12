@@ -1,7 +1,8 @@
+import clsx from 'clsx';
 import { useState, useMemo } from 'react';
 import {
   Calendar, ChevronLeft, ChevronRight, Grid3x3, List,
-  Clock, MapPin, Users, DollarSign, X,
+  Clock, MapPin,
   AlertCircle,
   CheckCircle,
   XCircle,
@@ -9,10 +10,11 @@ import {
   Grid2x2
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+
 import { useAppSelector } from '@/hooks/hooks';
 import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import { useThemeClasses } from '@/hooks/useThemeClasses';
-import { formatDateRange } from '@/helpers/formatter';
+import { formatDate, formatDateRange } from '@/helpers/formatter';
 import { Button } from '@/components/ui/button';
 import { ReordableDataTable } from '@/components/shared/ReordableDataTable';
 
@@ -24,21 +26,22 @@ interface EventsWithViewModeProps {
   registrationFilter: string;
   statusFilter: string;
   searchQuery: string;
+  setSelectedEvent: (v: Event) => void;
+  setShowQuickSnapModal: (v: boolean) => void;
 }
 
 type ViewMode = 'calendar-month' | 'calendar-week' | 'calendar-day' | 'list' | 'grid';
 
-const VIEW_MODES: {
+const CALENDAR_MODES: {
   key: ViewMode;
   label: string;
   icon: React.ElementType;
 }[] = [
-    { key: 'list', label: 'list_view', icon: List },
-    { key: 'grid', label: 'grid_view', icon: Grid2x2 },
-    { key: 'calendar-month', label: 'month_view', icon: Calendar }, // 📅 month icon
+    { key: 'calendar-month', label: 'month_view', icon: Calendar },
     { key: 'calendar-week', label: 'week_view', icon: Grid3x3 },
-    { key: 'calendar-day', label: 'day_view', icon: Clock },
+    { key: 'calendar-day', label: 'day_view', icon: Clock }
   ];
+
 
 const WEEKDAY_LABELS: Record<string, string[]> = {
   en: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
@@ -70,6 +73,8 @@ export default function EventsWithViewMode({
   registrationFilter,
   statusFilter,
   searchQuery,
+  setSelectedEvent,
+  setShowQuickSnapModal,
 }: EventsWithViewModeProps) {
   const { t, i18n } = useTranslation('events');
   const { isRTL } = useAppSelector((state) => state.settings);
@@ -78,7 +83,6 @@ export default function EventsWithViewMode({
 
   const [currentDate, setCurrentDate] = useState(new Date());
   const [viewMode, setViewMode] = useState<ViewMode>('list');
-  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [selectedEvents, setSelectedEvents] = useState<Set<string>>(new Set());
   const [displayedListCount, setDisplayedListCount] = useState(12);
 
@@ -89,6 +93,14 @@ export default function EventsWithViewMode({
       { month: 'long', year: 'numeric' }
     );
   }, [currentDate, language]);
+
+  const isGridActive = viewMode === 'grid';
+  const isListActive = viewMode === 'list';
+
+  const toggleTarget = isGridActive ? 'list' : 'grid';
+  const ToggleIcon = isGridActive ? List : Grid2x2;
+  const toggleLabel = isGridActive ? 'list_view' : 'grid_view';
+
 
   // Navigation
   const goPrevious = () => {
@@ -153,6 +165,13 @@ export default function EventsWithViewMode({
     });
   }, [currentDate]);
 
+
+  // Handle events sets
+  const handleEventSelect = (event: Event) => {
+    // e.stopPropagation()
+    setShowQuickSnapModal(true)
+    setSelectedEvent(event)
+  }
   // Events on a given date
   const eventsOnDate = (date: Date) => {
     const dateStr = date.toISOString().split('T')[0];
@@ -172,12 +191,6 @@ export default function EventsWithViewMode({
       .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
   }, [events]);
 
-  const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString(
-      language === 'ar' ? 'ar-EG' : language === 'he' ? 'he-IL' : 'en-US',
-      { month: 'short', day: 'numeric', year: 'numeric' }
-    );
-  };
 
   // Month View
   const MonthView = () => (
@@ -209,7 +222,7 @@ export default function EventsWithViewMode({
                 return (
                   <div
                     key={event.id}
-                    onClick={(e) => { e.stopPropagation(); setSelectedEvent(event); }}
+                    onClick={() => handleEventSelect(event)}
                     className={`px-1 py-0.5 ${ribbon} text-white rounded truncate cursor-pointer`}
                     title={event.name}
                   >
@@ -246,7 +259,7 @@ export default function EventsWithViewMode({
                 return (
                   <div
                     key={event.id}
-                    onClick={() => setSelectedEvent(event)}
+                    onClick={() => handleEventSelect(event)}
                     className={`p-2 ${ribbon} text-white rounded text-xs cursor-pointer`}
                   >
                     <div className="font-medium truncate">{event.name}</div>
@@ -279,7 +292,7 @@ export default function EventsWithViewMode({
             {dayEvents.map(event => (
               <div
                 key={event.id}
-                onClick={() => setSelectedEvent(event)}
+                onClick={() => handleEventSelect(event)}
                 className="bg-gray-50 dark:bg-gray-800 rounded-xl p-6 hover:shadow-md cursor-pointer transition-shadow"
               >
                 <div className="flex justify-between items-start">
@@ -313,6 +326,21 @@ export default function EventsWithViewMode({
   const GridView = () => {
     const displayed = upcomingEvents.slice(0, displayedListCount);
 
+    if (events?.length === 0) {
+      return (
+        <div className="text-center py-12">
+          <AlertCircle className={`w-16 h-16 mx-auto mb-4 ${themeColor.textTertiary}`} />
+          <h3 className={`text-lg mb-2 ${themeColor.textPrimary}`}>{t('no_events_found')}</h3>
+          <p className={themeColor.textTertiary}>
+            {searchQuery || selectedWebsiteCount > 0 || eventTypeFilter !== 'all' ||
+              registrationFilter !== 'all' || statusFilter !== 'all'
+              ? t('no_events_found_desc')
+              : t('no_events_available')}
+          </p>
+        </div>
+      )
+    }
+
     return (
       <div className='py-6 px-4'>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -322,7 +350,7 @@ export default function EventsWithViewMode({
             return (
               <div
                 key={event.id}
-                onClick={() => setSelectedEvent(event)}
+                onClick={() => handleEventSelect(event)}
                 className="bg-white dark:bg-gray-900 rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow cursor-pointer"
               >
                 <div className="relative h-52">
@@ -333,7 +361,7 @@ export default function EventsWithViewMode({
                       className="w-full h-full object-cover"
                     />
                   ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center">
+                    <div className="w-full h-full bg-linear-to-br from-purple-400 to-pink-400 flex items-center justify-center">
                       <Calendar className="w-20 h-20 text-white/40" />
                     </div>
                   )}
@@ -346,7 +374,7 @@ export default function EventsWithViewMode({
                   <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
                     <div className="flex items-center gap-2">
                       <Calendar className="w-4 h-4" />
-                      {formatDate(event.startDate)}
+                      {formatDate(event.startDate, language)}
                     </div>
                     <div className="flex items-center gap-2">
                       <MapPin className="w-4 h-4" />
@@ -373,9 +401,9 @@ export default function EventsWithViewMode({
           <div className="mt-10 text-center">
             <button
               onClick={() => setDisplayedListCount(prev => prev + 12)}
-              className="px-8 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:shadow-lg transition-all"
+              className="px-8 py-3 bg-linear-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:shadow-lg transition-all"
             >
-              {t('loadMore')}
+              {t('load_more')}
             </button>
           </div>
         )}
@@ -386,242 +414,159 @@ export default function EventsWithViewMode({
   // Grid View
   const ListView = () => {
     return (
-      <>
-        {/* Error/Empty States */}
-        {events.length === 0 && (
-          <div className="text-center py-12">
-            <AlertCircle className={`w-16 h-16 mx-auto mb-4 ${themeColor.textTertiary}`} />
-            <h3 className={`text-lg mb-2 ${themeColor.textPrimary}`}>{t('no_events_found')}</h3>
-            <p className={themeColor.textTertiary}>
-              {searchQuery || selectedWebsiteCount > 0 || eventTypeFilter !== 'all' ||
-                registrationFilter !== 'all' || statusFilter !== 'all'
-                ? t('no_events_found_desc')
-                : t('no_events_available')}
-            </p>
-          </div>
-        )}
-
-        <ReordableDataTable
-          rowKey="id"
-          data={displayedEvents}
-          selectedItems={selectedEvents}
-          onSelectionChange={setSelectedEvents}
-          onRowClick={setSelectedEvent}
-          storageKey="eventsTableColumnOrder"
-          columns={[
-            { key: 'checkbox', label: '', width: '50px' },
-            {
-              key: 'event_name',
-              label: t('event_name'),
-              sortable: true,
-              render: (event) => (
-                <div className="flex items-center gap-2">
-                  {event.isMultiDay && (
-                    <CalendarRange className="w-4 h-4 text-teal-500 flex-shrink-0" />
-                  )}
-                  <span className="text-sm line-clamp-2">{event.name}</span>
-                </div>
+      <ReordableDataTable
+        rowKey="id"
+        data={displayedEvents}
+        selectedItems={selectedEvents}
+        onSelectionChange={setSelectedEvents}
+        onRowClick={(item)=>handleEventSelect(item)}
+        storageKey="eventsTableColumnOrder"
+        columns={[
+          { key: 'checkbox', label: '', width: '50px' },
+          {
+            key: 'event_name',
+            label: t('event_name'),
+            sortable: true,
+            render: (event) => (
+              <div className="flex items-center gap-2">
+                {event.isMultiDay && (
+                  <CalendarRange className="w-4 h-4 text-teal-500 shrink-0" />
+                )}
+                <span className="text-sm line-clamp-2">{event.name}</span>
+              </div>
+            ),
+          },
+          {
+            key: 'website',
+            label: t('website'),
+            render: (event) => (
+              <span className="text-xs sm:text-sm text-gray-500">
+                {event.website || '-'}
+              </span>
+            ),
+          },
+          {
+            key: 'date',
+            label: t('date'),
+            sortable: true,
+            render: (event) =>
+              formatDateRange(
+                event.startDate,
+                event.endDate,
+                event.isMultiDay
               ),
-            },
-            {
-              key: 'website',
-              label: t('website'),
-              render: (event) => (
-                <span className="text-xs sm:text-sm text-gray-500">
-                  {event.website || '-'}
+          },
+          {
+            key: 'time',
+            label: t('time'),
+            render: (event) => (
+              <span className="text-xs sm:text-sm">
+                {event.startTime} – {event.endTime}
+              </span>
+            ),
+          },
+          {
+            key: 'price',
+            label: t('price'),
+            sortable: true,
+            render: (event) =>
+              event.isFree ? (
+                <span className="px-2 py-1 bg-green-500/20 text-green-500 rounded-full text-xs">
+                  {t('free')}
                 </span>
+              ) : (
+                <span className="font-medium">₪{event.price}</span>
               ),
-            },
-            {
-              key: 'date',
-              label: t('date'),
-              sortable: true,
-              render: (event) =>
-                formatDateRange(
-                  event.startDate,
-                  event.endDate,
-                  event.isMultiDay
-                ),
-            },
-            {
-              key: 'time',
-              label: t('time'),
-              render: (event) => (
-                <span className="text-xs sm:text-sm">
-                  {event.startTime} – {event.endTime}
-                </span>
+          },
+          {
+            key: 'registration',
+            label: t('registration'),
+            render: (event) =>
+              event.registrationRequired ? (
+                <CheckCircle className="w-4 h-4 text-green-500 mx-auto" />
+              ) : (
+                <XCircle className="w-4 h-4 text-gray-400 mx-auto" />
               ),
-            },
-            {
-              key: 'price',
-              label: t('price'),
-              sortable: true,
-              render: (event) =>
-                event.isFree ? (
-                  <span className="px-2 py-1 bg-green-500/20 text-green-500 rounded-full text-xs">
-                    {t('free')}
+          },
+          {
+            key: 'status',
+            label: t('status'),
+            sortable: true,
+            render: (event) => (
+              <span
+                className={`px-2 py-1 rounded-full text-xs ${event.status === 'upcoming'
+                  ? 'bg-blue-500/20 text-blue-500'
+                  : event.status === 'past'
+                    ? 'bg-gray-500/20 text-gray-500'
+                    : 'bg-red-500/20 text-red-500'
+                  }`}
+              >
+                {event.status === 'upcoming'
+                  ? t('upcoming')
+                  : event.status === 'past'
+                    ? t('past')
+                    : t('canceled')}
+              </span>
+            ),
+          },
+          {
+            key: 'registrations',
+            label: t('registrations'),
+            sortable: true,
+            render: (event) => (
+              <div className="text-right">
+                {event.totalRegistrations.toLocaleString()}
+                {event.capacity > 0 && (
+                  <span className="text-xs text-gray-400 ml-1">
+                    / {event.capacity.toLocaleString()}
                   </span>
-                ) : (
-                  <span className="font-medium">₪{event.price}</span>
-                ),
-            },
-            {
-              key: 'registration',
-              label: t('registration'),
-              render: (event) =>
-                event.registrationRequired ? (
-                  <CheckCircle className="w-4 h-4 text-green-500 mx-auto" />
-                ) : (
-                  <XCircle className="w-4 h-4 text-gray-400 mx-auto" />
-                ),
-            },
-            {
-              key: 'status',
-              label: t('status'),
-              sortable: true,
-              render: (event) => (
-                <span
-                  className={`px-2 py-1 rounded-full text-xs ${event.status === 'upcoming'
-                    ? 'bg-blue-500/20 text-blue-500'
-                    : event.status === 'past'
-                      ? 'bg-gray-500/20 text-gray-500'
-                      : 'bg-red-500/20 text-red-500'
-                    }`}
-                >
-                  {event.status === 'upcoming'
-                    ? t('upcoming_status')
-                    : event.status === 'past'
-                      ? t('past_status')
-                      : t('canceled_status')}
-                </span>
-              ),
-            },
-            {
-              key: 'registrations',
-              label: t('registrations'),
-              sortable: true,
-              render: (event) => (
-                <div className="text-right">
-                  {event.totalRegistrations.toLocaleString()}
-                  {event.capacity > 0 && (
-                    <span className="text-xs text-gray-400 ml-1">
-                      / {event.capacity.toLocaleString()}
-                    </span>
-                  )}
-                </div>
-              ),
-            },
-            {
-              key: 'revenue',
-              label: t('revenue'),
-              sortable: true,
-              render: (event) =>
-                event.revenue > 0
-                  ? `₪${(event.revenue / 1000).toFixed(1)}K`
-                  : '-',
-            },
-          ]}
-        />
-
-      </>
+                )}
+              </div>
+            ),
+          },
+          {
+            key: 'revenue',
+            label: t('revenue'),
+            sortable: true,
+            render: (event) =>
+              event.revenue > 0
+                ? `₪${(event.revenue / 1000).toFixed(1)}K`
+                : '-',
+          },
+        ]}
+      />
     )
   }
-
-  // Event Modal
-  const EventModal = () => selectedEvent && (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-gray-900 rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
-        <div className="relative h-64 rounded-t-2xl overflow-hidden">
-          {selectedEvent.image ? (
-            <ImageWithFallback src={selectedEvent.image} alt={selectedEvent.name} className="w-full h-full object-cover" />
-          ) : (
-            <div className="w-full h-full bg-linear-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-              <Calendar className="w-32 h-32 text-white/30" />
-            </div>
-          )}
-          <button
-            onClick={() => setSelectedEvent(null)}
-            className="absolute top-4 right-4 p-3 bg-black/50 hover:bg-black/70 rounded-full text-white"
-          >
-            <X className="w-6 h-6" />
-          </button>
-        </div>
-
-        <div className="p-8">
-          <h2 className="text-3xl font-bold mb-6">{selectedEvent.name}</h2>
-
-          <div className="space-y-6">
-            <div className="flex items-center gap-4">
-              <Calendar className="w-6 h-6 text-purple-500" />
-              <div>
-                <div className="font-medium">
-                  {formatDate(selectedEvent.startDate)}
-                  {selectedEvent.startDate !== selectedEvent.endDate && ` – ${formatDate(selectedEvent.endDate)}`}
-                </div>
-                <div className="text-gray-600 dark:text-gray-400">
-                  {selectedEvent.startTime} – {selectedEvent.endTime}
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-4">
-              <MapPin className="w-6 h-6 text-purple-500" />
-              <div className="font-medium">{selectedEvent.location}</div>
-            </div>
-
-            <div className="flex items-center gap-4">
-              <DollarSign className="w-6 h-6 text-purple-500" />
-              <div className={`font-medium ${selectedEvent.isFree ? 'text-emerald-600' : 'text-purple-600'}`}>
-                {selectedEvent.isFree ? t('free') : `₪${selectedEvent.price}`}
-              </div>
-            </div>
-
-            {selectedEvent.registrationRequired && (
-              <div className="flex items-center gap-4">
-                <Users className="w-6 h-6 text-purple-500" />
-                <div>
-                  <div className="font-medium">
-                    {selectedEvent.totalRegistrations} / {selectedEvent.capacity} {t('registered')}
-                  </div>
-                  <div className="w-64 mt-2 bg-gray-200 dark:bg-gray-700 rounded-full h-3">
-                    <div
-                      className="bg-linear-to-r from-purple-500 to-pink-500 h-3 rounded-full"
-                      style={{ width: `${(selectedEvent.totalRegistrations / selectedEvent.capacity) * 100}%` }}
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {!selectedEvent.isFree && (
-              <div className="p-6 bg-linear-to-r from-purple-50 to-pink-50 dark:from-purple-900/30 dark:to-pink-900/30 rounded-xl border border-purple-200 dark:border-purple-800">
-                <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">{t('totalRevenue')}</div>
-                <div className="text-3xl font-bold text-purple-600 dark:text-purple-400">
-                  ₪{selectedEvent.revenue.toLocaleString()}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
 
   return (
     <div className="space-y-4">
       {/* Controls */}
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
         <div className="flex gap-2 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
-          {VIEW_MODES.map(({ key, label, icon: Icon }) => {
+          {/* List ↔ Grid Toggle */}
+          <Button
+            variant="ghost"
+            onClick={() => setViewMode(toggleTarget)}
+            className={clsx(
+              "flex items-center gap-2 px-4 py-2 rounded-lg",
+              viewMode === "list" || viewMode === "grid" ? "text-purple-600 bg-white dark:bg-gray-700 shadow" : "",
+            )}
+          >
+            <ToggleIcon className="w-5 h-5" />
+            {t(toggleLabel)}
+          </Button>
+
+          {/* Calendar Views */}
+          {CALENDAR_MODES.map(({ key, label, icon: Icon }) => {
             const isActive = viewMode === key;
 
             return (
               <Button
                 key={key}
-                variant='ghost'
+                variant="ghost"
                 onClick={() => setViewMode(key)}
                 className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors
-                  ${isActive
+                ${isActive
                     ? 'bg-white dark:bg-gray-700 text-purple-600 shadow'
                     : 'text-gray-600 dark:text-gray-300'
                   }`}
@@ -632,6 +577,7 @@ export default function EventsWithViewMode({
             );
           })}
         </div>
+
 
 
         {viewMode.startsWith('calendar-') && (
@@ -654,15 +600,13 @@ export default function EventsWithViewMode({
       </div>
 
       {/* Main Content */}
-      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 flex-1 overflow-y-auto max-h-[calc(100vh-600px)]">
+      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 flex-1 overflow-y-auto max-h-[calc(100vh-500px)]">
         {viewMode === 'calendar-month' && <MonthView />}
         {viewMode === 'calendar-week' && <WeekView />}
         {viewMode === 'calendar-day' && <DayView />}
         {viewMode === 'list' && <ListView />}
         {viewMode === 'grid' && <GridView />}
       </div>
-
-      <EventModal />
     </div>
   );
 }

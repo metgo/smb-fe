@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Building2, Package, ChevronDown, Bed, Compass, ShoppingBag, UtensilsCrossed, Plane, Landmark, MapPin } from 'lucide-react';
+import { Building2, ChevronDown, Bed, Compass, ShoppingBag, UtensilsCrossed, Plane, Landmark, MapPin } from 'lucide-react';
 
 import { InfoTooltip } from '@/components/shared/InfoTooltip';
 import { useGetBusinessStatsQuery, useGetProductStatsQuery } from '@/store/api/itemStatsApi';
 import { categories } from '@/lib/utils';
+import clsx from 'clsx';
+import { useAppSelector } from '@/hooks/hooks';
 
 const COLORS = {
   sleep: {
@@ -143,7 +145,7 @@ function DistributionCard({ title, icon, total, data }: DistributionCardProps) {
       </div>
 
       {/* 3D Column Chart */}
-      <div className="h-80 min-h-[320px] relative flex items-end justify-around gap-2 px-4 pb-12 pt-16">
+      <div className="h-80 min-h-80 relative flex items-end justify-around gap-2 px-4 pb-12 pt-16">
         {/* Animated gradient background */}
         <div className="absolute inset-0 bg-linear-to-br from-yellow-50 via-orange-50 to-pink-50 dark:from-yellow-900/10 dark:via-orange-900/10 dark:to-pink-900/10 rounded-xl opacity-50"></div>
 
@@ -312,6 +314,7 @@ const transformStatsData = (
 ---------------------------------------- */
 export default function DistributionCards() {
   const { t } = useTranslation('dashboard');
+  const {theme}=useAppSelector((state)=>state.settings)
 
   const [poiState, setPoiState] = useState<TransformedData>({
     totalItem: 0,
@@ -327,7 +330,6 @@ export default function DistributionCards() {
     totalItem: 0,
     data: [],
   });
-  console.log("🚀 ~ DistributionCards ~ productState:", productState)
 
   /* ----------------------------------------
      API Calls
@@ -354,7 +356,6 @@ export default function DistributionCards() {
     dmoId: '',
     authorityId: '',
   });
-  console.log("🚀 ~ DistributionCards ~ productData:", productData)
 
   /* ----------------------------------------
      Effects
@@ -398,7 +399,10 @@ export default function DistributionCards() {
   return (
     <section>
       <div className="flex items-start gap-2 mb-6">
-        <h2 className="text-gray-900 dark:text-white flex-1">
+        <h2 className={clsx(
+          " flex-1",
+          theme==="dark"?"text-white":"text-gray-900"
+        )}>
           {t('distribution_overview')}
         </h2>
         <InfoTooltip

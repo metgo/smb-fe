@@ -33,7 +33,6 @@ export function ReordableDataTable<T extends Record<string, any>>({
   onSelectionChange,
   rowKey,
 }: DataTableProps<T>) {
-  console.log("🚀 ~ ReordableDataTable ~ columns:", columns)
   const { theme, isRTL } = useAppSelector(state => state.settings);
   const { bgTertiary, borderColor, textSecondary, hoverBg } = useThemeClasses();
 

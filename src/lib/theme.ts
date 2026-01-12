@@ -19,6 +19,7 @@ export const getThemeClasses = (theme: Theme): ThemeClasses => ({
 
   inputClasses: theme === 'dark'
     ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-500'
-    : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'
+    : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400',
 
+  selectInputClasses: theme === 'dark' ? 'bg-gray-800 border-gray-700 text-white' : 'bg-gray-50 border-gray-300 text-gray-900'
 });

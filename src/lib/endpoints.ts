@@ -13,6 +13,11 @@ export const endpoints = {
   eventStats: "/stats/events",
   purchaseReportsStats: "/stats/purchase-reports",
 
-  googleAnalyticsViews: "/google-analytics-views"
+  googleAnalyticsViews: "/google-analytics-views",
+
+  categories: "/admin/buss-category",
+  subCategories:"admin/buss-sub-category",
+  accessibility: "/admin/accessibility",
+  groupType:"/admin/group-type"
 
 }

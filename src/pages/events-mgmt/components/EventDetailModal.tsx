@@ -11,8 +11,8 @@ import {
   DollarSign,
   FileDown,
   Search,
-  ArrowUpDown,
   Users,
+  Edit,
 } from "lucide-react";
 import {
   LineChart,
@@ -23,29 +23,19 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import { ReordableDataTable } from "@/components/shared/ReordableDataTable";
 
 
 interface EventDetailModalProps {
   selectedEvent: Event | null;
   setSelectedEvent: React.Dispatch<React.SetStateAction<Event | null>>;
-
-  // Daily breakdown toggle
   showDailyBreakdown: boolean;
   setShowDailyBreakdown: React.Dispatch<React.SetStateAction<boolean>>;
-
-  // Registrants search & sorting
   registrantSearchQuery: string;
   setRegistrantSearchQuery: React.Dispatch<React.SetStateAction<string>>;
   filteredRegistrants: Registrant[];
   handleSort: (key: string) => void;
-
-  // Export
-  exportToCSV: () => void;
-
-  // RTL
   isRTL: boolean;
-
-  // Optional: Selected registrant for further detail
   setSelectedRegistrant?: React.Dispatch<React.SetStateAction<Registrant | null>>;
 }
 
@@ -58,7 +48,6 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
   setRegistrantSearchQuery,
   filteredRegistrants,
   handleSort,
-  exportToCSV,
   isRTL,
   setSelectedRegistrant,
 }) => {
@@ -67,6 +56,40 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
   const { theme } = useAppSelector((state) => state.settings);
 
   if (!selectedEvent) return null;
+
+
+  const exportToCSV = () => {
+    if (!selectedEvent) return;
+    const headers = [
+      t('full_name'),
+      t('phone'),
+      t('email'),
+      t('quantity'),
+      t('ticket_type'),
+      `${t('total')} ${t('price')}`,
+      t('payment_status'),
+      t('registration_date'),
+      t('source_website')
+    ];
+    const rows = filteredRegistrants.map(reg => [
+      reg.fullName,
+      reg.phone,
+      reg.email,
+      reg.quantity,
+      reg.ticketType,
+      `₪${reg.totalPrice}`,
+      reg.paymentStatus,
+      reg.registrationDate,
+      reg.sourceWebsite
+    ]);
+    const csv = [headers, ...rows].map(row => row.join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${selectedEvent.name.replace(/\s+/g, '_')}_registrants.csv`;
+    a.click();
+  };
 
   const formatDateRange = (start: string, end?: string, isMultiDay?: boolean) => {
     if (!isMultiDay || !end) {
@@ -115,8 +138,7 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
       >
         {/* Header */}
         <div
-          className={`p-8 border-b ${theme === "dark" ? "border-gray-800" : "border-gray-200"
-            }`}
+          className={`p-8 border-b ${theme === "dark" ? "border-gray-800" : "border-gray-200"}`}
         >
           <div className="flex items-start justify-between gap-6">
             <div className="flex-1">
@@ -124,6 +146,7 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
                 <h2 className={`text-3xl font-bold ${textPrimary}`}>
                   {selectedEvent.name}
                 </h2>
+
                 {selectedEvent.isMultiDay && (
                   <span className="px-4 py-2 bg-teal-500/20 text-teal-500 rounded-full text-sm font-medium flex items-center gap-2">
                     <CalendarRange className="w-4 h-4" />
@@ -154,13 +177,26 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
                 </span>
               </div>
             </div>
-            <button
-              onClick={() => setSelectedEvent(null)}
-              className={`p-3 rounded-xl transition-all ${theme === "dark" ? "hover:bg-gray-800" : "hover:bg-gray-100"
-                }`}
-            >
-              <X className={`w-6 h-6 ${textTertiary}`} />
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => {
+                  // setEventToEdit(selectedEvent);
+                  // setIsEditWizardOpen(true);
+                  setSelectedEvent(null);
+                }}
+                className="flex items-center gap-2 px-4 py-2 bg-linear-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-lg transition-all transform hover:scale-105 shadow-md hover:shadow-lg"
+              >
+                <Edit className="w-4 h-4" />
+                <span className="font-medium text-sm">Edit</span>
+              </button>
+              <button
+                onClick={() => setSelectedEvent(null)}
+                className={`p-3 rounded-xl transition-all ${theme === "dark" ? "hover:bg-gray-800" : "hover:bg-gray-100"
+                  }`}
+              >
+                <X className={`w-6 h-6 ${textTertiary}`} />
+              </button>
+            </div>
           </div>
         </div>
 
@@ -176,8 +212,8 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
                 <button
                   onClick={() => setShowDailyBreakdown(!showDailyBreakdown)}
                   className={`px-5 py-2 rounded-xl text-sm font-medium transition-all ${theme === "dark"
-                      ? "bg-gray-800 hover:bg-gray-700 text-gray-300"
-                      : "bg-gray-100 hover:bg-gray-200 text-gray-700"
+                    ? "bg-gray-800 hover:bg-gray-700 text-gray-300"
+                    : "bg-gray-100 hover:bg-gray-200 text-gray-700"
                     }`}
                 >
                   {showDailyBreakdown ? t("show_summary") : t("show_daily_breakdown")}
@@ -185,7 +221,7 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
               )}
             </div>
 
-            {!showDailyBreakdown ? (
+            {showDailyBreakdown ? (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
                 {[
                   { label: t("total_registrations"), value: selectedEvent.totalRegistrations },
@@ -224,8 +260,8 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
                     <div
                       key={idx}
                       className={`p-6 rounded-2xl border ${theme === "dark"
-                          ? "border-gray-700 bg-gray-800/30"
-                          : "border-gray-200 bg-gray-50"
+                        ? "border-gray-700 bg-gray-800/30"
+                        : "border-gray-200 bg-gray-50"
                         }`}
                     >
                       <div className={`text-lg font-semibold mb-4 ${textPrimary}`}>
@@ -326,8 +362,8 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
               <button
                 onClick={exportToCSV}
                 className={`px-5 py-3 rounded-xl text-sm font-medium flex items-center gap-2 transition-all ${theme === "dark"
-                    ? "bg-gray-800 hover:bg-gray-700 text-gray-300"
-                    : "bg-gray-100 hover:bg-gray-200 text-gray-700"
+                  ? "bg-gray-800 hover:bg-gray-700 text-gray-300"
+                  : "bg-gray-100 hover:bg-gray-200 text-gray-700"
                   }`}
               >
                 <FileDown className="w-5 h-5" />
@@ -346,8 +382,8 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
                 value={registrantSearchQuery}
                 onChange={(e) => setRegistrantSearchQuery(e.target.value)}
                 className={`w-full ${isRTL ? "pr-12 pl-4" : "pl-12 pr-4"} py-3 rounded-xl border text-base ${theme === "dark"
-                    ? "bg-gray-800 border-gray-700 text-white placeholder-gray-500"
-                    : "bg-white border-gray-300 text-gray-900 placeholder-gray-400"
+                  ? "bg-gray-800 border-gray-700 text-white placeholder-gray-500"
+                  : "bg-white border-gray-300 text-gray-900 placeholder-gray-400"
                   } focus:ring-2 focus:ring-teal-500/20 transition-all`}
               />
             </div>
@@ -361,105 +397,115 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
               </div>
             ) : (
               <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-800">
-                <table className="w-full text-left">
-                  <thead className={`border-b ${theme === "dark" ? "border-gray-800" : "border-gray-200"}`}>
-                    <tr>
-                      <th
-                        className={`py-4 px-6 text-sm font-medium ${textTertiary} cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors`}
-                        onClick={() => handleSort("fullName")}
-                      >
-                        <div className="flex items-center gap-2">
-                          {t("full_name")}
-                          <ArrowUpDown className="w-4 h-4" />
+                <ReordableDataTable
+                  rowKey="id"
+                  data={filteredRegistrants}
+                  onRowClick={(item) => setSelectedRegistrant?.(item)}
+                  storageKey="registrantsTableColumnOrder"
+                  columns={[
+                    {
+                      key: 'full_name',
+                      label: t('full_name'),
+                      sortable: true,
+                      render: (reg) => (
+                        <span className="text-sm font-medium">
+                          {reg.fullName}
+                        </span>
+                      ),
+                    },
+                    {
+                      key: 'phone',
+                      label: t('phone'),
+                      render: (reg) => (
+                        <span className="text-sm text-gray-500">
+                          {reg.phone || '-'}
+                        </span>
+                      ),
+                    },
+                    {
+                      key: 'email',
+                      label: t('email'),
+                      render: (reg) => (
+                        <span className="text-sm text-gray-500">
+                          {reg.email || '-'}
+                        </span>
+                      ),
+                    },
+                    {
+                      key: 'quantity',
+                      label: t('quantity'),
+                      sortable: true,
+                      render: (reg) => (
+                        <div className="text-right text-sm font-medium">
+                          {reg.quantity}
                         </div>
-                      </th>
-                      <th className={`py-4 px-6 text-sm font-medium ${textTertiary} hidden md:table-cell`}>
-                        {t("phone")}
-                      </th>
-                      <th className={`py-4 px-6 text-sm font-medium ${textTertiary} hidden lg:table-cell`}>
-                        {t("email")}
-                      </th>
-                      <th className={`py-4 px-6 text-sm font-medium text-right ${textTertiary}`}>
-                        {t("quantity")}
-                      </th>
-                      <th className={`py-4 px-6 text-sm font-medium ${textTertiary} hidden xl:table-cell`}>
-                        {t("ticket_type")}
-                      </th>
-                      <th
-                        className={`py-4 px-6 text-sm font-medium text-right ${textTertiary} cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors`}
-                        onClick={() => handleSort("totalPrice")}
-                      >
-                        <div className="flex items-center justify-end gap-2">
-                          {t("total")}
-                          <ArrowUpDown className="w-4 h-4" />
-                        </div>
-                      </th>
-                      <th className={`py-4 px-6 text-sm font-medium text-center ${textTertiary}`}>
-                        {t("status")}
-                      </th>
-                      <th className={`py-4 px-6 text-sm font-medium ${textTertiary} hidden lg:table-cell`}>
-                        {t("registration_date")}
-                      </th>
-                      {selectedEvent.isMultiDay && (
-                        <th className={`py-4 px-6 text-sm font-medium ${textTertiary} hidden xl:table-cell`}>
-                          {t("days")}
-                        </th>
-                      )}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredRegistrants.map((reg) => (
-                      <tr
-                        key={reg.id}
-                        onClick={() => setSelectedRegistrant?.(reg)}
-                        className={`border-b transition-colors cursor-pointer ${theme === "dark"
-                            ? "border-gray-800 hover:bg-gray-800/50"
-                            : "border-gray-100 hover:bg-gray-50"
-                          }`}
-                      >
-                        <td className={`py-4 px-6 ${textPrimary}`}>{reg.fullName}</td>
-                        <td className={`py-4 px-6 ${textSecondary} hidden md:table-cell`}>
-                          {reg.phone}
-                        </td>
-                        <td className={`py-4 px-6 ${textSecondary} hidden lg:table-cell`}>
-                          {reg.email}
-                        </td>
-                        <td className={`py-4 px-6 text-right ${textPrimary}`}>{reg.quantity}</td>
-                        <td className={`py-4 px-6 ${textSecondary} hidden xl:table-cell`}>
-                          {reg.ticketType}
-                        </td>
-                        <td className={`py-4 px-6 text-right font-medium ${textPrimary}`}>
+                      ),
+                    },
+                    {
+                      key: 'ticket_type',
+                      label: t('ticket_type'),
+                      render: (reg) => (
+                        <span className="text-sm text-gray-500">
+                          {reg.ticketType || '-'}
+                        </span>
+                      ),
+                    },
+                    {
+                      key: 'total',
+                      label: t('total'),
+                      sortable: true,
+                      render: (reg) => (
+                        <div className="text-right font-medium">
                           ₪{reg.totalPrice}
-                        </td>
-                        <td className="py-4 px-6 text-center">
-                          <span
-                            className={`px-3 py-1.5 rounded-full text-xs font-medium ${getPaymentStatusColor(
-                              reg.paymentStatus
-                            )}`}
-                          >
-                            {reg.paymentStatus === "paid"
-                              ? t("paid_status")
-                              : reg.paymentStatus === "pending"
-                                ? t("pending_status")
-                                : t("refunded_status")}
-                          </span>
-                        </td>
-                        <td className={`py-4 px-6 ${textSecondary} hidden lg:table-cell`}>
-                          {new Date(reg.registrationDate).toLocaleDateString("en-US", {
-                            month: "short",
-                            day: "numeric",
-                            year: "numeric",
-                          })}
-                        </td>
-                        {selectedEvent.isMultiDay && reg.attendingDays && (
-                          <td className={`py-4 px-6 ${textSecondary} hidden xl:table-cell`}>
-                            {reg.attendingDays.length} {t("days")}
-                          </td>
-                        )}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                        </div>
+                      ),
+                    },
+                    {
+                      key: 'status',
+                      label: t('status'),
+                      render: (reg) => (
+                        <span
+                          className={`px-3 py-1.5 rounded-full text-xs font-medium ${getPaymentStatusColor(
+                            reg.paymentStatus
+                          )}`}
+                        >
+                          {reg.paymentStatus === 'paid'
+                            ? t('paid')
+                            : reg.paymentStatus === 'pending'
+                              ? t('pending')
+                              : t('refunded')}
+                        </span>
+                      ),
+                    },
+                    {
+                      key: 'registration_date',
+                      label: t('registration_date'),
+                      sortable: true,
+                      render: (reg) =>
+                        new Date(reg.registrationDate).toLocaleDateString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                          year: 'numeric',
+                        }),
+                    },
+                    ...(selectedEvent.isMultiDay
+                      ? [
+                        {
+                          key: 'days',
+                          label: t('days'),
+                          render: (reg: any) =>
+                            reg.attendingDays ? (
+                              <span className="text-sm text-gray-500">
+                                {reg.attendingDays.length} {t('days')}
+                              </span>
+                            ) : (
+                              '-'
+                            ),
+                        },
+                      ]
+                      : []),
+                  ]}
+                />
               </div>
             )}
           </section>

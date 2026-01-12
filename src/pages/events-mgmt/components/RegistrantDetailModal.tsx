@@ -37,11 +37,11 @@ const RegistrantDetailModal: React.FC<RegistrantDetailModalProps> = ({
   const getPaymentStatusText = (status: string) => {
     switch (status) {
       case "paid":
-        return t("paid_status");
+        return t("paid");
       case "pending":
-        return t("pending_status");
+        return t("pending");
       case "refunded":
-        return t("refunded_status");
+        return t("refunded");
       default:
         return status;
     }

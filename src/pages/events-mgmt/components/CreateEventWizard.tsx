@@ -49,6 +49,10 @@ export default function CreateEventWizard({
   const [slug, setSlug] = useState('');
   const [eventStatus, setEventStatus] = useState<'draft' | 'pending' | 'approved'>('draft');
   const [internalNotes, setInternalNotes] = useState('');
+  const [selectedSubCategoriesId, setSubCategoriesId] = useState<string[]>([])
+  const [selectedGroupTypesId, setGroupTypesId] = useState<string[]>([])
+  const [selectedAccessiblitiesId, setAccessiblitiesId] = useState<string[]>([])
+
 
   // Step 2: Date, Time & Format
   const [isMultiDay, setIsMultiDay] = useState(false);
@@ -60,6 +64,20 @@ export default function CreateEventWizard({
   const [eventFormat, setEventFormat] = useState<'physical' | 'online' | 'hybrid'>('physical');
   const [address, setAddress] = useState('');
   const [onlineLink, setOnlineLink] = useState('');
+
+  const [isRecurring, setIsRecurring] = useState(false);
+  const [recurrencePattern, setRecurrencePattern] = useState<RecurrencePattern>('weekly');
+  const [recurrenceInterval, setRecurrenceInterval] = useState(1); // For custom "every X days"
+  const [selectedWeekdays, setSelectedWeekdays] = useState<number[]>([1]); // 0=Sun, 1=Mon, etc.
+  const [monthlyType, setMonthlyType] = useState<MonthlyType>('date'); // By date or by day
+  const [monthlyOrdinal, setMonthlyOrdinal] = useState<MonthlyOrdinal>('1st');
+  const [monthlyWeekday, setMonthlyWeekday] = useState(1); // 0=Sun, 1=Mon, etc.
+  const [recurrenceEndType, setRecurrenceEndType] = useState<RecurrenceEndType>('count');
+  const [recurrenceEndDate, setRecurrenceEndDate] = useState('');
+  const [recurrenceEndCount, setRecurrenceEndCount] = useState(10);
+  const [showRecurrenceEditModal, setShowRecurrenceEditModal] = useState(false);
+  const [recurrenceEditScope, setRecurrenceEditScope] = useState<'this' | 'future' | 'all'>('this');
+
 
   // Step 3: Registration & Capacity
   const [registrationRequired, setRegistrationRequired] = useState(true);
@@ -89,7 +107,7 @@ export default function CreateEventWizard({
     { id: 2, icon: Calendar, label: t('step_2_date_time') },
     { id: 3, icon: Users, label: t('step_3_registration') },
     { id: 4, icon: Ticket, label: t('step_4_tickets') },
-    { id: 5, icon: Mail, label: 'Messaging', labelKey: 'step_5_messaging' },
+    { id: 5, icon: Mail, label: t('messaging'), labelKey: 'step_5_messaging' },
     { id: 6, icon: Image, label: t('step_5_media') },
     { id: 7, icon: CheckCircle, label: t('step_6_review') },
   ];
@@ -185,7 +203,7 @@ export default function CreateEventWizard({
 
   const handleNext = () => {
     if (validateStep(currentStep)) {
-      setCurrentStep(prev => Math.min(prev + 1, 6));
+      setCurrentStep(prev => Math.min(prev + 1, 7));
     }
   };
 
@@ -273,6 +291,13 @@ export default function CreateEventWizard({
   const deleteTicket = (id: string) => {
     if (confirm(t('delete_ticket_confirm'))) {
       setTickets(tickets.filter(t => t.id !== id));
+    }
+  };
+  const toggleWeekday = (day: number) => {
+    if (selectedWeekdays.includes(day)) {
+      setSelectedWeekdays(selectedWeekdays.filter(d => d !== day));
+    } else {
+      setSelectedWeekdays([...selectedWeekdays, day].sort());
     }
   };
 
@@ -363,7 +388,6 @@ export default function CreateEventWizard({
           {/* Step 1: Basic Information */}
           {currentStep === 1 && (
             <EventBasicInformation
-              currentStep={currentStep}
               eventName={eventName}
               setEventName={setEventName}
               shortDescription={shortDescription}
@@ -375,6 +399,12 @@ export default function CreateEventWizard({
               internalNotes={internalNotes}
               setInternalNotes={setInternalNotes}
               errors={errors}
+              selectedAccessiblitiesId={selectedAccessiblitiesId}
+              setAccessiblitiesId={setAccessiblitiesId}
+              selectedGroupTypesId={selectedGroupTypesId}
+              setGroupTypesId={setGroupTypesId}
+              selectedSubCategoriesId={selectedSubCategoriesId}
+              setSubCategoriesId={setSubCategoriesId}
             />
           )}
 
@@ -396,6 +426,26 @@ export default function CreateEventWizard({
               errors={errors}
               addEventDay={addEventDay}
               removeEventDay={removeEventDay}
+              isRecurring={isRecurring}
+              setIsRecurring={setIsRecurring}
+              recurrencePattern={recurrencePattern}
+              setRecurrencePattern={setRecurrencePattern}
+              toggleWeekday={toggleWeekday}
+              selectedWeekdays={selectedWeekdays}
+              monthlyType={monthlyType}
+              setMonthlyType={setMonthlyType}
+              monthlyOrdinal={monthlyOrdinal}
+              setMonthlyOrdinal={setMonthlyOrdinal}
+              monthlyWeekday={monthlyWeekday}
+              setMonthlyWeekday={setMonthlyWeekday}
+              recurrenceEndCount={recurrenceEndCount}
+              setRecurrenceEndCount={setRecurrenceEndCount}
+              recurrenceEndDate={recurrenceEndDate}
+              setRecurrenceEndDate={setRecurrenceEndDate}
+              recurrenceEndType={recurrenceEndType}
+              setRecurrenceEndType={setRecurrenceEndType}
+              recurrenceInterval={recurrenceInterval}
+              setRecurrenceInterval={setRecurrenceInterval}
             />
           )}
 
@@ -523,7 +573,7 @@ export default function CreateEventWizard({
               )}
             </button>
 
-            {currentStep < 6 ? (
+            {currentStep < 7 ? (
               <button
                 onClick={handleNext}
                 className="px-6 py-2 rounded-lg bg-teal-600 hover:bg-teal-700 text-white transition-colors flex items-center gap-2"

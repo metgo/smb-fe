@@ -9,10 +9,13 @@ import { Toaster } from "sonner";
 
 const RootLayout = () => {
   const { isSidebarCollapsed } = useAppSelector((state) => state.ui)
-  const { isRTL } = useAppSelector((state) => state.settings)
+  const { isRTL, theme } = useAppSelector((state) => state.settings)
 
   return (
-    <main className="min-h-screen bg-gray-50 dark:bg-gray-950 transition-colors flex flex-col">
+    <main className={clsx(
+      "min-h-screen transition-colors flex flex-col",
+      theme==="dark" ? "bg-gray-950":"bg-gray-50"
+    )}>
       <Header />
       <Toaster />
       <div className=" pt-20 relative">

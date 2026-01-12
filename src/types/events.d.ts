@@ -86,3 +86,8 @@ interface NotificationData {
   message: string;
   enabled: boolean;
 }
+
+type RecurrencePattern = 'daily' | 'weekly' | 'monthly' | 'custom'
+type MonthlyType = 'date' | 'day'
+type MonthlyOrdinal = '1st' | '2nd' | '3rd' | '4th' | 'last'
+type RecurrenceEndType = 'never' | 'date' | 'count'

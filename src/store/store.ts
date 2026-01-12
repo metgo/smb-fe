@@ -8,6 +8,7 @@ import { authApi } from "@/store/api/authApi"
 import { analyticsApi } from "@/store/api/analyticsApi"
 import { distrbOverviewApi } from "./api/distrbOverviewApi"
 import { itemStatsApi } from "./api/itemStatsApi"
+import { masterDataApi } from "./api/masterDataApi"
 
 export const store = configureStore({
   reducer: {
@@ -21,6 +22,7 @@ export const store = configureStore({
     [analyticsApi.reducerPath]: analyticsApi.reducer,
     [distrbOverviewApi.reducerPath]: distrbOverviewApi.reducer,
     [itemStatsApi.reducerPath]: itemStatsApi.reducer,
+    [masterDataApi.reducerPath]:masterDataApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(
@@ -28,6 +30,7 @@ export const store = configureStore({
       analyticsApi.middleware,
       distrbOverviewApi.middleware,
       itemStatsApi.middleware,
+      masterDataApi.middleware,
     ),
 })
 

@@ -73,7 +73,7 @@ export default function ProductsMgmtPage() {
 
   return (
     <>
-      <div className="h-[calc(100vh-204px)] flex flex-col">
+      <div className="h-[calc(104vh-204px)] flex flex-col">
         <PageHeader
           title={t('products_management')}
           description={t('products_management_desc')}

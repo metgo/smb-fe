@@ -15,6 +15,7 @@ interface ThemeClasses {
   textStatus: string;
   cardClasses: string;
   inputClasses: string;
+  selectInputClasses: string;
 }
 
 interface PageStats {

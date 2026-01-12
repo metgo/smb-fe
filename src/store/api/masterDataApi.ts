@@ -1,0 +1,63 @@
+import { createApi } from "@reduxjs/toolkit/query/react";
+import { axiosBaseQuery } from "./axiosBaseQuery";
+import { endpoints } from "@/lib/endpoints";
+
+
+interface Params{
+  locale: Language,
+  bussCategoryId?: string;
+}
+
+export const masterDataApi = createApi({
+  reducerPath: "masterDataApi",
+  baseQuery: axiosBaseQuery(),
+  tagTypes: ["MasterData"],
+  endpoints: (builder) => ({
+    getCategories: builder.query<any, Params>({
+      query: (params) => ({
+        url: endpoints.categories,
+        method: "GET",
+        params
+      }),
+      providesTags: ["MasterData"],
+      keepUnusedDataFor: 60 * 60 * 24,
+    }),
+
+    getSubCategories: builder.query<any, Params>({
+      query: (params) => ({
+        url: endpoints.subCategories,
+        method: "GET",
+        params
+      }),
+      providesTags: ["MasterData"],
+      keepUnusedDataFor: 60 * 60 * 24,
+    }),
+
+    getAccessibility: builder.query<any, Params>({
+      query: (params) => ({
+        url: endpoints.accessibility,
+        method: "GET",
+        params
+      }),
+      providesTags: ["MasterData"],
+      keepUnusedDataFor: 60 * 60 * 24,
+    }),
+
+    getGroupTypes: builder.query<any, Params>({
+      query: (params) => ({
+        url: endpoints.groupType,
+        method: "GET",
+        params
+      }),
+      providesTags: ["MasterData"],
+      keepUnusedDataFor: 60 * 60 * 24,
+    }),
+  }),
+});
+
+export const {
+  useGetCategoriesQuery,
+  useGetSubCategoriesQuery,
+  useGetAccessibilityQuery,
+  useGetGroupTypesQuery,
+} = masterDataApi;

@@ -30,3 +30,11 @@ export function normalizeTime(durationInSec: number): string {
 
   return parts.join(' ');
 }
+
+
+export const formatDate = (dateStr: string, language: string) => {
+  return new Date(dateStr).toLocaleDateString(
+    language === 'ar' ? 'ar-EG' : language === 'he' ? 'he-IL' : 'en-US',
+    { month: 'short', day: 'numeric', year: 'numeric' }
+  );
+};
