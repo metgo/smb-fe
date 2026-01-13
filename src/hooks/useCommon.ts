@@ -1,9 +1,10 @@
+import { useGetDmosQuery } from "@/store/api/masterDataApi";
 import { useTranslation } from "react-i18next";
 
 export function useCommon() {
-  const {t}=useTranslation('common')
+  const { t } = useTranslation('common')
+  const dmosAuthorities = useGetDmosQuery()
 
-  
   const authorities = [
     { value: 'all', label: t('all_authorities') },
     { value: 'negev', label: 'Western Negev Tourism Authority' },
@@ -37,6 +38,7 @@ export function useCommon() {
     websites,
     dateRanges,
     languages,
-    authorities
+    authorities,
+    dmosAuthorities
   }
 }

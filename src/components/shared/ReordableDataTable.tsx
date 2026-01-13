@@ -24,7 +24,7 @@ interface DataTableProps<T> {
   rowKey: keyof T;
 }
 
-export function ReordableDataTable<T extends Record<string, any>>({
+export default function ReordableDataTable<T extends Record<string, any>>({
   data,
   columns,
   storageKey = 'dataTableColumnOrder',

@@ -1,21 +1,24 @@
+import { toast } from 'sonner';
 import { useState, useEffect, Activity } from 'react';
 import {
-  X, Check, ArrowRight, ArrowLeft, Save, Calendar,
+  X, Check, Calendar,
   Users, Ticket, Image, FileText, CheckCircle, Loader,
   Mail
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAppSelector } from '@/hooks/hooks';
 
-import CreateTicketWizard from './sub-components/CreateTicketWizard';
+import EventMedia from './sub-components/EventMedia';
 import { useThemeClasses } from '@/hooks/useThemeClasses';
+import CreateTicketWizard from './sub-components/CreateTicketWizard';
 import NotificationsTimeline from './sub-components/NotificationsTimeline';
 import EventDateTimeFormat from './sub-components/EventDateTimeFormat';
 import EventRegistrationCapacity from './sub-components/EventRegistrationCapacity';
 import EventTickets from './sub-components/EventTickets';
-import EventMedia from './sub-components/EventMedia';
 import EventReviewPublish from './sub-components/EventReviewPublish';
 import EventBasicInformation from './sub-components/EventBasicInformation';
+import { WizardFooter } from '@/components/shared';
+import { useCreateEventStep1Mutation } from '@/store/api/eventsApi';
 
 interface CreateEventWizardProps {
   isOpen: boolean;
@@ -36,7 +39,8 @@ export default function CreateEventWizard({
   const { isRTL } = useAppSelector((state) => state.settings)
   const { cardClasses, textPrimary, textTertiary } = useThemeClasses();
 
-  const [isSaving, setIsSaving] = useState(false);
+  const [createEventStep1, { isLoading }] = useCreateEventStep1Mutation()
+
   const [currentStep, setCurrentStep] = useState(1);
   const [isPublishing, setIsPublishing] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
@@ -164,12 +168,13 @@ export default function CreateEventWizard({
     }
   }, [eventName, shortDescription, fullDescription, isOpen]);
 
+
+
+
   const handleAutoSave = async () => {
-    setIsSaving(true);
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 500));
     setLastSaved(new Date());
-    setIsSaving(false);
   };
 
   const validateStep = (step: number): boolean => {
@@ -202,20 +207,58 @@ export default function CreateEventWizard({
   };
 
   const handleNext = () => {
-    if (validateStep(currentStep)) {
-      setCurrentStep(prev => Math.min(prev + 1, 7));
-    }
+    setCurrentStep(prev => Math.min(prev + 1, 7));
   };
 
   const handlePrevious = () => {
     setCurrentStep(prev => Math.max(prev - 1, 1));
   };
 
+  const payload: EventPayload = {
+    name: eventName,
+    description: fullDescription,
+    shortDescription: shortDescription,
+    authorityId: undefined,
+    dmoId: undefined,
+    status: eventStatus.toUpperCase(),
+    groupTypesId: selectedGroupTypesId,
+    accessibilitiesId: selectedAccessiblitiesId,
+    subCategoriesId: selectedSubCategoriesId,
+    internalNotes: internalNotes,
+    dayDescription: eventDays?.map(item => ({
+      date: item.date,
+      startTime: item.startTime,
+      endTime: item.endTime
+    })),
+    eventType: eventFormat.toUpperCase(),
+    address: {
+      country: "",
+      city: "",
+      location: "",
+      additional_information: "",
+    },
+    onlineLink: onlineLink,
+    registration: {
+      isRegistration: registrationRequired,
+      noOfPeople: capacity,
+      isUnlimited: capacityType === "limited" ? false : true,
+    },
+    customQuestions: customQuestions,
+    // images: 
+    // rejected_reason
+    geoLocation: { lat: "", long: "" },
+    // recurringEventRule: {
+
+    // }
+
+  }
+
   const handleSaveDraft = async () => {
-    setIsSaving(true);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    setIsSaving(false);
-    alert(t('event_saved_as_draft'));
+    const data = await createEventStep1(payload).unwrap()
+    if (data?.message) {
+      toast.success(data?.message)
+    }
+    toast.success(t('event_saved_as_draft'));
   };
 
   const handlePublish = async () => {
@@ -230,14 +273,14 @@ export default function CreateEventWizard({
     }
 
     if (!allValid) {
-      alert(t('fix_errors_before_proceeding'));
+      toast.error(t('fix_errors_before_proceeding'));
       return;
     }
 
     setIsPublishing(true);
     await new Promise(resolve => setTimeout(resolve, 2000));
     setIsPublishing(false);
-    alert(t('event_published_success'));
+    toast.success(t('event_published_success'));
     onClose();
   };
 
@@ -322,7 +365,7 @@ export default function CreateEventWizard({
           <div className="flex items-center gap-3">
             {lastSaved && (
               <span className={`text-xs ${textTertiary}`}>
-                {isSaving ? (
+                {isLoading ? (
                   <span className="flex items-center gap-1">
                     <Loader className="w-3 h-3 animate-spin" />
                     {t('saving')}
@@ -343,8 +386,8 @@ export default function CreateEventWizard({
         </div>
 
         {/* Progress Bar */}
-        <div className={`px-6 py-4 border-b ${theme === 'dark' ? 'border-gray-800' : 'border-gray-200'}`}>
-          <div className="flex items-center justify-between">
+        <div className={`px-6 py-4 border-b ${theme === 'dark' ? 'border-gray-800' : 'border-gray-200'} `}>
+          <div className="flex items-center justify-between ">
             {steps.map((step, index) => (
               <div key={step.id} className="flex items-center flex-1">
                 <div className="flex flex-col items-center">
@@ -385,8 +428,7 @@ export default function CreateEventWizard({
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6">
-          {/* Step 1: Basic Information */}
-          {currentStep === 1 && (
+          <Activity mode={currentStep === 1 ? "visible" : "hidden"}>
             <EventBasicInformation
               eventName={eventName}
               setEventName={setEventName}
@@ -406,10 +448,9 @@ export default function CreateEventWizard({
               selectedSubCategoriesId={selectedSubCategoriesId}
               setSubCategoriesId={setSubCategoriesId}
             />
-          )}
+          </Activity>
 
-          {/* Step 2: Date, Time & Format */}
-          {currentStep === 2 && (
+          <Activity mode={currentStep === 2 ? "visible" : "hidden"}>
             <EventDateTimeFormat
               isMultiDay={isMultiDay}
               setIsMultiDay={setIsMultiDay}
@@ -447,10 +488,9 @@ export default function CreateEventWizard({
               recurrenceInterval={recurrenceInterval}
               setRecurrenceInterval={setRecurrenceInterval}
             />
-          )}
+          </Activity>
 
-          {/* Step 3: Registration & Capacity */}
-          {currentStep === 3 && (
+          <Activity mode={currentStep === 3 ? "visible" : "hidden"}>
             <EventRegistrationCapacity
               currentStep={currentStep}
               registrationRequired={registrationRequired}
@@ -463,10 +503,8 @@ export default function CreateEventWizard({
               setCustomQuestions={setCustomQuestions}
               addCustomQuestion={addCustomQuestion}
             />
-          )}
-
-          {/* Step 4: Tickets */}
-          {currentStep === 4 && (
+          </Activity>
+          <Activity mode={currentStep === 4 ? "visible" : "hidden"}>
             <EventTickets
               currentStep={currentStep}
               tickets={tickets}
@@ -479,10 +517,9 @@ export default function CreateEventWizard({
               addTicket={addTicket}
               deleteTicket={deleteTicket}
             />
-          )}
+          </Activity>
 
-          {/* Step 5: Ticket Holder Messaging */}
-          {currentStep === 5 && (
+          <Activity mode={currentStep === 5 ? "visible" : "hidden"}>
             <NotificationsTimeline
               notifications={notifications}
               setNotifications={setNotifications}
@@ -497,11 +534,8 @@ export default function CreateEventWizard({
               address={address}
               capacity={capacity}
             />
-          )}
-
-
-          {/* Step 6: Media */}
-          {currentStep === 6 && (
+          </Activity>
+          <Activity mode={currentStep === 6 ? "visible" : "hidden"}>
             <EventMedia
               currentStep={currentStep}
               images={images}
@@ -509,10 +543,9 @@ export default function CreateEventWizard({
               primaryImageIndex={primaryImageIndex}
               setPrimaryImageIndex={setPrimaryImageIndex}
             />
-          )}
+          </Activity>
 
-          {/* Step 7: Review & Publish */}
-          {currentStep === 7 && (
+          <Activity mode={currentStep === 7 ? "visible" : "hidden"}>
             <EventReviewPublish
               currentStep={currentStep}
               setCurrentStep={setCurrentStep}
@@ -531,86 +564,20 @@ export default function CreateEventWizard({
               customQuestions={customQuestions}
               tickets={tickets}
             />
-          )}
+
+          </Activity>
         </div>
 
-        {/* Footer */}
-        <div className={`flex items-center justify-between p-6 border-t ${theme === 'dark' ? 'border-gray-800' : 'border-gray-200'}`}>
-          <div className="flex items-center gap-3">
-            {currentStep > 1 && (
-              <button
-                onClick={handlePrevious}
-                className={`px-4 py-2 rounded-lg border transition-colors flex items-center gap-2 ${theme === 'dark'
-                  ? 'border-gray-700 hover:bg-gray-800'
-                  : 'border-gray-300 hover:bg-gray-100'
-                  }`}
-              >
-                {isRTL ? <ArrowRight className="w-4 h-4" /> : <ArrowLeft className="w-4 h-4" />}
-                {t('previous')}
-              </button>
-            )}
-          </div>
-
-          <div className="flex items-center gap-3">
-            <button
-              onClick={handleSaveDraft}
-              disabled={isSaving}
-              className={`px-4 py-2 rounded-lg border transition-colors ${theme === 'dark'
-                ? 'border-gray-700 hover:bg-gray-800'
-                : 'border-gray-300 hover:bg-gray-100'
-                }`}
-            >
-              {isSaving ? (
-                <span className="flex items-center gap-2">
-                  <Loader className="w-4 h-4 animate-spin" />
-                  {t('saving')}
-                </span>
-              ) : (
-                <span className="flex items-center gap-2">
-                  <Save className="w-4 h-4" />
-                  {t('save_draft')}
-                </span>
-              )}
-            </button>
-
-            {currentStep < 7 ? (
-              <button
-                onClick={handleNext}
-                className="px-6 py-2 rounded-lg bg-teal-600 hover:bg-teal-700 text-white transition-colors flex items-center gap-2"
-              >
-                {isRTL ? (
-                  <>
-                    {t('next')}
-                    <ArrowLeft className="w-4 h-4" />
-                  </>
-                ) : (
-                  <>
-                    {t('next')}
-                    <ArrowRight className="w-4 h-4" />
-                  </>
-                )}
-              </button>
-            ) : (
-              <button
-                onClick={handlePublish}
-                disabled={isPublishing}
-                className="px-6 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white transition-colors flex items-center gap-2"
-              >
-                {isPublishing ? (
-                  <>
-                    <Loader className="w-4 h-4 animate-spin" />
-                    {t('publishing')}
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle className="w-4 h-4" />
-                    {t('publish_event')}
-                  </>
-                )}
-              </button>
-            )}
-          </div>
-        </div>
+        <WizardFooter
+          currentStep={currentStep}
+          totalSteps={7}
+          isSaving={isLoading}
+          isPublishing={isPublishing}
+          onPrevious={handlePrevious}
+          onNext={handleNext}
+          onSaveDraft={handleSaveDraft}
+          onPublish={handlePublish}
+        />
       </div>
 
       <Activity mode={(showTicketModal && editingTicket ? "visible" : "hidden")}>

@@ -52,6 +52,15 @@ export const masterDataApi = createApi({
       providesTags: ["MasterData"],
       keepUnusedDataFor: 60 * 60 * 24,
     }),
+
+    getDmos: builder.query<any, void>({
+      query: () => ({
+        url: endpoints.dmos,
+        method: "GET",
+      }),
+      providesTags: ["MasterData"],
+      keepUnusedDataFor: 60 * 60 * 24,
+    }),
   }),
 });
 
@@ -60,4 +69,5 @@ export const {
   useGetSubCategoriesQuery,
   useGetAccessibilityQuery,
   useGetGroupTypesQuery,
+  useGetDmosQuery,
 } = masterDataApi;

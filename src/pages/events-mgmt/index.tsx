@@ -8,8 +8,7 @@ import { allEvents } from '@/constants/data';
 import { useThemeClasses } from '@/hooks/useThemeClasses';
 import { FilterButton } from '@/components/btns';
 import { EventsWithViewMode, CreateEventWizard, EventDetailModal, QuickSnapEventDetails, RegistrantDetailModal } from './components';
-import { PageHeader } from '@/components/shared/PageHeader';
-import { PageStats } from '@/components/shared/PageStats';
+import { PageHeader, PageStats, ViewModeToggle } from '@/components/shared';
 
 type SortConfig = {
   key: string;
@@ -39,6 +38,7 @@ export default function EventsMgmtPage() {
   const [registrantSearchQuery, setRegistrantSearchQuery] = useState('');
   const [showDailyBreakdown, setShowDailyBreakdown] = useState(false);
   const [showQuickSnapModal, setShowQuickSnapModal] = useState(false);
+  const [viewMode, setViewMode] = useState<'list' | 'grid' | 'calendar'>('list');
 
 
 
@@ -263,9 +263,9 @@ export default function EventsMgmtPage() {
         />
 
         {/* Search and Filter Section */}
-        <div className={`mb-6`}>
+        <div className={`mb-2`}>
           {/* Search Bar */}
-          <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex flex-col sm:flex-row gap-4 mb-2">
             <div className="flex-1 relative">
               <Search className={`absolute ${isRTL ? 'right-3' : 'left-3'} top-1/2 transform -translate-y-1/2 w-5 h-5 ${themeColor.textTertiary}`} />
               <input
@@ -280,6 +280,11 @@ export default function EventsMgmtPage() {
               />
             </div>
             <FilterButton value={showFilters} onChange={setShowFilters} />
+            <ViewModeToggle
+              showCalendor
+              onChange={setViewMode}
+              value={viewMode}
+            />
           </div>
 
           {showFilters && (
@@ -448,6 +453,7 @@ export default function EventsMgmtPage() {
           searchQuery={searchQuery}
           setSelectedEvent={setSelectedEvent}
           setShowQuickSnapModal={setShowQuickSnapModal}
+          viewMode={viewMode}
         />
       </div>
 

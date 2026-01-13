@@ -28,5 +28,11 @@
   "mini_site": "אתר מיני",
   "settings": "הגדרות",
   "documents": "מסמכי",
-  "version": "גרסה"
+  "version": "גרסה",
+
+   "previous": "הקודם",
+  "next": "הבא",
+  "save_draft": "שמור כטיוטה",
+  "publish": "פרסם",
+  "publishing": "מפרסם..."
 }

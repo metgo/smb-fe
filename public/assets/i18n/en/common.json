@@ -1,20 +1,18 @@
 {
-  "all_websites":"All Websites",
-  "all_authorities":"All Authorities",
+  "all_websites": "All Websites",
+  "all_authorities": "All Authorities",
   "app_title": "Western Negev Tourism Analytics",
   "executive_dashboard": "Executive Dashboard",
-
   "date_range": "Date Range",
   "last_7_days": "Last 7 Days",
   "last_30_days": "Last 30 Days",
   "last_90_days": "Last 90 Days",
   "last_year": "Last Year",
-
   "dashboard": "Dashboard",
   "events": "Events",
-  "products":"Products",
-  "businesses":"Businesses",
-  "orders":"Orders",
+  "products": "Products",
+  "businesses": "Businesses",
+  "orders": "Orders",
   "pois": "Points of Interest",
   "trips": "Trips",
   "fun_days": "Fun Days",
@@ -31,8 +29,12 @@
   "mini_site": "Mini-site",
   "settings": "Settings",
   "documents": "Documents",
+  "version": "Version",
 
-  "version": "Version"
-
+  "previous": "Previous",
+  "next": "Next",
+  "save_draft": "Save Draft",
+  "publish": "Publish",
+  "publishing": "Publishing..."
 
 }

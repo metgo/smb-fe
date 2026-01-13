@@ -1,26 +1,24 @@
-import clsx from 'clsx';
 import { useState, useMemo } from 'react';
 import {
-  Calendar, ChevronLeft, ChevronRight, Grid3x3, List,
+  Calendar, ChevronLeft, ChevronRight, Grid3x3,
   Clock, MapPin,
   AlertCircle,
   CheckCircle,
   XCircle,
   CalendarRange,
-  Grid2x2
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { useAppSelector } from '@/hooks/hooks';
-import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import { useThemeClasses } from '@/hooks/useThemeClasses';
 import { formatDate, formatDateRange } from '@/helpers/formatter';
 import { Button } from '@/components/ui/button';
-import { ReordableDataTable } from '@/components/shared/ReordableDataTable';
+import { ImageWithFallback, ReordableDataTable } from '@/components/shared';
 
 
 interface EventsWithViewModeProps {
   events: Event[];
+  viewMode: string;
   selectedWebsiteCount: number;
   eventTypeFilter: string;
   registrationFilter: string;
@@ -30,7 +28,7 @@ interface EventsWithViewModeProps {
   setShowQuickSnapModal: (v: boolean) => void;
 }
 
-type ViewMode = 'calendar-month' | 'calendar-week' | 'calendar-day' | 'list' | 'grid';
+type ViewMode = 'calendar-month' | 'calendar-week' | 'calendar-day';
 
 const CALENDAR_MODES: {
   key: ViewMode;
@@ -68,6 +66,7 @@ const getCategoryColor = (category: string) => {
 
 export default function EventsWithViewMode({
   events,
+  viewMode,
   selectedWebsiteCount,
   eventTypeFilter,
   registrationFilter,
@@ -82,7 +81,7 @@ export default function EventsWithViewMode({
   const themeColor = useThemeClasses()
 
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [viewMode, setViewMode] = useState<ViewMode>('list');
+  const [calendarViewMode, setCalendarViewMode] = useState<ViewMode>('calendar-month');
   const [selectedEvents, setSelectedEvents] = useState<Set<string>>(new Set());
   const [displayedListCount, setDisplayedListCount] = useState(12);
 
@@ -94,19 +93,11 @@ export default function EventsWithViewMode({
     );
   }, [currentDate, language]);
 
-  const isGridActive = viewMode === 'grid';
-  const isListActive = viewMode === 'list';
-
-  const toggleTarget = isGridActive ? 'list' : 'grid';
-  const ToggleIcon = isGridActive ? List : Grid2x2;
-  const toggleLabel = isGridActive ? 'list_view' : 'grid_view';
-
-
   // Navigation
   const goPrevious = () => {
-    if (viewMode === 'calendar-month') {
+    if (calendarViewMode === 'calendar-month') {
       setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
-    } else if (viewMode === 'calendar-week') {
+    } else if (calendarViewMode === 'calendar-week') {
       const newDate = new Date(currentDate);
       newDate.setDate(newDate.getDate() - 7);
       setCurrentDate(newDate);
@@ -118,9 +109,9 @@ export default function EventsWithViewMode({
   };
 
   const goNext = () => {
-    if (viewMode === 'calendar-month') {
+    if (calendarViewMode === 'calendar-month') {
       setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1));
-    } else if (viewMode === 'calendar-week') {
+    } else if (calendarViewMode === 'calendar-week') {
       const newDate = new Date(currentDate);
       newDate.setDate(newDate.getDate() + 7);
       setCurrentDate(newDate);
@@ -419,7 +410,7 @@ export default function EventsWithViewMode({
         data={displayedEvents}
         selectedItems={selectedEvents}
         onSelectionChange={setSelectedEvents}
-        onRowClick={(item)=>handleEventSelect(item)}
+        onRowClick={(item) => handleEventSelect(item)}
         storageKey="eventsTableColumnOrder"
         columns={[
           { key: 'checkbox', label: '', width: '50px' },
@@ -542,45 +533,33 @@ export default function EventsWithViewMode({
     <div className="space-y-4">
       {/* Controls */}
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
-        <div className="flex gap-2 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
-          {/* List ↔ Grid Toggle */}
-          <Button
-            variant="ghost"
-            onClick={() => setViewMode(toggleTarget)}
-            className={clsx(
-              "flex items-center gap-2 px-4 py-2 rounded-lg",
-              viewMode === "list" || viewMode === "grid" ? "text-purple-600 bg-white dark:bg-gray-700 shadow" : "",
-            )}
-          >
-            <ToggleIcon className="w-5 h-5" />
-            {t(toggleLabel)}
-          </Button>
+        {viewMode === "calendar" &&
+          <div className="flex gap-2 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
+            {/* Calendar Views */}
+            {CALENDAR_MODES.map(({ key, label, icon: Icon }) => {
+              const isActive = calendarViewMode === key;
 
-          {/* Calendar Views */}
-          {CALENDAR_MODES.map(({ key, label, icon: Icon }) => {
-            const isActive = viewMode === key;
-
-            return (
-              <Button
-                key={key}
-                variant="ghost"
-                onClick={() => setViewMode(key)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors
+              return (
+                <Button
+                  key={key}
+                  variant="ghost"
+                  onClick={() => setCalendarViewMode(key)}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors
                 ${isActive
-                    ? 'bg-white dark:bg-gray-700 text-purple-600 shadow'
-                    : 'text-gray-600 dark:text-gray-300'
-                  }`}
-              >
-                <Icon className="w-5 h-5" />
-                {t(label)}
-              </Button>
-            );
-          })}
-        </div>
+                      ? 'bg-white dark:bg-gray-700 text-purple-600 shadow'
+                      : 'text-gray-600 dark:text-gray-300'
+                    }`}
+                >
+                  <Icon className="w-5 h-5" />
+                  {t(label)}
+                </Button>
+              );
+            })}
+          </div>}
 
 
 
-        {viewMode.startsWith('calendar-') && (
+        {viewMode.startsWith('calendar') && (
           <div className="flex items-center gap-4">
             <button onClick={goPrevious} className="p-3 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">
               <ChevronLeft className="w-6 h-6" />
@@ -601,9 +580,9 @@ export default function EventsWithViewMode({
 
       {/* Main Content */}
       <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 flex-1 overflow-y-auto max-h-[calc(100vh-500px)]">
-        {viewMode === 'calendar-month' && <MonthView />}
-        {viewMode === 'calendar-week' && <WeekView />}
-        {viewMode === 'calendar-day' && <DayView />}
+        {calendarViewMode === 'calendar-month' && viewMode === 'calendar' && <MonthView />}
+        {calendarViewMode === 'calendar-week' && viewMode === 'calendar' && <WeekView />}
+        {calendarViewMode === 'calendar-day' && viewMode === 'calendar' && <DayView />}
         {viewMode === 'list' && <ListView />}
         {viewMode === 'grid' && <GridView />}
       </div>

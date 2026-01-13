@@ -4,9 +4,9 @@ import { LineChart, Line, ResponsiveContainer } from 'recharts';
 import { Users, Activity, Eye, Clock, Target, ChevronDown } from 'lucide-react';
 
 import { useCommon } from '@/hooks/useCommon';
-import { InfoTooltip } from '@/components/shared/InfoTooltip';
-import { useGetGoogleAnalyticsViewsQuery } from '@/store/api/analyticsApi';
+import { InfoTooltip } from '@/components/shared';
 import { normalizeTime } from '@/helpers/formatter';
+import { useGetGoogleAnalyticsViewsQuery } from '@/store/api/analyticsApi';
 
 const COLORS = {
   blue: {

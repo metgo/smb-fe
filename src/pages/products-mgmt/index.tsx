@@ -6,9 +6,7 @@ import { ProductWizard } from './components';
 import { useProductMgmt } from './useProductMgmt';
 import { useThemeClasses } from '@/hooks/useThemeClasses';
 import { useAppSelector } from '@/hooks/hooks';
-import { PageHeader } from '@/components/shared/PageHeader';
-import { PageStats } from '@/components/shared/PageStats';
-import { ReordableDataTable } from '@/components/shared/ReordableDataTable';
+import { PageHeader, PageStats, ReordableDataTable } from '@/components/shared';
 
 
 const businessId = ""

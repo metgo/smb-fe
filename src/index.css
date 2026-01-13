@@ -124,7 +124,7 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
-/* html,
+html,
 body,
 * {
   -ms-overflow-style: none;
@@ -138,7 +138,7 @@ body::-webkit-scrollbar,
   display: none;
   width: 0;
   height: 0;
-} */
+}
 
 @layer base {
   * {

@@ -1,10 +1,9 @@
+import clsx from "clsx";
 import { Outlet } from "react-router-dom";
 
 import Header from "./header";
 import Sidebar from "./sidebar";
 import { useAppSelector } from "@/hooks/hooks";
-import clsx from "clsx";
-import { Toaster } from "sonner";
 
 
 const RootLayout = () => {
@@ -17,7 +16,6 @@ const RootLayout = () => {
       theme==="dark" ? "bg-gray-950":"bg-gray-50"
     )}>
       <Header />
-      <Toaster />
       <div className=" pt-20 relative">
         <Sidebar />
 

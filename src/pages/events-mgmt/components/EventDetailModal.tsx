@@ -23,7 +23,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { ReordableDataTable } from "@/components/shared/ReordableDataTable";
+import { ReordableDataTable } from "@/components/shared";
 
 
 interface EventDetailModalProps {

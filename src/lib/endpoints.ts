@@ -16,8 +16,14 @@ export const endpoints = {
   googleAnalyticsViews: "/google-analytics-views",
 
   categories: "/admin/buss-category",
-  subCategories:"admin/buss-sub-category",
+  subCategories: "admin/buss-sub-category",
   accessibility: "/admin/accessibility",
-  groupType:"/admin/group-type"
+  groupType: "/admin/group-type",
 
+  dmos: "/dmos",
+
+  events: "/events",
+
+  googleMap: 'https://maps.googleapis.com/maps/api/js',
+  googlePlaceAutoComplete: 'https://places.googleapis.com/v1/places',
 }

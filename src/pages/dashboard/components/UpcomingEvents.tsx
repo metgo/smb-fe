@@ -1,10 +1,9 @@
 import { useTranslation } from 'react-i18next';
 import { Calendar, MapPin, ArrowRight } from 'lucide-react';
 
-import { InfoTooltip } from '@/components/shared/InfoTooltip';
-import { ImageWithFallback } from '@/components/shared/ImageWithFallback';
 import { Link } from 'react-router-dom';
 import { routes } from '@/lib/routes';
+import { ImageWithFallback, InfoTooltip } from '@/components/shared';
 
 interface Event {
   id: number;

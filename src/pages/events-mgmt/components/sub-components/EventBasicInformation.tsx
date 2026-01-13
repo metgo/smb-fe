@@ -1,9 +1,9 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 
+import { SelectableChips } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useGetAccessibilityQuery, useGetGroupTypesQuery, useGetSubCategoriesQuery } from "@/store/api/masterDataApi";
-import clsx from "clsx";
 
 interface EventBasicInformationProps {
   // Basic fields
@@ -169,75 +169,27 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
         </div>
       </div>
 
-      {/* Event SubCategories */}
-      <div>
-        <label className={`block text-sm font-medium mb-4 ${textSecondary}`}>Sub Categories</label>
-        <div className="flex items-center flex-wrap gap-2">
-          {subCategories?.datas?.data.map((item: any) => {
-            const isSelected = selectedSubCategoriesId.some((id) => id === item._id);
-
-            return (
-              <div
-                key={item._id}
-                onClick={() => handleSubcategorySelect(item._id)}
-                className={clsx(
-                  "border border-teal-600 px-4 py-1.5 rounded-3xl cursor-pointer",
-                  isSelected ? "bg-teal-600 text-white" : ""
-                )}
-              >
-                <span>{item.name}</span>
-              </div>
-            )
-          })}
-        </div>
-      </div>
-
-
-      {/* Event Accessiblities */}
-      <div>
-        <label className={`block text-sm font-medium mb-4 ${textSecondary}`}>Accessiblities</label>
-        <div className="flex items-center flex-wrap gap-2">
-          {accessibility?.datas?.data.map((item: any) => {
-            const isSelected = selectedAccessiblitiesId.some((id) => id === item._id);
-
-            return (
-              <div
-                key={item._id}
-                onClick={() => handleAccessibilitySelect(item._id)}
-                className={clsx(
-                  "border border-teal-600 px-4 py-1.5 rounded-3xl cursor-pointer",
-                  isSelected ? "bg-teal-600 text-white" : ""
-                )}
-              >
-                <span>{item.name}</span>
-              </div>
-            )
-          })}
-        </div>
-      </div>
-
-      {/* Event Grouptypes */}
-      <div>
-        <label className={`block text-sm font-medium mb-4 ${textSecondary}`}>Group Types</label>
-        <div className="flex items-center flex-wrap gap-2">
-          {groupTypes?.datas?.data.map((item: any) => {
-            const isSelected = selectedGroupTypesId.some((id) => id === item._id);
-
-            return (
-              <div
-                key={item._id}
-                onClick={() => handleGroupTypeSelect(item._id)}
-                className={clsx(
-                  "border border-teal-600 px-4 py-1.5 rounded-3xl cursor-pointer",
-                  isSelected ? "bg-teal-600 text-white" : ""
-                )}
-              >
-                <span>{item.name}</span>
-              </div>
-            )
-          })}
-        </div>
-      </div>
+      <SelectableChips
+        label="Sub Categories"
+        items={subCategories?.datas?.data}
+        selectedIds={selectedSubCategoriesId}
+        onSelect={handleSubcategorySelect}
+        textSecondary={textSecondary}
+      />
+      <SelectableChips
+        label="Accessiblities"
+        items={accessibility?.datas?.data}
+        selectedIds={selectedAccessiblitiesId}
+        onSelect={handleAccessibilitySelect}
+        textSecondary={textSecondary}
+      />
+      <SelectableChips
+        label="Group Types"
+        items={groupTypes?.datas?.data}
+        selectedIds={selectedGroupTypesId}
+        onSelect={handleGroupTypeSelect}
+        textSecondary={textSecondary}
+      />
 
       {/* Internal Notes */}
       <div>

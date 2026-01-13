@@ -80,7 +80,7 @@ export default function Sidebar() {
     },
     {
       id: 'orders',
-      path: routes.orders,
+      path: routes.ordersMgmt,
       label: t('orders') || 'Orders',
       icon: ShoppingCart,
     },

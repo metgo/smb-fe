@@ -194,11 +194,7 @@
   "online_link": "رابط عبر الإنترنت",
   "not_set": "غير محدد",
   "total_tickets": "إجمالي البطاقات",
-  "previous": "السابق",
-  "next": "التالي",
-  "save_draft": "حفظ المسودة",
-  "publish_event": "نشر الحدث",
-  "publishing": "يتم النشر...",
+
   "event_saved_as_draft": "تم حفظ الحدث كمسودة",
   "fix_errors_before_proceeding": "يرجى تصحيح الأخطاء قبل المتابعة",
   "event_published_success": "تم نشر الحدث بنجاح",

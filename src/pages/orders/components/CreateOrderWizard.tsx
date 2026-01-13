@@ -1,6 +1,25 @@
-// Add Order Wizard Component
-function AddOrderWizard({ theme, onClose, onAddOrder }: { theme: Theme; onClose: () => void; onAddOrder: (order: Partial<Order>) => void }) {
-  const { t, isRTL } = useLanguage();
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+
+import { useAppSelector } from "@/hooks/hooks";
+import { availableProducts } from "@/constants/data";
+import { Search, ShoppingCart, X, XCircle } from "lucide-react";
+
+
+interface CreateOrderWizard {
+  onClose: () => void;
+  onAddOrder: (order: Partial<Order>) => void
+}
+
+
+export default function CreateOrderWizard({
+  onClose,
+  onAddOrder
+}: CreateOrderWizard) {
+  const { t } = useTranslation('orders');
+  const { isRTL, theme } = useAppSelector((state) => state.settings)
+
+
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
     purchaserName: '',
@@ -18,52 +37,7 @@ function AddOrderWizard({ theme, onClose, onAddOrder }: { theme: Theme; onClose:
   const [productSearch, setProductSearch] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Mock products for selection
-  const availableProducts = [
-    // Experiences
-    { id: 'P001', name: 'Desert Safari Experience', vendor: 'Desert Tours Ltd', category: 'Experience', price: 450 },
-    { id: 'P002', name: 'Stargazing Night Tour', vendor: 'Desert Tours Ltd', category: 'Experience', price: 280 },
-    { id: 'P003', name: 'Local Cuisine Workshop', vendor: 'Culinary Negev', category: 'Experience', price: 220 },
-    { id: 'P004', name: 'Bedouin Cultural Experience', vendor: 'Heritage Tours', category: 'Experience', price: 320 },
-    { id: 'P005', name: 'Ceramic Workshop', vendor: 'Negev Arts', category: 'Experience', price: 180 },
-    { id: 'P006', name: 'Wine Tasting Tour', vendor: 'Negev Wineries', category: 'Experience', price: 295 },
-    { id: 'P007', name: 'Photography Safari', vendor: 'Lens & Desert', category: 'Experience', price: 380 },
-    { id: 'P008', name: 'Sunset Camel Ride', vendor: 'Desert Adventures', category: 'Experience', price: 240 },
 
-    // Accommodations
-    { id: 'P009', name: 'Boutique Hotel Room', vendor: 'Negev Inn', category: 'Accommodation', price: 680 },
-    { id: 'P010', name: 'Desert Lodge Suite', vendor: 'Negev Inn', category: 'Accommodation', price: 920 },
-    { id: 'P011', name: 'Eco-Cabin Experience', vendor: 'Green Desert Retreats', category: 'Accommodation', price: 540 },
-    { id: 'P012', name: 'Luxury Glamping Tent', vendor: 'Negev Under Stars', category: 'Accommodation', price: 750 },
-    { id: 'P013', name: 'Family Suite Package', vendor: 'Oasis Hotel', category: 'Accommodation', price: 1150 },
-
-    // Tours & Activities
-    { id: 'P014', name: 'Hiking Guide Service', vendor: 'Trail Masters', category: 'Service', price: 350 },
-    { id: 'P015', name: 'Off-Road Jeep Tour', vendor: 'Desert Adventures', category: 'Tour', price: 420 },
-    { id: 'P016', name: 'Archaeological Site Tour', vendor: 'Heritage Tours', category: 'Tour', price: 260 },
-    { id: 'P017', name: 'Mountain Biking Adventure', vendor: 'Trail Masters', category: 'Activity', price: 310 },
-    { id: 'P018', name: 'Rock Climbing Session', vendor: 'Summit Negev', category: 'Activity', price: 275 },
-
-    // Food & Dining
-    { id: 'P019', name: 'Traditional Dinner Experience', vendor: 'Culinary Negev', category: 'Dining', price: 185 },
-    { id: 'P020', name: 'Farm-to-Table Breakfast', vendor: 'Green Desert Retreats', category: 'Dining', price: 95 },
-    { id: 'P021', name: 'Gourmet Picnic Package', vendor: 'Oasis Catering', category: 'Dining', price: 145 },
-
-    // Wellness & Spa
-    { id: 'P022', name: 'Desert Spa Package', vendor: 'Serenity Spa Negev', category: 'Wellness', price: 480 },
-    { id: 'P023', name: 'Yoga Retreat Day', vendor: 'Mindful Desert', category: 'Wellness', price: 225 },
-    { id: 'P024', name: 'Massage & Hot Springs', vendor: 'Serenity Spa Negev', category: 'Wellness', price: 340 },
-
-    // Workshops & Classes
-    { id: 'P025', name: 'Weaving Workshop', vendor: 'Negev Arts', category: 'Workshop', price: 160 },
-    { id: 'P026', name: 'Bread Baking Class', vendor: 'Culinary Negev', category: 'Workshop', price: 120 },
-    { id: 'P027', name: 'Calligraphy Workshop', vendor: 'Heritage Arts Center', category: 'Workshop', price: 140 },
-
-    // Special Packages
-    { id: 'P028', name: 'Weekend Explorer Package', vendor: 'Desert Tours Ltd', category: 'Package', price: 1450 },
-    { id: 'P029', name: 'Romantic Getaway Bundle', vendor: 'Negev Romance', category: 'Package', price: 1680 },
-    { id: 'P030', name: 'Adventure Seeker Pass', vendor: 'Desert Adventures', category: 'Package', price: 890 },
-  ];
 
   const filteredProducts = availableProducts.filter(p =>
     p.name.toLowerCase().includes(productSearch.toLowerCase()) ||
@@ -74,19 +48,19 @@ function AddOrderWizard({ theme, onClose, onAddOrder }: { theme: Theme; onClose:
     const newErrors: Record<string, string> = {};
 
     if (step === 1) {
-      if (!formData.purchaserName.trim()) newErrors.purchaserName = t.fieldRequired || 'This field is required';
-      if (!formData.email.trim()) newErrors.email = t.fieldRequired || 'This field is required';
-      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) newErrors.email = t.invalidEmail || 'Invalid email';
-      if (!formData.phone.trim()) newErrors.phone = t.fieldRequired || 'This field is required';
+      if (!formData.purchaserName.trim()) newErrors.purchaserName = t('field_required') || 'This field is required';
+      if (!formData.email.trim()) newErrors.email = t('field_required') || 'This field is required';
+      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) newErrors.email = t('invalid_email') || 'Invalid email';
+      if (!formData.phone.trim()) newErrors.phone = t('field_required') || 'This field is required';
     } else if (step === 2) {
-      if (formData.products.length === 0) newErrors.products = t.fieldRequired || 'At least one product is required';
+      if (formData.products.length === 0) newErrors.products = t('field_required') || 'At least one product is required';
     } else if (step === 3) {
       const total = formData.products.reduce((sum, p) => sum + (p.quantity * p.unitPrice), 0) + formData.deliveryFee;
       if (formData.voucherAmount + formData.creditCardAmount !== total) {
         newErrors.payment = 'Payment amounts must equal total';
       }
       if (formData.deliveryMethod === 'delivery' && !formData.deliveryAddress.trim()) {
-        newErrors.deliveryAddress = t.fieldRequired || 'This field is required';
+        newErrors.deliveryAddress = t('field_required') || 'This field is required';
       }
     }
 
@@ -185,10 +159,10 @@ function AddOrderWizard({ theme, onClose, onAddOrder }: { theme: Theme; onClose:
   const totalAmount = formData.products.reduce((sum, p) => sum + (p.quantity * p.unitPrice), 0) + formData.deliveryFee;
 
   const steps = [
-    { number: 1, label: t.wizardStepCustomer || 'Customer Info' },
-    { number: 2, label: t.wizardStepProducts || 'Products' },
-    { number: 3, label: t.wizardStepPaymentDelivery || 'Payment & Delivery' },
-    { number: 4, label: t.wizardStepReview || 'Review' },
+    { number: 1, label: t('wizard_step_customer') || 'Customer Info' },
+    { number: 2, label: t('wizard_step_products') || 'Products' },
+    { number: 3, label: t('wizard_step_payment_delivery') || 'Payment & Delivery' },
+    { number: 4, label: t('wizard_step_Review') || 'Review' },
   ];
 
   return (
@@ -199,10 +173,10 @@ function AddOrderWizard({ theme, onClose, onAddOrder }: { theme: Theme; onClose:
           }`}
       >
         {/* Header */}
-        <div className={`p-6 border-b flex-shrink-0 ${theme === 'dark' ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'
+        <div className={`p-6 border-b shrink-0 ${theme === 'dark' ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'
           }`}>
           <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
-            <h2 className="text-2xl">{t.addOrder || 'Add Order'}</h2>
+            <h2 className="text-2xl">{t('add_order') || 'Add Order'}</h2>
             <button
               onClick={onClose}
               className={`p-2 rounded-lg transition-colors ${theme === 'dark' ? 'hover:bg-gray-800' : 'hover:bg-gray-100'
@@ -218,8 +192,8 @@ function AddOrderWizard({ theme, onClose, onAddOrder }: { theme: Theme; onClose:
               <div key={step.number} className="flex items-center flex-1">
                 <div className="flex flex-col items-center flex-1">
                   <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${currentStep >= step.number
-                      ? 'bg-teal-500 text-white'
-                      : theme === 'dark' ? 'bg-gray-800 text-gray-400' : 'bg-gray-200 text-gray-600'
+                    ? 'bg-teal-500 text-white'
+                    : theme === 'dark' ? 'bg-gray-800 text-gray-400' : 'bg-gray-200 text-gray-600'
                     }`}>
                     {step.number}
                   </div>
@@ -229,8 +203,8 @@ function AddOrderWizard({ theme, onClose, onAddOrder }: { theme: Theme; onClose:
                 </div>
                 {idx < steps.length - 1 && (
                   <div className={`h-0.5 flex-1 mx-2 ${currentStep > step.number
-                      ? 'bg-teal-500'
-                      : theme === 'dark' ? 'bg-gray-800' : 'bg-gray-200'
+                    ? 'bg-teal-500'
+                    : theme === 'dark' ? 'bg-gray-800' : 'bg-gray-200'
                     }`} />
                 )}
               </div>
@@ -243,19 +217,19 @@ function AddOrderWizard({ theme, onClose, onAddOrder }: { theme: Theme; onClose:
           {/* Step 1: Customer Information */}
           {currentStep === 1 && (
             <div className="space-y-4">
-              <h3 className="text-lg mb-4">{t.customerInformation || 'Customer Information'}</h3>
+              <h3 className="text-lg mb-4">{t('customer_information') || 'Customer Information'}</h3>
 
               <div>
                 <label className={`block text-sm mb-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} ${isRTL ? 'text-right' : ''}`}>
-                  {t.purchaserName || 'Purchaser Name'} <span className="text-red-500">*</span>
+                  {t('purchaser_name') || 'Purchaser Name'} <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   value={formData.purchaserName}
                   onChange={(e) => setFormData(prev => ({ ...prev, purchaserName: e.target.value }))}
                   className={`w-full px-3 py-2 rounded-lg border transition-colors ${isRTL ? 'text-right' : ''} ${theme === 'dark'
-                      ? 'bg-gray-800 border-gray-700 text-gray-100'
-                      : 'bg-white border-gray-300 text-gray-900'
+                    ? 'bg-gray-800 border-gray-700 text-gray-100'
+                    : 'bg-white border-gray-300 text-gray-900'
                     } ${errors.purchaserName ? 'border-red-500' : ''}`}
                 />
                 {errors.purchaserName && <p className="text-red-500 text-xs mt-1">{errors.purchaserName}</p>}
@@ -263,15 +237,15 @@ function AddOrderWizard({ theme, onClose, onAddOrder }: { theme: Theme; onClose:
 
               <div>
                 <label className={`block text-sm mb-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} ${isRTL ? 'text-right' : ''}`}>
-                  {t.purchaserEmail || 'Email'} <span className="text-red-500">*</span>
+                  {t('purchaser_email') || 'Email'} <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="email"
                   value={formData.email}
                   onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
                   className={`w-full px-3 py-2 rounded-lg border transition-colors ${isRTL ? 'text-right' : ''} ${theme === 'dark'
-                      ? 'bg-gray-800 border-gray-700 text-gray-100'
-                      : 'bg-white border-gray-300 text-gray-900'
+                    ? 'bg-gray-800 border-gray-700 text-gray-100'
+                    : 'bg-white border-gray-300 text-gray-900'
                     } ${errors.email ? 'border-red-500' : ''}`}
                 />
                 {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
@@ -279,15 +253,15 @@ function AddOrderWizard({ theme, onClose, onAddOrder }: { theme: Theme; onClose:
 
               <div>
                 <label className={`block text-sm mb-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} ${isRTL ? 'text-right' : ''}`}>
-                  {t.purchaserPhone || 'Phone'} <span className="text-red-500">*</span>
+                  {t('purchaser_phone') || 'Phone'} <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="tel"
                   value={formData.phone}
                   onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
                   className={`w-full px-3 py-2 rounded-lg border transition-colors ${isRTL ? 'text-right' : ''} ${theme === 'dark'
-                      ? 'bg-gray-800 border-gray-700 text-gray-100'
-                      : 'bg-white border-gray-300 text-gray-900'
+                    ? 'bg-gray-800 border-gray-700 text-gray-100'
+                    : 'bg-white border-gray-300 text-gray-900'
                     } ${errors.phone ? 'border-red-500' : ''}`}
                 />
                 {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
@@ -298,7 +272,7 @@ function AddOrderWizard({ theme, onClose, onAddOrder }: { theme: Theme; onClose:
           {/* Step 2: Product Selection */}
           {currentStep === 2 && (
             <div className="space-y-4">
-              <h3 className="text-lg mb-4">{t.productSelection || 'Product Selection'}</h3>
+              <h3 className="text-lg mb-4">{t('product_selection') || 'Product Selection'}</h3>
 
               {/* Search */}
               <div className="relative">
@@ -307,10 +281,10 @@ function AddOrderWizard({ theme, onClose, onAddOrder }: { theme: Theme; onClose:
                   type="text"
                   value={productSearch}
                   onChange={(e) => setProductSearch(e.target.value)}
-                  placeholder={t.searchProductsToAdd || 'Search products...'}
+                  placeholder={t('search_products_to_add') || 'Search products...'}
                   className={`w-full py-2 rounded-lg border transition-colors ${isRTL ? 'pr-10 pl-3 text-right' : 'pl-10 pr-3'} ${theme === 'dark'
-                      ? 'bg-gray-800 border-gray-700 text-gray-100 placeholder-gray-500'
-                      : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'
+                    ? 'bg-gray-800 border-gray-700 text-gray-100 placeholder-gray-500'
+                    : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'
                     }`}
                 />
               </div>
@@ -345,7 +319,7 @@ function AddOrderWizard({ theme, onClose, onAddOrder }: { theme: Theme; onClose:
               {/* Selected Products */}
               <div>
                 <h4 className={`text-sm mb-2 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} ${isRTL ? 'text-right' : ''}`}>
-                  {t.productsOrdered || 'Products Ordered'} ({formData.products.length})
+                  {t('products_ordered') || 'Products Ordered'} ({formData.products.length})
                 </h4>
                 {formData.products.length === 0 ? (
                   <div className={`p-8 text-center border-2 border-dashed rounded-lg ${theme === 'dark' ? 'border-gray-700 text-gray-400' : 'border-gray-300 text-gray-600'
@@ -372,8 +346,8 @@ function AddOrderWizard({ theme, onClose, onAddOrder }: { theme: Theme; onClose:
                               value={product.quantity}
                               onChange={(e) => handleUpdateQuantity(idx, parseInt(e.target.value) || 1)}
                               className={`w-16 px-2 py-1 text-center rounded border ${theme === 'dark'
-                                  ? 'bg-gray-900 border-gray-600'
-                                  : 'bg-white border-gray-300'
+                                ? 'bg-gray-900 border-gray-600'
+                                : 'bg-white border-gray-300'
                                 }`}
                             />
                             <span>×</span>
@@ -399,24 +373,24 @@ function AddOrderWizard({ theme, onClose, onAddOrder }: { theme: Theme; onClose:
           {/* Step 3: Payment & Delivery */}
           {currentStep === 3 && (
             <div className="space-y-4">
-              <h3 className="text-lg mb-4">{t.paymentDeliveryInfo || 'Payment & Delivery Information'}</h3>
+              <h3 className="text-lg mb-4">{t('payment_delivery_info') || 'Payment & Delivery Information'}</h3>
 
               {/* Delivery Method */}
               <div>
                 <label className={`block text-sm mb-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} ${isRTL ? 'text-right' : ''}`}>
-                  {t.deliveryMethod || 'Delivery Method'}
+                  {t('delivery_method') || 'Delivery Method'}
                 </label>
                 <select
                   value={formData.deliveryMethod}
                   onChange={(e) => setFormData(prev => ({ ...prev, deliveryMethod: e.target.value as any }))}
                   className={`w-full px-3 py-2 rounded-lg border transition-colors ${isRTL ? 'text-right' : ''} ${theme === 'dark'
-                      ? 'bg-gray-800 border-gray-700 text-gray-100'
-                      : 'bg-white border-gray-300 text-gray-900'
+                    ? 'bg-gray-800 border-gray-700 text-gray-100'
+                    : 'bg-white border-gray-300 text-gray-900'
                     }`}
                 >
-                  <option value="pickup">{t.pickup || 'Pickup'}</option>
-                  <option value="delivery">{t.delivery || 'Delivery'}</option>
-                  <option value="digital">{t.digital || 'Digital'}</option>
+                  <option value="pickup">{t('pickup') || 'Pickup'}</option>
+                  <option value="delivery">{t('delivery') || 'Delivery'}</option>
+                  <option value="digital">{t('digital') || 'Digital'}</option>
                 </select>
               </div>
 
@@ -425,15 +399,15 @@ function AddOrderWizard({ theme, onClose, onAddOrder }: { theme: Theme; onClose:
                 <>
                   <div>
                     <label className={`block text-sm mb-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} ${isRTL ? 'text-right' : ''}`}>
-                      {t.deliveryAddress || 'Delivery Address'} <span className="text-red-500">*</span>
+                      {t('delivery_address') || 'Delivery Address'} <span className="text-red-500">*</span>
                     </label>
                     <textarea
                       value={formData.deliveryAddress}
                       onChange={(e) => setFormData(prev => ({ ...prev, deliveryAddress: e.target.value }))}
                       rows={3}
                       className={`w-full px-3 py-2 rounded-lg border transition-colors resize-none ${isRTL ? 'text-right' : ''} ${theme === 'dark'
-                          ? 'bg-gray-800 border-gray-700 text-gray-100'
-                          : 'bg-white border-gray-300 text-gray-900'
+                        ? 'bg-gray-800 border-gray-700 text-gray-100'
+                        : 'bg-white border-gray-300 text-gray-900'
                         } ${errors.deliveryAddress ? 'border-red-500' : ''}`}
                     />
                     {errors.deliveryAddress && <p className="text-red-500 text-xs mt-1">{errors.deliveryAddress}</p>}
@@ -441,7 +415,7 @@ function AddOrderWizard({ theme, onClose, onAddOrder }: { theme: Theme; onClose:
 
                   <div>
                     <label className={`block text-sm mb-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} ${isRTL ? 'text-right' : ''}`}>
-                      {t.deliveryFee || 'Delivery Fee'}
+                      {t('delivery_fee') || 'Delivery Fee'}
                     </label>
                     <input
                       type="number"
@@ -449,8 +423,8 @@ function AddOrderWizard({ theme, onClose, onAddOrder }: { theme: Theme; onClose:
                       value={formData.deliveryFee}
                       onChange={(e) => setFormData(prev => ({ ...prev, deliveryFee: parseFloat(e.target.value) || 0 }))}
                       className={`w-full px-3 py-2 rounded-lg border transition-colors ${isRTL ? 'text-right' : ''} ${theme === 'dark'
-                          ? 'bg-gray-800 border-gray-700 text-gray-100'
-                          : 'bg-white border-gray-300 text-gray-900'
+                        ? 'bg-gray-800 border-gray-700 text-gray-100'
+                        : 'bg-white border-gray-300 text-gray-900'
                         }`}
                     />
                   </div>
@@ -460,27 +434,27 @@ function AddOrderWizard({ theme, onClose, onAddOrder }: { theme: Theme; onClose:
               {/* Delivery Instructions */}
               <div>
                 <label className={`block text-sm mb-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} ${isRTL ? 'text-right' : ''}`}>
-                  {t.deliveryInstructions || 'Delivery Instructions'}
+                  {t('delivery_instructions') || 'Delivery Instructions'}
                 </label>
                 <textarea
                   value={formData.deliveryInstructions}
                   onChange={(e) => setFormData(prev => ({ ...prev, deliveryInstructions: e.target.value }))}
                   rows={2}
                   className={`w-full px-3 py-2 rounded-lg border transition-colors resize-none ${isRTL ? 'text-right' : ''} ${theme === 'dark'
-                      ? 'bg-gray-800 border-gray-700 text-gray-100'
-                      : 'bg-white border-gray-300 text-gray-900'
+                    ? 'bg-gray-800 border-gray-700 text-gray-100'
+                    : 'bg-white border-gray-300 text-gray-900'
                     }`}
                 />
               </div>
 
               {/* Payment Amounts */}
               <div className={`p-4 rounded-lg border ${theme === 'dark' ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-gray-50'}`}>
-                <h4 className="text-sm mb-3">{t.paymentBreakdown || 'Payment Breakdown'}</h4>
+                <h4 className="text-sm mb-3">{t('payment_breakdown') || 'Payment Breakdown'}</h4>
 
                 <div className="space-y-3">
                   <div>
                     <label className={`block text-sm mb-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} ${isRTL ? 'text-right' : ''}`}>
-                      {t.voucherAmount || 'Voucher Amount'}
+                      {t('voucher_amount') || 'Voucher Amount'}
                     </label>
                     <input
                       type="number"
@@ -496,15 +470,15 @@ function AddOrderWizard({ theme, onClose, onAddOrder }: { theme: Theme; onClose:
                         }));
                       }}
                       className={`w-full px-3 py-2 rounded-lg border transition-colors ${isRTL ? 'text-right' : ''} ${theme === 'dark'
-                          ? 'bg-gray-900 border-gray-600 text-gray-100'
-                          : 'bg-white border-gray-300 text-gray-900'
+                        ? 'bg-gray-900 border-gray-600 text-gray-100'
+                        : 'bg-white border-gray-300 text-gray-900'
                         }`}
                     />
                   </div>
 
                   <div>
                     <label className={`block text-sm mb-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} ${isRTL ? 'text-right' : ''}`}>
-                      {t.creditCardAmount || 'Credit Card Amount'}
+                      {t('credit_card_amount') || 'Credit Card Amount'}
                     </label>
                     <input
                       type="number"
@@ -520,14 +494,14 @@ function AddOrderWizard({ theme, onClose, onAddOrder }: { theme: Theme; onClose:
                         }));
                       }}
                       className={`w-full px-3 py-2 rounded-lg border transition-colors ${isRTL ? 'text-right' : ''} ${theme === 'dark'
-                          ? 'bg-gray-900 border-gray-600 text-gray-100'
-                          : 'bg-white border-gray-300 text-gray-900'
+                        ? 'bg-gray-900 border-gray-600 text-gray-100'
+                        : 'bg-white border-gray-300 text-gray-900'
                         }`}
                     />
                   </div>
 
                   <div className={`pt-3 border-t flex justify-between ${theme === 'dark' ? 'border-gray-700' : 'border-gray-300'} ${isRTL ? 'flex-row-reverse' : ''}`}>
-                    <span>{t.total || 'Total'}:</span>
+                    <span>{t('total') || 'Total'}:</span>
                     <span className="font-bold">₪{totalAmount.toLocaleString()}</span>
                   </div>
                 </div>
@@ -539,21 +513,21 @@ function AddOrderWizard({ theme, onClose, onAddOrder }: { theme: Theme; onClose:
           {/* Step 4: Review */}
           {currentStep === 4 && (
             <div className="space-y-4">
-              <h3 className="text-lg mb-4">{t.reviewOrder || 'Review Order'}</h3>
+              <h3 className="text-lg mb-4">{t('review_order') || 'Review Order'}</h3>
 
               {/* Customer Info */}
               <div className={`p-4 rounded-lg border ${theme === 'dark' ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-gray-50'}`}>
-                <h4 className="text-sm mb-2 font-medium">{t.customerInformation || 'Customer Information'}</h4>
+                <h4 className="text-sm mb-2 font-medium">{t('customer_information') || 'Customer Information'}</h4>
                 <div className="space-y-1 text-sm">
-                  <p><span className={theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}>{t.name || 'Name'}:</span> {formData.purchaserName}</p>
-                  <p><span className={theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}>{t.email || 'Email'}:</span> {formData.email}</p>
-                  <p><span className={theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}>{t.phone || 'Phone'}:</span> {formData.phone}</p>
+                  <p><span className={theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}>{t('name') || 'Name'}:</span> {formData.purchaserName}</p>
+                  <p><span className={theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}>{t('email') || 'Email'}:</span> {formData.email}</p>
+                  <p><span className={theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}>{t('phone') || 'Phone'}:</span> {formData.phone}</p>
                 </div>
               </div>
 
               {/* Products */}
               <div className={`p-4 rounded-lg border ${theme === 'dark' ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-gray-50'}`}>
-                <h4 className="text-sm mb-2 font-medium">{t.productsOrdered || 'Products'}</h4>
+                <h4 className="text-sm mb-2 font-medium">{t('products_ordered') || 'Products'}</h4>
                 <div className="space-y-2">
                   {formData.products.map((product, idx) => (
                     <div key={idx} className={`flex justify-between text-sm ${isRTL ? 'flex-row-reverse' : ''}`}>
@@ -563,12 +537,12 @@ function AddOrderWizard({ theme, onClose, onAddOrder }: { theme: Theme; onClose:
                   ))}
                   {formData.deliveryFee > 0 && (
                     <div className={`flex justify-between text-sm ${isRTL ? 'flex-row-reverse' : ''}`}>
-                      <span>{t.deliveryFee || 'Delivery Fee'}</span>
+                      <span>{t('delivery_fee') || 'Delivery Fee'}</span>
                       <span>₪{formData.deliveryFee.toLocaleString()}</span>
                     </div>
                   )}
                   <div className={`pt-2 border-t flex justify-between font-medium ${theme === 'dark' ? 'border-gray-700' : 'border-gray-300'} ${isRTL ? 'flex-row-reverse' : ''}`}>
-                    <span>{t.total || 'Total'}</span>
+                    <span>{t('total') || 'Total'}</span>
                     <span>₪{totalAmount.toLocaleString()}</span>
                   </div>
                 </div>
@@ -576,14 +550,14 @@ function AddOrderWizard({ theme, onClose, onAddOrder }: { theme: Theme; onClose:
 
               {/* Payment & Delivery */}
               <div className={`p-4 rounded-lg border ${theme === 'dark' ? 'border-gray-700 bg-gray-800' : 'border-gray-200 bg-gray-50'}`}>
-                <h4 className="text-sm mb-2 font-medium">{t.paymentDeliveryInfo || 'Payment & Delivery'}</h4>
+                <h4 className="text-sm mb-2 font-medium">{t('payment_delivery_info') || 'Payment & Delivery'}</h4>
                 <div className="space-y-1 text-sm">
-                  <p><span className={theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}>{t.deliveryMethod || 'Delivery Method'}:</span> {formData.deliveryMethod}</p>
+                  <p><span className={theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}>{t('delivery_method') || 'Delivery Method'}:</span> {formData.deliveryMethod}</p>
                   {formData.deliveryAddress && (
-                    <p><span className={theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}>{t.deliveryAddress || 'Address'}:</span> {formData.deliveryAddress}</p>
+                    <p><span className={theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}>{t('delivery_address') || 'Address'}:</span> {formData.deliveryAddress}</p>
                   )}
-                  <p><span className={theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}>{t.voucherAmount || 'Voucher'}:</span> ₪{formData.voucherAmount.toLocaleString()}</p>
-                  <p><span className={theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}>{t.creditCardAmount || 'Credit Card'}:</span> ₪{formData.creditCardAmount.toLocaleString()}</p>
+                  <p><span className={theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}>{t('voucher_amount') || 'Voucher'}:</span> ₪{formData.voucherAmount.toLocaleString()}</p>
+                  <p><span className={theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}>{t('credit_card_amount') || 'Credit Card'}:</span> ₪{formData.creditCardAmount.toLocaleString()}</p>
                 </div>
               </div>
             </div>
@@ -597,11 +571,11 @@ function AddOrderWizard({ theme, onClose, onAddOrder }: { theme: Theme; onClose:
             <button
               onClick={handlePrevious}
               className={`px-4 py-2 rounded-lg transition-colors ${theme === 'dark'
-                  ? 'bg-gray-800 hover:bg-gray-700 text-gray-300'
-                  : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
+                ? 'bg-gray-800 hover:bg-gray-700 text-gray-300'
+                : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
                 }`}
             >
-              {t.previous || 'Previous'}
+              {t('previous') || 'Previous'}
             </button>
           )}
 
@@ -612,14 +586,14 @@ function AddOrderWizard({ theme, onClose, onAddOrder }: { theme: Theme; onClose:
               onClick={handleNext}
               className="px-6 py-2 bg-teal-500 hover:bg-teal-600 text-white rounded-lg transition-colors"
             >
-              {t.next || 'Next'}
+              {t('next') || 'Next'}
             </button>
           ) : (
             <button
               onClick={handleSubmit}
-              className="px-6 py-2 bg-gradient-to-r from-teal-500 to-blue-500 hover:from-teal-600 hover:to-blue-600 text-white rounded-lg transition-all"
+              className="px-6 py-2 bg-linear-to-r from-teal-500 to-blue-500 hover:from-teal-600 hover:to-blue-600 text-white rounded-lg transition-all"
             >
-              {t.createOrder || 'Create Order'}
+              {t('create_order') || 'Create Order'}
             </button>
           )}
         </div>

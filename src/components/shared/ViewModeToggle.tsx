@@ -1,21 +1,23 @@
 import { useThemeClasses } from '@/hooks/useThemeClasses';
-import { List, Grid3x3 } from 'lucide-react';
+import { List, Grid3x3, Calendar } from 'lucide-react';
 
-type ViewMode = 'list' | 'grid';
+type ViewMode = 'list' | 'grid' | 'calendar' | any;
 
 interface ViewModeToggleProps {
   value: ViewMode;
   onChange: (mode: ViewMode) => void;
   activeClassName?: string;
+  showCalendor?: boolean;
 }
 
-export function ViewModeToggle({
+export default function ViewModeToggle({
   value,
   onChange,
+  showCalendor = false,
   activeClassName = 'bg-teal-500 text-white',
 }: ViewModeToggleProps) {
   const themeColor = useThemeClasses()
-  const baseBtn = 'p-2 rounded transition-colors';
+  const baseBtn = 'p-2 rounded transition-colors cursor-pointer';
 
   return (
     <div
@@ -23,9 +25,8 @@ export function ViewModeToggle({
     >
       <button
         onClick={() => onChange('list')}
-        className={`${baseBtn} ${
-          value === 'list' ? activeClassName : themeColor.textTertiary
-        }`}
+        className={`${baseBtn} ${value === 'list' ? activeClassName : themeColor.textTertiary
+          }`}
         aria-label="List view"
       >
         <List className="w-4 h-4" />
@@ -33,13 +34,22 @@ export function ViewModeToggle({
 
       <button
         onClick={() => onChange('grid')}
-        className={`${baseBtn} ${
-          value === 'grid' ? activeClassName : themeColor.textTertiary
-        }`}
+        className={`${baseBtn} ${value === 'grid' ? activeClassName : themeColor.textTertiary
+          }`}
         aria-label="Grid view"
       >
         <Grid3x3 className="w-4 h-4" />
       </button>
+
+      {showCalendor &&
+        <button
+          onClick={() => onChange('calendar')}
+          className={`${baseBtn} ${value === 'calendar' ? activeClassName : themeColor.textTertiary
+            }`}
+          aria-label="Grid view"
+        >
+          <Calendar className="w-4 h-4" />
+        </button>}
     </div>
   );
 }

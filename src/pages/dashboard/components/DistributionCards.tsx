@@ -1,12 +1,12 @@
+import clsx from 'clsx';
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Building2, ChevronDown, Bed, Compass, ShoppingBag, UtensilsCrossed, Plane, Landmark, MapPin } from 'lucide-react';
 
-import { InfoTooltip } from '@/components/shared/InfoTooltip';
-import { useGetBusinessStatsQuery, useGetProductStatsQuery } from '@/store/api/itemStatsApi';
 import { categories } from '@/lib/utils';
-import clsx from 'clsx';
 import { useAppSelector } from '@/hooks/hooks';
+import { useGetBusinessStatsQuery, useGetProductStatsQuery } from '@/store/api/itemStatsApi';
+import { InfoTooltip } from '@/components/shared';
 
 const COLORS = {
   sleep: {

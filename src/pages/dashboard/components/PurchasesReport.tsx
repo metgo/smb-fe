@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next';
 import {  TrendingUp, Receipt } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
 
-import { InfoTooltip } from '@/components/shared/InfoTooltip';
+import { InfoTooltip } from '@/components/shared';
 import { useGetPurchaseReportsStatsQuery } from '@/store/api/itemStatsApi';
 
 interface PurchaseMetricProps {

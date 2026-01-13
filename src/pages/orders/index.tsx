@@ -1,127 +1,17 @@
-import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import {
   Search, Filter, Download, Plus, ChevronDown, ChevronUp,
-  MoreVertical, Check, X, Eye, Edit, Archive, CheckCircle, XCircle,
-  Loader, AlertCircle, Columns, ExternalLink, Mail, Phone, QrCode,
-  CreditCard, Ticket, Building2, MapPin, Package, Calendar,
-  Truck, ShoppingBag, FileText, MessageSquare, Clock, User,
-  DollarSign, TrendingUp, TrendingDown, Camera, ShoppingCart
+  XCircle, Loader, AlertCircle, Columns, Mail, Phone,
+  Truck, ShoppingBag,
+  DollarSign, TrendingUp, Camera, ShoppingCart
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useAppSelector } from '@/hooks/hooks';
+import { generateMockOrders } from '@/constants/data';
+import { CreateOrderWizard, FilterSelect, MonthFilter, OrderDetailsModal, QRScannerModal } from './components';
+import { useThemeClasses } from '@/hooks/useThemeClasses';
+import { PageStats } from '@/components/shared';
 
-interface OnlineOrdersManagementProps {
-  theme: Theme;
-}
-
-// Simulate user role for permissions
-const USER_ROLE = 'admin'; // Can be: 'admin', 'vendor', 'dmo', 'authority'
-
-// Order interface
-interface Order {
-  id: string;
-  purchaserName: string;
-  email: string;
-  phone: string;
-  orderType: 'online' | 'offline';
-  orderStatus: 'draft' | 'processing' | 'paid' | 'confirmed' | 'delivered' | 'completed' | 'cancelled' | 'partially_cancelled' | 'failed';
-  paymentStatus: 'pending' | 'success' | 'failed' | 'refunded' | 'partially_refunded';
-  paymentMethod: string[];
-  totalAmount: number;
-  voucherAmount: number;
-  creditCardAmount: number;
-  vendors: string[];
-  campaign: string;
-  deliveryType: 'pickup' | 'delivery' | 'digital';
-  createdDate: string;
-  paymentDate: string;
-  products: OrderProduct[];
-  address?: string;
-  campaignCode?: string;
-  qrScanned: boolean;
-  deliveryFee: number;
-}
-
-interface OrderProduct {
-  id: string;
-  name: string;
-  quantity: number;
-  unitPrice: number;
-  vendor: string;
-  deliveryType: 'pickup' | 'delivery';
-  imageUrl: string;
-  description: string;
-  category: string;
-  cancelled?: boolean;
-}
-
-// Mock data generator
-const generateMockOrders = (count: number): Order[] => {
-  const statuses: Order['orderStatus'][] = ['draft', 'processing', 'paid', 'confirmed', 'delivered', 'completed', 'cancelled', 'partially_cancelled', 'failed'];
-  const paymentStatuses: Order['paymentStatus'][] = ['pending', 'success', 'failed', 'refunded', 'partially_refunded'];
-  const deliveryTypes: Order['deliveryType'][] = ['pickup', 'delivery', 'digital'];
-  const vendors = ['Beersheba Bistro', 'Desert Delight', 'Negev Tours', 'Arad Adventures', 'Mitzpe Ramon Resort'];
-  const campaigns = ['Summer Sale 2026', 'Desert Discovery', 'Family Fun Days', 'Food Festival', 'Adventure Week'];
-
-  const products = [
-    { name: 'Guided Desert Tour', price: 120, imageUrl: 'https://via.placeholder.com/150', description: 'Explore the desert with a professional guide.', category: 'Tour' },
-    { name: 'Sunset Jeep Ride', price: 95, imageUrl: 'https://via.placeholder.com/150', description: 'Experience the sunset in a Jeep.', category: 'Activity' },
-    { name: 'Bedouin Dinner Experience', price: 75, imageUrl: 'https://via.placeholder.com/150', description: 'Enjoy a traditional Bedouin dinner.', category: 'Dinner' },
-    { name: 'Hotel Night Package', price: 180, imageUrl: 'https://via.placeholder.com/150', description: 'Stay overnight in a luxurious hotel.', category: 'Accommodation' },
-    { name: 'Makhtesh Ramon Hike', price: 60, imageUrl: 'https://via.placeholder.com/150', description: 'Hike through the Makhtesh Ramon.', category: 'Hike' },
-    { name: 'Wine Tasting Tour', price: 85, imageUrl: 'https://via.placeholder.com/150', description: 'Sample local wines on a guided tour.', category: 'Tour' },
-    { name: 'Pottery Workshop', price: 45, imageUrl: 'https://via.placeholder.com/150', description: 'Create pottery pieces in a hands-on workshop.', category: 'Workshop' },
-  ];
-
-  return Array.from({ length: count }, (_, i) => {
-    const orderProducts: OrderProduct[] = Array.from(
-      { length: Math.floor(Math.random() * 3) + 1 },
-      (_, j) => {
-        const product = products[Math.floor(Math.random() * products.length)];
-        const qty = Math.floor(Math.random() * 3) + 1;
-        return {
-          id: `prod-${i}-${j}`,
-          name: product.name,
-          quantity: qty,
-          unitPrice: product.price,
-          vendor: vendors[Math.floor(Math.random() * vendors.length)],
-          deliveryType: Math.random() > 0.5 ? 'pickup' : 'delivery',
-          imageUrl: product.imageUrl,
-          description: product.description,
-          category: product.category,
-        };
-      }
-    );
-
-    const totalAmount = orderProducts.reduce((sum, p) => sum + (p.quantity * p.unitPrice), 0);
-    const voucherPortion = Math.random() > 0.3 ? Math.floor(totalAmount * (Math.random() * 0.5)) : 0;
-    const deliveryFee = orderProducts.some(p => p.deliveryType === 'delivery') ? 15 : 0;
-
-    return {
-      id: `ORD-${String(10000 + i).padStart(5, '0')}`,
-      purchaserName: `Customer ${i + 1}`,
-      email: `customer${i + 1}@example.com`,
-      phone: `+972-50-${String(Math.floor(Math.random() * 10000000)).padStart(7, '0')}`,
-      orderType: Math.random() > 0.5 ? 'online' : 'offline',
-      orderStatus: statuses[Math.floor(Math.random() * statuses.length)],
-      paymentStatus: paymentStatuses[Math.floor(Math.random() * paymentStatuses.length)],
-      paymentMethod: voucherPortion > 0 ? ['voucher', 'credit_card'] : ['credit_card'],
-      totalAmount: totalAmount + deliveryFee,
-      voucherAmount: voucherPortion,
-      creditCardAmount: totalAmount - voucherPortion,
-      vendors: [...new Set(orderProducts.map(p => p.vendor))],
-      campaign: campaigns[Math.floor(Math.random() * campaigns.length)],
-      deliveryType: deliveryTypes[Math.floor(Math.random() * deliveryTypes.length)],
-      createdDate: new Date(2026, 0, Math.floor(Math.random() * 30) + 1).toISOString(),
-      paymentDate: new Date(2026, 0, Math.floor(Math.random() * 30) + 1).toISOString(),
-      products: orderProducts,
-      address: Math.random() > 0.5 ? '123 Main St, Beersheba' : undefined,
-      campaignCode: `CAMP${Math.floor(Math.random() * 1000)}`,
-      qrScanned: Math.random() > 0.5,
-      deliveryFee,
-    };
-  });
-};
 
 // Default columns configuration
 const defaultColumns = {
@@ -142,9 +32,12 @@ const defaultColumns = {
 
 type ColumnVisibility = typeof defaultColumns;
 
-export default function OnlineOrdersManagement({ theme }: OnlineOrdersManagementProps) {
+export default function OrdersMgmtPage() {
   const { t } = useTranslation('orders');
-  const { isRTL } = useAppSelector((state) => state.settings)
+  const { isRTL, theme } = useAppSelector((state) => state.settings);
+
+  const {textPrimary,textSecondary,textTertiary}=useThemeClasses()
+
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -157,10 +50,6 @@ export default function OnlineOrdersManagement({ theme }: OnlineOrdersManagement
   const [showQRScanner, setShowQRScanner] = useState(false);
   const columnSettingsRef = useRef<HTMLDivElement>(null);
 
-  // Text color utilities
-  const textPrimary = theme === 'dark' ? 'text-gray-100' : 'text-gray-900';
-  const textSecondary = theme === 'dark' ? 'text-gray-300' : 'text-gray-700';
-  const textTertiary = theme === 'dark' ? 'text-gray-400' : 'text-gray-600';
 
   // Filters
   const [filters, setFilters] = useState({
@@ -279,124 +168,65 @@ export default function OnlineOrdersManagement({ theme }: OnlineOrdersManagement
   };
 
   const handleExportCSV = () => {
-    // Determine which orders to export (selected or all filtered)
     const ordersToExport = selectedOrders.size > 0
       ? filteredOrders.filter(order => selectedOrders.has(order.id))
       : filteredOrders;
 
     if (ordersToExport.length === 0) {
-      alert(t.noOrdersToExport || 'No orders to export');
+      alert(t('noOrdersToExport') || 'No orders to export');
       return;
     }
 
-    // Helper function to escape CSV values
     const escapeCSV = (value: any): string => {
       if (value === null || value === undefined) return '';
       const stringValue = String(value);
-      // Escape quotes and wrap in quotes if contains comma, quote, or newline
       if (stringValue.includes(',') || stringValue.includes('"') || stringValue.includes('\n')) {
         return `"${stringValue.replace(/"/g, '""')}"`;
       }
       return stringValue;
     };
 
-    // Build CSV header based on visible columns
     const headers: string[] = [];
     const columnKeys: string[] = [];
 
-    if (columnVisibility.orderId) {
-      headers.push(t.orderId || 'Order ID');
-      columnKeys.push('orderId');
-    }
-    if (columnVisibility.purchaserName) {
-      headers.push(t.purchaserName || 'Purchaser');
-      columnKeys.push('purchaserName');
-    }
-    if (columnVisibility.email) {
-      headers.push(t.email || 'Email');
-      columnKeys.push('email');
-    }
-    if (columnVisibility.phone) {
-      headers.push(t.phone || 'Phone');
-      columnKeys.push('phone');
-    }
-    if (columnVisibility.orderStatus) {
-      headers.push(t.orderStatus || 'Status');
-      columnKeys.push('orderStatus');
-    }
-    if (columnVisibility.totalAmount) {
-      headers.push(t.totalAmount || 'Total');
-      columnKeys.push('totalAmount');
-    }
-    if (columnVisibility.paymentStatus) {
-      headers.push(t.paymentStatus || 'Payment');
-      columnKeys.push('paymentStatus');
-    }
-    if (columnVisibility.voucherAmount) {
-      headers.push(t.voucherAmount || 'Voucher');
-      columnKeys.push('voucherAmount');
-    }
-    if (columnVisibility.creditCardAmount) {
-      headers.push(t.creditCardAmount || 'Card');
-      columnKeys.push('creditCardAmount');
-    }
-    if (columnVisibility.vendors) {
-      headers.push(t.vendors || 'Vendors');
-      columnKeys.push('vendors');
-    }
-    if (columnVisibility.campaign) {
-      headers.push(t.campaign || 'Campaign');
-      columnKeys.push('campaign');
-    }
-    if (columnVisibility.createdDate) {
-      headers.push(t.createdDate || 'Created');
-      columnKeys.push('createdDate');
-    }
-    if (columnVisibility.paymentDate) {
-      headers.push(t.paymentDate || 'Paid');
-      columnKeys.push('paymentDate');
-    }
+    if (columnVisibility.orderId) { headers.push(t('orderId')); columnKeys.push('orderId'); }
+    if (columnVisibility.purchaserName) { headers.push(t('purchaserName')); columnKeys.push('purchaserName'); }
+    if (columnVisibility.email) { headers.push(t('email')); columnKeys.push('email'); }
+    if (columnVisibility.phone) { headers.push(t('phone')); columnKeys.push('phone'); }
+    if (columnVisibility.orderStatus) { headers.push(t('orderStatus')); columnKeys.push('orderStatus'); }
+    if (columnVisibility.totalAmount) { headers.push(t('totalAmount')); columnKeys.push('totalAmount'); }
+    if (columnVisibility.paymentStatus) { headers.push(t('paymentStatus')); columnKeys.push('paymentStatus'); }
+    if (columnVisibility.voucherAmount) { headers.push(t('voucherAmount')); columnKeys.push('voucherAmount'); }
+    if (columnVisibility.creditCardAmount) { headers.push(t('creditCardAmount')); columnKeys.push('creditCardAmount'); }
+    if (columnVisibility.vendors) { headers.push(t('vendors')); columnKeys.push('vendors'); }
+    if (columnVisibility.campaign) { headers.push(t('campaign')); columnKeys.push('campaign'); }
+    if (columnVisibility.createdDate) { headers.push(t('createdDate')); columnKeys.push('createdDate'); }
+    if (columnVisibility.paymentDate) { headers.push(t('paymentDate')); columnKeys.push('paymentDate'); }
 
-    // Build CSV content
     let csvContent = headers.map(escapeCSV).join(',') + '\n';
 
     ordersToExport.forEach(order => {
       const row: string[] = [];
 
       columnKeys.forEach(key => {
-        if (key === 'orderId') {
-          row.push(escapeCSV(order.id));
-        } else if (key === 'purchaserName') {
-          row.push(escapeCSV(order.purchaserName));
-        } else if (key === 'email') {
-          row.push(escapeCSV(order.email));
-        } else if (key === 'phone') {
-          row.push(escapeCSV(order.phone));
-        } else if (key === 'orderStatus') {
-          row.push(escapeCSV(order.orderStatus));
-        } else if (key === 'totalAmount') {
-          row.push(escapeCSV(`₪${order.totalAmount}`));
-        } else if (key === 'paymentStatus') {
-          row.push(escapeCSV(order.paymentStatus));
-        } else if (key === 'voucherAmount') {
-          row.push(escapeCSV(`₪${order.voucherAmount}`));
-        } else if (key === 'creditCardAmount') {
-          row.push(escapeCSV(`₪${order.creditCardAmount}`));
-        } else if (key === 'vendors') {
-          row.push(escapeCSV(order.vendors.join(', ')));
-        } else if (key === 'campaign') {
-          row.push(escapeCSV(order.campaign));
-        } else if (key === 'createdDate') {
-          row.push(escapeCSV(new Date(order.createdDate).toLocaleDateString()));
-        } else if (key === 'paymentDate') {
-          row.push(escapeCSV(new Date(order.paymentDate).toLocaleDateString()));
-        }
+        if (key === 'orderId') row.push(escapeCSV(order.id));
+        else if (key === 'purchaserName') row.push(escapeCSV(order.purchaserName));
+        else if (key === 'email') row.push(escapeCSV(order.email));
+        else if (key === 'phone') row.push(escapeCSV(order.phone));
+        else if (key === 'orderStatus') row.push(escapeCSV(order.orderStatus));
+        else if (key === 'totalAmount') row.push(escapeCSV(`₪${order.totalAmount}`));
+        else if (key === 'paymentStatus') row.push(escapeCSV(order.paymentStatus));
+        else if (key === 'voucherAmount') row.push(escapeCSV(`₪${order.voucherAmount}`));
+        else if (key === 'creditCardAmount') row.push(escapeCSV(`₪${order.creditCardAmount}`));
+        else if (key === 'vendors') row.push(escapeCSV(order.vendors.join(', ')));
+        else if (key === 'campaign') row.push(escapeCSV(order.campaign));
+        else if (key === 'createdDate') row.push(escapeCSV(new Date(order.createdDate).toLocaleDateString()));
+        else if (key === 'paymentDate') row.push(escapeCSV(new Date(order.paymentDate).toLocaleDateString()));
       });
 
       csvContent += row.join(',') + '\n';
     });
 
-    // Create and download the file
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
@@ -421,30 +251,25 @@ export default function OnlineOrdersManagement({ theme }: OnlineOrdersManagement
       : [];
 
     if (ordersToResend.length === 0) {
-      alert(t.noOrdersSelected || 'No orders selected');
+      alert(t('noOrdersSelected') || 'No orders selected');
       return;
     }
 
-    // Simulate sending order details via email
     console.log('Resending order details for:', ordersToResend.map(o => o.id));
 
-    // In a real implementation, this would call an API to send emails
     ordersToResend.forEach(order => {
       console.log(`Sending order details to ${order.email} for order ${order.id}`);
     });
 
-    // Show success message
     const message = ordersToResend.length === 1
-      ? `${t.orderDetailsSent || 'Order details sent to'} ${ordersToResend[0].email}`
-      : `${t.orderDetailsSent || 'Order details sent to'} ${ordersToResend.length} ${t.customers || 'customers'}`;
+      ? `${t('orderDetailsSent')} ${ordersToResend[0].email}`
+      : `${t('orderDetailsSent')} ${ordersToResend.length} ${t('customers')}`;
 
     alert(message);
 
-    // Clear selection after sending
     setSelectedOrders(new Set());
   };
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (columnSettingsRef.current && !columnSettingsRef.current.contains(event.target as Node)) {
@@ -455,18 +280,64 @@ export default function OnlineOrdersManagement({ theme }: OnlineOrdersManagement
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Status badge helper
+
+  const orderStats = [
+    {
+      id: 1,
+      title: t('totalOrders'),
+      value: statistics.totalOrders.toLocaleString(),
+      label: t('all'),
+      icon: <ShoppingCart className="w-5 h-5 text-purple-500" />,
+    },
+    {
+      id: 2,
+      title: t('revenue'),
+      value: `₪${statistics.totalRevenue.toLocaleString()}`,
+      label: t('gross'),
+      icon: <DollarSign className="w-5 h-5 text-green-500" />,
+    },
+    {
+      id: 3,
+      title: t('avgOrderValue'),
+      value: `₪${Math.round(statistics.avgOrderValue).toLocaleString()}`,
+      label: t('perOrder'),
+      icon: <TrendingUp className="w-5 h-5 text-blue-500" />,
+    },
+    {
+      id: 4,
+      title: t('pickups'),
+      value: statistics.pickups.toLocaleString(),
+      label: t('orders'),
+      icon: <ShoppingBag className="w-5 h-5 text-orange-500" />,
+    },
+    {
+      id: 5,
+      title: t('deliveries'),
+      value: statistics.deliveries.toLocaleString(),
+      label: t('orders'),
+      icon: <Truck className="w-5 h-5 text-teal-500" />,
+    },
+    {
+      id: 6,
+      title: t('cancelledOrders'),
+      value: statistics.cancelledOrders.toLocaleString(),
+      label: t('cancelled'),
+      icon: <XCircle className="w-5 h-5 text-red-500" />,
+    },
+  ];
+
+
   const getOrderStatusBadge = (status: Order['orderStatus']) => {
     const badges = {
-      draft: { bg: 'bg-gray-100 dark:bg-gray-800', text: 'text-gray-800 dark:text-gray-300', label: t.draft || 'Draft' },
-      processing: { bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-800 dark:text-blue-400', label: t.processing || 'Processing' },
-      paid: { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-800 dark:text-green-400', label: t.paid || 'Paid' },
-      confirmed: { bg: 'bg-teal-100 dark:bg-teal-900/30', text: 'text-teal-800 dark:text-teal-400', label: t.confirmed || 'Confirmed' },
-      delivered: { bg: 'bg-purple-100 dark:bg-purple-900/30', text: 'text-purple-800 dark:text-purple-400', label: t.delivered || 'Delivered' },
-      completed: { bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-800 dark:text-emerald-400', label: t.completed || 'Completed' },
-      cancelled: { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-800 dark:text-red-400', label: t.cancelled || 'Cancelled' },
-      partially_cancelled: { bg: 'bg-orange-100 dark:bg-orange-900/30', text: 'text-orange-800 dark:text-orange-400', label: t.partiallyCancelled || 'Partially Cancelled' },
-      failed: { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-800 dark:text-red-400', label: t.failed || 'Failed' },
+      draft: { bg: 'bg-gray-100 dark:bg-gray-800', text: 'text-gray-800 dark:text-gray-300', label: t('draft') },
+      processing: { bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-800 dark:text-blue-400', label: t('processing') },
+      paid: { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-800 dark:text-green-400', label: t('paid') },
+      confirmed: { bg: 'bg-teal-100 dark:bg-teal-900/30', text: 'text-teal-800 dark:text-teal-400', label: t('confirmed') },
+      delivered: { bg: 'bg-purple-100 dark:bg-purple-900/30', text: 'text-purple-800 dark:text-purple-400', label: t('delivered') },
+      completed: { bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-800 dark:text-emerald-400', label: t('completed') },
+      cancelled: { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-800 dark:text-red-400', label: t('cancelled') },
+      partially_cancelled: { bg: 'bg-orange-100 dark:bg-orange-900/30', text: 'text-orange-800 dark:text-orange-400', label: t('partiallyCancelled') },
+      failed: { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-800 dark:text-red-400', label: t('failed') },
     };
     const badge = badges[status];
     return (
@@ -478,11 +349,11 @@ export default function OnlineOrdersManagement({ theme }: OnlineOrdersManagement
 
   const getPaymentStatusBadge = (status: Order['paymentStatus']) => {
     const badges = {
-      pending: { bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'text-yellow-800 dark:text-yellow-400', label: t.pending || 'Pending' },
-      success: { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-800 dark:text-green-400', label: t.success || 'Success' },
-      failed: { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-800 dark:text-red-400', label: t.failed || 'Failed' },
-      refunded: { bg: 'bg-purple-100 dark:bg-purple-900/30', text: 'text-purple-800 dark:text-purple-400', label: t.refunded || 'Refunded' },
-      partially_refunded: { bg: 'bg-orange-100 dark:bg-orange-900/30', text: 'text-orange-800 dark:text-orange-400', label: t.partiallyRefunded || 'Partially Refunded' },
+      pending: { bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'text-yellow-800 dark:text-yellow-400', label: t('pending') },
+      success: { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-800 dark:text-green-400', label: t('success') },
+      failed: { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-800 dark:text-red-400', label: t('failed') },
+      refunded: { bg: 'bg-purple-100 dark:bg-purple-900/30', text: 'text-purple-800 dark:text-purple-400', label: t('refunded') },
+      partially_refunded: { bg: 'bg-orange-100 dark:bg-orange-900/30', text: 'text-orange-800 dark:text-orange-400', label: t('partiallyRefunded') },
     };
     const badge = badges[status];
     return (
@@ -493,188 +364,94 @@ export default function OnlineOrdersManagement({ theme }: OnlineOrdersManagement
   };
 
   return (
-    <div className={`p-6 max-w-[1600px] mx-auto ${theme === 'dark' ? 'bg-gray-950' : 'bg-gray-50'}`}>
+    <div className={`p-6 max-w-400 mx-auto ${theme === 'dark' ? 'bg-gray-950' : 'bg-gray-50'}`}>
       {/* Page Header */}
       <div className={`flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6 ${isRTL ? 'md:flex-row-reverse' : ''}`}>
         <div>
-          <h1 className={`text-2xl ${textPrimary}`}>{t.onlineOrdersManagement || 'Orders'}</h1>
-          <p className={`text-sm ${textTertiary} mt-1`}>{t.onlineOrdersSubtitle || 'Manage, track, and fulfill customer orders'}</p>
+          <h1 className={`text-2xl ${textPrimary}`}>{t('online_orders_management')}</h1>
+          <p className={`text-sm ${textTertiary} mt-1`}>{t('online_orders_subtitle')}</p>
         </div>
         <div className={`flex gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
           <button
             onClick={() => setShowQRScanner(true)}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${theme === 'dark'
-                ? 'border-gray-700 bg-gray-800 hover:bg-gray-700 text-gray-300'
-                : 'border-gray-300 bg-white hover:bg-gray-50 text-gray-700'
+              ? 'border-gray-700 bg-gray-800 hover:bg-gray-700 text-gray-300'
+              : 'border-gray-300 bg-white hover:bg-gray-50 text-gray-700'
               }`}
-            title={t.scanQRCode || 'Scan QR Code'}
+            title={t('scanQRCode')}
           >
             <Camera className="w-4 h-4" />
           </button>
           <button
             onClick={() => setShowAddOrderWizard(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-teal-500 to-blue-500 hover:from-teal-600 hover:to-blue-600 text-white rounded-lg transition-all"
+            className="flex items-center gap-2 px-4 py-2 bg-linear-to-r from-teal-500 to-blue-500 hover:from-teal-600 hover:to-blue-600 text-white rounded-lg transition-all"
           >
             <Plus className="w-4 h-4" />
-            <span>{t.addOrder || 'Add Order'}</span>
+            <span>{t('addOrder')}</span>
           </button>
         </div>
       </div>
 
-      {/* Statistics Strip */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-6">
-        {/* Total Orders */}
-        <div
-          onClick={() => { }}
-          className={`${theme === 'dark' ? 'bg-gray-800' : 'bg-white'} rounded-xl p-4 border ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'} shadow-sm hover:shadow-md transition-shadow cursor-pointer`}
-        >
-          <div className="flex items-center gap-3 mb-3">
-            <div className="p-2.5 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 shadow-md">
-              <ShoppingCart className="w-5 h-5 text-white" />
-            </div>
-            <span className={`text-sm ${textPrimary}`}>{t.totalOrders || 'Total Orders'}</span>
-          </div>
-          <p className={`text-2xl ${textPrimary} mb-1`}>{statistics.totalOrders.toLocaleString()}</p>
-          <p className={`text-xs ${textTertiary}`}>{t.all || 'All'}</p>
-        </div>
-
-        {/* Revenue */}
-        <div
-          onClick={() => { }}
-          className={`${theme === 'dark' ? 'bg-gray-800' : 'bg-white'} rounded-xl p-4 border ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'} shadow-sm hover:shadow-md transition-shadow cursor-pointer`}
-        >
-          <div className="flex items-center gap-3 mb-3">
-            <div className="p-2.5 rounded-lg bg-gradient-to-br from-green-500 to-green-600 shadow-md">
-              <DollarSign className="w-5 h-5 text-white" />
-            </div>
-            <span className={`text-sm ${textPrimary}`}>{t.revenue || 'Revenue'}</span>
-          </div>
-          <p className={`text-2xl ${textPrimary} mb-1`}>₪{statistics.totalRevenue.toLocaleString()}</p>
-          <p className={`text-xs ${textTertiary}`}>{t.gross || 'Gross'}</p>
-        </div>
-
-        {/* Avg Order Value */}
-        <div
-          onClick={() => { }}
-          className={`${theme === 'dark' ? 'bg-gray-800' : 'bg-white'} rounded-xl p-4 border ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'} shadow-sm hover:shadow-md transition-shadow cursor-pointer`}
-        >
-          <div className="flex items-center gap-3 mb-3">
-            <div className="p-2.5 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 shadow-md">
-              <TrendingUp className="w-5 h-5 text-white" />
-            </div>
-            <span className={`text-sm ${textPrimary}`}>{t.avgOrderValue || 'Avg Order Value'}</span>
-          </div>
-          <p className={`text-2xl ${textPrimary} mb-1`}>₪{Math.round(statistics.avgOrderValue).toLocaleString()}</p>
-          <p className={`text-xs ${textTertiary}`}>{t.perOrder || 'Per Order'}</p>
-        </div>
-
-        {/* Pickups */}
-        <div
-          onClick={() => { }}
-          className={`${theme === 'dark' ? 'bg-gray-800' : 'bg-white'} rounded-xl p-4 border ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'} shadow-sm hover:shadow-md transition-shadow cursor-pointer`}
-        >
-          <div className="flex items-center gap-3 mb-3">
-            <div className="p-2.5 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 shadow-md">
-              <ShoppingBag className="w-5 h-5 text-white" />
-            </div>
-            <span className={`text-sm ${textPrimary}`}>{t.pickups || 'Pickups'}</span>
-          </div>
-          <p className={`text-2xl ${textPrimary} mb-1`}>{statistics.pickups.toLocaleString()}</p>
-          <p className={`text-xs ${textTertiary}`}>{t.orders || 'Orders'}</p>
-        </div>
-
-        {/* Deliveries */}
-        <div
-          onClick={() => { }}
-          className={`${theme === 'dark' ? 'bg-gray-800' : 'bg-white'} rounded-xl p-4 border ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'} shadow-sm hover:shadow-md transition-shadow cursor-pointer`}
-        >
-          <div className="flex items-center gap-3 mb-3">
-            <div className="p-2.5 rounded-lg bg-gradient-to-br from-teal-500 to-teal-600 shadow-md">
-              <Truck className="w-5 h-5 text-white" />
-            </div>
-            <span className={`text-sm ${textPrimary}`}>{t.deliveries || 'Deliveries'}</span>
-          </div>
-          <p className={`text-2xl ${textPrimary} mb-1`}>{statistics.deliveries.toLocaleString()}</p>
-          <p className={`text-xs ${textTertiary}`}>{t.orders || 'Orders'}</p>
-        </div>
-
-        {/* Cancelled Orders */}
-        <div
-          onClick={() => { }}
-          className={`${theme === 'dark' ? 'bg-gray-800' : 'bg-white'} rounded-xl p-4 border ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'} shadow-sm hover:shadow-md transition-shadow cursor-pointer`}
-        >
-          <div className="flex items-center gap-3 mb-3">
-            <div className="p-2.5 rounded-lg bg-gradient-to-br from-red-500 to-red-600 shadow-md">
-              <XCircle className="w-5 h-5 text-white" />
-            </div>
-            <span className={`text-sm ${textPrimary}`}>{t.cancelledOrders || 'Cancelled'}</span>
-          </div>
-          <p className={`text-2xl ${textPrimary} mb-1`}>{statistics.cancelledOrders.toLocaleString()}</p>
-          <p className={`text-xs ${textTertiary}`}>{t.cancelled || 'Cancelled'}</p>
-        </div>
-      </div>
+      <PageStats
+        stats={orderStats}
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-6"
+      />
 
       {/* Search and Filters */}
-      <div className={`${theme === 'dark' ? 'bg-gray-900/50 border-gray-800' : 'bg-white border-gray-200'
-        } border rounded-lg p-4 mb-6`}>
+      <div className={`${theme === 'dark' ? 'bg-gray-900/50 border-gray-800' : 'bg-white border-gray-200'} border rounded-lg p-4 mb-6`}>
         <div className={`flex flex-col md:flex-row gap-4 ${isRTL ? 'md:flex-row-reverse' : ''}`}>
-          {/* Search */}
           <div className="flex-1 relative">
             <Search className={`absolute ${isRTL ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 w-4 h-4 ${textTertiary}`} />
             <input
               type="text"
-              placeholder={t.searchOrders || 'Search by Order ID, Name, Email, Phone...'}
+              placeholder={t('searchOrders')}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className={`w-full ${isRTL ? 'pr-10 text-right' : 'pl-10'} py-2 rounded-lg border transition-colors ${theme === 'dark'
-                  ? 'bg-gray-800 border-gray-700 text-gray-100 placeholder-gray-500'
-                  : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'
+                ? 'bg-gray-800 border-gray-700 text-gray-100 placeholder-gray-500'
+                : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'
                 }`}
             />
           </div>
 
-          {/* Download CSV Button */}
           <button
             onClick={handleExportCSV}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${theme === 'dark'
-                ? 'border-gray-700 bg-gray-800 hover:bg-gray-700 text-gray-300'
-                : 'border-gray-300 bg-white hover:bg-gray-50 text-gray-700'
+              ? 'border-gray-700 bg-gray-800 hover:bg-gray-700 text-gray-300'
+              : 'border-gray-300 bg-white hover:bg-gray-50 text-gray-700'
               }`}
-            title={t.downloadCSV || 'Download CSV'}
+            title={t('downloadCSV')}
           >
             <Download className="w-4 h-4" />
-            <span>{t.downloadCSV || 'Download CSV'}</span>
+            <span>{t('downloadCSV')}</span>
           </button>
 
-          {/* Filter Toggle */}
           <button
             onClick={() => setShowFilters(!showFilters)}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${theme === 'dark'
-                ? 'border-gray-700 bg-gray-800 hover:bg-gray-700 text-gray-300'
-                : 'border-gray-300 bg-white hover:bg-gray-50 text-gray-700'
+              ? 'border-gray-700 bg-gray-800 hover:bg-gray-700 text-gray-300'
+              : 'border-gray-300 bg-white hover:bg-gray-50 text-gray-700'
               }`}
           >
             <Filter className="w-4 h-4" />
-            <span>{t.filters || 'Filters'}</span>
+            <span>{t('filters')}</span>
             {showFilters ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
           </button>
 
-          {/* Column Settings */}
           <div className="relative" ref={columnSettingsRef}>
             <button
               onClick={() => setShowColumnSettings(!showColumnSettings)}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${theme === 'dark'
-                  ? 'border-gray-700 bg-gray-800 hover:bg-gray-700 text-gray-300'
-                  : 'border-gray-300 bg-white hover:bg-gray-50 text-gray-700'
+                ? 'border-gray-700 bg-gray-800 hover:bg-gray-700 text-gray-300'
+                : 'border-gray-300 bg-white hover:bg-gray-50 text-gray-700'
                 }`}
             >
               <Columns className="w-4 h-4" />
-              <span>{t.columns || 'Columns'}</span>
+              <span>{t('columns')}</span>
             </button>
 
             {showColumnSettings && (
-              <div className={`absolute ${isRTL ? 'left-0' : 'right-0'} mt-2 w-64 rounded-lg shadow-lg border z-10 ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
-                }`}>
+              <div className={`absolute ${isRTL ? 'left-0' : 'right-0'} mt-2 w-64 rounded-lg shadow-lg border z-10 ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
                 <div className="p-3 max-h-96 overflow-y-auto">
                   {Object.entries(columnVisibility).map(([key, visible]) => (
                     <label key={key} className={`flex items-center gap-2 p-2 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 ${isRTL ? 'flex-row-reverse justify-end' : ''}`}>
@@ -684,7 +461,7 @@ export default function OnlineOrdersManagement({ theme }: OnlineOrdersManagement
                         onChange={(e) => setColumnVisibility(prev => ({ ...prev, [key]: e.target.checked }))}
                         className="rounded"
                       />
-                      <span className={`text-sm ${textSecondary}`}>{t[key] || key}</span>
+                      <span className={`text-sm ${textSecondary}`}>{t(key as keyof typeof t)}</span>
                     </label>
                   ))}
                 </div>
@@ -693,48 +470,41 @@ export default function OnlineOrdersManagement({ theme }: OnlineOrdersManagement
           </div>
         </div>
 
-        {/* Expanded Filters */}
         {showFilters && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
             <FilterSelect
-              label={t.orderType || 'Order Type'}
+              label={t('orderType')}
               value={filters.orderType}
               onChange={(value) => setFilters(prev => ({ ...prev, orderType: value }))}
               options={[
-                { value: 'all', label: t.all || 'All' },
-                { value: 'online', label: t.online || 'Online' },
-                { value: 'offline', label: t.offline || 'Offline' },
+                { value: 'all', label: t('all') },
+                { value: 'online', label: t('online') },
+                { value: 'offline', label: t('offline') },
               ]}
-              theme={theme}
-              isRTL={isRTL}
             />
             <FilterSelect
-              label={t.deliveryType || 'Delivery Type'}
+              label={t('deliveryType')}
               value={filters.deliveryType}
               onChange={(value) => setFilters(prev => ({ ...prev, deliveryType: value }))}
               options={[
-                { value: 'all', label: t.all || 'All' },
-                { value: 'pickup', label: t.pickup || 'Pickup' },
-                { value: 'delivery', label: t.delivery || 'Delivery' },
-                { value: 'digital', label: t.digital || 'Digital' },
+                { value: 'all', label: t('all') },
+                { value: 'pickup', label: t('pickup') },
+                { value: 'delivery', label: t('delivery') },
+                { value: 'digital', label: t('digital') },
               ]}
-              theme={theme}
-              isRTL={isRTL}
             />
             <FilterSelect
-              label={t.paymentMethod || 'Payment Method'}
+              label={t('paymentMethod')}
               value={filters.paymentMethod}
               onChange={(value) => setFilters(prev => ({ ...prev, paymentMethod: value }))}
               options={[
-                { value: 'all', label: t.all || 'All' },
-                { value: 'voucher', label: t.voucher || 'Voucher' },
-                { value: 'credit_card', label: t.creditCard || 'Credit Card' },
+                { value: 'all', label: t('all') },
+                { value: 'voucher', label: t('voucher') },
+                { value: 'credit_card', label: t('creditCard') },
               ]}
-              theme={theme}
-              isRTL={isRTL}
             />
             <MonthFilter
-              label={t.month || 'Month'}
+              label={t('month')}
               value={filters.month}
               onChange={(value) => setFilters(prev => ({ ...prev, month: value }))}
               dateFrom={filters.dateFrom}
@@ -751,47 +521,45 @@ export default function OnlineOrdersManagement({ theme }: OnlineOrdersManagement
 
       {/* Bulk Actions Toolbar */}
       {selectedOrders.size > 0 && (
-        <div className={`${theme === 'dark' ? 'bg-teal-900/30 border-teal-800' : 'bg-teal-50 border-teal-200'
-          } border rounded-lg p-4 mb-4 flex items-center gap-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
+        <div className={`${theme === 'dark' ? 'bg-teal-900/30 border-teal-800' : 'bg-teal-50 border-teal-200'} border rounded-lg p-4 mb-4 flex items-center gap-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
           <span className={`${textPrimary}`}>
-            {selectedOrders.size} {t.selected || 'selected'}
+            {selectedOrders.size} {t('selected')}
           </span>
           <button
             onClick={handleResendOrderDetails}
             className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-colors ${theme === 'dark'
-                ? 'bg-blue-800 hover:bg-blue-700 text-blue-100'
-                : 'bg-blue-500 hover:bg-blue-600 text-white'
+              ? 'bg-blue-800 hover:bg-blue-700 text-blue-100'
+              : 'bg-blue-500 hover:bg-blue-600 text-white'
               }`}
           >
             <Mail className="w-4 h-4" />
-            <span className="text-sm">{t.resendOrderDetails || 'Resend Order Details'}</span>
+            <span className="text-sm">{t('resendOrderDetails')}</span>
           </button>
           <button
             onClick={handleExportCSV}
             className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-colors ${theme === 'dark'
-                ? 'bg-gray-800 hover:bg-gray-700 text-gray-300'
-                : 'bg-white hover:bg-gray-100 text-gray-700'
+              ? 'bg-gray-800 hover:bg-gray-700 text-gray-300'
+              : 'bg-white hover:bg-gray-100 text-gray-700'
               }`}
           >
             <Download className="w-4 h-4" />
-            <span className="text-sm">{t.exportCSV || 'Export CSV'}</span>
+            <span className="text-sm">{t('exportCSV')}</span>
           </button>
           <button
             onClick={handleExportXLS}
             className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-colors ${theme === 'dark'
-                ? 'bg-gray-800 hover:bg-gray-700 text-gray-300'
-                : 'bg-white hover:bg-gray-100 text-gray-700'
+              ? 'bg-gray-800 hover:bg-gray-700 text-gray-300'
+              : 'bg-white hover:bg-gray-100 text-gray-700'
               }`}
           >
             <Download className="w-4 h-4" />
-            <span className="text-sm">{t.exportXLS || 'Export XLS'}</span>
+            <span className="text-sm">{t('exportXLS')}</span>
           </button>
         </div>
       )}
 
       {/* Orders Table */}
-      <div className={`${theme === 'dark' ? 'bg-gray-900/50 border-gray-800' : 'bg-white border-gray-200'
-        } border rounded-lg overflow-hidden`}>
+      <div className={`${theme === 'dark' ? 'bg-gray-900/50 border-gray-800' : 'bg-white border-gray-200'} border rounded-lg overflow-hidden`}>
         {loading ? (
           <div className="flex items-center justify-center py-20">
             <Loader className="w-8 h-8 animate-spin text-teal-500" />
@@ -799,7 +567,7 @@ export default function OnlineOrdersManagement({ theme }: OnlineOrdersManagement
         ) : filteredOrders.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20">
             <AlertCircle className={`w-12 h-12 ${textTertiary} mb-4`} />
-            <p className={`${textSecondary}`}>{t.noOrdersFound || 'No orders found'}</p>
+            <p className={`${textSecondary}`}>{t('noOrdersFound')}</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -814,19 +582,19 @@ export default function OnlineOrdersManagement({ theme }: OnlineOrdersManagement
                       className="rounded"
                     />
                   </th>
-                  {columnVisibility.orderId && <th className={`p-3 ${isRTL ? 'text-right' : 'text-left'} text-sm ${textSecondary}`}>{t.orderId || 'Order ID'}</th>}
-                  {columnVisibility.purchaserName && <th className={`p-3 ${isRTL ? 'text-right' : 'text-left'} text-sm ${textSecondary}`}>{t.purchaserName || 'Purchaser'}</th>}
-                  {columnVisibility.email && <th className={`p-3 ${isRTL ? 'text-right' : 'text-left'} text-sm ${textSecondary}`}>{t.email || 'Email'}</th>}
-                  {columnVisibility.phone && <th className={`p-3 ${isRTL ? 'text-right' : 'text-left'} text-sm ${textSecondary}`}>{t.phone || 'Phone'}</th>}
-                  {columnVisibility.orderStatus && <th className={`p-3 ${isRTL ? 'text-right' : 'text-left'} text-sm ${textSecondary}`}>{t.orderStatus || 'Status'}</th>}
-                  {columnVisibility.totalAmount && <th className={`p-3 ${isRTL ? 'text-right' : 'text-left'} text-sm ${textSecondary}`}>{t.totalAmount || 'Total'}</th>}
-                  {columnVisibility.paymentStatus && <th className={`p-3 ${isRTL ? 'text-right' : 'text-left'} text-sm ${textSecondary}`}>{t.paymentStatus || 'Payment'}</th>}
-                  {columnVisibility.voucherAmount && <th className={`p-3 ${isRTL ? 'text-right' : 'text-left'} text-sm ${textSecondary}`}>{t.voucherAmount || 'Voucher'}</th>}
-                  {columnVisibility.creditCardAmount && <th className={`p-3 ${isRTL ? 'text-right' : 'text-left'} text-sm ${textSecondary}`}>{t.creditCardAmount || 'Card'}</th>}
-                  {columnVisibility.vendors && <th className={`p-3 ${isRTL ? 'text-right' : 'text-left'} text-sm ${textSecondary}`}>{t.vendors || 'Vendors'}</th>}
-                  {columnVisibility.campaign && <th className={`p-3 ${isRTL ? 'text-right' : 'text-left'} text-sm ${textSecondary}`}>{t.campaign || 'Campaign'}</th>}
-                  {columnVisibility.createdDate && <th className={`p-3 ${isRTL ? 'text-right' : 'text-left'} text-sm ${textSecondary}`}>{t.createdDate || 'Created'}</th>}
-                  {columnVisibility.paymentDate && <th className={`p-3 ${isRTL ? 'text-right' : 'text-left'} text-sm ${textSecondary}`}>{t.paymentDate || 'Paid'}</th>}
+                  {columnVisibility.orderId && <th className={`p-3 ${isRTL ? 'text-right' : 'text-left'} text-sm ${textSecondary}`}>{t('orderId')}</th>}
+                  {columnVisibility.purchaserName && <th className={`p-3 ${isRTL ? 'text-right' : 'text-left'} text-sm ${textSecondary}`}>{t('purchaserName')}</th>}
+                  {columnVisibility.email && <th className={`p-3 ${isRTL ? 'text-right' : 'text-left'} text-sm ${textSecondary}`}>{t('email')}</th>}
+                  {columnVisibility.phone && <th className={`p-3 ${isRTL ? 'text-right' : 'text-left'} text-sm ${textSecondary}`}>{t('phone')}</th>}
+                  {columnVisibility.orderStatus && <th className={`p-3 ${isRTL ? 'text-right' : 'text-left'} text-sm ${textSecondary}`}>{t('orderStatus')}</th>}
+                  {columnVisibility.totalAmount && <th className={`p-3 ${isRTL ? 'text-right' : 'text-left'} text-sm ${textSecondary}`}>{t('totalAmount')}</th>}
+                  {columnVisibility.paymentStatus && <th className={`p-3 ${isRTL ? 'text-right' : 'text-left'} text-sm ${textSecondary}`}>{t('paymentStatus')}</th>}
+                  {columnVisibility.voucherAmount && <th className={`p-3 ${isRTL ? 'text-right' : 'text-left'} text-sm ${textSecondary}`}>{t('voucherAmount')}</th>}
+                  {columnVisibility.creditCardAmount && <th className={`p-3 ${isRTL ? 'text-right' : 'text-left'} text-sm ${textSecondary}`}>{t('creditCardAmount')}</th>}
+                  {columnVisibility.vendors && <th className={`p-3 ${isRTL ? 'text-right' : 'text-left'} text-sm ${textSecondary}`}>{t('vendors')}</th>}
+                  {columnVisibility.campaign && <th className={`p-3 ${isRTL ? 'text-right' : 'text-left'} text-sm ${textSecondary}`}>{t('campaign')}</th>}
+                  {columnVisibility.createdDate && <th className={`p-3 ${isRTL ? 'text-right' : 'text-left'} text-sm ${textSecondary}`}>{t('createdDate')}</th>}
+                  {columnVisibility.paymentDate && <th className={`p-3 ${isRTL ? 'text-right' : 'text-left'} text-sm ${textSecondary}`}>{t('paymentDate')}</th>}
                 </tr>
               </thead>
               <tbody>
@@ -835,8 +603,8 @@ export default function OnlineOrdersManagement({ theme }: OnlineOrdersManagement
                     key={order.id}
                     onClick={() => handleRowClick(order)}
                     className={`border-t cursor-pointer transition-colors ${theme === 'dark'
-                        ? 'border-gray-800 hover:bg-gray-800/50'
-                        : 'border-gray-200 hover:bg-gray-50'
+                      ? 'border-gray-800 hover:bg-gray-800/50'
+                      : 'border-gray-200 hover:bg-gray-50'
                       }`}
                   >
                     <td className="p-3" onClick={(e) => e.stopPropagation()}>
@@ -890,19 +658,15 @@ export default function OnlineOrdersManagement({ theme }: OnlineOrdersManagement
         )}
       </div>
 
-      {/* Order Details Modal */}
       {showOrderDetails && selectedOrder && (
         <OrderDetailsModal
           order={selectedOrder}
-          theme={theme}
           onClose={() => setShowOrderDetails(false)}
         />
       )}
 
-      {/* Add Order Wizard Modal */}
       {showAddOrderWizard && (
-        <AddOrderWizard
-          theme={theme}
+        <CreateOrderWizard
           onClose={() => setShowAddOrderWizard(false)}
           onAddOrder={(newOrder) => {
             setOrders(prev => [newOrder as Order, ...prev]);
@@ -910,324 +674,11 @@ export default function OnlineOrdersManagement({ theme }: OnlineOrdersManagement
         />
       )}
 
-      {/* QR Scanner Modal */}
       {showQRScanner && (
         <QRScannerModal
-          theme={theme}
           onClose={() => setShowQRScanner(false)}
         />
       )}
     </div>
   );
 }
-
-// Helper Components
-function StatCard({ label, value, theme, onClick }: { label: string; value: string; theme: Theme; onClick: () => void }) {
-  return (
-    <div
-      onClick={onClick}
-      className={`p-4 rounded-lg border cursor-pointer transition-all hover:shadow-md ${theme === 'dark'
-          ? 'bg-gray-900/50 border-gray-800 hover:border-teal-500'
-          : 'bg-white border-gray-200 hover:border-teal-500'
-        }`}
-    >
-      <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} mb-1`}>{label}</p>
-      <p className={`text-xl ${theme === 'dark' ? 'text-gray-100' : 'text-gray-900'}`}>{value}</p>
-    </div>
-  );
-}
-
-// Helper function to generate last N months in MM-YYYY format
-function getLastNMonths(n: number): { value: string; label: string }[] {
-  const months = [];
-  const now = new Date();
-
-  for (let i = 0; i < n; i++) {
-    const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = date.getFullYear();
-    const value = `${month}-${year}`;
-    const label = `${month}/${year}`;
-    months.push({ value, label });
-  }
-
-  return months;
-}
-
-// Month Filter Component with custom date range
-function MonthFilter({
-  label,
-  value,
-  onChange,
-  dateFrom,
-  dateTo,
-  onDateFromChange,
-  onDateToChange,
-  theme,
-  isRTL,
-  t
-}: {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-  dateFrom: string;
-  dateTo: string;
-  onDateFromChange: (value: string) => void;
-  onDateToChange: (value: string) => void;
-  theme: Theme;
-  isRTL: boolean;
-  t: any;
-}) {
-  const [showAllMonths, setShowAllMonths] = useState(false);
-  const last5Months = getLastNMonths(5);
-  const last12Months = getLastNMonths(12);
-
-  return (
-    <div>
-      <label className={`block text-sm mb-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} ${isRTL ? 'text-right' : ''}`}>
-        {label}
-      </label>
-
-      {/* Main dropdown */}
-      <div className="relative">
-        <select
-          value={value}
-          onChange={(e) => {
-            onChange(e.target.value);
-            if (e.target.value !== 'custom') {
-              onDateFromChange('');
-              onDateToChange('');
-            }
-          }}
-          className={`w-full px-3 py-2 rounded-lg border transition-colors ${isRTL ? 'text-right' : ''} ${theme === 'dark'
-              ? 'bg-gray-800 border-gray-700 text-gray-100'
-              : 'bg-white border-gray-300 text-gray-900'
-            }`}
-        >
-          <option value="all">{t.all || 'All'}</option>
-          {(showAllMonths ? last12Months : last5Months).map(month => (
-            <option key={month.value} value={month.value}>{month.label}</option>
-          ))}
-          <option value="custom">{t.customRange || 'Custom Range'}</option>
-        </select>
-
-        {/* Show more/less button */}
-        {!showAllMonths && (
-          <button
-            type="button"
-            onClick={() => setShowAllMonths(true)}
-            className={`text-xs mt-1 ${theme === 'dark' ? 'text-teal-400 hover:text-teal-300' : 'text-teal-600 hover:text-teal-700'} ${isRTL ? 'text-right w-full' : 'text-left'}`}
-          >
-            {t.showMore || 'Show more months...'}
-          </button>
-        )}
-      </div>
-
-      {/* Custom date range inputs */}
-      {value === 'custom' && (
-        <div className="mt-2 space-y-2">
-          <div>
-            <label className={`block text-xs mb-1 ${theme === 'dark' ? 'text-gray-500' : 'text-gray-500'} ${isRTL ? 'text-right' : ''}`}>
-              {t.from || 'From'}
-            </label>
-            <input
-              type="date"
-              value={dateFrom}
-              onChange={(e) => onDateFromChange(e.target.value)}
-              className={`w-full px-3 py-1.5 text-sm rounded-lg border transition-colors ${isRTL ? 'text-right' : ''} ${theme === 'dark'
-                  ? 'bg-gray-800 border-gray-700 text-gray-100'
-                  : 'bg-white border-gray-300 text-gray-900'
-                }`}
-            />
-          </div>
-          <div>
-            <label className={`block text-xs mb-1 ${theme === 'dark' ? 'text-gray-500' : 'text-gray-500'} ${isRTL ? 'text-right' : ''}`}>
-              {t.to || 'To'}
-            </label>
-            <input
-              type="date"
-              value={dateTo}
-              onChange={(e) => onDateToChange(e.target.value)}
-              className={`w-full px-3 py-1.5 text-sm rounded-lg border transition-colors ${isRTL ? 'text-right' : ''} ${theme === 'dark'
-                  ? 'bg-gray-800 border-gray-700 text-gray-100'
-                  : 'bg-white border-gray-300 text-gray-900'
-                }`}
-            />
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// Cancellation Dialog Component
-function CancellationDialog({
-  type,
-  itemName,
-  theme,
-  onCancel,
-  onConfirm
-}: {
-  type: 'order' | 'item';
-  itemName?: string;
-  theme: Theme;
-  onCancel: () => void;
-  onConfirm: (reason: string, notes: string) => void;
-}) {
-  const { t, isRTL } = useLanguage();
-  const [selectedReason, setSelectedReason] = useState('');
-  const [notes, setNotes] = useState('');
-
-  const cancellationReasons = [
-    { value: '', label: t.selectReason || 'Select a reason...' },
-    { value: 'customer_request', label: t.customerRequest || 'Customer Request' },
-    { value: 'out_of_stock', label: t.outOfStock || 'Out of Stock' },
-    { value: 'pricing_error', label: t.pricingError || 'Pricing Error' },
-    { value: 'duplicate_order', label: t.duplicateOrder || 'Duplicate Order' },
-    { value: 'payment_issue', label: t.paymentIssue || 'Payment Issue' },
-    { value: 'other', label: t.other || 'Other' },
-  ];
-
-  const handleSubmit = () => {
-    if (selectedReason && notes.trim()) {
-      onConfirm(selectedReason, notes);
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4" onClick={onCancel}>
-      <div
-        onClick={(e) => e.stopPropagation()}
-        className={`w-full max-w-md rounded-lg p-6 ${theme === 'dark' ? 'bg-gray-900 text-gray-100' : 'bg-white text-gray-900'
-          }`}
-      >
-        <h3 className={`text-xl mb-4 ${isRTL ? 'text-right' : ''}`}>
-          {type === 'order'
-            ? (t.cancelOrder || 'Cancel Order')
-            : (t.cancelItem || 'Cancel Item')}
-        </h3>
-
-        {itemName && (
-          <p className={`text-sm mb-4 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} ${isRTL ? 'text-right' : ''}`}>
-            {t.cancelling || 'Cancelling'}: <span className="font-medium">{itemName}</span>
-          </p>
-        )}
-
-        {/* Reason Dropdown */}
-        <div className="mb-4">
-          <label className={`block text-sm mb-2 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} ${isRTL ? 'text-right' : ''}`}>
-            {t.cancellationReason || 'Cancellation Reason'} <span className="text-red-500">*</span>
-          </label>
-          <select
-            value={selectedReason}
-            onChange={(e) => setSelectedReason(e.target.value)}
-            className={`w-full px-3 py-2 rounded-lg border transition-colors ${isRTL ? 'text-right' : ''} ${theme === 'dark'
-                ? 'bg-gray-800 border-gray-700 text-gray-100'
-                : 'bg-white border-gray-300 text-gray-900'
-              }`}
-          >
-            {cancellationReasons.map(reason => (
-              <option key={reason.value} value={reason.value}>{reason.label}</option>
-            ))}
-          </select>
-        </div>
-
-        {/* Additional Notes */}
-        <div className="mb-6">
-          <label className={`block text-sm mb-2 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} ${isRTL ? 'text-right' : ''}`}>
-            {t.additionalNotes || 'Additional Notes'} <span className="text-red-500">*</span>
-          </label>
-          <textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            rows={4}
-            placeholder={t.enterDetails || 'Enter details...'}
-            className={`w-full px-3 py-2 rounded-lg border transition-colors resize-none ${isRTL ? 'text-right' : ''} ${theme === 'dark'
-                ? 'bg-gray-800 border-gray-700 text-gray-100 placeholder-gray-500'
-                : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'
-              }`}
-          />
-        </div>
-
-        {/* Action Buttons */}
-        <div className={`flex gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
-          <button
-            onClick={handleSubmit}
-            disabled={!selectedReason || !notes.trim()}
-            className={`flex-1 px-4 py-2 bg-red-500 text-white rounded-lg transition-colors ${!selectedReason || !notes.trim()
-                ? 'opacity-50 cursor-not-allowed'
-                : 'hover:bg-red-600'
-              }`}
-          >
-            {t.submit || 'Submit'}
-          </button>
-          <button
-            onClick={onCancel}
-            className={`flex-1 px-4 py-2 rounded-lg transition-colors ${theme === 'dark'
-                ? 'bg-gray-800 hover:bg-gray-700 text-gray-300'
-                : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
-              }`}
-          >
-            {t.cancel || 'Cancel'}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function FilterSelect({
-  label,
-  value,
-  onChange,
-  options,
-  theme,
-  isRTL
-}: {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-  options: { value: string; label: string }[];
-  theme: Theme;
-  isRTL: boolean;
-}) {
-  return (
-    <div>
-      <label className={`block text-sm mb-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} ${isRTL ? 'text-right' : ''}`}>
-        {label}
-      </label>
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className={`w-full px-3 py-2 rounded-lg border transition-colors ${isRTL ? 'text-right' : ''} ${theme === 'dark'
-            ? 'bg-gray-800 border-gray-700 text-gray-100'
-            : 'bg-white border-gray-300 text-gray-900'
-          }`}
-      >
-        {options.map(opt => (
-          <option key={opt.value} value={opt.value}>{opt.label}</option>
-        ))}
-      </select>
-    </div>
-  );
-}
-
-// Order Details Modal Component
-
-
-function InfoRow({ label, value, theme }: { label: string; value: string; theme: Theme }) {
-  const textTertiary = theme === 'dark' ? 'text-gray-400' : 'text-gray-600';
-  const textPrimary = theme === 'dark' ? 'text-gray-100' : 'text-gray-900';
-
-  return (
-    <div>
-      <p className={`text-xs ${textTertiary} mb-1`}>{label}</p>
-      <p className={`text-sm ${textPrimary}`}>{value}</p>
-    </div>
-  );
-}
-
-
-
-
-

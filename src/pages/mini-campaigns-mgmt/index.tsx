@@ -7,8 +7,7 @@ import { MiniCampaignWizard } from './components';
 import { useThemeClasses } from '@/hooks/useThemeClasses';
 import { useAppSelector } from '@/hooks/hooks';
 import { AddButton } from '@/components/btns';
-import { ViewModeToggle } from '@/components/shared/ViewModeToggle';
-import { PageStats } from '@/components/shared/PageStats';
+import { PageStats, ViewModeToggle } from '@/components/shared';
 
 interface MiniCampaign {
   id: string;

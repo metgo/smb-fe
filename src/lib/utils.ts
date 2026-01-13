@@ -24,3 +24,32 @@ export const categories: Record<string, string> = {
   [categoryIds.attraction]: "attraction",
   [categoryIds.tour]: "travel",
 };
+
+
+export const googlePointOfInterest = [
+  {
+    featureType: 'poi',
+    elementType: 'labels',
+    stylers: [{ visibility: 'off' }],
+  },
+  {
+    featureType: 'poi.business',
+    elementType: 'labels',
+    stylers: [{ visibility: 'off' }],
+  },
+  {
+    featureType: 'poi.attraction',
+    elementType: 'labels',
+    stylers: [{ visibility: 'off' }],
+  },
+  {
+    featureType: 'poi.place_of_worship',
+    elementType: 'labels',
+    stylers: [{ visibility: 'off' }],
+  },
+  // {
+  //   featureType: 'poi.airport',
+  //   elementType: 'labels.text',
+  //   stylers: [{ visibility: 'off' }]
+  // }
+];

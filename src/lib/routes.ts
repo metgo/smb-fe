@@ -4,7 +4,7 @@ export const routes = {
   businessDetails: "/business-details",
   productsMgmt: "/products-management",
   productDetails: "/product-details",
-  orders: "/orders",
+  ordersMgmt: "/orders-management",
   orderDetails: "/order-details",
   pointOfInterest: "/point-of-interest",
   trips: "/trips",

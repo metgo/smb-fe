@@ -1,3 +1,4 @@
+import clsx from 'clsx';
 import { useTranslation } from 'react-i18next';
 import {
   Search, Download, ChevronDown, ChevronUp,
@@ -8,13 +9,10 @@ import {
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 
 import { useAppSelector } from '@/hooks/hooks';
-import { generateMockBusinesses, type Business } from '@/constants/data';
 import { FilterButton } from '@/components/btns';
-import { PageHeader } from '@/components/shared/PageHeader';
-import { PageStats } from '@/components/shared/PageStats';
-import { ReordableDataTable } from '@/components/shared/ReordableDataTable';
-import clsx from 'clsx';
 import { useThemeClasses } from '@/hooks/useThemeClasses';
+import { generateMockBusinesses, type Business } from '@/constants/data';
+import { PageHeader, PageStats, ReordableDataTable } from '@/components/shared';
 
 interface BusinessesListProps {
   theme: Theme;

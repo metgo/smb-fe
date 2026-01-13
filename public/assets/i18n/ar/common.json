@@ -22,5 +22,11 @@
   "mini_site": "الموقع الصغير",
   "settings": "الإعدادات",
   "documents": "الوثائق",
-  "version": "الإصدار"
+  "version": "الإصدار",
+
+    "previous": "السابق",
+  "next": "التالي",
+  "save_draft": "حفظ كمسودة",
+  "publish": "نشر",
+  "publishing": "جارٍ النشر..."
 }

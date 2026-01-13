@@ -5,7 +5,7 @@ import { Outlet, RouterProvider, createBrowserRouter, Navigate } from "react-rou
 import { routes } from "@/lib/routes";
 import DashboardPage from "@/pages/dashboard";
 import RootLayout from "@/components/RootLayout";
-import { AuthPage, BusinessesMgmtPage, ProductsMgmtPage, MiniCampaignsMgmtPage, EventsMgmtPage, ProfilePage } from "@/pages";
+import { AuthPage, BusinessesMgmtPage, ProductsMgmtPage, MiniCampaignsMgmtPage, EventsMgmtPage, ProfilePage, OrdersMgmtPage } from "@/pages";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -50,6 +50,7 @@ function App() {
         { path: routes.miniCampaign, element: <MiniCampaignsMgmtPage /> },
         { path: routes.eventsMgmt, element: <EventsMgmtPage /> },
         { path: routes.profile, element: <ProfilePage /> },
+        { path: routes.ordersMgmt, element: <OrdersMgmtPage /> },
         { path: "/*", element: <DashboardPage /> },
       ]
     },

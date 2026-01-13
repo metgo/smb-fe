@@ -1,4 +1,4 @@
-import { InfoTooltip } from '@/components/shared/InfoTooltip';
+import { InfoTooltip } from '@/components/shared';
 import { ArrowRight, TrendingUp, Building2, Package, Monitor, Trophy, Award, Medal } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 

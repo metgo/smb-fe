@@ -11,8 +11,8 @@ import {
 import clsx from "clsx";
 
 import { formatDate } from "@/helpers/formatter";
-import { ImageWithFallback } from "@/components/shared/ImageWithFallback";
 import { useAppSelector } from "@/hooks/hooks";
+import { ImageWithFallback } from "@/components/shared";
 
 interface QuickSnapEventDetailsProps {
   selectedEvent: Event | null;

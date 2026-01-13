@@ -6,7 +6,7 @@ interface PageStatsProps {
 }
 
 
-export function PageStats({
+export default function PageStats({
   stats,
   className = "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-6"
 }: PageStatsProps) {
@@ -17,7 +17,7 @@ export function PageStats({
       {stats?.map(item => (
         <div
           key={item.id}
-          className={`${bgPrimary} rounded-xl p-4 border ${borderColor} shadow-sm`}
+          className={`${bgPrimary} rounded-xl px-4 py-2 border ${borderColor} shadow-sm`}
         >
           <div className="flex items-center gap-2 mb-3">
             {item.icon}

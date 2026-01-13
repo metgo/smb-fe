@@ -11,7 +11,7 @@ interface PageHeaderProps {
 }
 
 
-export function PageHeader({
+export default function PageHeader({
   title,
   description,
   h1Gradient,

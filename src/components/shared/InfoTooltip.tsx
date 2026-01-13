@@ -7,7 +7,7 @@ interface InfoTooltipProps {
   title?: string;
 }
 
-export function InfoTooltip({ content, title }: InfoTooltipProps) {
+export default function InfoTooltip({ content, title }: InfoTooltipProps) {
   const [isOpen, setIsOpen] = useState(false);
   const {isRTL}=useAppSelector(state=>state.settings)
 

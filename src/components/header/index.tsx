@@ -8,6 +8,7 @@ import { setLanguage, setTheme } from '@/features/settingsSlice';
 import { useCommon } from '@/hooks/useCommon';
 import clsx from 'clsx';
 import { useThemeClasses } from '@/hooks/useThemeClasses';
+import DmoAuthorityies from './DmoAuthorityies';
 
 
 
@@ -15,7 +16,7 @@ export default function Header() {
   const dispatch = useDispatch()
   const { t, i18n } = useTranslation('common');
 
-  const { languages, authorities, websites, dateRanges } = useCommon()
+  const { languages, websites, dateRanges, dmosAuthorities } = useCommon()
   const { theme, language } = useAppSelector((state) => state.settings)
   const { isEditMode, } = useAppSelector((state) => state.ui)
   const { textPrimary, selectInputClasses } = useThemeClasses()
@@ -44,24 +45,7 @@ export default function Header() {
 
           {/* Controls */}
           <div className="flex items-center gap-3">
-            {/* Authority Selector */}
-            <div className="relative">
-              <select
-                // value={selectedAuthority}
-                // onChange={(e) => setSelectedAuthority(e.target.value)}
-                className={clsx(
-                  "appearance-none border rounded-lg px-4 py-2 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 min-w-50",
-                  selectInputClasses
-                )}
-              >
-                {authorities.map((auth) => (
-                  <option key={auth.value} value={auth.value}>
-                    {auth.label}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="absolute top-1/2 ltr:right-3 rtl:left-3 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
-            </div>
+            <DmoAuthorityies data={dmosAuthorities?.data?.data}/>
 
             {/* Website Selector */}
             <div className="relative">

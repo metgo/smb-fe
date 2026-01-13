@@ -28,11 +28,6 @@ export function Login({ setCurrentTab }: LoginProps) {
     try {
       const data = await login({ email: username, password }).unwrap();
       if (data.user.role === UserRole.TRAVELLER && !data?.user?.hasBusiness) {
-        // router.replace(
-        //   `/${languagePreference}/business/add`,
-        //   undefined,
-        //   { locale: languagePreference }
-        // );
       } else {
         navigate(routes.dashboard, { replace: true });
       }

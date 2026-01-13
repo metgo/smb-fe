@@ -1,6 +1,7 @@
-import { InfoTooltip } from '@/components/shared/InfoTooltip';
-import {  TrendingUp, TrendingDown, Ticket, ShoppingCart, Store } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import {  TrendingUp, TrendingDown, Ticket, ShoppingCart, Store } from 'lucide-react';
+
+import { InfoTooltip } from '@/components/shared';
 
 interface MetricProps {
   label: string;

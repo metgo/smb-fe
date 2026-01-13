@@ -1,5 +1,18 @@
-function ProductDetailsModal({ product, theme, onClose }: { product: OrderProduct; theme: Theme; onClose: () => void }) {
-  const { t, isRTL } = useLanguage();
+import { useAppSelector } from "@/hooks/hooks";
+import { X } from "lucide-react";
+import { useTranslation } from "react-i18next";
+
+
+interface ProductDetailsModalProps {
+  product: OrderProduct;
+  onClose: () => void
+}
+
+
+export default function ProductDetailsModal({ product, onClose }: ProductDetailsModalProps) {
+  const { t } = useTranslation('oders');
+  const { isRTL, theme } = useAppSelector((state) => state.settings)
+
   const textPrimary = theme === 'dark' ? 'text-gray-100' : 'text-gray-900';
   const textSecondary = theme === 'dark' ? 'text-gray-300' : 'text-gray-700';
   const textTertiary = theme === 'dark' ? 'text-gray-400' : 'text-gray-600';
@@ -27,13 +40,13 @@ function ProductDetailsModal({ product, theme, onClose }: { product: OrderProduc
               className={`w-20 h-20 object-cover rounded-lg ${theme === 'dark' ? 'bg-gray-800' : 'bg-gray-100'}`}
             />
             <div>
-              <p className={`text-sm ${textTertiary} mb-1`}>{t.vendor || 'Vendor'}</p>
+              <p className={`text-sm ${textTertiary} mb-1`}>{t('vendor') || 'Vendor'}</p>
               <p className={`text-sm ${textPrimary}`}>{product.vendor}</p>
-              <p className={`text-sm ${textTertiary} mb-1`}>{t.category || 'Category'}</p>
+              <p className={`text-sm ${textTertiary} mb-1`}>{t('category') || 'Category'}</p>
               <p className={`text-sm ${textPrimary}`}>{product.category}</p>
             </div>
           </div>
-          <p className={`text-sm ${textTertiary} mt-4`}>{t.description || 'Description'}</p>
+          <p className={`text-sm ${textTertiary} mt-4`}>{t('description') || 'Description'}</p>
           <p className={`text-sm ${textPrimary}`}>{product.description}</p>
         </div>
       </div>
