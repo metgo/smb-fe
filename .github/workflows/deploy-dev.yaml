@@ -23,7 +23,7 @@ jobs:
 
       - name: Create .env file for ${{ matrix.app.name }}
         run: |
-          echo -n "${{ secrets[matrix.app.env_file] }}" | base64 -d > .env.${{ matrix.app.name }}
+          echo -n "${{ secrets[matrix.app.env_file] }}" | base64 -d > .env
 
       - name: Docker login
         run: docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
