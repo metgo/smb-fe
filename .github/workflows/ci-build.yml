@@ -1,0 +1,48 @@
+# This workflow builds the project
+
+name: Build
+
+on:
+  push:
+    branches:
+      - main
+      - dev
+      - release/*
+      - instance/*
+  pull_request:
+    branches:
+      - main
+      - dev
+      - release/*
+      - instance/*
+
+jobs:
+  build:
+    name: Build Project
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [22.x] # Use 22.x to get latest 22.x.x version
+
+    steps:
+      - name: Checkout the code
+        uses: actions/checkout@v3
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "yarn" # Cache yarn dependencies
+
+      - name: Create .env file
+        run: |
+          echo -n "${{ secrets.ENV_FILE_DEV_TAV8 }}" | base64 -d > .env
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Build the project
+        run: yarn build
+        env:
+          NODE_OPTIONS: "--max_old_space_size=4096"
