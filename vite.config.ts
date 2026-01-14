@@ -12,6 +12,6 @@ export default defineConfig({
     },
   },
   preview: {
-    allowedHosts: ['stg.workspace.metgo.app'], // <-- add your host here
+    allowedHosts: ['*'], // <-- add your host here
   },
 });
