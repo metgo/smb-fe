@@ -14,7 +14,6 @@ export default function ProductDetailsModal({ product, onClose }: ProductDetails
   const { isRTL, theme } = useAppSelector((state) => state.settings)
 
   const textPrimary = theme === 'dark' ? 'text-gray-100' : 'text-gray-900';
-  const textSecondary = theme === 'dark' ? 'text-gray-300' : 'text-gray-700';
   const textTertiary = theme === 'dark' ? 'text-gray-400' : 'text-gray-600';
 
   return (

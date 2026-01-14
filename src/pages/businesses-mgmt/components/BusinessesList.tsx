@@ -11,12 +11,12 @@ import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useAppSelector } from '@/hooks/hooks';
 import { FilterButton } from '@/components/btns';
 import { useThemeClasses } from '@/hooks/useThemeClasses';
-import { generateMockBusinesses, type Business } from '@/constants/data';
+import { generateMockBusinesses } from '@/constants/data';
 import { PageHeader, PageStats, ReordableDataTable } from '@/components/shared';
 
 interface BusinessesListProps {
   theme: Theme;
-  onBusinessClick: (business: Business) => void;
+  onBusinessClick: (business: any) => void;
   onCreateNew: () => void;
 }
 
@@ -83,7 +83,7 @@ export default function BusinessesList({ theme, onBusinessClick, onCreateNew }: 
   const [error, setError] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [showFilters, setShowFilters] = useState(false);
-  const [businesses, setBusinesses] = useState<Business[]>([]);
+  const [businesses, setBusinesses] = useState<any[]>([]);
   const [showColumnSettings, setShowColumnSettings] = useState(false);
   const [selectedBusinesses, setSelectedBusinesses] = useState<Set<string>>(new Set());
 
@@ -140,8 +140,8 @@ export default function BusinessesList({ theme, onBusinessClick, onCreateNew }: 
   }, [showColumnSettings]);
 
   // Sorting
-  const [sortColumn, setSortColumn] = useState<keyof Business | null>(null);
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [sortColumn] = useState<string | null>(null);
+  const [sortDirection] = useState<'asc' | 'desc'>('asc');
 
   // Infinite scroll
   const [displayCount, setDisplayCount] = useState(50);
@@ -247,36 +247,6 @@ export default function BusinessesList({ theme, onBusinessClick, onCreateNew }: 
     return () => container.removeEventListener('scroll', handleScroll);
   }, [handleScroll]);
 
-  // Handle sorting
-  const handleSort = (column: keyof Business) => {
-    if (sortColumn === column) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortColumn(column);
-      setSortDirection('asc');
-    }
-  };
-
-  // Handle selection
-  const toggleSelectAll = () => {
-    if (selectedBusinesses.size === filteredBusinesses.slice(0, displayCount).length) {
-      setSelectedBusinesses(new Set());
-    } else {
-      setSelectedBusinesses(
-        new Set(filteredBusinesses.slice(0, displayCount).map((b) => b.id))
-      );
-    }
-  };
-
-  const toggleSelect = (id: string) => {
-    const newSet = new Set(selectedBusinesses);
-    if (newSet.has(id)) {
-      newSet.delete(id);
-    } else {
-      newSet.add(id);
-    }
-    setSelectedBusinesses(newSet);
-  };
 
   // Column toggle handler
   const toggleColumn = (column: keyof ColumnVisibility) => {
@@ -313,48 +283,15 @@ export default function BusinessesList({ theme, onBusinessClick, onCreateNew }: 
 
   // Get unique values for filters
   const authorities = useMemo(
-    () => Array.from(new Set(businesses.map((b) => b.authority))),
+    () => Array.from(new Set(businesses.map((b: any) => b.authority))),
     [businesses]
   );
-  const dmos = useMemo(() => Array.from(new Set(businesses.map((b) => b.dmo))), [businesses]);
-
-  // Get unique websites for filter
-  const websites = useMemo(() => {
-    const sites = businesses.map((b) => {
-      try {
-        return new URL(b.website).hostname;
-      } catch {
-        return b.website;
-      }
-    });
-    return Array.from(new Set(sites));
-  }, [businesses]);
+  const dmos = useMemo(() => Array.from(new Set(businesses.map((b: any) => b.dmo))), [businesses]);
 
   // Permission check
   const canChangeStatus = ['superadmin', 'admin', 'dmo', 'authority'].includes(USER_ROLE);
 
   const displayedBusinesses = filteredBusinesses.slice(0, displayCount);
-
-  // Status badge component
-  const StatusBadge = ({ status }: { status: Business['status'] }) => {
-    const statusConfig = {
-      draft: { color: 'bg-gray-500', label: t('draft') },
-      pending: { color: 'bg-yellow-500', label: t('pending') },
-      approved: { color: 'bg-green-500', label: t('approved') },
-      rejected: { color: 'bg-red-500', label: t('rejected') },
-      archived: { color: 'bg-gray-400', label: t('archived') },
-    };
-
-    const config = statusConfig[status];
-
-    return (
-      <span
-        className={`px-2 py-1 rounded-full text-xs text-white ${config.color}`}
-      >
-        {config.label}
-      </span>
-    );
-  };
 
   // Categories badge component
   const CategoriesBadges = ({ categories }: { categories: string[] }) => {
@@ -364,7 +301,7 @@ export default function BusinessesList({ theme, onBusinessClick, onCreateNew }: 
 
     return (
       <div className="flex flex-wrap gap-1">
-        {displayCategories.map((category, index) => (
+        {displayCategories.map((category: any, index: number) => (
           <span
             key={index}
             className={`px-2 py-0.5 rounded-full text-xs ${categoryColors[category] || defaultCategoryColor
@@ -403,7 +340,7 @@ export default function BusinessesList({ theme, onBusinessClick, onCreateNew }: 
   };
 
   // Calculate trip count (mock - in real app would come from backend)
-  const getTripCount = (business: Business): number => {
+  const getTripCount = (business: any): number => {
     // Mock calculation based on products count and impact score
     return Math.floor((business.productsCount * business.impactScore) / 10);
   };
@@ -479,7 +416,7 @@ export default function BusinessesList({ theme, onBusinessClick, onCreateNew }: 
     {
       id: 2,
       title: t('active_businesses') || 'Active Businesses',
-      value: filteredBusinesses.filter(b => b.status === 'approved').length,
+      value: filteredBusinesses.filter((b: any) => b.status === 'approved').length,
       label: t('approved') || 'Approved',
       icon: <CheckCircle className="w-5 h-5 text-green-600" />,
     },
@@ -487,7 +424,7 @@ export default function BusinessesList({ theme, onBusinessClick, onCreateNew }: 
       id: 3,
       title: t('total_products') || 'Total Products',
       value: filteredBusinesses
-        .reduce((sum, b) => sum + b.productsCount, 0)
+        .reduce((sum: number, b: any) => sum + b.productsCount, 0)
         .toLocaleString(),
       label: t('listed') || 'Listed',
       icon: <UtensilsCrossed className="w-5 h-5 text-blue-600" />,
@@ -498,7 +435,7 @@ export default function BusinessesList({ theme, onBusinessClick, onCreateNew }: 
       value:
         filteredBusinesses.length > 0
           ? Math.round(
-            filteredBusinesses.reduce((sum, b) => sum + b.impactScore, 0) /
+            filteredBusinesses.reduce((sum: number, b: any) => sum + b.impactScore, 0) /
             filteredBusinesses.length
           )
           : 0,
@@ -508,7 +445,7 @@ export default function BusinessesList({ theme, onBusinessClick, onCreateNew }: 
     {
       id: 5,
       title: t('pending_approval') || 'Pending Approval',
-      value: filteredBusinesses.filter(b => b.status === 'pending').length,
+      value: filteredBusinesses.filter((b: any) => b.status === 'pending').length,
       label: t('awaiting') || 'Awaiting',
       icon: <AlertCircle className="w-5 h-5 text-yellow-600" />,
     },
@@ -518,7 +455,7 @@ export default function BusinessesList({ theme, onBusinessClick, onCreateNew }: 
       value: `${filteredBusinesses.length > 0
         ? Math.round(
           filteredBusinesses.reduce(
-            (sum, b) => sum + b.completionPercentage,
+            (sum: number, b: any) => sum + b.completionPercentage,
             0
           ) / filteredBusinesses.length
         )
@@ -698,7 +635,7 @@ export default function BusinessesList({ theme, onBusinessClick, onCreateNew }: 
                     } focus:outline-none focus:ring-2 focus:ring-teal-500`}
                 >
                   <option value="all">{t('all')}</option>
-                  {authorities.map((auth) => (
+                  {authorities.map((auth: any) => (
                     <option key={auth} value={auth}>
                       {auth}
                     </option>
@@ -720,7 +657,7 @@ export default function BusinessesList({ theme, onBusinessClick, onCreateNew }: 
                     } focus:outline-none focus:ring-2 focus:ring-teal-500`}
                 >
                   <option value="all">{t('all')}</option>
-                  {dmos.map((dmo) => (
+                  {dmos.map((dmo: any) => (
                     <option key={dmo} value={dmo}>
                       {dmo}
                     </option>

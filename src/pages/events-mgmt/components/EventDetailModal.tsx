@@ -34,7 +34,6 @@ interface EventDetailModalProps {
   registrantSearchQuery: string;
   setRegistrantSearchQuery: React.Dispatch<React.SetStateAction<string>>;
   filteredRegistrants: Registrant[];
-  handleSort: (key: string) => void;
   isRTL: boolean;
   setSelectedRegistrant?: React.Dispatch<React.SetStateAction<Registrant | null>>;
 }
@@ -47,7 +46,6 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
   registrantSearchQuery,
   setRegistrantSearchQuery,
   filteredRegistrants,
-  handleSort,
   isRTL,
   setSelectedRegistrant,
 }) => {

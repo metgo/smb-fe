@@ -18,12 +18,12 @@ interface LoginProps {
 export function Login({ setCurrentTab }: LoginProps) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [error] = useState('');
   const navigate = useNavigate();
 
   const [login, { isLoading }] = useLoginMutation();
 
-  const handleLogin = async (e: any) => {
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     try {
       const data = await login({ email: username, password }).unwrap();

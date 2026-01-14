@@ -27,7 +27,6 @@ export default function CreateBusinessWizard({
   const { isRTL } = useAppSelector(state => state.settings)
   
   const [currentStep, setCurrentStep] = useState(1);
-  const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
 
   const [formData, setFormData] = useState({
@@ -160,9 +159,7 @@ export default function CreateBusinessWizard({
 
   // Auto-save simulation
   const handleAutoSave = () => {
-    setIsSaving(true);
     setTimeout(() => {
-      setIsSaving(false);
       setLastSaved(new Date());
     }, 500);
   };
@@ -191,39 +188,6 @@ export default function CreateBusinessWizard({
 
     // Step 5 validation
     if (!formData.logo) newErrors.logo = t('field_required');
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const validateStep = (step: number): boolean => {
-    const newErrors: Record<string, string> = {};
-
-    if (step === 1) {
-      if (!formData.name) newErrors.name = t('field_required');
-      if (!formData.shortDescription) newErrors.shortDescription = t('field_required');
-      if (!formData.fullDescription) newErrors.fullDescription = t('field_required');
-    }
-
-    if (step === 2) {
-      if (!formData.email) newErrors.email = t('field_required');
-      if (!formData.phone) newErrors.phone = t('field_required');
-      if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-        newErrors.email = t('invalid_email');
-      }
-    }
-
-    if (step === 3) {
-      if (!formData.address) newErrors.address = t('field_required');
-    }
-
-    if (step === 4) {
-      if (!formData.primaryCategory) newErrors.primaryCategory = t('field_required');
-    }
-
-    if (step === 5) {
-      if (!formData.logo) newErrors.logo = t('field_required');
-    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;

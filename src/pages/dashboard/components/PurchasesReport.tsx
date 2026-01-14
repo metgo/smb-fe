@@ -3,7 +3,6 @@ import {  TrendingUp, Receipt } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
 
 import { InfoTooltip } from '@/components/shared';
-import { useGetPurchaseReportsStatsQuery } from '@/store/api/itemStatsApi';
 
 interface PurchaseMetricProps {
   label: string;
@@ -37,8 +36,7 @@ function PurchaseMetric({ label, value, change, description }: PurchaseMetricPro
 
 export default function PurchasesReport() {
   const { t } = useTranslation('dashboard');
-  const purchasesReportStats= useGetPurchaseReportsStatsQuery()
-  
+
   // Stacked bar chart data: vouchers + creditCards = orders
   const chartData = [
     { month: t('jul'), creditCards: 156, vouchers: 89, total: 245 },
