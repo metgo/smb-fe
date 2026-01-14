@@ -18,15 +18,17 @@ COPY ${ENV_FILE} .env
 # Build the Vite app
 RUN yarn build
 
-# Step 2: Serve with Vite preview (much simpler!)
 FROM node:22-alpine AS runner
 
 WORKDIR /app
 
-# Copy only necessary files for production
+# Copy built app and dependencies
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/node_modules ./node_modules
+
+# Copy Vite config so allowedHosts is used
+COPY --from=builder /app/vite.config.js ./vite.config.js
 
 # Expose port 3000
 EXPOSE 3000
