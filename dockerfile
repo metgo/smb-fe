@@ -28,7 +28,7 @@ COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/node_modules ./node_modules
 
 # Copy Vite config so allowedHosts is used
-COPY --from=builder /app/vite.config.js ./vite.config.js
+COPY . .
 
 # Expose port 3000
 EXPOSE 3000
