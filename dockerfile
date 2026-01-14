@@ -1,5 +1,5 @@
 # Step 1: Build the app with yarn
-FROM node:20.12.1 AS builder
+FROM node:22-alpine AS builder
 
 # Set working directory
 WORKDIR /app
@@ -19,7 +19,7 @@ COPY ${ENV_FILE} .env
 RUN yarn build
 
 # Step 2: Prepare the final image (runtime)
-FROM node:20.12.1 AS runner
+FROM node:22-alpine AS runner
 
 WORKDIR /app
 
