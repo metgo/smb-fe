@@ -15,20 +15,21 @@ COPY . .
 ARG ENV_FILE=.env
 COPY ${ENV_FILE} .env
 
-# Build the Next.js app
+# Build the Vite app
 RUN yarn build
 
-# Step 2: Prepare the final image (runtime)
+# Step 2: Serve with Vite preview (much simpler!)
 FROM node:22-alpine AS runner
 
 WORKDIR /app
 
-COPY --from=builder /app .
+# Copy only necessary files for production
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/node_modules ./node_modules
 
-# Allow PORT to be set dynamically
-ARG APP_PORT=3001
-ENV PORT=${APP_PORT}
+# Expose port 3000
+EXPOSE 3000
 
-EXPOSE ${PORT}
-
-CMD ["yarn", "start"]
+# Serve the built app with Vite preview
+CMD ["yarn", "preview", "--host", "0.0.0.0", "--port", "3000"]
