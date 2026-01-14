@@ -3,17 +3,16 @@ import { useState } from 'react';
 import { useAppSelector } from '@/hooks/hooks';
 
 import {BusinessDetails, BusinessesList, CreateBusinessWizard} from './components';
-import type { Business } from '@/constants/data';
 
 
 type View = 'list' | 'details' | 'create' | 'edit';
 
 export default function BusinessesMgmtPage() {
   const [currentView, setCurrentView] = useState<View>('list');
-  const [selectedBusiness, setSelectedBusiness] = useState<Business | null>(null);
+  const [selectedBusiness, setSelectedBusiness] = useState<any | null>(null);
   const { theme } = useAppSelector((state) => state.settings)
 
-  const handleBusinessClick = (business: Business) => {
+  const handleBusinessClick = (business: any) => {
     setSelectedBusiness(business);
     setCurrentView('details');
   };

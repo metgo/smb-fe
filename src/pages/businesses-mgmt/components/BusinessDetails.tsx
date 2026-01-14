@@ -5,10 +5,9 @@ import {
   Tag, TrendingUp, FileText, Plus, Trash2, Upload, Star, Eye
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import type { Business } from '@/constants/data';
 
 interface BusinessDetailsProps {
-  business: Business;
+  business: any;
   theme: Theme;
   onBack: () => void;
   onEdit: () => void;
@@ -20,7 +19,6 @@ const USER_ROLE = 'admin'; // Can be: 'superadmin', 'admin', 'dmo', 'authority',
 export default function BusinessDetails({ business, theme, onBack, onEdit, onCreateProduct }: BusinessDetailsProps) {
   const { t } = useTranslation('businesses');
   const [activeTab, setActiveTab] = useState('overview');
-  const [showStatusModal, setShowStatusModal] = useState(false);
 
   const canChangeStatus = ['superadmin', 'admin', 'dmo', 'authority'].includes(USER_ROLE);
 
@@ -79,7 +77,7 @@ export default function BusinessDetails({ business, theme, onBack, onEdit, onCre
           {t('categories')}
         </h3>
         <div className="flex flex-wrap gap-2">
-          {business.categories.map((cat, idx) => (
+          {business.categories.map((cat: any, idx: number) => (
             <span
               key={idx}
               className={`px-3 py-1 rounded-full text-sm ${theme === 'dark'
@@ -100,7 +98,7 @@ export default function BusinessDetails({ business, theme, onBack, onEdit, onCre
             {t('subcategories')}
           </h3>
           <div className="flex flex-wrap gap-2">
-            {business.subcategories.map((subcat, idx) => (
+            {business.subcategories.map((subcat: any, idx: number) => (
               <span
                 key={idx}
                 className={`px-3 py-1 rounded-full text-sm ${theme === 'dark'
@@ -122,7 +120,7 @@ export default function BusinessDetails({ business, theme, onBack, onEdit, onCre
             {t('tags')}
           </h3>
           <div className="flex flex-wrap gap-2">
-            {business.tags.map((tag, idx) => (
+            {business.tags.map((tag: any, idx: number) => (
               <span
                 key={idx}
                 className={`px-2 py-1 rounded text-xs ${theme === 'dark'
@@ -350,7 +348,7 @@ export default function BusinessDetails({ business, theme, onBack, onEdit, onCre
 
         {business.images.length > 0 ? (
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {business.images.map((img, idx) => (
+            {business.images.map((img: any, idx: number) => (
               <div
                 key={idx}
                 className={`relative aspect-video rounded-lg overflow-hidden border ${theme === 'dark' ? 'border-gray-700' : 'border-gray-300'
@@ -399,7 +397,7 @@ export default function BusinessDetails({ business, theme, onBack, onEdit, onCre
           {t('accessibility')}
         </h3>
         <div className="flex flex-wrap gap-2">
-          {business.accessibility.map((option, idx) => (
+          {business.accessibility.map((option: any, idx: number) => (
             <span
               key={idx}
               className={`px-3 py-1.5 rounded-lg flex items-center gap-2 ${theme === 'dark'
@@ -420,7 +418,7 @@ export default function BusinessDetails({ business, theme, onBack, onEdit, onCre
           {t('group_types')}
         </h3>
         <div className="flex flex-wrap gap-2">
-          {business.groupTypes.map((type, idx) => (
+          {business.groupTypes.map((type: any, idx: number) => (
             <span
               key={idx}
               className={`px-3 py-1.5 rounded-lg flex items-center gap-2 ${theme === 'dark'
@@ -468,7 +466,7 @@ export default function BusinessDetails({ business, theme, onBack, onEdit, onCre
                 </span>
                 <div className="flex items-center gap-2">
                   {hours && hours.length > 0 ? (
-                    hours.map((range, idx) => (
+                    hours.map((range: any, idx: number) => (
                       <span
                         key={idx}
                         className={`text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}
@@ -529,7 +527,7 @@ export default function BusinessDetails({ business, theme, onBack, onEdit, onCre
 
             {canChangeStatus && (
               <button
-                onClick={() => setShowStatusModal(true)}
+                onClick={() => {/* Status modal not implemented */}}
                 className={`px-4 py-2 rounded-lg border transition-colors flex items-center gap-2 ${theme === 'dark'
                     ? 'border-gray-700 hover:bg-gray-800 text-gray-300'
                     : 'border-gray-300 hover:bg-gray-100 text-gray-700'

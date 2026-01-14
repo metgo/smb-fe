@@ -1,3 +1,4 @@
+/// <reference types="@types/google.maps" />
 
 import { endpoints } from '@/lib/endpoints';
 import { envKeys } from '@/lib/envKeys';
@@ -6,6 +7,14 @@ import { LocateIcon } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+interface Suggestion {
+  placePrediction: {
+    placeId: string;
+    text: {
+      text: string;
+    };
+  };
+}
 
 interface MarkerMapProps {
   setGeo: (v: { lat: string, long: string }) => void,
@@ -25,15 +34,14 @@ const MarkerMap = ({
   const { t, i18n } = useTranslation('maps');
   const locale = i18n.language;
 
-  const mapRef = useRef(null);
-  const markerRef = useRef(null);
-  const inputRef = useRef(null);
-  const scriptRef = useRef(null);
+  const mapRef = useRef<HTMLDivElement | null>(null);
+  const markerRef = useRef<google.maps.Marker | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const scriptRef = useRef<HTMLScriptElement | null>(null);
 
-  const [map, setMap] = useState(null);
+  const [map, setMap] = useState<google.maps.Map | null>(null);
   const [inputValue, setInputValue] = useState('');
-  const [suggestions, setSuggestions] = useState([]);
-  const [isMapLoaded, setIsMapLoaded] = useState(false);
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
 
   useEffect(() => {
     if (address) {
@@ -46,7 +54,6 @@ const MarkerMap = ({
     script.src = `${endpoints.googleMap}?key=${envKeys.googleMapApiKey}&language=${locale}`;
     script.async = true;
     script.onload = () => {
-      setIsMapLoaded(true);
       initializeMap();
     };
     document.body.appendChild(script);
@@ -86,7 +93,7 @@ const MarkerMap = ({
       fullscreenControlOptions: {
         position: window?.google?.maps?.ControlPosition?.RIGHT_BOTTOM,
       },
-      styles: userRole !== 'superadmin' ? googlePointOfInterest : [],
+      styles: googlePointOfInterest,
     });
 
     // Custom control for map type
@@ -140,13 +147,13 @@ const MarkerMap = ({
       satelliteButton.style.color = !isRoadmap ? '#fff' : '#000';
     };
 
-    streetButton.addEventListener('click', (e) => {
+    streetButton.addEventListener('click', (e: MouseEvent) => {
       e.preventDefault();
       googleMap.setMapTypeId(window.google.maps.MapTypeId.ROADMAP);
       updateButtonStyles();
     });
 
-    satelliteButton.addEventListener('click', (e) => {
+    satelliteButton.addEventListener('click', (e: MouseEvent) => {
       e.preventDefault();
       googleMap.setMapTypeId(window.google.maps.MapTypeId.HYBRID);
       updateButtonStyles();
@@ -168,9 +175,9 @@ const MarkerMap = ({
       placeMarker(mapCenter.lat, mapCenter.lng, googleMap);
     }
 
-    googleMap.addListener('dblclick', (e) => {
-      const lat = e.latLng.lat();
-      const lng = e.latLng.lng();
+    googleMap.addListener('dblclick', (e: google.maps.MapMouseEvent) => {
+      const lat = e.latLng?.lat() || 0;
+      const lng = e.latLng?.lng() || 0;
       placeMarker(lat, lng, googleMap);
       fetchAddress(lat, lng);
     });
@@ -184,8 +191,8 @@ const MarkerMap = ({
 
   const fetchAddress = async (lat: number, lng: number) => {
     const geocoder = new window.google.maps.Geocoder();
-    geocoder.geocode({ location: { lat, lng } }, (results, status) => {
-      if (status === 'OK' && results[0]) {
+    geocoder.geocode({ location: { lat, lng } }, (results: google.maps.GeocoderResult[] | null, status: google.maps.GeocoderStatus) => {
+      if (status === 'OK' && results && results[0]) {
         setAddress(results[0].formatted_address);
         setInputValue(results[0].formatted_address);
       } else {
@@ -194,7 +201,7 @@ const MarkerMap = ({
     });
   };
 
-  const handleInputChange = async (e) => {
+  const handleInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setInputValue(value);
 
@@ -256,18 +263,20 @@ const MarkerMap = ({
       const lng = data.location.longitude;
       const formattedAddress = data.formattedAddress;
 
-      setGeo({ lat, long: lng });
+      setGeo({ lat: lat.toString(), long: lng.toString() });
       setAddress(formattedAddress);
       setInputValue(formattedAddress);
       setSuggestions([]);
-      placeMarker(lat, lng, map);
-      map.panTo({ lat, lng });
+      if (map) {
+        placeMarker(lat, lng, map);
+        map.panTo({ lat, lng });
+      }
     } catch (error) {
       console.error('Error fetching place details:', error);
     }
   };
 
-  const placeMarker = (lat, lng, googleMap) => {
+  const placeMarker = (lat: number, lng: number, googleMap: google.maps.Map) => {
     if (!googleMap) return;
 
     if (markerRef.current) {
@@ -286,12 +295,12 @@ const MarkerMap = ({
       },
     });
 
-    setGeo({ lat, long: lng });
+    setGeo({ lat: lat.toString(), long: lng.toString() });
 
-    markerRef.current.addListener('dragend', async (e) => {
-      const newLat = e.latLng.lat();
-      const newLng = e.latLng.lng();
-      setGeo({ lat: newLat, long: newLng });
+    markerRef.current.addListener('dragend', async (e: google.maps.MapMouseEvent) => {
+      const newLat = e.latLng?.lat() || 0;
+      const newLng = e.latLng?.lng() || 0;
+      setGeo({ lat: newLat.toString(), long: newLng.toString() });
       fetchAddress(newLat, newLng);
     });
 
@@ -299,7 +308,7 @@ const MarkerMap = ({
     window.google.maps.event.trigger(googleMap, 'resize');
   };
 
-  const findMyLocation = (e) => {
+  const findMyLocation = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
 
     if (!navigator.geolocation) {
@@ -312,7 +321,7 @@ const MarkerMap = ({
         const lat = position.coords.latitude;
         const lng = position.coords.longitude;
 
-        setGeo({ lat, long: lng });
+        setGeo({ lat: lat.toString(), long: lng.toString() });
 
         if (map) {
           placeMarker(lat, lng, map);
@@ -383,9 +392,9 @@ const MarkerMap = ({
                   borderBottom: '1px solid #eee',
                 }}
                 onMouseOver={(e) =>
-                  (e.target.style.backgroundColor = '#f0f0f0')
+                  ((e.target as HTMLElement).style.backgroundColor = '#f0f0f0')
                 }
-                onMouseOut={(e) => (e.target.style.backgroundColor = 'white')}
+                onMouseOut={(e) => ((e.target as HTMLElement).style.backgroundColor = 'white')}
               >
                 {suggestion.placePrediction.text.text}
               </li>
@@ -393,15 +402,14 @@ const MarkerMap = ({
           </ul>
         ) : null}
       </div>
-      <Tooltip title={t('findMyLocation')}>
-        <button
-          type="button"
-          onClick={(e) => findMyLocation(e)}
-          className="absolute bottom-2 left-2 bg-white rounded-md p-1 z-30"
-        >
-          <LocateIcon size={28} />
-        </button>
-      </Tooltip>
+      <button
+        type="button"
+        onClick={(e) => findMyLocation(e)}
+        className="absolute bottom-2 left-2 bg-white rounded-md p-1 z-30"
+        title={t('findMyLocation')}
+      >
+        <LocateIcon size={28} />
+      </button>
       <div
         ref={mapRef}
         style={{ width: '100%', height: '100%', zIndex: '10' }}

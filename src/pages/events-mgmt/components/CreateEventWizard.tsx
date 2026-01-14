@@ -25,15 +25,13 @@ interface CreateEventWizardProps {
   onClose: () => void;
   theme: Theme;
   mode?: 'create' | 'edit' | 'duplicate';
-  existingEvent?: any;
 }
 
 export default function CreateEventWizard({
   isOpen,
   onClose,
   theme,
-  mode = 'create',
-  existingEvent
+  mode = 'create'
 }: CreateEventWizardProps) {
   const { t } = useTranslation('events');
   const { isRTL } = useAppSelector((state) => state.settings)
@@ -61,7 +59,6 @@ export default function CreateEventWizard({
   // Step 2: Date, Time & Format
   const [isMultiDay, setIsMultiDay] = useState(false);
   const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
   const [eventDays, setEventDays] = useState<EventDay[]>([
     { id: '1', date: '', startTime: '09:00', endTime: '17:00', description: '' }
   ]);
@@ -79,8 +76,6 @@ export default function CreateEventWizard({
   const [recurrenceEndType, setRecurrenceEndType] = useState<RecurrenceEndType>('count');
   const [recurrenceEndDate, setRecurrenceEndDate] = useState('');
   const [recurrenceEndCount, setRecurrenceEndCount] = useState(10);
-  const [showRecurrenceEditModal, setShowRecurrenceEditModal] = useState(false);
-  const [recurrenceEditScope, setRecurrenceEditScope] = useState<'this' | 'future' | 'all'>('this');
 
 
   // Step 3: Registration & Capacity
@@ -130,7 +125,6 @@ export default function CreateEventWizard({
       setInternalNotes('');
       setIsMultiDay(false);
       setStartDate('');
-      setEndDate('');
       setEventDays([{ id: '1', date: '', startTime: '09:00', endTime: '17:00', description: '' }]);
       setEventFormat('physical');
       setAddress('');

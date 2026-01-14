@@ -4,7 +4,7 @@ import {
   CheckCircle, XCircle, Building2, DollarSign, Ticket, Home, Briefcase, Globe, Send, Clock, ChevronDown
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { mockProducts, websites } from '@/constants/data';
+import { websites } from '@/constants/data';
 
 interface MiniCampaignWizardProps {
   theme: Theme;
@@ -58,15 +58,11 @@ export default function MiniCampaignWizard({
   const [contentLanguage, setContentLanguage] = useState<'en' | 'he' | 'ar'>('en');
 
   // Step 2: Select Products
-  const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
-  const [primaryProducts, setPrimaryProducts] = useState<string[]>([]);
-  const [productViewMode, setProductViewMode] = useState<'grid' | 'list'>('grid');
-  const [productSearchQuery, setProductSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [selectedSubCategory, setSelectedSubCategory] = useState('all');
+  const [selectedProducts] = useState<string[]>([]);
+  const [primaryProducts] = useState<string[]>([]);
 
   // Step 3: Preview
-  const [previewMode, setPreviewMode] = useState<'desktop' | 'mobile'>('desktop');
+  // Preview mode can be added here if needed
 
   // Step 4: Voucher Creation
   const [sendTiming, setSendTiming] = useState<'immediate' | 'scheduled'>('immediate');
@@ -182,22 +178,6 @@ export default function MiniCampaignWizard({
     }
   };
 
-  const toggleProductSelection = (productId: string) => {
-    setSelectedProducts(prev => 
-      prev.includes(productId) 
-        ? prev.filter(id => id !== productId)
-        : [...prev, productId]
-    );
-  };
-
-  const togglePrimaryProduct = (productId: string) => {
-    setPrimaryProducts(prev => 
-      prev.includes(productId) 
-        ? prev.filter(id => id !== productId)
-        : [...prev, productId]
-    );
-  };
-
   const copyMiniSiteUrl = () => {
     const url = `https://tav-8.co.il/mini-site?campCode=${campaignCode}&voucherId=65c3874cd753aecdd6cb85ae&customerEmail=${email}`;
     navigator.clipboard.writeText(url);
@@ -292,13 +272,6 @@ export default function MiniCampaignWizard({
     };
     onSubmit(data, 'active');
   };
-
-  const filteredProducts = mockProducts.filter(product => {
-    const matchesSearch = product.name.toLowerCase().includes(productSearchQuery.toLowerCase());
-    const matchesPrice = voucherAmount ? product.price <= parseFloat(voucherAmount) : true;
-    const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory;
-    return matchesSearch && matchesPrice && matchesCategory;
-  });
 
   const actualStepNumber = getActualStepNumber(currentStep);
 
