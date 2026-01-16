@@ -1,5 +1,5 @@
 interface Event {
-  id: string;
+  _id: string;
   name: string;
   website: string;
   startDate: string;
@@ -24,6 +24,16 @@ interface Event {
     attendance: number;
     revenue: number;
   }[];
+}
+
+interface SignedUrlPayload {
+  originalName: string;
+  mimeType: string;
+}
+
+interface GcsFileUpload {
+  signedUrl: string;
+  gcsURL: string;
 }
 
 interface Registrant {
@@ -58,7 +68,7 @@ interface CustomQuestion {
 }
 
 interface TicketData {
-  id: string;
+  _id?: string;
   name: string;
   description: string;
   type: 'free' | 'paid' | 'vip' | 'donation';
@@ -94,29 +104,40 @@ type RecurrenceEndType = 'never' | 'date' | 'count'
 
 
 // Event Creation Payload
-interface EventPayload {
+
+interface EventBasicInfoPayload {
   name: string;
   description: string;
   shortDescription: string;
   authorityId?: string;
   dmoId?: string;
-  status: string// adjust according to your possible statuses
+  status: string
   internalNotes?: string;
   groupTypesId?: string[];
   accessibilitiesId?: string[];
   subCategoriesId?: string[];
+}
+
+interface EventDateTimePayload {
   dayDescription?: DayDescription[];
   eventType: string;
   address?: Address;
   onlineLink?: string;
-  registration?: Registration;
-  customQuestions?: CustomQuestion[];
-  images?: EventImage[];
-  rejected_reason?: string;
-  geoLocation?: GeoLocation;
   recurringEventRule?: RecurringEventRule;
-  scheduledNotifications?: ScheduledNotifications;
 }
+
+interface EventRegPayload {
+  registration?: Registration;
+}
+
+interface EventMsgSchedulePayload {
+  scheduledNotifications?: ScheduledNotifications[];
+}
+
+interface EventMediaPayload {
+
+}
+
 
 interface DayDescription {
   date: string;
@@ -171,7 +192,7 @@ interface GeoLocation {
 }
 
 interface RecurringEventRule {
-  pattern: "DAILY" | "WEEKLY" | "MONTHLY" | "YEARLY";
+  pattern: "DAILY" | "WEEKLY" | "MONTHLY" | "YEARLY" | "CUSTOM";
   daysOfWeek?: string[]; // e.g., ["Monday", "Wednesday"]
   monthlyType?: "SPECIFIC_DATE" | "RELATIVE";
   specificDate?: number;
@@ -186,7 +207,7 @@ interface RecurringEventRule {
 
 interface ScheduledNotifications {
   sendHoursBefore: number;
-  channels: ("EMAIL" | "SMS")[];
+  channels: ("EMAIL" | "SMS" | "WHATSAPP")[];
   language: string;
   template: string;
   customTemplate?: CustomTemplate;
@@ -195,4 +216,30 @@ interface ScheduledNotifications {
 interface CustomTemplate {
   subject: string;
   body: string;
+}
+
+
+interface TicketPayload {
+  _id?: string;
+  name: string;
+  description: string;
+  eventId: string;
+  price: {
+    markedPrice: number;
+    discountAmount: number;
+    discountPercent: number;
+    sellingPrice: number;
+  };
+  quantity: {
+    initial: number;
+    sold: number;
+    remaining: number;
+    isUnlimited: boolean;
+    perUserLimit: number;
+  },
+  images?: {
+    image: string;
+  }[]
+  status: string;
+  type: string;
 }

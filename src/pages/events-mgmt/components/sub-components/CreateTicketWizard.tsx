@@ -1,14 +1,21 @@
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { useCreateSignedUrlMutation, useCreateTicketMutation, useUpdateTicketMutation } from "@/store/api/eventMutationApi";
+
+import clsx from "clsx";
+import { toast } from "sonner";
 import { Upload, X } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+
 
 interface CreateTicketWizardProps {
   setShowTicketModal: (v: boolean) => void;
   setEditingTicket: (v: any) => void;
   theme: Theme;
-  editingTicket: any;
+  editingTicket: TicketPayload;
   tickets: any;
-  setTickets: any;
+  eventId: string | null;
+  refetch: () => void;
 }
 
 const CreateTicketWizard = ({
@@ -17,27 +24,102 @@ const CreateTicketWizard = ({
   theme,
   editingTicket,
   tickets,
-  setTickets,
+  eventId,
+  refetch,
 }: CreateTicketWizardProps) => {
   const { t } = useTranslation('events');
   const { cardClasses, textPrimary, textSecondary, inputClasses, textTertiary } = useThemeClasses();
 
-  const saveTicket = (ticket: TicketData) => {
-    if (tickets.find((t: any) => t.id === ticket.id)) {
-      setTickets(tickets.map((t: any) => (t.id === ticket.id ? ticket : t)));
-    } else {
-      setTickets([...tickets, ticket]);
+  const [createSignedUrl] = useCreateSignedUrlMutation();
+  const [createTicket, { isLoading: isSaving }] = useCreateTicketMutation()
+  const [updateTicket, { isLoading: isUpdating }] = useUpdateTicketMutation()
+
+  const [file, setFile] = useState<File | null>(null)
+  const [mediaURL, setMediaURL] = useState<GcsFileUpload>({ signedUrl: "", gcsURL: "" })
+
+  const saveTicket = async (ticket: TicketPayload) => {
+    if (eventId) {
+      const payload: TicketPayload = {
+        name: ticket.name,
+        description: ticket.description,
+        eventId: eventId,
+        price: {
+          markedPrice: ticket.price.markedPrice,
+          sellingPrice: ticket.price.sellingPrice,
+          discountPercent: 0,
+          discountAmount: 0,
+        },
+        quantity: {
+          initial: ticket.quantity.initial,
+          sold: 0,
+          remaining: ticket.quantity.remaining,
+          isUnlimited: ticket.quantity.isUnlimited,
+          perUserLimit: ticket.quantity.perUserLimit,
+        },
+        images: [{
+          image: mediaURL.gcsURL
+        }],
+        status: "active",
+        type: ticket.type.toUpperCase(),
+      }
+
+      // if (file && mediaURL.signedUrl) {
+      //   const uploadImageRes = await fetch(mediaURL.signedUrl, {
+      //     method: "PUT",
+      //     headers: {
+      //       "Content-Type": file.type, // important!
+      //     },
+      //     body: file,
+      //   });
+
+      //   if (!uploadImageRes.ok) {
+      //     toast.error("Upload failed");
+      //   } else {
+      //     toast.success("Upload successful!");
+      //   }
+      // }
+
+      const res = ticket._id ? await updateTicket({body: payload, ticketId: ticket?._id}).unwrap() : await createTicket(payload).unwrap()
+      if (res?.message) {
+        toast.success(res?.message || "Ticket created successfully")
+        refetch()
+      }
+
+      setShowTicketModal(false);
+      setEditingTicket(null);
     }
-    setShowTicketModal(false);
-    setEditingTicket(null);
   };
 
+  useEffect(() => {
+    if (file) {
+      async function generateSignedUrlForImage() {
+        const payload = ([{
+          originalName: file ? file.name : "",
+          mimeType: file ? file.type : "",
+        }]);
+
+        const res = await createSignedUrl(payload);
+
+        if (res?.data?.length > 0) {
+          setMediaURL({
+            signedUrl: res.data[0]?.signedUrl,
+            gcsURL: res.data[0]?.gcsURL,
+          })
+        }
+      }
+      generateSignedUrlForImage();
+    }
+  }, [file]);
+
+
+
+
   return (
-    <div className="fixed inset-0 bg-black/70 z-[60] flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-black/70 z-60 flex items-center justify-center p-4">
       <div className={`w-full max-w-2xl rounded-xl ${cardClasses} p-6`}>
         <div className="flex items-center justify-between mb-6">
           <h3 className={`text-xl ${textPrimary}`}>
-            {editingTicket?.id && tickets.find((t: any) => t.id === editingTicket.id)
+            {editingTicket?._id && tickets?.find((t: any) => t._id === editingTicket._id)
               ? t('edit_ticket')
               : t('create_ticket')}
           </h3>
@@ -46,9 +128,8 @@ const CreateTicketWizard = ({
               setShowTicketModal(false);
               setEditingTicket(null);
             }}
-            className={`p-2 rounded-lg transition-colors ${
-              theme === 'dark' ? 'hover:bg-gray-800' : 'hover:bg-gray-100'
-            }`}
+            className={`p-2 rounded-lg transition-colors ${theme === 'dark' ? 'hover:bg-gray-800' : 'hover:bg-gray-100'
+              }`}
           >
             <X className="w-5 h-5" />
           </button>
@@ -80,14 +161,13 @@ const CreateTicketWizard = ({
           <div>
             <label className={`block text-sm mb-2 ${textSecondary}`}>{t('ticket_image')}</label>
             <div
-              className={`border-2 border-dashed rounded-lg p-4 ${
-                theme === 'dark' ? 'border-gray-700 bg-gray-800/30' : 'border-gray-300 bg-gray-50'
-              }`}
+              className={`border-2 border-dashed rounded-lg p-4 ${theme === 'dark' ? 'border-gray-700 bg-gray-800/30' : 'border-gray-300 bg-gray-50'
+                }`}
             >
-              {editingTicket?.image ? (
+              {editingTicket?.images ? (
                 <div className="relative">
                   <img
-                    src={editingTicket.image}
+                    src={editingTicket?.images[0].image}
                     alt="Ticket preview"
                     className="w-full h-40 object-cover rounded-lg"
                   />
@@ -109,6 +189,7 @@ const CreateTicketWizard = ({
                     onChange={(e) => {
                       const file = e.target.files?.[0];
                       if (file) {
+                        setFile(file);
                         const reader = new FileReader();
                         reader.onloadend = () => {
                           setEditingTicket({ ...editingTicket, image: reader.result as string });
@@ -137,13 +218,12 @@ const CreateTicketWizard = ({
                 <button
                   key={type}
                   onClick={() => setEditingTicket({ ...editingTicket, type })}
-                  className={`px-4 py-2 rounded-lg border capitalize transition-colors ${
-                    editingTicket?.type === type
-                      ? 'border-teal-500 bg-teal-500/10 text-teal-500'
-                      : theme === 'dark'
+                  className={`px-4 py-2 rounded-lg border capitalize transition-colors ${editingTicket?.type.toLowerCase() === type
+                    ? 'border-teal-500 bg-teal-500/10 text-teal-500'
+                    : theme === 'dark'
                       ? 'border-gray-700 hover:bg-gray-800'
                       : 'border-gray-300 hover:bg-gray-50'
-                  }`}
+                    }`}
                 >
                   {t(type)}
                 </button>
@@ -151,17 +231,17 @@ const CreateTicketWizard = ({
             </div>
           </div>
 
-          {editingTicket?.type !== 'free' && (
+          {editingTicket?.type.toLowerCase() !== 'free' && (
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className={`block text-sm mb-2 ${textSecondary}`}>{t('marked_price')} (₪)</label>
                 <input
                   type="number"
-                  value={editingTicket?.markedPrice || ''}
+                  value={editingTicket?.price?.markedPrice || ''}
                   onChange={(e) =>
                     setEditingTicket({
                       ...editingTicket,
-                      markedPrice: parseFloat(e.target.value) || 0,
+                      price: { ...editingTicket.price, markedPrice: parseFloat(e.target.value) || 0 },
                     })
                   }
                   className={`w-full px-4 py-2 rounded-lg border ${inputClasses}`}
@@ -171,11 +251,11 @@ const CreateTicketWizard = ({
                 <label className={`block text-sm mb-2 ${textSecondary}`}>{t('selling_price')} (₪)</label>
                 <input
                   type="number"
-                  value={editingTicket?.sellingPrice || ''}
+                  value={editingTicket?.price?.sellingPrice || ''}
                   onChange={(e) =>
                     setEditingTicket({
                       ...editingTicket,
-                      sellingPrice: parseFloat(e.target.value) || 0,
+                      price: { ...editingTicket.price, sellingPrice: parseFloat(e.target.value) || 0 },
                     })
                   }
                   className={`w-full px-4 py-2 rounded-lg border ${inputClasses}`}
@@ -189,11 +269,11 @@ const CreateTicketWizard = ({
               <label className={`block text-sm mb-2 ${textSecondary}`}>{t('quantity')}</label>
               <input
                 type="number"
-                value={editingTicket?.quantity || ''}
+                value={editingTicket?.quantity.initial || ''}
                 onChange={(e) =>
                   setEditingTicket({
                     ...editingTicket,
-                    quantity: parseInt(e.target.value) || 0,
+                    quantity: { ...editingTicket.quantity, initial: parseInt(e.target.value) || 0, }
                   })
                 }
                 className={`w-full px-4 py-2 rounded-lg border ${inputClasses}`}
@@ -203,11 +283,11 @@ const CreateTicketWizard = ({
               <label className={`block text-sm mb-2 ${textSecondary}`}>{t('per_user_limit')}</label>
               <input
                 type="number"
-                value={editingTicket?.perUserLimit || ''}
+                value={editingTicket?.quantity?.perUserLimit || ''}
                 onChange={(e) =>
                   setEditingTicket({
                     ...editingTicket,
-                    perUserLimit: parseInt(e.target.value) || 0,
+                    quantity: { ...editingTicket.quantity, perUserLimit: parseInt(e.target.value) || 0, }
                   })
                 }
                 className={`w-full px-4 py-2 rounded-lg border ${inputClasses}`}
@@ -221,17 +301,19 @@ const CreateTicketWizard = ({
                 setShowTicketModal(false);
                 setEditingTicket(null);
               }}
-              className={`px-4 py-2 rounded-lg border transition-colors ${
-                theme === 'dark'
-                  ? 'border-gray-700 hover:bg-gray-800'
-                  : 'border-gray-300 hover:bg-gray-100'
-              }`}
+              className={`px-4 py-2 cursor-pointer rounded-lg border transition-colors ${theme === 'dark'
+                ? 'border-gray-700 hover:bg-gray-800'
+                : 'border-gray-300 hover:bg-gray-100'
+                }`}
             >
               {t('cancel')}
             </button>
             <button
               onClick={() => saveTicket(editingTicket)}
-              className="px-6 py-2 rounded-lg bg-teal-600 hover:bg-teal-700 text-white transition-colors"
+              className={clsx(
+                "px-6 py-2 rounded-lg transition-colors",
+                (isSaving || isUpdating) ? "cursor-not-allowed bg-gray-400 text-black" : " bg-teal-600 hover:bg-teal-700 text-white cursor-pointer "
+              )}
             >
               {t('save_ticket')}
             </button>

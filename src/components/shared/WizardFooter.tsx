@@ -43,7 +43,7 @@ export default function WizardFooter({
         {currentStep > 1 && (
           <button
             onClick={onPrevious}
-            className={`px-4 py-2 rounded-lg border transition-colors flex items-center gap-2 ${theme === 'dark'
+            className={`px-4 py-2 rounded-lg border transition-colors flex items-center gap-2 cursor-pointer ${theme === 'dark'
                 ? 'border-gray-700 hover:bg-gray-800'
                 : 'border-gray-300 hover:bg-gray-100'
               }`}
@@ -63,7 +63,7 @@ export default function WizardFooter({
         <button
           onClick={onSaveDraft}
           disabled={isSaving}
-          className={`px-4 py-2 rounded-lg border transition-colors ${theme === 'dark'
+          className={`px-4 py-2 rounded-lg border cursor-pointer transition-colors ${theme === 'dark'
               ? 'border-gray-700 hover:bg-gray-800'
               : 'border-gray-300 hover:bg-gray-100'
             }`}
@@ -84,7 +84,7 @@ export default function WizardFooter({
         {currentStep < totalSteps ? (
           <button
             onClick={onNext}
-            className="px-6 py-2 rounded-lg bg-teal-600 hover:bg-teal-700 text-white transition-colors flex items-center gap-2"
+            className="px-6 py-2 rounded-lg bg-teal-600 hover:bg-teal-700 text-white transition-colors flex items-center gap-2 cursor-pointer"
           >
             {isRTL ? (
               <>
@@ -102,7 +102,7 @@ export default function WizardFooter({
           <button
             onClick={onPublish}
             disabled={isPublishing}
-            className="px-6 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white transition-colors flex items-center gap-2"
+            className="px-6 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white transition-colors flex items-center gap-2 cursor-pointer"
           >
             {isPublishing ? (
               <>

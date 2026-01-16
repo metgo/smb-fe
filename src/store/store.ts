@@ -10,7 +10,10 @@ import { analyticsApi } from "@/store/api/analyticsApi"
 import { distrbOverviewApi } from "./api/distrbOverviewApi"
 import { itemStatsApi } from "./api/itemStatsApi"
 import { masterDataApi } from "./api/masterDataApi"
-import { eventApi } from "./api/eventsApi"
+import { eventMutationApi } from "./api/eventMutationApi"
+import { eventQueryApi } from "./api/eventQueryApi"
+import { userMutationApi } from "./api/userMutationApi"
+import { userQueryApi } from "./api/userQueryApi"
 
 export const store = configureStore({
   reducer: {
@@ -25,7 +28,12 @@ export const store = configureStore({
     [distrbOverviewApi.reducerPath]: distrbOverviewApi.reducer,
     [itemStatsApi.reducerPath]: itemStatsApi.reducer,
     [masterDataApi.reducerPath]:masterDataApi.reducer,
-    [eventApi.reducerPath]:eventApi.reducer,
+    [userMutationApi.reducerPath]:userMutationApi.reducer,
+    [eventMutationApi.reducerPath]:eventMutationApi.reducer,
+
+    [eventQueryApi.reducerPath]:eventQueryApi.reducer,
+    [userQueryApi.reducerPath]:userQueryApi.reducer,
+
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(
@@ -34,7 +42,13 @@ export const store = configureStore({
       distrbOverviewApi.middleware,
       itemStatsApi.middleware,
       masterDataApi.middleware,
-      eventApi.middleware,
+      
+      userMutationApi.middleware,
+      eventMutationApi.middleware,
+
+      eventQueryApi.middleware,
+      userQueryApi.middleware,
+
     ),
 })
 

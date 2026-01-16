@@ -3,7 +3,7 @@ import { axiosBaseQuery } from "./axiosBaseQuery";
 import { endpoints } from "@/lib/endpoints";
 
 
-interface Params{
+interface Params {
   locale: Language,
   bussCategoryId?: string;
 }
@@ -61,6 +61,13 @@ export const masterDataApi = createApi({
       providesTags: ["MasterData"],
       keepUnusedDataFor: 60 * 60 * 24,
     }),
+
+    getAllWebsites: builder.query<Website[], void>({
+      query: () => ({
+        url: endpoints.websites,
+        method: "GET"
+      })
+    })
   }),
 });
 
@@ -70,4 +77,5 @@ export const {
   useGetAccessibilityQuery,
   useGetGroupTypesQuery,
   useGetDmosQuery,
+  useGetAllWebsitesQuery,
 } = masterDataApi;

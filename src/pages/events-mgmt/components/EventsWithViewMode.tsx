@@ -10,9 +10,9 @@ import {
 import { useTranslation } from 'react-i18next';
 
 import { useAppSelector } from '@/hooks/hooks';
+import { Button } from '@/components/ui/button';
 import { useThemeClasses } from '@/hooks/useThemeClasses';
 import { formatDate, formatDateRange } from '@/helpers/formatter';
-import { Button } from '@/components/ui/button';
 import { ImageWithFallback, ReordableDataTable } from '@/components/shared';
 
 
@@ -165,22 +165,14 @@ export default function EventsWithViewMode({
   }
   // Events on a given date
   const eventsOnDate = (date: Date) => {
-    const dateStr = date.toISOString().split('T')[0];
-    return events.filter(e => {
-      const start = new Date(e.startDate).toISOString().split('T')[0];
-      const end = new Date(e.endDate).toISOString().split('T')[0];
+    const dateStr = date?.toISOString().split('T')[0];
+    return events?.filter(e => {
+      const start = new Date(e.startDate)?.toISOString()?.split('T')[0];
+      const end = new Date(e.endDate)?.toISOString()?.split('T')[0];
       return dateStr >= start && dateStr <= end;
     });
   };
 
-  // Upcoming events for list view
-  const upcomingEvents = useMemo(() => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    return events
-      .filter(e => new Date(e.startDate) >= today)
-      .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
-  }, [events]);
 
 
   // Month View
@@ -212,7 +204,7 @@ export default function EventsWithViewMode({
                 const { ribbon } = getCategoryColor(event.category);
                 return (
                   <div
-                    key={event.id}
+                    key={event._id}
                     onClick={() => handleEventSelect(event)}
                     className={`px-1 py-0.5 ${ribbon} text-white rounded truncate cursor-pointer`}
                     title={event.name}
@@ -221,8 +213,8 @@ export default function EventsWithViewMode({
                   </div>
                 );
               })}
-              {dayEvents.length > 3 && (
-                <div className="text-gray-500">+{dayEvents.length - 3} {t('more')}</div>
+              {dayEvents?.length > 3 && (
+                <div className="text-gray-500">+{dayEvents?.length - 3} {t('more')}</div>
               )}
             </div>
           </div>
@@ -249,7 +241,7 @@ export default function EventsWithViewMode({
                 const { ribbon } = getCategoryColor(event.category);
                 return (
                   <div
-                    key={event.id}
+                    key={event._id}
                     onClick={() => handleEventSelect(event)}
                     className={`p-2 ${ribbon} text-white rounded text-xs cursor-pointer`}
                   >
@@ -276,13 +268,13 @@ export default function EventsWithViewMode({
     return (
       <div className='py-6 px-4'>
         <h3 className="text-2xl font-semibold mb-6">{dayLabel}</h3>
-        {dayEvents.length === 0 ? (
+        {dayEvents?.length === 0 ? (
           <div className="text-center py-20 text-gray-500">{t('noEventsThisDay')}</div>
         ) : (
           <div className="space-y-6">
             {dayEvents.map(event => (
               <div
-                key={event.id}
+                key={event._id}
                 onClick={() => handleEventSelect(event)}
                 className="bg-gray-50 dark:bg-gray-800 rounded-xl p-6 hover:shadow-md cursor-pointer transition-shadow"
               >
@@ -315,7 +307,7 @@ export default function EventsWithViewMode({
 
   // List View
   const GridView = () => {
-    const displayed = upcomingEvents.slice(0, displayedListCount);
+    const displayed = events?.slice(0, displayedListCount);
 
     if (events?.length === 0) {
       return (
@@ -340,7 +332,7 @@ export default function EventsWithViewMode({
 
             return (
               <div
-                key={event.id}
+                key={event._id}
                 onClick={() => handleEventSelect(event)}
                 className="bg-white dark:bg-gray-900 rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow cursor-pointer"
               >
@@ -388,7 +380,7 @@ export default function EventsWithViewMode({
           })}
         </div>
 
-        {upcomingEvents.length > displayedListCount && (
+        {events?.length > displayedListCount && (
           <div className="mt-10 text-center">
             <button
               onClick={() => setDisplayedListCount(prev => prev + 12)}
@@ -406,7 +398,7 @@ export default function EventsWithViewMode({
   const ListView = () => {
     return (
       <ReordableDataTable
-        rowKey="id"
+        rowKey="_id"
         data={displayedEvents}
         selectedItems={selectedEvents}
         onSelectionChange={setSelectedEvents}
@@ -506,10 +498,10 @@ export default function EventsWithViewMode({
             sortable: true,
             render: (event) => (
               <div className="text-right">
-                {event.totalRegistrations.toLocaleString()}
-                {event.capacity > 0 && (
+                {event?.totalRegistrations?.toLocaleString()}
+                {event?.capacity > 0 && (
                   <span className="text-xs text-gray-400 ml-1">
-                    / {event.capacity.toLocaleString()}
+                    / {event?.capacity?.toLocaleString()}
                   </span>
                 )}
               </div>

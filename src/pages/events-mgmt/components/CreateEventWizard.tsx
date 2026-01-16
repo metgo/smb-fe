@@ -1,4 +1,5 @@
 import { toast } from 'sonner';
+import { skipToken } from '@reduxjs/toolkit/query';
 import { useState, useEffect, Activity } from 'react';
 import {
   X, Check, Calendar,
@@ -8,17 +9,17 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useAppSelector } from '@/hooks/hooks';
 
+import { WizardFooter } from '@/components/shared';
 import EventMedia from './sub-components/EventMedia';
+import EventTickets from './sub-components/EventTickets';
 import { useThemeClasses } from '@/hooks/useThemeClasses';
-import CreateTicketWizard from './sub-components/CreateTicketWizard';
 import NotificationsTimeline from './sub-components/NotificationsTimeline';
 import EventDateTimeFormat from './sub-components/EventDateTimeFormat';
 import EventRegistrationCapacity from './sub-components/EventRegistrationCapacity';
-import EventTickets from './sub-components/EventTickets';
 import EventReviewPublish from './sub-components/EventReviewPublish';
 import EventBasicInformation from './sub-components/EventBasicInformation';
-import { WizardFooter } from '@/components/shared';
-import { useCreateEventStep1Mutation } from '@/store/api/eventsApi';
+import { useInitEventCreateMutation, useUpdateEventMutation } from '@/store/api/eventMutationApi';
+import { useGetEventByIdQuery } from '@/store/api/eventQueryApi';
 
 interface CreateEventWizardProps {
   isOpen: boolean;
@@ -26,6 +27,7 @@ interface CreateEventWizardProps {
   theme: Theme;
   mode?: 'create' | 'edit' | 'duplicate';
   existingEvent?: any;
+  editId?: string | null;
 }
 
 export default function CreateEventWizard({
@@ -33,24 +35,30 @@ export default function CreateEventWizard({
   onClose,
   theme,
   mode = 'create',
-  existingEvent
+  editId = null
 }: CreateEventWizardProps) {
   const { t } = useTranslation('events');
   const { isRTL } = useAppSelector((state) => state.settings)
   const { cardClasses, textPrimary, textTertiary } = useThemeClasses();
 
-  const [createEventStep1, { isLoading }] = useCreateEventStep1Mutation()
+  const [updateEvent, { isLoading: isEventUpdating }] = useUpdateEventMutation()
+  const [initEventCreate, { isLoading: isEventCreating }] = useInitEventCreateMutation()
+  const { data: editData } = useGetEventByIdQuery(
+    editId ? { eventId: editId } : skipToken
+  );
+
+  useEffect(() => { if(editId) setEventId(editId) }, [editId])
 
   const [currentStep, setCurrentStep] = useState(1);
   const [isPublishing, setIsPublishing] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [eventId, setEventId] = useState<string | null>(null);
 
   // Step 1: Basic Information
   const [eventName, setEventName] = useState('');
   const [shortDescription, setShortDescription] = useState('');
   const [fullDescription, setFullDescription] = useState('');
   const [eventLanguage, setEventLanguage] = useState<Language>('en');
-  const [slug, setSlug] = useState('');
   const [eventStatus, setEventStatus] = useState<'draft' | 'pending' | 'approved'>('draft');
   const [internalNotes, setInternalNotes] = useState('');
   const [selectedSubCategoriesId, setSubCategoriesId] = useState<string[]>([])
@@ -68,17 +76,19 @@ export default function CreateEventWizard({
   const [eventFormat, setEventFormat] = useState<'physical' | 'online' | 'hybrid'>('physical');
   const [address, setAddress] = useState('');
   const [onlineLink, setOnlineLink] = useState('');
+  const [geo, setGeo] = useState<Geo>({ lat: "", lng: "" })
 
   const [isRecurring, setIsRecurring] = useState(false);
   const [recurrencePattern, setRecurrencePattern] = useState<RecurrencePattern>('weekly');
   const [recurrenceInterval, setRecurrenceInterval] = useState(1); // For custom "every X days"
-  const [selectedWeekdays, setSelectedWeekdays] = useState<number[]>([1]); // 0=Sun, 1=Mon, etc.
+  const [selectedWeekdays, setSelectedWeekdays] = useState<string[]>([]); // 0=Sun, 1=Mon, etc.
   const [monthlyType, setMonthlyType] = useState<MonthlyType>('date'); // By date or by day
   const [monthlyOrdinal, setMonthlyOrdinal] = useState<MonthlyOrdinal>('1st');
   const [monthlyWeekday, setMonthlyWeekday] = useState(1); // 0=Sun, 1=Mon, etc.
   const [recurrenceEndType, setRecurrenceEndType] = useState<RecurrenceEndType>('count');
   const [recurrenceEndDate, setRecurrenceEndDate] = useState('');
   const [recurrenceEndCount, setRecurrenceEndCount] = useState(10);
+  const [specificDate, setSpecificDate] = useState()
   const [showRecurrenceEditModal, setShowRecurrenceEditModal] = useState(false);
   const [recurrenceEditScope, setRecurrenceEditScope] = useState<'this' | 'future' | 'all'>('this');
 
@@ -92,7 +102,6 @@ export default function CreateEventWizard({
   // Step 4: Tickets
   const [tickets, setTickets] = useState<TicketData[]>([]);
   const [showTicketModal, setShowTicketModal] = useState(false);
-  const [editingTicket, setEditingTicket] = useState<TicketData | null>(null);
 
   // Step 5: Messaging
   const [notifications, setNotifications] = useState<NotificationData[]>([]);
@@ -125,7 +134,6 @@ export default function CreateEventWizard({
       setShortDescription('');
       setFullDescription('');
       setEventLanguage('en');
-      setSlug('');
       setEventStatus('draft');
       setInternalNotes('');
       setIsMultiDay(false);
@@ -146,36 +154,6 @@ export default function CreateEventWizard({
       setLastSaved(null);
     }
   }, [isOpen, mode]);
-
-  // Auto-generate slug from event name
-  useEffect(() => {
-    if (eventName && !slug) {
-      const generatedSlug = eventName
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/(^-|-$)/g, '');
-      setSlug(generatedSlug);
-    }
-  }, [eventName, slug]);
-
-  // Auto-save functionality
-  useEffect(() => {
-    if (isOpen && eventName) {
-      const timer = setTimeout(() => {
-        handleAutoSave();
-      }, 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [eventName, shortDescription, fullDescription, isOpen]);
-
-
-
-
-  const handleAutoSave = async () => {
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 500));
-    setLastSaved(new Date());
-  };
 
   const validateStep = (step: number): boolean => {
     const newErrors: Record<string, string> = {};
@@ -214,7 +192,7 @@ export default function CreateEventWizard({
     setCurrentStep(prev => Math.max(prev - 1, 1));
   };
 
-  const payload: EventPayload = {
+  const eventBasicInfoPayload = {
     name: eventName,
     description: fullDescription,
     shortDescription: shortDescription,
@@ -225,41 +203,103 @@ export default function CreateEventWizard({
     accessibilitiesId: selectedAccessiblitiesId,
     subCategoriesId: selectedSubCategoriesId,
     internalNotes: internalNotes,
+  }
+
+  const eventDateTimePayload = {
     dayDescription: eventDays?.map(item => ({
       date: item.date,
       startTime: item.startTime,
       endTime: item.endTime
     })),
+    geoLocation: { lat: geo.lat, long: geo.lng },
+    recurringEventRule: {
+      pattern: recurrencePattern.toUpperCase(),
+      monthlyType: monthlyType.toUpperCase(),
+      daysOfWeeks: selectedWeekdays,
+      specificDate,
+      relativeDate: "",
+      customInterval: '',
+      customUnit: 'DAY',
+      endType: 'END_DATE',
+      occurrenceLimit: '',
+      endDate,
+    },
     eventType: eventFormat.toUpperCase(),
     address: {
       country: "",
       city: "",
-      location: "",
+      location: address,
       additional_information: "",
     },
     onlineLink: onlineLink,
+  }
+
+  const eventRegistrationPayload = {
     registration: {
       isRegistration: registrationRequired,
       noOfPeople: capacity,
       isUnlimited: capacityType === "limited" ? false : true,
     },
     customQuestions: customQuestions,
-    // images: 
-    // rejected_reason
-    geoLocation: { lat: "", long: "" },
-    // recurringEventRule: {
+  }
 
-    // }
+  const eventMsgSchedulePayload = {
+    scheduledNotifications: notifications?.map(item => ({
+      sendHoursBefore: item.hoursBeforeEvent,
+      channels: ['EMAIL', 'SMS', 'WHATSAPP'],
+      language: item.language,
+      template: item.template,
+      customTemplate: {
+        subject: item.subject,
+        body: item.message,
+      },
+    }))
+  }
+
+  const eventMediaPayload = {
 
   }
 
   const handleSaveDraft = async () => {
-    const data = await createEventStep1(payload).unwrap()
-    if (data?.message) {
-      toast.success(data?.message)
+    try {
+      let currentEventId = eventId;
+
+      // 1️⃣ Init event if not created yet
+      if (!currentEventId) {
+        const initRes = await initEventCreate().unwrap();
+
+        if (!initRes?.id) return;
+
+        currentEventId = initRes.id;
+        setEventId(currentEventId);
+      }
+
+      // 2️⃣ Step → Payload map
+      const stepPayloadMap: Record<number, any> = {
+        1: eventBasicInfoPayload,
+        2: eventDateTimePayload,
+        3: eventRegistrationPayload,
+        5: eventMsgSchedulePayload,
+        6: eventMediaPayload,
+      };
+
+      const payload = stepPayloadMap[currentStep];
+
+      if (!payload) return;
+
+      // 3️⃣ Update event
+      const res = await updateEvent({ body: payload, eventId: currentEventId! }).unwrap();
+
+      // 4️⃣ Success feedback
+      toast.success(res?.message ?? t('event_saved_as_draft'));
+      setCurrentStep(prev => prev + 1)
+    } catch (error: any) {
+      toast.error(error?.message || t('something_went_wrong'));
     }
-    toast.success(t('event_saved_as_draft'));
   };
+
+
+
 
   const handlePublish = async () => {
     // Validate all steps
@@ -313,30 +353,9 @@ export default function CreateEventWizard({
     ]);
   };
 
-  const addTicket = () => {
-    setEditingTicket({
-      id: Date.now().toString(),
-      name: '',
-      description: '',
-      type: 'free',
-      markedPrice: 0,
-      sellingPrice: 0,
-      quantity: 100,
-      perUserLimit: 5,
-      saleStart: '',
-      saleEnd: '',
-      visibility: 'public',
-      assignedDays: []
-    });
-    setShowTicketModal(true);
-  };
 
-  const deleteTicket = (id: string) => {
-    if (confirm(t('delete_ticket_confirm'))) {
-      setTickets(tickets.filter(t => t.id !== id));
-    }
-  };
-  const toggleWeekday = (day: number) => {
+
+  const toggleWeekday = (day: string) => {
     if (selectedWeekdays.includes(day)) {
       setSelectedWeekdays(selectedWeekdays.filter(d => d !== day));
     } else {
@@ -365,7 +384,7 @@ export default function CreateEventWizard({
           <div className="flex items-center gap-3">
             {lastSaved && (
               <span className={`text-xs ${textTertiary}`}>
-                {isLoading ? (
+                {(isEventCreating || isEventUpdating) ? (
                   <span className="flex items-center gap-1">
                     <Loader className="w-3 h-3 animate-spin" />
                     {t('saving')}
@@ -389,7 +408,11 @@ export default function CreateEventWizard({
         <div className={`px-6 py-4 border-b ${theme === 'dark' ? 'border-gray-800' : 'border-gray-200'} `}>
           <div className="flex items-center justify-between ">
             {steps.map((step, index) => (
-              <div key={step.id} className="flex items-center flex-1">
+              <div
+                key={step.id}
+                className="flex items-center flex-1 cursor-pointer"
+                onClick={() => setCurrentStep(step.id)}
+              >
                 <div className="flex flex-col items-center">
                   <div
                     className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${currentStep > step.id
@@ -452,6 +475,8 @@ export default function CreateEventWizard({
 
           <Activity mode={currentStep === 2 ? "visible" : "hidden"}>
             <EventDateTimeFormat
+              geo={geo}
+              setGeo={setGeo}
               isMultiDay={isMultiDay}
               setIsMultiDay={setIsMultiDay}
               startDate={startDate}
@@ -506,16 +531,10 @@ export default function CreateEventWizard({
           </Activity>
           <Activity mode={currentStep === 4 ? "visible" : "hidden"}>
             <EventTickets
-              currentStep={currentStep}
-              tickets={tickets}
-              setTickets={setTickets}
-              editingTicket={editingTicket}
-              setEditingTicket={setEditingTicket}
+              eventId={eventId}
               showTicketModal={showTicketModal}
               setShowTicketModal={setShowTicketModal}
               errors={errors}
-              addTicket={addTicket}
-              deleteTicket={deleteTicket}
             />
           </Activity>
 
@@ -571,7 +590,7 @@ export default function CreateEventWizard({
         <WizardFooter
           currentStep={currentStep}
           totalSteps={7}
-          isSaving={isLoading}
+          isSaving={isEventUpdating}
           isPublishing={isPublishing}
           onPrevious={handlePrevious}
           onNext={handleNext}
@@ -579,17 +598,6 @@ export default function CreateEventWizard({
           onPublish={handlePublish}
         />
       </div>
-
-      <Activity mode={(showTicketModal && editingTicket ? "visible" : "hidden")}>
-        <CreateTicketWizard
-          theme={theme}
-          editingTicket={editingTicket}
-          tickets={tickets}
-          setTickets={setTickets}
-          setShowTicketModal={setShowTicketModal}
-          setEditingTicket={setEditingTicket}
-        />
-      </Activity>
     </div>
   );
 }

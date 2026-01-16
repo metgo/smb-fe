@@ -1,6 +1,8 @@
-import { useAppSelector } from "@/hooks/hooks";
 import { X } from "lucide-react";
 import { useTranslation } from "react-i18next";
+
+import { useAppSelector } from "@/hooks/hooks";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 
 interface ProductDetailsModalProps {
@@ -13,9 +15,7 @@ export default function ProductDetailsModal({ product, onClose }: ProductDetails
   const { t } = useTranslation('oders');
   const { isRTL, theme } = useAppSelector((state) => state.settings)
 
-  const textPrimary = theme === 'dark' ? 'text-gray-100' : 'text-gray-900';
-  const textSecondary = theme === 'dark' ? 'text-gray-300' : 'text-gray-700';
-  const textTertiary = theme === 'dark' ? 'text-gray-400' : 'text-gray-600';
+  const {textPrimary, textTertiary}=useThemeClasses()
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={onClose}>

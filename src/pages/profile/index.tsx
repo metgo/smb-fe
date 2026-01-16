@@ -1,191 +1,294 @@
-import { useAppSelector } from '@/hooks/hooks';
-import { routes } from '@/lib/routes';
-import { Mail, Phone, Building2, MapPin, Calendar, LogOut } from 'lucide-react';
+import { Activity, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import {
+  Mail,
+  Phone,
+  MapPin,
+  Calendar,
+  LogOut,
+  CreditCard,
+  Plus,
+  Building2,
+  User,
+} from 'lucide-react';
 
-// Mock user data - in a real app, this would come from authentication context
-const user = {
-  name: 'Admin User',
-  email: 'admin@metgo.app',
-  phone: '+972-50-123-4567',
-  role: 'Super Administrator',
-  userType: 'Authority Manager',
-  businessName: 'MetGo LTD',
-  location: 'Western Negev, Israel',
-  joinedDate: 'January 2024',
-  avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=400&fit=crop'
-};
+import { routes } from '@/lib/routes';
+import { useAppSelector } from '@/hooks/hooks';
+import { AssignBankAccountModal } from './components';
+import { useNavigate } from 'react-router-dom';
+import { useGetUserInfoQuery } from '@/store/api/userQueryApi';
+import { formatDate } from '@/helpers/formatter';
+
+export function getInitials(fullName: string): string {
+  if (!fullName) return '';
+
+  return fullName
+    .trim()
+    .split(/\s+/)          // split by one or more spaces
+    .map(word => word[0])  // take first letter
+    .join('')
+    .toUpperCase();
+}
 
 
 export default function ProfilePage() {
-  const { t } = useTranslation('profile');
+  const { t, i18n } = useTranslation('profile');
+  const { t: tBank } = useTranslation('banks')
+  const language = i18n.language
+
+  const banks = tBank('banks', { returnObjects: true }) as Bank[];
+
+  const { theme } = useAppSelector((state) => state.settings);
   const navigate = useNavigate()
 
-  const { theme, isRTL } = useAppSelector((state) => state.settings)
-  const { isSidebarCollapsed } = useAppSelector((state) => state.ui)
+  const { data: userInfo, refetch } = useGetUserInfoQuery()
+
+  const [showBankModal, setShowBankModal] = useState(false);
 
 
-  const onLogout = () => {
+  const handleLogout = () => {
     localStorage.removeItem("userData")
     navigate(routes.auth)
   }
 
+  const bank = banks?.find(
+    bank => bank.bankId === userInfo?.bankAccount?.bankNumber
+  );
+
+  const branchName = bank?.branches?.find(
+    branch => branch.branchId === userInfo?.bankAccount?.branchNumber
+  )?.branchName;
+
 
   return (
-    <div className={`min-h-screen ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'} transition-all duration-300 ${isRTL
-      ? (isSidebarCollapsed ? 'mr-16' : 'mr-64')
-      : (isSidebarCollapsed ? 'ml-16' : 'ml-64')
-      }`}>
+    <>
       <div className="max-w-4xl mx-auto p-8">
         {/* Header */}
-        <div className={`${theme === 'dark' ? 'bg-gray-800' : 'bg-white'} rounded-2xl shadow-lg p-8 mb-6`}>
+        <div
+          className={`${theme === 'dark' ? 'bg-gray-800' : 'bg-white'
+            } rounded-2xl shadow-lg p-8 mb-6`}
+        >
           <div className="flex items-center gap-6">
-            {/* Avatar */}
-            <div className="relative">
-              <img
-                src={user.avatar}
-                alt={user.name}
-                className="w-32 h-32 rounded-full object-cover border-4 border-teal-500"
-              />
-              <div className="absolute bottom-0 right-0 w-8 h-8 bg-green-500 rounded-full border-4 border-white"></div>
+            <div className="w-32 h-32 rounded-full object-cover border-4 border-teal-500 flex items-center justify-center ">
+              <div className='text-6xl font-bold text-teal-600'>
+                {getInitials(`${userInfo?.firstName + " " + userInfo?.lastName}`)}
+              </div>
             </div>
 
-            {/* Basic Info */}
             <div className="flex-1">
-              <h1 className={`text-3xl mb-2 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                {user.name}
+              <h1
+                className={`text-3xl mb-2 ${theme === 'dark' ? 'text-white' : 'text-gray-900'
+                  }`}
+              >
+                {userInfo?.firstName + " " + userInfo?.lastName}
               </h1>
-              <p className={`text-lg mb-1 ${theme === 'dark' ? 'text-teal-400' : 'text-teal-600'}`}>
-                {user.role}
-              </p>
-              <p className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                {user.userType}
+              <p
+                className={`text-lg ${theme === 'dark' ? 'text-teal-400' : 'text-teal-600'
+                  }`}
+              >
+                {userInfo?.role}
               </p>
             </div>
 
-            {/* Logout Button */}
             <button
-              onClick={onLogout}
-              className="flex items-center gap-2 px-6 py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl transition-colors cursor-pointer"
+              onClick={handleLogout}
+              className="flex items-center gap-2 px-6 py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl cursor-pointer"
             >
               <LogOut className="w-5 h-5" />
-              <span>{t('logout') || 'Logout'}</span>
+              {t('logout')}
             </button>
           </div>
         </div>
 
         {/* Contact Information */}
-        <div className={`${theme === 'dark' ? 'bg-gray-800' : 'bg-white'} rounded-2xl shadow-lg p-8 mb-6`}>
-          <h2 className={`text-2xl mb-6 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-            {t('contact_information') || 'Contact Information'}
+        <div
+          className={`${theme === 'dark' ? 'bg-gray-800' : 'bg-white'
+            } rounded-2xl shadow-lg p-8 mb-6`}
+        >
+          <h2 className="text-2xl mb-6">
+            {t('contact_information')}
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Email */}
-            <div className="flex items-start gap-4">
-              <div className={`p-3 rounded-lg ${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-100'}`}>
-                <Mail className={`w-6 h-6 ${theme === 'dark' ? 'text-teal-400' : 'text-teal-600'}`} />
-              </div>
-              <div>
-                <p className={`text-sm mb-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                  {t('email') || 'Email'}
-                </p>
-                <p className={`${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                  {user.email}
-                </p>
-              </div>
-            </div>
-
-            {/* Phone */}
-            <div className="flex items-start gap-4">
-              <div className={`p-3 rounded-lg ${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-100'}`}>
-                <Phone className={`w-6 h-6 ${theme === 'dark' ? 'text-teal-400' : 'text-teal-600'}`} />
-              </div>
-              <div>
-                <p className={`text-sm mb-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                  {t('phone') || 'Phone'}
-                </p>
-                <p className={`${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                  {user.phone}
-                </p>
-              </div>
-            </div>
-
-            {/* Location */}
-            <div className="flex items-start gap-4">
-              <div className={`p-3 rounded-lg ${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-100'}`}>
-                <MapPin className={`w-6 h-6 ${theme === 'dark' ? 'text-teal-400' : 'text-teal-600'}`} />
-              </div>
-              <div>
-                <p className={`text-sm mb-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                  {t('location') || 'Location'}
-                </p>
-                <p className={`${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                  {user.location}
-                </p>
-              </div>
-            </div>
-
-            {/* Joined Date */}
-            <div className="flex items-start gap-4">
-              <div className={`p-3 rounded-lg ${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-100'}`}>
-                <Calendar className={`w-6 h-6 ${theme === 'dark' ? 'text-teal-400' : 'text-teal-600'}`} />
-              </div>
-              <div>
-                <p className={`text-sm mb-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                  {t('member_since') || 'Member Since'}
-                </p>
-                <p className={`${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                  {user.joinedDate}
-                </p>
-              </div>
-            </div>
+            <InfoItem
+              icon={<Mail />}
+              label={t('email')}
+              value={userInfo?.email || ""}
+              theme={theme}
+            />
+            <InfoItem
+              icon={<Phone />}
+              label={t('phone')}
+              value={userInfo?.phoneDetails.phoneNumber || ""}
+              theme={theme}
+            />
+            <InfoItem
+              icon={<MapPin />}
+              label={t('location')}
+              value={userInfo?.address || ""}
+              theme={theme}
+            />
+            <InfoItem
+              icon={<Calendar />}
+              label={t('member_since')}
+              value={formatDate(userInfo?.createdAt||"", language) || ""}
+              theme={theme}
+            />
           </div>
         </div>
 
-        {/* Business Information */}
-        <div className={`${theme === 'dark' ? 'bg-gray-800' : 'bg-white'} rounded-2xl shadow-lg p-8`}>
-          <h2 className={`text-2xl mb-6 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-            {t('business_information') || 'Business Information'}
-          </h2>
+        {/* Bank Account */}
+        <div
+          className={`${theme === 'dark' ? 'bg-gray-800' : 'bg-white'
+            } rounded-2xl shadow-lg p-8`}
+        >
+          <div className="flex justify-between mb-6">
+            <h2 className="text-2xl">
+              {t('bank_account_details')}
+            </h2>
 
-          <div className="flex items-start gap-4">
-            <div className={`p-3 rounded-lg ${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-100'}`}>
-              <Building2 className={`w-6 h-6 ${theme === 'dark' ? 'text-teal-400' : 'text-teal-600'}`} />
-            </div>
-            <div>
-              <p className={`text-sm mb-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                {t('business_name') || 'Business Name'}
-              </p>
-              <p className={`text-xl ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                {user.businessName}
-              </p>
-            </div>
+            <button
+              onClick={() => setShowBankModal(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-teal-600 text-white rounded-lg cursor-pointer"
+            >
+              {userInfo?.bankAccount?.accountNumber ? (
+                <>
+                  <CreditCard className="w-4 h-4" />
+                  {t('edit_bank_account')}
+                </>
+              ) : (
+                <>
+                  <Plus className="w-4 h-4" />
+                  {t('add_bank_account')}
+                </>
+              )}
+            </button>
           </div>
 
-          {/* Additional Business Details */}
-          <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className={`text-sm mb-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                  {t('user_type') || 'User Type'}
-                </p>
-                <p className={`${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                  {user.userType}
-                </p>
+          {userInfo?.bankAccount ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="flex items-start gap-4">
+                <div className={`p-3 rounded-lg ${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-100'}`}>
+                  <CreditCard className={`w-6 h-6 ${theme === 'dark' ? 'text-teal-400' : 'text-teal-600'}`} />
+                </div>
+                <div>
+                  <p className={`text-sm mb-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                    {t('bank_name') || 'Bank Name'}
+                  </p>
+                  <p className={`${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+                    {bank?.bankName}
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className={`text-sm mb-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                  {t('access_level') || 'Access Level'}
-                </p>
-                <p className={`${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-                  {user.role}
-                </p>
+
+              <div className="flex items-start gap-4">
+                <div className={`p-3 rounded-lg ${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-100'}`}>
+                  <Building2 className={`w-6 h-6 ${theme === 'dark' ? 'text-teal-400' : 'text-teal-600'}`} />
+                </div>
+                <div>
+                  <p className={`text-sm mb-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                    {t('branch_name') || 'Branch Name'}
+                  </p>
+                  <p className={`${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+                    {branchName}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-4">
+                <div className={`p-3 rounded-lg ${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-100'}`}>
+                  <User className={`w-6 h-6 ${theme === 'dark' ? 'text-teal-400' : 'text-teal-600'}`} />
+                </div>
+                <div>
+                  <p className={`text-sm mb-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                    {t('account_number') || 'Account Number'}
+                  </p>
+                  <p className={`${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+                    {userInfo?.bankAccount?.accountNumber}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-4">
+                <div className={`p-3 rounded-lg ${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-100'}`}>
+                  <Building2 className={`w-6 h-6 ${theme === 'dark' ? 'text-teal-400' : 'text-teal-600'}`} />
+                </div>
+                <div>
+                  <p className={`text-sm mb-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                    {t('bn_number') || 'BN Number (ח.פ.)'}
+                  </p>
+                  <p className={`${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+                    {userInfo?.bankAccount?.businessNumberByGovt}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-4 md:col-span-2">
+                <div className={`p-3 rounded-lg ${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-100'}`}>
+                  <User className={`w-6 h-6 ${theme === 'dark' ? 'text-teal-400' : 'text-teal-600'}`} />
+                </div>
+                <div>
+                  <p className={`text-sm mb-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                    {t('name_on_invoice') || 'Name on Invoice'}
+                  </p>
+                  <p className={`${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+                    {userInfo?.bankAccount?.invoiceName}
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
+          ) : (
+            <div className="text-center py-12 text-gray-500">
+              <CreditCard className="w-16 h-16 mx-auto mb-4 opacity-40" />
+              <p className="text-lg">
+                {t('no_bank_account_added')}
+              </p>
+              <p className="text-sm">
+                {t('click_add_bank_account')}
+              </p>
+            </div>
+          )}
+
+        </div >
+      </div >
+
+      <Activity mode={showBankModal ? "visible" : "hidden"}>
+        <AssignBankAccountModal
+          theme={theme}
+          banks={banks}
+          refetch={refetch}
+          userId={userInfo?.id || ""}
+          setIsOpen={setShowBankModal}
+          savedBankAccount={userInfo?.bankAccount}
+        />
+      </Activity>
+    </>
+  );
+}
+
+/* Reusable info item */
+function InfoItem({
+  icon,
+  label,
+  value,
+  theme,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  theme: string;
+}) {
+  return (
+    <div className="flex gap-4">
+      <div
+        className={`p-3 rounded-lg ${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-100'
+          }`}
+      >
+        {icon}
+      </div>
+      <div>
+        <p className="text-sm">{label}</p>
+        <p>{value}</p>
       </div>
     </div>
   );

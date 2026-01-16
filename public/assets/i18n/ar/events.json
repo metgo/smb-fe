@@ -57,8 +57,8 @@
   "language": "اللغة",
   "template": "القالب",
   "template_24h": "تذكير قبل 24 ساعة",
-  "template_same_date": "تذكير في نفس اليوم",
-  "template_start_soon": "الفعالية ستبدأ قريبًا",
+  "template_same_day": "تذكير في نفس اليوم",
+  "template_starting_soon": "الفعالية ستبدأ قريبًا",
 
   "subject": "الموضوع (البريد الإلكتروني فقط)",
   "message_content": "محتوى الرسالة",
@@ -223,6 +223,7 @@
   "search_registrants_placeholder": "البحث عن المسجلين...",
   "show_summary": "عرض الملخص",
   "registrant_details": "تفاصيل المسجل",
-  "no_registrants_match": "لا يوجد مسجلون يطابقون بحثك"
+  "no_registrants_match": "لا يوجد مسجلون يطابقون بحثك",
 
+  "search_placeholder": "ابحث عن عنوان..."
 }

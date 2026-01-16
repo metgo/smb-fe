@@ -61,8 +61,8 @@
   "language": "שפה",
   "template": "תבנית",
   "template_24h": "תזכורת 24 שעות לפני",
-  "template_same_date": "תזכורת באותו היום",
-  "template_start_soon": "האירוע מתחיל בקרוב",
+  "template_same_day": "תזכורת באותו היום",
+  "template_starting_soon": "האירוע מתחיל בקרוב",
 
   "subject": "נושא (אימייל בלבד)",
   "message_content": "תוכן ההודעה",
@@ -223,5 +223,7 @@
   "search_registrants_placeholder": "חיפוש נרשמים...",
   "show_summary": "הצג סיכום",
   "registrant_details": "פרטי הנרשם",
-  "no_registrants_match": "לא נמצאו נרשמים התואמים את החיפוש שלך"
+  "no_registrants_match": "לא נמצאו נרשמים התואמים את החיפוש שלך",
+
+   "search_placeholder": "חפש כתובת..."
 }

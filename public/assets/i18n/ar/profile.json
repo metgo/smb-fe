@@ -1,0 +1,31 @@
+{
+  "add_banck_account": "إضافة حساب بنكي",
+  "bank_name": "اسم البنك",
+  "select_bank": "اختر البنك",
+  "branch_name": "اسم الفرع",
+  "select_branch": "اختر الفرع",
+  "account_number": "رقم الحساب",
+  "bn_number": "رقم السجل التجاري",
+  "name_on_invoice": "الاسم في الفاتورة",
+  "cancel": "إلغاء",
+  "save": "حفظ",
+
+  "logout": "تسجيل الخروج",
+  "contact_information": "معلومات الاتصال",
+  "email": "البريد الإلكتروني",
+  "phone": "رقم الهاتف",
+  "location": "الموقع",
+  "member_since": "عضو منذ",
+
+  "business_information": "معلومات النشاط التجاري",
+  "business_name": "اسم النشاط التجاري",
+  "user_type": "نوع المستخدم",
+  "access_level": "مستوى الصلاحيات",
+
+  "bank_account_details": "تفاصيل الحساب البنكي",
+  "add_bank_account": "إضافة حساب بنكي",
+  "edit_bank_account": "تعديل الحساب البنكي",
+
+  "no_bank_account_added": "لم تتم إضافة أي حساب بنكي",
+  "click_add_bank_account": "انقر على \"إضافة حساب بنكي\" لإضافة معلوماتك البنكية"
+}

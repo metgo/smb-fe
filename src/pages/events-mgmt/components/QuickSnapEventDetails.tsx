@@ -197,7 +197,7 @@ const QuickSnapEventDetails = ({
                       : "text-purple-600"
                   )}
                 >
-                  ₪{selectedEvent.revenue.toLocaleString()}
+                  ₪{selectedEvent?.revenue?.toLocaleString()}
                 </div>
               </div>
             )}

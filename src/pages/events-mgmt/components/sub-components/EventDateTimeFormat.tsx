@@ -1,6 +1,6 @@
+import { useTranslation } from "react-i18next";
 import { useAppSelector } from "@/hooks/hooks";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { useTranslation } from "react-i18next";
 import {
   Calendar,
   Trash2,
@@ -12,7 +12,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import DatePicker from "@/components/shared/DatePicker";
-import GooglePlacesAutocomplete from "@/components/shared/GooglePlacesAutocomplete";
+import { MarkerMap } from "@/components/maps";
 
 interface EventDay {
   id: string;
@@ -25,6 +25,8 @@ interface EventDay {
 type EventFormat = "physical" | "online" | "hybrid";
 
 interface EventDateTimeFormatProps {
+  geo: Geo,
+  setGeo: (v: Geo) => void;
   // Multi-day toggle
   isMultiDay: boolean;
   setIsMultiDay: React.Dispatch<React.SetStateAction<boolean>>;
@@ -63,14 +65,14 @@ interface EventDateTimeFormatProps {
   setIsRecurring: (v: boolean) => void;
   recurrencePattern: RecurrencePattern;
   setRecurrencePattern: (v: RecurrencePattern) => void;
-  toggleWeekday: (v: number) => void;
+  toggleWeekday: (v: string) => void;
   monthlyType: MonthlyType;
   setMonthlyType: (v: MonthlyType) => void;
   monthlyOrdinal: MonthlyOrdinal;
   setMonthlyOrdinal: (v: MonthlyOrdinal) => void;
   monthlyWeekday: number;
   setMonthlyWeekday: (v: number) => void;
-  selectedWeekdays: number[];
+  selectedWeekdays: string[];
 
   recurrenceEndType: RecurrenceEndType;
   setRecurrenceEndType: (v: RecurrenceEndType) => void;
@@ -103,6 +105,7 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
   recurrencePattern, setRecurrencePattern,
   toggleWeekday,
   selectedWeekdays,
+  geo, setGeo,
   monthlyType, setMonthlyType,
   monthlyOrdinal, setMonthlyOrdinal,
   monthlyWeekday, setMonthlyWeekday,
@@ -416,13 +419,7 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
                   </label>
 
                   <div className="flex gap-2 flex-wrap">
-                    {(isRTL
-                      ? [6, 5, 4, 3, 2, 1, 0]
-                      : [0, 1, 2, 3, 4, 5, 6]
-                    ).map((day) => {
-                      const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-                      const dayNamesRTL = ['א׳', 'ב׳', 'ג׳', 'ד׳', 'ה׳', 'ו׳', 'ש׳'];
-
+                    {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => {
                       return (
                         <button
                           key={day}
@@ -435,7 +432,7 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
                               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                             }`}
                         >
-                          {isRTL ? dayNamesRTL[day] : dayNames[day]}
+                          {t(day.toLocaleLowerCase())}
                         </button>
                       );
                     })}
@@ -446,16 +443,24 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
               {/* Monthly */}
               {recurrencePattern === 'monthly' && (
                 <div className="space-y-3">
-                  <label className="flex items-center gap-3">
-                    <input
-                      type="radio"
-                      checked={monthlyType === 'date'}
-                      onChange={() => setMonthlyType('date')}
+                  <div className="flex items-center gap-4">
+                    <label className="flex items-center gap-3">
+                      <input
+                        type="radio"
+                        checked={monthlyType === 'date'}
+                        onChange={() => setMonthlyType('date')}
+                      />
+                      <span className={textSecondary}>
+                        {t('by_specific_date') || 'By specific date'}
+                      </span>
+                    </label>
+                    <DatePicker
+                      value={recurrenceEndDate}
+                      onChange={(date) => setRecurrenceEndDate(date)}
+                      placeholder={t('select_date')}
+                      theme={theme}
                     />
-                    <span className={textSecondary}>
-                      {t('by_specific_date') || 'By specific date'}
-                    </span>
-                  </label>
+                  </div>
 
                   <label className="flex items-center gap-3">
                     <input
@@ -481,7 +486,7 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
                         <option value="2nd">{t('second') || '2nd'}</option>
                         <option value="3rd">{t('third') || '3rd'}</option>
                         <option value="4th">{t('fourth') || '4th'}</option>
-                        <option value="last">{t('last') || 'Last'}</option>
+                        <option value="last">{t('fifth') || '5th'}</option>
                       </select>
 
                       <select
@@ -688,12 +693,11 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
           <label className={`block text-sm mb-2 ${textSecondary}`}>
             {t("location_address")} <span className="text-red-500">*</span>
           </label>
-          <GooglePlacesAutocomplete
-            value={address}
-            onChange={(value) => setAddress(value)}
-            placeholder={t("search_location")}
-            theme={theme}
-            error={errors.address}
+          <MarkerMap
+            geo={geo}
+            setGeo={setGeo}
+            address={address}
+            setAddress={setAddress}
           />
         </div>
       )}

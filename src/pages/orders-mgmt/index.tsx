@@ -1,16 +1,17 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useState, useEffect, useMemo, useRef, Activity } from 'react';
 import {
   Search, Filter, Download, Plus, ChevronDown, ChevronUp,
   XCircle, Loader, AlertCircle, Columns, Mail, Phone,
   Truck, ShoppingBag,
   DollarSign, TrendingUp, Camera, ShoppingCart
 } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
+
 import { useAppSelector } from '@/hooks/hooks';
 import { generateMockOrders } from '@/constants/data';
-import { CreateOrderWizard, FilterSelect, MonthFilter, OrderDetailsModal, QRScannerModal } from './components';
 import { useThemeClasses } from '@/hooks/useThemeClasses';
-import { PageStats } from '@/components/shared';
+import { PageStats, ReordableDataTable } from '@/components/shared';
+import { CreateOrderWizard, FilterSelect, MonthFilter, OrderDetailsModal, QRScannerModal } from './components';
 
 
 // Default columns configuration
@@ -33,10 +34,11 @@ const defaultColumns = {
 type ColumnVisibility = typeof defaultColumns;
 
 export default function OrdersMgmtPage() {
-  const { t } = useTranslation('orders');
+  const { t, i18n } = useTranslation('orders');
   const { isRTL, theme } = useAppSelector((state) => state.settings);
+  const language = i18n.language;
 
-  const {textPrimary,textSecondary,textTertiary}=useThemeClasses()
+  const { textPrimary, textSecondary, textTertiary } = useThemeClasses()
 
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -172,7 +174,7 @@ export default function OrdersMgmtPage() {
       ? filteredOrders.filter(order => selectedOrders.has(order.id))
       : filteredOrders;
 
-    if (ordersToExport.length === 0) {
+    if (ordersToExport?.length === 0) {
       alert(t('noOrdersToExport') || 'No orders to export');
       return;
     }
@@ -364,7 +366,8 @@ export default function OrdersMgmtPage() {
   };
 
   return (
-    <div className={`p-6 max-w-400 mx-auto ${theme === 'dark' ? 'bg-gray-950' : 'bg-gray-50'}`}>
+    <div className={`h-[calc(108vh-210px)] flex flex-col ${theme === 'dark' ? 'bg-gray-950' : 'bg-gray-50'}`}>
+
       {/* Page Header */}
       <div className={`flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6 ${isRTL ? 'md:flex-row-reverse' : ''}`}>
         <div>
@@ -398,7 +401,7 @@ export default function OrdersMgmtPage() {
       />
 
       {/* Search and Filters */}
-      <div className={`${theme === 'dark' ? 'bg-gray-900/50 border-gray-800' : 'bg-white border-gray-200'} border rounded-lg p-4 mb-6`}>
+      <div className={` border rounded-lg p-4 mb-6`}>
         <div className={`flex flex-col md:flex-row gap-4 ${isRTL ? 'md:flex-row-reverse' : ''}`}>
           <div className="flex-1 relative">
             <Search className={`absolute ${isRTL ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 w-4 h-4 ${textTertiary}`} />
@@ -570,115 +573,175 @@ export default function OrdersMgmtPage() {
             <p className={`${textSecondary}`}>{t('noOrdersFound')}</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className={`${theme === 'dark' ? 'bg-gray-800/50' : 'bg-gray-50'}`}>
-                <tr>
-                  <th className="p-3 text-left">
-                    <input
-                      type="checkbox"
-                      checked={selectedOrders.size === filteredOrders.length}
-                      onChange={handleSelectAll}
-                      className="rounded"
-                    />
-                  </th>
-                  {columnVisibility.orderId && <th className={`p-3 ${isRTL ? 'text-right' : 'text-left'} text-sm ${textSecondary}`}>{t('orderId')}</th>}
-                  {columnVisibility.purchaserName && <th className={`p-3 ${isRTL ? 'text-right' : 'text-left'} text-sm ${textSecondary}`}>{t('purchaserName')}</th>}
-                  {columnVisibility.email && <th className={`p-3 ${isRTL ? 'text-right' : 'text-left'} text-sm ${textSecondary}`}>{t('email')}</th>}
-                  {columnVisibility.phone && <th className={`p-3 ${isRTL ? 'text-right' : 'text-left'} text-sm ${textSecondary}`}>{t('phone')}</th>}
-                  {columnVisibility.orderStatus && <th className={`p-3 ${isRTL ? 'text-right' : 'text-left'} text-sm ${textSecondary}`}>{t('orderStatus')}</th>}
-                  {columnVisibility.totalAmount && <th className={`p-3 ${isRTL ? 'text-right' : 'text-left'} text-sm ${textSecondary}`}>{t('totalAmount')}</th>}
-                  {columnVisibility.paymentStatus && <th className={`p-3 ${isRTL ? 'text-right' : 'text-left'} text-sm ${textSecondary}`}>{t('paymentStatus')}</th>}
-                  {columnVisibility.voucherAmount && <th className={`p-3 ${isRTL ? 'text-right' : 'text-left'} text-sm ${textSecondary}`}>{t('voucherAmount')}</th>}
-                  {columnVisibility.creditCardAmount && <th className={`p-3 ${isRTL ? 'text-right' : 'text-left'} text-sm ${textSecondary}`}>{t('creditCardAmount')}</th>}
-                  {columnVisibility.vendors && <th className={`p-3 ${isRTL ? 'text-right' : 'text-left'} text-sm ${textSecondary}`}>{t('vendors')}</th>}
-                  {columnVisibility.campaign && <th className={`p-3 ${isRTL ? 'text-right' : 'text-left'} text-sm ${textSecondary}`}>{t('campaign')}</th>}
-                  {columnVisibility.createdDate && <th className={`p-3 ${isRTL ? 'text-right' : 'text-left'} text-sm ${textSecondary}`}>{t('createdDate')}</th>}
-                  {columnVisibility.paymentDate && <th className={`p-3 ${isRTL ? 'text-right' : 'text-left'} text-sm ${textSecondary}`}>{t('paymentDate')}</th>}
-                </tr>
-              </thead>
-              <tbody>
-                {filteredOrders.map((order) => (
-                  <tr
-                    key={order.id}
-                    onClick={() => handleRowClick(order)}
-                    className={`border-t cursor-pointer transition-colors ${theme === 'dark'
-                      ? 'border-gray-800 hover:bg-gray-800/50'
-                      : 'border-gray-200 hover:bg-gray-50'
-                      }`}
-                  >
-                    <td className="p-3" onClick={(e) => e.stopPropagation()}>
-                      <input
-                        type="checkbox"
-                        checked={selectedOrders.has(order.id)}
-                        onChange={() => handleSelectOrder(order.id)}
-                        className="rounded"
-                      />
-                    </td>
-                    {columnVisibility.orderId && <td className={`p-3 text-sm ${textPrimary}`}>{order.id}</td>}
-                    {columnVisibility.purchaserName && <td className={`p-3 text-sm ${textPrimary}`}>{order.purchaserName}</td>}
-                    {columnVisibility.email && (
-                      <td className="p-3">
-                        <a
-                          href={`mailto:${order.email}`}
-                          onClick={(e) => e.stopPropagation()}
-                          className={`flex items-center gap-1 text-sm text-teal-500 hover:text-teal-600`}
-                        >
-                          <Mail className="w-3 h-3" />
-                          {order.email}
-                        </a>
-                      </td>
-                    )}
-                    {columnVisibility.phone && (
-                      <td className="p-3">
-                        <a
-                          href={`tel:${order.phone}`}
-                          onClick={(e) => e.stopPropagation()}
-                          className={`flex items-center gap-1 text-sm text-teal-500 hover:text-teal-600`}
-                        >
-                          <Phone className="w-3 h-3" />
-                          {order.phone}
-                        </a>
-                      </td>
-                    )}
-                    {columnVisibility.orderStatus && <td className="p-3">{getOrderStatusBadge(order.orderStatus)}</td>}
-                    {columnVisibility.totalAmount && <td className={`p-3 text-sm ${textPrimary}`}>₪{order.totalAmount.toLocaleString()}</td>}
-                    {columnVisibility.paymentStatus && <td className="p-3">{getPaymentStatusBadge(order.paymentStatus)}</td>}
-                    {columnVisibility.voucherAmount && <td className={`p-3 text-sm ${textTertiary}`}>₪{order.voucherAmount.toLocaleString()}</td>}
-                    {columnVisibility.creditCardAmount && <td className={`p-3 text-sm ${textTertiary}`}>₪{order.creditCardAmount.toLocaleString()}</td>}
-                    {columnVisibility.vendors && <td className={`p-3 text-sm ${textTertiary}`}>{order.vendors.join(', ')}</td>}
-                    {columnVisibility.campaign && <td className={`p-3 text-sm ${textTertiary}`}>{order.campaign}</td>}
-                    {columnVisibility.createdDate && <td className={`p-3 text-sm ${textTertiary}`}>{new Date(order.createdDate).toLocaleDateString()}</td>}
-                    {columnVisibility.paymentDate && <td className={`p-3 text-sm ${textTertiary}`}>{new Date(order.paymentDate).toLocaleDateString()}</td>}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="overflow-x-auto overflow-hidden max-h-[calc(100vh-400px)]">
+            <ReordableDataTable
+              rowKey="id"
+              data={filteredOrders}
+              selectedItems={selectedOrders}
+              onSelectionChange={() => setSelectedOrders}
+              onRowClick={handleRowClick}
+              storageKey="ordersTableColumnOrder"
+              columns={[
+                { key: 'checkbox', label: '', width: '50px' },
+                columnVisibility.orderId && {
+                  key: 'orderId',
+                  label: t('order_id'),
+                  sortable: true,
+                  render: (order: any) => (
+                    <div className="text-sm">{order.id}</div>
+                  ),
+                },
+
+                columnVisibility.purchaserName && {
+                  key: 'purchaserName',
+                  label: t('purchaser_name'),
+                  sortable: true,
+                  render: (order: any) => (
+                    <div className="text-sm">{order.purchaserName}</div>
+                  ),
+                },
+
+                columnVisibility.email && {
+                  key: 'email',
+                  label: t('email'),
+                  render: (order: any) => (
+                    <a
+                      href={`mailto:${order.email}`}
+                      onClick={(e) => e.stopPropagation()}
+                      className="flex items-center gap-1 text-sm text-teal-500 hover:text-teal-600"
+                    >
+                      <Mail className="w-3 h-3" />
+                      {order.email}
+                    </a>
+                  ),
+                },
+
+                columnVisibility.phone && {
+                  key: 'phone',
+                  label: t('phone'),
+                  render: (order: any) => (
+                    <a
+                      href={`tel:${order.phone}`}
+                      onClick={(e) => e.stopPropagation()}
+                      className="flex items-center gap-1 text-sm text-teal-500 hover:text-teal-600"
+                    >
+                      <Phone className="w-3 h-3" />
+                      {order.phone}
+                    </a>
+                  ),
+                },
+
+                columnVisibility.orderStatus && {
+                  key: 'orderStatus',
+                  label: t('order_status'),
+                  render: (order: any) => getOrderStatusBadge(order.orderStatus),
+                },
+
+                columnVisibility.totalAmount && {
+                  key: 'totalAmount',
+                  label: t('total_amount'),
+                  sortable: true,
+                  render: (order: any) => (
+                    <div className="text-sm font-medium">
+                      ₪{order.totalAmount.toLocaleString()}
+                    </div>
+                  ),
+                },
+
+                columnVisibility.paymentStatus && {
+                  key: 'paymentStatus',
+                  label: t('payment_status'),
+                  render: (order: any) => getPaymentStatusBadge(order.paymentStatus),
+                },
+
+                columnVisibility.voucherAmount && {
+                  key: 'voucherAmount',
+                  label: t('voucher_amount'),
+                  sortable: true,
+                  render: (order: any) => (
+                    <div className="text-sm text-gray-500">
+                      ₪{order.voucherAmount.toLocaleString()}
+                    </div>
+                  ),
+                },
+
+                columnVisibility.creditCardAmount && {
+                  key: 'creditCardAmount',
+                  label: t('credit_card_amount'),
+                  sortable: true,
+                  render: (order: any) => (
+                    <div className="text-sm text-gray-500">
+                      ₪{order.creditCardAmount.toLocaleString()}
+                    </div>
+                  ),
+                },
+
+                columnVisibility.vendors && {
+                  key: 'vendors',
+                  label: t('vendors'),
+                  render: (order: any) => (
+                    <div className="text-sm text-gray-500">
+                      {order.vendors.join(', ')}
+                    </div>
+                  ),
+                },
+
+                columnVisibility.campaign && {
+                  key: 'campaign',
+                  label: t('campaign'),
+                  render: (order: any) => (
+                    <div className="text-sm text-gray-500">
+                      {order.campaign}
+                    </div>
+                  ),
+                },
+
+                columnVisibility.createdDate && {
+                  key: 'createdDate',
+                  label: t('created_date'),
+                  sortable: true,
+                  render: (order: any) => (
+                    <div className="text-sm text-gray-500">
+                      {new Date(order.createdDate).toLocaleDateString(language)}
+                    </div>
+                  ),
+                },
+
+                columnVisibility.paymentDate && {
+                  key: 'paymentDate',
+                  label: t('payment_date'),
+                  sortable: true,
+                  render: (order: any) => (
+                    <div className="text-sm text-gray-500">
+                      {new Date(order.paymentDate).toLocaleDateString(language)}
+                    </div>
+                  ),
+                },
+              ].filter(Boolean)}
+            />
           </div>
         )}
       </div>
 
-      {showOrderDetails && selectedOrder && (
+      <Activity mode={(selectedOrder && showOrderDetails) ? "visible" : "hidden"}>
         <OrderDetailsModal
-          order={selectedOrder}
+          order={selectedOrder!}
           onClose={() => setShowOrderDetails(false)}
         />
-      )}
+      </Activity>
 
-      {showAddOrderWizard && (
+      <Activity mode={showAddOrderWizard ? "visible" : "hidden"}>
         <CreateOrderWizard
           onClose={() => setShowAddOrderWizard(false)}
           onAddOrder={(newOrder) => {
             setOrders(prev => [newOrder as Order, ...prev]);
           }}
         />
-      )}
+      </Activity>
 
-      {showQRScanner && (
-        <QRScannerModal
-          onClose={() => setShowQRScanner(false)}
-        />
-      )}
+      <Activity mode={showQRScanner ? "visible" : "hidden"}>
+        <QRScannerModal onClose={() => setShowQRScanner(false)} />
+      </Activity>
     </div>
   );
 }

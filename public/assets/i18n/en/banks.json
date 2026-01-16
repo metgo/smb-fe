@@ -1,0 +1,6097 @@
+{
+  "banks": [
+    {
+      "bankId": "22",
+      "bankName": "Citibank",
+      "branches": []
+    },
+    {
+      "bankId": "23",
+      "bankName": "HSBC BANK plc",
+      "branches": [
+        {
+          "branchId": "101",
+          "branchName": "HSBC BANK plc"
+        },
+        {
+          "branchId": "102",
+          "branchName": "HSBC BANK plc"
+        }
+      ]
+    },
+    {
+      "bankId": "18",
+      "bankName": "One Zero Digital Bank LTD",
+      "branches": [
+        {
+          "branchId": "1",
+          "branchName": "Customers"
+        },
+        {
+          "branchId": "50",
+          "branchName": "Corporates"
+        },
+        {
+          "branchId": "410",
+          "branchName": "Suppliers"
+        },
+        {
+          "branchId": "300",
+          "branchName": "ALM"
+        },
+        {
+          "branchId": "400",
+          "branchName": "Management"
+        }
+      ]
+    },
+    {
+      "bankId": "39",
+      "bankName": "State Bank Of India",
+      "branches": [
+        {
+          "branchId": "1",
+          "branchName": "State Bank of Inndia"
+        }
+      ]
+    },
+    {
+      "bankId": "13",
+      "bankName": "Union Bank of Israel Ltd",
+      "branches": [
+        {
+          "branchId": "70",
+          "branchName": "Petach Tikva"
+        },
+        {
+          "branchId": "148",
+          "branchName": "Rimonim Bney Brak"
+        },
+        {
+          "branchId": "159",
+          "branchName": "Rishon Le Zion city center"
+        },
+        {
+          "branchId": "93",
+          "branchName": "Rechovot"
+        },
+        {
+          "branchId": "72",
+          "branchName": "Herzliya"
+        },
+        {
+          "branchId": "158",
+          "branchName": "Holon"
+        },
+        {
+          "branchId": "143",
+          "branchName": "Elad"
+        },
+        {
+          "branchId": "154",
+          "branchName": "Modi'in"
+        },
+        {
+          "branchId": "152",
+          "branchName": "Hod Hasharon"
+        },
+        {
+          "branchId": "75",
+          "branchName": "Raanana"
+        },
+        {
+          "branchId": "190",
+          "branchName": "Nahariya"
+        },
+        {
+          "branchId": "153",
+          "branchName": "Hakrayot"
+        },
+        {
+          "branchId": "64",
+          "branchName": "Mikado"
+        },
+        {
+          "branchId": "66",
+          "branchName": "Gordon"
+        },
+        {
+          "branchId": "196",
+          "branchName": "Yehidat Bizua Igud"
+        },
+        {
+          "branchId": "197",
+          "branchName": "Iskey Chutz"
+        },
+        {
+          "branchId": "198",
+          "branchName": "Yehidat Bitzua"
+        },
+        {
+          "branchId": "992",
+          "branchName": "mashkantaot"
+        },
+        {
+          "branchId": "125",
+          "branchName": "credit center"
+        },
+        {
+          "branchId": "123",
+          "branchName": "direct services union"
+        },
+        {
+          "branchId": "94",
+          "branchName": "Beer Sheva"
+        },
+        {
+          "branchId": "76",
+          "branchName": "Kiryat Arye"
+        },
+        {
+          "branchId": "51",
+          "branchName": "Jerusalem Main"
+        },
+        {
+          "branchId": "81",
+          "branchName": "Haifa"
+        },
+        {
+          "branchId": "78",
+          "branchName": "Rosh Haayin"
+        },
+        {
+          "branchId": "79",
+          "branchName": "Hertzlia Pituach"
+        },
+        {
+          "branchId": "74",
+          "branchName": "Rishon Le Zion"
+        },
+        {
+          "branchId": "192",
+          "branchName": "Ashkelon"
+        },
+        {
+          "branchId": "95",
+          "branchName": "Poleg"
+        },
+        {
+          "branchId": "63",
+          "branchName": "Tel Aviv Main Branch"
+        },
+        {
+          "branchId": "140",
+          "branchName": "igud premium"
+        },
+        {
+          "branchId": "62",
+          "branchName": "Ramat Gan"
+        },
+        {
+          "branchId": "165",
+          "branchName": "romema"
+        },
+        {
+          "branchId": "71",
+          "branchName": "Ashdod"
+        },
+        {
+          "branchId": "91",
+          "branchName": "Netanya"
+        }
+      ]
+    },
+    {
+      "bankId": "14",
+      "bankName": "Bank Otsar Ha-hayal Ltd",
+      "branches": [
+        {
+          "branchId": "371",
+          "branchName": "Ramat David"
+        },
+        {
+          "branchId": "346",
+          "branchName": "Netanya"
+        },
+        {
+          "branchId": "311",
+          "branchName": "Pardes Hana"
+        },
+        {
+          "branchId": "392",
+          "branchName": "Rishon Lezion West"
+        },
+        {
+          "branchId": "348",
+          "branchName": "Afek"
+        },
+        {
+          "branchId": "312",
+          "branchName": "Yavne"
+        },
+        {
+          "branchId": "335",
+          "branchName": "Kfar Saba Green branch"
+        },
+        {
+          "branchId": "313",
+          "branchName": "Rosh Pina"
+        },
+        {
+          "branchId": "993",
+          "branchName": "Arava"
+        },
+        {
+          "branchId": "362",
+          "branchName": "Mifratz Haifa"
+        },
+        {
+          "branchId": "343",
+          "branchName": "Ariel"
+        },
+        {
+          "branchId": "345",
+          "branchName": "Reut"
+        },
+        {
+          "branchId": "315",
+          "branchName": "Modieen"
+        },
+        {
+          "branchId": "330",
+          "branchName": "RAMAT GAN"
+        },
+        {
+          "branchId": "365",
+          "branchName": "Zahala"
+        },
+        {
+          "branchId": "398",
+          "branchName": "Carmiel"
+        },
+        {
+          "branchId": "350",
+          "branchName": "Matam Omega"
+        },
+        {
+          "branchId": "397",
+          "branchName": "Gedera"
+        },
+        {
+          "branchId": "349",
+          "branchName": "Ashkelon"
+        },
+        {
+          "branchId": "321",
+          "branchName": "Factoring"
+        },
+        {
+          "branchId": "388",
+          "branchName": "Direct Service Center"
+        },
+        {
+          "branchId": "305",
+          "branchName": "ME VERTUALLY"
+        },
+        {
+          "branchId": "314",
+          "branchName": "Glilot"
+        },
+        {
+          "branchId": "310",
+          "branchName": "HADERA Otsar hahayal"
+        },
+        {
+          "branchId": "381",
+          "branchName": "Ramon"
+        },
+        {
+          "branchId": "376",
+          "branchName": "Hatzerim"
+        },
+        {
+          "branchId": "367",
+          "branchName": "Hatzor"
+        },
+        {
+          "branchId": "336",
+          "branchName": "Nevy-Hayfa"
+        },
+        {
+          "branchId": "379",
+          "branchName": "Palmachim"
+        },
+        {
+          "branchId": "360",
+          "branchName": "Otzar Hahayal Kryat Shmona"
+        },
+        {
+          "branchId": "382",
+          "branchName": "Bat Yam Holon"
+        },
+        {
+          "branchId": "324",
+          "branchName": "TIBERIAS Ozar Hahayel"
+        },
+        {
+          "branchId": "380",
+          "branchName": "Kfar Saba"
+        },
+        {
+          "branchId": "309",
+          "branchName": "AFULA Ozar Hahayel"
+        },
+        {
+          "branchId": "338",
+          "branchName": "Best Customers"
+        },
+        {
+          "branchId": "344",
+          "branchName": "Rishon Le Zion"
+        },
+        {
+          "branchId": "395",
+          "branchName": "Rehovot"
+        },
+        {
+          "branchId": "332",
+          "branchName": "City of training bases"
+        },
+        {
+          "branchId": "359",
+          "branchName": "Otzar Hahaayal KIRYAT GAT"
+        },
+        {
+          "branchId": "366",
+          "branchName": "Tel Nof"
+        },
+        {
+          "branchId": "342",
+          "branchName": "Nevatim"
+        },
+        {
+          "branchId": "377",
+          "branchName": "Eilat"
+        },
+        {
+          "branchId": "477",
+          "branchName": "Uvda"
+        },
+        {
+          "branchId": "373",
+          "branchName": "Otsar Hahayal Ashkelon City"
+        },
+        {
+          "branchId": "316",
+          "branchName": "Ramat Poleg"
+        },
+        {
+          "branchId": "378",
+          "branchName": "Hakirya Bitachon"
+        },
+        {
+          "branchId": "357",
+          "branchName": "Central"
+        },
+        {
+          "branchId": "361",
+          "branchName": "Hashmonaim"
+        },
+        {
+          "branchId": "322",
+          "branchName": "Givataim"
+        },
+        {
+          "branchId": "399",
+          "branchName": "head staff"
+        },
+        {
+          "branchId": "372",
+          "branchName": "Tel Hashomer"
+        },
+        {
+          "branchId": "334",
+          "branchName": "hever"
+        },
+        {
+          "branchId": "319",
+          "branchName": "NAHARIYA"
+        },
+        {
+          "branchId": "358",
+          "branchName": "Otzar Hahayal YAHUD"
+        },
+        {
+          "branchId": "369",
+          "branchName": "Jerusalem"
+        },
+        {
+          "branchId": "355",
+          "branchName": "Ashdod"
+        },
+        {
+          "branchId": "329",
+          "branchName": "YOKNEAM"
+        },
+        {
+          "branchId": "375",
+          "branchName": "Ramat Hasharon"
+        },
+        {
+          "branchId": "363",
+          "branchName": "Beer Sheva"
+        },
+        {
+          "branchId": "303",
+          "branchName": "Ramot Ozar haHayal"
+        },
+        {
+          "branchId": "318",
+          "branchName": "Neve Zeev"
+        },
+        {
+          "branchId": "317",
+          "branchName": "Petah Tikva - Kfar Ganim"
+        }
+      ]
+    },
+    {
+      "bankId": "11",
+      "bankName": "Israel Discount Bank Ltd",
+      "branches": [
+        {
+          "branchId": "5",
+          "branchName": "Nof HaGalil"
+        },
+        {
+          "branchId": "444",
+          "branchName": "Haifa Private Banking Center"
+        },
+        {
+          "branchId": "303",
+          "branchName": "Modi'in"
+        },
+        {
+          "branchId": "995",
+          "branchName": "Shluhat Marom Neve"
+        },
+        {
+          "branchId": "96",
+          "branchName": "Marom Neve"
+        },
+        {
+          "branchId": "40",
+          "branchName": "Ramat Gan"
+        },
+        {
+          "branchId": "7",
+          "branchName": "Tel Ganim"
+        },
+        {
+          "branchId": "443",
+          "branchName": "Kiryat Byalik"
+        },
+        {
+          "branchId": "232",
+          "branchName": "Private Banking , Tel Aviv"
+        },
+        {
+          "branchId": "568",
+          "branchName": "Private Banking Center, Tel Aviv"
+        },
+        {
+          "branchId": "130",
+          "branchName": "MAPU"
+        },
+        {
+          "branchId": "147",
+          "branchName": "Kikar Lev Dizengoff"
+        },
+        {
+          "branchId": "151",
+          "branchName": "Yad Eliahu"
+        },
+        {
+          "branchId": "174",
+          "branchName": "Carmiel"
+        },
+        {
+          "branchId": "93",
+          "branchName": "Nazareth"
+        },
+        {
+          "branchId": "361",
+          "branchName": "Pardes Hanna"
+        },
+        {
+          "branchId": "98",
+          "branchName": "Tzfat"
+        },
+        {
+          "branchId": "75",
+          "branchName": "Kiryat Motzkin"
+        },
+        {
+          "branchId": "535",
+          "branchName": "Ha-Snif Yashir"
+        },
+        {
+          "branchId": "188",
+          "branchName": "Hakanionim"
+        },
+        {
+          "branchId": "396",
+          "branchName": "Assaf Harofe"
+        },
+        {
+          "branchId": "488",
+          "branchName": "Investments center"
+        },
+        {
+          "branchId": "506",
+          "branchName": "Maarav Rishon Letzion"
+        },
+        {
+          "branchId": "45",
+          "branchName": "Rehovot"
+        },
+        {
+          "branchId": "384",
+          "branchName": "Hashfela Businees Center"
+        },
+        {
+          "branchId": "167",
+          "branchName": "Beit Shemesh"
+        },
+        {
+          "branchId": "131",
+          "branchName": "Kiryat Gat"
+        },
+        {
+          "branchId": "302",
+          "branchName": "Givat Tal"
+        },
+        {
+          "branchId": "111",
+          "branchName": "Dimona"
+        },
+        {
+          "branchId": "112",
+          "branchName": "Gadera"
+        },
+        {
+          "branchId": "3",
+          "branchName": "Eilat (Hashalom Center)"
+        },
+        {
+          "branchId": "59",
+          "branchName": "Lod"
+        },
+        {
+          "branchId": "128",
+          "branchName": "Ashkelon (Hashikma)"
+        },
+        {
+          "branchId": "996",
+          "branchName": "BARNEH SHLUHAT ASHKELON"
+        },
+        {
+          "branchId": "117",
+          "branchName": "Nes Tziona"
+        },
+        {
+          "branchId": "526",
+          "branchName": "Poleg Netanya"
+        },
+        {
+          "branchId": "320",
+          "branchName": "kiryat hasharon branch"
+        },
+        {
+          "branchId": "514",
+          "branchName": "Tel Aviv Casier Center"
+        },
+        {
+          "branchId": "43",
+          "branchName": "Ramla"
+        },
+        {
+          "branchId": "102",
+          "branchName": "Ramat Hen"
+        },
+        {
+          "branchId": "123",
+          "branchName": "Kikar Hayahalom"
+        },
+        {
+          "branchId": "398",
+          "branchName": "Tel Hashomer"
+        },
+        {
+          "branchId": "452",
+          "branchName": "Tel Aviv Businees Center"
+        },
+        {
+          "branchId": "92",
+          "branchName": "Raanana"
+        },
+        {
+          "branchId": "97",
+          "branchName": "Nahariya"
+        },
+        {
+          "branchId": "95",
+          "branchName": "Zichron Yaakov"
+        },
+        {
+          "branchId": "383",
+          "branchName": "North Businees Center"
+        },
+        {
+          "branchId": "515",
+          "branchName": "Kidmat Atidim"
+        },
+        {
+          "branchId": "85",
+          "branchName": "Kikar Yitzhak Rabin"
+        },
+        {
+          "branchId": "100",
+          "branchName": "Rothschild Boulevard"
+        },
+        {
+          "branchId": "83",
+          "branchName": "Zfon Dizengoff"
+        },
+        {
+          "branchId": "14",
+          "branchName": "Tel-Aviv city"
+        },
+        {
+          "branchId": "26",
+          "branchName": "Hatzrot Jaffa Branch"
+        },
+        {
+          "branchId": "34",
+          "branchName": "Alon"
+        },
+        {
+          "branchId": "118",
+          "branchName": "Neve Avivim"
+        },
+        {
+          "branchId": "152",
+          "branchName": "Kikar Hamedina"
+        },
+        {
+          "branchId": "10",
+          "branchName": "Tel Aviv Main Branch"
+        },
+        {
+          "branchId": "198",
+          "branchName": "Afeka"
+        },
+        {
+          "branchId": "233",
+          "branchName": "Private Banking Center,Jerusalem"
+        },
+        {
+          "branchId": "992",
+          "branchName": "Ramat Eshkol"
+        },
+        {
+          "branchId": "109",
+          "branchName": "Ramat Eshkol"
+        },
+        {
+          "branchId": "62",
+          "branchName": "Hamoshava"
+        },
+        {
+          "branchId": "114",
+          "branchName": "Rova Dalet"
+        },
+        {
+          "branchId": "994",
+          "branchName": "Kfar Yona"
+        },
+        {
+          "branchId": "94",
+          "branchName": "Beer Sheba"
+        },
+        {
+          "branchId": "41",
+          "branchName": "Petah Tikva"
+        },
+        {
+          "branchId": "362",
+          "branchName": "Em Hamoshavot"
+        },
+        {
+          "branchId": "187",
+          "branchName": "Hod Hasharon"
+        },
+        {
+          "branchId": "137",
+          "branchName": "Migdal Haemek"
+        },
+        {
+          "branchId": "997",
+          "branchName": "Migdal Haemek shluhat afula"
+        },
+        {
+          "branchId": "42",
+          "branchName": "Netanya"
+        },
+        {
+          "branchId": "156",
+          "branchName": "Int' Private Banking Center, Netanya"
+        },
+        {
+          "branchId": "55",
+          "branchName": "Rishon Letzion"
+        },
+        {
+          "branchId": "110",
+          "branchName": "Kiryat Shmona, Kenion \"8 in the Center\""
+        },
+        {
+          "branchId": "990",
+          "branchName": "BAT YAM"
+        },
+        {
+          "branchId": "148",
+          "branchName": "haneviim"
+        },
+        {
+          "branchId": "44",
+          "branchName": "Herzliya"
+        },
+        {
+          "branchId": "340",
+          "branchName": "Hasharon Private Banking Center"
+        },
+        {
+          "branchId": "510",
+          "branchName": "Mevaseret Tzion"
+        },
+        {
+          "branchId": "213",
+          "branchName": "Nyarot Erech"
+        },
+        {
+          "branchId": "305",
+          "branchName": "Y.L.M"
+        },
+        {
+          "branchId": "308",
+          "branchName": "Pensyoni"
+        },
+        {
+          "branchId": "316",
+          "branchName": "Tifoul Pensyoni"
+        },
+        {
+          "branchId": "518",
+          "branchName": "Bankim Department"
+        },
+        {
+          "branchId": "520",
+          "branchName": "Matach and Bankim"
+        },
+        {
+          "branchId": "129",
+          "branchName": "Tiful"
+        },
+        {
+          "branchId": "6",
+          "branchName": "Pituach"
+        },
+        {
+          "branchId": "8",
+          "branchName": "Sheinkin"
+        },
+        {
+          "branchId": "200",
+          "branchName": "Bitzoa'a"
+        },
+        {
+          "branchId": "202",
+          "branchName": "Mishpatit"
+        },
+        {
+          "branchId": "210",
+          "branchName": "Gemel"
+        },
+        {
+          "branchId": "211",
+          "branchName": "Mishpatit"
+        },
+        {
+          "branchId": "212",
+          "branchName": "Necasim V Binoy"
+        },
+        {
+          "branchId": "468",
+          "branchName": "Ikolim Department"
+        },
+        {
+          "branchId": "222",
+          "branchName": "Telebank"
+        },
+        {
+          "branchId": "219",
+          "branchName": "Telebank"
+        },
+        {
+          "branchId": "201",
+          "branchName": "Hashvot"
+        },
+        {
+          "branchId": "221",
+          "branchName": "Telebank"
+        },
+        {
+          "branchId": "348",
+          "branchName": "Mmaz JLM"
+        },
+        {
+          "branchId": "220",
+          "branchName": "Telebank"
+        },
+        {
+          "branchId": "136",
+          "branchName": "Kiron"
+        },
+        {
+          "branchId": "125",
+          "branchName": "Ramat Hasharon"
+        },
+        {
+          "branchId": "139",
+          "branchName": "Bnei Brak"
+        },
+        {
+          "branchId": "58",
+          "branchName": "Derech Ben Gurion"
+        },
+        {
+          "branchId": "145",
+          "branchName": "Givatayim"
+        },
+        {
+          "branchId": "77",
+          "branchName": "Kiryat Ata"
+        },
+        {
+          "branchId": "176",
+          "branchName": "Hamifraz"
+        },
+        {
+          "branchId": "99",
+          "branchName": "Akko"
+        },
+        {
+          "branchId": "517",
+          "branchName": "Lev Hayr"
+        },
+        {
+          "branchId": "991",
+          "branchName": "Lev Hayr"
+        },
+        {
+          "branchId": "56",
+          "branchName": "kfar ganim"
+        },
+        {
+          "branchId": "80",
+          "branchName": "Diamond Exchange"
+        },
+        {
+          "branchId": "65",
+          "branchName": "Kiryat Hayovel"
+        },
+        {
+          "branchId": "66",
+          "branchName": "Rehavia"
+        },
+        {
+          "branchId": "68",
+          "branchName": "East Jerusalem"
+        },
+        {
+          "branchId": "69",
+          "branchName": "Beit Hakerem"
+        },
+        {
+          "branchId": "993",
+          "branchName": "Jerusalem city  Center"
+        },
+        {
+          "branchId": "194",
+          "branchName": "Jerusalem city  Center"
+        },
+        {
+          "branchId": "321",
+          "branchName": "haleom branch"
+        },
+        {
+          "branchId": "381",
+          "branchName": "Jerosalem Businees Center"
+        },
+        {
+          "branchId": "4",
+          "branchName": "Ashdod City"
+        },
+        {
+          "branchId": "90",
+          "branchName": "Hadera"
+        },
+        {
+          "branchId": "153",
+          "branchName": "Kiryat Malachi"
+        },
+        {
+          "branchId": "106",
+          "branchName": "Beit Hakranot"
+        },
+        {
+          "branchId": "107",
+          "branchName": "RAMAT ALMOGI"
+        },
+        {
+          "branchId": "76",
+          "branchName": "Merkaz Hacarmel"
+        },
+        {
+          "branchId": "998",
+          "branchName": "PAL YAM"
+        },
+        {
+          "branchId": "525",
+          "branchName": "Mahane Yehuda Casier Center"
+        },
+        {
+          "branchId": "159",
+          "branchName": "Jerusalem city  Center"
+        },
+        {
+          "branchId": "162",
+          "branchName": "Talpiut jerusalem"
+        },
+        {
+          "branchId": "61",
+          "branchName": "Mahane Yehuda"
+        },
+        {
+          "branchId": "64",
+          "branchName": "Geula"
+        },
+        {
+          "branchId": "175",
+          "branchName": "Yavne"
+        },
+        {
+          "branchId": "51",
+          "branchName": "Bat Yam"
+        },
+        {
+          "branchId": "330",
+          "branchName": "wolfson hospital branch"
+        },
+        {
+          "branchId": "146",
+          "branchName": "Herzliya Pituah"
+        },
+        {
+          "branchId": "382",
+          "branchName": "Hasharon Businees Center"
+        },
+        {
+          "branchId": "103",
+          "branchName": "KIRYAT AILON"
+        },
+        {
+          "branchId": "49",
+          "branchName": "Holon"
+        },
+        {
+          "branchId": "157",
+          "branchName": "Hataasiya Holon"
+        },
+        {
+          "branchId": "46",
+          "branchName": "TIBIREAS"
+        },
+        {
+          "branchId": "54",
+          "branchName": "Kfar Saba"
+        },
+        {
+          "branchId": "2",
+          "branchName": "Afula"
+        }
+      ]
+    },
+    {
+      "bankId": "31",
+      "bankName": "The First International Bank of Israel Ltd",
+      "branches": [
+        {
+          "branchId": "60",
+          "branchName": "EXECUTION SECURITIES DEPARTMENT"
+        },
+        {
+          "branchId": "321",
+          "branchName": "Factoring"
+        },
+        {
+          "branchId": "296",
+          "branchName": "Kopot Gemel"
+        },
+        {
+          "branchId": "298",
+          "branchName": "Hanhalat heshbonot"
+        },
+        {
+          "branchId": "287",
+          "branchName": "Tel aviv"
+        },
+        {
+          "branchId": "46",
+          "branchName": "TEL AVIV MAIN BRANCH"
+        },
+        {
+          "branchId": "273",
+          "branchName": "Rotschild Blvd. Tel Aviv"
+        },
+        {
+          "branchId": "286",
+          "branchName": "Securities department"
+        },
+        {
+          "branchId": "150",
+          "branchName": "Back Office Operations for Stock Exchange Members"
+        },
+        {
+          "branchId": "222",
+          "branchName": "Back Office Operations"
+        },
+        {
+          "branchId": "295",
+          "branchName": "Call center"
+        },
+        {
+          "branchId": "297",
+          "branchName": "MACHLAKA MERAKEZET"
+        },
+        {
+          "branchId": "388",
+          "branchName": "Direct Service Center"
+        },
+        {
+          "branchId": "305",
+          "branchName": "ME VERTUALLY"
+        },
+        {
+          "branchId": "105",
+          "branchName": "ME VERTUALLY"
+        },
+        {
+          "branchId": "274",
+          "branchName": "HERZLIYA PITUAH"
+        },
+        {
+          "branchId": "288",
+          "branchName": "JERUSALEM"
+        },
+        {
+          "branchId": "314",
+          "branchName": "Glilot"
+        },
+        {
+          "branchId": "183",
+          "branchName": "RABBI AKIBA"
+        },
+        {
+          "branchId": "160",
+          "branchName": "Cashier Center Bnei Brak"
+        },
+        {
+          "branchId": "38",
+          "branchName": "SAVYON"
+        },
+        {
+          "branchId": "124",
+          "branchName": "AM HAMOSHAVOT"
+        },
+        {
+          "branchId": "181",
+          "branchName": "PETAH TIKVA"
+        },
+        {
+          "branchId": "34",
+          "branchName": "PETAH TIKVA"
+        },
+        {
+          "branchId": "369",
+          "branchName": "Jerusalem"
+        },
+        {
+          "branchId": "74",
+          "branchName": "TALPIOT"
+        },
+        {
+          "branchId": "114",
+          "branchName": "KIRYAT MOSHE"
+        },
+        {
+          "branchId": "182",
+          "branchName": "KANFE NESARIM"
+        },
+        {
+          "branchId": "12",
+          "branchName": "JERUSALEM MAIN BRANCH"
+        },
+        {
+          "branchId": "13",
+          "branchName": "REHAVIA"
+        },
+        {
+          "branchId": "355",
+          "branchName": "Ashdod"
+        },
+        {
+          "branchId": "88",
+          "branchName": "Cashier Center"
+        },
+        {
+          "branchId": "33",
+          "branchName": "Ashdod city"
+        },
+        {
+          "branchId": "310",
+          "branchName": "HADERA Otsar hahayal"
+        },
+        {
+          "branchId": "27",
+          "branchName": "HADERA"
+        },
+        {
+          "branchId": "381",
+          "branchName": "Ramon"
+        },
+        {
+          "branchId": "376",
+          "branchName": "Hatzerim"
+        },
+        {
+          "branchId": "367",
+          "branchName": "Hatzor"
+        },
+        {
+          "branchId": "336",
+          "branchName": "Nevy-Hayfa"
+        },
+        {
+          "branchId": "916",
+          "branchName": "Northern private banking center"
+        },
+        {
+          "branchId": "187",
+          "branchName": "HAIFA"
+        },
+        {
+          "branchId": "138",
+          "branchName": "ha-Technion"
+        },
+        {
+          "branchId": "6",
+          "branchName": "Main Business Branch Northern Israel"
+        },
+        {
+          "branchId": "7",
+          "branchName": "NAVE SHAANAN"
+        },
+        {
+          "branchId": "379",
+          "branchName": "Palmachim"
+        },
+        {
+          "branchId": "91",
+          "branchName": "MAA LOT TARSHIHA"
+        },
+        {
+          "branchId": "360",
+          "branchName": "Otzar Hahayal Kryat Shmona"
+        },
+        {
+          "branchId": "50",
+          "branchName": "KIRYAT SHMONA"
+        },
+        {
+          "branchId": "382",
+          "branchName": "Bat Yam Holon"
+        },
+        {
+          "branchId": "51",
+          "branchName": "HERZLIYA PITUAH"
+        },
+        {
+          "branchId": "64",
+          "branchName": "TZAMAROT"
+        },
+        {
+          "branchId": "78",
+          "branchName": "Holon Business"
+        },
+        {
+          "branchId": "45",
+          "branchName": "Holon"
+        },
+        {
+          "branchId": "324",
+          "branchName": "TIBERIAS Ozar Hahayel"
+        },
+        {
+          "branchId": "2",
+          "branchName": "TIBERIAS"
+        },
+        {
+          "branchId": "380",
+          "branchName": "Kfar Saba"
+        },
+        {
+          "branchId": "21",
+          "branchName": "KFAR SABA"
+        },
+        {
+          "branchId": "316",
+          "branchName": "Ramat Poleg"
+        },
+        {
+          "branchId": "22",
+          "branchName": "NETANYA"
+        },
+        {
+          "branchId": "24",
+          "branchName": "KIRIAT HASHARON"
+        },
+        {
+          "branchId": "309",
+          "branchName": "AFULA Ozar Hahayel"
+        },
+        {
+          "branchId": "111",
+          "branchName": "AFULA"
+        },
+        {
+          "branchId": "70",
+          "branchName": "KIRYAT MOTZKIN"
+        },
+        {
+          "branchId": "338",
+          "branchName": "Best Customers"
+        },
+        {
+          "branchId": "344",
+          "branchName": "Rishon Le Zion"
+        },
+        {
+          "branchId": "119",
+          "branchName": "West Rishon"
+        },
+        {
+          "branchId": "32",
+          "branchName": "RISHON LEZION"
+        },
+        {
+          "branchId": "279",
+          "branchName": "REHOVOT"
+        },
+        {
+          "branchId": "174",
+          "branchName": "REHOVOT"
+        },
+        {
+          "branchId": "395",
+          "branchName": "Rehovot"
+        },
+        {
+          "branchId": "29",
+          "branchName": "Rehovot"
+        },
+        {
+          "branchId": "332",
+          "branchName": "City of training bases"
+        },
+        {
+          "branchId": "359",
+          "branchName": "Otzar Hahaayal KIRYAT GAT"
+        },
+        {
+          "branchId": "62",
+          "branchName": "KIRYAT GAT"
+        },
+        {
+          "branchId": "366",
+          "branchName": "Tel Nof"
+        },
+        {
+          "branchId": "342",
+          "branchName": "Nevatim"
+        },
+        {
+          "branchId": "477",
+          "branchName": "Uvda"
+        },
+        {
+          "branchId": "377",
+          "branchName": "Eilat"
+        },
+        {
+          "branchId": "3",
+          "branchName": "EILAT"
+        },
+        {
+          "branchId": "349",
+          "branchName": "Otsar Hahayal Askelon barnea"
+        },
+        {
+          "branchId": "373",
+          "branchName": "Otsar Hahayal Ashkelon City"
+        },
+        {
+          "branchId": "109",
+          "branchName": "ASHKELON"
+        },
+        {
+          "branchId": "132",
+          "branchName": "Askelon barnea"
+        },
+        {
+          "branchId": "346",
+          "branchName": "Netanya"
+        },
+        {
+          "branchId": "357",
+          "branchName": "Central"
+        },
+        {
+          "branchId": "361",
+          "branchName": "Hashmonaim"
+        },
+        {
+          "branchId": "82",
+          "branchName": "RAMAT AVIV"
+        },
+        {
+          "branchId": "189",
+          "branchName": "TEL AVIV MAIN BRANCH"
+        },
+        {
+          "branchId": "322",
+          "branchName": "Givataim"
+        },
+        {
+          "branchId": "116",
+          "branchName": "Rothschild"
+        },
+        {
+          "branchId": "44",
+          "branchName": "HAOPERA"
+        },
+        {
+          "branchId": "48",
+          "branchName": "Main Business Branch Central Israel"
+        },
+        {
+          "branchId": "121",
+          "branchName": "RAMAT HAHAYAL"
+        },
+        {
+          "branchId": "127",
+          "branchName": "AVIVIM"
+        },
+        {
+          "branchId": "378",
+          "branchName": "Hakirya Bitachon"
+        },
+        {
+          "branchId": "399",
+          "branchName": "head staff"
+        },
+        {
+          "branchId": "30",
+          "branchName": "RAMLEH"
+        },
+        {
+          "branchId": "118",
+          "branchName": "Ramlod"
+        },
+        {
+          "branchId": "334",
+          "branchName": "hever"
+        },
+        {
+          "branchId": "372",
+          "branchName": "Tel Hashomer"
+        },
+        {
+          "branchId": "126",
+          "branchName": "AVNEI HEN"
+        },
+        {
+          "branchId": "26",
+          "branchName": "DIAMOND EXCHANGE"
+        },
+        {
+          "branchId": "92",
+          "branchName": "RAANANA"
+        },
+        {
+          "branchId": "280",
+          "branchName": "RAANANA"
+        },
+        {
+          "branchId": "52",
+          "branchName": "NAHARIYA"
+        },
+        {
+          "branchId": "319",
+          "branchName": "NAHARIYA"
+        },
+        {
+          "branchId": "110",
+          "branchName": "YAHUD"
+        },
+        {
+          "branchId": "358",
+          "branchName": "Otzar Hahayal YAHUD"
+        },
+        {
+          "branchId": "8",
+          "branchName": "KIRYAT BIALIK"
+        },
+        {
+          "branchId": "262",
+          "branchName": "Ubank Rehavia"
+        },
+        {
+          "branchId": "185",
+          "branchName": "JERUSALEM"
+        },
+        {
+          "branchId": "172",
+          "branchName": "Ramot"
+        },
+        {
+          "branchId": "175",
+          "branchName": "EXT.JERUSALEM"
+        },
+        {
+          "branchId": "986",
+          "branchName": "EXT. ASHDOD (PNINAT HAROVA)"
+        },
+        {
+          "branchId": "186",
+          "branchName": "Ashdod"
+        },
+        {
+          "branchId": "329",
+          "branchName": "YOKNEAM"
+        },
+        {
+          "branchId": "131",
+          "branchName": "YOKNEAM"
+        },
+        {
+          "branchId": "35",
+          "branchName": "KIRON"
+        },
+        {
+          "branchId": "85",
+          "branchName": "Ramat Hasharon haBenleumi"
+        },
+        {
+          "branchId": "375",
+          "branchName": "Ramat Hasharon"
+        },
+        {
+          "branchId": "188",
+          "branchName": "BNEI BRAK"
+        },
+        {
+          "branchId": "168",
+          "branchName": "Rimonim"
+        },
+        {
+          "branchId": "28",
+          "branchName": "GIVATAYIM"
+        },
+        {
+          "branchId": "363",
+          "branchName": "Beer Sheva"
+        },
+        {
+          "branchId": "303",
+          "branchName": "Ramot Ozar haHayal Beer Sheva"
+        },
+        {
+          "branchId": "318",
+          "branchName": "Neve Zeev"
+        },
+        {
+          "branchId": "17",
+          "branchName": "BEER SHEBA"
+        },
+        {
+          "branchId": "19",
+          "branchName": "Ramot BEER SHEBA"
+        },
+        {
+          "branchId": "317",
+          "branchName": "Petah Tikva - Kfar Ganim"
+        },
+        {
+          "branchId": "95",
+          "branchName": "Kfar Ganim"
+        },
+        {
+          "branchId": "371",
+          "branchName": "Ramat David"
+        },
+        {
+          "branchId": "311",
+          "branchName": "Pardes Hana"
+        },
+        {
+          "branchId": "392",
+          "branchName": "Rishon Lezion West"
+        },
+        {
+          "branchId": "179",
+          "branchName": "RAMAT BEIT SHEMESH"
+        },
+        {
+          "branchId": "348",
+          "branchName": "Afek"
+        },
+        {
+          "branchId": "36",
+          "branchName": "AFEK"
+        },
+        {
+          "branchId": "312",
+          "branchName": "Yavne"
+        },
+        {
+          "branchId": "39",
+          "branchName": "BAT YAM"
+        },
+        {
+          "branchId": "134",
+          "branchName": "Kiryat aylon"
+        },
+        {
+          "branchId": "335",
+          "branchName": "Kfar Saba Green branch"
+        },
+        {
+          "branchId": "135",
+          "branchName": "KFAR SABA H'YEROKA"
+        },
+        {
+          "branchId": "313",
+          "branchName": "Rosh Pina"
+        },
+        {
+          "branchId": "1",
+          "branchName": "Rosh Pina"
+        },
+        {
+          "branchId": "120",
+          "branchName": "KFAR HAVRADIM"
+        },
+        {
+          "branchId": "176",
+          "branchName": "EL-AD"
+        },
+        {
+          "branchId": "180",
+          "branchName": "MODIIN ILIT"
+        },
+        {
+          "branchId": "993",
+          "branchName": "Arava"
+        },
+        {
+          "branchId": "362",
+          "branchName": "Mifratz Haifa"
+        },
+        {
+          "branchId": "112",
+          "branchName": "DENIA"
+        },
+        {
+          "branchId": "5",
+          "branchName": "ROMEMA"
+        },
+        {
+          "branchId": "9",
+          "branchName": "HACARMEL HAIFA"
+        },
+        {
+          "branchId": "177",
+          "branchName": "BETAR ELLIT"
+        },
+        {
+          "branchId": "343",
+          "branchName": "Ariel"
+        },
+        {
+          "branchId": "345",
+          "branchName": "Reut"
+        },
+        {
+          "branchId": "315",
+          "branchName": "Modieen"
+        },
+        {
+          "branchId": "128",
+          "branchName": "Modiin"
+        },
+        {
+          "branchId": "37",
+          "branchName": "HOD HASHARON"
+        },
+        {
+          "branchId": "330",
+          "branchName": "RAMAT GAN"
+        },
+        {
+          "branchId": "41",
+          "branchName": "RAMAT GAN"
+        },
+        {
+          "branchId": "173",
+          "branchName": "Netivot"
+        },
+        {
+          "branchId": "65",
+          "branchName": "DIZENGOFF"
+        },
+        {
+          "branchId": "272",
+          "branchName": "HaMadina square Ubank"
+        },
+        {
+          "branchId": "365",
+          "branchName": "Zahala"
+        },
+        {
+          "branchId": "93",
+          "branchName": "BAIT LESIN"
+        },
+        {
+          "branchId": "94",
+          "branchName": "Top-Dan"
+        },
+        {
+          "branchId": "59",
+          "branchName": "CARMIEL"
+        },
+        {
+          "branchId": "398",
+          "branchName": "Carmiel"
+        },
+        {
+          "branchId": "350",
+          "branchName": "Matam Omega"
+        },
+        {
+          "branchId": "397",
+          "branchName": "Gedera"
+        }
+      ]
+    },
+    {
+      "bankId": "12",
+      "bankName": "Bank Hapoalim B.M",
+      "branches": [
+        {
+          "branchId": "500",
+          "branchName": "harimon"
+        },
+        {
+          "branchId": "509",
+          "branchName": "kupot-gemel hanhr"
+        },
+        {
+          "branchId": "515",
+          "branchName": "Platinum Banking"
+        },
+        {
+          "branchId": "681",
+          "branchName": "lev dizengoff"
+        },
+        {
+          "branchId": "754",
+          "branchName": "pinkas"
+        },
+        {
+          "branchId": "170",
+          "branchName": "Main Branch"
+        },
+        {
+          "branchId": "184",
+          "branchName": "Merkaz Mezumanim"
+        },
+        {
+          "branchId": "194",
+          "branchName": "Ayalon Business Center"
+        },
+        {
+          "branchId": "219",
+          "branchName": "Poalim Invest Harimon"
+        },
+        {
+          "branchId": "242",
+          "branchName": "Poalim Invest Tel Aviv"
+        },
+        {
+          "branchId": "282",
+          "branchName": "mutual fund"
+        },
+        {
+          "branchId": "60",
+          "branchName": "retail credit and mortgages"
+        },
+        {
+          "branchId": "666",
+          "branchName": "baka el garbia"
+        },
+        {
+          "branchId": "983",
+          "branchName": "Even Yehuda Extension"
+        },
+        {
+          "branchId": "90",
+          "branchName": "Yarka"
+        },
+        {
+          "branchId": "715",
+          "branchName": "hatzor"
+        },
+        {
+          "branchId": "747",
+          "branchName": "karmiel"
+        },
+        {
+          "branchId": "653",
+          "branchName": "kadima"
+        },
+        {
+          "branchId": "672",
+          "branchName": "mitzpeh ramon"
+        },
+        {
+          "branchId": "551",
+          "branchName": "kalansua"
+        },
+        {
+          "branchId": "578",
+          "branchName": "kfar kra"
+        },
+        {
+          "branchId": "550",
+          "branchName": "hagolan bnei yehuda"
+        },
+        {
+          "branchId": "618",
+          "branchName": "Ramle"
+        },
+        {
+          "branchId": "981",
+          "branchName": "ramat efal extension"
+        },
+        {
+          "branchId": "613",
+          "branchName": "ramat gan"
+        },
+        {
+          "branchId": "537",
+          "branchName": "yahalom"
+        },
+        {
+          "branchId": "773",
+          "branchName": "neve ram"
+        },
+        {
+          "branchId": "453",
+          "branchName": "center bus.center"
+        },
+        {
+          "branchId": "139",
+          "branchName": "Poalim Invest Ramt Gan"
+        },
+        {
+          "branchId": "407",
+          "branchName": "etgarim"
+        },
+        {
+          "branchId": "661",
+          "branchName": "ra'anana"
+        },
+        {
+          "branchId": "716",
+          "branchName": "nahariya"
+        },
+        {
+          "branchId": "717",
+          "branchName": "beit shean"
+        },
+        {
+          "branchId": "625",
+          "branchName": "zichron yaakov"
+        },
+        {
+          "branchId": "617",
+          "branchName": "yahud"
+        },
+        {
+          "branchId": "746",
+          "branchName": "hakiryon"
+        },
+        {
+          "branchId": "556",
+          "branchName": "netivot"
+        },
+        {
+          "branchId": "680",
+          "branchName": "kfar shmaryahu"
+        },
+        {
+          "branchId": "582",
+          "branchName": "modi'in"
+        },
+        {
+          "branchId": "743",
+          "branchName": "sharet"
+        },
+        {
+          "branchId": "626",
+          "branchName": "hod hasharon"
+        },
+        {
+          "branchId": "621",
+          "branchName": "binyamina"
+        },
+        {
+          "branchId": "445",
+          "branchName": "matav bet -dagan"
+        },
+        {
+          "branchId": "980",
+          "branchName": "kiryat ekron extension"
+        },
+        {
+          "branchId": "728",
+          "branchName": "migdal ha'emeq"
+        },
+        {
+          "branchId": "473",
+          "branchName": "Harish"
+        },
+        {
+          "branchId": "202",
+          "branchName": "kfar yasif"
+        },
+        {
+          "branchId": "478",
+          "branchName": "kafar cana"
+        },
+        {
+          "branchId": "744",
+          "branchName": "majdal shams"
+        },
+        {
+          "branchId": "731",
+          "branchName": "shfar'am"
+        },
+        {
+          "branchId": "982",
+          "branchName": "Iksal Extension"
+        },
+        {
+          "branchId": "581",
+          "branchName": "magh'ar"
+        },
+        {
+          "branchId": "742",
+          "branchName": "Dalyat al Karmel-Osfiya"
+        },
+        {
+          "branchId": "449",
+          "branchName": "yafia"
+        },
+        {
+          "branchId": "726",
+          "branchName": "nazareth"
+        },
+        {
+          "branchId": "211",
+          "branchName": "Nazareth Business preferred"
+        },
+        {
+          "branchId": "635",
+          "branchName": "Rishonim"
+        },
+        {
+          "branchId": "615",
+          "branchName": "rehovot"
+        },
+        {
+          "branchId": "544",
+          "branchName": "hadarim"
+        },
+        {
+          "branchId": "416",
+          "branchName": "Poalim Invest Rehovot"
+        },
+        {
+          "branchId": "452",
+          "branchName": "south bus.center"
+        },
+        {
+          "branchId": "446",
+          "branchName": "Ramat Beit Shemesh"
+        },
+        {
+          "branchId": "692",
+          "branchName": "beit shemesh"
+        },
+        {
+          "branchId": "671",
+          "branchName": "yeruham"
+        },
+        {
+          "branchId": "645",
+          "branchName": "kiryat gat"
+        },
+        {
+          "branchId": "447",
+          "branchName": "givat tal"
+        },
+        {
+          "branchId": "677",
+          "branchName": "rosh ha'ain"
+        },
+        {
+          "branchId": "239",
+          "branchName": "Kfar Manda"
+        },
+        {
+          "branchId": "703",
+          "branchName": "tirat hacarmel"
+        },
+        {
+          "branchId": "632",
+          "branchName": "dimona"
+        },
+        {
+          "branchId": "719",
+          "branchName": "kiryat tivon hanassi"
+        },
+        {
+          "branchId": "637",
+          "branchName": "beer yaacov"
+        },
+        {
+          "branchId": "646",
+          "branchName": "gedera"
+        },
+        {
+          "branchId": "763",
+          "branchName": "arad"
+        },
+        {
+          "branchId": "644",
+          "branchName": "eilat"
+        },
+        {
+          "branchId": "486",
+          "branchName": "rahat"
+        },
+        {
+          "branchId": "774",
+          "branchName": "ben gurion airport"
+        },
+        {
+          "branchId": "685",
+          "branchName": "lod"
+        },
+        {
+          "branchId": "752",
+          "branchName": "hata'asia ha'avirit"
+        },
+        {
+          "branchId": "686",
+          "branchName": "shimshon"
+        },
+        {
+          "branchId": "650",
+          "branchName": "ashkelon"
+        },
+        {
+          "branchId": "651",
+          "branchName": "afridar"
+        },
+        {
+          "branchId": "636",
+          "branchName": "ness ziona"
+        },
+        {
+          "branchId": "459",
+          "branchName": "HAYEZIRA"
+        },
+        {
+          "branchId": "472",
+          "branchName": "Netanya Business 472"
+        },
+        {
+          "branchId": "476",
+          "branchName": "kirtat hasharon"
+        },
+        {
+          "branchId": "612",
+          "branchName": "netanya"
+        },
+        {
+          "branchId": "562",
+          "branchName": "Netanya Business 562"
+        },
+        {
+          "branchId": "771",
+          "branchName": "Ir Yamim"
+        },
+        {
+          "branchId": "432",
+          "branchName": "Poalim Invest Netanya"
+        },
+        {
+          "branchId": "394",
+          "branchName": "Netanya Business 394"
+        },
+        {
+          "branchId": "749",
+          "branchName": "netanya hayam"
+        },
+        {
+          "branchId": "167",
+          "branchName": "Netanya Business 167"
+        },
+        {
+          "branchId": "168",
+          "branchName": "Netanya Business 168"
+        },
+        {
+          "branchId": "169",
+          "branchName": "Netanya Business 169"
+        },
+        {
+          "branchId": "174",
+          "branchName": "Netanya Business 174"
+        },
+        {
+          "branchId": "72",
+          "branchName": "Netanya Business 72"
+        },
+        {
+          "branchId": "797",
+          "branchName": "niarot erech"
+        },
+        {
+          "branchId": "799",
+          "branchName": "hanhala-rashit"
+        },
+        {
+          "branchId": "595",
+          "branchName": "halvaot-ovdim"
+        },
+        {
+          "branchId": "602",
+          "branchName": "hatzafon"
+        },
+        {
+          "branchId": "603",
+          "branchName": "yad eliyahu"
+        },
+        {
+          "branchId": "604",
+          "branchName": "kiryat shalom"
+        },
+        {
+          "branchId": "607",
+          "branchName": "shchunat hatikva"
+        },
+        {
+          "branchId": "609",
+          "branchName": "kikar rabin"
+        },
+        {
+          "branchId": "610",
+          "branchName": "hadar yosef"
+        },
+        {
+          "branchId": "611",
+          "branchName": "jaffa"
+        },
+        {
+          "branchId": "529",
+          "branchName": "yeshurun"
+        },
+        {
+          "branchId": "531",
+          "branchName": "matach hanar"
+        },
+        {
+          "branchId": "532",
+          "branchName": "shaul hamelech"
+        },
+        {
+          "branchId": "579",
+          "branchName": "hevrot bnot hanhar"
+        },
+        {
+          "branchId": "580",
+          "branchName": "pk' meyuhadim hnahr"
+        },
+        {
+          "branchId": "567",
+          "branchName": "beit asia"
+        },
+        {
+          "branchId": "568",
+          "branchName": "ramat aviv gimel"
+        },
+        {
+          "branchId": "772",
+          "branchName": "linciln"
+        },
+        {
+          "branchId": "778",
+          "branchName": "Avivim"
+        },
+        {
+          "branchId": "780",
+          "branchName": "yitzhak sadeh"
+        },
+        {
+          "branchId": "794",
+          "branchName": "intl.p.b.center"
+        },
+        {
+          "branchId": "795",
+          "branchName": "tochniot chisachon"
+        },
+        {
+          "branchId": "450",
+          "branchName": "tel aviv bus.center"
+        },
+        {
+          "branchId": "987",
+          "branchName": "Carmelim Extension"
+        },
+        {
+          "branchId": "988",
+          "branchName": "Israelya Extension"
+        },
+        {
+          "branchId": "791",
+          "branchName": "Hamifratz"
+        },
+        {
+          "branchId": "755",
+          "branchName": "yzre'eliya"
+        },
+        {
+          "branchId": "144",
+          "branchName": "Poalim Invest Haifa"
+        },
+        {
+          "branchId": "359",
+          "branchName": "Hamifratz Business Center"
+        },
+        {
+          "branchId": "700",
+          "branchName": "haifa main"
+        },
+        {
+          "branchId": "701",
+          "branchName": "har hacarmel"
+        },
+        {
+          "branchId": "702",
+          "branchName": "neve sha'anan"
+        },
+        {
+          "branchId": "704",
+          "branchName": "achuza"
+        },
+        {
+          "branchId": "708",
+          "branchName": "carmelim"
+        },
+        {
+          "branchId": "736",
+          "branchName": "Poalim Business Haifa"
+        },
+        {
+          "branchId": "267",
+          "branchName": "Poalim Invest Krayot"
+        },
+        {
+          "branchId": "549",
+          "branchName": "kfar tavor"
+        },
+        {
+          "branchId": "290",
+          "branchName": "Beitar ilit"
+        },
+        {
+          "branchId": "286",
+          "branchName": "ariel"
+        },
+        {
+          "branchId": "732",
+          "branchName": "Ma'alot Tarshiha"
+        },
+        {
+          "branchId": "570",
+          "branchName": "omer"
+        },
+        {
+          "branchId": "506",
+          "branchName": "tira"
+        },
+        {
+          "branchId": "762",
+          "branchName": "yavne"
+        },
+        {
+          "branchId": "665",
+          "branchName": "taibeh"
+        },
+        {
+          "branchId": "548",
+          "branchName": "Um el Fahem"
+        },
+        {
+          "branchId": "718",
+          "branchName": "kiryat shmona"
+        },
+        {
+          "branchId": "516",
+          "branchName": "ramat hanassi"
+        },
+        {
+          "branchId": "642",
+          "branchName": "bat yam"
+        },
+        {
+          "branchId": "455",
+          "branchName": "hasharon bus.center"
+        },
+        {
+          "branchId": "584",
+          "branchName": "hagalim"
+        },
+        {
+          "branchId": "150",
+          "branchName": "Poalim Invest Herzliya"
+        },
+        {
+          "branchId": "358",
+          "branchName": "Herzliya Business Center"
+        },
+        {
+          "branchId": "628",
+          "branchName": "herzliya"
+        },
+        {
+          "branchId": "600",
+          "branchName": "Holon Business 600"
+        },
+        {
+          "branchId": "522",
+          "branchName": "shenkar"
+        },
+        {
+          "branchId": "539",
+          "branchName": "Lev Holon"
+        },
+        {
+          "branchId": "586",
+          "branchName": "Holon Business 586"
+        },
+        {
+          "branchId": "758",
+          "branchName": "sheshet hayamim"
+        },
+        {
+          "branchId": "765",
+          "branchName": "Holon Business 765"
+        },
+        {
+          "branchId": "399",
+          "branchName": "Holon Business 399"
+        },
+        {
+          "branchId": "412",
+          "branchName": "Holon Business 412"
+        },
+        {
+          "branchId": "436",
+          "branchName": "Holon Business 436"
+        },
+        {
+          "branchId": "159",
+          "branchName": "Holon Business 159"
+        },
+        {
+          "branchId": "391",
+          "branchName": "Holon Business 391"
+        },
+        {
+          "branchId": "638",
+          "branchName": "holon weizman"
+        },
+        {
+          "branchId": "175",
+          "branchName": "Holon Business 175"
+        },
+        {
+          "branchId": "176",
+          "branchName": "Holon Business 176"
+        },
+        {
+          "branchId": "177",
+          "branchName": "Holon Business 177"
+        },
+        {
+          "branchId": "61",
+          "branchName": "Holon Business 61"
+        },
+        {
+          "branchId": "63",
+          "branchName": "Holon Business 63"
+        },
+        {
+          "branchId": "110",
+          "branchName": "Holon Business 110"
+        },
+        {
+          "branchId": "723",
+          "branchName": "tveria"
+        },
+        {
+          "branchId": "559",
+          "branchName": "hadar tal"
+        },
+        {
+          "branchId": "627",
+          "branchName": "kfar saba"
+        },
+        {
+          "branchId": "542",
+          "branchName": "rosh pina"
+        },
+        {
+          "branchId": "479",
+          "branchName": "sakhnin"
+        },
+        {
+          "branchId": "458",
+          "branchName": "North Business Centre"
+        },
+        {
+          "branchId": "727",
+          "branchName": "afula"
+        },
+        {
+          "branchId": "738",
+          "branchName": "afula eilt"
+        },
+        {
+          "branchId": "41",
+          "branchName": "Poalim Invest Afula"
+        },
+        {
+          "branchId": "622",
+          "branchName": "pardes hana"
+        },
+        {
+          "branchId": "714",
+          "branchName": "tzfat"
+        },
+        {
+          "branchId": "729",
+          "branchName": "Kiryat Motzkin"
+        },
+        {
+          "branchId": "768",
+          "branchName": "neve yam"
+        },
+        {
+          "branchId": "408",
+          "branchName": "Poalim Invest Rishon Lezion"
+        },
+        {
+          "branchId": "555",
+          "branchName": "hashaked"
+        },
+        {
+          "branchId": "634",
+          "branchName": "Rishon Lezion"
+        },
+        {
+          "branchId": "722",
+          "branchName": "yokne'am"
+        },
+        {
+          "branchId": "656",
+          "branchName": "kiryat ono"
+        },
+        {
+          "branchId": "986",
+          "branchName": "mazkeret batya Extension"
+        },
+        {
+          "branchId": "536",
+          "branchName": "mazkeret batya"
+        },
+        {
+          "branchId": "630",
+          "branchName": "ramat hasharon"
+        },
+        {
+          "branchId": "655",
+          "branchName": "bnei brak"
+        },
+        {
+          "branchId": "640",
+          "branchName": "givatayim"
+        },
+        {
+          "branchId": "877",
+          "branchName": "call center"
+        },
+        {
+          "branchId": "767",
+          "branchName": "Be Online"
+        },
+        {
+          "branchId": "643",
+          "branchName": "azur"
+        },
+        {
+          "branchId": "675",
+          "branchName": "kfar yona"
+        },
+        {
+          "branchId": "410",
+          "branchName": "shoham"
+        },
+        {
+          "branchId": "721",
+          "branchName": "kiryat ata"
+        },
+        {
+          "branchId": "418",
+          "branchName": "Tamra"
+        },
+        {
+          "branchId": "712",
+          "branchName": "nesher tel hanan"
+        },
+        {
+          "branchId": "713",
+          "branchName": "acco"
+        },
+        {
+          "branchId": "770",
+          "branchName": "Ha'eshel"
+        },
+        {
+          "branchId": "434",
+          "branchName": "Poalim Invest Be'er Sheva"
+        },
+        {
+          "branchId": "668",
+          "branchName": "hanesi'im"
+        },
+        {
+          "branchId": "160",
+          "branchName": "Neve Zeeav"
+        },
+        {
+          "branchId": "631",
+          "branchName": "beer sheva"
+        },
+        {
+          "branchId": "69",
+          "branchName": "RAMAT YISHAY"
+        },
+        {
+          "branchId": "985",
+          "branchName": "Gan Yavne  Extension"
+        },
+        {
+          "branchId": "647",
+          "branchName": "gan yavne"
+        },
+        {
+          "branchId": "657",
+          "branchName": "or yehuda"
+        },
+        {
+          "branchId": "465",
+          "branchName": "Em hamoshavot"
+        },
+        {
+          "branchId": "616",
+          "branchName": "petah tikva"
+        },
+        {
+          "branchId": "552",
+          "branchName": "Poalim Business Petah-Tikva"
+        },
+        {
+          "branchId": "761",
+          "branchName": "haim ozer"
+        },
+        {
+          "branchId": "153",
+          "branchName": "Kefar Ganim"
+        },
+        {
+          "branchId": "143",
+          "branchName": "Poalim Invest Petah Tikva"
+        },
+        {
+          "branchId": "688",
+          "branchName": "kiriat arie"
+        },
+        {
+          "branchId": "457",
+          "branchName": "jerusalem bus. center"
+        },
+        {
+          "branchId": "599",
+          "branchName": "hagan hatechnology"
+        },
+        {
+          "branchId": "520",
+          "branchName": "giv'at shaul"
+        },
+        {
+          "branchId": "533",
+          "branchName": "me'ah she'arim"
+        },
+        {
+          "branchId": "538",
+          "branchName": "ramot"
+        },
+        {
+          "branchId": "782",
+          "branchName": "rehavia"
+        },
+        {
+          "branchId": "784",
+          "branchName": "hagiv'a hatzarfatit"
+        },
+        {
+          "branchId": "406",
+          "branchName": "Poalim Invest Jerusalem"
+        },
+        {
+          "branchId": "690",
+          "branchName": "jerusalem"
+        },
+        {
+          "branchId": "691",
+          "branchName": "kiryat hayovel"
+        },
+        {
+          "branchId": "694",
+          "branchName": "beit hakerem"
+        },
+        {
+          "branchId": "695",
+          "branchName": "ramot eshkol"
+        },
+        {
+          "branchId": "696",
+          "branchName": "east jerusalem"
+        },
+        {
+          "branchId": "698",
+          "branchName": "sha'arei hayir"
+        },
+        {
+          "branchId": "699",
+          "branchName": "pisgat ze'ev"
+        },
+        {
+          "branchId": "748",
+          "branchName": "talpiot"
+        },
+        {
+          "branchId": "540",
+          "branchName": "kikar hasiti"
+        },
+        {
+          "branchId": "766",
+          "branchName": "gur"
+        },
+        {
+          "branchId": "658",
+          "branchName": "ashdod"
+        },
+        {
+          "branchId": "454",
+          "branchName": "Ashdod bus. Center"
+        },
+        {
+          "branchId": "62",
+          "branchName": "Poalim Invest Ashdod"
+        },
+        {
+          "branchId": "984",
+          "branchName": "Kesaria Extension"
+        },
+        {
+          "branchId": "620",
+          "branchName": "hadera"
+        },
+        {
+          "branchId": "115",
+          "branchName": "Poalim Invest Hadera"
+        },
+        {
+          "branchId": "633",
+          "branchName": "ofakim"
+        },
+        {
+          "branchId": "475",
+          "branchName": "elad"
+        },
+        {
+          "branchId": "448",
+          "branchName": "MEVASSERET ZION"
+        },
+        {
+          "branchId": "673",
+          "branchName": "Mevo Yam"
+        },
+        {
+          "branchId": "649",
+          "branchName": "sderot"
+        },
+        {
+          "branchId": "648",
+          "branchName": "kiryat malakhi"
+        },
+        {
+          "branchId": "576",
+          "branchName": "harod"
+        },
+        {
+          "branchId": "456",
+          "branchName": "haifa bus. center"
+        }
+      ]
+    },
+    {
+      "bankId": "4",
+      "bankName": "Bank Yahav  for Government Employees Ltd",
+      "branches": [
+        {
+          "branchId": "137",
+          "branchName": "Asaf   Ha'rofe"
+        },
+        {
+          "branchId": "281",
+          "branchName": "EILAT"
+        },
+        {
+          "branchId": "195",
+          "branchName": "Ichilov"
+        },
+        {
+          "branchId": "130",
+          "branchName": "Rothschild"
+        },
+        {
+          "branchId": "202",
+          "branchName": "daliat al karmel"
+        },
+        {
+          "branchId": "825",
+          "branchName": "mgdal haemak"
+        },
+        {
+          "branchId": "401",
+          "branchName": "Ramat  Gan"
+        },
+        {
+          "branchId": "132",
+          "branchName": "Tel Hashomer"
+        },
+        {
+          "branchId": "203",
+          "branchName": "netivot"
+        },
+        {
+          "branchId": "497",
+          "branchName": "Pizgat  Zeev"
+        },
+        {
+          "branchId": "204",
+          "branchName": "talpeut"
+        },
+        {
+          "branchId": "120",
+          "branchName": "Jerusalem"
+        },
+        {
+          "branchId": "121",
+          "branchName": "Kedem"
+        },
+        {
+          "branchId": "114",
+          "branchName": "Ashdod"
+        },
+        {
+          "branchId": "207",
+          "branchName": "kiriat-ata"
+        },
+        {
+          "branchId": "124",
+          "branchName": "Ber Sheva"
+        },
+        {
+          "branchId": "119",
+          "branchName": "Petach Tikva"
+        },
+        {
+          "branchId": "133",
+          "branchName": "Natanya"
+        },
+        {
+          "branchId": "245",
+          "branchName": "Afula"
+        },
+        {
+          "branchId": "430",
+          "branchName": "Lev  Rishon"
+        },
+        {
+          "branchId": "136",
+          "branchName": "Reshon  Lezion"
+        },
+        {
+          "branchId": "278",
+          "branchName": "Rehovot"
+        },
+        {
+          "branchId": "461",
+          "branchName": "Bet  Shemesh"
+        },
+        {
+          "branchId": "206",
+          "branchName": "rosh ahin"
+        },
+        {
+          "branchId": "171",
+          "branchName": "Bat  Yam"
+        },
+        {
+          "branchId": "284",
+          "branchName": "Holon"
+        },
+        {
+          "branchId": "118",
+          "branchName": "kfar saba"
+        },
+        {
+          "branchId": "311",
+          "branchName": "Carmel"
+        },
+        {
+          "branchId": "116",
+          "branchName": "Modi'in"
+        },
+        {
+          "branchId": "193",
+          "branchName": "Ma' alleh  Adumim"
+        },
+        {
+          "branchId": "141",
+          "branchName": "Nahariya"
+        },
+        {
+          "branchId": "279",
+          "branchName": "Kiryat Beyalik"
+        },
+        {
+          "branchId": "115",
+          "branchName": "Hayovel Tower"
+        },
+        {
+          "branchId": "131",
+          "branchName": "Ha'arbaa"
+        },
+        {
+          "branchId": "280",
+          "branchName": "Karmiel"
+        },
+        {
+          "branchId": "125",
+          "branchName": "Ashkelon"
+        },
+        {
+          "branchId": "138",
+          "branchName": "Hadera"
+        },
+        {
+          "branchId": "725",
+          "branchName": "yoknam halit"
+        },
+        {
+          "branchId": "236",
+          "branchName": "Glilot"
+        },
+        {
+          "branchId": "117",
+          "branchName": "Mercaz  Hanegev"
+        },
+        {
+          "branchId": "7",
+          "branchName": "Malcha"
+        },
+        {
+          "branchId": "110",
+          "branchName": "Hanhala  Rashit"
+        },
+        {
+          "branchId": "111",
+          "branchName": "Hanhala  Rashit"
+        },
+        {
+          "branchId": "112",
+          "branchName": "Hanhala  Rashit"
+        },
+        {
+          "branchId": "113",
+          "branchName": "Hanhala  Rashit"
+        },
+        {
+          "branchId": "488",
+          "branchName": "Mishkenot Hauma"
+        },
+        {
+          "branchId": "201",
+          "branchName": "Hdasa"
+        },
+        {
+          "branchId": "145",
+          "branchName": "Hanhala  Rashit"
+        },
+        {
+          "branchId": "146",
+          "branchName": "Hanhala  Rashit"
+        },
+        {
+          "branchId": "148",
+          "branchName": "Hanhala  Rashit"
+        },
+        {
+          "branchId": "149",
+          "branchName": "Hanhala  Rashit"
+        },
+        {
+          "branchId": "123",
+          "branchName": "Bet Yahav"
+        },
+        {
+          "branchId": "126",
+          "branchName": "Hanhala  Rashit"
+        },
+        {
+          "branchId": "129",
+          "branchName": "kanfei  nesharim"
+        },
+        {
+          "branchId": "44",
+          "branchName": "Hilel  Yafe"
+        },
+        {
+          "branchId": "134",
+          "branchName": "Ben Guryon"
+        },
+        {
+          "branchId": "824",
+          "branchName": "shdarot"
+        },
+        {
+          "branchId": "142",
+          "branchName": "nof agalil"
+        },
+        {
+          "branchId": "233",
+          "branchName": "Rambam"
+        },
+        {
+          "branchId": "140",
+          "branchName": "Haifa"
+        },
+        {
+          "branchId": "144",
+          "branchName": "university of haifa"
+        },
+        {
+          "branchId": "135",
+          "branchName": "Wollfson"
+        },
+        {
+          "branchId": "246",
+          "branchName": "Tiberya"
+        },
+        {
+          "branchId": "128",
+          "branchName": "kiryat gat"
+        },
+        {
+          "branchId": "205",
+          "branchName": "dimona"
+        },
+        {
+          "branchId": "150",
+          "branchName": "Bear  Yakov"
+        }
+      ]
+    },
+    {
+      "bankId": "54",
+      "bankName": "Bank of Jerusalem Ltd",
+      "branches": [
+        {
+          "branchId": "51",
+          "branchName": "tel aviv"
+        },
+        {
+          "branchId": "25",
+          "branchName": "netivot"
+        },
+        {
+          "branchId": "30",
+          "branchName": "intr private banking"
+        },
+        {
+          "branchId": "91",
+          "branchName": "nazareth"
+        },
+        {
+          "branchId": "92",
+          "branchName": "netanya"
+        },
+        {
+          "branchId": "98",
+          "branchName": "sakhnin"
+        },
+        {
+          "branchId": "63",
+          "branchName": "krayot"
+        },
+        {
+          "branchId": "96",
+          "branchName": "carmiel"
+        },
+        {
+          "branchId": "45",
+          "branchName": "capital market"
+        },
+        {
+          "branchId": "68",
+          "branchName": "bat yam"
+        },
+        {
+          "branchId": "67",
+          "branchName": "holon"
+        },
+        {
+          "branchId": "65",
+          "branchName": "um el phaem"
+        },
+        {
+          "branchId": "64",
+          "branchName": "sahanin"
+        },
+        {
+          "branchId": "66",
+          "branchName": "ashqelon"
+        },
+        {
+          "branchId": "95",
+          "branchName": "dalitat carmel"
+        },
+        {
+          "branchId": "37",
+          "branchName": "pisgat zeev"
+        },
+        {
+          "branchId": "38",
+          "branchName": "beit shemesh"
+        },
+        {
+          "branchId": "60",
+          "branchName": "beit shemesh"
+        },
+        {
+          "branchId": "39",
+          "branchName": "beitar ilit"
+        },
+        {
+          "branchId": "79",
+          "branchName": "oryehuda"
+        },
+        {
+          "branchId": "93",
+          "branchName": "petah tiqva"
+        },
+        {
+          "branchId": "55",
+          "branchName": "hamerkaz"
+        },
+        {
+          "branchId": "69",
+          "branchName": "beer sheva"
+        },
+        {
+          "branchId": "94",
+          "branchName": "carmiel"
+        },
+        {
+          "branchId": "54",
+          "branchName": "hakko"
+        },
+        {
+          "branchId": "62",
+          "branchName": "tarhiha"
+        },
+        {
+          "branchId": "26",
+          "branchName": "geula jerusalem"
+        },
+        {
+          "branchId": "77",
+          "branchName": "main branch"
+        },
+        {
+          "branchId": "50",
+          "branchName": "jerusalem"
+        },
+        {
+          "branchId": "76",
+          "branchName": "elad"
+        },
+        {
+          "branchId": "36",
+          "branchName": "modiin ilit"
+        },
+        {
+          "branchId": "61",
+          "branchName": "ashdod"
+        },
+        {
+          "branchId": "52",
+          "branchName": "haifa"
+        },
+        {
+          "branchId": "41",
+          "branchName": "beitar ilit"
+        },
+        {
+          "branchId": "97",
+          "branchName": "um el phaem"
+        },
+        {
+          "branchId": "53",
+          "branchName": "rishon le zion"
+        },
+        {
+          "branchId": "40",
+          "branchName": "beit shemesh"
+        },
+        {
+          "branchId": "1",
+          "branchName": "accouting branch"
+        },
+        {
+          "branchId": "31",
+          "branchName": "business branch"
+        },
+        {
+          "branchId": "22",
+          "branchName": "issuer prepaid"
+        }
+      ]
+    },
+    {
+      "bankId": "99",
+      "bankName": "Bank Of Israel",
+      "branches": [
+        {
+          "branchId": "1",
+          "branchName": "Jerusalem"
+        }
+      ]
+    },
+    {
+      "bankId": "10",
+      "bankName": "Bank Leumi Le-Israel B.M",
+      "branches": [
+        {
+          "branchId": "68",
+          "branchName": "Modi'in Mortgage Extension"
+        },
+        {
+          "branchId": "694",
+          "branchName": "savionay yam"
+        },
+        {
+          "branchId": "955",
+          "branchName": "benyamina"
+        },
+        {
+          "branchId": "867",
+          "branchName": "KFAR YASIF"
+        },
+        {
+          "branchId": "853",
+          "branchName": "ramat chen"
+        },
+        {
+          "branchId": "836",
+          "branchName": "shikon havatikim"
+        },
+        {
+          "branchId": "969",
+          "branchName": "MM SHFAR'AM"
+        },
+        {
+          "branchId": "842",
+          "branchName": "Shfaram Business"
+        },
+        {
+          "branchId": "874",
+          "branchName": "kiryat biyalik"
+        },
+        {
+          "branchId": "718",
+          "branchName": "GLOBAL BANKING 718"
+        },
+        {
+          "branchId": "771",
+          "branchName": "king shaul"
+        },
+        {
+          "branchId": "622",
+          "branchName": "tzameret"
+        },
+        {
+          "branchId": "839",
+          "branchName": "faibel"
+        },
+        {
+          "branchId": "829",
+          "branchName": "gesher hayarqon"
+        },
+        {
+          "branchId": "813",
+          "branchName": "bazel"
+        },
+        {
+          "branchId": "625",
+          "branchName": "neve avivim"
+        },
+        {
+          "branchId": "821",
+          "branchName": "Cashir Center Tel Aviv"
+        },
+        {
+          "branchId": "957",
+          "branchName": "even yehuda"
+        },
+        {
+          "branchId": "723",
+          "branchName": "iksal"
+        },
+        {
+          "branchId": "977",
+          "branchName": "BEIT GAN"
+        },
+        {
+          "branchId": "984",
+          "branchName": "MRAR"
+        },
+        {
+          "branchId": "772",
+          "branchName": "bueine nujedat"
+        },
+        {
+          "branchId": "778",
+          "branchName": "jolis"
+        },
+        {
+          "branchId": "722",
+          "branchName": "HORPHISH"
+        },
+        {
+          "branchId": "791",
+          "branchName": "turan"
+        },
+        {
+          "branchId": "713",
+          "branchName": "YAFFA"
+        },
+        {
+          "branchId": "704",
+          "branchName": "beer yaakov"
+        },
+        {
+          "branchId": "964",
+          "branchName": "Natzrat Business"
+        },
+        {
+          "branchId": "840",
+          "branchName": "NAZARETH"
+        },
+        {
+          "branchId": "617",
+          "branchName": "MIRKZ AMEDEEM"
+        },
+        {
+          "branchId": "782",
+          "branchName": "SAFAFRY"
+        },
+        {
+          "branchId": "974",
+          "branchName": "Service Center Hasharon"
+        },
+        {
+          "branchId": "637",
+          "branchName": "habe'er"
+        },
+        {
+          "branchId": "908",
+          "branchName": "IBLIN"
+        },
+        {
+          "branchId": "796",
+          "branchName": "RENE MASHHAD"
+        },
+        {
+          "branchId": "945",
+          "branchName": "RAMA"
+        },
+        {
+          "branchId": "781",
+          "branchName": "Service Center Bet Yam"
+        },
+        {
+          "branchId": "958",
+          "branchName": "herzelia pituach"
+        },
+        {
+          "branchId": "863",
+          "branchName": "kikar siran"
+        },
+        {
+          "branchId": "714",
+          "branchName": "kfar saba hieroka"
+        },
+        {
+          "branchId": "754",
+          "branchName": "jdaidi maker"
+        },
+        {
+          "branchId": "720",
+          "branchName": "tshrnichovski"
+        },
+        {
+          "branchId": "892",
+          "branchName": "hagalil"
+        },
+        {
+          "branchId": "883",
+          "branchName": "Hawadi"
+        },
+        {
+          "branchId": "667",
+          "branchName": "oranit"
+        },
+        {
+          "branchId": "692",
+          "branchName": "givat shemuel"
+        },
+        {
+          "branchId": "915",
+          "branchName": "kiryat yovel"
+        },
+        {
+          "branchId": "784",
+          "branchName": "gilo"
+        },
+        {
+          "branchId": "920",
+          "branchName": "kikar zion"
+        },
+        {
+          "branchId": "634",
+          "branchName": "pisgat zeev"
+        },
+        {
+          "branchId": "798",
+          "branchName": "ramot"
+        },
+        {
+          "branchId": "512",
+          "branchName": "ramor eshkol"
+        },
+        {
+          "branchId": "786",
+          "branchName": "kikar hashvatim"
+        },
+        {
+          "branchId": "959",
+          "branchName": "givat olga"
+        },
+        {
+          "branchId": "684",
+          "branchName": "mazkeret batya"
+        },
+        {
+          "branchId": "731",
+          "branchName": "hazon hish"
+        },
+        {
+          "branchId": "775",
+          "branchName": "haye'elim"
+        },
+        {
+          "branchId": "703",
+          "branchName": "kfar ganim"
+        },
+        {
+          "branchId": "835",
+          "branchName": "tel mond"
+        },
+        {
+          "branchId": "706",
+          "branchName": "pardesia"
+        },
+        {
+          "branchId": "680",
+          "branchName": "Modi'in"
+        },
+        {
+          "branchId": "691",
+          "branchName": "tzelon"
+        },
+        {
+          "branchId": "943",
+          "branchName": "hod hasharon"
+        },
+        {
+          "branchId": "987",
+          "branchName": "migdal haemek"
+        },
+        {
+          "branchId": "752",
+          "branchName": "ma'ale edomim"
+        },
+        {
+          "branchId": "788",
+          "branchName": "kiryat arba Extension"
+        },
+        {
+          "branchId": "263",
+          "branchName": "mashkantaot karney shomron"
+        },
+        {
+          "branchId": "615",
+          "branchName": "KABOUL"
+        },
+        {
+          "branchId": "644",
+          "branchName": "KAFAR KANA"
+        },
+        {
+          "branchId": "787",
+          "branchName": "jat"
+        },
+        {
+          "branchId": "652",
+          "branchName": "kfar kasem"
+        },
+        {
+          "branchId": "841",
+          "branchName": "ARAARA"
+        },
+        {
+          "branchId": "906",
+          "branchName": "Iron Business"
+        },
+        {
+          "branchId": "613",
+          "branchName": "Qlansowa"
+        },
+        {
+          "branchId": "846",
+          "branchName": "KAFAR KARA"
+        },
+        {
+          "branchId": "732",
+          "branchName": "katzrin"
+        },
+        {
+          "branchId": "668",
+          "branchName": "Sorek Business"
+        },
+        {
+          "branchId": "936",
+          "branchName": "ramla"
+        },
+        {
+          "branchId": "708",
+          "branchName": "shchakim"
+        },
+        {
+          "branchId": "851",
+          "branchName": "ramat gan"
+        },
+        {
+          "branchId": "653",
+          "branchName": "tel hashomer"
+        },
+        {
+          "branchId": "655",
+          "branchName": "kesem"
+        },
+        {
+          "branchId": "666",
+          "branchName": "Megdaly Paz Business"
+        },
+        {
+          "branchId": "852",
+          "branchName": "ramat itzchak"
+        },
+        {
+          "branchId": "854",
+          "branchName": "haroe"
+        },
+        {
+          "branchId": "682",
+          "branchName": "asakim ramat hachayal"
+        },
+        {
+          "branchId": "743",
+          "branchName": "asakim habursa"
+        },
+        {
+          "branchId": "748",
+          "branchName": "Business Center Dan"
+        },
+        {
+          "branchId": "942",
+          "branchName": "Ra'a'nana"
+        },
+        {
+          "branchId": "962",
+          "branchName": "na'aria"
+        },
+        {
+          "branchId": "966",
+          "branchName": "beit shean"
+        },
+        {
+          "branchId": "956",
+          "branchName": "zichron yaakov"
+        },
+        {
+          "branchId": "837",
+          "branchName": "yahud"
+        },
+        {
+          "branchId": "898",
+          "branchName": "Business Center Hamifratz"
+        },
+        {
+          "branchId": "876",
+          "branchName": "Business Center Haifa"
+        },
+        {
+          "branchId": "719",
+          "branchName": "KIRYAT BIALIK"
+        },
+        {
+          "branchId": "790",
+          "branchName": "netivot"
+        },
+        {
+          "branchId": "838",
+          "branchName": "neot afeka"
+        },
+        {
+          "branchId": "847",
+          "branchName": "Pension Center Champion"
+        },
+        {
+          "branchId": "865",
+          "branchName": "Tel Aviv Tzafon BUSUNESS"
+        },
+        {
+          "branchId": "872",
+          "branchName": "Service Center North Tel Aviv"
+        },
+        {
+          "branchId": "673",
+          "branchName": "Habarzel Business"
+        },
+        {
+          "branchId": "627",
+          "branchName": "migdalay david"
+        },
+        {
+          "branchId": "810",
+          "branchName": "kikar hamoshavot"
+        },
+        {
+          "branchId": "807",
+          "branchName": "trumpeldor"
+        },
+        {
+          "branchId": "654",
+          "branchName": "asakim alonim"
+        },
+        {
+          "branchId": "603",
+          "branchName": "kikar hamedina"
+        },
+        {
+          "branchId": "809",
+          "branchName": "hechal hatarbut"
+        },
+        {
+          "branchId": "833",
+          "branchName": "Ainshtein"
+        },
+        {
+          "branchId": "616",
+          "branchName": "hama'apilim"
+        },
+        {
+          "branchId": "624",
+          "branchName": "emek bracha"
+        },
+        {
+          "branchId": "626",
+          "branchName": "Private Banking Dan"
+        },
+        {
+          "branchId": "628",
+          "branchName": "ramat aviv g"
+        },
+        {
+          "branchId": "631",
+          "branchName": "Lamed"
+        },
+        {
+          "branchId": "801",
+          "branchName": "YAFO"
+        },
+        {
+          "branchId": "802",
+          "branchName": "asakim alenbi"
+        },
+        {
+          "branchId": "803",
+          "branchName": "Biyalik (foreign residents)"
+        },
+        {
+          "branchId": "804",
+          "branchName": "gordon"
+        },
+        {
+          "branchId": "805",
+          "branchName": "Florentin Business"
+        },
+        {
+          "branchId": "806",
+          "branchName": "lev dizengoff"
+        },
+        {
+          "branchId": "811",
+          "branchName": "Lev Tel-Aviv Business"
+        },
+        {
+          "branchId": "812",
+          "branchName": "Migdaly Aviv Business"
+        },
+        {
+          "branchId": "814",
+          "branchName": "yad eliyaho"
+        },
+        {
+          "branchId": "816",
+          "branchName": "kikar itzhak rabin"
+        },
+        {
+          "branchId": "817",
+          "branchName": "Business Center Tel Aviv"
+        },
+        {
+          "branchId": "832",
+          "branchName": "pinkas"
+        },
+        {
+          "branchId": "686",
+          "branchName": "PRIVATE BANKING TEL AVIV"
+        },
+        {
+          "branchId": "103",
+          "branchName": "Extension of foreign residents (biyalik)"
+        },
+        {
+          "branchId": "606",
+          "branchName": "Global Banking 606"
+        },
+        {
+          "branchId": "983",
+          "branchName": "baka el garbia"
+        },
+        {
+          "branchId": "862",
+          "branchName": "DIR EL ASSAD  - Beaana"
+        },
+        {
+          "branchId": "884",
+          "branchName": "Gulis Business"
+        },
+        {
+          "branchId": "761",
+          "branchName": "GUSH HALAV"
+        },
+        {
+          "branchId": "979",
+          "branchName": "KFAR DABURIA"
+        },
+        {
+          "branchId": "981",
+          "branchName": "daliat el carmel"
+        },
+        {
+          "branchId": "871",
+          "branchName": "YARKA"
+        },
+        {
+          "branchId": "961",
+          "branchName": "karmiel"
+        },
+        {
+          "branchId": "825",
+          "branchName": "KAFAR MANDA"
+        },
+        {
+          "branchId": "792",
+          "branchName": "NAHEF"
+        },
+        {
+          "branchId": "885",
+          "branchName": "tirat hacarmel"
+        },
+        {
+          "branchId": "923",
+          "branchName": "dimona"
+        },
+        {
+          "branchId": "895",
+          "branchName": "kiryat tivon"
+        },
+        {
+          "branchId": "928",
+          "branchName": "gedera"
+        },
+        {
+          "branchId": "758",
+          "branchName": "arad"
+        },
+        {
+          "branchId": "999",
+          "branchName": "eilat"
+        },
+        {
+          "branchId": "849",
+          "branchName": "HEAD OFFICE"
+        },
+        {
+          "branchId": "899",
+          "branchName": "LEUMI VIP"
+        },
+        {
+          "branchId": "640",
+          "branchName": "call center regardless"
+        },
+        {
+          "branchId": "938",
+          "branchName": "airport city"
+        },
+        {
+          "branchId": "950",
+          "branchName": "LEUMI VIP"
+        },
+        {
+          "branchId": "991",
+          "branchName": "ANAF SLIKA UMISHLOACH"
+        },
+        {
+          "branchId": "914",
+          "branchName": "LEUMI VIP"
+        },
+        {
+          "branchId": "937",
+          "branchName": "lod"
+        },
+        {
+          "branchId": "678",
+          "branchName": "LEUMI VIP"
+        },
+        {
+          "branchId": "693",
+          "branchName": "asakim ayalon"
+        },
+        {
+          "branchId": "281",
+          "branchName": "Mortgage Stamping Center"
+        },
+        {
+          "branchId": "736",
+          "branchName": "LEUMI VIP"
+        },
+        {
+          "branchId": "925",
+          "branchName": "Business Ashkelon"
+        },
+        {
+          "branchId": "926",
+          "branchName": "AFRIDAR ASHKELON"
+        },
+        {
+          "branchId": "725",
+          "branchName": "Science Park Business"
+        },
+        {
+          "branchId": "933",
+          "branchName": "nes ziona"
+        },
+        {
+          "branchId": "648",
+          "branchName": "Sharonim Business"
+        },
+        {
+          "branchId": "717",
+          "branchName": "asakim natania"
+        },
+        {
+          "branchId": "952",
+          "branchName": "NETANYA"
+        },
+        {
+          "branchId": "681",
+          "branchName": "ramat poleg"
+        },
+        {
+          "branchId": "744",
+          "branchName": "Business Center Hasharon"
+        },
+        {
+          "branchId": "873",
+          "branchName": "SACHNIN"
+        },
+        {
+          "branchId": "965",
+          "branchName": "Afula"
+        },
+        {
+          "branchId": "672",
+          "branchName": "Afula Business"
+        },
+        {
+          "branchId": "745",
+          "branchName": "Business Center Ha'amakim"
+        },
+        {
+          "branchId": "954",
+          "branchName": "pardes chana"
+        },
+        {
+          "branchId": "975",
+          "branchName": "zfat"
+        },
+        {
+          "branchId": "900",
+          "branchName": "kiryat yam"
+        },
+        {
+          "branchId": "705",
+          "branchName": "KIRYAT MOTZKIN"
+        },
+        {
+          "branchId": "978",
+          "branchName": "Business Center Rishon"
+        },
+        {
+          "branchId": "669",
+          "branchName": "HAYEKEV RISHON LEZION"
+        },
+        {
+          "branchId": "671",
+          "branchName": "asakim rishon le'zion"
+        },
+        {
+          "branchId": "944",
+          "branchName": "MAARAV RISHON"
+        },
+        {
+          "branchId": "934",
+          "branchName": "rishon le zion"
+        },
+        {
+          "branchId": "660",
+          "branchName": "weizmann institute of science"
+        },
+        {
+          "branchId": "929",
+          "branchName": "bilu"
+        },
+        {
+          "branchId": "930",
+          "branchName": "rechovot"
+        },
+        {
+          "branchId": "799",
+          "branchName": "private banking rehovot"
+        },
+        {
+          "branchId": "909",
+          "branchName": "ARABE"
+        },
+        {
+          "branchId": "795",
+          "branchName": "PEKIIN"
+        },
+        {
+          "branchId": "674",
+          "branchName": "RAMAT BEIT SHEMESH"
+        },
+        {
+          "branchId": "916",
+          "branchName": "beit shemesh"
+        },
+        {
+          "branchId": "164",
+          "branchName": "ramat beit shemesh Extension"
+        },
+        {
+          "branchId": "927",
+          "branchName": "kiryat gat"
+        },
+        {
+          "branchId": "742",
+          "branchName": "Rosh Ha'ayin"
+        },
+        {
+          "branchId": "980",
+          "branchName": "tira"
+        },
+        {
+          "branchId": "939",
+          "branchName": "Yavne"
+        },
+        {
+          "branchId": "951",
+          "branchName": "taibe"
+        },
+        {
+          "branchId": "820",
+          "branchName": "UM EL PAHM"
+        },
+        {
+          "branchId": "976",
+          "branchName": "kiryat shmona"
+        },
+        {
+          "branchId": "859",
+          "branchName": "Business Bat-Yam"
+        },
+        {
+          "branchId": "861",
+          "branchName": "bat yam"
+        },
+        {
+          "branchId": "844",
+          "branchName": "kfar shmaryahu"
+        },
+        {
+          "branchId": "864",
+          "branchName": "Business Center Leumitech"
+        },
+        {
+          "branchId": "688",
+          "branchName": "PRIVATE BANKING HASHARON"
+        },
+        {
+          "branchId": "614",
+          "branchName": "private banking herzelya"
+        },
+        {
+          "branchId": "783",
+          "branchName": "Maskit Business"
+        },
+        {
+          "branchId": "948",
+          "branchName": "herzelia"
+        },
+        {
+          "branchId": "657",
+          "branchName": "KIRYAT SHARET"
+        },
+        {
+          "branchId": "858",
+          "branchName": "Holon"
+        },
+        {
+          "branchId": "866",
+          "branchName": "Marganit"
+        },
+        {
+          "branchId": "651",
+          "branchName": "asakim hacharushet"
+        },
+        {
+          "branchId": "827",
+          "branchName": "Holon Business"
+        },
+        {
+          "branchId": "767",
+          "branchName": "Business Center Holon"
+        },
+        {
+          "branchId": "970",
+          "branchName": "Tiberias"
+        },
+        {
+          "branchId": "828",
+          "branchName": "HASHARON HEIGHT BUSINESS"
+        },
+        {
+          "branchId": "683",
+          "branchName": "kochav yair"
+        },
+        {
+          "branchId": "946",
+          "branchName": "kfar saba"
+        },
+        {
+          "branchId": "727",
+          "branchName": "Rosh Pina"
+        },
+        {
+          "branchId": "753",
+          "branchName": "Rosh Pina Business"
+        },
+        {
+          "branchId": "789",
+          "branchName": "ofakim"
+        },
+        {
+          "branchId": "638",
+          "branchName": "mevaseret zion"
+        },
+        {
+          "branchId": "941",
+          "branchName": "sderot"
+        },
+        {
+          "branchId": "985",
+          "branchName": "kiryat malachy"
+        },
+        {
+          "branchId": "972",
+          "branchName": "Nof Hagalil"
+        },
+        {
+          "branchId": "621",
+          "branchName": "Modi'in Elite"
+        },
+        {
+          "branchId": "435",
+          "branchName": "Harish Extension"
+        },
+        {
+          "branchId": "698",
+          "branchName": "Sapir Business"
+        },
+        {
+          "branchId": "889",
+          "branchName": "halutzay hataasia"
+        },
+        {
+          "branchId": "875",
+          "branchName": "hatechniyon"
+        },
+        {
+          "branchId": "877",
+          "branchName": "kiryat eliezer"
+        },
+        {
+          "branchId": "879",
+          "branchName": "HAIFA"
+        },
+        {
+          "branchId": "880",
+          "branchName": "horev"
+        },
+        {
+          "branchId": "881",
+          "branchName": "Cashir Center Haifa"
+        },
+        {
+          "branchId": "882",
+          "branchName": "neve sha'anan"
+        },
+        {
+          "branchId": "891",
+          "branchName": "hacarmel"
+        },
+        {
+          "branchId": "886",
+          "branchName": "moriya"
+        },
+        {
+          "branchId": "878",
+          "branchName": "hadar"
+        },
+        {
+          "branchId": "635",
+          "branchName": "denya"
+        },
+        {
+          "branchId": "715",
+          "branchName": "private banking horev"
+        },
+        {
+          "branchId": "716",
+          "branchName": "kanyon haifa"
+        },
+        {
+          "branchId": "685",
+          "branchName": "PRIVATE BANKING - HAIFA"
+        },
+        {
+          "branchId": "702",
+          "branchName": "Mvoot Haifa Business"
+        },
+        {
+          "branchId": "509",
+          "branchName": "hanevi'im"
+        },
+        {
+          "branchId": "105",
+          "branchName": "Bitar Elit Extension"
+        },
+        {
+          "branchId": "973",
+          "branchName": "Maalot TARSHIHA"
+        },
+        {
+          "branchId": "641",
+          "branchName": "Maalot"
+        },
+        {
+          "branchId": "968",
+          "branchName": "Har Hozvim Business"
+        },
+        {
+          "branchId": "901",
+          "branchName": "Business Center Jerusalem"
+        },
+        {
+          "branchId": "902",
+          "branchName": "KING GEORGE"
+        },
+        {
+          "branchId": "903",
+          "branchName": "beit hakerem"
+        },
+        {
+          "branchId": "647",
+          "branchName": "Business Givat Shaul"
+        },
+        {
+          "branchId": "661",
+          "branchName": "Service Center Jerusalem"
+        },
+        {
+          "branchId": "904",
+          "branchName": "Shaar Haeir"
+        },
+        {
+          "branchId": "687",
+          "branchName": "PRIVATE BANKING JERUSALEM"
+        },
+        {
+          "branchId": "994",
+          "branchName": "genral guardian"
+        },
+        {
+          "branchId": "905",
+          "branchName": "ramot eshkol"
+        },
+        {
+          "branchId": "911",
+          "branchName": "geula"
+        },
+        {
+          "branchId": "912",
+          "branchName": "rechavia"
+        },
+        {
+          "branchId": "918",
+          "branchName": "east jerusalem"
+        },
+        {
+          "branchId": "797",
+          "branchName": "givat oranim"
+        },
+        {
+          "branchId": "766",
+          "branchName": "bait vagan"
+        },
+        {
+          "branchId": "780",
+          "branchName": "GLOBAL BANKING 780"
+        },
+        {
+          "branchId": "785",
+          "branchName": "talpiot"
+        },
+        {
+          "branchId": "963",
+          "branchName": "Service Center Ashdod"
+        },
+        {
+          "branchId": "662",
+          "branchName": "city ashdod"
+        },
+        {
+          "branchId": "618",
+          "branchName": "Business Center Lachish"
+        },
+        {
+          "branchId": "932",
+          "branchName": "Ashdod"
+        },
+        {
+          "branchId": "376",
+          "branchName": "Rashbi Extension"
+        },
+        {
+          "branchId": "639",
+          "branchName": "asakim kisaria"
+        },
+        {
+          "branchId": "953",
+          "branchName": "hadera"
+        },
+        {
+          "branchId": "907",
+          "branchName": "HADERA BUSUNESS"
+        },
+        {
+          "branchId": "729",
+          "branchName": "yoqneam"
+        },
+        {
+          "branchId": "995",
+          "branchName": "furadis"
+        },
+        {
+          "branchId": "843",
+          "branchName": "kiryat ono"
+        },
+        {
+          "branchId": "665",
+          "branchName": "osishkin"
+        },
+        {
+          "branchId": "949",
+          "branchName": "ramat hasharon"
+        },
+        {
+          "branchId": "855",
+          "branchName": "Hyarkon Business"
+        },
+        {
+          "branchId": "856",
+          "branchName": "BNEI BRAK"
+        },
+        {
+          "branchId": "857",
+          "branchName": "givatayim"
+        },
+        {
+          "branchId": "988",
+          "branchName": "tel ganim"
+        },
+        {
+          "branchId": "757",
+          "branchName": "jaljulia"
+        },
+        {
+          "branchId": "747",
+          "branchName": "shoam"
+        },
+        {
+          "branchId": "897",
+          "branchName": "kiryat ata"
+        },
+        {
+          "branchId": "887",
+          "branchName": "HAKRAYOT BUSINESS"
+        },
+        {
+          "branchId": "187",
+          "branchName": "Extension HAKRAYOT BUSINESS"
+        },
+        {
+          "branchId": "831",
+          "branchName": "TAMRA"
+        },
+        {
+          "branchId": "893",
+          "branchName": "LEUMI VIP"
+        },
+        {
+          "branchId": "960",
+          "branchName": "Akko"
+        },
+        {
+          "branchId": "663",
+          "branchName": "Cashir Center Beea Sheva"
+        },
+        {
+          "branchId": "734",
+          "branchName": "neve zeev"
+        },
+        {
+          "branchId": "921",
+          "branchName": "Beer Sheva Business"
+        },
+        {
+          "branchId": "922",
+          "branchName": "merkaz hanegev"
+        },
+        {
+          "branchId": "924",
+          "branchName": "BEER SHEVA"
+        },
+        {
+          "branchId": "607",
+          "branchName": "Business Center Negev"
+        },
+        {
+          "branchId": "896",
+          "branchName": "Ramat Ishay Business"
+        },
+        {
+          "branchId": "739",
+          "branchName": "gan yavne"
+        },
+        {
+          "branchId": "676",
+          "branchName": "or yehuda"
+        },
+        {
+          "branchId": "670",
+          "branchName": "asakim kiryat arie"
+        },
+        {
+          "branchId": "940",
+          "branchName": "Petach Tikva"
+        },
+        {
+          "branchId": "709",
+          "branchName": "PETACH TIKVA BUSINESS"
+        },
+        {
+          "branchId": "818",
+          "branchName": "LEUMI VIP"
+        },
+        {
+          "branchId": "707",
+          "branchName": "Business Center Afek"
+        },
+        {
+          "branchId": "746",
+          "branchName": "Cashir Center Petach Tikva"
+        },
+        {
+          "branchId": "629",
+          "branchName": "DIAMOND EXCHANGE"
+        },
+        {
+          "branchId": "998",
+          "branchName": "Pepper"
+        },
+        {
+          "branchId": "601",
+          "branchName": "Pepper"
+        },
+        {
+          "branchId": "646",
+          "branchName": "BITZUA ASHRAI"
+        },
+        {
+          "branchId": "989",
+          "branchName": "BANK SERVICES CENTER"
+        },
+        {
+          "branchId": "800",
+          "branchName": "PRINCIPAL BRANCH"
+        },
+        {
+          "branchId": "679",
+          "branchName": "ATM Zone"
+        },
+        {
+          "branchId": "701",
+          "branchName": "leumi total digital"
+        },
+        {
+          "branchId": "104",
+          "branchName": "Mortgage Qiryat Hamemshala"
+        },
+        {
+          "branchId": "501",
+          "branchName": "Kikar Hashabbat"
+        }
+      ]
+    },
+    {
+      "bankId": "20",
+      "bankName": "Mizrahi Tefahot Bank Ltd",
+      "branches": [
+        {
+          "branchId": "624",
+          "branchName": "Phoenix Kup\"g"
+        },
+        {
+          "branchId": "628",
+          "branchName": "Ecselent Helman 2"
+        },
+        {
+          "branchId": "629",
+          "branchName": "E"
+        },
+        {
+          "branchId": "630",
+          "branchName": "Phoenix 3 Kup\"g"
+        },
+        {
+          "branchId": "632",
+          "branchName": "Ecselent Helman 3"
+        },
+        {
+          "branchId": "634",
+          "branchName": "Ecselent Helman 4"
+        },
+        {
+          "branchId": "635",
+          "branchName": "Phoenix4 Kup\"g"
+        },
+        {
+          "branchId": "906",
+          "branchName": "Phoenix Kup\"g"
+        },
+        {
+          "branchId": "907",
+          "branchName": "Ecselent Helman 8"
+        },
+        {
+          "branchId": "655",
+          "branchName": "Phoenix 9 Kup\"g"
+        },
+        {
+          "branchId": "660",
+          "branchName": "Ecselent Helman 6"
+        },
+        {
+          "branchId": "674",
+          "branchName": "Ecselent Helman 7"
+        },
+        {
+          "branchId": "637",
+          "branchName": "Phoenix6 Kup\"g"
+        },
+        {
+          "branchId": "648",
+          "branchName": "Ecselent Helman 5"
+        },
+        {
+          "branchId": "649",
+          "branchName": "Phoenix 7 Kup\"g"
+        },
+        {
+          "branchId": "544",
+          "branchName": "Kakal"
+        },
+        {
+          "branchId": "464",
+          "branchName": "K.K.L"
+        },
+        {
+          "branchId": "592",
+          "branchName": "Or Yehuda"
+        },
+        {
+          "branchId": "481",
+          "branchName": "Kikar Kfar Ganim"
+        },
+        {
+          "branchId": "548",
+          "branchName": "Kikar Kfar Ganim"
+        },
+        {
+          "branchId": "536",
+          "branchName": "Tiful Orpi"
+        },
+        {
+          "branchId": "509",
+          "branchName": "Banking Center"
+        },
+        {
+          "branchId": "510",
+          "branchName": "Cash Center"
+        },
+        {
+          "branchId": "531",
+          "branchName": "Tiful Kupat Gemel Orpi"
+        },
+        {
+          "branchId": "708",
+          "branchName": "Hashrai Zrhni"
+        },
+        {
+          "branchId": "709",
+          "branchName": "Hashrai Zrhni"
+        },
+        {
+          "branchId": "732",
+          "branchName": "Shtampfer Netanya"
+        },
+        {
+          "branchId": "733",
+          "branchName": "Kiryat Motzkin"
+        },
+        {
+          "branchId": "435",
+          "branchName": "Rishon Le Zion"
+        },
+        {
+          "branchId": "734",
+          "branchName": "Ramat Bet Shemesh"
+        },
+        {
+          "branchId": "728",
+          "branchName": "Afek Rosh Ha'ayin"
+        },
+        {
+          "branchId": "614",
+          "branchName": "Oz"
+        },
+        {
+          "branchId": "618",
+          "branchName": "Oz"
+        },
+        {
+          "branchId": "616",
+          "branchName": "Infinity Company"
+        },
+        {
+          "branchId": "921",
+          "branchName": "Infinity Company"
+        },
+        {
+          "branchId": "904",
+          "branchName": "Infinity Company"
+        },
+        {
+          "branchId": "726",
+          "branchName": "Elad"
+        },
+        {
+          "branchId": "722",
+          "branchName": "Modiin Elit"
+        },
+        {
+          "branchId": "564",
+          "branchName": "Haifa Business"
+        },
+        {
+          "branchId": "594",
+          "branchName": "Shamai"
+        },
+        {
+          "branchId": "600",
+          "branchName": "Kern Hasuyim"
+        },
+        {
+          "branchId": "457",
+          "branchName": "Apotropus"
+        },
+        {
+          "branchId": "460",
+          "branchName": "Old City"
+        },
+        {
+          "branchId": "729",
+          "branchName": "Romema"
+        },
+        {
+          "branchId": "401",
+          "branchName": "Kiryat Ha'asakim, Jerusalem"
+        },
+        {
+          "branchId": "403",
+          "branchName": "Jerusalem Business Center"
+        },
+        {
+          "branchId": "910",
+          "branchName": "Metav Dash Kup\"g"
+        },
+        {
+          "branchId": "912",
+          "branchName": "Metav Dash"
+        },
+        {
+          "branchId": "914",
+          "branchName": "Metav Dash"
+        },
+        {
+          "branchId": "917",
+          "branchName": "Metav Dash"
+        },
+        {
+          "branchId": "918",
+          "branchName": "Metav Dash"
+        },
+        {
+          "branchId": "922",
+          "branchName": "Metav Dash"
+        },
+        {
+          "branchId": "923",
+          "branchName": "Metav Dash"
+        },
+        {
+          "branchId": "924",
+          "branchName": "Metav Dash"
+        },
+        {
+          "branchId": "622",
+          "branchName": "Dash 1 Kapital Kup\"g"
+        },
+        {
+          "branchId": "626",
+          "branchName": "Dash2 Kapital Kup\"g"
+        },
+        {
+          "branchId": "631",
+          "branchName": "Dash 3 Kapital Kup\"g"
+        },
+        {
+          "branchId": "905",
+          "branchName": "Metav Dash"
+        },
+        {
+          "branchId": "653",
+          "branchName": "Metav Dash  13 Kup\"g"
+        },
+        {
+          "branchId": "654",
+          "branchName": "Metav Dash  14 Kup\"g"
+        },
+        {
+          "branchId": "658",
+          "branchName": "Dash 5 Kapital Kup\"g"
+        },
+        {
+          "branchId": "664",
+          "branchName": "Metav Dash 16 Kup\"g"
+        },
+        {
+          "branchId": "665",
+          "branchName": "Metav Dash 15 Kup\"g"
+        },
+        {
+          "branchId": "638",
+          "branchName": "Dash 4 Kapital Kup\"g"
+        },
+        {
+          "branchId": "640",
+          "branchName": "Dash 6 Kapital Kup\"g"
+        },
+        {
+          "branchId": "641",
+          "branchName": "Dash 7 Kapital Kup\"g"
+        },
+        {
+          "branchId": "642",
+          "branchName": "Dash 8 Kapital Kup\"g"
+        },
+        {
+          "branchId": "643",
+          "branchName": "Dash9 Kapital Kup\"g"
+        },
+        {
+          "branchId": "644",
+          "branchName": "Dash10 Kapital Kup\"g"
+        },
+        {
+          "branchId": "645",
+          "branchName": "Dash 11 Kapital Kup\"g"
+        },
+        {
+          "branchId": "646",
+          "branchName": "Dash 12 Kapital Kup\"g"
+        },
+        {
+          "branchId": "604",
+          "branchName": "Phoenix 8 Kup\"g"
+        },
+        {
+          "branchId": "911",
+          "branchName": "Phoenix Kup\"g"
+        },
+        {
+          "branchId": "913",
+          "branchName": "Phoenix Kup\"g"
+        },
+        {
+          "branchId": "919",
+          "branchName": "Phoenix Kup\"g"
+        },
+        {
+          "branchId": "920",
+          "branchName": "Phoenix Kup\"g"
+        },
+        {
+          "branchId": "925",
+          "branchName": "Phoenix Kup\"g"
+        },
+        {
+          "branchId": "926",
+          "branchName": "Phoenix Kup\"g"
+        },
+        {
+          "branchId": "927",
+          "branchName": "Phoenix Kup\"g"
+        },
+        {
+          "branchId": "636",
+          "branchName": "Phoenix5 Kup\"g"
+        },
+        {
+          "branchId": "619",
+          "branchName": "Phoenix 10 Kup\"g"
+        },
+        {
+          "branchId": "620",
+          "branchName": "Phoenix Kup\"g"
+        },
+        {
+          "branchId": "623",
+          "branchName": "Ecselent Helman 1"
+        },
+        {
+          "branchId": "447",
+          "branchName": "Nesher"
+        },
+        {
+          "branchId": "523",
+          "branchName": "Nesher"
+        },
+        {
+          "branchId": "445",
+          "branchName": "Akko"
+        },
+        {
+          "branchId": "426",
+          "branchName": "Beer Sheva Business Center"
+        },
+        {
+          "branchId": "566",
+          "branchName": "Mezada"
+        },
+        {
+          "branchId": "429",
+          "branchName": "Petah Tikva,Business Center"
+        },
+        {
+          "branchId": "431",
+          "branchName": "Global Towers"
+        },
+        {
+          "branchId": "550",
+          "branchName": "Lev Hair , Petah Tikva"
+        },
+        {
+          "branchId": "465",
+          "branchName": "Lev Aair , Petah Tikva"
+        },
+        {
+          "branchId": "519",
+          "branchName": "Kiryat Arie"
+        },
+        {
+          "branchId": "730",
+          "branchName": "Kikar Hamoshava"
+        },
+        {
+          "branchId": "909",
+          "branchName": "Shibolet"
+        },
+        {
+          "branchId": "454",
+          "branchName": "Efrat"
+        },
+        {
+          "branchId": "596",
+          "branchName": "Pikdonot Mosdiym"
+        },
+        {
+          "branchId": "480",
+          "branchName": "Securities"
+        },
+        {
+          "branchId": "580",
+          "branchName": "Employment Service"
+        },
+        {
+          "branchId": "633",
+          "branchName": "Ayalon Kup\"g"
+        },
+        {
+          "branchId": "781",
+          "branchName": "Shovare Asray"
+        },
+        {
+          "branchId": "440",
+          "branchName": "Foreign Currency Operational"
+        },
+        {
+          "branchId": "689",
+          "branchName": "Bizua"
+        },
+        {
+          "branchId": "673",
+          "branchName": "Chisachon lechol yeled"
+        },
+        {
+          "branchId": "652",
+          "branchName": "Ayalon 2 Kup\"g"
+        },
+        {
+          "branchId": "561",
+          "branchName": "Ahuza Raanana"
+        },
+        {
+          "branchId": "731",
+          "branchName": "Ahuza Maharv"
+        },
+        {
+          "branchId": "496",
+          "branchName": "Merkaz Elram, Raanana"
+        },
+        {
+          "branchId": "475",
+          "branchName": "Tel Aviv Business Center"
+        },
+        {
+          "branchId": "908",
+          "branchName": "Electric Company"
+        },
+        {
+          "branchId": "621",
+          "branchName": "Analist Kup\"g"
+        },
+        {
+          "branchId": "627",
+          "branchName": "Althuler Sham Kup\"g"
+        },
+        {
+          "branchId": "556",
+          "branchName": "Hashmonaim  Business Center"
+        },
+        {
+          "branchId": "461",
+          "branchName": "Tel Aviv Business Center"
+        },
+        {
+          "branchId": "723",
+          "branchName": "Alenby"
+        },
+        {
+          "branchId": "727",
+          "branchName": "Mikado"
+        },
+        {
+          "branchId": "409",
+          "branchName": "Tel Aviv Business Center"
+        },
+        {
+          "branchId": "688",
+          "branchName": "Mislaca"
+        },
+        {
+          "branchId": "670",
+          "branchName": "Electric Company"
+        },
+        {
+          "branchId": "639",
+          "branchName": "Mislaca"
+        },
+        {
+          "branchId": "597",
+          "branchName": "Chisachon Pension"
+        },
+        {
+          "branchId": "612",
+          "branchName": "Tiful Kupat Gemel Orpi 2"
+        },
+        {
+          "branchId": "571",
+          "branchName": "Atid"
+        },
+        {
+          "branchId": "572",
+          "branchName": "Ofek"
+        },
+        {
+          "branchId": "573",
+          "branchName": "Shakak"
+        },
+        {
+          "branchId": "574",
+          "branchName": "Segev"
+        },
+        {
+          "branchId": "576",
+          "branchName": "Barak"
+        },
+        {
+          "branchId": "577",
+          "branchName": "Shavit"
+        },
+        {
+          "branchId": "451",
+          "branchName": "Nationwide Loans"
+        },
+        {
+          "branchId": "751",
+          "branchName": "Nationwide Loans"
+        },
+        {
+          "branchId": "724",
+          "branchName": "Hashrai Zrhni"
+        },
+        {
+          "branchId": "488",
+          "branchName": "Provident Funds Sector"
+        },
+        {
+          "branchId": "499",
+          "branchName": "Head Office"
+        },
+        {
+          "branchId": "501",
+          "branchName": "Inter Finance Trade Sector"
+        },
+        {
+          "branchId": "503",
+          "branchName": "Factoring"
+        },
+        {
+          "branchId": "555",
+          "branchName": "Kugel, Holon"
+        },
+        {
+          "branchId": "462",
+          "branchName": "Tiberias"
+        },
+        {
+          "branchId": "424",
+          "branchName": "Kfar Saba Industrial District"
+        },
+        {
+          "branchId": "533",
+          "branchName": "Kfar Saba Industrial District"
+        },
+        {
+          "branchId": "647",
+          "branchName": "Kfar Saba, Weizmann St."
+        },
+        {
+          "branchId": "437",
+          "branchName": "Ofakim"
+        },
+        {
+          "branchId": "438",
+          "branchName": "Kanyon Orot"
+        },
+        {
+          "branchId": "450",
+          "branchName": "Kiryat Malachi"
+        },
+        {
+          "branchId": "560",
+          "branchName": "Nof  Haglil"
+        },
+        {
+          "branchId": "444",
+          "branchName": "Haifa Business"
+        },
+        {
+          "branchId": "449",
+          "branchName": "Carmel Branch"
+        },
+        {
+          "branchId": "441",
+          "branchName": "Haifa,Hadar"
+        },
+        {
+          "branchId": "558",
+          "branchName": "Maalot"
+        },
+        {
+          "branchId": "414",
+          "branchName": "Bar Ilan"
+        },
+        {
+          "branchId": "591",
+          "branchName": "Agripas, Jerusalem"
+        },
+        {
+          "branchId": "417",
+          "branchName": "Jerusalem, Geulah"
+        },
+        {
+          "branchId": "479",
+          "branchName": "Share Zedek"
+        },
+        {
+          "branchId": "539",
+          "branchName": "Kanfei Nesharim"
+        },
+        {
+          "branchId": "563",
+          "branchName": "Ramot Jerusalem"
+        },
+        {
+          "branchId": "568",
+          "branchName": "Jerusalem Business Center"
+        },
+        {
+          "branchId": "458",
+          "branchName": "Givat Shaul"
+        },
+        {
+          "branchId": "459",
+          "branchName": "Old City"
+        },
+        {
+          "branchId": "402",
+          "branchName": "Jerusalem Business Center"
+        },
+        {
+          "branchId": "517",
+          "branchName": "Talpiot"
+        },
+        {
+          "branchId": "615",
+          "branchName": "Ashdod Industrial Area"
+        },
+        {
+          "branchId": "416",
+          "branchName": "Ashdod"
+        },
+        {
+          "branchId": "565",
+          "branchName": "Ashdod City"
+        },
+        {
+          "branchId": "420",
+          "branchName": "Hadera"
+        },
+        {
+          "branchId": "472",
+          "branchName": "Ramat Hasharon"
+        },
+        {
+          "branchId": "430",
+          "branchName": "Beni Barak Business Center"
+        },
+        {
+          "branchId": "468",
+          "branchName": "Hazon Ish"
+        },
+        {
+          "branchId": "476",
+          "branchName": "Beni Barak Business Center"
+        },
+        {
+          "branchId": "570",
+          "branchName": "Rimonim"
+        },
+        {
+          "branchId": "583",
+          "branchName": "B\"B Jerusalem"
+        },
+        {
+          "branchId": "515",
+          "branchName": "Concord Towers"
+        },
+        {
+          "branchId": "455",
+          "branchName": "Givataim"
+        },
+        {
+          "branchId": "448",
+          "branchName": "Kiryat Ata"
+        },
+        {
+          "branchId": "407",
+          "branchName": "Hashmonaim  Business Center"
+        },
+        {
+          "branchId": "408",
+          "branchName": "Sky Tower TA"
+        },
+        {
+          "branchId": "410",
+          "branchName": "Kikar Hamedina"
+        },
+        {
+          "branchId": "436",
+          "branchName": "Yaffa Courts"
+        },
+        {
+          "branchId": "524",
+          "branchName": "Kikar Hamedina"
+        },
+        {
+          "branchId": "528",
+          "branchName": "Kriyat Atidim"
+        },
+        {
+          "branchId": "667",
+          "branchName": "Premium"
+        },
+        {
+          "branchId": "549",
+          "branchName": "Baqa al-Gharbiyye"
+        },
+        {
+          "branchId": "513",
+          "branchName": "Carmiel"
+        },
+        {
+          "branchId": "505",
+          "branchName": "Matam haifa"
+        },
+        {
+          "branchId": "456",
+          "branchName": "Dimona"
+        },
+        {
+          "branchId": "489",
+          "branchName": "Arad"
+        },
+        {
+          "branchId": "470",
+          "branchName": "Eilat"
+        },
+        {
+          "branchId": "617",
+          "branchName": "Premium"
+        },
+        {
+          "branchId": "546",
+          "branchName": "Mata\"l Lod"
+        },
+        {
+          "branchId": "427",
+          "branchName": "Ashkelon"
+        },
+        {
+          "branchId": "491",
+          "branchName": "Ashkelon"
+        },
+        {
+          "branchId": "511",
+          "branchName": "Nes Ziona"
+        },
+        {
+          "branchId": "422",
+          "branchName": "Netanya Business Center"
+        },
+        {
+          "branchId": "542",
+          "branchName": "Netanya Business Center"
+        },
+        {
+          "branchId": "553",
+          "branchName": "Kenyon Hasharon"
+        },
+        {
+          "branchId": "452",
+          "branchName": "Kenyon Hashron"
+        },
+        {
+          "branchId": "669",
+          "branchName": "Kenyon Hasharon"
+        },
+        {
+          "branchId": "585",
+          "branchName": "Saknin"
+        },
+        {
+          "branchId": "474",
+          "branchName": "Afula"
+        },
+        {
+          "branchId": "473",
+          "branchName": "Pardes Hana"
+        },
+        {
+          "branchId": "562",
+          "branchName": "Zefat"
+        },
+        {
+          "branchId": "495",
+          "branchName": "Rishon Le Zion Industrial District"
+        },
+        {
+          "branchId": "434",
+          "branchName": "Rehovot"
+        },
+        {
+          "branchId": "532",
+          "branchName": "Park Hamada"
+        },
+        {
+          "branchId": "567",
+          "branchName": "Bet Shemesh"
+        },
+        {
+          "branchId": "433",
+          "branchName": "Kiryat Gat"
+        },
+        {
+          "branchId": "418",
+          "branchName": "Ben Gurion Airport"
+        },
+        {
+          "branchId": "537",
+          "branchName": "Um El Fahem"
+        },
+        {
+          "branchId": "487",
+          "branchName": "Kiryat Shemona"
+        },
+        {
+          "branchId": "425",
+          "branchName": "Bat Yam"
+        },
+        {
+          "branchId": "415",
+          "branchName": "Herzliya"
+        },
+        {
+          "branchId": "522",
+          "branchName": "Herzliya Pituach"
+        },
+        {
+          "branchId": "412",
+          "branchName": "Holon"
+        },
+        {
+          "branchId": "419",
+          "branchName": "Park Asakim Holon"
+        },
+        {
+          "branchId": "530",
+          "branchName": "Givat Shemuel"
+        },
+        {
+          "branchId": "569",
+          "branchName": "Jerusalem, Ramat Eshkol"
+        },
+        {
+          "branchId": "520",
+          "branchName": "International Private Banking Center"
+        },
+        {
+          "branchId": "502",
+          "branchName": "Internationl Private Banking Center"
+        },
+        {
+          "branchId": "582",
+          "branchName": "Yokneam"
+        },
+        {
+          "branchId": "467",
+          "branchName": "Kiryat Ono"
+        },
+        {
+          "branchId": "512",
+          "branchName": "Ramatym Hod Hasharon"
+        },
+        {
+          "branchId": "54",
+          "branchName": "Efrat"
+        },
+        {
+          "branchId": "589",
+          "branchName": "Kafr Qasim"
+        },
+        {
+          "branchId": "463",
+          "branchName": "Kafr Qasim"
+        },
+        {
+          "branchId": "432",
+          "branchName": "Ramla"
+        },
+        {
+          "branchId": "413",
+          "branchName": "Ramat Gan"
+        },
+        {
+          "branchId": "466",
+          "branchName": "Diamond Business"
+        },
+        {
+          "branchId": "477",
+          "branchName": "The Tower Branch"
+        },
+        {
+          "branchId": "590",
+          "branchName": "Zichron Yaakov"
+        },
+        {
+          "branchId": "514",
+          "branchName": "Yehud"
+        },
+        {
+          "branchId": "518",
+          "branchName": "Kiryon"
+        },
+        {
+          "branchId": "428",
+          "branchName": "Netivot"
+        },
+        {
+          "branchId": "421",
+          "branchName": "Gan Hair"
+        },
+        {
+          "branchId": "469",
+          "branchName": "Alenby"
+        },
+        {
+          "branchId": "471",
+          "branchName": "Sky Tower TA"
+        },
+        {
+          "branchId": "547",
+          "branchName": "Ramat Aviv"
+        },
+        {
+          "branchId": "551",
+          "branchName": "Midtown TA"
+        },
+        {
+          "branchId": "557",
+          "branchName": "Yigal Alon"
+        },
+        {
+          "branchId": "453",
+          "branchName": "Dizengoff"
+        },
+        {
+          "branchId": "493",
+          "branchName": "Ramat Aviv"
+        },
+        {
+          "branchId": "494",
+          "branchName": "Hashmonaim  Business Center"
+        },
+        {
+          "branchId": "405",
+          "branchName": "Kikar Hamedina"
+        },
+        {
+          "branchId": "406",
+          "branchName": "Hatzrot Yafo"
+        },
+        {
+          "branchId": "521",
+          "branchName": "Modiin"
+        },
+        {
+          "branchId": "446",
+          "branchName": "Kiryat Yam"
+        },
+        {
+          "branchId": "552",
+          "branchName": "Migdal Haemeq"
+        },
+        {
+          "branchId": "483",
+          "branchName": "Karnei Shomron"
+        },
+        {
+          "branchId": "497",
+          "branchName": "Karnei Shomron"
+        },
+        {
+          "branchId": "538",
+          "branchName": "Kfar Yacif"
+        },
+        {
+          "branchId": "442",
+          "branchName": "Shlomi"
+        },
+        {
+          "branchId": "534",
+          "branchName": "Marom Neve"
+        },
+        {
+          "branchId": "423",
+          "branchName": "Merkaz Elram, Raanana"
+        },
+        {
+          "branchId": "581",
+          "branchName": "Shfaram"
+        },
+        {
+          "branchId": "443",
+          "branchName": "Nahariya"
+        },
+        {
+          "branchId": "439",
+          "branchName": "Beit Shean"
+        },
+        {
+          "branchId": "525",
+          "branchName": "Savyonim"
+        },
+        {
+          "branchId": "478",
+          "branchName": "Internationl Private Banking Center Tel"
+        },
+        {
+          "branchId": "490",
+          "branchName": "Barnea Ashkelon"
+        },
+        {
+          "branchId": "559",
+          "branchName": "Nazerath"
+        },
+        {
+          "branchId": "541",
+          "branchName": "International Private Banking Center"
+        },
+        {
+          "branchId": "529",
+          "branchName": "Kanyon Hbeer"
+        },
+        {
+          "branchId": "657",
+          "branchName": "Rechovot City Centre"
+        },
+        {
+          "branchId": "543",
+          "branchName": "Rosh Hayin"
+        },
+        {
+          "branchId": "540",
+          "branchName": "Yavne"
+        },
+        {
+          "branchId": "554",
+          "branchName": "Park Hyam"
+        },
+        {
+          "branchId": "411",
+          "branchName": "Kiryat Eilon"
+        },
+        {
+          "branchId": "527",
+          "branchName": "Kiryat Eilon"
+        },
+        {
+          "branchId": "526",
+          "branchName": "Harim"
+        },
+        {
+          "branchId": "484",
+          "branchName": "Shedrot"
+        },
+        {
+          "branchId": "593",
+          "branchName": "Harish"
+        },
+        {
+          "branchId": "492",
+          "branchName": "Neve Shanan"
+        }
+      ]
+    },
+    {
+      "bankId": "46",
+      "bankName": "Bank Massad Ltd",
+      "branches": [
+        {
+          "branchId": "510",
+          "branchName": "ako"
+        },
+        {
+          "branchId": "511",
+          "branchName": "Holon"
+        },
+        {
+          "branchId": "507",
+          "branchName": "Ramat Gan"
+        },
+        {
+          "branchId": "548",
+          "branchName": "Hanhala Rashit"
+        },
+        {
+          "branchId": "506",
+          "branchName": "SHEFARAM"
+        },
+        {
+          "branchId": "503",
+          "branchName": "Tel Aviv"
+        },
+        {
+          "branchId": "504",
+          "branchName": "Karmiel"
+        },
+        {
+          "branchId": "514",
+          "branchName": "Nazareth"
+        },
+        {
+          "branchId": "520",
+          "branchName": "AOM AL FAHEM"
+        },
+        {
+          "branchId": "904",
+          "branchName": "sachnit"
+        },
+        {
+          "branchId": "539",
+          "branchName": "Be'er Sheva"
+        },
+        {
+          "branchId": "509",
+          "branchName": "Petah Tikva"
+        },
+        {
+          "branchId": "502",
+          "branchName": "Kfar saba"
+        },
+        {
+          "branchId": "902",
+          "branchName": "Hasharon"
+        },
+        {
+          "branchId": "527",
+          "branchName": "Haifa"
+        },
+        {
+          "branchId": "515",
+          "branchName": "Jerusalem"
+        },
+        {
+          "branchId": "915",
+          "branchName": "Hagivaa Haztrfatit"
+        },
+        {
+          "branchId": "516",
+          "branchName": "Ashdod"
+        },
+        {
+          "branchId": "517",
+          "branchName": "Hadera"
+        },
+        {
+          "branchId": "2",
+          "branchName": "Oranim"
+        },
+        {
+          "branchId": "508",
+          "branchName": "Netanya"
+        },
+        {
+          "branchId": "501",
+          "branchName": "RISHON LEZION"
+        },
+        {
+          "branchId": "519",
+          "branchName": "modieen"
+        }
+      ]
+    },
+    {
+      "bankId": "17",
+      "bankName": "Mercantile Discount Bank ltd",
+      "branches": [
+        {
+          "branchId": "638",
+          "branchName": "Salah a-din"
+        },
+        {
+          "branchId": "740",
+          "branchName": "Yehuda Hanassi"
+        },
+        {
+          "branchId": "712",
+          "branchName": "Akko Investment Center"
+        },
+        {
+          "branchId": "644",
+          "branchName": "Akko"
+        },
+        {
+          "branchId": "750",
+          "branchName": "Kfar Qasim"
+        },
+        {
+          "branchId": "669",
+          "branchName": "Ramle"
+        },
+        {
+          "branchId": "663",
+          "branchName": "Ramat Gan"
+        },
+        {
+          "branchId": "660",
+          "branchName": "Nahariya"
+        },
+        {
+          "branchId": "672",
+          "branchName": "Hashalom"
+        },
+        {
+          "branchId": "754",
+          "branchName": "municipal"
+        },
+        {
+          "branchId": "662",
+          "branchName": "Tirat Hacarmel"
+        },
+        {
+          "branchId": "655",
+          "branchName": "Dizengoff"
+        },
+        {
+          "branchId": "720",
+          "branchName": "Business Main Branch"
+        },
+        {
+          "branchId": "654",
+          "branchName": "Tel Aviv Main"
+        },
+        {
+          "branchId": "653",
+          "branchName": "Jaffa"
+        },
+        {
+          "branchId": "738",
+          "branchName": "Cabul"
+        },
+        {
+          "branchId": "691",
+          "branchName": "Kfar Yasif"
+        },
+        {
+          "branchId": "631",
+          "branchName": "Kfar Kanna"
+        },
+        {
+          "branchId": "620",
+          "branchName": "Shfar'am"
+        },
+        {
+          "branchId": "721",
+          "branchName": "Netivot"
+        },
+        {
+          "branchId": "671",
+          "branchName": "Iksal"
+        },
+        {
+          "branchId": "724",
+          "branchName": "Bu'eine Ngidat"
+        },
+        {
+          "branchId": "753",
+          "branchName": "Hurfeish"
+        },
+        {
+          "branchId": "632",
+          "branchName": "Tur'an"
+        },
+        {
+          "branchId": "628",
+          "branchName": "Yafia"
+        },
+        {
+          "branchId": "602",
+          "branchName": "Yarcha"
+        },
+        {
+          "branchId": "625",
+          "branchName": "Mi'iliya"
+        },
+        {
+          "branchId": "639",
+          "branchName": "Nazareth Main"
+        },
+        {
+          "branchId": "627",
+          "branchName": "Pop Paul VI"
+        },
+        {
+          "branchId": "640",
+          "branchName": "El Ram"
+        },
+        {
+          "branchId": "680",
+          "branchName": "Kiryat Motzkin"
+        },
+        {
+          "branchId": "728",
+          "branchName": "Experts Center - Foreign Trade Dept."
+        },
+        {
+          "branchId": "674",
+          "branchName": "Rehovot"
+        },
+        {
+          "branchId": "756",
+          "branchName": "I'billin"
+        },
+        {
+          "branchId": "634",
+          "branchName": "Ailaboun"
+        },
+        {
+          "branchId": "630",
+          "branchName": "Reineh"
+        },
+        {
+          "branchId": "643",
+          "branchName": "Rama"
+        },
+        {
+          "branchId": "725",
+          "branchName": "Beit Shemesh"
+        },
+        {
+          "branchId": "699",
+          "branchName": "Kfar Saba"
+        },
+        {
+          "branchId": "681",
+          "branchName": "Jadeidi-Maker"
+        },
+        {
+          "branchId": "679",
+          "branchName": "Carmel Center"
+        },
+        {
+          "branchId": "694",
+          "branchName": "Wadi Nisnas"
+        },
+        {
+          "branchId": "695",
+          "branchName": "Kfar Tavor"
+        },
+        {
+          "branchId": "707",
+          "branchName": "Haifa Investment Center"
+        },
+        {
+          "branchId": "603",
+          "branchName": "Meitar"
+        },
+        {
+          "branchId": "645",
+          "branchName": "Beer Sheva"
+        },
+        {
+          "branchId": "683",
+          "branchName": "Or Yehuda"
+        },
+        {
+          "branchId": "651",
+          "branchName": "Petach Tikva"
+        },
+        {
+          "branchId": "607",
+          "branchName": "Experts Center Holon"
+        },
+        {
+          "branchId": "613",
+          "branchName": "Mortgages"
+        },
+        {
+          "branchId": "727",
+          "branchName": "Experts Center - North Foreign Trade Dept."
+        },
+        {
+          "branchId": "875",
+          "branchName": "Experts Center Nesher"
+        },
+        {
+          "branchId": "701",
+          "branchName": "Tel-Aviv and Central Area Region"
+        },
+        {
+          "branchId": "714",
+          "branchName": "Tel Aviv Investment Center"
+        },
+        {
+          "branchId": "746",
+          "branchName": "Romema"
+        },
+        {
+          "branchId": "711",
+          "branchName": "Jerusalem Investment Center"
+        },
+        {
+          "branchId": "702",
+          "branchName": "Jerusalem and Southern Area Region"
+        },
+        {
+          "branchId": "876",
+          "branchName": "Experts Center Jerusalem"
+        },
+        {
+          "branchId": "621",
+          "branchName": "Shivtei Israel"
+        },
+        {
+          "branchId": "736",
+          "branchName": "Sanhedriya"
+        },
+        {
+          "branchId": "661",
+          "branchName": "Kanfei Nesharim"
+        },
+        {
+          "branchId": "676",
+          "branchName": "Ashdod"
+        },
+        {
+          "branchId": "677",
+          "branchName": "Hadera"
+        },
+        {
+          "branchId": "732",
+          "branchName": "Bnei Brak"
+        },
+        {
+          "branchId": "745",
+          "branchName": "Rabbi Akiva"
+        },
+        {
+          "branchId": "614",
+          "branchName": "Tamra"
+        },
+        {
+          "branchId": "650",
+          "branchName": "Haifa business center"
+        },
+        {
+          "branchId": "703",
+          "branchName": "Haifa and Sharon Area Region"
+        },
+        {
+          "branchId": "623",
+          "branchName": "Dabourie"
+        },
+        {
+          "branchId": "743",
+          "branchName": "Dir El Asad"
+        },
+        {
+          "branchId": "744",
+          "branchName": "Dir Hana"
+        },
+        {
+          "branchId": "706",
+          "branchName": "Akko Area Region"
+        },
+        {
+          "branchId": "624",
+          "branchName": "Majd Al-Krum"
+        },
+        {
+          "branchId": "649",
+          "branchName": "Dimona"
+        },
+        {
+          "branchId": "696",
+          "branchName": "Rahat"
+        },
+        {
+          "branchId": "705",
+          "branchName": "Nazareth Area Region"
+        },
+        {
+          "branchId": "747",
+          "branchName": "Nazareth Investment Center"
+        },
+        {
+          "branchId": "647",
+          "branchName": "Netanya"
+        },
+        {
+          "branchId": "687",
+          "branchName": "Sachnin"
+        },
+        {
+          "branchId": "619",
+          "branchName": "Accountancy Div."
+        },
+        {
+          "branchId": "659",
+          "branchName": "Accountancy"
+        },
+        {
+          "branchId": "690",
+          "branchName": "Securities Center"
+        },
+        {
+          "branchId": "668",
+          "branchName": "Rishon LeZion"
+        },
+        {
+          "branchId": "626",
+          "branchName": "Arraba"
+        },
+        {
+          "branchId": "697",
+          "branchName": "Umm El-Fahem"
+        },
+        {
+          "branchId": "678",
+          "branchName": "Bat Yam"
+        },
+        {
+          "branchId": "686",
+          "branchName": "Holon"
+        },
+        {
+          "branchId": "734",
+          "branchName": "Betar Ilit"
+        },
+        {
+          "branchId": "752",
+          "branchName": "Ha Amakim"
+        },
+        {
+          "branchId": "692",
+          "branchName": "Tarshiha"
+        },
+        {
+          "branchId": "635",
+          "branchName": "Geula"
+        },
+        {
+          "branchId": "642",
+          "branchName": "Jerusalem main"
+        },
+        {
+          "branchId": "742",
+          "branchName": "Ramot"
+        }
+      ]
+    },
+    {
+      "bankId": "52",
+      "bankName": "Poaley Agudat Israel Bank Ltd",
+      "branches": [
+        {
+          "branchId": "181",
+          "branchName": "PETAH TIKVA"
+        },
+        {
+          "branchId": "180",
+          "branchName": "MODIIN ILIT"
+        },
+        {
+          "branchId": "182",
+          "branchName": "KANFE NESARIM"
+        },
+        {
+          "branchId": "183",
+          "branchName": "RABBI AKIBA"
+        },
+        {
+          "branchId": "160",
+          "branchName": "Cashier Center Bnei Brak"
+        },
+        {
+          "branchId": "174",
+          "branchName": "REHOVOT"
+        },
+        {
+          "branchId": "177",
+          "branchName": "BETAR ELLIT"
+        },
+        {
+          "branchId": "185",
+          "branchName": "JERUSALEM"
+        },
+        {
+          "branchId": "172",
+          "branchName": "Ramot"
+        },
+        {
+          "branchId": "175",
+          "branchName": "EXT.JERUSALEM"
+        },
+        {
+          "branchId": "186",
+          "branchName": "Ashdod"
+        },
+        {
+          "branchId": "986",
+          "branchName": "EXT. ASHDOD (PNINAT HAROVA)"
+        },
+        {
+          "branchId": "168",
+          "branchName": "Rimonim"
+        },
+        {
+          "branchId": "188",
+          "branchName": "BNEI BRAK"
+        },
+        {
+          "branchId": "189",
+          "branchName": "TEL AVIV MAIN BRANCH"
+        },
+        {
+          "branchId": "173",
+          "branchName": "Netivot"
+        },
+        {
+          "branchId": "179",
+          "branchName": "RAMAT BEIT SHEMESH"
+        },
+        {
+          "branchId": "176",
+          "branchName": "EL-AD"
+        },
+        {
+          "branchId": "187",
+          "branchName": "HAIFA"
+        }
+      ]
+    },
+    {
+      "bankId": "26",
+      "bankName": "UBank Ltd",
+      "branches": [
+        {
+          "branchId": "272",
+          "branchName": "HaMadina square Ubank"
+        },
+        {
+          "branchId": "262",
+          "branchName": "Ubank Rehavia"
+        },
+        {
+          "branchId": "280",
+          "branchName": "RAANANA"
+        },
+        {
+          "branchId": "279",
+          "branchName": "REHOVOT"
+        },
+        {
+          "branchId": "288",
+          "branchName": "JERUSALEM"
+        },
+        {
+          "branchId": "286",
+          "branchName": "Securities department"
+        },
+        {
+          "branchId": "287",
+          "branchName": "Tel aviv"
+        },
+        {
+          "branchId": "274",
+          "branchName": "HERZLIYA PITUAH"
+        },
+        {
+          "branchId": "273",
+          "branchName": "Rotschild Blvd. Tel Aviv"
+        }
+      ]
+    },
+    {
+      "bankId": "50",
+      "bankName": "Bank Clearing Center Ltd",
+      "branches": []
+    },
+    {
+      "bankId": "59",
+      "bankName": "Automated Banking Services",
+      "branches": []
+    }
+  ]
+}

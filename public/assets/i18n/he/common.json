@@ -26,6 +26,7 @@
   "news_feed": "הזנה חדשות",
   "feed_settings": "הגדרות הזנה",
   "mini_site": "אתר מיני",
+  "my_profile": "ملفي الشخصي",
   "settings": "הגדרות",
   "documents": "מסמכי",
   "version": "גרסה",
@@ -34,5 +35,23 @@
   "next": "הבא",
   "save_draft": "שמור כטיוטה",
   "publish": "פרסם",
-  "publishing": "מפרסם..."
+  "publishing": "מפרסם...",
+
+   "filter": "סינון",
+
+  "sunday": "יום ראשון",
+  "monday": "יום שני",
+  "tuesday": "יום שלישי",
+  "wednesday": "יום רביעי",
+  "thursday": "יום חמישי",
+  "friday": "יום שישי",
+  "saturday": "יום שבת",
+
+  "sun": "א׳",
+  "mon": "ב׳",
+  "tue": "ג׳",
+  "wed": "ד׳",
+  "thu": "ה׳",
+  "fri": "ו׳",
+  "sat": "ש׳"
 }

@@ -4,11 +4,11 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useTranslation } from "react-i18next";
 import { CheckCircle } from "lucide-react";
 
-interface TicketData {
-  id: string;
-  name: string;
-  type: "free" | "paid" | "vip" | "donation";
-}
+// interface TicketData {
+//   id: string;
+//   name: string;
+//   type: "free" | "paid" | "vip" | "donation";
+// }
 
 interface CustomQuestion {
   id: string;

@@ -1,0 +1,31 @@
+{
+  "add_banck_account": "הוסף חשבון בנק",
+  "bank_name": "שם הבנק",
+  "select_bank": "בחר בנק",
+  "branch_name": "שם הסניף",
+  "select_branch": "בחר סניף",
+  "account_number": "מספר חשבון",
+  "bn_number": "מספר ח.פ.",
+  "name_on_invoice": "שם על החשבונית",
+  "cancel": "ביטול",
+  "save": "שמירה",
+
+  "logout": "התנתקות",
+  "contact_information": "פרטי קשר",
+  "email": "אימייל",
+  "phone": "טלפון",
+  "location": "מיקום",
+  "member_since": "חבר מאז",
+
+  "business_information": "פרטי העסק",
+  "business_name": "שם העסק",
+  "user_type": "סוג משתמש",
+  "access_level": "רמת גישה",
+
+  "bank_account_details": "פרטי חשבון בנק",
+  "add_bank_account": "הוסף חשבון בנק",
+  "edit_bank_account": "עריכת חשבון בנק",
+
+  "no_bank_account_added": "לא נוספו פרטי חשבון בנק",
+  "click_add_bank_account": "לחץ על \"הוסף חשבון בנק\" כדי להוסיף פרטי בנק"
+}

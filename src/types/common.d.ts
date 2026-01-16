@@ -2,6 +2,16 @@
 type Language = 'en' | 'ar' | 'he';
 type Theme = 'light' | 'dark';
 
+interface Geo {
+  lat: string;
+  lng: string;
+}
+
+interface Website {
+  _id: string;
+  name: string;
+}
+
 interface ThemeClasses {
   hoverBg: string;
   bgPrimary: string;

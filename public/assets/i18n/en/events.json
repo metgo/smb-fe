@@ -53,8 +53,8 @@
   "language":"Language",
   "template":"Template",
   "template_24h":"24h Before Remainder",
-  "template_same_date":"Same Day Remainder",
-  "template_start_soon":"Event Starting Soon",
+  "template_same_day":"Same Day Remainder",
+  "template_starting_soon":"Event Starting Soon",
   "subject":"Subject (Email only)",
   "message_content":"Message Content",
   "available_variables":"Available variables",
@@ -212,5 +212,6 @@
   "show_summary":"Show Summary",
 
   "registrant_details":"Registrant Details",
-  "no_registrants_match":"No Registrants Match Your Search"
+  "no_registrants_match":"No Registrants Match Your Search",
+  "search_placeholder":"Search Address..."
 }

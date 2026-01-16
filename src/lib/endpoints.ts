@@ -23,7 +23,16 @@ export const endpoints = {
   dmos: "/dmos",
 
   events: "/events",
+  eventsStats: "/events-stats",
 
+  users: "/users",
+  userInfo: "/users/me",
+
+  tickets: "/tickets",
+  mediaSignedUrl: "/media-signed-url",
+  
+  websites: "/websites",
+  
   googleMap: 'https://maps.googleapis.com/maps/api/js',
   googlePlaceAutoComplete: 'https://places.googleapis.com/v1/places',
 }

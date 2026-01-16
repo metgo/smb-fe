@@ -88,6 +88,8 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
     }
   }
 
+
+
   return (
     <div className="space-y-4 max-w-3xl mx-auto">
       {/* Event Name */}

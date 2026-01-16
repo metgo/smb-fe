@@ -4,32 +4,45 @@ import { useTranslation } from 'react-i18next';
 import { Calendar, Users, Ticket, DollarSign, Search, } from 'lucide-react';
 
 import { useAppSelector } from '@/hooks/hooks';
-import { allEvents } from '@/constants/data';
-import { useThemeClasses } from '@/hooks/useThemeClasses';
 import { FilterButton } from '@/components/btns';
-import { EventsWithViewMode, CreateEventWizard, EventDetailModal, QuickSnapEventDetails, RegistrantDetailModal } from './components';
+import { useThemeClasses } from '@/hooks/useThemeClasses';
+import { useGetAllWebsitesQuery } from '@/store/api/masterDataApi';
 import { PageHeader, PageStats, ViewModeToggle } from '@/components/shared';
+import { useGetAllEventsQuery, useGetEventsStatsQuery } from '@/store/api/eventQueryApi';
+import { EventsWithViewMode, CreateEventWizard, EventDetailModal, QuickSnapEventDetails, RegistrantDetailModal } from './components';
 
 type SortConfig = {
   key: string;
   direction: 'asc' | 'desc';
 } | null;
 
+
 export default function EventsMgmtPage() {
   const { t } = useTranslation('events');
   const { isRTL, theme } = useAppSelector((state) => state.settings);
   const themeColor = useThemeClasses();
 
+
   const [isCreateWizardOpen, setIsCreateWizardOpen] = useState(false);
+
+  const [editId, setEditId] = useState<string | null>(null)
 
   // Filters
   const [showFilters, setShowFilters] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedWebsites, setSelectedWebsites] = useState<string[]>([]);
+  const [selectedWebsites, setSelectedWebsites] = useState<Website[]>([]);
   const [eventTypeFilter, setEventTypeFilter] = useState<'all' | 'free' | 'paid'>('all');
   const [registrationFilter, setRegistrationFilter] = useState<'all' | 'yes' | 'no'>('all');
   const [statusFilter, setStatusFilter] = useState<'all' | 'upcoming' | 'past' | 'canceled'>('all');
   const [dateRangeFilter, setDateRangeFilter] = useState({ start: '', end: '' });
+
+  // Data Fetch
+  const { data: events, isLoading } = useGetAllEventsQuery({
+    search: searchQuery,
+    // eventType: eventTypeFilter.toUpperCase()
+  })
+  const { data: eventStatsData, isLoading: isEventStatsFetching } = useGetEventsStatsQuery({})
+  const { data: websites } = useGetAllWebsitesQuery();
 
   // Table and Modal State
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
@@ -39,8 +52,6 @@ export default function EventsMgmtPage() {
   const [showDailyBreakdown, setShowDailyBreakdown] = useState(false);
   const [showQuickSnapModal, setShowQuickSnapModal] = useState(false);
   const [viewMode, setViewMode] = useState<'list' | 'grid' | 'calendar'>('list');
-
-
 
   // Mock data - Registrants
   const mockRegistrants: Registrant[] = selectedEvent ? [
@@ -111,33 +122,6 @@ export default function EventsMgmtPage() {
     },
   ] : [];
 
-  const websites = ['Western Negev Tourism', 'Be\'er Sheva Tourism', 'Dimona Tourism', 'Sderot Cultural'];
-
-  // Filter events
-  const filteredEvents = allEvents.filter(event => {
-    if (searchQuery && !event.name.toLowerCase().includes(searchQuery.toLowerCase())) {
-      return false;
-    }
-    if (selectedWebsites.length > 0 && !selectedWebsites.includes(event.website)) {
-      return false;
-    }
-    if (eventTypeFilter === 'free' && !event.isFree) return false;
-    if (eventTypeFilter === 'paid' && event.isFree) return false;
-    if (registrationFilter === 'yes' && !event.registrationRequired) return false;
-    if (registrationFilter === 'no' && event.registrationRequired) return false;
-    if (statusFilter !== 'all' && event.status !== statusFilter) return false;
-    if (dateRangeFilter.start && event.startDate < dateRangeFilter.start) return false;
-    if (dateRangeFilter.end && event.endDate > dateRangeFilter.end) return false;
-    return true;
-  });
-
-  // Calculate global metrics
-  const globalMetrics = {
-    totalEvents: allEvents.length,
-    totalRevenue: allEvents.reduce((sum, e) => sum + e.revenue, 0),
-    totalRegistrations: allEvents.reduce((sum, e) => sum + e.totalRegistrations, 0),
-    upcomingEvents: allEvents.filter(e => e.status === 'upcoming').length,
-  };
 
   // Sort registrants
   const sortedRegistrants = [...mockRegistrants].sort((a, b) => {
@@ -187,6 +171,7 @@ export default function EventsMgmtPage() {
     if (selectedEvent) {
       setIsCreateWizardOpen(true);
       setSelectedEvent(null);
+      setEditId(selectedEvent?._id)
     }
   };
 
@@ -208,39 +193,31 @@ export default function EventsMgmtPage() {
     });
   };
 
-
-
-
-
   const eventStats = [
     {
       id: 1,
       title: t('total_events'),
-      value: globalMetrics.totalEvents,
-      label: `${globalMetrics.upcomingEvents} ${t('upcoming')}`,
+      value: eventStatsData?.totalEventsCount,
+      label: `${eventStatsData?.upcomingEventsCount} ${t('upcoming')}`,
       labelClass: 'text-green-500',
       icon: <Calendar className="w-8 h-8 text-teal-500" />,
     },
     {
       id: 2,
       title: t('total_registrations'),
-      value: globalMetrics.totalRegistrations.toLocaleString(),
+      value: eventStatsData?.totalRegistration,
       icon: <Users className="w-8 h-8 text-blue-500" />,
     },
     {
       id: 3,
       title: t('total_revenue'),
-      value: `₪${(globalMetrics.totalRevenue / 1000).toFixed(1)}K`,
+      value: `₪${(eventStatsData?.totalRevenue / 1000).toFixed(1)}K`,
       icon: <DollarSign className="w-8 h-8 text-green-500" />,
     },
     {
       id: 4,
       title: t('avg_capacity_fill'),
-      value: `${Math.round(
-        (allEvents.reduce((sum, e) => sum + e.totalRegistrations, 0) /
-          allEvents.reduce((sum, e) => sum + e.capacity, 0)) *
-        100
-      )}%`,
+      value: `${eventStatsData?.avgCapacityFill}%`,
       icon: <Ticket className="w-8 h-8 text-purple-500" />,
     },
   ];
@@ -296,8 +273,8 @@ export default function EventsMgmtPage() {
                   <label className={`block text-sm mb-2 ${themeColor.textSecondary}`}>{t('websites')}</label>
                   <div className={`p-3 rounded-lg border max-h-32 overflow-y-auto ${theme === 'dark' ? 'border-gray-700 bg-gray-900' : 'border-gray-300 bg-white'
                     }`}>
-                    {websites.map(website => (
-                      <label key={website} className="flex items-center gap-2 mb-2 last:mb-0 cursor-pointer">
+                    {websites && websites?.map((website) => (
+                      <label key={website?._id} className="flex items-center gap-2 mb-2 last:mb-0 cursor-pointer">
                         <input
                           type="checkbox"
                           checked={selectedWebsites.includes(website)}
@@ -305,12 +282,12 @@ export default function EventsMgmtPage() {
                             if (e.target.checked) {
                               setSelectedWebsites([...selectedWebsites, website]);
                             } else {
-                              setSelectedWebsites(selectedWebsites.filter(w => w !== website));
+                              setSelectedWebsites(selectedWebsites?.filter(w => w._id !== website._id));
                             }
                           }}
                           className="rounded text-teal-500"
                         />
-                        <span className={`text-sm ${themeColor.textSecondary}`}>{website}</span>
+                        <span className={`text-sm ${themeColor.textSecondary}`}>{website?.name}</span>
                       </label>
                     ))}
                   </div>
@@ -405,8 +382,8 @@ export default function EventsMgmtPage() {
                       </span>
                     )}
                     {selectedWebsites.map(w => (
-                      <span key={w} className="px-3 py-1 bg-blue-500/20 text-blue-500 rounded-full text-xs">
-                        {w}
+                      <span key={w._id} className="px-3 py-1 bg-blue-500/20 text-blue-500 rounded-full text-xs">
+                        {w.name}
                       </span>
                     ))}
                     {eventTypeFilter !== 'all' && (
@@ -445,7 +422,7 @@ export default function EventsMgmtPage() {
 
         {/* Events with different View */}
         <EventsWithViewMode
-          events={filteredEvents as any}
+          events={events as any || []}
           selectedWebsiteCount={selectedWebsites?.length || 0}
           eventTypeFilter={eventTypeFilter}
           registrationFilter={registrationFilter}
@@ -490,9 +467,9 @@ export default function EventsMgmtPage() {
         />
       </Activity>
 
-
       {/* Create Event Wizard */}
       <CreateEventWizard
+        editId={editId}
         isOpen={isCreateWizardOpen}
         onClose={() => setIsCreateWizardOpen(false)}
         theme={theme}

@@ -1,10 +1,12 @@
-import { useAppSelector } from "@/hooks/hooks";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useAppSelector } from "@/hooks/hooks";
+import { Mail, Phone, X, XCircle } from "lucide-react";
+
 import InfoRow from "./sub-components/InfoRow";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 import ProductDetailsModal from "./sub-components/ProductDetailsModal";
 import CancellationDialog from "./sub-components/CancellationDialog";
-import { Mail, Phone, X, XCircle } from "lucide-react";
 
 interface OrderDetailsModalProps {
   order: Order;
@@ -17,17 +19,14 @@ const USER_ROLE = "authority"
 export default function OrderDetailsModal({ order, onClose }: OrderDetailsModalProps) {
   const { t } = useTranslation('orders');
   const { isRTL, theme } = useAppSelector((state) => state.settings)
-  const textPrimary = theme === 'dark' ? 'text-gray-100' : 'text-gray-900';
-  const textSecondary = theme === 'dark' ? 'text-gray-300' : 'text-gray-700';
-  const textTertiary = theme === 'dark' ? 'text-gray-400' : 'text-gray-600';
-  const [selectedProduct, setSelectedProduct] = useState<OrderProduct | null>(null);
+  const {textPrimary, textTertiary}=useThemeClasses()
+
   const [showProductModal, setShowProductModal] = useState(false);
-  const [orderProducts, setOrderProducts] = useState<OrderProduct[]>(order.products);
+  const [selectedProduct, setSelectedProduct] = useState<OrderProduct | null>(null);
+  const [orderProducts, setOrderProducts] = useState<OrderProduct[]>(order?.products);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [cancelType, setCancelType] = useState<'order' | 'item'>('order');
   const [itemToCancel, setItemToCancel] = useState<OrderProduct | null>(null);
-
-
 
 
   function getOrderStatusBadge(status: Order['orderStatus']) {
@@ -81,8 +80,8 @@ export default function OrderDetailsModal({ order, onClose }: OrderDetailsModalP
 
     const badge = badges[status];
     return (
-      <span className={`px-2 py-1 rounded-full text-xs ${badge.bg} ${badge.text}`}>
-        {badge.label}
+      <span className={`px-2 py-1 rounded-full text-xs ${badge?.bg} ${badge?.text}`}>
+        {badge?.label}
       </span>
     );
   }
@@ -118,8 +117,8 @@ export default function OrderDetailsModal({ order, onClose }: OrderDetailsModalP
 
     const badge = badges[status];
     return (
-      <span className={`px-2 py-1 rounded-full text-xs ${badge.bg} ${badge.text}`}>
-        {badge.label}
+      <span className={`px-2 py-1 rounded-full text-xs ${badge?.bg} ${badge?.text}`}>
+        {badge?.label}
       </span>
     );
   }
@@ -136,10 +135,10 @@ export default function OrderDetailsModal({ order, onClose }: OrderDetailsModalP
           }`}>
           <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
             <div>
-              <h2 className={`text-2xl ${textPrimary}`}>{order.id}</h2>
+              <h2 className={`text-2xl ${textPrimary}`}>{order?.id}</h2>
               <div className="flex gap-2 mt-2">
-                {getOrderStatusBadge(order.orderStatus)}
-                {getPaymentStatusBadge(order.paymentStatus)}
+                {getOrderStatusBadge(order?.orderStatus)}
+                {getPaymentStatusBadge(order?.paymentStatus)}
               </div>
             </div>
             <button
@@ -157,41 +156,41 @@ export default function OrderDetailsModal({ order, onClose }: OrderDetailsModalP
           <div>
             <h3 className={`text-lg mb-3 ${textPrimary}`}>{t('purchaserInformation')}</h3>
             <div className="grid grid-cols-2 gap-4">
-              <InfoRow label={t('name')} value={order.purchaserName} theme={theme} />
+              <InfoRow label={t('name')} value={order?.purchaserName} theme={theme} />
               {/* Email - Clickable */}
               <div>
                 <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} mb-1`}>{t('email')}</p>
                 <a
-                  href={`mailto:${order.email}`}
+                  href={`mailto:${order?.email}`}
                   className={`text-sm flex items-center gap-1 text-teal-500 hover:text-teal-600 transition-colors`}
                 >
                   <Mail className="w-3 h-3" />
-                  {order.email}
+                  {order?.email}
                 </a>
               </div>
               {/* Phone - Clickable */}
               <div>
                 <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} mb-1`}>{t('phone')}</p>
                 <a
-                  href={`tel:${order.phone}`}
+                  href={`tel:${order?.phone}`}
                   className={`text-sm flex items-center gap-1 text-teal-500 hover:text-teal-600 transition-colors`}
                 >
                   <Phone className="w-3 h-3" />
-                  {order.phone}
+                  {order?.phone}
                 </a>
               </div>
-              <InfoRow label={t('campaign')} value={`${order.campaign} (${order.campaignCode})`} theme={theme} />
-              {order.address && <InfoRow label={t('address')} value={order.address} theme={theme} />}
+              <InfoRow label={t('campaign')} value={`${order?.campaign} (${order?.campaignCode})`} theme={theme} />
+              {order?.address && <InfoRow label={t('address')} value={order?.address} theme={theme} />}
             </div>
           </div>
           {/* Products Section */}
           <div>
             <h3 className={`text-lg mb-3 ${textPrimary}`}>{t('products')}</h3>
             <div className={`border rounded-lg overflow-hidden ${theme === 'dark' ? 'border-gray-800' : 'border-gray-200'}`}>
-              {orderProducts.map((product, idx) => (
+              {orderProducts?.map((product, idx) => (
                 <div
-                  key={product.id}
-                  className={`p-4 ${idx > 0 ? `border-t ${theme === 'dark' ? 'border-gray-800' : 'border-gray-200'}` : ''} ${product.cancelled ? 'opacity-50' : ''}`}
+                  key={product?.id}
+                  className={`p-4 ${idx > 0 ? `border-t ${theme === 'dark' ? 'border-gray-800' : 'border-gray-200'}` : ''} ${product?.cancelled ? 'opacity-50' : ''}`}
                 >
                   <div className="flex items-start gap-4">
                     {/* Product Image */}
@@ -200,11 +199,11 @@ export default function OrderDetailsModal({ order, onClose }: OrderDetailsModalP
                         setSelectedProduct(product);
                         setShowProductModal(true);
                       }}
-                      className="flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
+                      className="shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
                     >
                       <img
-                        src={product.imageUrl}
-                        alt={product.name}
+                        src={product?.imageUrl}
+                        alt={product?.name}
                         className={`w-20 h-20 object-cover rounded-lg ${theme === 'dark' ? 'bg-gray-800' : 'bg-gray-100'}`}
                       />
                     </div>
@@ -216,18 +215,18 @@ export default function OrderDetailsModal({ order, onClose }: OrderDetailsModalP
                         setShowProductModal(true);
                       }}
                     >
-                      <p className={`${textPrimary} ${product.cancelled ? 'line-through' : ''}`}>{product.name}</p>
-                      <p className={`text-sm ${textTertiary}`}>{product.vendor}</p>
-                      <p className={`text-xs ${textTertiary} mt-1`}>{product.category}</p>
+                      <p className={`${textPrimary} ${product?.cancelled ? 'line-through' : ''}`}>{product?.name}</p>
+                      <p className={`text-sm ${textTertiary}`}>{product?.vendor}</p>
+                      <p className={`text-xs ${textTertiary} mt-1`}>{product?.category}</p>
                     </div>
                     {/* Price & Actions */}
                     <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
                       <div className={`text-right ${isRTL ? 'text-left' : ''}`}>
-                        <p className={`${textPrimary} ${product.cancelled ? 'line-through' : ''}`}>₪{(product.quantity * product.unitPrice).toLocaleString()}</p>
-                        <p className={`text-sm ${textTertiary}`}>{product.quantity} x ₪{product.unitPrice}</p>
+                        <p className={`${textPrimary} ${product?.cancelled ? 'line-through' : ''}`}>₪{(product?.quantity * product?.unitPrice).toLocaleString()}</p>
+                        <p className={`text-sm ${textTertiary}`}>{product?.quantity} x ₪{product?.unitPrice}</p>
                       </div>
                       {/* Cancel Button */}
-                      {!product.cancelled && USER_ROLE !== 'authority' && (
+                      {!product?.cancelled && USER_ROLE !== 'authority' && (
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
@@ -244,7 +243,7 @@ export default function OrderDetailsModal({ order, onClose }: OrderDetailsModalP
                           <XCircle className="w-5 h-5" />
                         </button>
                       )}
-                      {product.cancelled && (
+                      {product?.cancelled && (
                         <span className={`text-xs px-2 py-1 rounded-full bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400`}>
                           {t('cancelled')}
                         </span>
@@ -261,21 +260,21 @@ export default function OrderDetailsModal({ order, onClose }: OrderDetailsModalP
             <div className={`border rounded-lg p-4 space-y-2 ${theme === 'dark' ? 'border-gray-800' : 'border-gray-200'}`}>
               <div className="flex justify-between">
                 <span className={textTertiary}>{t('voucherAmount')}</span>
-                <span className={textPrimary}>₪{order.voucherAmount.toLocaleString()}</span>
+                <span className={textPrimary}>₪{order?.voucherAmount.toLocaleString()}</span>
               </div>
               <div className="flex justify-between">
                 <span className={textTertiary}>{t('creditCardAmount')}</span>
-                <span className={textPrimary}>₪{order.creditCardAmount.toLocaleString()}</span>
+                <span className={textPrimary}>₪{order?.creditCardAmount.toLocaleString()}</span>
               </div>
-              {order.deliveryFee > 0 && (
+              {order?.deliveryFee > 0 && (
                 <div className="flex justify-between">
                   <span className={textTertiary}>{t('deliveryFee')}</span>
-                  <span className={textPrimary}>₪{order.deliveryFee.toLocaleString()}</span>
+                  <span className={textPrimary}>₪{order?.deliveryFee.toLocaleString()}</span>
                 </div>
               )}
               <div className={`flex justify-between pt-2 border-t ${theme === 'dark' ? 'border-gray-700' : 'border-gray-300'}`}>
                 <span className={`${textPrimary}`}>{t('total')}</span>
-                <span className={`${textPrimary}`}>₪{order.totalAmount.toLocaleString()}</span>
+                <span className={`${textPrimary}`}>₪{order?.totalAmount?.toLocaleString()}</span>
               </div>
             </div>
           </div>

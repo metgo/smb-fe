@@ -1,0 +1,28 @@
+{
+  "add_banck_account": "Add Bank Account",
+  "bank_name": "Bank Name",
+  "select_bank": "Select Bank",
+  "branch_name": "Branch Name",
+  "select_branch": "Select Branch",
+  "account_number": "Account Number",
+  "bn_number": "BN Number",
+  "name_on_invoice": "Name on Invoice",
+  "cancel":"Cancel",
+  "save":"Save",
+  
+  "logout": "Logout",
+  "contact_information": "Contact Information",
+  "email": "Email",
+  "phone": "Phone",
+  "location": "Location",
+  "member_since": "Member Since",
+  "business_information": "Business Information",
+  "business_name": "Business Name",
+  "user_type": "User Type",
+  "access_level": "Access Level",
+  "bank_account_details": "Bank Account Details",
+  "add_bank_account": "Add Bank Account",
+  "edit_bank_account": "Edit Bank Account",
+  "no_bank_account_added": "No bank account details added",
+  "click_add_bank_account": "Click \"Add Bank Account\" to add your banking information"
+}
