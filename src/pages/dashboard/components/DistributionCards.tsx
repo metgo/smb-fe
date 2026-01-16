@@ -326,11 +326,6 @@ export default function DistributionCards() {
     data: [],
   });
 
-  const [productState, setProductState] = useState<TransformedData>({
-    totalItem: 0,
-    data: [],
-  });
-
   /* ----------------------------------------
      API Calls
   ---------------------------------------- */
@@ -350,7 +345,7 @@ export default function DistributionCards() {
     serviceType: 'point_of_interest',
   });
 
-  const { data: productData } = useGetProductStatsQuery({
+  useGetProductStatsQuery({
     startDate: '2025-01-01',
     endDate: '2025-01-31',
     dmoId: '',
@@ -382,16 +377,6 @@ export default function DistributionCards() {
     );
   }, [poiData]);
 
-  useEffect(() => {
-    if (!productData?.datas) return;
-
-    setProductState(
-      transformStatsData(
-        productData?.datas?.getAllProductStats,
-        productData?.datas?.totalNumberOfProducts
-      )
-    );
-  }, [productData]);
 
   /* ----------------------------------------
      Render

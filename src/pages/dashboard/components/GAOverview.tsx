@@ -157,7 +157,7 @@ export default function GAOverview() {
   const [timeframe, setTimeframe] = useState('last30days');
   const [selectedWebsite, setSelectedWebsite] = useState('all');
 
-  const { data, isLoading } = useGetGoogleAnalyticsViewsQuery({
+  const { data } = useGetGoogleAnalyticsViewsQuery({
     startDate: '2025-01-01',
     endDate: '2025-01-31',
     dmoId: '',

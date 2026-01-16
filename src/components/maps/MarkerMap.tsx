@@ -60,7 +60,6 @@ const MarkerMap = ({
     script.async = true;
 
     script.onload = () => {
-      setIsMapLoaded(true);
       initializeMap();
     };
 

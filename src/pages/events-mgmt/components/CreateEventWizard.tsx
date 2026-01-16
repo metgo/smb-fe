@@ -69,7 +69,6 @@ export default function CreateEventWizard({
   // Step 2: Date, Time & Format
   const [isMultiDay, setIsMultiDay] = useState(false);
   const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
   const [eventDays, setEventDays] = useState<EventDay[]>([
     { id: '1', date: '', startTime: '09:00', endTime: '17:00', description: '' }
   ]);
@@ -89,6 +88,7 @@ export default function CreateEventWizard({
   const [recurrenceEndDate, setRecurrenceEndDate] = useState('');
   const [recurrenceEndCount, setRecurrenceEndCount] = useState(10);
   const [specificDate, setSpecificDate] = useState()
+  const [endDate, setEndDate]=useState("")
   const [showRecurrenceEditModal, setShowRecurrenceEditModal] = useState(false);
   const [recurrenceEditScope, setRecurrenceEditScope] = useState<'this' | 'future' | 'all'>('this');
 
@@ -138,7 +138,6 @@ export default function CreateEventWizard({
       setInternalNotes('');
       setIsMultiDay(false);
       setStartDate('');
-      setEndDate('');
       setEventDays([{ id: '1', date: '', startTime: '09:00', endTime: '17:00', description: '' }]);
       setEventFormat('physical');
       setAddress('');

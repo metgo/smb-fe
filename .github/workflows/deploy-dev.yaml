@@ -1,0 +1,64 @@
+name: Deploy to Docker Hub
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        app:
+          - name: dev_workspace_fe
+            env_file: ENV_FILE_DEV
+            tag: develop
+            port: 3000
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Create .env file for ${{ matrix.app.name }}
+        run: |
+          echo -n "${{ secrets[matrix.app.env_file] }}" | base64 -d > .env
+
+      - name: Docker login
+        run: docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push Docker image for ${{ matrix.app.name }}
+        run: |
+          docker build \
+            --build-arg ENV_FILE=.env.${{ matrix.app.name }} \
+            --build-arg APP_PORT=${{ matrix.app.port }} \
+            -t ${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.app.name }}:${{ matrix.app.tag }} .
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.app.name }}:${{ matrix.app.tag }}
+          docker image prune -f
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+
+    strategy:
+      matrix:
+        app:
+          - name: dev_workspace_fe
+            tag: develop
+
+    steps:
+      - name: SSH into server and deploy ${{ matrix.app.name }}
+        uses: fifsky/ssh-action@master
+        with:
+          command: |
+            cd app
+            echo ${{ secrets.SUDO_PASSWORD }} | sudo -S docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
+
+            echo ${{ secrets.SUDO_PASSWORD }} | sudo -S docker compose pull ${{ matrix.app.name }}
+            echo ${{ secrets.SUDO_PASSWORD }} | sudo -S docker compose up -d ${{ matrix.app.name }}
+            echo ${{ secrets.SUDO_PASSWORD }} | sudo -S docker image prune -f
+          host: ${{ secrets.SERVER_IP }}
+          user: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          options: "-T -o StrictHostKeyChecking=no"

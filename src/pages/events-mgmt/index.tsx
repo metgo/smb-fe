@@ -47,7 +47,7 @@ export default function EventsMgmtPage() {
   // Table and Modal State
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [selectedRegistrant, setSelectedRegistrant] = useState<Registrant | null>(null);
-  const [registrantSortConfig, setRegistrantSortConfig] = useState<SortConfig>(null);
+  const [registrantSortConfig] = useState<SortConfig>(null);
   const [registrantSearchQuery, setRegistrantSearchQuery] = useState('');
   const [showDailyBreakdown, setShowDailyBreakdown] = useState(false);
   const [showQuickSnapModal, setShowQuickSnapModal] = useState(false);
@@ -181,17 +181,9 @@ export default function EventsMgmtPage() {
     setShowQuickSnapModal(false)
   };
 
-  const handleSort = (key: string) => {
-    setRegistrantSortConfig(current => {
-      if (!current || current.key !== key) {
-        return { key, direction: 'asc' };
-      }
-      if (current.direction === 'asc') {
-        return { key, direction: 'desc' };
-      }
-      return null;
-    });
-  };
+
+
+
 
   const eventStats = [
     {
@@ -444,7 +436,6 @@ export default function EventsMgmtPage() {
           registrantSearchQuery={registrantSearchQuery}
           setRegistrantSearchQuery={setRegistrantSearchQuery}
           filteredRegistrants={filteredRegistrants}
-          handleSort={handleSort}
           isRTL={isRTL}
           setSelectedRegistrant={setSelectedRegistrant}
         />
