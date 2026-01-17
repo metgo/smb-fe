@@ -150,9 +150,6 @@ export default function ReordableDataTable<T extends Record<string, any>>({
     data.length > 0 &&
     data.every(item => selectedItems.has(item[rowKey]));
 
-  const someSelected =
-    selectedItems && selectedItems.size > 0 && !allSelected;
-
   const toggleAll = () => {
     if (!onSelectionChange) return;
 

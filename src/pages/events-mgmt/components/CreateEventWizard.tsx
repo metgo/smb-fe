@@ -43,7 +43,7 @@ export default function CreateEventWizard({
 
   const [updateEvent, { isLoading: isEventUpdating }] = useUpdateEventMutation()
   const [initEventCreate, { isLoading: isEventCreating }] = useInitEventCreateMutation()
-  const { data: editData } = useGetEventByIdQuery(
+  const { data: _editData } = useGetEventByIdQuery(
     editId ? { eventId: editId } : skipToken
   );
 
@@ -87,10 +87,8 @@ export default function CreateEventWizard({
   const [recurrenceEndType, setRecurrenceEndType] = useState<RecurrenceEndType>('count');
   const [recurrenceEndDate, setRecurrenceEndDate] = useState('');
   const [recurrenceEndCount, setRecurrenceEndCount] = useState(10);
-  const [specificDate, setSpecificDate] = useState()
-  const [endDate, setEndDate]=useState("")
-  const [showRecurrenceEditModal, setShowRecurrenceEditModal] = useState(false);
-  const [recurrenceEditScope, setRecurrenceEditScope] = useState<'this' | 'future' | 'all'>('this');
+  const [specificDate] = useState()
+  const [endDate] = useState("")
 
 
   // Step 3: Registration & Capacity

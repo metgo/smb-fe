@@ -242,7 +242,7 @@ export default function ProductsMgmtPage() {
                   rowKey="id"
                   data={sortedProducts}
                   selectedItems={selectedProducts}
-                  onSelectionChange={setSelectedProducts}
+                  onSelectionChange={(selected) => setSelectedProducts(selected as Set<string>)}
                   onRowClick={setSelectedProduct}
                   storageKey="productsTableColumnOrder"
                   columns={[

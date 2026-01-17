@@ -401,7 +401,7 @@ export default function EventsWithViewMode({
         rowKey="_id"
         data={displayedEvents}
         selectedItems={selectedEvents}
-        onSelectionChange={setSelectedEvents}
+        onSelectionChange={(selected) => setSelectedEvents(selected as Set<string>)}
         onRowClick={(item) => handleEventSelect(item)}
         storageKey="eventsTableColumnOrder"
         columns={[
