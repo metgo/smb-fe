@@ -44,7 +44,7 @@ const EventTickets: React.FC<EventTicketsProps> = ({
   const { textPrimary, textTertiary } = useThemeClasses();
   const { theme } = useAppSelector((state) => state.settings);
   const { data: tickets, refetch } = useGetAllTicketQuery(eventId ? { eventId } : skipToken)
-  const [deleteTicket, { isLoading }] = useDeleteTicketMutation()
+  const [deleteTicket, { isLoading: _isLoading }] = useDeleteTicketMutation()
 
   const [editingTicket, setEditingTicket] = useState<TicketPayload | null>(null);
 
@@ -200,12 +200,7 @@ const EventTickets: React.FC<EventTicketsProps> = ({
 
                   <button
                     onClick={() => {
-                      const duplicated: TicketData = {
-                        ...ticket,
-                        id: Date.now().toString(),
-                        name: `${ticket.name} (${t("copy") || "Copy"})`,
-                      };
-                      // setTickets((prev) => [...prev, duplicated]);
+                      // TODO: Implement duplicate ticket functionality
                     }}
                     className={`p-3 rounded-xl transition-all ${theme === "dark"
                       ? "hover:bg-gray-700"

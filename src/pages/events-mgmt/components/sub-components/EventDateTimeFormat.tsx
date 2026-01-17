@@ -155,7 +155,7 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
         currentDate.setDate(currentDate.getDate() + 1);
       } else if (recurrencePattern === 'weekly') {
         const dayOfWeek = currentDate.getDay();
-        if (selectedWeekdays.includes(dayOfWeek)) {
+        if (selectedWeekdays.includes(String(dayOfWeek))) {
           shouldAdd = true;
         }
         currentDate.setDate(currentDate.getDate() + 1);

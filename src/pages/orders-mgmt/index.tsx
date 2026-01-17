@@ -145,25 +145,6 @@ export default function OrdersMgmtPage() {
     };
   }, [filteredOrders]);
 
-  // Bulk selection handlers
-  const handleSelectAll = () => {
-    if (selectedOrders.size === filteredOrders.length) {
-      setSelectedOrders(new Set());
-    } else {
-      setSelectedOrders(new Set(filteredOrders.map(o => o.id)));
-    }
-  };
-
-  const handleSelectOrder = (orderId: string) => {
-    const newSelected = new Set(selectedOrders);
-    if (newSelected.has(orderId)) {
-      newSelected.delete(orderId);
-    } else {
-      newSelected.add(orderId);
-    }
-    setSelectedOrders(newSelected);
-  };
-
   const handleRowClick = (order: Order) => {
     setSelectedOrder(order);
     setShowOrderDetails(true);
