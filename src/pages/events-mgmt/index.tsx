@@ -36,11 +36,11 @@ export default function EventsMgmtPage() {
   const [dateRangeFilter, setDateRangeFilter] = useState({ start: '', end: '' });
 
   // Data Fetch
-  const { data: events, isLoading } = useGetAllEventsQuery({
+  const { data: events, isLoading: _isLoading } = useGetAllEventsQuery({
     search: searchQuery,
     // eventType: eventTypeFilter.toUpperCase()
   })
-  const { data: eventStatsData, isLoading: isEventStatsFetching } = useGetEventsStatsQuery({})
+  const { data: eventStatsData, isLoading: _isEventStatsFetching } = useGetEventsStatsQuery({})
   const { data: websites } = useGetAllWebsitesQuery();
 
   // Table and Modal State

@@ -28,6 +28,10 @@ interface Event {
   }[];
 }
 
+interface IEventResponse{
+  
+}
+
 interface SignedUrlPayload {
   originalName: string;
   mimeType: string;

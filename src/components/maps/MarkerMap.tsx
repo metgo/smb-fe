@@ -42,7 +42,7 @@ const MarkerMap = ({
   const [map, setMap] = useState<any>(null);
   const [inputValue, setInputValue] = useState<string>('');
   const [suggestions, setSuggestions] = useState<PlaceSuggestion[]>([]);
-  const [isMapLoaded, setIsMapLoaded] = useState<boolean>(false);
+  const [_isMapLoaded, _setIsMapLoaded] = useState<boolean>(false);
 
   /* ---------------- Effects ---------------- */
 
