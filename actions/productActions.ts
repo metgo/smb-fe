@@ -18,6 +18,10 @@ export async function getProducts(businessId: string) {
   try {
     const res = await fetch(
       `${urls.productsList}?businessId=${businessId}&campCode=${CODE}`,
+      {
+        method: "GET",
+        cache: "no-store",
+      },
     );
     if (!res.ok) throw new Error("Failed to fetch categories");
     const data = await res.json();
