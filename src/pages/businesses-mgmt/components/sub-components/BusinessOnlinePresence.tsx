@@ -3,7 +3,6 @@ import { Globe, Facebook, Instagram, Youtube, Music } from "lucide-react";
 
 /* ---------- Types ---------- */
 
-
 interface OnlinePresenceData {
   website: string;
   facebook: string;
@@ -43,7 +42,9 @@ const BusinessOnlinePresence: FC<BusinessOnlinePresenceProps> = ({
 
   return (
     <div className="space-y-6">
-      <h3 className={`text-lg ${theme === "dark" ? "text-gray-200" : "text-gray-800"}`}>
+      <h3
+        className={`text-lg ${theme === "dark" ? "text-gray-200" : "text-gray-800"}`}
+      >
         {t("online_presence") || "Online Presence & Social Media"}
       </h3>
 
@@ -51,7 +52,7 @@ const BusinessOnlinePresence: FC<BusinessOnlinePresenceProps> = ({
       <SocialInput
         label={t("website_url")}
         icon={<Globe className="w-5 h-5 text-gray-400" />}
-        value={formData.online_presence?.website||""}
+        value={formData.online_presence?.website || ""}
         placeholder="https://example.com"
         inputClasses={inputClasses}
         isRTL={isRTL}
@@ -65,7 +66,7 @@ const BusinessOnlinePresence: FC<BusinessOnlinePresenceProps> = ({
 
       {/* Facebook */}
       <SocialInput
-        label={t("facebook_url")}
+        label={t("facebook")}
         icon={<Facebook className="w-5 h-5 text-gray-400" />}
         value={formData.online_presence?.facebook}
         placeholder="https://facebook.com/example"
@@ -81,7 +82,7 @@ const BusinessOnlinePresence: FC<BusinessOnlinePresenceProps> = ({
 
       {/* Instagram */}
       <SocialInput
-        label={t("instagram_url")}
+        label={t("instagram")}
         icon={<Instagram className="w-5 h-5 text-gray-400" />}
         value={formData.online_presence?.instagram}
         placeholder="https://instagram.com/example"
@@ -97,7 +98,7 @@ const BusinessOnlinePresence: FC<BusinessOnlinePresenceProps> = ({
 
       {/* YouTube */}
       <SocialInput
-        label={t("youtube_url")}
+        label={t("youtube")}
         icon={<Youtube className="w-5 h-5 text-gray-400" />}
         value={formData.online_presence?.youtube}
         placeholder="https://youtube.com/example"
@@ -113,7 +114,7 @@ const BusinessOnlinePresence: FC<BusinessOnlinePresenceProps> = ({
 
       {/* TikTok */}
       <SocialInput
-        label={t("tiktok_url")}
+        label={t("tiktok")}
         icon={<Music className="w-5 h-5 text-gray-400" />}
         value={formData.online_presence?.tiktok}
         placeholder="https://tiktok.com/example"
@@ -156,10 +157,18 @@ const SocialInput: FC<SocialInputProps> = ({
   <div>
     <label className="block text-sm mb-2 text-gray-500">{label}</label>
     <div className="relative">
-      <div className={`absolute ${isRTL ? "right-3" : "left-3"} top-1/2 -translate-y-1/2`}>
+      <div
+        className={`absolute ${isRTL ? "right-3" : "left-3"} top-1/2 -translate-y-1/2`}
+      >
         {icon}
       </div>
-      <input type="url" value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} className={inputClasses} />
+      <input
+        type="url"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className={inputClasses}
+      />
     </div>
   </div>
 );

@@ -42,7 +42,7 @@ const BusinessContactOwership: FC<BusinessContactOwershipProps> = ({
   setFormData,
   errors,
 }) => {
-  const { t } = useTranslation("business");
+  const { t } = useTranslation("businesses");
 
   return (
     <div className="space-y-6">
@@ -75,8 +75,8 @@ const BusinessContactOwership: FC<BusinessContactOwershipProps> = ({
               errors.email
                 ? "border-red-500"
                 : theme === "dark"
-                ? "bg-gray-800 border-gray-700 text-gray-200"
-                : "bg-white border-gray-300 text-gray-900"
+                  ? "bg-gray-800 border-gray-700 text-gray-200"
+                  : "bg-white border-gray-300 text-gray-900"
             } focus:outline-none focus:ring-2 focus:ring-teal-500`}
           />
         </div>
@@ -115,8 +115,8 @@ const BusinessContactOwership: FC<BusinessContactOwershipProps> = ({
               errors.phone
                 ? "border-red-500"
                 : theme === "dark"
-                ? "bg-gray-800 border-gray-700 text-gray-200"
-                : "bg-white border-gray-300 text-gray-900"
+                  ? "bg-gray-800 border-gray-700 text-gray-200"
+                  : "bg-white border-gray-300 text-gray-900"
             } focus:outline-none focus:ring-2 focus:ring-teal-500`}
           />
         </div>
