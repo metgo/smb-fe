@@ -69,12 +69,9 @@ export default async function Page({
     queryFn: () => getAllFilters(selectedFiltersIds),
   });
 
-  await queryClient.prefetchInfiniteQuery({
-    queryKey: ["feeds", selectedFiltersIds],
-    staleTime: 0,
-    queryFn: ({ pageParam = 1 }) =>
-      getFeedItems(pageParam, selectedFiltersIds, isAllClear),
-    initialPageParam: 1,
+  await queryClient.prefetchQuery({
+    queryKey: ["feeds"],
+    queryFn: () => getFeedItems(),
   });
 
   return (
