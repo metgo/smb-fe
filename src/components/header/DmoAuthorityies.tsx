@@ -4,23 +4,8 @@ import { ChevronDown } from "lucide-react";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 
-type Authority = {
-  _id: string;
-  name: string;
-  dmoId: string;
-  logoPath?: string;
-};
-
-type ParentItem = {
-  _id: string;
-  name: string;
-  imagePath?: string;
-  logoPath?: string;
-  authorities: Authority[];
-};
-
 type Props = {
-  data: ParentItem[];
+  data: IDmo[];
 };
 
 const DmoAuthorityies: React.FC<Props> = ({ data }) => {

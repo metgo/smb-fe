@@ -31,3 +31,47 @@ interface Product {
     ar: boolean;
   };
 }
+
+interface ProductFormData {
+  // Basic Info
+  businessId: string;
+  name: {
+    en: string;
+    he: string;
+    ar: string;
+  };
+  shortDescription: {
+    en: string;
+    he: string;
+    ar: string;
+  };
+  fullDescription: {
+    en: string;
+    he: string;
+    ar: string;
+  };
+
+  // Type & Category
+  type: 'physical' | 'table-order' | 'service' | 'hotel-room' | 'experience' | '';
+  categories: string[];
+
+  // Pricing
+  markedPrice: string;
+  sellingPrice: string;
+  quantity: string;
+  isUnlimited: boolean;
+  startDate: string;
+  endDate: string;
+
+  // Media
+  mainImage: string | null;
+  additionalImages: string[];
+
+  // Delivery/Service
+  enableHomeDelivery: boolean;
+  enableStorePickup: boolean;
+  deliveryFee: string;
+  deliveryTime: string;
+  serviceDuration: string;
+  serviceLocation: string;
+}

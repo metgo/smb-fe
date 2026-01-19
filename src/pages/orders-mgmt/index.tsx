@@ -40,14 +40,14 @@ export default function OrdersMgmtPage() {
 
   const { textPrimary, textSecondary, textTertiary } = useThemeClasses()
 
-  const [orders, setOrders] = useState<Order[]>([]);
+  const [orders, setOrders] = useState<IOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedOrders, setSelectedOrders] = useState<Set<string>>(new Set());
   const [showFilters, setShowFilters] = useState(false);
   const [showColumnSettings, setShowColumnSettings] = useState(false);
   const [showOrderDetails, setShowOrderDetails] = useState(false);
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<IOrder | null>(null);
   const [showAddOrderWizard, setShowAddOrderWizard] = useState(false);
   const [showQRScanner, setShowQRScanner] = useState(false);
   const columnSettingsRef = useRef<HTMLDivElement>(null);
@@ -164,7 +164,7 @@ export default function OrdersMgmtPage() {
     setSelectedOrders(newSelected);
   };
 
-  const handleRowClick = (order: Order) => {
+  const handleRowClick = (order: IOrder) => {
     setSelectedOrder(order);
     setShowOrderDetails(true);
   };
@@ -329,7 +329,7 @@ export default function OrdersMgmtPage() {
   ];
 
 
-  const getOrderStatusBadge = (status: Order['orderStatus']) => {
+  const getOrderStatusBadge = (status: IOrder['orderStatus']) => {
     const badges = {
       draft: { bg: 'bg-gray-100 dark:bg-gray-800', text: 'text-gray-800 dark:text-gray-300', label: t('draft') },
       processing: { bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-800 dark:text-blue-400', label: t('processing') },
@@ -343,13 +343,13 @@ export default function OrdersMgmtPage() {
     };
     const badge = badges[status];
     return (
-      <span className={`px-2 py-1 rounded-full text-xs ${badge.bg} ${badge.text}`}>
-        {badge.label}
+      <span className={`px-2 py-1 rounded-full text-xs ${badge?.bg} ${badge?.text}`}>
+        {badge?.label}
       </span>
     );
   };
 
-  const getPaymentStatusBadge = (status: Order['paymentStatus']) => {
+  const getPaymentStatusBadge = (status: IOrder['paymentStatus']) => {
     const badges = {
       pending: { bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'text-yellow-800 dark:text-yellow-400', label: t('pending') },
       success: { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-800 dark:text-green-400', label: t('success') },
@@ -359,8 +359,8 @@ export default function OrdersMgmtPage() {
     };
     const badge = badges[status];
     return (
-      <span className={`px-2 py-1 rounded-full text-xs ${badge.bg} ${badge.text}`}>
-        {badge.label}
+      <span className={`px-2 py-1 rounded-full text-xs ${badge?.bg} ${badge?.text}`}>
+        {badge?.label}
       </span>
     );
   };
@@ -725,8 +725,13 @@ export default function OrdersMgmtPage() {
 
       <Activity mode={(selectedOrder && showOrderDetails) ? "visible" : "hidden"}>
         <OrderDetailsModal
+          t={t}
+          isRTL={isRTL}
+          theme={theme}
           order={selectedOrder!}
           onClose={() => setShowOrderDetails(false)}
+          getOrderStatusBadge={getOrderStatusBadge}
+          getPaymentStatusBadge={getPaymentStatusBadge}
         />
       </Activity>
 
@@ -734,7 +739,7 @@ export default function OrdersMgmtPage() {
         <CreateOrderWizard
           onClose={() => setShowAddOrderWizard(false)}
           onAddOrder={(newOrder) => {
-            setOrders(prev => [newOrder as Order, ...prev]);
+            setOrders(prev => [newOrder as IOrder, ...prev]);
           }}
         />
       </Activity>

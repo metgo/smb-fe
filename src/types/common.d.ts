@@ -36,3 +36,18 @@ interface PageStats {
   labelClass?: string;
   icon: ReactNode;
 }
+
+type IAuthority = {
+  _id: string;
+  name: string;
+  dmoId: string;
+  logoPath?: string;
+};
+
+type IDmo = {
+  _id: string;
+  name: string;
+  imagePath?: string;
+  logoPath?: string;
+  authorities: Authority[];
+};

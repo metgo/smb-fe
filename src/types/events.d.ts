@@ -1,3 +1,5 @@
+type TMonthlyType = "SPECIFIC_DATE" | "RELATIVE_DAY"
+
 interface Event {
   _id: string;
   name: string;
@@ -98,7 +100,6 @@ interface NotificationData {
 }
 
 type RecurrencePattern = 'daily' | 'weekly' | 'monthly' | 'custom'
-type MonthlyType = 'date' | 'day'
 type MonthlyOrdinal = '1st' | '2nd' | '3rd' | '4th' | 'last'
 type RecurrenceEndType = 'never' | 'date' | 'count'
 
@@ -170,13 +171,15 @@ interface QuestionOption {
   label: string;
 }
 
-interface EventImage {
+interface IEventImage {
   image: string;
   caption?: string;
   alt?: string;
   isPrimary: boolean;
   subCoordinates?: SubCoordinates;
 }
+type TEventImages = IEventImage[];
+
 
 interface SubCoordinates {
   xMin: number;
@@ -219,7 +222,7 @@ interface CustomTemplate {
 }
 
 
-interface TicketPayload {
+interface ITicketPayload {
   _id?: string;
   name: string;
   description: string;
@@ -237,9 +240,22 @@ interface TicketPayload {
     isUnlimited: boolean;
     perUserLimit: number;
   },
-  images?: {
-    image: string;
-  }[]
+  imageUrl?: string;
+  images?: [{ image: string }]
   status: string;
   type: string;
+}
+
+
+type IUploadStatus = "idle" | "uploading" | "success" | "error";
+
+interface IEventImageUpload {
+  id: number;
+  file?: File;
+  previewUrl: string;
+  signedUrl?: string;
+  gcsURL?: string;
+  progress: number;
+  status: UploadStatus;
+  isPrimary: boolean;
 }

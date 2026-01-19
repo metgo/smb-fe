@@ -1,12 +1,18 @@
+import clsx from "clsx";
 import React from "react";
+import { ChevronDown } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { SelectableChips } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useGetAccessibilityQuery, useGetGroupTypesQuery, useGetSubCategoriesQuery } from "@/store/api/masterDataApi";
+import { useCommon } from "@/hooks/useCommon";
 
 interface EventBasicInformationProps {
-  // Basic fields
+  selectedDmoId: string;
+  setSelectDmoId: React.Dispatch<React.SetStateAction<string>>;
+  selectedAuthorityId: string;
+  setSelectAuthorityId: React.Dispatch<React.SetStateAction<string>>;
   eventName: string;
   setEventName: React.Dispatch<React.SetStateAction<string>>;
   shortDescription: string;
@@ -44,16 +50,21 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
   selectedSubCategoriesId, setSubCategoriesId,
   selectedAccessiblitiesId, setAccessiblitiesId,
   selectedGroupTypesId, setGroupTypesId,
+  selectedDmoId, setSelectDmoId,
+  selectedAuthorityId, setSelectAuthorityId,
 }) => {
 
   const { t, i18n } = useTranslation("events");
-  const { textSecondary, textTertiary, inputClasses } = useThemeClasses();
+  const { dmosAuthorities } = useCommon()
+  const { textSecondary, textTertiary, inputClasses, selectInputClasses } = useThemeClasses();
   const locale = i18n.language as Language;
 
   const { data: subCategories } = useGetSubCategoriesQuery({ bussCategoryId: "6566fcd4a77d2a477266d3b9", locale });
   const { data: accessibility } = useGetAccessibilityQuery({ locale });
   const { data: groupTypes } = useGetGroupTypesQuery({ locale });
 
+
+  const selectedDmos = dmosAuthorities?.find((item) => item?._id === selectedDmoId);
 
   const handleSubcategorySelect = (itemId: string) => {
     const exists = selectedSubCategoriesId?.some((id) => id === itemId);
@@ -92,6 +103,64 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
 
   return (
     <div className="space-y-4 max-w-3xl mx-auto">
+
+      <div className="flex items-center justify-between gap-4">
+        {/* Dmos Dropdown */}
+        <div className="flex-1">
+          <label className={`block text-sm font-medium mb-3 ${textSecondary}`}>
+            {t("select_dmo")} <span className="text-red-500">*</span>
+          </label>
+          <div className=" flex gap-2 relative">
+            <select
+              value={selectedDmoId}
+              onChange={(e) => {
+                setSelectDmoId(e.target.value);
+                setSelectAuthorityId("");
+              }}
+              className={clsx(
+                "appearance-none h-12 w-full border rounded-lg px-4 py-2 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 min-w-45",
+                // selectInputClasses
+              )}
+            >
+              <option value="">Select DMO</option>
+              {dmosAuthorities?.map((parent) => (
+                <option key={parent._id} value={parent._id}>
+                  {parent.name}
+                </option>
+              ))}
+            </select>
+            <ChevronDown className="absolute top-1/2 ltr:right-3 rtl:left-3 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+          </div>
+        </div>
+
+        {/* Authorities Dropdown */}
+        <div className="flex-1">
+          <label className={`block text-sm font-medium mb-3 ${textSecondary}`}>
+            {t("select_authority")} <span className="text-red-500">*</span>
+          </label>
+          <div className=" w-full relative">
+            <select
+              value={selectedAuthorityId}
+              onChange={(e) => setSelectAuthorityId(e.target.value)}
+              className={clsx(
+                "appearance-none h-12 w-full border rounded-lg px-4 py-2 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 min-w-45",
+                selectInputClasses
+              )}
+            >
+              <option value="">Select Authority</option>
+              {selectedDmos?.authorities?.map((child) => (
+                <option key={child._id} value={child._id}>
+                  {child.name}
+                </option>
+              ))}
+            </select>
+            <ChevronDown className="absolute top-1/2 ltr:right-3 rtl:left-3 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+          </div>
+        </div>
+      </div>
+
+
+
       {/* Event Name */}
       <div>
         <label className={`block text-sm font-medium mb-3 ${textSecondary}`}>
@@ -207,7 +276,7 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
           className={`w-full px-5 py-4 rounded-xl border resize-none text-base ${inputClasses} transition-all focus:ring-2 focus:ring-teal-500/20`}
         />
       </div>
-    </div>
+    </div >
   );
 };
 

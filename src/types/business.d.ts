@@ -19,6 +19,11 @@
   lifetimeSales: number; // Total sales revenue in ILS
   address: string;
   coordinates: { lat: number; lng: number };
+  owner?: {
+    name: string;
+    email: string;
+    phone: string;
+  };
   contactPerson: {
     name: string;
     email: string;
@@ -34,4 +39,22 @@
   completionPercentage: number;
   internalNotes?: string;
   rejectionNote?: string;
+  analytics?: {
+    pageViews: number;
+    uniqueVisitors: number;
+    clicks: number;
+    bookmarks: number;
+    shares: number;
+    averageTimeOnPage: number; // in seconds
+    conversionRate: number; // percentage
+  };
+  socialMedia?: {
+    facebook?: string;
+    instagram?: string;
+    youtube?: string;
+    tiktok?: string;
+  };
+  deliveryAdditionalInfo?: string;
+  deliveryReturnExchange?: string[];
+  deliverySpecificSellerInfo?: string[];
 }

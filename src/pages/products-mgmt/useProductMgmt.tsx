@@ -4,7 +4,6 @@ import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 
-
 // Mock businesses for wizard
 const businesses = [
   { id: 'biz-1', name: 'Desert Lodge Hotel' },
@@ -18,8 +17,7 @@ const businessId = ""
 
 export function useProductMgmt() {
   const { t, i18n } = useTranslation('products');
-  type LanguageKey = 'en' | 'he' | 'ar';
-  const language = (['en', 'he', 'ar'].includes(i18n.language) ? i18n.language : 'en') as LanguageKey;
+  const language = (['en', 'he', 'ar'].includes(i18n.language) ? i18n.language : 'en') as Language;
 
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');

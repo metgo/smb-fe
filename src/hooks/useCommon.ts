@@ -3,7 +3,9 @@ import { useTranslation } from "react-i18next";
 
 export function useCommon() {
   const { t } = useTranslation('common')
-  const dmosAuthorities = useGetDmosQuery()
+  const { data } = useGetDmosQuery()
+
+  const dmosAuthorities:IDmo[] = data?.data;
 
   const authorities = [
     { value: 'all', label: t('all_authorities') },

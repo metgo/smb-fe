@@ -22,7 +22,6 @@ export default function EventsMgmtPage() {
   const { isRTL, theme } = useAppSelector((state) => state.settings);
   const themeColor = useThemeClasses();
 
-
   const [isCreateWizardOpen, setIsCreateWizardOpen] = useState(false);
 
   const [editId, setEditId] = useState<string | null>(null)
@@ -462,7 +461,7 @@ export default function EventsMgmtPage() {
       <CreateEventWizard
         editId={editId}
         isOpen={isCreateWizardOpen}
-        onClose={() => setIsCreateWizardOpen(false)}
+        onClose={() => {setIsCreateWizardOpen(false); setEditId(null)}}
         theme={theme}
         mode="create"
       />

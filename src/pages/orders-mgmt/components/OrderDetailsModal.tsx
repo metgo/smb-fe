@@ -1,6 +1,4 @@
 import { useState } from "react";
-import { useTranslation } from "react-i18next";
-import { useAppSelector } from "@/hooks/hooks";
 import { Mail, Phone, X, XCircle } from "lucide-react";
 
 import InfoRow from "./sub-components/InfoRow";
@@ -9,119 +7,36 @@ import ProductDetailsModal from "./sub-components/ProductDetailsModal";
 import CancellationDialog from "./sub-components/CancellationDialog";
 
 interface OrderDetailsModalProps {
-  order: Order;
-  onClose: () => void
+  theme: Theme;
+  order: IOrder;
+  isRTL: boolean;
+  onClose: () => void;
+  t: (key: string) => string;
+  getOrderStatusBadge: any;
+  getPaymentStatusBadge: any;
 }
 
 const USER_ROLE = "authority"
 
 
-export default function OrderDetailsModal({ order, onClose }: OrderDetailsModalProps) {
-  const { t } = useTranslation('orders');
-  const { isRTL, theme } = useAppSelector((state) => state.settings)
-  const {textPrimary, textTertiary}=useThemeClasses()
+function OrderDetailsModal({
+  order,
+  onClose,
+  theme,
+  isRTL,
+  t,
+  getOrderStatusBadge,
+  getPaymentStatusBadge,
+}: OrderDetailsModalProps) {
 
+  const { textTertiary, textPrimary } = useThemeClasses()
+
+  const [selectedProduct, setSelectedProduct] = useState<IOrderProduct | null>(null);
   const [showProductModal, setShowProductModal] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState<OrderProduct | null>(null);
-  const [orderProducts, setOrderProducts] = useState<OrderProduct[]>(order?.products);
+  const [orderProducts, setOrderProducts] = useState<IOrderProduct[]>(order?.products);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [cancelType, setCancelType] = useState<'order' | 'item'>('order');
-  const [itemToCancel, setItemToCancel] = useState<OrderProduct | null>(null);
-
-
-  function getOrderStatusBadge(status: Order['orderStatus']) {
-    const badges = {
-      draft: {
-        bg: 'bg-gray-100 dark:bg-gray-800',
-        text: 'text-gray-800 dark:text-gray-300',
-        label: t('draft')
-      },
-      processing: {
-        bg: 'bg-blue-100 dark:bg-blue-900/30',
-        text: 'text-blue-800 dark:text-blue-400',
-        label: t('processing')
-      },
-      paid: {
-        bg: 'bg-green-100 dark:bg-green-900/30',
-        text: 'text-green-800 dark:text-green-400',
-        label: t('paid')
-      },
-      confirmed: {
-        bg: 'bg-teal-100 dark:bg-teal-900/30',
-        text: 'text-teal-800 dark:text-teal-400',
-        label: t('confirmed')
-      },
-      delivered: {
-        bg: 'bg-purple-100 dark:bg-purple-900/30',
-        text: 'text-purple-800 dark:text-purple-400',
-        label: t('delivered')
-      },
-      completed: {
-        bg: 'bg-emerald-100 dark:bg-emerald-900/30',
-        text: 'text-emerald-800 dark:text-emerald-400',
-        label: t('completed')
-      },
-      cancelled: {
-        bg: 'bg-red-100 dark:bg-red-900/30',
-        text: 'text-red-800 dark:text-red-400',
-        label: t('cancelled')
-      },
-      partially_cancelled: {
-        bg: 'bg-orange-100 dark:bg-orange-900/30',
-        text: 'text-orange-800 dark:text-orange-400',
-        label: t('partiallyCancelled')
-      },
-      failed: {
-        bg: 'bg-red-100 dark:bg-red-900/30',
-        text: 'text-red-800 dark:text-red-400',
-        label: t('failed')
-      },
-    };
-
-    const badge = badges[status];
-    return (
-      <span className={`px-2 py-1 rounded-full text-xs ${badge?.bg} ${badge?.text}`}>
-        {badge?.label}
-      </span>
-    );
-  }
-
-  function getPaymentStatusBadge(status: Order['paymentStatus']) {
-    const badges = {
-      pending: {
-        bg: 'bg-yellow-100 dark:bg-yellow-900/30',
-        text: 'text-yellow-800 dark:text-yellow-400',
-        label: t('pending')
-      },
-      success: {
-        bg: 'bg-green-100 dark:bg-green-900/30',
-        text: 'text-green-800 dark:text-green-400',
-        label: t('success')
-      },
-      failed: {
-        bg: 'bg-red-100 dark:bg-red-900/30',
-        text: 'text-red-800 dark:text-red-400',
-        label: t('failed')
-      },
-      refunded: {
-        bg: 'bg-purple-100 dark:bg-purple-900/30',
-        text: 'text-purple-800 dark:text-purple-400',
-        label: t('refunded')
-      },
-      partially_refunded: {
-        bg: 'bg-orange-100 dark:bg-orange-900/30',
-        text: 'text-orange-800 dark:text-orange-400',
-        label: t('partiallyRefunded')
-      },
-    };
-
-    const badge = badges[status];
-    return (
-      <span className={`px-2 py-1 rounded-full text-xs ${badge?.bg} ${badge?.text}`}>
-        {badge?.label}
-      </span>
-    );
-  }
+  const [itemToCancel, setItemToCancel] = useState<IOrderProduct | null>(null);
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={onClose}>
@@ -150,16 +65,18 @@ export default function OrderDetailsModal({ order, onClose }: OrderDetailsModalP
             </button>
           </div>
         </div>
+
         {/* Content */}
         <div className="p-6 space-y-6">
           {/* Purchaser Information */}
           <div>
-            <h3 className={`text-lg mb-3 ${textPrimary}`}>{t('purchaserInformation')}</h3>
+            <h3 className={`text-lg mb-3 ${textPrimary}`}>{t('purchaser_information') || 'Purchaser Information'}</h3>
             <div className="grid grid-cols-2 gap-4">
-              <InfoRow label={t('name')} value={order?.purchaserName} theme={theme} />
+              <InfoRow label={t.name || 'Name'} value={order?.purchaserName} theme={theme} />
+
               {/* Email - Clickable */}
               <div>
-                <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} mb-1`}>{t('email')}</p>
+                <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} mb-1`}>{t('email') || 'Email'}</p>
                 <a
                   href={`mailto:${order?.email}`}
                   className={`text-sm flex items-center gap-1 text-teal-500 hover:text-teal-600 transition-colors`}
@@ -168,9 +85,10 @@ export default function OrderDetailsModal({ order, onClose }: OrderDetailsModalP
                   {order?.email}
                 </a>
               </div>
+
               {/* Phone - Clickable */}
               <div>
-                <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} mb-1`}>{t('phone')}</p>
+                <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} mb-1`}>{t('phone') || 'Phone'}</p>
                 <a
                   href={`tel:${order?.phone}`}
                   className={`text-sm flex items-center gap-1 text-teal-500 hover:text-teal-600 transition-colors`}
@@ -179,13 +97,15 @@ export default function OrderDetailsModal({ order, onClose }: OrderDetailsModalP
                   {order?.phone}
                 </a>
               </div>
-              <InfoRow label={t('campaign')} value={`${order?.campaign} (${order?.campaignCode})`} theme={theme} />
-              {order?.address && <InfoRow label={t('address')} value={order?.address} theme={theme} />}
+
+              <InfoRow label={t('campaign') || 'Campaign'} value={`${order?.campaign} (${order?.campaignCode})`} theme={theme} />
+              {order?.address && <InfoRow label={t('address') || 'Address'} value={order?.address} theme={theme} />}
             </div>
           </div>
+
           {/* Products Section */}
           <div>
-            <h3 className={`text-lg mb-3 ${textPrimary}`}>{t('products')}</h3>
+            <h3 className={`text-lg mb-3 ${textPrimary}`}>{t('products') || 'Products'}</h3>
             <div className={`border rounded-lg overflow-hidden ${theme === 'dark' ? 'border-gray-800' : 'border-gray-200'}`}>
               {orderProducts?.map((product, idx) => (
                 <div
@@ -207,6 +127,7 @@ export default function OrderDetailsModal({ order, onClose }: OrderDetailsModalP
                         className={`w-20 h-20 object-cover rounded-lg ${theme === 'dark' ? 'bg-gray-800' : 'bg-gray-100'}`}
                       />
                     </div>
+
                     {/* Product Info */}
                     <div
                       className="flex-1 cursor-pointer"
@@ -219,12 +140,14 @@ export default function OrderDetailsModal({ order, onClose }: OrderDetailsModalP
                       <p className={`text-sm ${textTertiary}`}>{product?.vendor}</p>
                       <p className={`text-xs ${textTertiary} mt-1`}>{product?.category}</p>
                     </div>
+
                     {/* Price & Actions */}
                     <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
                       <div className={`text-right ${isRTL ? 'text-left' : ''}`}>
                         <p className={`${textPrimary} ${product?.cancelled ? 'line-through' : ''}`}>₪{(product?.quantity * product?.unitPrice).toLocaleString()}</p>
                         <p className={`text-sm ${textTertiary}`}>{product?.quantity} x ₪{product?.unitPrice}</p>
                       </div>
+
                       {/* Cancel Button */}
                       {!product?.cancelled && USER_ROLE !== 'authority' && (
                         <button
@@ -238,14 +161,15 @@ export default function OrderDetailsModal({ order, onClose }: OrderDetailsModalP
                             ? 'hover:bg-red-900/30 text-red-400'
                             : 'hover:bg-red-50 text-red-500'
                             }`}
-                          title={t('cancelProduct')}
+                          title={t('cancel_product') || 'Cancel Product'}
                         >
                           <XCircle className="w-5 h-5" />
                         </button>
                       )}
+
                       {product?.cancelled && (
                         <span className={`text-xs px-2 py-1 rounded-full bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400`}>
-                          {t('cancelled')}
+                          {t('cancelled') || 'Cancelled'}
                         </span>
                       )}
                     </div>
@@ -254,30 +178,32 @@ export default function OrderDetailsModal({ order, onClose }: OrderDetailsModalP
               ))}
             </div>
           </div>
+
           {/* Payment Breakdown */}
           <div>
-            <h3 className={`text-lg mb-3 ${textPrimary}`}>{t('paymentBreakdown')}</h3>
+            <h3 className={`text-lg mb-3 ${textPrimary}`}>{t('payment_breakdown') || 'Payment Breakdown'}</h3>
             <div className={`border rounded-lg p-4 space-y-2 ${theme === 'dark' ? 'border-gray-800' : 'border-gray-200'}`}>
               <div className="flex justify-between">
-                <span className={textTertiary}>{t('voucherAmount')}</span>
+                <span className={textTertiary}>{t('voucher_amount') || 'Voucher'}</span>
                 <span className={textPrimary}>₪{order?.voucherAmount.toLocaleString()}</span>
               </div>
               <div className="flex justify-between">
-                <span className={textTertiary}>{t('creditCardAmount')}</span>
+                <span className={textTertiary}>{t('credit_card_amount') || 'Credit Card'}</span>
                 <span className={textPrimary}>₪{order?.creditCardAmount.toLocaleString()}</span>
               </div>
               {order?.deliveryFee > 0 && (
                 <div className="flex justify-between">
-                  <span className={textTertiary}>{t('deliveryFee')}</span>
+                  <span className={textTertiary}>{t('delivery_fee') || 'Delivery Fee'}</span>
                   <span className={textPrimary}>₪{order?.deliveryFee.toLocaleString()}</span>
                 </div>
               )}
               <div className={`flex justify-between pt-2 border-t ${theme === 'dark' ? 'border-gray-700' : 'border-gray-300'}`}>
-                <span className={`${textPrimary}`}>{t('total')}</span>
-                <span className={`${textPrimary}`}>₪{order?.totalAmount?.toLocaleString()}</span>
+                <span className={`${textPrimary}`}>{t('total') || 'Total'}</span>
+                <span className={`${textPrimary}`}>₪{order?.totalAmount.toLocaleString()}</span>
               </div>
             </div>
           </div>
+
           {/* Actions */}
           {USER_ROLE !== 'authority' && (
             <div className={`flex gap-3 pt-4 border-t ${theme === 'dark' ? 'border-gray-800' : 'border-gray-200'} ${isRTL ? 'flex-row-reverse' : ''}`}>
@@ -289,18 +215,19 @@ export default function OrderDetailsModal({ order, onClose }: OrderDetailsModalP
                 }}
                 className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
               >
-                {t('cancelOrder')}
+                {t('cancel_order') || 'Cancel Order'}
               </button>
               <button className={`px-4 py-2 rounded-lg transition-colors ${theme === 'dark'
                 ? 'bg-gray-800 hover:bg-gray-700 text-gray-300'
                 : 'bg-gray-200 hover:bg-gray-300 text-gray-700'
                 }`}>
-                {t('resendNotification')}
+                {t('resend_notification') || 'Resend Notification'}
               </button>
             </div>
           )}
         </div>
       </div>
+
       {/* Cancellation Dialog */}
       {showCancelDialog && (
         <CancellationDialog
@@ -324,6 +251,7 @@ export default function OrderDetailsModal({ order, onClose }: OrderDetailsModalP
           }}
         />
       )}
+
       {/* Product Details Modal */}
       {showProductModal && selectedProduct && (
         <ProductDetailsModal
@@ -335,5 +263,6 @@ export default function OrderDetailsModal({ order, onClose }: OrderDetailsModalP
         />
       )}
     </div>
-  );
+  )
 }
+export default OrderDetailsModal

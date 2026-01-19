@@ -1,5 +1,3 @@
-import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { useCreateSignedUrlMutation, useCreateTicketMutation, useUpdateTicketMutation } from "@/store/api/eventMutationApi";
 
 import clsx from "clsx";
 import { toast } from "sonner";
@@ -7,12 +5,16 @@ import { Upload, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
+import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { useCreateSignedUrlMutation, useCreateTicketMutation, useUpdateTicketMutation } from "@/store/api/eventMutationApi";
+import { uploadWithProgress } from "@/helpers";
+
 
 interface CreateTicketWizardProps {
   setShowTicketModal: (v: boolean) => void;
   setEditingTicket: (v: any) => void;
   theme: Theme;
-  editingTicket: TicketPayload;
+  editingTicket: ITicketPayload;
   tickets: any;
   eventId: string | null;
   refetch: () => void;
@@ -31,15 +33,17 @@ const CreateTicketWizard = ({
   const { cardClasses, textPrimary, textSecondary, inputClasses, textTertiary } = useThemeClasses();
 
   const [createSignedUrl] = useCreateSignedUrlMutation();
+
+  const [progress, setProgress] = useState(0);
   const [createTicket, { isLoading: isSaving }] = useCreateTicketMutation()
   const [updateTicket, { isLoading: isUpdating }] = useUpdateTicketMutation()
 
   const [file, setFile] = useState<File | null>(null)
   const [mediaURL, setMediaURL] = useState<GcsFileUpload>({ signedUrl: "", gcsURL: "" })
 
-  const saveTicket = async (ticket: TicketPayload) => {
+  const saveTicket = async (ticket: ITicketPayload) => {
     if (eventId) {
-      const payload: TicketPayload = {
+      const payload: ITicketPayload = {
         name: ticket.name,
         description: ticket.description,
         eventId: eventId,
@@ -63,23 +67,18 @@ const CreateTicketWizard = ({
         type: ticket.type.toUpperCase(),
       }
 
-      // if (file && mediaURL.signedUrl) {
-      //   const uploadImageRes = await fetch(mediaURL.signedUrl, {
-      //     method: "PUT",
-      //     headers: {
-      //       "Content-Type": file.type, // important!
-      //     },
-      //     body: file,
-      //   });
+      if (file && mediaURL.signedUrl) {
+        try {
+          setProgress(0);
+          await uploadWithProgress(file, mediaURL?.signedUrl, setProgress);
+          toast.success("Upload successful!");
+          setFile(null)
+        } catch (err) {
+          toast.error("Upload failed");
+        }
+      }
 
-      //   if (!uploadImageRes.ok) {
-      //     toast.error("Upload failed");
-      //   } else {
-      //     toast.success("Upload successful!");
-      //   }
-      // }
-
-      const res = ticket._id ? await updateTicket({body: payload, ticketId: ticket?._id}).unwrap() : await createTicket(payload).unwrap()
+      const res = ticket._id ? await updateTicket({ body: payload, ticketId: ticket?._id }).unwrap() : await createTicket(payload).unwrap()
       if (res?.message) {
         toast.success(res?.message || "Ticket created successfully")
         refetch()
@@ -111,6 +110,7 @@ const CreateTicketWizard = ({
     }
   }, [file]);
 
+  useEffect(() => setProgress(0), [])
 
 
 
@@ -159,15 +159,26 @@ const CreateTicketWizard = ({
           </div>
 
           <div>
-            <label className={`block text-sm mb-2 ${textSecondary}`}>{t('ticket_image')}</label>
+            <div className="flex items-center gap-2">
+              <label className={`block text-sm mb-2 ${textSecondary}`}>{t('ticket_image')}</label>
+              {progress > 0 && (
+                <div className="w-120 bg-gray-200 rounded h-2 mt-2 flex items-center gap-2">
+                  <div
+                    className="bg-green-500 h-2 rounded transition-all"
+                    style={{ width: `${progress}%` }}
+                  />
+                  <div>{progress}%</div>
+                </div>
+              )}
+            </div>
             <div
               className={`border-2 border-dashed rounded-lg p-4 ${theme === 'dark' ? 'border-gray-700 bg-gray-800/30' : 'border-gray-300 bg-gray-50'
                 }`}
             >
-              {editingTicket?.images ? (
+              {editingTicket?.imageUrl ? (
                 <div className="relative">
                   <img
-                    src={editingTicket?.images[0].image}
+                    src={editingTicket?.imageUrl}
                     alt="Ticket preview"
                     className="w-full h-40 object-cover rounded-lg"
                   />
@@ -192,7 +203,7 @@ const CreateTicketWizard = ({
                         setFile(file);
                         const reader = new FileReader();
                         reader.onloadend = () => {
-                          setEditingTicket({ ...editingTicket, image: reader.result as string });
+                          setEditingTicket({ ...editingTicket, imageUrl: reader.result as string });
                         };
                         reader.readAsDataURL(file);
                       }

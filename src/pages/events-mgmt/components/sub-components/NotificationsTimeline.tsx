@@ -105,7 +105,7 @@ const NotificationsTimeline: React.FC<NotificationsTimelineProps> = ({
                           prev.map((n) => (n.id === notification.id ? { ...n, enabled: !n.enabled } : n))
                         );
                       }}
-                      className={`p-2 rounded-lg transition-colors ${theme === "dark" ? "hover:bg-gray-700" : "hover:bg-gray-200"}`}
+                      className={`p-2 rounded-lg transition-colors cursor-pointer ${theme === "dark" ? "hover:bg-gray-700" : "hover:bg-gray-200"}`}
                       title={notification.enabled ? t("disable") : t("enable")}
                     >
                       {notification.enabled ? (
@@ -119,7 +119,7 @@ const NotificationsTimeline: React.FC<NotificationsTimelineProps> = ({
                         setEditingNotification(notification);
                         setShowNotificationForm(true);
                       }}
-                      className={`p-2 rounded-lg transition-colors ${theme === "dark" ? "hover:bg-gray-700" : "hover:bg-gray-200"}`}
+                      className={`p-2 rounded-lg transition-colors cursor-pointer ${theme === "dark" ? "hover:bg-gray-700" : "hover:bg-gray-200"}`}
                     >
                       <FileText className="w-4 h-4" />
                     </button>
@@ -131,7 +131,7 @@ const NotificationsTimeline: React.FC<NotificationsTimelineProps> = ({
                         };
                         setNotifications((prev) => [...prev, duplicated]);
                       }}
-                      className={`p-2 rounded-lg transition-colors ${theme === "dark" ? "hover:bg-gray-700" : "hover:bg-gray-200"}`}
+                      className={`p-2 rounded-lg transition-colors cursor-pointer ${theme === "dark" ? "hover:bg-gray-700" : "hover:bg-gray-200"}`}
                     >
                       <Copy className="w-4 h-4" />
                     </button>
@@ -141,7 +141,7 @@ const NotificationsTimeline: React.FC<NotificationsTimelineProps> = ({
                           setNotifications((prev) => prev.filter((n) => n.id !== notification.id));
                         }
                       }}
-                      className="p-2 rounded-lg text-red-500 hover:bg-red-500/10 transition-colors"
+                      className="p-2 rounded-lg text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>

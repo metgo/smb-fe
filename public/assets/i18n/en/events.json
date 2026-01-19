@@ -46,6 +46,7 @@
   "add_notification":"Add Notification",
   "configure_notification":"Configure Notification",
   "send_hours_before_event":"Send hours before event",
+  "hours_before_event":"Hours before event",
   "channels":"Channels",
   "email":"Email",
   "sms":"SMS",

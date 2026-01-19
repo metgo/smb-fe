@@ -11,7 +11,6 @@ interface MarkerMapProps {
   setAddress: (v: string) => void;
   address: string;
   geo: Geo;
-  businessCategoryPinIcon?: string;
 }
 
 interface PlaceSuggestion {
@@ -29,7 +28,6 @@ const MarkerMap = ({
   setAddress,
   address,
   geo,
-  businessCategoryPinIcon = '',
 }: MarkerMapProps) => {
   const { t, i18n } = useTranslation('maps');
   const locale = i18n.language;
@@ -128,9 +126,7 @@ const MarkerMap = ({
       map: googleMap,
       draggable: true,
       icon: {
-        url:
-          businessCategoryPinIcon ||
-          '/assets/img/metgo/map-pin.png',
+        url:'/assets/images/map-pin.png',
         scaledSize: new window.google.maps.Size(30, 40),
       },
     });

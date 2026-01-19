@@ -15,7 +15,7 @@ import { useAppSelector } from "@/hooks/hooks";
 import { ImageWithFallback } from "@/components/shared";
 
 interface QuickSnapEventDetailsProps {
-  selectedEvent: Event | null;
+  selectedEvent: any | null;
   setSelectedEvent: (v: Event | null) => void;
   handleViewDetails: () => void;
   handleEditEvent: () => void;
@@ -27,6 +27,7 @@ const QuickSnapEventDetails = ({
   handleEditEvent,
   handleViewDetails,
 }: QuickSnapEventDetailsProps) => {
+  console.log("🚀 ~ QuickSnapEventDetails ~ selectedEvent:", selectedEvent)
   const { t, i18n } = useTranslation("events");
   const { theme } = useAppSelector((state) => state.settings);
   const language = i18n.language || "en";
@@ -102,7 +103,7 @@ const QuickSnapEventDetails = ({
               <Calendar className="w-6 h-6 text-purple-500" />
               <div>
                 <div className="font-medium">
-                  {formatDate(selectedEvent.startDate, language)}
+                  {formatDate(selectedEvent?.dayDescription?.[0].date, language)}
                   {selectedEvent.startDate !== selectedEvent.endDate &&
                     ` – ${formatDate(selectedEvent.endDate, language)}`}
                 </div>
@@ -120,7 +121,7 @@ const QuickSnapEventDetails = ({
             {/* Location */}
             <div className="flex items-center gap-4">
               <MapPin className="w-6 h-6 text-purple-500" />
-              <div className="font-medium">{selectedEvent.location}</div>
+              <div className="font-medium">{selectedEvent?.address?.location}</div>
             </div>
 
             {/* Price */}
