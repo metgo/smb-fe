@@ -550,12 +550,14 @@ export default function ProductsMgmtPage() {
       )}
 
       {selectedProduct && currentView === "details" && (
-        <Activity mode={selectedProduct && !isEditing ? "visible" : "hidden"}>
+        <Activity mode={!isEditing ? "visible" : "hidden"}>
           <ProductDetails
             product={selectedProduct}
             onBack={() => {}}
             onDuplicate={() => {}}
-            onEdit={() => {}}
+            onEdit={() => {
+              setIsEditing(true);
+            }}
           />
         </Activity>
       )}
