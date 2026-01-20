@@ -31,7 +31,6 @@ export default function ProductDetails({ product, onBack, onEdit, onDuplicate }:
   const canEdit = ['superadmin', 'admin', 'dmo', 'authority', 'business_owner'].includes(USER_ROLE);
 
 
-
   const tabs = [
     { id: 'overview', label: t('overview'), icon: FileText },
     { id: 'pricing', label: t('pricing') || 'Pricing & Sales', icon: DollarSign },

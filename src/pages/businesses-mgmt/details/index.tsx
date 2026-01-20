@@ -1,5 +1,5 @@
 import { useState } from "react";
-import {ArrowLeft, Edit, Plus, Box, UserCog} from "lucide-react";
+import { ArrowLeft, Edit, Plus, Box, UserCog } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useAppSelector } from "@/hooks/hooks";
 import {
@@ -14,7 +14,7 @@ import {
   BusinessOpeningHoursDetails,
   BusinessTitleSection,
   ChangeOwnerModal,
-  TabsSection
+  TabsSection,
 } from "./components";
 
 interface BusinessDetailsProps {
@@ -27,7 +27,6 @@ interface BusinessDetailsProps {
 
 const USER_ROLE = "admin"; // Can be: 'superadmin', 'admin', 'dmo', 'authority', 'business_owner'
 
-
 export default function BusinessDetails({
   business,
   onBack,
@@ -35,14 +34,15 @@ export default function BusinessDetails({
   onCreateProduct,
   onViewProducts,
 }: BusinessDetailsProps) {
-  const { t } = useTranslation("business");
+  const { t } = useTranslation("businesses");
   const { theme } = useAppSelector((state) => state.settings);
   const [activeTab, setActiveTab] = useState("overview");
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [showChangeOwnerModal, setShowChangeOwnerModal] = useState(false);
 
-  const canChangeStatus = ["superadmin", "admin", "dmo", "authority"].includes(USER_ROLE);
-
+  const canChangeStatus = ["superadmin", "admin", "dmo", "authority"].includes(
+    USER_ROLE,
+  );
 
   const StatusBadge = ({ status }: { status: Business["status"] }) => {
     const statusConfig = {
@@ -56,14 +56,16 @@ export default function BusinessDetails({
     const config = statusConfig[status];
 
     return (
-      <span className={`px-3 py-1 rounded-full text-sm text-white ${config.color}`}>
+      <span
+        className={`px-3 py-1 rounded-full text-sm text-white ${config.color}`}
+      >
         {config.label}
       </span>
     );
   };
 
   const renderContent = () => {
-    const commonProps = { theme, t, business }
+    const commonProps = { theme, t, business };
     switch (activeTab) {
       case "overview":
         return <BusinessInfoDetails {...commonProps} />;
@@ -96,8 +98,9 @@ export default function BusinessDetails({
         <div className="flex items-center justify-between mb-4">
           <button
             onClick={onBack}
-            className={`flex items-center gap-2 text-sm hover:text-teal-600 transition-colors ${theme === "dark" ? "text-gray-400" : "text-gray-600"
-              }`}
+            className={`flex items-center gap-2 text-sm hover:text-teal-600 transition-colors ${
+              theme === "dark" ? "text-gray-400" : "text-gray-600"
+            }`}
           >
             <ArrowLeft className="w-5 h-5" />
             {t("back_to_list")}
@@ -135,10 +138,11 @@ export default function BusinessDetails({
             {canChangeStatus && (
               <button
                 onClick={() => setShowStatusModal(true)}
-                className={`px-4 py-2 rounded-lg border transition-colors flex items-center gap-2 ${theme === "dark"
-                  ? "border-gray-700 hover:bg-gray-800 text-gray-300"
-                  : "border-gray-300 hover:bg-gray-100 text-gray-700"
-                  }`}
+                className={`px-4 py-2 rounded-lg border transition-colors flex items-center gap-2 ${
+                  theme === "dark"
+                    ? "border-gray-700 hover:bg-gray-800 text-gray-300"
+                    : "border-gray-300 hover:bg-gray-100 text-gray-700"
+                }`}
               >
                 {t("change_status")}
               </button>
@@ -147,10 +151,11 @@ export default function BusinessDetails({
             {USER_ROLE === "admin" && (
               <button
                 onClick={() => setShowChangeOwnerModal(true)}
-                className={`px-4 py-2 rounded-lg border transition-colors flex items-center gap-2 ${theme === "dark"
-                  ? "border-gray-700 hover:bg-gray-800 text-gray-300"
-                  : "border-gray-300 hover:bg-gray-100 text-gray-700"
-                  }`}
+                className={`px-4 py-2 rounded-lg border transition-colors flex items-center gap-2 ${
+                  theme === "dark"
+                    ? "border-gray-700 hover:bg-gray-800 text-gray-300"
+                    : "border-gray-300 hover:bg-gray-100 text-gray-700"
+                }`}
               >
                 <UserCog className="w-4 h-4" />
                 {t("change_owner")}
@@ -160,8 +165,15 @@ export default function BusinessDetails({
         </div>
 
         <BusinessTitleSection business={business} theme={theme} t={t} />
-        {business.analytics && <AnalyticsStatsSection business={business} theme={theme} t={t} />}
-        <TabsSection activeTab={activeTab} setActiveTab={setActiveTab} theme={theme} t={t} />
+        {business.analytics && (
+          <AnalyticsStatsSection business={business} theme={theme} t={t} />
+        )}
+        <TabsSection
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          theme={theme}
+          t={t}
+        />
       </div>
 
       {/* Content */}

@@ -5,11 +5,17 @@
 
   "products_list": "Products List",
   "product_details": "Product Details",
-
   "create_product": "Create Product",
   "edit_product": "Edit Product",
   "duplicate_product": "Duplicate Product",
-
+  "draft": "Draft",
+    "pending": "Pending",
+    "approved": "Approved",
+        "approve": "Approve",
+    "rejected": "Rejected",
+    "archived": "Archived",
+        "archive": "Archive",
+"selected_items" : "Selected Items",
   "product_name": "Product Name",
   "product_type": "Product Type",
   "physical_product": "Physical Product",
@@ -17,6 +23,8 @@
   "experience": "Experience",
     "total_revenue": "Total Revenue",
 "filters":"Filters",
+"table_order": "Table Order",
+    "hotel_room": "Hotel Room",
     "items_sold": "Items Sold",
     "avg_product_price": "Avg Product Price",
     "revenue_this_month": "Revenue This Month",

@@ -470,7 +470,7 @@ export default function OrdersMgmtPage() {
       partially_cancelled: {
         bg: "bg-orange-100 dark:bg-orange-900/30",
         text: "text-orange-800 dark:text-orange-400",
-        label: t("partiallyCancelled"),
+        label: t("partially_cancelled"),
       },
       failed: {
         bg: "bg-red-100 dark:bg-red-900/30",
