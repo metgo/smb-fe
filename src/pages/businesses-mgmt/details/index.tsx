@@ -37,32 +37,32 @@ export default function BusinessDetails({
   const { t } = useTranslation("businesses");
   const { theme } = useAppSelector((state) => state.settings);
   const [activeTab, setActiveTab] = useState("overview");
-  const [showStatusModal, setShowStatusModal] = useState(false);
+  const [_showStatusModal, setShowStatusModal] = useState(false);
   const [showChangeOwnerModal, setShowChangeOwnerModal] = useState(false);
 
   const canChangeStatus = ["superadmin", "admin", "dmo", "authority"].includes(
     USER_ROLE,
   );
 
-  const StatusBadge = ({ status }: { status: Business["status"] }) => {
-    const statusConfig = {
-      draft: { color: "bg-gray-500", label: t("draft") },
-      pending: { color: "bg-yellow-500", label: t("pending") },
-      approved: { color: "bg-green-500", label: t("approved") },
-      rejected: { color: "bg-red-500", label: t("rejected") },
-      archived: { color: "bg-gray-400", label: t("archived") },
-    };
+  // const StatusBadge = ({ status }: { status: Business["status"] }) => {
+  //   const statusConfig = {
+  //     draft: { color: "bg-gray-500", label: t("draft") },
+  //     pending: { color: "bg-yellow-500", label: t("pending") },
+  //     approved: { color: "bg-green-500", label: t("approved") },
+  //     rejected: { color: "bg-red-500", label: t("rejected") },
+  //     archived: { color: "bg-gray-400", label: t("archived") },
+  //   };
 
-    const config = statusConfig[status];
+  //   const config = statusConfig[status];
 
-    return (
-      <span
-        className={`px-3 py-1 rounded-full text-sm text-white ${config.color}`}
-      >
-        {config.label}
-      </span>
-    );
-  };
+  //   return (
+  //     <span
+  //       className={`px-3 py-1 rounded-full text-sm text-white ${config.color}`}
+  //     >
+  //       {config.label}
+  //     </span>
+  //   );
+  // };
 
   const renderContent = () => {
     const commonProps = { theme, t, business };
@@ -118,7 +118,7 @@ export default function BusinessDetails({
             {onCreateProduct && (
               <button
                 onClick={onCreateProduct}
-                className="px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 hover:shadow-lg text-white rounded-lg transition-all flex items-center gap-2"
+                className="px-4 py-2 bg-linear-to-r from-blue-500 to-indigo-600 hover:shadow-lg text-white rounded-lg transition-all flex items-center gap-2"
               >
                 <Plus className="w-4 h-4" />
                 {t("create_product")}
@@ -128,7 +128,7 @@ export default function BusinessDetails({
             {onViewProducts && (
               <button
                 onClick={onViewProducts}
-                className="px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 hover:shadow-lg text-white rounded-lg transition-all flex items-center gap-2"
+                className="px-4 py-2 bg-linear-to-r from-blue-500 to-indigo-600 hover:shadow-lg text-white rounded-lg transition-all flex items-center gap-2"
               >
                 <Box className="w-4 h-4" />
                 {t("view_products")}

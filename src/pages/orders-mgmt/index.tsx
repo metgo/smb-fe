@@ -186,24 +186,24 @@ export default function OrdersMgmtPage() {
     };
   }, [filteredOrders]);
 
-  // Bulk selection handlers
-  const handleSelectAll = () => {
-    if (selectedOrders.size === filteredOrders.length) {
-      setSelectedOrders(new Set());
-    } else {
-      setSelectedOrders(new Set(filteredOrders.map((o) => o.id)));
-    }
-  };
+  // // Bulk selection handlers
+  // const handleSelectAll = () => {
+  //   if (selectedOrders.size === filteredOrders.length) {
+  //     setSelectedOrders(new Set());
+  //   } else {
+  //     setSelectedOrders(new Set(filteredOrders.map((o) => o.id)));
+  //   }
+  // };
 
-  const handleSelectOrder = (orderId: string) => {
-    const newSelected = new Set(selectedOrders);
-    if (newSelected.has(orderId)) {
-      newSelected.delete(orderId);
-    } else {
-      newSelected.add(orderId);
-    }
-    setSelectedOrders(newSelected);
-  };
+  // const handleSelectOrder = (orderId: string) => {
+  //   const newSelected = new Set(selectedOrders);
+  //   if (newSelected.has(orderId)) {
+  //     newSelected.delete(orderId);
+  //   } else {
+  //     newSelected.add(orderId);
+  //   }
+  //   setSelectedOrders(newSelected);
+  // };
 
   const handleRowClick = (order: IOrder) => {
     setSelectedOrder(order);
@@ -793,145 +793,157 @@ export default function OrdersMgmtPage() {
               onSelectionChange={() => setSelectedOrders}
               onRowClick={handleRowClick}
               storageKey="ordersTableColumnOrder"
-              columns={[
-                { key: "checkbox", label: "", width: "50px" },
-                columnVisibility.orderId && {
-                  key: "orderId",
-                  label: t("order_id"),
-                  sortable: true,
-                  render: (order: any) => (
-                    <div className="text-sm">{order.id}</div>
-                  ),
-                },
+              columns={
+                [
+                  { key: "checkbox", label: "", width: "50px" },
+                  columnVisibility.orderId && {
+                    key: "orderId",
+                    label: t("order_id"),
+                    sortable: true,
+                    render: (order: IOrder) => (
+                      <div className="text-sm">{order.id}</div>
+                    ),
+                  },
 
-                columnVisibility.purchaserName && {
-                  key: "purchaserName",
-                  label: t("purchaser_name_field"),
-                  sortable: true,
-                  render: (order: any) => (
-                    <div className="text-sm">{order.purchaserName}</div>
-                  ),
-                },
+                  columnVisibility.purchaserName && {
+                    key: "purchaserName",
+                    label: t("purchaser_name_field"),
+                    sortable: true,
+                    render: (order: IOrder) => (
+                      <div className="text-sm">{order.purchaserName}</div>
+                    ),
+                  },
 
-                columnVisibility.email && {
-                  key: "email",
-                  label: t("purchaser_email"),
-                  render: (order: any) => (
-                    <a
-                      href={`mailto:${order.email}`}
-                      onClick={(e) => e.stopPropagation()}
-                      className="flex items-center gap-1 text-sm text-teal-500 hover:text-teal-600"
-                    >
-                      <Mail className="w-3 h-3" />
-                      {order.email}
-                    </a>
-                  ),
-                },
+                  columnVisibility.email && {
+                    key: "email",
+                    label: t("purchaser_email"),
+                    render: (order: IOrder) => (
+                      <a
+                        href={`mailto:${order.email}`}
+                        onClick={(e) => e.stopPropagation()}
+                        className="flex items-center gap-1 text-sm text-teal-500 hover:text-teal-600"
+                      >
+                        <Mail className="w-3 h-3" />
+                        {order.email}
+                      </a>
+                    ),
+                  },
 
-                columnVisibility.phone && {
-                  key: "phone",
-                  label: t("purchaser_phone"),
-                  render: (order: any) => (
-                    <a
-                      href={`tel:${order.phone}`}
-                      onClick={(e) => e.stopPropagation()}
-                      className="flex items-center gap-1 text-sm text-teal-500 hover:text-teal-600"
-                    >
-                      <Phone className="w-3 h-3" />
-                      {order.phone}
-                    </a>
-                  ),
-                },
+                  columnVisibility.phone && {
+                    key: "phone",
+                    label: t("purchaser_phone"),
+                    render: (order: IOrder) => (
+                      <a
+                        href={`tel:${order.phone}`}
+                        onClick={(e) => e.stopPropagation()}
+                        className="flex items-center gap-1 text-sm text-teal-500 hover:text-teal-600"
+                      >
+                        <Phone className="w-3 h-3" />
+                        {order.phone}
+                      </a>
+                    ),
+                  },
 
-                columnVisibility.orderStatus && {
-                  key: "orderStatus",
-                  label: t("order_status"),
-                  render: (order: any) =>
-                    getOrderStatusBadge(order.orderStatus),
-                },
+                  columnVisibility.orderStatus && {
+                    key: "orderStatus",
+                    label: t("order_status"),
+                    render: (order: IOrder) =>
+                      getOrderStatusBadge(order.orderStatus),
+                  },
 
-                columnVisibility.totalAmount && {
-                  key: "totalAmount",
-                  label: t("total_amount"),
-                  sortable: true,
-                  render: (order: any) => (
-                    <div className="text-sm font-medium">
-                      ₪{order.totalAmount.toLocaleString()}
-                    </div>
-                  ),
-                },
+                  columnVisibility.totalAmount && {
+                    key: "totalAmount",
+                    label: t("total_amount"),
+                    sortable: true,
+                    render: (order: any) => (
+                      <div className="text-sm font-medium">
+                        ₪{order.totalAmount.toLocaleString()}
+                      </div>
+                    ),
+                  },
 
-                columnVisibility.paymentStatus && {
-                  key: "paymentStatus",
-                  label: t("payment_status"),
-                  render: (order: any) =>
-                    getPaymentStatusBadge(order.paymentStatus),
-                },
+                  columnVisibility.paymentStatus && {
+                    key: "paymentStatus",
+                    label: t("payment_status"),
+                    render: (order: IOrder) =>
+                      getPaymentStatusBadge(order.paymentStatus),
+                  },
 
-                columnVisibility.voucherAmount && {
-                  key: "voucherAmount",
-                  label: t("voucher_amount"),
-                  sortable: true,
-                  render: (order: any) => (
-                    <div className="text-sm text-gray-500">
-                      ₪{order.voucherAmount.toLocaleString()}
-                    </div>
-                  ),
-                },
+                  columnVisibility.voucherAmount && {
+                    key: "voucherAmount",
+                    label: t("voucher_amount"),
+                    sortable: true,
+                    render: (order: IOrder) => (
+                      <div className="text-sm text-gray-500">
+                        ₪{order.voucherAmount.toLocaleString()}
+                      </div>
+                    ),
+                  },
 
-                columnVisibility.creditCardAmount && {
-                  key: "creditCardAmount",
-                  label: t("credit_card_amount"),
-                  sortable: true,
-                  render: (order: any) => (
-                    <div className="text-sm text-gray-500">
-                      ₪{order.creditCardAmount.toLocaleString()}
-                    </div>
-                  ),
-                },
+                  columnVisibility.creditCardAmount && {
+                    key: "creditCardAmount",
+                    label: t("credit_card_amount"),
+                    sortable: true,
+                    render: (order: IOrder) => (
+                      <div className="text-sm text-gray-500">
+                        ₪{order.creditCardAmount.toLocaleString()}
+                      </div>
+                    ),
+                  },
 
-                columnVisibility.vendors && {
-                  key: "vendors",
-                  label: t("vendors"),
-                  render: (order: any) => (
-                    <div className="text-sm text-gray-500">
-                      {order.vendors.join(", ")}
-                    </div>
-                  ),
-                },
+                  columnVisibility.vendors && {
+                    key: "vendors",
+                    label: t("vendors"),
+                    render: (order: IOrder) => (
+                      <div className="text-sm text-gray-500">
+                        {order.vendors.join(", ")}
+                      </div>
+                    ),
+                  },
 
-                columnVisibility.campaign && {
-                  key: "campaign",
-                  label: t("campaign"),
-                  render: (order: any) => (
-                    <div className="text-sm text-gray-500">
-                      {order.campaign}
-                    </div>
-                  ),
-                },
+                  columnVisibility.campaign && {
+                    key: "campaign",
+                    label: t("campaign"),
+                    render: (order: IOrder) => (
+                      <div className="text-sm text-gray-500">
+                        {order.campaign}
+                      </div>
+                    ),
+                  },
 
-                columnVisibility.createdDate && {
-                  key: "createdDate",
-                  label: t("created_date"),
-                  sortable: true,
-                  render: (order: any) => (
-                    <div className="text-sm text-gray-500">
-                      {new Date(order.createdDate).toLocaleDateString(language)}
-                    </div>
-                  ),
-                },
+                  columnVisibility.createdDate && {
+                    key: "createdDate",
+                    label: t("created_date"),
+                    sortable: true,
+                    render: (order: IOrder) => (
+                      <div className="text-sm text-gray-500">
+                        {new Date(order.createdDate).toLocaleDateString(
+                          language,
+                        )}
+                      </div>
+                    ),
+                  },
 
-                columnVisibility.paymentDate && {
-                  key: "paymentDate",
-                  label: t("payment_date"),
-                  sortable: true,
-                  render: (order: any) => (
-                    <div className="text-sm text-gray-500">
-                      {new Date(order.paymentDate).toLocaleDateString(language)}
-                    </div>
-                  ),
-                },
-              ].filter(Boolean)}
+                  columnVisibility.paymentDate && {
+                    key: "paymentDate",
+                    label: t("payment_date"),
+                    sortable: true,
+                    render: (order: IOrder) => (
+                      <div className="text-sm text-gray-500">
+                        {new Date(order.paymentDate).toLocaleDateString(
+                          language,
+                        )}
+                      </div>
+                    ),
+                  },
+                ].filter(Boolean) as {
+                  key: string;
+                  label: string;
+                  width?: string;
+                  sortable?: boolean;
+                  render?: (row: IOrder) => React.ReactNode;
+                }[]
+              }
             />
           </div>
         )}

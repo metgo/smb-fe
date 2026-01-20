@@ -7,7 +7,7 @@ import { Search, ShoppingCart, X, XCircle } from "lucide-react";
 
 interface CreateOrderWizard {
   onClose: () => void;
-  onAddOrder: (order: Partial<Order>) => void;
+  onAddOrder: (order: Partial<IOrder>) => void;
 }
 
 export default function CreateOrderWizard({
@@ -147,7 +147,7 @@ export default function CreateOrderWizard({
       if (formData.voucherAmount > 0) paymentMethods.push("Voucher");
       if (formData.creditCardAmount > 0) paymentMethods.push("Credit Card");
 
-      const newOrder: Partial<Order> = {
+      const newOrder: Partial<IOrder> = {
         id: `ORD-${Date.now()}`,
         purchaserName: formData.purchaserName,
         email: formData.email,
@@ -860,7 +860,7 @@ export default function CreateOrderWizard({
 
         {/* Footer */}
         <div
-          className={`p-6 border-t flex gap-3 flex-shrink-0 ${
+          className={`p-6 border-t flex gap-3 shrink-0 ${
             theme === "dark"
               ? "bg-gray-900 border-gray-800"
               : "bg-white border-gray-200"

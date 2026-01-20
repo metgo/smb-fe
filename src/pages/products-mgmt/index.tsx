@@ -39,7 +39,7 @@ export default function ProductsMgmtPage() {
     setSelectedProducts,
     showFilters,
     setShowFilters,
-    isCreating,
+    // isCreating,
     setIsCreating,
     statusFilter,
     setStatusFilter,

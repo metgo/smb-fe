@@ -22,7 +22,7 @@ const ProductAttributes = ({
   availableCategories,
 }: ProductAttributesProps) => {
 
-  const { bgSecondary, bgTertiary, textPrimary, textSecondary, textTertiary, borderColor, hoverBg } = useThemeClasses()
+  const {  textPrimary, textSecondary, borderColor, hoverBg } = useThemeClasses()
 
   const productTypes = [
     { value: "physical", label: t("physical_product"), icon: "📦" },

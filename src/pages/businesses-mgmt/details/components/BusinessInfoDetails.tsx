@@ -1,4 +1,4 @@
-import { useState, type FC, type JSX } from 'react'
+import { useState, type FC } from 'react'
 import { Tag, TrendingUp, ExternalLink, Download, ChevronDown } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -6,12 +6,12 @@ import { toast } from 'sonner'
 
 type Theme = 'light' | 'dark'
 
-interface WebsiteConnection {
-  id: string | number
-  name: string
-  logo: JSX.Element
-  color: string
-}
+// interface WebsiteConnection {
+//   id: string | number
+//   name: string
+//   logo: JSX.Element
+//   color: string
+// }
 
 interface Business {
   shortDescription: string
@@ -199,8 +199,8 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({
       {/* Website Connections */}
       <div
         className={`p-4 rounded-lg border ${theme === 'dark'
-          ? 'bg-gradient-to-br from-gray-800/50 to-gray-900/30 border-gray-700'
-          : 'bg-gradient-to-br from-blue-50 to-purple-50 border-blue-200'
+          ? 'bg-linear-to-br from-gray-800/50 to-gray-900/30 border-gray-700'
+          : 'bg-linear-to-br from-blue-50 to-purple-50 border-blue-200'
           }`}
       >
         <h3 className={`text-sm mb-3 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>

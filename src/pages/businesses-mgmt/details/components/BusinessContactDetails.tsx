@@ -25,8 +25,8 @@ const BusinessContactDetails: FC<BusinessContactDetailsProps> = ({
       {/* Business Owner */}
       <div
         className={`p-4 rounded-lg border-2 ${theme === "dark"
-            ? "bg-gradient-to-br from-teal-900/20 to-blue-900/20 border-teal-800"
-            : "bg-gradient-to-br from-teal-50 to-blue-50 border-teal-300"
+            ? "bg-linear-to-br from-teal-900/20 to-blue-900/20 border-teal-800"
+            : "bg-linear-to-br from-teal-50 to-blue-50 border-teal-300"
           }`}
       >
         <div className="flex items-center justify-between mb-4">

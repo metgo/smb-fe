@@ -165,7 +165,7 @@ function KPICard({ title, value, icon, sparklineData, color }: KPICardProps) {
 
 export default function GAOverview() {
   const { t } = useTranslation("dashboard");
-  const { t: ct } = useTranslation("common");
+  // const { t: ct } = useTranslation("common");
 
   const { dateRanges: timeframes, websites } = useCommon();
   const [timeframe, setTimeframe] = useState("last30days");

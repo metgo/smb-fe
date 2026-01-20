@@ -148,7 +148,7 @@ const BusinessOnlinePresenceDetails: FC<BusinessOnlinePresenceDetailsProps> = ({
                 className={`text-sm flex items-center gap-2 ${link.color} hover:underline break-all`}
               >
                 <span className="truncate">{link.url}</span>
-                <ExternalLink className="w-4 h-4 flex-shrink-0" />
+                <ExternalLink className="w-4 h-4 shrink-0" />
               </a>
             </div>
           );
