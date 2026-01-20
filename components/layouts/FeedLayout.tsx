@@ -132,11 +132,11 @@ const FeedLayout = ({ selectedFiltersIds }: FeedLayoutProps) => {
               className="relative inline-block w-full"
             >
               <div
-                className={`relative z-10 border-2 border-white rounded-full shadow-2xl shadow-green-400
+                className={`relative z-10 border-2 border-white rounded-full shadow-2xl shadow-yellow-400
                   ${shouldAnimate ? "animate-zoom-3x" : ""}`}
               >
                 {appliedFilterCount > 0 && (
-                  <div className="bg-green-500 absolute right-0 -top-1 rounded-full h-[25px] w-[25px] text-[10px] flex items-center justify-center text-white aspect-square border-2 border-white z-20">
+                  <div className="bg-ye-500 absolute right-0 -top-1 rounded-full h-[25px] w-[25px] text-[10px] flex items-center justify-center text-white aspect-square border-2 border-white z-20">
                     {appliedFilterCount}
                   </div>
                 )}

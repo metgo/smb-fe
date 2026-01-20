@@ -36,8 +36,8 @@ interface FeedCardProps {
 
 const FeedCard = ({ height, width, feedItem }: FeedCardProps) => {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [hasMounted, setHasMounted] = useState(false);
 
