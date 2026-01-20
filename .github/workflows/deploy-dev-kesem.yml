@@ -1,4 +1,4 @@
-name: Deploy to Docker Hub NegevTime DEV
+name: Deploy to Docker Hub KESSEM DEV
 
 on:
   push:
