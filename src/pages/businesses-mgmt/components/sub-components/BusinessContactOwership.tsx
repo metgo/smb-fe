@@ -68,7 +68,7 @@ const BusinessContactOwership: FC<BusinessContactOwershipProps> = ({
             onChange={(e) =>
               setFormData({ ...formData, email: e.target.value })
             }
-            placeholder="business@example.com"
+            placeholder={t("business@example.com")}
             className={`w-full ${
               isRTL ? "pr-10 pl-4" : "pl-10 pr-4"
             } py-2 rounded-lg border ${

@@ -32,16 +32,12 @@
   "documents": "Documents",
   "version": "Version",
   "filters": "Filters",
-
-
   "previous": "Previous",
   "next": "Next",
   "save_draft": "Save Draft",
   "publish": "Publish",
   "publishing": "Publishing...",
-
   "filter":"Filter",
-
   "sunday": "Sunday",
   "monday": "Monday",
   "tuesday": "Tuesday",
@@ -49,7 +45,6 @@
   "thursday": "Thursday",
   "friday": "Friday",
   "saturday": "Saturday",
-
   "sun": "Sun",
   "mon": "Mon",
   "tue": "Tue",
