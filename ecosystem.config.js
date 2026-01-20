@@ -2,7 +2,7 @@ module.exports = {
   apps: [
     {
       name: "negevtime",
-      script: "yarn",
+      script: "node_modules/next/dist/bin/next",
       args: "start",
       instances: "max", // number of CPU cores
       exec_mode: "cluster",
