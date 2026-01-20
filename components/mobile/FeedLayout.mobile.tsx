@@ -162,14 +162,14 @@ const MobileFeedLayout = ({ selectedFiltersIds }: MobileFeedLayoutProps) => {
             >
               {/* Circle with shadow behind icon */}
               <div
-                className={`absolute top-3 w-12 h-12 rounded-full shadow-xl shadow-green-300
+                className={`absolute top-3 w-12 h-12 rounded-full shadow-xl shadow-yellow-400
               ${shouldAnimate ? "animate-zoom-3x" : ""}`}
               />
 
               {/* Icon stays centered */}
               <AiIcon size={68} />
               {appliedFilterCount > 0 && (
-                <div className="bg-green-500 absolute right-1 top-1 rounded-full h-4.5 w-4.5 text-[10px] flex items-center justify-center text-white border border-white">
+                <div className="bg-yellow-500 absolute right-1 top-1 rounded-full h-4.5 w-4.5 text-[10px] flex items-center justify-center text-white border border-white">
                   {appliedFilterCount}
                 </div>
               )}

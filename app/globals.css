@@ -142,6 +142,7 @@ body::-webkit-scrollbar,
 
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
+  /* color: #ecb902; */
 }
 
 .no-scrollbar-arrows::-webkit-scrollbar-button {
@@ -549,6 +550,6 @@ input[type="range"]::-moz-range-thumb {
 }
 
 .animate-zoom-3x {
-  animation: zoom-3x 6s ease-in-out infinite;
+  animation: zoom-3x 120s ease-in-out infinite;
   transform-origin: center;
 }
