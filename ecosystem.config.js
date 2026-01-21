@@ -4,8 +4,7 @@ module.exports = {
       name: "negevtime",
       script: "node_modules/next/dist/bin/next",
       args: "start",
-      cwd: "/app",
-      instances: "max", // number of CPU cores
+      instances: "max",
       exec_mode: "cluster",
       watch: false,
       env: {
