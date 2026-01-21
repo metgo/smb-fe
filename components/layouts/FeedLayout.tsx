@@ -185,7 +185,7 @@ const FeedLayout = ({ selectedFiltersIds, isAllClear }: FeedLayoutProps) => {
         {hideFirstTwoSection && (
           <div className="fixed bottom-1 right-4 custom-cursor max-sm:hidden md:block">
             <SunsetButton
-              variant={"continuous"}
+              variant={"black"}
               onClick={handleFilterIconClick}
               appliedFilterCount={appliedFilterCount}
             />
