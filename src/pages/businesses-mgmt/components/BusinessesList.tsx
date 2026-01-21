@@ -26,6 +26,7 @@ import { FilterButton } from "@/components/btns";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { generateMockBusinesses } from "@/constants/data";
 import { PageHeader, PageStats, ReordableDataTable } from "@/components/shared";
+import { useGetAllbusinessesQuery } from "@/store/api/businessQueryApi";
 
 interface BusinessesListProps {
   theme: Theme;
@@ -178,6 +179,11 @@ export default function BusinessesList({
   const [displayCount, setDisplayCount] = useState(50);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
+  const { data: businessData, isLoading: _isLoading } =
+    useGetAllbusinessesQuery({
+      search: searchTerm,
+      // eventType: eventTypeFilter.toUpperCase()
+    });
   // Load mock data
   useEffect(() => {
     try {
@@ -187,6 +193,8 @@ export default function BusinessesList({
       setError(true);
     }
   }, []);
+
+  console.log("businessData:", businessData);
 
   // Filter and sort logic
   const filteredBusinesses = useMemo(() => {

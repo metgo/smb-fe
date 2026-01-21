@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   CheckCircle,
   X,
@@ -13,6 +13,10 @@ import {
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useAppSelector } from "@/hooks/hooks";
+import {
+  useInitBusinessCreateMutation,
+  useUpdateBusinessMutation,
+} from "@/store/api/businessMutationApi";
 import {
   BusinessAttributes,
   BusinessBasicInfos,
@@ -36,15 +40,24 @@ interface CreateBusinessWizardProps {
 
 export default function CreateBusinessWizard({
   onClose,
-  onSave,
+  // onSave,
 }: CreateBusinessWizardProps) {
   const { t } = useTranslation("businesses");
   const { theme, isRTL } = useAppSelector((state) => state.settings);
-
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [updateBusiness] =
+    useUpdateBusinessMutation();
+  const [initBusinessCreate] =
+    useInitBusinessCreateMutation();
   const [currentStep, setCurrentStep] = useState(1);
   const [editData, _setEditData] = useState<any>();
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
+    const [selectedDmoId, setSelectDmoId] = useState<string>("");
+const [selectedAuthorityId, setSelectAuthorityId] = useState<string>("");
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [_businessId, setBusinessId] = useState<string | null>(null);
+  const businessIdRef = useRef<string | null>(null);
 
   // Form State
   const [formData, setFormData] = useState<any>({
@@ -114,8 +127,6 @@ export default function CreateBusinessWizard({
     },
   });
 
-  const [errors, _setErrors] = useState<Record<string, string>>({});
-
   const totalSteps = 9;
 
   const steps = [
@@ -144,19 +155,20 @@ export default function CreateBusinessWizard({
   // Draft Save Payload per Step
   const stepPayloadMap: Record<number, any> = {
     1: {
-      authority: formData.authority,
-      nameEn: formData.nameEn,
-      nameHe: formData.nameHe,
-      nameAr: formData.nameAr,
-      shortDescriptionEn: formData.shortDescriptionEn,
-      shortDescriptionHe: formData.shortDescriptionHe,
-      shortDescriptionAr: formData.shortDescriptionAr,
-      fullDescriptionEn: formData.fullDescriptionEn,
-      fullDescriptionHe: formData.fullDescriptionHe,
-      fullDescriptionAr: formData.fullDescriptionAr,
-      slug: formData.slug,
+      // authority: formData.authority,
+      authorityId: formData.authority,
+      name: formData.nameEn,
+      // nameHe: formData.nameHe,
+      // nameAr: formData.nameAr,
+      shortDescription: formData.shortDescriptionEn,
+      // shortDescriptionHe: formData.shortDescriptionHe,
+      // shortDescriptionAr: formData.shortDescriptionAr,
+      description: formData.fullDescriptionEn,
+      // fullDescriptionHe: formData.fullDescriptionHe,
+      // fullDescriptionAr: formData.fullDescriptionAr,
+      // slug: formData.slug,
       internalNotes: formData.internalNotes,
-      categories: formData.categories,
+      // categories: formData.categories,
     },
     2: {
       email: formData.email,
@@ -201,39 +213,112 @@ export default function CreateBusinessWizard({
   // Auto-save draft
   const handleSaveDraft = async () => {
     try {
-      const payload = stepPayloadMap[currentStep];
-      if (!payload) return;
+      let currentBusinessId = businessIdRef.current;
+      if (!currentBusinessId) {
+        const initRes = await initBusinessCreate().unwrap();
+        console.log("Business ID", currentBusinessId);
+        if (!initRes?.id) return;
 
-      // Simulate API call
-      setIsSaving(true);
+        currentBusinessId = initRes.id;
+        businessIdRef.current = initRes.id;
+
+        setBusinessId(currentBusinessId);
+      }
+      const payload = stepPayloadMap[currentStep];
+      console.log("PATCH payload", payload);
+
+      if (!payload) return;
+      // 3️⃣ Update business
+      const res = await updateBusiness({
+        body: payload,
+        businessId: currentBusinessId!,
+      }).unwrap();
       setIsSaving(false);
       setLastSaved(new Date());
 
-      toast.success(t("business_saved_as_draft"));
+      toast.success(res?.message ?? t("business_saved_as_draft"));
     } catch (error: any) {
       toast.error(error?.message || t("something_went_wrong"));
     }
   };
-
-  const handleNext = () => {
+  console.log("form data busienss", formData);
+  const handleNext = async () => {
+    await handleSaveDraft();
     handleSaveDraft();
-    if (currentStep < totalSteps) setCurrentStep(currentStep + 1);
+    if (currentStep < totalSteps) setCurrentStep((prev) => prev + 1);
   };
+  const validateStep = (step: number): boolean => {
+    const newErrors: Record<string, string> = {};
 
+    switch (step) {
+      case 1:
+        if (!formData.nameEn.trim()) newErrors.nameEn = t("required_field");
+        if (!formData.shortDescriptionEn.trim())
+          newErrors.shortDescriptionEn = t("required_field");
+        if (!formData.fullDescriptionEn.trim())
+          newErrors.fullDescriptionEn = t("required_field");
+        if (formData.nameEn.length < 3) newErrors.nameEn = t("field_too_short");
+        break;
+      case 2:
+        if (!formData.email.trim()) newErrors.email = t("required_field");
+        if (!formData.phone.trim()) newErrors.phone = t("required_field");
+        break;
+      case 3:
+        if (!formData.address.trim()) newErrors.address = "Address is required";
+        break;
+      case 4:
+        if (!formData.primaryCategory) {
+          newErrors.primaryCategory = t("primary_category_required");
+        }
+        break;
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+  const handlePublish = async () => {
+    // Validate all steps
+    let allValid = true;
+    for (let i = 1; i <= 4; i++) {
+      if (!validateStep(i)) {
+        allValid = false;
+        setCurrentStep(i);
+        break;
+      }
+    }
+
+    if (!allValid) {
+      toast.error(t("fix_errors_before_proceeding"));
+      return;
+    }
+
+    setIsPublishing(true);
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+    setIsPublishing(false);
+    toast.success(t("business created succesfully"));
+    onClose();
+  };
   const handlePrevious = () => {
     if (currentStep > 1) setCurrentStep(currentStep - 1);
   };
 
-  const handleSubmit = () => {
-    // Here you can validate all steps before final submit
-    onSave({ ...formData, status: "pending" });
-  };
+  // const handleSubmit = () => {
+  //   // Here you can validate all steps before final submit
+  //   onSave({ ...formData, status: "pending" });
+  // };
 
   const renderStep = () => {
     const commonProps = { theme, isRTL, t, formData, errors, setFormData };
     switch (currentStep) {
       case 1:
-        return <BusinessBasicInfos {...commonProps} canApprove />;
+        return  <BusinessBasicInfos
+          {...commonProps}
+          canApprove
+          selectedDmoId={selectedDmoId}
+          setSelectDmoId={setSelectDmoId}
+          selectedAuthorityId={selectedAuthorityId}
+          setSelectAuthorityId={setSelectAuthorityId}
+        />
       case 2:
         return <BusinessContactOwership {...commonProps} />;
       case 3:
@@ -351,11 +436,11 @@ export default function CreateBusinessWizard({
           currentStep={currentStep}
           totalSteps={totalSteps}
           isSaving={isSaving}
-          isPublishing={isSaving}
+          isPublishing={isPublishing}
           onPrevious={handlePrevious}
           onNext={handleNext}
           onSaveDraft={handleSaveDraft}
-          onPublish={handleSubmit}
+          onPublish={handlePublish}
         />
       </div>
     </div>

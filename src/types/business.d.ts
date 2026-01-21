@@ -58,3 +58,16 @@
   deliveryReturnExchange?: string[];
   deliverySpecificSellerInfo?: string[];
 }
+
+interface BusinessBasicInfoPayload {
+    authority: string;
+  name: string;
+  shortDescription: string;
+  fullDescription: string;
+    internalNotes?: string;
+}
+
+interface BusinessContactPayload {
+   email: string;
+  phone: string;
+}

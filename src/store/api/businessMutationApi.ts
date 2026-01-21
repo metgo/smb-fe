@@ -4,77 +4,46 @@ import { endpoints } from '@/lib/endpoints';
 import { axiosBaseQuery } from './axiosBaseQuery';
 
 /* ---------------- Payload Union ---------------- */
-export type EventStepPayload =
-  | EventBasicInfoPayload
-  | EventDateTimePayload
-  | EventRegPayload
-  | ITicketPayload
-  | EventMsgSchedulePayload
-  | EventMediaPayload;
-
+export type BusinessStepPayload =
+  |BusinessBasicInfoPayload
+  | BusinessContactPayload;
+  // | BusinessLocationPayload
+  // | BusinessCategoriesPayload
+  // | BusinessMediaPayload
+  // | BusinessHoursPayload
+  // | BusinessDeliveryPayload
+  // | BusinessSocialMediaPayload;
 
 /* ---------------- API ---------------- */
-export const eventMutationApi = createApi({
-  reducerPath: 'eventMutationApi',
+export const businessMutationApi = createApi({
+  reducerPath: 'businessMutationApi',
   baseQuery: axiosBaseQuery(),
-  tagTypes: ['Event'],
+  tagTypes: ['Business'],
   endpoints: (builder) => ({
-    initEventCreate: builder.mutation<any, void>({
+    initBusinessCreate: builder.mutation<any, void>({
       query: () => ({
-        url: endpoints.events,
+        url: endpoints.businesses,
         method: 'POST',
         data: { name: "" }
       }),
-      invalidatesTags: ['Event']
+      invalidatesTags: ['Business']
     }),
 
-    updateEvent: builder.mutation<any, { body: EventStepPayload, eventId: string }>({
-      query: ({ body, eventId }) => ({
-        url: `${endpoints.events}/${eventId}`,
+    updateBusiness: builder.mutation<any, { body: any, businessId: string }>({
+      query: ({ body, businessId }) => ({
+        url: `${endpoints.businesses}/${businessId}`,
         method: 'PATCH',
         data: body,
       }),
-      invalidatesTags: ['Event']
+      invalidatesTags: ['Business']
     }),
 
-    createTicket: builder.mutation<any, ITicketPayload>({
-      query: (body) => ({
-        url: endpoints.tickets,
-        method: 'POST',
-        data: body
-      }),
-    }),
-
-    updateTicket: builder.mutation<any, { body: ITicketPayload, ticketId: string }>({
-      query: ({ body, ticketId }) => ({
-        url: `${endpoints.tickets}/${ticketId}`,
-        method: 'PATCH',
-        data: body
-      }),
-    }),
-
-    deleteTicket: builder.mutation<any, { ticketId: string }>({
-      query: ({ ticketId }) => ({
-        url: `${endpoints.tickets}/${ticketId}`,
-        method: 'DELETE',
-      })
-    }),
-
-    createSignedUrl: builder.mutation<any, SignedUrlPayload[]>({
-      query: (body) => ({
-        url: endpoints.mediaSignedUrl,
-        method: 'POST',
-        data: { items: body }
-      })
-    }),
+    
   }),
 });
 
 export const {
-  useInitEventCreateMutation,
-  useUpdateEventMutation,
-  useUpdateTicketMutation,
-  useCreateSignedUrlMutation,
-  useDeleteTicketMutation,
-  useCreateTicketMutation,
-} = eventMutationApi;
+  useInitBusinessCreateMutation,
+  useUpdateBusinessMutation,
+  
+} = businessMutationApi;

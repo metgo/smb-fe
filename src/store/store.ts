@@ -1,19 +1,21 @@
-import { configureStore } from "@reduxjs/toolkit"
-import uiReducer from "@/features/uiSlice"
-import authReducer from "@/features/authSlice"
-import settingsReducer from "@/features/settingsSlice"
-import filterReducer from "@/features/filterSlice"
-import themeSlice from "@/features/themeSlice"
+import { configureStore } from "@reduxjs/toolkit";
+import uiReducer from "@/features/uiSlice";
+import authReducer from "@/features/authSlice";
+import settingsReducer from "@/features/settingsSlice";
+import filterReducer from "@/features/filterSlice";
+import themeSlice from "@/features/themeSlice";
 
-import { authApi } from "@/store/api/authApi"
-import { analyticsApi } from "@/store/api/analyticsApi"
-import { distrbOverviewApi } from "./api/distrbOverviewApi"
-import { itemStatsApi } from "./api/itemStatsApi"
-import { masterDataApi } from "./api/masterDataApi"
-import { eventMutationApi } from "./api/eventMutationApi"
-import { eventQueryApi } from "./api/eventQueryApi"
-import { userMutationApi } from "./api/userMutationApi"
-import { userQueryApi } from "./api/userQueryApi"
+import { authApi } from "@/store/api/authApi";
+import { analyticsApi } from "@/store/api/analyticsApi";
+import { distrbOverviewApi } from "./api/distrbOverviewApi";
+import { itemStatsApi } from "./api/itemStatsApi";
+import { masterDataApi } from "./api/masterDataApi";
+import { eventMutationApi } from "./api/eventMutationApi";
+import { businessMutationApi } from "./api/businessMutationApi";
+import { eventQueryApi } from "./api/eventQueryApi";
+import { userMutationApi } from "./api/userMutationApi";
+import { userQueryApi } from "./api/userQueryApi";
+import { businessQueryApi } from "./api/businessQueryApi";
 
 export const store = configureStore({
   reducer: {
@@ -27,13 +29,15 @@ export const store = configureStore({
     [analyticsApi.reducerPath]: analyticsApi.reducer,
     [distrbOverviewApi.reducerPath]: distrbOverviewApi.reducer,
     [itemStatsApi.reducerPath]: itemStatsApi.reducer,
-    [masterDataApi.reducerPath]:masterDataApi.reducer,
-    [userMutationApi.reducerPath]:userMutationApi.reducer,
-    [eventMutationApi.reducerPath]:eventMutationApi.reducer,
+    [masterDataApi.reducerPath]: masterDataApi.reducer,
+    [userMutationApi.reducerPath]: userMutationApi.reducer,
+    [eventMutationApi.reducerPath]: eventMutationApi.reducer,
+    [businessMutationApi.reducerPath]: businessMutationApi.reducer,
 
-    [eventQueryApi.reducerPath]:eventQueryApi.reducer,
-    [userQueryApi.reducerPath]:userQueryApi.reducer,
+    [businessQueryApi.reducerPath]: businessQueryApi.reducer,
 
+    [eventQueryApi.reducerPath]: eventQueryApi.reducer,
+    [userQueryApi.reducerPath]: userQueryApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(
@@ -42,15 +46,14 @@ export const store = configureStore({
       distrbOverviewApi.middleware,
       itemStatsApi.middleware,
       masterDataApi.middleware,
-      
+      businessQueryApi.middleware,
       userMutationApi.middleware,
       eventMutationApi.middleware,
-
+      businessMutationApi.middleware,
       eventQueryApi.middleware,
       userQueryApi.middleware,
-
     ),
-})
+});
 
-export type RootState = ReturnType<typeof store.getState>
-export type AppDispatch = typeof store.dispatch
+export type RootState = ReturnType<typeof store.getState>;
+export type AppDispatch = typeof store.dispatch;

@@ -1,5 +1,6 @@
 import { useState, type FC } from "react";
-import { Globe } from "lucide-react";
+import { ChevronDown, Globe } from "lucide-react";
+import { useCommon } from "@/hooks/useCommon";
 
 interface BusinessFormData {
   authority: string;
@@ -31,6 +32,12 @@ interface BusinessBasicInfosProps {
 
   errors: FormErrors;
   canApprove: boolean;
+  selectedDmoId?: string;
+  setSelectDmoId: React.Dispatch<React.SetStateAction<string>>;
+
+  selectedAuthorityId?: string;
+  setSelectAuthorityId: React.Dispatch<React.SetStateAction<string>>;
+  eventName?: string;
 }
 
 /* ---------------- Component ---------------- */
@@ -58,10 +65,15 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
   setFormData,
   errors,
   canApprove,
+  selectedDmoId,
+  setSelectDmoId,
+  selectedAuthorityId,
+  setSelectAuthorityId,
 }) => {
   const [selectedFormLanguage, setSelectedFormLanguage] = useState<
     "en" | "he" | "ar"
   >("en");
+const { dmosAuthorities } = useCommon();
 
   /* -------- Helpers -------- */
 
@@ -88,7 +100,9 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
     if (type === "short") return "وصف مختصر";
     return "وصف كامل";
   };
-
+  const selectedDmos = dmosAuthorities?.find(
+    (item) => item?._id === selectedDmoId,
+  );
   /* ---------------- Render ---------------- */
 
   return (
@@ -123,33 +137,52 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
           </select>
         </div>
       </div>
-
-      {/* Authority */}
-      <div>
-        <label
-          className={`block text-sm mb-2 ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}
-        >
-          {t("authority")} *
+      <div className="flex-1">
+        <label className={`block text-sm font-medium mb-3 `}>
+          {t("select_dmo")} <span className="text-red-500">*</span>
         </label>
-        <select
-          value={formData.authority}
-          onChange={(e) =>
+        <div className=" flex gap-2 relative">
+          <select
+            value={selectedDmoId}
+            onChange={(e) => {
+              setSelectDmoId(e.target.value);
+              setSelectAuthorityId("");
+            }}
+          >
+            <option value="">Select DMO</option>
+            {dmosAuthorities?.map((parent) => (
+              <option key={parent._id} value={parent._id}>
+                {parent.name}
+              </option>
+            ))}
+          </select>
+          <ChevronDown className="absolute top-1/2 ltr:right-3 rtl:left-3 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+        </div>
+      </div>
+      {/* Authority */}
+      <div className="flex-1">
+        <label className={`block text-sm font-medium mb-3 `}>
+          {t("select_authority")} <span className="text-red-500">*</span>
+        </label>
+        <div className=" w-full relative">
+          <select
+            value={formData.authority}
+             onChange={(e) =>
             setFormData({ ...formData, authority: e.target.value })
           }
-          className={`w-full px-4 py-2 rounded-lg border ${
-            theme === "dark"
-              ? "bg-gray-800 border-gray-700 text-gray-200"
-              : "bg-white border-gray-300 text-gray-900"
-          } focus:outline-none focus:ring-2 focus:ring-teal-500`}
-        >
-          <option value="">{t("select")}</option>
-          {AUTHORITIES.map((auth) => (
-            <option key={auth} value={auth}>
-              {auth}
-            </option>
-          ))}
-        </select>
+          >
+            <option value="">Select Authority</option>
+            {selectedDmos?.authorities?.map((child) => (
+              <option key={child._id} value={child._id}>
+                {child.name}
+              </option>
+            ))}
+          </select>
+          <ChevronDown className="absolute top-1/2 ltr:right-3 rtl:left-3 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+        </div>
       </div>
+
+      
 
       {/* Business Name */}
       <div>
