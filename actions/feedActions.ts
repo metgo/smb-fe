@@ -159,6 +159,71 @@ export async function getFeedItems(
   }
 }
 
+interface FeedBody {
+  details: {
+    id: string;
+    serviceType: string;
+  }[];
+}
+export async function getFeedDetailsItems(
+  body: FeedBody,
+): Promise<FeedItemDetailsResponse> {
+  const baseUrl = `${urls.feedDetails}?campCode=${CODE}`;
+
+  try {
+    const res = await fetch(baseUrl, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+      body: JSON.stringify(body),
+      cache: "no-store",
+    });
+
+    if (!res.ok) throw new Error(`Failed to fetch feeds: ${res.statusText}`);
+
+    const resData: FeedItemResponse = await res.json();
+    const finalData = shuffleArray(resData?.data);
+    return {
+      ...resData,
+      data: finalData,
+    };
+  } catch (error) {
+    console.error("Error in getAllFeeds:", error);
+
+    return {
+      data: [],
+      totalData: 0,
+    };
+  }
+}
+
+export async function getFeedItemIds() {
+  const baseUrl = `${urls.feedsIds}?campCode=${CODE}`;
+
+  try {
+    const res = await fetch(baseUrl, {
+      method: "GET",
+      cache: "no-store",
+    });
+
+    if (!res.ok) throw new Error(`Failed to fetch feeds: ${res.statusText}`);
+
+    const resData: FeedItemResponse = await res.json();
+    const finalData = shuffleArray(resData?.data);
+    return {
+      ...resData,
+      data: finalData,
+    };
+  } catch (error) {
+    console.error("Error in getAllFeeds:", error);
+
+    return {
+      data: [],
+      totalData: 0,
+    };
+  }
+}
 // ------------------------------------------------------------------------------------------
 
 export async function getAllFilters(filters?: FiltersProps) {

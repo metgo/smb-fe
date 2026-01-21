@@ -49,6 +49,11 @@ declare interface FeedItemResponse {
     | any;
 }
 
+declare interface FeedItemDetailsResponse {
+  data: FeedItem[];
+  totalData?: number;
+}
+
 declare type BusinessCardProps = {
   width: number;
   height: number;

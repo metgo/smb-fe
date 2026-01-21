@@ -456,3 +456,73 @@ export function isPlaceOpenNow(
 
   return false;
 }
+
+type Filters = {
+  categoryIds: string[];
+  subCategoryIds: string[];
+  groupTypeIds: string[];
+  accessibilityIds: string[];
+  serviceTypes: string[];
+};
+
+export const filterBusinesses = (businesses: any[], filters: Filters) => {
+  const hasAnyFilter =
+    filters.categoryIds.length > 0 ||
+    filters.subCategoryIds.length > 0 ||
+    filters.groupTypeIds.length > 0 ||
+    filters.accessibilityIds.length > 0 ||
+    filters.serviceTypes.length > 0;
+
+  // If no filters selected → show all
+  if (!hasAnyFilter) return businesses;
+
+  return businesses.filter((business) => {
+    let matched = false;
+
+    // Category
+    if (
+      filters.categoryIds.length > 0 &&
+      filters.categoryIds.includes(business.primaryCategoryId)
+    ) {
+      matched = true;
+    }
+
+    // Sub-category
+    if (
+      filters.subCategoryIds.length > 0 &&
+      filters.subCategoryIds.includes(business.subCategoryId)
+    ) {
+      matched = true;
+    }
+
+    // Group Types
+    if (
+      filters.groupTypeIds.length > 0 &&
+      business.groupTypesId?.some((id: string) =>
+        filters.groupTypeIds.includes(id),
+      )
+    ) {
+      matched = true;
+    }
+
+    // Accessibilities
+    if (
+      filters.accessibilityIds.length > 0 &&
+      business.accessibilitiesId?.some((id: string) =>
+        filters.accessibilityIds.includes(id),
+      )
+    ) {
+      matched = true;
+    }
+
+    // Service Types
+    if (
+      filters.serviceTypes.length > 0 &&
+      filters.serviceTypes.includes(business.serviceType)
+    ) {
+      matched = true;
+    }
+
+    return matched;
+  });
+};
