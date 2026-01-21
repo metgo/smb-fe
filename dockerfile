@@ -24,8 +24,5 @@ COPY --from=builder /app .
 ENV NODE_ENV=production
 EXPOSE 3000
 
-# Install PM2 globally
-RUN yarn global add pm2
-
-# Use PM2 runtime in cluster mode
-CMD ["pm2-runtime", "ecosystem.config.js"]
+# Start Next.js
+CMD ["npm", "start"]
