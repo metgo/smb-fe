@@ -186,7 +186,7 @@ implements IQueryHandler<GetAllFeedItemsQuery> {
       );
 
       const select
-        = '_id name shortDescription description geoLocation images primaryCategoryId address slug serviceType';
+        = '_id name shortDescription description geoLocation images primaryCategoryId address slug serviceType groupTypesId accessibilitiesId';
 
       const allBusiness = await queryhandler<Business>(this.BusinessModel, {
         findQuery,
@@ -216,7 +216,7 @@ implements IQueryHandler<GetAllFeedItemsQuery> {
       );
 
       const select
-        = '_id name shortDescription description geoLocation images primaryCategoryId address slug serviceType';
+        = '_id name shortDescription description geoLocation images primaryCategoryId address slug serviceType groupTypesId accessibilitiesId';
 
       const allPOI = await queryhandler<Business>(this.BusinessModel, {
         findQuery,
@@ -246,7 +246,7 @@ implements IQueryHandler<GetAllFeedItemsQuery> {
       );
 
       const select
-        = '_id name shortDescription description geoLocation images address slug';
+        = '_id name shortDescription description geoLocation images address slug groupTypesId accessibilitiesId';
 
       const allEvents = await queryhandler<Event>(this.EventModel, {
         findQuery,
@@ -365,6 +365,8 @@ implements IQueryHandler<GetAllFeedItemsQuery> {
           address: 1,
           createdAt: 1,
           serviceType: 1,
+          groupTypesId: 1,
+          accessibilitiesId: 1,
         },
       });
 
@@ -390,6 +392,8 @@ implements IQueryHandler<GetAllFeedItemsQuery> {
         address: trip.address,
         slug: trip.slug,
         serviceType: trip.serviceType,
+        groupTypesId: trip.groupTypesId,
+        accessibilitiesId: trip.accessibilitiesId,
       }));
 
       return {

@@ -851,8 +851,8 @@ export class OrdersService {
             ...orderEmailFields,
             EVENT_NAME: eventDetails[0].name || '',
             PRODUCTS_HTML: productsHtml,
-            BUYERNAME: group.buyerName,
-            TOTALAMOUNT: group.totalAmount,
+            BUYERNAME: group.buyerName || '',
+            TOTALAMOUNT: group.totalAmount || 0,
             CHANGE_SETTINGS_LINK: externalApi?.themeId?.websiteUrl,
             BUSINESSADDRESS: eventDetails[0]?.address?.location || '',
             QRCODEURL: order?.qrCodeUrl || '',
@@ -971,11 +971,6 @@ export class OrdersService {
       BANNER_IMG: `${bucketUrl}footer/banner-web.png`,
       MOBILE_BANNER_IMG: `${bucketUrl}footer/banner-mobile.png`,
       WEBSITE_NAME: externalApi?.name,
-      BUSINESSNAME: businessDetails[0]?.name || '',
-      BUSINESSPHONE:
-        `${businessDetails[0]?.countryCode}-${businessDetails[0]?.phoneNumber}`
-        || '',
-      BUSINESSEMAIL: businessDetails[0]?.busiEmail || '',
     };
 
     type EmailOrderGroup = {
@@ -986,6 +981,9 @@ export class OrdersService {
         name: string;
         price: number;
         deliveryFee: number;
+        businessName: string;
+        businessPhone: string;
+        businessEmail: string;
       }[];
       totalAmount: number;
     };
@@ -996,6 +994,10 @@ export class OrdersService {
       const { email } = orderItem;
       const product = productInfo.find(
         p => p._id.toString() === orderItem.itemId.toString(),
+      );
+
+      const business = businessDetails.find(
+        busi => busi._id.toString() === product.businessId.toString(),
       );
 
       if (!product) return;
@@ -1012,12 +1014,19 @@ export class OrdersService {
       const quantity = orderItem?.quantity || 1;
       const deliveryFee = orderItem?.deliveryFee || 0;
 
+      const businessName = business.name;
+      const businessPhone = business.phoneNumber;
+      const businessEmail = business.busiEmail;
+
       emailToProductsMap[email].products.push({
         quantity,
         image: product?.images[0]?.image,
         name: product?.name,
         price,
         deliveryFee,
+        businessName,
+        businessPhone,
+        businessEmail,
       });
 
       emailToProductsMap[email].totalAmount += price * quantity + deliveryFee;
@@ -1042,7 +1051,7 @@ export class OrdersService {
                             style="max-width: 100px; height: 100px; margin-left: 10px; display: block;">
                         </td>
                         <td style="padding: 0 10px; vertical-align: middle;" width="100%">
-                          <span style="display: block; font-size: 16px; color: #333333;">${
+                          <span style="display: block; font-size: 18px; color: #333333;">${
   product?.name
 }</span>
                           <span style="display: block; font-size: 14px; color: #666666;">כמות: ${
@@ -1050,12 +1059,21 @@ export class OrdersService {
 }</span>
   <span style="display: block; font-size: 14px; color: #666666;">
   דמי משלוח: ₪${product?.deliveryFee}</span>
+  <span style="display: block; font-size: 15px; color: #333333;">שם העסק: ${
+  product?.businessName
+}</span>
+                          <span style="display: block; font-size: 14px; color: #666666;">דוא"ל עסקי: ${
+  product?.businessEmail
+}</span>
+  <span style="display: block; font-size: 14px; color: #666666;">
+ טלפון עסקי: ${product?.businessPhone}</span>
                         </td>
                         <td style="padding: 0; vertical-align: middle; white-space: nowrap;">
                           <span dir="rtl" style="font-size: 16px; color: #333333;">₪${
   product?.price
 }</span>
                         </td>
+                       
                       </tr>
                     </table>
                   </td>
@@ -1073,8 +1091,8 @@ export class OrdersService {
           mergeVars: {
             ...orderEmailFields,
             PRODUCTS_HTML: productsHtml,
-            BUYERNAME: group.buyerName,
-            TOTALAMOUNT: group.totalAmount,
+            BUYERNAME: group.buyerName || '',
+            TOTALAMOUNT: group.totalAmount || 0,
             CHANGE_SETTINGS_LINK: externalApi?.themeId?.websiteUrl,
             BUSINESSADDRESS: businessDetails[0]?.address?.location || '',
             QRCODEURL: order?.qrCodeUrl || '',
@@ -1156,10 +1174,14 @@ export class OrdersService {
           from_name: externalApi?.name,
           mergeVars: {
             ...orderEmailFields,
-            TOTALAMOUNT: businessTotalAmount,
-            BUYERNAME: order?.firstName,
+            BUSINESSNAME: business?.name || '',
+            BUSINESSPHONE:
+              `${business?.countryCode}-${business?.phoneNumber}` || '',
+            BUSINESSEMAIL: business?.busiEmail || '',
+            TOTALAMOUNT: businessTotalAmount || 0,
+            BUYERNAME: order?.firstName || '',
             PRODUCTS_HTML: productsHtmlForEchBusiness,
-            BUYER_PHONE_NUMBER: order.phone,
+            BUYER_PHONE_NUMBER: order.phone || '',
             BUYER_ORDER_EMAIL: order?.email || '',
           },
         });

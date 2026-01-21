@@ -28,6 +28,12 @@ export class GetAllItemsResponse {
   @ApiProperty({ type: String, required: true })
     primaryCategoryId: string;
 
+  @ApiProperty({ type: [String], required: true })
+    groupTypesId: string[];
+
+  @ApiProperty({ type: [String], required: true })
+    accessibilitiesId: string[];
+
   @ApiProperty({ type: String, required: true })
     address: string;
 
