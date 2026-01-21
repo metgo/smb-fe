@@ -1,3 +1,4 @@
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 import clsx from "clsx";
 
 type SelectableChipsProps = {
@@ -15,6 +16,7 @@ const SelectableChips = ({
   onSelect,
   textSecondary,
 }: SelectableChipsProps) => {
+  const { textPrimary } = useThemeClasses()
   return (
     <div>
       <label className={`block text-sm font-medium mb-4 ${textSecondary}`}>
@@ -31,7 +33,8 @@ const SelectableChips = ({
               onClick={() => onSelect(item._id)}
               className={clsx(
                 "border border-teal-600 px-2.5 py-1 text-sm font-semibold rounded-3xl cursor-pointer transition-colors",
-                isSelected && "bg-teal-600 text-white"
+                isSelected && "bg-teal-600 text-white",
+                textPrimary
               )}
             >
               {item.name}

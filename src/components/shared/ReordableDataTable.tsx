@@ -4,11 +4,9 @@ import { ArrowUpDown, ArrowUp, ArrowDown, GripVertical } from 'lucide-react';
 import { useAppSelector } from '@/hooks/hooks';
 import { useThemeClasses } from '@/hooks/useThemeClasses';
 
-/* ================= Types ================= */
-
 type SortDirection = 'asc' | 'desc' | null;
 
-export interface Column<T> {
+interface Column<T> {
   key: keyof T | 'checkbox' | 'actions' | string;
   label: string;
   sortable?: boolean;
@@ -16,81 +14,62 @@ export interface Column<T> {
   width?: string;
 }
 
-/**
- * Allows:
- * condition && { ... }
- * null
- * undefined
- */
-type MaybeColumn<T> = Column<T> | false | null | undefined;
-
 interface DataTableProps<T> {
   data: T[];
-  columns: MaybeColumn<T>[];
-  rowKey: keyof T;
-
+  columns: Column<T>[];
   storageKey?: string;
   onRowClick?: (item: T) => void;
-
-  selectedItems?: Set<T[keyof T]>;
-  onSelectionChange?: (selected: Set<T[keyof T]>) => void;
+  selectedItems?: Set<any>;
+  onSelectionChange?: (selected: Set<any>) => void;
+  rowKey: keyof T;
 }
-
-/* ================= Helpers ================= */
-
-function isColumn<T>(col: MaybeColumn<T>): col is Column<T> {
-  return Boolean(col);
-}
-
-/* ================= Component ================= */
 
 export default function ReordableDataTable<T extends Record<string, any>>({
   data,
   columns,
-  rowKey,
   storageKey = 'dataTableColumnOrder',
   onRowClick,
   selectedItems,
   onSelectionChange,
+  rowKey,
 }: DataTableProps<T>) {
   const { theme, isRTL } = useAppSelector(state => state.settings);
   const { bgTertiary, borderColor, textSecondary, hoverBg } = useThemeClasses();
 
-  /** Filter out falsy columns safely */
-  const validColumns = useMemo(() => columns.filter(isColumn), [columns]);
-
-  /* ---------- Column order ---------- */
-
+  // Load saved column order
   const [columnOrder, setColumnOrder] = useState<string[]>(() => {
-    if (typeof window === 'undefined') {
-      return validColumns.map(c => c.key as string);
-    }
+    if (typeof window === 'undefined') return columns.map(c => c.key as string);
 
     try {
       const saved = localStorage.getItem(storageKey);
       if (saved) {
-        const parsed: string[] = JSON.parse(saved);
-        const validKeys = validColumns.map(c => c.key as string);
-
-        const filtered = parsed.filter(k => validKeys.includes(k));
-        return filtered.length ? filtered : validKeys;
+        const parsed = JSON.parse(saved);
+        return parsed.filter((k: string) => columns.some(c => c.key === k))?.length > 0
+          ? parsed
+          : columns.map(c => c.key as string);
       }
-    } catch {
-      /* ignore */
+    } catch (e) {
+      console.error('Failed to load column order:', e);
     }
-
-    return validColumns.map(c => c.key as string);
+    return columns.map(c => c.key as string);
   });
-
-  useEffect(() => {
-    localStorage.setItem(storageKey, JSON.stringify(columnOrder));
-  }, [columnOrder, storageKey]);
-
-  /* ---------- Sorting ---------- */
 
   const [sortField, setSortField] = useState<keyof T | null>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>(null);
 
+  const [draggedColumn, setDraggedColumn] = useState<string | null>(null);
+  const [dragOverColumn, setDragOverColumn] = useState<string | null>(null);
+
+  // Save column order
+  useEffect(() => {
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(columnOrder));
+    } catch (e) {
+      console.error('Failed to save column order:', e);
+    }
+  }, [columnOrder, storageKey]);
+
+  // Sorted data
   const sortedData = useMemo(() => {
     if (!sortField || !sortDirection) return data;
 
@@ -112,131 +91,126 @@ export default function ReordableDataTable<T extends Record<string, any>>({
 
   const handleSort = (field: keyof T) => {
     if (sortField === field) {
-      const next =
-        sortDirection === 'asc' ? 'desc' : sortDirection === 'desc' ? null : 'asc';
-
+      const next = sortDirection === 'asc' ? 'desc' : sortDirection === 'desc' ? null : 'asc';
       setSortDirection(next);
-      if (!next) setSortField(null);
+      if (next === null) setSortField(null);
     } else {
       setSortField(field);
       setSortDirection('asc');
     }
   };
 
-  /* ---------- Drag & Drop ---------- */
-
-  const [dragged, setDragged] = useState<string | null>(null);
-  const [dragOver, setDragOver] = useState<string | null>(null);
-
-  const handleDrop = (target: string) => {
-    if (!dragged || dragged === target) return;
-
-    const next = [...columnOrder];
-    const from = next.indexOf(dragged);
-    const to = next.indexOf(target);
-
-    next.splice(from, 1);
-    next.splice(to, 0, dragged);
-    setColumnOrder(next);
-
-    setDragged(null);
-    setDragOver(null);
+  const handleDragStart = (colKey: string) => setDraggedColumn(colKey);
+  const handleDragOver = (e: React.DragEvent, colKey: string) => {
+    e.preventDefault();
+    if (draggedColumn && draggedColumn !== colKey) {
+      setDragOverColumn(colKey);
+    }
   };
 
-  /* ---------- Selection ---------- */
+  const handleDrop = (e: React.DragEvent, targetKey: string) => {
+    e.preventDefault();
+    if (draggedColumn && draggedColumn !== targetKey) {
+      const newOrder = [...columnOrder];
+      const draggedIndex = newOrder.indexOf(draggedColumn);
+      const targetIndex = newOrder.indexOf(targetKey);
+      newOrder.splice(draggedIndex, 1);
+      newOrder.splice(targetIndex, 0, draggedColumn);
+      setColumnOrder(newOrder);
+    }
+    setDraggedColumn(null);
+    setDragOverColumn(null);
+  };
 
-  const allSelected =
-    selectedItems &&
-    data.length > 0 &&
-    data.every(item => selectedItems.has(item[rowKey]));
+  const handleDragEnd = () => {
+    setDraggedColumn(null);
+    setDragOverColumn(null);
+  };
 
-  const someSelected =
-    selectedItems && selectedItems.size > 0 && !allSelected;
+  const allSelected = data?.length > 0 && data.every(item => selectedItems && selectedItems?.has(item[rowKey]));
+  const someSelected = selectedItems && selectedItems.size > 0 && !allSelected;
 
   const toggleAll = () => {
-    if (!onSelectionChange) return;
-
-    const next = new Set(selectedItems);
+    const newSelected = new Set(selectedItems);
     if (allSelected) {
-      data.forEach(i => next.delete(i[rowKey]));
+      data.forEach(item => newSelected.delete(item[rowKey]));
     } else {
-      data.forEach(i => next.add(i[rowKey]));
+      data.forEach(item => newSelected.add(item[rowKey]));
     }
-    onSelectionChange(next);
+    if (onSelectionChange)
+      onSelectionChange(newSelected);
   };
 
   const toggleRow = (item: T) => {
-    if (!onSelectionChange) return;
-
-    const next = new Set(selectedItems);
+    const newSelected = new Set(selectedItems);
     const key = item[rowKey];
-
-    next.has(key) ? next.delete(key) : next.add(key);
-    onSelectionChange(next);
+    if (newSelected.has(key)) newSelected.delete(key);
+    else newSelected.add(key);
+    if (onSelectionChange)
+      onSelectionChange(newSelected);
   };
 
-  const sortIcon = (field: keyof T) => {
+  const getSortIcon = (field: keyof T) => {
     if (sortField !== field) return <ArrowUpDown className="w-4 h-4 opacity-40" />;
-    return sortDirection === 'asc'
-      ? <ArrowUp className="w-4 h-4" />
-      : <ArrowDown className="w-4 h-4" />;
+    return sortDirection === 'asc' ? <ArrowUp className="w-4 h-4" /> : <ArrowDown className="w-4 h-4" />;
   };
-
-  /* ================= Render ================= */
 
   return (
     <div className={`rounded-xl border ${borderColor} overflow-hidden`}>
+      {/* Scrollable container */}
       <div className="overflow-x-auto max-h-[calc(100vh-400px)] overflow-y-auto">
         <table className="w-full">
+          {/* Sticky Header */}
           <thead className={`sticky top-0 z-50 ${bgTertiary} border-b ${borderColor}`}>
             <tr>
-              {columnOrder.map(key => {
-                const column = validColumns.find(c => c.key === key);
+              {columnOrder?.map(colKey => {
+                const column = columns.find(c => c.key === colKey);
                 if (!column) return null;
 
-                const sortable = column.sortable && typeof column.key === 'string';
+                const isSortable = column.sortable && typeof column.key === 'string';
                 const field = column.key as keyof T;
 
                 return (
                   <th
-                    key={key}
-                    draggable={!['checkbox', 'actions'].includes(key)}
-                    onDragStart={() => setDragged(key)}
-                    onDragOver={e => {
-                      e.preventDefault();
-                      setDragOver(key);
-                    }}
-                    onDrop={() => handleDrop(key)}
-                    onDragEnd={() => setDragged(null)}
-                    onClick={() => sortable && handleSort(field)}
-                    className={`p-3 text-${isRTL ? 'right' : 'left'} text-sm ${textSecondary}
-                      ${sortable ? 'cursor-pointer' : ''}`}
+                    key={colKey}
+                    className={`p-3 text-${isRTL ? 'right' : 'left'} text-sm ${textSecondary} tracking-wider select-none
+                      ${isSortable ? 'cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700' : ''}
+                      transition-colors group`}
                     style={{
                       width: column.width,
-                      background:
-                        dragOver === key
+                      backgroundColor:
+                        dragOverColumn === colKey
                           ? theme === 'dark'
-                            ? 'rgba(255,255,255,0.08)'
-                            : 'rgba(0,0,0,0.05)'
+                            ? 'rgba(255, 255, 255, 0.08)'
+                            : 'rgba(0, 0, 0, 0.05)'
                           : undefined,
                     }}
+                    draggable={colKey !== 'checkbox' && colKey !== 'actions'}
+                    onDragStart={() => handleDragStart(colKey as string)}
+                    onDragOver={e => handleDragOver(e, colKey as string)}
+                    onDrop={e => handleDrop(e, colKey as string)}
+                    onDragEnd={handleDragEnd}
+                    onClick={() => isSortable && handleSort(field)}
                   >
                     <div className="flex items-center gap-2">
-                      {!['checkbox', 'actions'].includes(key) && (
-                        <GripVertical className="w-4 h-4 opacity-50" />
+                      {colKey !== 'checkbox' && colKey !== 'actions' && (
+                        <GripVertical className="w-4 h-4 opacity-0 group-hover:opacity-60 transition-opacity" />
                       )}
 
-                      {key === 'checkbox' ? (
+                      {colKey === 'checkbox' ? (
                         <input
                           type="checkbox"
-                          checked={!!allSelected}
-                          // ref={el => el && (el.indeterminate = !!someSelected)}
+                          checked={allSelected}
+                          ref={(input: HTMLInputElement | null) => {
+                            if (input && someSelected) input.indeterminate = someSelected;
+                          }}
                           onChange={toggleAll}
+                          className="rounded border-gray-300 dark:border-gray-600"
                         />
                       ) : (
                         <>
-                          {column.label}
-                          {sortable && sortIcon(field)}
+                          <span>{column.label}</span>
+                          {isSortable && getSortIcon(field)}
                         </>
                       )}
                     </div>
@@ -246,36 +220,42 @@ export default function ReordableDataTable<T extends Record<string, any>>({
             </tr>
           </thead>
 
+          {/* Scrollable Body */}
           <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
-            {sortedData.length === 0 ? (
+            {sortedData?.length === 0 ? (
               <tr>
-                <td colSpan={columnOrder.length} className="py-10 text-center text-gray-400">
+                <td colSpan={columnOrder?.length} className="text-center py-12 text-gray-500 dark:text-gray-400">
                   No data available
                 </td>
               </tr>
             ) : (
-              sortedData.map(item => (
+              sortedData?.map((item, idx) => (
                 <tr
-                  key={String(item[rowKey])}
+                  key={item[rowKey] ?? idx}
                   onClick={() => onRowClick?.(item)}
-                  className={`${hoverBg} ${onRowClick ? 'cursor-pointer' : ''}`}
+                  className={`transition-colors ${hoverBg} ${onRowClick ? 'cursor-pointer' : ''}`}
                 >
-                  {columnOrder.map(key => {
-                    const column = validColumns.find(c => c.key === key);
-                    if (!column) return null;
+                  {columnOrder?.map(colKey => {
+                    const column = columns.find(c => c.key === colKey);
+                    if (!column) return <td key={colKey} />;
 
                     return (
-                      <td key={key} className="p-3 text-sm">
-                        {key === 'checkbox' ? (
+                      <td
+                        key={colKey}
+                        className="p-3 text-sm"
+                        onClick={e => colKey === 'checkbox' && e.stopPropagation()}
+                      >
+                        {colKey === 'checkbox' ? (
                           <input
                             type="checkbox"
-                            checked={!!selectedItems?.has(item[rowKey])}
+                            checked={selectedItems && selectedItems.has(item[rowKey])}
                             onChange={() => toggleRow(item)}
+                            className="rounded border-gray-300 dark:border-gray-600"
                           />
                         ) : column.render ? (
                           column.render(item)
                         ) : (
-                          String(item[key as keyof T] ?? '-')
+                          String(item[colKey as keyof T] ?? '-')
                         )}
                       </td>
                     );

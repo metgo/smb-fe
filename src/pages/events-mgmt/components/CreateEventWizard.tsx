@@ -10,16 +10,11 @@ import { useTranslation } from 'react-i18next';
 import { useAppSelector } from '@/hooks/hooks';
 
 import { WizardFooter } from '@/components/shared';
-import EventMedia from './sub-components/EventMedia';
-import EventTickets from './sub-components/EventTickets';
 import { useThemeClasses } from '@/hooks/useThemeClasses';
-import NotificationsTimeline from './sub-components/NotificationsTimeline';
-import EventDateTimeFormat from './sub-components/EventDateTimeFormat';
-import EventRegistrationCapacity from './sub-components/EventRegistrationCapacity';
-import EventReviewPublish from './sub-components/EventReviewPublish';
-import EventBasicInformation from './sub-components/EventBasicInformation';
-import { useInitEventCreateMutation, useUpdateEventMutation } from '@/store/api/eventMutationApi';
+
 import { useGetEventByIdQuery } from '@/store/api/eventQueryApi';
+import { useInitEventCreateMutation, useUpdateEventMutation } from '@/store/api/eventMutationApi';
+import { EventBasicInformation, EventDateTimeFormat, EventMedia, EventRegistrationCapacity, EventReviewPublish, EventTickets, NotificationsTimeline } from './sub-components';
 
 interface CreateEventWizardProps {
   isOpen: boolean;
@@ -43,11 +38,11 @@ export default function CreateEventWizard({
 
   const [updateEvent, { isLoading: isEventUpdating }] = useUpdateEventMutation()
   const [initEventCreate, { isLoading: isEventCreating }] = useInitEventCreateMutation()
-  const { data: editData } = useGetEventByIdQuery(
-    editId ? { eventId: editId } : skipToken
-  );
-
-  useEffect(() => { if(editId) setEventId(editId) }, [editId])
+  // const { data: editData } = useGetEventByIdQuery(
+  //   editId ? { eventId: editId } : skipToken
+  // );
+  const { data: editData, refetch } = useGetEventByIdQuery(editId ? { eventId: editId } : skipToken);
+  useEffect(() => { if (editId) setEventId(editId) }, [editId])
 
   const [currentStep, setCurrentStep] = useState(1);
   const [isPublishing, setIsPublishing] = useState(false);
@@ -55,6 +50,8 @@ export default function CreateEventWizard({
   const [eventId, setEventId] = useState<string | null>(null);
 
   // Step 1: Basic Information
+  const [selectedDmoId, setSelectDmoId] = useState<string>("");
+  const [selectedAuthorityId, setSelectAuthorityId] = useState<string>("");
   const [eventName, setEventName] = useState('');
   const [shortDescription, setShortDescription] = useState('');
   const [fullDescription, setFullDescription] = useState('');
@@ -79,19 +76,16 @@ export default function CreateEventWizard({
 
   const [isRecurring, setIsRecurring] = useState(false);
   const [recurrencePattern, setRecurrencePattern] = useState<RecurrencePattern>('weekly');
-  const [recurrenceInterval, setRecurrenceInterval] = useState(1); // For custom "every X days"
   const [selectedWeekdays, setSelectedWeekdays] = useState<string[]>([]); // 0=Sun, 1=Mon, etc.
-  const [monthlyType, setMonthlyType] = useState<MonthlyType>('date'); // By date or by day
-  const [monthlyOrdinal, setMonthlyOrdinal] = useState<MonthlyOrdinal>('1st');
-  const [monthlyWeekday, setMonthlyWeekday] = useState(1); // 0=Sun, 1=Mon, etc.
+  const [monthlyType, setMonthlyType] = useState<TMonthlyType>('SPECIFIC_DATE'); // By date or by day
   const [recurrenceEndType, setRecurrenceEndType] = useState<RecurrenceEndType>('count');
   const [recurrenceEndDate, setRecurrenceEndDate] = useState('');
   const [recurrenceEndCount, setRecurrenceEndCount] = useState(10);
-  const [specificDate, setSpecificDate] = useState()
-  const [endDate, setEndDate]=useState("")
-  const [showRecurrenceEditModal, setShowRecurrenceEditModal] = useState(false);
-  const [recurrenceEditScope, setRecurrenceEditScope] = useState<'this' | 'future' | 'all'>('this');
-
+  const [specificDate, setSpecificDate] = useState<number>(1)
+  const [relativeDate, setRelativeDate] = useState<number>(1)
+  const [relativeDay, setRelativeDay] = useState<string>("sun")
+  const [customInterval, setCustomInterval] = useState<number>(1)
+  const [customUnit, setCustomUnit] = useState<string>("day")
 
   // Step 3: Registration & Capacity
   const [registrationRequired, setRegistrationRequired] = useState(true);
@@ -109,8 +103,7 @@ export default function CreateEventWizard({
   const [editingNotification, setEditingNotification] = useState<NotificationData | null>(null);
 
   // Step 6: Media
-  const [images, setImages] = useState<string[]>([]);
-  const [primaryImageIndex, setPrimaryImageIndex] = useState(0);
+  const [eventImages, setEventImages] = useState<TEventImages>([])
 
   // Validation errors
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -147,12 +140,41 @@ export default function CreateEventWizard({
       setCapacity(100);
       setCustomQuestions([]);
       setTickets([]);
-      setImages([]);
-      setPrimaryImageIndex(0);
+      setEventImages([]);
       setErrors({});
       setLastSaved(null);
     }
   }, [isOpen, mode]);
+
+
+  useEffect(() => {
+    if (editData && editId) {
+      // Basic information
+      setEventName(editData?.name)
+      setShortDescription(editData?.shortDescription)
+      setFullDescription(editData?.description)
+      setEventStatus(editData?.status.toLowerCase())
+      setAccessiblitiesId(editData?.accessibilitiesId)
+      setGroupTypesId(editData?.groupTypesId)
+      setSubCategoriesId(editData?.subCategoriesId)
+      setInternalNotes(editData?.internalNotes);
+
+      // Date & Time
+      setEventDays(editData?.dayDescription)
+      setGeo({ lat: editData?.geoLocation?.lat, lng: editData?.geoLocation?.long })
+      setEventFormat(editData?.eventType?.toLowerCase())
+
+      // Registration
+      setRegistrationRequired(editData?.registration?.isRegistration)
+      setCapacity(editData?.registration?.capacity)
+      setCapacityType(editData?.registration?.isUnlimited ? "unlimited" : "limited")
+      setCustomQuestions(editData?.customQuestions)
+
+      // Media
+      setEventImages(editData?.images)
+    }
+  }, [editData, editId])
+
 
   const validateStep = (step: number): boolean => {
     const newErrors: Record<string, string> = {};
@@ -184,7 +206,8 @@ export default function CreateEventWizard({
   };
 
   const handleNext = () => {
-    setCurrentStep(prev => Math.min(prev + 1, 7));
+    // setCurrentStep(prev => Math.min(prev + 1, 7));
+    handleSaveDraft();
   };
 
   const handlePrevious = () => {
@@ -206,22 +229,23 @@ export default function CreateEventWizard({
 
   const eventDateTimePayload = {
     dayDescription: eventDays?.map(item => ({
-      date: item.date,
+      date: isMultiDay ? item.date : startDate,
       startTime: item.startTime,
       endTime: item.endTime
     })),
     geoLocation: { lat: geo.lat, long: geo.lng },
     recurringEventRule: {
       pattern: recurrencePattern.toUpperCase(),
+      daysOfWeek: selectedWeekdays,
       monthlyType: monthlyType.toUpperCase(),
-      daysOfWeeks: selectedWeekdays,
       specificDate,
-      relativeDate: "",
-      customInterval: '',
-      customUnit: 'DAY',
+      relativeDate,
+      relativeDay,
+      customInterval,
+      customUnit: customUnit.toUpperCase(),
       endType: 'END_DATE',
-      occurrenceLimit: '',
-      endDate,
+      occurrenceLimit: recurrenceEndCount,
+      endDate: recurrenceEndDate,
     },
     eventType: eventFormat.toUpperCase(),
     address: {
@@ -245,18 +269,25 @@ export default function CreateEventWizard({
   const eventMsgSchedulePayload = {
     scheduledNotifications: notifications?.map(item => ({
       sendHoursBefore: item.hoursBeforeEvent,
-      channels: ['EMAIL', 'SMS', 'WHATSAPP'],
+      channels: (
+        [
+          item?.channels?.email && 'EMAIL',
+          item?.channels?.sms && 'SMS',
+          item?.channels?.whatsapp && 'WHATSAPP',
+        ].filter(Boolean) as ('EMAIL' | 'SMS' | 'WHATSAPP')[]
+      ),
       language: item.language,
       template: item.template,
       customTemplate: {
         subject: item.subject,
         body: item.message,
       },
-    }))
-  }
+    })),
+  };
+
 
   const eventMediaPayload = {
-
+    images: eventImages
   }
 
   const handleSaveDraft = async () => {
@@ -291,6 +322,7 @@ export default function CreateEventWizard({
 
       // 4️⃣ Success feedback
       toast.success(res?.message ?? t('event_saved_as_draft'));
+      refetch()
       setCurrentStep(prev => prev + 1)
     } catch (error: any) {
       toast.error(error?.message || t('something_went_wrong'));
@@ -463,6 +495,10 @@ export default function CreateEventWizard({
               internalNotes={internalNotes}
               setInternalNotes={setInternalNotes}
               errors={errors}
+              selectedDmoId={selectedDmoId}
+              setSelectDmoId={setSelectDmoId}
+              selectedAuthorityId={selectedAuthorityId}
+              setSelectAuthorityId={setSelectAuthorityId}
               selectedAccessiblitiesId={selectedAccessiblitiesId}
               setAccessiblitiesId={setAccessiblitiesId}
               selectedGroupTypesId={selectedGroupTypesId}
@@ -499,18 +535,22 @@ export default function CreateEventWizard({
               selectedWeekdays={selectedWeekdays}
               monthlyType={monthlyType}
               setMonthlyType={setMonthlyType}
-              monthlyOrdinal={monthlyOrdinal}
-              setMonthlyOrdinal={setMonthlyOrdinal}
-              monthlyWeekday={monthlyWeekday}
-              setMonthlyWeekday={setMonthlyWeekday}
               recurrenceEndCount={recurrenceEndCount}
               setRecurrenceEndCount={setRecurrenceEndCount}
               recurrenceEndDate={recurrenceEndDate}
               setRecurrenceEndDate={setRecurrenceEndDate}
               recurrenceEndType={recurrenceEndType}
               setRecurrenceEndType={setRecurrenceEndType}
-              recurrenceInterval={recurrenceInterval}
-              setRecurrenceInterval={setRecurrenceInterval}
+              setSpecificDate={setSpecificDate}
+              specificDate={specificDate}
+              relativeDate={relativeDate}
+              setRelativeDate={setRelativeDate}
+              relativeDay={relativeDay}
+              setRelativeDay={setRelativeDay}
+              customInterval={customInterval}
+              setCustomInterval={setCustomInterval}
+              customUnit={customUnit}
+              setCustomUnit={setCustomUnit}
             />
           </Activity>
 
@@ -555,11 +595,10 @@ export default function CreateEventWizard({
           </Activity>
           <Activity mode={currentStep === 6 ? "visible" : "hidden"}>
             <EventMedia
-              currentStep={currentStep}
-              images={images}
-              setImages={setImages}
-              primaryImageIndex={primaryImageIndex}
-              setPrimaryImageIndex={setPrimaryImageIndex}
+              t={t}
+              theme={theme}
+              eventImages={eventImages}
+              setEventImages={setEventImages}
             />
           </Activity>
 

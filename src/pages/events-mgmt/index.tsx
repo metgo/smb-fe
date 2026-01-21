@@ -22,7 +22,6 @@ export default function EventsMgmtPage() {
   const { isRTL, theme } = useAppSelector((state) => state.settings);
   const themeColor = useThemeClasses();
 
-
   const [isCreateWizardOpen, setIsCreateWizardOpen] = useState(false);
 
   const [editId, setEditId] = useState<string | null>(null)
@@ -37,11 +36,11 @@ export default function EventsMgmtPage() {
   const [dateRangeFilter, setDateRangeFilter] = useState({ start: '', end: '' });
 
   // Data Fetch
-  const { data: events, isLoading } = useGetAllEventsQuery({
+  const { data: events, isLoading: _isLoading } = useGetAllEventsQuery({
     search: searchQuery,
     // eventType: eventTypeFilter.toUpperCase()
   })
-  const { data: eventStatsData, isLoading: isEventStatsFetching } = useGetEventsStatsQuery({})
+  const { data: eventStatsData, isLoading: _isEventStatsFetching } = useGetEventsStatsQuery({})
   const { data: websites } = useGetAllWebsitesQuery();
 
   // Table and Modal State
@@ -462,7 +461,7 @@ export default function EventsMgmtPage() {
       <CreateEventWizard
         editId={editId}
         isOpen={isCreateWizardOpen}
-        onClose={() => setIsCreateWizardOpen(false)}
+        onClose={() => {setIsCreateWizardOpen(false); setEditId(null)}}
         theme={theme}
         mode="create"
       />

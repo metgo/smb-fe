@@ -65,13 +65,10 @@ interface EventDateTimeFormatProps {
   setIsRecurring: (v: boolean) => void;
   recurrencePattern: RecurrencePattern;
   setRecurrencePattern: (v: RecurrencePattern) => void;
+  monthlyType: TMonthlyType;
+  setMonthlyType: (v: TMonthlyType) => void;
+
   toggleWeekday: (v: string) => void;
-  monthlyType: MonthlyType;
-  setMonthlyType: (v: MonthlyType) => void;
-  monthlyOrdinal: MonthlyOrdinal;
-  setMonthlyOrdinal: (v: MonthlyOrdinal) => void;
-  monthlyWeekday: number;
-  setMonthlyWeekday: (v: number) => void;
   selectedWeekdays: string[];
 
   recurrenceEndType: RecurrenceEndType;
@@ -80,10 +77,30 @@ interface EventDateTimeFormatProps {
   setRecurrenceEndCount: (v: number) => void;
   recurrenceEndDate: string;
   setRecurrenceEndDate: (v: string) => void;
-  recurrenceInterval: number,
-  setRecurrenceInterval: (v: number) => void;
 
+  specificDate: number;
+  setSpecificDate: (v: number) => void;
+  relativeDate: number;
+  setRelativeDate: (v: number) => void;
+  relativeDay: string;
+  setRelativeDay: (v: string) => void;
+  customInterval: number;
+  setCustomInterval: (v: number) => void;
+  customUnit: string;
+  setCustomUnit: (v: string) => void;
 }
+
+
+const weekDays=[
+  {value: "Sunday", label:"Sun"},
+  {value: "Monday", label:"Mon"},
+  {value: "Tuesday", label:"Tue"},
+  {value: "Wednesday", label:"Wed"},
+  {value: "Thursday", label:"Thu"},
+  {value: "Friday", label:"Fri"},
+  {value: "Saturday", label:"Sat"},
+
+]
 
 const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
   isMultiDay,
@@ -106,19 +123,21 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
   toggleWeekday,
   selectedWeekdays,
   geo, setGeo,
+  specificDate, setSpecificDate,
+  relativeDate, setRelativeDate,
+  relativeDay, setRelativeDay,
+  customInterval, setCustomInterval,
+  customUnit, setCustomUnit,
+
   monthlyType, setMonthlyType,
-  monthlyOrdinal, setMonthlyOrdinal,
-  monthlyWeekday, setMonthlyWeekday,
   recurrenceEndCount, setRecurrenceEndCount,
   recurrenceEndDate, setRecurrenceEndDate,
   recurrenceEndType, setRecurrenceEndType,
-  recurrenceInterval, setRecurrenceInterval,
-
 }) => {
   const { t } = useTranslation("events");
+  const { t: cT } = useTranslation('common');
   const { textSecondary, textTertiary, inputClasses, textPrimary } = useThemeClasses();
   const { theme, isRTL } = useAppSelector((state) => state.settings);
-
 
 
   // Generate recurring occurrences
@@ -155,12 +174,12 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
         currentDate.setDate(currentDate.getDate() + 1);
       } else if (recurrencePattern === 'weekly') {
         const dayOfWeek = currentDate.getDay();
-        if (selectedWeekdays.includes(dayOfWeek)) {
+        if (selectedWeekdays.includes(weekDays[dayOfWeek].value)) {
           shouldAdd = true;
         }
         currentDate.setDate(currentDate.getDate() + 1);
       } else if (recurrencePattern === 'monthly') {
-        if (monthlyType === 'date') {
+        if (monthlyType === 'SPECIFIC_DATE') {
           // Same date each month
           if (currentDate.getDate() === start.getDate()) {
             shouldAdd = true;
@@ -174,7 +193,7 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
         }
       } else if (recurrencePattern === 'custom') {
         shouldAdd = true;
-        currentDate.setDate(currentDate.getDate() + recurrenceInterval);
+        currentDate.setDate(currentDate.getDate() + customInterval);
       }
 
       if (shouldAdd && currentDate <= endDate) {
@@ -419,20 +438,20 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
                   </label>
 
                   <div className="flex gap-2 flex-wrap">
-                    {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => {
+                    {weekDays.map((day) => {
                       return (
                         <button
-                          key={day}
+                          key={day.value}
                           type="button"
-                          onClick={() => toggleWeekday(day)}
-                          className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-medium ${selectedWeekdays.includes(day)
+                          onClick={() => toggleWeekday(day.value)}
+                          className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-medium ${selectedWeekdays.includes(day.value)
                             ? 'bg-teal-600 text-white'
                             : theme === 'dark'
                               ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                             }`}
                         >
-                          {t(day.toLocaleLowerCase())}
+                          {cT(day.label.toLocaleLowerCase())}
                         </button>
                       );
                     })}
@@ -447,62 +466,70 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
                     <label className="flex items-center gap-3">
                       <input
                         type="radio"
-                        checked={monthlyType === 'date'}
-                        onChange={() => setMonthlyType('date')}
+                        checked={monthlyType === 'SPECIFIC_DATE'}
+                        onChange={() => setMonthlyType('SPECIFIC_DATE')}
                       />
                       <span className={textSecondary}>
                         {t('by_specific_date') || 'By specific date'}
                       </span>
                     </label>
-                    <DatePicker
-                      value={recurrenceEndDate}
-                      onChange={(date) => setRecurrenceEndDate(date)}
-                      placeholder={t('select_date')}
-                      theme={theme}
-                    />
+                    <select
+                      value={specificDate}
+                      onChange={(e) => setSpecificDate(Number(e.target.value))}
+                      className={` w-40 px-3 py-2 rounded-lg border ${inputClasses}`}
+                    >
+                      {Array.from({ length: 31 }, (_, i) => {
+                        const day = i + 1;
+                        return (
+                          <option key={day} value={day}>
+                            {day}
+                          </option>
+                        );
+                      })}
+                    </select>
                   </div>
 
                   <label className="flex items-center gap-3">
                     <input
                       type="radio"
-                      checked={monthlyType === 'day'}
-                      onChange={() => setMonthlyType('day')}
+                      checked={monthlyType === 'RELATIVE_DAY'}
+                      onChange={() => setMonthlyType('RELATIVE_DAY')}
                     />
                     <span className={textSecondary}>
                       {t('by_relative_day') || 'By relative day'}
                     </span>
                   </label>
 
-                  {monthlyType === 'day' && (
+                  {monthlyType === 'RELATIVE_DAY' && (
                     <div className="flex gap-3">
                       <select
-                        value={monthlyOrdinal}
+                        value={relativeDate}
                         onChange={(e) =>
-                          setMonthlyOrdinal(e.target.value as any)
+                          setRelativeDate(parseInt(e.target.value) as any)
                         }
                         className={`flex-1 px-3 py-2 rounded-lg border ${inputClasses}`}
                       >
-                        <option value="1st">{t('first') || '1st'}</option>
-                        <option value="2nd">{t('second') || '2nd'}</option>
-                        <option value="3rd">{t('third') || '3rd'}</option>
-                        <option value="4th">{t('fourth') || '4th'}</option>
-                        <option value="last">{t('fifth') || '5th'}</option>
+                        <option value="1">{cT('first') || '1st'}</option>
+                        <option value="2">{cT('second') || '2nd'}</option>
+                        <option value="3">{cT('third') || '3rd'}</option>
+                        <option value="4">{cT('fourth') || '4th'}</option>
+                        <option value="5">{cT('fifth') || '5th'}</option>
                       </select>
 
                       <select
-                        value={monthlyWeekday}
+                        value={relativeDay}
                         onChange={(e) =>
-                          setMonthlyWeekday(Number(e.target.value))
+                          setRelativeDay(e.target.value)
                         }
                         className={`flex-1 px-3 py-2 rounded-lg border ${inputClasses}`}
                       >
-                        <option value="0">{t('sunday')}</option>
-                        <option value="1">{t('monday')}</option>
-                        <option value="2">{t('tuesday')}</option>
-                        <option value="3">{t('wednesday')}</option>
-                        <option value="4">{t('thursday')}</option>
-                        <option value="5">{t('friday')}</option>
-                        <option value="6">{t('saturday')}</option>
+                        <option value="sunday">{cT('sunday')}</option>
+                        <option value="monday">{cT('monday')}</option>
+                        <option value="tuesday">{cT('tuesday')}</option>
+                        <option value="wednesday">{cT('wednesday')}</option>
+                        <option value="thursday">{cT('thursday')}</option>
+                        <option value="friday">{cT('friday')}</option>
+                        <option value="saturday">{cT('saturday')}</option>
                       </select>
                     </div>
                   )}
@@ -517,15 +544,29 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
                   <label className={`block text-sm mb-2 ${textSecondary}`}>
                     {t('every')}
                   </label>
-                  <div className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                    <input
-                      type="number"
-                      min="1"
-                      value={recurrenceInterval}
-                      onChange={(e) => setRecurrenceInterval(parseInt(e.target.value) || 1)}
-                      className={`w-20 px-3 py-2 rounded-lg border ${inputClasses}`}
-                    />
-                    <span className={textSecondary}>{t('days')}</span>
+                  <div>
+                    <div className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                      <input
+                        min="1"
+                        type="number"
+                        value={customInterval}
+                        onChange={(e) => setCustomInterval(parseInt(e.target.value) || 1)}
+                        className={`w-20 px-3 py-2 rounded-lg border ${inputClasses}`}
+                      />
+                      <select
+                        value={customUnit}
+                        onChange={(e) =>
+                          setCustomUnit(e.target.value as any)
+                        }
+                        className={`flex-1 px-3 py-2 rounded-lg border ${inputClasses}`}
+                      >
+                        <option value="day">{cT('days')}</option>
+                        <option value="week">{cT('weeks')}</option>
+                        <option value="month">{cT('months')}</option>
+                        <option value="year">{cT('years')}</option>
+                      </select>
+                    </div>
+
                   </div>
                 </div>
               )}

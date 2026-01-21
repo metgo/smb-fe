@@ -52,6 +52,7 @@
   "no_notifications_yet": "לא נקבעו התראות עדיין",
   "add_notification": "הוסף התראה",
   "configure_notification": "הגדר התראה",
+  "hours_before_event": "שעות לפני האירוע",
   "send_hours_before_event": "שלח שעות לפני האירוע",
 
   "channels": "ערוצים",

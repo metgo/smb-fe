@@ -48,6 +48,7 @@
   "no_notifications_yet": "لم يتم جدولة أي إشعارات بعد",
   "add_notification": "إضافة إشعار",
   "configure_notification": "إعداد الإشعار",
+  "hours_before_event": "ساعات قبل الفعالية",
   "send_hours_before_event": "إرسال قبل الفعالية بساعات",
 
   "channels": "القنوات",

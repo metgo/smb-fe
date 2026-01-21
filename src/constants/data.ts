@@ -1,180 +1,3 @@
-
-export const dmoAuthorities = [
-  {
-    "_id": "61dc551b1fd34e871d6abf0d",
-    "name": "אשכול רשויות נגב מערבי",
-    "imagePath": "https://storage.googleapis.com/metgo_staging/2024/6/Eyf7pBQi0FawsIcK.png",
-    "logoPath": "https://storage.googleapis.com/metgo_staging/2024/7/l6GMbNXLS3R3yyNj.webp",
-    "authorities": [
-      {
-        "_id": "61f2b8d89325a6bd4ddc9bad",
-        "name": "לקיה",
-        "dmoId": "61dc551b1fd34e871d6abf0d",
-        "logoPath": "https://storage.googleapis.com/metgo_staging/2024/7/a5ktfSy-Qn3z5fZ7.png"
-      },
-      {
-        "_id": "61f2b86d9325a6bd4ddc9b7d",
-        "name": "אשכול מועצה אזורית",
-        "dmoId": "61dc551b1fd34e871d6abf0d",
-        "logoPath": "https://storage.googleapis.com/metgo_staging/2024/7/_f3LHyAYA0xQNThN.png"
-      },
-      {
-        "_id": "61f2b8789325a6bd4ddc9b83",
-        "name": "שדות נגב מועצה אזורית",
-        "dmoId": "61dc551b1fd34e871d6abf0d",
-        "logoPath": "https://storage.googleapis.com/metgo_staging/2024/7/RQMwwB61NGaJoy0r.png"
-      },
-      {
-        "_id": "61f2b8c29325a6bd4ddc9ba1",
-        "name": "אופקים",
-        "dmoId": "61dc551b1fd34e871d6abf0d",
-        "logoPath": "https://storage.googleapis.com/metgo_staging/2024/7/TATw7OxBHNz7tCz6.png"
-      },
-      {
-        "_id": "61f2b8bd9325a6bd4ddc9b9b",
-        "name": "נתיבות",
-        "dmoId": "61dc551b1fd34e871d6abf0d",
-        "logoPath": "https://storage.googleapis.com/metgo_staging/2024/7/aZcscU41GoFKY3oQ.png"
-      },
-      {
-        "_id": "61dc551b1fd34e871d6abf0d",
-        "name": "בני שמעון מועצה אזורית",
-        "dmoId": "61dc551b1fd34e871d6abf0d",
-        "logoPath": "https://storage.googleapis.com/metgo_staging/2024/7/IaAGb79pwq37FyCy.png"
-      },
-      {
-        "_id": "61f2b8a89325a6bd4ddc9b8f",
-        "name": "חוף אשקלון מועצה אזורית",
-        "dmoId": "61dc551b1fd34e871d6abf0d",
-        "logoPath": "https://storage.googleapis.com/metgo_staging/2024/7/zzfjnGShVJP04Als.png"
-      },
-      {
-        "_id": "61f2b8ca9325a6bd4ddc9ba7",
-        "name": "רהט",
-        "dmoId": "61dc551b1fd34e871d6abf0d",
-        "logoPath": "https://storage.googleapis.com/metgo_staging/2024/7/kALa85nPFB-KL4Lb.png"
-      },
-      {
-        "_id": "61d2eb2df58fa2f89374dbb7",
-        "name": "שער הנגב מועצה אזורית",
-        "dmoId": "61dc551b1fd34e871d6abf0d",
-        "logoPath": "https://storage.googleapis.com/metgo_staging/2024/7/P2WNmFAjLnWglla6.png"
-      },
-      {
-        "_id": "61f2b8849325a6bd4ddc9b89",
-        "name": "מרחבים מועצה אזורית",
-        "dmoId": "61dc551b1fd34e871d6abf0d",
-        "logoPath": "https://storage.googleapis.com/metgo_staging/2024/7/4w0X_-pWAi97BWes.png"
-      },
-      {
-        "_id": "61f2b8b59325a6bd4ddc9b95",
-        "name": "שדרות",
-        "dmoId": "61dc551b1fd34e871d6abf0d",
-        "logoPath": "https://storage.googleapis.com/metgo_staging/2024/7/2HwaNM1uY5f8kcCP.png"
-      }
-    ],
-    "id": "61dc551b1fd34e871d6abf0d"
-  },
-  {
-    "_id": "61f2b91d9325a6bd4ddc9bb3",
-    "name": "הרצליה והסביבה",
-    "logoPath": "https://storage.googleapis.com/metgo_staging/2024/7/Wm3znoF160PXMpaR.png",
-    "authorities": [
-      {
-        "_id": "61f2b91d9325a6bd4ddc9bb3",
-        "name": "הרצליה והסביבה",
-        "dmoId": "61f2b91d9325a6bd4ddc9bb3"
-      }
-    ],
-    "id": "61f2b91d9325a6bd4ddc9bb3"
-  },
-  {
-    "_id": "6637806e4d0835c88ccaea99",
-    "name": "אשכול רשויות נגב מזרחי",
-    "logoPath": "https://storage.googleapis.com/metgo_staging/2024/7/uP8DjdafgkiWfk4q.png",
-    "authorities": [
-      {
-        "_id": "663b324ae9f2f6b4984cf3b2",
-        "name": "ירוחם מועצה מקומית",
-        "dmoId": "6637806e4d0835c88ccaea99"
-      },
-      {
-        "_id": "663c7e828ac3195a591b138e",
-        "name": "מצפה רמון מועצה מקומית",
-        "dmoId": "6637806e4d0835c88ccaea99"
-      },
-      {
-        "_id": "663c7e8d8ac3195a591b1394",
-        "name": "ערערה בנגב מועצה מקומית",
-        "dmoId": "6637806e4d0835c88ccaea99"
-      },
-      {
-        "_id": "663c7e978ac3195a591b139a",
-        "name": "שגב שלום מועצה מקומית",
-        "dmoId": "6637806e4d0835c88ccaea99"
-      },
-      {
-        "_id": "663c7e568ac3195a591b04c1",
-        "name": "ערד",
-        "dmoId": "6637806e4d0835c88ccaea99"
-      },
-      {
-        "_id": "663c7e5d8ac3195a591b1372",
-        "name": "חורה מועצה מקומית",
-        "dmoId": "6637806e4d0835c88ccaea99"
-      },
-      {
-        "_id": "663c7eb98ac3195a591b13ac",
-        "name": "חבל אילות הערבה הדרומית מועצה אזורית",
-        "dmoId": "6637806e4d0835c88ccaea99"
-      },
-      {
-        "_id": "663c7e3a8ac3195a591b04b0",
-        "name": "דימונה",
-        "dmoId": "6637806e4d0835c88ccaea99"
-      },
-      {
-        "_id": "663c7e6c8ac3195a591b1382",
-        "name": "כסיפה מועצה מקומית",
-        "dmoId": "6637806e4d0835c88ccaea99"
-      },
-      {
-        "_id": "663c7e798ac3195a591b1388",
-        "name": "מיתר מועצה מקומית",
-        "dmoId": "6637806e4d0835c88ccaea99"
-      },
-      {
-        "_id": "663c7ea08ac3195a591b13a0",
-        "name": "תל שבע מועצה מקומית",
-        "dmoId": "6637806e4d0835c88ccaea99"
-      },
-      {
-        "_id": "663c7eaa8ac3195a591b13a6",
-        "name": "אל קסום מועצה אזורית",
-        "dmoId": "6637806e4d0835c88ccaea99"
-      },
-      {
-        "_id": "663c7ecb8ac3195a591b13b8",
-        "name": "ערבה תיכונה מועצה אזורית",
-        "dmoId": "6637806e4d0835c88ccaea99"
-      },
-      {
-        "_id": "663c7ec28ac3195a591b13b2",
-        "name": "נווה מדבר מועצה אזורית",
-        "dmoId": "6637806e4d0835c88ccaea99"
-      },
-      {
-        "_id": "663c7ed48ac3195a591b13be",
-        "name": "רמת הנגב מועצה אזורית",
-        "dmoId": "6637806e4d0835c88ccaea99"
-      }
-    ],
-    "id": "6637806e4d0835c88ccaea99"
-  }
-]
-
-
-
 export const mockBusinesses: Business[] = [
   {
     id: 'bus-001',
@@ -220,6 +43,30 @@ export const mockBusinesses: Business[] = [
     createdAt: '2024-01-15T10:30:00Z',
     updatedAt: '2024-12-20T14:22:00Z',
     completionPercentage: 100,
+    analytics: {
+      pageViews: 1500,
+      uniqueVisitors: 500,
+      clicks: 300,
+      bookmarks: 50,
+      shares: 20,
+      averageTimeOnPage: 120,
+      conversionRate: 15,
+    },
+    socialMedia: {
+      facebook: 'https://facebook.com/desertbloomcafe',
+      instagram: 'https://instagram.com/desertbloomcafe',
+      youtube: 'https://youtube.com/desertbloomcafe',
+      tiktok: 'https://tiktok.com/desertbloomcafe',
+    },
+    deliveryAdditionalInfo: 'Delivery to all of Israel - 20 ILS. Pick-up available from our Ofakim location or other locations in Eshkol Regional Council by arrangement.',
+    deliveryReturnExchange: [
+      'Items from the order can only be returned or exchanged once, in coordination with the business',
+      'Customers are responsible for returning the product directly to the business',
+    ],
+    deliverySpecificSellerInfo: [
+      'Products ship within 1-3 business days',
+      'Contactless delivery available upon request',
+    ],
   },
   {
     id: 'bus-002',
@@ -265,6 +112,21 @@ export const mockBusinesses: Business[] = [
     createdAt: '2024-02-10T09:15:00Z',
     updatedAt: '2024-12-18T11:45:00Z',
     completionPercentage: 95,
+    analytics: {
+      pageViews: 2000,
+      uniqueVisitors: 600,
+      clicks: 400,
+      bookmarks: 60,
+      shares: 25,
+      averageTimeOnPage: 150,
+      conversionRate: 20,
+    },
+    socialMedia: {
+      facebook: 'https://facebook.com/negevadventuretours',
+      instagram: 'https://instagram.com/negevadventuretours',
+      youtube: 'https://youtube.com/negevadventuretours',
+      tiktok: 'https://tiktok.com/negevadventuretours',
+    },
   },
   {
     id: 'bus-003',
@@ -310,6 +172,30 @@ export const mockBusinesses: Business[] = [
     createdAt: '2024-03-05T12:00:00Z',
     updatedAt: '2024-12-22T09:30:00Z',
     completionPercentage: 88,
+    analytics: {
+      pageViews: 1800,
+      uniqueVisitors: 550,
+      clicks: 350,
+      bookmarks: 45,
+      shares: 15,
+      averageTimeOnPage: 130,
+      conversionRate: 18,
+    },
+    socialMedia: {
+      facebook: 'https://facebook.com/sderotartisanmarket',
+      instagram: 'https://instagram.com/sderotartisanmarket',
+      youtube: 'https://youtube.com/sderotartisanmarket',
+      tiktok: 'https://tiktok.com/sderotartisanmarket',
+    },
+    deliveryAdditionalInfo: 'Products are available for self-collection from the market on Fridays between 9:00-14:00. Some vendors offer individual delivery services.',
+    deliveryReturnExchange: [
+      'Returns are accepted within 14 days of delivery with original packaging',
+      'Exchange only policy - no refunds',
+    ],
+    deliverySpecificSellerInfo: [
+      'Products are available for self-collection from the business location only',
+      'Shipping is not included in the price and will be arranged separately with the business after purchase',
+    ],
   },
   {
     id: 'bus-004',
@@ -355,6 +241,21 @@ export const mockBusinesses: Business[] = [
     createdAt: '2024-11-20T15:30:00Z',
     updatedAt: '2024-12-15T10:20:00Z',
     completionPercentage: 75,
+    analytics: {
+      pageViews: 1200,
+      uniqueVisitors: 400,
+      clicks: 250,
+      bookmarks: 30,
+      shares: 10,
+      averageTimeOnPage: 100,
+      conversionRate: 10,
+    },
+    socialMedia: {
+      facebook: 'https://facebook.com/halutzalodge',
+      instagram: 'https://instagram.com/halutzalodge',
+      youtube: 'https://youtube.com/halutzalodge',
+      tiktok: 'https://tiktok.com/halutzalodge',
+    },
   },
   {
     id: 'bus-005',
@@ -400,6 +301,21 @@ export const mockBusinesses: Business[] = [
     createdAt: '2024-01-08T08:45:00Z',
     updatedAt: '2024-12-19T16:10:00Z',
     completionPercentage: 92,
+    analytics: {
+      pageViews: 1600,
+      uniqueVisitors: 500,
+      clicks: 300,
+      bookmarks: 40,
+      shares: 20,
+      averageTimeOnPage: 110,
+      conversionRate: 14,
+    },
+    socialMedia: {
+      facebook: 'https://facebook.com/netivotspicebazaar',
+      instagram: 'https://instagram.com/netivotspicebazaar',
+      youtube: 'https://youtube.com/netivotspicebazaar',
+      tiktok: 'https://tiktok.com/netivotspicebazaar',
+    },
   },
   {
     id: 'bus-006',
@@ -446,6 +362,21 @@ export const mockBusinesses: Business[] = [
     updatedAt: '2024-12-15T14:30:00Z',
     completionPercentage: 45,
     internalNotes: 'New business - still setting up product listings',
+    analytics: {
+      pageViews: 800,
+      uniqueVisitors: 300,
+      clicks: 150,
+      bookmarks: 20,
+      shares: 5,
+      averageTimeOnPage: 90,
+      conversionRate: 5,
+    },
+    socialMedia: {
+      facebook: 'https://facebook.com/beershevaceramics',
+      instagram: 'https://instagram.com/beershevaceramics',
+      youtube: 'https://youtube.com/beershevaceramics',
+      tiktok: 'https://tiktok.com/beershevaceramics',
+    },
   },
 ];
 
@@ -525,11 +456,35 @@ export function generateMockBusinesses(count: number = 100): Business[] {
       createdAt: new Date(2024, Math.floor(Math.random() * 12), Math.floor(Math.random() * 28) + 1).toISOString(),
       updatedAt: new Date(2024, 11, Math.floor(Math.random() * 24) + 1).toISOString(),
       completionPercentage: Math.floor(Math.random() * 40) + 60,
+      analytics: {
+        pageViews: Math.floor(Math.random() * 2000) + 500,
+        uniqueVisitors: Math.floor(Math.random() * 1000) + 200,
+        clicks: Math.floor(Math.random() * 500) + 100,
+        bookmarks: Math.floor(Math.random() * 100) + 20,
+        shares: Math.floor(Math.random() * 50) + 5,
+        averageTimeOnPage: Math.floor(Math.random() * 100) + 50,
+        conversionRate: Math.floor(Math.random() * 20) + 5,
+      },
+      socialMedia: {
+        facebook: `https://facebook.com/business${i + 1}`,
+        instagram: `https://instagram.com/business${i + 1}`,
+        youtube: `https://youtube.com/business${i + 1}`,
+        tiktok: `https://tiktok.com/business${i + 1}`,
+      },
     });
   }
 
   return [...mockBusinesses, ...generated];
 }
+
+
+
+
+
+
+
+
+
 
 // Mock data
 export const websites = ['Website 1', 'Website 2', 'Website 3'];
@@ -542,551 +497,11 @@ export const mockProducts = [
 
 
 
-// Mock data - Events
-export const allEvents = [
-  {
-    id: '1',
-    name: 'Negev Desert Stars Festival',
-    website: 'Western Negev Tourism',
-    startDate: '2026-01-02',
-    endDate: '2026-01-04',
-    startTime: '18:00',
-    endTime: '23:00',
-    price: 150,
-    isFree: false,
-    registrationRequired: true,
-    status: 'upcoming',
-    totalRegistrations: 845,
-    capacity: 1500,
-    revenue: 126750,
-    refunds: 2250,
-    isMultiDay: true,
-    category: 'Culture',
-    location: 'Ramon Crater',
-    image: 'https://images.unsplash.com/photo-1683138155815-d7edd806d8a3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxkZXNlcnQlMjBzdGFycyUyMG5pZ2h0JTIwc2t5fGVufDF8fHx8MTc2NjczMzAxMHww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
-    dailyMetrics: [
-      { date: '2026-01-02', registrations: 320, attendance: 310, revenue: 48000 },
-      { date: '2026-01-03', registrations: 285, attendance: 270, revenue: 42750 },
-      { date: '2026-01-04', registrations: 240, attendance: 225, revenue: 36000 },
-    ]
-  },
-  {
-    id: '2',
-    name: 'Be\'er Sheva Arts Week',
-    website: 'Be\'er Sheva Tourism',
-    startDate: '2026-01-05',
-    endDate: '2026-01-05',
-    startTime: '10:00',
-    endTime: '18:00',
-    price: 0,
-    isFree: true,
-    registrationRequired: false,
-    status: 'upcoming',
-    totalRegistrations: 0,
-    capacity: 1200,
-    revenue: 0,
-    refunds: 0,
-    isMultiDay: false,
-    category: 'Arts',
-    location: 'Be\'er Sheva Cultural Center',
-    image: 'https://images.unsplash.com/photo-1652105882148-74eadf081c10?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhcnQlMjBnYWxsZXJ5JTIwZmVzdGl2YWx8ZW58MXx8fHwxNzY2NzMzMDExfDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral'
-  },
-  {
-    id: '3',
-    name: 'Negev Culinary Market',
-    website: 'Western Negev Tourism',
-    startDate: '2026-01-17',
-    endDate: '2026-01-17',
-    startTime: '12:00',
-    endTime: '20:00',
-    price: 50,
-    isFree: false,
-    registrationRequired: true,
-    status: 'upcoming',
-    totalRegistrations: 1567,
-    capacity: 2500,
-    revenue: 78350,
-    refunds: 0,
-    isMultiDay: false,
-    category: 'Food',
-    location: 'Sderot Central Park',
-    image: 'https://images.unsplash.com/photo-1759663783558-fa350d7a6734?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxmb29kJTIwbWFya2V0JTIwY3VsaW5hcnl8ZW58MXx8fHwxNzY2NzMzMDExfDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral'
-  },
-  {
-    id: '4',
-    name: 'Desert Music Festival',
-    website: 'Dimona Tourism',
-    startDate: '2026-01-29',
-    endDate: '2026-01-31',
-    startTime: '16:00',
-    endTime: '01:00',
-    price: 250,
-    isFree: false,
-    registrationRequired: true,
-    status: 'upcoming',
-    totalRegistrations: 2890,
-    capacity: 3500,
-    revenue: 722500,
-    refunds: 5000,
-    isMultiDay: true,
-    category: 'Music',
-    location: 'Dimona Amphitheater',
-    image: 'https://images.unsplash.com/photo-1666289186874-0d023fe7d002?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtdXNpYyUyMGZlc3RpdmFsJTIwY29uY2VydHxlbnwxfHx8fDE3NjY2NDMxMDV8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
-    dailyMetrics: [
-      { date: '2026-01-29', registrations: 1100, attendance: 1050, revenue: 275000 },
-      { date: '2026-01-30', registrations: 980, attendance: 950, revenue: 245000 },
-      { date: '2026-01-31', registrations: 810, attendance: 790, revenue: 202500 },
-    ]
-  },
-  {
-    id: '5',
-    name: 'Negev Heritage Tour',
-    website: 'Western Negev Tourism',
-    startDate: '2026-01-06',
-    endDate: '2026-01-06',
-    startTime: '09:00',
-    endTime: '15:00',
-    price: 75,
-    isFree: false,
-    registrationRequired: true,
-    status: 'upcoming',
-    totalRegistrations: 312,
-    capacity: 600,
-    revenue: 23400,
-    refunds: 750,
-    isMultiDay: false,
-    category: 'Heritage',
-    location: 'Tel Sheva',
-    image: 'https://images.unsplash.com/photo-1607541297580-7bb554347b5f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxoZXJpdGFnZSUyMHRvdXJpc20lMjB0b3VyfGVufDF8fHx8MTc2NjczMzAxMnww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral'
-  },
-  {
-    id: '6',
-    name: 'Ramon Crater Hiking Day',
-    website: 'Western Negev Tourism',
-    startDate: '2024-12-10',
-    endDate: '2024-12-10',
-    startTime: '06:00',
-    endTime: '14:00',
-    price: 0,
-    isFree: true,
-    registrationRequired: true,
-    status: 'past',
-    totalRegistrations: 450,
-    capacity: 500,
-    revenue: 0,
-    refunds: 0,
-    isMultiDay: false,
-    category: 'Nature',
-    location: 'Ramon Crater'
-  },
-  {
-    id: '7',
-    name: 'Sderot Film Festival',
-    website: 'Sderot Cultural',
-    startDate: '2024-11-20',
-    endDate: '2024-11-23',
-    startTime: '18:00',
-    endTime: '23:00',
-    price: 120,
-    isFree: false,
-    registrationRequired: true,
-    status: 'past',
-    totalRegistrations: 678,
-    capacity: 800,
-    revenue: 81360,
-    refunds: 1200,
-    isMultiDay: true,
-    category: 'Culture',
-    location: 'Sderot Cinema Complex',
-    dailyMetrics: [
-      { date: '2024-11-20', registrations: 210, attendance: 205, revenue: 25200 },
-      { date: '2024-11-21', registrations: 180, attendance: 175, revenue: 21600 },
-      { date: '2024-11-22', registrations: 165, attendance: 160, revenue: 19800 },
-      { date: '2024-11-23', registrations: 123, attendance: 118, revenue: 14760 },
-    ]
-  },
-  {
-    id: '8',
-    name: 'New Year Celebration',
-    website: 'Be\'er Sheva Tourism',
-    startDate: '2024-12-31',
-    endDate: '2024-12-31',
-    startTime: '21:00',
-    endTime: '02:00',
-    price: 200,
-    isFree: false,
-    registrationRequired: true,
-    status: 'canceled',
-    totalRegistrations: 234,
-    capacity: 1000,
-    revenue: 0,
-    refunds: 46800,
-    isMultiDay: false,
-    category: 'Entertainment',
-    location: 'Be\'er Sheva City Center'
-  },
-  {
-    id: '9',
-    name: 'Negev Wine Tasting Experience',
-    website: 'Western Negev Tourism',
-    startDate: '2026-01-08',
-    endDate: '2026-01-08',
-    startTime: '17:00',
-    endTime: '21:00',
-    price: 120,
-    isFree: false,
-    registrationRequired: true,
-    status: 'upcoming',
-    totalRegistrations: 156,
-    capacity: 200,
-    revenue: 18720,
-    refunds: 0,
-    isMultiDay: false,
-    category: 'Food',
-    location: 'Ramat Negev Winery',
-    image: 'https://images.unsplash.com/photo-1687877954846-00876ced28bf?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx3aW5lJTIwdGFzdGluZyUyMHZpbmV5YXJkfGVufDF8fHx8MTc2NjczMzE0OHww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral'
-  },
-  {
-    id: '10',
-    name: 'Children\'s Art Workshop',
-    website: 'Sderot Cultural',
-    startDate: '2026-01-10',
-    endDate: '2026-01-10',
-    startTime: '10:00',
-    endTime: '13:00',
-    price: 30,
-    isFree: false,
-    registrationRequired: true,
-    status: 'upcoming',
-    totalRegistrations: 45,
-    capacity: 50,
-    revenue: 1350,
-    refunds: 0,
-    isMultiDay: false,
-    category: 'Arts',
-    location: 'Sderot Community Center',
-    image: 'https://images.unsplash.com/photo-1759646828783-7e1b8f02f89b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjaGlsZHJlbiUyMHdvcmtzaG9wJTIwY3JhZnR8ZW58MXx8fHwxNzY2NzMzMTQ5fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral'
-  },
-  {
-    id: '11',
-    name: 'Desert Yoga Retreat',
-    website: 'Western Negev Tourism',
-    startDate: '2026-01-12',
-    endDate: '2026-01-13',
-    startTime: '08:00',
-    endTime: '17:00',
-    price: 180,
-    isFree: false,
-    registrationRequired: true,
-    status: 'upcoming',
-    totalRegistrations: 67,
-    capacity: 80,
-    revenue: 12060,
-    refunds: 360,
-    isMultiDay: true,
-    category: 'Wellness',
-    location: 'Mitzpe Ramon Retreat Center',
-    image: 'https://images.unsplash.com/photo-1758797315487-b3b225dff7d8?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx5b2dhJTIwd2VsbG5lc3MlMjByZXRyZWF0fGVufDF8fHx8MTc2NjczMTY4Nnww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
-    dailyMetrics: [
-      { date: '2026-01-12', registrations: 35, attendance: 34, revenue: 6300 },
-      { date: '2026-01-13', registrations: 32, attendance: 31, revenue: 5760 },
-    ]
-  },
-  {
-    id: '12',
-    name: 'Bedouin Night Market',
-    website: 'Be\'er Sheva Tourism',
-    startDate: '2026-01-15',
-    endDate: '2026-01-15',
-    startTime: '18:00',
-    endTime: '23:00',
-    price: 0,
-    isFree: true,
-    registrationRequired: false,
-    status: 'upcoming',
-    totalRegistrations: 0,
-    capacity: 2000,
-    revenue: 0,
-    refunds: 0,
-    isMultiDay: false,
-    category: 'Culture',
-    location: 'Be\'er Sheva Old City',
-    image: 'https://images.unsplash.com/photo-1748003512546-b43e620fbc9c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxuaWdodCUyMG1hcmtldCUyMGxpZ2h0c3xlbnwxfHx8fDE3NjY3MzMxNDl8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral'
-  },
-  {
-    id: '13',
-    name: 'Photography Exhibition',
-    website: 'Dimona Tourism',
-    startDate: '2026-01-19',
-    endDate: '2026-01-23',
-    startTime: '10:00',
-    endTime: '19:00',
-    price: 25,
-    isFree: false,
-    registrationRequired: false,
-    status: 'upcoming',
-    totalRegistrations: 0,
-    capacity: 500,
-    revenue: 8750,
-    refunds: 0,
-    isMultiDay: true,
-    category: 'Arts',
-    location: 'Dimona Art Gallery',
-    image: 'https://images.unsplash.com/photo-1742497359858-8e0a442c9c55?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwaG90b2dyYXBoeSUyMGV4aGliaXRpb24lMjBnYWxsZXJ5fGVufDF8fHx8MTc2NjcxMjEzMHww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
-    dailyMetrics: [
-      { date: '2026-01-19', registrations: 0, attendance: 78, revenue: 1950 },
-      { date: '2026-01-20', registrations: 0, attendance: 65, revenue: 1625 },
-      { date: '2026-01-21', registrations: 0, attendance: 52, revenue: 1300 },
-      { date: '2026-01-22', registrations: 0, attendance: 48, revenue: 1200 },
-      { date: '2026-01-23', registrations: 0, attendance: 71, revenue: 1775 },
-    ]
-  },
-  {
-    id: '14',
-    name: 'Ramon Crater Trail Run',
-    website: 'Western Negev Tourism',
-    startDate: '2026-01-24',
-    endDate: '2026-01-24',
-    startTime: '06:30',
-    endTime: '12:00',
-    price: 85,
-    isFree: false,
-    registrationRequired: true,
-    status: 'upcoming',
-    totalRegistrations: 234,
-    capacity: 300,
-    revenue: 19890,
-    refunds: 0,
-    isMultiDay: false,
-    category: 'Sports',
-    location: 'Ramon Crater',
-    image: 'https://images.unsplash.com/photo-1765914448171-bcbb56e0a7d0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtYXJhdGhvbiUyMHJ1bm5pbmclMjByYWNlfGVufDF8fHx8MTc2NjczMzE1MHww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral'
-  },
-  {
-    id: '15',
-    name: 'Desert Theater Performance',
-    website: 'Be\'er Sheva Tourism',
-    startDate: '2026-01-25',
-    endDate: '2026-01-26',
-    startTime: '20:00',
-    endTime: '22:30',
-    price: 95,
-    isFree: false,
-    registrationRequired: true,
-    status: 'upcoming',
-    totalRegistrations: 187,
-    capacity: 250,
-    revenue: 17765,
-    refunds: 0,
-    isMultiDay: true,
-    category: 'Culture',
-    location: 'Be\'er Sheva Performing Arts Center',
-    image: 'https://images.unsplash.com/photo-1764936394584-c4a66ac31e00?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHx0aGVhdGVyJTIwcGVyZm9ybWFuY2UlMjBzdGFnZXxlbnwxfHx8fDE3NjY3MTQ1MjR8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
-    dailyMetrics: [
-      { date: '2026-01-25', registrations: 98, attendance: 96, revenue: 9310 },
-      { date: '2026-01-26', registrations: 89, attendance: 87, revenue: 8455 },
-    ]
-  },
-  {
-    id: '16',
-    name: 'Negev Camping Adventure',
-    website: 'Western Negev Tourism',
-    startDate: '2026-01-09',
-    endDate: '2026-01-11',
-    startTime: '16:00',
-    endTime: '11:00',
-    price: 220,
-    isFree: false,
-    registrationRequired: true,
-    status: 'upcoming',
-    totalRegistrations: 78,
-    capacity: 100,
-    revenue: 17160,
-    refunds: 0,
-    isMultiDay: true,
-    category: 'Adventure',
-    location: 'Negev Highlands',
-    image: 'https://images.unsplash.com/photo-1663648681648-df9b0465ce4e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjYW1waW5nJTIwYWR2ZW50dXJlJTIwb3V0ZG9vcnxlbnwxfHx8fDE3NjY3MzMxNTF8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
-    dailyMetrics: [
-      { date: '2026-01-09', registrations: 28, attendance: 27, revenue: 6160 },
-      { date: '2026-01-10', registrations: 26, attendance: 26, revenue: 5720 },
-      { date: '2026-01-11', registrations: 24, attendance: 23, revenue: 5280 },
-    ]
-  },
-  {
-    id: '17',
-    name: 'Traditional Cooking Workshop',
-    website: 'Sderot Cultural',
-    startDate: '2026-01-27',
-    endDate: '2026-01-27',
-    startTime: '14:00',
-    endTime: '18:00',
-    price: 65,
-    isFree: false,
-    registrationRequired: true,
-    status: 'upcoming',
-    totalRegistrations: 32,
-    capacity: 35,
-    revenue: 2080,
-    refunds: 0,
-    isMultiDay: false,
-    category: 'Food',
-    location: 'Sderot Culinary School',
-    image: 'https://images.unsplash.com/photo-1758874960436-c97920a559cf?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb29raW5nJTIwY2xhc3MlMjBraXRjaGVufGVufDF8fHx8MTc2NjY2MzA1MHww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral'
-  },
-  {
-    id: '18',
-    name: 'Hiking Through History',
-    website: 'Western Negev Tourism',
-    startDate: '2026-01-28',
-    endDate: '2026-01-28',
-    startTime: '07:00',
-    endTime: '15:00',
-    price: 55,
-    isFree: false,
-    registrationRequired: true,
-    status: 'upcoming',
-    totalRegistrations: 124,
-    capacity: 150,
-    revenue: 6820,
-    refunds: 0,
-    isMultiDay: false,
-    category: 'Nature',
-    location: 'Tel Arad National Park',
-    image: 'https://images.unsplash.com/photo-1615352916558-eead776a2ec2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxoaWtpbmclMjBuYXR1cmUlMjB0cmFpbHxlbnwxfHx8fDE3NjY3MzMxNDh8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral'
-  },
-  {
-    id: '19',
-    name: 'Spring Flower Festival',
-    website: 'Be\'er Sheva Tourism',
-    startDate: '2026-01-14',
-    endDate: '2026-01-14',
-    startTime: '09:00',
-    endTime: '18:00',
-    price: 0,
-    isFree: true,
-    registrationRequired: false,
-    status: 'upcoming',
-    totalRegistrations: 0,
-    capacity: 3000,
-    revenue: 0,
-    refunds: 0,
-    isMultiDay: true,
-    category: 'Nature',
-    location: 'Be\'er Sheva Park',
-  },
-  {
-    id: '20',
-    name: 'Negev Artisan Market',
-    website: 'Dimona Tourism',
-    startDate: '2026-01-18',
-    endDate: '2026-01-18',
-    startTime: '10:00',
-    endTime: '17:00',
-    price: 0,
-    isFree: true,
-    registrationRequired: false,
-    status: 'upcoming',
-    totalRegistrations: 0,
-    capacity: 1500,
-    revenue: 0,
-    refunds: 0,
-    isMultiDay: false,
-    category: 'Culture',
-    location: 'Dimona Town Square'
-  },
-  {
-    id: '21',
-    name: 'Jazz Under the Stars',
-    website: 'Western Negev Tourism',
-    startDate: '2026-01-16',
-    endDate: '2026-01-16',
-    startTime: '20:00',
-    endTime: '23:30',
-    price: 110,
-    isFree: false,
-    registrationRequired: true,
-    status: 'upcoming',
-    totalRegistrations: 267,
-    capacity: 400,
-    revenue: 29370,
-    refunds: 0,
-    isMultiDay: false,
-    category: 'Music',
-    location: 'Ramon Crater Amphitheater'
-  },
-  {
-    id: '22',
-    name: 'Family Fun Day',
-    website: 'Sderot Cultural',
-    startDate: '2026-01-22',
-    endDate: '2026-01-22',
-    startTime: '10:00',
-    endTime: '16:00',
-    price: 0,
-    isFree: true,
-    registrationRequired: false,
-    status: 'upcoming',
-    totalRegistrations: 0,
-    capacity: 800,
-    revenue: 0,
-    refunds: 0,
-    isMultiDay: false,
-    category: 'Entertainment',
-    location: 'Sderot Central Park'
-  },
-  {
-    id: '23',
-    name: 'Desert Meditation Retreat',
-    website: 'Western Negev Tourism',
-    startDate: '2026-01-30',
-    endDate: '2026-01-31',
-    startTime: '08:00',
-    endTime: '18:00',
-    price: 340,
-    isFree: false,
-    registrationRequired: true,
-    status: 'upcoming',
-    totalRegistrations: 42,
-    capacity: 50,
-    revenue: 14280,
-    refunds: 0,
-    isMultiDay: true,
-    category: 'Wellness',
-    location: 'Mitzpe Ramon Retreat',
-    dailyMetrics: [
-      { date: '2026-01-30', registrations: 22, attendance: 22, revenue: 7480 },
-      { date: '2026-01-31', registrations: 20, attendance: 20, revenue: 6800 },
-    ]
-  },
-  {
-    id: '24',
-    name: 'Spring Concert Series',
-    website: 'Be\'er Sheva Tourism',
-    startDate: '2026-01-07',
-    endDate: '2026-01-07',
-    startTime: '19:00',
-    endTime: '22:00',
-    price: 75,
-    isFree: false,
-    registrationRequired: true,
-    status: 'upcoming',
-    totalRegistrations: 412,
-    capacity: 600,
-    revenue: 30900,
-    refunds: 0,
-    isMultiDay: false,
-    category: 'Music',
-    location: 'Be\'er Sheva Amphitheater'
-  },
-];
 
-
-
-export const generateMockOrders = (count: number): Order[] => {
-  const statuses: Order['orderStatus'][] = ['draft', 'processing', 'paid', 'confirmed', 'delivered', 'completed', 'cancelled', 'partially_cancelled', 'failed'];
-  const paymentStatuses: Order['paymentStatus'][] = ['pending', 'success', 'failed', 'refunded', 'partially_refunded'];
-  const deliveryTypes: Order['deliveryType'][] = ['pickup', 'delivery', 'digital'];
+export const generateMockOrders = (count: number): IOrder[] => {
+  const statuses: IOrder['orderStatus'][] = ['draft', 'processing', 'paid', 'confirmed', 'delivered', 'completed', 'cancelled', 'partially_cancelled', 'failed'];
+  const paymentStatuses: IOrder['paymentStatus'][] = ['pending', 'success', 'failed', 'refunded', 'partially_refunded'];
+  const deliveryTypes: IOrder['deliveryType'][] = ['pickup', 'delivery', 'digital'];
   const vendors = ['Beersheba Bistro', 'Desert Delight', 'Negev Tours', 'Arad Adventures', 'Mitzpe Ramon Resort'];
   const campaigns = ['Summer Sale 2026', 'Desert Discovery', 'Family Fun Days', 'Food Festival', 'Adventure Week'];
 
@@ -1101,7 +516,7 @@ export const generateMockOrders = (count: number): Order[] => {
   ];
 
   return Array.from({ length: count }, (_, i) => {
-    const orderProducts: OrderProduct[] = Array.from(
+    const orderProducts: IOrderProduct[] = Array.from(
       { length: Math.floor(Math.random() * 3) + 1 },
       (_, j) => {
         const product = products[Math.floor(Math.random() * products.length)];

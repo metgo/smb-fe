@@ -45,7 +45,7 @@ export default function Header() {
 
           {/* Controls */}
           <div className="flex items-center gap-3">
-            <DmoAuthorityies data={dmosAuthorities?.data?.data}/>
+            <DmoAuthorityies data={dmosAuthorities}/>
 
             {/* Website Selector */}
             <div className="relative">

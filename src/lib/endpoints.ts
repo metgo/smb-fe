@@ -22,6 +22,11 @@ export const endpoints = {
 
   dmos: "/dmos",
 
+  // business
+  business: "/business",
+  businesses: "/businesses",
+
+  // events
   events: "/events",
   eventsStats: "/events-stats",
 
@@ -30,9 +35,9 @@ export const endpoints = {
 
   tickets: "/tickets",
   mediaSignedUrl: "/media-signed-url",
-  
+
   websites: "/websites",
-  
+
   googleMap: 'https://maps.googleapis.com/maps/api/js',
   googlePlaceAutoComplete: 'https://places.googleapis.com/v1/places',
 }

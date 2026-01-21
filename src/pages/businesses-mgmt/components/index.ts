@@ -1,10 +1,7 @@
-import BusinessDetails from "./BusinessDetails";
 import BusinessesList from "./BusinessesList";
 import CreateBusinessWizard from "./CreateBusinessWizard";
 
-export{
-  
-  BusinessDetails,
+export {
   BusinessesList,
   CreateBusinessWizard,
 }

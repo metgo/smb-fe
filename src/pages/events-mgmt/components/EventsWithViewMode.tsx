@@ -28,10 +28,10 @@ interface EventsWithViewModeProps {
   setShowQuickSnapModal: (v: boolean) => void;
 }
 
-type ViewMode = 'calendar-month' | 'calendar-week' | 'calendar-day';
+type TViewMode = 'calendar-month' | 'calendar-week' | 'calendar-day';
 
 const CALENDAR_MODES: {
-  key: ViewMode;
+  key: TViewMode;
   label: string;
   icon: React.ElementType;
 }[] = [
@@ -75,13 +75,14 @@ export default function EventsWithViewMode({
   setSelectedEvent,
   setShowQuickSnapModal,
 }: EventsWithViewModeProps) {
+  console.log("🚀 ~ EventsWithViewMode ~ events:", events)
   const { t, i18n } = useTranslation('events');
   const { isRTL } = useAppSelector((state) => state.settings);
   const language = i18n.language || 'en';
   const themeColor = useThemeClasses()
 
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [calendarViewMode, setCalendarViewMode] = useState<ViewMode>('calendar-month');
+  const [calendarViewMode, setCalendarViewMode] = useState<TViewMode>('calendar-month');
   const [selectedEvents, setSelectedEvents] = useState<Set<string>>(new Set());
   const [displayedListCount, setDisplayedListCount] = useState(12);
 
@@ -401,7 +402,7 @@ export default function EventsWithViewMode({
         rowKey="_id"
         data={displayedEvents}
         selectedItems={selectedEvents}
-        onSelectionChange={setSelectedEvents}
+        onSelectionChange={(selected) => setSelectedEvents(selected as Set<string>)}
         onRowClick={(item) => handleEventSelect(item)}
         storageKey="eventsTableColumnOrder"
         columns={[
@@ -548,8 +549,6 @@ export default function EventsWithViewMode({
               );
             })}
           </div>}
-
-
 
         {viewMode.startsWith('calendar') && (
           <div className="flex items-center gap-4">

@@ -1,6 +1,6 @@
-import ProductWizard from "./ProductWizard";
+import CreateProductWizard from "./CreateProductWizard";
 
 export{
-  ProductWizard
+  CreateProductWizard
 
 }

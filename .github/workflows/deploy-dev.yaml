@@ -3,7 +3,7 @@ name: Deploy to Docker Hub
 on:
   push:
     branches:
-      - main
+      - dev
 
 jobs:
   build:
@@ -31,7 +31,7 @@ jobs:
       - name: Build and push Docker image for ${{ matrix.app.name }}
         run: |
           docker build \
-            --build-arg ENV_FILE=.env.${{ matrix.app.name }} \
+            --build-arg ENV_FILE=.env \
             --build-arg APP_PORT=${{ matrix.app.port }} \
             -t ${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.app.name }}:${{ matrix.app.tag }} .
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.app.name }}:${{ matrix.app.tag }}

@@ -2,7 +2,8 @@ import { useState } from 'react';
 
 import { useAppSelector } from '@/hooks/hooks';
 
-import {BusinessDetails, BusinessesList, CreateBusinessWizard} from './components';
+import BusinessDetails from './details';
+import { BusinessesList, CreateBusinessWizard} from './components';
 
 
 type View = 'list' | 'details' | 'create' | 'edit';
@@ -59,7 +60,6 @@ export default function BusinessesMgmtPage() {
       {currentView === 'details' && selectedBusiness && (
         <BusinessDetails
           business={selectedBusiness}
-          theme={theme}
           onBack={handleBackToList}
           onEdit={handleEdit}
           onCreateProduct={handleCreateProduct}
@@ -68,10 +68,8 @@ export default function BusinessesMgmtPage() {
 
       {(currentView === 'create' || currentView === 'edit') && (
         <CreateBusinessWizard
-          theme={theme}
           onClose={handleCloseWizard}
           onSave={handleSave}
-          editData={currentView === 'edit' ? selectedBusiness : undefined}
         />
       )}
     </>

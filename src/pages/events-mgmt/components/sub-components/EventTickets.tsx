@@ -2,7 +2,7 @@ import { toast } from "sonner";
 import { Activity, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { skipToken } from "@reduxjs/toolkit/query";
-import { Plus, Ticket, AlertCircle, FileText, Copy, Trash2 } from "lucide-react";
+import { Plus, Ticket, AlertCircle, FileText, Trash2 } from "lucide-react";
 
 import { useAppSelector } from "@/hooks/hooks";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
@@ -44,9 +44,9 @@ const EventTickets: React.FC<EventTicketsProps> = ({
   const { textPrimary, textTertiary } = useThemeClasses();
   const { theme } = useAppSelector((state) => state.settings);
   const { data: tickets, refetch } = useGetAllTicketQuery(eventId ? { eventId } : skipToken)
-  const [deleteTicket, { isLoading }] = useDeleteTicketMutation()
+  const [deleteTicket, { isLoading: _isLoading }] = useDeleteTicketMutation()
 
-  const [editingTicket, setEditingTicket] = useState<TicketPayload | null>(null);
+  const [editingTicket, setEditingTicket] = useState<ITicketPayload | null>(null);
 
 
   const formatPrice = (ticket: TicketData) => {
@@ -58,6 +58,7 @@ const EventTickets: React.FC<EventTicketsProps> = ({
   const handleDeleteTicket = async (ticketId: string) => {
     try {
       await deleteTicket({ ticketId }).unwrap();
+      refetch()
       toast.success(t("ticket_deleted_successfully") || "Ticket deleted");
     } catch (error) {
       toast.error(t("ticket_delete_failed") || "Failed to delete ticket");
@@ -189,7 +190,7 @@ const EventTickets: React.FC<EventTicketsProps> = ({
                       setEditingTicket(ticket);
                       setShowTicketModal(true);
                     }}
-                    className={`p-3 rounded-xl transition-all ${theme === "dark"
+                    className={`p-3 rounded-xl transition-all cursor-pointer ${theme === "dark"
                       ? "hover:bg-gray-700"
                       : "hover:bg-gray-200"
                       }`}
@@ -198,27 +199,22 @@ const EventTickets: React.FC<EventTicketsProps> = ({
                     <FileText className="w-5 h-5" />
                   </button>
 
-                  <button
+                  {/* <button
                     onClick={() => {
-                      const duplicated: TicketData = {
-                        ...ticket,
-                        id: Date.now().toString(),
-                        name: `${ticket.name} (${t("copy") || "Copy"})`,
-                      };
-                      // setTickets((prev) => [...prev, duplicated]);
+                      // TODO: Implement duplicate ticket functionality
                     }}
-                    className={`p-3 rounded-xl transition-all ${theme === "dark"
+                    className={`p-3 rounded-xl transition-all cursor-pointer ${theme === "dark"
                       ? "hover:bg-gray-700"
                       : "hover:bg-gray-200"
                       }`}
                     title={t("duplicate_ticket") || "Duplicate ticket"}
                   >
                     <Copy className="w-5 h-5" />
-                  </button>
+                  </button> */}
 
                   <button
-                    onClick={() => handleDeleteTicket(ticket.id)}
-                    className="p-3 rounded-xl text-red-500 hover:bg-red-500/10 transition-all"
+                    onClick={() => handleDeleteTicket(ticket._id)}
+                    className="p-3 rounded-xl text-red-500 hover:bg-red-500/10 transition-all cursor-pointer"
                     title={t("delete_ticket") || "Delete ticket"}
                   >
                     <Trash2 className="w-5 h-5" />

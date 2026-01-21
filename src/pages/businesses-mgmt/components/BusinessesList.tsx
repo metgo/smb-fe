@@ -1,18 +1,31 @@
-import clsx from 'clsx';
-import { useTranslation } from 'react-i18next';
+import clsx from "clsx";
+import { useTranslation } from "react-i18next";
 import {
-  Search, Download, ChevronDown, ChevronUp,
-  Archive, CheckCircle, XCircle,
-  Loader, AlertCircle, Columns, ExternalLink, UtensilsCrossed, Plane,
-  Landmark, Theater, BedDouble, Map
-} from 'lucide-react';
-import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+  Search,
+  Download,
+  ChevronDown,
+  ChevronUp,
+  Archive,
+  CheckCircle,
+  XCircle,
+  Loader,
+  AlertCircle,
+  Columns,
+  ExternalLink,
+  UtensilsCrossed,
+  Plane,
+  Landmark,
+  Theater,
+  BedDouble,
+  Map,
+} from "lucide-react";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 
-import { useAppSelector } from '@/hooks/hooks';
-import { FilterButton } from '@/components/btns';
-import { useThemeClasses } from '@/hooks/useThemeClasses';
-import { generateMockBusinesses } from '@/constants/data';
-import { PageHeader, PageStats, ReordableDataTable } from '@/components/shared';
+import { useAppSelector } from "@/hooks/hooks";
+import { FilterButton } from "@/components/btns";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { generateMockBusinesses } from "@/constants/data";
+import { PageHeader, PageStats, ReordableDataTable } from "@/components/shared";
 
 interface BusinessesListProps {
   theme: Theme;
@@ -21,7 +34,7 @@ interface BusinessesListProps {
 }
 
 // Simulate user role for permissions
-const USER_ROLE = 'admin'; // Can be: 'superadmin', 'admin', 'dmo', 'authority', 'business_owner'
+const USER_ROLE = "admin"; // Can be: 'superadmin', 'admin', 'dmo', 'authority', 'business_owner'
 
 // Column configuration
 const defaultColumns = {
@@ -44,72 +57,84 @@ type ColumnVisibility = typeof defaultColumns;
 
 // Column definitions with default status
 const columnDefinitions = [
-  { key: 'impactScore' as keyof ColumnVisibility, isDefault: true },
-  { key: 'businessName' as keyof ColumnVisibility, isDefault: true },
-  { key: 'shortDescription' as keyof ColumnVisibility, isDefault: true },
-  { key: 'contactName' as keyof ColumnVisibility, isDefault: true },
-  { key: 'businessEmail' as keyof ColumnVisibility, isDefault: true },
-  { key: 'phoneNumber' as keyof ColumnVisibility, isDefault: true },
-  { key: 'productsCount' as keyof ColumnVisibility, isDefault: true },
-  { key: 'status' as keyof ColumnVisibility, isDefault: true },
-  { key: 'lifetimeSales' as keyof ColumnVisibility, isDefault: true },
-  { key: 'tripCount' as keyof ColumnVisibility, isDefault: false },
-  { key: 'websiteUrl' as keyof ColumnVisibility, isDefault: false },
-  { key: 'contactPhone' as keyof ColumnVisibility, isDefault: false },
-  { key: 'categories' as keyof ColumnVisibility, isDefault: false },
+  { key: "impactScore" as keyof ColumnVisibility, isDefault: true },
+  { key: "businessName" as keyof ColumnVisibility, isDefault: true },
+  { key: "shortDescription" as keyof ColumnVisibility, isDefault: true },
+  { key: "contactName" as keyof ColumnVisibility, isDefault: true },
+  { key: "businessEmail" as keyof ColumnVisibility, isDefault: true },
+  { key: "phoneNumber" as keyof ColumnVisibility, isDefault: true },
+  { key: "productsCount" as keyof ColumnVisibility, isDefault: true },
+  { key: "status" as keyof ColumnVisibility, isDefault: true },
+  { key: "lifetimeSales" as keyof ColumnVisibility, isDefault: true },
+  { key: "tripCount" as keyof ColumnVisibility, isDefault: false },
+  { key: "websiteUrl" as keyof ColumnVisibility, isDefault: false },
+  { key: "contactPhone" as keyof ColumnVisibility, isDefault: false },
+  { key: "categories" as keyof ColumnVisibility, isDefault: false },
 ];
 
 // Category colors for visual distinction
 const categoryColors: { [key: string]: string } = {
-  'Food & Dining': 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400',
-  'Cafe': 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400',
-  'Tourism': 'bg-teal-100 text-teal-800 dark:bg-teal-900/30 dark:text-teal-400',
-  'Adventure': 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
-  'Shopping': 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400',
-  'Culture': 'bg-pink-100 text-pink-800 dark:bg-pink-900/30 dark:text-pink-400',
-  'Accommodation': 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
-  'Eco-Tourism': 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400',
-  'Workshops': 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400',
+  "Food & Dining":
+    "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400",
+  Cafe: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400",
+  Tourism: "bg-teal-100 text-teal-800 dark:bg-teal-900/30 dark:text-teal-400",
+  Adventure:
+    "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
+  Shopping:
+    "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400",
+  Culture: "bg-pink-100 text-pink-800 dark:bg-pink-900/30 dark:text-pink-400",
+  Accommodation:
+    "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
+  "Eco-Tourism":
+    "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400",
+  Workshops:
+    "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400",
 };
 
-const defaultCategoryColor = 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400';
+const defaultCategoryColor =
+  "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400";
 
-export default function BusinessesList({ theme, onBusinessClick, onCreateNew }: BusinessesListProps) {
-
+export default function BusinessesList({
+  theme,
+  onBusinessClick,
+  onCreateNew,
+}: BusinessesListProps) {
   const { t } = useTranslation("businesses");
-  const { isRTL } = useAppSelector((state) => state.settings)
-  const {textPrimary, textSecondary,}=useThemeClasses()
+  const { isRTL } = useAppSelector((state) => state.settings);
+  const { textPrimary, textSecondary } = useThemeClasses();
 
   const [error, setError] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [businesses, setBusinesses] = useState<any[]>([]);
   const [showColumnSettings, setShowColumnSettings] = useState(false);
-  const [selectedBusinesses, setSelectedBusinesses] = useState<Set<string>>(new Set());
+  const [selectedBusinesses, setSelectedBusinesses] = useState<Set<string>>(
+    new Set(),
+  );
 
   const columnSettingsRef = useRef<HTMLDivElement>(null);
 
   // Filters
   const [filters, setFilters] = useState({
-    authority: 'all',
-    dmo: 'all',
-    status: 'all',
-    hasProducts: 'all',
+    authority: "all",
+    dmo: "all",
+    status: "all",
+    hasProducts: "all",
     impactMin: 200,
     impactMax: 800,
-    dateFrom: '',
-    dateTo: '',
+    dateFrom: "",
+    dateTo: "",
   });
 
   // Column visibility - load from localStorage or use defaults
   const [visibleColumns, setVisibleColumns] = useState<ColumnVisibility>(() => {
     try {
-      const saved = localStorage.getItem('businessesTableColumns');
+      const saved = localStorage.getItem("businessesTableColumns");
       if (saved) {
         return { ...defaultColumns, ...JSON.parse(saved) };
       }
     } catch (e) {
-      console.error('Failed to load column settings:', e);
+      console.error("Failed to load column settings:", e);
     }
     return defaultColumns;
   });
@@ -117,31 +142,37 @@ export default function BusinessesList({ theme, onBusinessClick, onCreateNew }: 
   // Save column visibility to localStorage
   useEffect(() => {
     try {
-      localStorage.setItem('businessesTableColumns', JSON.stringify(visibleColumns));
+      localStorage.setItem(
+        "businessesTableColumns",
+        JSON.stringify(visibleColumns),
+      );
     } catch (e) {
-      console.error('Failed to save column settings:', e);
+      console.error("Failed to save column settings:", e);
     }
   }, [visibleColumns]);
 
   // Close column settings when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (columnSettingsRef.current && !columnSettingsRef.current.contains(event.target as Node)) {
+      if (
+        columnSettingsRef.current &&
+        !columnSettingsRef.current.contains(event.target as Node)
+      ) {
         setShowColumnSettings(false);
       }
     };
 
     if (showColumnSettings) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
     }
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [showColumnSettings]);
 
   // Sorting
   const [sortColumn] = useState<string | null>(null);
-  const [sortDirection] = useState<'asc' | 'desc'>('asc');
+  const [sortDirection] = useState<"asc" | "desc">("asc");
 
   // Infinite scroll
   const [displayCount, setDisplayCount] = useState(50);
@@ -168,42 +199,48 @@ export default function BusinessesList({ theme, onBusinessClick, onCreateNew }: 
         (b) =>
           b.name.toLowerCase().includes(term) ||
           b.email.toLowerCase().includes(term) ||
-          b.phone.toLowerCase().includes(term)
+          b.phone.toLowerCase().includes(term),
       );
     }
 
     // Authority filter
-    if (filters.authority !== 'all') {
+    if (filters.authority !== "all") {
       filtered = filtered.filter((b) => b.authority === filters.authority);
     }
 
     // DMO filter
-    if (filters.dmo !== 'all') {
+    if (filters.dmo !== "all") {
       filtered = filtered.filter((b) => b.dmo === filters.dmo);
     }
 
     // Status filter
-    if (filters.status !== 'all') {
+    if (filters.status !== "all") {
       filtered = filtered.filter((b) => b.status === filters.status);
     }
 
     // Has products filter
-    if (filters.hasProducts !== 'all') {
-      const hasProducts = filters.hasProducts === 'yes';
-      filtered = filtered.filter((b) => (b.productsCount > 0) === hasProducts);
+    if (filters.hasProducts !== "all") {
+      const hasProducts = filters.hasProducts === "yes";
+      filtered = filtered.filter((b) => b.productsCount > 0 === hasProducts);
     }
 
     // Impact range filter
     filtered = filtered.filter(
-      (b) => b.impactScore >= filters.impactMin && b.impactScore <= filters.impactMax
+      (b) =>
+        b.impactScore >= filters.impactMin &&
+        b.impactScore <= filters.impactMax,
     );
 
     // Date range filter
     if (filters.dateFrom) {
-      filtered = filtered.filter((b) => new Date(b.createdAt) >= new Date(filters.dateFrom));
+      filtered = filtered.filter(
+        (b) => new Date(b.createdAt) >= new Date(filters.dateFrom),
+      );
     }
     if (filters.dateTo) {
-      filtered = filtered.filter((b) => new Date(b.createdAt) <= new Date(filters.dateTo));
+      filtered = filtered.filter(
+        (b) => new Date(b.createdAt) <= new Date(filters.dateTo),
+      );
     }
 
     // Sorting
@@ -212,14 +249,14 @@ export default function BusinessesList({ theme, onBusinessClick, onCreateNew }: 
         const aVal = a[sortColumn];
         const bVal = b[sortColumn];
 
-        if (typeof aVal === 'string' && typeof bVal === 'string') {
-          return sortDirection === 'asc'
+        if (typeof aVal === "string" && typeof bVal === "string") {
+          return sortDirection === "asc"
             ? aVal.localeCompare(bVal)
             : bVal.localeCompare(aVal);
         }
 
-        if (typeof aVal === 'number' && typeof bVal === 'number') {
-          return sortDirection === 'asc' ? aVal - bVal : bVal - aVal;
+        if (typeof aVal === "number" && typeof bVal === "number") {
+          return sortDirection === "asc" ? aVal - bVal : bVal - aVal;
         }
 
         return 0;
@@ -233,7 +270,8 @@ export default function BusinessesList({ theme, onBusinessClick, onCreateNew }: 
   const handleScroll = useCallback(() => {
     if (!scrollContainerRef.current) return;
 
-    const { scrollTop, scrollHeight, clientHeight } = scrollContainerRef.current;
+    const { scrollTop, scrollHeight, clientHeight } =
+      scrollContainerRef.current;
     if (scrollTop + clientHeight >= scrollHeight - 100) {
       setDisplayCount((prev) => Math.min(prev + 50, filteredBusinesses.length));
     }
@@ -243,10 +281,9 @@ export default function BusinessesList({ theme, onBusinessClick, onCreateNew }: 
     const container = scrollContainerRef.current;
     if (!container) return;
 
-    container.addEventListener('scroll', handleScroll);
-    return () => container.removeEventListener('scroll', handleScroll);
+    container.addEventListener("scroll", handleScroll);
+    return () => container.removeEventListener("scroll", handleScroll);
   }, [handleScroll]);
-
 
   // Column toggle handler
   const toggleColumn = (column: keyof ColumnVisibility) => {
@@ -263,33 +300,38 @@ export default function BusinessesList({ theme, onBusinessClick, onCreateNew }: 
 
   // Bulk actions
   const handleBulkApprove = () => {
-    console.log('Bulk approve:', Array.from(selectedBusinesses));
+    console.log("Bulk approve:", Array.from(selectedBusinesses));
     setSelectedBusinesses(new Set());
   };
 
   const handleBulkReject = () => {
-    console.log('Bulk reject:', Array.from(selectedBusinesses));
+    console.log("Bulk reject:", Array.from(selectedBusinesses));
     setSelectedBusinesses(new Set());
   };
 
   const handleBulkArchive = () => {
-    console.log('Bulk archive:', Array.from(selectedBusinesses));
+    console.log("Bulk archive:", Array.from(selectedBusinesses));
     setSelectedBusinesses(new Set());
   };
 
   const handleExport = () => {
-    console.log('Export businesses');
+    console.log("Export businesses");
   };
 
   // Get unique values for filters
   const authorities = useMemo(
     () => Array.from(new Set(businesses.map((b: any) => b.authority))),
-    [businesses]
+    [businesses],
   );
-  const dmos = useMemo(() => Array.from(new Set(businesses.map((b: any) => b.dmo))), [businesses]);
+  const dmos = useMemo(
+    () => Array.from(new Set(businesses.map((b: any) => b.dmo))),
+    [businesses],
+  );
 
   // Permission check
-  const canChangeStatus = ['superadmin', 'admin', 'dmo', 'authority'].includes(USER_ROLE);
+  const canChangeStatus = ["superadmin", "admin", "dmo", "authority"].includes(
+    USER_ROLE,
+  );
 
   const displayedBusinesses = filteredBusinesses.slice(0, displayCount);
 
@@ -304,14 +346,17 @@ export default function BusinessesList({ theme, onBusinessClick, onCreateNew }: 
         {displayCategories.map((category: any, index: number) => (
           <span
             key={index}
-            className={`px-2 py-0.5 rounded-full text-xs ${categoryColors[category] || defaultCategoryColor
-              }`}
+            className={`px-2 py-0.5 rounded-full text-xs ${
+              categoryColors[category] || defaultCategoryColor
+            }`}
           >
             {category}
           </span>
         ))}
         {remaining > 0 && (
-          <span className={`px-2 py-0.5 rounded-full text-xs ${defaultCategoryColor}`}>
+          <span
+            className={`px-2 py-0.5 rounded-full text-xs ${defaultCategoryColor}`}
+          >
             +{remaining}
           </span>
         )}
@@ -322,19 +367,19 @@ export default function BusinessesList({ theme, onBusinessClick, onCreateNew }: 
   // Helper function to get column label
   const getColumnLabel = (key: keyof ColumnVisibility): string => {
     const labelMap: { [K in keyof ColumnVisibility]: string } = {
-      impactScore: t('impactScore'),
-      businessName: t('businessName'),
-      shortDescription: t('shortDescription'),
-      contactName: t('contactPerson'),
-      businessEmail: t('businessEmail'),
-      phoneNumber: t('phoneNumber'),
-      productsCount: t('productsCount'),
-      status: t('status'),
-      lifetimeSales: t('lifetimeSales'),
-      tripCount: t('tripCount') || 'Trip Count',
-      websiteUrl: t('websiteUrl'),
-      contactPhone: t('contactPhone') || 'Contact Phone',
-      categories: t('categories'),
+      impactScore: t("impactScore"),
+      businessName: t("businessName"),
+      shortDescription: t("shortDescription"),
+      contactName: t("contactPerson"),
+      businessEmail: t("businessEmail"),
+      phoneNumber: t("phoneNumber"),
+      productsCount: t("productsCount"),
+      status: t("status"),
+      lifetimeSales: t("lifetimeSales"),
+      tripCount: t("tripCount") || "Trip Count",
+      websiteUrl: t("websiteUrl"),
+      contactPhone: t("contactPhone") || "Contact Phone",
+      categories: t("categories"),
     };
     return labelMap[key];
   };
@@ -347,24 +392,38 @@ export default function BusinessesList({ theme, onBusinessClick, onCreateNew }: 
 
   // Get category icon based on main category
   const getCategoryIcon = (categories: string[]) => {
-    const mainCategory = categories[0]?.toLowerCase() || '';
+    const mainCategory = categories[0]?.toLowerCase() || "";
 
-    if (mainCategory.includes('food') || mainCategory.includes('dining') || mainCategory.includes('cafe')) {
+    if (
+      mainCategory.includes("food") ||
+      mainCategory.includes("dining") ||
+      mainCategory.includes("cafe")
+    ) {
       return <UtensilsCrossed className="w-5 h-5" />;
     }
-    if (mainCategory.includes('tourism') || mainCategory.includes('travel')) {
+    if (mainCategory.includes("tourism") || mainCategory.includes("travel")) {
       return <Plane className="w-5 h-5" />;
     }
-    if (mainCategory.includes('adventure') || mainCategory.includes('attraction')) {
+    if (
+      mainCategory.includes("adventure") ||
+      mainCategory.includes("attraction")
+    ) {
       return <Landmark className="w-5 h-5" />;
     }
-    if (mainCategory.includes('culture')) {
+    if (mainCategory.includes("culture")) {
       return <Theater className="w-5 h-5" />;
     }
-    if (mainCategory.includes('accommodation') || mainCategory.includes('sleep')) {
+    if (
+      mainCategory.includes("accommodation") ||
+      mainCategory.includes("sleep")
+    ) {
       return <BedDouble className="w-5 h-5" />;
     }
-    if (mainCategory.includes('local') || mainCategory.includes('shopping') || mainCategory.includes('eco')) {
+    if (
+      mainCategory.includes("local") ||
+      mainCategory.includes("shopping") ||
+      mainCategory.includes("eco")
+    ) {
       return <Map className="w-5 h-5" />;
     }
     // Default icon
@@ -391,14 +450,16 @@ export default function BusinessesList({ theme, onBusinessClick, onCreateNew }: 
       <div className="flex-1 flex items-center justify-center">
         <div className="text-center">
           <AlertCircle className="w-12 h-12 mx-auto mb-4 text-red-600" />
-          <h3 className={`text-xl mb-2 ${theme === 'dark' ? 'text-gray-200' : 'text-gray-800'}`}>
-            {t('error_loading_businesses')}
+          <h3
+            className={`text-xl mb-2 ${theme === "dark" ? "text-gray-200" : "text-gray-800"}`}
+          >
+            {t("error_loading_businesses")}
           </h3>
           <button
             onClick={() => window.location.reload()}
             className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg transition-colors"
           >
-            {t('retry') || 'Retry'}
+            {t("retry") || "Retry"}
           </button>
         </div>
       </div>
@@ -408,79 +469,85 @@ export default function BusinessesList({ theme, onBusinessClick, onCreateNew }: 
   const businessStats = [
     {
       id: 1,
-      title: t('total_businesses') || 'Total Businesses',
+      title: t("total_businesses") || "Total Businesses",
       value: filteredBusinesses.length,
-      label: t('registered') || 'Registered',
+      label: t("registered") || "Registered",
       icon: <Map className="w-5 h-5 text-purple-600" />,
     },
     {
       id: 2,
-      title: t('active_businesses') || 'Active Businesses',
-      value: filteredBusinesses.filter((b: any) => b.status === 'approved').length,
-      label: t('approved') || 'Approved',
+      title: t("active_businesses") || "Active Businesses",
+      value: filteredBusinesses.filter((b: any) => b.status === "approved")
+        .length,
+      label: t("approved") || "Approved",
       icon: <CheckCircle className="w-5 h-5 text-green-600" />,
     },
     {
       id: 3,
-      title: t('total_products') || 'Total Products',
+      title: t("total_products") || "Total Products",
       value: filteredBusinesses
         .reduce((sum: number, b: any) => sum + b.productsCount, 0)
         .toLocaleString(),
-      label: t('listed') || 'Listed',
+      label: t("listed") || "Listed",
       icon: <UtensilsCrossed className="w-5 h-5 text-blue-600" />,
     },
     {
       id: 4,
-      title: t('avg_impact') || 'Avg. Impact',
+      title: t("avg_impact") || "Avg. Impact",
       value:
         filteredBusinesses.length > 0
           ? Math.round(
-            filteredBusinesses.reduce((sum: number, b: any) => sum + b.impactScore, 0) /
-            filteredBusinesses.length
-          )
+              filteredBusinesses.reduce(
+                (sum: number, b: any) => sum + b.impactScore,
+                0,
+              ) / filteredBusinesses.length,
+            )
           : 0,
-      label: t('score') || 'Score',
+      label: t("score") || "Score",
       icon: <Theater className="w-5 h-5 text-orange-600" />,
     },
     {
       id: 5,
-      title: t('pending_approval') || 'Pending Approval',
-      value: filteredBusinesses.filter((b: any) => b.status === 'pending').length,
-      label: t('awaiting') || 'Awaiting',
+      title: t("pending_approval") || "Pending Approval",
+      value: filteredBusinesses.filter((b: any) => b.status === "pending")
+        .length,
+      label: t("awaiting") || "Awaiting",
       icon: <AlertCircle className="w-5 h-5 text-yellow-600" />,
     },
     {
       id: 6,
-      title: t('avg_completion') || 'Avg. Completion',
-      value: `${filteredBusinesses.length > 0
-        ? Math.round(
-          filteredBusinesses.reduce(
-            (sum: number, b: any) => sum + b.completionPercentage,
-            0
-          ) / filteredBusinesses.length
-        )
-        : 0
-        }%`,
-      label: t('profile_data') || 'Profile Data',
+      title: t("avg_completion") || "Avg. Completion",
+      value: `${
+        filteredBusinesses.length > 0
+          ? Math.round(
+              filteredBusinesses.reduce(
+                (sum: number, b: any) => sum + b.completionPercentage,
+                0,
+              ) / filteredBusinesses.length,
+            )
+          : 0
+      }%`,
+      label: t("profile_data") || "Profile Data",
       icon: <Landmark className="w-5 h-5 text-teal-600" />,
     },
   ];
-
 
   return (
     <div className="flex flex-col overflow-hidden h-[calc(108vh-210px)] px-4 ">
       {/* Sticky Header */}
       <div
-        className={`border-b ${theme === 'dark' ? 'bg-gray-900/50 border-gray-800' : 'bg-transparent border-gray-200'
-          } sticky top-0 z-10`}
+        className={`border-b ${
+          theme === "dark"
+            ? "bg-gray-900/50 border-gray-800"
+            : "bg-transparent border-gray-200"
+        } sticky top-0 z-10`}
       >
-
         <PageHeader
-          title={t('businesses_management')}
-          description={t('businesses_management_desc')}
-          btnLabel={t('add_business')}
+          title={t("businesses_management")}
+          description={t("businesses_management_desc")}
+          btnLabel={t("add_business")}
           onClick={onCreateNew}
-          h1Gradient='bg-linear-to-r  text-transparent from-blue-500 via-indigo-600 to-purple-600'
+          h1Gradient="bg-linear-to-r  text-transparent from-blue-500 via-indigo-600 to-purple-600"
         />
         <PageStats
           stats={businessStats}
@@ -492,18 +559,20 @@ export default function BusinessesList({ theme, onBusinessClick, onCreateNew }: 
           {/* Search */}
           <div className="flex-1 relative">
             <Search
-              className={`absolute ${isRTL ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 w-5 h-5 ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'
-                }`}
+              className={`absolute ${isRTL ? "right-3" : "left-3"} top-1/2 -translate-y-1/2 w-5 h-5 ${
+                theme === "dark" ? "text-gray-500" : "text-gray-400"
+              }`}
             />
             <input
               type="text"
-              placeholder={t('search_businesses_placeholder')}
+              placeholder={t("search_businesses_placeholder")}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className={`w-full ${isRTL ? 'pr-10 pl-4' : 'pl-10 pr-4'} py-2 rounded-lg border ${theme === 'dark'
-                ? 'bg-gray-800 border-gray-700 text-gray-200 placeholder-gray-500'
-                : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'
-                } focus:outline-none focus:ring-2 focus:ring-teal-500`}
+              className={`w-full ${isRTL ? "pr-10 pl-4" : "pl-10 pr-4"} py-2 rounded-lg border ${
+                theme === "dark"
+                  ? "bg-gray-800 border-gray-700 text-gray-200 placeholder-gray-500"
+                  : "bg-white border-gray-300 text-gray-900 placeholder-gray-400"
+              } focus:outline-none focus:ring-2 focus:ring-teal-500`}
             />
           </div>
 
@@ -513,54 +582,72 @@ export default function BusinessesList({ theme, onBusinessClick, onCreateNew }: 
           <div className="relative" ref={columnSettingsRef}>
             <button
               onClick={() => setShowColumnSettings(!showColumnSettings)}
-              className={`px-4 py-2 rounded-lg border flex items-center gap-2 transition-colors ${theme === 'dark'
-                ? 'border-gray-700 hover:bg-gray-800 text-gray-300'
-                : 'border-gray-300 hover:bg-gray-100 text-gray-700'
-                }`}
+              className={`px-4 py-2 rounded-lg border flex items-center gap-2 transition-colors ${
+                theme === "dark"
+                  ? "border-gray-700 hover:bg-gray-800 text-gray-300"
+                  : "border-gray-300 hover:bg-gray-100 text-gray-700"
+              }`}
             >
               <Columns className="w-5 h-5" />
-              {t('show_columns')}
-              {showColumnSettings ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              {t("show_columns")}
+              {showColumnSettings ? (
+                <ChevronUp className="w-4 h-4" />
+              ) : (
+                <ChevronDown className="w-4 h-4" />
+              )}
             </button>
 
             {/* Column Settings Dropdown */}
             {showColumnSettings && (
               <div
-                className={`absolute ${isRTL ? 'left-0' : 'right-0'} mt-2 w-72 rounded-lg shadow-lg border z-20 ${theme === 'dark'
-                  ? 'bg-gray-800 border-gray-700'
-                  : 'bg-white border-gray-200'
-                  }`}
+                className={`absolute ${isRTL ? "left-0" : "right-0"} mt-2 w-72 rounded-lg shadow-lg border z-20 ${
+                  theme === "dark"
+                    ? "bg-gray-800 border-gray-700"
+                    : "bg-white border-gray-200"
+                }`}
               >
-                <div className={`p-4 border-b ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'}`}>
+                <div
+                  className={`p-4 border-b ${theme === "dark" ? "border-gray-700" : "border-gray-200"}`}
+                >
                   <div className="flex items-center justify-between mb-2">
-                    <h3 className={`text-sm ${theme === 'dark' ? 'text-gray-200' : 'text-gray-900'}`}>
-                      {t('column_settings') || 'Column Settings'}
+                    <h3
+                      className={`text-sm ${theme === "dark" ? "text-gray-200" : "text-gray-900"}`}
+                    >
+                      {t("column_settings") || "Column Settings"}
                     </h3>
                     <button
                       onClick={resetToDefault}
                       className="text-xs text-teal-600 hover:text-teal-700 transition-colors"
                     >
-                      {t('reset_to_default') || 'Reset to Default'}
+                      {t("reset_to_default") || "Reset to Default"}
                     </button>
                   </div>
-                  <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                    {t('select_columns_to_display') || 'Select columns to display'}
+                  <p
+                    className={`text-xs ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
+                  >
+                    {t("select_columns_to_display") ||
+                      "Select columns to display"}
                   </p>
                 </div>
 
                 <div className="max-h-96 overflow-y-auto">
                   {/* Default Columns */}
-                  <div className={`p-3 border-b ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'}`}>
-                    <p className={`text-xs mb-2 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                      {t('default_columns') || 'Default Columns'}
+                  <div
+                    className={`p-3 border-b ${theme === "dark" ? "border-gray-700" : "border-gray-200"}`}
+                  >
+                    <p
+                      className={`text-xs mb-2 ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
+                    >
+                      {t("default_columns") || "Default Columns"}
                     </p>
                     {columnDefinitions
                       .filter((col) => col.isDefault)
                       .map((col) => (
                         <label
                           key={col.key}
-                          className={`flex items-center gap-2 px-2 py-2 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
-                            }`}
+                          className={`flex items-center gap-2 px-2 py-2 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${
+                            theme === "dark" ? "text-gray-300" : "text-gray-700"
+                          }`}
                         >
                           <input
                             type="checkbox"
@@ -568,23 +655,28 @@ export default function BusinessesList({ theme, onBusinessClick, onCreateNew }: 
                             onChange={() => toggleColumn(col.key)}
                             className="w-4 h-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500"
                           />
-                          <span className="text-sm">{getColumnLabel(col.key)}</span>
+                          <span className="text-sm">
+                            {getColumnLabel(col.key)}
+                          </span>
                         </label>
                       ))}
                   </div>
 
                   {/* Optional Columns */}
                   <div className="p-3">
-                    <p className={`text-xs mb-2 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                      {t('optional_columns') || 'Optional Columns'}
+                    <p
+                      className={`text-xs mb-2 ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
+                    >
+                      {t("optional_columns") || "Optional Columns"}
                     </p>
                     {columnDefinitions
                       .filter((col) => !col.isDefault)
                       .map((col) => (
                         <label
                           key={col.key}
-                          className={`flex items-center gap-2 px-2 py-2 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
-                            }`}
+                          className={`flex items-center gap-2 px-2 py-2 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${
+                            theme === "dark" ? "text-gray-300" : "text-gray-700"
+                          }`}
                         >
                           <input
                             type="checkbox"
@@ -592,7 +684,9 @@ export default function BusinessesList({ theme, onBusinessClick, onCreateNew }: 
                             onChange={() => toggleColumn(col.key)}
                             className="w-4 h-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500"
                           />
-                          <span className="text-sm">{getColumnLabel(col.key)}</span>
+                          <span className="text-sm">
+                            {getColumnLabel(col.key)}
+                          </span>
                         </label>
                       ))}
                   </div>
@@ -604,37 +698,46 @@ export default function BusinessesList({ theme, onBusinessClick, onCreateNew }: 
           {/* Export */}
           <button
             onClick={handleExport}
-            className={`px-4 py-2 rounded-lg border flex items-center gap-2 transition-colors ${theme === 'dark'
-              ? 'border-gray-700 hover:bg-gray-800 text-gray-300'
-              : 'border-gray-300 hover:bg-gray-100 text-gray-700'
-              }`}
+            className={`px-4 py-2 rounded-lg border flex items-center gap-2 transition-colors ${
+              theme === "dark"
+                ? "border-gray-700 hover:bg-gray-800 text-gray-300"
+                : "border-gray-300 hover:bg-gray-100 text-gray-700"
+            }`}
           >
             <Download className="w-5 h-5" />
-            {t('export')}
+            {t("export")}
           </button>
         </div>
 
         {/* Filters Panel */}
         {showFilters && (
           <div
-            className={`pb-4 border-t ${theme === 'dark' ? 'border-gray-800 bg-gray-900/30' : 'border-gray-200 bg-gray-50'
-              }`}
+            className={`pb-4 border-t ${
+              theme === "dark"
+                ? "border-gray-800 bg-gray-900/30"
+                : "border-gray-200 bg-gray-50"
+            }`}
           >
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
               {/* Authority Filter */}
               <div>
-                <label className={`block text-sm mb-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                  {t('authority')}
+                <label
+                  className={`block text-sm mb-1 ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
+                >
+                  {t("authority")}
                 </label>
                 <select
                   value={filters.authority}
-                  onChange={(e) => setFilters({ ...filters, authority: e.target.value })}
-                  className={`w-full px-3 py-2 rounded-lg border ${theme === 'dark'
-                    ? 'bg-gray-800 border-gray-700 text-gray-200'
-                    : 'bg-white border-gray-300 text-gray-900'
-                    } focus:outline-none focus:ring-2 focus:ring-teal-500`}
+                  onChange={(e) =>
+                    setFilters({ ...filters, authority: e.target.value })
+                  }
+                  className={`w-full px-3 py-2 rounded-lg border ${
+                    theme === "dark"
+                      ? "bg-gray-800 border-gray-700 text-gray-200"
+                      : "bg-white border-gray-300 text-gray-900"
+                  } focus:outline-none focus:ring-2 focus:ring-teal-500`}
                 >
-                  <option value="all">{t('all')}</option>
+                  <option value="all">{t("all")}</option>
                   {authorities.map((auth: any) => (
                     <option key={auth} value={auth}>
                       {auth}
@@ -645,18 +748,23 @@ export default function BusinessesList({ theme, onBusinessClick, onCreateNew }: 
 
               {/* DMO Filter */}
               <div>
-                <label className={`block text-sm mb-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                  {t('dmo')}
+                <label
+                  className={`block text-sm mb-1 ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
+                >
+                  {t("dmo")}
                 </label>
                 <select
                   value={filters.dmo}
-                  onChange={(e) => setFilters({ ...filters, dmo: e.target.value })}
-                  className={`w-full px-3 py-2 rounded-lg border ${theme === 'dark'
-                    ? 'bg-gray-800 border-gray-700 text-gray-200'
-                    : 'bg-white border-gray-300 text-gray-900'
-                    } focus:outline-none focus:ring-2 focus:ring-teal-500`}
+                  onChange={(e) =>
+                    setFilters({ ...filters, dmo: e.target.value })
+                  }
+                  className={`w-full px-3 py-2 rounded-lg border ${
+                    theme === "dark"
+                      ? "bg-gray-800 border-gray-700 text-gray-200"
+                      : "bg-white border-gray-300 text-gray-900"
+                  } focus:outline-none focus:ring-2 focus:ring-teal-500`}
                 >
-                  <option value="all">{t('all')}</option>
+                  <option value="all">{t("all")}</option>
                   {dmos.map((dmo: any) => (
                     <option key={dmo} value={dmo}>
                       {dmo}
@@ -667,42 +775,52 @@ export default function BusinessesList({ theme, onBusinessClick, onCreateNew }: 
 
               {/* Status Filter */}
               <div>
-                <label className={`block text-sm mb-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                  {t('status')}
+                <label
+                  className={`block text-sm mb-1 ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
+                >
+                  {t("status")}
                 </label>
                 <select
                   value={filters.status}
-                  onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-                  className={`w-full px-3 py-2 rounded-lg border ${theme === 'dark'
-                    ? 'bg-gray-800 border-gray-700 text-gray-200'
-                    : 'bg-white border-gray-300 text-gray-900'
-                    } focus:outline-none focus:ring-2 focus:ring-teal-500`}
+                  onChange={(e) =>
+                    setFilters({ ...filters, status: e.target.value })
+                  }
+                  className={`w-full px-3 py-2 rounded-lg border ${
+                    theme === "dark"
+                      ? "bg-gray-800 border-gray-700 text-gray-200"
+                      : "bg-white border-gray-300 text-gray-900"
+                  } focus:outline-none focus:ring-2 focus:ring-teal-500`}
                 >
-                  <option value="all">{t('all')}</option>
-                  <option value="draft">{t('draft')}</option>
-                  <option value="pending">{t('pending')}</option>
-                  <option value="approved">{t('approved')}</option>
-                  <option value="rejected">{t('rejected')}</option>
-                  <option value="archived">{t('archived')}</option>
+                  <option value="all">{t("all")}</option>
+                  <option value="draft">{t("draft")}</option>
+                  <option value="pending">{t("pending")}</option>
+                  <option value="approved">{t("approved")}</option>
+                  <option value="rejected">{t("rejected")}</option>
+                  <option value="archived">{t("archived")}</option>
                 </select>
               </div>
 
               {/* Has Products Filter */}
               <div>
-                <label className={`block text-sm mb-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-                  {t('has_products')}
+                <label
+                  className={`block text-sm mb-1 ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
+                >
+                  {t("has_products")}
                 </label>
                 <select
                   value={filters.hasProducts}
-                  onChange={(e) => setFilters({ ...filters, hasProducts: e.target.value })}
-                  className={`w-full px-3 py-2 rounded-lg border ${theme === 'dark'
-                    ? 'bg-gray-800 border-gray-700 text-gray-200'
-                    : 'bg-white border-gray-300 text-gray-900'
-                    } focus:outline-none focus:ring-2 focus:ring-teal-500`}
+                  onChange={(e) =>
+                    setFilters({ ...filters, hasProducts: e.target.value })
+                  }
+                  className={`w-full px-3 py-2 rounded-lg border ${
+                    theme === "dark"
+                      ? "bg-gray-800 border-gray-700 text-gray-200"
+                      : "bg-white border-gray-300 text-gray-900"
+                  } focus:outline-none focus:ring-2 focus:ring-teal-500`}
                 >
-                  <option value="all">{t('all')}</option>
-                  <option value="yes">{t('yes')}</option>
-                  <option value="no">{t('no')}</option>
+                  <option value="all">{t("all")}</option>
+                  <option value="yes">{t("yes")}</option>
+                  <option value="no">{t("no")}</option>
                 </select>
               </div>
             </div>
@@ -710,19 +828,19 @@ export default function BusinessesList({ theme, onBusinessClick, onCreateNew }: 
             <button
               onClick={() =>
                 setFilters({
-                  authority: 'all',
-                  dmo: 'all',
-                  status: 'all',
-                  hasProducts: 'all',
+                  authority: "all",
+                  dmo: "all",
+                  status: "all",
+                  hasProducts: "all",
                   impactMin: 0,
                   impactMax: 10,
-                  dateFrom: '',
-                  dateTo: '',
+                  dateFrom: "",
+                  dateTo: "",
                 })
               }
               className="mt-3 px-4 py-2 text-sm text-teal-600 hover:text-teal-700 transition-colors"
             >
-              {t('clear_all')}
+              {t("clear_all")}
             </button>
           </div>
         )}
@@ -730,11 +848,16 @@ export default function BusinessesList({ theme, onBusinessClick, onCreateNew }: 
         {/* Bulk Actions Bar */}
         {selectedBusinesses.size > 0 && canChangeStatus && (
           <div
-            className={`px-6 py-3 border-t flex items-center justify-between ${theme === 'dark' ? 'border-gray-800 bg-teal-900/20' : 'border-gray-200 bg-teal-50'
-              }`}
+            className={`px-6 py-3 border-t flex items-center justify-between ${
+              theme === "dark"
+                ? "border-gray-800 bg-teal-900/20"
+                : "border-gray-200 bg-teal-50"
+            }`}
           >
-            <span className={`text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
-              {selectedBusinesses.size} {t('selected')}
+            <span
+              className={`text-sm ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}
+            >
+              {selectedBusinesses.size} {t("selected")}
             </span>
 
             <div className="flex items-center gap-2">
@@ -743,21 +866,21 @@ export default function BusinessesList({ theme, onBusinessClick, onCreateNew }: 
                 className="px-3 py-1.5 text-sm bg-green-600 hover:bg-green-700 text-white rounded transition-colors flex items-center gap-1"
               >
                 <CheckCircle className="w-4 h-4" />
-                {t('approve')}
+                {t("approve")}
               </button>
               <button
                 onClick={handleBulkReject}
                 className="px-3 py-1.5 text-sm bg-red-600 hover:bg-red-700 text-white rounded transition-colors flex items-center gap-1"
               >
                 <XCircle className="w-4 h-4" />
-                {t('reject')}
+                {t("reject")}
               </button>
               <button
                 onClick={handleBulkArchive}
                 className="px-3 py-1.5 text-sm bg-gray-600 hover:bg-gray-700 text-white rounded transition-colors flex items-center gap-1"
               >
                 <Archive className="w-4 h-4" />
-                {t('archive')}
+                {t("archive")}
               </button>
             </div>
           </div>
@@ -765,24 +888,27 @@ export default function BusinessesList({ theme, onBusinessClick, onCreateNew }: 
       </div>
 
       {/* Table with horizontal scroll */}
-      <div
-        ref={scrollContainerRef}
-        className="flex-1 overflow-auto py-6"
-      >
+      <div ref={scrollContainerRef} className="flex-1 overflow-auto py-6">
         {displayedBusinesses.length === 0 ? (
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
               <AlertCircle className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-              <h3 className={`text-lg mb-2 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
-                {t('no_businesses_found')}
+              <h3
+                className={`text-lg mb-2 ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}
+              >
+                {t("no_businesses_found")}
               </h3>
-              <p className={`text-sm ${theme === 'dark' ? 'text-gray-500' : 'text-gray-500'}`}>
-                {t('no_businesses_found_desc')}
+              <p
+                className={`text-sm ${theme === "dark" ? "text-gray-500" : "text-gray-500"}`}
+              >
+                {t("no_businesses_found_desc")}
               </p>
             </div>
           </div>
         ) : (
-          <div className={`rounded-2xl ${theme === 'dark' ? 'bg-gray-900/50' : 'bg-white'}`}>
+          <div
+            className={`rounded-2xl ${theme === "dark" ? "bg-gray-900/50" : "bg-white"}`}
+          >
             <ReordableDataTable
               rowKey="id"
               data={displayedBusinesses}
@@ -792,12 +918,12 @@ export default function BusinessesList({ theme, onBusinessClick, onCreateNew }: 
               storageKey="businessesTableColumnOrder"
               columns={[
                 ...(canChangeStatus
-                  ? [{ key: 'checkbox', label: '', width: '50px' }]
+                  ? [{ key: "checkbox", label: "", width: "50px" }]
                   : []),
 
                 {
-                  key: 'impactScore',
-                  label: t('impact_score'),
+                  key: "impactScore",
+                  label: t("impact_score"),
                   sortable: true,
                   render: (business) => (
                     <span
@@ -813,7 +939,7 @@ export default function BusinessesList({ theme, onBusinessClick, onCreateNew }: 
                               : "bg-yellow-100 text-yellow-700"
                             : theme === "dark"
                               ? "bg-gray-700 text-gray-400"
-                              : "bg-gray-100 text-gray-600"
+                              : "bg-gray-100 text-gray-600",
                       )}
                     >
                       {business.impactScore}
@@ -822,15 +948,15 @@ export default function BusinessesList({ theme, onBusinessClick, onCreateNew }: 
                 },
 
                 {
-                  key: 'businessName',
-                  label: t('business_name'),
+                  key: "businessName",
+                  label: t("business_name"),
                   sortable: true,
                   render: (business) => (
                     <div className="flex items-center gap-3">
                       <div
                         className={clsx(
                           "w-10 h-10 rounded-lg flex items-center justify-center",
-                          theme === "dark" ? "bg-teal-500/10" : "bg-teal-50"
+                          theme === "dark" ? "bg-teal-500/10" : "bg-teal-50",
                         )}
                       >
                         <span className="text-teal-500">
@@ -843,8 +969,8 @@ export default function BusinessesList({ theme, onBusinessClick, onCreateNew }: 
                 },
 
                 {
-                  key: 'shortDescription',
-                  label: t('short_description'),
+                  key: "shortDescription",
+                  label: t("short_description"),
                   render: (business) => (
                     <div className={clsx(textSecondary, "max-w-xs truncate")}>
                       {business.shortDescription}
@@ -853,8 +979,8 @@ export default function BusinessesList({ theme, onBusinessClick, onCreateNew }: 
                 },
 
                 {
-                  key: 'contactName',
-                  label: t('contact_name'),
+                  key: "contactName",
+                  label: t("contact_name"),
                   render: (business) => (
                     <span className={textSecondary}>
                       {business.contactPerson.name}
@@ -863,16 +989,16 @@ export default function BusinessesList({ theme, onBusinessClick, onCreateNew }: 
                 },
 
                 {
-                  key: 'businessEmail',
-                  label: t('email'),
+                  key: "businessEmail",
+                  label: t("business_email"),
                   render: (business) => (
                     <span className={textSecondary}>{business.email}</span>
                   ),
                 },
 
                 {
-                  key: 'phoneNumber',
-                  label: t('phone'),
+                  key: "phoneNumber",
+                  label: t("phone_number"),
                   render: (business) => (
                     <span className={clsx(textSecondary, "whitespace-nowrap")}>
                       {business.phone}
@@ -881,17 +1007,19 @@ export default function BusinessesList({ theme, onBusinessClick, onCreateNew }: 
                 },
 
                 {
-                  key: 'productsCount',
-                  label: t('products'),
+                  key: "productsCount",
+                  label: t("products_count"),
                   sortable: true,
                   render: (business) => (
-                    <span className={textPrimary}>{business.productsCount}</span>
+                    <span className={textPrimary}>
+                      {business.productsCount}
+                    </span>
                   ),
                 },
 
                 {
-                  key: 'status',
-                  label: t('status'),
+                  key: "status",
+                  label: t("status"),
                   sortable: true,
                   render: (business) => (
                     <span
@@ -907,21 +1035,21 @@ export default function BusinessesList({ theme, onBusinessClick, onCreateNew }: 
                                 ? theme === "dark"
                                   ? "bg-gray-700 text-gray-400"
                                   : "bg-gray-100 text-gray-600"
-                                : "bg-gray-600/20 text-gray-400"
+                                : "bg-gray-600/20 text-gray-400",
                       )}
                     >
-                      {business.status === "draft" && t('draft')}
-                      {business.status === "pending" && t('pending')}
-                      {business.status === "approved" && t('approved')}
-                      {business.status === "rejected" && t('rejected')}
-                      {business.status === "archived" && t('archived')}
+                      {business.status === "draft" && t("draft")}
+                      {business.status === "pending" && t("pending")}
+                      {business.status === "approved" && t("approved")}
+                      {business.status === "rejected" && t("rejected")}
+                      {business.status === "archived" && t("archived")}
                     </span>
                   ),
                 },
 
                 {
-                  key: 'lifetimeSales',
-                  label: t('lifetime_sales'),
+                  key: "lifetimeSales",
+                  label: t("lifetime_sales"),
                   sortable: true,
                   render: (business) => (
                     <span className={clsx(textPrimary, "font-medium")}>
@@ -931,17 +1059,19 @@ export default function BusinessesList({ theme, onBusinessClick, onCreateNew }: 
                 },
 
                 {
-                  key: 'tripCount',
-                  label: t('trips'),
+                  key: "tripCount",
+                  label: t("trips"),
                   sortable: true,
                   render: (business) => (
-                    <span className={textPrimary}>{getTripCount(business)}</span>
+                    <span className={textPrimary}>
+                      {getTripCount(business)}
+                    </span>
                   ),
                 },
 
                 {
-                  key: 'websiteUrl',
-                  label: t('website'),
+                  key: "websiteUrl",
+                  label: t("website"),
                   render: (business) => (
                     <a
                       href={business.website}
@@ -959,8 +1089,8 @@ export default function BusinessesList({ theme, onBusinessClick, onCreateNew }: 
                 },
 
                 {
-                  key: 'contactPhone',
-                  label: t('contact_phone'),
+                  key: "contactPhone",
+                  label: t("contact_phone"),
                   render: (business) => (
                     <span className={clsx(textSecondary, "whitespace-nowrap")}>
                       {business.contactPerson.phone}
@@ -969,15 +1099,14 @@ export default function BusinessesList({ theme, onBusinessClick, onCreateNew }: 
                 },
 
                 {
-                  key: 'categories',
-                  label: t('categories'),
+                  key: "categories",
+                  label: t("categories"),
                   render: (business) => (
                     <CategoriesBadges categories={business.categories} />
                   ),
                 },
               ]}
             />
-
           </div>
         )}
 
