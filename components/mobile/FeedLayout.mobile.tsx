@@ -157,7 +157,7 @@ const MobileFeedLayout = ({ selectedFiltersIds }: MobileFeedLayoutProps) => {
           <div className="fixed bottom-2 right-[42%] custom-cursor">
             <SunsetButton
               size={60}
-              variant={"continuous"}
+              variant={"black"}
               onClick={handleFilterIconClick}
               appliedFilterCount={appliedFilterCount}
             />

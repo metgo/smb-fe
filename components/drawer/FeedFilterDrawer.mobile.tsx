@@ -251,7 +251,7 @@ const MobileFeedFilterDrawer: React.FC<MobileFeedFilterDrawerProps> = ({
           >
             <SunsetButton
               size={46}
-              variant={"continuous"}
+              variant={"black"}
               appliedFilterCount={appliedFilterCount}
             />
           </button>
