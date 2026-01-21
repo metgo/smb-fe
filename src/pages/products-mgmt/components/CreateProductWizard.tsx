@@ -38,7 +38,7 @@ export default function CreateProductWizard({
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [selectedFormLanguage, setSelectedFormLanguage] = useState<'en' | 'he' | 'ar'>('en');
   const [isSaving, setIsSaving] = useState(false); // unused but kept
-  const [isPublishing, setIsPublishing] = useState(false); // unused but kept
+  const [isPublishing, _setIsPublishing] = useState(false); // unused but kept
 
   const businesses = [
     { id: 'biz-1', name: 'Desert Lodge Hotel' },
@@ -137,7 +137,7 @@ export default function CreateProductWizard({
   };
 
   // Last saved timestamp
-  const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [_lastSaved, setLastSaved] = useState<Date | null>(null);
 
   // Draft Save Payload per Step
   const stepPayloadMap: Record<number, any> = {

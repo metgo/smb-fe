@@ -14,15 +14,15 @@ interface MediaErrors {
   logo?: string;
 }
 
-interface MediaTranslations {
-  logo_required: string;
-  upload_logo: string;
-  image_gallery: string;
-  upload_up_to_10_images: string;
-  primary_image: string;
-  set_as_primary?: string;
-  upload_images?: string;
-}
+// interface MediaTranslations {
+//   logo_required: string;
+//   upload_logo: string;
+//   image_gallery: string;
+//   upload_up_to_10_images: string;
+//   primary_image: string;
+//   set_as_primary?: string;
+//   upload_images?: string;
+// }
 
 /* ---------- Props ---------- */
 

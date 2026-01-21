@@ -42,7 +42,7 @@ const BusinessContactOwership: FC<BusinessContactOwershipProps> = ({
   setFormData,
   errors,
 }) => {
-  const { t } = useTranslation("business");
+  const { t } = useTranslation("businesses");
 
   return (
     <div className="space-y-6">
@@ -68,15 +68,15 @@ const BusinessContactOwership: FC<BusinessContactOwershipProps> = ({
             onChange={(e) =>
               setFormData({ ...formData, email: e.target.value })
             }
-            placeholder="business@example.com"
+            placeholder={t("business@example.com")}
             className={`w-full ${
               isRTL ? "pr-10 pl-4" : "pl-10 pr-4"
             } py-2 rounded-lg border ${
               errors.email
                 ? "border-red-500"
                 : theme === "dark"
-                ? "bg-gray-800 border-gray-700 text-gray-200"
-                : "bg-white border-gray-300 text-gray-900"
+                  ? "bg-gray-800 border-gray-700 text-gray-200"
+                  : "bg-white border-gray-300 text-gray-900"
             } focus:outline-none focus:ring-2 focus:ring-teal-500`}
           />
         </div>
@@ -115,8 +115,8 @@ const BusinessContactOwership: FC<BusinessContactOwershipProps> = ({
               errors.phone
                 ? "border-red-500"
                 : theme === "dark"
-                ? "bg-gray-800 border-gray-700 text-gray-200"
-                : "bg-white border-gray-300 text-gray-900"
+                  ? "bg-gray-800 border-gray-700 text-gray-200"
+                  : "bg-white border-gray-300 text-gray-900"
             } focus:outline-none focus:ring-2 focus:ring-teal-500`}
           />
         </div>

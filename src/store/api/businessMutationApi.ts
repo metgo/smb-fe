@@ -8,7 +8,7 @@ export type EventStepPayload =
   | EventBasicInfoPayload
   | EventDateTimePayload
   | EventRegPayload
-  | TicketPayload
+  | ITicketPayload
   | EventMsgSchedulePayload
   | EventMediaPayload;
 
@@ -37,7 +37,7 @@ export const eventMutationApi = createApi({
       invalidatesTags: ['Event']
     }),
 
-    createTicket: builder.mutation<any, TicketPayload>({
+    createTicket: builder.mutation<any, ITicketPayload>({
       query: (body) => ({
         url: endpoints.tickets,
         method: 'POST',
@@ -45,7 +45,7 @@ export const eventMutationApi = createApi({
       }),
     }),
 
-    updateTicket: builder.mutation<any, { body: TicketPayload, ticketId: string }>({
+    updateTicket: builder.mutation<any, { body: ITicketPayload, ticketId: string }>({
       query: ({ body, ticketId }) => ({
         url: `${endpoints.tickets}/${ticketId}`,
         method: 'PATCH',

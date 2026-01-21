@@ -33,7 +33,7 @@ const ProductBasicInfo = ({
   const { bgTertiary, textPrimary, textSecondary, textTertiary, borderColor } = useThemeClasses()
 
   // Helper to get field key based on selected language
-  const getFieldKey = (field: "name" | "shortDescription" | "fullDescription") => {
+  const getFieldKey = (_field: "name" | "shortDescription" | "fullDescription") => {
     return selectedFormLanguage;
   };
 

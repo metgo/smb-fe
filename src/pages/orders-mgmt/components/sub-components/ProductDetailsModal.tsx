@@ -6,7 +6,7 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 
 interface ProductDetailsModalProps {
-  product: OrderProduct;
+  product: IOrderProduct;
   onClose: () => void
 }
 

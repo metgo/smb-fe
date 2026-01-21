@@ -498,10 +498,10 @@ export const mockProducts = [
 
 
 
-export const generateMockOrders = (count: number): Order[] => {
-  const statuses: Order['orderStatus'][] = ['draft', 'processing', 'paid', 'confirmed', 'delivered', 'completed', 'cancelled', 'partially_cancelled', 'failed'];
-  const paymentStatuses: Order['paymentStatus'][] = ['pending', 'success', 'failed', 'refunded', 'partially_refunded'];
-  const deliveryTypes: Order['deliveryType'][] = ['pickup', 'delivery', 'digital'];
+export const generateMockOrders = (count: number): IOrder[] => {
+  const statuses: IOrder['orderStatus'][] = ['draft', 'processing', 'paid', 'confirmed', 'delivered', 'completed', 'cancelled', 'partially_cancelled', 'failed'];
+  const paymentStatuses: IOrder['paymentStatus'][] = ['pending', 'success', 'failed', 'refunded', 'partially_refunded'];
+  const deliveryTypes: IOrder['deliveryType'][] = ['pickup', 'delivery', 'digital'];
   const vendors = ['Beersheba Bistro', 'Desert Delight', 'Negev Tours', 'Arad Adventures', 'Mitzpe Ramon Resort'];
   const campaigns = ['Summer Sale 2026', 'Desert Discovery', 'Family Fun Days', 'Food Festival', 'Adventure Week'];
 
@@ -516,7 +516,7 @@ export const generateMockOrders = (count: number): Order[] => {
   ];
 
   return Array.from({ length: count }, (_, i) => {
-    const orderProducts: OrderProduct[] = Array.from(
+    const orderProducts: IOrderProduct[] = Array.from(
       { length: Math.floor(Math.random() * 3) + 1 },
       (_, j) => {
         const product = products[Math.floor(Math.random() * products.length)];
