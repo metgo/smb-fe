@@ -32,7 +32,7 @@ export async function getAllFeeds(
   page: number,
   filters: FiltersProps,
   isAllClear: boolean = false,
-  limit: number = 100,
+  limit: number = 10,
 ): Promise<BusinessesProps> {
   let baseUrl: string;
 
@@ -162,9 +162,9 @@ export async function getFeedItemsWithFilter(
 
 export async function getFeedItems(): Promise<FeedItemResponse> {
   let baseUrl: string;
-  const limit = 1000;
+  const limit = 10;
 
-  baseUrl = `${urls.feeds}?campCode=${CODE}&limit=${limit}&page=1`;
+  baseUrl = `${urls.feeds}?campCode=${CODE}`;
 
   try {
     const res = await fetch(baseUrl, {
