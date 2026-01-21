@@ -6,7 +6,6 @@ import MobileNavbar from "./Navbar.mobile";
 import MobileBusinessPinMap from "../maps/BusinessPinMap.mobile";
 import MobileFeedsThumbnailCarousel from "./FeedsThumbnailCarousel.mobile";
 
-import { AiIcon } from "../ui/svgIcons";
 import { misc } from "@/constant/hebrew";
 import { pathNames } from "@/lib/endpoints";
 import { categoryColors } from "@/lib/utils";
@@ -20,6 +19,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getAllFilters, getFeedItems } from "@/actions/feedActions";
 import { getPresetFilters } from "@/actions/commonActions";
 import { filterBusinesses } from "@/lib/helpers";
+import { SunsetButton } from "../filter-icon/SunsetButton";
 
 interface MobileFeedLayoutProps {
   selectedFiltersIds: any;
@@ -76,7 +76,6 @@ const MobileFeedLayout = ({ selectedFiltersIds }: MobileFeedLayoutProps) => {
     isSelected,
     toggleParam,
     handleResetFilters,
-    shouldAnimate,
     filterState,
   } = useFeedFilter(filters, initialSelectedFiltersIds);
 
@@ -156,24 +155,12 @@ const MobileFeedLayout = ({ selectedFiltersIds }: MobileFeedLayoutProps) => {
       {hideFirstTwoSection && (
         <>
           <div className="fixed bottom-2 right-[42%] custom-cursor">
-            <div
+            <SunsetButton
+              size={60}
+              variant={"continuous"}
               onClick={handleFilterIconClick}
-              className="relative inline-flex items-center justify-center"
-            >
-              {/* Circle with shadow behind icon */}
-              <div
-                className={`absolute top-3 w-12 h-12 rounded-full shadow-xl shadow-yellow-400
-              ${shouldAnimate ? "animate-zoom-3x" : ""}`}
-              />
-
-              {/* Icon stays centered */}
-              <AiIcon size={68} />
-              {appliedFilterCount > 0 && (
-                <div className="bg-yellow-500 absolute right-1 top-1 rounded-full h-4.5 w-4.5 text-[10px] flex items-center justify-center text-white border border-white">
-                  {appliedFilterCount}
-                </div>
-              )}
-            </div>
+              appliedFilterCount={appliedFilterCount}
+            />
           </div>
           {!alreadyShownFilterTooltip && (
             <div className="bg-[#28C368] px-4 py-2 rounded-md text-white fixed bottom-16 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-max font-bold">

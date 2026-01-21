@@ -5,7 +5,6 @@ import { MotionDialogDiv } from "../ui";
 import { filterPanelLabels } from "@/constant/hebrew";
 
 import {
-  AiIcon,
   CloseIcon,
   EventIcon,
   FundayIcon,
@@ -15,6 +14,7 @@ import {
 import { filterCategories, ICON_MAP, SERVICE_TYPE_MAP } from "@/lib/utils";
 import { useCommonHook } from "@/hooks";
 import useGeneralStore from "@/stores/generalStore";
+import { SunsetButton } from "../filter-icon/SunsetButton";
 
 interface FeedFilterDrawerProps {
   isOpen: boolean;
@@ -210,17 +210,16 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
         </div>
 
         {/* CLOSE BUTTON */}
-        <div className=" flex-shrink-0 flex items-center justify-between px-4">
+        <div className=" shrink-0 flex items-center justify-between px-4">
           <button
             onClick={() => setIsOpen(false)}
             className="relative custom-cursor"
           >
-            {appliedFilterCount > 0 && (
-              <div className="bg-green-500 absolute right-1 top-1 rounded-full h-[18px] w-[18px] text-[10px] flex items-center justify-center text-white aspect-square border border-white">
-                {appliedFilterCount}
-              </div>
-            )}
-            <AiIcon size={68} />
+            <SunsetButton
+              size={50}
+              variant={"continuous"}
+              appliedFilterCount={appliedFilterCount}
+            />
           </button>
           <button
             type="button"
