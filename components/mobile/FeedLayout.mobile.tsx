@@ -99,7 +99,7 @@ const MobileFeedLayout = ({ selectedFiltersIds }: MobileFeedLayoutProps) => {
   // Prepare feed items for carousel
   const carouselItems = useMemo(
     () =>
-      businesses?.map((item) => ({
+      businesses?.map((item: any) => ({
         id: item._id,
         name: item?.name,
         image: item?.images?.[0]?.image,

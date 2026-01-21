@@ -1,4 +1,3 @@
-import { Suspense } from "react";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 
 import Navbar from "@/components/navbar";
@@ -11,7 +10,7 @@ import { getMarketing } from "@/actions/marketingAction";
 import FeedLayout from "@/components/layouts/FeedLayout";
 import { getQueryClient } from "@/lib/getQueryClient";
 import { getPresetFilters } from "@/actions/commonActions";
-import { getAllFilters, getFeedItems } from "@/actions/feedActions";
+import { getAllFilters, getFeedItemIds } from "@/actions/feedActions";
 import MobileFeedLayout from "@/components/mobile/FeedLayout.mobile";
 import MarketingSection from "@/components/marketing/MarketingSection";
 import CurrentTempOfYourCity from "@/components/navbar/CurrentTempOfYourCity";
@@ -62,16 +61,19 @@ export default async function Page({
   await queryClient.prefetchQuery({
     queryKey: ["preset-filters"],
     queryFn: getPresetFilters,
+    staleTime: Infinity,
   });
 
   await queryClient.prefetchQuery({
     queryKey: ["filters", selectedFiltersIds],
     queryFn: () => getAllFilters(selectedFiltersIds),
+    staleTime: Infinity,
   });
 
   await queryClient.prefetchQuery({
-    queryKey: ["feeds"],
-    queryFn: () => getFeedItems(),
+    queryKey: ["feedIds"],
+    queryFn: () => getFeedItemIds(),
+    staleTime: Infinity,
   });
 
   return (
@@ -93,24 +95,21 @@ export default async function Page({
           <IntroVideo />
         </section>
 
-        {/* ---------------- Marketing ---------------- */}
+        {/* ---------------\- Marketing ---------------- */}
         <MarketingSection marketing={marketing} />
 
         {/* ---------------- Feed ---------------- */}
         <section className="relative z-50 bg-white">
           <Navbar showFilterTab />
 
-          <Suspense>
-            <MobileFeedLayout
-              isAllClear={isAllClear}
-              selectedFiltersIds={selectedFiltersIds}
-            />
+          {/* <Suspense> */}
+          <MobileFeedLayout
+            isAllClear={isAllClear}
+            selectedFiltersIds={selectedFiltersIds}
+          />
 
-            <FeedLayout
-              isAllClear={isAllClear}
-              selectedFiltersIds={selectedFiltersIds}
-            />
-          </Suspense>
+          <FeedLayout selectedFiltersIds={selectedFiltersIds} />
+          {/* </Suspense> */}
         </section>
       </ScrollSnapWrapper>
     </HydrationBoundary>

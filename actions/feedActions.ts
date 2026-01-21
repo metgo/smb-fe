@@ -160,11 +160,47 @@ export async function getFeedItemsWithFilter(
   }
 }
 
-export async function getFeedItems(): Promise<FeedItemResponse> {
-  let baseUrl: string;
-  const limit = 1000;
+interface FeedBody {
+  details: {
+    id: string;
+    serviceType: string;
+  }[];
+}
+export async function getFeedDetailsItems(
+  body: FeedBody,
+): Promise<FeedItemDetailsResponse> {
+  const baseUrl = `${urls.feedDetails}?campCode=${CODE}`;
 
-  baseUrl = `${urls.feeds}?campCode=${CODE}&limit=${limit}&page=1`;
+  try {
+    const res = await fetch(baseUrl, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+      body: JSON.stringify(body),
+      cache: "no-store",
+    });
+
+    if (!res.ok) throw new Error(`Failed to fetch feeds: ${res.statusText}`);
+
+    const resData: FeedItemResponse = await res.json();
+    const finalData = shuffleArray(resData?.data);
+    return {
+      ...resData,
+      data: finalData,
+    };
+  } catch (error) {
+    console.error("Error in getAllFeeds:", error);
+
+    return {
+      data: [],
+      totalData: 0,
+    };
+  }
+}
+
+export async function getFeedItemIds() {
+  const baseUrl = `${urls.feedsIds}?campCode=${CODE}`;
 
   try {
     const res = await fetch(baseUrl, {
@@ -186,13 +222,33 @@ export async function getFeedItems(): Promise<FeedItemResponse> {
     return {
       data: [],
       totalData: 0,
-      meta: {
-        page: 1,
-        limit,
-        pageCount: 1,
-        hasPreviousPage: false,
-        hasNextPage: false,
-      },
+    };
+  }
+}
+
+export async function getFeedItems() {
+  const baseUrl = `${urls.feeds}?campCode=${CODE}`;
+
+  try {
+    const res = await fetch(baseUrl, {
+      method: "GET",
+      cache: "no-store",
+    });
+
+    if (!res.ok) throw new Error(`Failed to fetch feeds: ${res.statusText}`);
+
+    const resData: FeedItemResponse = await res.json();
+    const finalData = shuffleArray(resData?.data);
+    return {
+      ...resData,
+      data: finalData,
+    };
+  } catch (error) {
+    console.error("Error in getAllFeeds:", error);
+
+    return {
+      data: [],
+      totalData: 0,
     };
   }
 }
