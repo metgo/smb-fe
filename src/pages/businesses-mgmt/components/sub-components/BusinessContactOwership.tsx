@@ -10,12 +10,17 @@ interface ContactPerson {
   name: string;
   email: string;
   phone: string;
+  address: string;
+  countryCode: string;
+  whatsAppCountryCode: string;
+  whatsAppNumber: string;
+  prefferedChannel: string;
 }
 
 interface BusinessContactFormData {
   email: string;
   phone: string;
-  contactPerson: ContactPerson;
+  contactDetails: ContactPerson;
 }
 
 interface FormErrors {
@@ -146,12 +151,12 @@ const BusinessContactOwership: FC<BusinessContactOwershipProps> = ({
         <div className="space-y-4">
           <input
             type="text"
-            value={formData.contactPerson.name}
+            value={formData.contactDetails.name}
             onChange={(e) =>
               setFormData({
                 ...formData,
-                contactPerson: {
-                  ...formData.contactPerson,
+                contactDetails: {
+                  ...formData.contactDetails,
                   name: e.target.value,
                 },
               })
@@ -166,12 +171,12 @@ const BusinessContactOwership: FC<BusinessContactOwershipProps> = ({
 
           <input
             type="email"
-            value={formData.contactPerson.email}
+            value={formData.contactDetails.email}
             onChange={(e) =>
               setFormData({
                 ...formData,
-                contactPerson: {
-                  ...formData.contactPerson,
+                contactDetails: {
+                  ...formData.contactDetails,
                   email: e.target.value,
                 },
               })
@@ -186,12 +191,12 @@ const BusinessContactOwership: FC<BusinessContactOwershipProps> = ({
 
           <input
             type="tel"
-            value={formData.contactPerson.phone}
+            value={formData.contactDetails.phone}
             onChange={(e) =>
               setFormData({
                 ...formData,
-                contactPerson: {
-                  ...formData.contactPerson,
+                contactDetails: {
+                  ...formData.contactDetails,
                   phone: e.target.value,
                 },
               })

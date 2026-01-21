@@ -45,20 +45,21 @@ export default function CreateBusinessWizard({
   const { t } = useTranslation("businesses");
   const { theme, isRTL } = useAppSelector((state) => state.settings);
   const [isPublishing, setIsPublishing] = useState(false);
-  const [updateBusiness] =
-    useUpdateBusinessMutation();
-  const [initBusinessCreate] =
-    useInitBusinessCreateMutation();
+  const [updateBusiness] = useUpdateBusinessMutation();
+  const [initBusinessCreate] = useInitBusinessCreateMutation();
   const [currentStep, setCurrentStep] = useState(1);
   const [editData, _setEditData] = useState<any>();
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
-    const [selectedDmoId, setSelectDmoId] = useState<string>("");
-const [selectedAuthorityId, setSelectAuthorityId] = useState<string>("");
+  const [selectedDmoId, setSelectDmoId] = useState<string>("");
+  const [selectedAuthorityId, setSelectAuthorityId] = useState<string>("");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [_businessId, setBusinessId] = useState<string | null>(null);
   const businessIdRef = useRef<string | null>(null);
-
+  const [selectedGroupTypesId, setGroupTypesId] = useState<string[]>([]);
+  const [selectedAccessiblitiesId, setAccessiblitiesId] = useState<string[]>(
+    [],
+  );
   // Form State
   const [formData, setFormData] = useState<any>({
     // Step 1
@@ -79,22 +80,21 @@ const [selectedAuthorityId, setSelectAuthorityId] = useState<string>("");
     // Step 2
     email: "",
     phone: "",
-    website: "",
-    contactPerson: { name: "", email: "", phone: "" },
+    contactDetails: { name: "", email: "", phone: "" },
     preferredChannel: "email",
     collaborators: [] as any[],
 
     // Step 3
-    address: "",
+    address: { country: "", city: "", location: "" },
     coordinates: { lat: 31.2518, lng: 34.7913 },
 
     // Step 4
     primaryCategory: "",
-    subcategories: [] as string[],
+    // subcategories: [] as string[],
     tags: [] as string[],
     accessibility: [] as string[],
     groupTypes: [] as string[],
-    serviceType: "",
+    // serviceType: "",
 
     // Step 5
     logo: null as string | null,
@@ -118,13 +118,19 @@ const [selectedAuthorityId, setSelectAuthorityId] = useState<string>("");
     deliverySpecificSellerInfo: [] as string[],
 
     // Step 8
-    onlinePresence: {
-      website: "",
-      facebook: "",
-      instagram: "",
-      youtube: "",
-      tiktok: "",
-    },
+    // onlinePresence: {
+    //   website: "",
+    //   facebook: "",
+    //   instagram: "",
+    //   youtube: "",
+    //   tiktok: "",
+    // },
+     socialMedia: [
+    {
+      socialMediaId: "",
+      url: ""
+    }
+  ],
   });
 
   const totalSteps = 9;
@@ -155,40 +161,41 @@ const [selectedAuthorityId, setSelectAuthorityId] = useState<string>("");
   // Draft Save Payload per Step
   const stepPayloadMap: Record<number, any> = {
     1: {
-      // authority: formData.authority,
       authorityId: formData.authority,
       name: formData.nameEn,
-      // nameHe: formData.nameHe,
-      // nameAr: formData.nameAr,
       shortDescription: formData.shortDescriptionEn,
-      // shortDescriptionHe: formData.shortDescriptionHe,
-      // shortDescriptionAr: formData.shortDescriptionAr,
       description: formData.fullDescriptionEn,
-      // fullDescriptionHe: formData.fullDescriptionHe,
-      // fullDescriptionAr: formData.fullDescriptionAr,
-      // slug: formData.slug,
       internalNotes: formData.internalNotes,
-      // categories: formData.categories,
     },
     2: {
-      email: formData.email,
-      phone: formData.phone,
-      website: formData.website,
-      contactPerson: formData.contactPerson,
-      preferredChannel: formData.preferredChannel,
-      collaborators: formData.collaborators,
+      busiEmail: formData.email,
+      phoneNumber: formData.phone,
+      contactDetails: {
+        name: formData.contactDetails?.name,
+        countryCode: formData.contactDetails?.countryCode,
+        phone: formData.contactDetails?.phone,
+        address: formData.contactDetails?.address,
+        email: formData.contactDetails?.email,
+        whatsAppCountryCode: formData.contactDetails?.whatsAppCountryCode,
+        whatsAppNumber: formData.contactDetails?.whatsAppNumber,
+        prefferedChannel: formData.contactDetails?.prefferedChannel,
+      },
     },
     3: {
-      address: formData.address,
-      coordinates: formData.coordinates,
+      address: {
+        country: formData.address.country,
+        city: formData.address.city,
+        location: formData.address.location,
+      },
+      geoLocation: formData.coordinates,
     },
     4: {
-      primaryCategory: formData.primaryCategory,
-      subcategories: formData.subcategories,
+      primaryCategoryId: formData.primaryCategory,
+      // subcategories: formData.subcategories,
       tags: formData.tags,
-      accessibility: formData.accessibility,
-      groupTypes: formData.groupTypes,
-      serviceType: formData.serviceType,
+      accessibilitiesId: selectedAccessiblitiesId,
+      groupTypesId: selectedGroupTypesId,
+      // serviceType: formData.serviceType,
     },
     5: {
       logo: formData.logo,
@@ -206,7 +213,7 @@ const [selectedAuthorityId, setSelectAuthorityId] = useState<string>("");
       deliverySpecificSellerInfo: formData.deliverySpecificSellerInfo,
     },
     8: {
-      onlinePresence: formData.onlinePresence,
+      socialMedia: formData.onlinePresence,
     },
   };
 
@@ -228,7 +235,7 @@ const [selectedAuthorityId, setSelectAuthorityId] = useState<string>("");
       console.log("PATCH payload", payload);
 
       if (!payload) return;
-      // 3️⃣ Update business
+      // Update business
       const res = await updateBusiness({
         body: payload,
         businessId: currentBusinessId!,
@@ -311,20 +318,31 @@ const [selectedAuthorityId, setSelectAuthorityId] = useState<string>("");
     const commonProps = { theme, isRTL, t, formData, errors, setFormData };
     switch (currentStep) {
       case 1:
-        return  <BusinessBasicInfos
-          {...commonProps}
-          canApprove
-          selectedDmoId={selectedDmoId}
-          setSelectDmoId={setSelectDmoId}
-          selectedAuthorityId={selectedAuthorityId}
-          setSelectAuthorityId={setSelectAuthorityId}
-        />
+        return (
+          <BusinessBasicInfos
+            {...commonProps}
+            canApprove
+            selectedDmoId={selectedDmoId}
+            setSelectDmoId={setSelectDmoId}
+            selectedAuthorityId={selectedAuthorityId}
+            setSelectAuthorityId={setSelectAuthorityId}
+          />
+        );
       case 2:
         return <BusinessContactOwership {...commonProps} />;
       case 3:
         return <BusinessLocation {...commonProps} />;
       case 4:
-        return <BusinessAttributes {...commonProps} />;
+        return (
+          <BusinessAttributes
+            {...commonProps}
+            selectedAccessiblitiesId={selectedAccessiblitiesId}
+            setAccessiblitiesId={setAccessiblitiesId}
+            selectedGroupTypesId={selectedGroupTypesId}
+            setGroupTypesId={setGroupTypesId}
+         
+          />
+        );
       case 5:
         return <BusinessMedia {...commonProps} />;
       case 6:

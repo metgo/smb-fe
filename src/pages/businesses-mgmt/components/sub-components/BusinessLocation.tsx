@@ -6,17 +6,23 @@ import { MapPin } from "lucide-react";
 type Theme = "light" | "dark";
 
 interface Coordinates {
-  lat: number;
-  lng: number;
+  lat: string;
+  long: string;
+}
+
+interface Address {
+  country: string;
+  city: string;
+  location: string;
 }
 
 interface LocationFormData {
-  address: string;
-  coordinates: Coordinates;
+  address: Address;
+  geoLocation: Coordinates;
 }
 
 interface LocationErrors {
-  address?: string;
+  address?: Address;
 }
 
 /* ---------- Props ---------- */
@@ -61,9 +67,15 @@ const BusinessLocation: FC<BusinessLocationProps> = ({
 
           <input
             type="text"
-            value={formData.address}
+            value={formData.address.city}
             onChange={(e) =>
-              setFormData({ ...formData, address: e.target.value })
+              setFormData({
+                ...formData,
+                address: {
+                  ...formData.address,
+                  city: e.target.value,
+                },
+              })
             }
             placeholder={t("enter_full_address")}
             className={`w-full ${
@@ -72,15 +84,13 @@ const BusinessLocation: FC<BusinessLocationProps> = ({
               errors.address
                 ? "border-red-500"
                 : theme === "dark"
-                ? "bg-gray-800 border-gray-700 text-gray-200"
-                : "bg-white border-gray-300 text-gray-900"
+                  ? "bg-gray-800 border-gray-700 text-gray-200"
+                  : "bg-white border-gray-300 text-gray-900"
             } focus:outline-none focus:ring-2 focus:ring-teal-500`}
           />
         </div>
 
-        {errors.address && (
-          <p className="text-red-500 text-sm mt-1">{errors.address}</p>
-        )}
+      
       </div>
 
       {/* Map Placeholder */}
@@ -121,8 +131,8 @@ const BusinessLocation: FC<BusinessLocationProps> = ({
             theme === "dark" ? "text-gray-400" : "text-gray-600"
           }`}
         >
-          {t("geo_coordinates")}: {formData.coordinates.lat.toFixed(6)},{" "}
-          {formData.coordinates.lng.toFixed(6)}
+          {t("geo_coordinates")}: {formData.geoLocation.lat},{" "}
+          {formData.geoLocation.long}
         </p>
       </div>
     </div>

@@ -1,3 +1,5 @@
+
+
 {
   "businesses_management": "Businesses Management",
   "businesses_management_desc": "Manage all businesses across the western Negev region",
@@ -7,6 +9,8 @@
   "pending_approval":"Pending Approval",
   "short_description":"Short Description",
   "contact_name":"Contact Person",
+  "select_dmo": "Select DMO",
+  "select_authority": "Select Authority",
   "name":"Name",
   "basic_information":"Basic Information",
   "authority":"Authority",
@@ -107,7 +111,7 @@
   "viewer": "Viewer",
   "search_address": "Search Address",
   "address": "Address",
-  "enter_full_address": "Enter full adress",
+  "enter_full_address": "Enter full address",
   "pin_location": "Pin Location",
   "center_on_my_location": "Center on My Location",
   "street_view": "Street View",

@@ -1,6 +1,7 @@
 import { useState, type FC } from "react";
 import { ChevronDown, Globe } from "lucide-react";
 import { useCommon } from "@/hooks/useCommon";
+import clsx from "clsx";
 
 interface BusinessFormData {
   authority: string;
@@ -73,7 +74,7 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
   const [selectedFormLanguage, setSelectedFormLanguage] = useState<
     "en" | "he" | "ar"
   >("en");
-const { dmosAuthorities } = useCommon();
+  const { dmosAuthorities } = useCommon();
 
   /* -------- Helpers -------- */
 
@@ -138,7 +139,7 @@ const { dmosAuthorities } = useCommon();
         </div>
       </div>
       <div className="flex-1">
-        <label className={`block text-sm font-medium mb-3 `}>
+        <label className={`block text-sm  mb-3 `}>
           {t("select_dmo")} <span className="text-red-500">*</span>
         </label>
         <div className=" flex gap-2 relative">
@@ -148,6 +149,10 @@ const { dmosAuthorities } = useCommon();
               setSelectDmoId(e.target.value);
               setSelectAuthorityId("");
             }}
+            className={clsx(
+              "appearance-none h-12 w-full border rounded-lg px-4 py-2 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 min-w-45",
+              // selectInputClasses
+            )}
           >
             <option value="">Select DMO</option>
             {dmosAuthorities?.map((parent) => (
@@ -161,15 +166,19 @@ const { dmosAuthorities } = useCommon();
       </div>
       {/* Authority */}
       <div className="flex-1">
-        <label className={`block text-sm font-medium mb-3 `}>
+        <label className={`block text-sm  mb-3 `}>
           {t("select_authority")} <span className="text-red-500">*</span>
         </label>
         <div className=" w-full relative">
           <select
             value={formData.authority}
-             onChange={(e) =>
-            setFormData({ ...formData, authority: e.target.value })
-          }
+            onChange={(e) =>
+              setFormData({ ...formData, authority: e.target.value })
+            }
+            className={clsx(
+              "appearance-none h-12 w-full border rounded-lg px-4 py-2 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 min-w-45",
+              // selectInputClasses
+            )}
           >
             <option value="">Select Authority</option>
             {selectedDmos?.authorities?.map((child) => (
@@ -181,8 +190,6 @@ const { dmosAuthorities } = useCommon();
           <ChevronDown className="absolute top-1/2 ltr:right-3 rtl:left-3 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
         </div>
       </div>
-
-      
 
       {/* Business Name */}
       <div>

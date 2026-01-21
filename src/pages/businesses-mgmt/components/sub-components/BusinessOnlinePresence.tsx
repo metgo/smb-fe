@@ -22,6 +22,14 @@ interface BusinessOnlinePresenceProps {
   formData: OnlinePresenceFormData;
   setFormData: (data: OnlinePresenceFormData) => void;
 }
+interface SocialMediaItem {
+  socialMediaId: string;
+  url: string;
+}
+
+interface OnlinePresenceFormData {
+  socialMedia: SocialMediaItem[];
+}
 
 /* ---------- Component ---------- */
 
@@ -32,6 +40,7 @@ const BusinessOnlinePresence: FC<BusinessOnlinePresenceProps> = ({
   formData,
   setFormData,
 }) => {
+  
   const inputClasses = `w-full ${
     isRTL ? "pr-10 pl-4" : "pl-10 pr-4"
   } py-2 rounded-lg border ${
