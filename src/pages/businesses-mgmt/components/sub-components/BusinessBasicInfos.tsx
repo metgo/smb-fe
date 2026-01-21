@@ -42,22 +42,22 @@ interface BusinessBasicInfosProps {
 }
 
 /* ---------------- Component ---------------- */
-// Authority options for the Western Negev region
-const AUTHORITIES = [
-  "Be'er Sheva",
-  "Sderot",
-  "Netivot",
-  "Ofakim",
-  "Arad",
-  "Dimona",
-  "Yeruham",
-  "Rahat",
-  "Regional Council - Sha'ar HaNegev",
-  "Regional Council - Eshkol",
-  "Regional Council - Sdot Negev",
-  "Regional Council - Merhavim",
-  "Regional Council - Bnei Shimon",
-];
+// // Authority options for the Western Negev region
+// const AUTHORITIES = [
+//   "Be'er Sheva",
+//   "Sderot",
+//   "Netivot",
+//   "Ofakim",
+//   "Arad",
+//   "Dimona",
+//   "Yeruham",
+//   "Rahat",
+//   "Regional Council - Sha'ar HaNegev",
+//   "Regional Council - Eshkol",
+//   "Regional Council - Sdot Negev",
+//   "Regional Council - Merhavim",
+//   "Regional Council - Bnei Shimon",
+// ];
 
 const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
   t,
@@ -68,7 +68,6 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
   canApprove,
   selectedDmoId,
   setSelectDmoId,
-  selectedAuthorityId,
   setSelectAuthorityId,
 }) => {
   const [selectedFormLanguage, setSelectedFormLanguage] = useState<
