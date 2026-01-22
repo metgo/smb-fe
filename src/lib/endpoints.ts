@@ -9,7 +9,7 @@ export const endpoints = {
   popularBusiness: "/popular-business",
 
   businessStats: "/stats/business",
-  productStats: "/stats/product",
+  productStats: "/stats/products",
   eventStats: "/stats/events",
   purchaseReportsStats: "/stats/purchase-reports",
 
@@ -29,6 +29,8 @@ export const endpoints = {
   // events
   events: "/events",
   eventsStats: "/events-stats",
+
+  
 
   users: "/users",
   userInfo: "/users/me",
