@@ -55,14 +55,19 @@ export function extractEventDates(
 ): string {
   if (!dayDescription || dayDescription.length === 0) return '-';
 
-  const formattedDates = dayDescription
-    .map(d => {
-      // Convert Date object to ISO string if needed
-      const dateStr = d?.date instanceof Date ? d.date.toISOString() : d?.date;
-      return formatDateRange(dateStr, dateStr, false);
-    })
-    .filter(Boolean);
+  const dates = dayDescription
+    .map(d => (d?.date instanceof Date ? d.date : new Date(d?.date)))
+    .filter(Boolean)
+    .sort((a, b) => a.getTime() - b.getTime());
 
-  return formattedDates.length > 0 ? formattedDates.join(', ') : '-';
+  if (dates.length === 1) {
+    const str = dates[0].toISOString();
+    return formatDateRange(str, str, false);
+  }
+
+  const startStr = dates[0].toISOString();
+  const endStr = dates[dates.length - 1].toISOString();
+
+  return formatDateRange(startStr, endStr, true);
 }
 
