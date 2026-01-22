@@ -26,14 +26,14 @@ export default function UpcomingEvents() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {events?.map((event) => (
+        {events?.map((event: any) => (
           <div
             key={event._id}
             className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden hover:shadow-lg transition-all group cursor-pointer"
           >
             <div className="relative h-48 overflow-hidden">
               <ImageWithFallback
-                src={event?.images?.find(img => img.isPrimary)?.image || event?.images[0]?.image}
+                src={event?.images?.find((img:any) => img?.isPrimary)?.image || event?.images[0]?.image}
                 alt={event?.name}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
               />
