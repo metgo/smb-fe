@@ -7,7 +7,6 @@ import { useFeedFilter } from "@/hooks";
 import useGeneralStore from "@/stores/generalStore";
 import useFavoriteFeedItemStore from "@/stores/favoriteFeedItemStore";
 
-import { IconImage } from "../ui";
 import NoFeedItemLayout from "./NoFeedItemLayout";
 import BusinessPinMap from "../maps/BusinessPinMap";
 import OnlyFeedCardsLayout from "./OnlyFeedCardsLayout";
@@ -19,6 +18,7 @@ import { getFeedItems, getAllFilters } from "@/actions/feedActions";
 import { getPresetFilters } from "@/actions/commonActions";
 import { misc } from "@/constant/hebrew";
 import { filterBusinesses } from "@/lib/helpers";
+import { SunsetButton } from "../filter-icon/SunsetButton";
 
 interface FeedLayoutProps {
   isAllClear: boolean;
@@ -64,7 +64,6 @@ const FeedLayout = ({ selectedFiltersIds }: FeedLayoutProps) => {
     isSelected,
     toggleParam,
     handleResetFilters,
-    shouldAnimate,
     filterState,
   } = useFeedFilter(filters, initialSelectedFiltersIds);
   /* ---------------------- Memoized Data ---------------------- */
@@ -127,22 +126,11 @@ const FeedLayout = ({ selectedFiltersIds }: FeedLayoutProps) => {
         {/* Filter Button */}
         {hideFirstTwoSection && (
           <div className="fixed bottom-1 right-4 custom-cursor max-sm:hidden md:block">
-            <div
+            <SunsetButton
+              variant={"black"}
               onClick={handleFilterIconClick}
-              className="relative inline-block w-full"
-            >
-              <div
-                className={`relative z-10 border-2 border-white rounded-full shadow-2xl shadow-yellow-400
-                  ${shouldAnimate ? "animate-zoom-3x" : ""}`}
-              >
-                {appliedFilterCount > 0 && (
-                  <div className="bg-ye-500 absolute right-0 -top-1 rounded-full h-[25px] w-[25px] text-[10px] flex items-center justify-center text-white aspect-square border-2 border-white z-20">
-                    {appliedFilterCount}
-                  </div>
-                )}
-                <IconImage icon="ai" width={84} height={84} />
-              </div>
-            </div>
+              appliedFilterCount={appliedFilterCount}
+            />
             {!alreadyShownFilterTooltip && (
               <div className="bg-[#28C368] px-4 py-2 rounded-md text-white absolute right-24 bottom-8 w-max font-bold ">
                 {misc.filterIconTooltip}

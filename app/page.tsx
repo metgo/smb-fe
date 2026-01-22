@@ -1,4 +1,3 @@
-import { Suspense } from "react";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 
 import Navbar from "@/components/navbar";
@@ -61,16 +60,19 @@ export default async function Page({
 
   await queryClient.prefetchQuery({
     queryKey: ["preset-filters"],
+    staleTime: Infinity,
     queryFn: getPresetFilters,
   });
 
   await queryClient.prefetchQuery({
     queryKey: ["filters", selectedFiltersIds],
+    staleTime: Infinity,
     queryFn: () => getAllFilters(selectedFiltersIds),
   });
 
   await queryClient.prefetchQuery({
     queryKey: ["feeds"],
+    staleTime: Infinity,
     queryFn: () => getFeedItems(),
   });
 
@@ -100,17 +102,15 @@ export default async function Page({
         <section className="relative z-50 bg-white">
           <Navbar showFilterTab />
 
-          <Suspense>
-            <MobileFeedLayout
-              isAllClear={isAllClear}
-              selectedFiltersIds={selectedFiltersIds}
-            />
+          <MobileFeedLayout
+            isAllClear={isAllClear}
+            selectedFiltersIds={selectedFiltersIds}
+          />
 
-            <FeedLayout
-              isAllClear={isAllClear}
-              selectedFiltersIds={selectedFiltersIds}
-            />
-          </Suspense>
+          <FeedLayout
+            isAllClear={isAllClear}
+            selectedFiltersIds={selectedFiltersIds}
+          />
         </section>
       </ScrollSnapWrapper>
     </HydrationBoundary>
