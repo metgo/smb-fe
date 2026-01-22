@@ -11,9 +11,8 @@ import { useTranslation } from 'react-i18next';
 
 import { Button } from '@/components/ui/button';
 import { useThemeClasses } from '@/hooks/useThemeClasses';
-import { formatDate, formatDateRange } from '@/helpers/formatter';
 import { ImageWithFallback, ReordableDataTable } from '@/components/shared';
-import { extractCenterAddressText } from '@/helpers';
+import { extractCenterAddressText, extractEventDates } from '@/helpers';
 
 
 interface EventsWithViewModeProps {
@@ -164,13 +163,15 @@ export default function EventsWithViewMode({
   }
   // Events on a given date
   const eventsOnDate = (date: Date) => {
-    const dateStr = date?.toISOString()?.split('T')[0];
-    return events?.filter(e => {
-      const start = new Date(e.startDate)?.toISOString()?.split('T')[0];
-      const end = new Date(e.endDate)?.toISOString()?.split('T')[0];
-      return dateStr >= start && dateStr <= end;
-    });
-  };
+  const dateStr = date.toISOString().split('T')[0]; // normalize input date
+
+  return events?.filter(e =>
+    e.dayDescription?.some(d => {
+      const dStr = new Date(d.date).toISOString().split('T')[0]; // normalize dayDescription date
+      return dStr === dateStr;
+    })
+  );
+};
 
 
 
@@ -351,7 +352,7 @@ export default function EventsWithViewMode({
                   <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
                     <div className="flex items-center gap-2">
                       <Calendar className="w-4 h-4" />
-                      {formatDate(event.startDate, language)}
+                      {extractEventDates(event?.dayDescription)}
                     </div>
                     <div className="flex items-center gap-2">
                       <MapPin className="w-4 h-4" />
@@ -426,12 +427,7 @@ export default function EventsWithViewMode({
             key: 'date',
             label: t('date'),
             sortable: true,
-            render: (event) =>
-              formatDateRange(
-                event.startDate,
-                event.endDate,
-                event.isMultiDay
-              ),
+             render: (event) => extractEventDates(event?.dayDescription),
           },
           {
             key: 'price',

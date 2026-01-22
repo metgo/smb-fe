@@ -1,3 +1,5 @@
+import { formatDateRange } from '@/helpers/formatter';
+
 export function uploadWithProgress(
   file: File,
   signedUrl: string,
@@ -34,7 +36,7 @@ export function uploadWithProgress(
 
 export function extractCenterAddressText(address: string): string | null {
   // Split by spaces
-  const parts = address.split(" ");
+  const parts = address?  address?.split(" "): "-";
 
   // Find the part that is not a plus-code (e.g., "5H8P+WJ") and not a comma
   for (const part of parts) {
@@ -46,3 +48,21 @@ export function extractCenterAddressText(address: string): string | null {
 
   return null;
 }
+
+
+export function extractEventDates(
+  dayDescription?: { date: string | Date }[]
+): string {
+  if (!dayDescription || dayDescription.length === 0) return '-';
+
+  const formattedDates = dayDescription
+    .map(d => {
+      // Convert Date object to ISO string if needed
+      const dateStr = d?.date instanceof Date ? d.date.toISOString() : d?.date;
+      return formatDateRange(dateStr, dateStr, false);
+    })
+    .filter(Boolean);
+
+  return formattedDates.length > 0 ? formattedDates.join(', ') : '-';
+}
+
