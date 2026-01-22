@@ -26,7 +26,10 @@ import { FilterButton } from "@/components/btns";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { generateMockBusinesses } from "@/constants/data";
 import { PageHeader, PageStats, ReordableDataTable } from "@/components/shared";
-import { useGetAllbusinessesQuery, useGetBusinessStatsQuery } from "@/store/api/businessQueryApi";
+import {
+  useGetAllbusinessesQuery,
+  useGetBusinessStatsQuery,
+} from "@/store/api/businessQueryApi";
 
 interface BusinessesListProps {
   theme: Theme;
@@ -103,7 +106,8 @@ export default function BusinessesList({
   const { t } = useTranslation("businesses");
   const { isRTL } = useAppSelector((state) => state.settings);
   const { textPrimary, textSecondary } = useThemeClasses();
-
+const [page, setPage] = useState<number>(1);
+  const limit = 10;
   const [error, setError] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [showFilters, setShowFilters] = useState(false);
@@ -112,8 +116,10 @@ export default function BusinessesList({
   const [selectedBusinesses, setSelectedBusinesses] = useState<Set<string>>(
     new Set(),
   );
-  const { data: businessStatsData } = useGetBusinessStatsQuery({})
-  console.log("busienss stats", businessStatsData)
+   // Keep all fetched data accumulated here
+  const [allData, setAllData] = useState([]);
+  const { data: businessStatsData } = useGetBusinessStatsQuery({});
+  console.log("busienss stats", businessStatsData);
 
   const columnSettingsRef = useRef<HTMLDivElement>(null);
 
@@ -184,6 +190,8 @@ export default function BusinessesList({
   const { data: businessData, isLoading: _isLoading } =
     useGetAllbusinessesQuery({
       search: searchTerm,
+      page: String(1),
+      limit: String(10),
       // eventType: eventTypeFilter.toUpperCase()
     });
   // Load mock data
@@ -213,65 +221,65 @@ export default function BusinessesList({
       );
     }
 
-    // Authority filter
-    if (filters.authority !== "all") {
-      filtered = filtered.filter((b) => b.authority === filters.authority);
-    }
+    // // Authority filter
+    // if (filters.authority !== "all") {
+    //   filtered = filtered.filter((b) => b.authority === filters.authority);
+    // }
 
-    // DMO filter
-    if (filters.dmo !== "all") {
-      filtered = filtered.filter((b) => b.dmo === filters.dmo);
-    }
+    // // DMO filter
+    // if (filters.dmo !== "all") {
+    //   filtered = filtered.filter((b) => b.dmo === filters.dmo);
+    // }
 
-    // Status filter
-    if (filters.status !== "all") {
-      filtered = filtered.filter((b) => b.status === filters.status);
-    }
+    // // Status filter
+    // if (filters.status !== "all") {
+    //   filtered = filtered.filter((b) => b.status === filters.status);
+    // }
 
-    // Has products filter
-    if (filters.hasProducts !== "all") {
-      const hasProducts = filters.hasProducts === "yes";
-      filtered = filtered.filter((b) => b.productsCount > 0 === hasProducts);
-    }
+    // // Has products filter
+    // if (filters.hasProducts !== "all") {
+    //   const hasProducts = filters.hasProducts === "yes";
+    //   filtered = filtered.filter((b) => b.productsCount > 0 === hasProducts);
+    // }
 
-    // Impact range filter
-    filtered = filtered.filter(
-      (b) =>
-        b.impactScore >= filters.impactMin &&
-        b.impactScore <= filters.impactMax,
-    );
+    // // Impact range filter
+    // filtered = filtered.filter(
+    //   (b) =>
+    //     b.impactScore >= filters.impactMin &&
+    //     b.impactScore <= filters.impactMax,
+    // );
 
-    // Date range filter
-    if (filters.dateFrom) {
-      filtered = filtered.filter(
-        (b) => new Date(b.createdAt) >= new Date(filters.dateFrom),
-      );
-    }
-    if (filters.dateTo) {
-      filtered = filtered.filter(
-        (b) => new Date(b.createdAt) <= new Date(filters.dateTo),
-      );
-    }
+    // // Date range filter
+    // if (filters.dateFrom) {
+    //   filtered = filtered.filter(
+    //     (b) => new Date(b.createdAt) >= new Date(filters.dateFrom),
+    //   );
+    // }
+    // if (filters.dateTo) {
+    //   filtered = filtered.filter(
+    //     (b) => new Date(b.createdAt) <= new Date(filters.dateTo),
+    //   );
+    // }
 
-    // Sorting
-    if (sortColumn) {
-      filtered.sort((a, b) => {
-        const aVal = a[sortColumn];
-        const bVal = b[sortColumn];
+    // // Sorting
+    // if (sortColumn) {
+    //   filtered.sort((a, b) => {
+    //     const aVal = a[sortColumn];
+    //     const bVal = b[sortColumn];
 
-        if (typeof aVal === "string" && typeof bVal === "string") {
-          return sortDirection === "asc"
-            ? aVal.localeCompare(bVal)
-            : bVal.localeCompare(aVal);
-        }
+    //     if (typeof aVal === "string" && typeof bVal === "string") {
+    //       return sortDirection === "asc"
+    //         ? aVal.localeCompare(bVal)
+    //         : bVal.localeCompare(aVal);
+    //     }
 
-        if (typeof aVal === "number" && typeof bVal === "number") {
-          return sortDirection === "asc" ? aVal - bVal : bVal - aVal;
-        }
+    //     if (typeof aVal === "number" && typeof bVal === "number") {
+    //       return sortDirection === "asc" ? aVal - bVal : bVal - aVal;
+    //     }
 
-        return 0;
-      });
-    }
+    //     return 0;
+    //   });
+    // }
 
     return filtered;
   }, [businesses, searchTerm, filters, sortColumn, sortDirection]);
@@ -373,6 +381,162 @@ export default function BusinessesList({
       </div>
     );
   };
+  const columns = [
+    ...(canChangeStatus ? [{ key: "checkbox", label: "", width: "50px" }] : []),
+    {
+      key: "_id",
+      label: "id",
+    },
+    {
+      key: "impact",
+      label: t("impact_score"),
+      sortable: true,
+      width: "110px",
+      render: (business: any) => {
+        const score = business.impact ?? 0;
+        return (
+          <span
+            className={clsx(
+              "inline-flex items-center justify-center px-3 py-1 rounded-lg text-sm font-medium",
+              score >= 650
+                ? theme === "dark"
+                  ? "bg-green-500/20 text-green-400"
+                  : "bg-green-100 text-green-700"
+                : score >= 450
+                  ? theme === "dark"
+                    ? "bg-yellow-500/20 text-yellow-400"
+                    : "bg-yellow-100 text-yellow-700"
+                  : theme === "dark"
+                    ? "bg-gray-700 text-gray-400"
+                    : "bg-gray-100 text-gray-600",
+            )}
+          >
+            {score}
+          </span>
+        );
+      },
+    },
+
+    {
+      key: "name",
+      label: t("business_name"),
+      sortable: true,
+      render: (business: any) => (
+        <div className="flex items-center gap-3">
+          <div
+            className={clsx(
+              "w-10 h-10 rounded-lg flex items-center justify-center",
+              theme === "dark" ? "bg-teal-500/10" : "bg-teal-50",
+            )}
+          >
+            {/* You can add icon logic later when categories arrive */}
+          </div>
+          <span className={textPrimary}>
+            {business.name || business.slug || t("unnamed_business") || "-"}
+          </span>
+        </div>
+      ),
+    },
+
+    {
+      key: "busiEmail",
+      label: t("business_email"),
+      render: (business: any) => (
+        <span className={textSecondary}>{business.busiEmail || "-"}</span>
+      ),
+    },
+
+    {
+      key: "phoneNumber",
+      label: t("phone_number"),
+      render: (business: any) => (
+        <span className={clsx(textSecondary, "whitespace-nowrap")}>
+          {business.phoneNumber || "-"}
+        </span>
+      ),
+    },
+
+    {
+      key: "productCount",
+      label: t("products_count"),
+      sortable: true,
+      render: (business: any) => (
+        <span className={textPrimary}>{business.productCount ?? 0}</span>
+      ),
+    },
+
+    {
+      key: "status",
+      label: t("status"),
+      sortable: true,
+      render: (business: any) => {
+        const st = (business.status || "").toLowerCase();
+        return (
+          <span
+            className={clsx(
+              "inline-flex items-center px-3 py-1 rounded-lg text-sm font-medium",
+              st === "approved"
+                ? "bg-blue-500/20 text-blue-400"
+                : st === "pending"
+                  ? "bg-yellow-500/20 text-yellow-400"
+                  : st === "rejected"
+                    ? "bg-red-500/20 text-red-400"
+                    : st === "draft"
+                      ? theme === "dark"
+                        ? "bg-gray-700 text-gray-400"
+                        : "bg-gray-100 text-gray-600"
+                      : "bg-gray-600/20 text-gray-400",
+            )}
+          >
+            {t(st) || st || t("unknown")}
+          </span>
+        );
+      },
+    },
+
+    {
+      key: "tripCount",
+      label: t("trips"),
+      sortable: true,
+      render: (business: any) => (
+        <span className={textPrimary}>{business.tripCount ?? 0}</span>
+      ),
+    },
+
+    {
+      key: "associatedWebsites",
+      label: t("website"),
+      render: (business: any) => {
+        const sites = business.associatedWebsites || [];
+        if (!sites.length) return <span className={textSecondary}>-</span>;
+
+        // Show first valid URL (or the most relevant one)
+        const mainSite = sites.find((s: any) => s.url) || sites[0];
+        if (!mainSite?.url) return <span className={textSecondary}>-</span>;
+
+        try {
+          const url = new URL(mainSite.url);
+          return (
+            <a
+              href={mainSite.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="flex items-center gap-1 text-teal-500 hover:text-teal-400 transition-colors"
+            >
+              <ExternalLink className="w-4 h-4" />
+              <span className="text-sm">{url.hostname}</span>
+            </a>
+          );
+        } catch {
+          return <span className={textSecondary}>{mainSite.url}</span>;
+        }
+      },
+    },
+
+  
+  ];
+ 
 
   // Helper function to get column label
   const getColumnLabel = (key: keyof ColumnVisibility): string => {
@@ -397,48 +561,48 @@ export default function BusinessesList({
   // Calculate trip count (mock - in real app would come from backend)
   const getTripCount = (business: any): number => {
     // Mock calculation based on products count and impact score
-    return Math.floor((business.productsCount * business.impactScore) / 10);
+    return Math.floor((business.productCount * business.impact) / 10);
   };
 
   // Get category icon based on main category
-  const getCategoryIcon = (categories: string[]) => {
-    const mainCategory = categories[0]?.toLowerCase() || "";
+  // const getCategoryIcon = (categories: string[]) => {
+  //   const mainCategory = categories[0]?.toLowerCase() || "";
 
-    if (
-      mainCategory.includes("food") ||
-      mainCategory.includes("dining") ||
-      mainCategory.includes("cafe")
-    ) {
-      return <UtensilsCrossed className="w-5 h-5" />;
-    }
-    if (mainCategory.includes("tourism") || mainCategory.includes("travel")) {
-      return <Plane className="w-5 h-5" />;
-    }
-    if (
-      mainCategory.includes("adventure") ||
-      mainCategory.includes("attraction")
-    ) {
-      return <Landmark className="w-5 h-5" />;
-    }
-    if (mainCategory.includes("culture")) {
-      return <Theater className="w-5 h-5" />;
-    }
-    if (
-      mainCategory.includes("accommodation") ||
-      mainCategory.includes("sleep")
-    ) {
-      return <BedDouble className="w-5 h-5" />;
-    }
-    if (
-      mainCategory.includes("local") ||
-      mainCategory.includes("shopping") ||
-      mainCategory.includes("eco")
-    ) {
-      return <Map className="w-5 h-5" />;
-    }
-    // Default icon
-    return <Map className="w-5 h-5" />;
-  };
+  //   if (
+  //     mainCategory.includes("food") ||
+  //     mainCategory.includes("dining") ||
+  //     mainCategory.includes("cafe")
+  //   ) {
+  //     return <UtensilsCrossed className="w-5 h-5" />;
+  //   }
+  //   if (mainCategory.includes("tourism") || mainCategory.includes("travel")) {
+  //     return <Plane className="w-5 h-5" />;
+  //   }
+  //   if (
+  //     mainCategory.includes("adventure") ||
+  //     mainCategory.includes("attraction")
+  //   ) {
+  //     return <Landmark className="w-5 h-5" />;
+  //   }
+  //   if (mainCategory.includes("culture")) {
+  //     return <Theater className="w-5 h-5" />;
+  //   }
+  //   if (
+  //     mainCategory.includes("accommodation") ||
+  //     mainCategory.includes("sleep")
+  //   ) {
+  //     return <BedDouble className="w-5 h-5" />;
+  //   }
+  //   if (
+  //     mainCategory.includes("local") ||
+  //     mainCategory.includes("shopping") ||
+  //     mainCategory.includes("eco")
+  //   ) {
+  //     return <Map className="w-5 h-5" />;
+  //   }
+  //   // Default icon
+  //   return <Map className="w-5 h-5" />;
+  // };
 
   // Loading state
   // if (loading) {
@@ -501,8 +665,7 @@ export default function BusinessesList({
     {
       id: 4,
       title: t("avg_impact") || "Avg. Impact",
-      value:
-        businessStatsData?.averageImpactScore,
+      value: businessStatsData?.averageImpactScore,
       label: t("score") || "Score",
       icon: <Theater className="w-5 h-5 text-orange-600" />,
     },
@@ -900,202 +1063,13 @@ export default function BusinessesList({
             className={`rounded-2xl ${theme === "dark" ? "bg-gray-900/50" : "bg-white"}`}
           >
             <ReordableDataTable
-              rowKey="id"
-              data={displayedBusinesses}
-              selectedItems={selectedBusinesses}
-              onSelectionChange={setSelectedBusinesses}
+              rowKey="_id"
+              data={businessData?.data}
+              // selectedItems={selectedBusinesses}
+              // onSelectionChange={setSelectedBusinesses}
               onRowClick={(business) => onBusinessClick(business)}
               storageKey="businessesTableColumnOrder"
-              columns={[
-                ...(canChangeStatus
-                  ? [{ key: "checkbox", label: "", width: "50px" }]
-                  : []),
-
-                {
-                  key: "impactScore",
-                  label: t("impact_score"),
-                  sortable: true,
-                  render: (business) => (
-                    <span
-                      className={clsx(
-                        "inline-flex items-center justify-center px-3 py-1 rounded-lg text-sm font-medium",
-                        business.impactScore >= 650
-                          ? theme === "dark"
-                            ? "bg-green-500/20 text-green-400"
-                            : "bg-green-100 text-green-700"
-                          : business.impactScore >= 450
-                            ? theme === "dark"
-                              ? "bg-yellow-500/20 text-yellow-400"
-                              : "bg-yellow-100 text-yellow-700"
-                            : theme === "dark"
-                              ? "bg-gray-700 text-gray-400"
-                              : "bg-gray-100 text-gray-600",
-                      )}
-                    >
-                      {business.impactScore}
-                    </span>
-                  ),
-                },
-
-                {
-                  key: "businessName",
-                  label: t("business_name"),
-                  sortable: true,
-                  render: (business) => (
-                    <div className="flex items-center gap-3">
-                      <div
-                        className={clsx(
-                          "w-10 h-10 rounded-lg flex items-center justify-center",
-                          theme === "dark" ? "bg-teal-500/10" : "bg-teal-50",
-                        )}
-                      >
-                        <span className="text-teal-500">
-                          {getCategoryIcon(business.categories)}
-                        </span>
-                      </div>
-                      <span className={textPrimary}>{business.name}</span>
-                    </div>
-                  ),
-                },
-
-                {
-                  key: "shortDescription",
-                  label: t("short_description"),
-                  render: (business) => (
-                    <div className={clsx(textSecondary, "max-w-xs truncate")}>
-                      {business.shortDescription}
-                    </div>
-                  ),
-                },
-
-                {
-                  key: "contactName",
-                  label: t("contact_name"),
-                  render: (business) => (
-                    <span className={textSecondary}>
-                      {business.contactPerson.name}
-                    </span>
-                  ),
-                },
-
-                {
-                  key: "businessEmail",
-                  label: t("business_email"),
-                  render: (business) => (
-                    <span className={textSecondary}>{business.email}</span>
-                  ),
-                },
-
-                {
-                  key: "phoneNumber",
-                  label: t("phone_number"),
-                  render: (business) => (
-                    <span className={clsx(textSecondary, "whitespace-nowrap")}>
-                      {business.phone}
-                    </span>
-                  ),
-                },
-
-                {
-                  key: "productsCount",
-                  label: t("products_count"),
-                  sortable: true,
-                  render: (business) => (
-                    <span className={textPrimary}>
-                      {business.productsCount}
-                    </span>
-                  ),
-                },
-
-                {
-                  key: "status",
-                  label: t("status"),
-                  sortable: true,
-                  render: (business) => (
-                    <span
-                      className={clsx(
-                        "inline-flex items-center px-3 py-1 rounded-lg text-sm font-medium",
-                        business.status === "approved"
-                          ? "bg-blue-500/20 text-blue-400"
-                          : business.status === "pending"
-                            ? "bg-yellow-500/20 text-yellow-400"
-                            : business.status === "rejected"
-                              ? "bg-red-500/20 text-red-400"
-                              : business.status === "draft"
-                                ? theme === "dark"
-                                  ? "bg-gray-700 text-gray-400"
-                                  : "bg-gray-100 text-gray-600"
-                                : "bg-gray-600/20 text-gray-400",
-                      )}
-                    >
-                      {business.status === "draft" && t("draft")}
-                      {business.status === "pending" && t("pending")}
-                      {business.status === "approved" && t("approved")}
-                      {business.status === "rejected" && t("rejected")}
-                      {business.status === "archived" && t("archived")}
-                    </span>
-                  ),
-                },
-
-                {
-                  key: "lifetimeSales",
-                  label: t("lifetime_sales"),
-                  sortable: true,
-                  render: (business) => (
-                    <span className={clsx(textPrimary, "font-medium")}>
-                      ₪{business.lifetimeSales.toLocaleString()}
-                    </span>
-                  ),
-                },
-
-                {
-                  key: "tripCount",
-                  label: t("trips"),
-                  sortable: true,
-                  render: (business) => (
-                    <span className={textPrimary}>
-                      {getTripCount(business)}
-                    </span>
-                  ),
-                },
-
-                {
-                  key: "websiteUrl",
-                  label: t("website"),
-                  render: (business) => (
-                    <a
-                      href={business.website}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={(e) => e.stopPropagation()}
-                      className="flex items-center gap-1 text-teal-500 hover:text-teal-400 transition-colors"
-                    >
-                      <ExternalLink className="w-4 h-4" />
-                      <span className="text-sm">
-                        {new URL(business.website).hostname}
-                      </span>
-                    </a>
-                  ),
-                },
-
-                {
-                  key: "contactPhone",
-                  label: t("contact_phone"),
-                  render: (business) => (
-                    <span className={clsx(textSecondary, "whitespace-nowrap")}>
-                      {business.contactPerson.phone}
-                    </span>
-                  ),
-                },
-
-                {
-                  key: "categories",
-                  label: t("categories"),
-                  render: (business) => (
-                    <CategoriesBadges categories={business.categories} />
-                  ),
-                },
-              ]}
+              columns={columns}
             />
           </div>
         )}

@@ -16,8 +16,8 @@ interface BusinessTitleSectionProps {
     };
     const config = statusConfig[status];
     return (
-      <span className={`px-3 py-1 rounded-full text-sm text-white ${config.color}`}>
-        {config.label}
+      <span className={`px-3 py-1 rounded-full text-sm text-white ${config?.color}`}>
+        {config?.label}
       </span>
     );
   };
@@ -33,7 +33,7 @@ interface BusinessTitleSectionProps {
           <div className="flex items-center gap-2">
             <TrendingUp className="w-5 h-5 text-green-600" />
             <span className={theme === "dark" ? "text-gray-300" : "text-gray-700"}>
-              {t("impact_score")}: {business.impactScore.toFixed(1)}
+              {t("impact_score")}: {business.impact.toFixed(1)}
             </span>
           </div>
         </div>

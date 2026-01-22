@@ -19,7 +19,7 @@ interface Business {
   categories: string[]
   subcategories: string[]
   tags: string[]
-  impactScore: number
+  impact: number
   internalNotes?: string
   status: string
   rejectionNote?: string
@@ -109,7 +109,7 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({
           {t('short_description')}
         </h3>
         <p className={theme === 'dark' ? 'text-gray-200' : 'text-gray-800'}>
-          {business.shortDescription}
+          {business?.shortDescription}
         </p>
       </div>
 
@@ -119,7 +119,7 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({
           {t('full_description')}
         </h3>
         <p className={theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}>
-          {business.fullDescription}
+          {business?.fullDescription}
         </p>
       </div>
 
@@ -129,7 +129,7 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({
           {t('categories')}
         </h3>
         <div className="flex flex-wrap gap-2">
-          {business.categories.map((cat, idx) => (
+          {business?.categories?.map((cat, idx) => (
             <span
               key={idx}
               className={`px-3 py-1 rounded-full text-sm ${theme === 'dark' ? 'bg-teal-900/30 text-teal-400' : 'bg-teal-100 text-teal-800'
@@ -142,13 +142,13 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({
       </div>
 
       {/* Subcategories */}
-      {business.subcategories.length > 0 && (
+      {business?.subcategories?.length > 0 && (
         <div>
           <h3 className={`text-sm mb-2 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
             {t('subcategories')}
           </h3>
           <div className="flex flex-wrap gap-2">
-            {business.subcategories.map((subcat, idx) => (
+            {business?.subcategories?.map((subcat, idx) => (
               <span
                 key={idx}
                 className={`px-3 py-1 rounded-full text-sm ${theme === 'dark' ? 'bg-blue-900/30 text-blue-400' : 'bg-blue-100 text-blue-800'
@@ -162,13 +162,13 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({
       )}
 
       {/* Tags */}
-      {business.tags.length > 0 && (
+      {business?.tags?.length > 0 && (
         <div>
           <h3 className={`text-sm mb-2 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
             {t('tags')}
           </h3>
           <div className="flex flex-wrap gap-2">
-            {business.tags.map((tag, idx) => (
+            {business?.tags?.map((tag, idx) => (
               <span
                 key={idx}
                 className={`px-2 py-1 rounded text-xs ${theme === 'dark' ? 'bg-gray-800 text-gray-400' : 'bg-gray-200 text-gray-700'
@@ -190,7 +190,7 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({
         <div className="flex items-center gap-3">
           <TrendingUp className="w-5 h-5 text-green-600" />
           <span className={`text-2xl ${theme === 'dark' ? 'text-gray-200' : 'text-gray-800'}`}>
-            {business.impactScore.toFixed(1)}
+            {business?.impact?.toFixed(1)}
           </span>
           <span className={theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}>/ 10</span>
         </div>
@@ -207,7 +207,7 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({
           {t('connected_websites')}
         </h3>
         <div className="flex flex-wrap items-center gap-3">
-          {websiteConnections.map((website) => (
+          {websiteConnections?.map((website) => (
             <button
               key={website.id}
               onClick={() => handleWebsiteClick(website)}
@@ -281,7 +281,7 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({
       </div>
 
       {/* Internal Notes */}
-      {canChangeStatus && business.internalNotes && (
+      {canChangeStatus && business?.internalNotes && (
         <div
           className={`p-4 rounded-lg ${theme === 'dark' ? 'bg-yellow-900/20 border border-yellow-800' : 'bg-yellow-50 border border-yellow-200'}`}
         >
@@ -289,13 +289,13 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({
             {t('internal_notes')}
           </h3>
           <p className={theme === 'dark' ? 'text-yellow-300' : 'text-yellow-900'}>
-            {business.internalNotes}
+            {business?.internalNotes}
           </p>
         </div>
       )}
 
       {/* Rejection Note */}
-      {business.status === 'rejected' && business.rejectionNote && (
+      {business?.status === 'rejected' && business?.rejectionNote && (
         <div
           className={`p-4 rounded-lg ${theme === 'dark' ? 'bg-red-900/20 border border-red-800' : 'bg-red-50 border border-red-200'}`}
         >
@@ -303,7 +303,7 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({
             {t('rejection_note')}
           </h3>
           <p className={theme === 'dark' ? 'text-red-300' : 'text-red-900'}>
-            {business.rejectionNote || t('no_rejection_note')}
+            {business?.rejectionNote || t('no_rejection_note')}
           </p>
         </div>
       )}

@@ -14,7 +14,7 @@
   categories: string[];
   subcategories: string[];
   tags: string[];
-  impactScore: number;
+  impact: number;
   productsCount: number;
   lifetimeSales: number; // Total sales revenue in ILS
   address: string;
