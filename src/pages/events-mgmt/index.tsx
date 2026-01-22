@@ -274,7 +274,7 @@ export default function EventsMgmtPage() {
                     )}
                     {statusFilter !== 'all' && (
                       <span className="px-3 py-1 bg-orange-500/20 text-orange-500 rounded-full text-xs capitalize">
-                        {statusFilter === 'upcoming' ? t('upcoming_status') : statusFilter === 'past' ? t('past_status') : t('canceled_status')}
+                        {statusFilter === 'APPROVED' ? t('upcoming_status') : statusFilter === 'PENDING' ? t('past_status') : t('canceled_status')}
                       </span>
                     )}
                     <button
@@ -314,6 +314,7 @@ export default function EventsMgmtPage() {
       <Activity mode={showDailyBreakdown && !showQuickSnapModal ? "visible" : "hidden"}>
         <EventDetailModal
           isRTL={isRTL}
+          handleEditEvent={handleEditEvent}
           selectedEvent={selectedEvent}
           setSelectedEvent={setSelectedEvent}
           showDailyBreakdown={showDailyBreakdown}

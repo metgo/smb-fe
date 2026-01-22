@@ -2,7 +2,7 @@ import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { Activity, useEffect, useState } from "react";
-import { Plus, Ticket, AlertCircle, FileText, Trash2 } from "lucide-react";
+import { Plus, Ticket, FileText, Trash2 } from "lucide-react";
 
 import { useAppSelector } from "@/hooks/hooks";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
@@ -44,6 +44,7 @@ const EventTickets: React.FC<EventTicketsProps> = ({
   setTickets,
   setCurrentStep,
 }) => {
+  console.log(" EventTickets ~ errors:", errors)
   const { t } = useTranslation("events");
   const { textPrimary, textTertiary } = useThemeClasses();
   const { theme } = useAppSelector((state) => state.settings);
@@ -115,14 +116,6 @@ const EventTickets: React.FC<EventTicketsProps> = ({
           {t("create_ticket")}
         </button>
       </div>
-
-      {/* Global Error */}
-      {errors.tickets && (
-        <div className="p-5 rounded-xl bg-red-500/10 border border-red-500/50 text-red-600 dark:text-red-400 flex items-center gap-3">
-          <AlertCircle className="w-6 h-6 shrink-0" />
-          <span className="font-medium">{errors.tickets}</span>
-        </div>
-      )}
 
       {/* No Tickets State */}
       {tickets?.length === 0 || !tickets ? (

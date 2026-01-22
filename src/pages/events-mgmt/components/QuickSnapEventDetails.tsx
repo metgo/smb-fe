@@ -10,10 +10,9 @@ import {
 } from "lucide-react";
 import clsx from "clsx";
 
-import { formatDate } from "@/helpers/formatter";
 import { useAppSelector } from "@/hooks/hooks";
 import { ImageWithFallback } from "@/components/shared";
-import { extractCenterAddressText } from "@/helpers";
+import { extractCenterAddressText, extractEventDates } from "@/helpers";
 
 interface QuickSnapEventDetailsProps {
   selectedEvent: any | null;
@@ -28,10 +27,8 @@ const QuickSnapEventDetails = ({
   handleEditEvent,
   handleViewDetails,
 }: QuickSnapEventDetailsProps) => {
-  console.log("🚀 ~ QuickSnapEventDetails ~ selectedEvent:", selectedEvent)
-  const { t, i18n } = useTranslation("events");
+  const { t } = useTranslation("events");
   const { theme } = useAppSelector((state) => state.settings);
-  const language = i18n.language || "en";
 
   if (!selectedEvent) return null;
 
@@ -45,7 +42,7 @@ const QuickSnapEventDetails = ({
       >
         {/* Header Image */}
         <div className="relative h-64 rounded-t-2xl overflow-hidden">
-          {selectedEvent?.images ? (
+          {selectedEvent?.images?.[0]?.image ? (
             <ImageWithFallback
               src={selectedEvent.images?.[0]?.image}
               alt={selectedEvent.name}
@@ -104,9 +101,7 @@ const QuickSnapEventDetails = ({
               <Calendar className="w-6 h-6 text-purple-500" />
               <div>
                 <div className="font-medium">
-                  {formatDate(selectedEvent?.dayDescription?.[0]?.date, language)}
-                  {selectedEvent?.startDate !== selectedEvent?.endDate &&
-                    ` – ${formatDate(selectedEvent.endDate, language)}`}
+                    {extractEventDates(selectedEvent?.dayDescription)}
                 </div>
                 <div
                   className={clsx(
@@ -161,11 +156,10 @@ const QuickSnapEventDetails = ({
                     <div
                       className="bg-linear-to-r from-purple-500 to-pink-500 h-3 rounded-full"
                       style={{
-                        width: `${
-                          (selectedEvent.totalRegistrations /
+                        width: `${(selectedEvent.totalRegistrations /
                             selectedEvent.capacity) *
                           100
-                        }%`,
+                          }%`,
                       }}
                     />
                   </div>
@@ -199,7 +193,7 @@ const QuickSnapEventDetails = ({
                       : "text-purple-600"
                   )}
                 >
-                  ₪ 0 
+                  ₪ 0
                   {/* {selectedEvent?.revenue?.toLocaleString()} */}
                 </div>
               </div>

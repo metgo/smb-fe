@@ -116,7 +116,7 @@ export default function CreateEventWizard({
 
   // Reset all state when wizard closes or opens in create mode
   useEffect(() => {
-    if (isOpen && !editId) {
+    if (isOpen) {
       // Reset to initial state
       setCurrentStep(1);
       setEventName('');
@@ -145,8 +145,9 @@ export default function CreateEventWizard({
       setGroupTypesId([]);
       setAccessiblitiesId([]);
       setEventId(null);
+      setEventImages([]);
     }
-  }, [isOpen,]);
+  }, [isOpen, editData]);
 
 
   useEffect(() => {
@@ -229,7 +230,7 @@ export default function CreateEventWizard({
         if (capacityType === 'limited' && capacity <= 0) newErrors.capacity = 'Must be greater than 0';
         break;
       case 4:
-        if (tickets?.length === 0 && registrationRequired) {
+        if (tickets?.length===0 && registrationRequired) {
           newErrors.tickets = t('at_least_one_ticket_required');
         }
         break;
@@ -240,8 +241,11 @@ export default function CreateEventWizard({
   };
 
   const handleNext = () => {
-    // setCurrentStep(prev => Math.min(prev + 1, 7));
-    handleSaveDraft();
+    if (currentStep === 4) {
+      setCurrentStep(prev => Math.min(prev + 1, 7));
+    } else {
+      handleSaveDraft();
+    }
   };
 
   const handlePrevious = () => {
