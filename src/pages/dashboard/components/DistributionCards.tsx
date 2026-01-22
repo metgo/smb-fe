@@ -3,7 +3,6 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Building2, ChevronDown, Bed, Compass, ShoppingBag, UtensilsCrossed, Plane, Landmark, MapPin, Package } from 'lucide-react';
 
-import { categories } from '@/lib/utils';
 import { useAppSelector } from '@/hooks/hooks';
 import { useGetBusinessStatsQuery, useGetPOIStatsQuery, useGetProductStatsQuery } from '@/store/api/itemStatsApi';
 import { InfoTooltip } from '@/components/shared';

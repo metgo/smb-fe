@@ -15,8 +15,8 @@ interface EventsStatsParams {
 }
 
 interface EventListParams {
-  page?: string;
-  limit?: string;
+  page?: number;
+  limit?: number;
   search?: string;
   eventType?: string;
   status?: string;
@@ -66,7 +66,6 @@ export const eventQueryApi = createApi({
         method: 'GET'
       })
     })
-
   }),
 
 });
