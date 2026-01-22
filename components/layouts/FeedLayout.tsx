@@ -13,11 +13,11 @@ import OnlyFeedCardsLayout from "./OnlyFeedCardsLayout";
 import MapFeedIntegratedLayout from "./MapFeedIntegratedLayout";
 import StickyYellowRibbonImage from "../StickyYellowRibbonImage";
 import FeedFilterDrawer from "../drawer/FeedFilterDrawer";
-import { IconImage } from "../ui";
 
 import { getFeedItems, getAllFilters } from "@/actions/feedActions";
 import { getPresetFilters } from "@/actions/commonActions";
 import { misc } from "@/constant/hebrew";
+import { SunsetButton } from "../filter-icon/SunsetButton";
 
 interface FeedLayoutProps {
   isAllClear: boolean;
@@ -95,7 +95,6 @@ const FeedLayout = ({ selectedFiltersIds, isAllClear }: FeedLayoutProps) => {
     isSelected,
     toggleParam,
     handleResetFilters,
-    shouldAnimate,
   } = useFeedFilter(filters, initialSelectedFiltersIds);
 
   /* ---------------------- Infinite Scroll Observer ---------------------- */
@@ -185,22 +184,11 @@ const FeedLayout = ({ selectedFiltersIds, isAllClear }: FeedLayoutProps) => {
         {/* Filter Button */}
         {hideFirstTwoSection && (
           <div className="fixed bottom-1 right-4 custom-cursor max-sm:hidden md:block">
-            <div
+            <SunsetButton
+              variant={"black"}
               onClick={handleFilterIconClick}
-              className="relative inline-block w-full"
-            >
-              <div
-                className={`relative z-10 border-2 border-white rounded-full shadow-2xl shadow-green-400
-                  ${shouldAnimate ? "animate-zoom-3x" : ""}`}
-              >
-                {appliedFilterCount > 0 && (
-                  <div className="bg-green-500 absolute right-0 -top-1 rounded-full h-[25px] w-[25px] text-[10px] flex items-center justify-center text-white aspect-square border-2 border-white z-20">
-                    {appliedFilterCount}
-                  </div>
-                )}
-                <IconImage icon="ai" width={84} height={84} />
-              </div>
-            </div>
+              appliedFilterCount={appliedFilterCount}
+            />
             {!alreadyShownFilterTooltip && (
               <div className="bg-[#28C368] px-4 py-2 rounded-md text-white absolute right-24 bottom-8 w-max font-bold ">
                 {misc.filterIconTooltip}
