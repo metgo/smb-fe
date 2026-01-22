@@ -226,5 +226,16 @@
   "registrant_details": "פרטי הנרשם",
   "no_registrants_match": "לא נמצאו נרשמים התואמים את החיפוש שלך",
 
-   "search_placeholder": "חפש כתובת..."
+   "search_placeholder": "חפש כתובת...",
+
+   "your_images": "התמונות שלך",
+  "tickets": "כרטיסים",
+  "registration": "הרשמה",
+  "required": "נדרש",
+  "select_dmo": "בחר DMO",
+  "select_authority": "בחר רשות",
+  "messaging": "הודעות",
+  "no_registrants_yet": "טרם נרשמו משתתפים",
+  "date_range": "טווח תאריכים",
+  "websites": "אתרים"
 }

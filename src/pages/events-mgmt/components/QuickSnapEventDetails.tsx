@@ -138,8 +138,7 @@ const QuickSnapEventDetails = ({
               >
                 {selectedEvent.isFree
                   ? t("free")
-                  : `₪ 0
-                  ${selectedEvent.price}`}
+                  : `₪ 0`}
               </div>
             </div>
 

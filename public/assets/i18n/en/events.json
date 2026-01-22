@@ -214,5 +214,16 @@
 
   "registrant_details":"Registrant Details",
   "no_registrants_match":"No Registrants Match Your Search",
-  "search_placeholder":"Search Address..."
+  "search_placeholder":"Search Address...",
+
+  "your_images": "Your Images",
+  "tickets": "Tickets",
+  "registration": "Registration",
+  "required": "Required",
+  "select_dmo": "Select DMO",
+  "select_authority": "Select Authority",
+  "messaging": "Messaging",
+  "no_registrants_yet": "No Registrants Yet",
+  "date_range": "Date Range",
+  "websites": "Websites"
 }

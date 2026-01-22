@@ -19,6 +19,7 @@ interface EventTicketsProps {
   };
   eventId: string | null;
   setTickets: (v: TicketData[])=>void;
+  setCurrentStep: (v: number) => void;
 }
 
 const getTicketTypeColor = (type: string) => {
@@ -41,6 +42,7 @@ const EventTickets: React.FC<EventTicketsProps> = ({
   showTicketModal,
   errors,
   setTickets,
+  setCurrentStep,
 }) => {
   const { t } = useTranslation("events");
   const { textPrimary, textTertiary } = useThemeClasses();
@@ -123,7 +125,7 @@ const EventTickets: React.FC<EventTicketsProps> = ({
       )}
 
       {/* No Tickets State */}
-      {tickets?.length === 0 ? (
+      {tickets?.length === 0 || !tickets ? (
         <div
           className={`p-16 rounded-2xl border-2 border-dashed text-center ${theme === "dark"
             ? "border-gray-700 bg-gray-800/30"
@@ -241,6 +243,7 @@ const EventTickets: React.FC<EventTicketsProps> = ({
           editingTicket={editingTicket!}
           tickets={tickets}
           refetch={refetch}
+          setCurrentStep={setCurrentStep}
           setShowTicketModal={setShowTicketModal}
           setEditingTicket={setEditingTicket}
         />

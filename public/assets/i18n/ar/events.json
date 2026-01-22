@@ -226,5 +226,16 @@
   "registrant_details": "تفاصيل المسجل",
   "no_registrants_match": "لا يوجد مسجلون يطابقون بحثك",
 
-  "search_placeholder": "ابحث عن عنوان..."
+  "search_placeholder": "ابحث عن عنوان...",
+  
+  "your_images": "صورك",
+  "tickets": "تذاكر",
+  "registration": "تسجيل",
+  "required": "مطلوب",
+  "select_dmo": "اختر DMO",
+  "select_authority": "اختر السلطة",
+  "messaging": "الرسائل",
+  "no_registrants_yet": "لا يوجد مسجلون بعد",
+  "date_range": "نطاق التاريخ",
+  "websites": "مواقع إلكترونية"
 }

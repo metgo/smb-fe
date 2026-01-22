@@ -401,7 +401,6 @@ const NotificationsTimeline: React.FC<NotificationsTimelineProps> = ({
               <button
                 onClick={() => {
                   if (!editingNotification.channels.email && !editingNotification.channels.sms && !editingNotification.channels.whatsapp) {
-                    alert(t("select_at_least_one_channel"));
                     return;
                   }
                   const existingIndex = notifications.findIndex((n) => n.id === editingNotification.id);

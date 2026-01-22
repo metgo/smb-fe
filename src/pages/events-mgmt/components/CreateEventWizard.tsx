@@ -9,7 +9,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useAppSelector } from '@/hooks/hooks';
 
-import { WizardFooter } from '@/components/shared';
+import { Spinner, WizardFooter } from '@/components/shared';
 import { useThemeClasses } from '@/hooks/useThemeClasses';
 
 import { useGetEventByIdQuery } from '@/store/api/eventQueryApi';
@@ -36,7 +36,7 @@ export default function CreateEventWizard({
 
   const [updateEvent, { isLoading: isEventUpdating }] = useUpdateEventMutation()
   const [initEventCreate, { isLoading: isEventCreating }] = useInitEventCreateMutation()
-  const { data: editData, refetch } = useGetEventByIdQuery(editId ? { eventId: editId } : skipToken);
+  const { data: editData, isLoading } = useGetEventByIdQuery(editId ? { eventId: editId } : skipToken);
 
   useEffect(() => { if (editId) setEventId(editId) }, [editId])
 
@@ -91,8 +91,6 @@ export default function CreateEventWizard({
 
   // Step 4: Tickets
   const [tickets, setTickets] = useState<TicketData[]>([]);
-  const [ticketCount, setTicketCount] = useState(0);
-  console.log("🚀 ~ CreateEventWizard ~ ticketCount:", ticketCount)
   const [showTicketModal, setShowTicketModal] = useState(false);
 
   // Step 5: Messaging
@@ -181,6 +179,7 @@ export default function CreateEventWizard({
       setRecurrenceEndDate(editData?.recurringEventRuleId?.endDate || '')
       setRecurrenceEndCount(editData?.recurringEventRuleId?.occurrenceLimit || 10)
       setAddress(editData?.address?.location || '')
+      setOnlineLink(editData?.onlineLink || '')
 
       // Registration
       setRegistrationRequired(editData?.registration?.isRegistration)
@@ -230,7 +229,7 @@ export default function CreateEventWizard({
         if (capacityType === 'limited' && capacity <= 0) newErrors.capacity = 'Must be greater than 0';
         break;
       case 4:
-        if (ticketCount && registrationRequired) {
+        if (tickets?.length === 0 && registrationRequired) {
           newErrors.tickets = t('at_least_one_ticket_required');
         }
         break;
@@ -361,7 +360,6 @@ export default function CreateEventWizard({
 
       // 4️⃣ Success feedback
       toast.success(res?.message ?? t('event_saved_as_draft'));
-      refetch()
       setCurrentStep(prev => prev + 1)
     } catch (error: any) {
       toast.error(error?.message || t('something_went_wrong'));
@@ -441,240 +439,244 @@ export default function CreateEventWizard({
         className={`w-full max-w-5xl h-[90vh] rounded-xl flex flex-col ${cardClasses} ${isRTL ? 'rtl' : 'ltr'
           }`}
       >
-        {/* Header */}
-        <div className={`flex items-center justify-between p-6 border-b ${theme === 'dark' ? 'border-gray-800' : 'border-gray-200'}`}>
-          <div className="flex-1">
-            <h2 className={`text-2xl ${textPrimary}`}>
-              {editId ? t('edit_event') : t('create_new_event')}
-            </h2>
-            <p className={`text-sm mt-1 ${textTertiary}`}>
-              {t('step')} {currentStep} {t('step_of')} {steps.length}: {steps[currentStep - 1].label}
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            {lastSaved && (
-              <span className={`text-xs ${textTertiary}`}>
-                {(isEventCreating || isEventUpdating) ? (
-                  <span className="flex items-center gap-1">
-                    <Loader className="w-3 h-3 animate-spin" />
-                    {t('saving')}
-                  </span>
-                ) : (
-                  `${t('saved')} ${lastSaved.toLocaleTimeString()}`
-                )}
-              </span>
-            )}
-            <button
-              onClick={onClose}
-              className={`p-2 rounded-lg transition-colors ${theme === 'dark' ? 'hover:bg-gray-800' : 'hover:bg-gray-100'
-                }`}
-            >
-              <X className={`w-6 h-6 ${textTertiary}`} />
-            </button>
-          </div>
-        </div>
-
-        {/* Progress Bar */}
-        <div className={`px-6 py-4 border-b ${theme === 'dark' ? 'border-gray-800' : 'border-gray-200'} `}>
-          <div className="flex items-center justify-between ">
-            {steps.map((step, index) => (
-              <div
-                key={step.id}
-                className="flex items-center flex-1 cursor-pointer"
-                onClick={() => setCurrentStep(step.id)}
+        <Spinner isLoading={isEventCreating || isEventCreating || isLoading} />
+        <>
+          {/* Header */}
+          <div className={`flex items-center justify-between p-6 border-b ${theme === 'dark' ? 'border-gray-800' : 'border-gray-200'}`}>
+            <div className="flex-1">
+              <h2 className={`text-2xl ${textPrimary}`}>
+                {editId ? t('edit_event') : t('create_new_event')}
+              </h2>
+              <p className={`text-sm mt-1 ${textTertiary}`}>
+                {t('step')} {currentStep} {t('step_of')} {steps.length}: {steps[currentStep - 1].label}
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              {lastSaved && (
+                <span className={`text-xs ${textTertiary}`}>
+                  {(isEventCreating || isEventUpdating) ? (
+                    <span className="flex items-center gap-1">
+                      <Loader className="w-3 h-3 animate-spin" />
+                      {t('saving')}
+                    </span>
+                  ) : (
+                    `${t('saved')} ${lastSaved.toLocaleTimeString()}`
+                  )}
+                </span>
+              )}
+              <button
+                onClick={onClose}
+                className={`p-2 rounded-lg transition-colors ${theme === 'dark' ? 'hover:bg-gray-800' : 'hover:bg-gray-100'
+                  }`}
               >
-                <div className="flex flex-col items-center">
-                  <div
-                    className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${currentStep > step.id
-                      ? 'bg-green-500 text-white'
-                      : currentStep === step.id
-                        ? 'bg-teal-500 text-white'
-                        : theme === 'dark'
-                          ? 'bg-gray-800 text-gray-500'
-                          : 'bg-gray-200 text-gray-400'
-                      }`}
-                  >
-                    {currentStep > step.id ? (
-                      <Check className="w-5 h-5" />
-                    ) : (
-                      <step.icon className="w-5 h-5" />
-                    )}
-                  </div>
-                  <span className={`text-xs mt-1 hidden md:block ${textTertiary}`}>
-                    {step.label}
-                  </span>
-                </div>
-                {index < steps.length - 1 && (
-                  <div
-                    className={`flex-1 h-0.5 mx-2 ${currentStep > step.id
-                      ? 'bg-green-500'
-                      : theme === 'dark'
-                        ? 'bg-gray-800'
-                        : 'bg-gray-200'
-                      }`}
-                  />
-                )}
-              </div>
-            ))}
+                <X className={`w-6 h-6 ${textTertiary}`} />
+              </button>
+            </div>
           </div>
-        </div>
 
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6">
-          <Activity mode={currentStep === 1 ? "visible" : "hidden"}>
-            <EventBasicInformation
-              eventName={eventName}
-              setEventName={setEventName}
-              shortDescription={shortDescription}
-              setShortDescription={setShortDescription}
-              fullDescription={fullDescription}
-              setFullDescription={setFullDescription}
-              eventStatus={eventStatus}
-              setEventStatus={setEventStatus}
-              internalNotes={internalNotes}
-              setInternalNotes={setInternalNotes}
-              errors={errors}
-              selectedDmoId={selectedDmoId}
-              setSelectDmoId={setSelectDmoId}
-              selectedAuthorityId={selectedAuthorityId}
-              setSelectAuthorityId={setSelectAuthorityId}
-              selectedAccessiblitiesId={selectedAccessiblitiesId}
-              setAccessiblitiesId={setAccessiblitiesId}
-              selectedGroupTypesId={selectedGroupTypesId}
-              setGroupTypesId={setGroupTypesId}
-              selectedSubCategoriesId={selectedSubCategoriesId}
-              setSubCategoriesId={setSubCategoriesId}
-            />
-          </Activity>
+          {/* Progress Bar */}
+          <div className={`px-6 py-4 border-b ${theme === 'dark' ? 'border-gray-800' : 'border-gray-200'} `}>
+            <div className="flex items-center justify-between ">
+              {steps.map((step, index) => (
+                <div
+                  key={step.id}
+                  className="flex items-center flex-1 cursor-pointer"
+                  onClick={() => setCurrentStep(step.id)}
+                >
+                  <div className="flex flex-col items-center">
+                    <div
+                      className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${currentStep > step.id
+                        ? 'bg-green-500 text-white'
+                        : currentStep === step.id
+                          ? 'bg-teal-500 text-white'
+                          : theme === 'dark'
+                            ? 'bg-gray-800 text-gray-500'
+                            : 'bg-gray-200 text-gray-400'
+                        }`}
+                    >
+                      {currentStep > step.id ? (
+                        <Check className="w-5 h-5" />
+                      ) : (
+                        <step.icon className="w-5 h-5" />
+                      )}
+                    </div>
+                    <span className={`text-xs mt-1 hidden md:block ${textTertiary}`}>
+                      {step.label}
+                    </span>
+                  </div>
+                  {index < steps.length - 1 && (
+                    <div
+                      className={`flex-1 h-0.5 mx-2 ${currentStep > step.id
+                        ? 'bg-green-500'
+                        : theme === 'dark'
+                          ? 'bg-gray-800'
+                          : 'bg-gray-200'
+                        }`}
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
 
-          <Activity mode={currentStep === 2 ? "visible" : "hidden"}>
-            <EventDateTimeFormat
-              geo={geo}
-              setGeo={setGeo}
-              isMultiDay={isMultiDay}
-              setIsMultiDay={setIsMultiDay}
-              startDate={startDate}
-              setStartDate={setStartDate}
-              eventDays={eventDays}
-              setEventDays={setEventDays}
-              eventFormat={eventFormat}
-              setEventFormat={setEventFormat}
-              address={address}
-              setAddress={setAddress}
-              onlineLink={onlineLink}
-              setOnlineLink={setOnlineLink}
-              errors={errors}
-              addEventDay={addEventDay}
-              removeEventDay={removeEventDay}
-              isRecurring={isRecurring}
-              setIsRecurring={setIsRecurring}
-              recurrencePattern={recurrencePattern}
-              setRecurrencePattern={setRecurrencePattern}
-              toggleWeekday={toggleWeekday}
-              selectedWeekdays={selectedWeekdays}
-              monthlyType={monthlyType}
-              setMonthlyType={setMonthlyType}
-              recurrenceEndCount={recurrenceEndCount}
-              setRecurrenceEndCount={setRecurrenceEndCount}
-              recurrenceEndDate={recurrenceEndDate}
-              setRecurrenceEndDate={setRecurrenceEndDate}
-              recurrenceEndType={recurrenceEndType}
-              setRecurrenceEndType={setRecurrenceEndType}
-              setSpecificDate={setSpecificDate}
-              specificDate={specificDate}
-              relativeDate={relativeDate}
-              setRelativeDate={setRelativeDate}
-              relativeDay={relativeDay}
-              setRelativeDay={setRelativeDay}
-              customInterval={customInterval}
-              setCustomInterval={setCustomInterval}
-              customUnit={customUnit}
-              setCustomUnit={setCustomUnit}
-            />
-          </Activity>
+          {/* Content */}
+          <div className="flex-1 overflow-y-auto p-6">
+            <Activity mode={currentStep === 1 ? "visible" : "hidden"}>
+              <EventBasicInformation
+                eventName={eventName}
+                setEventName={setEventName}
+                shortDescription={shortDescription}
+                setShortDescription={setShortDescription}
+                fullDescription={fullDescription}
+                setFullDescription={setFullDescription}
+                eventStatus={eventStatus}
+                setEventStatus={setEventStatus}
+                internalNotes={internalNotes}
+                setInternalNotes={setInternalNotes}
+                errors={errors}
+                selectedDmoId={selectedDmoId}
+                setSelectDmoId={setSelectDmoId}
+                selectedAuthorityId={selectedAuthorityId}
+                setSelectAuthorityId={setSelectAuthorityId}
+                selectedAccessiblitiesId={selectedAccessiblitiesId}
+                setAccessiblitiesId={setAccessiblitiesId}
+                selectedGroupTypesId={selectedGroupTypesId}
+                setGroupTypesId={setGroupTypesId}
+                selectedSubCategoriesId={selectedSubCategoriesId}
+                setSubCategoriesId={setSubCategoriesId}
+              />
+            </Activity>
 
-          <Activity mode={currentStep === 3 ? "visible" : "hidden"}>
-            <EventRegistrationCapacity
-              currentStep={currentStep}
-              registrationRequired={registrationRequired}
-              setRegistrationRequired={setRegistrationRequired}
-              capacityType={capacityType}
-              setCapacityType={setCapacityType}
-              capacity={capacity}
-              setCapacity={setCapacity}
-              customQuestions={customQuestions}
-              setCustomQuestions={setCustomQuestions}
-              addCustomQuestion={addCustomQuestion}
-            />
-          </Activity>
-          <Activity mode={currentStep === 4 ? "visible" : "hidden"}>
-            <EventTickets
-              eventId={eventId}
-              showTicketModal={showTicketModal}
-              setShowTicketModal={setShowTicketModal}
-              errors={errors}
-              setTickets={setTickets}
-            />
-          </Activity>
+            <Activity mode={currentStep === 2 ? "visible" : "hidden"}>
+              <EventDateTimeFormat
+                geo={geo}
+                setGeo={setGeo}
+                isMultiDay={isMultiDay}
+                setIsMultiDay={setIsMultiDay}
+                startDate={startDate}
+                setStartDate={setStartDate}
+                eventDays={eventDays}
+                setEventDays={setEventDays}
+                eventFormat={eventFormat}
+                setEventFormat={setEventFormat}
+                address={address}
+                setAddress={setAddress}
+                onlineLink={onlineLink}
+                setOnlineLink={setOnlineLink}
+                errors={errors}
+                addEventDay={addEventDay}
+                removeEventDay={removeEventDay}
+                isRecurring={isRecurring}
+                setIsRecurring={setIsRecurring}
+                recurrencePattern={recurrencePattern}
+                setRecurrencePattern={setRecurrencePattern}
+                toggleWeekday={toggleWeekday}
+                selectedWeekdays={selectedWeekdays}
+                monthlyType={monthlyType}
+                setMonthlyType={setMonthlyType}
+                recurrenceEndCount={recurrenceEndCount}
+                setRecurrenceEndCount={setRecurrenceEndCount}
+                recurrenceEndDate={recurrenceEndDate}
+                setRecurrenceEndDate={setRecurrenceEndDate}
+                recurrenceEndType={recurrenceEndType}
+                setRecurrenceEndType={setRecurrenceEndType}
+                setSpecificDate={setSpecificDate}
+                specificDate={specificDate}
+                relativeDate={relativeDate}
+                setRelativeDate={setRelativeDate}
+                relativeDay={relativeDay}
+                setRelativeDay={setRelativeDay}
+                customInterval={customInterval}
+                setCustomInterval={setCustomInterval}
+                customUnit={customUnit}
+                setCustomUnit={setCustomUnit}
+              />
+            </Activity>
 
-          <Activity mode={currentStep === 5 ? "visible" : "hidden"}>
-            <NotificationsTimeline
-              notifications={notifications}
-              setNotifications={setNotifications}
-              editingNotification={editingNotification}
-              setEditingNotification={setEditingNotification}
-              showNotificationForm={showNotificationForm}
-              setShowNotificationForm={setShowNotificationForm}
-              eventLanguage={eventLanguage}
-              eventName={eventName}
-              startDate={startDate}
-              eventDays={eventDays}
-              address={address}
-              capacity={capacity}
-            />
-          </Activity>
-          <Activity mode={currentStep === 6 ? "visible" : "hidden"}>
-            <EventMedia
-              t={t}
-              theme={theme}
-              eventImages={eventImages}
-              setEventImages={setEventImages}
-            />
-          </Activity>
+            <Activity mode={currentStep === 3 ? "visible" : "hidden"}>
+              <EventRegistrationCapacity
+                currentStep={currentStep}
+                registrationRequired={registrationRequired}
+                setRegistrationRequired={setRegistrationRequired}
+                capacityType={capacityType}
+                setCapacityType={setCapacityType}
+                capacity={capacity}
+                setCapacity={setCapacity}
+                customQuestions={customQuestions}
+                setCustomQuestions={setCustomQuestions}
+                addCustomQuestion={addCustomQuestion}
+              />
+            </Activity>
+            <Activity mode={currentStep === 4 ? "visible" : "hidden"}>
+              <EventTickets
+                eventId={eventId}
+                showTicketModal={showTicketModal}
+                setShowTicketModal={setShowTicketModal}
+                errors={errors}
+                setTickets={setTickets}
+                setCurrentStep={setCurrentStep}
+              />
+            </Activity>
 
-          <Activity mode={currentStep === 7 ? "visible" : "hidden"}>
-            <EventReviewPublish
-              currentStep={currentStep}
-              setCurrentStep={setCurrentStep}
-              eventName={eventName}
-              shortDescription={shortDescription}
-              eventLanguage={eventLanguage}
-              eventStatus={eventStatus}
-              isMultiDay={isMultiDay}
-              startDate={startDate}
-              eventFormat={eventFormat}
-              address={address}
-              onlineLink={onlineLink}
-              registrationRequired={registrationRequired}
-              capacityType={capacityType}
-              capacity={capacity}
-              customQuestions={customQuestions}
-              tickets={tickets}
-            />
+            <Activity mode={currentStep === 5 ? "visible" : "hidden"}>
+              <NotificationsTimeline
+                notifications={notifications}
+                setNotifications={setNotifications}
+                editingNotification={editingNotification}
+                setEditingNotification={setEditingNotification}
+                showNotificationForm={showNotificationForm}
+                setShowNotificationForm={setShowNotificationForm}
+                eventLanguage={eventLanguage}
+                eventName={eventName}
+                startDate={startDate}
+                eventDays={eventDays}
+                address={address}
+                capacity={capacity}
+              />
+            </Activity>
+            <Activity mode={currentStep === 6 ? "visible" : "hidden"}>
+              <EventMedia
+                t={t}
+                theme={theme}
+                eventImages={eventImages}
+                setEventImages={setEventImages}
+              />
+            </Activity>
 
-          </Activity>
-        </div>
+            <Activity mode={currentStep === 7 ? "visible" : "hidden"}>
+              <EventReviewPublish
+                currentStep={currentStep}
+                setCurrentStep={setCurrentStep}
+                eventName={eventName}
+                shortDescription={shortDescription}
+                eventLanguage={eventLanguage}
+                eventStatus={eventStatus}
+                isMultiDay={isMultiDay}
+                startDate={startDate}
+                eventFormat={eventFormat}
+                address={address}
+                onlineLink={onlineLink}
+                registrationRequired={registrationRequired}
+                capacityType={capacityType}
+                capacity={capacity}
+                customQuestions={customQuestions}
+                tickets={tickets}
+              />
 
-        <WizardFooter
-          currentStep={currentStep}
-          totalSteps={7}
-          isSaving={isEventUpdating}
-          isPublishing={isPublishing}
-          onPrevious={handlePrevious}
-          onNext={handleNext}
-          onSaveDraft={handleSaveDraft}
-          onPublish={handlePublish}
-        />
+            </Activity>
+          </div>
+
+          <WizardFooter
+            currentStep={currentStep}
+            totalSteps={7}
+            isSaving={isEventUpdating}
+            isPublishing={isPublishing}
+            onPrevious={handlePrevious}
+            onNext={handleNext}
+            onSaveDraft={handleSaveDraft}
+            onPublish={handlePublish}
+          />
+        </>
       </div>
     </div>
   );

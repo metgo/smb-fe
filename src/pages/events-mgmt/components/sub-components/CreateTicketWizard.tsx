@@ -8,6 +8,7 @@ import { useTranslation } from "react-i18next";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useCreateSignedUrlMutation, useCreateTicketMutation, useUpdateTicketMutation } from "@/store/api/eventMutationApi";
 import { uploadWithProgress } from "@/helpers";
+import { Spinner } from "@/components/shared";
 
 
 interface CreateTicketWizardProps {
@@ -18,6 +19,7 @@ interface CreateTicketWizardProps {
   tickets: any;
   eventId: string | null;
   refetch: () => void;
+  setCurrentStep: (v: number) => void;
 }
 
 const CreateTicketWizard = ({
@@ -28,6 +30,7 @@ const CreateTicketWizard = ({
   tickets,
   eventId,
   refetch,
+  setCurrentStep,
 }: CreateTicketWizardProps) => {
   const { t } = useTranslation('events');
   const { cardClasses, textPrimary, textSecondary, inputClasses, textTertiary } = useThemeClasses();
@@ -42,51 +45,54 @@ const CreateTicketWizard = ({
   const [mediaURL, setMediaURL] = useState<GcsFileUpload>({ signedUrl: "", gcsURL: "" })
 
   const saveTicket = async (ticket: ITicketPayload) => {
-    if (eventId) {
-      const payload: ITicketPayload = {
-        name: ticket.name,
-        description: ticket.description,
-        eventId: eventId,
-        price: {
-          markedPrice: ticket.price.markedPrice,
-          sellingPrice: ticket.price.sellingPrice,
-          discountPercent: 0,
-          discountAmount: 0,
-        },
-        quantity: {
-          initial: ticket.quantity.initial,
-          sold: 0,
-          remaining: ticket.quantity.remaining,
-          isUnlimited: ticket.quantity.isUnlimited,
-          perUserLimit: ticket.quantity.perUserLimit,
-        },
-        images: [{
-          image: mediaURL.gcsURL
-        }],
-        status: "active",
-        type: ticket.type.toUpperCase(),
-      }
-
-      if (file && mediaURL.signedUrl) {
-        try {
-          setProgress(0);
-          await uploadWithProgress(file, mediaURL?.signedUrl, setProgress);
-          toast.success("Upload successful!");
-          setFile(null)
-        } catch (err) {
-          toast.error("Upload failed");
-        }
-      }
-
-      const res = ticket._id ? await updateTicket({ body: payload, ticketId: ticket?._id }).unwrap() : await createTicket(payload).unwrap()
-      if (res?.message) {
-        toast.success(res?.message || "Ticket created successfully")
-        refetch()
-      }
-
-      setShowTicketModal(false);
-      setEditingTicket(null);
+    if (!eventId) {
+      toast.error("Event ID is missing");
+      setCurrentStep(1)
+      return;
     }
+    const payload: ITicketPayload = {
+      name: ticket.name,
+      description: ticket.description,
+      eventId: eventId,
+      price: {
+        markedPrice: ticket.price.markedPrice,
+        sellingPrice: ticket.price.sellingPrice,
+        discountPercent: 0,
+        discountAmount: 0,
+      },
+      quantity: {
+        initial: ticket.quantity.initial,
+        sold: 0,
+        remaining: ticket.quantity.remaining,
+        isUnlimited: ticket.quantity.isUnlimited,
+        perUserLimit: ticket.quantity.perUserLimit,
+      },
+      images: [{
+        image: mediaURL.gcsURL
+      }],
+      status: "active",
+      type: ticket.type.toUpperCase(),
+    }
+
+    if (file && mediaURL.signedUrl) {
+      try {
+        setProgress(0);
+        await uploadWithProgress(file, mediaURL?.signedUrl, setProgress);
+        toast.success("Upload successful!");
+        setFile(null)
+      } catch (err) {
+        toast.error("Upload failed");
+      }
+    }
+
+    const res = ticket._id ? await updateTicket({ body: payload, ticketId: ticket?._id }).unwrap() : await createTicket(payload).unwrap()
+    if (res?.message) {
+      toast.success(res?.message || "Ticket created successfully")
+      refetch()
+    }
+
+    setShowTicketModal(false);
+    setEditingTicket(null);
   };
 
   useEffect(() => {
@@ -116,6 +122,7 @@ const CreateTicketWizard = ({
 
   return (
     <div className="fixed inset-0 bg-black/70 z-60 flex items-center justify-center p-4">
+      <Spinner isLoading={isSaving || isUpdating} />
       <div className={`w-full max-w-2xl rounded-xl ${cardClasses} p-6`}>
         <div className="flex items-center justify-between mb-6">
           <h3 className={`text-xl ${textPrimary}`}>

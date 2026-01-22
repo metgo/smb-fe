@@ -29,7 +29,7 @@ const MarkerMap = ({
   address,
   geo,
 }: MarkerMapProps) => {
-  const { t, i18n } = useTranslation('maps');
+  const { t, i18n } = useTranslation('events');
   const locale = i18n.language;
 
   /* ---------------- Refs ---------------- */
