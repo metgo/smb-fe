@@ -37,7 +37,7 @@ export const businessMutationApi = createApi({
       }),
       invalidatesTags: ['Business']
     }),
-
+  
     
   }),
 });

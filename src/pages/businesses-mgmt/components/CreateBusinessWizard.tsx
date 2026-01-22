@@ -17,10 +17,7 @@ import {
   useInitBusinessCreateMutation,
   useUpdateBusinessMutation,
 } from "@/store/api/businessMutationApi";
-import type {
-  OperatingHours,
-  OpeningHrPayload 
-} from "@/types/openinghours";
+import type { OperatingHours, OpeningHrPayload } from "@/types/openinghours";
 
 import {
   BusinessAttributes,
@@ -65,23 +62,23 @@ export default function CreateBusinessWizard({
   const [selectedAccessiblitiesId, setAccessiblitiesId] = useState<string[]>(
     [],
   );
-    const [geo, setGeo] = useState<Geo>({ lat: "", lng: "" });
-    const [address, setAddress] = useState("");
-console.log("address, geo", address, geo)
+  const [geo, setGeo] = useState<Geo>({ lat: "", lng: "" });
+  const [address, setAddress] = useState("");
+  console.log("address, geo", address, geo);
 
-const parseAddress = (address:any) => {
-  const parts = address.split(",");
+  const parseAddress = (address: any) => {
+    const parts = address.split(",");
 
-  return {
-    location: parts[0]?.trim(), // David HaMelech St 35
-    city: parts[1]?.trim(),     // Be'er Sheva
-    country: parts[2]?.trim(),  // Israel
+    return {
+      location: parts[0]?.trim(), // David HaMelech St 35
+      city: parts[1]?.trim(), // Be'er Sheva
+      country: parts[2]?.trim(), // Israel
+    };
   };
-};
 
-const { location, city, country } = parseAddress(address);
-//timedate range
-const transformOperatingHoursToPayload = (
+  const { location, city, country } = parseAddress(address);
+  //timedate range
+  const transformOperatingHoursToPayload = (
     operatingHours: OperatingHours,
   ): OpeningHrPayload[] => {
     const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
@@ -175,12 +172,7 @@ const transformOperatingHoursToPayload = (
     //   youtube: "",
     //   tiktok: "",
     // },
-     socialMedia: [
-    {
-      socialMediaId: "",
-      url: ""
-    }
-  ],
+    socialMedia: [],
   });
 
   const totalSteps = 9;
@@ -256,17 +248,17 @@ const transformOperatingHoursToPayload = (
     },
     7: {
       vendorDelivers: formData.vendorDelivers,
-      pickupAvailable: formData.pickupAvailable,
-      deliveryAreas: formData.deliveryAreas,
+      isPickUpAvailable: formData.pickupAvailable,
+      deliveryArea: formData.deliveryAreas,
       deliveryAdditionalInfo: formData.deliveryAdditionalInfo,
       deliveryReturnExchange: formData.deliveryReturnExchange,
       deliverySpecificSellerInfo: formData.deliverySpecificSellerInfo,
     },
     8: {
-      socialMedia: formData.onlinePresence,
+      socialMedia: formData.socialMedia,
     },
   };
-console.log("address", stepPayloadMap[3])
+  console.log("address", stepPayloadMap[3]);
   // Auto-save draft
   const handleSaveDraft = async () => {
     try {
@@ -381,9 +373,15 @@ console.log("address", stepPayloadMap[3])
       case 2:
         return <BusinessContactOwership {...commonProps} />;
       case 3:
-        return <BusinessLocation {...commonProps} geo={geo}
-              setGeo={setGeo} address={address}
-              setAddress={setAddress}/>;
+        return (
+          <BusinessLocation
+            {...commonProps}
+            geo={geo}
+            setGeo={setGeo}
+            address={address}
+            setAddress={setAddress}
+          />
+        );
       case 4:
         return (
           <BusinessAttributes
@@ -392,7 +390,6 @@ console.log("address", stepPayloadMap[3])
             setAccessiblitiesId={setAccessiblitiesId}
             selectedGroupTypesId={selectedGroupTypesId}
             setGroupTypesId={setGroupTypesId}
-         
           />
         );
       case 5:

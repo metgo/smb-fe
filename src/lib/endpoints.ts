@@ -19,12 +19,12 @@ export const endpoints = {
   subCategories: "admin/buss-sub-category",
   accessibility: "/admin/accessibility",
   groupType: "/admin/group-type",
-
   dmos: "/dmos",
 
   // business
   business: "/business",
   businesses: "/businesses",
+  businessStatDashboard: "businesses-stat",
 
   // events
   events: "/events",
@@ -38,6 +38,6 @@ export const endpoints = {
 
   websites: "/websites",
 
-  googleMap: 'https://maps.googleapis.com/maps/api/js',
-  googlePlaceAutoComplete: 'https://places.googleapis.com/v1/places',
-}
+  googleMap: "https://maps.googleapis.com/maps/api/js",
+  googlePlaceAutoComplete: "https://places.googleapis.com/v1/places",
+};

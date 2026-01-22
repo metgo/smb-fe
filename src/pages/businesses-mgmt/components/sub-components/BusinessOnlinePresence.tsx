@@ -10,11 +10,16 @@ interface OnlinePresenceData {
   youtube: string;
   tiktok: string;
 }
-
+interface SocialMediaItem {
+  socialMediaId: "website" | "facebook" | "instagram" | "youtube" | "tiktok";
+  url: string;
+}
 interface OnlinePresenceFormData {
   online_presence: OnlinePresenceData;
 }
-
+interface OnlinePresenceFormData {
+  socialMedia: SocialMediaItem[];
+}
 interface BusinessOnlinePresenceProps {
   theme: Theme;
   isRTL: boolean;
@@ -23,9 +28,10 @@ interface BusinessOnlinePresenceProps {
   setFormData: (data: OnlinePresenceFormData) => void;
 }
 interface SocialMediaItem {
-  socialMediaId: string;
+  socialMediaId: "website" | "facebook" | "instagram" | "youtube" | "tiktok";
   url: string;
 }
+
 
 interface OnlinePresenceFormData {
   socialMedia: SocialMediaItem[];
@@ -40,7 +46,6 @@ const BusinessOnlinePresence: FC<BusinessOnlinePresenceProps> = ({
   formData,
   setFormData,
 }) => {
-  
   const inputClasses = `w-full ${
     isRTL ? "pr-10 pl-4" : "pl-10 pr-4"
   } py-2 rounded-lg border ${
@@ -48,6 +53,36 @@ const BusinessOnlinePresence: FC<BusinessOnlinePresenceProps> = ({
       ? "bg-gray-800 border-gray-700 text-gray-200"
       : "bg-white border-gray-300 text-gray-900"
   } focus:outline-none focus:ring-2 focus:ring-teal-500`;
+
+  const updateSocialMedia = (
+    id: SocialMediaItem["socialMediaId"],
+    value: string,
+  ) => {
+    const existing = formData.socialMedia.find(
+      (item) => item.socialMediaId === id,
+    );
+
+    let updatedSocialMedia;
+
+    if (existing) {
+      updatedSocialMedia = formData.socialMedia.map((item) =>
+        item.socialMediaId === id ? { ...item, url: value } : item,
+      );
+    } else {
+      updatedSocialMedia = [
+        ...formData.socialMedia,
+        { socialMediaId: id, url: value },
+      ];
+    }
+
+    setFormData({
+      ...formData,
+      socialMedia: updatedSocialMedia,
+    });
+  };
+  const getSocialMediaValue = (id: SocialMediaItem["socialMediaId"]) =>
+  formData.socialMedia?.find((item) => item.socialMediaId === id)?.url || "";
+
 
   return (
     <div className="space-y-6">
@@ -61,80 +96,55 @@ const BusinessOnlinePresence: FC<BusinessOnlinePresenceProps> = ({
       <SocialInput
         label={t("website_url")}
         icon={<Globe className="w-5 h-5 text-gray-400" />}
-        value={formData.online_presence?.website || ""}
+        value={getSocialMediaValue("website")}
         placeholder="https://example.com"
         inputClasses={inputClasses}
         isRTL={isRTL}
-        onChange={(value) =>
-          setFormData({
-            ...formData,
-            online_presence: { ...formData.online_presence, website: value },
-          })
-        }
+        onChange={(value) => updateSocialMedia("website", value)}
       />
 
       {/* Facebook */}
       <SocialInput
         label={t("facebook")}
         icon={<Facebook className="w-5 h-5 text-gray-400" />}
-        value={formData.online_presence?.facebook}
+        value={getSocialMediaValue("facebook")}
         placeholder="https://facebook.com/example"
         inputClasses={inputClasses}
         isRTL={isRTL}
-        onChange={(value) =>
-          setFormData({
-            ...formData,
-            online_presence: { ...formData.online_presence, facebook: value },
-          })
-        }
+        onChange={(value) => updateSocialMedia("facebook", value)}
       />
 
       {/* Instagram */}
       <SocialInput
         label={t("instagram")}
         icon={<Instagram className="w-5 h-5 text-gray-400" />}
-        value={formData.online_presence?.instagram}
+        value={getSocialMediaValue("instagram")}
         placeholder="https://instagram.com/example"
         inputClasses={inputClasses}
         isRTL={isRTL}
-        onChange={(value) =>
-          setFormData({
-            ...formData,
-            online_presence: { ...formData.online_presence, instagram: value },
-          })
-        }
+        onChange={(value) => updateSocialMedia("instagram", value)}
       />
 
       {/* YouTube */}
       <SocialInput
         label={t("youtube")}
         icon={<Youtube className="w-5 h-5 text-gray-400" />}
-        value={formData.online_presence?.youtube}
+        value={getSocialMediaValue("youtube")}
         placeholder="https://youtube.com/example"
         inputClasses={inputClasses}
         isRTL={isRTL}
-        onChange={(value) =>
-          setFormData({
-            ...formData,
-            online_presence: { ...formData.online_presence, youtube: value },
-          })
-        }
+        onChange={(value) => updateSocialMedia("youtube", value)}
       />
 
       {/* TikTok */}
       <SocialInput
         label={t("tiktok")}
         icon={<Music className="w-5 h-5 text-gray-400" />}
-        value={formData.online_presence?.tiktok}
+        value={getSocialMediaValue("tiktok")}
         placeholder="https://tiktok.com/example"
         inputClasses={inputClasses}
         isRTL={isRTL}
-        onChange={(value) =>
-          setFormData({
-            ...formData,
-            online_presence: { ...formData.online_presence, tiktok: value },
-          })
-        }
+        onChange={(value) => updateSocialMedia("tiktok", value)}
       />
     </div>
   );

@@ -9,6 +9,7 @@
   "pending_approval":"Pending Approval",
   "short_description":"Short Description",
   "contact_name":"Contact Person",
+  "location_address": "Location Address",
   "select_dmo": "Select DMO",
   "select_authority": "Select Authority",
   "name":"Name",

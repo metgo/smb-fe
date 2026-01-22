@@ -155,31 +155,6 @@ const BusinessAttributes: FC<BusinessAttributesProps> = ({
         textSecondary={textSecondary}
       />
 
-      {/* Service Type */}
-      {/* <div>
-        <label
-          className={`block text-sm mb-2 ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}
-        >
-          {t("service_type")}
-        </label>
-        <select
-          value={formData.serviceType}
-          onChange={(e) =>
-            setFormData({ ...formData, serviceType: e.target.value })
-          }
-          className={`w-full px-4 py-2 rounded-lg border ${
-            theme === "dark"
-              ? "bg-gray-800 border-gray-700 text-gray-200"
-              : "bg-white border-gray-300 text-gray-900"
-          } focus:outline-none focus:ring-2 focus:ring-teal-500`}
-        >
-          <option value="">{t("select")}</option>
-          <option value="B2C">B2C</option>
-          <option value="B2B">B2B</option>
-          <option value="Both">Both</option>
-        </select>
-      </div> */}
-
       {/* Tags */}
       <div>
         <label

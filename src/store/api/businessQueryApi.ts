@@ -4,16 +4,13 @@ import { endpoints } from '@/lib/endpoints';
 
 
 interface BusinessStatsParams {
-  startDate?: string;
-  endDate?: string;
-  dmoId?: string;
-  authorityId?: string;
-  businessId?: string;
-  minPrice?: string;
-  maxPrice?: string;
-  status?: string;
+  totalBusinesses?: number;
+  activeBusinesses?: number;
+  totalProducts?: number;
+  averageImpactScore?: number;
+  pendingApproval?: number;
+  averageCompletion?: number;
 }
-
 interface BusinessListParams {
   page?: string;
   limit?: string;
@@ -45,7 +42,7 @@ export const businessQueryApi = createApi({
 
     getBusinessStats: builder.query<any, BusinessStatsParams>({
       query: (params) => ({
-        url: endpoints.businessStats,
+        url: endpoints.businessStatDashboard,
         method: 'GET',
         params
       })

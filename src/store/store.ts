@@ -46,12 +46,12 @@ export const store = configureStore({
       distrbOverviewApi.middleware,
       itemStatsApi.middleware,
       masterDataApi.middleware,
-      businessQueryApi.middleware,
       userMutationApi.middleware,
       eventMutationApi.middleware,
       businessMutationApi.middleware,
       eventQueryApi.middleware,
       userQueryApi.middleware,
+      businessQueryApi.middleware,
     ),
 });
 

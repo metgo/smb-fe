@@ -26,7 +26,7 @@ import { FilterButton } from "@/components/btns";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { generateMockBusinesses } from "@/constants/data";
 import { PageHeader, PageStats, ReordableDataTable } from "@/components/shared";
-import { useGetAllbusinessesQuery } from "@/store/api/businessQueryApi";
+import { useGetAllbusinessesQuery, useGetBusinessStatsQuery } from "@/store/api/businessQueryApi";
 
 interface BusinessesListProps {
   theme: Theme;
@@ -112,6 +112,8 @@ export default function BusinessesList({
   const [selectedBusinesses, setSelectedBusinesses] = useState<Set<string>>(
     new Set(),
   );
+  const { data: businessStatsData } = useGetBusinessStatsQuery({})
+  console.log("busienss stats", businessStatsData)
 
   const columnSettingsRef = useRef<HTMLDivElement>(null);
 
@@ -478,24 +480,21 @@ export default function BusinessesList({
     {
       id: 1,
       title: t("total_businesses") || "Total Businesses",
-      value: filteredBusinesses.length,
+      value: businessStatsData?.totalBusinesses,
       label: t("registered") || "Registered",
       icon: <Map className="w-5 h-5 text-purple-600" />,
     },
     {
       id: 2,
       title: t("active_businesses") || "Active Businesses",
-      value: filteredBusinesses.filter((b: any) => b.status === "approved")
-        .length,
+      value: businessStatsData?.activeBusinesses,
       label: t("approved") || "Approved",
       icon: <CheckCircle className="w-5 h-5 text-green-600" />,
     },
     {
       id: 3,
       title: t("total_products") || "Total Products",
-      value: filteredBusinesses
-        .reduce((sum: number, b: any) => sum + b.productsCount, 0)
-        .toLocaleString(),
+      value: businessStatsData?.totalProducts,
       label: t("listed") || "Listed",
       icon: <UtensilsCrossed className="w-5 h-5 text-blue-600" />,
     },
@@ -503,38 +502,21 @@ export default function BusinessesList({
       id: 4,
       title: t("avg_impact") || "Avg. Impact",
       value:
-        filteredBusinesses.length > 0
-          ? Math.round(
-              filteredBusinesses.reduce(
-                (sum: number, b: any) => sum + b.impactScore,
-                0,
-              ) / filteredBusinesses.length,
-            )
-          : 0,
+        businessStatsData?.averageImpactScore,
       label: t("score") || "Score",
       icon: <Theater className="w-5 h-5 text-orange-600" />,
     },
     {
       id: 5,
       title: t("pending_approval") || "Pending Approval",
-      value: filteredBusinesses.filter((b: any) => b.status === "pending")
-        .length,
+      value: businessStatsData?.pendingApproval,
       label: t("awaiting") || "Awaiting",
       icon: <AlertCircle className="w-5 h-5 text-yellow-600" />,
     },
     {
       id: 6,
       title: t("avg_completion") || "Avg. Completion",
-      value: `${
-        filteredBusinesses.length > 0
-          ? Math.round(
-              filteredBusinesses.reduce(
-                (sum: number, b: any) => sum + b.completionPercentage,
-                0,
-              ) / filteredBusinesses.length,
-            )
-          : 0
-      }%`,
+      value: businessStatsData?.averageCompletion,
       label: t("profile_data") || "Profile Data",
       icon: <Landmark className="w-5 h-5 text-teal-600" />,
     },
