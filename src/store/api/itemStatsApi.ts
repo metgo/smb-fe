@@ -27,6 +27,14 @@ export const itemStatsApi = createApi({
       }),
       providesTags: ['ItemStatistics'],
     }),
+    getPOIStats: builder.query<any, Params>({
+      query: (params) => ({
+        url: endpoints.poiStats,
+        method: 'GET',
+        params,
+      }),
+      providesTags: ['ItemStatistics'],
+    }),
     getProductStats: builder.query<any, Params>({
       query: (params) => ({
         url: endpoints.productStats,
@@ -54,7 +62,8 @@ export const itemStatsApi = createApi({
 
 export const {
   useGetBusinessStatsQuery,
-  useGetEventStatsQuery,
+  useGetPOIStatsQuery,
   useGetProductStatsQuery,
+  useGetEventStatsQuery,
   useGetPurchaseReportsStatsQuery,
 } = itemStatsApi

@@ -4,43 +4,16 @@ import { Calendar, MapPin, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { routes } from '@/lib/routes';
 import { ImageWithFallback, InfoTooltip } from '@/components/shared';
-
-interface Event {
-  id: number;
-  title: string;
-  date: string;
-  location: string;
-  image: string;
-}
-
+import { useGetAllEventsQuery } from '@/store/api/eventQueryApi';
 
 export default function UpcomingEvents() {
   const { t } = useTranslation('dashboard');
 
-  const events: Event[] = [
-    {
-      id: 1,
-      title: 'Negev Desert Stars Festival',
-      date: 'Jan 18-20, 2026',
-      location: 'Ramon Crater, Mitzpe Ramon',
-      image: 'https://images.unsplash.com/photo-1633088926847-435cdb7e76da?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxpc3JhZWwlMjBuZWdldiUyMGRlc2VydCUyMGxhbmRzY2FwZXxlbnwxfHx8fDE3NjU2MDk4ODh8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
-    },
-    {
-      id: 2,
-      title: 'Be\'er Sheva International Arts Week',
-      date: 'Feb 5-12, 2026',
-      location: 'Be\'er Sheva Culture Center',
-      image: 'https://images.unsplash.com/photo-1735956559986-dd3658c94f22?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxqZXJ1c2FsZW0lMjBmZXN0aXZhbCUyMGN1bHR1cmV8ZW58MXx8fHwxNzY1NjA5ODg4fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
-    },
-    {
-      id: 3,
-      title: 'Negev Culinary Market',
-      date: 'Feb 22-23, 2026',
-      location: 'Sderot Community Center',
-      image: 'https://images.unsplash.com/photo-1547516453-01c9910aafbf?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxpc3JhZWxpJTIwZm9vZCUyMG1hcmtldHxlbnwxfHx8fDE3NjU2MDk4ODh8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
-    },
-  ];
-
+  
+ const { data: events } = useGetAllEventsQuery({
+    page: 1,
+    limit:3,
+  })
 
   return (
     <section>
@@ -53,27 +26,27 @@ export default function UpcomingEvents() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {events.map((event) => (
+        {events?.map((event) => (
           <div
-            key={event.id}
+            key={event._id}
             className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden hover:shadow-lg transition-all group cursor-pointer"
           >
             <div className="relative h-48 overflow-hidden">
               <ImageWithFallback
-                src={event.image}
-                alt={event.title}
+                src={event?.images?.find(img => img.isPrimary)?.image || event?.images[0]?.image}
+                alt={event?.name}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
               />
             </div>
             <div className="p-4">
-              <h3 className="text-gray-900 dark:text-white mb-2 line-clamp-2">{event.title}</h3>
+              <h3 className="text-gray-900 dark:text-white mb-2 line-clamp-2">{event?.name}</h3>
               <div className="flex items-start gap-2 text-sm text-gray-600 dark:text-gray-400 mb-2">
                 <Calendar className="w-4 h-4 mt-0.5 shrink-0" />
-                <span>{event.date}</span>
+                <span>{event?.dayDescription[0]?.date}</span>
               </div>
               <div className="flex items-start gap-2 text-sm text-gray-600 dark:text-gray-400">
                 <MapPin className="w-4 h-4 mt-0.5 shrink-0" />
-                <span className="line-clamp-1">{event.location}</span>
+                <span className="line-clamp-1">{event?.address?.location}</span>
               </div>
             </div>
           </div>

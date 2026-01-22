@@ -1,11 +1,10 @@
 import clsx from 'clsx';
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Building2, ChevronDown, Bed, Compass, ShoppingBag, UtensilsCrossed, Plane, Landmark, MapPin } from 'lucide-react';
+import { Building2, ChevronDown, Bed, Compass, ShoppingBag, UtensilsCrossed, Plane, Landmark, MapPin, Package } from 'lucide-react';
 
-import { categories } from '@/lib/utils';
 import { useAppSelector } from '@/hooks/hooks';
-import { useGetBusinessStatsQuery, useGetProductStatsQuery } from '@/store/api/itemStatsApi';
+import { useGetBusinessStatsQuery, useGetPOIStatsQuery, useGetProductStatsQuery } from '@/store/api/itemStatsApi';
 import { InfoTooltip } from '@/components/shared';
 
 const COLORS = {
@@ -78,8 +77,27 @@ interface DistributionCardProps {
   title: string;
   icon: React.ReactNode;
   total: number;
-  data: { name: string; value: number; percentage: number }[];
+  data: { _id?: string; name: string; count?: number; value: number; percentage: number }[];
 }
+
+const statuses = [
+  { value: 'active', label: 'Active' },
+  { value: 'approved', label: 'Approved' },
+  { value: 'draft', label: 'Draft' },
+];
+
+const getCategoryName = (name: string, t: (v: string) => string) => {
+  switch (name) {
+    case 'sleep': return t('sleep');
+    case 'eat': return t('eat');
+    case 'attraction': return t('attraction');
+    case 'local': return t('local');
+    case 'travel': return t('travel');
+    case 'culture': return t('culture');
+    default: return name;
+  }
+};
+
 
 function DistributionCard({ title, icon, total, data }: DistributionCardProps) {
   const { t } = useTranslation('dashboard');
@@ -95,26 +113,6 @@ function DistributionCard({ title, icon, total, data }: DistributionCardProps) {
     return () => clearTimeout(timer);
   }, []);
 
-  const statuses = [
-    { value: 'active', label: 'Active' },
-    { value: 'approved', label: 'Approved' },
-    { value: 'draft', label: 'Draft' },
-  ];
-
-  const getCategoryName = (name: string) => {
-    switch (name) {
-      case 'sleep': return t('sleep');
-      case 'eat': return t('eat');
-      case 'attraction': return t('attraction');
-      case 'local': return t('local');
-      case 'travel': return t('travel');
-      case 'culture': return t('culture');
-      default: return name;
-    }
-  };
-
-  // Find max value for scaling bars
-  const maxValue = Math.max(...data?.map(item => item?.value));
 
   return (
     <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6 hover:shadow-lg transition-shadow">
@@ -125,7 +123,7 @@ function DistributionCard({ title, icon, total, data }: DistributionCardProps) {
           </div>
           <div>
             <h3 className="text-gray-900 dark:text-white">{title}</h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400">Total: {total.toLocaleString()}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Total: {total}</p>
           </div>
         </div>
         <div className="relative">
@@ -157,11 +155,9 @@ function DistributionCard({ title, icon, total, data }: DistributionCardProps) {
         </div>
 
         {data?.map((item, index) => {
-          const Icon = CATEGORY_ICONS[item?.name as keyof typeof CATEGORY_ICONS];
-          const colorConfig = COLORS[item?.name as keyof typeof COLORS];
+          const Icon = CATEGORY_ICONS[item?.name?.toLowerCase() as keyof typeof CATEGORY_ICONS];
+          const colorConfig = COLORS[item?._id as keyof typeof COLORS];
           const isActive = activeIndex === index;
-          const heightPercent = (item?.value / maxValue) * 100;
-          const barHeight = `${Math.max(heightPercent, 10)}%`;
 
           return (
             <div
@@ -179,7 +175,7 @@ function DistributionCard({ title, icon, total, data }: DistributionCardProps) {
               <div className={`absolute -top-20 left-1/2 -translate-x-1/2 transition-all duration-300 ${isActive ? 'opacity-100 -translate-y-1' : 'opacity-0'
                 }`}>
                 <div className={`px-2 py-1 rounded-lg bg-linear-to-br ${colorConfig?.gradient} text-white text-xs font-bold shadow-lg whitespace-nowrap`}>
-                  {item.value.toLocaleString()}
+                  {item?.count}
                 </div>
               </div>
 
@@ -187,7 +183,7 @@ function DistributionCard({ title, icon, total, data }: DistributionCardProps) {
               <div
                 className="relative w-full ease-out"
                 style={{
-                  height: isAnimated ? barHeight : '0%',
+                  height: isAnimated ? item.percentage : '0%',
                   transform: isActive ? 'translateY(-8px) scale(1.05)' : 'translateY(0) scale(1)',
                   transition: isAnimated
                     ? `all 0.3s ease-out, height 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) ${index * 0.1}s`
@@ -243,7 +239,7 @@ function DistributionCard({ title, icon, total, data }: DistributionCardProps) {
                 <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10">
                   <span className={`px-2 py-0.5 rounded-full text-xs font-bold bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-md transition-all ${isActive ? 'scale-110' : 'scale-100'
                     }`}>
-                    {item.percentage}%
+                    {item?.percentage}%
                   </span>
                 </div>
               </div>
@@ -252,7 +248,7 @@ function DistributionCard({ title, icon, total, data }: DistributionCardProps) {
               <div className="mt-2 text-center min-h-8 flex items-center justify-center px-1">
                 <span className={`text-xs text-gray-700 dark:text-gray-300 leading-tight line-clamp-2 transition-all ${isActive ? 'font-bold' : 'font-medium'
                   }`}>
-                  {getCategoryName(item.name)}
+                  {getCategoryName(item?.name, t)}
                 </span>
               </div>
             </div>
@@ -266,65 +262,14 @@ function DistributionCard({ title, icon, total, data }: DistributionCardProps) {
 /* ----------------------------------------
    Types
 ---------------------------------------- */
-type StatItem = {
-  categoryId: string;
-  count: number;
-};
-
-type TransformedData = {
-  totalItem: number;
-  data: { name: string; value: number; percentage: number }[];
-};
-
-/* ----------------------------------------
-   Shared Transformer (SAFE)
----------------------------------------- */
-const transformStatsData = (
-  stats?: StatItem[],
-  totalFromApi?: number
-): TransformedData => {
-  if (!Array.isArray(stats) || stats?.length === 0) {
-    return { totalItem: 0, data: [] };
-  }
-
-  const totalCount = stats?.reduce((sum, item) => sum + item.count, 0);
-
-  const data = stats?.map((item) => {
-    const value = item.count;
-    const percentage = totalCount
-      ? Math.round((value / totalCount) * 100)
-      : 0;
-
-    return {
-      name: categories[item.categoryId] ?? 'unknown',
-      value,
-      percentage,
-    };
-  });
-
-  return {
-    totalItem: totalFromApi ?? totalCount,
-    data,
-  };
-};
-
 
 /* ----------------------------------------
    Component
 ---------------------------------------- */
 export default function DistributionCards() {
   const { t } = useTranslation('dashboard');
-  const {theme}=useAppSelector((state)=>state.settings)
+  const { theme } = useAppSelector((state) => state.settings)
 
-  const [poiState, setPoiState] = useState<TransformedData>({
-    totalItem: 0,
-    data: [],
-  });
-
-  const [businessState, setBusinessState] = useState<TransformedData>({
-    totalItem: 0,
-    data: [],
-  });
 
   /* ----------------------------------------
      API Calls
@@ -334,18 +279,16 @@ export default function DistributionCards() {
     endDate: '2025-01-31',
     dmoId: '',
     authorityId: '',
-    serviceType: 'business',
   });
 
-  const { data: poiData } = useGetBusinessStatsQuery({
+  const { data: poiData } = useGetPOIStatsQuery({
     startDate: '2025-01-01',
     endDate: '2025-01-31',
     dmoId: '',
     authorityId: '',
-    serviceType: 'point_of_interest',
   });
 
-  useGetProductStatsQuery({
+  const { data: productData } = useGetProductStatsQuery({
     startDate: '2025-01-01',
     endDate: '2025-01-31',
     dmoId: '',
@@ -358,23 +301,11 @@ export default function DistributionCards() {
   useEffect(() => {
     if (!businessData?.datas) return;
 
-    setBusinessState(
-      transformStatsData(
-        businessData?.datas?.filteredBusinessStats,
-        businessData?.datas?.totalNumberOfBusinesses
-      )
-    );
   }, [businessData]);
 
   useEffect(() => {
     if (!poiData?.datas) return;
 
-    setPoiState(
-      transformStatsData(
-        poiData.datas.getAllBusinessStats,
-        poiData.datas.totalNumberOfBusinesses
-      )
-    );
   }, [poiData]);
 
 
@@ -386,7 +317,7 @@ export default function DistributionCards() {
       <div className="flex items-start gap-2 mb-6">
         <h2 className={clsx(
           " flex-1",
-          theme==="dark"?"text-white":"text-gray-900"
+          theme === "dark" ? "text-white" : "text-gray-900"
         )}>
           {t('distribution_overview')}
         </h2>
@@ -400,22 +331,22 @@ export default function DistributionCards() {
         <DistributionCard
           title={t('businesses')}
           icon={<Building2 className="w-5 h-5 text-white" />}
-          total={businessState.totalItem}
-          data={businessState.data}
+          total={businessData?.total}
+          data={businessData?.byCategory}
         />
 
-        {/* <DistributionCard
+        <DistributionCard
           title={t('products')}
           icon={<Package className="w-5 h-5 text-white" />}
-          total={productState.totalItem}
-          data={productState.data}
-        /> */}
+          total={productData?.total}
+          data={productData?.byCategory}
+        />
 
         <DistributionCard
           title={t('pois')}
           icon={<MapPin className="w-5 h-5 text-white" />}
-          total={poiState.totalItem}
-          data={poiState.data}
+          total={poiData?.total}
+          data={poiData?.byCategory}
         />
       </div>
     </section>
