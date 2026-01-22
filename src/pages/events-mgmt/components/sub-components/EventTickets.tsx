@@ -1,7 +1,7 @@
 import { toast } from "sonner";
-import { Activity, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { skipToken } from "@reduxjs/toolkit/query";
+import { Activity, useEffect, useState } from "react";
 import { Plus, Ticket, AlertCircle, FileText, Trash2 } from "lucide-react";
 
 import { useAppSelector } from "@/hooks/hooks";
@@ -18,6 +18,7 @@ interface EventTicketsProps {
     tickets?: string;
   };
   eventId: string | null;
+  setTickets: (v: TicketData[])=>void;
 }
 
 const getTicketTypeColor = (type: string) => {
@@ -39,6 +40,7 @@ const EventTickets: React.FC<EventTicketsProps> = ({
   setShowTicketModal,
   showTicketModal,
   errors,
+  setTickets,
 }) => {
   const { t } = useTranslation("events");
   const { textPrimary, textTertiary } = useThemeClasses();
@@ -89,6 +91,12 @@ const EventTickets: React.FC<EventTicketsProps> = ({
     });
     setShowTicketModal(true);
   };
+
+  useEffect(()=>{
+    if(editingTicket || tickets){
+      setTickets(tickets as any)
+    }
+  }, [editingTicket, tickets])
 
   return (
     <div className="space-y-8 max-w-4xl mx-auto">
@@ -179,7 +187,7 @@ const EventTickets: React.FC<EventTicketsProps> = ({
                     </div>
                     <div>
                       <span className="font-medium">{t("per_user_limit")}:</span>{" "}
-                      {ticket?.quantity?.perUserLimit === 0 ? t("no_limit") : ticket?.quantity.perUserLimit}
+                      {ticket?.quantity?.perUserLimit === 0 ? t("no_limit") : ticket?.quantity?.perUserLimit}
                     </div>
                   </div>
                 </div>

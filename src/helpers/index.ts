@@ -30,3 +30,19 @@ export function uploadWithProgress(
     xhr.send(file);
   });
 }
+
+
+export function extractCenterAddressText(address: string): string | null {
+  // Split by spaces
+  const parts = address.split(" ");
+
+  // Find the part that is not a plus-code (e.g., "5H8P+WJ") and not a comma
+  for (const part of parts) {
+    const trimmed = part.replace(",", ""); // remove comma if any
+    if (!trimmed.includes("+") && trimmed.length > 0) {
+      return trimmed;
+    }
+  }
+
+  return null;
+}

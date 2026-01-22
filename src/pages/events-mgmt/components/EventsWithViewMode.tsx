@@ -9,15 +9,15 @@ import {
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-import { useAppSelector } from '@/hooks/hooks';
 import { Button } from '@/components/ui/button';
 import { useThemeClasses } from '@/hooks/useThemeClasses';
 import { formatDate, formatDateRange } from '@/helpers/formatter';
 import { ImageWithFallback, ReordableDataTable } from '@/components/shared';
+import { extractCenterAddressText } from '@/helpers';
 
 
 interface EventsWithViewModeProps {
-  events: Event[];
+  events: any[];
   viewMode: string;
   selectedWebsiteCount: number;
   eventTypeFilter: string;
@@ -75,9 +75,7 @@ export default function EventsWithViewMode({
   setSelectedEvent,
   setShowQuickSnapModal,
 }: EventsWithViewModeProps) {
-  console.log("🚀 ~ EventsWithViewMode ~ events:", events)
   const { t, i18n } = useTranslation('events');
-  const { isRTL } = useAppSelector((state) => state.settings);
   const language = i18n.language || 'en';
   const themeColor = useThemeClasses()
 
@@ -166,7 +164,7 @@ export default function EventsWithViewMode({
   }
   // Events on a given date
   const eventsOnDate = (date: Date) => {
-    const dateStr = date?.toISOString().split('T')[0];
+    const dateStr = date?.toISOString()?.split('T')[0];
     return events?.filter(e => {
       const start = new Date(e.startDate)?.toISOString()?.split('T')[0];
       const end = new Date(e.endDate)?.toISOString()?.split('T')[0];
@@ -306,7 +304,7 @@ export default function EventsWithViewMode({
     );
   };
 
-  // List View
+  // Grid View
   const GridView = () => {
     const displayed = events?.slice(0, displayedListCount);
 
@@ -329,8 +327,6 @@ export default function EventsWithViewMode({
       <div className='py-6 px-4'>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {displayed.map(event => {
-            const { ribbon } = getCategoryColor(event.category);
-
             return (
               <div
                 key={event._id}
@@ -338,9 +334,9 @@ export default function EventsWithViewMode({
                 className="bg-white dark:bg-gray-900 rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow cursor-pointer"
               >
                 <div className="relative h-52">
-                  {event.image ? (
+                  {event?.images?.[0]?.image ? (
                     <ImageWithFallback
-                      src={event.image}
+                      src={event?.images?.[0]?.image}
                       alt={event.name}
                       className="w-full h-full object-cover"
                     />
@@ -349,9 +345,6 @@ export default function EventsWithViewMode({
                       <Calendar className="w-20 h-20 text-white/40" />
                     </div>
                   )}
-                  <div className={`absolute top-4 ${isRTL ? 'left-4' : 'right-4'} ${ribbon} text-white px-4 py-1.5 text-xs font-medium rounded shadow-lg`}>
-                    {event.category}
-                  </div>
                 </div>
                 <div className="p-5">
                   <h3 className="font-semibold text-lg mb-3 line-clamp-2">{event.name}</h3>
@@ -362,12 +355,12 @@ export default function EventsWithViewMode({
                     </div>
                     <div className="flex items-center gap-2">
                       <MapPin className="w-4 h-4" />
-                      <span className="truncate">{event.location}</span>
+                      <span className="truncate">{extractCenterAddressText(event?.address?.location)}</span>
                     </div>
                   </div>
                   <div className="mt-5 flex justify-between items-center">
                     <span className={`font-medium ${event.isFree ? 'text-emerald-600' : 'text-purple-600'}`}>
-                      {event.isFree ? t('free') : `₪${event.price}`}
+                      {event?.isFree ? t('free') : `₪ 0`}
                     </span>
                     {event.registrationRequired && (
                       <div className="text-xs text-gray-500">
@@ -395,7 +388,7 @@ export default function EventsWithViewMode({
     );
   };
 
-  // Grid View
+  // List View
   const ListView = () => {
     return (
       <ReordableDataTable
@@ -439,15 +432,6 @@ export default function EventsWithViewMode({
                 event.endDate,
                 event.isMultiDay
               ),
-          },
-          {
-            key: 'time',
-            label: t('time'),
-            render: (event) => (
-              <span className="text-xs sm:text-sm">
-                {event.startTime} – {event.endTime}
-              </span>
-            ),
           },
           {
             key: 'price',

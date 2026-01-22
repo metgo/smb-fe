@@ -24,17 +24,17 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { ReordableDataTable } from "@/components/shared";
+import { useGetEventsStatsQuery } from "@/store/api/eventQueryApi";
 
 
 interface EventDetailModalProps {
+  isRTL: boolean;
   selectedEvent: Event | null;
   setSelectedEvent: React.Dispatch<React.SetStateAction<Event | null>>;
   showDailyBreakdown: boolean;
   setShowDailyBreakdown: React.Dispatch<React.SetStateAction<boolean>>;
   registrantSearchQuery: string;
   setRegistrantSearchQuery: React.Dispatch<React.SetStateAction<string>>;
-  filteredRegistrants: Registrant[];
-  isRTL: boolean;
   setSelectedRegistrant?: React.Dispatch<React.SetStateAction<Registrant | null>>;
 }
 
@@ -45,13 +45,16 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
   setShowDailyBreakdown,
   registrantSearchQuery,
   setRegistrantSearchQuery,
-  filteredRegistrants,
   isRTL,
   setSelectedRegistrant,
 }) => {
+  const filteredRegistrants: any[] = []
+  console.log("🚀 ~ EventDetailModal ~ selectedEvent:", selectedEvent)
   const { t } = useTranslation("events");
   const { textPrimary, textSecondary, textTertiary } = useThemeClasses();
   const { theme } = useAppSelector((state) => state.settings);
+  const { data: eventStatsData, isLoading: _isEventStatsFetching } = useGetEventsStatsQuery({eventId: selectedEvent ? selectedEvent._id : ''});
+  console.log("🚀 ~ EventDetailModal ~ eventStatsData:", eventStatsData)
 
   if (!selectedEvent) return null;
 
@@ -222,19 +225,19 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
             {showDailyBreakdown ? (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
                 {[
-                  { label: t("total_registrations"), value: selectedEvent.totalRegistrations },
+                  { label: t("total_registrations"), value: eventStatsData?.totalRegistrations },
                   {
                     label: t("capacity"),
-                    value: selectedEvent.capacity,
+                    value: eventStatsData?.totalAttended,
                     sub: `${Math.round(
-                      (selectedEvent.totalRegistrations / selectedEvent.capacity) * 100
+                      (eventStatsData?.totalRegistrations / eventStatsData?.capacity) * 100
                     )}% ${t("filled")}`,
                   },
-                  { label: t("revenue"), value: `₪${(selectedEvent.revenue / 1000).toFixed(1)}K` },
-                  { label: t("refunds"), value: `₪${(selectedEvent.refunds / 1000).toFixed(1)}K` },
+                  { label: t("revenue"), value: `₪${(eventStatsData?.totalRevenue / 1000).toFixed(1)}K` },
+                  { label: t("refunds"), value: `₪${(eventStatsData?.refunds / 1000).toFixed(1)}K` },
                   {
                     label: t("event_type"),
-                    value: selectedEvent.isFree ? t("free") : t("paid"),
+                    value: eventStatsData?.isFree ? t("free") : t("paid"),
                   },
                 ].map((metric, i) => (
                   <div
@@ -297,14 +300,14 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
             )}
 
             {/* Trend Chart */}
-            {selectedEvent.dailyMetrics && selectedEvent.dailyMetrics.length > 1 && (
+            {selectedEvent?.dailyMetrics && selectedEvent?.dailyMetrics.length > 1 && (
               <div className={`mt-8 p-6 rounded-2xl ${theme === "dark" ? "bg-gray-800/50" : "bg-gray-50"}`}>
                 <h4 className={`text-lg font-medium mb-4 ${textSecondary}`}>
                   {t("registration_attendance_trend")}
                 </h4>
                 <div style={{ height: "280px" }}>
                   <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={selectedEvent.dailyMetrics}>
+                    <LineChart data={selectedEvent?.dailyMetrics}>
                       <CartesianGrid
                         strokeDasharray="4 4"
                         stroke={theme === "dark" ? "#374151" : "#e5e7eb"}
@@ -386,7 +389,7 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
               />
             </div>
 
-            {filteredRegistrants.length === 0 ? (
+            {filteredRegistrants?.length === 0 ? (
               <div className="text-center py-16">
                 <Users className={`w-20 h-20 mx-auto mb-5 opacity-50 ${textTertiary}`} />
                 <p className={`text-lg ${textTertiary}`}>

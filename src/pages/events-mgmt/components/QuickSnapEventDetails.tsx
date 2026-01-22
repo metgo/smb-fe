@@ -13,6 +13,7 @@ import clsx from "clsx";
 import { formatDate } from "@/helpers/formatter";
 import { useAppSelector } from "@/hooks/hooks";
 import { ImageWithFallback } from "@/components/shared";
+import { extractCenterAddressText } from "@/helpers";
 
 interface QuickSnapEventDetailsProps {
   selectedEvent: any | null;
@@ -44,9 +45,9 @@ const QuickSnapEventDetails = ({
       >
         {/* Header Image */}
         <div className="relative h-64 rounded-t-2xl overflow-hidden">
-          {selectedEvent.image ? (
+          {selectedEvent?.images ? (
             <ImageWithFallback
-              src={selectedEvent.image}
+              src={selectedEvent.images?.[0]?.image}
               alt={selectedEvent.name}
               className="w-full h-full object-cover"
             />
@@ -103,8 +104,8 @@ const QuickSnapEventDetails = ({
               <Calendar className="w-6 h-6 text-purple-500" />
               <div>
                 <div className="font-medium">
-                  {formatDate(selectedEvent?.dayDescription?.[0].date, language)}
-                  {selectedEvent.startDate !== selectedEvent.endDate &&
+                  {formatDate(selectedEvent?.dayDescription?.[0]?.date, language)}
+                  {selectedEvent?.startDate !== selectedEvent?.endDate &&
                     ` – ${formatDate(selectedEvent.endDate, language)}`}
                 </div>
                 <div
@@ -121,7 +122,7 @@ const QuickSnapEventDetails = ({
             {/* Location */}
             <div className="flex items-center gap-4">
               <MapPin className="w-6 h-6 text-purple-500" />
-              <div className="font-medium">{selectedEvent?.address?.location}</div>
+              <div className="font-medium">{extractCenterAddressText(selectedEvent?.address?.location)}</div>
             </div>
 
             {/* Price */}
@@ -137,7 +138,8 @@ const QuickSnapEventDetails = ({
               >
                 {selectedEvent.isFree
                   ? t("free")
-                  : `₪${selectedEvent.price}`}
+                  : `₪ 0
+                  ${selectedEvent.price}`}
               </div>
             </div>
 
@@ -198,7 +200,8 @@ const QuickSnapEventDetails = ({
                       : "text-purple-600"
                   )}
                 >
-                  ₪{selectedEvent?.revenue?.toLocaleString()}
+                  ₪ 0 
+                  {/* {selectedEvent?.revenue?.toLocaleString()} */}
                 </div>
               </div>
             )}

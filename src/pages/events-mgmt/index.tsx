@@ -11,10 +11,6 @@ import { PageHeader, PageStats, ViewModeToggle } from '@/components/shared';
 import { useGetAllEventsQuery, useGetEventsStatsQuery } from '@/store/api/eventQueryApi';
 import { EventsWithViewMode, CreateEventWizard, EventDetailModal, QuickSnapEventDetails, RegistrantDetailModal } from './components';
 
-type SortConfig = {
-  key: string;
-  direction: 'asc' | 'desc';
-} | null;
 
 
 export default function EventsMgmtPage() {
@@ -46,123 +42,10 @@ export default function EventsMgmtPage() {
   // Table and Modal State
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [selectedRegistrant, setSelectedRegistrant] = useState<Registrant | null>(null);
-  const [registrantSortConfig] = useState<SortConfig>(null);
   const [registrantSearchQuery, setRegistrantSearchQuery] = useState('');
   const [showDailyBreakdown, setShowDailyBreakdown] = useState(false);
   const [showQuickSnapModal, setShowQuickSnapModal] = useState(false);
   const [viewMode, setViewMode] = useState<'list' | 'grid' | 'calendar'>('list');
-
-  // Mock data - Registrants
-  const mockRegistrants: Registrant[] = selectedEvent ? [
-    {
-      id: '1',
-      fullName: 'David Cohen',
-      phone: '+972-50-123-4567',
-      email: 'david.cohen@example.com',
-      quantity: 2,
-      ticketType: 'General Admission',
-      totalPrice: selectedEvent.price * 2,
-      paymentStatus: 'paid',
-      registrationDate: '2025-01-05',
-      sourceWebsite: selectedEvent.website,
-      attendingDays: selectedEvent.isMultiDay ? ['2025-01-18', '2025-01-19'] : undefined
-    },
-    {
-      id: '2',
-      fullName: 'Sarah Levi',
-      phone: '+972-52-987-6543',
-      email: 'sarah.levi@example.com',
-      quantity: 1,
-      ticketType: 'VIP',
-      totalPrice: selectedEvent.price * 1.5,
-      paymentStatus: 'paid',
-      registrationDate: '2025-01-08',
-      sourceWebsite: selectedEvent.website,
-      attendingDays: selectedEvent.isMultiDay ? ['2025-01-18', '2025-01-19', '2025-01-20'] : undefined
-    },
-    {
-      id: '3',
-      fullName: 'Michael Peretz',
-      phone: '+972-54-555-8888',
-      email: 'michael.p@example.com',
-      quantity: 4,
-      ticketType: 'General Admission',
-      totalPrice: selectedEvent.price * 4,
-      paymentStatus: 'pending',
-      registrationDate: '2025-01-10',
-      sourceWebsite: selectedEvent.website,
-      attendingDays: selectedEvent.isMultiDay ? ['2025-01-19'] : undefined
-    },
-    {
-      id: '4',
-      fullName: 'Rachel Mizrahi',
-      phone: '+972-50-222-3333',
-      email: 'rachel.m@example.com',
-      quantity: 1,
-      ticketType: 'General Admission',
-      totalPrice: selectedEvent.price,
-      paymentStatus: 'refunded',
-      registrationDate: '2025-01-03',
-      sourceWebsite: selectedEvent.website,
-      attendingDays: selectedEvent.isMultiDay ? ['2025-01-18'] : undefined
-    },
-    {
-      id: '5',
-      fullName: 'Yossi Alon',
-      phone: '+972-53-777-9999',
-      email: 'yossi.alon@example.com',
-      quantity: 2,
-      ticketType: 'Early Bird',
-      totalPrice: selectedEvent.price * 2 * 0.8,
-      paymentStatus: 'paid',
-      registrationDate: '2024-12-28',
-      sourceWebsite: selectedEvent.website,
-      attendingDays: selectedEvent.isMultiDay ? ['2025-01-18', '2025-01-19', '2025-01-20'] : undefined
-    },
-  ] : [];
-
-
-  // Sort registrants
-  const sortedRegistrants = [...mockRegistrants].sort((a, b) => {
-    if (!registrantSortConfig) return 0;
-    const { key, direction } = registrantSortConfig;
-
-    const aRaw = a[key as keyof Registrant];
-    const bRaw = b[key as keyof Registrant];
-
-    const normalize = (val: any) => {
-      if (val === undefined || val === null) return '';
-      if (typeof val === 'string') return val.toLowerCase();
-      if (typeof val === 'number') return val;
-      if (Array.isArray(val)) return val.length;
-      if (val instanceof Date) return val.getTime();
-      return String(val).toLowerCase();
-    };
-
-    const aVal = normalize(aRaw);
-    const bVal = normalize(bRaw);
-
-    if (typeof aVal === 'number' && typeof bVal === 'number') {
-      if (aVal < bVal) return direction === 'asc' ? -1 : 1;
-      if (aVal > bVal) return direction === 'asc' ? 1 : -1;
-      return 0;
-    }
-
-    if (String(aVal) < String(bVal)) return direction === 'asc' ? -1 : 1;
-    if (String(aVal) > String(bVal)) return direction === 'asc' ? 1 : -1;
-    return 0;
-  });
-
-  // Filter registrants by search
-  const filteredRegistrants = sortedRegistrants.filter(reg => {
-    if (!registrantSearchQuery) return true;
-    const query = registrantSearchQuery.toLowerCase();
-    return (
-      reg.fullName.toLowerCase().includes(query) ||
-      reg.email.toLowerCase().includes(query) ||
-      reg.phone.includes(query)
-    );
-  });
 
 
   // Handle edit event
@@ -179,10 +62,6 @@ export default function EventsMgmtPage() {
     setShowDailyBreakdown(true);
     setShowQuickSnapModal(false)
   };
-
-
-
-
 
   const eventStats = [
     {
@@ -428,14 +307,13 @@ export default function EventsMgmtPage() {
       {/* Event Detail Modal */}
       <Activity mode={showDailyBreakdown && !showQuickSnapModal ? "visible" : "hidden"}>
         <EventDetailModal
+          isRTL={isRTL}
           selectedEvent={selectedEvent}
           setSelectedEvent={setSelectedEvent}
           showDailyBreakdown={showDailyBreakdown}
           setShowDailyBreakdown={setShowDailyBreakdown}
           registrantSearchQuery={registrantSearchQuery}
           setRegistrantSearchQuery={setRegistrantSearchQuery}
-          filteredRegistrants={filteredRegistrants}
-          isRTL={isRTL}
           setSelectedRegistrant={setSelectedRegistrant}
         />
       </Activity>
@@ -463,7 +341,6 @@ export default function EventsMgmtPage() {
         isOpen={isCreateWizardOpen}
         onClose={() => {setIsCreateWizardOpen(false); setEditId(null)}}
         theme={theme}
-        mode="create"
       />
     </>
   );

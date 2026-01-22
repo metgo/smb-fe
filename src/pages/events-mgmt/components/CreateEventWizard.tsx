@@ -20,7 +20,6 @@ interface CreateEventWizardProps {
   isOpen: boolean;
   onClose: () => void;
   theme: Theme;
-  mode?: 'create' | 'edit' | 'duplicate';
   existingEvent?: any;
   editId?: string | null;
 }
@@ -29,7 +28,6 @@ export default function CreateEventWizard({
   isOpen,
   onClose,
   theme,
-  mode = 'create',
   editId = null
 }: CreateEventWizardProps) {
   const { t } = useTranslation('events');
@@ -38,10 +36,8 @@ export default function CreateEventWizard({
 
   const [updateEvent, { isLoading: isEventUpdating }] = useUpdateEventMutation()
   const [initEventCreate, { isLoading: isEventCreating }] = useInitEventCreateMutation()
-  // const { data: editData } = useGetEventByIdQuery(
-  //   editId ? { eventId: editId } : skipToken
-  // );
   const { data: editData, refetch } = useGetEventByIdQuery(editId ? { eventId: editId } : skipToken);
+
   useEffect(() => { if (editId) setEventId(editId) }, [editId])
 
   const [currentStep, setCurrentStep] = useState(1);
@@ -95,6 +91,8 @@ export default function CreateEventWizard({
 
   // Step 4: Tickets
   const [tickets, setTickets] = useState<TicketData[]>([]);
+  const [ticketCount, setTicketCount] = useState(0);
+  console.log("🚀 ~ CreateEventWizard ~ ticketCount:", ticketCount)
   const [showTicketModal, setShowTicketModal] = useState(false);
 
   // Step 5: Messaging
@@ -120,7 +118,7 @@ export default function CreateEventWizard({
 
   // Reset all state when wizard closes or opens in create mode
   useEffect(() => {
-    if (isOpen && mode === 'create') {
+    if (isOpen && !editId) {
       // Reset to initial state
       setCurrentStep(1);
       setEventName('');
@@ -143,8 +141,14 @@ export default function CreateEventWizard({
       setEventImages([]);
       setErrors({});
       setLastSaved(null);
+      setSelectAuthorityId("");
+      setSelectDmoId("");
+      setSubCategoriesId([]);
+      setGroupTypesId([]);
+      setAccessiblitiesId([]);
+      setEventId(null);
     }
-  }, [isOpen, mode]);
+  }, [isOpen,]);
 
 
   useEffect(() => {
@@ -158,11 +162,25 @@ export default function CreateEventWizard({
       setGroupTypesId(editData?.groupTypesId)
       setSubCategoriesId(editData?.subCategoriesId)
       setInternalNotes(editData?.internalNotes);
+      setSelectAuthorityId(editData?.authorityId || "");
+      setSelectDmoId(editData?.dmoId || "");
 
       // Date & Time
       setEventDays(editData?.dayDescription)
+      setStartDate(editData?.dayDescription?.[0]?.date || '')
       setGeo({ lat: editData?.geoLocation?.lat, lng: editData?.geoLocation?.long })
       setEventFormat(editData?.eventType?.toLowerCase())
+      setRecurrencePattern(editData?.recurringEventRuleId?.pattern?.toLowerCase() || 'weekly')
+      setSelectedWeekdays(editData?.recurringEventRuleId?.daysOfWeek || [])
+      setMonthlyType(editData?.recurringEventRuleId?.monthlyType)
+      setSpecificDate(editData?.recurringEventRuleId?.specificDate || 1)
+      setRelativeDate(editData?.recurringEventRuleId?.relativeDate || 1)
+      setRelativeDay(editData?.recurringEventRuleId?.relativeDay || "sun")
+      setCustomInterval(editData?.recurringEventRuleId?.customInterval || 1)
+      setCustomUnit(editData?.recurringEventRuleId?.customUnit?.toLowerCase() || "day")
+      setRecurrenceEndDate(editData?.recurringEventRuleId?.endDate || '')
+      setRecurrenceEndCount(editData?.recurringEventRuleId?.occurrenceLimit || 10)
+      setAddress(editData?.address?.location || '')
 
       // Registration
       setRegistrationRequired(editData?.registration?.isRegistration)
@@ -172,6 +190,23 @@ export default function CreateEventWizard({
 
       // Media
       setEventImages(editData?.images)
+
+      // Message shedule nofitications
+      const notification = editData?.scheduledNotificationId?.map((item: any) => ({
+        id: item?._id,
+        channels: {
+          email: item?.channels?.includes('EMAIL'),
+          sms: item?.channels?.includes('SMS'),
+          whatsapp: item?.channels?.includes('WHATSAPP'),
+        },
+        hoursBeforeEvent: item?.sendHoursBefore,
+        language: item?.language,
+        template: item?.template,
+        subject: item?.customTemplate?.subject,
+        message: item?.customTemplate?.body,
+        enabled: item.status === 'ACTIVE' ? true : false,
+      }))
+      setNotifications(notification)
     }
   }, [editData, editId])
 
@@ -195,7 +230,7 @@ export default function CreateEventWizard({
         if (capacityType === 'limited' && capacity <= 0) newErrors.capacity = 'Must be greater than 0';
         break;
       case 4:
-        if (tickets.length === 0 && registrationRequired) {
+        if (ticketCount && registrationRequired) {
           newErrors.tickets = t('at_least_one_ticket_required');
         }
         break;
@@ -218,9 +253,9 @@ export default function CreateEventWizard({
     name: eventName,
     description: fullDescription,
     shortDescription: shortDescription,
-    authorityId: undefined,
-    dmoId: undefined,
-    status: eventStatus.toUpperCase(),
+    authorityId: selectedAuthorityId,
+    dmoId: selectedDmoId,
+    status: eventStatus?.toUpperCase(),
     groupTypesId: selectedGroupTypesId,
     accessibilitiesId: selectedAccessiblitiesId,
     subCategoriesId: selectedSubCategoriesId,
@@ -235,19 +270,19 @@ export default function CreateEventWizard({
     })),
     geoLocation: { lat: geo.lat, long: geo.lng },
     recurringEventRule: {
-      pattern: recurrencePattern.toUpperCase(),
+      pattern: recurrencePattern?.toUpperCase(),
       daysOfWeek: selectedWeekdays,
-      monthlyType: monthlyType.toUpperCase(),
+      monthlyType: monthlyType?.toUpperCase(),
       specificDate,
       relativeDate,
       relativeDay,
       customInterval,
-      customUnit: customUnit.toUpperCase(),
+      customUnit: customUnit?.toUpperCase(),
       endType: 'END_DATE',
       occurrenceLimit: recurrenceEndCount,
       endDate: recurrenceEndDate,
     },
-    eventType: eventFormat.toUpperCase(),
+    eventType: eventFormat?.toUpperCase(),
     address: {
       country: "",
       city: "",
@@ -278,16 +313,19 @@ export default function CreateEventWizard({
       ),
       language: item.language,
       template: item.template,
+      status: item.enabled ? "ACTIVE" : "INACTIVE",
       customTemplate: {
         subject: item.subject,
         body: item.message,
       },
     })),
   };
-
-
   const eventMediaPayload = {
     images: eventImages
+  }
+
+  const reviewPublishPayload = {
+    status: 'APPROVED'
   }
 
   const handleSaveDraft = async () => {
@@ -311,6 +349,7 @@ export default function CreateEventWizard({
         3: eventRegistrationPayload,
         5: eventMsgSchedulePayload,
         6: eventMediaPayload,
+        7: reviewPublishPayload,
       };
 
       const payload = stepPayloadMap[currentStep];
@@ -406,7 +445,7 @@ export default function CreateEventWizard({
         <div className={`flex items-center justify-between p-6 border-b ${theme === 'dark' ? 'border-gray-800' : 'border-gray-200'}`}>
           <div className="flex-1">
             <h2 className={`text-2xl ${textPrimary}`}>
-              {mode === 'create' ? t('create_new_event') : mode === 'edit' ? t('edit_event') : t('duplicate_event')}
+              {editId ? t('edit_event') : t('create_new_event')}
             </h2>
             <p className={`text-sm mt-1 ${textTertiary}`}>
               {t('step')} {currentStep} {t('step_of')} {steps.length}: {steps[currentStep - 1].label}
@@ -574,6 +613,7 @@ export default function CreateEventWizard({
               showTicketModal={showTicketModal}
               setShowTicketModal={setShowTicketModal}
               errors={errors}
+              setTickets={setTickets}
             />
           </Activity>
 
