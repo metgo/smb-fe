@@ -64,7 +64,8 @@ export default function CreateBusinessWizard({
   );
   const [geo, setGeo] = useState<Geo>({ lat: "", lng: "" });
   const [address, setAddress] = useState("");
-  console.log("address, geo", address, geo);
+
+  console.log("address", address);
 
   const parseAddress = (address: any) => {
     const parts = address.split(",");
@@ -76,7 +77,8 @@ export default function CreateBusinessWizard({
     };
   };
 
-  const { location, city, country } = parseAddress(address);
+  const addr = parseAddress(address);
+
   //timedate range
   const transformOperatingHoursToPayload = (
     operatingHours: OperatingHours,
@@ -132,7 +134,7 @@ export default function CreateBusinessWizard({
     collaborators: [] as any[],
 
     // Step 3
-    address: { country: "", city: "", location: "" },
+    address: "",
     coordinates: { lat: "", lng: "" },
 
     // Step 4
@@ -225,9 +227,9 @@ export default function CreateBusinessWizard({
     },
     3: {
       address: {
-        country: country,
-        city: city,
-        location: location,
+        country: addr.country,
+        city: addr.city,
+        location: addr.location,
       },
       geoLocation: geo,
     },
@@ -247,7 +249,7 @@ export default function CreateBusinessWizard({
       openingHrs: transformOperatingHoursToPayload(formData.operatingHours),
     },
     7: {
-      vendorDelivers: formData.vendorDelivers,
+      // vendorDelivers: formData.vendorDelivers,
       isPickUpAvailable: formData.pickupAvailable,
       deliveryArea: formData.deliveryAreas,
       deliveryAdditionalInfo: formData.deliveryAdditionalInfo,
@@ -313,7 +315,8 @@ export default function CreateBusinessWizard({
         if (!formData.phone.trim()) newErrors.phone = t("required_field");
         break;
       case 3:
-        if (!formData.address.trim()) newErrors.address = "Address is required";
+        if (!formData.geoLocation)
+          newErrors.geoLocation = "Gelocation is required";
         break;
       case 4:
         if (!formData.primaryCategory) {
@@ -326,21 +329,6 @@ export default function CreateBusinessWizard({
     return Object.keys(newErrors).length === 0;
   };
   const handlePublish = async () => {
-    // Validate all steps
-    let allValid = true;
-    for (let i = 1; i <= 4; i++) {
-      if (!validateStep(i)) {
-        allValid = false;
-        setCurrentStep(i);
-        break;
-      }
-    }
-
-    if (!allValid) {
-      toast.error(t("fix_errors_before_proceeding"));
-      return;
-    }
-
     setIsPublishing(true);
     await new Promise((resolve) => setTimeout(resolve, 2000));
     setIsPublishing(false);

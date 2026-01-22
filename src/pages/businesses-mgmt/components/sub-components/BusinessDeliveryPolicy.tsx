@@ -2,7 +2,6 @@ import { Activity, useState, type FC } from "react";
 import { Plus, X, MapPin } from "lucide-react";
 import PickupLocationModal from "./PickupLocationModal";
 
-
 interface PickupLocation {
   address: string;
   isAlwaysOpen: boolean;
@@ -14,7 +13,6 @@ interface DeliveryArea {
   price: string;
   pickUpLocation: PickupLocation[];
 }
-
 
 interface BusinessDeliveryFormData {
   vendorDelivers: boolean;
@@ -44,7 +42,6 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
   formData,
   setFormData,
 }) => {
-
   const [pickupLocationModal, setPickupLocationModal] = useState<{
     show: boolean;
     areaIndex: number;
@@ -58,39 +55,40 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
 
   // Translated delivery options
   const DELIVERY_RETURN_EXCHANGE_OPTIONS = [
-    t('return_option1'),
-    t('return_option2'),
-    t('return_option3'),
-    t('return_option4'),
-    t('return_option5'),
-    t('return_option6'),
-    t('return_option7'),
-    t('return_option8'),
+    t("return_option1"),
+    t("return_option2"),
+    t("return_option3"),
+    t("return_option4"),
+    t("return_option5"),
+    t("return_option6"),
+    t("return_option7"),
+    t("return_option8"),
   ];
   const DELIVERY_SPECIFIC_SELLER_INFO_OPTIONS = [
-    t('seller_info_option1'),
-    t('seller_info_option2'),
-    t('seller_info_option3'),
-    t('seller_info_option4'),
-    t('seller_info_option5'),
-    t('seller_info_option6'),
-    t('seller_info_option7'),
-    t('seller_info_option8'),
-    t('seller_info_option9'),
+    t("seller_info_option1"),
+    t("seller_info_option2"),
+    t("seller_info_option3"),
+    t("seller_info_option4"),
+    t("seller_info_option5"),
+    t("seller_info_option6"),
+    t("seller_info_option7"),
+    t("seller_info_option8"),
+    t("seller_info_option9"),
   ];
 
   return (
     <div className="space-y-6">
       <h3
-        className={`text-lg ${theme === "dark" ? "text-gray-200" : "text-gray-800"
-          }`}
+        className={`text-lg ${
+          theme === "dark" ? "text-gray-200" : "text-gray-800"
+        }`}
       >
         {t("delivery")}
       </h3>
 
       {/* Delivery Options */}
       <div className="flex items-center gap-6">
-        <label className="flex items-center gap-2 cursor-pointer">
+        {/* <label className="flex items-center gap-2 cursor-pointer">
           <input
             type="checkbox"
             checked={formData.vendorDelivers}
@@ -105,7 +103,7 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
           >
             {t("vendor_delivers")}
           </span>
-        </label>
+        </label> */}
 
         <label className="flex items-center gap-2 cursor-pointer">
           <input
@@ -117,8 +115,9 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
             className="w-4 h-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500"
           />
           <span
-            className={`text-sm ${theme === "dark" ? "text-gray-300" : "text-gray-700"
-              }`}
+            className={`text-sm ${
+              theme === "dark" ? "text-gray-300" : "text-gray-700"
+            }`}
           >
             {t("pickup_available")}
           </span>
@@ -130,8 +129,9 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
         <div>
           <div className="flex items-center justify-between mb-3">
             <label
-              className={`block text-sm ${theme === "dark" ? "text-gray-300" : "text-gray-700"
-                }`}
+              className={`block text-sm ${
+                theme === "dark" ? "text-gray-300" : "text-gray-700"
+              }`}
             >
               {t("delivery_areas_pricing")}
             </label>
@@ -157,10 +157,11 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
             {formData.deliveryAreas.map((deliveryArea, areaIdx) => (
               <div
                 key={areaIdx}
-                className={`p-4 rounded-lg border ${theme === "dark"
-                  ? "bg-gray-800/50 border-gray-700"
-                  : "bg-gray-50 border-gray-200"
-                  }`}
+                className={`p-4 rounded-lg border ${
+                  theme === "dark"
+                    ? "bg-gray-800/50 border-gray-700"
+                    : "bg-gray-50 border-gray-200"
+                }`}
               >
                 <div className="grid grid-cols-12 gap-3 mb-3">
                   {/* Area */}
@@ -227,7 +228,7 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
                         setFormData({
                           ...formData,
                           deliveryAreas: formData.deliveryAreas.filter(
-                            (_, i) => i !== areaIdx
+                            (_, i) => i !== areaIdx,
                           ),
                         })
                       }
@@ -251,7 +252,10 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
 
         <div className="space-y-2">
           {DELIVERY_RETURN_EXCHANGE_OPTIONS.map((option) => (
-            <label key={option} className="flex items-start gap-3 cursor-pointer">
+            <label
+              key={option}
+              className="flex items-start gap-3 cursor-pointer"
+            >
               <input
                 type="checkbox"
                 checked={formData.deliveryReturnExchange.includes(option)}
@@ -261,8 +265,8 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
                     deliveryReturnExchange: e.target.checked
                       ? [...formData.deliveryReturnExchange, option]
                       : formData.deliveryReturnExchange.filter(
-                        (p) => p !== option
-                      ),
+                          (p) => p !== option,
+                        ),
                   })
                 }
                 className="mt-1 w-4 h-4"
@@ -275,9 +279,7 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
 
       {/* Additional Info */}
       <div>
-        <label className="block text-sm mb-2">
-          {t("additional_details")}
-        </label>
+        <label className="block text-sm mb-2">{t("additional_details")}</label>
         <textarea
           value={formData.deliveryAdditionalInfo}
           onChange={(e) =>
@@ -300,7 +302,10 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
 
         <div className="space-y-2">
           {DELIVERY_SPECIFIC_SELLER_INFO_OPTIONS.map((option) => (
-            <label key={option} className="flex items-start gap-3 cursor-pointer">
+            <label
+              key={option}
+              className="flex items-start gap-3 cursor-pointer"
+            >
               <input
                 type="checkbox"
                 checked={formData.deliverySpecificSellerInfo.includes(option)}
@@ -310,8 +315,8 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
                     deliverySpecificSellerInfo: e.target.checked
                       ? [...formData.deliverySpecificSellerInfo, option]
                       : formData.deliverySpecificSellerInfo.filter(
-                        (i) => i !== option
-                      ),
+                          (i) => i !== option,
+                        ),
                   })
                 }
                 className="mt-1 w-4 h-4"
@@ -321,7 +326,6 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
           ))}
         </div>
       </div>
-
 
       <Activity mode={pickupLocationModal ? "visible" : "hidden"}>
         <PickupLocationModal

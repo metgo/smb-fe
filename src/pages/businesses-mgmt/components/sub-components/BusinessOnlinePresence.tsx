@@ -1,40 +1,29 @@
-import type { FC } from "react";
+import { useEffect, type FC } from "react";
 import { Globe, Facebook, Instagram, Youtube, Music } from "lucide-react";
+import { useGetAllSocialMediaQuery } from "@/store/api/masterDataApi";
 
 /* ---------- Types ---------- */
 
-interface OnlinePresenceData {
-  website: string;
-  facebook: string;
-  instagram: string;
-  youtube: string;
-  tiktok: string;
-}
 interface SocialMediaItem {
-  socialMediaId: "website" | "facebook" | "instagram" | "youtube" | "tiktok";
-  url: string;
+  _id: string;
+  name: string;
+  icon: {
+    _id: string;
+    name: string;
+    iconPath: string;
+    iconAlt: string;
+  };
 }
-interface OnlinePresenceFormData {
-  online_presence: OnlinePresenceData;
-}
-interface OnlinePresenceFormData {
-  socialMedia: SocialMediaItem[];
-}
+
 interface BusinessOnlinePresenceProps {
-  theme: Theme;
+  theme: "light" | "dark";
   isRTL: boolean;
   t: (key: string) => string;
-  formData: OnlinePresenceFormData;
-  setFormData: (data: OnlinePresenceFormData) => void;
-}
-interface SocialMediaItem {
-  socialMediaId: "website" | "facebook" | "instagram" | "youtube" | "tiktok";
-  url: string;
-}
-
-
-interface OnlinePresenceFormData {
-  socialMedia: SocialMediaItem[];
+  formData: {
+    socialMedia: Array<{ socialMediaId: string; url: string }>;
+    [key: string]: any;
+  };
+  setFormData: (data: any) => void;
 }
 
 /* ---------- Component ---------- */
@@ -46,111 +35,109 @@ const BusinessOnlinePresence: FC<BusinessOnlinePresenceProps> = ({
   formData,
   setFormData,
 }) => {
+  const { data: socialMediaRes, isLoading } = useGetAllSocialMediaQuery();
+
+  const allSocialMedia: SocialMediaItem[] = socialMediaRes?.datas?.data ?? [];
+
+  // Helper: get current URL for a given social media id
+  const getUrlForId = (id: string) => {
+    return (
+      formData.socialMedia?.find((item) => item.socialMediaId === id)?.url || ""
+    );
+  };
+
+  // Update formData.socialMedia array
+  const updateSocialUrl = (socialMediaId: string, url: string) => {
+    setFormData((prev: any) => {
+      const existing = prev.socialMedia || [];
+
+      // Remove old entry if exists
+      const filtered = existing.filter(
+        (item: any) => item.socialMediaId !== socialMediaId,
+      );
+
+      // Add new one only if there's a value
+      const updated =
+        url.trim() === ""
+          ? filtered
+          : [...filtered, { socialMediaId, url: url.trim() }];
+
+      return {
+        ...prev,
+        socialMedia: updated,
+      };
+    });
+  };
+
   const inputClasses = `w-full ${
     isRTL ? "pr-10 pl-4" : "pl-10 pr-4"
   } py-2 rounded-lg border ${
     theme === "dark"
-      ? "bg-gray-800 border-gray-700 text-gray-200"
-      : "bg-white border-gray-300 text-gray-900"
+      ? "bg-gray-800 border-gray-700 text-gray-200 placeholder-gray-500"
+      : "bg-white border-gray-300 text-gray-900 placeholder-gray-400"
   } focus:outline-none focus:ring-2 focus:ring-teal-500`;
 
-  const updateSocialMedia = (
-    id: SocialMediaItem["socialMediaId"],
-    value: string,
-  ) => {
-    const existing = formData.socialMedia.find(
-      (item) => item.socialMediaId === id,
+  // Optional: show loading state or skeleton
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <h3
+          className={`text-lg ${
+            theme === "dark" ? "text-gray-200" : "text-gray-800"
+          }`}
+        >
+          {t("online_presence") || "Online Presence & Social Media"}
+        </h3>
+        <div className="text-sm opacity-70">Loading social platforms...</div>
+      </div>
     );
-
-    let updatedSocialMedia;
-
-    if (existing) {
-      updatedSocialMedia = formData.socialMedia.map((item) =>
-        item.socialMediaId === id ? { ...item, url: value } : item,
-      );
-    } else {
-      updatedSocialMedia = [
-        ...formData.socialMedia,
-        { socialMediaId: id, url: value },
-      ];
-    }
-
-    setFormData({
-      ...formData,
-      socialMedia: updatedSocialMedia,
-    });
-  };
-  const getSocialMediaValue = (id: SocialMediaItem["socialMediaId"]) =>
-  formData.socialMedia?.find((item) => item.socialMediaId === id)?.url || "";
-
+  }
 
   return (
     <div className="space-y-6">
       <h3
-        className={`text-lg ${theme === "dark" ? "text-gray-200" : "text-gray-800"}`}
+        className={`text-lg ${
+          theme === "dark" ? "text-gray-200" : "text-gray-800"
+        }`}
       >
         {t("online_presence") || "Online Presence & Social Media"}
       </h3>
 
-      {/* Website */}
-      <SocialInput
-        label={t("website_url")}
-        icon={<Globe className="w-5 h-5 text-gray-400" />}
-        value={getSocialMediaValue("website")}
-        placeholder="https://example.com"
-        inputClasses={inputClasses}
-        isRTL={isRTL}
-        onChange={(value) => updateSocialMedia("website", value)}
-      />
+      <div className="grid gap-5 sm:grid-cols-2">
+        {allSocialMedia.map((platform) => {
+          const isWebsite = platform.name.toLowerCase() === "website";
+          const label = platform.name;
+          const placeholder = isWebsite
+            ? "https://yourwebsite.com"
+            : `https://${platform.name.toLowerCase()}.com/yourpage`;
 
-      {/* Facebook */}
-      <SocialInput
-        label={t("facebook")}
-        icon={<Facebook className="w-5 h-5 text-gray-400" />}
-        value={getSocialMediaValue("facebook")}
-        placeholder="https://facebook.com/example"
-        inputClasses={inputClasses}
-        isRTL={isRTL}
-        onChange={(value) => updateSocialMedia("facebook", value)}
-      />
+          // You can map known platforms to lucide icons, fallback to globe
+          let Icon = Globe;
+          if (platform.name.toLowerCase() === "facebook") Icon = Facebook;
+          if (platform.name.toLowerCase() === "instagram") Icon = Instagram;
+          if (platform.name.toLowerCase() === "youtube") Icon = Youtube;
+          // Add more mappings as needed
 
-      {/* Instagram */}
-      <SocialInput
-        label={t("instagram")}
-        icon={<Instagram className="w-5 h-5 text-gray-400" />}
-        value={getSocialMediaValue("instagram")}
-        placeholder="https://instagram.com/example"
-        inputClasses={inputClasses}
-        isRTL={isRTL}
-        onChange={(value) => updateSocialMedia("instagram", value)}
-      />
+          // Prefer API icon if you want to use <img> instead of lucide
+          // For now using lucide for consistency & performance
 
-      {/* YouTube */}
-      <SocialInput
-        label={t("youtube")}
-        icon={<Youtube className="w-5 h-5 text-gray-400" />}
-        value={getSocialMediaValue("youtube")}
-        placeholder="https://youtube.com/example"
-        inputClasses={inputClasses}
-        isRTL={isRTL}
-        onChange={(value) => updateSocialMedia("youtube", value)}
-      />
-
-      {/* TikTok */}
-      <SocialInput
-        label={t("tiktok")}
-        icon={<Music className="w-5 h-5 text-gray-400" />}
-        value={getSocialMediaValue("tiktok")}
-        placeholder="https://tiktok.com/example"
-        inputClasses={inputClasses}
-        isRTL={isRTL}
-        onChange={(value) => updateSocialMedia("tiktok", value)}
-      />
+          return (
+            <SocialInput
+              key={platform._id}
+              label={label}
+              icon={<Icon size={20} className="text-teal-500" />}
+              value={getUrlForId(platform._id)}
+              placeholder={placeholder}
+              isRTL={isRTL}
+              inputClasses={inputClasses}
+              onChange={(value) => updateSocialUrl(platform._id, value)}
+            />
+          );
+        })}
+      </div>
     </div>
   );
 };
-
-export default BusinessOnlinePresence;
 
 /* ---------- Reusable Social Input ---------- */
 
@@ -177,7 +164,7 @@ const SocialInput: FC<SocialInputProps> = ({
     <label className="block text-sm mb-2 text-gray-500">{label}</label>
     <div className="relative">
       <div
-        className={`absolute ${isRTL ? "right-3" : "left-3"} top-1/2 -translate-y-1/2`}
+        className={`absolute ${isRTL ? "right-3" : "left-3"} top-1/2 -translate-y-1/2 pointer-events-none`}
       >
         {icon}
       </div>
@@ -191,3 +178,5 @@ const SocialInput: FC<SocialInputProps> = ({
     </div>
   </div>
 );
+
+export default BusinessOnlinePresence;
