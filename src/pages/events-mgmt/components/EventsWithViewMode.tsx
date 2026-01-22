@@ -166,7 +166,7 @@ export default function EventsWithViewMode({
   const dateStr = date.toISOString().split('T')[0]; // normalize input date
 
   return events?.filter(e =>
-    e.dayDescription?.some(d => {
+    e.dayDescription?.some((d:any) => {
       const dStr = new Date(d.date).toISOString().split('T')[0]; // normalize dayDescription date
       return dStr === dateStr;
     })
@@ -286,7 +286,7 @@ export default function EventsWithViewMode({
       <h3 className="text-2xl font-semibold mb-6">{dayLabel}</h3>
       {dayEvents?.length === 0 ? (
         <div className="text-center py-20 text-gray-500">
-          {t('noEventsThisDay')}
+          {t('no_events_this_day')}
         </div>
       ) : (
         <div className="space-y-6">
