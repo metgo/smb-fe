@@ -17,6 +17,11 @@ import {
   useInitBusinessCreateMutation,
   useUpdateBusinessMutation,
 } from "@/store/api/businessMutationApi";
+import type {
+  OperatingHours,
+  OpeningHrPayload 
+} from "@/types/openinghours";
+
 import {
   BusinessAttributes,
   BusinessBasicInfos,
@@ -75,7 +80,36 @@ const parseAddress = (address:any) => {
 };
 
 const { location, city, country } = parseAddress(address);
+//timedate range
+const transformOperatingHoursToPayload = (
+    operatingHours: OperatingHours,
+  ): OpeningHrPayload[] => {
+    const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
 
+    return Object.entries(operatingHours).flatMap(
+      ([day, ranges]): OpeningHrPayload[] => {
+        // Holiday (closed)
+        if (ranges.length === 0) {
+          return [
+            {
+              days: day,
+              open: `${today}T00:00:00.000Z`,
+              close: `${today}T00:00:00.000Z`,
+              isHoliday: true,
+            },
+          ];
+        }
+
+        // Open hours
+        return ranges.map((range: any) => ({
+          days: day,
+          open: `${today}T${range.open}:00.000Z`,
+          close: `${today}T${range.close}:00.000Z`,
+          isHoliday: false,
+        }));
+      },
+    );
+  };
   // Form State
   const [formData, setFormData] = useState<any>({
     // Step 1
@@ -218,7 +252,7 @@ const { location, city, country } = parseAddress(address);
       images: formData.images,
     },
     6: {
-      operatingHours: formData.operatingHours,
+      openingHrs: transformOperatingHoursToPayload(formData.operatingHours),
     },
     7: {
       vendorDelivers: formData.vendorDelivers,

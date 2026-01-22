@@ -1,20 +1,9 @@
 import { TimePickerWidget } from "@/components/shared/TimePickerWidget";
 import type { FC } from "react";
-
-interface TimeRange {
-  open: string;
-  close: string;
-}
-
-interface OperatingHours {
-  sunday: TimeRange[];
-  monday: TimeRange[];
-  tuesday: TimeRange[];
-  wednesday: TimeRange[];
-  thursday: TimeRange[];
-  friday: TimeRange[];
-  saturday: TimeRange[];
-}
+import type {
+  OperatingHours,
+  OpeningHrPayload 
+} from "@/types/openinghours";
 
 interface BusinessOpeningHoursProps {
   theme: "light" | "dark";
@@ -47,6 +36,40 @@ const BusinessOpeningHours: FC<BusinessOpeningHoursProps> = ({
     { key: "saturday", label: t("saturday") },
   ] as const;
 
+  const transformOperatingHoursToPayload = (
+    operatingHours: OperatingHours,
+  ): OpeningHrPayload[] => {
+    const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+
+    return Object.entries(operatingHours).flatMap(
+      ([day, ranges]): OpeningHrPayload[] => {
+        // Holiday (closed)
+        if (ranges.length === 0) {
+          return [
+            {
+              days: day,
+              open: `${today}T00:00:00.000Z`,
+              close: `${today}T00:00:00.000Z`,
+              isHoliday: true,
+            },
+          ];
+        }
+
+        // Open hours
+        return ranges.map((range: any) => ({
+          days: day,
+          open: `${today}T${range.open}:00.000Z`,
+          close: `${today}T${range.close}:00.000Z`,
+          isHoliday: false,
+        }));
+      },
+    );
+  };
+
+  const payload = {
+    openingHrs: transformOperatingHoursToPayload(formData.operatingHours),
+  };
+  console.log("payload opening hours", payload);
   return (
     <div className="space-y-6">
       <h3 className={theme === "dark" ? "text-gray-200" : "text-gray-800"}>
