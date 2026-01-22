@@ -108,6 +108,9 @@ type MonthlyOrdinal = '1st' | '2nd' | '3rd' | '4th' | 'last'
 type RecurrenceEndType = 'never' | 'date' | 'count'
 
 
+type EventStatus = 'PENDING' | 'APPROVED' | 'CLOSED' | 'REJECTED' | 'DRAFT'
+
+
 // Event Creation Payload
 
 interface EventBasicInfoPayload {

@@ -27,14 +27,20 @@ export default function EventsMgmtPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedWebsites, setSelectedWebsites] = useState<Website[]>([]);
   const [eventTypeFilter, setEventTypeFilter] = useState<'all' | 'free' | 'paid'>('all');
-  const [registrationFilter, setRegistrationFilter] = useState<'all' | 'yes' | 'no'>('all');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'upcoming' | 'past' | 'canceled'>('all');
+  const [registrationFilter, setRegistrationFilter] = useState<'all' | 'true' | 'false'>('all');
+  const [statusFilter, setStatusFilter] = useState<EventStatus | 'all'>('all');
   const [dateRangeFilter, setDateRangeFilter] = useState({ start: '', end: '' });
 
   // Data Fetch
   const { data: events, isLoading: _isLoading } = useGetAllEventsQuery({
-    search: searchQuery,
-    // eventType: eventTypeFilter.toUpperCase()
+    ...(searchQuery && {search: searchQuery}),
+    ...(eventTypeFilter && eventTypeFilter === 'free' && {isFree: true}),
+    ...(eventTypeFilter && eventTypeFilter === 'paid' && {isFree: false}),
+    ...(registrationFilter !== "all" && { isRegistration: Boolean(registrationFilter) }),
+    ...(statusFilter !== "all" && { status: statusFilter}),
+    ...(dateRangeFilter.start && {startDate:dateRangeFilter.start}),
+    ...(dateRangeFilter.end && {endDate: dateRangeFilter.end}),
+    externalApiId: selectedWebsites.map(site => site._id),
   })
   const { data: eventStatsData, isLoading: _isEventStatsFetching } = useGetEventsStatsQuery({})
   const { data: websites } = useGetAllWebsitesQuery();
@@ -192,8 +198,8 @@ export default function EventsMgmtPage() {
                       }`}
                   >
                     <option value="all">{t('all')}</option>
-                    <option value="yes">{t('required')}</option>
-                    <option value="no">{t('not_required')}</option>
+                    <option value='true'>{t('required')}</option>
+                    <option value="false">{t('not_required')}</option>
                   </select>
                 </div>
 
@@ -209,9 +215,9 @@ export default function EventsMgmtPage() {
                       }`}
                   >
                     <option value="all">{t('all')}</option>
-                    <option value="upcoming">{t('upcoming_status')}</option>
-                    <option value="past">{t('past_status')}</option>
-                    <option value="canceled">{t('canceled_status')}</option>
+                    <option value="PENDING">{t('pending')}</option>
+                    <option value="APPROVED">{t('approved')}</option>
+                    <option value="DRAFT">{t('draft')}</option>
                   </select>
                 </div>
 
@@ -263,7 +269,7 @@ export default function EventsMgmtPage() {
                     )}
                     {registrationFilter !== 'all' && (
                       <span className="px-3 py-1 bg-green-500/20 text-green-500 rounded-full text-xs">
-                        {registrationFilter === 'yes' ? t('registration_required_text') : t('registration_not_required')}
+                        {registrationFilter === 'true' ? t('registration_required_text') : t('registration_not_required')}
                       </span>
                     )}
                     {statusFilter !== 'all' && (

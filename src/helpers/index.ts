@@ -1,3 +1,5 @@
+import { formatDateRange } from '@/helpers/formatter';
+
 export function uploadWithProgress(
   file: File,
   signedUrl: string,
@@ -46,3 +48,26 @@ export function extractCenterAddressText(address: string): string | null {
 
   return null;
 }
+
+
+export function extractEventDates(
+  dayDescription?: { date: string | Date }[]
+): string {
+  if (!dayDescription || dayDescription.length === 0) return '-';
+
+  const dates = dayDescription
+    .map(d => (d?.date instanceof Date ? d.date : new Date(d?.date)))
+    .filter(Boolean)
+    .sort((a, b) => a.getTime() - b.getTime());
+
+  if (dates.length === 1) {
+    const str = dates[0].toISOString();
+    return formatDateRange(str, str, false);
+  }
+
+  const startStr = dates[0].toISOString();
+  const endStr = dates[dates.length - 1].toISOString();
+
+  return formatDateRange(startStr, endStr, true);
+}
+

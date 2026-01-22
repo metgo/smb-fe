@@ -11,9 +11,8 @@ import { useTranslation } from 'react-i18next';
 
 import { Button } from '@/components/ui/button';
 import { useThemeClasses } from '@/hooks/useThemeClasses';
-import { formatDate, formatDateRange } from '@/helpers/formatter';
 import { ImageWithFallback, ReordableDataTable } from '@/components/shared';
-import { extractCenterAddressText } from '@/helpers';
+import { extractCenterAddressText, extractEventDates } from '@/helpers';
 
 
 interface EventsWithViewModeProps {
@@ -164,13 +163,15 @@ export default function EventsWithViewMode({
   }
   // Events on a given date
   const eventsOnDate = (date: Date) => {
-    const dateStr = date?.toISOString()?.split('T')[0];
-    return events?.filter(e => {
-      const start = new Date(e.startDate)?.toISOString()?.split('T')[0];
-      const end = new Date(e.endDate)?.toISOString()?.split('T')[0];
-      return dateStr >= start && dateStr <= end;
-    });
-  };
+  const dateStr = date.toISOString().split('T')[0]; // normalize input date
+
+  return events?.filter(e =>
+    e.dayDescription?.some(d => {
+      const dStr = new Date(d.date).toISOString().split('T')[0]; // normalize dayDescription date
+      return dStr === dateStr;
+    })
+  );
+};
 
 
 
@@ -258,20 +259,42 @@ export default function EventsWithViewMode({
 
   // Day View
   const DayView = () => {
-    const dayEvents = eventsOnDate(currentDate);
-    const dayLabel = currentDate.toLocaleDateString(
-      language === 'ar' ? 'ar-EG' : language === 'he' ? 'he-IL' : 'en-US',
-      { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }
-    );
+  const dayEvents = eventsOnDate(currentDate);
 
-    return (
-      <div className='py-6 px-4'>
-        <h3 className="text-2xl font-semibold mb-6">{dayLabel}</h3>
-        {dayEvents?.length === 0 ? (
-          <div className="text-center py-20 text-gray-500">{t('noEventsThisDay')}</div>
-        ) : (
-          <div className="space-y-6">
-            {dayEvents.map(event => (
+  const dayLabel = currentDate.toLocaleDateString(
+    language === 'ar' ? 'ar-EG' : language === 'he' ? 'he-IL' : 'en-US',
+    { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }
+  );
+
+  // Helper to compute ticket price label
+  const getPriceLabel = (event: any) => {
+    if (!event.tickets || event.tickets.length === 0) return t('free');
+
+    const prices = event.tickets.map((t: any) => t.price.sellingPrice);
+    const min = Math.min(...prices);
+    const max = Math.max(...prices);
+
+    return min === 0 && max === 0
+      ? t('free')
+      : min === max
+      ? `₪${min}`
+      : `₪${min} - ₪${max}`;
+  };
+
+  return (
+    <div className="py-6 px-4">
+      <h3 className="text-2xl font-semibold mb-6">{dayLabel}</h3>
+      {dayEvents?.length === 0 ? (
+        <div className="text-center py-20 text-gray-500">
+          {t('noEventsThisDay')}
+        </div>
+      ) : (
+        <div className="space-y-6">
+          {dayEvents.map((event) => {
+            const priceLabel = getPriceLabel(event);
+            const isFree = priceLabel === t('free');
+
+            return (
               <div
                 key={event._id}
                 onClick={() => handleEventSelect(event)}
@@ -291,18 +314,24 @@ export default function EventsWithViewMode({
                       </div>
                     </div>
                   </div>
-                  <div className={`px-4 py-2 rounded-full text-sm font-medium ${event.isFree ? 'bg-emerald-100 text-emerald-700' : 'bg-purple-100 text-purple-700'
-                    }`}>
-                    {event.isFree ? t('free') : `₪${event.price}`}
+                  <div
+                    className={`px-4 py-2 rounded-full text-sm font-medium ${
+                      isFree
+                        ? 'bg-emerald-100 text-emerald-700'
+                        : 'bg-purple-100 text-purple-700'
+                    }`}
+                  >
+                    {priceLabel}
                   </div>
                 </div>
               </div>
-            ))}
-          </div>
-        )}
-      </div>
-    );
-  };
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+};
 
   // Grid View
   const GridView = () => {
@@ -351,7 +380,7 @@ export default function EventsWithViewMode({
                   <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
                     <div className="flex items-center gap-2">
                       <Calendar className="w-4 h-4" />
-                      {formatDate(event.startDate, language)}
+                      {extractEventDates(event?.dayDescription)}
                     </div>
                     <div className="flex items-center gap-2">
                       <MapPin className="w-4 h-4" />
@@ -426,12 +455,7 @@ export default function EventsWithViewMode({
             key: 'date',
             label: t('date'),
             sortable: true,
-            render: (event) =>
-              formatDateRange(
-                event.startDate,
-                event.endDate,
-                event.isMultiDay
-              ),
+             render: (event) => extractEventDates(event?.dayDescription),
           },
           {
             key: 'price',
