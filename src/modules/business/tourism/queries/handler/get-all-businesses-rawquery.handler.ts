@@ -72,14 +72,14 @@ implements IQueryHandler<GetAllBusinessesRawQuery> {
         };
       }
 
-      const categoryIds = campDetails.category.map(cat => cat.id);
+      // const categoryIds = campDetails.category.map(cat => cat.id);
 
-      if (!categoriesId) {
-        findQuery = {
-          ...findQuery,
-          bussCategoriesId: { $in: categoryIds },
-        };
-      }
+      // if (!categoriesId) {
+      //   findQuery = {
+      //     ...findQuery,
+      //     bussCategoriesId: { $in: categoryIds },
+      //   };
+      // }
 
       if (subCategoriesId) {
         const subCategoriesIds = Array.isArray(subCategoriesId)

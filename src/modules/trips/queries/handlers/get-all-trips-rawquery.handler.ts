@@ -37,19 +37,19 @@ implements IQueryHandler<GetAllTripsRawQuery> {
         return { data: [] };
       }
 
-      const categoryIds = campDetails.category.map(cat => cat.id);
+      // const categoryIds = campDetails.category.map(cat => cat.id);
 
       let stationId;
-      if (categoryIds || accessibilitiesId || groupTypesId) {
+      if (categoriesId || accessibilitiesId || groupTypesId) {
         let findQueryBusiness;
 
-        if (categoryIds) {
+        if (categoriesId) {
           const categories = Array.isArray(categoriesId)
             ? categoriesId
             : [categoriesId];
           findQueryBusiness = {
             ...findQueryBusiness,
-            bussCategoriesId: { $in: categories || categoryIds },
+            bussCategoriesId: { $in: categories },
           };
         }
 

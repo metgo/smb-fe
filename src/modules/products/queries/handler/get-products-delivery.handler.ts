@@ -73,13 +73,13 @@ implements IQueryHandler<GetProductsDeliveryQuery> {
 
       const filteredProductIds = productIds.filter(prodId => validProductIdsSet.has(prodId.toString()));
 
-      const categoryIds = campDetails.category.map(cat => cat.id);
+      // const categoryIds = campDetails.category.map(cat => cat.id);
 
       const findQuery = {
         status: ProductStatus.ACTIVE,
         isDeleted: false,
         _id: { $in: filteredProductIds },
-        categories: { $in: categoryIds },
+        // categories: { $in: categoryIds },
         $and: [
           {
             $or: [

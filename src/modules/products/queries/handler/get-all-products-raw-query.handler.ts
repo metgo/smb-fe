@@ -122,14 +122,14 @@ implements IQueryHandler<GetAllProductsRawQuery> {
         };
       }
 
-      const categoryIds = campDetails.category.map(cat => cat.id);
+      // const categoryIds = campDetails.category.map(cat => cat.id);
 
-      if (!categoriesId && categoryIds.length) {
-        findQuery = {
-          ...findQuery,
-          categories: { $in: categoryIds },
-        };
-      }
+      // if (!categoriesId && categoryIds.length) {
+      //   findQuery = {
+      //     ...findQuery,
+      //     categories: { $in: categoryIds },
+      //   };
+      // }
 
       if (subCategoriesId) {
         const subCategoriesIds = Array.isArray(subCategoriesId)
