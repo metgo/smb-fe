@@ -22,8 +22,9 @@ interface EventListParams {
   status?: string;
   isRegistration?: boolean;
   isFree?: boolean;
-  authorityId?: boolean;
-  dmoId?: boolean;
+  authorityId?: string;
+  dmoId?: string;
+  externalApiId?: string[];
   sortOrder?: string;
   sortBy?: string;
   startDate?: string;
