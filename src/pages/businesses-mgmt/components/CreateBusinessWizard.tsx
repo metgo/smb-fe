@@ -60,6 +60,22 @@ export default function CreateBusinessWizard({
   const [selectedAccessiblitiesId, setAccessiblitiesId] = useState<string[]>(
     [],
   );
+    const [geo, setGeo] = useState<Geo>({ lat: "", lng: "" });
+    const [address, setAddress] = useState("");
+console.log("address, geo", address, geo)
+
+const parseAddress = (address:any) => {
+  const parts = address.split(",");
+
+  return {
+    location: parts[0]?.trim(), // David HaMelech St 35
+    city: parts[1]?.trim(),     // Be'er Sheva
+    country: parts[2]?.trim(),  // Israel
+  };
+};
+
+const { location, city, country } = parseAddress(address);
+
   // Form State
   const [formData, setFormData] = useState<any>({
     // Step 1
@@ -86,7 +102,7 @@ export default function CreateBusinessWizard({
 
     // Step 3
     address: { country: "", city: "", location: "" },
-    coordinates: { lat: 31.2518, lng: 34.7913 },
+    coordinates: { lat: "", lng: "" },
 
     // Step 4
     primaryCategory: "",
@@ -183,11 +199,11 @@ export default function CreateBusinessWizard({
     },
     3: {
       address: {
-        country: formData.address.country,
-        city: formData.address.city,
-        location: formData.address.location,
+        country: country,
+        city: city,
+        location: location,
       },
-      geoLocation: formData.coordinates,
+      geoLocation: geo,
     },
     4: {
       primaryCategoryId: formData.primaryCategory,
@@ -216,7 +232,7 @@ export default function CreateBusinessWizard({
       socialMedia: formData.onlinePresence,
     },
   };
-
+console.log("address", stepPayloadMap[3])
   // Auto-save draft
   const handleSaveDraft = async () => {
     try {
@@ -331,7 +347,9 @@ export default function CreateBusinessWizard({
       case 2:
         return <BusinessContactOwership {...commonProps} />;
       case 3:
-        return <BusinessLocation {...commonProps} />;
+        return <BusinessLocation {...commonProps} geo={geo}
+              setGeo={setGeo} address={address}
+              setAddress={setAddress}/>;
       case 4:
         return (
           <BusinessAttributes

@@ -1,5 +1,7 @@
 import type { FC } from "react";
 import { MapPin } from "lucide-react";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { MarkerMap } from "@/components/maps";
 
 /* ---------- Types ---------- */
 
@@ -34,6 +36,10 @@ interface BusinessLocationProps {
   formData: LocationFormData;
   errors: LocationErrors;
   setFormData: (data: LocationFormData) => void;
+   geo: Geo,
+  setGeo: (v: Geo) => void;
+  address: string;
+  setAddress: React.Dispatch<React.SetStateAction<string>>;
 }
 
 /* ---------- Component ---------- */
@@ -45,11 +51,25 @@ const BusinessLocation: FC<BusinessLocationProps> = ({
   formData,
   errors,
   setFormData,
+  geo, setGeo, address, setAddress
 }) => {
+  const { textSecondary} = useThemeClasses();
+  
   return (
     <div className="space-y-6">
+       <div>
+                <label className={`block text-sm mb-2 ${textSecondary}`}>
+                  {t("location_address")} <span className="text-red-500">*</span>
+                </label>
+                <MarkerMap
+                  geo={geo}
+                  setGeo={setGeo}
+                  address={address}
+                  setAddress={setAddress}
+                />
+              </div>
       {/* Address */}
-      <div>
+      {/* <div>
         <label
           className={`block text-sm mb-2 ${
             theme === "dark" ? "text-gray-300" : "text-gray-700"
@@ -91,35 +111,12 @@ const BusinessLocation: FC<BusinessLocationProps> = ({
         </div>
 
       
-      </div>
+      </div> */}
 
-      {/* Map Placeholder */}
-      <div
-        className={`h-96 rounded-lg flex items-center justify-center ${
-          theme === "dark"
-            ? "bg-gray-800 border border-gray-700"
-            : "bg-gray-100 border border-gray-300"
-        }`}
-      >
-        <div className="text-center">
-          <MapPin
-            className={`w-12 h-12 mx-auto mb-2 ${
-              theme === "dark" ? "text-gray-600" : "text-gray-400"
-            }`}
-          />
-          <p className="text-gray-500">{t("google_maps_widget")}</p>
-          <p
-            className={`text-sm mt-1 ${
-              theme === "dark" ? "text-gray-600" : "text-gray-400"
-            }`}
-          >
-            {t("search_address")}, {t("pin_location")}
-          </p>
-        </div>
-      </div>
+      
 
       {/* Coordinates */}
-      <div
+      {/* <div
         className={`p-4 rounded-lg ${
           theme === "dark"
             ? "bg-gray-800/50 border border-gray-700"
@@ -134,7 +131,7 @@ const BusinessLocation: FC<BusinessLocationProps> = ({
           {t("geo_coordinates")}: {formData.geoLocation.lat},{" "}
           {formData.geoLocation.long}
         </p>
-      </div>
+      </div> */}
     </div>
   );
 };
