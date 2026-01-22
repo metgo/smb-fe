@@ -8,8 +8,9 @@ export const endpoints = {
   popularProducts: "/popular-products",
   popularBusiness: "/popular-business",
 
-  businessStats: "/stats/business",
-  productStats: "/stats/products",
+  businessStats: "/home-stats/businesses",
+  poiStats: "/home-stats/point-of-interests",
+  productStats: "/home-stats/products",
   eventStats: "/stats/events",
   purchaseReportsStats: "/stats/purchase-reports",
 

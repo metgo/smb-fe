@@ -5,7 +5,7 @@ import { Building2, ChevronDown, Bed, Compass, ShoppingBag, UtensilsCrossed, Pla
 
 import { categories } from '@/lib/utils';
 import { useAppSelector } from '@/hooks/hooks';
-import { useGetBusinessStatsQuery, useGetProductStatsQuery } from '@/store/api/itemStatsApi';
+import { useGetBusinessStatsQuery, useGetPOIStatsQuery, useGetProductStatsQuery } from '@/store/api/itemStatsApi';
 import { InfoTooltip } from '@/components/shared';
 
 const COLORS = {
@@ -99,6 +99,7 @@ const getCategoryName = (name: string, t: (v: string) => string) => {
   }
 };
 
+
 function DistributionCard({ title, icon, total, data }: DistributionCardProps) {
   const { t } = useTranslation('dashboard');
   const [status, setStatus] = useState('active');
@@ -114,9 +115,6 @@ function DistributionCard({ title, icon, total, data }: DistributionCardProps) {
   }, []);
 
 
-  // Find max value for scaling bars
-  const maxValue = Math.max(...data?.map(item => item?.value));
-
   return (
     <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6 hover:shadow-lg transition-shadow">
       <div className="flex items-center justify-between mb-8">
@@ -158,174 +156,7 @@ function DistributionCard({ title, icon, total, data }: DistributionCardProps) {
         </div>
 
         {data?.map((item, index) => {
-          const Icon = CATEGORY_ICONS[item?.name as keyof typeof CATEGORY_ICONS];
-          const colorConfig = COLORS[item?.name as keyof typeof COLORS];
-          const isActive = activeIndex === index;
-          const heightPercent = (item?.value / maxValue) * 100;
-          const barHeight = `${Math.max(heightPercent, 10)}%`;
-
-          return (
-            <div
-              key={index}
-              className="relative flex-1 flex flex-col items-center justify-end group cursor-pointer"
-              onMouseEnter={() => setActiveIndex(index)}
-              onMouseLeave={() => setActiveIndex(null)}
-              style={{
-                height: '100%',
-                minWidth: '40px',
-                maxWidth: '80px'
-              }}
-            >
-              {/* Value label above bar */}
-              <div className={`absolute -top-20 left-1/2 -translate-x-1/2 transition-all duration-300 ${isActive ? 'opacity-100 -translate-y-1' : 'opacity-0'
-                }`}>
-                <div className={`px-2 py-1 rounded-lg bg-linear-to-br ${colorConfig?.gradient} text-white text-xs font-bold shadow-lg whitespace-nowrap`}>
-                  {item.value.toLocaleString()}
-                </div>
-              </div>
-
-              {/* 3D Column */}
-              <div
-                className="relative w-full ease-out"
-                style={{
-                  height: isAnimated ? barHeight : '0%',
-                  transform: isActive ? 'translateY(-8px) scale(1.05)' : 'translateY(0) scale(1)',
-                  transition: isAnimated
-                    ? `all 0.3s ease-out, height 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) ${index * 0.1}s`
-                    : 'all 0.3s ease-out'
-                }}
-              >
-                {/* Shadow */}
-                <div
-                  className="absolute bottom-0 left-0 right-0 h-full bg-black/20 rounded-t-lg blur-sm transform translate-y-1"
-                  style={{ zIndex: 0 }}
-                ></div>
-
-                {/* Side panel (right) - for 3D effect */}
-                <div
-                  className={`absolute top-0 -right-1 w-3 h-full bg-linear-to-b ${colorConfig?.sideGradient} rounded-tr-lg`}
-                  style={{
-                    transform: 'skewY(-3deg)',
-                    transformOrigin: 'top left',
-                    zIndex: 1
-                  }}
-                />
-
-                {/* Main front face */}
-                <div
-                  className={`absolute inset-0 bg-linear-to-b ${colorConfig?.bgGradient} border-2 border-b-0 rounded-t-xl backdrop-blur-sm transition-all duration-300 ${isActive ? `${colorConfig?.shadow} shadow-2xl` : colorConfig?.shadow
-                    }`}
-                  style={{ zIndex: 2 }}
-                >
-                  {/* Shimmer effect */}
-                  <div className="absolute inset-0 bg-linear-to-t from-white/10 to-transparent rounded-t-xl"></div>
-                </div>
-
-                {/* Top cap - 3D lid */}
-                <div
-                  className={`absolute -top-1 left-0 right-1 h-3 bg-linear-to-r ${colorConfig?.topGradient} rounded-t-lg border-2 ${isActive ? 'shadow-xl' : 'shadow-lg'
-                    }`}
-                  style={{
-                    transform: 'perspective(100px) rotateX(45deg)',
-                    transformOrigin: 'bottom',
-                    zIndex: 3
-                  }}
-                />
-
-                {/* Icon on bar */}
-                <div className={`absolute -top-10 left-1/2 -translate-x-1/2 transition-all duration-300 z-10 ${isActive ? 'scale-125' : 'scale-100'
-                  }`}>
-                  <div className={`w-8 h-8 rounded-lg bg-linear-to-br ${colorConfig?.gradient} shadow-lg ${colorConfig?.shadow} flex items-center justify-center`}>
-                    <Icon className="w-4 h-4 text-white" />
-                  </div>
-                </div>
-
-                {/* Percentage badge */}
-                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10">
-                  <span className={`px-2 py-0.5 rounded-full text-xs font-bold bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-md transition-all ${isActive ? 'scale-110' : 'scale-100'
-                    }`}>
-                    {item.percentage}%
-                  </span>
-                </div>
-              </div>
-
-              {/* Category label below */}
-              <div className="mt-2 text-center min-h-8 flex items-center justify-center px-1">
-                <span className={`text-xs text-gray-700 dark:text-gray-300 leading-tight line-clamp-2 transition-all ${isActive ? 'font-bold' : 'font-medium'
-                  }`}>
-                  {getCategoryName(item.name, t)}
-                </span>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-
-
-
-function DistributionProductCard({ title, icon, total, data }: DistributionCardProps) {
-  const { t } = useTranslation('dashboard');
-  const [status, setStatus] = useState('active');
-  const [activeIndex, setActiveIndex] = useState<number | null>(null);
-  const [isAnimated, setIsAnimated] = useState(false);
-
-  // Trigger animation on mount
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsAnimated(true);
-    }, 100);
-    return () => clearTimeout(timer);
-  }, []);
-
-
-
-
-  return (
-    <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6 hover:shadow-lg transition-shadow">
-      <div className="flex items-center justify-between mb-8">
-        <div className="flex items-center gap-3">
-          <div className="p-3 bg-linear-to-br from-purple-500 to-pink-600 rounded-lg shadow-lg shadow-purple-500/30 hover:shadow-purple-500/50 transition-shadow">
-            {icon}
-          </div>
-          <div>
-            <h3 className="text-gray-900 dark:text-white">{title}</h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400">Total: {total}</p>
-          </div>
-        </div>
-        <div className="relative">
-          <select
-            value={status}
-            onChange={(e) => setStatus(e.target.value)}
-            className="appearance-none bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-1.5 pr-8 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
-          >
-            {statuses?.map((s) => (
-              <option key={s.value} value={s.value}>
-                {s.label}
-              </option>
-            ))}
-          </select>
-          <ChevronDown className="absolute top-1/2 ltr:right-2 rtl:left-2 -translate-y-1/2 w-3 h-3 text-gray-500 pointer-events-none" />
-        </div>
-      </div>
-
-      {/* 3D Column Chart */}
-      <div className="h-80 min-h-80 relative flex items-end justify-around gap-2 px-4 pb-12 pt-16">
-        {/* Animated gradient background */}
-        <div className="absolute inset-0 bg-linear-to-br from-yellow-50 via-orange-50 to-pink-50 dark:from-yellow-900/10 dark:via-orange-900/10 dark:to-pink-900/10 rounded-xl opacity-50"></div>
-
-        {/* Grid lines for reference */}
-        <div className="absolute inset-x-0 bottom-0 h-full flex flex-col justify-between pb-12 pt-16 px-4 pointer-events-none">
-          {[0, 1, 2, 3, 4].map((i) => (
-            <div key={i} className="border-t border-gray-200 dark:border-gray-700 opacity-30"></div>
-          ))}
-        </div>
-
-        {data?.map((item, index) => {
-          const Icon = CATEGORY_ICONS[item?._id as keyof typeof CATEGORY_ICONS];
+          const Icon = CATEGORY_ICONS[item?.name?.toLowerCase() as keyof typeof CATEGORY_ICONS];
           const colorConfig = COLORS[item?._id as keyof typeof COLORS];
           const isActive = activeIndex === index;
 
@@ -409,7 +240,7 @@ function DistributionProductCard({ title, icon, total, data }: DistributionCardP
                 <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10">
                   <span className={`px-2 py-0.5 rounded-full text-xs font-bold bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-md transition-all ${isActive ? 'scale-110' : 'scale-100'
                     }`}>
-                    {item.percentage}%
+                    {item?.percentage}%
                   </span>
                 </div>
               </div>
@@ -418,7 +249,7 @@ function DistributionProductCard({ title, icon, total, data }: DistributionCardP
               <div className="mt-2 text-center min-h-8 flex items-center justify-center px-1">
                 <span className={`text-xs text-gray-700 dark:text-gray-300 leading-tight line-clamp-2 transition-all ${isActive ? 'font-bold' : 'font-medium'
                   }`}>
-                  {getCategoryName(item.name, t)}
+                  {getCategoryName(item?.name, t)}
                 </span>
               </div>
             </div>
@@ -432,48 +263,6 @@ function DistributionProductCard({ title, icon, total, data }: DistributionCardP
 /* ----------------------------------------
    Types
 ---------------------------------------- */
-type StatItem = {
-  categoryId: string;
-  count: number;
-};
-
-type TransformedData = {
-  totalItem: number;
-  data: { name: string; value: number; percentage: number }[];
-};
-
-/* ----------------------------------------
-   Shared Transformer (SAFE)
----------------------------------------- */
-const transformStatsData = (
-  stats?: StatItem[],
-  totalFromApi?: number
-): TransformedData => {
-  if (!Array.isArray(stats) || stats?.length === 0) {
-    return { totalItem: 0, data: [] };
-  }
-
-  const totalCount = stats?.reduce((sum, item) => sum + item.count, 0);
-
-  const data = stats?.map((item) => {
-    const value = item.count;
-    const percentage = totalCount
-      ? Math.round((value / totalCount) * 100)
-      : 0;
-
-    return {
-      name: categories[item.categoryId] ?? 'unknown',
-      value,
-      percentage,
-    };
-  });
-
-  return {
-    totalItem: totalFromApi ?? totalCount,
-    data,
-  };
-};
-
 
 /* ----------------------------------------
    Component
@@ -482,15 +271,6 @@ export default function DistributionCards() {
   const { t } = useTranslation('dashboard');
   const { theme } = useAppSelector((state) => state.settings)
 
-  const [poiState, setPoiState] = useState<TransformedData>({
-    totalItem: 0,
-    data: [],
-  });
-
-  const [businessState, setBusinessState] = useState<TransformedData>({
-    totalItem: 0,
-    data: [],
-  });
 
   /* ----------------------------------------
      API Calls
@@ -500,15 +280,13 @@ export default function DistributionCards() {
     endDate: '2025-01-31',
     dmoId: '',
     authorityId: '',
-    serviceType: 'business',
   });
 
-  const { data: poiData } = useGetBusinessStatsQuery({
+  const { data: poiData } = useGetPOIStatsQuery({
     startDate: '2025-01-01',
     endDate: '2025-01-31',
     dmoId: '',
     authorityId: '',
-    serviceType: 'point_of_interest',
   });
 
   const { data: productData } = useGetProductStatsQuery({
@@ -524,23 +302,11 @@ export default function DistributionCards() {
   useEffect(() => {
     if (!businessData?.datas) return;
 
-    setBusinessState(
-      transformStatsData(
-        businessData?.datas?.filteredBusinessStats,
-        businessData?.datas?.totalNumberOfBusinesses
-      )
-    );
   }, [businessData]);
 
   useEffect(() => {
     if (!poiData?.datas) return;
 
-    setPoiState(
-      transformStatsData(
-        poiData.datas.getAllBusinessStats,
-        poiData.datas.totalNumberOfBusinesses
-      )
-    );
   }, [poiData]);
 
 
@@ -566,22 +332,22 @@ export default function DistributionCards() {
         <DistributionCard
           title={t('businesses')}
           icon={<Building2 className="w-5 h-5 text-white" />}
-          total={businessState.totalItem}
-          data={businessState.data}
+          total={businessData?.total}
+          data={businessData?.byCategory}
         />
 
-        {/* <DistributionProductCard
+        <DistributionCard
           title={t('products')}
           icon={<Package className="w-5 h-5 text-white" />}
           total={productData?.total}
           data={productData?.byCategory}
-        /> */}
+        />
 
         <DistributionCard
           title={t('pois')}
           icon={<MapPin className="w-5 h-5 text-white" />}
-          total={poiState.totalItem}
-          data={poiState.data}
+          total={poiData?.total}
+          data={poiData?.byCategory}
         />
       </div>
     </section>
