@@ -260,7 +260,7 @@ export default function CreateBusinessWizard({
       socialMedia: formData.socialMedia,
     },
   };
-  console.log("address", stepPayloadMap[3]);
+  console.log("steppayloadmap", stepPayloadMap[3]);
   // Auto-save draft
   const handleSaveDraft = async () => {
     try {
@@ -315,8 +315,9 @@ export default function CreateBusinessWizard({
         if (!formData.phone.trim()) newErrors.phone = t("required_field");
         break;
       case 3:
-        if (!formData.geoLocation)
-          newErrors.geoLocation = "Gelocation is required";
+       if(addr.country === undefined){
+        newErrors.address = t("required_field")
+       }
         break;
       case 4:
         if (!formData.primaryCategory) {
@@ -329,6 +330,20 @@ export default function CreateBusinessWizard({
     return Object.keys(newErrors).length === 0;
   };
   const handlePublish = async () => {
+     // Validate all steps
+        let allValid = true;
+        for (let i = 1; i <= 5; i++) {
+          if (!validateStep(i)) {
+            allValid = false;
+            setCurrentStep(i);
+            break;
+          }
+        }
+    
+        if (!allValid) {
+          toast.error(t("fix_errors_before_proceeding"));
+          return;
+        }
     setIsPublishing(true);
     await new Promise((resolve) => setTimeout(resolve, 2000));
     setIsPublishing(false);
