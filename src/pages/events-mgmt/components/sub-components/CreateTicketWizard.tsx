@@ -22,6 +22,8 @@ interface CreateTicketWizardProps {
   refetch: () => void;
   setCurrentStep: (v: number) => void;
   eventDays: EventDay[];
+  ticketDateTime: ITicketDateTime[]
+  setTicketDateTime: any;
 }
 
 const modelTitle = (mode: TTicketOpMode, t: (key: string) => string) => {
@@ -47,7 +49,10 @@ const CreateTicketWizard = ({
   opMode,
   setCurrentStep,
   eventDays,
+  ticketDateTime,
+  setTicketDateTime
 }: CreateTicketWizardProps) => {
+  console.log("🚀 ~ CreateTicketWizard ~ ticketDateTime:", ticketDateTime)
   const { t } = useTranslation('events');
   const { cardClasses, textPrimary, textSecondary, inputClasses, textTertiary } = useThemeClasses();
 
@@ -56,9 +61,7 @@ const CreateTicketWizard = ({
   const [progress, setProgress] = useState(0);
   const [createTicket, { isLoading: isSaving }] = useCreateTicketMutation()
   const [updateTicket, { isLoading: isUpdating }] = useUpdateTicketMutation()
-  const [ticketDateTime, setTicketDateTime] = useState<ITicketDateTime[]>([
-    { id: 1, date: eventDays?.[0].date, startTime: eventDays[0].startTime, endTime: eventDays[0].endTime }
-  ]);
+
   const [file, setFile] = useState<File | null>(null)
   const [mediaURL, setMediaURL] = useState<GcsFileUpload>({ signedUrl: "", gcsURL: "" })
 
@@ -144,10 +147,10 @@ const CreateTicketWizard = ({
 
 
   const addEventDay = () => {
-    setTicketDateTime((prev) => [
+    setTicketDateTime((prev:any) => [
       ...prev,
       {
-        id: ticketDateTime.length + 1,
+        _id: ticketDateTime.length + 1,
         date: '',
         startTime: '09:00',
         endTime: '17:00'
@@ -156,7 +159,7 @@ const CreateTicketWizard = ({
   };
 
   const removeEventDay = (id: number) => {
-    setTicketDateTime(prev => prev.filter(day => day.id !== id));
+    setTicketDateTime((prev:any) => prev.filter((day:any) => day._id !== id));
   };
 
   const updateEventDay = (
@@ -164,7 +167,7 @@ const CreateTicketWizard = ({
     field: keyof Omit<EventDay, 'id'>,
     value: string
   ) => {
-    setTicketDateTime(prev => {
+    setTicketDateTime((prev:any) => {
       const updated = [...prev];
       updated[index] = { ...updated[index], [field]: value };
       return updated;
@@ -278,13 +281,12 @@ const CreateTicketWizard = ({
             </div>
 
             <section>
-              <label htmlFor="">Ticket Days</label>
+              <label className={`block text-sm mb-2 ${textSecondary}`}>Ticket Days</label>
               <div className="w-full space-y-2 mt-2">
-                {ticketDateTime.map((day, index) => (
+                {ticketDateTime?.map((day, index) => (
                   <div
-                    key={day.id}
+                    key={day._id}
                   >
-
                     {/* Fields */}
                     <div className="grid grid-cols-12 gap-2 w-full">
                       {/* Date Select */}
@@ -326,7 +328,7 @@ const CreateTicketWizard = ({
 
                       {/* Remove row */}
                       <button
-                        onClick={() => removeEventDay(day.id)}
+                        onClick={() => removeEventDay(day._id)}
                         className="text-red-500 hover:text-red-600 p-1 col-span-1"
                       >
                         <Trash2 className=" w-full h-4" />

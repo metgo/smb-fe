@@ -230,7 +230,7 @@ interface CustomTemplate {
 }
 
 interface ITicketDateTime {
-  id: number;
+  _id: number;
   date: string;
   startTime: string;
   endTime: string;
