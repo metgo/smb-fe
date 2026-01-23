@@ -251,7 +251,162 @@ export default function BusinessesList({
   };
 
   const handleExport = () => {
-    console.log("Export businesses");
+    // 1. Determine which businesses to export
+    const businessesToExport =
+      selectedBusinesses.size > 0
+        ? (businessData?.data?.filter((business: any) =>
+            selectedBusinesses.has(business._id),
+          ) ?? [])
+        : (businessData?.data ?? []);
+
+    if (businessesToExport.length === 0) {
+      alert(t("noBusinessesToExport") || "No businesses to export");
+      return;
+    }
+
+    // 2. CSV escaping utility
+    const escapeCSV = (value: any): string => {
+      if (value === null || value === undefined) return "";
+      const stringValue = String(value);
+      if (
+        stringValue.includes(",") ||
+        stringValue.includes('"') ||
+        stringValue.includes("\n")
+      ) {
+        return `"${stringValue.replace(/"/g, '""')}"`;
+      }
+      return stringValue;
+    };
+
+    // 3. Build headers & corresponding keys based on visible columns
+    const headers: string[] = [];
+    const columnKeys: string[] = [];
+
+    if (visibleColumns.impactScore) {
+      headers.push(t("impactScore"));
+      columnKeys.push("impactScore");
+    }
+    if (visibleColumns.businessName) {
+      headers.push(t("businessName"));
+      columnKeys.push("name"); // actual field is .name
+    }
+    if (visibleColumns.shortDescription) {
+      headers.push(t("shortDescription"));
+      columnKeys.push("shortDescription");
+    }
+    if (visibleColumns.contactName) {
+      headers.push(t("contactPerson"));
+      columnKeys.push("contactName");
+    }
+    if (visibleColumns.businessEmail) {
+      headers.push(t("businessEmail"));
+      columnKeys.push("busiEmail"); // field name in data
+    }
+    if (visibleColumns.phoneNumber) {
+      headers.push(t("phoneNumber"));
+      columnKeys.push("phoneNumber");
+    }
+    if (visibleColumns.productsCount) {
+      headers.push(t("productsCount"));
+      columnKeys.push("productCount"); // field name in data
+    }
+    if (visibleColumns.status) {
+      headers.push(t("status"));
+      columnKeys.push("status");
+    }
+    if (visibleColumns.lifetimeSales) {
+      headers.push(t("lifetimeSales"));
+      columnKeys.push("lifetimeSales");
+    }
+    if (visibleColumns.tripCount) {
+      headers.push(t("tripCount"));
+      columnKeys.push("tripCount");
+    }
+    if (visibleColumns.websiteUrl) {
+      headers.push(t("websiteUrl"));
+      columnKeys.push("websiteUrl");
+    }
+    if (visibleColumns.contactPhone) {
+      headers.push(t("contactPhone"));
+      columnKeys.push("contactPhone");
+    }
+    if (visibleColumns.categories) {
+      headers.push(t("categories"));
+      columnKeys.push("categories");
+    }
+
+    // 4. Build CSV content
+    let csvContent = headers.map(escapeCSV).join(",") + "\n";
+
+    businessesToExport.forEach((business: any) => {
+      const row: string[] = [];
+
+      columnKeys.forEach((key) => {
+        let value: any;
+
+        switch (key) {
+          case "impactScore":
+            value = business.impact ?? 0;
+            break;
+          case "name":
+            value =
+              business.name || business.slug || t("unnamed_business") || "-";
+            break;
+          case "busiEmail":
+            value = business.busiEmail || "-";
+            break;
+          case "phoneNumber":
+            value = business.phoneNumber || "-";
+            break;
+          case "productCount":
+            value = business.productCount ?? 0;
+            break;
+          case "status":
+            value = business.status || "unknown";
+            break;
+          case "tripCount":
+            value = business.tripCount ?? getTripCount(business); // fallback to your helper
+            break;
+          case "websiteUrl":
+            // Pick first valid URL if array
+            const sites = business.associatedWebsites || [];
+            value = sites.find((s: any) => s.url)?.url || "-";
+            break;
+          case "categories":
+            value = Array.isArray(business.categories)
+              ? business.categories.join(", ")
+              : "-";
+            break;
+          case "lifetimeSales":
+          case "shortDescription":
+          case "contactName":
+          case "contactPhone":
+            // Add these fields when they exist in your real data
+            value = business[key] ?? "-";
+            break;
+          default:
+            value = "-";
+        }
+
+        row.push(escapeCSV(value));
+      });
+
+      csvContent += row.join(",") + "\n";
+    });
+
+    // 5. Trigger download
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    const timestamp = new Date().toISOString().slice(0, 10);
+
+    link.setAttribute("href", url);
+    link.setAttribute("download", `businesses_export_${timestamp}.csv`);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   // Permission check
