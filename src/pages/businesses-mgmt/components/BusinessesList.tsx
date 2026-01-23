@@ -830,52 +830,74 @@ export default function BusinessesList({
                   </p>
                 </div>
                 <div className="p-3 max-h-96 overflow-y-auto">
-                  {Object.entries(columnVisibility).map(([key, visible]) => (
-                    <label
-                      key={key}
-                      className={`flex items-center gap-2 p-2 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 ${isRTL ? "flex-row-reverse justify-end" : ""}`}
-                    >
-                      <input
-                        type="checkbox"
-                        checked={visible}
-                        onChange={(e) =>
-                          setColumnVisibility((prev) => ({
-                            ...prev,
-                            [key]: e.target.checked,
-                          }))
-                        }
-                        className="rounded"
-                      />
-                      <span className={`text-sm ${textSecondary}`}>
-                        {t(key as keyof typeof t)}
-                      </span>
-                    </label>
-                  ))}
-                </div>
-                {/* Optional Columns */}
-                <div className="p-3">
-                  <p
-                    className={`text-xs mb-2 ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
-                  >
-                    {t("optional_columns") || "Optional Columns"}
-                  </p>
-                  {columnDefinitions
-                    .filter((col) => !col.isDefault)
-                    .map((col) => (
+                  {/* Default Columns */}
+                  {Object.entries(columnVisibility)
+                    .filter(
+                      ([key]) =>
+                        columnDefinitions.find((col) => col.key === key)
+                          ?.isDefault,
+                    )
+                    .map(([key, visible]) => (
                       <label
-                        key={col.key}
-                        className={`flex items-center gap-2 px-2 py-2 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${
-                          theme === "dark" ? "text-gray-300" : "text-gray-700"
+                        key={key}
+                        className={`flex items-center gap-2 p-2 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 ${
+                          isRTL ? "flex-row-reverse justify-end" : ""
                         }`}
                       >
                         <input
                           type="checkbox"
-                          checked={visibleColumns[col.key]}
-                          onChange={() => toggleColumn(col.key)}
-                          className="w-4 h-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500"
+                          checked={visible}
+                          onChange={(e) =>
+                            setColumnVisibility((prev) => ({
+                              ...prev,
+                              [key]: e.target.checked,
+                            }))
+                          }
+                          className="rounded"
                         />
                         <span className={`text-sm ${textSecondary}`}>
-                          {t(col.key as keyof typeof t)}
+                          {t(key as keyof typeof t)}
+                        </span>
+                      </label>
+                    ))}
+
+                  {/* Divider */}
+                  {columnDefinitions.some((col) => !col.isDefault) && (
+                    <div className="my-3 border-t border-gray-200 dark:border-gray-700" />
+                  )}
+
+                  {/* Non-default Columns */}
+                  <p
+                    className={`text-xs mb-2 ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
+                  >
+                    Optional Columns
+                  </p>
+                  {Object.entries(columnVisibility)
+                    .filter(
+                      ([key]) =>
+                        !columnDefinitions.find((col) => col.key === key)
+                          ?.isDefault,
+                    )
+                    .map(([key, visible]) => (
+                      <label
+                        key={key}
+                        className={`flex items-center gap-2 p-2 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 ${
+                          isRTL ? "flex-row-reverse justify-end" : ""
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={visible}
+                          onChange={(e) =>
+                            setColumnVisibility((prev) => ({
+                              ...prev,
+                              [key]: e.target.checked,
+                            }))
+                          }
+                          className="rounded"
+                        />
+                        <span className={`text-sm ${textSecondary}`}>
+                          {t(key as keyof typeof t)}
                         </span>
                       </label>
                     ))}
@@ -1042,12 +1064,10 @@ export default function BusinessesList({
                   // Skip rendering empty filters
                   if (!value || value === "all") return null;
 
-                  // Special case: don't show authority chip if no DMO is selected
                   if (key === "authorityId" && !filters.dmoId) {
                     return null;
                   }
 
-                  // For status → show friendly label instead of raw value
                   let displayValue = value;
                   if (key === "status") {
                     displayValue = t(value.toLowerCase()) || value;
@@ -1058,7 +1078,6 @@ export default function BusinessesList({
                     const dmo = dmosAuthorities?.find((d) => d._id === value);
                     displayValue = dmo?.name || value;
                   } else if (key === "authorityId") {
-                    // Optional: show Authority name instead of ID
                     const authority = selectedDmos?.authorities?.find(
                       (a) => a._id === value,
                     );
@@ -1157,19 +1176,16 @@ export default function BusinessesList({
       <div
         className={`${theme === "dark" ? "bg-gray-900/50 border-gray-800" : "bg-white border-gray-200"} border rounded-lg overflow-hidden`}
       >
-       
         {loading ? (
-           <div className="flex items-center justify-center py-20">
+          <div className="flex items-center justify-center py-20">
             <Loader className="w-8 h-8 animate-spin text-teal-500" />
           </div>
         ) : businessData?.data?.length === 0 ? (
-           <div className="flex flex-col items-center justify-center py-20">
+          <div className="flex flex-col items-center justify-center py-20">
             <AlertCircle className={`w-12 h-12 ${textTertiary} mb-4`} />
             <p className={`${textSecondary}`}>{t("no_businesses_found")}</p>
           </div>
-        ) :
-        
-        businessData?.data?.length === 0 ? (
+        ) : businessData?.data?.length === 0 ? (
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
               <AlertCircle className="w-12 h-12 mx-auto mb-4 text-gray-400" />
