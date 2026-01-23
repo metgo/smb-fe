@@ -137,6 +137,7 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
   recurrenceEndDate, setRecurrenceEndDate,
   recurrenceEndType, setRecurrenceEndType,
 }) => {
+  console.log("🚀 ~ EventDateTimeFormat ~ eventDays:", eventDays)
   const { t } = useTranslation("events");
   const { t: cT } = useTranslation('common');
   const { textSecondary, textTertiary, inputClasses, textPrimary } = useThemeClasses();
@@ -347,15 +348,24 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <DatePicker
                   disablePast
-                  value={day?.date ? new Date(day?.date).toISOString().split('T')[0]: ''}
+                  value={
+                    day?.date
+                      ? new Date(day.date).toISOString().split('T')[0]
+                      : ''
+                  }
                   onChange={(date) => {
-                    const updated = [...eventDays];
-                    updated[index].date = date;
-                    setEventDays(updated);
+                    setEventDays(prev =>
+                      prev.map((item, i) =>
+                        i === index
+                          ? { ...item, date }
+                          : item
+                      )
+                    );
                   }}
                   placeholder={t("select_date")}
                   theme={theme}
                 />
+
                 <input
                   type="time"
                   value={day.startTime}

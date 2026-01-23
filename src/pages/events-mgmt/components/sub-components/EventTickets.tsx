@@ -225,7 +225,7 @@ const EventTickets: React.FC<EventTicketsProps> = ({
                         ...ticket,
                         imageUrl: ticket?.images?.[0]?.image || "",
                       });
-                      setTicketDateTime(ticket.dayDescription)
+                      setTicketDateTime(ticket.dayDescription ?? [])
                       setOpMode("UPDATE")
                       setShowTicketModal(true);
                     }}
