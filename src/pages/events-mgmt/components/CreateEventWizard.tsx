@@ -1,7 +1,7 @@
 import { toast } from 'sonner';
 import { skipToken } from '@reduxjs/toolkit/query';
 import { useSearchParams } from 'react-router-dom';
-import { useState, useEffect, Activity } from 'react';
+import { useState, useEffect } from 'react';
 import {
   X, Check, Calendar,
   Users, Ticket, Image, FileText, CheckCircle, Loader,
@@ -50,6 +50,7 @@ export default function CreateEventWizard({
   const [currentStep, setCurrentStep] = useState(1);
   const [isPublishing, setIsPublishing] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [eventDaysForTickets, setEventDaysForTickets] = useState<EventDay[]>([])
 
   // Step 1: Basic Information
   const [selectedDmoId, setSelectDmoId] = useState<string>("");
@@ -68,9 +69,7 @@ export default function CreateEventWizard({
   // Step 2: Date, Time & Format
   const [isMultiDay, setIsMultiDay] = useState(false);
   const [startDate, setStartDate] = useState('');
-  const [eventDays, setEventDays] = useState<EventDay[]>([
-    { id: '1', date: '', startTime: '09:00', endTime: '17:00', description: '' }
-  ]);
+  const [eventDays, setEventDays] = useState<EventDay[]>([]);
   const [eventFormat, setEventFormat] = useState<'physical' | 'online' | 'hybrid'>('physical');
   const [address, setAddress] = useState('');
   const [onlineLink, setOnlineLink] = useState('');
@@ -149,7 +148,6 @@ export default function CreateEventWizard({
       setCapacityType('limited');
       setCapacity(100);
       setCustomQuestions([]);
-      setEventImages([]);
       setErrors({});
       setLastSaved(null);
       setSelectAuthorityId("");
@@ -223,6 +221,21 @@ export default function CreateEventWizard({
       setNotifications(notification)
     }
   }, [editData, editId])
+
+
+  useEffect(() => {
+    if (isMultiDay) {
+      setEventDaysForTickets(eventDays)
+    } else {
+      setEventDaysForTickets([{
+        id: "1",
+        date: startDate,
+        startTime: eventDays[0]?.startTime,
+        endTime: eventDays[0]?.endTime,
+        description: ""
+      }])
+    }
+  }, [startDate, eventDays, isMultiDay])
 
 
   const validateStep = (step: number): boolean => {
@@ -528,7 +541,7 @@ export default function CreateEventWizard({
 
           {/* Content */}
           <div className="flex-1 overflow-y-auto p-6">
-            <Activity mode={currentStep === 1 ? "visible" : "hidden"}>
+            {currentStep === 1 &&
               <EventBasicInformation
                 markDirty={markDirty}
                 eventName={eventName}
@@ -553,9 +566,8 @@ export default function CreateEventWizard({
                 selectedSubCategoriesId={selectedSubCategoriesId}
                 setSubCategoriesId={setSubCategoriesId}
               />
-            </Activity>
-
-            <Activity mode={currentStep === 2 ? "visible" : "hidden"}>
+            }
+            {currentStep === 2 &&
               <EventDateTimeFormat
                 geo={geo}
                 setGeo={setGeo}
@@ -600,9 +612,9 @@ export default function CreateEventWizard({
                 setCustomUnit={setCustomUnit}
                 markDirty={markDirty}
               />
-            </Activity>
+            }
 
-            <Activity mode={currentStep === 3 ? "visible" : "hidden"}>
+            {currentStep === 3 &&
               <EventRegistrationCapacity
                 markDirty={markDirty}
                 currentStep={currentStep}
@@ -615,9 +627,9 @@ export default function CreateEventWizard({
                 customQuestions={customQuestions}
                 setCustomQuestions={setCustomQuestions}
                 addCustomQuestion={addCustomQuestion}
-              />
-            </Activity>
-            <Activity mode={currentStep === 4 ? "visible" : "hidden"}>
+              />}
+
+            {currentStep === 4 &&
               <EventTickets
                 tickets={tickets}
                 eventId={eventId}
@@ -628,10 +640,10 @@ export default function CreateEventWizard({
                 errors={errors}
                 refetch={ticketRefetch}
                 setCurrentStep={setCurrentStep}
-              />
-            </Activity>
+                eventDays={eventDaysForTickets}
+              />}
 
-            <Activity mode={currentStep === 5 ? "visible" : "hidden"}>
+            {currentStep === 5 &&
               <NotificationsTimeline
                 markDirty={markDirty}
                 notifications={notifications}
@@ -646,19 +658,17 @@ export default function CreateEventWizard({
                 eventDays={eventDays}
                 address={address}
                 capacity={capacity}
-              />
-            </Activity>
-            <Activity mode={currentStep === 6 ? "visible" : "hidden"}>
+              />}
+            {currentStep === 6 &&
               <EventMedia
                 t={t}
                 theme={theme}
                 markDirty={markDirty}
                 eventImages={eventImages}
                 setEventImages={setEventImages}
-              />
-            </Activity>
+              />}
 
-            <Activity mode={currentStep === 7 ? "visible" : "hidden"}>
+            {currentStep === 7 &&
               <EventReviewPublish
                 setCurrentStep={setCurrentStep}
                 eventName={eventName}
@@ -675,9 +685,7 @@ export default function CreateEventWizard({
                 capacity={capacity}
                 customQuestions={customQuestions}
                 tickets={tickets}
-              />
-
-            </Activity>
+              />}
           </div>
 
           <WizardFooter

@@ -14,6 +14,7 @@ import { eventMutationApi } from "./api/eventMutationApi"
 import { eventQueryApi } from "./api/eventQueryApi"
 import { userMutationApi } from "./api/userMutationApi"
 import { userQueryApi } from "./api/userQueryApi"
+import { mediaMutationApi } from "./api/mediaMutationApi"
 
 export const store = configureStore({
   reducer: {
@@ -30,6 +31,7 @@ export const store = configureStore({
     [masterDataApi.reducerPath]:masterDataApi.reducer,
     [userMutationApi.reducerPath]:userMutationApi.reducer,
     [eventMutationApi.reducerPath]:eventMutationApi.reducer,
+    [mediaMutationApi.reducerPath]:eventMutationApi.reducer,
 
     [eventQueryApi.reducerPath]:eventQueryApi.reducer,
     [userQueryApi.reducerPath]:userQueryApi.reducer,

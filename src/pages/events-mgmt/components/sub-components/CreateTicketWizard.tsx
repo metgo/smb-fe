@@ -1,7 +1,7 @@
 
 import clsx from "clsx";
 import { toast } from "sonner";
-import { Upload, X } from "lucide-react";
+import { Plus, Trash2, Upload, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
@@ -9,28 +9,44 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useCreateSignedUrlMutation, useCreateTicketMutation, useUpdateTicketMutation } from "@/store/api/eventMutationApi";
 import { uploadWithProgress } from "@/helpers";
 import { Spinner } from "@/components/shared";
+import { formatDate } from "@/helpers/formatter";
 
 
 interface CreateTicketWizardProps {
+  opMode: TTicketOpMode;
   setShowTicketModal: (v: boolean) => void;
   setEditingTicket: (v: any) => void;
   theme: Theme;
   editingTicket: ITicketPayload;
-  tickets: any;
   eventId: string | null;
   refetch: () => void;
   setCurrentStep: (v: number) => void;
+  eventDays: EventDay[];
 }
+
+const modelTitle = (mode: TTicketOpMode, t: (key: string) => string) => {
+  switch (mode) {
+    case "CREATE":
+      return t('create_ticket');
+    case "UPDATE":
+      return t('edit_ticket')
+    case "DUPLICATE":
+      return t('duplicate_ticket');
+    default: return
+  }
+}
+
 
 const CreateTicketWizard = ({
   setShowTicketModal,
   setEditingTicket,
   theme,
   editingTicket,
-  tickets,
   eventId,
   refetch,
+  opMode,
   setCurrentStep,
+  eventDays,
 }: CreateTicketWizardProps) => {
   const { t } = useTranslation('events');
   const { cardClasses, textPrimary, textSecondary, inputClasses, textTertiary } = useThemeClasses();
@@ -40,7 +56,9 @@ const CreateTicketWizard = ({
   const [progress, setProgress] = useState(0);
   const [createTicket, { isLoading: isSaving }] = useCreateTicketMutation()
   const [updateTicket, { isLoading: isUpdating }] = useUpdateTicketMutation()
-
+  const [ticketDateTime, setTicketDateTime] = useState<ITicketDateTime[]>([
+    { id: 1, date: eventDays?.[0].date, startTime: eventDays[0].startTime, endTime: eventDays[0].endTime}
+  ]);
   const [file, setFile] = useState<File | null>(null)
   const [mediaURL, setMediaURL] = useState<GcsFileUpload>({ signedUrl: "", gcsURL: "" })
 
@@ -51,9 +69,9 @@ const CreateTicketWizard = ({
       return;
     }
     const payload: ITicketPayload = {
+      eventId,
       name: ticket.name,
       description: ticket.description,
-      eventId: eventId,
       price: {
         markedPrice: ticket.price.markedPrice,
         sellingPrice: ticket.price.sellingPrice,
@@ -67,6 +85,11 @@ const CreateTicketWizard = ({
         isUnlimited: ticket.quantity.isUnlimited,
         perUserLimit: ticket.quantity.perUserLimit,
       },
+      dayDescription: ticketDateTime?.map(item => ({
+        date: item.date,
+        startTime: item.startTime,
+        endTime: item.endTime
+      })),
       images: [{
         image: mediaURL.gcsURL
       }],
@@ -118,18 +141,40 @@ const CreateTicketWizard = ({
 
   useEffect(() => setProgress(0), [])
 
+  const addEventDay = () => {
+    setTicketDateTime((prev) => [
+      ...prev,
+      {
+        id: ticketDateTime.length + 1,
+        date: '',
+        startTime: '09:00',
+        endTime: '17:00'
+      }
+    ]);
+  };
 
+  const removeEventDay = (id: number) => {
+    setTicketDateTime(prev => prev.filter(day => day.id !== id));
+  };
+
+  const updateEventDay = (
+    index: number,
+    field: keyof Omit<EventDay, 'id'>,
+    value: string
+  ) => {
+    setTicketDateTime(prev => {
+      const updated = [...prev];
+      updated[index] = { ...updated[index], [field]: value };
+      return updated;
+    });
+  };
 
   return (
     <div className="fixed inset-0 bg-black/70 z-60 flex items-center justify-center p-4">
       <Spinner isLoading={isSaving || isUpdating} />
       <div className={`w-full max-w-2xl rounded-xl ${cardClasses} p-6`}>
         <div className="flex items-center justify-between mb-2">
-          <h3 className={`text-xl ${textPrimary}`}>
-            {editingTicket?._id && tickets?.find((t: any) => t._id === editingTicket._id)
-              ? t('edit_ticket')
-              : t('create_ticket')}
-          </h3>
+          <h3 className={`text-xl ${textPrimary}`}>{modelTitle(opMode, t)}</h3>
           <button
             onClick={() => {
               setShowTicketModal(false);
@@ -143,8 +188,7 @@ const CreateTicketWizard = ({
         </div>
 
         <div className="space-y-3">
-          <section className={`px-3 py-4 space-y-3 max-h-[70vh] overflow-y-auto rounded-lg border ${theme === "dark" ? "border-gray-700 bg-gray-800/50" : "border-gray-200 bg-gray-50"
-            }`}>
+          <section className={`px-3 py-4 space-y-3 max-h-[70vh] overflow-y-auto rounded-lg border ${theme === "dark" ? "border-gray-700 bg-gray-800/50" : "border-gray-200 bg-gray-50"}`}>
             <div>
               <label className={`block text-sm mb-2 ${textSecondary}`}>{t('ticket_name')}</label>
               <input
@@ -230,6 +274,76 @@ const CreateTicketWizard = ({
                 )}
               </div>
             </div>
+
+            <section>
+              <label htmlFor="">Ticket Days</label>
+              <div className="w-full space-y-2 mt-2">
+                {ticketDateTime.map((day, index) => (
+                  <div
+                    key={day.id}
+                  >
+
+                    {/* Fields */}
+                    <div className="grid grid-cols-12 gap-2 w-full">
+                      {/* Date Select */}
+                      <select
+                        value={day.date}
+                        onChange={(e) =>
+                          updateEventDay(index, 'date', e.target.value)
+                        }
+                        className={`px-3 py-2 col-span-5 rounded-lg border ${inputClasses}`}
+                      >
+                        <option value="">{t('select_date')}</option>
+
+                        {eventDays?.map(date => (
+                          <option key={date.id} value={date.date}>
+                            {formatDate(date.date, "en")}
+                          </option>
+                        ))}
+                      </select>
+
+                      {/* Start Time */}
+                      <input
+                        type="time"
+                        value={day.startTime}
+                        onChange={(e) =>
+                          updateEventDay(index, 'startTime', e.target.value)
+                        }
+                        className={`px-3 py-2 col-span-3 rounded-lg border ${inputClasses}`}
+                      />
+
+                      {/* End Time */}
+                      <input
+                        type="time"
+                        value={day.endTime}
+                        onChange={(e) =>
+                          updateEventDay(index, 'endTime', e.target.value)
+                        }
+                        className={`px-3 py-2 col-span-3 rounded-lg border ${inputClasses}`}
+                      />
+
+                      {/* Remove row */}
+                      <button
+                        onClick={() => removeEventDay(day.id)}
+                        className="text-red-500 hover:text-red-600 p-1 col-span-1"
+                      >
+                        <Trash2 className=" w-full h-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+
+                <button
+                  onClick={addEventDay}
+                  className="border border-green-600 text-green-500 rounded-md px-3 py-2 flex items-center gap-2"
+                >
+                  <Plus />
+                  <span>Add More</span>
+                </button>
+              </div>
+
+            </section>
+
 
             <div>
               <label className={`block text-sm mb-2 ${textSecondary}`}>{t('ticket_type')}</label>

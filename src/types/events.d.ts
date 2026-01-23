@@ -1,4 +1,5 @@
 type TMonthlyType = "SPECIFIC_DATE" | "RELATIVE_DAY"
+type TTicketOpMode = "CREATE" | "DUPLICATE" | "UPDATE"
 
 interface Event {
   _id: string;
@@ -28,8 +29,8 @@ interface Event {
   }[];
 }
 
-interface IEventResponse{
-  
+interface IEventResponse {
+
 }
 
 interface SignedUrlPayload {
@@ -228,12 +229,24 @@ interface CustomTemplate {
   body: string;
 }
 
+interface ITicketDateTime {
+  id: number;
+  date: string;
+  startTime: string;
+  endTime: string;
+}
 
 interface ITicketPayload {
   _id?: string;
   name: string;
   description: string;
   eventId: string;
+  dayDescription: {
+    _id?: string;
+    date: string;
+    startTime: string;
+    endTime: string;
+  }[]
   price: {
     markedPrice: number;
     discountAmount: number;

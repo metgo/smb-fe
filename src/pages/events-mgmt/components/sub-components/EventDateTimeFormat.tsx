@@ -268,6 +268,7 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
               {t("date")} <span className="text-red-500">*</span>
             </label>
             <DatePicker
+              disablePast
               value={startDate}
               onChange={(date) => setStartDate(date)}
               placeholder={t("select_date")}
@@ -319,6 +320,7 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <DatePicker
+                  disablePast
                   value={day.date}
                   onChange={(date) => {
                     const updated = [...eventDays];

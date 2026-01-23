@@ -4,6 +4,7 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useTranslation } from "react-i18next";
 import { CheckCircle } from "lucide-react";
 import { formatDate } from "@/helpers/formatter";
+import { extractCenterAddressText } from "@/helpers";
 
 interface CustomQuestion {
   id: string;
@@ -114,7 +115,7 @@ const EventReviewPublish: React.FC<EventReviewPublishProps> = ({
           <p><strong>{t("format")}:</strong> <span className="capitalize">{t(eventFormat)}</span></p>
           <p><strong>{t("type")}:</strong> {isMultiDay ? t("multi_day_event_text") : t("single_day_event_text")}</p>
           {!isMultiDay && <p><strong>{t("date")}:</strong> {formatDate(startDate, language)}</p>}
-          {eventFormat !== "online" && <p><strong>{t("address")}:</strong> {formatValue(address)}</p>}
+          {eventFormat !== "online" && <p><strong>{t("address")}:</strong> {extractCenterAddressText(address)}</p>}
           {eventFormat !== "physical" && <p><strong>{t("online_link")}:</strong> {formatValue(onlineLink, "not_applicable")}</p>}
         </div>
       </div>
@@ -182,9 +183,6 @@ const EventReviewPublish: React.FC<EventReviewPublishProps> = ({
           )}
         </div>
       </div>
-
-      {/* Final Publish Button (can be added in parent) */}
-      {/* You can add a publish button here or in the parent wizard */}
     </div>
   );
 };
