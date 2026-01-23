@@ -37,7 +37,10 @@ export const endpoints = {
   userInfo: "/users/me",
 
   tickets: "/tickets",
+
+  // Media
   mediaSignedUrl: "/media-signed-url",
+  mediaFileDelete: "/media",
 
   websites: "/websites",
 

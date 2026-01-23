@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { ChevronDown } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
@@ -30,7 +30,7 @@ interface EventBasicInformationProps {
   setGroupTypesId: (v: string[]) => void;
   selectedAccessiblitiesId: string[];
   setAccessiblitiesId: (v: string[]) => void;
-  errors:Record<string, string>;
+  errors: Record<string, string>;
 }
 
 const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
@@ -80,6 +80,33 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
     internalNotes,
   ]);
 
+  const fieldRefs = {
+    dmoId: useRef<HTMLDivElement>(null),
+    authorityId: useRef<HTMLDivElement>(null),
+    eventName: useRef<HTMLInputElement>(null),
+    shortDescription: useRef<HTMLInputElement>(null),
+  };
+
+
+  useEffect(() => {
+    const errorKeys = Object.keys(errors);
+    if (errorKeys.length === 0) return;
+
+    const firstErrorKey = errorKeys[0];
+    const ref = fieldRefs[firstErrorKey as keyof typeof fieldRefs];
+
+    if (ref?.current) {
+      ref.current.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+
+      if ("focus" in ref.current) {
+        (ref.current as HTMLElement).focus();
+      }
+    }
+  }, [errors]);
+
 
   const handleSubcategorySelect = (itemId: string) => {
     const exists = selectedSubCategoriesId?.some((id) => id === itemId);
@@ -121,7 +148,7 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
 
       <div className="flex items-center justify-between gap-4">
         {/* Dmos Dropdown */}
-        <div className="flex-1">
+        <div className="flex-1" ref={fieldRefs.dmoId}>
           <label className={`block text-sm font-medium mb-3 ${textSecondary}`}>
             {t("select_dmo")} <span className="text-red-500">*</span>
           </label>
@@ -134,7 +161,7 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
               }}
               className={clsx(
                 "appearance-none h-12 w-full border rounded-lg px-4 py-2 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 min-w-45",
-                // selectInputClasses
+                selectInputClasses, errors.dmoId && "border-red-500"
               )}
             >
               <option value="">Select DMO</option>
@@ -154,7 +181,7 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
         </div>
 
         {/* Authorities Dropdown */}
-        <div className="flex-1">
+        <div className="flex-1" ref={fieldRefs.authorityId}>
           <label className={`block text-sm font-medium mb-3 ${textSecondary}`}>
             {t("select_authority")} <span className="text-red-500">*</span>
           </label>
@@ -164,7 +191,8 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
               onChange={(e) => setSelectAuthorityId(e.target.value)}
               className={clsx(
                 "appearance-none h-12 w-full border rounded-lg px-4 py-2 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 min-w-45",
-                selectInputClasses
+                selectInputClasses, 
+                errors.dmoId && "border-red-500"
               )}
             >
               <option value="">Select Authority</option>
@@ -192,6 +220,7 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
         <input
           type="text"
           value={eventName}
+          ref={fieldRefs.eventName}
           onChange={(e) => setEventName(e.target.value)}
           placeholder={t("enter_event_name")}
           className={`w-full px-5 py-3 rounded-xl border text-lg ${inputClasses} transition-all focus:ring-2 focus:ring-teal-500/20 ${errors.eventName ? "border-red-500" : ""
@@ -211,11 +240,13 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
         </label>
         <input
           type="text"
+          ref={fieldRefs.shortDescription}
           value={shortDescription}
           onChange={(e) => setShortDescription(e.target.value)}
           placeholder={t("brief_description")}
           maxLength={200}
-          className={`w-full px-5 py-3 rounded-xl border text-base ${inputClasses} transition-all focus:ring-2 focus:ring-teal-500/20`}
+          className={`w-full px-5 py-3 rounded-xl border text-base ${inputClasses} transition-all focus:ring-2 focus:ring-teal-500/20 ${errors.shortDescription ? "border-red-500" : ""
+            } `}
         />
         <p className={`text-xs mt-2 text-right ${textTertiary}`}>
           {shortDescription?.length}/200 {t("max_characters")}

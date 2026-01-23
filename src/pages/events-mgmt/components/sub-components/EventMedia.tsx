@@ -25,11 +25,9 @@ const EventMedia: React.FC<EventMediaProps> = ({
   const [createSignedUrl] = useCreateSignedUrlMutation();
   const { textPrimary, textSecondary, textTertiary, } = useThemeClasses()
 
-
   const imagesRef = useRef<HTMLDivElement>(null);
   const [primaryImageIndex, setPrimaryImageIndex] = useState(0);
   const [images, setImages] = useState<IEventImageUpload[]>([]);
-
 
   useEffect(() => {
     if (images) {
@@ -37,9 +35,6 @@ const EventMedia: React.FC<EventMediaProps> = ({
     }
   }, [images])
 
-  useEffect(() => {
-    setImages([])
-  }, [])
 
   useEffect(() => {
     if (!eventImages?.length) return;

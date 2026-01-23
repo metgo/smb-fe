@@ -1,6 +1,6 @@
 import { toast } from "sonner";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Activity, useState } from "react";
 import { Plus, Ticket, FileText, Trash2, AlertCircle } from "lucide-react";
 
 import { useAppSelector } from "@/hooks/hooks";
@@ -14,15 +14,14 @@ import { ConfirmDialog } from "@/components/shared";
 interface EventTicketsProps {
   showTicketModal: boolean;
   setShowTicketModal: React.Dispatch<React.SetStateAction<boolean>>;
-  errors: {
-    tickets?: string;
-  };
+  errors: { tickets?: string };
   eventId: string;
-  refetch: ()=>void;
+  refetch: () => void;
   setEventId: (v: string) => void;
   initEventCreate: () => any;
   setCurrentStep: (v: number) => void;
   tickets: any;
+  eventDays: EventDay[];
 }
 
 const getTicketTypeColor = (type: string) => {
@@ -49,19 +48,23 @@ const EventTickets: React.FC<EventTicketsProps> = ({
   refetch,
   setCurrentStep,
   initEventCreate,
+  eventDays
 }) => {
   const { t } = useTranslation("events");
   const { textPrimary, textTertiary } = useThemeClasses();
   const { theme } = useAppSelector((state) => state.settings);
+  const [opMode, setOpMode] = useState<TTicketOpMode>("CREATE")
 
-  
+
 
   const [deleteTicket, { isLoading: isDeleting }] = useDeleteTicketMutation();
   const [editingTicket, setEditingTicket] = useState<ITicketPayload | null>(null);
 
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [ticketToDelete, setTicketToDelete] = useState<string | null>(null);
-
+  const [ticketDateTime, setTicketDateTime] = useState<ITicketDateTime[]>([
+    { _id: 1, date: eventDays?.[0].date, startTime: eventDays[0].startTime, endTime: eventDays[0].endTime }
+  ]);
 
   const formatPrice = (ticket: TicketData) => {
     if (ticket.type === "free") return t("free");
@@ -86,6 +89,11 @@ const EventTickets: React.FC<EventTicketsProps> = ({
       description: "",
       eventId,
       type: "free",
+      dayDescription: [{
+        date: "",
+        startTime: "",
+        endTime: "",
+      }],
       price: {
         markedPrice: 0,
         sellingPrice: 0,
@@ -93,7 +101,7 @@ const EventTickets: React.FC<EventTicketsProps> = ({
         discountPercent: 0,
       },
       quantity: {
-        initial: 0,
+        initial: 1,
         sold: 0,
         remaining: 0,
         isUnlimited: false,
@@ -105,8 +113,12 @@ const EventTickets: React.FC<EventTicketsProps> = ({
       const res = await initEventCreate().unwrap();
       setEventId(res?.id);
     }
+    setOpMode("CREATE")
     setShowTicketModal(true);
   };
+
+
+
   return (
     <div className="space-y-8 max-w-4xl mx-auto">
       {/* Header */}
@@ -125,7 +137,7 @@ const EventTickets: React.FC<EventTicketsProps> = ({
       </div>
 
       {/* Loading Skeleton */}
-      {( isDeleting) && (
+      {(isDeleting) && (
         <div className="space-y-5">
           {Array.from({ length: 3 }).map((_, i) => (
             <TicketCardSkeleton key={i} theme={theme} />
@@ -165,7 +177,7 @@ const EventTickets: React.FC<EventTicketsProps> = ({
       )}
 
       {/* Tickets List */}
-      { tickets?.length > 0 && (
+      {tickets?.length > 0 && (
         <div className="space-y-5">
           {tickets?.map((ticket: any) => (
             <div
@@ -206,26 +218,40 @@ const EventTickets: React.FC<EventTicketsProps> = ({
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3">
+                <div className="flex items-center">
                   <button
                     onClick={() => {
                       setEditingTicket({
                         ...ticket,
                         imageUrl: ticket?.images?.[0]?.image || "",
                       });
+                      setTicketDateTime(ticket.dayDescription ?? [])
+                      setOpMode("UPDATE")
                       setShowTicketModal(true);
                     }}
-                    className="p-3 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700"
+                    className="p-3 cursor-pointer rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 "
                   >
                     <FileText className="w-5 h-5" />
                   </button>
-
+                  {/* <button
+                    onClick={() => {
+                      setEditingTicket({
+                        ...ticket,
+                        imageUrl: ticket?.images?.[0]?.image || "",
+                      });
+                      setOpMode("DUPLICATE")
+                      setShowTicketModal(true);
+                    }}
+                    className="p-3 cursor-pointer rounded-xl text-blue-500 hover:bg-blue-500/10"
+                  >
+                    <Copy className="w-5 h-5" />
+                  </button> */}
                   <button
                     onClick={() => {
                       setTicketToDelete(ticket._id);
                       setIsConfirmOpen(true);
                     }}
-                    className="p-3 rounded-xl text-red-500 hover:bg-red-500/10"
+                    className="p-3 cursor-pointer rounded-xl text-red-500 hover:bg-red-500/10"
                   >
                     <Trash2 className="w-5 h-5" />
                   </button>
@@ -238,18 +264,20 @@ const EventTickets: React.FC<EventTicketsProps> = ({
       )}
 
       {/* Ticket Wizard */}
-      <Activity mode={showTicketModal && editingTicket ? "visible" : "hidden"}>
+      {(showTicketModal && editingTicket) &&
         <CreateTicketWizard
           theme={theme}
           eventId={eventId}
-          tickets={tickets}
           refetch={refetch}
+          opMode={opMode}
+          eventDays={eventDays}
           setCurrentStep={setCurrentStep}
           setShowTicketModal={setShowTicketModal}
           editingTicket={editingTicket!}
           setEditingTicket={setEditingTicket}
-        />
-      </Activity>
+          ticketDateTime={ticketDateTime}
+          setTicketDateTime={setTicketDateTime}
+        />}
 
       <ConfirmDialog
         open={isConfirmOpen}
