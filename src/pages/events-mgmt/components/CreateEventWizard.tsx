@@ -13,7 +13,7 @@ import { useAppSelector } from '@/hooks/hooks';
 import { Spinner, WizardFooter } from '@/components/shared';
 import { useThemeClasses } from '@/hooks/useThemeClasses';
 
-import { useGetEventByIdQuery } from '@/store/api/eventQueryApi';
+import { useGetAllTicketQuery, useGetEventByIdQuery } from '@/store/api/eventQueryApi';
 import { useInitEventCreateMutation, useUpdateEventMutation } from '@/store/api/eventMutationApi';
 import { EventBasicInformation, EventDateTimeFormat, EventMedia, EventRegistrationCapacity, EventReviewPublish, EventTickets, NotificationsTimeline } from './sub-components';
 import { useEventDraftSaver } from '../hooks/useEventDraftSaver';
@@ -37,15 +37,19 @@ export default function CreateEventWizard({
   const { isRTL } = useAppSelector((state) => state.settings)
   const { cardClasses, textPrimary, textTertiary } = useThemeClasses();
   const editId = searchParams.get("eventId");
+  const [eventId, setEventId] = useState<string>("");
 
   const [updateEvent, { isLoading: isEventUpdating }] = useUpdateEventMutation()
   const [initEventCreate, { isLoading: isEventCreating }] = useInitEventCreateMutation()
   const { data: editData, refetch, isLoading, isFetching } = useGetEventByIdQuery(editId ? { eventId: editId } : skipToken);
+  const {
+    data: tickets,
+    refetch: ticketRefetch,
+  } = useGetAllTicketQuery(eventId ? { eventId } : skipToken);
 
   const [currentStep, setCurrentStep] = useState(1);
   const [isPublishing, setIsPublishing] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
-  const [eventId, setEventId] = useState<string>("");
 
   // Step 1: Basic Information
   const [selectedDmoId, setSelectDmoId] = useState<string>("");
@@ -92,7 +96,6 @@ export default function CreateEventWizard({
   const [customQuestions, setCustomQuestions] = useState<CustomQuestion[]>([]);
 
   // Step 4: Tickets
-  const [tickets, setTickets] = useState<TicketData[]>([]);
   const [showTicketModal, setShowTicketModal] = useState(false);
 
   // Step 5: Messaging
@@ -146,7 +149,6 @@ export default function CreateEventWizard({
       setCapacityType('limited');
       setCapacity(100);
       setCustomQuestions([]);
-      setTickets([]);
       setEventImages([]);
       setErrors({});
       setLastSaved(null);
@@ -159,6 +161,7 @@ export default function CreateEventWizard({
       setNotifications([])
     }
   }, [isOpen, editId]);
+
 
 
   useEffect(() => {
@@ -616,13 +619,14 @@ export default function CreateEventWizard({
             </Activity>
             <Activity mode={currentStep === 4 ? "visible" : "hidden"}>
               <EventTickets
+                tickets={tickets}
                 eventId={eventId}
                 setEventId={setEventId}
                 initEventCreate={initEventCreate}
                 showTicketModal={showTicketModal}
                 setShowTicketModal={setShowTicketModal}
                 errors={errors}
-                setTickets={setTickets}
+                refetch={ticketRefetch}
                 setCurrentStep={setCurrentStep}
               />
             </Activity>

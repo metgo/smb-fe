@@ -38,9 +38,13 @@ const EventMedia: React.FC<EventMediaProps> = ({
   }, [images])
 
   useEffect(() => {
+    setImages([])
+  }, [])
+
+  useEffect(() => {
     if (!eventImages?.length) return;
     if (images.length > 0) return; // prevent duplicate hydration
-
+    setImages([])
     const hasPrimary = eventImages.some(img => img.isPrimary);
 
     const hydratedImages: IEventImageUpload[] = eventImages.map(
