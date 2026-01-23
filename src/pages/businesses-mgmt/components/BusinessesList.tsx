@@ -108,7 +108,7 @@ export default function BusinessesList({
   const { isRTL } = useAppSelector((state) => state.settings);
   const { textPrimary, textSecondary, textTertiary } = useThemeClasses();
   const [page, setPage] = useState<number>(1);
-  const limit = 10;
+  const limit = 20;
 
   const [error, setError] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -422,7 +422,6 @@ export default function BusinessesList({
     columnVisibility.impact && {
       key: "impact",
       label: t("impact_score"),
-      sortable: true,
       width: "110px",
       render: (business: any) => {
         const score = business.impact ?? 0;
@@ -452,7 +451,6 @@ export default function BusinessesList({
     columnVisibility.name && {
       key: "name",
       label: t("business_name"),
-      sortable: true,
       render: (business: any) => (
         <span className={textPrimary}>
           {business.name || business.slug || t("unnamed_business") || "-"}
@@ -463,7 +461,6 @@ export default function BusinessesList({
     columnVisibility.shortDescription && {
       key: "shortDescription",
       label: t("shortDescription"),
-      sortable: true,
       render: (business: any) => (
         <span className={textPrimary}>{business.shortDescription || "-"}</span>
       ),
@@ -510,7 +507,6 @@ export default function BusinessesList({
     columnVisibility.productCount && {
       key: "productCount",
       label: t("products_count"),
-      sortable: true,
       render: (business: any) => (
         <span className={textPrimary}>{business.productCount ?? 0}</span>
       ),
@@ -519,7 +515,6 @@ export default function BusinessesList({
     columnVisibility.status && {
       key: "status",
       label: t("status"),
-      sortable: true,
       render: (business: any) => {
         const st = (business.status || "").toLowerCase();
         return (
@@ -546,7 +541,6 @@ export default function BusinessesList({
     columnVisibility.tripCount && {
       key: "tripCount",
       label: t("trips"),
-      sortable: true,
       render: (business: any) => (
         <span className={textPrimary}>{business.tripCount ?? 0}</span>
       ),

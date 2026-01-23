@@ -1,7 +1,8 @@
 import { useState, type FC } from "react";
-import { ChevronDown, Globe } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { useCommon } from "@/hooks/useCommon";
 import clsx from "clsx";
+import { Globe, Facebook, Twitter, Instagram, Linkedin } from "lucide-react";
 
 interface BusinessFormData {
   authority: string;
@@ -103,8 +104,30 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
   const selectedDmos = dmosAuthorities?.find(
     (item) => item?._id === selectedDmoId,
   );
-  /* ---------------- Render ---------------- */
 
+  //websites
+  const [allWebsites, setAllWebsites] = useState(false);
+  const [selectedWebsites, setSelectedWebsites] = useState<any>([]);
+  const websites = [
+    { name: "Facebook", icon: <Facebook size={18} /> },
+    { name: "Twitter", icon: <Twitter size={18} /> },
+    { name: "Instagram", icon: <Instagram size={18} /> },
+    { name: "LinkedIn", icon: <Linkedin size={18} /> },
+  ];
+  const toggleWebsite = (site: any) => {
+    if (selectedWebsites.includes(site)) {
+      setSelectedWebsites(selectedWebsites.filter((w:any) => w !== site));
+    } else {
+      setSelectedWebsites([...selectedWebsites, site]);
+    }
+  };
+
+  const handleAllWebsitesChange = () => {
+    setAllWebsites(!allWebsites);
+    if (!allWebsites) {
+      setSelectedWebsites([]); // clear individual selections when all websites checked
+    }
+  };
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -188,6 +211,55 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
           </select>
           <ChevronDown className="absolute top-1/2 ltr:right-3 rtl:left-3 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
         </div>
+      </div>
+
+      {/* All Websites */}
+      <div className="">
+        <label
+          className={`block text-sm mb-2 ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}
+        >
+          {t("website_visibility")} *
+        </label>
+
+        <div className="mb-4">
+          <label
+            htmlFor="all-websites"
+            className="flex items-center cursor-pointer border rounded p-2 w-full"
+            style={{ gap: "0.5rem" }}
+          >
+            <input
+              type="checkbox"
+              id="all-websites"
+              checked={allWebsites}
+              onChange={handleAllWebsitesChange}
+              className="flex-shrink-0"
+            />
+            <Globe className="mr-2" />
+            <span>All Websites</span>
+          </label>
+        </div>
+
+        {!allWebsites && (
+          <div className="grid grid-cols-2 gap-4">
+            {websites.map(({ name, icon }) => (
+              <label
+                key={name}
+                htmlFor={name}
+                className="flex items-center cursor-pointer border rounded p-2 w-full"
+                style={{ gap: "0.5rem" }}
+              >
+                <input
+                  type="checkbox"
+                  id={name}
+                  checked={selectedWebsites.includes(name)}
+                  onChange={() => toggleWebsite(name)}
+                  className="flex-shrink-0"
+                />
+                <span className="text-blue-600">{icon}</span> {name}
+              </label>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Business Name */}

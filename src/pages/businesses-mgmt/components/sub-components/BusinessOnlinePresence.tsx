@@ -1,5 +1,5 @@
-import { useEffect, type FC } from "react";
-import { Globe, Facebook, Instagram, Youtube, Music } from "lucide-react";
+import {  type FC } from "react";
+import { Globe, Facebook, Instagram, Youtube } from "lucide-react";
 import { useGetAllSocialMediaQuery } from "@/store/api/masterDataApi";
 
 /* ---------- Types ---------- */

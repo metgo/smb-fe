@@ -10,8 +10,14 @@ interface Coordinates {
   lng: number
 }
 
+interface Address {
+  city : string;
+  country: string;
+  location: string;
+}
+
 interface Business {
-  address: string
+  address: Address
   coordinates: Coordinates
 }
 
@@ -35,7 +41,7 @@ const BusinessLocationDetails: FC<BusinessLocationDetailsProps> = ({ theme, t, b
         </h3>
         <p className={`flex items-center gap-2 ${theme === 'dark' ? 'text-gray-200' : 'text-gray-800'}`}>
           <MapPin className="w-5 h-5" />
-          {business.address}
+          {business?.address?.city}
         </p>
       </div>
 
@@ -45,7 +51,7 @@ const BusinessLocationDetails: FC<BusinessLocationDetailsProps> = ({ theme, t, b
           {t('geo_coordinates')}
         </h3>
         <p className={theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}>
-          {t('latitude')}: {business.coordinates.lat.toFixed(6)}, {t('longitude')}: {business.coordinates.lng.toFixed(6)}
+          {t('latitude')}: {business?.coordinates?.lat?.toFixed(6)}, {t('longitude')}: {business?.coordinates?.lng?.toFixed(6)}
         </p>
       </div>
 

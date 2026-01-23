@@ -1,5 +1,5 @@
 import type { FC } from "react";
-import { X } from "lucide-react";
+import { Loader, X } from "lucide-react";
 import {
   useGetAccessibilityQuery,
   useGetCategoriesQuery,
@@ -80,8 +80,10 @@ const BusinessAttributes: FC<BusinessAttributesProps> = ({
   const { i18n } = useTranslation("businesses");
   const locale = i18n.language as Language;
   const { textSecondary } = useThemeClasses();
-  const { data: accessibility } = useGetAccessibilityQuery({ locale });
-  const { data: groupTypes } = useGetGroupTypesQuery({ locale });
+  const { data: accessibility, isLoading: isLoadingAccessibility } =
+    useGetAccessibilityQuery({ locale });
+  const { data: groupTypes, isLoading: isLoadingGroupTypes } =
+    useGetGroupTypesQuery({ locale });
 
   const { data: primaryCategories } = useGetCategoriesQuery({ locale });
 
@@ -140,20 +142,50 @@ const BusinessAttributes: FC<BusinessAttributesProps> = ({
           <p className="text-red-500 text-sm mt-1">{errors.primaryCategory}</p>
         )}
       </div>
-      <SelectableChips
-        label="Accessiblities"
-        items={accessibility?.datas?.data}
-        selectedIds={selectedAccessiblitiesId}
-        onSelect={handleAccessibilitySelect}
-        textSecondary={textSecondary}
-      />
-      <SelectableChips
-        label="Group Types"
-        items={groupTypes?.datas?.data}
-        selectedIds={selectedGroupTypesId}
-        onSelect={handleGroupTypeSelect}
-        textSecondary={textSecondary}
-      />
+      {isLoadingAccessibility ? (
+        <div
+          style={{
+            textAlign: "center",
+            fontSize: "16px",
+            color: "green",
+            padding: "10px 0",
+            fontWeight: "500",
+            fontFamily: "Arial, sans-serif",
+          }}
+        >
+          Loading Accessibilities
+        </div>
+      ) : (
+        <SelectableChips
+          label="Accessiblities"
+          items={accessibility?.datas?.data}
+          selectedIds={selectedAccessiblitiesId}
+          onSelect={handleAccessibilitySelect}
+          textSecondary={textSecondary}
+        />
+      )}
+      {isLoadingGroupTypes ? (
+        <div
+          style={{
+            textAlign: "center",
+            fontSize: "16px",
+            color: "green",
+            padding: "10px 0",
+            fontWeight: "500",
+            fontFamily: "Arial, sans-serif",
+          }}
+        >
+          Loading Group Types
+        </div>
+      ) : (
+        <SelectableChips
+          label="Group Types"
+          items={groupTypes?.datas?.data}
+          selectedIds={selectedGroupTypesId}
+          onSelect={handleGroupTypeSelect}
+          textSecondary={textSecondary}
+        />
+      )}
 
       {/* Tags */}
       <div>

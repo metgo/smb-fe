@@ -11,10 +11,8 @@ import { useTranslation } from 'react-i18next';
 type WizardFooterProps = {
   currentStep: number;
   totalSteps: number;
-
   isSaving: boolean;
   isPublishing: boolean;
-
   onPrevious: () => void;
   onNext: () => void;
   onSaveDraft: () => void;

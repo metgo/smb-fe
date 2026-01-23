@@ -6,7 +6,7 @@ export function useCommon() {
   const { data } = useGetDmosQuery()
 
   const dmosAuthorities:IDmo[] = data?.data;
-
+console.log("dms authorities", dmosAuthorities)
   const authorities = [
     { value: 'all', label: t('all_authorities') },
     { value: 'negev', label: 'Western Negev Tourism Authority' },

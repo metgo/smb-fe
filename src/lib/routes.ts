@@ -10,7 +10,6 @@ export const routes = {
   trips: "/trips",
   eventsMgmt: "/events-management",
   funDays: "/fun-days",
-
   vouchers: "/vouchers",
   offlineVouchers: "/offline-vouchers",
   miniCampaign: "/mini-campaign",

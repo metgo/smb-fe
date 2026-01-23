@@ -24,7 +24,7 @@
     email: string;
     phone: string;
   };
-  contactPerson: {
+  contactDetails: {
     name: string;
     email: string;
     phone: string;

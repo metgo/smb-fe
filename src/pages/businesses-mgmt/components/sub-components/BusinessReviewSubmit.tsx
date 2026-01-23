@@ -93,10 +93,6 @@ const BusinessReviewSubmit: FC<BusinessReviewSubmitProps> = ({ theme, formData, 
             <span className="font-medium">{t("primary_category")}: </span>
             {formData.primaryCategory || t("not_set")}
           </p>
-          <p className={theme === "dark" ? "text-gray-300" : "text-gray-700"}>
-            <span className="font-medium">{t("address")}: </span>
-            {formData.address || t("not_set")}
-          </p>
         </div>
       </div>
     </div>

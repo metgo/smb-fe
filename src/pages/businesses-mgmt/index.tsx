@@ -4,6 +4,7 @@ import { useAppSelector } from '@/hooks/hooks';
 
 import BusinessDetails from './details';
 import { BusinessesList, CreateBusinessWizard} from './components';
+import { useGetbusinessByIdQuery } from '@/store/api/businessQueryApi';
 
 
 type View = 'list' | 'details' | 'create' | 'edit';
@@ -13,8 +14,16 @@ export default function BusinessesMgmtPage() {
   const [selectedBusiness, setSelectedBusiness] = useState<any | null>(null);
   const { theme } = useAppSelector((state) => state.settings)
 
-  const handleBusinessClick = (business: any) => {
-    setSelectedBusiness(business);
+  const { data: businessByIdData } = useGetbusinessByIdQuery(
+       { businessId: selectedBusiness?._id } ,  {
+    skip: !selectedBusiness?._id,
+  }
+    );
+
+console.log("business of single id", businessByIdData)
+
+  const handleBusinessClick = (businessByIdData: any) => {
+    setSelectedBusiness(businessByIdData);
     setCurrentView('details');
   };
 
@@ -46,7 +55,7 @@ export default function BusinessesMgmtPage() {
   const handleCreateProduct = () => {
    console.log("adfasfjkljsdfs lajflsadjl asdfas")
   };
-
+console.log("selected business", selectedBusiness)
   return (
     <>
       {currentView === 'list' && (

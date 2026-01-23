@@ -22,7 +22,7 @@ export const endpoints = {
   dmos: "/dmos",
 
   // business
-  business: "/business",
+  business: "/businesses",
   businesses: "/businesses",
   businessStatDashboard: "businesses-stat",
 

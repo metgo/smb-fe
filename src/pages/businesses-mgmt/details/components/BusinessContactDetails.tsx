@@ -53,25 +53,25 @@ const BusinessContactDetails: FC<BusinessContactDetailsProps> = ({
           )}
         </div>
 
-        {business.owner ? (
+        {business?.owner ? (
           <div className="space-y-2">
             <p className={theme === "dark" ? "text-gray-200" : "text-gray-800"}>
               <span className={theme === "dark" ? "text-gray-500" : "text-gray-600"}>
                 {t('name')}:
               </span>{" "}
-              <strong>{business.owner.name}</strong>
+              <strong>{business?.owner?.name}</strong>
             </p>
             <p className={theme === "dark" ? "text-gray-200" : "text-gray-800"}>
               <span className={theme === "dark" ? "text-gray-500" : "text-gray-600"}>
                 {t('email')}:
               </span>{" "}
-              {business.owner.email}
+              {business?.owner?.email}
             </p>
             <p className={theme === "dark" ? "text-gray-200" : "text-gray-800"}>
               <span className={theme === "dark" ? "text-gray-500" : "text-gray-600"}>
                 {t('phone')}:
               </span>{" "}
-              {business.owner.phone}
+              {business?.owner?.phone}
             </p>
           </div>
         ) : (
@@ -107,10 +107,10 @@ const BusinessContactDetails: FC<BusinessContactDetailsProps> = ({
           <div className="flex items-center gap-3">
             <Mail className={`w-5 h-5 ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`} />
             <a
-              href={`mailto:${business.email}`}
+              href={`mailto:${business?.email}`}
               className="text-teal-600 hover:text-teal-700 transition-colors"
             >
-              {business.email}
+              {business?.email}
             </a>
           </div>
 
@@ -120,20 +120,20 @@ const BusinessContactDetails: FC<BusinessContactDetailsProps> = ({
               href={`tel:${business.phone}`}
               className="text-teal-600 hover:text-teal-700 transition-colors"
             >
-              {business.phone}
+              {business?.phone}
             </a>
           </div>
 
-          {business.website && (
+          {business?.website && (
             <div className="flex items-center gap-3">
               <Globe className={`w-5 h-5 ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`} />
               <a
-                href={business.website}
+                href={business?.website}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-teal-600 hover:text-teal-700 transition-colors"
               >
-                {business.website}
+                {business?.website}
               </a>
             </div>
           )}
@@ -156,19 +156,19 @@ const BusinessContactDetails: FC<BusinessContactDetailsProps> = ({
             <span className={theme === "dark" ? "text-gray-500" : "text-gray-500"}>
               {t('name')}:
             </span>{" "}
-            {business.contactPerson.name}
+            {business?.contactDetails?.name}
           </p>
           <p className={theme === "dark" ? "text-gray-300" : "text-gray-700"}>
             <span className={theme === "dark" ? "text-gray-500" : "text-gray-500"}>
               {t('email')}:
             </span>{" "}
-            {business.contactPerson.email}
+            {business.contactDetails?.email}
           </p>
           <p className={theme === "dark" ? "text-gray-300" : "text-gray-700"}>
             <span className={theme === "dark" ? "text-gray-500" : "text-gray-500"}>
               {t('phone')}:
             </span>{" "}
-            {business.contactPerson.phone}
+            {business.contactDetails?.phone}
           </p>
         </div>
       </div>
