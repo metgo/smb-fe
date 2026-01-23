@@ -106,9 +106,10 @@ export default function BusinessesList({
 }: BusinessesListProps) {
   const { t } = useTranslation("businesses");
   const { isRTL } = useAppSelector((state) => state.settings);
-  const { textPrimary, textSecondary } = useThemeClasses();
+  const { textPrimary, textSecondary, textTertiary } = useThemeClasses();
   const [page, setPage] = useState<number>(1);
   const limit = 10;
+
   const [error, setError] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [showFilters, setShowFilters] = useState(false);
@@ -126,7 +127,8 @@ export default function BusinessesList({
   console.log("busienss stats", businessStatsData);
   console.log("selected filters", selectedAuthorityId, selectedDmoId);
   const columnSettingsRef = useRef<HTMLDivElement>(null);
-
+  const [columnVisibility, setColumnVisibility] =
+    useState<ColumnVisibility>(defaultColumns);
   // Filters
   const [filters, setFilters] = useState({
     authorityId: "",
@@ -216,7 +218,7 @@ export default function BusinessesList({
       hasProductFilter: "",
     });
   };
-  const { data: businessData, isLoading: _isLoading } =
+  const { data: businessData, isLoading: loading } =
     useGetAllbusinessesQuery(queryParams);
 
   console.log("businessData:", businessData);
@@ -231,7 +233,7 @@ export default function BusinessesList({
 
   // Reset to default columns
   const resetToDefault = () => {
-    setVisibleColumns(defaultColumns);
+    setColumnVisibility(defaultColumns);
   };
 
   // Bulk actions
@@ -416,8 +418,8 @@ export default function BusinessesList({
 
   const columns = [
     ...(canChangeStatus ? [{ key: "checkbox", label: "", width: "50px" }] : []),
-   
-    {
+
+    columnVisibility.impact && {
       key: "impact",
       label: t("impact_score"),
       sortable: true,
@@ -447,81 +449,65 @@ export default function BusinessesList({
       },
     },
 
-    {
+    columnVisibility.name && {
       key: "name",
       label: t("business_name"),
       sortable: true,
       render: (business: any) => (
-        <div className="flex items-center gap-3">
-          <div
-            className={clsx(
-              "w-10 h-10 rounded-lg flex items-center justify-center",
-              theme === "dark" ? "bg-teal-500/10" : "bg-teal-50",
-            )}
-          >
-          </div>
-          <span className={textPrimary}>
-            {business.name || business.slug || t("unnamed_business") || "-"}
-          </span>
-        </div>
-      ),
-    },
-    {
-      key: "shortDescription",
-      label: t("shortDescription"),
-      sortable: true,
-      render: (business: any) => (
-        <div className="flex items-center gap-3">
-          <div
-            className={clsx(
-              "w-10 h-10 rounded-lg flex items-center justify-center",
-              theme === "dark" ? "bg-teal-500/10" : "bg-teal-50",
-            )}
-          >
-          </div>
-          <span className={textPrimary}>
-            {business.shortDescription  || "-"}
-          </span>
-        </div>
-      ),
-    },
-{
-      key: "contactDetails",
-      label: t("contactPerson"),
-      render: (business: any) => (
-        <div className="flex items-center gap-3">
-          <div
-            className={clsx(
-              "w-10 h-10 rounded-lg flex items-center justify-center",
-              theme === "dark" ? "bg-teal-500/10" : "bg-teal-50",
-            )}
-          >
-          </div>
-          <span className={textPrimary}>
-            {business.contactDetails.name  || "-"}
-          </span>
-        </div>
-      ),
-    },
-    {
-      key: "busiEmail",
-      label: t("business_email"),
-      render: (business: any) => (
-        <span className={textSecondary}>{business.busiEmail || "-"}</span>
-      ),
-    },
-
-    {
-      key: "phoneNumber",
-      label: t("phone_number"),
-      render: (business: any) => (
-        <span className={clsx(textSecondary, "whitespace-nowrap")}>
-          {business.phoneNumber || "-"}
+        <span className={textPrimary}>
+          {business.name || business.slug || t("unnamed_business") || "-"}
         </span>
       ),
     },
 
-    {
+    columnVisibility.shortDescription && {
+      key: "shortDescription",
+      label: t("shortDescription"),
+      sortable: true,
+      render: (business: any) => (
+        <span className={textPrimary}>{business.shortDescription || "-"}</span>
+      ),
+    },
+
+    columnVisibility.contactDetails && {
+      key: "contactDetails",
+      label: t("contactPerson"),
+      render: (business: any) => (
+        <span className={textPrimary}>
+          {business.contactDetails?.name || "-"}
+        </span>
+      ),
+    },
+
+    columnVisibility.busiEmail && {
+      key: "busiEmail",
+      label: t("business_email"),
+      render: (business: any) => (
+        <a
+          href={`mailto:${business.busiEmail}`}
+          onClick={(e) => e.stopPropagation()}
+          className="flex items-center gap-1 text-sm text-teal-500 hover:text-teal-600"
+        >
+          {business.busiEmail || "-"}
+        </a>
+      ),
+    },
+
+    columnVisibility.phoneNumber && {
+      key: "phoneNumber",
+      label: t("phone_number"),
+      render: (business: any) => (
+        <a
+          href={`tel:${business.phoneNumber}`}
+          onClick={(e) => e.stopPropagation()}
+          className="flex items-center gap-1 text-sm text-teal-500 hover:text-teal-600 whitespace-nowrap"
+        >
+          {business.phoneNumber || "-"}
+        </a>
+      ),
+    },
+
+    columnVisibility.productCount && {
       key: "productCount",
       label: t("products_count"),
       sortable: true,
@@ -530,7 +516,7 @@ export default function BusinessesList({
       ),
     },
 
-    {
+    columnVisibility.status && {
       key: "status",
       label: t("status"),
       sortable: true,
@@ -546,11 +532,9 @@ export default function BusinessesList({
                   ? "bg-yellow-500/20 text-yellow-400"
                   : st === "rejected"
                     ? "bg-red-500/20 text-red-400"
-                    : st === "draft"
-                      ? theme === "dark"
-                        ? "bg-gray-700 text-gray-400"
-                        : "bg-gray-100 text-gray-600"
-                      : "bg-gray-600/20 text-gray-400",
+                    : theme === "dark"
+                      ? "bg-gray-700 text-gray-400"
+                      : "bg-gray-100 text-gray-600",
             )}
           >
             {t(st) || st || t("unknown")}
@@ -559,7 +543,7 @@ export default function BusinessesList({
       },
     },
 
-    {
+    columnVisibility.tripCount && {
       key: "tripCount",
       label: t("trips"),
       sortable: true,
@@ -568,14 +552,13 @@ export default function BusinessesList({
       ),
     },
 
-    {
+    columnVisibility.associatedWebsites && {
       key: "associatedWebsites",
       label: t("website"),
       render: (business: any) => {
         const sites = business.associatedWebsites || [];
         if (!sites.length) return <span className={textSecondary}>-</span>;
 
-        // Show first valid URL (or the most relevant one)
         const mainSite = sites.find((s: any) => s.url) || sites[0];
         if (!mainSite?.url) return <span className={textSecondary}>-</span>;
 
@@ -587,7 +570,7 @@ export default function BusinessesList({
               target="_blank"
               rel="noopener noreferrer"
               onClick={(e) => e.stopPropagation()}
-              className="flex items-center gap-1 text-teal-500 hover:text-teal-400 transition-colors"
+              className="flex items-center gap-1 text-teal-500 hover:text-teal-400"
             >
               <ExternalLink className="w-4 h-4" />
               <span className="text-sm">{url.hostname}</span>
@@ -598,25 +581,13 @@ export default function BusinessesList({
         }
       },
     },
-    {
-      key: "phoneNumber",
-      label: t("contact_phone"),
-      render: (business: any) => (
-        <div className="flex items-center gap-3">
-          <div
-            className={clsx(
-              "w-10 h-10 rounded-lg flex items-center justify-center",
-              theme === "dark" ? "bg-teal-500/10" : "bg-teal-50",
-            )}
-          >
-          </div>
-          <span className={textPrimary}>
-            {business.phoneNumber || "-"}
-          </span>
-        </div>
-      ),
-    },
-  ];
+  ].filter(Boolean) as {
+    key: string;
+    label: string;
+    width?: string;
+    sortable?: boolean;
+    render?: (row: any) => React.ReactNode;
+  }[];
 
   // Helper function to get column label
   const getColumnLabel = (key: keyof ColumnVisibility): string => {
@@ -833,11 +804,7 @@ export default function BusinessesList({
             {/* Column Settings Dropdown */}
             {showColumnSettings && (
               <div
-                className={`absolute ${isRTL ? "left-0" : "right-0"} mt-2 w-72 rounded-lg shadow-lg border z-50 ${
-                  theme === "dark"
-                    ? "bg-gray-800 border-gray-700"
-                    : "bg-white border-gray-200"
-                }`}
+                className={`absolute ${isRTL ? "left-0" : "right-0"} mt-2 w-64 rounded-lg shadow-lg max-h-50vh overflow-y-auto border z-10 ${theme === "dark" ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}
               >
                 <div
                   className={`p-4 border-b ${theme === "dark" ? "border-gray-700" : "border-gray-200"}`}
@@ -862,67 +829,56 @@ export default function BusinessesList({
                       "Select columns to display"}
                   </p>
                 </div>
-
-                <div className="max-h-96 overflow-y-auto">
-                  {/* Default Columns */}
-                  <div
-                    className={`p-3 border-b ${theme === "dark" ? "border-gray-700" : "border-gray-200"}`}
+                <div className="p-3 max-h-96 overflow-y-auto">
+                  {Object.entries(columnVisibility).map(([key, visible]) => (
+                    <label
+                      key={key}
+                      className={`flex items-center gap-2 p-2 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 ${isRTL ? "flex-row-reverse justify-end" : ""}`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={visible}
+                        onChange={(e) =>
+                          setColumnVisibility((prev) => ({
+                            ...prev,
+                            [key]: e.target.checked,
+                          }))
+                        }
+                        className="rounded"
+                      />
+                      <span className={`text-sm ${textSecondary}`}>
+                        {t(key as keyof typeof t)}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+                {/* Optional Columns */}
+                <div className="p-3">
+                  <p
+                    className={`text-xs mb-2 ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
                   >
-                    <p
-                      className={`text-xs mb-2 ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
-                    >
-                      {t("default_columns") || "Default Columns"}
-                    </p>
-                    {columnDefinitions
-                      .filter((col) => col.isDefault)
-                      .map((col) => (
-                        <label
-                          key={col.key}
-                          className={`flex items-center gap-2 px-2 py-2 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${
-                            theme === "dark" ? "text-gray-300" : "text-gray-700"
-                          }`}
-                        >
-                          <input
-                            type="checkbox"
-                            checked={visibleColumns[col.key]}
-                            onChange={() => toggleColumn(col.key)}
-                            className="w-4 h-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500"
-                          />
-                          <span className="text-sm">
-                            {getColumnLabel(col.key)}
-                          </span>
-                        </label>
-                      ))}
-                  </div>
-
-                  {/* Optional Columns */}
-                  <div className="p-3">
-                    <p
-                      className={`text-xs mb-2 ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
-                    >
-                      {t("optional_columns") || "Optional Columns"}
-                    </p>
-                    {columnDefinitions
-                      .filter((col) => !col.isDefault)
-                      .map((col) => (
-                        <label
-                          key={col.key}
-                          className={`flex items-center gap-2 px-2 py-2 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${
-                            theme === "dark" ? "text-gray-300" : "text-gray-700"
-                          }`}
-                        >
-                          <input
-                            type="checkbox"
-                            checked={visibleColumns[col.key]}
-                            onChange={() => toggleColumn(col.key)}
-                            className="w-4 h-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500"
-                          />
-                          <span className="text-sm">
-                            {getColumnLabel(col.key)}
-                          </span>
-                        </label>
-                      ))}
-                  </div>
+                    {t("optional_columns") || "Optional Columns"}
+                  </p>
+                  {columnDefinitions
+                    .filter((col) => !col.isDefault)
+                    .map((col) => (
+                      <label
+                        key={col.key}
+                        className={`flex items-center gap-2 px-2 py-2 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${
+                          theme === "dark" ? "text-gray-300" : "text-gray-700"
+                        }`}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={visibleColumns[col.key]}
+                          onChange={() => toggleColumn(col.key)}
+                          className="w-4 h-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500"
+                        />
+                        <span className={`text-sm ${textSecondary}`}>
+                          {t(col.key as keyof typeof t)}
+                        </span>
+                      </label>
+                    ))}
                 </div>
               </div>
             )}
@@ -1198,8 +1154,22 @@ export default function BusinessesList({
       </div>
 
       {/* Table with horizontal scroll */}
-      <div className="flex-1 overflow-auto py-6">
-        {businessData?.data?.length === 0 ? (
+      <div
+        className={`${theme === "dark" ? "bg-gray-900/50 border-gray-800" : "bg-white border-gray-200"} border rounded-lg overflow-hidden`}
+      >
+       
+        {loading ? (
+           <div className="flex items-center justify-center py-20">
+            <Loader className="w-8 h-8 animate-spin text-teal-500" />
+          </div>
+        ) : businessData?.data?.length === 0 ? (
+           <div className="flex flex-col items-center justify-center py-20">
+            <AlertCircle className={`w-12 h-12 ${textTertiary} mb-4`} />
+            <p className={`${textSecondary}`}>{t("no_businesses_found")}</p>
+          </div>
+        ) :
+        
+        businessData?.data?.length === 0 ? (
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
               <AlertCircle className="w-12 h-12 mx-auto mb-4 text-gray-400" />
