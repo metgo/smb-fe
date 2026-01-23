@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import {  TrendingUp, TrendingDown, Ticket, ShoppingCart, Store } from 'lucide-react';
+import {  Ticket, ShoppingCart, Store } from 'lucide-react';
 
 import { InfoTooltip } from '@/components/shared';
 
@@ -11,9 +11,6 @@ interface MetricProps {
 }
 
 function Metric({ label, value, trend, icon }: MetricProps) {
-  const hasTrend = trend !== undefined;
-  const isPositive = trend && trend >= 0;
-
   return (
     <div className="flex items-start justify-between py-3 border-b border-gray-200 dark:border-gray-800 last:border-0">
       <div className="flex items-center gap-2">
@@ -22,12 +19,6 @@ function Metric({ label, value, trend, icon }: MetricProps) {
       </div>
       <div className="flex items-center gap-2">
         <span className="text-gray-900 dark:text-white">{value}</span>
-        {hasTrend && (
-          <span className={`text-xs flex items-center gap-0.5 ${isPositive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-            {isPositive ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-            {Math.abs(trend!)}%
-          </span>
-        )}
       </div>
     </div>
   );

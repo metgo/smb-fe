@@ -39,7 +39,7 @@ interface PodiumItemProps {
 
 function PodiumItem({ rank, name, metric, change, height }: PodiumItemProps) {
   const isPositive = change >= 0;
-  
+
   const getTrophyIcon = () => {
     if (rank === 1) return <Trophy className="w-10 h-10" />;
     if (rank === 2) return <Award className="w-8 h-8" />;
@@ -70,56 +70,52 @@ function PodiumItem({ rank, name, metric, change, height }: PodiumItemProps) {
       <div className={`${getTrophyColor()} transform transition-transform hover:scale-110 mb-3`}>
         {getTrophyIcon()}
       </div>
-      
+
       {/* Name Above Podium */}
       <div className="w-full mb-2 min-h-[48px] flex items-center justify-center px-1">
-        <h4 className={`font-medium text-center text-gray-900 dark:text-white leading-tight line-clamp-2 ${
-          rank === 1 ? 'text-base' : 'text-sm'
-        }`}>
+        <h4 className={`font-medium text-center text-gray-900 dark:text-white leading-tight line-clamp-2 ${rank === 1 ? 'text-base' : 'text-sm'
+          }`}>
           {name}
         </h4>
       </div>
-      
+
       {/* Podium Block */}
-      <div 
+      <div
         className={`w-full rounded-t-2xl bg-gradient-to-b ${getPodiumColor()} border-2 border-b-0 backdrop-blur-sm flex flex-col items-center justify-start pt-4 px-2 transition-all hover:shadow-2xl hover:-translate-y-1 relative overflow-hidden shadow-[0_-8px_16px_rgba(0,0,0,0.15),0_-4px_8px_rgba(0,0,0,0.1),inset_0_2px_4px_rgba(255,255,255,0.3),inset_0_-2px_8px_rgba(0,0,0,0.2)] hover:shadow-[0_-12px_24px_rgba(0,0,0,0.2),0_-6px_12px_rgba(0,0,0,0.15),inset_0_2px_4px_rgba(255,255,255,0.4),inset_0_-2px_8px_rgba(0,0,0,0.25)]`}
         style={{ height }}
       >
         {/* Decorative shimmer effect */}
         <div className="absolute inset-0 bg-gradient-to-t from-white/10 to-transparent pointer-events-none"></div>
-        
+
         {/* 3D edge highlights */}
         <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-b from-white/40 to-transparent pointer-events-none"></div>
         <div className="absolute inset-y-0 left-0 w-1 bg-gradient-to-r from-white/30 to-transparent pointer-events-none"></div>
         <div className="absolute inset-y-0 right-0 w-1 bg-gradient-to-l from-white/30 to-transparent pointer-events-none"></div>
-        
+
         {/* Rank Badge */}
-        <div className={`w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-2xl shadow-lg relative z-10 ${
-          getRankBadgeColor()
-        }`}>
+        <div className={`w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-2xl shadow-lg relative z-10 ${getRankBadgeColor()
+          }`}>
           {rank}
         </div>
-        
+
         {/* Metric */}
         <div className="text-center mt-3 relative z-10">
           <p className={`font-bold text-gray-900 dark:text-white ${rank === 1 ? 'text-xl' : rank === 2 ? 'text-lg' : 'text-base'}`}>
             {metric}
           </p>
-          <span className={`text-xs flex items-center gap-0.5 justify-center mt-1 ${
-            isPositive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
-          }`}>
+          <span className={`text-xs flex items-center gap-0.5 justify-center mt-1 ${isPositive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+            }`}>
             <TrendingUp className={`w-3 h-3 ${!isPositive && 'rotate-180'}`} />
             {Math.abs(change)}%
           </span>
         </div>
       </div>
-      
+
       {/* Podium Base Line */}
-      <div className={`w-full h-1 bg-gradient-to-r ${
-        rank === 1 ? 'from-yellow-400 via-yellow-500 to-yellow-400' : 
-        rank === 2 ? 'from-gray-400 via-gray-500 to-gray-400' : 
-        'from-orange-400 via-orange-500 to-orange-400'
-      }`}></div>
+      <div className={`w-full h-1 bg-gradient-to-r ${rank === 1 ? 'from-yellow-400 via-yellow-500 to-yellow-400' :
+          rank === 2 ? 'from-gray-400 via-gray-500 to-gray-400' :
+            'from-orange-400 via-orange-500 to-orange-400'
+        }`}></div>
     </div>
   );
 }
@@ -133,16 +129,16 @@ interface PopularCardProps {
 
 function PopularCard({ title, icon, items, metricLabel }: PopularCardProps) {
   const { t } = useTranslation('dashboard');
-  
+
   // Top 3 for podium
   const topThree = items.slice(0, 3);
   // Remaining items
   const remaining = items.slice(3);
-  
+
   // Reorder for podium display: 2nd, 1st, 3rd
   const podiumOrder = [topThree[1], topThree[0], topThree[2]];
   const podiumHeights = ['200px', '240px', '160px']; // Heights for 2nd, 1st, 3rd
-  
+
   return (
     <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6 hover:shadow-lg transition-shadow">
       <div className="flex items-center justify-between mb-6">
@@ -156,7 +152,7 @@ function PopularCard({ title, icon, items, metricLabel }: PopularCardProps) {
           </div>
         </div>
       </div>
-      
+
       {/* Podium Display */}
       <div className="mb-6">
         <div className="grid grid-cols-3 gap-2 items-end">
@@ -191,36 +187,30 @@ function PopularCard({ title, icon, items, metricLabel }: PopularCardProps) {
 
 export default function PopularContent() {
   const { t } = useTranslation('dashboard');
-  
+
   const popularBusinesses = [
     { rank: 1, name: 'Ramon Crater Visitor Center', metric: '48,392', change: 15.3 },
     { rank: 2, name: 'Sderot Sapir College', metric: '42,847', change: 12.7 },
     { rank: 3, name: 'Eshkol National Park', metric: '38,234', change: 8.9 },
-    { rank: 4, name: 'Be\'er Sheva Old City Market', metric: '34,567', change: 18.2 },
-    { rank: 5, name: 'Halutza Sand Dunes', metric: '32,891', change: 6.4 },
   ];
 
   const popularProducts = [
     { rank: 1, name: 'Ramon Crater Jeep Tour', metric: '127,493', change: 22.8 },
     { rank: 2, name: 'Negev Desert Stargazing', metric: '98,234', change: 19.4 },
     { rank: 3, name: 'Be\'er Sheva Heritage Walking Tour', metric: '87,392', change: 14.6 },
-    { rank: 4, name: 'Bedouin Hospitality Experience', metric: '76,847', change: 11.2 },
-    { rank: 5, name: 'Sde Boker Desert Winery Tour', metric: '68,234', change: 16.9 },
   ];
 
   const popularScreens = [
     { rank: 1, name: '/attractions/ramon-crater', metric: '892,394', change: 18.7 },
     { rank: 2, name: '/experiences/desert-adventures', metric: '734,283', change: 15.3 },
     { rank: 3, name: '/accommodations/negev-hospitality', metric: '623,847', change: 12.4 },
-    { rank: 4, name: '/cultural/bedouin-heritage', metric: '547,293', change: 9.8 },
-    { rank: 5, name: '/events/beersheva-festivals', metric: '489,234', change: 21.5 },
   ];
 
   return (
     <section>
       <div className="flex items-start gap-2 mb-6">
         <h2 className="text-gray-900 dark:text-white flex-1">Popular Content</h2>
-        <InfoTooltip 
+        <InfoTooltip
           content={t('popular_content_desc')}
           title="Popular Content"
         />

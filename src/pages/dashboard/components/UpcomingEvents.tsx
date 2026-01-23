@@ -5,9 +5,11 @@ import { Link } from 'react-router-dom';
 import { routes } from '@/lib/routes';
 import { ImageWithFallback, InfoTooltip } from '@/components/shared';
 import { useGetAllEventsQuery } from '@/store/api/eventQueryApi';
+import { formatDate } from '@/helpers/formatter';
 
 export default function UpcomingEvents() {
-  const { t } = useTranslation('dashboard');
+  const { t, i18n} = useTranslation('dashboard');
+  const language = i18n?.language as Language;
 
   
  const { data: events } = useGetAllEventsQuery({
@@ -42,7 +44,7 @@ export default function UpcomingEvents() {
               <h3 className="text-gray-900 dark:text-white mb-2 line-clamp-2">{event?.name}</h3>
               <div className="flex items-start gap-2 text-sm text-gray-600 dark:text-gray-400 mb-2">
                 <Calendar className="w-4 h-4 mt-0.5 shrink-0" />
-                <span>{event?.dayDescription[0]?.date}</span>
+                <span>{formatDate(event?.dayDescription[0]?.date, language)}</span>
               </div>
               <div className="flex items-start gap-2 text-sm text-gray-600 dark:text-gray-400">
                 <MapPin className="w-4 h-4 mt-0.5 shrink-0" />

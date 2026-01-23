@@ -105,32 +105,32 @@ function DistributionCard({ title, icon, total, data }: DistributionCardProps) {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [isAnimated, setIsAnimated] = useState(false);
 
-  // Trigger animation on mount
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsAnimated(true);
-    }, 100);
+    const timer = setTimeout(() => setIsAnimated(true), 100);
     return () => clearTimeout(timer);
   }, []);
 
-
   return (
     <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6 hover:shadow-lg transition-shadow">
+      {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-3">
-          <div className="p-3 bg-linear-to-br from-purple-500 to-pink-600 rounded-lg shadow-lg shadow-purple-500/30 hover:shadow-purple-500/50 transition-shadow">
+          <div className="p-3 bg-linear-to-br from-purple-500 to-pink-600 rounded-lg shadow-lg">
             {icon}
           </div>
           <div>
             <h3 className="text-gray-900 dark:text-white">{title}</h3>
-            <p className="text-sm text-gray-500 dark:text-gray-400">Total: {total}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Total: {total}
+            </p>
           </div>
         </div>
+
         <div className="relative">
           <select
             value={status}
             onChange={(e) => setStatus(e.target.value)}
-            className="appearance-none bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-1.5 pr-8 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+            className="appearance-none bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-1.5 pr-8 text-sm"
           >
             {statuses?.map((s) => (
               <option key={s.value} value={s.value}>
@@ -138,117 +138,113 @@ function DistributionCard({ title, icon, total, data }: DistributionCardProps) {
               </option>
             ))}
           </select>
-          <ChevronDown className="absolute top-1/2 ltr:right-2 rtl:left-2 -translate-y-1/2 w-3 h-3 text-gray-500 pointer-events-none" />
+          <ChevronDown className="absolute top-1/2 right-2 -translate-y-1/2 w-3 h-3 text-gray-500 pointer-events-none" />
         </div>
       </div>
 
-      {/* 3D Column Chart */}
-      <div className="h-80 min-h-80 relative flex items-end justify-around gap-2 px-4 pb-12 pt-16">
-        {/* Animated gradient background */}
-        <div className="absolute inset-0 bg-linear-to-br from-yellow-50 via-orange-50 to-pink-50 dark:from-yellow-900/10 dark:via-orange-900/10 dark:to-pink-900/10 rounded-xl opacity-50"></div>
+      {/* Chart */}
+      <div className="h-80 relative flex items-end justify-around gap-2 px-4 pb-12 pt-16">
+        {/* Background */}
+        <div className="absolute inset-0 bg-linear-to-br from-yellow-50 via-orange-50 to-pink-50 dark:opacity-10 rounded-xl" />
 
-        {/* Grid lines for reference */}
-        <div className="absolute inset-x-0 bottom-0 h-full flex flex-col justify-between pb-12 pt-16 px-4 pointer-events-none">
+        {/* Grid */}
+        <div className="absolute inset-0 flex flex-col justify-between px-4 pb-12 pt-16 pointer-events-none">
           {[0, 1, 2, 3, 4].map((i) => (
-            <div key={i} className="border-t border-gray-200 dark:border-gray-700 opacity-30"></div>
+            <div key={i} className="border-t border-gray-200 dark:border-gray-700 opacity-30" />
           ))}
         </div>
 
         {data?.map((item, index) => {
-          const Icon = CATEGORY_ICONS[item?.name?.toLowerCase() as keyof typeof CATEGORY_ICONS];
-          const colorConfig = COLORS[item?._id as keyof typeof COLORS];
+          const Icon =
+            CATEGORY_ICONS[item.name.toLowerCase() as keyof typeof CATEGORY_ICONS];
+          const colorConfig = COLORS[item?.name?.toLowerCase() as keyof typeof COLORS];
           const isActive = activeIndex === index;
 
           return (
             <div
               key={index}
-              className="relative flex-1 flex flex-col items-center justify-end group cursor-pointer"
+              className="relative flex-1 flex flex-col items-center justify-end cursor-pointer"
+              style={{ height: '100%', minWidth: 40, maxWidth: 80 }}
               onMouseEnter={() => setActiveIndex(index)}
               onMouseLeave={() => setActiveIndex(null)}
-              style={{
-                height: '100%',
-                minWidth: '40px',
-                maxWidth: '80px'
-              }}
             >
-              {/* Value label above bar */}
-              <div className={`absolute -top-20 left-1/2 -translate-x-1/2 transition-all duration-300 ${isActive ? 'opacity-100 -translate-y-1' : 'opacity-0'
-                }`}>
-                <div className={`px-2 py-1 rounded-lg bg-linear-to-br ${colorConfig?.gradient} text-white text-xs font-bold shadow-lg whitespace-nowrap`}>
-                  {item?.count}
+              {/* Value tooltip */}
+              <div
+                className={`absolute -top-20 left-1/2 -translate-x-1/2 transition-all ${
+                  isActive ? 'opacity-100' : 'opacity-0'
+                }`}
+              >
+                <div
+                  className={`px-2 py-1 rounded-lg bg-linear-to-br ${colorConfig.gradient} text-white text-xs font-bold`}
+                >
+                  {item.count}
                 </div>
               </div>
 
-              {/* 3D Column */}
+              {/* ===== BAR COLUMN ===== */}
               <div
-                className="relative w-full ease-out"
+                className="absolute bottom-0 w-full"
                 style={{
-                  height: isAnimated ? item.percentage : '0%',
-                  transform: isActive ? 'translateY(-8px) scale(1.05)' : 'translateY(0) scale(1)',
+                  height: isAnimated ? `${item.percentage}%` : '0%',
+                  transform: isActive
+                    ? 'translateY(-8px) scale(1.05)'
+                    : 'translateY(0) scale(1)',
                   transition: isAnimated
-                    ? `all 0.3s ease-out, height 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) ${index * 0.1}s`
-                    : 'all 0.3s ease-out'
+                    ? `height 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) ${
+                        index * 0.1
+                      }s, transform 0.3s ease`
+                    : 'all 0.3s ease',
                 }}
               >
                 {/* Shadow */}
-                <div
-                  className="absolute bottom-0 left-0 right-0 h-full bg-black/20 rounded-t-lg blur-sm transform translate-y-1"
-                  style={{ zIndex: 0 }}
-                ></div>
+                <div className="absolute inset-0 bg-black/20 rounded-t-lg blur-sm translate-y-1" />
 
-                {/* Side panel (right) - for 3D effect */}
+                {/* Side panel */}
                 <div
-                  className={`absolute top-0 -right-1 w-3 h-full bg-linear-to-b ${colorConfig?.sideGradient} rounded-tr-lg`}
-                  style={{
-                    transform: 'skewY(-3deg)',
-                    transformOrigin: 'top left',
-                    zIndex: 1
-                  }}
+                  className={`absolute top-0 -right-1 w-3 h-full bg-linear-to-b ${colorConfig.sideGradient} rounded-tr-lg`}
+                  style={{ transform: 'skewY(-3deg)' }}
                 />
 
-                {/* Main front face */}
+                {/* Front */}
                 <div
-                  className={`absolute inset-0 bg-linear-to-b ${colorConfig?.bgGradient} border-2 border-b-0 rounded-t-xl backdrop-blur-sm transition-all duration-300 ${isActive ? `${colorConfig?.shadow} shadow-2xl` : colorConfig?.shadow
-                    }`}
-                  style={{ zIndex: 2 }}
+                  className={`absolute inset-0 bg-linear-to-b ${colorConfig.bgGradient} border-2 border-b-0 rounded-t-xl`}
                 >
-                  {/* Shimmer effect */}
-                  <div className="absolute inset-0 bg-linear-to-t from-white/10 to-transparent rounded-t-xl"></div>
+                  <div className="absolute inset-0 bg-linear-to-t from-white/10 to-transparent" />
                 </div>
 
-                {/* Top cap - 3D lid */}
+                {/* Top cap */}
                 <div
-                  className={`absolute -top-1 left-0 right-1 h-3 bg-linear-to-r ${colorConfig?.topGradient} rounded-t-lg border-2 ${isActive ? 'shadow-xl' : 'shadow-lg'
-                    }`}
+                  className={`absolute -top-1 left-0 right-1 h-3 bg-linear-to-r ${colorConfig.topGradient} rounded-t-lg`}
                   style={{
                     transform: 'perspective(100px) rotateX(45deg)',
-                    transformOrigin: 'bottom',
-                    zIndex: 3
                   }}
                 />
 
-                {/* Icon on bar */}
-                <div className={`absolute -top-10 left-1/2 -translate-x-1/2 transition-all duration-300 z-10 ${isActive ? 'scale-125' : 'scale-100'
-                  }`}>
-                  <div className={`w-8 h-8 rounded-lg bg-linear-to-br ${colorConfig?.gradient} shadow-lg ${colorConfig?.shadow} flex items-center justify-center`}>
+                {/* Icon */}
+                <div
+                  className={`absolute -top-10 left-1/2 -translate-x-1/2 transition ${
+                    isActive ? 'scale-125' : 'scale-100'
+                  }`}
+                >
+                  <div
+                    className={`w-8 h-8 rounded-lg bg-linear-to-br ${colorConfig.gradient} flex items-center justify-center shadow-lg`}
+                  >
                     <Icon className="w-4 h-4 text-white" />
                   </div>
                 </div>
 
-                {/* Percentage badge */}
-                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10">
-                  <span className={`px-2 py-0.5 rounded-full text-xs font-bold bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-md transition-all ${isActive ? 'scale-110' : 'scale-100'
-                    }`}>
-                    {item?.percentage}%
+                {/* Percentage */}
+                <div className="absolute bottom-3 left-1/2 -translate-x-1/2">
+                  <span className="px-2 py-0.5 rounded-full bg-white dark:bg-gray-900 text-xs font-bold shadow">
+                    {item.percentage}%
                   </span>
                 </div>
               </div>
 
-              {/* Category label below */}
-              <div className="mt-2 text-center min-h-8 flex items-center justify-center px-1">
-                <span className={`text-xs text-gray-700 dark:text-gray-300 leading-tight line-clamp-2 transition-all ${isActive ? 'font-bold' : 'font-medium'
-                  }`}>
-                  {getCategoryName(item?.name, t)}
+              {/* Label */}
+              <div className="mt-4 text-center min-h-8">
+                <span className="text-xs text-gray-700 dark:text-gray-300 font-medium line-clamp-2">
+                  {getCategoryName(item.name, t)}
                 </span>
               </div>
             </div>
@@ -259,9 +255,6 @@ function DistributionCard({ title, icon, total, data }: DistributionCardProps) {
   );
 }
 
-/* ----------------------------------------
-   Types
----------------------------------------- */
 
 /* ----------------------------------------
    Component
