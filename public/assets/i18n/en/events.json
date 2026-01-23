@@ -185,6 +185,7 @@
   "total_tickets": "Total Tickets",
   "event_saved_as_draft": "Event saved as draft",
   "fix_errors_before_proceeding": "Please fix the errors before proceeding",
+   "requried_fill_up_info": "Please fill in all required fields before continuing.",
   "event_published_success": "Event published successfully",
   "required_field": "This field is required",
   "field_too_short": "This field is too short",
@@ -225,5 +226,7 @@
   "messaging": "Messaging",
   "no_registrants_yet": "No Registrants Yet",
   "date_range": "Date Range",
-  "websites": "Websites"
+  "websites": "Websites",
+
+  "free_access_info":"When registration is disabled, attendees can join freely without signing up."
 }

@@ -37,6 +37,13 @@ export const eventMutationApi = createApi({
       invalidatesTags: ['Event']
     }),
 
+    deleteEvent: builder.mutation<any, { eventId: string }>({
+      query: ({ eventId }) => ({
+        url: `${endpoints.events}/${eventId}`,
+        method: 'DELETE',
+      })
+    }),
+
     createTicket: builder.mutation<any, ITicketPayload>({
       query: (body) => ({
         url: endpoints.tickets,
@@ -77,4 +84,5 @@ export const {
   useCreateSignedUrlMutation,
   useDeleteTicketMutation,
   useCreateTicketMutation,
+  useDeleteEventMutation,
 } = eventMutationApi;

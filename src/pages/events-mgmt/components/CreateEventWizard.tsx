@@ -1,5 +1,6 @@
 import { toast } from 'sonner';
 import { skipToken } from '@reduxjs/toolkit/query';
+import { useSearchParams } from 'react-router-dom';
 import { useState, useEffect, Activity } from 'react';
 import {
   X, Check, Calendar,
@@ -15,35 +16,36 @@ import { useThemeClasses } from '@/hooks/useThemeClasses';
 import { useGetEventByIdQuery } from '@/store/api/eventQueryApi';
 import { useInitEventCreateMutation, useUpdateEventMutation } from '@/store/api/eventMutationApi';
 import { EventBasicInformation, EventDateTimeFormat, EventMedia, EventRegistrationCapacity, EventReviewPublish, EventTickets, NotificationsTimeline } from './sub-components';
+import { useEventDraftSaver } from '../hooks/useEventDraftSaver';
 
 interface CreateEventWizardProps {
   isOpen: boolean;
   onClose: () => void;
   theme: Theme;
   existingEvent?: any;
-  editId?: string | null;
 }
 
 export default function CreateEventWizard({
   isOpen,
   onClose,
   theme,
-  editId = null
 }: CreateEventWizardProps) {
   const { t } = useTranslation('events');
+  const { t: tc } = useTranslation('common');
+
+  const [searchParams] = useSearchParams();
   const { isRTL } = useAppSelector((state) => state.settings)
   const { cardClasses, textPrimary, textTertiary } = useThemeClasses();
+  const editId = searchParams.get("eventId");
 
   const [updateEvent, { isLoading: isEventUpdating }] = useUpdateEventMutation()
   const [initEventCreate, { isLoading: isEventCreating }] = useInitEventCreateMutation()
-  const { data: editData, isLoading } = useGetEventByIdQuery(editId ? { eventId: editId } : skipToken);
-
-  useEffect(() => { if (editId) setEventId(editId) }, [editId])
+  const { data: editData, refetch, isLoading, isFetching } = useGetEventByIdQuery(editId ? { eventId: editId } : skipToken);
 
   const [currentStep, setCurrentStep] = useState(1);
   const [isPublishing, setIsPublishing] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
-  const [eventId, setEventId] = useState<string | null>(null);
+  const [eventId, setEventId] = useState<string>("");
 
   // Step 1: Basic Information
   const [selectedDmoId, setSelectDmoId] = useState<string>("");
@@ -114,10 +116,18 @@ export default function CreateEventWizard({
     { id: 7, icon: CheckCircle, label: t('step_6_review') },
   ];
 
+  useEffect(() => {
+    if (editId && isOpen) {
+      setEventId(editId)
+      refetch();
+    }
+  }, [editId, isOpen])
+
   // Reset all state when wizard closes or opens in create mode
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && !editId) {
       // Reset to initial state
+      setEventId("")
       setCurrentStep(1);
       setEventName('');
       setShortDescription('');
@@ -127,6 +137,7 @@ export default function CreateEventWizard({
       setInternalNotes('');
       setIsMultiDay(false);
       setStartDate('');
+      setSelectedWeekdays([])
       setEventDays([{ id: '1', date: '', startTime: '09:00', endTime: '17:00', description: '' }]);
       setEventFormat('physical');
       setAddress('');
@@ -144,10 +155,10 @@ export default function CreateEventWizard({
       setSubCategoriesId([]);
       setGroupTypesId([]);
       setAccessiblitiesId([]);
-      setEventId(null);
       setEventImages([]);
+      setNotifications([])
     }
-  }, [isOpen, editData]);
+  }, [isOpen, editId]);
 
 
   useEffect(() => {
@@ -216,9 +227,11 @@ export default function CreateEventWizard({
 
     switch (step) {
       case 1:
+        if (!selectedDmoId.trim()) newErrors.dmoId = t('required_field');
+        if (!selectedAuthorityId.trim()) newErrors.authorityId = t('required_field');
         if (!eventName.trim()) newErrors.eventName = t('required_field');
         if (!shortDescription.trim()) newErrors.shortDescription = t('required_field');
-        if (eventName.length < 3) newErrors.eventName = t('field_too_short');
+        if (eventName?.length < 3) newErrors.eventName = t('field_too_short');
         break;
       case 2:
         if (!isMultiDay && !startDate) newErrors.startDate = t('required_field');
@@ -230,27 +243,17 @@ export default function CreateEventWizard({
         if (capacityType === 'limited' && capacity <= 0) newErrors.capacity = 'Must be greater than 0';
         break;
       case 4:
-        if (tickets?.length===0 && registrationRequired) {
+        if (tickets?.length === 0 && registrationRequired) {
           newErrors.tickets = t('at_least_one_ticket_required');
         }
         break;
     }
 
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    return Object.keys(newErrors)?.length === 0;
   };
 
-  const handleNext = () => {
-    if (currentStep === 4) {
-      setCurrentStep(prev => Math.min(prev + 1, 7));
-    } else {
-      handleSaveDraft();
-    }
-  };
 
-  const handlePrevious = () => {
-    setCurrentStep(prev => Math.max(prev - 1, 1));
-  };
 
   const eventBasicInfoPayload = {
     name: eventName,
@@ -264,7 +267,6 @@ export default function CreateEventWizard({
     subCategoriesId: selectedSubCategoriesId,
     internalNotes: internalNotes,
   }
-
   const eventDateTimePayload = {
     dayDescription: eventDays?.map(item => ({
       date: isMultiDay ? item.date : startDate,
@@ -294,7 +296,6 @@ export default function CreateEventWizard({
     },
     onlineLink: onlineLink,
   }
-
   const eventRegistrationPayload = {
     registration: {
       isRegistration: registrationRequired,
@@ -303,7 +304,6 @@ export default function CreateEventWizard({
     },
     customQuestions: customQuestions,
   }
-
   const eventMsgSchedulePayload = {
     scheduledNotifications: notifications?.map(item => ({
       sendHoursBefore: item.hoursBeforeEvent,
@@ -327,56 +327,39 @@ export default function CreateEventWizard({
     images: eventImages
   }
 
-  const reviewPublishPayload = {
-    status: 'APPROVED'
-  }
-
-  const handleSaveDraft = async () => {
-    try {
-      let currentEventId = eventId;
-
-      // 1️⃣ Init event if not created yet
-      if (!currentEventId) {
-        const initRes = await initEventCreate().unwrap();
-
-        if (!initRes?.id) return;
-
-        currentEventId = initRes.id;
-        setEventId(currentEventId);
-      }
-
-      // 2️⃣ Step → Payload map
-      const stepPayloadMap: Record<number, any> = {
-        1: eventBasicInfoPayload,
-        2: eventDateTimePayload,
-        3: eventRegistrationPayload,
-        5: eventMsgSchedulePayload,
-        6: eventMediaPayload,
-        7: reviewPublishPayload,
-      };
-
-      const payload = stepPayloadMap[currentStep];
-
-      if (!payload) return;
-
-      // 3️⃣ Update event
-      const res = await updateEvent({ body: payload, eventId: currentEventId! }).unwrap();
-
-      // 4️⃣ Success feedback
-      toast.success(res?.message ?? t('event_saved_as_draft'));
-      setCurrentStep(prev => prev + 1)
-    } catch (error: any) {
-      toast.error(error?.message || t('something_went_wrong'));
-    }
+  const stepPayloadMap = {
+    1: () => eventBasicInfoPayload,
+    2: () => eventDateTimePayload,
+    3: () => eventRegistrationPayload,
+    5: () => eventMsgSchedulePayload,
+    6: () => eventMediaPayload,
   };
 
+  const {
+    markDirty,
+    saveDraft,
+    // hasUnsavedChanges,
+  } = useEventDraftSaver({
+    currentStep,
+    eventId,
+    setEventId,
+    initEventCreate,
+    updateEvent,
+    stepPayloadMap,
+  });
 
+  const handleNext = () => {
+    if (!validateStep(currentStep)) return;
+    setCurrentStep(prev => prev + 1);
+  };
 
+  const handlePrevious = () => {
+    setCurrentStep(prev => Math.max(prev - 1, 1));
+  };
 
   const handlePublish = async () => {
-    // Validate all steps
     let allValid = true;
-    for (let i = 1; i <= 5; i++) {
+    for (let i = 1; i <= 7; i++) {
       if (!validateStep(i)) {
         allValid = false;
         setCurrentStep(i);
@@ -385,12 +368,11 @@ export default function CreateEventWizard({
     }
 
     if (!allValid) {
-      toast.error(t('fix_errors_before_proceeding'));
+      toast.error(t('requried_fill_up_info'));
       return;
     }
-
     setIsPublishing(true);
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    saveDraft(true)
     setIsPublishing(false);
     toast.success(t('event_published_success'));
     onClose();
@@ -425,8 +407,6 @@ export default function CreateEventWizard({
     ]);
   };
 
-
-
   const toggleWeekday = (day: string) => {
     if (selectedWeekdays.includes(day)) {
       setSelectedWeekdays(selectedWeekdays.filter(d => d !== day));
@@ -434,6 +414,7 @@ export default function CreateEventWizard({
       setSelectedWeekdays([...selectedWeekdays, day].sort());
     }
   };
+
 
   if (!isOpen) return null;
 
@@ -443,7 +424,7 @@ export default function CreateEventWizard({
         className={`w-full max-w-5xl h-[90vh] rounded-xl flex flex-col ${cardClasses} ${isRTL ? 'rtl' : 'ltr'
           }`}
       >
-        <Spinner isLoading={isEventCreating || isEventCreating || isLoading} />
+        <Spinner isLoading={isEventCreating || isEventCreating || isLoading || isFetching} />
         <>
           {/* Header */}
           <div className={`flex items-center justify-between p-6 border-b ${theme === 'dark' ? 'border-gray-800' : 'border-gray-200'}`}>
@@ -452,7 +433,7 @@ export default function CreateEventWizard({
                 {editId ? t('edit_event') : t('create_new_event')}
               </h2>
               <p className={`text-sm mt-1 ${textTertiary}`}>
-                {t('step')} {currentStep} {t('step_of')} {steps.length}: {steps[currentStep - 1].label}
+                {t('step')} {currentStep} {t('step_of')} {steps?.length}: {steps[currentStep - 1].label}
               </p>
             </div>
             <div className="flex items-center gap-3">
@@ -469,7 +450,26 @@ export default function CreateEventWizard({
                 </span>
               )}
               <button
-                onClick={onClose}
+                onClick={handlePublish}
+                disabled={isPublishing}
+                className="px-6 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white transition-colors flex items-center gap-2 cursor-pointer"
+              >
+                {isPublishing ? (
+                  <>
+                    <Loader className="w-4 h-4 animate-spin" />
+                    {tc('publishing')}
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle className="w-4 h-4" />
+                    {tc('publish')}
+                  </>
+                )}
+              </button>
+              <button
+                onClick={() => {
+                  onClose();
+                }}
                 className={`p-2 rounded-lg transition-colors ${theme === 'dark' ? 'hover:bg-gray-800' : 'hover:bg-gray-100'
                   }`}
               >
@@ -508,7 +508,7 @@ export default function CreateEventWizard({
                       {step.label}
                     </span>
                   </div>
-                  {index < steps.length - 1 && (
+                  {index < steps?.length - 1 && (
                     <div
                       className={`flex-1 h-0.5 mx-2 ${currentStep > step.id
                         ? 'bg-green-500'
@@ -527,6 +527,7 @@ export default function CreateEventWizard({
           <div className="flex-1 overflow-y-auto p-6">
             <Activity mode={currentStep === 1 ? "visible" : "hidden"}>
               <EventBasicInformation
+                markDirty={markDirty}
                 eventName={eventName}
                 setEventName={setEventName}
                 shortDescription={shortDescription}
@@ -594,11 +595,13 @@ export default function CreateEventWizard({
                 setCustomInterval={setCustomInterval}
                 customUnit={customUnit}
                 setCustomUnit={setCustomUnit}
+                markDirty={markDirty}
               />
             </Activity>
 
             <Activity mode={currentStep === 3 ? "visible" : "hidden"}>
               <EventRegistrationCapacity
+                markDirty={markDirty}
                 currentStep={currentStep}
                 registrationRequired={registrationRequired}
                 setRegistrationRequired={setRegistrationRequired}
@@ -614,6 +617,8 @@ export default function CreateEventWizard({
             <Activity mode={currentStep === 4 ? "visible" : "hidden"}>
               <EventTickets
                 eventId={eventId}
+                setEventId={setEventId}
+                initEventCreate={initEventCreate}
                 showTicketModal={showTicketModal}
                 setShowTicketModal={setShowTicketModal}
                 errors={errors}
@@ -624,6 +629,7 @@ export default function CreateEventWizard({
 
             <Activity mode={currentStep === 5 ? "visible" : "hidden"}>
               <NotificationsTimeline
+                markDirty={markDirty}
                 notifications={notifications}
                 setNotifications={setNotifications}
                 editingNotification={editingNotification}
@@ -642,6 +648,7 @@ export default function CreateEventWizard({
               <EventMedia
                 t={t}
                 theme={theme}
+                markDirty={markDirty}
                 eventImages={eventImages}
                 setEventImages={setEventImages}
               />
@@ -649,7 +656,6 @@ export default function CreateEventWizard({
 
             <Activity mode={currentStep === 7 ? "visible" : "hidden"}>
               <EventReviewPublish
-                currentStep={currentStep}
                 setCurrentStep={setCurrentStep}
                 eventName={eventName}
                 shortDescription={shortDescription}
@@ -677,11 +683,22 @@ export default function CreateEventWizard({
             isPublishing={isPublishing}
             onPrevious={handlePrevious}
             onNext={handleNext}
-            onSaveDraft={handleSaveDraft}
+            onSaveDraft={() => saveDraft(false)}
             onPublish={handlePublish}
           />
         </>
       </div>
+
+
+      {/* <ConfirmDialog
+        open={isConfirmOpen}
+        title={"unsaved_changes"}
+        message="unsaved_changes_confirm"
+        confirmText="confirm"
+        variant="info"
+        onCancel={() => setIsConfirmOpen(false)}
+        onConfirm={onClose}
+      /> */}
     </div>
   );
 }

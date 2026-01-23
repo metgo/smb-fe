@@ -198,6 +198,7 @@
 
   "event_saved_as_draft": "האירוע נשמר כטיוטה",
   "fix_errors_before_proceeding": "אנא ת糹קן את השגיאות לפני המשך",
+  "requried_fill_up_info": "אנא מלא את כל השדות הנדרשים לפני המשך.",
   "event_published_success": "האירוע פורסם בהצלחה",
   "required_field": "שדה זה נדרש",
   "field_too_short": "שדה זה קצר מדי",
@@ -237,5 +238,7 @@
   "messaging": "הודעות",
   "no_registrants_yet": "טרם נרשמו משתתפים",
   "date_range": "טווח תאריכים",
-  "websites": "אתרים"
+  "websites": "אתרים",
+  
+  "free_access_info": "כאשר ההרשמה מושבתת, המשתתפים יכולים להצטרף בחופשיות ללא צורך בהרשמה."
 }

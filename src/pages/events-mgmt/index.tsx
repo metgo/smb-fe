@@ -1,6 +1,7 @@
 import clsx from 'clsx';
-import { Activity, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
+import { Activity, useEffect, useState } from 'react';
 import { Calendar, Users, Ticket, DollarSign, Search, } from 'lucide-react';
 
 import { useAppSelector } from '@/hooks/hooks';
@@ -15,12 +16,12 @@ import { EventsWithViewMode, CreateEventWizard, EventDetailModal, QuickSnapEvent
 
 export default function EventsMgmtPage() {
   const { t } = useTranslation('events');
+  const navigate = useNavigate();
+
   const { isRTL, theme } = useAppSelector((state) => state.settings);
   const themeColor = useThemeClasses();
 
   const [isCreateWizardOpen, setIsCreateWizardOpen] = useState(false);
-
-  const [editId, setEditId] = useState<string | null>(null)
 
   // Filters
   const [showFilters, setShowFilters] = useState(false);
@@ -32,14 +33,14 @@ export default function EventsMgmtPage() {
   const [dateRangeFilter, setDateRangeFilter] = useState({ start: '', end: '' });
 
   // Data Fetch
-  const { data: events, isLoading: _isLoading } = useGetAllEventsQuery({
-    ...(searchQuery && {search: searchQuery}),
-    ...(eventTypeFilter && eventTypeFilter === 'free' && {isFree: true}),
-    ...(eventTypeFilter && eventTypeFilter === 'paid' && {isFree: false}),
+  const { data: events, refetch, isLoading: _isLoading } = useGetAllEventsQuery({
+    ...(searchQuery && { search: searchQuery }),
+    ...(eventTypeFilter && eventTypeFilter === 'free' && { isFree: true }),
+    ...(eventTypeFilter && eventTypeFilter === 'paid' && { isFree: false }),
     ...(registrationFilter !== "all" && { isRegistration: Boolean(registrationFilter) }),
-    ...(statusFilter !== "all" && { status: statusFilter}),
-    ...(dateRangeFilter.start && {startDate:dateRangeFilter.start}),
-    ...(dateRangeFilter.end && {endDate: dateRangeFilter.end}),
+    ...(statusFilter !== "all" && { status: statusFilter }),
+    ...(dateRangeFilter.start && { startDate: dateRangeFilter.start }),
+    ...(dateRangeFilter.end && { endDate: dateRangeFilter.end }),
     externalApiId: selectedWebsites.map(site => site._id),
   })
   const { data: eventStatsData, isLoading: _isEventStatsFetching } = useGetEventsStatsQuery({})
@@ -53,21 +54,35 @@ export default function EventsMgmtPage() {
   const [showQuickSnapModal, setShowQuickSnapModal] = useState(false);
   const [viewMode, setViewMode] = useState<'list' | 'grid' | 'calendar'>('list');
 
-
-  // Handle edit event
   const handleEditEvent = () => {
     if (selectedEvent) {
       setIsCreateWizardOpen(true);
       setSelectedEvent(null);
-      setEditId(selectedEvent?._id)
+      navigate(`?eventId=${selectedEvent._id}`, { replace: true });
     }
   };
+
+  const handleAddEvent = () => {
+    setIsCreateWizardOpen(true);
+    navigate({}, { replace: true });
+  }
+
 
   // Handle view details
   const handleViewDetails = () => {
     setShowDailyBreakdown(true);
     setShowQuickSnapModal(false)
   };
+
+  const handleCreateWizardClose = () => {
+    navigate({}, { replace: true });
+    setIsCreateWizardOpen(false)
+  }
+  useEffect(() => {
+    if (!isCreateWizardOpen)
+      refetch()
+  }, [isCreateWizardOpen])
+
 
   const eventStats = [
     {
@@ -107,7 +122,7 @@ export default function EventsMgmtPage() {
           description={t('events_management_desc')}
           btnLabel={t('add_event')}
           h1Gradient={themeColor.textPrimary}
-          onClick={() => setIsCreateWizardOpen(true)}
+          onClick={handleAddEvent}
         />
 
         <PageStats
@@ -298,7 +313,9 @@ export default function EventsMgmtPage() {
 
         {/* Events with different View */}
         <EventsWithViewMode
+          isLoading={_isLoading}
           events={events as any || []}
+          refetch={refetch}
           selectedWebsiteCount={selectedWebsites?.length || 0}
           eventTypeFilter={eventTypeFilter}
           registrationFilter={registrationFilter}
@@ -344,10 +361,9 @@ export default function EventsMgmtPage() {
 
       {/* Create Event Wizard */}
       <CreateEventWizard
-        editId={editId}
-        isOpen={isCreateWizardOpen}
-        onClose={() => {setIsCreateWizardOpen(false); setEditId(null)}}
         theme={theme}
+        isOpen={isCreateWizardOpen}
+        onClose={handleCreateWizardClose}
       />
     </>
   );

@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import DatePicker from "@/components/shared/DatePicker";
 import { MarkerMap } from "@/components/maps";
+import { useEffect } from "react";
 
 interface EventDay {
   id: string;
@@ -88,21 +89,23 @@ interface EventDateTimeFormatProps {
   setCustomInterval: (v: number) => void;
   customUnit: string;
   setCustomUnit: (v: string) => void;
+  markDirty: (step: number) => void;
 }
 
 
-const weekDays=[
-  {value: "Sunday", label:"Sun"},
-  {value: "Monday", label:"Mon"},
-  {value: "Tuesday", label:"Tue"},
-  {value: "Wednesday", label:"Wed"},
-  {value: "Thursday", label:"Thu"},
-  {value: "Friday", label:"Fri"},
-  {value: "Saturday", label:"Sat"},
+const weekDays = [
+  { value: "Sunday", label: "Sun" },
+  { value: "Monday", label: "Mon" },
+  { value: "Tuesday", label: "Tue" },
+  { value: "Wednesday", label: "Wed" },
+  { value: "Thursday", label: "Thu" },
+  { value: "Friday", label: "Fri" },
+  { value: "Saturday", label: "Sat" },
 
 ]
 
 const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
+  markDirty,
   isMultiDay,
   setIsMultiDay,
   startDate,
@@ -138,6 +141,19 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
   const { t: cT } = useTranslation('common');
   const { textSecondary, textTertiary, inputClasses, textPrimary } = useThemeClasses();
   const { theme, isRTL } = useAppSelector((state) => state.settings);
+
+
+  useEffect(() => {
+    markDirty(2);
+  }, [
+    startDate,
+    eventDays,
+    eventFormat,
+    address,
+    onlineLink,
+    geo,
+    recurrencePattern,
+  ]);
 
 
   // Generate recurring occurrences
@@ -284,7 +300,7 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
         </div>
       ) : (
         <div className="space-y-4">
-          {eventDays.map((day, index) => (
+          {eventDays?.map((day, index) => (
             <div
               key={day.id}
               className={`p-4 rounded-lg border ${theme === "dark" ? "border-gray-700 bg-gray-800/50" : "border-gray-200 bg-gray-50"
@@ -292,7 +308,7 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
             >
               <div className="flex items-center justify-between mb-3">
                 <span className={`text-sm ${textSecondary}`}>{t("day")} {index + 1}</span>
-                {eventDays.length > 1 && (
+                {eventDays?.length > 1 && (
                   <button
                     onClick={() => removeEventDay(day.id)}
                     className="text-red-500 hover:text-red-600 p-1 transition-colors"
@@ -536,8 +552,6 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
                 </div>
               )}
 
-
-
               {/* Custom Interval */}
               {recurrencePattern === 'custom' && (
                 <div>
@@ -734,6 +748,9 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
           <label className={`block text-sm mb-2 ${textSecondary}`}>
             {t("location_address")} <span className="text-red-500">*</span>
           </label>
+          {errors.address && (
+            <p className="text-red-500 text-sm mt-1">{errors.address}</p>
+          )}
           <MarkerMap
             geo={geo}
             setGeo={setGeo}

@@ -89,7 +89,7 @@ interface TicketData {
 }
 
 interface NotificationData {
-  id: string;
+  _id: string;
   hoursBeforeEvent: number;
   channels: {
     email: boolean;
