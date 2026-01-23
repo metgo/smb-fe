@@ -1,9 +1,9 @@
-import React from "react";
+import clsx from "clsx";
+import { useEffect } from "react";
 import { useAppSelector } from "@/hooks/hooks";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useTranslation } from "react-i18next";
 import { Plus, Trash2, AlertCircle } from "lucide-react";
-import clsx from "clsx";
 
 
 
@@ -26,9 +26,11 @@ interface EventRegistrationCapacityProps {
 
   // Helper
   addCustomQuestion: () => void;
+  markDirty: (step: number) => void;
 }
 
 const EventRegistrationCapacity: React.FC<EventRegistrationCapacityProps> = ({
+  markDirty,
   currentStep,
   registrationRequired,
   setRegistrationRequired,
@@ -41,13 +43,17 @@ const EventRegistrationCapacity: React.FC<EventRegistrationCapacityProps> = ({
   addCustomQuestion,
 }) => {
   const { t } = useTranslation("events");
-  const { textPrimary, textSecondary, textTertiary, bgPrimary } = useThemeClasses();
+  const { textPrimary, textSecondary, textTertiary, bgPrimary, inputClasses } = useThemeClasses();
   const { theme } = useAppSelector((state) => state.settings);
-
-  // Reusable input classes
-  const inputClasses = theme === "dark"
-    ? "bg-gray-800 border-gray-700 text-gray-100 focus:border-teal-500"
-    : "bg-white border-gray-300 text-gray-900 focus:border-teal-500";
+  
+  useEffect(() => {
+    markDirty(3);
+  }, [
+    registrationRequired,
+    capacityType,
+    capacity,
+    customQuestions
+  ])
 
   if (currentStep !== 3) return null;
 
@@ -88,10 +94,10 @@ const EventRegistrationCapacity: React.FC<EventRegistrationCapacityProps> = ({
               <button
                 onClick={() => setCapacityType("unlimited")}
                 className={`px-6 py-4 rounded-xl border-2 transition-all flex flex-col items-center ${capacityType === "unlimited"
-                    ? "border-teal-500 bg-teal-500/10 text-teal-500 shadow-lg shadow-teal-500/10"
-                    : theme === "dark"
-                      ? "border-gray-700 hover:bg-gray-800/50"
-                      : "border-gray-300 hover:bg-gray-50"
+                  ? "border-teal-500 bg-teal-500/10 text-teal-500 shadow-lg shadow-teal-500/10"
+                  : theme === "dark"
+                    ? "border-gray-700 hover:bg-gray-800/50"
+                    : "border-gray-300 hover:bg-gray-50"
                   }`}
               >
                 <span className="text-2xl font-bold mb-1">∞</span>
@@ -101,10 +107,10 @@ const EventRegistrationCapacity: React.FC<EventRegistrationCapacityProps> = ({
               <button
                 onClick={() => setCapacityType("limited")}
                 className={`px-6 py-4 rounded-xl border-2 transition-all flex flex-col items-center ${capacityType === "limited"
-                    ? "border-teal-500 bg-teal-500/10 text-teal-500 shadow-lg shadow-teal-500/10"
-                    : theme === "dark"
-                      ? "border-gray-700 hover:bg-gray-800/50"
-                      : "border-gray-300 hover:bg-gray-50"
+                  ? "border-teal-500 bg-teal-500/10 text-teal-500 shadow-lg shadow-teal-500/10"
+                  : theme === "dark"
+                    ? "border-gray-700 hover:bg-gray-800/50"
+                    : "border-gray-300 hover:bg-gray-50"
                   }`}
               >
                 <span className="text-2xl font-bold mb-1">#</span>
@@ -202,11 +208,8 @@ const EventRegistrationCapacity: React.FC<EventRegistrationCapacityProps> = ({
             }`}
         >
           <AlertCircle className={`w-16 h-16 mx-auto mb-4 opacity-60 ${textTertiary}`} />
-          <h4 className={`text-lg font-medium mb-2 ${textSecondary}`}>
-            {t("free_access_title") || "Free Access Enabled"}
-          </h4>
           <p className={`${textTertiary}`}>
-            {t("free_access_desc") ||
+            {t("free_access_info") ||
               "When registration is disabled, attendees can join freely without signing up."}
           </p>
         </div>

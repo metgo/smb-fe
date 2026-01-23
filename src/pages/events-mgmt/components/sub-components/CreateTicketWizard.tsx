@@ -78,10 +78,10 @@ const CreateTicketWizard = ({
       try {
         setProgress(0);
         await uploadWithProgress(file, mediaURL?.signedUrl, setProgress);
-        toast.success("Upload successful!");
         setFile(null)
-      } catch (err) {
-        toast.error("Upload failed");
+        toast.success("Image has been uploaded successfully!");
+      } catch {
+        toast.error("Image upload failed! Please try again...");
       }
     }
 
@@ -124,7 +124,7 @@ const CreateTicketWizard = ({
     <div className="fixed inset-0 bg-black/70 z-60 flex items-center justify-center p-4">
       <Spinner isLoading={isSaving || isUpdating} />
       <div className={`w-full max-w-2xl rounded-xl ${cardClasses} p-6`}>
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-2">
           <h3 className={`text-xl ${textPrimary}`}>
             {editingTicket?._id && tickets?.find((t: any) => t._id === editingTicket._id)
               ? t('edit_ticket')
@@ -142,176 +142,183 @@ const CreateTicketWizard = ({
           </button>
         </div>
 
-        <div className="space-y-4">
-          <div>
-            <label className={`block text-sm mb-2 ${textSecondary}`}>{t('ticket_name')}</label>
-            <input
-              type="text"
-              value={editingTicket?.name || ''}
-              onChange={(e) => setEditingTicket({ ...editingTicket, name: e.target.value })}
-              placeholder={t('general_admission')}
-              className={`w-full px-4 py-2 rounded-lg border ${inputClasses}`}
-            />
-          </div>
-
-          <div>
-            <label className={`block text-sm mb-2 ${textSecondary}`}>{t('description')}</label>
-            <textarea
-              value={editingTicket?.description || ''}
-              onChange={(e) => setEditingTicket({ ...editingTicket, description: e.target.value })}
-              placeholder={t('enter_ticket_description') || 'Enter ticket description...'}
-              rows={3}
-              className={`w-full px-4 py-2 rounded-lg border ${inputClasses}`}
-            />
-          </div>
-
-          <div>
-            <div className="flex items-center gap-2">
-              <label className={`block text-sm mb-2 ${textSecondary}`}>{t('ticket_image')}</label>
-              {progress > 0 && (
-                <div className="w-120 bg-gray-200 rounded h-2 mt-2 flex items-center gap-2">
-                  <div
-                    className="bg-green-500 h-2 rounded transition-all"
-                    style={{ width: `${progress}%` }}
-                  />
-                  <div>{progress}%</div>
-                </div>
-              )}
+        <div className="space-y-3">
+          <section className={`px-3 py-4 space-y-3 max-h-[70vh] overflow-y-auto rounded-lg border ${theme === "dark" ? "border-gray-700 bg-gray-800/50" : "border-gray-200 bg-gray-50"
+            }`}>
+            <div>
+              <label className={`block text-sm mb-2 ${textSecondary}`}>{t('ticket_name')}</label>
+              <input
+                type="text"
+                value={editingTicket?.name || ''}
+                onChange={(e) => setEditingTicket({ ...editingTicket, name: e.target.value })}
+                placeholder={t('general_admission')}
+                className={`w-full px-4 py-2 rounded-lg border ${inputClasses}`}
+              />
             </div>
-            <div
-              className={`border-2 border-dashed rounded-lg p-4 ${theme === 'dark' ? 'border-gray-700 bg-gray-800/30' : 'border-gray-300 bg-gray-50'
-                }`}
-            >
-              {editingTicket?.imageUrl ? (
-                <div className="relative">
-                  <img
-                    src={editingTicket?.imageUrl}
-                    alt="Ticket preview"
-                    className="w-full h-40 object-cover rounded-lg"
-                  />
+
+            <div>
+              <label className={`block text-sm mb-2 ${textSecondary}`}>{t('description')}</label>
+              <textarea
+                value={editingTicket?.description || ''}
+                onChange={(e) => setEditingTicket({ ...editingTicket, description: e.target.value })}
+                placeholder={t('enter_ticket_description') || 'Enter ticket description...'}
+                rows={3}
+                className={`w-full px-4 py-2 rounded-lg border ${inputClasses}`}
+              />
+            </div>
+
+            <div>
+              <div className="flex items-center gap-2">
+                <label className={`block text-sm mb-2 ${textSecondary}`}>{t('ticket_image')}</label>
+                {progress > 0 && (
+                  <div className="w-120 bg-gray-200 rounded h-2 mt-2 flex items-center gap-2">
+                    <div
+                      className="bg-green-500 h-2 rounded transition-all"
+                      style={{ width: `${progress}%` }}
+                    />
+                    <div>{progress}%</div>
+                  </div>
+                )}
+              </div>
+              <div
+                className={`border-2 border-dashed rounded-lg p-4 ${theme === 'dark' ? 'border-gray-700 bg-gray-800/30' : 'border-gray-300 bg-gray-50'
+                  }`}
+              >
+                {editingTicket?.imageUrl ? (
+                  <div className="relative">
+                    <img
+                      src={editingTicket?.imageUrl}
+                      alt="Ticket preview"
+                      className="w-full h-40 object-cover rounded-lg"
+                    />
+                    <button
+                      onClick={() => { setFile(null); setEditingTicket({ ...editingTicket, imageUrl: '' }) }}
+                      className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors cursor-pointer"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="text-center">
+                    <Upload className={`w-10 h-10 mx-auto mb-2 ${textTertiary}`} />
+                    <p className={`text-sm ${textSecondary} mb-2`}>{t('click_to_upload_or_drag')}</p>
+                    <p className={`text-xs ${textTertiary} mb-3`}>{t('supported_formats')}</p>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          setFile(file);
+                          const reader = new FileReader();
+                          reader.onloadend = () => {
+                            setEditingTicket({ ...editingTicket, imageUrl: reader.result as string });
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                      className="hidden"
+                      id="ticket-image-upload"
+                    />
+                    <label
+                      htmlFor="ticket-image-upload"
+                      className="inline-block px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white text-sm rounded-lg cursor-pointer transition-colors"
+                    >
+                      {t('browse_files')}
+                    </label>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div>
+              <label className={`block text-sm mb-2 ${textSecondary}`}>{t('ticket_type')}</label>
+              <div className="grid grid-cols-3 gap-3">
+                {(['free', 'paid', 'vip'] as const).map((type) => (
                   <button
-                    onClick={() => setEditingTicket({ ...editingTicket, image: undefined })}
-                    className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                    key={type}
+                    onClick={() => setEditingTicket({ ...editingTicket, type })}
+                    className={`px-4 py-2 rounded-lg border capitalize transition-colors ${editingTicket?.type.toLowerCase() === type
+                      ? 'border-teal-500 bg-teal-500/10 text-teal-500'
+                      : theme === 'dark'
+                        ? 'border-gray-700 hover:bg-gray-800'
+                        : 'border-gray-300 hover:bg-gray-50'
+                      }`}
                   >
-                    <X className="w-4 h-4" />
+                    {t(type)}
                   </button>
-                </div>
-              ) : (
-                <div className="text-center">
-                  <Upload className={`w-10 h-10 mx-auto mb-2 ${textTertiary}`} />
-                  <p className={`text-sm ${textSecondary} mb-2`}>{t('click_to_upload_or_drag')}</p>
-                  <p className={`text-xs ${textTertiary} mb-3`}>{t('supported_formats')}</p>
+                ))}
+              </div>
+            </div>
+
+            {editingTicket?.type.toLowerCase() !== 'free' && (
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className={`block text-sm mb-2 ${textSecondary}`}>{t('marked_price')} (₪)</label>
                   <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) {
-                        setFile(file);
-                        const reader = new FileReader();
-                        reader.onloadend = () => {
-                          setEditingTicket({ ...editingTicket, imageUrl: reader.result as string });
-                        };
-                        reader.readAsDataURL(file);
-                      }
-                    }}
-                    className="hidden"
-                    id="ticket-image-upload"
+                    type="number"
+                    min={0}
+                    value={editingTicket?.price?.markedPrice || ''}
+                    onChange={(e) =>
+                      setEditingTicket({
+                        ...editingTicket,
+                        price: { ...editingTicket.price, markedPrice: parseFloat(e.target.value) || 0 },
+                      })
+                    }
+                    className={`w-full px-4 py-2 rounded-lg border ${inputClasses}`}
                   />
-                  <label
-                    htmlFor="ticket-image-upload"
-                    className="inline-block px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white text-sm rounded-lg cursor-pointer transition-colors"
-                  >
-                    {t('browse_files')}
-                  </label>
                 </div>
-              )}
-            </div>
-          </div>
+                <div>
+                  <label className={`block text-sm mb-2 ${textSecondary}`}>{t('selling_price')} (₪)</label>
+                  <input
+                    type="number"
+                    min={0}
+                    value={editingTicket?.price?.sellingPrice || ''}
+                    onChange={(e) =>
+                      setEditingTicket({
+                        ...editingTicket,
+                        price: { ...editingTicket.price, sellingPrice: parseFloat(e.target.value) || 0 },
+                      })
+                    }
+                    className={`w-full px-4 py-2 rounded-lg border ${inputClasses}`}
+                  />
+                </div>
+              </div>
+            )}
 
-          <div>
-            <label className={`block text-sm mb-2 ${textSecondary}`}>{t('ticket_type')}</label>
-            <div className="grid grid-cols-3 gap-3">
-              {(['free', 'paid', 'vip'] as const).map((type) => (
-                <button
-                  key={type}
-                  onClick={() => setEditingTicket({ ...editingTicket, type })}
-                  className={`px-4 py-2 rounded-lg border capitalize transition-colors ${editingTicket?.type.toLowerCase() === type
-                    ? 'border-teal-500 bg-teal-500/10 text-teal-500'
-                    : theme === 'dark'
-                      ? 'border-gray-700 hover:bg-gray-800'
-                      : 'border-gray-300 hover:bg-gray-50'
-                    }`}
-                >
-                  {t(type)}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {editingTicket?.type.toLowerCase() !== 'free' && (
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className={`block text-sm mb-2 ${textSecondary}`}>{t('marked_price')} (₪)</label>
+                <label className={`block text-sm mb-2 ${textSecondary}`}>{t('quantity')}</label>
                 <input
                   type="number"
-                  value={editingTicket?.price?.markedPrice || ''}
+                  min={1}
+                  value={editingTicket?.quantity.initial || ''}
                   onChange={(e) =>
                     setEditingTicket({
                       ...editingTicket,
-                      price: { ...editingTicket.price, markedPrice: parseFloat(e.target.value) || 0 },
+                      quantity: { ...editingTicket.quantity, initial: parseInt(e.target.value) || 0, }
                     })
                   }
                   className={`w-full px-4 py-2 rounded-lg border ${inputClasses}`}
                 />
               </div>
               <div>
-                <label className={`block text-sm mb-2 ${textSecondary}`}>{t('selling_price')} (₪)</label>
+                <label className={`block text-sm mb-2 ${textSecondary}`}>{t('per_user_limit')}</label>
                 <input
                   type="number"
-                  value={editingTicket?.price?.sellingPrice || ''}
+                  min={1}
+                  value={editingTicket?.quantity?.perUserLimit || ''}
                   onChange={(e) =>
                     setEditingTicket({
                       ...editingTicket,
-                      price: { ...editingTicket.price, sellingPrice: parseFloat(e.target.value) || 0 },
+                      quantity: { ...editingTicket.quantity, perUserLimit: parseInt(e.target.value) || 0, }
                     })
                   }
                   className={`w-full px-4 py-2 rounded-lg border ${inputClasses}`}
                 />
               </div>
             </div>
-          )}
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className={`block text-sm mb-2 ${textSecondary}`}>{t('quantity')}</label>
-              <input
-                type="number"
-                value={editingTicket?.quantity.initial || ''}
-                onChange={(e) =>
-                  setEditingTicket({
-                    ...editingTicket,
-                    quantity: { ...editingTicket.quantity, initial: parseInt(e.target.value) || 0, }
-                  })
-                }
-                className={`w-full px-4 py-2 rounded-lg border ${inputClasses}`}
-              />
-            </div>
-            <div>
-              <label className={`block text-sm mb-2 ${textSecondary}`}>{t('per_user_limit')}</label>
-              <input
-                type="number"
-                value={editingTicket?.quantity?.perUserLimit || ''}
-                onChange={(e) =>
-                  setEditingTicket({
-                    ...editingTicket,
-                    quantity: { ...editingTicket.quantity, perUserLimit: parseInt(e.target.value) || 0, }
-                  })
-                }
-                className={`w-full px-4 py-2 rounded-lg border ${inputClasses}`}
-              />
-            </div>
-          </div>
+          </section>
 
           <div className="flex justify-end gap-3 mt-6">
             <button

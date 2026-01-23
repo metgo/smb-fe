@@ -10,7 +10,8 @@ interface EventMediaProps {
   t: (key: string) => string;
   eventImages: TEventImages;
   setEventImages: (v: TEventImages) => void;
-  theme: Theme
+  theme: Theme;
+  markDirty: (step: number) => void;
 }
 
 
@@ -19,6 +20,7 @@ const EventMedia: React.FC<EventMediaProps> = ({
   eventImages,
   setEventImages,
   theme,
+  markDirty,
 }) => {
   const [createSignedUrl] = useCreateSignedUrlMutation();
   const { textPrimary, textSecondary, textTertiary, } = useThemeClasses()
@@ -44,7 +46,7 @@ const EventMedia: React.FC<EventMediaProps> = ({
     const hydratedImages: IEventImageUpload[] = eventImages.map(
       (img, index) => ({
         id: Date.now() + index,
-        previewUrl: img.image, 
+        previewUrl: img.image,
         progress: 100,
         status: "success",
         isPrimary: img.isPrimary || (!hasPrimary && index === 0),
@@ -58,6 +60,10 @@ const EventMedia: React.FC<EventMediaProps> = ({
     );
   }, [eventImages]);
 
+
+  useEffect(() => {
+    markDirty(6);
+  }, [eventImages])
 
   /* ---------------- File Select ---------------- */
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -132,9 +138,9 @@ const EventMedia: React.FC<EventMediaProps> = ({
         )
       );
 
-      toast.success("Upload successful!");
+      toast.success("Image has been uploaded successfully!");
     } catch {
-      toast.error("Upload failed");
+      toast.error("Image upload failed! Please try again...");
       setImages((prev) =>
         prev.map((img) =>
           img.id === id ? { ...img, status: "error" } : img

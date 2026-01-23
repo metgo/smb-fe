@@ -208,7 +208,8 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
                     )}% ${t("filled")}`,
                   },
                   { label: t("revenue"), value: `₪${(eventStatsData?.totalRevenue / 1000).toFixed(1)}K` },
-                  { label: t("refunds"), value: `₪${(eventStatsData?.refunds / 1000).toFixed(1)}K` },
+                  // { label: t("refunds"), value: `₪${(eventStatsData?.refunds / 1000).toFixed(1)}K` },
+                  { label: t("refunds"), value: `₪0K` },
                   {
                     label: t("event_type"),
                     value: eventStatsData?.isFree ? t("free") : t("paid"),

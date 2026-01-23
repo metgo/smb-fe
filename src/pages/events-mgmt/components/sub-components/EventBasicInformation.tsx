@@ -1,5 +1,5 @@
 import clsx from "clsx";
-import React from "react";
+import React, { useEffect } from "react";
 import { ChevronDown } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
@@ -9,6 +9,7 @@ import { useGetAccessibilityQuery, useGetGroupTypesQuery, useGetSubCategoriesQue
 import { useCommon } from "@/hooks/useCommon";
 
 interface EventBasicInformationProps {
+  markDirty: (step: number) => void;
   selectedDmoId: string;
   setSelectDmoId: React.Dispatch<React.SetStateAction<string>>;
   selectedAuthorityId: string;
@@ -29,13 +30,11 @@ interface EventBasicInformationProps {
   setGroupTypesId: (v: string[]) => void;
   selectedAccessiblitiesId: string[];
   setAccessiblitiesId: (v: string[]) => void;
-  // Errors
-  errors: {
-    eventName?: string;
-  };
+  errors:Record<string, string>;
 }
 
 const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
+  markDirty,
   eventName,
   setEventName,
   shortDescription,
@@ -65,6 +64,22 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
 
 
   const selectedDmos = dmosAuthorities?.find((item) => item?._id === selectedDmoId);
+
+
+  useEffect(() => {
+    markDirty(1);
+  }, [
+    eventName,
+    shortDescription,
+    fullDescription,
+    selectedAuthorityId,
+    selectedDmoId,
+    selectedAccessiblitiesId,
+    selectedGroupTypesId,
+    selectedSubCategoriesId,
+    internalNotes,
+  ]);
+
 
   const handleSubcategorySelect = (itemId: string) => {
     const exists = selectedSubCategoriesId?.some((id) => id === itemId);
@@ -131,6 +146,11 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
             </select>
             <ChevronDown className="absolute top-1/2 ltr:right-3 rtl:left-3 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
           </div>
+          {errors.dmoId && (
+            <p className="text-red-500 text-sm mt-2 flex items-center gap-1">
+              {errors.dmoId}
+            </p>
+          )}
         </div>
 
         {/* Authorities Dropdown */}
@@ -156,10 +176,13 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
             </select>
             <ChevronDown className="absolute top-1/2 ltr:right-3 rtl:left-3 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
           </div>
+          {errors.authorityId && (
+            <p className="text-red-500 text-sm mt-2 flex items-center gap-1">
+              {errors.authorityId}
+            </p>
+          )}
         </div>
       </div>
-
-
 
       {/* Event Name */}
       <div>
@@ -195,7 +218,7 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
           className={`w-full px-5 py-3 rounded-xl border text-base ${inputClasses} transition-all focus:ring-2 focus:ring-teal-500/20`}
         />
         <p className={`text-xs mt-2 text-right ${textTertiary}`}>
-          {shortDescription.length}/200 {t("max_characters")}
+          {shortDescription?.length}/200 {t("max_characters")}
         </p>
       </div>
 

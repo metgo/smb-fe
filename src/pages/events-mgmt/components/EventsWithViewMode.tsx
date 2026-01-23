@@ -6,24 +6,29 @@ import {
   CheckCircle,
   XCircle,
   CalendarRange,
+  TrashIcon,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 import { Button } from '@/components/ui/button';
 import { useThemeClasses } from '@/hooks/useThemeClasses';
-import { ImageWithFallback, ReordableDataTable } from '@/components/shared';
+import { ConfirmDialog, ImageWithFallback, ReordableDataTable } from '@/components/shared';
 import { extractCenterAddressText, extractEventDates } from '@/helpers';
 import { Link } from 'react-router-dom';
+import { useDeleteEventMutation } from '@/store/api/eventMutationApi';
+import { toast } from 'sonner';
 
 
 interface EventsWithViewModeProps {
   events: any[];
   viewMode: string;
+  isLoading: boolean;
   selectedWebsiteCount: number;
   eventTypeFilter: string;
   registrationFilter: string;
   statusFilter: string;
   searchQuery: string;
+  refetch: () => void;
   setSelectedEvent: (v: Event) => void;
   setShowQuickSnapModal: (v: boolean) => void;
 }
@@ -67,6 +72,8 @@ const getCategoryColor = (category: string) => {
 export default function EventsWithViewMode({
   events,
   viewMode,
+  refetch,
+  isLoading=false,
   selectedWebsiteCount,
   eventTypeFilter,
   registrationFilter,
@@ -79,10 +86,15 @@ export default function EventsWithViewMode({
   const language = i18n.language || 'en';
   const themeColor = useThemeClasses()
 
+  const [deleteEvent, { isLoading: isDeleting }] = useDeleteEventMutation()
+
   const [currentDate, setCurrentDate] = useState(new Date());
   const [calendarViewMode, setCalendarViewMode] = useState<TViewMode>('calendar-month');
   const [selectedEvents, setSelectedEvents] = useState<Set<string>>(new Set());
   const [displayedListCount, setDisplayedListCount] = useState(12);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [eventToDelete, setEventToDelete] = useState<string | null>(null);
+
 
   // Current month/year string
   const monthYear = useMemo(() => {
@@ -161,6 +173,12 @@ export default function EventsWithViewMode({
     // e.stopPropagation()
     setShowQuickSnapModal(true)
     setSelectedEvent(event)
+  }
+
+  const handleEventDelete = async (eventId: string) => {
+    const res = await deleteEvent({ eventId });
+    toast.success(res?.data?.message || 'Event deleted successfully');
+    refetch();
   }
   // Events on a given date
   const eventsOnDate = (date: Date) => {
@@ -355,12 +373,12 @@ export default function EventsWithViewMode({
     return (
       <div className='py-6 px-4'>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {displayed.map(event => {
+          {displayed?.map(event => {
             return (
               <div
                 key={event._id}
                 onClick={() => handleEventSelect(event)}
-                className="bg-white dark:bg-gray-900 rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow cursor-pointer"
+                className="bg-white dark:bg-gray-900 relative rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow cursor-pointer"
               >
                 <div className="relative h-52">
                   {event?.images?.[0]?.image ? (
@@ -375,6 +393,19 @@ export default function EventsWithViewMode({
                     </div>
                   )}
                 </div>
+
+                <button
+                  type='button'
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsConfirmOpen(true)
+                    setEventToDelete(event._id)
+                  }}
+                  className='absolute top-3 right-3 z-50 cursor-pointer bg-white dark:bg-gray-800 p-2 rounded-full shadow hover:shadow-lg transition-shadow text-red-600'
+                >
+                  <TrashIcon size={16} />
+                </button>
+
                 <div className="p-5">
                   <h3 className="font-semibold text-lg mb-3 line-clamp-2">{event.name}</h3>
                   <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
@@ -422,6 +453,7 @@ export default function EventsWithViewMode({
     return (
       <ReordableDataTable
         rowKey="_id"
+        isLoading={isLoading}
         data={displayedEvents}
         selectedItems={selectedEvents}
         onSelectionChange={(selected) => setSelectedEvents(selected as Set<string>)}
@@ -609,6 +641,27 @@ export default function EventsWithViewMode({
         {viewMode === 'list' && <ListView />}
         {viewMode === 'grid' && <GridView />}
       </div>
+
+
+
+      <ConfirmDialog
+        open={isConfirmOpen}
+        title={"delete_event"}
+        message="delete_event_confirm"
+        confirmText="delete"
+        loading={isDeleting}
+        variant="danger"
+        onCancel={() => {
+          setIsConfirmOpen(false);
+          setEventToDelete(null);
+        }}
+        onConfirm={() => {
+          if (!eventToDelete) return;
+          handleEventDelete(eventToDelete);
+          setIsConfirmOpen(false);
+          setEventToDelete(null);
+        }}
+      />
     </div>
   );
 }

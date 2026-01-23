@@ -198,6 +198,7 @@
 
   "event_saved_as_draft": "تم حفظ الحدث كمسودة",
   "fix_errors_before_proceeding": "يرجى تصحيح الأخطاء قبل المتابعة",
+  "requried_fill_up_info": "يرجى تعبئة جميع الحقول المطلوبة قبل المتابعة.",
   "event_published_success": "تم نشر الحدث بنجاح",
   "required_field": "هذا الحقل مطلوب",
   "field_too_short": "هذا الحقل قصير جداً",
@@ -237,5 +238,7 @@
   "messaging": "الرسائل",
   "no_registrants_yet": "لا يوجد مسجلون بعد",
   "date_range": "نطاق التاريخ",
-  "websites": "مواقع إلكترونية"
+  "websites": "مواقع إلكترونية",
+
+  "free_access_info": "عند تعطيل التسجيل، يمكن للحضور الانضمام بحرية دون الحاجة إلى التسجيل."
 }
