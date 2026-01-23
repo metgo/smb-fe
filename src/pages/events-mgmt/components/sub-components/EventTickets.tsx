@@ -1,12 +1,10 @@
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
-import { skipToken } from "@reduxjs/toolkit/query";
-import { Activity, useEffect, useState } from "react";
+import { Activity, useState } from "react";
 import { Plus, Ticket, FileText, Trash2, AlertCircle } from "lucide-react";
 
 import { useAppSelector } from "@/hooks/hooks";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { useGetAllTicketQuery } from "@/store/api/eventQueryApi";
 import { useDeleteTicketMutation } from "@/store/api/eventMutationApi";
 import CreateTicketWizard from "./CreateTicketWizard";
 import { TicketCardSkeleton } from "@/components/skeletons";
@@ -20,10 +18,11 @@ interface EventTicketsProps {
     tickets?: string;
   };
   eventId: string;
+  refetch: ()=>void;
   setEventId: (v: string) => void;
   initEventCreate: () => any;
-  setTickets: (v: TicketData[]) => void;
   setCurrentStep: (v: number) => void;
+  tickets: any;
 }
 
 const getTicketTypeColor = (type: string) => {
@@ -46,7 +45,8 @@ const EventTickets: React.FC<EventTicketsProps> = ({
   setShowTicketModal,
   showTicketModal,
   errors,
-  setTickets,
+  tickets,
+  refetch,
   setCurrentStep,
   initEventCreate,
 }) => {
@@ -54,12 +54,7 @@ const EventTickets: React.FC<EventTicketsProps> = ({
   const { textPrimary, textTertiary } = useThemeClasses();
   const { theme } = useAppSelector((state) => state.settings);
 
-  const {
-    data: tickets,
-    refetch,
-    isLoading,
-    isFetching,
-  } = useGetAllTicketQuery(eventId ? { eventId } : skipToken);
+  
 
   const [deleteTicket, { isLoading: isDeleting }] = useDeleteTicketMutation();
   const [editingTicket, setEditingTicket] = useState<ITicketPayload | null>(null);
@@ -112,11 +107,6 @@ const EventTickets: React.FC<EventTicketsProps> = ({
     }
     setShowTicketModal(true);
   };
-
-  useEffect(() => {
-    if (tickets) setTickets(tickets as any);
-  }, [tickets]);
-
   return (
     <div className="space-y-8 max-w-4xl mx-auto">
       {/* Header */}
@@ -135,7 +125,7 @@ const EventTickets: React.FC<EventTicketsProps> = ({
       </div>
 
       {/* Loading Skeleton */}
-      {(isLoading || isFetching || isDeleting) && (
+      {( isDeleting) && (
         <div className="space-y-5">
           {Array.from({ length: 3 }).map((_, i) => (
             <TicketCardSkeleton key={i} theme={theme} />
@@ -151,7 +141,7 @@ const EventTickets: React.FC<EventTicketsProps> = ({
       )}
 
       {/* Empty State */}
-      {!isLoading && (tickets?.length === 0 || !tickets) && (
+      {(tickets?.length === 0 || !tickets) && (
         <div
           className={`p-16 rounded-2xl border-2 border-dashed text-center ${theme === "dark"
             ? "border-gray-700 bg-gray-800/30"
@@ -175,9 +165,9 @@ const EventTickets: React.FC<EventTicketsProps> = ({
       )}
 
       {/* Tickets List */}
-      {!isLoading && tickets?.length > 0 && (
+      { tickets?.length > 0 && (
         <div className="space-y-5">
-          {tickets.map((ticket: any) => (
+          {tickets?.map((ticket: any) => (
             <div
               key={ticket._id}
               className={`p-6 rounded-xl border hover:shadow-md transition ${theme === "dark"
