@@ -32,7 +32,7 @@ export async function getAllFeeds(
   page: number,
   filters: FiltersProps,
   isAllClear: boolean = false,
-  limit: number = 100,
+  limit: number = 10,
 ): Promise<BusinessesProps> {
   let baseUrl: string;
 
@@ -160,74 +160,10 @@ export async function getFeedItemsWithFilter(
   }
 }
 
-interface FeedBody {
-  details: {
-    id: string;
-    serviceType: string;
-  }[];
-}
-export async function getFeedDetailsItems(
-  body: FeedBody,
-): Promise<FeedItemDetailsResponse> {
-  const baseUrl = `${urls.feedDetails}?campCode=${CODE}`;
+export async function getFeedItems(): Promise<FeedItemResponse> {
+  let baseUrl: string;
 
-  try {
-    const res = await fetch(baseUrl, {
-      headers: {
-        "Content-Type": "application/json",
-      },
-      method: "POST",
-      body: JSON.stringify(body),
-      cache: "no-store",
-    });
-
-    if (!res.ok) throw new Error(`Failed to fetch feeds: ${res.statusText}`);
-
-    const resData: FeedItemResponse = await res.json();
-    const finalData = shuffleArray(resData?.data);
-    return {
-      ...resData,
-      data: finalData,
-    };
-  } catch (error) {
-    console.error("Error in getAllFeeds:", error);
-
-    return {
-      data: [],
-      totalData: 0,
-    };
-  }
-}
-
-export async function getFeedItemIds() {
-  const baseUrl = `${urls.feedsIds}?campCode=${CODE}`;
-
-  try {
-    const res = await fetch(baseUrl, {
-      method: "GET",
-      cache: "no-store",
-    });
-
-    if (!res.ok) throw new Error(`Failed to fetch feeds: ${res.statusText}`);
-
-    const resData: FeedItemResponse = await res.json();
-    const finalData = shuffleArray(resData?.data);
-    return {
-      ...resData,
-      data: finalData,
-    };
-  } catch (error) {
-    console.error("Error in getAllFeeds:", error);
-
-    return {
-      data: [],
-      totalData: 0,
-    };
-  }
-}
-
-export async function getFeedItems() {
-  const baseUrl = `${urls.feeds}?campCode=${CODE}`;
+  baseUrl = `${urls.feeds}?campCode=${CODE}`;
 
   try {
     const res = await fetch(baseUrl, {

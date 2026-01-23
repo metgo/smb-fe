@@ -10,7 +10,7 @@ import { getMarketing } from "@/actions/marketingAction";
 import FeedLayout from "@/components/layouts/FeedLayout";
 import { getQueryClient } from "@/lib/getQueryClient";
 import { getPresetFilters } from "@/actions/commonActions";
-import { getAllFilters, getFeedItemIds } from "@/actions/feedActions";
+import { getAllFilters, getFeedItems } from "@/actions/feedActions";
 import MobileFeedLayout from "@/components/mobile/FeedLayout.mobile";
 import MarketingSection from "@/components/marketing/MarketingSection";
 import CurrentTempOfYourCity from "@/components/navbar/CurrentTempOfYourCity";
@@ -60,20 +60,20 @@ export default async function Page({
 
   await queryClient.prefetchQuery({
     queryKey: ["preset-filters"],
-    queryFn: getPresetFilters,
     staleTime: Infinity,
+    queryFn: getPresetFilters,
   });
 
   await queryClient.prefetchQuery({
     queryKey: ["filters", selectedFiltersIds],
-    queryFn: () => getAllFilters(selectedFiltersIds),
     staleTime: Infinity,
+    queryFn: () => getAllFilters(selectedFiltersIds),
   });
 
   await queryClient.prefetchQuery({
-    queryKey: ["feedIds"],
-    queryFn: () => getFeedItemIds(),
+    queryKey: ["feeds"],
     staleTime: Infinity,
+    queryFn: () => getFeedItems(),
   });
 
   return (
@@ -102,14 +102,12 @@ export default async function Page({
         <section className="relative z-50 bg-white">
           <Navbar showFilterTab />
 
-          {/* <Suspense> */}
           <MobileFeedLayout
             isAllClear={isAllClear}
             selectedFiltersIds={selectedFiltersIds}
           />
 
           <FeedLayout selectedFiltersIds={selectedFiltersIds} />
-          {/* </Suspense> */}
         </section>
       </ScrollSnapWrapper>
     </HydrationBoundary>

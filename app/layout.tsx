@@ -17,6 +17,7 @@ import { urls } from "@/lib/endpoints";
 import { getFavicon, getLogo } from "@/constant/images";
 import ServiceWorkerRegistrar from "@/components/ServiceWorkerRegistrar";
 import Providers from "@/components/wrappers/Providers";
+import InitialLoader from "@/components/InitialLoader";
 
 // Dynamic metadata
 export async function generateMetadata(): Promise<Metadata> {
@@ -86,7 +87,7 @@ export default function RootLayout({ children }: ReactChildNode) {
           trigger-size-medium
         "
       >
-        <Suspense>
+        <Suspense fallback={<InitialLoader />}>
           <Providers>
             <SiteInfoClientProvider>
               <GoogleAnalytics gaId={GOOGLE_ANALYTIC_ID!} />

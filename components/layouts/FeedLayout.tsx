@@ -14,11 +14,7 @@ import FeedFilterDrawer from "../drawer/FeedFilterDrawer";
 import MapFeedIntegratedLayout from "./MapFeedIntegratedLayout";
 import StickyYellowRibbonImage from "../StickyYellowRibbonImage";
 
-import {
-  getAllFilters,
-  getFeedItemIds,
-  getFeedDetailsItems,
-} from "@/actions/feedActions";
+import { getAllFilters } from "@/actions/feedActions";
 import { getPresetFilters } from "@/actions/commonActions";
 import { misc } from "@/constant/hebrew";
 import { filterBusinesses } from "@/lib/helpers";
