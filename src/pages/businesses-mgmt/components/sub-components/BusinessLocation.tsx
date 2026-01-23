@@ -44,12 +44,12 @@ interface BusinessLocationProps {
 /* ---------- Component ---------- */
 
 const BusinessLocation: FC<BusinessLocationProps> = ({
-  theme,
-  isRTL,
+  // theme,
+  // isRTL,
   t,
-  formData,
-  errors,
-  setFormData,
+  // formData,
+  // errors,
+  // setFormData,
   geo,
   setGeo,
   address,

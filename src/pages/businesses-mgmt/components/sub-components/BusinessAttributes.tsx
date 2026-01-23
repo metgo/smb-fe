@@ -1,5 +1,5 @@
 import type { FC } from "react";
-import { Loader, X } from "lucide-react";
+import {  X } from "lucide-react";
 import {
   useGetAccessibilityQuery,
   useGetCategoriesQuery,

@@ -13,18 +13,15 @@ import {
   Columns,
   ExternalLink,
   UtensilsCrossed,
-  Plane,
   Landmark,
   Theater,
-  BedDouble,
   Map,
 } from "lucide-react";
-import { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 
 import { useAppSelector } from "@/hooks/hooks";
 import { FilterButton } from "@/components/btns";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { generateMockBusinesses } from "@/constants/data";
 import { PageHeader, PageStats, ReordableDataTable } from "@/components/shared";
 import {
   useGetAllbusinessesQuery,
@@ -78,26 +75,26 @@ const columnDefinitions = [
 ];
 
 // Category colors for visual distinction
-const categoryColors: { [key: string]: string } = {
-  "Food & Dining":
-    "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400",
-  Cafe: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400",
-  Tourism: "bg-teal-100 text-teal-800 dark:bg-teal-900/30 dark:text-teal-400",
-  Adventure:
-    "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
-  Shopping:
-    "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400",
-  Culture: "bg-pink-100 text-pink-800 dark:bg-pink-900/30 dark:text-pink-400",
-  Accommodation:
-    "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
-  "Eco-Tourism":
-    "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400",
-  Workshops:
-    "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400",
-};
+// const categoryColors: { [key: string]: string } = {
+//   "Food & Dining":
+//     "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400",
+//   Cafe: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400",
+//   Tourism: "bg-teal-100 text-teal-800 dark:bg-teal-900/30 dark:text-teal-400",
+//   Adventure:
+//     "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
+//   Shopping:
+//     "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400",
+//   Culture: "bg-pink-100 text-pink-800 dark:bg-pink-900/30 dark:text-pink-400",
+//   Accommodation:
+//     "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
+//   "Eco-Tourism":
+//     "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400",
+//   Workshops:
+//     "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400",
+// };
 
-const defaultCategoryColor =
-  "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400";
+// const defaultCategoryColor =
+//   "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400";
 
 export default function BusinessesList({
   theme,
@@ -107,10 +104,10 @@ export default function BusinessesList({
   const { t } = useTranslation("businesses");
   const { isRTL } = useAppSelector((state) => state.settings);
   const { textPrimary, textSecondary, textTertiary } = useThemeClasses();
-  const [page, setPage] = useState<number>(1);
+  const [page, _setPage] = useState<number>(1);
   const limit = 20;
 
-  const [error, setError] = useState(false);
+  const [error, _setError] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [showColumnSettings, setShowColumnSettings] = useState(false);
@@ -139,7 +136,7 @@ export default function BusinessesList({
   console.log("filter?? statys", filters);
 
   // Column visibility - load from localStorage or use defaults
-  const [visibleColumns, setVisibleColumns] = useState<ColumnVisibility>(() => {
+  const [visibleColumns, _setVisibleColumns] = useState<ColumnVisibility>(() => {
     try {
       const saved = localStorage.getItem("businessesTableColumns");
       if (saved) {
@@ -224,12 +221,12 @@ export default function BusinessesList({
   console.log("businessData:", businessData);
 
   // Column toggle handler
-  const toggleColumn = (column: keyof ColumnVisibility) => {
-    setVisibleColumns((prev) => ({
-      ...prev,
-      [column]: !prev[column],
-    }));
-  };
+  // const toggleColumn = (column: keyof ColumnVisibility) => {
+  //   setVisibleColumns((prev) => ({
+  //     ...prev,
+  //     [column]: !prev[column],
+  //   }));
+  // };
 
   // Reset to default columns
   const resetToDefault = () => {
@@ -584,24 +581,24 @@ export default function BusinessesList({
   }[];
 
   // Helper function to get column label
-  const getColumnLabel = (key: keyof ColumnVisibility): string => {
-    const labelMap: { [K in keyof ColumnVisibility]: string } = {
-      impact: t("impactScore"),
-      name: t("businessName"),
-      shortDescription: t("shortDescription"),
-      contactDetails: t("contactPerson"),
-      busiEmail: t("businessEmail"),
-      phoneNumber: t("phoneNumber"),
-      productCount: t("productsCount"),
-      status: t("status"),
-      lifetimeSales: t("lifetimeSales"),
-      tripCount: t("tripCount") || "Trip Count",
-      associatedWebsites: t("websiteUrl"),
-      contactPhone: t("contactPhone") || "Contact Phone",
-      categories: t("categories"),
-    };
-    return labelMap[key];
-  };
+  // const getColumnLabel = (key: keyof ColumnVisibility): string => {
+  //   const labelMap: { [K in keyof ColumnVisibility]: string } = {
+  //     impact: t("impactScore"),
+  //     name: t("businessName"),
+  //     shortDescription: t("shortDescription"),
+  //     contactDetails: t("contactPerson"),
+  //     busiEmail: t("businessEmail"),
+  //     phoneNumber: t("phoneNumber"),
+  //     productCount: t("productsCount"),
+  //     status: t("status"),
+  //     lifetimeSales: t("lifetimeSales"),
+  //     tripCount: t("tripCount") || "Trip Count",
+  //     associatedWebsites: t("websiteUrl"),
+  //     contactPhone: t("contactPhone") || "Contact Phone",
+  //     categories: t("categories"),
+  //   };
+  //   return labelMap[key];
+  // };
 
   // Calculate trip count (mock - in real app would come from backend)
   const getTripCount = (business: any): number => {

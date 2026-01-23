@@ -291,6 +291,7 @@ export default function CreateBusinessWizard({
     } catch (error: any) {
       toast.error(error?.message || t("something_went_wrong"));
     }
+    
   };
   console.log("form data busienss", formData);
   const handleNext = async () => {
@@ -503,6 +504,7 @@ export default function CreateBusinessWizard({
 
         {/* Footer */}
         <WizardFooter
+        
           currentStep={currentStep}
           totalSteps={totalSteps}
           isSaving={isSaving}
