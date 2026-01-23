@@ -30,6 +30,7 @@ import {
   useGetAllbusinessesQuery,
   useGetBusinessStatsQuery,
 } from "@/store/api/businessQueryApi";
+import { useCommon } from "@/hooks/useCommon";
 
 interface BusinessesListProps {
   theme: Theme;
@@ -106,34 +107,34 @@ export default function BusinessesList({
   const { t } = useTranslation("businesses");
   const { isRTL } = useAppSelector((state) => state.settings);
   const { textPrimary, textSecondary } = useThemeClasses();
-const [page, setPage] = useState<number>(1);
+  const [page, setPage] = useState<number>(1);
   const limit = 10;
   const [error, setError] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [showFilters, setShowFilters] = useState(false);
-  const [businesses, setBusinesses] = useState<any[]>([]);
   const [showColumnSettings, setShowColumnSettings] = useState(false);
   const [selectedBusinesses, setSelectedBusinesses] = useState<Set<string>>(
     new Set(),
   );
-   // Keep all fetched data accumulated here
-  const [allData, setAllData] = useState([]);
+  const { dmosAuthorities } = useCommon();
+  const [selectedDmoId, setSelectDmoId] = useState<string>("");
+  const [selectedAuthorityId, setSelectAuthorityId] = useState<string>("");
+  const selectedDmos = dmosAuthorities?.find(
+    (item) => item?._id === selectedDmoId,
+  );
   const { data: businessStatsData } = useGetBusinessStatsQuery({});
   console.log("busienss stats", businessStatsData);
-
+  console.log("selected filters", selectedAuthorityId, selectedDmoId);
   const columnSettingsRef = useRef<HTMLDivElement>(null);
 
   // Filters
   const [filters, setFilters] = useState({
-    authority: "all",
-    dmo: "all",
-    status: "all",
-    hasProducts: "all",
-    impactMin: 200,
-    impactMax: 800,
-    dateFrom: "",
-    dateTo: "",
+    authorityId: "",
+    dmoId: "",
+    status: "DRAFT",
+    hasProductFilter: "",
   });
+  console.log("filter?? statys", filters);
 
   // Column visibility - load from localStorage or use defaults
   const [visibleColumns, setVisibleColumns] = useState<ColumnVisibility>(() => {
@@ -178,130 +179,48 @@ const [page, setPage] = useState<number>(1);
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [showColumnSettings]);
+  const queryParams = useMemo(() => {
+    const params: any = {
+      page: String(page),
+      limit: String(limit),
+    };
 
-  // Sorting
-  const [sortColumn] = useState<string | null>(null);
-  const [sortDirection] = useState<"asc" | "desc">("asc");
+    if (searchTerm) params.search = searchTerm;
 
-  // Infinite scroll
-  const [displayCount, setDisplayCount] = useState(50);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-
-  const { data: businessData, isLoading: _isLoading } =
-    useGetAllbusinessesQuery({
-      search: searchTerm,
-      page: String(1),
-      limit: String(10),
-      // eventType: eventTypeFilter.toUpperCase()
-    });
-  // Load mock data
-  useEffect(() => {
-    try {
-      const data = generateMockBusinesses(200);
-      setBusinesses(data);
-    } catch (err) {
-      setError(true);
+    if (filters.status !== "all") {
+      params.status = filters.status;
     }
-  }, []);
+
+    if (filters.authorityId && filters.authorityId !== "all") {
+      params.authorityId = filters.authorityId;
+    }
+
+    if (filters.dmoId && filters.dmoId !== "all") {
+      params.dmoId = filters.dmoId;
+    }
+
+    if (filters.hasProductFilter !== "all") {
+      params.hasProductFilter = filters.hasProductFilter === "yes";
+    }
+
+    return params;
+  }, [page, limit, searchTerm, filters]);
+
+  const clearFilter = () => {
+    setSelectAuthorityId("")
+    setSelectDmoId("")
+                setFilters({
+                  authorityId: "",
+                  dmoId: "",
+                  status: "DRAFT",
+                  hasProductFilter: "",
+                 
+                })
+  }
+  const { data: businessData, isLoading: _isLoading } =
+    useGetAllbusinessesQuery(queryParams);
 
   console.log("businessData:", businessData);
-
-  // Filter and sort logic
-  const filteredBusinesses = useMemo(() => {
-    let filtered = [...businesses];
-
-    // Search filter
-    if (searchTerm) {
-      const term = searchTerm.toLowerCase();
-      filtered = filtered.filter(
-        (b) =>
-          b.name.toLowerCase().includes(term) ||
-          b.email.toLowerCase().includes(term) ||
-          b.phone.toLowerCase().includes(term),
-      );
-    }
-
-    // // Authority filter
-    // if (filters.authority !== "all") {
-    //   filtered = filtered.filter((b) => b.authority === filters.authority);
-    // }
-
-    // // DMO filter
-    // if (filters.dmo !== "all") {
-    //   filtered = filtered.filter((b) => b.dmo === filters.dmo);
-    // }
-
-    // // Status filter
-    // if (filters.status !== "all") {
-    //   filtered = filtered.filter((b) => b.status === filters.status);
-    // }
-
-    // // Has products filter
-    // if (filters.hasProducts !== "all") {
-    //   const hasProducts = filters.hasProducts === "yes";
-    //   filtered = filtered.filter((b) => b.productsCount > 0 === hasProducts);
-    // }
-
-    // // Impact range filter
-    // filtered = filtered.filter(
-    //   (b) =>
-    //     b.impactScore >= filters.impactMin &&
-    //     b.impactScore <= filters.impactMax,
-    // );
-
-    // // Date range filter
-    // if (filters.dateFrom) {
-    //   filtered = filtered.filter(
-    //     (b) => new Date(b.createdAt) >= new Date(filters.dateFrom),
-    //   );
-    // }
-    // if (filters.dateTo) {
-    //   filtered = filtered.filter(
-    //     (b) => new Date(b.createdAt) <= new Date(filters.dateTo),
-    //   );
-    // }
-
-    // // Sorting
-    // if (sortColumn) {
-    //   filtered.sort((a, b) => {
-    //     const aVal = a[sortColumn];
-    //     const bVal = b[sortColumn];
-
-    //     if (typeof aVal === "string" && typeof bVal === "string") {
-    //       return sortDirection === "asc"
-    //         ? aVal.localeCompare(bVal)
-    //         : bVal.localeCompare(aVal);
-    //     }
-
-    //     if (typeof aVal === "number" && typeof bVal === "number") {
-    //       return sortDirection === "asc" ? aVal - bVal : bVal - aVal;
-    //     }
-
-    //     return 0;
-    //   });
-    // }
-
-    return filtered;
-  }, [businesses, searchTerm, filters, sortColumn, sortDirection]);
-
-  // Infinite scroll handler
-  const handleScroll = useCallback(() => {
-    if (!scrollContainerRef.current) return;
-
-    const { scrollTop, scrollHeight, clientHeight } =
-      scrollContainerRef.current;
-    if (scrollTop + clientHeight >= scrollHeight - 100) {
-      setDisplayCount((prev) => Math.min(prev + 50, filteredBusinesses.length));
-    }
-  }, [filteredBusinesses.length]);
-
-  useEffect(() => {
-    const container = scrollContainerRef.current;
-    if (!container) return;
-
-    container.addEventListener("scroll", handleScroll);
-    return () => container.removeEventListener("scroll", handleScroll);
-  }, [handleScroll]);
 
   // Column toggle handler
   const toggleColumn = (column: keyof ColumnVisibility) => {
@@ -336,57 +255,17 @@ const [page, setPage] = useState<number>(1);
     console.log("Export businesses");
   };
 
-  // Get unique values for filters
-  const authorities = useMemo(
-    () => Array.from(new Set(businesses.map((b: any) => b.authority))),
-    [businesses],
-  );
-  const dmos = useMemo(
-    () => Array.from(new Set(businesses.map((b: any) => b.dmo))),
-    [businesses],
-  );
-
   // Permission check
   const canChangeStatus = ["superadmin", "admin", "dmo", "authority"].includes(
     USER_ROLE,
   );
 
-  const displayedBusinesses = filteredBusinesses.slice(0, displayCount);
-
-  // Categories badge component
-  const CategoriesBadges = ({ categories }: { categories: string[] }) => {
-    // Show max 2 categories with +X more indicator
-    const displayCategories = categories.slice(0, 2);
-    const remaining = categories.length - 2;
-
-    return (
-      <div className="flex flex-wrap gap-1">
-        {displayCategories.map((category: any, index: number) => (
-          <span
-            key={index}
-            className={`px-2 py-0.5 rounded-full text-xs ${
-              categoryColors[category] || defaultCategoryColor
-            }`}
-          >
-            {category}
-          </span>
-        ))}
-        {remaining > 0 && (
-          <span
-            className={`px-2 py-0.5 rounded-full text-xs ${defaultCategoryColor}`}
-          >
-            +{remaining}
-          </span>
-        )}
-      </div>
-    );
-  };
   const columns = [
     ...(canChangeStatus ? [{ key: "checkbox", label: "", width: "50px" }] : []),
-    {
-      key: "_id",
-      label: "id",
-    },
+    // {
+    //   key: "_id",
+    //   label: "id",
+    // },
     {
       key: "impact",
       label: t("impact_score"),
@@ -533,10 +412,7 @@ const [page, setPage] = useState<number>(1);
         }
       },
     },
-
-  
   ];
- 
 
   // Helper function to get column label
   const getColumnLabel = (key: keyof ColumnVisibility): string => {
@@ -872,58 +748,72 @@ const [page, setPage] = useState<number>(1);
             }`}
           >
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
-              {/* Authority Filter */}
-              <div>
-                <label
-                  className={`block text-sm mb-1 ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
-                >
-                  {t("authority")}
-                </label>
-                <select
-                  value={filters.authority}
-                  onChange={(e) =>
-                    setFilters({ ...filters, authority: e.target.value })
-                  }
-                  className={`w-full px-3 py-2 rounded-lg border ${
-                    theme === "dark"
-                      ? "bg-gray-800 border-gray-700 text-gray-200"
-                      : "bg-white border-gray-300 text-gray-900"
-                  } focus:outline-none focus:ring-2 focus:ring-teal-500`}
-                >
-                  <option value="all">{t("all")}</option>
-                  {authorities.map((auth: any) => (
-                    <option key={auth} value={auth}>
-                      {auth}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
               {/* DMO Filter */}
-              <div>
+              <div className="flex-1">
                 <label
                   className={`block text-sm mb-1 ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
                 >
-                  {t("dmo")}
+                  {" "}
+                  {t("select_dmo")} <span className="text-red-500">*</span>
                 </label>
-                <select
-                  value={filters.dmo}
-                  onChange={(e) =>
-                    setFilters({ ...filters, dmo: e.target.value })
-                  }
-                  className={`w-full px-3 py-2 rounded-lg border ${
-                    theme === "dark"
-                      ? "bg-gray-800 border-gray-700 text-gray-200"
-                      : "bg-white border-gray-300 text-gray-900"
-                  } focus:outline-none focus:ring-2 focus:ring-teal-500`}
+                <div className=" flex gap-2 relative">
+                  <select
+                    value={selectedDmoId}
+                    onChange={(e) => {
+                      const value = e.target.value;
+
+                      setSelectDmoId(value);
+                      setSelectAuthorityId("");
+
+                      setFilters((prev) => ({
+                        ...prev,
+                        dmoId: value,
+                        authorityId: "", // reset authority when DMO changes
+                      }));
+                    }}
+                    className={`w-full px-3 py-2 rounded-lg border ${
+                      theme === "dark"
+                        ? "bg-gray-800 border-gray-700 text-gray-200"
+                        : "bg-white border-gray-300 text-gray-900"
+                    } focus:outline-none focus:ring-2 focus:ring-teal-500`}
+                  >
+                    <option value="">Select DMO</option>
+                    {dmosAuthorities?.map((parent) => (
+                      <option key={parent._id} value={parent._id}>
+                        {parent.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              {/* Authority Filter */}
+              <div className="flex-1">
+                <label
+                  className={`block text-sm mb-1 ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
                 >
-                  <option value="all">{t("all")}</option>
-                  {dmos.map((dmo: any) => (
-                    <option key={dmo} value={dmo}>
-                      {dmo}
-                    </option>
-                  ))}
-                </select>
+                  {" "}
+                  {t("select_authority")}{" "}
+                  <span className="text-red-500">*</span>
+                </label>
+                <div className=" w-full relative">
+                  <select
+                    onChange={(e) =>
+                      setFilters({ ...filters, authorityId: e.target.value })
+                    }
+                    className={`w-full px-3 py-2 rounded-lg border ${
+                      theme === "dark"
+                        ? "bg-gray-800 border-gray-700 text-gray-200"
+                        : "bg-white border-gray-300 text-gray-900"
+                    } focus:outline-none focus:ring-2 focus:ring-teal-500`}
+                  >
+                    <option value="">Select Authority</option>
+                    {selectedDmos?.authorities?.map((child) => (
+                      <option key={child._id} value={child._id}>
+                        {child.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
               {/* Status Filter */}
@@ -945,11 +835,11 @@ const [page, setPage] = useState<number>(1);
                   } focus:outline-none focus:ring-2 focus:ring-teal-500`}
                 >
                   <option value="all">{t("all")}</option>
-                  <option value="draft">{t("draft")}</option>
-                  <option value="pending">{t("pending")}</option>
-                  <option value="approved">{t("approved")}</option>
-                  <option value="rejected">{t("rejected")}</option>
-                  <option value="archived">{t("archived")}</option>
+                  <option value="DRAFT">{t("draft")}</option>
+                  <option value="PENDING">{t("pending")}</option>
+                  <option value="APPROVED">{t("approved")}</option>
+                  <option value="REJECTED">{t("rejected")}</option>
+                  <option value="ARCHIVED">{t("archived")}</option>
                 </select>
               </div>
 
@@ -961,9 +851,9 @@ const [page, setPage] = useState<number>(1);
                   {t("has_products")}
                 </label>
                 <select
-                  value={filters.hasProducts}
+                  value={filters.hasProductFilter}
                   onChange={(e) =>
-                    setFilters({ ...filters, hasProducts: e.target.value })
+                    setFilters({ ...filters, hasProductFilter: e.target.value })
                   }
                   className={`w-full px-3 py-2 rounded-lg border ${
                     theme === "dark"
@@ -979,18 +869,7 @@ const [page, setPage] = useState<number>(1);
             </div>
 
             <button
-              onClick={() =>
-                setFilters({
-                  authority: "all",
-                  dmo: "all",
-                  status: "all",
-                  hasProducts: "all",
-                  impactMin: 0,
-                  impactMax: 10,
-                  dateFrom: "",
-                  dateTo: "",
-                })
-              }
+              onClick={clearFilter}
               className="mt-3 px-4 py-2 text-sm text-teal-600 hover:text-teal-700 transition-colors"
             >
               {t("clear_all")}
@@ -1041,8 +920,8 @@ const [page, setPage] = useState<number>(1);
       </div>
 
       {/* Table with horizontal scroll */}
-      <div ref={scrollContainerRef} className="flex-1 overflow-auto py-6">
-        {displayedBusinesses.length === 0 ? (
+      <div className="flex-1 overflow-auto py-6">
+        {businessData?.data?.length === 0 ? (
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
               <AlertCircle className="w-12 h-12 mx-auto mb-4 text-gray-400" />
@@ -1065,19 +944,12 @@ const [page, setPage] = useState<number>(1);
             <ReordableDataTable
               rowKey="_id"
               data={businessData?.data}
-              // selectedItems={selectedBusinesses}
+              selectedItems={selectedBusinesses}
               // onSelectionChange={setSelectedBusinesses}
               onRowClick={(business) => onBusinessClick(business)}
               storageKey="businessesTableColumnOrder"
               columns={columns}
             />
-          </div>
-        )}
-
-        {/* Loading more indicator */}
-        {displayCount < filteredBusinesses.length && (
-          <div className="flex items-center justify-center py-4">
-            <Loader className="w-5 h-5 animate-spin text-teal-600" />
           </div>
         )}
       </div>
