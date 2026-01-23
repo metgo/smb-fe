@@ -43,17 +43,17 @@ const USER_ROLE = "admin"; // Can be: 'superadmin', 'admin', 'dmo', 'authority',
 
 // Column configuration
 const defaultColumns = {
-  impactScore: true,
-  businessName: true,
+  impact: true,
+  name: true,
   shortDescription: true,
-  contactName: true,
-  businessEmail: true,
+  contactDetails: true,
+  busiEmail: true,
   phoneNumber: true,
-  productsCount: true,
+  productCount: true,
   status: true,
   lifetimeSales: true,
   tripCount: false,
-  websiteUrl: false,
+  associatedWebsites: false,
   contactPhone: false,
   categories: false,
 };
@@ -62,17 +62,17 @@ type ColumnVisibility = typeof defaultColumns;
 
 // Column definitions with default status
 const columnDefinitions = [
-  { key: "impactScore" as keyof ColumnVisibility, isDefault: true },
-  { key: "businessName" as keyof ColumnVisibility, isDefault: true },
+  { key: "impact" as keyof ColumnVisibility, isDefault: true },
+  { key: "name" as keyof ColumnVisibility, isDefault: true },
   { key: "shortDescription" as keyof ColumnVisibility, isDefault: true },
-  { key: "contactName" as keyof ColumnVisibility, isDefault: true },
-  { key: "businessEmail" as keyof ColumnVisibility, isDefault: true },
+  { key: "contactDetails" as keyof ColumnVisibility, isDefault: true },
+  { key: "busiEmail" as keyof ColumnVisibility, isDefault: true },
   { key: "phoneNumber" as keyof ColumnVisibility, isDefault: true },
-  { key: "productsCount" as keyof ColumnVisibility, isDefault: true },
+  { key: "productCount" as keyof ColumnVisibility, isDefault: true },
   { key: "status" as keyof ColumnVisibility, isDefault: true },
   { key: "lifetimeSales" as keyof ColumnVisibility, isDefault: true },
   { key: "tripCount" as keyof ColumnVisibility, isDefault: false },
-  { key: "websiteUrl" as keyof ColumnVisibility, isDefault: false },
+  { key: "associatedWebsites" as keyof ColumnVisibility, isDefault: false },
   { key: "contactPhone" as keyof ColumnVisibility, isDefault: false },
   { key: "categories" as keyof ColumnVisibility, isDefault: false },
 ];
@@ -282,11 +282,11 @@ export default function BusinessesList({
     const headers: string[] = [];
     const columnKeys: string[] = [];
 
-    if (visibleColumns.impactScore) {
+    if (visibleColumns.impact) {
       headers.push(t("impactScore"));
-      columnKeys.push("impactScore");
+      columnKeys.push("impact");
     }
-    if (visibleColumns.businessName) {
+    if (visibleColumns.name) {
       headers.push(t("businessName"));
       columnKeys.push("name"); // actual field is .name
     }
@@ -294,11 +294,11 @@ export default function BusinessesList({
       headers.push(t("shortDescription"));
       columnKeys.push("shortDescription");
     }
-    if (visibleColumns.contactName) {
+    if (visibleColumns.contactDetails) {
       headers.push(t("contactPerson"));
       columnKeys.push("contactName");
     }
-    if (visibleColumns.businessEmail) {
+    if (visibleColumns.busiEmail) {
       headers.push(t("businessEmail"));
       columnKeys.push("busiEmail"); // field name in data
     }
@@ -306,7 +306,7 @@ export default function BusinessesList({
       headers.push(t("phoneNumber"));
       columnKeys.push("phoneNumber");
     }
-    if (visibleColumns.productsCount) {
+    if (visibleColumns.productCount) {
       headers.push(t("productsCount"));
       columnKeys.push("productCount"); // field name in data
     }
@@ -322,9 +322,9 @@ export default function BusinessesList({
       headers.push(t("tripCount"));
       columnKeys.push("tripCount");
     }
-    if (visibleColumns.websiteUrl) {
+    if (visibleColumns.associatedWebsites) {
       headers.push(t("websiteUrl"));
-      columnKeys.push("websiteUrl");
+      columnKeys.push("associatedWebsites");
     }
     if (visibleColumns.contactPhone) {
       headers.push(t("contactPhone"));
@@ -416,10 +416,7 @@ export default function BusinessesList({
 
   const columns = [
     ...(canChangeStatus ? [{ key: "checkbox", label: "", width: "50px" }] : []),
-    // {
-    //   key: "_id",
-    //   label: "id",
-    // },
+   
     {
       key: "impact",
       label: t("impact_score"),
@@ -462,7 +459,6 @@ export default function BusinessesList({
               theme === "dark" ? "bg-teal-500/10" : "bg-teal-50",
             )}
           >
-            {/* You can add icon logic later when categories arrive */}
           </div>
           <span className={textPrimary}>
             {business.name || business.slug || t("unnamed_business") || "-"}
@@ -470,7 +466,43 @@ export default function BusinessesList({
         </div>
       ),
     },
-
+    {
+      key: "shortDescription",
+      label: t("shortDescription"),
+      sortable: true,
+      render: (business: any) => (
+        <div className="flex items-center gap-3">
+          <div
+            className={clsx(
+              "w-10 h-10 rounded-lg flex items-center justify-center",
+              theme === "dark" ? "bg-teal-500/10" : "bg-teal-50",
+            )}
+          >
+          </div>
+          <span className={textPrimary}>
+            {business.shortDescription  || "-"}
+          </span>
+        </div>
+      ),
+    },
+{
+      key: "contactDetails",
+      label: t("contactPerson"),
+      render: (business: any) => (
+        <div className="flex items-center gap-3">
+          <div
+            className={clsx(
+              "w-10 h-10 rounded-lg flex items-center justify-center",
+              theme === "dark" ? "bg-teal-500/10" : "bg-teal-50",
+            )}
+          >
+          </div>
+          <span className={textPrimary}>
+            {business.contactDetails.name  || "-"}
+          </span>
+        </div>
+      ),
+    },
     {
       key: "busiEmail",
       label: t("business_email"),
@@ -566,22 +598,40 @@ export default function BusinessesList({
         }
       },
     },
+    {
+      key: "phoneNumber",
+      label: t("contact_phone"),
+      render: (business: any) => (
+        <div className="flex items-center gap-3">
+          <div
+            className={clsx(
+              "w-10 h-10 rounded-lg flex items-center justify-center",
+              theme === "dark" ? "bg-teal-500/10" : "bg-teal-50",
+            )}
+          >
+          </div>
+          <span className={textPrimary}>
+            {business.phoneNumber || "-"}
+          </span>
+        </div>
+      ),
+    },
   ];
 
   // Helper function to get column label
   const getColumnLabel = (key: keyof ColumnVisibility): string => {
     const labelMap: { [K in keyof ColumnVisibility]: string } = {
-      impactScore: t("impactScore"),
-      businessName: t("businessName"),
+      impact: t("impactScore"),
+      name: t("businessName"),
       shortDescription: t("shortDescription"),
-      contactName: t("contactPerson"),
-      businessEmail: t("businessEmail"),
+      contactDetails: t("contactPerson"),
+      busiEmail: t("businessEmail"),
       phoneNumber: t("phoneNumber"),
-      productsCount: t("productsCount"),
+      productCount: t("productsCount"),
       status: t("status"),
       lifetimeSales: t("lifetimeSales"),
       tripCount: t("tripCount") || "Trip Count",
-      websiteUrl: t("websiteUrl"),
+      associatedWebsites: t("websiteUrl"),
       contactPhone: t("contactPhone") || "Contact Phone",
       categories: t("categories"),
     };
@@ -1173,7 +1223,7 @@ export default function BusinessesList({
               rowKey="_id"
               data={businessData?.data}
               selectedItems={selectedBusinesses}
-              // onSelectionChange={setSelectedBusinesses}
+              onSelectionChange={setSelectedBusinesses}
               onRowClick={(business) => onBusinessClick(business)}
               storageKey="businessesTableColumnOrder"
               columns={columns}
