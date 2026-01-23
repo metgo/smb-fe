@@ -207,16 +207,15 @@ export default function BusinessesList({
   }, [page, limit, searchTerm, filters]);
 
   const clearFilter = () => {
-    setSelectAuthorityId("")
-    setSelectDmoId("")
-                setFilters({
-                  authorityId: "",
-                  dmoId: "",
-                  status: "DRAFT",
-                  hasProductFilter: "",
-                 
-                })
-  }
+    setSelectAuthorityId("");
+    setSelectDmoId("");
+    setFilters({
+      authorityId: "",
+      dmoId: "",
+      status: "DRAFT",
+      hasProductFilter: "",
+    });
+  };
   const { data: businessData, isLoading: _isLoading } =
     useGetAllbusinessesQuery(queryParams);
 
@@ -629,7 +628,7 @@ export default function BusinessesList({
             {/* Column Settings Dropdown */}
             {showColumnSettings && (
               <div
-                className={`absolute ${isRTL ? "left-0" : "right-0"} mt-2 w-72 rounded-lg shadow-lg border z-20 ${
+                className={`absolute ${isRTL ? "left-0" : "right-0"} mt-2 w-72 rounded-lg shadow-lg border z-50 ${
                   theme === "dark"
                     ? "bg-gray-800 border-gray-700"
                     : "bg-white border-gray-200"
@@ -797,9 +796,12 @@ export default function BusinessesList({
                 </label>
                 <div className=" w-full relative">
                   <select
-                    onChange={(e) =>
-                      setFilters({ ...filters, authorityId: e.target.value })
-                    }
+                    value={selectedAuthorityId}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setSelectAuthorityId(value); // sync local authority id state
+                      setFilters((prev) => ({ ...prev, authorityId: value }));
+                    }}
                     className={`w-full px-3 py-2 rounded-lg border ${
                       theme === "dark"
                         ? "bg-gray-800 border-gray-700 text-gray-200"
@@ -867,13 +869,84 @@ export default function BusinessesList({
                 </select>
               </div>
             </div>
+            <div className="flex gap-4">
+              <button
+                onClick={clearFilter}
+                className="mt-3 px-4 py-2 text-sm text-teal-600 hover:text-teal-700 transition-colors"
+              >
+                {t("clear_all")}
+              </button>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {Object.entries(filters).map(([key, value]) => {
+                  // Skip rendering empty filters
+                  if (!value || value === "all") return null;
 
-            <button
-              onClick={clearFilter}
-              className="mt-3 px-4 py-2 text-sm text-teal-600 hover:text-teal-700 transition-colors"
-            >
-              {t("clear_all")}
-            </button>
+                  // Special case: don't show authority chip if no DMO is selected
+                  if (key === "authorityId" && !filters.dmoId) {
+                    return null;
+                  }
+
+                  // For status → show friendly label instead of raw value
+                  let displayValue = value;
+                  if (key === "status") {
+                    displayValue = t(value.toLowerCase()) || value;
+                  } else if (key === "hasProductFilter") {
+                    displayValue = value === "yes" ? t("yes") : t("no");
+                  } else if (key === "dmoId") {
+                    // Optional: show DMO name instead of ID
+                    const dmo = dmosAuthorities?.find((d) => d._id === value);
+                    displayValue = dmo?.name || value;
+                  } else if (key === "authorityId") {
+                    // Optional: show Authority name instead of ID
+                    const authority = selectedDmos?.authorities?.find(
+                      (a) => a._id === value,
+                    );
+                    displayValue = authority?.name || value;
+                  }
+
+                  return (
+                    <div
+                      key={key}
+                      className="flex items-center gap-2 rounded-full bg-teal-50 dark:bg-teal-950/40 px-3 py-1 text-sm text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800/50"
+                    >
+                      <span>{displayValue}</span>
+
+                      <button
+                        onClick={() => {
+                          if (key === "dmoId") {
+                            setSelectDmoId("");
+                            setSelectAuthorityId("");
+                            setFilters((prev) => ({
+                              ...prev,
+                              dmoId: "",
+                              authorityId: "",
+                            }));
+                          } else if (key === "authorityId") {
+                            setSelectAuthorityId("");
+                            setFilters((prev) => ({
+                              ...prev,
+                              authorityId: "",
+                            }));
+                          } else if (key === "status") {
+                            setFilters((prev) => ({
+                              ...prev,
+                              status: "DRAFT",
+                            }));
+                          } else {
+                            // For other keys
+                            setFilters((prev) => ({ ...prev, [key]: "" }));
+                          }
+                        }}
+                        className="ml-1 text-teal-600 hover:text-teal-800 dark:text-teal-400 dark:hover:text-teal-200"
+                        aria-label="Remove filter"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         )}
 
