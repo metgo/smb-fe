@@ -177,6 +177,7 @@ export default function CreateEventWizard({
       setSelectDmoId(editData?.dmoId || "");
 
       // Date & Time
+      setIsMultiDay(editData?.dayDescription?.length > 1)
       setEventDays(editData?.dayDescription)
       setStartDate(editData?.dayDescription?.[0]?.date || '')
       setGeo({ lat: editData?.geoLocation?.lat, lng: editData?.geoLocation?.long })
