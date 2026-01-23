@@ -80,9 +80,6 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
     internalNotes,
   ]);
 
-  /* ------------------------------------------------------------------ */
-  /* 🔹 REFS FOR ERROR SCROLLING */
-  /* ------------------------------------------------------------------ */
   const fieldRefs = {
     dmoId: useRef<HTMLDivElement>(null),
     authorityId: useRef<HTMLDivElement>(null),
@@ -90,9 +87,7 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
     shortDescription: useRef<HTMLInputElement>(null),
   };
 
-  /* ------------------------------------------------------------------ */
-  /* 🔹 AUTO SCROLL TO FIRST ERROR */
-  /* ------------------------------------------------------------------ */
+
   useEffect(() => {
     const errorKeys = Object.keys(errors);
     if (errorKeys.length === 0) return;
@@ -166,7 +161,7 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
               }}
               className={clsx(
                 "appearance-none h-12 w-full border rounded-lg px-4 py-2 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 min-w-45",
-                // selectInputClasses
+                selectInputClasses, errors.dmoId && "border-red-500"
               )}
             >
               <option value="">Select DMO</option>
@@ -196,7 +191,8 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
               onChange={(e) => setSelectAuthorityId(e.target.value)}
               className={clsx(
                 "appearance-none h-12 w-full border rounded-lg px-4 py-2 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 min-w-45",
-                selectInputClasses
+                selectInputClasses, 
+                errors.dmoId && "border-red-500"
               )}
             >
               <option value="">Select Authority</option>
@@ -249,7 +245,8 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
           onChange={(e) => setShortDescription(e.target.value)}
           placeholder={t("brief_description")}
           maxLength={200}
-          className={`w-full px-5 py-3 rounded-xl border text-base ${inputClasses} transition-all focus:ring-2 focus:ring-teal-500/20`}
+          className={`w-full px-5 py-3 rounded-xl border text-base ${inputClasses} transition-all focus:ring-2 focus:ring-teal-500/20 ${errors.shortDescription ? "border-red-500" : ""
+            } `}
         />
         <p className={`text-xs mt-2 text-right ${textTertiary}`}>
           {shortDescription?.length}/200 {t("max_characters")}

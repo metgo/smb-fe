@@ -1,15 +1,15 @@
 
 import clsx from "clsx";
 import { toast } from "sonner";
-import { Plus, Trash2, Upload, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Plus, Trash2, Upload, X } from "lucide-react";
 
-import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { useCreateSignedUrlMutation, useCreateTicketMutation, useUpdateTicketMutation } from "@/store/api/eventMutationApi";
 import { uploadWithProgress } from "@/helpers";
 import { Spinner } from "@/components/shared";
 import { formatDate } from "@/helpers/formatter";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { useCreateSignedUrlMutation, useCreateTicketMutation, useUpdateTicketMutation } from "@/store/api/eventMutationApi";
 
 
 interface CreateTicketWizardProps {
@@ -57,7 +57,7 @@ const CreateTicketWizard = ({
   const [createTicket, { isLoading: isSaving }] = useCreateTicketMutation()
   const [updateTicket, { isLoading: isUpdating }] = useUpdateTicketMutation()
   const [ticketDateTime, setTicketDateTime] = useState<ITicketDateTime[]>([
-    { id: 1, date: eventDays?.[0].date, startTime: eventDays[0].startTime, endTime: eventDays[0].endTime}
+    { id: 1, date: eventDays?.[0].date, startTime: eventDays[0].startTime, endTime: eventDays[0].endTime }
   ]);
   const [file, setFile] = useState<File | null>(null)
   const [mediaURL, setMediaURL] = useState<GcsFileUpload>({ signedUrl: "", gcsURL: "" })
@@ -140,6 +140,8 @@ const CreateTicketWizard = ({
   }, [file]);
 
   useEffect(() => setProgress(0), [])
+
+
 
   const addEventDay = () => {
     setTicketDateTime((prev) => [

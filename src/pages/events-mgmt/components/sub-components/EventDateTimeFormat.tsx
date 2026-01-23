@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import DatePicker from "@/components/shared/DatePicker";
 import { MarkerMap } from "@/components/maps";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 interface EventDay {
   id: string;
@@ -155,6 +155,32 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
     recurrencePattern,
   ]);
 
+  const fieldRefs = {
+    startDate: useRef<HTMLDivElement>(null),
+    address: useRef<HTMLDivElement>(null),
+    onlineLink: useRef<HTMLInputElement>(null),
+  };
+
+
+  useEffect(() => {
+    const errorKeys = Object.keys(errors);
+    if (errorKeys.length === 0) return;
+
+    const firstErrorKey = errorKeys[0];
+    const ref = fieldRefs[firstErrorKey as keyof typeof fieldRefs];
+
+    if (ref?.current) {
+      ref.current.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+
+      if ("focus" in ref.current) {
+        (ref.current as HTMLElement).focus();
+      }
+    }
+  }, [errors]);
+
 
   // Generate recurring occurrences
   const generateRecurringOccurrences = () => {
@@ -263,7 +289,7 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
       {/* Date & Time Input */}
       {!isMultiDay ? (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
+          <div ref={fieldRefs.startDate}>
             <label className={`block text-sm mb-2 ${textSecondary}`}>
               {t("date")} <span className="text-red-500">*</span>
             </label>
@@ -746,7 +772,7 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
 
       {/* Physical / Hybrid Location */}
       {eventFormat !== "online" && (
-        <div>
+        <div ref={fieldRefs.address}>
           <label className={`block text-sm mb-2 ${textSecondary}`}>
             {t("location_address")} <span className="text-red-500">*</span>
           </label>
@@ -771,6 +797,7 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
           <input
             type="url"
             value={onlineLink}
+            ref={fieldRefs.onlineLink}
             onChange={(e) => setOnlineLink(e.target.value)}
             placeholder="https://zoom.us/..."
             className={`w-full px-4 py-2 rounded-lg border ${inputClasses} ${errors.onlineLink ? "border-red-500" : ""}`}
