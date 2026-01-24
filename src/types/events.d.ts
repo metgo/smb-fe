@@ -179,15 +179,6 @@ interface QuestionOption {
   label: string;
 }
 
-interface IEventImage {
-  image: string;
-  caption?: string;
-  alt?: string;
-  isPrimary: boolean;
-  subCoordinates?: SubCoordinates;
-}
-type TEventImages = IEventImage[];
-
 
 interface SubCoordinates {
   xMin: number;
@@ -266,16 +257,3 @@ interface ITicketPayload {
   type: string;
 }
 
-
-type IUploadStatus = "idle" | "uploading" | "success" | "error";
-
-interface IEventImageUpload {
-  id: number;
-  file?: File;
-  previewUrl: string;
-  signedUrl?: string;
-  gcsURL?: string;
-  progress: number;
-  status: UploadStatus;
-  isPrimary: boolean;
-}

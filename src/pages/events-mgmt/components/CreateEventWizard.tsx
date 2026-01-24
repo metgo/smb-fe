@@ -1,22 +1,24 @@
+import clsx from 'clsx';
 import { toast } from 'sonner';
 import { skipToken } from '@reduxjs/toolkit/query';
 import { useSearchParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import {
-  X, Check, Calendar,
+  Check, Calendar,
   Users, Ticket, Image, FileText, CheckCircle, Loader,
   Mail
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useAppSelector } from '@/hooks/hooks';
 
-import { Spinner, WizardFooter } from '@/components/shared';
+import { WizardFooter } from '@/components/shared';
 import { useThemeClasses } from '@/hooks/useThemeClasses';
 
 import { useGetAllTicketQuery, useGetEventByIdQuery } from '@/store/api/eventQueryApi';
 import { useInitEventCreateMutation, useUpdateEventMutation } from '@/store/api/eventMutationApi';
 import { EventBasicInformation, EventDateTimeFormat, EventMedia, EventRegistrationCapacity, EventReviewPublish, EventTickets, NotificationsTimeline } from './sub-components';
+import { ModalWrapper } from '@/components/wrapper';
 import { useEventDraftSaver } from '../hooks/useEventDraftSaver';
+import { useImagesUpload } from '@/hooks/useImagesUpload';
 
 interface CreateEventWizardProps {
   isOpen: boolean;
@@ -34,8 +36,7 @@ export default function CreateEventWizard({
   const { t: tc } = useTranslation('common');
 
   const [searchParams] = useSearchParams();
-  const { isRTL } = useAppSelector((state) => state.settings)
-  const { cardClasses, textPrimary, textTertiary } = useThemeClasses();
+  const { textPrimary, textTertiary, rowDir } = useThemeClasses();
   const editId = searchParams.get("eventId");
   const [eventId, setEventId] = useState<string>("");
 
@@ -51,6 +52,7 @@ export default function CreateEventWizard({
   const [isPublishing, setIsPublishing] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [eventDaysForTickets, setEventDaysForTickets] = useState<EventDay[]>([])
+  const [localTickets,setLocalTickets]=useState([]) // It's for TRK cache issue solved locally.
 
   // Step 1: Basic Information
   const [selectedDmoId, setSelectDmoId] = useState<string>("");
@@ -69,7 +71,9 @@ export default function CreateEventWizard({
   // Step 2: Date, Time & Format
   const [isMultiDay, setIsMultiDay] = useState(false);
   const [startDate, setStartDate] = useState('');
-  const [eventDays, setEventDays] = useState<EventDay[]>([]);
+  const [eventDays, setEventDays] = useState<EventDay[]>([
+    { id: "", date: "", startTime: "9:30", endTime: "14:30", description: "" }
+  ]);
   const [eventFormat, setEventFormat] = useState<'physical' | 'online' | 'hybrid'>('physical');
   const [address, setAddress] = useState('');
   const [onlineLink, setOnlineLink] = useState('');
@@ -103,7 +107,21 @@ export default function CreateEventWizard({
   const [editingNotification, setEditingNotification] = useState<NotificationData | null>(null);
 
   // Step 6: Media
-  const [eventImages, setEventImages] = useState<TEventImages>([])
+  const [eventImages, setEventImages] = useState<TImages>([])
+  const {
+    images,
+    imagesRef,
+    primaryImageIndex,
+    handleImageUpload,
+    uploadAll: eventImageUploadAll,
+    setPrimaryImage,
+    setImages,
+    deleteTarget,
+    setDeleteTarget,
+    confirmDelete,
+    isImageDeleting,
+    handleDeleteImage,
+  } = useImagesUpload({ initialImages: eventImages, onChange: setEventImages })
 
   // Validation errors
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -124,11 +142,16 @@ export default function CreateEventWizard({
       refetch();
     }
   }, [editId, isOpen])
+  useEffect(()=>{
+    if(tickets && eventId)
+      setLocalTickets(tickets)
+  }, [tickets, editData])
 
   // Reset all state when wizard closes or opens in create mode
   useEffect(() => {
     if (isOpen && !editId) {
       // Reset to initial state
+      setImages([])
       setEventId("")
       setCurrentStep(1);
       setEventName('');
@@ -157,6 +180,7 @@ export default function CreateEventWizard({
       setAccessiblitiesId([]);
       setEventImages([]);
       setNotifications([])
+      setLocalTickets([])
     }
   }, [isOpen, editId]);
 
@@ -244,15 +268,15 @@ export default function CreateEventWizard({
 
     switch (step) {
       case 1:
-        if (!selectedDmoId.trim()) newErrors.dmoId = t('required_field');
-        if (!selectedAuthorityId.trim()) newErrors.authorityId = t('required_field');
-        if (!eventName.trim()) newErrors.eventName = t('required_field');
-        if (!shortDescription.trim()) newErrors.shortDescription = t('required_field');
+        if (!selectedDmoId?.trim()) newErrors.dmoId = t('required_field');
+        if (!selectedAuthorityId?.trim()) newErrors.authorityId = t('required_field');
+        if (!eventName?.trim()) newErrors.eventName = t('required_field');
+        if (!shortDescription?.trim()) newErrors.shortDescription = t('required_field');
         if (eventName?.length < 3) newErrors.eventName = t('field_too_short');
         break;
       case 2:
         if (!isMultiDay && !startDate) newErrors.startDate = t('required_field');
-        if (isMultiDay && eventDays.some(d => !d.date)) newErrors.dates = 'All dates required';
+        if (isMultiDay && eventDays?.some(d => !d.date)) newErrors.dates = 'All dates required';
         if (eventFormat !== 'online' && !address) newErrors.address = t('required_field');
         if (eventFormat !== 'physical' && !onlineLink) newErrors.onlineLink = t('required_field');
         break;
@@ -365,10 +389,17 @@ export default function CreateEventWizard({
     stepPayloadMap,
   });
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (!validateStep(currentStep)) return;
+    if (currentStep === 6)
+      await eventImageUploadAll()
     setCurrentStep(prev => prev + 1);
   };
+
+  const handleSaveDraft = async () => {
+    await eventImageUploadAll()
+    saveDraft(false)
+  }
 
   const handlePrevious = () => {
     setCurrentStep(prev => Math.max(prev - 1, 1));
@@ -376,6 +407,7 @@ export default function CreateEventWizard({
 
   const handlePublish = async () => {
     let allValid = true;
+    await eventImageUploadAll()
     for (let i = 1; i <= 7; i++) {
       if (!validateStep(i)) {
         allValid = false;
@@ -389,7 +421,7 @@ export default function CreateEventWizard({
       return;
     }
     setIsPublishing(true);
-    saveDraft(true)
+    await saveDraft(true)
     setIsPublishing(false);
     toast.success(t('event_published_success'));
     onClose();
@@ -411,6 +443,16 @@ export default function CreateEventWizard({
   const removeEventDay = (id: string) => {
     setEventDays(eventDays.filter(d => d.id !== id));
   };
+
+  const handleSpecificStepJump = (stepId: number) => {
+    if (stepId !== 6) {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      })
+    }
+    setCurrentStep(stepId)
+  }
 
   const addCustomQuestion = () => {
     setCustomQuestions([
@@ -436,282 +478,276 @@ export default function CreateEventWizard({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <ModalWrapper
+      onClose={onClose}
+      showSpinner={isEventCreating || isEventCreating || isLoading || isFetching}
+    >
+      {/* Header */}
       <div
-        className={`w-full max-w-5xl h-[90vh] rounded-xl flex flex-col ${cardClasses} ${isRTL ? 'rtl' : 'ltr'
-          }`}
+        className={clsx(
+          rowDir,
+          "flex items-center justify-between p-6 border-b w-full",
+          theme === "dark" ? "border-gray-800" : "border-gray-200"
+        )}
       >
-        <Spinner isLoading={isEventCreating || isEventCreating || isLoading || isFetching} />
-        <>
-          {/* Header */}
-          <div className={`flex items-center justify-between p-6 border-b ${theme === 'dark' ? 'border-gray-800' : 'border-gray-200'}`}>
-            <div className="flex-1">
-              <h2 className={`text-2xl ${textPrimary}`}>
-                {editId ? t('edit_event') : t('create_new_event')}
-              </h2>
-              <p className={`text-sm mt-1 ${textTertiary}`}>
-                {t('step')} {currentStep} {t('step_of')} {steps?.length}: {steps[currentStep - 1].label}
-              </p>
-            </div>
-            <div className="flex items-center gap-3">
-              {lastSaved && (
-                <span className={`text-xs ${textTertiary}`}>
-                  {(isEventCreating || isEventUpdating) ? (
-                    <span className="flex items-center gap-1">
-                      <Loader className="w-3 h-3 animate-spin" />
-                      {t('saving')}
-                    </span>
-                  ) : (
-                    `${t('saved')} ${lastSaved.toLocaleTimeString()}`
-                  )}
+        {/* Title */}
+        <div className="">
+          <h2 className={`text-2xl ${textPrimary}`}>
+            {editId ? t('edit_event') : t('create_new_event')}
+          </h2>
+          <p className={`text-sm mt-1 ${textTertiary}`}>
+            {t('step')} {currentStep} {t('step_of')} {steps?.length}: {steps[currentStep - 1].label}
+          </p>
+        </div>
+
+        {/* Publish button */}
+        <div className="flex items-center gap-3">
+          {lastSaved && (
+            <span className={`text-xs ${textTertiary}`}>
+              {(isEventCreating || isEventUpdating) ? (
+                <span className="flex items-center gap-1">
+                  <Loader className="w-3 h-3 animate-spin" />
+                  {t('saving')}
                 </span>
+              ) : (
+                `${t('saved')} ${lastSaved.toLocaleTimeString()}`
               )}
-              <button
-                onClick={handlePublish}
-                disabled={isPublishing}
-                className="px-6 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white transition-colors flex items-center gap-2 cursor-pointer"
-              >
-                {isPublishing ? (
-                  <>
-                    <Loader className="w-4 h-4 animate-spin" />
-                    {tc('publishing')}
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle className="w-4 h-4" />
-                    {tc('publish')}
-                  </>
-                )}
-              </button>
-              <button
-                onClick={() => {
-                  onClose();
-                }}
-                className={`p-2 rounded-lg transition-colors ${theme === 'dark' ? 'hover:bg-gray-800' : 'hover:bg-gray-100'
-                  }`}
-              >
-                <X className={`w-6 h-6 ${textTertiary}`} />
-              </button>
-            </div>
-          </div>
-
-          {/* Progress Bar */}
-          <div className={`px-6 py-4 border-b ${theme === 'dark' ? 'border-gray-800' : 'border-gray-200'} `}>
-            <div className="flex items-center justify-between ">
-              {steps.map((step, index) => (
-                <div
-                  key={step.id}
-                  className="flex items-center flex-1 cursor-pointer"
-                  onClick={() => setCurrentStep(step.id)}
-                >
-                  <div className="flex flex-col items-center">
-                    <div
-                      className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${currentStep > step.id
-                        ? 'bg-green-500 text-white'
-                        : currentStep === step.id
-                          ? 'bg-teal-500 text-white'
-                          : theme === 'dark'
-                            ? 'bg-gray-800 text-gray-500'
-                            : 'bg-gray-200 text-gray-400'
-                        }`}
-                    >
-                      {currentStep > step.id ? (
-                        <Check className="w-5 h-5" />
-                      ) : (
-                        <step.icon className="w-5 h-5" />
-                      )}
-                    </div>
-                    <span className={`text-xs mt-1 hidden md:block ${textTertiary}`}>
-                      {step.label}
-                    </span>
-                  </div>
-                  {index < steps?.length - 1 && (
-                    <div
-                      className={`flex-1 h-0.5 mx-2 ${currentStep > step.id
-                        ? 'bg-green-500'
-                        : theme === 'dark'
-                          ? 'bg-gray-800'
-                          : 'bg-gray-200'
-                        }`}
-                    />
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Content */}
-          <div className="flex-1 overflow-y-auto p-6">
-            {currentStep === 1 &&
-              <EventBasicInformation
-                markDirty={markDirty}
-                eventName={eventName}
-                setEventName={setEventName}
-                shortDescription={shortDescription}
-                setShortDescription={setShortDescription}
-                fullDescription={fullDescription}
-                setFullDescription={setFullDescription}
-                eventStatus={eventStatus}
-                setEventStatus={setEventStatus}
-                internalNotes={internalNotes}
-                setInternalNotes={setInternalNotes}
-                errors={errors}
-                selectedDmoId={selectedDmoId}
-                setSelectDmoId={setSelectDmoId}
-                selectedAuthorityId={selectedAuthorityId}
-                setSelectAuthorityId={setSelectAuthorityId}
-                selectedAccessiblitiesId={selectedAccessiblitiesId}
-                setAccessiblitiesId={setAccessiblitiesId}
-                selectedGroupTypesId={selectedGroupTypesId}
-                setGroupTypesId={setGroupTypesId}
-                selectedSubCategoriesId={selectedSubCategoriesId}
-                setSubCategoriesId={setSubCategoriesId}
-              />
-            }
-            {currentStep === 2 &&
-              <EventDateTimeFormat
-                geo={geo}
-                setGeo={setGeo}
-                isMultiDay={isMultiDay}
-                setIsMultiDay={setIsMultiDay}
-                startDate={startDate}
-                setStartDate={setStartDate}
-                eventDays={eventDays}
-                setEventDays={setEventDays}
-                eventFormat={eventFormat}
-                setEventFormat={setEventFormat}
-                address={address}
-                setAddress={setAddress}
-                onlineLink={onlineLink}
-                setOnlineLink={setOnlineLink}
-                errors={errors}
-                addEventDay={addEventDay}
-                removeEventDay={removeEventDay}
-                isRecurring={isRecurring}
-                setIsRecurring={setIsRecurring}
-                recurrencePattern={recurrencePattern}
-                setRecurrencePattern={setRecurrencePattern}
-                toggleWeekday={toggleWeekday}
-                selectedWeekdays={selectedWeekdays}
-                monthlyType={monthlyType}
-                setMonthlyType={setMonthlyType}
-                recurrenceEndCount={recurrenceEndCount}
-                setRecurrenceEndCount={setRecurrenceEndCount}
-                recurrenceEndDate={recurrenceEndDate}
-                setRecurrenceEndDate={setRecurrenceEndDate}
-                recurrenceEndType={recurrenceEndType}
-                setRecurrenceEndType={setRecurrenceEndType}
-                setSpecificDate={setSpecificDate}
-                specificDate={specificDate}
-                relativeDate={relativeDate}
-                setRelativeDate={setRelativeDate}
-                relativeDay={relativeDay}
-                setRelativeDay={setRelativeDay}
-                customInterval={customInterval}
-                setCustomInterval={setCustomInterval}
-                customUnit={customUnit}
-                setCustomUnit={setCustomUnit}
-                markDirty={markDirty}
-              />
-            }
-
-            {currentStep === 3 &&
-              <EventRegistrationCapacity
-                markDirty={markDirty}
-                currentStep={currentStep}
-                registrationRequired={registrationRequired}
-                setRegistrationRequired={setRegistrationRequired}
-                capacityType={capacityType}
-                setCapacityType={setCapacityType}
-                capacity={capacity}
-                setCapacity={setCapacity}
-                customQuestions={customQuestions}
-                setCustomQuestions={setCustomQuestions}
-                addCustomQuestion={addCustomQuestion}
-              />}
-
-            {currentStep === 4 &&
-              <EventTickets
-                tickets={tickets}
-                eventId={eventId}
-                setEventId={setEventId}
-                initEventCreate={initEventCreate}
-                showTicketModal={showTicketModal}
-                setShowTicketModal={setShowTicketModal}
-                errors={errors}
-                refetch={ticketRefetch}
-                setCurrentStep={setCurrentStep}
-                eventDays={eventDaysForTickets}
-              />}
-
-            {currentStep === 5 &&
-              <NotificationsTimeline
-                markDirty={markDirty}
-                notifications={notifications}
-                setNotifications={setNotifications}
-                editingNotification={editingNotification}
-                setEditingNotification={setEditingNotification}
-                showNotificationForm={showNotificationForm}
-                setShowNotificationForm={setShowNotificationForm}
-                eventLanguage={eventLanguage}
-                eventName={eventName}
-                startDate={startDate}
-                eventDays={eventDays}
-                address={address}
-                capacity={capacity}
-              />}
-            {currentStep === 6 &&
-              <EventMedia
-                t={t}
-                theme={theme}
-                markDirty={markDirty}
-                eventImages={eventImages}
-                setEventImages={setEventImages}
-              />}
-
-            {currentStep === 7 &&
-              <EventReviewPublish
-                setCurrentStep={setCurrentStep}
-                eventName={eventName}
-                shortDescription={shortDescription}
-                eventLanguage={eventLanguage}
-                eventStatus={eventStatus}
-                isMultiDay={isMultiDay}
-                startDate={startDate}
-                eventFormat={eventFormat}
-                address={address}
-                onlineLink={onlineLink}
-                registrationRequired={registrationRequired}
-                capacityType={capacityType}
-                capacity={capacity}
-                customQuestions={customQuestions}
-                tickets={tickets}
-              />}
-          </div>
-
-          <WizardFooter
-            currentStep={currentStep}
-            totalSteps={7}
-            isSaving={isEventUpdating}
-            isPublishing={isPublishing}
-            onPrevious={handlePrevious}
-            onNext={handleNext}
-            onSaveDraft={() => saveDraft(false)}
-            onPublish={handlePublish}
-          />
-        </>
+            </span>
+          )}
+          <button
+            onClick={handlePublish}
+            disabled={isPublishing}
+            className="px-6 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white transition-colors flex items-center gap-2 cursor-pointer"
+          >
+            {isPublishing ? (
+              <>
+                <Loader className="w-4 h-4 animate-spin" />
+                {tc('publishing')}
+              </>
+            ) : (
+              <>
+                <CheckCircle className="w-4 h-4" />
+                {tc('publish')}
+              </>
+            )}
+          </button>
+        </div>
       </div>
 
+      {/* Progress Bar */}
+      <div className={`px-6 py-4 border-b ${theme === 'dark' ? 'border-gray-800' : 'border-gray-200'} `}>
+        <div className={clsx(
+          rowDir,
+          "flex items-center justify-between ",
+        )}>
+          {steps.map((step, index) => (
+            <div
+              key={step.id}
+              className="flex items-center flex-1 cursor-pointer"
+              onClick={() => handleSpecificStepJump(step.id)}
+            >
+              <div className="flex flex-col items-center">
+                <div
+                  className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${currentStep > step.id
+                    ? 'bg-green-500 text-white'
+                    : currentStep === step.id
+                      ? 'bg-teal-500 text-white'
+                      : theme === 'dark'
+                        ? 'bg-gray-800 text-gray-500'
+                        : 'bg-gray-200 text-gray-400'
+                    }`}
+                >
+                  {currentStep > step.id ? (
+                    <Check className="w-5 h-5" />
+                  ) : (
+                    <step.icon className="w-5 h-5" />
+                  )}
+                </div>
+                <span className={`text-xs mt-1 hidden md:block ${textTertiary}`}>
+                  {step.label}
+                </span>
+              </div>
+              {index < steps?.length - 1 && (
+                <div
+                  className={`flex-1 h-0.5 mx-2 ${currentStep > step.id
+                    ? 'bg-green-500'
+                    : theme === 'dark'
+                      ? 'bg-gray-800'
+                      : 'bg-gray-200'
+                    }`}
+                />
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
 
-      {/* <ConfirmDialog
-        open={isConfirmOpen}
-        title={"unsaved_changes"}
-        message="unsaved_changes_confirm"
-        confirmText="confirm"
-        variant="info"
-        onCancel={() => setIsConfirmOpen(false)}
-        onConfirm={onClose}
-      /> */}
-    </div>
+      {/* Content */}
+      <div className="flex-1 overflow-y-auto p-6">
+        {currentStep === 1 &&
+          <EventBasicInformation
+            markDirty={markDirty}
+            eventName={eventName}
+            setEventName={setEventName}
+            shortDescription={shortDescription}
+            setShortDescription={setShortDescription}
+            fullDescription={fullDescription}
+            setFullDescription={setFullDescription}
+            eventStatus={eventStatus}
+            setEventStatus={setEventStatus}
+            internalNotes={internalNotes}
+            setInternalNotes={setInternalNotes}
+            errors={errors}
+            selectedDmoId={selectedDmoId}
+            setSelectDmoId={setSelectDmoId}
+            selectedAuthorityId={selectedAuthorityId}
+            setSelectAuthorityId={setSelectAuthorityId}
+            selectedAccessiblitiesId={selectedAccessiblitiesId}
+            setAccessiblitiesId={setAccessiblitiesId}
+            selectedGroupTypesId={selectedGroupTypesId}
+            setGroupTypesId={setGroupTypesId}
+            selectedSubCategoriesId={selectedSubCategoriesId}
+            setSubCategoriesId={setSubCategoriesId}
+          />
+        }
+        {currentStep === 2 &&
+          <EventDateTimeFormat
+            geo={geo}
+            setGeo={setGeo}
+            isMultiDay={isMultiDay}
+            setIsMultiDay={setIsMultiDay}
+            startDate={startDate}
+            setStartDate={setStartDate}
+            eventDays={eventDays}
+            setEventDays={setEventDays}
+            eventFormat={eventFormat}
+            setEventFormat={setEventFormat}
+            address={address}
+            setAddress={setAddress}
+            onlineLink={onlineLink}
+            setOnlineLink={setOnlineLink}
+            errors={errors}
+            addEventDay={addEventDay}
+            removeEventDay={removeEventDay}
+            isRecurring={isRecurring}
+            setIsRecurring={setIsRecurring}
+            recurrencePattern={recurrencePattern}
+            setRecurrencePattern={setRecurrencePattern}
+            toggleWeekday={toggleWeekday}
+            selectedWeekdays={selectedWeekdays}
+            monthlyType={monthlyType}
+            setMonthlyType={setMonthlyType}
+            recurrenceEndCount={recurrenceEndCount}
+            setRecurrenceEndCount={setRecurrenceEndCount}
+            recurrenceEndDate={recurrenceEndDate}
+            setRecurrenceEndDate={setRecurrenceEndDate}
+            recurrenceEndType={recurrenceEndType}
+            setRecurrenceEndType={setRecurrenceEndType}
+            setSpecificDate={setSpecificDate}
+            specificDate={specificDate}
+            relativeDate={relativeDate}
+            setRelativeDate={setRelativeDate}
+            relativeDay={relativeDay}
+            setRelativeDay={setRelativeDay}
+            customInterval={customInterval}
+            setCustomInterval={setCustomInterval}
+            customUnit={customUnit}
+            setCustomUnit={setCustomUnit}
+            markDirty={markDirty}
+          />
+        }
+
+        {currentStep === 3 &&
+          <EventRegistrationCapacity
+            markDirty={markDirty}
+            currentStep={currentStep}
+            registrationRequired={registrationRequired}
+            setRegistrationRequired={setRegistrationRequired}
+            capacityType={capacityType}
+            setCapacityType={setCapacityType}
+            capacity={capacity}
+            setCapacity={setCapacity}
+            customQuestions={customQuestions}
+            setCustomQuestions={setCustomQuestions}
+            addCustomQuestion={addCustomQuestion}
+          />}
+
+        {currentStep === 4 &&
+          <EventTickets
+            tickets={localTickets}
+            eventId={eventId}
+            setEventId={setEventId}
+            initEventCreate={initEventCreate}
+            showTicketModal={showTicketModal}
+            setShowTicketModal={setShowTicketModal}
+            errors={errors}
+            refetch={ticketRefetch}
+            eventDays={eventDaysForTickets}
+          />}
+
+        {currentStep === 5 &&
+          <NotificationsTimeline
+            markDirty={markDirty}
+            notifications={notifications}
+            setNotifications={setNotifications}
+            editingNotification={editingNotification}
+            setEditingNotification={setEditingNotification}
+            showNotificationForm={showNotificationForm}
+            setShowNotificationForm={setShowNotificationForm}
+            eventLanguage={eventLanguage}
+            eventName={eventName}
+            startDate={startDate}
+            eventDays={eventDays}
+            address={address}
+            capacity={capacity}
+          />}
+        {currentStep === 6 &&
+          <EventMedia
+            t={t}
+            theme={theme}
+            markDirty={markDirty}
+            images={images}
+            imagesRef={imagesRef}
+            setPrimaryImage={setPrimaryImage}
+            handleImageUpload={handleImageUpload}
+            primaryImageIndex={primaryImageIndex}
+            deleteTarget={deleteTarget}
+            setDeleteTarget={setDeleteTarget}
+            confirmDelete={confirmDelete}
+            handleDeleteImage={handleDeleteImage}
+            isImageDeleting={isImageDeleting}
+          />}
+
+        {currentStep === 7 &&
+          <EventReviewPublish
+            setCurrentStep={setCurrentStep}
+            eventName={eventName}
+            shortDescription={shortDescription}
+            eventLanguage={eventLanguage}
+            eventStatus={eventStatus}
+            isMultiDay={isMultiDay}
+            startDate={startDate}
+            eventFormat={eventFormat}
+            address={address}
+            onlineLink={onlineLink}
+            registrationRequired={registrationRequired}
+            capacityType={capacityType}
+            capacity={capacity}
+            customQuestions={customQuestions}
+            tickets={localTickets}
+          />}
+      </div>
+
+      <WizardFooter
+        currentStep={currentStep}
+        totalSteps={7}
+        isSaving={isEventUpdating}
+        isPublishing={isPublishing}
+        onPrevious={handlePrevious}
+        onNext={handleNext}
+        onSaveDraft={handleSaveDraft}
+        onPublish={handlePublish}
+      />
+    </ModalWrapper>
   );
 }

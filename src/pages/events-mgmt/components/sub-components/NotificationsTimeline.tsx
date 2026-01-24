@@ -82,12 +82,12 @@ const NotificationsTimeline: React.FC<NotificationsTimelineProps> = ({
 
       {/* Notifications Timeline */}
       <div className="space-y-4">
-        {notifications.length > 0 ? (
+        {notifications?.length > 0 ? (
           notifications
             .sort((a, b) => a.hoursBeforeEvent - b.hoursBeforeEvent)
-            .map((notification) => (
+            .map((notification, index) => (
               <div
-                key={notification._id}
+                key={notification._id + index}
                 className={`p-4 rounded-lg border ${theme === "dark" ? "border-gray-700 bg-gray-800/50" : "border-gray-200 bg-gray-50"} ${!notification.enabled ? "opacity-50" : ""
                   }`}
               >
@@ -219,8 +219,8 @@ const NotificationsTimeline: React.FC<NotificationsTimelineProps> = ({
 
       <ConfirmDialog
         open={isConfirmOpen}
-        title="delete_notification"
-        message="delete_notification_confirm"
+        title="deletd_notification"
+        message="delete_notification_cofirm"
         confirmText="delete"
         loading={false}
         variant="danger"

@@ -31,7 +31,7 @@ export const store = configureStore({
     [masterDataApi.reducerPath]:masterDataApi.reducer,
     [userMutationApi.reducerPath]:userMutationApi.reducer,
     [eventMutationApi.reducerPath]:eventMutationApi.reducer,
-    [mediaMutationApi.reducerPath]:eventMutationApi.reducer,
+    [mediaMutationApi.reducerPath]:mediaMutationApi.reducer,
 
     [eventQueryApi.reducerPath]:eventQueryApi.reducer,
     [userQueryApi.reducerPath]:userQueryApi.reducer,
@@ -50,6 +50,7 @@ export const store = configureStore({
 
       eventQueryApi.middleware,
       userQueryApi.middleware,
+      mediaMutationApi.middleware,
 
     ),
 })

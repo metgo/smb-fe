@@ -18,11 +18,11 @@ export const mediaMutationApi = createApi({
       })
     }),
 
-    deleteMedia: builder.mutation<any, void>({
-      query: (body)=>({
+    deleteMedia: builder.mutation<any, {imageUrl: string}>({
+      query: ({imageUrl})=>({
         url: endpoints.mediaFileDelete,
         method: 'DELETE',
-        data: body,
+        data: {imageUrl},
       })
     })
   }),

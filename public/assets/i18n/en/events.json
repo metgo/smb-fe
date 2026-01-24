@@ -143,6 +143,7 @@
   "dropdown": "Dropdown",
   "checkbox": "Checkbox",
   "when_registration_disabled": "When registration is disabled",
+
   "event_tickets": "Event Tickets",
   "create_ticket": "Create Ticket",
   "no_tickets_yet": "No Tickets Yet",
@@ -157,7 +158,16 @@
   "cancel": "Cancel",
   "save_ticket": "Save Ticket",
   "edit_ticket": "Edit Ticket",
-  "delete_ticket_confirm": "Are you sure you want to delete this ticket?",
+  "duplicate_ticket": "Duplicate Ticket",
+  "ticket_days":"Ticket Days",
+  "ticket_name_required": "Ticket name is required",
+  "date_required": "Date is required",
+  "start_time_required": "Start time is required",
+  "end_time_required": "End time is required",
+  "marked_price_required": "Marked price is required",
+  "selling_price_required": "Selling price is required",
+  "add_more_days": "Add More Days",
+
   "event_images": "Event Images",
   "upload_images": "Upload Images",
   "drag_drop_images": "Drag & Drop Images",
@@ -228,5 +238,8 @@
   "date_range": "Date Range",
   "websites": "Websites",
 
-  "free_access_info":"When registration is disabled, attendees can join freely without signing up."
+  "free_access_info":"When registration is disabled, attendees can join freely without signing up.",
+  "select_event_day_first": "You must select event day(s) first.",
+  "no_tickets_created":"No ticktes created yet. Please create ticket first"
+
 }

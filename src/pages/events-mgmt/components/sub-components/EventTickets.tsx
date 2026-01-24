@@ -1,7 +1,8 @@
+import clsx from "clsx";
 import { toast } from "sonner";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Plus, Ticket, FileText, Trash2, AlertCircle } from "lucide-react";
+import { Plus, Ticket, FileText, Trash2, AlertCircle, Copy } from "lucide-react";
 
 import { useAppSelector } from "@/hooks/hooks";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
@@ -9,6 +10,7 @@ import { useDeleteTicketMutation } from "@/store/api/eventMutationApi";
 import CreateTicketWizard from "./CreateTicketWizard";
 import { TicketCardSkeleton } from "@/components/skeletons";
 import { ConfirmDialog } from "@/components/shared";
+import { TooltipWrapper } from "@/components/wrapper";
 
 
 interface EventTicketsProps {
@@ -19,7 +21,6 @@ interface EventTicketsProps {
   refetch: () => void;
   setEventId: (v: string) => void;
   initEventCreate: () => any;
-  setCurrentStep: (v: number) => void;
   tickets: any;
   eventDays: EventDay[];
 }
@@ -46,16 +47,14 @@ const EventTickets: React.FC<EventTicketsProps> = ({
   errors,
   tickets,
   refetch,
-  setCurrentStep,
   initEventCreate,
   eventDays
 }) => {
   const { t } = useTranslation("events");
-  const { textPrimary, textTertiary } = useThemeClasses();
+  const { textPrimary, textTertiary, rowDir } = useThemeClasses();
   const { theme } = useAppSelector((state) => state.settings);
   const [opMode, setOpMode] = useState<TTicketOpMode>("CREATE")
-
-
+  const isTicketDisabled = !eventDays?.length || eventDays[0]?.date === "";
 
   const [deleteTicket, { isLoading: isDeleting }] = useDeleteTicketMutation();
   const [editingTicket, setEditingTicket] = useState<ITicketPayload | null>(null);
@@ -122,18 +121,34 @@ const EventTickets: React.FC<EventTicketsProps> = ({
   return (
     <div className="space-y-8 max-w-4xl mx-auto">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className={clsx(rowDir, "flex items-center justify-between")}>
         <h2 className={`text-2xl font-bold ${textPrimary}`}>
           {t("event_tickets")}
         </h2>
 
-        <button
-          onClick={addTicket}
-          className="px-5 py-3 cursor-pointer rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-medium flex items-center gap-2 shadow-lg shadow-teal-600/20"
+        <TooltipWrapper
+          infoText={`🗓 ${t("select_event_day_first")}`}
+          showToolTip={isTicketDisabled}
         >
-          <Plus className="w-5 h-5" />
-          {t("create_ticket")}
-        </button>
+          <span className="inline-block">
+            <button
+              type="button"
+              disabled={isTicketDisabled}
+              onClick={() => {
+                if (isTicketDisabled) return;
+                addTicket();
+              }}
+              className={clsx(
+                "px-5 py-3 rounded-xl font-medium flex items-center gap-2 shadow-lg transition-all bg-teal-600 hover:bg-teal-700 text-white shadow-teal-600/20",
+                isTicketDisabled ? "cursor-not-allowed" : "cursor-pointer",
+              )}
+            >
+              <Plus className="w-5 h-5" />
+              {t("create_ticket")}
+            </button>
+          </span>
+        </TooltipWrapper>
+
       </div>
 
       {/* Loading Skeleton */}
@@ -145,7 +160,7 @@ const EventTickets: React.FC<EventTicketsProps> = ({
         </div>
       )}
       {/* Global Error */}
-      {errors.tickets && !tickets && (
+      {errors.tickets && (!tickets || tickets?.length === 0) && (
         <div className="p-5 rounded-xl bg-red-500/10 border border-red-500/50 text-red-600 dark:text-red-400 flex items-center gap-3">
           <AlertCircle className="w-6 h-6 shrink-0" />
           <span className="font-medium">{errors.tickets}</span>
@@ -167,17 +182,25 @@ const EventTickets: React.FC<EventTicketsProps> = ({
           <p className={`mb-8 ${textTertiary}`}>
             {t("no_tickets_yet_desc")}
           </p>
-          <button
-            onClick={addTicket}
-            className="px-8 py-4 cursor-pointer rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-medium text-lg shadow-lg"
+          <TooltipWrapper
+            infoText={`🗓 ${t("select_event_day_first")}`}
+            showToolTip={isTicketDisabled}
           >
-            {t("create_first_ticket")}
-          </button>
+            <button
+              onClick={addTicket}
+              className={clsx(
+                "px-8 py-4 cursor-pointer rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-medium text-lg shadow-lg",
+                isTicketDisabled ? "cursor-not-allowed" : "cursor-pointer"
+              )}
+            >
+              {t("create_first_ticket")}
+            </button>
+          </TooltipWrapper>
         </div>
       )}
 
       {/* Tickets List */}
-      {tickets?.length > 0 && (
+      {tickets?.length > 0 && !isDeleting && (
         <div className="space-y-5">
           {tickets?.map((ticket: any) => (
             <div
@@ -233,10 +256,11 @@ const EventTickets: React.FC<EventTicketsProps> = ({
                   >
                     <FileText className="w-5 h-5" />
                   </button>
-                  {/* <button
+                  <button
                     onClick={() => {
                       setEditingTicket({
                         ...ticket,
+                        name: ticket.name +" (Copy)",
                         imageUrl: ticket?.images?.[0]?.image || "",
                       });
                       setOpMode("DUPLICATE")
@@ -245,7 +269,7 @@ const EventTickets: React.FC<EventTicketsProps> = ({
                     className="p-3 cursor-pointer rounded-xl text-blue-500 hover:bg-blue-500/10"
                   >
                     <Copy className="w-5 h-5" />
-                  </button> */}
+                  </button>
                   <button
                     onClick={() => {
                       setTicketToDelete(ticket._id);
@@ -271,7 +295,6 @@ const EventTickets: React.FC<EventTicketsProps> = ({
           refetch={refetch}
           opMode={opMode}
           eventDays={eventDays}
-          setCurrentStep={setCurrentStep}
           setShowTicketModal={setShowTicketModal}
           editingTicket={editingTicket!}
           setEditingTicket={setEditingTicket}

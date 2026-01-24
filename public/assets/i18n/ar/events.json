@@ -160,6 +160,7 @@
   "no_tickets_yet": "لا توجد بطاقات بعد",
   "no_tickets_yet_desc": "لم تقم بإنشاء أي بطاقات بعد. أنشئ البطاقة الأولى لبدء البيع.",
   "create_first_ticket": "إنشاء البطاقة الأولى",
+
   "ticket_name": "اسم البطاقة",
   "ticket_type": "نوع البطاقة",
   "vip": "VIP",
@@ -169,7 +170,16 @@
   "cancel": "إلغاء",
   "save_ticket": "حفظ البطاقة",
   "edit_ticket": "تحرير البطاقة",
-  "delete_ticket_confirm": "هل أنت متأكد من حذف هذه البطاقة؟",
+  "duplicate_ticket": "نسخ التذكرة",
+  "ticket_days": "أيام التذكرة",
+  "ticket_name_required": "اسم التذكرة مطلوب",
+  "date_required": "التاريخ مطلوب",
+  "start_time_required": "وقت البدء مطلوب",
+  "end_time_required": "وقت الانتهاء مطلوب",
+  "marked_price_required": "السعر الأصلي مطلوب",
+  "selling_price_required": "سعر البيع مطلوب",
+  "add_more_days": "إضافة أيام أخرى", 
+
   "event_images": "صور الحدث",
   "upload_images": "تحميل الصور",
   "drag_drop_images": "سحب وإفلات الصور",
@@ -240,5 +250,7 @@
   "date_range": "نطاق التاريخ",
   "websites": "مواقع إلكترونية",
 
-  "free_access_info": "عند تعطيل التسجيل، يمكن للحضور الانضمام بحرية دون الحاجة إلى التسجيل."
+  "free_access_info": "عند تعطيل التسجيل، يمكن للحضور الانضمام بحرية دون الحاجة إلى التسجيل.",
+  "select_event_day_first": "يجب اختيار يوم/أيام الفعالية أولاً.",
+  "no_tickets_created": "لم يتم إنشاء أي تذاكر بعد. يرجى إنشاء تذكرة أولاً."
 }

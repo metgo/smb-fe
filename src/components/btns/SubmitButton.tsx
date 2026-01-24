@@ -6,12 +6,15 @@ interface SubmitButtonProps {
   loading: boolean;
   label: string;
   className: string;
+  onClick?: ()=>void;
+  type?: "submit" | "reset" | "button" | "reset";
 }
 
-const SubmitButton = ({ loading, label, className }: SubmitButtonProps) => (
+const SubmitButton = ({ loading, label, className, type = "submit", onClick }: SubmitButtonProps) => (
   <Button
-    type="submit"
+    type={type}
     disabled={loading}
+    onClick={onClick && onClick}
     className={clsx(
       className,
       loading ? "cursor-not-allowed" : "cursor-pointer",
