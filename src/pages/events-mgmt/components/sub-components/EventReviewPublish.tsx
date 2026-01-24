@@ -3,12 +3,8 @@ import { useAppSelector } from "@/hooks/hooks";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useTranslation } from "react-i18next";
 import { CheckCircle } from "lucide-react";
-
-// interface TicketData {
-//   id: string;
-//   name: string;
-//   type: "free" | "paid" | "vip" | "donation";
-// }
+import { formatDate } from "@/helpers/formatter";
+import { extractCenterAddressText } from "@/helpers";
 
 interface CustomQuestion {
   id: string;
@@ -17,7 +13,6 @@ interface CustomQuestion {
 }
 
 interface EventReviewPublishProps {
-  currentStep: number;
   setCurrentStep: React.Dispatch<React.SetStateAction<number>>;
 
   // Basic Info (Step 1)
@@ -44,7 +39,6 @@ interface EventReviewPublishProps {
 }
 
 const EventReviewPublish: React.FC<EventReviewPublishProps> = ({
-  currentStep,
   setCurrentStep,
   eventName,
   shortDescription,
@@ -61,11 +55,11 @@ const EventReviewPublish: React.FC<EventReviewPublishProps> = ({
   customQuestions,
   tickets,
 }) => {
-  const { t } = useTranslation("events");
+  const { t, i18n } = useTranslation("events");
   const { textPrimary, textSecondary, textTertiary } = useThemeClasses();
   const { theme } = useAppSelector((state) => state.settings);
 
-  if (currentStep !== 7) return null;
+  const language = i18n.language as Language;
 
   const formatValue = (value: string | undefined, fallback: string = "not_set") =>
     value || t(fallback);
@@ -120,8 +114,8 @@ const EventReviewPublish: React.FC<EventReviewPublishProps> = ({
         <div className={`grid grid-cols-1 md:grid-cols-2 gap-4 text-base ${textSecondary}`}>
           <p><strong>{t("format")}:</strong> <span className="capitalize">{t(eventFormat)}</span></p>
           <p><strong>{t("type")}:</strong> {isMultiDay ? t("multi_day_event_text") : t("single_day_event_text")}</p>
-          {!isMultiDay && <p><strong>{t("date")}:</strong> {formatValue(startDate)}</p>}
-          {eventFormat !== "online" && <p><strong>{t("address")}:</strong> {formatValue(address)}</p>}
+          {!isMultiDay && <p><strong>{t("date")}:</strong> {formatDate(startDate, language)}</p>}
+          {eventFormat !== "online" && <p><strong>{t("address")}:</strong> {extractCenterAddressText(address)}</p>}
           {eventFormat !== "physical" && <p><strong>{t("online_link")}:</strong> {formatValue(onlineLink, "not_applicable")}</p>}
         </div>
       </div>
@@ -147,11 +141,11 @@ const EventReviewPublish: React.FC<EventReviewPublishProps> = ({
             <>
               <p>
                 <strong>{t("capacity")}:</strong>{" "}
-                {capacityType === "unlimited" ? t("unlimited") : `${capacity} ${t("attendees")}`}
+                {capacityType === "unlimited" ? t("unlimited") : `${capacity ?? 0} ${t("attendees")}`}
               </p>
               <p>
-                <strong>{t("custom_questions")}:</strong> {customQuestions.length}{" "}
-                {customQuestions.length === 1 ? t("question") : t("questions")}
+                <strong>{t("custom_questions")}:</strong> {customQuestions?.length}{" "}
+                {customQuestions?.length === 1 ? t("question") : t("questions")}
               </p>
             </>
           )}
@@ -173,14 +167,14 @@ const EventReviewPublish: React.FC<EventReviewPublishProps> = ({
         </div>
         <div className={`text-base ${textSecondary}`}>
           <p className="mb-3">
-            <strong>{t("total_tickets")}:</strong> {tickets.length}
+            <strong>{t("total_tickets")}:</strong> {tickets?.length}
           </p>
-          {tickets.length > 0 ? (
+          {tickets?.length > 0 ? (
             <ul className="space-y-2 ml-6 list-disc">
-              {tickets.map((ticket, i) => (
+              {tickets?.map((ticket, i) => (
                 <li key={i}>
-                  <span className="font-medium">{ticket.name}</span>{" "}
-                  <span className="text-teal-500">({t(ticket.type)})</span>
+                  <span className="font-medium">{ticket?.name}</span>{" "}
+                  <span className="text-teal-500">({t(ticket?.type)})</span>
                 </li>
               ))}
             </ul>
@@ -189,9 +183,6 @@ const EventReviewPublish: React.FC<EventReviewPublishProps> = ({
           )}
         </div>
       </div>
-
-      {/* Final Publish Button (can be added in parent) */}
-      {/* You can add a publish button here or in the parent wizard */}
     </div>
   );
 };

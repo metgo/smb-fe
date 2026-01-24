@@ -1,3 +1,5 @@
+import { formatDateRange } from '@/helpers/formatter';
+
 export function uploadWithProgress(
   file: File,
   signedUrl: string,
@@ -30,3 +32,61 @@ export function uploadWithProgress(
     xhr.send(file);
   });
 }
+
+export const convertToWebP = async (file: File): Promise<File> => {
+  const bitmap = await createImageBitmap(file);
+  const canvas = document.createElement("canvas");
+  canvas.width = bitmap.width;
+  canvas.height = bitmap.height;
+
+  const ctx = canvas.getContext("2d")!;
+  ctx.drawImage(bitmap, 0, 0);
+
+  const blob = await new Promise<Blob>(res =>
+    canvas.toBlob(b => res(b!), "image/webp", 0.8)
+  );
+
+  return new File([blob], file.name.replace(/\.\w+$/, ".webp"), {
+    type: "image/webp",
+  });
+};
+
+
+
+export function extractCenterAddressText(address: string): string | null {
+  // Split by spaces
+  const parts = address?  address?.split(" "): "-";
+
+  // Find the part that is not a plus-code (e.g., "5H8P+WJ") and not a comma
+  for (const part of parts) {
+    const trimmed = part.replace(",", ""); // remove comma if any
+    if (!trimmed.includes("+") && trimmed.length > 0) {
+      return trimmed;
+    }
+  }
+
+  return null;
+}
+
+
+export function extractEventDates(
+  dayDescription?: { date: string | Date }[]
+): string {
+  if (!dayDescription || dayDescription.length === 0) return '-';
+
+  const dates = dayDescription
+    .map(d => (d?.date instanceof Date ? d.date : new Date(d?.date)))
+    .filter(Boolean)
+    .sort((a, b) => a.getTime() - b.getTime());
+
+  if (dates.length === 1) {
+    const str = dates[0].toISOString();
+    return formatDateRange(str, str, false);
+  }
+
+  const startStr = dates[0].toISOString();
+  const endStr = dates[dates.length - 1].toISOString();
+
+  return formatDateRange(startStr, endStr, true);
+}
+

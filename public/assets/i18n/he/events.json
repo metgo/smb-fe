@@ -160,6 +160,7 @@
   "no_tickets_yet": "אין כרטיסים עדיין",
   "no_tickets_yet_desc": "עדיין לא יצרת כרטיסים. צור את הכרטיס הראשון שלך כדי להתחיל למכור.",
   "create_first_ticket": "יצירת כרטיס ראשון",
+
   "ticket_name": "שם הכרטיס",
   "ticket_type": "סוג הכרטיס",
   "vip": "VIP",
@@ -169,7 +170,16 @@
   "cancel": "ביטול",
   "save_ticket": "שמור כרטיס",
   "edit_ticket": "עריכת כרטיס",
-  "delete_ticket_confirm": "האם אתה בטוח שברצונך למחוק את הכרטיס הזה?",
+  "duplicate_ticket": "שכפל כרטיס",
+  "ticket_days": "ימי כרטיס",
+  "ticket_name_required": "שם הכרטיס הוא שדה חובה",
+  "date_required": "התאריך הוא שדה חובה",
+  "start_time_required": "שעת ההתחלה היא שדה חובה",
+  "end_time_required": "שעת הסיום היא שדה חובה",
+  "marked_price_required": "המחיר המסומן הוא שדה חובה",
+  "selling_price_required": "מחיר המכירה הוא שדה חובה",
+  "add_more_days": "הוסף ימים נוספים",
+  
   "event_images": "תמונות אירוע",
   "upload_images": "העלאה של תמונות",
   "drag_drop_images": "גרור ושחרר תמונות",
@@ -198,6 +208,7 @@
 
   "event_saved_as_draft": "האירוע נשמר כטיוטה",
   "fix_errors_before_proceeding": "אנא ת糹קן את השגיאות לפני המשך",
+  "requried_fill_up_info": "אנא מלא את כל השדות הנדרשים לפני המשך.",
   "event_published_success": "האירוע פורסם בהצלחה",
   "required_field": "שדה זה נדרש",
   "field_too_short": "שדה זה קצר מדי",
@@ -226,5 +237,20 @@
   "registrant_details": "פרטי הנרשם",
   "no_registrants_match": "לא נמצאו נרשמים התואמים את החיפוש שלך",
 
-   "search_placeholder": "חפש כתובת..."
+   "search_placeholder": "חפש כתובת...",
+
+   "your_images": "התמונות שלך",
+  "tickets": "כרטיסים",
+  "registration": "הרשמה",
+  "required": "נדרש",
+  "select_dmo": "בחר DMO",
+  "select_authority": "בחר רשות",
+  "messaging": "הודעות",
+  "no_registrants_yet": "טרם נרשמו משתתפים",
+  "date_range": "טווח תאריכים",
+  "websites": "אתרים",
+  
+  "free_access_info": "כאשר ההרשמה מושבתת, המשתתפים יכולים להצטרף בחופשיות ללא צורך בהרשמה.",
+  "select_event_day_first": "עליך לבחור תחילה יום/ימי אירוע.",
+  "no_tickets_created": "עדיין לא נוצרו כרטיסים. אנא צור כרטיס תחילה."
 }

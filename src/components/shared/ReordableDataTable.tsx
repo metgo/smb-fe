@@ -156,10 +156,10 @@ export default function ReordableDataTable<T extends Record<string, any>>({
   };
 
   return (
-    <div className={`rounded-xl border ${borderColor} overflow-hidden`}>
+    <div className={`rounded-xl border ${borderColor}`}>
       {/* Scrollable container */}
-      <div className="overflow-x-auto max-h-[calc(100vh-400px)] overflow-y-auto">
-        <table className="w-full">
+      <div className="overflow-x-auto max-h-[calc(100vh-450px)] overflow-y-auto">
+        <table className="w-full h-full">
           {/* Sticky Header */}
           <thead className={`sticky top-0 z-50 ${bgTertiary} border-b ${borderColor}`}>
             <tr>

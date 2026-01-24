@@ -6,24 +6,29 @@ import {
   CheckCircle,
   XCircle,
   CalendarRange,
+  TrashIcon,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-import { useAppSelector } from '@/hooks/hooks';
 import { Button } from '@/components/ui/button';
 import { useThemeClasses } from '@/hooks/useThemeClasses';
-import { formatDate, formatDateRange } from '@/helpers/formatter';
-import { ImageWithFallback, ReordableDataTable } from '@/components/shared';
+import { ConfirmDialog, ImageWithFallback, ReordableDataTable } from '@/components/shared';
+import { extractCenterAddressText, extractEventDates } from '@/helpers';
+import { Link } from 'react-router-dom';
+import { useDeleteEventMutation } from '@/store/api/eventMutationApi';
+import { toast } from 'sonner';
 
 
 interface EventsWithViewModeProps {
-  events: Event[];
+  events: any[];
   viewMode: string;
+  isLoading: boolean;
   selectedWebsiteCount: number;
   eventTypeFilter: string;
   registrationFilter: string;
   statusFilter: string;
   searchQuery: string;
+  refetch: () => void;
   setSelectedEvent: (v: Event) => void;
   setShowQuickSnapModal: (v: boolean) => void;
 }
@@ -67,6 +72,7 @@ const getCategoryColor = (category: string) => {
 export default function EventsWithViewMode({
   events,
   viewMode,
+  refetch,
   selectedWebsiteCount,
   eventTypeFilter,
   registrationFilter,
@@ -75,16 +81,19 @@ export default function EventsWithViewMode({
   setSelectedEvent,
   setShowQuickSnapModal,
 }: EventsWithViewModeProps) {
-  console.log("🚀 ~ EventsWithViewMode ~ events:", events)
   const { t, i18n } = useTranslation('events');
-  const { isRTL } = useAppSelector((state) => state.settings);
   const language = i18n.language || 'en';
   const themeColor = useThemeClasses()
+
+  const [deleteEvent, { isLoading: isDeleting }] = useDeleteEventMutation()
 
   const [currentDate, setCurrentDate] = useState(new Date());
   const [calendarViewMode, setCalendarViewMode] = useState<TViewMode>('calendar-month');
   const [selectedEvents, setSelectedEvents] = useState<Set<string>>(new Set());
   const [displayedListCount, setDisplayedListCount] = useState(12);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [eventToDelete, setEventToDelete] = useState<string | null>(null);
+
 
   // Current month/year string
   const monthYear = useMemo(() => {
@@ -164,14 +173,22 @@ export default function EventsWithViewMode({
     setShowQuickSnapModal(true)
     setSelectedEvent(event)
   }
+
+  const handleEventDelete = async (eventId: string) => {
+    const res = await deleteEvent({ eventId });
+    toast.success(res?.data?.message || 'Event deleted successfully');
+    refetch();
+  }
   // Events on a given date
   const eventsOnDate = (date: Date) => {
-    const dateStr = date?.toISOString().split('T')[0];
-    return events?.filter(e => {
-      const start = new Date(e.startDate)?.toISOString()?.split('T')[0];
-      const end = new Date(e.endDate)?.toISOString()?.split('T')[0];
-      return dateStr >= start && dateStr <= end;
-    });
+    const dateStr = date.toISOString().split('T')[0]; // normalize input date
+
+    return events?.filter(e =>
+      e.dayDescription?.some((d: any) => {
+        const dStr = new Date(d.date).toISOString().split('T')[0]; // normalize dayDescription date
+        return dStr === dateStr;
+      })
+    );
   };
 
 
@@ -261,52 +278,79 @@ export default function EventsWithViewMode({
   // Day View
   const DayView = () => {
     const dayEvents = eventsOnDate(currentDate);
+
     const dayLabel = currentDate.toLocaleDateString(
       language === 'ar' ? 'ar-EG' : language === 'he' ? 'he-IL' : 'en-US',
       { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }
     );
 
+    // Helper to compute ticket price label
+    const getPriceLabel = (event: any) => {
+      if (!event.tickets || event.tickets.length === 0) return t('free');
+
+      const prices = event.tickets.map((t: any) => t.price.sellingPrice);
+      const min = Math.min(...prices);
+      const max = Math.max(...prices);
+
+      return min === 0 && max === 0
+        ? t('free')
+        : min === max
+          ? `₪${min}`
+          : `₪${min} - ₪${max}`;
+    };
+
     return (
-      <div className='py-6 px-4'>
+      <div className="py-6 px-4">
         <h3 className="text-2xl font-semibold mb-6">{dayLabel}</h3>
         {dayEvents?.length === 0 ? (
-          <div className="text-center py-20 text-gray-500">{t('noEventsThisDay')}</div>
+          <div className="text-center py-20 text-gray-500">
+            {t('no_events_this_day')}
+          </div>
         ) : (
           <div className="space-y-6">
-            {dayEvents.map(event => (
-              <div
-                key={event._id}
-                onClick={() => handleEventSelect(event)}
-                className="bg-gray-50 dark:bg-gray-800 rounded-xl p-6 hover:shadow-md cursor-pointer transition-shadow"
-              >
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h4 className="text-xl font-medium mb-3">{event.name}</h4>
-                    <div className="space-y-2 text-gray-600 dark:text-gray-400">
-                      <div className="flex items-center gap-2">
-                        <Clock className="w-5 h-5" />
-                        {event.startTime} - {event.endTime}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <MapPin className="w-5 h-5" />
-                        {event.location}
+            {dayEvents.map((event) => {
+              const priceLabel = getPriceLabel(event);
+              const isFree = priceLabel === t('free');
+
+              return (
+                <div
+                  key={event._id}
+                  onClick={() => handleEventSelect(event)}
+                  className="bg-gray-50 dark:bg-gray-800 rounded-xl p-6 hover:shadow-md cursor-pointer transition-shadow"
+                >
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h4 className="text-xl font-medium mb-3">{event.name}</h4>
+                      <div className="space-y-2 text-gray-600 dark:text-gray-400">
+                        <div className="flex items-center gap-2">
+                          <Clock className="w-5 h-5" />
+                          {event.startTime} - {event.endTime}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <MapPin className="w-5 h-5" />
+                          {event.location}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <div className={`px-4 py-2 rounded-full text-sm font-medium ${event.isFree ? 'bg-emerald-100 text-emerald-700' : 'bg-purple-100 text-purple-700'
-                    }`}>
-                    {event.isFree ? t('free') : `₪${event.price}`}
+                    <div
+                      className={`px-4 py-2 rounded-full text-sm font-medium ${isFree
+                        ? 'bg-emerald-100 text-emerald-700'
+                        : 'bg-purple-100 text-purple-700'
+                        }`}
+                    >
+                      {priceLabel}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
     );
   };
 
-  // List View
+  // Grid View
   const GridView = () => {
     const displayed = events?.slice(0, displayedListCount);
 
@@ -328,19 +372,17 @@ export default function EventsWithViewMode({
     return (
       <div className='py-6 px-4'>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {displayed.map(event => {
-            const { ribbon } = getCategoryColor(event.category);
-
+          {displayed?.map(event => {
             return (
               <div
                 key={event._id}
                 onClick={() => handleEventSelect(event)}
-                className="bg-white dark:bg-gray-900 rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow cursor-pointer"
+                className="bg-white dark:bg-gray-900 relative rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow cursor-pointer"
               >
                 <div className="relative h-52">
-                  {event.image ? (
+                  {event?.images?.[0]?.image ? (
                     <ImageWithFallback
-                      src={event.image}
+                      src={event?.images?.[0]?.image}
                       alt={event.name}
                       className="w-full h-full object-cover"
                     />
@@ -349,25 +391,35 @@ export default function EventsWithViewMode({
                       <Calendar className="w-20 h-20 text-white/40" />
                     </div>
                   )}
-                  <div className={`absolute top-4 ${isRTL ? 'left-4' : 'right-4'} ${ribbon} text-white px-4 py-1.5 text-xs font-medium rounded shadow-lg`}>
-                    {event.category}
-                  </div>
                 </div>
+
+                <button
+                  type='button'
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsConfirmOpen(true)
+                    setEventToDelete(event._id)
+                  }}
+                  className='absolute top-3 right-3 z-50 cursor-pointer bg-white dark:bg-gray-800 p-2 rounded-full shadow hover:shadow-lg transition-shadow text-red-600'
+                >
+                  <TrashIcon size={16} />
+                </button>
+
                 <div className="p-5">
                   <h3 className="font-semibold text-lg mb-3 line-clamp-2">{event.name}</h3>
                   <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
                     <div className="flex items-center gap-2">
                       <Calendar className="w-4 h-4" />
-                      {formatDate(event.startDate, language)}
+                      {extractEventDates(event?.dayDescription)}
                     </div>
                     <div className="flex items-center gap-2">
                       <MapPin className="w-4 h-4" />
-                      <span className="truncate">{event.location}</span>
+                      <span className="truncate">{extractCenterAddressText(event?.address?.location)}</span>
                     </div>
                   </div>
                   <div className="mt-5 flex justify-between items-center">
                     <span className={`font-medium ${event.isFree ? 'text-emerald-600' : 'text-purple-600'}`}>
-                      {event.isFree ? t('free') : `₪${event.price}`}
+                      {event?.isFree ? t('free') : `₪ 0`}
                     </span>
                     {event.registrationRequired && (
                       <div className="text-xs text-gray-500">
@@ -395,7 +447,7 @@ export default function EventsWithViewMode({
     );
   };
 
-  // Grid View
+  // List View
   const ListView = () => {
     return (
       <ReordableDataTable
@@ -422,45 +474,55 @@ export default function EventsWithViewMode({
           },
           {
             key: 'website',
-            label: t('website'),
+            label: t('websites'),
             render: (event) => (
-              <span className="text-xs sm:text-sm text-gray-500">
-                {event.website || '-'}
-              </span>
+              <div className='flex flex-col'>
+                {event?.associatedWebsites?.map((item: any) => (
+                  <Link
+                    key={item._id}
+                    to={item?.url}
+                    target='_blank'
+                    className="text-xs sm:text-sm underline text-blue-500 hover:font-bold"
+                  >
+                    {item.name || '-'}
+                  </Link>
+
+                ))}
+              </div>
             ),
           },
           {
             key: 'date',
             label: t('date'),
             sortable: true,
-            render: (event) =>
-              formatDateRange(
-                event.startDate,
-                event.endDate,
-                event.isMultiDay
-              ),
-          },
-          {
-            key: 'time',
-            label: t('time'),
-            render: (event) => (
-              <span className="text-xs sm:text-sm">
-                {event.startTime} – {event.endTime}
-              </span>
-            ),
+            render: (event) => extractEventDates(event?.dayDescription),
           },
           {
             key: 'price',
             label: t('price'),
             sortable: true,
-            render: (event) =>
-              event.isFree ? (
-                <span className="px-2 py-1 bg-green-500/20 text-green-500 rounded-full text-xs">
-                  {t('free')}
-                </span>
-              ) : (
-                <span className="font-medium">₪{event.price}</span>
-              ),
+            render: (event) => {
+              const firstTicket = event?.tickets?.[0];
+              const lastTicket = event?.tickets?.[event?.tickets?.length - 1];
+              return (
+                <div>
+                  {firstTicket?.type === "FREE" ? (
+                    <span className="px-2 py-1 bg-green-500/20 text-green-500 rounded-full text-xs">
+                      {t('free')}
+                    </span>
+                  ) : (
+                    <span className="font-medium">₪{firstTicket?.price?.sellingPrice}</span>
+                  )}-
+                  {lastTicket?.type === "FREE" ? (
+                    <span className="px-2 py-1 bg-green-500/20 text-green-500 rounded-full text-xs">
+                      {t('free')}
+                    </span>
+                  ) : (
+                    <span className="font-medium">₪{lastTicket?.price?.sellingPrice}</span>
+                  )}
+                </div>
+              )
+            }
           },
           {
             key: 'registration',
@@ -478,18 +540,18 @@ export default function EventsWithViewMode({
             sortable: true,
             render: (event) => (
               <span
-                className={`px-2 py-1 rounded-full text-xs ${event.status === 'upcoming'
+                className={`px-2 py-1 rounded-full text-xs ${event.status === 'APPROVED'
                   ? 'bg-blue-500/20 text-blue-500'
-                  : event.status === 'past'
+                  : event.status === 'PENDING'
                     ? 'bg-gray-500/20 text-gray-500'
                     : 'bg-red-500/20 text-red-500'
                   }`}
               >
-                {event.status === 'upcoming'
-                  ? t('upcoming')
-                  : event.status === 'past'
-                    ? t('past')
-                    : t('canceled')}
+                {event.status === 'APPROVED'
+                  ? t('approved')
+                  : event.status === 'PENDING'
+                    ? t('pending')
+                    : t('draft')}
               </span>
             ),
           },
@@ -570,13 +632,34 @@ export default function EventsWithViewMode({
       </div>
 
       {/* Main Content */}
-      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 flex-1 overflow-y-auto max-h-[calc(100vh-500px)]">
+      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 flex-1 overflow-y-auto max-h-[calc(100vh-450px)]">
         {calendarViewMode === 'calendar-month' && viewMode === 'calendar' && <MonthView />}
         {calendarViewMode === 'calendar-week' && viewMode === 'calendar' && <WeekView />}
         {calendarViewMode === 'calendar-day' && viewMode === 'calendar' && <DayView />}
         {viewMode === 'list' && <ListView />}
         {viewMode === 'grid' && <GridView />}
       </div>
+
+
+
+      <ConfirmDialog
+        open={isConfirmOpen}
+        title={"delete_event"}
+        message="delete_event_confirm"
+        confirmText="delete"
+        loading={isDeleting}
+        variant="danger"
+        onCancel={() => {
+          setIsConfirmOpen(false);
+          setEventToDelete(null);
+        }}
+        onConfirm={() => {
+          if (!eventToDelete) return;
+          handleEventDelete(eventToDelete);
+          setIsConfirmOpen(false);
+          setEventToDelete(null);
+        }}
+      />
     </div>
   );
 }

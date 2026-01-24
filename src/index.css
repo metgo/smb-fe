@@ -150,6 +150,12 @@ body::-webkit-scrollbar,
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
+
+}
+@layer utilities {
+  .field-error {
+    @apply border-red-500 focus:border-red-500 focus:ring-red-500/20;
+  }
 }
 
 /**
@@ -202,9 +208,10 @@ body::-webkit-scrollbar,
   }
 }
 
-.db1{
+.db1 {
   border: 2px dotted red;
 }
+
 html {
   font-size: var(--font-size);
 }

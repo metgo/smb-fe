@@ -14,8 +14,8 @@ export const getThemeClasses = (theme: Theme): ThemeClasses => ({
   hoverBg: theme === 'dark' ? 'hover:bg-gray-800' : 'hover:bg-gray-50',
 
   cardClasses: theme === 'dark'
-    ? 'bg-gray-800/50 backdrop-blur rounded-xl border border-gray-700'
-    : 'bg-white rounded-xl border border-gray-200 shadow-sm',
+    ? 'bg-gray-800/50 backdrop-blur border border-gray-700'
+    : 'bg-white border border-gray-200 shadow-sm',
 
   inputClasses: theme === 'dark'
     ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-500'

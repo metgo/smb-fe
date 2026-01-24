@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import DatePicker from "@/components/shared/DatePicker";
 import { MarkerMap } from "@/components/maps";
+import { useEffect, useRef } from "react";
 
 interface EventDay {
   id: string;
@@ -88,21 +89,23 @@ interface EventDateTimeFormatProps {
   setCustomInterval: (v: number) => void;
   customUnit: string;
   setCustomUnit: (v: string) => void;
+  markDirty: (step: number) => void;
 }
 
 
-const weekDays=[
-  {value: "Sunday", label:"Sun"},
-  {value: "Monday", label:"Mon"},
-  {value: "Tuesday", label:"Tue"},
-  {value: "Wednesday", label:"Wed"},
-  {value: "Thursday", label:"Thu"},
-  {value: "Friday", label:"Fri"},
-  {value: "Saturday", label:"Sat"},
+const weekDays = [
+  { value: "Sunday", label: "Sun" },
+  { value: "Monday", label: "Mon" },
+  { value: "Tuesday", label: "Tue" },
+  { value: "Wednesday", label: "Wed" },
+  { value: "Thursday", label: "Thu" },
+  { value: "Friday", label: "Fri" },
+  { value: "Saturday", label: "Sat" },
 
 ]
 
 const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
+  markDirty,
   isMultiDay,
   setIsMultiDay,
   startDate,
@@ -138,6 +141,45 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
   const { t: cT } = useTranslation('common');
   const { textSecondary, textTertiary, inputClasses, textPrimary } = useThemeClasses();
   const { theme, isRTL } = useAppSelector((state) => state.settings);
+
+
+  useEffect(() => {
+    markDirty(2);
+  }, [
+    startDate,
+    eventDays,
+    eventFormat,
+    address,
+    onlineLink,
+    geo,
+    recurrencePattern,
+  ]);
+
+  const fieldRefs = {
+    startDate: useRef<HTMLDivElement>(null),
+    address: useRef<HTMLDivElement>(null),
+    onlineLink: useRef<HTMLInputElement>(null),
+  };
+
+
+  useEffect(() => {
+    const errorKeys = Object.keys(errors);
+    if (errorKeys.length === 0) return;
+
+    const firstErrorKey = errorKeys[0];
+    const ref = fieldRefs[firstErrorKey as keyof typeof fieldRefs];
+
+    if (ref?.current) {
+      ref.current.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+
+      if ("focus" in ref.current) {
+        (ref.current as HTMLElement).focus();
+      }
+    }
+  }, [errors]);
 
 
   // Generate recurring occurrences
@@ -247,12 +289,13 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
       {/* Date & Time Input */}
       {!isMultiDay ? (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
+          <div ref={fieldRefs.startDate}>
             <label className={`block text-sm mb-2 ${textSecondary}`}>
               {t("date")} <span className="text-red-500">*</span>
             </label>
             <DatePicker
-              value={startDate}
+              disablePast
+              value={startDate ? new Date(startDate).toISOString().split('T')[0] : ''}
               onChange={(date) => setStartDate(date)}
               placeholder={t("select_date")}
               theme={theme}
@@ -284,7 +327,7 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
         </div>
       ) : (
         <div className="space-y-4">
-          {eventDays.map((day, index) => (
+          {eventDays?.map((day, index) => (
             <div
               key={day.id}
               className={`p-4 rounded-lg border ${theme === "dark" ? "border-gray-700 bg-gray-800/50" : "border-gray-200 bg-gray-50"
@@ -292,7 +335,7 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
             >
               <div className="flex items-center justify-between mb-3">
                 <span className={`text-sm ${textSecondary}`}>{t("day")} {index + 1}</span>
-                {eventDays.length > 1 && (
+                {eventDays?.length > 1 && (
                   <button
                     onClick={() => removeEventDay(day.id)}
                     className="text-red-500 hover:text-red-600 p-1 transition-colors"
@@ -303,15 +346,25 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 <DatePicker
-                  value={day.date}
+                  disablePast
+                  value={
+                    day?.date
+                      ? new Date(day.date).toISOString().split('T')[0]
+                      : ''
+                  }
                   onChange={(date) => {
-                    const updated = [...eventDays];
-                    updated[index].date = date;
-                    setEventDays(updated);
+                    setEventDays(prev =>
+                      prev.map((item, i) =>
+                        i === index
+                          ? { ...item, date }
+                          : item
+                      )
+                    );
                   }}
                   placeholder={t("select_date")}
                   theme={theme}
                 />
+
                 <input
                   type="time"
                   value={day.startTime}
@@ -536,8 +589,6 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
                 </div>
               )}
 
-
-
               {/* Custom Interval */}
               {recurrencePattern === 'custom' && (
                 <div>
@@ -730,10 +781,13 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
 
       {/* Physical / Hybrid Location */}
       {eventFormat !== "online" && (
-        <div>
+        <div ref={fieldRefs.address}>
           <label className={`block text-sm mb-2 ${textSecondary}`}>
             {t("location_address")} <span className="text-red-500">*</span>
           </label>
+          {errors.address && (
+            <p className="text-red-500 text-sm mt-1">{errors.address}</p>
+          )}
           <MarkerMap
             geo={geo}
             setGeo={setGeo}
@@ -752,6 +806,7 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
           <input
             type="url"
             value={onlineLink}
+            ref={fieldRefs.onlineLink}
             onChange={(e) => setOnlineLink(e.target.value)}
             placeholder="https://zoom.us/..."
             className={`w-full px-4 py-2 rounded-lg border ${inputClasses} ${errors.onlineLink ? "border-red-500" : ""}`}
