@@ -47,6 +47,9 @@
   "publishing": "מפרסם...",
   "cancle": "ביטול",
   "delete": "מחק",
+  "confirm": "אישור",
+  "details": "פרטים",
+  "edit": "עריכה",
 
   "delete_ticket": "מחיקת כרטיס",
   "delete_ticket_confirm": "האם אתה בטוח שברצונך למחוק כרטיס זה?",
@@ -56,7 +59,17 @@
   "unsaved_changes_confirm": "יש לך שינויים שלא נשמרו. האם אתה בטוח שברצונך לעזוב?",
   "delete_event": "מחיקת אירוע",
   "delete_event_confirm": "האם אתה בטוח שברצונך למחוק אירוע זה?",
-  "confirm": "אישור",
+  "image_upload_info": "העלאת התמונה החלה. אנא המתן…",
+  "delete_image": "מחיקת תמונה",
+  "delete_image_confirm": "האם אתה בטוח שברצונך למחוק תמונה זו? פעולה זו אינה ניתנת לביטול.",
+  
+  "image_upload_success": "התמונה הועלתה בהצלחה!",
+  "image_delete_success": "התמונה נמחקה בהצלחה!",
+  "image_upload_failed": "העלאת התמונה נכשלה! אנא נסה שוב...",
+  "image_delete_failed": "מחיקת התמונה נכשלה! אנא נסה שוב...",
+  
+  "primary": "ראשי",
+  "set_as_primary": "הגדר כראשי",
 
   "sunday": "יום ראשון",
   "monday": "יום שני",

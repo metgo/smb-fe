@@ -33,6 +33,25 @@ export function uploadWithProgress(
   });
 }
 
+export const convertToWebP = async (file: File): Promise<File> => {
+  const bitmap = await createImageBitmap(file);
+  const canvas = document.createElement("canvas");
+  canvas.width = bitmap.width;
+  canvas.height = bitmap.height;
+
+  const ctx = canvas.getContext("2d")!;
+  ctx.drawImage(bitmap, 0, 0);
+
+  const blob = await new Promise<Blob>(res =>
+    canvas.toBlob(b => res(b!), "image/webp", 0.8)
+  );
+
+  return new File([blob], file.name.replace(/\.\w+$/, ".webp"), {
+    type: "image/webp",
+  });
+};
+
+
 
 export function extractCenterAddressText(address: string): string | null {
   // Split by spaces

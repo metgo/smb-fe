@@ -35,7 +35,7 @@ export default function ConfirmDialog({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="w-full max-w-md rounded-xl bg-white dark:bg-gray-900 p-6 shadow-xl">
+      <div className="w-full max-w-md rounded-xl border border-red-500 bg-white dark:bg-gray-900 p-6 shadow-xl">
         <div className="flex items-start gap-4">
           <div className={`p-2 rounded-full ${variantStyles[variant]}`}>
             <AlertTriangle className="w-5 h-5" />

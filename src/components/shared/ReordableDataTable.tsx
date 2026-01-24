@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { ArrowUpDown, ArrowUp, ArrowDown, GripVertical, Loader } from 'lucide-react';
+import { ArrowUpDown, ArrowUp, ArrowDown, GripVertical } from 'lucide-react';
+
 import { useAppSelector } from '@/hooks/hooks';
+import { useThemeClasses } from '@/hooks/useThemeClasses';
 
 type SortDirection = 'asc' | 'desc' | null;
 
@@ -13,7 +15,6 @@ interface Column<T> {
 }
 
 interface DataTableProps<T> {
-  isLoading?: boolean;
   data: T[];
   columns: Column<T>[];
   storageKey?: string;
@@ -26,35 +27,31 @@ interface DataTableProps<T> {
 export default function ReordableDataTable<T extends Record<string, any>>({
   data,
   columns,
-  isLoading = false,
   storageKey = 'dataTableColumnOrder',
   onRowClick,
   selectedItems,
   onSelectionChange,
   rowKey,
 }: DataTableProps<T>) {
-  const { isRTL, theme } = useAppSelector(state => state.settings)
+  const { theme, isRTL } = useAppSelector(state => state.settings);
+  const { bgTertiary, borderColor, textSecondary, hoverBg } = useThemeClasses();
 
-  // Load saved column order and validate it matches current columns
+  // Load saved column order
   const [columnOrder, setColumnOrder] = useState<string[]>(() => {
-    const validColumnKeys = columns.map(c => c.key as string);
+    if (typeof window === 'undefined') return columns.map(c => c.key as string);
 
     try {
       const saved = localStorage.getItem(storageKey);
       if (saved) {
         const parsed = JSON.parse(saved);
-        // Filter to only include valid column keys that exist in current columns
-        const validOrder = parsed.filter((k: string) => validColumnKeys.includes(k));
-
-        // If we have valid saved order with all columns, use it
-        if (validOrder.length === validColumnKeys.length) {
-          return validOrder;
-        }
+        return parsed.filter((k: string) => columns.some(c => c.key === k))?.length > 0
+          ? parsed
+          : columns.map(c => c.key as string);
       }
     } catch (e) {
       console.error('Failed to load column order:', e);
     }
-    return validColumnKeys;
+    return columns.map(c => c.key as string);
   });
 
   const [sortField, setSortField] = useState<keyof T | null>(null);
@@ -62,17 +59,6 @@ export default function ReordableDataTable<T extends Record<string, any>>({
 
   const [draggedColumn, setDraggedColumn] = useState<string | null>(null);
   const [dragOverColumn, setDragOverColumn] = useState<string | null>(null);
-
-  // Validate and sync column order when columns prop changes
-  useEffect(() => {
-    const validColumnKeys = columns.map(c => c.key as string);
-    const currentOrderIsValid = columnOrder.every(k => validColumnKeys.includes(k))
-      && columnOrder.length === validColumnKeys.length;
-
-    if (!currentOrderIsValid) {
-      setColumnOrder(validColumnKeys);
-    }
-  }, [columns]);
 
   // Save column order
   useEffect(() => {
@@ -169,28 +155,25 @@ export default function ReordableDataTable<T extends Record<string, any>>({
     return sortDirection === 'asc' ? <ArrowUp className="w-4 h-4" /> : <ArrowDown className="w-4 h-4" />;
   };
 
-  // Get valid columns only - those that exist in both columnOrder and columns definition
-  const validColumns = columnOrder
-    .map(colKey => columns.find(c => c.key === colKey))
-    .filter((col): col is Column<T> => col !== undefined);
-
   return (
-    <div className="rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden">
+    <div className={`rounded-xl border ${borderColor}`}>
       {/* Scrollable container */}
-      <div className="overflow-x-auto max-h-[calc(100vh-200px)] overflow-y-auto">
-        <table className="w-full h-full relative">
+      <div className="overflow-x-auto max-h-[calc(100vh-450px)] overflow-y-auto">
+        <table className="w-full h-full">
           {/* Sticky Header */}
-          <thead className="sticky top-0 z-50 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
+          <thead className={`sticky top-0 z-50 ${bgTertiary} border-b ${borderColor}`}>
             <tr>
-              {validColumns.map(column => {
-                const colKey = column.key as string;
+              {columnOrder?.map(colKey => {
+                const column = columns.find(c => c.key === colKey);
+                if (!column) return null;
+
                 const isSortable = column.sortable && typeof column.key === 'string';
                 const field = column.key as keyof T;
 
                 return (
                   <th
                     key={colKey}
-                    className={`p-3 text-${isRTL ? 'right' : 'left'} text-sm text-gray-600 dark:text-gray-400 tracking-wider select-none
+                    className={`p-3 text-${isRTL ? 'right' : 'left'} text-sm ${textSecondary} tracking-wider select-none
                       ${isSortable ? 'cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700' : ''}
                       transition-colors group`}
                     style={{
@@ -203,9 +186,9 @@ export default function ReordableDataTable<T extends Record<string, any>>({
                           : undefined,
                     }}
                     draggable={colKey !== 'checkbox' && colKey !== 'actions'}
-                    onDragStart={() => handleDragStart(colKey)}
-                    onDragOver={e => handleDragOver(e, colKey)}
-                    onDrop={e => handleDrop(e, colKey)}
+                    onDragStart={() => handleDragStart(colKey as string)}
+                    onDragOver={e => handleDragOver(e, colKey as string)}
+                    onDrop={e => handleDrop(e, colKey as string)}
                     onDragEnd={handleDragEnd}
                     onClick={() => isSortable && handleSort(field)}
                   >
@@ -239,27 +222,23 @@ export default function ReordableDataTable<T extends Record<string, any>>({
 
           {/* Scrollable Body */}
           <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
-            {isLoading ? (
+            {sortedData?.length === 0 ? (
               <tr>
-                <td colSpan={validColumns.length} className="py-20 text-center">
-                  <Loader className="w-8 h-8 animate-spin text-teal-500 mx-auto" />
-                </td>
-              </tr>
-            ) : sortedData?.length === 0 ? (
-              <tr>
-                <td colSpan={validColumns.length} className="text-center py-12 text-gray-500 dark:text-gray-400">
+                <td colSpan={columnOrder?.length} className="text-center py-12 text-gray-500 dark:text-gray-400">
                   No data available
                 </td>
               </tr>
             ) : (
-              sortedData.map((item, idx) => (
+              sortedData?.map((item, idx) => (
                 <tr
                   key={item[rowKey] ?? idx}
                   onClick={() => onRowClick?.(item)}
-                  className={`transition-colors hover:bg-gray-50 dark:hover:bg-gray-800 ${onRowClick ? 'cursor-pointer' : ''}`}
+                  className={`transition-colors ${hoverBg} ${onRowClick ? 'cursor-pointer' : ''}`}
                 >
-                  {validColumns.map(column => {
-                    const colKey = column.key as string;
+                  {columnOrder?.map(colKey => {
+                    const column = columns.find(c => c.key === colKey);
+                    if (!column) return <td key={colKey} />;
+
                     return (
                       <td
                         key={colKey}

@@ -1,5 +1,6 @@
+import { ModalWrapper } from "@/components/wrapper";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { Mail, MessageSquare, Send, Smartphone, X } from "lucide-react";
+import { Mail, MessageSquare, Send, Smartphone } from "lucide-react";
 
 
 interface CreateNotificationWizardProps {
@@ -33,28 +34,23 @@ const CreateNotificationWizard: React.FC<CreateNotificationWizardProps> = ({
   setNotifications,
 }) => {
 
-  const { cardClasses, textPrimary, textSecondary, textTertiary } = useThemeClasses();
+  const { textPrimary, textSecondary, textTertiary } = useThemeClasses();
 
   if (!editingNotification) return;
 
   return (
-    <div className="fixed inset-0 bg-black/70 z-60 flex items-center justify-center">
-      <div className={`w-full max-w-2xl rounded-xl ${cardClasses} p-3`}>
-        <div className="flex items-center justify-between">
-          <h4 className={`text-lg mb-4 ${textPrimary}`}>{t("configure_notification")}</h4>
-          <button
-            onClick={() => {
-              setShowNotificationForm(false);
-              setEditingNotification(null);
-            }}
-            className={`p-2 rounded-lg transition-colors ${theme === 'dark' ? 'hover:bg-gray-800' : 'hover:bg-gray-100'
-              }`}
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+    <ModalWrapper
+      onClose={() => {
+        setShowNotificationForm(false);
+        setEditingNotification(null);
+      }}
+      maxWidth="max-w-2xl"
+    >
+      <div className=" p-4">
+        <h4 className={`text-lg mb-4 ${textPrimary}`}>{t("configure_notification")}</h4>
+        
         <div
-          className={`px-6 py-2 space-y-3 rounded-lg border ${theme === "dark" ? "border-gray-700 bg-gray-800/50" : "border-gray-200 bg-gray-50"
+          className={`px-6 py-2 space-y-3 max-h-[73vh] overflow-y-auto rounded-lg border ${theme === "dark" ? "border-gray-700 bg-gray-800/50" : "border-gray-200 bg-gray-50"
             }`}
         >
           <div className="flex items-center gap-4">
@@ -249,6 +245,7 @@ const CreateNotificationWizard: React.FC<CreateNotificationWizardProps> = ({
             </div>
           </div>
         </div>
+       
         {/* Actions */}
         <div className="flex justify-end gap-3 mt-2">
           <button
@@ -283,9 +280,9 @@ const CreateNotificationWizard: React.FC<CreateNotificationWizardProps> = ({
             {t("save_notification")}
           </button>
         </div>
-
       </div>
-    </div>
+
+    </ModalWrapper>
   )
 }
 

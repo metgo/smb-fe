@@ -1,15 +1,15 @@
 import clsx from 'clsx';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { Activity, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Calendar, Users, Ticket, DollarSign, Search, } from 'lucide-react';
 
-import { useAppSelector } from '@/hooks/hooks';
+import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { FilterButton } from '@/components/btns';
 import { useThemeClasses } from '@/hooks/useThemeClasses';
 import { useGetAllWebsitesQuery } from '@/store/api/masterDataApi';
 import { PageHeader, PageStats, ViewModeToggle } from '@/components/shared';
-import { useGetAllEventsQuery, useGetEventsStatsQuery } from '@/store/api/eventQueryApi';
+import { eventQueryApi, useGetAllEventsQuery, useGetEventsStatsQuery } from '@/store/api/eventQueryApi';
 import { EventsWithViewMode, CreateEventWizard, EventDetailModal, QuickSnapEventDetails, RegistrantDetailModal } from './components';
 
 
@@ -17,9 +17,10 @@ import { EventsWithViewMode, CreateEventWizard, EventDetailModal, QuickSnapEvent
 export default function EventsMgmtPage() {
   const { t } = useTranslation('events');
   const navigate = useNavigate();
+  const dispatch = useAppDispatch()
 
   const { isRTL, theme } = useAppSelector((state) => state.settings);
-  const themeColor = useThemeClasses();
+  const { textPrimary, textSecondary, inputClasses, textTertiary } = useThemeClasses();
 
   const [isCreateWizardOpen, setIsCreateWizardOpen] = useState(false);
 
@@ -76,6 +77,7 @@ export default function EventsMgmtPage() {
 
   const handleCreateWizardClose = () => {
     navigate({}, { replace: true });
+    dispatch(eventQueryApi.util.resetApiState());
     setIsCreateWizardOpen(false)
   }
   useEffect(() => {
@@ -121,7 +123,7 @@ export default function EventsMgmtPage() {
           title={t('events_management_dashboard')}
           description={t('events_management_desc')}
           btnLabel={t('add_event')}
-          h1Gradient={themeColor.textPrimary}
+          h1Gradient={textPrimary}
           onClick={handleAddEvent}
         />
 
@@ -135,7 +137,7 @@ export default function EventsMgmtPage() {
           {/* Search Bar */}
           <div className="flex flex-col sm:flex-row gap-4 mb-2">
             <div className="flex-1 relative">
-              <Search className={`absolute ${isRTL ? 'right-3' : 'left-3'} top-1/2 transform -translate-y-1/2 w-5 h-5 ${themeColor.textTertiary}`} />
+              <Search className={`absolute ${isRTL ? 'right-3' : 'left-3'} top-1/2 transform -translate-y-1/2 w-5 h-5 ${textTertiary}`} />
               <input
                 type="text"
                 placeholder={t('search_events_placeholder')}
@@ -156,37 +158,12 @@ export default function EventsMgmtPage() {
           </div>
 
           {showFilters && (
-            <div className={clsx(themeColor.inputClasses, "px-4 py-3 rounded-md")}>
+            <div className={clsx(inputClasses, "px-4 pb-2 rounded-md")}>
               {/* Collapsible Filters */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 pt-4  dark:border-gray-700">
-                {/* Website Multi-Select */}
-                <div>
-                  <label className={`block text-sm mb-2 ${themeColor.textSecondary}`}>{t('websites')}</label>
-                  <div className={`p-3 rounded-lg border max-h-32 overflow-y-auto ${theme === 'dark' ? 'border-gray-700 bg-gray-900' : 'border-gray-300 bg-white'
-                    }`}>
-                    {websites && websites?.map((website) => (
-                      <label key={website?._id} className="flex items-center gap-2 mb-2 last:mb-0 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={selectedWebsites.includes(website)}
-                          onChange={(e) => {
-                            if (e.target.checked) {
-                              setSelectedWebsites([...selectedWebsites, website]);
-                            } else {
-                              setSelectedWebsites(selectedWebsites?.filter(w => w._id !== website._id));
-                            }
-                          }}
-                          className="rounded text-teal-500"
-                        />
-                        <span className={`text-sm ${themeColor.textSecondary}`}>{website?.name}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-
+              <div className="grid grid-cols-12 gap-2 pt-2  dark:border-gray-700">
                 {/* Event Type */}
-                <div>
-                  <label className={`block text-sm mb-2 ${themeColor.textSecondary}`}>{t('event_type')}</label>
+                <div className='col-span-3'>
+                  <label className={`block text-sm mb-2 ${textSecondary}`}>{t('event_type')}</label>
                   <select
                     value={eventTypeFilter}
                     onChange={(e) => setEventTypeFilter(e.target.value as any)}
@@ -202,8 +179,8 @@ export default function EventsMgmtPage() {
                 </div>
 
                 {/* Registration Required */}
-                <div>
-                  <label className={`block text-sm mb-2 ${themeColor.textSecondary}`}>{t('registration')}</label>
+                <div className='col-span-3'>
+                  <label className={`block text-sm mb-2 ${textSecondary}`}>{t('registration')}</label>
                   <select
                     value={registrationFilter}
                     onChange={(e) => setRegistrationFilter(e.target.value as any)}
@@ -219,8 +196,8 @@ export default function EventsMgmtPage() {
                 </div>
 
                 {/* Status */}
-                <div>
-                  <label className={`block text-sm mb-2 ${themeColor.textSecondary}`}>{t('status')}</label>
+                <div className='col-span-2'>
+                  <label className={`block text-sm mb-2 ${textSecondary}`}>{t('status')}</label>
                   <select
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value as any)}
@@ -237,9 +214,9 @@ export default function EventsMgmtPage() {
                 </div>
 
                 {/* Date Range */}
-                <div>
-                  <label className={`block text-sm mb-2 ${themeColor.textSecondary}`}>{t('date_range')}</label>
-                  <div className="flex flex-col gap-2">
+                <div className='col-span-4'>
+                  <label className={`block text-sm mb-2 ${textSecondary}`}>{t('date_range')}</label>
+                  <div className="flex gap-2">
                     <input
                       type="date"
                       value={dateRangeFilter.start}
@@ -261,12 +238,38 @@ export default function EventsMgmtPage() {
                   </div>
                 </div>
               </div>
+              {/* Website Multi-Select */}
+              <div>
+                <label className={`block text-sm my-2 ${textSecondary}`}>{t('websites')}</label>
+                <div className={` rounded-lg  overflow-y-auto flex items-center gap-4`}>
+                  {websites && websites?.map((website) => (
+                    <label
+                      key={website?._id}
+                      className="flex items-center gap-2 mb-2 last:mb-0 cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedWebsites.includes(website)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedWebsites([...selectedWebsites, website]);
+                          } else {
+                            setSelectedWebsites(selectedWebsites?.filter(w => w._id !== website._id));
+                          }
+                        }}
+                        className="rounded text-teal-500"
+                      />
+                      <span className={`text-sm ${textSecondary}`}>{website?.name}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
 
               {/* Active Filters Summary */}
               {(selectedWebsites.length > 0 || eventTypeFilter !== 'all' || registrationFilter !== 'all' ||
                 statusFilter !== 'all' || dateRangeFilter.start || dateRangeFilter.end || searchQuery) && (
                   <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 flex items-center gap-2 flex-wrap">
-                    <span className={`text-sm ${themeColor.textTertiary}`}>{t('active_filters')}:</span>
+                    <span className={`text-sm ${textTertiary}`}>{t('active_filters')}:</span>
                     {searchQuery && (
                       <span className="px-3 py-1 bg-teal-500/20 text-teal-500 rounded-full text-xs">
                         {t('search')}: "{searchQuery}"
@@ -328,7 +331,7 @@ export default function EventsMgmtPage() {
       </div>
 
       {/* Event Detail Modal */}
-      <Activity mode={showDailyBreakdown && !showQuickSnapModal ? "visible" : "hidden"}>
+      {showDailyBreakdown && !showQuickSnapModal &&
         <EventDetailModal
           isRTL={isRTL}
           handleEditEvent={handleEditEvent}
@@ -339,25 +342,23 @@ export default function EventsMgmtPage() {
           registrantSearchQuery={registrantSearchQuery}
           setRegistrantSearchQuery={setRegistrantSearchQuery}
           setSelectedRegistrant={setSelectedRegistrant}
-        />
-      </Activity>
+        />}
 
       {/* Registrant Detail Modal (Nested) */}
-      <Activity mode={selectedRegistrant ? "visible" : "hidden"}>
+      {selectedRegistrant &&
         <RegistrantDetailModal
           selectedRegistrant={selectedRegistrant}
           setSelectedRegistrant={setSelectedRegistrant}
-        />
-      </Activity>
+        />}
 
-      <Activity mode={selectedEvent && showQuickSnapModal ? "visible" : "hidden"}>
+      {selectedEvent && showQuickSnapModal &&
         <QuickSnapEventDetails
           handleEditEvent={handleEditEvent}
           handleViewDetails={handleViewDetails}
           selectedEvent={selectedEvent}
           setSelectedEvent={setSelectedEvent}
         />
-      </Activity>
+      }
 
       {/* Create Event Wizard */}
       <CreateEventWizard

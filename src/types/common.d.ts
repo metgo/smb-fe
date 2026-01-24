@@ -37,17 +37,45 @@ interface PageStats {
   icon: ReactNode;
 }
 
-type IAuthority = {
+interface IAuthority {
   _id: string;
   name: string;
   dmoId: string;
   logoPath?: string;
 };
 
-type IDmo = {
+interface IDmo {
   _id: string;
   name: string;
   imagePath?: string;
   logoPath?: string;
   authorities: Authority[];
 };
+
+interface IDeleteTarget {
+  imageUrl: string;
+  index: number;
+}
+
+type TUploadStatus = "idle" | "uploading" | "success" | "error";
+
+interface IImageUpload {
+  id: number;
+  file?: File;
+  previewUrl: string;
+  signedUrl?: string;
+  gcsURL?: string;
+  progress: number;
+  status: UploadStatus;
+  isPrimary?: boolean;
+}
+
+interface IImage {
+  image: string;
+  caption?: string;
+  alt?: string;
+  isPrimary?: boolean;
+  subCoordinates?: SubCoordinates;
+}
+type TImages = IImage[];
+

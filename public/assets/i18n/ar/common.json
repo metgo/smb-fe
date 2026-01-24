@@ -25,8 +25,8 @@
   "documents": "الوثائق",
   "version": "الإصدار",
 
-"filter": "تصفية",
- "filters": "عوامل التصفية",
+  "filter": "تصفية",
+  "filters": "عوامل التصفية",
   "previous": "السابق",
   "next": "التالي",
   "save_draft": "حفظ المسودة",
@@ -35,6 +35,9 @@
   "publishing": "جارٍ النشر...",
   "cancle": "إلغاء",
   "delete": "حذف",
+  "confirm": "تأكيد",
+  "details": "التفاصيل",
+  "edit": "تعديل",
 
   "delete_ticket": "حذف التذكرة",
   "delete_ticket_confirm": "هل أنت متأكد أنك تريد حذف هذه التذكرة؟",
@@ -44,7 +47,17 @@
   "unsaved_changes_confirm": "لديك تغييرات غير محفوظة. هل أنت متأكد أنك تريد المغادرة؟",
   "delete_event": "حذف الحدث",
   "delete_event_confirm": "هل أنت متأكد أنك تريد حذف هذا الحدث؟",
-  "confirm": "تأكيد",
+  "image_upload_info": "بدأ تحميل الصورة. يرجى الانتظار…",
+  "delete_image": "حذف الصورة",
+  "delete_image_confirm": "هل أنت متأكد أنك تريد حذف هذه الصورة؟ لا يمكن التراجع عن هذا الإجراء.",
+
+  "image_upload_success": "تم رفع الصورة بنجاح!",
+  "image_delete_success": "تم حذف الصورة بنجاح!",
+  "image_upload_failed": "فشل رفع الصورة! يرجى المحاولة مرة أخرى...",
+  "image_delete_failed": "فشل حذف الصورة! يرجى المحاولة مرة أخرى...",
+
+  "primary": "أساسي",
+  "set_as_primary": "تعيين كصورة أساسية",
 
   "sunday": "الأحد",
   "monday": "الاثنين",

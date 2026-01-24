@@ -73,7 +73,6 @@ export default function EventsWithViewMode({
   events,
   viewMode,
   refetch,
-  isLoading=false,
   selectedWebsiteCount,
   eventTypeFilter,
   registrationFilter,
@@ -453,7 +452,6 @@ export default function EventsWithViewMode({
     return (
       <ReordableDataTable
         rowKey="_id"
-        isLoading={isLoading}
         data={displayedEvents}
         selectedItems={selectedEvents}
         onSelectionChange={(selected) => setSelectedEvents(selected as Set<string>)}
@@ -634,7 +632,7 @@ export default function EventsWithViewMode({
       </div>
 
       {/* Main Content */}
-      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 flex-1 overflow-y-auto max-h-[calc(100vh-500px)]">
+      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 flex-1 overflow-y-auto max-h-[calc(100vh-450px)]">
         {calendarViewMode === 'calendar-month' && viewMode === 'calendar' && <MonthView />}
         {calendarViewMode === 'calendar-week' && viewMode === 'calendar' && <WeekView />}
         {calendarViewMode === 'calendar-day' && viewMode === 'calendar' && <DayView />}

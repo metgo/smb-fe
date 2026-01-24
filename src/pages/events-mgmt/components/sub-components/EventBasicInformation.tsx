@@ -1,12 +1,11 @@
-import clsx from "clsx";
 import React, { useEffect, useRef } from "react";
-import { ChevronDown } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { SelectableChips } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useGetAccessibilityQuery, useGetGroupTypesQuery, useGetSubCategoriesQuery } from "@/store/api/masterDataApi";
 import { useCommon } from "@/hooks/useCommon";
+import { FormFieldWrapper, InputField, RadioGroupField, SelectField, TextareaField } from "@/components/form-fields";
 
 interface EventBasicInformationProps {
   markDirty: (step: number) => void;
@@ -55,7 +54,7 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
 
   const { t, i18n } = useTranslation("events");
   const { dmosAuthorities } = useCommon()
-  const { textSecondary, textTertiary, inputClasses, selectInputClasses } = useThemeClasses();
+  const { textSecondary, inputClasses, selectInputClasses } = useThemeClasses();
   const locale = i18n.language as Language;
 
   const { data: subCategories } = useGetSubCategoriesQuery({ bussCategoryId: "6566fcd4a77d2a477266d3b9", locale });
@@ -90,7 +89,7 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
 
   useEffect(() => {
     const errorKeys = Object.keys(errors);
-    if (errorKeys.length === 0) return;
+    if (errorKeys?.length === 0) return;
 
     const firstErrorKey = errorKeys[0];
     const ref = fieldRefs[firstErrorKey as keyof typeof fieldRefs];
@@ -146,153 +145,116 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
   return (
     <div className="space-y-4 max-w-3xl mx-auto">
 
-      <div className="flex items-center justify-between gap-4">
-        {/* Dmos Dropdown */}
-        <div className="flex-1" ref={fieldRefs.dmoId}>
-          <label className={`block text-sm font-medium mb-3 ${textSecondary}`}>
-            {t("select_dmo")} <span className="text-red-500">*</span>
-          </label>
-          <div className=" flex gap-2 relative">
-            <select
+      <div className="flex items-start justify-between gap-4">
+        {/* DMO */}
+        <div className="flex-1">
+          <FormFieldWrapper
+            required
+            label={t("select_dmo")}
+            error={errors.dmoId}
+          >
+            <SelectField
               value={selectedDmoId}
-              onChange={(e) => {
-                setSelectDmoId(e.target.value);
+              onChange={(v) => {
+                setSelectDmoId(v);
                 setSelectAuthorityId("");
               }}
-              className={clsx(
-                "appearance-none h-12 w-full border rounded-lg px-4 py-2 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 min-w-45",
-                selectInputClasses, errors.dmoId && "border-red-500"
-              )}
-            >
-              <option value="">Select DMO</option>
-              {dmosAuthorities?.map((parent) => (
-                <option key={parent._id} value={parent._id}>
-                  {parent.name}
-                </option>
-              ))}
-            </select>
-            <ChevronDown className="absolute top-1/2 ltr:right-3 rtl:left-3 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
-          </div>
-          {errors.dmoId && (
-            <p className="text-red-500 text-sm mt-2 flex items-center gap-1">
-              {errors.dmoId}
-            </p>
-          )}
+              placeholder={t("select_dmo")}
+              options={dmosAuthorities?.map(d => ({
+                label: d.name,
+                value: d._id
+              })) ?? []}
+              error={errors.dmoId}
+              fieldRef={fieldRefs.dmoId}
+              selectInputClasses={selectInputClasses}
+            />
+          </FormFieldWrapper>
         </div>
 
-        {/* Authorities Dropdown */}
-        <div className="flex-1" ref={fieldRefs.authorityId}>
-          <label className={`block text-sm font-medium mb-3 ${textSecondary}`}>
-            {t("select_authority")} <span className="text-red-500">*</span>
-          </label>
-          <div className=" w-full relative">
-            <select
+        {/* Authority */}
+        <div className="flex-1">
+          <FormFieldWrapper
+            required
+            label={t("select_authority")}
+            error={errors.authorityId}
+          >
+            <SelectField
               value={selectedAuthorityId}
-              onChange={(e) => setSelectAuthorityId(e.target.value)}
-              className={clsx(
-                "appearance-none h-12 w-full border rounded-lg px-4 py-2 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 min-w-45",
-                selectInputClasses, 
-                errors.dmoId && "border-red-500"
-              )}
-            >
-              <option value="">Select Authority</option>
-              {selectedDmos?.authorities?.map((child) => (
-                <option key={child._id} value={child._id}>
-                  {child.name}
-                </option>
-              ))}
-            </select>
-            <ChevronDown className="absolute top-1/2 ltr:right-3 rtl:left-3 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
-          </div>
-          {errors.authorityId && (
-            <p className="text-red-500 text-sm mt-2 flex items-center gap-1">
-              {errors.authorityId}
-            </p>
-          )}
+              onChange={setSelectAuthorityId}
+              placeholder={t("select_authority")}
+              options={selectedDmos?.authorities?.map(a => ({
+                label: a.name,
+                value: a._id
+              })) ?? []}
+              error={errors.authorityId}
+              fieldRef={fieldRefs.authorityId}
+              selectInputClasses={selectInputClasses}
+            />
+          </FormFieldWrapper>
         </div>
       </div>
 
-      {/* Event Name */}
-      <div>
-        <label className={`block text-sm font-medium mb-3 ${textSecondary}`}>
-          {t("event_name")} <span className="text-red-500">*</span>
-        </label>
-        <input
-          type="text"
+
+      <FormFieldWrapper
+        required
+        label={t("event_name")}
+        error={errors.eventName}
+      >
+        <InputField
           value={eventName}
-          ref={fieldRefs.eventName}
-          onChange={(e) => setEventName(e.target.value)}
+          onChange={setEventName}
           placeholder={t("enter_event_name")}
-          className={`w-full px-5 py-3 rounded-xl border text-lg ${inputClasses} transition-all focus:ring-2 focus:ring-teal-500/20 ${errors.eventName ? "border-red-500" : ""
-            }`}
+          inputClasses={`${inputClasses} text-lg`}
+          fieldRef={fieldRefs.eventName}
         />
-        {errors.eventName && (
-          <p className="text-red-500 text-sm mt-2 flex items-center gap-1">
-            {errors.eventName}
-          </p>
-        )}
-      </div>
+      </FormFieldWrapper>
+
 
       {/* Short Description */}
-      <div>
-        <label className={`block text-sm font-medium mb-3 ${textSecondary}`}>
-          {t("short_description")} <span className="text-red-500">*</span>
-        </label>
-        <input
-          type="text"
-          ref={fieldRefs.shortDescription}
+      <FormFieldWrapper
+        required
+        label={t("short_description")}
+        error={errors.shortDescription}
+        inputHintText={`${shortDescription?.length ?? 0}/200 ${t("max_characters")}`}
+      >
+        <InputField
           value={shortDescription}
-          onChange={(e) => setShortDescription(e.target.value)}
+          onChange={setShortDescription}
           placeholder={t("brief_description")}
+          inputClasses={inputClasses}
+          fieldRef={fieldRefs.shortDescription}
           maxLength={200}
-          className={`w-full px-5 py-3 rounded-xl border text-base ${inputClasses} transition-all focus:ring-2 focus:ring-teal-500/20 ${errors.shortDescription ? "border-red-500" : ""
-            } `}
         />
-        <p className={`text-xs mt-2 text-right ${textTertiary}`}>
-          {shortDescription?.length}/200 {t("max_characters")}
-        </p>
-      </div>
+      </FormFieldWrapper>
+
 
       {/* Full Description */}
-      <div>
-        <label className={`block text-sm font-medium mb-3 ${textSecondary}`}>
-          {t("full_description")}
-        </label>
-        <textarea
+      <FormFieldWrapper
+        label={t("full_description")}
+      >
+        <TextareaField
           value={fullDescription}
-          onChange={(e) => setFullDescription(e.target.value)}
+          onChange={setFullDescription}
           placeholder={t("full_event_description")}
           rows={8}
-          className={`w-full px-5 py-4 rounded-xl border resize-none text-base ${inputClasses} transition-all focus:ring-2 focus:ring-teal-500/20`}
+          inputClasses={`${inputClasses} text-base`}
         />
-      </div>
+      </FormFieldWrapper>
+
 
       {/* Event Status */}
-      <div>
-        <label className={`block text-sm font-medium mb-4 ${textSecondary}`}>
-          {t("event_status")}
-        </label>
-        <div className="flex flex-wrap gap-6">
-          {(["draft", "pending", "approved"] as const).map((status) => (
-            <label
-              key={status}
-              className="flex items-center gap-3 cursor-pointer group"
-            >
-              <input
-                type="radio"
-                name="eventStatus"
-                value={status}
-                checked={eventStatus === status}
-                onChange={(e) => setEventStatus(e.target.value as any)}
-                className="w-5 h-5 text-teal-500 focus:ring-teal-500 focus:ring-2"
-              />
-              <span className={`text-base capitalize font-medium ${textSecondary} group-hover:text-teal-500 transition-colors`}>
-                {t(status)}
-              </span>
-            </label>
-          ))}
-        </div>
-      </div>
+      <FormFieldWrapper
+        label={t("event_status")}
+      >
+        <RadioGroupField
+          value={eventStatus}
+          options={["draft", "pending", "approved"]}
+          onChange={setEventStatus}
+          labelMapper={(v) => t(v)}
+          textSecondary={textSecondary}
+        />
+      </FormFieldWrapper>
+
 
       <SelectableChips
         label="Sub Categories"
@@ -317,19 +279,19 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
       />
 
       {/* Internal Notes */}
-      <div>
-        <label className={`block text-sm font-medium mb-3 ${textSecondary}`}>
-          {t("internal_notes")}
-          <span className={`text-xs ml-2 ${textTertiary}`}>({t("visible_only_to_admins")})</span>
-        </label>
-        <textarea
-          value={internalNotes}
-          onChange={(e) => setInternalNotes(e.target.value)}
-          placeholder={t("add_internal_notes")}
+      <FormFieldWrapper
+        label={t("internal_notes")}
+        hint={t("visible_only_to_admins")}
+      >
+        <TextareaField
           rows={4}
-          className={`w-full px-5 py-4 rounded-xl border resize-none text-base ${inputClasses} transition-all focus:ring-2 focus:ring-teal-500/20`}
+          value={internalNotes}
+          onChange={setInternalNotes}
+          placeholder={t("add_internal_notes")}
+          inputClasses={`${inputClasses} text-base`}
         />
-      </div>
+      </FormFieldWrapper>
+
     </div >
   );
 };
