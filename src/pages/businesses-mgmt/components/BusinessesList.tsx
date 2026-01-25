@@ -121,8 +121,6 @@ export default function BusinessesList({
     (item) => item?._id === selectedDmoId,
   );
   const { data: businessStatsData } = useGetBusinessStatsQuery({});
-  console.log("busienss stats", businessStatsData);
-  console.log("selected filters", selectedAuthorityId, selectedDmoId);
   const columnSettingsRef = useRef<HTMLDivElement>(null);
   const [columnVisibility, setColumnVisibility] =
     useState<ColumnVisibility>(defaultColumns);
@@ -133,7 +131,6 @@ export default function BusinessesList({
     status: "DRAFT",
     hasProductFilter: "",
   });
-  console.log("filter?? statys", filters);
 
   // Column visibility - load from localStorage or use defaults
   const [visibleColumns, _setVisibleColumns] = useState<ColumnVisibility>(() => {
@@ -218,7 +215,6 @@ export default function BusinessesList({
   const { data: businessData, isLoading: loading } =
     useGetAllbusinessesQuery(queryParams);
 
-  console.log("businessData:", businessData);
 
   // Column toggle handler
   // const toggleColumn = (column: keyof ColumnVisibility) => {

@@ -26,14 +26,14 @@ interface BusinessTitleSectionProps {
     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
       <div>
         <h1 className={`text-3xl mb-2 ${theme === "dark" ? "text-gray-100" : "text-gray-900"}`}>
-          {business.name}
+          {business?.name}
         </h1>
         <div className="flex items-center gap-4">
-          <StatusBadge status={business.status} />
+          <StatusBadge status={business?.status} />
           <div className="flex items-center gap-2">
             <TrendingUp className="w-5 h-5 text-green-600" />
             <span className={theme === "dark" ? "text-gray-300" : "text-gray-700"}>
-              {t("impact_score")}: {business.impact.toFixed(1)}
+              {t("impact_score")}: {business?.impact?.toFixed(1)}
             </span>
           </div>
         </div>
@@ -48,11 +48,11 @@ interface BusinessTitleSectionProps {
           <div className="w-32 h-2 bg-gray-300 dark:bg-gray-700 rounded-full overflow-hidden">
             <div
               className="h-full bg-teal-600 transition-all duration-300"
-              style={{ width: `${business.completionPercentage}%` }}
+              style={{ width: `${business?.completionPercentage}%` }}
             />
           </div>
           <span className={`text-sm ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}>
-            {business.completionPercentage}%
+            {business?.completionPercentage}%
           </span>
         </div>
       </div>

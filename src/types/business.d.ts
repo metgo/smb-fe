@@ -1,4 +1,4 @@
- interface Business {
+interface Business {
   id: string;
   name: string;
   shortDescription: string;
@@ -60,14 +60,19 @@
 }
 
 interface BusinessBasicInfoPayload {
-    authority: string;
+  authority: string;
   name: string;
   shortDescription: string;
   fullDescription: string;
-    internalNotes?: string;
+  internalNotes?: string;
 }
 
 interface BusinessContactPayload {
-   email: string;
+  email: string;
   phone: string;
+}
+
+interface IBusinessMedia {
+  logo: IImageUpload,
+  gallery: IImageUpload[],
 }

@@ -1,9 +1,9 @@
-export interface TimeRange {
+interface TimeRange {
   open: string;
   close: string;
 }
 
-export interface OperatingHours {
+interface OperatingHours {
   sunday: TimeRange[];
   monday: TimeRange[];
   tuesday: TimeRange[];
@@ -13,7 +13,7 @@ export interface OperatingHours {
   saturday: TimeRange[];
 }
 
-export interface OpeningHrPayload {
+interface OpeningHrPayload {
   days: string;
   open: string;
   close: string;

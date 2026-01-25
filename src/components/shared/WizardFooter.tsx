@@ -1,4 +1,6 @@
 import { useAppSelector } from '@/hooks/hooks';
+import { useThemeClasses } from '@/hooks/useThemeClasses';
+import clsx from 'clsx';
 import {
   ArrowLeft,
   ArrowRight,
@@ -31,10 +33,16 @@ export default function WizardFooter({
 }: WizardFooterProps) {
   const { t } = useTranslation('common')
   const { theme, isRTL } = useAppSelector((state) => state.settings)
+  const { rowDir, borderColor } = useThemeClasses()
+
+
   return (
     <div
-      className={`flex items-center justify-between p-6 border-t ${theme === 'dark' ? 'border-gray-800' : 'border-gray-200'
-        }`}
+      className={clsx(
+        rowDir,
+        borderColor,
+        "flex items-center justify-between p-6 border-t"
+      )}
     >
       {/* Left */}
       <div className="flex items-center gap-3">
@@ -42,28 +50,33 @@ export default function WizardFooter({
           <button
             onClick={onPrevious}
             className={`px-4 py-2 rounded-lg border transition-colors flex items-center gap-2 cursor-pointer ${theme === 'dark'
-                ? 'border-gray-700 hover:bg-gray-800'
-                : 'border-gray-300 hover:bg-gray-100'
+              ? 'border-gray-700 hover:bg-gray-800'
+              : 'border-gray-300 hover:bg-gray-100'
               }`}
           >
             {isRTL ? (
-              <ArrowRight className="w-4 h-4" />
+              <>
+                {t('previous')}
+                <ArrowRight className="w-4 h-4" />
+              </>
             ) : (
-              <ArrowLeft className="w-4 h-4" />
+              <>
+                <ArrowLeft className="w-4 h-4" />
+                {t('previous')}
+              </>
             )}
-            {t('previous')}
           </button>
         )}
       </div>
 
       {/* Right */}
-      <div className="flex items-center gap-3">
+      <div className={clsx(rowDir, "flex items-center gap-3")}>
         <button
           onClick={onSaveDraft}
           disabled={isSaving}
           className={`px-4 py-2 rounded-lg border cursor-pointer transition-colors ${theme === 'dark'
-              ? 'border-gray-700 hover:bg-gray-800'
-              : 'border-gray-300 hover:bg-gray-100'
+            ? 'border-gray-700 hover:bg-gray-800'
+            : 'border-gray-300 hover:bg-gray-100'
             }`}
         >
           {isSaving ? (
@@ -86,8 +99,8 @@ export default function WizardFooter({
           >
             {isRTL ? (
               <>
-                {t('next')}
                 <ArrowLeft className="w-4 h-4" />
+                {t('next')}
               </>
             ) : (
               <>

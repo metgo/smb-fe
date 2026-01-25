@@ -1,23 +1,13 @@
-import { useState, useEffect, useRef } from "react";
-import {
-  CheckCircle,
-  X,
-  MapPin,
-  Image as ImageIcon,
-  Clock,
-  Globe,
-  Tag,
-  FileText,
-  Users,
-  Truck,
-} from "lucide-react";
+import { toast } from "sonner";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { CheckCircle, MapPin, Image as ImageIcon, Clock, Globe, Tag, FileText, Users, Truck, } from "lucide-react";
+
 import { useAppSelector } from "@/hooks/hooks";
 import {
   useInitBusinessCreateMutation,
   useUpdateBusinessMutation,
 } from "@/store/api/businessMutationApi";
-import type { OperatingHours, OpeningHrPayload } from "@/types/openinghours";
 
 import {
   BusinessAttributes,
@@ -31,33 +21,139 @@ import {
   BusinessReviewSubmit,
 } from "./sub-components";
 import { WizardFooter } from "@/components/shared";
-import { toast } from "sonner";
+import { ModalWrapper } from "@/components/wrapper";
+import { useImagesUpload } from "@/hooks/useImagesUpload";
+import { useSingleImageUpload } from "@/hooks/useSingleImageUpload";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
+import clsx from "clsx";
+import { PublishButton } from "@/components/btns";
+import { useBusinessDraftSaver } from "../hooks/useBusinessDraftSaver";
 
 interface CreateBusinessWizardProps {
   onClose: () => void;
-  onSave: (data: any) => void;
 }
-
-// const USER_ROLE = "admin";
 
 export default function CreateBusinessWizard({
   onClose,
-  // onSave,
 }: CreateBusinessWizardProps) {
   const { t } = useTranslation("businesses");
   const { theme, isRTL } = useAppSelector((state) => state.settings);
+  const { textPrimary, textTertiary } = useThemeClasses()
+
+  // Form State
+  const [formData, setFormData] = useState<any>({
+    // Step 1
+    authority: "",
+    nameEn: "",
+    nameHe: "",
+    nameAr: "",
+    shortDescriptionEn: "",
+    shortDescriptionHe: "",
+    shortDescriptionAr: "",
+    fullDescriptionEn: "",
+    fullDescriptionHe: "",
+    fullDescriptionAr: "",
+    internalNotes: "",
+    categories: [] as string[],
+
+    // Step 2
+    email: "",
+    phone: "",
+    contactDetails: { name: "", email: "", phone: "" },
+    preferredChannel: "email",
+    collaborators: [] as any[],
+
+    // Step 3
+    address: "",
+    coordinates: { lat: "", lng: "" },
+
+    // Step 4
+    primaryCategory: "",
+    // subcategories: [] as string[],
+    tags: [] as string[],
+    accessibility: [] as string[],
+    groupTypes: [] as string[],
+    // serviceType: "",
+
+    // Step 5
+    logo: null as IImage | null,
+    images: null as TImages | null,
+
+    // Step 6
+    operatingHours: {
+      sunday: [{ open: "09:00", close: "18:00" }],
+      monday: [{ open: "09:00", close: "18:00" }],
+      tuesday: [{ open: "09:00", close: "18:00" }],
+      wednesday: [{ open: "09:00", close: "18:00" }],
+      thursday: [{ open: "09:00", close: "18:00" }],
+      friday: [{ open: "09:00", close: "14:00" }],
+      saturday: [] as { open: string; close: string }[],
+    },
+    vendorDelivers: false,
+    pickupAvailable: false,
+    deliveryAreas: [] as any[],
+    deliveryAdditionalInfo: "",
+    deliveryReturnExchange: [] as string[],
+    deliverySpecificSellerInfo: [] as string[],
+
+    // Step 8
+    socialMedia: [],
+  });
+
+  const {
+    images,
+    primaryImageIndex,
+    handleImageUpload,
+    uploadAll,
+    setPrimaryImage,
+    setImages,
+    deleteTarget,
+    setDeleteTarget,
+    confirmDelete,
+    isImageDeleting,
+    handleDeleteImage,
+  } = useImagesUpload({
+    initialImages: formData.images, onChange: (images) => {
+      setFormData((prev: any) => ({
+        ...prev,
+        images
+      }))
+    }
+  })
+
+  const {
+    image: logoImage,
+    handleImageSelect: handleLogoImageSelect,
+    uploadImage: uploadLogoImage,
+    confirmDelete: confirmDeleteLogo,
+    deleteTarget: deleteTargetLogo,
+    setDeleteTarget: setDeleteTargetLogo,
+    isImageDeleting: isLogoImageDeleting,
+    handleDeleteImage: handleDeleteLogoImage,
+  } = useSingleImageUpload({
+    initialImage: formData?.logo,
+    onChange: (img) => {
+      setFormData((prev: any) => ({
+        ...prev,
+        logo: img,
+      }));
+    },
+  });
+
+  const [updateBusiness, { isLoading: isSaving }] = useUpdateBusinessMutation();
+  const [initBusinessCreate, { isLoading: isCreating }] = useInitBusinessCreateMutation();
+
+
   const [isPublishing, setIsPublishing] = useState(false);
-  const [updateBusiness] = useUpdateBusinessMutation();
-  const [initBusinessCreate] = useInitBusinessCreateMutation();
+  const [isPublishBtnClicked, setIsPublishBtnClicked] = useState(false)
   const [currentStep, setCurrentStep] = useState(1);
   const [editData, _setEditData] = useState<any>();
-  const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
   const [selectedDmoId, setSelectDmoId] = useState<string>("");
   const [selectedAuthorityId, setSelectAuthorityId] = useState<string>("");
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [_businessId, setBusinessId] = useState<string | null>(null);
-  const businessIdRef = useRef<string | null>(null);
+  const [businessId, setBusinessId] = useState<string>("");
   const [selectedGroupTypesId, setGroupTypesId] = useState<string[]>([]);
   const [selectedAccessiblitiesId, setAccessiblitiesId] = useState<string[]>(
     [],
@@ -65,7 +161,6 @@ export default function CreateBusinessWizard({
   const [geo, setGeo] = useState<Geo>({ lat: "", lng: "" });
   const [address, setAddress] = useState("");
 
-  console.log("address", address);
 
   const parseAddress = (address: any) => {
     const parts = address.split(",");
@@ -109,73 +204,7 @@ export default function CreateBusinessWizard({
       },
     );
   };
-  // Form State
-  const [formData, setFormData] = useState<any>({
-    // Step 1
-    authority: "",
-    nameEn: "",
-    nameHe: "",
-    nameAr: "",
-    shortDescriptionEn: "",
-    shortDescriptionHe: "",
-    shortDescriptionAr: "",
-    fullDescriptionEn: "",
-    fullDescriptionHe: "",
-    fullDescriptionAr: "",
-    slug: "",
-    internalNotes: "",
-    categories: [] as string[],
 
-    // Step 2
-    email: "",
-    phone: "",
-    contactDetails: { name: "", email: "", phone: "" },
-    preferredChannel: "email",
-    collaborators: [] as any[],
-
-    // Step 3
-    address: "",
-    coordinates: { lat: "", lng: "" },
-
-    // Step 4
-    primaryCategory: "",
-    // subcategories: [] as string[],
-    tags: [] as string[],
-    accessibility: [] as string[],
-    groupTypes: [] as string[],
-    // serviceType: "",
-
-    // Step 5
-    logo: null as string | null,
-    images: [] as string[],
-
-    // Step 6
-    operatingHours: {
-      sunday: [{ open: "09:00", close: "18:00" }],
-      monday: [{ open: "09:00", close: "18:00" }],
-      tuesday: [{ open: "09:00", close: "18:00" }],
-      wednesday: [{ open: "09:00", close: "18:00" }],
-      thursday: [{ open: "09:00", close: "18:00" }],
-      friday: [{ open: "09:00", close: "14:00" }],
-      saturday: [] as { open: string; close: string }[],
-    },
-    vendorDelivers: false,
-    pickupAvailable: false,
-    deliveryAreas: [] as any[],
-    deliveryAdditionalInfo: "",
-    deliveryReturnExchange: [] as string[],
-    deliverySpecificSellerInfo: [] as string[],
-
-    // Step 8
-    // onlinePresence: {
-    //   website: "",
-    //   facebook: "",
-    //   instagram: "",
-    //   youtube: "",
-    //   tiktok: "",
-    // },
-    socialMedia: [],
-  });
 
   const totalSteps = 9;
 
@@ -191,114 +220,70 @@ export default function CreateBusinessWizard({
     { number: 9, title: t("step_review_submit"), icon: CheckCircle },
   ];
 
-  // Auto-generate slug
-  useEffect(() => {
-    if (formData.nameEn && !editData) {
-      const slug = formData.nameEn
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/(^-|-$)/g, "");
-      setFormData((prev: any) => ({ ...prev, slug }));
-    }
-  }, [formData.nameEn, editData]);
 
   // Draft Save Payload per Step
-  const stepPayloadMap: Record<number, any> = {
-    1: {
-      authorityId: formData.authority,
-      name: formData.nameEn,
-      shortDescription: formData.shortDescriptionEn,
-      description: formData.fullDescriptionEn,
-      internalNotes: formData.internalNotes,
+  const stepPayloadMap = {
+    // step 1:
+    authorityId: formData.authority,
+    name: formData.nameEn,
+    shortDescription: formData.shortDescriptionEn,
+    description: formData.fullDescriptionEn,
+    internalNotes: formData.internalNotes,
+    // step 2
+    busiEmail: formData.email,
+    phoneNumber: formData.phone,
+    contactDetails: {
+      name: formData.contactDetails?.name,
+      countryCode: formData.contactDetails?.countryCode,
+      phone: formData.contactDetails?.phone,
+      address: formData.contactDetails?.address,
+      email: formData.contactDetails?.email,
+      whatsAppCountryCode: formData.contactDetails?.whatsAppCountryCode,
+      whatsAppNumber: formData.contactDetails?.whatsAppNumber,
+      prefferedChannel: formData.contactDetails?.prefferedChannel,
     },
-    2: {
-      busiEmail: formData.email,
-      phoneNumber: formData.phone,
-      contactDetails: {
-        name: formData.contactDetails?.name,
-        countryCode: formData.contactDetails?.countryCode,
-        phone: formData.contactDetails?.phone,
-        address: formData.contactDetails?.address,
-        email: formData.contactDetails?.email,
-        whatsAppCountryCode: formData.contactDetails?.whatsAppCountryCode,
-        whatsAppNumber: formData.contactDetails?.whatsAppNumber,
-        prefferedChannel: formData.contactDetails?.prefferedChannel,
-      },
+    //  step 3
+    address: {
+      country: addr.country,
+      city: addr.city,
+      location: addr.location,
     },
-    3: {
-      address: {
-        country: addr.country,
-        city: addr.city,
-        location: addr.location,
-      },
-      geoLocation: geo,
-    },
-    4: {
-      primaryCategoryId: formData.primaryCategory,
-      // subcategories: formData.subcategories,
-      tags: formData.tags,
-      accessibilitiesId: selectedAccessiblitiesId,
-      groupTypesId: selectedGroupTypesId,
-      // serviceType: formData.serviceType,
-    },
-    5: {
-      logo: formData.logo,
-      images: formData.images,
-    },
-    6: {
-      openingHrs: transformOperatingHoursToPayload(formData.operatingHours),
-    },
-    7: {
-      // vendorDelivers: formData.vendorDelivers,
-      isPickUpAvailable: formData.pickupAvailable,
-      deliveryArea: formData.deliveryAreas,
-      deliveryAdditionalInfo: formData.deliveryAdditionalInfo,
-      deliveryReturnExchange: formData.deliveryReturnExchange,
-      deliverySpecificSellerInfo: formData.deliverySpecificSellerInfo,
-    },
-    8: {
-      socialMedia: formData.socialMedia,
-    },
+    geoLocation: geo,
+    //  step 4
+    primaryCategoryId: formData.primaryCategory,
+    // subcategories: formData.subcategories,
+    tags: formData.tags,
+    accessibilitiesId: selectedAccessiblitiesId,
+    groupTypesId: selectedGroupTypesId,
+    // serviceType: formData.serviceType,
+    //  step 5
+    logo: formData.logo,
+    images: formData.images,
+    //  step 6
+    openingHrs: transformOperatingHoursToPayload(formData.operatingHours),
+    // step 7
+    // vendorDelivers: formData.vendorDelivers,
+    isPickUpAvailable: formData.pickupAvailable,
+    deliveryArea: formData.deliveryAreas,
+    deliveryAdditionalInfo: formData.deliveryAdditionalInfo,
+    deliveryReturnExchange: formData.deliveryReturnExchange,
+    deliverySpecificSellerInfo: formData.deliverySpecificSellerInfo,
+    // step 8 
+    socialMedia: formData.socialMedia,
   };
-  console.log("steppayloadmap", stepPayloadMap[3]);
-  // Auto-save draft
-  const handleSaveDraft = async () => {
-    try {
-      let currentBusinessId = businessIdRef.current;
-      if (!currentBusinessId) {
-        const initRes = await initBusinessCreate().unwrap();
-        console.log("Business ID", currentBusinessId);
-        if (!initRes?.id) return;
 
-        currentBusinessId = initRes.id;
-        businessIdRef.current = initRes.id;
+  const {
+    markDirty,
+    saveDraft,
+  } = useBusinessDraftSaver({
+    currentStep,
+    businessId,
+    setBusinessId,
+    initBusinessCreate,
+    updateBusiness,
+    stepPayloadMap,
+  });
 
-        setBusinessId(currentBusinessId);
-      }
-      const payload = stepPayloadMap[currentStep];
-      console.log("PATCH payload", payload);
-
-      if (!payload) return;
-      // Update business
-      const res = await updateBusiness({
-        body: payload,
-        businessId: currentBusinessId!,
-      }).unwrap();
-      setIsSaving(false);
-      setLastSaved(new Date());
-
-      toast.success(res?.message ?? t("business_saved_as_draft"));
-    } catch (error: any) {
-      toast.error(error?.message || t("something_went_wrong"));
-    }
-    
-  };
-  console.log("form data busienss", formData);
-  const handleNext = async () => {
-    await handleSaveDraft();
-    handleSaveDraft();
-    if (currentStep < totalSteps) setCurrentStep((prev) => prev + 1);
-  };
   const validateStep = (step: number): boolean => {
     const newErrors: Record<string, string> = {};
 
@@ -316,9 +301,9 @@ export default function CreateBusinessWizard({
         if (!formData.phone.trim()) newErrors.phone = t("required_field");
         break;
       case 3:
-       if(addr.country === undefined){
-        newErrors.address = t("required_field")
-       }
+        if (addr.city === undefined) {
+          newErrors.address = t("required_field")
+        }
         break;
       case 4:
         if (!formData.primaryCategory) {
@@ -326,42 +311,61 @@ export default function CreateBusinessWizard({
         }
         break;
     }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-  const handlePublish = async () => {
-     // Validate all steps
-        let allValid = true;
-        for (let i = 1; i <= 5; i++) {
-          if (!validateStep(i)) {
-            allValid = false;
-            setCurrentStep(i);
-            break;
-          }
-        }
-    
-        if (!allValid) {
-          toast.error(t("fix_errors_before_proceeding"));
-          return;
-        }
-    setIsPublishing(true);
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    setIsPublishing(false);
-    toast.success(t("business created succesfully"));
-    onClose();
+
+  const handleNext = async () => {
+    if (!validateStep(currentStep) && isPublishBtnClicked) return;
+    if (currentStep === 5) {
+      await uploadLogoImage()
+      await uploadAll()
+    }
+    setCurrentStep((prev) => prev + 1);
   };
+
   const handlePrevious = () => {
     if (currentStep > 1) setCurrentStep(currentStep - 1);
   };
 
-  // const handleSubmit = () => {
-  //   // Here you can validate all steps before final submit
-  //   onSave({ ...formData, status: "pending" });
-  // };
+  const handleSaveDraft = async () => {
+    await uploadLogoImage()
+    await uploadAll()
+    saveDraft(false)
+  };
+
+  const handlePublish = async () => {
+    setIsPublishBtnClicked(true)
+    // Validate all steps
+    let allValid = true;
+    for (let i = 1; i <= 5; i++) {
+      if (!validateStep(i)) {
+        allValid = false;
+        setCurrentStep(i);
+        break;
+      }
+    }
+
+    if (!allValid) {
+      toast.error(t("fix_errors_before_proceeding"));
+      return;
+    }
+    setIsPublishing(true);
+    saveDraft(true)
+    setIsPublishing(false);
+    toast.success(t("business created succesfully"));
+    onClose();
+  };
+
+
 
   const renderStep = () => {
-    const commonProps = { theme, isRTL, t, formData, errors, setFormData };
+    const commonProps = { theme, isRTL, t, formData, errors, setFormData, markDirty };
+    const mediaProps = {
+      theme, t, errors, markDirty,
+      logoImage, handleLogoImageSelect, deleteTargetLogo, setDeleteTargetLogo, isLogoImageDeleting, confirmDeleteLogo, handleDeleteLogoImage,
+      images, primaryImageIndex, setPrimaryImage, handleImageUpload, deleteTarget, setDeleteTarget, isImageDeleting, confirmDelete, handleDeleteImage,
+    }
     switch (currentStep) {
       case 1:
         return (
@@ -397,7 +401,7 @@ export default function CreateBusinessWizard({
           />
         );
       case 5:
-        return <BusinessMedia {...commonProps} />;
+        return <BusinessMedia {...mediaProps} />;
       case 6:
         return <BusinessOpeningHours {...commonProps} />;
       case 7:
@@ -412,54 +416,56 @@ export default function CreateBusinessWizard({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-      <div
-        className={`w-full max-w-4xl max-h-[90vh] rounded-lg shadow-2xl flex flex-col ${
-          theme === "dark" ? "bg-gray-900" : "bg-white"
-        }`}
-      >
-        {/* Header */}
-        <div
-          className={`px-6 py-4 border-b ${theme === "dark" ? "border-gray-800" : "border-gray-200"}`}
-        >
-          <div className="flex items-center justify-between mb-4">
-            <h2
-              className={`text-2xl ${theme === "dark" ? "text-gray-100" : "text-gray-900"}`}
-            >
+    <ModalWrapper
+      onClose={onClose}
+      showSpinner={isCreating || isSaving}
+    >
+
+      {/* Header */}
+      <div className={clsx("px-6 py-4 border-b", textPrimary)}>
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h2 className={clsx("text-2xl", textPrimary)}>
               {editData ? t("edit_business") : t("create_new_business")}
             </h2>
-            <button
-              onClick={onClose}
-              className={`p-2 rounded-lg transition-colors ${
-                theme === "dark"
-                  ? "hover:bg-gray-800 text-gray-400"
-                  : "hover:bg-gray-100 text-gray-600"
-              }`}
+            <p
+              className={`text-sm ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
             >
-              <X className="w-6 h-6" />
-            </button>
-          </div>
+              {t("step")} {currentStep} {t("of")} {totalSteps}:{" "}
+              {steps[currentStep - 1].title}
+            </p>
 
-          {/* Progress Bar */}
-          <div className="flex items-center gap-2 mb-2">
-            {steps.map((step) => {
-              const Icon = step.icon;
-              return (
-                <div
-                  key={step.number}
-                  onClick={() => setCurrentStep(step.number)}
-                  className="flex-1 flex items-center gap-2 cursor-pointer"
-                >
+            {lastSaved && (
+              <p
+                className={`text-xs mt-2 ${theme === "dark" ? "text-gray-500" : "text-gray-500"}`}
+              >
+                {t("saved")} {lastSaved.toLocaleTimeString()}
+              </p>
+            )}
+          </div>
+          <PublishButton onClick={handlePublish} isLoading={isPublishing} />
+        </div>
+
+        <div className="flex items-center gap-2 mb-4">
+          {steps.map((step) => {
+            const Icon = step.icon;
+            return (
+              <div
+                key={step.number}
+                onClick={() => setCurrentStep(step.number)}
+                className="flex-1 cursor-pointer"
+              >
+                <div className="flex items-center gap-2">
+                  {/* Icon */}
                   <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center text-sm ${
-                      step.number === currentStep
+                    className={`w-8 h-8 rounded-full flex items-center justify-center text-sm flex-shrink-0 ${step.number === currentStep
                         ? "bg-teal-600 text-white"
                         : step.number < currentStep
                           ? "bg-green-600 text-white"
                           : theme === "dark"
                             ? "bg-gray-800 text-gray-500"
                             : "bg-gray-200 text-gray-500"
-                    }`}
+                      }`}
                   >
                     {step.number < currentStep ? (
                       <CheckCircle className="w-5 h-5" />
@@ -467,54 +473,49 @@ export default function CreateBusinessWizard({
                       <Icon className="w-4 h-4" />
                     )}
                   </div>
+
+                  {/* Connecting Line */}
                   {step.number < totalSteps && (
                     <div
-                      className={`flex-1 h-1 rounded ${
-                        step.number < currentStep
+                      className={`flex-1 h-1 rounded ${step.number < currentStep
                           ? "bg-green-600"
                           : theme === "dark"
                             ? "bg-gray-800"
                             : "bg-gray-200"
-                      }`}
+                        }`}
                     />
                   )}
                 </div>
-              );
-            })}
-          </div>
 
-          <p
-            className={`text-sm ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
-          >
-            {t("step")} {currentStep} {t("of")} {totalSteps}:{" "}
-            {steps[currentStep - 1].title}
-          </p>
-
-          {lastSaved && (
-            <p
-              className={`text-xs mt-2 ${theme === "dark" ? "text-gray-500" : "text-gray-500"}`}
-            >
-              {t("saved")} {lastSaved.toLocaleTimeString()}
-            </p>
-          )}
+                {/* Step Title Below */}
+                <div className="mt-1">
+                  <span
+                    className={`text-xs block text-center md:block text-nowrap overflow-hidden ${textTertiary}`}
+                  >
+                    {step.title}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
         </div>
 
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6">{renderStep()}</div>
-
-        {/* Footer */}
-        <WizardFooter
-        
-          currentStep={currentStep}
-          totalSteps={totalSteps}
-          isSaving={isSaving}
-          isPublishing={isPublishing}
-          onPrevious={handlePrevious}
-          onNext={handleNext}
-          onSaveDraft={handleSaveDraft}
-          onPublish={handlePublish}
-        />
       </div>
-    </div>
+
+      {/* Content */}
+      <div className="flex-1 overflow-y-auto p-6">{renderStep()}</div>
+
+      {/* Footer */}
+      <WizardFooter
+        currentStep={currentStep}
+        totalSteps={totalSteps}
+        isSaving={isSaving || isCreating}
+        isPublishing={isPublishing}
+        onPrevious={handlePrevious}
+        onNext={handleNext}
+        onSaveDraft={handleSaveDraft}
+        onPublish={handlePublish}
+      />
+    </ModalWrapper>
   );
 }

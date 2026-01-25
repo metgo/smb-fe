@@ -1,8 +1,10 @@
-import { useState, type FC } from "react";
-import { ChevronDown } from "lucide-react";
-import { useCommon } from "@/hooks/useCommon";
 import clsx from "clsx";
+import { useEffect, useState, type FC } from "react";
+import { ChevronDown } from "lucide-react";
 import { Globe, Facebook, Twitter, Instagram, Linkedin } from "lucide-react";
+
+import { useCommon } from "@/hooks/useCommon";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 interface BusinessFormData {
   authority: string;
@@ -39,42 +41,25 @@ interface BusinessBasicInfosProps {
 
   selectedAuthorityId?: string;
   setSelectAuthorityId: React.Dispatch<React.SetStateAction<string>>;
-  eventName?: string;
+  markDirty: (step: number) => void;
 }
 
-/* ---------------- Component ---------------- */
-// // Authority options for the Western Negev region
-// const AUTHORITIES = [
-//   "Be'er Sheva",
-//   "Sderot",
-//   "Netivot",
-//   "Ofakim",
-//   "Arad",
-//   "Dimona",
-//   "Yeruham",
-//   "Rahat",
-//   "Regional Council - Sha'ar HaNegev",
-//   "Regional Council - Eshkol",
-//   "Regional Council - Sdot Negev",
-//   "Regional Council - Merhavim",
-//   "Regional Council - Bnei Shimon",
-// ];
 
 const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
   t,
   theme,
   formData,
   setFormData,
+  markDirty,
   errors,
   canApprove,
   selectedDmoId,
   setSelectDmoId,
   setSelectAuthorityId,
 }) => {
-  const [selectedFormLanguage, setSelectedFormLanguage] = useState<
-    "en" | "he" | "ar"
-  >("en");
   const { dmosAuthorities } = useCommon();
+  const [selectedFormLanguage, setSelectedFormLanguage] = useState<Language>("en");
+  const { selectInputClasses, borderColor } = useThemeClasses()
 
   /* -------- Helpers -------- */
 
@@ -116,7 +101,7 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
   ];
   const toggleWebsite = (site: any) => {
     if (selectedWebsites.includes(site)) {
-      setSelectedWebsites(selectedWebsites.filter((w:any) => w !== site));
+      setSelectedWebsites(selectedWebsites.filter((w: any) => w !== site));
     } else {
       setSelectedWebsites([...selectedWebsites, site]);
     }
@@ -128,6 +113,14 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
       setSelectedWebsites([]); // clear individual selections when all websites checked
     }
   };
+
+  useEffect(() => {
+    markDirty(1)
+  }, [
+    formData,
+    selectedWebsites,
+    selectedDmoId
+  ])
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -148,11 +141,10 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
             onChange={(e) =>
               setSelectedFormLanguage(e.target.value as Language)
             }
-            className={`px-3 py-1.5 rounded-lg border ${
-              theme === "dark"
-                ? "bg-gray-800 border-gray-700 text-gray-200"
-                : "bg-white border-gray-300 text-gray-900"
-            } text-sm focus:outline-none focus:ring-2 focus:ring-teal-500`}
+            className={`px-3 py-1.5 rounded-lg border ${theme === "dark"
+              ? "bg-gray-800 border-gray-700 text-gray-200"
+              : "bg-white border-gray-300 text-gray-900"
+              } text-sm focus:outline-none focus:ring-2 focus:ring-teal-500`}
           >
             <option value="en">English</option>
             <option value="he">עברית</option>
@@ -160,56 +152,60 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
           </select>
         </div>
       </div>
-      <div className="flex-1">
-        <label className={`block text-sm  mb-3 `}>
-          {t("select_dmo")} <span className="text-red-500">*</span>
-        </label>
-        <div className=" flex gap-2 relative">
-          <select
-            value={selectedDmoId}
-            onChange={(e) => {
-              setSelectDmoId(e.target.value);
-              setSelectAuthorityId("");
-            }}
-            className={clsx(
-              "appearance-none h-12 w-full border rounded-lg px-4 py-2 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 min-w-45",
-              // selectInputClasses
-            )}
-          >
-            <option value="">Select DMO</option>
-            {dmosAuthorities?.map((parent) => (
-              <option key={parent._id} value={parent._id}>
-                {parent.name}
-              </option>
-            ))}
-          </select>
-          <ChevronDown className="absolute top-1/2 ltr:right-3 rtl:left-3 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+
+      <div className="flex items-center justify-between gap-4">
+        {/* DMO Selection */}
+        <div className="flex-1">
+          <label className={`block text-sm  mb-3 `}>
+            {t("select_dmo")} <span className="text-red-500">*</span>
+          </label>
+          <div className=" flex gap-2 relative">
+            <select
+              value={selectedDmoId}
+              onChange={(e) => {
+                setSelectDmoId(e.target.value);
+                setSelectAuthorityId("");
+              }}
+              className={clsx(
+                "appearance-none h-12 w-full border rounded-lg px-4 py-2 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 min-w-45",
+                selectInputClasses
+              )}
+            >
+              <option value="">Select DMO</option>
+              {dmosAuthorities?.map((parent) => (
+                <option key={parent._id} value={parent._id}>
+                  {parent.name}
+                </option>
+              ))}
+            </select>
+            <ChevronDown className="absolute top-1/2 ltr:right-3 rtl:left-3 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+          </div>
         </div>
-      </div>
-      {/* Authority */}
-      <div className="flex-1">
-        <label className={`block text-sm  mb-3 `}>
-          {t("select_authority")} <span className="text-red-500">*</span>
-        </label>
-        <div className=" w-full relative">
-          <select
-            value={formData.authority}
-            onChange={(e) =>
-              setFormData({ ...formData, authority: e.target.value })
-            }
-            className={clsx(
-              "appearance-none h-12 w-full border rounded-lg px-4 py-2 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 min-w-45",
-              // selectInputClasses
-            )}
-          >
-            <option value="">Select Authority</option>
-            {selectedDmos?.authorities?.map((child) => (
-              <option key={child._id} value={child._id}>
-                {child.name}
-              </option>
-            ))}
-          </select>
-          <ChevronDown className="absolute top-1/2 ltr:right-3 rtl:left-3 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+        {/* Authority */}
+        <div className="flex-1">
+          <label className={`block text-sm  mb-3 `}>
+            {t("select_authority")} <span className="text-red-500">*</span>
+          </label>
+          <div className=" w-full relative">
+            <select
+              value={formData.authority}
+              onChange={(e) =>
+                setFormData({ ...formData, authority: e.target.value })
+              }
+              className={clsx(
+                "appearance-none h-12 w-full border rounded-lg px-4 py-2 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 min-w-45",
+                selectInputClasses
+              )}
+            >
+              <option value="">Select Authority</option>
+              {selectedDmos?.authorities?.map((child) => (
+                <option key={child._id} value={child._id}>
+                  {child.name}
+                </option>
+              ))}
+            </select>
+            <ChevronDown className="absolute top-1/2 ltr:right-3 rtl:left-3 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+          </div>
         </div>
       </div>
 
@@ -253,7 +249,7 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
                   id={name}
                   checked={selectedWebsites.includes(name)}
                   onChange={() => toggleWebsite(name)}
-                  className="flex-shrink-0"
+                  className="shrink-0"
                 />
                 <span className="text-blue-600">{icon}</span> {name}
               </label>
@@ -280,38 +276,18 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
           }
           placeholder={getPlaceholder("name")}
           dir={selectedFormLanguage === "en" ? "ltr" : "rtl"}
-          className={`w-full px-4 py-2 rounded-lg border ${
-            errors[getFieldName("name")]
-              ? "border-red-500"
-              : theme === "dark"
-                ? "bg-gray-800 border-gray-700 text-gray-200"
-                : "bg-white border-gray-300 text-gray-900"
-          } focus:outline-none focus:ring-2 focus:ring-teal-500`}
+          className={`w-full px-4 py-2 rounded-lg border ${errors[getFieldName("name")]
+            ? "border-red-500"
+            : theme === "dark"
+              ? "bg-gray-800 border-gray-700 text-gray-200"
+              : "bg-white border-gray-300 text-gray-900"
+            } focus:outline-none focus:ring-2 focus:ring-teal-500`}
         />
         {errors[getFieldName("name")] && (
           <p className="text-red-500 text-sm mt-1">
             {errors[getFieldName("name")]}
           </p>
         )}
-      </div>
-
-      {/* Slug */}
-      <div>
-        <label
-          className={`block text-sm mb-2 ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}
-        >
-          {t("slug")} ({t("auto_generated")})
-        </label>
-        <input
-          type="text"
-          value={formData.slug}
-          onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-          className={`w-full px-4 py-2 rounded-lg border ${
-            theme === "dark"
-              ? "bg-gray-800 border-gray-700 text-gray-200"
-              : "bg-white border-gray-300 text-gray-900"
-          } focus:outline-none focus:ring-2 focus:ring-teal-500`}
-        />
       </div>
 
       {/* Short Description */}
@@ -334,13 +310,12 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
           }
           placeholder={getPlaceholder("short")}
           dir={selectedFormLanguage === "en" ? "ltr" : "rtl"}
-          className={`w-full px-4 py-2 rounded-lg border ${
-            errors[getFieldName("shortDescription")]
-              ? "border-red-500"
-              : theme === "dark"
-                ? "bg-gray-800 border-gray-700 text-gray-200"
-                : "bg-white border-gray-300 text-gray-900"
-          } focus:outline-none focus:ring-2 focus:ring-teal-500`}
+          className={`w-full px-4 py-2 rounded-lg border ${errors[getFieldName("shortDescription")]
+            ? "border-red-500"
+            : theme === "dark"
+              ? "bg-gray-800 border-gray-700 text-gray-200"
+              : "bg-white border-gray-300 text-gray-900"
+            } focus:outline-none focus:ring-2 focus:ring-teal-500`}
         />
       </div>
 
@@ -364,13 +339,12 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
           }
           placeholder={getPlaceholder("full")}
           dir={selectedFormLanguage === "en" ? "ltr" : "rtl"}
-          className={`w-full px-4 py-2 rounded-lg border ${
-            errors[getFieldName("fullDescription")]
-              ? "border-red-500"
-              : theme === "dark"
-                ? "bg-gray-800 border-gray-700 text-gray-200"
-                : "bg-white border-gray-300 text-gray-900"
-          } focus:outline-none focus:ring-2 focus:ring-teal-500`}
+          className={`w-full px-4 py-2 rounded-lg border ${errors[getFieldName("fullDescription")]
+            ? "border-red-500"
+            : theme === "dark"
+              ? "bg-gray-800 border-gray-700 text-gray-200"
+              : "bg-white border-gray-300 text-gray-900"
+            } focus:outline-none focus:ring-2 focus:ring-teal-500`}
         />
       </div>
 
@@ -392,11 +366,7 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
               setFormData({ ...formData, internalNotes: e.target.value })
             }
             placeholder={t("add_internal_notes")}
-            className={`w-full px-4 py-2 rounded-lg border ${
-              theme === "dark"
-                ? "bg-gray-800 border-gray-700 text-gray-200"
-                : "bg-white border-gray-300 text-gray-900"
-            } focus:outline-none focus:ring-2 focus:ring-teal-500`}
+            className={`w-full px-4 py-2 rounded-lg border ${borderColor} focus:outline-none focus:ring-2 focus:ring-teal-500`}
           />
         </div>
       )}

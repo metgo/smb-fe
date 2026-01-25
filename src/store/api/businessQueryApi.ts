@@ -53,6 +53,13 @@ export const businessQueryApi = createApi({
         url: `${endpoints.business}/${businessId}`,
         method: 'GET'
       })
+    }),
+
+    getbusinessBySlug: builder.query<any, { slug: string | null }>({
+      query: ({ slug }) => ({
+        url: `${endpoints.business}/${slug}`,
+        method: 'GET'
+      })
     })
 
   }),
@@ -63,4 +70,5 @@ export const {
   useGetAllbusinessesQuery,
   useGetBusinessStatsQuery,
   useGetbusinessByIdQuery,
+  useGetbusinessBySlugQuery,
 } = businessQueryApi;

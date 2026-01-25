@@ -1,44 +1,48 @@
 import clsx from 'clsx';
-import { Activity, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import { Calendar, Users, Ticket, DollarSign, Search, } from 'lucide-react';
 
-import { useAppSelector } from '@/hooks/hooks';
+import { useAppDispatch, useAppSelector } from '@/hooks/hooks';
 import { FilterButton } from '@/components/btns';
 import { useThemeClasses } from '@/hooks/useThemeClasses';
 import { useGetAllWebsitesQuery } from '@/store/api/masterDataApi';
 import { PageHeader, PageStats, ViewModeToggle } from '@/components/shared';
-import { useGetAllEventsQuery, useGetEventsStatsQuery } from '@/store/api/eventQueryApi';
+import { eventQueryApi, useGetAllEventsQuery, useGetEventsStatsQuery } from '@/store/api/eventQueryApi';
 import { EventsWithViewMode, CreateEventWizard, EventDetailModal, QuickSnapEventDetails, RegistrantDetailModal } from './components';
 
-type SortConfig = {
-  key: string;
-  direction: 'asc' | 'desc';
-} | null;
 
 
 export default function EventsMgmtPage() {
   const { t } = useTranslation('events');
+  const navigate = useNavigate();
+  const dispatch = useAppDispatch()
+
   const { isRTL, theme } = useAppSelector((state) => state.settings);
-  const themeColor = useThemeClasses();
+  const { textPrimary, textSecondary, inputClasses, textTertiary } = useThemeClasses();
 
   const [isCreateWizardOpen, setIsCreateWizardOpen] = useState(false);
-
-  const [editId, setEditId] = useState<string | null>(null)
 
   // Filters
   const [showFilters, setShowFilters] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedWebsites, setSelectedWebsites] = useState<Website[]>([]);
   const [eventTypeFilter, setEventTypeFilter] = useState<'all' | 'free' | 'paid'>('all');
-  const [registrationFilter, setRegistrationFilter] = useState<'all' | 'yes' | 'no'>('all');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'upcoming' | 'past' | 'canceled'>('all');
+  const [registrationFilter, setRegistrationFilter] = useState<'all' | 'true' | 'false'>('all');
+  const [statusFilter, setStatusFilter] = useState<EventStatus | 'all'>('all');
   const [dateRangeFilter, setDateRangeFilter] = useState({ start: '', end: '' });
 
   // Data Fetch
-  const { data: events, isLoading: _isLoading } = useGetAllEventsQuery({
-    search: searchQuery,
-    // eventType: eventTypeFilter.toUpperCase()
+  const { data: events, refetch, isLoading: _isLoading } = useGetAllEventsQuery({
+    ...(searchQuery && { search: searchQuery }),
+    ...(eventTypeFilter && eventTypeFilter === 'free' && { isFree: true }),
+    ...(eventTypeFilter && eventTypeFilter === 'paid' && { isFree: false }),
+    ...(registrationFilter !== "all" && { isRegistration: Boolean(registrationFilter) }),
+    ...(statusFilter !== "all" && { status: statusFilter }),
+    ...(dateRangeFilter.start && { startDate: dateRangeFilter.start }),
+    ...(dateRangeFilter.end && { endDate: dateRangeFilter.end }),
+    externalApiId: selectedWebsites.map(site => site._id),
   })
   const { data: eventStatsData, isLoading: _isEventStatsFetching } = useGetEventsStatsQuery({})
   const { data: websites } = useGetAllWebsitesQuery();
@@ -46,133 +50,24 @@ export default function EventsMgmtPage() {
   // Table and Modal State
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [selectedRegistrant, setSelectedRegistrant] = useState<Registrant | null>(null);
-  const [registrantSortConfig] = useState<SortConfig>(null);
   const [registrantSearchQuery, setRegistrantSearchQuery] = useState('');
   const [showDailyBreakdown, setShowDailyBreakdown] = useState(false);
   const [showQuickSnapModal, setShowQuickSnapModal] = useState(false);
   const [viewMode, setViewMode] = useState<'list' | 'grid' | 'calendar'>('list');
 
-  // Mock data - Registrants
-  const mockRegistrants: Registrant[] = selectedEvent ? [
-    {
-      id: '1',
-      fullName: 'David Cohen',
-      phone: '+972-50-123-4567',
-      email: 'david.cohen@example.com',
-      quantity: 2,
-      ticketType: 'General Admission',
-      totalPrice: selectedEvent.price * 2,
-      paymentStatus: 'paid',
-      registrationDate: '2025-01-05',
-      sourceWebsite: selectedEvent.website,
-      attendingDays: selectedEvent.isMultiDay ? ['2025-01-18', '2025-01-19'] : undefined
-    },
-    {
-      id: '2',
-      fullName: 'Sarah Levi',
-      phone: '+972-52-987-6543',
-      email: 'sarah.levi@example.com',
-      quantity: 1,
-      ticketType: 'VIP',
-      totalPrice: selectedEvent.price * 1.5,
-      paymentStatus: 'paid',
-      registrationDate: '2025-01-08',
-      sourceWebsite: selectedEvent.website,
-      attendingDays: selectedEvent.isMultiDay ? ['2025-01-18', '2025-01-19', '2025-01-20'] : undefined
-    },
-    {
-      id: '3',
-      fullName: 'Michael Peretz',
-      phone: '+972-54-555-8888',
-      email: 'michael.p@example.com',
-      quantity: 4,
-      ticketType: 'General Admission',
-      totalPrice: selectedEvent.price * 4,
-      paymentStatus: 'pending',
-      registrationDate: '2025-01-10',
-      sourceWebsite: selectedEvent.website,
-      attendingDays: selectedEvent.isMultiDay ? ['2025-01-19'] : undefined
-    },
-    {
-      id: '4',
-      fullName: 'Rachel Mizrahi',
-      phone: '+972-50-222-3333',
-      email: 'rachel.m@example.com',
-      quantity: 1,
-      ticketType: 'General Admission',
-      totalPrice: selectedEvent.price,
-      paymentStatus: 'refunded',
-      registrationDate: '2025-01-03',
-      sourceWebsite: selectedEvent.website,
-      attendingDays: selectedEvent.isMultiDay ? ['2025-01-18'] : undefined
-    },
-    {
-      id: '5',
-      fullName: 'Yossi Alon',
-      phone: '+972-53-777-9999',
-      email: 'yossi.alon@example.com',
-      quantity: 2,
-      ticketType: 'Early Bird',
-      totalPrice: selectedEvent.price * 2 * 0.8,
-      paymentStatus: 'paid',
-      registrationDate: '2024-12-28',
-      sourceWebsite: selectedEvent.website,
-      attendingDays: selectedEvent.isMultiDay ? ['2025-01-18', '2025-01-19', '2025-01-20'] : undefined
-    },
-  ] : [];
-
-
-  // Sort registrants
-  const sortedRegistrants = [...mockRegistrants].sort((a, b) => {
-    if (!registrantSortConfig) return 0;
-    const { key, direction } = registrantSortConfig;
-
-    const aRaw = a[key as keyof Registrant];
-    const bRaw = b[key as keyof Registrant];
-
-    const normalize = (val: any) => {
-      if (val === undefined || val === null) return '';
-      if (typeof val === 'string') return val.toLowerCase();
-      if (typeof val === 'number') return val;
-      if (Array.isArray(val)) return val.length;
-      if (val instanceof Date) return val.getTime();
-      return String(val).toLowerCase();
-    };
-
-    const aVal = normalize(aRaw);
-    const bVal = normalize(bRaw);
-
-    if (typeof aVal === 'number' && typeof bVal === 'number') {
-      if (aVal < bVal) return direction === 'asc' ? -1 : 1;
-      if (aVal > bVal) return direction === 'asc' ? 1 : -1;
-      return 0;
-    }
-
-    if (String(aVal) < String(bVal)) return direction === 'asc' ? -1 : 1;
-    if (String(aVal) > String(bVal)) return direction === 'asc' ? 1 : -1;
-    return 0;
-  });
-
-  // Filter registrants by search
-  const filteredRegistrants = sortedRegistrants.filter(reg => {
-    if (!registrantSearchQuery) return true;
-    const query = registrantSearchQuery.toLowerCase();
-    return (
-      reg.fullName.toLowerCase().includes(query) ||
-      reg.email.toLowerCase().includes(query) ||
-      reg.phone.includes(query)
-    );
-  });
-
-
-  // Handle edit event
   const handleEditEvent = () => {
     if (selectedEvent) {
       setIsCreateWizardOpen(true);
       setSelectedEvent(null);
-      setEditId(selectedEvent?._id)
+      navigate(`?eventId=${selectedEvent._id}`, { replace: true });
     }
   };
+
+  const handleAddEvent = () => {
+    setIsCreateWizardOpen(true);
+    navigate({}, { replace: true });
+  }
+
 
   // Handle view details
   const handleViewDetails = () => {
@@ -180,8 +75,15 @@ export default function EventsMgmtPage() {
     setShowQuickSnapModal(false)
   };
 
-
-
+  const handleCreateWizardClose = () => {
+    navigate({}, { replace: true });
+    dispatch(eventQueryApi.util.resetApiState());
+    setIsCreateWizardOpen(false)
+  }
+  useEffect(() => {
+    if (!isCreateWizardOpen)
+      refetch()
+  }, [isCreateWizardOpen])
 
 
   const eventStats = [
@@ -221,8 +123,8 @@ export default function EventsMgmtPage() {
           title={t('events_management_dashboard')}
           description={t('events_management_desc')}
           btnLabel={t('add_event')}
-          h1Gradient={themeColor.textPrimary}
-          onClick={() => setIsCreateWizardOpen(true)}
+          h1Gradient={textPrimary}
+          onClick={handleAddEvent}
         />
 
         <PageStats
@@ -235,7 +137,7 @@ export default function EventsMgmtPage() {
           {/* Search Bar */}
           <div className="flex flex-col sm:flex-row gap-4 mb-2">
             <div className="flex-1 relative">
-              <Search className={`absolute ${isRTL ? 'right-3' : 'left-3'} top-1/2 transform -translate-y-1/2 w-5 h-5 ${themeColor.textTertiary}`} />
+              <Search className={`absolute ${isRTL ? 'right-3' : 'left-3'} top-1/2 transform -translate-y-1/2 w-5 h-5 ${textTertiary}`} />
               <input
                 type="text"
                 placeholder={t('search_events_placeholder')}
@@ -256,37 +158,12 @@ export default function EventsMgmtPage() {
           </div>
 
           {showFilters && (
-            <div className={clsx(themeColor.inputClasses, "px-4 py-3 rounded-md")}>
+            <div className={clsx(inputClasses, "px-4 pb-2 rounded-md")}>
               {/* Collapsible Filters */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 pt-4  dark:border-gray-700">
-                {/* Website Multi-Select */}
-                <div>
-                  <label className={`block text-sm mb-2 ${themeColor.textSecondary}`}>{t('websites')}</label>
-                  <div className={`p-3 rounded-lg border max-h-32 overflow-y-auto ${theme === 'dark' ? 'border-gray-700 bg-gray-900' : 'border-gray-300 bg-white'
-                    }`}>
-                    {websites && websites?.map((website) => (
-                      <label key={website?._id} className="flex items-center gap-2 mb-2 last:mb-0 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={selectedWebsites.includes(website)}
-                          onChange={(e) => {
-                            if (e.target.checked) {
-                              setSelectedWebsites([...selectedWebsites, website]);
-                            } else {
-                              setSelectedWebsites(selectedWebsites?.filter(w => w._id !== website._id));
-                            }
-                          }}
-                          className="rounded text-teal-500"
-                        />
-                        <span className={`text-sm ${themeColor.textSecondary}`}>{website?.name}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-
+              <div className="grid grid-cols-12 gap-2 pt-2  dark:border-gray-700">
                 {/* Event Type */}
-                <div>
-                  <label className={`block text-sm mb-2 ${themeColor.textSecondary}`}>{t('event_type')}</label>
+                <div className='col-span-3'>
+                  <label className={`block text-sm mb-2 ${textSecondary}`}>{t('event_type')}</label>
                   <select
                     value={eventTypeFilter}
                     onChange={(e) => setEventTypeFilter(e.target.value as any)}
@@ -302,8 +179,8 @@ export default function EventsMgmtPage() {
                 </div>
 
                 {/* Registration Required */}
-                <div>
-                  <label className={`block text-sm mb-2 ${themeColor.textSecondary}`}>{t('registration')}</label>
+                <div className='col-span-3'>
+                  <label className={`block text-sm mb-2 ${textSecondary}`}>{t('registration')}</label>
                   <select
                     value={registrationFilter}
                     onChange={(e) => setRegistrationFilter(e.target.value as any)}
@@ -313,14 +190,14 @@ export default function EventsMgmtPage() {
                       }`}
                   >
                     <option value="all">{t('all')}</option>
-                    <option value="yes">{t('required')}</option>
-                    <option value="no">{t('not_required')}</option>
+                    <option value='true'>{t('required')}</option>
+                    <option value="false">{t('not_required')}</option>
                   </select>
                 </div>
 
                 {/* Status */}
-                <div>
-                  <label className={`block text-sm mb-2 ${themeColor.textSecondary}`}>{t('status')}</label>
+                <div className='col-span-2'>
+                  <label className={`block text-sm mb-2 ${textSecondary}`}>{t('status')}</label>
                   <select
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value as any)}
@@ -330,16 +207,16 @@ export default function EventsMgmtPage() {
                       }`}
                   >
                     <option value="all">{t('all')}</option>
-                    <option value="upcoming">{t('upcoming_status')}</option>
-                    <option value="past">{t('past_status')}</option>
-                    <option value="canceled">{t('canceled_status')}</option>
+                    <option value="PENDING">{t('pending')}</option>
+                    <option value="APPROVED">{t('approved')}</option>
+                    <option value="DRAFT">{t('draft')}</option>
                   </select>
                 </div>
 
                 {/* Date Range */}
-                <div>
-                  <label className={`block text-sm mb-2 ${themeColor.textSecondary}`}>{t('date_range')}</label>
-                  <div className="flex flex-col gap-2">
+                <div className='col-span-4'>
+                  <label className={`block text-sm mb-2 ${textSecondary}`}>{t('date_range')}</label>
+                  <div className="flex gap-2">
                     <input
                       type="date"
                       value={dateRangeFilter.start}
@@ -361,12 +238,38 @@ export default function EventsMgmtPage() {
                   </div>
                 </div>
               </div>
+              {/* Website Multi-Select */}
+              <div>
+                <label className={`block text-sm my-2 ${textSecondary}`}>{t('websites')}</label>
+                <div className={` rounded-lg  overflow-y-auto flex items-center gap-4`}>
+                  {websites && websites?.map((website) => (
+                    <label
+                      key={website?._id}
+                      className="flex items-center gap-2 mb-2 last:mb-0 cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedWebsites.includes(website)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedWebsites([...selectedWebsites, website]);
+                          } else {
+                            setSelectedWebsites(selectedWebsites?.filter(w => w._id !== website._id));
+                          }
+                        }}
+                        className="rounded text-teal-500"
+                      />
+                      <span className={`text-sm ${textSecondary}`}>{website?.name}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
 
               {/* Active Filters Summary */}
               {(selectedWebsites.length > 0 || eventTypeFilter !== 'all' || registrationFilter !== 'all' ||
                 statusFilter !== 'all' || dateRangeFilter.start || dateRangeFilter.end || searchQuery) && (
                   <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 flex items-center gap-2 flex-wrap">
-                    <span className={`text-sm ${themeColor.textTertiary}`}>{t('active_filters')}:</span>
+                    <span className={`text-sm ${textTertiary}`}>{t('active_filters')}:</span>
                     {searchQuery && (
                       <span className="px-3 py-1 bg-teal-500/20 text-teal-500 rounded-full text-xs">
                         {t('search')}: "{searchQuery}"
@@ -384,12 +287,12 @@ export default function EventsMgmtPage() {
                     )}
                     {registrationFilter !== 'all' && (
                       <span className="px-3 py-1 bg-green-500/20 text-green-500 rounded-full text-xs">
-                        {registrationFilter === 'yes' ? t('registration_required_text') : t('registration_not_required')}
+                        {registrationFilter === 'true' ? t('registration_required_text') : t('registration_not_required')}
                       </span>
                     )}
                     {statusFilter !== 'all' && (
                       <span className="px-3 py-1 bg-orange-500/20 text-orange-500 rounded-full text-xs capitalize">
-                        {statusFilter === 'upcoming' ? t('upcoming_status') : statusFilter === 'past' ? t('past_status') : t('canceled_status')}
+                        {statusFilter === 'APPROVED' ? t('upcoming_status') : statusFilter === 'PENDING' ? t('past_status') : t('canceled_status')}
                       </span>
                     )}
                     <button
@@ -413,7 +316,9 @@ export default function EventsMgmtPage() {
 
         {/* Events with different View */}
         <EventsWithViewMode
+          isLoading={_isLoading}
           events={events as any || []}
+          refetch={refetch}
           selectedWebsiteCount={selectedWebsites?.length || 0}
           eventTypeFilter={eventTypeFilter}
           registrationFilter={registrationFilter}
@@ -426,44 +331,40 @@ export default function EventsMgmtPage() {
       </div>
 
       {/* Event Detail Modal */}
-      <Activity mode={showDailyBreakdown && !showQuickSnapModal ? "visible" : "hidden"}>
+      {showDailyBreakdown && !showQuickSnapModal &&
         <EventDetailModal
+          isRTL={isRTL}
+          handleEditEvent={handleEditEvent}
           selectedEvent={selectedEvent}
           setSelectedEvent={setSelectedEvent}
           showDailyBreakdown={showDailyBreakdown}
           setShowDailyBreakdown={setShowDailyBreakdown}
           registrantSearchQuery={registrantSearchQuery}
           setRegistrantSearchQuery={setRegistrantSearchQuery}
-          filteredRegistrants={filteredRegistrants}
-          isRTL={isRTL}
           setSelectedRegistrant={setSelectedRegistrant}
-        />
-      </Activity>
+        />}
 
       {/* Registrant Detail Modal (Nested) */}
-      <Activity mode={selectedRegistrant ? "visible" : "hidden"}>
+      {selectedRegistrant &&
         <RegistrantDetailModal
           selectedRegistrant={selectedRegistrant}
           setSelectedRegistrant={setSelectedRegistrant}
-        />
-      </Activity>
+        />}
 
-      <Activity mode={selectedEvent && showQuickSnapModal ? "visible" : "hidden"}>
+      {selectedEvent && showQuickSnapModal &&
         <QuickSnapEventDetails
           handleEditEvent={handleEditEvent}
           handleViewDetails={handleViewDetails}
           selectedEvent={selectedEvent}
           setSelectedEvent={setSelectedEvent}
         />
-      </Activity>
+      }
 
       {/* Create Event Wizard */}
       <CreateEventWizard
-        editId={editId}
-        isOpen={isCreateWizardOpen}
-        onClose={() => {setIsCreateWizardOpen(false); setEditId(null)}}
         theme={theme}
-        mode="create"
+        isOpen={isCreateWizardOpen}
+        onClose={handleCreateWizardClose}
       />
     </>
   );

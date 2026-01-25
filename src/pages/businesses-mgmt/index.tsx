@@ -3,27 +3,22 @@ import { useState } from 'react';
 import { useAppSelector } from '@/hooks/hooks';
 
 import BusinessDetails from './details';
-import { BusinessesList, CreateBusinessWizard} from './components';
-import { useGetbusinessByIdQuery } from '@/store/api/businessQueryApi';
+import { BusinessesList, CreateBusinessWizard } from './components';
+import { useNavigate } from 'react-router-dom';
 
 
 type View = 'list' | 'details' | 'create' | 'edit';
 
 export default function BusinessesMgmtPage() {
+  const navigate = useNavigate();
   const [currentView, setCurrentView] = useState<View>('list');
   const [selectedBusiness, setSelectedBusiness] = useState<any | null>(null);
   const { theme } = useAppSelector((state) => state.settings)
 
-  const { data: businessByIdData } = useGetbusinessByIdQuery(
-       { businessId: selectedBusiness?._id } ,  {
-    skip: !selectedBusiness?._id,
-  }
-    );
 
-console.log("business of single id", businessByIdData)
-
-  const handleBusinessClick = (businessByIdData: any) => {
-    setSelectedBusiness(businessByIdData);
+  const handleBusinessClick = (business: any) => {
+    setSelectedBusiness(business);
+    navigate(`?businessId=${business?._id}&businessSlug=${business?.slug}`, { replace: true })
     setCurrentView('details');
   };
 
@@ -41,21 +36,14 @@ console.log("business of single id", businessByIdData)
     setSelectedBusiness(null);
   };
 
-  const handleSave = (data: any) => {
-    console.log('Saving business:', data);
-    setCurrentView('list');
-    setSelectedBusiness(null);
-  };
-
   const handleCloseWizard = () => {
     setCurrentView('list');
     setSelectedBusiness(null);
   };
 
   const handleCreateProduct = () => {
-   console.log("adfasfjkljsdfs lajflsadjl asdfas")
   };
-console.log("selected business", selectedBusiness)
+
   return (
     <>
       {currentView === 'list' && (
@@ -68,9 +56,8 @@ console.log("selected business", selectedBusiness)
 
       {currentView === 'details' && selectedBusiness && (
         <BusinessDetails
-          business={selectedBusiness}
-          onBack={handleBackToList}
           onEdit={handleEdit}
+          onBack={handleBackToList}
           onCreateProduct={handleCreateProduct}
         />
       )}
@@ -78,7 +65,6 @@ console.log("selected business", selectedBusiness)
       {(currentView === 'create' || currentView === 'edit') && (
         <CreateBusinessWizard
           onClose={handleCloseWizard}
-          onSave={handleSave}
         />
       )}
     </>

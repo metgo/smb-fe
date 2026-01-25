@@ -13,8 +13,8 @@ interface BusinessAttributesDetailsProps {
 /* ---------- Component ---------- */
 
 const BusinessAttributesDetails: FC<BusinessAttributesDetailsProps> = ({
-  theme,
   t,
+  theme,
   business,
 }) => {
   return (
@@ -27,7 +27,7 @@ const BusinessAttributesDetails: FC<BusinessAttributesDetailsProps> = ({
           {t('accessibility')}
         </h3>
         <div className="flex flex-wrap gap-2">
-          {business.accessibility.map((option, idx) => (
+          {business?.accessibility?.map((option, idx) => (
             <span
               key={idx}
               className={`px-3 py-1.5 rounded-lg flex items-center gap-2 ${

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ArrowLeft, Edit, Plus, Box, UserCog } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useAppSelector } from "@/hooks/hooks";
@@ -16,9 +16,11 @@ import {
   ChangeOwnerModal,
   TabsSection,
 } from "./components";
+import { useSearchParams } from "react-router-dom";
+import { useGetbusinessBySlugQuery } from "@/store/api/businessQueryApi";
+import { skipToken } from "@reduxjs/toolkit/query";
 
 interface BusinessDetailsProps {
-  business: Business;
   onBack: () => void;
   onEdit: () => void;
   onCreateProduct?: () => void;
@@ -28,7 +30,6 @@ interface BusinessDetailsProps {
 const USER_ROLE = "admin"; // Can be: 'superadmin', 'admin', 'dmo', 'authority', 'business_owner'
 
 export default function BusinessDetails({
-  business,
   onBack,
   onEdit,
   onCreateProduct,
@@ -36,6 +37,13 @@ export default function BusinessDetails({
 }: BusinessDetailsProps) {
   const { t } = useTranslation("businesses");
   const { theme } = useAppSelector((state) => state.settings);
+
+  const [searchParams] = useSearchParams()
+  const businessSlug = searchParams.get("businessSlug")
+
+  const { data: business } = useGetbusinessBySlugQuery(businessSlug ? { slug: businessSlug } : skipToken)
+
+  const [businessMedia, setBusinessMedia] = useState<IBusinessMedia | null>(null)
   const [activeTab, setActiveTab] = useState("overview");
   const [_showStatusModal, setShowStatusModal] = useState(false);
   const [showChangeOwnerModal, setShowChangeOwnerModal] = useState(false);
@@ -64,8 +72,37 @@ export default function BusinessDetails({
   //   );
   // };
 
+  useEffect(() => {
+    if (!business?.logo || !business?.images?.length) return;
+    const hasPrimary = business?.images?.some((img: any) => img.isPrimary);
+
+    if (business) {
+      const logo = {
+        id: Date.now(),
+        previewUrl: business?.logo?.image,
+        progress: 100,
+        status: "success",
+        isPrimary: false,
+        gcsURL: business?.logo?.image,
+      }
+      const gallery = business?.images?.map((item: any, index: number) => ({
+        id: Date.now() + index,
+        previewUrl: item.image,
+        progress: 100,
+        status: "success",
+        isPrimary: item.isPrimary || (!hasPrimary && index === 0),
+        gcsURL: item.image,
+      }))
+      setBusinessMedia({
+        logo,
+        gallery,
+      })
+    }
+  }, [business, businessSlug])
+
   const renderContent = () => {
     const commonProps = { theme, t, business };
+    const mediaProps = {theme, t,  businessMedia}
     switch (activeTab) {
       case "overview":
         return <BusinessInfoDetails {...commonProps} />;
@@ -74,7 +111,7 @@ export default function BusinessDetails({
       case "location":
         return <BusinessLocationDetails {...commonProps} />;
       case "media":
-        return <BusinessMediaDetails {...commonProps} />;
+        return <BusinessMediaDetails {...mediaProps} />;
       case "social":
         return <BusinessOnlinePresenceDetails {...commonProps} />;
       case "delivery":
@@ -98,9 +135,8 @@ export default function BusinessDetails({
         <div className="flex items-center justify-between mb-4">
           <button
             onClick={onBack}
-            className={`flex items-center gap-2 text-sm hover:text-teal-600 transition-colors ${
-              theme === "dark" ? "text-gray-400" : "text-gray-600"
-            }`}
+            className={`flex items-center gap-2 text-sm hover:text-teal-600 transition-colors ${theme === "dark" ? "text-gray-400" : "text-gray-600"
+              }`}
           >
             <ArrowLeft className="w-5 h-5" />
             {t("back_to_list")}
@@ -138,11 +174,10 @@ export default function BusinessDetails({
             {canChangeStatus && (
               <button
                 onClick={() => setShowStatusModal(true)}
-                className={`px-4 py-2 rounded-lg border transition-colors flex items-center gap-2 ${
-                  theme === "dark"
-                    ? "border-gray-700 hover:bg-gray-800 text-gray-300"
-                    : "border-gray-300 hover:bg-gray-100 text-gray-700"
-                }`}
+                className={`px-4 py-2 rounded-lg border transition-colors flex items-center gap-2 ${theme === "dark"
+                  ? "border-gray-700 hover:bg-gray-800 text-gray-300"
+                  : "border-gray-300 hover:bg-gray-100 text-gray-700"
+                  }`}
               >
                 {t("change_status")}
               </button>
@@ -151,11 +186,10 @@ export default function BusinessDetails({
             {USER_ROLE === "admin" && (
               <button
                 onClick={() => setShowChangeOwnerModal(true)}
-                className={`px-4 py-2 rounded-lg border transition-colors flex items-center gap-2 ${
-                  theme === "dark"
-                    ? "border-gray-700 hover:bg-gray-800 text-gray-300"
-                    : "border-gray-300 hover:bg-gray-100 text-gray-700"
-                }`}
+                className={`px-4 py-2 rounded-lg border transition-colors flex items-center gap-2 ${theme === "dark"
+                  ? "border-gray-700 hover:bg-gray-800 text-gray-300"
+                  : "border-gray-300 hover:bg-gray-100 text-gray-700"
+                  }`}
               >
                 <UserCog className="w-4 h-4" />
                 {t("change_owner")}
@@ -165,7 +199,7 @@ export default function BusinessDetails({
         </div>
 
         <BusinessTitleSection business={business} theme={theme} t={t} />
-        {business.analytics && (
+        {business?.analytics && (
           <AnalyticsStatsSection business={business} theme={theme} t={t} />
         )}
         <TabsSection
@@ -184,9 +218,9 @@ export default function BusinessDetails({
         isOpen={showChangeOwnerModal}
         onClose={() => setShowChangeOwnerModal(false)}
         theme={theme}
-        currentOwner={business.owner}
+        currentOwner={business?.owner}
         onOwnerChange={(ownerData) => {
-          console.log("New owner data:", ownerData);
+          console.log("🚀 ~ BusinessDetails ~ ownerData:", ownerData)
           setShowChangeOwnerModal(false);
         }}
       />

@@ -143,6 +143,7 @@
   "dropdown": "Dropdown",
   "checkbox": "Checkbox",
   "when_registration_disabled": "When registration is disabled",
+
   "event_tickets": "Event Tickets",
   "create_ticket": "Create Ticket",
   "no_tickets_yet": "No Tickets Yet",
@@ -157,7 +158,16 @@
   "cancel": "Cancel",
   "save_ticket": "Save Ticket",
   "edit_ticket": "Edit Ticket",
-  "delete_ticket_confirm": "Are you sure you want to delete this ticket?",
+  "duplicate_ticket": "Duplicate Ticket",
+  "ticket_days":"Ticket Days",
+  "ticket_name_required": "Ticket name is required",
+  "date_required": "Date is required",
+  "start_time_required": "Start time is required",
+  "end_time_required": "End time is required",
+  "marked_price_required": "Marked price is required",
+  "selling_price_required": "Selling price is required",
+  "add_more_days": "Add More Days",
+
   "event_images": "Event Images",
   "upload_images": "Upload Images",
   "drag_drop_images": "Drag & Drop Images",
@@ -185,6 +195,7 @@
   "total_tickets": "Total Tickets",
   "event_saved_as_draft": "Event saved as draft",
   "fix_errors_before_proceeding": "Please fix the errors before proceeding",
+   "requried_fill_up_info": "Please fill in all required fields before continuing.",
   "event_published_success": "Event published successfully",
   "required_field": "This field is required",
   "field_too_short": "This field is too short",
@@ -214,5 +225,21 @@
 
   "registrant_details":"Registrant Details",
   "no_registrants_match":"No Registrants Match Your Search",
-  "search_placeholder":"Search Address..."
+  "search_placeholder":"Search Address...",
+
+  "your_images": "Your Images",
+  "tickets": "Tickets",
+  "registration": "Registration",
+  "required": "Required",
+  "select_dmo": "Select DMO",
+  "select_authority": "Select Authority",
+  "messaging": "Messaging",
+  "no_registrants_yet": "No Registrants Yet",
+  "date_range": "Date Range",
+  "websites": "Websites",
+
+  "free_access_info":"When registration is disabled, attendees can join freely without signing up.",
+  "select_event_day_first": "You must select event day(s) first.",
+  "no_tickets_created":"No ticktes created yet. Please create ticket first"
+
 }

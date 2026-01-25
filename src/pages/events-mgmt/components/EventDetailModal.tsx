@@ -24,17 +24,19 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { ReordableDataTable } from "@/components/shared";
+import { useGetEventsStatsQuery } from "@/store/api/eventQueryApi";
+import { extractCenterAddressText, extractEventDates } from "@/helpers";
 
 
 interface EventDetailModalProps {
-  selectedEvent: Event | null;
+  isRTL: boolean;
+  selectedEvent: any;
+  handleEditEvent: () => void;
   setSelectedEvent: React.Dispatch<React.SetStateAction<Event | null>>;
   showDailyBreakdown: boolean;
   setShowDailyBreakdown: React.Dispatch<React.SetStateAction<boolean>>;
   registrantSearchQuery: string;
   setRegistrantSearchQuery: React.Dispatch<React.SetStateAction<string>>;
-  filteredRegistrants: Registrant[];
-  isRTL: boolean;
   setSelectedRegistrant?: React.Dispatch<React.SetStateAction<Registrant | null>>;
 }
 
@@ -45,13 +47,15 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
   setShowDailyBreakdown,
   registrantSearchQuery,
   setRegistrantSearchQuery,
-  filteredRegistrants,
   isRTL,
+  handleEditEvent,
   setSelectedRegistrant,
 }) => {
+  const filteredRegistrants: any[] = []
   const { t } = useTranslation("events");
   const { textPrimary, textSecondary, textTertiary } = useThemeClasses();
   const { theme } = useAppSelector((state) => state.settings);
+  const { data: eventStatsData, isLoading: _isEventStatsFetching } = useGetEventsStatsQuery({ eventId: selectedEvent ? selectedEvent._id : '' });
 
   if (!selectedEvent) return null;
 
@@ -89,25 +93,6 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
     a.click();
   };
 
-  const formatDateRange = (start: string, end?: string, isMultiDay?: boolean) => {
-    if (!isMultiDay || !end) {
-      return new Date(start).toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      });
-    }
-    const startFormatted = new Date(start).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-    });
-    const endFormatted = new Date(end).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
-    return `${startFormatted} - ${endFormatted}`;
-  };
 
   const getPaymentStatusColor = (status: string) => {
     switch (status) {
@@ -155,33 +140,25 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
               <div className="flex flex-wrap items-center gap-6 text-base">
                 <span className={`flex items-center gap-2 ${textSecondary}`}>
                   <MapPin className="w-5 h-5" />
-                  {selectedEvent.location}
+                  {extractCenterAddressText(selectedEvent?.address?.location)}
                 </span>
                 <span className={`flex items-center gap-2 ${textSecondary}`}>
                   <Calendar className="w-5 h-5" />
-                  {formatDateRange(
-                    selectedEvent.startDate,
-                    selectedEvent.endDate,
-                    selectedEvent.isMultiDay
-                  )}
+                  {extractEventDates(selectedEvent?.dayDiscription)}
                 </span>
                 <span className={`flex items-center gap-2 ${textSecondary}`}>
                   <Clock className="w-5 h-5" />
-                  {selectedEvent.startTime} - {selectedEvent.endTime}
+                  {selectedEvent?.dayDescription?.[0]?.startTime} - {selectedEvent?.dayDescription?.[0]?.endTime}
                 </span>
                 <span className={`flex items-center gap-2 ${textSecondary}`}>
                   <DollarSign className="w-5 h-5" />
-                  {selectedEvent.isFree ? t("free") : `₪${selectedEvent.price}`}
+                  {selectedEvent.isFree ? t("free") : `₪0`}
                 </span>
               </div>
             </div>
             <div className="flex items-center gap-2">
               <button
-                onClick={() => {
-                  // setEventToEdit(selectedEvent);
-                  // setIsEditWizardOpen(true);
-                  setSelectedEvent(null);
-                }}
+                onClick={() => handleEditEvent()}
                 className="flex items-center gap-2 px-4 py-2 bg-linear-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-lg transition-all transform hover:scale-105 shadow-md hover:shadow-lg"
               >
                 <Edit className="w-4 h-4" />
@@ -222,19 +199,20 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
             {showDailyBreakdown ? (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
                 {[
-                  { label: t("total_registrations"), value: selectedEvent.totalRegistrations },
+                  { label: t("total_registrations"), value: eventStatsData?.totalRegistrations },
                   {
                     label: t("capacity"),
-                    value: selectedEvent.capacity,
+                    value: eventStatsData?.totalAttended,
                     sub: `${Math.round(
-                      (selectedEvent.totalRegistrations / selectedEvent.capacity) * 100
+                      (eventStatsData?.totalRegistrations / eventStatsData?.capacity) * 100
                     )}% ${t("filled")}`,
                   },
-                  { label: t("revenue"), value: `₪${(selectedEvent.revenue / 1000).toFixed(1)}K` },
-                  { label: t("refunds"), value: `₪${(selectedEvent.refunds / 1000).toFixed(1)}K` },
+                  { label: t("revenue"), value: `₪${(eventStatsData?.totalRevenue / 1000).toFixed(1)}K` },
+                  // { label: t("refunds"), value: `₪${(eventStatsData?.refunds / 1000).toFixed(1)}K` },
+                  { label: t("refunds"), value: `₪0K` },
                   {
                     label: t("event_type"),
-                    value: selectedEvent.isFree ? t("free") : t("paid"),
+                    value: eventStatsData?.isFree ? t("free") : t("paid"),
                   },
                 ].map((metric, i) => (
                   <div
@@ -254,7 +232,7 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
                   <h4 className={`text-lg font-medium mb-4 ${textSecondary}`}>
                     {t("daily_breakdown")}
                   </h4>
-                  {selectedEvent.dailyMetrics.map((day, idx) => (
+                  {selectedEvent.dailyMetrics.map((day: any, idx: number) => (
                     <div
                       key={idx}
                       className={`p-6 rounded-2xl border ${theme === "dark"
@@ -297,14 +275,14 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
             )}
 
             {/* Trend Chart */}
-            {selectedEvent.dailyMetrics && selectedEvent.dailyMetrics.length > 1 && (
+            {selectedEvent?.dailyMetrics && selectedEvent?.dailyMetrics.length > 1 && (
               <div className={`mt-8 p-6 rounded-2xl ${theme === "dark" ? "bg-gray-800/50" : "bg-gray-50"}`}>
                 <h4 className={`text-lg font-medium mb-4 ${textSecondary}`}>
                   {t("registration_attendance_trend")}
                 </h4>
                 <div style={{ height: "280px" }}>
                   <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={selectedEvent.dailyMetrics}>
+                    <LineChart data={selectedEvent?.dailyMetrics}>
                       <CartesianGrid
                         strokeDasharray="4 4"
                         stroke={theme === "dark" ? "#374151" : "#e5e7eb"}
@@ -386,7 +364,7 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
               />
             </div>
 
-            {filteredRegistrants.length === 0 ? (
+            {filteredRegistrants?.length === 0 ? (
               <div className="text-center py-16">
                 <Users className={`w-20 h-20 mx-auto mb-5 opacity-50 ${textTertiary}`} />
                 <p className={`text-lg ${textTertiary}`}>

@@ -1,27 +1,15 @@
+import { ImageWithFallback } from '@/components/shared'
 import { Upload, Star, Eye, Trash2, ImageIcon } from 'lucide-react'
-import type { FC } from 'react'
 
-/* ---------- Types ---------- */
-
-type Theme = 'light' | 'dark'
-
-interface Business {
-  name: string
-  logo: string
-  images: string[]
-}
-
-/* ---------- Props ---------- */
 
 interface BusinessMediaDetailsProps {
   theme: Theme
   t: (key: string) => string
-  business: Business
+  businessMedia: IBusinessMedia | null
 }
 
 /* ---------- Component ---------- */
-
-const BusinessMediaDetails: FC<BusinessMediaDetailsProps> = ({ theme, t, business }) => {
+const BusinessMediaDetails: React.FC<BusinessMediaDetailsProps> = ({ theme, t, businessMedia }) => {
   return (
     <div className="space-y-6">
       {/* Logo */}
@@ -31,9 +19,9 @@ const BusinessMediaDetails: FC<BusinessMediaDetailsProps> = ({ theme, t, busines
         </h3>
         <div className="flex items-center gap-4">
           <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-gray-300">
-            <img
-              src={business.logo}
-              alt={business.name}
+            <ImageWithFallback
+              src={businessMedia?.logo?.previewUrl}
+              alt={"Business logo"}
               className="w-full h-full object-cover"
             />
           </div>
@@ -57,18 +45,18 @@ const BusinessMediaDetails: FC<BusinessMediaDetailsProps> = ({ theme, t, busines
           </button>
         </div>
 
-        {business.images.length > 0 ? (
+        { businessMedia && businessMedia?.gallery?.length > 0 ? (
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {business.images.map((img, idx) => (
+            {businessMedia?.gallery?.map((img, idx) => (
               <div
                 key={idx}
                 className={`relative aspect-video rounded-lg overflow-hidden border ${
                   theme === 'dark' ? 'border-gray-700' : 'border-gray-300'
                 } group`}
               >
-                <img
-                  src={img}
-                  alt={`${business.name} ${idx + 1}`}
+                <ImageWithFallback
+                  src={img?.previewUrl}
+                  alt={` ${idx + 1}`}
                   className="w-full h-full object-cover"
                 />
                 {idx === 0 && (
