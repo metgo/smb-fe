@@ -1,10 +1,7 @@
 import { toast } from "sonner";
 import { useState } from "react";
 import { Globe } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 
-import { routes } from "@/lib/routes";
-import { UserRole } from "@/enums/user.types";
 import { useLoginMutation } from "@/store/api/authApi";
 import ContinueWithGoogle from "./ContinueWithGoogle";
 import { SubmitButton } from "@/components/btns";
@@ -17,7 +14,6 @@ export function Login({ setCurrentTab }: LoginProps) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error] = useState("");
-  const navigate = useNavigate();
 
   const [login, { isLoading }] = useLoginMutation();
 
