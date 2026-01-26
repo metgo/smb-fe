@@ -34,14 +34,16 @@ const BusinessOpeningHours: FC<BusinessOpeningHoursProps> = ({
   ] as const;
 
   const transformOperatingHoursToPayload = (
-    operatingHours: OperatingHours,
+    operatingHours?: OperatingHours,
   ): OpeningHrPayload[] => {
+    if (!operatingHours) return []; // ✅ prevents crash
+
     const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
 
     return Object.entries(operatingHours).flatMap(
       ([day, ranges]): OpeningHrPayload[] => {
         // Holiday (closed)
-        if (ranges.length === 0) {
+        if (!ranges || ranges.length === 0) {
           return [
             {
               days: day,
@@ -74,7 +76,7 @@ const BusinessOpeningHours: FC<BusinessOpeningHoursProps> = ({
       </h3>
 
       {daysOfWeek.map((day) => {
-        const hours = formData.operatingHours[day.key];
+        const hours = formData.operatingHours?.[day.key] ?? [];
 
         return (
           <div

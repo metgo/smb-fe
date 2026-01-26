@@ -50,7 +50,7 @@ const BusinessAttributesDetails: FC<BusinessAttributesDetailsProps> = ({
           {t("group_types")}
         </h3>
         <div className="flex flex-wrap gap-2">
-          {business.groupTypes.map((type, idx) => (
+          {business?.groupTypes?.map((type, idx) => (
             <span
               key={idx}
               className={`px-3 py-1.5 rounded-lg flex items-center gap-2 ${

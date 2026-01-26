@@ -27,13 +27,14 @@ interface BusinessFormData {
 interface FormErrors {
   [key: string]: string;
 }
+type View = "list" | "details" | "create" | "edit" | undefined;
 
 interface BusinessBasicInfosProps {
   theme: Theme;
   t: (key: string) => string;
   formData: BusinessFormData;
   setFormData: (data: BusinessFormData) => void;
-
+  business: any;
   errors: FormErrors;
   canApprove: boolean;
   selectedDmoId?: string;
@@ -42,6 +43,7 @@ interface BusinessBasicInfosProps {
   selectedAuthorityId?: string;
   setSelectAuthorityId: React.Dispatch<React.SetStateAction<string>>;
   markDirty: (step: number) => void;
+  currentView: View;
 }
 
 const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
@@ -51,10 +53,12 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
   setFormData,
   markDirty,
   errors,
+  currentView,
   canApprove,
   selectedDmoId,
   setSelectDmoId,
   setSelectAuthorityId,
+  business,
 }) => {
   const { dmosAuthorities } = useCommon();
   const [selectedFormLanguage, setSelectedFormLanguage] =
@@ -89,6 +93,37 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
   const selectedDmos = dmosAuthorities?.find(
     (item) => item?._id === selectedDmoId,
   );
+  useEffect(() => {
+    if (!business || currentView !== "edit") return;
+
+    setFormData({
+      ...formData,
+
+      // Authority
+      authority: business?.authorityId?._id || "",
+
+      // Names
+      nameEn: business?.name || "",
+      nameHe: business?.nameHe || "",
+      nameAr: business?.nameAr || "",
+
+      // Descriptions
+      shortDescriptionEn: business?.shortDescription || "",
+      shortDescriptionHe: "",
+      shortDescriptionAr: "",
+
+      fullDescriptionEn: business?.description || "",
+      fullDescriptionHe: "",
+      fullDescriptionAr: "",
+
+      // Notes & slug
+      internalNotes: business?.internalNotes || "",
+      slug: business?.slug || "",
+    });
+
+    // DMO
+    setSelectDmoId(business?.dmoId?._id || "");
+  }, [business]);
 
   //websites
   const [allWebsites, setAllWebsites] = useState(false);

@@ -1,5 +1,5 @@
 import { toast } from "sonner";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   CheckCircle,
@@ -38,21 +38,34 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 import clsx from "clsx";
 import { PublishButton } from "@/components/btns";
 import { useBusinessDraftSaver } from "../hooks/useBusinessDraftSaver";
+import { useGetbusinessBySlugQuery } from "@/store/api/businessQueryApi";
+import { skipToken } from "@reduxjs/toolkit/query";
+import { useSearchParams } from "react-router-dom";
+type View = "list" | "details" | "create" | "edit";
 
 interface CreateBusinessWizardProps {
   onClose: () => void;
+  currentView?: View;
+  selectedBusiness?: any;
 }
 
 export default function CreateBusinessWizard({
   onClose,
+  currentView,
 }: CreateBusinessWizardProps) {
   const { t } = useTranslation("businesses");
   const { theme, isRTL } = useAppSelector((state) => state.settings);
   const { textPrimary, textTertiary } = useThemeClasses();
+  const [searchParams] = useSearchParams();
 
+  const businessSlug = searchParams.get("businessSlug");
+  const { data: business } = useGetbusinessBySlugQuery(
+    businessSlug ? { slug: businessSlug } : skipToken,
+  );
   // Form State
   const [formData, setFormData] = useState<any>({
     // Step 1
+    id: "",
     authority: "",
     nameEn: "",
     nameHe: "",
@@ -110,8 +123,17 @@ export default function CreateBusinessWizard({
     socialMedia: [],
   });
 
+  console.log("formdata", formData);
+
+  useEffect(() => {
+    setFormData({
+      logo: business.logo,
+      images: business.images,
+    });
+  }, [business]);
   const {
     images,
+    imagesRef,
     primaryImageIndex,
     handleImageUpload,
     uploadAll,
@@ -124,12 +146,7 @@ export default function CreateBusinessWizard({
     handleDeleteImage,
   } = useImagesUpload({
     initialImages: formData.images,
-    onChange: (images) => {
-      setFormData((prev: any) => ({
-        ...prev,
-        images,
-      }));
-    },
+    onChange: (images) => {},
   });
 
   const {
@@ -184,36 +201,36 @@ export default function CreateBusinessWizard({
 
   const addr = parseAddress(address);
 
-  //timedate range
-  const transformOperatingHoursToPayload = (
-    operatingHours: OperatingHours,
-  ): OpeningHrPayload[] => {
-    const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+  // //timedate range
+  // const transformOperatingHoursToPayload = (
+  //   operatingHours: OperatingHours,
+  // ): OpeningHrPayload[] => {
+  //   const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
 
-    return Object.entries(operatingHours).flatMap(
-      ([day, ranges]): OpeningHrPayload[] => {
-        // Holiday (closed)
-        if (ranges.length === 0) {
-          return [
-            {
-              days: day,
-              open: `${today}T00:00:00.000Z`,
-              close: `${today}T00:00:00.000Z`,
-              isHoliday: true,
-            },
-          ];
-        }
+  //   return Object.entries(operatingHours).flatMap(
+  //     ([day, ranges]): OpeningHrPayload[] => {
+  //       // Holiday (closed)
+  //       if (ranges.length === 0) {
+  //         return [
+  //           {
+  //             days: day,
+  //             open: `${today}T00:00:00.000Z`,
+  //             close: `${today}T00:00:00.000Z`,
+  //             isHoliday: true,
+  //           },
+  //         ];
+  //       }
 
-        // Open hours
-        return ranges.map((range: any) => ({
-          days: day,
-          open: `${today}T${range.open}:00.000Z`,
-          close: `${today}T${range.close}:00.000Z`,
-          isHoliday: false,
-        }));
-      },
-    );
-  };
+  //       // Open hours
+  //       return ranges.map((range: any) => ({
+  //         days: day,
+  //         open: `${today}T${range.open}:00.000Z`,
+  //         close: `${today}T${range.close}:00.000Z`,
+  //         isHoliday: false,
+  //       }));
+  //     },
+  //   );
+  // };
 
   const totalSteps = 9;
 
@@ -268,7 +285,7 @@ export default function CreateBusinessWizard({
     logo: formData.logo,
     images: formData.images,
     //  step 6
-    openingHrs: transformOperatingHoursToPayload(formData.operatingHours),
+    openingHrs: formData.operatingHours,
     // step 7
     // vendorDelivers: formData.vendorDelivers,
     isPickUpAvailable: formData.pickupAvailable,
@@ -294,19 +311,20 @@ export default function CreateBusinessWizard({
 
     switch (step) {
       case 1:
-        if (!formData.nameEn.trim()) newErrors.nameEn = t("required_field");
-        if (!formData.shortDescriptionEn.trim())
+        if (!formData.nameEn?.trim()) newErrors.nameEn = t("required_field");
+        if (!formData.shortDescriptionEn?.trim())
           newErrors.shortDescriptionEn = t("required_field");
-        if (!formData.fullDescriptionEn.trim())
+        if (!formData.fullDescriptionEn?.trim())
           newErrors.fullDescriptionEn = t("required_field");
-        if (formData.nameEn.length < 3) newErrors.nameEn = t("field_too_short");
+        if (formData.nameEn?.length < 3)
+          newErrors.nameEn = t("field_too_short");
         break;
       case 2:
-        if (!formData.email.trim()) newErrors.email = t("required_field");
-        if (!formData.phone.trim()) newErrors.phone = t("required_field");
+        if (!formData.email?.trim()) newErrors.email = t("required_field");
+        if (!formData.phone?.trim()) newErrors.phone = t("required_field");
         break;
       case 3:
-        if (addr.city === undefined) {
+        if (addr?.city === undefined) {
           newErrors.address = t("required_field");
         }
         break;
@@ -350,17 +368,27 @@ export default function CreateBusinessWizard({
         break;
       }
     }
-
-    if (!allValid) {
-      toast.error(t("fix_errors_before_proceeding"));
-      return;
+    if (currentView !== "edit") {
+      if (!allValid) {
+        toast.error(t("fix_errors_before_proceeding"));
+        return;
+      }
     }
+
     setIsPublishing(true);
     saveDraft(true);
     setIsPublishing(false);
     toast.success(t("business created succesfully"));
     onClose();
   };
+
+  console.log("business", business);
+
+  useEffect(() => {
+    if (currentView === "edit") {
+      setBusinessId(business?._id);
+    }
+  }, [currentView]);
 
   const renderStep = () => {
     const commonProps = {
@@ -371,6 +399,8 @@ export default function CreateBusinessWizard({
       errors,
       setFormData,
       markDirty,
+      business,
+      currentView,
     };
     const mediaProps = {
       theme,
@@ -385,6 +415,7 @@ export default function CreateBusinessWizard({
       confirmDeleteLogo,
       handleDeleteLogoImage,
       images,
+      imagesRef,
       primaryImageIndex,
       setPrimaryImage,
       handleImageUpload,
@@ -429,7 +460,7 @@ export default function CreateBusinessWizard({
           />
         );
       case 5:
-        return <BusinessMedia {...mediaProps} />;
+        return <BusinessMedia {...mediaProps} business={business} />;
       case 6:
         return <BusinessOpeningHours {...commonProps} />;
       case 7:
@@ -450,7 +481,9 @@ export default function CreateBusinessWizard({
         <div className="flex items-center justify-between mb-4">
           <div>
             <h2 className={clsx("text-2xl", textPrimary)}>
-              {editData ? t("edit_business") : t("create_new_business")}
+              {currentView === "edit"
+                ? t("edit_business")
+                : t("create_new_business")}
             </h2>
             <p
               className={`text-sm ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}

@@ -52,8 +52,9 @@ const BusinessOpeningHoursDetails: FC<BusinessOpeningHoursDetailsProps> = ({
         {t("weekly_schedule")}
       </h3>
 
-      {daysOfWeek.map((day) => {
-        const hours = business.operatingHours[day.key as keyof OperatingHours];
+      {daysOfWeek?.map((day) => {
+        const hours =
+          business?.operatingHours?.[day.key as keyof OperatingHours];
         return (
           <div
             key={day.key}

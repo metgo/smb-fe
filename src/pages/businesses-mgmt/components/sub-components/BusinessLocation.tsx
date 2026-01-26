@@ -1,6 +1,7 @@
-import type { FC } from "react";
+import { useEffect, type FC } from "react";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { MarkerMap } from "@/components/maps";
+import { current } from "@reduxjs/toolkit";
 
 /* ---------- Types ---------- */
 
@@ -27,6 +28,7 @@ interface LocationErrors {
 }
 
 /* ---------- Props ---------- */
+type View = "list" | "details" | "create" | "edit" | undefined;
 
 interface BusinessLocationProps {
   theme: Theme;
@@ -39,6 +41,8 @@ interface BusinessLocationProps {
   setGeo: (v: Geo) => void;
   address: string;
   setAddress: React.Dispatch<React.SetStateAction<string>>;
+  business: any;
+  currentView: View;
 }
 
 /* ---------- Component ---------- */
@@ -51,11 +55,37 @@ const BusinessLocation: FC<BusinessLocationProps> = ({
   // errors,
   // setFormData,
   geo,
+  currentView,
   setGeo,
   address,
   setAddress,
+  business,
 }) => {
   const { textSecondary } = useThemeClasses();
+  useEffect(() => {
+    if (!business || currentView !== "edit") return;
+
+    // Set geo location
+    if (business.geoLocation?.lat || business.geoLocation?.lng) {
+      setGeo({
+        lat: String(business.geoLocation.lat),
+        lng: String(business.geoLocation.lng),
+      });
+    }
+
+    // Set formatted address
+    if (business.address) {
+      const formatted = [
+        business.address.location,
+        business.address.city,
+        business.address.country,
+      ]
+        .filter(Boolean)
+        .join(", ");
+
+      setAddress(formatted);
+    }
+  }, [business]);
 
   return (
     <div className="space-y-6">

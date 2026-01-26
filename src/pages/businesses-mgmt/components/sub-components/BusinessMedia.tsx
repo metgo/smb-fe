@@ -29,6 +29,7 @@ interface BusinessMediaProps {
   setDeleteTarget: (v: IDeleteTarget | null) => void;
   confirmDelete: () => void;
   isImageDeleting: boolean;
+  business: any;
   handleDeleteImage: (item: IImageUpload, index: number) => void;
 }
 
@@ -38,7 +39,7 @@ const BusinessMedia: FC<BusinessMediaProps> = ({
   t,
   theme,
   errors,
-
+  business,
   logoImage,
   handleLogoImageSelect,
   deleteTargetLogo,

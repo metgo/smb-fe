@@ -1,4 +1,4 @@
-import type { FC } from "react";
+import { useEffect, type FC } from "react";
 import { X } from "lucide-react";
 import {
   useGetAccessibilityQuery,
@@ -20,6 +20,7 @@ interface BusinessAttributesFormData {
   accessibility: string[];
   groupTypes: string[];
 }
+type View = "list" | "details" | "create" | "edit" | undefined;
 
 interface FormErrors {
   primaryCategory?: string;
@@ -31,11 +32,12 @@ interface BusinessAttributesProps {
   formData: BusinessAttributesFormData;
   setFormData: (data: BusinessAttributesFormData) => void;
   errors: FormErrors;
-
+  business: any;
   selectedGroupTypesId: string[];
   setGroupTypesId: (v: string[]) => void;
   selectedAccessiblitiesId: string[];
   setAccessiblitiesId: (v: string[]) => void;
+  currentView: View;
 }
 
 /* ---------------- Constants ---------------- */
@@ -70,12 +72,14 @@ const BusinessAttributes: FC<BusinessAttributesProps> = ({
   t,
   theme,
   formData,
+  business,
   setFormData,
   errors,
   selectedGroupTypesId,
   setGroupTypesId,
   selectedAccessiblitiesId,
   setAccessiblitiesId,
+  currentView,
 }) => {
   const { i18n } = useTranslation("businesses");
   const locale = i18n.language as Language;
@@ -108,6 +112,27 @@ const BusinessAttributes: FC<BusinessAttributesProps> = ({
       setAccessiblitiesId([...selectedAccessiblitiesId, itemId]);
     }
   };
+  useEffect(() => {
+    if (!business || currentView !== "edit") return;
+
+    // Primary category + tags
+    setFormData({
+      ...formData,
+      primaryCategory: business.primaryCategoryId || "",
+      tags: business.tags || [],
+    });
+
+    // Group Types
+    if (Array.isArray(business.groupTypesId)) {
+      setGroupTypesId(business.groupTypesId.map((g: any) => g._id));
+    }
+
+    // Accessibilities
+    if (Array.isArray(business.accessibilitiesId)) {
+      setAccessiblitiesId(business.accessibilitiesId.map((a: any) => a._id));
+    }
+  }, [business]);
+
   console.log("primary category", primaryCategories);
   return (
     <div className="space-y-6">
@@ -202,7 +227,7 @@ const BusinessAttributes: FC<BusinessAttributesProps> = ({
           }`}
         >
           <div className="flex flex-wrap gap-2">
-            {formData.tags.map((tag, idx) => (
+            {formData.tags?.map((tag, idx) => (
               <span
                 key={idx}
                 className="px-2 py-1 bg-teal-100 dark:bg-teal-900/30 text-teal-800 dark:text-teal-400 rounded flex items-center gap-1 text-sm"
@@ -212,7 +237,7 @@ const BusinessAttributes: FC<BusinessAttributesProps> = ({
                   onClick={() =>
                     setFormData({
                       ...formData,
-                      tags: formData.tags.filter((_, i) => i !== idx),
+                      tags: formData.tags?.filter((_, i) => i !== idx),
                     })
                   }
                   className="hover:text-red-600"

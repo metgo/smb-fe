@@ -128,7 +128,7 @@ export default function BusinessesList({
   const [filters, setFilters] = useState({
     authorityId: "",
     dmoId: "",
-    status: "DRAFT",
+    status: "APPROVED",
     hasProductFilter: "",
   });
 

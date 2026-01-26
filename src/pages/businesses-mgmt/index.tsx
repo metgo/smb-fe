@@ -61,8 +61,15 @@ export default function BusinessesMgmtPage() {
         />
       )}
 
-      {(currentView === "create" || currentView === "edit") && (
+      {currentView === "create" && (
         <CreateBusinessWizard onClose={handleCloseWizard} />
+      )}
+      {currentView === "edit" && (
+        <CreateBusinessWizard
+          selectedBusiness={selectedBusiness}
+          currentView={currentView}
+          onClose={handleCloseWizard}
+        />
       )}
     </>
   );

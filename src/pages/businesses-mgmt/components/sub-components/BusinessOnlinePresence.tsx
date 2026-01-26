@@ -1,4 +1,4 @@
-import { type FC } from "react";
+import { useEffect, type FC } from "react";
 import { Globe, Facebook, Instagram, Youtube } from "lucide-react";
 import { useGetAllSocialMediaQuery } from "@/store/api/masterDataApi";
 
@@ -24,7 +24,10 @@ interface BusinessOnlinePresenceProps {
     [key: string]: any;
   };
   setFormData: (data: any) => void;
+  business: any;
+  currentView: View;
 }
+type View = "list" | "details" | "create" | "edit" | undefined;
 
 /* ---------- Component ---------- */
 
@@ -32,8 +35,10 @@ const BusinessOnlinePresence: FC<BusinessOnlinePresenceProps> = ({
   theme,
   isRTL,
   t,
+  business,
   formData,
   setFormData,
+  currentView,
 }) => {
   const { data: socialMediaRes, isLoading } = useGetAllSocialMediaQuery();
 
@@ -48,27 +53,24 @@ const BusinessOnlinePresence: FC<BusinessOnlinePresenceProps> = ({
 
   // Update formData.socialMedia array
   const updateSocialUrl = (socialMediaId: string, url: string) => {
-    setFormData((prev: any) => {
-      const existing = prev.socialMedia || [];
+    const existing = formData.socialMedia || [];
 
-      // Remove old entry if exists
-      const filtered = existing.filter(
-        (item: any) => item.socialMediaId !== socialMediaId,
-      );
+    const filtered = existing.filter(
+      (item) => item.socialMediaId !== socialMediaId,
+    );
 
-      // Add new one only if there's a value
-      const updated =
-        url.trim() === ""
-          ? filtered
-          : [...filtered, { socialMediaId, url: url.trim() }];
+    const updated =
+      url.trim() === ""
+        ? filtered
+        : [...filtered, { socialMediaId, url: url.trim() }];
 
-      return {
-        ...prev,
-        socialMedia: updated,
-      };
+    setFormData({
+      ...formData,
+      socialMedia: updated,
     });
   };
 
+  console.log("social media urls payload", formData);
   const inputClasses = `w-full ${
     isRTL ? "pr-10 pl-4" : "pl-10 pr-4"
   } py-2 rounded-lg border ${
@@ -76,6 +78,25 @@ const BusinessOnlinePresence: FC<BusinessOnlinePresenceProps> = ({
       ? "bg-gray-800 border-gray-700 text-gray-200 placeholder-gray-500"
       : "bg-white border-gray-300 text-gray-900 placeholder-gray-400"
   } focus:outline-none focus:ring-2 focus:ring-teal-500`;
+
+  useEffect(() => {
+    if (!business || currentView !== "edit") return;
+
+    const normalizedSocialMedia = (business.socialMedia ?? []).map(
+      (item: any) => ({
+        socialMediaId:
+          typeof item.socialMediaId === "object" && item.socialMediaId?._id
+            ? item.socialMediaId._id
+            : item.socialMediaId,
+        url: item.url || "",
+      }),
+    );
+
+    setFormData((prev: any) => ({
+      ...prev,
+      socialMedia: normalizedSocialMedia,
+    }));
+  }, [business]);
 
   // Optional: show loading state or skeleton
   if (isLoading) {
@@ -117,9 +138,6 @@ const BusinessOnlinePresence: FC<BusinessOnlinePresenceProps> = ({
           if (platform.name.toLowerCase() === "instagram") Icon = Instagram;
           if (platform.name.toLowerCase() === "youtube") Icon = Youtube;
           // Add more mappings as needed
-
-          // Prefer API icon if you want to use <img> instead of lucide
-          // For now using lucide for consistency & performance
 
           return (
             <SocialInput

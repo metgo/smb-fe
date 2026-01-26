@@ -1,4 +1,4 @@
-import { Activity, useState, type FC } from "react";
+import { Activity, useEffect, useState, type FC } from "react";
 import { Plus, X, MapPin } from "lucide-react";
 import PickupLocationModal from "./PickupLocationModal";
 
@@ -13,11 +13,12 @@ interface DeliveryArea {
   price: string;
   pickUpLocation: PickupLocation[];
 }
+type View = "list" | "details" | "create" | "edit" | undefined;
 
 interface BusinessDeliveryFormData {
   vendorDelivers: boolean;
   pickupAvailable: boolean;
-  deliveryAreas: DeliveryArea[];
+  deliveryArea: DeliveryArea[];
   deliveryReturnExchange: string[];
   deliveryAdditionalInfo: string;
   deliverySpecificSellerInfo: string[];
@@ -26,10 +27,11 @@ interface BusinessDeliveryFormData {
 interface BusinessDeliveryPolicyProps {
   theme: Theme;
   isRTL: boolean;
+  currentView: View;
 
   formData: BusinessDeliveryFormData;
   setFormData: (data: BusinessDeliveryFormData) => void;
-
+  business: any;
   t: (key: string) => string;
 }
 
@@ -41,6 +43,8 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
   isRTL,
   formData,
   setFormData,
+  business,
+  currentView,
 }) => {
   const [pickupLocationModal, setPickupLocationModal] = useState<{
     show: boolean;
@@ -75,7 +79,18 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
     t("seller_info_option8"),
     t("seller_info_option9"),
   ];
+  useEffect(() => {
+    if (!business || currentView !== "edit") return;
 
+    setFormData({
+      vendorDelivers: business.vendorDelivers ?? false,
+      pickupAvailable: business.isPickUpAvailable ?? false,
+      deliveryArea: business.deliveryArea ?? [],
+      deliveryReturnExchange: business.deliveryReturnExchange ?? [],
+      deliveryAdditionalInfo: business.deliveryAdditionalInfo ?? "",
+      deliverySpecificSellerInfo: business.deliverySpecificSellerInfo ?? [],
+    });
+  }, [business]);
   return (
     <div className="space-y-6">
       <h3
@@ -141,8 +156,8 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
               onClick={() =>
                 setFormData({
                   ...formData,
-                  deliveryAreas: [
-                    ...formData.deliveryAreas,
+                  deliveryArea: [
+                    ...formData.deliveryArea,
                     { area: "", price: "", pickUpLocation: [] },
                   ],
                 })
@@ -155,7 +170,7 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
           </div>
 
           <div className="space-y-4">
-            {formData.deliveryAreas.map((deliveryArea, areaIdx) => (
+            {formData.deliveryArea?.map((deliveryArea, areaIdx) => (
               <div
                 key={areaIdx}
                 className={`p-4 rounded-lg border ${
@@ -174,9 +189,9 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
                       type="text"
                       value={deliveryArea.area}
                       onChange={(e) => {
-                        const areas = [...formData.deliveryAreas];
+                        const areas = [...formData.deliveryArea];
                         areas[areaIdx].area = e.target.value;
-                        setFormData({ ...formData, deliveryAreas: areas });
+                        setFormData({ ...formData, deliveryArea: areas });
                       }}
                       placeholder={isRTL ? "באר שבע" : "Be'er Sheva"}
                       className="w-full px-3 py-2 rounded-lg border text-sm focus:ring-2 focus:ring-teal-500"
@@ -192,9 +207,9 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
                       type="number"
                       value={deliveryArea.price}
                       onChange={(e) => {
-                        const areas = [...formData.deliveryAreas];
+                        const areas = [...formData.deliveryArea];
                         areas[areaIdx].price = e.target.value;
-                        setFormData({ ...formData, deliveryAreas: areas });
+                        setFormData({ ...formData, deliveryArea: areas });
                       }}
                       className="w-full px-3 py-2 rounded-lg border text-sm focus:ring-2 focus:ring-teal-500"
                     />
@@ -228,7 +243,7 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
                       onClick={() =>
                         setFormData({
                           ...formData,
-                          deliveryAreas: formData.deliveryAreas.filter(
+                          deliveryArea: formData.deliveryArea?.filter(
                             (_, i) => i !== areaIdx,
                           ),
                         })
@@ -259,13 +274,13 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
             >
               <input
                 type="checkbox"
-                checked={formData.deliveryReturnExchange.includes(option)}
+                checked={formData.deliveryReturnExchange?.includes(option)}
                 onChange={(e) =>
                   setFormData({
                     ...formData,
                     deliveryReturnExchange: e.target.checked
                       ? [...formData.deliveryReturnExchange, option]
-                      : formData.deliveryReturnExchange.filter(
+                      : formData.deliveryReturnExchange?.filter(
                           (p) => p !== option,
                         ),
                   })
@@ -309,13 +324,13 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
             >
               <input
                 type="checkbox"
-                checked={formData.deliverySpecificSellerInfo.includes(option)}
+                checked={formData.deliverySpecificSellerInfo?.includes(option)}
                 onChange={(e) =>
                   setFormData({
                     ...formData,
                     deliverySpecificSellerInfo: e.target.checked
                       ? [...formData.deliverySpecificSellerInfo, option]
-                      : formData.deliverySpecificSellerInfo.filter(
+                      : formData.deliverySpecificSellerInfo?.filter(
                           (i) => i !== option,
                         ),
                   })

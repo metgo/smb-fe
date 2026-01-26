@@ -21,8 +21,8 @@ type Theme = "light" | "dark";
 
 interface Business {
   shortDescription: string;
-  fullDescription: string;
-  categories: string[];
+  description: string;
+  primaryCategoryId: string;
   subcategories: string[];
   tags: string[];
   impact: number;
@@ -152,7 +152,7 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({
           {t("full_description")}
         </h3>
         <p className={theme === "dark" ? "text-gray-300" : "text-gray-700"}>
-          {business?.fullDescription}
+          {business?.description}
         </p>
       </div>
 
@@ -164,7 +164,7 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({
           {t("categories")}
         </h3>
         <div className="flex flex-wrap gap-2">
-          {business?.categories?.map((cat, idx) => (
+          {/* {business?.categories?.map((cat, idx) => (
             <span
               key={idx}
               className={`px-3 py-1 rounded-full text-sm ${
@@ -175,7 +175,8 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({
             >
               {cat}
             </span>
-          ))}
+          ))} */}
+          {business?.primaryCategoryId}
         </div>
       </div>
 
