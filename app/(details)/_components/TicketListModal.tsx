@@ -138,10 +138,6 @@ const TicketListModal = ({
           endTime: eventDay.endTime,
         })),
     );
-    console.log(
-      "🚀 ~ handleTicketAddToCart ~ selectedTickets:",
-      selectedTickets,
-    );
 
     selectedTickets.forEach((ticket) => setCartItem(ticket));
     setIsOpen(false);
@@ -179,7 +175,7 @@ const TicketListModal = ({
               <div key={eventDays._id}>
                 <div
                   onClick={() => handleToggleTicketList(eventDays._id)}
-                  className="border-[2px] border-black/80 rounded-lg px-3 py-2 flex items-center justify-between custom-cursor"
+                  className="border-2 border-black/80 rounded-lg px-3 py-2 flex items-center justify-between custom-cursor"
                 >
                   <span className="font-bold">{events.chooseCard}</span>
                   <span className="text-gray-600">{eventDays.date}</span>
