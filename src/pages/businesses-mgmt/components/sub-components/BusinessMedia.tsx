@@ -76,15 +76,14 @@ const BusinessMedia: FC<BusinessMediaProps> = ({
                 errors.logo
                   ? "border-red-500"
                   : theme === "dark"
-                  ? "border-gray-700 hover:border-gray-600"
-                  : "border-gray-300 hover:border-gray-400"
+                    ? "border-gray-700 hover:border-gray-600"
+                    : "border-gray-300 hover:border-gray-400"
               }`}
               onClick={() => {
                 // TODO: Replace with real upload
                 setFormData({
                   ...formData,
-                  logo:
-                    "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=200&h=200&fit=crop",
+                  logo: "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=200&h=200&fit=crop",
                 });
               }}
             >

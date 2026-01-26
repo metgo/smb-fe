@@ -1,15 +1,15 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { ArrowUpDown, ArrowUp, ArrowDown, GripVertical } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from "react";
+import { ArrowUpDown, ArrowUp, ArrowDown, GripVertical } from "lucide-react";
 
-import { useAppSelector } from '@/hooks/hooks';
-import { useThemeClasses } from '@/hooks/useThemeClasses';
+import { useAppSelector } from "@/hooks/hooks";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 /* ================= Types ================= */
 
-type SortDirection = 'asc' | 'desc' | null;
+type SortDirection = "asc" | "desc" | null;
 
 export interface Column<T> {
-  key: keyof T | 'checkbox' | 'actions' | string;
+  key: keyof T | "checkbox" | "actions" | string;
   label: string;
   sortable?: boolean;
   render?: (item: T) => React.ReactNode;
@@ -48,12 +48,12 @@ export default function ReordableDataTable<T extends Record<string, any>>({
   data,
   columns,
   rowKey,
-  storageKey = 'dataTableColumnOrder',
+  storageKey = "dataTableColumnOrder",
   onRowClick,
   selectedItems,
   onSelectionChange,
 }: DataTableProps<T>) {
-  const { theme, isRTL } = useAppSelector(state => state.settings);
+  const { theme, isRTL } = useAppSelector((state) => state.settings);
   const { bgTertiary, borderColor, textSecondary, hoverBg } = useThemeClasses();
 
   /** Filter out falsy columns safely */
@@ -62,24 +62,24 @@ export default function ReordableDataTable<T extends Record<string, any>>({
   /* ---------- Column order ---------- */
 
   const [columnOrder, setColumnOrder] = useState<string[]>(() => {
-    if (typeof window === 'undefined') {
-      return validColumns.map(c => c.key as string);
+    if (typeof window === "undefined") {
+      return validColumns.map((c) => c.key as string);
     }
 
     try {
       const saved = localStorage.getItem(storageKey);
       if (saved) {
         const parsed: string[] = JSON.parse(saved);
-        const validKeys = validColumns.map(c => c.key as string);
+        const validKeys = validColumns.map((c) => c.key as string);
 
-        const filtered = parsed.filter(k => validKeys.includes(k));
+        const filtered = parsed.filter((k) => validKeys.includes(k));
         return filtered.length ? filtered : validKeys;
       }
     } catch {
       /* ignore */
     }
 
-    return validColumns.map(c => c.key as string);
+    return validColumns.map((c) => c.key as string);
   });
 
   useEffect(() => {
@@ -98,14 +98,14 @@ export default function ReordableDataTable<T extends Record<string, any>>({
       const aVal = a[sortField];
       const bVal = b[sortField];
 
-      if (typeof aVal === 'string' && typeof bVal === 'string') {
-        return sortDirection === 'asc'
+      if (typeof aVal === "string" && typeof bVal === "string") {
+        return sortDirection === "asc"
           ? aVal.localeCompare(bVal)
           : bVal.localeCompare(aVal);
       }
 
-      if (aVal < bVal) return sortDirection === 'asc' ? -1 : 1;
-      if (aVal > bVal) return sortDirection === 'asc' ? 1 : -1;
+      if (aVal < bVal) return sortDirection === "asc" ? -1 : 1;
+      if (aVal > bVal) return sortDirection === "asc" ? 1 : -1;
       return 0;
     });
   }, [data, sortField, sortDirection]);
@@ -113,13 +113,17 @@ export default function ReordableDataTable<T extends Record<string, any>>({
   const handleSort = (field: keyof T) => {
     if (sortField === field) {
       const next =
-        sortDirection === 'asc' ? 'desc' : sortDirection === 'desc' ? null : 'asc';
+        sortDirection === "asc"
+          ? "desc"
+          : sortDirection === "desc"
+            ? null
+            : "asc";
 
       setSortDirection(next);
       if (!next) setSortField(null);
     } else {
       setSortField(field);
-      setSortDirection('asc');
+      setSortDirection("asc");
     }
   };
 
@@ -148,7 +152,7 @@ export default function ReordableDataTable<T extends Record<string, any>>({
   const allSelected =
     selectedItems &&
     data.length > 0 &&
-    data.every(item => selectedItems.has(item[rowKey]));
+    data.every((item) => selectedItems.has(item[rowKey]));
 
   // const someSelected =
   //   selectedItems && selectedItems.size > 0 && !allSelected;
@@ -158,9 +162,9 @@ export default function ReordableDataTable<T extends Record<string, any>>({
 
     const next = new Set(selectedItems);
     if (allSelected) {
-      data.forEach(i => next.delete(i[rowKey]));
+      data.forEach((i) => next.delete(i[rowKey]));
     } else {
-      data.forEach(i => next.add(i[rowKey]));
+      data.forEach((i) => next.add(i[rowKey]));
     }
     onSelectionChange(next);
   };
@@ -171,15 +175,22 @@ export default function ReordableDataTable<T extends Record<string, any>>({
     const next = new Set(selectedItems);
     const key = item[rowKey];
 
-    next.has(key) ? next.delete(key) : next.add(key);
+    if (next.has(key)) {
+      next.delete(key);
+    } else {
+      next.add(key);
+    }
     onSelectionChange(next);
   };
 
   const sortIcon = (field: keyof T) => {
-    if (sortField !== field) return <ArrowUpDown className="w-4 h-4 opacity-40" />;
-    return sortDirection === 'asc'
-      ? <ArrowUp className="w-4 h-4" />
-      : <ArrowDown className="w-4 h-4" />;
+    if (sortField !== field)
+      return <ArrowUpDown className="w-4 h-4 opacity-40" />;
+    return sortDirection === "asc" ? (
+      <ArrowUp className="w-4 h-4" />
+    ) : (
+      <ArrowDown className="w-4 h-4" />
+    );
   };
 
   /* ================= Render ================= */
@@ -188,45 +199,48 @@ export default function ReordableDataTable<T extends Record<string, any>>({
     <div className={`rounded-xl border ${borderColor} overflow-hidden`}>
       <div className="overflow-x-auto max-h-[calc(100vh-400px)] overflow-y-auto">
         <table className="w-full">
-          <thead className={`sticky top-0 z-50 ${bgTertiary} border-b ${borderColor}`}>
+          <thead
+            className={`sticky top-0 z-50 ${bgTertiary} border-b ${borderColor}`}
+          >
             <tr>
-              {columnOrder.map(key => {
-                const column = validColumns.find(c => c.key === key);
+              {columnOrder.map((key) => {
+                const column = validColumns.find((c) => c.key === key);
                 if (!column) return null;
 
-                const sortable = column.sortable && typeof column.key === 'string';
+                const sortable =
+                  column.sortable && typeof column.key === "string";
                 const field = column.key as keyof T;
 
                 return (
                   <th
                     key={key}
-                    draggable={!['checkbox', 'actions'].includes(key)}
+                    draggable={!["checkbox", "actions"].includes(key)}
                     onDragStart={() => setDragged(key)}
-                    onDragOver={e => {
+                    onDragOver={(e) => {
                       e.preventDefault();
                       setDragOver(key);
                     }}
                     onDrop={() => handleDrop(key)}
                     onDragEnd={() => setDragged(null)}
                     onClick={() => sortable && handleSort(field)}
-                    className={`p-3 text-${isRTL ? 'right' : 'left'} text-sm ${textSecondary}
-                      ${sortable ? 'cursor-pointer' : ''}`}
+                    className={`p-3 text-${isRTL ? "right" : "left"} text-sm ${textSecondary}
+                      ${sortable ? "cursor-pointer" : ""}`}
                     style={{
                       width: column.width,
                       background:
                         dragOver === key
-                          ? theme === 'dark'
-                            ? 'rgba(255,255,255,0.08)'
-                            : 'rgba(0,0,0,0.05)'
+                          ? theme === "dark"
+                            ? "rgba(255,255,255,0.08)"
+                            : "rgba(0,0,0,0.05)"
                           : undefined,
                     }}
                   >
                     <div className="flex items-center gap-2">
-                      {!['checkbox', 'actions'].includes(key) && (
+                      {!["checkbox", "actions"].includes(key) && (
                         <GripVertical className="w-4 h-4 opacity-50" />
                       )}
 
-                      {key === 'checkbox' ? (
+                      {key === "checkbox" ? (
                         <input
                           type="checkbox"
                           checked={!!allSelected}
@@ -249,24 +263,27 @@ export default function ReordableDataTable<T extends Record<string, any>>({
           <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
             {sortedData.length === 0 ? (
               <tr>
-                <td colSpan={columnOrder.length} className="py-10 text-center text-gray-400">
+                <td
+                  colSpan={columnOrder.length}
+                  className="py-10 text-center text-gray-400"
+                >
                   No data available
                 </td>
               </tr>
             ) : (
-              sortedData.map(item => (
+              sortedData.map((item) => (
                 <tr
                   key={String(item[rowKey])}
                   onClick={() => onRowClick?.(item)}
-                  className={`${hoverBg} ${onRowClick ? 'cursor-pointer' : ''}`}
+                  className={`${hoverBg} ${onRowClick ? "cursor-pointer" : ""}`}
                 >
-                  {columnOrder.map(key => {
-                    const column = validColumns.find(c => c.key === key);
+                  {columnOrder.map((key) => {
+                    const column = validColumns.find((c) => c.key === key);
                     if (!column) return null;
 
                     return (
                       <td key={key} className="p-3 text-sm">
-                        {key === 'checkbox' ? (
+                        {key === "checkbox" ? (
                           <input
                             type="checkbox"
                             checked={!!selectedItems?.has(item[rowKey])}
@@ -275,7 +292,7 @@ export default function ReordableDataTable<T extends Record<string, any>>({
                         ) : column.render ? (
                           column.render(item)
                         ) : (
-                          String(item[key as keyof T] ?? '-')
+                          String(item[key as keyof T] ?? "-")
                         )}
                       </td>
                     );

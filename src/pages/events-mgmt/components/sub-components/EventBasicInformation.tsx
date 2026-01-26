@@ -3,9 +3,19 @@ import { useTranslation } from "react-i18next";
 
 import { SelectableChips } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { useGetAccessibilityQuery, useGetGroupTypesQuery, useGetSubCategoriesQuery } from "@/store/api/masterDataApi";
+import {
+  useGetAccessibilityQuery,
+  useGetGroupTypesQuery,
+  useGetSubCategoriesQuery,
+} from "@/store/api/masterDataApi";
 import { useCommon } from "@/hooks/useCommon";
-import { FormFieldWrapper, InputField, RadioGroupField, SelectField, TextareaField } from "@/components/form-fields";
+import {
+  FormFieldWrapper,
+  InputField,
+  RadioGroupField,
+  SelectField,
+  TextareaField,
+} from "@/components/form-fields";
 
 interface EventBasicInformationProps {
   markDirty: (step: number) => void;
@@ -20,7 +30,9 @@ interface EventBasicInformationProps {
   fullDescription: string;
   setFullDescription: React.Dispatch<React.SetStateAction<string>>;
   eventStatus: "draft" | "pending" | "approved";
-  setEventStatus: React.Dispatch<React.SetStateAction<"draft" | "pending" | "approved">>;
+  setEventStatus: React.Dispatch<
+    React.SetStateAction<"draft" | "pending" | "approved">
+  >;
   internalNotes: string;
   setInternalNotes: React.Dispatch<React.SetStateAction<string>>;
   selectedSubCategoriesId: string[];
@@ -34,6 +46,10 @@ interface EventBasicInformationProps {
 
 const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
   markDirty,
+  selectedDmoId,
+  setSelectDmoId,
+  selectedAuthorityId,
+  setSelectAuthorityId,
   eventName,
   setEventName,
   shortDescription,
@@ -44,26 +60,70 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
   setEventStatus,
   internalNotes,
   setInternalNotes,
+  selectedSubCategoriesId,
+  setSubCategoriesId,
+  selectedGroupTypesId,
+  setGroupTypesId,
+  selectedAccessiblitiesId,
+  setAccessiblitiesId,
   errors,
-  selectedSubCategoriesId, setSubCategoriesId,
-  selectedAccessiblitiesId, setAccessiblitiesId,
-  selectedGroupTypesId, setGroupTypesId,
-  selectedDmoId, setSelectDmoId,
-  selectedAuthorityId, setSelectAuthorityId,
 }) => {
-
   const { t, i18n } = useTranslation("events");
-  const { dmosAuthorities } = useCommon()
+  const { dmosAuthorities } = useCommon();
   const { textSecondary, inputClasses, selectInputClasses } = useThemeClasses();
   const locale = i18n.language as Language;
 
-  const { data: subCategories } = useGetSubCategoriesQuery({ bussCategoryId: "6566fcd4a77d2a477266d3b9", locale });
+  const { data: subCategories } = useGetSubCategoriesQuery({
+    bussCategoryId: "6566fcd4a77d2a477266d3b9",
+    locale,
+  });
   const { data: accessibility } = useGetAccessibilityQuery({ locale });
   const { data: groupTypes } = useGetGroupTypesQuery({ locale });
 
+  // Individual refs for scroll targets
+  const dmoSectionRef = useRef<HTMLDivElement | null>(null);
+  const authoritySectionRef = useRef<HTMLDivElement | null>(null);
+  const nameSectionRef = useRef<HTMLDivElement | null>(null);
+  const shortDescSectionRef = useRef<HTMLDivElement | null>(null);
 
-  const selectedDmos = dmosAuthorities?.find((item) => item?._id === selectedDmoId);
+  // Auto-scroll to first error field
+  useEffect(() => {
+    if (Object.keys(errors).length === 0) return;
 
+    const firstErrorKey = Object.keys(errors)[0];
+
+    let targetRef: React.RefObject<HTMLDivElement | null> | null = null;
+
+    switch (firstErrorKey) {
+      case "dmoId":
+        targetRef = dmoSectionRef;
+        break;
+      case "authorityId":
+        targetRef = authoritySectionRef;
+        break;
+      case "eventName":
+        targetRef = nameSectionRef;
+        break;
+      case "shortDescription":
+        targetRef = shortDescSectionRef;
+        break;
+      default:
+        break;
+    }
+
+    if (targetRef?.current) {
+      targetRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+
+      // Try to focus the first focusable element inside
+      const focusable = targetRef.current.querySelector(
+        "input, select, textarea, button",
+      ) as HTMLElement | null;
+      focusable?.focus?.();
+    }
+  }, [errors]);
 
   useEffect(() => {
     markDirty(1);
@@ -77,77 +137,42 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
     selectedGroupTypesId,
     selectedSubCategoriesId,
     internalNotes,
+    markDirty,
   ]);
 
-  const fieldRefs = {
-    dmoId: useRef<HTMLDivElement>(null),
-    authorityId: useRef<HTMLDivElement>(null),
-    eventName: useRef<HTMLInputElement>(null),
-    shortDescription: useRef<HTMLInputElement>(null),
-  };
-
-
-  useEffect(() => {
-    const errorKeys = Object.keys(errors);
-    if (errorKeys?.length === 0) return;
-
-    const firstErrorKey = errorKeys[0];
-    const ref = fieldRefs[firstErrorKey as keyof typeof fieldRefs];
-
-    if (ref?.current) {
-      ref.current.scrollIntoView({
-        behavior: "smooth",
-        block: "center",
-      });
-
-      if ("focus" in ref.current) {
-        (ref.current as HTMLElement).focus();
-      }
-    }
-  }, [errors]);
-
+  const selectedDmos = dmosAuthorities?.find(
+    (item) => item?._id === selectedDmoId,
+  );
 
   const handleSubcategorySelect = (itemId: string) => {
-    const exists = selectedSubCategoriesId?.some((id) => id === itemId);
-
-    if (exists) {
-      const updated = selectedSubCategoriesId?.filter((id) => id !== itemId);
-      setSubCategoriesId(updated);
-    } else {
-      setSubCategoriesId([...selectedSubCategoriesId, itemId]);
-    }
-  }
+    setSubCategoriesId(
+      selectedSubCategoriesId.includes(itemId)
+        ? selectedSubCategoriesId.filter((id) => id !== itemId)
+        : [...selectedSubCategoriesId, itemId],
+    );
+  };
 
   const handleGroupTypeSelect = (itemId: string) => {
-    const exists = selectedGroupTypesId?.some((id) => id === itemId);
-
-    if (exists) {
-      const updated = selectedGroupTypesId?.filter((id) => id !== itemId);
-      setGroupTypesId(updated);
-    } else {
-      setGroupTypesId([...selectedGroupTypesId, itemId]);
-    }
-  }
+    setGroupTypesId(
+      selectedGroupTypesId.includes(itemId)
+        ? selectedGroupTypesId.filter((id) => id !== itemId)
+        : [...selectedGroupTypesId, itemId],
+    );
+  };
 
   const handleAccessibilitySelect = (itemId: string) => {
-    const exists = selectedAccessiblitiesId?.some((id) => id === itemId);
-
-    if (exists) {
-      const updated = selectedAccessiblitiesId?.filter((id) => id !== itemId);
-      setAccessiblitiesId(updated);
-    } else {
-      setAccessiblitiesId([...selectedAccessiblitiesId, itemId]);
-    }
-  }
-
-
+    setAccessiblitiesId(
+      selectedAccessiblitiesId.includes(itemId)
+        ? selectedAccessiblitiesId.filter((id) => id !== itemId)
+        : [...selectedAccessiblitiesId, itemId],
+    );
+  };
 
   return (
-    <div className="space-y-4 max-w-3xl mx-auto">
-
-      <div className="flex items-start justify-between gap-4">
-        {/* DMO */}
-        <div className="flex-1">
+    <div className="space-y-6 max-w-3xl mx-auto">
+      {/* DMO + Authority */}
+      <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
+        <div className="flex-1 w-full" ref={dmoSectionRef}>
           <FormFieldWrapper
             required
             label={t("select_dmo")}
@@ -160,19 +185,19 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
                 setSelectAuthorityId("");
               }}
               placeholder={t("select_dmo")}
-              options={dmosAuthorities?.map(d => ({
-                label: d.name,
-                value: d._id
-              })) ?? []}
+              options={
+                dmosAuthorities?.map((d) => ({
+                  label: d.name,
+                  value: d._id,
+                })) ?? []
+              }
               error={errors.dmoId}
-              fieldRef={fieldRefs.dmoId}
               selectInputClasses={selectInputClasses}
             />
           </FormFieldWrapper>
         </div>
 
-        {/* Authority */}
-        <div className="flex-1">
+        <div className="flex-1 w-full" ref={authoritySectionRef}>
           <FormFieldWrapper
             required
             label={t("select_authority")}
@@ -182,56 +207,55 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
               value={selectedAuthorityId}
               onChange={setSelectAuthorityId}
               placeholder={t("select_authority")}
-              options={selectedDmos?.authorities?.map(a => ({
-                label: a.name,
-                value: a._id
-              })) ?? []}
+              options={
+                selectedDmos?.authorities?.map((a) => ({
+                  label: a.name,
+                  value: a._id,
+                })) ?? []
+              }
               error={errors.authorityId}
-              fieldRef={fieldRefs.authorityId}
               selectInputClasses={selectInputClasses}
             />
           </FormFieldWrapper>
         </div>
       </div>
 
-
-      <FormFieldWrapper
-        required
-        label={t("event_name")}
-        error={errors.eventName}
-      >
-        <InputField
-          value={eventName}
-          onChange={setEventName}
-          placeholder={t("enter_event_name")}
-          inputClasses={`${inputClasses} text-lg`}
-          fieldRef={fieldRefs.eventName}
-        />
-      </FormFieldWrapper>
-
+      {/* Event Name */}
+      <div ref={nameSectionRef}>
+        <FormFieldWrapper
+          required
+          label={t("event_name")}
+          error={errors.eventName}
+        >
+          <InputField
+            value={eventName}
+            onChange={setEventName}
+            placeholder={t("enter_event_name")}
+            inputClasses={`${inputClasses} text-lg`}
+          />
+        </FormFieldWrapper>
+      </div>
 
       {/* Short Description */}
-      <FormFieldWrapper
-        required
-        label={t("short_description")}
-        error={errors.shortDescription}
-        inputHintText={`${shortDescription?.length ?? 0}/200 ${t("max_characters")}`}
-      >
-        <InputField
-          value={shortDescription}
-          onChange={setShortDescription}
-          placeholder={t("brief_description")}
-          inputClasses={inputClasses}
-          fieldRef={fieldRefs.shortDescription}
-          maxLength={200}
-        />
-      </FormFieldWrapper>
-
+      <div ref={shortDescSectionRef}>
+        <FormFieldWrapper
+          required
+          label={t("short_description")}
+          error={errors.shortDescription}
+          inputHintText={`${shortDescription?.length ?? 0}/200 ${t("max_characters")}`}
+        >
+          <InputField
+            value={shortDescription}
+            onChange={setShortDescription}
+            placeholder={t("brief_description")}
+            inputClasses={inputClasses}
+            maxLength={200}
+          />
+        </FormFieldWrapper>
+      </div>
 
       {/* Full Description */}
-      <FormFieldWrapper
-        label={t("full_description")}
-      >
+      <FormFieldWrapper label={t("full_description")}>
         <TextareaField
           value={fullDescription}
           onChange={setFullDescription}
@@ -241,11 +265,8 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
         />
       </FormFieldWrapper>
 
-
       {/* Event Status */}
-      <FormFieldWrapper
-        label={t("event_status")}
-      >
+      <FormFieldWrapper label={t("event_status")}>
         <RadioGroupField
           value={eventStatus}
           options={["draft", "pending", "approved"]}
@@ -255,24 +276,26 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
         />
       </FormFieldWrapper>
 
-
+      {/* Chips */}
       <SelectableChips
         label="Sub Categories"
-        items={subCategories?.datas?.data}
+        items={subCategories?.datas?.data ?? []}
         selectedIds={selectedSubCategoriesId}
         onSelect={handleSubcategorySelect}
         textSecondary={textSecondary}
       />
+
       <SelectableChips
         label="Accessiblities"
-        items={accessibility?.datas?.data}
+        items={accessibility?.datas?.data ?? []}
         selectedIds={selectedAccessiblitiesId}
         onSelect={handleAccessibilitySelect}
         textSecondary={textSecondary}
       />
+
       <SelectableChips
         label="Group Types"
-        items={groupTypes?.datas?.data}
+        items={groupTypes?.datas?.data ?? []}
         selectedIds={selectedGroupTypesId}
         onSelect={handleGroupTypeSelect}
         textSecondary={textSecondary}
@@ -291,8 +314,7 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
           inputClasses={`${inputClasses} text-base`}
         />
       </FormFieldWrapper>
-
-    </div >
+    </div>
   );
 };
 

@@ -30,7 +30,7 @@ const InputField = ({
       className={clsx(
         "w-full px-5 py-3 rounded-xl border transition-all focus:ring-2 focus:ring-teal-500/20",
         inputClasses,
-        error && "border-red-500"
+        error && "border-red-500",
       )}
     />
   );

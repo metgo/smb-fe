@@ -72,8 +72,8 @@ const BusinessLocation: FC<BusinessLocationProps> = ({
               errors.address
                 ? "border-red-500"
                 : theme === "dark"
-                ? "bg-gray-800 border-gray-700 text-gray-200"
-                : "bg-white border-gray-300 text-gray-900"
+                  ? "bg-gray-800 border-gray-700 text-gray-200"
+                  : "bg-white border-gray-300 text-gray-900"
             } focus:outline-none focus:ring-2 focus:ring-teal-500`}
           />
         </div>

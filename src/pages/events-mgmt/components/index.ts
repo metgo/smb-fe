@@ -4,11 +4,10 @@ import EventsWithViewMode from "./EventsWithViewMode";
 import QuickSnapEventDetails from "./QuickSnapEventDetails";
 import RegistrantDetailModal from "./RegistrantDetailModal";
 
-export{
+export {
   CreateEventWizard,
   EventDetailModal,
   EventsWithViewMode,
   RegistrantDetailModal,
   QuickSnapEventDetails,
-
-}
+};

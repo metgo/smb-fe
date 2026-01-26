@@ -1,25 +1,25 @@
-import { createApi } from '@reduxjs/toolkit/query/react';
+import { createApi } from "@reduxjs/toolkit/query/react";
 
-import { endpoints } from '@/lib/endpoints';
-import { axiosBaseQuery } from './axiosBaseQuery';
-
+import { endpoints } from "@/lib/endpoints";
+import { axiosBaseQuery } from "./axiosBaseQuery";
 
 export const userMutationApi = createApi({
-  reducerPath: 'userMutationApi',
+  reducerPath: "userMutationApi",
   baseQuery: axiosBaseQuery(),
-  tagTypes: ['user'],
+  tagTypes: ["user"],
   endpoints: (builder) => ({
-    updateProfileInfo: builder.mutation<any, { body: UserProfilePayload, userId: string }>({
+    updateProfileInfo: builder.mutation<
+      any,
+      { body: UserProfilePayload; userId: string }
+    >({
       query: ({ body, userId }) => ({
         url: `${endpoints.users}/${userId}`,
-        method: 'PATCH',
+        method: "PATCH",
         data: body,
       }),
-      invalidatesTags: ['user']
+      invalidatesTags: ["user"],
     }),
   }),
 });
 
-export const {
-  useUpdateProfileInfoMutation
-} = userMutationApi;
+export const { useUpdateProfileInfoMutation } = userMutationApi;

@@ -29,11 +29,13 @@ const ProductBasicInfo = ({
   errors,
   businesses,
 }: ProductBasicInfoProps) => {
- 
-  const { bgTertiary, textPrimary, textSecondary, textTertiary, borderColor } = useThemeClasses()
+  const { bgTertiary, textPrimary, textSecondary, textTertiary, borderColor } =
+    useThemeClasses();
 
   // Helper to get field key based on selected language
-  const getFieldKey = (_field: "name" | "shortDescription" | "fullDescription") => {
+  const getFieldKey = (
+    _field: "name" | "shortDescription" | "fullDescription",
+  ) => {
     return selectedFormLanguage;
   };
 
@@ -68,7 +70,9 @@ const ProductBasicInfo = ({
         </label>
         <select
           value={formData.businessId}
-          onChange={(e) => setFormData({ ...formData, businessId: e.target.value })}
+          onChange={(e) =>
+            setFormData({ ...formData, businessId: e.target.value })
+          }
           className={`w-full px-4 py-3 rounded-lg border ${borderColor} ${bgTertiary} ${textPrimary}`}
         >
           <option value="">{t("select_business")}</option>

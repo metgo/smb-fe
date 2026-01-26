@@ -1,13 +1,12 @@
-import type { FC } from "react"
-import { Accessibility, Users } from "lucide-react"
-
+import type { FC } from "react";
+import { Accessibility, Users } from "lucide-react";
 
 /* ---------- Props ---------- */
 
 interface BusinessAttributesDetailsProps {
-  theme: Theme
-  t: (key: string)=>string;
-  business: Business
+  theme: Theme;
+  t: (key: string) => string;
+  business: Business;
 }
 
 /* ---------- Component ---------- */
@@ -24,7 +23,7 @@ const BusinessAttributesDetails: FC<BusinessAttributesDetailsProps> = ({
         <h3
           className={`mb-3 ${theme === "dark" ? "text-gray-200" : "text-gray-800"}`}
         >
-          {t('accessibility')}
+          {t("accessibility")}
         </h3>
         <div className="flex flex-wrap gap-2">
           {business.accessibility.map((option, idx) => (
@@ -48,7 +47,7 @@ const BusinessAttributesDetails: FC<BusinessAttributesDetailsProps> = ({
         <h3
           className={`mb-3 ${theme === "dark" ? "text-gray-200" : "text-gray-800"}`}
         >
-          {t('group_types')}
+          {t("group_types")}
         </h3>
         <div className="flex flex-wrap gap-2">
           {business.groupTypes.map((type, idx) => (
@@ -67,7 +66,7 @@ const BusinessAttributesDetails: FC<BusinessAttributesDetailsProps> = ({
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default BusinessAttributesDetails
+export default BusinessAttributesDetails;

@@ -1,7 +1,6 @@
-import { createApi } from '@reduxjs/toolkit/query/react';
-import { axiosBaseQuery } from './axiosBaseQuery';
-import { endpoints } from '@/lib/endpoints';
-
+import { createApi } from "@reduxjs/toolkit/query/react";
+import { axiosBaseQuery } from "./axiosBaseQuery";
+import { endpoints } from "@/lib/endpoints";
 
 interface BusinessStatsParams {
   startDate?: string;
@@ -31,35 +30,33 @@ interface BusinessListParams {
 }
 
 export const businessQueryApi = createApi({
-  reducerPath: 'businessQueryApi',
+  reducerPath: "businessQueryApi",
   baseQuery: axiosBaseQuery(),
-  tagTypes: ['Business'],
+  tagTypes: ["Business"],
   endpoints: (builder) => ({
     getAllbusinesses: builder.query<any, BusinessListParams>({
       query: (params) => ({
         url: endpoints.businesses,
-        method: 'GET',
+        method: "GET",
         params,
-      })
+      }),
     }),
 
     getBusinessStats: builder.query<any, BusinessStatsParams>({
       query: (params) => ({
         url: endpoints.businessStats,
-        method: 'GET',
-        params
-      })
+        method: "GET",
+        params,
+      }),
     }),
 
     getbusinessById: builder.query<any, { businessId: string | null }>({
       query: ({ businessId }) => ({
         url: `${endpoints.business}/${businessId}`,
-        method: 'GET'
-      })
-    })
-
+        method: "GET",
+      }),
+    }),
   }),
-
 });
 
 export const {

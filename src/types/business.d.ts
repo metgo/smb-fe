@@ -1,4 +1,4 @@
- interface Business {
+interface Business {
   id: string;
   name: string;
   shortDescription: string;
@@ -8,7 +8,7 @@
   website: string;
   logo: string;
   images: string[];
-  status: 'draft' | 'pending' | 'approved' | 'rejected' | 'archived';
+  status: "draft" | "pending" | "approved" | "rejected" | "archived";
   authority: string;
   dmo: string;
   categories: string[];

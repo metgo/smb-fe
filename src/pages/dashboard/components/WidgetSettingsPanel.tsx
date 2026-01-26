@@ -1,8 +1,8 @@
-import { useTranslation } from 'react-i18next';
-import { X, Eye, EyeOff, RotateCcw } from 'lucide-react';
+import { useTranslation } from "react-i18next";
+import { X, Eye, EyeOff, RotateCcw } from "lucide-react";
 
-import type { WidgetConfig } from '@/hooks/useWidgetPreferences';
-import { Button } from '@/components/ui/button';
+import type { WidgetConfig } from "@/hooks/useWidgetPreferences";
+import { Button } from "@/components/ui/button";
 
 interface WidgetSettingsPanelProps {
   isOpen: boolean;
@@ -21,7 +21,7 @@ export default function WidgetSettingsPanel({
   onReset,
   viewName,
 }: WidgetSettingsPanelProps) {
-  const { t } = useTranslation('dashboard');
+  const { t } = useTranslation("dashboard");
 
   if (!isOpen) return null;
 
@@ -33,8 +33,12 @@ export default function WidgetSettingsPanel({
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-800">
             <div>
-              <h2 className="text-lg text-gray-900 dark:text-white">{t('widget_settings')}</h2>
-              <p className="text-sm text-gray-500 dark:text-gray-400">{viewName}</p>
+              <h2 className="text-lg text-gray-900 dark:text-white">
+                {t("widget_settings")}
+              </h2>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                {viewName}
+              </p>
             </div>
             <button
               onClick={onClose}
@@ -53,10 +57,11 @@ export default function WidgetSettingsPanel({
                 .map((widget) => (
                   <div
                     key={widget.id}
-                    className={`flex items-center justify-between p-4 rounded-lg border transition-colors ${widget.visible
-                        ? 'bg-teal-50 dark:bg-teal-950/20 border-teal-200 dark:border-teal-800'
-                        : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700'
-                      }`}
+                    className={`flex items-center justify-between p-4 rounded-lg border transition-colors ${
+                      widget.visible
+                        ? "bg-teal-50 dark:bg-teal-950/20 border-teal-200 dark:border-teal-800"
+                        : "bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700"
+                    }`}
                   >
                     <div className="flex items-center gap-3">
                       {widget.visible ? (
@@ -64,21 +69,25 @@ export default function WidgetSettingsPanel({
                       ) : (
                         <EyeOff className="w-5 h-5 text-gray-400" />
                       )}
-                      <span className={`text-sm ${widget.visible
-                          ? 'text-gray-900 dark:text-white'
-                          : 'text-gray-500 dark:text-gray-500'
-                        }`}>
+                      <span
+                        className={`text-sm ${
+                          widget.visible
+                            ? "text-gray-900 dark:text-white"
+                            : "text-gray-500 dark:text-gray-500"
+                        }`}
+                      >
                         {widget.name}
                       </span>
                     </div>
                     <button
                       onClick={() => onToggleWidget(widget.id)}
-                      className={`px-3 py-1.5 rounded-md text-xs transition-colors ${widget.visible
-                          ? 'bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300'
-                          : 'bg-teal-600 hover:bg-teal-700 text-white'
-                        }`}
+                      className={`px-3 py-1.5 rounded-md text-xs transition-colors ${
+                        widget.visible
+                          ? "bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300"
+                          : "bg-teal-600 hover:bg-teal-700 text-white"
+                      }`}
                     >
-                      {widget.visible ? 'Hide' : 'Show'}
+                      {widget.visible ? "Hide" : "Show"}
                     </button>
                   </div>
                 ))}

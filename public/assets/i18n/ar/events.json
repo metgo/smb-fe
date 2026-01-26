@@ -100,7 +100,7 @@
   "loading_more_events": "تحميل المزيد من الأحداث...",
 
   "list_view": "عرض القائمة",
-  "grid_view":"شبكة",
+  "grid_view": "شبكة",
   "month_view": "شهر",
   "week_view": "أسبوع",
   "day_view": "يوم",
@@ -178,7 +178,7 @@
   "end_time_required": "وقت الانتهاء مطلوب",
   "marked_price_required": "السعر الأصلي مطلوب",
   "selling_price_required": "سعر البيع مطلوب",
-  "add_more_days": "إضافة أيام أخرى", 
+  "add_more_days": "إضافة أيام أخرى",
 
   "event_images": "صور الحدث",
   "upload_images": "تحميل الصور",
@@ -238,7 +238,7 @@
   "no_registrants_match": "لا يوجد مسجلون يطابقون بحثك",
 
   "search_placeholder": "ابحث عن عنوان...",
-  
+
   "your_images": "صورك",
   "tickets": "تذاكر",
   "registration": "تسجيل",

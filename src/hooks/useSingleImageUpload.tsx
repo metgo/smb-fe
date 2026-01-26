@@ -37,7 +37,7 @@ export const useSingleImageUpload = ({
       status: "success",
       gcsURL: initialImage,
     });
-  }, [initialImage]);
+  }, [initialImage, image]);
 
   /* ---------------- File select ---------------- */
   const handleImageSelect = (file: File) => {
@@ -67,28 +67,28 @@ export const useSingleImageUpload = ({
     if (!image?.file) return;
 
     try {
-      setImage(prev => prev && { ...prev, status: "uploading", progress: 0 });
+      setImage((prev) => prev && { ...prev, status: "uploading", progress: 0 });
 
       const webpFile = await convertToWebP(image.file);
       const { signedUrl, gcsURL } = await generateSignedUrl(webpFile);
 
-      await uploadWithProgress(webpFile, signedUrl, progress => {
-        setImage(prev => prev && { ...prev, progress });
+      await uploadWithProgress(webpFile, signedUrl, (progress) => {
+        setImage((prev) => prev && { ...prev, progress });
       });
 
-      setImage(prev =>
-        prev && {
-          ...prev,
-          status: "success",
-          progress: 100,
-          gcsURL,
-        }
+      setImage(
+        (prev) =>
+          prev && {
+            ...prev,
+            status: "success",
+            progress: 100,
+            gcsURL,
+          },
       );
       toast.success(t("image_upload_success"));
       return gcsURL;
-
     } catch {
-      setImage(prev => prev && { ...prev, status: "error" });
+      setImage((prev) => prev && { ...prev, status: "error" });
       toast.error(t("image_upload_failed"));
       return "";
     }
@@ -103,14 +103,16 @@ export const useSingleImageUpload = ({
     onChange(null);
   };
 
-  const handleDeleteImage = (image: IImageUpload, opMode: TTicketOpMode = "CREATE") => {
+  const handleDeleteImage = (
+    image: IImageUpload,
+    opMode: TTicketOpMode = "CREATE",
+  ) => {
     if (image.status !== "success" || opMode === "DUPLICATE") {
-      removeImage()
+      removeImage();
       return;
     }
-    if (image?.gcsURL)
-      setDeleteTarget(image.gcsURL)
-  }
+    if (image?.gcsURL) setDeleteTarget(image.gcsURL);
+  };
 
   /* ---------------- Delete from GCS ---------------- */
   const confirmDelete = async () => {
@@ -132,7 +134,7 @@ export const useSingleImageUpload = ({
     if (image?.status === "success" && image.gcsURL) {
       onChange({ image: image.gcsURL });
     }
-  }, [image]);
+  }, [image, onChange]);
 
   return {
     image,

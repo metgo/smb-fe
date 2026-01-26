@@ -24,7 +24,7 @@ export default function ConfirmDialog({
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
-  const {t}=useTranslation('common')
+  const { t } = useTranslation("common");
   if (!open) return null;
 
   const variantStyles = {

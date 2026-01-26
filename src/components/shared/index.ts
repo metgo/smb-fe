@@ -9,8 +9,7 @@ import Spinner from "./Spinner";
 import ViewModeToggle from "./ViewModeToggle";
 import WizardFooter from "./WizardFooter";
 
-
-export{
+export {
   Spinner,
   PageStats,
   PageHeader,
@@ -21,5 +20,4 @@ export{
   SelectableChips,
   ImageWithFallback,
   ReordableDataTable,
-  
-}
+};

@@ -1,6 +1,5 @@
-
-type Language = 'en' | 'ar' | 'he';
-type Theme = 'light' | 'dark';
+type Language = "en" | "ar" | "he";
+type Theme = "light" | "dark";
 
 interface Geo {
   lat: string;
@@ -42,7 +41,7 @@ interface IAuthority {
   name: string;
   dmoId: string;
   logoPath?: string;
-};
+}
 
 interface IDmo {
   _id: string;
@@ -50,7 +49,7 @@ interface IDmo {
   imagePath?: string;
   logoPath?: string;
   authorities: Authority[];
-};
+}
 
 interface IDeleteTarget {
   imageUrl: string;
@@ -78,4 +77,3 @@ interface IImage {
   subCoordinates?: SubCoordinates;
 }
 type TImages = IImage[];
-

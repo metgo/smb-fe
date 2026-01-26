@@ -1,14 +1,8 @@
-import { useAppSelector } from '@/hooks/hooks';
-import { useThemeClasses } from '@/hooks/useThemeClasses';
-import clsx from 'clsx';
-import {
-  ArrowLeft,
-  ArrowRight,
-  Loader,
-  Save,
-  CheckCircle,
-} from 'lucide-react';
-import { useTranslation } from 'react-i18next';
+import { useAppSelector } from "@/hooks/hooks";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
+import clsx from "clsx";
+import { ArrowLeft, ArrowRight, Loader, Save, CheckCircle } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 type WizardFooterProps = {
   currentStep: number;
@@ -33,17 +27,16 @@ export default function WizardFooter({
   onSaveDraft,
   onPublish,
 }: WizardFooterProps) {
-  const { t } = useTranslation('common')
-  const { theme, isRTL } = useAppSelector((state) => state.settings)
-  const { rowDir, borderColor } = useThemeClasses()
-
+  const { t } = useTranslation("common");
+  const { theme, isRTL } = useAppSelector((state) => state.settings);
+  const { rowDir, borderColor } = useThemeClasses();
 
   return (
     <div
       className={clsx(
         rowDir,
         borderColor,
-        "flex items-center justify-between p-6 border-t"
+        "flex items-center justify-between p-6 border-t",
       )}
     >
       {/* Left */}
@@ -51,20 +44,21 @@ export default function WizardFooter({
         {currentStep > 1 && (
           <button
             onClick={onPrevious}
-            className={`px-4 py-2 rounded-lg border transition-colors flex items-center gap-2 cursor-pointer ${theme === 'dark'
-              ? 'border-gray-700 hover:bg-gray-800'
-              : 'border-gray-300 hover:bg-gray-100'
-              }`}
+            className={`px-4 py-2 rounded-lg border transition-colors flex items-center gap-2 cursor-pointer ${
+              theme === "dark"
+                ? "border-gray-700 hover:bg-gray-800"
+                : "border-gray-300 hover:bg-gray-100"
+            }`}
           >
             {isRTL ? (
               <>
-                {t('previous')}
+                {t("previous")}
                 <ArrowRight className="w-4 h-4" />
               </>
             ) : (
               <>
                 <ArrowLeft className="w-4 h-4" />
-                {t('previous')}
+                {t("previous")}
               </>
             )}
           </button>
@@ -76,20 +70,21 @@ export default function WizardFooter({
         <button
           onClick={onSaveDraft}
           disabled={isSaving}
-          className={`px-4 py-2 rounded-lg border cursor-pointer transition-colors ${theme === 'dark'
-            ? 'border-gray-700 hover:bg-gray-800'
-            : 'border-gray-300 hover:bg-gray-100'
-            }`}
+          className={`px-4 py-2 rounded-lg border cursor-pointer transition-colors ${
+            theme === "dark"
+              ? "border-gray-700 hover:bg-gray-800"
+              : "border-gray-300 hover:bg-gray-100"
+          }`}
         >
           {isSaving ? (
             <span className="flex items-center gap-2">
               <Loader className="w-4 h-4 animate-spin" />
-              {t('saving')}
+              {t("saving")}
             </span>
           ) : (
             <span className="flex items-center gap-2">
               <Save className="w-4 h-4" />
-              {t('save_draft')}
+              {t("save_draft")}
             </span>
           )}
         </button>
@@ -102,11 +97,11 @@ export default function WizardFooter({
             {isRTL ? (
               <>
                 <ArrowLeft className="w-4 h-4" />
-                {t('next')}
+                {t("next")}
               </>
             ) : (
               <>
-                {t('next')}
+                {t("next")}
                 <ArrowRight className="w-4 h-4" />
               </>
             )}
@@ -120,12 +115,12 @@ export default function WizardFooter({
             {isPublishing ? (
               <>
                 <Loader className="w-4 h-4 animate-spin" />
-                {t('publishing')}
+                {t("publishing")}
               </>
             ) : (
               <>
                 <CheckCircle className="w-4 h-4" />
-                {t('publish')}
+                {t("publish")}
               </>
             )}
           </button>

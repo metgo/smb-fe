@@ -2,9 +2,8 @@ import { createApi } from "@reduxjs/toolkit/query/react";
 import { axiosBaseQuery } from "./axiosBaseQuery";
 import { endpoints } from "@/lib/endpoints";
 
-
 interface Params {
-  locale: Language,
+  locale: Language;
   bussCategoryId?: string;
 }
 
@@ -17,7 +16,7 @@ export const masterDataApi = createApi({
       query: (params) => ({
         url: endpoints.categories,
         method: "GET",
-        params
+        params,
       }),
       providesTags: ["MasterData"],
       keepUnusedDataFor: 60 * 60 * 24,
@@ -27,7 +26,7 @@ export const masterDataApi = createApi({
       query: (params) => ({
         url: endpoints.subCategories,
         method: "GET",
-        params
+        params,
       }),
       providesTags: ["MasterData"],
       keepUnusedDataFor: 60 * 60 * 24,
@@ -37,7 +36,7 @@ export const masterDataApi = createApi({
       query: (params) => ({
         url: endpoints.accessibility,
         method: "GET",
-        params
+        params,
       }),
       providesTags: ["MasterData"],
       keepUnusedDataFor: 60 * 60 * 24,
@@ -47,7 +46,7 @@ export const masterDataApi = createApi({
       query: (params) => ({
         url: endpoints.groupType,
         method: "GET",
-        params
+        params,
       }),
       providesTags: ["MasterData"],
       keepUnusedDataFor: 60 * 60 * 24,
@@ -65,9 +64,9 @@ export const masterDataApi = createApi({
     getAllWebsites: builder.query<Website[], void>({
       query: () => ({
         url: endpoints.websites,
-        method: "GET"
-      })
-    })
+        method: "GET",
+      }),
+    }),
   }),
 });
 

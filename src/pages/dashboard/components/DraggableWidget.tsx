@@ -1,6 +1,6 @@
-import { useRef } from 'react';
-import { useDrag, useDrop } from 'react-dnd';
-import { GripVertical } from 'lucide-react';
+import { useRef } from "react";
+import { useDrag, useDrop } from "react-dnd";
+import { GripVertical } from "lucide-react";
 
 interface DraggableWidgetProps {
   id: string;
@@ -25,7 +25,7 @@ export default function DraggableWidget({
   const ref = useRef<HTMLDivElement>(null);
 
   const [{ isDragging }, drag] = useDrag({
-    type: 'WIDGET',
+    type: "WIDGET",
     item: { id, index },
     canDrag: isEditMode,
     collect: (monitor) => ({
@@ -34,7 +34,7 @@ export default function DraggableWidget({
   });
 
   const [, drop] = useDrop<DragItem>({
-    accept: 'WIDGET',
+    accept: "WIDGET",
     hover: (item) => {
       if (!ref.current) return;
 
@@ -48,7 +48,11 @@ export default function DraggableWidget({
     },
   });
 
-  drop(ref);
+  // ✅ Combine refs using a callback ref
+  const dragDropRef = (node: HTMLDivElement | null) => {
+    ref.current = node;
+    drag(drop(node));
+  };
 
   if (!isEditMode) {
     return <div>{children}</div>;
@@ -56,14 +60,13 @@ export default function DraggableWidget({
 
   return (
     <div
-      ref={ref}
+      ref={dragDropRef}
       className={`relative group transition-all duration-200
-        ${isDragging ? 'opacity-50 scale-95' : 'opacity-100 scale-100'}
+        ${isDragging ? "opacity-50 scale-95" : "opacity-100 scale-100"}
       `}
     >
       {/* Drag Handle */}
       <div
-        ref={(node) => (drag as any)(node)}
         className="absolute -top-4 left-1/2 -translate-x-1/2
                    px-4 py-2 bg-teal-500 hover:bg-teal-600
                    text-white rounded-full cursor-grab
@@ -75,9 +78,11 @@ export default function DraggableWidget({
       </div>
 
       {/* Widget Content */}
-      <div className="ring-2 ring-teal-500 ring-offset-4
+      <div
+        className="ring-2 ring-teal-500 ring-offset-4
                       dark:ring-offset-gray-950
-                      ring-offset-gray-50 rounded-lg">
+                      ring-offset-gray-50 rounded-lg"
+      >
         {children}
       </div>
     </div>

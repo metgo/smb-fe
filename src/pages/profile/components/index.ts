@@ -1,6 +1,3 @@
 import AssignBankAccountModal from "./AssignBankAccountModal";
 
-export{
-  AssignBankAccountModal
-  
-}
+export { AssignBankAccountModal };

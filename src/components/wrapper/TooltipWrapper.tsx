@@ -9,21 +9,22 @@ import type { FC, ReactNode } from "react";
 import { useAppSelector } from "@/hooks/hooks";
 
 interface TooltipWrapperProps {
-  children: ReactNode
+  children: ReactNode;
   infoText: string;
   showToolTip: boolean;
 }
 
-
-const TooltipWrapper: FC<TooltipWrapperProps> = ({ children, infoText, showToolTip }) => {
-  const {theme}=useAppSelector((state)=>state.settings);
+const TooltipWrapper: FC<TooltipWrapperProps> = ({
+  children,
+  infoText,
+  showToolTip,
+}) => {
+  const { theme } = useAppSelector((state) => state.settings);
 
   return (
     <TooltipProvider>
       <Tooltip>
-        <TooltipTrigger asChild>
-          {children}
-        </TooltipTrigger>
+        <TooltipTrigger asChild>{children}</TooltipTrigger>
 
         {showToolTip && (
           <TooltipContent
@@ -31,7 +32,9 @@ const TooltipWrapper: FC<TooltipWrapperProps> = ({ children, infoText, showToolT
             align="center"
             className={clsx(
               "px-6 py-4 shadow-md border border-teal-500 font-semibold",
-              theme==="dark"? "text-white bg-black/60":"text-black bg-white/80"
+              theme === "dark"
+                ? "text-white bg-black/60"
+                : "text-black bg-white/80",
             )}
           >
             <p>{infoText}</p>
@@ -39,8 +42,7 @@ const TooltipWrapper: FC<TooltipWrapperProps> = ({ children, infoText, showToolT
         )}
       </Tooltip>
     </TooltipProvider>
+  );
+};
 
-  )
-}
-
-export default TooltipWrapper
+export default TooltipWrapper;
