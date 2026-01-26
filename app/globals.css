@@ -57,7 +57,7 @@ body,
   /* IE and Edge */
   scrollbar-width: none;
   /* scroll-behavior: auto !important; */
-  overscroll-behavior-y: none;
+  /* overscroll-behavior-y: none; */
 
   /* Firefox */
 }
