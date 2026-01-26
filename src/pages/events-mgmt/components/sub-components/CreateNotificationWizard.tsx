@@ -2,7 +2,6 @@ import { ModalWrapper } from "@/components/wrapper";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { Mail, MessageSquare, Send, Smartphone } from "lucide-react";
 
-
 interface CreateNotificationWizardProps {
   t: (key: string) => string;
   theme: Theme;
@@ -13,11 +12,12 @@ interface CreateNotificationWizardProps {
   capacity?: number;
   editingNotification: NotificationData | null;
   notifications: NotificationData[];
-  setEditingNotification: React.Dispatch<React.SetStateAction<NotificationData | null>>;
+  setEditingNotification: React.Dispatch<
+    React.SetStateAction<NotificationData | null>
+  >;
   setShowNotificationForm: React.Dispatch<React.SetStateAction<boolean>>;
   setNotifications: React.Dispatch<React.SetStateAction<NotificationData[]>>;
 }
-
 
 const CreateNotificationWizard: React.FC<CreateNotificationWizardProps> = ({
   t,
@@ -33,7 +33,6 @@ const CreateNotificationWizard: React.FC<CreateNotificationWizardProps> = ({
   setShowNotificationForm,
   setNotifications,
 }) => {
-
   const { textPrimary, textSecondary, textTertiary } = useThemeClasses();
 
   if (!editingNotification) return;
@@ -47,17 +46,23 @@ const CreateNotificationWizard: React.FC<CreateNotificationWizardProps> = ({
       maxWidth="max-w-2xl"
     >
       <div className=" p-4">
-        <h4 className={`text-lg mb-4 ${textPrimary}`}>{t("configure_notification")}</h4>
-        
+        <h4 className={`text-lg mb-4 ${textPrimary}`}>
+          {t("configure_notification")}
+        </h4>
+
         <div
-          className={`px-6 py-2 space-y-3 max-h-[73vh] overflow-y-auto rounded-lg border ${theme === "dark" ? "border-gray-700 bg-gray-800/50" : "border-gray-200 bg-gray-50"
-            }`}
+          className={`px-6 py-2 space-y-3 max-h-[73vh] overflow-y-auto rounded-lg border ${
+            theme === "dark"
+              ? "border-gray-700 bg-gray-800/50"
+              : "border-gray-200 bg-gray-50"
+          }`}
         >
           <div className="flex items-center gap-4">
             {/* Timing */}
             <div className="flex-1">
               <label className={`block text-sm mb-2 ${textSecondary}`}>
-                {t("send_hours_before_event")} <span className="text-red-500">*</span>
+                {t("send_hours_before_event")}{" "}
+                <span className="text-red-500">*</span>
               </label>
               <input
                 type="number"
@@ -69,10 +74,11 @@ const CreateNotificationWizard: React.FC<CreateNotificationWizardProps> = ({
                     hoursBeforeEvent: parseInt(e.target.value) || 1,
                   })
                 }
-                className={`w-full px-4 py-2 rounded-lg border ${theme === "dark"
-                  ? "bg-gray-800 border-gray-700 text-gray-100"
-                  : "bg-white border-gray-300 text-gray-900"
-                  }`}
+                className={`w-full px-4 py-2 rounded-lg border ${
+                  theme === "dark"
+                    ? "bg-gray-800 border-gray-700 text-gray-100"
+                    : "bg-white border-gray-300 text-gray-900"
+                }`}
               />
             </div>
 
@@ -89,7 +95,10 @@ const CreateNotificationWizard: React.FC<CreateNotificationWizardProps> = ({
                     onChange={(e) =>
                       setEditingNotification({
                         ...editingNotification,
-                        channels: { ...editingNotification.channels, email: e.target.checked },
+                        channels: {
+                          ...editingNotification.channels,
+                          email: e.target.checked,
+                        },
                       })
                     }
                     className="rounded"
@@ -104,7 +113,10 @@ const CreateNotificationWizard: React.FC<CreateNotificationWizardProps> = ({
                     onChange={(e) =>
                       setEditingNotification({
                         ...editingNotification,
-                        channels: { ...editingNotification.channels, sms: e.target.checked },
+                        channels: {
+                          ...editingNotification.channels,
+                          sms: e.target.checked,
+                        },
                       })
                     }
                     className="rounded"
@@ -119,7 +131,10 @@ const CreateNotificationWizard: React.FC<CreateNotificationWizardProps> = ({
                     onChange={(e) =>
                       setEditingNotification({
                         ...editingNotification,
-                        channels: { ...editingNotification.channels, whatsapp: e.target.checked },
+                        channels: {
+                          ...editingNotification.channels,
+                          whatsapp: e.target.checked,
+                        },
                       })
                     }
                     className="rounded"
@@ -134,7 +149,9 @@ const CreateNotificationWizard: React.FC<CreateNotificationWizardProps> = ({
           <div className="flex items-center gap-4">
             {/* Language */}
             <div className="flex-1">
-              <label className={`block text-sm mb-2 ${textSecondary}`}>{t("language")}</label>
+              <label className={`block text-sm mb-2 ${textSecondary}`}>
+                {t("language")}
+              </label>
               <select
                 value={editingNotification.language}
                 onChange={(e) =>
@@ -143,10 +160,11 @@ const CreateNotificationWizard: React.FC<CreateNotificationWizardProps> = ({
                     language: e.target.value as "en" | "he" | "ar",
                   })
                 }
-                className={`w-full px-4 py-2 rounded-lg border ${theme === "dark"
-                  ? "bg-gray-800 border-gray-700 text-gray-100"
-                  : "bg-white border-gray-300 text-gray-900"
-                  }`}
+                className={`w-full px-4 py-2 rounded-lg border ${
+                  theme === "dark"
+                    ? "bg-gray-800 border-gray-700 text-gray-100"
+                    : "bg-white border-gray-300 text-gray-900"
+                }`}
               >
                 <option value="en">{t("english")}</option>
                 <option value="he">{t("hebrew")}</option>
@@ -156,7 +174,9 @@ const CreateNotificationWizard: React.FC<CreateNotificationWizardProps> = ({
 
             {/* Template */}
             <div className="flex-1">
-              <label className={`block text-sm mb-2 ${textSecondary}`}>{t("template")}</label>
+              <label className={`block text-sm mb-2 ${textSecondary}`}>
+                {t("template")}
+              </label>
               <select
                 value={editingNotification.template}
                 onChange={(e) =>
@@ -165,14 +185,17 @@ const CreateNotificationWizard: React.FC<CreateNotificationWizardProps> = ({
                     template: e.target.value,
                   })
                 }
-                className={`w-full px-4 py-2 rounded-lg border ${theme === "dark"
-                  ? "bg-gray-800 border-gray-700 text-gray-100"
-                  : "bg-white border-gray-300 text-gray-900"
-                  }`}
+                className={`w-full px-4 py-2 rounded-lg border ${
+                  theme === "dark"
+                    ? "bg-gray-800 border-gray-700 text-gray-100"
+                    : "bg-white border-gray-300 text-gray-900"
+                }`}
               >
                 <option value="24h-reminder">{t("template_24h")}</option>
                 <option value="same-day">{t("template_same_day")}</option>
-                <option value="starting-soon">{t("template_starting_soon")}</option>
+                <option value="starting-soon">
+                  {t("template_starting_soon")}
+                </option>
               </select>
             </div>
           </div>
@@ -192,16 +215,19 @@ const CreateNotificationWizard: React.FC<CreateNotificationWizardProps> = ({
                 })
               }
               placeholder="Reminder: {{Event Name}} tomorrow at {{Event Time}}"
-              className={`w-full px-4 py-2 rounded-lg border ${theme === "dark"
-                ? "bg-gray-800 border-gray-700 text-gray-100"
-                : "bg-white border-gray-300 text-gray-900"
-                }`}
+              className={`w-full px-4 py-2 rounded-lg border ${
+                theme === "dark"
+                  ? "bg-gray-800 border-gray-700 text-gray-100"
+                  : "bg-white border-gray-300 text-gray-900"
+              }`}
             />
           </div>
 
           {/* Message Content */}
           <div className="">
-            <label className={`block text-sm mb-2 ${textSecondary}`}>{t("message_content")}</label>
+            <label className={`block text-sm mb-2 ${textSecondary}`}>
+              {t("message_content")}
+            </label>
             <textarea
               value={editingNotification.message}
               onChange={(e) =>
@@ -212,40 +238,51 @@ const CreateNotificationWizard: React.FC<CreateNotificationWizardProps> = ({
               }
               placeholder="Hi {{First Name}},\n\nThis is a reminder that {{Event Name}} is happening tomorrow at {{Event Time}}!\n\nVenue: {{Venue}}\n\nYour ticket: {{Ticket QR}}"
               rows={6}
-              className={`w-full px-4 py-2 rounded-lg border ${theme === "dark"
-                ? "bg-gray-800 border-gray-700 text-gray-100"
-                : "bg-white border-gray-300 text-gray-900"
-                }`}
+              className={`w-full px-4 py-2 rounded-lg border ${
+                theme === "dark"
+                  ? "bg-gray-800 border-gray-700 text-gray-100"
+                  : "bg-white border-gray-300 text-gray-900"
+              }`}
             />
             <p className={`text-xs ${textTertiary} mt-2`}>
-              {t("available_variables")}: {"{{ Event Name }}"}, {"{{ Event Date }}"}, {"{{ Event Time }}"}, {"{{ Venue }}"}, {"{{ First Name }}"}, {"{{ Ticket QR }}"}
+              {t("available_variables")}: {"{{ Event Name }}"},{" "}
+              {"{{ Event Date }}"}, {"{{ Event Time }}"}, {"{{ Venue }}"},{" "}
+              {"{{ First Name }}"}, {"{{ Ticket QR }}"}
             </p>
           </div>
           {/* Preview */}
           <div
-            className={`p-4 rounded-lg border mb-4 ${theme === "dark" ? "border-gray-700 bg-gray-900/50" : "border-gray-200 bg-white"
-              }`}
+            className={`p-4 rounded-lg border mb-4 ${
+              theme === "dark"
+                ? "border-gray-700 bg-gray-900/50"
+                : "border-gray-200 bg-white"
+            }`}
           >
-            <div className={`text-sm ${textTertiary} mb-2`}>{t("preview")}:</div>
+            <div className={`text-sm ${textTertiary} mb-2`}>
+              {t("preview")}:
+            </div>
             <div className={`text-sm ${textSecondary}`}>
-              {editingNotification.message.replace(/\{\{([^}]+)\}\}/g, (_, key) => {
-                const mockData: Record<string, string> = {
-                  "Event Name": eventName || "Sample Event",
-                  "Event Date": startDate || "2026-01-15",
-                  "Event Time": eventDays?.[0]?.startTime || "10:00",
-                  Venue: address || "Event Location",
-                  "First Name": "John",
-                  "Ticket QR": "[QR Code]",
-                };
-                return mockData[key.trim()] || key;
-              })}
+              {editingNotification.message.replace(
+                /\{\{([^}]+)\}\}/g,
+                (_, key) => {
+                  const mockData: Record<string, string> = {
+                    "Event Name": eventName || "Sample Event",
+                    "Event Date": startDate || "2026-01-15",
+                    "Event Time": eventDays?.[0]?.startTime || "10:00",
+                    Venue: address || "Event Location",
+                    "First Name": "John",
+                    "Ticket QR": "[QR Code]",
+                  };
+                  return mockData[key.trim()] || key;
+                },
+              )}
             </div>
             <div className={`text-xs ${textTertiary} mt-2`}>
               {t("recipient_count")}: {capacity || 100} {t("ticket_holders")}
             </div>
           </div>
         </div>
-       
+
         {/* Actions */}
         <div className="flex justify-end gap-3 mt-2">
           <button
@@ -253,17 +290,26 @@ const CreateNotificationWizard: React.FC<CreateNotificationWizardProps> = ({
               setShowNotificationForm(false);
               setEditingNotification(null);
             }}
-            className={`px-4 py-2 rounded-lg border transition-colors ${theme === "dark" ? "border-gray-700 hover:bg-gray-800" : "border-gray-300 hover:bg-gray-100"
-              }`}
+            className={`px-4 py-2 rounded-lg border transition-colors ${
+              theme === "dark"
+                ? "border-gray-700 hover:bg-gray-800"
+                : "border-gray-300 hover:bg-gray-100"
+            }`}
           >
             {t("cancel")}
           </button>
           <button
             onClick={() => {
-              if (!editingNotification.channels.email && !editingNotification.channels.sms && !editingNotification.channels.whatsapp) {
+              if (
+                !editingNotification.channels.email &&
+                !editingNotification.channels.sms &&
+                !editingNotification.channels.whatsapp
+              ) {
                 return;
               }
-              const existingIndex = notifications.findIndex((n) => n._id === editingNotification._id);
+              const existingIndex = notifications.findIndex(
+                (n) => n._id === editingNotification._id,
+              );
               if (existingIndex >= 0) {
                 const updated = [...notifications];
                 updated[existingIndex] = editingNotification;
@@ -281,9 +327,8 @@ const CreateNotificationWizard: React.FC<CreateNotificationWizardProps> = ({
           </button>
         </div>
       </div>
-
     </ModalWrapper>
-  )
-}
+  );
+};
 
-export default CreateNotificationWizard
+export default CreateNotificationWizard;

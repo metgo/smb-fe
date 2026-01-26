@@ -3,28 +3,26 @@ import { axiosBaseQuery } from "./axiosBaseQuery";
 import { endpoints } from "@/lib/endpoints";
 
 export const distrbOverviewApi = createApi({
-  reducerPath: 'distrbOverviewApi',
+  reducerPath: "distrbOverviewApi",
   baseQuery: axiosBaseQuery(),
-  tagTypes: ['Distribution'],
+  tagTypes: ["Distribution"],
   endpoints: (builder) => ({
     getPopularBusiness: builder.query<any, void>({
       query: () => ({
         url: endpoints.popularBusiness,
-        method: 'GET',
+        method: "GET",
       }),
-      providesTags: ['Distribution'],
+      providesTags: ["Distribution"],
     }),
     getPopularProducts: builder.query<any, void>({
       query: () => ({
         url: endpoints.popularProducts,
-        method: 'GET',
+        method: "GET",
       }),
-      providesTags: ['Distribution'],
-    })
-  })
-})
+      providesTags: ["Distribution"],
+    }),
+  }),
+});
 
-export const {
-  useGetPopularProductsQuery,
-  useGetPopularBusinessQuery,
-} = distrbOverviewApi
+export const { useGetPopularProductsQuery, useGetPopularBusinessQuery } =
+  distrbOverviewApi;

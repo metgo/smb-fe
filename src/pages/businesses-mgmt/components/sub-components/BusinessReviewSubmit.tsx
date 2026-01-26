@@ -26,17 +26,26 @@ interface BusinessReviewSubmitProps {
   t: (key: string) => string;
 }
 
-const BusinessReviewSubmit: FC<BusinessReviewSubmitProps> = ({ theme, formData, errors, t }) => {
+const BusinessReviewSubmit: FC<BusinessReviewSubmitProps> = ({
+  theme,
+  formData,
+  errors,
+  t,
+}) => {
   return (
     <div className="space-y-6">
       {/* Review Header */}
       <div
         className={`p-4 rounded-lg ${
-          theme === "dark" ? "bg-green-900/20 border border-green-800" : "bg-green-50 border border-green-200"
+          theme === "dark"
+            ? "bg-green-900/20 border border-green-800"
+            : "bg-green-50 border border-green-200"
         }`}
       >
         <CheckCircle className="w-8 h-8 text-green-600 mb-2" />
-        <h3 className={`mb-2 ${theme === "dark" ? "text-green-400" : "text-green-800"}`}>
+        <h3
+          className={`mb-2 ${theme === "dark" ? "text-green-400" : "text-green-800"}`}
+        >
           {t("review_your_business")}
         </h3>
         <p className={theme === "dark" ? "text-green-300" : "text-green-900"}>
@@ -48,10 +57,14 @@ const BusinessReviewSubmit: FC<BusinessReviewSubmitProps> = ({ theme, formData, 
       {Object.keys(errors).length > 0 && (
         <div
           className={`p-4 rounded-lg ${
-            theme === "dark" ? "bg-red-900/20 border border-red-800" : "bg-red-50 border border-red-200"
+            theme === "dark"
+              ? "bg-red-900/20 border border-red-800"
+              : "bg-red-50 border border-red-200"
           }`}
         >
-          <h4 className={`mb-2 ${theme === "dark" ? "text-red-400" : "text-red-800"}`}>
+          <h4
+            className={`mb-2 ${theme === "dark" ? "text-red-400" : "text-red-800"}`}
+          >
             {t("missing_mandatory_fields")}
           </h4>
           <ul
@@ -74,10 +87,14 @@ const BusinessReviewSubmit: FC<BusinessReviewSubmitProps> = ({ theme, formData, 
       {/* Summary Section */}
       <div
         className={`p-4 rounded-lg ${
-          theme === "dark" ? "bg-gray-800/50 border border-gray-700" : "bg-gray-50 border border-gray-200"
+          theme === "dark"
+            ? "bg-gray-800/50 border border-gray-700"
+            : "bg-gray-50 border border-gray-200"
         }`}
       >
-        <h4 className={`mb-3 ${theme === "dark" ? "text-gray-200" : "text-gray-800"}`}>
+        <h4
+          className={`mb-3 ${theme === "dark" ? "text-gray-200" : "text-gray-800"}`}
+        >
           {t("basic_information")}
         </h4>
         <div className="space-y-2">

@@ -1,8 +1,13 @@
-import { useState } from 'react';
+import { useState } from "react";
 import {
-  X, Check,
-  Image as ImageIcon, Globe, Package, Truck, Eye
-} from 'lucide-react';
+  X,
+  Check,
+  Image as ImageIcon,
+  Globe,
+  Package,
+  Truck,
+  Eye,
+} from "lucide-react";
 import {
   ProductAttributes,
   ProductBasicInfo,
@@ -10,13 +15,13 @@ import {
   ProductMedia,
   ProductMultilingualContent,
   ProductPricingAvailability,
-  ProductReviewSubmit
-} from './sub-components';
-import { useTranslation } from 'react-i18next';
-import { useAppSelector } from '@/hooks/hooks';
-import { WizardFooter } from '@/components/shared';
-import { useThemeClasses } from '@/hooks/useThemeClasses';
-import { toast } from 'sonner';
+  ProductReviewSubmit,
+} from "./sub-components";
+import { useTranslation } from "react-i18next";
+import { useAppSelector } from "@/hooks/hooks";
+import { WizardFooter } from "@/components/shared";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { toast } from "sonner";
 
 interface ProductWizardProps {
   onClose: () => void;
@@ -27,95 +32,115 @@ interface ProductWizardProps {
 export default function CreateProductWizard({
   onClose,
   editingProduct,
-  preSelectedBusinessName
+  preSelectedBusinessName,
 }: ProductWizardProps) {
-  const { t, i18n } = useTranslation('product');
-  const { theme } = useAppSelector(state => state.settings);
+  const { t, i18n } = useTranslation("product");
+  const { theme } = useAppSelector((state) => state.settings);
 
-  const language = i18n.language as Language
+  const language = i18n.language as Language;
 
   const [currentStep, setCurrentStep] = useState(1);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [selectedFormLanguage, setSelectedFormLanguage] = useState<'en' | 'he' | 'ar'>('en');
+  const [selectedFormLanguage, setSelectedFormLanguage] = useState<
+    "en" | "he" | "ar"
+  >("en");
   const [isSaving, setIsSaving] = useState(false); // unused but kept
   const [isPublishing, _setIsPublishing] = useState(false); // unused but kept
 
   const businesses = [
-    { id: 'biz-1', name: 'Desert Lodge Hotel' },
-    { id: 'biz-2', name: 'Ramon Crater Restaurant' },
-    { id: 'biz-3', name: 'Negev Adventure Tours' },
-    { id: 'biz-4', name: "Be'er Sheva Wellness Spa" },
-    { id: 'biz-5', name: 'Sderot Artisan Market' },
+    { id: "biz-1", name: "Desert Lodge Hotel" },
+    { id: "biz-2", name: "Ramon Crater Restaurant" },
+    { id: "biz-3", name: "Negev Adventure Tours" },
+    { id: "biz-4", name: "Be'er Sheva Wellness Spa" },
+    { id: "biz-5", name: "Sderot Artisan Market" },
   ];
 
   const preSelectedBusinessId = preSelectedBusinessName
-    ? businesses.find(b => b.name === preSelectedBusinessName)?.id || ''
-    : '';
+    ? businesses.find((b) => b.name === preSelectedBusinessName)?.id || ""
+    : "";
 
   const [formData, setFormData] = useState<ProductFormData>(
     editingProduct || {
       businessId: preSelectedBusinessId,
-      name: { en: '', he: '', ar: '' },
-      shortDescription: { en: '', he: '', ar: '' },
-      fullDescription: { en: '', he: '', ar: '' },
-      type: '',
+      name: { en: "", he: "", ar: "" },
+      shortDescription: { en: "", he: "", ar: "" },
+      fullDescription: { en: "", he: "", ar: "" },
+      type: "",
       categories: [],
-      markedPrice: '',
-      sellingPrice: '',
-      quantity: '',
+      markedPrice: "",
+      sellingPrice: "",
+      quantity: "",
       isUnlimited: false,
-      startDate: '',
-      endDate: '',
+      startDate: "",
+      endDate: "",
       mainImage: null,
       additionalImages: [],
       enableHomeDelivery: false,
       enableStorePickup: false,
-      deliveryFee: '',
-      deliveryTime: '',
-      serviceDuration: '',
-      serviceLocation: ''
-    }
+      deliveryFee: "",
+      deliveryTime: "",
+      serviceDuration: "",
+      serviceLocation: "",
+    },
   );
 
   const availableCategories = [
-    'Food & Dining', 'Accommodation', 'Tours & Activities',
-    'Shopping', 'Wellness & Spa', 'Entertainment'
+    "Food & Dining",
+    "Accommodation",
+    "Tours & Activities",
+    "Shopping",
+    "Wellness & Spa",
+    "Entertainment",
   ];
 
-  const { bgSecondary, bgTertiary, textPrimary, textSecondary, textTertiary, borderColor, hoverBg } = useThemeClasses();
+  const {
+    bgSecondary,
+    bgTertiary,
+    textPrimary,
+    textSecondary,
+    textTertiary,
+    borderColor,
+    hoverBg,
+  } = useThemeClasses();
 
   const steps = [
-    { number: 1, title: t('product_basic_info'), icon: Package },
-    { number: 2, title: t('product_type_category'), icon: Package },
-    { number: 3, title: t('product_pricing'), icon: Package },
-    { number: 4, title: t('product_media'), icon: ImageIcon },
-    { number: 5, title: t('product_multilingual'), icon: Globe },
-    { number: 6, title: t('product_delivery_service'), icon: Truck },
-    { number: 7, title: t('product_review'), icon: Eye }
+    { number: 1, title: t("product_basic_info"), icon: Package },
+    { number: 2, title: t("product_type_category"), icon: Package },
+    { number: 3, title: t("product_pricing"), icon: Package },
+    { number: 4, title: t("product_media"), icon: ImageIcon },
+    { number: 5, title: t("product_multilingual"), icon: Globe },
+    { number: 6, title: t("product_delivery_service"), icon: Truck },
+    { number: 7, title: t("product_review"), icon: Eye },
   ];
 
   const validateStep = (step: number): boolean => {
     const newErrors: Record<string, string> = {};
     switch (step) {
       case 1:
-        if (!formData.businessId) newErrors.businessId = t('field_required');
-        if (!formData.name.en) newErrors.nameEn = t('field_required');
-        if (!formData.shortDescription.en) newErrors.shortDescEn = t('field_required');
+        if (!formData.businessId) newErrors.businessId = t("field_required");
+        if (!formData.name.en) newErrors.nameEn = t("field_required");
+        if (!formData.shortDescription.en)
+          newErrors.shortDescEn = t("field_required");
         break;
       case 2:
-        if (!formData.type) newErrors.type = t('field_required');
-        if (formData.categories.length === 0) newErrors.categories = t('select_at_least_one_category');
+        if (!formData.type) newErrors.type = t("field_required");
+        if (formData.categories.length === 0)
+          newErrors.categories = t("select_at_least_one_category");
         break;
       case 3:
         if (!formData.sellingPrice || parseFloat(formData.sellingPrice) <= 0) {
-          newErrors.sellingPrice = t('invalid_price');
+          newErrors.sellingPrice = t("invalid_price");
         }
-        if (!formData.isUnlimited && (!formData.quantity || parseInt(formData.quantity) < 0)) {
-          newErrors.quantity = t('invalid_quantity');
+        if (
+          !formData.isUnlimited &&
+          (!formData.quantity || parseInt(formData.quantity) < 0)
+        ) {
+          newErrors.quantity = t("invalid_quantity");
         }
         break;
       case 4:
-        if (!formData.mainImage) newErrors.mainImage = t('upload_at_least_one_image');
+        if (!formData.mainImage)
+          newErrors.mainImage = t("upload_at_least_one_image");
         break;
     }
     setErrors(newErrors);
@@ -132,9 +157,7 @@ export default function CreateProductWizard({
     if (currentStep > 1) setCurrentStep(currentStep - 1);
   };
 
-  const handleSubmit = () => {
-  ;
-  };
+  const handleSubmit = () => {};
 
   // Last saved timestamp
   const [_lastSaved, setLastSaved] = useState<Date | null>(null);
@@ -194,22 +217,24 @@ export default function CreateProductWizard({
       setIsSaving(false);
       setLastSaved(new Date());
 
-      toast.success(t('product_saved_as_draft'));
+      toast.success(t("product_saved_as_draft"));
     } catch (error: any) {
       setIsSaving(false);
-      toast.error(error?.message || t('something_went_wrong'));
+      toast.error(error?.message || t("something_went_wrong"));
     }
   };
 
-
-  const handleImageUpload = (file: File, type: 'main' | 'additional') => {
+  const handleImageUpload = (file: File, type: "main" | "additional") => {
     const reader = new FileReader();
     reader.onloadend = () => {
       const imageUrl = reader.result as string;
-      if (type === 'main') {
+      if (type === "main") {
         setFormData({ ...formData, mainImage: imageUrl });
       } else {
-        setFormData({ ...formData, additionalImages: [...formData.additionalImages, imageUrl] });
+        setFormData({
+          ...formData,
+          additionalImages: [...formData.additionalImages, imageUrl],
+        });
       }
     };
     reader.readAsDataURL(file);
@@ -227,7 +252,7 @@ export default function CreateProductWizard({
       setSelectedFormLanguage,
       handleImageUpload,
       availableCategories,
-      businesses
+      businesses,
     };
 
     switch (currentStep) {
@@ -252,15 +277,20 @@ export default function CreateProductWizard({
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className={`${bgSecondary} rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden shadow-2xl flex flex-col`}>
+      <div
+        className={`${bgSecondary} rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden shadow-2xl flex flex-col`}
+      >
         {/* Header */}
-        <div className={`p-6 border-b ${borderColor} flex items-center justify-between`}>
+        <div
+          className={`p-6 border-b ${borderColor} flex items-center justify-between`}
+        >
           <div>
             <h2 className={`text-2xl ${textPrimary} mb-1`}>
-              {editingProduct ? t('edit_product') : t('create_product')}
+              {editingProduct ? t("edit_product") : t("create_product")}
             </h2>
             <p className={`text-sm ${textTertiary}`}>
-              {t('step')} {currentStep} {t('step_of')} 7: {steps[currentStep - 1].title}
+              {t("step")} {currentStep} {t("step_of")} 7:{" "}
+              {steps[currentStep - 1].title}
             </p>
           </div>
           <button
@@ -278,17 +308,24 @@ export default function CreateProductWizard({
               <div key={step.number} className="flex-1">
                 <div className="flex items-center">
                   <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-all ${currentStep === step.number
-                      ? 'bg-teal-500 text-white'
-                      : currentStep > step.number
-                        ? 'bg-green-500 text-white'
-                        : `${bgTertiary} ${textTertiary}`
-                      }`}
+                    className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-all ${
+                      currentStep === step.number
+                        ? "bg-teal-500 text-white"
+                        : currentStep > step.number
+                          ? "bg-green-500 text-white"
+                          : `${bgTertiary} ${textTertiary}`
+                    }`}
                   >
-                    {currentStep > step.number ? <Check className="w-4 h-4" /> : step.number}
+                    {currentStep > step.number ? (
+                      <Check className="w-4 h-4" />
+                    ) : (
+                      step.number
+                    )}
                   </div>
                   {idx < steps.length - 1 && (
-                    <div className={`flex-1 h-1 mx-2 ${currentStep > step.number ? 'bg-green-500' : bgTertiary}`} />
+                    <div
+                      className={`flex-1 h-1 mx-2 ${currentStep > step.number ? "bg-green-500" : bgTertiary}`}
+                    />
                   )}
                 </div>
               </div>
@@ -297,9 +334,7 @@ export default function CreateProductWizard({
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6">
-          {renderStepContent()}
-        </div>
+        <div className="flex-1 overflow-y-auto p-6">{renderStepContent()}</div>
 
         <WizardFooter
           currentStep={currentStep}

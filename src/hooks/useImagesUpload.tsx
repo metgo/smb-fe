@@ -3,34 +3,35 @@ import { useTranslation } from "react-i18next";
 import { useEffect, useRef, useState } from "react";
 
 import { convertToWebP, uploadWithProgress } from "@/helpers";
-import { useCreateSignedUrlMutation, useDeleteMediaMutation } from "@/store/api/mediaMutationApi";
+import {
+  useCreateSignedUrlMutation,
+  useDeleteMediaMutation,
+} from "@/store/api/mediaMutationApi";
 
 interface UseImagesUploadProps {
   initialImages?: IImage[];
   onChange: (images: TImages) => void;
 }
 
-
 export const useImagesUpload = ({
   initialImages = [],
   onChange,
 }: UseImagesUploadProps) => {
-  const { t } = useTranslation('common')
+  const { t } = useTranslation("common");
   const [createSignedUrl] = useCreateSignedUrlMutation();
-  const [deleteMedia, { isLoading: isImageDeleting }] = useDeleteMediaMutation()
+  const [deleteMedia, { isLoading: isImageDeleting }] =
+    useDeleteMediaMutation();
 
   const imagesRef = useRef<HTMLDivElement>(null);
   const [images, setImages] = useState<IImageUpload[]>([]);
   const [primaryImageIndex, setPrimaryImageIndex] = useState(0);
   const [deleteTarget, setDeleteTarget] = useState<IDeleteTarget | null>(null);
 
-
-
   /* ---------------- Hydrate existing images ---------------- */
   useEffect(() => {
     if (!initialImages?.length || images?.length) return;
 
-    const hasPrimary = initialImages?.some(img => img.isPrimary);
+    const hasPrimary = initialImages?.some((img) => img.isPrimary);
 
     const hydrated = initialImages?.map((img, index) => ({
       id: Date.now() + index,
@@ -42,11 +43,8 @@ export const useImagesUpload = ({
     }));
 
     setImages(hydrated);
-    setPrimaryImageIndex(
-      hydrated.findIndex(i => i.isPrimary) || 0
-    );
-  }, [initialImages]);
-
+    setPrimaryImageIndex(hydrated.findIndex((i) => i.isPrimary) || 0);
+  }, [initialImages, images?.length]);
 
   /* ---------------- File select ---------------- */
   const handleImageUpload = (files: FileList) => {
@@ -59,12 +57,15 @@ export const useImagesUpload = ({
       isPrimary: false,
     }));
 
-    setImages(prev => [...prev, ...newImages]);
+    setImages((prev) => [...prev, ...newImages]);
     imagesRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   /* ---------------- Signed URL ---------------- */
-  const generateSignedUrl = async (imageFile: { name: string, type: string }) => {
+  const generateSignedUrl = async (imageFile: {
+    name: string;
+    type: string;
+  }) => {
     const res = await createSignedUrl([
       {
         originalName: imageFile!.name,
@@ -77,43 +78,39 @@ export const useImagesUpload = ({
 
   /* ---------------- Upload single ---------------- */
   const uploadImage = async (id: number) => {
-    const image = images.find(i => i.id === id);
+    const image = images.find((i) => i.id === id);
     if (!image?.file) return;
-    toast.info(t('image_upload_info'))
+    toast.info(t("image_upload_info"));
 
     try {
-      setImages(prev =>
-        prev.map(img =>
-          img.id === id ? { ...img, status: "uploading", progress: 0 } : img
-        )
+      setImages((prev) =>
+        prev.map((img) =>
+          img.id === id ? { ...img, status: "uploading", progress: 0 } : img,
+        ),
       );
 
-      const webpFile = await convertToWebP(image.file)
+      const webpFile = await convertToWebP(image.file);
       const { signedUrl, gcsURL } = await generateSignedUrl(webpFile);
 
       await uploadWithProgress(webpFile, signedUrl, (progress) => {
-        setImages(prev =>
-          prev.map(img =>
-            img.id === id ? { ...img, progress } : img
-          )
+        setImages((prev) =>
+          prev.map((img) => (img.id === id ? { ...img, progress } : img)),
         );
       });
 
-      setImages(prev =>
-        prev.map(img =>
+      setImages((prev) =>
+        prev.map((img) =>
           img.id === id
             ? { ...img, status: "success", progress: 100, gcsURL }
-            : img
-        )
+            : img,
+        ),
       );
 
       toast.success("Image uploaded successfully");
     } catch {
       toast.error("Image upload failed");
-      setImages(prev =>
-        prev.map(img =>
-          img.id === id ? { ...img, status: "error" } : img
-        )
+      setImages((prev) =>
+        prev.map((img) => (img.id === id ? { ...img, status: "error" } : img)),
       );
     }
   };
@@ -130,14 +127,14 @@ export const useImagesUpload = ({
   /* ---------------- Primary image ---------------- */
   const setPrimaryImage = (index: number) => {
     setPrimaryImageIndex(index);
-    setImages(prev =>
-      prev.map((img, i) => ({ ...img, isPrimary: i === index }))
+    setImages((prev) =>
+      prev.map((img, i) => ({ ...img, isPrimary: i === index })),
     );
   };
 
   /* ---------------- Remove image ---------------- */
   const removeImage = (index: number) => {
-    setImages(prev => {
+    setImages((prev) => {
       const img = prev[index];
       if (img?.previewUrl?.startsWith("blob:")) {
         URL.revokeObjectURL(img.previewUrl);
@@ -153,8 +150,7 @@ export const useImagesUpload = ({
       removeImage(index);
       return;
     }
-    if (image?.gcsURL)
-      setDeleteTarget({ imageUrl: image.gcsURL, index })
+    if (image?.gcsURL) setDeleteTarget({ imageUrl: image.gcsURL, index });
   };
 
   /*--------------- Delete Image File from Storage - If already uploaded ------------------ */
@@ -175,14 +171,14 @@ export const useImagesUpload = ({
   /* ---------------- Sync payload ---------------- */
   useEffect(() => {
     const payload: TImages = images
-      .filter(img => img.status === "success")
-      .map(img => ({
+      .filter((img) => img.status === "success")
+      .map((img) => ({
         image: img.gcsURL!,
         isPrimary: img.isPrimary,
       }));
 
     onChange(payload);
-  }, [images]);
+  }, [images, onChange]);
 
   return {
     images,

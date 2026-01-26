@@ -39,69 +39,6 @@ const MarkerMap = ({ setGeo, setAddress, address, geo }: MarkerMapProps) => {
   const [suggestions, setSuggestions] = useState<PlaceSuggestion[]>([]);
   const [_isMapLoaded, _setIsMapLoaded] = useState<boolean>(false);
 
-  /* ---------------- Effects ---------------- */
-
-  useEffect(() => {
-    if (address) setInputValue(address);
-  }, [address]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    const script = document.createElement("script");
-    script.src = `${endpoints.googleMap}?key=${envKeys.googleMapApiKey}&language=${locale}`;
-    script.async = true;
-
-    script.onload = () => {
-      initializeMap();
-    };
-
-    document.body.appendChild(script);
-    scriptRef.current = script;
-
-    return () => {
-      if (scriptRef.current) {
-        document.body.removeChild(scriptRef.current);
-      }
-    };
-  }, [locale]);
-
-  /* ---------------- Map Init ---------------- */
-
-  const initializeMap = (): void => {
-    if (!mapRef.current || !window.google?.maps) return;
-
-    const defaultCenter = { lat: 31.304167, lng: 34.521977 };
-
-    const lat = parseFloat(geo?.lat);
-    const lng = parseFloat(geo?.lng);
-
-    const center = !isNaN(lat) && !isNaN(lng) ? { lat, lng } : defaultCenter;
-
-    const googleMap = new window.google.maps.Map(mapRef.current, {
-      center,
-      zoom: 10,
-      mapTypeControl: false,
-      streetViewControl: false,
-      zoomControl: false,
-      fullscreenControl: true,
-      gestureHandling: "greedy",
-      styles: googlePointOfInterest,
-    });
-
-    setMap(googleMap);
-
-    placeMarker(center.lat, center.lng, googleMap);
-
-    googleMap.addListener("dblclick", (e: any) => {
-      if (!e.latLng) return;
-      const lat = e.latLng.lat();
-      const lng = e.latLng.lng();
-      placeMarker(lat, lng, googleMap);
-      fetchAddress(lat, lng);
-    });
-  };
-
   /* ---------------- Helpers ---------------- */
 
   const placeMarker = (lat: number, lng: number, googleMap: any): void => {
@@ -146,8 +83,69 @@ const MarkerMap = ({ setGeo, setAddress, address, geo }: MarkerMapProps) => {
     );
   };
 
-  /* ---------------- Handlers ---------------- */
+  /* ---------------- Effects ---------------- */
 
+  useEffect(() => {
+    if (address) setInputValue(address);
+  }, [address]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const initializeMap = (): void => {
+      if (!mapRef.current || !window.google?.maps) return;
+
+      const defaultCenter = { lat: 31.304167, lng: 34.521977 };
+
+      const lat = parseFloat(geo?.lat);
+      const lng = parseFloat(geo?.lng);
+
+      const center = !isNaN(lat) && !isNaN(lng) ? { lat, lng } : defaultCenter;
+
+      const googleMap = new window.google.maps.Map(mapRef.current, {
+        center,
+        zoom: 10,
+        mapTypeControl: false,
+        streetViewControl: false,
+        zoomControl: false,
+        fullscreenControl: true,
+        gestureHandling: "greedy",
+        styles: googlePointOfInterest,
+      });
+
+      setMap(googleMap);
+
+      placeMarker(center.lat, center.lng, googleMap);
+
+      googleMap.addListener("dblclick", (e: any) => {
+        if (!e.latLng) return;
+        const lat = e.latLng.lat();
+        const lng = e.latLng.lng();
+        placeMarker(lat, lng, googleMap);
+        fetchAddress(lat, lng);
+      });
+    };
+
+    const script = document.createElement("script");
+    script.src = `${endpoints.googleMap}?key=${envKeys.googleMapApiKey}&language=${locale}`;
+    script.async = true;
+
+    script.onload = () => {
+      initializeMap();
+    };
+
+    document.body.appendChild(script);
+    scriptRef.current = script;
+
+    return () => {
+      if (scriptRef.current) {
+        document.body.removeChild(scriptRef.current);
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [locale]);
+
+  /* ---------------- Handlers ---------------- */
   const handleInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setInputValue(value);

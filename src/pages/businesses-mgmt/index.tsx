@@ -1,52 +1,51 @@
-import { useState } from 'react';
+import { useState } from "react";
 
-import { useAppSelector } from '@/hooks/hooks';
+import { useAppSelector } from "@/hooks/hooks";
 
-import BusinessDetails from './details';
-import { BusinessesList, CreateBusinessWizard } from './components';
-import { useNavigate } from 'react-router-dom';
+import BusinessDetails from "./details";
+import { BusinessesList, CreateBusinessWizard } from "./components";
+import { useNavigate } from "react-router-dom";
 
-
-type View = 'list' | 'details' | 'create' | 'edit';
+type View = "list" | "details" | "create" | "edit";
 
 export default function BusinessesMgmtPage() {
   const navigate = useNavigate();
-  const [currentView, setCurrentView] = useState<View>('list');
+  const [currentView, setCurrentView] = useState<View>("list");
   const [selectedBusiness, setSelectedBusiness] = useState<any | null>(null);
-  const { theme } = useAppSelector((state) => state.settings)
-
+  const { theme } = useAppSelector((state) => state.settings);
 
   const handleBusinessClick = (business: any) => {
     setSelectedBusiness(business);
-    navigate(`?businessId=${business?._id}&businessSlug=${business?.slug}`, { replace: true })
-    setCurrentView('details');
+    navigate(`?businessId=${business?._id}&businessSlug=${business?.slug}`, {
+      replace: true,
+    });
+    setCurrentView("details");
   };
 
   const handleCreateNew = () => {
     setSelectedBusiness(null);
-    setCurrentView('create');
+    setCurrentView("create");
   };
 
   const handleEdit = () => {
-    setCurrentView('edit');
+    setCurrentView("edit");
   };
 
   const handleBackToList = () => {
-    setCurrentView('list');
+    setCurrentView("list");
     setSelectedBusiness(null);
   };
 
   const handleCloseWizard = () => {
-    setCurrentView('list');
+    setCurrentView("list");
     setSelectedBusiness(null);
   };
 
-  const handleCreateProduct = () => {
-  };
+  const handleCreateProduct = () => {};
 
   return (
     <>
-      {currentView === 'list' && (
+      {currentView === "list" && (
         <BusinessesList
           theme={theme}
           onBusinessClick={handleBusinessClick}
@@ -54,7 +53,7 @@ export default function BusinessesMgmtPage() {
         />
       )}
 
-      {currentView === 'details' && selectedBusiness && (
+      {currentView === "details" && selectedBusiness && (
         <BusinessDetails
           onEdit={handleEdit}
           onBack={handleBackToList}
@@ -62,10 +61,8 @@ export default function BusinessesMgmtPage() {
         />
       )}
 
-      {(currentView === 'create' || currentView === 'edit') && (
-        <CreateBusinessWizard
-          onClose={handleCloseWizard}
-        />
+      {(currentView === "create" || currentView === "edit") && (
+        <CreateBusinessWizard onClose={handleCloseWizard} />
       )}
     </>
   );

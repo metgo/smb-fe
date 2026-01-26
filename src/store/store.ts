@@ -13,10 +13,10 @@ import { masterDataApi } from "./api/masterDataApi";
 import { eventMutationApi } from "./api/eventMutationApi";
 import { businessMutationApi } from "./api/businessMutationApi";
 import { businessQueryApi } from "./api/businessQueryApi";
-import { eventQueryApi } from "./api/eventQueryApi"
-import { userMutationApi } from "./api/userMutationApi"
-import { userQueryApi } from "./api/userQueryApi"
-import { mediaMutationApi } from "./api/mediaMutationApi"
+import { eventQueryApi } from "./api/eventQueryApi";
+import { userMutationApi } from "./api/userMutationApi";
+import { userQueryApi } from "./api/userQueryApi";
+import { mediaMutationApi } from "./api/mediaMutationApi";
 
 export const store = configureStore({
   reducer: {
@@ -31,10 +31,10 @@ export const store = configureStore({
     [distrbOverviewApi.reducerPath]: distrbOverviewApi.reducer,
     [itemStatsApi.reducerPath]: itemStatsApi.reducer,
     [businessMutationApi.reducerPath]: businessMutationApi.reducer,
-    [masterDataApi.reducerPath]:masterDataApi.reducer,
-    [userMutationApi.reducerPath]:userMutationApi.reducer,
-    [eventMutationApi.reducerPath]:eventMutationApi.reducer,
-    [mediaMutationApi.reducerPath]:mediaMutationApi.reducer,
+    [masterDataApi.reducerPath]: masterDataApi.reducer,
+    [userMutationApi.reducerPath]: userMutationApi.reducer,
+    [eventMutationApi.reducerPath]: eventMutationApi.reducer,
+    [mediaMutationApi.reducerPath]: mediaMutationApi.reducer,
 
     [businessQueryApi.reducerPath]: businessQueryApi.reducer,
     [eventQueryApi.reducerPath]: eventQueryApi.reducer,
@@ -54,7 +54,6 @@ export const store = configureStore({
       userQueryApi.middleware,
       businessQueryApi.middleware,
       mediaMutationApi.middleware,
-
     ),
 });
 

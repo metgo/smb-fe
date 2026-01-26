@@ -13,5 +13,5 @@ export {
   ProductMedia,
   ProductMultilingualContent,
   ProductPricingAvailability,
-  ProductReviewSubmit
-}
+  ProductReviewSubmit,
+};

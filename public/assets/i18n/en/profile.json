@@ -7,9 +7,9 @@
   "account_number": "Account Number",
   "bn_number": "BN Number",
   "name_on_invoice": "Name on Invoice",
-  "cancel":"Cancel",
-  "save":"Save",
-  
+  "cancel": "Cancel",
+  "save": "Save",
+
   "logout": "Logout",
   "contact_information": "Contact Information",
   "email": "Email",

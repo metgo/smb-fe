@@ -11,14 +11,14 @@ interface SelectFieldProps {
   selectInputClasses: string;
 }
 
- const SelectField = ({
+const SelectField = ({
   value,
   onChange,
   options,
   placeholder,
   error,
   fieldRef,
-  selectInputClasses
+  selectInputClasses,
 }: SelectFieldProps) => {
   return (
     <div ref={fieldRef} className="relative">
@@ -28,11 +28,11 @@ interface SelectFieldProps {
         className={clsx(
           "appearance-none h-12 w-full border rounded-lg px-4 py-2 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500",
           selectInputClasses,
-          error && "border-red-500"
+          error && "border-red-500",
         )}
       >
         <option value="">{placeholder}</option>
-        {options.map(opt => (
+        {options.map((opt) => (
           <option key={opt.value} value={opt.value}>
             {opt.label}
           </option>
@@ -43,4 +43,4 @@ interface SelectFieldProps {
     </div>
   );
 };
-export default SelectField
+export default SelectField;

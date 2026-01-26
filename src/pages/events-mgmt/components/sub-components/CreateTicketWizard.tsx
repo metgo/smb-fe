@@ -1,6 +1,6 @@
 import clsx from "clsx";
 import { toast } from "sonner";
-import {  useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Plus, Trash2, Upload, X } from "lucide-react";
 import { formatDate } from "@/helpers/formatter";
@@ -8,7 +8,10 @@ import { ModalWrapper } from "@/components/wrapper";
 import { ConfirmDialog } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useSingleImageUpload } from "@/hooks/useSingleImageUpload";
-import { useCreateTicketMutation, useUpdateTicketMutation } from "@/store/api/eventMutationApi";
+import {
+  useCreateTicketMutation,
+  useUpdateTicketMutation,
+} from "@/store/api/eventMutationApi";
 
 interface CreateTicketWizardProps {
   opMode: TTicketOpMode;
@@ -25,10 +28,14 @@ interface CreateTicketWizardProps {
 
 const modelTitle = (mode: TTicketOpMode, t: (key: string) => string) => {
   switch (mode) {
-    case "CREATE": return t("create_ticket");
-    case "UPDATE": return t("edit_ticket");
-    case "DUPLICATE": return t("duplicate_ticket");
-    default: return "";
+    case "CREATE":
+      return t("create_ticket");
+    case "UPDATE":
+      return t("edit_ticket");
+    case "DUPLICATE":
+      return t("duplicate_ticket");
+    default:
+      return "";
   }
 };
 
@@ -45,7 +52,8 @@ const CreateTicketWizard = ({
   setTicketDateTime,
 }: CreateTicketWizardProps) => {
   const { t } = useTranslation("events");
-  const { textPrimary, textSecondary, inputClasses, textTertiary, rowDir } = useThemeClasses();
+  const { textPrimary, textSecondary, inputClasses, textTertiary, rowDir } =
+    useThemeClasses();
 
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
@@ -58,7 +66,9 @@ const CreateTicketWizard = ({
     sellingPrice?: string;
   }>({ ticketDays: [] });
 
-  const isPaidOrVip = ["paid", "vip"].includes(editingTicket?.type?.toLowerCase() || "");
+  const isPaidOrVip = ["paid", "vip"].includes(
+    editingTicket?.type?.toLowerCase() || "",
+  );
 
   const {
     image,
@@ -97,7 +107,8 @@ const CreateTicketWizard = ({
 
     // Description
     if (!editingTicket.description?.trim()) {
-      newErrors.description = t("description_required") || "Ticket description is required";
+      newErrors.description =
+        t("description_required") || "Ticket description is required";
       isValid = false;
       firstInvalidField = firstInvalidField ?? "description";
     }
@@ -110,7 +121,8 @@ const CreateTicketWizard = ({
         isValid = false;
       }
       if (!day.startTime) {
-        dayError = dayError || t("start_time_required") || "Start time required";
+        dayError =
+          dayError || t("start_time_required") || "Start time required";
         isValid = false;
       }
       if (!day.endTime) {
@@ -118,7 +130,8 @@ const CreateTicketWizard = ({
         isValid = false;
       }
       if (day.startTime && day.endTime && day.startTime >= day.endTime) {
-        dayError = dayError || t("end_after_start") || "End time must be after start";
+        dayError =
+          dayError || t("end_after_start") || "End time must be after start";
         isValid = false;
       }
       if (dayError) {
@@ -129,13 +142,21 @@ const CreateTicketWizard = ({
 
     // Prices - only when paid or VIP
     if (isPaidOrVip) {
-      if (!editingTicket.price?.markedPrice || editingTicket.price.markedPrice <= 0) {
-        newErrors.markedPrice = t("marked_price_required") || "Marked price is required";
+      if (
+        !editingTicket.price?.markedPrice ||
+        editingTicket.price.markedPrice <= 0
+      ) {
+        newErrors.markedPrice =
+          t("marked_price_required") || "Marked price is required";
         isValid = false;
         firstInvalidField = firstInvalidField ?? "markedPrice";
       }
-      if (!editingTicket.price?.sellingPrice || editingTicket.price.sellingPrice <= 0) {
-        newErrors.sellingPrice = t("selling_price_required") || "Selling price is required";
+      if (
+        !editingTicket.price?.sellingPrice ||
+        editingTicket.price.sellingPrice <= 0
+      ) {
+        newErrors.sellingPrice =
+          t("selling_price_required") || "Selling price is required";
         isValid = false;
         firstInvalidField = firstInvalidField ?? "sellingPrice";
       }
@@ -153,7 +174,7 @@ const CreateTicketWizard = ({
 
             // Try to focus the first input/select/textarea inside
             const focusable = targetEl.querySelector(
-              "input:not([type=hidden]), textarea, select"
+              "input:not([type=hidden]), textarea, select",
             ) as HTMLElement | null;
             focusable?.focus();
           }
@@ -216,11 +237,19 @@ const CreateTicketWizard = ({
     };
 
     try {
-      const res = editingTicket._id && opMode !== "DUPLICATE"
-        ? await updateTicket({ body: payload, ticketId: editingTicket._id }).unwrap()
-        : await createTicket(payload).unwrap();
+      const res =
+        editingTicket._id && opMode !== "DUPLICATE"
+          ? await updateTicket({
+              body: payload,
+              ticketId: editingTicket._id,
+            }).unwrap()
+          : await createTicket(payload).unwrap();
 
-      toast.success(res?.message || t("ticket_saved_successfully") || "Ticket saved successfully");
+      toast.success(
+        res?.message ||
+          t("ticket_saved_successfully") ||
+          "Ticket saved successfully",
+      );
       refetch();
       setShowTicketModal(false);
       setEditingTicket(null);
@@ -245,7 +274,11 @@ const CreateTicketWizard = ({
     setTicketDateTime((prev) => prev.filter((day) => day._id !== id));
   };
 
-  const updateTicketDay = (index: number, field: keyof ITicketDateTime, value: string) => {
+  const updateTicketDay = (
+    index: number,
+    field: keyof ITicketDateTime,
+    value: string,
+  ) => {
     setTicketDateTime((prev) => {
       const updated = [...prev];
       updated[index] = { ...updated[index], [field]: value };
@@ -270,11 +303,17 @@ const CreateTicketWizard = ({
         <section
           className={clsx(
             "px-3 py-5 space-y-6 max-h-[70vh] overflow-y-auto rounded-lg border",
-            theme === "dark" ? "border-gray-700 bg-gray-800/50" : "border-gray-200 bg-gray-50"
+            theme === "dark"
+              ? "border-gray-700 bg-gray-800/50"
+              : "border-gray-200 bg-gray-50",
           )}
         >
           {/* === Ticket Name === */}
-          <div ref={(el) => {sectionRefs.current["name"] = el}}>
+          <div
+            ref={(el) => {
+              sectionRefs.current["name"] = el;
+            }}
+          >
             <label className={`block text-sm mb-2 ${textSecondary}`}>
               {t("ticket_name")} <span className="text-red-500">*</span>
             </label>
@@ -282,23 +321,32 @@ const CreateTicketWizard = ({
               type="text"
               value={editingTicket?.name || ""}
               onChange={(e) => {
-                setEditingTicket((prev: ITicketPayload) => ({ ...prev, name: e.target.value }));
+                setEditingTicket((prev: ITicketPayload) => ({
+                  ...prev,
+                  name: e.target.value,
+                }));
                 clearError("name");
               }}
               placeholder={t("general_admission")}
               className={clsx(
                 "w-full px-4 py-2.5 rounded-lg border transition-colors",
                 inputClasses,
-                errors.name && "field-error"
+                errors.name && "field-error",
               )}
             />
             {errors.name && (
-              <p className="mt-1.5 text-sm text-red-600 dark:text-red-400">{errors.name}</p>
+              <p className="mt-1.5 text-sm text-red-600 dark:text-red-400">
+                {errors.name}
+              </p>
             )}
           </div>
 
           {/* === Description === */}
-          <div ref={(el) => {sectionRefs.current["description"] = el}}>
+          <div
+            ref={(el) => {
+              sectionRefs.current["description"] = el;
+            }}
+          >
             <label className={`block text-sm mb-2 ${textSecondary}`}>
               {t("description")} <span className="text-red-500">*</span>
             </label>
@@ -310,22 +358,28 @@ const CreateTicketWizard = ({
                   description: e.target.value,
                 }))
               }
-              placeholder={t("enter_ticket_description") || "Enter ticket description..."}
+              placeholder={
+                t("enter_ticket_description") || "Enter ticket description..."
+              }
               rows={3}
               className={clsx(
                 "w-full px-4 py-2.5 rounded-lg border transition-colors",
                 inputClasses,
-                errors.description && "field-error"
+                errors.description && "field-error",
               )}
             />
             {errors.description && (
-              <p className="mt-1.5 text-sm text-red-600 dark:text-red-400">{errors.description}</p>
+              <p className="mt-1.5 text-sm text-red-600 dark:text-red-400">
+                {errors.description}
+              </p>
             )}
           </div>
 
           {/* === Ticket Days === */}
           <section>
-            <label className={`block text-sm mb-2 ${textSecondary}`}>{t("ticket_days")}</label>
+            <label className={`block text-sm mb-2 ${textSecondary}`}>
+              {t("ticket_days")}
+            </label>
             <div className="space-y-4 mt-2">
               {ticketDateTime.map((day, index) => (
                 <div
@@ -335,15 +389,23 @@ const CreateTicketWizard = ({
                   }}
                   className="space-y-2"
                 >
-                  <div className={clsx("grid grid-cols-12 gap-2 items-center", rowDir)}>
+                  <div
+                    className={clsx(
+                      "grid grid-cols-12 gap-2 items-center",
+                      rowDir,
+                    )}
+                  >
                     <div className="col-span-5">
                       <select
                         value={day.date}
-                        onChange={(e) => updateTicketDay(index, "date", e.target.value)}
+                        onChange={(e) =>
+                          updateTicketDay(index, "date", e.target.value)
+                        }
                         className={clsx(
                           "w-full px-3 py-2 rounded-lg border transition-colors",
                           inputClasses,
-                          errors.ticketDays[index] && "border-red-500 focus:border-red-500"
+                          errors.ticketDays[index] &&
+                            "border-red-500 focus:border-red-500",
                         )}
                       >
                         <option value="">{t("select_date")}</option>
@@ -359,11 +421,14 @@ const CreateTicketWizard = ({
                       <input
                         type="time"
                         value={day.startTime}
-                        onChange={(e) => updateTicketDay(index, "startTime", e.target.value)}
+                        onChange={(e) =>
+                          updateTicketDay(index, "startTime", e.target.value)
+                        }
                         className={clsx(
                           "w-full px-3 py-2 rounded-lg border transition-colors",
                           inputClasses,
-                          errors.ticketDays[index] && "border-red-500 focus:border-red-500"
+                          errors.ticketDays[index] &&
+                            "border-red-500 focus:border-red-500",
                         )}
                       />
                     </div>
@@ -372,11 +437,14 @@ const CreateTicketWizard = ({
                       <input
                         type="time"
                         value={day.endTime}
-                        onChange={(e) => updateTicketDay(index, "endTime", e.target.value)}
+                        onChange={(e) =>
+                          updateTicketDay(index, "endTime", e.target.value)
+                        }
                         className={clsx(
                           "w-full px-3 py-2 rounded-lg border transition-colors",
                           inputClasses,
-                          errors.ticketDays[index] && "border-red-500 focus:border-red-500"
+                          errors.ticketDays[index] &&
+                            "border-red-500 focus:border-red-500",
                         )}
                       />
                     </div>
@@ -411,7 +479,9 @@ const CreateTicketWizard = ({
 
           {/* === Ticket Type === */}
           <div>
-            <label className={`block text-sm mb-2 ${textSecondary}`}>{t("ticket_type")}</label>
+            <label className={`block text-sm mb-2 ${textSecondary}`}>
+              {t("ticket_type")}
+            </label>
             <div className="grid grid-cols-3 gap-3">
               {(["free", "paid", "vip"] as const).map((type) => (
                 <button
@@ -422,10 +492,20 @@ const CreateTicketWizard = ({
                       ...prev,
                       type,
                       ...(type === "free"
-                        ? { price: { ...prev.price, markedPrice: 0, sellingPrice: 0 } }
+                        ? {
+                            price: {
+                              ...prev.price,
+                              markedPrice: 0,
+                              sellingPrice: 0,
+                            },
+                          }
                         : {}),
                     }));
-                    setErrors((prev) => ({ ...prev, markedPrice: undefined, sellingPrice: undefined }));
+                    setErrors((prev) => ({
+                      ...prev,
+                      markedPrice: undefined,
+                      sellingPrice: undefined,
+                    }));
                   }}
                   className={clsx(
                     "px-4 py-2.5 rounded-lg border capitalize transition-colors",
@@ -433,7 +513,7 @@ const CreateTicketWizard = ({
                       ? "border-teal-500 bg-teal-500/10 text-teal-500 font-medium"
                       : theme === "dark"
                         ? "border-gray-700 hover:bg-gray-800"
-                        : "border-gray-300 hover:bg-gray-50"
+                        : "border-gray-300 hover:bg-gray-50",
                   )}
                 >
                   {t(type)}
@@ -445,9 +525,14 @@ const CreateTicketWizard = ({
           {/* === Prices === */}
           {isPaidOrVip && (
             <div className="grid grid-cols-2 gap-4">
-              <div ref={(el) => { sectionRefs.current["markedPrice"] = el; }}>
+              <div
+                ref={(el) => {
+                  sectionRefs.current["markedPrice"] = el;
+                }}
+              >
                 <label className={`block text-sm mb-2 ${textSecondary}`}>
-                  {t("marked_price")} (₪) <span className="text-red-500">*</span>
+                  {t("marked_price")} (₪){" "}
+                  <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="number"
@@ -464,17 +549,24 @@ const CreateTicketWizard = ({
                   className={clsx(
                     "w-full px-4 py-2.5 rounded-lg border transition-colors",
                     inputClasses,
-                    errors.markedPrice && "field-error"
+                    errors.markedPrice && "field-error",
                   )}
                 />
                 {errors.markedPrice && (
-                  <p className="mt-1.5 text-sm text-red-600 dark:text-red-400">{errors.markedPrice}</p>
+                  <p className="mt-1.5 text-sm text-red-600 dark:text-red-400">
+                    {errors.markedPrice}
+                  </p>
                 )}
               </div>
 
-              <div ref={(el) => {sectionRefs.current["sellingPrice"] = el;}}>
+              <div
+                ref={(el) => {
+                  sectionRefs.current["sellingPrice"] = el;
+                }}
+              >
                 <label className={`block text-sm mb-2 ${textSecondary}`}>
-                  {t("selling_price")} (₪) <span className="text-red-500">*</span>
+                  {t("selling_price")} (₪){" "}
+                  <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="number"
@@ -491,11 +583,13 @@ const CreateTicketWizard = ({
                   className={clsx(
                     "w-full px-4 py-2.5 rounded-lg border transition-colors",
                     inputClasses,
-                    errors.sellingPrice && "field-error"
+                    errors.sellingPrice && "field-error",
                   )}
                 />
                 {errors.sellingPrice && (
-                  <p className="mt-1.5 text-sm text-red-600 dark:text-red-400">{errors.sellingPrice}</p>
+                  <p className="mt-1.5 text-sm text-red-600 dark:text-red-400">
+                    {errors.sellingPrice}
+                  </p>
                 )}
               </div>
             </div>
@@ -504,7 +598,9 @@ const CreateTicketWizard = ({
           {/* Quantity */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className={`block text-sm mb-2 ${textSecondary}`}>{t("quantity")}</label>
+              <label className={`block text-sm mb-2 ${textSecondary}`}>
+                {t("quantity")}
+              </label>
               <input
                 type="number"
                 min={1}
@@ -512,14 +608,19 @@ const CreateTicketWizard = ({
                 onChange={(e) =>
                   setEditingTicket((prev: any) => ({
                     ...prev,
-                    quantity: { ...prev.quantity, initial: parseInt(e.target.value) || 0 },
+                    quantity: {
+                      ...prev.quantity,
+                      initial: parseInt(e.target.value) || 0,
+                    },
                   }))
                 }
                 className={`w-full px-4 py-2.5 rounded-lg border ${inputClasses}`}
               />
             </div>
             <div>
-              <label className={`block text-sm mb-2 ${textSecondary}`}>{t("per_user_limit")}</label>
+              <label className={`block text-sm mb-2 ${textSecondary}`}>
+                {t("per_user_limit")}
+              </label>
               <input
                 type="number"
                 min={1}
@@ -527,7 +628,10 @@ const CreateTicketWizard = ({
                 onChange={(e) =>
                   setEditingTicket((prev: any) => ({
                     ...prev,
-                    quantity: { ...prev.quantity, perUserLimit: parseInt(e.target.value) || 0 },
+                    quantity: {
+                      ...prev.quantity,
+                      perUserLimit: parseInt(e.target.value) || 0,
+                    },
                   }))
                 }
                 className={`w-full px-4 py-2.5 rounded-lg border ${inputClasses}`}
@@ -538,24 +642,32 @@ const CreateTicketWizard = ({
           {/* === Ticket Image === */}
           <div>
             <div className="flex items-center justify-between">
-              <label className={`block text-sm mb-2 ${textSecondary}`}>{t("ticket_image")}</label>
-              {image?.progress !== undefined && image.progress > 0 && image.status === "uploading" && (
-                <div className="flex items-center gap-2 w-32">
-                  <div className="w-full bg-gray-200 rounded h-2">
-                    <div
-                      className="bg-teal-600 h-2 rounded transition-all"
-                      style={{ width: `${image.progress}%` }}
-                    />
+              <label className={`block text-sm mb-2 ${textSecondary}`}>
+                {t("ticket_image")}
+              </label>
+              {image?.progress !== undefined &&
+                image.progress > 0 &&
+                image.status === "uploading" && (
+                  <div className="flex items-center gap-2 w-32">
+                    <div className="w-full bg-gray-200 rounded h-2">
+                      <div
+                        className="bg-teal-600 h-2 rounded transition-all"
+                        style={{ width: `${image.progress}%` }}
+                      />
+                    </div>
+                    <span className="text-xs text-gray-600 dark:text-gray-400">
+                      {image.progress}%
+                    </span>
                   </div>
-                  <span className="text-xs text-gray-600 dark:text-gray-400">{image.progress}%</span>
-                </div>
-              )}
+                )}
             </div>
 
             <div
               className={clsx(
                 "border-2 border-dashed rounded-lg p-4",
-                theme === "dark" ? "border-gray-700 bg-gray-800/30" : "border-gray-300 bg-gray-50"
+                theme === "dark"
+                  ? "border-gray-700 bg-gray-800/30"
+                  : "border-gray-300 bg-gray-50",
               )}
             >
               {image?.previewUrl ? (
@@ -575,8 +687,12 @@ const CreateTicketWizard = ({
                 </div>
               ) : (
                 <div className="text-center">
-                  <Upload className={`w-10 h-10 mx-auto mb-2 ${textTertiary}`} />
-                  <p className={`text-sm ${textSecondary} mb-2`}>{t("click_to_upload_or_drag")}</p>
+                  <Upload
+                    className={`w-10 h-10 mx-auto mb-2 ${textTertiary}`}
+                  />
+                  <p className={`text-sm ${textSecondary} mb-2`}>
+                    {t("click_to_upload_or_drag")}
+                  </p>
                   <input
                     type="file"
                     accept="image/*"
@@ -606,8 +722,11 @@ const CreateTicketWizard = ({
               setShowTicketModal(false);
               setEditingTicket(null);
             }}
-            className={`px-5 py-2.5 rounded-lg border transition-colors ${theme === "dark" ? "border-gray-700 hover:bg-gray-800" : "border-gray-300 hover:bg-gray-100"
-              }`}
+            className={`px-5 py-2.5 rounded-lg border transition-colors ${
+              theme === "dark"
+                ? "border-gray-700 hover:bg-gray-800"
+                : "border-gray-300 hover:bg-gray-100"
+            }`}
           >
             {t("cancel")}
           </button>
@@ -619,10 +738,12 @@ const CreateTicketWizard = ({
               "px-6 py-2.5 rounded-lg text-white transition-colors min-w-30",
               isSaving || isUpdating || image?.status === "uploading"
                 ? "bg-gray-400 cursor-not-allowed"
-                : "bg-teal-600 hover:bg-teal-700 cursor-pointer"
+                : "bg-teal-600 hover:bg-teal-700 cursor-pointer",
             )}
           >
-            {isSaving || isUpdating || image?.status === "uploading" ? "Saving..." : t("save_ticket")}
+            {isSaving || isUpdating || image?.status === "uploading"
+              ? "Saving..."
+              : t("save_ticket")}
           </button>
         </div>
       </div>

@@ -1,9 +1,21 @@
-
-type TPaymentStatus = 'pending' | 'success' | 'failed' | 'refunded' | 'partially_refunded';
-type TOrderStatus = 'draft' | 'processing' | 'paid' | 'confirmed' | 'delivered' | 'completed' | 'cancelled' | 'partially_cancelled' | 'failed';
-type TOrderType = 'online' | 'offline';
-type TDeliveryType = 'pickup' | 'delivery' | 'digital';
-
+type TPaymentStatus =
+  | "pending"
+  | "success"
+  | "failed"
+  | "refunded"
+  | "partially_refunded";
+type TOrderStatus =
+  | "draft"
+  | "processing"
+  | "paid"
+  | "confirmed"
+  | "delivered"
+  | "completed"
+  | "cancelled"
+  | "partially_cancelled"
+  | "failed";
+type TOrderType = "online" | "offline";
+type TDeliveryType = "pickup" | "delivery" | "digital";
 
 interface IOrder {
   id: string;
@@ -12,7 +24,7 @@ interface IOrder {
   phone: string;
   orderType: TOrderType;
   orderStatus: TOrderStatus;
-  paymentStatus: TPaymentStatus,
+  paymentStatus: TPaymentStatus;
   paymentMethod: string[];
   totalAmount: number;
   voucherAmount: number;
@@ -35,7 +47,7 @@ interface IOrderProduct {
   quantity: number;
   unitPrice: number;
   vendor: string;
-  deliveryType: 'pickup' | 'delivery';
+  deliveryType: "pickup" | "delivery";
   imageUrl: string;
   description: string;
   category: string;

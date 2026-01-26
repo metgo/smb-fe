@@ -8,7 +8,7 @@ interface Business {
   website: string;
   logo: string;
   images: string[];
-  status: 'draft' | 'pending' | 'approved' | 'rejected' | 'archived';
+  status: "draft" | "pending" | "approved" | "rejected" | "archived";
   authority: string;
   dmo: string;
   categories: string[];
@@ -73,6 +73,6 @@ interface BusinessContactPayload {
 }
 
 interface IBusinessMedia {
-  logo: IImageUpload,
-  gallery: IImageUpload[],
+  logo: IImageUpload;
+  gallery: IImageUpload[];
 }

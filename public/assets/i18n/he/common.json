@@ -1,8 +1,8 @@
 {
   "app_title": "ניתוח תיירות הנגב המערבי",
   "executive_dashboard": "לוח מחוונים ניהולי",
-  "all_websites":"",
-  "all_authorities":"",
+  "all_websites": "",
+  "all_authorities": "",
   "date_range": "טווח תאריכים",
   "last_7_days": "7 ימים אחרונים",
   "last_30_days": "30 ימים אחרונים",
@@ -23,8 +23,8 @@
   "cash_in": "כסף נכנס",
   "cash_back": "החזר כספים",
   "site_management": "ניהול אתר",
-  "vouchers":"שוברים",
-  "mini_campaigns":"מיני קמפיין",
+  "vouchers": "שוברים",
+  "mini_campaigns": "מיני קמפיין",
   "home": "בית",
   "promotions": "โปรโมציות",
   "blog": "בלוג",
@@ -35,7 +35,6 @@
   "settings": "הגדרות",
   "documents": "מסמכי",
   "version": "גרסה",
-
 
   "filter": "סינון",
   "filters": "מסננים",
@@ -62,12 +61,12 @@
   "image_upload_info": "העלאת התמונה החלה. אנא המתן…",
   "delete_image": "מחיקת תמונה",
   "delete_image_confirm": "האם אתה בטוח שברצונך למחוק תמונה זו? פעולה זו אינה ניתנת לביטול.",
-  
+
   "image_upload_success": "התמונה הועלתה בהצלחה!",
   "image_delete_success": "התמונה נמחקה בהצלחה!",
   "image_upload_failed": "העלאת התמונה נכשלה! אנא נסה שוב...",
   "image_delete_failed": "מחיקת התמונה נכשלה! אנא נסה שוב...",
-  
+
   "primary": "ראשי",
   "set_as_primary": "הגדר כראשי",
 

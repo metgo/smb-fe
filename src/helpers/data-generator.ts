@@ -1,15 +1,27 @@
 // Mock data generator
 export function generateMockProducts(): Product[] {
   const businesses = [
-    { id: 'biz-1', name: 'Desert Lodge Hotel' },
-    { id: 'biz-2', name: 'Ramon Crater Restaurant' },
-    { id: 'biz-3', name: 'Negev Adventure Tours' },
-    { id: 'biz-4', name: 'Be\'er Sheva Wellness Spa' },
-    { id: 'biz-5', name: 'Sderot Artisan Market' },
+    { id: "biz-1", name: "Desert Lodge Hotel" },
+    { id: "biz-2", name: "Ramon Crater Restaurant" },
+    { id: "biz-3", name: "Negev Adventure Tours" },
+    { id: "biz-4", name: "Be'er Sheva Wellness Spa" },
+    { id: "biz-5", name: "Sderot Artisan Market" },
   ];
 
-  const types: Product['type'][] = ['physical', 'table-order', 'service', 'hotel-room', 'experience'];
-  const statuses: Product['status'][] = ['draft', 'pending', 'approved', 'rejected', 'archived'];
+  const types: Product["type"][] = [
+    "physical",
+    "table-order",
+    "service",
+    "hotel-room",
+    "experience",
+  ];
+  const statuses: Product["status"][] = [
+    "draft",
+    "pending",
+    "approved",
+    "rejected",
+    "archived",
+  ];
 
   const products: Product[] = [];
 
@@ -25,12 +37,12 @@ export function generateMockProducts(): Product[] {
       name: {
         en: `Product ${i}`,
         he: `מוצר ${i}`,
-        ar: `منتج ${i}`
+        ar: `منتج ${i}`,
       },
       shortDescription: {
         en: `Amazing product for your needs`,
         he: `מוצר מדהים לצרכים שלך`,
-        ar: `منتج مذهل لاحتياجاتك`
+        ar: `منتج مذهل لاحتياجاتك`,
       },
       businessId: business.id,
       businessName: business.name,
@@ -38,20 +50,23 @@ export function generateMockProducts(): Product[] {
       status,
       markedPrice,
       sellingPrice,
-      quantity: Math.random() > 0.3 ? Math.floor(Math.random() * 100) + 10 : null,
+      quantity:
+        Math.random() > 0.3 ? Math.floor(Math.random() * 100) + 10 : null,
       soldCount: Math.floor(Math.random() * 30),
       availability: {
         startDate: null,
-        endDate: null
+        endDate: null,
       },
-      categories: ['Category A', 'Category B'],
+      categories: ["Category A", "Category B"],
       image: null,
-      lastUpdated: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
+      lastUpdated: new Date(
+        Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000,
+      ).toISOString(),
       languageCompleteness: {
         en: true,
         he: Math.random() > 0.3,
-        ar: Math.random() > 0.5
-      }
+        ar: Math.random() > 0.5,
+      },
     });
   }
 

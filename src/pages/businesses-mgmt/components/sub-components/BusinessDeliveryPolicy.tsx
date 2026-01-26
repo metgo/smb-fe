@@ -98,8 +98,9 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
             className="w-4 h-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500"
           />
           <span
-            className={`text-sm ${theme === "dark" ? "text-gray-300" : "text-gray-700"
-              }`}
+            className={`text-sm ${
+              theme === "dark" ? "text-gray-300" : "text-gray-700"
+            }`}
           >
             {t("vendor_delivers")}
           </span>

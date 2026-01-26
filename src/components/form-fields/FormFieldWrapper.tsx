@@ -17,15 +17,13 @@ const FormFieldWrapper = ({
   hint = "",
   inputHintText = "",
 }: FormFieldWrapperProps) => {
-  const { textTertiary, textSecondary } = useThemeClasses()
+  const { textTertiary, textSecondary } = useThemeClasses();
   return (
     <div>
       <label className={`block text-sm font-medium mb-3 ${textSecondary}`}>
         {label} {required && <span className="text-red-500">*</span>}
         {hint && (
-          <span className={`text-xs ml-2 ${textTertiary}`}>
-            ({hint})
-          </span>
+          <span className={`text-xs ml-2 ${textTertiary}`}>({hint})</span>
         )}
       </label>
 
@@ -38,10 +36,12 @@ const FormFieldWrapper = ({
           </p>
         )}
         {inputHintText && (
-          <span className={`text-xs mt-2 text-right ${textTertiary}`}>{inputHintText}</span>
+          <span className={`text-xs mt-2 text-right ${textTertiary}`}>
+            {inputHintText}
+          </span>
         )}
       </div>
     </div>
   );
 };
-export default FormFieldWrapper
+export default FormFieldWrapper;

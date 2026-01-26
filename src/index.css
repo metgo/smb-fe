@@ -150,7 +150,6 @@ body::-webkit-scrollbar,
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
-
 }
 @layer utilities {
   .field-error {
@@ -162,7 +161,7 @@ body::-webkit-scrollbar,
  * Base typography. This is not applied to elements which have an ancestor with a Tailwind text class.
  */
 @layer base {
-  :where(:not(:has([class*=' text-']), :not(:has([class^='text-'])))) {
+  :where(:not(:has([class*=" text-"]), :not(:has([class^="text-"])))) {
     h1 {
       font-size: var(--text-2xl);
       font-weight: var(--font-weight-medium);
@@ -204,7 +203,6 @@ body::-webkit-scrollbar,
       font-weight: var(--font-weight-normal);
       line-height: 1.5;
     }
-
   }
 }
 

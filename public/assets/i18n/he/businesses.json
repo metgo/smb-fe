@@ -39,8 +39,8 @@
   "error_loading_businesses": "שגיאה בטעינת עסקים",
   "permission_denied": "הגישה נדחתה",
   "permission_denied_desc": "אין לך הרשאה לצפות בתוכן זה",
-"avg_completion":"השלמה ממוצעת",
-"profile_data": "נתוני פרופיל",
+  "avg_completion": "השלמה ממוצעת",
+  "profile_data": "נתוני פרופיל",
   "awaiting": "בהמתנה",
   "score": "ציון",
   "listed": "רשום",
@@ -49,7 +49,7 @@
   "business_details": "פרטי עסק",
   "back_to_list": "חזור לרשימה",
   "back_to_businesses": "חזור לעסקים",
-    "brief_description": "תיאור קצר",
+  "brief_description": "תיאור קצר",
   "business": "עסק",
   "change_status": "שנה סטטוס",
   "completion_percentage": "השלמה",
@@ -161,7 +161,7 @@
   "all_mandatory_fields_required": "יש למלא את כל שדות החובה",
   "rejection_requires_notes": "דחייה דורשת הערות פנימיות",
 
-  "active_businesses":"עסקים פעילים",
+  "active_businesses": "עסקים פעילים",
   "total_products": "סך כל המוצרים ",
   "pending_approval": "ממתין לאישור",
   "short_description": "תיאור קצר",
@@ -171,7 +171,6 @@
   "authority": "רְשׁוּת ",
   "select": "לִבחוֹר  ",
   "full_name": "שם מלא",
-
 
   "add_internal_notes": "הוסף הערות פנימיות",
   "full_description": "תיאור מלא",

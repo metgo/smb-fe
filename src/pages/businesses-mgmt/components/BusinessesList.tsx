@@ -133,17 +133,19 @@ export default function BusinessesList({
   });
 
   // Column visibility - load from localStorage or use defaults
-  const [visibleColumns, _setVisibleColumns] = useState<ColumnVisibility>(() => {
-    try {
-      const saved = localStorage.getItem("businessesTableColumns");
-      if (saved) {
-        return { ...defaultColumns, ...JSON.parse(saved) };
+  const [visibleColumns, _setVisibleColumns] = useState<ColumnVisibility>(
+    () => {
+      try {
+        const saved = localStorage.getItem("businessesTableColumns");
+        if (saved) {
+          return { ...defaultColumns, ...JSON.parse(saved) };
+        }
+      } catch (e) {
+        console.error("Failed to load column settings:", e);
       }
-    } catch (e) {
-      console.error("Failed to load column settings:", e);
-    }
-    return defaultColumns;
-  });
+      return defaultColumns;
+    },
+  );
 
   // Save column visibility to localStorage
   useEffect(() => {
@@ -214,7 +216,6 @@ export default function BusinessesList({
   };
   const { data: businessData, isLoading: loading } =
     useGetAllbusinessesQuery(queryParams);
-
 
   // Column toggle handler
   // const toggleColumn = (column: keyof ColumnVisibility) => {
@@ -362,16 +363,18 @@ export default function BusinessesList({
           case "tripCount":
             value = business.tripCount ?? getTripCount(business); // fallback to your helper
             break;
-          case "websiteUrl":
+          case "websiteUrl": {
             // Pick first valid URL if array
             const sites = business.associatedWebsites || [];
-            value = sites.find((s: any) => s.url)?.url || "-";
+            value = sites?.find((s: any) => s.url)?.url || "-";
             break;
-          case "categories":
+          }
+          case "categories": {
             value = Array.isArray(business.categories)
               ? business.categories.join(", ")
               : "-";
             break;
+          }
           case "lifetimeSales":
           case "shortDescription":
           case "contactName":

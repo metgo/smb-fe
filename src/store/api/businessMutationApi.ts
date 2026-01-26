@@ -1,49 +1,44 @@
-import { createApi } from '@reduxjs/toolkit/query/react';
+import { createApi } from "@reduxjs/toolkit/query/react";
 
-import { endpoints } from '@/lib/endpoints';
-import { axiosBaseQuery } from './axiosBaseQuery';
+import { endpoints } from "@/lib/endpoints";
+import { axiosBaseQuery } from "./axiosBaseQuery";
 
 /* ---------------- Payload Union ---------------- */
 export type BusinessStepPayload =
-  |BusinessBasicInfoPayload
+  | BusinessBasicInfoPayload
   | BusinessContactPayload;
-  // | BusinessLocationPayload
-  // | BusinessCategoriesPayload
-  // | BusinessMediaPayload
-  // | BusinessHoursPayload
-  // | BusinessDeliveryPayload
-  // | BusinessSocialMediaPayload;
+// | BusinessLocationPayload
+// | BusinessCategoriesPayload
+// | BusinessMediaPayload
+// | BusinessHoursPayload
+// | BusinessDeliveryPayload
+// | BusinessSocialMediaPayload;
 
 /* ---------------- API ---------------- */
 export const businessMutationApi = createApi({
-  reducerPath: 'businessMutationApi',
+  reducerPath: "businessMutationApi",
   baseQuery: axiosBaseQuery(),
-  tagTypes: ['Business'],
+  tagTypes: ["Business"],
   endpoints: (builder) => ({
     initBusinessCreate: builder.mutation<any, void>({
       query: () => ({
         url: endpoints.businesses,
-        method: 'POST',
-        data: { name: "" }
+        method: "POST",
+        data: { name: "" },
       }),
-      invalidatesTags: ['Business']
+      invalidatesTags: ["Business"],
     }),
 
-    updateBusiness: builder.mutation<any, { body: any, businessId: string }>({
+    updateBusiness: builder.mutation<any, { body: any; businessId: string }>({
       query: ({ body, businessId }) => ({
         url: `${endpoints.businesses}/${businessId}`,
-        method: 'PATCH',
+        method: "PATCH",
         data: body,
       }),
-      invalidatesTags: ['Business']
+      invalidatesTags: ["Business"],
     }),
-  
-    
   }),
 });
 
-export const {
-  useInitBusinessCreateMutation,
-  useUpdateBusinessMutation,
-  
-} = businessMutationApi;
+export const { useInitBusinessCreateMutation, useUpdateBusinessMutation } =
+  businessMutationApi;

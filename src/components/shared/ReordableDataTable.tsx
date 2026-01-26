@@ -1,5 +1,11 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { ArrowUpDown, ArrowUp, ArrowDown, GripVertical } from "lucide-react";
+import {
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
+  GripVertical,
+  Loader,
+} from "lucide-react";
 
 import { useAppSelector } from "@/hooks/hooks";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
@@ -21,6 +27,7 @@ interface DataTableProps<T> {
   selectedItems?: Set<any>;
   onSelectionChange?: (selected: Set<any>) => void;
   rowKey: keyof T;
+  isDataLoading?: boolean;
 }
 
 export default function ReordableDataTable<T extends Record<string, any>>({
@@ -31,10 +38,11 @@ export default function ReordableDataTable<T extends Record<string, any>>({
   selectedItems,
   onSelectionChange,
   rowKey,
+  isDataLoading = false,
 }: DataTableProps<T>) {
   const { theme, isRTL } = useAppSelector((state) => state.settings);
   const { bgTertiary, borderColor, textSecondary, hoverBg } = useThemeClasses();
-console.log("columns", columns)
+  console.log("columns", columns);
 
   // Load saved column order
   const [columnOrder, setColumnOrder] = useState<string[]>(() => {
@@ -174,7 +182,7 @@ console.log("columns", columns)
         <table className="w-full h-full">
           {/* Sticky Header */}
           <thead
-            className={`sticky top-0 z-5 ${bgTertiary} border-b ${borderColor}`}
+            className={`sticky top-0 z-50 ${bgTertiary} border-b ${borderColor}`}
           >
             <tr>
               {columnOrder?.map((colKey) => {
@@ -238,21 +246,40 @@ console.log("columns", columns)
 
           {/* Scrollable Body */}
           <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
-            {sortedData?.length === 0 ? (
+            {isDataLoading ? (
               <tr>
                 <td
-                  colSpan={columnOrder?.length}
-                  className="text-center py-12 text-gray-500 dark:text-gray-400"
+                  colSpan={columnOrder?.length || 1}
+                  className="h-80 text-center"
                 >
-                  No data available
+                  <div className="flex flex-col items-center justify-center h-full gap-3">
+                    <Loader className="w-10 h-10 animate-spin text-teal-600" />
+                    <span className="text-sm text-gray-500 dark:text-gray-400">
+                      Loading data...
+                    </span>
+                  </div>
+                </td>
+              </tr>
+            ) : sortedData?.length === 0 ? (
+              // No data state
+              <tr>
+                <td
+                  colSpan={columnOrder?.length || 1}
+                  className="h-32 text-center text-gray-500 dark:text-gray-400"
+                >
+                  <div className="flex flex-col items-center justify-center h-full gap-2">
+                    <p>No data available</p>
+                    {/* Optional: add icon or illustration */}
+                  </div>
                 </td>
               </tr>
             ) : (
-              sortedData?.map((item, idx) => (
+              // Normal data rows
+              sortedData.map((item, idx) => (
                 <tr
                   key={item[rowKey] ?? idx}
                   onClick={() => onRowClick?.(item)}
-                  className={`transition-colors ${hoverBg} ${onRowClick ? "cursor-pointer" : ""}`}
+                  className={`transition-colors ${hoverBg} ${onRowClick ? "cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50" : ""}`}
                 >
                   {columnOrder?.map((colKey) => {
                     const column = columns.find((c) => c.key === colKey);
@@ -269,11 +296,9 @@ console.log("columns", columns)
                         {colKey === "checkbox" ? (
                           <input
                             type="checkbox"
-                            checked={
-                              selectedItems && selectedItems.has(item[rowKey])
-                            }
+                            checked={selectedItems?.has(item[rowKey]) ?? false}
                             onChange={() => toggleRow(item)}
-                            className="rounded border-gray-300 dark:border-gray-600"
+                            className="rounded border-gray-300 dark:border-gray-600 focus:ring-teal-500"
                           />
                         ) : column.render ? (
                           column.render(item)

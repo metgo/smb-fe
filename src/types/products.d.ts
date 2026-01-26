@@ -12,8 +12,8 @@ interface Product {
   };
   businessId: string;
   businessName: string;
-  type: 'physical' | 'table-order' | 'service' | 'hotel-room' | 'experience';
-  status: 'draft' | 'pending' | 'approved' | 'rejected' | 'archived';
+  type: "physical" | "table-order" | "service" | "hotel-room" | "experience";
+  status: "draft" | "pending" | "approved" | "rejected" | "archived";
   markedPrice: number;
   sellingPrice: number;
   quantity: number | null; // null = unlimited
@@ -52,7 +52,13 @@ interface ProductFormData {
   };
 
   // Type & Category
-  type: 'physical' | 'table-order' | 'service' | 'hotel-room' | 'experience' | '';
+  type:
+    | "physical"
+    | "table-order"
+    | "service"
+    | "hotel-room"
+    | "experience"
+    | "";
   categories: string[];
 
   // Pricing

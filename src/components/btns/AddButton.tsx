@@ -1,13 +1,11 @@
-import { Plus } from "lucide-react"
+import { Plus } from "lucide-react";
 
 interface AddButtonProps {
   label: string;
-  handleClick: ()=>void;
+  handleClick: () => void;
 }
 
-
 const AddButton = ({ label, handleClick }: AddButtonProps) => {
-
   return (
     <button
       onClick={handleClick}

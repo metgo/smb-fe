@@ -22,8 +22,8 @@ const ProductMedia: React.FC<ProductMediaProps> = ({
   errors,
   handleImageUpload,
 }) => {
-
-  const { textSecondary, textTertiary, borderColor, hoverBg } = useThemeClasses()
+  const { textSecondary, textTertiary, borderColor, hoverBg } =
+    useThemeClasses();
 
   return (
     <div className="space-y-6">
@@ -57,7 +57,9 @@ const ProductMedia: React.FC<ProductMediaProps> = ({
             <>
               <Upload className={`w-12 h-12 mx-auto mb-4 ${textTertiary}`} />
               <p className={`${textSecondary} mb-2`}>{t("drag_drop_images")}</p>
-              <p className={`text-xs ${textTertiary}`}>{t("image_format_size")}</p>
+              <p className={`text-xs ${textTertiary}`}>
+                {t("image_format_size")}
+              </p>
             </>
           )}
         </div>
@@ -71,7 +73,9 @@ const ProductMedia: React.FC<ProductMediaProps> = ({
           }}
           className="hidden"
         />
-        {errors.mainImage && <p className="text-red-500 text-sm mt-1">{errors.mainImage}</p>}
+        {errors.mainImage && (
+          <p className="text-red-500 text-sm mt-1">{errors.mainImage}</p>
+        )}
       </div>
 
       {/* Additional Images */}
@@ -81,10 +85,14 @@ const ProductMedia: React.FC<ProductMediaProps> = ({
         </label>
         <div
           className={`border-2 border-dashed ${borderColor} rounded-xl p-6 text-center ${hoverBg} cursor-pointer transition-colors`}
-          onClick={() => document.getElementById("additional-images-input")?.click()}
+          onClick={() =>
+            document.getElementById("additional-images-input")?.click()
+          }
         >
           <Upload className={`w-8 h-8 mx-auto mb-2 ${textTertiary}`} />
-          <p className={`text-sm ${textSecondary}`}>{t("additional_images_limit")}</p>
+          <p className={`text-sm ${textSecondary}`}>
+            {t("additional_images_limit")}
+          </p>
         </div>
         <input
           id="additional-images-input"
@@ -111,7 +119,9 @@ const ProductMedia: React.FC<ProductMediaProps> = ({
                   onClick={() =>
                     setFormData({
                       ...formData,
-                      additionalImages: formData.additionalImages.filter((_, i) => i !== idx),
+                      additionalImages: formData.additionalImages.filter(
+                        (_, i) => i !== idx,
+                      ),
                     })
                   }
                   className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded hover:bg-red-600"

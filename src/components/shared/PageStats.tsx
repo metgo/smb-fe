@@ -1,20 +1,20 @@
-import { useThemeClasses } from "@/hooks/useThemeClasses"
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 interface PageStatsProps {
-  stats: PageStats[]
+  stats: PageStats[];
   className?: string;
 }
 
-
 export default function PageStats({
   stats,
-  className = "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-6"
+  className = "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-6",
 }: PageStatsProps) {
-  const { bgPrimary, borderColor, textPrimary, textTertiary } = useThemeClasses()
+  const { bgPrimary, borderColor, textPrimary, textTertiary } =
+    useThemeClasses();
 
   return (
     <div className={className}>
-      {stats?.map(item => (
+      {stats?.map((item) => (
         <div
           key={item.id}
           className={`${bgPrimary} rounded-xl px-4 py-2 border ${borderColor} shadow-sm`}
@@ -25,10 +25,14 @@ export default function PageStats({
           </div>
           <p className={`text-2xl ${textPrimary} mb-1`}>{item.value}</p>
           {item.label && (
-            <p className={`text-xs ${item.labelClass ? item.labelClass : textTertiary}`}>{item.label}</p>
+            <p
+              className={`text-xs ${item.labelClass ? item.labelClass : textTertiary}`}
+            >
+              {item.label}
+            </p>
           )}
         </div>
       ))}
     </div>
-  )
+  );
 }

@@ -1,5 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
-import { MapPin, Search, X } from 'lucide-react';
+import { useState, useEffect, useRef } from "react";
+import { MapPin, Search, X } from "lucide-react";
 
 interface GooglePlacesAutocompleteProps {
   value: string;
@@ -11,29 +11,104 @@ interface GooglePlacesAutocompleteProps {
 
 // Mock Google Places data for demonstration (Western Negev cities)
 const MOCK_PLACES = [
-  { description: 'Beer Sheva, Israel', placeId: '1', mainText: 'Beer Sheva', secondaryText: 'Israel' },
-  { description: 'Sderot, Israel', placeId: '2', mainText: 'Sderot', secondaryText: 'Israel' },
-  { description: 'Netivot, Israel', placeId: '3', mainText: 'Netivot', secondaryText: 'Israel' },
-  { description: 'Ofakim, Israel', placeId: '4', mainText: 'Ofakim', secondaryText: 'Israel' },
-  { description: 'Ashkelon, Israel', placeId: '5', mainText: 'Ashkelon', secondaryText: 'Israel' },
-  { description: 'Kiryat Gat, Israel', placeId: '6', mainText: 'Kiryat Gat', secondaryText: 'Israel' },
-  { description: 'Rahat, Israel', placeId: '7', mainText: 'Rahat', secondaryText: 'Israel' },
-  { description: 'Dimona, Israel', placeId: '8', mainText: 'Dimona', secondaryText: 'Israel' },
-  { description: 'Arad, Israel', placeId: '9', mainText: 'Arad', secondaryText: 'Israel' },
-  { description: 'Yeruham, Israel', placeId: '10', mainText: 'Yeruham', secondaryText: 'Israel' },
-  { description: 'Mitzpe Ramon, Israel', placeId: '11', mainText: 'Mitzpe Ramon', secondaryText: 'Israel' },
-  { description: 'Kiryat Malachi, Israel', placeId: '12', mainText: 'Kiryat Malachi', secondaryText: 'Israel' },
-  { description: 'Eshkol Regional Council, Israel', placeId: '13', mainText: 'Eshkol Regional Council', secondaryText: 'Western Negev, Israel' },
-  { description: 'Sha\'ar HaNegev Regional Council, Israel', placeId: '14', mainText: 'Sha\'ar HaNegev', secondaryText: 'Western Negev, Israel' },
-  { description: 'Sdot Negev Regional Council, Israel', placeId: '15', mainText: 'Sdot Negev', secondaryText: 'Western Negev, Israel' },
+  {
+    description: "Beer Sheva, Israel",
+    placeId: "1",
+    mainText: "Beer Sheva",
+    secondaryText: "Israel",
+  },
+  {
+    description: "Sderot, Israel",
+    placeId: "2",
+    mainText: "Sderot",
+    secondaryText: "Israel",
+  },
+  {
+    description: "Netivot, Israel",
+    placeId: "3",
+    mainText: "Netivot",
+    secondaryText: "Israel",
+  },
+  {
+    description: "Ofakim, Israel",
+    placeId: "4",
+    mainText: "Ofakim",
+    secondaryText: "Israel",
+  },
+  {
+    description: "Ashkelon, Israel",
+    placeId: "5",
+    mainText: "Ashkelon",
+    secondaryText: "Israel",
+  },
+  {
+    description: "Kiryat Gat, Israel",
+    placeId: "6",
+    mainText: "Kiryat Gat",
+    secondaryText: "Israel",
+  },
+  {
+    description: "Rahat, Israel",
+    placeId: "7",
+    mainText: "Rahat",
+    secondaryText: "Israel",
+  },
+  {
+    description: "Dimona, Israel",
+    placeId: "8",
+    mainText: "Dimona",
+    secondaryText: "Israel",
+  },
+  {
+    description: "Arad, Israel",
+    placeId: "9",
+    mainText: "Arad",
+    secondaryText: "Israel",
+  },
+  {
+    description: "Yeruham, Israel",
+    placeId: "10",
+    mainText: "Yeruham",
+    secondaryText: "Israel",
+  },
+  {
+    description: "Mitzpe Ramon, Israel",
+    placeId: "11",
+    mainText: "Mitzpe Ramon",
+    secondaryText: "Israel",
+  },
+  {
+    description: "Kiryat Malachi, Israel",
+    placeId: "12",
+    mainText: "Kiryat Malachi",
+    secondaryText: "Israel",
+  },
+  {
+    description: "Eshkol Regional Council, Israel",
+    placeId: "13",
+    mainText: "Eshkol Regional Council",
+    secondaryText: "Western Negev, Israel",
+  },
+  {
+    description: "Sha'ar HaNegev Regional Council, Israel",
+    placeId: "14",
+    mainText: "Sha'ar HaNegev",
+    secondaryText: "Western Negev, Israel",
+  },
+  {
+    description: "Sdot Negev Regional Council, Israel",
+    placeId: "15",
+    mainText: "Sdot Negev",
+    secondaryText: "Western Negev, Israel",
+  },
 ];
 
 export default function GooglePlacesAutocomplete({
   value,
   onChange,
-  placeholder = 'Search for a location',
+  placeholder = "Search for a location",
   theme,
-  error
+  error,
 }: GooglePlacesAutocompleteProps) {
   const [query, setQuery] = useState(value);
   const [suggestions, setSuggestions] = useState<any[]>([]);
@@ -41,12 +116,13 @@ export default function GooglePlacesAutocomplete({
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const inputClasses = theme === 'dark'
-    ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-500'
-    : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400';
+  const inputClasses =
+    theme === "dark"
+      ? "bg-gray-800 border-gray-700 text-white placeholder-gray-500"
+      : "bg-white border-gray-300 text-gray-900 placeholder-gray-400";
 
-  const textSecondary = theme === 'dark' ? 'text-gray-300' : 'text-gray-700';
-  const textTertiary = theme === 'dark' ? 'text-gray-400' : 'text-gray-500';
+  const textSecondary = theme === "dark" ? "text-gray-300" : "text-gray-700";
+  const textTertiary = theme === "dark" ? "text-gray-400" : "text-gray-500";
 
   // Sync query with value prop
   useEffect(() => {
@@ -62,9 +138,10 @@ export default function GooglePlacesAutocomplete({
 
     const timer = setTimeout(() => {
       // Use mock data for demo
-      const filtered = MOCK_PLACES.filter(place =>
-        place.description.toLowerCase().includes(query.toLowerCase()) ||
-        place.mainText.toLowerCase().includes(query.toLowerCase())
+      const filtered = MOCK_PLACES.filter(
+        (place) =>
+          place.description.toLowerCase().includes(query.toLowerCase()) ||
+          place.mainText.toLowerCase().includes(query.toLowerCase()),
       );
       setSuggestions(filtered);
       setIsOpen(filtered.length > 0);
@@ -85,21 +162,23 @@ export default function GooglePlacesAutocomplete({
     if (!isOpen || suggestions.length === 0) return;
 
     switch (e.key) {
-      case 'ArrowDown':
+      case "ArrowDown":
         e.preventDefault();
-        setSelectedIndex(prev => (prev < suggestions.length - 1 ? prev + 1 : prev));
+        setSelectedIndex((prev) =>
+          prev < suggestions.length - 1 ? prev + 1 : prev,
+        );
         break;
-      case 'ArrowUp':
+      case "ArrowUp":
         e.preventDefault();
-        setSelectedIndex(prev => (prev > 0 ? prev - 1 : -1));
+        setSelectedIndex((prev) => (prev > 0 ? prev - 1 : -1));
         break;
-      case 'Enter':
+      case "Enter":
         e.preventDefault();
         if (selectedIndex >= 0) {
           handleSelect(suggestions[selectedIndex]);
         }
         break;
-      case 'Escape':
+      case "Escape":
         setIsOpen(false);
         setSelectedIndex(-1);
         break;
@@ -107,8 +186,8 @@ export default function GooglePlacesAutocomplete({
   };
 
   const handleClear = () => {
-    setQuery('');
-    onChange('');
+    setQuery("");
+    onChange("");
     setSuggestions([]);
     setIsOpen(false);
     inputRef.current?.focus();
@@ -140,7 +219,7 @@ export default function GooglePlacesAutocomplete({
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
           className={`w-full pl-10 pr-10 py-2 rounded-lg border ${inputClasses} ${
-            error ? 'border-red-500' : ''
+            error ? "border-red-500" : ""
           }`}
         />
         {query && (
@@ -157,9 +236,9 @@ export default function GooglePlacesAutocomplete({
       {isOpen && suggestions.length > 0 && (
         <div
           className={`absolute z-50 w-full mt-1 rounded-lg border shadow-lg max-h-60 overflow-y-auto ${
-            theme === 'dark'
-              ? 'bg-gray-800 border-gray-700'
-              : 'bg-white border-gray-200'
+            theme === "dark"
+              ? "bg-gray-800 border-gray-700"
+              : "bg-white border-gray-200"
           }`}
         >
           {suggestions.map((suggestion, index) => (
@@ -168,15 +247,17 @@ export default function GooglePlacesAutocomplete({
               onClick={() => handleSelect(suggestion)}
               className={`w-full px-4 py-3 text-left flex items-start gap-3 transition-colors ${
                 index === selectedIndex
-                  ? theme === 'dark'
-                    ? 'bg-gray-700'
-                    : 'bg-gray-100'
-                  : theme === 'dark'
-                  ? 'hover:bg-gray-700'
-                  : 'hover:bg-gray-50'
-              } ${index > 0 ? (theme === 'dark' ? 'border-t border-gray-700' : 'border-t border-gray-100') : ''}`}
+                  ? theme === "dark"
+                    ? "bg-gray-700"
+                    : "bg-gray-100"
+                  : theme === "dark"
+                    ? "hover:bg-gray-700"
+                    : "hover:bg-gray-50"
+              } ${index > 0 ? (theme === "dark" ? "border-t border-gray-700" : "border-t border-gray-100") : ""}`}
             >
-              <MapPin className={`w-4 h-4 mt-0.5 flex-shrink-0 ${textTertiary}`} />
+              <MapPin
+                className={`w-4 h-4 mt-0.5 flex-shrink-0 ${textTertiary}`}
+              />
               <div className="flex-1 min-w-0">
                 <div className={`text-sm ${textSecondary}`}>
                   {suggestion.mainText}
@@ -198,9 +279,7 @@ export default function GooglePlacesAutocomplete({
         Search for cities in the Western Negev region
       </p>
 
-      {error && (
-        <p className="text-red-500 text-sm mt-1">{error}</p>
-      )}
+      {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
     </div>
   );
 }

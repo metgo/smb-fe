@@ -1,5 +1,4 @@
 {
-  
   "select_dashboard_view": "Select Dashboard View",
 
   "desktop_dashboard": "Desktop Dashboard",
@@ -30,14 +29,13 @@
   "show_hide_widgets": "Show/Hide Widgets",
   "reset_to_defaults": "Reset to Defaults",
 
-  
   "google_analytics_overview": "Google Analytics Overview",
   "users": "Users",
   "sessions": "Sessions",
   "page_views": "Page Views",
   "avg_duration": "Avg. Duration",
   "conversions": "Conversions",
-  
+
   "google_analytics_overview_desc": "Real-time analytics from Google Analytics showing user engagement metrics including sessions, page views, average session duration, and conversion rates for your tourism websites.",
   "distribution_overview_desc": "Distribution of businesses, products, and points of interest across different categories including sleep, eat, attractions, local services, travel, and cultural sites in the Western Negev region.",
   "upcoming_events_desc": "Calendar of scheduled tourism events, festivals, and activities across the Western Negev region with dates, locations, and registration status.",

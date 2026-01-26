@@ -1,6 +1,6 @@
-import { createApi } from '@reduxjs/toolkit/query/react';
-import { axiosBaseQuery } from './axiosBaseQuery';
-import { endpoints } from '@/lib/endpoints';
+import { createApi } from "@reduxjs/toolkit/query/react";
+import { axiosBaseQuery } from "./axiosBaseQuery";
+import { endpoints } from "@/lib/endpoints";
 
 interface LoginPayload {
   email: string;
@@ -21,14 +21,14 @@ interface RegisterStep2Payload {
 }
 
 export const authApi = createApi({
-  reducerPath: 'authApi',
+  reducerPath: "authApi",
   baseQuery: axiosBaseQuery(),
   endpoints: (builder) => ({
     //  Login
     login: builder.mutation<any, LoginPayload>({
       query: (body) => ({
         url: endpoints.login,
-        method: 'POST',
+        method: "POST",
         data: body,
       }),
     }),
@@ -37,7 +37,7 @@ export const authApi = createApi({
     registerStep1: builder.mutation<any, RegisterStep1Payload>({
       query: (body) => ({
         url: endpoints.registerStep1,
-        method: 'POST',
+        method: "POST",
         data: body,
       }),
     }),
@@ -46,7 +46,7 @@ export const authApi = createApi({
     registerStep2: builder.mutation<any, RegisterStep2Payload>({
       query: ({ userId, ...body }) => ({
         url: `${endpoints.registerStep2}/${userId}`,
-        method: 'PATCH',
+        method: "PATCH",
         data: body,
       }),
     }),
