@@ -20,13 +20,13 @@ interface EventDay {
   date: string; // ISO date string, e.g., "2026-01-15"
   startTime: string; // "14:30"
   endTime: string; // "18:00"
-  description: string
+  description: string;
 }
 
 type EventFormat = "physical" | "online" | "hybrid";
 
 interface EventDateTimeFormatProps {
-  geo: Geo,
+  geo: Geo;
   setGeo: (v: Geo) => void;
   // Multi-day toggle
   isMultiDay: boolean;
@@ -74,7 +74,7 @@ interface EventDateTimeFormatProps {
 
   recurrenceEndType: RecurrenceEndType;
   setRecurrenceEndType: (v: RecurrenceEndType) => void;
-  recurrenceEndCount: number,
+  recurrenceEndCount: number;
   setRecurrenceEndCount: (v: number) => void;
   recurrenceEndDate: string;
   setRecurrenceEndDate: (v: string) => void;
@@ -92,7 +92,6 @@ interface EventDateTimeFormatProps {
   markDirty: (step: number) => void;
 }
 
-
 const weekDays = [
   { value: "Sunday", label: "Sun" },
   { value: "Monday", label: "Mon" },
@@ -101,8 +100,7 @@ const weekDays = [
   { value: "Thursday", label: "Thu" },
   { value: "Friday", label: "Fri" },
   { value: "Saturday", label: "Sat" },
-
-]
+];
 
 const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
   markDirty,
@@ -121,27 +119,39 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
   errors,
   addEventDay,
   removeEventDay,
-  isRecurring, setIsRecurring,
-  recurrencePattern, setRecurrencePattern,
+  isRecurring,
+  setIsRecurring,
+  recurrencePattern,
+  setRecurrencePattern,
   toggleWeekday,
   selectedWeekdays,
-  geo, setGeo,
-  specificDate, setSpecificDate,
-  relativeDate, setRelativeDate,
-  relativeDay, setRelativeDay,
-  customInterval, setCustomInterval,
-  customUnit, setCustomUnit,
+  geo,
+  setGeo,
+  specificDate,
+  setSpecificDate,
+  relativeDate,
+  setRelativeDate,
+  relativeDay,
+  setRelativeDay,
+  customInterval,
+  setCustomInterval,
+  customUnit,
+  setCustomUnit,
 
-  monthlyType, setMonthlyType,
-  recurrenceEndCount, setRecurrenceEndCount,
-  recurrenceEndDate, setRecurrenceEndDate,
-  recurrenceEndType, setRecurrenceEndType,
+  monthlyType,
+  setMonthlyType,
+  recurrenceEndCount,
+  setRecurrenceEndCount,
+  recurrenceEndDate,
+  setRecurrenceEndDate,
+  recurrenceEndType,
+  setRecurrenceEndType,
 }) => {
   const { t } = useTranslation("events");
-  const { t: cT } = useTranslation('common');
-  const { textSecondary, textTertiary, inputClasses, textPrimary } = useThemeClasses();
+  const { t: cT } = useTranslation("common");
+  const { textSecondary, textTertiary, inputClasses, textPrimary } =
+    useThemeClasses();
   const { theme, isRTL } = useAppSelector((state) => state.settings);
-
 
   useEffect(() => {
     markDirty(2);
@@ -153,34 +163,45 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
     onlineLink,
     geo,
     recurrencePattern,
+    markDirty,
   ]);
 
-  const fieldRefs = {
-    startDate: useRef<HTMLDivElement>(null),
-    address: useRef<HTMLDivElement>(null),
-    onlineLink: useRef<HTMLInputElement>(null),
-  };
-
+  const startDateRef = useRef<HTMLDivElement>(null);
+  const addressRef = useRef<HTMLDivElement>(null);
+  const onlineLinkRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const errorKeys = Object.keys(errors);
     if (errorKeys.length === 0) return;
 
     const firstErrorKey = errorKeys[0];
-    const ref = fieldRefs[firstErrorKey as keyof typeof fieldRefs];
+    let targetRef: React.RefObject<HTMLDivElement | null> | null = null;
 
-    if (ref?.current) {
-      ref.current.scrollIntoView({
+    switch (firstErrorKey) {
+      case "address":
+        targetRef = addressRef;
+        break;
+      case "startDate":
+        targetRef = startDateRef;
+        break;
+      case "onlineLink":
+        targetRef = onlineLinkRef;
+        break;
+      default:
+        break;
+    }
+
+    if (targetRef?.current) {
+      targetRef.current.scrollIntoView({
         behavior: "smooth",
         block: "center",
       });
 
-      if ("focus" in ref.current) {
-        (ref.current as HTMLElement).focus();
+      if ("focus" in targetRef.current) {
+        (targetRef.current as HTMLElement).focus();
       }
     }
   }, [errors]);
-
 
   // Generate recurring occurrences
   const generateRecurringOccurrences = () => {
@@ -188,40 +209,40 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
 
     const occurrences: Array<{ date: string; time: string }> = [];
     const start = new Date(startDate);
-    const startTime = eventDays[0]?.startTime || '09:00';
-    let currentDate = new Date(start);
+    const startTime = eventDays[0]?.startTime || "09:00";
+    const currentDate = new Date(start);
 
     // Calculate end date (max 1 year)
     const maxEndDate = new Date(start);
     maxEndDate.setFullYear(maxEndDate.getFullYear() + 1);
 
     let endDate: Date;
-    if (recurrenceEndType === 'date' && recurrenceEndDate) {
+    if (recurrenceEndType === "date" && recurrenceEndDate) {
       endDate = new Date(recurrenceEndDate);
       if (endDate > maxEndDate) endDate = maxEndDate;
-    } else if (recurrenceEndType === 'count') {
+    } else if (recurrenceEndType === "count") {
       endDate = maxEndDate; // Will stop at count anyway
     } else {
       endDate = maxEndDate;
     }
 
     let count = 0;
-    const maxCount = recurrenceEndType === 'count' ? recurrenceEndCount : 365;
+    const maxCount = recurrenceEndType === "count" ? recurrenceEndCount : 365;
 
     while (currentDate <= endDate && count < maxCount) {
       let shouldAdd = false;
 
-      if (recurrencePattern === 'daily') {
+      if (recurrencePattern === "daily") {
         shouldAdd = true;
         currentDate.setDate(currentDate.getDate() + 1);
-      } else if (recurrencePattern === 'weekly') {
+      } else if (recurrencePattern === "weekly") {
         const dayOfWeek = currentDate.getDay();
         if (selectedWeekdays.includes(weekDays[dayOfWeek].value)) {
           shouldAdd = true;
         }
         currentDate.setDate(currentDate.getDate() + 1);
-      } else if (recurrencePattern === 'monthly') {
-        if (monthlyType === 'SPECIFIC_DATE') {
+      } else if (recurrencePattern === "monthly") {
+        if (monthlyType === "SPECIFIC_DATE") {
           // Same date each month
           if (currentDate.getDate() === start.getDate()) {
             shouldAdd = true;
@@ -233,15 +254,15 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
           shouldAdd = true;
           currentDate.setMonth(currentDate.getMonth() + 1);
         }
-      } else if (recurrencePattern === 'custom') {
+      } else if (recurrencePattern === "custom") {
         shouldAdd = true;
         currentDate.setDate(currentDate.getDate() + customInterval);
       }
 
       if (shouldAdd && currentDate <= endDate) {
         occurrences.push({
-          date: currentDate.toISOString().split('T')[0],
-          time: startTime
+          date: currentDate.toISOString().split("T")[0],
+          time: startTime,
         });
         count++;
       }
@@ -257,28 +278,32 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
     <div className="space-y-6 max-w-3xl mx-auto">
       {/* Event Duration: Single vs Multi-day */}
       <div>
-        <label className={`block text-sm mb-2 ${textSecondary}`}>{t("event_duration")}</label>
+        <label className={`block text-sm mb-2 ${textSecondary}`}>
+          {t("event_duration")}
+        </label>
         <div className="flex gap-4">
           <button
             onClick={() => setIsMultiDay(false)}
-            className={`flex-1 px-4 py-3 rounded-lg border transition-colors ${!isMultiDay
-              ? "border-teal-500 bg-teal-500/10 text-teal-500"
-              : theme === "dark"
-                ? "border-gray-700 hover:bg-gray-800"
-                : "border-gray-300 hover:bg-gray-50"
-              }`}
+            className={`flex-1 px-4 py-3 rounded-lg border transition-colors ${
+              !isMultiDay
+                ? "border-teal-500 bg-teal-500/10 text-teal-500"
+                : theme === "dark"
+                  ? "border-gray-700 hover:bg-gray-800"
+                  : "border-gray-300 hover:bg-gray-50"
+            }`}
           >
             <Calendar className="w-5 h-5 mx-auto mb-1" />
             <span className="text-sm">{t("single_day")}</span>
           </button>
           <button
             onClick={() => setIsMultiDay(true)}
-            className={`flex-1 px-4 py-3 rounded-lg border transition-colors ${isMultiDay
-              ? "border-teal-500 bg-teal-500/10 text-teal-500"
-              : theme === "dark"
-                ? "border-gray-700 hover:bg-gray-800"
-                : "border-gray-300 hover:bg-gray-50"
-              }`}
+            className={`flex-1 px-4 py-3 rounded-lg border transition-colors ${
+              isMultiDay
+                ? "border-teal-500 bg-teal-500/10 text-teal-500"
+                : theme === "dark"
+                  ? "border-gray-700 hover:bg-gray-800"
+                  : "border-gray-300 hover:bg-gray-50"
+            }`}
           >
             <Calendar className="w-5 h-5 mx-auto mb-1" />
             <span className="text-sm">{t("multi_day")}</span>
@@ -289,13 +314,15 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
       {/* Date & Time Input */}
       {!isMultiDay ? (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div ref={fieldRefs.startDate}>
+          <div ref={startDateRef}>
             <label className={`block text-sm mb-2 ${textSecondary}`}>
               {t("date")} <span className="text-red-500">*</span>
             </label>
             <DatePicker
               disablePast
-              value={startDate ? new Date(startDate).toISOString().split('T')[0] : ''}
+              value={
+                startDate ? new Date(startDate).toISOString().split("T")[0] : ""
+              }
               onChange={(date) => setStartDate(date)}
               placeholder={t("select_date")}
               theme={theme}
@@ -303,7 +330,9 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
             />
           </div>
           <div>
-            <label className={`block text-sm mb-2 ${textSecondary}`}>{t("start_time")}</label>
+            <label className={`block text-sm mb-2 ${textSecondary}`}>
+              {t("start_time")}
+            </label>
             <input
               type="time"
               value={eventDays[0]?.startTime || ""}
@@ -314,7 +343,9 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
             />
           </div>
           <div>
-            <label className={`block text-sm mb-2 ${textSecondary}`}>{t("end_time")}</label>
+            <label className={`block text-sm mb-2 ${textSecondary}`}>
+              {t("end_time")}
+            </label>
             <input
               type="time"
               value={eventDays[0]?.endTime || ""}
@@ -330,11 +361,16 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
           {eventDays?.map((day, index) => (
             <div
               key={day.id}
-              className={`p-4 rounded-lg border ${theme === "dark" ? "border-gray-700 bg-gray-800/50" : "border-gray-200 bg-gray-50"
-                }`}
+              className={`p-4 rounded-lg border ${
+                theme === "dark"
+                  ? "border-gray-700 bg-gray-800/50"
+                  : "border-gray-200 bg-gray-50"
+              }`}
             >
               <div className="flex items-center justify-between mb-3">
-                <span className={`text-sm ${textSecondary}`}>{t("day")} {index + 1}</span>
+                <span className={`text-sm ${textSecondary}`}>
+                  {t("day")} {index + 1}
+                </span>
                 {eventDays?.length > 1 && (
                   <button
                     onClick={() => removeEventDay(day.id)}
@@ -349,16 +385,14 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
                   disablePast
                   value={
                     day?.date
-                      ? new Date(day.date).toISOString().split('T')[0]
-                      : ''
+                      ? new Date(day.date).toISOString().split("T")[0]
+                      : ""
                   }
                   onChange={(date) => {
-                    setEventDays(prev =>
+                    setEventDays((prev) =>
                       prev.map((item, i) =>
-                        i === index
-                          ? { ...item, date }
-                          : item
-                      )
+                        i === index ? { ...item, date } : item,
+                      ),
                     );
                   }}
                   placeholder={t("select_date")}
@@ -391,10 +425,11 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
 
           <button
             onClick={addEventDay}
-            className={`w-full px-4 py-2 rounded-lg border-2 border-dashed transition-colors flex flex-col items-center justify-center ${theme === "dark"
-              ? "border-gray-700 hover:border-teal-500 hover:bg-gray-800"
-              : "border-gray-300 hover:border-teal-500 hover:bg-gray-50"
-              }`}
+            className={`w-full px-4 py-2 rounded-lg border-2 border-dashed transition-colors flex flex-col items-center justify-center ${
+              theme === "dark"
+                ? "border-gray-700 hover:border-teal-500 hover:bg-gray-800"
+                : "border-gray-300 hover:border-teal-500 hover:bg-gray-50"
+            }`}
           >
             <Plus className="w-5 h-5 mb-1" />
             <span className="text-sm">{t("add_another_day")}</span>
@@ -405,30 +440,33 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
       {/* Recurring Events Section */}
       {!isMultiDay && (
         <div
-          className={`p-6 rounded-lg border ${theme === 'dark'
-            ? 'border-gray-700 bg-gray-800/50'
-            : 'border-gray-200 bg-gray-50'
-            }`}
+          className={`p-6 rounded-lg border ${
+            theme === "dark"
+              ? "border-gray-700 bg-gray-800/50"
+              : "border-gray-200 bg-gray-50"
+          }`}
         >
           {/* Header */}
           <div
-            className={`flex items-center justify-between mb-4 ${isRTL ? 'flex-row-reverse' : ''
-              }`}
+            className={`flex items-center justify-between mb-4 ${
+              isRTL ? "flex-row-reverse" : ""
+            }`}
           >
             <div
-              className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''
-                }`}
+              className={`flex items-center gap-2 ${
+                isRTL ? "flex-row-reverse" : ""
+              }`}
             >
               <Repeat className="w-5 h-5 text-teal-500" />
               <label className={`text-sm font-medium ${textPrimary}`}>
-                {t('recurring_event') || 'Recurring Event'}
+                {t("recurring_event") || "Recurring Event"}
               </label>
               <button
                 type="button"
                 className="p-1 hover:bg-gray-700 rounded"
                 title={
-                  t('recurring_event_tooltip') ||
-                  'Create multiple event occurrences based on a repeating schedule'
+                  t("recurring_event_tooltip") ||
+                  "Create multiple event occurrences based on a repeating schedule"
                 }
               >
                 <Info className="w-4 h-4 text-gray-400" />
@@ -451,19 +489,20 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
               {/* Recurrence Pattern */}
               <div>
                 <label className={`block text-sm mb-2 ${textSecondary}`}>
-                  {t('recurrence_pattern') || 'Recurrence Pattern'}
+                  {t("recurrence_pattern") || "Recurrence Pattern"}
                 </label>
 
                 <div className="space-y-2">
-                  {['daily', 'weekly', 'monthly', 'custom'].map((pattern) => (
+                  {["daily", "weekly", "monthly", "custom"].map((pattern) => (
                     <label
                       key={pattern}
-                      className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${recurrencePattern === pattern
-                        ? 'border-teal-500 bg-teal-500/10'
-                        : theme === 'dark'
-                          ? 'border-gray-700 hover:bg-gray-800'
-                          : 'border-gray-200 hover:bg-gray-50'
-                        } ${isRTL ? 'flex-row-reverse' : ''}`}
+                      className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+                        recurrencePattern === pattern
+                          ? "border-teal-500 bg-teal-500/10"
+                          : theme === "dark"
+                            ? "border-gray-700 hover:bg-gray-800"
+                            : "border-gray-200 hover:bg-gray-50"
+                      } ${isRTL ? "flex-row-reverse" : ""}`}
                     >
                       <input
                         type="radio"
@@ -484,10 +523,10 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
               </div>
 
               {/* Weekly */}
-              {recurrencePattern === 'weekly' && (
+              {recurrencePattern === "weekly" && (
                 <div>
                   <label className={`block text-sm mb-2 ${textSecondary}`}>
-                    {t('select_days') || 'Select Days'}
+                    {t("select_days") || "Select Days"}
                   </label>
 
                   <div className="flex gap-2 flex-wrap">
@@ -497,12 +536,13 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
                           key={day.value}
                           type="button"
                           onClick={() => toggleWeekday(day.value)}
-                          className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-medium ${selectedWeekdays.includes(day.value)
-                            ? 'bg-teal-600 text-white'
-                            : theme === 'dark'
-                              ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                            }`}
+                          className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-medium ${
+                            selectedWeekdays.includes(day.value)
+                              ? "bg-teal-600 text-white"
+                              : theme === "dark"
+                                ? "bg-gray-700 text-gray-300 hover:bg-gray-600"
+                                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                          }`}
                         >
                           {cT(day.label.toLocaleLowerCase())}
                         </button>
@@ -513,17 +553,17 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
               )}
 
               {/* Monthly */}
-              {recurrencePattern === 'monthly' && (
+              {recurrencePattern === "monthly" && (
                 <div className="space-y-3">
                   <div className="flex items-center gap-4">
                     <label className="flex items-center gap-3">
                       <input
                         type="radio"
-                        checked={monthlyType === 'SPECIFIC_DATE'}
-                        onChange={() => setMonthlyType('SPECIFIC_DATE')}
+                        checked={monthlyType === "SPECIFIC_DATE"}
+                        onChange={() => setMonthlyType("SPECIFIC_DATE")}
                       />
                       <span className={textSecondary}>
-                        {t('by_specific_date') || 'By specific date'}
+                        {t("by_specific_date") || "By specific date"}
                       </span>
                     </label>
                     <select
@@ -545,15 +585,15 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
                   <label className="flex items-center gap-3">
                     <input
                       type="radio"
-                      checked={monthlyType === 'RELATIVE_DAY'}
-                      onChange={() => setMonthlyType('RELATIVE_DAY')}
+                      checked={monthlyType === "RELATIVE_DAY"}
+                      onChange={() => setMonthlyType("RELATIVE_DAY")}
                     />
                     <span className={textSecondary}>
-                      {t('by_relative_day') || 'By relative day'}
+                      {t("by_relative_day") || "By relative day"}
                     </span>
                   </label>
 
-                  {monthlyType === 'RELATIVE_DAY' && (
+                  {monthlyType === "RELATIVE_DAY" && (
                     <div className="flex gap-3">
                       <select
                         value={relativeDate}
@@ -562,27 +602,25 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
                         }
                         className={`flex-1 px-3 py-2 rounded-lg border ${inputClasses}`}
                       >
-                        <option value="1">{cT('first') || '1st'}</option>
-                        <option value="2">{cT('second') || '2nd'}</option>
-                        <option value="3">{cT('third') || '3rd'}</option>
-                        <option value="4">{cT('fourth') || '4th'}</option>
-                        <option value="5">{cT('fifth') || '5th'}</option>
+                        <option value="1">{cT("first") || "1st"}</option>
+                        <option value="2">{cT("second") || "2nd"}</option>
+                        <option value="3">{cT("third") || "3rd"}</option>
+                        <option value="4">{cT("fourth") || "4th"}</option>
+                        <option value="5">{cT("fifth") || "5th"}</option>
                       </select>
 
                       <select
                         value={relativeDay}
-                        onChange={(e) =>
-                          setRelativeDay(e.target.value)
-                        }
+                        onChange={(e) => setRelativeDay(e.target.value)}
                         className={`flex-1 px-3 py-2 rounded-lg border ${inputClasses}`}
                       >
-                        <option value="sunday">{cT('sunday')}</option>
-                        <option value="monday">{cT('monday')}</option>
-                        <option value="tuesday">{cT('tuesday')}</option>
-                        <option value="wednesday">{cT('wednesday')}</option>
-                        <option value="thursday">{cT('thursday')}</option>
-                        <option value="friday">{cT('friday')}</option>
-                        <option value="saturday">{cT('saturday')}</option>
+                        <option value="sunday">{cT("sunday")}</option>
+                        <option value="monday">{cT("monday")}</option>
+                        <option value="tuesday">{cT("tuesday")}</option>
+                        <option value="wednesday">{cT("wednesday")}</option>
+                        <option value="thursday">{cT("thursday")}</option>
+                        <option value="friday">{cT("friday")}</option>
+                        <option value="saturday">{cT("saturday")}</option>
                       </select>
                     </div>
                   )}
@@ -590,34 +628,35 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
               )}
 
               {/* Custom Interval */}
-              {recurrencePattern === 'custom' && (
+              {recurrencePattern === "custom" && (
                 <div>
                   <label className={`block text-sm mb-2 ${textSecondary}`}>
-                    {t('every')}
+                    {t("every")}
                   </label>
                   <div>
-                    <div className={`flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                    <div
+                      className={`flex items-center gap-2 ${isRTL ? "flex-row-reverse" : ""}`}
+                    >
                       <input
                         min="1"
                         type="number"
                         value={customInterval}
-                        onChange={(e) => setCustomInterval(parseInt(e.target.value) || 1)}
+                        onChange={(e) =>
+                          setCustomInterval(parseInt(e.target.value) || 1)
+                        }
                         className={`w-20 px-3 py-2 rounded-lg border ${inputClasses}`}
                       />
                       <select
                         value={customUnit}
-                        onChange={(e) =>
-                          setCustomUnit(e.target.value as any)
-                        }
+                        onChange={(e) => setCustomUnit(e.target.value as any)}
                         className={`flex-1 px-3 py-2 rounded-lg border ${inputClasses}`}
                       >
-                        <option value="day">{cT('days')}</option>
-                        <option value="week">{cT('weeks')}</option>
-                        <option value="month">{cT('months')}</option>
-                        <option value="year">{cT('years')}</option>
+                        <option value="day">{cT("days")}</option>
+                        <option value="week">{cT("weeks")}</option>
+                        <option value="month">{cT("months")}</option>
+                        <option value="year">{cT("years")}</option>
                       </select>
                     </div>
-
                   </div>
                 </div>
               )}
@@ -625,45 +664,51 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
               {/* End Condition */}
               <div>
                 <label className={`block text-sm mb-2 ${textSecondary}`}>
-                  {t('recurrence_ends')}
+                  {t("recurrence_ends")}
                 </label>
                 <div className="space-y-2">
-                  <label className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                  <label
+                    className={`flex items-center gap-3 ${isRTL ? "flex-row-reverse" : ""}`}
+                  >
                     <input
                       type="radio"
                       name="end-type"
-                      checked={recurrenceEndType === 'count'}
-                      onChange={() => setRecurrenceEndType('count')}
+                      checked={recurrenceEndType === "count"}
+                      onChange={() => setRecurrenceEndType("count")}
                       className="w-4 h-4"
                     />
-                    <span className={textSecondary}>{t('after')}</span>
-                    {recurrenceEndType === 'count' && (
+                    <span className={textSecondary}>{t("after")}</span>
+                    {recurrenceEndType === "count" && (
                       <input
                         type="number"
                         min="1"
                         max="365"
                         value={recurrenceEndCount}
-                        onChange={(e) => setRecurrenceEndCount(parseInt(e.target.value) || 10)}
+                        onChange={(e) =>
+                          setRecurrenceEndCount(parseInt(e.target.value) || 10)
+                        }
                         className={`w-20 px-2 py-1 rounded border ${inputClasses}`}
                       />
                     )}
-                    <span className={textSecondary}>{t('occurrences')}</span>
+                    <span className={textSecondary}>{t("occurrences")}</span>
                   </label>
 
-                  <label className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                  <label
+                    className={`flex items-center gap-3 ${isRTL ? "flex-row-reverse" : ""}`}
+                  >
                     <input
                       type="radio"
                       name="end-type"
-                      checked={recurrenceEndType === 'date'}
-                      onChange={() => setRecurrenceEndType('date')}
+                      checked={recurrenceEndType === "date"}
+                      onChange={() => setRecurrenceEndType("date")}
                       className="w-4 h-4"
                     />
-                    <span className={textSecondary}>{t('end_on')}</span>
-                    {recurrenceEndType === 'date' && (
+                    <span className={textSecondary}>{t("end_on")}</span>
+                    {recurrenceEndType === "date" && (
                       <DatePicker
                         value={recurrenceEndDate}
                         onChange={(date) => setRecurrenceEndDate(date)}
-                        placeholder={t('select_date')}
+                        placeholder={t("select_date")}
                         theme={theme}
                       />
                     )}
@@ -673,50 +718,62 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
 
               {/* Helper Text */}
               <div
-                className={`p-3 rounded-lg ${theme === 'dark'
-                  ? 'bg-blue-900/20 border border-blue-800'
-                  : 'bg-blue-50 border border-blue-200'
-                  }`}
+                className={`p-3 rounded-lg ${
+                  theme === "dark"
+                    ? "bg-blue-900/20 border border-blue-800"
+                    : "bg-blue-50 border border-blue-200"
+                }`}
               >
                 <p className="text-sm text-blue-600 dark:text-blue-400">
                   <Info className="w-4 h-4 inline mr-2" />
-                  {t('recurring_instances_managed')}
+                  {t("recurring_instances_managed")}
                 </p>
               </div>
 
               {/* Preview Occurrences */}
               {startDate && (
                 <div
-                  className={`p-4 rounded-lg border ${theme === 'dark'
-                    ? 'border-gray-700 bg-gray-900/50'
-                    : 'border-gray-200 bg-white'
-                    }`}
+                  className={`p-4 rounded-lg border ${
+                    theme === "dark"
+                      ? "border-gray-700 bg-gray-900/50"
+                      : "border-gray-200 bg-white"
+                  }`}
                 >
-                  <div className={`flex items-center justify-between mb-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                  <div
+                    className={`flex items-center justify-between mb-3 ${isRTL ? "flex-row-reverse" : ""}`}
+                  >
                     <span className={`text-sm font-medium ${textPrimary}`}>
-                      {t('generated_occurrences')}
+                      {t("generated_occurrences")}
                     </span>
                     <span
-                      className={`text-xs px-2 py-1 rounded ${theme === 'dark'
-                        ? 'bg-teal-900/30 text-teal-400'
-                        : 'bg-teal-100 text-teal-700'
-                        }`}
+                      className={`text-xs px-2 py-1 rounded ${
+                        theme === "dark"
+                          ? "bg-teal-900/30 text-teal-400"
+                          : "bg-teal-100 text-teal-700"
+                      }`}
                     >
-                      {generateRecurringOccurrences().length} {t('occurrences')}
+                      {generateRecurringOccurrences().length} {t("occurrences")}
                     </span>
                   </div>
 
                   <div className="max-h-40 overflow-y-auto space-y-1">
-                    {generateRecurringOccurrences().slice(0, 5).map((occ, i) => (
-                      <div key={i} className={`text-xs ${textTertiary} flex items-center gap-2`}>
-                        <Calendar className="w-3 h-3" />
-                        {new Date(occ.date).toLocaleDateString()} at {occ.time}
-                      </div>
-                    ))}
+                    {generateRecurringOccurrences()
+                      .slice(0, 5)
+                      .map((occ, i) => (
+                        <div
+                          key={i}
+                          className={`text-xs ${textTertiary} flex items-center gap-2`}
+                        >
+                          <Calendar className="w-3 h-3" />
+                          {new Date(occ.date).toLocaleDateString()} at{" "}
+                          {occ.time}
+                        </div>
+                      ))}
 
                     {generateRecurringOccurrences().length > 5 && (
                       <div className={`text-xs ${textTertiary} italic`}>
-                        + {generateRecurringOccurrences().length - 5} {t('more')}...
+                        + {generateRecurringOccurrences().length - 5}{" "}
+                        {t("more")}...
                       </div>
                     )}
                   </div>
@@ -724,7 +781,9 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
               )}
 
               {/* Validation Warning */}
-              {startDate && recurrenceEndType === 'date' && recurrenceEndDate &&
+              {startDate &&
+                recurrenceEndType === "date" &&
+                recurrenceEndDate &&
                 (() => {
                   const start = new Date(startDate);
                   const end = new Date(recurrenceEndDate);
@@ -734,14 +793,15 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
                   if (end > maxEnd) {
                     return (
                       <div
-                        className={`p-3 rounded-lg ${theme === 'dark'
-                          ? 'bg-red-900/20 border border-red-800'
-                          : 'bg-red-50 border border-red-200'
-                          }`}
+                        className={`p-3 rounded-lg ${
+                          theme === "dark"
+                            ? "bg-red-900/20 border border-red-800"
+                            : "bg-red-50 border border-red-200"
+                        }`}
                       >
                         <p className="text-sm text-red-600 dark:text-red-400">
                           <AlertCircle className="w-4 h-4 inline mr-2" />
-                          {t('recurrence_max_one_year')}
+                          {t("recurrence_max_one_year")}
                         </p>
                       </div>
                     );
@@ -755,18 +815,21 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
 
       {/* Event Format */}
       <div>
-        <label className={`block text-sm mb-2 ${textSecondary}`}>{t("event_format")}</label>
+        <label className={`block text-sm mb-2 ${textSecondary}`}>
+          {t("event_format")}
+        </label>
         <div className="grid grid-cols-3 gap-3">
           {(["physical", "online", "hybrid"] as const).map((format) => (
             <button
               key={format}
               onClick={() => setEventFormat(format)}
-              className={`px-4 py-3 rounded-lg border capitalize transition-colors flex flex-col items-center ${eventFormat === format
-                ? "border-teal-500 bg-teal-500/10 text-teal-500"
-                : theme === "dark"
-                  ? "border-gray-700 hover:bg-gray-800"
-                  : "border-gray-300 hover:bg-gray-50"
-                }`}
+              className={`px-4 py-3 rounded-lg border capitalize transition-colors flex flex-col items-center ${
+                eventFormat === format
+                  ? "border-teal-500 bg-teal-500/10 text-teal-500"
+                  : theme === "dark"
+                    ? "border-gray-700 hover:bg-gray-800"
+                    : "border-gray-300 hover:bg-gray-50"
+              }`}
             >
               {format === "physical" ? (
                 <MapPin className="w-5 h-5 mb-1" />
@@ -781,7 +844,7 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
 
       {/* Physical / Hybrid Location */}
       {eventFormat !== "online" && (
-        <div ref={fieldRefs.address}>
+        <div ref={addressRef}>
           <label className={`block text-sm mb-2 ${textSecondary}`}>
             {t("location_address")} <span className="text-red-500">*</span>
           </label>
@@ -806,7 +869,7 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
           <input
             type="url"
             value={onlineLink}
-            ref={fieldRefs.onlineLink}
+            ref={onlineLinkRef}
             onChange={(e) => setOnlineLink(e.target.value)}
             placeholder="https://zoom.us/..."
             className={`w-full px-4 py-2 rounded-lg border ${inputClasses} ${errors.onlineLink ? "border-red-500" : ""}`}

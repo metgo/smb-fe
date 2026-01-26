@@ -1,10 +1,10 @@
-import { LocateIcon } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
-import { useEffect, useRef, useState } from 'react';
+import { LocateIcon } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { useEffect, useRef, useState } from "react";
 
-import { envKeys } from '@/lib/envKeys';
-import { endpoints } from '@/lib/endpoints';
-import { googlePointOfInterest } from '@/lib/utils';
+import { envKeys } from "@/lib/envKeys";
+import { endpoints } from "@/lib/endpoints";
+import { googlePointOfInterest } from "@/lib/utils";
 
 interface MarkerMapProps {
   setGeo: (v: Geo) => void;
@@ -23,13 +23,8 @@ interface PlaceSuggestion {
 }
 
 /* ---------------- Component ---------------- */
-const MarkerMap = ({
-  setGeo,
-  setAddress,
-  address,
-  geo,
-}: MarkerMapProps) => {
-  const { t, i18n } = useTranslation('events');
+const MarkerMap = ({ setGeo, setAddress, address, geo }: MarkerMapProps) => {
+  const { t, i18n } = useTranslation("events");
   const locale = i18n.language;
 
   /* ---------------- Refs ---------------- */
@@ -40,9 +35,53 @@ const MarkerMap = ({
 
   /* ---------------- State ---------------- */
   const [map, setMap] = useState<any>(null);
-  const [inputValue, setInputValue] = useState<string>('');
+  const [inputValue, setInputValue] = useState<string>("");
   const [suggestions, setSuggestions] = useState<PlaceSuggestion[]>([]);
   const [_isMapLoaded, _setIsMapLoaded] = useState<boolean>(false);
+
+  /* ---------------- Helpers ---------------- */
+
+  const placeMarker = (lat: number, lng: number, googleMap: any): void => {
+    if (markerRef.current) {
+      markerRef.current.setMap(null);
+    }
+
+    markerRef.current = new window.google.maps.Marker({
+      position: { lat, lng },
+      map: googleMap,
+      draggable: true,
+      icon: {
+        url: "/assets/images/map-pin.png",
+        scaledSize: new window.google.maps.Size(30, 40),
+      },
+    });
+
+    setGeo({ lat: lat.toString(), lng: lng.toString() });
+
+    markerRef.current.addListener("dragend", (e: any) => {
+      if (!e.latLng) return;
+      const newLat = e.latLng.lat();
+      const newLng = e.latLng.lng();
+      setGeo({ lat: newLat.toString(), lng: newLng.toString() });
+      fetchAddress(newLat, newLng);
+    });
+
+    googleMap.panTo({ lat, lng });
+  };
+
+  const fetchAddress = (lat: number, lng: number): void => {
+    const geocoder = new window.google.maps.Geocoder();
+
+    geocoder.geocode(
+      { location: { lat, lng } },
+      (results: any, status: string) => {
+        if (status === "OK" && results?.[0]) {
+          setAddress(results[0].formatted_address);
+          setInputValue(results[0].formatted_address);
+        }
+      },
+    );
+  };
 
   /* ---------------- Effects ---------------- */
 
@@ -51,9 +90,43 @@ const MarkerMap = ({
   }, [address]);
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === "undefined") return;
 
-    const script = document.createElement('script');
+    const initializeMap = (): void => {
+      if (!mapRef.current || !window.google?.maps) return;
+
+      const defaultCenter = { lat: 31.304167, lng: 34.521977 };
+
+      const lat = parseFloat(geo?.lat);
+      const lng = parseFloat(geo?.lng);
+
+      const center = !isNaN(lat) && !isNaN(lng) ? { lat, lng } : defaultCenter;
+
+      const googleMap = new window.google.maps.Map(mapRef.current, {
+        center,
+        zoom: 10,
+        mapTypeControl: false,
+        streetViewControl: false,
+        zoomControl: false,
+        fullscreenControl: true,
+        gestureHandling: "greedy",
+        styles: googlePointOfInterest,
+      });
+
+      setMap(googleMap);
+
+      placeMarker(center.lat, center.lng, googleMap);
+
+      googleMap.addListener("dblclick", (e: any) => {
+        if (!e.latLng) return;
+        const lat = e.latLng.lat();
+        const lng = e.latLng.lng();
+        placeMarker(lat, lng, googleMap);
+        fetchAddress(lat, lng);
+      });
+    };
+
+    const script = document.createElement("script");
     script.src = `${endpoints.googleMap}?key=${envKeys.googleMapApiKey}&language=${locale}`;
     script.async = true;
 
@@ -69,103 +142,11 @@ const MarkerMap = ({
         document.body.removeChild(scriptRef.current);
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [locale]);
 
-  /* ---------------- Map Init ---------------- */
-
-  const initializeMap = (): void => {
-    if (!mapRef.current || !window.google?.maps) return;
-
-    const defaultCenter = { lat: 31.304167, lng: 34.521977 };
-
-    const lat = parseFloat(geo?.lat);
-    const lng = parseFloat(geo?.lng);
-
-    const center =
-      !isNaN(lat) && !isNaN(lng)
-        ? { lat, lng }
-        : defaultCenter;
-
-    const googleMap = new window.google.maps.Map(mapRef.current, {
-      center,
-      zoom: 10,
-      mapTypeControl: false,
-      streetViewControl: false,
-      zoomControl: false,
-      fullscreenControl: true,
-      gestureHandling: 'greedy',
-      styles: googlePointOfInterest,
-    });
-
-    setMap(googleMap);
-
-    placeMarker(center.lat, center.lng, googleMap);
-
-    googleMap.addListener('dblclick', (e: any) => {
-      if (!e.latLng) return;
-      const lat = e.latLng.lat();
-      const lng = e.latLng.lng();
-      placeMarker(lat, lng, googleMap);
-      fetchAddress(lat, lng);
-    });
-  };
-
-  /* ---------------- Helpers ---------------- */
-
-  const placeMarker = (
-    lat: number,
-    lng: number,
-    googleMap: any
-  ): void => {
-    if (markerRef.current) {
-      markerRef.current.setMap(null);
-    }
-
-    markerRef.current = new window.google.maps.Marker({
-      position: { lat, lng },
-      map: googleMap,
-      draggable: true,
-      icon: {
-        url:'/assets/images/map-pin.png',
-        scaledSize: new window.google.maps.Size(30, 40),
-      },
-    });
-
-    setGeo({ lat: lat.toString(), lng: lng.toString() });
-
-    markerRef.current.addListener(
-      'dragend',
-      (e: any) => {
-        if (!e.latLng) return;
-        const newLat = e.latLng.lat();
-        const newLng = e.latLng.lng();
-        setGeo({ lat: newLat.toString(), lng: newLng.toString() });
-        fetchAddress(newLat, newLng);
-      }
-    );
-
-    googleMap.panTo({ lat, lng });
-  };
-
-  const fetchAddress = (lat: number, lng: number): void => {
-    const geocoder = new window.google.maps.Geocoder();
-
-    geocoder.geocode(
-      { location: { lat, lng } },
-      (results: any, status: string) => {
-        if (status === 'OK' && results?.[0]) {
-          setAddress(results[0].formatted_address);
-          setInputValue(results[0].formatted_address);
-        }
-      }
-    );
-  };
-
   /* ---------------- Handlers ---------------- */
-
-  const handleInputChange = async (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const handleInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setInputValue(value);
 
@@ -177,16 +158,16 @@ const MarkerMap = ({
     const response = await fetch(
       `${endpoints.googlePlaceAutoComplete}:autocomplete`,
       {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'X-Goog-Api-Key': envKeys.googleMapApiKey,
+          "Content-Type": "application/json",
+          "X-Goog-Api-Key": envKeys.googleMapApiKey,
         },
         body: JSON.stringify({
           input: value,
           languageCode: locale,
         }),
-      }
+      },
     );
 
     const data = await response.json();
@@ -198,9 +179,9 @@ const MarkerMap = ({
       `${endpoints.googlePlaceAutoComplete}/${placeId}?fields=location,formattedAddress`,
       {
         headers: {
-          'X-Goog-Api-Key': envKeys.googleMapApiKey,
+          "X-Goog-Api-Key": envKeys.googleMapApiKey,
         },
-      }
+      },
     );
 
     const data = await response.json();
@@ -218,9 +199,7 @@ const MarkerMap = ({
     }
   };
 
-  const findMyLocation = (
-    e: React.MouseEvent<HTMLButtonElement>
-  ) => {
+  const findMyLocation = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
 
     navigator.geolocation.getCurrentPosition((pos) => {
@@ -241,12 +220,12 @@ const MarkerMap = ({
   /* ---------------- Render ---------------- */
 
   return (
-    <div style={{ width: '100%', height: '40vh', position: 'relative' }}>
+    <div style={{ width: "100%", height: "40vh", position: "relative" }}>
       <input
         ref={inputRef}
         value={inputValue}
         onChange={handleInputChange}
-        placeholder={t('search_placeholder')}
+        placeholder={t("search_placeholder")}
         className="absolute top-2 left-2 z-50 w-[95%] h-12 px-3 rounded-xl bg-white/60"
       />
 
@@ -255,9 +234,7 @@ const MarkerMap = ({
           {suggestions.map((s) => (
             <li
               key={s.placePrediction.placeId}
-              onClick={() =>
-                handleSuggestionSelect(s.placePrediction.placeId)
-              }
+              onClick={() => handleSuggestionSelect(s.placePrediction.placeId)}
               className="p-2 cursor-pointer hover:bg-gray-100"
             >
               {s.placePrediction.text.text}
