@@ -106,7 +106,7 @@
   "day_view": "יום",
   "today": "היום",
 
-    "create_new_event": "יצירת אירוע חדש",
+  "create_new_event": "יצירת אירוע חדש",
   "edit_event": "עריכת אירוע",
   "duplicate_event": "שכפול אירוע",
   "step": "שלב",
@@ -179,7 +179,7 @@
   "marked_price_required": "המחיר המסומן הוא שדה חובה",
   "selling_price_required": "מחיר המכירה הוא שדה חובה",
   "add_more_days": "הוסף ימים נוספים",
-  
+
   "event_images": "תמונות אירוע",
   "upload_images": "העלאה של תמונות",
   "drag_drop_images": "גרור ושחרר תמונות",
@@ -237,9 +237,9 @@
   "registrant_details": "פרטי הנרשם",
   "no_registrants_match": "לא נמצאו נרשמים התואמים את החיפוש שלך",
 
-   "search_placeholder": "חפש כתובת...",
+  "search_placeholder": "חפש כתובת...",
 
-   "your_images": "התמונות שלך",
+  "your_images": "התמונות שלך",
   "tickets": "כרטיסים",
   "registration": "הרשמה",
   "required": "נדרש",
@@ -249,7 +249,7 @@
   "no_registrants_yet": "טרם נרשמו משתתפים",
   "date_range": "טווח תאריכים",
   "websites": "אתרים",
-  
+
   "free_access_info": "כאשר ההרשמה מושבתת, המשתתפים יכולים להצטרף בחופשיות ללא צורך בהרשמה.",
   "select_event_day_first": "עליך לבחור תחילה יום/ימי אירוע.",
   "no_tickets_created": "עדיין לא נוצרו כרטיסים. אנא צור כרטיס תחילה."

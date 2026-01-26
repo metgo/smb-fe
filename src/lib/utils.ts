@@ -1,10 +1,9 @@
-import { clsx, type ClassValue } from "clsx"
-import { twMerge } from "tailwind-merge"
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
+  return twMerge(clsx(inputs));
 }
-
 
 export const categoryIds = {
   sleep: "6566fcd4a77d2a477266d3b9",
@@ -25,27 +24,26 @@ export const categories: Record<string, string> = {
   [categoryIds.tour]: "travel",
 };
 
-
 export const googlePointOfInterest = [
   {
-    featureType: 'poi',
-    elementType: 'labels',
-    stylers: [{ visibility: 'off' }],
+    featureType: "poi",
+    elementType: "labels",
+    stylers: [{ visibility: "off" }],
   },
   {
-    featureType: 'poi.business',
-    elementType: 'labels',
-    stylers: [{ visibility: 'off' }],
+    featureType: "poi.business",
+    elementType: "labels",
+    stylers: [{ visibility: "off" }],
   },
   {
-    featureType: 'poi.attraction',
-    elementType: 'labels',
-    stylers: [{ visibility: 'off' }],
+    featureType: "poi.attraction",
+    elementType: "labels",
+    stylers: [{ visibility: "off" }],
   },
   {
-    featureType: 'poi.place_of_worship',
-    elementType: 'labels',
-    stylers: [{ visibility: 'off' }],
+    featureType: "poi.place_of_worship",
+    elementType: "labels",
+    stylers: [{ visibility: "off" }],
   },
   // {
   //   featureType: 'poi.airport',
@@ -53,6 +51,3 @@ export const googlePointOfInterest = [
   //   stylers: [{ visibility: 'off' }]
   // }
 ];
-
-
-

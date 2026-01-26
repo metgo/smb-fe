@@ -2,7 +2,7 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 interface ProductDeliveryServiceProps {
   t: (key: string) => string;
-  formData: ProductFormData
+  formData: ProductFormData;
   setFormData: (data: ProductFormData) => void;
 }
 
@@ -11,7 +11,14 @@ const ProductDeliveryService = ({
   formData,
   setFormData,
 }: ProductDeliveryServiceProps) => {
-  const { bgTertiary, textPrimary, textSecondary, textTertiary, borderColor, hoverBg } = useThemeClasses()
+  const {
+    bgTertiary,
+    textPrimary,
+    textSecondary,
+    textTertiary,
+    borderColor,
+    hoverBg,
+  } = useThemeClasses();
 
   return (
     <div className="space-y-6">
@@ -52,9 +59,7 @@ const ProductDeliveryService = ({
             {formData.enableHomeDelivery && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 ml-8">
                 <div>
-                  <label
-                    className={`block text-sm ${textSecondary} mb-2`}
-                  >
+                  <label className={`block text-sm ${textSecondary} mb-2`}>
                     {t("delivery_fee")} (₪)
                   </label>
                   <input
@@ -69,9 +74,7 @@ const ProductDeliveryService = ({
                 </div>
 
                 <div>
-                  <label
-                    className={`block text-sm ${textSecondary} mb-2`}
-                  >
+                  <label className={`block text-sm ${textSecondary} mb-2`}>
                     {t("estimated_delivery_time")}
                   </label>
                   <input
@@ -158,9 +161,7 @@ const ProductDeliveryService = ({
       {/* Hotel Room Info */}
       {formData.type === "hotel-room" && (
         <div className={`p-6 rounded-xl ${bgTertiary} text-center`}>
-          <p className={`${textSecondary}`}>
-            {t("hotel_room_info")}
-          </p>
+          <p className={`${textSecondary}`}>{t("hotel_room_info")}</p>
         </div>
       )}
     </div>

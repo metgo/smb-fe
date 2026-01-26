@@ -37,7 +37,7 @@ const QuickSnapEventDetails = ({
       <div
         className={clsx(
           "rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl",
-          theme === "dark" ? "bg-gray-900" : "bg-white"
+          theme === "dark" ? "bg-gray-900" : "bg-white",
         )}
       >
         {/* Header Image */}
@@ -69,7 +69,7 @@ const QuickSnapEventDetails = ({
             <h2
               className={clsx(
                 "text-3xl font-bold",
-                theme === "dark" ? "text-white" : "text-gray-900"
+                theme === "dark" ? "text-white" : "text-gray-900",
               )}
             >
               {selectedEvent.name}
@@ -101,12 +101,12 @@ const QuickSnapEventDetails = ({
               <Calendar className="w-6 h-6 text-purple-500" />
               <div>
                 <div className="font-medium">
-                    {extractEventDates(selectedEvent?.dayDescription)}
+                  {extractEventDates(selectedEvent?.dayDescription)}
                 </div>
                 <div
                   className={clsx(
                     "text-sm",
-                    theme === "dark" ? "text-gray-400" : "text-gray-600"
+                    theme === "dark" ? "text-gray-400" : "text-gray-600",
                   )}
                 >
                   {selectedEvent.startTime} – {selectedEvent.endTime}
@@ -117,7 +117,9 @@ const QuickSnapEventDetails = ({
             {/* Location */}
             <div className="flex items-center gap-4">
               <MapPin className="w-6 h-6 text-purple-500" />
-              <div className="font-medium">{extractCenterAddressText(selectedEvent?.address?.location)}</div>
+              <div className="font-medium">
+                {extractCenterAddressText(selectedEvent?.address?.location)}
+              </div>
             </div>
 
             {/* Price */}
@@ -126,14 +128,10 @@ const QuickSnapEventDetails = ({
               <div
                 className={clsx(
                   "font-medium",
-                  selectedEvent.isFree
-                    ? "text-emerald-600"
-                    : "text-purple-600"
+                  selectedEvent.isFree ? "text-emerald-600" : "text-purple-600",
                 )}
               >
-                {selectedEvent.isFree
-                  ? t("free")
-                  : `₪ 0`}
+                {selectedEvent.isFree ? t("free") : `₪ 0`}
               </div>
             </div>
 
@@ -150,16 +148,17 @@ const QuickSnapEventDetails = ({
                   <div
                     className={clsx(
                       "w-64 mt-2 rounded-full h-3",
-                      theme === "dark" ? "bg-gray-700" : "bg-gray-200"
+                      theme === "dark" ? "bg-gray-700" : "bg-gray-200",
                     )}
                   >
                     <div
                       className="bg-linear-to-r from-purple-500 to-pink-500 h-3 rounded-full"
                       style={{
-                        width: `${(selectedEvent.totalRegistrations /
+                        width: `${
+                          (selectedEvent.totalRegistrations /
                             selectedEvent.capacity) *
                           100
-                          }%`,
+                        }%`,
                       }}
                     />
                   </div>
@@ -174,13 +173,13 @@ const QuickSnapEventDetails = ({
                   "p-6 rounded-xl border",
                   theme === "dark"
                     ? "bg-purple-900/30 border-purple-800"
-                    : "bg-purple-50 border-purple-200"
+                    : "bg-purple-50 border-purple-200",
                 )}
               >
                 <div
                   className={clsx(
                     "text-sm mb-1",
-                    theme === "dark" ? "text-gray-400" : "text-gray-600"
+                    theme === "dark" ? "text-gray-400" : "text-gray-600",
                   )}
                 >
                   {t("totalRevenue")}
@@ -188,13 +187,10 @@ const QuickSnapEventDetails = ({
                 <div
                   className={clsx(
                     "text-3xl font-bold",
-                    theme === "dark"
-                      ? "text-purple-400"
-                      : "text-purple-600"
+                    theme === "dark" ? "text-purple-400" : "text-purple-600",
                   )}
                 >
-                  ₪ 0
-                  {/* {selectedEvent?.revenue?.toLocaleString()} */}
+                  ₪ 0{/* {selectedEvent?.revenue?.toLocaleString()} */}
                 </div>
               </div>
             )}

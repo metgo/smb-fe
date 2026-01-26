@@ -1,11 +1,11 @@
-import type { BaseQueryFn } from '@reduxjs/toolkit/query';
-import axiosInstance from '@/lib/axios';
+import type { BaseQueryFn } from "@reduxjs/toolkit/query";
+import axiosInstance from "@/lib/axios";
 
 export const axiosBaseQuery =
   (): BaseQueryFn<
     {
       url: string;
-      method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
+      method: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
       data?: any;
       params?: any;
     },

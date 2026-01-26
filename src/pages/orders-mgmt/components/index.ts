@@ -4,11 +4,10 @@ import MonthFilter from "./MonthFilter";
 import OrderDetailsModal from "./OrderDetailsModal";
 import QRScannerModal from "./QRScannerModal";
 
-export{
+export {
   FilterSelect,
   MonthFilter,
   CreateOrderWizard,
   QRScannerModal,
   OrderDetailsModal,
-
-}
+};

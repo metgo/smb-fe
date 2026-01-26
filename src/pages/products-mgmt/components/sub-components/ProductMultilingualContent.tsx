@@ -16,7 +16,8 @@ const ProductMultilingualContent: React.FC<ProductMultilingualContentProps> = ({
   formData,
   setFormData,
 }) => {
-  const { bgTertiary, textPrimary, textSecondary, borderColor } = useThemeClasses()
+  const { bgTertiary, textPrimary, textSecondary, borderColor } =
+    useThemeClasses();
 
   return (
     <div className="space-y-6">
@@ -60,7 +61,10 @@ const ProductMultilingualContent: React.FC<ProductMultilingualContentProps> = ({
               onChange={(e) =>
                 setFormData({
                   ...formData,
-                  shortDescription: { ...formData.shortDescription, he: e.target.value },
+                  shortDescription: {
+                    ...formData.shortDescription,
+                    he: e.target.value,
+                  },
                 })
               }
               rows={2}
@@ -104,7 +108,10 @@ const ProductMultilingualContent: React.FC<ProductMultilingualContentProps> = ({
               onChange={(e) =>
                 setFormData({
                   ...formData,
-                  shortDescription: { ...formData.shortDescription, ar: e.target.value },
+                  shortDescription: {
+                    ...formData.shortDescription,
+                    ar: e.target.value,
+                  },
                 })
               }
               rows={2}

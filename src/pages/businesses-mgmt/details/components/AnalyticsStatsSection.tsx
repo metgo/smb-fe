@@ -1,20 +1,60 @@
-import { Eye, Users, MousePointer, Bookmark, Share2, Timer, TrendingUp } from "lucide-react";
+import {
+  Eye,
+  Users,
+  MousePointer,
+  Bookmark,
+  Share2,
+  Timer,
+  TrendingUp,
+} from "lucide-react";
 
 interface AnalyticsStatsSectionProps {
   business: Business;
   theme: string;
-  t: (key: string)=>string;
+  t: (key: string) => string;
 }
- 
-const AnalyticsStatsSection = ({ business, theme, t }: AnalyticsStatsSectionProps) => {
+
+const AnalyticsStatsSection = ({
+  business,
+  theme,
+  t,
+}: AnalyticsStatsSectionProps) => {
   const stats = [
-    { icon: Eye, label: t("page_views"), value: business?.analytics?.pageViews.toLocaleString() },
-    { icon: Users, label: t("unique_visitors"), value: business?.analytics?.uniqueVisitors.toLocaleString() },
-    { icon: MousePointer, label: t("clicks"), value: business?.analytics?.clicks.toLocaleString() },
-    { icon: Bookmark, label: t("bookmarks"), value: business?.analytics?.bookmarks.toLocaleString() },
-    { icon: Share2, label: t("shares"), value: business?.analytics?.shares.toLocaleString() },
-    { icon: Timer, label: t("avg_time_on_page"), value: `${business?.analytics?.averageTimeOnPage}s` },
-    { icon: TrendingUp, label: t("conversion_rate"), value: `${business?.analytics?.conversionRate}%` },
+    {
+      icon: Eye,
+      label: t("page_views"),
+      value: business?.analytics?.pageViews.toLocaleString(),
+    },
+    {
+      icon: Users,
+      label: t("unique_visitors"),
+      value: business?.analytics?.uniqueVisitors.toLocaleString(),
+    },
+    {
+      icon: MousePointer,
+      label: t("clicks"),
+      value: business?.analytics?.clicks.toLocaleString(),
+    },
+    {
+      icon: Bookmark,
+      label: t("bookmarks"),
+      value: business?.analytics?.bookmarks.toLocaleString(),
+    },
+    {
+      icon: Share2,
+      label: t("shares"),
+      value: business?.analytics?.shares.toLocaleString(),
+    },
+    {
+      icon: Timer,
+      label: t("avg_time_on_page"),
+      value: `${business?.analytics?.averageTimeOnPage}s`,
+    },
+    {
+      icon: TrendingUp,
+      label: t("conversion_rate"),
+      value: `${business?.analytics?.conversionRate}%`,
+    },
   ];
 
   return (
@@ -29,11 +69,15 @@ const AnalyticsStatsSection = ({ business, theme, t }: AnalyticsStatsSectionProp
             >
               <div className="flex items-center gap-2 mb-2">
                 <Icon className="w-5 h-5 text-teal-600 dark:text-teal-400" />
-                <h3 className={`text-sm ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}>
+                <h3
+                  className={`text-sm ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
+                >
                   {stat.label}
                 </h3>
               </div>
-              <p className={`text-2xl font-bold ${theme === "dark" ? "text-white" : "text-gray-900"}`}>
+              <p
+                className={`text-2xl font-bold ${theme === "dark" ? "text-white" : "text-gray-900"}`}
+              >
                 {stat.value}
               </p>
             </div>
@@ -44,4 +88,4 @@ const AnalyticsStatsSection = ({ business, theme, t }: AnalyticsStatsSectionProp
   );
 };
 
-export default AnalyticsStatsSection
+export default AnalyticsStatsSection;

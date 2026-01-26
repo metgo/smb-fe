@@ -5,7 +5,11 @@ interface BusinessTitleSectionProps {
   theme: string;
   t: any;
 }
- const BusinessTitleSection = ({ business, theme, t }: BusinessTitleSectionProps) => {
+const BusinessTitleSection = ({
+  business,
+  theme,
+  t,
+}: BusinessTitleSectionProps) => {
   const StatusBadge = ({ status }: { status: Business["status"] }) => {
     const statusConfig = {
       draft: { color: "bg-gray-500", label: t("draft") },
@@ -16,7 +20,9 @@ interface BusinessTitleSectionProps {
     };
     const config = statusConfig[status];
     return (
-      <span className={`px-3 py-1 rounded-full text-sm text-white ${config.color}`}>
+      <span
+        className={`px-3 py-1 rounded-full text-sm text-white ${config.color}`}
+      >
         {config.label}
       </span>
     );
@@ -25,14 +31,18 @@ interface BusinessTitleSectionProps {
   return (
     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
       <div>
-        <h1 className={`text-3xl mb-2 ${theme === "dark" ? "text-gray-100" : "text-gray-900"}`}>
+        <h1
+          className={`text-3xl mb-2 ${theme === "dark" ? "text-gray-100" : "text-gray-900"}`}
+        >
           {business.name}
         </h1>
         <div className="flex items-center gap-4">
           <StatusBadge status={business.status} />
           <div className="flex items-center gap-2">
             <TrendingUp className="w-5 h-5 text-green-600" />
-            <span className={theme === "dark" ? "text-gray-300" : "text-gray-700"}>
+            <span
+              className={theme === "dark" ? "text-gray-300" : "text-gray-700"}
+            >
               {t("impact_score")}: {business.impactScore.toFixed(1)}
             </span>
           </div>
@@ -41,7 +51,9 @@ interface BusinessTitleSectionProps {
 
       {/* Completion Percentage */}
       <div className="flex flex-col items-end">
-        <span className={`text-sm mb-1 ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}>
+        <span
+          className={`text-sm mb-1 ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
+        >
           {t("completion_percentage")}
         </span>
         <div className="flex items-center gap-3">
@@ -51,7 +63,9 @@ interface BusinessTitleSectionProps {
               style={{ width: `${business.completionPercentage}%` }}
             />
           </div>
-          <span className={`text-sm ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}>
+          <span
+            className={`text-sm ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}
+          >
             {business.completionPercentage}%
           </span>
         </div>
@@ -59,4 +73,4 @@ interface BusinessTitleSectionProps {
     </div>
   );
 };
-export default BusinessTitleSection
+export default BusinessTitleSection;

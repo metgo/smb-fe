@@ -11,7 +11,7 @@ const TextareaField = ({
   onChange,
   placeholder,
   rows = 6,
-  inputClasses
+  inputClasses,
 }: TextareaFieldProps) => {
   return (
     <textarea
@@ -23,4 +23,4 @@ const TextareaField = ({
     />
   );
 };
-export default TextareaField
+export default TextareaField;

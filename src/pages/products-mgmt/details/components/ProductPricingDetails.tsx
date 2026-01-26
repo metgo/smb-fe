@@ -1,9 +1,9 @@
-import React from 'react'
+import React from "react";
 
 interface ProductPricingDetailsProps {
   product: Product;
   theme: Theme;
-  t: (key: string)=>string;
+  t: (key: string) => string;
 }
 
 const ProductPricingDetails: React.FC<ProductPricingDetailsProps> = ({
@@ -11,11 +11,11 @@ const ProductPricingDetails: React.FC<ProductPricingDetailsProps> = ({
   theme,
   t,
 }) => {
-  const discountAmount = product.markedPrice - product.sellingPrice
+  const discountAmount = product.markedPrice - product.sellingPrice;
   const discountPercent =
     product.markedPrice > 0
       ? Math.round((discountAmount / product.markedPrice) * 100)
-      : 0
+      : 0;
 
   return (
     <div className="space-y-6">
@@ -23,20 +23,23 @@ const ProductPricingDetails: React.FC<ProductPricingDetailsProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Marked Price */}
         <div
-          className={`p-4 rounded-lg border ${theme === 'dark'
-              ? 'border-gray-700 bg-gray-800/50'
-              : 'border-gray-200 bg-gray-50'
-            }`}
+          className={`p-4 rounded-lg border ${
+            theme === "dark"
+              ? "border-gray-700 bg-gray-800/50"
+              : "border-gray-200 bg-gray-50"
+          }`}
         >
           <h3
-            className={`text-sm mb-2 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
-              }`}
+            className={`text-sm mb-2 ${
+              theme === "dark" ? "text-gray-400" : "text-gray-600"
+            }`}
           >
-            {t('marked_price') || 'Marked Price'}
+            {t("marked_price") || "Marked Price"}
           </h3>
           <p
-            className={`text-3xl font-bold ${theme === 'dark' ? 'text-gray-200' : 'text-gray-800'
-              }`}
+            className={`text-3xl font-bold ${
+              theme === "dark" ? "text-gray-200" : "text-gray-800"
+            }`}
           >
             ₪{product.markedPrice.toLocaleString()}
           </p>
@@ -44,20 +47,23 @@ const ProductPricingDetails: React.FC<ProductPricingDetailsProps> = ({
 
         {/* Selling Price */}
         <div
-          className={`p-4 rounded-lg border ${theme === 'dark'
-              ? 'border-teal-700 bg-teal-950/30'
-              : 'border-teal-200 bg-teal-50'
-            }`}
+          className={`p-4 rounded-lg border ${
+            theme === "dark"
+              ? "border-teal-700 bg-teal-950/30"
+              : "border-teal-200 bg-teal-50"
+          }`}
         >
           <h3
-            className={`text-sm mb-2 ${theme === 'dark' ? 'text-teal-400' : 'text-teal-700'
-              }`}
+            className={`text-sm mb-2 ${
+              theme === "dark" ? "text-teal-400" : "text-teal-700"
+            }`}
           >
-            {t('selling_price') || 'Selling Price'}
+            {t("selling_price") || "Selling Price"}
           </h3>
           <p
-            className={`text-3xl font-bold ${theme === 'dark' ? 'text-teal-300' : 'text-teal-800'
-              }`}
+            className={`text-3xl font-bold ${
+              theme === "dark" ? "text-teal-300" : "text-teal-800"
+            }`}
           >
             ₪{product.sellingPrice.toLocaleString()}
           </p>
@@ -67,27 +73,31 @@ const ProductPricingDetails: React.FC<ProductPricingDetailsProps> = ({
       {/* Discount */}
       {discountAmount > 0 && (
         <div
-          className={`p-4 rounded-lg border ${theme === 'dark'
-              ? 'border-orange-700 bg-orange-950/30'
-              : 'border-orange-200 bg-orange-50'
-            }`}
+          className={`p-4 rounded-lg border ${
+            theme === "dark"
+              ? "border-orange-700 bg-orange-950/30"
+              : "border-orange-200 bg-orange-50"
+          }`}
         >
           <h3
-            className={`text-sm mb-2 ${theme === 'dark' ? 'text-orange-400' : 'text-orange-700'
-              }`}
+            className={`text-sm mb-2 ${
+              theme === "dark" ? "text-orange-400" : "text-orange-700"
+            }`}
           >
-            {t('discount') || 'Discount'}
+            {t("discount") || "Discount"}
           </h3>
           <div className="flex items-baseline gap-3">
             <p
-              className={`text-2xl font-bold ${theme === 'dark' ? 'text-orange-300' : 'text-orange-800'
-                }`}
+              className={`text-2xl font-bold ${
+                theme === "dark" ? "text-orange-300" : "text-orange-800"
+              }`}
             >
               ₪{discountAmount.toLocaleString()}
             </p>
             <p
-              className={`text-lg ${theme === 'dark' ? 'text-orange-400' : 'text-orange-700'
-                }`}
+              className={`text-lg ${
+                theme === "dark" ? "text-orange-400" : "text-orange-700"
+              }`}
             >
               ({discountPercent}% off)
             </p>
@@ -97,26 +107,29 @@ const ProductPricingDetails: React.FC<ProductPricingDetailsProps> = ({
 
       {/* Sales Statistics */}
       <div
-        className={`p-4 rounded-lg border ${theme === 'dark'
-            ? 'border-gray-700 bg-gray-800/50'
-            : 'border-gray-200 bg-gray-50'
-          }`}
+        className={`p-4 rounded-lg border ${
+          theme === "dark"
+            ? "border-gray-700 bg-gray-800/50"
+            : "border-gray-200 bg-gray-50"
+        }`}
       >
         <h3
-          className={`text-sm mb-3 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
-            }`}
+          className={`text-sm mb-3 ${
+            theme === "dark" ? "text-gray-400" : "text-gray-600"
+          }`}
         >
-          {t('sales_statistics') || 'Sales Statistics'}
+          {t("sales_statistics") || "Sales Statistics"}
         </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <p className="text-xs mb-1 text-gray-500">
-              {t('units_sold') || 'Units Sold'}
+              {t("units_sold") || "Units Sold"}
             </p>
             <p
-              className={`text-xl font-bold ${theme === 'dark' ? 'text-gray-200' : 'text-gray-800'
-                }`}
+              className={`text-xl font-bold ${
+                theme === "dark" ? "text-gray-200" : "text-gray-800"
+              }`}
             >
               {product.soldCount.toLocaleString()}
             </p>
@@ -124,11 +137,12 @@ const ProductPricingDetails: React.FC<ProductPricingDetailsProps> = ({
 
           <div>
             <p className="text-xs mb-1 text-gray-500">
-              {t('total_revenue') || 'Total Revenue'}
+              {t("total_revenue") || "Total Revenue"}
             </p>
             <p
-              className={`text-xl font-bold ${theme === 'dark' ? 'text-gray-200' : 'text-gray-800'
-                }`}
+              className={`text-xl font-bold ${
+                theme === "dark" ? "text-gray-200" : "text-gray-800"
+              }`}
             >
               ₪{(product.soldCount * product.sellingPrice).toLocaleString()}
             </p>
@@ -136,11 +150,12 @@ const ProductPricingDetails: React.FC<ProductPricingDetailsProps> = ({
 
           <div>
             <p className="text-xs mb-1 text-gray-500">
-              {t('avg_order_value') || 'Avg Order Value'}
+              {t("avg_order_value") || "Avg Order Value"}
             </p>
             <p
-              className={`text-xl font-bold ${theme === 'dark' ? 'text-gray-200' : 'text-gray-800'
-                }`}
+              className={`text-xl font-bold ${
+                theme === "dark" ? "text-gray-200" : "text-gray-800"
+              }`}
             >
               ₪{product.sellingPrice.toLocaleString()}
             </p>
@@ -148,7 +163,7 @@ const ProductPricingDetails: React.FC<ProductPricingDetailsProps> = ({
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default ProductPricingDetails
+export default ProductPricingDetails;

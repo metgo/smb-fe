@@ -9,13 +9,13 @@ type Props = {
 };
 
 const DmoAuthorityies: React.FC<Props> = ({ data }) => {
-  const { selectInputClasses } = useThemeClasses()
+  const { selectInputClasses } = useThemeClasses();
   const [selectedParentId, setSelectedParentId] = useState<string>("");
   const [selectedChildId, setSelectedChildId] = useState<string>("");
 
   const selectedParent = data?.find((item) => item._id === selectedParentId);
   const selectedChild = selectedParent?.authorities?.find(
-    (child) => child._id === selectedChildId
+    (child) => child._id === selectedChildId,
   );
 
   return (
@@ -40,7 +40,7 @@ const DmoAuthorityies: React.FC<Props> = ({ data }) => {
             }}
             className={clsx(
               "appearance-none border rounded-lg px-4 py-2 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 min-w-45",
-              selectInputClasses
+              selectInputClasses,
             )}
           >
             <option value="">Select DMO</option>
@@ -52,7 +52,6 @@ const DmoAuthorityies: React.FC<Props> = ({ data }) => {
           </select>
           <ChevronDown className="absolute top-1/2 ltr:right-3 rtl:left-3 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
         </div>
-
       </div>
 
       {/* Child Dropdown */}
@@ -63,7 +62,7 @@ const DmoAuthorityies: React.FC<Props> = ({ data }) => {
             onChange={(e) => setSelectedChildId(e.target.value)}
             className={clsx(
               "appearance-none border rounded-lg px-4 py-2 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 min-w-45",
-              selectInputClasses
+              selectInputClasses,
             )}
           >
             <option value="">Select Authority</option>
@@ -85,7 +84,6 @@ const DmoAuthorityies: React.FC<Props> = ({ data }) => {
           </div>
         )}
       </div>
-
     </div>
   );
 };

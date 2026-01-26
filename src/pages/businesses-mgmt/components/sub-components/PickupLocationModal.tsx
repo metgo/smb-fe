@@ -2,7 +2,7 @@ import { X } from "lucide-react";
 
 interface PickupLocationModalProps {
   theme: Theme;
-  t: (key: string)=>string;
+  t: (key: string) => string;
   pickupLocationModal: {
     locationIndex: number | null;
     areaIndex: number;
@@ -90,9 +90,7 @@ const PickupLocationModal = ({
                   },
                 })
               }
-              placeholder={
-                isRTL ? "מבצע ניצנן 52/37" : "52/37 Mivtza Nitzan"
-              }
+              placeholder={isRTL ? "מבצע ניצנן 52/37" : "52/37 Mivtza Nitzan"}
               className={`w-full px-4 py-2 rounded-lg border ${
                 theme === "dark"
                   ? "bg-gray-800 border-gray-700 text-gray-200"
@@ -145,7 +143,7 @@ const PickupLocationModal = ({
                 <div className="grid grid-cols-7 gap-2">
                   {days.map((day) => {
                     const hasDay = pickupLocationModal.data.openingHrs.some(
-                      (h) => h.day === day
+                      (h) => h.day === day,
                     );
                     return (
                       <button
@@ -153,7 +151,7 @@ const PickupLocationModal = ({
                         onClick={() => {
                           const newHrs = hasDay
                             ? pickupLocationModal.data.openingHrs.filter(
-                                (h) => h.day !== day
+                                (h) => h.day !== day,
                               )
                             : [
                                 ...pickupLocationModal.data.openingHrs,
@@ -171,8 +169,8 @@ const PickupLocationModal = ({
                           hasDay
                             ? "bg-teal-600 text-white"
                             : theme === "dark"
-                            ? "bg-gray-800 text-gray-400 hover:bg-gray-700"
-                            : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                              ? "bg-gray-800 text-gray-400 hover:bg-gray-700"
+                              : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                         }`}
                       >
                         {day}
@@ -184,70 +182,92 @@ const PickupLocationModal = ({
                 {/* Time Inputs */}
                 {pickupLocationModal.data.openingHrs.length > 0 ? (
                   <div className="mt-3 space-y-2">
-                    {pickupLocationModal.data.openingHrs.map((timeSlot, idx) => (
-                      <div key={idx} className="flex items-center gap-2">
-                        <span
-                          className={`text-xs w-12 ${
-                            theme === "dark" ? "text-gray-400" : "text-gray-600"
-                          }`}
-                        >
-                          {timeSlot.day}
-                        </span>
-                        <input
-                          type="time"
-                          value={timeSlot.open}
-                          onChange={(e) => {
-                            const newHrs = [...pickupLocationModal.data.openingHrs];
-                            newHrs[idx].open = e.target.value;
-                            setPickupLocationModal({
-                              ...pickupLocationModal,
-                              data: { ...pickupLocationModal.data, openingHrs: newHrs },
-                            });
-                          }}
-                          className={`px-3 py-1.5 rounded-lg border text-sm ${
-                            theme === "dark"
-                              ? "bg-gray-800 border-gray-700 text-gray-200"
-                              : "bg-white border-gray-300 text-gray-900"
-                          } focus:outline-none focus:ring-2 focus:ring-teal-500`}
-                        />
-                        <span
-                          className={theme === "dark" ? "text-gray-500" : "text-gray-500"}
-                        >
-                          -
-                        </span>
-                        <input
-                          type="time"
-                          value={timeSlot.close}
-                          onChange={(e) => {
-                            const newHrs = [...pickupLocationModal.data.openingHrs];
-                            newHrs[idx].close = e.target.value;
-                            setPickupLocationModal({
-                              ...pickupLocationModal,
-                              data: { ...pickupLocationModal.data, openingHrs: newHrs },
-                            });
-                          }}
-                          className={`px-3 py-1.5 rounded-lg border text-sm ${
-                            theme === "dark"
-                              ? "bg-gray-800 border-gray-700 text-gray-200"
-                              : "bg-white border-gray-300 text-gray-900"
-                          } focus:outline-none focus:ring-2 focus:ring-teal-500`}
-                        />
-                        <button
-                          onClick={() => {
-                            const newHrs = pickupLocationModal.data.openingHrs.filter(
-                              (_, i) => i !== idx
-                            );
-                            setPickupLocationModal({
-                              ...pickupLocationModal,
-                              data: { ...pickupLocationModal.data, openingHrs: newHrs },
-                            });
-                          }}
-                          className="p-1 text-red-500 hover:bg-red-500 hover:text-white rounded transition-colors"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-                      </div>
-                    ))}
+                    {pickupLocationModal.data.openingHrs.map(
+                      (timeSlot, idx) => (
+                        <div key={idx} className="flex items-center gap-2">
+                          <span
+                            className={`text-xs w-12 ${
+                              theme === "dark"
+                                ? "text-gray-400"
+                                : "text-gray-600"
+                            }`}
+                          >
+                            {timeSlot.day}
+                          </span>
+                          <input
+                            type="time"
+                            value={timeSlot.open}
+                            onChange={(e) => {
+                              const newHrs = [
+                                ...pickupLocationModal.data.openingHrs,
+                              ];
+                              newHrs[idx].open = e.target.value;
+                              setPickupLocationModal({
+                                ...pickupLocationModal,
+                                data: {
+                                  ...pickupLocationModal.data,
+                                  openingHrs: newHrs,
+                                },
+                              });
+                            }}
+                            className={`px-3 py-1.5 rounded-lg border text-sm ${
+                              theme === "dark"
+                                ? "bg-gray-800 border-gray-700 text-gray-200"
+                                : "bg-white border-gray-300 text-gray-900"
+                            } focus:outline-none focus:ring-2 focus:ring-teal-500`}
+                          />
+                          <span
+                            className={
+                              theme === "dark"
+                                ? "text-gray-500"
+                                : "text-gray-500"
+                            }
+                          >
+                            -
+                          </span>
+                          <input
+                            type="time"
+                            value={timeSlot.close}
+                            onChange={(e) => {
+                              const newHrs = [
+                                ...pickupLocationModal.data.openingHrs,
+                              ];
+                              newHrs[idx].close = e.target.value;
+                              setPickupLocationModal({
+                                ...pickupLocationModal,
+                                data: {
+                                  ...pickupLocationModal.data,
+                                  openingHrs: newHrs,
+                                },
+                              });
+                            }}
+                            className={`px-3 py-1.5 rounded-lg border text-sm ${
+                              theme === "dark"
+                                ? "bg-gray-800 border-gray-700 text-gray-200"
+                                : "bg-white border-gray-300 text-gray-900"
+                            } focus:outline-none focus:ring-2 focus:ring-teal-500`}
+                          />
+                          <button
+                            onClick={() => {
+                              const newHrs =
+                                pickupLocationModal.data.openingHrs.filter(
+                                  (_, i) => i !== idx,
+                                );
+                              setPickupLocationModal({
+                                ...pickupLocationModal,
+                                data: {
+                                  ...pickupLocationModal.data,
+                                  openingHrs: newHrs,
+                                },
+                              });
+                            }}
+                            className="p-1 text-red-500 hover:bg-red-500 hover:text-white rounded transition-colors"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ),
+                    )}
                   </div>
                 ) : (
                   <p
@@ -288,11 +308,14 @@ const PickupLocationModal = ({
 
               if (pickupLocationModal.locationIndex !== null) {
                 // Edit existing location
-                newAreas[areaIndex].pickUpLocation[pickupLocationModal.locationIndex] =
-                  pickupLocationModal.data;
+                newAreas[areaIndex].pickUpLocation[
+                  pickupLocationModal.locationIndex
+                ] = pickupLocationModal.data;
               } else {
                 // Add new location
-                newAreas[areaIndex].pickUpLocation.push(pickupLocationModal.data);
+                newAreas[areaIndex].pickUpLocation.push(
+                  pickupLocationModal.data,
+                );
               }
 
               setFormData({ ...formData, deliveryAreas: newAreas });
@@ -301,7 +324,9 @@ const PickupLocationModal = ({
             className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg transition-colors"
             disabled={!pickupLocationModal.data.address}
           >
-            {pickupLocationModal.locationIndex !== null ? t("update") : t("add")}
+            {pickupLocationModal.locationIndex !== null
+              ? t("update")
+              : t("add")}
           </button>
         </div>
       </div>

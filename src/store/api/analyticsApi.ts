@@ -1,7 +1,6 @@
-import { createApi } from '@reduxjs/toolkit/query/react';
-import { axiosBaseQuery } from './axiosBaseQuery';
-import { endpoints } from '@/lib/endpoints';
-
+import { createApi } from "@reduxjs/toolkit/query/react";
+import { axiosBaseQuery } from "./axiosBaseQuery";
+import { endpoints } from "@/lib/endpoints";
 
 interface GoogleAnalyticsParams {
   startDate: string;
@@ -12,22 +11,19 @@ interface GoogleAnalyticsParams {
 }
 
 export const analyticsApi = createApi({
-  reducerPath: 'analyticsApi',
+  reducerPath: "analyticsApi",
   baseQuery: axiosBaseQuery(),
-  tagTypes: ['Analytics'],
+  tagTypes: ["Analytics"],
   endpoints: (builder) => ({
     getGoogleAnalyticsViews: builder.query<any, GoogleAnalyticsParams>({
       query: (params) => ({
         url: endpoints.googleAnalyticsViews,
-        method: 'GET',
-        params, 
+        method: "GET",
+        params,
       }),
-      providesTags: ['Analytics'],
+      providesTags: ["Analytics"],
     }),
   }),
 });
 
-export const {
-  useGetGoogleAnalyticsViewsQuery,
-} = analyticsApi;
-
+export const { useGetGoogleAnalyticsViewsQuery } = analyticsApi;

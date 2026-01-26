@@ -1,8 +1,5 @@
 const TicketCardSkeleton = ({ theme }: { theme: string }) => {
-  const base =
-    theme === "dark"
-      ? "bg-gray-700/40"
-      : "bg-gray-200/60";
+  const base = theme === "dark" ? "bg-gray-700/40" : "bg-gray-200/60";
 
   return (
     <div

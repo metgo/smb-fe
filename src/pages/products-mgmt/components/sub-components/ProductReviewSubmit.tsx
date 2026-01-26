@@ -3,10 +3,10 @@ import { Eye } from "lucide-react";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 interface ProductReviewSubmitProps {
-  t: (key: string)=>string;
+  t: (key: string) => string;
   theme: Theme;
   language: Language;
-  formData: ProductFormData
+  formData: ProductFormData;
 }
 
 const ProductReviewSubmit: React.FC<ProductReviewSubmitProps> = ({
@@ -15,8 +15,8 @@ const ProductReviewSubmit: React.FC<ProductReviewSubmitProps> = ({
   language,
   formData,
 }) => {
-
-  const { textPrimary, textSecondary, textTertiary, borderColor } = useThemeClasses()
+  const { textPrimary, textSecondary, textTertiary, borderColor } =
+    useThemeClasses();
 
   const getTypeLabel = (type: string) => {
     switch (type) {
@@ -62,7 +62,8 @@ const ProductReviewSubmit: React.FC<ProductReviewSubmitProps> = ({
               {formData.name[language] || formData.name.en}
             </h3>
             <p className={`${textSecondary}`}>
-              {formData.shortDescription[language] || formData.shortDescription.en}
+              {formData.shortDescription[language] ||
+                formData.shortDescription.en}
             </p>
           </div>
 
@@ -78,11 +79,12 @@ const ProductReviewSubmit: React.FC<ProductReviewSubmitProps> = ({
             <div>
               <p className={`text-sm ${textTertiary}`}>{t("price")}</p>
               <p className={`font-medium ${textPrimary}`}>
-                {formData.markedPrice && formData.markedPrice !== formData.sellingPrice && (
-                  <span className="line-through text-gray-400 mr-2">
-                    ₪{formData.markedPrice}
-                  </span>
-                )}
+                {formData.markedPrice &&
+                  formData.markedPrice !== formData.sellingPrice && (
+                    <span className="line-through text-gray-400 mr-2">
+                      ₪{formData.markedPrice}
+                    </span>
+                  )}
                 <span className="text-teal-600 dark:text-teal-400">
                   ₪{formData.sellingPrice}
                 </span>
@@ -107,9 +109,12 @@ const ProductReviewSubmit: React.FC<ProductReviewSubmitProps> = ({
           {/* Full Description */}
           {formData.fullDescription.en && (
             <div>
-              <p className={`text-sm ${textTertiary} mb-2`}>{t("description")}</p>
+              <p className={`text-sm ${textTertiary} mb-2`}>
+                {t("description")}
+              </p>
               <p className={`${textSecondary}`}>
-                {formData.fullDescription[language] || formData.fullDescription.en}
+                {formData.fullDescription[language] ||
+                  formData.fullDescription.en}
               </p>
             </div>
           )}
