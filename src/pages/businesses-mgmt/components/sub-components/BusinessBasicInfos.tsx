@@ -44,7 +44,6 @@ interface BusinessBasicInfosProps {
   markDirty: (step: number) => void;
 }
 
-
 const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
   t,
   theme,
@@ -58,8 +57,9 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
   setSelectAuthorityId,
 }) => {
   const { dmosAuthorities } = useCommon();
-  const [selectedFormLanguage, setSelectedFormLanguage] = useState<Language>("en");
-  const { selectInputClasses, borderColor } = useThemeClasses()
+  const [selectedFormLanguage, setSelectedFormLanguage] =
+    useState<Language>("en");
+  const { selectInputClasses, borderColor } = useThemeClasses();
 
   /* -------- Helpers -------- */
 
@@ -115,12 +115,8 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
   };
 
   useEffect(() => {
-    markDirty(1)
-  }, [
-    formData,
-    selectedWebsites,
-    selectedDmoId
-  ])
+    markDirty(1);
+  }, [formData, selectedWebsites, selectedDmoId]);
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -141,10 +137,11 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
             onChange={(e) =>
               setSelectedFormLanguage(e.target.value as Language)
             }
-            className={`px-3 py-1.5 rounded-lg border ${theme === "dark"
-              ? "bg-gray-800 border-gray-700 text-gray-200"
-              : "bg-white border-gray-300 text-gray-900"
-              } text-sm focus:outline-none focus:ring-2 focus:ring-teal-500`}
+            className={`px-3 py-1.5 rounded-lg border ${
+              theme === "dark"
+                ? "bg-gray-800 border-gray-700 text-gray-200"
+                : "bg-white border-gray-300 text-gray-900"
+            } text-sm focus:outline-none focus:ring-2 focus:ring-teal-500`}
           >
             <option value="en">English</option>
             <option value="he">עברית</option>
@@ -168,7 +165,7 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
               }}
               className={clsx(
                 "appearance-none h-12 w-full border rounded-lg px-4 py-2 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 min-w-45",
-                selectInputClasses
+                selectInputClasses,
               )}
             >
               <option value="">Select DMO</option>
@@ -194,7 +191,7 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
               }
               className={clsx(
                 "appearance-none h-12 w-full border rounded-lg px-4 py-2 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 min-w-45",
-                selectInputClasses
+                selectInputClasses,
               )}
             >
               <option value="">Select Authority</option>
@@ -276,12 +273,13 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
           }
           placeholder={getPlaceholder("name")}
           dir={selectedFormLanguage === "en" ? "ltr" : "rtl"}
-          className={`w-full px-4 py-2 rounded-lg border ${errors[getFieldName("name")]
-            ? "border-red-500"
-            : theme === "dark"
-              ? "bg-gray-800 border-gray-700 text-gray-200"
-              : "bg-white border-gray-300 text-gray-900"
-            } focus:outline-none focus:ring-2 focus:ring-teal-500`}
+          className={`w-full px-4 py-2 rounded-lg border ${
+            errors[getFieldName("name")]
+              ? "border-red-500"
+              : theme === "dark"
+                ? "bg-gray-800 border-gray-700 text-gray-200"
+                : "bg-white border-gray-300 text-gray-900"
+          } focus:outline-none focus:ring-2 focus:ring-teal-500`}
         />
         {errors[getFieldName("name")] && (
           <p className="text-red-500 text-sm mt-1">
@@ -310,12 +308,13 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
           }
           placeholder={getPlaceholder("short")}
           dir={selectedFormLanguage === "en" ? "ltr" : "rtl"}
-          className={`w-full px-4 py-2 rounded-lg border ${errors[getFieldName("shortDescription")]
-            ? "border-red-500"
-            : theme === "dark"
-              ? "bg-gray-800 border-gray-700 text-gray-200"
-              : "bg-white border-gray-300 text-gray-900"
-            } focus:outline-none focus:ring-2 focus:ring-teal-500`}
+          className={`w-full px-4 py-2 rounded-lg border ${
+            errors[getFieldName("shortDescription")]
+              ? "border-red-500"
+              : theme === "dark"
+                ? "bg-gray-800 border-gray-700 text-gray-200"
+                : "bg-white border-gray-300 text-gray-900"
+          } focus:outline-none focus:ring-2 focus:ring-teal-500`}
         />
       </div>
 
@@ -339,12 +338,13 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
           }
           placeholder={getPlaceholder("full")}
           dir={selectedFormLanguage === "en" ? "ltr" : "rtl"}
-          className={`w-full px-4 py-2 rounded-lg border ${errors[getFieldName("fullDescription")]
-            ? "border-red-500"
-            : theme === "dark"
-              ? "bg-gray-800 border-gray-700 text-gray-200"
-              : "bg-white border-gray-300 text-gray-900"
-            } focus:outline-none focus:ring-2 focus:ring-teal-500`}
+          className={`w-full px-4 py-2 rounded-lg border ${
+            errors[getFieldName("fullDescription")]
+              ? "border-red-500"
+              : theme === "dark"
+                ? "bg-gray-800 border-gray-700 text-gray-200"
+                : "bg-white border-gray-300 text-gray-900"
+          } focus:outline-none focus:ring-2 focus:ring-teal-500`}
         />
       </div>
 

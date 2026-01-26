@@ -1,9 +1,6 @@
 import { TimePickerWidget } from "@/components/shared/TimePickerWidget";
 import type { FC } from "react";
-import type {
-  OperatingHours,
-  OpeningHrPayload 
-} from "@/types/openinghours";
+import type { OperatingHours, OpeningHrPayload } from "@/types/openinghours";
 
 interface BusinessOpeningHoursProps {
   theme: "light" | "dark";

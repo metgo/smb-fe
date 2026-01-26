@@ -38,12 +38,16 @@ export default function BusinessDetails({
   const { t } = useTranslation("businesses");
   const { theme } = useAppSelector((state) => state.settings);
 
-  const [searchParams] = useSearchParams()
-  const businessSlug = searchParams.get("businessSlug")
+  const [searchParams] = useSearchParams();
+  const businessSlug = searchParams.get("businessSlug");
 
-  const { data: business } = useGetbusinessBySlugQuery(businessSlug ? { slug: businessSlug } : skipToken)
+  const { data: business } = useGetbusinessBySlugQuery(
+    businessSlug ? { slug: businessSlug } : skipToken,
+  );
 
-  const [businessMedia, setBusinessMedia] = useState<IBusinessMedia | null>(null)
+  const [businessMedia, setBusinessMedia] = useState<IBusinessMedia | null>(
+    null,
+  );
   const [activeTab, setActiveTab] = useState("overview");
   const [_showStatusModal, setShowStatusModal] = useState(false);
   const [showChangeOwnerModal, setShowChangeOwnerModal] = useState(false);
@@ -84,7 +88,7 @@ export default function BusinessDetails({
         status: "success",
         isPrimary: false,
         gcsURL: business?.logo?.image,
-      }
+      };
       const gallery = business?.images?.map((item: any, index: number) => ({
         id: Date.now() + index,
         previewUrl: item.image,
@@ -92,17 +96,17 @@ export default function BusinessDetails({
         status: "success",
         isPrimary: item.isPrimary || (!hasPrimary && index === 0),
         gcsURL: item.image,
-      }))
+      }));
       setBusinessMedia({
         logo,
         gallery,
-      })
+      });
     }
-  }, [business, businessSlug])
+  }, [business, businessSlug]);
 
   const renderContent = () => {
     const commonProps = { theme, t, business };
-    const mediaProps = {theme, t,  businessMedia}
+    const mediaProps = { theme, t, businessMedia };
     switch (activeTab) {
       case "overview":
         return <BusinessInfoDetails {...commonProps} />;
@@ -135,8 +139,9 @@ export default function BusinessDetails({
         <div className="flex items-center justify-between mb-4">
           <button
             onClick={onBack}
-            className={`flex items-center gap-2 text-sm hover:text-teal-600 transition-colors ${theme === "dark" ? "text-gray-400" : "text-gray-600"
-              }`}
+            className={`flex items-center gap-2 text-sm hover:text-teal-600 transition-colors ${
+              theme === "dark" ? "text-gray-400" : "text-gray-600"
+            }`}
           >
             <ArrowLeft className="w-5 h-5" />
             {t("back_to_list")}
@@ -174,10 +179,11 @@ export default function BusinessDetails({
             {canChangeStatus && (
               <button
                 onClick={() => setShowStatusModal(true)}
-                className={`px-4 py-2 rounded-lg border transition-colors flex items-center gap-2 ${theme === "dark"
-                  ? "border-gray-700 hover:bg-gray-800 text-gray-300"
-                  : "border-gray-300 hover:bg-gray-100 text-gray-700"
-                  }`}
+                className={`px-4 py-2 rounded-lg border transition-colors flex items-center gap-2 ${
+                  theme === "dark"
+                    ? "border-gray-700 hover:bg-gray-800 text-gray-300"
+                    : "border-gray-300 hover:bg-gray-100 text-gray-700"
+                }`}
               >
                 {t("change_status")}
               </button>
@@ -186,10 +192,11 @@ export default function BusinessDetails({
             {USER_ROLE === "admin" && (
               <button
                 onClick={() => setShowChangeOwnerModal(true)}
-                className={`px-4 py-2 rounded-lg border transition-colors flex items-center gap-2 ${theme === "dark"
-                  ? "border-gray-700 hover:bg-gray-800 text-gray-300"
-                  : "border-gray-300 hover:bg-gray-100 text-gray-700"
-                  }`}
+                className={`px-4 py-2 rounded-lg border transition-colors flex items-center gap-2 ${
+                  theme === "dark"
+                    ? "border-gray-700 hover:bg-gray-800 text-gray-300"
+                    : "border-gray-300 hover:bg-gray-100 text-gray-700"
+                }`}
               >
                 <UserCog className="w-4 h-4" />
                 {t("change_owner")}
@@ -220,7 +227,7 @@ export default function BusinessDetails({
         theme={theme}
         currentOwner={business?.owner}
         onOwnerChange={(ownerData) => {
-          console.log("🚀 ~ BusinessDetails ~ ownerData:", ownerData)
+          console.log("🚀 ~ BusinessDetails ~ ownerData:", ownerData);
           setShowChangeOwnerModal(false);
         }}
       />

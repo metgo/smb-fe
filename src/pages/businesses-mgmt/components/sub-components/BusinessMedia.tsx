@@ -2,12 +2,9 @@ import type { FC } from "react";
 import { Plus, Upload, X } from "lucide-react";
 import { ConfirmDialog, ImageWithFallback } from "@/components/shared";
 
-
-
 interface MediaErrors {
   logo?: string;
 }
-
 
 /* ---------- Props ---------- */
 
@@ -16,23 +13,23 @@ interface BusinessMediaProps {
   t: (key: string) => string;
   errors: MediaErrors;
 
-  logoImage: IImageUpload | null,
-  handleLogoImageSelect: (file: File) => void,
-  confirmDeleteLogo: () => void,
-  deleteTargetLogo: string | null,
-  setDeleteTargetLogo: (imgUrl: string | null) => void,
-  isLogoImageDeleting: boolean,
-  handleDeleteLogoImage: (logoImg: IImageUpload) => void,
+  logoImage: IImageUpload | null;
+  handleLogoImageSelect: (file: File) => void;
+  confirmDeleteLogo: () => void;
+  deleteTargetLogo: string | null;
+  setDeleteTargetLogo: (imgUrl: string | null) => void;
+  isLogoImageDeleting: boolean;
+  handleDeleteLogoImage: (logoImg: IImageUpload) => void;
 
-  images: IImageUpload[],
-  primaryImageIndex: number,
-  setPrimaryImage: (idx: number) => void,
-  handleImageUpload: (files: FileList) => void,
-  deleteTarget: IDeleteTarget | null,
-  setDeleteTarget: (v: IDeleteTarget | null) => void,
+  images: IImageUpload[];
+  primaryImageIndex: number;
+  setPrimaryImage: (idx: number) => void;
+  handleImageUpload: (files: FileList) => void;
+  deleteTarget: IDeleteTarget | null;
+  setDeleteTarget: (v: IDeleteTarget | null) => void;
   confirmDelete: () => void;
   isImageDeleting: boolean;
-  handleDeleteImage: (item: IImageUpload, index: number) => void
+  handleDeleteImage: (item: IImageUpload, index: number) => void;
 }
 
 /* ---------- Component ---------- */
@@ -60,14 +57,14 @@ const BusinessMedia: FC<BusinessMediaProps> = ({
   isImageDeleting,
   handleImageUpload,
 }) => {
-
   return (
     <div className="space-y-6">
       {/* Logo Upload */}
       <div>
         <label
-          className={`block text-sm mb-2 ${theme === "dark" ? "text-gray-300" : "text-gray-700"
-            }`}
+          className={`block text-sm mb-2 ${
+            theme === "dark" ? "text-gray-300" : "text-gray-700"
+          }`}
         >
           {t("logo_required")} *
         </label>
@@ -89,22 +86,27 @@ const BusinessMedia: FC<BusinessMediaProps> = ({
             </div>
           ) : (
             <div
-              className={`w-32 h-32 rounded-full border-2 border-dashed flex items-center justify-center cursor-pointer ${errors.logo
-                ? "border-red-500"
-                : theme === "dark"
-                  ? "border-gray-700 hover:border-gray-600"
-                  : "border-gray-300 hover:border-gray-400"
-                }`}
-              onClick={() => document.getElementById("logo-image-upload")?.click()}
+              className={`w-32 h-32 rounded-full border-2 border-dashed flex items-center justify-center cursor-pointer ${
+                errors.logo
+                  ? "border-red-500"
+                  : theme === "dark"
+                    ? "border-gray-700 hover:border-gray-600"
+                    : "border-gray-300 hover:border-gray-400"
+              }`}
+              onClick={() =>
+                document.getElementById("logo-image-upload")?.click()
+              }
             >
               <div className="text-center">
                 <Upload
-                  className={`w-6 h-6 mx-auto mb-1 ${theme === "dark" ? "text-gray-600" : "text-gray-400"
-                    }`}
+                  className={`w-6 h-6 mx-auto mb-1 ${
+                    theme === "dark" ? "text-gray-600" : "text-gray-400"
+                  }`}
                 />
                 <p
-                  className={`text-xs ${theme === "dark" ? "text-gray-600" : "text-gray-500"
-                    }`}
+                  className={`text-xs ${
+                    theme === "dark" ? "text-gray-600" : "text-gray-500"
+                  }`}
                 >
                   {t("upload_logo")}
                 </p>
@@ -131,8 +133,9 @@ const BusinessMedia: FC<BusinessMediaProps> = ({
       {/* Image Gallery */}
       <div>
         <label
-          className={`block text-sm mb-2 ${theme === "dark" ? "text-gray-300" : "text-gray-700"
-            }`}
+          className={`block text-sm mb-2 ${
+            theme === "dark" ? "text-gray-300" : "text-gray-700"
+          }`}
         >
           {t("image_gallery")}
           <span className="text-xs ml-2 text-gray-500">
@@ -144,8 +147,9 @@ const BusinessMedia: FC<BusinessMediaProps> = ({
           {images.map((img, idx) => (
             <div
               key={idx}
-              className={`relative aspect-square rounded-lg overflow-hidden border group ${theme === "dark" ? "border-gray-700" : "border-gray-300"
-                }`}
+              className={`relative aspect-square rounded-lg overflow-hidden border group ${
+                theme === "dark" ? "border-gray-700" : "border-gray-300"
+              }`}
             >
               <ImageWithFallback
                 src={img.previewUrl}
@@ -181,10 +185,11 @@ const BusinessMedia: FC<BusinessMediaProps> = ({
           {/* Upload New Image */}
           {images?.length < 10 && (
             <div
-              className={`aspect-square rounded-lg border-2 border-dashed flex items-center justify-center cursor-pointer ${theme === "dark"
-                ? "border-gray-700 hover:border-gray-600"
-                : "border-gray-300 hover:border-gray-400"
-                }`}
+              className={`aspect-square rounded-lg border-2 border-dashed flex items-center justify-center cursor-pointer ${
+                theme === "dark"
+                  ? "border-gray-700 hover:border-gray-600"
+                  : "border-gray-300 hover:border-gray-400"
+              }`}
               onClick={() => document.getElementById("image-upload")?.click()}
             >
               {/* Hidden file input */}
@@ -193,17 +198,21 @@ const BusinessMedia: FC<BusinessMediaProps> = ({
                 type="file"
                 multiple
                 accept="image/*"
-                onChange={(e) => e.target.files && handleImageUpload(e.target.files)}
+                onChange={(e) =>
+                  e.target.files && handleImageUpload(e.target.files)
+                }
                 className="hidden"
               />
               <div className="text-center">
                 <Plus
-                  className={`w-8 h-8 mx-auto mb-1 ${theme === "dark" ? "text-gray-600" : "text-gray-400"
-                    }`}
+                  className={`w-8 h-8 mx-auto mb-1 ${
+                    theme === "dark" ? "text-gray-600" : "text-gray-400"
+                  }`}
                 />
                 <p
-                  className={`text-xs ${theme === "dark" ? "text-gray-600" : "text-gray-500"
-                    }`}
+                  className={`text-xs ${
+                    theme === "dark" ? "text-gray-600" : "text-gray-500"
+                  }`}
                 >
                   {t("upload_images") || "Upload"}
                 </p>

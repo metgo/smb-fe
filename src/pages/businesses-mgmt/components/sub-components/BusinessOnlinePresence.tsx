@@ -1,4 +1,4 @@
-import {  type FC } from "react";
+import { type FC } from "react";
 import { Globe, Facebook, Instagram, Youtube } from "lucide-react";
 import { useGetAllSocialMediaQuery } from "@/store/api/masterDataApi";
 

@@ -1,15 +1,16 @@
-import { CheckCircle, Loader } from 'lucide-react'
-import { useTranslation } from 'react-i18next';
+import { CheckCircle, Loader } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
-
-interface PublishButtonProps{
+interface PublishButtonProps {
   isLoading: boolean;
-  onClick: ()=>void;
+  onClick: () => void;
 }
 
-
-const PublishButton:React.FC<PublishButtonProps> = ({isLoading, onClick}) => {
-  const {t}=useTranslation('common')
+const PublishButton: React.FC<PublishButtonProps> = ({
+  isLoading,
+  onClick,
+}) => {
+  const { t } = useTranslation("common");
   return (
     <button
       onClick={onClick}
@@ -19,16 +20,16 @@ const PublishButton:React.FC<PublishButtonProps> = ({isLoading, onClick}) => {
       {isLoading ? (
         <>
           <Loader className="w-4 h-4 animate-spin" />
-          {t('publishing')}
+          {t("publishing")}
         </>
       ) : (
         <>
           <CheckCircle className="w-4 h-4" />
-          {t('publish')}
+          {t("publish")}
         </>
       )}
     </button>
-  )
-}
+  );
+};
 
-export default PublishButton
+export default PublishButton;

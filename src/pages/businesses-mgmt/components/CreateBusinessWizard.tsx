@@ -1,7 +1,17 @@
 import { toast } from "sonner";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { CheckCircle, MapPin, Image as ImageIcon, Clock, Globe, Tag, FileText, Users, Truck, } from "lucide-react";
+import {
+  CheckCircle,
+  MapPin,
+  Image as ImageIcon,
+  Clock,
+  Globe,
+  Tag,
+  FileText,
+  Users,
+  Truck,
+} from "lucide-react";
 
 import { useAppSelector } from "@/hooks/hooks";
 import {
@@ -38,7 +48,7 @@ export default function CreateBusinessWizard({
 }: CreateBusinessWizardProps) {
   const { t } = useTranslation("businesses");
   const { theme, isRTL } = useAppSelector((state) => state.settings);
-  const { textPrimary, textTertiary } = useThemeClasses()
+  const { textPrimary, textTertiary } = useThemeClasses();
 
   // Form State
   const [formData, setFormData] = useState<any>({
@@ -113,13 +123,14 @@ export default function CreateBusinessWizard({
     isImageDeleting,
     handleDeleteImage,
   } = useImagesUpload({
-    initialImages: formData.images, onChange: (images) => {
+    initialImages: formData.images,
+    onChange: (images) => {
       setFormData((prev: any) => ({
         ...prev,
-        images
-      }))
-    }
-  })
+        images,
+      }));
+    },
+  });
 
   const {
     image: logoImage,
@@ -141,11 +152,11 @@ export default function CreateBusinessWizard({
   });
 
   const [updateBusiness, { isLoading: isSaving }] = useUpdateBusinessMutation();
-  const [initBusinessCreate, { isLoading: isCreating }] = useInitBusinessCreateMutation();
-
+  const [initBusinessCreate, { isLoading: isCreating }] =
+    useInitBusinessCreateMutation();
 
   const [isPublishing, setIsPublishing] = useState(false);
-  const [isPublishBtnClicked, setIsPublishBtnClicked] = useState(false)
+  const [isPublishBtnClicked, setIsPublishBtnClicked] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [editData, _setEditData] = useState<any>();
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
@@ -160,7 +171,6 @@ export default function CreateBusinessWizard({
   );
   const [geo, setGeo] = useState<Geo>({ lat: "", lng: "" });
   const [address, setAddress] = useState("");
-
 
   const parseAddress = (address: any) => {
     const parts = address.split(",");
@@ -205,7 +215,6 @@ export default function CreateBusinessWizard({
     );
   };
 
-
   const totalSteps = 9;
 
   const steps = [
@@ -219,7 +228,6 @@ export default function CreateBusinessWizard({
     { number: 8, title: t("step_online_info"), icon: Globe },
     { number: 9, title: t("step_review_submit"), icon: CheckCircle },
   ];
-
 
   // Draft Save Payload per Step
   const stepPayloadMap = {
@@ -268,14 +276,11 @@ export default function CreateBusinessWizard({
     deliveryAdditionalInfo: formData.deliveryAdditionalInfo,
     deliveryReturnExchange: formData.deliveryReturnExchange,
     deliverySpecificSellerInfo: formData.deliverySpecificSellerInfo,
-    // step 8 
+    // step 8
     socialMedia: formData.socialMedia,
   };
 
-  const {
-    markDirty,
-    saveDraft,
-  } = useBusinessDraftSaver({
+  const { markDirty, saveDraft } = useBusinessDraftSaver({
     currentStep,
     businessId,
     setBusinessId,
@@ -302,7 +307,7 @@ export default function CreateBusinessWizard({
         break;
       case 3:
         if (addr.city === undefined) {
-          newErrors.address = t("required_field")
+          newErrors.address = t("required_field");
         }
         break;
       case 4:
@@ -318,8 +323,8 @@ export default function CreateBusinessWizard({
   const handleNext = async () => {
     if (!validateStep(currentStep) && isPublishBtnClicked) return;
     if (currentStep === 5) {
-      await uploadLogoImage()
-      await uploadAll()
+      await uploadLogoImage();
+      await uploadAll();
     }
     setCurrentStep((prev) => prev + 1);
   };
@@ -329,13 +334,13 @@ export default function CreateBusinessWizard({
   };
 
   const handleSaveDraft = async () => {
-    await uploadLogoImage()
-    await uploadAll()
-    saveDraft(false)
+    await uploadLogoImage();
+    await uploadAll();
+    saveDraft(false);
   };
 
   const handlePublish = async () => {
-    setIsPublishBtnClicked(true)
+    setIsPublishBtnClicked(true);
     // Validate all steps
     let allValid = true;
     for (let i = 1; i <= 5; i++) {
@@ -351,21 +356,44 @@ export default function CreateBusinessWizard({
       return;
     }
     setIsPublishing(true);
-    saveDraft(true)
+    saveDraft(true);
     setIsPublishing(false);
     toast.success(t("business created succesfully"));
     onClose();
   };
 
-
-
   const renderStep = () => {
-    const commonProps = { theme, isRTL, t, formData, errors, setFormData, markDirty };
+    const commonProps = {
+      theme,
+      isRTL,
+      t,
+      formData,
+      errors,
+      setFormData,
+      markDirty,
+    };
     const mediaProps = {
-      theme, t, errors, markDirty,
-      logoImage, handleLogoImageSelect, deleteTargetLogo, setDeleteTargetLogo, isLogoImageDeleting, confirmDeleteLogo, handleDeleteLogoImage,
-      images, primaryImageIndex, setPrimaryImage, handleImageUpload, deleteTarget, setDeleteTarget, isImageDeleting, confirmDelete, handleDeleteImage,
-    }
+      theme,
+      t,
+      errors,
+      markDirty,
+      logoImage,
+      handleLogoImageSelect,
+      deleteTargetLogo,
+      setDeleteTargetLogo,
+      isLogoImageDeleting,
+      confirmDeleteLogo,
+      handleDeleteLogoImage,
+      images,
+      primaryImageIndex,
+      setPrimaryImage,
+      handleImageUpload,
+      deleteTarget,
+      setDeleteTarget,
+      isImageDeleting,
+      confirmDelete,
+      handleDeleteImage,
+    };
     switch (currentStep) {
       case 1:
         return (
@@ -416,11 +444,7 @@ export default function CreateBusinessWizard({
   };
 
   return (
-    <ModalWrapper
-      onClose={onClose}
-      showSpinner={isCreating || isSaving}
-    >
-
+    <ModalWrapper onClose={onClose} showSpinner={isCreating || isSaving}>
       {/* Header */}
       <div className={clsx("px-6 py-4 border-b", textPrimary)}>
         <div className="flex items-center justify-between mb-4">
@@ -458,14 +482,15 @@ export default function CreateBusinessWizard({
                 <div className="flex items-center gap-2">
                   {/* Icon */}
                   <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center text-sm flex-shrink-0 ${step.number === currentStep
+                    className={`w-8 h-8 rounded-full flex items-center justify-center text-sm flex-shrink-0 ${
+                      step.number === currentStep
                         ? "bg-teal-600 text-white"
                         : step.number < currentStep
                           ? "bg-green-600 text-white"
                           : theme === "dark"
                             ? "bg-gray-800 text-gray-500"
                             : "bg-gray-200 text-gray-500"
-                      }`}
+                    }`}
                   >
                     {step.number < currentStep ? (
                       <CheckCircle className="w-5 h-5" />
@@ -477,12 +502,13 @@ export default function CreateBusinessWizard({
                   {/* Connecting Line */}
                   {step.number < totalSteps && (
                     <div
-                      className={`flex-1 h-1 rounded ${step.number < currentStep
+                      className={`flex-1 h-1 rounded ${
+                        step.number < currentStep
                           ? "bg-green-600"
                           : theme === "dark"
                             ? "bg-gray-800"
                             : "bg-gray-200"
-                        }`}
+                      }`}
                     />
                   )}
                 </div>
@@ -499,7 +525,6 @@ export default function CreateBusinessWizard({
             );
           })}
         </div>
-
       </div>
 
       {/* Content */}
