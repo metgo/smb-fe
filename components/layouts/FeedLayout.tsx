@@ -109,9 +109,6 @@ const FeedLayout = ({ selectedFiltersIds }: FeedLayoutProps) => {
     }
   };
 
-  /* ---------------------- Guards ---------------------- */
-  // if (!isHydrated || !hideFirstTwoSection) return null;
-
   /* ---------------------- JSX ---------------------- */
   return (
     <>

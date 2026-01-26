@@ -136,7 +136,7 @@ const FilterDrawer = () => {
           <MotionDialogDiv
             type="drawer-bottom"
             onClick={(e) => e.stopPropagation()}
-            className=" fixed inset-x-0 bottom-0 z-[9999] w-full sm:max-w-[200px] md:max-w-[300px] lg:max-w-[400px] bg-white shadow-xl flex flex-col "
+            className=" fixed inset-x-0 bottom-0 z-99 w-full sm:max-w-[200px] md:max-w-[300px] lg:max-w-100 bg-white shadow-xl flex flex-col "
           >
             {/* Header */}
             <div className="flex justify-between items-center">

@@ -169,19 +169,21 @@ const MobileFeedLayout = ({ selectedFiltersIds }: MobileFeedLayoutProps) => {
           )}
         </>
       )}
-      {isFilterDrawerOpen && (
-        <MobileFeedFilterDrawer
-          itemCount={businesses?.length}
-          isOpen={isFilterDrawerOpen}
-          setIsOpen={setIsFilterDrawerOpen}
-          filters={filters}
-          appliedFilterCount={appliedFilterCount}
-          isSelected={isSelected}
-          toggleParam={toggleParam}
-          handleResetFilters={handleResetFilters}
-          filteredSubCategories={filteredSubCategories}
-        />
-      )}
+      <div className="bg-black/40">
+        {isFilterDrawerOpen && (
+          <MobileFeedFilterDrawer
+            itemCount={businesses?.length}
+            isOpen={isFilterDrawerOpen}
+            setIsOpen={setIsFilterDrawerOpen}
+            filters={filters}
+            appliedFilterCount={appliedFilterCount}
+            isSelected={isSelected}
+            toggleParam={toggleParam}
+            handleResetFilters={handleResetFilters}
+            filteredSubCategories={filteredSubCategories}
+          />
+        )}
+      </div>
     </div>
   );
 };

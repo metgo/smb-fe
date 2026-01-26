@@ -58,7 +58,7 @@ const MobileFeedFilterDrawer: React.FC<MobileFeedFilterDrawerProps> = ({
         type="drawer-bottom"
         onClick={(e) => e.stopPropagation()}
         className={clsx(
-          "fixed inset-x-0 bottom-0 z-50 w-full bg-white flex flex-col shadow-2xl",
+          "fixed inset-x-0 bottom-0 z-50 w-full bg-white flex flex-col shadow-2xl overflow-y-auto",
           showAllFilters ? "h-[calc(100dvh-65px)]" : "max-h-max",
         )}
       >
