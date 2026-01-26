@@ -1,13 +1,27 @@
-import { Accessibility, Clock, FileText, Globe, ImageIcon, MapPin, Truck, Users } from "lucide-react";
+import {
+  Accessibility,
+  Clock,
+  FileText,
+  Globe,
+  ImageIcon,
+  MapPin,
+  Truck,
+  Users,
+} from "lucide-react";
 
 interface TabsSectionProps {
   activeTab: string;
   setActiveTab: (tabId: string) => void;
   theme: Theme;
-  t: (key:string)=>string;
+  t: (key: string) => string;
 }
 
-const TabsSection = ({ activeTab, setActiveTab, theme, t }: TabsSectionProps) => {
+const TabsSection = ({
+  activeTab,
+  setActiveTab,
+  theme,
+  t,
+}: TabsSectionProps) => {
   const tabs = [
     { id: "overview", label: t("overview"), icon: FileText },
     { id: "contact", label: t("contact_ownership"), icon: Users },
@@ -15,7 +29,11 @@ const TabsSection = ({ activeTab, setActiveTab, theme, t }: TabsSectionProps) =>
     { id: "media", label: t("images_branding"), icon: ImageIcon },
     { id: "social", label: t("social_networks"), icon: Globe },
     { id: "delivery", label: t("delivery_policy"), icon: Truck },
-    { id: "accessibility", label: t("accessibility_group_types"), icon: Accessibility },
+    {
+      id: "accessibility",
+      label: t("accessibility_group_types"),
+      icon: Accessibility,
+    },
     { id: "hours", label: t("operating_hours"), icon: Clock },
   ];
 
@@ -45,4 +63,4 @@ const TabsSection = ({ activeTab, setActiveTab, theme, t }: TabsSectionProps) =>
     </div>
   );
 };
-export default TabsSection
+export default TabsSection;

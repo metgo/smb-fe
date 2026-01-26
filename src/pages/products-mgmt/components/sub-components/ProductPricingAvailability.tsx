@@ -2,8 +2,8 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 import React from "react";
 
 interface ProductPricingAvailabilityProps {
- t: (key: string) => string;
-  formData: ProductFormData
+  t: (key: string) => string;
+  formData: ProductFormData;
   setFormData: (data: ProductFormData) => void;
   errors: {
     sellingPrice?: string;
@@ -17,7 +17,8 @@ const ProductPricingAvailability: React.FC<ProductPricingAvailabilityProps> = ({
   setFormData,
   errors,
 }) => {
-  const {  bgTertiary, textPrimary, textSecondary, textTertiary, borderColor } = useThemeClasses()
+  const { bgTertiary, textPrimary, textSecondary, textTertiary, borderColor } =
+    useThemeClasses();
 
   return (
     <div className="space-y-6">
@@ -79,7 +80,9 @@ const ProductPricingAvailability: React.FC<ProductPricingAvailabilityProps> = ({
 
         {!formData.isUnlimited && (
           <div>
-            <label className={`block text-sm font-medium ${textSecondary} mb-2`}>
+            <label
+              className={`block text-sm font-medium ${textSecondary} mb-2`}
+            >
               {t("stock_quantity")} *
             </label>
             <input

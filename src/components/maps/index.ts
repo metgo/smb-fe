@@ -1,6 +1,3 @@
 import MarkerMap from "./MarkerMap";
 
-export{
-  MarkerMap
-  
-}
+export { MarkerMap };

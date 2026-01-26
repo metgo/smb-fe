@@ -17,12 +17,13 @@ import { Activity, useEffect, useState } from "react";
 import CreateNotificationWizard from "./CreateNotificationWizard";
 import { ConfirmDialog } from "@/components/shared";
 
-
 interface NotificationsTimelineProps {
   notifications: NotificationData[];
   setNotifications: React.Dispatch<React.SetStateAction<NotificationData[]>>;
   editingNotification: NotificationData | null;
-  setEditingNotification: React.Dispatch<React.SetStateAction<NotificationData | null>>;
+  setEditingNotification: React.Dispatch<
+    React.SetStateAction<NotificationData | null>
+  >;
   showNotificationForm: boolean;
   setShowNotificationForm: React.Dispatch<React.SetStateAction<boolean>>;
   eventLanguage: "en" | "he" | "ar";
@@ -54,11 +55,12 @@ const NotificationsTimeline: React.FC<NotificationsTimelineProps> = ({
   const { isRTL, theme } = useAppSelector((state) => state.settings);
 
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-  const [notificationToDelete, setNotificationToDelete] = useState<string | null>(null);
-
+  const [notificationToDelete, setNotificationToDelete] = useState<
+    string | null
+  >(null);
 
   useEffect(() => {
-    markDirty(5)
+    markDirty(5);
   }, [
     notifications,
     eventLanguage,
@@ -66,8 +68,9 @@ const NotificationsTimeline: React.FC<NotificationsTimelineProps> = ({
     startDate,
     eventDays,
     address,
-    capacity
-  ])
+    capacity,
+    markDirty,
+  ]);
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       <div className="text-center mb-6">
@@ -88,26 +91,41 @@ const NotificationsTimeline: React.FC<NotificationsTimelineProps> = ({
             .map((notification, index) => (
               <div
                 key={notification._id + index}
-                className={`p-4 rounded-lg border ${theme === "dark" ? "border-gray-700 bg-gray-800/50" : "border-gray-200 bg-gray-50"} ${!notification.enabled ? "opacity-50" : ""
-                  }`}
+                className={`p-4 rounded-lg border ${theme === "dark" ? "border-gray-700 bg-gray-800/50" : "border-gray-200 bg-gray-50"} ${
+                  !notification.enabled ? "opacity-50" : ""
+                }`}
               >
-                <div className={`flex items-center justify-between ${isRTL ? "flex-row-reverse" : ""}`}>
-                  <div className={`flex items-center gap-3 ${isRTL ? "flex-row-reverse" : ""}`}>
+                <div
+                  className={`flex items-center justify-between ${isRTL ? "flex-row-reverse" : ""}`}
+                >
+                  <div
+                    className={`flex items-center gap-3 ${isRTL ? "flex-row-reverse" : ""}`}
+                  >
                     <Clock className="w-5 h-5 text-teal-500" />
                     <div>
                       <div className={`${textPrimary} font-medium`}>
-                        {notification.hoursBeforeEvent} {t("hours_before_event")}
+                        {notification.hoursBeforeEvent}{" "}
+                        {t("hours_before_event")}
                       </div>
-                      <div className={`text-sm ${textTertiary} flex items-center gap-2 ${isRTL ? "flex-row-reverse" : ""}`}>
-                        {notification.channels.email && <Mail className="w-4 h-4" />}
-                        {notification.channels.sms && <MessageSquare className="w-4 h-4" />}
-                        {notification.channels.whatsapp && <Smartphone className="w-4 h-4" />}
+                      <div
+                        className={`text-sm ${textTertiary} flex items-center gap-2 ${isRTL ? "flex-row-reverse" : ""}`}
+                      >
+                        {notification.channels.email && (
+                          <Mail className="w-4 h-4" />
+                        )}
+                        {notification.channels.sms && (
+                          <MessageSquare className="w-4 h-4" />
+                        )}
+                        {notification.channels.whatsapp && (
+                          <Smartphone className="w-4 h-4" />
+                        )}
                         <span>• {notification.language.toUpperCase()}</span>
                         <span
-                          className={`px-2 py-0.5 rounded text-xs ${notification.enabled
-                            ? "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400"
-                            : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400"
-                            }`}
+                          className={`px-2 py-0.5 rounded text-xs ${
+                            notification.enabled
+                              ? "bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400"
+                              : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400"
+                          }`}
                         >
                           {notification.enabled ? t("active") : t("disabled")}
                         </span>
@@ -115,11 +133,17 @@ const NotificationsTimeline: React.FC<NotificationsTimelineProps> = ({
                     </div>
                   </div>
 
-                  <div className={`flex items-center gap-2 ${isRTL ? "flex-row-reverse" : ""}`}>
+                  <div
+                    className={`flex items-center gap-2 ${isRTL ? "flex-row-reverse" : ""}`}
+                  >
                     <button
                       onClick={() => {
                         setNotifications((prev) =>
-                          prev.map((n) => (n._id === notification._id ? { ...n, enabled: !n.enabled } : n))
+                          prev.map((n) =>
+                            n._id === notification._id
+                              ? { ...n, enabled: !n.enabled }
+                              : n,
+                          ),
                         );
                       }}
                       className={`p-2 rounded-lg transition-colors cursor-pointer ${theme === "dark" ? "hover:bg-gray-700" : "hover:bg-gray-200"}`}
@@ -154,8 +178,8 @@ const NotificationsTimeline: React.FC<NotificationsTimelineProps> = ({
                     </button>
                     <button
                       onClick={() => {
-                        setNotificationToDelete(notification._id)
-                        setIsConfirmOpen(true)
+                        setNotificationToDelete(notification._id);
+                        setIsConfirmOpen(true);
                       }}
                       className="p-2 rounded-lg text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer"
                     >
@@ -188,8 +212,11 @@ const NotificationsTimeline: React.FC<NotificationsTimelineProps> = ({
               });
               setShowNotificationForm(true);
             }}
-            className={`w-full px-4 py-3 rounded-lg border-2 border-dashed transition-colors flex items-center justify-center gap-2 ${theme === "dark" ? "border-gray-700 hover:bg-gray-800" : "border-gray-300 hover:bg-gray-50"
-              }`}
+            className={`w-full px-4 py-3 rounded-lg border-2 border-dashed transition-colors flex items-center justify-center gap-2 ${
+              theme === "dark"
+                ? "border-gray-700 hover:bg-gray-800"
+                : "border-gray-300 hover:bg-gray-50"
+            }`}
           >
             <Plus className="w-5 h-5" />
             <span>{t("add_notification")}</span>
@@ -197,7 +224,11 @@ const NotificationsTimeline: React.FC<NotificationsTimelineProps> = ({
         )}
 
         {/* Notification Configuration Form */}
-        <Activity mode={showNotificationForm && editingNotification ? "visible" : "hidden"}>
+        <Activity
+          mode={
+            showNotificationForm && editingNotification ? "visible" : "hidden"
+          }
+        >
           <CreateNotificationWizard
             t={t}
             theme={theme}
@@ -213,9 +244,7 @@ const NotificationsTimeline: React.FC<NotificationsTimelineProps> = ({
             setEditingNotification={setEditingNotification}
           />
         </Activity>
-
       </div>
-
 
       <ConfirmDialog
         open={isConfirmOpen}
@@ -231,7 +260,9 @@ const NotificationsTimeline: React.FC<NotificationsTimelineProps> = ({
         onConfirm={async () => {
           if (!notificationToDelete) return;
 
-          setNotifications((prev) => prev.filter((n) => n._id !== notificationToDelete));
+          setNotifications((prev) =>
+            prev.filter((n) => n._id !== notificationToDelete),
+          );
 
           setIsConfirmOpen(false);
           setNotificationToDelete(null);

@@ -13,5 +13,5 @@ export {
   EventRegistrationCapacity,
   EventReviewPublish,
   EventTickets,
-  NotificationsTimeline
-}
+  NotificationsTimeline,
+};

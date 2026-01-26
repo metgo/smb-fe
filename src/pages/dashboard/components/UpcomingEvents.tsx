@@ -1,9 +1,9 @@
-import { useTranslation } from 'react-i18next';
-import { Calendar, MapPin, ArrowRight } from 'lucide-react';
+import { useTranslation } from "react-i18next";
+import { Calendar, MapPin, ArrowRight } from "lucide-react";
 
-import { Link } from 'react-router-dom';
-import { routes } from '@/lib/routes';
-import { ImageWithFallback, InfoTooltip } from '@/components/shared';
+import { Link } from "react-router-dom";
+import { routes } from "@/lib/routes";
+import { ImageWithFallback, InfoTooltip } from "@/components/shared";
 
 interface Event {
   id: number;
@@ -13,42 +13,45 @@ interface Event {
   image: string;
 }
 
-
 export default function UpcomingEvents() {
-  const { t } = useTranslation('dashboard');
+  const { t } = useTranslation("dashboard");
 
   const events: Event[] = [
     {
       id: 1,
-      title: 'Negev Desert Stars Festival',
-      date: 'Jan 18-20, 2026',
-      location: 'Ramon Crater, Mitzpe Ramon',
-      image: 'https://images.unsplash.com/photo-1633088926847-435cdb7e76da?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxpc3JhZWwlMjBuZWdldiUyMGRlc2VydCUyMGxhbmRzY2FwZXxlbnwxfHx8fDE3NjU2MDk4ODh8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
+      title: "Negev Desert Stars Festival",
+      date: "Jan 18-20, 2026",
+      location: "Ramon Crater, Mitzpe Ramon",
+      image:
+        "https://images.unsplash.com/photo-1633088926847-435cdb7e76da?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxpc3JhZWwlMjBuZWdldiUyMGRlc2VydCUyMGxhbmRzY2FwZXxlbnwxfHx8fDE3NjU2MDk4ODh8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
     },
     {
       id: 2,
-      title: 'Be\'er Sheva International Arts Week',
-      date: 'Feb 5-12, 2026',
-      location: 'Be\'er Sheva Culture Center',
-      image: 'https://images.unsplash.com/photo-1735956559986-dd3658c94f22?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxqZXJ1c2FsZW0lMjBmZXN0aXZhbCUyMGN1bHR1cmV8ZW58MXx8fHwxNzY1NjA5ODg4fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
+      title: "Be'er Sheva International Arts Week",
+      date: "Feb 5-12, 2026",
+      location: "Be'er Sheva Culture Center",
+      image:
+        "https://images.unsplash.com/photo-1735956559986-dd3658c94f22?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxqZXJ1c2FsZW0lMjBmZXN0aXZhbCUyMGN1bHR1cmV8ZW58MXx8fHwxNzY1NjA5ODg4fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
     },
     {
       id: 3,
-      title: 'Negev Culinary Market',
-      date: 'Feb 22-23, 2026',
-      location: 'Sderot Community Center',
-      image: 'https://images.unsplash.com/photo-1547516453-01c9910aafbf?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxpc3JhZWxpJTIwZm9vZCUyMG1hcmtldHxlbnwxfHx8fDE3NjU2MDk4ODh8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral',
+      title: "Negev Culinary Market",
+      date: "Feb 22-23, 2026",
+      location: "Sderot Community Center",
+      image:
+        "https://images.unsplash.com/photo-1547516453-01c9910aafbf?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxpc3JhZWxpJTIwZm9vZCUyMG1hcmtldHxlbnwxfHx8fDE3NjU2MDk4ODh8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
     },
   ];
-
 
   return (
     <section>
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-gray-900 dark:text-white">{t('upcoming_events')}</h2>
+        <h2 className="text-gray-900 dark:text-white">
+          {t("upcoming_events")}
+        </h2>
         <InfoTooltip
-          content={t('upcoming_events_desc')}
-          title={t('upcoming_events')}
+          content={t("upcoming_events_desc")}
+          title={t("upcoming_events")}
         />
       </div>
 
@@ -66,7 +69,9 @@ export default function UpcomingEvents() {
               />
             </div>
             <div className="p-4">
-              <h3 className="text-gray-900 dark:text-white mb-2 line-clamp-2">{event.title}</h3>
+              <h3 className="text-gray-900 dark:text-white mb-2 line-clamp-2">
+                {event.title}
+              </h3>
               <div className="flex items-start gap-2 text-sm text-gray-600 dark:text-gray-400 mb-2">
                 <Calendar className="w-4 h-4 mt-0.5 shrink-0" />
                 <span>{event.date}</span>
@@ -88,8 +93,13 @@ export default function UpcomingEvents() {
             <div className="w-12 h-12 bg-teal-500 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
               <ArrowRight className="w-6 h-6 text-white" />
             </div>
-            <p className="text-gray-900 dark:text-white mb-1">{t('view_all')}</p>
-            < p className="text-sm text-gray-600 dark:text-gray-400" > View all upcoming activities</p>
+            <p className="text-gray-900 dark:text-white mb-1">
+              {t("view_all")}
+            </p>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              {" "}
+              View all upcoming activities
+            </p>
           </div>
         </Link>
       </div>

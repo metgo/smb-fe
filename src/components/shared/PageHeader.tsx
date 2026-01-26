@@ -1,7 +1,6 @@
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { AddButton } from "../btns";
 
-
 interface PageHeaderProps {
   title: string;
   description?: string;
@@ -10,15 +9,14 @@ interface PageHeaderProps {
   btnLabel: string;
 }
 
-
 export default function PageHeader({
   title,
   description,
   h1Gradient,
   btnLabel,
-  onClick
+  onClick,
 }: PageHeaderProps) {
-  const { textSecondary } = useThemeClasses()
+  const { textSecondary } = useThemeClasses();
 
   return (
     <div className="shrink-0 py-6 pb-4 border-b border-gray-200 dark:border-gray-800 mb-4">
@@ -34,5 +32,5 @@ export default function PageHeader({
         </div>
       </div>
     </div>
-  )
+  );
 }

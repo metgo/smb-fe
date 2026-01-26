@@ -17,5 +17,5 @@ export const routes = {
 
   auth: "/authentication",
   miniSite: "/mini-site",
-  profile:"/profile",
-}
+  profile: "/profile",
+};

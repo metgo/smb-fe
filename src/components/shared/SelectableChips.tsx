@@ -16,7 +16,7 @@ const SelectableChips = ({
   onSelect,
   textSecondary,
 }: SelectableChipsProps) => {
-  const { textPrimary } = useThemeClasses()
+  const { textPrimary } = useThemeClasses();
   return (
     <div>
       <label className={`block text-sm font-medium mb-4 ${textSecondary}`}>
@@ -34,7 +34,7 @@ const SelectableChips = ({
               className={clsx(
                 "border border-teal-600 px-2.5 py-1 text-sm font-semibold rounded-3xl cursor-pointer transition-colors",
                 isSelected && "bg-teal-600 text-white",
-                textPrimary
+                textPrimary,
               )}
             >
               {item.name}
@@ -46,4 +46,4 @@ const SelectableChips = ({
   );
 };
 
-export default SelectableChips
+export default SelectableChips;

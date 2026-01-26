@@ -6,17 +6,20 @@ interface RadioGroupFieldProps<T extends string> {
   textSecondary: string;
 }
 
- const RadioGroupField = <T extends string>({
+const RadioGroupField = <T extends string>({
   value,
   options,
   onChange,
   labelMapper,
-  textSecondary
+  textSecondary,
 }: RadioGroupFieldProps<T>) => {
   return (
     <div className="flex flex-wrap gap-6">
-      {options.map(opt => (
-        <label key={opt} className="flex items-center gap-3 cursor-pointer group">
+      {options.map((opt) => (
+        <label
+          key={opt}
+          className="flex items-center gap-3 cursor-pointer group"
+        >
           <input
             type="radio"
             value={opt}
@@ -24,7 +27,9 @@ interface RadioGroupFieldProps<T extends string> {
             onChange={() => onChange(opt)}
             className="w-5 h-5 text-teal-500 focus:ring-teal-500 focus:ring-2"
           />
-          <span className={`text-base capitalize font-medium ${textSecondary} group-hover:text-teal-500`}>
+          <span
+            className={`text-base capitalize font-medium ${textSecondary} group-hover:text-teal-500`}
+          >
             {labelMapper(opt)}
           </span>
         </label>
@@ -32,4 +37,4 @@ interface RadioGroupFieldProps<T extends string> {
     </div>
   );
 };
-export default RadioGroupField
+export default RadioGroupField;

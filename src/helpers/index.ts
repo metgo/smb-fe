@@ -1,9 +1,9 @@
-import { formatDateRange } from '@/helpers/formatter';
+import { formatDateRange } from "@/helpers/formatter";
 
 export function uploadWithProgress(
   file: File,
   signedUrl: string,
-  onProgress: (percent: number) => void
+  onProgress: (percent: number) => void,
 ): Promise<void> {
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
@@ -42,8 +42,8 @@ export const convertToWebP = async (file: File): Promise<File> => {
   const ctx = canvas.getContext("2d")!;
   ctx.drawImage(bitmap, 0, 0);
 
-  const blob = await new Promise<Blob>(res =>
-    canvas.toBlob(b => res(b!), "image/webp", 0.8)
+  const blob = await new Promise<Blob>((res) =>
+    canvas.toBlob((b) => res(b!), "image/webp", 0.8),
   );
 
   return new File([blob], file.name.replace(/\.\w+$/, ".webp"), {
@@ -51,11 +51,9 @@ export const convertToWebP = async (file: File): Promise<File> => {
   });
 };
 
-
-
 export function extractCenterAddressText(address: string): string | null {
   // Split by spaces
-  const parts = address?  address?.split(" "): "-";
+  const parts = address ? address?.split(" ") : "-";
 
   // Find the part that is not a plus-code (e.g., "5H8P+WJ") and not a comma
   for (const part of parts) {
@@ -68,14 +66,13 @@ export function extractCenterAddressText(address: string): string | null {
   return null;
 }
 
-
 export function extractEventDates(
-  dayDescription?: { date: string | Date }[]
+  dayDescription?: { date: string | Date }[],
 ): string {
-  if (!dayDescription || dayDescription.length === 0) return '-';
+  if (!dayDescription || dayDescription.length === 0) return "-";
 
   const dates = dayDescription
-    .map(d => (d?.date instanceof Date ? d.date : new Date(d?.date)))
+    .map((d) => (d?.date instanceof Date ? d.date : new Date(d?.date)))
     .filter(Boolean)
     .sort((a, b) => a.getTime() - b.getTime());
 
@@ -89,4 +86,3 @@ export function extractEventDates(
 
   return formatDateRange(startStr, endStr, true);
 }
-

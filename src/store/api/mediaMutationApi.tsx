@@ -1,34 +1,31 @@
-import { createApi } from '@reduxjs/toolkit/query/react';
+import { createApi } from "@reduxjs/toolkit/query/react";
 
-import { endpoints } from '@/lib/endpoints';
-import { axiosBaseQuery } from './axiosBaseQuery';
-
+import { endpoints } from "@/lib/endpoints";
+import { axiosBaseQuery } from "./axiosBaseQuery";
 
 export const mediaMutationApi = createApi({
-  reducerPath: 'mediaMutationApi',
+  reducerPath: "mediaMutationApi",
   baseQuery: axiosBaseQuery(),
-  tagTypes: ['Media'],
+  tagTypes: ["Media"],
 
   endpoints: (builder) => ({
     createSignedUrl: builder.mutation<any, SignedUrlPayload[]>({
       query: (body) => ({
         url: endpoints.mediaSignedUrl,
-        method: 'POST',
-        data: { items: body }
-      })
+        method: "POST",
+        data: { items: body },
+      }),
     }),
 
-    deleteMedia: builder.mutation<any, {imageUrl: string}>({
-      query: ({imageUrl})=>({
+    deleteMedia: builder.mutation<any, { imageUrl: string }>({
+      query: ({ imageUrl }) => ({
         url: endpoints.mediaFileDelete,
-        method: 'DELETE',
-        data: {imageUrl},
-      })
-    })
+        method: "DELETE",
+        data: { imageUrl },
+      }),
+    }),
   }),
 });
 
-export const {
-  useCreateSignedUrlMutation,
-  useDeleteMediaMutation
-} = mediaMutationApi;
+export const { useCreateSignedUrlMutation, useDeleteMediaMutation } =
+  mediaMutationApi;

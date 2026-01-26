@@ -12,16 +12,15 @@ interface EventMediaProps {
   markDirty: (step: number) => void;
   images: IImageUpload[];
   imagesRef: React.RefObject<HTMLDivElement | null>;
-  primaryImageIndex: number,
-  handleImageUpload: (files: FileList) => void,
-  setPrimaryImage: (index: number) => void,
-  deleteTarget: IDeleteTarget | null,
-  setDeleteTarget: (v: IDeleteTarget | null) => void,
+  primaryImageIndex: number;
+  handleImageUpload: (files: FileList) => void;
+  setPrimaryImage: (index: number) => void;
+  deleteTarget: IDeleteTarget | null;
+  setDeleteTarget: (v: IDeleteTarget | null) => void;
   confirmDelete: () => void;
   isImageDeleting: boolean;
-  handleDeleteImage: (item: IImageUpload, index: number) => void
+  handleDeleteImage: (item: IImageUpload, index: number) => void;
 }
-
 
 const EventMedia: React.FC<EventMediaProps> = ({
   t,
@@ -38,18 +37,17 @@ const EventMedia: React.FC<EventMediaProps> = ({
   isImageDeleting,
   handleDeleteImage,
 }) => {
-  const { t: tc } = useTranslation("common")
-  const { textPrimary, textSecondary, textTertiary, } = useThemeClasses()
-
+  const { t: tc } = useTranslation("common");
+  const { textPrimary, textSecondary, textTertiary } = useThemeClasses();
 
   useEffect(() => {
     markDirty(6);
-  }, [images])
+  }, [images, markDirty, imagesRef]);
   useEffect(() => {
     if (images) {
       imagesRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     }
-  }, [images])
+  }, [images, imagesRef]);
 
   /* ---------------- JSX  ---------------- */
   return (
@@ -60,17 +58,16 @@ const EventMedia: React.FC<EventMediaProps> = ({
           <h2 className={`text-2xl font-bold mb-2 ${textPrimary}`}>
             {t("event_images")}
           </h2>
-          <p className={`text-base ${textTertiary}`}>
-            {t("upload_images")}
-          </p>
+          <p className={`text-base ${textTertiary}`}>{t("upload_images")}</p>
         </div>
 
         {/* Upload Area */}
         <div
-          className={`p-16 rounded-2xl border-2 border-dashed text-center transition-colors cursor-pointer ${theme === "dark"
-            ? "border-gray-700 bg-gray-800/30 hover:border-teal-500/50"
-            : "border-gray-300 bg-gray-50 hover:border-teal-500/50"
-            }`}
+          className={`p-16 rounded-2xl border-2 border-dashed text-center transition-colors cursor-pointer ${
+            theme === "dark"
+              ? "border-gray-700 bg-gray-800/30 hover:border-teal-500/50"
+              : "border-gray-300 bg-gray-50 hover:border-teal-500/50"
+          }`}
           onClick={() => document.getElementById("image-upload")?.click()}
           onDrop={(e) => {
             e.preventDefault();
@@ -79,13 +76,13 @@ const EventMedia: React.FC<EventMediaProps> = ({
           }}
           onDragOver={(e) => e.preventDefault()}
         >
-          <Upload className={`w-20 h-20 mx-auto mb-6 opacity-60 ${textTertiary}`} />
+          <Upload
+            className={`w-20 h-20 mx-auto mb-6 opacity-60 ${textTertiary}`}
+          />
           <p className={`text-lg font-medium mb-2 ${textSecondary}`}>
             {t("drag_drop_images")}
           </p>
-          <p className={`text-sm mb-6 ${textTertiary}`}>
-            {t("or")}
-          </p>
+          <p className={`text-sm mb-6 ${textTertiary}`}>{t("or")}</p>
           <button className="px-8 py-3 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-medium transition-all shadow-lg shadow-teal-600/20">
             {t("browse_files")}
           </button>
@@ -98,7 +95,9 @@ const EventMedia: React.FC<EventMediaProps> = ({
             type="file"
             multiple
             accept="image/*"
-            onChange={(e) => e.target.files && handleImageUpload(e.target.files)}
+            onChange={(e) =>
+              e.target.files && handleImageUpload(e.target.files)
+            }
             className="hidden"
           />
         </div>
@@ -113,12 +112,13 @@ const EventMedia: React.FC<EventMediaProps> = ({
               {images?.map((img, index) => (
                 <div
                   key={index}
-                  className={`relative rounded-xl overflow-hidden border-2 transition-all group ${primaryImageIndex === index
-                    ? "border-teal-500 ring-2 ring-teal-500/30"
-                    : theme === "dark"
-                      ? "border-gray-700 hover:border-teal-400"
-                      : "border-gray-200 hover:border-teal-300"
-                    }`}
+                  className={`relative rounded-xl overflow-hidden border-2 transition-all group ${
+                    primaryImageIndex === index
+                      ? "border-teal-500 ring-2 ring-teal-500/30"
+                      : theme === "dark"
+                        ? "border-gray-700 hover:border-teal-400"
+                        : "border-gray-200 hover:border-teal-300"
+                  }`}
                 >
                   <img
                     src={img.previewUrl}
@@ -129,8 +129,13 @@ const EventMedia: React.FC<EventMediaProps> = ({
                   {/* Progress Bar Overlay */}
                   {img.status === "uploading" && (
                     <div className="absolute bottom-16 left-0 w-full flex items-center px-2 z-50">
-                      <div className="bg-white h-1 rounded transition-all" style={{ width: `${img.progress}%` }} />
-                      <span className="ml-2 text-green-600 text-xs font-bold">{img.progress}%</span>
+                      <div
+                        className="bg-white h-1 rounded transition-all"
+                        style={{ width: `${img.progress}%` }}
+                      />
+                      <span className="ml-2 text-green-600 text-xs font-bold">
+                        {img.progress}%
+                      </span>
                     </div>
                   )}
 
@@ -148,17 +153,20 @@ const EventMedia: React.FC<EventMediaProps> = ({
                   </button>
 
                   {/* Action Buttons */}
-                  <div className={clsx(
-                    "absolute inset-0 bg-black/0 group-hover:bg-black/60 transition-all flex items-end p-4",
-                    img.status === "uploading" && "bg-black/60"
-                  )}>
+                  <div
+                    className={clsx(
+                      "absolute inset-0 bg-black/0 group-hover:bg-black/60 transition-all flex items-end p-4",
+                      img.status === "uploading" && "bg-black/60",
+                    )}
+                  >
                     <div className="flex items-center gap-2 w-full">
                       <button
                         onClick={() => setPrimaryImage(index)}
-                        className={`flex-1 cursor-pointer px-4 py-2 rounded-lg font-medium transition-all ${primaryImageIndex === index
-                          ? "bg-teal-500 text-white"
-                          : "bg-white/90 text-gray-900 hover:bg-white"
-                          }`}
+                        className={`flex-1 cursor-pointer px-4 py-2 rounded-lg font-medium transition-all ${
+                          primaryImageIndex === index
+                            ? "bg-teal-500 text-white"
+                            : "bg-white/90 text-gray-900 hover:bg-white"
+                        }`}
                       >
                         {tc("set_as_primary")}
                       </button>

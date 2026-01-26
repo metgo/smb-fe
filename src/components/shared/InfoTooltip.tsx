@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import { HelpCircle, X } from 'lucide-react';
-import { useAppSelector } from '@/hooks/hooks';
+import { useState } from "react";
+import { HelpCircle, X } from "lucide-react";
+import { useAppSelector } from "@/hooks/hooks";
 
 interface InfoTooltipProps {
   content: string;
@@ -9,7 +9,7 @@ interface InfoTooltipProps {
 
 export default function InfoTooltip({ content, title }: InfoTooltipProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const {isRTL}=useAppSelector(state=>state.settings)
+  const { isRTL } = useAppSelector((state) => state.settings);
 
   return (
     <div className="relative inline-block">
@@ -29,13 +29,13 @@ export default function InfoTooltip({ content, title }: InfoTooltipProps) {
             className="fixed inset-0 z-40"
             onClick={() => setIsOpen(false)}
           />
-          
+
           {/* Tooltip */}
           <div
             className={`absolute top-0 z-50 w-80 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl p-4 ${
-              isRTL ? 'left-0 ml-2' : 'right-0 mr-2'
+              isRTL ? "left-0 ml-2" : "right-0 mr-2"
             }`}
-            style={{ marginTop: '-0.5rem' }}
+            style={{ marginTop: "-0.5rem" }}
           >
             <div className="flex items-start justify-between gap-2 mb-2">
               {title && (

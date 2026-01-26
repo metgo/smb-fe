@@ -18,7 +18,7 @@ interface FormErrors {
 }
 
 interface BusinessAttributesProps {
-  t:(key: string)=>string;
+  t: (key: string) => string;
   theme: ThemeMode;
   formData: BusinessAttributesFormData;
   setFormData: (data: BusinessAttributesFormData) => void;
@@ -60,12 +60,13 @@ const BusinessAttributes: FC<BusinessAttributesProps> = ({
   setFormData,
   errors,
 }) => {
-
   return (
     <div className="space-y-6">
       {/* Primary Category */}
       <div>
-        <label className={`block text-sm mb-2 ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}>
+        <label
+          className={`block text-sm mb-2 ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}
+        >
           {t("primary_category")} *
         </label>
         <select
@@ -77,8 +78,8 @@ const BusinessAttributes: FC<BusinessAttributesProps> = ({
             errors.primaryCategory
               ? "border-red-500"
               : theme === "dark"
-              ? "bg-gray-800 border-gray-700 text-gray-200"
-              : "bg-white border-gray-300 text-gray-900"
+                ? "bg-gray-800 border-gray-700 text-gray-200"
+                : "bg-white border-gray-300 text-gray-900"
           } focus:outline-none focus:ring-2 focus:ring-teal-500`}
         >
           <option value="">{t("select")}</option>
@@ -95,7 +96,9 @@ const BusinessAttributes: FC<BusinessAttributesProps> = ({
 
       {/* Service Type */}
       <div>
-        <label className={`block text-sm mb-2 ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}>
+        <label
+          className={`block text-sm mb-2 ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}
+        >
           {t("service_type")}
         </label>
         <select
@@ -118,7 +121,9 @@ const BusinessAttributes: FC<BusinessAttributesProps> = ({
 
       {/* Tags */}
       <div>
-        <label className={`block text-sm mb-2 ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}>
+        <label
+          className={`block text-sm mb-2 ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}
+        >
           {t("tags")}
         </label>
         <div
@@ -176,7 +181,9 @@ const BusinessAttributes: FC<BusinessAttributesProps> = ({
 
       {/* Accessibility */}
       <div>
-        <label className={`block text-sm mb-2 ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}>
+        <label
+          className={`block text-sm mb-2 ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}
+        >
           {t("accessibility")}
         </label>
         <div className="grid grid-cols-2 gap-3">
@@ -192,8 +199,8 @@ const BusinessAttributes: FC<BusinessAttributesProps> = ({
                       ? "bg-teal-900/30 border-teal-600"
                       : "bg-teal-50 border-teal-600"
                     : theme === "dark"
-                    ? "bg-gray-800 border-gray-700 hover:border-gray-600"
-                    : "bg-white border-gray-300 hover:border-gray-400"
+                      ? "bg-gray-800 border-gray-700 hover:border-gray-600"
+                      : "bg-white border-gray-300 hover:border-gray-400"
                 }`}
               >
                 <input
@@ -209,7 +216,9 @@ const BusinessAttributes: FC<BusinessAttributesProps> = ({
                   }
                   className="w-4 h-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500"
                 />
-                <span className={`text-sm ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}>
+                <span
+                  className={`text-sm ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}
+                >
                   {option}
                 </span>
               </label>
@@ -220,7 +229,9 @@ const BusinessAttributes: FC<BusinessAttributesProps> = ({
 
       {/* Group Types */}
       <div>
-        <label className={`block text-sm mb-2 ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}>
+        <label
+          className={`block text-sm mb-2 ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}
+        >
           {t("group_types")}
         </label>
         <div className="grid grid-cols-2 gap-3">
@@ -236,8 +247,8 @@ const BusinessAttributes: FC<BusinessAttributesProps> = ({
                       ? "bg-purple-900/30 border-purple-600"
                       : "bg-purple-50 border-purple-600"
                     : theme === "dark"
-                    ? "bg-gray-800 border-gray-700 hover:border-gray-600"
-                    : "bg-white border-gray-300 hover:border-gray-400"
+                      ? "bg-gray-800 border-gray-700 hover:border-gray-600"
+                      : "bg-white border-gray-300 hover:border-gray-400"
                 }`}
               >
                 <input
@@ -253,7 +264,9 @@ const BusinessAttributes: FC<BusinessAttributesProps> = ({
                   }
                   className="w-4 h-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500"
                 />
-                <span className={`text-sm ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}>
+                <span
+                  className={`text-sm ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}
+                >
                   {type}
                 </span>
               </label>

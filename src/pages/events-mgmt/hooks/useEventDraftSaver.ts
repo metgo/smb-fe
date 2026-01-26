@@ -25,7 +25,7 @@ export function useEventDraftSaver({
 
   // 🔹 Mark step dirty
   const markDirty = useCallback((step: number) => {
-    setDirtySteps(prev => new Set(prev).add(step));
+    setDirtySteps((prev) => new Set(prev).add(step));
   }, []);
 
   // 🔹 Build single merged payload
@@ -33,9 +33,9 @@ export function useEventDraftSaver({
     const payload: Record<string, any> = {};
 
     [...dirtySteps]
-      .filter(step => step <= currentStep)
+      .filter((step) => step <= currentStep)
       .sort((a, b) => a - b)
-      .forEach(step => {
+      .forEach((step) => {
         const builder = stepPayloadMap[step];
         if (builder) Object.assign(payload, builder());
       });
@@ -44,48 +44,60 @@ export function useEventDraftSaver({
   }, [dirtySteps, currentStep, stepPayloadMap]);
 
   // 🔹 Save Draft (manual or autosave)
-  const saveDraft = useCallback(async (isPublish = false) => {
-    try {
-      let internalEventId;
+  const saveDraft = useCallback(
+    async (isPublish = false) => {
+      try {
+        let internalEventId;
 
-      // 1️⃣ Initialize event if not created yet
-      if (!eventId) {
-        const res = await initEventCreate().unwrap();
-        internalEventId = res?.id;
-        setEventId(res?.id);
+        // 1️⃣ Initialize event if not created yet
+        if (!eventId) {
+          const res = await initEventCreate().unwrap();
+          internalEventId = res?.id;
+          setEventId(res?.id);
+        }
+
+        // 2️⃣ Build base payload
+        let payload = buildPayload();
+
+        // 3️⃣ If publishing, override status
+        if (isPublish) {
+          payload = {
+            ...payload,
+            status: "APPROVED",
+          };
+        }
+
+        if (!Object.keys(payload).length) return;
+
+        // 4️⃣ Update event
+        const res = await updateEvent({
+          eventId: internalEventId || eventId!,
+          body: payload,
+        }).unwrap();
+
+        // 5️⃣ Clear dirty steps up to current step
+        setDirtySteps((prev) => {
+          const next = new Set(prev);
+          [...next].forEach((s) => s <= currentStep && next.delete(s));
+          return next;
+        });
+
+        toast.success(
+          res?.message ?? (isPublish ? "Event published" : "Draft saved"),
+        );
+      } catch (err: any) {
+        toast.error(err?.message || "Failed to save draft");
       }
-
-      // 2️⃣ Build base payload
-      let payload = buildPayload();
-
-      // 3️⃣ If publishing, override status
-      if (isPublish) {
-        payload = {
-          ...payload,
-          status: "APPROVED",
-        };
-      }
-
-      if (!Object.keys(payload).length) return;
-
-      // 4️⃣ Update event
-      const res = await updateEvent({
-        eventId: internalEventId || eventId!,
-        body: payload,
-      }).unwrap();
-
-      // 5️⃣ Clear dirty steps up to current step
-      setDirtySteps(prev => {
-        const next = new Set(prev);
-        [...next].forEach(s => s <= currentStep && next.delete(s));
-        return next;
-      });
-
-      toast.success(res?.message ?? (isPublish ? "Event published" : "Draft saved"));
-    } catch (err: any) {
-      toast.error(err?.message || "Failed to save draft");
-    }
-  }, [buildPayload, currentStep, initEventCreate, eventId, updateEvent]);
+    },
+    [
+      buildPayload,
+      currentStep,
+      initEventCreate,
+      eventId,
+      updateEvent,
+      setEventId,
+    ],
+  );
 
   // 🔹 Debounced autosave
   // useEffect(() => {

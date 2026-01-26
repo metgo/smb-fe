@@ -1,7 +1,14 @@
-
-export default function InfoRow({ label, value, theme }: { label: string; value: string; theme: Theme }) {
-  const textTertiary = theme === 'dark' ? 'text-gray-400' : 'text-gray-600';
-  const textPrimary = theme === 'dark' ? 'text-gray-100' : 'text-gray-900';
+export default function InfoRow({
+  label,
+  value,
+  theme,
+}: {
+  label: string;
+  value: string;
+  theme: Theme;
+}) {
+  const textTertiary = theme === "dark" ? "text-gray-400" : "text-gray-600";
+  const textPrimary = theme === "dark" ? "text-gray-100" : "text-gray-900";
 
   return (
     <div>

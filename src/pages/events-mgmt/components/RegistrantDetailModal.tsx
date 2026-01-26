@@ -6,7 +6,9 @@ import { X } from "lucide-react";
 
 interface RegistrantDetailModalProps {
   selectedRegistrant: Registrant | null;
-  setSelectedRegistrant: React.Dispatch<React.SetStateAction<Registrant | null>>;
+  setSelectedRegistrant: React.Dispatch<
+    React.SetStateAction<Registrant | null>
+  >;
 }
 
 const RegistrantDetailModal: React.FC<RegistrantDetailModalProps> = ({
@@ -80,7 +82,9 @@ const RegistrantDetailModal: React.FC<RegistrantDetailModalProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Basic Info */}
             <div>
-              <label className={`block text-xs font-medium mb-2 ${textTertiary}`}>
+              <label
+                className={`block text-xs font-medium mb-2 ${textTertiary}`}
+              >
                 {t("full_name")}
               </label>
               <p className={`text-lg font-semibold ${textPrimary}`}>
@@ -89,7 +93,9 @@ const RegistrantDetailModal: React.FC<RegistrantDetailModalProps> = ({
             </div>
 
             <div>
-              <label className={`block text-xs font-medium mb-2 ${textTertiary}`}>
+              <label
+                className={`block text-xs font-medium mb-2 ${textTertiary}`}
+              >
                 {t("phone")}
               </label>
               <p className={`text-lg ${textPrimary}`}>
@@ -98,7 +104,9 @@ const RegistrantDetailModal: React.FC<RegistrantDetailModalProps> = ({
             </div>
 
             <div className="md:col-span-2">
-              <label className={`block text-xs font-medium mb-2 ${textTertiary}`}>
+              <label
+                className={`block text-xs font-medium mb-2 ${textTertiary}`}
+              >
                 {t("email")}
               </label>
               <p className={`text-lg ${textPrimary}`}>
@@ -108,7 +116,9 @@ const RegistrantDetailModal: React.FC<RegistrantDetailModalProps> = ({
 
             {/* Ticket Details */}
             <div>
-              <label className={`block text-xs font-medium mb-2 ${textTertiary}`}>
+              <label
+                className={`block text-xs font-medium mb-2 ${textTertiary}`}
+              >
                 {t("quantity")}
               </label>
               <p className={`text-lg ${textPrimary}`}>
@@ -117,7 +127,9 @@ const RegistrantDetailModal: React.FC<RegistrantDetailModalProps> = ({
             </div>
 
             <div>
-              <label className={`block text-xs font-medium mb-2 ${textTertiary}`}>
+              <label
+                className={`block text-xs font-medium mb-2 ${textTertiary}`}
+              >
                 {t("ticket_type")}
               </label>
               <p className={`text-lg ${textPrimary}`}>
@@ -126,7 +138,9 @@ const RegistrantDetailModal: React.FC<RegistrantDetailModalProps> = ({
             </div>
 
             <div>
-              <label className={`block text-xs font-medium mb-2 ${textTertiary}`}>
+              <label
+                className={`block text-xs font-medium mb-2 ${textTertiary}`}
+              >
                 {t("total")} {t("price")}
               </label>
               <p className={`text-lg font-bold text-teal-500`}>
@@ -135,7 +149,9 @@ const RegistrantDetailModal: React.FC<RegistrantDetailModalProps> = ({
             </div>
 
             <div>
-              <label className={`block text-xs font-medium mb-2 ${textTertiary}`}>
+              <label
+                className={`block text-xs font-medium mb-2 ${textTertiary}`}
+              >
                 {t("payment_status")}
               </label>
               <p className={`text-lg capitalize ${textPrimary}`}>
@@ -144,7 +160,9 @@ const RegistrantDetailModal: React.FC<RegistrantDetailModalProps> = ({
             </div>
 
             <div>
-              <label className={`block text-xs font-medium mb-2 ${textTertiary}`}>
+              <label
+                className={`block text-xs font-medium mb-2 ${textTertiary}`}
+              >
                 {t("registration_date")}
               </label>
               <p className={`text-lg ${textPrimary}`}>
@@ -153,7 +171,9 @@ const RegistrantDetailModal: React.FC<RegistrantDetailModalProps> = ({
             </div>
 
             <div>
-              <label className={`block text-xs font-medium mb-2 ${textTertiary}`}>
+              <label
+                className={`block text-xs font-medium mb-2 ${textTertiary}`}
+              >
                 {t("source_website")}
               </label>
               <p className={`text-lg ${textPrimary}`}>
@@ -162,23 +182,26 @@ const RegistrantDetailModal: React.FC<RegistrantDetailModalProps> = ({
             </div>
 
             {/* Attending Days (Multi-day events) */}
-            {selectedRegistrant.attendingDays && selectedRegistrant.attendingDays.length > 0 && (
-              <div className="md:col-span-2">
-                <label className={`block text-xs font-medium mb-3 ${textTertiary}`}>
-                  {t("attending_days")}
-                </label>
-                <div className="flex flex-wrap gap-3">
-                  {selectedRegistrant.attendingDays.map((day, idx) => (
-                    <span
-                      key={idx}
-                      className="px-4 py-2 bg-teal-500/20 text-teal-500 rounded-xl text-sm font-medium flex items-center"
-                    >
-                      {formatShortDate(day)}
-                    </span>
-                  ))}
+            {selectedRegistrant.attendingDays &&
+              selectedRegistrant.attendingDays.length > 0 && (
+                <div className="md:col-span-2">
+                  <label
+                    className={`block text-xs font-medium mb-3 ${textTertiary}`}
+                  >
+                    {t("attending_days")}
+                  </label>
+                  <div className="flex flex-wrap gap-3">
+                    {selectedRegistrant.attendingDays.map((day, idx) => (
+                      <span
+                        key={idx}
+                        className="px-4 py-2 bg-teal-500/20 text-teal-500 rounded-xl text-sm font-medium flex items-center"
+                      >
+                        {formatShortDate(day)}
+                      </span>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
           </div>
         </div>
       </div>
