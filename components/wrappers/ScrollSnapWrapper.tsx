@@ -103,12 +103,12 @@ export default function ScrollSnapWrapper({ children, hasMarketing }: Props) {
       if (section === "first") {
         const top = firstRef.current?.offsetTop ?? 0;
         await smoothScrollTo(top);
-        setHideFirstTwoSection(false);
+        if (hasMarketing) setHideFirstTwoSection(false);
         setIsOnSection2(false);
       } else if (section === "second") {
         const top = secondRef.current?.offsetTop ?? 0;
         await smoothScrollTo(top);
-        setHideFirstTwoSection(false);
+        // setHideFirstTwoSection(false);
         setIsOnSection2(false);
       } else {
         // FIXED: Always scroll to feed top, not current offset

@@ -211,7 +211,7 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
 
         {/* CLOSE BUTTON */}
         <div className=" shrink-0 flex items-center justify-between px-4 mt-4">
-          <button
+          <div
             onClick={() => setIsOpen(false)}
             className="relative custom-cursor"
           >
@@ -220,7 +220,7 @@ const FeedFilterDrawer: React.FC<FeedFilterDrawerProps> = ({
               variant={"black"}
               appliedFilterCount={appliedFilterCount}
             />
-          </button>
+          </div>
           <button
             type="button"
             onClick={handleResetFilters}
