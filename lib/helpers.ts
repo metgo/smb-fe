@@ -1,3 +1,5 @@
+import { v4 as uuidv4 } from "uuid";
+
 import { pathNames } from "./endpoints";
 import { categoryIds, purposeTypeEnum } from "./utils";
 
@@ -455,4 +457,41 @@ export function isPlaceOpenNow(
   if (currentMinutes < closeMinutes) return true;
 
   return false;
+}
+
+export function groupTicketsByDateTime(
+  ticketIds: ITicketIds[],
+): GroupedTicketSlot[] {
+  const map = new Map<string, GroupedTicketSlot>();
+
+  ticketIds.forEach((ticket) => {
+    ticket.dayDescription.forEach((day: any) => {
+      const date = day.date.split("T")[0];
+      const key = `${date}|${day.startTime}|${day.endTime}`;
+
+      if (!map.has(key)) {
+        map.set(key, {
+          _id: uuidv4(), // unique slot id
+          date,
+          startTime: day.startTime,
+          endTime: day.endTime,
+          tickets: [],
+        });
+      }
+
+      map.get(key)!.tickets.push({
+        _id: ticket._id,
+        name: ticket.name,
+        images: ticket.images,
+        userId: ticket.userId ?? "",
+        price: ticket.price,
+        quantity: ticket.quantity,
+        status: ticket.status,
+        type: ticket.type,
+        description: ticket.description,
+      });
+    });
+  });
+
+  return Array.from(map.values());
 }

@@ -1,160 +1,154 @@
+"use client";
+
 import clsx from "clsx";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { IoIosArrowDown, IoIosArrowUp } from "react-icons/io";
 import { FaMinus, FaPlus } from "react-icons/fa6";
-import { useCallback, useEffect, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 
 import { Dialog } from "@/components/ui";
 import PriceTag from "@/components/PriceTag";
 import { buttonLabels, events } from "@/constant/hebrew";
 import useCartStore from "@/stores/cartStore";
 import { itemTypeEnum } from "@/lib/utils";
+import { groupTicketsByDateTime } from "@/lib/helpers";
+import { staticImages } from "@/constant/staticImages";
+
+/* ===================== TYPES ===================== */
 
 interface TicketListModalProps {
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
-  dayDescription: DayDescription[];
+  ticketIds: ITicketIds[];
+  eventId: string;
 }
 
-function formatDate(date: string) {
-  return new Date(date).toLocaleDateString("he-IL", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
+interface ISelectedTickets {
+  key: string;
+  ticketId: string;
+  eventDayId: string;
+  quantity: number;
+  price: number;
 }
+
+interface ITicketStockInfo {
+  remaining: number;
+  perUserLimit: number;
+}
+
+/* ===================== COMPONENT ===================== */
 
 const TicketListModal = ({
   isOpen,
   setIsOpen,
-  dayDescription,
+  ticketIds,
+  eventId,
 }: TicketListModalProps) => {
   const router = useRouter();
   const { setCartItem } = useCartStore();
 
-  const [isTicketSelected, setIsTicketSelected] = useState(false);
-  const [updatedTickets, setUpdatedTickets] = useState<
-    UpdatedTicketsListProps[]
-  >([]);
+  const grouped = useMemo(() => groupTicketsByDateTime(ticketIds), [ticketIds]);
 
-  useEffect(() => {
-    if (dayDescription.length > 0) {
-      const tickets = dayDescription.map((eventDays) => ({
-        _id: eventDays._id,
-        date: formatDate(eventDays.date),
-        startTime: eventDays.startTime,
-        endTime: eventDays.endTime,
-        tickets: eventDays?.ticketIds
-          ?.filter((item) => item.status !== "inactive")
-          ?.map((ticket) => ({
-            quantity: 0,
-            _id: ticket._id,
-            name: ticket.name,
-            desc: ticket.description,
-            isSelected: false,
-            image: ticket.images[0].image,
-            price: ticket.price.markedPrice,
-          })),
-      }));
-      setUpdatedTickets(tickets);
+  const [openEventDayIds, setOpenEventDayIds] = useState<string[]>([]);
+  const [selectedTickets, setSelectedTickets] = useState<ISelectedTickets[]>(
+    [],
+  );
+  const [errorKey, setErrorKey] = useState<string | null>(null);
+
+  const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+  /* ===================== HELPERS ===================== */
+
+  const getSelectionKey = (eventDayId: string, ticketId: string) =>
+    `${eventDayId}_${ticketId}`;
+
+  const getSelectedQuantity = (key: string) =>
+    selectedTickets.find((t) => t.key === key)?.quantity ?? 0;
+
+  function addTicket(
+    prev: ISelectedTickets[],
+    payload: {
+      key: string;
+      ticketId: string;
+      eventDayId: string;
+      price: number;
+      stock: ITicketStockInfo;
+    },
+  ): ISelectedTickets[] {
+    const existing = prev.find((t) => t.key === payload.key);
+    const currentQty = existing?.quantity ?? 0;
+
+    if (
+      payload.stock.remaining <= 0 ||
+      currentQty >= payload.stock.perUserLimit ||
+      currentQty + 1 > payload.stock.remaining
+    ) {
+      setErrorKey(payload.key);
+      setTimeout(() => setErrorKey(null), 2000);
+      return prev;
     }
-  }, [dayDescription]);
 
-  useEffect(() => {
-    const hasSelectedTickets = updatedTickets.some((eventDay) =>
-      eventDay.tickets.some((ticket) => ticket.isSelected),
+    if (existing) {
+      return prev.map((t) =>
+        t.key === payload.key ? { ...t, quantity: t.quantity + 1 } : t,
+      );
+    }
+
+    return [
+      ...prev,
+      {
+        key: payload.key,
+        ticketId: payload.ticketId,
+        eventDayId: payload.eventDayId,
+        quantity: 1,
+        price: payload.price,
+      },
+    ];
+  }
+
+  function removeTicket(prev: ISelectedTickets[], key: string) {
+    const existing = prev.find((t) => t.key === key);
+    if (!existing) return prev;
+
+    if (existing.quantity === 1) {
+      return prev.filter((t) => t.key !== key);
+    }
+
+    return prev.map((t) =>
+      t.key === key ? { ...t, quantity: t.quantity - 1 } : t,
     );
-    setIsTicketSelected(hasSelectedTickets);
-  }, [updatedTickets]);
+  }
 
-  const incrementQuantity = useCallback(
-    (e: React.MouseEvent, eventDayId: string, ticketId: string) => {
-      e.stopPropagation();
-      setUpdatedTickets((prev) =>
-        prev.map((eventDay) =>
-          eventDay._id === eventDayId
-            ? {
-                ...eventDay,
-                tickets: eventDay.tickets.map((ticket) =>
-                  ticket._id === ticketId
-                    ? {
-                        ...ticket,
-                        quantity: ticket.quantity + 1,
-                        isSelected: true,
-                      }
-                    : ticket,
-                ),
-              }
-            : eventDay,
-        ),
-      );
-    },
-    [],
-  );
-
-  const decrementQuantity = useCallback(
-    (e: React.MouseEvent, eventDayId: string, ticketId: string) => {
-      e.stopPropagation();
-      setUpdatedTickets((prev) =>
-        prev.map((eventDay) =>
-          eventDay._id === eventDayId
-            ? {
-                ...eventDay,
-                tickets: eventDay.tickets.map((ticket) => {
-                  if (ticket._id === ticketId && ticket.quantity > 0) {
-                    const newQty = ticket.quantity - 1;
-                    return {
-                      ...ticket,
-                      quantity: newQty,
-                      isSelected: newQty > 0,
-                    };
-                  }
-                  return ticket;
-                }),
-              }
-            : eventDay,
-        ),
-      );
-    },
-    [],
-  );
+  /* ===================== ADD TO CART ===================== */
 
   function handleTicketAddToCart() {
-    const selectedTickets = updatedTickets.flatMap((eventDay) =>
-      eventDay.tickets
-        .filter((ticket) => ticket.isSelected)
-        .map((ticket) => ({
-          _id: ticket._id,
-          name: ticket.name,
-          desc: ticket.desc,
-          image: ticket.image,
-          price: ticket.price,
-          itemType: itemTypeEnum.ticket,
-          quantity: ticket.quantity,
-          parentId: eventDay._id,
-          eventDate: eventDay.date,
-          startTime: eventDay.startTime,
-          endTime: eventDay.endTime,
-        })),
-    );
+    selectedTickets.forEach((selected) => {
+      const eventDay = grouped.find((d) => d._id === selected.eventDayId);
+      const ticket = eventDay?.tickets.find((t) => t._id === selected.ticketId);
 
-    selectedTickets.forEach((ticket) => setCartItem(ticket));
+      if (!eventDay || !ticket) return;
+
+      setCartItem({
+        _id: ticket._id,
+        name: ticket.name,
+        desc: ticket.description,
+        image: ticket.images[0]?.image,
+        price: ticket.price.sellingPrice,
+        quantity: selected.quantity,
+        itemType: itemTypeEnum.ticket,
+        parentId: eventId,
+        eventDate: eventDay.date,
+        startTime: eventDay.startTime,
+        endTime: eventDay.endTime,
+      });
+    });
+
     setIsOpen(false);
     router.push("/cart");
   }
 
-  // Toggle handler
-  const [openEventDayIds, setOpenEventDayIds] = useState<string[]>([]);
-
-  function handleToggleTicketList(eventDayId: string) {
-    setOpenEventDayIds(
-      (prev) =>
-        prev.includes(eventDayId)
-          ? prev.filter((id) => id !== eventDayId) // close if already open
-          : [...prev, eventDayId], // open alongside others
-    );
-  }
+  /* ===================== UI ===================== */
 
   return (
     <Dialog
@@ -162,129 +156,163 @@ const TicketListModal = ({
       onClose={() => setIsOpen(false)}
       className="max-w-3xl w-full"
     >
-      <div className="relative w-full rounded-md p-10">
-        <h1 className="font-bold text-2xl w-full text-center">
+      <div className="p-10">
+        <h1 className="font-bold text-2xl text-center">
           {events.eventTicketTitle}
         </h1>
 
-        <div className="mt-4 p-10 max-h-[60vh] shadow-md rounded-xl flex flex-col gap-8 overflow-y-scroll ">
-          {updatedTickets.map((eventDays) => {
-            const isOpen = openEventDayIds.includes(eventDays._id);
+        <div className="mt-6 pb-4 max-h-[60vh] overflow-y-auto space-y-6">
+          {grouped.map((eventDay) => {
+            const isOpen = openEventDayIds.includes(eventDay._id);
 
             return (
-              <div key={eventDays._id}>
+              <div
+                key={eventDay._id}
+                ref={(el) => {
+                  sectionRefs.current[eventDay._id] = el;
+                }}
+              >
                 <div
-                  onClick={() => handleToggleTicketList(eventDays._id)}
-                  className="border-2 border-black/80 rounded-lg px-3 py-2 flex items-center justify-between custom-cursor"
+                  onClick={() => {
+                    setOpenEventDayIds((prev) =>
+                      prev.includes(eventDay._id)
+                        ? prev.filter((id) => id !== eventDay._id)
+                        : [...prev, eventDay._id],
+                    );
+
+                    setTimeout(() => {
+                      sectionRefs.current[eventDay._id]?.scrollIntoView({
+                        behavior: "smooth",
+                        block: "start",
+                      });
+                    }, 50);
+                  }}
+                  className="border rounded-lg px-4 py-3 flex justify-between cursor-pointer"
                 >
                   <span className="font-bold">{events.chooseCard}</span>
-                  <span className="text-gray-600">{eventDays.date}</span>
+                  <span className="text-gray-600">{eventDay.date}</span>
                   <span>
-                    {eventDays.startTime} - {eventDays.endTime}
+                    {eventDay.startTime} - {eventDay.endTime}
                   </span>
                   {isOpen ? <IoIosArrowUp /> : <IoIosArrowDown />}
                 </div>
 
-                {isOpen && (
-                  <div>
-                    {eventDays?.tickets?.length > 0 ? (
-                      eventDays?.tickets?.map((ticket) => (
+                {isOpen &&
+                  eventDay.tickets.map((ticket) => {
+                    const key = getSelectionKey(eventDay._id, ticket._id);
+                    const qty = getSelectedQuantity(key);
+                    const isSelected = qty > 0;
+
+                    return (
+                      <div key={key}>
                         <div
-                          key={`${eventDays._id}-${ticket._id}`}
                           className={clsx(
-                            "grid grid-cols-12 items-center justify-between py-1 px-2 rounded-md transition-colors mt-2",
-                            ticket.isSelected
-                              ? "bg-primary border-2 border-secondary"
-                              : "hover:bg-prmary border-2 border-transparent",
+                            "mt-2 grid grid-cols-12 items-center border rounded-md p-3 transition-colors",
+                            errorKey === key
+                              ? "border-red-500"
+                              : isSelected
+                                ? "bg-primary border-secondary"
+                                : "hover:bg-gray-50",
                           )}
                         >
-                          <div className="flex items-center gap-2 col-span-8">
-                            <Image
-                              src={ticket.image}
-                              alt={ticket.name}
-                              width={100}
-                              height={100}
-                              className="h-10 w-10 rounded-md"
-                            />
-                            <div>
-                              <h2 className={"font-bold"}>{ticket.name}</h2>
-                              <div
-                                dangerouslySetInnerHTML={{
-                                  __html: ticket.desc,
-                                }}
-                                className="line-clamp-1 font-normal"
+                          <div className="col-span-7 max-sm:col-span-12 max-sm:mb-4 flex gap-3">
+                            <div className="h-16 w-20">
+                              <Image
+                                src={
+                                  ticket.images?.[0]?.image ||
+                                  staticImages.placeholder
+                                }
+                                alt={ticket.name}
+                                width={40}
+                                height={40}
+                                unoptimized
+                                className="rounded-md h-full w-full object-cover"
                               />
+                            </div>
+                            <div>
+                              <h2 className="font-bold">{ticket.name}</h2>
+                              <div
+                                className="text-sm line-clamp-1"
+                                dangerouslySetInnerHTML={{
+                                  __html: ticket.description,
+                                }}
+                              />
+                              <p className="text-sm text-gray-500">
+                                {events.remaining}:{" "}
+                                <strong>{ticket.quantity.remaining}</strong> |{" "}
+                                {events.maxPerUser}:{" "}
+                                <strong>{ticket.quantity.perUserLimit}</strong>
+                              </p>
                             </div>
                           </div>
 
-                          <div className="flex items-center gap-4 col-span-3">
-                            <div className="flex items-center gap-1">
-                              <button
-                                type="button"
-                                className="size-9 rounded-full border border-secondary flex items-center justify-center custom-cursor hover:bg-gray-50 transition-colors"
-                                onClick={(e) =>
-                                  incrementQuantity(
-                                    e,
-                                    eventDays._id,
-                                    ticket._id,
-                                  )
-                                }
-                              >
-                                <FaPlus />
-                              </button>
-                              <span className="min-w-[2rem] text-center font-medium">
-                                {ticket.quantity}
-                              </span>
-                              <button
-                                type="button"
-                                disabled={ticket.quantity === 0}
-                                className={clsx(
-                                  "size-9 rounded-full border border-secondary flex items-center justify-center transition-colors",
-                                  ticket.quantity === 0
-                                    ? "cursor-not-allowed opacity-50"
-                                    : "custom-cursor hover:bg-gray-50",
-                                )}
-                                onClick={(e) =>
-                                  decrementQuantity(
-                                    e,
-                                    eventDays._id,
-                                    ticket._id,
-                                  )
-                                }
-                              >
-                                <FaMinus />
-                              </button>
-                            </div>
+                          <div className="col-span-3 max-sm:col-span-8 flex items-center gap-2">
+                            <button
+                              onClick={() =>
+                                setSelectedTickets((prev) =>
+                                  addTicket(prev, {
+                                    key,
+                                    ticketId: ticket._id,
+                                    eventDayId: eventDay._id,
+                                    price: ticket.price.sellingPrice,
+                                    stock: ticket.quantity,
+                                  }),
+                                )
+                              }
+                              className={clsx(
+                                "size-8 rounded-full border flex items-center justify-center cursor-pointer",
+                              )}
+                            >
+                              <FaPlus />
+                            </button>
+
+                            <span className="min-w-6 text-center">{qty}</span>
+
+                            <button
+                              disabled={qty === 0}
+                              onClick={() =>
+                                setSelectedTickets((prev) =>
+                                  removeTicket(prev, key),
+                                )
+                              }
+                              className={clsx(
+                                "size-8 rounded-full border flex items-center justify-center",
+                                qty === 0
+                                  ? "opacity-50 cursor-not-allowed"
+                                  : "cursor-pointer",
+                              )}
+                            >
+                              <FaMinus />
+                            </button>
                           </div>
+
                           <PriceTag
-                            price={ticket.price}
-                            className="col-span-1 text-end"
+                            price={ticket.price.sellingPrice}
+                            className="col-span-2 text-end"
                           />
                         </div>
-                      ))
-                    ) : (
-                      <div className="font-normal text-xl mt-3 text-center text-secondary">
-                        {events.eventTicketNotFound}
+                        {errorKey === key && (
+                          <p className="text-red-500">
+                            {events.exceedInfoText}
+                          </p>
+                        )}
                       </div>
-                    )}
-                  </div>
-                )}
+                    );
+                  })}
               </div>
             );
           })}
         </div>
 
-        {/* Continue */}
-        <div className="flex items-center justify-center mt-8">
+        <div className="mt-8 flex justify-center">
           <button
-            type="button"
-            disabled={!isTicketSelected}
+            disabled={selectedTickets.length === 0}
             onClick={handleTicketAddToCart}
             className={clsx(
-              isTicketSelected
-                ? "bg-black custom-cursor"
-                : "bg-black/50 cursor-not-allowed",
-              " px-8 py-2 rounded-md text-white font-bold hover:shadow-md",
+              "px-8 py-2 font-bold rounded-md",
+              selectedTickets.length
+                ? "bg-black text-white"
+                : "bg-black/40 cursor-not-allowed",
             )}
           >
             {buttonLabels.continue}

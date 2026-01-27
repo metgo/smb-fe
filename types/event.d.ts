@@ -1,15 +1,55 @@
-interface TicketIds {
+interface IDayDescription {
+  _id: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+}
+
+interface ITicketPrice {
+  _id: string;
+  markedPrice: number;
+  sellingPrice: number;
+  discountAmount: number;
+  discountPercent: number;
+}
+interface ITicketQuantity {
+  _id: string;
+  initial: number;
+  sold: number;
+  remaining: number;
+  perUserLimit: number;
+  isUnlimited: boolean;
+}
+
+interface ITicketIds {
   _id: string;
   name: string;
   images: ImageItem[];
   userId: string;
-  price: {
-    _id: string;
-    markedPrice: number;
-    sellingPrice: number;
-  };
+  price: ITicketPrice;
+  quantity: ITicketQuantity;
   status: string;
+  type: string;
   description: string;
+  dayDescription: IDayDescription[];
+}
+
+interface GroupedTicketSlot {
+  _id: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  tickets: {
+    _id: string;
+    name: string;
+    images: ImageItem[];
+    userId: string;
+    price: ITicketPrice;
+    quantity: ITicketQuantity;
+    status: string;
+    type: string;
+    description: string;
+  }[];
 }
 
 declare interface DayDescription {
@@ -26,7 +66,7 @@ interface Payment {
   method: string;
   isFree: boolean;
   externalLink: string;
-  ticketIds: string[] | TicketIds[];
+  ticketIds: ITicketIds[];
 }
 
 declare interface EventDetailsProps {
