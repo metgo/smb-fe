@@ -18,6 +18,7 @@ import { AssignBankAccountModal } from "./components";
 import { useNavigate } from "react-router-dom";
 import { useGetUserInfoQuery } from "@/store/api/userQueryApi";
 import { formatDate } from "@/helpers/formatter";
+import { Spinner } from "@/components/shared";
 
 export function getInitials(fullName: string): string {
   if (!fullName) return "";
@@ -40,7 +41,12 @@ export default function ProfilePage() {
   const { theme } = useAppSelector((state) => state.settings);
   const navigate = useNavigate();
 
-  const { data: userInfo, refetch } = useGetUserInfoQuery();
+  const {
+    data: userInfo,
+    refetch,
+    isLoading,
+    isFetching,
+  } = useGetUserInfoQuery();
 
   const [showBankModal, setShowBankModal] = useState(false);
 
@@ -59,6 +65,7 @@ export default function ProfilePage() {
 
   return (
     <>
+      <Spinner isLoading={isFetching || isLoading} />
       <div className="max-w-4xl mx-auto p-8">
         {/* Header */}
         <div

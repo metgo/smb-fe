@@ -81,11 +81,11 @@ const CreateTicketWizard = ({
     handleDeleteImage,
   } = useSingleImageUpload({
     initialImage: editingTicket?.imageUrl,
-    onChange: (img) => {
-      setEditingTicket((prev: ITicketPayload) => ({
-        ...prev,
-        imageUrl: img?.image || "",
-      }));
+    onChange: () => {
+      // setEditingTicket((prev: ITicketPayload) => ({
+      //   ...prev,
+      //   imageUrl: img?.image || "",
+      // }));
     },
   });
 
@@ -381,7 +381,7 @@ const CreateTicketWizard = ({
               {t("ticket_days")}
             </label>
             <div className="space-y-4 mt-2">
-              {ticketDateTime.map((day, index) => (
+              {ticketDateTime?.map((day, index) => (
                 <div
                   key={day._id}
                   ref={(el) => {
@@ -458,7 +458,7 @@ const CreateTicketWizard = ({
                     </button>
                   </div>
 
-                  {errors.ticketDays[index] && (
+                  {errors?.ticketDays[index] && (
                     <p className="text-sm text-red-600 dark:text-red-400 pl-1">
                       {errors.ticketDays[index]}
                     </p>

@@ -2,14 +2,7 @@ import clsx from "clsx";
 import { toast } from "sonner";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import {
-  Plus,
-  Ticket,
-  FileText,
-  Trash2,
-  AlertCircle,
-  Copy,
-} from "lucide-react";
+import { Plus, Ticket, Trash2, AlertCircle, Copy, PenBox } from "lucide-react";
 
 import { useAppSelector } from "@/hooks/hooks";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
@@ -60,6 +53,7 @@ const EventTickets: React.FC<EventTicketsProps> = ({
   const { theme } = useAppSelector((state) => state.settings);
   const [opMode, setOpMode] = useState<TTicketOpMode>("CREATE");
   const isTicketDisabled = !eventDays?.length || eventDays[0]?.date === "";
+  console.log("🚀 ~ EventTickets ~ isTicketDisabled:", isTicketDisabled);
 
   const [deleteTicket, { isLoading: isDeleting }] = useDeleteTicketMutation();
   const [editingTicket, setEditingTicket] = useState<ITicketPayload | null>(
@@ -200,8 +194,9 @@ const EventTickets: React.FC<EventTicketsProps> = ({
           >
             <button
               onClick={addTicket}
+              disabled={isTicketDisabled}
               className={clsx(
-                "px-8 py-4 cursor-pointer rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-medium text-lg shadow-lg",
+                "px-8 py-4 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-medium text-lg shadow-lg",
                 isTicketDisabled ? "cursor-not-allowed" : "cursor-pointer",
               )}
             >
@@ -271,7 +266,7 @@ const EventTickets: React.FC<EventTicketsProps> = ({
                     }}
                     className="p-3 cursor-pointer rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 "
                   >
-                    <FileText className="w-5 h-5" />
+                    <PenBox className="w-5 h-5" />
                   </button>
                   <button
                     onClick={() => {
