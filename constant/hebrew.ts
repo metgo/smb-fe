@@ -110,6 +110,9 @@ export const events = {
   eventDetails: "פרטי האירוע",
   eventTicketTitle: "רכישת כרטיסים למסיבת קצב לילית בנגב",
   eventTicketNotFound: "כרטיס האירוע לא נמצא",
+  remaining: "נותרו",
+  maxPerUser: "מקסימום למשתמש",
+  exceedInfoText: "הגעת למספר הכרטיסים המרבי המותר לאפשרות זו.",
 };
 
 export const tempCardInfo = {

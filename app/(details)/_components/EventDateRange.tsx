@@ -17,11 +17,6 @@ const EventDateRange = ({
   payment,
 }: EventDetailsProps) => {
   const [openTicketModal, setOpenTicketModal] = useState(false);
-  // const [clickedDay, setClickedDay] = useState({
-  //   day: "",
-  //   days: "",
-  //   month: "",
-  // });
 
   function handleOpenTicketModal() {
     setOpenTicketModal(true);
@@ -57,9 +52,8 @@ const EventDateRange = ({
             );
           })}
         </div>
-
         <div className="space-y-2.5">
-          {payment?.method === paymentMethodType.externalLink ? (
+          {payment?.method === paymentMethodType?.externalLink ? (
             <Link
               href={payment?.externalLink}
               target="_blank"
@@ -77,7 +71,6 @@ const EventDateRange = ({
               <span>{misc.enrollment}</span>
             </button>
           )}
-
           {/* <p className="text-theme font-normal text-[12px] text-center db1">
             {eventDetils.dateline}
           </p> */}
@@ -88,7 +81,8 @@ const EventDateRange = ({
         <TicketListModal
           isOpen={openTicketModal}
           setIsOpen={setOpenTicketModal}
-          dayDescription={dayDescription}
+          ticketIds={payment?.ticketIds}
+          eventId={_id}
         />
       )}
     </>

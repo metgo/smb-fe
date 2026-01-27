@@ -2,9 +2,8 @@
 
 import { getCityOrCenter } from "@/lib/helpers";
 import AttributePills from "@/components/AttributePills";
-import { EventLocationMap } from "@/app/(details)/_components";
+import { EventDateRange, EventLocationMap } from "@/app/(details)/_components";
 import MobileImageGallery from "@/components/mobile/ImageGallery.mobile";
-import MobileEventTicketsDateRange from "./EventTicketsDateRange.mobile";
 import MobileFeedScreenActionIcons from "@/components/mobile/FeedScreenActionIcons.mobile";
 import { LocationIcon } from "@/components/ui/svgIcons";
 
@@ -48,7 +47,7 @@ const MobileEventDetails = ({
           />
         </section>
 
-        <MobileEventTicketsDateRange {...eventDetails} />
+        <EventDateRange {...eventDetails} />
 
         <section className="px-6 py-4">
           <EventLocationMap geoLocation={eventDetails.geoLocation} />
