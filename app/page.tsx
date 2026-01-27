@@ -79,7 +79,7 @@ export default async function Page({
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <ScrollSnapWrapper hasMarketing={marketing?.items?.length > 0}>
+      <ScrollSnapWrapper hasMarketing={marketing?.items?.length > 200}>
         {/* ---------------- Hero Section ---------------- */}
         <section className="relative">
           <div className="z-20 fixed top-2.5 right-0 w-full flex items-center justify-between px-4 md:px-16 lg:px-20">
