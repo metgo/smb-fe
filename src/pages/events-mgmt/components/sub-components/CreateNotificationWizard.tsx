@@ -1,4 +1,4 @@
-import { ModalWrapper } from "@/components/wrapper";
+import { EmailEditorWrapper, ModalWrapper } from "@/components/wrapper";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { Mail, MessageSquare, Send, Smartphone } from "lucide-react";
 
@@ -43,7 +43,7 @@ const CreateNotificationWizard: React.FC<CreateNotificationWizardProps> = ({
         setShowNotificationForm(false);
         setEditingNotification(null);
       }}
-      maxWidth="max-w-2xl"
+      maxWidth="max-w-3xl h-max"
     >
       <div className=" p-4">
         <h4 className={`text-lg mb-4 ${textPrimary}`}>
@@ -196,6 +196,7 @@ const CreateNotificationWizard: React.FC<CreateNotificationWizardProps> = ({
                 <option value="starting-soon">
                   {t("template_starting_soon")}
                 </option>
+                <option value="custom">{t("custom")}</option>
               </select>
             </div>
           </div>
@@ -228,27 +229,22 @@ const CreateNotificationWizard: React.FC<CreateNotificationWizardProps> = ({
             <label className={`block text-sm mb-2 ${textSecondary}`}>
               {t("message_content")}
             </label>
-            <textarea
+
+            <EmailEditorWrapper
               value={editingNotification.message}
-              onChange={(e) =>
-                setEditingNotification({
-                  ...editingNotification,
-                  message: e.target.value,
-                })
+              onChange={(v) =>
+                setEditingNotification({ ...editingNotification, message: v })
               }
-              placeholder="Hi {{First Name}},\n\nThis is a reminder that {{Event Name}} is happening tomorrow at {{Event Time}}!\n\nVenue: {{Venue}}\n\nYour ticket: {{Ticket QR}}"
-              rows={6}
-              className={`w-full px-4 py-2 rounded-lg border ${
-                theme === "dark"
-                  ? "bg-gray-800 border-gray-700 text-gray-100"
-                  : "bg-white border-gray-300 text-gray-900"
-              }`}
+              isRTL={editingNotification.language === "he"}
+              previewData={{
+                "Event Name": eventName || "Sample Event",
+                "Event Date": startDate || "2026-01-15",
+                "Event Time": eventDays?.[0]?.startTime || "10:00",
+                Venue: address || "Event Location",
+                "First Name": "John",
+                "Ticket QR": "[QR]",
+              }}
             />
-            <p className={`text-xs ${textTertiary} mt-2`}>
-              {t("available_variables")}: {"{{ Event Name }}"},{" "}
-              {"{{ Event Date }}"}, {"{{ Event Time }}"}, {"{{ Venue }}"},{" "}
-              {"{{ First Name }}"}, {"{{ Ticket QR }}"}
-            </p>
           </div>
           {/* Preview */}
           <div
@@ -258,25 +254,6 @@ const CreateNotificationWizard: React.FC<CreateNotificationWizardProps> = ({
                 : "border-gray-200 bg-white"
             }`}
           >
-            <div className={`text-sm ${textTertiary} mb-2`}>
-              {t("preview")}:
-            </div>
-            <div className={`text-sm ${textSecondary}`}>
-              {editingNotification.message.replace(
-                /\{\{([^}]+)\}\}/g,
-                (_, key) => {
-                  const mockData: Record<string, string> = {
-                    "Event Name": eventName || "Sample Event",
-                    "Event Date": startDate || "2026-01-15",
-                    "Event Time": eventDays?.[0]?.startTime || "10:00",
-                    Venue: address || "Event Location",
-                    "First Name": "John",
-                    "Ticket QR": "[QR Code]",
-                  };
-                  return mockData[key.trim()] || key;
-                },
-              )}
-            </div>
             <div className={`text-xs ${textTertiary} mt-2`}>
               {t("recipient_count")}: {capacity || 100} {t("ticket_holders")}
             </div>

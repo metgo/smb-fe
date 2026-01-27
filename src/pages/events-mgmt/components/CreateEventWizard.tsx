@@ -39,6 +39,7 @@ import {
 import { ModalWrapper } from "@/components/wrapper";
 import { useEventDraftSaver } from "../hooks/useEventDraftSaver";
 import { useImagesUpload } from "@/hooks/useImagesUpload";
+import { formatToBackendTemplate } from "@/helpers/formatter";
 
 interface CreateEventWizardProps {
   isOpen: boolean;
@@ -421,7 +422,7 @@ export default function CreateEventWizard({
       status: item.enabled ? "ACTIVE" : "INACTIVE",
       customTemplate: {
         subject: item.subject,
-        body: item.message,
+        body: formatToBackendTemplate(item.message),
       },
     })),
   };

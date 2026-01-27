@@ -7,6 +7,11 @@ interface Params {
   bussCategoryId?: string;
 }
 
+interface IWebsiteFilterProps {
+  authorityId: string;
+  dmoId: string;
+}
+
 export const masterDataApi = createApi({
   reducerPath: "masterDataApi",
   baseQuery: axiosBaseQuery(),
@@ -61,10 +66,11 @@ export const masterDataApi = createApi({
       keepUnusedDataFor: 60 * 60 * 24,
     }),
 
-    getAllWebsites: builder.query<Website[], void>({
-      query: () => ({
+    getAllWebsites: builder.query<IAllWebsites, IWebsiteFilterProps | void>({
+      query: (params) => ({
         url: endpoints.websites,
         method: "GET",
+        params,
       }),
     }),
   }),

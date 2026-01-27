@@ -9,6 +9,9 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      "@ckeditor/ckeditor5-core": path.resolve(
+        "./node_modules/@ckeditor/ckeditor5-core",
+      ),
     },
   },
   preview: {

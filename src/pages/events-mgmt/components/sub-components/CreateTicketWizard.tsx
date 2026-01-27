@@ -92,6 +92,9 @@ const CreateTicketWizard = ({
   const [createTicket, { isLoading: isSaving }] = useCreateTicketMutation();
   const [updateTicket, { isLoading: isUpdating }] = useUpdateTicketMutation();
 
+  const [isSaved, setIsSaved] = useState(false);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+
   // ─── VALIDATION ─────────────────────────────────────────────────
   const validateTicket = (): boolean => {
     const newErrors: typeof errors = { ticketDays: [] };
@@ -287,12 +290,20 @@ const CreateTicketWizard = ({
     clearError(`day-${index}`);
   };
 
+  function handleClose() {
+    if (!isSaved) {
+      setIsConfirmOpen(true);
+      return;
+    }
+    setShowTicketModal(false);
+    setEditingTicket(null);
+    setIsConfirmOpen(false);
+    setIsSaved(true);
+  }
+
   return (
     <ModalWrapper
-      onClose={() => {
-        setShowTicketModal(false);
-        setEditingTicket(null);
-      }}
+      onClose={handleClose}
       height="h-[88vh]"
       maxWidth="max-w-2xl"
       showSpinner={isSaving || isUpdating || image?.status === "uploading"}
@@ -757,6 +768,15 @@ const CreateTicketWizard = ({
         variant="danger"
         onCancel={() => setDeleteTarget(null)}
         onConfirm={confirmDelete}
+      />
+      <ConfirmDialog
+        open={isConfirmOpen}
+        title="unsaved_changes"
+        message="unsaved_changes_confirm"
+        confirmText="confirm"
+        variant="warning"
+        onCancel={() => setIsSaved(false)}
+        onConfirm={handleClose}
       />
     </ModalWrapper>
   );

@@ -53,7 +53,6 @@ const EventTickets: React.FC<EventTicketsProps> = ({
   const { theme } = useAppSelector((state) => state.settings);
   const [opMode, setOpMode] = useState<TTicketOpMode>("CREATE");
   const isTicketDisabled = !eventDays?.length || eventDays[0]?.date === "";
-  console.log("🚀 ~ EventTickets ~ isTicketDisabled:", isTicketDisabled);
 
   const [deleteTicket, { isLoading: isDeleting }] = useDeleteTicketMutation();
   const [editingTicket, setEditingTicket] = useState<ITicketPayload | null>(

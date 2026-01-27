@@ -1,10 +1,11 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { SelectableChips } from "@/components/shared";
+import { ImageWithFallback, SelectableChips } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import {
   useGetAccessibilityQuery,
+  useGetAllWebsitesQuery,
   useGetGroupTypesQuery,
   useGetSubCategoriesQuery,
 } from "@/store/api/masterDataApi";
@@ -16,6 +17,7 @@ import {
   SelectField,
   TextareaField,
 } from "@/components/form-fields";
+import { Globe } from "lucide-react";
 
 interface EventBasicInformationProps {
   markDirty: (step: number) => void;
@@ -70,15 +72,27 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
 }) => {
   const { t, i18n } = useTranslation("events");
   const { dmosAuthorities } = useCommon();
-  const { textSecondary, inputClasses, selectInputClasses } = useThemeClasses();
+  const { textSecondary, inputClasses, selectInputClasses, theme } =
+    useThemeClasses();
   const locale = i18n.language as Language;
 
+  const { data: allWebsites } = useGetAllWebsitesQuery({
+    authorityId: selectedAuthorityId,
+    dmoId: selectedDmoId,
+  });
   const { data: subCategories } = useGetSubCategoriesQuery({
     bussCategoryId: "6566fcd4a77d2a477266d3b9",
     locale,
   });
   const { data: accessibility } = useGetAccessibilityQuery({ locale });
   const { data: groupTypes } = useGetGroupTypesQuery({ locale });
+
+  const [websiteVisibilityIds, setWebsiteVisibilityIds] = useState({
+    allBlacklistIds: [],
+    selectedBlacklistIds: [],
+    allWhitelistIds: [],
+    selectedWhitelistIds: [],
+  });
 
   // Individual refs for scroll targets
   const dmoSectionRef = useRef<HTMLDivElement | null>(null);
@@ -217,6 +231,111 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
               selectInputClasses={selectInputClasses}
             />
           </FormFieldWrapper>
+        </div>
+      </div>
+
+      {/* Websites */}
+      <div className=" space-y-4">
+        <label
+          className={`block text-sm mb-2 ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}
+        >
+          {t("website_visibility")} *
+        </label>
+
+        {/* Associated Websites */}
+        <div>
+          {(allWebsites?.associatedWebsites?.length || 0) > 0 && (
+            <div>
+              <label htmlFor="">{t("select_associated_websites")}</label>
+              <div className="grid grid-cols-2 gap-4 mt-2">
+                <label
+                  htmlFor="all-associated-websites"
+                  className="flex items-center cursor-pointer border rounded p-2 w-full"
+                  style={{ gap: "0.5rem" }}
+                >
+                  <input
+                    type="checkbox"
+                    id="all-associated-websites"
+                    // checked={allWebsites}
+                    // onChange={handleAllWebsitesChange}
+                    className="shrink-0"
+                  />
+                  <Globe className="mr-2" />
+                  <span>All</span>
+                </label>
+                {allWebsites?.associatedWebsites?.map((item) => (
+                  <label
+                    key={item._id}
+                    htmlFor={item.name}
+                    className="flex items-center cursor-pointer border rounded p-2 w-full"
+                    style={{ gap: "0.5rem" }}
+                  >
+                    <input
+                      type="checkbox"
+                      id={item.name}
+                      // checked={selectedWebsites.includes(name)}
+                      // onChange={() => toggleWebsite(name)}
+                      className="shrink-0"
+                    />
+                    <ImageWithFallback
+                      src={item.logo}
+                      alt={item.logo}
+                      className="w-4 h-4"
+                    />
+                    <span className="text-gray-600">{item.name}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Un Associated Websites */}
+        <div>
+          {(allWebsites?.unAssociatedWebsites?.length || 0) > 0 && (
+            <div>
+              <label htmlFor="">{t("select_unassociated_websites")}</label>
+              <div className="grid grid-cols-2 gap-4 mt-2">
+                <label
+                  htmlFor="all-unassociated-websites"
+                  className="flex items-center cursor-pointer border rounded-md p-2 w-full"
+                  style={{ gap: "0.5rem" }}
+                >
+                  <input
+                    type="checkbox"
+                    id="all-unassociated-websites"
+                    // checked={allWebsites}
+                    // onChange={handleAllWebsitesChange}
+                    className="shrink-0"
+                  />
+                  <Globe className="mr-2" />
+                  <span>All</span>
+                </label>
+                {allWebsites?.unAssociatedWebsites?.map((item) => (
+                  <label
+                    key={item._id}
+                    htmlFor={item.name}
+                    className="flex items-center cursor-pointer border rounded-md p-2 w-full"
+                    style={{ gap: "0.5rem" }}
+                  >
+                    <input
+                      type="checkbox"
+                      id={item.name}
+                      // checked={selectedWebsites.includes(name)}
+                      // onChange={() => toggleWebsite(name)}
+                      className="shrink-0"
+                    />
+                    <ImageWithFallback
+                      src={item.logo}
+                      alt={item.logo}
+                      className="w-4 h-4"
+                    />
+                    <span className="text-gray-600">{item.name}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

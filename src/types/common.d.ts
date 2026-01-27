@@ -6,9 +6,16 @@ interface Geo {
   lng: string;
 }
 
-interface Website {
+interface IWebsite {
   _id: string;
   name: string;
+  websiteUrl: string;
+  logo: string;
+}
+
+interface IAllWebsites {
+  associatedWebsites: IWebsite[];
+  unAssociatedWebsites: IWebsite[];
 }
 
 interface ThemeClasses {
