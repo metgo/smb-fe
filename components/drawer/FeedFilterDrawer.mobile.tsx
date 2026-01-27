@@ -58,7 +58,7 @@ const MobileFeedFilterDrawer: React.FC<MobileFeedFilterDrawerProps> = ({
         type="drawer-bottom"
         onClick={(e) => e.stopPropagation()}
         className={clsx(
-          "fixed inset-x-0 bottom-0 z-50 w-full bg-white flex flex-col shadow-2xl",
+          "fixed inset-x-0 bottom-0 z-50 w-full bg-white flex flex-col shadow-2xl overflow-y-auto",
           showAllFilters ? "h-[calc(100dvh-65px)]" : "max-h-max",
         )}
       >
@@ -244,8 +244,8 @@ const MobileFeedFilterDrawer: React.FC<MobileFeedFilterDrawerProps> = ({
         </div>
 
         {/* CLOSE BUTTON */}
-        <div className=" flex-shrink-0 flex items-center justify-between px-4 gap-4 mt-4">
-          <button
+        <div className="shrink-0 flex items-center justify-between px-4 gap-4 mt-4">
+          <div
             onClick={() => setIsOpen(false)}
             className="relative custom-cursor"
           >
@@ -254,7 +254,7 @@ const MobileFeedFilterDrawer: React.FC<MobileFeedFilterDrawerProps> = ({
               variant={"black"}
               appliedFilterCount={appliedFilterCount}
             />
-          </button>
+          </div>
           <button
             type="button"
             onClick={handleResetFilters}

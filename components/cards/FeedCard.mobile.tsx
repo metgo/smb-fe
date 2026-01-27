@@ -175,7 +175,6 @@ const FeedCardMobile = ({ height, width, feedItem }: FeedCardProps) => {
           sizes={`${width}px`}
           className={clsx(
             "object-cover transition-transform duration-500 ease-in-out ultra-sharp",
-            "group-hover:scale-140",
           )}
           priority={false}
         />
