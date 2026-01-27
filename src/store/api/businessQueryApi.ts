@@ -75,6 +75,7 @@ export const businessQueryApi = createApi({
 export const {
   useGetAllbusinessesQuery,
   useGetBusinessStatsQuery,
+  useLazyGetIndividualBusinessStatsQuery,
   useGetbusinessByIdQuery,
   useGetbusinessBySlugQuery,
   useGetIndividualBusinessStatsQuery,

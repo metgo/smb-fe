@@ -58,10 +58,11 @@ const BusinessReviewSubmit: FC<BusinessReviewSubmitProps> = ({
       fullDescriptionEn: business?.description || "",
       fullDescriptionHe: "",
       fullDescriptionAr: "",
+      primaryCategoryId: business?.primaryCategoryId || "",
     });
 
     // DMO
-  }, [business, currentView]);
+  }, [business, currentView, formData, setFormData]);
   console.log("formdata review submit", formData);
   return (
     <div className="space-y-6">

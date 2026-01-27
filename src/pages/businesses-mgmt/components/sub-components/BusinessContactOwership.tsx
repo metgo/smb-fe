@@ -57,7 +57,6 @@ const BusinessContactOwership: FC<BusinessContactOwershipProps> = ({
     setFormData({
       email: business.busiEmail || "",
       phone: business.phoneNumber || "",
-
       contactDetails: {
         name: business.contactDetails?.name,
         countryCode: business.contactDetails?.countryCode,
@@ -80,7 +79,7 @@ const BusinessContactOwership: FC<BusinessContactOwershipProps> = ({
             theme === "dark" ? "text-gray-300" : "text-gray-700"
           }`}
         >
-          {t("business_email")} *
+          {t("business_email")} <span className="text-red-500">*</span>
         </label>
 
         <div className="relative">
@@ -120,7 +119,7 @@ const BusinessContactOwership: FC<BusinessContactOwershipProps> = ({
             theme === "dark" ? "text-gray-300" : "text-gray-700"
           }`}
         >
-          {t("phone_number")} *
+          {t("phone_number")} <span className="text-red-500">*</span>
         </label>
 
         <div className="relative">

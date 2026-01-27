@@ -69,7 +69,7 @@ const BusinessMedia: FC<BusinessMediaProps> = ({
             theme === "dark" ? "text-gray-300" : "text-gray-700"
           }`}
         >
-          {t("logo_required")} *
+          {t("logo_required")} <span className="text-red-500">*</span>
         </label>
 
         <div className="flex items-center gap-4">

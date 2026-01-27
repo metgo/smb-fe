@@ -56,6 +56,22 @@ export default function CreateBusinessWizard({
   const { t } = useTranslation("businesses");
   const { theme, isRTL } = useAppSelector((state) => state.settings);
   const { textPrimary, textTertiary } = useThemeClasses();
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [isPublishBtnClicked, setIsPublishBtnClicked] = useState(false);
+  const [currentStep, setCurrentStep] = useState(1);
+  // const [editData, _setEditData] = useState<any>();
+  const [lastSaved, _setLastSaved] = useState<Date | null>(null);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const [selectedDmoId, setSelectedDmoId] = useState<string>("");
+  const [selectedAuthorityId, setSelectAuthorityId] = useState<string>("");
+  const [businessId, setBusinessId] = useState<string>("");
+  const [selectedGroupTypesId, setGroupTypesId] = useState<string[]>([]);
+  const [selectedAccessiblitiesId, setAccessiblitiesId] = useState<string[]>(
+    [],
+  );
+  const [geo, setGeo] = useState<Geo>({ lat: "", lng: "" });
+  const [address, setAddress] = useState("");
   const [searchParams] = useSearchParams();
 
   const businessSlug = searchParams.get("businessSlug");
@@ -122,14 +138,6 @@ export default function CreateBusinessWizard({
     socialMedia: [],
   });
 
-  useEffect(() => {
-    if (currentView === "edit") {
-      setFormData({
-        logo: business?.logo?.image,
-        images: business?.images,
-      });
-    }
-  }, [business]);
   console.log("formdata iages", formData.images);
   const {
     images,
@@ -175,23 +183,6 @@ export default function CreateBusinessWizard({
   const [initBusinessCreate, { isLoading: isCreating }] =
     useInitBusinessCreateMutation();
 
-  const [isPublishing, setIsPublishing] = useState(false);
-  const [isPublishBtnClicked, setIsPublishBtnClicked] = useState(false);
-  const [currentStep, setCurrentStep] = useState(1);
-  // const [editData, _setEditData] = useState<any>();
-  const [lastSaved, _setLastSaved] = useState<Date | null>(null);
-  const [errors, setErrors] = useState<Record<string, string>>({});
-
-  const [selectedDmoId, setSelectDmoId] = useState<string>("");
-  const [selectedAuthorityId, setSelectAuthorityId] = useState<string>("");
-  const [businessId, setBusinessId] = useState<string>("");
-  const [selectedGroupTypesId, setGroupTypesId] = useState<string[]>([]);
-  const [selectedAccessiblitiesId, setAccessiblitiesId] = useState<string[]>(
-    [],
-  );
-  const [geo, setGeo] = useState<Geo>({ lat: "", lng: "" });
-  const [address, setAddress] = useState("");
-
   const parseAddress = (address: any) => {
     const parts = address.split(",");
 
@@ -205,7 +196,27 @@ export default function CreateBusinessWizard({
   const addr = parseAddress(address);
 
   const totalSteps = 9;
-
+  useEffect(() => {
+    if (currentView === "edit") {
+      setFormData({
+        authority: business?.authorityId?._id || "",
+        nameEn: business.name || "",
+        nameHe: business.nameHe || "",
+        nameAr: business.nameAr || "",
+        shortDescriptionEn: business.shortDescription || "",
+        shortDescriptionHe: "",
+        shortDescriptionAr: "",
+        fullDescriptionEn: business.description || "",
+        fullDescriptionHe: "",
+        fullDescriptionAr: "",
+        internalNotes: business.internalNotes || "",
+        slug: business.slug || "",
+        logo: business?.logo?.image,
+        images: business?.images,
+      });
+      setSelectedDmoId(business?.dmoId?._id || "");
+    }
+  }, [business, currentView]);
   const steps = [
     { number: 1, title: t("step_basic_info"), icon: FileText },
     { number: 2, title: t("step_contact_ownership"), icon: Users },
@@ -402,7 +413,7 @@ export default function CreateBusinessWizard({
             {...commonProps}
             canApprove
             selectedDmoId={selectedDmoId}
-            setSelectDmoId={setSelectDmoId}
+            setSelectDmoId={setSelectedDmoId}
             selectedAuthorityId={selectedAuthorityId}
             setSelectAuthorityId={setSelectAuthorityId}
           />
@@ -445,7 +456,7 @@ export default function CreateBusinessWizard({
   };
 
   return (
-    <ModalWrapper onClose={onClose} showSpinner={!isCreating || isSaving}>
+    <ModalWrapper onClose={onClose} showSpinner={isCreating || isSaving}>
       {/* Header */}
       <div className={clsx("px-6 py-4 border-b", textPrimary)}>
         <div className="flex items-center justify-between mb-4">

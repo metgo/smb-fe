@@ -34,7 +34,6 @@ interface BusinessBasicInfosProps {
   t: (key: string) => string;
   formData: BusinessFormData;
   setFormData: (data: BusinessFormData) => void;
-  business: any;
   errors: FormErrors;
   canApprove: boolean;
   selectedDmoId?: string;
@@ -53,13 +52,29 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
   setFormData,
   markDirty,
   errors,
-  currentView,
   canApprove,
   selectedDmoId,
   setSelectDmoId,
   setSelectAuthorityId,
-  business,
 }) => {
+  //   if (!business || currentView !== "edit") return;
+
+  //   setFormData({
+  //     authority: business.authorityId?._id || "",
+  //     nameEn: business.name || "",
+  //     nameHe: business.nameHe || "",
+  //     nameAr: business.nameAr || "",
+  //     shortDescriptionEn: business.shortDescription || "",
+  //     shortDescriptionHe: "",
+  //     shortDescriptionAr: "",
+  //     fullDescriptionEn: business.description || "",
+  //     fullDescriptionHe: "",
+  //     fullDescriptionAr: "",
+  //     internalNotes: business.internalNotes || "",
+  //     slug: business.slug || "",
+  //   });
+  //   setSelectDmoId(business.dmoId?._id || "");
+  // }, [business]);
   const { dmosAuthorities } = useCommon();
   const [selectedFormLanguage, setSelectedFormLanguage] =
     useState<Language>("en");
@@ -93,37 +108,6 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
   const selectedDmos = dmosAuthorities?.find(
     (item) => item?._id === selectedDmoId,
   );
-  useEffect(() => {
-    if (!business || currentView !== "edit") return;
-
-    setFormData({
-      ...formData,
-
-      // Authority
-      authority: business?.authorityId?._id || "",
-
-      // Names
-      nameEn: business?.name || "",
-      nameHe: business?.nameHe || "",
-      nameAr: business?.nameAr || "",
-
-      // Descriptions
-      shortDescriptionEn: business?.shortDescription || "",
-      shortDescriptionHe: "",
-      shortDescriptionAr: "",
-
-      fullDescriptionEn: business?.description || "",
-      fullDescriptionHe: "",
-      fullDescriptionAr: "",
-
-      // Notes & slug
-      internalNotes: business?.internalNotes || "",
-      slug: business?.slug || "",
-    });
-
-    // DMO
-    setSelectDmoId(business?.dmoId?._id || "");
-  }, [business, currentView]);
 
   //websites
   const [allWebsites, setAllWebsites] = useState(false);
@@ -245,9 +229,11 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
       {/* All Websites */}
       <div className="">
         <label
-          className={`block text-sm mb-2 ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}
+          className={`block text-sm mb-2 ${
+            theme === "dark" ? "text-gray-300" : "text-gray-700"
+          }`}
         >
-          {t("website_visibility")} *
+          {t("website_visibility")} <span className="text-red-500">*</span>
         </label>
 
         <div className="mb-4">
@@ -296,7 +282,7 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
         <label
           className={`block text-sm mb-2 ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}
         >
-          {t("business_name")} *
+          {t("business_name")} <span className="text-red-500">*</span>
         </label>
         <input
           type="text"
@@ -329,7 +315,7 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
         <label
           className={`block text-sm mb-2 ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}
         >
-          {t("short_description")} *
+          {t("short_description")} <span className="text-red-500">*</span>
         </label>
         <textarea
           rows={3}
@@ -359,7 +345,7 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
         <label
           className={`block text-sm mb-2 ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}
         >
-          {t("full_description")} *
+          {t("full_description")} <span className="text-red-500">*</span>
         </label>
         <textarea
           rows={6}

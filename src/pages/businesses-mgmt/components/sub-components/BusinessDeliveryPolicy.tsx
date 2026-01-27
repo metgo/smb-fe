@@ -1,4 +1,4 @@
-import { Activity, useEffect, useState, type FC } from "react";
+import { Activity, useState, type FC } from "react";
 import { Plus, X, MapPin } from "lucide-react";
 import PickupLocationModal from "./PickupLocationModal";
 
@@ -43,8 +43,8 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
   isRTL,
   formData,
   setFormData,
-  business,
-  currentView,
+  // business,
+  // currentView,
 }) => {
   const [pickupLocationModal, setPickupLocationModal] = useState<{
     show: boolean;
@@ -79,18 +79,18 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
     t("seller_info_option8"),
     t("seller_info_option9"),
   ];
-  useEffect(() => {
-    if (!business || currentView !== "edit") return;
+  // useEffect(() => {
+  //   if (!business || currentView !== "edit") return;
 
-    setFormData({
-      vendorDelivers: business.vendorDelivers ?? false,
-      pickupAvailable: business.isPickUpAvailable ?? false,
-      deliveryArea: business.deliveryArea ?? [],
-      deliveryReturnExchange: business.deliveryReturnExchange ?? [],
-      deliveryAdditionalInfo: business.deliveryAdditionalInfo ?? "",
-      deliverySpecificSellerInfo: business.deliverySpecificSellerInfo ?? [],
-    });
-  }, [business]);
+  //   setFormData({
+  //     vendorDelivers: business.vendorDelivers ?? false,
+  //     pickupAvailable: business.isPickUpAvailable ?? false,
+  //     deliveryArea: business.deliveryArea ?? [],
+  //     deliveryReturnExchange: business.deliveryReturnExchange ?? [],
+  //     deliveryAdditionalInfo: business.deliveryAdditionalInfo ?? "",
+  //     deliverySpecificSellerInfo: business.deliverySpecificSellerInfo ?? [],
+  //   });
+  // }, [business]);
   return (
     <div className="space-y-6">
       <h3

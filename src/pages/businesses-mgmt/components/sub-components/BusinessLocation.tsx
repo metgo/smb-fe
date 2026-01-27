@@ -85,7 +85,7 @@ const BusinessLocation: FC<BusinessLocationProps> = ({
 
       setAddress(formatted);
     }
-  }, [business]);
+  }, [business, currentView]);
 
   return (
     <div className="space-y-6">

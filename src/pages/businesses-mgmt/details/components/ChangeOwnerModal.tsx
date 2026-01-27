@@ -61,7 +61,6 @@ export default function ChangeOwnerModal({
   const businessIdParams = searchParams.get("businessId");
   const businessId = businessIdParams ? [businessIdParams] : []; //backend expects an array
 
-  console.log("data", userEmailCheck);
   // New user form fields
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");

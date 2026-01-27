@@ -131,7 +131,7 @@ const BusinessAttributes: FC<BusinessAttributesProps> = ({
     if (Array.isArray(business.accessibilitiesId)) {
       setAccessiblitiesId(business.accessibilitiesId.map((a: any) => a._id));
     }
-  }, [business]);
+  }, [business, formData, setFormData, setAccessiblitiesId, setGroupTypesId]);
 
   return (
     <div className="space-y-6">
@@ -140,7 +140,7 @@ const BusinessAttributes: FC<BusinessAttributesProps> = ({
         <label
           className={`block text-sm mb-2 ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}
         >
-          {t("primary_category")} *
+          {t("primary_category")} <span className="text-red-500">*</span>
         </label>
         <select
           value={formData.primaryCategory}

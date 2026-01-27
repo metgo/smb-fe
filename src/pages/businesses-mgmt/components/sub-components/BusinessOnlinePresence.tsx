@@ -96,7 +96,7 @@ const BusinessOnlinePresence: FC<BusinessOnlinePresenceProps> = ({
       ...prev,
       socialMedia: normalizedSocialMedia,
     }));
-  }, [business]);
+  }, [business, formData, setFormData]);
 
   // Optional: show loading state or skeleton
   if (isLoading) {
