@@ -133,7 +133,6 @@ const BusinessAttributes: FC<BusinessAttributesProps> = ({
     }
   }, [business]);
 
-  console.log("primary category", primaryCategories);
   return (
     <div className="space-y-6">
       {/* Primary Category */}

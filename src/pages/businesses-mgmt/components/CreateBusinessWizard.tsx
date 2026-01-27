@@ -41,7 +41,7 @@ import { useBusinessDraftSaver } from "../hooks/useBusinessDraftSaver";
 import { useGetbusinessBySlugQuery } from "@/store/api/businessQueryApi";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { useSearchParams } from "react-router-dom";
-type View = "list" | "details" | "create" | "edit";
+type View = "list" | "details" | "create" | "edit" | undefined;
 
 interface CreateBusinessWizardProps {
   onClose: () => void;
@@ -103,15 +103,14 @@ export default function CreateBusinessWizard({
     images: null as TImages | null,
 
     // Step 6
-    operatingHours: {
-      sunday: [{ open: "09:00", close: "18:00" }],
-      monday: [{ open: "09:00", close: "18:00" }],
-      tuesday: [{ open: "09:00", close: "18:00" }],
-      wednesday: [{ open: "09:00", close: "18:00" }],
-      thursday: [{ open: "09:00", close: "18:00" }],
-      friday: [{ open: "09:00", close: "14:00" }],
-      saturday: [] as { open: string; close: string }[],
-    },
+    operatingHours: [
+      { day: "sunday", open: "09:00", close: "18:00" },
+      { day: "monday", open: "09:00", close: "18:00" },
+      { day: "tuesday", open: "09:00", close: "18:00" },
+      { day: "wednesday", open: "09:00", close: "18:00" },
+      { day: "thursday", open: "09:00", close: "18:00" },
+      { day: "friday", open: "09:00", close: "14:00" },
+    ],
     vendorDelivers: false,
     pickupAvailable: false,
     deliveryAreas: [] as any[],
@@ -123,14 +122,15 @@ export default function CreateBusinessWizard({
     socialMedia: [],
   });
 
-  console.log("formdata", formData);
-
   useEffect(() => {
-    setFormData({
-      logo: business.logo,
-      images: business.images,
-    });
+    if (currentView === "edit") {
+      setFormData({
+        logo: business?.logo?.image,
+        images: business?.images,
+      });
+    }
   }, [business]);
+  console.log("formdata iages", formData.images);
   const {
     images,
     imagesRef,
@@ -138,7 +138,7 @@ export default function CreateBusinessWizard({
     handleImageUpload,
     uploadAll,
     setPrimaryImage,
-    setImages,
+    // setImages,
     deleteTarget,
     setDeleteTarget,
     confirmDelete,
@@ -146,7 +146,11 @@ export default function CreateBusinessWizard({
     handleDeleteImage,
   } = useImagesUpload({
     initialImages: formData.images,
-    onChange: (images) => {},
+    onChange: (images) =>
+      setFormData((prev: any) => ({
+        ...prev,
+        images,
+      })),
   });
 
   const {
@@ -167,7 +171,6 @@ export default function CreateBusinessWizard({
       }));
     },
   });
-
   const [updateBusiness, { isLoading: isSaving }] = useUpdateBusinessMutation();
   const [initBusinessCreate, { isLoading: isCreating }] =
     useInitBusinessCreateMutation();
@@ -175,8 +178,8 @@ export default function CreateBusinessWizard({
   const [isPublishing, setIsPublishing] = useState(false);
   const [isPublishBtnClicked, setIsPublishBtnClicked] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
-  const [editData, _setEditData] = useState<any>();
-  const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  // const [editData, _setEditData] = useState<any>();
+  const [lastSaved, _setLastSaved] = useState<Date | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const [selectedDmoId, setSelectDmoId] = useState<string>("");
@@ -200,37 +203,6 @@ export default function CreateBusinessWizard({
   };
 
   const addr = parseAddress(address);
-
-  // //timedate range
-  // const transformOperatingHoursToPayload = (
-  //   operatingHours: OperatingHours,
-  // ): OpeningHrPayload[] => {
-  //   const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
-
-  //   return Object.entries(operatingHours).flatMap(
-  //     ([day, ranges]): OpeningHrPayload[] => {
-  //       // Holiday (closed)
-  //       if (ranges.length === 0) {
-  //         return [
-  //           {
-  //             days: day,
-  //             open: `${today}T00:00:00.000Z`,
-  //             close: `${today}T00:00:00.000Z`,
-  //             isHoliday: true,
-  //           },
-  //         ];
-  //       }
-
-  //       // Open hours
-  //       return ranges.map((range: any) => ({
-  //         days: day,
-  //         open: `${today}T${range.open}:00.000Z`,
-  //         close: `${today}T${range.close}:00.000Z`,
-  //         isHoliday: false,
-  //       }));
-  //     },
-  //   );
-  // };
 
   const totalSteps = 9;
 
@@ -382,8 +354,6 @@ export default function CreateBusinessWizard({
     onClose();
   };
 
-  console.log("business", business);
-
   useEffect(() => {
     if (currentView === "edit") {
       setBusinessId(business?._id);
@@ -475,7 +445,7 @@ export default function CreateBusinessWizard({
   };
 
   return (
-    <ModalWrapper onClose={onClose} showSpinner={isCreating || isSaving}>
+    <ModalWrapper onClose={onClose} showSpinner={!isCreating || isSaving}>
       {/* Header */}
       <div className={clsx("px-6 py-4 border-b", textPrimary)}>
         <div className="flex items-center justify-between mb-4">

@@ -7,6 +7,8 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useGetCategoriesQuery } from "@/store/api/masterDataApi";
+import i18n from "@/i18n";
 
 /* ---------- Types ---------- */
 
@@ -87,14 +89,17 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({
   business,
   canChangeStatus,
 }) => {
-  const [showQRDropdown, setShowQRDropdown] = useState(false);
+  const locale = i18n.language as Language;
 
+  const [showQRDropdown, setShowQRDropdown] = useState(false);
+  const { data: primaryCategories } = useGetCategoriesQuery({ locale });
   const handleWebsiteClick = (website: (typeof websiteConnections)[0]) => {
     toast.success(`${website.name} site opened`, {
       description: `Redirecting to ${website.name}...`,
       duration: 2000,
     });
   };
+  console.log("business", business);
 
   const handleQRDownload = (site: (typeof qrSites)[0]) => {
     toast.success(t("qr_code_downloaded"), {
@@ -140,7 +145,7 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({
           {t("short_description")}
         </h3>
         <p className={theme === "dark" ? "text-gray-200" : "text-gray-800"}>
-          {business?.shortDescription}
+          {business?.shortDescription ? business.shortDescription : "-"}
         </p>
       </div>
 
@@ -152,7 +157,7 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({
           {t("full_description")}
         </h3>
         <p className={theme === "dark" ? "text-gray-300" : "text-gray-700"}>
-          {business?.description}
+          {business?.description ? business.description : "-"}
         </p>
       </div>
 
@@ -163,20 +168,14 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({
         >
           {t("categories")}
         </h3>
+
         <div className="flex flex-wrap gap-2">
-          {/* {business?.categories?.map((cat, idx) => (
-            <span
-              key={idx}
-              className={`px-3 py-1 rounded-full text-sm ${
-                theme === "dark"
-                  ? "bg-teal-900/30 text-teal-400"
-                  : "bg-teal-100 text-teal-800"
-              }`}
-            >
-              {cat}
-            </span>
-          ))} */}
-          {business?.primaryCategoryId}
+          {(() => {
+            const category = primaryCategories?.datas?.data.find(
+              (cat: any) => cat._id === business?.primaryCategoryId,
+            );
+            return category ? category.name : "-";
+          })()}
         </div>
       </div>
 
@@ -206,13 +205,13 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({
       )}
 
       {/* Tags */}
-      {business?.tags?.length > 0 && (
+      <h3
+        className={`text-sm mb-2 ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
+      >
+        {t("tags")}
+      </h3>
+      {business?.tags?.length > 0 ? (
         <div>
-          <h3
-            className={`text-sm mb-2 ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
-          >
-            {t("tags")}
-          </h3>
           <div className="flex flex-wrap gap-2">
             {business?.tags?.map((tag, idx) => (
               <span
@@ -229,6 +228,12 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({
             ))}
           </div>
         </div>
+      ) : (
+        <p
+          className={`text-sm italic ${theme === "dark" ? "text-gray-500" : "text-gray-400"}`}
+        >
+          -
+        </p>
       )}
 
       {/* Impact */}
@@ -243,7 +248,7 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({
           <span
             className={`text-2xl ${theme === "dark" ? "text-gray-200" : "text-gray-800"}`}
           >
-            {business?.impact?.toFixed(1)}
+            {business?.impact?.toFixed(1) ? business.impact?.toFixed(1) : "-"}
           </span>
           <span
             className={theme === "dark" ? "text-gray-400" : "text-gray-600"}

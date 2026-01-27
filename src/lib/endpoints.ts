@@ -20,6 +20,7 @@ export const endpoints = {
   accessibility: "/admin/accessibility",
   groupType: "/admin/group-type",
   dmos: "/dmos",
+  changeOwner: "/admin/businesses/assign-user/",
 
   // business
   business: "/businesses",
@@ -32,7 +33,7 @@ export const endpoints = {
 
   users: "/users",
   userInfo: "/users/me",
-
+  userAdmin: "/users/admin",
   tickets: "/tickets",
 
   // Media

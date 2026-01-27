@@ -1,7 +1,6 @@
 import { useEffect, type FC } from "react";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { MarkerMap } from "@/components/maps";
-import { current } from "@reduxjs/toolkit";
 
 /* ---------- Types ---------- */
 
@@ -62,11 +61,12 @@ const BusinessLocation: FC<BusinessLocationProps> = ({
   business,
 }) => {
   const { textSecondary } = useThemeClasses();
+  console.log("geo", business?.geoLocation);
   useEffect(() => {
     if (!business || currentView !== "edit") return;
 
     // Set geo location
-    if (business.geoLocation?.lat || business.geoLocation?.lng) {
+    if (business?.geoLocation) {
       setGeo({
         lat: String(business.geoLocation.lat),
         lng: String(business.geoLocation.lng),

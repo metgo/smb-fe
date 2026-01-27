@@ -8,7 +8,17 @@ interface Business {
   website: string;
   logo: string;
   images: string[];
-  status: "draft" | "pending" | "approved" | "rejected" | "archived";
+  status:
+    | "draft"
+    | "pending"
+    | "approved"
+    | "rejected"
+    | "archived"
+    | "DRAFT"
+    | "PENDING"
+    | "APPROVED"
+    | "REJECTED"
+    | "ARCHIVED";
   authority: string;
   dmo: string;
   categories: string[];
@@ -36,7 +46,7 @@ interface Business {
   groupTypes: string[];
   createdAt: string;
   updatedAt: string;
-  completionPercentage: number;
+  completionPercent: number;
   internalNotes?: string;
   rejectionNote?: string;
   analytics?: {

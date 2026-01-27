@@ -12,13 +12,15 @@ const BusinessTitleSection = ({
 }: BusinessTitleSectionProps) => {
   const StatusBadge = ({ status }: { status: Business["status"] }) => {
     const statusConfig = {
-      draft: { color: "bg-gray-500", label: t("draft") },
-      pending: { color: "bg-yellow-500", label: t("pending") },
-      approved: { color: "bg-green-500", label: t("approved") },
-      rejected: { color: "bg-red-500", label: t("rejected") },
-      archived: { color: "bg-gray-400", label: t("archived") },
+      DRAFT: { color: "bg-gray-500", label: t("draft") },
+      PENDING: { color: "bg-yellow-500", label: t("pending") },
+      APPROVED: { color: "bg-green-500", label: t("approved") },
+      REJECTED: { color: "bg-red-500", label: t("rejected") },
+      ARCHIVED: { color: "bg-gray-400", label: t("archived") },
     };
-    const config = statusConfig[status];
+    const config =
+      statusConfig[status.toUpperCase() as keyof typeof statusConfig];
+
     return (
       <span
         className={`px-3 py-1 rounded-full text-sm text-white ${config?.color}`}
@@ -60,13 +62,13 @@ const BusinessTitleSection = ({
           <div className="w-32 h-2 bg-gray-300 dark:bg-gray-700 rounded-full overflow-hidden">
             <div
               className="h-full bg-teal-600 transition-all duration-300"
-              style={{ width: `${business?.completionPercentage}%` }}
+              style={{ width: `${business?.completionPercent}%` }}
             />
           </div>
           <span
             className={`text-sm ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}
           >
-            {business?.completionPercentage}%
+            {business?.completionPercent}%
           </span>
         </div>
       </div>

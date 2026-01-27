@@ -39,7 +39,7 @@ const BusinessMedia: FC<BusinessMediaProps> = ({
   t,
   theme,
   errors,
-  business,
+  // business,
   logoImage,
   handleLogoImageSelect,
   deleteTargetLogo,
@@ -58,6 +58,8 @@ const BusinessMedia: FC<BusinessMediaProps> = ({
   isImageDeleting,
   handleImageUpload,
 }) => {
+  console.log("images0", images);
+
   return (
     <div className="space-y-6">
       {/* Logo Upload */}
@@ -73,11 +75,19 @@ const BusinessMedia: FC<BusinessMediaProps> = ({
         <div className="flex items-center gap-4">
           {logoImage?.previewUrl ? (
             <div className="relative w-32 h-32 rounded-full border-2 border-gray-300">
-              <ImageWithFallback
-                src={logoImage?.previewUrl}
-                alt="Logo"
-                className="w-full h-full object-cover rounded-full"
-              />
+              <div
+                className=""
+                onClick={() =>
+                  document.getElementById("logo-image-upload")?.click()
+                }
+              >
+                <ImageWithFallback
+                  src={logoImage?.previewUrl}
+                  alt="Logo"
+                  className="w-full h-full object-cover rounded-full"
+                />
+              </div>
+
               <button
                 onClick={() => handleDeleteLogoImage(logoImage)}
                 className="absolute top-2 right-2 z-50 cursor-pointer p-1 bg-red-600 text-white rounded-full hover:bg-red-700"
@@ -125,7 +135,6 @@ const BusinessMedia: FC<BusinessMediaProps> = ({
             </div>
           )}
         </div>
-
         {errors.logo && (
           <p className="text-red-500 text-sm mt-1">{errors.logo}</p>
         )}
@@ -165,7 +174,17 @@ const BusinessMedia: FC<BusinessMediaProps> = ({
               >
                 <X className="w-4 h-4" />
               </button>
-
+              {img.status === "uploading" && (
+                <div className="absolute bottom-16 left-0 w-full flex items-center px-2 z-50">
+                  <div
+                    className="bg-white h-1 rounded transition-all"
+                    style={{ width: `${img.progress}%` }}
+                  />
+                  <span className="ml-2 text-green-600 text-xs font-bold">
+                    {img.progress}%
+                  </span>
+                </div>
+              )}
               {/* Primary Badge */}
               {idx === primaryImageIndex && (
                 <div className="absolute top-2 left-2 px-2 py-1 bg-yellow-500 text-white text-xs rounded z-10">

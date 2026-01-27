@@ -5,35 +5,12 @@ import type { FC } from "react";
 
 type Theme = "light" | "dark";
 
-interface Coordinates {
-  lat: number;
-  lng: number;
-}
-
-type Address =
-  | string
-  | {
-      city: string;
-      country: string;
-      location: string;
-    };
-
-interface Business {
-  address: Address;
-  coordinates: Coordinates;
-}
-
-interface Business {
-  address: Address;
-  coordinates: Coordinates;
-}
-
 /* ---------- Props ---------- */
 
 interface BusinessLocationDetailsProps {
   theme: Theme;
   t: (key: string) => string;
-  business: Business;
+  business: any;
 }
 
 /* ---------- Component ---------- */
@@ -48,15 +25,26 @@ const BusinessLocationDetails: FC<BusinessLocationDetailsProps> = ({
       {/* Address */}
       <div>
         <h3
-          className={`text-sm mb-2 ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
+          className={`text-sm mb-2 ${
+            theme === "dark" ? "text-gray-400" : "text-gray-600"
+          }`}
         >
           {t("address")}
         </h3>
+
         <p
-          className={`flex items-center gap-2 ${theme === "dark" ? "text-gray-200" : "text-gray-800"}`}
+          className={`flex items-center gap-2 ${
+            theme === "dark" ? "text-gray-200" : "text-gray-800"
+          }`}
         >
           <MapPin className="w-5 h-5" />
-          {/* {business?.address?.city} */}
+          {[
+            business?.address?.country,
+            business?.address?.city,
+            business?.address?.location,
+          ]
+            .filter(Boolean) // remove falsy values like null
+            .join(", ")}
         </p>
       </div>
 
@@ -68,8 +56,10 @@ const BusinessLocationDetails: FC<BusinessLocationDetailsProps> = ({
           {t("geo_coordinates")}
         </h3>
         <p className={theme === "dark" ? "text-gray-300" : "text-gray-700"}>
-          {t("latitude")}: {business?.coordinates?.lat?.toFixed(6)},{" "}
-          {t("longitude")}: {business?.coordinates?.lng?.toFixed(6)}
+          {t("latitude")}:{" "}
+          {business?.geoLocation?.lat ? business.geoLocation.lat : "-"},{" "}
+          {t("longitude")}:{" "}
+          {business?.geoLocation?.long ? business?.geoLocation?.long : "-"}
         </p>
       </div>
 

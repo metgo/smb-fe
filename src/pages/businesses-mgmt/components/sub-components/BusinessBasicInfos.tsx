@@ -123,7 +123,7 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
 
     // DMO
     setSelectDmoId(business?.dmoId?._id || "");
-  }, [business]);
+  }, [business, currentView]);
 
   //websites
   const [allWebsites, setAllWebsites] = useState(false);
@@ -152,6 +152,7 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
   useEffect(() => {
     markDirty(1);
   }, [formData, selectedWebsites, selectedDmoId]);
+
   return (
     <div className="space-y-6">
       {/* Header */}

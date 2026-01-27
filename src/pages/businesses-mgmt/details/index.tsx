@@ -111,7 +111,9 @@ export default function BusinessDetails({
       case "overview":
         return <BusinessInfoDetails {...commonProps} />;
       case "contact":
-        return <BusinessContactDetails {...commonProps} userRole={"Admin"} />;
+        return (
+          <BusinessContactDetails {...commonProps} USER_ROLE={USER_ROLE} />
+        );
       case "location":
         return <BusinessLocationDetails {...commonProps} />;
       case "media":
@@ -128,7 +130,6 @@ export default function BusinessDetails({
         return null;
     }
   };
-
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
       {/* Header */}
@@ -225,6 +226,7 @@ export default function BusinessDetails({
         isOpen={showChangeOwnerModal}
         onClose={() => setShowChangeOwnerModal(false)}
         theme={theme}
+        USER_ROLE={USER_ROLE}
         currentOwner={business?.owner}
         onOwnerChange={(ownerData) => {
           console.log("🚀 ~ BusinessDetails ~ ownerData:", ownerData);

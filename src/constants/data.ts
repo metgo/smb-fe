@@ -44,7 +44,7 @@ export const mockBusinesses: Business[] = [
     groupTypes: ["Families", "Couples", "Groups"],
     createdAt: "2024-01-15T10:30:00Z",
     updatedAt: "2024-12-20T14:22:00Z",
-    completionPercentage: 100,
+    completionPercent: 100,
     analytics: {
       pageViews: 1500,
       uniqueVisitors: 500,
@@ -116,7 +116,7 @@ export const mockBusinesses: Business[] = [
     groupTypes: ["Families", "Groups", "Corporate"],
     createdAt: "2024-02-10T09:15:00Z",
     updatedAt: "2024-12-18T11:45:00Z",
-    completionPercentage: 95,
+    completionPercent: 95,
     analytics: {
       pageViews: 2000,
       uniqueVisitors: 600,
@@ -182,7 +182,7 @@ export const mockBusinesses: Business[] = [
     groupTypes: ["Families", "Individuals", "Seniors"],
     createdAt: "2024-03-05T12:00:00Z",
     updatedAt: "2024-12-22T09:30:00Z",
-    completionPercentage: 88,
+    completionPercent: 88,
     analytics: {
       pageViews: 1800,
       uniqueVisitors: 550,
@@ -254,7 +254,7 @@ export const mockBusinesses: Business[] = [
     groupTypes: ["Couples", "Small Groups", "Solo Travelers"],
     createdAt: "2024-11-20T15:30:00Z",
     updatedAt: "2024-12-15T10:20:00Z",
-    completionPercentage: 75,
+    completionPercent: 75,
     analytics: {
       pageViews: 1200,
       uniqueVisitors: 400,
@@ -316,7 +316,7 @@ export const mockBusinesses: Business[] = [
     groupTypes: ["Individuals", "Families", "Food Enthusiasts"],
     createdAt: "2024-01-08T08:45:00Z",
     updatedAt: "2024-12-19T16:10:00Z",
-    completionPercentage: 92,
+    completionPercent: 92,
     analytics: {
       pageViews: 1600,
       uniqueVisitors: 500,
@@ -378,7 +378,7 @@ export const mockBusinesses: Business[] = [
     groupTypes: ["Individuals", "Families", "Groups", "Corporate Teams"],
     createdAt: "2024-12-01T11:00:00Z",
     updatedAt: "2024-12-15T14:30:00Z",
-    completionPercentage: 45,
+    completionPercent: 45,
     internalNotes: "New business - still setting up product listings",
     analytics: {
       pageViews: 800,
@@ -490,7 +490,7 @@ export function generateMockBusinesses(count: number = 100): Business[] {
         11,
         Math.floor(Math.random() * 24) + 1,
       ).toISOString(),
-      completionPercentage: Math.floor(Math.random() * 40) + 60,
+      completionPercent: Math.floor(Math.random() * 40) + 60,
       analytics: {
         pageViews: Math.floor(Math.random() * 2000) + 500,
         uniqueVisitors: Math.floor(Math.random() * 1000) + 200,

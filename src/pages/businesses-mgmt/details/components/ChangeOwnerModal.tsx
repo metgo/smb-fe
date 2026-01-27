@@ -1,7 +1,13 @@
 import { toast } from "sonner";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { X, Mail, AlertCircle, CheckCircle, Loader2 } from "lucide-react";
+import {
+  useGetUserByEmailQuery,
+  usePatchBusinessOwnerMutation,
+  usePostUserAdminMutation,
+} from "@/store/api/masterDataApi";
+import { useSearchParams } from "react-router-dom";
 
 interface ChangeOwnerModalProps {
   isOpen: boolean;
@@ -13,35 +19,8 @@ interface ChangeOwnerModalProps {
     phone: string;
   };
   onOwnerChange: (ownerData: any) => void;
+  USER_ROLE: string;
 }
-
-// Mock user database
-const existingUsers = [
-  {
-    email: "john.doe@example.com",
-    firstName: "John",
-    lastName: "Doe",
-    phone: "+972-50-123-4567",
-    address: "Tel Aviv, Israel",
-    language: "EN",
-  },
-  {
-    email: "sarah.cohen@example.com",
-    firstName: "Sarah",
-    lastName: "Cohen",
-    phone: "+972-52-987-6543",
-    address: "Jerusalem, Israel",
-    language: "HE",
-  },
-  {
-    email: "david.levi@example.com",
-    firstName: "David",
-    lastName: "Levi",
-    phone: "+972-54-555-1234",
-    address: "Haifa, Israel",
-    language: "EN",
-  },
-];
 
 export default function ChangeOwnerModal({
   isOpen,
@@ -49,23 +28,50 @@ export default function ChangeOwnerModal({
   theme,
   currentOwner,
   onOwnerChange,
+  USER_ROLE,
 }: ChangeOwnerModalProps) {
   const [step, setStep] = useState<"email" | "create-user">("email");
   const [email, setEmail] = useState("");
   const [isChecking, setIsChecking] = useState(false);
   const [userFound, setUserFound] = useState(false);
   const [foundUser, setFoundUser] = useState<any>(null);
+  const [emailCheck, _setEmailCheck] = useState<boolean>(false);
+  console.log("🚀 ~ ChangeOwnerModal ~ emailCheck:", emailCheck);
+  const [debouncedEmail, setDebouncedEmail] = useState("");
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedEmail(email);
+    }, 900);
+
+    return () => clearTimeout(timer);
+  }, [email]);
+
+  const { data: userEmailCheck } = useGetUserByEmailQuery(
+    { email: debouncedEmail },
+    { skip: !debouncedEmail },
+  );
+  //if no users is available in db
+  const [postUserAdmin] = usePostUserAdminMutation();
+  //change business owner
+  const [updateOwner] = usePatchBusinessOwnerMutation();
+  console.log("🚀 ~ ChangeOwnerModal ~ updateOwner:", updateOwner);
+  //get id from params to send when updating owner
+  const [searchParams] = useSearchParams();
+  const businessIdParams = searchParams.get("businessId");
+  const businessId = businessIdParams ? [businessIdParams] : []; //backend expects an array
+
+  console.log("data", userEmailCheck);
   // New user form fields
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
-  const [language, setLanguage] = useState("EN");
-
+  const [language, setLanguage] = useState("en");
   if (!isOpen) return null;
 
   const handleEmailCheck = async () => {
+    // setEmailCheck(true);
     if (!email || !email.includes("@")) {
       toast.error("Invalid Email", {
         description: "Please enter a valid email address",
@@ -75,41 +81,41 @@ export default function ChangeOwnerModal({
 
     setIsChecking(true);
 
-    // Simulate API call to check if user exists
-    setTimeout(() => {
-      const user = existingUsers.find(
-        (u) => u.email.toLowerCase() === email.toLowerCase(),
-      );
+    console.log("🚀 ~ handleEmailCheck ~ userEmailCheck:", userEmailCheck);
 
-      if (user) {
-        setUserFound(true);
-        setFoundUser(user);
-        toast.success("User Found!", {
-          description: `${user.firstName} ${user.lastName} is already in the system`,
-        });
-      } else {
-        setUserFound(false);
-        setStep("create-user");
-        toast.info("New User", {
-          description:
-            "This email is not in the system. Please create a new user.",
-        });
-      }
-      setIsChecking(false);
-    }, 800);
+    if (userEmailCheck?.id) {
+      setUserFound(true);
+      setFoundUser(userEmailCheck);
+      toast.success("User Found!", {
+        description: `${userEmailCheck?.firstName} ${userEmailCheck?.lastName} is already in the system`,
+      });
+    } else {
+      setUserFound(false);
+      setFoundUser("");
+      setStep("create-user");
+      toast.info("New User", {
+        description:
+          "This email is not in the system. Please create a new user.",
+      });
+    }
+    setIsChecking(false);
   };
 
   const handleAssignExistingUser = () => {
     if (foundUser) {
+      updateOwner({ userId: foundUser?.id, businessesId: businessId });
       onOwnerChange({
         name: `${foundUser.firstName} ${foundUser.lastName}`,
         email: foundUser.email,
-        phone: foundUser.phone,
+        phone: foundUser.phoneNumber,
       });
       toast.success("Owner Changed!", {
         description: `${foundUser.firstName} ${foundUser.lastName} is now the owner`,
       });
+      setUserFound(false);
+      setFoundUser("");
       handleClose();
+      setEmail("");
     }
   };
 
@@ -119,6 +125,16 @@ export default function ChangeOwnerModal({
         description: "Please fill in all required fields",
       });
       return;
+    } else {
+      postUserAdmin({
+        email,
+        firstName,
+        lastName,
+        phoneNumber: phone,
+        address,
+        languagePreference: language,
+        role: USER_ROLE,
+      });
     }
 
     const newOwner = {
@@ -146,7 +162,7 @@ export default function ChangeOwnerModal({
     setLastName("");
     setPhone("");
     setAddress("");
-    setLanguage("EN");
+    setLanguage("en");
     onClose();
   };
 
@@ -214,9 +230,6 @@ export default function ChangeOwnerModal({
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      onKeyPress={(e) =>
-                        e.key === "Enter" && handleEmailCheck()
-                      }
                       placeholder="owner@example.com"
                       className={`w-full pl-10 pr-4 py-3 rounded-lg border transition-colors ${
                         theme === "dark"
@@ -226,8 +239,8 @@ export default function ChangeOwnerModal({
                     />
                   </div>
                   <button
+                    // onClick={() => setEmailCheck(true)}
                     onClick={handleEmailCheck}
-                    disabled={isChecking}
                     className="px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                   >
                     {isChecking ? (
@@ -283,7 +296,8 @@ export default function ChangeOwnerModal({
                           <strong>Email:</strong> {foundUser.email}
                         </p>
                         <p>
-                          <strong>Phone:</strong> {foundUser.phone}
+                          <strong>Phone:</strong>{" "}
+                          {foundUser.phoneDetails?.phoneNumber}
                         </p>
                         <p>
                           <strong>Location:</strong> {foundUser.address}
@@ -470,9 +484,9 @@ export default function ChangeOwnerModal({
                       : "bg-white border-gray-300 text-gray-900 focus:border-teal-500"
                   } focus:outline-none focus:ring-2 focus:ring-teal-500/20`}
                 >
-                  <option value="EN">English</option>
-                  <option value="HE">עברית (Hebrew)</option>
-                  <option value="AR">العربية (Arabic)</option>
+                  <option value="en">English</option>
+                  <option value="he">עברית (Hebrew)</option>
+                  <option value="ar">العربية (Arabic)</option>
                 </select>
               </div>
 
