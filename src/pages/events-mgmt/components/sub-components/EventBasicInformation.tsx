@@ -16,6 +16,7 @@ import {
   SelectField,
   TextareaField,
 } from "@/components/form-fields";
+import { categoryIds } from "@/lib/utils";
 
 interface EventBasicInformationProps {
   markDirty: (step: number) => void;
@@ -74,7 +75,7 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
   const locale = i18n.language as Language;
 
   const { data: subCategories } = useGetSubCategoriesQuery({
-    bussCategoryId: "6566fcd4a77d2a477266d3b9",
+    bussCategoryId: categoryIds.event,
     locale,
   });
   const { data: accessibility } = useGetAccessibilityQuery({ locale });
