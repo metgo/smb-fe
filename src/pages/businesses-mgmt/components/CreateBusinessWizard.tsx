@@ -298,16 +298,18 @@ export default function CreateBusinessWizard({
           newErrors.nameEn = t("field_too_short");
         break;
       case 2:
-        if (!formData.email?.trim()) newErrors.email = t("required_field");
-        if (!formData.phone?.trim()) newErrors.phone = t("required_field");
+        if (formData.email?.trim() === "")
+          newErrors.email = t("required_field");
+        if (formData.phone?.trim() === "")
+          newErrors.phone = t("required_field");
         break;
       case 3:
-        if (addr?.city === undefined) {
+        if (!addr) {
           newErrors.address = t("required_field");
         }
         break;
       case 4:
-        if (!formData.primaryCategory) {
+        if (formData.primaryCategory?.trim() === "") {
           newErrors.primaryCategory = t("primary_category_required");
         }
         break;
@@ -348,11 +350,9 @@ export default function CreateBusinessWizard({
         break;
       }
     }
-    if (currentView !== "edit") {
-      if (!allValid) {
-        toast.error(t("fix_errors_before_proceeding"));
-        return;
-      }
+    if (!allValid) {
+      toast.error(t("fix_errors_before_proceeding"));
+      return;
     }
 
     setIsPublishing(true);
@@ -361,7 +361,7 @@ export default function CreateBusinessWizard({
     toast.success(t("business created succesfully"));
     onClose();
   };
-
+  console.log("formDaata", formData);
   useEffect(() => {
     if (currentView === "edit") {
       setBusinessId(business?._id);

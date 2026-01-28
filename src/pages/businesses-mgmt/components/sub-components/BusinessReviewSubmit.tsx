@@ -62,8 +62,7 @@ const BusinessReviewSubmit: FC<BusinessReviewSubmitProps> = ({
     });
 
     // DMO
-  }, [business, currentView, formData, setFormData]);
-  console.log("formdata review submit", formData);
+  }, [business, currentView]);
   return (
     <div className="space-y-6">
       {/* Review Header */}

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { ArrowLeft, Edit, Plus, Box, UserCog } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useAppSelector } from "@/hooks/hooks";
+
 import {
   AnalyticsStatsSection,
   BusinessAttributesDetails,
@@ -60,6 +61,7 @@ export default function BusinessDetails({
   const canChangeStatus = ["superadmin", "admin", "dmo", "authority"].includes(
     USER_ROLE,
   );
+
   const {
     images,
     imagesRef,
