@@ -50,11 +50,16 @@ export default function ChangeOwnerModal({
     { email: debouncedEmail },
     { skip: !debouncedEmail },
   );
+  const [userId, setUserId] = useState<string>("");
+  useEffect(() => {
+    if (userEmailCheck?.id) {
+      setUserId(userEmailCheck.id);
+    }
+  }, [userEmailCheck]);
   //if no users is available in db
   const [postUserAdmin] = usePostUserAdminMutation();
   //change business owner
   const [updateOwner] = usePatchBusinessOwnerMutation();
-  console.log("🚀 ~ ChangeOwnerModal ~ updateOwner:", updateOwner);
   //get id from params to send when updating owner
   const [searchParams] = useSearchParams();
   const businessIdParams = searchParams.get("businessId");
@@ -79,15 +84,13 @@ export default function ChangeOwnerModal({
 
     setIsChecking(true);
 
-    console.log("🚀 ~ handleEmailCheck ~ userEmailCheck:", userEmailCheck);
-
-    if (userEmailCheck?.id) {
+    if (userId !== "") {
       setUserFound(true);
       setFoundUser(userEmailCheck);
       toast.success("User Found!", {
         description: `${userEmailCheck?.firstName} ${userEmailCheck?.lastName} is already in the system`,
       });
-    } else {
+    } else if (userId === "") {
       setUserFound(false);
       setFoundUser("");
       setStep("create-user");
@@ -114,6 +117,7 @@ export default function ChangeOwnerModal({
       setFoundUser("");
       handleClose();
       setEmail("");
+      setUserId("");
     }
   };
 
@@ -149,7 +153,6 @@ export default function ChangeOwnerModal({
     });
     handleClose();
   };
-
   const handleClose = () => {
     setStep("email");
     setEmail("");

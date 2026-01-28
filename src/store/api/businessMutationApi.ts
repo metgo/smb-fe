@@ -28,7 +28,12 @@ export const businessMutationApi = createApi({
       }),
       invalidatesTags: ["Business"],
     }),
-
+    deleteBusiness: builder.mutation<any, { businessId: string }>({
+      query: ({ businessId }) => ({
+        url: `${endpoints.business}/${businessId}`,
+        method: "DELETE",
+      }),
+    }),
     updateBusiness: builder.mutation<any, { body: any; businessId: string }>({
       query: ({ body, businessId }) => ({
         url: `${endpoints.businesses}/${businessId}`,
@@ -40,5 +45,8 @@ export const businessMutationApi = createApi({
   }),
 });
 
-export const { useInitBusinessCreateMutation, useUpdateBusinessMutation } =
-  businessMutationApi;
+export const {
+  useInitBusinessCreateMutation,
+  useUpdateBusinessMutation,
+  useDeleteBusinessMutation,
+} = businessMutationApi;

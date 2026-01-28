@@ -147,6 +147,7 @@
   "approved": "Approved",
   "rejected": "Rejected",
   "archived": "Archived",
+  "closed": "Closed",
   "edit": "Edit",
   "create_product": "Create Product",
   "change_owner": "Change Owner",
@@ -166,6 +167,7 @@
   "productsCount": "Products Count",
   "lifetimeSales": "Lifetime Sales",
   "business_owner": "Business Owner",
+
   "no_owner_assigned": "No owner assigned",
   "tripCount": "Trip Count",
   "websiteUrl": "Website URL",

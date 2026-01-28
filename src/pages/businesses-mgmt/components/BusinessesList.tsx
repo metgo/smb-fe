@@ -1,5 +1,6 @@
 import clsx from "clsx";
 import { useTranslation } from "react-i18next";
+import InfiniteScroll from "react-infinite-scroll-component";
 import {
   Search,
   Download,
@@ -22,12 +23,18 @@ import { useState, useEffect, useMemo, useRef } from "react";
 import { useAppSelector } from "@/hooks/hooks";
 import { FilterButton } from "@/components/btns";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { PageHeader, PageStats, ReordableDataTable } from "@/components/shared";
+import {
+  PageHeader,
+  PageStats,
+  ReordableDataTable,
+  ViewModeToggle,
+} from "@/components/shared";
 import {
   useGetAllbusinessesQuery,
   useGetBusinessStatsQuery,
 } from "@/store/api/businessQueryApi";
 import { useCommon } from "@/hooks/useCommon";
+import BusinessGridView from "./sub-components/BusinessGridView";
 
 interface BusinessesListProps {
   theme: Theme;
@@ -103,10 +110,14 @@ export default function BusinessesList({
 }: BusinessesListProps) {
   const { t } = useTranslation("businesses");
   const { isRTL } = useAppSelector((state) => state.settings);
-  const { textPrimary, textSecondary, textTertiary } = useThemeClasses();
-  const [page, _setPage] = useState<number>(1);
-  const limit = 20;
+  const { textPrimary, textSecondary } = useThemeClasses();
+  //infinite scroll states
+  const [page, setPage] = useState<number>(1);
+  const LIMIT = 20;
+  const [businesses, setBusinesses] = useState<any[]>([]);
+  const [hasMore, setHasMore] = useState(true);
 
+  const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const [error, _setError] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [showFilters, setShowFilters] = useState(false);
@@ -128,7 +139,7 @@ export default function BusinessesList({
   const [filters, setFilters] = useState({
     authorityId: "",
     dmoId: "",
-    status: "APPROVED",
+    status: "all",
     hasProductFilter: "",
   });
 
@@ -177,10 +188,11 @@ export default function BusinessesList({
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [showColumnSettings]);
+
   const queryParams = useMemo(() => {
     const params: any = {
-      page: String(page),
-      limit: String(limit),
+      page,
+      limit: LIMIT,
     };
 
     if (searchTerm) params.search = searchTerm;
@@ -202,7 +214,7 @@ export default function BusinessesList({
     }
 
     return params;
-  }, [page, limit, searchTerm, filters]);
+  }, [page, searchTerm, filters]);
 
   const clearFilter = () => {
     setSelectAuthorityId("");
@@ -210,12 +222,40 @@ export default function BusinessesList({
     setFilters({
       authorityId: "",
       dmoId: "",
-      status: "DRAFT",
+      status: "all",
       hasProductFilter: "",
     });
   };
-  const { data: businessData, isLoading: loading } =
-    useGetAllbusinessesQuery(queryParams);
+
+  const {
+    data: businessData,
+    isLoading: loading,
+    refetch,
+  } = useGetAllbusinessesQuery(queryParams);
+  useEffect(() => {
+    if (!businessData?.meta) return;
+
+    // Once we receive any page's meta we know the real situation
+    setHasMore(businessData.meta.hasNextPage === true);
+
+    // Optional safety: if we ever get fewer items than limit → last page
+    if (businessData?.data?.length < LIMIT) {
+      setHasMore(false);
+    }
+  }, [businessData]);
+
+  useEffect(() => {
+    if (businessData?.data) {
+      setBusinesses((prev) => [...prev, ...businessData.data]);
+    }
+  }, [businessData]);
+
+  const fetchNextPage = () => {
+    // Prevent calling if already no more pages or loading
+    if (!hasMore) return;
+
+    setPage((prev) => prev + 1);
+  };
 
   // Column toggle handler
   // const toggleColumn = (column: keyof ColumnVisibility) => {
@@ -794,7 +834,7 @@ export default function BusinessesList({
             {/* Column Settings Dropdown */}
             {showColumnSettings && (
               <div
-                className={`absolute ${isRTL ? "left-0" : "right-0"} mt-2 w-64 rounded-lg shadow-lg max-h-50vh overflow-y-auto border z-10 ${theme === "dark" ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}
+                className={`absolute ${isRTL ? "left-0" : "right-0"} mt-2 w-64 rounded-lg shadow-lg max-h-50vh overflow-y-auto border z-50 ${theme === "dark" ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}
               >
                 <div
                   className={`p-4 border-b ${theme === "dark" ? "border-gray-700" : "border-gray-200"}`}
@@ -908,6 +948,7 @@ export default function BusinessesList({
             <Download className="w-5 h-5" />
             {t("export")}
           </button>
+          <ViewModeToggle onChange={setViewMode} value={viewMode} />
         </div>
 
         {/* Filters Panel */}
@@ -1014,7 +1055,7 @@ export default function BusinessesList({
                   <option value="PENDING">{t("pending")}</option>
                   <option value="APPROVED">{t("approved")}</option>
                   <option value="REJECTED">{t("rejected")}</option>
-                  <option value="ARCHIVED">{t("archived")}</option>
+                  <option value="CLOSED">{t("closed")}</option>
                 </select>
               </div>
 
@@ -1100,7 +1141,7 @@ export default function BusinessesList({
                           } else if (key === "status") {
                             setFilters((prev) => ({
                               ...prev,
-                              status: "DRAFT",
+                              status: "all",
                             }));
                           } else {
                             // For other keys
@@ -1171,14 +1212,11 @@ export default function BusinessesList({
             <Loader className="w-8 h-8 animate-spin text-teal-500" />
           </div>
         ) : businessData?.data?.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20">
-            <AlertCircle className={`w-12 h-12 ${textTertiary} mb-4`} />
-            <p className={`${textSecondary}`}>{t("no_businesses_found")}</p>
-          </div>
-        ) : businessData?.data?.length === 0 ? (
           <div className="flex items-center justify-center h-64">
             <div className="text-center">
-              <AlertCircle className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+              <AlertCircle
+                className={`w-12 h-12 ${theme === "dark" ? "text-gray-300" : "text-gray-400"} mx-auto mb-4`}
+              />
               <h3
                 className={`text-lg mb-2 ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}
               >
@@ -1191,18 +1229,47 @@ export default function BusinessesList({
               </p>
             </div>
           </div>
-        ) : (
+        ) : viewMode === "list" ? (
           <div
             className={`rounded-2xl ${theme === "dark" ? "bg-gray-900/50" : "bg-white"}`}
           >
-            <ReordableDataTable
-              rowKey="_id"
+            <div
+              id="business-table-scroll"
+              style={{ height: "70vh", overflow: "auto" }}
+            >
+              <InfiniteScroll
+                dataLength={businesses.length}
+                next={fetchNextPage}
+                hasMore={hasMore}
+                loader={<p className="text-center py-3">Loading more...</p>}
+                endMessage={
+                  <p className="text-center py-3 text-gray-500">
+                    No more businesses
+                  </p>
+                }
+                scrollableTarget="business-table-scroll"
+              >
+                <ReordableDataTable
+                  rowKey="_id"
+                  data={businesses}
+                  selectedItems={selectedBusinesses}
+                  onSelectionChange={setSelectedBusinesses}
+                  onRowClick={(business) => onBusinessClick(business)}
+                  storageKey="businessesTableColumnOrder"
+                  columns={columns}
+                />
+              </InfiniteScroll>
+            </div>
+          </div>
+        ) : (
+          <div
+            className={`rounded-2xl ${theme === "dark" ? "bg-gray-900/50" : "bg-white"} h-150 overflow-y-auto`}
+          >
+            <BusinessGridView
               data={businessData?.data}
-              selectedItems={selectedBusinesses}
-              onSelectionChange={setSelectedBusinesses}
+              theme={theme}
+              refetch={refetch}
               onRowClick={(business) => onBusinessClick(business)}
-              storageKey="businessesTableColumnOrder"
-              columns={columns}
             />
           </div>
         )}

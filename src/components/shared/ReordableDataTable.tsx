@@ -28,6 +28,8 @@ interface DataTableProps<T> {
   onSelectionChange?: (selected: Set<any>) => void;
   rowKey: keyof T;
   isDataLoading?: boolean;
+  fetchNextPage?: () => void;
+  hasMore?: boolean;
 }
 
 export default function ReordableDataTable<T extends Record<string, any>>({
@@ -38,11 +40,11 @@ export default function ReordableDataTable<T extends Record<string, any>>({
   selectedItems,
   onSelectionChange,
   rowKey,
+
   isDataLoading = false,
 }: DataTableProps<T>) {
   const { theme, isRTL } = useAppSelector((state) => state.settings);
   const { bgTertiary, borderColor, textSecondary, hoverBg } = useThemeClasses();
-  console.log("columns", columns);
 
   // Load saved column order
   const [columnOrder, setColumnOrder] = useState<string[]>(() => {
@@ -178,11 +180,14 @@ export default function ReordableDataTable<T extends Record<string, any>>({
   return (
     <div className={`rounded-xl border ${borderColor}`}>
       {/* Scrollable container */}
-      <div className="overflow-x-auto max-h-[calc(100vh-450px)] overflow-y-auto">
+      <div
+        className="overflow-x-auto max-h-[calc(100vh-450px)] overflow-y-auto"
+        id="business-table-scroll"
+      >
         <table className="w-full h-full">
           {/* Sticky Header */}
           <thead
-            className={`sticky top-0 z-50 ${bgTertiary} border-b ${borderColor}`}
+            className={`sticky top-0 z-5 ${bgTertiary} border-b ${borderColor}`}
           >
             <tr>
               {columnOrder?.map((colKey) => {

@@ -99,7 +99,6 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({
       duration: 2000,
     });
   };
-  console.log("business", business);
 
   const handleQRDownload = (site: (typeof qrSites)[0]) => {
     toast.success(t("qr_code_downloaded"), {

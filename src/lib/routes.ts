@@ -13,7 +13,6 @@ export const routes = {
   vouchers: "/vouchers",
   offlineVouchers: "/offline-vouchers",
   miniCampaign: "/mini-campaign",
-
   auth: "/authentication",
   miniSite: "/mini-site",
   profile: "/profile",
