@@ -58,6 +58,8 @@ const BusinessMedia: FC<BusinessMediaProps> = ({
   isImageDeleting,
   handleImageUpload,
 }) => {
+  console.log("🚀 ~ logoImage:", logoImage);
+
   return (
     <div className="space-y-6">
       {/* Logo Upload */}

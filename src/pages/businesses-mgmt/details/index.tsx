@@ -19,6 +19,9 @@ import {
 import { useSearchParams } from "react-router-dom";
 import { useGetbusinessBySlugQuery } from "@/store/api/businessQueryApi";
 import { skipToken } from "@reduxjs/toolkit/query";
+import { useSingleImageUpload } from "@/hooks/useSingleImageUpload";
+import { useImagesUpload } from "@/hooks/useImagesUpload";
+import { useUpdateBusinessMutation } from "@/store/api/businessMutationApi";
 
 interface BusinessDetailsProps {
   onBack: () => void;
@@ -40,10 +43,15 @@ export default function BusinessDetails({
 
   const [searchParams] = useSearchParams();
   const businessSlug = searchParams.get("businessSlug");
-
+  const businessId = searchParams.get("businessId");
   const { data: business } = useGetbusinessBySlugQuery(
     businessSlug ? { slug: businessSlug } : skipToken,
   );
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [businessLogoImage, setBusinessLogoImage] = useState<IImage | null>(
+    null,
+  );
+  const [galleryImages, setGalleryImages] = useState<TImages>([]);
 
   const [businessMedia, setBusinessMedia] = useState<IBusinessMedia | null>(
     null,
@@ -55,7 +63,36 @@ export default function BusinessDetails({
   const canChangeStatus = ["superadmin", "admin", "dmo", "authority"].includes(
     USER_ROLE,
   );
-
+  const {
+    images,
+    imagesRef,
+    primaryImageIndex,
+    handleImageUpload,
+    uploadAll,
+    setPrimaryImage,
+    // setImages,
+    deleteTarget,
+    setDeleteTarget,
+    confirmDelete,
+    isImageDeleting,
+    handleDeleteImage,
+  } = useImagesUpload({
+    initialImages: galleryImages,
+    onChange: setGalleryImages,
+  });
+  const {
+    image: logoImage,
+    handleImageSelect: handleLogoImageSelect,
+    uploadImage: uploadLogoImage,
+    confirmDelete: confirmDeleteLogo,
+    deleteTarget: deleteTargetLogo,
+    setDeleteTarget: setDeleteTargetLogo,
+    isImageDeleting: isLogoImageDeleting,
+    handleDeleteImage: handleDeleteLogoImage,
+  } = useSingleImageUpload({
+    initialImage: businessLogoImage?.image,
+    onChange: setBusinessLogoImage,
+  });
   // const StatusBadge = ({ status }: { status: Business["status"] }) => {
   //   const statusConfig = {
   //     draft: { color: "bg-gray-500", label: t("draft") },
@@ -76,37 +113,93 @@ export default function BusinessDetails({
   //   );
   // };
 
-  useEffect(() => {
-    if (!business?.logo || !business?.images?.length) return;
-    const hasPrimary = business?.images?.some((img: any) => img.isPrimary);
+  // useEffect(() => {
+  //   if (!business?.logo || !business?.images?.length) return;
+  //   const hasPrimary = business?.images?.some((img: any) => img.isPrimary);
 
-    if (business) {
-      const logo = {
-        id: Date.now(),
-        previewUrl: business?.logo?.image,
-        progress: 100,
-        status: "success",
-        isPrimary: false,
-        gcsURL: business?.logo?.image,
+  //   if (business) {
+  //     const logo = {
+  //       id: Date.now(),
+  //       previewUrl: business?.logo?.image,
+  //       progress: 100,
+  //       status: "success",
+  //       isPrimary: false,
+  //       gcsURL: business?.logo?.image,
+  //     };
+  //     const gallery = business?.images?.map((item: any, index: number) => ({
+  //       id: Date.now() + index,
+  //       previewUrl: item.image,
+  //       progress: 100,
+  //       status: "success",
+  //       isPrimary: item.isPrimary || (!hasPrimary && index === 0),
+  //       gcsURL: item.image,
+  //     }));
+  //     setBusinessMedia({
+  //       logo,
+  //       gallery,
+  //     });
+  //   }
+  // }, [business, businessSlug]);
+
+  const [updateBusiness] = useUpdateBusinessMutation();
+
+  useEffect(() => {
+    setGalleryImages(business?.images);
+    setBusinessLogoImage({ image: business?.logo?.image });
+  }, [business]);
+
+  const handleSubmit = async () => {
+    try {
+      let logoUrl = businessLogoImage?.image ?? null;
+
+      // upload logo only if replaced
+      if (logoImage?.file) {
+        logoUrl = await uploadLogoImage();
+      }
+      // upload gallery images
+      await uploadAll();
+
+      const body = {
+        logo: { image: logoUrl },
+        images: galleryImages,
       };
-      const gallery = business?.images?.map((item: any, index: number) => ({
-        id: Date.now() + index,
-        previewUrl: item.image,
-        progress: 100,
-        status: "success",
-        isPrimary: item.isPrimary || (!hasPrimary && index === 0),
-        gcsURL: item.image,
-      }));
-      setBusinessMedia({
-        logo,
-        gallery,
-      });
+
+      await updateBusiness({ body, businessId }).unwrap();
+
+      console.log("Business updated", galleryImages);
+    } catch {
+      console.error("Failed to save");
     }
-  }, [business, businessSlug]);
+  };
+
+  console.log("Business out", galleryImages);
 
   const renderContent = () => {
     const commonProps = { theme, t, business };
-    const mediaProps = { theme, t, businessMedia };
+    const mediaProps = {
+      theme,
+      t,
+      errors,
+      uploadLogoImage,
+      business,
+      logoImage,
+      handleLogoImageSelect,
+      deleteTargetLogo,
+      setDeleteTargetLogo,
+      isLogoImageDeleting,
+      confirmDeleteLogo,
+      handleDeleteLogoImage,
+      images,
+      imagesRef,
+      primaryImageIndex,
+      setPrimaryImage,
+      handleImageUpload,
+      deleteTarget,
+      setDeleteTarget,
+      isImageDeleting,
+      confirmDelete,
+      handleDeleteImage,
+    };
     switch (activeTab) {
       case "overview":
         return <BusinessInfoDetails {...commonProps} />;
@@ -203,6 +296,16 @@ export default function BusinessDetails({
                 {t("change_owner")}
               </button>
             )}
+            <button
+              onClick={handleSubmit}
+              className={`px-4 py-2 rounded-lg border transition-colors flex items-center gap-2 ${
+                theme === "dark"
+                  ? "border-gray-700 hover:bg-gray-800 text-gray-300"
+                  : "border-gray-300 hover:bg-gray-100 text-gray-700"
+              }`}
+            >
+              Save
+            </button>
           </div>
         </div>
 

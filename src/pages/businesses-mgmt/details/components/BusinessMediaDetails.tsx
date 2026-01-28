@@ -1,18 +1,71 @@
-import { ImageWithFallback } from "@/components/shared";
-import { Upload, Star, Eye, Trash2, ImageIcon } from "lucide-react";
-
+import { ConfirmDialog, ImageWithFallback } from "@/components/shared";
+import {
+  Upload,
+  Star,
+  Eye,
+  Trash2,
+  ImageIcon,
+  Plus,
+  X,
+  Trash,
+} from "lucide-react";
+interface MediaErrors {
+  logo?: string;
+}
 interface BusinessMediaDetailsProps {
   theme: Theme;
   t: (key: string) => string;
-  businessMedia: IBusinessMedia | null;
+  errors: MediaErrors;
+
+  logoImage: IImageUpload | null;
+  handleLogoImageSelect: (file: File) => void;
+  confirmDeleteLogo: () => void;
+  deleteTargetLogo: string | null;
+  setDeleteTargetLogo: (imgUrl: string | null) => void;
+  isLogoImageDeleting: boolean;
+  handleDeleteLogoImage: (logoImg: IImageUpload) => void;
+
+  images: IImageUpload[];
+  primaryImageIndex: number;
+  setPrimaryImage: (idx: number) => void;
+  handleImageUpload: (files: FileList) => void;
+  deleteTarget: IDeleteTarget | null;
+  setDeleteTarget: (v: IDeleteTarget | null) => void;
+  confirmDelete: () => void;
+  isImageDeleting: boolean;
+  business: any;
+  handleDeleteImage: (item: IImageUpload, index: number) => void;
+  uploadLogoImage: (file: File) => void;
 }
 
 /* ---------- Component ---------- */
 const BusinessMediaDetails: React.FC<BusinessMediaDetailsProps> = ({
-  theme,
   t,
-  businessMedia,
+  theme,
+  errors,
+  uploadLogoImage,
+  logoImage,
+  handleLogoImageSelect,
+  deleteTargetLogo,
+  setDeleteTargetLogo,
+  isLogoImageDeleting,
+  handleDeleteLogoImage,
+  confirmDeleteLogo,
+
+  images,
+  primaryImageIndex,
+  setPrimaryImage,
+  handleDeleteImage,
+  deleteTarget,
+  setDeleteTarget,
+  confirmDelete,
+  isImageDeleting,
+  handleImageUpload,
 }) => {
+  {
+    console.log("logoImage", logoImage);
+  }
+
   return (
     <div className="space-y-6">
       {/* Logo */}
@@ -25,77 +78,135 @@ const BusinessMediaDetails: React.FC<BusinessMediaDetailsProps> = ({
         <div className="flex items-center gap-4">
           <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-gray-300">
             <ImageWithFallback
-              src={businessMedia?.logo?.previewUrl}
+              src={logoImage?.previewUrl}
               alt={"Business logo"}
               className="w-full h-full object-cover"
             />
           </div>
           <div className="flex gap-2">
-            <button className="px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-700 rounded hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors">
+            <label
+              htmlFor="logo-image-upload"
+              className="px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-700 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            >
               {t("replace_logo")}
-            </button>
+            </label>
+
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) handleLogoImageSelect(file);
+              }}
+              className="hidden"
+              id="logo-image-upload"
+            />
           </div>
         </div>
+      </div>
+      {/* Image Gallery Header */}
+      <div className="flex items-center justify-between">
+        <h3
+          className={`text-md  ${
+            theme === "dark" ? "text-gray-200" : "text-gray-800"
+          }`}
+        >
+          {t("image_gallery") || "Image Gallery"}
+        </h3>
+
+        {images.length < 10 && (
+          <>
+            <button
+              type="button"
+              onClick={() => document.getElementById("image-upload")?.click()}
+              className="px-3 py-1 bg-teal-600 hover:bg-teal-700 text-white rounded-none transition-colors flex items-center gap-2"
+            >
+              <Upload className="w-4 h-4" />
+
+              {t("upload_images") || "Upload Images"}
+            </button>
+
+            {/* Hidden file input */}
+            <input
+              id="image-upload"
+              type="file"
+              multiple
+              accept="image/*"
+              onChange={(e) =>
+                e.target.files && handleImageUpload(e.target.files)
+              }
+              className="hidden"
+            />
+          </>
+        )}
       </div>
 
       {/* Image Gallery */}
-      <div>
-        <div className="flex items-center justify-between mb-3">
-          <h3 className={theme === "dark" ? "text-gray-200" : "text-gray-800"}>
-            {t("image_gallery")}
-          </h3>
-          <button className="px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white text-sm rounded transition-colors flex items-center gap-1">
-            <Upload className="w-4 h-4" />
-            {t("upload_images")}
-          </button>
-        </div>
-
-        {businessMedia && businessMedia?.gallery?.length > 0 ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {businessMedia?.gallery?.map((img, idx) => (
-              <div
-                key={idx}
-                className={`relative aspect-video rounded-lg overflow-hidden border ${
-                  theme === "dark" ? "border-gray-700" : "border-gray-300"
-                } group`}
-              >
-                <ImageWithFallback
-                  src={img?.previewUrl}
-                  alt={` ${idx + 1}`}
-                  className="w-full h-full object-cover"
-                />
-                {idx === 0 && (
-                  <div className="absolute top-2 left-2 px-2 py-1 bg-yellow-500 text-white text-xs rounded flex items-center gap-1">
-                    <Star className="w-3 h-3 fill-current" />
-                    {t("primary_image")}
-                  </div>
-                )}
-                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                  <button className="p-2 bg-white rounded-full hover:bg-gray-100 transition-colors">
-                    <Eye className="w-4 h-4 text-gray-800" />
-                  </button>
-                  <button className="p-2 bg-white rounded-full hover:bg-gray-100 transition-colors">
-                    <Trash2 className="w-4 h-4 text-red-600" />
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {images.map((img, idx) => (
           <div
-            className={`p-8 text-center rounded-lg border-2 border-dashed ${
+            key={idx}
+            className={`relative aspect-square rounded-lg overflow-hidden border group ${
               theme === "dark" ? "border-gray-700" : "border-gray-300"
             }`}
           >
-            <ImageIcon
-              className={`w-12 h-12 mx-auto mb-2 ${theme === "dark" ? "text-gray-600" : "text-gray-400"}`}
+            <ImageWithFallback
+              src={img.previewUrl}
+              alt={`Image ${idx + 1}`}
+              className="w-full h-full object-cover"
             />
-            <p className={theme === "dark" ? "text-gray-500" : "text-gray-500"}>
-              {t("no_images_uploaded")}
-            </p>
+
+            {/* Delete */}
+            <div className="absolute inset-0 flex items-center justify-center gap-3 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+              {/* View */}
+              <button
+                type="button"
+                className="p-2 bg-white text-red rounded-full hover:bg-white"
+              >
+                <Eye className="w-4 h-4" />
+              </button>
+
+              {/* Delete */}
+              <button
+                type="button"
+                onClick={() => handleDeleteImage(img, idx)}
+                className="p-2 bg-red-600 hover:bg-red-700 rounded-full"
+              >
+                <Trash2 className="w-4 h-4 text-white" />
+              </button>
+            </div>
+
+            {img.status === "uploading" && (
+              <div className="absolute bottom-16 left-0 w-full flex items-center px-2 z-50">
+                <div
+                  className="bg-white h-1 rounded transition-all"
+                  style={{ width: `${img.progress}%` }}
+                />
+                <span className="ml-2 text-green-600 text-xs font-bold">
+                  {img.progress}%
+                </span>
+              </div>
+            )}
+            {/* Primary Badge */}
+            {idx === primaryImageIndex && (
+              <div className="absolute top-2 left-2 px-2 py-1 bg-yellow-500 text-white text-xs rounded z-10 flex items-center gap-1">
+                <Star className="w-3 h-3 fill-white" />
+                {t("primary_image")}
+              </div>
+            )}
           </div>
-        )}
+        ))}
       </div>
+      <ConfirmDialog
+        open={!!deleteTarget}
+        title="delete_image"
+        message="delete_image_confirm"
+        confirmText="delete"
+        loading={isImageDeleting}
+        variant="danger"
+        onCancel={() => setDeleteTarget(null)}
+        onConfirm={confirmDelete}
+      />
     </div>
   );
 };

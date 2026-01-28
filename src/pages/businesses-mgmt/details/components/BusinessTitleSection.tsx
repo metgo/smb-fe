@@ -135,7 +135,7 @@ const BusinessTitleSection = ({
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-28">
         {businessStatsConfig.map((item) => {
           const Icon = item.icon;
           const value = isLoading
