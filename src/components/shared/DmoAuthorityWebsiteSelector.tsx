@@ -16,6 +16,7 @@ type Props = {
   setSelectAuthorityId: React.Dispatch<React.SetStateAction<string>>;
   websiteVisibilityIds: IWebsiteVisibilityIds;
   setWebsiteVisibilityIds: (v: any) => void;
+  eventAssociatedWebsites: IAssociatedWebsiteIds[];
 };
 
 export default function DmoAuthorityWebsiteSelector({
@@ -28,6 +29,7 @@ export default function DmoAuthorityWebsiteSelector({
   dmoSectionRef,
   websiteVisibilityIds,
   setWebsiteVisibilityIds,
+  eventAssociatedWebsites,
 }: Props) {
   const { t } = useTranslation("common");
   const { dmosAuthorities, allWebsites } = useCommon();
@@ -74,12 +76,27 @@ export default function DmoAuthorityWebsiteSelector({
   useEffect(() => {
     if (!associatedWebsites.length || !unAssociatedWebsites.length) return;
 
+    const allBlacklistIds = associatedWebsites?.map((w) => w?._id);
+    const allWhitelistIds = unAssociatedWebsites?.map((w) => w?._id);
+
+    const eventAssociatedIds = new Set(
+      eventAssociatedWebsites?.map((w) => w?._id) || [],
+    );
+
+    const selectedBlacklistIds = Array.from(eventAssociatedIds).filter((id) =>
+      allBlacklistIds?.includes(id),
+    );
+
+    const selectedWhitelistIds = Array.from(eventAssociatedIds).filter((id) =>
+      allWhitelistIds?.includes(id),
+    );
+
     setWebsiteVisibilityIds((prev: IWebsiteVisibilityIds) => ({
       ...prev,
-      allBlacklistIds: associatedWebsites.map((w) => w._id),
-      selectedBlacklistIds: associatedWebsites.map((w) => w._id),
-      allWhitelistIds: unAssociatedWebsites.map((w) => w._id),
-      selectedWhitelistIds: [],
+      allBlacklistIds,
+      selectedBlacklistIds,
+      allWhitelistIds,
+      selectedWhitelistIds,
     }));
   }, [associatedWebsites, unAssociatedWebsites]);
 
@@ -147,7 +164,7 @@ export default function DmoAuthorityWebsiteSelector({
           </label>
 
           {/* Individual Websites */}
-          {websites.map((item) => (
+          {websites?.map((item) => (
             <label
               key={item._id}
               className="flex items-center gap-2 cursor-pointer border rounded p-2"

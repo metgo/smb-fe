@@ -95,3 +95,9 @@ interface IWebsiteVisibilityIds {
   allWhitelistIds: string[];
   selectedWhitelistIds: string[];
 }
+
+interface IAssociatedWebsiteIds {
+  _id: string;
+  name: string;
+  url: string;
+}

@@ -47,6 +47,7 @@ interface EventBasicInformationProps {
 
   websiteVisibilityIds: IWebsiteVisibilityIds;
   setWebsiteVisibilityIds: (v: any) => void;
+  eventAssociatedWebsites?: IAssociatedWebsiteIds[];
 }
 
 const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
@@ -74,6 +75,7 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
   errors,
   websiteVisibilityIds,
   setWebsiteVisibilityIds,
+  eventAssociatedWebsites = [],
 }) => {
   const { t, i18n } = useTranslation("events");
   const { textSecondary, inputClasses } = useThemeClasses();
@@ -182,6 +184,7 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
         dmoSectionRef={dmoSectionRef}
         websiteVisibilityIds={websiteVisibilityIds}
         setWebsiteVisibilityIds={setWebsiteVisibilityIds}
+        eventAssociatedWebsites={eventAssociatedWebsites}
       />
 
       {/* Event Name */}

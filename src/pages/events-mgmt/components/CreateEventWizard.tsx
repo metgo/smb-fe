@@ -374,11 +374,11 @@ export default function CreateEventWizard({
   const websiteAccessItemPayload = {
     blacklist: {
       allItems: websiteVisibilityIds.allBlacklistIds,
-      selectedItems: websiteVisibilityIds.allBlacklistIds,
+      selectedItems: websiteVisibilityIds.selectedBlacklistIds,
     },
     whitelist: {
-      allItems: websiteVisibilityIds.allBlacklistIds,
-      selectedItems: websiteVisibilityIds.allBlacklistIds,
+      allItems: websiteVisibilityIds.allWhitelistIds,
+      selectedItems: websiteVisibilityIds.selectedWhitelistIds,
     },
     purpose: "event",
   };
@@ -732,6 +732,7 @@ export default function CreateEventWizard({
             setSubCategoriesId={setSubCategoriesId}
             websiteVisibilityIds={websiteVisibilityIds}
             setWebsiteVisibilityIds={setWebsiteVisibilityIds}
+            eventAssociatedWebsites={editData?.associatedWebsites ?? []}
           />
         )}
         {currentStep === 2 && (
