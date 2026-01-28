@@ -43,19 +43,16 @@ export default function BusinessDetails({
 
   const [searchParams] = useSearchParams();
   const businessSlug = searchParams.get("businessSlug");
-  const businessId = searchParams.get("businessId");
+  const businessId = searchParams.get("businessId") ?? ""; // fallback to empty string
   const { data: business } = useGetbusinessBySlugQuery(
     businessSlug ? { slug: businessSlug } : skipToken,
   );
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [errors, _setErrors] = useState<Record<string, string>>({});
   const [businessLogoImage, setBusinessLogoImage] = useState<IImage | null>(
     null,
   );
   const [galleryImages, setGalleryImages] = useState<TImages>([]);
 
-  const [businessMedia, setBusinessMedia] = useState<IBusinessMedia | null>(
-    null,
-  );
   const [activeTab, setActiveTab] = useState("overview");
   const [_showStatusModal, setShowStatusModal] = useState(false);
   const [showChangeOwnerModal, setShowChangeOwnerModal] = useState(false);

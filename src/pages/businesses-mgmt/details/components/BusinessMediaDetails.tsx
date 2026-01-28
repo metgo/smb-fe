@@ -1,14 +1,5 @@
 import { ConfirmDialog, ImageWithFallback } from "@/components/shared";
-import {
-  Upload,
-  Star,
-  Eye,
-  Trash2,
-  ImageIcon,
-  Plus,
-  X,
-  Trash,
-} from "lucide-react";
+import { Upload, Star, Eye, Trash2 } from "lucide-react";
 interface MediaErrors {
   logo?: string;
 }
@@ -42,19 +33,12 @@ interface BusinessMediaDetailsProps {
 const BusinessMediaDetails: React.FC<BusinessMediaDetailsProps> = ({
   t,
   theme,
-  errors,
-  uploadLogoImage,
+
   logoImage,
   handleLogoImageSelect,
-  deleteTargetLogo,
-  setDeleteTargetLogo,
-  isLogoImageDeleting,
-  handleDeleteLogoImage,
-  confirmDeleteLogo,
 
   images,
   primaryImageIndex,
-  setPrimaryImage,
   handleDeleteImage,
   deleteTarget,
   setDeleteTarget,
@@ -62,10 +46,6 @@ const BusinessMediaDetails: React.FC<BusinessMediaDetailsProps> = ({
   isImageDeleting,
   handleImageUpload,
 }) => {
-  {
-    console.log("logoImage", logoImage);
-  }
-
   return (
     <div className="space-y-6">
       {/* Logo */}
