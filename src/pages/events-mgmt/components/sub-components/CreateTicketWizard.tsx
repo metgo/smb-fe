@@ -1,6 +1,6 @@
 import clsx from "clsx";
 import { toast } from "sonner";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Plus, Trash2, Upload, X } from "lucide-react";
 import { formatDate } from "@/helpers/formatter";
@@ -65,6 +65,7 @@ const CreateTicketWizard = ({
     markedPrice?: string;
     sellingPrice?: string;
   }>({ ticketDays: [] });
+  const [ticketImage, setTicketImage] = useState<IImage | null>(null);
 
   const isPaidOrVip = ["paid", "vip"].includes(
     editingTicket?.type?.toLowerCase() || "",
@@ -80,20 +81,21 @@ const CreateTicketWizard = ({
     isImageDeleting,
     handleDeleteImage,
   } = useSingleImageUpload({
-    initialImage: editingTicket?.imageUrl,
-    onChange: () => {
-      // setEditingTicket((prev: ITicketPayload) => ({
-      //   ...prev,
-      //   imageUrl: img?.image || "",
-      // }));
-    },
+    initialImage: ticketImage?.image,
+    onChange: () => setTicketImage,
   });
 
   const [createTicket, { isLoading: isSaving }] = useCreateTicketMutation();
   const [updateTicket, { isLoading: isUpdating }] = useUpdateTicketMutation();
 
-  const [isSaved, setIsSaved] = useState(false);
-  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  // const [isSaved, setIsSaved] = useState(false);
+  // const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+
+  useEffect(() => {
+    if (editingTicket?.imageUrl) {
+      setTicketImage({ image: editingTicket?.imageUrl });
+    }
+  }, [editingTicket]);
 
   // ─── VALIDATION ─────────────────────────────────────────────────
   const validateTicket = (): boolean => {
@@ -234,7 +236,7 @@ const CreateTicketWizard = ({
         startTime: item.startTime,
         endTime: item.endTime,
       })),
-      images: [{ image: uploadImageUrl || editingTicket.imageUrl || "" }],
+      images: [{ image: uploadImageUrl || ticketImage?.image }],
       status: "active",
       type: editingTicket.type.toUpperCase(),
     };
@@ -291,14 +293,9 @@ const CreateTicketWizard = ({
   };
 
   function handleClose() {
-    if (!isSaved) {
-      setIsConfirmOpen(true);
-      return;
-    }
     setShowTicketModal(false);
     setEditingTicket(null);
-    setIsConfirmOpen(false);
-    setIsSaved(true);
+    setTicketImage(null);
   }
 
   return (
@@ -769,7 +766,7 @@ const CreateTicketWizard = ({
         onCancel={() => setDeleteTarget(null)}
         onConfirm={confirmDelete}
       />
-      <ConfirmDialog
+      {/* <ConfirmDialog
         open={isConfirmOpen}
         title="unsaved_changes"
         message="unsaved_changes_confirm"
@@ -777,7 +774,7 @@ const CreateTicketWizard = ({
         variant="warning"
         onCancel={() => setIsSaved(false)}
         onConfirm={handleClose}
-      />
+      /> */}
     </ModalWrapper>
   );
 };

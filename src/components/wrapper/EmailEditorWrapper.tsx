@@ -18,6 +18,7 @@ import {
   RemoveFormat,
 } from "ckeditor5";
 import "ckeditor5/ckeditor5.css";
+import { formatToBackendTemplate } from "@/helpers/formatter";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Constants

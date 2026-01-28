@@ -56,3 +56,16 @@ export function formatToBackendTemplate(html: string) {
     return `*|${formatted}|*`;
   });
 }
+
+export function formatFromBackendTemplate(html: string) {
+  return html.replace(/\*\|\s*([^|]+)\s*\|\*/g, (_, variable) => {
+    // Convert FIRST_NAME → First Name
+    const formatted = variable
+      .toLowerCase()
+      .split("_")
+      .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+
+    return `{{ ${formatted} }}`;
+  });
+}

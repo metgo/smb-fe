@@ -13,7 +13,7 @@ import {
   Plus,
   PenBox,
 } from "lucide-react";
-import { Activity, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import CreateNotificationWizard from "./CreateNotificationWizard";
 import { ConfirmDialog } from "@/components/shared";
 
@@ -50,14 +50,19 @@ const NotificationsTimeline: React.FC<NotificationsTimelineProps> = ({
   address,
   capacity,
 }) => {
+  console.log("🚀 ~ NotificationsTimeline ~ notifications:", notifications);
   const { t } = useTranslation("events");
   const { textPrimary, textTertiary } = useThemeClasses();
   const { isRTL, theme } = useAppSelector((state) => state.settings);
 
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [notificationToDelete, setNotificationToDelete] = useState<
-    string | null
+    number | null
   >(null);
+  console.log(
+    "🚀 ~ NotificationsTimeline ~ notificationToDelete:",
+    notificationToDelete,
+  );
 
   useEffect(() => {
     markDirty(5);
@@ -168,7 +173,7 @@ const NotificationsTimeline: React.FC<NotificationsTimelineProps> = ({
                       onClick={() => {
                         const duplicated: NotificationData = {
                           ...notification,
-                          _id: Date.now().toString(),
+                          index: notifications.length,
                         };
                         setNotifications((prev) => [...prev, duplicated]);
                       }}
@@ -178,7 +183,7 @@ const NotificationsTimeline: React.FC<NotificationsTimelineProps> = ({
                     </button>
                     <button
                       onClick={() => {
-                        setNotificationToDelete(notification._id);
+                        setNotificationToDelete(notification?.index);
                         setIsConfirmOpen(true);
                       }}
                       className="p-2 rounded-lg text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer"
@@ -201,7 +206,7 @@ const NotificationsTimeline: React.FC<NotificationsTimelineProps> = ({
           <button
             onClick={() => {
               setEditingNotification({
-                _id: Date.now().toString(),
+                index: notifications.length,
                 hoursBeforeEvent: 24,
                 channels: { email: true, sms: false, whatsapp: false },
                 language: eventLanguage,
@@ -254,10 +259,10 @@ const NotificationsTimeline: React.FC<NotificationsTimelineProps> = ({
           setNotificationToDelete(null);
         }}
         onConfirm={async () => {
-          if (!notificationToDelete) return;
-
+          if (notificationToDelete === null) return;
+          console.log("notivications", notifications);
           setNotifications((prev) =>
-            prev.filter((n) => n._id !== notificationToDelete),
+            prev.filter((n) => n.index !== notificationToDelete),
           );
 
           setIsConfirmOpen(false);

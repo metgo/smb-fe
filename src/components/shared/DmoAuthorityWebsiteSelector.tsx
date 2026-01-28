@@ -6,6 +6,7 @@ import { useCommon } from "@/hooks/useCommon";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useGetAllWebsitesQuery } from "@/store/api/masterDataApi";
 import { FormFieldWrapper, SelectField } from "@/components/form-fields";
+import { skipToken } from "@reduxjs/toolkit/query";
 
 type Props = {
   selectedDmoId: string;
@@ -27,13 +28,17 @@ export default function DmoAuthorityWebsiteSelector({
   dmoSectionRef,
 }: Props) {
   const { t } = useTranslation("common");
-  const { theme, selectInputClasses } = useThemeClasses();
   const { dmosAuthorities } = useCommon();
+  const { theme, selectInputClasses } = useThemeClasses();
 
-  const { data: allWebsites } = useGetAllWebsitesQuery({
-    authorityId: selectedAuthorityId,
-    dmoId: selectedDmoId,
-  });
+  const { data: allWebsites } = useGetAllWebsitesQuery(
+    selectedAuthorityId || selectedDmoId
+      ? {
+          authorityId: selectedAuthorityId,
+          dmoId: selectedDmoId,
+        }
+      : skipToken,
+  );
 
   const [websiteVisibilityIds, setWebsiteVisibilityIds] = useState({
     allBlacklistIds: [] as string[],
@@ -54,6 +59,8 @@ export default function DmoAuthorityWebsiteSelector({
     setWebsiteVisibilityIds((prev) => ({
       ...prev,
       allBlacklistIds: allWebsites.associatedWebsites?.map((w) => w._id) || [],
+      selectedBlacklistIds:
+        allWebsites.associatedWebsites?.map((w) => w._id) || [],
       allWhitelistIds:
         allWebsites.unAssociatedWebsites?.map((w) => w._id) || [],
     }));
@@ -100,7 +107,7 @@ export default function DmoAuthorityWebsiteSelector({
     allKey: "allBlacklistIds" | "allWhitelistIds",
     selectedKey: "selectedBlacklistIds" | "selectedWhitelistIds",
   ) => {
-    if (!websites || websites.length === 0) return null;
+    if (!websites || websites?.length === 0) return null;
 
     const allSelected =
       websiteVisibilityIds[selectedKey].length ===
@@ -110,7 +117,7 @@ export default function DmoAuthorityWebsiteSelector({
       <div>
         <label className="block mb-1 font-medium">{title}</label>
 
-        <div className="grid grid-cols-2 gap-4 mt-2">
+        <div className="grid grid-cols-4 gap-2 mt-2">
           {/* Select All */}
           <label className="flex items-center gap-2 cursor-pointer border rounded p-2 text-gray-600">
             <input
@@ -205,10 +212,10 @@ export default function DmoAuthorityWebsiteSelector({
         <div className="space-y-4">
           <label
             className={`block text-sm mb-2 ${
-              theme === "dark" ? "text-gray-300" : "text-gray-700"
+              theme === "dark" ? "text-gray-300" : "text-gray-800"
             }`}
           >
-            {t("website_visibility")} *
+            {t("website_visibility")}
           </label>
 
           {/* Associated → Blacklist */}

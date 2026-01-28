@@ -287,8 +287,9 @@ export default function CreateEventWizard({
 
       // Message shedule nofitications
       const notification = editData?.scheduledNotificationId?.map(
-        (item: any) => ({
-          id: item?._id,
+        (item: any, index: number) => ({
+          _id: item?._id,
+          index,
           channels: {
             email: item?.channels?.includes("EMAIL"),
             sms: item?.channels?.includes("SMS"),
@@ -409,23 +410,39 @@ export default function CreateEventWizard({
     },
     customQuestions: customQuestions,
   };
+
   const eventMsgSchedulePayload = {
-    scheduledNotifications: notifications?.map((item) => ({
-      sendHoursBefore: item.hoursBeforeEvent,
-      channels: [
-        item?.channels?.email && "EMAIL",
-        item?.channels?.sms && "SMS",
-        item?.channels?.whatsapp && "WHATSAPP",
-      ].filter(Boolean) as ("EMAIL" | "SMS" | "WHATSAPP")[],
-      language: item.language,
-      template: item.template,
-      status: item.enabled ? "ACTIVE" : "INACTIVE",
-      customTemplate: {
-        subject: item.subject,
-        body: formatToBackendTemplate(item.message),
-      },
-    })),
+    scheduledNotifications: notifications.map((item) => {
+      const base = {
+        ...(!item.index ? { _id: item._id } : {}),
+
+        sendHoursBefore: item.hoursBeforeEvent,
+
+        channels: [
+          item.channels?.email && "EMAIL",
+          item.channels?.sms && "SMS",
+          item.channels?.whatsapp && "WHATSAPP",
+        ].filter(Boolean) as ("EMAIL" | "SMS" | "WHATSAPP")[],
+
+        language: item.language,
+        template: item.template,
+        status: item.enabled ? "ACTIVE" : "INACTIVE",
+      };
+
+      if (item.template === "custom") {
+        return {
+          ...base,
+          customTemplate: {
+            subject: item.subject,
+            body: formatToBackendTemplate(item.message),
+          },
+        };
+      } else {
+        return base;
+      }
+    }),
   };
+
   const eventMediaPayload = {
     images: eventImages,
   };

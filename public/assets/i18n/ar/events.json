@@ -57,9 +57,16 @@
   "whatsapp": "واتساب",
   "language": "اللغة",
   "template": "القالب",
+  "custom": "مخصص",
   "template_24h": "تذكير قبل 24 ساعة",
   "template_same_day": "تذكير في نفس اليوم",
   "template_starting_soon": "الفعالية ستبدأ قريبًا",
+
+  "english": "الإنجليزية",
+  "hebrew": "العبرية",
+  "arebic": "العربية",
+  "active": "نشط",
+  "disabled": "معطل",
 
   "subject": "الموضوع (البريد الإلكتروني فقط)",
   "message_content": "محتوى الرسالة",

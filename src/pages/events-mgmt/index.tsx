@@ -69,7 +69,6 @@ export default function EventsMgmtPage() {
   const { data: eventStatsData, isLoading: _isEventStatsFetching } =
     useGetEventsStatsQuery({});
   const { data: websites } = useGetAllWebsitesQuery();
-  console.log("🚀 ~ EventsMgmtPage ~ websites:", websites);
 
   // Table and Modal State
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
