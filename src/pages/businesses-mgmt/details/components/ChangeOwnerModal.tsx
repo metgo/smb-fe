@@ -35,8 +35,7 @@ export default function ChangeOwnerModal({
   const [isChecking, setIsChecking] = useState(false);
   const [userFound, setUserFound] = useState(false);
   const [foundUser, setFoundUser] = useState<any>(null);
-  const [emailCheck, _setEmailCheck] = useState<boolean>(false);
-  console.log("🚀 ~ ChangeOwnerModal ~ emailCheck:", emailCheck);
+  // const [emailCheck, _setEmailCheck] = useState<boolean>(false);
   const [debouncedEmail, setDebouncedEmail] = useState("");
 
   useEffect(() => {

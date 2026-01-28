@@ -39,7 +39,7 @@ const BusinessMedia: FC<BusinessMediaProps> = ({
   t,
   theme,
   errors,
-  // business,
+
   logoImage,
   handleLogoImageSelect,
   deleteTargetLogo,
@@ -58,8 +58,6 @@ const BusinessMedia: FC<BusinessMediaProps> = ({
   isImageDeleting,
   handleImageUpload,
 }) => {
-  console.log("images0", images);
-
   return (
     <div className="space-y-6">
       {/* Logo Upload */}
@@ -76,7 +74,7 @@ const BusinessMedia: FC<BusinessMediaProps> = ({
           {logoImage?.previewUrl ? (
             <div className="relative w-32 h-32 rounded-full border-2 border-gray-300">
               <div
-                className=""
+                className="w-full h-full"
                 onClick={() =>
                   document.getElementById("logo-image-upload")?.click()
                 }

@@ -48,7 +48,7 @@ const EventMedia: React.FC<EventMediaProps> = ({
       imagesRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   }, [images, imagesRef]);
-  console.log("images", images);
+
   /* ---------------- JSX  ---------------- */
   return (
     <>

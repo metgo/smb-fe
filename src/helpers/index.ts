@@ -86,3 +86,13 @@ export function extractEventDates(
 
   return formatDateRange(startStr, endStr, true);
 }
+
+export const parseAddress = (address: any) => {
+  const parts = address.split(",");
+
+  return {
+    location: parts[0]?.trim(), // David HaMelech St 35
+    city: parts[1]?.trim(), // Be'er Sheva
+    country: parts[2]?.trim(), // Israel
+  };
+};

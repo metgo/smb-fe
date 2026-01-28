@@ -1,9 +1,20 @@
-import { useGetDmosQuery } from "@/store/api/masterDataApi";
+import {
+  useGetAccessibilityQuery,
+  useGetAllSocialMediaQuery,
+  useGetCategoriesQuery,
+  useGetDmosQuery,
+  useGetGroupTypesQuery,
+} from "@/store/api/masterDataApi";
 import { useTranslation } from "react-i18next";
 
 export function useCommon() {
-  const { t } = useTranslation("common");
+  const { t, i18n } = useTranslation("common");
+  const locale = i18n.language as Language;
   const { data } = useGetDmosQuery();
+  const { data: primaryCategories } = useGetCategoriesQuery({ locale });
+  const { data: accessibility } = useGetAccessibilityQuery({ locale });
+  const { data: groupTypes } = useGetGroupTypesQuery({ locale });
+  const { data: socialMedia } = useGetAllSocialMediaQuery();
 
   const dmosAuthorities: IDmo[] = data?.data;
 
@@ -42,5 +53,9 @@ export function useCommon() {
     languages,
     authorities,
     dmosAuthorities,
+    primaryCategories,
+    accessibility,
+    groupTypes,
+    socialMedia,
   };
 }

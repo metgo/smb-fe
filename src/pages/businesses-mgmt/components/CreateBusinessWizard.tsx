@@ -41,6 +41,7 @@ import { useBusinessDraftSaver } from "../hooks/useBusinessDraftSaver";
 import { useGetbusinessBySlugQuery } from "@/store/api/businessQueryApi";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { useSearchParams } from "react-router-dom";
+import { parseAddress } from "@/helpers";
 type View = "list" | "details" | "create" | "edit" | undefined;
 
 interface CreateBusinessWizardProps {
@@ -56,10 +57,17 @@ export default function CreateBusinessWizard({
   const { t } = useTranslation("businesses");
   const { theme, isRTL } = useAppSelector((state) => state.settings);
   const { textPrimary, textTertiary } = useThemeClasses();
+  const [searchParams] = useSearchParams();
+
+  const businessSlug = searchParams.get("businessSlug");
+
+  const { data: business } = useGetbusinessBySlugQuery(
+    businessSlug ? { slug: businessSlug } : skipToken,
+  );
+
   const [isPublishing, setIsPublishing] = useState(false);
   const [isPublishBtnClicked, setIsPublishBtnClicked] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
-  // const [editData, _setEditData] = useState<any>();
   const [lastSaved, _setLastSaved] = useState<Date | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -72,12 +80,14 @@ export default function CreateBusinessWizard({
   );
   const [geo, setGeo] = useState<Geo>({ lat: "", lng: "" });
   const [address, setAddress] = useState("");
-  const [searchParams] = useSearchParams();
 
-  const businessSlug = searchParams.get("businessSlug");
-  const { data: business } = useGetbusinessBySlugQuery(
-    businessSlug ? { slug: businessSlug } : skipToken,
+  // Business Media States
+  const [galleryImages, setGalleryImages] = useState<TImages>([]);
+  const [logoGcsUrl, setLogoGcsUrl] = useState<string>("");
+  const [businessLogoImage, setBusinessLogoImage] = useState<IImage | null>(
+    null,
   );
+
   // Form State
   const [formData, setFormData] = useState<any>({
     // Step 1
@@ -138,7 +148,6 @@ export default function CreateBusinessWizard({
     socialMedia: [],
   });
 
-  console.log("formdata iages", formData.images);
   const {
     images,
     imagesRef,
@@ -153,12 +162,8 @@ export default function CreateBusinessWizard({
     isImageDeleting,
     handleDeleteImage,
   } = useImagesUpload({
-    initialImages: formData.images,
-    onChange: (images) =>
-      setFormData((prev: any) => ({
-        ...prev,
-        images,
-      })),
+    initialImages: galleryImages,
+    onChange: setGalleryImages,
   });
 
   const {
@@ -171,27 +176,13 @@ export default function CreateBusinessWizard({
     isImageDeleting: isLogoImageDeleting,
     handleDeleteImage: handleDeleteLogoImage,
   } = useSingleImageUpload({
-    initialImage: formData?.logo,
-    onChange: (img) => {
-      setFormData((prev: any) => ({
-        ...prev,
-        logo: img,
-      }));
-    },
+    initialImage: businessLogoImage?.image,
+    onChange: setBusinessLogoImage,
   });
+
   const [updateBusiness, { isLoading: isSaving }] = useUpdateBusinessMutation();
   const [initBusinessCreate, { isLoading: isCreating }] =
     useInitBusinessCreateMutation();
-
-  const parseAddress = (address: any) => {
-    const parts = address.split(",");
-
-    return {
-      location: parts[0]?.trim(), // David HaMelech St 35
-      city: parts[1]?.trim(), // Be'er Sheva
-      country: parts[2]?.trim(), // Israel
-    };
-  };
 
   const addr = parseAddress(address);
 
@@ -200,23 +191,27 @@ export default function CreateBusinessWizard({
     if (currentView === "edit") {
       setFormData({
         authority: business?.authorityId?._id || "",
-        nameEn: business.name || "",
-        nameHe: business.nameHe || "",
-        nameAr: business.nameAr || "",
-        shortDescriptionEn: business.shortDescription || "",
+        nameEn: business?.name || "",
+        nameHe: business?.nameHe || "",
+        nameAr: business?.nameAr || "",
+        shortDescriptionEn: business?.shortDescription || "",
         shortDescriptionHe: "",
         shortDescriptionAr: "",
-        fullDescriptionEn: business.description || "",
+        fullDescriptionEn: business?.description || "",
         fullDescriptionHe: "",
         fullDescriptionAr: "",
-        internalNotes: business.internalNotes || "",
-        slug: business.slug || "",
+        internalNotes: business?.internalNotes || "",
+        slug: business?.slug || "",
         logo: business?.logo?.image,
         images: business?.images,
       });
       setSelectedDmoId(business?.dmoId?._id || "");
+
+      setGalleryImages(business?.images);
+      setBusinessLogoImage({ image: business?.logo?.image });
     }
   }, [business, currentView]);
+
   const steps = [
     { number: 1, title: t("step_basic_info"), icon: FileText },
     { number: 2, title: t("step_contact_ownership"), icon: Users },
@@ -265,8 +260,8 @@ export default function CreateBusinessWizard({
     groupTypesId: selectedGroupTypesId,
     // serviceType: formData.serviceType,
     //  step 5
-    logo: formData.logo,
-    images: formData.images,
+    logo: { image: logoGcsUrl },
+    images: galleryImages,
     //  step 6
     openingHrs: formData.operatingHours,
     // step 7
@@ -324,7 +319,8 @@ export default function CreateBusinessWizard({
   const handleNext = async () => {
     if (!validateStep(currentStep) && isPublishBtnClicked) return;
     if (currentStep === 5) {
-      await uploadLogoImage();
+      const logoUrl = await uploadLogoImage();
+      setLogoGcsUrl(logoUrl);
       await uploadAll();
     }
     setCurrentStep((prev) => prev + 1);
@@ -335,9 +331,10 @@ export default function CreateBusinessWizard({
   };
 
   const handleSaveDraft = async () => {
-    await uploadLogoImage();
+    const logoUrl = await uploadLogoImage();
+    setLogoGcsUrl(logoUrl);
     await uploadAll();
-    saveDraft(false);
+    await saveDraft(false);
   };
 
   const handlePublish = async () => {
@@ -359,7 +356,7 @@ export default function CreateBusinessWizard({
     }
 
     setIsPublishing(true);
-    saveDraft(true);
+    await saveDraft(true);
     setIsPublishing(false);
     toast.success(t("business created succesfully"));
     onClose();

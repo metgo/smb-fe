@@ -1,17 +1,8 @@
 import { useEffect, type FC } from "react";
 import { X } from "lucide-react";
-import {
-  useGetAccessibilityQuery,
-  useGetCategoriesQuery,
-  useGetGroupTypesQuery,
-} from "@/store/api/masterDataApi";
-import { useTranslation } from "react-i18next";
 import { SelectableChips } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-
-/* ---------------- Types ---------------- */
-
-type ThemeMode = "dark" | "light";
+import { useCommon } from "@/hooks/useCommon";
 
 interface BusinessAttributesFormData {
   primaryCategory: string;
@@ -28,7 +19,7 @@ interface FormErrors {
 
 interface BusinessAttributesProps {
   t: (key: string) => string;
-  theme: ThemeMode;
+  theme: Theme;
   formData: BusinessAttributesFormData;
   setFormData: (data: BusinessAttributesFormData) => void;
   errors: FormErrors;
@@ -39,32 +30,6 @@ interface BusinessAttributesProps {
   setAccessiblitiesId: (v: string[]) => void;
   currentView: View;
 }
-
-/* ---------------- Constants ---------------- */
-
-// const PRIMARY_CATEGORIES = [
-//   { value: "food", label: "Food & Dining" },
-//   { value: "accommodation", label: "Accommodation" },
-//   { value: "tourism", label: "Tourism" },
-//   { value: "shopping", label: "Shopping" },
-//   { value: "culture", label: "Culture" },
-// ];
-
-// const ACCESSIBILITY_OPTIONS = [
-//   "Wheelchair Accessible",
-//   "Accessible Parking",
-//   "Accessible Restrooms",
-//   "Sign Language",
-// ];
-
-// const GROUP_TYPES = [
-//   "Families",
-//   "Couples",
-//   "Groups",
-//   "Individuals",
-//   "Seniors",
-//   "Corporate",
-// ];
 
 /* ---------------- Component ---------------- */
 
@@ -81,15 +46,8 @@ const BusinessAttributes: FC<BusinessAttributesProps> = ({
   setAccessiblitiesId,
   currentView,
 }) => {
-  const { i18n } = useTranslation("businesses");
-  const locale = i18n.language as Language;
   const { textSecondary } = useThemeClasses();
-  const { data: accessibility, isLoading: isLoadingAccessibility } =
-    useGetAccessibilityQuery({ locale });
-  const { data: groupTypes, isLoading: isLoadingGroupTypes } =
-    useGetGroupTypesQuery({ locale });
-
-  const { data: primaryCategories } = useGetCategoriesQuery({ locale });
+  const { primaryCategories, accessibility, groupTypes } = useCommon();
 
   const handleGroupTypeSelect = (itemId: string) => {
     const exists = selectedGroupTypesId?.some((id) => id === itemId);
@@ -131,7 +89,7 @@ const BusinessAttributes: FC<BusinessAttributesProps> = ({
     if (Array.isArray(business.accessibilitiesId)) {
       setAccessiblitiesId(business.accessibilitiesId.map((a: any) => a._id));
     }
-  }, [business, formData, setFormData, setAccessiblitiesId, setGroupTypesId]);
+  }, [business, setFormData, setAccessiblitiesId, setGroupTypesId]);
 
   return (
     <div className="space-y-6">
@@ -166,50 +124,21 @@ const BusinessAttributes: FC<BusinessAttributesProps> = ({
           <p className="text-red-500 text-sm mt-1">{errors.primaryCategory}</p>
         )}
       </div>
-      {isLoadingAccessibility ? (
-        <div
-          style={{
-            textAlign: "center",
-            fontSize: "16px",
-            color: "green",
-            padding: "10px 0",
-            fontWeight: "500",
-            fontFamily: "Arial, sans-serif",
-          }}
-        >
-          Loading Accessibilities
-        </div>
-      ) : (
-        <SelectableChips
-          label="Accessiblities"
-          items={accessibility?.datas?.data}
-          selectedIds={selectedAccessiblitiesId}
-          onSelect={handleAccessibilitySelect}
-          textSecondary={textSecondary}
-        />
-      )}
-      {isLoadingGroupTypes ? (
-        <div
-          style={{
-            textAlign: "center",
-            fontSize: "16px",
-            color: "green",
-            padding: "10px 0",
-            fontWeight: "500",
-            fontFamily: "Arial, sans-serif",
-          }}
-        >
-          Loading Group Types
-        </div>
-      ) : (
-        <SelectableChips
-          label="Group Types"
-          items={groupTypes?.datas?.data}
-          selectedIds={selectedGroupTypesId}
-          onSelect={handleGroupTypeSelect}
-          textSecondary={textSecondary}
-        />
-      )}
+
+      <SelectableChips
+        label="Accessiblities"
+        items={accessibility?.datas?.data}
+        selectedIds={selectedAccessiblitiesId}
+        onSelect={handleAccessibilitySelect}
+        textSecondary={textSecondary}
+      />
+      <SelectableChips
+        label="Group Types"
+        items={groupTypes?.datas?.data}
+        selectedIds={selectedGroupTypesId}
+        onSelect={handleGroupTypeSelect}
+        textSecondary={textSecondary}
+      />
 
       {/* Tags */}
       <div>
