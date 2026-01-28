@@ -36,7 +36,7 @@ export default function EventsMgmtPage() {
   // Filters
   const [showFilters, setShowFilters] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedWebsites, setSelectedWebsites] = useState<Website[]>([]);
+  const [selectedWebsites, setSelectedWebsites] = useState<IWebsite[]>([]);
   const [eventTypeFilter, setEventTypeFilter] = useState<
     "all" | "free" | "paid"
   >("all");
@@ -69,6 +69,7 @@ export default function EventsMgmtPage() {
   const { data: eventStatsData, isLoading: _isEventStatsFetching } =
     useGetEventsStatsQuery({});
   const { data: websites } = useGetAllWebsitesQuery();
+  console.log("🚀 ~ EventsMgmtPage ~ websites:", websites);
 
   // Table and Modal State
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
@@ -297,7 +298,7 @@ export default function EventsMgmtPage() {
                   className={` rounded-lg  overflow-y-auto flex items-center gap-4`}
                 >
                   {websites &&
-                    websites?.map((website) => (
+                    websites?.associatedWebsites?.map((website) => (
                       <label
                         key={website?._id}
                         className="flex items-center gap-2 mb-2 last:mb-0 cursor-pointer"
