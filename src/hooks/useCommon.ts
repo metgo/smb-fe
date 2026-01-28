@@ -1,4 +1,7 @@
-import { useGetDmosQuery } from "@/store/api/masterDataApi";
+import {
+  useGetAllWebsitesQuery,
+  useGetDmosQuery,
+} from "@/store/api/masterDataApi";
 import { useTranslation } from "react-i18next";
 
 export function useCommon() {
@@ -6,6 +9,7 @@ export function useCommon() {
   const { data } = useGetDmosQuery();
 
   const dmosAuthorities: IDmo[] = data?.data;
+  const { data: allWebsites } = useGetAllWebsitesQuery();
 
   const authorities = [
     { value: "all", label: t("all_authorities") },
@@ -42,5 +46,6 @@ export function useCommon() {
     languages,
     authorities,
     dmosAuthorities,
+    allWebsites,
   };
 }

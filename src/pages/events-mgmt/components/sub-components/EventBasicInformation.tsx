@@ -1,19 +1,20 @@
 import React, { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 
-import { SelectableChips } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import {
+  DmoAuthorityWebsiteSelector,
+  SelectableChips,
+} from "@/components/shared";
 import {
   useGetAccessibilityQuery,
   useGetGroupTypesQuery,
   useGetSubCategoriesQuery,
 } from "@/store/api/masterDataApi";
-import { useCommon } from "@/hooks/useCommon";
 import {
   FormFieldWrapper,
   InputField,
   RadioGroupField,
-  SelectField,
   TextareaField,
 } from "@/components/form-fields";
 import { categoryIds } from "@/lib/utils";
@@ -43,6 +44,10 @@ interface EventBasicInformationProps {
   selectedAccessiblitiesId: string[];
   setAccessiblitiesId: (v: string[]) => void;
   errors: Record<string, string>;
+
+  websiteVisibilityIds: IWebsiteVisibilityIds;
+  setWebsiteVisibilityIds: (v: any) => void;
+  eventAssociatedWebsites?: IAssociatedWebsiteIds[];
 }
 
 const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
@@ -68,10 +73,12 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
   selectedAccessiblitiesId,
   setAccessiblitiesId,
   errors,
+  websiteVisibilityIds,
+  setWebsiteVisibilityIds,
+  eventAssociatedWebsites = [],
 }) => {
   const { t, i18n } = useTranslation("events");
-  const { dmosAuthorities } = useCommon();
-  const { textSecondary, inputClasses, selectInputClasses } = useThemeClasses();
+  const { textSecondary, inputClasses } = useThemeClasses();
   const locale = i18n.language as Language;
 
   const { data: subCategories } = useGetSubCategoriesQuery({
@@ -141,10 +148,6 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
     markDirty,
   ]);
 
-  const selectedDmos = dmosAuthorities?.find(
-    (item) => item?._id === selectedDmoId,
-  );
-
   const handleSubcategorySelect = (itemId: string) => {
     setSubCategoriesId(
       selectedSubCategoriesId.includes(itemId)
@@ -171,55 +174,18 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
 
   return (
     <div className="space-y-6 max-w-3xl mx-auto">
-      {/* DMO + Authority */}
-      <div className="flex flex-col sm:flex-row items-start justify-between gap-4">
-        <div className="flex-1 w-full" ref={dmoSectionRef}>
-          <FormFieldWrapper
-            required
-            label={t("select_dmo")}
-            error={errors.dmoId}
-          >
-            <SelectField
-              value={selectedDmoId}
-              onChange={(v) => {
-                setSelectDmoId(v);
-                setSelectAuthorityId("");
-              }}
-              placeholder={t("select_dmo")}
-              options={
-                dmosAuthorities?.map((d) => ({
-                  label: d.name,
-                  value: d._id,
-                })) ?? []
-              }
-              error={errors.dmoId}
-              selectInputClasses={selectInputClasses}
-            />
-          </FormFieldWrapper>
-        </div>
-
-        <div className="flex-1 w-full" ref={authoritySectionRef}>
-          <FormFieldWrapper
-            required
-            label={t("select_authority")}
-            error={errors.authorityId}
-          >
-            <SelectField
-              value={selectedAuthorityId}
-              onChange={setSelectAuthorityId}
-              placeholder={t("select_authority")}
-              options={
-                selectedDmos?.authorities?.map((a) => ({
-                  label: a.name,
-                  value: a._id,
-                })) ?? []
-              }
-              error={errors.authorityId}
-              selectInputClasses={selectInputClasses}
-            />
-          </FormFieldWrapper>
-        </div>
-      </div>
+      <DmoAuthorityWebsiteSelector
+        errors={errors}
+        selectedDmoId={selectedDmoId}
+        setSelectDmoId={setSelectDmoId}
+        selectedAuthorityId={selectedAuthorityId}
+        setSelectAuthorityId={setSelectAuthorityId}
+        authoritySectionRef={authoritySectionRef}
+        dmoSectionRef={dmoSectionRef}
+        websiteVisibilityIds={websiteVisibilityIds}
+        setWebsiteVisibilityIds={setWebsiteVisibilityIds}
+        eventAssociatedWebsites={eventAssociatedWebsites}
+      />
 
       {/* Event Name */}
       <div ref={nameSectionRef}>

@@ -61,9 +61,16 @@
   "whatsapp": "וואטסאפ",
   "language": "שפה",
   "template": "תבנית",
+  "custom": "מותאם אישית",
   "template_24h": "תזכורת 24 שעות לפני",
   "template_same_day": "תזכורת באותו היום",
   "template_starting_soon": "האירוע מתחיל בקרוב",
+
+  "english": "אנגלית",
+  "hebrew": "עברית",
+  "arebic": "ערבית",
+  "active": "פעיל",
+  "disabled": "מושבת",
 
   "subject": "נושא (אימייל בלבד)",
   "message_content": "תוכן ההודעה",

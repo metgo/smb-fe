@@ -41,6 +41,7 @@ export const endpoints = {
   mediaFileDelete: "/media",
 
   websites: "/websites",
+  websiteAccessItem: "/websites/access-items",
 
   googleMap: "https://maps.googleapis.com/maps/api/js",
   googlePlaceAutoComplete: "https://places.googleapis.com/v1/places",
