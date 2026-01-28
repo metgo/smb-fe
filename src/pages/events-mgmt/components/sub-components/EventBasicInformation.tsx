@@ -44,6 +44,9 @@ interface EventBasicInformationProps {
   selectedAccessiblitiesId: string[];
   setAccessiblitiesId: (v: string[]) => void;
   errors: Record<string, string>;
+
+  websiteVisibilityIds: IWebsiteVisibilityIds;
+  setWebsiteVisibilityIds: (v: any) => void;
 }
 
 const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
@@ -69,6 +72,8 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
   selectedAccessiblitiesId,
   setAccessiblitiesId,
   errors,
+  websiteVisibilityIds,
+  setWebsiteVisibilityIds,
 }) => {
   const { t, i18n } = useTranslation("events");
   const { textSecondary, inputClasses } = useThemeClasses();
@@ -175,6 +180,8 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
         setSelectAuthorityId={setSelectAuthorityId}
         authoritySectionRef={authoritySectionRef}
         dmoSectionRef={dmoSectionRef}
+        websiteVisibilityIds={websiteVisibilityIds}
+        setWebsiteVisibilityIds={setWebsiteVisibilityIds}
       />
 
       {/* Event Name */}

@@ -1,12 +1,10 @@
 import { Globe } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useCallback, useMemo } from "react";
 
 import { useCommon } from "@/hooks/useCommon";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { useGetAllWebsitesQuery } from "@/store/api/masterDataApi";
 import { FormFieldWrapper, SelectField } from "@/components/form-fields";
-import { skipToken } from "@reduxjs/toolkit/query";
 
 type Props = {
   selectedDmoId: string;
@@ -16,6 +14,8 @@ type Props = {
   authoritySectionRef: React.RefObject<HTMLDivElement | null>;
   setSelectDmoId: React.Dispatch<React.SetStateAction<string>>;
   setSelectAuthorityId: React.Dispatch<React.SetStateAction<string>>;
+  websiteVisibilityIds: IWebsiteVisibilityIds;
+  setWebsiteVisibilityIds: (v: any) => void;
 };
 
 export default function DmoAuthorityWebsiteSelector({
@@ -26,59 +26,76 @@ export default function DmoAuthorityWebsiteSelector({
   setSelectAuthorityId,
   authoritySectionRef,
   dmoSectionRef,
+  websiteVisibilityIds,
+  setWebsiteVisibilityIds,
 }: Props) {
   const { t } = useTranslation("common");
-  const { dmosAuthorities } = useCommon();
+  const { dmosAuthorities, allWebsites } = useCommon();
   const { theme, selectInputClasses } = useThemeClasses();
-
-  const { data: allWebsites } = useGetAllWebsitesQuery(
-    selectedAuthorityId || selectedDmoId
-      ? {
-          authorityId: selectedAuthorityId,
-          dmoId: selectedDmoId,
-        }
-      : skipToken,
-  );
-
-  const [websiteVisibilityIds, setWebsiteVisibilityIds] = useState({
-    allBlacklistIds: [] as string[],
-    selectedBlacklistIds: [] as string[],
-    allWhitelistIds: [] as string[],
-    selectedWhitelistIds: [] as string[],
-  });
 
   const selectedDmos = dmosAuthorities?.find(
     (item) => item?._id === selectedDmoId,
   );
+
+  const { associatedWebsites, unAssociatedWebsites } = useMemo(() => {
+    const result = {
+      associatedWebsites: [] as IWebsite[],
+      unAssociatedWebsites: [] as IWebsite[],
+    };
+
+    if (!allWebsites?.length) return result;
+
+    // If nothing selected → everything is unassociated (or change if needed)
+    if (!selectedDmoId && !selectedAuthorityId) {
+      result.unAssociatedWebsites = [...allWebsites];
+      return result;
+    }
+
+    for (const site of allWebsites) {
+      const matchDmo = selectedDmoId && site.dmoIds?.includes(selectedDmoId);
+
+      const matchAuthority =
+        selectedAuthorityId && site.authorityIds?.includes(selectedAuthorityId);
+
+      // OR logic
+      if (matchDmo || matchAuthority) {
+        result.associatedWebsites.push(site);
+      } else {
+        result.unAssociatedWebsites.push(site);
+      }
+    }
+
+    return result;
+  }, [allWebsites, selectedDmoId, selectedAuthorityId]);
+
   /* ----------------------------
    Initialize ALL IDs (once data arrives)
   -----------------------------*/
   useEffect(() => {
-    if (!allWebsites) return;
+    if (!associatedWebsites.length || !unAssociatedWebsites.length) return;
 
-    setWebsiteVisibilityIds((prev) => ({
+    setWebsiteVisibilityIds((prev: IWebsiteVisibilityIds) => ({
       ...prev,
-      allBlacklistIds: allWebsites.associatedWebsites?.map((w) => w._id) || [],
-      selectedBlacklistIds:
-        allWebsites.associatedWebsites?.map((w) => w._id) || [],
-      allWhitelistIds:
-        allWebsites.unAssociatedWebsites?.map((w) => w._id) || [],
+      allBlacklistIds: associatedWebsites.map((w) => w._id),
+      selectedBlacklistIds: associatedWebsites.map((w) => w._id),
+      allWhitelistIds: unAssociatedWebsites.map((w) => w._id),
+      selectedWhitelistIds: [],
     }));
-  }, [allWebsites]);
+  }, [associatedWebsites, unAssociatedWebsites]);
 
   /* ----------------------------
    Helpers
   -----------------------------*/
   const toggleId = useCallback(
     (id: string, key: "selectedBlacklistIds" | "selectedWhitelistIds") => {
-      setWebsiteVisibilityIds((prev) => ({
+      setWebsiteVisibilityIds((prev: IWebsiteVisibilityIds) => ({
         ...prev,
         [key]: prev[key].includes(id)
           ? prev[key].filter((x) => x !== id)
           : [...prev[key], id],
       }));
     },
-    [],
+    [setWebsiteVisibilityIds],
   );
 
   const toggleAll = useCallback(
@@ -86,7 +103,7 @@ export default function DmoAuthorityWebsiteSelector({
       allKey: "allBlacklistIds" | "allWhitelistIds",
       selectedKey: "selectedBlacklistIds" | "selectedWhitelistIds",
     ) => {
-      setWebsiteVisibilityIds((prev) => {
+      setWebsiteVisibilityIds((prev: IWebsiteVisibilityIds) => {
         const isAllSelected = prev[selectedKey].length === prev[allKey].length;
 
         return {
@@ -95,7 +112,7 @@ export default function DmoAuthorityWebsiteSelector({
         };
       });
     },
-    [],
+    [setWebsiteVisibilityIds],
   );
 
   /* ----------------------------
@@ -186,7 +203,6 @@ export default function DmoAuthorityWebsiteSelector({
 
         <div className="flex-1 w-full" ref={authoritySectionRef}>
           <FormFieldWrapper
-            required
             label={t("select_authority")}
             error={errors.authorityId}
           >
@@ -218,18 +234,16 @@ export default function DmoAuthorityWebsiteSelector({
             {t("website_visibility")}
           </label>
 
-          {/* Associated → Blacklist */}
           {renderSection(
             t("select_associated_websites"),
-            allWebsites?.associatedWebsites,
+            associatedWebsites,
             "allBlacklistIds",
             "selectedBlacklistIds",
           )}
 
-          {/* Unassociated → Whitelist */}
           {renderSection(
             t("select_unassociated_websites"),
-            allWebsites?.unAssociatedWebsites,
+            unAssociatedWebsites,
             "allWhitelistIds",
             "selectedWhitelistIds",
           )}

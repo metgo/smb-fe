@@ -11,9 +11,13 @@ interface IWebsite {
   name: string;
   websiteUrl: string;
   logo: string;
+  dmoIds: string[];
+  authorityIds: string[];
 }
 
-interface IAllWebsites {
+type TAllWebsites = IWebsite[];
+
+interface IFromattedAllWebsites {
   associatedWebsites: IWebsite[];
   unAssociatedWebsites: IWebsite[];
 }
@@ -84,3 +88,10 @@ interface IImage {
   subCoordinates?: SubCoordinates;
 }
 type TImages = IImage[];
+
+interface IWebsiteVisibilityIds {
+  allBlacklistIds: string[];
+  selectedBlacklistIds: string[];
+  allWhitelistIds: string[];
+  selectedWhitelistIds: string[];
+}

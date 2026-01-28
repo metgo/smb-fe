@@ -40,6 +40,7 @@ import { ModalWrapper } from "@/components/wrapper";
 import { useEventDraftSaver } from "../hooks/useEventDraftSaver";
 import { useImagesUpload } from "@/hooks/useImagesUpload";
 import { formatToBackendTemplate } from "@/helpers/formatter";
+import { useCreateWebsiteAccessItemMutation } from "@/store/api/commonMutationApi";
 
 interface CreateEventWizardProps {
   isOpen: boolean;
@@ -65,6 +66,9 @@ export default function CreateEventWizard({
     useUpdateEventMutation();
   const [initEventCreate, { isLoading: isEventCreating }] =
     useInitEventCreateMutation();
+  const [createWebsiteAccessItem, { isLoading: isWebsiteAccessItemCreating }] =
+    useCreateWebsiteAccessItemMutation();
+
   const {
     data: editData,
     refetch,
@@ -100,6 +104,12 @@ export default function CreateEventWizard({
   const [selectedAccessiblitiesId, setAccessiblitiesId] = useState<string[]>(
     [],
   );
+  const [websiteVisibilityIds, setWebsiteVisibilityIds] = useState({
+    allBlacklistIds: [] as string[],
+    selectedBlacklistIds: [] as string[],
+    allWhitelistIds: [] as string[],
+    selectedWhitelistIds: [] as string[],
+  });
 
   // Step 2: Date, Time & Format
   const [isMultiDay, setIsMultiDay] = useState(false);
@@ -361,6 +371,18 @@ export default function CreateEventWizard({
     return Object.keys(newErrors)?.length === 0;
   };
 
+  const websiteAccessItemPayload = {
+    blacklist: {
+      allItems: websiteVisibilityIds.allBlacklistIds,
+      selectedItems: websiteVisibilityIds.allBlacklistIds,
+    },
+    whitelist: {
+      allItems: websiteVisibilityIds.allBlacklistIds,
+      selectedItems: websiteVisibilityIds.allBlacklistIds,
+    },
+    purpose: "event",
+  };
+
   const eventBasicInfoPayload = {
     name: eventName,
     description: fullDescription,
@@ -476,7 +498,13 @@ export default function CreateEventWizard({
 
   const handleSaveDraft = async () => {
     await eventImageUploadAll();
-    saveDraft(false);
+    await saveDraft(false);
+    if (eventId) {
+      await createWebsiteAccessItem({
+        body: websiteAccessItemPayload,
+        itemId: eventId,
+      });
+    }
   };
 
   const handlePrevious = () => {
@@ -501,6 +529,12 @@ export default function CreateEventWizard({
     }
     setIsPublishing(true);
     await saveDraft(true);
+    if (eventId) {
+      await createWebsiteAccessItem({
+        body: websiteAccessItemPayload,
+        itemId: eventId,
+      });
+    }
     setIsPublishing(false);
     toast.success(t("event_published_success"));
     onClose();
@@ -559,7 +593,11 @@ export default function CreateEventWizard({
     <ModalWrapper
       onClose={onClose}
       showSpinner={
-        isEventCreating || isEventCreating || isLoading || isFetching
+        isEventCreating ||
+        isEventCreating ||
+        isLoading ||
+        isFetching ||
+        isWebsiteAccessItemCreating
       }
     >
       {/* Header */}
@@ -692,6 +730,8 @@ export default function CreateEventWizard({
             setGroupTypesId={setGroupTypesId}
             selectedSubCategoriesId={selectedSubCategoriesId}
             setSubCategoriesId={setSubCategoriesId}
+            websiteVisibilityIds={websiteVisibilityIds}
+            setWebsiteVisibilityIds={setWebsiteVisibilityIds}
           />
         )}
         {currentStep === 2 && (

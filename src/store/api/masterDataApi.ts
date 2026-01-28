@@ -66,11 +66,10 @@ export const masterDataApi = createApi({
       keepUnusedDataFor: 60 * 60 * 24,
     }),
 
-    getAllWebsites: builder.query<IAllWebsites, IWebsiteFilterProps | void>({
-      query: (params) => ({
+    getAllWebsites: builder.query<TAllWebsites, void>({
+      query: () => ({
         url: endpoints.websites,
         method: "GET",
-        params,
       }),
     }),
   }),

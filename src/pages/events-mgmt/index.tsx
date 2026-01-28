@@ -297,7 +297,7 @@ export default function EventsMgmtPage() {
                   className={` rounded-lg  overflow-y-auto flex items-center gap-4`}
                 >
                   {websites &&
-                    websites?.associatedWebsites?.map((website) => (
+                    websites?.map((website) => (
                       <label
                         key={website?._id}
                         className="flex items-center gap-2 mb-2 last:mb-0 cursor-pointer"
