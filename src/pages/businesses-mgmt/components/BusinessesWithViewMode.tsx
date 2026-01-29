@@ -200,21 +200,23 @@ export default function BusinessesList({
     refetch,
   } = useGetAllbusinessesQuery(queryParams);
 
-  useEffect(() => {
-    if (!businessData?.meta) return;
-    setHasMore(businessData.meta.hasNextPage);
-  }, [businessData]);
-
+  //infinite scroll logic
   useEffect(() => {
     if (!businessData?.data) return;
+    if (!businessData?.meta) return;
+    setHasMore(businessData.meta.hasNextPage);
     setBusinesses((prev) =>
       page === 1 ? businessData.data : [...prev, ...businessData.data],
     );
   }, [businessData, page]);
 
   const fetchNextPage = () => {
-    if (!hasMore) return;
-    setPage((prev) => prev + 1);
+    if (!hasMore) {
+      return;
+    }
+    setPage((prev) => {
+      return prev + 1;
+    });
   };
 
   // Reset to default columns
@@ -816,7 +818,7 @@ export default function BusinessesList({
                   } else if (key === "hasProductFilter") {
                     displayValue = value === "yes" ? t("yes") : t("no");
                   } else if (key === "dmoId") {
-                    // Optional: show DMO name instead of ID
+                    //  show DMO name instead of ID
                     const dmo = dmosAuthorities?.find((d) => d._id === value);
                     displayValue = dmo?.name || value;
                   } else if (key === "authorityId") {
@@ -913,17 +915,7 @@ export default function BusinessesList({
           </div>
         )}
       </div>
-
-      <InfiniteScroll
-        dataLength={businesses.length}
-        next={fetchNextPage}
-        hasMore={hasMore}
-        loader={<p className="text-center py-3">Loading more...</p>}
-        endMessage={
-          <p className="text-center py-3 text-gray-500">No more businesses</p>
-        }
-        scrollableTarget="business-table-scroll"
-      >
+      <div className="flex-1 overflow-y-auto">
         <div className="">
           {viewMode === "list" ? (
             <BusinessListView
@@ -931,6 +923,8 @@ export default function BusinessesList({
               onBusinessClick={onBusinessClick}
               isLoading={isLoading}
               businesses={businesses}
+              next={fetchNextPage}
+              hasMore={hasMore}
             />
           ) : (
             <div className="h-96 overflow-y-auto bg-white">
@@ -938,11 +932,14 @@ export default function BusinessesList({
                 data={businesses}
                 theme={theme}
                 refetch={refetch}
+                isLoading={isLoading}
+                next={fetchNextPage}
+                hasMore={hasMore}
               />
             </div>
           )}
         </div>
-      </InfiniteScroll>
+      </div>
     </div>
   );
 }

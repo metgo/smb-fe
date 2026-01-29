@@ -1,11 +1,11 @@
 import clsx from "clsx";
-import { useEffect, useState, type FC } from "react";
+import { useEffect, useRef, useState, type FC } from "react";
 import { ChevronDown } from "lucide-react";
 import { Globe, Facebook, Twitter, Instagram, Linkedin } from "lucide-react";
 
 import { useCommon } from "@/hooks/useCommon";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-
+import { DmoAuthorityWebsiteSelector } from "@/components/shared";
 interface BusinessFormData {
   authority: string;
   slug: string;
@@ -38,11 +38,14 @@ interface BusinessBasicInfosProps {
   canApprove: boolean;
   selectedDmoId?: string;
   setSelectDmoId: React.Dispatch<React.SetStateAction<string>>;
-
+  businessId: string;
   selectedAuthorityId?: string;
   setSelectAuthorityId: React.Dispatch<React.SetStateAction<string>>;
   markDirty: (step: number) => void;
   currentView: View;
+  websiteVisibilityIds: IWebsiteVisibilityIds;
+  setWebsiteVisibilityIds: (v: any) => void;
+  businessAssociatedWebsites?: IAssociatedWebsiteIds[];
 }
 
 const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
@@ -55,7 +58,12 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
   canApprove,
   selectedDmoId,
   setSelectDmoId,
+  selectedAuthorityId,
   setSelectAuthorityId,
+  businessId,
+  websiteVisibilityIds,
+  setWebsiteVisibilityIds,
+  businessAssociatedWebsites = [],
 }) => {
   //   if (!business || currentView !== "edit") return;
 
@@ -79,6 +87,7 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
   const [selectedFormLanguage, setSelectedFormLanguage] =
     useState<Language>("en");
   const { selectInputClasses, borderColor } = useThemeClasses();
+  const dmoSectionRef = useRef<HTMLDivElement | null>(null);
 
   /* -------- Helpers -------- */
 
@@ -170,63 +179,7 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
         </div>
       </div>
 
-      <div className="flex items-center justify-between gap-4">
-        {/* DMO Selection */}
-        <div className="flex-1">
-          <label className={`block text-sm  mb-3 `}>
-            {t("select_dmo")} <span className="text-red-500">*</span>
-          </label>
-          <div className=" flex gap-2 relative">
-            <select
-              value={selectedDmoId}
-              onChange={(e) => {
-                setSelectDmoId(e.target.value);
-                setSelectAuthorityId("");
-              }}
-              className={clsx(
-                "appearance-none h-12 w-full border rounded-lg px-4 py-2 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 min-w-45",
-                selectInputClasses,
-              )}
-            >
-              <option value="">Select DMO</option>
-              {dmosAuthorities?.map((parent) => (
-                <option key={parent._id} value={parent._id}>
-                  {parent.name}
-                </option>
-              ))}
-            </select>
-            <ChevronDown className="absolute top-1/2 ltr:right-3 rtl:left-3 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
-          </div>
-        </div>
-        {/* Authority */}
-        <div className="flex-1">
-          <label className={`block text-sm  mb-3 `}>
-            {t("select_authority")} <span className="text-red-500">*</span>
-          </label>
-          <div className=" w-full relative">
-            <select
-              value={formData.authority}
-              onChange={(e) =>
-                setFormData({ ...formData, authority: e.target.value })
-              }
-              className={clsx(
-                "appearance-none h-12 w-full border rounded-lg px-4 py-2 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 min-w-45",
-                selectInputClasses,
-              )}
-            >
-              <option value="">Select Authority</option>
-              {selectedDmos?.authorities?.map((child) => (
-                <option key={child._id} value={child._id}>
-                  {child.name}
-                </option>
-              ))}
-            </select>
-            <ChevronDown className="absolute top-1/2 ltr:right-3 rtl:left-3 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
-          </div>
-        </div>
-      </div>
-
-      {/* All Websites */}
+      {/* All Websites
       <div className="">
         <label
           className={`block text-sm mb-2 ${
@@ -275,8 +228,19 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
             ))}
           </div>
         )}
-      </div>
-
+      </div> */}
+      <DmoAuthorityWebsiteSelector
+        errors={errors}
+        isEdit={!!businessId}
+        selectedDmoId={selectedDmoId ?? ""}
+        setSelectDmoId={setSelectDmoId}
+        selectedAuthorityId={selectedAuthorityId ?? ""}
+        setSelectAuthorityId={setSelectAuthorityId}
+        dmoSectionRef={dmoSectionRef}
+        websiteVisibilityIds={websiteVisibilityIds}
+        setWebsiteVisibilityIds={setWebsiteVisibilityIds}
+        itemAssociatedWebsites={businessAssociatedWebsites}
+      />
       {/* Business Name */}
       <div>
         <label

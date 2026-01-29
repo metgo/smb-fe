@@ -90,7 +90,7 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
       deliveryAdditionalInfo: business.deliveryAdditionalInfo ?? "",
       deliverySpecificSellerInfo: business.deliverySpecificSellerInfo ?? [],
     });
-  }, [business, formData, setFormData, currentView]);
+  }, [business, setFormData, currentView]);
   return (
     <div className="space-y-6">
       <h3

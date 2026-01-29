@@ -1,3 +1,4 @@
+import { useCommon } from "@/hooks/useCommon";
 import { CheckCircle } from "lucide-react";
 import { useEffect, type FC } from "react";
 type View = "list" | "details" | "create" | "edit" | undefined;
@@ -39,6 +40,7 @@ const BusinessReviewSubmit: FC<BusinessReviewSubmitProps> = ({
   currentView,
   t,
 }) => {
+  const { primaryCategories } = useCommon();
   useEffect(() => {
     if (!business || currentView !== "edit") return;
 
@@ -85,7 +87,7 @@ const BusinessReviewSubmit: FC<BusinessReviewSubmitProps> = ({
       </div>
 
       {/* Missing Fields Warning */}
-      {Object.keys(errors).length > 0 && (
+      {/* {Object.keys(errors).length > 0 && (
         <div
           className={`p-4 rounded-lg ${
             theme === "dark"
@@ -113,7 +115,7 @@ const BusinessReviewSubmit: FC<BusinessReviewSubmitProps> = ({
             {errors.logo && <li>{t("logo_required")}</li>}
           </ul>
         </div>
-      )}
+      )} */}
 
       {/* Summary Section */}
       <div
@@ -139,7 +141,11 @@ const BusinessReviewSubmit: FC<BusinessReviewSubmitProps> = ({
           </p>
           <p className={theme === "dark" ? "text-gray-300" : "text-gray-700"}>
             <span className="font-medium">{t("primary_category")}: </span>
-            {formData.primaryCategory || t("not_set")}
+            {formData?.primaryCategory
+              ? primaryCategories?.datas?.data?.find(
+                  (cat: any) => cat._id === formData.primaryCategory,
+                )?.name
+              : t("not_set")}
           </p>
         </div>
       </div>

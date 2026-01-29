@@ -1,10 +1,11 @@
 import { toast } from "sonner";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { AlertCircle, MapPin, Phone, TrashIcon } from "lucide-react";
 
 import { ConfirmDialog, ImageWithFallback } from "@/components/shared";
 import { useDeleteBusinessMutation } from "@/store/api/businessMutationApi";
+import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 
 interface Business {
   _id: string;
@@ -27,6 +28,9 @@ interface GridViewProps<T> {
   onRowClick?: (item: T) => void;
   theme: "dark" | "light";
   refetch: () => void;
+  next?: () => void;
+  hasMore?: boolean;
+  isLoading?: boolean;
 }
 
 function BusinessGridView<T extends Business>({
@@ -34,10 +38,21 @@ function BusinessGridView<T extends Business>({
   onRowClick,
   theme,
   refetch,
+  hasMore,
+  next,
+  isLoading = false,
 }: GridViewProps<T>) {
   const [searchParams] = useSearchParams();
   const businessId = searchParams.get("businessId") ?? ""; // fallback to empty string
+  const scrollRef = useRef<HTMLDivElement | null>(null);
 
+  //scroll on list view works on grid view by caching but if user opens grid view directly it doesnt so for that
+  useInfiniteScroll({
+    ref: scrollRef,
+    hasMore,
+    isLoading: isLoading,
+    onLoadMore: next,
+  });
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [businessToDelete, setBusinessToDelete] = useState<string | null>(null);
   const [deleteBusiness, { isLoading: isDeleting }] =
@@ -48,7 +63,7 @@ function BusinessGridView<T extends Business>({
     refetch();
   };
 
-  if (!data || data.length === 0) {
+  if (data.length === 0) {
     return (
       <div className="text-center py-12">
         <AlertCircle
@@ -72,67 +87,73 @@ function BusinessGridView<T extends Business>({
 
   return (
     <div className="py-6 px-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-        {data.map((business) => (
-          <div
-            key={business._id}
-            className="bg-white dark:bg-gray-900 relative rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow cursor-pointer"
-            onClick={() => onRowClick && onRowClick(business)}
-          >
-            {/* Delete button */}
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsConfirmOpen(true);
-                setBusinessToDelete(businessId);
-              }}
-              className="absolute top-2 right-2 z-5 p-1 cursor-pointer rounded-full text-red-600 bg-white"
-              aria-label={`Delete ${business.name}`}
+      <div
+        className="overflow-x-auto max-h-[calc(100vh-450px)] overflow-y-auto"
+        id="business-table-scroll"
+        ref={scrollRef}
+      >
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+          {data.map((business) => (
+            <div
+              key={business._id}
+              className="bg-white dark:bg-gray-900 relative rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow cursor-pointer"
+              onClick={() => onRowClick && onRowClick(business)}
             >
-              <TrashIcon size={18} />
-            </button>
+              {/* Delete button */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsConfirmOpen(true);
+                  setBusinessToDelete(businessId);
+                }}
+                className="absolute top-2 right-2 z-5 p-1 cursor-pointer rounded-full text-red-600 bg-white"
+                aria-label={`Delete ${business.name}`}
+              >
+                <TrashIcon size={18} />
+              </button>
 
-            <div className="relative h-36">
-              {business?.images && business.images.length > 0 ? (
-                <ImageWithFallback
-                  src={business.images[0].image}
-                  alt={business.name}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full bg-linear-to-br from-purple-400 to-pink-400 flex items-center justify-center">
-                  <AlertCircle className="w-20 h-20 text-white/40" />
+              <div className="relative h-36">
+                {business?.images && business.images.length > 0 ? (
+                  <ImageWithFallback
+                    src={business.images[0].image}
+                    alt={business.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-linear-to-br from-purple-400 to-pink-400 flex items-center justify-center">
+                    <AlertCircle className="w-20 h-20 text-white/40" />
+                  </div>
+                )}
+              </div>
+
+              <div className="p-5">
+                <h3 className="font-semibold text-lg mb-3 line-clamp-2">
+                  {business.name}
+                </h3>
+
+                <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+                  {business.address && (
+                    <div className="flex items-center gap-2">
+                      <MapPin className="w-4 h-4" />
+                      <span className="truncate">
+                        {business?.address?.country}, {business.address?.city}
+                      </span>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
 
-            <div className="p-5">
-              <h3 className="font-semibold text-lg mb-3 line-clamp-2">
-                {business.name}
-              </h3>
-
-              <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-                {business.address && (
-                  <div className="flex items-center gap-2">
-                    <MapPin className="w-4 h-4" />
-                    <span className="truncate">
-                      {business?.address?.country}, {business.address?.city}
-                    </span>
-                  </div>
-                )}
-              </div>
-
-              <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                {business?.phoneNumber && (
-                  <div className="flex items-center gap-2">
-                    <Phone className="w-4 h-4" />
-                    <span className="truncate">{business.phoneNumber}</span>
-                  </div>
-                )}
+                <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                  {business?.phoneNumber && (
+                    <div className="flex items-center gap-2">
+                      <Phone className="w-4 h-4" />
+                      <span className="truncate">{business.phoneNumber}</span>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
       <ConfirmDialog
         open={isConfirmOpen}

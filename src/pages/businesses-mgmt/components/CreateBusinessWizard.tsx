@@ -42,6 +42,7 @@ import { useGetbusinessBySlugQuery } from "@/store/api/businessQueryApi";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { useSearchParams } from "react-router-dom";
 import { parseAddress } from "@/helpers";
+import { useCreateWebsiteAccessItemMutation } from "@/store/api/commonMutationApi";
 type View = "list" | "details" | "create" | "edit" | undefined;
 
 interface CreateBusinessWizardProps {
@@ -58,7 +59,8 @@ export default function CreateBusinessWizard({
   const { theme, isRTL } = useAppSelector((state) => state.settings);
   const { textPrimary, textTertiary } = useThemeClasses();
   const [searchParams] = useSearchParams();
-
+  const [createWebsiteAccessItem, { isLoading: isWebsiteAccessItemCreating }] =
+    useCreateWebsiteAccessItemMutation();
   const businessSlug = searchParams.get("businessSlug");
 
   const { data: business } = useGetbusinessBySlugQuery(
@@ -87,7 +89,12 @@ export default function CreateBusinessWizard({
   const [businessLogoImage, setBusinessLogoImage] = useState<IImage | null>(
     null,
   );
-
+  const [websiteVisibilityIds, setWebsiteVisibilityIds] = useState({
+    allBlacklistIds: [] as string[],
+    selectedBlacklistIds: [] as string[],
+    allWhitelistIds: [] as string[],
+    selectedWhitelistIds: [] as string[],
+  });
   // Form State
   const [formData, setFormData] = useState<any>({
     // Step 1
@@ -188,9 +195,10 @@ export default function CreateBusinessWizard({
 
   const totalSteps = 9;
   useEffect(() => {
-    if (currentView === "edit") {
+    if (businessId === "" || currentView !== "edit") return;
+
+    if (currentView === "edit" && businessId) {
       setFormData({
-        authority: business?.authorityId?._id || "",
         nameEn: business?.name || "",
         nameHe: business?.nameHe || "",
         nameAr: business?.nameAr || "",
@@ -205,12 +213,14 @@ export default function CreateBusinessWizard({
         logo: business?.logo?.image,
         images: business?.images,
       });
+      setSelectAuthorityId(business?.authorityId?._id || "");
+
       setSelectedDmoId(business?.dmoId?._id || "");
 
       setGalleryImages(business?.images);
       setBusinessLogoImage({ image: business?.logo?.image });
     }
-  }, [business, currentView]);
+  }, [business, currentView, businessId, currentStep]);
 
   const steps = [
     { number: 1, title: t("step_basic_info"), icon: FileText },
@@ -227,7 +237,8 @@ export default function CreateBusinessWizard({
   // Draft Save Payload per Step
   const stepPayloadMap = {
     // step 1:
-    authorityId: formData.authority,
+    authorityId: selectedAuthorityId,
+    // dmoId: selectedDmoId,
     name: formData.nameEn,
     shortDescription: formData.shortDescriptionEn,
     description: formData.fullDescriptionEn,
@@ -297,14 +308,23 @@ export default function CreateBusinessWizard({
         if (formData.nameEn?.length < 3)
           newErrors.nameEn = t("field_too_short");
         break;
-      case 2:
-        if (formData.email?.trim() === "")
+      case 2: {
+        if (formData.email?.trim() === "") {
           newErrors.email = t("required_field");
+        }
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        if (formData.email && !emailRegex.test(formData.email.trim())) {
+          newErrors.email = t("invalid_email_format");
+        }
         if (formData.phone?.trim() === "")
           newErrors.phone = t("required_field");
         break;
+      }
+
       case 3:
-        if (!addr) {
+        if (!addr.city || !addr.country || !addr.location) {
           newErrors.address = t("required_field");
         }
         break;
@@ -337,6 +357,12 @@ export default function CreateBusinessWizard({
     setLogoGcsUrl(logoUrl);
     await uploadAll();
     await saveDraft(false);
+    if (businessId) {
+      await createWebsiteAccessItem({
+        body: websiteAccessItemPayload,
+        itemId: businessId,
+      });
+    }
   };
 
   const handlePublish = async () => {
@@ -357,6 +383,12 @@ export default function CreateBusinessWizard({
 
     setIsPublishing(true);
     await saveDraft(true);
+    if (businessId) {
+      await createWebsiteAccessItem({
+        body: websiteAccessItemPayload,
+        itemId: businessId,
+      });
+    }
     setIsPublishing(false);
     toast.success(t("business created succesfully"));
     onClose();
@@ -368,6 +400,17 @@ export default function CreateBusinessWizard({
     }
   }, [currentView]);
 
+  const websiteAccessItemPayload = {
+    blacklist: {
+      allItems: websiteVisibilityIds.allBlacklistIds,
+      selectedItems: websiteVisibilityIds.selectedBlacklistIds,
+    },
+    whitelist: {
+      allItems: websiteVisibilityIds.allWhitelistIds,
+      selectedItems: websiteVisibilityIds.selectedWhitelistIds,
+    },
+    purpose: "business",
+  };
   const renderStep = () => {
     const commonProps = {
       theme,
@@ -408,11 +451,15 @@ export default function CreateBusinessWizard({
         return (
           <BusinessBasicInfos
             {...commonProps}
+            businessId={businessId}
             canApprove
             selectedDmoId={selectedDmoId}
             setSelectDmoId={setSelectedDmoId}
             selectedAuthorityId={selectedAuthorityId}
             setSelectAuthorityId={setSelectAuthorityId}
+            websiteVisibilityIds={websiteVisibilityIds}
+            setWebsiteVisibilityIds={setWebsiteVisibilityIds}
+            businessAssociatedWebsites={business?.associatedWebsites ?? []}
           />
         );
       case 2:

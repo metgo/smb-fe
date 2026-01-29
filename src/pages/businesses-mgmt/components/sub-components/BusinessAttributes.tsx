@@ -89,7 +89,13 @@ const BusinessAttributes: FC<BusinessAttributesProps> = ({
     if (Array.isArray(business.accessibilitiesId)) {
       setAccessiblitiesId(business.accessibilitiesId.map((a: any) => a._id));
     }
-  }, [business, setFormData, setAccessiblitiesId, setGroupTypesId]);
+  }, [
+    business,
+    setFormData,
+    setAccessiblitiesId,
+    setGroupTypesId,
+    currentView,
+  ]);
 
   return (
     <div className="space-y-6">

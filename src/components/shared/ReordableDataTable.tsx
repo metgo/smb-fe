@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import {
   ArrowUpDown,
   ArrowUp,
@@ -9,6 +9,7 @@ import {
 
 import { useAppSelector } from "@/hooks/hooks";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 
 type SortDirection = "asc" | "desc" | null;
 
@@ -28,7 +29,7 @@ interface DataTableProps<T> {
   onSelectionChange?: (selected: Set<any>) => void;
   rowKey: keyof T;
   isDataLoading?: boolean;
-  fetchNextPage?: () => void;
+  next?: () => void;
   hasMore?: boolean;
 }
 
@@ -40,11 +41,34 @@ export default function ReordableDataTable<T extends Record<string, any>>({
   selectedItems,
   onSelectionChange,
   rowKey,
-
+  hasMore,
+  next,
   isDataLoading = false,
 }: DataTableProps<T>) {
   const { theme, isRTL } = useAppSelector((state) => state.settings);
   const { bgTertiary, borderColor, textSecondary, hoverBg } = useThemeClasses();
+
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+
+  // useEffect(() => {
+  //   if (!scrollRef.current || !next || !hasMore) return;
+
+  //   const el = scrollRef.current;
+
+  //   const handleScroll = () => {
+  //     const { scrollTop, scrollHeight, clientHeight } = el;
+
+  //     // trigger slightly before bottom
+  //     if (scrollTop + clientHeight >= scrollHeight - 50) {
+  //       if (!isDataLoading && hasMore) {
+  //         next();
+  //       }
+  //     }
+  //   };
+
+  //   el.addEventListener("scroll", handleScroll);
+  //   return () => el.removeEventListener("scroll", handleScroll);
+  // }, [next, hasMore, isDataLoading]);
 
   // Load saved column order
   const [columnOrder, setColumnOrder] = useState<string[]>(() => {
@@ -177,15 +201,23 @@ export default function ReordableDataTable<T extends Record<string, any>>({
     );
   };
 
+  //hook for scroll
+  useInfiniteScroll({
+    ref: scrollRef,
+    hasMore,
+    isLoading: isDataLoading,
+    onLoadMore: next,
+  });
+
   return (
     <div className={`rounded-xl border ${borderColor}`}>
       {/* Scrollable container */}
       <div
         className="overflow-x-auto max-h-[calc(100vh-450px)] overflow-y-auto"
         id="business-table-scroll"
+        ref={scrollRef}
       >
         <table className="w-full h-full">
-          {/* Sticky Header */}
           <thead
             className={`sticky top-0 z-5 ${bgTertiary} border-b ${borderColor}`}
           >
@@ -248,8 +280,6 @@ export default function ReordableDataTable<T extends Record<string, any>>({
               })}
             </tr>
           </thead>
-
-          {/* Scrollable Body */}
           <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
             {isDataLoading ? (
               <tr>
@@ -274,7 +304,6 @@ export default function ReordableDataTable<T extends Record<string, any>>({
                 >
                   <div className="flex flex-col items-center justify-center h-full gap-2">
                     <p>No data available</p>
-                    {/* Optional: add icon or illustration */}
                   </div>
                 </td>
               </tr>

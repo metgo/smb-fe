@@ -11,6 +11,8 @@ interface BusinessListViewProps {
   businesses: any[];
   isLoading: boolean;
   onBusinessClick: (business: any) => void;
+  next: () => void;
+  hasMore: boolean;
 }
 
 const USER_ROLE = "admin";
@@ -39,6 +41,8 @@ export default function BusinessListView({
   isLoading,
   businesses,
   onBusinessClick,
+  next,
+  hasMore,
 }: BusinessListViewProps) {
   const { t } = useTranslation("businesses");
   const { textPrimary, textSecondary } = useThemeClasses();
@@ -49,7 +53,7 @@ export default function BusinessListView({
     new Set(),
   );
   const columnSettingsRef = useRef<HTMLDivElement>(null);
-  const [columnVisibility, setColumnVisibility] =
+  const [columnVisibility, _setColumnVisibility] =
     useState<ColumnVisibility>(defaultColumns);
 
   // Column visibility - load from localStorage or use defaults
@@ -139,7 +143,7 @@ export default function BusinessListView({
       key: "name",
       label: t("business_name"),
       render: (business: any) => (
-        <span className={textPrimary}>
+        <span className={`${textPrimary} line-clamp-1`}>
           {business.name || business.slug || t("unnamed_business") || "-"}
         </span>
       ),
@@ -149,7 +153,9 @@ export default function BusinessListView({
       key: "shortDescription",
       label: t("shortDescription"),
       render: (business: any) => (
-        <span className={textPrimary}>{business.shortDescription || "-"}</span>
+        <span className={`${textPrimary} line-clamp-1`}>
+          {business.shortDescription || "-"}
+        </span>
       ),
     },
 
@@ -294,10 +300,7 @@ export default function BusinessListView({
 
   return (
     <div className="flex flex-col overflow-hidden h-[calc(108vh-210px)] ">
-      <div
-        id="business-table-scroll"
-        style={{ height: "70vh", overflow: "auto" }}
-      >
+      <div>
         <ReordableDataTable
           rowKey="_id"
           data={businesses}
@@ -307,6 +310,8 @@ export default function BusinessListView({
           onRowClick={(business) => onBusinessClick(business)}
           storageKey="businessesTableColumnOrder"
           columns={columns}
+          hasMore={hasMore}
+          next={next}
         />
       </div>
     </div>
