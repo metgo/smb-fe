@@ -1,4 +1,7 @@
+import { toast } from "sonner";
+import { Link } from "react-router-dom";
 import { useState, useMemo } from "react";
+
 import {
   Calendar,
   ChevronLeft,
@@ -22,9 +25,8 @@ import {
   ReordableDataTable,
 } from "@/components/shared";
 import { extractCenterAddressText, extractEventDates } from "@/helpers";
-import { Link } from "react-router-dom";
 import { useDeleteEventMutation } from "@/store/api/eventMutationApi";
-import { toast } from "sonner";
+import { EventCardSkeleton } from "@/components/skeletons";
 
 interface EventsWithViewModeProps {
   events: any[];
@@ -382,7 +384,7 @@ export default function EventsWithViewMode({
   const GridView = () => {
     const displayed = events?.slice(0, displayedListCount);
 
-    if (events?.length === 0) {
+    if (events?.length === 0 && !isLoading) {
       return (
         <div className="text-center py-12">
           <AlertCircle
@@ -407,71 +409,79 @@ export default function EventsWithViewMode({
     return (
       <div className="py-6 px-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {displayed?.map((event) => {
-            return (
-              <div
-                key={event._id}
-                onClick={() => handleEventSelect(event)}
-                className="bg-white dark:bg-gray-900 relative rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow cursor-pointer"
-              >
-                <div className="relative h-52">
-                  {event?.images?.[0]?.image ? (
-                    <ImageWithFallback
-                      src={event?.images?.[0]?.image}
-                      alt={event.name}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-linear-to-br from-purple-400 to-pink-400 flex items-center justify-center">
-                      <Calendar className="w-20 h-20 text-white/40" />
+          {isLoading ? (
+            Array.from({ length: 7 }).map((_, index) => (
+              <EventCardSkeleton key={index} />
+            ))
+          ) : (
+            <>
+              {displayed?.map((event) => {
+                return (
+                  <div
+                    key={event._id}
+                    onClick={() => handleEventSelect(event)}
+                    className="bg-white dark:bg-gray-900 relative rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow cursor-pointer"
+                  >
+                    <div className="relative h-52">
+                      {event?.images?.[0]?.image ? (
+                        <ImageWithFallback
+                          src={event?.images?.[0]?.image}
+                          alt={event.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-linear-to-br from-purple-400 to-pink-400 flex items-center justify-center">
+                          <Calendar className="w-20 h-20 text-white/40" />
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
 
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setIsConfirmOpen(true);
-                    setEventToDelete(event._id);
-                  }}
-                  className="absolute top-3 right-3 z-50 cursor-pointer bg-white dark:bg-gray-800 p-2 rounded-full shadow hover:shadow-lg transition-shadow text-red-600"
-                >
-                  <TrashIcon size={16} />
-                </button>
-
-                <div className="p-5">
-                  <h3 className="font-semibold text-lg mb-3 line-clamp-2">
-                    {event.name}
-                  </h3>
-                  <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-                    <div className="flex items-center gap-2">
-                      <Calendar className="w-4 h-4" />
-                      {extractEventDates(event?.dayDescription)}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <MapPin className="w-4 h-4" />
-                      <span className="truncate">
-                        {extractCenterAddressText(event?.address?.location)}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="mt-5 flex justify-between items-center">
-                    <span
-                      className={`font-medium ${event.isFree ? "text-emerald-600" : "text-purple-600"}`}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsConfirmOpen(true);
+                        setEventToDelete(event._id);
+                      }}
+                      className="absolute top-3 right-3 z-50 cursor-pointer bg-white dark:bg-gray-800 p-2 rounded-full shadow hover:shadow-lg transition-shadow text-red-600"
                     >
-                      {event?.isFree ? t("free") : `₪ 0`}
-                    </span>
-                    {event.registrationRequired && (
-                      <div className="text-xs text-gray-500">
-                        {event.totalRegistrations}/{event.capacity}
+                      <TrashIcon size={16} />
+                    </button>
+
+                    <div className="p-5">
+                      <h3 className="font-semibold text-lg mb-3 line-clamp-2">
+                        {event.name}
+                      </h3>
+                      <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+                        <div className="flex items-center gap-2">
+                          <Calendar className="w-4 h-4" />
+                          {extractEventDates(event?.dayDescription)}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <MapPin className="w-4 h-4" />
+                          <span className="truncate">
+                            {extractCenterAddressText(event?.address?.location)}
+                          </span>
+                        </div>
                       </div>
-                    )}
+                      <div className="mt-5 flex justify-between items-center">
+                        <span
+                          className={`font-medium ${event.isFree ? "text-emerald-600" : "text-purple-600"}`}
+                        >
+                          {event?.isFree ? t("free") : `₪ 0`}
+                        </span>
+                        {event.registrationRequired && (
+                          <div className="text-xs text-gray-500">
+                            {event.totalRegistrations}/{event.capacity}
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
-            );
-          })}
+                );
+              })}
+            </>
+          )}
         </div>
 
         {events?.length > displayedListCount && (

@@ -1,5 +1,7 @@
-import { ModalWrapper } from "@/components/wrapper";
+import { EmailEditorWrapper, ModalWrapper } from "@/components/wrapper";
+import { formatFromBackendTemplate } from "@/helpers/formatter";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import clsx from "clsx";
 import { Mail, MessageSquare, Send, Smartphone } from "lucide-react";
 
 interface CreateNotificationWizardProps {
@@ -33,7 +35,8 @@ const CreateNotificationWizard: React.FC<CreateNotificationWizardProps> = ({
   setShowNotificationForm,
   setNotifications,
 }) => {
-  const { textPrimary, textSecondary, textTertiary } = useThemeClasses();
+  const { textPrimary, textSecondary, textTertiary, borderColor } =
+    useThemeClasses();
 
   if (!editingNotification) return;
 
@@ -43,7 +46,7 @@ const CreateNotificationWizard: React.FC<CreateNotificationWizardProps> = ({
         setShowNotificationForm(false);
         setEditingNotification(null);
       }}
-      maxWidth="max-w-2xl"
+      maxWidth="max-w-3xl h-max"
     >
       <div className=" p-4">
         <h4 className={`text-lg mb-4 ${textPrimary}`}>
@@ -51,11 +54,10 @@ const CreateNotificationWizard: React.FC<CreateNotificationWizardProps> = ({
         </h4>
 
         <div
-          className={`px-6 py-2 space-y-3 max-h-[73vh] overflow-y-auto rounded-lg border ${
-            theme === "dark"
-              ? "border-gray-700 bg-gray-800/50"
-              : "border-gray-200 bg-gray-50"
-          }`}
+          className={clsx(
+            `px-6 py-8 space-y-3 max-h-[73vh] overflow-y-auto rounded-lg border`,
+            borderColor,
+          )}
         >
           <div className="flex items-center gap-4">
             {/* Timing */}
@@ -168,7 +170,7 @@ const CreateNotificationWizard: React.FC<CreateNotificationWizardProps> = ({
               >
                 <option value="en">{t("english")}</option>
                 <option value="he">{t("hebrew")}</option>
-                <option value="ar">{t("arabic")}</option>
+                <option value="ar">{t("arebic")}</option>
               </select>
             </div>
 
@@ -196,91 +198,76 @@ const CreateNotificationWizard: React.FC<CreateNotificationWizardProps> = ({
                 <option value="starting-soon">
                   {t("template_starting_soon")}
                 </option>
+                <option value="custom">{t("custom")}</option>
               </select>
             </div>
           </div>
 
-          {/* Subject */}
-          <div className="">
-            <label className={`block text-sm mb-2 ${textSecondary}`}>
-              {t("subject")}
-            </label>
-            <input
-              type="text"
-              value={editingNotification.subject}
-              onChange={(e) =>
-                setEditingNotification({
-                  ...editingNotification,
-                  subject: e.target.value,
-                })
-              }
-              placeholder="Reminder: {{Event Name}} tomorrow at {{Event Time}}"
-              className={`w-full px-4 py-2 rounded-lg border ${
-                theme === "dark"
-                  ? "bg-gray-800 border-gray-700 text-gray-100"
-                  : "bg-white border-gray-300 text-gray-900"
-              }`}
-            />
-          </div>
+          {editingNotification.template === "custom" && (
+            <>
+              {/* Subject */}
+              <div className="">
+                <label className={`block text-sm mb-2 ${textSecondary}`}>
+                  {t("subject")}
+                </label>
+                <input
+                  type="text"
+                  value={editingNotification.subject}
+                  onChange={(e) =>
+                    setEditingNotification({
+                      ...editingNotification,
+                      subject: e.target.value,
+                    })
+                  }
+                  placeholder="Reminder: {{Event Name}} tomorrow at {{Event Time}}"
+                  className={`w-full px-4 py-2 rounded-lg border ${
+                    theme === "dark"
+                      ? "bg-gray-800 border-gray-700 text-gray-100"
+                      : "bg-white border-gray-300 text-gray-900"
+                  }`}
+                />
+              </div>
 
-          {/* Message Content */}
-          <div className="">
-            <label className={`block text-sm mb-2 ${textSecondary}`}>
-              {t("message_content")}
-            </label>
-            <textarea
-              value={editingNotification.message}
-              onChange={(e) =>
-                setEditingNotification({
-                  ...editingNotification,
-                  message: e.target.value,
-                })
-              }
-              placeholder="Hi {{First Name}},\n\nThis is a reminder that {{Event Name}} is happening tomorrow at {{Event Time}}!\n\nVenue: {{Venue}}\n\nYour ticket: {{Ticket QR}}"
-              rows={6}
-              className={`w-full px-4 py-2 rounded-lg border ${
-                theme === "dark"
-                  ? "bg-gray-800 border-gray-700 text-gray-100"
-                  : "bg-white border-gray-300 text-gray-900"
-              }`}
-            />
-            <p className={`text-xs ${textTertiary} mt-2`}>
-              {t("available_variables")}: {"{{ Event Name }}"},{" "}
-              {"{{ Event Date }}"}, {"{{ Event Time }}"}, {"{{ Venue }}"},{" "}
-              {"{{ First Name }}"}, {"{{ Ticket QR }}"}
-            </p>
-          </div>
-          {/* Preview */}
-          <div
-            className={`p-4 rounded-lg border mb-4 ${
-              theme === "dark"
-                ? "border-gray-700 bg-gray-900/50"
-                : "border-gray-200 bg-white"
-            }`}
-          >
-            <div className={`text-sm ${textTertiary} mb-2`}>
-              {t("preview")}:
-            </div>
-            <div className={`text-sm ${textSecondary}`}>
-              {editingNotification.message.replace(
-                /\{\{([^}]+)\}\}/g,
-                (_, key) => {
-                  const mockData: Record<string, string> = {
+              {/* Message Content */}
+              <div className="">
+                <label className={`block text-sm mb-2 ${textSecondary}`}>
+                  {t("message_content")}
+                </label>
+
+                <EmailEditorWrapper
+                  value={formatFromBackendTemplate(editingNotification.message)}
+                  onChange={(v) =>
+                    setEditingNotification({
+                      ...editingNotification,
+                      message: v,
+                    })
+                  }
+                  isRTL={editingNotification.language === "he"}
+                  previewData={{
                     "Event Name": eventName || "Sample Event",
                     "Event Date": startDate || "2026-01-15",
                     "Event Time": eventDays?.[0]?.startTime || "10:00",
                     Venue: address || "Event Location",
                     "First Name": "John",
-                    "Ticket QR": "[QR Code]",
-                  };
-                  return mockData[key.trim()] || key;
-                },
-              )}
-            </div>
-            <div className={`text-xs ${textTertiary} mt-2`}>
-              {t("recipient_count")}: {capacity || 100} {t("ticket_holders")}
-            </div>
-          </div>
+                    "Ticket QR": "[QR]",
+                  }}
+                />
+              </div>
+
+              <div
+                className={`p-4 rounded-lg border mb-4 ${
+                  theme === "dark"
+                    ? "border-gray-700 bg-gray-900/50"
+                    : "border-gray-200 bg-white"
+                }`}
+              >
+                <div className={`text-xs ${textTertiary} mt-2`}>
+                  {t("recipient_count")}: {capacity || 100}{" "}
+                  {t("ticket_holders")}
+                </div>
+              </div>
+            </>
+          )}
         </div>
 
         {/* Actions */}

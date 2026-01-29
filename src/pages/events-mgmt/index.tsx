@@ -36,7 +36,7 @@ export default function EventsMgmtPage() {
   // Filters
   const [showFilters, setShowFilters] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedWebsites, setSelectedWebsites] = useState<Website[]>([]);
+  const [selectedWebsites, setSelectedWebsites] = useState<IWebsite[]>([]);
   const [eventTypeFilter, setEventTypeFilter] = useState<
     "all" | "free" | "paid"
   >("all");

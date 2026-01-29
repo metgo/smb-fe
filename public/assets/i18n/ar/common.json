@@ -73,5 +73,12 @@
   "wed": "أرب",
   "thu": "خم",
   "fri": "جم",
-  "sat": "سب"
+  "sat": "سب",
+
+  "all": "الكل",
+  "select_dmo": "اختر DMO",
+  "select_authority": "اختر الجهة",
+  "website_visibility": "ظهور المواقع",
+  "select_associated_websites": "اختر المواقع المرتبطة",
+  "select_unassociated_websites": "اختر المواقع غير المرتبطة"
 }

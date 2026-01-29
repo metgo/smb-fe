@@ -39,6 +39,8 @@ import {
 import { ModalWrapper } from "@/components/wrapper";
 import { useEventDraftSaver } from "../hooks/useEventDraftSaver";
 import { useImagesUpload } from "@/hooks/useImagesUpload";
+import { formatToBackendTemplate } from "@/helpers/formatter";
+import { useCreateWebsiteAccessItemMutation } from "@/store/api/commonMutationApi";
 
 interface CreateEventWizardProps {
   isOpen: boolean;
@@ -64,6 +66,9 @@ export default function CreateEventWizard({
     useUpdateEventMutation();
   const [initEventCreate, { isLoading: isEventCreating }] =
     useInitEventCreateMutation();
+  const [createWebsiteAccessItem, { isLoading: isWebsiteAccessItemCreating }] =
+    useCreateWebsiteAccessItemMutation();
+
   const {
     data: editData,
     refetch,
@@ -99,6 +104,12 @@ export default function CreateEventWizard({
   const [selectedAccessiblitiesId, setAccessiblitiesId] = useState<string[]>(
     [],
   );
+  const [websiteVisibilityIds, setWebsiteVisibilityIds] = useState({
+    allBlacklistIds: [] as string[],
+    selectedBlacklistIds: [] as string[],
+    allWhitelistIds: [] as string[],
+    selectedWhitelistIds: [] as string[],
+  });
 
   // Step 2: Date, Time & Format
   const [isMultiDay, setIsMultiDay] = useState(false);
@@ -286,8 +297,9 @@ export default function CreateEventWizard({
 
       // Message shedule nofitications
       const notification = editData?.scheduledNotificationId?.map(
-        (item: any) => ({
-          id: item?._id,
+        (item: any, index: number) => ({
+          _id: item?._id,
+          index,
           channels: {
             email: item?.channels?.includes("EMAIL"),
             sms: item?.channels?.includes("SMS"),
@@ -327,8 +339,6 @@ export default function CreateEventWizard({
     switch (step) {
       case 1:
         if (!selectedDmoId?.trim()) newErrors.dmoId = t("required_field");
-        if (!selectedAuthorityId?.trim())
-          newErrors.authorityId = t("required_field");
         if (!eventName?.trim()) newErrors.eventName = t("required_field");
         if (!shortDescription?.trim())
           newErrors.shortDescription = t("required_field");
@@ -357,6 +367,18 @@ export default function CreateEventWizard({
 
     setErrors(newErrors);
     return Object.keys(newErrors)?.length === 0;
+  };
+
+  const websiteAccessItemPayload = {
+    blacklist: {
+      allItems: websiteVisibilityIds.allBlacklistIds,
+      selectedItems: websiteVisibilityIds.selectedBlacklistIds,
+    },
+    whitelist: {
+      allItems: websiteVisibilityIds.allWhitelistIds,
+      selectedItems: websiteVisibilityIds.selectedWhitelistIds,
+    },
+    purpose: "event",
   };
 
   const eventBasicInfoPayload = {
@@ -408,23 +430,39 @@ export default function CreateEventWizard({
     },
     customQuestions: customQuestions,
   };
+
   const eventMsgSchedulePayload = {
-    scheduledNotifications: notifications?.map((item) => ({
-      sendHoursBefore: item.hoursBeforeEvent,
-      channels: [
-        item?.channels?.email && "EMAIL",
-        item?.channels?.sms && "SMS",
-        item?.channels?.whatsapp && "WHATSAPP",
-      ].filter(Boolean) as ("EMAIL" | "SMS" | "WHATSAPP")[],
-      language: item.language,
-      template: item.template,
-      status: item.enabled ? "ACTIVE" : "INACTIVE",
-      customTemplate: {
-        subject: item.subject,
-        body: item.message,
-      },
-    })),
+    scheduledNotifications: notifications.map((item) => {
+      const base = {
+        ...(!item.index ? { _id: item._id } : {}),
+
+        sendHoursBefore: item.hoursBeforeEvent,
+
+        channels: [
+          item.channels?.email && "EMAIL",
+          item.channels?.sms && "SMS",
+          item.channels?.whatsapp && "WHATSAPP",
+        ].filter(Boolean) as ("EMAIL" | "SMS" | "WHATSAPP")[],
+
+        language: item.language,
+        template: item.template,
+        status: item.enabled ? "ACTIVE" : "INACTIVE",
+      };
+
+      if (item.template === "custom") {
+        return {
+          ...base,
+          customTemplate: {
+            subject: item.subject,
+            body: formatToBackendTemplate(item.message),
+          },
+        };
+      } else {
+        return base;
+      }
+    }),
   };
+
   const eventMediaPayload = {
     images: eventImages,
   };
@@ -458,7 +496,13 @@ export default function CreateEventWizard({
 
   const handleSaveDraft = async () => {
     await eventImageUploadAll();
-    saveDraft(false);
+    await saveDraft(false);
+    if (eventId) {
+      await createWebsiteAccessItem({
+        body: websiteAccessItemPayload,
+        itemId: eventId,
+      });
+    }
   };
 
   const handlePrevious = () => {
@@ -483,6 +527,12 @@ export default function CreateEventWizard({
     }
     setIsPublishing(true);
     await saveDraft(true);
+    if (eventId) {
+      await createWebsiteAccessItem({
+        body: websiteAccessItemPayload,
+        itemId: eventId,
+      });
+    }
     setIsPublishing(false);
     toast.success(t("event_published_success"));
     onClose();
@@ -541,7 +591,11 @@ export default function CreateEventWizard({
     <ModalWrapper
       onClose={onClose}
       showSpinner={
-        isEventCreating || isEventCreating || isLoading || isFetching
+        isEventCreating ||
+        isEventCreating ||
+        isLoading ||
+        isFetching ||
+        isWebsiteAccessItemCreating
       }
     >
       {/* Header */}
@@ -652,6 +706,7 @@ export default function CreateEventWizard({
       <div className="flex-1 overflow-y-auto p-6">
         {currentStep === 1 && (
           <EventBasicInformation
+            eventId={eventId}
             markDirty={markDirty}
             eventName={eventName}
             setEventName={setEventName}
@@ -674,6 +729,9 @@ export default function CreateEventWizard({
             setGroupTypesId={setGroupTypesId}
             selectedSubCategoriesId={selectedSubCategoriesId}
             setSubCategoriesId={setSubCategoriesId}
+            websiteVisibilityIds={websiteVisibilityIds}
+            setWebsiteVisibilityIds={setWebsiteVisibilityIds}
+            eventAssociatedWebsites={editData?.associatedWebsites ?? []}
           />
         )}
         {currentStep === 2 && (
