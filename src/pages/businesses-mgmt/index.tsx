@@ -1,10 +1,9 @@
 import { useState } from "react";
-
-import { useAppSelector } from "@/hooks/hooks";
+import { useNavigate } from "react-router-dom";
 
 import BusinessDetails from "./details";
-import { BusinessesList, CreateBusinessWizard } from "./components";
-import { useNavigate } from "react-router-dom";
+import { useAppSelector } from "@/hooks/hooks";
+import { BusinessesWithViewMode, CreateBusinessWizard } from "./components";
 
 type View = "list" | "details" | "create" | "edit";
 
@@ -46,7 +45,7 @@ export default function BusinessesMgmtPage() {
   return (
     <>
       {currentView === "list" && (
-        <BusinessesList
+        <BusinessesWithViewMode
           theme={theme}
           onBusinessClick={handleBusinessClick}
           onCreateNew={handleCreateNew}

@@ -12,12 +12,14 @@ interface AnalyticsStatsSectionProps {
   business: Business;
   theme: string;
   t: (key: string) => string;
+  borderColor: string;
 }
 
 const AnalyticsStatsSection = ({
-  business,
-  theme,
   t,
+  theme,
+  business,
+  borderColor,
 }: AnalyticsStatsSectionProps) => {
   const stats = [
     {
@@ -63,10 +65,7 @@ const AnalyticsStatsSection = ({
         {stats.map((stat, idx) => {
           const Icon = stat.icon;
           return (
-            <div
-              key={idx}
-              className={`p-4 rounded-lg border ${theme === "dark" ? "border-gray-700 bg-gray-800/50" : "border-gray-200 bg-gray-50"}`}
-            >
+            <div key={idx} className={`p-4 rounded-lg border ${borderColor}`}>
               <div className="flex items-center gap-2 mb-2">
                 <Icon className="w-5 h-5 text-teal-600 dark:text-teal-400" />
                 <h3

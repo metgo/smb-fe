@@ -23,14 +23,16 @@ export default function PageStats({
             {item.icon}
             <span className={`text-sm ${textPrimary}`}>{item.title}</span>
           </div>
-          <p className={`text-2xl ${textPrimary} mb-1`}>{item.value}</p>
-          {item.label && (
-            <p
-              className={`text-xs ${item.labelClass ? item.labelClass : textTertiary}`}
-            >
-              {item.label}
-            </p>
-          )}
+          <div className="flex items-center gap-2">
+            <p className={`text-2xl ${textPrimary}`}>{item.value}</p>
+            {item.label && (
+              <p
+                className={`text-xs ${item.labelClass ? item.labelClass : textTertiary}`}
+              >
+                {item.label}
+              </p>
+            )}
+          </div>
         </div>
       ))}
     </div>

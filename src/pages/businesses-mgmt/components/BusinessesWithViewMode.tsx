@@ -1,4 +1,3 @@
-import clsx from "clsx";
 import { useTranslation } from "react-i18next";
 import InfiniteScroll from "react-infinite-scroll-component";
 import {
@@ -9,10 +8,8 @@ import {
   Archive,
   CheckCircle,
   XCircle,
-  Loader,
   AlertCircle,
   Columns,
-  ExternalLink,
   UtensilsCrossed,
   Landmark,
   Theater,
@@ -23,18 +20,14 @@ import { useState, useEffect, useMemo, useRef } from "react";
 import { useAppSelector } from "@/hooks/hooks";
 import { FilterButton } from "@/components/btns";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import {
-  PageHeader,
-  PageStats,
-  ReordableDataTable,
-  ViewModeToggle,
-} from "@/components/shared";
+import { PageHeader, PageStats, ViewModeToggle } from "@/components/shared";
 import {
   useGetAllbusinessesQuery,
   useGetBusinessStatsQuery,
 } from "@/store/api/businessQueryApi";
 import { useCommon } from "@/hooks/useCommon";
 import BusinessGridView from "./sub-components/BusinessGridView";
+import { BusinessListView } from "./sub-components";
 
 interface BusinessesListProps {
   theme: Theme;
@@ -42,8 +35,7 @@ interface BusinessesListProps {
   onCreateNew: () => void;
 }
 
-// Simulate user role for permissions
-const USER_ROLE = "admin"; // Can be: 'superadmin', 'admin', 'dmo', 'authority', 'business_owner'
+const USER_ROLE = "admin";
 
 // Column configuration
 const defaultColumns = {
@@ -81,27 +73,7 @@ const columnDefinitions = [
   { key: "categories" as keyof ColumnVisibility, isDefault: false },
 ];
 
-// Category colors for visual distinction
-// const categoryColors: { [key: string]: string } = {
-//   "Food & Dining":
-//     "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400",
-//   Cafe: "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400",
-//   Tourism: "bg-teal-100 text-teal-800 dark:bg-teal-900/30 dark:text-teal-400",
-//   Adventure:
-//     "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
-//   Shopping:
-//     "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400",
-//   Culture: "bg-pink-100 text-pink-800 dark:bg-pink-900/30 dark:text-pink-400",
-//   Accommodation:
-//     "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
-//   "Eco-Tourism":
-//     "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400",
-//   Workshops:
-//     "bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-400",
-// };
-
-// const defaultCategoryColor =
-//   "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-400";
+const LIMIT = 20;
 
 export default function BusinessesList({
   theme,
@@ -109,13 +81,15 @@ export default function BusinessesList({
   onCreateNew,
 }: BusinessesListProps) {
   const { t } = useTranslation("businesses");
+  const { textSecondary } = useThemeClasses();
+  const { dmosAuthorities } = useCommon();
   const { isRTL } = useAppSelector((state) => state.settings);
-  const { textPrimary, textSecondary } = useThemeClasses();
+  const { data: businessStatsData } = useGetBusinessStatsQuery({});
+
   //infinite scroll states
   const [page, setPage] = useState<number>(1);
-  const LIMIT = 20;
-  const [businesses, setBusinesses] = useState<any[]>([]);
   const [hasMore, setHasMore] = useState(true);
+  const [businesses, setBusinesses] = useState<any[]>([]);
 
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const [error, _setError] = useState(false);
@@ -125,16 +99,15 @@ export default function BusinessesList({
   const [selectedBusinesses, setSelectedBusinesses] = useState<Set<string>>(
     new Set(),
   );
-  const { dmosAuthorities } = useCommon();
   const [selectedDmoId, setSelectDmoId] = useState<string>("");
   const [selectedAuthorityId, setSelectAuthorityId] = useState<string>("");
   const selectedDmos = dmosAuthorities?.find(
     (item) => item?._id === selectedDmoId,
   );
-  const { data: businessStatsData } = useGetBusinessStatsQuery({});
   const columnSettingsRef = useRef<HTMLDivElement>(null);
   const [columnVisibility, setColumnVisibility] =
     useState<ColumnVisibility>(defaultColumns);
+
   // Filters
   const [filters, setFilters] = useState({
     authorityId: "",
@@ -142,6 +115,17 @@ export default function BusinessesList({
     status: "all",
     hasProductFilter: "",
   });
+
+  const clearFilter = () => {
+    setSelectAuthorityId("");
+    setSelectDmoId("");
+    setFilters({
+      authorityId: "",
+      dmoId: "",
+      status: "all",
+      hasProductFilter: "",
+    });
+  };
 
   // Column visibility - load from localStorage or use defaults
   const [visibleColumns, _setVisibleColumns] = useState<ColumnVisibility>(
@@ -157,18 +141,6 @@ export default function BusinessesList({
       return defaultColumns;
     },
   );
-
-  // Save column visibility to localStorage
-  useEffect(() => {
-    try {
-      localStorage.setItem(
-        "businessesTableColumns",
-        JSON.stringify(visibleColumns),
-      );
-    } catch (e) {
-      console.error("Failed to save column settings:", e);
-    }
-  }, [visibleColumns]);
 
   // Close column settings when clicking outside
   useEffect(() => {
@@ -216,54 +188,34 @@ export default function BusinessesList({
     return params;
   }, [page, searchTerm, filters]);
 
-  const clearFilter = () => {
-    setSelectAuthorityId("");
-    setSelectDmoId("");
-    setFilters({
-      authorityId: "",
-      dmoId: "",
-      status: "all",
-      hasProductFilter: "",
-    });
-  };
+  useEffect(() => {
+    setBusinesses([]);
+    setPage(1);
+    setHasMore(true);
+  }, [searchTerm, filters]);
 
   const {
     data: businessData,
-    isLoading: loading,
+    isLoading,
     refetch,
   } = useGetAllbusinessesQuery(queryParams);
+
   useEffect(() => {
     if (!businessData?.meta) return;
-
-    // Once we receive any page's meta we know the real situation
-    setHasMore(businessData.meta.hasNextPage === true);
-
-    // Optional safety: if we ever get fewer items than limit → last page
-    if (businessData?.data?.length < LIMIT) {
-      setHasMore(false);
-    }
+    setHasMore(businessData.meta.hasNextPage);
   }, [businessData]);
 
   useEffect(() => {
-    if (businessData?.data) {
-      setBusinesses((prev) => [...prev, ...businessData.data]);
-    }
-  }, [businessData]);
+    if (!businessData?.data) return;
+    setBusinesses((prev) =>
+      page === 1 ? businessData.data : [...prev, ...businessData.data],
+    );
+  }, [businessData, page]);
 
   const fetchNextPage = () => {
-    // Prevent calling if already no more pages or loading
     if (!hasMore) return;
-
     setPage((prev) => prev + 1);
   };
-
-  // Column toggle handler
-  // const toggleColumn = (column: keyof ColumnVisibility) => {
-  //   setVisibleColumns((prev) => ({
-  //     ...prev,
-  //     [column]: !prev[column],
-  //   }));
-  // };
 
   // Reset to default columns
   const resetToDefault = () => {
@@ -447,257 +399,14 @@ export default function BusinessesList({
     URL.revokeObjectURL(url);
   };
 
-  // Permission check
   const canChangeStatus = ["superadmin", "admin", "dmo", "authority"].includes(
     USER_ROLE,
   );
 
-  const columns = [
-    ...(canChangeStatus ? [{ key: "checkbox", label: "", width: "50px" }] : []),
-
-    columnVisibility.impact && {
-      key: "impact",
-      label: t("impact_score"),
-      width: "110px",
-      render: (business: any) => {
-        const score = business.impact ?? 0;
-        return (
-          <span
-            className={clsx(
-              "inline-flex items-center justify-center px-3 py-1 rounded-lg text-sm font-medium",
-              score >= 650
-                ? theme === "dark"
-                  ? "bg-green-500/20 text-green-400"
-                  : "bg-green-100 text-green-700"
-                : score >= 450
-                  ? theme === "dark"
-                    ? "bg-yellow-500/20 text-yellow-400"
-                    : "bg-yellow-100 text-yellow-700"
-                  : theme === "dark"
-                    ? "bg-gray-700 text-gray-400"
-                    : "bg-gray-100 text-gray-600",
-            )}
-          >
-            {score}
-          </span>
-        );
-      },
-    },
-
-    columnVisibility.name && {
-      key: "name",
-      label: t("business_name"),
-      render: (business: any) => (
-        <span className={textPrimary}>
-          {business.name || business.slug || t("unnamed_business") || "-"}
-        </span>
-      ),
-    },
-
-    columnVisibility.shortDescription && {
-      key: "shortDescription",
-      label: t("shortDescription"),
-      render: (business: any) => (
-        <span className={textPrimary}>{business.shortDescription || "-"}</span>
-      ),
-    },
-
-    columnVisibility.contactDetails && {
-      key: "contactDetails",
-      label: t("contactPerson"),
-      render: (business: any) => (
-        <span className={textPrimary}>
-          {business.contactDetails?.name || "-"}
-        </span>
-      ),
-    },
-
-    columnVisibility.busiEmail && {
-      key: "busiEmail",
-      label: t("business_email"),
-      render: (business: any) => (
-        <a
-          href={`mailto:${business.busiEmail}`}
-          onClick={(e) => e.stopPropagation()}
-          className="flex items-center gap-1 text-sm text-teal-500 hover:text-teal-600"
-        >
-          {business.busiEmail || "-"}
-        </a>
-      ),
-    },
-
-    columnVisibility.phoneNumber && {
-      key: "phoneNumber",
-      label: t("phone_number"),
-      render: (business: any) => (
-        <a
-          href={`tel:${business.phoneNumber}`}
-          onClick={(e) => e.stopPropagation()}
-          className="flex items-center gap-1 text-sm text-teal-500 hover:text-teal-600 whitespace-nowrap"
-        >
-          {business.phoneNumber || "-"}
-        </a>
-      ),
-    },
-
-    columnVisibility.productCount && {
-      key: "productCount",
-      label: t("products_count"),
-      render: (business: any) => (
-        <span className={textPrimary}>{business.productCount ?? 0}</span>
-      ),
-    },
-
-    columnVisibility.status && {
-      key: "status",
-      label: t("status"),
-      render: (business: any) => {
-        const st = (business.status || "").toLowerCase();
-        return (
-          <span
-            className={clsx(
-              "inline-flex items-center px-3 py-1 rounded-lg text-sm font-medium",
-              st === "approved"
-                ? "bg-blue-500/20 text-blue-400"
-                : st === "pending"
-                  ? "bg-yellow-500/20 text-yellow-400"
-                  : st === "rejected"
-                    ? "bg-red-500/20 text-red-400"
-                    : theme === "dark"
-                      ? "bg-gray-700 text-gray-400"
-                      : "bg-gray-100 text-gray-600",
-            )}
-          >
-            {t(st) || st || t("unknown")}
-          </span>
-        );
-      },
-    },
-
-    columnVisibility.tripCount && {
-      key: "tripCount",
-      label: t("trips"),
-      render: (business: any) => (
-        <span className={textPrimary}>{business.tripCount ?? 0}</span>
-      ),
-    },
-
-    columnVisibility.associatedWebsites && {
-      key: "associatedWebsites",
-      label: t("website"),
-      render: (business: any) => {
-        const sites = business.associatedWebsites || [];
-        if (!sites.length) return <span className={textSecondary}>-</span>;
-
-        const mainSite = sites.find((s: any) => s.url) || sites[0];
-        if (!mainSite?.url) return <span className={textSecondary}>-</span>;
-
-        try {
-          const url = new URL(mainSite.url);
-          return (
-            <a
-              href={mainSite.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={(e) => e.stopPropagation()}
-              className="flex items-center gap-1 text-teal-500 hover:text-teal-400"
-            >
-              <ExternalLink className="w-4 h-4" />
-              <span className="text-sm">{url.hostname}</span>
-            </a>
-          );
-        } catch {
-          return <span className={textSecondary}>{mainSite.url}</span>;
-        }
-      },
-    },
-  ].filter(Boolean) as {
-    key: string;
-    label: string;
-    width?: string;
-    sortable?: boolean;
-    render?: (row: any) => React.ReactNode;
-  }[];
-
-  // Helper function to get column label
-  // const getColumnLabel = (key: keyof ColumnVisibility): string => {
-  //   const labelMap: { [K in keyof ColumnVisibility]: string } = {
-  //     impact: t("impactScore"),
-  //     name: t("businessName"),
-  //     shortDescription: t("shortDescription"),
-  //     contactDetails: t("contactPerson"),
-  //     busiEmail: t("businessEmail"),
-  //     phoneNumber: t("phoneNumber"),
-  //     productCount: t("productsCount"),
-  //     status: t("status"),
-  //     lifetimeSales: t("lifetimeSales"),
-  //     tripCount: t("tripCount") || "Trip Count",
-  //     associatedWebsites: t("websiteUrl"),
-  //     contactPhone: t("contactPhone") || "Contact Phone",
-  //     categories: t("categories"),
-  //   };
-  //   return labelMap[key];
-  // };
-
-  // Calculate trip count (mock - in real app would come from backend)
+  // Mock calculation based on products count and impact score
   const getTripCount = (business: any): number => {
-    // Mock calculation based on products count and impact score
     return Math.floor((business.productCount * business.impact) / 10);
   };
-
-  // Get category icon based on main category
-  // const getCategoryIcon = (categories: string[]) => {
-  //   const mainCategory = categories[0]?.toLowerCase() || "";
-
-  //   if (
-  //     mainCategory.includes("food") ||
-  //     mainCategory.includes("dining") ||
-  //     mainCategory.includes("cafe")
-  //   ) {
-  //     return <UtensilsCrossed className="w-5 h-5" />;
-  //   }
-  //   if (mainCategory.includes("tourism") || mainCategory.includes("travel")) {
-  //     return <Plane className="w-5 h-5" />;
-  //   }
-  //   if (
-  //     mainCategory.includes("adventure") ||
-  //     mainCategory.includes("attraction")
-  //   ) {
-  //     return <Landmark className="w-5 h-5" />;
-  //   }
-  //   if (mainCategory.includes("culture")) {
-  //     return <Theater className="w-5 h-5" />;
-  //   }
-  //   if (
-  //     mainCategory.includes("accommodation") ||
-  //     mainCategory.includes("sleep")
-  //   ) {
-  //     return <BedDouble className="w-5 h-5" />;
-  //   }
-  //   if (
-  //     mainCategory.includes("local") ||
-  //     mainCategory.includes("shopping") ||
-  //     mainCategory.includes("eco")
-  //   ) {
-  //     return <Map className="w-5 h-5" />;
-  //   }
-  //   // Default icon
-  //   return <Map className="w-5 h-5" />;
-  // };
-
-  // Loading state
-  // if (loading) {
-  //   return (
-  //     <div className="flex-1 flex items-center justify-center">
-  //       <div className="text-center">
-  //         <Loader className="w-12 h-12 animate-spin mx-auto mb-4 text-teal-600" />
-  //         <p className={theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}>
-  //           {t('loadingBusinesses')}
-  //         </p>
-  //       </div>
-  //     </div>
-  //   );
-  // }
 
   // Error state
   if (error) {
@@ -767,7 +476,7 @@ export default function BusinessesList({
   ];
 
   return (
-    <div className="flex flex-col overflow-hidden h-[calc(108vh-210px)] px-4 ">
+    <div className="flex flex-col h-[calc(108vh-210px)] ">
       {/* Sticky Header */}
       <div
         className={`border-b ${
@@ -813,128 +522,130 @@ export default function BusinessesList({
           <FilterButton value={showFilters} onChange={setShowFilters} />
 
           {/* Column Settings */}
-          <div className="relative" ref={columnSettingsRef}>
-            <button
-              onClick={() => setShowColumnSettings(!showColumnSettings)}
-              className={`px-4 py-2 rounded-lg border flex items-center gap-2 transition-colors ${
-                theme === "dark"
-                  ? "border-gray-700 hover:bg-gray-800 text-gray-300"
-                  : "border-gray-300 hover:bg-gray-100 text-gray-700"
-              }`}
-            >
-              <Columns className="w-5 h-5" />
-              {t("show_columns")}
-              {showColumnSettings ? (
-                <ChevronUp className="w-4 h-4" />
-              ) : (
-                <ChevronDown className="w-4 h-4" />
-              )}
-            </button>
-
-            {/* Column Settings Dropdown */}
-            {showColumnSettings && (
-              <div
-                className={`absolute ${isRTL ? "left-0" : "right-0"} mt-2 w-64 rounded-lg shadow-lg max-h-50vh overflow-y-auto border z-50 ${theme === "dark" ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}
+          {viewMode === "list" && (
+            <div className="relative" ref={columnSettingsRef}>
+              <button
+                onClick={() => setShowColumnSettings(!showColumnSettings)}
+                className={`px-4 py-2 rounded-lg border flex items-center gap-2 transition-colors ${
+                  theme === "dark"
+                    ? "border-gray-700 hover:bg-gray-800 text-gray-300"
+                    : "border-gray-300 hover:bg-gray-100 text-gray-700"
+                }`}
               >
+                <Columns className="w-5 h-5" />
+                {t("show_columns")}
+                {showColumnSettings ? (
+                  <ChevronUp className="w-4 h-4" />
+                ) : (
+                  <ChevronDown className="w-4 h-4" />
+                )}
+              </button>
+
+              {/* Column Settings Dropdown */}
+              {showColumnSettings && (
                 <div
-                  className={`p-4 border-b ${theme === "dark" ? "border-gray-700" : "border-gray-200"}`}
+                  className={`absolute ${isRTL ? "left-0" : "right-0"} mt-2 w-64 rounded-lg shadow-lg max-h-50vh overflow-y-auto border z-50 ${theme === "dark" ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}
                 >
-                  <div className="flex items-center justify-between mb-2">
-                    <h3
-                      className={`text-sm ${theme === "dark" ? "text-gray-200" : "text-gray-900"}`}
+                  <div
+                    className={`p-4 border-b ${theme === "dark" ? "border-gray-700" : "border-gray-200"}`}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <h3
+                        className={`text-sm ${theme === "dark" ? "text-gray-200" : "text-gray-900"}`}
+                      >
+                        {t("column_settings") || "Column Settings"}
+                      </h3>
+                      <button
+                        onClick={resetToDefault}
+                        className="text-xs text-teal-600 hover:text-teal-700 transition-colors"
+                      >
+                        {t("reset_to_default") || "Reset to Default"}
+                      </button>
+                    </div>
+                    <p
+                      className={`text-xs ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
                     >
-                      {t("column_settings") || "Column Settings"}
-                    </h3>
-                    <button
-                      onClick={resetToDefault}
-                      className="text-xs text-teal-600 hover:text-teal-700 transition-colors"
-                    >
-                      {t("reset_to_default") || "Reset to Default"}
-                    </button>
+                      {t("select_columns_to_display") ||
+                        "Select columns to display"}
+                    </p>
                   </div>
-                  <p
-                    className={`text-xs ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
-                  >
-                    {t("select_columns_to_display") ||
-                      "Select columns to display"}
-                  </p>
-                </div>
-                <div className="p-3 max-h-96 overflow-y-auto">
-                  {/* Default Columns */}
-                  {Object.entries(columnVisibility)
-                    .filter(
-                      ([key]) =>
-                        columnDefinitions.find((col) => col.key === key)
-                          ?.isDefault,
-                    )
-                    .map(([key, visible]) => (
-                      <label
-                        key={key}
-                        className={`flex items-center gap-2 p-2 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 ${
-                          isRTL ? "flex-row-reverse justify-end" : ""
-                        }`}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={visible}
-                          onChange={(e) =>
-                            setColumnVisibility((prev) => ({
-                              ...prev,
-                              [key]: e.target.checked,
-                            }))
-                          }
-                          className="rounded"
-                        />
-                        <span className={`text-sm ${textSecondary}`}>
-                          {t(key as keyof typeof t)}
-                        </span>
-                      </label>
-                    ))}
+                  <div className="p-3 max-h-96 overflow-y-auto">
+                    {/* Default Columns */}
+                    {Object.entries(columnVisibility)
+                      .filter(
+                        ([key]) =>
+                          columnDefinitions.find((col) => col.key === key)
+                            ?.isDefault,
+                      )
+                      .map(([key, visible]) => (
+                        <label
+                          key={key}
+                          className={`flex items-center gap-2 p-2 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 ${
+                            isRTL ? "flex-row-reverse justify-end" : ""
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={visible}
+                            onChange={(e) =>
+                              setColumnVisibility((prev) => ({
+                                ...prev,
+                                [key]: e.target.checked,
+                              }))
+                            }
+                            className="rounded"
+                          />
+                          <span className={`text-sm ${textSecondary}`}>
+                            {t(key as keyof typeof t)}
+                          </span>
+                        </label>
+                      ))}
 
-                  {/* Divider */}
-                  {columnDefinitions.some((col) => !col.isDefault) && (
-                    <div className="my-3 border-t border-gray-200 dark:border-gray-700" />
-                  )}
+                    {/* Divider */}
+                    {columnDefinitions.some((col) => !col.isDefault) && (
+                      <div className="my-3 border-t border-gray-200 dark:border-gray-700" />
+                    )}
 
-                  {/* Non-default Columns */}
-                  <p
-                    className={`text-xs mb-2 ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
-                  >
-                    Optional Columns
-                  </p>
-                  {Object.entries(columnVisibility)
-                    .filter(
-                      ([key]) =>
-                        !columnDefinitions.find((col) => col.key === key)
-                          ?.isDefault,
-                    )
-                    .map(([key, visible]) => (
-                      <label
-                        key={key}
-                        className={`flex items-center gap-2 p-2 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 ${
-                          isRTL ? "flex-row-reverse justify-end" : ""
-                        }`}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={visible}
-                          onChange={(e) =>
-                            setColumnVisibility((prev) => ({
-                              ...prev,
-                              [key]: e.target.checked,
-                            }))
-                          }
-                          className="rounded"
-                        />
-                        <span className={`text-sm ${textSecondary}`}>
-                          {t(key as keyof typeof t)}
-                        </span>
-                      </label>
-                    ))}
+                    {/* Non-default Columns */}
+                    <p
+                      className={`text-xs mb-2 ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
+                    >
+                      Optional Columns
+                    </p>
+                    {Object.entries(columnVisibility)
+                      .filter(
+                        ([key]) =>
+                          !columnDefinitions.find((col) => col.key === key)
+                            ?.isDefault,
+                      )
+                      .map(([key, visible]) => (
+                        <label
+                          key={key}
+                          className={`flex items-center gap-2 p-2 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 ${
+                            isRTL ? "flex-row-reverse justify-end" : ""
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={visible}
+                            onChange={(e) =>
+                              setColumnVisibility((prev) => ({
+                                ...prev,
+                                [key]: e.target.checked,
+                              }))
+                            }
+                            className="rounded"
+                          />
+                          <span className={`text-sm ${textSecondary}`}>
+                            {t(key as keyof typeof t)}
+                          </span>
+                        </label>
+                      ))}
+                  </div>
                 </div>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
+          )}
 
           {/* Export */}
           <button
@@ -1203,77 +914,35 @@ export default function BusinessesList({
         )}
       </div>
 
-      {/* Table with horizontal scroll */}
-      <div
-        className={`${theme === "dark" ? "bg-gray-900/50 border-gray-800" : "bg-white border-gray-200"} border rounded-lg overflow-hidden`}
+      <InfiniteScroll
+        dataLength={businesses.length}
+        next={fetchNextPage}
+        hasMore={hasMore}
+        loader={<p className="text-center py-3">Loading more...</p>}
+        endMessage={
+          <p className="text-center py-3 text-gray-500">No more businesses</p>
+        }
+        scrollableTarget="business-table-scroll"
       >
-        {loading ? (
-          <div className="flex items-center justify-center py-20">
-            <Loader className="w-8 h-8 animate-spin text-teal-500" />
-          </div>
-        ) : businessData?.data?.length === 0 ? (
-          <div className="flex items-center justify-center h-64">
-            <div className="text-center">
-              <AlertCircle
-                className={`w-12 h-12 ${theme === "dark" ? "text-gray-300" : "text-gray-400"} mx-auto mb-4`}
-              />
-              <h3
-                className={`text-lg mb-2 ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}
-              >
-                {t("no_businesses_found")}
-              </h3>
-              <p
-                className={`text-sm ${theme === "dark" ? "text-gray-500" : "text-gray-500"}`}
-              >
-                {t("no_businesses_found_desc")}
-              </p>
-            </div>
-          </div>
-        ) : viewMode === "list" ? (
-          <div
-            className={`rounded-2xl ${theme === "dark" ? "bg-gray-900/50" : "bg-white"}`}
-          >
-            <div
-              id="business-table-scroll"
-              style={{ height: "70vh", overflow: "auto" }}
-            >
-              <InfiniteScroll
-                dataLength={businesses.length}
-                next={fetchNextPage}
-                hasMore={hasMore}
-                loader={<p className="text-center py-3">Loading more...</p>}
-                endMessage={
-                  <p className="text-center py-3 text-gray-500">
-                    No more businesses
-                  </p>
-                }
-                scrollableTarget="business-table-scroll"
-              >
-                <ReordableDataTable
-                  rowKey="_id"
-                  data={businesses}
-                  selectedItems={selectedBusinesses}
-                  onSelectionChange={setSelectedBusinesses}
-                  onRowClick={(business) => onBusinessClick(business)}
-                  storageKey="businessesTableColumnOrder"
-                  columns={columns}
-                />
-              </InfiniteScroll>
-            </div>
-          </div>
-        ) : (
-          <div
-            className={`rounded-2xl ${theme === "dark" ? "bg-gray-900/50" : "bg-white"} h-150 overflow-y-auto`}
-          >
-            <BusinessGridView
-              data={businessData?.data}
+        <div className="">
+          {viewMode === "list" ? (
+            <BusinessListView
               theme={theme}
-              refetch={refetch}
-              onRowClick={(business) => onBusinessClick(business)}
+              onBusinessClick={onBusinessClick}
+              isLoading={isLoading}
+              businesses={businesses}
             />
-          </div>
-        )}
-      </div>
+          ) : (
+            <div className="h-96 overflow-y-auto bg-white">
+              <BusinessGridView
+                data={businesses}
+                theme={theme}
+                refetch={refetch}
+              />
+            </div>
+          )}
+        </div>
+      </InfiniteScroll>
     </div>
   );
 }

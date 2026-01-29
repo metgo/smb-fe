@@ -1,7 +1,8 @@
+import clsx from "clsx";
 import { useEffect, useState } from "react";
-import { ArrowLeft, Edit, Plus, Box, UserCog } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { useAppSelector } from "@/hooks/hooks";
+import { useSearchParams } from "react-router-dom";
+import { ArrowLeft, Edit, Plus, Box, UserCog } from "lucide-react";
 
 import {
   AnalyticsStatsSection,
@@ -17,11 +18,13 @@ import {
   ChangeOwnerModal,
   TabsSection,
 } from "./components";
-import { useSearchParams } from "react-router-dom";
-import { useGetbusinessBySlugQuery } from "@/store/api/businessQueryApi";
+import { Spinner } from "@/components/shared";
+import { useAppSelector } from "@/hooks/hooks";
 import { skipToken } from "@reduxjs/toolkit/query";
-import { useSingleImageUpload } from "@/hooks/useSingleImageUpload";
 import { useImagesUpload } from "@/hooks/useImagesUpload";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { useSingleImageUpload } from "@/hooks/useSingleImageUpload";
+import { useGetbusinessBySlugQuery } from "@/store/api/businessQueryApi";
 import { useUpdateBusinessMutation } from "@/store/api/businessMutationApi";
 
 interface BusinessDetailsProps {
@@ -41,11 +44,13 @@ export default function BusinessDetails({
 }: BusinessDetailsProps) {
   const { t } = useTranslation("businesses");
   const { theme } = useAppSelector((state) => state.settings);
+  const { borderColor } = useThemeClasses();
 
   const [searchParams] = useSearchParams();
   const businessSlug = searchParams.get("businessSlug");
-  const businessId = searchParams.get("businessId") ?? ""; // fallback to empty string
-  const { data: business } = useGetbusinessBySlugQuery(
+  const businessId = searchParams.get("businessId") ?? "";
+
+  const { data: business, isLoading } = useGetbusinessBySlugQuery(
     businessSlug ? { slug: businessSlug } : skipToken,
   );
   const [errors, _setErrors] = useState<Record<string, string>>({});
@@ -92,6 +97,7 @@ export default function BusinessDetails({
     initialImage: businessLogoImage?.image,
     onChange: setBusinessLogoImage,
   });
+
   // const StatusBadge = ({ status }: { status: Business["status"] }) => {
   //   const statusConfig = {
   //     draft: { color: "bg-gray-500", label: t("draft") },
@@ -171,8 +177,6 @@ export default function BusinessDetails({
     }
   };
 
-  console.log("Business out", galleryImages);
-
   const renderContent = () => {
     const commonProps = { theme, t, business };
     const mediaProps = {
@@ -199,6 +203,7 @@ export default function BusinessDetails({
       confirmDelete,
       handleDeleteImage,
     };
+
     switch (activeTab) {
       case "overview":
         return <BusinessInfoDetails {...commonProps} />;
@@ -223,16 +228,16 @@ export default function BusinessDetails({
     }
   };
   return (
-    <div className="flex-1 flex flex-col overflow-hidden">
+    <div className="flex-1 flex flex-col overflow-hidden relative">
+      <Spinner isLoading={isLoading} />
+
       {/* Header */}
-      <div
-        className={`border-b ${theme === "dark" ? "bg-gray-900/50 border-gray-800" : "bg-white border-gray-200"} px-6 py-4`}
-      >
+      <div className={clsx(`border-b px-6 py-4`, borderColor)}>
         {/* Top Row */}
         <div className="flex items-center justify-between mb-4">
           <button
             onClick={onBack}
-            className={`flex items-center gap-2 text-sm hover:text-teal-600 transition-colors ${
+            className={`flex items-center gap-2 text-sm hover:text-teal-600 transition-colors cursor-pointer ${
               theme === "dark" ? "text-gray-400" : "text-gray-600"
             }`}
           >
@@ -243,7 +248,7 @@ export default function BusinessDetails({
           <div className="flex items-center gap-2">
             <button
               onClick={onEdit}
-              className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg transition-colors flex items-center gap-2"
+              className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg transition-colors flex items-center gap-2 cursor-pointer"
             >
               <Edit className="w-4 h-4" />
               {t("edit")}
@@ -252,7 +257,7 @@ export default function BusinessDetails({
             {onCreateProduct && (
               <button
                 onClick={onCreateProduct}
-                className="px-4 py-2 bg-linear-to-r from-blue-500 to-indigo-600 hover:shadow-lg text-white rounded-lg transition-all flex items-center gap-2"
+                className="px-4 py-2 bg-linear-to-r from-blue-500 to-indigo-600 hover:shadow-lg text-white rounded-lg transition-all flex items-center gap-2 cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
                 {t("create_product")}
@@ -262,7 +267,7 @@ export default function BusinessDetails({
             {onViewProducts && (
               <button
                 onClick={onViewProducts}
-                className="px-4 py-2 bg-linear-to-r from-blue-500 to-indigo-600 hover:shadow-lg text-white rounded-lg transition-all flex items-center gap-2"
+                className="px-4 py-2 bg-linear-to-r from-blue-500 to-indigo-600 hover:shadow-lg text-white rounded-lg transition-all flex items-center gap-2 cursor-pointer"
               >
                 <Box className="w-4 h-4" />
                 {t("view_products")}
@@ -272,7 +277,7 @@ export default function BusinessDetails({
             {canChangeStatus && (
               <button
                 onClick={() => setShowStatusModal(true)}
-                className={`px-4 py-2 rounded-lg border transition-colors flex items-center gap-2 ${
+                className={`px-4 py-2 rounded-lg border transition-colors flex items-center gap-2 cursor-pointer ${
                   theme === "dark"
                     ? "border-gray-700 hover:bg-gray-800 text-gray-300"
                     : "border-gray-300 hover:bg-gray-100 text-gray-700"
@@ -285,7 +290,7 @@ export default function BusinessDetails({
             {USER_ROLE === "admin" && (
               <button
                 onClick={() => setShowChangeOwnerModal(true)}
-                className={`px-4 py-2 rounded-lg border transition-colors flex items-center gap-2 ${
+                className={`px-4 py-2 rounded-lg border transition-colors flex items-center gap-2 cursor-pointer ${
                   theme === "dark"
                     ? "border-gray-700 hover:bg-gray-800 text-gray-300"
                     : "border-gray-300 hover:bg-gray-100 text-gray-700"
@@ -297,7 +302,7 @@ export default function BusinessDetails({
             )}
             <button
               onClick={handleSubmit}
-              className={`px-4 py-2 rounded-lg border transition-colors flex items-center gap-2 ${
+              className={`px-4 py-2 rounded-lg border transition-colors flex items-center gap-2 cursor-pointer ${
                 theme === "dark"
                   ? "border-gray-700 hover:bg-gray-800 text-gray-300"
                   : "border-gray-300 hover:bg-gray-100 text-gray-700"
@@ -310,13 +315,18 @@ export default function BusinessDetails({
 
         <BusinessTitleSection business={business} theme={theme} t={t} />
         {business?.analytics && (
-          <AnalyticsStatsSection business={business} theme={theme} t={t} />
+          <AnalyticsStatsSection
+            t={t}
+            theme={theme}
+            business={business}
+            borderColor={borderColor}
+          />
         )}
         <TabsSection
+          t={t}
+          theme={theme}
           activeTab={activeTab}
           setActiveTab={setActiveTab}
-          theme={theme}
-          t={t}
         />
       </div>
 
@@ -330,8 +340,7 @@ export default function BusinessDetails({
         theme={theme}
         USER_ROLE={USER_ROLE}
         currentOwner={business?.owner}
-        onOwnerChange={(ownerData) => {
-          console.log("🚀 ~ BusinessDetails ~ ownerData:", ownerData);
+        onOwnerChange={(_) => {
           setShowChangeOwnerModal(false);
         }}
       />

@@ -1,6 +1,7 @@
-import { useGetIndividualBusinessStatsQuery } from "@/store/api/businessQueryApi";
-import { TrendingUp, Users, Eye, Timer, Activity } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
+import { TrendingUp, Users, Eye, Timer, Activity } from "lucide-react";
+
+import { useGetIndividualBusinessStatsQuery } from "@/store/api/businessQueryApi";
 
 interface BusinessTitleSectionProps {
   business: Business;
@@ -8,49 +9,18 @@ interface BusinessTitleSectionProps {
   t: (key: string) => string;
 }
 
-interface BusinessStats {
-  pagePath: string;
-  pageViews: number;
-  activeUsers: number;
-  viewsPerUser: number;
-  averageEngagementTime: string;
-  eventCount: number;
-}
-
 const BusinessTitleSection = ({
   business,
   theme,
   t,
 }: BusinessTitleSectionProps) => {
-  const StatusBadge = ({ status }: { status: Business["status"] }) => {
-    const statusConfig = {
-      DRAFT: { color: "bg-gray-500", label: t("draft") },
-      PENDING: { color: "bg-yellow-500", label: t("pending") },
-      APPROVED: { color: "bg-green-500", label: t("approved") },
-      REJECTED: { color: "bg-red-500", label: t("rejected") },
-      ARCHIVED: { color: "bg-gray-400", label: t("archived") },
-    };
-
-    const config =
-      statusConfig[status?.toUpperCase() as keyof typeof statusConfig];
-
-    return (
-      <span
-        className={`px-3 py-1 rounded-full text-sm text-white ${config?.color}`}
-      >
-        {config?.label}
-      </span>
-    );
-  };
-
   const [searchParams] = useSearchParams();
   const businessId = searchParams.get("businessId");
 
-  const { data: businessStatIndividual, isLoading } =
-    useGetIndividualBusinessStatsQuery(
-      { businessId },
-      { skip: !businessId },
-    ) as { data?: BusinessStats; isLoading: boolean };
+  const { data: businessStatIndividual } = useGetIndividualBusinessStatsQuery(
+    { businessId },
+    { skip: !businessId },
+  );
 
   const businessStatsConfig = [
     {
@@ -79,6 +49,27 @@ const BusinessTitleSection = ({
       icon: Activity,
     },
   ] as const;
+
+  const StatusBadge = ({ status }: { status: Business["status"] }) => {
+    const statusConfig = {
+      DRAFT: { color: "bg-gray-500", label: t("draft") },
+      PENDING: { color: "bg-yellow-500", label: t("pending") },
+      APPROVED: { color: "bg-green-500", label: t("approved") },
+      REJECTED: { color: "bg-red-500", label: t("rejected") },
+      ARCHIVED: { color: "bg-gray-400", label: t("archived") },
+    };
+
+    const config =
+      statusConfig[status?.toUpperCase() as keyof typeof statusConfig];
+
+    return (
+      <span
+        className={`px-3 py-1 rounded-full text-sm text-white ${config?.color}`}
+      >
+        {config?.label}
+      </span>
+    );
+  };
 
   return (
     <div className="flex flex-col gap-6">
@@ -135,17 +126,15 @@ const BusinessTitleSection = ({
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-28">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-6">
         {businessStatsConfig.map((item) => {
           const Icon = item.icon;
-          const value = isLoading
-            ? "—"
-            : (businessStatIndividual?.[item.key] ?? "-");
+          const value = businessStatIndividual?.[item.key] ?? "-";
 
           return (
             <div
               key={item.key}
-              className={`p-4 w-60 rounded-xl border ${
+              className={`p-4 rounded-xl border ${
                 theme === "dark"
                   ? "bg-gray-800 border-gray-700"
                   : "bg-gray-100 border-gray-200"

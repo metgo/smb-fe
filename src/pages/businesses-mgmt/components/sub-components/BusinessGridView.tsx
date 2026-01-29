@@ -1,9 +1,10 @@
+import { toast } from "sonner";
 import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { AlertCircle, MapPin, Phone, TrashIcon } from "lucide-react";
+
 import { ConfirmDialog, ImageWithFallback } from "@/components/shared";
 import { useDeleteBusinessMutation } from "@/store/api/businessMutationApi";
-import { toast } from "sonner";
-import { useSearchParams } from "react-router-dom";
 
 interface Business {
   _id: string;
@@ -71,7 +72,7 @@ function BusinessGridView<T extends Business>({
 
   return (
     <div className="py-6 px-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3">
         {data.map((business) => (
           <div
             key={business._id}
@@ -81,14 +82,14 @@ function BusinessGridView<T extends Business>({
             {/* Delete button */}
             <button
               onClick={(e) => {
-                e.stopPropagation(); // Prevent triggering onRowClick
+                e.stopPropagation();
                 setIsConfirmOpen(true);
                 setBusinessToDelete(businessId);
               }}
-              className="absolute top-2 right-2 z-5 p-1 rounded-full text-red-600 bg-white"
+              className="absolute top-2 right-2 z-5 p-1 cursor-pointer rounded-full text-red-600 bg-white"
               aria-label={`Delete ${business.name}`}
             >
-              <TrashIcon size={16} />
+              <TrashIcon size={18} />
             </button>
 
             <div className="relative h-36">
@@ -99,7 +100,7 @@ function BusinessGridView<T extends Business>({
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <div className="w-full h-full bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center">
+                <div className="w-full h-full bg-linear-to-br from-purple-400 to-pink-400 flex items-center justify-center">
                   <AlertCircle className="w-20 h-20 text-white/40" />
                 </div>
               )}
