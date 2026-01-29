@@ -50,7 +50,6 @@ const NotificationsTimeline: React.FC<NotificationsTimelineProps> = ({
   address,
   capacity,
 }) => {
-  console.log("🚀 ~ NotificationsTimeline ~ notifications:", notifications);
   const { t } = useTranslation("events");
   const { textPrimary, textTertiary } = useThemeClasses();
   const { isRTL, theme } = useAppSelector((state) => state.settings);
@@ -59,10 +58,6 @@ const NotificationsTimeline: React.FC<NotificationsTimelineProps> = ({
   const [notificationToDelete, setNotificationToDelete] = useState<
     number | null
   >(null);
-  console.log(
-    "🚀 ~ NotificationsTimeline ~ notificationToDelete:",
-    notificationToDelete,
-  );
 
   useEffect(() => {
     markDirty(5);
