@@ -1,12 +1,14 @@
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { AddButton } from "../btns";
+import { AddButton, RefreshButton } from "../btns";
 
 interface PageHeaderProps {
   title: string;
   description?: string;
   h1Gradient?: string;
   onClick: () => void;
+  onRefreshClick?: () => void;
   btnLabel: string;
+  isRefreshing?: boolean;
 }
 
 export default function PageHeader({
@@ -15,6 +17,8 @@ export default function PageHeader({
   h1Gradient,
   btnLabel,
   onClick,
+  onRefreshClick,
+  isRefreshing,
 }: PageHeaderProps) {
   const { textSecondary } = useThemeClasses();
 
@@ -28,7 +32,16 @@ export default function PageHeader({
             </h1>
             {description && <p className={textSecondary}>{description}</p>}
           </div>
-          <AddButton label={btnLabel} handleClick={onClick} />
+
+          <div className="flex items-center gap-4">
+            {onRefreshClick && (
+              <RefreshButton
+                onClick={onRefreshClick}
+                isRefreshing={isRefreshing}
+              />
+            )}
+            <AddButton label={btnLabel} handleClick={onClick} />
+          </div>
         </div>
       </div>
     </div>

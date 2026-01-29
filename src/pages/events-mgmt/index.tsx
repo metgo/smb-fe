@@ -1,7 +1,7 @@
 import clsx from "clsx";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Calendar, Users, Ticket, DollarSign, Search } from "lucide-react";
 
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
@@ -105,9 +105,6 @@ export default function EventsMgmtPage() {
     dispatch(eventQueryApi.util.resetApiState());
     setIsCreateWizardOpen(false);
   };
-  useEffect(() => {
-    if (!isCreateWizardOpen) refetch();
-  }, [isCreateWizardOpen, refetch]);
 
   const eventStats = [
     {
@@ -147,6 +144,8 @@ export default function EventsMgmtPage() {
           btnLabel={t("add_event")}
           h1Gradient={textPrimary}
           onClick={handleAddEvent}
+          onRefreshClick={refetch}
+          isRefreshing={_isLoading || _isEventStatsFetching}
         />
 
         <PageStats

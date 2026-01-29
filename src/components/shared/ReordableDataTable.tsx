@@ -9,6 +9,7 @@ import {
 
 import { useAppSelector } from "@/hooks/hooks";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import clsx from "clsx";
 
 type SortDirection = "asc" | "desc" | null;
 
@@ -42,7 +43,14 @@ export default function ReordableDataTable<T extends Record<string, any>>({
   isDataLoading = false,
 }: DataTableProps<T>) {
   const { theme, isRTL } = useAppSelector((state) => state.settings);
-  const { bgTertiary, borderColor, textSecondary, hoverBg } = useThemeClasses();
+  const {
+    bgPrimary,
+    bgTertiary,
+    borderColor,
+    textSecondary,
+    textPrimary,
+    hoverBg,
+  } = useThemeClasses();
 
   // Load saved column order
   const [columnOrder, setColumnOrder] = useState<string[]>(() => {
@@ -197,7 +205,7 @@ export default function ReordableDataTable<T extends Record<string, any>>({
                   <th
                     key={colKey}
                     className={`p-3 text-${isRTL ? "right" : "left"} text-sm ${textSecondary} tracking-wider select-none
-                      ${isSortable ? "cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700" : ""}
+                      ${isSortable ? `cursor-pointer ${bgTertiary} ` : ""}
                       transition-colors group`}
                     style={{
                       width: column.width,
@@ -265,11 +273,10 @@ export default function ReordableDataTable<T extends Record<string, any>>({
               <tr>
                 <td
                   colSpan={columnOrder?.length || 1}
-                  className="h-32 text-center text-gray-500 dark:text-gray-400"
+                  className={clsx("h-32 text-center ", textPrimary)}
                 >
                   <div className="flex flex-col items-center justify-center h-full gap-2">
                     <p>No data available</p>
-                    {/* Optional: add icon or illustration */}
                   </div>
                 </td>
               </tr>
@@ -288,7 +295,10 @@ export default function ReordableDataTable<T extends Record<string, any>>({
                     return (
                       <td
                         key={colKey}
-                        className="p-3 text-sm"
+                        className={clsx(
+                          "p-3 text-sm cursor-pointer",
+                          textSecondary,
+                        )}
                         onClick={(e) =>
                           colKey === "checkbox" && e.stopPropagation()
                         }
@@ -298,7 +308,9 @@ export default function ReordableDataTable<T extends Record<string, any>>({
                             type="checkbox"
                             checked={selectedItems?.has(item[rowKey]) ?? false}
                             onChange={() => toggleRow(item)}
-                            className="rounded border-gray-300 dark:border-gray-600 focus:ring-teal-500"
+                            className={clsx(
+                              "rounded focus:ring-teal-500 cursor-pointer",
+                            )}
                           />
                         ) : column.render ? (
                           column.render(item)

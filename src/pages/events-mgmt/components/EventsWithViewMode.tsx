@@ -1,3 +1,4 @@
+import clsx from "clsx";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
 import { useState, useMemo } from "react";
@@ -92,7 +93,14 @@ export default function EventsWithViewMode({
 }: EventsWithViewModeProps) {
   const { t, i18n } = useTranslation("events");
   const language = i18n.language || "en";
-  const themeColor = useThemeClasses();
+  const {
+    bgPrimary,
+    bgSecondary,
+    bgTertiary,
+    borderColor,
+    textTertiary,
+    textPrimary,
+  } = useThemeClasses();
 
   const [deleteEvent, { isLoading: isDeleting }] = useDeleteEventMutation();
 
@@ -387,13 +395,11 @@ export default function EventsWithViewMode({
     if (events?.length === 0 && !isLoading) {
       return (
         <div className="text-center py-12">
-          <AlertCircle
-            className={`w-16 h-16 mx-auto mb-4 ${themeColor.textTertiary}`}
-          />
-          <h3 className={`text-lg mb-2 ${themeColor.textPrimary}`}>
+          <AlertCircle className={`w-16 h-16 mx-auto mb-4 ${textTertiary}`} />
+          <h3 className={`text-lg mb-2 ${textPrimary}`}>
             {t("no_events_found")}
           </h3>
-          <p className={themeColor.textTertiary}>
+          <p className={textTertiary}>
             {searchQuery ||
             selectedWebsiteCount > 0 ||
             eventTypeFilter !== "all" ||
@@ -420,7 +426,11 @@ export default function EventsWithViewMode({
                   <div
                     key={event._id}
                     onClick={() => handleEventSelect(event)}
-                    className="bg-white dark:bg-gray-900 relative rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow cursor-pointer"
+                    className={clsx(
+                      bgPrimary,
+                      textPrimary,
+                      " relative rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow cursor-pointer",
+                    )}
                   >
                     <div className="relative h-52">
                       {event?.images?.[0]?.image ? (
@@ -443,7 +453,10 @@ export default function EventsWithViewMode({
                         setIsConfirmOpen(true);
                         setEventToDelete(event._id);
                       }}
-                      className="absolute top-3 right-3 z-50 cursor-pointer bg-white dark:bg-gray-800 p-2 rounded-full shadow hover:shadow-lg transition-shadow text-red-600"
+                      className={clsx(
+                        "absolute top-3 right-3 z-50 cursor-pointer p-2 rounded-full shadow hover:shadow-lg transition-shadow text-red-600 border",
+                        bgTertiary,
+                      )}
                     >
                       <TrashIcon size={16} />
                     </button>
@@ -701,7 +714,13 @@ export default function EventsWithViewMode({
       </div>
 
       {/* Main Content */}
-      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 flex-1 overflow-y-auto max-h-[calc(100vh-450px)]">
+      <div
+        className={clsx(
+          bgSecondary,
+          borderColor,
+          "border flex-1 overflow-y-auto max-h-[calc(100vh-450px)]",
+        )}
+      >
         {calendarViewMode === "calendar-month" && viewMode === "calendar" && (
           <MonthView />
         )}

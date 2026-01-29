@@ -87,5 +87,8 @@
   "select_authority": "Select Authority",
   "website_visibility": "Website Visibility",
   "select_associated_websites": "Select Associated Websites",
-  "select_unassociated_websites": "Select Unassociated Websites"
+  "select_unassociated_websites": "Select Unassociated Websites",
+
+  "download_pdf": "Download PDF",
+  "download_csv": "Download CSV"
 }

@@ -36,6 +36,7 @@ interface ThemeClasses {
   cardClasses: string;
   inputClasses: string;
   selectInputClasses: string;
+  exportBtnBgClasses: string;
 }
 
 interface PageStats {
