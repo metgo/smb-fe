@@ -42,6 +42,7 @@ export const endpoints = {
 
   websites: "/websites",
   socialmedia: "admin/social-media",
+  websiteAccessItem: "/websites/access-items",
 
   googleMap: "https://maps.googleapis.com/maps/api/js",
   googlePlaceAutoComplete: "https://places.googleapis.com/v1/places",

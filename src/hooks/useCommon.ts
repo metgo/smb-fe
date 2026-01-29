@@ -2,8 +2,9 @@ import {
   useGetAccessibilityQuery,
   useGetAllSocialMediaQuery,
   useGetCategoriesQuery,
-  useGetDmosQuery,
   useGetGroupTypesQuery,
+  useGetAllWebsitesQuery,
+  useGetDmosQuery,
 } from "@/store/api/masterDataApi";
 import { useTranslation } from "react-i18next";
 
@@ -17,6 +18,7 @@ export function useCommon() {
   const { data: socialMedia } = useGetAllSocialMediaQuery();
 
   const dmosAuthorities: IDmo[] = data?.data;
+  const { data: allWebsites } = useGetAllWebsitesQuery();
 
   const authorities = [
     { value: "all", label: t("all_authorities") },
@@ -57,5 +59,6 @@ export function useCommon() {
     accessibility,
     groupTypes,
     socialMedia,
+    allWebsites,
   };
 }

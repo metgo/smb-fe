@@ -6,9 +6,20 @@ interface Geo {
   lng: string;
 }
 
-interface Website {
+interface IWebsite {
   _id: string;
   name: string;
+  websiteUrl: string;
+  logo: string;
+  dmoIds: string[];
+  authorityIds: string[];
+}
+
+type TAllWebsites = IWebsite[];
+
+interface IFromattedAllWebsites {
+  associatedWebsites: IWebsite[];
+  unAssociatedWebsites: IWebsite[];
 }
 
 interface ThemeClasses {
@@ -77,3 +88,16 @@ interface IImage {
   subCoordinates?: SubCoordinates;
 }
 type TImages = IImage[];
+
+interface IWebsiteVisibilityIds {
+  allBlacklistIds: string[];
+  selectedBlacklistIds: string[];
+  allWhitelistIds: string[];
+  selectedWhitelistIds: string[];
+}
+
+interface IAssociatedWebsiteIds {
+  _id: string;
+  name: string;
+  url: string;
+}

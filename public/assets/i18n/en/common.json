@@ -83,5 +83,12 @@
   "wed": "Wed",
   "thu": "Thu",
   "fri": "Fri",
-  "sat": "Sat"
+  "sat": "Sat",
+
+  "all": "All",
+  "select_dmo": "Select DMO",
+  "select_authority": "Select Authority",
+  "website_visibility": "Website Visibility",
+  "select_associated_websites": "Select Associated Websites",
+  "select_unassociated_websites": "Select Unassociated Websites"
 }

@@ -141,13 +141,13 @@ const EventMedia: React.FC<EventMediaProps> = ({
 
                   {/* Primary Image Badge */}
                   {primaryImageIndex === index && (
-                    <div className="absolute top-2 left-3 z-10 px-3 py-1 bg-teal-500 text-white text-sm font-semibold rounded-full shadow-lg">
+                    <div className="absolute top-2 left-3 z-10 px-2 bg-orange-500 text-white text-sm font-semibold rounded shadow-lg">
                       {tc("primary")}
                     </div>
                   )}
                   <button
                     onClick={() => handleDeleteImage(img, index)}
-                    className="p-2 absolute top-2 right-3 z-20 bg-red-500/90 text-white rounded-lg hover:bg-red-600 transition-all cursor-pointer"
+                    className="p-1 absolute top-2 right-3 z-20 bg-red-500/90 text-white rounded-lg hover:bg-red-600 transition-all cursor-pointer"
                   >
                     <X className="w-5 h-5" />
                   </button>
@@ -155,7 +155,7 @@ const EventMedia: React.FC<EventMediaProps> = ({
                   {/* Action Buttons */}
                   <div
                     className={clsx(
-                      "absolute inset-0 bg-black/0 group-hover:bg-black/60 transition-all flex items-end p-4",
+                      "absolute inset-0 bg-black/0 group-hover:bg-black/60 transition-all hidden group-hover:flex items-end p-4 ",
                       img.status === "uploading" && "bg-black/60",
                     )}
                   >

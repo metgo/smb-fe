@@ -78,7 +78,7 @@ const QuickSnapEventDetails = ({
             <div className="flex items-center gap-2 shrink-0">
               <button
                 onClick={handleViewDetails}
-                className="flex items-center gap-2 px-4 py-2 bg-linear-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white rounded-lg transition-all transform hover:scale-105 shadow-md hover:shadow-lg"
+                className=" cursor-pointer flex items-center gap-2 px-4 py-2 bg-linear-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white rounded-lg transition-all transform hover:scale-105 shadow-md hover:shadow-lg"
               >
                 <Eye className="w-4 h-4" />
                 <span className="text-sm font-medium">Details</span>
@@ -86,7 +86,7 @@ const QuickSnapEventDetails = ({
 
               <button
                 onClick={handleEditEvent}
-                className="flex items-center gap-2 px-4 py-2 bg-linear-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-lg transition-all transform hover:scale-105 shadow-md hover:shadow-lg"
+                className="flex items-center cursor-pointer gap-2 px-4 py-2 bg-linear-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-lg transition-all transform hover:scale-105 shadow-md hover:shadow-lg"
               >
                 <Edit className="w-4 h-4" />
                 <span className="text-sm font-medium">Edit</span>

@@ -1,6 +1,6 @@
 import clsx from "clsx";
 import { toast } from "sonner";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Plus, Trash2, Upload, X } from "lucide-react";
 import { formatDate } from "@/helpers/formatter";
@@ -51,6 +51,7 @@ const CreateTicketWizard = ({
   ticketDateTime,
   setTicketDateTime,
 }: CreateTicketWizardProps) => {
+  console.log("🚀 ~ CreateTicketWizard ~ editingTicket:", editingTicket);
   const { t } = useTranslation("events");
   const { textPrimary, textSecondary, inputClasses, textTertiary, rowDir } =
     useThemeClasses();
@@ -65,6 +66,8 @@ const CreateTicketWizard = ({
     markedPrice?: string;
     sellingPrice?: string;
   }>({ ticketDays: [] });
+  const [ticketImage, setTicketImage] = useState<IImage | null>(null);
+  console.log("🚀 ~ CreateTicketWizard ~ ticketImage:", ticketImage);
 
   const isPaidOrVip = ["paid", "vip"].includes(
     editingTicket?.type?.toLowerCase() || "",
@@ -80,17 +83,21 @@ const CreateTicketWizard = ({
     isImageDeleting,
     handleDeleteImage,
   } = useSingleImageUpload({
-    initialImage: editingTicket?.imageUrl,
-    onChange: (img) => {
-      setEditingTicket((prev: ITicketPayload) => ({
-        ...prev,
-        imageUrl: img?.image || "",
-      }));
-    },
+    initialImage: ticketImage?.image,
+    onChange: () => setTicketImage,
   });
 
   const [createTicket, { isLoading: isSaving }] = useCreateTicketMutation();
   const [updateTicket, { isLoading: isUpdating }] = useUpdateTicketMutation();
+
+  // const [isSaved, setIsSaved] = useState(false);
+  // const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+
+  useEffect(() => {
+    if (editingTicket?.imageUrl) {
+      setTicketImage({ image: editingTicket?.imageUrl });
+    }
+  }, [editingTicket]);
 
   // ─── VALIDATION ─────────────────────────────────────────────────
   const validateTicket = (): boolean => {
@@ -231,7 +238,7 @@ const CreateTicketWizard = ({
         startTime: item.startTime,
         endTime: item.endTime,
       })),
-      images: [{ image: uploadImageUrl || editingTicket.imageUrl || "" }],
+      images: [{ image: uploadImageUrl }],
       status: "active",
       type: editingTicket.type.toUpperCase(),
     };
@@ -287,12 +294,15 @@ const CreateTicketWizard = ({
     clearError(`day-${index}`);
   };
 
+  function handleClose() {
+    setShowTicketModal(false);
+    setEditingTicket(null);
+    setTicketImage(null);
+  }
+
   return (
     <ModalWrapper
-      onClose={() => {
-        setShowTicketModal(false);
-        setEditingTicket(null);
-      }}
+      onClose={handleClose}
       height="h-[88vh]"
       maxWidth="max-w-2xl"
       showSpinner={isSaving || isUpdating || image?.status === "uploading"}
@@ -381,7 +391,7 @@ const CreateTicketWizard = ({
               {t("ticket_days")}
             </label>
             <div className="space-y-4 mt-2">
-              {ticketDateTime.map((day, index) => (
+              {ticketDateTime?.map((day, index) => (
                 <div
                   key={day._id}
                   ref={(el) => {
@@ -458,7 +468,7 @@ const CreateTicketWizard = ({
                     </button>
                   </div>
 
-                  {errors.ticketDays[index] && (
+                  {errors?.ticketDays[index] && (
                     <p className="text-sm text-red-600 dark:text-red-400 pl-1">
                       {errors.ticketDays[index]}
                     </p>
@@ -758,6 +768,15 @@ const CreateTicketWizard = ({
         onCancel={() => setDeleteTarget(null)}
         onConfirm={confirmDelete}
       />
+      {/* <ConfirmDialog
+        open={isConfirmOpen}
+        title="unsaved_changes"
+        message="unsaved_changes_confirm"
+        confirmText="confirm"
+        variant="warning"
+        onCancel={() => setIsSaved(false)}
+        onConfirm={handleClose}
+      /> */}
     </ModalWrapper>
   );
 };

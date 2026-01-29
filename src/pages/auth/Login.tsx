@@ -5,12 +5,16 @@ import { Globe } from "lucide-react";
 import { useLoginMutation } from "@/store/api/authApi";
 import ContinueWithGoogle from "./ContinueWithGoogle";
 import { SubmitButton } from "@/components/btns";
+import { routes } from "@/lib/routes";
+import { useNavigate } from "react-router-dom";
 
 interface LoginProps {
   setCurrentTab: (v: string) => void;
 }
 
 export function Login({ setCurrentTab }: LoginProps) {
+  const navigate = useNavigate();
+
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error] = useState("");
@@ -27,7 +31,7 @@ export function Login({ setCurrentTab }: LoginProps) {
         localStorage.removeItem("dmoId");
         localStorage.removeItem("authorityId");
       }
-
+      navigate(routes.dashboard, { replace: true });
       toast.success(`Welcome ${data.user.firstName} ${data.user.lastName}`);
     } catch (err: any) {
       toast.error(err?.data?.message || "Login failed");
