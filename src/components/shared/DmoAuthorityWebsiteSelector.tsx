@@ -7,11 +7,11 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { FormFieldWrapper, SelectField } from "@/components/form-fields";
 
 type Props = {
+  isEdit: boolean;
   selectedDmoId: string;
   selectedAuthorityId: string;
   errors: Record<string, string>;
   dmoSectionRef: React.RefObject<HTMLDivElement | null>;
-  authoritySectionRef: React.RefObject<HTMLDivElement | null>;
   setSelectDmoId: React.Dispatch<React.SetStateAction<string>>;
   setSelectAuthorityId: React.Dispatch<React.SetStateAction<string>>;
   websiteVisibilityIds: IWebsiteVisibilityIds;
@@ -21,16 +21,20 @@ type Props = {
 
 export default function DmoAuthorityWebsiteSelector({
   errors,
+  isEdit,
   selectedDmoId,
   setSelectDmoId,
   selectedAuthorityId,
   setSelectAuthorityId,
-  authoritySectionRef,
   dmoSectionRef,
   websiteVisibilityIds,
   setWebsiteVisibilityIds,
   eventAssociatedWebsites,
 }: Props) {
+  console.log(
+    "🚀 ~ DmoAuthorityWebsiteSelector ~ websiteVisibilityIds:",
+    websiteVisibilityIds,
+  );
   const { t } = useTranslation("common");
   const { dmosAuthorities, allWebsites } = useCommon();
   const { theme, selectInputClasses } = useThemeClasses();
@@ -83,9 +87,11 @@ export default function DmoAuthorityWebsiteSelector({
       eventAssociatedWebsites?.map((w) => w?._id) || [],
     );
 
-    const selectedBlacklistIds = Array.from(eventAssociatedIds).filter((id) =>
-      allBlacklistIds?.includes(id),
-    );
+    const selectedBlacklistIds = isEdit
+      ? Array.from(eventAssociatedIds).filter((id) =>
+          allBlacklistIds?.includes(id),
+        )
+      : allBlacklistIds;
 
     const selectedWhitelistIds = Array.from(eventAssociatedIds).filter((id) =>
       allWhitelistIds?.includes(id),
@@ -218,7 +224,7 @@ export default function DmoAuthorityWebsiteSelector({
           </FormFieldWrapper>
         </div>
 
-        <div className="flex-1 w-full" ref={authoritySectionRef}>
+        <div className="flex-1 w-full">
           <FormFieldWrapper
             label={t("select_authority")}
             error={errors.authorityId}

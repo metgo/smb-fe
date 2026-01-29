@@ -339,8 +339,6 @@ export default function CreateEventWizard({
     switch (step) {
       case 1:
         if (!selectedDmoId?.trim()) newErrors.dmoId = t("required_field");
-        if (!selectedAuthorityId?.trim())
-          newErrors.authorityId = t("required_field");
         if (!eventName?.trim()) newErrors.eventName = t("required_field");
         if (!shortDescription?.trim())
           newErrors.shortDescription = t("required_field");
@@ -708,6 +706,7 @@ export default function CreateEventWizard({
       <div className="flex-1 overflow-y-auto p-6">
         {currentStep === 1 && (
           <EventBasicInformation
+            eventId={eventId}
             markDirty={markDirty}
             eventName={eventName}
             setEventName={setEventName}
