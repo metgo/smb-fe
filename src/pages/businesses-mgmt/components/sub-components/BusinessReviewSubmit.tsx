@@ -87,7 +87,7 @@ const BusinessReviewSubmit: FC<BusinessReviewSubmitProps> = ({
       </div>
 
       {/* Missing Fields Warning */}
-      {/* {Object.keys(errors).length > 0 && (
+      {Object.keys(errors).length > 0 && (
         <div
           className={`p-4 rounded-lg ${
             theme === "dark"
@@ -115,7 +115,7 @@ const BusinessReviewSubmit: FC<BusinessReviewSubmitProps> = ({
             {errors.logo && <li>{t("logo_required")}</li>}
           </ul>
         </div>
-      )} */}
+      )}
 
       {/* Summary Section */}
       <div

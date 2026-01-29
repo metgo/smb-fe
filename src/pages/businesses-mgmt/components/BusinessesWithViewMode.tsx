@@ -1,5 +1,4 @@
 import { useTranslation } from "react-i18next";
-import InfiniteScroll from "react-infinite-scroll-component";
 import {
   Search,
   Download,

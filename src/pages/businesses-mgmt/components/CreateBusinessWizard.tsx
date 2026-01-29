@@ -59,8 +59,7 @@ export default function CreateBusinessWizard({
   const { theme, isRTL } = useAppSelector((state) => state.settings);
   const { textPrimary, textTertiary } = useThemeClasses();
   const [searchParams] = useSearchParams();
-  const [createWebsiteAccessItem, { isLoading: isWebsiteAccessItemCreating }] =
-    useCreateWebsiteAccessItemMutation();
+  const [createWebsiteAccessItem] = useCreateWebsiteAccessItemMutation();
   const businessSlug = searchParams.get("businessSlug");
 
   const { data: business } = useGetbusinessBySlugQuery(
