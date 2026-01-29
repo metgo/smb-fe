@@ -16,7 +16,7 @@ type Props = {
   setSelectAuthorityId: React.Dispatch<React.SetStateAction<string>>;
   websiteVisibilityIds: IWebsiteVisibilityIds;
   setWebsiteVisibilityIds: (v: any) => void;
-  eventAssociatedWebsites: IAssociatedWebsiteIds[];
+  itemAssociatedWebsites: IAssociatedWebsiteIds[];
 };
 
 export default function DmoAuthorityWebsiteSelector({
@@ -29,12 +29,8 @@ export default function DmoAuthorityWebsiteSelector({
   dmoSectionRef,
   websiteVisibilityIds,
   setWebsiteVisibilityIds,
-  eventAssociatedWebsites,
+  itemAssociatedWebsites,
 }: Props) {
-  console.log(
-    "🚀 ~ DmoAuthorityWebsiteSelector ~ websiteVisibilityIds:",
-    websiteVisibilityIds,
-  );
   const { t } = useTranslation("common");
   const { dmosAuthorities, allWebsites } = useCommon();
   const { theme, selectInputClasses } = useThemeClasses();
@@ -83,17 +79,17 @@ export default function DmoAuthorityWebsiteSelector({
     const allBlacklistIds = associatedWebsites?.map((w) => w?._id);
     const allWhitelistIds = unAssociatedWebsites?.map((w) => w?._id);
 
-    const eventAssociatedIds = new Set(
-      eventAssociatedWebsites?.map((w) => w?._id) || [],
+    const itemAssociatedIds = new Set(
+      itemAssociatedWebsites?.map((w) => w?._id) || [],
     );
 
     const selectedBlacklistIds = isEdit
-      ? Array.from(eventAssociatedIds).filter((id) =>
+      ? Array.from(itemAssociatedIds).filter((id) =>
           allBlacklistIds?.includes(id),
         )
       : allBlacklistIds;
 
-    const selectedWhitelistIds = Array.from(eventAssociatedIds).filter((id) =>
+    const selectedWhitelistIds = Array.from(itemAssociatedIds).filter((id) =>
       allWhitelistIds?.includes(id),
     );
 
@@ -225,10 +221,7 @@ export default function DmoAuthorityWebsiteSelector({
         </div>
 
         <div className="flex-1 w-full">
-          <FormFieldWrapper
-            label={t("select_authority")}
-            error={errors.authorityId}
-          >
+          <FormFieldWrapper label={t("select_authority")}>
             <SelectField
               value={selectedAuthorityId}
               onChange={setSelectAuthorityId}

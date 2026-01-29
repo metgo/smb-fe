@@ -186,7 +186,7 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
         dmoSectionRef={dmoSectionRef}
         websiteVisibilityIds={websiteVisibilityIds}
         setWebsiteVisibilityIds={setWebsiteVisibilityIds}
-        eventAssociatedWebsites={eventAssociatedWebsites}
+        itemAssociatedWebsites={eventAssociatedWebsites}
       />
 
       {/* Event Name */}
