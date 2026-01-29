@@ -22,6 +22,11 @@ import { useAppSelector } from "@/hooks/hooks";
 import { WizardFooter } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { toast } from "sonner";
+import {
+  useInitProductCreateMutation,
+  useUpdateProductMutation,
+} from "@/store/api/productMutationApi";
+import { useGetAllbusinessesQuery } from "@/store/api/businessQueryApi";
 
 interface ProductWizardProps {
   onClose: () => void;
@@ -47,16 +52,12 @@ export default function CreateProductWizard({
   const [isSaving, setIsSaving] = useState(false); // unused but kept
   const [isPublishing, _setIsPublishing] = useState(false); // unused but kept
 
-  const businesses = [
-    { id: "biz-1", name: "Desert Lodge Hotel" },
-    { id: "biz-2", name: "Ramon Crater Restaurant" },
-    { id: "biz-3", name: "Negev Adventure Tours" },
-    { id: "biz-4", name: "Be'er Sheva Wellness Spa" },
-    { id: "biz-5", name: "Sderot Artisan Market" },
-  ];
+  const { data: businessData, isLoading: isBusinessesLoading } =
+    useGetAllbusinessesQuery({ search: "" });
+  const businesses = businessData?.data?.slice(0, 10);
 
   const preSelectedBusinessId = preSelectedBusinessName
-    ? businesses.find((b) => b.name === preSelectedBusinessName)?.id || ""
+    ? businesses?.find((b) => b.name === preSelectedBusinessName)?.id || ""
     : "";
 
   const [formData, setFormData] = useState<ProductFormData>(
@@ -102,7 +103,11 @@ export default function CreateProductWizard({
     borderColor,
     hoverBg,
   } = useThemeClasses();
+  const [productId, setProductId] = useState<string>("");
 
+  const [initProductCreate, { isLoading: isCreating }] =
+    useInitProductCreateMutation();
+  const [updateProduct] = useUpdateProductMutation();
   const steps = [
     { number: 1, title: t("product_basic_info"), icon: Package },
     { number: 2, title: t("product_type_category"), icon: Package },
@@ -146,8 +151,12 @@ export default function CreateProductWizard({
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
+  const handleSaveDraft = async () => {
+    await saveDraft(false);
+  };
 
   const handleNext = () => {
+    handleSaveDraft();
     if (validateStep(currentStep)) {
       if (currentStep < 7) setCurrentStep(currentStep + 1);
     }
@@ -157,15 +166,16 @@ export default function CreateProductWizard({
     if (currentStep > 1) setCurrentStep(currentStep - 1);
   };
 
-  const handleSubmit = () => {};
-
+  const handlePublish = async () => {
+    await saveDraft(true);
+  };
   // Last saved timestamp
   const [_lastSaved, setLastSaved] = useState<Date | null>(null);
 
   // Draft Save Payload per Step
   const stepPayloadMap: Record<number, any> = {
     1: {
-      businessId: formData.businessId,
+      businessId: "6979a913004c7ccdb2f6962a",
       name: formData.name,
       shortDescription: formData.shortDescription,
       fullDescription: formData.fullDescription,
@@ -202,22 +212,43 @@ export default function CreateProductWizard({
       serviceLocation: formData.serviceLocation,
     },
   };
-
+  console.log("formData product", formData);
+  const [businessId, setBusinessId] = useState("");
   // Auto-save draft function
-  const handleSaveDraft = async () => {
+  const saveDraft = async (isPublish = false) => {
     try {
-      const payload = stepPayloadMap[currentStep];
+      let internalProductId;
+
+      // 1️⃣ Initialize product if not created yet
+      if (!productId) {
+        const res = await initProductCreate({ businessId }).unwrap();
+        internalProductId = res?.id;
+        setProductId(res?.id);
+      }
+      let payload = stepPayloadMap;
       if (!payload) return;
 
-      setIsSaving(true);
+      if (isPublish) {
+        payload = {
+          ...payload,
+        };
+      }
+      if (!Object.keys(payload).length) return;
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      // 4️⃣ Update product
+      const res = await updateProduct({
+        productId: internalProductId || productId!,
+        body: payload,
+      }).unwrap();
+
+      setIsSaving(true);
 
       setIsSaving(false);
       setLastSaved(new Date());
 
-      toast.success(t("product_saved_as_draft"));
+      toast.success(
+        res?.message ?? (isPublish ? "Product published" : "Draft saved"),
+      );
     } catch (error: any) {
       setIsSaving(false);
       toast.error(error?.message || t("something_went_wrong"));
@@ -257,7 +288,13 @@ export default function CreateProductWizard({
 
     switch (currentStep) {
       case 1:
-        return <ProductBasicInfo {...commonProps} />;
+        return (
+          <ProductBasicInfo
+            {...commonProps}
+            setBusinessId={setBusinessId}
+            isBusinessesLoading={isBusinessesLoading}
+          />
+        );
       case 2:
         return <ProductAttributes {...commonProps} />;
       case 3:
@@ -344,7 +381,7 @@ export default function CreateProductWizard({
           onPrevious={handlePrevious}
           onNext={handleNext}
           onSaveDraft={handleSaveDraft}
-          onPublish={handleSubmit}
+          onPublish={handlePublish}
         />
       </div>
     </div>

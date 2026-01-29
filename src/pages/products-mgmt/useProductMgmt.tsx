@@ -2,15 +2,7 @@ import { useState } from "react";
 import { generateMockProducts } from "@/helpers/data-generator";
 import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
 import { useTranslation } from "react-i18next";
-
-// Mock businesses for wizard
-const businesses = [
-  { id: "biz-1", name: "Desert Lodge Hotel" },
-  { id: "biz-2", name: "Ramon Crater Restaurant" },
-  { id: "biz-3", name: "Negev Adventure Tours" },
-  { id: "biz-4", name: "Be'er Sheva Wellness Spa" },
-  { id: "biz-5", name: "Sderot Artisan Market" },
-];
+import { useGetAllbusinessesQuery } from "@/store/api/businessQueryApi";
 
 const businessId = "";
 
@@ -19,7 +11,9 @@ export function useProductMgmt() {
   const language = (
     ["en", "he", "ar"].includes(i18n.language) ? i18n.language : "en"
   ) as Language;
-
+  // Mock businesses for wizard
+  // const { data: businessData } = useGetAllbusinessesQuery({});
+  // const businesses = businessData?.data?.slice(0, 10);
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const [selectedProducts, setSelectedProducts] = useState<Set<string>>(
@@ -52,7 +46,7 @@ export function useProductMgmt() {
     if (businessId && product.businessId !== businessId) return false;
 
     // Search
-    const searchLower = searchQuery.toLowerCase();
+    const searchLower = searchQuery?.toLowerCase();
     const nameMatch = Object.values(product.name).some((n) =>
       n.toLowerCase().includes(searchLower),
     );
@@ -139,49 +133,49 @@ export function useProductMgmt() {
     setProducts((prev) => [duplicated, ...prev]);
   };
 
-  const handleProductSubmit = (formData: any, status: "draft" | "pending") => {
-    const newProduct: Product = {
-      id:
-        isEditing && selectedProduct
-          ? selectedProduct.id
-          : `product-${Date.now()}`,
-      name: formData.name,
-      shortDescription: formData.shortDescription,
-      businessId: formData.businessId,
-      businessName:
-        businesses.find((b) => b.id === formData.businessId)?.name || "",
-      type: formData.type,
-      status: status === "pending" ? "pending" : "draft",
-      markedPrice: parseFloat(formData.markedPrice) || 0,
-      sellingPrice: parseFloat(formData.sellingPrice),
-      quantity: formData.isUnlimited ? null : parseInt(formData.quantity),
-      soldCount: 0,
-      availability: {
-        startDate: formData.startDate || null,
-        endDate: formData.endDate || null,
-      },
-      categories: formData.categories,
-      image: formData.mainImage,
-      lastUpdated: new Date().toISOString(),
-      languageCompleteness: {
-        en: !!formData.name.en,
-        he: !!formData.name.he,
-        ar: !!formData.name.ar,
-      },
-    };
+  // const handleProductSubmit = (formData: any, status: "draft" | "pending") => {
+  //   const newProduct: Product = {
+  //     id:
+  //       isEditing && selectedProduct
+  //         ? selectedProduct.id
+  //         : `product-${Date.now()}`,
+  //     name: formData.name,
+  //     shortDescription: formData.shortDescription,
+  //     businessId: formData.businessId,
+  //     businessName:
+  //       businesses.find((b) => b.id === formData.businessId)?.name || "",
+  //     type: formData.type,
+  //     status: status === "pending" ? "pending" : "draft",
+  //     markedPrice: parseFloat(formData.markedPrice) || 0,
+  //     sellingPrice: parseFloat(formData.sellingPrice),
+  //     quantity: formData.isUnlimited ? null : parseInt(formData.quantity),
+  //     soldCount: 0,
+  //     availability: {
+  //       startDate: formData.startDate || null,
+  //       endDate: formData.endDate || null,
+  //     },
+  //     categories: formData.categories,
+  //     image: formData.mainImage,
+  //     lastUpdated: new Date().toISOString(),
+  //     languageCompleteness: {
+  //       en: !!formData.name.en,
+  //       he: !!formData.name.he,
+  //       ar: !!formData.name.ar,
+  //     },
+  //   };
 
-    if (isEditing && selectedProduct) {
-      setProducts((prev) =>
-        prev.map((p) => (p.id === selectedProduct.id ? newProduct : p)),
-      );
-    } else {
-      setProducts((prev) => [newProduct, ...prev]);
-    }
+  //   if (isEditing && selectedProduct) {
+  //     setProducts((prev) =>
+  //       prev.map((p) => (p.id === selectedProduct.id ? newProduct : p)),
+  //     );
+  //   } else {
+  //     setProducts((prev) => [newProduct, ...prev]);
+  //   }
 
-    setIsCreating(false);
-    setIsEditing(false);
-    setSelectedProduct(null);
-  };
+  //   setIsCreating(false);
+  //   setIsEditing(false);
+  //   setSelectedProduct(null);
+  // };
 
   // Calculate sales metrics
   const totalRevenue = sortedProducts.reduce(
@@ -309,7 +303,7 @@ export function useProductMgmt() {
     handleSelectAll,
     handleBulkStatusChange,
     handleDuplicateProduct,
-    handleProductSubmit,
+    // handleProductSubmit,
     salesMetrics,
     getProductTypeLabel,
     getStatusBadge,

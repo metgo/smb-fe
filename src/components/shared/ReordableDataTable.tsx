@@ -275,7 +275,7 @@ export default function ReordableDataTable<T extends Record<string, any>>({
               </tr>
             ) : (
               // Normal data rows
-              sortedData.map((item, idx) => (
+              sortedData?.map((item, idx) => (
                 <tr
                   key={item[rowKey] ?? idx}
                   onClick={() => onRowClick?.(item)}

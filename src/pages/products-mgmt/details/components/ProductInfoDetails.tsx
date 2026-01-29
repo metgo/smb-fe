@@ -60,7 +60,7 @@ const ProductInfoDetails: React.FC<ProductInfoDetailsProps> = ({
           const url = URL.createObjectURL(blob);
           const a = document.createElement("a");
           a.href = url;
-          a.download = `${product.name[language]}-${site.id}-qr-code.png`;
+          a.download = `${product.name}-${site.id}-qr-code.png`;
           a.click();
           URL.revokeObjectURL(url);
         }
@@ -140,7 +140,7 @@ const ProductInfoDetails: React.FC<ProductInfoDetailsProps> = ({
           <div className="w-full h-64 rounded-lg overflow-hidden">
             <img
               src={product?.image}
-              alt={product?.name[language]}
+              alt={product?.name}
               className="w-full h-full object-cover"
             />
           </div>
@@ -154,9 +154,9 @@ const ProductInfoDetails: React.FC<ProductInfoDetailsProps> = ({
         >
           {t("short_description")}
         </h3>
-        <p className={theme === "dark" ? "text-gray-200" : "text-gray-800"}>
+        {/* <p className={theme === "dark" ? "text-gray-200" : "text-gray-800"}>
           {product.shortDescription[language]}
-        </p>
+        </p> */}
       </div>
 
       {/* Business */}
@@ -196,7 +196,7 @@ const ProductInfoDetails: React.FC<ProductInfoDetailsProps> = ({
         >
           {t("categories")}
         </h3>
-        <div className="flex flex-wrap gap-2">
+        {/* <div className="flex flex-wrap gap-2">
           {product.categories.map((cat, idx) => (
             <span
               key={idx}
@@ -209,11 +209,11 @@ const ProductInfoDetails: React.FC<ProductInfoDetailsProps> = ({
               {cat}
             </span>
           ))}
-        </div>
+        </div> */}
       </div>
 
       {/* Language Completeness */}
-      <div>
+      {/* <div>
         <h3
           className={`text-sm mb-2 ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
         >
@@ -234,10 +234,10 @@ const ProductInfoDetails: React.FC<ProductInfoDetailsProps> = ({
             </span>
           ))}
         </div>
-      </div>
+      </div> */}
 
       {/* Connected Websites */}
-      <div
+      {/* <div
         className={`p-4 rounded-lg border ${
           theme === "dark"
             ? "bg-gray-800/50 border-gray-700"
@@ -262,7 +262,7 @@ const ProductInfoDetails: React.FC<ProductInfoDetailsProps> = ({
             </button>
           ))}
         </div>
-      </div>
+      </div> */}
 
       {/* QR Download */}
       <div

@@ -11,6 +11,7 @@ interface ProductBasicInfoProps {
     shortDescription: Record<string, string>;
     fullDescription: Record<string, string>;
   };
+  setBusinessId: (data: string) => void;
   setFormData: (data: any) => void;
   errors: {
     businessId?: string;
@@ -18,6 +19,7 @@ interface ProductBasicInfoProps {
     shortDescEn?: string;
   };
   businesses: { id: string; name: string }[];
+  isBusinessesLoading: boolean;
 }
 
 const ProductBasicInfo = ({
@@ -28,17 +30,17 @@ const ProductBasicInfo = ({
   setFormData,
   errors,
   businesses,
+  setBusinessId,
+  isBusinessesLoading,
 }: ProductBasicInfoProps) => {
   const { bgTertiary, textPrimary, textSecondary, textTertiary, borderColor } =
     useThemeClasses();
-
   // Helper to get field key based on selected language
   const getFieldKey = (
     _field: "name" | "shortDescription" | "fullDescription",
   ) => {
     return selectedFormLanguage;
   };
-
   // Helper to get placeholder text based on language
   const getPlaceholder = (type: "name" | "short" | "full") => {
     const placeholders: Record<string, Record<string, string>> = {
@@ -70,14 +72,22 @@ const ProductBasicInfo = ({
         </label>
         <select
           value={formData.businessId}
-          onChange={(e) =>
-            setFormData({ ...formData, businessId: e.target.value })
-          }
+          onChange={(e) => {
+            const selectedBusinessId = e.target.value;
+
+            setFormData({
+              ...formData,
+              businessId: selectedBusinessId,
+            });
+
+            setBusinessId(selectedBusinessId); // 👈 send ID here
+          }}
           className={`w-full px-4 py-3 rounded-lg border ${borderColor} ${bgTertiary} ${textPrimary}`}
         >
           <option value="">{t("select_business")}</option>
-          {businesses.map((biz) => (
-            <option key={biz.id} value={biz.id}>
+
+          {businesses?.map((biz) => (
+            <option key={biz._id} value={biz._id}>
               {biz.name}
             </option>
           ))}

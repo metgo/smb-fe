@@ -26,6 +26,8 @@ export const endpoints = {
   business: "/business",
   businesses: "/businesses",
 
+  //products
+  products: "/products",
   // events
   events: "/events",
   eventsStats: "/events-stats",

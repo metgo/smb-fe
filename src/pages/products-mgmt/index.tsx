@@ -19,6 +19,8 @@ import { CreateProductWizard } from "./components";
 import { Activity, useState } from "react";
 import ProductDetails from "./details/inde";
 
+import { useGetAllProductsQuery } from "@/store/api/productQueryApi";
+
 const businessId = "";
 
 export default function ProductsMgmtPage() {
@@ -60,11 +62,122 @@ export default function ProductsMgmtPage() {
   >("list");
 
   const themeColor = useThemeClasses();
+  const [searchTerm, setSearchTerm] = useState<string>("");
 
   const handleProductClick = (product: any) => {
     setSelectedProduct(product);
     setCurrentView("details");
   };
+  const handleCreateNew = () => {
+    setSelectedProduct(null);
+    setCurrentView("create");
+  };
+  const {
+    data: productData,
+    isLoading: loading,
+    refetch,
+  } = useGetAllProductsQuery({ search: searchTerm });
+
+  const columns = [
+    { key: "checkbox", label: "", width: "50px" },
+    {
+      key: "images",
+      label: t("product_image"),
+      render: (product) => (
+        <div className="w-12 h-12 rounded-lg bg-linear-to-br from-blue-500 to-indigo-600 flex items-center justify-center overflow-hidden">
+          {product.image ? (
+            <img
+              src={product.images[0]}
+              alt={product.name[language]}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <Package className="w-6 h-6 text-white" />
+          )}
+        </div>
+      ),
+    },
+    // {
+    //   key: "productName",
+    //   label: t("product_name"),
+    //   sortable: true,
+    //   render: (product) => (
+    //     <div>
+    //       <div className="font-medium">{product.name[language]}</div>
+    //       <div className="text-xs text-gray-500 truncate max-w-xs">
+    //         {product.shortDescription[language]}
+    //       </div>
+    //     </div>
+    //   ),
+    // },
+    {
+      key: "businessId",
+      label: t("business_name"),
+      render: (p) => p.businessId?.name,
+    },
+    {
+      key: "productType",
+      label: t("product_type"),
+      render: (p) => p.productType,
+    },
+    {
+      key: "status",
+      label: t("product_status"),
+      render: (p) => p.status,
+    },
+    {
+      key: "price",
+      label: t("price"),
+      sortable: true,
+      render: (p) => (
+        <div>
+          {p.price?.markedPrice !== p.price?.sellingPrice && (
+            <div className="text-xs text-gray-400 line-through">
+              ₪{p.markedPrice}
+            </div>
+          )}
+          <div className="font-medium">₪{p.price?.markedPrice}</div>
+        </div>
+      ),
+    },
+    {
+      key: "impact",
+      label: t("impact"),
+      sortable: true,
+      render: (p) => <div className="">{p.impact}</div>,
+    },
+    {
+      key: "quantity",
+      label: t("quantity"),
+      sortable: true,
+      render: (p) => p.quantity?.sold,
+    },
+    {
+      key: "updatedAt",
+      label: t("last_updated"),
+      sortable: true,
+      render: (p) => (
+        <div className={`p-3 ${themeColor.textTertiary} text-sm`}>
+          {new Date(p.updatedAt).toLocaleDateString(language)}
+        </div>
+      ),
+    },
+    {
+      key: "actions",
+      label: t("actions"),
+      render: (product) => (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            handleDuplicateProduct(product);
+          }}
+          className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
+        >
+          <Copy className="w-4 h-4" />
+        </button>
+      ),
+    },
+  ];
 
   const salesStats = [
     {
@@ -106,7 +219,7 @@ export default function ProductsMgmtPage() {
             description={t("products_management_desc")}
             h1Gradient="bg-linear-to-r  text-transparent from-blue-500 via-indigo-600 to-purple-600"
             btnLabel={t("add_products")}
-            onClick={() => setIsCreating(true)}
+            onClick={handleCreateNew}
           />
 
           {/* Fixed Stats, Toolbar, Filters - Always Visible */}
@@ -122,16 +235,35 @@ export default function ProductsMgmtPage() {
                 {/* Search */}
                 <div className="flex-1 min-w-50 max-w-md">
                   <div className="relative">
+                    {/* Search Icon */}
                     <Search
                       className={`absolute ${isRTL ? "right-3" : "left-3"} top-1/2 -translate-y-1/2 w-5 h-5 ${themeColor.textTertiary}`}
                     />
+
+                    {/* Input */}
                     <input
                       type="text"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
                       placeholder={t("search_products")}
-                      className={`w-full ${isRTL ? "pr-10 pl-4" : "pl-10 pr-4"} py-2 rounded-lg border ${themeColor.borderColor} ${themeColor.bgSecondary} ${themeColor.textPrimary} placeholder-gray-400`}
+                      className={`w-full 
+                      ${isRTL ? "pr-10 pl-10" : "pl-10 pr-10"} 
+                      py-2 rounded-lg border 
+                      ${themeColor.borderColor} 
+                      ${themeColor.bgSecondary} 
+                      ${themeColor.textPrimary} 
+                      placeholder-gray-400`}
                     />
+
+                    {/* Clear (Cross) Button */}
+                    {searchTerm && (
+                      <button
+                        onClick={() => setSearchTerm("")}
+                        className={`absolute ${isRTL ? "left-3" : "right-3"} top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600`}
+                      >
+                        ✕
+                      </button>
+                    )}
                   </div>
                 </div>
 
@@ -301,134 +433,18 @@ export default function ProductsMgmtPage() {
                 >
                   <ReordableDataTable
                     rowKey="id"
-                    data={sortedProducts}
+                    data={productData?.data}
                     selectedItems={selectedProducts}
                     onSelectionChange={setSelectedProducts}
-                    // onRowClick={setSelectedProduct}
                     onRowClick={(product) => handleProductClick(product)}
                     storageKey="productsTableColumnOrder"
-                    columns={[
-                      { key: "checkbox", label: "", width: "50px" },
-                      {
-                        key: "image",
-                        label: t("product_image"),
-                        render: (product) => (
-                          <div className="w-12 h-12 rounded-lg bg-linear-to-br from-blue-500 to-indigo-600 flex items-center justify-center overflow-hidden">
-                            {product.image ? (
-                              <img
-                                src={product.image}
-                                alt={product.name[language]}
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <Package className="w-6 h-6 text-white" />
-                            )}
-                          </div>
-                        ),
-                      },
-                      {
-                        key: "productName",
-                        label: t("product_name"),
-                        sortable: true,
-                        render: (product) => (
-                          <div>
-                            <div className="font-medium">
-                              {product.name[language]}
-                            </div>
-                            <div className="text-xs text-gray-500 truncate max-w-xs">
-                              {product.shortDescription[language]}
-                            </div>
-                          </div>
-                        ),
-                      },
-                      {
-                        key: "businessName",
-                        label: t("business_name"),
-                        render: (p) => p.businessName,
-                      },
-                      {
-                        key: "type",
-                        label: t("product_type"),
-                        render: (p) => getProductTypeLabel(p.type),
-                      },
-                      {
-                        key: "status",
-                        label: t("product_status"),
-                        render: (p) => getStatusBadge(p.status),
-                      },
-                      {
-                        key: "price",
-                        label: t("price"),
-                        sortable: true,
-                        render: (p) => (
-                          <div>
-                            {p.markedPrice !== p.sellingPrice && (
-                              <div className="text-xs text-gray-400 line-through">
-                                ₪{p.markedPrice}
-                              </div>
-                            )}
-                            <div className="font-medium">₪{p.sellingPrice}</div>
-                          </div>
-                        ),
-                      },
-                      {
-                        key: "impact",
-                        label: t("impact"),
-                        sortable: true,
-                        render: (p) => (
-                          <div className="flex items-center gap-2">
-                            <span
-                              className={`font-medium ${p.soldCount > 20 ? "text-green-600" : p.soldCount > 10 ? "text-blue-600" : "text-gray-600"}`}
-                            >
-                              {p.soldCount}
-                            </span>
-                            <span className="text-xs text-gray-400">sold</span>
-                          </div>
-                        ),
-                      },
-                      {
-                        key: "quantity",
-                        label: t("quantity"),
-                        sortable: true,
-                        render: (p) => p.quantity,
-                      },
-                      {
-                        key: "lastUpdated",
-                        label: t("last_updated"),
-                        sortable: true,
-                        render: (p) => (
-                          <div
-                            key="lastUpdated"
-                            className={`p-3 ${themeColor.textTertiary} text-sm`}
-                          >
-                            {new Date(p.lastUpdated).toLocaleDateString(
-                              language,
-                            )}
-                          </div>
-                        ),
-                      },
-                      {
-                        key: "actions",
-                        label: t("actions"),
-                        render: (product) => (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDuplicateProduct(product);
-                            }}
-                            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
-                          >
-                            <Copy className="w-4 h-4" />
-                          </button>
-                        ),
-                      },
-                    ]}
+                    columns={columns}
                   />
                 </div>
               ) : (
                 // Grid View
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                  {sortedProducts.map((product) => (
+                  {productData?.data?.map((product) => (
                     <div
                       key={product.id}
                       onClick={() => {
@@ -441,7 +457,7 @@ export default function ProductsMgmtPage() {
                         {product.image ? (
                           <img
                             src={product.image}
-                            alt={product.name[language]}
+                            alt={product.name}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                           />
                         ) : (
@@ -474,13 +490,13 @@ export default function ProductsMgmtPage() {
                         <h3
                           className={`${themeColor.textPrimary} mb-2 font-medium line-clamp-2`}
                         >
-                          {product.name[language]}
+                          {product.name}
                         </h3>
-                        <p
+                        {/* <p
                           className={`text-sm ${themeColor.textTertiary} mb-3 line-clamp-2`}
                         >
                           {product.shortDescription[language]}
-                        </p>
+                        </p> */}
                         <div className="flex items-center justify-between mb-2">
                           <div
                             className={`text-sm ${themeColor.textSecondary}`}
@@ -494,12 +510,12 @@ export default function ProductsMgmtPage() {
                               </span>
                             )}
                             <span className="font-medium">
-                              ₪{product.sellingPrice}
+                              ₪{product?.price?.selligPrice}
                             </span>
                           </div>
                         </div>
                         <div className={`text-xs ${themeColor.textTertiary}`}>
-                          {product.businessName}
+                          {product.name}
                         </div>
                       </div>
                     </div>
@@ -518,6 +534,7 @@ export default function ProductsMgmtPage() {
             setIsCreating(false);
             setIsEditing(false);
             setSelectedProduct(null);
+            setCurrentView("list");
           }}
           editingProduct={
             isEditing && selectedProduct
@@ -553,7 +570,9 @@ export default function ProductsMgmtPage() {
         <Activity mode={!isEditing ? "visible" : "hidden"}>
           <ProductDetails
             product={selectedProduct}
-            onBack={() => {}}
+            onBack={() => {
+              setCurrentView("list");
+            }}
             onDuplicate={() => {}}
             onEdit={() => {
               setIsEditing(true);

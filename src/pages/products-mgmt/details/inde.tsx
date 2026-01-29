@@ -45,7 +45,7 @@ export default function ProductDetails({
 
   const [activeTab, setActiveTab] = useState("overview");
   const [currentStatus, setCurrentStatus] = useState<Product["status"]>(
-    product?.status,
+    product.status,
   );
   const [showStatusDropdown, setShowStatusDropdown] = useState(false);
 
@@ -97,9 +97,9 @@ export default function ProductDetails({
       <div className="relative">
         <button
           onClick={() => setShowStatusDropdown(!showStatusDropdown)}
-          className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm text-white ${config.color} hover:opacity-90 transition-opacity`}
+          className={`flex items-center gap-2 px-3 py-1 rounded-full text-sm text-white ${config?.color} hover:opacity-90 transition-opacity`}
         >
-          <span>{config.label}</span>
+          <span>{config?.label}</span>
           <ChevronDown
             className={`w-4 h-4 transition-transform ${showStatusDropdown ? "rotate-180" : ""}`}
           />
@@ -231,10 +231,10 @@ export default function ProductDetails({
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-4">
               <div className="w-16 h-16 rounded-lg bg-linear-to-br from-blue-500 to-indigo-600 flex items-center justify-center overflow-hidden">
-                {product?.image ? (
+                {product.image ? (
                   <img
-                    src={product?.image}
-                    alt={product?.name[language]}
+                    src={product.images[0]}
+                    alt={product.name}
                     className="w-full h-full object-cover"
                   />
                 ) : (
@@ -247,15 +247,15 @@ export default function ProductDetails({
                     theme === "dark" ? "text-white" : "text-gray-900"
                   }`}
                 >
-                  {product.name[language]}
+                  {product.name}
                 </h1>
-                <p
+                {/* <p
                   className={
                     theme === "dark" ? "text-gray-400" : "text-gray-600"
                   }
                 >
-                  {product.shortDescription[language]}
-                </p>
+                  {product.shortDescription}
+                </p> */}
               </div>
             </div>
             <StatusBadge status={product.status} />
@@ -285,7 +285,10 @@ export default function ProductDetails({
               <p
                 className={`text-3xl font-bold ${theme === "dark" ? "text-white" : "text-gray-900"}`}
               >
-                ₪{(product.soldCount * product.sellingPrice).toLocaleString()}
+                ₪
+                {(
+                  product.quantity?.sold * product.price?.sellingPrice
+                ).toLocaleString()}
               </p>
             </div>
 
@@ -307,7 +310,7 @@ export default function ProductDetails({
               <p
                 className={`text-3xl font-bold ${theme === "dark" ? "text-white" : "text-gray-900"}`}
               >
-                {product.soldCount.toLocaleString()}
+                {product.quantity.sold.toLocaleString()}
               </p>
             </div>
 
@@ -329,10 +332,13 @@ export default function ProductDetails({
               <p
                 className={`text-3xl font-bold ${theme === "dark" ? "text-white" : "text-gray-900"}`}
               >
-                {product.quantity === null ? (
+                {product.quantity?.isUnlimited ? (
                   <span className="text-teal-500">∞</span>
                 ) : (
-                  (product.quantity - product.soldCount).toLocaleString()
+                  (product.quantity?.remaining
+                    ? product.quantity.remaining
+                    : ""
+                  ).toLocaleString()
                 )}
               </p>
             </div>
