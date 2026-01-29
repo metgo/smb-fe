@@ -7,11 +7,6 @@ interface Params {
   bussCategoryId?: string;
 }
 
-interface IWebsiteFilterProps {
-  authorityId: string;
-  dmoId: string;
-}
-
 export const masterDataApi = createApi({
   reducerPath: "masterDataApi",
   baseQuery: axiosBaseQuery(),
