@@ -20,6 +20,7 @@ import {
 import { categoryIds } from "@/lib/utils";
 
 interface EventBasicInformationProps {
+  eventId: string;
   markDirty: (step: number) => void;
   selectedDmoId: string;
   setSelectDmoId: React.Dispatch<React.SetStateAction<string>>;
@@ -51,6 +52,7 @@ interface EventBasicInformationProps {
 }
 
 const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
+  eventId,
   markDirty,
   selectedDmoId,
   setSelectDmoId,
@@ -176,11 +178,11 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
     <div className="space-y-6 max-w-3xl mx-auto">
       <DmoAuthorityWebsiteSelector
         errors={errors}
+        isEdit={!!eventId}
         selectedDmoId={selectedDmoId}
         setSelectDmoId={setSelectDmoId}
         selectedAuthorityId={selectedAuthorityId}
         setSelectAuthorityId={setSelectAuthorityId}
-        authoritySectionRef={authoritySectionRef}
         dmoSectionRef={dmoSectionRef}
         websiteVisibilityIds={websiteVisibilityIds}
         setWebsiteVisibilityIds={setWebsiteVisibilityIds}
