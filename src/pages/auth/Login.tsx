@@ -1,47 +1,40 @@
-import { toast } from 'sonner';
-import { useState } from 'react';
-import { Globe } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { toast } from "sonner";
+import { useState } from "react";
+import { Globe } from "lucide-react";
 
-import { routes } from '@/lib/routes';
-import { UserRole } from '@/enums/user.types';
-import { useLoginMutation } from '@/store/api/authApi';
-import ContinueWithGoogle from './ContinueWithGoogle';
-import { SubmitButton } from '@/components/btns';
-
-
+import { useLoginMutation } from "@/store/api/authApi";
+import ContinueWithGoogle from "./ContinueWithGoogle";
+import { SubmitButton } from "@/components/btns";
+import { routes } from "@/lib/routes";
+import { useNavigate } from "react-router-dom";
 
 interface LoginProps {
   setCurrentTab: (v: string) => void;
 }
 
 export function Login({ setCurrentTab }: LoginProps) {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [error] = useState('');
   const navigate = useNavigate();
+
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error] = useState("");
 
   const [login, { isLoading }] = useLoginMutation();
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
+    e.preventDefault();
     try {
       const data = await login({ email: username, password }).unwrap();
-      if (data.user.role === UserRole.TRAVELLER && !data?.user?.hasBusiness) {
-      } else {
-        navigate(routes.dashboard, { replace: true });
+      if (typeof window !== "undefined") {
+        localStorage.setItem("userData", JSON.stringify(data));
+        localStorage.setItem("user", JSON.stringify(data.user));
+        localStorage.removeItem("dmoId");
+        localStorage.removeItem("authorityId");
       }
-
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('userData', JSON.stringify(data));
-        localStorage.setItem('user', JSON.stringify(data.user));
-        localStorage.removeItem('dmoId');
-        localStorage.removeItem('authorityId');
-      }
-
+      navigate(routes.dashboard, { replace: true });
       toast.success(`Welcome ${data.user.firstName} ${data.user.lastName}`);
     } catch (err: any) {
-      toast.error(err?.data?.message || 'Login failed');
+      toast.error(err?.data?.message || "Login failed");
     }
   };
 
@@ -62,7 +55,7 @@ export function Login({ setCurrentTab }: LoginProps) {
 
           {/* Subtitle */}
           <p className="text-white/80 mb-8">
-            Don't have an Account?{' '}
+            Don't have an Account?{" "}
             <button
               onClick={() => setCurrentTab("register")}
               className="text-yellow-400 hover:text-yellow-300 transition-colors cursor-pointer"
@@ -91,9 +84,7 @@ export function Login({ setCurrentTab }: LoginProps) {
             />
 
             {/* Error Message */}
-            {error && (
-              <p className="text-red-300 text-sm">{error}</p>
-            )}
+            {error && <p className="text-red-300 text-sm">{error}</p>}
 
             {/* Forgot Password */}
             <div className="text-right">
@@ -107,14 +98,12 @@ export function Login({ setCurrentTab }: LoginProps) {
 
             <SubmitButton
               loading={isLoading}
-              label='Sign In'
-              className='bg-blue-500 hover:bg-blue-600 text-white rounded-xl text-lg py-7'
+              label="Sign In"
+              className="bg-blue-500 hover:bg-blue-600 text-white rounded-xl text-lg py-7"
             />
-
 
             {/* Divider */}
             <div className="text-center text-white/80">Or</div>
-
           </form>
           {/* Google Sign In */}
           <ContinueWithGoogle />

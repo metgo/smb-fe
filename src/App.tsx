@@ -1,22 +1,34 @@
-import { Suspense } from "react"
-import { Outlet, RouterProvider, createBrowserRouter, Navigate } from "react-router-dom"
-
+import { Suspense } from "react";
+import {
+  Outlet,
+  RouterProvider,
+  createBrowserRouter,
+  Navigate,
+} from "react-router-dom";
 
 import { routes } from "@/lib/routes";
 import DashboardPage from "@/pages/dashboard";
 import RootLayout from "@/components/RootLayout";
-import { AuthPage, BusinessesMgmtPage, ProductsMgmtPage, MiniCampaignsMgmtPage, EventsMgmtPage, ProfilePage, OrdersMgmtPage } from "@/pages";
+import {
+  AuthPage,
+  BusinessesMgmtPage,
+  ProductsMgmtPage,
+  MiniCampaignsMgmtPage,
+  EventsMgmtPage,
+  ProfilePage,
+  OrdersMgmtPage,
+} from "@/pages";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
   isLoginPage?: boolean;
 }
 
-
 function App() {
-
-
-  const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, isLoginPage = false }) => {
+  const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
+    children,
+    isLoginPage = false,
+  }) => {
     const isLoggedIn = !!localStorage.getItem("userData");
 
     if (isLoginPage) {
@@ -32,7 +44,6 @@ function App() {
 
     return children;
   };
-
 
   const router = createBrowserRouter([
     {
@@ -52,22 +63,21 @@ function App() {
         { path: routes.profile, element: <ProfilePage /> },
         { path: routes.ordersMgmt, element: <OrdersMgmtPage /> },
         { path: "/*", element: <DashboardPage /> },
-      ]
+      ],
     },
     {
       element: (
         <Suspense fallback={null}>
-          <ProtectedRoute isLoginPage><Outlet /></ProtectedRoute>
+          <ProtectedRoute isLoginPage>
+            <Outlet />
+          </ProtectedRoute>
         </Suspense>
       ),
-      children: [
-        { path: routes.auth, element: <AuthPage /> },
-      ]
+      children: [{ path: routes.auth, element: <AuthPage /> }],
     },
-  ])
+  ]);
 
-
-  return <RouterProvider router={router} />
+  return <RouterProvider router={router} />;
 }
 
-export default App
+export default App;

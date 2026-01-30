@@ -3,12 +3,8 @@ import { useAppSelector } from "@/hooks/hooks";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useTranslation } from "react-i18next";
 import { CheckCircle } from "lucide-react";
-
-// interface TicketData {
-//   id: string;
-//   name: string;
-//   type: "free" | "paid" | "vip" | "donation";
-// }
+import { formatDate } from "@/helpers/formatter";
+import { extractCenterAddressText } from "@/helpers";
 
 interface CustomQuestion {
   id: string;
@@ -17,7 +13,6 @@ interface CustomQuestion {
 }
 
 interface EventReviewPublishProps {
-  currentStep: number;
   setCurrentStep: React.Dispatch<React.SetStateAction<number>>;
 
   // Basic Info (Step 1)
@@ -44,7 +39,6 @@ interface EventReviewPublishProps {
 }
 
 const EventReviewPublish: React.FC<EventReviewPublishProps> = ({
-  currentStep,
   setCurrentStep,
   eventName,
   shortDescription,
@@ -61,14 +55,16 @@ const EventReviewPublish: React.FC<EventReviewPublishProps> = ({
   customQuestions,
   tickets,
 }) => {
-  const { t } = useTranslation("events");
+  const { t, i18n } = useTranslation("events");
   const { textPrimary, textSecondary, textTertiary } = useThemeClasses();
   const { theme } = useAppSelector((state) => state.settings);
 
-  if (currentStep !== 7) return null;
+  const language = i18n.language as Language;
 
-  const formatValue = (value: string | undefined, fallback: string = "not_set") =>
-    value || t(fallback);
+  const formatValue = (
+    value: string | undefined,
+    fallback: string = "not_set",
+  ) => value || t(fallback);
 
   return (
     <div className="space-y-10 max-w-4xl mx-auto">
@@ -78,13 +74,13 @@ const EventReviewPublish: React.FC<EventReviewPublishProps> = ({
         <h2 className={`text-3xl font-bold mb-3 ${textPrimary}`}>
           {t("review_your_event")}
         </h2>
-        <p className={`text-lg ${textTertiary}`}>
-          {t("review_all_details")}
-        </p>
+        <p className={`text-lg ${textTertiary}`}>{t("review_all_details")}</p>
       </div>
 
       {/* Basic Information */}
-      <div className={`p-8 rounded-2xl border ${theme === "dark" ? "border-gray-700 bg-gray-800/50" : "border-gray-200 bg-gray-50"}`}>
+      <div
+        className={`p-8 rounded-2xl border ${theme === "dark" ? "border-gray-700 bg-gray-800/50" : "border-gray-200 bg-gray-50"}`}
+      >
         <div className="flex items-center justify-between mb-6">
           <h3 className={`text-xl font-semibold ${textPrimary}`}>
             {t("basic_information")}
@@ -96,16 +92,29 @@ const EventReviewPublish: React.FC<EventReviewPublishProps> = ({
             {t("edit")}
           </button>
         </div>
-        <div className={`grid grid-cols-1 md:grid-cols-2 gap-4 text-base ${textSecondary}`}>
-          <p><strong>{t("name")}:</strong> {formatValue(eventName)}</p>
-          <p><strong>{t("language")}:</strong> {eventLanguage.toUpperCase()}</p>
-          <p><strong>{t("description")}:</strong> {formatValue(shortDescription)}</p>
-          <p><strong>{t("event_status")}:</strong> <span className="capitalize">{t(eventStatus)}</span></p>
+        <div
+          className={`grid grid-cols-1 md:grid-cols-2 gap-4 text-base ${textSecondary}`}
+        >
+          <p>
+            <strong>{t("name")}:</strong> {formatValue(eventName)}
+          </p>
+          <p>
+            <strong>{t("language")}:</strong> {eventLanguage.toUpperCase()}
+          </p>
+          <p>
+            <strong>{t("description")}:</strong> {formatValue(shortDescription)}
+          </p>
+          <p>
+            <strong>{t("event_status")}:</strong>{" "}
+            <span className="capitalize">{t(eventStatus)}</span>
+          </p>
         </div>
       </div>
 
       {/* Date & Location */}
-      <div className={`p-8 rounded-2xl border ${theme === "dark" ? "border-gray-700 bg-gray-800/50" : "border-gray-200 bg-gray-50"}`}>
+      <div
+        className={`p-8 rounded-2xl border ${theme === "dark" ? "border-gray-700 bg-gray-800/50" : "border-gray-200 bg-gray-50"}`}
+      >
         <div className="flex items-center justify-between mb-6">
           <h3 className={`text-xl font-semibold ${textPrimary}`}>
             {t("date_location")}
@@ -117,17 +126,43 @@ const EventReviewPublish: React.FC<EventReviewPublishProps> = ({
             {t("edit")}
           </button>
         </div>
-        <div className={`grid grid-cols-1 md:grid-cols-2 gap-4 text-base ${textSecondary}`}>
-          <p><strong>{t("format")}:</strong> <span className="capitalize">{t(eventFormat)}</span></p>
-          <p><strong>{t("type")}:</strong> {isMultiDay ? t("multi_day_event_text") : t("single_day_event_text")}</p>
-          {!isMultiDay && <p><strong>{t("date")}:</strong> {formatValue(startDate)}</p>}
-          {eventFormat !== "online" && <p><strong>{t("address")}:</strong> {formatValue(address)}</p>}
-          {eventFormat !== "physical" && <p><strong>{t("online_link")}:</strong> {formatValue(onlineLink, "not_applicable")}</p>}
+        <div
+          className={`grid grid-cols-1 md:grid-cols-2 gap-4 text-base ${textSecondary}`}
+        >
+          <p>
+            <strong>{t("format")}:</strong>{" "}
+            <span className="capitalize">{t(eventFormat)}</span>
+          </p>
+          <p>
+            <strong>{t("type")}:</strong>{" "}
+            {isMultiDay
+              ? t("multi_day_event_text")
+              : t("single_day_event_text")}
+          </p>
+          {!isMultiDay && (
+            <p>
+              <strong>{t("date")}:</strong> {formatDate(startDate, language)}
+            </p>
+          )}
+          {eventFormat !== "online" && (
+            <p>
+              <strong>{t("address")}:</strong>{" "}
+              {extractCenterAddressText(address)}
+            </p>
+          )}
+          {eventFormat !== "physical" && (
+            <p>
+              <strong>{t("online_link")}:</strong>{" "}
+              {formatValue(onlineLink, "not_applicable")}
+            </p>
+          )}
         </div>
       </div>
 
       {/* Registration */}
-      <div className={`p-8 rounded-2xl border ${theme === "dark" ? "border-gray-700 bg-gray-800/50" : "border-gray-200 bg-gray-50"}`}>
+      <div
+        className={`p-8 rounded-2xl border ${theme === "dark" ? "border-gray-700 bg-gray-800/50" : "border-gray-200 bg-gray-50"}`}
+      >
         <div className="flex items-center justify-between mb-6">
           <h3 className={`text-xl font-semibold ${textPrimary}`}>
             {t("registration")}
@@ -141,17 +176,21 @@ const EventReviewPublish: React.FC<EventReviewPublishProps> = ({
         </div>
         <div className={`space-y-4 text-base ${textSecondary}`}>
           <p>
-            <strong>{t("required")}:</strong> {registrationRequired ? t("yes") : t("no")}
+            <strong>{t("required")}:</strong>{" "}
+            {registrationRequired ? t("yes") : t("no")}
           </p>
           {registrationRequired && (
             <>
               <p>
                 <strong>{t("capacity")}:</strong>{" "}
-                {capacityType === "unlimited" ? t("unlimited") : `${capacity} ${t("attendees")}`}
+                {capacityType === "unlimited"
+                  ? t("unlimited")
+                  : `${capacity ?? 0} ${t("attendees")}`}
               </p>
               <p>
-                <strong>{t("custom_questions")}:</strong> {customQuestions.length}{" "}
-                {customQuestions.length === 1 ? t("question") : t("questions")}
+                <strong>{t("custom_questions")}:</strong>{" "}
+                {customQuestions?.length}{" "}
+                {customQuestions?.length === 1 ? t("question") : t("questions")}
               </p>
             </>
           )}
@@ -159,7 +198,9 @@ const EventReviewPublish: React.FC<EventReviewPublishProps> = ({
       </div>
 
       {/* Tickets */}
-      <div className={`p-8 rounded-2xl border ${theme === "dark" ? "border-gray-700 bg-gray-800/50" : "border-gray-200 bg-gray-50"}`}>
+      <div
+        className={`p-8 rounded-2xl border ${theme === "dark" ? "border-gray-700 bg-gray-800/50" : "border-gray-200 bg-gray-50"}`}
+      >
         <div className="flex items-center justify-between mb-6">
           <h3 className={`text-xl font-semibold ${textPrimary}`}>
             {t("tickets")}
@@ -173,14 +214,14 @@ const EventReviewPublish: React.FC<EventReviewPublishProps> = ({
         </div>
         <div className={`text-base ${textSecondary}`}>
           <p className="mb-3">
-            <strong>{t("total_tickets")}:</strong> {tickets.length}
+            <strong>{t("total_tickets")}:</strong> {tickets?.length}
           </p>
-          {tickets.length > 0 ? (
+          {tickets?.length > 0 ? (
             <ul className="space-y-2 ml-6 list-disc">
-              {tickets.map((ticket, i) => (
+              {tickets?.map((ticket, i) => (
                 <li key={i}>
-                  <span className="font-medium">{ticket.name}</span>{" "}
-                  <span className="text-teal-500">({t(ticket.type)})</span>
+                  <span className="font-medium">{ticket?.name}</span>{" "}
+                  <span className="text-teal-500">({t(ticket?.type)})</span>
                 </li>
               ))}
             </ul>
@@ -189,9 +230,6 @@ const EventReviewPublish: React.FC<EventReviewPublishProps> = ({
           )}
         </div>
       </div>
-
-      {/* Final Publish Button (can be added in parent) */}
-      {/* You can add a publish button here or in the parent wizard */}
     </div>
   );
 };

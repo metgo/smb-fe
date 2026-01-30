@@ -24,4 +24,4 @@ export {
   BusinessMediaDetails,
   BusinessOnlinePresenceDetails,
   BusinessOpeningHoursDetails,
-}
+};

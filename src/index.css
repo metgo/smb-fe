@@ -151,12 +151,17 @@ body::-webkit-scrollbar,
     -moz-osx-font-smoothing: grayscale;
   }
 }
+@layer utilities {
+  .field-error {
+    @apply border-red-500 focus:border-red-500 focus:ring-red-500/20;
+  }
+}
 
 /**
  * Base typography. This is not applied to elements which have an ancestor with a Tailwind text class.
  */
 @layer base {
-  :where(:not(:has([class*=' text-']), :not(:has([class^='text-'])))) {
+  :where(:not(:has([class*=" text-"]), :not(:has([class^="text-"])))) {
     h1 {
       font-size: var(--text-2xl);
       font-weight: var(--font-weight-medium);
@@ -198,13 +203,29 @@ body::-webkit-scrollbar,
       font-weight: var(--font-weight-normal);
       line-height: 1.5;
     }
-
   }
 }
 
-.db1{
+.db1 {
   border: 2px dotted red;
 }
+
 html {
   font-size: var(--font-size);
+}
+.ck-editor__editable {
+  min-height: 180px;
+}
+
+/* Disable CKEditor sticky toolbar completely */
+.email-editor-wrapper .ck-sticky-panel__content_sticky {
+  position: static !important;
+  top: auto !important;
+  box-shadow: none !important;
+}
+
+/* Remove placeholder height that causes layout jump */
+.email-editor-wrapper .ck-sticky-panel__placeholder {
+  display: none !important;
+  height: 0 !important;
 }

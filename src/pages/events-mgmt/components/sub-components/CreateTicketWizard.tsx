@@ -1,240 +1,530 @@
-
 import clsx from "clsx";
 import { toast } from "sonner";
-import { Upload, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-
+import { Plus, Trash2, Upload, X } from "lucide-react";
+import { formatDate } from "@/helpers/formatter";
+import { ModalWrapper } from "@/components/wrapper";
+import { ConfirmDialog } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { useCreateSignedUrlMutation, useCreateTicketMutation, useUpdateTicketMutation } from "@/store/api/eventMutationApi";
-import { uploadWithProgress } from "@/helpers";
-
+import { useSingleImageUpload } from "@/hooks/useSingleImageUpload";
+import {
+  useCreateTicketMutation,
+  useUpdateTicketMutation,
+} from "@/store/api/eventMutationApi";
 
 interface CreateTicketWizardProps {
+  opMode: TTicketOpMode;
   setShowTicketModal: (v: boolean) => void;
   setEditingTicket: (v: any) => void;
   theme: Theme;
   editingTicket: ITicketPayload;
-  tickets: any;
   eventId: string | null;
   refetch: () => void;
+  eventDays: EventDay[];
+  ticketDateTime: ITicketDateTime[];
+  setTicketDateTime: React.Dispatch<React.SetStateAction<ITicketDateTime[]>>;
 }
+
+const modelTitle = (mode: TTicketOpMode, t: (key: string) => string) => {
+  switch (mode) {
+    case "CREATE":
+      return t("create_ticket");
+    case "UPDATE":
+      return t("edit_ticket");
+    case "DUPLICATE":
+      return t("duplicate_ticket");
+    default:
+      return "";
+  }
+};
 
 const CreateTicketWizard = ({
   setShowTicketModal,
   setEditingTicket,
   theme,
   editingTicket,
-  tickets,
   eventId,
   refetch,
+  opMode,
+  eventDays,
+  ticketDateTime,
+  setTicketDateTime,
 }: CreateTicketWizardProps) => {
-  const { t } = useTranslation('events');
-  const { cardClasses, textPrimary, textSecondary, inputClasses, textTertiary } = useThemeClasses();
+  console.log("🚀 ~ CreateTicketWizard ~ editingTicket:", editingTicket);
+  const { t } = useTranslation("events");
+  const { textPrimary, textSecondary, inputClasses, textTertiary, rowDir } =
+    useThemeClasses();
 
-  const [createSignedUrl] = useCreateSignedUrlMutation();
+  const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
-  const [progress, setProgress] = useState(0);
-  const [createTicket, { isLoading: isSaving }] = useCreateTicketMutation()
-  const [updateTicket, { isLoading: isUpdating }] = useUpdateTicketMutation()
+  // ─── ERROR STATES ───────────────────────────────────────────────
+  const [errors, setErrors] = useState<{
+    name?: string;
+    description?: string;
+    ticketDays: string[];
+    markedPrice?: string;
+    sellingPrice?: string;
+  }>({ ticketDays: [] });
+  const [ticketImage, setTicketImage] = useState<IImage | null>(null);
+  console.log("🚀 ~ CreateTicketWizard ~ ticketImage:", ticketImage);
 
-  const [file, setFile] = useState<File | null>(null)
-  const [mediaURL, setMediaURL] = useState<GcsFileUpload>({ signedUrl: "", gcsURL: "" })
+  const isPaidOrVip = ["paid", "vip"].includes(
+    editingTicket?.type?.toLowerCase() || "",
+  );
 
-  const saveTicket = async (ticket: ITicketPayload) => {
-    if (eventId) {
-      const payload: ITicketPayload = {
-        name: ticket.name,
-        description: ticket.description,
-        eventId: eventId,
-        price: {
-          markedPrice: ticket.price.markedPrice,
-          sellingPrice: ticket.price.sellingPrice,
-          discountPercent: 0,
-          discountAmount: 0,
-        },
-        quantity: {
-          initial: ticket.quantity.initial,
-          sold: 0,
-          remaining: ticket.quantity.remaining,
-          isUnlimited: ticket.quantity.isUnlimited,
-          perUserLimit: ticket.quantity.perUserLimit,
-        },
-        images: [{
-          image: mediaURL.gcsURL
-        }],
-        status: "active",
-        type: ticket.type.toUpperCase(),
+  const {
+    image,
+    handleImageSelect,
+    uploadImage,
+    confirmDelete,
+    deleteTarget,
+    setDeleteTarget,
+    isImageDeleting,
+    handleDeleteImage,
+  } = useSingleImageUpload({
+    initialImage: ticketImage?.image,
+    onChange: () => setTicketImage,
+  });
+
+  const [createTicket, { isLoading: isSaving }] = useCreateTicketMutation();
+  const [updateTicket, { isLoading: isUpdating }] = useUpdateTicketMutation();
+
+  // const [isSaved, setIsSaved] = useState(false);
+  // const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+
+  useEffect(() => {
+    if (editingTicket?.imageUrl) {
+      setTicketImage({ image: editingTicket?.imageUrl });
+    }
+  }, [editingTicket]);
+
+  // ─── VALIDATION ─────────────────────────────────────────────────
+  const validateTicket = (): boolean => {
+    const newErrors: typeof errors = { ticketDays: [] };
+    let isValid = true;
+    let firstInvalidField: string | null = null;
+
+    // Name
+    if (!editingTicket.name?.trim()) {
+      newErrors.name = t("ticket_name_required") || "Ticket name is required";
+      isValid = false;
+      firstInvalidField = firstInvalidField ?? "name";
+    }
+
+    // Description
+    if (!editingTicket.description?.trim()) {
+      newErrors.description =
+        t("description_required") || "Ticket description is required";
+      isValid = false;
+      firstInvalidField = firstInvalidField ?? "description";
+    }
+
+    // Ticket days
+    ticketDateTime.forEach((day, index) => {
+      let dayError = "";
+      if (!day.date?.trim()) {
+        dayError = t("date_required") || "Date is required";
+        isValid = false;
       }
+      if (!day.startTime) {
+        dayError =
+          dayError || t("start_time_required") || "Start time required";
+        isValid = false;
+      }
+      if (!day.endTime) {
+        dayError = dayError || t("end_time_required") || "End time required";
+        isValid = false;
+      }
+      if (day.startTime && day.endTime && day.startTime >= day.endTime) {
+        dayError =
+          dayError || t("end_after_start") || "End time must be after start";
+        isValid = false;
+      }
+      if (dayError) {
+        newErrors.ticketDays[index] = dayError;
+        firstInvalidField = firstInvalidField ?? `day-${index}`;
+      }
+    });
 
-      if (file && mediaURL.signedUrl) {
-        try {
-          setProgress(0);
-          await uploadWithProgress(file, mediaURL?.signedUrl, setProgress);
-          toast.success("Upload successful!");
-          setFile(null)
-        } catch (err) {
-          toast.error("Upload failed");
+    // Prices - only when paid or VIP
+    if (isPaidOrVip) {
+      if (
+        !editingTicket.price?.markedPrice ||
+        editingTicket.price.markedPrice <= 0
+      ) {
+        newErrors.markedPrice =
+          t("marked_price_required") || "Marked price is required";
+        isValid = false;
+        firstInvalidField = firstInvalidField ?? "markedPrice";
+      }
+      if (
+        !editingTicket.price?.sellingPrice ||
+        editingTicket.price.sellingPrice <= 0
+      ) {
+        newErrors.sellingPrice =
+          t("selling_price_required") || "Selling price is required";
+        isValid = false;
+        firstInvalidField = firstInvalidField ?? "sellingPrice";
+      }
+    }
+
+    setErrors(newErrors);
+
+    // Scroll to first error field (after DOM has chance to update)
+    if (!isValid && firstInvalidField) {
+      setTimeout(() => {
+        if (firstInvalidField !== null) {
+          const targetEl = sectionRefs.current[firstInvalidField];
+          if (targetEl) {
+            targetEl.scrollIntoView({ behavior: "smooth", block: "center" });
+
+            // Try to focus the first input/select/textarea inside
+            const focusable = targetEl.querySelector(
+              "input:not([type=hidden]), textarea, select",
+            ) as HTMLElement | null;
+            focusable?.focus();
+          }
         }
-      }
+      }, 80); // small delay helps with conditional rendering / re-renders
+    }
 
-      const res = ticket._id ? await updateTicket({ body: payload, ticketId: ticket?._id }).unwrap() : await createTicket(payload).unwrap()
-      if (res?.message) {
-        toast.success(res?.message || "Ticket created successfully")
-        refetch()
-      }
+    return isValid;
+  };
 
+  const clearError = (field: keyof typeof errors | `day-${number}`) => {
+    setErrors((prev) => {
+      const next = { ...prev };
+      if (field === "name") next.name = undefined;
+      else if (field === "description") next.description = undefined;
+      else if (field === "markedPrice") next.markedPrice = undefined;
+      else if (field === "sellingPrice") next.sellingPrice = undefined;
+      else if (field.startsWith("day-")) {
+        const idx = Number(field.split("-")[1]);
+        next.ticketDays[idx] = "";
+      }
+      return next;
+    });
+  };
+
+  const saveTicket = async () => {
+    if (!validateTicket()) return;
+    if (!eventId) {
+      toast.error("Event ID is missing");
+      return;
+    }
+
+    const uploadImageUrl = await uploadImage();
+
+    const payload: ITicketPayload = {
+      eventId,
+      name: editingTicket.name.trim(),
+      description: editingTicket.description?.trim() || "",
+      price: {
+        markedPrice: editingTicket.price?.markedPrice || 0,
+        sellingPrice: editingTicket.price?.sellingPrice || 0,
+        discountPercent: 0,
+        discountAmount: 0,
+      },
+      quantity: {
+        initial: editingTicket.quantity?.initial || 0,
+        sold: 0,
+        remaining: editingTicket.quantity?.initial || 0,
+        isUnlimited: editingTicket.quantity?.isUnlimited || false,
+        perUserLimit: editingTicket.quantity?.perUserLimit || 0,
+      },
+      dayDescription: ticketDateTime.map((item) => ({
+        date: item.date,
+        startTime: item.startTime,
+        endTime: item.endTime,
+      })),
+      images: [{ image: uploadImageUrl }],
+      status: "active",
+      type: editingTicket.type.toUpperCase(),
+    };
+
+    try {
+      const res =
+        editingTicket._id && opMode !== "DUPLICATE"
+          ? await updateTicket({
+              body: payload,
+              ticketId: editingTicket._id,
+            }).unwrap()
+          : await createTicket(payload).unwrap();
+
+      toast.success(
+        res?.message ||
+          t("ticket_saved_successfully") ||
+          "Ticket saved successfully",
+      );
+      refetch();
       setShowTicketModal(false);
       setEditingTicket(null);
+    } catch (err: any) {
+      toast.error(err?.data?.message || "Failed to save ticket");
     }
   };
 
-  useEffect(() => {
-    if (file) {
-      async function generateSignedUrlForImage() {
-        const payload = ([{
-          originalName: file ? file.name : "",
-          mimeType: file ? file.type : "",
-        }]);
+  const addTicketDay = () => {
+    setTicketDateTime((prev) => [
+      ...prev,
+      {
+        _id: ticketDateTime.length + 1,
+        date: eventDays[0]?.date || "",
+        startTime: eventDays[0]?.startTime || "09:00",
+        endTime: eventDays[0]?.endTime || "17:00",
+      },
+    ]);
+  };
 
-        const res = await createSignedUrl(payload);
+  const removeEventDay = (id: string | number) => {
+    setTicketDateTime((prev) => prev.filter((day) => day._id !== id));
+  };
 
-        if (res?.data?.length > 0) {
-          setMediaURL({
-            signedUrl: res.data[0]?.signedUrl,
-            gcsURL: res.data[0]?.gcsURL,
-          })
-        }
-      }
-      generateSignedUrlForImage();
-    }
-  }, [file]);
+  const updateTicketDay = (
+    index: number,
+    field: keyof ITicketDateTime,
+    value: string,
+  ) => {
+    setTicketDateTime((prev) => {
+      const updated = [...prev];
+      updated[index] = { ...updated[index], [field]: value };
+      return updated;
+    });
+    clearError(`day-${index}`);
+  };
 
-  useEffect(() => setProgress(0), [])
-
-
+  function handleClose() {
+    setShowTicketModal(false);
+    setEditingTicket(null);
+    setTicketImage(null);
+  }
 
   return (
-    <div className="fixed inset-0 bg-black/70 z-60 flex items-center justify-center p-4">
-      <div className={`w-full max-w-2xl rounded-xl ${cardClasses} p-6`}>
-        <div className="flex items-center justify-between mb-6">
-          <h3 className={`text-xl ${textPrimary}`}>
-            {editingTicket?._id && tickets?.find((t: any) => t._id === editingTicket._id)
-              ? t('edit_ticket')
-              : t('create_ticket')}
-          </h3>
-          <button
-            onClick={() => {
-              setShowTicketModal(false);
-              setEditingTicket(null);
-            }}
-            className={`p-2 rounded-lg transition-colors ${theme === 'dark' ? 'hover:bg-gray-800' : 'hover:bg-gray-100'
-              }`}
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+    <ModalWrapper
+      onClose={handleClose}
+      height="h-[88vh]"
+      maxWidth="max-w-2xl"
+      showSpinner={isSaving || isUpdating || image?.status === "uploading"}
+    >
+      <div className="p-4 space-y-4 relative">
+        <h3 className={`text-xl ${textPrimary}`}>{modelTitle(opMode, t)}</h3>
 
-        <div className="space-y-4">
-          <div>
-            <label className={`block text-sm mb-2 ${textSecondary}`}>{t('ticket_name')}</label>
+        <section
+          className={clsx(
+            "px-3 py-5 space-y-6 max-h-[70vh] overflow-y-auto rounded-lg border",
+            theme === "dark"
+              ? "border-gray-700 bg-gray-800/50"
+              : "border-gray-200 bg-gray-50",
+          )}
+        >
+          {/* === Ticket Name === */}
+          <div
+            ref={(el) => {
+              sectionRefs.current["name"] = el;
+            }}
+          >
+            <label className={`block text-sm mb-2 ${textSecondary}`}>
+              {t("ticket_name")} <span className="text-red-500">*</span>
+            </label>
             <input
               type="text"
-              value={editingTicket?.name || ''}
-              onChange={(e) => setEditingTicket({ ...editingTicket, name: e.target.value })}
-              placeholder={t('general_admission')}
-              className={`w-full px-4 py-2 rounded-lg border ${inputClasses}`}
+              value={editingTicket?.name || ""}
+              onChange={(e) => {
+                setEditingTicket((prev: ITicketPayload) => ({
+                  ...prev,
+                  name: e.target.value,
+                }));
+                clearError("name");
+              }}
+              placeholder={t("general_admission")}
+              className={clsx(
+                "w-full px-4 py-2.5 rounded-lg border transition-colors",
+                inputClasses,
+                errors.name && "field-error",
+              )}
             />
+            {errors.name && (
+              <p className="mt-1.5 text-sm text-red-600 dark:text-red-400">
+                {errors.name}
+              </p>
+            )}
           </div>
 
-          <div>
-            <label className={`block text-sm mb-2 ${textSecondary}`}>{t('description')}</label>
+          {/* === Description === */}
+          <div
+            ref={(el) => {
+              sectionRefs.current["description"] = el;
+            }}
+          >
+            <label className={`block text-sm mb-2 ${textSecondary}`}>
+              {t("description")} <span className="text-red-500">*</span>
+            </label>
             <textarea
-              value={editingTicket?.description || ''}
-              onChange={(e) => setEditingTicket({ ...editingTicket, description: e.target.value })}
-              placeholder={t('enter_ticket_description') || 'Enter ticket description...'}
+              value={editingTicket?.description || ""}
+              onChange={(e) =>
+                setEditingTicket((prev: ITicketPayload) => ({
+                  ...prev,
+                  description: e.target.value,
+                }))
+              }
+              placeholder={
+                t("enter_ticket_description") || "Enter ticket description..."
+              }
               rows={3}
-              className={`w-full px-4 py-2 rounded-lg border ${inputClasses}`}
+              className={clsx(
+                "w-full px-4 py-2.5 rounded-lg border transition-colors",
+                inputClasses,
+                errors.description && "field-error",
+              )}
             />
+            {errors.description && (
+              <p className="mt-1.5 text-sm text-red-600 dark:text-red-400">
+                {errors.description}
+              </p>
+            )}
           </div>
 
-          <div>
-            <div className="flex items-center gap-2">
-              <label className={`block text-sm mb-2 ${textSecondary}`}>{t('ticket_image')}</label>
-              {progress > 0 && (
-                <div className="w-120 bg-gray-200 rounded h-2 mt-2 flex items-center gap-2">
+          {/* === Ticket Days === */}
+          <section>
+            <label className={`block text-sm mb-2 ${textSecondary}`}>
+              {t("ticket_days")}
+            </label>
+            <div className="space-y-4 mt-2">
+              {ticketDateTime?.map((day, index) => (
+                <div
+                  key={day._id}
+                  ref={(el) => {
+                    if (el) sectionRefs.current[`day-${index}`] = el;
+                  }}
+                  className="space-y-2"
+                >
                   <div
-                    className="bg-green-500 h-2 rounded transition-all"
-                    style={{ width: `${progress}%` }}
-                  />
-                  <div>{progress}%</div>
-                </div>
-              )}
-            </div>
-            <div
-              className={`border-2 border-dashed rounded-lg p-4 ${theme === 'dark' ? 'border-gray-700 bg-gray-800/30' : 'border-gray-300 bg-gray-50'
-                }`}
-            >
-              {editingTicket?.imageUrl ? (
-                <div className="relative">
-                  <img
-                    src={editingTicket?.imageUrl}
-                    alt="Ticket preview"
-                    className="w-full h-40 object-cover rounded-lg"
-                  />
-                  <button
-                    onClick={() => setEditingTicket({ ...editingTicket, image: undefined })}
-                    className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                    className={clsx(
+                      "grid grid-cols-12 gap-2 items-center",
+                      rowDir,
+                    )}
                   >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-              ) : (
-                <div className="text-center">
-                  <Upload className={`w-10 h-10 mx-auto mb-2 ${textTertiary}`} />
-                  <p className={`text-sm ${textSecondary} mb-2`}>{t('click_to_upload_or_drag')}</p>
-                  <p className={`text-xs ${textTertiary} mb-3`}>{t('supported_formats')}</p>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) {
-                        setFile(file);
-                        const reader = new FileReader();
-                        reader.onloadend = () => {
-                          setEditingTicket({ ...editingTicket, imageUrl: reader.result as string });
-                        };
-                        reader.readAsDataURL(file);
-                      }
-                    }}
-                    className="hidden"
-                    id="ticket-image-upload"
-                  />
-                  <label
-                    htmlFor="ticket-image-upload"
-                    className="inline-block px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white text-sm rounded-lg cursor-pointer transition-colors"
-                  >
-                    {t('browse_files')}
-                  </label>
-                </div>
-              )}
-            </div>
-          </div>
+                    <div className="col-span-5">
+                      <select
+                        value={day.date}
+                        onChange={(e) =>
+                          updateTicketDay(index, "date", e.target.value)
+                        }
+                        className={clsx(
+                          "w-full px-3 py-2 rounded-lg border transition-colors",
+                          inputClasses,
+                          errors.ticketDays[index] &&
+                            "border-red-500 focus:border-red-500",
+                        )}
+                      >
+                        <option value="">{t("select_date")}</option>
+                        {eventDays.map((d) => (
+                          <option key={d.id} value={d.date}>
+                            {formatDate(d.date, "en")}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
 
+                    <div className="col-span-3">
+                      <input
+                        type="time"
+                        value={day.startTime}
+                        onChange={(e) =>
+                          updateTicketDay(index, "startTime", e.target.value)
+                        }
+                        className={clsx(
+                          "w-full px-3 py-2 rounded-lg border transition-colors",
+                          inputClasses,
+                          errors.ticketDays[index] &&
+                            "border-red-500 focus:border-red-500",
+                        )}
+                      />
+                    </div>
+
+                    <div className="col-span-3">
+                      <input
+                        type="time"
+                        value={day.endTime}
+                        onChange={(e) =>
+                          updateTicketDay(index, "endTime", e.target.value)
+                        }
+                        className={clsx(
+                          "w-full px-3 py-2 rounded-lg border transition-colors",
+                          inputClasses,
+                          errors.ticketDays[index] &&
+                            "border-red-500 focus:border-red-500",
+                        )}
+                      />
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => removeEventDay(day._id)}
+                      className="col-span-1 p-2 text-red-500 hover:text-red-600 bg-red-100 dark:bg-red-900/30 rounded-md flex items-center justify-center"
+                    >
+                      <Trash2 size={18} />
+                    </button>
+                  </div>
+
+                  {errors?.ticketDays[index] && (
+                    <p className="text-sm text-red-600 dark:text-red-400 pl-1">
+                      {errors.ticketDays[index]}
+                    </p>
+                  )}
+                </div>
+              ))}
+
+              <button
+                type="button"
+                onClick={addTicketDay}
+                className="border border-dashed border-green-600 text-green-600 hover:bg-green-50 dark:hover:bg-green-950/30 rounded-md px-4 py-2.5 flex items-center justify-center w-full transition-colors"
+              >
+                <Plus size={18} className="mr-2" />
+                {t("add_more_days")}
+              </button>
+            </div>
+          </section>
+
+          {/* === Ticket Type === */}
           <div>
-            <label className={`block text-sm mb-2 ${textSecondary}`}>{t('ticket_type')}</label>
+            <label className={`block text-sm mb-2 ${textSecondary}`}>
+              {t("ticket_type")}
+            </label>
             <div className="grid grid-cols-3 gap-3">
-              {(['free', 'paid', 'vip'] as const).map((type) => (
+              {(["free", "paid", "vip"] as const).map((type) => (
                 <button
                   key={type}
-                  onClick={() => setEditingTicket({ ...editingTicket, type })}
-                  className={`px-4 py-2 rounded-lg border capitalize transition-colors ${editingTicket?.type.toLowerCase() === type
-                    ? 'border-teal-500 bg-teal-500/10 text-teal-500'
-                    : theme === 'dark'
-                      ? 'border-gray-700 hover:bg-gray-800'
-                      : 'border-gray-300 hover:bg-gray-50'
-                    }`}
+                  type="button"
+                  onClick={() => {
+                    setEditingTicket((prev: ITicketPayload) => ({
+                      ...prev,
+                      type,
+                      ...(type === "free"
+                        ? {
+                            price: {
+                              ...prev.price,
+                              markedPrice: 0,
+                              sellingPrice: 0,
+                            },
+                          }
+                        : {}),
+                    }));
+                    setErrors((prev) => ({
+                      ...prev,
+                      markedPrice: undefined,
+                      sellingPrice: undefined,
+                    }));
+                  }}
+                  className={clsx(
+                    "px-4 py-2.5 rounded-lg border capitalize transition-colors",
+                    editingTicket?.type?.toLowerCase() === type
+                      ? "border-teal-500 bg-teal-500/10 text-teal-500 font-medium"
+                      : theme === "dark"
+                        ? "border-gray-700 hover:bg-gray-800"
+                        : "border-gray-300 hover:bg-gray-50",
+                  )}
                 >
                   {t(type)}
                 </button>
@@ -242,96 +532,252 @@ const CreateTicketWizard = ({
             </div>
           </div>
 
-          {editingTicket?.type.toLowerCase() !== 'free' && (
+          {/* === Prices === */}
+          {isPaidOrVip && (
             <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className={`block text-sm mb-2 ${textSecondary}`}>{t('marked_price')} (₪)</label>
+              <div
+                ref={(el) => {
+                  sectionRefs.current["markedPrice"] = el;
+                }}
+              >
+                <label className={`block text-sm mb-2 ${textSecondary}`}>
+                  {t("marked_price")} (₪){" "}
+                  <span className="text-red-500">*</span>
+                </label>
                 <input
                   type="number"
-                  value={editingTicket?.price?.markedPrice || ''}
-                  onChange={(e) =>
-                    setEditingTicket({
-                      ...editingTicket,
-                      price: { ...editingTicket.price, markedPrice: parseFloat(e.target.value) || 0 },
-                    })
-                  }
-                  className={`w-full px-4 py-2 rounded-lg border ${inputClasses}`}
+                  min={0}
+                  value={editingTicket?.price?.markedPrice || ""}
+                  onChange={(e) => {
+                    const val = parseFloat(e.target.value) || 0;
+                    setEditingTicket((prev: ITicketPayload) => ({
+                      ...prev,
+                      price: { ...prev.price, markedPrice: val },
+                    }));
+                    clearError("markedPrice");
+                  }}
+                  className={clsx(
+                    "w-full px-4 py-2.5 rounded-lg border transition-colors",
+                    inputClasses,
+                    errors.markedPrice && "field-error",
+                  )}
                 />
+                {errors.markedPrice && (
+                  <p className="mt-1.5 text-sm text-red-600 dark:text-red-400">
+                    {errors.markedPrice}
+                  </p>
+                )}
               </div>
-              <div>
-                <label className={`block text-sm mb-2 ${textSecondary}`}>{t('selling_price')} (₪)</label>
+
+              <div
+                ref={(el) => {
+                  sectionRefs.current["sellingPrice"] = el;
+                }}
+              >
+                <label className={`block text-sm mb-2 ${textSecondary}`}>
+                  {t("selling_price")} (₪){" "}
+                  <span className="text-red-500">*</span>
+                </label>
                 <input
                   type="number"
-                  value={editingTicket?.price?.sellingPrice || ''}
-                  onChange={(e) =>
-                    setEditingTicket({
-                      ...editingTicket,
-                      price: { ...editingTicket.price, sellingPrice: parseFloat(e.target.value) || 0 },
-                    })
-                  }
-                  className={`w-full px-4 py-2 rounded-lg border ${inputClasses}`}
+                  min={0}
+                  value={editingTicket?.price?.sellingPrice || ""}
+                  onChange={(e) => {
+                    const val = parseFloat(e.target.value) || 0;
+                    setEditingTicket((prev: ITicketPayload) => ({
+                      ...prev,
+                      price: { ...prev.price, sellingPrice: val },
+                    }));
+                    clearError("sellingPrice");
+                  }}
+                  className={clsx(
+                    "w-full px-4 py-2.5 rounded-lg border transition-colors",
+                    inputClasses,
+                    errors.sellingPrice && "field-error",
+                  )}
                 />
+                {errors.sellingPrice && (
+                  <p className="mt-1.5 text-sm text-red-600 dark:text-red-400">
+                    {errors.sellingPrice}
+                  </p>
+                )}
               </div>
             </div>
           )}
 
+          {/* Quantity */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className={`block text-sm mb-2 ${textSecondary}`}>{t('quantity')}</label>
+              <label className={`block text-sm mb-2 ${textSecondary}`}>
+                {t("quantity")}
+              </label>
               <input
                 type="number"
-                value={editingTicket?.quantity.initial || ''}
+                min={1}
+                value={editingTicket?.quantity?.initial ?? ""}
                 onChange={(e) =>
-                  setEditingTicket({
-                    ...editingTicket,
-                    quantity: { ...editingTicket.quantity, initial: parseInt(e.target.value) || 0, }
-                  })
+                  setEditingTicket((prev: any) => ({
+                    ...prev,
+                    quantity: {
+                      ...prev.quantity,
+                      initial: parseInt(e.target.value) || 0,
+                    },
+                  }))
                 }
-                className={`w-full px-4 py-2 rounded-lg border ${inputClasses}`}
+                className={`w-full px-4 py-2.5 rounded-lg border ${inputClasses}`}
               />
             </div>
             <div>
-              <label className={`block text-sm mb-2 ${textSecondary}`}>{t('per_user_limit')}</label>
+              <label className={`block text-sm mb-2 ${textSecondary}`}>
+                {t("per_user_limit")}
+              </label>
               <input
                 type="number"
-                value={editingTicket?.quantity?.perUserLimit || ''}
+                min={1}
+                value={editingTicket?.quantity?.perUserLimit ?? ""}
                 onChange={(e) =>
-                  setEditingTicket({
-                    ...editingTicket,
-                    quantity: { ...editingTicket.quantity, perUserLimit: parseInt(e.target.value) || 0, }
-                  })
+                  setEditingTicket((prev: any) => ({
+                    ...prev,
+                    quantity: {
+                      ...prev.quantity,
+                      perUserLimit: parseInt(e.target.value) || 0,
+                    },
+                  }))
                 }
-                className={`w-full px-4 py-2 rounded-lg border ${inputClasses}`}
+                className={`w-full px-4 py-2.5 rounded-lg border ${inputClasses}`}
               />
             </div>
           </div>
 
-          <div className="flex justify-end gap-3 mt-6">
-            <button
-              onClick={() => {
-                setShowTicketModal(false);
-                setEditingTicket(null);
-              }}
-              className={`px-4 py-2 cursor-pointer rounded-lg border transition-colors ${theme === 'dark'
-                ? 'border-gray-700 hover:bg-gray-800'
-                : 'border-gray-300 hover:bg-gray-100'
-                }`}
-            >
-              {t('cancel')}
-            </button>
-            <button
-              onClick={() => saveTicket(editingTicket)}
+          {/* === Ticket Image === */}
+          <div>
+            <div className="flex items-center justify-between">
+              <label className={`block text-sm mb-2 ${textSecondary}`}>
+                {t("ticket_image")}
+              </label>
+              {image?.progress !== undefined &&
+                image.progress > 0 &&
+                image.status === "uploading" && (
+                  <div className="flex items-center gap-2 w-32">
+                    <div className="w-full bg-gray-200 rounded h-2">
+                      <div
+                        className="bg-teal-600 h-2 rounded transition-all"
+                        style={{ width: `${image.progress}%` }}
+                      />
+                    </div>
+                    <span className="text-xs text-gray-600 dark:text-gray-400">
+                      {image.progress}%
+                    </span>
+                  </div>
+                )}
+            </div>
+
+            <div
               className={clsx(
-                "px-6 py-2 rounded-lg transition-colors",
-                (isSaving || isUpdating) ? "cursor-not-allowed bg-gray-400 text-black" : " bg-teal-600 hover:bg-teal-700 text-white cursor-pointer "
+                "border-2 border-dashed rounded-lg p-4",
+                theme === "dark"
+                  ? "border-gray-700 bg-gray-800/30"
+                  : "border-gray-300 bg-gray-50",
               )}
             >
-              {t('save_ticket')}
-            </button>
+              {image?.previewUrl ? (
+                <div className="relative">
+                  <img
+                    src={image.previewUrl}
+                    alt="Ticket preview"
+                    className="w-full h-40 object-cover rounded-lg"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteImage(image, opMode)}
+                    className="absolute -top-2 -right-2 p-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600"
+                  >
+                    <X className="w-6 h-6" />
+                  </button>
+                </div>
+              ) : (
+                <div className="text-center">
+                  <Upload
+                    className={`w-10 h-10 mx-auto mb-2 ${textTertiary}`}
+                  />
+                  <p className={`text-sm ${textSecondary} mb-2`}>
+                    {t("click_to_upload_or_drag")}
+                  </p>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) handleImageSelect(file);
+                    }}
+                    className="hidden"
+                    id="ticket-image-upload"
+                  />
+                  <label
+                    htmlFor="ticket-image-upload"
+                    className="inline-block px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white text-sm rounded-lg cursor-pointer"
+                  >
+                    {t("browse_files")}
+                  </label>
+                </div>
+              )}
+            </div>
           </div>
+        </section>
+
+        {/* Action buttons */}
+        <div className="flex justify-end gap-3 mt-6">
+          <button
+            onClick={() => {
+              setShowTicketModal(false);
+              setEditingTicket(null);
+            }}
+            className={`px-5 py-2.5 rounded-lg border transition-colors ${
+              theme === "dark"
+                ? "border-gray-700 hover:bg-gray-800"
+                : "border-gray-300 hover:bg-gray-100"
+            }`}
+          >
+            {t("cancel")}
+          </button>
+
+          <button
+            onClick={saveTicket}
+            disabled={isSaving || isUpdating || image?.status === "uploading"}
+            className={clsx(
+              "px-6 py-2.5 rounded-lg text-white transition-colors min-w-30",
+              isSaving || isUpdating || image?.status === "uploading"
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-teal-600 hover:bg-teal-700 cursor-pointer",
+            )}
+          >
+            {isSaving || isUpdating || image?.status === "uploading"
+              ? "Saving..."
+              : t("save_ticket")}
+          </button>
         </div>
       </div>
-    </div>
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        title="delete_image"
+        message="delete_image_confirm"
+        confirmText="delete"
+        loading={isImageDeleting}
+        variant="danger"
+        onCancel={() => setDeleteTarget(null)}
+        onConfirm={confirmDelete}
+      />
+      {/* <ConfirmDialog
+        open={isConfirmOpen}
+        title="unsaved_changes"
+        message="unsaved_changes_confirm"
+        confirmText="confirm"
+        variant="warning"
+        onCancel={() => setIsSaved(false)}
+        onConfirm={handleClose}
+      /> */}
+    </ModalWrapper>
   );
 };
 

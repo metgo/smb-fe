@@ -1,4 +1,5 @@
-type TMonthlyType = "SPECIFIC_DATE" | "RELATIVE_DAY"
+type TMonthlyType = "SPECIFIC_DATE" | "RELATIVE_DAY";
+type TTicketOpMode = "CREATE" | "DUPLICATE" | "UPDATE";
 
 interface Event {
   _id: string;
@@ -11,7 +12,7 @@ interface Event {
   price: number;
   isFree: boolean;
   registrationRequired: boolean;
-  status: 'upcoming' | 'past' | 'canceled';
+  status: "upcoming" | "past" | "canceled";
   totalRegistrations: number;
   capacity: number;
   revenue: number;
@@ -28,9 +29,7 @@ interface Event {
   }[];
 }
 
-interface IEventResponse{
-  
-}
+interface IEventResponse {}
 
 interface SignedUrlPayload {
   originalName: string;
@@ -50,12 +49,11 @@ interface Registrant {
   quantity: number;
   ticketType: string;
   totalPrice: number;
-  paymentStatus: 'paid' | 'pending' | 'refunded';
+  paymentStatus: "paid" | "pending" | "refunded";
   registrationDate: string;
   sourceWebsite: string;
   attendingDays?: string[];
 }
-
 
 interface EventDay {
   id: string;
@@ -68,7 +66,7 @@ interface EventDay {
 interface CustomQuestion {
   id: string;
   label: string;
-  type: 'text' | 'textarea' | 'dropdown' | 'checkbox';
+  type: "text" | "textarea" | "dropdown" | "checkbox";
   required: boolean;
   options?: string[];
 }
@@ -77,36 +75,38 @@ interface TicketData {
   _id?: string;
   name: string;
   description: string;
-  type: 'free' | 'paid' | 'vip' | 'donation';
+  type: "free" | "paid" | "vip" | "donation";
   markedPrice: number;
   sellingPrice: number;
   quantity: number;
   perUserLimit: number;
   saleStart: string;
   saleEnd: string;
-  visibility: 'public' | 'hidden' | 'promo';
+  visibility: "public" | "hidden" | "promo";
   assignedDays: string[];
 }
 
 interface NotificationData {
-  id: string;
+  _id?: string;
+  index: number;
   hoursBeforeEvent: number;
   channels: {
     email: boolean;
     sms: boolean;
     whatsapp: boolean;
   };
-  language: 'en' | 'he' | 'ar';
+  language: "en" | "he" | "ar";
   template: string;
   subject: string;
   message: string;
   enabled: boolean;
 }
 
-type RecurrencePattern = 'daily' | 'weekly' | 'monthly' | 'custom'
-type MonthlyOrdinal = '1st' | '2nd' | '3rd' | '4th' | 'last'
-type RecurrenceEndType = 'never' | 'date' | 'count'
+type RecurrencePattern = "daily" | "weekly" | "monthly" | "custom";
+type MonthlyOrdinal = "1st" | "2nd" | "3rd" | "4th" | "last";
+type RecurrenceEndType = "never" | "date" | "count";
 
+type EventStatus = "PENDING" | "APPROVED" | "CLOSED" | "REJECTED" | "DRAFT";
 
 // Event Creation Payload
 
@@ -116,7 +116,7 @@ interface EventBasicInfoPayload {
   shortDescription: string;
   authorityId?: string;
   dmoId?: string;
-  status: string
+  status: string;
   internalNotes?: string;
   groupTypesId?: string[];
   accessibilitiesId?: string[];
@@ -139,10 +139,7 @@ interface EventMsgSchedulePayload {
   scheduledNotifications?: ScheduledNotifications[];
 }
 
-interface EventMediaPayload {
-
-}
-
+interface EventMediaPayload {}
 
 interface DayDescription {
   date: string;
@@ -174,16 +171,6 @@ interface QuestionOption {
   value: string;
   label: string;
 }
-
-interface IEventImage {
-  image: string;
-  caption?: string;
-  alt?: string;
-  isPrimary: boolean;
-  subCoordinates?: SubCoordinates;
-}
-type TEventImages = IEventImage[];
-
 
 interface SubCoordinates {
   xMin: number;
@@ -225,12 +212,24 @@ interface CustomTemplate {
   body: string;
 }
 
+interface ITicketDateTime {
+  _id: number;
+  date: string;
+  startTime: string;
+  endTime: string;
+}
 
 interface ITicketPayload {
   _id?: string;
   name: string;
   description: string;
   eventId: string;
+  dayDescription: {
+    _id?: string;
+    date: string;
+    startTime: string;
+    endTime: string;
+  }[];
   price: {
     markedPrice: number;
     discountAmount: number;
@@ -243,23 +242,9 @@ interface ITicketPayload {
     remaining: number;
     isUnlimited: boolean;
     perUserLimit: number;
-  },
+  };
   imageUrl?: string;
-  images?: [{ image: string }]
+  images?: [{ image: string }];
   status: string;
   type: string;
-}
-
-
-type IUploadStatus = "idle" | "uploading" | "success" | "error";
-
-interface IEventImageUpload {
-  id: number;
-  file?: File;
-  previewUrl: string;
-  signedUrl?: string;
-  gcsURL?: string;
-  progress: number;
-  status: UploadStatus;
-  isPrimary: boolean;
 }

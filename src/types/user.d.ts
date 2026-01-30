@@ -1,4 +1,3 @@
-
 interface BankAccountDetails {
   bankNumber?: string;
   branchNumber?: string;
@@ -65,7 +64,7 @@ interface UserInfoRes {
   address: string;
   isPhoneVerify: boolean;
   isEmailVerify: boolean;
-  role: 'superadmin' | 'admin' | 'user' | string;
+  role: "superadmin" | "admin" | "user" | string;
   createdAt: string; // ISO date
   updatedAt: string; // ISO date
   bankAccount: BankAccount;
@@ -73,4 +72,3 @@ interface UserInfoRes {
   dmo: string | null;
   authority: string | null;
 }
-

@@ -92,6 +92,19 @@
   "conversion_rate": "שיעור המרה",
   "vs_last_month": "לעומת חודש שעבר",
 
+  "per_transaction": "לפי עסקה",
+  "per_redemption": "לפי מימוש",
+  "per_sale": "לפי מכירה",
+  "last_30_days": "30 הימים האחרונים",
+
+  "total_number": "מספר כולל",
+  "assigned_vouchers": "שוברים שהוקצו",
+  "remaining_amount": "סכום נותר",
+  "paid_by_vouchers": "שולם באמצעות שוברים",
+  "paid_by_bank_transfer": "שולם בהעברה בנקאית",
+
+  "purchases_report_summary_desc": "מדדים מקיפים להכנסות ולשוברים",
+
   "jan": "ינו",
   "feb": "פבר",
   "mar": "מרץ",

@@ -1,7 +1,7 @@
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 interface ProductAttributesProps {
-  t: (key: string)=>string;
+  t: (key: string) => string;
   formData: {
     type: string;
     categories: string[];
@@ -21,8 +21,8 @@ const ProductAttributes = ({
   errors,
   availableCategories,
 }: ProductAttributesProps) => {
-
-  const {  textPrimary, textSecondary, borderColor, hoverBg } = useThemeClasses()
+  const { textPrimary, textSecondary, borderColor, hoverBg } =
+    useThemeClasses();
 
   const productTypes = [
     { value: "physical", label: t("physical_product"), icon: "📦" },
@@ -84,7 +84,9 @@ const ProductAttributes = ({
                   } else {
                     setFormData({
                       ...formData,
-                      categories: formData.categories.filter((c) => c !== category),
+                      categories: formData.categories.filter(
+                        (c) => c !== category,
+                      ),
                     });
                   }
                 }}

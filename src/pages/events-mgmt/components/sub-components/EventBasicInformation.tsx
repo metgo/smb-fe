@@ -1,14 +1,27 @@
-import clsx from "clsx";
-import React from "react";
-import { ChevronDown } from "lucide-react";
+import React, { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 
-import { SelectableChips } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { useGetAccessibilityQuery, useGetGroupTypesQuery, useGetSubCategoriesQuery } from "@/store/api/masterDataApi";
-import { useCommon } from "@/hooks/useCommon";
+import {
+  DmoAuthorityWebsiteSelector,
+  SelectableChips,
+} from "@/components/shared";
+import {
+  useGetAccessibilityQuery,
+  useGetGroupTypesQuery,
+  useGetSubCategoriesQuery,
+} from "@/store/api/masterDataApi";
+import {
+  FormFieldWrapper,
+  InputField,
+  RadioGroupField,
+  TextareaField,
+} from "@/components/form-fields";
+import { categoryIds } from "@/lib/utils";
 
 interface EventBasicInformationProps {
+  eventId: string;
+  markDirty: (step: number) => void;
   selectedDmoId: string;
   setSelectDmoId: React.Dispatch<React.SetStateAction<string>>;
   selectedAuthorityId: string;
@@ -20,7 +33,9 @@ interface EventBasicInformationProps {
   fullDescription: string;
   setFullDescription: React.Dispatch<React.SetStateAction<string>>;
   eventStatus: "draft" | "pending" | "approved";
-  setEventStatus: React.Dispatch<React.SetStateAction<"draft" | "pending" | "approved">>;
+  setEventStatus: React.Dispatch<
+    React.SetStateAction<"draft" | "pending" | "approved">
+  >;
   internalNotes: string;
   setInternalNotes: React.Dispatch<React.SetStateAction<string>>;
   selectedSubCategoriesId: string[];
@@ -29,13 +44,20 @@ interface EventBasicInformationProps {
   setGroupTypesId: (v: string[]) => void;
   selectedAccessiblitiesId: string[];
   setAccessiblitiesId: (v: string[]) => void;
-  // Errors
-  errors: {
-    eventName?: string;
-  };
+  errors: Record<string, string>;
+
+  websiteVisibilityIds: IWebsiteVisibilityIds;
+  setWebsiteVisibilityIds: (v: any) => void;
+  eventAssociatedWebsites?: IAssociatedWebsiteIds[];
 }
 
 const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
+  eventId,
+  markDirty,
+  selectedDmoId,
+  setSelectDmoId,
+  selectedAuthorityId,
+  setSelectAuthorityId,
   eventName,
   setEventName,
   shortDescription,
@@ -46,237 +68,222 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
   setEventStatus,
   internalNotes,
   setInternalNotes,
+  selectedSubCategoriesId,
+  setSubCategoriesId,
+  selectedGroupTypesId,
+  setGroupTypesId,
+  selectedAccessiblitiesId,
+  setAccessiblitiesId,
   errors,
-  selectedSubCategoriesId, setSubCategoriesId,
-  selectedAccessiblitiesId, setAccessiblitiesId,
-  selectedGroupTypesId, setGroupTypesId,
-  selectedDmoId, setSelectDmoId,
-  selectedAuthorityId, setSelectAuthorityId,
+  websiteVisibilityIds,
+  setWebsiteVisibilityIds,
+  eventAssociatedWebsites = [],
 }) => {
-
   const { t, i18n } = useTranslation("events");
-  const { dmosAuthorities } = useCommon()
-  const { textSecondary, textTertiary, inputClasses, selectInputClasses } = useThemeClasses();
+  const { textSecondary, inputClasses } = useThemeClasses();
   const locale = i18n.language as Language;
 
-  const { data: subCategories } = useGetSubCategoriesQuery({ bussCategoryId: "6566fcd4a77d2a477266d3b9", locale });
+  const { data: subCategories } = useGetSubCategoriesQuery({
+    bussCategoryId: categoryIds.event,
+    locale,
+  });
   const { data: accessibility } = useGetAccessibilityQuery({ locale });
   const { data: groupTypes } = useGetGroupTypesQuery({ locale });
 
+  // Individual refs for scroll targets
+  const dmoSectionRef = useRef<HTMLDivElement | null>(null);
+  const authoritySectionRef = useRef<HTMLDivElement | null>(null);
+  const nameSectionRef = useRef<HTMLDivElement | null>(null);
+  const shortDescSectionRef = useRef<HTMLDivElement | null>(null);
 
-  const selectedDmos = dmosAuthorities?.find((item) => item?._id === selectedDmoId);
+  // Auto-scroll to first error field
+  useEffect(() => {
+    if (Object.keys(errors).length === 0) return;
+
+    const firstErrorKey = Object.keys(errors)[0];
+
+    let targetRef: React.RefObject<HTMLDivElement | null> | null = null;
+
+    switch (firstErrorKey) {
+      case "dmoId":
+        targetRef = dmoSectionRef;
+        break;
+      case "authorityId":
+        targetRef = authoritySectionRef;
+        break;
+      case "eventName":
+        targetRef = nameSectionRef;
+        break;
+      case "shortDescription":
+        targetRef = shortDescSectionRef;
+        break;
+      default:
+        break;
+    }
+
+    if (targetRef?.current) {
+      targetRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+
+      // Try to focus the first focusable element inside
+      const focusable = targetRef.current.querySelector(
+        "input, select, textarea, button",
+      ) as HTMLElement | null;
+      focusable?.focus?.();
+    }
+  }, [errors]);
+
+  useEffect(() => {
+    markDirty(1);
+  }, [
+    eventName,
+    shortDescription,
+    fullDescription,
+    selectedAuthorityId,
+    selectedDmoId,
+    selectedAccessiblitiesId,
+    selectedGroupTypesId,
+    selectedSubCategoriesId,
+    internalNotes,
+    markDirty,
+  ]);
 
   const handleSubcategorySelect = (itemId: string) => {
-    const exists = selectedSubCategoriesId?.some((id) => id === itemId);
-
-    if (exists) {
-      const updated = selectedSubCategoriesId?.filter((id) => id !== itemId);
-      setSubCategoriesId(updated);
-    } else {
-      setSubCategoriesId([...selectedSubCategoriesId, itemId]);
-    }
-  }
+    setSubCategoriesId(
+      selectedSubCategoriesId.includes(itemId)
+        ? selectedSubCategoriesId.filter((id) => id !== itemId)
+        : [...selectedSubCategoriesId, itemId],
+    );
+  };
 
   const handleGroupTypeSelect = (itemId: string) => {
-    const exists = selectedGroupTypesId?.some((id) => id === itemId);
-
-    if (exists) {
-      const updated = selectedGroupTypesId?.filter((id) => id !== itemId);
-      setGroupTypesId(updated);
-    } else {
-      setGroupTypesId([...selectedGroupTypesId, itemId]);
-    }
-  }
+    setGroupTypesId(
+      selectedGroupTypesId.includes(itemId)
+        ? selectedGroupTypesId.filter((id) => id !== itemId)
+        : [...selectedGroupTypesId, itemId],
+    );
+  };
 
   const handleAccessibilitySelect = (itemId: string) => {
-    const exists = selectedAccessiblitiesId?.some((id) => id === itemId);
-
-    if (exists) {
-      const updated = selectedAccessiblitiesId?.filter((id) => id !== itemId);
-      setAccessiblitiesId(updated);
-    } else {
-      setAccessiblitiesId([...selectedAccessiblitiesId, itemId]);
-    }
-  }
-
-
+    setAccessiblitiesId(
+      selectedAccessiblitiesId.includes(itemId)
+        ? selectedAccessiblitiesId.filter((id) => id !== itemId)
+        : [...selectedAccessiblitiesId, itemId],
+    );
+  };
 
   return (
-    <div className="space-y-4 max-w-3xl mx-auto">
-
-      <div className="flex items-center justify-between gap-4">
-        {/* Dmos Dropdown */}
-        <div className="flex-1">
-          <label className={`block text-sm font-medium mb-3 ${textSecondary}`}>
-            {t("select_dmo")} <span className="text-red-500">*</span>
-          </label>
-          <div className=" flex gap-2 relative">
-            <select
-              value={selectedDmoId}
-              onChange={(e) => {
-                setSelectDmoId(e.target.value);
-                setSelectAuthorityId("");
-              }}
-              className={clsx(
-                "appearance-none h-12 w-full border rounded-lg px-4 py-2 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 min-w-45",
-                // selectInputClasses
-              )}
-            >
-              <option value="">Select DMO</option>
-              {dmosAuthorities?.map((parent) => (
-                <option key={parent._id} value={parent._id}>
-                  {parent.name}
-                </option>
-              ))}
-            </select>
-            <ChevronDown className="absolute top-1/2 ltr:right-3 rtl:left-3 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
-          </div>
-        </div>
-
-        {/* Authorities Dropdown */}
-        <div className="flex-1">
-          <label className={`block text-sm font-medium mb-3 ${textSecondary}`}>
-            {t("select_authority")} <span className="text-red-500">*</span>
-          </label>
-          <div className=" w-full relative">
-            <select
-              value={selectedAuthorityId}
-              onChange={(e) => setSelectAuthorityId(e.target.value)}
-              className={clsx(
-                "appearance-none h-12 w-full border rounded-lg px-4 py-2 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 min-w-45",
-                selectInputClasses
-              )}
-            >
-              <option value="">Select Authority</option>
-              {selectedDmos?.authorities?.map((child) => (
-                <option key={child._id} value={child._id}>
-                  {child.name}
-                </option>
-              ))}
-            </select>
-            <ChevronDown className="absolute top-1/2 ltr:right-3 rtl:left-3 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
-          </div>
-        </div>
-      </div>
-
-
+    <div className="space-y-6 max-w-3xl mx-auto">
+      <DmoAuthorityWebsiteSelector
+        errors={errors}
+        isEdit={!!eventId}
+        selectedDmoId={selectedDmoId}
+        setSelectDmoId={setSelectDmoId}
+        selectedAuthorityId={selectedAuthorityId}
+        setSelectAuthorityId={setSelectAuthorityId}
+        dmoSectionRef={dmoSectionRef}
+        websiteVisibilityIds={websiteVisibilityIds}
+        setWebsiteVisibilityIds={setWebsiteVisibilityIds}
+        itemAssociatedWebsites={eventAssociatedWebsites}
+      />
 
       {/* Event Name */}
-      <div>
-        <label className={`block text-sm font-medium mb-3 ${textSecondary}`}>
-          {t("event_name")} <span className="text-red-500">*</span>
-        </label>
-        <input
-          type="text"
-          value={eventName}
-          onChange={(e) => setEventName(e.target.value)}
-          placeholder={t("enter_event_name")}
-          className={`w-full px-5 py-3 rounded-xl border text-lg ${inputClasses} transition-all focus:ring-2 focus:ring-teal-500/20 ${errors.eventName ? "border-red-500" : ""
-            }`}
-        />
-        {errors.eventName && (
-          <p className="text-red-500 text-sm mt-2 flex items-center gap-1">
-            {errors.eventName}
-          </p>
-        )}
+      <div ref={nameSectionRef}>
+        <FormFieldWrapper
+          required
+          label={t("event_name")}
+          error={errors.eventName}
+        >
+          <InputField
+            value={eventName}
+            onChange={setEventName}
+            placeholder={t("enter_event_name")}
+            inputClasses={`${inputClasses} text-lg`}
+          />
+        </FormFieldWrapper>
       </div>
 
       {/* Short Description */}
-      <div>
-        <label className={`block text-sm font-medium mb-3 ${textSecondary}`}>
-          {t("short_description")} <span className="text-red-500">*</span>
-        </label>
-        <input
-          type="text"
-          value={shortDescription}
-          onChange={(e) => setShortDescription(e.target.value)}
-          placeholder={t("brief_description")}
-          maxLength={200}
-          className={`w-full px-5 py-3 rounded-xl border text-base ${inputClasses} transition-all focus:ring-2 focus:ring-teal-500/20`}
-        />
-        <p className={`text-xs mt-2 text-right ${textTertiary}`}>
-          {shortDescription.length}/200 {t("max_characters")}
-        </p>
+      <div ref={shortDescSectionRef}>
+        <FormFieldWrapper
+          required
+          label={t("short_description")}
+          error={errors.shortDescription}
+          inputHintText={`${shortDescription?.length ?? 0}/200 ${t("max_characters")}`}
+        >
+          <InputField
+            value={shortDescription}
+            onChange={setShortDescription}
+            placeholder={t("brief_description")}
+            inputClasses={inputClasses}
+            maxLength={200}
+          />
+        </FormFieldWrapper>
       </div>
 
       {/* Full Description */}
-      <div>
-        <label className={`block text-sm font-medium mb-3 ${textSecondary}`}>
-          {t("full_description")}
-        </label>
-        <textarea
+      <FormFieldWrapper label={t("full_description")}>
+        <TextareaField
           value={fullDescription}
-          onChange={(e) => setFullDescription(e.target.value)}
+          onChange={setFullDescription}
           placeholder={t("full_event_description")}
           rows={8}
-          className={`w-full px-5 py-4 rounded-xl border resize-none text-base ${inputClasses} transition-all focus:ring-2 focus:ring-teal-500/20`}
+          inputClasses={`${inputClasses} text-base`}
         />
-      </div>
+      </FormFieldWrapper>
 
       {/* Event Status */}
-      <div>
-        <label className={`block text-sm font-medium mb-4 ${textSecondary}`}>
-          {t("event_status")}
-        </label>
-        <div className="flex flex-wrap gap-6">
-          {(["draft", "pending", "approved"] as const).map((status) => (
-            <label
-              key={status}
-              className="flex items-center gap-3 cursor-pointer group"
-            >
-              <input
-                type="radio"
-                name="eventStatus"
-                value={status}
-                checked={eventStatus === status}
-                onChange={(e) => setEventStatus(e.target.value as any)}
-                className="w-5 h-5 text-teal-500 focus:ring-teal-500 focus:ring-2"
-              />
-              <span className={`text-base capitalize font-medium ${textSecondary} group-hover:text-teal-500 transition-colors`}>
-                {t(status)}
-              </span>
-            </label>
-          ))}
-        </div>
-      </div>
+      <FormFieldWrapper label={t("event_status")}>
+        <RadioGroupField
+          value={eventStatus}
+          options={["draft", "pending", "approved"]}
+          onChange={setEventStatus}
+          labelMapper={(v) => t(v)}
+          textSecondary={textSecondary}
+        />
+      </FormFieldWrapper>
 
+      {/* Chips */}
       <SelectableChips
         label="Sub Categories"
-        items={subCategories?.datas?.data}
+        items={subCategories?.datas?.data ?? []}
         selectedIds={selectedSubCategoriesId}
         onSelect={handleSubcategorySelect}
         textSecondary={textSecondary}
       />
+
       <SelectableChips
         label="Accessiblities"
-        items={accessibility?.datas?.data}
+        items={accessibility?.datas?.data ?? []}
         selectedIds={selectedAccessiblitiesId}
         onSelect={handleAccessibilitySelect}
         textSecondary={textSecondary}
       />
+
       <SelectableChips
         label="Group Types"
-        items={groupTypes?.datas?.data}
+        items={groupTypes?.datas?.data ?? []}
         selectedIds={selectedGroupTypesId}
         onSelect={handleGroupTypeSelect}
         textSecondary={textSecondary}
       />
 
       {/* Internal Notes */}
-      <div>
-        <label className={`block text-sm font-medium mb-3 ${textSecondary}`}>
-          {t("internal_notes")}
-          <span className={`text-xs ml-2 ${textTertiary}`}>({t("visible_only_to_admins")})</span>
-        </label>
-        <textarea
-          value={internalNotes}
-          onChange={(e) => setInternalNotes(e.target.value)}
-          placeholder={t("add_internal_notes")}
+      <FormFieldWrapper
+        label={t("internal_notes")}
+        hint={t("visible_only_to_admins")}
+      >
+        <TextareaField
           rows={4}
-          className={`w-full px-5 py-4 rounded-xl border resize-none text-base ${inputClasses} transition-all focus:ring-2 focus:ring-teal-500/20`}
+          value={internalNotes}
+          onChange={setInternalNotes}
+          placeholder={t("add_internal_notes")}
+          inputClasses={`${inputClasses} text-base`}
         />
-      </div>
-    </div >
+      </FormFieldWrapper>
+    </div>
   );
 };
 

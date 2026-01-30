@@ -1,6 +1,3 @@
 import MiniCampaignWizard from "./MiniCampaignWizard";
 
-export{
-  MiniCampaignWizard
-
-}
+export { MiniCampaignWizard };

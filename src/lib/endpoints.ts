@@ -5,13 +5,17 @@ export const endpoints = {
   registerStep1: "/auth/register-step1",
   registerStep2: "/auth/register-step2",
 
-  popularProducts: "/popular-products",
-  popularBusiness: "/popular-business",
+  popularProductsStats: "/popular-products",
+  popularBusinessStats: "/popular-business",
+  popularPoiStats: "/popular-pois",
 
+  eventStats: "/stats/events",
   businessStats: "/home-stats/businesses",
   poiStats: "/home-stats/point-of-interests",
   productStats: "/home-stats/products",
-  eventStats: "/stats/events",
+  voucherStats: "/stats/vouchers",
+  onlineOrderStats: "/stats/orders",
+  offlineOrderStats: "/offline-order",
   purchaseReportsStats: "/stats/purchase-reports",
 
   googleAnalyticsViews: "/google-analytics-views",
@@ -31,16 +35,18 @@ export const endpoints = {
   events: "/events",
   eventsStats: "/events-stats",
 
-  
-
   users: "/users",
   userInfo: "/users/me",
 
   tickets: "/tickets",
+
+  // Media
   mediaSignedUrl: "/media-signed-url",
+  mediaFileDelete: "/media",
 
   websites: "/websites",
+  websiteAccessItem: "/websites/access-items",
 
-  googleMap: 'https://maps.googleapis.com/maps/api/js',
-  googlePlaceAutoComplete: 'https://places.googleapis.com/v1/places',
-}
+  googleMap: "https://maps.googleapis.com/maps/api/js",
+  googlePlaceAutoComplete: "https://places.googleapis.com/v1/places",
+};

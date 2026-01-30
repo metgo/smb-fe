@@ -70,13 +70,29 @@
   "total_orders": "إجمالي الطلبات",
   "total_vouchers": "إجمالي القسائم",
   "orders": "الطلبات",
+
   "popular_businesses": "الأعمال الشعبية",
   "popular_products": "المنتجات الشعبية",
   "popular_pois": "نقاط الاهتمام الشعبية",
+
   "key_performance_indicators": "مؤشرات الأداء الرئيسية",
   "total_revenue": "إجمالي الإيرادات",
   "conversion_rate": "معدل التحويل",
   "vs_last_month": "مقابل الشهر الماضي",
+
+  "per_transaction": "لكل معاملة",
+  "per_redemption": "لكل استرداد",
+  "per_sale": "لكل عملية بيع",
+  "last_30_days": "آخر 30 يومًا",
+
+  "total_number": "العدد الإجمالي",
+  "assigned_vouchers": "القسائم المخصصة",
+  "remaining_amount": "المبلغ المتبقي",
+  "paid_by_vouchers": "تم الدفع بواسطة القسائم",
+  "paid_by_bank_transfer": "تم الدفع عن طريق التحويل البنكي",
+
+  "purchases_report_summary_desc": "مؤشرات شاملة للإيرادات والقسائم",
+
   "jan": "ينا",
   "feb": "فبر",
   "mar": "مار",

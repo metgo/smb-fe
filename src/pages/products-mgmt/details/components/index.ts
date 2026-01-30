@@ -10,4 +10,4 @@ export {
   ProductInfoDetails,
   ProductMediaDetails,
   ProductPricingDetails,
-}
+};

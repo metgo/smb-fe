@@ -9,9 +9,9 @@ interface AssignBankAccountModalProps {
   theme: Theme;
   userId: string;
   banks: Bank[];
-  refetch: ()=>void;
+  refetch: () => void;
   setIsOpen: (v: boolean) => void;
-  savedBankAccount: BankAccount | undefined,
+  savedBankAccount: BankAccount | undefined;
 }
 
 const AssignBankAccountModal = ({
@@ -22,17 +22,16 @@ const AssignBankAccountModal = ({
   setIsOpen,
   savedBankAccount,
 }: AssignBankAccountModalProps) => {
-  const { t } = useTranslation('profile')
+  const { t } = useTranslation("profile");
 
-  const [updateProfileInfo, { isLoading }] = useUpdateProfileInfoMutation()
+  const [updateProfileInfo, { isLoading }] = useUpdateProfileInfoMutation();
 
-
-  const [selectedBankNumber, setSelectedBankNumber] = useState('');
-  const [selectedBranchNumber, setSelectedBranchNumber] = useState('');
+  const [selectedBankNumber, setSelectedBankNumber] = useState("");
+  const [selectedBranchNumber, setSelectedBranchNumber] = useState("");
 
   const selectedBank = useMemo(
     () => banks.find((b) => b.bankId === selectedBankNumber),
-    [banks, selectedBankNumber]
+    [banks, selectedBankNumber],
   );
 
   const [errors, setErrors] = useState<BankAccountErrors>({});
@@ -40,27 +39,27 @@ const AssignBankAccountModal = ({
   const validate = (): boolean => {
     const newErrors: BankAccountErrors = {};
 
-    if (!selectedBankNumber) newErrors.bankNumber = t('required') || 'Required';
-    if (!selectedBranchNumber) newErrors.branchNumber = t('required') || 'Required';
+    if (!selectedBankNumber) newErrors.bankNumber = t("required") || "Required";
+    if (!selectedBranchNumber)
+      newErrors.branchNumber = t("required") || "Required";
     if (!bankAccountData.accountNumber)
-      newErrors.accountNumber = t('required') || 'Required';
+      newErrors.accountNumber = t("required") || "Required";
     if (!bankAccountData.bnNumber)
-      newErrors.bnNumber = t('required') || 'Required';
+      newErrors.bnNumber = t("required") || "Required";
     if (!bankAccountData.invoiceName)
-      newErrors.invoiceName = t('required') || 'Required';
+      newErrors.invoiceName = t("required") || "Required";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const [bankAccountData, setBankAccountData] = useState<BankAccountDetails>({
-    branchNumber: '',
-    bankNumber: '',
-    accountNumber: '',
-    bnNumber: '',
-    invoiceName: '',
+    branchNumber: "",
+    bankNumber: "",
+    accountNumber: "",
+    bnNumber: "",
+    invoiceName: "",
   });
-
 
   const handleSaveBankAccount = async () => {
     if (!validate() && !userId) return;
@@ -76,54 +75,61 @@ const AssignBankAccountModal = ({
     const res = await updateProfileInfo({ body: payload, userId }).unwrap();
 
     if (res?.message) {
-      refetch()
-      toast.success(res.message || "Bank Info updated successfully")
+      refetch();
+      toast.success(res.message || "Bank Info updated successfully");
       setIsOpen(false);
     }
   };
 
-
   const handleBankChange = (field: keyof BankAccountDetails, value: string) => {
-    setBankAccountData(prev => ({
+    setBankAccountData((prev) => ({
       ...prev,
       [field]: value,
-      ...(field === 'bankNumber' ? { branchName: '' } : {})
+      ...(field === "bankNumber" ? { branchName: "" } : {}),
     }));
   };
 
   const handleCloseBankModal = () => {
-    setIsOpen(false)
-  }
+    setIsOpen(false);
+  };
 
   useEffect(() => {
     if (savedBankAccount) {
-      setSelectedBankNumber(savedBankAccount.bankNumber)
-      setSelectedBranchNumber(savedBankAccount.branchNumber)
+      setSelectedBankNumber(savedBankAccount.bankNumber);
+      setSelectedBranchNumber(savedBankAccount.branchNumber);
       setBankAccountData({
         accountNumber: savedBankAccount.accountNumber,
         bnNumber: savedBankAccount.businessNumberByGovt,
         invoiceName: savedBankAccount.invoiceName,
         bankNumber: savedBankAccount?.bankNumber,
-        branchNumber: savedBankAccount?.branchNumber
-      })
-
+        branchNumber: savedBankAccount?.branchNumber,
+      });
     }
-  }, [savedBankAccount])
-
+  }, [savedBankAccount]);
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className={`${theme === 'dark' ? 'bg-gray-800' : 'bg-white'} rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto`}>
+      <div
+        className={`${theme === "dark" ? "bg-gray-800" : "bg-white"} rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto`}
+      >
         {/* Modal Header */}
-        <div className={`sticky top-0 ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'} border-b ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'} p-6 flex items-center justify-between`}>
-          <h3 className={`text-2xl ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
-            {savedBankAccount ? (t('edit_bank_account') || 'Edit Bank Account') : (t('add_bank_account') || 'Add Bank Account')}
+        <div
+          className={`sticky top-0 ${theme === "dark" ? "bg-gray-800" : "bg-white"} border-b ${theme === "dark" ? "border-gray-700" : "border-gray-200"} p-6 flex items-center justify-between`}
+        >
+          <h3
+            className={`text-2xl ${theme === "dark" ? "text-white" : "text-gray-900"}`}
+          >
+            {savedBankAccount
+              ? t("edit_bank_account") || "Edit Bank Account"
+              : t("add_bank_account") || "Add Bank Account"}
           </h3>
           <button
             onClick={handleCloseBankModal}
-            className={`p-2 rounded-lg ${theme === 'dark' ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} transition-colors`}
+            className={`p-2 rounded-lg ${theme === "dark" ? "hover:bg-gray-700" : "hover:bg-gray-100"} transition-colors`}
           >
-            <X className={`w-6 h-6 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`} />
+            <X
+              className={`w-6 h-6 ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
+            />
           </button>
         </div>
 
@@ -132,9 +138,11 @@ const AssignBankAccountModal = ({
           {/* Bank Name */}
           <div>
             <label className="flex items-center gap-2 text-sm mb-2">
-              <span>{t('bank_name')} *</span>
+              <span>{t("bank_name")} *</span>
               {errors.bankNumber && (
-                <span className="text-red-500 text-xs">{errors.bankNumber}</span>
+                <span className="text-red-500 text-xs">
+                  {errors.bankNumber}
+                </span>
               )}
             </label>
 
@@ -143,17 +151,17 @@ const AssignBankAccountModal = ({
               onChange={(e) => {
                 const bankNumber = e.target.value;
                 setSelectedBankNumber(bankNumber);
-                setSelectedBranchNumber('');
+                setSelectedBranchNumber("");
                 setBankAccountData((prev) => ({
                   ...prev,
                   bankNumber,
-                  branchName: '',
+                  branchName: "",
                 }));
                 setErrors((prev) => ({ ...prev, bankNumber: undefined }));
               }}
-              className={`w-full px-4 py-3 rounded-lg border ${theme === 'dark' ? 'bg-gray-700 border-gray-600 text-gray-200' : 'bg-white border-gray-300 text-gray-900'} focus:outline-none focus:ring-2 focus:ring-teal-500 disabled:opacity-50 disabled:cursor-not-allowed`}
+              className={`w-full px-4 py-3 rounded-lg border ${theme === "dark" ? "bg-gray-700 border-gray-600 text-gray-200" : "bg-white border-gray-300 text-gray-900"} focus:outline-none focus:ring-2 focus:ring-teal-500 disabled:opacity-50 disabled:cursor-not-allowed`}
             >
-              <option value="">{t('select_bank')}</option>
+              <option value="">{t("select_bank")}</option>
               {banks.map((bank) => (
                 <option
                   key={bank.bankId}
@@ -164,15 +172,16 @@ const AssignBankAccountModal = ({
                 </option>
               ))}
             </select>
-
           </div>
 
           {/* Branch Name */}
           <div>
             <label className="flex items-center gap-2 text-sm mb-2">
-              <span>{t('branch_name')} *</span>
+              <span>{t("branch_name")} *</span>
               {errors.branchNumber && (
-                <span className="text-red-500 text-xs">{errors.branchNumber}</span>
+                <span className="text-red-500 text-xs">
+                  {errors.branchNumber}
+                </span>
               )}
             </label>
 
@@ -188,9 +197,9 @@ const AssignBankAccountModal = ({
                 setErrors((prev) => ({ ...prev, branchNumber: undefined }));
               }}
               disabled={!selectedBank || selectedBank.branches.length === 0}
-              className={`w-full px-4 py-3 rounded-lg border ${theme === 'dark' ? 'bg-gray-700 border-gray-600 text-gray-200' : 'bg-white border-gray-300 text-gray-900'} focus:outline-none focus:ring-2 focus:ring-teal-500 disabled:opacity-50 disabled:cursor-not-allowed`}
+              className={`w-full px-4 py-3 rounded-lg border ${theme === "dark" ? "bg-gray-700 border-gray-600 text-gray-200" : "bg-white border-gray-300 text-gray-900"} focus:outline-none focus:ring-2 focus:ring-teal-500 disabled:opacity-50 disabled:cursor-not-allowed`}
             >
-              <option value="">{t('select_branch')}</option>
+              <option value="">{t("select_branch")}</option>
               {selectedBank?.branches.map((branch) => (
                 <option
                   key={branch.branchId}
@@ -201,15 +210,16 @@ const AssignBankAccountModal = ({
                 </option>
               ))}
             </select>
-
           </div>
 
           {/* Account Number */}
           <div>
             <label className="flex items-center gap-2 text-sm mb-2">
-              <span>{t('account_number')} *</span>
+              <span>{t("account_number")} *</span>
               {errors.accountNumber && (
-                <span className="text-red-500 text-xs">{errors.accountNumber}</span>
+                <span className="text-red-500 text-xs">
+                  {errors.accountNumber}
+                </span>
               )}
             </label>
 
@@ -217,21 +227,22 @@ const AssignBankAccountModal = ({
               type="text"
               value={bankAccountData.accountNumber}
               onChange={(e) => {
-                handleBankChange('accountNumber', e.target.value);
+                handleBankChange("accountNumber", e.target.value);
                 setErrors((prev) => ({ ...prev, accountNumber: undefined }));
               }}
               placeholder="123456789"
-              className={`w-full px-4 py-3 rounded-lg border ${theme === 'dark'
-                ? 'bg-gray-700 border-gray-600 text-gray-200 placeholder-gray-500'
-                : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'
-                } focus:outline-none focus:ring-2 focus:ring-teal-500`}
+              className={`w-full px-4 py-3 rounded-lg border ${
+                theme === "dark"
+                  ? "bg-gray-700 border-gray-600 text-gray-200 placeholder-gray-500"
+                  : "bg-white border-gray-300 text-gray-900 placeholder-gray-400"
+              } focus:outline-none focus:ring-2 focus:ring-teal-500`}
             />
           </div>
 
           {/* BN Number */}
           <div>
             <label className="flex items-center gap-2 text-sm mb-2">
-              <span>{t('bn_number')} *</span>
+              <span>{t("bn_number")} *</span>
               {errors.bnNumber && (
                 <span className="text-red-500 text-xs">{errors.bnNumber}</span>
               )}
@@ -240,23 +251,26 @@ const AssignBankAccountModal = ({
               type="text"
               value={bankAccountData.bnNumber}
               onChange={(e) => {
-                handleBankChange('bnNumber', e.target.value);
+                handleBankChange("bnNumber", e.target.value);
                 setErrors((prev) => ({ ...prev, bnNumber: undefined }));
               }}
               placeholder="123456789"
-              className={`w-full px-4 py-3 rounded-lg border ${theme === 'dark'
-                ? 'bg-gray-700 border-gray-600 text-gray-200 placeholder-gray-500'
-                : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'
-                } focus:outline-none focus:ring-2 focus:ring-teal-500`}
+              className={`w-full px-4 py-3 rounded-lg border ${
+                theme === "dark"
+                  ? "bg-gray-700 border-gray-600 text-gray-200 placeholder-gray-500"
+                  : "bg-white border-gray-300 text-gray-900 placeholder-gray-400"
+              } focus:outline-none focus:ring-2 focus:ring-teal-500`}
             />
           </div>
 
           {/* Name on Invoice */}
           <div>
             <label className="flex items-center gap-2 text-sm mb-2">
-              <span>{t('name_on_invoice')} *</span>
+              <span>{t("name_on_invoice")} *</span>
               {errors.invoiceName && (
-                <span className="text-red-500 text-xs">{errors.invoiceName}</span>
+                <span className="text-red-500 text-xs">
+                  {errors.invoiceName}
+                </span>
               )}
             </label>
 
@@ -264,28 +278,32 @@ const AssignBankAccountModal = ({
               type="text"
               value={bankAccountData.invoiceName}
               onChange={(e) => {
-                handleBankChange('invoiceName', e.target.value);
+                handleBankChange("invoiceName", e.target.value);
                 setErrors((prev) => ({ ...prev, invoiceName: undefined }));
               }}
               placeholder="MetGo LTD"
-              className={`w-full px-4 py-3 rounded-lg border ${theme === 'dark'
-                ? 'bg-gray-700 border-gray-600 text-gray-200 placeholder-gray-500'
-                : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'
-                } focus:outline-none focus:ring-2 focus:ring-teal-500`}
+              className={`w-full px-4 py-3 rounded-lg border ${
+                theme === "dark"
+                  ? "bg-gray-700 border-gray-600 text-gray-200 placeholder-gray-500"
+                  : "bg-white border-gray-300 text-gray-900 placeholder-gray-400"
+              } focus:outline-none focus:ring-2 focus:ring-teal-500`}
             />
           </div>
         </div>
 
         {/* Modal Footer */}
-        <div className={`sticky bottom-0 ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'} border-t ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'} p-6 flex items-center justify-end gap-3`}>
+        <div
+          className={`sticky bottom-0 ${theme === "dark" ? "bg-gray-800" : "bg-white"} border-t ${theme === "dark" ? "border-gray-700" : "border-gray-200"} p-6 flex items-center justify-end gap-3`}
+        >
           <button
             onClick={handleCloseBankModal}
-            className={`px-6 py-3 rounded-lg ${theme === 'dark'
-              ? 'bg-gray-700 hover:bg-gray-600 text-gray-200'
-              : 'bg-gray-200 hover:bg-gray-300 text-gray-800'
-              } transition-colors cursor-pointer`}
+            className={`px-6 py-3 rounded-lg ${
+              theme === "dark"
+                ? "bg-gray-700 hover:bg-gray-600 text-gray-200"
+                : "bg-gray-200 hover:bg-gray-300 text-gray-800"
+            } transition-colors cursor-pointer`}
           >
-            {t('cancel') || 'Cancel'}
+            {t("cancel") || "Cancel"}
           </button>
           <button
             onClick={handleSaveBankAccount}
@@ -296,20 +314,21 @@ const AssignBankAccountModal = ({
               !bankAccountData.bnNumber ||
               !bankAccountData.invoiceName
             }
-
             className={clsx(
               "flex items-center gap-2 cursor-pointer px-6 py-3 rounded-lg transition-colors",
-              isLoading ? "disabled:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed text-black" : " bg-teal-600 hover:bg-teal-700 text-white"
+              isLoading
+                ? "disabled:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed text-black"
+                : " bg-teal-600 hover:bg-teal-700 text-white",
             )}
           >
             {isLoading && <Loader2 className="w-5 h-5 animate-spin" />}
             <Save className="w-5 h-5" />
-            <span>{t('save') || 'Save'}</span>
+            <span>{t("save") || "Save"}</span>
           </button>
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default AssignBankAccountModal
+export default AssignBankAccountModal;

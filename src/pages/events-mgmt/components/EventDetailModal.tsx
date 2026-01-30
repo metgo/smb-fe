@@ -24,18 +24,21 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { ReordableDataTable } from "@/components/shared";
-
+import { useGetEventsStatsQuery } from "@/store/api/eventQueryApi";
+import { extractCenterAddressText, extractEventDates } from "@/helpers";
 
 interface EventDetailModalProps {
-  selectedEvent: Event | null;
+  isRTL: boolean;
+  selectedEvent: any;
+  handleEditEvent: () => void;
   setSelectedEvent: React.Dispatch<React.SetStateAction<Event | null>>;
   showDailyBreakdown: boolean;
   setShowDailyBreakdown: React.Dispatch<React.SetStateAction<boolean>>;
   registrantSearchQuery: string;
   setRegistrantSearchQuery: React.Dispatch<React.SetStateAction<string>>;
-  filteredRegistrants: Registrant[];
-  isRTL: boolean;
-  setSelectedRegistrant?: React.Dispatch<React.SetStateAction<Registrant | null>>;
+  setSelectedRegistrant?: React.Dispatch<
+    React.SetStateAction<Registrant | null>
+  >;
 }
 
 const EventDetailModal: React.FC<EventDetailModalProps> = ({
@@ -45,31 +48,33 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
   setShowDailyBreakdown,
   registrantSearchQuery,
   setRegistrantSearchQuery,
-  filteredRegistrants,
   isRTL,
+  handleEditEvent,
   setSelectedRegistrant,
 }) => {
+  const filteredRegistrants: any[] = [];
   const { t } = useTranslation("events");
   const { textPrimary, textSecondary, textTertiary } = useThemeClasses();
   const { theme } = useAppSelector((state) => state.settings);
+  const { data: eventStatsData, isLoading: _isEventStatsFetching } =
+    useGetEventsStatsQuery({ eventId: selectedEvent ? selectedEvent._id : "" });
 
   if (!selectedEvent) return null;
-
 
   const exportToCSV = () => {
     if (!selectedEvent) return;
     const headers = [
-      t('full_name'),
-      t('phone'),
-      t('email'),
-      t('quantity'),
-      t('ticket_type'),
-      `${t('total')} ${t('price')}`,
-      t('payment_status'),
-      t('registration_date'),
-      t('source_website')
+      t("full_name"),
+      t("phone"),
+      t("email"),
+      t("quantity"),
+      t("ticket_type"),
+      `${t("total")} ${t("price")}`,
+      t("payment_status"),
+      t("registration_date"),
+      t("source_website"),
     ];
-    const rows = filteredRegistrants.map(reg => [
+    const rows = filteredRegistrants.map((reg) => [
       reg.fullName,
       reg.phone,
       reg.email,
@@ -78,35 +83,15 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
       `₪${reg.totalPrice}`,
       reg.paymentStatus,
       reg.registrationDate,
-      reg.sourceWebsite
+      reg.sourceWebsite,
     ]);
-    const csv = [headers, ...rows].map(row => row.join(',')).join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
+    const csv = [headers, ...rows].map((row) => row.join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
-    a.download = `${selectedEvent.name.replace(/\s+/g, '_')}_registrants.csv`;
+    a.download = `${selectedEvent.name.replace(/\s+/g, "_")}_registrants.csv`;
     a.click();
-  };
-
-  const formatDateRange = (start: string, end?: string, isMultiDay?: boolean) => {
-    if (!isMultiDay || !end) {
-      return new Date(start).toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      });
-    }
-    const startFormatted = new Date(start).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-    });
-    const endFormatted = new Date(end).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
-    return `${startFormatted} - ${endFormatted}`;
   };
 
   const getPaymentStatusColor = (status: string) => {
@@ -130,8 +115,9 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
       }}
     >
       <div
-        className={`w-full max-w-6xl my-8 rounded-2xl shadow-2xl ${theme === "dark" ? "bg-gray-900" : "bg-white"
-          }`}
+        className={`w-full max-w-6xl my-8 rounded-2xl shadow-2xl ${
+          theme === "dark" ? "bg-gray-900" : "bg-white"
+        }`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -155,33 +141,26 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
               <div className="flex flex-wrap items-center gap-6 text-base">
                 <span className={`flex items-center gap-2 ${textSecondary}`}>
                   <MapPin className="w-5 h-5" />
-                  {selectedEvent.location}
+                  {extractCenterAddressText(selectedEvent?.address?.location)}
                 </span>
                 <span className={`flex items-center gap-2 ${textSecondary}`}>
                   <Calendar className="w-5 h-5" />
-                  {formatDateRange(
-                    selectedEvent.startDate,
-                    selectedEvent.endDate,
-                    selectedEvent.isMultiDay
-                  )}
+                  {extractEventDates(selectedEvent?.dayDiscription)}
                 </span>
                 <span className={`flex items-center gap-2 ${textSecondary}`}>
                   <Clock className="w-5 h-5" />
-                  {selectedEvent.startTime} - {selectedEvent.endTime}
+                  {selectedEvent?.dayDescription?.[0]?.startTime} -{" "}
+                  {selectedEvent?.dayDescription?.[0]?.endTime}
                 </span>
                 <span className={`flex items-center gap-2 ${textSecondary}`}>
                   <DollarSign className="w-5 h-5" />
-                  {selectedEvent.isFree ? t("free") : `₪${selectedEvent.price}`}
+                  {selectedEvent.isFree ? t("free") : `₪0`}
                 </span>
               </div>
             </div>
             <div className="flex items-center gap-2">
               <button
-                onClick={() => {
-                  // setEventToEdit(selectedEvent);
-                  // setIsEditWizardOpen(true);
-                  setSelectedEvent(null);
-                }}
+                onClick={() => handleEditEvent()}
                 className="flex items-center gap-2 px-4 py-2 bg-linear-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-lg transition-all transform hover:scale-105 shadow-md hover:shadow-lg"
               >
                 <Edit className="w-4 h-4" />
@@ -189,8 +168,9 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
               </button>
               <button
                 onClick={() => setSelectedEvent(null)}
-                className={`p-3 rounded-xl transition-all ${theme === "dark" ? "hover:bg-gray-800" : "hover:bg-gray-100"
-                  }`}
+                className={`p-3 rounded-xl transition-all ${
+                  theme === "dark" ? "hover:bg-gray-800" : "hover:bg-gray-100"
+                }`}
               >
                 <X className={`w-6 h-6 ${textTertiary}`} />
               </button>
@@ -209,12 +189,15 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
               {selectedEvent.isMultiDay && selectedEvent.dailyMetrics && (
                 <button
                   onClick={() => setShowDailyBreakdown(!showDailyBreakdown)}
-                  className={`px-5 py-2 rounded-xl text-sm font-medium transition-all ${theme === "dark"
-                    ? "bg-gray-800 hover:bg-gray-700 text-gray-300"
-                    : "bg-gray-100 hover:bg-gray-200 text-gray-700"
-                    }`}
+                  className={`px-5 py-2 rounded-xl text-sm font-medium transition-all ${
+                    theme === "dark"
+                      ? "bg-gray-800 hover:bg-gray-700 text-gray-300"
+                      : "bg-gray-100 hover:bg-gray-200 text-gray-700"
+                  }`}
                 >
-                  {showDailyBreakdown ? t("show_summary") : t("show_daily_breakdown")}
+                  {showDailyBreakdown
+                    ? t("show_summary")
+                    : t("show_daily_breakdown")}
                 </button>
               )}
             </div>
@@ -222,29 +205,47 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
             {showDailyBreakdown ? (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
                 {[
-                  { label: t("total_registrations"), value: selectedEvent.totalRegistrations },
+                  {
+                    label: t("total_registrations"),
+                    value: eventStatsData?.totalRegistrations,
+                  },
                   {
                     label: t("capacity"),
-                    value: selectedEvent.capacity,
+                    value: eventStatsData?.totalAttended,
                     sub: `${Math.round(
-                      (selectedEvent.totalRegistrations / selectedEvent.capacity) * 100
+                      (eventStatsData?.totalRegistrations /
+                        eventStatsData?.capacity) *
+                        100,
                     )}% ${t("filled")}`,
                   },
-                  { label: t("revenue"), value: `₪${(selectedEvent.revenue / 1000).toFixed(1)}K` },
-                  { label: t("refunds"), value: `₪${(selectedEvent.refunds / 1000).toFixed(1)}K` },
+                  {
+                    label: t("revenue"),
+                    value: `₪${(eventStatsData?.totalRevenue / 1000).toFixed(1)}K`,
+                  },
+                  // { label: t("refunds"), value: `₪${(eventStatsData?.refunds / 1000).toFixed(1)}K` },
+                  { label: t("refunds"), value: `₪0K` },
                   {
                     label: t("event_type"),
-                    value: selectedEvent.isFree ? t("free") : t("paid"),
+                    value: eventStatsData?.isFree ? t("free") : t("paid"),
                   },
                 ].map((metric, i) => (
                   <div
                     key={i}
-                    className={`p-6 rounded-2xl ${theme === "dark" ? "bg-gray-800/50" : "bg-gray-50"
-                      }`}
+                    className={`p-6 rounded-2xl ${
+                      theme === "dark" ? "bg-gray-800/50" : "bg-gray-50"
+                    }`}
                   >
-                    <div className={`text-sm mb-2 ${textTertiary}`}>{metric.label}</div>
-                    <div className={`text-3xl font-bold ${textPrimary}`}>{metric.value}</div>
-                    {metric.sub && <div className="text-sm text-teal-500 mt-2">{metric.sub}</div>}
+                    <div className={`text-sm mb-2 ${textTertiary}`}>
+                      {metric.label}
+                    </div>
+                    <div className={`text-3xl font-bold ${textPrimary}`}>
+                      {metric.value}
+                    </div>
+                    {metric.sub && (
+                      <div className="text-sm text-teal-500 mt-2">
+                        {metric.sub}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -254,15 +255,18 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
                   <h4 className={`text-lg font-medium mb-4 ${textSecondary}`}>
                     {t("daily_breakdown")}
                   </h4>
-                  {selectedEvent.dailyMetrics.map((day, idx) => (
+                  {selectedEvent.dailyMetrics.map((day: any, idx: number) => (
                     <div
                       key={idx}
-                      className={`p-6 rounded-2xl border ${theme === "dark"
-                        ? "border-gray-700 bg-gray-800/30"
-                        : "border-gray-200 bg-gray-50"
-                        }`}
+                      className={`p-6 rounded-2xl border ${
+                        theme === "dark"
+                          ? "border-gray-700 bg-gray-800/30"
+                          : "border-gray-200 bg-gray-50"
+                      }`}
                     >
-                      <div className={`text-lg font-semibold mb-4 ${textPrimary}`}>
+                      <div
+                        className={`text-lg font-semibold mb-4 ${textPrimary}`}
+                      >
                         {new Date(day.date).toLocaleDateString("en-US", {
                           weekday: "long",
                           month: "long",
@@ -272,19 +276,25 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
                       </div>
                       <div className="grid grid-cols-3 gap-6">
                         <div>
-                          <div className={`text-sm ${textTertiary}`}>{t("registrations")}</div>
+                          <div className={`text-sm ${textTertiary}`}>
+                            {t("registrations")}
+                          </div>
                           <div className={`text-2xl font-bold ${textPrimary}`}>
                             {day.registrations}
                           </div>
                         </div>
                         <div>
-                          <div className={`text-sm ${textTertiary}`}>{t("attendance")}</div>
+                          <div className={`text-sm ${textTertiary}`}>
+                            {t("attendance")}
+                          </div>
                           <div className={`text-2xl font-bold ${textPrimary}`}>
                             {day.attendance}
                           </div>
                         </div>
                         <div>
-                          <div className={`text-sm ${textTertiary}`}>{t("revenue")}</div>
+                          <div className={`text-sm ${textTertiary}`}>
+                            {t("revenue")}
+                          </div>
                           <div className={`text-2xl font-bold ${textPrimary}`}>
                             ₪{(day.revenue / 1000).toFixed(1)}K
                           </div>
@@ -297,58 +307,64 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
             )}
 
             {/* Trend Chart */}
-            {selectedEvent.dailyMetrics && selectedEvent.dailyMetrics.length > 1 && (
-              <div className={`mt-8 p-6 rounded-2xl ${theme === "dark" ? "bg-gray-800/50" : "bg-gray-50"}`}>
-                <h4 className={`text-lg font-medium mb-4 ${textSecondary}`}>
-                  {t("registration_attendance_trend")}
-                </h4>
-                <div style={{ height: "280px" }}>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={selectedEvent.dailyMetrics}>
-                      <CartesianGrid
-                        strokeDasharray="4 4"
-                        stroke={theme === "dark" ? "#374151" : "#e5e7eb"}
-                      />
-                      <XAxis
-                        dataKey="date"
-                        stroke={theme === "dark" ? "#9ca3af" : "#6b7280"}
-                        tickFormatter={(value) =>
-                          new Date(value).toLocaleDateString("en-US", {
-                            month: "short",
-                            day: "numeric",
-                          })
-                        }
-                      />
-                      <YAxis stroke={theme === "dark" ? "#9ca3af" : "#6b7280"} />
-                      <Tooltip
-                        contentStyle={{
-                          backgroundColor: theme === "dark" ? "#1f2937" : "#ffffff",
-                          border: `1px solid ${theme === "dark" ? "#374151" : "#e5e7eb"}`,
-                          borderRadius: "12px",
-                          padding: "12px",
-                        }}
-                      />
-                      <Line
-                        type="monotone"
-                        dataKey="registrations"
-                        stroke="#14b8a6"
-                        strokeWidth={3}
-                        dot={{ fill: "#14b8a6", r: 6 }}
-                        name={t("registrations")}
-                      />
-                      <Line
-                        type="monotone"
-                        dataKey=" tickAttendance"
-                        stroke="#8b5cf6"
-                        strokeWidth={3}
-                        dot={{ fill: "#8b5cf6", r: 6 }}
-                        name={t("attendance")}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
+            {selectedEvent?.dailyMetrics &&
+              selectedEvent?.dailyMetrics.length > 1 && (
+                <div
+                  className={`mt-8 p-6 rounded-2xl ${theme === "dark" ? "bg-gray-800/50" : "bg-gray-50"}`}
+                >
+                  <h4 className={`text-lg font-medium mb-4 ${textSecondary}`}>
+                    {t("registration_attendance_trend")}
+                  </h4>
+                  <div style={{ height: "280px" }}>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={selectedEvent?.dailyMetrics}>
+                        <CartesianGrid
+                          strokeDasharray="4 4"
+                          stroke={theme === "dark" ? "#374151" : "#e5e7eb"}
+                        />
+                        <XAxis
+                          dataKey="date"
+                          stroke={theme === "dark" ? "#9ca3af" : "#6b7280"}
+                          tickFormatter={(value) =>
+                            new Date(value).toLocaleDateString("en-US", {
+                              month: "short",
+                              day: "numeric",
+                            })
+                          }
+                        />
+                        <YAxis
+                          stroke={theme === "dark" ? "#9ca3af" : "#6b7280"}
+                        />
+                        <Tooltip
+                          contentStyle={{
+                            backgroundColor:
+                              theme === "dark" ? "#1f2937" : "#ffffff",
+                            border: `1px solid ${theme === "dark" ? "#374151" : "#e5e7eb"}`,
+                            borderRadius: "12px",
+                            padding: "12px",
+                          }}
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="registrations"
+                          stroke="#14b8a6"
+                          strokeWidth={3}
+                          dot={{ fill: "#14b8a6", r: 6 }}
+                          name={t("registrations")}
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey=" tickAttendance"
+                          stroke="#8b5cf6"
+                          strokeWidth={3}
+                          dot={{ fill: "#8b5cf6", r: 6 }}
+                          name={t("attendance")}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
           </section>
 
           {/* Registrants Table */}
@@ -359,10 +375,11 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
               </h3>
               <button
                 onClick={exportToCSV}
-                className={`px-5 py-3 rounded-xl text-sm font-medium flex items-center gap-2 transition-all ${theme === "dark"
-                  ? "bg-gray-800 hover:bg-gray-700 text-gray-300"
-                  : "bg-gray-100 hover:bg-gray-200 text-gray-700"
-                  }`}
+                className={`px-5 py-3 rounded-xl text-sm font-medium flex items-center gap-2 transition-all ${
+                  theme === "dark"
+                    ? "bg-gray-800 hover:bg-gray-700 text-gray-300"
+                    : "bg-gray-100 hover:bg-gray-200 text-gray-700"
+                }`}
               >
                 <FileDown className="w-5 h-5" />
                 {t("export_csv")}
@@ -379,18 +396,23 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
                 placeholder={t("search_registrants_placeholder")}
                 value={registrantSearchQuery}
                 onChange={(e) => setRegistrantSearchQuery(e.target.value)}
-                className={`w-full ${isRTL ? "pr-12 pl-4" : "pl-12 pr-4"} py-3 rounded-xl border text-base ${theme === "dark"
-                  ? "bg-gray-800 border-gray-700 text-white placeholder-gray-500"
-                  : "bg-white border-gray-300 text-gray-900 placeholder-gray-400"
-                  } focus:ring-2 focus:ring-teal-500/20 transition-all`}
+                className={`w-full ${isRTL ? "pr-12 pl-4" : "pl-12 pr-4"} py-3 rounded-xl border text-base ${
+                  theme === "dark"
+                    ? "bg-gray-800 border-gray-700 text-white placeholder-gray-500"
+                    : "bg-white border-gray-300 text-gray-900 placeholder-gray-400"
+                } focus:ring-2 focus:ring-teal-500/20 transition-all`}
               />
             </div>
 
-            {filteredRegistrants.length === 0 ? (
+            {filteredRegistrants?.length === 0 ? (
               <div className="text-center py-16">
-                <Users className={`w-20 h-20 mx-auto mb-5 opacity-50 ${textTertiary}`} />
+                <Users
+                  className={`w-20 h-20 mx-auto mb-5 opacity-50 ${textTertiary}`}
+                />
                 <p className={`text-lg ${textTertiary}`}>
-                  {registrantSearchQuery ? t("no_registrants_match") : t("no_registrants_yet")}
+                  {registrantSearchQuery
+                    ? t("no_registrants_match")
+                    : t("no_registrants_yet")}
                 </p>
               </div>
             ) : (
@@ -402,8 +424,8 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
                   storageKey="registrantsTableColumnOrder"
                   columns={[
                     {
-                      key: 'full_name',
-                      label: t('full_name'),
+                      key: "full_name",
+                      label: t("full_name"),
                       sortable: true,
                       render: (reg) => (
                         <span className="text-sm font-medium">
@@ -412,26 +434,26 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
                       ),
                     },
                     {
-                      key: 'phone',
-                      label: t('phone'),
+                      key: "phone",
+                      label: t("phone"),
                       render: (reg) => (
                         <span className="text-sm text-gray-500">
-                          {reg.phone || '-'}
+                          {reg.phone || "-"}
                         </span>
                       ),
                     },
                     {
-                      key: 'email',
-                      label: t('email'),
+                      key: "email",
+                      label: t("email"),
                       render: (reg) => (
                         <span className="text-sm text-gray-500">
-                          {reg.email || '-'}
+                          {reg.email || "-"}
                         </span>
                       ),
                     },
                     {
-                      key: 'quantity',
-                      label: t('quantity'),
+                      key: "quantity",
+                      label: t("quantity"),
                       sortable: true,
                       render: (reg) => (
                         <div className="text-right text-sm font-medium">
@@ -440,17 +462,17 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
                       ),
                     },
                     {
-                      key: 'ticket_type',
-                      label: t('ticket_type'),
+                      key: "ticket_type",
+                      label: t("ticket_type"),
                       render: (reg) => (
                         <span className="text-sm text-gray-500">
-                          {reg.ticketType || '-'}
+                          {reg.ticketType || "-"}
                         </span>
                       ),
                     },
                     {
-                      key: 'total',
-                      label: t('total'),
+                      key: "total",
+                      label: t("total"),
                       sortable: true,
                       render: (reg) => (
                         <div className="text-right font-medium">
@@ -459,48 +481,51 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
                       ),
                     },
                     {
-                      key: 'status',
-                      label: t('status'),
+                      key: "status",
+                      label: t("status"),
                       render: (reg) => (
                         <span
                           className={`px-3 py-1.5 rounded-full text-xs font-medium ${getPaymentStatusColor(
-                            reg.paymentStatus
+                            reg.paymentStatus,
                           )}`}
                         >
-                          {reg.paymentStatus === 'paid'
-                            ? t('paid')
-                            : reg.paymentStatus === 'pending'
-                              ? t('pending')
-                              : t('refunded')}
+                          {reg.paymentStatus === "paid"
+                            ? t("paid")
+                            : reg.paymentStatus === "pending"
+                              ? t("pending")
+                              : t("refunded")}
                         </span>
                       ),
                     },
                     {
-                      key: 'registration_date',
-                      label: t('registration_date'),
+                      key: "registration_date",
+                      label: t("registration_date"),
                       sortable: true,
                       render: (reg) =>
-                        new Date(reg.registrationDate).toLocaleDateString('en-US', {
-                          month: 'short',
-                          day: 'numeric',
-                          year: 'numeric',
-                        }),
+                        new Date(reg.registrationDate).toLocaleDateString(
+                          "en-US",
+                          {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          },
+                        ),
                     },
                     ...(selectedEvent.isMultiDay
                       ? [
-                        {
-                          key: 'days',
-                          label: t('days'),
-                          render: (reg: any) =>
-                            reg.attendingDays ? (
-                              <span className="text-sm text-gray-500">
-                                {reg.attendingDays.length} {t('days')}
-                              </span>
-                            ) : (
-                              '-'
-                            ),
-                        },
-                      ]
+                          {
+                            key: "days",
+                            label: t("days"),
+                            render: (reg: any) =>
+                              reg.attendingDays ? (
+                                <span className="text-sm text-gray-500">
+                                  {reg.attendingDays.length} {t("days")}
+                                </span>
+                              ) : (
+                                "-"
+                              ),
+                          },
+                        ]
                       : []),
                   ]}
                 />

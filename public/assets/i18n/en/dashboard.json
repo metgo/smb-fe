@@ -1,5 +1,4 @@
 {
-  
   "select_dashboard_view": "Select Dashboard View",
 
   "desktop_dashboard": "Desktop Dashboard",
@@ -30,14 +29,13 @@
   "show_hide_widgets": "Show/Hide Widgets",
   "reset_to_defaults": "Reset to Defaults",
 
-  
   "google_analytics_overview": "Google Analytics Overview",
   "users": "Users",
   "sessions": "Sessions",
   "page_views": "Page Views",
   "avg_duration": "Avg. Duration",
   "conversions": "Conversions",
-  
+
   "google_analytics_overview_desc": "Real-time analytics from Google Analytics showing user engagement metrics including sessions, page views, average session duration, and conversion rates for your tourism websites.",
   "distribution_overview_desc": "Distribution of businesses, products, and points of interest across different categories including sleep, eat, attractions, local services, travel, and cultural sites in the Western Negev region.",
   "upcoming_events_desc": "Calendar of scheduled tourism events, festivals, and activities across the Western Negev region with dates, locations, and registration status.",
@@ -62,6 +60,10 @@
   "travel": "Travel",
   "culture": "Culture",
 
+  "popular_businesses": "Popular Businesses",
+  "popular_products": "Popular Products",
+  "popular_pois": "Popular POIs",
+
   "upcoming_events": "Upcoming Events",
   "view_all": "View All",
 
@@ -84,9 +86,18 @@
   "total_vouchers": "Total Vouchers",
   "orders": "Orders",
 
-  "popular_businesses": "Popular Businesses",
-  "popular_products": "Popular Products",
-  "popular_pois": "Popular POIs",
+  "per_transaction": "Per transaction",
+  "per_redemption": "Per redemption",
+  "per_sale": "Per sale",
+  "last_30_days": "Last 30 days",
+
+  "total_number": "Total Number",
+  "assigned_vouchers": "Assigned Vouchers",
+  "remaining_amount": "Remaining Amount",
+  "paid_by_vouchers": "Paid by Vouchers",
+  "paid_by_bank_transfer": "Paid by Bank Transfer",
+
+  "purchases_report_summary_desc": "Comprehensive revenue and voucher metrics",
 
   "jan": "Jan",
   "feb": "Feb",
