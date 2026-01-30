@@ -13,6 +13,7 @@ import {
 import { InfoTooltip } from "@/components/shared";
 import { useGetPurchaseReportsStatsQuery } from "@/store/api/itemStatsApi";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { formatILS } from "@/helpers/formatter";
 
 interface PurchaseMetricProps {
   label: string;
@@ -46,7 +47,7 @@ function PurchaseMetric({ label, value, description }: PurchaseMetricProps) {
             isDark ? "text-white" : "text-gray-900",
           )}
         >
-          ₪{Number(value)?.toFixed(2)}
+          {formatILS(value)}
         </p>
       </div>
 
