@@ -3,7 +3,7 @@ import {
   ArrowUpDown,
   ArrowUp,
   ArrowDown,
-  GripVertical,
+  // GripVertical,
   Loader,
 } from "lucide-react";
 
@@ -45,6 +45,8 @@ export default function ReordableDataTable<T extends Record<string, any>>({
   next,
   isDataLoading = false,
 }: DataTableProps<T>) {
+  console.log("🚀 ~ ReordableDataTable ~ columns:", columns);
+
   const { theme, isRTL } = useAppSelector((state) => state.settings);
   const { bgTertiary, borderColor, textSecondary, hoverBg } = useThemeClasses();
 
@@ -52,24 +54,33 @@ export default function ReordableDataTable<T extends Record<string, any>>({
 
   // Load saved column order
   const [columnOrder, setColumnOrder] = useState<string[]>(() => {
-    if (typeof window === "undefined")
+    if (typeof window === "undefined") {
       return columns.map((c) => c.key as string);
+    }
 
     try {
       const saved = localStorage.getItem(storageKey);
       if (saved) {
-        const parsed = JSON.parse(saved);
-        return parsed.filter((k: string) => columns.some((c) => c.key === k))
-          ?.length > 0
-          ? parsed
-          : columns.map((c) => c.key as string);
+        const parsed: string[] = JSON.parse(saved);
+
+        const validKeys = parsed.filter((k) =>
+          columns.some((c) => c.key === k),
+        );
+
+        const missingKeys = columns
+          .map((c) => c.key as string)
+          .filter((k) => !validKeys.includes(k));
+
+        return [...validKeys, ...missingKeys];
       }
     } catch (e) {
       console.error("Failed to load column order:", e);
     }
+
     return columns.map((c) => c.key as string);
   });
 
+  console.log("🚀 ~ ReordableDataTable ~ columnOrder:", columnOrder);
   const [sortField, setSortField] = useState<keyof T | null>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>(null);
 
@@ -233,10 +244,6 @@ export default function ReordableDataTable<T extends Record<string, any>>({
                     onClick={() => isSortable && handleSort(field)}
                   >
                     <div className="flex items-center gap-2">
-                      {colKey !== "checkbox" && colKey !== "actions" && (
-                        <GripVertical className="w-4 h-4 opacity-0 group-hover:opacity-60 transition-opacity" />
-                      )}
-
                       {colKey === "checkbox" ? (
                         <input
                           type="checkbox"
@@ -246,7 +253,7 @@ export default function ReordableDataTable<T extends Record<string, any>>({
                               input.indeterminate = someSelected;
                           }}
                           onChange={toggleAll}
-                          className="rounded border-gray-300 dark:border-gray-600"
+                          className="rounded border-gray-300  "
                         />
                       ) : (
                         <>
@@ -260,7 +267,7 @@ export default function ReordableDataTable<T extends Record<string, any>>({
               })}
             </tr>
           </thead>
-          <tbody className={`  divide-y divide-gray-200 dark:divide-gray-800 `}>
+          <tbody>
             {isDataLoading ? (
               <tr>
                 <td
@@ -269,9 +276,6 @@ export default function ReordableDataTable<T extends Record<string, any>>({
                 >
                   <div className="flex flex-col items-center justify-center h-full gap-3">
                     <Loader className="w-10 h-10 animate-spin text-teal-600" />
-                    <span className="text-sm text-gray-500 dark:text-gray-400">
-                      Loading data...
-                    </span>
                   </div>
                 </td>
               </tr>
@@ -293,7 +297,7 @@ export default function ReordableDataTable<T extends Record<string, any>>({
                 <tr
                   key={item[rowKey] ?? idx}
                   onClick={() => onRowClick?.(item)}
-                  className={`${theme === "dark" ? "bg-gray-900 text-gray-400" : "bg-whit"} ${hoverBg} ${onRowClick ? "cursor-pointer hover:bg-gray-50 " : ""}`}
+                  className={`${theme === "dark" ? "bg-gray-900 text-gray-400" : "bg-white"} ${hoverBg} ${onRowClick ? "cursor-pointer hover:bg-gray-50 " : ""} `}
                 >
                   {columnOrder?.map((colKey) => {
                     const column = columns.find((c) => c.key === colKey);
