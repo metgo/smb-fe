@@ -69,3 +69,24 @@ export function formatFromBackendTemplate(html: string) {
     return `{{ ${formatted} }}`;
   });
 }
+
+export function formatILSDraft(amount: string | number): string {
+  const value = Number(amount);
+
+  if (Number.isNaN(value)) return "₪0.00";
+
+  return new Intl.NumberFormat("he-IL", {
+    style: "currency",
+    currency: "ILS",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value);
+}
+
+export function formatILS(amount: string | number): string {
+  const value = Number(amount);
+
+  if (Number.isNaN(value)) return "₪0.00";
+
+  return `₪${value.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
+}

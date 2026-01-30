@@ -39,6 +39,7 @@ export default function ProfilePage() {
   const banks = tBank("banks", { returnObjects: true }) as Bank[];
 
   const { theme } = useAppSelector((state) => state.settings);
+  const { user } = useAppSelector((state) => state.auth);
   const navigate = useNavigate();
 
   const {
@@ -52,6 +53,7 @@ export default function ProfilePage() {
 
   const handleLogout = () => {
     localStorage.removeItem("userData");
+    localStorage.removeItem("user");
     navigate(routes.auth);
   };
 
@@ -76,9 +78,7 @@ export default function ProfilePage() {
           <div className="flex items-center gap-6">
             <div className="w-32 h-32 rounded-full object-cover border-4 border-teal-500 flex items-center justify-center ">
               <div className="text-6xl font-bold text-teal-600">
-                {getInitials(
-                  `${userInfo?.firstName + " " + userInfo?.lastName}`,
-                )}
+                {getInitials(`${user?.firstName + " " + user?.lastName}`)}
               </div>
             </div>
 
@@ -88,14 +88,14 @@ export default function ProfilePage() {
                   theme === "dark" ? "text-white" : "text-gray-900"
                 }`}
               >
-                {userInfo?.firstName + " " + userInfo?.lastName}
+                {user?.firstName + " " + user?.lastName}
               </h1>
               <p
                 className={`text-lg ${
                   theme === "dark" ? "text-teal-400" : "text-teal-600"
                 }`}
               >
-                {userInfo?.role}
+                {user?.role}
               </p>
             </div>
 

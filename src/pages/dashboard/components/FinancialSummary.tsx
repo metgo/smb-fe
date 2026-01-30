@@ -8,6 +8,7 @@ import {
 } from "@/store/api/itemStatsApi";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import clsx from "clsx";
+import { formatILS } from "@/helpers/formatter";
 
 interface MetricProps {
   isDark: boolean;
@@ -80,7 +81,6 @@ interface SummaryCardProps {
   metrics: {
     label: string;
     value: string;
-    trend?: number;
     icon?: React.ReactNode;
   }[];
   subtitle: string;
@@ -160,22 +160,18 @@ export default function FinancialSummary() {
     {
       label: t("created"),
       value: voucherData?.datas?.[0]?.totalNumberOfVouchers,
-      trend: 8.5,
     },
     {
       label: t("assigned_vouchers"),
       value: voucherData?.datas?.[0]?.totalAssignedVouchers,
-      trend: 12.3,
     },
     {
       label: t("value"),
-      value: `₪${voucherData?.datas?.[0]?.totalValueOfVoucher}`,
-      trend: 15.7,
+      value: formatILS(voucherData?.datas?.[0]?.totalValueOfVoucher),
     },
     {
       label: t("remaining_amount"),
-      value: `₪${voucherData?.datas?.[0]?.totalAmountToRedeem}`,
-      trend: -3.2,
+      value: formatILS(voucherData?.datas?.[0]?.totalAmountToRedeem),
     },
   ];
 
@@ -183,17 +179,14 @@ export default function FinancialSummary() {
     {
       label: t("total_number"),
       value: onlineOrderData?.datas?.[0]?.totalNumber,
-      trend: 18.9,
     },
     {
       label: t("total_amount"),
-      value: `₪${onlineOrderData?.datas?.[0]?.totalAmount}`,
-      trend: 18.9,
+      value: formatILS(onlineOrderData?.datas?.[0]?.totalAmount),
     },
     {
       label: t("credit_card"),
-      value: `₪${onlineOrderData?.datas?.[0]?.amountPaidByCreditCard}`,
-      trend: 22.4,
+      value: formatILS(onlineOrderData?.datas?.[0]?.amountPaidByCreditCard),
     },
     // { label: t("paid_by_vouchers"), value: `₪${onlineOrderData?.datas?.totalValueOfVoucher}`, trend: 11.2 },
   ];

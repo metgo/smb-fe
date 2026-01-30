@@ -2,11 +2,13 @@ import { toast } from "sonner";
 import { useState } from "react";
 import { Globe } from "lucide-react";
 
+import { routes } from "@/lib/routes";
 import { useLoginMutation } from "@/store/api/authApi";
 import ContinueWithGoogle from "./ContinueWithGoogle";
 import { SubmitButton } from "@/components/btns";
-import { routes } from "@/lib/routes";
 import { useNavigate } from "react-router-dom";
+import { useAppDispatch } from "@/hooks/hooks";
+import { loginSuccess } from "@/features/authSlice";
 
 interface LoginProps {
   setCurrentTab: (v: string) => void;
@@ -14,6 +16,7 @@ interface LoginProps {
 
 export function Login({ setCurrentTab }: LoginProps) {
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -23,14 +26,19 @@ export function Login({ setCurrentTab }: LoginProps) {
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
     try {
       const data = await login({ email: username, password }).unwrap();
+
       if (typeof window !== "undefined") {
         localStorage.setItem("userData", JSON.stringify(data));
         localStorage.setItem("user", JSON.stringify(data.user));
         localStorage.removeItem("dmoId");
         localStorage.removeItem("authorityId");
       }
+
+      dispatch(loginSuccess(data.user));
+
       navigate(routes.dashboard, { replace: true });
       toast.success(`Welcome ${data.user.firstName} ${data.user.lastName}`);
     } catch (err: any) {
