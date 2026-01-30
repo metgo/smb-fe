@@ -106,6 +106,7 @@ export default function BusinessesList({
   const columnSettingsRef = useRef<HTMLDivElement>(null);
   const [columnVisibility, setColumnVisibility] =
     useState<ColumnVisibility>(defaultColumns);
+  console.log("🚀 ~ BusinessesList ~ columnVisibility:", columnVisibility);
 
   // Filters
   const [filters, setFilters] = useState({
@@ -477,469 +478,475 @@ export default function BusinessesList({
   ];
 
   return (
-    <div className="flex flex-col h-[calc(108vh-210px)] ">
-      {/* Sticky Header */}
-      <div
-        className={`border-b ${
-          theme === "dark"
-            ? "bg-gray-900/50 border-gray-800"
-            : "bg-transparent border-gray-200"
-        } sticky top-0 z-10`}
-      >
-        <PageHeader
-          title={t("businesses_management")}
-          description={t("businesses_management_desc")}
-          btnLabel={t("add_business")}
-          onClick={onCreateNew}
-          h1Gradient="bg-linear-to-r  text-transparent from-blue-500 via-indigo-600 to-purple-600"
-        />
-        <PageStats
-          stats={businessStats}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4"
-        />
+    <>
+      <div className="flex flex-col  ">
+        {/* Sticky Header */}
+        <div
+          className={`border-b ${
+            theme === "dark"
+              ? " border-gray-800"
+              : "bg-transparent border-gray-200"
+          } z-10`}
+        >
+          <PageHeader
+            title={t("businesses_management")}
+            description={t("businesses_management_desc")}
+            btnLabel={t("add_business")}
+            onClick={onCreateNew}
+            h1Gradient="bg-linear-to-r  text-transparent from-blue-500 via-indigo-600 to-purple-600"
+          />
+          <PageStats
+            stats={businessStats}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4"
+          />
 
-        {/* Search and Filters */}
-        <div className="py-4 flex flex-col lg:flex-row gap-3">
-          {/* Search */}
-          <div className="flex-1 relative">
-            <Search
-              className={`absolute ${isRTL ? "right-3" : "left-3"} top-1/2 -translate-y-1/2 w-5 h-5 ${
-                theme === "dark" ? "text-gray-500" : "text-gray-400"
-              }`}
-            />
-            <input
-              type="text"
-              placeholder={t("search_businesses_placeholder")}
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className={`w-full ${isRTL ? "pr-10 pl-4" : "pl-10 pr-4"} py-2 rounded-lg border ${
-                theme === "dark"
-                  ? "bg-gray-800 border-gray-700 text-gray-200 placeholder-gray-500"
-                  : "bg-white border-gray-300 text-gray-900 placeholder-gray-400"
-              } focus:outline-none focus:ring-2 focus:ring-teal-500`}
-            />
-          </div>
-
-          <FilterButton value={showFilters} onChange={setShowFilters} />
-
-          {/* Column Settings */}
-          {viewMode === "list" && (
-            <div className="relative" ref={columnSettingsRef}>
-              <button
-                onClick={() => setShowColumnSettings(!showColumnSettings)}
-                className={`px-4 py-2 rounded-lg border flex items-center gap-2 transition-colors ${
-                  theme === "dark"
-                    ? "border-gray-700 hover:bg-gray-800 text-gray-300"
-                    : "border-gray-300 hover:bg-gray-100 text-gray-700"
+          {/* Search and Filters */}
+          <div className="py-4 flex flex-col lg:flex-row gap-3">
+            {/* Search */}
+            <div className="flex-1 relative">
+              <Search
+                className={`absolute ${isRTL ? "right-3" : "left-3"} top-1/2 -translate-y-1/2 w-5 h-5 ${
+                  theme === "dark" ? "text-gray-500" : "text-gray-400"
                 }`}
-              >
-                <Columns className="w-5 h-5" />
-                {t("show_columns")}
-                {showColumnSettings ? (
-                  <ChevronUp className="w-4 h-4" />
-                ) : (
-                  <ChevronDown className="w-4 h-4" />
-                )}
-              </button>
-
-              {/* Column Settings Dropdown */}
-              {showColumnSettings && (
-                <div
-                  className={`absolute ${isRTL ? "left-0" : "right-0"} mt-2 w-64 rounded-lg shadow-lg max-h-50vh overflow-y-auto border z-50 ${theme === "dark" ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}
-                >
-                  <div
-                    className={`p-4 border-b ${theme === "dark" ? "border-gray-700" : "border-gray-200"}`}
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <h3
-                        className={`text-sm ${theme === "dark" ? "text-gray-200" : "text-gray-900"}`}
-                      >
-                        {t("column_settings") || "Column Settings"}
-                      </h3>
-                      <button
-                        onClick={resetToDefault}
-                        className="text-xs text-teal-600 hover:text-teal-700 transition-colors"
-                      >
-                        {t("reset_to_default") || "Reset to Default"}
-                      </button>
-                    </div>
-                    <p
-                      className={`text-xs ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
-                    >
-                      {t("select_columns_to_display") ||
-                        "Select columns to display"}
-                    </p>
-                  </div>
-                  <div className="p-3 max-h-96 overflow-y-auto">
-                    {/* Default Columns */}
-                    {Object.entries(columnVisibility)
-                      .filter(
-                        ([key]) =>
-                          columnDefinitions.find((col) => col.key === key)
-                            ?.isDefault,
-                      )
-                      .map(([key, visible]) => (
-                        <label
-                          key={key}
-                          className={`flex items-center gap-2 p-2 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 ${
-                            isRTL ? "flex-row-reverse justify-end" : ""
-                          }`}
-                        >
-                          <input
-                            type="checkbox"
-                            checked={visible}
-                            onChange={(e) =>
-                              setColumnVisibility((prev) => ({
-                                ...prev,
-                                [key]: e.target.checked,
-                              }))
-                            }
-                            className="rounded"
-                          />
-                          <span className={`text-sm ${textSecondary}`}>
-                            {t(key as keyof typeof t)}
-                          </span>
-                        </label>
-                      ))}
-
-                    {/* Divider */}
-                    {columnDefinitions.some((col) => !col.isDefault) && (
-                      <div className="my-3 border-t border-gray-200 dark:border-gray-700" />
-                    )}
-
-                    {/* Non-default Columns */}
-                    <p
-                      className={`text-xs mb-2 ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
-                    >
-                      Optional Columns
-                    </p>
-                    {Object.entries(columnVisibility)
-                      .filter(
-                        ([key]) =>
-                          !columnDefinitions.find((col) => col.key === key)
-                            ?.isDefault,
-                      )
-                      .map(([key, visible]) => (
-                        <label
-                          key={key}
-                          className={`flex items-center gap-2 p-2 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 ${
-                            isRTL ? "flex-row-reverse justify-end" : ""
-                          }`}
-                        >
-                          <input
-                            type="checkbox"
-                            checked={visible}
-                            onChange={(e) =>
-                              setColumnVisibility((prev) => ({
-                                ...prev,
-                                [key]: e.target.checked,
-                              }))
-                            }
-                            className="rounded"
-                          />
-                          <span className={`text-sm ${textSecondary}`}>
-                            {t(key as keyof typeof t)}
-                          </span>
-                        </label>
-                      ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Export */}
-          <button
-            onClick={handleExport}
-            className={`px-4 py-2 rounded-lg border flex items-center gap-2 transition-colors ${
-              theme === "dark"
-                ? "border-gray-700 hover:bg-gray-800 text-gray-300"
-                : "border-gray-300 hover:bg-gray-100 text-gray-700"
-            }`}
-          >
-            <Download className="w-5 h-5" />
-            {t("export")}
-          </button>
-          <ViewModeToggle onChange={setViewMode} value={viewMode} />
-        </div>
-
-        {/* Filters Panel */}
-        {showFilters && (
-          <div
-            className={`pb-4 border-t ${
-              theme === "dark"
-                ? "border-gray-800 bg-gray-900/30"
-                : "border-gray-200 bg-gray-50"
-            }`}
-          >
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
-              {/* DMO Filter */}
-              <div className="flex-1">
-                <label
-                  className={`block text-sm mb-1 ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
-                >
-                  {" "}
-                  {t("select_dmo")} <span className="text-red-500">*</span>
-                </label>
-                <div className=" flex gap-2 relative">
-                  <select
-                    value={selectedDmoId}
-                    onChange={(e) => {
-                      const value = e.target.value;
-
-                      setSelectDmoId(value);
-                      setSelectAuthorityId("");
-
-                      setFilters((prev) => ({
-                        ...prev,
-                        dmoId: value,
-                        authorityId: "", // reset authority when DMO changes
-                      }));
-                    }}
-                    className={`w-full px-3 py-2 rounded-lg border ${
-                      theme === "dark"
-                        ? "bg-gray-800 border-gray-700 text-gray-200"
-                        : "bg-white border-gray-300 text-gray-900"
-                    } focus:outline-none focus:ring-2 focus:ring-teal-500`}
-                  >
-                    <option value="">Select DMO</option>
-                    {dmosAuthorities?.map((parent) => (
-                      <option key={parent._id} value={parent._id}>
-                        {parent.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-              {/* Authority Filter */}
-              <div className="flex-1">
-                <label
-                  className={`block text-sm mb-1 ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
-                >
-                  {" "}
-                  {t("select_authority")}{" "}
-                  <span className="text-red-500">*</span>
-                </label>
-                <div className=" w-full relative">
-                  <select
-                    value={selectedAuthorityId}
-                    onChange={(e) => {
-                      const value = e.target.value;
-                      setSelectAuthorityId(value); // sync local authority id state
-                      setFilters((prev) => ({ ...prev, authorityId: value }));
-                    }}
-                    className={`w-full px-3 py-2 rounded-lg border ${
-                      theme === "dark"
-                        ? "bg-gray-800 border-gray-700 text-gray-200"
-                        : "bg-white border-gray-300 text-gray-900"
-                    } focus:outline-none focus:ring-2 focus:ring-teal-500`}
-                  >
-                    <option value="">Select Authority</option>
-                    {selectedDmos?.authorities?.map((child) => (
-                      <option key={child._id} value={child._id}>
-                        {child.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              {/* Status Filter */}
-              <div>
-                <label
-                  className={`block text-sm mb-1 ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
-                >
-                  {t("status")}
-                </label>
-                <select
-                  value={filters.status}
-                  onChange={(e) =>
-                    setFilters({ ...filters, status: e.target.value })
-                  }
-                  className={`w-full px-3 py-2 rounded-lg border ${
-                    theme === "dark"
-                      ? "bg-gray-800 border-gray-700 text-gray-200"
-                      : "bg-white border-gray-300 text-gray-900"
-                  } focus:outline-none focus:ring-2 focus:ring-teal-500`}
-                >
-                  <option value="all">{t("all")}</option>
-                  <option value="DRAFT">{t("draft")}</option>
-                  <option value="PENDING">{t("pending")}</option>
-                  <option value="APPROVED">{t("approved")}</option>
-                  <option value="REJECTED">{t("rejected")}</option>
-                  <option value="CLOSED">{t("closed")}</option>
-                </select>
-              </div>
-
-              {/* Has Products Filter */}
-              <div>
-                <label
-                  className={`block text-sm mb-1 ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
-                >
-                  {t("has_products")}
-                </label>
-                <select
-                  value={filters.hasProductFilter}
-                  onChange={(e) =>
-                    setFilters({ ...filters, hasProductFilter: e.target.value })
-                  }
-                  className={`w-full px-3 py-2 rounded-lg border ${
-                    theme === "dark"
-                      ? "bg-gray-800 border-gray-700 text-gray-200"
-                      : "bg-white border-gray-300 text-gray-900"
-                  } focus:outline-none focus:ring-2 focus:ring-teal-500`}
-                >
-                  <option value="all">{t("all")}</option>
-                  <option value="yes">{t("yes")}</option>
-                  <option value="no">{t("no")}</option>
-                </select>
-              </div>
-            </div>
-            <div className="flex gap-4">
-              <button
-                onClick={clearFilter}
-                className="mt-3 px-4 py-2 text-sm text-teal-600 hover:text-teal-700 transition-colors"
-              >
-                {t("clear_all")}
-              </button>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {Object.entries(filters).map(([key, value]) => {
-                  // Skip rendering empty filters
-                  if (!value || value === "all") return null;
-
-                  if (key === "authorityId" && !filters.dmoId) {
-                    return null;
-                  }
-
-                  let displayValue = value;
-                  if (key === "status") {
-                    displayValue = t(value.toLowerCase()) || value;
-                  } else if (key === "hasProductFilter") {
-                    displayValue = value === "yes" ? t("yes") : t("no");
-                  } else if (key === "dmoId") {
-                    //  show DMO name instead of ID
-                    const dmo = dmosAuthorities?.find((d) => d._id === value);
-                    displayValue = dmo?.name || value;
-                  } else if (key === "authorityId") {
-                    const authority = selectedDmos?.authorities?.find(
-                      (a) => a._id === value,
-                    );
-                    displayValue = authority?.name || value;
-                  }
-
-                  return (
-                    <div
-                      key={key}
-                      className="flex items-center gap-2 rounded-full bg-teal-50 dark:bg-teal-950/40 px-3 py-1 text-sm text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800/50"
-                    >
-                      <span>{displayValue}</span>
-
-                      <button
-                        onClick={() => {
-                          if (key === "dmoId") {
-                            setSelectDmoId("");
-                            setSelectAuthorityId("");
-                            setFilters((prev) => ({
-                              ...prev,
-                              dmoId: "",
-                              authorityId: "",
-                            }));
-                          } else if (key === "authorityId") {
-                            setSelectAuthorityId("");
-                            setFilters((prev) => ({
-                              ...prev,
-                              authorityId: "",
-                            }));
-                          } else if (key === "status") {
-                            setFilters((prev) => ({
-                              ...prev,
-                              status: "all",
-                            }));
-                          } else {
-                            // For other keys
-                            setFilters((prev) => ({ ...prev, [key]: "" }));
-                          }
-                        }}
-                        className="ml-1 text-teal-600 hover:text-teal-800 dark:text-teal-400 dark:hover:text-teal-200"
-                        aria-label="Remove filter"
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Bulk Actions Bar */}
-        {selectedBusinesses.size > 0 && canChangeStatus && (
-          <div
-            className={`px-6 py-3 border-t flex items-center justify-between ${
-              theme === "dark"
-                ? "border-gray-800 bg-teal-900/20"
-                : "border-gray-200 bg-teal-50"
-            }`}
-          >
-            <span
-              className={`text-sm ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}
-            >
-              {selectedBusinesses.size} {t("selected")}
-            </span>
-
-            <div className="flex items-center gap-2">
-              <button
-                onClick={handleBulkApprove}
-                className="px-3 py-1.5 text-sm bg-green-600 hover:bg-green-700 text-white rounded transition-colors flex items-center gap-1"
-              >
-                <CheckCircle className="w-4 h-4" />
-                {t("approve")}
-              </button>
-              <button
-                onClick={handleBulkReject}
-                className="px-3 py-1.5 text-sm bg-red-600 hover:bg-red-700 text-white rounded transition-colors flex items-center gap-1"
-              >
-                <XCircle className="w-4 h-4" />
-                {t("reject")}
-              </button>
-              <button
-                onClick={handleBulkArchive}
-                className="px-3 py-1.5 text-sm bg-gray-600 hover:bg-gray-700 text-white rounded transition-colors flex items-center gap-1"
-              >
-                <Archive className="w-4 h-4" />
-                {t("archive")}
-              </button>
-            </div>
-          </div>
-        )}
-      </div>
-      <div className="flex-1 overflow-y-auto">
-        <div className="">
-          {viewMode === "list" ? (
-            <BusinessListView
-              theme={theme}
-              onBusinessClick={onBusinessClick}
-              isLoading={isLoading}
-              businesses={businesses}
-              next={fetchNextPage}
-              hasMore={hasMore}
-            />
-          ) : (
-            <div className="h-96 overflow-y-auto bg-white">
-              <BusinessGridView
-                data={businesses}
-                theme={theme}
-                refetch={refetch}
-                isLoading={isLoading}
-                next={fetchNextPage}
-                hasMore={hasMore}
-                onRowClick={onBusinessClick}
+              />
+              <input
+                type="text"
+                placeholder={t("search_businesses_placeholder")}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className={`w-full ${isRTL ? "pr-10 pl-4" : "pl-10 pr-4"} py-2 rounded-lg border ${
+                  theme === "dark"
+                    ? "bg-gray-800 border-gray-700 text-gray-200 placeholder-gray-500"
+                    : "bg-white border-gray-300 text-gray-900 placeholder-gray-400"
+                } focus:outline-none focus:ring-2 focus:ring-teal-500`}
               />
             </div>
+
+            <FilterButton value={showFilters} onChange={setShowFilters} />
+
+            {/* Column Settings */}
+            {viewMode === "list" && (
+              <div className="relative" ref={columnSettingsRef}>
+                <button
+                  onClick={() => setShowColumnSettings(!showColumnSettings)}
+                  className={`px-4 py-2 rounded-lg border flex items-center gap-2 transition-colors ${
+                    theme === "dark"
+                      ? "border-gray-700 hover:bg-gray-800 text-gray-300"
+                      : "border-gray-300 hover:bg-gray-100 text-gray-700"
+                  }`}
+                >
+                  <Columns className="w-5 h-5" />
+                  {t("show_columns")}
+                  {showColumnSettings ? (
+                    <ChevronUp className="w-4 h-4" />
+                  ) : (
+                    <ChevronDown className="w-4 h-4" />
+                  )}
+                </button>
+
+                {/* Column Settings Dropdown */}
+                {showColumnSettings && (
+                  <div
+                    className={`absolute ${isRTL ? "left-0" : "right-0"} mt-2 w-64 rounded-lg shadow-lg max-h-50vh overflow-y-auto border z-50 ${theme === "dark" ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}
+                  >
+                    <div
+                      className={`p-4 border-b ${theme === "dark" ? "border-gray-700" : "border-gray-200"}`}
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <h3
+                          className={`text-sm ${theme === "dark" ? "text-gray-200" : "text-gray-900"}`}
+                        >
+                          {t("column_settings") || "Column Settings"}
+                        </h3>
+                        <button
+                          onClick={resetToDefault}
+                          className="text-xs text-teal-600 hover:text-teal-700 transition-colors"
+                        >
+                          {t("reset_to_default") || "Reset to Default"}
+                        </button>
+                      </div>
+                      <p
+                        className={`text-xs ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
+                      >
+                        {t("select_columns_to_display") ||
+                          "Select columns to display"}
+                      </p>
+                    </div>
+                    <div className="p-3 max-h-96 overflow-y-auto">
+                      {/* Default Columns */}
+                      {Object.entries(columnVisibility)
+                        .filter(
+                          ([key]) =>
+                            columnDefinitions.find((col) => col.key === key)
+                              ?.isDefault,
+                        )
+                        .map(([key, visible]) => (
+                          <label
+                            key={key}
+                            className={`flex items-center gap-2 p-2 rounded cursor-pointer  dark:hover:bg-gray-700 ${
+                              isRTL ? "flex-row-reverse justify-end" : ""
+                            }`}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={visible}
+                              onChange={(e) =>
+                                setColumnVisibility((prev) => ({
+                                  ...prev,
+                                  [key]: e.target.checked,
+                                }))
+                              }
+                              className="rounded"
+                            />
+                            <span className={`text-sm ${textSecondary}`}>
+                              {t(key as keyof typeof t)}
+                            </span>
+                          </label>
+                        ))}
+
+                      {/* Divider */}
+                      {columnDefinitions.some((col) => !col.isDefault) && (
+                        <div className="my-3 border-t border-gray-200 dark:border-gray-700" />
+                      )}
+
+                      {/* Non-default Columns */}
+                      <p
+                        className={`text-xs mb-2 ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
+                      >
+                        Optional Columns
+                      </p>
+                      {Object.entries(columnVisibility)
+                        .filter(
+                          ([key]) =>
+                            !columnDefinitions.find((col) => col.key === key)
+                              ?.isDefault,
+                        )
+                        .map(([key, visible]) => (
+                          <label
+                            key={key}
+                            className={`flex items-center gap-2 p-2 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 ${
+                              isRTL ? "flex-row-reverse justify-end" : ""
+                            }`}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={visible}
+                              onChange={(e) =>
+                                setColumnVisibility((prev) => ({
+                                  ...prev,
+                                  [key]: e.target.checked,
+                                }))
+                              }
+                              className="rounded"
+                            />
+                            <span className={`text-sm ${textSecondary}`}>
+                              {t(key as keyof typeof t)}
+                            </span>
+                          </label>
+                        ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Export */}
+            <button
+              onClick={handleExport}
+              className={`px-4 py-2 rounded-lg border flex items-center gap-2 transition-colors ${
+                theme === "dark"
+                  ? "border-gray-700 hover:bg-gray-800 text-gray-300"
+                  : "border-gray-300 hover:bg-gray-100 text-gray-700"
+              }`}
+            >
+              <Download className="w-5 h-5" />
+              {t("export")}
+            </button>
+            <ViewModeToggle onChange={setViewMode} value={viewMode} />
+          </div>
+
+          {/* Filters Panel */}
+          {showFilters && (
+            <div
+              className={`pb-4 border-t ${
+                theme === "dark"
+                  ? "border-gray-800 bg-gray-900/30"
+                  : "border-gray-200 bg-gray-50"
+              }`}
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
+                {/* DMO Filter */}
+                <div className="flex-1">
+                  <label
+                    className={`block text-sm mb-1 ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
+                  >
+                    {" "}
+                    {t("select_dmo")} <span className="text-red-500">*</span>
+                  </label>
+                  <div className=" flex gap-2 relative">
+                    <select
+                      value={selectedDmoId}
+                      onChange={(e) => {
+                        const value = e.target.value;
+
+                        setSelectDmoId(value);
+                        setSelectAuthorityId("");
+
+                        setFilters((prev) => ({
+                          ...prev,
+                          dmoId: value,
+                          authorityId: "", // reset authority when DMO changes
+                        }));
+                      }}
+                      className={`w-full px-3 py-2 rounded-lg border ${
+                        theme === "dark"
+                          ? "bg-gray-800 border-gray-700 text-gray-200"
+                          : "bg-white border-gray-300 text-gray-900"
+                      } focus:outline-none focus:ring-2 focus:ring-teal-500`}
+                    >
+                      <option value="">Select DMO</option>
+                      {dmosAuthorities?.map((parent) => (
+                        <option key={parent._id} value={parent._id}>
+                          {parent.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                {/* Authority Filter */}
+                <div className="flex-1">
+                  <label
+                    className={`block text-sm mb-1 ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
+                  >
+                    {" "}
+                    {t("select_authority")}{" "}
+                    <span className="text-red-500">*</span>
+                  </label>
+                  <div className=" w-full relative">
+                    <select
+                      value={selectedAuthorityId}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setSelectAuthorityId(value); // sync local authority id state
+                        setFilters((prev) => ({ ...prev, authorityId: value }));
+                      }}
+                      className={`w-full px-3 py-2 rounded-lg border ${
+                        theme === "dark"
+                          ? "bg-gray-800 border-gray-700 text-gray-200"
+                          : "bg-white border-gray-300 text-gray-900"
+                      } focus:outline-none focus:ring-2 focus:ring-teal-500`}
+                    >
+                      <option value="">Select Authority</option>
+                      {selectedDmos?.authorities?.map((child) => (
+                        <option key={child._id} value={child._id}>
+                          {child.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Status Filter */}
+                <div>
+                  <label
+                    className={`block text-sm mb-1 ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
+                  >
+                    {t("status")}
+                  </label>
+                  <select
+                    value={filters.status}
+                    onChange={(e) =>
+                      setFilters({ ...filters, status: e.target.value })
+                    }
+                    className={`w-full px-3 py-2 rounded-lg border ${
+                      theme === "dark"
+                        ? "bg-gray-800 border-gray-700 text-gray-200"
+                        : "bg-white border-gray-300 text-gray-900"
+                    } focus:outline-none focus:ring-2 focus:ring-teal-500`}
+                  >
+                    <option value="all">{t("all")}</option>
+                    <option value="DRAFT">{t("draft")}</option>
+                    <option value="PENDING">{t("pending")}</option>
+                    <option value="APPROVED">{t("approved")}</option>
+                    <option value="REJECTED">{t("rejected")}</option>
+                    <option value="CLOSED">{t("closed")}</option>
+                  </select>
+                </div>
+
+                {/* Has Products Filter */}
+                <div>
+                  <label
+                    className={`block text-sm mb-1 ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
+                  >
+                    {t("has_products")}
+                  </label>
+                  <select
+                    value={filters.hasProductFilter}
+                    onChange={(e) =>
+                      setFilters({
+                        ...filters,
+                        hasProductFilter: e.target.value,
+                      })
+                    }
+                    className={`w-full px-3 py-2 rounded-lg border ${
+                      theme === "dark"
+                        ? "bg-gray-800 border-gray-700 text-gray-200"
+                        : "bg-white border-gray-300 text-gray-900"
+                    } focus:outline-none focus:ring-2 focus:ring-teal-500`}
+                  >
+                    <option value="all">{t("all")}</option>
+                    <option value="yes">{t("yes")}</option>
+                    <option value="no">{t("no")}</option>
+                  </select>
+                </div>
+              </div>
+              <div className="flex gap-4">
+                <button
+                  onClick={clearFilter}
+                  className="mt-3 px-4 py-2 text-sm text-teal-600 hover:text-teal-700 transition-colors"
+                >
+                  {t("clear_all")}
+                </button>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {Object.entries(filters).map(([key, value]) => {
+                    // Skip rendering empty filters
+                    if (!value || value === "all") return null;
+
+                    if (key === "authorityId" && !filters.dmoId) {
+                      return null;
+                    }
+
+                    let displayValue = value;
+                    if (key === "status") {
+                      displayValue = t(value.toLowerCase()) || value;
+                    } else if (key === "hasProductFilter") {
+                      displayValue = value === "yes" ? t("yes") : t("no");
+                    } else if (key === "dmoId") {
+                      //  show DMO name instead of ID
+                      const dmo = dmosAuthorities?.find((d) => d._id === value);
+                      displayValue = dmo?.name || value;
+                    } else if (key === "authorityId") {
+                      const authority = selectedDmos?.authorities?.find(
+                        (a) => a._id === value,
+                      );
+                      displayValue = authority?.name || value;
+                    }
+
+                    return (
+                      <div
+                        key={key}
+                        className="flex items-center gap-2 rounded-full bg-teal-50 dark:bg-teal-950/40 px-3 py-1 text-sm text-teal-700 dark:text-teal-300 border border-teal-200 dark:border-teal-800/50"
+                      >
+                        <span>{displayValue}</span>
+
+                        <button
+                          onClick={() => {
+                            if (key === "dmoId") {
+                              setSelectDmoId("");
+                              setSelectAuthorityId("");
+                              setFilters((prev) => ({
+                                ...prev,
+                                dmoId: "",
+                                authorityId: "",
+                              }));
+                            } else if (key === "authorityId") {
+                              setSelectAuthorityId("");
+                              setFilters((prev) => ({
+                                ...prev,
+                                authorityId: "",
+                              }));
+                            } else if (key === "status") {
+                              setFilters((prev) => ({
+                                ...prev,
+                                status: "all",
+                              }));
+                            } else {
+                              // For other keys
+                              setFilters((prev) => ({ ...prev, [key]: "" }));
+                            }
+                          }}
+                          className="ml-1 text-teal-600 hover:text-teal-800 dark:text-teal-400 dark:hover:text-teal-200"
+                          aria-label="Remove filter"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Bulk Actions Bar */}
+          {selectedBusinesses.size > 0 && canChangeStatus && (
+            <div
+              className={`px-6 py-3 border-t flex items-center justify-between ${
+                theme === "dark"
+                  ? "border-gray-800 bg-teal-900/20"
+                  : "border-gray-200 bg-teal-50"
+              }`}
+            >
+              <span
+                className={`text-sm ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}
+              >
+                {selectedBusinesses.size} {t("selected")}
+              </span>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleBulkApprove}
+                  className="px-3 py-1.5 text-sm bg-green-600 hover:bg-green-700 text-white rounded transition-colors flex items-center gap-1"
+                >
+                  <CheckCircle className="w-4 h-4" />
+                  {t("approve")}
+                </button>
+                <button
+                  onClick={handleBulkReject}
+                  className="px-3 py-1.5 text-sm bg-red-600 hover:bg-red-700 text-white rounded transition-colors flex items-center gap-1"
+                >
+                  <XCircle className="w-4 h-4" />
+                  {t("reject")}
+                </button>
+                <button
+                  onClick={handleBulkArchive}
+                  className="px-3 py-1.5 text-sm bg-gray-600 hover:bg-gray-700 text-white rounded transition-colors flex items-center gap-1"
+                >
+                  <Archive className="w-4 h-4" />
+                  {t("archive")}
+                </button>
+              </div>
+            </div>
           )}
         </div>
+        <div className="flex-1 overflow-y-auto">
+          <div className="">
+            {viewMode === "list" ? (
+              <BusinessListView
+                theme={theme}
+                onBusinessClick={onBusinessClick}
+                isLoading={isLoading}
+                businesses={businesses}
+                next={fetchNextPage}
+                hasMore={hasMore}
+                columnVisibility={columnVisibility}
+              />
+            ) : (
+              <div className="h-96 overflow-y-auto ">
+                <BusinessGridView
+                  data={businesses}
+                  theme={theme}
+                  refetch={refetch}
+                  isLoading={isLoading}
+                  next={fetchNextPage}
+                  hasMore={hasMore}
+                  onRowClick={onBusinessClick}
+                />
+              </div>
+            )}
+          </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

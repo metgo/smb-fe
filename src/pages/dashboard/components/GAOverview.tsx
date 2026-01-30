@@ -7,6 +7,7 @@ import { useCommon } from "@/hooks/useCommon";
 import { InfoTooltip } from "@/components/shared";
 import { normalizeTime } from "@/helpers/formatter";
 import { useGetGoogleAnalyticsViewsQuery } from "@/store/api/analyticsApi";
+import { useAppSelector } from "@/hooks/hooks";
 
 const COLORS = {
   blue: {
@@ -109,9 +110,12 @@ interface KPICardProps {
 function KPICard({ title, value, icon, sparklineData, color }: KPICardProps) {
   const chartData = sparklineData?.map((value, index) => ({ value, index }));
   const colorConfig = COLORS[color];
+  const { theme } = useAppSelector((state) => state.settings);
 
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-xl border-2 border-gray-200 dark:border-gray-800 p-6 hover:shadow-2xl transition-all relative overflow-hidden group">
+    <div
+      className={`${theme === "dark" ? "bg-gray-900" : "bg-white "} dark:bg-gray-900 rounded-xl border-2 border-gray-200 dark:border-gray-800 p-6 hover:shadow-2xl transition-all relative overflow-hidden group`}
+    >
       {/* 3D Background gradient - matching Distribution Overview */}
       <div
         className={`absolute inset-0 bg-linear-to-b ${colorConfig.bgGradient} opacity-20 dark:opacity-30 pointer-events-none`}
@@ -133,10 +137,16 @@ function KPICard({ title, value, icon, sparklineData, color }: KPICardProps) {
           </div>
           {/* 3D Trend badge with gradient */}
         </div>
-        <p className="text-sm text-gray-600 dark:text-gray-400 mb-2 font-medium">
+        <p
+          className={`${theme === "dark" ? "text-white" : "text-black"} text-sm text-gray-600 dark:text-gray-400 mb-2 font-medium`}
+        >
           {title}
         </p>
-        <p className="text-gray-900 dark:text-white mb-4">{value}</p>
+        <p
+          className={`${theme === "dark" ? "text-white" : "tet-gray-300"} text-gray-900 dark:text-white mb-4`}
+        >
+          {value}
+        </p>
         <div className="h-12 min-h-12">
           <ResponsiveContainer
             width="100%"
@@ -166,6 +176,7 @@ function KPICard({ title, value, icon, sparklineData, color }: KPICardProps) {
 export default function GAOverview() {
   const { t } = useTranslation("dashboard");
   // const { t: ct } = useTranslation("common");
+  const { theme } = useAppSelector((state) => state.settings);
 
   const { dateRanges: timeframes, websites } = useCommon();
   const [timeframe, setTimeframe] = useState("last30days");
@@ -227,14 +238,24 @@ export default function GAOverview() {
 
   return (
     <section>
-      <div className="bg-linear-to-br from-teal-50 to-blue-50 dark:from-teal-950/30 dark:to-blue-950/30 rounded-2xl border border-gray-200 dark:border-gray-800 p-6 sm:p-8">
+      <div
+        className={`rounded-2xl border border-gray-200 p-6 sm:p-8 bg-background ${
+          theme === "dark"
+            ? "bg-black"
+            : "bg-linear-to-br from-teal-50 to-blue-50"
+        }`}
+      >
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
           <div className="flex items-start gap-2">
             <div className="flex-1">
-              <h2 className="text-gray-900 dark:text-white mb-1">
+              <h2
+                className={`${theme === "dark" ? "text-gray-300" : "text-gray-900"} mb-1`}
+              >
                 {t("google_analytics_overview")}
               </h2>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <p
+                className={`${theme === "dark" ? "text-gray-400" : "text-gray-600"} text-sm`}
+              >
                 Key performance metrics and trends
               </p>
             </div>
@@ -248,7 +269,13 @@ export default function GAOverview() {
               <select
                 value={selectedWebsite}
                 onChange={(e) => setSelectedWebsite(e.target.value)}
-                className="appearance-none bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-2 pr-10 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-teal-500"
+                className={`
+                appearance-none
+                border border-gray-300 dark:border-gray-700
+                rounded-lg px-4 py-2 pr-10 text-sm
+                focus:outline-none focus:ring-2 focus:ring-teal-500
+                ${theme === "dark" ? "bg-gray-700 text-gray-300" : "bg-white text-gray-900"}
+              `}
               >
                 {websites?.map((site) => (
                   <option key={site.value} value={site.value}>
@@ -262,7 +289,13 @@ export default function GAOverview() {
               <select
                 value={timeframe}
                 onChange={(e) => setTimeframe(e.target.value)}
-                className="appearance-none bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-2 pr-10 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-teal-500"
+                className={`
+                appearance-none
+                border border-gray-300 dark:border-gray-700
+                rounded-lg px-4 py-2 pr-10 text-sm
+                focus:outline-none focus:ring-2 focus:ring-teal-500
+                ${theme === "dark" ? "bg-gray-700 text-gray-300" : "bg-white text-gray-900"}
+              `}
               >
                 {timeframes.map((tf) => (
                   <option key={tf.value} value={tf.value}>

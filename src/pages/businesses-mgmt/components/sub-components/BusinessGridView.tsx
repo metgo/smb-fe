@@ -6,6 +6,7 @@ import { AlertCircle, MapPin, Phone, TrashIcon } from "lucide-react";
 import { ConfirmDialog, ImageWithFallback } from "@/components/shared";
 import { useDeleteBusinessMutation } from "@/store/api/businessMutationApi";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
+import { useTranslation } from "react-i18next";
 
 interface Business {
   _id: string;
@@ -53,6 +54,7 @@ function BusinessGridView<T extends Business>({
     isLoading: isLoading,
     onLoadMore: next,
   });
+  const { t } = useTranslation("businesses");
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [businessToDelete, setBusinessToDelete] = useState<string | null>(null);
   const [deleteBusiness, { isLoading: isDeleting }] =
@@ -65,7 +67,7 @@ function BusinessGridView<T extends Business>({
 
   if (data.length === 0) {
     return (
-      <div className="text-center py-12">
+      <div className="flex flex-col overflow-hidden h-[calc(108vh-210px)] ">
         <AlertCircle
           className={`w-16 h-16 mx-auto mb-4 ${
             theme === "dark" ? "text-gray-500" : "text-gray-400"
@@ -76,7 +78,7 @@ function BusinessGridView<T extends Business>({
             theme === "dark" ? "text-gray-300" : "text-gray-700"
           }`}
         >
-          {"no_businesses_found"}
+          t{"no_businesses_found"}
         </h3>
         <p className={theme === "dark" ? "text-gray-500" : "text-gray-600"}>
           {"no_businesses_found_desc"}

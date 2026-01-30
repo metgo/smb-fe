@@ -4,6 +4,7 @@ import { Calendar, MapPin, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { routes } from "@/lib/routes";
 import { ImageWithFallback, InfoTooltip } from "@/components/shared";
+import { useAppSelector } from "@/hooks/hooks";
 
 interface Event {
   id: number;
@@ -15,6 +16,7 @@ interface Event {
 
 export default function UpcomingEvents() {
   const { t } = useTranslation("dashboard");
+  const { theme } = useAppSelector((state) => state.settings);
 
   const events: Event[] = [
     {
@@ -46,9 +48,10 @@ export default function UpcomingEvents() {
   return (
     <section>
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-gray-900 dark:text-white">
+        <h2 className={`${theme === "dark" ? "text-white" : "text-gray-900"}`}>
           {t("upcoming_events")}
         </h2>
+
         <InfoTooltip
           content={t("upcoming_events_desc")}
           title={t("upcoming_events")}
@@ -59,7 +62,11 @@ export default function UpcomingEvents() {
         {events.map((event) => (
           <div
             key={event.id}
-            className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden hover:shadow-lg transition-all group cursor-pointer"
+            className={`rounded-xl overflow-hidden transition-all group cursor-pointer border ${
+              theme === "dark"
+                ? "bg-gray-900 border-gray-800 hover:shadow-lg"
+                : "bg-white border-gray-200 hover:shadow-lg"
+            }`}
           >
             <div className="relative h-48 overflow-hidden">
               <ImageWithFallback
@@ -69,9 +76,12 @@ export default function UpcomingEvents() {
               />
             </div>
             <div className="p-4">
-              <h3 className="text-gray-900 dark:text-white mb-2 line-clamp-2">
+              <h3
+                className={`${theme === "dark" ? "text-gray-300" : "text-gray-900"} mb-2 line-clamp-2`}
+              >
                 {event.title}
               </h3>
+
               <div className="flex items-start gap-2 text-sm text-gray-600 dark:text-gray-400 mb-2">
                 <Calendar className="w-4 h-4 mt-0.5 shrink-0" />
                 <span>{event.date}</span>
@@ -87,7 +97,11 @@ export default function UpcomingEvents() {
         {/* Show More Card */}
         <Link
           to={routes.eventsMgmt}
-          className="bg-linear-to-br from-teal-50 to-blue-50 dark:from-teal-950/30 dark:to-blue-950/30 rounded-xl border border-gray-200 dark:border-gray-800 flex items-center justify-center hover:shadow-lg transition-all cursor-pointer group min-h-[320px]"
+          className={`rounded-xl flex items-center justify-center hover:shadow-lg transition-all cursor-pointer group min-h-[320px] border ${
+            theme === "dark"
+              ? "bg-linear-to-br from-teal-950/30 to-blue-950/30 border-gray-800"
+              : "bg-linear-to-br from-teal-50 to-blue-50 border-gray-200"
+          }`}
         >
           <div className="text-center p-6">
             <div className="w-12 h-12 bg-teal-500 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">

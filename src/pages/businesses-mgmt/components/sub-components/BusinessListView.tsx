@@ -1,24 +1,11 @@
 import clsx from "clsx";
 import { useTranslation } from "react-i18next";
 import { AlertCircle, ExternalLink } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { ReordableDataTable } from "@/components/shared";
-
-interface BusinessListViewProps {
-  theme: Theme;
-  businesses: any[];
-  isLoading: boolean;
-  onBusinessClick: (business: any) => void;
-  next: () => void;
-  hasMore: boolean;
-}
-
-const USER_ROLE = "admin";
-
-// Column configuration
-const defaultColumns = {
+export const defaultColumns = {
   impact: true,
   name: true,
   shortDescription: true,
@@ -34,7 +21,19 @@ const defaultColumns = {
   categories: false,
 };
 
-type ColumnVisibility = typeof defaultColumns;
+export type ColumnVisibility = typeof defaultColumns;
+
+interface BusinessListViewProps {
+  theme: Theme;
+  businesses: any[];
+  isLoading: boolean;
+  onBusinessClick: (business: any) => void;
+  next: () => void;
+  hasMore: boolean;
+  columnVisibility: ColumnVisibility;
+}
+
+const USER_ROLE = "admin";
 
 export default function BusinessListView({
   theme,
@@ -43,64 +42,15 @@ export default function BusinessListView({
   onBusinessClick,
   next,
   hasMore,
+  columnVisibility,
 }: BusinessListViewProps) {
   const { t } = useTranslation("businesses");
   const { textPrimary, textSecondary } = useThemeClasses();
 
   const [error, _setError] = useState(false);
-  const [showColumnSettings, setShowColumnSettings] = useState(false);
   const [selectedBusinesses, setSelectedBusinesses] = useState<Set<string>>(
     new Set(),
   );
-  const columnSettingsRef = useRef<HTMLDivElement>(null);
-  const [columnVisibility, _setColumnVisibility] =
-    useState<ColumnVisibility>(defaultColumns);
-
-  // Column visibility - load from localStorage or use defaults
-  const [visibleColumns, _setVisibleColumns] = useState<ColumnVisibility>(
-    () => {
-      try {
-        const saved = localStorage.getItem("businessesTableColumns");
-        if (saved) {
-          return { ...defaultColumns, ...JSON.parse(saved) };
-        }
-      } catch (e) {
-        console.error("Failed to load column settings:", e);
-      }
-      return defaultColumns;
-    },
-  );
-
-  // Save column visibility to localStorage
-  useEffect(() => {
-    try {
-      localStorage.setItem(
-        "businessesTableColumns",
-        JSON.stringify(visibleColumns),
-      );
-    } catch (e) {
-      console.error("Failed to save column settings:", e);
-    }
-  }, [visibleColumns]);
-
-  // Close column settings when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        columnSettingsRef.current &&
-        !columnSettingsRef.current.contains(event.target as Node)
-      ) {
-        setShowColumnSettings(false);
-      }
-    };
-
-    if (showColumnSettings) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [showColumnSettings]);
 
   // Permission check
   const canChangeStatus = ["superadmin", "admin", "dmo", "authority"].includes(
@@ -300,7 +250,7 @@ export default function BusinessListView({
 
   return (
     <div className="flex flex-col overflow-hidden h-[calc(108vh-210px)] ">
-      <div>
+      <div className="sticky">
         <ReordableDataTable
           rowKey="_id"
           data={businesses}

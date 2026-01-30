@@ -256,7 +256,11 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
               setFormData({ ...formData, internalNotes: e.target.value })
             }
             placeholder={t("add_internal_notes")}
-            className={`w-full px-4 py-2 rounded-lg border ${borderColor} focus:outline-none focus:ring-2 focus:ring-teal-500`}
+            className={`w-full px-4 py-4 rounded-lg border ${borderColor} focus:outline-none focus:ring-2 focus:ring-teal-500 ${
+              theme === "dark"
+                ? "bg-gray-800 text-gray-200 placeholder-gray-500"
+                : "bg-white text-gray-900 placeholder-gray-400"
+            }`}
           />
         </div>
       )}

@@ -145,7 +145,7 @@ export default function CreateBusinessWizard({
     ],
     vendorDelivers: false,
     pickupAvailable: false,
-    deliveryAreas: [] as any[],
+    deliveryArea: [] as any[],
     deliveryAdditionalInfo: "",
     deliveryReturnExchange: [] as string[],
     deliverySpecificSellerInfo: [] as string[],
@@ -299,7 +299,7 @@ export default function CreateBusinessWizard({
 
     switch (step) {
       case 1:
-        if (!formData.nameEn?.trim()) newErrors.nameEn = t("required_field");
+        // if (!formData.nameEn?.trim()) newErrors.nameEn = t("required_field");
         if (!formData.shortDescriptionEn?.trim())
           newErrors.shortDescriptionEn = t("required_field");
         if (!formData.fullDescriptionEn?.trim())
@@ -376,7 +376,7 @@ export default function CreateBusinessWizard({
       }
     }
     if (!allValid) {
-      toast.error(t("fix_errors_before_proceeding"));
+      toast.error(t("fill_all_fields"));
       return;
     }
 
