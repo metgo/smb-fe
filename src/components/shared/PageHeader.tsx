@@ -1,12 +1,15 @@
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { AddButton } from "../btns";
+import { AddButton, RefreshButton } from "../btns";
+import clsx from "clsx";
 
 interface PageHeaderProps {
   title: string;
   description?: string;
   h1Gradient?: string;
   onClick: () => void;
+  onRefreshClick?: () => void;
   btnLabel: string;
+  isRefreshing?: boolean;
 }
 
 export default function PageHeader({
@@ -15,11 +18,13 @@ export default function PageHeader({
   h1Gradient,
   btnLabel,
   onClick,
+  onRefreshClick,
+  isRefreshing,
 }: PageHeaderProps) {
-  const { textSecondary } = useThemeClasses();
+  const { textSecondary, borderColor } = useThemeClasses();
 
   return (
-    <div className="shrink-0 py-6 pb-4 border-b border-gray-200 dark:border-gray-800 mb-4">
+    <div className={clsx("shrink-0 py-6 pb-4 border-b mb-4", borderColor)}>
       <div className="mx-auto">
         <div className="flex items-center justify-between">
           <div>
@@ -28,7 +33,16 @@ export default function PageHeader({
             </h1>
             {description && <p className={textSecondary}>{description}</p>}
           </div>
-          <AddButton label={btnLabel} handleClick={onClick} />
+
+          <div className="flex items-center gap-4">
+            {onRefreshClick && (
+              <RefreshButton
+                onClick={onRefreshClick}
+                isRefreshing={isRefreshing}
+              />
+            )}
+            <AddButton label={btnLabel} handleClick={onClick} />
+          </div>
         </div>
       </div>
     </div>
