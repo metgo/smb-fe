@@ -50,26 +50,6 @@ export default function ReordableDataTable<T extends Record<string, any>>({
 
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
-  // useEffect(() => {
-  //   if (!scrollRef.current || !next || !hasMore) return;
-
-  //   const el = scrollRef.current;
-
-  //   const handleScroll = () => {
-  //     const { scrollTop, scrollHeight, clientHeight } = el;
-
-  //     // trigger slightly before bottom
-  //     if (scrollTop + clientHeight >= scrollHeight - 50) {
-  //       if (!isDataLoading && hasMore) {
-  //         next();
-  //       }
-  //     }
-  //   };
-
-  //   el.addEventListener("scroll", handleScroll);
-  //   return () => el.removeEventListener("scroll", handleScroll);
-  // }, [next, hasMore, isDataLoading]);
-
   // Load saved column order
   const [columnOrder, setColumnOrder] = useState<string[]>(() => {
     if (typeof window === "undefined")
@@ -280,7 +260,7 @@ export default function ReordableDataTable<T extends Record<string, any>>({
               })}
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
+          <tbody className={`  divide-y divide-gray-200 dark:divide-gray-800 `}>
             {isDataLoading ? (
               <tr>
                 <td
@@ -313,7 +293,7 @@ export default function ReordableDataTable<T extends Record<string, any>>({
                 <tr
                   key={item[rowKey] ?? idx}
                   onClick={() => onRowClick?.(item)}
-                  className={`transition-colors ${hoverBg} ${onRowClick ? "cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50" : ""}`}
+                  className={`${theme === "dark" ? "bg-gray-900 text-gray-400" : "bg-whit"} ${hoverBg} ${onRowClick ? "cursor-pointer hover:bg-gray-50 " : ""}`}
                 >
                   {columnOrder?.map((colKey) => {
                     const column = columns.find((c) => c.key === colKey);

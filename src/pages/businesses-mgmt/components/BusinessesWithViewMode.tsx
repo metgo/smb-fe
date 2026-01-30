@@ -934,6 +934,7 @@ export default function BusinessesList({
                 isLoading={isLoading}
                 next={fetchNextPage}
                 hasMore={hasMore}
+                onRowClick={onBusinessClick}
               />
             </div>
           )}

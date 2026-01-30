@@ -86,7 +86,11 @@ function BusinessGridView<T extends Business>({
   }
 
   return (
-    <div className="py-6 px-4">
+    <div
+      className={`py-6 px-4 ${
+        theme == "dark" ? "border-gray-700 bg-gray-900" : "border-gray-300 "
+      } `}
+    >
       <div
         className="overflow-x-auto max-h-[calc(100vh-450px)] overflow-y-auto"
         id="business-table-scroll"
@@ -96,7 +100,7 @@ function BusinessGridView<T extends Business>({
           {data.map((business) => (
             <div
               key={business._id}
-              className="bg-white dark:bg-gray-900 relative rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow cursor-pointer"
+              className={`${theme === "dark" ? "bg-gray-900" : "bg-white"} dark:bg-gray-900 relative rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow cursor-pointer`}
               onClick={() => onRowClick && onRowClick(business)}
             >
               {/* Delete button */}
@@ -126,12 +130,20 @@ function BusinessGridView<T extends Business>({
                 )}
               </div>
 
-              <div className="p-5">
-                <h3 className="font-semibold text-lg mb-3 line-clamp-2">
+              <div
+                className={`p-5 ${
+                  theme === "dark"
+                    ? "bg-gray-800 text-gray-400"
+                    : "bg-white text-gray-600"
+                }`}
+              >
+                <h3
+                  className={`${theme === "dark" ? "text-white" : "text-gray-600"} font-semibold text-lg mb-3 line-clamp-2 text-gray-900 dark:text-white`}
+                >
                   {business.name}
                 </h3>
 
-                <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+                <div className="space-y-2 text-sm">
                   {business.address && (
                     <div className="flex items-center gap-2">
                       <MapPin className="w-4 h-4" />
@@ -142,7 +154,7 @@ function BusinessGridView<T extends Business>({
                   )}
                 </div>
 
-                <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                <div className="mt-2 text-sm">
                   {business?.phoneNumber && (
                     <div className="flex items-center gap-2">
                       <Phone className="w-4 h-4" />
