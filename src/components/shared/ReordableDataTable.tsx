@@ -43,14 +43,8 @@ export default function ReordableDataTable<T extends Record<string, any>>({
   isDataLoading = false,
 }: DataTableProps<T>) {
   const { theme, isRTL } = useAppSelector((state) => state.settings);
-  const {
-    bgPrimary,
-    bgTertiary,
-    borderColor,
-    textSecondary,
-    textPrimary,
-    hoverBg,
-  } = useThemeClasses();
+  const { bgTertiary, borderColor, textSecondary, textPrimary, hoverBg } =
+    useThemeClasses();
 
   // Load saved column order
   const [columnOrder, setColumnOrder] = useState<string[]>(() => {

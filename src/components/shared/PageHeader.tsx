@@ -1,5 +1,6 @@
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { AddButton, RefreshButton } from "../btns";
+import clsx from "clsx";
 
 interface PageHeaderProps {
   title: string;
@@ -20,10 +21,10 @@ export default function PageHeader({
   onRefreshClick,
   isRefreshing,
 }: PageHeaderProps) {
-  const { textSecondary } = useThemeClasses();
+  const { textSecondary, borderColor } = useThemeClasses();
 
   return (
-    <div className="shrink-0 py-6 pb-4 border-b border-gray-200 dark:border-gray-800 mb-4">
+    <div className={clsx("shrink-0 py-6 pb-4 border-b mb-4", borderColor)}>
       <div className="mx-auto">
         <div className="flex items-center justify-between">
           <div>

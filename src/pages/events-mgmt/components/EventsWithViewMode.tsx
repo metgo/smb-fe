@@ -21,12 +21,16 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import {
+  BulkActionBar,
   ConfirmDialog,
   ImageWithFallback,
   ReordableDataTable,
 } from "@/components/shared";
 import { extractCenterAddressText, extractEventDates } from "@/helpers";
-import { useDeleteEventMutation } from "@/store/api/eventMutationApi";
+import {
+  useDeleteEventMutation,
+  useUpdateEventMutation,
+} from "@/store/api/eventMutationApi";
 import { EventCardSkeleton } from "@/components/skeletons";
 
 interface EventsWithViewModeProps {
@@ -103,6 +107,7 @@ export default function EventsWithViewMode({
   } = useThemeClasses();
 
   const [deleteEvent, { isLoading: isDeleting }] = useDeleteEventMutation();
+  const [updateEvent] = useUpdateEventMutation();
 
   const [currentDate, setCurrentDate] = useState(new Date());
   const [calendarViewMode, setCalendarViewMode] =
@@ -199,6 +204,7 @@ export default function EventsWithViewMode({
     toast.success(res?.data?.message || "Event deleted successfully");
     refetch();
   };
+
   // Events on a given date
   const eventsOnDate = (date: Date) => {
     const dateStr = date.toISOString().split("T")[0]; // normalize input date
@@ -656,8 +662,68 @@ export default function EventsWithViewMode({
     );
   };
 
+  const handleBulkStatusChange = async (status: TStatus) => {
+    if (!selectedEvents.size) return;
+    const toastId = toast.loading(
+      "Please wait. Event's status are changing...",
+    );
+
+    try {
+      const results = await Promise.all(
+        Array.from(selectedEvents).map((eventId: string) =>
+          updateEvent({ eventId, body: { status: status?.toUpperCase() } }),
+        ),
+      );
+      const message = results[0]?.data?.message;
+      toast.success(message, { id: toastId });
+      setSelectedEvents(new Set());
+      refetch();
+    } catch (error: any) {
+      toast.error(error?.message || "Failed to change events status", {
+        id: toastId,
+      });
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (!selectedEvents.size) return;
+    const toastId = toast.loading("Please wait. Events are deleting...");
+    try {
+      const results = await Promise.all(
+        Array.from(selectedEvents).map((eventId: string) =>
+          deleteEvent({ eventId }),
+        ),
+      );
+
+      const message =
+        results[0]?.data?.message || "Events deleted successfully";
+      toast.success(message, { id: toastId });
+      setSelectedEvents(new Set());
+      refetch();
+    } catch (error: any) {
+      toast.error(error?.message || "Failed to delete events");
+    }
+  };
+
+  const handleBulkCsvExport = () => {
+    console.log("CSV export for:", 2);
+  };
+  const handleBulkPdfExport = () => {
+    console.log("PDF export for:", 2);
+  };
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-2">
+      <BulkActionBar
+        selectedItemCount={selectedEvents.size || 0}
+        handleBulkStatusChange={handleBulkStatusChange}
+        onBulkAction={{
+          delete: handleBulkDelete,
+          csvExport: handleBulkCsvExport,
+          pdfExport: handleBulkPdfExport,
+        }}
+      />
+
       {/* Controls */}
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
         {viewMode === "calendar" && (
