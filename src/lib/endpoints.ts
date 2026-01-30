@@ -5,13 +5,17 @@ export const endpoints = {
   registerStep1: "/auth/register-step1",
   registerStep2: "/auth/register-step2",
 
-  popularProducts: "/popular-products",
-  popularBusiness: "/popular-business",
+  popularProductsStats: "/popular-products",
+  popularBusinessStats: "/popular-business",
+  popularPoiStats: "/popular-pois",
 
   businessStats: "/home-stats/businesses",
   poiStats: "/home-stats/point-of-interests",
   productStats: "/home-stats/products",
   eventStats: "/stats/events",
+  voucherStats: "/stats/vouchers",
+  onlineOrderStats: "/stats/orders",
+  offlineOrderStats: "/offline-order",
   purchaseReportsStats: "/stats/purchase-reports",
 
   googleAnalyticsViews: "/google-analytics-views",

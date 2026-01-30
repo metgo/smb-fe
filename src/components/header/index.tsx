@@ -1,3 +1,6 @@
+import clsx from "clsx";
+import { useState } from "react";
+
 import { useDispatch } from "react-redux";
 import { useTranslation } from "react-i18next";
 import {
@@ -6,7 +9,6 @@ import {
   Sun,
   ChevronDown,
   Monitor,
-  Calendar,
   Settings,
   Check,
 } from "lucide-react";
@@ -15,18 +17,19 @@ import { useAppSelector } from "@/hooks/hooks";
 import { toggleEditMode } from "@/features/uiSlice";
 import { setLanguage, setTheme } from "@/features/settingsSlice";
 import { useCommon } from "@/hooks/useCommon";
-import clsx from "clsx";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import DmoAuthorityies from "./DmoAuthorityies";
+import { WebsiteSelect } from "../shared";
 
 export default function Header() {
   const dispatch = useDispatch();
   const { t, i18n } = useTranslation("common");
 
-  const { languages, websites, dateRanges, dmosAuthorities } = useCommon();
+  const { languages, allWebsites, dateRanges, dmosAuthorities } = useCommon();
   const { theme, language } = useAppSelector((state) => state.settings);
   const { isEditMode } = useAppSelector((state) => state.ui);
   const { textPrimary, selectInputClasses } = useThemeClasses();
+  const [selectedWebsite, setSelectedWebsite] = useState("");
 
   const handleLanguageChange = (lng: string) => {
     dispatch(setLanguage(lng));
@@ -59,29 +62,15 @@ export default function Header() {
           {/* Controls */}
           <div className="flex items-center gap-3">
             <DmoAuthorityies data={dmosAuthorities} />
-
-            {/* Website Selector */}
-            <div className="relative">
-              <select
-                // value={selectedWebsite}
-                // onChange={(e) => setSelectedWebsite(e.target.value)}
-                className={clsx(
-                  "appearance-none border rounded-lg px-4 py-2 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 min-w-45",
-                  selectInputClasses,
-                )}
-              >
-                {websites.map((site) => (
-                  <option key={site.value} value={site.value}>
-                    {site.label}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="absolute top-1/2 ltr:right-3 rtl:left-3 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
-            </div>
+            <WebsiteSelect
+              websites={allWebsites}
+              value={selectedWebsite}
+              onChange={setSelectedWebsite}
+              placeholder="Choose website"
+            />
 
             {/* Date Range Selector */}
             <div className="relative">
-              <Calendar className="absolute top-1/2 ltr:left-3 rtl:right-3 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
               <select
                 // value={dateRange}
                 // onChange={(e) => setDateRange(e.target.value)}

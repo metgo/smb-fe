@@ -60,6 +60,10 @@
   "travel": "Travel",
   "culture": "Culture",
 
+  "popular_businesses": "Popular Businesses",
+  "popular_products": "Popular Products",
+  "popular_pois": "Popular POIs",
+
   "upcoming_events": "Upcoming Events",
   "view_all": "View All",
 
@@ -82,9 +86,18 @@
   "total_vouchers": "Total Vouchers",
   "orders": "Orders",
 
-  "popular_businesses": "Popular Businesses",
-  "popular_products": "Popular Products",
-  "popular_pois": "Popular POIs",
+  "per_transaction": "Per transaction",
+  "per_redemption": "Per redemption",
+  "per_sale": "Per sale",
+  "last_30_days": "Last 30 days",
+
+  "total_number": "Total Number",
+  "assigned_vouchers": "Assigned Vouchers",
+  "remaining_amount": "Remaining Amount",
+  "paid_by_vouchers": "Paid by Vouchers",
+  "paid_by_bank_transfer": "Paid by Bank Transfer",
+
+  "purchases_report_summary_desc": "Comprehensive revenue and voucher metrics",
 
   "jan": "Jan",
   "feb": "Feb",

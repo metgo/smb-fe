@@ -1,12 +1,14 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { LineChart, Line, ResponsiveContainer } from "recharts";
 import { Users, Activity, Eye, Clock, Target, ChevronDown } from "lucide-react";
+import clsx from "clsx";
 
 import { useCommon } from "@/hooks/useCommon";
-import { InfoTooltip } from "@/components/shared";
+import { InfoTooltip, WebsiteSelect } from "@/components/shared";
 import { normalizeTime } from "@/helpers/formatter";
 import { useGetGoogleAnalyticsViewsQuery } from "@/store/api/analyticsApi";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 const COLORS = {
   blue: {
@@ -100,43 +102,71 @@ const transformAnalyticsData = (data: AnalyticsItem[]) => {
 interface KPICardProps {
   title: string;
   value: string;
-  change: number;
+  change?: number;
   icon: React.ReactNode;
   sparklineData: number[];
   color: keyof typeof COLORS;
 }
 
 function KPICard({ title, value, icon, sparklineData, color }: KPICardProps) {
+  const { isDark } = useThemeClasses();
   const chartData = sparklineData?.map((value, index) => ({ value, index }));
   const colorConfig = COLORS[color];
 
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-xl border-2 border-gray-200 dark:border-gray-800 p-6 hover:shadow-2xl transition-all relative overflow-hidden group">
-      {/* 3D Background gradient - matching Distribution Overview */}
+    <div
+      className={clsx(
+        "rounded-xl border-2 p-6 hover:shadow-2xl transition-all relative overflow-hidden group",
+        isDark ? "bg-gray-900 border-gray-800" : "bg-white border-gray-200",
+      )}
+    >
+      {/* Background gradient */}
       <div
-        className={`absolute inset-0 bg-linear-to-b ${colorConfig.bgGradient} opacity-20 dark:opacity-30 pointer-events-none`}
+        className={clsx(
+          "absolute inset-0 pointer-events-none opacity-20",
+          isDark
+            ? colorConfig.bgGradient.replace("dark:", "")
+            : colorConfig.bgGradient.split(" dark:")[0],
+        )}
+      />
+      {/* Shimmer overlay */}
+      <div className="absolute inset-0 bg-linear-to-t from-white/10 to-transparent pointer-events-none"></div>
+      <div
+        className="absolute -bottom-1 left-0 right-0 h-2 rounded-b-xl"
+        style={{
+          backgroundColor: isDark ? "rgba(0,0,0,0.3)" : "rgba(0,0,0,0.1)",
+        }}
       ></div>
-
-      {/* Shimmer effect overlay */}
-      <div className="absolute inset-0 bg-linear-to-t from-white/10 to-transparent dark:from-white/5 pointer-events-none"></div>
-
-      {/* 3D bottom shadow */}
-      <div className="absolute -bottom-1 left-0 right-0 h-2 bg-black/10 dark:bg-black/30 blur-sm rounded-b-xl"></div>
 
       <div className="relative z-10">
         <div className="flex items-start justify-between mb-4">
-          {/* 3D Icon with Olympic-style gradient */}
           <div
-            className={`p-2.5 bg-linear-to-br ${colorConfig.gradient} rounded-lg shadow-lg ${colorConfig.shadow} transition-all transform hover:scale-110 border-2 border-white/20 text-white [&>svg]:drop-shadow-lg`}
+            className={clsx(
+              "p-2.5 rounded-lg transition-all transform hover:scale-110 border-2 text-white [&>svg]:drop-shadow-lg",
+              colorConfig.gradient,
+              colorConfig.shadow,
+            )}
           >
             {icon}
           </div>
-          {/* 3D Trend badge with gradient */}
         </div>
-        <p className="text-sm text-gray-600 dark:text-gray-400 mb-2 font-medium">
+        <p
+          className={clsx(
+            "mb-2 font-medium text-sm",
+            isDark ? "text-gray-400" : "text-gray-600",
+          )}
+        >
           {title}
         </p>
-        <p className="text-gray-900 dark:text-white mb-4">{value}</p>
+        <p
+          className={clsx(
+            "mb-4 font-semibold text-lg",
+            isDark ? "text-white" : "text-gray-900",
+          )}
+        >
+          {value}
+        </p>
+
         <div className="h-12 min-h-12">
           <ResponsiveContainer
             width="100%"
@@ -151,9 +181,7 @@ function KPICard({ title, value, icon, sparklineData, color }: KPICardProps) {
                 stroke={colorConfig.stroke}
                 strokeWidth={3}
                 dot={false}
-                style={{
-                  filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.1))",
-                }}
+                style={{ filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.1))" }}
               />
             </LineChart>
           </ResponsiveContainer>
@@ -165,43 +193,102 @@ function KPICard({ title, value, icon, sparklineData, color }: KPICardProps) {
 
 export default function GAOverview() {
   const { t } = useTranslation("dashboard");
-  // const { t: ct } = useTranslation("common");
+  const { isDark } = useThemeClasses();
 
-  const { dateRanges: timeframes, websites } = useCommon();
+  const { dateRanges: timeframes, allWebsites } = useCommon();
   const [timeframe, setTimeframe] = useState("last30days");
-  const [selectedWebsite, setSelectedWebsite] = useState("all");
+  const [selectedWebsite, setSelectedWebsite] = useState("");
 
+  // Compute startDate and endDate based on timeframe
+  const { startDate, endDate } = useMemo(() => {
+    const today = new Date();
+    let start: Date;
+
+    switch (timeframe) {
+      case "last7days":
+        start = new Date();
+        start.setDate(today.getDate() - 6);
+        break;
+      case "last30days":
+        start = new Date();
+        start.setDate(today.getDate() - 29);
+        break;
+      case "last90days":
+        start = new Date();
+        start.setDate(today.getDate() - 89);
+        break;
+      case "custom": // "last_year"
+        start = new Date();
+        start.setFullYear(today.getFullYear() - 1);
+        start.setDate(today.getDate() + 1);
+        break;
+      default:
+        start = new Date();
+        start.setDate(today.getDate() - 29);
+        break;
+    }
+
+    const formatDate = (d: Date) => d.toISOString().split("T")[0];
+
+    return {
+      startDate: formatDate(start),
+      endDate: formatDate(today),
+    };
+  }, [timeframe]);
+  console.log("🚀 ~ GAOverview ~ endDate:", endDate);
+  console.log("🚀 ~ GAOverview ~ startDate:", startDate);
+
+  // API call with dynamic dates
   const { data } = useGetGoogleAnalyticsViewsQuery({
-    startDate: "2025-01-01",
-    endDate: "2025-01-31",
+    startDate,
+    endDate,
     dmoId: "",
     authorityId: "",
-    externalApiId: "",
+    externalApiId: selectedWebsite ? selectedWebsite : "",
   });
+
   const result = transformAnalyticsData(data);
 
   const kpis: KPICardProps[] = [
     {
       title: t("users"),
       value: result?.activeUsers?.total?.toString(),
-      change: 12.5,
-      icon: <Users className="w-5 h-5 text-teal-600 dark:text-teal-400" />,
+      icon: (
+        <Users
+          className={clsx(
+            "w-5 h-5",
+            isDark ? "text-teal-400" : "text-teal-600",
+          )}
+        />
+      ),
       sparklineData: result?.activeUsers?.sparklineData,
       color: "blue",
     },
     {
       title: t("sessions"),
       value: result?.sessions.total.toString(),
-      change: 8.3,
-      icon: <Activity className="w-5 h-5 text-teal-600 dark:text-teal-400" />,
+      icon: (
+        <Activity
+          className={clsx(
+            "w-5 h-5",
+            isDark ? "text-teal-400" : "text-teal-600",
+          )}
+        />
+      ),
       sparklineData: result?.sessions.sparklineData,
       color: "purple",
     },
     {
       title: t("page_views"),
       value: result?.pageviews?.total?.toString(),
-      change: 15.2,
-      icon: <Eye className="w-5 h-5 text-teal-600 dark:text-teal-400" />,
+      icon: (
+        <Eye
+          className={clsx(
+            "w-5 h-5",
+            isDark ? "text-teal-400" : "text-teal-600",
+          )}
+        />
+      ),
       sparklineData: result?.pageviews?.sparklineData,
       color: "amber",
     },
@@ -210,16 +297,28 @@ export default function GAOverview() {
       value: normalizeTime(
         result?.averageSessionDuration?.total / data?.length,
       ),
-      change: 5.7,
-      icon: <Clock className="w-5 h-5 text-teal-600 dark:text-teal-400" />,
+      icon: (
+        <Clock
+          className={clsx(
+            "w-5 h-5",
+            isDark ? "text-teal-400" : "text-teal-600",
+          )}
+        />
+      ),
       sparklineData: result?.averageSessionDuration?.sparklineData,
       color: "red",
     },
     {
       title: t("conversions"),
       value: result?.conversions?.total?.toString(),
-      change: 18.9,
-      icon: <Target className="w-5 h-5 text-teal-600 dark:text-teal-400" />,
+      icon: (
+        <Target
+          className={clsx(
+            "w-5 h-5",
+            isDark ? "text-teal-400" : "text-teal-600",
+          )}
+        />
+      ),
       sparklineData: result?.conversions?.sparklineData,
       color: "emerald",
     },
@@ -227,14 +326,31 @@ export default function GAOverview() {
 
   return (
     <section>
-      <div className="bg-linear-to-br from-teal-50 to-blue-50 dark:from-teal-950/30 dark:to-blue-950/30 rounded-2xl border border-gray-200 dark:border-gray-800 p-6 sm:p-8">
+      <div
+        className={clsx(
+          "rounded-2xl border p-6 sm:p-8",
+          isDark
+            ? "bg-teal-950/30 to-blue-950/30 border-gray-800"
+            : "bg-linear-to-br from-teal-50 to-blue-50 border-gray-200",
+        )}
+      >
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
           <div className="flex items-start gap-2">
             <div className="flex-1">
-              <h2 className="text-gray-900 dark:text-white mb-1">
+              <h2
+                className={clsx(
+                  "mb-1 font-semibold",
+                  isDark ? "text-white" : "text-gray-900",
+                )}
+              >
                 {t("google_analytics_overview")}
               </h2>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
+              <p
+                className={clsx(
+                  "text-sm",
+                  isDark ? "text-gray-400" : "text-gray-600",
+                )}
+              >
                 Key performance metrics and trends
               </p>
             </div>
@@ -243,26 +359,24 @@ export default function GAOverview() {
               title={t("google_analytics_overview")}
             />
           </div>
+
           <div className="flex flex-wrap items-center gap-3">
-            <div className="relative">
-              <select
-                value={selectedWebsite}
-                onChange={(e) => setSelectedWebsite(e.target.value)}
-                className="appearance-none bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-2 pr-10 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-teal-500"
-              >
-                {websites?.map((site) => (
-                  <option key={site.value} value={site.value}>
-                    {site.label}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="absolute top-1/2 ltr:right-3 rtl:left-3 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
-            </div>
+            <WebsiteSelect
+              websites={allWebsites}
+              value={selectedWebsite}
+              onChange={setSelectedWebsite}
+              placeholder="Choose website"
+            />
             <div className="relative">
               <select
                 value={timeframe}
                 onChange={(e) => setTimeframe(e.target.value)}
-                className="appearance-none bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-2 pr-10 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-teal-500"
+                className={clsx(
+                  "appearance-none rounded-lg px-4 py-2 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500",
+                  isDark
+                    ? "bg-gray-800 border-gray-700 text-white"
+                    : "bg-white border-gray-300 text-gray-900",
+                )}
               >
                 {timeframes.map((tf) => (
                   <option key={tf.value} value={tf.value}>
