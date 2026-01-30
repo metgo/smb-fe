@@ -6,7 +6,6 @@ import { AlertCircle, MapPin, Phone, TrashIcon } from "lucide-react";
 import { ConfirmDialog, ImageWithFallback } from "@/components/shared";
 import { useDeleteBusinessMutation } from "@/store/api/businessMutationApi";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
-import { useTranslation } from "react-i18next";
 
 interface Business {
   _id: string;

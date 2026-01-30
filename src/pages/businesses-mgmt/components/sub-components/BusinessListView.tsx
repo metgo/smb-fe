@@ -1,5 +1,4 @@
 import clsx from "clsx";
-import { useTranslation } from "react-i18next";
 import { AlertCircle, ExternalLink } from "lucide-react";
 import { useState } from "react";
 

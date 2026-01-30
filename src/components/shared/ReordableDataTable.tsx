@@ -31,7 +31,7 @@ interface DataTableProps<T> {
   isDataLoading?: boolean;
   next?: () => void;
   hasMore?: boolean;
-  t: (key: string) => string;
+  t?: (key: string) => string;
 }
 
 export default function ReordableDataTable<T extends Record<string, any>>({
@@ -284,13 +284,14 @@ export default function ReordableDataTable<T extends Record<string, any>>({
               </tr>
             ) : sortedData?.length === 0 ? (
               // No data state
+
               <tr>
                 <td
                   colSpan={columnOrder?.length || 1}
                   className="h-32 text-center text-gray-500 dark:text-gray-400"
                 >
                   <div className="flex flex-col items-center justify-center h-full gap-2">
-                    {t("no_data")}
+                    {t ? t("no_data") : "No data available"}
                   </div>
                 </td>
               </tr>
