@@ -11,7 +11,6 @@ interface BusinessAttributesFormData {
   accessibility: string[];
   groupTypes: string[];
 }
-type View = "list" | "details" | "create" | "edit" | undefined;
 
 interface FormErrors {
   primaryCategory?: string;
