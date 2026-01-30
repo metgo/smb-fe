@@ -7,7 +7,6 @@ import themeSlice from "@/features/themeSlice";
 
 import { authApi } from "@/store/api/authApi";
 import { analyticsApi } from "@/store/api/analyticsApi";
-import { distrbOverviewApi } from "./api/distrbOverviewApi";
 import { itemStatsApi } from "./api/itemStatsApi";
 import { masterDataApi } from "./api/masterDataApi";
 import { eventMutationApi } from "./api/eventMutationApi";
@@ -27,7 +26,6 @@ export const store = configureStore({
 
     [authApi.reducerPath]: authApi.reducer,
     [analyticsApi.reducerPath]: analyticsApi.reducer,
-    [distrbOverviewApi.reducerPath]: distrbOverviewApi.reducer,
     [itemStatsApi.reducerPath]: itemStatsApi.reducer,
     [masterDataApi.reducerPath]: masterDataApi.reducer,
     [userMutationApi.reducerPath]: userMutationApi.reducer,
@@ -42,7 +40,6 @@ export const store = configureStore({
     getDefaultMiddleware().concat(
       authApi.middleware,
       analyticsApi.middleware,
-      distrbOverviewApi.middleware,
       itemStatsApi.middleware,
       masterDataApi.middleware,
 
