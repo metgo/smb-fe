@@ -197,7 +197,7 @@ export default function GAOverview() {
 
   const { dateRanges: timeframes, allWebsites } = useCommon();
   const [timeframe, setTimeframe] = useState("last30days");
-  const [selectedWebsite, setSelectedWebsite] = useState("all");
+  const [selectedWebsite, setSelectedWebsite] = useState("");
 
   // Compute startDate and endDate based on timeframe
   const { startDate, endDate } = useMemo(() => {
@@ -235,6 +235,8 @@ export default function GAOverview() {
       endDate: formatDate(today),
     };
   }, [timeframe]);
+  console.log("🚀 ~ GAOverview ~ endDate:", endDate);
+  console.log("🚀 ~ GAOverview ~ startDate:", startDate);
 
   // API call with dynamic dates
   const { data } = useGetGoogleAnalyticsViewsQuery({
@@ -242,7 +244,7 @@ export default function GAOverview() {
     endDate,
     dmoId: "",
     authorityId: "",
-    externalApiId: selectedWebsite,
+    externalApiId: selectedWebsite ? selectedWebsite : "",
   });
 
   const result = transformAnalyticsData(data);
