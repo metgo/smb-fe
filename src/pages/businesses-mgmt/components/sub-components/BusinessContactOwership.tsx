@@ -1,4 +1,4 @@
-import { useEffect, type FC } from "react";
+import { type FC } from "react";
 import { Mail, Phone, User } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
@@ -44,31 +44,11 @@ type View = "list" | "details" | "create" | "edit" | undefined;
 const BusinessContactOwership: FC<BusinessContactOwershipProps> = ({
   theme,
   isRTL,
-  business,
   formData,
   setFormData,
   errors,
-  currentView,
 }) => {
   const { t } = useTranslation("businesses");
-  useEffect(() => {
-    if (!business || currentView !== "edit") return;
-
-    setFormData({
-      email: business.busiEmail || "",
-      phone: business.phoneNumber || "",
-      contactDetails: {
-        name: business.contactDetails?.name,
-        countryCode: business.contactDetails?.countryCode,
-        phone: business.contactDetails?.phone,
-        address: business.contactDetails?.address,
-        email: business.contactDetails?.email,
-        whatsAppCountryCode: business.contactDetails?.whatsAppCountryCode,
-        whatsAppNumber: business.contactDetails?.whatsAppNumber,
-        prefferedChannel: business.contactDetails?.prefferedChannel,
-      },
-    });
-  }, [business]);
 
   return (
     <div className="space-y-6">

@@ -1,4 +1,4 @@
-import { useEffect, type FC } from "react";
+import { type FC } from "react";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { MarkerMap } from "@/components/maps";
 
@@ -54,7 +54,7 @@ const BusinessLocation: FC<BusinessLocationProps> = ({
   // errors,
   // setFormData,
   geo,
-  currentView,
+  // currentView,
   setGeo,
   address,
   setAddress,
@@ -62,30 +62,30 @@ const BusinessLocation: FC<BusinessLocationProps> = ({
 }) => {
   const { textSecondary } = useThemeClasses();
   console.log("geo", business?.geoLocation);
-  useEffect(() => {
-    if (!business || currentView !== "edit") return;
+  // useEffect(() => {
+  //   if (!business || currentView !== "edit") return;
 
-    // Set geo location
-    if (business?.geoLocation) {
-      setGeo({
-        lat: String(business.geoLocation.lat),
-        lng: String(business.geoLocation.lng),
-      });
-    }
+  //   // Set geo location
+  //   if (business?.geoLocation) {
+  //     setGeo({
+  //       lat: String(business.geoLocation.lat),
+  //       lng: String(business.geoLocation.lng),
+  //     });
+  //   }
 
-    // Set formatted address
-    if (business.address) {
-      const formatted = [
-        business.address.location,
-        business.address.city,
-        business.address.country,
-      ]
-        .filter(Boolean)
-        .join(", ");
+  //   // Set formatted address
+  //   if (business.address) {
+  //     const formatted = [
+  //       business.address.location,
+  //       business.address.city,
+  //       business.address.country,
+  //     ]
+  //       .filter(Boolean)
+  //       .join(", ");
 
-      setAddress(formatted);
-    }
-  }, [business, currentView]);
+  //     setAddress(formatted);
+  //   }
+  // }, [business, currentView]);
 
   return (
     <div className="space-y-6">

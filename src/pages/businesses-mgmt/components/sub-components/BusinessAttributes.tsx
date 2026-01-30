@@ -1,4 +1,4 @@
-import { useEffect, type FC } from "react";
+import { type FC } from "react";
 import { X } from "lucide-react";
 import { SelectableChips } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
@@ -23,12 +23,10 @@ interface BusinessAttributesProps {
   formData: BusinessAttributesFormData;
   setFormData: (data: BusinessAttributesFormData) => void;
   errors: FormErrors;
-  business: any;
   selectedGroupTypesId: string[];
   setGroupTypesId: (v: string[]) => void;
   selectedAccessiblitiesId: string[];
   setAccessiblitiesId: (v: string[]) => void;
-  currentView: View;
 }
 
 /* ---------------- Component ---------------- */
@@ -37,14 +35,12 @@ const BusinessAttributes: FC<BusinessAttributesProps> = ({
   t,
   theme,
   formData,
-  business,
   setFormData,
   errors,
   selectedGroupTypesId,
   setGroupTypesId,
   selectedAccessiblitiesId,
   setAccessiblitiesId,
-  currentView,
 }) => {
   const { textSecondary } = useThemeClasses();
   const { primaryCategories, accessibility, groupTypes } = useCommon();
@@ -70,32 +66,32 @@ const BusinessAttributes: FC<BusinessAttributesProps> = ({
       setAccessiblitiesId([...selectedAccessiblitiesId, itemId]);
     }
   };
-  useEffect(() => {
-    if (!business || currentView !== "edit") return;
 
-    // Primary category + tags
-    setFormData({
-      ...formData,
-      primaryCategory: business.primaryCategoryId || "",
-      tags: business.tags || [],
-    });
+  //   if (!business || currentView !== "edit") return;
 
-    // Group Types
-    if (Array.isArray(business.groupTypesId)) {
-      setGroupTypesId(business.groupTypesId.map((g: any) => g._id));
-    }
+  //   // Primary category + tags
+  //   setFormData({
+  //     ...formData,
+  //     primaryCategory: business.primaryCategoryId || "",
+  //     tags: business.tags || [],
+  //   });
 
-    // Accessibilities
-    if (Array.isArray(business.accessibilitiesId)) {
-      setAccessiblitiesId(business.accessibilitiesId.map((a: any) => a._id));
-    }
-  }, [
-    business,
-    setFormData,
-    setAccessiblitiesId,
-    setGroupTypesId,
-    currentView,
-  ]);
+  //   // Group Types
+  //   if (Array.isArray(business.groupTypesId)) {
+  //     setGroupTypesId(business.groupTypesId.map((g: any) => g._id));
+  //   }
+
+  //   // Accessibilities
+  //   if (Array.isArray(business.accessibilitiesId)) {
+  //     setAccessiblitiesId(business.accessibilitiesId.map((a: any) => a._id));
+  //   }
+  // }, [
+  //   business,
+  //   setFormData,
+  //   setAccessiblitiesId,
+  //   setGroupTypesId,
+  //   currentView,
+  // ]);
 
   return (
     <div className="space-y-6">

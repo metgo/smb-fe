@@ -198,6 +198,7 @@ export default function CreateBusinessWizard({
 
     if (currentView === "edit" && businessId) {
       setFormData({
+        //basic info
         nameEn: business?.name || "",
         nameHe: business?.nameHe || "",
         nameAr: business?.nameAr || "",
@@ -209,13 +210,59 @@ export default function CreateBusinessWizard({
         fullDescriptionAr: "",
         internalNotes: business?.internalNotes || "",
         slug: business?.slug || "",
+        //images
         logo: business?.logo?.image,
         images: business?.images,
+        //location
+        vendorDelivers: business.vendorDelivers ?? false,
+        pickupAvailable: business.isPickUpAvailable ?? false,
+        deliveryArea: business.deliveryArea ?? [],
+        deliveryReturnExchange: business.deliveryReturnExchange ?? [],
+        deliveryAdditionalInfo: business.deliveryAdditionalInfo ?? "",
+        deliverySpecificSellerInfo: business.deliverySpecificSellerInfo ?? [],
+        //contact
+        email: business.busiEmail || "",
+        phone: business.phoneNumber || "",
+        contactDetails: {
+          name: business.contactDetails?.name,
+          countryCode: business.contactDetails?.countryCode,
+          phone: business.contactDetails?.phone,
+          address: business.contactDetails?.address,
+          email: business.contactDetails?.email,
+          whatsAppCountryCode: business.contactDetails?.whatsAppCountryCode,
+          whatsAppNumber: business.contactDetails?.whatsAppNumber,
+          prefferedChannel: business.contactDetails?.prefferedChannel,
+        },
+        //attributes
+        primaryCategory: business.primaryCategoryId || "",
+        tags: business.tags || [],
       });
+      setAccessiblitiesId(business.accessibilitiesId.map((a: any) => a._id));
+      setGroupTypesId(business.groupTypesId.map((g: any) => g._id));
+
+      // Set geo location
+      if (business?.geoLocation) {
+        setGeo({
+          lat: String(business.geoLocation.lat),
+          lng: String(business.geoLocation.lng),
+        });
+      }
+
+      // Set formatted address
+      if (business?.address) {
+        const formatted = [
+          business.address.location,
+          business.address.city,
+          business.address.country,
+        ]
+          .filter(Boolean)
+          .join(", ");
+
+        setAddress(formatted);
+      }
+
       setSelectAuthorityId(business?.authorityId?._id || "");
-
       setSelectedDmoId(business?.dmoId?._id || "");
-
       setGalleryImages(business?.images);
       setBusinessLogoImage({ image: business?.logo?.image });
     }
