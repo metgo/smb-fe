@@ -31,6 +31,7 @@ interface BusinessListViewProps {
   next: () => void;
   hasMore: boolean;
   columnVisibility: ColumnVisibility;
+  t: (key: string) => string;
 }
 
 const USER_ROLE = "admin";
@@ -43,8 +44,8 @@ export default function BusinessListView({
   next,
   hasMore,
   columnVisibility,
+  t,
 }: BusinessListViewProps) {
-  const { t } = useTranslation("businesses");
   const { textPrimary, textSecondary } = useThemeClasses();
 
   const [error, _setError] = useState(false);
@@ -262,6 +263,7 @@ export default function BusinessListView({
           columns={columns}
           hasMore={hasMore}
           next={next}
+          t={t}
         />
       </div>
     </div>

@@ -32,6 +32,7 @@ interface GridViewProps<T> {
   next?: () => void;
   hasMore?: boolean;
   isLoading?: boolean;
+  t: (key: string) => string;
 }
 
 function BusinessGridView<T extends Business>({
@@ -41,6 +42,7 @@ function BusinessGridView<T extends Business>({
   refetch,
   hasMore,
   next,
+  t,
   isLoading = false,
 }: GridViewProps<T>) {
   const [searchParams] = useSearchParams();
@@ -54,7 +56,6 @@ function BusinessGridView<T extends Business>({
     isLoading: isLoading,
     onLoadMore: next,
   });
-  const { t } = useTranslation("businesses");
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [businessToDelete, setBusinessToDelete] = useState<string | null>(null);
   const [deleteBusiness, { isLoading: isDeleting }] =
@@ -78,10 +79,10 @@ function BusinessGridView<T extends Business>({
             theme === "dark" ? "text-gray-300" : "text-gray-700"
           }`}
         >
-          t{"no_businesses_found"}
+          {t("no_businesses_found")}
         </h3>
         <p className={theme === "dark" ? "text-gray-500" : "text-gray-600"}>
-          {"no_businesses_found_desc"}
+          {t("no_businesses_found_desc")}
         </p>
       </div>
     );

@@ -189,7 +189,6 @@ export default function BusinessesList({
   }, [page, searchTerm, filters]);
 
   useEffect(() => {
-    setBusinesses([]);
     setPage(1);
     setHasMore(true);
   }, [searchTerm, filters]);
@@ -925,8 +924,9 @@ export default function BusinessesList({
               <BusinessListView
                 theme={theme}
                 onBusinessClick={onBusinessClick}
+                t={t}
                 isLoading={isLoading}
-                businesses={businesses}
+                businesses={businesses || []}
                 next={fetchNextPage}
                 hasMore={hasMore}
                 columnVisibility={columnVisibility}
@@ -934,7 +934,8 @@ export default function BusinessesList({
             ) : (
               <div className="h-96 overflow-y-auto ">
                 <BusinessGridView
-                  data={businesses}
+                  t={t}
+                  data={businesses || []}
                   theme={theme}
                   refetch={refetch}
                   isLoading={isLoading}

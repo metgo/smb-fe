@@ -31,6 +31,7 @@ interface DataTableProps<T> {
   isDataLoading?: boolean;
   next?: () => void;
   hasMore?: boolean;
+  t: (key: string) => string;
 }
 
 export default function ReordableDataTable<T extends Record<string, any>>({
@@ -43,6 +44,7 @@ export default function ReordableDataTable<T extends Record<string, any>>({
   rowKey,
   hasMore,
   next,
+  t,
   isDataLoading = false,
 }: DataTableProps<T>) {
   console.log("🚀 ~ ReordableDataTable ~ columns:", columns);
@@ -200,6 +202,7 @@ export default function ReordableDataTable<T extends Record<string, any>>({
     onLoadMore: next,
   });
 
+  console.log("🚀 ~ ReordableDataTable ~ sortedData:", sortedData);
   return (
     <div className={`rounded-xl border ${borderColor}`}>
       {/* Scrollable container */}
@@ -287,7 +290,7 @@ export default function ReordableDataTable<T extends Record<string, any>>({
                   className="h-32 text-center text-gray-500 dark:text-gray-400"
                 >
                   <div className="flex flex-col items-center justify-center h-full gap-2">
-                    <p>No data available</p>
+                    {t("no_data")}
                   </div>
                 </td>
               </tr>
