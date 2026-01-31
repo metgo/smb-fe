@@ -213,6 +213,10 @@ body::-webkit-scrollbar,
 html {
   font-size: var(--font-size);
 }
+button {
+  cursor: pointer;
+}
+
 .ck-editor__editable {
   min-height: 180px;
 }
