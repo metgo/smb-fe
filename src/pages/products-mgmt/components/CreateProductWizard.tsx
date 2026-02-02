@@ -39,7 +39,7 @@ export default function CreateProductWizard({
   editingProduct,
   preSelectedBusinessName,
 }: ProductWizardProps) {
-  const { t, i18n } = useTranslation("product");
+  const { t, i18n } = useTranslation("products");
   const { theme } = useAppSelector((state) => state.settings);
 
   const language = i18n.language as Language;
@@ -56,16 +56,22 @@ export default function CreateProductWizard({
     useGetAllbusinessesQuery({ search: "" });
   const businesses = businessData?.data?.slice(0, 10);
 
-  const preSelectedBusinessId = preSelectedBusinessName
-    ? businesses?.find((b) => b.name === preSelectedBusinessName)?.id || ""
-    : "";
+  // const preSelectedBusinessId = preSelectedBusinessName
+  //   ? businesses?.find((b) => b.name === preSelectedBusinessName)?.id || ""
+  //   : "";
 
-  const [formData, setFormData] = useState<ProductFormData>(
+  const [businessId, setBusinessId] = useState("");
+
+  const [formData, setFormData] = useState<any>(
     editingProduct || {
-      businessId: preSelectedBusinessId,
-      name: { en: "", he: "", ar: "" },
-      shortDescription: { en: "", he: "", ar: "" },
-      fullDescription: { en: "", he: "", ar: "" },
+      businessId: businessId,
+      name: "",
+      nameHe: "",
+      nameAr: "",
+      shortDescription: "",
+      shortDescriptionHe: "",
+      shortDescriptionAr: "",
+      fullDescription: "",
       type: "",
       categories: [],
       markedPrice: "",
@@ -123,8 +129,8 @@ export default function CreateProductWizard({
     switch (step) {
       case 1:
         if (!formData.businessId) newErrors.businessId = t("field_required");
-        if (!formData.name.en) newErrors.nameEn = t("field_required");
-        if (!formData.shortDescription.en)
+        if (!formData.name) newErrors.name = t("field_required");
+        if (!formData.shortDescription)
           newErrors.shortDescEn = t("field_required");
         break;
       case 2:
@@ -175,45 +181,56 @@ export default function CreateProductWizard({
   // Draft Save Payload per Step
   const stepPayloadMap: Record<number, any> = {
     1: {
-      businessId: "6979a913004c7ccdb2f6962a",
+      businessId: formData.businessId,
       name: formData.name,
+
       shortDescription: formData.shortDescription,
-      fullDescription: formData.fullDescription,
-      type: formData.type,
-      categories: formData.categories,
-      markedPrice: formData.markedPrice,
-      sellingPrice: formData.sellingPrice,
-      quantity: formData.quantity,
-      isUnlimited: formData.isUnlimited,
+      description: formData.fullDescription,
     },
     2: {
-      markedPrice: formData.markedPrice,
-      sellingPrice: formData.sellingPrice,
-      quantity: formData.quantity,
-      isUnlimited: formData.isUnlimited,
-      startDate: formData.startDate,
-      endDate: formData.endDate,
+      // productType: formData.type,
+      productType: formData.type,
+      categories: formData.categories,
     },
     3: {
-      mainImage: formData.mainImage,
-      additionalImages: formData.additionalImages,
+      price: {
+        markedPrice: formData.markedPrice,
+        sellingPrice: formData.sellingPrice,
+      },
+      quantity: {
+        remaining: formData.quantity,
+        isUnlimited: formData.isUnlimited,
+      },
+      activeStartDate: formData.startDate,
+      activeEndDate: formData.endDate,
+      // mainImage: formData.mainImage,
+      // additionalImages: formData.additionalImages,
     },
     4: {
-      name: formData.name,
-      shortDescription: formData.shortDescription,
-      fullDescription: formData.fullDescription,
+      // name: formData.name,
+      // shortDescription: formData.shortDescription,
+      // description: formData.fullDescription,
     },
     5: {
+      nameHe: formData.nameHe,
+      shortDescriptionHe: formData.shortDescriptionHe,
+
+      nameAr: formData.nameAr,
+      shortDescriptionAr: formData.shortDescriptionAr,
+
+      // enableHomeDelivery: formData.enableHomeDelivery,
+      // enableStorePickup: formData.enableStorePickup,
+      // deliveryFee: formData.deliveryFee,
+      // deliveryTime: formData.deliveryTime,
+      // serviceDuration: formData.serviceDuration,
+      // serviceLocation: formData.serviceLocation,
+    },
+    6: {
       enableHomeDelivery: formData.enableHomeDelivery,
       enableStorePickup: formData.enableStorePickup,
-      deliveryFee: formData.deliveryFee,
-      deliveryTime: formData.deliveryTime,
-      serviceDuration: formData.serviceDuration,
-      serviceLocation: formData.serviceLocation,
     },
   };
   console.log("formData product", formData);
-  const [businessId, setBusinessId] = useState("");
   // Auto-save draft function
   const saveDraft = async (isPublish = false) => {
     try {
@@ -225,15 +242,10 @@ export default function CreateProductWizard({
         internalProductId = res?.id;
         setProductId(res?.id);
       }
-      let payload = stepPayloadMap;
-      if (!payload) return;
 
-      if (isPublish) {
-        payload = {
-          ...payload,
-        };
-      }
-      if (!Object.keys(payload).length) return;
+      // Only send payload for the current step
+      const payload = stepPayloadMap[currentStep];
+      if (!payload || !Object.keys(payload).length) return;
 
       // 4️⃣ Update product
       const res = await updateProduct({
@@ -326,7 +338,7 @@ export default function CreateProductWizard({
               {editingProduct ? t("edit_product") : t("create_product")}
             </h2>
             <p className={`text-sm ${textTertiary}`}>
-              {t("step")} {currentStep} {t("step_of")} 7:{" "}
+              {t("step")} {currentStep} {t("of")} 7:{" "}
               {steps[currentStep - 1].title}
             </p>
           </div>
@@ -340,33 +352,48 @@ export default function CreateProductWizard({
 
         {/* Progress Bar */}
         <div className={`px-6 pt-4 pb-2 border-b ${borderColor}`}>
-          <div className="flex items-center justify-between mb-2">
-            {steps.map((step, idx) => (
-              <div key={step.number} className="flex-1">
-                <div className="flex items-center">
-                  <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-all ${
-                      currentStep === step.number
-                        ? "bg-teal-500 text-white"
-                        : currentStep > step.number
-                          ? "bg-green-500 text-white"
-                          : `${bgTertiary} ${textTertiary}`
-                    }`}
-                  >
-                    {currentStep > step.number ? (
-                      <Check className="w-4 h-4" />
-                    ) : (
-                      step.number
+          <div className="flex items-start justify-between">
+            {steps.map((step, idx) => {
+              const Icon = step.icon;
+              const isActive = currentStep === step.number;
+              const isCompleted = currentStep > step.number;
+
+              return (
+                <div
+                  key={step.number}
+                  className="flex-1 cursor-pointer"
+                  onClick={() => setCurrentStep(step.number)}
+                >
+                  {/* Icon + connector */}
+                  <div className="flex items-center">
+                    <div
+                      className={`w-10 h-10 rounded-full flex items-center justify-center transition-all
+                ${
+                  isActive
+                    ? "bg-teal-500 text-white"
+                    : isCompleted
+                      ? "bg-green-500 text-white"
+                      : `${bgTertiary} ${textTertiary}`
+                }`}
+                    >
+                      {isCompleted ? (
+                        <Check className="w-5 h-5" />
+                      ) : (
+                        <Icon className="w-5 h-5" />
+                      )}
+                    </div>
+
+                    {idx < steps.length - 1 && (
+                      <div
+                        className={`flex-1 h-1 mx-2 ${
+                          isCompleted ? "bg-green-500" : bgTertiary
+                        }`}
+                      />
                     )}
                   </div>
-                  {idx < steps.length - 1 && (
-                    <div
-                      className={`flex-1 h-1 mx-2 ${currentStep > step.number ? "bg-green-500" : bgTertiary}`}
-                    />
-                  )}
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 

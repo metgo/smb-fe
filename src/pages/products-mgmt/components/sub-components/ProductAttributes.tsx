@@ -25,11 +25,11 @@ const ProductAttributes = ({
     useThemeClasses();
 
   const productTypes = [
-    { value: "physical", label: t("physical_product"), icon: "📦" },
-    { value: "table-order", label: t("table_order"), icon: "🍽️" },
-    { value: "service", label: t("service"), icon: "⚡" },
-    { value: "hotel-room", label: t("hotel_room"), icon: "🏨" },
-    { value: "experience", label: t("experience"), icon: "🎭" },
+    { value: "PHYSICAL", label: t("physical_product"), icon: "📦" },
+    { value: "TABLE_ORDER", label: t("table_order"), icon: "🍽️" },
+    { value: "SERVICE", label: t("service"), icon: "⚡" },
+    { value: "HOTEL", label: t("hotel_room"), icon: "🏨" },
+    { value: "EXPERIENCE", label: t("experience"), icon: "🎭" },
   ];
 
   return (

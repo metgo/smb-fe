@@ -2,8 +2,8 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 interface ProductDeliveryServiceProps {
   t: (key: string) => string;
-  formData: ProductFormData;
-  setFormData: (data: ProductFormData) => void;
+  formData: any;
+  setFormData: (data: any) => void;
 }
 
 const ProductDeliveryService = ({
@@ -23,7 +23,8 @@ const ProductDeliveryService = ({
   return (
     <div className="space-y-6">
       {/* Delivery Options for Physical / Table Order */}
-      {(formData.type === "physical" || formData.type === "table-order") && (
+      {(formData.productType === "PHYSICAL" ||
+        formData.productType === "TABLE-ORDER") && (
         <>
           <h3 className={`text-lg font-medium ${textPrimary}`}>
             {t("delivery_options")}
@@ -119,7 +120,8 @@ const ProductDeliveryService = ({
       )}
 
       {/* Service / Experience Details */}
-      {(formData.type === "service" || formData.type === "experience") && (
+      {(formData.productType === "service" ||
+        formData.productType === "experience") && (
         <>
           <h3 className={`text-lg font-medium ${textPrimary}`}>
             {t("service_details")}
@@ -159,7 +161,7 @@ const ProductDeliveryService = ({
       )}
 
       {/* Hotel Room Info */}
-      {formData.type === "hotel-room" && (
+      {formData.productType === "hotel-room" && (
         <div className={`p-6 rounded-xl ${bgTertiary} text-center`}>
           <p className={`${textSecondary}`}>{t("hotel_room_info")}</p>
         </div>

@@ -7,9 +7,9 @@ interface ProductBasicInfoProps {
   setSelectedFormLanguage: (lang: "en" | "he" | "ar") => void;
   formData: {
     businessId: string;
-    name: Record<string, string>;
-    shortDescription: Record<string, string>;
-    fullDescription: Record<string, string>;
+    name: string;
+    shortDescription: string;
+    fullDescription: string;
   };
   setBusinessId: (data: string) => void;
   setFormData: (data: any) => void;
@@ -79,13 +79,11 @@ const ProductBasicInfo = ({
               ...formData,
               businessId: selectedBusinessId,
             });
-
-            setBusinessId(selectedBusinessId); // 👈 send ID here
+            setBusinessId(selectedBusinessId);
           }}
           className={`w-full px-4 py-3 rounded-lg border ${borderColor} ${bgTertiary} ${textPrimary}`}
         >
           <option value="">{t("select_business")}</option>
-
           {businesses?.map((biz) => (
             <option key={biz._id} value={biz._id}>
               {biz.name}
@@ -125,17 +123,17 @@ const ProductBasicInfo = ({
         </label>
         <input
           type="text"
-          value={formData.name[getFieldKey("name")]}
+          value={formData.name}
           onChange={(e) =>
             setFormData({
               ...formData,
-              name: { ...formData.name, [getFieldKey("name")]: e.target.value },
+              name: e.target.value,
             })
           }
           className={`w-full px-4 py-3 rounded-lg border ${borderColor} ${bgTertiary} ${textPrimary}`}
           placeholder={getPlaceholder("name")}
-          dir={selectedFormLanguage === "en" ? "ltr" : "rtl"}
         />
+
         {errors.nameEn && selectedFormLanguage === "en" && (
           <p className="text-red-500 text-sm mt-1">{errors.nameEn}</p>
         )}
@@ -147,22 +145,19 @@ const ProductBasicInfo = ({
           {t("product_short_description")} *
         </label>
         <textarea
-          value={formData.shortDescription[getFieldKey("shortDescription")]}
+          value={formData.shortDescription}
           onChange={(e) =>
             setFormData({
               ...formData,
-              shortDescription: {
-                ...formData.shortDescription,
-                [getFieldKey("shortDescription")]: e.target.value,
-              },
+              shortDescription: e.target.value,
             })
           }
           rows={3}
+          maxLength={160}
           className={`w-full px-4 py-3 rounded-lg border ${borderColor} ${bgTertiary} ${textPrimary}`}
           placeholder={getPlaceholder("short")}
-          maxLength={160}
-          dir={selectedFormLanguage === "en" ? "ltr" : "rtl"}
         />
+
         {errors.shortDescEn && selectedFormLanguage === "en" && (
           <p className="text-red-500 text-sm mt-1">{errors.shortDescEn}</p>
         )}
@@ -174,20 +169,16 @@ const ProductBasicInfo = ({
           {t("product_full_description")}
         </label>
         <textarea
-          value={formData.fullDescription[getFieldKey("fullDescription")]}
+          value={formData.fullDescription}
           onChange={(e) =>
             setFormData({
               ...formData,
-              fullDescription: {
-                ...formData.fullDescription,
-                [getFieldKey("fullDescription")]: e.target.value,
-              },
+              fullDescription: e.target.value,
             })
           }
           rows={6}
           className={`w-full px-4 py-3 rounded-lg border ${borderColor} ${bgTertiary} ${textPrimary}`}
           placeholder={getPlaceholder("full")}
-          dir={selectedFormLanguage === "en" ? "ltr" : "rtl"}
         />
       </div>
     </div>

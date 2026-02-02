@@ -74,7 +74,7 @@ export default function ProductsMgmtPage() {
   };
   const {
     data: productData,
-    isLoading: loading,
+    isLoading: isLoadingProduct,
     refetch,
   } = useGetAllProductsQuery({ search: searchTerm });
 
@@ -83,7 +83,7 @@ export default function ProductsMgmtPage() {
     {
       key: "images",
       label: t("product_image"),
-      render: (product) => (
+      render: (product: any) => (
         <div className="w-12 h-12 rounded-lg bg-linear-to-br from-blue-500 to-indigo-600 flex items-center justify-center overflow-hidden">
           {product.image ? (
             <img
@@ -113,30 +113,30 @@ export default function ProductsMgmtPage() {
     {
       key: "businessId",
       label: t("business_name"),
-      render: (p) => p.businessId?.name,
+      render: (product: any) => product.businessId?.name,
     },
     {
       key: "productType",
       label: t("product_type"),
-      render: (p) => p.productType,
+      render: (product: any) => product.productType,
     },
     {
       key: "status",
       label: t("product_status"),
-      render: (p) => p.status,
+      render: (product: any) => product.status,
     },
     {
       key: "price",
       label: t("price"),
       sortable: true,
-      render: (p) => (
+      render: (product: any) => (
         <div>
-          {p.price?.markedPrice !== p.price?.sellingPrice && (
+          {product.price?.markedPrice !== product.price?.sellingPrice && (
             <div className="text-xs text-gray-400 line-through">
-              ₪{p.markedPrice}
+              ₪{product.markedPrice}
             </div>
           )}
-          <div className="font-medium">₪{p.price?.markedPrice}</div>
+          <div className="font-medium">₪{product.price?.markedPrice}</div>
         </div>
       ),
     },
@@ -144,28 +144,28 @@ export default function ProductsMgmtPage() {
       key: "impact",
       label: t("impact"),
       sortable: true,
-      render: (p) => <div className="">{p.impact}</div>,
+      render: (product: any) => <div className="">{product.impact}</div>,
     },
     {
       key: "quantity",
       label: t("quantity"),
       sortable: true,
-      render: (p) => p.quantity?.sold,
+      render: (product: any) => product.quantity?.sold,
     },
     {
       key: "updatedAt",
       label: t("last_updated"),
       sortable: true,
-      render: (p) => (
+      render: (product: any) => (
         <div className={`p-3 ${themeColor.textTertiary} text-sm`}>
-          {new Date(p.updatedAt).toLocaleDateString(language)}
+          {new Date(product.updatedAt).toLocaleDateString(language)}
         </div>
       ),
     },
     {
       key: "actions",
       label: t("actions"),
-      render: (product) => (
+      render: (product: any) => (
         <button
           onClick={(e) => {
             e.stopPropagation();
@@ -433,6 +433,7 @@ export default function ProductsMgmtPage() {
                 >
                   <ReordableDataTable
                     rowKey="id"
+                    isDataLoading={isLoadingProduct}
                     data={productData?.data}
                     selectedItems={selectedProducts}
                     onSelectionChange={setSelectedProducts}
@@ -444,7 +445,7 @@ export default function ProductsMgmtPage() {
               ) : (
                 // Grid View
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                  {productData?.data?.map((product) => (
+                  {productData?.data?.map((product: any) => (
                     <div
                       key={product.id}
                       onClick={() => {

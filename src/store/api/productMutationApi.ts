@@ -10,9 +10,10 @@ export const productMutationApi = createApi({
   endpoints: (builder) => ({
     initProductCreate: builder.mutation<any, { businessId: string }>({
       query: ({ businessId }) => ({
-        url: `${endpoints.products}/${businessId}`,
+        url: `${endpoints.products}`,
         method: "POST",
         data: {
+          businessId,
           name: "",
         },
       }),
