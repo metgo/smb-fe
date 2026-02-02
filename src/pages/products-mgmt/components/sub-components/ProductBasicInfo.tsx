@@ -18,7 +18,7 @@ interface ProductBasicInfoProps {
     nameEn?: string;
     shortDescEn?: string;
   };
-  businesses: { id: string; name: string }[];
+  businesses: { _id: string; name: string }[];
   isBusinessesLoading: boolean;
 }
 
