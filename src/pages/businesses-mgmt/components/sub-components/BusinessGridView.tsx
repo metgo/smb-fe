@@ -1,6 +1,5 @@
 import { toast } from "sonner";
 import { useRef, useState } from "react";
-import { useSearchParams } from "react-router-dom";
 import { AlertCircle, MapPin, Phone, TrashIcon } from "lucide-react";
 
 import { ConfirmDialog, ImageWithFallback } from "@/components/shared";
@@ -24,7 +23,7 @@ interface Business {
 }
 
 interface GridViewProps<T> {
-  data: T[];
+  data: any[];
   onRowClick?: (item: T) => void;
   theme: "dark" | "light";
   refetch: () => void;
@@ -44,8 +43,6 @@ function BusinessGridView<T extends Business>({
   t,
   isLoading = false,
 }: GridViewProps<T>) {
-  const [searchParams] = useSearchParams();
-  const businessId = searchParams.get("businessId") ?? ""; // fallback to empty string
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
   //scroll on list view works on grid view by caching but if user opens grid view directly it doesnt so for that
@@ -59,8 +56,9 @@ function BusinessGridView<T extends Business>({
   const [businessToDelete, setBusinessToDelete] = useState<string | null>(null);
   const [deleteBusiness, { isLoading: isDeleting }] =
     useDeleteBusinessMutation();
-  const handleBusinessDelete = async (businessId: string) => {
-    const res = await deleteBusiness({ businessId });
+
+  const handleBusinessDelete = async (slug: string) => {
+    const res = await deleteBusiness({ slug });
     toast.success(res?.data?.message || "Business deleted successfully");
     refetch();
   };
@@ -110,7 +108,7 @@ function BusinessGridView<T extends Business>({
                 onClick={(e) => {
                   e.stopPropagation();
                   setIsConfirmOpen(true);
-                  setBusinessToDelete(businessId);
+                  setBusinessToDelete(business?.slug);
                 }}
                 className="absolute top-2 right-2 z-5 p-1 cursor-pointer rounded-full text-red-600 bg-white"
                 aria-label={`Delete ${business.name}`}

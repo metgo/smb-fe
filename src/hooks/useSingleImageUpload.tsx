@@ -101,7 +101,6 @@ export const useSingleImageUpload = ({
     }
     setImage(null);
     onChange(null);
-    console.log("I'm from remove Image");
   };
 
   const handleDeleteImage = (

@@ -31,11 +31,14 @@ interface BusinessListViewProps {
   hasMore: boolean;
   columnVisibility: ColumnVisibility;
   t: (key: string) => string;
+  selectedBusinesses: Set<string>;
+  setSelectedBusinesses: (v: Set<string>) => void;
 }
 
 const USER_ROLE = "admin";
 
 export default function BusinessListView({
+  t,
   theme,
   isLoading,
   businesses,
@@ -43,14 +46,12 @@ export default function BusinessListView({
   next,
   hasMore,
   columnVisibility,
-  t,
+  selectedBusinesses,
+  setSelectedBusinesses,
 }: BusinessListViewProps) {
   const { textPrimary, textSecondary } = useThemeClasses();
 
   const [error, _setError] = useState(false);
-  const [selectedBusinesses, setSelectedBusinesses] = useState<Set<string>>(
-    new Set(),
-  );
 
   // Permission check
   const canChangeStatus = ["superadmin", "admin", "dmo", "authority"].includes(

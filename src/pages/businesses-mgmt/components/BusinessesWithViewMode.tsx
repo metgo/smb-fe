@@ -4,9 +4,7 @@ import {
   Download,
   ChevronDown,
   ChevronUp,
-  Archive,
   CheckCircle,
-  XCircle,
   AlertCircle,
   Columns,
   UtensilsCrossed,
@@ -19,7 +17,12 @@ import { useState, useEffect, useMemo, useRef } from "react";
 import { useAppSelector } from "@/hooks/hooks";
 import { FilterButton } from "@/components/btns";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { PageHeader, PageStats, ViewModeToggle } from "@/components/shared";
+import {
+  BulkActionBar,
+  PageHeader,
+  PageStats,
+  ViewModeToggle,
+} from "@/components/shared";
 import {
   useGetAllbusinessesQuery,
   useGetBusinessStatsQuery,
@@ -27,14 +30,17 @@ import {
 import { useCommon } from "@/hooks/useCommon";
 import BusinessGridView from "./sub-components/BusinessGridView";
 import { BusinessListView } from "./sub-components";
+import { toast } from "sonner";
+import {
+  useDeleteBusinessMutation,
+  useUpdateBusinessMutation,
+} from "@/store/api/businessMutationApi";
 
 interface BusinessesListProps {
   theme: Theme;
   onBusinessClick: (business: any) => void;
   onCreateNew: () => void;
 }
-
-const USER_ROLE = "admin";
 
 // Column configuration
 const defaultColumns = {
@@ -84,6 +90,8 @@ export default function BusinessesList({
   const { dmosAuthorities } = useCommon();
   const { isRTL } = useAppSelector((state) => state.settings);
   const { data: businessStatsData } = useGetBusinessStatsQuery({});
+  const [updateBusiness] = useUpdateBusinessMutation();
+  const [deleteBusiness] = useDeleteBusinessMutation();
 
   //infinite scroll states
   const [page, setPage] = useState<number>(1);
@@ -106,7 +114,6 @@ export default function BusinessesList({
   const columnSettingsRef = useRef<HTMLDivElement>(null);
   const [columnVisibility, setColumnVisibility] =
     useState<ColumnVisibility>(defaultColumns);
-  console.log("🚀 ~ BusinessesList ~ columnVisibility:", columnVisibility);
 
   // Filters
   const [filters, setFilters] = useState({
@@ -210,9 +217,7 @@ export default function BusinessesList({
   }, [businessData, page]);
 
   const fetchNextPage = () => {
-    if (!hasMore) {
-      return;
-    }
+    if (!hasMore) return;
     setPage((prev) => {
       return prev + 1;
     });
@@ -223,20 +228,50 @@ export default function BusinessesList({
     setColumnVisibility(defaultColumns);
   };
 
-  // Bulk actions
-  const handleBulkApprove = () => {
-    console.log("Bulk approve:", Array.from(selectedBusinesses));
-    setSelectedBusinesses(new Set());
+  const handleBulkDelete = async () => {
+    if (!selectedBusinesses.size) return;
+    const toastId = toast.loading("Please wait. Businesses are deleting...");
+    try {
+      const results = await Promise.all(
+        Array.from(selectedBusinesses).map((businessId: string) =>
+          deleteBusiness({ slug: businessId }),
+        ),
+      );
+
+      const message =
+        results[0]?.data?.message || "Businesses deleted successfully";
+      toast.success(message, { id: toastId });
+      setSelectedBusinesses(new Set());
+      refetch();
+    } catch (error: any) {
+      toast.error(error?.message || "Failed to delete Businesses");
+    }
   };
 
-  const handleBulkReject = () => {
-    console.log("Bulk reject:", Array.from(selectedBusinesses));
-    setSelectedBusinesses(new Set());
-  };
+  const handleBulkStatusChange = async (status: TStatus) => {
+    if (!selectedBusinesses.size) return;
+    const toastId = toast.loading(
+      "Please wait. Businesses's status are changing...",
+    );
 
-  const handleBulkArchive = () => {
-    console.log("Bulk archive:", Array.from(selectedBusinesses));
-    setSelectedBusinesses(new Set());
+    try {
+      const results = await Promise.all(
+        Array.from(selectedBusinesses).map((businessId: string) =>
+          updateBusiness({
+            businessId,
+            body: { status: status?.toUpperCase() },
+          }),
+        ),
+      );
+      const message = results[0]?.data?.message;
+      toast.success(message, { id: toastId });
+      setSelectedBusinesses(new Set());
+      refetch();
+    } catch (error: any) {
+      toast.error(error?.message || "Failed to change Businesses status", {
+        id: toastId,
+      });
+    }
   };
 
   const handleExport = () => {
@@ -399,10 +434,6 @@ export default function BusinessesList({
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
   };
-
-  const canChangeStatus = ["superadmin", "admin", "dmo", "authority"].includes(
-    USER_ROLE,
-  );
 
   // Mock calculation based on products count and impact score
   const getTripCount = (business: any): number => {
@@ -877,59 +908,28 @@ export default function BusinessesList({
             </div>
           )}
 
-          {/* Bulk Actions Bar */}
-          {selectedBusinesses.size > 0 && canChangeStatus && (
-            <div
-              className={`px-6 py-3 border-t flex items-center justify-between ${
-                theme === "dark"
-                  ? "border-gray-800 bg-teal-900/20"
-                  : "border-gray-200 bg-teal-50"
-              }`}
-            >
-              <span
-                className={`text-sm ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}
-              >
-                {selectedBusinesses.size} {t("selected")}
-              </span>
-
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={handleBulkApprove}
-                  className="px-3 py-1.5 text-sm bg-green-600 hover:bg-green-700 text-white rounded transition-colors flex items-center gap-1"
-                >
-                  <CheckCircle className="w-4 h-4" />
-                  {t("approve")}
-                </button>
-                <button
-                  onClick={handleBulkReject}
-                  className="px-3 py-1.5 text-sm bg-red-600 hover:bg-red-700 text-white rounded transition-colors flex items-center gap-1"
-                >
-                  <XCircle className="w-4 h-4" />
-                  {t("reject")}
-                </button>
-                <button
-                  onClick={handleBulkArchive}
-                  className="px-3 py-1.5 text-sm bg-gray-600 hover:bg-gray-700 text-white rounded transition-colors flex items-center gap-1"
-                >
-                  <Archive className="w-4 h-4" />
-                  {t("archive")}
-                </button>
-              </div>
-            </div>
-          )}
+          <BulkActionBar
+            selectedItemCount={selectedBusinesses.size || 0}
+            handleBulkStatusChange={handleBulkStatusChange}
+            onBulkAction={{
+              delete: handleBulkDelete,
+            }}
+          />
         </div>
         <div className="flex-1 overflow-y-auto">
           <div className="">
             {viewMode === "list" ? (
               <BusinessListView
+                t={t}
                 theme={theme}
                 onBusinessClick={onBusinessClick}
-                t={t}
                 isLoading={isLoading}
                 businesses={businesses || []}
                 next={fetchNextPage}
                 hasMore={hasMore}
                 columnVisibility={columnVisibility}
+                selectedBusinesses={selectedBusinesses}
+                setSelectedBusinesses={setSelectedBusinesses}
               />
             ) : (
               <div className="h-96 overflow-y-auto ">

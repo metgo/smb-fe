@@ -7,12 +7,6 @@ import { axiosBaseQuery } from "./axiosBaseQuery";
 export type BusinessStepPayload =
   | BusinessBasicInfoPayload
   | BusinessContactPayload;
-// | BusinessLocationPayload
-// | BusinessCategoriesPayload
-// | BusinessMediaPayload
-// | BusinessHoursPayload
-// | BusinessDeliveryPayload
-// | BusinessSocialMediaPayload;
 
 /* ---------------- API ---------------- */
 export const businessMutationApi = createApi({
@@ -28,9 +22,9 @@ export const businessMutationApi = createApi({
       }),
       invalidatesTags: ["Business"],
     }),
-    deleteBusiness: builder.mutation<any, { businessId: string }>({
-      query: ({ businessId }) => ({
-        url: `${endpoints.business}/${businessId}`,
+    deleteBusiness: builder.mutation<any, { slug: string }>({
+      query: ({ slug }) => ({
+        url: `${endpoints.business}/${slug}`,
         method: "DELETE",
       }),
     }),

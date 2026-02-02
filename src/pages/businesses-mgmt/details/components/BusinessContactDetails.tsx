@@ -73,8 +73,7 @@ const BusinessContactDetails: FC<BusinessContactDetailsProps> = ({
             theme={theme}
             USER_ROLE={USER_ROLE}
             // currentOwner={business?.owner}
-            onOwnerChange={(ownerData) => {
-              console.log("🚀 ~ BusinessDetails ~ ownerData:", ownerData);
+            onOwnerChange={(_) => {
               setShowChangeOwnerModal(false);
             }}
           />

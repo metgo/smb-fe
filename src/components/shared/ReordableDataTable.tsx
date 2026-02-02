@@ -49,8 +49,6 @@ export default function ReordableDataTable<T extends Record<string, any>>({
   t,
   isDataLoading = false,
 }: DataTableProps<T>) {
-  console.log("🚀 ~ ReordableDataTable ~ columns:", columns);
-
   const { theme, isRTL } = useAppSelector((state) => state.settings);
   const { bgTertiary, borderColor, textSecondary, textPrimary, hoverBg } =
     useThemeClasses();
@@ -85,7 +83,6 @@ export default function ReordableDataTable<T extends Record<string, any>>({
     return columns.map((c) => c.key as string);
   });
 
-  console.log("🚀 ~ ReordableDataTable ~ columnOrder:", columnOrder);
   const [sortField, setSortField] = useState<keyof T | null>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>(null);
 
@@ -205,7 +202,6 @@ export default function ReordableDataTable<T extends Record<string, any>>({
     onLoadMore: next,
   });
 
-  console.log("🚀 ~ ReordableDataTable ~ sortedData:", sortedData);
   return (
     <div className={`rounded-xl border ${borderColor}`}>
       {/* Scrollable container */}
