@@ -477,6 +477,7 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
                   rowKey="id"
                   data={filteredRegistrants}
                   onRowClick={(item) => setSelectedRegistrant?.(item)}
+                  t={t}
                   storageKey="registrantsTableColumnOrder"
                   columns={[
                     {

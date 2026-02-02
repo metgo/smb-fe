@@ -255,7 +255,6 @@ const NotificationsTimeline: React.FC<NotificationsTimelineProps> = ({
         }}
         onConfirm={async () => {
           if (notificationToDelete === null) return;
-          console.log("notivications", notifications);
           setNotifications((prev) =>
             prev.filter((n) => n.index !== notificationToDelete),
           );

@@ -39,6 +39,7 @@ import {
 import { ModalWrapper } from "@/components/wrapper";
 import { useEventDraftSaver } from "../hooks/useEventDraftSaver";
 import { useImagesUpload } from "@/hooks/useImagesUpload";
+import { PublishButton } from "@/components/btns";
 import { formatToBackendTemplate } from "@/helpers/formatter";
 import { useCreateWebsiteAccessItemMutation } from "@/store/api/commonMutationApi";
 
@@ -55,7 +56,6 @@ export default function CreateEventWizard({
   theme,
 }: CreateEventWizardProps) {
   const { t } = useTranslation("events");
-  const { t: tc } = useTranslation("common");
 
   const [searchParams] = useSearchParams();
   const { textPrimary, textTertiary, rowDir } = useThemeClasses();
@@ -631,23 +631,7 @@ export default function CreateEventWizard({
               )}
             </span>
           )}
-          <button
-            onClick={handlePublish}
-            disabled={isPublishing}
-            className="px-6 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white transition-colors flex items-center gap-2 cursor-pointer"
-          >
-            {isPublishing ? (
-              <>
-                <Loader className="w-4 h-4 animate-spin" />
-                {tc("publishing")}
-              </>
-            ) : (
-              <>
-                <CheckCircle className="w-4 h-4" />
-                {tc("publish")}
-              </>
-            )}
-          </button>
+          <PublishButton onClick={handlePublish} isLoading={isPublishing} />
         </div>
       </div>
 

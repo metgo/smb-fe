@@ -1,4 +1,4 @@
-import BusinessesList from "./BusinessesList";
+import BusinessesWithViewMode from "./BusinessesWithViewMode";
 import CreateBusinessWizard from "./CreateBusinessWizard";
 
-export { BusinessesList, CreateBusinessWizard };
+export { BusinessesWithViewMode, CreateBusinessWizard };

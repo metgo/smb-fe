@@ -51,7 +51,6 @@ const CreateTicketWizard = ({
   ticketDateTime,
   setTicketDateTime,
 }: CreateTicketWizardProps) => {
-  console.log("🚀 ~ CreateTicketWizard ~ editingTicket:", editingTicket);
   const { t } = useTranslation("events");
   const { textPrimary, textSecondary, inputClasses, textTertiary, rowDir } =
     useThemeClasses();
@@ -67,7 +66,6 @@ const CreateTicketWizard = ({
     sellingPrice?: string;
   }>({ ticketDays: [] });
   const [ticketImage, setTicketImage] = useState<IImage | null>(null);
-  console.log("🚀 ~ CreateTicketWizard ~ ticketImage:", ticketImage);
 
   const isPaidOrVip = ["paid", "vip"].includes(
     editingTicket?.type?.toLowerCase() || "",

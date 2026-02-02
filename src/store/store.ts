@@ -10,6 +10,8 @@ import { analyticsApi } from "@/store/api/analyticsApi";
 import { itemStatsApi } from "./api/itemStatsApi";
 import { masterDataApi } from "./api/masterDataApi";
 import { eventMutationApi } from "./api/eventMutationApi";
+import { businessMutationApi } from "./api/businessMutationApi";
+import { businessQueryApi } from "./api/businessQueryApi";
 import { eventQueryApi } from "./api/eventQueryApi";
 import { userMutationApi } from "./api/userMutationApi";
 import { userQueryApi } from "./api/userQueryApi";
@@ -27,12 +29,14 @@ export const store = configureStore({
     [authApi.reducerPath]: authApi.reducer,
     [analyticsApi.reducerPath]: analyticsApi.reducer,
     [itemStatsApi.reducerPath]: itemStatsApi.reducer,
+    [businessMutationApi.reducerPath]: businessMutationApi.reducer,
     [masterDataApi.reducerPath]: masterDataApi.reducer,
     [userMutationApi.reducerPath]: userMutationApi.reducer,
     [eventMutationApi.reducerPath]: eventMutationApi.reducer,
     [mediaMutationApi.reducerPath]: mediaMutationApi.reducer,
     [commonMutationApi.reducerPath]: commonMutationApi.reducer,
 
+    [businessQueryApi.reducerPath]: businessQueryApi.reducer,
     [eventQueryApi.reducerPath]: eventQueryApi.reducer,
     [userQueryApi.reducerPath]: userQueryApi.reducer,
   },
@@ -42,12 +46,12 @@ export const store = configureStore({
       analyticsApi.middleware,
       itemStatsApi.middleware,
       masterDataApi.middleware,
-
       userMutationApi.middleware,
       eventMutationApi.middleware,
-
+      businessMutationApi.middleware,
       eventQueryApi.middleware,
       userQueryApi.middleware,
+      businessQueryApi.middleware,
       mediaMutationApi.middleware,
       commonMutationApi.middleware,
     ),

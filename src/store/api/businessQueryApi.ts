@@ -3,16 +3,13 @@ import { axiosBaseQuery } from "./axiosBaseQuery";
 import { endpoints } from "@/lib/endpoints";
 
 interface BusinessStatsParams {
-  startDate?: string;
-  endDate?: string;
-  dmoId?: string;
-  authorityId?: string;
-  businessId?: string;
-  minPrice?: string;
-  maxPrice?: string;
-  status?: string;
+  totalBusinesses?: number;
+  activeBusinesses?: number;
+  totalProducts?: number;
+  averageImpactScore?: number;
+  pendingApproval?: number;
+  averageCompletion?: number;
 }
-
 interface BusinessListParams {
   page?: string;
   limit?: string;
@@ -44,15 +41,31 @@ export const businessQueryApi = createApi({
 
     getBusinessStats: builder.query<any, BusinessStatsParams>({
       query: (params) => ({
-        url: endpoints.businessStats,
+        url: endpoints.businessStatDashboard,
         method: "GET",
         params,
       }),
     }),
 
+    getIndividualBusinessStats: builder.query<
+      any,
+      { businessId: string | null }
+    >({
+      query: ({ businessId }) => ({
+        url: `${endpoints.businessStatDashboard}/${businessId}`,
+        method: "GET",
+      }),
+    }),
     getbusinessById: builder.query<any, { businessId: string | null }>({
       query: ({ businessId }) => ({
         url: `${endpoints.business}/${businessId}`,
+        method: "GET",
+      }),
+    }),
+
+    getbusinessBySlug: builder.query<any, { slug: string | null }>({
+      query: ({ slug }) => ({
+        url: `${endpoints.business}/${slug}`,
         method: "GET",
       }),
     }),
@@ -62,5 +75,8 @@ export const businessQueryApi = createApi({
 export const {
   useGetAllbusinessesQuery,
   useGetBusinessStatsQuery,
+  useLazyGetIndividualBusinessStatsQuery,
   useGetbusinessByIdQuery,
+  useGetbusinessBySlugQuery,
+  useGetIndividualBusinessStatsQuery,
 } = businessQueryApi;

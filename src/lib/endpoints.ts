@@ -24,12 +24,13 @@ export const endpoints = {
   subCategories: "admin/buss-sub-category",
   accessibility: "/admin/accessibility",
   groupType: "/admin/group-type",
-
   dmos: "/dmos",
+  changeOwner: "/admin/businesses/assign-user/",
 
   // business
-  business: "/business",
+  business: "/businesses",
   businesses: "/businesses",
+  businessStatDashboard: "/businesses-stat",
 
   // events
   events: "/events",
@@ -37,7 +38,7 @@ export const endpoints = {
 
   users: "/users",
   userInfo: "/users/me",
-
+  userAdmin: "/users/admin",
   tickets: "/tickets",
 
   // Media
@@ -45,6 +46,7 @@ export const endpoints = {
   mediaFileDelete: "/media",
 
   websites: "/websites",
+  socialmedia: "admin/social-media",
   websiteAccessItem: "/websites/access-items",
 
   googleMap: "https://maps.googleapis.com/maps/api/js",

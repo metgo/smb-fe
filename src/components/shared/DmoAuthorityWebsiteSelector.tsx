@@ -151,15 +151,35 @@ export default function DmoAuthorityWebsiteSelector({
 
     return (
       <div>
-        <label className="block mb-1 font-medium">{title}</label>
-
+        <label
+          className={`block text-sm mb-2 ${
+            theme === "dark" ? "text-gray-300" : "text-gray-700"
+          }`}
+        >
+          {title}
+        </label>
         <div className="grid grid-cols-4 gap-2 mt-2">
           {/* Select All */}
-          <label className="flex items-center gap-2 cursor-pointer border rounded p-2 text-gray-600">
+          <label
+            className={`flex items-center gap-2 cursor-pointer border rounded p-2
+            ${
+              theme === "dark"
+                ? "border-gray-700 bg-gray-900 text-gray-300"
+                : "border-gray-300 bg-white text-gray-700"
+            }
+          `}
+          >
             <input
               type="checkbox"
               checked={allSelected}
               onChange={() => toggleAll(allKey, selectedKey)}
+              className={`rounded
+                ${
+                  theme === "dark"
+                    ? "bg-gray-900 border-gray-700 accent-teal-500"
+                    : "bg-white border-gray-300 accent-teal-600"
+                }
+              `}
             />
             <Globe className="h-6 w-6" />
             <span>{t("all")}</span>
@@ -169,19 +189,32 @@ export default function DmoAuthorityWebsiteSelector({
           {websites?.map((item) => (
             <label
               key={item._id}
-              className="flex items-center gap-2 cursor-pointer border rounded p-2"
+              className={`flex items-center gap-2 cursor-pointer border rounded p-2
+      ${
+        theme === "dark"
+          ? "border-gray-700 bg-gray-900 text-gray-300"
+          : "border-gray-300 bg-white text-gray-700"
+      }
+    `}
             >
               <input
                 type="checkbox"
                 checked={websiteVisibilityIds[selectedKey].includes(item._id)}
                 onChange={() => toggleId(item._id, selectedKey)}
+                className={`rounded
+                ${
+                  theme === "dark"
+                    ? "bg-gray-900 border-gray-700 accent-teal-500"
+                    : "bg-white border-gray-300 accent-teal-600"
+                }
+              `}
               />
               <img
                 src={item.logo}
                 alt={item.name}
                 className="w-8 h-8 object-contain"
               />
-              <span className="text-gray-600">{item.name}</span>
+              <span>{item.name}</span>
             </label>
           ))}
         </div>

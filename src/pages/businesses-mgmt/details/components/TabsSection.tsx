@@ -45,7 +45,7 @@ const TabsSection = ({
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`px-4 py-2 rounded-t-lg flex items-center gap-2 whitespace-nowrap transition-colors ${
+            className={`px-4 py-2 cursor-pointer rounded-t-lg flex items-center gap-2 whitespace-nowrap transition-colors ${
               activeTab === tab.id
                 ? theme === "dark"
                   ? "bg-gray-800 text-teal-400 border-b-2 border-teal-500"
