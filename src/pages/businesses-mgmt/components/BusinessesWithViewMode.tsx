@@ -1,6 +1,5 @@
 import { useTranslation } from "react-i18next";
 import {
-  Search,
   Download,
   ChevronDown,
   ChevronUp,
@@ -31,6 +30,7 @@ import BusinessGridView from "./sub-components/BusinessGridView";
 import { BusinessListView } from "./sub-components";
 import { toast } from "sonner";
 import { useBulkBusinessesUpdateMutation } from "@/store/api/businessMutationApi";
+import SearchInput from "@/components/shared/SearchInput";
 
 interface BusinessesListProps {
   theme: Theme;
@@ -112,7 +112,7 @@ export default function BusinessesList({
     dmoId,
     authorityId,
     status: "all",
-    hasProductFilter: "",
+    hasProductFilter: "all",
   });
 
   const clearFilter = () => {
@@ -120,7 +120,7 @@ export default function BusinessesList({
       authorityId: "",
       dmoId: "",
       status: "all",
-      hasProductFilter: "",
+      hasProductFilter: "all",
     });
   };
 
@@ -192,6 +192,7 @@ export default function BusinessesList({
 
   const {
     data: businessData,
+    isFetching,
     isLoading,
     refetch,
   } = useGetAllbusinessesQuery(queryParams);
@@ -207,7 +208,7 @@ export default function BusinessesList({
   }, [businessData, page]);
 
   const fetchNextPage = () => {
-    if (!hasMore) return;
+    if (!hasMore || isFetching) return;
     setPage((prev) => {
       return prev + 1;
     });
@@ -519,21 +520,12 @@ export default function BusinessesList({
           <div className="py-4 flex flex-col lg:flex-row gap-3">
             {/* Search */}
             <div className="flex-1 relative">
-              <Search
-                className={`absolute ${isRTL ? "right-3" : "left-3"} top-1/2 -translate-y-1/2 w-5 h-5 ${
-                  theme === "dark" ? "text-gray-500" : "text-gray-400"
-                }`}
-              />
-              <input
-                type="text"
+              <SearchInput
                 placeholder={t("search_businesses_placeholder")}
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className={`w-full ${isRTL ? "pr-10 pl-4" : "pl-10 pr-4"} py-2 rounded-lg border ${
-                  theme === "dark"
-                    ? "bg-gray-800 border-gray-700 text-gray-200 placeholder-gray-500"
-                    : "bg-white border-gray-300 text-gray-900 placeholder-gray-400"
-                } focus:outline-none focus:ring-2 focus:ring-teal-500`}
+                searchTerm={searchTerm}
+                setSearchTerm={setSearchTerm}
+                isRTL={isRTL}
+                theme={theme}
               />
             </div>
 
@@ -689,7 +681,7 @@ export default function BusinessesList({
                   : "border-gray-200 bg-gray-50"
               }`}
             >
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 ml-4 mt-4">
                 {/* Status Filter */}
                 <div>
                   <label
