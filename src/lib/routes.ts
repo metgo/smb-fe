@@ -10,11 +10,9 @@ export const routes = {
   trips: "/trips",
   eventsMgmt: "/events-management",
   funDays: "/fun-days",
-
   vouchers: "/vouchers",
   offlineVouchers: "/offline-vouchers",
   miniCampaign: "/mini-campaign",
-
   auth: "/authentication",
   miniSite: "/mini-site",
   profile: "/profile",

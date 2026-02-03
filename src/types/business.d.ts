@@ -8,13 +8,23 @@ interface Business {
   website: string;
   logo: string;
   images: string[];
-  status: "draft" | "pending" | "approved" | "rejected" | "archived";
+  status:
+    | "draft"
+    | "pending"
+    | "approved"
+    | "rejected"
+    | "archived"
+    | "DRAFT"
+    | "PENDING"
+    | "APPROVED"
+    | "REJECTED"
+    | "ARCHIVED";
   authority: string;
   dmo: string;
   categories: string[];
   subcategories: string[];
   tags: string[];
-  impactScore: number;
+  impact: number;
   productsCount: number;
   lifetimeSales: number; // Total sales revenue in ILS
   address: string;
@@ -24,7 +34,7 @@ interface Business {
     email: string;
     phone: string;
   };
-  contactPerson: {
+  contactDetails: {
     name: string;
     email: string;
     phone: string;
@@ -36,7 +46,7 @@ interface Business {
   groupTypes: string[];
   createdAt: string;
   updatedAt: string;
-  completionPercentage: number;
+  completionPercent: number;
   internalNotes?: string;
   rejectionNote?: string;
   analytics?: {
@@ -57,4 +67,22 @@ interface Business {
   deliveryAdditionalInfo?: string;
   deliveryReturnExchange?: string[];
   deliverySpecificSellerInfo?: string[];
+}
+
+interface BusinessBasicInfoPayload {
+  authority: string;
+  name: string;
+  shortDescription: string;
+  fullDescription: string;
+  internalNotes?: string;
+}
+
+interface BusinessContactPayload {
+  email: string;
+  phone: string;
+}
+
+interface IBusinessMedia {
+  logo: IImageUpload;
+  gallery: IImageUpload[];
 }

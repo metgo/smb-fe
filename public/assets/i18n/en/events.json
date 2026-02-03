@@ -53,9 +53,17 @@
   "whatsapp": "WhatsApp",
   "language": "Language",
   "template": "Template",
+  "custom": "Custom",
   "template_24h": "24h Before Remainder",
   "template_same_day": "Same Day Remainder",
   "template_starting_soon": "Event Starting Soon",
+
+  "english": "English",
+  "heberw": "Heberw",
+  "arebic": "Arabic",
+  "active": "Active",
+  "disabled": "Disabled",
+
   "subject": "Subject (Email only)",
   "message_content": "Message Content",
   "available_variables": "Available variables",

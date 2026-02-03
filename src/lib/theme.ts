@@ -27,4 +27,9 @@ export const getThemeClasses = (theme: Theme): ThemeClasses => ({
     theme === "dark"
       ? "bg-gray-800 border-gray-700 text-white"
       : "bg-gray-50 border-gray-300 text-gray-900",
+
+  exportBtnBgClasses:
+    theme === "dark"
+      ? "bg-gray-800 hover:bg-gray-700 text-gray-300"
+      : "bg-gray-100 hover:bg-gray-200 text-gray-700",
 });

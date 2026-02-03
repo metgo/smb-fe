@@ -11,6 +11,7 @@ interface MarkerMapProps {
   setAddress: (v: string) => void;
   address: string;
   geo: Geo;
+  drag?: boolean;
 }
 
 interface PlaceSuggestion {
@@ -23,8 +24,14 @@ interface PlaceSuggestion {
 }
 
 /* ---------------- Component ---------------- */
-const MarkerMap = ({ setGeo, setAddress, address, geo }: MarkerMapProps) => {
-  const { t, i18n } = useTranslation("events");
+const MarkerMap = ({
+  setGeo,
+  setAddress,
+  address,
+  geo,
+  drag,
+}: MarkerMapProps) => {
+  const { t, i18n } = useTranslation("common");
   const locale = i18n.language;
 
   /* ---------------- Refs ---------------- */
@@ -49,7 +56,7 @@ const MarkerMap = ({ setGeo, setAddress, address, geo }: MarkerMapProps) => {
     markerRef.current = new window.google.maps.Marker({
       position: { lat, lng },
       map: googleMap,
-      draggable: true,
+      draggable: drag ? false : true,
       icon: {
         url: "/assets/images/map-pin.png",
         scaledSize: new window.google.maps.Size(30, 40),
@@ -220,7 +227,7 @@ const MarkerMap = ({ setGeo, setAddress, address, geo }: MarkerMapProps) => {
   /* ---------------- Render ---------------- */
 
   return (
-    <div style={{ width: "100%", height: "40vh", position: "relative" }}>
+    <div style={{ width: "100%", height: "50vh", position: "relative" }}>
       <input
         ref={inputRef}
         value={inputValue}

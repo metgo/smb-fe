@@ -116,6 +116,7 @@ function DistributionCard({ title, icon, total, data }: DistributionCardProps) {
   const [status, setStatus] = useState("active");
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const [isAnimated, setIsAnimated] = useState(false);
+  const { theme } = useAppSelector((state) => state.settings);
 
   // Trigger animation on mount
   useEffect(() => {
@@ -154,14 +155,20 @@ function DistributionCard({ title, icon, total, data }: DistributionCardProps) {
   const maxValue = Math.max(...(data?.map((item) => item?.value) || []));
 
   return (
-    <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6 hover:shadow-lg transition-shadow">
+    <div
+      className={`${theme === "dark" ? "bg-gray-900" : "bg-white"}  dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-6 hover:shadow-lg transition-shadow`}
+    >
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-3">
           <div className="p-3 bg-linear-to-br from-purple-500 to-pink-600 rounded-lg shadow-lg shadow-purple-500/30 hover:shadow-purple-500/50 transition-shadow">
             {icon}
           </div>
           <div>
-            <h3 className="text-gray-900 dark:text-white">{title}</h3>
+            <h3
+              className={`${theme === "dark" ? "text-gray-300" : "text-black"} `}
+            >
+              {title}
+            </h3>
             <p className="text-sm text-gray-500 dark:text-gray-400">
               Total: {total.toLocaleString()}
             </p>
@@ -171,7 +178,17 @@ function DistributionCard({ title, icon, total, data }: DistributionCardProps) {
           <select
             value={status}
             onChange={(e) => setStatus(e.target.value)}
-            className="appearance-none bg-gray-50 dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-1.5 pr-8 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+            className={`
+    appearance-none
+    border border-gray-300 dark:border-gray-700
+    rounded-lg px-3 py-1.5 pr-8 text-sm
+    focus:outline-none focus:ring-2 focus:ring-purple-500
+    ${
+      theme === "dark"
+        ? "bg-gray-900 text-gray-200"
+        : "bg-gray-50 text-gray-900"
+    }
+  `}
           >
             {statuses?.map((s) => (
               <option key={s.value} value={s.value}>

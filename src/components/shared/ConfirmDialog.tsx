@@ -1,3 +1,5 @@
+import { useThemeClasses } from "@/hooks/useThemeClasses";
+import clsx from "clsx";
 import { AlertTriangle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
@@ -25,6 +27,8 @@ export default function ConfirmDialog({
   onCancel,
 }: ConfirmDialogProps) {
   const { t } = useTranslation("common");
+  const { bgTertiary, bgPrimary, textPrimary, borderColor, textSecondary } =
+    useThemeClasses();
   if (!open) return null;
 
   const variantStyles = {
@@ -35,25 +39,35 @@ export default function ConfirmDialog({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-      <div className="w-full max-w-md rounded-xl border border-red-500 bg-white dark:bg-gray-900 p-6 shadow-xl">
+      <div
+        className={clsx(
+          bgTertiary,
+          "w-full max-w-md rounded-xl border border-red-500 p-6 shadow-xl",
+        )}
+      >
         <div className="flex items-start gap-4">
           <div className={`p-2 rounded-full ${variantStyles[variant]}`}>
             <AlertTriangle className="w-5 h-5" />
           </div>
 
           <div className="flex-1">
-            <h3 className="text-lg font-semibold">{t(title)}</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-              {t(message)}
-            </p>
+            <h3 className={clsx("text-lg font-semibold", textSecondary)}>
+              {t(title)}
+            </h3>
+            <p className={clsx("text-sm mt-1", textPrimary)}>{t(message)}</p>
           </div>
         </div>
 
-        <div className="mt-6 flex justify-end gap-3">
+        <div className="mt-6 flex justify-end gap-3 font-semibold">
           <button
             onClick={onCancel}
             disabled={loading}
-            className="px-4 py-2 rounded-lg border text-sm cursor-pointer"
+            className={clsx(
+              borderColor,
+              bgPrimary,
+              textPrimary,
+              "px-4 py-2 rounded-lg border text-sm cursor-pointer",
+            )}
           >
             {t(cancelText)}
           </button>

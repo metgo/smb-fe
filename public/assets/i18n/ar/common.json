@@ -39,6 +39,22 @@
   "details": "التفاصيل",
   "edit": "تعديل",
 
+  "pending": "قيد الانتظار",
+  "approve": "الموافقة",
+  "reject": "رفض",
+  "archive": "أرشيف",
+  "draft": "مسودة",
+  "export": "تصدير",
+  "action": "إجراء",
+  "status": "الحالة",
+  "selected": "تم الاختيار",
+  "csv_export": "تصدير CSV",
+  "pdf_export": "تصدير PDF",
+  "free": "مجاني",
+  "paid": "مدفوع",
+  "required": "مطلوب",
+  "not_required": "غير مطلوب",
+
   "delete_ticket": "حذف التذكرة",
   "delete_ticket_confirm": "هل أنت متأكد أنك تريد حذف هذه التذكرة؟",
   "deletd_notification": "حذف الإشعار",
@@ -73,5 +89,12 @@
   "wed": "أرب",
   "thu": "خم",
   "fri": "جم",
-  "sat": "سب"
+  "sat": "سب",
+
+  "all": "الكل",
+  "select_dmo": "اختر DMO",
+  "select_authority": "اختر الجهة",
+  "website_visibility": "ظهور المواقع",
+  "select_associated_websites": "اختر المواقع المرتبطة",
+  "select_unassociated_websites": "اختر المواقع غير المرتبطة"
 }

@@ -14,6 +14,13 @@ export const productQueryApi = createApi({
         params,
       }),
     }),
+    getProductbyId: builder.query<any, { productId: string | null }>({
+      query: ({ productId }) => ({
+        url: `${endpoints.products}/${productId}`,
+        method: "GET",
+      }),
+    }),
   }),
 });
-export const { useGetAllProductsQuery } = productQueryApi;
+export const { useGetAllProductsQuery, useGetProductbyIdQuery } =
+  productQueryApi;

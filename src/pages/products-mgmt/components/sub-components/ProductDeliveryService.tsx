@@ -23,8 +23,7 @@ const ProductDeliveryService = ({
   return (
     <div className="space-y-6">
       {/* Delivery Options for Physical / Table Order */}
-      {(formData.productType === "PHYSICAL" ||
-        formData.productType === "TABLE-ORDER") && (
+      {(formData.type === "PHYSICAL" || formData.type === "TABLE_ORDER") && (
         <>
           <h3 className={`text-lg font-medium ${textPrimary}`}>
             {t("delivery_options")}
@@ -120,8 +119,7 @@ const ProductDeliveryService = ({
       )}
 
       {/* Service / Experience Details */}
-      {(formData.productType === "service" ||
-        formData.productType === "experience") && (
+      {(formData.type === "SERVICE" || formData.type === "EXPERIENCE") && (
         <>
           <h3 className={`text-lg font-medium ${textPrimary}`}>
             {t("service_details")}
@@ -161,7 +159,7 @@ const ProductDeliveryService = ({
       )}
 
       {/* Hotel Room Info */}
-      {formData.productType === "hotel-room" && (
+      {formData.type === "HOTEL" && (
         <div className={`p-6 rounded-xl ${bgTertiary} text-center`}>
           <p className={`${textSecondary}`}>{t("hotel_room_info")}</p>
         </div>

@@ -1,14 +1,32 @@
 type Language = "en" | "ar" | "he";
 type Theme = "light" | "dark";
+type TStatus =
+  | "draft"
+  | "pending"
+  | "approved"
+  | "rejected"
+  | "archived"
+  | null;
 
 interface Geo {
   lat: string;
   lng: string;
 }
 
-interface Website {
+interface IWebsite {
   _id: string;
   name: string;
+  websiteUrl: string;
+  logo: string;
+  dmoIds: string[];
+  authorityIds: string[];
+}
+
+type TAllWebsites = IWebsite[];
+
+interface IFromattedAllWebsites {
+  associatedWebsites: IWebsite[];
+  unAssociatedWebsites: IWebsite[];
 }
 
 interface ThemeClasses {
@@ -25,6 +43,7 @@ interface ThemeClasses {
   cardClasses: string;
   inputClasses: string;
   selectInputClasses: string;
+  exportBtnBgClasses: string;
 }
 
 interface PageStats {
@@ -77,3 +96,16 @@ interface IImage {
   subCoordinates?: SubCoordinates;
 }
 type TImages = IImage[];
+
+interface IWebsiteVisibilityIds {
+  allBlacklistIds: string[];
+  selectedBlacklistIds: string[];
+  allWhitelistIds: string[];
+  selectedWhitelistIds: string[];
+}
+
+interface IAssociatedWebsiteIds {
+  _id: string;
+  name: string;
+  url: string;
+}

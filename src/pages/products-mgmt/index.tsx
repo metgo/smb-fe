@@ -20,6 +20,7 @@ import { Activity, useState } from "react";
 import ProductDetails from "./details/inde";
 
 import { useGetAllProductsQuery } from "@/store/api/productQueryApi";
+import { useNavigate } from "react-router-dom";
 
 const businessId = "";
 
@@ -60,17 +61,27 @@ export default function ProductsMgmtPage() {
   const [currentView, setCurrentView] = useState<
     "list" | "details" | "edit" | "create"
   >("list");
+  const [productId, setProductId] = useState<string>("");
+  console.log("🚀 ~ ProductsMgmtPage ~ productId:", productId);
 
   const themeColor = useThemeClasses();
   const [searchTerm, setSearchTerm] = useState<string>("");
+  const navigate = useNavigate();
 
   const handleProductClick = (product: any) => {
     setSelectedProduct(product);
+    setProductId(product?._id);
+    navigate(`?productId=${product?._id}&productSlug=${product?.slug}`, {
+      replace: true,
+    });
     setCurrentView("details");
   };
   const handleCreateNew = () => {
     setSelectedProduct(null);
     setCurrentView("create");
+  };
+  const handleEdit = () => {
+    setCurrentView("edit");
   };
   const {
     data: productData,
@@ -97,19 +108,19 @@ export default function ProductsMgmtPage() {
         </div>
       ),
     },
-    // {
-    //   key: "productName",
-    //   label: t("product_name"),
-    //   sortable: true,
-    //   render: (product) => (
-    //     <div>
-    //       <div className="font-medium">{product.name[language]}</div>
-    //       <div className="text-xs text-gray-500 truncate max-w-xs">
-    //         {product.shortDescription[language]}
-    //       </div>
-    //     </div>
-    //   ),
-    // },
+    {
+      key: "name",
+      label: t("product_name"),
+      sortable: true,
+      render: (product: any) => (
+        <div>
+          <div className="font-medium">{product.name[language]}</div>
+          <div className="text-xs text-gray-500 truncate max-w-xs">
+            {product.name}
+          </div>
+        </div>
+      ),
+    },
     {
       key: "businessId",
       label: t("business_name"),
@@ -529,7 +540,22 @@ export default function ProductsMgmtPage() {
       </Activity>
 
       {/* Create/Edit Product Wizard */}
-      {(currentView === "create" || currentView === "edit") && (
+      {currentView === "create" && (
+        <CreateProductWizard
+          productId={productId}
+          setProductId={setProductId}
+          onClose={() => {
+            setIsCreating(false);
+            setIsEditing(false);
+            setSelectedProduct(null);
+            setCurrentView("list");
+          }}
+          selectedProduct={selectedProduct}
+          preSelectedBusinessName={"abc"}
+          currentView={currentView}
+        />
+      )}
+      {currentView === "edit" && (
         <CreateProductWizard
           onClose={() => {
             setIsCreating(false);
@@ -537,33 +563,10 @@ export default function ProductsMgmtPage() {
             setSelectedProduct(null);
             setCurrentView("list");
           }}
-          editingProduct={
-            isEditing && selectedProduct
-              ? {
-                  businessId: selectedProduct.businessId,
-                  name: selectedProduct.name,
-                  shortDescription: selectedProduct.shortDescription,
-                  fullDescription: { en: "", he: "", ar: "" },
-                  type: selectedProduct.type,
-                  categories: selectedProduct.categories,
-                  markedPrice: selectedProduct.markedPrice.toString(),
-                  sellingPrice: selectedProduct.sellingPrice.toString(),
-                  quantity: selectedProduct.quantity?.toString() || "",
-                  isUnlimited: selectedProduct.quantity === null,
-                  startDate: selectedProduct.availability.startDate || "",
-                  endDate: selectedProduct.availability.endDate || "",
-                  mainImage: selectedProduct.image,
-                  additionalImages: [],
-                  enableHomeDelivery: false,
-                  enableStorePickup: false,
-                  deliveryFee: "",
-                  deliveryTime: "",
-                  serviceDuration: "",
-                  serviceLocation: "",
-                }
-              : null
-          }
-          preSelectedBusinessName={"abc"}
+          selectedProduct={selectedProduct}
+          productId={productId}
+          setProductId={setProductId}
+          currentView={currentView}
         />
       )}
 
@@ -575,9 +578,7 @@ export default function ProductsMgmtPage() {
               setCurrentView("list");
             }}
             onDuplicate={() => {}}
-            onEdit={() => {
-              setIsEditing(true);
-            }}
+            onEdit={handleEdit}
           />
         </Activity>
       )}

@@ -10,13 +10,15 @@ import { distrbOverviewApi } from "./api/distrbOverviewApi";
 import { itemStatsApi } from "./api/itemStatsApi";
 import { masterDataApi } from "./api/masterDataApi";
 import { eventMutationApi } from "./api/eventMutationApi";
+import { businessMutationApi } from "./api/businessMutationApi";
+import { businessQueryApi } from "./api/businessQueryApi";
 import { eventQueryApi } from "./api/eventQueryApi";
 import { userMutationApi } from "./api/userMutationApi";
 import { userQueryApi } from "./api/userQueryApi";
 import { mediaMutationApi } from "./api/mediaMutationApi";
 import { productMutationApi } from "./api/productMutationApi";
 import { productQueryApi } from "./api/productQueryApi";
-import { businessQueryApi } from "./api/businessQueryApi";
+import { commonMutationApi } from "./api/commonMutationApi";
 export const store = configureStore({
   reducer: {
     ui: uiReducer,
@@ -29,13 +31,17 @@ export const store = configureStore({
     [analyticsApi.reducerPath]: analyticsApi.reducer,
     [distrbOverviewApi.reducerPath]: distrbOverviewApi.reducer,
     [itemStatsApi.reducerPath]: itemStatsApi.reducer,
+    [businessMutationApi.reducerPath]: businessMutationApi.reducer,
     [masterDataApi.reducerPath]: masterDataApi.reducer,
     [userMutationApi.reducerPath]: userMutationApi.reducer,
     [eventMutationApi.reducerPath]: eventMutationApi.reducer,
     [mediaMutationApi.reducerPath]: mediaMutationApi.reducer,
+
     [productMutationApi.reducerPath]: productMutationApi.reducer,
     [productQueryApi.reducerPath]: productQueryApi.reducer,
+    [commonMutationApi.reducerPath]: commonMutationApi.reducer,
     [businessQueryApi.reducerPath]: businessQueryApi.reducer,
+
     [eventQueryApi.reducerPath]: eventQueryApi.reducer,
     [userQueryApi.reducerPath]: userQueryApi.reducer,
   },
@@ -46,16 +52,16 @@ export const store = configureStore({
       distrbOverviewApi.middleware,
       itemStatsApi.middleware,
       masterDataApi.middleware,
-
       userMutationApi.middleware,
       eventMutationApi.middleware,
-
+      businessMutationApi.middleware,
       eventQueryApi.middleware,
       userQueryApi.middleware,
+      businessQueryApi.middleware,
       mediaMutationApi.middleware,
       productMutationApi.middleware,
       productQueryApi.middleware,
-      businessQueryApi.middleware,
+      commonMutationApi.middleware,
     ),
 });
 

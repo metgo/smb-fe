@@ -1,4 +1,6 @@
+import BulkActionBar from "./BulkActionBar";
 import ConfirmDialog from "./ConfirmDialog";
+import DmoAuthorityWebsiteSelector from "./DmoAuthorityWebsiteSelector";
 import ImageWithFallback from "./ImageWithFallback";
 import InfoTooltip from "./InfoTooltip";
 import PageHeader from "./PageHeader";
@@ -16,8 +18,10 @@ export {
   WizardFooter,
   InfoTooltip,
   ConfirmDialog,
+  BulkActionBar,
   ViewModeToggle,
   SelectableChips,
   ImageWithFallback,
   ReordableDataTable,
+  DmoAuthorityWebsiteSelector,
 };

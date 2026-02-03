@@ -1,9 +1,8 @@
-import type { FC } from "react";
+import { type FC } from "react";
 import { X } from "lucide-react";
-
-/* ---------------- Types ---------------- */
-
-type ThemeMode = "dark" | "light";
+import { SelectableChips } from "@/components/shared";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { useCommon } from "@/hooks/useCommon";
 
 interface BusinessAttributesFormData {
   primaryCategory: string;
@@ -19,37 +18,15 @@ interface FormErrors {
 
 interface BusinessAttributesProps {
   t: (key: string) => string;
-  theme: ThemeMode;
+  theme: Theme;
   formData: BusinessAttributesFormData;
   setFormData: (data: BusinessAttributesFormData) => void;
   errors: FormErrors;
+  selectedGroupTypesId: string[];
+  setGroupTypesId: (v: string[]) => void;
+  selectedAccessiblitiesId: string[];
+  setAccessiblitiesId: (v: string[]) => void;
 }
-
-/* ---------------- Constants ---------------- */
-
-const PRIMARY_CATEGORIES = [
-  { value: "food", label: "Food & Dining" },
-  { value: "accommodation", label: "Accommodation" },
-  { value: "tourism", label: "Tourism" },
-  { value: "shopping", label: "Shopping" },
-  { value: "culture", label: "Culture" },
-];
-
-const ACCESSIBILITY_OPTIONS = [
-  "Wheelchair Accessible",
-  "Accessible Parking",
-  "Accessible Restrooms",
-  "Sign Language",
-];
-
-const GROUP_TYPES = [
-  "Families",
-  "Couples",
-  "Groups",
-  "Individuals",
-  "Seniors",
-  "Corporate",
-];
 
 /* ---------------- Component ---------------- */
 
@@ -59,7 +36,62 @@ const BusinessAttributes: FC<BusinessAttributesProps> = ({
   formData,
   setFormData,
   errors,
+  selectedGroupTypesId,
+  setGroupTypesId,
+  selectedAccessiblitiesId,
+  setAccessiblitiesId,
 }) => {
+  const { textSecondary } = useThemeClasses();
+  const { primaryCategories, accessibility, groupTypes } = useCommon();
+
+  const handleGroupTypeSelect = (itemId: string) => {
+    const exists = selectedGroupTypesId?.some((id) => id === itemId);
+
+    if (exists) {
+      const updated = selectedGroupTypesId?.filter((id) => id !== itemId);
+      setGroupTypesId(updated);
+    } else {
+      setGroupTypesId([...selectedGroupTypesId, itemId]);
+    }
+  };
+
+  const handleAccessibilitySelect = (itemId: string) => {
+    const exists = selectedAccessiblitiesId?.some((id) => id === itemId);
+
+    if (exists) {
+      const updated = selectedAccessiblitiesId?.filter((id) => id !== itemId);
+      setAccessiblitiesId(updated);
+    } else {
+      setAccessiblitiesId([...selectedAccessiblitiesId, itemId]);
+    }
+  };
+
+  //   if (!business || currentView !== "edit") return;
+
+  //   // Primary category + tags
+  //   setFormData({
+  //     ...formData,
+  //     primaryCategory: business.primaryCategoryId || "",
+  //     tags: business.tags || [],
+  //   });
+
+  //   // Group Types
+  //   if (Array.isArray(business.groupTypesId)) {
+  //     setGroupTypesId(business.groupTypesId.map((g: any) => g._id));
+  //   }
+
+  //   // Accessibilities
+  //   if (Array.isArray(business.accessibilitiesId)) {
+  //     setAccessiblitiesId(business.accessibilitiesId.map((a: any) => a._id));
+  //   }
+  // }, [
+  //   business,
+  //   setFormData,
+  //   setAccessiblitiesId,
+  //   setGroupTypesId,
+  //   currentView,
+  // ]);
+
   return (
     <div className="space-y-6">
       {/* Primary Category */}
@@ -67,7 +99,7 @@ const BusinessAttributes: FC<BusinessAttributesProps> = ({
         <label
           className={`block text-sm mb-2 ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}
         >
-          {t("primary_category")} *
+          {t("primary_category")} <span className="text-red-500">*</span>
         </label>
         <select
           value={formData.primaryCategory}
@@ -83,9 +115,9 @@ const BusinessAttributes: FC<BusinessAttributesProps> = ({
           } focus:outline-none focus:ring-2 focus:ring-teal-500`}
         >
           <option value="">{t("select")}</option>
-          {PRIMARY_CATEGORIES.map((cat) => (
-            <option key={cat.value} value={cat.value}>
-              {cat.label}
+          {primaryCategories?.datas?.data.map((cat: any) => (
+            <option key={cat._id} value={cat._id}>
+              {cat.name}
             </option>
           ))}
         </select>
@@ -94,30 +126,20 @@ const BusinessAttributes: FC<BusinessAttributesProps> = ({
         )}
       </div>
 
-      {/* Service Type */}
-      <div>
-        <label
-          className={`block text-sm mb-2 ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}
-        >
-          {t("service_type")}
-        </label>
-        <select
-          value={formData.serviceType}
-          onChange={(e) =>
-            setFormData({ ...formData, serviceType: e.target.value })
-          }
-          className={`w-full px-4 py-2 rounded-lg border ${
-            theme === "dark"
-              ? "bg-gray-800 border-gray-700 text-gray-200"
-              : "bg-white border-gray-300 text-gray-900"
-          } focus:outline-none focus:ring-2 focus:ring-teal-500`}
-        >
-          <option value="">{t("select")}</option>
-          <option value="B2C">B2C</option>
-          <option value="B2B">B2B</option>
-          <option value="Both">Both</option>
-        </select>
-      </div>
+      <SelectableChips
+        label="Accessiblities"
+        items={accessibility?.datas?.data}
+        selectedIds={selectedAccessiblitiesId}
+        onSelect={handleAccessibilitySelect}
+        textSecondary={textSecondary}
+      />
+      <SelectableChips
+        label="Group Types"
+        items={groupTypes?.datas?.data}
+        selectedIds={selectedGroupTypesId}
+        onSelect={handleGroupTypeSelect}
+        textSecondary={textSecondary}
+      />
 
       {/* Tags */}
       <div>
@@ -134,7 +156,7 @@ const BusinessAttributes: FC<BusinessAttributesProps> = ({
           }`}
         >
           <div className="flex flex-wrap gap-2">
-            {formData.tags.map((tag, idx) => (
+            {formData.tags?.map((tag, idx) => (
               <span
                 key={idx}
                 className="px-2 py-1 bg-teal-100 dark:bg-teal-900/30 text-teal-800 dark:text-teal-400 rounded flex items-center gap-1 text-sm"
@@ -144,7 +166,7 @@ const BusinessAttributes: FC<BusinessAttributesProps> = ({
                   onClick={() =>
                     setFormData({
                       ...formData,
-                      tags: formData.tags.filter((_, i) => i !== idx),
+                      tags: formData.tags?.filter((_, i) => i !== idx),
                     })
                   }
                   className="hover:text-red-600"
@@ -176,102 +198,6 @@ const BusinessAttributes: FC<BusinessAttributesProps> = ({
               }`}
             />
           </div>
-        </div>
-      </div>
-
-      {/* Accessibility */}
-      <div>
-        <label
-          className={`block text-sm mb-2 ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}
-        >
-          {t("accessibility")}
-        </label>
-        <div className="grid grid-cols-2 gap-3">
-          {ACCESSIBILITY_OPTIONS.map((option) => {
-            const isChecked = formData.accessibility.includes(option);
-
-            return (
-              <label
-                key={option}
-                className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer ${
-                  isChecked
-                    ? theme === "dark"
-                      ? "bg-teal-900/30 border-teal-600"
-                      : "bg-teal-50 border-teal-600"
-                    : theme === "dark"
-                      ? "bg-gray-800 border-gray-700 hover:border-gray-600"
-                      : "bg-white border-gray-300 hover:border-gray-400"
-                }`}
-              >
-                <input
-                  type="checkbox"
-                  checked={isChecked}
-                  onChange={() =>
-                    setFormData({
-                      ...formData,
-                      accessibility: isChecked
-                        ? formData.accessibility.filter((a) => a !== option)
-                        : [...formData.accessibility, option],
-                    })
-                  }
-                  className="w-4 h-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500"
-                />
-                <span
-                  className={`text-sm ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}
-                >
-                  {option}
-                </span>
-              </label>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Group Types */}
-      <div>
-        <label
-          className={`block text-sm mb-2 ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}
-        >
-          {t("group_types")}
-        </label>
-        <div className="grid grid-cols-2 gap-3">
-          {GROUP_TYPES.map((type) => {
-            const isChecked = formData.groupTypes.includes(type);
-
-            return (
-              <label
-                key={type}
-                className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer ${
-                  isChecked
-                    ? theme === "dark"
-                      ? "bg-purple-900/30 border-purple-600"
-                      : "bg-purple-50 border-purple-600"
-                    : theme === "dark"
-                      ? "bg-gray-800 border-gray-700 hover:border-gray-600"
-                      : "bg-white border-gray-300 hover:border-gray-400"
-                }`}
-              >
-                <input
-                  type="checkbox"
-                  checked={isChecked}
-                  onChange={() =>
-                    setFormData({
-                      ...formData,
-                      groupTypes: isChecked
-                        ? formData.groupTypes.filter((g) => g !== type)
-                        : [...formData.groupTypes, type],
-                    })
-                  }
-                  className="w-4 h-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500"
-                />
-                <span
-                  className={`text-sm ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}
-                >
-                  {type}
-                </span>
-              </label>
-            );
-          })}
         </div>
       </div>
     </div>

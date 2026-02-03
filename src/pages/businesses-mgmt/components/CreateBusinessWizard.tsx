@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
+import { toast } from "sonner";
+import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   CheckCircle,
-  X,
   MapPin,
   Image as ImageIcon,
   Clock,
@@ -11,8 +12,13 @@ import {
   Users,
   Truck,
 } from "lucide-react";
-import { useTranslation } from "react-i18next";
+
 import { useAppSelector } from "@/hooks/hooks";
+import {
+  useInitBusinessCreateMutation,
+  useUpdateBusinessMutation,
+} from "@/store/api/businessMutationApi";
+
 import {
   BusinessAttributes,
   BusinessBasicInfos,
@@ -25,30 +31,73 @@ import {
   BusinessReviewSubmit,
 } from "./sub-components";
 import { WizardFooter } from "@/components/shared";
-import { toast } from "sonner";
+import { ModalWrapper } from "@/components/wrapper";
+import { useImagesUpload } from "@/hooks/useImagesUpload";
+import { useSingleImageUpload } from "@/hooks/useSingleImageUpload";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
+import clsx from "clsx";
+import { PublishButton } from "@/components/btns";
+import { useBusinessDraftSaver } from "../hooks/useBusinessDraftSaver";
+import { useGetbusinessBySlugQuery } from "@/store/api/businessQueryApi";
+import { skipToken } from "@reduxjs/toolkit/query";
+import { useSearchParams } from "react-router-dom";
+import { parseAddress } from "@/helpers";
+import { useCreateWebsiteAccessItemMutation } from "@/store/api/commonMutationApi";
+type View = "list" | "details" | "create" | "edit" | undefined;
 
 interface CreateBusinessWizardProps {
   onClose: () => void;
-  onSave: (data: any) => void;
+  currentView?: View;
+  selectedBusiness?: any;
 }
-
-// const USER_ROLE = "admin";
 
 export default function CreateBusinessWizard({
   onClose,
-  onSave,
+  currentView,
 }: CreateBusinessWizardProps) {
   const { t } = useTranslation("businesses");
   const { theme, isRTL } = useAppSelector((state) => state.settings);
+  const { textPrimary, textTertiary } = useThemeClasses();
+  const [searchParams] = useSearchParams();
+  const [createWebsiteAccessItem] = useCreateWebsiteAccessItemMutation();
+  const businessSlug = searchParams.get("businessSlug");
 
+  const { data: business } = useGetbusinessBySlugQuery(
+    businessSlug ? { slug: businessSlug } : skipToken,
+  );
+
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [isPublishBtnClicked, setIsPublishBtnClicked] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
-  const [editData, _setEditData] = useState<any>();
-  const [isSaving, setIsSaving] = useState(false);
-  const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [lastSaved, _setLastSaved] = useState<Date | null>(null);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
+  const [selectedDmoId, setSelectedDmoId] = useState<string>("");
+  const [selectedAuthorityId, setSelectAuthorityId] = useState<string>("");
+  const [businessId, setBusinessId] = useState<string>("");
+  const [selectedGroupTypesId, setGroupTypesId] = useState<string[]>([]);
+  const [selectedAccessiblitiesId, setAccessiblitiesId] = useState<string[]>(
+    [],
+  );
+  const [geo, setGeo] = useState<Geo>({ lat: "", lng: "" });
+  const [address, setAddress] = useState("");
+
+  // Business Media States
+  const [galleryImages, setGalleryImages] = useState<TImages>([]);
+  const [logoGcsUrl, setLogoGcsUrl] = useState<string>("");
+  const [businessLogoImage, setBusinessLogoImage] = useState<IImage | null>(
+    null,
+  );
+  const [websiteVisibilityIds, setWebsiteVisibilityIds] = useState({
+    allBlacklistIds: [] as string[],
+    selectedBlacklistIds: [] as string[],
+    allWhitelistIds: [] as string[],
+    selectedWhitelistIds: [] as string[],
+  });
   // Form State
   const [formData, setFormData] = useState<any>({
     // Step 1
+    id: "",
     authority: "",
     nameEn: "",
     nameHe: "",
@@ -59,64 +108,165 @@ export default function CreateBusinessWizard({
     fullDescriptionEn: "",
     fullDescriptionHe: "",
     fullDescriptionAr: "",
-    slug: "",
     internalNotes: "",
     categories: [] as string[],
 
     // Step 2
     email: "",
     phone: "",
-    website: "",
-    contactPerson: { name: "", email: "", phone: "" },
+    contactDetails: { name: "", email: "", phone: "" },
     preferredChannel: "email",
     collaborators: [] as any[],
 
     // Step 3
     address: "",
-    coordinates: { lat: 31.2518, lng: 34.7913 },
+    coordinates: { lat: "", lng: "" },
 
     // Step 4
     primaryCategory: "",
-    subcategories: [] as string[],
+    // subcategories: [] as string[],
     tags: [] as string[],
     accessibility: [] as string[],
     groupTypes: [] as string[],
-    serviceType: "",
+    // serviceType: "",
 
     // Step 5
-    logo: null as string | null,
-    images: [] as string[],
+    logo: null as IImage | null,
+    images: null as TImages | null,
 
     // Step 6
-    operatingHours: {
-      sunday: [{ open: "09:00", close: "18:00" }],
-      monday: [{ open: "09:00", close: "18:00" }],
-      tuesday: [{ open: "09:00", close: "18:00" }],
-      wednesday: [{ open: "09:00", close: "18:00" }],
-      thursday: [{ open: "09:00", close: "18:00" }],
-      friday: [{ open: "09:00", close: "14:00" }],
-      saturday: [] as { open: string; close: string }[],
-    },
+    operatingHours: [
+      { day: "sunday", open: "09:00", close: "18:00" },
+      { day: "monday", open: "09:00", close: "18:00" },
+      { day: "tuesday", open: "09:00", close: "18:00" },
+      { day: "wednesday", open: "09:00", close: "18:00" },
+      { day: "thursday", open: "09:00", close: "18:00" },
+      { day: "friday", open: "09:00", close: "14:00" },
+    ],
     vendorDelivers: false,
     pickupAvailable: false,
-    deliveryAreas: [] as any[],
+    deliveryArea: [] as any[],
     deliveryAdditionalInfo: "",
     deliveryReturnExchange: [] as string[],
     deliverySpecificSellerInfo: [] as string[],
 
     // Step 8
-    onlinePresence: {
-      website: "",
-      facebook: "",
-      instagram: "",
-      youtube: "",
-      tiktok: "",
-    },
+    socialMedia: [],
   });
 
-  const [errors, _setErrors] = useState<Record<string, string>>({});
+  const {
+    images,
+    imagesRef,
+    primaryImageIndex,
+    handleImageUpload,
+    uploadAll,
+    setPrimaryImage,
+    // setImages,
+    deleteTarget,
+    setDeleteTarget,
+    confirmDelete,
+    isImageDeleting,
+    handleDeleteImage,
+  } = useImagesUpload({
+    initialImages: galleryImages,
+    onChange: setGalleryImages,
+  });
+
+  const {
+    image: logoImage,
+    handleImageSelect: handleLogoImageSelect,
+    uploadImage: uploadLogoImage,
+    confirmDelete: confirmDeleteLogo,
+    deleteTarget: deleteTargetLogo,
+    setDeleteTarget: setDeleteTargetLogo,
+    isImageDeleting: isLogoImageDeleting,
+    handleDeleteImage: handleDeleteLogoImage,
+  } = useSingleImageUpload({
+    initialImage: businessLogoImage?.image,
+    onChange: setBusinessLogoImage,
+  });
+
+  const [updateBusiness, { isLoading: isSaving }] = useUpdateBusinessMutation();
+  const [initBusinessCreate, { isLoading: isCreating }] =
+    useInitBusinessCreateMutation();
+
+  const addr = parseAddress(address);
 
   const totalSteps = 9;
+  useEffect(() => {
+    if (businessId === "" || currentView !== "edit") return;
+
+    if (currentView === "edit" && businessId) {
+      setFormData({
+        //basic info
+        nameEn: business?.name || "",
+        nameHe: business?.nameHe || "",
+        nameAr: business?.nameAr || "",
+        shortDescriptionEn: business?.shortDescription || "",
+        shortDescriptionHe: "",
+        shortDescriptionAr: "",
+        fullDescriptionEn: business?.description || "",
+        fullDescriptionHe: "",
+        fullDescriptionAr: "",
+        internalNotes: business?.internalNotes || "",
+        slug: business?.slug || "",
+        //images
+        logo: business?.logo?.image,
+        images: business?.images,
+        //location
+        vendorDelivers: business.vendorDelivers ?? false,
+        pickupAvailable: business.isPickUpAvailable ?? false,
+        deliveryArea: business.deliveryArea ?? [],
+        deliveryReturnExchange: business.deliveryReturnExchange ?? [],
+        deliveryAdditionalInfo: business.deliveryAdditionalInfo ?? "",
+        deliverySpecificSellerInfo: business.deliverySpecificSellerInfo ?? [],
+        //contact
+        email: business.busiEmail || "",
+        phone: business.phoneNumber || "",
+        contactDetails: {
+          name: business.contactDetails?.name,
+          countryCode: business.contactDetails?.countryCode,
+          phone: business.contactDetails?.phone,
+          address: business.contactDetails?.address,
+          email: business.contactDetails?.email,
+          whatsAppCountryCode: business.contactDetails?.whatsAppCountryCode,
+          whatsAppNumber: business.contactDetails?.whatsAppNumber,
+          prefferedChannel: business.contactDetails?.prefferedChannel,
+        },
+        //attributes
+        primaryCategory: business.primaryCategoryId || "",
+        tags: business.tags || [],
+      });
+      setAccessiblitiesId(business.accessibilitiesId.map((a: any) => a._id));
+      setGroupTypesId(business.groupTypesId.map((g: any) => g._id));
+
+      // Set geo location
+      if (business?.geoLocation) {
+        setGeo({
+          lat: String(business.geoLocation.lat),
+          lng: String(business.geoLocation.lng),
+        });
+      }
+
+      // Set formatted address
+      if (business?.address) {
+        const formatted = [
+          business.address.location,
+          business.address.city,
+          business.address.country,
+        ]
+          .filter(Boolean)
+          .join(", ");
+
+        setAddress(formatted);
+      }
+
+      setSelectAuthorityId(business?.authorityId?._id || "");
+      setSelectedDmoId(business?.dmoId?._id || "");
+      setGalleryImages(business?.images);
+      setBusinessLogoImage({ image: business?.logo?.image });
+    }
+  }, [business, currentView, businessId, currentStep]);
 
   const steps = [
     { number: 1, title: t("step_basic_info"), icon: FileText },
@@ -130,118 +280,258 @@ export default function CreateBusinessWizard({
     { number: 9, title: t("step_review_submit"), icon: CheckCircle },
   ];
 
-  // Auto-generate slug
-  useEffect(() => {
-    if (formData.nameEn && !editData) {
-      const slug = formData.nameEn
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/(^-|-$)/g, "");
-      setFormData((prev: any) => ({ ...prev, slug }));
-    }
-  }, [formData.nameEn, editData]);
-
   // Draft Save Payload per Step
-  const stepPayloadMap: Record<number, any> = {
-    1: {
-      authority: formData.authority,
-      nameEn: formData.nameEn,
-      nameHe: formData.nameHe,
-      nameAr: formData.nameAr,
-      shortDescriptionEn: formData.shortDescriptionEn,
-      shortDescriptionHe: formData.shortDescriptionHe,
-      shortDescriptionAr: formData.shortDescriptionAr,
-      fullDescriptionEn: formData.fullDescriptionEn,
-      fullDescriptionHe: formData.fullDescriptionHe,
-      fullDescriptionAr: formData.fullDescriptionAr,
-      slug: formData.slug,
-      internalNotes: formData.internalNotes,
-      categories: formData.categories,
+  const stepPayloadMap = {
+    // step 1:
+    authorityId: selectedAuthorityId,
+    // dmoId: selectedDmoId,
+    name: formData.nameEn,
+    shortDescription: formData.shortDescriptionEn,
+    description: formData.fullDescriptionEn,
+    internalNotes: formData.internalNotes,
+    // step 2
+    busiEmail: formData.email,
+    phoneNumber: formData.phone,
+    contactDetails: {
+      name: formData.contactDetails?.name,
+      countryCode: formData.contactDetails?.countryCode,
+      phone: formData.contactDetails?.phone,
+      address: formData.contactDetails?.address,
+      email: formData.contactDetails?.email,
+      whatsAppCountryCode: formData.contactDetails?.whatsAppCountryCode,
+      whatsAppNumber: formData.contactDetails?.whatsAppNumber,
+      prefferedChannel: formData.contactDetails?.prefferedChannel,
     },
-    2: {
-      email: formData.email,
-      phone: formData.phone,
-      website: formData.website,
-      contactPerson: formData.contactPerson,
-      preferredChannel: formData.preferredChannel,
-      collaborators: formData.collaborators,
+    //  step 3
+    address: {
+      country: addr.country,
+      city: addr.city,
+      location: addr.location,
     },
-    3: {
-      address: formData.address,
-      coordinates: formData.coordinates,
-    },
-    4: {
-      primaryCategory: formData.primaryCategory,
-      subcategories: formData.subcategories,
-      tags: formData.tags,
-      accessibility: formData.accessibility,
-      groupTypes: formData.groupTypes,
-      serviceType: formData.serviceType,
-    },
-    5: {
-      logo: formData.logo,
-      images: formData.images,
-    },
-    6: {
-      operatingHours: formData.operatingHours,
-    },
-    7: {
-      vendorDelivers: formData.vendorDelivers,
-      pickupAvailable: formData.pickupAvailable,
-      deliveryAreas: formData.deliveryAreas,
-      deliveryAdditionalInfo: formData.deliveryAdditionalInfo,
-      deliveryReturnExchange: formData.deliveryReturnExchange,
-      deliverySpecificSellerInfo: formData.deliverySpecificSellerInfo,
-    },
-    8: {
-      onlinePresence: formData.onlinePresence,
-    },
+    geoLocation: geo,
+    //  step 4
+    primaryCategoryId: formData.primaryCategory,
+    // subcategories: formData.subcategories,
+    tags: formData.tags,
+    accessibilitiesId: selectedAccessiblitiesId,
+    groupTypesId: selectedGroupTypesId,
+    // serviceType: formData.serviceType,
+    //  step 5
+    logo: { image: logoGcsUrl },
+    images: galleryImages,
+    //  step 6
+    openingHrs: formData.operatingHours,
+    // step 7
+    // vendorDelivers: formData.vendorDelivers,
+    isPickUpAvailable: formData.pickupAvailable,
+    deliveryArea: formData.deliveryAreas,
+    deliveryAdditionalInfo: formData.deliveryAdditionalInfo,
+    deliveryReturnExchange: formData.deliveryReturnExchange,
+    deliverySpecificSellerInfo: formData.deliverySpecificSellerInfo,
+    // step 8
+    socialMedia: formData.socialMedia,
   };
 
-  // Auto-save draft
-  const handleSaveDraft = async () => {
-    try {
-      const payload = stepPayloadMap[currentStep];
-      if (!payload) return;
+  const { markDirty, saveDraft } = useBusinessDraftSaver({
+    currentStep,
+    businessId,
+    setBusinessId,
+    initBusinessCreate,
+    updateBusiness,
+    stepPayloadMap,
+  });
 
-      // Simulate API call
-      setIsSaving(true);
-      setIsSaving(false);
-      setLastSaved(new Date());
+  const validateStep = (step: number): boolean => {
+    const newErrors: Record<string, string> = {};
 
-      toast.success(t("business_saved_as_draft"));
-    } catch (error: any) {
-      toast.error(error?.message || t("something_went_wrong"));
+    switch (step) {
+      case 1:
+        // if (!formData.nameEn?.trim()) newErrors.nameEn = t("required_field");
+        if (!formData.shortDescriptionEn?.trim())
+          newErrors.shortDescriptionEn = t("required_field");
+        if (!formData.fullDescriptionEn?.trim())
+          newErrors.fullDescriptionEn = t("required_field");
+        if (formData.nameEn?.length < 3)
+          newErrors.nameEn = t("field_too_short");
+        break;
+      case 2: {
+        if (formData.email?.trim() === "") {
+          newErrors.email = t("required_field");
+        }
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        if (formData.email && !emailRegex.test(formData.email.trim())) {
+          newErrors.email = t("invalid_email_format");
+        }
+        if (formData.phone?.trim() === "")
+          newErrors.phone = t("required_field");
+        break;
+      }
+
+      case 3:
+        if (!addr.city || !addr.country || !addr.location) {
+          newErrors.address = t("required_field");
+        }
+        break;
+      case 4:
+        if (formData.primaryCategory?.trim() === "") {
+          newErrors.primaryCategory = t("primary_category_required");
+        }
+        break;
     }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
-  const handleNext = () => {
-    handleSaveDraft();
-    if (currentStep < totalSteps) setCurrentStep(currentStep + 1);
+  const handleNext = async () => {
+    if (!validateStep(currentStep) && isPublishBtnClicked) return;
+    if (currentStep === 5) {
+      const logoUrl = await uploadLogoImage();
+      setLogoGcsUrl(logoUrl);
+      await uploadAll();
+    }
+    setCurrentStep((prev) => prev + 1);
   };
 
   const handlePrevious = () => {
     if (currentStep > 1) setCurrentStep(currentStep - 1);
   };
 
-  const handleSubmit = () => {
-    // Here you can validate all steps before final submit
-    onSave({ ...formData, status: "pending" });
+  const handleSaveDraft = async () => {
+    const logoUrl = await uploadLogoImage();
+    setLogoGcsUrl(logoUrl);
+    await uploadAll();
+    await saveDraft(false);
+    if (businessId) {
+      await createWebsiteAccessItem({
+        body: websiteAccessItemPayload,
+        itemId: businessId,
+      });
+    }
   };
 
+  const handlePublish = async () => {
+    setIsPublishBtnClicked(true);
+    // Validate all steps
+    let allValid = true;
+    for (let i = 1; i <= 5; i++) {
+      if (!validateStep(i)) {
+        allValid = false;
+        setCurrentStep(i);
+        break;
+      }
+    }
+    if (!allValid) {
+      toast.error(t("fill_all_fields"));
+      return;
+    }
+
+    setIsPublishing(true);
+    await saveDraft(true);
+    if (businessId) {
+      await createWebsiteAccessItem({
+        body: websiteAccessItemPayload,
+        itemId: businessId,
+      });
+    }
+    setIsPublishing(false);
+    toast.success(t("business created succesfully"));
+    onClose();
+  };
+  console.log("formDaata", formData);
+  useEffect(() => {
+    if (currentView === "edit") {
+      setBusinessId(business?._id);
+    }
+  }, [currentView]);
+
+  const websiteAccessItemPayload = {
+    blacklist: {
+      allItems: websiteVisibilityIds.allBlacklistIds,
+      selectedItems: websiteVisibilityIds.selectedBlacklistIds,
+    },
+    whitelist: {
+      allItems: websiteVisibilityIds.allWhitelistIds,
+      selectedItems: websiteVisibilityIds.selectedWhitelistIds,
+    },
+    purpose: "business",
+  };
   const renderStep = () => {
-    const commonProps = { theme, isRTL, t, formData, errors, setFormData };
+    const commonProps = {
+      theme,
+      isRTL,
+      t,
+      formData,
+      errors,
+      setFormData,
+      markDirty,
+      business,
+      currentView,
+    };
+    const mediaProps = {
+      theme,
+      t,
+      errors,
+      markDirty,
+      logoImage,
+      handleLogoImageSelect,
+      deleteTargetLogo,
+      setDeleteTargetLogo,
+      isLogoImageDeleting,
+      confirmDeleteLogo,
+      handleDeleteLogoImage,
+      images,
+      imagesRef,
+      primaryImageIndex,
+      setPrimaryImage,
+      handleImageUpload,
+      deleteTarget,
+      setDeleteTarget,
+      isImageDeleting,
+      confirmDelete,
+      handleDeleteImage,
+    };
     switch (currentStep) {
       case 1:
-        return <BusinessBasicInfos {...commonProps} canApprove />;
+        return (
+          <BusinessBasicInfos
+            {...commonProps}
+            businessId={businessId}
+            canApprove
+            selectedDmoId={selectedDmoId}
+            setSelectDmoId={setSelectedDmoId}
+            selectedAuthorityId={selectedAuthorityId}
+            setSelectAuthorityId={setSelectAuthorityId}
+            websiteVisibilityIds={websiteVisibilityIds}
+            setWebsiteVisibilityIds={setWebsiteVisibilityIds}
+            businessAssociatedWebsites={business?.associatedWebsites ?? []}
+          />
+        );
       case 2:
         return <BusinessContactOwership {...commonProps} />;
       case 3:
-        return <BusinessLocation {...commonProps} />;
+        return (
+          <BusinessLocation
+            {...commonProps}
+            geo={geo}
+            setGeo={setGeo}
+            address={address}
+            setAddress={setAddress}
+          />
+        );
       case 4:
-        return <BusinessAttributes {...commonProps} />;
+        return (
+          <BusinessAttributes
+            {...commonProps}
+            selectedAccessiblitiesId={selectedAccessiblitiesId}
+            setAccessiblitiesId={setAccessiblitiesId}
+            selectedGroupTypesId={selectedGroupTypesId}
+            setGroupTypesId={setGroupTypesId}
+          />
+        );
       case 5:
-        return <BusinessMedia {...commonProps} />;
+        return <BusinessMedia {...mediaProps} business={business} />;
       case 6:
         return <BusinessOpeningHours {...commonProps} />;
       case 7:
@@ -256,46 +546,47 @@ export default function CreateBusinessWizard({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-      <div
-        className={`w-full max-w-4xl max-h-[90vh] rounded-lg shadow-2xl flex flex-col ${
-          theme === "dark" ? "bg-gray-900" : "bg-white"
-        }`}
-      >
-        {/* Header */}
-        <div
-          className={`px-6 py-4 border-b ${theme === "dark" ? "border-gray-800" : "border-gray-200"}`}
-        >
-          <div className="flex items-center justify-between mb-4">
-            <h2
-              className={`text-2xl ${theme === "dark" ? "text-gray-100" : "text-gray-900"}`}
-            >
-              {editData ? t("edit_business") : t("create_new_business")}
+    <ModalWrapper onClose={onClose} showSpinner={isCreating || isSaving}>
+      {/* Header */}
+      <div className={clsx("px-6 py-4 border-b", textPrimary)}>
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h2 className={clsx("text-2xl", textPrimary)}>
+              {currentView === "edit"
+                ? t("edit_business")
+                : t("create_new_business")}
             </h2>
-            <button
-              onClick={onClose}
-              className={`p-2 rounded-lg transition-colors ${
-                theme === "dark"
-                  ? "hover:bg-gray-800 text-gray-400"
-                  : "hover:bg-gray-100 text-gray-600"
-              }`}
+            <p
+              className={`text-sm ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
             >
-              <X className="w-6 h-6" />
-            </button>
-          </div>
+              {t("step")} {currentStep} {t("of")} {totalSteps}:{" "}
+              {steps[currentStep - 1].title}
+            </p>
 
-          {/* Progress Bar */}
-          <div className="flex items-center gap-2 mb-2">
-            {steps.map((step) => {
-              const Icon = step.icon;
-              return (
-                <div
-                  key={step.number}
-                  onClick={() => setCurrentStep(step.number)}
-                  className="flex-1 flex items-center gap-2 cursor-pointer"
-                >
+            {lastSaved && (
+              <p
+                className={`text-xs mt-2 ${theme === "dark" ? "text-gray-500" : "text-gray-500"}`}
+              >
+                {t("saved")} {lastSaved.toLocaleTimeString()}
+              </p>
+            )}
+          </div>
+          <PublishButton onClick={handlePublish} isLoading={isPublishing} />
+        </div>
+
+        <div className="flex items-center gap-2 mb-4">
+          {steps.map((step) => {
+            const Icon = step.icon;
+            return (
+              <div
+                key={step.number}
+                onClick={() => setCurrentStep(step.number)}
+                className="flex-1 cursor-pointer"
+              >
+                <div className="flex items-center gap-2">
+                  {/* Icon */}
                   <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center text-sm ${
+                    className={`w-8 h-8 rounded-full flex items-center justify-center text-sm flex-shrink-0 ${
                       step.number === currentStep
                         ? "bg-teal-600 text-white"
                         : step.number < currentStep
@@ -311,6 +602,8 @@ export default function CreateBusinessWizard({
                       <Icon className="w-4 h-4" />
                     )}
                   </div>
+
+                  {/* Connecting Line */}
                   {step.number < totalSteps && (
                     <div
                       className={`flex-1 h-1 rounded ${
@@ -323,41 +616,35 @@ export default function CreateBusinessWizard({
                     />
                   )}
                 </div>
-              );
-            })}
-          </div>
 
-          <p
-            className={`text-sm ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
-          >
-            {t("step")} {currentStep} {t("of")} {totalSteps}:{" "}
-            {steps[currentStep - 1].title}
-          </p>
-
-          {lastSaved && (
-            <p
-              className={`text-xs mt-2 ${theme === "dark" ? "text-gray-500" : "text-gray-500"}`}
-            >
-              {t("saved")} {lastSaved.toLocaleTimeString()}
-            </p>
-          )}
+                {/* Step Title Below */}
+                <div className="mt-1">
+                  <span
+                    className={`text-xs block text-center md:block text-nowrap overflow-hidden ${textTertiary}`}
+                  >
+                    {step.title}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
         </div>
-
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6">{renderStep()}</div>
-
-        {/* Footer */}
-        <WizardFooter
-          currentStep={currentStep}
-          totalSteps={totalSteps}
-          isSaving={isSaving}
-          isPublishing={isSaving}
-          onPrevious={handlePrevious}
-          onNext={handleNext}
-          onSaveDraft={handleSaveDraft}
-          onPublish={handleSubmit}
-        />
       </div>
-    </div>
+
+      {/* Content */}
+      <div className="flex-1 overflow-y-auto p-6">{renderStep()}</div>
+
+      {/* Footer */}
+      <WizardFooter
+        currentStep={currentStep}
+        totalSteps={totalSteps}
+        isSaving={isSaving || isCreating}
+        isPublishing={isPublishing}
+        onPrevious={handlePrevious}
+        onNext={handleNext}
+        onSaveDraft={handleSaveDraft}
+        onPublish={handlePublish}
+      />
+    </ModalWrapper>
   );
 }

@@ -7,10 +7,8 @@ import { useTranslation } from "react-i18next";
 type WizardFooterProps = {
   currentStep: number;
   totalSteps: number;
-
   isSaving: boolean;
   isPublishing: boolean;
-
   onPrevious: () => void;
   onNext: () => void;
   onSaveDraft: () => void;
@@ -72,7 +70,7 @@ export default function WizardFooter({
           disabled={isSaving}
           className={`px-4 py-2 rounded-lg border cursor-pointer transition-colors ${
             theme === "dark"
-              ? "border-gray-700 hover:bg-gray-800"
+              ? "border-gray-700 hover:bg-gray-800 text-gray-300"
               : "border-gray-300 hover:bg-gray-100"
           }`}
         >

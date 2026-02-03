@@ -1,4 +1,4 @@
-import type { FC } from "react";
+import { type FC } from "react";
 import { Mail, Phone, User } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
@@ -10,12 +10,17 @@ interface ContactPerson {
   name: string;
   email: string;
   phone: string;
+  address: string;
+  countryCode: string;
+  whatsAppCountryCode: string;
+  whatsAppNumber: string;
+  prefferedChannel: string;
 }
 
 interface BusinessContactFormData {
   email: string;
   phone: string;
-  contactPerson: ContactPerson;
+  contactDetails: ContactPerson;
 }
 
 interface FormErrors {
@@ -26,12 +31,13 @@ interface FormErrors {
 interface BusinessContactOwershipProps {
   theme: ThemeMode;
   isRTL: boolean;
-
+  business: any;
   formData: BusinessContactFormData;
   setFormData: (data: BusinessContactFormData) => void;
-
   errors: FormErrors;
+  currentView: View;
 }
+type View = "list" | "details" | "create" | "edit" | undefined;
 
 /* ---------------- Component ---------------- */
 
@@ -53,7 +59,7 @@ const BusinessContactOwership: FC<BusinessContactOwershipProps> = ({
             theme === "dark" ? "text-gray-300" : "text-gray-700"
           }`}
         >
-          {t("business_email")} *
+          {t("business_email")} <span className="text-red-500">*</span>
         </label>
 
         <div className="relative">
@@ -93,7 +99,7 @@ const BusinessContactOwership: FC<BusinessContactOwershipProps> = ({
             theme === "dark" ? "text-gray-300" : "text-gray-700"
           }`}
         >
-          {t("phone_number")} *
+          {t("phone_number")} <span className="text-red-500">*</span>
         </label>
 
         <div className="relative">
@@ -146,12 +152,12 @@ const BusinessContactOwership: FC<BusinessContactOwershipProps> = ({
         <div className="space-y-4">
           <input
             type="text"
-            value={formData.contactPerson.name}
+            value={formData.contactDetails?.name}
             onChange={(e) =>
               setFormData({
                 ...formData,
-                contactPerson: {
-                  ...formData.contactPerson,
+                contactDetails: {
+                  ...formData.contactDetails,
                   name: e.target.value,
                 },
               })
@@ -166,12 +172,12 @@ const BusinessContactOwership: FC<BusinessContactOwershipProps> = ({
 
           <input
             type="email"
-            value={formData.contactPerson.email}
+            value={formData.contactDetails?.email}
             onChange={(e) =>
               setFormData({
                 ...formData,
-                contactPerson: {
-                  ...formData.contactPerson,
+                contactDetails: {
+                  ...formData.contactDetails,
                   email: e.target.value,
                 },
               })
@@ -186,12 +192,12 @@ const BusinessContactOwership: FC<BusinessContactOwershipProps> = ({
 
           <input
             type="tel"
-            value={formData.contactPerson.phone}
+            value={formData.contactDetails?.phone}
             onChange={(e) =>
               setFormData({
                 ...formData,
-                contactPerson: {
-                  ...formData.contactPerson,
+                contactDetails: {
+                  ...formData.contactDetails,
                   phone: e.target.value,
                 },
               })

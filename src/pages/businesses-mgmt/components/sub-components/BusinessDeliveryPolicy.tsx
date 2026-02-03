@@ -13,11 +13,12 @@ interface DeliveryArea {
   price: string;
   pickUpLocation: PickupLocation[];
 }
+type View = "list" | "details" | "create" | "edit" | undefined;
 
 interface BusinessDeliveryFormData {
   vendorDelivers: boolean;
   pickupAvailable: boolean;
-  deliveryAreas: DeliveryArea[];
+  deliveryArea: DeliveryArea[];
   deliveryReturnExchange: string[];
   deliveryAdditionalInfo: string;
   deliverySpecificSellerInfo: string[];
@@ -26,10 +27,11 @@ interface BusinessDeliveryFormData {
 interface BusinessDeliveryPolicyProps {
   theme: Theme;
   isRTL: boolean;
+  currentView: View;
 
   formData: BusinessDeliveryFormData;
   setFormData: (data: BusinessDeliveryFormData) => void;
-
+  business: any;
   t: (key: string) => string;
 }
 
@@ -76,6 +78,17 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
     t("seller_info_option9"),
   ];
 
+  //   if (!business || currentView !== "edit") return;
+
+  //   setFormData({
+  //     vendorDelivers: business.vendorDelivers ?? false,
+  //     pickupAvailable: business.isPickUpAvailable ?? false,
+  //     deliveryArea: business.deliveryArea ?? [],
+  //     deliveryReturnExchange: business.deliveryReturnExchange ?? [],
+  //     deliveryAdditionalInfo: business.deliveryAdditionalInfo ?? "",
+  //     deliverySpecificSellerInfo: business.deliverySpecificSellerInfo ?? [],
+  //   });
+  // }, [business, setFormData, currentView]);
   return (
     <div className="space-y-6">
       <h3
@@ -88,7 +101,7 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
 
       {/* Delivery Options */}
       <div className="flex items-center gap-6">
-        <label className="flex items-center gap-2 cursor-pointer">
+        {/* <label className="flex items-center gap-2 cursor-pointer">
           <input
             type="checkbox"
             checked={formData.vendorDelivers}
@@ -104,7 +117,7 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
           >
             {t("vendor_delivers")}
           </span>
-        </label>
+        </label> */}
 
         <label className="flex items-center gap-2 cursor-pointer">
           <input
@@ -141,8 +154,8 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
               onClick={() =>
                 setFormData({
                   ...formData,
-                  deliveryAreas: [
-                    ...formData.deliveryAreas,
+                  deliveryArea: [
+                    ...formData.deliveryArea,
                     { area: "", price: "", pickUpLocation: [] },
                   ],
                 })
@@ -155,7 +168,7 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
           </div>
 
           <div className="space-y-4">
-            {formData.deliveryAreas.map((deliveryArea, areaIdx) => (
+            {formData.deliveryArea?.map((deliveryArea, areaIdx) => (
               <div
                 key={areaIdx}
                 className={`p-4 rounded-lg border ${
@@ -166,37 +179,60 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
               >
                 <div className="grid grid-cols-12 gap-3 mb-3">
                   {/* Area */}
+                  {/* Delivery Area */}
                   <div className="col-span-5">
-                    <label className="block text-xs mb-1 text-gray-500">
+                    <label
+                      className={`block text-xs mb-1 ${
+                        theme === "dark" ? "text-gray-400" : "text-gray-500"
+                      }`}
+                    >
                       {t("delivery_area")}
                     </label>
+
                     <input
                       type="text"
                       value={deliveryArea.area}
                       onChange={(e) => {
-                        const areas = [...formData.deliveryAreas];
+                        const areas = [...formData.deliveryArea];
                         areas[areaIdx].area = e.target.value;
-                        setFormData({ ...formData, deliveryAreas: areas });
+                        setFormData({ ...formData, deliveryArea: areas });
                       }}
                       placeholder={isRTL ? "באר שבע" : "Be'er Sheva"}
-                      className="w-full px-3 py-2 rounded-lg border text-sm focus:ring-2 focus:ring-teal-500"
+                      className={`w-full px-3 py-2 rounded-lg border text-sm focus:ring-2 focus:ring-teal-500
+      ${
+        theme === "dark"
+          ? "bg-gray-900 border-gray-700 text-gray-100 placeholder-gray-500"
+          : "bg-white border-gray-300 text-gray-900 placeholder-gray-400"
+      }
+    `}
                     />
                   </div>
 
                   {/* Price */}
                   <div className="col-span-3">
-                    <label className="block text-xs mb-1 text-gray-500">
+                    <label
+                      className={`block text-xs mb-1 ${
+                        theme === "dark" ? "text-gray-400" : "text-gray-500"
+                      }`}
+                    >
                       {t("delivery_price")}
                     </label>
+
                     <input
                       type="number"
                       value={deliveryArea.price}
                       onChange={(e) => {
-                        const areas = [...formData.deliveryAreas];
+                        const areas = [...formData.deliveryArea];
                         areas[areaIdx].price = e.target.value;
-                        setFormData({ ...formData, deliveryAreas: areas });
+                        setFormData({ ...formData, deliveryArea: areas });
                       }}
-                      className="w-full px-3 py-2 rounded-lg border text-sm focus:ring-2 focus:ring-teal-500"
+                      className={`w-full px-3 py-2 rounded-lg border text-sm focus:ring-2 focus:ring-teal-500
+      ${
+        theme === "dark"
+          ? "bg-gray-900 border-gray-700 text-gray-100 placeholder-gray-500"
+          : "bg-white border-gray-300 text-gray-900 placeholder-gray-400"
+      }
+    `}
                     />
                   </div>
 
@@ -215,7 +251,13 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
                           },
                         })
                       }
-                      className="w-full px-3 py-2 rounded-lg border text-sm flex justify-center gap-1"
+                      className={`w-full px-3 py-2 rounded-lg border text-sm flex justify-center gap-1
+      ${
+        theme === "dark"
+          ? "bg-gray-900 border-gray-700 text-gray-300 hover:bg-gray-800"
+          : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+      }
+    `}
                     >
                       <MapPin className="w-4 h-4" />
                       {t("add_location")}
@@ -228,7 +270,7 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
                       onClick={() =>
                         setFormData({
                           ...formData,
-                          deliveryAreas: formData.deliveryAreas.filter(
+                          deliveryArea: formData.deliveryArea?.filter(
                             (_, i) => i !== areaIdx,
                           ),
                         })
@@ -247,7 +289,11 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
 
       {/* Return & Exchange */}
       <div>
-        <label className="block text-sm mb-2">
+        <label
+          className={`block text-sm mb-2 ${
+            theme === "dark" ? "text-gray-300" : "text-gray-700"
+          }`}
+        >
           {t("return_exchange_policy")}
         </label>
 
@@ -255,22 +301,30 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
           {DELIVERY_RETURN_EXCHANGE_OPTIONS.map((option) => (
             <label
               key={option}
-              className="flex items-start gap-3 cursor-pointer"
+              className={`flex items-start gap-3 cursor-pointer
+          ${theme === "dark" ? "text-gray-300" : "text-gray-700"}
+        `}
             >
               <input
                 type="checkbox"
-                checked={formData.deliveryReturnExchange.includes(option)}
+                checked={formData.deliveryReturnExchange?.includes(option)}
                 onChange={(e) =>
                   setFormData({
                     ...formData,
                     deliveryReturnExchange: e.target.checked
                       ? [...formData.deliveryReturnExchange, option]
-                      : formData.deliveryReturnExchange.filter(
+                      : formData.deliveryReturnExchange?.filter(
                           (p) => p !== option,
                         ),
                   })
                 }
-                className="mt-1 w-4 h-4"
+                className={`mt-1 w-4 h-4 rounded
+            ${
+              theme === "dark"
+                ? "bg-gray-900 border-gray-700 text-teal-500"
+                : "bg-white border-gray-300 text-teal-600"
+            }
+          `}
               />
               <span className="text-sm">{option}</span>
             </label>
@@ -280,7 +334,14 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
 
       {/* Additional Info */}
       <div>
-        <label className="block text-sm mb-2">{t("additional_details")}</label>
+        <label
+          className={`block text-sm mb-2 ${
+            theme === "dark" ? "text-gray-300" : "text-gray-700"
+          }`}
+        >
+          {t("additional_details")}
+        </label>
+
         <textarea
           value={formData.deliveryAdditionalInfo}
           onChange={(e) =>
@@ -291,13 +352,23 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
           }
           rows={3}
           placeholder={t("additional_details_placeholder")}
-          className="w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-teal-500"
+          className={`w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-teal-500
+      ${
+        theme === "dark"
+          ? "bg-gray-900 border-gray-700 text-gray-100 placeholder-gray-500"
+          : "bg-white border-gray-300 text-gray-900 placeholder-gray-400"
+      }
+    `}
         />
       </div>
 
       {/* Seller Info */}
       <div>
-        <label className="block text-sm mb-2">
+        <label
+          className={`block text-sm mb-2 ${
+            theme === "dark" ? "text-gray-300" : "text-gray-700"
+          }`}
+        >
           {t("specific_seller_delivery_info")}
         </label>
 
@@ -305,22 +376,30 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
           {DELIVERY_SPECIFIC_SELLER_INFO_OPTIONS.map((option) => (
             <label
               key={option}
-              className="flex items-start gap-3 cursor-pointer"
+              className={`flex items-start gap-3 cursor-pointer
+          ${theme === "dark" ? "text-gray-300" : "text-gray-700"}
+        `}
             >
               <input
                 type="checkbox"
-                checked={formData.deliverySpecificSellerInfo.includes(option)}
+                checked={formData.deliverySpecificSellerInfo?.includes(option)}
                 onChange={(e) =>
                   setFormData({
                     ...formData,
                     deliverySpecificSellerInfo: e.target.checked
                       ? [...formData.deliverySpecificSellerInfo, option]
-                      : formData.deliverySpecificSellerInfo.filter(
+                      : formData.deliverySpecificSellerInfo?.filter(
                           (i) => i !== option,
                         ),
                   })
                 }
-                className="mt-1 w-4 h-4"
+                className={`mt-1 w-4 h-4 rounded 
+            ${
+              theme === "dark"
+                ? "bg-gray-900 border-gray-700 text-teal-500"
+                : "bg-white border-gray-300 text-teal-600"
+            }
+          `}
               />
               <span className="text-sm">{option}</span>
             </label>

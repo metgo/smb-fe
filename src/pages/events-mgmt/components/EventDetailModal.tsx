@@ -1,7 +1,7 @@
 import React from "react";
-import { useAppSelector } from "@/hooks/hooks";
-import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useTranslation } from "react-i18next";
+
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 import {
   X,
   Calendar,
@@ -9,7 +9,6 @@ import {
   MapPin,
   Clock,
   DollarSign,
-  FileDown,
   Search,
   Users,
   Edit,
@@ -26,6 +25,7 @@ import {
 import { ReordableDataTable } from "@/components/shared";
 import { useGetEventsStatsQuery } from "@/store/api/eventQueryApi";
 import { extractCenterAddressText, extractEventDates } from "@/helpers";
+import { ExportBtns } from "@/components/btns";
 
 interface EventDetailModalProps {
   isRTL: boolean;
@@ -54,8 +54,7 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
 }) => {
   const filteredRegistrants: any[] = [];
   const { t } = useTranslation("events");
-  const { textPrimary, textSecondary, textTertiary } = useThemeClasses();
-  const { theme } = useAppSelector((state) => state.settings);
+  const { textPrimary, textSecondary, textTertiary, theme } = useThemeClasses();
   const { data: eventStatsData, isLoading: _isEventStatsFetching } =
     useGetEventsStatsQuery({ eventId: selectedEvent ? selectedEvent._id : "" });
 
@@ -92,6 +91,73 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
     a.href = url;
     a.download = `${selectedEvent.name.replace(/\s+/g, "_")}_registrants.csv`;
     a.click();
+  };
+
+  const exportToPDF = () => {
+    if (!selectedEvent) return;
+
+    // Create a simple HTML document for PDF printing
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) return;
+
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>${selectedEvent.name} - ${t("registrants")}</title>
+          <style>
+            body { font-family: Arial, sans-serif; padding: 20px; }
+            h1 { color: #333; margin-bottom: 20px; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+            th { background-color: #14b8a6; color: white; }
+            tr:nth-child(even) { background-color: #f9f9f9; }
+          </style>
+        </head>
+        <body>
+          <h1>${selectedEvent.name}</h1>
+          <p><strong>${t("total_registrations")}:</strong> ${filteredRegistrants.length}</p>
+          <table>
+            <thead>
+              <tr>
+                <th>${t("full_name")}</th>
+                <th>${t("phone")}</th>
+                <th>${t("email")}</th>
+                <th>${t("quantity")}</th>
+                <th>${t("ticket_type")}</th>
+                <th>${t("total")}</th>
+                <th>${t("payment_status")}</th>
+                <th>${t("reg_date")}</th>
+                <th>${t("source_website")}</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${filteredRegistrants
+                .map(
+                  (reg) => `
+                <tr>
+                  <td>${reg.fullName}</td>
+                  <td>${reg.phone}</td>
+                  <td>${reg.email}</td>
+                  <td>${reg.quantity}</td>
+                  <td>${reg.ticketType}</td>
+                  <td>₪${reg.totalPrice}</td>
+                  <td>${reg.paymentStatus}</td>
+                  <td>${reg.registrationDate}</td>
+                  <td>${reg.sourceWebsite}</td>
+                </tr>
+              `,
+                )
+                .join("")}
+            </tbody>
+          </table>
+        </body>
+      </html>
+    `;
+
+    printWindow.document.write(htmlContent);
+    printWindow.document.close();
+    printWindow.print();
   };
 
   const getPaymentStatusColor = (status: string) => {
@@ -161,7 +227,7 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
             <div className="flex items-center gap-2">
               <button
                 onClick={() => handleEditEvent()}
-                className="flex items-center gap-2 px-4 py-2 bg-linear-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-lg transition-all transform hover:scale-105 shadow-md hover:shadow-lg"
+                className=" cursor-pointer flex items-center gap-2 px-4 py-2 bg-linear-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white rounded-lg transition-all transform hover:scale-105 shadow-md hover:shadow-lg"
               >
                 <Edit className="w-4 h-4" />
                 <span className="font-medium text-sm">Edit</span>
@@ -369,21 +435,11 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
 
           {/* Registrants Table */}
           <section>
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center justify-between mb-4">
               <h3 className={`text-2xl font-semibold ${textPrimary}`}>
                 {t("registrants")} ({filteredRegistrants.length})
               </h3>
-              <button
-                onClick={exportToCSV}
-                className={`px-5 py-3 rounded-xl text-sm font-medium flex items-center gap-2 transition-all ${
-                  theme === "dark"
-                    ? "bg-gray-800 hover:bg-gray-700 text-gray-300"
-                    : "bg-gray-100 hover:bg-gray-200 text-gray-700"
-                }`}
-              >
-                <FileDown className="w-5 h-5" />
-                {t("export_csv")}
-              </button>
+              <ExportBtns exportToCSV={exportToCSV} exportToPDF={exportToPDF} />
             </div>
 
             {/* Search */}
@@ -421,6 +477,7 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
                   rowKey="id"
                   data={filteredRegistrants}
                   onRowClick={(item) => setSelectedRegistrant?.(item)}
+                  t={t}
                   storageKey="registrantsTableColumnOrder"
                   columns={[
                     {

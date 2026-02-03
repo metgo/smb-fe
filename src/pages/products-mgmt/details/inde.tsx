@@ -38,7 +38,7 @@ export default function ProductDetails({
   onBack,
   onEdit,
   onDuplicate,
-}: ProductDetailsProps) {
+}: any) {
   const { t, i18n } = useTranslation("products");
   const { isRTL, theme } = useAppSelector((state) => state.settings);
   const language = i18n.language as Language;
@@ -310,7 +310,7 @@ export default function ProductDetails({
               <p
                 className={`text-3xl font-bold ${theme === "dark" ? "text-white" : "text-gray-900"}`}
               >
-                {product.quantity.sold.toLocaleString()}
+                {product.quantity?.sold.toLocaleString()}
               </p>
             </div>
 

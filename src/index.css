@@ -213,3 +213,23 @@ body::-webkit-scrollbar,
 html {
   font-size: var(--font-size);
 }
+button {
+  cursor: pointer;
+}
+
+.ck-editor__editable {
+  min-height: 180px;
+}
+
+/* Disable CKEditor sticky toolbar completely */
+.email-editor-wrapper .ck-sticky-panel__content_sticky {
+  position: static !important;
+  top: auto !important;
+  box-shadow: none !important;
+}
+
+/* Remove placeholder height that causes layout jump */
+.email-editor-wrapper .ck-sticky-panel__placeholder {
+  display: none !important;
+  height: 0 !important;
+}

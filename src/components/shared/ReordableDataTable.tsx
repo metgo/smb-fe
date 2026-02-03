@@ -1,14 +1,17 @@
-import React, { useState, useEffect, useMemo } from "react";
+import clsx from "clsx";
+import React, { useState, useEffect, useMemo, useRef } from "react";
+
 import {
   ArrowUpDown,
   ArrowUp,
   ArrowDown,
-  GripVertical,
+  // GripVertical,
   Loader,
 } from "lucide-react";
 
 import { useAppSelector } from "@/hooks/hooks";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 
 type SortDirection = "asc" | "desc" | null;
 
@@ -19,7 +22,6 @@ interface Column<T> {
   render?: (item: T) => React.ReactNode;
   width?: string;
 }
-
 interface DataTableProps<T> {
   data: T[];
   columns: Column<T>[];
@@ -29,6 +31,9 @@ interface DataTableProps<T> {
   onSelectionChange?: (selected: Set<any>) => void;
   rowKey: keyof T;
   isDataLoading?: boolean;
+  next?: () => void;
+  hasMore?: boolean;
+  t?: (key: string) => string;
 }
 
 export default function ReordableDataTable<T extends Record<string, any>>({
@@ -39,28 +44,42 @@ export default function ReordableDataTable<T extends Record<string, any>>({
   selectedItems,
   onSelectionChange,
   rowKey,
+  hasMore,
+  next,
+  t,
   isDataLoading = false,
 }: DataTableProps<T>) {
   const { theme, isRTL } = useAppSelector((state) => state.settings);
-  const { bgTertiary, borderColor, textSecondary, hoverBg } = useThemeClasses();
+  const { bgTertiary, borderColor, textSecondary, textPrimary, hoverBg } =
+    useThemeClasses();
+
+  const scrollRef = useRef<HTMLDivElement | null>(null);
 
   // Load saved column order
   const [columnOrder, setColumnOrder] = useState<string[]>(() => {
-    if (typeof window === "undefined")
+    if (typeof window === "undefined") {
       return columns.map((c) => c.key as string);
+    }
 
     try {
       const saved = localStorage.getItem(storageKey);
       if (saved) {
-        const parsed = JSON.parse(saved);
-        return parsed.filter((k: string) => columns.some((c) => c.key === k))
-          ?.length > 0
-          ? parsed
-          : columns.map((c) => c.key as string);
+        const parsed: string[] = JSON.parse(saved);
+
+        const validKeys = parsed.filter((k) =>
+          columns.some((c) => c.key === k),
+        );
+
+        const missingKeys = columns
+          .map((c) => c.key as string)
+          .filter((k) => !validKeys.includes(k));
+
+        return [...validKeys, ...missingKeys];
       }
     } catch (e) {
       console.error("Failed to load column order:", e);
     }
+
     return columns.map((c) => c.key as string);
   });
 
@@ -175,14 +194,25 @@ export default function ReordableDataTable<T extends Record<string, any>>({
     );
   };
 
+  //hook for scroll
+  useInfiniteScroll({
+    ref: scrollRef,
+    hasMore,
+    isLoading: isDataLoading,
+    onLoadMore: next,
+  });
+
   return (
     <div className={`rounded-xl border ${borderColor}`}>
       {/* Scrollable container */}
-      <div className="overflow-x-auto max-h-[calc(100vh-450px)] overflow-y-auto">
+      <div
+        className="overflow-x-auto max-h-[calc(100vh-450px)] overflow-y-auto"
+        id="business-table-scroll"
+        ref={scrollRef}
+      >
         <table className="w-full h-full">
-          {/* Sticky Header */}
           <thead
-            className={`sticky top-0 z-50 ${bgTertiary} border-b ${borderColor}`}
+            className={`sticky top-0 z-5 ${bgTertiary} border-b ${borderColor}`}
           >
             <tr>
               {columnOrder?.map((colKey) => {
@@ -197,7 +227,7 @@ export default function ReordableDataTable<T extends Record<string, any>>({
                   <th
                     key={colKey}
                     className={`p-3 text-${isRTL ? "right" : "left"} text-sm ${textSecondary} tracking-wider select-none
-                      ${isSortable ? "cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700" : ""}
+                      ${isSortable ? `cursor-pointer ${bgTertiary} ` : ""}
                       transition-colors group`}
                     style={{
                       width: column.width,
@@ -216,10 +246,6 @@ export default function ReordableDataTable<T extends Record<string, any>>({
                     onClick={() => isSortable && handleSort(field)}
                   >
                     <div className="flex items-center gap-2">
-                      {colKey !== "checkbox" && colKey !== "actions" && (
-                        <GripVertical className="w-4 h-4 opacity-0 group-hover:opacity-60 transition-opacity" />
-                      )}
-
                       {colKey === "checkbox" ? (
                         <input
                           type="checkbox"
@@ -229,7 +255,7 @@ export default function ReordableDataTable<T extends Record<string, any>>({
                               input.indeterminate = someSelected;
                           }}
                           onChange={toggleAll}
-                          className="rounded border-gray-300 dark:border-gray-600"
+                          className="rounded border-gray-300  "
                         />
                       ) : (
                         <>
@@ -243,9 +269,7 @@ export default function ReordableDataTable<T extends Record<string, any>>({
               })}
             </tr>
           </thead>
-
-          {/* Scrollable Body */}
-          <tbody className="divide-y divide-gray-200 dark:divide-gray-800">
+          <tbody>
             {isDataLoading ? (
               <tr>
                 <td
@@ -254,22 +278,19 @@ export default function ReordableDataTable<T extends Record<string, any>>({
                 >
                   <div className="flex flex-col items-center justify-center h-full gap-3">
                     <Loader className="w-10 h-10 animate-spin text-teal-600" />
-                    <span className="text-sm text-gray-500 dark:text-gray-400">
-                      Loading data...
-                    </span>
                   </div>
                 </td>
               </tr>
             ) : sortedData?.length === 0 ? (
               // No data state
+
               <tr>
                 <td
                   colSpan={columnOrder?.length || 1}
-                  className="h-32 text-center text-gray-500 dark:text-gray-400"
+                  className={clsx("h-32 text-center ", textPrimary)}
                 >
                   <div className="flex flex-col items-center justify-center h-full gap-2">
-                    <p>No data available</p>
-                    {/* Optional: add icon or illustration */}
+                    {t ? t("no_data") : "No data available"}
                   </div>
                 </td>
               </tr>
@@ -279,7 +300,7 @@ export default function ReordableDataTable<T extends Record<string, any>>({
                 <tr
                   key={item[rowKey] ?? idx}
                   onClick={() => onRowClick?.(item)}
-                  className={`transition-colors ${hoverBg} ${onRowClick ? "cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50" : ""}`}
+                  className={`${theme === "dark" ? "bg-gray-900 text-gray-400" : "bg-white"} ${hoverBg} ${onRowClick ? "cursor-pointer hover:bg-gray-50 " : ""} `}
                 >
                   {columnOrder?.map((colKey) => {
                     const column = columns.find((c) => c.key === colKey);
@@ -288,7 +309,10 @@ export default function ReordableDataTable<T extends Record<string, any>>({
                     return (
                       <td
                         key={colKey}
-                        className="p-3 text-sm"
+                        className={clsx(
+                          "p-3 text-sm cursor-pointer",
+                          textSecondary,
+                        )}
                         onClick={(e) =>
                           colKey === "checkbox" && e.stopPropagation()
                         }
@@ -298,7 +322,9 @@ export default function ReordableDataTable<T extends Record<string, any>>({
                             type="checkbox"
                             checked={selectedItems?.has(item[rowKey]) ?? false}
                             onChange={() => toggleRow(item)}
-                            className="rounded border-gray-300 dark:border-gray-600 focus:ring-teal-500"
+                            className={clsx(
+                              "rounded focus:ring-teal-500 cursor-pointer",
+                            )}
                           />
                         ) : column.render ? (
                           column.render(item)

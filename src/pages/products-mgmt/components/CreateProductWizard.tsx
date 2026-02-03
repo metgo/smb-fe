@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   X,
   Check,
@@ -26,18 +26,31 @@ import {
   useInitProductCreateMutation,
   useUpdateProductMutation,
 } from "@/store/api/productMutationApi";
-import { useGetAllbusinessesQuery } from "@/store/api/businessQueryApi";
+import { skipToken } from "@reduxjs/toolkit/query";
+
+import { useGetbusinessForProductQuery } from "@/store/api/businessQueryApi";
+import { useSearchParams } from "react-router-dom";
+import { useGetProductbyIdQuery } from "@/store/api/productQueryApi";
+import { useImagesUpload } from "@/hooks/useImagesUpload";
+import { categories } from "@/lib/utils";
 
 interface ProductWizardProps {
   onClose: () => void;
   editingProduct?: ProductFormData | null;
   preSelectedBusinessName?: string | null;
+  productId: string;
+  setProductId: (v: string) => void;
+  selectedProduct?: any;
+  currentView: string;
 }
 
 export default function CreateProductWizard({
   onClose,
   editingProduct,
-  preSelectedBusinessName,
+  productId,
+  setProductId,
+  selectedProduct,
+  currentView,
 }: ProductWizardProps) {
   const { t, i18n } = useTranslation("products");
   const { theme } = useAppSelector((state) => state.settings);
@@ -51,17 +64,43 @@ export default function CreateProductWizard({
   >("en");
   const [isSaving, setIsSaving] = useState(false); // unused but kept
   const [isPublishing, _setIsPublishing] = useState(false); // unused but kept
+  //image
+  const [galleryImages, setGalleryImages] = useState<TImages>([]);
 
   const { data: businessData, isLoading: isBusinessesLoading } =
-    useGetAllbusinessesQuery({ search: "" });
+    useGetbusinessForProductQuery({});
   const businesses = businessData?.data?.slice(0, 10);
-
   // const preSelectedBusinessId = preSelectedBusinessName
   //   ? businesses?.find((b) => b.name === preSelectedBusinessName)?.id || ""
   //   : "";
+  const [searchParams] = useSearchParams();
 
+  const productIdParam = searchParams.get("productId");
+  const { data: product } = useGetProductbyIdQuery(
+    productIdParam ? { productId: productId } : skipToken,
+  );
+  console.log("🚀 ~ CreateProductWizard ~ productId:", productId);
+
+  console.log("🚀 ~ CreateProductWizard ~ product:", product);
   const [businessId, setBusinessId] = useState("");
-
+  const {
+    images,
+    imagesRef,
+    primaryImageIndex,
+    handleImageUpload,
+    uploadAll,
+    setPrimaryImage,
+    // setImages,
+    deleteTarget,
+    setDeleteTarget,
+    confirmDelete,
+    isImageDeleting,
+    handleDeleteImage,
+  } = useImagesUpload({
+    initialImages: galleryImages,
+    onChange: setGalleryImages,
+  });
+  console.log(" setGalleryImages:", galleryImages);
   const [formData, setFormData] = useState<any>(
     editingProduct || {
       businessId: businessId,
@@ -80,7 +119,7 @@ export default function CreateProductWizard({
       isUnlimited: false,
       startDate: "",
       endDate: "",
-      mainImage: null,
+      images: null as TImages | null,
       additionalImages: [],
       enableHomeDelivery: false,
       enableStorePickup: false,
@@ -90,6 +129,50 @@ export default function CreateProductWizard({
       serviceLocation: "",
     },
   );
+
+  useEffect(() => {
+    if (!productId || currentView !== "edit" || !product) return;
+
+    setFormData((prev: any) => ({
+      ...prev,
+
+      // basic info
+      businessId: product._id || prev.businessId,
+      name: product.name || "",
+      nameHe: product.nameHe || "",
+      nameAr: product.nameAr || "",
+
+      shortDescription: product.shortDescription || "",
+      shortDescriptionHe: product.shortDescriptionHe || "",
+      shortDescriptionAr: product.shortDescriptionAr || "",
+      fullDescription: product.fullDescription || "",
+
+      type: product.productType || "",
+      categories: product.categories || [],
+
+      // pricing & stock
+      markedPrice: product.price.markedPrice || "",
+      sellingPrice: product.price.sellingPrice || "",
+      quantity: product.quantity.remaining || "",
+      isUnlimited: product.quantity.isUnlimited || false,
+
+      // dates
+      startDate: product.startDate || "",
+      endDate: product.endDate || "",
+
+      // images
+      images: product.images || null,
+      additionalImages: product.additionalImages || [],
+
+      // delivery / service
+      enableHomeDelivery: product.enableHomeDelivery || false,
+      enableStorePickup: product.enableStorePickup || false,
+      deliveryFee: product.deliveryFee || "",
+      deliveryTime: product.deliveryTime || "",
+      serviceDuration: product.serviceDuration || "",
+      serviceLocation: product.serviceLocation || "",
+    }));
+  }, [currentView, productId, product]);
 
   const availableCategories = [
     "Food & Dining",
@@ -109,7 +192,6 @@ export default function CreateProductWizard({
     borderColor,
     hoverBg,
   } = useThemeClasses();
-  const [productId, setProductId] = useState<string>("");
 
   const [initProductCreate, { isLoading: isCreating }] =
     useInitProductCreateMutation();
@@ -158,6 +240,7 @@ export default function CreateProductWizard({
     return Object.keys(newErrors).length === 0;
   };
   const handleSaveDraft = async () => {
+    await uploadAll();
     await saveDraft(false);
   };
 
@@ -210,6 +293,7 @@ export default function CreateProductWizard({
       // name: formData.name,
       // shortDescription: formData.shortDescription,
       // description: formData.fullDescription,
+      images: galleryImages,
     },
     5: {
       nameHe: formData.nameHe,
@@ -226,8 +310,12 @@ export default function CreateProductWizard({
       // serviceLocation: formData.serviceLocation,
     },
     6: {
-      enableHomeDelivery: formData.enableHomeDelivery,
-      enableStorePickup: formData.enableStorePickup,
+      // enableHomeDelivery: formData.enableHomeDelivery,
+      // enableStorePickup: formData.enableStorePickup,
+      // deliveryFee: formData.deliveryFee,
+      // deliveryTime: formData.deliveryTime,
+      // serviceDuration: formData.serviceDuration,
+      // serviceLocation: formData.serviceLocation,
     },
   };
   console.log("formData product", formData);
@@ -267,21 +355,21 @@ export default function CreateProductWizard({
     }
   };
 
-  const handleImageUpload = (file: File, type: "main" | "additional") => {
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const imageUrl = reader.result as string;
-      if (type === "main") {
-        setFormData({ ...formData, mainImage: imageUrl });
-      } else {
-        setFormData({
-          ...formData,
-          additionalImages: [...formData.additionalImages, imageUrl],
-        });
-      }
-    };
-    reader.readAsDataURL(file);
-  };
+  // const handleImageUpload = (file: File, type: "main" | "additional") => {
+  //   const reader = new FileReader();
+  //   reader.onloadend = () => {
+  //     const imageUrl = reader.result as string;
+  //     if (type === "main") {
+  //       setFormData({ ...formData, mainImage: imageUrl });
+  //     } else {
+  //       setFormData({
+  //         ...formData,
+  //         additionalImages: [...formData.additionalImages, imageUrl],
+  //       });
+  //     }
+  //   };
+  //   reader.readAsDataURL(file);
+  // };
 
   const renderStepContent = () => {
     const commonProps = {
@@ -289,6 +377,7 @@ export default function CreateProductWizard({
       theme,
       language,
       formData,
+
       setFormData,
       errors,
       selectedFormLanguage,
@@ -297,7 +386,22 @@ export default function CreateProductWizard({
       availableCategories,
       businesses,
     };
+    const mediaProps = {
+      theme,
+      t,
+      errors,
 
+      images,
+      imagesRef,
+      primaryImageIndex,
+      setPrimaryImage,
+      handleImageUpload,
+      deleteTarget,
+      setDeleteTarget,
+      isImageDeleting,
+      confirmDelete,
+      handleDeleteImage,
+    };
     switch (currentStep) {
       case 1:
         return (
@@ -312,7 +416,7 @@ export default function CreateProductWizard({
       case 3:
         return <ProductPricingAvailability {...commonProps} />;
       case 4:
-        return <ProductMedia {...commonProps} />;
+        return <ProductMedia {...mediaProps} {...commonProps} />;
       case 5:
         return <ProductMultilingualContent {...commonProps} />;
       case 6:
@@ -335,7 +439,7 @@ export default function CreateProductWizard({
         >
           <div>
             <h2 className={`text-2xl ${textPrimary} mb-1`}>
-              {editingProduct ? t("edit_product") : t("create_product")}
+              {currentView === "edit" ? t("edit_product") : t("create_product")}
             </h2>
             <p className={`text-sm ${textTertiary}`}>
               {t("step")} {currentStep} {t("of")} 7:{" "}

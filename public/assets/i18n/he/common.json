@@ -50,6 +50,22 @@
   "details": "פרטים",
   "edit": "עריכה",
 
+  "pending": "בהמתנה",
+  "approve": "אשר",
+  "reject": "דחה",
+  "archive": "ארכיון",
+  "draft": "טיוטה",
+  "export": "ייצוא",
+  "action": "פעולה",
+  "status": "סטטוס",
+  "selected": "נבחר",
+  "csv_export": "ייצוא CSV",
+  "pdf_export": "ייצוא PDF",
+  "free": "חינם",
+  "paid": "בתשלום",
+  "required": "נדרש",
+  "not_required": "לא נדרש",
+
   "delete_ticket": "מחיקת כרטיס",
   "delete_ticket_confirm": "האם אתה בטוח שברצונך למחוק כרטיס זה?",
   "deletd_notification": "מחיקת התראה",
@@ -83,5 +99,12 @@
   "wed": "ד׳",
   "thu": "ה׳",
   "fri": "ו׳",
-  "sat": "ש׳"
+  "sat": "ש׳",
+
+  "all": "הכול",
+  "select_dmo": "בחר DMO",
+  "select_authority": "בחר רשות",
+  "website_visibility": "נראות אתרים",
+  "select_associated_websites": "בחר אתרים משויכים",
+  "select_unassociated_websites": "בחר אתרים שאינם משויכים"
 }

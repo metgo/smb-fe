@@ -20,15 +20,15 @@ const ProductReviewSubmit: React.FC<ProductReviewSubmitProps> = ({
 
   const getTypeLabel = (type: string) => {
     switch (type) {
-      case "physical":
+      case "PHYSICAL":
         return t("physical_product");
-      case "table-order":
+      case "TABLE_ORDER":
         return t("table_order");
-      case "service":
+      case "SERVICE":
         return t("service");
-      case "hotel-room":
+      case "HOTEL":
         return t("hotel_room");
-      case "experience":
+      case "EXPERIENCE":
         return t("experience");
       default:
         return "-";

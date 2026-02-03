@@ -2,7 +2,6 @@ import { useState } from "react";
 import { generateMockProducts } from "@/helpers/data-generator";
 import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { useGetAllbusinessesQuery } from "@/store/api/businessQueryApi";
 
 const businessId = "";
 
@@ -11,9 +10,7 @@ export function useProductMgmt() {
   const language = (
     ["en", "he", "ar"].includes(i18n.language) ? i18n.language : "en"
   ) as Language;
-  // Mock businesses for wizard
-  // const { data: businessData } = useGetAllbusinessesQuery({});
-  // const businesses = businessData?.data?.slice(0, 10);
+
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const [selectedProducts, setSelectedProducts] = useState<Set<string>>(

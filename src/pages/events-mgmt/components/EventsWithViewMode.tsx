@@ -1,4 +1,8 @@
+import clsx from "clsx";
+import { toast } from "sonner";
+import { Link } from "react-router-dom";
 import { useState, useMemo } from "react";
+
 import {
   Calendar,
   ChevronLeft,
@@ -17,14 +21,17 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import {
+  BulkActionBar,
   ConfirmDialog,
   ImageWithFallback,
   ReordableDataTable,
 } from "@/components/shared";
 import { extractCenterAddressText, extractEventDates } from "@/helpers";
-import { Link } from "react-router-dom";
-import { useDeleteEventMutation } from "@/store/api/eventMutationApi";
-import { toast } from "sonner";
+import {
+  useDeleteEventMutation,
+  useUpdateEventMutation,
+} from "@/store/api/eventMutationApi";
+import { EventCardSkeleton } from "@/components/skeletons";
 
 interface EventsWithViewModeProps {
   events: any[];
@@ -90,9 +97,17 @@ export default function EventsWithViewMode({
 }: EventsWithViewModeProps) {
   const { t, i18n } = useTranslation("events");
   const language = i18n.language || "en";
-  const themeColor = useThemeClasses();
+  const {
+    bgPrimary,
+    bgSecondary,
+    bgTertiary,
+    borderColor,
+    textTertiary,
+    textPrimary,
+  } = useThemeClasses();
 
   const [deleteEvent, { isLoading: isDeleting }] = useDeleteEventMutation();
+  const [updateEvent] = useUpdateEventMutation();
 
   const [currentDate, setCurrentDate] = useState(new Date());
   const [calendarViewMode, setCalendarViewMode] =
@@ -189,6 +204,7 @@ export default function EventsWithViewMode({
     toast.success(res?.data?.message || "Event deleted successfully");
     refetch();
   };
+
   // Events on a given date
   const eventsOnDate = (date: Date) => {
     const dateStr = date.toISOString().split("T")[0]; // normalize input date
@@ -382,16 +398,14 @@ export default function EventsWithViewMode({
   const GridView = () => {
     const displayed = events?.slice(0, displayedListCount);
 
-    if (events?.length === 0) {
+    if (events?.length === 0 && !isLoading) {
       return (
         <div className="text-center py-12">
-          <AlertCircle
-            className={`w-16 h-16 mx-auto mb-4 ${themeColor.textTertiary}`}
-          />
-          <h3 className={`text-lg mb-2 ${themeColor.textPrimary}`}>
+          <AlertCircle className={`w-16 h-16 mx-auto mb-4 ${textTertiary}`} />
+          <h3 className={`text-lg mb-2 ${textPrimary}`}>
             {t("no_events_found")}
           </h3>
-          <p className={themeColor.textTertiary}>
+          <p className={textTertiary}>
             {searchQuery ||
             selectedWebsiteCount > 0 ||
             eventTypeFilter !== "all" ||
@@ -407,71 +421,86 @@ export default function EventsWithViewMode({
     return (
       <div className="py-6 px-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {displayed?.map((event) => {
-            return (
-              <div
-                key={event._id}
-                onClick={() => handleEventSelect(event)}
-                className="bg-white dark:bg-gray-900 relative rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow cursor-pointer"
-              >
-                <div className="relative h-52">
-                  {event?.images?.[0]?.image ? (
-                    <ImageWithFallback
-                      src={event?.images?.[0]?.image}
-                      alt={event.name}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-linear-to-br from-purple-400 to-pink-400 flex items-center justify-center">
-                      <Calendar className="w-20 h-20 text-white/40" />
-                    </div>
-                  )}
-                </div>
-
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setIsConfirmOpen(true);
-                    setEventToDelete(event._id);
-                  }}
-                  className="absolute top-3 right-3 z-50 cursor-pointer bg-white dark:bg-gray-800 p-2 rounded-full shadow hover:shadow-lg transition-shadow text-red-600"
-                >
-                  <TrashIcon size={16} />
-                </button>
-
-                <div className="p-5">
-                  <h3 className="font-semibold text-lg mb-3 line-clamp-2">
-                    {event.name}
-                  </h3>
-                  <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-                    <div className="flex items-center gap-2">
-                      <Calendar className="w-4 h-4" />
-                      {extractEventDates(event?.dayDescription)}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <MapPin className="w-4 h-4" />
-                      <span className="truncate">
-                        {extractCenterAddressText(event?.address?.location)}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="mt-5 flex justify-between items-center">
-                    <span
-                      className={`font-medium ${event.isFree ? "text-emerald-600" : "text-purple-600"}`}
-                    >
-                      {event?.isFree ? t("free") : `₪ 0`}
-                    </span>
-                    {event.registrationRequired && (
-                      <div className="text-xs text-gray-500">
-                        {event.totalRegistrations}/{event.capacity}
-                      </div>
+          {isLoading ? (
+            Array.from({ length: 7 }).map((_, index) => (
+              <EventCardSkeleton key={index} />
+            ))
+          ) : (
+            <>
+              {displayed?.map((event) => {
+                return (
+                  <div
+                    key={event._id}
+                    onClick={() => handleEventSelect(event)}
+                    className={clsx(
+                      bgPrimary,
+                      textPrimary,
+                      " relative rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow cursor-pointer",
                     )}
+                  >
+                    <div className="relative h-52">
+                      {event?.images?.[0]?.image ? (
+                        <ImageWithFallback
+                          src={event?.images?.[0]?.image}
+                          alt={event.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-linear-to-br from-purple-400 to-pink-400 flex items-center justify-center">
+                          <Calendar className="w-20 h-20 text-white/40" />
+                        </div>
+                      )}
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsConfirmOpen(true);
+                        setEventToDelete(event._id);
+                      }}
+                      className={clsx(
+                        "absolute top-3 right-3 z-50 cursor-pointer p-2 rounded-full shadow hover:shadow-lg transition-shadow text-red-600 border",
+                        bgTertiary,
+                      )}
+                    >
+                      <TrashIcon size={16} />
+                    </button>
+
+                    <div className="p-5">
+                      <h3 className="font-semibold text-lg mb-3 line-clamp-2">
+                        {event.name}
+                      </h3>
+                      <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+                        <div className="flex items-center gap-2">
+                          <Calendar className="w-4 h-4" />
+                          {extractEventDates(event?.dayDescription)}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <MapPin className="w-4 h-4" />
+                          <span className="truncate">
+                            {extractCenterAddressText(event?.address?.location)}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="mt-5 flex justify-between items-center">
+                        <span
+                          className={`font-medium ${event.isFree ? "text-emerald-600" : "text-purple-600"}`}
+                        >
+                          {event?.isFree ? t("free") : `₪ 0`}
+                        </span>
+                        {event.registrationRequired && (
+                          <div className="text-xs text-gray-500">
+                            {event.totalRegistrations}/{event.capacity}
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
-            );
-          })}
+                );
+              })}
+            </>
+          )}
         </div>
 
         {events?.length > displayedListCount && (
@@ -633,8 +662,68 @@ export default function EventsWithViewMode({
     );
   };
 
+  const handleBulkStatusChange = async (status: TStatus) => {
+    if (!selectedEvents.size) return;
+    const toastId = toast.loading(
+      "Please wait. Event's status are changing...",
+    );
+
+    try {
+      const results = await Promise.all(
+        Array.from(selectedEvents).map((eventId: string) =>
+          updateEvent({ eventId, body: { status: status?.toUpperCase() } }),
+        ),
+      );
+      const message = results[0]?.data?.message;
+      toast.success(message, { id: toastId });
+      setSelectedEvents(new Set());
+      refetch();
+    } catch (error: any) {
+      toast.error(error?.message || "Failed to change events status", {
+        id: toastId,
+      });
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (!selectedEvents.size) return;
+    const toastId = toast.loading("Please wait. Events are deleting...");
+    try {
+      const results = await Promise.all(
+        Array.from(selectedEvents).map((eventId: string) =>
+          deleteEvent({ eventId }),
+        ),
+      );
+
+      const message =
+        results[0]?.data?.message || "Events deleted successfully";
+      toast.success(message, { id: toastId });
+      setSelectedEvents(new Set());
+      refetch();
+    } catch (error: any) {
+      toast.error(error?.message || "Failed to delete events");
+    }
+  };
+
+  const handleBulkCsvExport = () => {
+    console.log("CSV export for:", 2);
+  };
+  const handleBulkPdfExport = () => {
+    console.log("PDF export for:", 2);
+  };
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-2">
+      <BulkActionBar
+        selectedItemCount={selectedEvents.size || 0}
+        handleBulkStatusChange={handleBulkStatusChange}
+        onBulkAction={{
+          delete: handleBulkDelete,
+          csvExport: handleBulkCsvExport,
+          pdfExport: handleBulkPdfExport,
+        }}
+      />
+
       {/* Controls */}
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
         {viewMode === "calendar" && (
@@ -691,7 +780,13 @@ export default function EventsWithViewMode({
       </div>
 
       {/* Main Content */}
-      <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 flex-1 overflow-y-auto max-h-[calc(100vh-450px)]">
+      <div
+        className={clsx(
+          bgSecondary,
+          borderColor,
+          "border flex-1 overflow-y-auto max-h-[calc(100vh-450px)]",
+        )}
+      >
         {calendarViewMode === "calendar-month" && viewMode === "calendar" && (
           <MonthView />
         )}
