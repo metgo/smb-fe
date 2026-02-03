@@ -1,5 +1,6 @@
 import Select from "react-select";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import ImageWithFallback from "./ImageWithFallback";
 
 export type WebsiteOption = {
   value: string;
@@ -25,7 +26,7 @@ export default function WebsiteSelect({
   value,
   onChange,
   placeholder = "Select website",
-  isClearable = true,
+  isClearable = false,
   isDisabled = false,
 }: Props) {
   const { isDark } = useThemeClasses();
@@ -128,7 +129,7 @@ export default function WebsiteSelect({
       }}
       formatOptionLabel={(option: WebsiteOption) => (
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <img
+          <ImageWithFallback
             src={option.logo}
             alt={option.label}
             style={{ width: 24, height: 24, objectFit: "contain" }}

@@ -17,6 +17,7 @@ import { userMutationApi } from "./api/userMutationApi";
 import { userQueryApi } from "./api/userQueryApi";
 import { mediaMutationApi } from "./api/mediaMutationApi";
 import { commonMutationApi } from "./api/commonMutationApi";
+import { saveSettings, saveUserInfo } from "@/lib/storage";
 
 export const store = configureStore({
   reducer: {
@@ -55,6 +56,11 @@ export const store = configureStore({
       mediaMutationApi.middleware,
       commonMutationApi.middleware,
     ),
+});
+
+store.subscribe(() => {
+  saveSettings(store.getState().settings);
+  saveUserInfo(store.getState().auth);
 });
 
 export type RootState = ReturnType<typeof store.getState>;

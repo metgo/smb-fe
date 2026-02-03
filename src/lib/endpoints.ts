@@ -7,7 +7,7 @@ export const endpoints = {
 
   popularProductsStats: "/popular-products",
   popularBusinessStats: "/popular-business",
-  popularPoiStats: "/popular-pois",
+  popularPoiStats: "/popular-poi",
 
   businessStats: "/home-stats/businesses",
   poiStats: "/home-stats/point-of-interests",
@@ -15,8 +15,8 @@ export const endpoints = {
   eventStats: "/stats/events",
   voucherStats: "/stats/vouchers",
   onlineOrderStats: "/stats/orders",
-  offlineOrderStats: "/offline-order",
-  purchaseReportsStats: "/stats/purchase-reports",
+  offlineOrderStats: "/home-stats/offline-order",
+  purchaseReportsStats: "/home-stats/purchase-reports",
 
   googleAnalyticsViews: "/google-analytics-views",
 

@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import clsx from "clsx";
 
 interface AssignBankAccountModalProps {
-  theme: Theme;
+  isDark: boolean;
   userId: string;
   banks: Bank[];
   refetch: () => void;
@@ -15,7 +15,7 @@ interface AssignBankAccountModalProps {
 }
 
 const AssignBankAccountModal = ({
-  theme,
+  isDark,
   userId,
   banks,
   refetch,
@@ -110,25 +110,23 @@ const AssignBankAccountModal = ({
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div
-        className={`${theme === "dark" ? "bg-gray-800" : "bg-white"} rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto`}
+        className={`${isDark ? "bg-gray-800" : "bg-white"} rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto`}
       >
         {/* Modal Header */}
         <div
-          className={`sticky top-0 ${theme === "dark" ? "bg-gray-800" : "bg-white"} border-b ${theme === "dark" ? "border-gray-700" : "border-gray-200"} p-6 flex items-center justify-between`}
+          className={`sticky top-0 ${isDark ? "bg-gray-800" : "bg-white"} border-b ${isDark ? "border-gray-700" : "border-gray-200"} p-6 flex items-center justify-between`}
         >
-          <h3
-            className={`text-2xl ${theme === "dark" ? "text-white" : "text-gray-900"}`}
-          >
+          <h3 className={`text-2xl ${isDark ? "text-white" : "text-gray-900"}`}>
             {savedBankAccount
               ? t("edit_bank_account") || "Edit Bank Account"
               : t("add_bank_account") || "Add Bank Account"}
           </h3>
           <button
             onClick={handleCloseBankModal}
-            className={`p-2 rounded-lg ${theme === "dark" ? "hover:bg-gray-700" : "hover:bg-gray-100"} transition-colors`}
+            className={`p-2 rounded-lg ${isDark ? "hover:bg-gray-700" : "hover:bg-gray-100"} transition-colors`}
           >
             <X
-              className={`w-6 h-6 ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
+              className={`w-6 h-6 ${isDark ? "text-gray-400" : "text-gray-600"}`}
             />
           </button>
         </div>
@@ -159,7 +157,7 @@ const AssignBankAccountModal = ({
                 }));
                 setErrors((prev) => ({ ...prev, bankNumber: undefined }));
               }}
-              className={`w-full px-4 py-3 rounded-lg border ${theme === "dark" ? "bg-gray-700 border-gray-600 text-gray-200" : "bg-white border-gray-300 text-gray-900"} focus:outline-none focus:ring-2 focus:ring-teal-500 disabled:opacity-50 disabled:cursor-not-allowed`}
+              className={`w-full px-4 py-3 rounded-lg border ${isDark ? "bg-gray-700 border-gray-600 text-gray-200" : "bg-white border-gray-300 text-gray-900"} focus:outline-none focus:ring-2 focus:ring-teal-500 disabled:opacity-50 disabled:cursor-not-allowed`}
             >
               <option value="">{t("select_bank")}</option>
               {banks.map((bank) => (
@@ -197,7 +195,7 @@ const AssignBankAccountModal = ({
                 setErrors((prev) => ({ ...prev, branchNumber: undefined }));
               }}
               disabled={!selectedBank || selectedBank.branches.length === 0}
-              className={`w-full px-4 py-3 rounded-lg border ${theme === "dark" ? "bg-gray-700 border-gray-600 text-gray-200" : "bg-white border-gray-300 text-gray-900"} focus:outline-none focus:ring-2 focus:ring-teal-500 disabled:opacity-50 disabled:cursor-not-allowed`}
+              className={`w-full px-4 py-3 rounded-lg border ${isDark ? "bg-gray-700 border-gray-600 text-gray-200" : "bg-white border-gray-300 text-gray-900"} focus:outline-none focus:ring-2 focus:ring-teal-500 disabled:opacity-50 disabled:cursor-not-allowed`}
             >
               <option value="">{t("select_branch")}</option>
               {selectedBank?.branches.map((branch) => (
@@ -232,7 +230,7 @@ const AssignBankAccountModal = ({
               }}
               placeholder="123456789"
               className={`w-full px-4 py-3 rounded-lg border ${
-                theme === "dark"
+                isDark
                   ? "bg-gray-700 border-gray-600 text-gray-200 placeholder-gray-500"
                   : "bg-white border-gray-300 text-gray-900 placeholder-gray-400"
               } focus:outline-none focus:ring-2 focus:ring-teal-500`}
@@ -256,7 +254,7 @@ const AssignBankAccountModal = ({
               }}
               placeholder="123456789"
               className={`w-full px-4 py-3 rounded-lg border ${
-                theme === "dark"
+                isDark
                   ? "bg-gray-700 border-gray-600 text-gray-200 placeholder-gray-500"
                   : "bg-white border-gray-300 text-gray-900 placeholder-gray-400"
               } focus:outline-none focus:ring-2 focus:ring-teal-500`}
@@ -283,7 +281,7 @@ const AssignBankAccountModal = ({
               }}
               placeholder="MetGo LTD"
               className={`w-full px-4 py-3 rounded-lg border ${
-                theme === "dark"
+                isDark
                   ? "bg-gray-700 border-gray-600 text-gray-200 placeholder-gray-500"
                   : "bg-white border-gray-300 text-gray-900 placeholder-gray-400"
               } focus:outline-none focus:ring-2 focus:ring-teal-500`}
@@ -293,12 +291,12 @@ const AssignBankAccountModal = ({
 
         {/* Modal Footer */}
         <div
-          className={`sticky bottom-0 ${theme === "dark" ? "bg-gray-800" : "bg-white"} border-t ${theme === "dark" ? "border-gray-700" : "border-gray-200"} p-6 flex items-center justify-end gap-3`}
+          className={`sticky bottom-0 ${isDark ? "bg-gray-800" : "bg-white"} border-t ${isDark ? "border-gray-700" : "border-gray-200"} p-6 flex items-center justify-end gap-3`}
         >
           <button
             onClick={handleCloseBankModal}
             className={`px-6 py-3 rounded-lg ${
-              theme === "dark"
+              isDark
                 ? "bg-gray-700 hover:bg-gray-600 text-gray-200"
                 : "bg-gray-200 hover:bg-gray-300 text-gray-800"
             } transition-colors cursor-pointer`}

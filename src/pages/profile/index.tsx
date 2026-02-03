@@ -19,6 +19,8 @@ import { useNavigate } from "react-router-dom";
 import { useGetUserInfoQuery } from "@/store/api/userQueryApi";
 import { formatDate } from "@/helpers/formatter";
 import { Spinner } from "@/components/shared";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
+import clsx from "clsx";
 
 export function getInitials(fullName: string): string {
   if (!fullName) return "";
@@ -32,13 +34,13 @@ export function getInitials(fullName: string): string {
 }
 
 export default function ProfilePage() {
-  const { t, i18n } = useTranslation("profile");
+  const { t } = useTranslation("profile");
   const { t: tBank } = useTranslation("banks");
-  const language = i18n.language;
 
   const banks = tBank("banks", { returnObjects: true }) as Bank[];
 
-  const { theme } = useAppSelector((state) => state.settings);
+  const { language } = useAppSelector((state) => state.settings);
+  const { isDark, textSecondary } = useThemeClasses();
   const { user } = useAppSelector((state) => state.auth);
   const navigate = useNavigate();
 
@@ -51,10 +53,11 @@ export default function ProfilePage() {
 
   const [showBankModal, setShowBankModal] = useState(false);
 
-  const handleLogout = () => {
-    localStorage.removeItem("userData");
-    localStorage.removeItem("user");
-    navigate(routes.auth);
+  const handleLogout = (e: any) => {
+    e.preventDefault();
+    localStorage.removeItem("user_info");
+    localStorage.removeItem("access_token");
+    navigate(routes.auth, { replace: true });
   };
 
   const bank = banks?.find(
@@ -72,7 +75,7 @@ export default function ProfilePage() {
         {/* Header */}
         <div
           className={`${
-            theme === "dark" ? "bg-gray-900" : "bg-white"
+            isDark ? "bg-gray-800" : "bg-white"
           } rounded-2xl shadow-lg p-8 mb-6`}
         >
           <div className="flex items-center gap-6">
@@ -85,14 +88,14 @@ export default function ProfilePage() {
             <div className="flex-1">
               <h1
                 className={`text-3xl mb-2 ${
-                  theme === "dark" ? "text-gray-200" : "text-gray-900"
+                  isDark ? "text-white" : "text-gray-900"
                 }`}
               >
                 {user?.firstName + " " + user?.lastName}
               </h1>
               <p
                 className={`text-lg ${
-                  theme === "dark" ? "text-teal-400" : "text-teal-600"
+                  isDark ? "text-teal-400" : "text-teal-600"
                 }`}
               >
                 {user?.role}
@@ -112,35 +115,33 @@ export default function ProfilePage() {
         {/* Contact Information */}
         <div
           className={`${
-            theme === "dark" ? "bg-gray-900 text-gray-300" : "bg-white"
+            isDark ? "bg-gray-800" : "bg-white"
           } rounded-2xl shadow-lg p-8 mb-6`}
         >
-          <h2 className="text-2xl mb-6">{t("contact_information")}</h2>
+          <h2 className={clsx("text-2xl mb-6", textSecondary)}>
+            {t("contact_information")}
+          </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <InfoItem
               icon={<Mail />}
               label={t("email")}
               value={userInfo?.email || ""}
-              theme={theme}
             />
             <InfoItem
               icon={<Phone />}
               label={t("phone")}
               value={userInfo?.phoneDetails.phoneNumber || ""}
-              theme={theme}
             />
             <InfoItem
               icon={<MapPin />}
               label={t("location")}
               value={userInfo?.address || ""}
-              theme={theme}
             />
             <InfoItem
               icon={<Calendar />}
               label={t("member_since")}
               value={formatDate(userInfo?.createdAt || "", language) || ""}
-              theme={theme}
             />
           </div>
         </div>
@@ -148,11 +149,11 @@ export default function ProfilePage() {
         {/* Bank Account */}
         <div
           className={`${
-            theme === "dark" ? "bg-gray-900 text-gray-300" : "bg-white"
+            isDark ? "bg-gray-800" : "bg-white"
           } rounded-2xl shadow-lg p-8`}
         >
           <div className="flex justify-between mb-6">
-            <h2 className="text-2xl font-medium">
+            <h2 className={clsx("text-2xl", textSecondary)}>
               {t("bank_account_details")}
             </h2>
 
@@ -178,21 +179,19 @@ export default function ProfilePage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="flex items-start gap-4">
                 <div
-                  className={`p-3 rounded-lg ${theme === "dark" ? "bg-gray-700" : "bg-gray-100"}`}
+                  className={`p-3 rounded-lg ${isDark ? "bg-gray-700" : "bg-gray-100"}`}
                 >
                   <CreditCard
-                    className={`w-6 h-6 ${theme === "dark" ? "text-teal-400" : "text-teal-600"}`}
+                    className={`w-6 h-6 ${isDark ? "text-teal-400" : "text-teal-600"}`}
                   />
                 </div>
                 <div>
                   <p
-                    className={`text-sm mb-1 ${theme === "dark" ? "text-gray-300" : "text-gray-600"}`}
+                    className={`text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
                   >
                     {t("bank_name") || "Bank Name"}
                   </p>
-                  <p
-                    className={`${theme === "dark" ? "text-gray-300" : "text-gray-900"}`}
-                  >
+                  <p className={`${isDark ? "text-white" : "text-gray-900"}`}>
                     {bank?.bankName}
                   </p>
                 </div>
@@ -200,21 +199,19 @@ export default function ProfilePage() {
 
               <div className="flex items-start gap-4">
                 <div
-                  className={`p-3 rounded-lg ${theme === "dark" ? "bg-gray-700" : "bg-gray-100"}`}
+                  className={`p-3 rounded-lg ${isDark ? "bg-gray-700" : "bg-gray-100"}`}
                 >
                   <Building2
-                    className={`w-6 h-6 ${theme === "dark" ? "text-teal-400" : "text-teal-600"}`}
+                    className={`w-6 h-6 ${isDark ? "text-teal-400" : "text-teal-600"}`}
                   />
                 </div>
                 <div>
                   <p
-                    className={`text-sm mb-1 ${theme === "dark" ? "text-gray-300" : "text-gray-600"}`}
+                    className={`text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
                   >
                     {t("branch_name") || "Branch Name"}
                   </p>
-                  <p
-                    className={`${theme === "dark" ? "text-gray-300" : "text-gray-900"}`}
-                  >
+                  <p className={`${isDark ? "text-white" : "text-gray-900"}`}>
                     {branchName}
                   </p>
                 </div>
@@ -222,21 +219,19 @@ export default function ProfilePage() {
 
               <div className="flex items-start gap-4">
                 <div
-                  className={`p-3 rounded-lg ${theme === "dark" ? "bg-gray-700" : "bg-gray-100"}`}
+                  className={`p-3 rounded-lg ${isDark ? "bg-gray-700" : "bg-gray-100"}`}
                 >
                   <User
-                    className={`w-6 h-6 ${theme === "dark" ? "text-teal-400" : "text-teal-600"}`}
+                    className={`w-6 h-6 ${isDark ? "text-teal-400" : "text-teal-600"}`}
                   />
                 </div>
                 <div>
                   <p
-                    className={`text-sm mb-1 ${theme === "dark" ? "text-gray-300" : "text-gray-600"}`}
+                    className={`text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
                   >
                     {t("account_number") || "Account Number"}
                   </p>
-                  <p
-                    className={`${theme === "dark" ? "text-gray-300" : "text-gray-900"}`}
-                  >
+                  <p className={`${isDark ? "text-white" : "text-gray-900"}`}>
                     {userInfo?.bankAccount?.accountNumber}
                   </p>
                 </div>
@@ -244,21 +239,19 @@ export default function ProfilePage() {
 
               <div className="flex items-start gap-4">
                 <div
-                  className={`p-3 rounded-lg ${theme === "dark" ? "bg-gray-700" : "bg-gray-100"}`}
+                  className={`p-3 rounded-lg ${isDark ? "bg-gray-700" : "bg-gray-100"}`}
                 >
                   <Building2
-                    className={`w-6 h-6 ${theme === "dark" ? "text-teal-400" : "text-teal-600"}`}
+                    className={`w-6 h-6 ${isDark ? "text-teal-400" : "text-teal-600"}`}
                   />
                 </div>
                 <div>
                   <p
-                    className={`text-sm mb-1 ${theme === "dark" ? "text-gray-300" : "text-gray-600"}`}
+                    className={`text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
                   >
                     {t("bn_number") || "BN Number (ח.פ.)"}
                   </p>
-                  <p
-                    className={`${theme === "dark" ? "text-gray-300" : "text-gray-900"}`}
-                  >
+                  <p className={`${isDark ? "text-white" : "text-gray-900"}`}>
                     {userInfo?.bankAccount?.businessNumberByGovt}
                   </p>
                 </div>
@@ -266,21 +259,19 @@ export default function ProfilePage() {
 
               <div className="flex items-start gap-4 md:col-span-2">
                 <div
-                  className={`p-3 rounded-lg ${theme === "dark" ? "bg-gray-700" : "bg-gray-100"}`}
+                  className={`p-3 rounded-lg ${isDark ? "bg-gray-700" : "bg-gray-100"}`}
                 >
                   <User
-                    className={`w-6 h-6 ${theme === "dark" ? "text-teal-400" : "text-teal-600"}`}
+                    className={`w-6 h-6 ${isDark ? "text-teal-400" : "text-teal-600"}`}
                   />
                 </div>
                 <div>
                   <p
-                    className={`text-sm mb-1 ${theme === "dark" ? "text-gray-300" : "text-gray-600"}`}
+                    className={`text-sm mb-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
                   >
                     {t("name_on_invoice") || "Name on Invoice"}
                   </p>
-                  <p
-                    className={`${theme === "dark" ? "text-gray-300" : "text-gray-900"}`}
-                  >
+                  <p className={`${isDark ? "text-white" : "text-gray-900"}`}>
                     {userInfo?.bankAccount?.invoiceName}
                   </p>
                 </div>
@@ -298,7 +289,7 @@ export default function ProfilePage() {
 
       <Activity mode={showBankModal ? "visible" : "hidden"}>
         <AssignBankAccountModal
-          theme={theme}
+          isDark
           banks={banks}
           refetch={refetch}
           userId={userInfo?.id || ""}
@@ -315,25 +306,26 @@ function InfoItem({
   icon,
   label,
   value,
-  theme,
 }: {
   icon: React.ReactNode;
   label: string;
   value: string;
-  theme: string;
 }) {
+  const { isDark, textSecondary, textTertiary } = useThemeClasses();
+
   return (
     <div className="flex gap-4">
       <div
-        className={`p-3 rounded-lg ${
-          theme === "dark" ? "bg-gray-700" : "bg-gray-100"
-        }`}
+        className={clsx(
+          "p-3 rounded-lg",
+          isDark ? "bg-gray-600 text-white/40" : "bg-gray-200 text-black",
+        )}
       >
         {icon}
       </div>
       <div>
-        <p className="text-sm">{label}</p>
-        <p>{value}</p>
+        <p className={clsx("text-sm", textTertiary)}>{label}</p>
+        <p className={clsx(textSecondary)}>{value}</p>
       </div>
     </div>
   );
