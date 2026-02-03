@@ -1,7 +1,7 @@
 import clsx from "clsx";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Calendar, Users, Ticket, DollarSign, Search } from "lucide-react";
 
 import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
@@ -24,6 +24,8 @@ import {
 
 export default function EventsMgmtPage() {
   const { t } = useTranslation("events");
+  const { t: tc } = useTranslation("common");
+
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
 
@@ -102,12 +104,8 @@ export default function EventsMgmtPage() {
 
   const handleCreateWizardClose = () => {
     navigate({}, { replace: true });
-    dispatch(eventQueryApi.util.resetApiState());
     setIsCreateWizardOpen(false);
   };
-  useEffect(() => {
-    if (!isCreateWizardOpen) refetch();
-  }, [isCreateWizardOpen, refetch]);
 
   const eventStats = [
     {
@@ -147,6 +145,8 @@ export default function EventsMgmtPage() {
           btnLabel={t("add_event")}
           h1Gradient={textPrimary}
           onClick={handleAddEvent}
+          onRefreshClick={() => dispatch(eventQueryApi.util.resetApiState())}
+          isRefreshing={_isLoading || _isEventStatsFetching}
         />
 
         <PageStats
@@ -200,9 +200,9 @@ export default function EventsMgmtPage() {
                         : "bg-white border-gray-300 text-gray-900"
                     }`}
                   >
-                    <option value="all">{t("all")}</option>
-                    <option value="free">{t("free")}</option>
-                    <option value="paid">{t("paid")}</option>
+                    <option value="all">{tc("all")}</option>
+                    <option value="free">{tc("free")}</option>
+                    <option value="paid">{tc("paid")}</option>
                   </select>
                 </div>
 
@@ -222,9 +222,9 @@ export default function EventsMgmtPage() {
                         : "bg-white border-gray-300 text-gray-900"
                     }`}
                   >
-                    <option value="all">{t("all")}</option>
-                    <option value="true">{t("required")}</option>
-                    <option value="false">{t("not_required")}</option>
+                    <option value="all">{tc("all")}</option>
+                    <option value="true">{tc("required")}</option>
+                    <option value="false">{tc("not_required")}</option>
                   </select>
                 </div>
 
@@ -242,10 +242,10 @@ export default function EventsMgmtPage() {
                         : "bg-white border-gray-300 text-gray-900"
                     }`}
                   >
-                    <option value="all">{t("all")}</option>
-                    <option value="PENDING">{t("pending")}</option>
-                    <option value="APPROVED">{t("approved")}</option>
-                    <option value="DRAFT">{t("draft")}</option>
+                    <option value="all">{tc("all")}</option>
+                    <option value="PENDING">{tc("pending")}</option>
+                    <option value="APPROVED">{tc("approved")}</option>
+                    <option value="DRAFT">{tc("draft")}</option>
                   </select>
                 </div>
 
