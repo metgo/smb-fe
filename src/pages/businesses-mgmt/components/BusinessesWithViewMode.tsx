@@ -91,8 +91,6 @@ export default function BusinessesList({
 
   //infinite scroll states
   const [page, setPage] = useState<number>(1);
-  const [hasMore, setHasMore] = useState(true);
-  const [businesses, setBusinesses] = useState<any[]>([]);
 
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const [error, _setError] = useState(false);
@@ -187,25 +185,18 @@ export default function BusinessesList({
 
   useEffect(() => {
     setPage(1);
-    setHasMore(true);
   }, [searchTerm, filters]);
+  console.log("current page:", page);
 
   const {
     data: businessData,
-    isFetching,
     isLoading,
+    isFetching,
     refetch,
   } = useGetAllbusinessesQuery(queryParams);
 
-  //infinite scroll logic
-  useEffect(() => {
-    if (!businessData?.data) return;
-    if (!businessData?.meta) return;
-    setHasMore(businessData.meta.hasNextPage);
-    setBusinesses((prev) =>
-      page === 1 ? businessData.data : [...prev, ...businessData.data],
-    );
-  }, [businessData, page]);
+  const businesses = businessData?.data ?? [];
+  const hasMore = businessData?.meta?.hasNextPage;
 
   const fetchNextPage = () => {
     if (!hasMore || isFetching) return;

@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from "react";
 import { Search, X } from "lucide-react";
 
 interface SearchInputProps {
@@ -15,8 +16,24 @@ const SearchInput: React.FC<SearchInputProps> = ({
   isRTL = false,
   theme = "light",
 }) => {
+  const [inputValue, setInputValue] = useState(searchTerm);
+
+  useEffect(() => {
+    setInputValue(searchTerm); // Sync if external searchTerm changes
+  }, [searchTerm]);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setSearchTerm(inputValue);
+    }, 3000); // 3 seconds debounce
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [inputValue, setSearchTerm]);
+
   return (
-    <div>
+    <div className="relative">
       <Search
         className={`absolute ${isRTL ? "right-3" : "left-3"} top-1/2 -translate-y-1/2 w-5 h-5 ${
           theme === "dark" ? "text-gray-500" : "text-gray-400"
@@ -26,8 +43,8 @@ const SearchInput: React.FC<SearchInputProps> = ({
       <input
         type="text"
         placeholder={placeholder}
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
+        value={inputValue}
+        onChange={(e) => setInputValue(e.target.value)}
         className={`w-full ${isRTL ? "pr-10 pl-4" : "pl-10 pr-4"} py-2 rounded-lg border ${
           theme === "dark"
             ? "bg-gray-800 border-gray-700 text-gray-200 placeholder-gray-500"
@@ -35,14 +52,14 @@ const SearchInput: React.FC<SearchInputProps> = ({
         } focus:outline-none focus:ring-2 focus:ring-teal-500`}
       />
 
-      {searchTerm && (
+      {inputValue && (
         <X
           className={`absolute ${isRTL ? "left-3" : "right-3"} top-1/2 -translate-y-1/2 cursor-pointer ${
             theme === "dark"
               ? "text-gray-400 hover:text-gray-200"
               : "text-gray-500 hover:text-black"
           }`}
-          onClick={() => setSearchTerm("")}
+          onClick={() => setInputValue("")}
           size={20}
         />
       )}
