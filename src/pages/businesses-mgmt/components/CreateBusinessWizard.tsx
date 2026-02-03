@@ -1,3 +1,4 @@
+import clsx from "clsx";
 import { toast } from "sonner";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -35,14 +36,13 @@ import { ModalWrapper } from "@/components/wrapper";
 import { useImagesUpload } from "@/hooks/useImagesUpload";
 import { useSingleImageUpload } from "@/hooks/useSingleImageUpload";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import clsx from "clsx";
-import { PublishButton } from "@/components/btns";
 import { useBusinessDraftSaver } from "../hooks/useBusinessDraftSaver";
-import { useGetbusinessBySlugQuery } from "@/store/api/businessQueryApi";
+import { useGetbusinessByIdQuery } from "@/store/api/businessQueryApi";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { useSearchParams } from "react-router-dom";
 import { parseAddress } from "@/helpers";
 import { useCreateWebsiteAccessItemMutation } from "@/store/api/commonMutationApi";
+import PublishButton from "@/components/btns/PublishButton";
 type View = "list" | "details" | "create" | "edit" | undefined;
 
 interface CreateBusinessWizardProps {
@@ -60,10 +60,10 @@ export default function CreateBusinessWizard({
   const { textPrimary, textTertiary } = useThemeClasses();
   const [searchParams] = useSearchParams();
   const [createWebsiteAccessItem] = useCreateWebsiteAccessItemMutation();
-  const businessSlug = searchParams.get("businessSlug");
+  const businessEditId = searchParams.get("businessId") ?? "";
 
-  const { data: business } = useGetbusinessBySlugQuery(
-    businessSlug ? { slug: businessSlug } : skipToken,
+  const { data: business } = useGetbusinessByIdQuery(
+    businessEditId ? { businessId: businessEditId } : skipToken,
   );
 
   const [isPublishing, setIsPublishing] = useState(false);

@@ -3,10 +3,11 @@ import { createApi } from "@reduxjs/toolkit/query/react";
 import { endpoints } from "@/lib/endpoints";
 import { axiosBaseQuery } from "./axiosBaseQuery";
 
-/* ---------------- Payload Union ---------------- */
-export type BusinessStepPayload =
-  | BusinessBasicInfoPayload
-  | BusinessContactPayload;
+interface IBulkUpdateParams {
+  businessesId: string[];
+  status?: string;
+  isDeleted?: boolean;
+}
 
 /* ---------------- API ---------------- */
 export const businessMutationApi = createApi({
@@ -22,9 +23,9 @@ export const businessMutationApi = createApi({
       }),
       invalidatesTags: ["Business"],
     }),
-    deleteBusiness: builder.mutation<any, { slug: string }>({
-      query: ({ slug }) => ({
-        url: `${endpoints.business}/${slug}`,
+    deleteBusiness: builder.mutation<any, { businessId: string }>({
+      query: ({ businessId }) => ({
+        url: `${endpoints.business}/${businessId}`,
         method: "DELETE",
       }),
     }),
@@ -36,6 +37,13 @@ export const businessMutationApi = createApi({
       }),
       invalidatesTags: ["Business"],
     }),
+    bulkBusinessesUpdate: builder.mutation<any, IBulkUpdateParams>({
+      query: (body) => ({
+        url: endpoints.bulkBusinessesUpdate,
+        method: "PATCH",
+        data: body,
+      }),
+    }),
   }),
 });
 
@@ -43,4 +51,5 @@ export const {
   useInitBusinessCreateMutation,
   useUpdateBusinessMutation,
   useDeleteBusinessMutation,
+  useBulkBusinessesUpdateMutation,
 } = businessMutationApi;

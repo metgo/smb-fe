@@ -5,13 +5,18 @@ export const endpoints = {
   registerStep1: "/auth/register-step1",
   registerStep2: "/auth/register-step2",
 
-  popularProducts: "/popular-products",
-  popularBusiness: "/popular-business",
+  popularProductsStats: "/popular-products",
+  popularBusinessStats: "/popular-business",
+  popularPoiStats: "/popular-poi",
 
-  businessStats: "/stats/business",
-  productStats: "/stats/product",
   eventStats: "/stats/events",
-  purchaseReportsStats: "/stats/purchase-reports",
+  businessStats: "/home-stats/businesses",
+  poiStats: "/home-stats/point-of-interests",
+  productStats: "/home-stats/products",
+  voucherStats: "/stats/vouchers",
+  onlineOrderStats: "/stats/orders",
+  offlineOrderStats: "/home-stats/offline-order",
+  purchaseReportsStats: "/home-stats/purchase-reports",
 
   googleAnalyticsViews: "/google-analytics-views",
 
@@ -26,6 +31,7 @@ export const endpoints = {
   business: "/businesses",
   businesses: "/businesses",
   businessStatDashboard: "/businesses-stat",
+  bulkBusinessesUpdate: "/bulk-businesses-update",
 
   // events
   events: "/events",

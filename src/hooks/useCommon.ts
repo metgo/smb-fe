@@ -20,14 +20,6 @@ export function useCommon() {
   const dmosAuthorities: IDmo[] = data?.data;
   const { data: allWebsites } = useGetAllWebsitesQuery();
 
-  const authorities = [
-    { value: "all", label: t("all_authorities") },
-    { value: "negev", label: "Western Negev Tourism Authority" },
-    { value: "southern", label: "Southern District Tourism" },
-    { value: "eilat", label: "Eilat Tourism Corporation" },
-    { value: "beersheva", label: "Be'er Sheva Development Authority" },
-  ];
-
   const websites = [
     { value: "all", label: t("all_websites") },
     { value: "visitnegev", label: "visitnegev.co.il" },
@@ -53,7 +45,6 @@ export function useCommon() {
     websites,
     dateRanges,
     languages,
-    authorities,
     dmosAuthorities,
     primaryCategories,
     accessibility,

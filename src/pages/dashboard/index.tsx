@@ -18,17 +18,20 @@ import {
   UpcomingEvents,
   WidgetSettingsPanel,
 } from "./components";
+import clsx from "clsx";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 const Dashboard = () => {
   const { t } = useTranslation("dashboard");
+  const dispatch = useAppDispatch();
   const { isEditMode } = useAppSelector((state) => state.ui);
+  const { isDark } = useThemeClasses();
   const {
     preferences,
     toggleWidgetVisibility,
     reorderWidgets,
     resetToDefaults,
   } = useWidgetPreferences();
-  const dispatch = useAppDispatch();
 
   // Desktop Dashboard widget management - always define these
   const desktopWidgets = preferences.desktop.sort((a, b) => a.order - b.order);
@@ -63,14 +66,33 @@ const Dashboard = () => {
         >
           {/* Edit Mode Banner */}
           {isEditMode && (
-            <div className="mb-6 bg-teal-50 dark:bg-teal-950/20 border border-teal-200 dark:border-teal-800 rounded-lg p-4">
+            <div
+              className={clsx(
+                "mb-6 rounded-lg p-4 border",
+                isDark
+                  ? "bg-teal-950/20 border-teal-800"
+                  : "bg-teal-50 border-teal-200",
+              )}
+            >
               <div className="flex items-center gap-3">
-                <Settings2 className="w-5 h-5 text-teal-600 dark:text-teal-400" />
+                <Settings2
+                  className={clsx(
+                    "w-5 h-5",
+                    isDark ? "text-teal-400" : "text-teal-600",
+                  )}
+                />
+
                 <div className="flex-1">
-                  <p className="text-sm text-teal-900 dark:text-teal-100">
-                    {t("edit_mode_active")} - {t("edit_mode_instructions")}
+                  <p
+                    className={clsx(
+                      "text-sm",
+                      isDark ? "text-teal-100" : "text-teal-900",
+                    )}
+                  >
+                    {t("edit_mode_active")} – {t("edit_mode_instructions")}
                   </p>
                 </div>
+
                 <Button
                   onClick={() => dispatch(toggleEditMode())}
                   className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg text-sm transition-colors"

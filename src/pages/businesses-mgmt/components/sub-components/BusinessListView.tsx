@@ -104,9 +104,12 @@ export default function BusinessListView({
       key: "shortDescription",
       label: t("shortDescription"),
       render: (business: any) => (
-        <span className={`${textPrimary} line-clamp-1`}>
-          {business.shortDescription || "-"}
-        </span>
+        <div
+          className={`${textPrimary} line-clamp-1`}
+          dangerouslySetInnerHTML={{
+            __html: business?.shortDescription || "-",
+          }}
+        />
       ),
     },
 

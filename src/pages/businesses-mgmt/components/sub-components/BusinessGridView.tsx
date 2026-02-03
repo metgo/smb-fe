@@ -57,8 +57,8 @@ function BusinessGridView<T extends Business>({
   const [deleteBusiness, { isLoading: isDeleting }] =
     useDeleteBusinessMutation();
 
-  const handleBusinessDelete = async (slug: string) => {
-    const res = await deleteBusiness({ slug });
+  const handleBusinessDelete = async (businessId: string) => {
+    const res = await deleteBusiness({ businessId });
     toast.success(res?.data?.message || "Business deleted successfully");
     refetch();
   };
@@ -108,7 +108,7 @@ function BusinessGridView<T extends Business>({
                 onClick={(e) => {
                   e.stopPropagation();
                   setIsConfirmOpen(true);
-                  setBusinessToDelete(business?.slug);
+                  setBusinessToDelete(business?._id);
                 }}
                 className="absolute top-2 right-2 z-5 p-1 cursor-pointer rounded-full text-red-600 bg-white"
                 aria-label={`Delete ${business.name}`}
