@@ -29,14 +29,10 @@ export function Login({ setCurrentTab }: LoginProps) {
 
     try {
       const data = await login({ email: username, password }).unwrap();
-
       if (typeof window !== "undefined") {
-        localStorage.setItem("userData", JSON.stringify(data));
-        localStorage.setItem("user", JSON.stringify(data.user));
-        localStorage.removeItem("dmoId");
-        localStorage.removeItem("authorityId");
+        localStorage.setItem("user_info", JSON.stringify({ user: data.user }));
+        localStorage.setItem("access_token", data.accessToken);
       }
-
       dispatch(loginSuccess(data.user));
 
       navigate(routes.dashboard, { replace: true });

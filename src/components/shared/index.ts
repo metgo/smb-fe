@@ -1,5 +1,6 @@
 import ConfirmDialog from "./ConfirmDialog";
 import DmoAuthorityWebsiteSelector from "./DmoAuthorityWebsiteSelector";
+import IdleLogout from "./IdleLogout";
 import ImageWithFallback from "./ImageWithFallback";
 import InfoTooltip from "./InfoTooltip";
 import PageHeader from "./PageHeader";
@@ -15,6 +16,7 @@ export {
   Spinner,
   PageStats,
   PageHeader,
+  IdleLogout,
   InfoTooltip,
   WizardFooter,
   WebsiteSelect,

@@ -1,14 +1,16 @@
+import clsx from "clsx";
 import { useTranslation } from "react-i18next";
 import { Ticket, ShoppingCart, Store } from "lucide-react";
 
 import { InfoTooltip } from "@/components/shared";
 import {
+  useGetOfflineOrderStatsQuery,
   useGetOnlineOrderStatsQuery,
   useGetVoucherStatsQuery,
 } from "@/store/api/itemStatsApi";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import clsx from "clsx";
 import { formatILS } from "@/helpers/formatter";
+import { useAppSelector } from "@/hooks/hooks";
 
 interface MetricProps {
   isDark: boolean;
@@ -17,23 +19,6 @@ interface MetricProps {
   trend?: number;
   icon?: React.ReactNode;
 }
-
-const getLastMonthRange = () => {
-  const now = new Date();
-
-  // First day of last month
-  const start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-
-  // Last day of last month
-  const end = new Date(now.getFullYear(), now.getMonth(), 0);
-
-  const format = (date: Date) => date.toISOString().split("T")[0]; // YYYY-MM-DD
-
-  return {
-    startDate: format(start),
-    endDate: format(end),
-  };
-};
 
 function Metric({ isDark, label, value, icon }: MetricProps) {
   return (
@@ -139,22 +124,22 @@ function SummaryCard({
 
 export default function FinancialSummary() {
   const { t } = useTranslation("dashboard");
-  const { startDate, endDate } = getLastMonthRange();
+  const { startDate, endDate } = useAppSelector((state) => state.auth);
   const { isDark } = useThemeClasses();
 
-  const onlineOrderParams = {
-    sortBy: "monthly",
-    startDate,
-    endDate,
-  };
   const voucherStatsParams = {
-    sortBy: "monthly",
     createdEndDate: endDate,
     createdStartDate: startDate,
   };
-  const { data: onlineOrderData } =
-    useGetOnlineOrderStatsQuery(onlineOrderParams);
+  const { data: onlineOrderData } = useGetOnlineOrderStatsQuery({
+    startDate,
+    endDate,
+  });
   const { data: voucherData } = useGetVoucherStatsQuery(voucherStatsParams);
+  const { data: offilneOrderData } = useGetOfflineOrderStatsQuery({
+    startDate,
+    endDate,
+  });
 
   const voucherMetrics = [
     {
@@ -192,9 +177,15 @@ export default function FinancialSummary() {
   ];
 
   const offlineOrdersMetrics = [
-    { label: t("total_amount"), value: "₪3,421,780", trend: 5.6 },
-    { label: t("credit_card"), value: "₪1,892,340", trend: 7.8 },
-    { label: t("paid_by_bank_transfer"), value: "₪1,529,440", trend: 3.1 },
+    {
+      label: t("total_amount"),
+      value: formatILS(offilneOrderData?.totalAmount),
+    },
+    { label: t("credit_card"), value: formatILS(offilneOrderData?.creditCard) },
+    {
+      label: t("paid_by_bank_transfer"),
+      value: formatILS(offilneOrderData?.bankTransfer),
+    },
   ];
 
   return (

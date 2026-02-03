@@ -6,18 +6,10 @@ import { useTranslation } from "react-i18next";
 
 export function useCommon() {
   const { t } = useTranslation("common");
-  const { data } = useGetDmosQuery();
 
+  const { data } = useGetDmosQuery();
   const dmosAuthorities: IDmo[] = data?.data;
   const { data: allWebsites } = useGetAllWebsitesQuery();
-
-  const authorities = [
-    { value: "all", label: t("all_authorities") },
-    { value: "negev", label: "Western Negev Tourism Authority" },
-    { value: "southern", label: "Southern District Tourism" },
-    { value: "eilat", label: "Eilat Tourism Corporation" },
-    { value: "beersheva", label: "Be'er Sheva Development Authority" },
-  ];
 
   const websites = [
     { value: "all", label: t("all_websites") },
@@ -44,7 +36,6 @@ export function useCommon() {
     websites,
     dateRanges,
     languages,
-    authorities,
     dmosAuthorities,
     allWebsites,
   };

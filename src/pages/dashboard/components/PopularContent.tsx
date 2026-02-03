@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next";
 import { InfoTooltip } from "@/components/shared";
 import {
   useGetPopularBusinessStatsQuery,
+  useGetPopularPoiStatsQuery,
   useGetPopularProductStatsQuery,
 } from "@/store/api/itemStatsApi";
 import {
@@ -16,6 +17,7 @@ import {
 import { Link } from "react-router-dom";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import clsx from "clsx";
+import { useAppSelector } from "@/hooks/hooks";
 
 interface PodiumItemProps {
   isDark: boolean;
@@ -171,7 +173,7 @@ function PopularCard({
   const { isDark } = useThemeClasses();
 
   // Top 3 for podium
-  const topThree = items.slice(0, 3);
+  const topThree = items?.slice(0, 3);
 
   // Reorder for podium display: 2nd, 1st, 3rd
   const podiumOrder = [topThree[1], topThree[0], topThree[2]];
@@ -250,10 +252,20 @@ function PopularCard({
 export default function PopularContent() {
   const { t } = useTranslation("dashboard");
   const { isDark } = useThemeClasses();
+  const { dmoId, authorityId } = useAppSelector((state) => state.auth);
 
-  const { data: popularBusinessStats } = useGetPopularBusinessStatsQuery();
-  const { data: popularProductStats } = useGetPopularProductStatsQuery();
-  // const { data: popularPoiStats } = useGetPopularPoiStatsQuery();
+  const { data: popularBusinessStats } = useGetPopularBusinessStatsQuery({
+    dmoId,
+    authorityId,
+  });
+  const { data: popularProductStats } = useGetPopularProductStatsQuery({
+    dmoId,
+    authorityId,
+  });
+  const { data: popularPoiStats } = useGetPopularPoiStatsQuery({
+    dmoId,
+    authorityId,
+  });
 
   const popularBusinesses = [
     {
@@ -291,24 +303,21 @@ export default function PopularContent() {
     },
   ];
 
-  const popularScreens = [
+  const popularPois = [
     {
       rank: 1,
-      name: "/attractions/ramon-crater",
-      metric: "892,394",
-      change: 18.7,
+      name: popularPoiStats?.[0]?.name,
+      metric: popularPoiStats?.[0]?.impact,
     },
     {
       rank: 2,
-      name: "/experiences/desert-adventures",
-      metric: "734,283",
-      change: 15.3,
+      name: popularPoiStats?.[1]?.name,
+      metric: popularPoiStats?.[1]?.impact,
     },
     {
       rank: 3,
-      name: "/accommodations/negev-hospitality",
-      metric: "623,847",
-      change: 12.4,
+      name: popularPoiStats?.[2]?.name,
+      metric: popularPoiStats?.[2]?.impact,
     },
   ];
 
@@ -343,7 +352,7 @@ export default function PopularContent() {
         <PopularCard
           title={t("popular_pois")}
           icon={<Monitor className="w-5 h-5 text-white" />}
-          items={popularScreens}
+          items={popularPois}
           metricLabel="Page views"
           navPath="/pois-management"
         />

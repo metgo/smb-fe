@@ -14,12 +14,16 @@ import { InfoTooltip } from "@/components/shared";
 import { useGetPurchaseReportsStatsQuery } from "@/store/api/itemStatsApi";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { formatILS } from "@/helpers/formatter";
+import { useAppSelector } from "@/hooks/hooks";
 
 interface PurchaseMetricProps {
   label: string;
   value: string;
   description?: string;
 }
+
+const formatMonth = (month: string) =>
+  new Date(month + "-01").toLocaleString("en", { month: "short" });
 
 function PurchaseMetric({ label, value, description }: PurchaseMetricProps) {
   const { isDark } = useThemeClasses();
@@ -68,47 +72,49 @@ function PurchaseMetric({ label, value, description }: PurchaseMetricProps) {
 export default function PurchasesReport() {
   const { t } = useTranslation("dashboard");
   const { isDark } = useThemeClasses();
+  const { startDate, endDate } = useAppSelector((state) => state.auth);
 
-  const { data } = useGetPurchaseReportsStatsQuery();
+  const { data } = useGetPurchaseReportsStatsQuery({ startDate, endDate });
 
-  const chartData = [
-    { month: t("jul"), creditCards: 156, vouchers: 89, total: 245 },
-    { month: t("aug"), creditCards: 195, vouchers: 117, total: 312 },
-    { month: t("sep"), creditCards: 178, vouchers: 111, total: 289 },
-    { month: t("oct"), creditCards: 245, vouchers: 133, total: 378 },
-    { month: t("nov"), creditCards: 276, vouchers: 147, total: 423 },
-    { month: t("dec"), creditCards: 298, vouchers: 158, total: 456 },
-  ];
+  const chartData =
+    data?.monthlyBreakdown?.map((item: any) => ({
+      month: formatMonth(item?.month),
+      creditCards: Number(item?.totalOrderAmount || 0),
+      vouchers: Number(item?.totalVoucherAmountRedeemed || 0),
+      total:
+        Number(item?.totalOrderAmount || 0) +
+        Number(item?.totalVoucherAmountRedeemed || 0),
+    })) ?? [];
 
   const purchasesReports = [
     {
       id: 1,
       label: t("avg_order"),
-      value: data?.datas?.averageOrderAmount,
+      value: data?.averageOrderAmount,
       description: t("per_transaction"),
     },
     {
       id: 2,
       label: t("avg_voucher"),
-      value: data?.datas?.averageVoucherAmountRedeemed,
+      value: data?.averageVoucherAmountRedeemed,
       description: t("per_redemption"),
     },
     {
       id: 3,
       label: t("voucher_sold"),
-      value: data?.datas?.averageVoucherAmountSold,
+      value: data?.averageVoucherAmountSold,
       description: t("per_sale"),
     },
     {
       id: 4,
       label: t("total_orders"),
-      value: data?.datas?.totalOrderAmount,
+      value: data?.totalOrderAmount,
       description: t("last_30_days"),
     },
     {
       id: 5,
       label: t("total_vouchers"),
-      value: data?.datas?.totalVoucherAmount,
+      value: data?.totalVoucherAmount,
       description: t("last_30_days"),
     },
   ];
@@ -234,8 +240,8 @@ export default function PurchasesReport() {
                 ) => {
                   const safeValue = value ?? 0;
                   const label =
-                    name === "creditCards" ? t("credit_card") : t("vouchers");
-                  return [`${safeValue}K ₪`, label];
+                    name === "Vouchers" ? t("vouchers") : t("credit_card");
+                  return [`${safeValue / 1000}K ₪`, label];
                 }}
               />
 

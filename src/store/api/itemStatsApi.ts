@@ -15,12 +15,17 @@ interface Params {
 interface IFinancialSummaryParams {
   startDate: string;
   endDate: string;
-  sortBy: string;
+  sortBy?: string;
 }
 interface IVoucherStatsParams {
   createdEndDate: string;
   createdStartDate: string;
-  sortBy: string;
+  sortBy?: string;
+}
+
+interface IPopularContentParams {
+  dmoId?: string;
+  authorityId?: string;
 }
 
 export const itemStatsApi = createApi({
@@ -63,35 +68,39 @@ export const itemStatsApi = createApi({
       providesTags: ["ItemStatistics"],
     }),
 
-    getPurchaseReportsStats: builder.query<any, void>({
-      query: () => ({
+    getPurchaseReportsStats: builder.query<any, IFinancialSummaryParams>({
+      query: (params) => ({
         url: endpoints.purchaseReportsStats,
         method: "GET",
+        params,
       }),
       providesTags: ["ItemStatistics"],
     }),
 
     // Popular Contents
-    getPopularBusinessStats: builder.query<any, void>({
-      query: () => ({
+    getPopularBusinessStats: builder.query<any, IPopularContentParams>({
+      query: (params) => ({
         url: endpoints.popularBusinessStats,
         method: "GET",
+        params,
       }),
       providesTags: ["ItemStatistics"],
     }),
 
-    getPopularProductStats: builder.query<any, void>({
-      query: () => ({
+    getPopularProductStats: builder.query<any, IPopularContentParams>({
+      query: (params) => ({
         url: endpoints.popularProductsStats,
         method: "GET",
+        params,
       }),
       providesTags: ["ItemStatistics"],
     }),
 
-    getPopularPoiStats: builder.query<any, void>({
-      query: () => ({
+    getPopularPoiStats: builder.query<any, IPopularContentParams>({
+      query: (params) => ({
         url: endpoints.popularPoiStats,
         method: "GET",
+        params,
       }),
       providesTags: ["ItemStatistics"],
     }),

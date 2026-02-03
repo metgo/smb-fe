@@ -1,14 +1,13 @@
-import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { LineChart, Line, ResponsiveContainer } from "recharts";
-import { Users, Activity, Eye, Clock, Target, ChevronDown } from "lucide-react";
+import { Users, Activity, Eye, Clock, Target } from "lucide-react";
 import clsx from "clsx";
 
-import { useCommon } from "@/hooks/useCommon";
-import { InfoTooltip, WebsiteSelect } from "@/components/shared";
+import { InfoTooltip } from "@/components/shared";
 import { normalizeTime } from "@/helpers/formatter";
 import { useGetGoogleAnalyticsViewsQuery } from "@/store/api/analyticsApi";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { useAppSelector } from "@/hooks/hooks";
 
 const COLORS = {
   blue: {
@@ -195,56 +194,17 @@ export default function GAOverview() {
   const { t } = useTranslation("dashboard");
   const { isDark } = useThemeClasses();
 
-  const { dateRanges: timeframes, allWebsites } = useCommon();
-  const [timeframe, setTimeframe] = useState("last30days");
-  const [selectedWebsite, setSelectedWebsite] = useState("");
-
-  // Compute startDate and endDate based on timeframe
-  const { startDate, endDate } = useMemo(() => {
-    const today = new Date();
-    let start: Date;
-
-    switch (timeframe) {
-      case "last7days":
-        start = new Date();
-        start.setDate(today.getDate() - 6);
-        break;
-      case "last30days":
-        start = new Date();
-        start.setDate(today.getDate() - 29);
-        break;
-      case "last90days":
-        start = new Date();
-        start.setDate(today.getDate() - 89);
-        break;
-      case "custom": // "last_year"
-        start = new Date();
-        start.setFullYear(today.getFullYear() - 1);
-        start.setDate(today.getDate() + 1);
-        break;
-      default:
-        start = new Date();
-        start.setDate(today.getDate() - 29);
-        break;
-    }
-
-    const formatDate = (d: Date) => d.toISOString().split("T")[0];
-
-    return {
-      startDate: formatDate(start),
-      endDate: formatDate(today),
-    };
-  }, [timeframe]);
-  console.log("🚀 ~ GAOverview ~ endDate:", endDate);
-  console.log("🚀 ~ GAOverview ~ startDate:", startDate);
+  const { dmoId, authorityId, websiteId, startDate, endDate } = useAppSelector(
+    (state) => state.auth,
+  );
 
   // API call with dynamic dates
   const { data } = useGetGoogleAnalyticsViewsQuery({
     startDate,
     endDate,
-    dmoId: "",
-    authorityId: "",
-    externalApiId: selectedWebsite ? selectedWebsite : "",
+    dmoId,
+    authorityId,
+    externalApiId: websiteId,
   });
 
   const result = transformAnalyticsData(data);
@@ -358,34 +318,6 @@ export default function GAOverview() {
               content={t("google_analytics_overview_desc")}
               title={t("google_analytics_overview")}
             />
-          </div>
-
-          <div className="flex flex-wrap items-center gap-3">
-            <WebsiteSelect
-              websites={allWebsites}
-              value={selectedWebsite}
-              onChange={setSelectedWebsite}
-              placeholder="Choose website"
-            />
-            <div className="relative">
-              <select
-                value={timeframe}
-                onChange={(e) => setTimeframe(e.target.value)}
-                className={clsx(
-                  "appearance-none rounded-lg px-4 py-2 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500",
-                  isDark
-                    ? "bg-gray-800 border-gray-700 text-white"
-                    : "bg-white border-gray-300 text-gray-900",
-                )}
-              >
-                {timeframes.map((tf) => (
-                  <option key={tf.value} value={tf.value}>
-                    {tf.label}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="absolute top-1/2 ltr:right-3 rtl:left-3 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
-            </div>
           </div>
         </div>
 

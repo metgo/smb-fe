@@ -232,8 +232,8 @@ export function DistributionCard({
           className={clsx(
             "absolute inset-0 rounded-xl",
             isDark
-              ? "bg-gradient-to-br from-yellow-900/10 via-orange-900/10 to-pink-900/10"
-              : "bg-gradient-to-br from-yellow-50 via-orange-50 to-pink-50",
+              ? "bg-linear-to-br from-yellow-900/10 via-orange-900/10 to-pink-900/10"
+              : "bg-linear-to-br from-yellow-50 via-orange-50 to-pink-50",
           )}
         />
 
@@ -269,23 +269,6 @@ export function DistributionCard({
               onMouseEnter={() => setActiveIndex(index)}
               onMouseLeave={() => setActiveIndex(null)}
             >
-              {/* Value tooltip */}
-              <div
-                className={clsx(
-                  "absolute -top-20 left-1/2 -translate-x-1/2 transition-all",
-                  isActive ? "opacity-100" : "opacity-0",
-                )}
-              >
-                <div
-                  className={clsx(
-                    "px-2 py-1 rounded-lg text-white text-xs font-bold bg-linear-to-br",
-                    colorConfig.gradient,
-                  )}
-                >
-                  {item.count}
-                </div>
-              </div>
-
               {/* ===== BAR ===== */}
               <div
                 className="absolute bottom-0 w-full"
@@ -337,6 +320,23 @@ export function DistributionCard({
                   }}
                 />
 
+                {/* Value tooltip */}
+                <div
+                  className={clsx(
+                    "absolute -top-20 left-1/2 -translate-x-1/2 transition-all",
+                    isActive ? "opacity-100" : "opacity-0",
+                  )}
+                >
+                  <div
+                    className={clsx(
+                      "px-2 py-1 rounded-lg text-white text-xs font-bold bg-linear-to-br",
+                      colorConfig.gradient,
+                    )}
+                  >
+                    {item.count}
+                  </div>
+                </div>
+
                 {/* Icon */}
                 <div
                   className={clsx(
@@ -372,7 +372,7 @@ export function DistributionCard({
               </div>
 
               {/* Label */}
-              <div className="absolute -bottom-8 text-center z-50">
+              <div className="absolute -bottom-8 text-center z-30">
                 <span
                   className={clsx(
                     "text-xs font-bold line-clamp-2",
@@ -396,29 +396,32 @@ export function DistributionCard({
 export default function DistributionCards() {
   const { t } = useTranslation("dashboard");
   const { theme } = useAppSelector((state) => state.settings);
+  const { startDate, endDate, dmoId, authorityId } = useAppSelector(
+    (state) => state.auth,
+  );
 
   /* ----------------------------------------
      API Calls
   ---------------------------------------- */
   const { data: businessData } = useGetBusinessStatsQuery({
-    startDate: "2025-01-01",
-    endDate: "2025-01-31",
-    dmoId: "",
-    authorityId: "",
+    startDate,
+    endDate,
+    dmoId,
+    authorityId,
   });
 
   const { data: poiData } = useGetPOIStatsQuery({
-    startDate: "2025-01-01",
-    endDate: "2025-01-31",
-    dmoId: "",
-    authorityId: "",
+    startDate,
+    endDate,
+    dmoId,
+    authorityId,
   });
 
   const { data: productData } = useGetProductStatsQuery({
-    startDate: "2025-01-01",
-    endDate: "2025-01-31",
-    dmoId: "",
-    authorityId: "",
+    startDate,
+    endDate,
+    dmoId,
+    authorityId,
   });
 
   /* ----------------------------------------
