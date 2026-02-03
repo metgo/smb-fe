@@ -11,7 +11,7 @@ const persisted = loadSettings();
 
 const initialState: SettingsState = {
   language: persisted?.language ?? "en",
-  theme: persisted?.theme ?? "light",
+  theme: persisted?.theme ?? "dark",
   isRTL: persisted?.isRTL ?? false,
 };
 
