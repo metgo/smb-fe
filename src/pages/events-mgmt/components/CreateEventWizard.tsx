@@ -53,7 +53,7 @@ export default function CreateEventWizard({
   onClose,
 }: CreateEventWizardProps) {
   const { t } = useTranslation("events");
-  const { t: tc } = useTranslation("common");
+  // const { t: tc } = useTranslation("common");
   const [searchParams] = useSearchParams();
 
   const editId = searchParams.get("eventId");

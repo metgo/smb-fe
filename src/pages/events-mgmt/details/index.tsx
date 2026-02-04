@@ -50,8 +50,7 @@ export default function EventDetailsPage() {
   const { data: tickets } = useGetAllTicketQuery(
     eventId ? { eventId } : skipToken,
   );
-  const [updateEvent, { isLoading: isEventUpdating }] =
-    useUpdateEventMutation();
+  const [updateEvent] = useUpdateEventMutation();
 
   useEffect(() => {
     if (eventDetails?.images) setGalleryImages(eventDetails?.images);

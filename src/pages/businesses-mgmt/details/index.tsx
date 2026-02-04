@@ -71,7 +71,7 @@ export default function BusinessDetails({
     imagesRef,
     primaryImageIndex,
     handleImageUpload,
-    uploadAll,
+    // uploadAll,
     setPrimaryImage,
     // setImages,
     deleteTarget,
@@ -145,7 +145,7 @@ export default function BusinessDetails({
   //   }
   // }, [business, businessSlug]);
 
-  const [updateBusiness] = useUpdateBusinessMutation();
+  // const [updateBusiness] = useUpdateBusinessMutation();
 
   useEffect(() => {
     setGalleryImages(business?.images);
