@@ -152,29 +152,29 @@ export default function BusinessDetails({
     setBusinessLogoImage({ image: business?.logo?.image });
   }, [business]);
 
-  const handleSubmit = async () => {
-    try {
-      let logoUrl = businessLogoImage?.image ?? null;
+  // const handleSubmit = async () => {
+  //   try {
+  //     let logoUrl = businessLogoImage?.image ?? null;
 
-      // upload logo only if replaced
-      if (logoImage?.file) {
-        logoUrl = await uploadLogoImage();
-      }
-      // upload gallery images
-      await uploadAll();
+  //     // upload logo only if replaced
+  //     if (logoImage?.file) {
+  //       logoUrl = await uploadLogoImage();
+  //     }
+  //     // upload gallery images
+  //     await uploadAll();
 
-      const body = {
-        logo: { image: logoUrl },
-        images: galleryImages,
-      };
+  //     const body = {
+  //       logo: { image: logoUrl },
+  //       images: galleryImages,
+  //     };
 
-      await updateBusiness({ body, businessId }).unwrap();
+  //     await updateBusiness({ body, businessId }).unwrap();
 
-      console.log("Business updated", galleryImages);
-    } catch {
-      console.error("Failed to save");
-    }
-  };
+  //     console.log("Business updated", galleryImages);
+  //   } catch {
+  //     console.error("Failed to save");
+  //   }
+  // };
 
   const renderContent = () => {
     const commonProps = { theme, t, business };
@@ -227,11 +227,11 @@ export default function BusinessDetails({
     }
   };
   return (
-    <div className="flex-1 flex flex-col overflow-hidden relative">
+    <div className=" flex flex-col h-screen overflow-hidden relative ">
       <Spinner isLoading={isLoading} />
 
       {/* Header */}
-      <div className={clsx(`border-b px-6 py-4`, borderColor)}>
+      <div className={clsx(` shrink-0 border-b px-6 py-4 `, borderColor)}>
         {/* Top Row */}
         <div className="flex items-center justify-between mb-4">
           <button
@@ -299,7 +299,7 @@ export default function BusinessDetails({
                 {t("change_owner")}
               </button>
             )}
-            <button
+            {/* <button
               onClick={handleSubmit}
               className={`px-4 py-2 rounded-lg border transition-colors flex items-center gap-2 cursor-pointer ${
                 theme === "dark"
@@ -308,7 +308,7 @@ export default function BusinessDetails({
               }`}
             >
               Save
-            </button>
+            </button> */}
           </div>
         </div>
 
@@ -330,7 +330,7 @@ export default function BusinessDetails({
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-auto p-6">{renderContent()}</div>
+      <div className="flex-1 overflow-y-auto p-6">{renderContent()}</div>
 
       {/* Change Owner Modal */}
       <ChangeOwnerModal
