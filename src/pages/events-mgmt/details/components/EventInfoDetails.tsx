@@ -149,8 +149,8 @@ const EventInfoDetails: React.FC<EventInfoDetailsProps> = ({
             className={clsx(
               "rounded-xl border p-6 transition-all duration-200",
               isDark
-                ? "bg-gradient-to-br from-gray-800 to-gray-800/50 border-gray-700"
-                : "bg-gradient-to-br from-blue-50 to-purple-50 border-blue-200",
+                ? "bg-linear-to-br from-gray-800 to-gray-800/50 border-gray-700"
+                : "bg-linear-to-br from-blue-50 to-purple-50 border-blue-200",
             )}
           >
             <div className="flex items-center gap-3 mb-4">

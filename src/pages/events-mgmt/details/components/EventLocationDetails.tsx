@@ -54,14 +54,6 @@ const EventLocationDetails: FC<EventLocationDetailsProps> = ({
     eventDetails?.geoLocation?.lat &&
     (eventDetails?.geoLocation?.lng || eventDetails?.geoLocation?.long);
 
-  const openInMaps = () => {
-    if (hasCoordinates) {
-      const lat = eventDetails.geoLocation.lat;
-      const lng = eventDetails.geoLocation.lng || eventDetails.geoLocation.long;
-      window.open(`https://www.google.com/maps?q=${lat},${lng}`, "_blank");
-    }
-  };
-
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -278,20 +270,6 @@ const EventLocationDetails: FC<EventLocationDetailsProps> = ({
                   </p>
                 </div>
               </div>
-
-              {/* Open in Maps Button */}
-              <button
-                onClick={openInMaps}
-                className={clsx(
-                  "px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 hover:scale-105 flex items-center gap-1.5",
-                  isDark
-                    ? "bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 border border-blue-800/50"
-                    : "bg-blue-100 text-blue-700 hover:bg-blue-200 border border-blue-200",
-                )}
-              >
-                <Map className="w-3.5 h-3.5" />
-                Open in Maps
-              </button>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -400,7 +378,7 @@ const EventLocationDetails: FC<EventLocationDetailsProps> = ({
           </div>
         </div>
 
-        <div className="w-full h-[400px]">
+        <div className="w-full h-100">
           <MarkerMap
             geo={geo}
             setGeo={setGeo}

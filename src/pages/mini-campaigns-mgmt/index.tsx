@@ -378,7 +378,7 @@ export default function MiniCampaignsMgmtPage() {
         {/* Header */}
         <div className="mb-6">
           <h1
-            className={`text-3xl mb-2 bg-gradient-to-r from-purple-600 via-pink-600 to-orange-500 bg-clip-text text-transparent`}
+            className={`text-3xl mb-2 bg-linear-to-r from-purple-600 via-pink-600 to-orange-500 bg-clip-text text-transparent`}
           >
             {t("mini_campaigns_management")}
           </h1>
@@ -717,7 +717,7 @@ export default function MiniCampaignsMgmtPage() {
                     className={`w-full h-2 ${themeColor.bgSecondary} rounded-full overflow-hidden`}
                   >
                     <div
-                      className="h-full bg-gradient-to-r from-purple-500 to-pink-600 transition-all"
+                      className="h-full bg-linear-to-r from-purple-500 to-pink-600 transition-all"
                       style={{
                         width: `${(campaign.usedVouchers / campaign.totalVouchers) * 100}%`,
                       }}
