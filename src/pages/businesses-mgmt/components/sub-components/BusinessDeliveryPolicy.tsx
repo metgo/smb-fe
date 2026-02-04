@@ -1,13 +1,12 @@
 import { Activity, useState, type FC } from "react";
 import { Plus, X, MapPin, Edit } from "lucide-react";
 import PickupLocationModal from "./PickupLocationModal";
-import { useAppSelector } from "@/hooks/hooks";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 interface PickupLocation {
   address: string;
   isAlwaysOpen: boolean;
-  openingHrs: string[];
+  openingHrs: { day: string; open: string; close: string }[]; // match your state type
 }
 
 interface DeliveryArea {
@@ -484,7 +483,6 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
 
       <Activity mode={pickupLocationModal ? "visible" : "hidden"}>
         <PickupLocationModal
-          t={t}
           theme={theme}
           isRTL={isRTL}
           formData={formData}

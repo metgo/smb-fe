@@ -5,12 +5,9 @@ import {
   FileText,
   CheckCircle,
   Package,
-  LocationEdit,
-  MapPin,
   House,
   IndianRupee,
 } from "lucide-react";
-import { useAppSelector } from "@/hooks/hooks";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 /* ---------- Types ---------- */
