@@ -26,6 +26,9 @@ import { skipToken } from "@reduxjs/toolkit/query";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useImagesUpload } from "@/hooks/useImagesUpload";
 import { CreateEventWizard } from "../components";
+import { StatusChangeBtn } from "@/components/btns";
+import { useUpdateEventMutation } from "@/store/api/eventMutationApi";
+import { toast } from "sonner";
 
 export default function EventDetailsPage() {
   const { t } = useTranslation("businesses");
@@ -47,6 +50,8 @@ export default function EventDetailsPage() {
   const { data: tickets } = useGetAllTicketQuery(
     eventId ? { eventId } : skipToken,
   );
+  const [updateEvent, { isLoading: isEventUpdating }] =
+    useUpdateEventMutation();
 
   useEffect(() => {
     if (eventDetails?.images) setGalleryImages(eventDetails?.images);
@@ -75,6 +80,23 @@ export default function EventDetailsPage() {
     refetch();
   };
 
+  const onStatusChangeHandler = async (status: string) => {
+    try {
+      const res = await updateEvent({
+        eventId,
+        body: { status: status.toUpperCase() },
+      });
+
+      if (res) {
+        refetch();
+        toast.success("Event status updated successfully!");
+      }
+    } catch (error) {
+      toast.error("Failed to update event status.");
+      console.error("Error:", error);
+    }
+  };
+
   const renderContent = () => {
     const commonProps = { t, eventDetails };
     const mediaProps = {
@@ -100,7 +122,7 @@ export default function EventDetailsPage() {
       case "media":
         return <EventMediaDetails {...mediaProps} />;
       case "tickets":
-        return <EventTicketDetails tickets={tickets} t={t} />;
+        return <EventTicketDetails tickets={tickets} />;
       case "schedual_notification":
         return <EventScheduledNotificationDetails {...eventDetails} />;
       case "attributes":
@@ -129,6 +151,12 @@ export default function EventDetailsPage() {
             </button>
 
             <div className="flex items-center gap-2">
+              {userRole === UserRole.SUPERADMIN && (
+                <StatusChangeBtn
+                  handleStatusChange={onStatusChangeHandler}
+                  status={eventDetails?.status}
+                />
+              )}
               <button
                 onClick={() => setIsEditOpen(true)}
                 className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg transition-colors flex items-center gap-2"
@@ -136,19 +164,6 @@ export default function EventDetailsPage() {
                 <Edit className="w-4 h-4" />
                 {t("edit")}
               </button>
-
-              {userRole === UserRole.SUPERADMIN && (
-                <button
-                  // onClick={() => setShowStatusModal(true)}
-                  className={`px-4 py-2 rounded-lg border transition-colors flex items-center gap-2 ${
-                    isDark
-                      ? "border-gray-700 hover:bg-gray-800 text-gray-300"
-                      : "border-gray-300 hover:bg-gray-100 text-gray-700"
-                  }`}
-                >
-                  {t("change_status")}
-                </button>
-              )}
             </div>
           </div>
 

@@ -1,4 +1,5 @@
 import AddButton from "./AddButton";
+import BulkStatusChangeBtn from "./BulkStatusChangeBtn";
 import ExportBtns from "./ExportBtns";
 import FilterButton from "./FilterButton";
 import RefreshButton from "./RefreshButton";
@@ -12,4 +13,5 @@ export {
   ExportBtns,
   RefreshButton,
   StatusChangeBtn,
+  BulkStatusChangeBtn,
 };
