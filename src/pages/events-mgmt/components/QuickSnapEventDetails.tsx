@@ -13,11 +13,12 @@ import clsx from "clsx";
 import { useAppSelector } from "@/hooks/hooks";
 import { ImageWithFallback } from "@/components/shared";
 import { extractCenterAddressText, extractEventDates } from "@/helpers";
+import { useNavigate } from "react-router-dom";
+import { routes } from "@/lib/routes";
 
 interface QuickSnapEventDetailsProps {
   selectedEvent: any | null;
   setSelectedEvent: (v: Event | null) => void;
-  handleViewDetails: () => void;
   handleEditEvent: () => void;
 }
 
@@ -25,10 +26,16 @@ const QuickSnapEventDetails = ({
   selectedEvent,
   setSelectedEvent,
   handleEditEvent,
-  handleViewDetails,
 }: QuickSnapEventDetailsProps) => {
   const { t } = useTranslation("events");
+  const navigate = useNavigate();
   const { theme } = useAppSelector((state) => state.settings);
+
+  const handleEventDetailsNavigate = () => {
+    navigate(`${routes.eventDetails}?eventId=${selectedEvent?._id}`, {
+      replace: true,
+    });
+  };
 
   if (!selectedEvent) return null;
 
@@ -77,7 +84,7 @@ const QuickSnapEventDetails = ({
 
             <div className="flex items-center gap-2 shrink-0">
               <button
-                onClick={handleViewDetails}
+                onClick={handleEventDetailsNavigate}
                 className=" cursor-pointer flex items-center gap-2 px-4 py-2 bg-linear-to-r from-teal-500 to-cyan-500 hover:from-teal-600 hover:to-cyan-600 text-white rounded-lg transition-all transform hover:scale-105 shadow-md hover:shadow-lg"
               >
                 <Eye className="w-4 h-4" />

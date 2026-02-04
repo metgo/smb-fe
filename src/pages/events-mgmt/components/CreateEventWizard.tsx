@@ -46,22 +46,20 @@ import { useCreateWebsiteAccessItemMutation } from "@/store/api/commonMutationAp
 interface CreateEventWizardProps {
   isOpen: boolean;
   onClose: () => void;
-  theme: Theme;
-  existingEvent?: any;
 }
 
 export default function CreateEventWizard({
   isOpen,
   onClose,
-  theme,
 }: CreateEventWizardProps) {
   const { t } = useTranslation("events");
-
+  const { t: tc } = useTranslation("common");
   const [searchParams] = useSearchParams();
-  const { textPrimary, textTertiary, rowDir } = useThemeClasses();
+
   const editId = searchParams.get("eventId");
   const [eventId, setEventId] = useState<string>("");
 
+  const { textPrimary, textTertiary, rowDir, isDark } = useThemeClasses();
   const [updateEvent, { isLoading: isEventUpdating }] =
     useUpdateEventMutation();
   const [initEventCreate, { isLoading: isEventCreating }] =
@@ -603,7 +601,7 @@ export default function CreateEventWizard({
         className={clsx(
           rowDir,
           "flex items-center justify-between p-6 border-b w-full",
-          theme === "dark" ? "border-gray-800" : "border-gray-200",
+          isDark ? "border-gray-800" : "border-gray-200",
         )}
       >
         {/* Title */}
@@ -637,7 +635,7 @@ export default function CreateEventWizard({
 
       {/* Progress Bar */}
       <div
-        className={`px-6 py-4 border-b ${theme === "dark" ? "border-gray-800" : "border-gray-200"} `}
+        className={`px-6 py-4 border-b ${isDark ? "border-gray-800" : "border-gray-200"} `}
       >
         <div className={clsx(rowDir, "flex items-center justify-between ")}>
           {steps.map((step, index) => (
@@ -653,7 +651,7 @@ export default function CreateEventWizard({
                       ? "bg-green-500 text-white"
                       : currentStep === step.id
                         ? "bg-teal-500 text-white"
-                        : theme === "dark"
+                        : isDark
                           ? "bg-gray-800 text-gray-500"
                           : "bg-gray-200 text-gray-400"
                   }`}
@@ -675,7 +673,7 @@ export default function CreateEventWizard({
                   className={`flex-1 h-0.5 mx-2 ${
                     currentStep > step.id
                       ? "bg-green-500"
-                      : theme === "dark"
+                      : isDark
                         ? "bg-gray-800"
                         : "bg-gray-200"
                   }`}
@@ -815,7 +813,6 @@ export default function CreateEventWizard({
         {currentStep === 6 && (
           <EventMedia
             t={t}
-            theme={theme}
             markDirty={markDirty}
             images={images}
             imagesRef={imagesRef}

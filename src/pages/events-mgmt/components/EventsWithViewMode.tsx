@@ -1,6 +1,6 @@
 import clsx from "clsx";
 import { toast } from "sonner";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useState, useMemo } from "react";
 
 import {
@@ -32,6 +32,7 @@ import {
   useUpdateEventMutation,
 } from "@/store/api/eventMutationApi";
 import { EventCardSkeleton } from "@/components/skeletons";
+import { routes } from "@/lib/routes";
 
 interface EventsWithViewModeProps {
   events: any[];
@@ -43,8 +44,6 @@ interface EventsWithViewModeProps {
   statusFilter: string;
   searchQuery: string;
   refetch: () => void;
-  setSelectedEvent: (v: Event) => void;
-  setShowQuickSnapModal: (v: boolean) => void;
 }
 
 type TViewMode = "calendar-month" | "calendar-week" | "calendar-day";
@@ -92,11 +91,10 @@ export default function EventsWithViewMode({
   registrationFilter,
   statusFilter,
   searchQuery,
-  setSelectedEvent,
-  setShowQuickSnapModal,
 }: EventsWithViewModeProps) {
   const { t, i18n } = useTranslation("events");
   const language = i18n.language || "en";
+  const navigate = useNavigate();
   const {
     bgPrimary,
     bgSecondary,
@@ -194,9 +192,7 @@ export default function EventsWithViewMode({
 
   // Handle events sets
   const handleEventSelect = (event: Event) => {
-    // e.stopPropagation()
-    setShowQuickSnapModal(true);
-    setSelectedEvent(event);
+    navigate(`${routes.eventDetails}?eventId=${event?._id}`, { replace: true });
   };
 
   const handleEventDelete = async (eventId: string) => {
