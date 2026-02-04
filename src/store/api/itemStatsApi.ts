@@ -2,13 +2,11 @@ import { createApi } from "@reduxjs/toolkit/query/react";
 import { axiosBaseQuery } from "./axiosBaseQuery";
 import { endpoints } from "@/lib/endpoints";
 
-interface Params {
+interface IDistOverviewParams {
   startDate: string;
   endDate: string;
   dmoId?: string;
   authorityId?: string;
-  externalApiId?: string;
-  serviceType?: string;
   status?: string;
 }
 
@@ -33,7 +31,8 @@ export const itemStatsApi = createApi({
   baseQuery: axiosBaseQuery(),
   tagTypes: ["ItemStatistics"],
   endpoints: (builder) => ({
-    getBusinessStats: builder.query<any, Params>({
+    // Distribution Overview's api
+    getBusinessStats: builder.query<any, IDistOverviewParams>({
       query: (params) => ({
         url: endpoints.businessStats,
         method: "GET",
@@ -41,7 +40,8 @@ export const itemStatsApi = createApi({
       }),
       providesTags: ["ItemStatistics"],
     }),
-    getPOIStats: builder.query<any, Params>({
+
+    getPOIStats: builder.query<any, IDistOverviewParams>({
       query: (params) => ({
         url: endpoints.poiStats,
         method: "GET",
@@ -49,7 +49,8 @@ export const itemStatsApi = createApi({
       }),
       providesTags: ["ItemStatistics"],
     }),
-    getProductStats: builder.query<any, Params>({
+
+    getProductStats: builder.query<any, IDistOverviewParams>({
       query: (params) => ({
         url: endpoints.productStats,
         method: "GET",
