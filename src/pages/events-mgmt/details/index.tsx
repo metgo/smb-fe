@@ -43,28 +43,30 @@ export default function EventDetailsPage() {
   const [activeTab, setActiveTab] = useState("overview");
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [galleryImages, setGalleryImages] = useState<TImages>([]);
-
+  const [eventDays, setEventDays] = useState<EventDay[]>([
+    { id: "", date: "", startTime: "9:30", endTime: "14:30", description: "" },
+  ]);
   const { data: eventDetails, refetch } = useGetEventByIdQuery(
     eventId ? { eventId } : skipToken,
   );
-  const { data: tickets } = useGetAllTicketQuery(
+  const { data: tickets, refetch: ticketsRefetch } = useGetAllTicketQuery(
     eventId ? { eventId } : skipToken,
   );
-  const [updateEvent, { isLoading: isEventUpdating }] =
-    useUpdateEventMutation();
+  const [updateEvent] = useUpdateEventMutation();
 
   useEffect(() => {
-    if (eventDetails?.images) setGalleryImages(eventDetails?.images);
-  }, [eventDetails?.images]);
+    if (eventDetails) {
+      setGalleryImages(eventDetails?.images);
+      setEventDays(eventDetails?.dayDescription);
+    }
+  }, [eventDetails, eventId]);
 
   const {
     images,
     imagesRef,
     primaryImageIndex,
     handleImageUpload,
-    // uploadAll,
     setPrimaryImage,
-    // setImages,
     deleteTarget,
     setDeleteTarget,
     confirmDelete,
@@ -122,7 +124,14 @@ export default function EventDetailsPage() {
       case "media":
         return <EventMediaDetails {...mediaProps} />;
       case "tickets":
-        return <EventTicketDetails tickets={tickets} />;
+        return (
+          <EventTicketDetails
+            tickets={tickets}
+            eventId={eventId}
+            refetch={ticketsRefetch}
+            eventDays={eventDays}
+          />
+        );
       case "schedual_notification":
         return <EventScheduledNotificationDetails {...eventDetails} />;
       case "attributes":

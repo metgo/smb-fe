@@ -1,14 +1,13 @@
-import { ConfirmDialog, ImageWithFallback } from "@/components/shared";
+import clsx from "clsx";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { ConfirmDialog, ImageWithFallback } from "@/components/shared";
 import {
-  Upload,
   Star,
   Eye,
   Trash2,
   Image as ImageIcon,
   CheckCircle2,
 } from "lucide-react";
-import clsx from "clsx";
 
 interface EventMediaDetailsProps {
   t: (key: string) => string;
@@ -69,7 +68,8 @@ const EventMediaDetails: React.FC<EventMediaDetailsProps> = ({
 
           {images.length < 10 && (
             <>
-              <button
+              {/* ---------FUTURE USE----------- */}
+              {/* <button
                 type="button"
                 onClick={() => document.getElementById("image-upload")?.click()}
                 className={clsx(
@@ -81,7 +81,7 @@ const EventMediaDetails: React.FC<EventMediaDetailsProps> = ({
               >
                 <Upload className="w-4 h-4" />
                 {t("upload_images") || "Upload Images"}
-              </button>
+              </button> */}
 
               <input
                 id="image-upload"
@@ -107,7 +107,7 @@ const EventMediaDetails: React.FC<EventMediaDetailsProps> = ({
                 : "bg-yellow-50 border border-yellow-200 text-yellow-800",
             )}
           >
-            <ImageIcon className="w-4 h-4 flex-shrink-0" />
+            <ImageIcon className="w-4 h-4 shrink-0" />
             <span>
               You can upload {10 - images.length} more{" "}
               {10 - images.length === 1 ? "image" : "images"}
@@ -274,7 +274,8 @@ const EventMediaDetails: React.FC<EventMediaDetailsProps> = ({
           >
             Upload images to create your event gallery
           </p>
-          <button
+          {/* ---------FUTURE USE----------- */}
+          {/* <button
             type="button"
             onClick={() => document.getElementById("image-upload")?.click()}
             className={clsx(
@@ -286,7 +287,7 @@ const EventMediaDetails: React.FC<EventMediaDetailsProps> = ({
           >
             <Upload className="w-4 h-4" />
             Upload Your First Image
-          </button>
+          </button> */}
         </div>
       )}
 

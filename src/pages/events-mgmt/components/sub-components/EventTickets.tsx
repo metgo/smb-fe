@@ -300,14 +300,13 @@ const EventTickets: React.FC<EventTicketsProps> = ({
       {/* Ticket Wizard */}
       {showTicketModal && editingTicket && (
         <CreateTicketWizard
-          theme={theme}
           eventId={eventId}
           refetch={refetch}
           opMode={opMode}
           eventDays={eventDays}
-          setShowTicketModal={setShowTicketModal}
-          editingTicket={editingTicket!}
-          setEditingTicket={setEditingTicket}
+          setIsOpen={setShowTicketModal}
+          editData={editingTicket!}
+          setEditData={setEditingTicket}
           ticketDateTime={ticketDateTime}
           setTicketDateTime={setTicketDateTime}
         />
