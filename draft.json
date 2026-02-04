@@ -1,0 +1,46 @@
+{
+  "scheduledNotificationId": [
+    {
+      "_id": "69799a4f004c7ccdb2f686f5",
+      "createdAt": "2026-01-28T05:10:39.413Z",
+      "updatedAt": "2026-02-03T10:55:05.217Z",
+      "createdBy": "659649e04267dd2b02174cc3",
+      "updatedBy": "659649e04267dd2b02174cc3",
+      "deletedBy": null,
+      "deletedAt": null,
+      "isDeleted": false,
+      "eventId": "6974c657ff994a5914429608",
+      "sendHoursBefore": 24,
+      "channels": ["EMAIL", "SMS", "WHATSAPP"],
+      "language": "en",
+      "template": "custom",
+      "customTemplate": {
+        "subject": "Remainder",
+        "body": "<p>Hi *|FIRST_NAME|*,</p><p>We are going to organize at *|EVENT_DATE|*,</p><p>*|EVENT_NAME|**|TICKET_QR|**|VENUE|*</p>"
+      },
+      "status": "ACTIVE",
+      "__v": 0
+    },
+    {
+      "_id": "6981d409d7b5ad21ecfaa359",
+      "createdAt": "2026-02-03T10:55:05.093Z",
+      "updatedAt": null,
+      "createdBy": "659649e04267dd2b02174cc3",
+      "updatedBy": null,
+      "deletedBy": null,
+      "deletedAt": null,
+      "isDeleted": false,
+      "eventId": "6974c657ff994a5914429608",
+      "sendHoursBefore": 12,
+      "channels": ["EMAIL", "SMS", "WHATSAPP"],
+      "language": "en",
+      "template": "custom",
+      "customTemplate": {
+        "subject": "Reminder: Concert on Friday.",
+        "body": "<p>Hi *|FIRST_NAME|*,</p><p>&nbsp;</p><p>I hope you are doing well. We are going to organize the the *|EVENT_NAME|* event on *|EVENT_DATE|* at *|EVENT_TIME|*.&nbsp;<br>Venue: *|VENUE|*,</p><p>Time: *|EVENT_DATE|* at *|EVENT_TIME|*</p><p>QR: *|TICKET_QR|*<br><br>Thank you !!</p>"
+      },
+      "status": "ACTIVE",
+      "__v": 0
+    }
+  ]
+}

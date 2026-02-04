@@ -9,10 +9,10 @@ export const endpoints = {
   popularBusinessStats: "/popular-business",
   popularPoiStats: "/popular-poi",
 
-  eventStats: "/stats/events",
   businessStats: "/home-stats/businesses",
   poiStats: "/home-stats/point-of-interests",
   productStats: "/home-stats/products",
+  eventStats: "/stats/events",
   voucherStats: "/stats/vouchers",
   onlineOrderStats: "/stats/orders",
   offlineOrderStats: "/home-stats/offline-order",
