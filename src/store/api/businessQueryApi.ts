@@ -3,16 +3,13 @@ import { axiosBaseQuery } from "./axiosBaseQuery";
 import { endpoints } from "@/lib/endpoints";
 
 interface BusinessStatsParams {
-  startDate?: string;
-  endDate?: string;
-  dmoId?: string;
-  authorityId?: string;
-  businessId?: string;
-  minPrice?: string;
-  maxPrice?: string;
-  status?: string;
+  totalBusinesses?: number;
+  activeBusinesses?: number;
+  totalProducts?: number;
+  averageImpactScore?: number;
+  pendingApproval?: number;
+  averageCompletion?: number;
 }
-
 interface BusinessListParams {
   page?: string;
   limit?: string;
@@ -23,6 +20,7 @@ interface BusinessListParams {
   isFree?: boolean;
   authorityId?: boolean;
   dmoId?: boolean;
+  hasProductFilter?: string;
   sortOrder?: string;
   sortBy?: string;
   startDate?: string;
@@ -40,16 +38,44 @@ export const businessQueryApi = createApi({
         method: "GET",
         params,
       }),
+
+      serializeQueryArgs: ({ endpointName, queryArgs }) => {
+        // serialize to a string that includes page and search/filter params
+        const { page, search, status, authorityId, dmoId, hasProductFilter } =
+          queryArgs;
+
+        // Important: only serialize params relevant to cache differentiation
+        return `${endpointName}-${page}-${search || ""}-${status || ""}-${authorityId || ""}-${dmoId || ""}-${hasProductFilter !== undefined ? hasProductFilter : ""}`;
+      },
+      // 🔑 merge new page data into cache
+      merge: (currentCache, newData) => {
+        currentCache.data.push(...newData.data);
+        currentCache.meta = newData.meta;
+      },
+
+      // 🔑 refetch when page changes
+      forceRefetch({ currentArg, previousArg }) {
+        return currentArg?.page !== previousArg?.page;
+      },
     }),
 
     getBusinessStats: builder.query<any, BusinessStatsParams>({
       query: (params) => ({
-        url: endpoints.businessStats,
+        url: endpoints.businessStatDashboard,
         method: "GET",
         params,
       }),
     }),
 
+    getIndividualBusinessStats: builder.query<
+      any,
+      { businessId: string | null }
+    >({
+      query: ({ businessId }) => ({
+        url: `${endpoints.businessStatDashboard}/${businessId}`,
+        method: "GET",
+      }),
+    }),
     getbusinessById: builder.query<any, { businessId: string | null }>({
       query: ({ businessId }) => ({
         url: `${endpoints.business}/${businessId}`,
@@ -62,5 +88,7 @@ export const businessQueryApi = createApi({
 export const {
   useGetAllbusinessesQuery,
   useGetBusinessStatsQuery,
+  useLazyGetIndividualBusinessStatsQuery,
   useGetbusinessByIdQuery,
+  useGetIndividualBusinessStatsQuery,
 } = businessQueryApi;

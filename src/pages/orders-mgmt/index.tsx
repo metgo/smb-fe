@@ -351,11 +351,6 @@ export default function OrdersMgmtPage() {
       return;
     }
 
-    console.log(
-      "Resending order details for:",
-      ordersToResend.map((o) => o.id),
-    );
-
     ordersToResend.forEach((order) => {
       console.log(
         `Sending order details to ${order.email} for order ${order.id}`,

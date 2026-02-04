@@ -1,5 +1,7 @@
+import { useCommon } from "@/hooks/useCommon";
 import { CheckCircle } from "lucide-react";
-import type { FC } from "react";
+import { type FC } from "react";
+type View = "list" | "details" | "create" | "edit" | undefined;
 
 interface BusinessReviewSubmitProps {
   theme: "light" | "dark";
@@ -23,15 +25,20 @@ interface BusinessReviewSubmitProps {
     primaryCategory: string;
     logo: string;
   }>;
+  business: any;
   t: (key: string) => string;
+  currentView: View;
 }
 
 const BusinessReviewSubmit: FC<BusinessReviewSubmitProps> = ({
   theme,
   formData,
   errors,
+
   t,
 }) => {
+  const { primaryCategories } = useCommon();
+
   return (
     <div className="space-y-6">
       {/* Review Header */}
@@ -108,11 +115,11 @@ const BusinessReviewSubmit: FC<BusinessReviewSubmitProps> = ({
           </p>
           <p className={theme === "dark" ? "text-gray-300" : "text-gray-700"}>
             <span className="font-medium">{t("primary_category")}: </span>
-            {formData.primaryCategory || t("not_set")}
-          </p>
-          <p className={theme === "dark" ? "text-gray-300" : "text-gray-700"}>
-            <span className="font-medium">{t("address")}: </span>
-            {formData.address || t("not_set")}
+            {formData?.primaryCategory
+              ? primaryCategories?.datas?.data?.find(
+                  (cat: any) => cat._id === formData.primaryCategory,
+                )?.name
+              : t("not_set")}
           </p>
         </div>
       </div>

@@ -1,8 +1,8 @@
 import { X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface PickupLocationModalProps {
   theme: Theme;
-  t: (key: string) => string;
   pickupLocationModal: {
     locationIndex: number | null;
     areaIndex: number;
@@ -20,16 +20,24 @@ interface PickupLocationModalProps {
 
 const PickupLocationModal = ({
   theme,
-  t,
   pickupLocationModal,
   setPickupLocationModal,
   formData,
   setFormData,
   isRTL = false,
 }: PickupLocationModalProps) => {
+  const { t } = useTranslation("common");
+
   if (!pickupLocationModal) return null;
 
   const days = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
+
+  console.log("picup data", formData.deliveryArea);
+  const pickupAddresses =
+    formData.deliveryArea?.flatMap((area: any) =>
+      area.pickUpLocation.map((location: any) => location),
+    ) || [];
+  console.log(" ~ pickupAddresses:", pickupAddresses);
 
   return (
     <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/50">
@@ -232,7 +240,10 @@ const PickupLocationModal = ({
                               const newHrs = [
                                 ...pickupLocationModal.data.openingHrs,
                               ];
-                              newHrs[idx].close = e.target.value;
+                              newHrs[idx] = {
+                                ...newHrs[idx],
+                                close: e.target.value,
+                              };
                               setPickupLocationModal({
                                 ...pickupLocationModal,
                                 data: {
@@ -303,22 +314,32 @@ const PickupLocationModal = ({
             onClick={() => {
               if (!pickupLocationModal.data.address) return;
 
-              const newAreas = [...formData.deliveryAreas];
-              const areaIndex = pickupLocationModal.areaIndex;
+              const newAreas = formData.deliveryArea.map(
+                (area: any, idx: any) => {
+                  if (idx === pickupLocationModal.areaIndex) {
+                    const newPickUpLocation = [...area.pickUpLocation];
 
-              if (pickupLocationModal.locationIndex !== null) {
-                // Edit existing location
-                newAreas[areaIndex].pickUpLocation[
-                  pickupLocationModal.locationIndex
-                ] = pickupLocationModal.data;
-              } else {
-                // Add new location
-                newAreas[areaIndex].pickUpLocation.push(
-                  pickupLocationModal.data,
-                );
-              }
+                    if (pickupLocationModal.locationIndex !== null) {
+                      newPickUpLocation[pickupLocationModal.locationIndex] =
+                        pickupLocationModal.data;
+                    } else {
+                      newPickUpLocation.push(pickupLocationModal.data);
+                    }
 
-              setFormData({ ...formData, deliveryAreas: newAreas });
+                    return {
+                      ...area,
+                      pickUpLocation: newPickUpLocation,
+                    };
+                  }
+                  return area;
+                },
+              );
+
+              setFormData({
+                ...formData,
+                deliveryArea: newAreas,
+              });
+
               setPickupLocationModal(null);
             }}
             className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg transition-colors"

@@ -1,96 +1,98 @@
-/* ---------- Types ---------- */
-
-import type { FC } from "react";
+import React from "react";
 
 type Theme = "light" | "dark";
 
-interface OperatingHourRange {
+interface OperatingHour {
+  day: string;
   open: string;
   close: string;
+  isHoliday?: boolean;
 }
-
-interface OperatingHours {
-  sunday: OperatingHourRange[];
-  monday: OperatingHourRange[];
-  tuesday: OperatingHourRange[];
-  wednesday: OperatingHourRange[];
-  thursday: OperatingHourRange[];
-  friday: OperatingHourRange[];
-  saturday: OperatingHourRange[];
-}
-
-/* ---------- Props ---------- */
 
 interface BusinessOpeningHoursDetailsProps {
   theme: Theme;
-  t: (key: string) => string;
-  business: Business;
+  business: {
+    openingHrs: OperatingHour[];
+  };
 }
+const dayOrder = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
 
-/* ---------- Component ---------- */
+const getDayDisplay = (day: string) =>
+  day.charAt(0).toUpperCase() + day.slice(1).toLowerCase();
 
-const BusinessOpeningHoursDetails: FC<BusinessOpeningHoursDetailsProps> = ({
-  theme,
-  t,
-  business,
-}) => {
-  const daysOfWeek = [
-    { key: "sunday", label: t("sunday") },
-    { key: "monday", label: t("monday") },
-    { key: "tuesday", label: t("tuesday") },
-    { key: "wednesday", label: t("wednesday") },
-    { key: "thursday", label: t("thursday") },
-    { key: "friday", label: t("friday") },
-    { key: "saturday", label: t("saturday") },
-  ];
+const BusinessOpeningHoursDetails: React.FC<
+  BusinessOpeningHoursDetailsProps
+> = ({ theme, business }) => {
+  const openingHrs = business?.openingHrs || [];
 
-  return (
-    <div className="space-y-4">
-      <h3
-        className={`mb-3 ${theme === "dark" ? "text-gray-200" : "text-gray-800"}`}
+  const formatTime = (time: string) => {
+    if (!time) return null;
+    return time.replace(/^0/, "") || "00:00";
+  };
+
+  if (openingHrs.length === 0) {
+    return (
+      <div
+        className={`py-4 px-6 rounded ${
+          theme === "dark"
+            ? "bg-gray-800 text-white border-gray-700"
+            : "bg-gray-50 text-gray-700 border-gray-200"
+        }`}
       >
-        {t("weekly_schedule")}
-      </h3>
+        No schedule available
+      </div>
+    );
+  }
 
-      {daysOfWeek.map((day) => {
-        const hours = business.operatingHours[day.key as keyof OperatingHours];
-        return (
-          <div
-            key={day.key}
-            className={`p-4 rounded-lg ${
-              theme === "dark"
-                ? "bg-gray-800/50 border border-gray-700"
-                : "bg-gray-50 border border-gray-200"
-            }`}
-          >
-            <div className="flex items-center justify-between">
-              <span
-                className={`font-medium ${theme === "dark" ? "text-gray-200" : "text-gray-800"}`}
-              >
-                {day.label}
-              </span>
-              <div className="flex items-center gap-2">
-                {hours && hours.length > 0 ? (
-                  hours.map((range, idx) => (
-                    <span
-                      key={idx}
-                      className={`text-sm ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}
-                    >
-                      {range.open} - {range.close}
-                    </span>
-                  ))
-                ) : (
-                  <span
-                    className={`text-sm ${theme === "dark" ? "text-gray-500" : "text-gray-500"}`}
-                  >
-                    {t("closed")}
-                  </span>
-                )}
-              </div>
+  const hoursMap = new Map(openingHrs.map((h) => [h.day.toUpperCase(), h]));
+  console.log("opemonghrs", business);
+  return (
+    <div>
+      <h2
+        className={`mb-3 px-4 py-2 rounded ${
+          theme === "dark"
+            ? "border-gray-700 text-white bg-gray-900"
+            : "bg-gray-50 border-gray-200 text-gray-900"
+        }`}
+      >
+        Weekly Schedule
+      </h2>
+
+      <div className="space-y-3 px-4">
+        {dayOrder.map((day) => {
+          const entry = hoursMap.get(day);
+
+          let displayText = "Closed";
+
+          if (entry) {
+            if (entry.isHoliday) {
+              displayText = "Holiday";
+            } else if (entry.open && entry.close) {
+              if (entry.open === "00:00" && entry.close === "00:00") {
+                displayText = "Closed";
+              } else {
+                displayText = `${formatTime(entry.open)} – ${formatTime(
+                  entry.close,
+                )}`;
+              }
+            }
+          }
+
+          return (
+            <div
+              key={day}
+              className={`flex justify-between items-center py-3 px-4 rounded-lg ${
+                theme === "dark"
+                  ? "bg-gray-800/50 border border-gray-700 text-white hover:bg-gray-700"
+                  : "bg-gray-50 border border-gray-200 hover:bg-gray-100"
+              }`}
+            >
+              <span>{getDayDisplay(day)}</span>
+              <span>{displayText}</span>
             </div>
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
     </div>
   );
 };

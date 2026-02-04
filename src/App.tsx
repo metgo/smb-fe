@@ -17,7 +17,9 @@ import {
   EventsMgmtPage,
   ProfilePage,
   OrdersMgmtPage,
+  EventDetailsPage,
 } from "@/pages";
+import { IdleLogout } from "./components/shared";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -29,7 +31,7 @@ function App() {
     children,
     isLoginPage = false,
   }) => {
-    const isLoggedIn = !!localStorage.getItem("userData");
+    const isLoggedIn = !!localStorage.getItem("access_token");
 
     if (isLoginPage) {
       if (isLoggedIn) {
@@ -50,6 +52,7 @@ function App() {
       element: (
         <Suspense fallback={null}>
           <ProtectedRoute>
+            <IdleLogout />
             <RootLayout />
           </ProtectedRoute>
         </Suspense>
@@ -57,9 +60,11 @@ function App() {
       children: [
         { path: routes.dashboard, element: <DashboardPage /> },
         { path: routes.businessMgmt, element: <BusinessesMgmtPage /> },
+
         { path: routes.productsMgmt, element: <ProductsMgmtPage /> },
         { path: routes.miniCampaign, element: <MiniCampaignsMgmtPage /> },
         { path: routes.eventsMgmt, element: <EventsMgmtPage /> },
+        { path: routes.eventDetails, element: <EventDetailsPage /> },
         { path: routes.profile, element: <ProfilePage /> },
         { path: routes.ordersMgmt, element: <OrdersMgmtPage /> },
         { path: "/*", element: <DashboardPage /> },

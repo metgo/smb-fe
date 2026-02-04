@@ -7,7 +7,6 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useTranslation } from "react-i18next";
 
 interface EventMediaProps {
-  theme: Theme;
   t: (key: string) => string;
   markDirty: (step: number) => void;
   images: IImageUpload[];
@@ -24,7 +23,6 @@ interface EventMediaProps {
 
 const EventMedia: React.FC<EventMediaProps> = ({
   t,
-  theme,
   images,
   markDirty,
   imagesRef,
@@ -38,7 +36,8 @@ const EventMedia: React.FC<EventMediaProps> = ({
   handleDeleteImage,
 }) => {
   const { t: tc } = useTranslation("common");
-  const { textPrimary, textSecondary, textTertiary } = useThemeClasses();
+  const { textPrimary, textSecondary, textTertiary, isDark } =
+    useThemeClasses();
 
   useEffect(() => {
     markDirty(6);
@@ -64,7 +63,7 @@ const EventMedia: React.FC<EventMediaProps> = ({
         {/* Upload Area */}
         <div
           className={`p-16 rounded-2xl border-2 border-dashed text-center transition-colors cursor-pointer ${
-            theme === "dark"
+            isDark
               ? "border-gray-700 bg-gray-800/30 hover:border-teal-500/50"
               : "border-gray-300 bg-gray-50 hover:border-teal-500/50"
           }`}
@@ -115,7 +114,7 @@ const EventMedia: React.FC<EventMediaProps> = ({
                   className={`relative rounded-xl overflow-hidden border-2 transition-all group ${
                     primaryImageIndex === index
                       ? "border-teal-500 ring-2 ring-teal-500/30"
-                      : theme === "dark"
+                      : isDark
                         ? "border-gray-700 hover:border-teal-400"
                         : "border-gray-200 hover:border-teal-300"
                   }`}

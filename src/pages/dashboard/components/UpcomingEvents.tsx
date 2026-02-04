@@ -1,84 +1,98 @@
+import clsx from "clsx";
 import { useTranslation } from "react-i18next";
 import { Calendar, MapPin, ArrowRight } from "lucide-react";
-
 import { Link } from "react-router-dom";
+
 import { routes } from "@/lib/routes";
 import { ImageWithFallback, InfoTooltip } from "@/components/shared";
-
-interface Event {
-  id: number;
-  title: string;
-  date: string;
-  location: string;
-  image: string;
-}
+import { useGetAllEventsQuery } from "@/store/api/eventQueryApi";
+import { formatDate } from "@/helpers/formatter";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 export default function UpcomingEvents() {
-  const { t } = useTranslation("dashboard");
+  const { t, i18n } = useTranslation("dashboard");
+  const language = i18n?.language as Language;
+  const { isDark } = useThemeClasses();
 
-  const events: Event[] = [
-    {
-      id: 1,
-      title: "Negev Desert Stars Festival",
-      date: "Jan 18-20, 2026",
-      location: "Ramon Crater, Mitzpe Ramon",
-      image:
-        "https://images.unsplash.com/photo-1633088926847-435cdb7e76da?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxpc3JhZWwlMjBuZWdldiUyMGRlc2VydCUyMGxhbmRzY2FwZXxlbnwxfHx8fDE3NjU2MDk4ODh8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
-    },
-    {
-      id: 2,
-      title: "Be'er Sheva International Arts Week",
-      date: "Feb 5-12, 2026",
-      location: "Be'er Sheva Culture Center",
-      image:
-        "https://images.unsplash.com/photo-1735956559986-dd3658c94f22?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxqZXJ1c2FsZW0lMjBmZXN0aXZhbCUyMGN1bHR1cmV8ZW58MXx8fHwxNzY1NjA5ODg4fDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
-    },
-    {
-      id: 3,
-      title: "Negev Culinary Market",
-      date: "Feb 22-23, 2026",
-      location: "Sderot Community Center",
-      image:
-        "https://images.unsplash.com/photo-1547516453-01c9910aafbf?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxpc3JhZWxpJTIwZm9vZCUyMG1hcmtldHxlbnwxfHx8fDE3NjU2MDk4ODh8MA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
-    },
-  ];
+  const { data: events } = useGetAllEventsQuery({
+    page: 1,
+    limit: 3,
+  });
 
   return (
     <section>
+      {/* Section Header */}
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-gray-900 dark:text-white">
+        <h2
+          className={clsx(
+            "font-semibold",
+            isDark ? "text-white" : "text-gray-900",
+          )}
+        >
           {t("upcoming_events")}
         </h2>
+
         <InfoTooltip
           content={t("upcoming_events_desc")}
           title={t("upcoming_events")}
         />
       </div>
 
+      {/* Events Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {events.map((event) => (
+        {events?.map((event: any) => (
           <div
-            key={event.id}
-            className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 overflow-hidden hover:shadow-lg transition-all group cursor-pointer"
+            key={event._id}
+            className={clsx(
+              "rounded-xl border overflow-hidden hover:shadow-lg transition-all group",
+              isDark
+                ? "bg-gray-900 border-gray-800"
+                : "bg-white border-gray-200",
+            )}
           >
+            {/* Image */}
             <div className="relative h-48 overflow-hidden">
               <ImageWithFallback
-                src={event.image}
-                alt={event.title}
+                src={
+                  event?.images?.find((img: any) => img?.isPrimary)?.image ||
+                  event?.images[0]?.image
+                }
+                alt={event?.name}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
               />
             </div>
+
+            {/* Event Details */}
             <div className="p-4">
-              <h3 className="text-gray-900 dark:text-white mb-2 line-clamp-2">
-                {event.title}
+              <h3
+                className={clsx(
+                  "mb-2 line-clamp-2 font-semibold",
+                  isDark ? "text-white" : "text-gray-900",
+                )}
+              >
+                {event?.name}
               </h3>
-              <div className="flex items-start gap-2 text-sm text-gray-600 dark:text-gray-400 mb-2">
+
+              <div
+                className={clsx(
+                  "flex items-start gap-2 text-sm mb-2",
+                  isDark ? "text-gray-400" : "text-gray-600",
+                )}
+              >
                 <Calendar className="w-4 h-4 mt-0.5 shrink-0" />
-                <span>{event.date}</span>
+                <span>
+                  {formatDate(event?.dayDescription[0]?.date, language)}
+                </span>
               </div>
-              <div className="flex items-start gap-2 text-sm text-gray-600 dark:text-gray-400">
+
+              <div
+                className={clsx(
+                  "flex items-start gap-2 text-sm",
+                  isDark ? "text-gray-400" : "text-gray-600",
+                )}
+              >
                 <MapPin className="w-4 h-4 mt-0.5 shrink-0" />
-                <span className="line-clamp-1">{event.location}</span>
+                <span className="line-clamp-1">{event?.address?.location}</span>
               </div>
             </div>
           </div>
@@ -87,18 +101,34 @@ export default function UpcomingEvents() {
         {/* Show More Card */}
         <Link
           to={routes.eventsMgmt}
-          className="bg-linear-to-br from-teal-50 to-blue-50 dark:from-teal-950/30 dark:to-blue-950/30 rounded-xl border border-gray-200 dark:border-gray-800 flex items-center justify-center hover:shadow-lg transition-all cursor-pointer group min-h-[320px]"
+          className={clsx(
+            "rounded-xl border flex items-center justify-center hover:shadow-lg transition-all cursor-pointer group min-h-[320px] p-6",
+            isDark
+              ? "bg-teal-950/30 to-blue-950/30 border-gray-800"
+              : "bg-linear-to-br from-teal-50 to-blue-50 border-gray-200",
+          )}
         >
-          <div className="text-center p-6">
+          <div className="text-center">
             <div className="w-12 h-12 bg-teal-500 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
               <ArrowRight className="w-6 h-6 text-white" />
             </div>
-            <p className="text-gray-900 dark:text-white mb-1">
+
+            <p
+              className={clsx(
+                "mb-1 font-semibold",
+                isDark ? "text-white" : "text-gray-900",
+              )}
+            >
               {t("view_all")}
             </p>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              {" "}
-              View all upcoming activities
+
+            <p
+              className={clsx(
+                "text-sm",
+                isDark ? "text-gray-400" : "text-gray-600",
+              )}
+            >
+              {t("view_all_upcoming_activities")}
             </p>
           </div>
         </Link>

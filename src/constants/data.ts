@@ -21,12 +21,12 @@ export const mockBusinesses: Business[] = [
     categories: ["Food & Dining", "Cafe"],
     subcategories: ["Middle Eastern Cuisine", "Coffee Shop"],
     tags: ["Kosher", "Family Friendly", "Outdoor Seating", "WiFi"],
-    impactScore: 685,
+    impact: 685,
     productsCount: 12,
     lifetimeSales: 150000,
     address: "HaShalom St 45, Ofakim",
     coordinates: { lat: 31.3158, lng: 34.6203 },
-    contactPerson: {
+    contactDetails: {
       name: "Sarah Cohen",
       email: "sarah@desertbloom.co.il",
       phone: "+972-50-1234567",
@@ -44,7 +44,7 @@ export const mockBusinesses: Business[] = [
     groupTypes: ["Families", "Couples", "Groups"],
     createdAt: "2024-01-15T10:30:00Z",
     updatedAt: "2024-12-20T14:22:00Z",
-    completionPercentage: 100,
+    completionPercent: 100,
     analytics: {
       pageViews: 1500,
       uniqueVisitors: 500,
@@ -93,12 +93,12 @@ export const mockBusinesses: Business[] = [
     categories: ["Tourism", "Adventure"],
     subcategories: ["Jeep Tours", "Hiking", "Nature Tours"],
     tags: ["Desert", "Outdoor", "Photography", "Family Activities"],
-    impactScore: 742,
+    impact: 742,
     productsCount: 8,
     lifetimeSales: 200000,
     address: "Kibbutz Revivim, Western Negev",
     coordinates: { lat: 31.0892, lng: 34.7031 },
-    contactPerson: {
+    contactDetails: {
       name: "David Levi",
       email: "david@negevadventure.com",
       phone: "+972-52-9876543",
@@ -116,7 +116,7 @@ export const mockBusinesses: Business[] = [
     groupTypes: ["Families", "Groups", "Corporate"],
     createdAt: "2024-02-10T09:15:00Z",
     updatedAt: "2024-12-18T11:45:00Z",
-    completionPercentage: 95,
+    completionPercent: 95,
     analytics: {
       pageViews: 2000,
       uniqueVisitors: 600,
@@ -155,12 +155,12 @@ export const mockBusinesses: Business[] = [
     categories: ["Shopping", "Culture"],
     subcategories: ["Market", "Arts & Crafts", "Local Products"],
     tags: ["Handmade", "Local", "Organic", "Weekly Event"],
-    impactScore: 598,
+    impact: 598,
     productsCount: 156,
     lifetimeSales: 180000,
     address: "Yerushalayim Ave, Sderot",
     coordinates: { lat: 31.5244, lng: 34.5951 },
-    contactPerson: {
+    contactDetails: {
       name: "Rachel Mizrahi",
       email: "rachel@sderotartisan.co.il",
       phone: "+972-54-3456789",
@@ -182,7 +182,7 @@ export const mockBusinesses: Business[] = [
     groupTypes: ["Families", "Individuals", "Seniors"],
     createdAt: "2024-03-05T12:00:00Z",
     updatedAt: "2024-12-22T09:30:00Z",
-    completionPercentage: 88,
+    completionPercent: 88,
     analytics: {
       pageViews: 1800,
       uniqueVisitors: 550,
@@ -231,12 +231,12 @@ export const mockBusinesses: Business[] = [
     categories: ["Accommodation", "Eco-Tourism"],
     subcategories: ["Lodge", "Sustainable Tourism", "Desert Experience"],
     tags: ["Eco-Friendly", "Stargazing", "Off-Grid", "Romantic"],
-    impactScore: 721,
+    impact: 721,
     productsCount: 4,
     lifetimeSales: 50000,
     address: "Halutza Sands, Western Negev",
     coordinates: { lat: 31.2456, lng: 34.5234 },
-    contactPerson: {
+    contactDetails: {
       name: "Michael Green",
       email: "michael@halutzalodge.com",
       phone: "+972-50-7654321",
@@ -254,7 +254,7 @@ export const mockBusinesses: Business[] = [
     groupTypes: ["Couples", "Small Groups", "Solo Travelers"],
     createdAt: "2024-11-20T15:30:00Z",
     updatedAt: "2024-12-15T10:20:00Z",
-    completionPercentage: 75,
+    completionPercent: 75,
     analytics: {
       pageViews: 1200,
       uniqueVisitors: 400,
@@ -293,12 +293,12 @@ export const mockBusinesses: Business[] = [
     categories: ["Shopping", "Food & Dining"],
     subcategories: ["Specialty Food", "Traditional Market"],
     tags: ["Spices", "Traditional", "Gourmet", "Cultural"],
-    impactScore: 563,
+    impact: 563,
     productsCount: 245,
     lifetimeSales: 250000,
     address: "HaRav Yitzhak Nissim St 12, Netivot",
     coordinates: { lat: 31.4189, lng: 34.5964 },
-    contactPerson: {
+    contactDetails: {
       name: "Yossi Dahan",
       email: "yossi@netivotspice.co.il",
       phone: "+972-52-1239876",
@@ -316,7 +316,7 @@ export const mockBusinesses: Business[] = [
     groupTypes: ["Individuals", "Families", "Food Enthusiasts"],
     createdAt: "2024-01-08T08:45:00Z",
     updatedAt: "2024-12-19T16:10:00Z",
-    completionPercentage: 92,
+    completionPercent: 92,
     analytics: {
       pageViews: 1600,
       uniqueVisitors: 500,
@@ -355,12 +355,12 @@ export const mockBusinesses: Business[] = [
     categories: ["Culture", "Workshops"],
     subcategories: ["Art Studio", "Craft Workshops", "Pottery"],
     tags: ["Handmade", "Art", "Workshops", "Souvenirs"],
-    impactScore: 438,
+    impact: 438,
     productsCount: 0,
     lifetimeSales: 0,
     address: "Rager Blvd 78, Be'er Sheva",
     coordinates: { lat: 31.2518, lng: 34.7913 },
-    contactPerson: {
+    contactDetails: {
       name: "Tamar Shapira",
       email: "tamar@beershevaceramics.com",
       phone: "+972-54-9988776",
@@ -378,7 +378,7 @@ export const mockBusinesses: Business[] = [
     groupTypes: ["Individuals", "Families", "Groups", "Corporate Teams"],
     createdAt: "2024-12-01T11:00:00Z",
     updatedAt: "2024-12-15T14:30:00Z",
-    completionPercentage: 45,
+    completionPercent: 45,
     internalNotes: "New business - still setting up product listings",
     analytics: {
       pageViews: 800,
@@ -456,7 +456,7 @@ export function generateMockBusinesses(count: number = 100): Business[] {
       categories: [type.category],
       subcategories: [type.type],
       tags: ["Local", "Quality"],
-      impactScore: Math.floor(Math.random() * 601) + 200, // Range: 200-800
+      impact: Math.floor(Math.random() * 601) + 200, // Range: 200-800
       productsCount,
       lifetimeSales: Math.floor(Math.random() * 500000) + 50000, // Range: 50000-550000
       address: `Street ${i + 1}, City ${(i % 6) + 1}`,
@@ -464,7 +464,7 @@ export function generateMockBusinesses(count: number = 100): Business[] {
         lat: 31.2 + Math.random() * 0.4,
         lng: 34.5 + Math.random() * 0.4,
       },
-      contactPerson: {
+      contactDetails: {
         name: `Contact Person ${i + 1}`,
         email: `person${i + 1}@business.co.il`,
         phone: `+972-50-${String(Math.floor(Math.random() * 9000000) + 1000000)}`,
@@ -490,7 +490,7 @@ export function generateMockBusinesses(count: number = 100): Business[] {
         11,
         Math.floor(Math.random() * 24) + 1,
       ).toISOString(),
-      completionPercentage: Math.floor(Math.random() * 40) + 60,
+      completionPercent: Math.floor(Math.random() * 40) + 60,
       analytics: {
         pageViews: Math.floor(Math.random() * 2000) + 500,
         uniqueVisitors: Math.floor(Math.random() * 1000) + 200,

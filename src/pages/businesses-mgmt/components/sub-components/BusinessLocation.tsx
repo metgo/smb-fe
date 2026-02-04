@@ -1,25 +1,33 @@
-import type { FC } from "react";
-import { MapPin } from "lucide-react";
+import { type FC } from "react";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { MarkerMap } from "@/components/maps";
 
 /* ---------- Types ---------- */
 
 type Theme = "light" | "dark";
 
 interface Coordinates {
-  lat: number;
-  lng: number;
+  lat: string;
+  long: string;
+}
+
+interface Address {
+  country: string;
+  city: string;
+  location: string;
 }
 
 interface LocationFormData {
-  address: string;
-  coordinates: Coordinates;
+  address: Address;
+  geoLocation: Coordinates;
 }
 
 interface LocationErrors {
-  address?: string;
+  address?: Address;
 }
 
 /* ---------- Props ---------- */
+type View = "list" | "details" | "create" | "edit" | undefined;
 
 interface BusinessLocationProps {
   theme: Theme;
@@ -28,102 +36,69 @@ interface BusinessLocationProps {
   formData: LocationFormData;
   errors: LocationErrors;
   setFormData: (data: LocationFormData) => void;
+  geo: Geo;
+  setGeo: (v: Geo) => void;
+  address: string;
+  setAddress: React.Dispatch<React.SetStateAction<string>>;
+  business: any;
+  currentView: View;
 }
 
 /* ---------- Component ---------- */
 
 const BusinessLocation: FC<BusinessLocationProps> = ({
-  theme,
-  isRTL,
+  // theme,
+  // isRTL,
   t,
-  formData,
-  errors,
-  setFormData,
+  // formData,
+  // errors,
+  // setFormData,
+  geo,
+  // currentView,
+  setGeo,
+  address,
+  setAddress,
+  business,
 }) => {
+  const { textSecondary } = useThemeClasses();
+  console.log("geo", business?.geoLocation);
+  // useEffect(() => {
+  //   if (!business || currentView !== "edit") return;
+
+  //   // Set geo location
+  //   if (business?.geoLocation) {
+  //     setGeo({
+  //       lat: String(business.geoLocation.lat),
+  //       lng: String(business.geoLocation.lng),
+  //     });
+  //   }
+
+  //   // Set formatted address
+  //   if (business.address) {
+  //     const formatted = [
+  //       business.address.location,
+  //       business.address.city,
+  //       business.address.country,
+  //     ]
+  //       .filter(Boolean)
+  //       .join(", ");
+
+  //     setAddress(formatted);
+  //   }
+  // }, [business, currentView]);
+
   return (
     <div className="space-y-6">
-      {/* Address */}
       <div>
-        <label
-          className={`block text-sm mb-2 ${
-            theme === "dark" ? "text-gray-300" : "text-gray-700"
-          }`}
-        >
-          {t("address")} *
+        <label className={`block text-sm mb-2 ${textSecondary}`}>
+          {t("location_address")} <span className="text-red-500">*</span>
         </label>
-
-        <div className="relative">
-          <MapPin
-            className={`absolute ${
-              isRTL ? "right-3" : "left-3"
-            } top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400`}
-          />
-
-          <input
-            type="text"
-            value={formData.address}
-            onChange={(e) =>
-              setFormData({ ...formData, address: e.target.value })
-            }
-            placeholder={t("enter_full_address")}
-            className={`w-full ${
-              isRTL ? "pr-10 pl-4" : "pl-10 pr-4"
-            } py-2 rounded-lg border ${
-              errors.address
-                ? "border-red-500"
-                : theme === "dark"
-                  ? "bg-gray-800 border-gray-700 text-gray-200"
-                  : "bg-white border-gray-300 text-gray-900"
-            } focus:outline-none focus:ring-2 focus:ring-teal-500`}
-          />
-        </div>
-
-        {errors.address && (
-          <p className="text-red-500 text-sm mt-1">{errors.address}</p>
-        )}
-      </div>
-
-      {/* Map Placeholder */}
-      <div
-        className={`h-96 rounded-lg flex items-center justify-center ${
-          theme === "dark"
-            ? "bg-gray-800 border border-gray-700"
-            : "bg-gray-100 border border-gray-300"
-        }`}
-      >
-        <div className="text-center">
-          <MapPin
-            className={`w-12 h-12 mx-auto mb-2 ${
-              theme === "dark" ? "text-gray-600" : "text-gray-400"
-            }`}
-          />
-          <p className="text-gray-500">{t("google_maps_widget")}</p>
-          <p
-            className={`text-sm mt-1 ${
-              theme === "dark" ? "text-gray-600" : "text-gray-400"
-            }`}
-          >
-            {t("search_address")}, {t("pin_location")}
-          </p>
-        </div>
-      </div>
-
-      {/* Coordinates */}
-      <div
-        className={`p-4 rounded-lg ${
-          theme === "dark"
-            ? "bg-gray-800/50 border border-gray-700"
-            : "bg-gray-50 border border-gray-200"
-        }`}
-      >
-        <p
-          className={`text-sm ${
-            theme === "dark" ? "text-gray-400" : "text-gray-600"
-          }`}
-        >
-          {t("geo_coordinates")}: {formData.coordinates.lat.toFixed(6)},{" "}
-          {formData.coordinates.lng.toFixed(6)}
-        </p>
+        <MarkerMap
+          geo={geo}
+          setGeo={setGeo}
+          address={address}
+          setAddress={setAddress}
+        />
       </div>
     </div>
   );

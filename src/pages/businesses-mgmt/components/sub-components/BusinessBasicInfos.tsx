@@ -1,6 +1,8 @@
-import { useState, type FC } from "react";
+import { useEffect, useRef, useState, type FC } from "react";
 import { Globe } from "lucide-react";
 
+import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { DmoAuthorityWebsiteSelector } from "@/components/shared";
 interface BusinessFormData {
   authority: string;
   slug: string;
@@ -22,46 +24,48 @@ interface BusinessFormData {
 interface FormErrors {
   [key: string]: string;
 }
+type View = "list" | "details" | "create" | "edit" | undefined;
 
 interface BusinessBasicInfosProps {
   theme: Theme;
   t: (key: string) => string;
   formData: BusinessFormData;
   setFormData: (data: BusinessFormData) => void;
-
   errors: FormErrors;
   canApprove: boolean;
+  selectedDmoId?: string;
+  setSelectDmoId: React.Dispatch<React.SetStateAction<string>>;
+  businessId: string;
+  selectedAuthorityId?: string;
+  setSelectAuthorityId: React.Dispatch<React.SetStateAction<string>>;
+  markDirty: (step: number) => void;
+  currentView: View;
+  websiteVisibilityIds: IWebsiteVisibilityIds;
+  setWebsiteVisibilityIds: (v: any) => void;
+  businessAssociatedWebsites?: IAssociatedWebsiteIds[];
 }
-
-/* ---------------- Component ---------------- */
-// Authority options for the Western Negev region
-const AUTHORITIES = [
-  "Be'er Sheva",
-  "Sderot",
-  "Netivot",
-  "Ofakim",
-  "Arad",
-  "Dimona",
-  "Yeruham",
-  "Rahat",
-  "Regional Council - Sha'ar HaNegev",
-  "Regional Council - Eshkol",
-  "Regional Council - Sdot Negev",
-  "Regional Council - Merhavim",
-  "Regional Council - Bnei Shimon",
-];
 
 const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
   t,
   theme,
   formData,
   setFormData,
+  markDirty,
   errors,
   canApprove,
+  selectedDmoId,
+  setSelectDmoId,
+  selectedAuthorityId,
+  setSelectAuthorityId,
+  businessId,
+  websiteVisibilityIds,
+  setWebsiteVisibilityIds,
+  businessAssociatedWebsites = [],
 }) => {
-  const [selectedFormLanguage, setSelectedFormLanguage] = useState<
-    "en" | "he" | "ar"
-  >("en");
+  const [selectedFormLanguage, setSelectedFormLanguage] =
+    useState<Language>("en");
+  const { borderColor } = useThemeClasses();
+  const dmoSectionRef = useRef<HTMLDivElement | null>(null);
 
   /* -------- Helpers -------- */
 
@@ -88,8 +92,13 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
     if (type === "short") return "وصف مختصر";
     return "وصف كامل";
   };
+  // const selectedDmos = dmosAuthorities?.find(
+  //   (item) => item?._id === selectedDmoId,
+  // );
 
-  /* ---------------- Render ---------------- */
+  useEffect(() => {
+    markDirty(1);
+  }, [formData, selectedDmoId]);
 
   return (
     <div className="space-y-6">
@@ -124,39 +133,24 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
         </div>
       </div>
 
-      {/* Authority */}
-      <div>
-        <label
-          className={`block text-sm mb-2 ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}
-        >
-          {t("authority")} *
-        </label>
-        <select
-          value={formData.authority}
-          onChange={(e) =>
-            setFormData({ ...formData, authority: e.target.value })
-          }
-          className={`w-full px-4 py-2 rounded-lg border ${
-            theme === "dark"
-              ? "bg-gray-800 border-gray-700 text-gray-200"
-              : "bg-white border-gray-300 text-gray-900"
-          } focus:outline-none focus:ring-2 focus:ring-teal-500`}
-        >
-          <option value="">{t("select")}</option>
-          {AUTHORITIES.map((auth) => (
-            <option key={auth} value={auth}>
-              {auth}
-            </option>
-          ))}
-        </select>
-      </div>
-
+      <DmoAuthorityWebsiteSelector
+        errors={errors}
+        isEdit={!!businessId}
+        selectedDmoId={selectedDmoId ?? ""}
+        setSelectDmoId={setSelectDmoId}
+        selectedAuthorityId={selectedAuthorityId ?? ""}
+        setSelectAuthorityId={setSelectAuthorityId}
+        dmoSectionRef={dmoSectionRef}
+        websiteVisibilityIds={websiteVisibilityIds}
+        setWebsiteVisibilityIds={setWebsiteVisibilityIds}
+        itemAssociatedWebsites={businessAssociatedWebsites}
+      />
       {/* Business Name */}
       <div>
         <label
           className={`block text-sm mb-2 ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}
         >
-          {t("business_name")} *
+          {t("business_name")} <span className="text-red-500">*</span>
         </label>
         <input
           type="text"
@@ -184,31 +178,12 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
         )}
       </div>
 
-      {/* Slug */}
-      <div>
-        <label
-          className={`block text-sm mb-2 ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}
-        >
-          {t("slug")} ({t("auto_generated")})
-        </label>
-        <input
-          type="text"
-          value={formData.slug}
-          onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-          className={`w-full px-4 py-2 rounded-lg border ${
-            theme === "dark"
-              ? "bg-gray-800 border-gray-700 text-gray-200"
-              : "bg-white border-gray-300 text-gray-900"
-          } focus:outline-none focus:ring-2 focus:ring-teal-500`}
-        />
-      </div>
-
       {/* Short Description */}
       <div>
         <label
           className={`block text-sm mb-2 ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}
         >
-          {t("short_description")} *
+          {t("short_description")} <span className="text-red-500">*</span>
         </label>
         <textarea
           rows={3}
@@ -238,7 +213,7 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
         <label
           className={`block text-sm mb-2 ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}
         >
-          {t("full_description")} *
+          {t("full_description")} <span className="text-red-500">*</span>
         </label>
         <textarea
           rows={6}
@@ -281,11 +256,11 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
               setFormData({ ...formData, internalNotes: e.target.value })
             }
             placeholder={t("add_internal_notes")}
-            className={`w-full px-4 py-2 rounded-lg border ${
+            className={`w-full px-4 py-4 rounded-lg border ${borderColor} focus:outline-none focus:ring-2 focus:ring-teal-500 ${
               theme === "dark"
-                ? "bg-gray-800 border-gray-700 text-gray-200"
-                : "bg-white border-gray-300 text-gray-900"
-            } focus:outline-none focus:ring-2 focus:ring-teal-500`}
+                ? "bg-gray-800 text-gray-200 placeholder-gray-500"
+                : "bg-white text-gray-900 placeholder-gray-400"
+            }`}
           />
         </div>
       )}

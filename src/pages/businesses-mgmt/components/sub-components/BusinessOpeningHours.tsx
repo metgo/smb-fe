@@ -1,164 +1,117 @@
-import { TimePickerWidget } from "@/components/shared/TimePickerWidget";
-import type { FC } from "react";
+import React from "react";
 
-interface TimeRange {
+interface OperatingHour {
+  day: string;
   open: string;
   close: string;
-}
-
-interface OperatingHours {
-  sunday: TimeRange[];
-  monday: TimeRange[];
-  tuesday: TimeRange[];
-  wednesday: TimeRange[];
-  thursday: TimeRange[];
-  friday: TimeRange[];
-  saturday: TimeRange[];
+  isHoliday: boolean;
 }
 
 interface BusinessOpeningHoursProps {
   theme: "light" | "dark";
-  isRTL: boolean;
-  formData: {
-    operatingHours: OperatingHours;
-  };
-  setFormData: React.Dispatch<
-    React.SetStateAction<{
-      operatingHours: OperatingHours;
-    }>
-  >;
-  t: (key: string) => string;
+  formData: { operatingHours: OperatingHour[] };
+  setFormData: (data: any) => void;
 }
 
-const BusinessOpeningHours: FC<BusinessOpeningHoursProps> = ({
+const daysOfWeek = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
+
+const BusinessOpeningHours = ({
   theme,
-  isRTL,
   formData,
   setFormData,
-  t,
-}) => {
-  const daysOfWeek = [
-    { key: "sunday", label: t("sunday") },
-    { key: "monday", label: t("monday") },
-    { key: "tuesday", label: t("tuesday") },
-    { key: "wednesday", label: t("wednesday") },
-    { key: "thursday", label: t("thursday") },
-    { key: "friday", label: t("friday") },
-    { key: "saturday", label: t("saturday") },
-  ] as const;
+}: BusinessOpeningHoursProps) => {
+  React.useEffect(() => {
+    if (!formData.operatingHours || formData.operatingHours.length === 0) {
+      setFormData({
+        ...formData,
+        operatingHours: daysOfWeek.map((day) => ({
+          day,
+          open: "",
+          close: "",
+          isHoliday: false,
+        })),
+      });
+    }
+  }, [formData, setFormData]);
+
+  const handleToggleHoliday = (index: number) => {
+    const newHours = [...formData.operatingHours];
+    const current = newHours[index];
+    if (!current.isHoliday) {
+      newHours[index] = { ...current, isHoliday: true, open: "", close: "" };
+    } else {
+      newHours[index] = { ...current, isHoliday: false };
+    }
+    setFormData({ ...formData, operatingHours: newHours });
+  };
+
+  const handleTimeChange = (
+    index: number,
+    field: "open" | "close",
+    value: string,
+  ) => {
+    const newHours = [...formData.operatingHours];
+    newHours[index] = { ...newHours[index], [field]: value };
+    setFormData({ ...formData, operatingHours: newHours });
+  };
 
   return (
     <div className="space-y-6">
-      <h3 className={theme === "dark" ? "text-gray-200" : "text-gray-800"}>
-        {t("operating_hours")}
-      </h3>
-
-      {daysOfWeek.map((day) => {
-        const hours = formData.operatingHours[day.key];
-
-        return (
-          <div
-            key={day.key}
-            className={`p-4 rounded-lg ${
-              theme === "dark"
-                ? "bg-gray-800/50 border border-gray-700"
-                : "bg-gray-50 border border-gray-200"
-            }`}
-          >
-            <div className="flex items-center justify-between mb-3">
-              <span
-                className={`font-medium ${
-                  theme === "dark" ? "text-gray-200" : "text-gray-800"
+      {formData.operatingHours?.map((hour, idx) => (
+        <div
+          key={hour.day}
+          className={`flex justify-between items-start p-5 border rounded-md ${
+            theme === "dark" ? "bg-gray-800" : "bg-gray-100"
+          }`}
+        >
+          {/* Left side: Day and open time (open time below day) */}
+          <div className="flex flex-col">
+            <div className="w-12 font-semibold">{hour.day}</div>
+            <div className="flex gap-4 items-center">
+              <input
+                type="time"
+                value={hour.open}
+                onChange={(e) => handleTimeChange(idx, "open", e.target.value)}
+                disabled={hour.isHoliday}
+                className={`mt-1 px-3 py-3 rounded-lg border text-sm ${
+                  theme === "dark"
+                    ? "bg-gray-700 border-gray-600 text-gray-200"
+                    : "bg-white border-gray-300 text-gray-900"
                 }`}
-              >
-                {day.label}
-              </span>
-
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={hours.length === 0}
-                  onChange={(e) => {
-                    setFormData((prev) => ({
-                      ...prev,
-                      operatingHours: {
-                        ...prev.operatingHours,
-                        [day.key]: e.target.checked
-                          ? []
-                          : [{ open: "09:00", close: "18:00" }],
-                      },
-                    }));
-                  }}
-                  className="w-4 h-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500"
-                />
-                <span
-                  className={`text-sm ${
-                    theme === "dark" ? "text-gray-400" : "text-gray-600"
-                  }`}
-                >
-                  {t("closed")}
-                </span>
-              </label>
+              />
+              <div className="">to</div>
+              <input
+                type="time"
+                value={hour.close}
+                onChange={(e) => handleTimeChange(idx, "close", e.target.value)}
+                disabled={hour.isHoliday}
+                className={`px-3 py-3 rounded-lg border text-sm ${
+                  theme === "dark"
+                    ? "bg-gray-700 border-gray-600 text-gray-200"
+                    : "bg-white border-gray-300 text-gray-900"
+                }`}
+              />
             </div>
-
-            {hours.length > 0 && (
-              <div className="space-y-2">
-                {hours.map((range, idx) => (
-                  <div key={idx} className="flex items-center gap-3">
-                    <TimePickerWidget
-                      value={range.open}
-                      onChange={(time) => {
-                        setFormData((prev) => {
-                          const updated = [...prev.operatingHours[day.key]];
-                          updated[idx] = {
-                            ...updated[idx],
-                            open: time,
-                          };
-
-                          return {
-                            ...prev,
-                            operatingHours: {
-                              ...prev.operatingHours,
-                              [day.key]: updated,
-                            },
-                          };
-                        });
-                      }}
-                      theme={theme}
-                      isRTL={isRTL}
-                    />
-
-                    <span className="text-gray-500">{t("to")}</span>
-
-                    <TimePickerWidget
-                      value={range.close}
-                      onChange={(time) => {
-                        setFormData((prev) => {
-                          const updated = [...prev.operatingHours[day.key]];
-                          updated[idx] = {
-                            ...updated[idx],
-                            close: time,
-                          };
-
-                          return {
-                            ...prev,
-                            operatingHours: {
-                              ...prev.operatingHours,
-                              [day.key]: updated,
-                            },
-                          };
-                        });
-                      }}
-                      theme={theme}
-                      isRTL={isRTL}
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
-        );
-      })}
+
+          {/* Right side: close time and checkbox (stacked vertically) */}
+          <div className="flex flex-col items-end space-y-2">
+            <label className="flex items-center gap-1 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={hour.isHoliday}
+                onChange={() => handleToggleHoliday(idx)}
+                className="w-4 h-4 rounded border-gray-300"
+              />
+              <span
+                className={theme === "dark" ? "text-gray-300" : "text-gray-700"}
+              >
+                Closed
+              </span>
+            </label>
+          </div>
+        </div>
+      ))}
     </div>
   );
 };

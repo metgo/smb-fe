@@ -67,14 +67,48 @@ export const masterDataApi = createApi({
         method: "GET",
       }),
     }),
+
+    getUserByEmail: builder.query<any, { email: string | null }>({
+      query: ({ email }) => ({
+        url: `${endpoints.users}/${email}`,
+        method: "GET",
+      }),
+    }),
+
+    postUserAdmin: builder.mutation<any, any>({
+      query: (formData) => ({
+        url: endpoints.userAdmin,
+        method: "POST",
+        data: formData,
+      }),
+    }),
+
+    patchBusinessOwner: builder.mutation<any, any>({
+      query: (body) => ({
+        url: endpoints.changeOwner,
+        method: "PATCH",
+        data: body,
+      }),
+    }),
+
+    getAllSocialMedia: builder.query<any, void>({
+      query: () => ({
+        url: endpoints.socialmedia,
+        method: "GET",
+      }),
+    }),
   }),
 });
 
 export const {
   useGetCategoriesQuery,
   useGetSubCategoriesQuery,
+  usePatchBusinessOwnerMutation,
   useGetAccessibilityQuery,
   useGetGroupTypesQuery,
   useGetDmosQuery,
+  usePostUserAdminMutation,
+  useGetUserByEmailQuery,
   useGetAllWebsitesQuery,
+  useGetAllSocialMediaQuery,
 } = masterDataApi;

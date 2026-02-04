@@ -8,12 +8,11 @@ const axiosInstance = axios.create({
   },
 });
 
-// 🔐 Attach Bearer token automatically
+//  Attach Bearer token automatically
 axiosInstance.interceptors.request.use(
   (config) => {
     if (typeof window !== "undefined") {
-      const userData = localStorage.getItem("userData");
-      const token = userData ? JSON.parse(userData)?.accessToken : null;
+      const token = localStorage.getItem("access_token");
 
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;

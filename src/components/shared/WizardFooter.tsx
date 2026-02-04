@@ -7,10 +7,8 @@ import { useTranslation } from "react-i18next";
 type WizardFooterProps = {
   currentStep: number;
   totalSteps: number;
-
   isSaving: boolean;
   isPublishing: boolean;
-
   onPrevious: () => void;
   onNext: () => void;
   onSaveDraft: () => void;
@@ -28,9 +26,9 @@ export default function WizardFooter({
   onPublish,
 }: WizardFooterProps) {
   const { t } = useTranslation("common");
-  const { theme, isRTL } = useAppSelector((state) => state.settings);
+  const { isRTL } = useAppSelector((state) => state.settings);
   const { rowDir, borderColor } = useThemeClasses();
-
+  const { isDark } = useThemeClasses();
   return (
     <div
       className={clsx(
@@ -45,8 +43,8 @@ export default function WizardFooter({
           <button
             onClick={onPrevious}
             className={`px-4 py-2 rounded-lg border transition-colors flex items-center gap-2 cursor-pointer ${
-              theme === "dark"
-                ? "border-gray-700 hover:bg-gray-800"
+              isDark
+                ? "border-gray-700 hover:bg-gray-800 text-gray-300"
                 : "border-gray-300 hover:bg-gray-100"
             }`}
           >
@@ -71,8 +69,8 @@ export default function WizardFooter({
           onClick={onSaveDraft}
           disabled={isSaving}
           className={`px-4 py-2 rounded-lg border cursor-pointer transition-colors ${
-            theme === "dark"
-              ? "border-gray-700 hover:bg-gray-800"
+            isDark
+              ? "border-gray-700 hover:bg-gray-800 text-gray-300"
               : "border-gray-300 hover:bg-gray-100"
           }`}
         >

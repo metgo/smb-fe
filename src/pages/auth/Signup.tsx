@@ -11,6 +11,8 @@ import {
   useRegisterStep1Mutation,
   useRegisterStep2Mutation,
 } from "@/store/api/authApi";
+import { useAppDispatch } from "@/hooks/hooks";
+import { loginSuccess } from "@/features/authSlice";
 
 interface SignupProps {
   setCurrentTab: (v: string) => void;
@@ -45,6 +47,8 @@ const InputField = ({
 
 export function Signup({ setCurrentTab }: SignupProps) {
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+
   const [email, setEmail] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -83,10 +87,9 @@ export function Signup({ setCurrentTab }: SignupProps) {
     }).unwrap();
 
     if (typeof window !== "undefined") {
-      localStorage.setItem("userData", JSON.stringify(res));
-      localStorage.setItem("user", JSON.stringify(res.user));
-      localStorage.removeItem("dmoId");
-      localStorage.removeItem("authorityId");
+      localStorage.setItem("user_info", JSON.stringify({ user: res.user }));
+      localStorage.setItem("access_token", res.accessToken);
+      dispatch(loginSuccess(res.user));
     }
     navigate(routes.dashboard, { replace: true });
     toast.success(`Welcome ${res.user.firstName} ${res.user.lastName}`);
@@ -94,7 +97,7 @@ export function Signup({ setCurrentTab }: SignupProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-yellow-400 via-red-500 to-green-600 flex items-center justify-center p-8">
+    <div className="min-h-screen bg-linear-to-br from-yellow-400 via-red-500 to-green-600 flex items-center justify-center p-8">
       <div className="w-full max-w-xl">
         <div className="bg-gray-800/40 backdrop-blur-md rounded-3xl p-12 shadow-2xl">
           {/* Header */}
