@@ -5,11 +5,13 @@ import {
   FileText,
   CheckCircle,
   Package,
-  MapPin,
   LocationEdit,
+  MapPin,
+  House,
+  IndianRupee,
 } from "lucide-react";
-import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useAppSelector } from "@/hooks/hooks";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 /* ---------- Types ---------- */
 
@@ -17,6 +19,7 @@ type Theme = "light" | "dark";
 interface PickupLocation {
   address: string;
   isAlwaysOpen?: boolean;
+  openingHrs?: any[];
 }
 
 interface DeliveryAreaItem {
@@ -44,7 +47,7 @@ const BusinessDeliveryPolicyDetails: FC<BusinessDeliveryPolicyDetailsProps> = ({
   t,
   business,
 }) => {
-  const { isRTL } = useAppSelector((state) => state.settings);
+  const { isDark } = useThemeClasses();
 
   const hasDeliveryInfo =
     business.deliveryAdditionalInfo ||
@@ -161,46 +164,48 @@ const BusinessDeliveryPolicyDetails: FC<BusinessDeliveryPolicyDetailsProps> = ({
       {/* Delivery Area */}
       {business.deliveryArea && business.deliveryArea.length > 0 && (
         <div
-          className={`p-4 rounded-lg  ${
-            theme === "dark" ? " " : " border-gray-200"
+          className={`p-4 rounded-lg ${
+            theme === "dark" ? "" : "border-gray-200"
           }`}
         >
           {business.deliveryArea.map((deliveryArea, areaIdx) => (
             <div
               key={areaIdx}
-              className={`mb-6 p-4 rounded-lg ${
+              className={`mb-6 p-4 gap-5 flex flex-col rounded-lg ${
                 theme === "dark"
                   ? "bg-gray-900 border border-gray-700"
-                  : " border border-gray-200 shadow-sm"
+                  : "border border-gray-200 shadow-sm"
               }`}
             >
               <div className="grid grid-cols-12 gap-3 mb-3">
                 {/* Area */}
                 <div className="col-span-5">
                   <label
-                    className={`block text-md mb-1 font-semibold ${
+                    className={` text-md mb-1 font-semibold flex items-center gap-2 ${
                       theme === "dark" ? "text-gray-400" : "text-gray-600"
                     }`}
                   >
+                    <Truck size={16} />
                     {t("delivery_area")}
                   </label>
 
                   <p
-                    className={`text-md ${
+                    className={`text-lg ${
                       theme === "dark" ? "text-gray-200" : "text-gray-800"
                     }`}
                   >
-                    {deliveryArea.area || (isRTL ? "באר שבע" : "Be'er Sheva")}
+                    {deliveryArea.area ? deliveryArea.area : "-"}
                   </p>
                 </div>
 
                 {/* Price */}
                 <div className="col-span-3">
                   <label
-                    className={`block text-md mb-1 font-semibold ${
+                    className={` text-md mb-1 font-semibold flex items-center gap-2 ${
                       theme === "dark" ? "text-gray-400" : "text-gray-600"
                     }`}
                   >
+                    <IndianRupee size={16} />
                     {t("delivery_price")}
                   </label>
 
@@ -209,34 +214,81 @@ const BusinessDeliveryPolicyDetails: FC<BusinessDeliveryPolicyDetailsProps> = ({
                       theme === "dark" ? "text-gray-200" : "text-gray-800"
                     }`}
                   >
-                    {deliveryArea.price}
+                    {deliveryArea.price ? deliveryArea.price : "-"}
                   </p>
                 </div>
               </div>
+              <div className="flex flex-col">
+                {/* Pickup locations title */}
+                <div
+                  className={`font-semibold flex items-center gap-2 ${
+                    theme === "dark" ? "text-gray-300" : "text-gray-700"
+                  }`}
+                >
+                  <House size={16} className="" />
 
-              {/* Pickup locations title  */}
-              <div
-                className={`mb-2 font-semibold flex flex-wrap items-center gap-2 ${
-                  theme === "dark" ? "text-gray-300" : "text-gray-700"
-                }`}
-              >
-                <div>Pickup Locations:</div>
-                {deliveryArea.pickUpLocation?.map((pickup, pickupIdx) => (
-                  <div
-                    key={pickupIdx}
-                    className="border px-6 h-12 rounded-md mb-2 bg-white dark:bg-gray-800 flex items-center gap-2"
-                  >
-                    <LocationEdit size={16} className="text-green-500" />
-                    <div className="flex items-center gap-5">
-                      <div className="font-semibold">{pickup.address}</div>
-                      {pickup.isAlwaysOpen && (
-                        <div className="text-sm text-gray-600 dark:text-gray-400">
-                          {t("open_24_7")}
+                  <div>{t("pickup_locations")}:</div>
+                </div>
+                <div className="flex gap-20">
+                  {deliveryArea.pickUpLocation &&
+                  deliveryArea.pickUpLocation.length > 0 ? (
+                    deliveryArea.pickUpLocation.map((pickup, pickupIdx) => (
+                      <div
+                        key={pickupIdx}
+                        className="py-3 mb-2 rounded-md dark:bg-gray-800"
+                      >
+                        <div className="flex items-center gap-2 mb-1">
+                          <div
+                            className={`font-semibold mb-2 flex items-center gap-2 ${
+                              theme === "dark"
+                                ? "text-gray-300"
+                                : "text-gray-700"
+                            }`}
+                          >
+                            {pickup.address}
+                          </div>
                         </div>
-                      )}
+
+                        {/* Opening Hours or 24/7 */}
+                        {pickup.isAlwaysOpen ? (
+                          <div className="text-sm  bg-green-600 text-white px-2 py-2 rounded-sm dark:text-gray-400">
+                            {t("open_24_7")}
+                          </div>
+                        ) : pickup.openingHrs &&
+                          pickup.openingHrs.length > 0 ? (
+                          <div
+                            className={`text-sm flex flex-col gap-4 ${
+                              isDark ? "text-gray-400" : "text-gray-600"
+                            }`}
+                          >
+                            {pickup.openingHrs.map((hours, idx) => (
+                              <div
+                                key={idx}
+                                className="flex justify-start gap-3"
+                              >
+                                <span className="font-medium">
+                                  {hours.day}:
+                                </span>
+                                <span>
+                                  {hours.open} - {hours.close}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="text-sm text-gray-600 dark:text-gray-400">
+                            {/* Fallback if no hours and not always open */}
+                            {t("no_opening_hours_available")}
+                          </div>
+                        )}
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center text-gray-500 dark:text-gray-400 py-4">
+                      -
                     </div>
-                  </div>
-                ))}
+                  )}
+                </div>
               </div>
             </div>
           ))}

@@ -1,55 +1,42 @@
 import React from "react";
 
 type Theme = "light" | "dark";
+
+interface OperatingHour {
+  day: string;
+  open: string;
+  close: string;
+  isHoliday?: boolean;
+}
+
 interface BusinessOpeningHoursDetailsProps {
   theme: Theme;
-  t: (key: string) => string;
-  business: any;
+  business: {
+    openingHrs: OperatingHour[];
+  };
 }
+const dayOrder = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
+
+const getDayDisplay = (day: string) =>
+  day.charAt(0).toUpperCase() + day.slice(1).toLowerCase();
 
 const BusinessOpeningHoursDetails: React.FC<
   BusinessOpeningHoursDetailsProps
 > = ({ theme, business }) => {
   const openingHrs = business?.openingHrs || [];
 
-  // Format UTC ISO time → HH:mm (24-hour) in local timezone
-  const formatTime = (utcIsoString: any) => {
-    if (!utcIsoString) return null;
-    const date = new Date(utcIsoString);
-    return date
-      .toLocaleTimeString("en-US", {
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false,
-      })
-      .replace(/^0+/, "");
+  const formatTime = (time: string) => {
+    if (!time) return null;
+    return time.replace(/^0/, "") || "00:00";
   };
-
-  const dayOrder = [
-    "sunday",
-    "monday",
-    "tuesday",
-    "wednesday",
-    "thursday",
-    "friday",
-    "saturday",
-  ];
-
-  const getDayDisplay = (day: any) =>
-    day.charAt(0).toUpperCase() + day.slice(1);
-
-  const getHoursForDay = (dayName: any) =>
-    openingHrs.find(
-      (item: any) => item?.days?.toLowerCase() === dayName.toLowerCase(),
-    );
 
   if (openingHrs.length === 0) {
     return (
       <div
         className={`py-4 px-6 rounded ${
           theme === "dark"
-            ? "bg-gray-800 text-white  border-gray-700"
-            : "bg-gray-50 text-gray-700  border-gray-200"
+            ? "bg-gray-800 text-white border-gray-700"
+            : "bg-gray-50 text-gray-700 border-gray-200"
         }`}
       >
         No schedule available
@@ -57,21 +44,23 @@ const BusinessOpeningHoursDetails: React.FC<
     );
   }
 
+  const hoursMap = new Map(openingHrs.map((h) => [h.day.toUpperCase(), h]));
+  console.log("opemonghrs", business);
   return (
     <div>
       <h2
-        className={`mb-3 ${
+        className={`mb-3 px-4 py-2 rounded ${
           theme === "dark"
-            ? "border-gray-700 text-white hover:bg-gray-700"
-            : "bg-gray-50 border-gray-200 hover:bg-gray-100"
+            ? "border-gray-700 text-white bg-gray-900"
+            : "bg-gray-50 border-gray-200 text-gray-900"
         }`}
       >
         Weekly Schedule
       </h2>
 
-      <div className="space-y-3">
+      <div className="space-y-3 px-4">
         {dayOrder.map((day) => {
-          const entry = getHoursForDay(day);
+          const entry = hoursMap.get(day);
 
           let displayText = "Closed";
 
@@ -79,14 +68,12 @@ const BusinessOpeningHoursDetails: React.FC<
             if (entry.isHoliday) {
               displayText = "Holiday";
             } else if (entry.open && entry.close) {
-              const openTime = formatTime(entry.open);
-              const closeTime = formatTime(entry.close);
-
-              // 00:00-00:00 is often used to indicate closed
-              if (openTime === "00:00" && closeTime === "00:00") {
+              if (entry.open === "00:00" && entry.close === "00:00") {
                 displayText = "Closed";
               } else {
-                displayText = `${openTime} – ${closeTime}`;
+                displayText = `${formatTime(entry.open)} – ${formatTime(
+                  entry.close,
+                )}`;
               }
             }
           }

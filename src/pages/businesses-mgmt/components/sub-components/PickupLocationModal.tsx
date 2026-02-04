@@ -1,8 +1,8 @@
 import { X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface PickupLocationModalProps {
   theme: Theme;
-  t: (key: string) => string;
   pickupLocationModal: {
     locationIndex: number | null;
     areaIndex: number;
@@ -20,21 +20,17 @@ interface PickupLocationModalProps {
 
 const PickupLocationModal = ({
   theme,
-  t,
   pickupLocationModal,
   setPickupLocationModal,
   formData,
   setFormData,
   isRTL = false,
 }: PickupLocationModalProps) => {
+  const { t } = useTranslation("common");
+
   if (!pickupLocationModal) return null;
 
   const days = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
-
-  console.log(
-    "🚀 ~ PickupLocationModal ~ pickupLocationModal:",
-    pickupLocationModal,
-  );
 
   console.log("picup data", formData.deliveryArea);
   const pickupAddresses =
@@ -244,7 +240,10 @@ const PickupLocationModal = ({
                               const newHrs = [
                                 ...pickupLocationModal.data.openingHrs,
                               ];
-                              newHrs[idx].close = e.target.value;
+                              newHrs[idx] = {
+                                ...newHrs[idx],
+                                close: e.target.value,
+                              };
                               setPickupLocationModal({
                                 ...pickupLocationModal,
                                 data: {

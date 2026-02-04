@@ -1,6 +1,8 @@
 import { Activity, useState, type FC } from "react";
-import { Plus, X, MapPin, LocationEdit } from "lucide-react";
+import { Plus, X, MapPin, Edit } from "lucide-react";
 import PickupLocationModal from "./PickupLocationModal";
+import { useAppSelector } from "@/hooks/hooks";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 interface PickupLocation {
   address: string;
@@ -43,7 +45,6 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
   isRTL,
   formData,
   setFormData,
-  currentView,
 }) => {
   const [pickupLocationModal, setPickupLocationModal] = useState<{
     show: boolean;
@@ -55,7 +56,7 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
       openingHrs: { day: string; open: string; close: string }[];
     };
   } | null>(null);
-
+  const { isDark } = useThemeClasses();
   //delete pickup
   const handleDeletePickup = (areaIdx: any, pickupIdx: any) => {
     const updatedAreas = formData.deliveryArea.map((area, idx) => {
@@ -94,17 +95,6 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
     t("seller_info_option9"),
   ];
 
-  //   if (!business || currentView !== "edit") return;
-
-  //   setFormData({
-  //     vendorDelivers: business.vendorDelivers ?? false,
-  //     pickupAvailable: business.isPickUpAvailable ?? false,
-  //     deliveryArea: business.deliveryArea ?? [],
-  //     deliveryReturnExchange: business.deliveryReturnExchange ?? [],
-  //     deliveryAdditionalInfo: business.deliveryAdditionalInfo ?? "",
-  //     deliverySpecificSellerInfo: business.deliverySpecificSellerInfo ?? [],
-  //   });
-  // }, [business, setFormData, currentView]);
   return (
     <div className="space-y-6">
       <h3
@@ -272,7 +262,7 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
                       }
                       className={`w-full px-3 py-2 rounded-lg border text-sm flex justify-center gap-1
                       ${
-                        theme === "dark"
+                        isDark
                           ? "bg-gray-900 border-gray-700 text-gray-300 hover:bg-gray-800"
                           : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
                       }
@@ -303,25 +293,35 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
                 {deliveryArea?.pickUpLocation.length > 0 && (
                   <label
                     className={`block text-xs mb-1 ${
-                      theme === "dark" ? "text-gray-400" : "text-gray-500"
+                      isDark ? "text-gray-400" : "text-gray-500"
                     }`}
                   >
                     {" "}
-                    Pickup Locations :
+                    {t("pickup_locations")} :
                   </label>
                 )}
 
                 {deliveryArea?.pickUpLocation?.map((pickup, pickupIdx) => (
                   <div
                     key={pickupIdx}
-                    className="border p-3 rounded-md mb-2 bg-white dark:bg-gray-800"
+                    className={`border p-3 rounded-md mb-2 ${
+                      isDark
+                        ? "bg-gray-800 text-white border-gray-700"
+                        : "bg-white text-black border-gray-200"
+                    }`}
                   >
-                    <div className="flex justify-between items-center mb-1">
-                      <div className="flex items-center gap-2 font-semibold">
-                        <LocationEdit size={16} className="text-green-500" />
-                        {pickup.address}
-                        <div className="text-sm flex items-center text-gray-600 dark:text-gray-400 mb-1">
-                          {pickup.isAlwaysOpen && t("open_24_7")}
+                    <div className="flex justify-between items-center mb-1 ">
+                      <div className="flex items-center gap-2 font-semibold ">
+                        <div className="flex items-center gap-2">
+                          <MapPin size={16} className="text-green-500" />
+                          {pickup.address}
+                        </div>
+                        <div className="flex items-center ">
+                          {pickup.isAlwaysOpen && (
+                            <span className="text-xs flex items-center bg-green-600 px-2 mt-2 py-1 rounded-sm text-white mb-1 ml-2">
+                              {t("open_24_7")}
+                            </span>
+                          )}
                         </div>
                       </div>
 
@@ -338,7 +338,12 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
                           }
                           className="text-blue-600 hover:text-blue-800 text-sm"
                         >
-                          Edit
+                          <Edit
+                            size={12}
+                            className={
+                              isDark ? "text-gray-300" : "text-gray-600"
+                            }
+                          />
                         </button>
 
                         <button

@@ -135,14 +135,7 @@ export default function CreateBusinessWizard({
     images: null as TImages | null,
 
     // Step 6
-    operatingHours: [
-      { day: "sunday", open: "09:00", close: "18:00" },
-      { day: "monday", open: "09:00", close: "18:00" },
-      { day: "tuesday", open: "09:00", close: "18:00" },
-      { day: "wednesday", open: "09:00", close: "18:00" },
-      { day: "thursday", open: "09:00", close: "18:00" },
-      { day: "friday", open: "09:00", close: "14:00" },
-    ],
+    operatingHours: [],
     vendorDelivers: false,
     pickupAvailable: false,
     deliveryArea: [] as any[],
@@ -233,6 +226,7 @@ export default function CreateBusinessWizard({
           whatsAppNumber: business.contactDetails?.whatsAppNumber,
           prefferedChannel: business.contactDetails?.prefferedChannel,
         },
+        operatingHours: business?.openingHrs,
         //attributes
         primaryCategory: business.primaryCategoryId || "",
         tags: business.tags || [],
@@ -267,7 +261,6 @@ export default function CreateBusinessWizard({
       setBusinessLogoImage({ image: business?.logo?.image });
     }
   }, [business, currentView, businessId, currentStep]);
-  // console.log("form data delivery", business.deliveryArea);
   const steps = [
     { number: 1, title: t("step_basic_info"), icon: FileText },
     { number: 2, title: t("step_contact_ownership"), icon: Users },

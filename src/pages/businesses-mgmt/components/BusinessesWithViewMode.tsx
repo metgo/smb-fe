@@ -226,13 +226,17 @@ export default function BusinessesList({
         refetch();
       }
     } catch (error: any) {
-      toast.error(error?.message || "Failed to delete Businesses");
+      toast.error(error?.message || "Failed to delete Businesses", {
+        id: toastId,
+      });
     }
   };
 
   const handleBulkStatusChange = async (status: TStatus) => {
     if (!selectedBusinesses.size) return;
-    toast.loading("Please wait. Businesses's status are changing...");
+    const toastId = toast.loading(
+      "Please wait. Businesses's status are changing...",
+    );
 
     try {
       const results = await bulkBusinessesUpdate({
@@ -242,12 +246,14 @@ export default function BusinessesList({
 
       if (results?.data) {
         const message = "Businesses status updated successfully";
-        toast.success(message);
+        toast.success(message, { id: toastId });
         setSelectedBusinesses(new Set());
         refetch();
       }
     } catch (error: any) {
-      toast.error(error?.message || "Failed to change Businesses status");
+      toast.error(error?.message || "Failed to change Businesses status", {
+        id: toastId,
+      });
     }
   };
 

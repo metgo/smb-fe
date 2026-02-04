@@ -1,6 +1,6 @@
 import { useCommon } from "@/hooks/useCommon";
 import { CheckCircle } from "lucide-react";
-import { useEffect, type FC } from "react";
+import { type FC } from "react";
 type View = "list" | "details" | "create" | "edit" | undefined;
 
 interface BusinessReviewSubmitProps {
@@ -28,43 +28,17 @@ interface BusinessReviewSubmitProps {
   business: any;
   t: (key: string) => string;
   currentView: View;
-  setFormData: (data: any) => void;
 }
 
 const BusinessReviewSubmit: FC<BusinessReviewSubmitProps> = ({
   theme,
   formData,
-  setFormData,
   errors,
-  business,
-  currentView,
+
   t,
 }) => {
   const { primaryCategories } = useCommon();
-  useEffect(() => {
-    if (!business || currentView !== "edit") return;
 
-    setFormData({
-      ...formData,
-
-      // Names
-      nameEn: business?.name || "",
-      nameHe: business?.nameHe || "",
-      nameAr: business?.nameAr || "",
-
-      // Descriptions
-      shortDescriptionEn: business?.shortDescription || "",
-      shortDescriptionHe: "",
-      shortDescriptionAr: "",
-
-      fullDescriptionEn: business?.description || "",
-      fullDescriptionHe: "",
-      fullDescriptionAr: "",
-      primaryCategoryId: business?.primaryCategoryId || "",
-    });
-
-    // DMO
-  }, [business, currentView]);
   return (
     <div className="space-y-6">
       {/* Review Header */}
