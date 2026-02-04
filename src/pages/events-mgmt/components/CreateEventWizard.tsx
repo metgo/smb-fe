@@ -54,7 +54,6 @@ export default function CreateEventWizard({
   ticketRefetch,
 }: CreateEventWizardProps) {
   const { t } = useTranslation("events");
-  // const { t: tc } = useTranslation("common");
   const [searchParams] = useSearchParams();
 
   const editId = searchParams.get("eventId");
