@@ -1,5 +1,5 @@
 import { Activity, useState, type FC } from "react";
-import { Plus, X, MapPin, LocateFixedIcon, LocationEdit } from "lucide-react";
+import { Plus, X, MapPin, LocationEdit } from "lucide-react";
 import PickupLocationModal from "./PickupLocationModal";
 
 interface PickupLocation {
@@ -326,14 +326,20 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
                       </div>
 
                       <div className="flex gap-2">
-                        {currentView === "edit" && (
-                          <button
-                            // onClick={() => handleEditPickup(areaIdx, pickupIdx)}
-                            className="text-blue-600 hover:text-blue-800 text-sm"
-                          >
-                            Edit
-                          </button>
-                        )}
+                        <button
+                          onClick={() =>
+                            setPickupLocationModal({
+                              show: true,
+                              areaIndex: areaIdx,
+                              locationIndex: pickupIdx,
+                              data: formData.deliveryArea[areaIdx]
+                                .pickUpLocation[pickupIdx],
+                            })
+                          }
+                          className="text-blue-600 hover:text-blue-800 text-sm"
+                        >
+                          Edit
+                        </button>
 
                         <button
                           onClick={() => handleDeletePickup(areaIdx, pickupIdx)}
