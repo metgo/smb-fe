@@ -2,16 +2,6 @@ import { createApi } from "@reduxjs/toolkit/query/react";
 import { axiosBaseQuery } from "./axiosBaseQuery";
 import { endpoints } from "@/lib/endpoints";
 
-interface Params {
-  startDate: string;
-  endDate: string;
-  dmoId?: string;
-  authorityId?: string;
-  externalApiId?: string;
-  serviceType?: string;
-  status?: string;
-}
-
 interface IDistOverviewParams {
   startDate: string;
   endDate: string;
