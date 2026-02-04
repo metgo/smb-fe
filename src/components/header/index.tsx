@@ -13,11 +13,12 @@ import {
   setDmo,
   setTimeFrame,
   setWebsite,
+  setTimeFrameValue,
 } from "@/features/authSlice";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { ReactSelect } from "../form-fields";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 
 export default function Header() {
   const dispatch = useAppDispatch();
@@ -31,15 +32,13 @@ export default function Header() {
     dmosAuthorities,
   } = useCommon();
   const { language } = useAppSelector((state) => state.settings);
-  const { authorityId, dmoId, websiteId, userRole } = useAppSelector(
+  const { authorityId, dmoId, websiteId, userRole, timeFrame } = useAppSelector(
     (state) => state.auth,
   );
 
   const { isEditMode } = useAppSelector((state) => state.ui);
   const { textPrimary, selectInputClasses, rowDir, isDark } = useThemeClasses();
   const selectedParent = dmosAuthorities?.find((item) => item._id === dmoId);
-
-  const [timeframe, setTimeframe] = useState("custom");
 
   const filteredWebsites = useMemo(() => {
     const result = [];
@@ -69,20 +68,20 @@ export default function Header() {
     const today = new Date();
     let start: Date;
 
-    switch (timeframe) {
-      case "last7days":
+    switch (timeFrame) {
+      case "last_7_days":
         start = new Date();
         start.setDate(today.getDate() - 6);
         break;
-      case "last30days":
+      case "last_30_days":
         start = new Date();
         start.setDate(today.getDate() - 29);
         break;
-      case "last90days":
+      case "last_90_days":
         start = new Date();
         start.setDate(today.getDate() - 89);
         break;
-      case "custom": // "last_year"
+      case "last_year":
         start = new Date();
         start.setFullYear(today.getFullYear() - 1);
         start.setDate(today.getDate() + 1);
@@ -100,7 +99,7 @@ export default function Header() {
         endDate: formatDate(today),
       }),
     );
-  }, [timeframe, dispatch]);
+  }, [timeFrame, dispatch]);
 
   const handleLanguageChange = (lng: string) => {
     dispatch(setLanguage(lng));
@@ -118,9 +117,6 @@ export default function Header() {
         <div className={clsx("flex items-center justify-between h-20", rowDir)}>
           {/* Logo and Brand */}
           <div className={clsx("flex items-center gap-3", rowDir)}>
-            {/* <div className="w-10 h-10 bg-linear-to-br from-teal-500 to-blue-600 rounded-lg flex items-center justify-center">
-              <Globe className="w-6 h-6 text-white" />
-            </div> */}
             <img
               src="/assets/images/metgologo.png"
               alt="Logo image"
@@ -172,8 +168,8 @@ export default function Header() {
             {/* Date Range Selector */}
             <div className="relative">
               <select
-                value={timeframe}
-                onChange={(e) => setTimeframe(e.target.value)}
+                value={timeFrame}
+                onChange={(e) => dispatch(setTimeFrameValue(e.target.value))}
                 className={clsx(
                   "appearance-none border rounded-lg px-4 py-2 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500",
                   selectInputClasses,
@@ -212,7 +208,10 @@ export default function Header() {
             {/* Theme Toggle */}
             <button
               onClick={() => dispatch(setTheme(isDark ? "light" : "dark"))}
-              className="p-2 cursor-pointer rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              className={clsx(
+                "p-2 cursor-pointer rounded-lg  transition-colors",
+                isDark ? "hover:bg-gray-700" : "hover:bg-gray-100",
+              )}
               aria-label="Toggle theme"
             >
               {isDark ? (
@@ -237,11 +236,12 @@ export default function Header() {
             {toggleEditMode() && location.pathname === routes.dashboard && (
               <button
                 onClick={() => dispatch(toggleEditMode())}
-                className={`p-2 cursor-pointer rounded-lg border transition-colors ${
+                className={clsx(
+                  "p-2 cursor-pointer rounded-lg border transition-colors",
                   isEditMode
                     ? "bg-teal-500 border-teal-600 hover:bg-teal-600"
-                    : "bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700"
-                }`}
+                    : "bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700",
+                )}
                 aria-label="Toggle edit mode"
               >
                 {isEditMode ? (

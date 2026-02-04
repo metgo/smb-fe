@@ -124,7 +124,11 @@ function SummaryCard({
 
 export default function FinancialSummary() {
   const { t } = useTranslation("dashboard");
-  const { startDate, endDate } = useAppSelector((state) => state.auth);
+  const { t: tc } = useTranslation("common");
+
+  const { startDate, endDate, timeFrame } = useAppSelector(
+    (state) => state.auth,
+  );
   const { isDark } = useThemeClasses();
 
   const voucherStatsParams = {
@@ -205,21 +209,21 @@ export default function FinancialSummary() {
         <SummaryCard
           isDark={isDark}
           title={t("vouchers")}
-          subtitle={t("last_month")}
+          subtitle={tc(timeFrame)}
           icon={<Ticket className="w-5 h-5 text-white" />}
           metrics={voucherMetrics}
         />
         <SummaryCard
           isDark={isDark}
           title={t("online_orders")}
-          subtitle={t("last_month")}
+          subtitle={tc(timeFrame)}
           icon={<ShoppingCart className="w-5 h-5 text-white" />}
           metrics={onlineOrdersMetrics}
         />
         <SummaryCard
           isDark={isDark}
           title={t("offline_orders")}
-          subtitle={t("last_month")}
+          subtitle={tc(timeFrame)}
           icon={<Store className="w-5 h-5 text-white" />}
           metrics={offlineOrdersMetrics}
         />

@@ -1,0 +1,479 @@
+import clsx from "clsx";
+import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
+import {
+  Building2,
+  ChevronDown,
+  Bed,
+  Compass,
+  ShoppingBag,
+  UtensilsCrossed,
+  Plane,
+  Landmark,
+  MapPin,
+  Package,
+} from "lucide-react";
+
+import { useAppSelector } from "@/hooks/hooks";
+import {
+  useGetBusinessStatsQuery,
+  useGetPOIStatsQuery,
+  useGetProductStatsQuery,
+} from "@/store/api/itemStatsApi";
+import { InfoTooltip } from "@/components/shared";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
+
+const COLORS = {
+  sleep: {
+    base: "#3b82f6",
+    gradient: "from-blue-400 via-blue-500 to-blue-600",
+    shadow: "shadow-blue-500/30",
+    glow: "hover:shadow-blue-500/50",
+    bgGradient:
+      "from-blue-100 via-blue-200 to-blue-300 dark:from-blue-900/40 dark:via-blue-800/50 dark:to-blue-700/60",
+    topGradient:
+      "from-blue-300 to-blue-400 dark:from-blue-600 dark:to-blue-700",
+    sideGradient:
+      "from-blue-400/80 to-blue-500/80 dark:from-blue-700/80 dark:to-blue-800/80",
+  },
+  attraction: {
+    base: "#f59e0b",
+    gradient: "from-amber-400 via-amber-500 to-amber-600",
+    shadow: "shadow-amber-500/30",
+    glow: "hover:shadow-amber-500/50",
+    bgGradient:
+      "from-amber-100 via-amber-200 to-amber-300 dark:from-amber-900/40 dark:via-amber-800/50 dark:to-amber-700/60",
+    topGradient:
+      "from-amber-300 to-amber-400 dark:from-amber-600 dark:to-amber-700",
+    sideGradient:
+      "from-amber-400/80 to-amber-500/80 dark:from-amber-700/80 dark:to-amber-800/80",
+  },
+  local: {
+    base: "#10b981",
+    gradient: "from-emerald-400 via-emerald-500 to-emerald-600",
+    shadow: "shadow-emerald-500/30",
+    glow: "hover:shadow-emerald-500/50",
+    bgGradient:
+      "from-emerald-100 via-emerald-200 to-emerald-300 dark:from-emerald-900/40 dark:via-emerald-800/50 dark:to-emerald-700/60",
+    topGradient:
+      "from-emerald-300 to-emerald-400 dark:from-emerald-600 dark:to-emerald-700",
+    sideGradient:
+      "from-emerald-400/80 to-emerald-500/80 dark:from-emerald-700/80 dark:to-emerald-800/80",
+  },
+  eat: {
+    base: "#ef4444",
+    gradient: "from-red-400 via-red-500 to-red-600",
+    shadow: "shadow-red-500/30",
+    glow: "hover:shadow-red-500/50",
+    bgGradient:
+      "from-red-100 via-red-200 to-red-300 dark:from-red-900/40 dark:via-red-800/50 dark:to-red-700/60",
+    topGradient: "from-red-300 to-red-400 dark:from-red-600 dark:to-red-700",
+    sideGradient:
+      "from-red-400/80 to-red-500/80 dark:from-red-700/80 dark:to-red-800/80",
+  },
+  travel: {
+    base: "#8b5cf6",
+    gradient: "from-purple-400 via-purple-500 to-purple-600",
+    shadow: "shadow-purple-500/30",
+    glow: "hover:shadow-purple-500/50",
+    bgGradient:
+      "from-purple-100 via-purple-200 to-purple-300 dark:from-purple-900/40 dark:via-purple-800/50 dark:to-purple-700/60",
+    topGradient:
+      "from-purple-300 to-purple-400 dark:from-purple-600 dark:to-purple-700",
+    sideGradient:
+      "from-purple-400/80 to-purple-500/80 dark:from-purple-700/80 dark:to-purple-800/80",
+  },
+  culture: {
+    base: "#ec4899",
+    gradient: "from-pink-400 via-pink-500 to-pink-600",
+    shadow: "shadow-pink-500/30",
+    glow: "hover:shadow-pink-500/50",
+    bgGradient:
+      "from-pink-100 via-pink-200 to-pink-300 dark:from-pink-900/40 dark:via-pink-800/50 dark:to-pink-700/60",
+    topGradient:
+      "from-pink-300 to-pink-400 dark:from-pink-600 dark:to-pink-700",
+    sideGradient:
+      "from-pink-400/80 to-pink-500/80 dark:from-pink-700/80 dark:to-pink-800/80",
+  },
+};
+
+const CATEGORY_ICONS = {
+  sleep: Bed,
+  attraction: Compass,
+  local: ShoppingBag,
+  eat: UtensilsCrossed,
+  travel: Plane,
+  culture: Landmark,
+};
+
+interface DistributionCardProps {
+  title: string;
+  icon: React.ReactNode;
+  total: number;
+  data: {
+    _id?: string;
+    name: string;
+    count?: number;
+    value: number;
+    percentage: number;
+  }[];
+}
+
+const statuses = [
+  { value: "active", label: "Active" },
+  { value: "approved", label: "Approved" },
+  { value: "draft", label: "Draft" },
+];
+
+const getCategoryName = (name: string, t: (v: string) => string) => {
+  switch (name) {
+    case "sleep":
+      return t("sleep");
+    case "eat":
+      return t("eat");
+    case "attraction":
+      return t("attraction");
+    case "local":
+      return t("local");
+    case "travel":
+      return t("travel");
+    case "culture":
+      return t("culture");
+    default:
+      return name;
+  }
+};
+
+export function DistributionCard({
+  title,
+  icon,
+  total,
+  data,
+}: DistributionCardProps) {
+  const { t } = useTranslation("dashboard");
+  const { isDark } = useThemeClasses();
+
+  const [status, setStatus] = useState("active");
+  const [isAnimated, setIsAnimated] = useState(false);
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setIsAnimated(true), 100);
+    return () => clearTimeout(timer);
+  }, []);
+
+  return (
+    <div
+      className={clsx(
+        "rounded-xl border p-3 hover:shadow-lg transition-shadow",
+        isDark ? "bg-gray-900 border-gray-800" : "bg-white border-gray-200",
+      )}
+    >
+      {/* ===== Header ===== */}
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center gap-3">
+          <div className="p-3 bg-linear-to-br from-purple-500 to-pink-600 rounded-lg shadow-lg">
+            {icon}
+          </div>
+
+          <div>
+            <h3
+              className={clsx(
+                "font-semibold",
+                isDark ? "text-white" : "text-gray-900",
+              )}
+            >
+              {title}
+            </h3>
+
+            <p
+              className={clsx(
+                "text-sm",
+                isDark ? "text-gray-400" : "text-gray-500",
+              )}
+            >
+              Total: {total?.toLocaleString()}
+            </p>
+          </div>
+        </div>
+
+        {/* ===== Status Select ===== */}
+        <div className="relative">
+          <select
+            value={status}
+            onChange={(e) => setStatus(e.target.value)}
+            className={clsx(
+              "appearance-none rounded-lg px-3 py-1.5 pr-8 text-sm border focus:outline-none",
+              isDark
+                ? "bg-gray-800 border-gray-700 text-white"
+                : "bg-gray-50 border-gray-300 text-gray-900",
+            )}
+          >
+            {statuses?.map((s) => (
+              <option key={s.value} value={s.value}>
+                {s.label}
+              </option>
+            ))}
+          </select>
+
+          <ChevronDown
+            className={clsx(
+              "absolute top-1/2 right-2 -translate-y-1/2 w-3 h-3 pointer-events-none",
+              isDark ? "text-gray-400" : "text-gray-500",
+            )}
+          />
+        </div>
+      </div>
+
+      {/* ===== Chart ===== */}
+      <div className="h-80 relative flex items-end justify-around gap-2 px-4 pb-12 pt-16">
+        {/* Background */}
+        <div
+          className={clsx(
+            "absolute inset-0 rounded-xl",
+            isDark
+              ? "bg-linear-to-br from-yellow-900/10 via-orange-900/10 to-pink-900/10"
+              : "bg-linear-to-br from-yellow-50 via-orange-50 to-pink-50",
+          )}
+        />
+
+        {/* Grid */}
+        <div className="absolute inset-0 flex flex-col justify-between px-4 pb-12 pt-16 pointer-events-none">
+          {[0, 1, 2, 3, 4].map((i) => (
+            <div
+              key={i}
+              className={clsx(
+                "border-t opacity-30",
+                isDark ? "border-gray-700" : "border-gray-200",
+              )}
+            />
+          ))}
+        </div>
+
+        {data?.map((item, index) => {
+          const Icon =
+            CATEGORY_ICONS[
+              item.name.toLowerCase() as keyof typeof CATEGORY_ICONS
+            ];
+
+          const colorConfig =
+            COLORS[item.name.toLowerCase() as keyof typeof COLORS];
+
+          const isActive = activeIndex === index;
+
+          return (
+            <div
+              key={index}
+              className="relative flex-1 flex flex-col items-center justify-end cursor-pointer"
+              style={{ height: "100%", minWidth: 40, maxWidth: 80 }}
+              onMouseEnter={() => setActiveIndex(index)}
+              onMouseLeave={() => setActiveIndex(null)}
+            >
+              {/* ===== BAR ===== */}
+              <div
+                className="absolute bottom-0 w-full"
+                style={{
+                  height: isAnimated ? `${item.percentage}%` : "0%",
+                  transform: isActive
+                    ? "translateY(-8px) scale(1.05)"
+                    : "translateY(0) scale(1)",
+                  transition: isAnimated
+                    ? `height 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) ${
+                        index * 0.1
+                      }s, transform 0.3s ease`
+                    : "all 0.3s ease",
+                }}
+              >
+                {/* Shadow */}
+                <div className="absolute inset-0 bg-black/20 rounded-t-lg blur-sm translate-y-1" />
+
+                {/* Side */}
+                <div
+                  className={clsx(
+                    "absolute top-0 -right-1 w-3 h-full rounded-tr-lg bg-linear-to-b",
+                    colorConfig.sideGradient,
+                  )}
+                  style={{ transform: "skewY(-3deg)" }}
+                />
+
+                {/* Front */}
+                <div
+                  className={clsx(
+                    "absolute inset-0 border-2 border-b-0 rounded-t-xl backdrop-blur-sm bg-linear-to-b transition-all duration-300",
+                    colorConfig.bgGradient,
+                    isActive
+                      ? `${colorConfig.shadow} shadow-2xl`
+                      : colorConfig.shadow,
+                  )}
+                />
+
+                {/* Top cap */}
+                <div
+                  className={clsx(
+                    "absolute -top-1 left-0 right-1 h-3 rounded-t-lg border-2 bg-linear-to-r",
+                    colorConfig.topGradient,
+                    isActive ? "shadow-xl" : "shadow-lg",
+                  )}
+                  style={{
+                    transform: "perspective(100px) rotateX(45deg)",
+                    transformOrigin: "bottom",
+                  }}
+                />
+
+                {/* Value tooltip */}
+                <div
+                  className={clsx(
+                    "absolute -top-20 left-1/2 -translate-x-1/2 transition-all",
+                    isActive ? "opacity-100" : "opacity-0",
+                  )}
+                >
+                  <div
+                    className={clsx(
+                      "px-2 py-1 rounded-lg text-white text-xs font-bold bg-linear-to-br",
+                      colorConfig.gradient,
+                    )}
+                  >
+                    {item.count}
+                  </div>
+                </div>
+
+                {/* Icon */}
+                <div
+                  className={clsx(
+                    "absolute -top-10 left-1/2 -translate-x-1/2 transition-all duration-300 z-10",
+                    isActive ? "scale-125" : "scale-100",
+                  )}
+                >
+                  <div
+                    className={clsx(
+                      "w-8 h-8 rounded-lg shadow-lg flex items-center justify-center bg-linear-to-br",
+                      colorConfig.gradient,
+                      colorConfig.shadow,
+                    )}
+                  >
+                    <Icon className="w-4 h-4 text-white" />
+                  </div>
+                </div>
+
+                {/* Percentage */}
+                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10">
+                  <span
+                    className={clsx(
+                      "px-2 py-0.5 rounded-full text-xs font-bold shadow-md transition-all",
+                      isDark
+                        ? "bg-gray-900 text-white"
+                        : "bg-white text-gray-900",
+                      isActive ? "scale-110" : "scale-100",
+                    )}
+                  >
+                    {item.percentage}%
+                  </span>
+                </div>
+              </div>
+
+              {/* Label */}
+              <div className="absolute -bottom-8 text-center z-30">
+                <span
+                  className={clsx(
+                    "text-xs font-bold line-clamp-2",
+                    isDark ? "text-gray-300" : "text-gray-700",
+                  )}
+                >
+                  {getCategoryName(item.name, t)}
+                </span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ----------------------------------------
+   Component
+---------------------------------------- */
+export default function DistributionCards() {
+  const { t } = useTranslation("dashboard");
+  const { isDark } = useThemeClasses();
+  const { startDate, endDate, dmoId, authorityId } = useAppSelector(
+    (state) => state.auth,
+  );
+
+  /* ----------------------------------------
+     API Calls
+  ---------------------------------------- */
+  const { data: businessData } = useGetBusinessStatsQuery({
+    startDate,
+    endDate,
+    dmoId,
+    authorityId,
+  });
+
+  const { data: poiData } = useGetPOIStatsQuery({
+    startDate,
+    endDate,
+    dmoId,
+    authorityId,
+  });
+
+  const { data: productData } = useGetProductStatsQuery({
+    startDate,
+    endDate,
+    dmoId,
+    authorityId,
+  });
+
+  /* ----------------------------------------
+     Effects
+  ---------------------------------------- */
+  useEffect(() => {
+    if (!businessData?.datas) return;
+  }, [businessData]);
+
+  useEffect(() => {
+    if (!poiData?.datas) return;
+  }, [poiData]);
+
+  /* ----------------------------------------
+     Render
+  ---------------------------------------- */
+  return (
+    <section>
+      <div className="flex items-start gap-2 mb-6">
+        <h2
+          className={clsx(" flex-1", isDark ? "text-white" : "text-gray-900")}
+        >
+          {t("distribution_overview")}
+        </h2>
+        <InfoTooltip
+          content={t("distribution_overview_desc")}
+          title={t("distribution_overview")}
+        />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+        <DistributionCard
+          title={t("businesses")}
+          icon={<Building2 className="w-5 h-5 text-white" />}
+          total={businessData?.total}
+          data={businessData?.byCategory}
+        />
+
+        <DistributionCard
+          title={t("products")}
+          icon={<Package className="w-5 h-5 text-white" />}
+          total={productData?.total}
+          data={productData?.byCategory}
+        />
+
+        <DistributionCard
+          title={t("pois")}
+          icon={<MapPin className="w-5 h-5 text-white" />}
+          total={poiData?.total}
+          data={poiData?.byCategory}
+        />
+      </div>
+    </section>
+  );
+}

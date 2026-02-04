@@ -35,6 +35,7 @@ interface AuthState {
   websiteId: string;
   startDate: string;
   endDate: string;
+  timeFrame: string;
 }
 
 const persisted = loadUserInfo();
@@ -48,6 +49,7 @@ const initialState: AuthState = {
   websiteId: persisted?.websiteId ?? "",
   startDate: persisted?.startDate ?? "",
   endDate: persisted?.endDate ?? "",
+  timeFrame: persisted?.timeFrame ?? "last_year",
 };
 
 const authSlice = createSlice({
@@ -83,6 +85,9 @@ const authSlice = createSlice({
       state.startDate = action.payload.startDate;
       state.endDate = action.payload.endDate;
     },
+    setTimeFrameValue: (state, action: PayloadAction<string>) => {
+      state.timeFrame = action.payload;
+    },
   },
 });
 
@@ -93,5 +98,6 @@ export const {
   setAuthority,
   setWebsite,
   setTimeFrame,
+  setTimeFrameValue,
 } = authSlice.actions;
 export default authSlice.reducer;
