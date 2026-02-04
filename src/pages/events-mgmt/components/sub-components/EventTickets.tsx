@@ -17,7 +17,7 @@ interface EventTicketsProps {
   setShowTicketModal: React.Dispatch<React.SetStateAction<boolean>>;
   errors: { tickets?: string };
   eventId: string;
-  refetch: () => void;
+  refetch?: () => void;
   setEventId: (v: string) => void;
   initEventCreate: () => any;
   tickets: any;
@@ -79,7 +79,7 @@ const EventTickets: React.FC<EventTicketsProps> = ({
   const handleDeleteTicket = async (ticketId: string) => {
     try {
       await deleteTicket({ ticketId }).unwrap();
-      refetch();
+      if (refetch) refetch();
       toast.success(t("ticket_deleted_successfully"));
     } catch {
       toast.error(t("ticket_delete_failed"));
@@ -300,14 +300,13 @@ const EventTickets: React.FC<EventTicketsProps> = ({
       {/* Ticket Wizard */}
       {showTicketModal && editingTicket && (
         <CreateTicketWizard
-          theme={theme}
           eventId={eventId}
           refetch={refetch}
           opMode={opMode}
           eventDays={eventDays}
-          setShowTicketModal={setShowTicketModal}
-          editingTicket={editingTicket!}
-          setEditingTicket={setEditingTicket}
+          setIsOpen={setShowTicketModal}
+          editData={editingTicket!}
+          setEditData={setEditingTicket}
           ticketDateTime={ticketDateTime}
           setTicketDateTime={setTicketDateTime}
         />

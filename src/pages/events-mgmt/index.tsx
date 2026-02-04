@@ -4,9 +4,9 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { Calendar, Users, Ticket, DollarSign, Search } from "lucide-react";
 
+import { useAppSelector } from "@/hooks/hooks";
 import { FilterButton } from "@/components/btns";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { useAppSelector } from "@/hooks/hooks";
 import { useGetAllWebsitesQuery } from "@/store/api/masterDataApi";
 import { PageHeader, PageStats, ViewModeToggle } from "@/components/shared";
 import {
@@ -21,8 +21,8 @@ export default function EventsMgmtPage() {
 
   const navigate = useNavigate();
 
-  const { isRTL, theme } = useAppSelector((state) => state.settings);
-  const { textPrimary, textSecondary, inputClasses, textTertiary } =
+  const { isRTL } = useAppSelector((state) => state.settings);
+  const { textPrimary, textSecondary, inputClasses, textTertiary, isDark } =
     useThemeClasses();
 
   const [isCreateWizardOpen, setIsCreateWizardOpen] = useState(false);
@@ -139,7 +139,7 @@ export default function EventsMgmtPage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className={`w-full ${isRTL ? "pr-10 pl-4" : "pl-10 pr-4"} py-2 rounded-lg border transition-colors ${
-                  theme === "dark"
+                  isDark
                     ? "bg-gray-900 border-gray-700 text-white placeholder-gray-500"
                     : "bg-white border-gray-300 text-gray-900 placeholder-gray-400"
                 }`}
@@ -166,7 +166,7 @@ export default function EventsMgmtPage() {
                     value={eventTypeFilter}
                     onChange={(e) => setEventTypeFilter(e.target.value as any)}
                     className={`w-full px-3 py-2 rounded-lg border ${
-                      theme === "dark"
+                      isDark
                         ? "bg-gray-900 border-gray-700 text-white"
                         : "bg-white border-gray-300 text-gray-900"
                     }`}
@@ -188,7 +188,7 @@ export default function EventsMgmtPage() {
                       setRegistrationFilter(e.target.value as any)
                     }
                     className={`w-full px-3 py-2 rounded-lg border ${
-                      theme === "dark"
+                      isDark
                         ? "bg-gray-900 border-gray-700 text-white"
                         : "bg-white border-gray-300 text-gray-900"
                     }`}
@@ -208,7 +208,7 @@ export default function EventsMgmtPage() {
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value as any)}
                     className={`w-full px-3 py-2 rounded-lg border ${
-                      theme === "dark"
+                      isDark
                         ? "bg-gray-900 border-gray-700 text-white"
                         : "bg-white border-gray-300 text-gray-900"
                     }`}
@@ -236,7 +236,7 @@ export default function EventsMgmtPage() {
                         })
                       }
                       className={`w-full px-3 py-2 rounded-lg border text-sm ${
-                        theme === "dark"
+                        isDark
                           ? "bg-gray-900 border-gray-700 text-white"
                           : "bg-white border-gray-300 text-gray-900"
                       }`}
@@ -251,7 +251,7 @@ export default function EventsMgmtPage() {
                         })
                       }
                       className={`w-full px-3 py-2 rounded-lg border text-sm ${
-                        theme === "dark"
+                        isDark
                           ? "bg-gray-900 border-gray-700 text-white"
                           : "bg-white border-gray-300 text-gray-900"
                       }`}
@@ -380,7 +380,6 @@ export default function EventsMgmtPage() {
           viewMode={viewMode}
         />
       </div>
-
       {/* Create Event Wizard */}
       <CreateEventWizard
         isOpen={isCreateWizardOpen}

@@ -344,7 +344,7 @@ export default function MiniCampaignWizard({
         >
           <div>
             <h2
-              className={`text-2xl bg-gradient-to-r from-purple-600 via-pink-600 to-orange-500 bg-clip-text text-transparent`}
+              className={`text-2xl bg-linear-to-r from-purple-600 via-pink-600 to-orange-500 bg-clip-text text-transparent`}
             >
               {editingMiniSite
                 ? t("edit_mini_campaign")
@@ -371,7 +371,7 @@ export default function MiniCampaignWizard({
                   <div
                     className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
                       currentStep >= index + 1
-                        ? "bg-gradient-to-r from-purple-500 to-pink-600 text-white"
+                        ? "bg-linear-to-r from-purple-500 to-pink-600 text-white"
                         : `${bgPrimary} border-2 ${borderColor} ${textTertiary}`
                     }`}
                   >
@@ -385,7 +385,7 @@ export default function MiniCampaignWizard({
                 </div>
                 {index < steps.length - 1 && (
                   <div
-                    className={`flex-1 h-0.5 ${currentStep > index + 1 ? "bg-gradient-to-r from-purple-500 to-pink-600" : borderColor} mx-2`}
+                    className={`flex-1 h-0.5 ${currentStep > index + 1 ? "bg-linear-to-r from-purple-500 to-pink-600" : borderColor} mx-2`}
                   />
                 )}
               </div>
@@ -1203,7 +1203,7 @@ export default function MiniCampaignWizard({
             {currentStep < steps.length ? (
               <button
                 onClick={handleNext}
-                className="flex items-center gap-2 px-6 py-2 rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700 transition-colors"
+                className="flex items-center gap-2 px-6 py-2 rounded-lg bg-linear-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700 transition-colors"
               >
                 {t("next")}
                 <ArrowRight className="w-4 h-4" />
@@ -1211,7 +1211,7 @@ export default function MiniCampaignWizard({
             ) : (
               <button
                 onClick={handlePublish}
-                className="flex items-center gap-2 px-6 py-2 rounded-lg bg-gradient-to-r from-green-600 to-teal-600 text-white hover:from-green-700 hover:to-teal-700 transition-colors"
+                className="flex items-center gap-2 px-6 py-2 rounded-lg bg-linear-to-r from-green-600 to-teal-600 text-white hover:from-green-700 hover:to-teal-700 transition-colors"
               >
                 <Send className="w-4 h-4" />
                 {t("publish")}

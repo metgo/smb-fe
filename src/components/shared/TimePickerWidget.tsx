@@ -172,11 +172,11 @@ export function TimePickerWidget({
           <div
             className={`px-6 py-6 text-center border-b ${
               theme === "dark"
-                ? "bg-gradient-to-br from-teal-900/20 to-purple-900/20 border-gray-800"
-                : "bg-gradient-to-br from-teal-50 to-purple-50 border-gray-200"
+                ? "bg-linear-to-br from-teal-900/20 to-purple-900/20 border-gray-800"
+                : "bg-linear-to-br from-teal-50 to-purple-50 border-gray-200"
             }`}
           >
-            <div className="text-5xl font-bold tracking-wider font-mono bg-gradient-to-r from-teal-500 to-purple-500 bg-clip-text text-transparent">
+            <div className="text-5xl font-bold tracking-wider font-mono bg-linear-to-r from-teal-500 to-purple-500 bg-clip-text text-transparent">
               {selectedHour}:{selectedMinute}
             </div>
           </div>
@@ -204,15 +204,15 @@ export function TimePickerWidget({
                 <div
                   className={`absolute top-0 left-0 right-0 h-20 pointer-events-none z-20 ${
                     theme === "dark"
-                      ? "bg-gradient-to-b from-gray-900 via-gray-900/50 to-transparent"
-                      : "bg-gradient-to-b from-white via-white/50 to-transparent"
+                      ? "bg-linear-to-b from-gray-900 via-gray-900/50 to-transparent"
+                      : "bg-linear-to-b from-white via-white/50 to-transparent"
                   }`}
                 />
                 <div
                   className={`absolute bottom-0 left-0 right-0 h-20 pointer-events-none z-20 ${
                     theme === "dark"
-                      ? "bg-gradient-to-t from-gray-900 via-gray-900/50 to-transparent"
-                      : "bg-gradient-to-t from-white via-white/50 to-transparent"
+                      ? "bg-linear-to-t from-gray-900 via-gray-900/50 to-transparent"
+                      : "bg-linear-to-t from-white via-white/50 to-transparent"
                   }`}
                 />
 
@@ -266,15 +266,15 @@ export function TimePickerWidget({
                 <div
                   className={`absolute top-0 left-0 right-0 h-20 pointer-events-none z-20 ${
                     theme === "dark"
-                      ? "bg-gradient-to-b from-gray-900 via-gray-900/50 to-transparent"
-                      : "bg-gradient-to-b from-white via-white/50 to-transparent"
+                      ? "bg-linear-to-b from-gray-900 via-gray-900/50 to-transparent"
+                      : "bg-linear-to-b from-white via-white/50 to-transparent"
                   }`}
                 />
                 <div
                   className={`absolute bottom-0 left-0 right-0 h-20 pointer-events-none z-20 ${
                     theme === "dark"
-                      ? "bg-gradient-to-t from-gray-900 via-gray-900/50 to-transparent"
-                      : "bg-gradient-to-t from-white via-white/50 to-transparent"
+                      ? "bg-linear-to-t from-gray-900 via-gray-900/50 to-transparent"
+                      : "bg-linear-to-t from-white via-white/50 to-transparent"
                   }`}
                 />
 
@@ -318,7 +318,7 @@ export function TimePickerWidget({
           >
             <button
               onClick={handleConfirm}
-              className="w-full px-4 py-2.5 bg-gradient-to-r from-teal-500 to-purple-500 hover:from-teal-600 hover:to-purple-600 text-white rounded-xl font-medium transition-all duration-200 shadow-lg shadow-teal-500/20 hover:shadow-xl hover:shadow-teal-500/30"
+              className="w-full px-4 py-2.5 bg-linear-to-r from-teal-500 to-purple-500 hover:from-teal-600 hover:to-purple-600 text-white rounded-xl font-medium transition-all duration-200 shadow-lg shadow-teal-500/20 hover:shadow-xl hover:shadow-teal-500/30"
             >
               Confirm
             </button>

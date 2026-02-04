@@ -8,6 +8,7 @@ import EventTicketDetails from "./EventTicketDetails";
 import EventDateTimeDetails from "./EventDateTimeDetails";
 import EventScheduledNotificationDetails from "./EventSchedualNotificationDetails";
 import EventTitleSection from "./EventTitleSection";
+import EventRegistrationDetails from "./EventRegistrationDetails";
 
 export {
   EventTitleSection,
@@ -19,5 +20,6 @@ export {
   EventAttributesDetails,
   EventInfoDetails,
   EventMediaDetails,
+  EventRegistrationDetails,
   EventScheduledNotificationDetails,
 };
