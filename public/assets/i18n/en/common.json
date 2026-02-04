@@ -107,5 +107,15 @@
   "select_unassociated_websites": "Select Unassociated Websites",
 
   "download_pdf": "Download PDF",
-  "download_csv": "Download CSV"
+  "download_csv": "Download CSV",
+
+  "overview": "Overview",
+  "date_time": "Date & Time",
+  "location_map": "Location & Map",
+  "registration": "Registration",
+  "tickets": "Tickets",
+  "messages": "Messages",
+  "media": "Media",
+  "attributes": "Attributes",
+  "schedual_notification": "Notification Schedule"
 }

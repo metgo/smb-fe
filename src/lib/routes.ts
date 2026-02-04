@@ -8,7 +8,10 @@ export const routes = {
   orderDetails: "/order-details",
   pointOfInterest: "/point-of-interest",
   trips: "/trips",
+
   eventsMgmt: "/events-management",
+  eventDetails: "/event-details",
+
   funDays: "/fun-days",
 
   vouchers: "/vouchers",

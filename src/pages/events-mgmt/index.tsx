@@ -1,33 +1,25 @@
 import clsx from "clsx";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
 import { Calendar, Users, Ticket, DollarSign, Search } from "lucide-react";
 
-import { useAppDispatch, useAppSelector } from "@/hooks/hooks";
 import { FilterButton } from "@/components/btns";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { useAppSelector } from "@/hooks/hooks";
 import { useGetAllWebsitesQuery } from "@/store/api/masterDataApi";
 import { PageHeader, PageStats, ViewModeToggle } from "@/components/shared";
 import {
-  eventQueryApi,
   useGetAllEventsQuery,
   useGetEventsStatsQuery,
 } from "@/store/api/eventQueryApi";
-import {
-  EventsWithViewMode,
-  CreateEventWizard,
-  EventDetailModal,
-  QuickSnapEventDetails,
-  RegistrantDetailModal,
-} from "./components";
+import { EventsWithViewMode, CreateEventWizard } from "./components";
 
 export default function EventsMgmtPage() {
   const { t } = useTranslation("events");
   const { t: tc } = useTranslation("common");
 
   const navigate = useNavigate();
-  const dispatch = useAppDispatch();
 
   const { isRTL, theme } = useAppSelector((state) => state.settings);
   const { textPrimary, textSecondary, inputClasses, textTertiary } =
@@ -72,34 +64,13 @@ export default function EventsMgmtPage() {
     useGetEventsStatsQuery({});
   const { data: websites } = useGetAllWebsitesQuery();
 
-  // Table and Modal State
-  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
-  const [selectedRegistrant, setSelectedRegistrant] =
-    useState<Registrant | null>(null);
-  const [registrantSearchQuery, setRegistrantSearchQuery] = useState("");
-  const [showDailyBreakdown, setShowDailyBreakdown] = useState(false);
-  const [showQuickSnapModal, setShowQuickSnapModal] = useState(false);
   const [viewMode, setViewMode] = useState<"list" | "grid" | "calendar">(
     "list",
   );
 
-  const handleEditEvent = () => {
-    if (selectedEvent) {
-      setIsCreateWizardOpen(true);
-      setSelectedEvent(null);
-      navigate(`?eventId=${selectedEvent._id}`, { replace: true });
-    }
-  };
-
   const handleAddEvent = () => {
     setIsCreateWizardOpen(true);
     navigate({}, { replace: true });
-  };
-
-  // Handle view details
-  const handleViewDetails = () => {
-    setShowDailyBreakdown(true);
-    setShowQuickSnapModal(false);
   };
 
   const handleCreateWizardClose = () => {
@@ -145,8 +116,8 @@ export default function EventsMgmtPage() {
           btnLabel={t("add_event")}
           h1Gradient={textPrimary}
           onClick={handleAddEvent}
-          onRefreshClick={() => dispatch(eventQueryApi.util.resetApiState())}
-          isRefreshing={_isLoading || _isEventStatsFetching}
+          // onRefreshClick={() => dispatch(eventQueryApi.util.resetApiState())}
+          // isRefreshing={_isLoading || _isEventStatsFetching}
         />
 
         <PageStats
@@ -406,47 +377,12 @@ export default function EventsMgmtPage() {
           registrationFilter={registrationFilter}
           statusFilter={statusFilter}
           searchQuery={searchQuery}
-          setSelectedEvent={setSelectedEvent}
-          setShowQuickSnapModal={setShowQuickSnapModal}
           viewMode={viewMode}
         />
       </div>
 
-      {/* Event Detail Modal */}
-      {showDailyBreakdown && !showQuickSnapModal && (
-        <EventDetailModal
-          isRTL={isRTL}
-          handleEditEvent={handleEditEvent}
-          selectedEvent={selectedEvent}
-          setSelectedEvent={setSelectedEvent}
-          showDailyBreakdown={showDailyBreakdown}
-          setShowDailyBreakdown={setShowDailyBreakdown}
-          registrantSearchQuery={registrantSearchQuery}
-          setRegistrantSearchQuery={setRegistrantSearchQuery}
-          setSelectedRegistrant={setSelectedRegistrant}
-        />
-      )}
-
-      {/* Registrant Detail Modal (Nested) */}
-      {selectedRegistrant && (
-        <RegistrantDetailModal
-          selectedRegistrant={selectedRegistrant}
-          setSelectedRegistrant={setSelectedRegistrant}
-        />
-      )}
-
-      {selectedEvent && showQuickSnapModal && (
-        <QuickSnapEventDetails
-          handleEditEvent={handleEditEvent}
-          handleViewDetails={handleViewDetails}
-          selectedEvent={selectedEvent}
-          setSelectedEvent={setSelectedEvent}
-        />
-      )}
-
       {/* Create Event Wizard */}
       <CreateEventWizard
-        theme={theme}
         isOpen={isCreateWizardOpen}
         onClose={handleCreateWizardClose}
       />
