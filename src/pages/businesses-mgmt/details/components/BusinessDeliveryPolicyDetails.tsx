@@ -1,14 +1,34 @@
 import type { FC } from "react";
-import { Truck, ArrowLeft, FileText, CheckCircle, Package } from "lucide-react";
+import {
+  Truck,
+  ArrowLeft,
+  FileText,
+  CheckCircle,
+  Package,
+  MapPin,
+  LocationEdit,
+} from "lucide-react";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { useAppSelector } from "@/hooks/hooks";
 
 /* ---------- Types ---------- */
 
 type Theme = "light" | "dark";
+interface PickupLocation {
+  address: string;
+  isAlwaysOpen?: boolean;
+}
 
+interface DeliveryAreaItem {
+  area?: string;
+  price?: string | number;
+  pickUpLocation?: PickupLocation[];
+}
 interface BusinessDeliveryData {
   deliveryAdditionalInfo?: string;
   deliveryReturnExchange?: string[];
   deliverySpecificSellerInfo?: string[];
+  deliveryArea?: DeliveryAreaItem[];
 }
 
 interface BusinessDeliveryPolicyDetailsProps {
@@ -24,12 +44,15 @@ const BusinessDeliveryPolicyDetails: FC<BusinessDeliveryPolicyDetailsProps> = ({
   t,
   business,
 }) => {
+  const { isRTL } = useAppSelector((state) => state.settings);
+
   const hasDeliveryInfo =
     business.deliveryAdditionalInfo ||
     (business.deliveryReturnExchange &&
       business.deliveryReturnExchange.length > 0) ||
     (business.deliverySpecificSellerInfo &&
-      business.deliverySpecificSellerInfo.length > 0);
+      business.deliverySpecificSellerInfo.length > 0) ||
+    (business.deliveryArea && business.deliveryArea?.length > 0);
 
   if (!hasDeliveryInfo) {
     return (
@@ -59,6 +82,10 @@ const BusinessDeliveryPolicyDetails: FC<BusinessDeliveryPolicyDetailsProps> = ({
     );
   }
 
+  console.log(
+    "BusinessDeliveryPolicyDetails ~ business:",
+    business?.deliveryArea,
+  );
   return (
     <div className="space-y-6">
       {/* Additional Delivery Information */}
@@ -131,6 +158,90 @@ const BusinessDeliveryPolicyDetails: FC<BusinessDeliveryPolicyDetailsProps> = ({
             </ul>
           </div>
         )}
+      {/* Delivery Area */}
+      {business.deliveryArea && business.deliveryArea.length > 0 && (
+        <div
+          className={`p-4 rounded-lg  ${
+            theme === "dark" ? " " : " border-gray-200"
+          }`}
+        >
+          {business.deliveryArea.map((deliveryArea, areaIdx) => (
+            <div
+              key={areaIdx}
+              className={`mb-6 p-4 rounded-lg ${
+                theme === "dark"
+                  ? "bg-gray-900 border border-gray-700"
+                  : " border border-gray-200 shadow-sm"
+              }`}
+            >
+              <div className="grid grid-cols-12 gap-3 mb-3">
+                {/* Area */}
+                <div className="col-span-5">
+                  <label
+                    className={`block text-md mb-1 font-semibold ${
+                      theme === "dark" ? "text-gray-400" : "text-gray-600"
+                    }`}
+                  >
+                    {t("delivery_area")}
+                  </label>
+
+                  <p
+                    className={`text-md ${
+                      theme === "dark" ? "text-gray-200" : "text-gray-800"
+                    }`}
+                  >
+                    {deliveryArea.area || (isRTL ? "באר שבע" : "Be'er Sheva")}
+                  </p>
+                </div>
+
+                {/* Price */}
+                <div className="col-span-3">
+                  <label
+                    className={`block text-md mb-1 font-semibold ${
+                      theme === "dark" ? "text-gray-400" : "text-gray-600"
+                    }`}
+                  >
+                    {t("delivery_price")}
+                  </label>
+
+                  <p
+                    className={`text-md ${
+                      theme === "dark" ? "text-gray-200" : "text-gray-800"
+                    }`}
+                  >
+                    {deliveryArea.price}
+                  </p>
+                </div>
+              </div>
+
+              {/* Pickup locations title  */}
+              <div
+                className={`mb-2 font-semibold flex flex-wrap items-center gap-2 ${
+                  theme === "dark" ? "text-gray-300" : "text-gray-700"
+                }`}
+              >
+                <div>Pickup Locations:</div>
+                {deliveryArea.pickUpLocation?.map((pickup, pickupIdx) => (
+                  <div
+                    key={pickupIdx}
+                    className="border px-6 h-12 rounded-md mb-2 bg-white dark:bg-gray-800 flex items-center gap-2"
+                  >
+                    <LocationEdit size={16} className="text-green-500" />
+                    <div className="flex items-center gap-5">
+                      <div className="font-semibold">{pickup.address}</div>
+                      {pickup.isAlwaysOpen && (
+                        <div className="text-sm text-gray-600 dark:text-gray-400">
+                          {t("open_24_7")}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Specific Seller Information */}
       {business.deliverySpecificSellerInfo &&

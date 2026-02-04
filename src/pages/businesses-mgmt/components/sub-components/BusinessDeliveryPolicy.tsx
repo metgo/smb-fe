@@ -1,5 +1,5 @@
 import { Activity, useState, type FC } from "react";
-import { Plus, X, MapPin } from "lucide-react";
+import { Plus, X, MapPin, LocateFixedIcon, LocationEdit } from "lucide-react";
 import PickupLocationModal from "./PickupLocationModal";
 
 interface PickupLocation {
@@ -43,6 +43,7 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
   isRTL,
   formData,
   setFormData,
+  currentView,
 }) => {
   const [pickupLocationModal, setPickupLocationModal] = useState<{
     show: boolean;
@@ -54,6 +55,21 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
       openingHrs: { day: string; open: string; close: string }[];
     };
   } | null>(null);
+
+  //delete pickup
+  const handleDeletePickup = (areaIdx: any, pickupIdx: any) => {
+    const updatedAreas = formData.deliveryArea.map((area, idx) => {
+      if (idx === areaIdx) {
+        // Remove only the pickup at pickupIdx
+        const updatedPickups = area.pickUpLocation.filter(
+          (_, pIdx) => pIdx !== pickupIdx,
+        );
+        return { ...area, pickUpLocation: updatedPickups };
+      }
+      return area;
+    });
+    setFormData({ ...formData, deliveryArea: updatedAreas });
+  };
 
   // Translated delivery options
   const DELIVERY_RETURN_EXCHANGE_OPTIONS = [
@@ -284,6 +300,51 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
                     </button>
                   </div>
                 </div>
+                {deliveryArea?.pickUpLocation.length > 0 && (
+                  <label
+                    className={`block text-xs mb-1 ${
+                      theme === "dark" ? "text-gray-400" : "text-gray-500"
+                    }`}
+                  >
+                    {" "}
+                    Pickup Locations :
+                  </label>
+                )}
+
+                {deliveryArea?.pickUpLocation?.map((pickup, pickupIdx) => (
+                  <div
+                    key={pickupIdx}
+                    className="border p-3 rounded-md mb-2 bg-white dark:bg-gray-800"
+                  >
+                    <div className="flex justify-between items-center mb-1">
+                      <div className="flex items-center gap-2 font-semibold">
+                        <LocationEdit size={16} className="text-green-500" />
+                        {pickup.address}
+                        <div className="text-sm flex items-center text-gray-600 dark:text-gray-400 mb-1">
+                          {pickup.isAlwaysOpen && t("open_24_7")}
+                        </div>
+                      </div>
+
+                      <div className="flex gap-2">
+                        {currentView === "edit" && (
+                          <button
+                            // onClick={() => handleEditPickup(areaIdx, pickupIdx)}
+                            className="text-blue-600 hover:text-blue-800 text-sm"
+                          >
+                            Edit
+                          </button>
+                        )}
+
+                        <button
+                          onClick={() => handleDeletePickup(areaIdx, pickupIdx)}
+                          className="text-red-600 hover:text-red-800 text-sm"
+                        >
+                          &#x2715; {/* Cross symbol */}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             ))}
           </div>

@@ -315,24 +315,26 @@ const PickupLocationModal = ({
             onClick={() => {
               if (!pickupLocationModal.data.address) return;
 
-              const newAreas = formData.deliveryArea.map((area, idx) => {
-                if (idx === pickupLocationModal.areaIndex) {
-                  const newPickUpLocation = [...area.pickUpLocation];
+              const newAreas = formData.deliveryArea.map(
+                (area: any, idx: any) => {
+                  if (idx === pickupLocationModal.areaIndex) {
+                    const newPickUpLocation = [...area.pickUpLocation];
 
-                  if (pickupLocationModal.locationIndex !== null) {
-                    newPickUpLocation[pickupLocationModal.locationIndex] =
-                      pickupLocationModal.data;
-                  } else {
-                    newPickUpLocation.push(pickupLocationModal.data);
+                    if (pickupLocationModal.locationIndex !== null) {
+                      newPickUpLocation[pickupLocationModal.locationIndex] =
+                        pickupLocationModal.data;
+                    } else {
+                      newPickUpLocation.push(pickupLocationModal.data);
+                    }
+
+                    return {
+                      ...area,
+                      pickUpLocation: newPickUpLocation,
+                    };
                   }
-
-                  return {
-                    ...area,
-                    pickUpLocation: newPickUpLocation,
-                  };
-                }
-                return area;
-              });
+                  return area;
+                },
+              );
 
               setFormData({
                 ...formData,
