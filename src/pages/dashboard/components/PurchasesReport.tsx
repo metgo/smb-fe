@@ -71,8 +71,12 @@ function PurchaseMetric({ label, value, description }: PurchaseMetricProps) {
 
 export default function PurchasesReport() {
   const { t } = useTranslation("dashboard");
+  const { t: tc } = useTranslation("common");
+
   const { isDark } = useThemeClasses();
-  const { startDate, endDate } = useAppSelector((state) => state.auth);
+  const { startDate, endDate, timeFrame } = useAppSelector(
+    (state) => state.auth,
+  );
 
   const { data } = useGetPurchaseReportsStatsQuery({ startDate, endDate });
 
@@ -109,13 +113,13 @@ export default function PurchasesReport() {
       id: 4,
       label: t("total_orders"),
       value: data?.totalOrderAmount,
-      description: t("last_30_days"),
+      description: tc(timeFrame),
     },
     {
       id: 5,
       label: t("total_vouchers"),
       value: data?.totalVoucherAmount,
-      description: t("last_30_days"),
+      description: tc(timeFrame),
     },
   ];
 
