@@ -97,7 +97,7 @@ export function Signup({ setCurrentTab }: SignupProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-yellow-400 via-red-500 to-green-600 flex items-center justify-center p-8">
+    <div className="min-h-screen bg-linear-to-br from-yellow-400 via-red-500 to-green-600 flex items-center justify-center p-8">
       <div className="w-full max-w-xl">
         <div className="bg-gray-800/40 backdrop-blur-md rounded-3xl p-12 shadow-2xl">
           {/* Header */}

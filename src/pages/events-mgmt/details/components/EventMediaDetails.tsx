@@ -140,7 +140,7 @@ const EventMediaDetails: React.FC<EventMediaDetailsProps> = ({
               />
 
               {/* Overlay Actions */}
-              <div className="absolute inset-0 flex items-center justify-center gap-2 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
+              <div className="absolute inset-0 flex items-center justify-center gap-2 bg-linear-to-t from-black/80 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
                 {/* Set as Primary */}
                 {idx !== primaryImageIndex && (
                   <button

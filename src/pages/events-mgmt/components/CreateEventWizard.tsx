@@ -1,6 +1,5 @@
 import clsx from "clsx";
 import { toast } from "sonner";
-import { skipToken } from "@reduxjs/toolkit/query";
 import { useSearchParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import {
@@ -19,10 +18,6 @@ import { useTranslation } from "react-i18next";
 import { WizardFooter } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 
-import {
-  useGetAllTicketQuery,
-  useGetEventByIdQuery,
-} from "@/store/api/eventQueryApi";
 import {
   useInitEventCreateMutation,
   useUpdateEventMutation,
@@ -45,18 +40,24 @@ import { useCreateWebsiteAccessItemMutation } from "@/store/api/commonMutationAp
 interface CreateEventWizardProps {
   isOpen: boolean;
   onClose: () => void;
+  editData?: any;
+  tickets?: any;
+  ticketRefetch?: () => void;
 }
 
 export default function CreateEventWizard({
   isOpen,
   onClose,
+  editData,
+  tickets,
+  ticketRefetch,
 }: CreateEventWizardProps) {
   const { t } = useTranslation("events");
   const { t: tc } = useTranslation("common");
   const [searchParams] = useSearchParams();
 
   const editId = searchParams.get("eventId");
-  const [eventId, setEventId] = useState<string>("");
+  const [eventId, setEventId] = useState<string>(editId || "");
 
   const { textPrimary, textTertiary, rowDir, isDark } = useThemeClasses();
   const [updateEvent, { isLoading: isEventUpdating }] =
@@ -65,16 +66,6 @@ export default function CreateEventWizard({
     useInitEventCreateMutation();
   const [createWebsiteAccessItem, { isLoading: isWebsiteAccessItemCreating }] =
     useCreateWebsiteAccessItemMutation();
-
-  const {
-    data: editData,
-    refetch,
-    isLoading,
-    isFetching,
-  } = useGetEventByIdQuery(editId ? { eventId: editId } : skipToken);
-  const { data: tickets, refetch: ticketRefetch } = useGetAllTicketQuery(
-    eventId ? { eventId } : skipToken,
-  );
 
   const [currentStep, setCurrentStep] = useState(1);
   const [isPublishBtnClicked, setIsPublishBtnClicked] = useState(false);
@@ -184,14 +175,8 @@ export default function CreateEventWizard({
   ];
 
   useEffect(() => {
-    if (editId && isOpen) {
-      setEventId(editId);
-      refetch();
-    }
-  }, [editId, isOpen, refetch, eventId, setImages]);
-  useEffect(() => {
-    if (tickets && eventId) setLocalTickets(tickets);
-  }, [tickets, editData, eventId]);
+    if (tickets && (eventId || editId)) setLocalTickets(tickets);
+  }, [tickets, editData, eventId, editId]);
 
   // Reset all state when wizard closes or opens in create mode
   useEffect(() => {
@@ -588,11 +573,7 @@ export default function CreateEventWizard({
     <ModalWrapper
       onClose={onClose}
       showSpinner={
-        isEventCreating ||
-        isEventCreating ||
-        isLoading ||
-        isFetching ||
-        isWebsiteAccessItemCreating
+        isEventCreating || isEventCreating || isWebsiteAccessItemCreating
       }
     >
       {/* Header */}

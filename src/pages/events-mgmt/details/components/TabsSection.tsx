@@ -7,6 +7,7 @@ import {
   ImageIcon,
   MapPin,
   Ticket,
+  Users,
   // Users,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -26,8 +27,8 @@ const TabsSection = ({ activeTab, setActiveTab }: TabsSectionProps) => {
     { id: "date_time", label: t("date_time"), icon: Calendar },
     { id: "location", label: t("location_map"), icon: MapPin },
     { id: "media", label: t("media"), icon: ImageIcon },
-    // { id: "registration", label: t("registration"), icon: Users },
     { id: "tickets", label: t("tickets"), icon: Ticket },
+    { id: "registration", label: t("registration"), icon: Users },
     {
       id: "schedual_notification",
       label: t("schedual_notification"),

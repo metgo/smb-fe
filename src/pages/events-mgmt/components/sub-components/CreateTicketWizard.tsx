@@ -20,7 +20,7 @@ interface CreateTicketWizardProps {
   setEditData: (v: any) => void;
   editData: ITicketPayload;
   eventId: string | null;
-  refetch: () => void;
+  refetch?: () => void;
   eventDays: EventDay[];
   ticketDateTime: ITicketDateTime[];
   setTicketDateTime: React.Dispatch<React.SetStateAction<ITicketDateTime[]>>;
@@ -246,7 +246,7 @@ const CreateTicketWizard = ({
           t("ticket_saved_successfully") ||
           "Ticket saved successfully",
       );
-      refetch();
+      if (refetch) refetch();
       setIsOpen(false);
       setEditData(null);
     } catch (err: any) {
