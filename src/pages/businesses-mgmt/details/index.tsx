@@ -25,7 +25,6 @@ import { useImagesUpload } from "@/hooks/useImagesUpload";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useSingleImageUpload } from "@/hooks/useSingleImageUpload";
 import { useGetbusinessByIdQuery } from "@/store/api/businessQueryApi";
-import { useUpdateBusinessMutation } from "@/store/api/businessMutationApi";
 
 interface BusinessDetailsProps {
   onBack: () => void;
