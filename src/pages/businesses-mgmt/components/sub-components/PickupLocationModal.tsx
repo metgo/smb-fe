@@ -31,6 +31,18 @@ const PickupLocationModal = ({
 
   const days = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
 
+  console.log(
+    "🚀 ~ PickupLocationModal ~ pickupLocationModal:",
+    pickupLocationModal,
+  );
+
+  console.log("picup data", formData.deliveryArea);
+  const pickupAddresses =
+    formData.deliveryArea?.flatMap((area: any) =>
+      area.pickUpLocation.map((location: any) => location),
+    ) || [];
+  console.log(" ~ pickupAddresses:", pickupAddresses);
+
   return (
     <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/50">
       <div
@@ -303,22 +315,30 @@ const PickupLocationModal = ({
             onClick={() => {
               if (!pickupLocationModal.data.address) return;
 
-              const newAreas = [...formData.deliveryAreas];
-              const areaIndex = pickupLocationModal.areaIndex;
+              const newAreas = formData.deliveryArea.map((area, idx) => {
+                if (idx === pickupLocationModal.areaIndex) {
+                  const newPickUpLocation = [...area.pickUpLocation];
 
-              if (pickupLocationModal.locationIndex !== null) {
-                // Edit existing location
-                newAreas[areaIndex].pickUpLocation[
-                  pickupLocationModal.locationIndex
-                ] = pickupLocationModal.data;
-              } else {
-                // Add new location
-                newAreas[areaIndex].pickUpLocation.push(
-                  pickupLocationModal.data,
-                );
-              }
+                  if (pickupLocationModal.locationIndex !== null) {
+                    newPickUpLocation[pickupLocationModal.locationIndex] =
+                      pickupLocationModal.data;
+                  } else {
+                    newPickUpLocation.push(pickupLocationModal.data);
+                  }
 
-              setFormData({ ...formData, deliveryAreas: newAreas });
+                  return {
+                    ...area,
+                    pickUpLocation: newPickUpLocation,
+                  };
+                }
+                return area;
+              });
+
+              setFormData({
+                ...formData,
+                deliveryArea: newAreas,
+              });
+
               setPickupLocationModal(null);
             }}
             className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg transition-colors"

@@ -193,18 +193,21 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
                       type="text"
                       value={deliveryArea.area}
                       onChange={(e) => {
-                        const areas = [...formData.deliveryArea];
-                        areas[areaIdx].area = e.target.value;
+                        const areas = formData.deliveryArea.map((area, idx) =>
+                          idx === areaIdx
+                            ? { ...area, area: e.target.value }
+                            : area,
+                        );
                         setFormData({ ...formData, deliveryArea: areas });
                       }}
                       placeholder={isRTL ? "באר שבע" : "Be'er Sheva"}
                       className={`w-full px-3 py-2 rounded-lg border text-sm focus:ring-2 focus:ring-teal-500
-      ${
-        theme === "dark"
-          ? "bg-gray-900 border-gray-700 text-gray-100 placeholder-gray-500"
-          : "bg-white border-gray-300 text-gray-900 placeholder-gray-400"
-      }
-    `}
+                        ${
+                          theme === "dark"
+                            ? "bg-gray-900 border-gray-700 text-gray-100 placeholder-gray-500"
+                            : "bg-white border-gray-300 text-gray-900 placeholder-gray-400"
+                        }
+                      `}
                     />
                   </div>
 
@@ -227,12 +230,12 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
                         setFormData({ ...formData, deliveryArea: areas });
                       }}
                       className={`w-full px-3 py-2 rounded-lg border text-sm focus:ring-2 focus:ring-teal-500
-      ${
-        theme === "dark"
-          ? "bg-gray-900 border-gray-700 text-gray-100 placeholder-gray-500"
-          : "bg-white border-gray-300 text-gray-900 placeholder-gray-400"
-      }
-    `}
+                      ${
+                        theme === "dark"
+                          ? "bg-gray-900 border-gray-700 text-gray-100 placeholder-gray-500"
+                          : "bg-white border-gray-300 text-gray-900 placeholder-gray-400"
+                      }
+                    `}
                     />
                   </div>
 
@@ -252,12 +255,12 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
                         })
                       }
                       className={`w-full px-3 py-2 rounded-lg border text-sm flex justify-center gap-1
-      ${
-        theme === "dark"
-          ? "bg-gray-900 border-gray-700 text-gray-300 hover:bg-gray-800"
-          : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
-      }
-    `}
+                      ${
+                        theme === "dark"
+                          ? "bg-gray-900 border-gray-700 text-gray-300 hover:bg-gray-800"
+                          : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+                      }
+                    `}
                     >
                       <MapPin className="w-4 h-4" />
                       {t("add_location")}

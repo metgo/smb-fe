@@ -216,7 +216,7 @@ export default function CreateBusinessWizard({
         //location
         vendorDelivers: business.vendorDelivers ?? false,
         pickupAvailable: business.isPickUpAvailable ?? false,
-        deliveryArea: business.deliveryArea ?? [],
+        deliveryArea: business?.deliveryArea ?? [],
         deliveryReturnExchange: business.deliveryReturnExchange ?? [],
         deliveryAdditionalInfo: business.deliveryAdditionalInfo ?? "",
         deliverySpecificSellerInfo: business.deliverySpecificSellerInfo ?? [],
@@ -267,7 +267,7 @@ export default function CreateBusinessWizard({
       setBusinessLogoImage({ image: business?.logo?.image });
     }
   }, [business, currentView, businessId, currentStep]);
-
+  // console.log("form data delivery", business.deliveryArea);
   const steps = [
     { number: 1, title: t("step_basic_info"), icon: FileText },
     { number: 2, title: t("step_contact_ownership"), icon: Users },
@@ -324,7 +324,7 @@ export default function CreateBusinessWizard({
     // step 7
     // vendorDelivers: formData.vendorDelivers,
     isPickUpAvailable: formData.pickupAvailable,
-    deliveryArea: formData.deliveryAreas,
+    deliveryArea: formData.deliveryArea,
     deliveryAdditionalInfo: formData.deliveryAdditionalInfo,
     deliveryReturnExchange: formData.deliveryReturnExchange,
     deliverySpecificSellerInfo: formData.deliverySpecificSellerInfo,
@@ -395,6 +395,7 @@ export default function CreateBusinessWizard({
   };
 
   const handlePrevious = () => {
+    console.log("🚀 ~ handlePrevious ~ currentStep:", currentStep);
     if (currentStep > 1) setCurrentStep(currentStep - 1);
   };
 
