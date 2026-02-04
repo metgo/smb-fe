@@ -1,6 +1,5 @@
+import { loadSettings } from "@/lib/storage";
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-
-export type Theme = "light" | "dark";
 
 interface SettingsState {
   language: string;
@@ -8,10 +7,12 @@ interface SettingsState {
   isRTL: boolean;
 }
 
+const persisted = loadSettings();
+
 const initialState: SettingsState = {
-  language: "en",
-  theme: "light",
-  isRTL: false,
+  language: persisted?.language ?? "en",
+  theme: persisted?.theme ?? "dark",
+  isRTL: persisted?.isRTL ?? false,
 };
 
 const settingsSlice = createSlice({

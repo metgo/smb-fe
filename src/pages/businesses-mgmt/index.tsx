@@ -15,7 +15,7 @@ export default function BusinessesMgmtPage() {
 
   const handleBusinessClick = (business: any) => {
     setSelectedBusiness(business);
-    navigate(`?businessId=${business?._id}&businessSlug=${business?.slug}`, {
+    navigate(`?businessId=${business?._id}`, {
       replace: true,
     });
     setCurrentView("details");

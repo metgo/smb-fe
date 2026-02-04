@@ -1,6 +1,5 @@
 import { useTranslation } from "react-i18next";
 import {
-  Search,
   Download,
   ChevronDown,
   ChevronUp,
@@ -27,14 +26,11 @@ import {
   useGetAllbusinessesQuery,
   useGetBusinessStatsQuery,
 } from "@/store/api/businessQueryApi";
-import { useCommon } from "@/hooks/useCommon";
 import BusinessGridView from "./sub-components/BusinessGridView";
 import { BusinessListView } from "./sub-components";
 import { toast } from "sonner";
-import {
-  useDeleteBusinessMutation,
-  useUpdateBusinessMutation,
-} from "@/store/api/businessMutationApi";
+import { useBulkBusinessesUpdateMutation } from "@/store/api/businessMutationApi";
+import SearchInput from "@/components/shared/SearchInput";
 
 interface BusinessesListProps {
   theme: Theme;
@@ -87,16 +83,14 @@ export default function BusinessesList({
 }: BusinessesListProps) {
   const { t } = useTranslation("businesses");
   const { textSecondary } = useThemeClasses();
-  const { dmosAuthorities } = useCommon();
   const { isRTL } = useAppSelector((state) => state.settings);
+  const { dmoId, authorityId } = useAppSelector((state) => state.auth);
+
   const { data: businessStatsData } = useGetBusinessStatsQuery({});
-  const [updateBusiness] = useUpdateBusinessMutation();
-  const [deleteBusiness] = useDeleteBusinessMutation();
+  const [bulkBusinessesUpdate] = useBulkBusinessesUpdateMutation();
 
   //infinite scroll states
   const [page, setPage] = useState<number>(1);
-  const [hasMore, setHasMore] = useState(true);
-  const [businesses, setBusinesses] = useState<any[]>([]);
 
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const [error, _setError] = useState(false);
@@ -106,31 +100,25 @@ export default function BusinessesList({
   const [selectedBusinesses, setSelectedBusinesses] = useState<Set<string>>(
     new Set(),
   );
-  const [selectedDmoId, setSelectDmoId] = useState<string>("");
-  const [selectedAuthorityId, setSelectAuthorityId] = useState<string>("");
-  const selectedDmos = dmosAuthorities?.find(
-    (item) => item?._id === selectedDmoId,
-  );
+
   const columnSettingsRef = useRef<HTMLDivElement>(null);
   const [columnVisibility, setColumnVisibility] =
     useState<ColumnVisibility>(defaultColumns);
 
   // Filters
   const [filters, setFilters] = useState({
-    authorityId: "",
-    dmoId: "",
+    dmoId,
+    authorityId,
     status: "all",
-    hasProductFilter: "",
+    hasProductFilter: "all",
   });
 
   const clearFilter = () => {
-    setSelectAuthorityId("");
-    setSelectDmoId("");
     setFilters({
       authorityId: "",
       dmoId: "",
       status: "all",
-      hasProductFilter: "",
+      hasProductFilter: "all",
     });
   };
 
@@ -197,27 +185,20 @@ export default function BusinessesList({
 
   useEffect(() => {
     setPage(1);
-    setHasMore(true);
   }, [searchTerm, filters]);
 
   const {
     data: businessData,
     isLoading,
+    isFetching,
     refetch,
   } = useGetAllbusinessesQuery(queryParams);
 
-  //infinite scroll logic
-  useEffect(() => {
-    if (!businessData?.data) return;
-    if (!businessData?.meta) return;
-    setHasMore(businessData.meta.hasNextPage);
-    setBusinesses((prev) =>
-      page === 1 ? businessData.data : [...prev, ...businessData.data],
-    );
-  }, [businessData, page]);
+  const businesses = businessData?.data ?? [];
+  const hasMore = businessData?.meta?.hasNextPage;
 
   const fetchNextPage = () => {
-    if (!hasMore) return;
+    if (!hasMore || isFetching) return;
     setPage((prev) => {
       return prev + 1;
     });
@@ -232,17 +213,17 @@ export default function BusinessesList({
     if (!selectedBusinesses.size) return;
     const toastId = toast.loading("Please wait. Businesses are deleting...");
     try {
-      const results = await Promise.all(
-        Array.from(selectedBusinesses).map((businessId: string) =>
-          deleteBusiness({ slug: businessId }),
-        ),
-      );
+      const results = await bulkBusinessesUpdate({
+        businessesId: Array.from(selectedBusinesses),
+        isDeleted: true,
+      });
 
-      const message =
-        results[0]?.data?.message || "Businesses deleted successfully";
-      toast.success(message, { id: toastId });
-      setSelectedBusinesses(new Set());
-      refetch();
+      if (results?.data) {
+        const message = "Businesses deleted successfully";
+        toast.success(message, { id: toastId });
+        setSelectedBusinesses(new Set());
+        refetch();
+      }
     } catch (error: any) {
       toast.error(error?.message || "Failed to delete Businesses");
     }
@@ -250,27 +231,22 @@ export default function BusinessesList({
 
   const handleBulkStatusChange = async (status: TStatus) => {
     if (!selectedBusinesses.size) return;
-    const toastId = toast.loading(
-      "Please wait. Businesses's status are changing...",
-    );
+    toast.loading("Please wait. Businesses's status are changing...");
 
     try {
-      const results = await Promise.all(
-        Array.from(selectedBusinesses).map((businessId: string) =>
-          updateBusiness({
-            businessId,
-            body: { status: status?.toUpperCase() },
-          }),
-        ),
-      );
-      const message = results[0]?.data?.message;
-      toast.success(message, { id: toastId });
-      setSelectedBusinesses(new Set());
-      refetch();
-    } catch (error: any) {
-      toast.error(error?.message || "Failed to change Businesses status", {
-        id: toastId,
+      const results = await bulkBusinessesUpdate({
+        businessesId: Array.from(selectedBusinesses),
+        status: status?.toLocaleUpperCase(),
       });
+
+      if (results?.data) {
+        const message = "Businesses status updated successfully";
+        toast.success(message);
+        setSelectedBusinesses(new Set());
+        refetch();
+      }
+    } catch (error: any) {
+      toast.error(error?.message || "Failed to change Businesses status");
     }
   };
 
@@ -534,21 +510,10 @@ export default function BusinessesList({
           <div className="py-4 flex flex-col lg:flex-row gap-3">
             {/* Search */}
             <div className="flex-1 relative">
-              <Search
-                className={`absolute ${isRTL ? "right-3" : "left-3"} top-1/2 -translate-y-1/2 w-5 h-5 ${
-                  theme === "dark" ? "text-gray-500" : "text-gray-400"
-                }`}
-              />
-              <input
-                type="text"
+              <SearchInput
                 placeholder={t("search_businesses_placeholder")}
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className={`w-full ${isRTL ? "pr-10 pl-4" : "pl-10 pr-4"} py-2 rounded-lg border ${
-                  theme === "dark"
-                    ? "bg-gray-800 border-gray-700 text-gray-200 placeholder-gray-500"
-                    : "bg-white border-gray-300 text-gray-900 placeholder-gray-400"
-                } focus:outline-none focus:ring-2 focus:ring-teal-500`}
+                searchTerm={searchTerm}
+                setSearchTerm={setSearchTerm}
               />
             </div>
 
@@ -704,78 +669,7 @@ export default function BusinessesList({
                   : "border-gray-200 bg-gray-50"
               }`}
             >
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
-                {/* DMO Filter */}
-                <div className="flex-1">
-                  <label
-                    className={`block text-sm mb-1 ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
-                  >
-                    {" "}
-                    {t("select_dmo")} <span className="text-red-500">*</span>
-                  </label>
-                  <div className=" flex gap-2 relative">
-                    <select
-                      value={selectedDmoId}
-                      onChange={(e) => {
-                        const value = e.target.value;
-
-                        setSelectDmoId(value);
-                        setSelectAuthorityId("");
-
-                        setFilters((prev) => ({
-                          ...prev,
-                          dmoId: value,
-                          authorityId: "", // reset authority when DMO changes
-                        }));
-                      }}
-                      className={`w-full px-3 py-2 rounded-lg border ${
-                        theme === "dark"
-                          ? "bg-gray-800 border-gray-700 text-gray-200"
-                          : "bg-white border-gray-300 text-gray-900"
-                      } focus:outline-none focus:ring-2 focus:ring-teal-500`}
-                    >
-                      <option value="">Select DMO</option>
-                      {dmosAuthorities?.map((parent) => (
-                        <option key={parent._id} value={parent._id}>
-                          {parent.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-                {/* Authority Filter */}
-                <div className="flex-1">
-                  <label
-                    className={`block text-sm mb-1 ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
-                  >
-                    {" "}
-                    {t("select_authority")}{" "}
-                    <span className="text-red-500">*</span>
-                  </label>
-                  <div className=" w-full relative">
-                    <select
-                      value={selectedAuthorityId}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        setSelectAuthorityId(value); // sync local authority id state
-                        setFilters((prev) => ({ ...prev, authorityId: value }));
-                      }}
-                      className={`w-full px-3 py-2 rounded-lg border ${
-                        theme === "dark"
-                          ? "bg-gray-800 border-gray-700 text-gray-200"
-                          : "bg-white border-gray-300 text-gray-900"
-                      } focus:outline-none focus:ring-2 focus:ring-teal-500`}
-                    >
-                      <option value="">Select Authority</option>
-                      {selectedDmos?.authorities?.map((child) => (
-                        <option key={child._id} value={child._id}>
-                          {child.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 ml-4 mt-4">
                 {/* Status Filter */}
                 <div>
                   <label
@@ -851,15 +745,6 @@ export default function BusinessesList({
                       displayValue = t(value.toLowerCase()) || value;
                     } else if (key === "hasProductFilter") {
                       displayValue = value === "yes" ? t("yes") : t("no");
-                    } else if (key === "dmoId") {
-                      //  show DMO name instead of ID
-                      const dmo = dmosAuthorities?.find((d) => d._id === value);
-                      displayValue = dmo?.name || value;
-                    } else if (key === "authorityId") {
-                      const authority = selectedDmos?.authorities?.find(
-                        (a) => a._id === value,
-                      );
-                      displayValue = authority?.name || value;
                     }
 
                     return (
@@ -871,21 +756,7 @@ export default function BusinessesList({
 
                         <button
                           onClick={() => {
-                            if (key === "dmoId") {
-                              setSelectDmoId("");
-                              setSelectAuthorityId("");
-                              setFilters((prev) => ({
-                                ...prev,
-                                dmoId: "",
-                                authorityId: "",
-                              }));
-                            } else if (key === "authorityId") {
-                              setSelectAuthorityId("");
-                              setFilters((prev) => ({
-                                ...prev,
-                                authorityId: "",
-                              }));
-                            } else if (key === "status") {
+                            if (key === "status") {
                               setFilters((prev) => ({
                                 ...prev,
                                 status: "all",

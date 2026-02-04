@@ -74,7 +74,6 @@ const ProductBasicInfo = ({
           value={formData.businessId}
           onChange={(e) => {
             const selectedBusinessId = e.target.value;
-
             setFormData({
               ...formData,
               businessId: selectedBusinessId,

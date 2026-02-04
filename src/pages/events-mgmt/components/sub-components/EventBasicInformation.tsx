@@ -18,6 +18,8 @@ import {
   TextareaField,
 } from "@/components/form-fields";
 import { categoryIds } from "@/lib/utils";
+import { useAppSelector } from "@/hooks/hooks";
+import { UserRole } from "@/enums/user.types";
 
 interface EventBasicInformationProps {
   eventId: string;
@@ -80,6 +82,7 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
   eventAssociatedWebsites = [],
 }) => {
   const { t, i18n } = useTranslation("events");
+  const { userRole } = useAppSelector((state) => state.auth);
   const { textSecondary, inputClasses } = useThemeClasses();
   const locale = i18n.language as Language;
 
@@ -271,18 +274,20 @@ const EventBasicInformation: React.FC<EventBasicInformationProps> = ({
       />
 
       {/* Internal Notes */}
-      <FormFieldWrapper
-        label={t("internal_notes")}
-        hint={t("visible_only_to_admins")}
-      >
-        <TextareaField
-          rows={4}
-          value={internalNotes}
-          onChange={setInternalNotes}
-          placeholder={t("add_internal_notes")}
-          inputClasses={`${inputClasses} text-base`}
-        />
-      </FormFieldWrapper>
+      {userRole === UserRole.SUPERADMIN && (
+        <FormFieldWrapper
+          label={t("internal_notes")}
+          hint={t("visible_only_to_admins")}
+        >
+          <TextareaField
+            rows={4}
+            value={internalNotes}
+            onChange={setInternalNotes}
+            placeholder={t("add_internal_notes")}
+            inputClasses={`${inputClasses} text-base`}
+          />
+        </FormFieldWrapper>
+      )}
     </div>
   );
 };

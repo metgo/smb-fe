@@ -24,7 +24,7 @@ import { skipToken } from "@reduxjs/toolkit/query";
 import { useImagesUpload } from "@/hooks/useImagesUpload";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useSingleImageUpload } from "@/hooks/useSingleImageUpload";
-import { useGetbusinessBySlugQuery } from "@/store/api/businessQueryApi";
+import { useGetbusinessByIdQuery } from "@/store/api/businessQueryApi";
 import { useUpdateBusinessMutation } from "@/store/api/businessMutationApi";
 
 interface BusinessDetailsProps {
@@ -47,11 +47,10 @@ export default function BusinessDetails({
   const { borderColor } = useThemeClasses();
 
   const [searchParams] = useSearchParams();
-  const businessSlug = searchParams.get("businessSlug");
   const businessId = searchParams.get("businessId") ?? "";
 
-  const { data: business, isLoading } = useGetbusinessBySlugQuery(
-    businessSlug ? { slug: businessSlug } : skipToken,
+  const { data: business, isLoading } = useGetbusinessByIdQuery(
+    businessId ? { businessId } : skipToken,
   );
   const [errors, _setErrors] = useState<Record<string, string>>({});
   const [businessLogoImage, setBusinessLogoImage] = useState<IImage | null>(

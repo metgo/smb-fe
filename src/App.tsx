@@ -18,6 +18,7 @@ import {
   ProfilePage,
   OrdersMgmtPage,
 } from "@/pages";
+import { IdleLogout } from "./components/shared";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -29,7 +30,7 @@ function App() {
     children,
     isLoginPage = false,
   }) => {
-    const isLoggedIn = !!localStorage.getItem("userData");
+    const isLoggedIn = !!localStorage.getItem("access_token");
 
     if (isLoginPage) {
       if (isLoggedIn) {
@@ -50,6 +51,7 @@ function App() {
       element: (
         <Suspense fallback={null}>
           <ProtectedRoute>
+            <IdleLogout />
             <RootLayout />
           </ProtectedRoute>
         </Suspense>

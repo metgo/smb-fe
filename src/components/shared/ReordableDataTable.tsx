@@ -98,6 +98,45 @@ export default function ReordableDataTable<T extends Record<string, any>>({
     }
   }, [columnOrder, storageKey]);
 
+  //default order
+  const defaultOrder = useMemo(
+    () => columns.map((c) => c.key as string),
+    [columns],
+  );
+  useEffect(() => {
+    setColumnOrder((prev) => {
+      const prevSet = new Set(prev);
+
+      // columns that are currently visible
+      const visibleKeys = columns.map((c) => c.key as string);
+
+      // remove hidden columns
+      const cleaned = prev.filter((key) => visibleKeys.includes(key));
+
+      // reinsert missing columns at correct position
+      visibleKeys.forEach((key) => {
+        if (!prevSet.has(key)) {
+          const defaultIndex = defaultOrder.indexOf(key);
+
+          // find nearest previous column that exists
+          let insertAt = cleaned.length;
+          for (let i = defaultIndex - 1; i >= 0; i--) {
+            const prevKey = defaultOrder[i];
+            const idx = cleaned.indexOf(prevKey);
+            if (idx !== -1) {
+              insertAt = idx + 1;
+              break;
+            }
+          }
+
+          cleaned.splice(insertAt, 0, key);
+        }
+      });
+
+      return cleaned;
+    });
+  }, [columns, defaultOrder]);
+
   // Sorted data
   const sortedData = useMemo(() => {
     if (!sortField || !sortDirection) return data;

@@ -10,17 +10,20 @@ import {
   Settings2,
   ArrowUpDown,
   ArrowUp,
+  ChevronUp,
+  ChevronDown,
 } from "lucide-react";
 import { useProductMgmt } from "./useProductMgmt";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useAppSelector } from "@/hooks/hooks";
 import { PageHeader, PageStats, ReordableDataTable } from "@/components/shared";
 import { CreateProductWizard } from "./components";
-import { Activity, useState } from "react";
+import { Activity, useMemo, useRef, useState } from "react";
 import ProductDetails from "./details/inde";
 
 import { useGetAllProductsQuery } from "@/store/api/productQueryApi";
 import { useNavigate } from "react-router-dom";
+import SearchInput from "@/components/shared/SearchInput";
 
 const businessId = "";
 
@@ -57,6 +60,47 @@ export default function ProductsMgmtPage() {
     getProductTypeLabel,
     getStatusBadge,
   } = useProductMgmt();
+  //filters
+  const [page, setPage] = useState(1);
+  const LIMIT = 10;
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const { isDark } = useThemeClasses();
+  const [filters, setFilters] = useState({
+    status: "all",
+    productType: "all",
+    businessId: "all",
+  });
+  const clearFilters = () => {
+    setFilters({
+      status: "all",
+      productType: "all",
+      businessId: "all",
+    });
+  };
+  const productQueryParams = useMemo(() => {
+    const params: any = {
+      page,
+      limit: LIMIT,
+    };
+
+    if (searchTerm) {
+      params.search = searchTerm;
+    }
+
+    if (filters.status !== "all") {
+      params.status = filters.status.toUpperCase(); // API expects DRAFT, APPROVED, etc
+    }
+
+    if (filters.productType !== "all") {
+      params.productType = filters.productType.toUpperCase();
+    }
+
+    if (filters.businessId !== "all") {
+      params.businessId = filters.businessId;
+    }
+
+    return params;
+  }, [page, searchTerm, filters]);
 
   const [currentView, setCurrentView] = useState<
     "list" | "details" | "edit" | "create"
@@ -65,7 +109,6 @@ export default function ProductsMgmtPage() {
   console.log("🚀 ~ ProductsMgmtPage ~ productId:", productId);
 
   const themeColor = useThemeClasses();
-  const [searchTerm, setSearchTerm] = useState<string>("");
   const navigate = useNavigate();
 
   const handleProductClick = (product: any) => {
@@ -83,12 +126,52 @@ export default function ProductsMgmtPage() {
   const handleEdit = () => {
     setCurrentView("edit");
   };
+
   const {
     data: productData,
     isLoading: isLoadingProduct,
     refetch,
-  } = useGetAllProductsQuery({ search: searchTerm });
+  } = useGetAllProductsQuery(productQueryParams);
 
+  //column settings
+  const [showColumnSettings, setShowColumnSettings] = useState(false);
+  const columnSettingsRef = useRef(null);
+  const defaultColumns = {
+    checkbox: true, // Usually always visible for selection
+    images: true,
+    name: true,
+    businessId: true,
+    productType: true,
+    status: true,
+    price: true,
+    impact: false,
+    quantity: false,
+    updatedAt: false,
+    actions: true,
+  };
+
+  type ColumnVisibility = typeof defaultColumns;
+
+  const columnDefinitions = [
+    { key: "checkbox" as keyof ColumnVisibility, isDefault: true },
+    { key: "images" as keyof ColumnVisibility, isDefault: true },
+    { key: "name" as keyof ColumnVisibility, isDefault: true },
+    { key: "businessId" as keyof ColumnVisibility, isDefault: true },
+    { key: "productType" as keyof ColumnVisibility, isDefault: true },
+    { key: "status" as keyof ColumnVisibility, isDefault: true },
+    { key: "price" as keyof ColumnVisibility, isDefault: true },
+    { key: "impact" as keyof ColumnVisibility, isDefault: false },
+    { key: "quantity" as keyof ColumnVisibility, isDefault: false },
+    { key: "updatedAt" as keyof ColumnVisibility, isDefault: false },
+    { key: "actions" as keyof ColumnVisibility, isDefault: true },
+  ];
+
+  const [columnVisibility, setColumnVisibility] =
+    useState<ColumnVisibility>(defaultColumns);
+  // Reset to default columns
+  const resetToDefault = () => {
+    setColumnVisibility(defaultColumns);
+  };
   const columns = [
     { key: "checkbox", label: "", width: "50px" },
     {
@@ -242,64 +325,55 @@ export default function ProductsMgmtPage() {
               />
 
               {/* Toolbar */}
-              <div className="flex items-center justify-between gap-4 mb-6 flex-wrap">
-                {/* Search */}
-                <div className="flex-1 min-w-50 max-w-md">
-                  <div className="relative">
-                    {/* Search Icon */}
-                    <Search
-                      className={`absolute ${isRTL ? "right-3" : "left-3"} top-1/2 -translate-y-1/2 w-5 h-5 ${themeColor.textTertiary}`}
-                    />
-
-                    {/* Input */}
-                    <input
-                      type="text"
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      placeholder={t("search_products")}
-                      className={`w-full 
-                      ${isRTL ? "pr-10 pl-10" : "pl-10 pr-10"} 
-                      py-2 rounded-lg border 
-                      ${themeColor.borderColor} 
-                      ${themeColor.bgSecondary} 
-                      ${themeColor.textPrimary} 
-                      placeholder-gray-400`}
-                    />
-
-                    {/* Clear (Cross) Button */}
-                    {searchTerm && (
-                      <button
-                        onClick={() => setSearchTerm("")}
-                        className={`absolute ${isRTL ? "left-3" : "right-3"} top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600`}
-                      >
-                        ✕
-                      </button>
-                    )}
-                  </div>
+              <div className="py-4 flex flex-col lg:flex-row items-center justify-between gap-3">
+                {/* Search - extreme left */}
+                <div className="flex-1 relative min-w-50 max-w-md">
+                  <SearchInput
+                    placeholder={t("search_products")}
+                    searchTerm={searchTerm}
+                    setSearchTerm={setSearchTerm}
+                  />
                 </div>
 
-                {/* Right Section */}
-                <div className="flex items-center gap-2">
+                {/* Right side group: Filter Button + View Mode Toggle */}
+                <div className="flex items-center gap-3">
+                  {/* Filter Button */}
                   <button
                     onClick={() => setShowFilters(!showFilters)}
-                    className={`px-3 py-2 rounded-lg border ${themeColor.borderColor} ${showFilters ? "bg-teal-50 dark:bg-teal-950 border-teal-500" : themeColor.bgSecondary} ${themeColor.textSecondary} hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex items-center gap-2`}
+                    className={`px-3 py-2 rounded-lg border ${themeColor.borderColor} ${
+                      showFilters
+                        ? "bg-white dark:bg-teal-950 "
+                        : themeColor.bgSecondary
+                    } ${themeColor.textSecondary} hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex items-center gap-2`}
                   >
                     <Filter className="w-4 h-4" />
                     <span className="hidden sm:inline">{t("filters")}</span>
+                    {showFilters ? (
+                      <ChevronUp className="w-4 h-4" />
+                    ) : (
+                      <ChevronDown className="w-4 h-4" />
+                    )}
                   </button>
 
-                  <div
-                    className={`flex items-center gap-1 p-1 rounded-lg border ${themeColor.borderColor} ${themeColor.bgSecondary}`}
-                  >
+                  {/* View Mode Toggle */}
+                  <div className="flex items-center gap-1 p-1 rounded-lg border border-gray-300 bg-white dark:bg-gray-800 dark:border-gray-700">
                     <button
                       onClick={() => setViewMode("list")}
-                      className={`p-2 rounded ${viewMode === "list" ? "bg-teal-500 text-white" : themeColor.textTertiary}`}
+                      className={`p-2 rounded ${
+                        viewMode === "list"
+                          ? "bg-teal-500 text-white"
+                          : "text-gray-500"
+                      }`}
                     >
                       <List className="w-4 h-4" />
                     </button>
                     <button
                       onClick={() => setViewMode("grid")}
-                      className={`p-2 rounded ${viewMode === "grid" ? "bg-teal-500 text-white" : themeColor.textTertiary}`}
+                      className={`p-2 rounded ${
+                        viewMode === "grid"
+                          ? "bg-teal-500 text-white"
+                          : "text-gray-500"
+                      }`}
                     >
                       <Grid3x3 className="w-4 h-4" />
                     </button>
@@ -309,69 +383,106 @@ export default function ProductsMgmtPage() {
 
               {/* Filters Panel */}
               {showFilters && (
-                <div
-                  className={`mb-6 p-4 rounded-xl border ${themeColor.borderColor} ${themeColor.bgSecondary}`}
-                >
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div>
-                      <label
-                        className={`block text-sm ${themeColor.textSecondary} mb-2`}
-                      >
-                        {t("filter_by_status")}
-                      </label>
-                      <select
-                        value={statusFilter}
-                        onChange={(e) => setStatusFilter(e.target.value)}
-                        className={`w-full px-3 py-2 rounded-lg border ${themeColor.borderColor} ${themeColor.bgPrimary} ${themeColor.textPrimary}`}
-                      >
-                        <option value="all">{t("all")}</option>
-                        <option value="draft">{t("draft")}</option>
-                        <option value="pending">{t("pending")}</option>
-                        <option value="approved">{t("approved")}</option>
-                        <option value="rejected">{t("rejected")}</option>
-                        <option value="archived">{t("archived")}</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <label
-                        className={`block text-sm ${themeColor.textSecondary} mb-2`}
-                      >
-                        {t("filter_by_type")}
-                      </label>
-                      <select
-                        value={typeFilter}
-                        onChange={(e) => setTypeFilter(e.target.value)}
-                        className={`w-full px-3 py-2 rounded-lg border ${themeColor.borderColor} ${themeColor.bgPrimary} ${themeColor.textPrimary}`}
-                      >
-                        <option value="all">{t("all")}</option>
-                        <option value="physical">
-                          {t("physical_product")}
-                        </option>
-                        <option value="table-order">{t("table_order")}</option>
-                        <option value="service">{t("service")}</option>
-                        <option value="hotel-room">{t("hotel_room")}</option>
-                        <option value="experience">{t("experience")}</option>
-                      </select>
-                    </div>
-
-                    {!businessId && (
+                <div>
+                  <div
+                    className={`mb-6 p-4 rounded-t-sm border-t ${themeColor.borderColor} ${themeColor.bgSecondary}`}
+                  >
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                       <div>
                         <label
-                          className={`block text-sm ${themeColor.textSecondary} mb-2`}
+                          className={`block text-sm mb-1 ${
+                            isDark ? "text-gray-400" : "text-gray-600"
+                          }`}
                         >
-                          {t("filter_by_business")}
+                          {t("filter_by_status")}
                         </label>
                         <select
-                          value={businessFilter}
-                          onChange={(e) => setBusinessFilter(e.target.value)}
-                          className={`w-full px-3 py-2 rounded-lg border ${themeColor.borderColor} ${themeColor.bgPrimary} ${themeColor.textPrimary}`}
+                          value={filters.status}
+                          onChange={(e) =>
+                            setFilters((prev) => ({
+                              ...prev,
+                              status: e.target.value,
+                            }))
+                          }
+                          className={`w-full px-3 py-2 rounded-lg border ${
+                            isDark
+                              ? "bg-gray-800 border-gray-700 text-gray-200"
+                              : "bg-white border-gray-300 text-gray-900"
+                          } focus:outline-none focus:ring-2 focus:ring-teal-500`}
                         >
-                          <option value="all">{t("all_businesses")}</option>
-                          {/* Add business options dynamically */}
+                          <option value="all">{t("all")}</option>
+                          <option value="draft">{t("draft")}</option>
+                          <option value="pending">{t("pending")}</option>
+                          <option value="approved">{t("approved")}</option>
+                          <option value="rejected">{t("rejected")}</option>
+                          <option value="archived">{t("archived")}</option>
                         </select>
                       </div>
-                    )}
+
+                      <div>
+                        <label
+                          className={`block text-sm mb-1 ${
+                            isDark ? "text-gray-400" : "text-gray-600"
+                          }`}
+                        >
+                          {t("filter_by_type")}
+                        </label>
+                        <select
+                          value={filters.productType}
+                          onChange={(e) =>
+                            setFilters((prev) => ({
+                              ...prev,
+                              productType: e.target.value,
+                            }))
+                          }
+                          className={`w-full px-3 py-2 rounded-lg border ${
+                            isDark
+                              ? "bg-gray-800 border-gray-700 text-gray-200"
+                              : "bg-white border-gray-300 text-gray-900"
+                          } focus:outline-none focus:ring-2 focus:ring-teal-500`}
+                        >
+                          <option value="all">{t("all")}</option>
+                          <option value="physical">
+                            {t("physical_product")}
+                          </option>
+                          <option value="table_order">
+                            {t("table_order")}
+                          </option>
+                          <option value="service">{t("service")}</option>
+                          <option value="hotel-room">{t("hotel_room")}</option>
+                          <option value="experience">{t("experience")}</option>
+                        </select>
+                      </div>
+
+                      {!businessId && (
+                        <div>
+                          <label
+                            className={`block text-sm mb-1 ${
+                              isDark ? "text-gray-400" : "text-gray-600"
+                            }`}
+                          >
+                            {t("filter_by_business")}
+                          </label>
+                          <select
+                            value={filters.businessId}
+                            onChange={(e) =>
+                              setFilters((prev) => ({
+                                ...prev,
+                                businessId: e.target.value,
+                              }))
+                            }
+                            className={`w-full px-3 py-2 rounded-lg border ${
+                              isDark
+                                ? "bg-gray-800 border-gray-700 text-gray-200"
+                                : "bg-white border-gray-300 text-gray-900"
+                            } focus:outline-none focus:ring-2 focus:ring-teal-500`}
+                          >
+                            <option value="all">{t("all_businesses")}</option>
+                            {/* Add business options dynamically */}
+                          </select>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               )}

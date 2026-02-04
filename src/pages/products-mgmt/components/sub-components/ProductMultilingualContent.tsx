@@ -5,13 +5,17 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 interface ProductMultilingualContentProps {
   t: (key: string) => string;
   formData: {
-    name: { he: string; ar: string };
-    shortDescription: { he: string; ar: string };
+    name: string;
+    nameHe: string;
+    nameAr: string;
+    shortDescription: string;
+    shortDescriptionHe: string;
+    shortDescriptionAr: string;
   };
-  setFormData: (data: any) => void;
+  setFormData: React.Dispatch<React.SetStateAction<any>>;
 }
 
-const ProductMultilingualContent: React.FC<any> = ({
+const ProductMultilingualContent: React.FC<ProductMultilingualContentProps> = ({
   t,
   formData,
   setFormData,

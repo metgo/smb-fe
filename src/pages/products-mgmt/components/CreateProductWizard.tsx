@@ -32,7 +32,8 @@ import { useGetbusinessForProductQuery } from "@/store/api/businessQueryApi";
 import { useSearchParams } from "react-router-dom";
 import { useGetProductbyIdQuery } from "@/store/api/productQueryApi";
 import { useImagesUpload } from "@/hooks/useImagesUpload";
-import { categories } from "@/lib/utils";
+import { ModalWrapper } from "@/components/wrapper";
+import { useSingleImageUpload } from "@/hooks/useSingleImageUpload";
 
 interface ProductWizardProps {
   onClose: () => void;
@@ -49,7 +50,6 @@ export default function CreateProductWizard({
   editingProduct,
   productId,
   setProductId,
-  selectedProduct,
   currentView,
 }: ProductWizardProps) {
   const { t, i18n } = useTranslation("products");
@@ -62,10 +62,13 @@ export default function CreateProductWizard({
   const [selectedFormLanguage, setSelectedFormLanguage] = useState<
     "en" | "he" | "ar"
   >("en");
-  const [isSaving, setIsSaving] = useState(false); // unused but kept
+  // const [isSaving, setIsSaving] = useState(false); // unused but kept
   const [isPublishing, _setIsPublishing] = useState(false); // unused but kept
+  const [_isPublishBtnClicked, setIsPublishBtnClicked] = useState(false);
   //image
   const [galleryImages, setGalleryImages] = useState<TImages>([]);
+  const [_logoGcsUrl, setLogoGcsUrl] = useState<string>("");
+  const [productLogoImage, setProductLogoImage] = useState<IImage | null>(null);
 
   const { data: businessData, isLoading: isBusinessesLoading } =
     useGetbusinessForProductQuery({});
@@ -83,6 +86,7 @@ export default function CreateProductWizard({
 
   console.log("🚀 ~ CreateProductWizard ~ product:", product);
   const [businessId, setBusinessId] = useState("");
+
   const {
     images,
     imagesRef,
@@ -100,7 +104,19 @@ export default function CreateProductWizard({
     initialImages: galleryImages,
     onChange: setGalleryImages,
   });
-  console.log(" setGalleryImages:", galleryImages);
+  const {
+    image: logoImage,
+    handleImageSelect: handleLogoImageSelect,
+    uploadImage: uploadLogoImage,
+    confirmDelete: confirmDeleteLogo,
+    deleteTarget: deleteTargetLogo,
+    setDeleteTarget: setDeleteTargetLogo,
+    isImageDeleting: isLogoImageDeleting,
+    handleDeleteImage: handleDeleteLogoImage,
+  } = useSingleImageUpload({
+    initialImage: productLogoImage?.image,
+    onChange: setProductLogoImage,
+  });
   const [formData, setFormData] = useState<any>(
     editingProduct || {
       businessId: businessId,
@@ -119,6 +135,7 @@ export default function CreateProductWizard({
       isUnlimited: false,
       startDate: "",
       endDate: "",
+      logo: null as IImage | null,
       images: null as TImages | null,
       additionalImages: [],
       enableHomeDelivery: false,
@@ -133,11 +150,9 @@ export default function CreateProductWizard({
   useEffect(() => {
     if (!productId || currentView !== "edit" || !product) return;
 
-    setFormData((prev: any) => ({
-      ...prev,
-
+    setFormData({
       // basic info
-      businessId: product._id || prev.businessId,
+      businessId: product.businessId || "",
       name: product.name || "",
       nameHe: product.nameHe || "",
       nameAr: product.nameAr || "",
@@ -151,17 +166,18 @@ export default function CreateProductWizard({
       categories: product.categories || [],
 
       // pricing & stock
-      markedPrice: product.price.markedPrice || "",
-      sellingPrice: product.price.sellingPrice || "",
-      quantity: product.quantity.remaining || "",
-      isUnlimited: product.quantity.isUnlimited || false,
+      markedPrice: product.price?.markedPrice || "",
+      sellingPrice: product.price?.sellingPrice || "",
+      quantity: product.quantity?.remaining || "",
+      isUnlimited: product.quantity?.isUnlimited || false,
 
       // dates
       startDate: product.startDate || "",
       endDate: product.endDate || "",
 
       // images
-      images: product.images || null,
+      logo: product?.logo?.image,
+      images: product?.images || null,
       additionalImages: product.additionalImages || [],
 
       // delivery / service
@@ -171,9 +187,12 @@ export default function CreateProductWizard({
       deliveryTime: product.deliveryTime || "",
       serviceDuration: product.serviceDuration || "",
       serviceLocation: product.serviceLocation || "",
-    }));
+    });
+    setGalleryImages(product?.images);
+    setProductLogoImage({ image: product?.logo?.image });
   }, [currentView, productId, product]);
 
+  console.log("edit form data", product?.images);
   const availableCategories = [
     "Food & Dining",
     "Accommodation",
@@ -195,7 +214,7 @@ export default function CreateProductWizard({
 
   const [initProductCreate, { isLoading: isCreating }] =
     useInitProductCreateMutation();
-  const [updateProduct] = useUpdateProductMutation();
+  const [updateProduct, { isLoading: isSaving }] = useUpdateProductMutation();
   const steps = [
     { number: 1, title: t("product_basic_info"), icon: Package },
     { number: 2, title: t("product_type_category"), icon: Package },
@@ -232,23 +251,28 @@ export default function CreateProductWizard({
         }
         break;
       case 4:
-        if (!formData.mainImage)
-          newErrors.mainImage = t("upload_at_least_one_image");
+        if (!formData.images) newErrors.images = t("upload_at_least_one_image");
         break;
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
   const handleSaveDraft = async () => {
+    const logoUrl = await uploadLogoImage();
+    setLogoGcsUrl(logoUrl);
     await uploadAll();
     await saveDraft(false);
   };
 
-  const handleNext = () => {
-    handleSaveDraft();
-    if (validateStep(currentStep)) {
-      if (currentStep < 7) setCurrentStep(currentStep + 1);
+  const handleNext = async () => {
+    if (currentStep === 4) {
+      const logoUrl = await uploadLogoImage();
+      setLogoGcsUrl(logoUrl);
+      await uploadAll();
     }
+    setCurrentStep((prev) => prev + 1);
+
+    handleSaveDraft();
   };
 
   const handlePrevious = () => {
@@ -256,7 +280,12 @@ export default function CreateProductWizard({
   };
 
   const handlePublish = async () => {
+    setIsPublishBtnClicked(true);
+
     await saveDraft(true);
+    toast.success(t("business created succesfully"));
+
+    onClose();
   };
   // Last saved timestamp
   const [_lastSaved, setLastSaved] = useState<Date | null>(null);
@@ -271,7 +300,6 @@ export default function CreateProductWizard({
       description: formData.fullDescription,
     },
     2: {
-      // productType: formData.type,
       productType: formData.type,
       categories: formData.categories,
     },
@@ -286,13 +314,9 @@ export default function CreateProductWizard({
       },
       activeStartDate: formData.startDate,
       activeEndDate: formData.endDate,
-      // mainImage: formData.mainImage,
-      // additionalImages: formData.additionalImages,
     },
     4: {
-      // name: formData.name,
-      // shortDescription: formData.shortDescription,
-      // description: formData.fullDescription,
+      // logo: { image: logoGcsUrl },
       images: galleryImages,
     },
     5: {
@@ -301,13 +325,6 @@ export default function CreateProductWizard({
 
       nameAr: formData.nameAr,
       shortDescriptionAr: formData.shortDescriptionAr,
-
-      // enableHomeDelivery: formData.enableHomeDelivery,
-      // enableStorePickup: formData.enableStorePickup,
-      // deliveryFee: formData.deliveryFee,
-      // deliveryTime: formData.deliveryTime,
-      // serviceDuration: formData.serviceDuration,
-      // serviceLocation: formData.serviceLocation,
     },
     6: {
       // enableHomeDelivery: formData.enableHomeDelivery,
@@ -340,36 +357,21 @@ export default function CreateProductWizard({
         productId: internalProductId || productId!,
         body: payload,
       }).unwrap();
+      console.log(" ~ saveDraft ~ payload:", payload);
 
-      setIsSaving(true);
+      // setIsSaving(true);
 
-      setIsSaving(false);
+      // setIsSaving(false);
       setLastSaved(new Date());
 
       toast.success(
         res?.message ?? (isPublish ? "Product published" : "Draft saved"),
       );
     } catch (error: any) {
-      setIsSaving(false);
+      // setIsSaving(false);
       toast.error(error?.message || t("something_went_wrong"));
     }
   };
-
-  // const handleImageUpload = (file: File, type: "main" | "additional") => {
-  //   const reader = new FileReader();
-  //   reader.onloadend = () => {
-  //     const imageUrl = reader.result as string;
-  //     if (type === "main") {
-  //       setFormData({ ...formData, mainImage: imageUrl });
-  //     } else {
-  //       setFormData({
-  //         ...formData,
-  //         additionalImages: [...formData.additionalImages, imageUrl],
-  //       });
-  //     }
-  //   };
-  //   reader.readAsDataURL(file);
-  // };
 
   const renderStepContent = () => {
     const commonProps = {
@@ -377,7 +379,6 @@ export default function CreateProductWizard({
       theme,
       language,
       formData,
-
       setFormData,
       errors,
       selectedFormLanguage,
@@ -390,7 +391,13 @@ export default function CreateProductWizard({
       theme,
       t,
       errors,
-
+      logoImage,
+      handleLogoImageSelect,
+      deleteTargetLogo,
+      setDeleteTargetLogo,
+      isLogoImageDeleting,
+      confirmDeleteLogo,
+      handleDeleteLogoImage,
       images,
       imagesRef,
       primaryImageIndex,
@@ -429,49 +436,52 @@ export default function CreateProductWizard({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div
-        className={`${bgSecondary} rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden shadow-2xl flex flex-col`}
-      >
-        {/* Header */}
+    <ModalWrapper onClose={onClose} showSpinner={isCreating || isSaving}>
+      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
         <div
-          className={`p-6 border-b ${borderColor} flex items-center justify-between`}
+          className={`${bgSecondary} rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden shadow-2xl flex flex-col`}
         >
-          <div>
-            <h2 className={`text-2xl ${textPrimary} mb-1`}>
-              {currentView === "edit" ? t("edit_product") : t("create_product")}
-            </h2>
-            <p className={`text-sm ${textTertiary}`}>
-              {t("step")} {currentStep} {t("of")} 7:{" "}
-              {steps[currentStep - 1].title}
-            </p>
-          </div>
-          <button
-            onClick={onClose}
-            className={`p-2 rounded-lg ${hoverBg} ${textSecondary}`}
+          {/* Header */}
+          <div
+            className={`p-6 border-b ${borderColor} flex items-center justify-between`}
           >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+            <div>
+              <h2 className={`text-2xl ${textPrimary} mb-1`}>
+                {currentView === "edit"
+                  ? t("edit_product")
+                  : t("create_product")}
+              </h2>
+              <p className={`text-sm ${textTertiary}`}>
+                {t("step")} {currentStep} {t("of")} 7:{" "}
+                {steps[currentStep - 1].title}
+              </p>
+            </div>
+            <button
+              onClick={onClose}
+              className={`p-2 rounded-lg ${hoverBg} ${textSecondary}`}
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
 
-        {/* Progress Bar */}
-        <div className={`px-6 pt-4 pb-2 border-b ${borderColor}`}>
-          <div className="flex items-start justify-between">
-            {steps.map((step, idx) => {
-              const Icon = step.icon;
-              const isActive = currentStep === step.number;
-              const isCompleted = currentStep > step.number;
+          {/* Progress Bar */}
+          <div className={`px-6 pt-4 pb-2 border-b ${borderColor}`}>
+            <div className="flex items-start justify-between">
+              {steps.map((step, idx) => {
+                const Icon = step.icon;
+                const isActive = currentStep === step.number;
+                const isCompleted = currentStep > step.number;
 
-              return (
-                <div
-                  key={step.number}
-                  className="flex-1 cursor-pointer"
-                  onClick={() => setCurrentStep(step.number)}
-                >
-                  {/* Icon + connector */}
-                  <div className="flex items-center">
-                    <div
-                      className={`w-10 h-10 rounded-full flex items-center justify-center transition-all
+                return (
+                  <div
+                    key={step.number}
+                    className="flex-1 cursor-pointer"
+                    onClick={() => setCurrentStep(step.number)}
+                  >
+                    {/* Icon + connector */}
+                    <div className="flex items-center">
+                      <div
+                        className={`w-10 h-10 rounded-full flex items-center justify-center transition-all
                 ${
                   isActive
                     ? "bg-teal-500 text-white"
@@ -479,42 +489,45 @@ export default function CreateProductWizard({
                       ? "bg-green-500 text-white"
                       : `${bgTertiary} ${textTertiary}`
                 }`}
-                    >
-                      {isCompleted ? (
-                        <Check className="w-5 h-5" />
-                      ) : (
-                        <Icon className="w-5 h-5" />
+                      >
+                        {isCompleted ? (
+                          <Check className="w-5 h-5" />
+                        ) : (
+                          <Icon className="w-5 h-5" />
+                        )}
+                      </div>
+
+                      {idx < steps.length - 1 && (
+                        <div
+                          className={`flex-1 h-1 mx-2 ${
+                            isCompleted ? "bg-green-500" : bgTertiary
+                          }`}
+                        />
                       )}
                     </div>
-
-                    {idx < steps.length - 1 && (
-                      <div
-                        className={`flex-1 h-1 mx-2 ${
-                          isCompleted ? "bg-green-500" : bgTertiary
-                        }`}
-                      />
-                    )}
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
+
+          {/* Content */}
+          <div className="flex-1 overflow-y-auto p-6">
+            {renderStepContent()}
+          </div>
+
+          <WizardFooter
+            currentStep={currentStep}
+            totalSteps={7}
+            isSaving={isSaving}
+            isPublishing={isPublishing}
+            onPrevious={handlePrevious}
+            onNext={handleNext}
+            onSaveDraft={handleSaveDraft}
+            onPublish={handlePublish}
+          />
         </div>
-
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6">{renderStepContent()}</div>
-
-        <WizardFooter
-          currentStep={currentStep}
-          totalSteps={7}
-          isSaving={isSaving}
-          isPublishing={isPublishing}
-          onPrevious={handlePrevious}
-          onNext={handleNext}
-          onSaveDraft={handleSaveDraft}
-          onPublish={handlePublish}
-        />
       </div>
-    </div>
+    </ModalWrapper>
   );
 }

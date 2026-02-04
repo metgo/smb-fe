@@ -56,7 +56,7 @@ export default function ChangeOwnerModal({
       setUserId(userEmailCheck.id);
     }
   }, [userEmailCheck]);
-  //if no users is available in db
+  //if no users is available in db post them
   const [postUserAdmin] = usePostUserAdminMutation();
   //change business owner
   const [updateOwner] = usePatchBusinessOwnerMutation();
