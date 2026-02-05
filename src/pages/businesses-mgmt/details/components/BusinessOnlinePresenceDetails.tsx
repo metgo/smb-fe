@@ -8,10 +8,6 @@ import {
 } from "lucide-react";
 import type { FC } from "react";
 
-/* ---------- Types ---------- */
-
-type Theme = "light" | "dark";
-
 interface SocialMedia {
   facebook?: string;
   instagram?: string;
@@ -24,10 +20,8 @@ interface Business {
   socialMedia?: SocialMedia;
 }
 
-/* ---------- Props ---------- */
-
 interface BusinessOnlinePresenceDetailsProps {
-  theme: Theme;
+  isDark: boolean;
   t: (key: string) => string;
   business: Business;
 }
@@ -35,8 +29,8 @@ interface BusinessOnlinePresenceDetailsProps {
 /* ---------- Component ---------- */
 
 const BusinessOnlinePresenceDetails: FC<BusinessOnlinePresenceDetailsProps> = ({
-  theme,
   t,
+  isDark,
   business,
 }) => {
   const socialMediaMap = Array.isArray(business.socialMedia)
@@ -100,28 +94,24 @@ const BusinessOnlinePresenceDetails: FC<BusinessOnlinePresenceDetailsProps> = ({
     return (
       <div
         className={`p-8 text-center rounded-lg border ${
-          theme === "dark"
+          isDark
             ? "bg-gray-800/30 border-gray-700"
             : "bg-gray-50 border-gray-200"
         }`}
       >
         <Globe
           className={`w-16 h-16 mx-auto mb-4 ${
-            theme === "dark" ? "text-gray-600" : "text-gray-400"
+            isDark ? "text-gray-600" : "text-gray-400"
           }`}
         />
         <p
           className={`text-lg mb-2 ${
-            theme === "dark" ? "text-gray-300" : "text-gray-700"
+            isDark ? "text-gray-300" : "text-gray-700"
           }`}
         >
           {t("no_social_networks")}
         </p>
-        <p
-          className={`text-sm ${
-            theme === "dark" ? "text-gray-500" : "text-gray-500"
-          }`}
-        >
+        <p className={`text-sm ${isDark ? "text-gray-500" : "text-gray-500"}`}>
           {t("add_social_networks_description")}
         </p>
       </div>
@@ -132,7 +122,7 @@ const BusinessOnlinePresenceDetails: FC<BusinessOnlinePresenceDetailsProps> = ({
     <div className="space-y-6">
       <h3
         className={`text-lg font-semibold ${
-          theme === "dark" ? "text-gray-100" : "text-gray-800"
+          isDark ? "text-gray-100" : "text-gray-800"
         }`}
       >
         {t("online_presence")}
@@ -146,7 +136,7 @@ const BusinessOnlinePresenceDetails: FC<BusinessOnlinePresenceDetailsProps> = ({
               key={link.platform}
               className={`group flex flex-col gap-3 p-5 rounded-xl border transition-all
                 ${
-                  theme === "dark"
+                  isDark
                     ? "border-gray-700 hover:border-gray-600"
                     : "border-gray-200 hover:border-gray-300"
                 }
@@ -155,14 +145,14 @@ const BusinessOnlinePresenceDetails: FC<BusinessOnlinePresenceDetailsProps> = ({
               <div className="flex items-center gap-3">
                 <div
                   className={`p-2.5 rounded-lg ${
-                    theme === "dark" ? "bg-gray-800/70" : "bg-white shadow-sm"
+                    isDark ? "bg-gray-800/70" : "bg-white shadow-sm"
                   }`}
                 >
                   <Icon className={`w-6 h-6 ${link.color}`} strokeWidth={2} />
                 </div>
                 <span
                   className={`font-medium text-base ${
-                    theme === "dark" ? "text-gray-100" : "text-gray-800"
+                    isDark ? "text-gray-100" : "text-gray-800"
                   }`}
                 >
                   {link.platform}

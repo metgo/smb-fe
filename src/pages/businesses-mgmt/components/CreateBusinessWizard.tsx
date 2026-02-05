@@ -13,6 +13,7 @@ import {
   Users,
   Truck,
 } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
 
 import { useAppSelector } from "@/hooks/hooks";
 import {
@@ -39,7 +40,6 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useBusinessDraftSaver } from "../hooks/useBusinessDraftSaver";
 import { useGetbusinessByIdQuery } from "@/store/api/businessQueryApi";
 import { skipToken } from "@reduxjs/toolkit/query";
-import { useSearchParams } from "react-router-dom";
 import { parseAddress } from "@/helpers";
 import { useCreateWebsiteAccessItemMutation } from "@/store/api/commonMutationApi";
 import PublishButton from "@/components/btns/PublishButton";
@@ -186,6 +186,7 @@ export default function CreateBusinessWizard({
   const addr = parseAddress(address);
 
   const totalSteps = 9;
+
   useEffect(() => {
     if (businessId === "" || currentView !== "edit") return;
 
@@ -260,12 +261,13 @@ export default function CreateBusinessWizard({
       setGalleryImages(business?.images);
       setBusinessLogoImage({ image: business?.logo?.image });
     }
-  }, [business, currentView, businessId, currentStep]);
+  }, [business, currentView, businessId]);
+
   const steps = [
     { number: 1, title: t("step_basic_info"), icon: FileText },
     { number: 2, title: t("step_contact_ownership"), icon: Users },
     { number: 3, title: t("step_location"), icon: MapPin },
-    { number: 4, title: t("step_categories_attributes"), icon: Tag },
+    { number: 4, title: t("step_attributes"), icon: Tag },
     { number: 5, title: t("step_media"), icon: ImageIcon },
     { number: 6, title: t("step_operating_hours"), icon: Clock },
     { number: 7, title: t("step_delivery_policy"), icon: Truck },
@@ -388,7 +390,6 @@ export default function CreateBusinessWizard({
   };
 
   const handlePrevious = () => {
-    console.log("🚀 ~ handlePrevious ~ currentStep:", currentStep);
     if (currentStep > 1) setCurrentStep(currentStep - 1);
   };
 
@@ -492,7 +493,6 @@ export default function CreateBusinessWizard({
           <BusinessBasicInfos
             {...commonProps}
             businessId={businessId}
-            canApprove
             selectedDmoId={selectedDmoId}
             setSelectDmoId={setSelectedDmoId}
             selectedAuthorityId={selectedAuthorityId}

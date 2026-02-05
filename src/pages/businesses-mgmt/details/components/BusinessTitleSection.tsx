@@ -2,18 +2,16 @@ import { useSearchParams } from "react-router-dom";
 import { TrendingUp, Users, Eye, Timer, Activity } from "lucide-react";
 
 import { useGetIndividualBusinessStatsQuery } from "@/store/api/businessQueryApi";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 interface BusinessTitleSectionProps {
   business: Business;
-  theme: string;
   t: (key: string) => string;
 }
 
-const BusinessTitleSection = ({
-  business,
-  theme,
-  t,
-}: BusinessTitleSectionProps) => {
+const BusinessTitleSection = ({ business, t }: BusinessTitleSectionProps) => {
+  const { isDark } = useThemeClasses();
+
   const [searchParams] = useSearchParams();
   const businessId = searchParams.get("businessId");
 
@@ -78,7 +76,7 @@ const BusinessTitleSection = ({
         <div>
           <h1
             className={`text-3xl mb-2 ${
-              theme === "dark" ? "text-gray-100" : "text-gray-900"
+              isDark ? "text-gray-100" : "text-gray-900"
             }`}
           >
             {business?.name}
@@ -88,9 +86,7 @@ const BusinessTitleSection = ({
             <StatusBadge status={business?.status} />
             <div className="flex items-center gap-2">
               <TrendingUp className="w-5 h-5 text-green-600" />
-              <span
-                className={theme === "dark" ? "text-gray-300" : "text-gray-700"}
-              >
+              <span className={isDark ? "text-gray-300" : "text-gray-700"}>
                 {t("impact_score")}: {business?.impact?.toFixed(1)}
               </span>
             </div>
@@ -101,7 +97,7 @@ const BusinessTitleSection = ({
         <div className="flex flex-col items-end">
           <span
             className={`text-sm mb-1 ${
-              theme === "dark" ? "text-gray-400" : "text-gray-600"
+              isDark ? "text-gray-400" : "text-gray-600"
             }`}
           >
             {t("completion_percentage")}
@@ -116,7 +112,7 @@ const BusinessTitleSection = ({
             </div>
             <span
               className={`text-sm ${
-                theme === "dark" ? "text-gray-300" : "text-gray-700"
+                isDark ? "text-gray-300" : "text-gray-700"
               }`}
             >
               {business?.completionPercent}%
@@ -135,7 +131,7 @@ const BusinessTitleSection = ({
             <div
               key={item.key}
               className={`p-4 rounded-xl border ${
-                theme === "dark"
+                isDark
                   ? "bg-gray-800 border-gray-700"
                   : "bg-gray-100 border-gray-200"
               }`}
@@ -144,7 +140,7 @@ const BusinessTitleSection = ({
                 <Icon className="w-5 h-5 text-teal-600" />
                 <p
                   className={`text-md ${
-                    theme === "dark" ? "text-gray-300" : "text-gray-600"
+                    isDark ? "text-gray-300" : "text-gray-600"
                   }`}
                 >
                   {item.title}
@@ -153,7 +149,7 @@ const BusinessTitleSection = ({
 
               <p
                 className={`text-2xl font-semibold ${
-                  theme === "dark" ? "text-white" : "text-gray-900"
+                  isDark ? "text-white" : "text-gray-900"
                 }`}
               >
                 {value}

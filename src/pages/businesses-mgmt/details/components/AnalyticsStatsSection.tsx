@@ -1,3 +1,4 @@
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 import {
   Eye,
   Users,
@@ -10,17 +11,17 @@ import {
 
 interface AnalyticsStatsSectionProps {
   business: Business;
-  theme: string;
   t: (key: string) => string;
   borderColor: string;
 }
 
 const AnalyticsStatsSection = ({
   t,
-  theme,
   business,
   borderColor,
 }: AnalyticsStatsSectionProps) => {
+  const { isDark } = useThemeClasses();
+
   const stats = [
     {
       icon: Eye,
@@ -60,22 +61,25 @@ const AnalyticsStatsSection = ({
   ];
 
   return (
-    <div className={`mt-4 ${theme === "dark" ? "bg-gray-900" : "bg-white"}`}>
+    <div className={`mt-4 ${isDark ? "bg-gray-900" : "bg-white"}`}>
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
-        {stats.map((stat, idx) => {
+        {stats?.map((stat, idx) => {
           const Icon = stat.icon;
           return (
-            <div key={idx} className={`p-4 rounded-lg border ${borderColor}`}>
+            <div
+              key={idx}
+              className={`p-4 rounded-lg border db1 ${borderColor}`}
+            >
               <div className="flex items-center gap-2 mb-2">
                 <Icon className="w-5 h-5 text-teal-600 dark:text-teal-400" />
                 <h3
-                  className={`text-sm ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
+                  className={`text-sm ${isDark ? "text-gray-400" : "text-gray-600"}`}
                 >
                   {stat.label}
                 </h3>
               </div>
               <p
-                className={`text-2xl font-bold ${theme === "dark" ? "text-white" : "text-gray-900"}`}
+                className={`text-2xl font-bold ${isDark ? "text-white" : "text-gray-900"}`}
               >
                 {stat.value}
               </p>

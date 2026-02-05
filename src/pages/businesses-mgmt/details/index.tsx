@@ -19,12 +19,16 @@ import {
   TabsSection,
 } from "./components";
 import { Spinner } from "@/components/shared";
-import { useAppSelector } from "@/hooks/hooks";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { useImagesUpload } from "@/hooks/useImagesUpload";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useSingleImageUpload } from "@/hooks/useSingleImageUpload";
 import { useGetbusinessByIdQuery } from "@/store/api/businessQueryApi";
+import { useAppSelector } from "@/hooks/hooks";
+import { UserRole } from "@/enums/user.types";
+import { StatusChangeBtn } from "@/components/btns";
+import { toast } from "sonner";
+import { useUpdateBusinessMutation } from "@/store/api/businessMutationApi";
 
 interface BusinessDetailsProps {
   onBack: () => void;
@@ -33,8 +37,6 @@ interface BusinessDetailsProps {
   onViewProducts?: () => void;
 }
 
-const USER_ROLE = "admin"; // Can be: 'superadmin', 'admin', 'dmo', 'authority', 'business_owner'
-
 export default function BusinessDetails({
   onBack,
   onEdit,
@@ -42,15 +44,18 @@ export default function BusinessDetails({
   onViewProducts,
 }: BusinessDetailsProps) {
   const { t } = useTranslation("businesses");
-  const { theme } = useAppSelector((state) => state.settings);
-  const { borderColor } = useThemeClasses();
+  const { borderColor, isDark } = useThemeClasses();
+  const { userRole } = useAppSelector((state) => state.auth);
 
   const [searchParams] = useSearchParams();
   const businessId = searchParams.get("businessId") ?? "";
 
-  const { data: business, isLoading } = useGetbusinessByIdQuery(
-    businessId ? { businessId } : skipToken,
-  );
+  const {
+    data: business,
+    refetch,
+    isLoading,
+  } = useGetbusinessByIdQuery(businessId ? { businessId } : skipToken);
+  const [updateBusiness] = useUpdateBusinessMutation();
   const [errors, _setErrors] = useState<Record<string, string>>({});
   const [businessLogoImage, setBusinessLogoImage] = useState<IImage | null>(
     null,
@@ -58,11 +63,10 @@ export default function BusinessDetails({
   const [galleryImages, setGalleryImages] = useState<TImages>([]);
 
   const [activeTab, setActiveTab] = useState("overview");
-  const [_showStatusModal, setShowStatusModal] = useState(false);
   const [showChangeOwnerModal, setShowChangeOwnerModal] = useState(false);
 
   const canChangeStatus = ["superadmin", "admin", "dmo", "authority"].includes(
-    USER_ROLE,
+    userRole,
   );
 
   const {
@@ -175,11 +179,26 @@ export default function BusinessDetails({
   //   }
   // };
 
+  const onStatusChangeHandler = async (status: string) => {
+    try {
+      await updateBusiness({
+        businessId,
+        body: { status: status.toUpperCase() },
+      }).unwrap();
+
+      refetch();
+      toast.success("Business status updated successfully!");
+    } catch (error) {
+      toast.error("Failed to update business status.");
+      console.error(error);
+    }
+  };
+
   const renderContent = () => {
-    const commonProps = { theme, t, business };
+    const commonProps = { t, isDark, business };
     const mediaProps = {
-      theme,
       t,
+      isDark,
       errors,
       uploadLogoImage,
       business,
@@ -206,9 +225,7 @@ export default function BusinessDetails({
       case "overview":
         return <BusinessInfoDetails {...commonProps} />;
       case "contact":
-        return (
-          <BusinessContactDetails {...commonProps} USER_ROLE={USER_ROLE} />
-        );
+        return <BusinessContactDetails {...commonProps} USER_ROLE={userRole} />;
       case "location":
         return <BusinessLocationDetails {...commonProps} />;
       case "media":
@@ -226,7 +243,7 @@ export default function BusinessDetails({
     }
   };
   return (
-    <div className=" flex flex-col h-screen overflow-hidden relative ">
+    <div className=" flex flex-col overflow-hidden relative ">
       <Spinner isLoading={isLoading} />
 
       {/* Header */}
@@ -236,7 +253,7 @@ export default function BusinessDetails({
           <button
             onClick={onBack}
             className={`flex items-center gap-2 text-sm hover:text-teal-600 transition-colors cursor-pointer ${
-              theme === "dark" ? "text-gray-400" : "text-gray-600"
+              isDark ? "text-gray-400" : "text-gray-600"
             }`}
           >
             <ArrowLeft className="w-5 h-5" />
@@ -244,6 +261,26 @@ export default function BusinessDetails({
           </button>
 
           <div className="flex items-center gap-2">
+            {canChangeStatus && (
+              <StatusChangeBtn
+                handleStatusChange={onStatusChangeHandler}
+                status={business?.status}
+              />
+            )}
+
+            {userRole === UserRole.SUPERADMIN && (
+              <button
+                onClick={() => setShowChangeOwnerModal(true)}
+                className={`px-4 py-2 rounded-lg border transition-colors flex items-center gap-2 cursor-pointer ${
+                  isDark
+                    ? "border-gray-700 hover:bg-gray-800 text-gray-300"
+                    : "border-gray-300 hover:bg-gray-100 text-gray-700"
+                }`}
+              >
+                <UserCog className="w-4 h-4" />
+                {t("change_owner")}
+              </button>
+            )}
             <button
               onClick={onEdit}
               className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg transition-colors flex items-center gap-2 cursor-pointer"
@@ -271,61 +308,18 @@ export default function BusinessDetails({
                 {t("view_products")}
               </button>
             )}
-
-            {canChangeStatus && (
-              <button
-                onClick={() => setShowStatusModal(true)}
-                className={`px-4 py-2 rounded-lg border transition-colors flex items-center gap-2 cursor-pointer ${
-                  theme === "dark"
-                    ? "border-gray-700 hover:bg-gray-800 text-gray-300"
-                    : "border-gray-300 hover:bg-gray-100 text-gray-700"
-                }`}
-              >
-                {t("change_status")}
-              </button>
-            )}
-
-            {USER_ROLE === "admin" && (
-              <button
-                onClick={() => setShowChangeOwnerModal(true)}
-                className={`px-4 py-2 rounded-lg border transition-colors flex items-center gap-2 cursor-pointer ${
-                  theme === "dark"
-                    ? "border-gray-700 hover:bg-gray-800 text-gray-300"
-                    : "border-gray-300 hover:bg-gray-100 text-gray-700"
-                }`}
-              >
-                <UserCog className="w-4 h-4" />
-                {t("change_owner")}
-              </button>
-            )}
-            {/* <button
-              onClick={handleSubmit}
-              className={`px-4 py-2 rounded-lg border transition-colors flex items-center gap-2 cursor-pointer ${
-                theme === "dark"
-                  ? "border-gray-700 hover:bg-gray-800 text-gray-300"
-                  : "border-gray-300 hover:bg-gray-100 text-gray-700"
-              }`}
-            >
-              Save
-            </button> */}
           </div>
         </div>
 
-        <BusinessTitleSection business={business} theme={theme} t={t} />
+        <BusinessTitleSection business={business} t={t} />
         {business?.analytics && (
           <AnalyticsStatsSection
             t={t}
-            theme={theme}
             business={business}
             borderColor={borderColor}
           />
         )}
-        <TabsSection
-          t={t}
-          theme={theme}
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-        />
+        <TabsSection t={t} activeTab={activeTab} setActiveTab={setActiveTab} />
       </div>
 
       {/* Content */}
@@ -335,8 +329,7 @@ export default function BusinessDetails({
       <ChangeOwnerModal
         isOpen={showChangeOwnerModal}
         onClose={() => setShowChangeOwnerModal(false)}
-        theme={theme}
-        USER_ROLE={USER_ROLE}
+        USER_ROLE={userRole}
         currentOwner={business?.owner}
         onOwnerChange={(_) => {
           setShowChangeOwnerModal(false);

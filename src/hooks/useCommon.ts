@@ -5,6 +5,7 @@ import {
   useGetGroupTypesQuery,
   useGetAllWebsitesQuery,
   useGetDmosQuery,
+  useGetSubCategoriesQuery,
 } from "@/store/api/masterDataApi";
 import { useTranslation } from "react-i18next";
 
@@ -15,6 +16,8 @@ export function useCommon() {
   const { data: primaryCategories } = useGetCategoriesQuery({ locale });
   const { data: accessibility } = useGetAccessibilityQuery({ locale });
   const { data: groupTypes } = useGetGroupTypesQuery({ locale });
+  const { data: subCategories } = useGetSubCategoriesQuery({ locale });
+
   const { data: socialMedia } = useGetAllSocialMediaQuery();
 
   const dmosAuthorities: IDmo[] = data?.data;
@@ -51,5 +54,6 @@ export function useCommon() {
     groupTypes,
     socialMedia,
     allWebsites,
+    subCategories: subCategories?.datas?.data,
   };
 }

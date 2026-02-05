@@ -1,7 +1,3 @@
-import React from "react";
-
-type Theme = "light" | "dark";
-
 interface OperatingHour {
   day: string;
   open: string;
@@ -10,7 +6,7 @@ interface OperatingHour {
 }
 
 interface BusinessOpeningHoursDetailsProps {
-  theme: Theme;
+  isDark: boolean;
   business: {
     openingHrs: OperatingHour[];
   };
@@ -22,7 +18,7 @@ const getDayDisplay = (day: string) =>
 
 const BusinessOpeningHoursDetails: React.FC<
   BusinessOpeningHoursDetailsProps
-> = ({ theme, business }) => {
+> = ({ isDark, business }) => {
   const openingHrs = business?.openingHrs || [];
 
   const formatTime = (time: string) => {
@@ -34,7 +30,7 @@ const BusinessOpeningHoursDetails: React.FC<
     return (
       <div
         className={`py-4 px-6 rounded ${
-          theme === "dark"
+          isDark
             ? "bg-gray-800 text-white border-gray-700"
             : "bg-gray-50 text-gray-700 border-gray-200"
         }`}
@@ -50,7 +46,7 @@ const BusinessOpeningHoursDetails: React.FC<
     <div>
       <h2
         className={`mb-3 px-4 py-2 rounded ${
-          theme === "dark"
+          isDark
             ? "border-gray-700 text-white bg-gray-900"
             : "bg-gray-50 border-gray-200 text-gray-900"
         }`}
@@ -82,7 +78,7 @@ const BusinessOpeningHoursDetails: React.FC<
             <div
               key={day}
               className={`flex justify-between items-center py-3 px-4 rounded-lg ${
-                theme === "dark"
+                isDark
                   ? "bg-gray-800/50 border border-gray-700 text-white hover:bg-gray-700"
                   : "bg-gray-50 border border-gray-200 hover:bg-gray-100"
               }`}

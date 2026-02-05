@@ -144,7 +144,7 @@ const EventInfoDetails: React.FC<EventInfoDetailsProps> = ({
 
       {/* Website Connections */}
       {eventDetails?.associatedWebsites &&
-        eventDetails?.associatedWebsites.length > 0 && (
+        eventDetails?.associatedWebsites?.length > 0 && (
           <div
             className={clsx(
               "rounded-xl border p-6 transition-all duration-200",

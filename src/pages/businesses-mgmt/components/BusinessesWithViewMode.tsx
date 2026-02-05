@@ -186,7 +186,6 @@ export default function BusinessesList({
   useEffect(() => {
     setPage(1);
   }, [searchTerm, filters]);
-  console.log("current page:", page);
 
   const {
     data: businessData,

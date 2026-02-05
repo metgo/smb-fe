@@ -1,18 +1,18 @@
 import { toast } from "sonner";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { X, Mail, AlertCircle, CheckCircle, Loader2 } from "lucide-react";
 import {
-  useGetUserByEmailQuery,
+  useLazyGetUserByEmailQuery,
   usePatchBusinessOwnerMutation,
   usePostUserAdminMutation,
 } from "@/store/api/masterDataApi";
 import { useSearchParams } from "react-router-dom";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 interface ChangeOwnerModalProps {
   isOpen: boolean;
   onClose: () => void;
-  theme: Theme;
   currentOwner?: {
     name: string;
     email: string;
@@ -25,41 +25,22 @@ interface ChangeOwnerModalProps {
 export default function ChangeOwnerModal({
   isOpen,
   onClose,
-  theme,
   currentOwner,
   onOwnerChange,
   USER_ROLE,
 }: ChangeOwnerModalProps) {
-  const [step, setStep] = useState<"email" | "create-user">("email");
+  const { isDark } = useThemeClasses();
+  const [getUserByEmail, { isLoading }] = useLazyGetUserByEmailQuery();
+
   const [email, setEmail] = useState("");
+  const [step, setStep] = useState<"email" | "create-user">("email");
   const [isChecking, setIsChecking] = useState(false);
   const [userFound, setUserFound] = useState(false);
   const [foundUser, setFoundUser] = useState<any>(null);
-  // const [emailCheck, _setEmailCheck] = useState<boolean>(false);
-  const [debouncedEmail, setDebouncedEmail] = useState("");
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedEmail(email);
-    }, 900);
-
-    return () => clearTimeout(timer);
-  }, [email]);
-
-  const { data: userEmailCheck } = useGetUserByEmailQuery(
-    { email: debouncedEmail },
-    { skip: !debouncedEmail },
-  );
-  const [userId, setUserId] = useState<string>("");
-  useEffect(() => {
-    if (userEmailCheck?.id) {
-      setUserId(userEmailCheck.id);
-    }
-  }, [userEmailCheck]);
-  //if no users is available in db post them
   const [postUserAdmin] = usePostUserAdminMutation();
-  //change business owner
   const [updateOwner] = usePatchBusinessOwnerMutation();
+
   //get id from params to send when updating owner
   const [searchParams] = useSearchParams();
   const businessIdParams = searchParams.get("businessId");
@@ -74,7 +55,6 @@ export default function ChangeOwnerModal({
   if (!isOpen) return null;
 
   const handleEmailCheck = async () => {
-    // setEmailCheck(true);
     if (!email || !email.includes("@")) {
       toast.error("Invalid Email", {
         description: "Please enter a valid email address",
@@ -82,24 +62,26 @@ export default function ChangeOwnerModal({
       return;
     }
 
-    setIsChecking(true);
+    try {
+      setIsChecking(true);
 
-    if (userId !== "") {
-      setUserFound(true);
-      setFoundUser(userEmailCheck);
+      const user = await getUserByEmail({ email }).unwrap();
+
+      setFoundUser(user);
       toast.success("User Found!", {
-        description: `${userEmailCheck?.firstName} ${userEmailCheck?.lastName} is already in the system`,
+        description: `${user.firstName} ${user.lastName} is already in the system`,
       });
-    } else if (userId === "") {
-      setUserFound(false);
-      setFoundUser("");
+    } catch (err) {
+      setFoundUser(null);
       setStep("create-user");
+
       toast.info("New User", {
         description:
           "This email is not in the system. Please create a new user.",
       });
+    } finally {
+      setIsChecking(false);
     }
-    setIsChecking(false);
   };
 
   const handleAssignExistingUser = () => {
@@ -117,7 +99,6 @@ export default function ChangeOwnerModal({
       setFoundUser("");
       handleClose();
       setEmail("");
-      setUserId("");
     }
   };
 
@@ -171,7 +152,7 @@ export default function ChangeOwnerModal({
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div
         className={`w-full max-w-2xl rounded-xl shadow-2xl ${
-          theme === "dark"
+          isDark
             ? "bg-gray-900 border border-gray-800"
             : "bg-white border border-gray-200"
         }`}
@@ -179,18 +160,18 @@ export default function ChangeOwnerModal({
         {/* Header */}
         <div
           className={`flex items-center justify-between p-6 border-b ${
-            theme === "dark" ? "border-gray-800" : "border-gray-200"
+            isDark ? "border-gray-800" : "border-gray-200"
           }`}
         >
           <div>
             <h2
-              className={`text-xl ${theme === "dark" ? "text-white" : "text-gray-900"}`}
+              className={`text-xl ${isDark ? "text-white" : "text-gray-900"}`}
             >
               Change Business Owner
             </h2>
             {currentOwner && (
               <p
-                className={`text-sm mt-1 ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
+                className={`text-sm mt-1 ${isDark ? "text-gray-400" : "text-gray-600"}`}
               >
                 Current owner: {currentOwner.name} ({currentOwner.email})
               </p>
@@ -199,7 +180,7 @@ export default function ChangeOwnerModal({
           <button
             onClick={handleClose}
             className={`p-2 rounded-lg transition-colors ${
-              theme === "dark"
+              isDark
                 ? "hover:bg-gray-800 text-gray-400 hover:text-white"
                 : "hover:bg-gray-100 text-gray-600 hover:text-gray-900"
             }`}
@@ -215,7 +196,7 @@ export default function ChangeOwnerModal({
               <div>
                 <label
                   className={`block text-sm mb-2 ${
-                    theme === "dark" ? "text-gray-300" : "text-gray-700"
+                    isDark ? "text-gray-300" : "text-gray-700"
                   }`}
                 >
                   Owner Email Address
@@ -224,7 +205,7 @@ export default function ChangeOwnerModal({
                   <div className="flex-1 relative">
                     <Mail
                       className={`absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 ${
-                        theme === "dark" ? "text-gray-500" : "text-gray-400"
+                        isDark ? "text-gray-500" : "text-gray-400"
                       }`}
                     />
                     <input
@@ -233,14 +214,13 @@ export default function ChangeOwnerModal({
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="owner@example.com"
                       className={`w-full pl-10 pr-4 py-3 rounded-lg border transition-colors ${
-                        theme === "dark"
+                        isDark
                           ? "bg-gray-800 border-gray-700 text-white placeholder-gray-500 focus:border-teal-500"
                           : "bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:border-teal-500"
                       } focus:outline-none focus:ring-2 focus:ring-teal-500/20`}
                     />
                   </div>
                   <button
-                    // onClick={() => setEmailCheck(true)}
                     onClick={handleEmailCheck}
                     className="px-6 py-3 bg-teal-600 hover:bg-teal-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                   >
@@ -255,7 +235,7 @@ export default function ChangeOwnerModal({
                   </button>
                 </div>
                 <p
-                  className={`text-xs mt-2 ${theme === "dark" ? "text-gray-500" : "text-gray-600"}`}
+                  className={`text-xs mt-2 ${isDark ? "text-gray-500" : "text-gray-600"}`}
                 >
                   Enter the email address of the new owner. We'll check if
                   they're already in the system.
@@ -265,7 +245,7 @@ export default function ChangeOwnerModal({
               {userFound && foundUser && (
                 <div
                   className={`p-4 rounded-lg border-2 ${
-                    theme === "dark"
+                    isDark
                       ? "bg-green-900/20 border-green-800"
                       : "bg-green-50 border-green-300"
                   }`}
@@ -273,20 +253,20 @@ export default function ChangeOwnerModal({
                   <div className="flex items-start gap-3">
                     <CheckCircle
                       className={`w-5 h-5 mt-0.5 ${
-                        theme === "dark" ? "text-green-400" : "text-green-600"
+                        isDark ? "text-green-400" : "text-green-600"
                       }`}
                     />
                     <div className="flex-1">
                       <h3
                         className={`font-medium mb-2 ${
-                          theme === "dark" ? "text-green-400" : "text-green-900"
+                          isDark ? "text-green-400" : "text-green-900"
                         }`}
                       >
                         User Found in System
                       </h3>
                       <div
                         className={`space-y-1 text-sm ${
-                          theme === "dark" ? "text-green-300" : "text-green-800"
+                          isDark ? "text-green-300" : "text-green-800"
                         }`}
                       >
                         <p>
@@ -307,7 +287,7 @@ export default function ChangeOwnerModal({
                       <button
                         onClick={handleAssignExistingUser}
                         className={`mt-4 px-4 py-2 rounded-lg transition-colors ${
-                          theme === "dark"
+                          isDark
                             ? "bg-green-600 hover:bg-green-700 text-white"
                             : "bg-green-600 hover:bg-green-700 text-white"
                         }`}
@@ -325,7 +305,7 @@ export default function ChangeOwnerModal({
             <div className="space-y-6">
               <div
                 className={`p-4 rounded-lg border ${
-                  theme === "dark"
+                  isDark
                     ? "bg-blue-900/20 border-blue-800"
                     : "bg-blue-50 border-blue-300"
                 }`}
@@ -333,20 +313,20 @@ export default function ChangeOwnerModal({
                 <div className="flex items-start gap-3">
                   <AlertCircle
                     className={`w-5 h-5 mt-0.5 ${
-                      theme === "dark" ? "text-blue-400" : "text-blue-600"
+                      isDark ? "text-blue-400" : "text-blue-600"
                     }`}
                   />
                   <div>
                     <h3
                       className={`font-medium mb-1 ${
-                        theme === "dark" ? "text-blue-400" : "text-blue-900"
+                        isDark ? "text-blue-400" : "text-blue-900"
                       }`}
                     >
                       Create New User
                     </h3>
                     <p
                       className={`text-sm ${
-                        theme === "dark" ? "text-blue-300" : "text-blue-800"
+                        isDark ? "text-blue-300" : "text-blue-800"
                       }`}
                     >
                       {email} is not in the system. Please complete the
@@ -361,7 +341,7 @@ export default function ChangeOwnerModal({
                 <div>
                   <label
                     className={`block text-sm mb-2 ${
-                      theme === "dark" ? "text-gray-300" : "text-gray-700"
+                      isDark ? "text-gray-300" : "text-gray-700"
                     }`}
                   >
                     First Name <span className="text-red-500">*</span>
@@ -372,7 +352,7 @@ export default function ChangeOwnerModal({
                     onChange={(e) => setFirstName(e.target.value)}
                     placeholder="First Name"
                     className={`w-full px-4 py-3 rounded-lg border transition-colors ${
-                      theme === "dark"
+                      isDark
                         ? "bg-gray-800 border-gray-700 text-white placeholder-gray-500 focus:border-teal-500"
                         : "bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:border-teal-500"
                     } focus:outline-none focus:ring-2 focus:ring-teal-500/20`}
@@ -383,7 +363,7 @@ export default function ChangeOwnerModal({
                 <div>
                   <label
                     className={`block text-sm mb-2 ${
-                      theme === "dark" ? "text-gray-300" : "text-gray-700"
+                      isDark ? "text-gray-300" : "text-gray-700"
                     }`}
                   >
                     Last Name <span className="text-red-500">*</span>
@@ -394,7 +374,7 @@ export default function ChangeOwnerModal({
                     onChange={(e) => setLastName(e.target.value)}
                     placeholder="Last Name"
                     className={`w-full px-4 py-3 rounded-lg border transition-colors ${
-                      theme === "dark"
+                      isDark
                         ? "bg-gray-800 border-gray-700 text-white placeholder-gray-500 focus:border-teal-500"
                         : "bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:border-teal-500"
                     } focus:outline-none focus:ring-2 focus:ring-teal-500/20`}
@@ -406,7 +386,7 @@ export default function ChangeOwnerModal({
               <div>
                 <label
                   className={`block text-sm mb-2 ${
-                    theme === "dark" ? "text-gray-300" : "text-gray-700"
+                    isDark ? "text-gray-300" : "text-gray-700"
                   }`}
                 >
                   Email
@@ -416,7 +396,7 @@ export default function ChangeOwnerModal({
                   value={email}
                   readOnly
                   className={`w-full px-4 py-3 rounded-lg border transition-colors ${
-                    theme === "dark"
+                    isDark
                       ? "bg-gray-900 border-gray-700 text-gray-400"
                       : "bg-gray-100 border-gray-300 text-gray-600"
                   } cursor-not-allowed`}
@@ -427,7 +407,7 @@ export default function ChangeOwnerModal({
               <div>
                 <label
                   className={`block text-sm mb-2 ${
-                    theme === "dark" ? "text-gray-300" : "text-gray-700"
+                    isDark ? "text-gray-300" : "text-gray-700"
                   }`}
                 >
                   Phone Number <span className="text-red-500">*</span>
@@ -438,7 +418,7 @@ export default function ChangeOwnerModal({
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="Phone Number"
                   className={`w-full px-4 py-3 rounded-lg border transition-colors ${
-                    theme === "dark"
+                    isDark
                       ? "bg-gray-800 border-gray-700 text-white placeholder-gray-500 focus:border-teal-500"
                       : "bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:border-teal-500"
                   } focus:outline-none focus:ring-2 focus:ring-teal-500/20`}
@@ -449,7 +429,7 @@ export default function ChangeOwnerModal({
               <div>
                 <label
                   className={`block text-sm mb-2 ${
-                    theme === "dark" ? "text-gray-300" : "text-gray-700"
+                    isDark ? "text-gray-300" : "text-gray-700"
                   }`}
                 >
                   Address
@@ -460,7 +440,7 @@ export default function ChangeOwnerModal({
                   onChange={(e) => setAddress(e.target.value)}
                   placeholder="Address"
                   className={`w-full px-4 py-3 rounded-lg border transition-colors ${
-                    theme === "dark"
+                    isDark
                       ? "bg-gray-800 border-gray-700 text-white placeholder-gray-500 focus:border-teal-500"
                       : "bg-white border-gray-300 text-gray-900 placeholder-gray-400 focus:border-teal-500"
                   } focus:outline-none focus:ring-2 focus:ring-teal-500/20`}
@@ -471,7 +451,7 @@ export default function ChangeOwnerModal({
               <div>
                 <label
                   className={`block text-sm mb-2 ${
-                    theme === "dark" ? "text-gray-300" : "text-gray-700"
+                    isDark ? "text-gray-300" : "text-gray-700"
                   }`}
                 >
                   Language
@@ -480,7 +460,7 @@ export default function ChangeOwnerModal({
                   value={language}
                   onChange={(e) => setLanguage(e.target.value)}
                   className={`w-full px-4 py-3 rounded-lg border transition-colors ${
-                    theme === "dark"
+                    isDark
                       ? "bg-gray-800 border-gray-700 text-white focus:border-teal-500"
                       : "bg-white border-gray-300 text-gray-900 focus:border-teal-500"
                   } focus:outline-none focus:ring-2 focus:ring-teal-500/20`}
@@ -499,7 +479,7 @@ export default function ChangeOwnerModal({
                     setEmail("");
                   }}
                   className={`flex-1 px-4 py-3 rounded-lg border transition-colors ${
-                    theme === "dark"
+                    isDark
                       ? "border-gray-700 hover:bg-gray-800 text-gray-300"
                       : "border-gray-300 hover:bg-gray-50 text-gray-700"
                   }`}
