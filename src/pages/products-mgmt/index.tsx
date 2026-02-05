@@ -229,12 +229,12 @@ export default function ProductsMgmtPage() {
           <span
             className={clsx(
               "inline-flex items-center px-3 py-1 rounded-lg text-sm font-medium",
-              st === "approved"
-                ? "bg-blue-500/20 text-blue-400"
-                : st === "pending"
-                  ? "bg-yellow-500/20 text-yellow-400"
-                  : st === "rejected"
-                    ? "bg-red-500/20 text-red-400"
+              st === "active"
+                ? "bg-green-400 text-white"
+                : st === "inactive"
+                  ? "bg-yellow-500/20 text-yellow-600"
+                  : st === "draft"
+                    ? "bg-gray-500/20 text-gray-600"
                     : isDark
                       ? "bg-gray-700 text-gray-400"
                       : "bg-gray-100 text-gray-600",

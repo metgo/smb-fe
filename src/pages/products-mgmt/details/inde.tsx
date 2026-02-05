@@ -16,6 +16,8 @@ import {
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useAppSelector } from "@/hooks/hooks";
+import { UserRole } from "@/enums/user.types";
+
 import {
   ProductAvailabilityDetails,
   ProductInfoDetails,
@@ -71,6 +73,7 @@ export default function ProductDetails({
     "authority",
     "business_owner",
   ].includes(USER_ROLE);
+  const { userRole } = useAppSelector((state) => state.auth);
 
   const tabs = [
     { id: "overview", label: t("overview"), icon: FileText },
@@ -142,42 +145,48 @@ export default function ProductDetails({
                 : "bg-white border-gray-200"
             }`}
           >
-            <div
-              className={`p-2 border-b ${theme === "dark" ? "border-gray-700" : "border-gray-200"}`}
-            >
-              <p
-                className={`text-xs px-2 py-1 ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
-              >
-                {t("change_status") || "Change Status"}
-              </p>
-            </div>
-            <div className="p-2">
-              {(Object.keys(statusConfig) as Array<Product["status"]>).map(
-                (statusKey) => {
-                  const statusOption = statusConfig[statusKey];
-                  const isActive = statusKey === currentStatus;
-                  return (
-                    <button
-                      key={statusKey}
-                      onClick={() => handleStatusChange(statusKey)}
-                      className={`w-full text-${isRTL ? "right" : "left"} px-3 py-2 rounded-lg text-sm flex items-center justify-between transition-colors ${
-                        theme === "dark"
-                          ? "hover:bg-gray-700 text-gray-300"
-                          : "hover:bg-gray-100 text-gray-700"
-                      } ${isActive ? (theme === "dark" ? "bg-gray-700" : "bg-gray-100") : ""}`}
-                    >
-                      <div className="flex items-center gap-2">
-                        <div
-                          className={`w-3 h-3 rounded-full ${statusOption.color}`}
-                        />
-                        <span>{statusOption.label}</span>
-                      </div>
-                      {isActive && <Check className="w-4 h-4 text-teal-500" />}
-                    </button>
-                  );
-                },
-              )}
-            </div>
+            {userRole === UserRole.SUPERADMIN && (
+              <div className="">
+                <div
+                  className={`p-2 border-b ${theme === "dark" ? "border-gray-700" : "border-gray-200"}`}
+                >
+                  <p
+                    className={`text-xs px-2 py-1 ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
+                  >
+                    {t("change_status") || "Change Status"}
+                  </p>
+                </div>
+                <div className="p-2">
+                  {(Object.keys(statusConfig) as Array<Product["status"]>).map(
+                    (statusKey) => {
+                      const statusOption = statusConfig[statusKey];
+                      const isActive = statusKey === currentStatus;
+                      return (
+                        <button
+                          key={statusKey}
+                          onClick={() => handleStatusChange(statusKey)}
+                          className={`w-full text-${isRTL ? "right" : "left"} px-3 py-2 rounded-lg text-sm flex items-center justify-between transition-colors ${
+                            theme === "dark"
+                              ? "hover:bg-gray-700 text-gray-300"
+                              : "hover:bg-gray-100 text-gray-700"
+                          } ${isActive ? (theme === "dark" ? "bg-gray-700" : "bg-gray-100") : ""}`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <div
+                              className={`w-3 h-3 rounded-full ${statusOption.color}`}
+                            />
+                            <span>{statusOption.label}</span>
+                          </div>
+                          {isActive && (
+                            <Check className="w-4 h-4 text-teal-500" />
+                          )}
+                        </button>
+                      );
+                    },
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

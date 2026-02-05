@@ -70,6 +70,8 @@
   "impact": "Impact",
   "last_updated": "Last Updated",
   "actions": "Actions",
+  "status_updated": "Status Updated",
+  "product_status_changed_to": "Product Status Changed to",
   "sold": "Sold",
   "marked_price": "Original Price",
   "inactive": "Inactive",
