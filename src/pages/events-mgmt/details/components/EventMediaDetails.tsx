@@ -41,7 +41,7 @@ const EventMediaDetails: React.FC<EventMediaDetailsProps> = ({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 min-h-150">
       {/* Header */}
       <div>
         <div className="flex items-center justify-between mb-2">
