@@ -26,6 +26,7 @@ import {
 import { useGetProductbyIdQuery } from "@/store/api/productQueryApi";
 import { useSearchParams } from "react-router-dom";
 import { skipToken } from "@reduxjs/toolkit/query";
+import { useUpdateProductMutation } from "@/store/api/productMutationApi";
 interface ProductDetailsProps {
   // selectedProduct: Product;
   onBack: () => void;
@@ -56,6 +57,7 @@ export default function ProductDetails({
   const { data: product } = useGetProductbyIdQuery(
     productIdParam ? { productId: productId } : skipToken,
   );
+  const [updateProduct] = useUpdateProductMutation();
   const [activeTab, setActiveTab] = useState("overview");
   const [currentStatus, setCurrentStatus] = useState<Product["status"]>(
     product?.status,
@@ -89,21 +91,34 @@ export default function ProductDetails({
   const StatusBadge = ({ status }: { status: Product["status"] }) => {
     const statusConfig = {
       draft: { color: "bg-gray-500", label: t("draft") },
-      pending: { color: "bg-yellow-500", label: t("pending") },
-      approved: { color: "bg-green-500", label: t("approved") },
-      rejected: { color: "bg-red-500", label: t("rejected") },
-      archived: { color: "bg-gray-400", label: t("archived") },
+      active: { color: "bg-green-500", label: t("active") },
+      inactive: { color: "bg-red-400", label: t("inactive") },
     };
 
     const config = statusConfig[status];
 
-    const handleStatusChange = (newStatus: Product["status"]) => {
-      setCurrentStatus(newStatus);
-      setShowStatusDropdown(false);
-      toast.success(t("status_updated") || "Status Updated", {
-        description: `${t("product_status_changed_to") || "Product status changed to"} ${statusConfig[newStatus].label}`,
-        duration: 2000,
-      });
+    const handleStatusChange = async (newStatus: Product["status"]) => {
+      try {
+        console.log(newStatus.toUpperCase());
+
+        await updateProduct({
+          productId: productId,
+          body: { status: newStatus },
+        }).unwrap();
+
+        setCurrentStatus(newStatus);
+        setShowStatusDropdown(false);
+
+        toast.success(t("status_updated") || "Status Updated", {
+          description: `${
+            t("product_status_changed_to") || "Product status changed to"
+          } ${statusConfig[newStatus].label}`,
+          duration: 2000,
+        });
+      } catch (error) {
+        toast.error(t("status_update_failed") || "Failed to update status");
+        console.error("Status update failed", error);
+      }
     };
 
     return (

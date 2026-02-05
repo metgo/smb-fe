@@ -72,7 +72,7 @@ const ProductBasicInfo = ({
       {/* Select Business */}
       <div>
         <label className={`block text-sm font-medium ${textSecondary} mb-2`}>
-          {t("select_business")} *
+          {t("select_business")} <span className="text-red-500">*</span>
         </label>
         <select
           value={formData.businessId?._id}
@@ -122,7 +122,7 @@ const ProductBasicInfo = ({
       {/* Product Name */}
       <div>
         <label className={`block text-sm font-medium ${textSecondary} mb-2`}>
-          {t("product_name")} *
+          {t("product_name")} <span className="text-red-500">*</span>
         </label>
         <input
           type="text"
@@ -145,7 +145,8 @@ const ProductBasicInfo = ({
       {/* Short Description */}
       <div>
         <label className={`block text-sm font-medium ${textSecondary} mb-2`}>
-          {t("product_short_description")} *
+          {t("product_short_description")}{" "}
+          <span className="text-red-500">*</span>
         </label>
         <textarea
           value={formData.shortDescription}

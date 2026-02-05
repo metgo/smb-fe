@@ -13,6 +13,8 @@ import {
   ChevronDown,
   Columns,
 } from "lucide-react";
+import clsx from "clsx";
+
 import { useProductMgmt } from "./useProductMgmt";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { PageHeader, PageStats, ReordableDataTable } from "@/components/shared";
@@ -29,7 +31,7 @@ const businessId = "";
 const defaultColumns = {
   images: true,
   name: true,
-  businessId: false, //  optional
+  businessId: true, //  optional
   productType: true,
   status: true,
   price: true,
@@ -43,7 +45,7 @@ type ColumnVisibility = typeof defaultColumns;
 const columnDefinitions = [
   { key: "images" as keyof ColumnVisibility, isDefault: true },
   { key: "name" as keyof ColumnVisibility, isDefault: true },
-  { key: "businessId" as keyof ColumnVisibility, isDefault: false },
+  { key: "businessId" as keyof ColumnVisibility, isDefault: true },
   { key: "productType" as keyof ColumnVisibility, isDefault: true },
   { key: "status" as keyof ColumnVisibility, isDefault: true },
   { key: "price" as keyof ColumnVisibility, isDefault: true },
@@ -51,6 +53,8 @@ const columnDefinitions = [
   { key: "quantity" as keyof ColumnVisibility, isDefault: false },
   { key: "updatedAt" as keyof ColumnVisibility, isDefault: false },
 ];
+const USER_ROLE = "admin";
+
 export default function ProductsMgmtPage() {
   const {
     t,
@@ -81,6 +85,10 @@ export default function ProductsMgmtPage() {
   const { data: businessData, isLoading: isBusinessesLoading } =
     useGetbusinessForProductQuery({});
   const businesses = businessData?.data?.slice(0, 10);
+  const canChangeStatus = ["superadmin", "admin", "dmo", "authority"].includes(
+    USER_ROLE,
+  );
+
   //filters
   const [page, setPage] = useState(1);
   const LIMIT = 10;
@@ -132,6 +140,7 @@ export default function ProductsMgmtPage() {
   const navigate = useNavigate();
 
   const handleProductClick = (product: any) => {
+    console.log("product grid", product);
     setSelectedProduct(product);
     setProductId(product?._id);
     navigate(`?productId=${product?._id}&productSlug=${product?.slug}`, {
@@ -165,8 +174,9 @@ export default function ProductsMgmtPage() {
   };
 
   const columns = [
-    { key: "checkbox", label: "", width: "50px" },
-    {
+    ...(canChangeStatus ? [{ key: "checkbox", label: "", width: "50px" }] : []),
+
+    columnVisibility.images && {
       key: "images",
       label: t("product_image"),
       render: (product: any) => (
@@ -183,7 +193,8 @@ export default function ProductsMgmtPage() {
         </div>
       ),
     },
-    {
+
+    columnVisibility.name && {
       key: "name",
       label: t("product_name"),
       sortable: true,
@@ -196,22 +207,46 @@ export default function ProductsMgmtPage() {
         </div>
       ),
     },
-    {
+
+    columnVisibility.businessId && {
       key: "businessId",
       label: t("business_name"),
       render: (product: any) => product.businessId?.name,
     },
-    {
+
+    columnVisibility.productType && {
       key: "productType",
       label: t("product_type"),
       render: (product: any) => product.productType,
     },
-    {
+
+    columnVisibility.status && {
       key: "status",
       label: t("product_status"),
-      render: (product: any) => product.status,
+      render: (product: any) => {
+        const st = (product.status || "").toLowerCase();
+        return (
+          <span
+            className={clsx(
+              "inline-flex items-center px-3 py-1 rounded-lg text-sm font-medium",
+              st === "approved"
+                ? "bg-blue-500/20 text-blue-400"
+                : st === "pending"
+                  ? "bg-yellow-500/20 text-yellow-400"
+                  : st === "rejected"
+                    ? "bg-red-500/20 text-red-400"
+                    : isDark
+                      ? "bg-gray-700 text-gray-400"
+                      : "bg-gray-100 text-gray-600",
+            )}
+          >
+            {t(st) || st || t("unknown")}
+          </span>
+        );
+      },
     },
-    {
+
+    columnVisibility.price && {
       key: "price",
       label: t("price"),
       sortable: true,
@@ -226,19 +261,22 @@ export default function ProductsMgmtPage() {
         </div>
       ),
     },
-    {
+
+    columnVisibility.impact && {
       key: "impact",
       label: t("impact"),
       sortable: true,
-      render: (product: any) => <div className="">{product.impact}</div>,
+      render: (product: any) => <div>{product.impact}</div>,
     },
-    {
+
+    columnVisibility.quantity && {
       key: "quantity",
       label: t("quantity"),
       sortable: true,
       render: (product: any) => product.quantity?.sold,
     },
-    {
+
+    columnVisibility.updatedAt && {
       key: "updatedAt",
       label: t("last_updated"),
       sortable: true,
@@ -248,7 +286,8 @@ export default function ProductsMgmtPage() {
         </div>
       ),
     },
-    {
+
+    columnVisibility.actions && {
       key: "actions",
       label: t("actions"),
       render: (product: any) => (
@@ -263,7 +302,13 @@ export default function ProductsMgmtPage() {
         </button>
       ),
     },
-  ];
+  ].filter(Boolean) as {
+    key: string;
+    label: string;
+    width?: string;
+    sortable?: boolean;
+    render?: (row: any) => React.ReactNode;
+  }[];
 
   const salesStats = [
     {
@@ -319,138 +364,14 @@ export default function ProductsMgmtPage() {
               {/* Toolbar */}
               <div className="py-4 flex flex-col lg:flex-row items-center justify-between gap-3">
                 {/* Search - extreme left */}
-                <div className="flex-1 relative min-w-50 max-w-5xl">
+                <div className="flex-1 relative max-w-full ">
                   <SearchInput
                     placeholder={t("search_products")}
                     searchTerm={searchTerm}
                     setSearchTerm={setSearchTerm}
                   />
                 </div>
-                {viewMode === "list" && (
-                  <div className="relative" ref={columnSettingsRef}>
-                    <button
-                      onClick={() => setShowColumnSettings(!showColumnSettings)}
-                      className={`px-4 py-2 rounded-lg border flex items-center gap-2 transition-colors ${
-                        isDark
-                          ? "border-gray-700 hover:bg-gray-800 text-gray-300"
-                          : "border-gray-300 hover:bg-gray-100 text-gray-700"
-                      }`}
-                    >
-                      <Columns className="w-5 h-5" />
-                      {t("show_columns")}
-                      {showColumnSettings ? (
-                        <ChevronUp className="w-4 h-4" />
-                      ) : (
-                        <ChevronDown className="w-4 h-4" />
-                      )}
-                    </button>
 
-                    {/* Column Settings Dropdown */}
-                    {showColumnSettings && (
-                      <div
-                        className={`absolute ${isRTL ? "left-0" : "right-0"} mt-2 w-64 rounded-lg shadow-lg max-h-50vh overflow-y-auto border z-50 ${isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}
-                      >
-                        <div
-                          className={`p-4 border-b ${isDark ? "border-gray-700" : "border-gray-200"}`}
-                        >
-                          <div className="flex items-center justify-between mb-2">
-                            <h3
-                              className={`text-sm ${isDark ? "text-gray-200" : "text-gray-900"}`}
-                            >
-                              {t("column_settings") || "Column Settings"}
-                            </h3>
-                            <button
-                              onClick={resetToDefault}
-                              className="text-xs text-teal-600 hover:text-teal-700 transition-colors"
-                            >
-                              {t("reset_to_default") || "Reset to Default"}
-                            </button>
-                          </div>
-                          <p
-                            className={`text-xs ${isDark ? "text-gray-400" : "text-gray-600"}`}
-                          >
-                            {t("select_columns_to_display") ||
-                              "Select columns to display"}
-                          </p>
-                        </div>
-                        <div className="p-3 max-h-96 overflow-y-auto">
-                          {/* Default Columns */}
-                          {Object.entries(columnVisibility)
-                            .filter(
-                              ([key]) =>
-                                columnDefinitions.find((col) => col.key === key)
-                                  ?.isDefault,
-                            )
-                            .map(([key, visible]) => (
-                              <label
-                                key={key}
-                                className={`flex items-center gap-2 p-2 rounded cursor-pointer  dark:hover:bg-gray-700 ${
-                                  isRTL ? "flex-row-reverse justify-end" : ""
-                                }`}
-                              >
-                                <input
-                                  type="checkbox"
-                                  checked={visible}
-                                  onChange={(e) =>
-                                    setColumnVisibility((prev) => ({
-                                      ...prev,
-                                      [key]: e.target.checked,
-                                    }))
-                                  }
-                                  className="rounded"
-                                />
-                                <span className={`text-sm ${textSecondary}`}>
-                                  {t(key as keyof typeof t)}
-                                </span>
-                              </label>
-                            ))}
-
-                          {/* Divider */}
-                          {columnDefinitions.some((col) => !col.isDefault) && (
-                            <div className="my-3 border-t border-gray-200 dark:border-gray-700" />
-                          )}
-
-                          {/* Non-default Columns */}
-                          <p
-                            className={`text-xs mb-2 ${isDark ? "text-gray-400" : "text-gray-600"}`}
-                          >
-                            Optional Columns
-                          </p>
-                          {Object.entries(columnVisibility)
-                            .filter(
-                              ([key]) =>
-                                !columnDefinitions.find(
-                                  (col) => col.key === key,
-                                )?.isDefault,
-                            )
-                            .map(([key, visible]) => (
-                              <label
-                                key={key}
-                                className={`flex items-center gap-2 p-2 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 ${
-                                  isRTL ? "flex-row-reverse justify-end" : ""
-                                }`}
-                              >
-                                <input
-                                  type="checkbox"
-                                  checked={visible}
-                                  onChange={(e) =>
-                                    setColumnVisibility((prev) => ({
-                                      ...prev,
-                                      [key]: e.target.checked,
-                                    }))
-                                  }
-                                  className="rounded"
-                                />
-                                <span className={`text-sm ${textSecondary}`}>
-                                  {t(key as keyof typeof t)}
-                                </span>
-                              </label>
-                            ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
                 {/* Right side group: Filter Button + View Mode Toggle */}
                 <div className="flex items-center gap-3">
                   {/* Filter Button */}
@@ -470,16 +391,147 @@ export default function ProductsMgmtPage() {
                       <ChevronDown className="w-4 h-4" />
                     )}
                   </button>
+                  {viewMode === "list" && (
+                    <div className="relative" ref={columnSettingsRef}>
+                      <button
+                        onClick={() =>
+                          setShowColumnSettings(!showColumnSettings)
+                        }
+                        className={`px-4 py-2 rounded-lg border flex items-center gap-2 transition-colors ${
+                          isDark
+                            ? "border-gray-700 hover:bg-gray-800 text-gray-300"
+                            : "border-gray-300 hover:bg-gray-100 text-gray-700"
+                        }`}
+                      >
+                        <Columns className="w-5 h-5" />
+                        {t("show_columns")}
+                        {showColumnSettings ? (
+                          <ChevronUp className="w-4 h-4" />
+                        ) : (
+                          <ChevronDown className="w-4 h-4" />
+                        )}
+                      </button>
 
+                      {/* Column Settings Dropdown */}
+                      {showColumnSettings && (
+                        <div
+                          className={`absolute ${isRTL ? "left-0" : "right-0"} mt-2 w-64 rounded-lg shadow-lg max-h-50vh overflow-y-auto border z-50 ${isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}
+                        >
+                          <div
+                            className={`p-4 border-b ${isDark ? "border-gray-700" : "border-gray-200"}`}
+                          >
+                            <div className="flex items-center justify-between mb-2">
+                              <h3
+                                className={`text-sm ${isDark ? "text-gray-200" : "text-gray-900"}`}
+                              >
+                                {t("column_settings") || "Column Settings"}
+                              </h3>
+                              <button
+                                onClick={resetToDefault}
+                                className="text-xs text-teal-600 hover:text-teal-700 transition-colors"
+                              >
+                                {t("reset_to_default") || "Reset to Default"}
+                              </button>
+                            </div>
+                            <p
+                              className={`text-xs ${isDark ? "text-gray-400" : "text-gray-600"}`}
+                            >
+                              {t("select_columns_to_display") ||
+                                "Select columns to display"}
+                            </p>
+                          </div>
+                          <div className="p-3 max-h-96 overflow-y-auto">
+                            {/* Default Columns */}
+                            {Object.entries(columnVisibility)
+                              .filter(
+                                ([key]) =>
+                                  columnDefinitions.find(
+                                    (col) => col.key === key,
+                                  )?.isDefault,
+                              )
+                              .map(([key, visible]) => (
+                                <label
+                                  key={key}
+                                  className={`flex items-center gap-2 p-2 rounded cursor-pointer  dark:hover:bg-gray-700 ${
+                                    isRTL ? "flex-row-reverse justify-end" : ""
+                                  }`}
+                                >
+                                  <input
+                                    type="checkbox"
+                                    checked={visible}
+                                    onChange={(e) =>
+                                      setColumnVisibility((prev) => ({
+                                        ...prev,
+                                        [key]: e.target.checked,
+                                      }))
+                                    }
+                                    className="rounded"
+                                  />
+                                  <span className={`text-sm ${textSecondary}`}>
+                                    {t(key as keyof typeof t)}
+                                  </span>
+                                </label>
+                              ))}
+
+                            {/* Divider */}
+                            {columnDefinitions.some(
+                              (col) => !col.isDefault,
+                            ) && (
+                              <div className="my-3 border-t border-gray-200 dark:border-gray-700" />
+                            )}
+
+                            {/* Non-default Columns */}
+                            <p
+                              className={`text-xs mb-2 ${isDark ? "text-gray-400" : "text-gray-600"}`}
+                            >
+                              Optional Columns
+                            </p>
+                            {Object.entries(columnVisibility)
+                              .filter(
+                                ([key]) =>
+                                  !columnDefinitions.find(
+                                    (col) => col.key === key,
+                                  )?.isDefault,
+                              )
+                              .map(([key, visible]) => (
+                                <label
+                                  key={key}
+                                  className={`flex items-center gap-2 p-2 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 ${
+                                    isRTL ? "flex-row-reverse justify-end" : ""
+                                  }`}
+                                >
+                                  <input
+                                    type="checkbox"
+                                    checked={visible}
+                                    onChange={(e) =>
+                                      setColumnVisibility((prev) => ({
+                                        ...prev,
+                                        [key]: e.target.checked,
+                                      }))
+                                    }
+                                    className="rounded"
+                                  />
+                                  <span className={`text-sm ${textSecondary}`}>
+                                    {t(key as keyof typeof t)}
+                                  </span>
+                                </label>
+                              ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
                   {/* View Mode Toggle */}
-                  <div className="flex items-center gap-1 p-1 rounded-lg border border-gray-300 bg-white dark:bg-gray-800 dark:border-gray-700">
+                  <div
+                    className={`flex items-center gap-1 p-1 rounded-lg border border-gray-300 ${isDark ? "bg-gray-900" : "bg-white"} `}
+                  >
                     <button
                       onClick={() => setViewMode("list")}
                       className={`p-2 rounded ${
                         viewMode === "list"
                           ? "bg-teal-500 text-white"
-                          : "text-gray-500"
-                      }`}
+                          : "text-gray-500 dark:text-gray-400"
+                      } `}
                     >
                       <List className="w-4 h-4" />
                     </button>
@@ -594,7 +646,6 @@ export default function ProductsMgmtPage() {
                             } focus:outline-none focus:ring-2 focus:ring-teal-500`}
                           >
                             <option value="all">{t("all_businesses")}</option>
-
                             {isBusinessesLoading ? (
                               <option disabled>{t("loading")}...</option>
                             ) : (
@@ -607,6 +658,56 @@ export default function ProductsMgmtPage() {
                           </select>
                         </div>
                       )}
+                    </div>
+                    <div className="flex mt-4 gap-6 items-center">
+                      <div>
+                        {/* Clear all button */}
+                        {Object.entries(filters).some(
+                          ([_, val]) => val !== "all",
+                        ) && (
+                          <button
+                            onClick={() =>
+                              setFilters({
+                                status: "all",
+                                productType: "all",
+                                businessId: "all",
+                              })
+                            }
+                            className="ml-auto text-sm text-green-600 "
+                          >
+                            {t("clear_all")}
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Active filters display and clear all button */}
+                      <div className=" flex items-start gap-3">
+                        {/* Show active filters */}
+                        {Object.entries(filters).some(
+                          ([_, val]) => val !== "all",
+                        ) && (
+                          <div className="flex flex-wrap gap-2">
+                            {filters.status !== "all" && (
+                              <span className="px-3 py-1 rounded-full bg-teal-100 text-teal-800 text-sm">
+                                {t(filters.status)}
+                              </span>
+                            )}
+                            {filters.productType !== "all" && (
+                              <span className="px-3 py-1 rounded-full bg-teal-100 text-teal-800 text-sm">
+                                {t(filters.productType)}
+                              </span>
+                            )}
+                            {!businessId && filters.businessId !== "all" && (
+                              <span className="px-3 py-1 rounded-full bg-teal-100 text-teal-800 text-sm">
+                                {" "}
+                                {businessData?.data?.find(
+                                  (b: any) => b._id === filters.businessId,
+                                )?.name || filters.businessId}
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -694,11 +795,8 @@ export default function ProductsMgmtPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                   {productData?.data?.map((product: any) => (
                     <div
-                      key={product.id}
-                      onClick={() => {
-                        setSelectedProduct(product);
-                        setCurrentView("details");
-                      }}
+                      key={product._id}
+                      onClick={() => handleProductClick(product)}
                       className={`rounded-xl border ${themeColor.borderColor} ${themeColor.bgSecondary} overflow-hidden hover:shadow-lg transition-all cursor-pointer group`}
                     >
                       <div className="relative h-48 bg-linear-to-br from-blue-500 to-indigo-600">

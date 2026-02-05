@@ -14,6 +14,7 @@ export const productQueryApi = createApi({
         params,
       }),
     }),
+
     getProductbyId: builder.query<any, { productId: string | null }>({
       query: ({ productId }) => ({
         url: `${endpoints.products}/${productId}`,

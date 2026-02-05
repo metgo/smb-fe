@@ -94,7 +94,11 @@ const ProductReviewSubmit: React.FC<ProductReviewSubmitProps> = ({
             <div>
               <p className={`text-sm ${textTertiary}`}>{t("quantity")}</p>
               <p className={`font-medium ${textPrimary}`}>
-                {formData.isUnlimited ? t("unlimited") : formData.quantity}
+                {formData.isUnlimited
+                  ? t("unlimited")
+                  : formData.quantity
+                    ? formData.quantity
+                    : "-"}
               </p>
             </div>
 

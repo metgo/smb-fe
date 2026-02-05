@@ -240,7 +240,7 @@ export default function ReordableDataTable<T extends Record<string, any>>({
     isLoading: isDataLoading,
     onLoadMore: next,
   });
-
+  console.log("columns products", columns);
   return (
     <div className={`rounded-xl border ${borderColor}`}>
       {/* Scrollable container */}

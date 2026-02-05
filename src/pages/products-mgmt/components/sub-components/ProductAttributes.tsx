@@ -42,7 +42,7 @@ const ProductAttributes = ({
       {/* Product Type */}
       <div>
         <label className={`block text-sm font-medium ${textSecondary} mb-2`}>
-          {t("select_product_type")} *
+          {t("select_product_type")} <span className="text-red-500">*</span>
         </label>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {productTypes.map((type) => (
@@ -69,7 +69,7 @@ const ProductAttributes = ({
       {/* Product Categories (checkboxes) */}
       <div>
         <label className={`block text-sm font-medium ${textSecondary} mb-2`}>
-          {t("select_categories")} *
+          {t("select_categories")} <span className="text-red-500">*</span>
         </label>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
           {categoriesList.map((cat: any) => (
