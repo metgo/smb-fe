@@ -154,7 +154,7 @@ export default function EventDetailsPage() {
   };
 
   return (
-    <div className="flex flex-col h-[90vh] overflow-hidden relative">
+    <div className="flex flex-col overflow-hidden relative">
       {/* Sticky Header */}
       <div
         className={clsx(
