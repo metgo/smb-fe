@@ -63,65 +63,6 @@ const ProductMedia: FC<ProductMediaProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* ---------------- Logo Upload ---------------- */}
-      <div>
-        <label className={`block text-sm mb-2 ${textSecondary}`}>
-          {t("product_logo")} <span className="text-red-500">*</span>
-        </label>
-
-        <div className="flex items-center gap-4">
-          {logoImage?.previewUrl ? (
-            <div className="relative w-32 h-32 rounded-full border-2 border-gray-300">
-              <div
-                className="w-full h-full cursor-pointer"
-                onClick={() =>
-                  document.getElementById("product-logo-upload")?.click()
-                }
-              >
-                <ImageWithFallback
-                  src={logoImage.previewUrl}
-                  alt="Product Logo"
-                  className="w-full h-full object-cover rounded-full"
-                />
-              </div>
-
-              <button
-                onClick={() => handleDeleteLogoImage(logoImage)}
-                className="absolute top-2 right-2 z-50 p-1 bg-red-600 text-white rounded-full hover:bg-red-700"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-          ) : (
-            <div
-              className={`w-32 h-32 rounded-full border-2 border-dashed flex items-center justify-center cursor-pointer ${borderColor}`}
-              onClick={() =>
-                document.getElementById("product-logo-upload")?.click()
-              }
-            >
-              <div className="text-center">
-                <Upload className={`w-6 h-6 mx-auto mb-1 ${textTertiary}`} />
-                <p className={`text-xs ${textTertiary}`}>{t("upload_logo")}</p>
-                <input
-                  id="product-logo-upload"
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) handleLogoImageSelect(file);
-                  }}
-                />
-              </div>
-            </div>
-          )}
-        </div>
-
-        {errors.logo && (
-          <p className="text-red-500 text-sm mt-1">{errors.logo}</p>
-        )}
-      </div>
-
       {/* ---------------- Image Gallery ---------------- */}
       <div>
         <label className={`block text-sm mb-2 ${textSecondary}`}>

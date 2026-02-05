@@ -2,6 +2,8 @@ import { useState } from "react";
 import { generateMockProducts } from "@/helpers/data-generator";
 import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { useAppSelector } from "@/hooks/hooks";
 
 const businessId = "";
 
@@ -10,7 +12,8 @@ export function useProductMgmt() {
   const language = (
     ["en", "he", "ar"].includes(i18n.language) ? i18n.language : "en"
   ) as Language;
-
+  const { isDark } = useThemeClasses();
+  const { isRTL } = useAppSelector((state) => state.settings);
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
   const [selectedProducts, setSelectedProducts] = useState<Set<string>>(
@@ -47,8 +50,8 @@ export function useProductMgmt() {
     const nameMatch = Object.values(product.name).some((n) =>
       n.toLowerCase().includes(searchLower),
     );
-    const businessMatch = product.businessName
-      .toLowerCase()
+    const businessMatch = product.businessId
+      ?.toLowerCase()
       .includes(searchLower);
     if (searchQuery && !nameMatch && !businessMatch) return false;
 
@@ -97,14 +100,14 @@ export function useProductMgmt() {
     if (selectedProducts.size === sortedProducts.length) {
       setSelectedProducts(new Set());
     } else {
-      setSelectedProducts(new Set(sortedProducts.map((p) => p.id)));
+      setSelectedProducts(new Set(sortedProducts.map((p) => p._id)));
     }
   };
 
   const handleBulkStatusChange = (newStatus: Product["status"]) => {
     setProducts((prev) =>
       prev.map((p) =>
-        selectedProducts.has(p.id) ? { ...p, status: newStatus } : p,
+        selectedProducts.has(p._id) ? { ...p, status: newStatus } : p,
       ),
     );
     setSelectedProducts(new Set());
@@ -274,6 +277,7 @@ export function useProductMgmt() {
 
   return {
     t,
+    isRTL,
     language,
     searchQuery,
     setSearchQuery,
@@ -287,6 +291,7 @@ export function useProductMgmt() {
     setSelectedProducts,
     sortedProducts,
     setSortDirection,
+    isDark,
     showFilters,
     setShowFilters,
     isCreating,

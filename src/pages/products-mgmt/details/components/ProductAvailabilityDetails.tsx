@@ -3,14 +3,12 @@ import { Calendar } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 interface ProductAvailability {
-  startDate: string | null;
-  endDate: string | null;
+  activeStartDate: string | null;
+  activeEndDate: string | null;
 }
 
 interface ProductAvailabilityDetailsProps {
-  product: {
-    availability: ProductAvailability;
-  };
+  product: ProductAvailability;
   theme: Theme;
   language: Language;
 }
@@ -22,25 +20,25 @@ const ProductAvailabilityDetails: React.FC<ProductAvailabilityDetailsProps> = ({
 }) => {
   const { t } = useTranslation("products");
 
-  const { startDate, endDate } = product.availability;
+  const { activeStartDate, activeEndDate } = product;
 
   const formatDate = (date: string) =>
     new Date(date).toLocaleDateString(language);
 
   const availabilityStatus = () => {
-    if (!startDate && !endDate) {
+    if (!activeStartDate && !activeEndDate) {
       return t("always_available");
     }
 
-    if (startDate && !endDate) {
-      return `${t("available_from")} ${formatDate(startDate)}`;
+    if (activeStartDate && !activeEndDate) {
+      return `${t("available_from")} ${formatDate(activeStartDate)}`;
     }
 
-    if (!startDate && endDate) {
-      return `${t("available_until")} ${formatDate(endDate)}`;
+    if (!activeStartDate && activeEndDate) {
+      return `${t("available_until")} ${formatDate(activeEndDate)}`;
     }
 
-    return `${formatDate(startDate!)} - ${formatDate(endDate!)}`;
+    return `${formatDate(activeStartDate!)} - ${formatDate(activeEndDate!)}`;
   };
 
   return (
@@ -70,7 +68,7 @@ const ProductAvailabilityDetails: React.FC<ProductAvailabilityDetailsProps> = ({
           >
             <Calendar className="w-5 h-5" />
             <p className="text-xl font-semibold">
-              {startDate ? formatDate(startDate) : t("not_set")}
+              {activeStartDate ? formatDate(activeStartDate) : t("not_set")}
             </p>
           </div>
         </div>
@@ -98,7 +96,7 @@ const ProductAvailabilityDetails: React.FC<ProductAvailabilityDetailsProps> = ({
           >
             <Calendar className="w-5 h-5" />
             <p className="text-xl font-semibold">
-              {endDate ? formatDate(endDate) : t("not_set")}
+              {activeEndDate ? formatDate(activeEndDate) : t("not_set")}
             </p>
           </div>
         </div>

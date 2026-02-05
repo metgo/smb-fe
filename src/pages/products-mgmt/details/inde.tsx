@@ -23,29 +23,42 @@ import {
   ProductMediaDetails,
   ProductPricingDetails,
 } from "./components";
-
+import { useGetProductbyIdQuery } from "@/store/api/productQueryApi";
+import { useSearchParams } from "react-router-dom";
+import { skipToken } from "@reduxjs/toolkit/query";
 interface ProductDetailsProps {
-  product: Product;
+  // selectedProduct: Product;
   onBack: () => void;
   onEdit: () => void;
   onDuplicate: () => void;
+  productId: string;
+  setProductId: (productId: string) => void;
 }
 
 const USER_ROLE = "admin"; // Can be: 'superadmin', 'admin', 'dmo', 'authority', 'business_owner'
 
 export default function ProductDetails({
-  product,
+  // selectedProduct,
   onBack,
   onEdit,
   onDuplicate,
-}: any) {
+  productId,
+  // setProductId,
+}: ProductDetailsProps) {
   const { t, i18n } = useTranslation("products");
+  const { t: ct } = useTranslation("common");
+
   const { isRTL, theme } = useAppSelector((state) => state.settings);
   const language = i18n.language as Language;
+  const [searchParams] = useSearchParams();
 
+  const productIdParam = searchParams.get("productId");
+  const { data: product } = useGetProductbyIdQuery(
+    productIdParam ? { productId: productId } : skipToken,
+  );
   const [activeTab, setActiveTab] = useState("overview");
   const [currentStatus, setCurrentStatus] = useState<Product["status"]>(
-    product.status,
+    product?.status,
   );
   const [showStatusDropdown, setShowStatusDropdown] = useState(false);
 
@@ -188,7 +201,7 @@ export default function ProductDetails({
             : "bg-white border-gray-200"
         } border-b`}
       >
-        <div className="max-w-7xl mx-auto px-6 py-4">
+        <div className="max-w-full mx-auto px-6 py-4">
           <div className="flex items-center justify-between mb-4">
             <button
               onClick={onBack}
@@ -199,7 +212,7 @@ export default function ProductDetails({
               } transition-colors`}
             >
               <ArrowLeft className="w-5 h-5" />
-              <span>{t("back") || "Back"}</span>
+              <span>{ct("back_to_list") || "Back"}</span>
             </button>
 
             <div className="flex items-center gap-3">
@@ -231,9 +244,9 @@ export default function ProductDetails({
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-4">
               <div className="w-16 h-16 rounded-lg bg-linear-to-br from-blue-500 to-indigo-600 flex items-center justify-center overflow-hidden">
-                {product.image ? (
+                {product?.images?.length > 0 ? (
                   <img
-                    src={product.images[0]}
+                    src={product?.images[0]?.image}
                     alt={product.name}
                     className="w-full h-full object-cover"
                   />
@@ -247,7 +260,7 @@ export default function ProductDetails({
                     theme === "dark" ? "text-white" : "text-gray-900"
                   }`}
                 >
-                  {product.name}
+                  {product?.name}
                 </h1>
                 {/* <p
                   className={
@@ -258,7 +271,7 @@ export default function ProductDetails({
                 </p> */}
               </div>
             </div>
-            <StatusBadge status={product.status} />
+            <StatusBadge status={product?.status} />
           </div>
         </div>
 
@@ -287,7 +300,7 @@ export default function ProductDetails({
               >
                 ₪
                 {(
-                  product.quantity?.sold * product.price?.sellingPrice
+                  product?.quantity?.sold * product?.price?.sellingPrice
                 ).toLocaleString()}
               </p>
             </div>
@@ -310,7 +323,7 @@ export default function ProductDetails({
               <p
                 className={`text-3xl font-bold ${theme === "dark" ? "text-white" : "text-gray-900"}`}
               >
-                {product.quantity?.sold.toLocaleString()}
+                {product?.quantity?.sold.toLocaleString()}
               </p>
             </div>
 
@@ -332,13 +345,12 @@ export default function ProductDetails({
               <p
                 className={`text-3xl font-bold ${theme === "dark" ? "text-white" : "text-gray-900"}`}
               >
-                {product.quantity?.isUnlimited ? (
+                {product?.quantity?.isUnlimited ? (
                   <span className="text-teal-500">∞</span>
+                ) : typeof product?.quantity?.remaining === "number" ? (
+                  product.quantity.remaining.toLocaleString()
                 ) : (
-                  (product.quantity?.remaining
-                    ? product.quantity.remaining
-                    : ""
-                  ).toLocaleString()
+                  ""
                 )}
               </p>
             </div>
@@ -377,7 +389,7 @@ export default function ProductDetails({
       </div>
 
       {/* Content */}
-      <div className="max-w-7xl mx-auto px-6 py-6">
+      <div className="max-w-full mx-auto px-6 py-6">
         <div
           className={`${theme === "dark" ? "bg-gray-900 border-gray-800" : "bg-white border-gray-200"} rounded-xl border p-6`}
         >

@@ -6,7 +6,10 @@ interface ProductBasicInfoProps {
   selectedFormLanguage: "en" | "he" | "ar";
   setSelectedFormLanguage: (lang: "en" | "he" | "ar") => void;
   formData: {
-    businessId: string;
+    businessId: {
+      _id: string;
+      name: string;
+    };
     name: string;
     shortDescription: string;
     fullDescription: string;
@@ -33,6 +36,7 @@ const ProductBasicInfo = ({
   setBusinessId,
   isBusinessesLoading,
 }: ProductBasicInfoProps) => {
+  console.log("🚀 ~ ProductBasicInfo ~ businesses:", businesses);
   const { bgTertiary, textPrimary, textSecondary, textTertiary, borderColor } =
     useThemeClasses();
   // Helper to get field key based on selected language
@@ -71,7 +75,7 @@ const ProductBasicInfo = ({
           {t("select_business")} *
         </label>
         <select
-          value={formData.businessId}
+          value={formData.businessId?._id}
           onChange={(e) => {
             const selectedBusinessId = e.target.value;
             setFormData({

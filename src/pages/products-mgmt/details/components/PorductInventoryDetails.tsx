@@ -1,9 +1,13 @@
 import React from "react";
+interface ProductQuantity {
+  isUnlimited: boolean;
+  remaining: number;
+  sold: number;
+}
 
 interface ProductInventoryDetailsProps {
   product: {
-    quantity: number | null;
-    soldCount: number;
+    quantity: ProductQuantity | null;
   };
   theme: Theme;
   t: (key: string) => string;
@@ -14,12 +18,14 @@ const ProductInventoryDetails: React.FC<ProductInventoryDetailsProps> = ({
   theme,
   t,
 }) => {
-  const availableStock =
-    product.quantity !== null ? product.quantity - product.soldCount : null;
+  const isUnlimited = product.quantity?.isUnlimited;
+  const availableStock = product.quantity?.remaining ?? 0;
+  const soldCount = product.quantity?.sold ?? 0;
+
+  const totalStock = isUnlimited ? null : availableStock + soldCount;
+
   const stockPercentage =
-    product.quantity && availableStock !== null
-      ? (availableStock / product.quantity) * 100
-      : 0;
+    !isUnlimited && totalStock ? (availableStock / totalStock) * 100 : 100;
 
   return (
     <div className="space-y-6">
@@ -39,12 +45,15 @@ const ProductInventoryDetails: React.FC<ProductInventoryDetailsProps> = ({
             {t("total_quantity")}
           </h3>
           <p
-            className={`text-3xl font-bold ${theme === "dark" ? "text-gray-200" : "text-gray-800"}`}
+            className={`text-3xl font-bold ${
+              theme === "dark" ? "text-teal-300" : "text-teal-800"
+            }`}
           >
-            {product.quantity === null ? (
+            {" "}
+            {isUnlimited ? (
               <span className="text-teal-500">{t("unlimited")}</span>
             ) : (
-              product.quantity.toLocaleString()
+              totalStock?.toLocaleString()
             )}
           </p>
         </div>
@@ -76,19 +85,14 @@ const ProductInventoryDetails: React.FC<ProductInventoryDetailsProps> = ({
           </h3>
           <p
             className={`text-3xl font-bold ${
-              availableStock !== null && availableStock < 10
-                ? theme === "dark"
-                  ? "text-red-300"
-                  : "text-red-800"
-                : theme === "dark"
-                  ? "text-green-300"
-                  : "text-green-800"
+              theme === "dark" ? "text-teal-300" : "text-teal-800"
             }`}
           >
-            {product.quantity === null ? (
+            {" "}
+            {isUnlimited ? (
               <span className="text-teal-500">∞</span>
             ) : (
-              availableStock?.toLocaleString()
+              availableStock.toLocaleString()
             )}
           </p>
         </div>
@@ -114,18 +118,34 @@ const ProductInventoryDetails: React.FC<ProductInventoryDetailsProps> = ({
               style={{ width: `${stockPercentage}%` }}
             />
           </div>
-          <div className="flex justify-between mt-2 text-sm">
-            <span
-              className={theme === "dark" ? "text-gray-400" : "text-gray-600"}
-            >
-              {product.soldCount} {t("sold")}
-            </span>
-            <span
-              className={theme === "dark" ? "text-gray-400" : "text-gray-600"}
-            >
-              {availableStock} {t("remaining")}
-            </span>
-          </div>
+          {!isUnlimited && (
+            <div>
+              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4">
+                <div
+                  className="h-full bg-gradient-to-r from-teal-500 to-blue-500"
+                  style={{ width: `${stockPercentage}%` }}
+                />
+              </div>
+
+              <div className="flex justify-between mt-2 text-sm">
+                <span
+                  className={` font-bold ${
+                    theme === "dark" ? "text-teal-300" : "text-teal-800"
+                  }`}
+                >
+                  {" "}
+                  {soldCount} {t("sold")}
+                </span>
+                <span
+                  className={` font-bold ${
+                    theme === "dark" ? "text-teal-300" : "text-teal-800"
+                  }`}
+                >
+                  {availableStock} {t("remaining")}
+                </span>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

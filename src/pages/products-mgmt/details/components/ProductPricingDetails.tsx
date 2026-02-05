@@ -11,10 +11,11 @@ const ProductPricingDetails: React.FC<ProductPricingDetailsProps> = ({
   theme,
   t,
 }) => {
-  const discountAmount = product.markedPrice - product.sellingPrice;
+  const discountAmount =
+    product?.price.markedPrice - product?.price.sellingPrice;
   const discountPercent =
-    product.markedPrice > 0
-      ? Math.round((discountAmount / product.markedPrice) * 100)
+    product?.price.markedPrice > 0
+      ? Math.round((discountAmount / product?.price.markedPrice) * 100)
       : 0;
 
   return (
@@ -41,7 +42,7 @@ const ProductPricingDetails: React.FC<ProductPricingDetailsProps> = ({
               theme === "dark" ? "text-gray-200" : "text-gray-800"
             }`}
           >
-            ₪{product.markedPrice.toLocaleString()}
+            ₪{product?.price.markedPrice?.toLocaleString()}
           </p>
         </div>
 
@@ -65,7 +66,7 @@ const ProductPricingDetails: React.FC<ProductPricingDetailsProps> = ({
               theme === "dark" ? "text-teal-300" : "text-teal-800"
             }`}
           >
-            ₪{product.sellingPrice.toLocaleString()}
+            ₪{product?.price.sellingPrice?.toLocaleString()}
           </p>
         </div>
       </div>
@@ -92,7 +93,7 @@ const ProductPricingDetails: React.FC<ProductPricingDetailsProps> = ({
                 theme === "dark" ? "text-orange-300" : "text-orange-800"
               }`}
             >
-              ₪{discountAmount.toLocaleString()}
+              ₪{discountAmount?.toLocaleString()}
             </p>
             <p
               className={`text-lg ${
@@ -131,7 +132,7 @@ const ProductPricingDetails: React.FC<ProductPricingDetailsProps> = ({
                 theme === "dark" ? "text-gray-200" : "text-gray-800"
               }`}
             >
-              {product.soldCount.toLocaleString()}
+              {product?.quantity?.sold?.toLocaleString()}
             </p>
           </div>
 
@@ -144,7 +145,10 @@ const ProductPricingDetails: React.FC<ProductPricingDetailsProps> = ({
                 theme === "dark" ? "text-gray-200" : "text-gray-800"
               }`}
             >
-              ₪{(product.soldCount * product.sellingPrice).toLocaleString()}
+              ₪
+              {(
+                product?.quantity.sold * product?.price?.sellingPrice
+              ).toLocaleString()}
             </p>
           </div>
 
@@ -157,7 +161,7 @@ const ProductPricingDetails: React.FC<ProductPricingDetailsProps> = ({
                 theme === "dark" ? "text-gray-200" : "text-gray-800"
               }`}
             >
-              ₪{product.sellingPrice.toLocaleString()}
+              ₪{product?.price?.sellingPrice?.toLocaleString()}
             </p>
           </div>
         </div>

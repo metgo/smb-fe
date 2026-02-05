@@ -7,6 +7,8 @@ import {
   Package,
   Truck,
   Eye,
+  CreditCard,
+  FileText,
 } from "lucide-react";
 import {
   ProductAttributes,
@@ -43,6 +45,8 @@ interface ProductWizardProps {
   setProductId: (v: string) => void;
   selectedProduct?: any;
   currentView: string;
+  businesses?: any;
+  isBusinessesLoading?: any;
 }
 
 export default function CreateProductWizard({
@@ -51,6 +55,8 @@ export default function CreateProductWizard({
   productId,
   setProductId,
   currentView,
+  businesses,
+  isBusinessesLoading,
 }: ProductWizardProps) {
   const { t, i18n } = useTranslation("products");
   const { theme } = useAppSelector((state) => state.settings);
@@ -70,9 +76,6 @@ export default function CreateProductWizard({
   const [_logoGcsUrl, setLogoGcsUrl] = useState<string>("");
   const [productLogoImage, setProductLogoImage] = useState<IImage | null>(null);
 
-  const { data: businessData, isLoading: isBusinessesLoading } =
-    useGetbusinessForProductQuery({});
-  const businesses = businessData?.data?.slice(0, 10);
   // const preSelectedBusinessId = preSelectedBusinessName
   //   ? businesses?.find((b) => b.name === preSelectedBusinessName)?.id || ""
   //   : "";
@@ -82,9 +85,7 @@ export default function CreateProductWizard({
   const { data: product } = useGetProductbyIdQuery(
     productIdParam ? { productId: productId } : skipToken,
   );
-  console.log("🚀 ~ CreateProductWizard ~ productId:", productId);
 
-  console.log("🚀 ~ CreateProductWizard ~ product:", product);
   const [businessId, setBusinessId] = useState("");
 
   const {
@@ -148,7 +149,8 @@ export default function CreateProductWizard({
   );
 
   useEffect(() => {
-    if (!productId || currentView !== "edit" || !product) return;
+    if (currentView !== "edit") return;
+    if (!productId || !product) return;
 
     setFormData({
       // basic info
@@ -203,7 +205,6 @@ export default function CreateProductWizard({
   ];
 
   const {
-    bgSecondary,
     bgTertiary,
     textPrimary,
     textSecondary,
@@ -216,9 +217,9 @@ export default function CreateProductWizard({
     useInitProductCreateMutation();
   const [updateProduct, { isLoading: isSaving }] = useUpdateProductMutation();
   const steps = [
-    { number: 1, title: t("product_basic_info"), icon: Package },
+    { number: 1, title: t("product_basic_info"), icon: FileText },
     { number: 2, title: t("product_type_category"), icon: Package },
-    { number: 3, title: t("product_pricing"), icon: Package },
+    { number: 3, title: t("product_pricing"), icon: CreditCard },
     { number: 4, title: t("product_media"), icon: ImageIcon },
     { number: 5, title: t("product_multilingual"), icon: Globe },
     { number: 6, title: t("product_delivery_service"), icon: Truck },
@@ -357,7 +358,6 @@ export default function CreateProductWizard({
         productId: internalProductId || productId!,
         body: payload,
       }).unwrap();
-      console.log(" ~ saveDraft ~ payload:", payload);
 
       // setIsSaving(true);
 
@@ -437,51 +437,39 @@ export default function CreateProductWizard({
 
   return (
     <ModalWrapper onClose={onClose} showSpinner={isCreating || isSaving}>
-      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div
-          className={`${bgSecondary} rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden shadow-2xl flex flex-col`}
-        >
-          {/* Header */}
-          <div
-            className={`p-6 border-b ${borderColor} flex items-center justify-between`}
-          >
-            <div>
-              <h2 className={`text-2xl ${textPrimary} mb-1`}>
-                {currentView === "edit"
-                  ? t("edit_product")
-                  : t("create_product")}
-              </h2>
-              <p className={`text-sm ${textTertiary}`}>
-                {t("step")} {currentStep} {t("of")} 7:{" "}
-                {steps[currentStep - 1].title}
-              </p>
-            </div>
-            <button
-              onClick={onClose}
-              className={`p-2 rounded-lg ${hoverBg} ${textSecondary}`}
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
+      {/* Header */}
+      <div
+        className={`p-6 border-b ${borderColor} flex items-center justify-between`}
+      >
+        <div>
+          <h2 className={`text-2xl ${textPrimary} mb-1`}>
+            {currentView === "edit" ? t("edit_product") : t("create_product")}
+          </h2>
+          <p className={`text-sm ${textTertiary}`}>
+            {t("step")} {currentStep} {t("of")} 7:{" "}
+            {steps[currentStep - 1].title}
+          </p>
+        </div>
+      </div>
 
-          {/* Progress Bar */}
-          <div className={`px-6 pt-4 pb-2 border-b ${borderColor}`}>
-            <div className="flex items-start justify-between">
-              {steps.map((step, idx) => {
-                const Icon = step.icon;
-                const isActive = currentStep === step.number;
-                const isCompleted = currentStep > step.number;
+      {/* Progress Bar */}
+      <div className={`px-6 pt-4 pb-2 border-b ${borderColor}`}>
+        <div className="flex items-start justify-between">
+          {steps.map((step, idx) => {
+            const Icon = step.icon;
+            const isActive = currentStep === step.number;
+            const isCompleted = currentStep > step.number;
 
-                return (
+            return (
+              <div
+                key={step.number}
+                className="flex-1 cursor-pointer"
+                onClick={() => setCurrentStep(step.number)}
+              >
+                {/* Icon + connector */}
+                <div className="flex items-center">
                   <div
-                    key={step.number}
-                    className="flex-1 cursor-pointer"
-                    onClick={() => setCurrentStep(step.number)}
-                  >
-                    {/* Icon + connector */}
-                    <div className="flex items-center">
-                      <div
-                        className={`w-10 h-10 rounded-full flex items-center justify-center transition-all
+                    className={`w-10 h-10 rounded-full flex items-center justify-center transition-all
                 ${
                   isActive
                     ? "bg-teal-500 text-white"
@@ -489,45 +477,41 @@ export default function CreateProductWizard({
                       ? "bg-green-500 text-white"
                       : `${bgTertiary} ${textTertiary}`
                 }`}
-                      >
-                        {isCompleted ? (
-                          <Check className="w-5 h-5" />
-                        ) : (
-                          <Icon className="w-5 h-5" />
-                        )}
-                      </div>
-
-                      {idx < steps.length - 1 && (
-                        <div
-                          className={`flex-1 h-1 mx-2 ${
-                            isCompleted ? "bg-green-500" : bgTertiary
-                          }`}
-                        />
-                      )}
-                    </div>
+                  >
+                    {isCompleted ? (
+                      <Check className="w-5 h-5" />
+                    ) : (
+                      <Icon className="w-5 h-5" />
+                    )}
                   </div>
-                );
-              })}
-            </div>
-          </div>
 
-          {/* Content */}
-          <div className="flex-1 overflow-y-auto p-6">
-            {renderStepContent()}
-          </div>
-
-          <WizardFooter
-            currentStep={currentStep}
-            totalSteps={7}
-            isSaving={isSaving}
-            isPublishing={isPublishing}
-            onPrevious={handlePrevious}
-            onNext={handleNext}
-            onSaveDraft={handleSaveDraft}
-            onPublish={handlePublish}
-          />
+                  {idx < steps.length - 1 && (
+                    <div
+                      className={`flex-1 h-1 mx-2 ${
+                        isCompleted ? "bg-green-500" : bgTertiary
+                      }`}
+                    />
+                  )}
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
+
+      {/* Content */}
+      <div className="flex-1 overflow-y-auto p-6">{renderStepContent()}</div>
+
+      <WizardFooter
+        currentStep={currentStep}
+        totalSteps={7}
+        isSaving={isSaving}
+        isPublishing={isPublishing}
+        onPrevious={handlePrevious}
+        onNext={handleNext}
+        onSaveDraft={handleSaveDraft}
+        onPublish={handlePublish}
+      />
     </ModalWrapper>
   );
 }

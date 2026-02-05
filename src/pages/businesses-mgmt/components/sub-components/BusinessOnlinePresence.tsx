@@ -93,7 +93,7 @@ const BusinessOnlinePresence: React.FC<BusinessOnlinePresenceProps> = ({
       ...prev,
       socialMedia: normalizedSocialMedia,
     }));
-  }, [business, setFormData]);
+  }, [business, setFormData, currentView]);
 
   return (
     <div className="space-y-6">

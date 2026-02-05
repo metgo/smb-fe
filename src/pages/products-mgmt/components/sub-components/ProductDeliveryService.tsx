@@ -22,6 +22,17 @@ const ProductDeliveryService = ({
 
   return (
     <div className="space-y-6">
+      {formData.type === "" && (
+        <div
+          className="flex justify-center items-center text-center h-96
+                  bg-gray-50 border border-dashed border-gray-300
+                  rounded-md text-gray-600
+                  transition-all duration-300 ease-in-out"
+        >
+          {t("choose_product_type")}
+        </div>
+      )}
+
       {/* Delivery Options for Physical / Table Order */}
       {(formData.type === "PHYSICAL" || formData.type === "TABLE_ORDER") && (
         <>
