@@ -20,7 +20,7 @@ import {
   useGetPOIStatsQuery,
   useGetProductStatsQuery,
 } from "@/store/api/itemStatsApi";
-import { InfoTooltip } from "@/components/shared";
+import { InfoTooltip, Spinner } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 const getColors = (isDark: boolean) => ({
@@ -129,6 +129,8 @@ interface DistributionCardProps {
   total: number;
   status: string;
   setStatus: (v: string) => void;
+  isLoading: boolean;
+  statuses: { value: string; label: string }[];
   data: {
     _id?: string;
     name: string;
@@ -138,13 +140,19 @@ interface DistributionCardProps {
   }[];
 }
 
-const statuses = [
+const bzPoiStatuses = [
   { value: "DRAFT", label: "Draft" },
   { value: "PENDING", label: "Pending" },
   { value: "APPROVED", label: "Approved" },
   { value: "ARCHIVED", label: "Archived" },
   { value: "CLOSED", label: "Closed" },
   { value: "REJECTED", label: "Rejected" },
+];
+
+const prodStatuses = [
+  { value: "draft", label: "Draft" },
+  { value: "active", label: "Active" },
+  { value: "inactive", label: "Inactive" },
 ];
 
 const getCategoryName = (name: string, t: (v: string) => string) => {
@@ -173,6 +181,8 @@ export function DistributionCard({
   data,
   status,
   setStatus,
+  statuses,
+  isLoading,
 }: DistributionCardProps) {
   const { t } = useTranslation("dashboard");
   const { isDark } = useThemeClasses();
@@ -262,6 +272,7 @@ export function DistributionCard({
 
       {/* ===== Chart ===== */}
       <div className="h-80 relative flex items-end justify-around gap-2 px-2 pb-12 pt-16">
+        <Spinner isLoading={isLoading} />
         {/* Background */}
         <div
           className={clsx(
@@ -410,7 +421,7 @@ export function DistributionCard({
               </div>
 
               {/* Label */}
-              <div className="absolute -bottom-8 text-center z-30 overflow-clip w-14">
+              <div className="absolute -bottom-8 text-center z-30 overflow-clip w-16">
                 <span
                   className={clsx(
                     "text-xs font-bold line-clamp-2",
@@ -439,18 +450,19 @@ export default function DistributionCards() {
   );
   const [bzStatus, setBzStatus] = useState("APPROVED");
   const [productStatus, setProductStatus] = useState("active");
-  const [poiStatus, setPoiStatus] = useState("PENDING");
+  const [poiStatus, setPoiStatus] = useState("APPROVED");
 
   /* ---------------- API Calls --------------- */
-  const { data: businessData } = useGetBusinessStatsQuery({
-    startDate,
-    endDate,
-    dmoId,
-    authorityId,
-    status: bzStatus,
-  });
+  const { data: businessData, isFetching: isBzStatsLoading } =
+    useGetBusinessStatsQuery({
+      startDate,
+      endDate,
+      dmoId,
+      authorityId,
+      status: bzStatus,
+    });
 
-  const { data: poiData } = useGetPOIStatsQuery({
+  const { data: poiData, isFetching: isPoiStatsLoading } = useGetPOIStatsQuery({
     startDate,
     endDate,
     dmoId,
@@ -458,13 +470,14 @@ export default function DistributionCards() {
     status: poiStatus,
   });
 
-  const { data: productData } = useGetProductStatsQuery({
-    startDate,
-    endDate,
-    dmoId,
-    authorityId,
-    status: productStatus,
-  });
+  const { data: productData, isFetching: isProductStatsLoading } =
+    useGetProductStatsQuery({
+      startDate,
+      endDate,
+      dmoId,
+      authorityId,
+      status: productStatus,
+    });
 
   useEffect(() => {
     if (!businessData?.datas) return;
@@ -494,6 +507,8 @@ export default function DistributionCards() {
           icon={<Building2 className="w-5 h-5 text-white" />}
           total={businessData?.total}
           data={businessData?.byCategory}
+          statuses={bzPoiStatuses}
+          isLoading={isBzStatsLoading}
         />
 
         <DistributionCard
@@ -503,6 +518,8 @@ export default function DistributionCards() {
           icon={<Package className="w-5 h-5 text-white" />}
           total={productData?.total}
           data={productData?.byCategory}
+          statuses={prodStatuses}
+          isLoading={isProductStatsLoading}
         />
 
         <DistributionCard
@@ -512,6 +529,8 @@ export default function DistributionCards() {
           icon={<MapPin className="w-5 h-5 text-white" />}
           total={poiData?.total}
           data={poiData?.byCategory}
+          statuses={bzPoiStatuses}
+          isLoading={isPoiStatsLoading}
         />
       </div>
     </section>
