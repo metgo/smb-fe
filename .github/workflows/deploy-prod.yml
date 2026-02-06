@@ -3,7 +3,7 @@ name: Deploy to Productions
 on:
   push:
     branches:
-      - newversion
+      - main
 
 jobs:
   build:
