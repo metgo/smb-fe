@@ -25,6 +25,7 @@ interface ProductBasicInfoProps {
   businesses: { _id: string; name: string }[];
   isBusinessesLoading: boolean;
   businessData: any;
+  isLoading: any;
 }
 
 const ProductBasicInfo = ({
@@ -36,6 +37,7 @@ const ProductBasicInfo = ({
   errors,
   businesses,
   setBusinessId,
+  isLoading,
   isBusinessesLoading,
 }: ProductBasicInfoProps) => {
   const { bgTertiary, textPrimary, textSecondary, textTertiary, borderColor } =
@@ -95,6 +97,7 @@ const ProductBasicInfo = ({
           ))}
         </select> */}
         <ReactSelect
+          isLoading={isLoading}
           value={
             businesses?.find((biz) => biz._id === formData.businessId?._id)
               ? {
@@ -112,6 +115,7 @@ const ProductBasicInfo = ({
               businessId: selectedBusinessId,
             });
             setBusinessId(selectedBusinessId);
+            console.log("selectedBusinessid", selectedBusinessId);
           }}
           placeholder={t("select_business")}
           options={

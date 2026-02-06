@@ -29,24 +29,22 @@ import {
 } from "@/store/api/productMutationApi";
 import { skipToken } from "@reduxjs/toolkit/query";
 
-import { useSearchParams } from "react-router-dom";
 import { useGetProductbyIdQuery } from "@/store/api/productQueryApi";
 import { useImagesUpload } from "@/hooks/useImagesUpload";
 import { ModalWrapper } from "@/components/wrapper";
 import { useSingleImageUpload } from "@/hooks/useSingleImageUpload";
 import { PublishButton } from "@/components/btns";
+import { useGetbusinessForProductQuery } from "@/store/api/businessQueryApi";
 
 interface ProductWizardProps {
   onClose: () => void;
   editingProduct?: ProductFormData | null;
-  preSelectedBusinessName?: string | null;
-  productId: string;
-  setProductId: (v: string) => void;
+  productId?: string;
+  setProductId?: (value: string) => void;
   selectedProduct?: any;
-  currentView: string;
-  businesses?: any;
-  isBusinessesLoading?: any;
-  businessData: any;
+  currentView?: string;
+  isOpen?: boolean;
+  product?: any;
 }
 
 export default function CreateProductWizard({
@@ -55,15 +53,11 @@ export default function CreateProductWizard({
   productId,
   setProductId,
   currentView,
-  businesses,
-  isBusinessesLoading,
-  businessData,
 }: ProductWizardProps) {
   const { t, i18n } = useTranslation("products");
   const { theme } = useAppSelector((state) => state.settings);
 
   const language = i18n.language as Language;
-
   const [currentStep, setCurrentStep] = useState(1);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [selectedFormLanguage, setSelectedFormLanguage] = useState<
@@ -71,22 +65,19 @@ export default function CreateProductWizard({
   >("en");
   // const [isSaving, setIsSaving] = useState(false); // unused but kept
   const [isPublishing, setIsPublishing] = useState(false);
-
+  const {
+    data: product,
+    isLoading,
+    refetch,
+  } = useGetProductbyIdQuery(productId ? { productId: productId } : skipToken);
   const [_isPublishBtnClicked, setIsPublishBtnClicked] = useState(false);
-  //image
+
   const [galleryImages, setGalleryImages] = useState<TImages>([]);
   const [_logoGcsUrl, setLogoGcsUrl] = useState<string>("");
   const [productLogoImage, setProductLogoImage] = useState<IImage | null>(null);
-
-  // const preSelectedBusinessId = preSelectedBusinessName
-  //   ? businesses?.find((b) => b.name === preSelectedBusinessName)?.id || ""
-  //   : "";
-  const [searchParams] = useSearchParams();
-
-  const productIdParam = searchParams.get("productId");
-  const { data: product } = useGetProductbyIdQuery(
-    productIdParam ? { productId: productId } : skipToken,
-  );
+  const { data: businessData, isLoading: isBusinessesLoading } =
+    useGetbusinessForProductQuery({});
+  const businesses = businessData?.data;
 
   const [businessId, setBusinessId] = useState("");
 
@@ -151,7 +142,6 @@ export default function CreateProductWizard({
   );
 
   useEffect(() => {
-    if (currentView !== "edit") return;
     if (!productId || !product) return;
 
     setFormData({
@@ -196,7 +186,7 @@ export default function CreateProductWizard({
     setProductLogoImage({ image: product?.logo?.image });
   }, [currentView, productId, product]);
 
-  console.log("edit form data", product?.images);
+  console.log("edit form data", product);
   const availableCategories = [
     "Food & Dining",
     "Accommodation",
@@ -297,9 +287,10 @@ export default function CreateProductWizard({
     setIsPublishing(false);
 
     toast.success(t("business created succesfully"));
-
+    refetch();
     onClose();
   };
+  console.log("kdsfhjf", businessId);
   // Last saved timestamp
   const [_lastSaved, setLastSaved] = useState<Date | null>(null);
 
@@ -361,7 +352,7 @@ export default function CreateProductWizard({
       if (!productId) {
         const res = await initProductCreate({ businessId }).unwrap();
         internalProductId = res?.id;
-        setProductId(res?.id);
+        setProductId(res?.id || internalProductId);
       }
 
       // Only send payload for the current step
@@ -430,6 +421,7 @@ export default function CreateProductWizard({
           <ProductBasicInfo
             {...commonProps}
             setBusinessId={setBusinessId}
+            isLoading={isLoading}
             isBusinessesLoading={isBusinessesLoading}
             businessData={businessData}
           />
@@ -460,7 +452,7 @@ export default function CreateProductWizard({
         {/* Left content */}
         <div>
           <h2 className={`text-2xl ${textPrimary} mb-1`}>
-            {currentView === "edit" ? t("edit_product") : t("create_product")}
+            {productId ? t("edit_product") : t("create_product")}
           </h2>
           <p className={`text-sm ${textTertiary}`}>
             {t("step")} {currentStep} {t("of")} 7:{" "}

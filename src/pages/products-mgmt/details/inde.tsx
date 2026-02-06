@@ -26,40 +26,42 @@ import {
   ProductPricingDetails,
 } from "./components";
 import { useGetProductbyIdQuery } from "@/store/api/productQueryApi";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { useUpdateProductMutation } from "@/store/api/productMutationApi";
 import { Spinner } from "@/components/shared";
+import { CreateProductWizard } from "../components";
+import { routes } from "@/lib/routes";
+
 interface ProductDetailsProps {
   // selectedProduct: Product;
-  onBack: () => void;
-  onEdit: () => void;
+  // onBack: () => void;
   onDuplicate: () => void;
   productId: string;
-  setProductId: (productId: string) => void;
 }
 
 const USER_ROLE = "admin"; // Can be: 'superadmin', 'admin', 'dmo', 'authority', 'business_owner'
 
-export default function ProductDetails({
-  // selectedProduct,
-  onBack,
-  onEdit,
-  onDuplicate,
-  productId,
-  // setProductId,
-}: ProductDetailsProps) {
+export default function ProductDetails() {
   const { t, i18n } = useTranslation("products");
   const { t: ct } = useTranslation("common");
+  const navigate = useNavigate();
 
   const { isRTL, theme } = useAppSelector((state) => state.settings);
   const language = i18n.language as Language;
   const [searchParams] = useSearchParams();
 
-  const productIdParam = searchParams.get("productId");
+  const productId = searchParams.get("productId");
   const { data: product, isLoading } = useGetProductbyIdQuery(
-    productIdParam ? { productId: productId } : skipToken,
+    productId ? { productId: productId } : skipToken,
   );
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const handleClose = () => {
+    setIsEditOpen(false);
+  };
+  const handleEdit = () => {
+    setIsEditOpen(true);
+  };
   const [updateProduct] = useUpdateProductMutation();
   const [activeTab, setActiveTab] = useState("overview");
   const [currentStatus, setCurrentStatus] = useState<Product["status"]>(
@@ -231,7 +233,7 @@ export default function ProductDetails({
         <div className="max-w-full mx-auto px-6 py-4">
           <div className="flex items-center justify-between mb-4">
             <button
-              onClick={onBack}
+              onClick={() => navigate(routes.productsMgmt)}
               className={`flex items-center gap-2 px-3 py-2 rounded-lg ${
                 theme === "dark"
                   ? "hover:bg-gray-800 text-gray-300"
@@ -246,7 +248,7 @@ export default function ProductDetails({
               {canEdit && (
                 <>
                   <button
-                    onClick={onDuplicate}
+                    // onClick={onDuplicate}
                     className={`flex items-center gap-2 px-4 py-2 rounded-lg border ${
                       theme === "dark"
                         ? "border-gray-700 hover:bg-gray-800 text-gray-300"
@@ -257,7 +259,7 @@ export default function ProductDetails({
                     <span>{t("duplicate") || "Duplicate"}</span>
                   </button>
                   <button
-                    onClick={onEdit}
+                    onClick={handleEdit}
                     className="flex items-center gap-2 px-4 py-2 bg-linear-to-r from-blue-500 to-indigo-600 text-white rounded-lg hover:shadow-lg transition-all"
                   >
                     <Edit className="w-4 h-4" />
@@ -423,6 +425,13 @@ export default function ProductDetails({
           {renderContent()}
         </div>
       </div>
+      {isEditOpen && (
+        <CreateProductWizard
+          isOpen={isEditOpen}
+          onClose={handleClose}
+          productId={productId}
+        />
+      )}
     </div>
   );
 }

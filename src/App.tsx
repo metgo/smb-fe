@@ -18,6 +18,7 @@ import {
   ProfilePage,
   OrdersMgmtPage,
   EventDetailsPage,
+  ProductDetails,
 } from "@/pages";
 import { IdleLogout } from "./components/shared";
 
@@ -65,6 +66,8 @@ function App() {
         { path: routes.miniCampaign, element: <MiniCampaignsMgmtPage /> },
         { path: routes.eventsMgmt, element: <EventsMgmtPage /> },
         { path: routes.eventDetails, element: <EventDetailsPage /> },
+        { path: routes.productDetails, element: <ProductDetails /> },
+
         { path: routes.profile, element: <ProfilePage /> },
         { path: routes.ordersMgmt, element: <OrdersMgmtPage /> },
         { path: "/*", element: <DashboardPage /> },

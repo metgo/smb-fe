@@ -17,16 +17,24 @@ import clsx from "clsx";
 
 import { useProductMgmt } from "./useProductMgmt";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { PageHeader, PageStats, ReordableDataTable } from "@/components/shared";
+import {
+  BulkActionBar,
+  PageHeader,
+  PageStats,
+  ReordableDataTable,
+} from "@/components/shared";
 import { CreateProductWizard } from "./components";
 import { Activity, useMemo, useRef, useState } from "react";
-import ProductDetails from "./details/inde";
+import { routes } from "@/lib/routes";
 
 import { useGetAllProductsQuery } from "@/store/api/productQueryApi";
 import { useNavigate } from "react-router-dom";
 import SearchInput from "@/components/shared/SearchInput";
 import { useGetbusinessForProductQuery } from "@/store/api/businessQueryApi";
 import ReactSelect from "react-select";
+import { FilterButton } from "@/components/btns";
+import { toast } from "sonner";
+import { useBulkProductsUpdateMutation } from "@/store/api/productMutationApi";
 
 const businessId = "";
 const defaultColumns = {
@@ -66,17 +74,14 @@ export default function ProductsMgmtPage() {
     setViewMode,
     isEditing,
     setIsEditing,
-    selectedProduct,
-    setSelectedProduct,
-    selectedProducts,
-    setSelectedProducts,
+
     showFilters,
     setShowFilters,
     // isCreating,
     setIsCreating,
 
     sortedProducts,
-    handleBulkStatusChange,
+    // handleBulkStatusChange,
     handleDuplicateProduct,
     salesMetrics,
     getProductTypeLabel,
@@ -85,14 +90,18 @@ export default function ProductsMgmtPage() {
 
   const { data: businessData, isLoading: isBusinessesLoading } =
     useGetbusinessForProductQuery({});
-  const businesses = businessData?.data;
   const canChangeStatus = ["superadmin", "admin", "dmo", "authority"].includes(
     USER_ROLE,
   );
+  //select products
+  const [selectedProducts, setSelectedProducts] = useState<Set<string>>(
+    new Set(),
+  );
+  const [selectedProduct, setSelectedProduct] = useState(null);
 
   //filters
   const [page, _setPage] = useState(1);
-  const LIMIT = 10;
+  const LIMIT = 20;
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [filters, setFilters] = useState({
     status: "all",
@@ -136,29 +145,70 @@ export default function ProductsMgmtPage() {
   const [currentView, setCurrentView] = useState<
     "list" | "details" | "edit" | "create"
   >("list");
-  const [productId, setProductId] = useState<string>("");
+  const [_productId, setProductId] = useState<string>("");
   const { textSecondary } = useThemeClasses();
 
   const themeColor = useThemeClasses();
   const navigate = useNavigate();
 
   const handleProductClick = (product: any) => {
-    console.log("product grid", product);
-    setSelectedProduct(product);
-    setProductId(product?._id);
-    navigate(`?productId=${product?._id}&productSlug=${product?.slug}`, {
+    // console.log("product grid", product);
+    // setSelectedProduct(product);
+    // setProductId(product?._id);
+    // setCurrentView("details");
+    // console.log("roduct id", productId);
+    navigate(`${routes.productDetails}?productId=${product?._id}`, {
       replace: true,
     });
-    setCurrentView("details");
   };
   const handleCreateNew = () => {
     setSelectedProduct(null);
     setCurrentView("create");
   };
-  const handleEdit = () => {
-    setCurrentView("edit");
+  const [bulkProductsUpdate] = useBulkProductsUpdateMutation();
+
+  //bulk delete
+  const handleBulkDelete = async () => {
+    if (!selectedProducts.size) return;
+    const toastId = toast.loading("Please wait. Businesses are deleting...");
+    try {
+      const results = await bulkProductsUpdate({
+        productsId: Array.from(selectedProducts),
+        isDeleted: true,
+      });
+
+      if (results?.data) {
+        const message = "Products deleted successfully";
+        toast.success(message, { id: toastId });
+        setSelectedProducts(new Set());
+        refetch();
+      }
+    } catch (error: any) {
+      toast.error(error?.message || "Failed to delete Products");
+    }
   };
 
+  //bulk status change
+  const handleBulkStatusChange = async (status: TStatus) => {
+    if (!selectedProducts.size) return;
+    toast.loading("Please wait. Product's status are changing...");
+
+    try {
+      const results = await bulkProductsUpdate({
+        productsId: Array.from(selectedProducts),
+        status: status?.toLocaleUpperCase(),
+      });
+
+      if (results?.data) {
+        const message = "Products status updated successfully";
+        toast.success(message);
+        setSelectedProducts(new Set());
+        refetch();
+      }
+    } catch (error: any) {
+      toast.error(error?.message || "Failed to change Products status");
+    }
+  };
   const {
     data: productData,
     isLoading: isLoadingProduct,
@@ -378,22 +428,9 @@ export default function ProductsMgmtPage() {
                 {/* Right side group: Filter Button + View Mode Toggle */}
                 <div className="flex items-center gap-3">
                   {/* Filter Button */}
-                  <button
-                    onClick={() => setShowFilters(!showFilters)}
-                    className={`px-3 py-2 rounded-lg border ${themeColor.borderColor} ${
-                      showFilters
-                        ? "bg-white dark:bg-teal-950 "
-                        : themeColor.bgSecondary
-                    } ${themeColor.textSecondary} hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex items-center gap-2`}
-                  >
-                    <Filter className="w-4 h-4" />
-                    <span className="hidden sm:inline">{t("filters")}</span>
-                    {showFilters ? (
-                      <ChevronUp className="w-4 h-4" />
-                    ) : (
-                      <ChevronDown className="w-4 h-4" />
-                    )}
-                  </button>
+
+                  <FilterButton value={showFilters} onChange={setShowFilters} />
+
                   {viewMode === "list" && (
                     <div className="relative" ref={columnSettingsRef}>
                       <button
@@ -499,7 +536,7 @@ export default function ProductsMgmtPage() {
                               .map(([key, visible]) => (
                                 <label
                                   key={key}
-                                  className={`flex items-center gap-2 p-2 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 ${
+                                  className={`flex items-center gap-2 p-2 rounded cursor-pointer ${
                                     isRTL ? "flex-row-reverse justify-end" : ""
                                   }`}
                                 >
@@ -743,36 +780,43 @@ export default function ProductsMgmtPage() {
 
               {/* Bulk Actions */}
               {selectedProducts.size > 0 && (
-                <div
-                  className={`mb-6 py-4 rounded-xl border ${themeColor.borderColor} bg-teal-50 dark:bg-teal-950/30 flex items-center justify-between gap-4`}
-                >
-                  <div className="flex items-center gap-3">
-                    <Check className="w-5 h-5 text-teal-600 dark:text-teal-400" />
-                    <span className={themeColor.textSecondary}>
-                      {selectedProducts.size} {t("selected_items")}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => handleBulkStatusChange("approved")}
-                      className="px-3 py-1.5 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600 transition-colors"
-                    >
-                      {t("approve")}
-                    </button>
-                    <button
-                      onClick={() => handleBulkStatusChange("archived")}
-                      className="px-3 py-1.5 bg-gray-500 text-white rounded-lg text-sm hover:bg-gray-600 transition-colors"
-                    >
-                      {t("archive")}
-                    </button>
-                    <button
-                      onClick={() => setSelectedProducts(new Set())}
-                      className={`p-1.5 rounded-lg ${themeColor.hoverBg} ${themeColor.textSecondary}`}
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
+                // <div
+                //   className={`mb-6 py-4 rounded-xl border ${themeColor.borderColor} bg-teal-50 dark:bg-teal-950/30 flex items-center justify-between gap-4`}
+                // >
+                //   <div className="flex items-center gap-3">
+                //     <Check className="w-5 h-5 text-teal-600 dark:text-teal-400" />
+                //     <span className={themeColor.textSecondary}>
+                //       {selectedProducts.size} {t("selected_items")}
+                //     </span>
+                //   </div>
+                //   <div className="flex items-center gap-2">
+                //     <button
+                //       onClick={() => handleBulkStatusChange("approved")}
+                //       className="px-3 py-1.5 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600 transition-colors"
+                //     >
+                //       {t("approve")}
+                //     </button>
+                //     <button
+                //       onClick={() => handleBulkStatusChange("archived")}
+                //       className="px-3 py-1.5 bg-gray-500 text-white rounded-lg text-sm hover:bg-gray-600 transition-colors"
+                //     >
+                //       {t("archive")}
+                //     </button>
+                //     <button
+                //       onClick={() => setSelectedProducts(new Set())}
+                //       className={`p-1.5 rounded-lg ${themeColor.hoverBg} ${themeColor.textSecondary}`}
+                //     >
+                //       <X className="w-4 h-4" />
+                //     </button>
+                //   </div>
+                // </div>
+                <BulkActionBar
+                  selectedItemCount={selectedProducts.size || 0}
+                  handleBulkStatusChange={handleBulkStatusChange}
+                  onBulkAction={{
+                    delete: handleBulkDelete,
+                  }}
+                />
               )}
             </div>
           </div>
@@ -808,7 +852,7 @@ export default function ProductsMgmtPage() {
                   className={`rounded-xl border ${themeColor.borderColor} ${themeColor.bgSecondary} overflow-hidden max-h-[calc(100vh-400px)] overflow-y-auto`}
                 >
                   <ReordableDataTable
-                    rowKey="id"
+                    rowKey="_id"
                     isDataLoading={isLoadingProduct}
                     data={productData?.data}
                     selectedItems={selectedProducts}
@@ -904,7 +948,7 @@ export default function ProductsMgmtPage() {
       {/* Create/Edit Product Wizard */}
       {currentView === "create" && (
         <CreateProductWizard
-          productId={productId}
+          productId=""
           setProductId={setProductId}
           onClose={() => {
             setIsCreating(false);
@@ -913,13 +957,10 @@ export default function ProductsMgmtPage() {
             setCurrentView("list");
           }}
           selectedProduct={selectedProduct}
-          preSelectedBusinessName={"abc"}
           currentView={currentView}
-          businesses={businesses}
-          businessData={businessData}
         />
       )}
-      {currentView === "edit" && (
+      {/* {currentView === "edit" && (
         <CreateProductWizard
           onClose={() => {
             setIsCreating(false);
@@ -935,22 +976,7 @@ export default function ProductsMgmtPage() {
           isBusinessesLoading={isBusinessesLoading}
           businessData={businessData}
         />
-      )}
-
-      {selectedProduct && currentView === "details" && (
-        <Activity mode={!isEditing ? "visible" : "hidden"}>
-          <ProductDetails
-            // selectedProduct={selectedProduct}
-            onBack={() => {
-              setCurrentView("list");
-            }}
-            onDuplicate={() => {}}
-            onEdit={handleEdit}
-            productId={productId}
-            setProductId={setProductId}
-          />
-        </Activity>
-      )}
+      )} */}
     </>
   );
 }

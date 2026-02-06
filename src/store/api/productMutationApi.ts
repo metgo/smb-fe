@@ -2,7 +2,11 @@ import { createApi } from "@reduxjs/toolkit/query/react";
 
 import { endpoints } from "@/lib/endpoints";
 import { axiosBaseQuery } from "./axiosBaseQuery";
-
+interface IBulkUpdateParams {
+  productsId: string[];
+  status?: string;
+  isDeleted?: boolean;
+}
 export const productMutationApi = createApi({
   reducerPath: "productMutationApi",
   baseQuery: axiosBaseQuery(),
@@ -35,11 +39,19 @@ export const productMutationApi = createApi({
         method: "DELETE",
       }),
     }),
+    bulkProductsUpdate: builder.mutation<any, IBulkUpdateParams>({
+      query: (body) => ({
+        url: endpoints.bulkProductsUpdate,
+        method: "PATCH",
+        data: body,
+      }),
+    }),
   }),
 });
 
 export const {
   useInitProductCreateMutation,
+  useBulkProductsUpdateMutation,
   useUpdateProductMutation,
   useDeleteProductMutation,
 } = productMutationApi;
