@@ -140,7 +140,7 @@ export default function CreateProductWizard({
       serviceLocation: "",
     },
   );
-
+  console.log("huhhhh", product?.businessId?._id);
   useEffect(() => {
     if (!productId || !product) return;
 
@@ -290,7 +290,7 @@ export default function CreateProductWizard({
     refetch();
     onClose();
   };
-  console.log("kdsfhjf", businessId);
+  console.log("kdsfhjf", formData.businessId);
   // Last saved timestamp
   const [_lastSaved, setLastSaved] = useState<Date | null>(null);
 
@@ -340,7 +340,6 @@ export default function CreateProductWizard({
     // },
   };
   console.log("formData product", formData);
-  console.log("🚀 ~ saveDraft ~ productId:", productId);
 
   // Auto-save draft function
   const saveDraft = async (isPublish = false) => {

@@ -115,7 +115,6 @@ const ProductBasicInfo = ({
               businessId: selectedBusinessId,
             });
             setBusinessId(selectedBusinessId);
-            console.log("selectedBusinessid", selectedBusinessId);
           }}
           placeholder={t("select_business")}
           options={
