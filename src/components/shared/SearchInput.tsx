@@ -6,7 +6,7 @@ interface SearchInputProps {
   searchTerm: string;
   setSearchTerm: React.Dispatch<React.SetStateAction<string>>;
   isRTL?: boolean;
-  theme?: "light" | "dark";
+  isDark: boolean;
 }
 
 const SearchInput: React.FC<SearchInputProps> = ({
@@ -14,7 +14,7 @@ const SearchInput: React.FC<SearchInputProps> = ({
   searchTerm,
   setSearchTerm,
   isRTL = false,
-  theme = "light",
+  isDark,
 }) => {
   const [inputValue, setInputValue] = useState(searchTerm);
 
@@ -36,7 +36,7 @@ const SearchInput: React.FC<SearchInputProps> = ({
     <div className="relative">
       <Search
         className={`absolute ${isRTL ? "right-3" : "left-3"} top-1/2 -translate-y-1/2 w-5 h-5 ${
-          theme === "dark" ? "text-gray-500" : "text-gray-400"
+          isDark ? "text-gray-500" : "text-gray-400"
         }`}
       />
 
@@ -46,7 +46,7 @@ const SearchInput: React.FC<SearchInputProps> = ({
         value={inputValue}
         onChange={(e) => setInputValue(e.target.value)}
         className={`w-full ${isRTL ? "pr-10 pl-4" : "pl-10 pr-4"} py-2 rounded-lg border ${
-          theme === "dark"
+          isDark
             ? "bg-gray-800 border-gray-700 text-gray-200 placeholder-gray-500"
             : "bg-white border-gray-300 text-gray-900 placeholder-gray-400"
         } focus:outline-none focus:ring-2 focus:ring-teal-500`}
@@ -55,7 +55,7 @@ const SearchInput: React.FC<SearchInputProps> = ({
       {inputValue && (
         <X
           className={`absolute ${isRTL ? "left-3" : "right-3"} top-1/2 -translate-y-1/2 cursor-pointer ${
-            theme === "dark"
+            isDark
               ? "text-gray-400 hover:text-gray-200"
               : "text-gray-500 hover:text-black"
           }`}

@@ -1,5 +1,5 @@
 import { useState, type FC } from "react";
-import { Mail, Phone, Plus, Trash2, User, Users } from "lucide-react";
+import { Mail, Phone, User } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import InviteCollaboratorModal from "./InviteCollaboratorModal";
@@ -225,7 +225,7 @@ const BusinessContactOwership: FC<BusinessContactOwershipProps> = ({
         </div>
 
         {/* Collaborators */}
-        <div
+        {/* <div
           className={`p-4 rounded-lg ${
             isDark
               ? "bg-gray-800/50 border border-gray-700"
@@ -249,7 +249,7 @@ const BusinessContactOwership: FC<BusinessContactOwershipProps> = ({
             </button>
           </div>
 
-          {formData.collaborators.length === 0 ? (
+          {formData?.collaborators?.length === 0 ? (
             <p
               className={`text-sm ${isDark ? "text-gray-500" : "text-gray-500"}`}
             >
@@ -257,7 +257,7 @@ const BusinessContactOwership: FC<BusinessContactOwershipProps> = ({
             </p>
           ) : (
             <div className="space-y-2">
-              {formData.collaborators.map((collab, idx) => (
+              {formData?.collaborators?.map((collab, idx) => (
                 <div
                   key={idx}
                   className={`flex items-center justify-between p-3 rounded-lg ${
@@ -305,7 +305,7 @@ const BusinessContactOwership: FC<BusinessContactOwershipProps> = ({
               ))}
             </div>
           )}
-        </div>
+        </div> */}
       </div>
 
       {/* Invite Collaborator Modal */}

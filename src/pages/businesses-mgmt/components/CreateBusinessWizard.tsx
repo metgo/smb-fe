@@ -13,7 +13,6 @@ import {
   Users,
   Truck,
 } from "lucide-react";
-import { useSearchParams } from "react-router-dom";
 
 import { useAppSelector } from "@/hooks/hooks";
 import {
@@ -38,8 +37,6 @@ import { useImagesUpload } from "@/hooks/useImagesUpload";
 import { useSingleImageUpload } from "@/hooks/useSingleImageUpload";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useBusinessDraftSaver } from "../hooks/useBusinessDraftSaver";
-import { useGetbusinessByIdQuery } from "@/store/api/businessQueryApi";
-import { skipToken } from "@reduxjs/toolkit/query";
 import { parseAddress } from "@/helpers";
 import { useCreateWebsiteAccessItemMutation } from "@/store/api/commonMutationApi";
 import PublishButton from "@/components/btns/PublishButton";
@@ -48,23 +45,18 @@ type View = "list" | "details" | "create" | "edit" | undefined;
 interface CreateBusinessWizardProps {
   onClose: () => void;
   currentView?: View;
-  selectedBusiness?: any;
+  editData?: any;
 }
 
 export default function CreateBusinessWizard({
   onClose,
   currentView,
+  editData,
 }: CreateBusinessWizardProps) {
   const { t } = useTranslation("businesses");
   const { theme, isRTL } = useAppSelector((state) => state.settings);
   const { textPrimary, textTertiary } = useThemeClasses();
-  const [searchParams] = useSearchParams();
   const [createWebsiteAccessItem] = useCreateWebsiteAccessItemMutation();
-  const businessEditId = searchParams.get("businessId") ?? "";
-
-  const { data: business } = useGetbusinessByIdQuery(
-    businessEditId ? { businessId: businessEditId } : skipToken,
-  );
 
   const [isPublishing, setIsPublishing] = useState(false);
   const [isPublishBtnClicked, setIsPublishBtnClicked] = useState(false);
@@ -193,62 +185,62 @@ export default function CreateBusinessWizard({
     if (currentView === "edit" && businessId) {
       setFormData({
         //basic info
-        nameEn: business?.name || "",
-        nameHe: business?.nameHe || "",
-        nameAr: business?.nameAr || "",
-        shortDescriptionEn: business?.shortDescription || "",
+        nameEn: editData?.name || "",
+        nameHe: editData?.nameHe || "",
+        nameAr: editData?.nameAr || "",
+        shortDescriptionEn: editData?.shortDescription || "",
         shortDescriptionHe: "",
         shortDescriptionAr: "",
-        fullDescriptionEn: business?.description || "",
+        fullDescriptionEn: editData?.description || "",
         fullDescriptionHe: "",
         fullDescriptionAr: "",
-        internalNotes: business?.internalNotes || "",
-        slug: business?.slug || "",
+        internalNotes: editData?.internalNotes || "",
+        slug: editData?.slug || "",
         //images
-        logo: business?.logo?.image,
-        images: business?.images,
+        logo: editData?.logo?.image,
+        images: editData?.images,
         //location
-        vendorDelivers: business.vendorDelivers ?? false,
-        pickupAvailable: business.isPickUpAvailable ?? false,
-        deliveryArea: business?.deliveryArea ?? [],
-        deliveryReturnExchange: business.deliveryReturnExchange ?? [],
-        deliveryAdditionalInfo: business.deliveryAdditionalInfo ?? "",
-        deliverySpecificSellerInfo: business.deliverySpecificSellerInfo ?? [],
+        vendorDelivers: editData.vendorDelivers ?? false,
+        pickupAvailable: editData.isPickUpAvailable ?? false,
+        deliveryArea: editData?.deliveryArea ?? [],
+        deliveryReturnExchange: editData.deliveryReturnExchange ?? [],
+        deliveryAdditionalInfo: editData.deliveryAdditionalInfo ?? "",
+        deliverySpecificSellerInfo: editData.deliverySpecificSellerInfo ?? [],
         //contact
-        email: business.busiEmail || "",
-        phone: business.phoneNumber || "",
+        email: editData.busiEmail || "",
+        phone: editData.phoneNumber || "",
         contactDetails: {
-          name: business.contactDetails?.name,
-          countryCode: business.contactDetails?.countryCode,
-          phone: business.contactDetails?.phone,
-          address: business.contactDetails?.address,
-          email: business.contactDetails?.email,
-          whatsAppCountryCode: business.contactDetails?.whatsAppCountryCode,
-          whatsAppNumber: business.contactDetails?.whatsAppNumber,
-          prefferedChannel: business.contactDetails?.prefferedChannel,
+          name: editData.contactDetails?.name,
+          countryCode: editData.contactDetails?.countryCode,
+          phone: editData.contactDetails?.phone,
+          address: editData.contactDetails?.address,
+          email: editData.contactDetails?.email,
+          whatsAppCountryCode: editData.contactDetails?.whatsAppCountryCode,
+          whatsAppNumber: editData.contactDetails?.whatsAppNumber,
+          prefferedChannel: editData.contactDetails?.prefferedChannel,
         },
-        operatingHours: business?.openingHrs,
+        operatingHours: editData?.openingHrs,
         //attributes
-        primaryCategory: business.primaryCategoryId || "",
-        tags: business.tags || [],
+        primaryCategory: editData.primaryCategoryId || "",
+        tags: editData.tags || [],
       });
-      setAccessiblitiesId(business.accessibilitiesId.map((a: any) => a._id));
-      setGroupTypesId(business.groupTypesId.map((g: any) => g._id));
+      setAccessiblitiesId(editData.accessibilitiesId.map((a: any) => a._id));
+      setGroupTypesId(editData.groupTypesId.map((g: any) => g._id));
 
       // Set geo location
-      if (business?.geoLocation) {
+      if (editData?.geoLocation) {
         setGeo({
-          lat: String(business.geoLocation.lat),
-          lng: String(business.geoLocation.lng),
+          lat: String(editData.geoLocation.lat),
+          lng: String(editData.geoLocation.lng),
         });
       }
 
       // Set formatted address
-      if (business?.address) {
+      if (editData?.address) {
         const formatted = [
-          business.address.location,
-          business.address.city,
-          business.address.country,
+          editData.address.location,
+          editData.address.city,
+          editData.address.country,
         ]
           .filter(Boolean)
           .join(", ");
@@ -256,12 +248,12 @@ export default function CreateBusinessWizard({
         setAddress(formatted);
       }
 
-      setSelectAuthorityId(business?.authorityId?._id || "");
-      setSelectedDmoId(business?.dmoId?._id || "");
-      setGalleryImages(business?.images);
-      setBusinessLogoImage({ image: business?.logo?.image });
+      setSelectAuthorityId(editData?.authorityId?._id || "");
+      setSelectedDmoId(editData?.dmoId?._id || "");
+      setGalleryImages(editData?.images);
+      setBusinessLogoImage({ image: editData?.logo?.image });
     }
-  }, [business, currentView, businessId]);
+  }, [editData, currentView, businessId]);
 
   const steps = [
     { number: 1, title: t("step_basic_info"), icon: FileText },
@@ -434,10 +426,9 @@ export default function CreateBusinessWizard({
     toast.success(t("business created succesfully"));
     onClose();
   };
-  console.log("formDaata", formData);
   useEffect(() => {
     if (currentView === "edit") {
-      setBusinessId(business?._id);
+      setBusinessId(editData?._id);
     }
   }, [currentView]);
 
@@ -461,7 +452,7 @@ export default function CreateBusinessWizard({
       errors,
       setFormData,
       markDirty,
-      business,
+      business: editData,
       currentView,
     };
     const mediaProps = {
@@ -499,7 +490,7 @@ export default function CreateBusinessWizard({
             setSelectAuthorityId={setSelectAuthorityId}
             websiteVisibilityIds={websiteVisibilityIds}
             setWebsiteVisibilityIds={setWebsiteVisibilityIds}
-            businessAssociatedWebsites={business?.associatedWebsites ?? []}
+            businessAssociatedWebsites={editData?.associatedWebsites ?? []}
           />
         );
       case 2:
@@ -525,7 +516,7 @@ export default function CreateBusinessWizard({
           />
         );
       case 5:
-        return <BusinessMedia {...mediaProps} business={business} />;
+        return <BusinessMedia {...mediaProps} business={editData} />;
       case 6:
         return <BusinessOpeningHours {...commonProps} />;
       case 7:
@@ -580,7 +571,7 @@ export default function CreateBusinessWizard({
                 <div className="flex items-center gap-2">
                   {/* Icon */}
                   <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center text-sm flex-shrink-0 ${
+                    className={`w-8 h-8 rounded-full flex items-center justify-center text-sm shrink-0 ${
                       step.number === currentStep
                         ? "bg-teal-600 text-white"
                         : step.number < currentStep

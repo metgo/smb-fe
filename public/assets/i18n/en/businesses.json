@@ -269,5 +269,16 @@
   "submit_for_approval": "Submit for Approval",
   "approval_rules": "Approval Rules",
   "all_mandatory_fields_required": "All mandatory fields must be completed",
-  "rejection_requires_notes": "Rejection requires internal notes"
+  "rejection_requires_notes": "Rejection requires internal notes",
+
+  "user_details": "User Details",
+  "user_not_in_system_prompt": "This user is not in our system. Please provide their details.",
+  "new_user": "New User",
+  "email_address": "Email Address",
+  "invite_collaborator": "Invite Collaborator",
+  "enter_email_prompt": "Enter the email address of the person you want to invite",
+  "role": "Role",
+  "viewer_read_only": "Viewer (Read Only)",
+  "admin": "Admin",
+  "user_not_in_system_alert": "is not in our system. Please provide their information to send an invitation."
 }

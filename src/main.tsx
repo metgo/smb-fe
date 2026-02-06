@@ -1,6 +1,5 @@
 import "./index.css";
 import "./i18n";
-// import "@ckeditor/ckeditor5-build-classic/build/ckeditor.css";
 
 import { Toaster } from "sonner";
 import { StrictMode } from "react";

@@ -1,5 +1,7 @@
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import clsx from "clsx";
 import React from "react";
+import { useTranslation } from "react-i18next";
 
 interface OperatingHour {
   day: string;
@@ -19,7 +21,8 @@ const BusinessOpeningHours = ({
   formData,
   setFormData,
 }: BusinessOpeningHoursProps) => {
-  const { isDark } = useThemeClasses();
+  const { t } = useTranslation("common");
+  const { isDark, textSecondary } = useThemeClasses();
 
   React.useEffect(() => {
     if (!formData.operatingHours || formData.operatingHours.length === 0) {
@@ -58,7 +61,7 @@ const BusinessOpeningHours = ({
 
   return (
     <div className="space-y-6">
-      {formData.operatingHours?.map((hour, idx) => (
+      {formData?.operatingHours?.map((hour, idx) => (
         <div
           key={hour.day}
           className={`flex justify-between items-start p-5 border rounded-md ${
@@ -67,7 +70,9 @@ const BusinessOpeningHours = ({
         >
           {/* Left side: Day and open time (open time below day) */}
           <div className="flex flex-col">
-            <div className="w-12 font-semibold">{hour.day}</div>
+            <div className={clsx("w-12 font-semibold", textSecondary)}>
+              {t(hour.day)}
+            </div>
             <div className="flex gap-4 items-center">
               <input
                 type="time"
@@ -80,7 +85,7 @@ const BusinessOpeningHours = ({
                     : "bg-white border-gray-300 text-gray-900"
                 }`}
               />
-              <div className="">to</div>
+              <div className={clsx(textSecondary)}>{t("to")}</div>
               <input
                 type="time"
                 value={hour.close}

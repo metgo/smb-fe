@@ -1,16 +1,18 @@
 export const routes = {
   dashboard: "/",
+
   businessMgmt: "/businesses-management",
   businessDetails: "/business-details",
-  productsMgmt: "/products-management",
-  productDetails: "/product-details",
-  ordersMgmt: "/orders-management",
-  orderDetails: "/order-details",
-  pointOfInterest: "/point-of-interest",
-  trips: "/trips",
 
   eventsMgmt: "/events-management",
   eventDetails: "/event-details",
+
+  productsMgmt: "/products-management",
+  ordersMgmt: "/orders-management",
+  productDetails: "/product-details",
+  orderDetails: "/order-details",
+  pointOfInterest: "/point-of-interest",
+  trips: "/trips",
 
   funDays: "/fun-days",
   vouchers: "/vouchers",

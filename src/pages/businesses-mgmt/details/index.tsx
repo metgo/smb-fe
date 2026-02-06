@@ -1,4 +1,5 @@
 import clsx from "clsx";
+import { toast } from "sonner";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
@@ -27,22 +28,10 @@ import { useGetbusinessByIdQuery } from "@/store/api/businessQueryApi";
 import { useAppSelector } from "@/hooks/hooks";
 import { UserRole } from "@/enums/user.types";
 import { StatusChangeBtn } from "@/components/btns";
-import { toast } from "sonner";
 import { useUpdateBusinessMutation } from "@/store/api/businessMutationApi";
+import { CreateBusinessWizard } from "../components";
 
-interface BusinessDetailsProps {
-  onBack: () => void;
-  onEdit: () => void;
-  onCreateProduct?: () => void;
-  onViewProducts?: () => void;
-}
-
-export default function BusinessDetails({
-  onBack,
-  onEdit,
-  onCreateProduct,
-  onViewProducts,
-}: BusinessDetailsProps) {
+export default function BusinessDetailsPage() {
   const { t } = useTranslation("businesses");
   const { borderColor, isDark } = useThemeClasses();
   const { userRole } = useAppSelector((state) => state.auth);
@@ -63,7 +52,8 @@ export default function BusinessDetails({
   const [galleryImages, setGalleryImages] = useState<TImages>([]);
 
   const [activeTab, setActiveTab] = useState("overview");
-  const [showChangeOwnerModal, setShowChangeOwnerModal] = useState(false);
+  const [isEditClicked, setIsEditClicked] = useState(false);
+  const [isOwnerChangeModalOpen, setIsOwnerChangeModalOpen] = useState(false);
 
   const canChangeStatus = ["superadmin", "admin", "dmo", "authority"].includes(
     userRole,
@@ -179,6 +169,12 @@ export default function BusinessDetails({
   //   }
   // };
 
+  const onViewProducts = () => {};
+
+  const onCreateProduct = () => {};
+
+  const onBack = () => {};
+
   const onStatusChangeHandler = async (status: string) => {
     try {
       await updateBusiness({
@@ -270,7 +266,7 @@ export default function BusinessDetails({
 
             {userRole === UserRole.SUPERADMIN && (
               <button
-                onClick={() => setShowChangeOwnerModal(true)}
+                onClick={() => setIsOwnerChangeModalOpen(true)}
                 className={`px-4 py-2 rounded-lg border transition-colors flex items-center gap-2 cursor-pointer ${
                   isDark
                     ? "border-gray-700 hover:bg-gray-800 text-gray-300"
@@ -282,7 +278,7 @@ export default function BusinessDetails({
               </button>
             )}
             <button
-              onClick={onEdit}
+              onClick={() => setIsEditClicked(true)}
               className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-lg transition-colors flex items-center gap-2 cursor-pointer"
             >
               <Edit className="w-4 h-4" />
@@ -326,15 +322,21 @@ export default function BusinessDetails({
       <div className="flex-1 overflow-y-auto p-6">{renderContent()}</div>
 
       {/* Change Owner Modal */}
-      <ChangeOwnerModal
-        isOpen={showChangeOwnerModal}
-        onClose={() => setShowChangeOwnerModal(false)}
-        USER_ROLE={userRole}
-        currentOwner={business?.owner}
-        onOwnerChange={(_) => {
-          setShowChangeOwnerModal(false);
-        }}
-      />
+      {isOwnerChangeModalOpen && (
+        <ChangeOwnerModal
+          setIsOpen={setIsOwnerChangeModalOpen}
+          USER_ROLE={userRole}
+          currentOwner={business?.owner}
+        />
+      )}
+
+      {isEditClicked && (
+        <CreateBusinessWizard
+          editData={business}
+          currentView={"edit"}
+          onClose={() => setIsEditClicked(false)}
+        />
+      )}
     </div>
   );
 }
