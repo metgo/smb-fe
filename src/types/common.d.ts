@@ -1,6 +1,13 @@
 type Language = "en" | "ar" | "he";
 type Theme = "light" | "dark";
-type TStatus = "draft" | "pending" | "approved" | "rejected" | "archived";
+type TStatus =
+  | "draft"
+  | "active"
+  | "inactive"
+  | "pending"
+  | "approved"
+  | "rejected"
+  | "archived";
 
 interface Geo {
   lat: string;

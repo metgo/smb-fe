@@ -40,7 +40,14 @@ interface Product {
   ];
   collaboratorId: string[];
 
-  status: "draft" | "active" | "inactive";
+  status:
+    | "draft"
+    | "active"
+    | "inactive"
+    | "pending"
+    | "approved"
+    | "rejected"
+    | "archived";
   impact: number;
 
   categories: string[];

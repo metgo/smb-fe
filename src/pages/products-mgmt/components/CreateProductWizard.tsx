@@ -39,8 +39,8 @@ import { useGetbusinessForProductQuery } from "@/store/api/businessQueryApi";
 interface ProductWizardProps {
   onClose: () => void;
   editingProduct?: ProductFormData | null;
-  productId?: string;
-  setProductId?: (value: string) => void;
+  productId?: string | null;
+  setProductId: (value: string) => void;
   selectedProduct?: any;
   currentView?: string;
   isOpen?: boolean;
@@ -140,7 +140,6 @@ export default function CreateProductWizard({
       serviceLocation: "",
     },
   );
-  console.log("huhhhh", product?.businessId?._id);
   useEffect(() => {
     if (!productId || !product) return;
 

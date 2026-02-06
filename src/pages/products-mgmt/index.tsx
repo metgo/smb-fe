@@ -1,10 +1,7 @@
 import {
   Package,
-  Filter,
   Grid3x3,
   List,
-  X,
-  Check,
   Copy,
   Settings2,
   ArrowUpDown,
@@ -18,7 +15,7 @@ import clsx from "clsx";
 import { useProductMgmt } from "./useProductMgmt";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import {
-  BulkActionBar,
+  // BulkActionBar,
   PageHeader,
   PageStats,
   ReordableDataTable,
@@ -33,8 +30,8 @@ import SearchInput from "@/components/shared/SearchInput";
 import { useGetbusinessForProductQuery } from "@/store/api/businessQueryApi";
 import ReactSelect from "react-select";
 import { FilterButton } from "@/components/btns";
-import { toast } from "sonner";
-import { useBulkProductsUpdateMutation } from "@/store/api/productMutationApi";
+// import { toast } from "sonner";
+// import { useBulkProductsUpdateMutation } from "@/store/api/productMutationApi";
 
 const businessId = "";
 const defaultColumns = {
@@ -42,6 +39,7 @@ const defaultColumns = {
   name: true,
   businessId: true, //  optional
   productType: true,
+  actions: true,
   status: true,
   price: true,
   impact: false, //  optional
@@ -58,6 +56,7 @@ const columnDefinitions = [
   { key: "productType" as keyof ColumnVisibility, isDefault: true },
   { key: "status" as keyof ColumnVisibility, isDefault: true },
   { key: "price" as keyof ColumnVisibility, isDefault: true },
+  { key: "actions" as keyof ColumnVisibility, isDefault: true },
   { key: "impact" as keyof ColumnVisibility, isDefault: false },
   { key: "quantity" as keyof ColumnVisibility, isDefault: false },
   { key: "updatedAt" as keyof ColumnVisibility, isDefault: false },
@@ -72,7 +71,7 @@ export default function ProductsMgmtPage() {
     isDark,
     viewMode,
     setViewMode,
-    isEditing,
+    // isEditing,
     setIsEditing,
 
     showFilters,
@@ -80,16 +79,15 @@ export default function ProductsMgmtPage() {
     // isCreating,
     setIsCreating,
 
-    sortedProducts,
-    // handleBulkStatusChange,
-    handleDuplicateProduct,
+    // sortedProducts,
+    // // handleBulkStatusChange,
+    // handleDuplicateProduct,
     salesMetrics,
     getProductTypeLabel,
     getStatusBadge,
   } = useProductMgmt();
 
-  const { data: businessData, isLoading: isBusinessesLoading } =
-    useGetbusinessForProductQuery({});
+  const { data: businessData } = useGetbusinessForProductQuery({});
   const canChangeStatus = ["superadmin", "admin", "dmo", "authority"].includes(
     USER_ROLE,
   );
@@ -108,7 +106,7 @@ export default function ProductsMgmtPage() {
     productType: "all",
     businessId: "all",
   });
-  const [clearBusiness, setClearBusiness] = useState(false);
+  const [_clearBusiness, setClearBusiness] = useState(false);
   const clearFilter = (filterKey: string) => {
     setClearBusiness(true);
     setFilters((prev) => ({
@@ -165,55 +163,52 @@ export default function ProductsMgmtPage() {
     setSelectedProduct(null);
     setCurrentView("create");
   };
-  const [bulkProductsUpdate] = useBulkProductsUpdateMutation();
+  // const [bulkProductsUpdate] = useBulkProductsUpdateMutation();
 
   //bulk delete
-  const handleBulkDelete = async () => {
-    if (!selectedProducts.size) return;
-    const toastId = toast.loading("Please wait. Businesses are deleting...");
-    try {
-      const results = await bulkProductsUpdate({
-        productsId: Array.from(selectedProducts),
-        isDeleted: true,
-      });
+  // const handleBulkDelete = async () => {
+  //   if (!selectedProducts.size) return;
+  //   const toastId = toast.loading("Please wait. Businesses are deleting...");
+  //   try {
+  //     const results = await bulkProductsUpdate({
+  //       productsId: Array.from(selectedProducts),
+  //       isDeleted: true,
+  //     });
 
-      if (results?.data) {
-        const message = "Products deleted successfully";
-        toast.success(message, { id: toastId });
-        setSelectedProducts(new Set());
-        refetch();
-      }
-    } catch (error: any) {
-      toast.error(error?.message || "Failed to delete Products");
-    }
-  };
+  //     if (results?.data) {
+  //       const message = "Products deleted successfully";
+  //       toast.success(message, { id: toastId });
+  //       setSelectedProducts(new Set());
+  //       refetch();
+  //     }
+  //   } catch (error: any) {
+  //     toast.error(error?.message || "Failed to delete Products");
+  //   }
+  // };
 
-  //bulk status change
-  const handleBulkStatusChange = async (status: TStatus) => {
-    if (!selectedProducts.size) return;
-    toast.loading("Please wait. Product's status are changing...");
+  // //bulk status change
+  // const handleBulkStatusChange = async (status: TStatus) => {
+  //   if (!selectedProducts.size) return;
+  //   toast.loading("Please wait. Product's status are changing...");
 
-    try {
-      const results = await bulkProductsUpdate({
-        productsId: Array.from(selectedProducts),
-        status: status?.toLocaleUpperCase(),
-      });
+  //   try {
+  //     const results = await bulkProductsUpdate({
+  //       productsId: Array.from(selectedProducts),
+  //       status: status?.toLocaleUpperCase(),
+  //     });
 
-      if (results?.data) {
-        const message = "Products status updated successfully";
-        toast.success(message);
-        setSelectedProducts(new Set());
-        refetch();
-      }
-    } catch (error: any) {
-      toast.error(error?.message || "Failed to change Products status");
-    }
-  };
-  const {
-    data: productData,
-    isLoading: isLoadingProduct,
-    refetch,
-  } = useGetAllProductsQuery(productQueryParams);
+  //     if (results?.data) {
+  //       const message = "Products status updated successfully";
+  //       toast.success(message);
+  //       setSelectedProducts(new Set());
+  //       refetch();
+  //     }
+  //   } catch (error: any) {
+  //     toast.error(error?.message || "Failed to change Products status");
+  //   }
+  // };
+  const { data: productData, isLoading: isLoadingProduct } =
+    useGetAllProductsQuery(productQueryParams);
 
   //column settings
   const [showColumnSettings, setShowColumnSettings] = useState(false);
@@ -343,11 +338,11 @@ export default function ProductsMgmtPage() {
     columnVisibility.actions && {
       key: "actions",
       label: t("actions"),
-      render: (product: any) => (
+      render: () => (
         <button
           onClick={(e) => {
             e.stopPropagation();
-            handleDuplicateProduct(product);
+            // handleDuplicateProduct(product);
           }}
           className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
         >
@@ -779,37 +774,37 @@ export default function ProductsMgmtPage() {
               )}
 
               {/* Bulk Actions */}
-              {selectedProducts.size > 0 && (
-                // <div
-                //   className={`mb-6 py-4 rounded-xl border ${themeColor.borderColor} bg-teal-50 dark:bg-teal-950/30 flex items-center justify-between gap-4`}
-                // >
-                //   <div className="flex items-center gap-3">
-                //     <Check className="w-5 h-5 text-teal-600 dark:text-teal-400" />
-                //     <span className={themeColor.textSecondary}>
-                //       {selectedProducts.size} {t("selected_items")}
-                //     </span>
-                //   </div>
-                //   <div className="flex items-center gap-2">
-                //     <button
-                //       onClick={() => handleBulkStatusChange("approved")}
-                //       className="px-3 py-1.5 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600 transition-colors"
-                //     >
-                //       {t("approve")}
-                //     </button>
-                //     <button
-                //       onClick={() => handleBulkStatusChange("archived")}
-                //       className="px-3 py-1.5 bg-gray-500 text-white rounded-lg text-sm hover:bg-gray-600 transition-colors"
-                //     >
-                //       {t("archive")}
-                //     </button>
-                //     <button
-                //       onClick={() => setSelectedProducts(new Set())}
-                //       className={`p-1.5 rounded-lg ${themeColor.hoverBg} ${themeColor.textSecondary}`}
-                //     >
-                //       <X className="w-4 h-4" />
-                //     </button>
-                //   </div>
-                // </div>
+              {/* {selectedProducts.size > 0 && (
+                <div
+                  className={`mb-6 py-4 rounded-xl border ${themeColor.borderColor} bg-teal-50 dark:bg-teal-950/30 flex items-center justify-between gap-4`}
+                >
+                  <div className="flex items-center gap-3">
+                    <Check className="w-5 h-5 text-teal-600 dark:text-teal-400" />
+                    <span className={themeColor.textSecondary}>
+                      {selectedProducts.size} {t("selected_items")}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleBulkStatusChange("approved")}
+                      className="px-3 py-1.5 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600 transition-colors"
+                    >
+                      {t("approve")}
+                    </button>
+                    <button
+                      onClick={() => handleBulkStatusChange("archived")}
+                      className="px-3 py-1.5 bg-gray-500 text-white rounded-lg text-sm hover:bg-gray-600 transition-colors"
+                    >
+                      {t("archive")}
+                    </button>
+                    <button
+                      onClick={() => setSelectedProducts(new Set())}
+                      className={`p-1.5 rounded-lg ${themeColor.hoverBg} ${themeColor.textSecondary}`}
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
                 <BulkActionBar
                   selectedItemCount={selectedProducts.size || 0}
                   handleBulkStatusChange={handleBulkStatusChange}
@@ -817,7 +812,7 @@ export default function ProductsMgmtPage() {
                     delete: handleBulkDelete,
                   }}
                 />
-              )}
+              )} */}
             </div>
           </div>
 
@@ -825,7 +820,7 @@ export default function ProductsMgmtPage() {
           <div className="flex-1 overflow-y-auto py-6 pb-6">
             <div className=" mx-auto">
               {/* Products Content */}
-              {sortedProducts.length === 0 ? (
+              {productData?.data.length === 0 ? (
                 // Empty State
                 <div
                   className={`text-center py-16 ${themeColor.bgSecondary} rounded-xl border ${themeColor.borderColor}`}
@@ -960,23 +955,6 @@ export default function ProductsMgmtPage() {
           currentView={currentView}
         />
       )}
-      {/* {currentView === "edit" && (
-        <CreateProductWizard
-          onClose={() => {
-            setIsCreating(false);
-            setIsEditing(false);
-            setSelectedProduct(null);
-            setCurrentView("list");
-          }}
-          businesses={businesses}
-          selectedProduct={selectedProduct}
-          productId={productId}
-          setProductId={setProductId}
-          currentView={currentView}
-          isBusinessesLoading={isBusinessesLoading}
-          businessData={businessData}
-        />
-      )} */}
     </>
   );
 }

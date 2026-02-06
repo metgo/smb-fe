@@ -9,7 +9,7 @@ interface ProductMediaDetailsProps {
 
 const ProductMediaDetails: React.FC<ProductMediaDetailsProps> = ({
   product,
-  language,
+  // language,
   theme,
   t,
 }) => {
@@ -24,12 +24,12 @@ const ProductMediaDetails: React.FC<ProductMediaDetailsProps> = ({
           {t("product_images") || "Product Images"}
         </h3>
 
-        {product.image ? (
+        {product.images ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
               <img
-                src={product.image}
-                alt={product?.name?.[language] || "Product image"}
+                src={product.images[0].image}
+                alt={product?.name || "Product image"}
                 className="w-full h-64 object-cover"
               />
             </div>

@@ -1,5 +1,5 @@
 import type { FC } from "react";
-import { Plus, Upload, X } from "lucide-react";
+import { Plus, X } from "lucide-react";
 import { ConfirmDialog, ImageWithFallback } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 

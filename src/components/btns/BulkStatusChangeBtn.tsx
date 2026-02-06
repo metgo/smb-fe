@@ -22,6 +22,8 @@ const BulkStatusChangeBtn: React.FC<BulkStatusChangeBtnProps> = ({
     approved: { color: "bg-green-500", label: t("approved") },
     rejected: { color: "bg-red-500", label: t("rejected") },
     archived: { color: "bg-gray-400", label: t("archived") },
+    active: { color: "bg-gray-400", label: t("active") },
+    inactive: { color: "bg-gray-400", label: t("inactive") },
   };
 
   const handleStatusChange = (newStatus: Product["status"]) => {

@@ -33,13 +33,6 @@ import { Spinner } from "@/components/shared";
 import { CreateProductWizard } from "../components";
 import { routes } from "@/lib/routes";
 
-interface ProductDetailsProps {
-  // selectedProduct: Product;
-  // onBack: () => void;
-  onDuplicate: () => void;
-  productId: string;
-}
-
 const USER_ROLE = "admin"; // Can be: 'superadmin', 'admin', 'dmo', 'authority', 'business_owner'
 
 export default function ProductDetails() {
@@ -68,6 +61,7 @@ export default function ProductDetails() {
     product?.status,
   );
   const [showStatusDropdown, setShowStatusDropdown] = useState(false);
+  const [_productId, setProductId] = useState<string>("");
 
   const canEdit = [
     "superadmin",
@@ -97,8 +91,12 @@ export default function ProductDetails() {
   const StatusBadge = ({ status }: { status: Product["status"] }) => {
     const statusConfig = {
       draft: { color: "bg-gray-500", label: t("draft") },
-      active: { color: "bg-green-500", label: t("active") },
-      inactive: { color: "bg-red-400", label: t("inactive") },
+      pending: { color: "bg-yellow-500", label: t("pending") },
+      approved: { color: "bg-green-500", label: t("approved") },
+      rejected: { color: "bg-red-500", label: t("rejected") },
+      archived: { color: "bg-gray-400", label: t("archived") },
+      active: { color: "bg-gray-400", label: t("active") },
+      inactive: { color: "bg-gray-400", label: t("inactive") },
     };
 
     const config = statusConfig[status];
@@ -108,7 +106,7 @@ export default function ProductDetails() {
         console.log(newStatus.toUpperCase());
 
         await updateProduct({
-          productId: productId,
+          productId: productId ?? "",
           body: { status: newStatus },
         }).unwrap();
 
@@ -430,6 +428,7 @@ export default function ProductDetails() {
           isOpen={isEditOpen}
           onClose={handleClose}
           productId={productId}
+          setProductId={setProductId}
         />
       )}
     </div>

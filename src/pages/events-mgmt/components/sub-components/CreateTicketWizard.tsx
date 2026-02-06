@@ -71,7 +71,7 @@ const CreateTicketWizard = ({
     markedPrice?: string;
     sellingPrice?: string;
   }>({ ticketDays: [] });
-  const [ticketImage, setTicketImage] = useState<IImage | null>(null);
+  const [_ticketImage, _setTicketImage] = useState<IImage | null>(null);
 
   const isPaidOrVip = ["paid", "vip"].includes(
     editData?.type?.toLowerCase() || "",

@@ -38,16 +38,16 @@ const ProductBasicInfo = ({
   businesses,
   setBusinessId,
   isLoading,
-  isBusinessesLoading,
+  // isBusinessesLoading,
 }: ProductBasicInfoProps) => {
   const { bgTertiary, textPrimary, textSecondary, textTertiary, borderColor } =
     useThemeClasses();
   // Helper to get field key based on selected language
-  const getFieldKey = (
-    _field: "name" | "shortDescription" | "fullDescription",
-  ) => {
-    return selectedFormLanguage;
-  };
+  // const getFieldKey = (
+  //   _field: "name" | "shortDescription" | "fullDescription",
+  // ) => {
+  //   return selectedFormLanguage;
+  // };
   // Helper to get placeholder text based on language
   const getPlaceholder = (type: "name" | "short" | "full") => {
     const placeholders: Record<string, Record<string, string>> = {
