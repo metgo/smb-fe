@@ -32,12 +32,14 @@ import { useTranslation } from "react-i18next";
 import { toggleSidebar } from "@/features/uiSlice";
 import { useLocation, useNavigate } from "react-router-dom";
 import { routes } from "@/lib/routes";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 interface MenuItem {
   id: string;
   label: string;
   icon: any;
   path: string;
+  isEnabled: boolean;
   subItems?: MenuItem[];
 }
 
@@ -48,7 +50,8 @@ export default function Sidebar() {
 
   const dispatch = useAppDispatch();
 
-  const { theme, isRTL } = useAppSelector((state) => state.settings);
+  const { isDark } = useThemeClasses();
+  const { isRTL } = useAppSelector((state) => state.settings);
   const { isSidebarCollapsed } = useAppSelector((state) => state.ui);
 
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -61,72 +64,84 @@ export default function Sidebar() {
       path: routes.dashboard,
       label: t("dashboard") || "Dashboard",
       icon: LayoutDashboard,
+      isEnabled: true,
     },
     {
       id: "businesses",
       path: routes.businessMgmt,
       label: t("businesses") || "Businesses",
       icon: Building2,
+      isEnabled: true,
     },
     {
       id: "products",
       path: routes.productsMgmt,
       label: t("products") || "Products",
       icon: Package,
+      isEnabled: false,
     },
     {
       id: "orders",
       path: routes.ordersMgmt,
       label: t("orders") || "Orders",
       icon: ShoppingCart,
+      isEnabled: false,
     },
     {
       id: "events",
       path: routes.eventsMgmt,
       label: t("events") || "Events",
       icon: Calendar,
+      isEnabled: true,
     },
     {
       id: "poi",
       path: routes.pointOfInterest,
       label: t("pois") || "Points of Interest",
       icon: MapPin,
+      isEnabled: false,
     },
     {
       id: "trips",
       path: routes.trips,
       label: t("trips") || "Trips",
       icon: Map,
+      isEnabled: false,
     },
     {
       id: "fun-days",
       path: routes.funDays,
       label: t("fun_days") || "Fun Days",
       icon: Sparkles,
+      isEnabled: false,
     },
     {
       id: "local-economy",
       path: routes.miniCampaign,
       label: t("local_economy") || "Local Economy",
       icon: Wallet,
+      isEnabled: false,
       subItems: [
         {
           id: "vouchers",
           path: routes.vouchers,
           label: t("vouchers") || "Vouchers",
           icon: Ticket,
+          isEnabled: false,
         },
         {
           id: "offline-vouchers",
           path: routes.offlineVouchers,
           label: t("offline_vouchers") || "Offline Vouchers Purchases",
           icon: Receipt,
+          isEnabled: false,
         },
         {
           id: "mini-campaign",
           path: routes.miniCampaign,
           label: t("mini_campaigns") || "Mini-Campaigns",
           icon: Megaphone,
+          isEnabled: false,
         },
       ],
     },
@@ -135,42 +150,49 @@ export default function Sidebar() {
       path: routes.dashboard,
       label: t("site_management") || "Site Management",
       icon: Globe,
+      isEnabled: false,
       subItems: [
         {
           id: "home",
           path: routes.dashboard,
           label: t("home") || "Home",
           icon: Home,
+          isEnabled: false,
         },
         {
           id: "promotions",
           path: routes.dashboard,
           label: t("promotions") || "Promotions",
           icon: Megaphone,
+          isEnabled: false,
         },
         {
           id: "blog",
           path: routes.dashboard,
           label: t("blog") || "Blog",
           icon: FileText,
+          isEnabled: false,
         },
         {
           id: "news-feed",
           path: routes.dashboard,
           label: t("news_feed") || "News Feed",
           icon: Rss,
+          isEnabled: false,
         },
         {
           id: "feed-settings",
           path: routes.dashboard,
           label: t("feed_settings") || "Feed Settings",
           icon: SlidersHorizontal,
+          isEnabled: false,
         },
         {
           id: "mini-site",
           path: routes.dashboard,
           label: t("mini_site") || "Mini-site",
           icon: Layout,
+          isEnabled: false,
         },
       ],
     },
@@ -179,24 +201,28 @@ export default function Sidebar() {
       path: routes.profile,
       label: t("settings") || "Settings",
       icon: Settings,
+      isEnabled: true,
       subItems: [
         {
           id: "profile",
           path: routes.profile,
           label: t("my_profile") || "My Profile",
           icon: UserCircle,
+          isEnabled: true,
         },
         {
           id: "users",
           path: routes.dashboard,
           label: t("users") || "Users",
           icon: Users,
+          isEnabled: false,
         },
         {
           id: "documents",
           path: routes.dashboard,
           label: t("documents") || "Documents",
           icon: File,
+          isEnabled: false,
         },
       ],
     },
@@ -210,11 +236,16 @@ export default function Sidebar() {
     );
   };
 
-  const handleItemClick = (path: string, hasSubItems: boolean) => {
-    if (hasSubItems) {
-      toggleExpanded(path);
+  const handleItemClick = (item: MenuItem, hasSubItems: boolean) => {
+    // Prevent navigation if item is disabled
+    if (!item.isEnabled) {
+      return;
     }
-    navigate(path);
+
+    if (hasSubItems) {
+      toggleExpanded(item.path);
+    }
+    navigate(item.path);
   };
 
   const isItemActive = (path: string) => location.pathname === path;
@@ -225,6 +256,7 @@ export default function Sidebar() {
     const hasSubItems = item.subItems && item.subItems.length > 0;
     const expanded = isExpanded(item.path);
     const active = isItemActive(item.path);
+    const isDisabled = !item.isEnabled;
 
     const ChevronIcon = isRTL
       ? expanded
@@ -237,18 +269,25 @@ export default function Sidebar() {
     return (
       <div key={item.id}>
         <button
-          onClick={() => handleItemClick(item.path, hasSubItems as boolean)}
-          className={`w-full flex items-center gap-3 px-4 py-3 transition-all cursor-pointer ${
+          onClick={() => handleItemClick(item, hasSubItems as boolean)}
+          disabled={isDisabled}
+          className={`w-full flex items-center gap-3 px-4 py-3 transition-all ${
             level > 0 ? `${isRTL ? "pr-8" : "pl-8"}` : ""
           } ${
-            active
-              ? theme === "dark"
-                ? "bg-teal-500/20 text-teal-400 border-l-2 border-teal-500"
-                : "bg-teal-50 text-teal-700 border-l-2 border-teal-600"
-              : theme === "dark"
-                ? "text-gray-300 hover:bg-gray-800/50"
-                : "text-gray-700 hover:bg-gray-100"
-          } ${isSidebarCollapsed ? "justify-center" : ""} ${isRTL && !isSidebarCollapsed ? "flex-row-reverse" : ""}`}
+            isDisabled
+              ? isDark
+                ? "text-gray-600 cursor-not-allowed opacity-50"
+                : "text-gray-400 cursor-not-allowed opacity-60"
+              : active
+                ? isDark
+                  ? "bg-teal-500/20 text-teal-400 border-l-2 border-teal-500 cursor-pointer"
+                  : "bg-teal-50 text-teal-700 border-l-2 border-teal-600 cursor-pointer"
+                : isDark
+                  ? "text-gray-300 hover:bg-gray-800/50 cursor-pointer"
+                  : "text-gray-700 hover:bg-gray-100 cursor-pointer"
+          } ${isSidebarCollapsed ? "justify-center" : ""} ${
+            isRTL && !isSidebarCollapsed ? "flex-row-reverse" : ""
+          }`}
         >
           <Icon
             className={`${isSidebarCollapsed ? "w-5 h-5" : "w-4 h-4"} shrink-0`}
@@ -260,18 +299,16 @@ export default function Sidebar() {
               >
                 {item.label}
               </span>
-              {hasSubItems && <ChevronIcon className="w-4 h-4 shrink-0" />}
+              {hasSubItems && !isDisabled && (
+                <ChevronIcon className="w-4 h-4 shrink-0" />
+              )}
             </>
           )}
         </button>
 
         {/* Sub-items */}
-        {!isSidebarCollapsed && hasSubItems && expanded && (
-          <div
-            className={`${
-              theme === "dark" ? "bg-gray-900/30" : "bg-gray-50/50"
-            }`}
-          >
+        {!isSidebarCollapsed && hasSubItems && expanded && !isDisabled && (
+          <div className={`${isDark ? "bg-gray-900/30" : "bg-gray-50/50"}`}>
             {item.subItems!.map((subItem) =>
               renderMenuItem(subItem, level + 1),
             )}
@@ -292,19 +329,6 @@ export default function Sidebar() {
       )}
 
       {/* Sidebar */}
-      {/* <aside
-        className={`${isSidebarCollapsed ? 'w-16' : 'w-64'
-          } db1 h-[calc(100vh-5rem)] top-20 transition-all duration-300 flex flex-col border-r fixed top-20 bottom-0 left-0 z-30 ${theme === 'dark'
-            ? 'bg-gray-900/50 border-gray-800'
-            : 'bg-white border-gray-200'
-          } ${
-          // Mobile: fixed overlay with transform, Desktop: always fixed
-          isMobileOpen !== undefined
-            ? `lg:static ${isRTL ? 'right-0 left-auto' : 'left-0'} transform lg:transform-none ${isMobileOpen ? 'translate-x-0' : isRTL ? 'translate-x-full' : '-translate-x-full'
-            } lg:translate-x-0`
-            : ''
-          }`}
-      > */}
       <aside
         className={`
           fixed
@@ -316,7 +340,7 @@ export default function Sidebar() {
           border-r
           z-30
           ${
-            theme === "dark"
+            isDark
               ? "bg-gray-900/50 border-gray-800"
               : "bg-white border-gray-200"
           }
@@ -326,13 +350,13 @@ export default function Sidebar() {
         {/* Toggle Button */}
         <div
           className={`p-4 border-b ${
-            theme === "dark" ? "border-gray-800" : "border-gray-200"
+            isDark ? "border-gray-800" : "border-gray-200"
           }`}
         >
           <button
             onClick={() => dispatch(toggleSidebar())}
             className={`w-full cursor-pointer flex items-center justify-center p-2 rounded-lg transition-colors ${
-              theme === "dark"
+              isDark
                 ? "hover:bg-gray-800 text-gray-300"
                 : "hover:bg-gray-100 text-gray-700"
             }`}
@@ -355,12 +379,12 @@ export default function Sidebar() {
         {!isSidebarCollapsed && (
           <div
             className={`p-4 border-t ${
-              theme === "dark" ? "border-gray-800" : "border-gray-200"
+              isDark ? "border-gray-800" : "border-gray-200"
             }`}
           >
             <div
               className={`text-xs ${
-                theme === "dark" ? "text-gray-500" : "text-gray-400"
+                isDark ? "text-gray-500" : "text-gray-400"
               }`}
             >
               <p className="mb-1">{t("version") || "Version"} 1.0.0</p>
