@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { X, Mail, User, Phone, UserPlus, AlertCircle } from "lucide-react";
+import { Mail, User, Phone, UserPlus, AlertCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useAppSelector } from "@/hooks/hooks";
