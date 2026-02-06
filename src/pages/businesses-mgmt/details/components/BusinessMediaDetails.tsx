@@ -4,7 +4,7 @@ interface MediaErrors {
   logo?: string;
 }
 interface BusinessMediaDetailsProps {
-  theme: Theme;
+  isDark: boolean;
   t: (key: string) => string;
   errors: MediaErrors;
 
@@ -32,7 +32,7 @@ interface BusinessMediaDetailsProps {
 /* ---------- Component ---------- */
 const BusinessMediaDetails: React.FC<BusinessMediaDetailsProps> = ({
   t,
-  theme,
+  isDark,
 
   logoImage,
   // handleLogoImageSelect,
@@ -50,9 +50,7 @@ const BusinessMediaDetails: React.FC<BusinessMediaDetailsProps> = ({
     <div className="space-y-6">
       {/* Logo */}
       <div>
-        <h3
-          className={`mb-3 ${theme === "dark" ? "text-gray-200" : "text-gray-800"}`}
-        >
+        <h3 className={`mb-3 ${isDark ? "text-gray-200" : "text-gray-800"}`}>
           {t("logo")}
         </h3>
         <div className="flex items-center gap-4">
@@ -88,9 +86,7 @@ const BusinessMediaDetails: React.FC<BusinessMediaDetailsProps> = ({
       <div className="flex items-center justify-between">
         {images.length > 0 && (
           <h3
-            className={`text-md  ${
-              theme === "dark" ? "text-gray-200" : "text-gray-800"
-            }`}
+            className={`text-md  ${isDark ? "text-gray-200" : "text-gray-800"}`}
           >
             {t("image_gallery") || "Image Gallery"}
           </h3>
@@ -129,7 +125,7 @@ const BusinessMediaDetails: React.FC<BusinessMediaDetailsProps> = ({
           <div
             key={idx}
             className={`relative aspect-square rounded-lg overflow-hidden border group ${
-              theme === "dark" ? "border-gray-700" : "border-gray-300"
+              isDark ? "border-gray-700" : "border-gray-300"
             }`}
           >
             <ImageWithFallback

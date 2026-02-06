@@ -4,7 +4,7 @@ import { Accessibility, Users } from "lucide-react";
 /* ---------- Props ---------- */
 
 interface BusinessAttributesDetailsProps {
-  theme: Theme;
+  isDark: boolean;
   t: (key: string) => string;
   business: any;
 }
@@ -13,16 +13,14 @@ interface BusinessAttributesDetailsProps {
 
 const BusinessAttributesDetails: FC<BusinessAttributesDetailsProps> = ({
   t,
-  theme,
+  isDark,
   business,
 }) => {
   return (
     <div className="space-y-6">
       {/* Accessibility Options */}
       <div>
-        <h3
-          className={`mb-3 ${theme === "dark" ? "text-gray-200" : "text-gray-800"}`}
-        >
+        <h3 className={`mb-3 ${isDark ? "text-gray-200" : "text-gray-800"}`}>
           {t("accessibility")}
         </h3>
         <div className="flex flex-wrap gap-2">
@@ -32,7 +30,7 @@ const BusinessAttributesDetails: FC<BusinessAttributesDetailsProps> = ({
               <span
                 key={option?.id ?? idx} // Use option.id if exists, fallback to idx
                 className={`px-3 py-1.5 rounded-lg flex items-center gap-2 ${
-                  theme === "dark"
+                  isDark
                     ? "bg-blue-900/30 text-blue-400 border border-blue-800"
                     : "bg-blue-100 text-blue-800 border border-blue-300"
                 }`}
@@ -51,9 +49,7 @@ const BusinessAttributesDetails: FC<BusinessAttributesDetailsProps> = ({
 
       {/* Group Types */}
       <div>
-        <h3
-          className={`mb-3 ${theme === "dark" ? "text-gray-200" : "text-gray-800"}`}
-        >
+        <h3 className={`mb-3 ${isDark ? "text-gray-200" : "text-gray-800"}`}>
           {t("group_types")}
         </h3>
         <div className="flex flex-wrap gap-2">
@@ -63,7 +59,7 @@ const BusinessAttributesDetails: FC<BusinessAttributesDetailsProps> = ({
               <span
                 key={type?.id ?? idx} // Use type.id if available, fallback to idx
                 className={`px-3 py-1.5 rounded-lg flex items-center gap-2 ${
-                  theme === "dark"
+                  isDark
                     ? "bg-purple-900/30 text-purple-400 border border-purple-800"
                     : "bg-purple-100 text-purple-800 border border-purple-300"
                 }`}

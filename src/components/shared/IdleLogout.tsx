@@ -31,7 +31,7 @@ export default function IdleLogout() {
       );
       if (idleTimer.current) clearTimeout(idleTimer.current);
     };
-  }, []);
+  }, [resetIdleTimer]);
 
   return null;
 }

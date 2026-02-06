@@ -6,14 +6,16 @@ import BusinessesMgmtPage from "./businesses-mgmt";
 import MiniCampaignsMgmtPage from "./mini-campaigns-mgmt";
 import OrdersMgmtPage from "./orders-mgmt";
 import EventDetailsPage from "./events-mgmt/details";
+import BusinessDetailsPage from "./businesses-mgmt/details";
 
 export {
   AuthPage,
-  EventsMgmtPage,
   ProfilePage,
   ProductsMgmtPage,
   BusinessesMgmtPage,
+  BusinessDetailsPage,
+  EventsMgmtPage,
+  EventDetailsPage,
   MiniCampaignsMgmtPage,
   OrdersMgmtPage,
-  EventDetailsPage,
 };

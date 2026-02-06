@@ -2,14 +2,8 @@ import { MarkerMap } from "@/components/maps";
 import { MapPin } from "lucide-react";
 import { useEffect, useState, type FC } from "react";
 
-/* ---------- Types ---------- */
-
-type Theme = "light" | "dark";
-
-/* ---------- Props ---------- */
-
 interface BusinessLocationDetailsProps {
-  theme: Theme;
+  isDark: boolean;
   t: (key: string) => string;
   business: any;
 }
@@ -17,12 +11,13 @@ interface BusinessLocationDetailsProps {
 /* ---------- Component ---------- */
 
 const BusinessLocationDetails: FC<BusinessLocationDetailsProps> = ({
-  theme,
   t,
+  isDark,
   business,
 }) => {
-  const [geo, setGeo] = useState<Geo>({ lat: "", lng: "" });
   const [address, setAddress] = useState("");
+  const [geo, setGeo] = useState<Geo>({ lat: "", lng: "" });
+
   useEffect(() => {
     if (!business) return;
 
@@ -53,7 +48,7 @@ const BusinessLocationDetails: FC<BusinessLocationDetailsProps> = ({
       <div>
         <h3
           className={`text-sm mb-2 ${
-            theme === "dark" ? "text-gray-400" : "text-gray-600"
+            isDark ? "text-gray-400" : "text-gray-600"
           }`}
         >
           {t("address")}
@@ -61,7 +56,7 @@ const BusinessLocationDetails: FC<BusinessLocationDetailsProps> = ({
 
         <p
           className={`flex items-center gap-2 ${
-            theme === "dark" ? "text-gray-200" : "text-gray-800"
+            isDark ? "text-gray-200" : "text-gray-800"
           }`}
         >
           <MapPin className="w-5 h-5" />
@@ -78,11 +73,11 @@ const BusinessLocationDetails: FC<BusinessLocationDetailsProps> = ({
       {/* Coordinates */}
       <div>
         <h3
-          className={`text-sm mb-2 ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
+          className={`text-sm mb-2 ${isDark ? "text-gray-400" : "text-gray-600"}`}
         >
           {t("geo_coordinates")}
         </h3>
-        <p className={theme === "dark" ? "text-gray-300" : "text-gray-700"}>
+        <p className={isDark ? "text-gray-300" : "text-gray-700"}>
           {t("latitude")}:{" "}
           {business?.geoLocation?.lat ? business.geoLocation.lat : "-"},{" "}
           {t("longitude")}:{" "}

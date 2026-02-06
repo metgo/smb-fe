@@ -40,11 +40,11 @@ interface BusinessDeliveryPolicyProps {
 
 const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
   t,
-  theme,
   isRTL,
   formData,
   setFormData,
 }) => {
+  const { isDark } = useThemeClasses();
   const [pickupLocationModal, setPickupLocationModal] = useState<{
     show: boolean;
     areaIndex: number;
@@ -55,7 +55,7 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
       openingHrs: { day: string; open: string; close: string }[];
     };
   } | null>(null);
-  const { isDark } = useThemeClasses();
+
   //delete pickup
   const handleDeletePickup = (areaIdx: any, pickupIdx: any) => {
     const updatedAreas = formData.deliveryArea.map((area, idx) => {
@@ -96,11 +96,7 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
 
   return (
     <div className="space-y-6">
-      <h3
-        className={`text-lg ${
-          theme === "dark" ? "text-gray-200" : "text-gray-800"
-        }`}
-      >
+      <h3 className={`text-lg ${isDark ? "text-gray-200" : "text-gray-800"}`}>
         {t("delivery")}
       </h3>
 
@@ -117,7 +113,7 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
           />
           <span
             className={`text-sm ${
-              theme === "dark" ? "text-gray-300" : "text-gray-700"
+              isDark ? "text-gray-300" : "text-gray-700"
             }`}
           >
             {t("vendor_delivers")}
@@ -134,9 +130,7 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
             className="w-4 h-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500"
           />
           <span
-            className={`text-sm ${
-              theme === "dark" ? "text-gray-300" : "text-gray-700"
-            }`}
+            className={`text-sm ${isDark ? "text-gray-300" : "text-gray-700"}`}
           >
             {t("pickup_available")}
           </span>
@@ -149,7 +143,7 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
           <div className="flex items-center justify-between mb-3">
             <label
               className={`block text-sm ${
-                theme === "dark" ? "text-gray-300" : "text-gray-700"
+                isDark ? "text-gray-300" : "text-gray-700"
               }`}
             >
               {t("delivery_areas_pricing")}
@@ -177,7 +171,7 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
               <div
                 key={areaIdx}
                 className={`p-4 rounded-lg border ${
-                  theme === "dark"
+                  isDark
                     ? "bg-gray-800/50 border-gray-700"
                     : "bg-gray-50 border-gray-200"
                 }`}
@@ -188,7 +182,7 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
                   <div className="col-span-5">
                     <label
                       className={`block text-xs mb-1 ${
-                        theme === "dark" ? "text-gray-400" : "text-gray-500"
+                        isDark ? "text-gray-400" : "text-gray-500"
                       }`}
                     >
                       {t("delivery_area")}
@@ -208,7 +202,7 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
                       placeholder={isRTL ? "באר שבע" : "Be'er Sheva"}
                       className={`w-full px-3 py-2 rounded-lg border text-sm focus:ring-2 focus:ring-teal-500
                         ${
-                          theme === "dark"
+                          isDark
                             ? "bg-gray-900 border-gray-700 text-gray-100 placeholder-gray-500"
                             : "bg-white border-gray-300 text-gray-900 placeholder-gray-400"
                         }
@@ -220,7 +214,7 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
                   <div className="col-span-3">
                     <label
                       className={`block text-xs mb-1 ${
-                        theme === "dark" ? "text-gray-400" : "text-gray-500"
+                        isDark ? "text-gray-400" : "text-gray-500"
                       }`}
                     >
                       {t("delivery_price")}
@@ -236,7 +230,7 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
                       }}
                       className={`w-full px-3 py-2 rounded-lg border text-sm focus:ring-2 focus:ring-teal-500
                       ${
-                        theme === "dark"
+                        isDark
                           ? "bg-gray-900 border-gray-700 text-gray-100 placeholder-gray-500"
                           : "bg-white border-gray-300 text-gray-900 placeholder-gray-400"
                       }
@@ -365,7 +359,7 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
       <div>
         <label
           className={`block text-sm mb-2 ${
-            theme === "dark" ? "text-gray-300" : "text-gray-700"
+            isDark ? "text-gray-300" : "text-gray-700"
           }`}
         >
           {t("return_exchange_policy")}
@@ -376,7 +370,7 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
             <label
               key={option}
               className={`flex items-start gap-3 cursor-pointer
-          ${theme === "dark" ? "text-gray-300" : "text-gray-700"}
+          ${isDark ? "text-gray-300" : "text-gray-700"}
         `}
             >
               <input
@@ -394,7 +388,7 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
                 }
                 className={`mt-1 w-4 h-4 rounded
             ${
-              theme === "dark"
+              isDark
                 ? "bg-gray-900 border-gray-700 text-teal-500"
                 : "bg-white border-gray-300 text-teal-600"
             }
@@ -410,7 +404,7 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
       <div>
         <label
           className={`block text-sm mb-2 ${
-            theme === "dark" ? "text-gray-300" : "text-gray-700"
+            isDark ? "text-gray-300" : "text-gray-700"
           }`}
         >
           {t("additional_details")}
@@ -428,7 +422,7 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
           placeholder={t("additional_details_placeholder")}
           className={`w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-teal-500
       ${
-        theme === "dark"
+        isDark
           ? "bg-gray-900 border-gray-700 text-gray-100 placeholder-gray-500"
           : "bg-white border-gray-300 text-gray-900 placeholder-gray-400"
       }
@@ -440,7 +434,7 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
       <div>
         <label
           className={`block text-sm mb-2 ${
-            theme === "dark" ? "text-gray-300" : "text-gray-700"
+            isDark ? "text-gray-300" : "text-gray-700"
           }`}
         >
           {t("specific_seller_delivery_info")}
@@ -451,7 +445,7 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
             <label
               key={option}
               className={`flex items-start gap-3 cursor-pointer
-          ${theme === "dark" ? "text-gray-300" : "text-gray-700"}
+          ${isDark ? "text-gray-300" : "text-gray-700"}
         `}
             >
               <input
@@ -469,7 +463,7 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
                 }
                 className={`mt-1 w-4 h-4 rounded 
             ${
-              theme === "dark"
+              isDark
                 ? "bg-gray-900 border-gray-700 text-teal-500"
                 : "bg-white border-gray-300 text-teal-600"
             }
@@ -483,7 +477,6 @@ const BusinessDeliveryPolicy: FC<BusinessDeliveryPolicyProps> = ({
 
       <Activity mode={pickupLocationModal ? "visible" : "hidden"}>
         <PickupLocationModal
-          theme={theme}
           isRTL={isRTL}
           formData={formData}
           setFormData={setFormData}

@@ -10,9 +10,6 @@ import {
 } from "lucide-react";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 
-/* ---------- Types ---------- */
-
-type Theme = "light" | "dark";
 interface PickupLocation {
   address: string;
   isAlwaysOpen?: boolean;
@@ -32,7 +29,6 @@ interface BusinessDeliveryData {
 }
 
 interface BusinessDeliveryPolicyDetailsProps {
-  theme: Theme;
   t: (key: string) => string;
   business: BusinessDeliveryData;
 }
@@ -40,7 +36,6 @@ interface BusinessDeliveryPolicyDetailsProps {
 /* ---------- Component ---------- */
 
 const BusinessDeliveryPolicyDetails: FC<BusinessDeliveryPolicyDetailsProps> = ({
-  theme,
   t,
   business,
 }) => {
@@ -58,24 +53,22 @@ const BusinessDeliveryPolicyDetails: FC<BusinessDeliveryPolicyDetailsProps> = ({
     return (
       <div
         className={`p-8 text-center rounded-lg border ${
-          theme === "dark"
+          isDark
             ? "bg-gray-800/30 border-gray-700"
             : "bg-gray-50 border-gray-200"
         }`}
       >
         <Package
           className={`w-16 h-16 mx-auto mb-4 ${
-            theme === "dark" ? "text-gray-600" : "text-gray-400"
+            isDark ? "text-gray-600" : "text-gray-400"
           }`}
         />
         <p
-          className={`text-lg mb-2 ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}
+          className={`text-lg mb-2 ${isDark ? "text-gray-300" : "text-gray-700"}`}
         >
           {t("no_delivery_policy")}
         </p>
-        <p
-          className={`text-sm ${theme === "dark" ? "text-gray-500" : "text-gray-500"}`}
-        >
+        <p className={`text-sm ${isDark ? "text-gray-500" : "text-gray-500"}`}>
           {t("add_delivery_policy_description")}
         </p>
       </div>
@@ -92,27 +85,27 @@ const BusinessDeliveryPolicyDetails: FC<BusinessDeliveryPolicyDetailsProps> = ({
       {business.deliveryAdditionalInfo && (
         <div
           className={`p-4 rounded-lg border ${
-            theme === "dark"
+            isDark
               ? "bg-gray-800/50 border-gray-700"
               : "bg-gray-50 border-gray-200"
           }`}
         >
           <div className="flex items-center gap-3 mb-3">
             <div
-              className={`p-2 rounded-lg ${theme === "dark" ? "bg-teal-900/30" : "bg-teal-100"}`}
+              className={`p-2 rounded-lg ${isDark ? "bg-teal-900/30" : "bg-teal-100"}`}
             >
               <Truck
-                className={`w-5 h-5 ${theme === "dark" ? "text-teal-400" : "text-teal-700"}`}
+                className={`w-5 h-5 ${isDark ? "text-teal-400" : "text-teal-700"}`}
               />
             </div>
             <h3
-              className={`font-medium ${theme === "dark" ? "text-gray-200" : "text-gray-800"}`}
+              className={`font-medium ${isDark ? "text-gray-200" : "text-gray-800"}`}
             >
               {t("delivery_additional_info")}
             </h3>
           </div>
           <p
-            className={`text-sm ${theme === "dark" ? "text-gray-300" : "text-gray-700"} whitespace-pre-line`}
+            className={`text-sm ${isDark ? "text-gray-300" : "text-gray-700"} whitespace-pre-line`}
           >
             {business.deliveryAdditionalInfo}
           </p>
@@ -124,21 +117,21 @@ const BusinessDeliveryPolicyDetails: FC<BusinessDeliveryPolicyDetailsProps> = ({
         business.deliveryReturnExchange.length > 0 && (
           <div
             className={`p-4 rounded-lg border ${
-              theme === "dark"
+              isDark
                 ? "bg-gray-800/50 border-gray-700"
                 : "bg-gray-50 border-gray-200"
             }`}
           >
             <div className="flex items-center gap-3 mb-3">
               <div
-                className={`p-2 rounded-lg ${theme === "dark" ? "bg-blue-900/30" : "bg-blue-100"}`}
+                className={`p-2 rounded-lg ${isDark ? "bg-blue-900/30" : "bg-blue-100"}`}
               >
                 <ArrowLeft
-                  className={`w-5 h-5 ${theme === "dark" ? "text-blue-400" : "text-blue-700"}`}
+                  className={`w-5 h-5 ${isDark ? "text-blue-400" : "text-blue-700"}`}
                 />
               </div>
               <h3
-                className={`font-medium ${theme === "dark" ? "text-gray-200" : "text-gray-800"}`}
+                className={`font-medium ${isDark ? "text-gray-200" : "text-gray-800"}`}
               >
                 {t("return_exchange_policy")}
               </h3>
@@ -147,10 +140,10 @@ const BusinessDeliveryPolicyDetails: FC<BusinessDeliveryPolicyDetailsProps> = ({
               {business.deliveryReturnExchange.map((policy, idx) => (
                 <li
                   key={idx}
-                  className={`flex items-start gap-2 text-sm ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}
+                  className={`flex items-start gap-2 text-sm ${isDark ? "text-gray-300" : "text-gray-700"}`}
                 >
                   <CheckCircle
-                    className={`w-4 h-4 mt-0.5 flex-shrink-0 ${theme === "dark" ? "text-teal-400" : "text-teal-600"}`}
+                    className={`w-4 h-4 mt-0.5 flex-shrink-0 ${isDark ? "text-teal-400" : "text-teal-600"}`}
                   />
                   <span>{policy}</span>
                 </li>
@@ -160,16 +153,12 @@ const BusinessDeliveryPolicyDetails: FC<BusinessDeliveryPolicyDetailsProps> = ({
         )}
       {/* Delivery Area */}
       {business.deliveryArea && business.deliveryArea.length > 0 && (
-        <div
-          className={`p-4 rounded-lg ${
-            theme === "dark" ? "" : "border-gray-200"
-          }`}
-        >
+        <div className={`p-4 rounded-lg ${isDark ? "" : "border-gray-200"}`}>
           {business.deliveryArea.map((deliveryArea, areaIdx) => (
             <div
               key={areaIdx}
               className={`mb-6 p-4 gap-5 flex flex-col rounded-lg ${
-                theme === "dark"
+                isDark
                   ? "bg-gray-900 border border-gray-700"
                   : "border border-gray-200 shadow-sm"
               }`}
@@ -179,7 +168,7 @@ const BusinessDeliveryPolicyDetails: FC<BusinessDeliveryPolicyDetailsProps> = ({
                 <div className="col-span-5">
                   <label
                     className={` text-md mb-1 font-semibold flex items-center gap-2 ${
-                      theme === "dark" ? "text-gray-400" : "text-gray-600"
+                      isDark ? "text-gray-400" : "text-gray-600"
                     }`}
                   >
                     <Truck size={16} />
@@ -188,7 +177,7 @@ const BusinessDeliveryPolicyDetails: FC<BusinessDeliveryPolicyDetailsProps> = ({
 
                   <p
                     className={`text-lg ${
-                      theme === "dark" ? "text-gray-200" : "text-gray-800"
+                      isDark ? "text-gray-200" : "text-gray-800"
                     }`}
                   >
                     {deliveryArea.area ? deliveryArea.area : "-"}
@@ -199,7 +188,7 @@ const BusinessDeliveryPolicyDetails: FC<BusinessDeliveryPolicyDetailsProps> = ({
                 <div className="col-span-3">
                   <label
                     className={` text-md mb-1 font-semibold flex items-center gap-2 ${
-                      theme === "dark" ? "text-gray-400" : "text-gray-600"
+                      isDark ? "text-gray-400" : "text-gray-600"
                     }`}
                   >
                     <IndianRupee size={16} />
@@ -208,7 +197,7 @@ const BusinessDeliveryPolicyDetails: FC<BusinessDeliveryPolicyDetailsProps> = ({
 
                   <p
                     className={`text-md ${
-                      theme === "dark" ? "text-gray-200" : "text-gray-800"
+                      isDark ? "text-gray-200" : "text-gray-800"
                     }`}
                   >
                     {deliveryArea.price ? deliveryArea.price : "-"}
@@ -219,7 +208,7 @@ const BusinessDeliveryPolicyDetails: FC<BusinessDeliveryPolicyDetailsProps> = ({
                 {/* Pickup locations title */}
                 <div
                   className={`font-semibold flex items-center gap-2 ${
-                    theme === "dark" ? "text-gray-300" : "text-gray-700"
+                    isDark ? "text-gray-300" : "text-gray-700"
                   }`}
                 >
                   <House size={16} className="" />
@@ -237,9 +226,7 @@ const BusinessDeliveryPolicyDetails: FC<BusinessDeliveryPolicyDetailsProps> = ({
                         <div className="flex items-center gap-2 mb-1">
                           <div
                             className={`font-semibold mb-2 flex items-center gap-2 ${
-                              theme === "dark"
-                                ? "text-gray-300"
-                                : "text-gray-700"
+                              isDark ? "text-gray-300" : "text-gray-700"
                             }`}
                           >
                             {pickup.address}
@@ -297,21 +284,21 @@ const BusinessDeliveryPolicyDetails: FC<BusinessDeliveryPolicyDetailsProps> = ({
         business.deliverySpecificSellerInfo.length > 0 && (
           <div
             className={`p-4 rounded-lg border ${
-              theme === "dark"
+              isDark
                 ? "bg-gray-800/50 border-gray-700"
                 : "bg-gray-50 border-gray-200"
             }`}
           >
             <div className="flex items-center gap-3 mb-3">
               <div
-                className={`p-2 rounded-lg ${theme === "dark" ? "bg-purple-900/30" : "bg-purple-100"}`}
+                className={`p-2 rounded-lg ${isDark ? "bg-purple-900/30" : "bg-purple-100"}`}
               >
                 <FileText
-                  className={`w-5 h-5 ${theme === "dark" ? "text-purple-400" : "text-purple-700"}`}
+                  className={`w-5 h-5 ${isDark ? "text-purple-400" : "text-purple-700"}`}
                 />
               </div>
               <h3
-                className={`font-medium ${theme === "dark" ? "text-gray-200" : "text-gray-800"}`}
+                className={`font-medium ${isDark ? "text-gray-200" : "text-gray-800"}`}
               >
                 {t("delivery_specific_seller_info")}
               </h3>
@@ -320,10 +307,10 @@ const BusinessDeliveryPolicyDetails: FC<BusinessDeliveryPolicyDetailsProps> = ({
               {business.deliverySpecificSellerInfo.map((info, idx) => (
                 <li
                   key={idx}
-                  className={`flex items-start gap-2 text-sm ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}
+                  className={`flex items-start gap-2 text-sm ${isDark ? "text-gray-300" : "text-gray-700"}`}
                 >
                   <CheckCircle
-                    className={`w-4 h-4 mt-0.5 flex-shrink-0 ${theme === "dark" ? "text-teal-400" : "text-teal-600"}`}
+                    className={`w-4 h-4 mt-0.5 flex-shrink-0 ${isDark ? "text-teal-400" : "text-teal-600"}`}
                   />
                   <span>{info}</span>
                 </li>

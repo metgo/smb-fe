@@ -152,5 +152,16 @@
   "submit_for_approval": "إرسال للموافقة",
   "approval_rules": "قواعد الموافقة",
   "all_mandatory_fields_required": "يجب إكمال جميع الحقول الإلزامية",
-  "rejection_requires_notes": "الرفض يتطلب ملاحظات داخلية"
+  "rejection_requires_notes": "الرفض يتطلب ملاحظات داخلية",
+
+  "user_details": "تفاصيل المستخدم",
+  "user_not_in_system_prompt": "هذا المستخدم غير موجود في نظامنا. يرجى تقديم تفاصيله.",
+  "new_user": "مستخدم جديد",
+  "email_address": "عنوان البريد الإلكتروني",
+  "invite_collaborator": "دعوة متعاون",
+  "enter_email_prompt": "أدخل عنوان البريد الإلكتروني للشخص الذي تريد دعوته",
+  "role": "الدور",
+  "viewer_read_only": "مشاهد (للقراءة فقط)",
+  "admin": "مشرف",
+  "user_not_in_system_alert": "غير موجود في نظامنا. يرجى تقديم معلوماته لإرسال دعوة."
 }
