@@ -1,9 +1,9 @@
-name: Deploy to Docker Hub
+name: Deploy to Productions
 
 on:
   push:
     branches:
-      - dev
+      - main
 
 jobs:
   build:
@@ -12,9 +12,9 @@ jobs:
     strategy:
       matrix:
         app:
-          - name: dev_workspace_fe
-            env_file: ENV_FILE_DEV
-            tag: develop
+          - name: prod_workspace_fe
+            env_file: ENV_FILE_PROD
+            tag: production
             port: 3000
 
     steps:
@@ -44,8 +44,8 @@ jobs:
     strategy:
       matrix:
         app:
-          - name: dev_workspace_fe
-            tag: develop
+          - name: prod_workspace_fe
+            tag: production
 
     steps:
       - name: SSH into server and deploy ${{ matrix.app.name }}
