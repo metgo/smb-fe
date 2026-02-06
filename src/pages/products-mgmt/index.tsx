@@ -28,7 +28,7 @@ import { useGetAllProductsQuery } from "@/store/api/productQueryApi";
 import { useNavigate } from "react-router-dom";
 import SearchInput from "@/components/shared/SearchInput";
 import { useGetbusinessForProductQuery } from "@/store/api/businessQueryApi";
-import ReactSelect from "react-select";
+// import ReactSelect from "react-select";
 import { FilterButton } from "@/components/btns";
 // import { toast } from "sonner";
 // import { useBulkProductsUpdateMutation } from "@/store/api/productMutationApi";
@@ -87,7 +87,7 @@ export default function ProductsMgmtPage() {
     getStatusBadge,
   } = useProductMgmt();
 
-  const { data: businessData } = useGetbusinessForProductQuery({});
+  // const { data: businessData } = useGetbusinessForProductQuery({});
   const canChangeStatus = ["superadmin", "admin", "dmo", "authority"].includes(
     USER_ROLE,
   );
@@ -691,7 +691,7 @@ export default function ProductsMgmtPage() {
                               ))
                             )}
                           </select> */}
-                          <ReactSelect
+                          {/* <ReactSelect
                             isClearable
                             value={filters.businessId?.name}
                             onChange={(selectedOption) => {
@@ -709,7 +709,7 @@ export default function ProductsMgmtPage() {
                               })) ?? []
                             }
                             className="rounded-md z-5"
-                          />
+                          /> */}
                         </div>
                       )}
                     </div>
