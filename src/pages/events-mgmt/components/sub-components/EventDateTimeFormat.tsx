@@ -425,7 +425,7 @@ const EventDateTimeFormat: React.FC<EventDateTimeFormatProps> = ({
 
           <button
             onClick={addEventDay}
-            className={`w-full px-4 py-2 rounded-lg border-2 border-dashed transition-colors flex flex-col items-center justify-center ${
+            className={`w-full px-4 py-2 rounded-lg border-2 border-dashed transition-colors flex items-center justify-center gap-2 ${
               theme === "dark"
                 ? "border-gray-700 hover:border-teal-500 hover:bg-gray-800"
                 : "border-gray-300 hover:border-teal-500 hover:bg-gray-50"

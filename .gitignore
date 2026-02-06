@@ -24,3 +24,5 @@ draft.json
 *.njsproj
 *.sln
 *.sw?
+
+draft.json

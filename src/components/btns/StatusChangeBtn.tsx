@@ -1,89 +1,134 @@
-import { useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { ChevronDown } from "lucide-react";
+import { Check, ChevronDown } from "lucide-react";
 
 import { useAppSelector } from "@/hooks/hooks";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 interface StatusChangeBtnProps {
-  handleBulkStatusChange: (v: TStatus) => void;
+  status: TStatus;
+  handleStatusChange: (status: TStatus) => void;
 }
 
 const StatusChangeBtn: React.FC<StatusChangeBtnProps> = ({
-  handleBulkStatusChange,
+  status,
+  handleStatusChange,
 }) => {
   const { t } = useTranslation("common");
-  const { theme, isRTL } = useAppSelector((state) => state.settings);
+  const { isRTL } = useAppSelector((state) => state.settings);
+  const { isDark } = useThemeClasses();
 
-  const [showStatusDropdown, setShowStatusDropdown] = useState(false);
+  const [currentStatus, setCurrentStatus] = useState<TStatus>(
+    status?.toLowerCase() as TStatus,
+  );
+  const [isOpen, setIsOpen] = useState(false);
 
-  const statusConfig = {
-    draft: { color: "bg-gray-500", label: t("draft") },
-    pending: { color: "bg-yellow-500", label: t("pending") },
-    approved: { color: "bg-green-500", label: t("approved") },
-    rejected: { color: "bg-red-500", label: t("rejected") },
-    archived: { color: "bg-gray-400", label: t("archived") },
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  /* -------------------- Status Config -------------------- */
+  const statusConfig = useMemo(
+    () => ({
+      draft: { color: "bg-gray-500", label: t("draft") },
+      pending: { color: "bg-yellow-500", label: t("pending") },
+      approved: { color: "bg-green-500", label: t("approved") },
+      rejected: { color: "bg-red-500", label: t("rejected") },
+      archived: { color: "bg-gray-400", label: t("archived") },
+    }),
+    [t],
+  );
+
+  /* -------------------- Outside Click Handler -------------------- */
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false);
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen]);
+
+  /* -------------------- Handlers -------------------- */
+  const handleChange = (newStatus: TStatus) => {
+    setCurrentStatus(newStatus);
+    handleStatusChange(newStatus);
+    setIsOpen(false);
   };
 
-  const handleStatusChange = (newStatus: Product["status"]) => {
-    handleBulkStatusChange(newStatus);
-    setShowStatusDropdown(false);
-  };
-
+  /* -------------------- Render -------------------- */
   return (
-    <div className="relative">
+    <div className="relative" ref={dropdownRef}>
       <button
-        onClick={() => setShowStatusDropdown(!showStatusDropdown)}
-        className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm transition-opacity border border-blue-500 text-blue-500 font-medium  `}
+        type="button"
+        onClick={() => setIsOpen((prev) => !prev)}
+        className="flex items-center gap-2 px-4 py-2 rounded-md text-sm border border-gray-300 text-gray-500 font-medium"
       >
         <span>{t("change_status")}</span>
         <ChevronDown
-          className={`w-4 h-4 transition-transform ${showStatusDropdown ? "rotate-180" : ""}`}
+          className={`w-4 h-4 transition-transform ${
+            isOpen ? "rotate-180" : ""
+          }`}
         />
       </button>
 
-      {/* Dropdown Menu */}
-      {showStatusDropdown && (
+      {isOpen && (
         <div
-          className={`absolute ${isRTL ? "left-0" : "-right-4"} top-full mt-2 w-48 rounded-lg shadow-lg border z-60 ${
-            theme === "dark"
-              ? "bg-gray-800 border-gray-700"
-              : "bg-white border-gray-300"
-          }`}
+          className={`absolute top-full mt-2 w-48 rounded-lg shadow-lg border z-60
+            ${isRTL ? "left-0" : "-right-4"}
+            ${isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-300"}
+          `}
         >
           <div
-            className={`p-2 border-b ${theme === "dark" ? "border-gray-700" : "border-gray-200"}`}
+            className={`p-2 border-b ${
+              isDark ? "border-gray-700" : "border-gray-200"
+            }`}
           >
             <p
-              className={`text-xs px-2 py-1 ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
+              className={`text-xs px-2 py-1 ${
+                isDark ? "text-gray-400" : "text-gray-600"
+              }`}
             >
               {t("status")}
             </p>
           </div>
 
           <div className="p-2">
-            {(Object.keys(statusConfig) as Array<Product["status"]>).map(
-              (statusKey) => {
-                const statusOption = statusConfig[statusKey];
-                return (
-                  <button
-                    key={statusKey}
-                    onClick={() => handleStatusChange(statusKey)}
-                    className={`w-full text-${isRTL ? "right" : "left"} px-3 py-2 rounded-lg text-sm flex items-center justify-between transition-colors ${
-                      theme === "dark"
-                        ? "hover:bg-gray-700 text-gray-300"
-                        : "hover:bg-gray-100 text-gray-700"
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <div
-                        className={`w-3 h-3 rounded-full ${statusOption.color}`}
-                      />
-                      <span>{statusOption.label}</span>
-                    </div>
-                  </button>
-                );
-              },
-            )}
+            {(Object.keys(statusConfig) as TStatus[]).map((key) => {
+              const option = statusConfig[key];
+              const isActive = key === currentStatus;
+
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => handleChange(key)}
+                  className={`w-full px-3 py-2 rounded-lg text-sm flex items-center justify-between
+                    ${isRTL ? "text-right" : "text-left"}
+                    ${
+                      isDark
+                        ? "text-gray-300 hover:bg-gray-700"
+                        : "text-gray-700 hover:bg-gray-100"
+                    }
+                  `}
+                >
+                  <div className="flex items-center gap-2">
+                    <span className={`w-3 h-3 rounded-full ${option.color}`} />
+                    <span>{option.label}</span>
+                  </div>
+
+                  {isActive && <Check className="w-4 h-4 text-teal-500" />}
+                </button>
+              );
+            })}
           </div>
         </div>
       )}

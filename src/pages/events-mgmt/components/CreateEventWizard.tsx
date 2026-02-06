@@ -1,6 +1,5 @@
 import clsx from "clsx";
 import { toast } from "sonner";
-import { skipToken } from "@reduxjs/toolkit/query";
 import { useSearchParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import {
@@ -19,10 +18,6 @@ import { useTranslation } from "react-i18next";
 import { WizardFooter } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 
-import {
-  useGetAllTicketQuery,
-  useGetEventByIdQuery,
-} from "@/store/api/eventQueryApi";
 import {
   useInitEventCreateMutation,
   useUpdateEventMutation,
@@ -46,38 +41,31 @@ import { useCreateWebsiteAccessItemMutation } from "@/store/api/commonMutationAp
 interface CreateEventWizardProps {
   isOpen: boolean;
   onClose: () => void;
-  theme: Theme;
-  existingEvent?: any;
+  editData?: any;
+  tickets?: any;
+  ticketRefetch?: () => void;
 }
 
 export default function CreateEventWizard({
   isOpen,
   onClose,
-  theme,
+  editData,
+  tickets,
+  ticketRefetch,
 }: CreateEventWizardProps) {
   const { t } = useTranslation("events");
-
   const [searchParams] = useSearchParams();
-  const { textPrimary, textTertiary, rowDir } = useThemeClasses();
-  const editId = searchParams.get("eventId");
-  const [eventId, setEventId] = useState<string>("");
 
+  const editId = searchParams.get("eventId");
+  const [eventId, setEventId] = useState<string>(editId || "");
+
+  const { textPrimary, textTertiary, rowDir, isDark } = useThemeClasses();
   const [updateEvent, { isLoading: isEventUpdating }] =
     useUpdateEventMutation();
   const [initEventCreate, { isLoading: isEventCreating }] =
     useInitEventCreateMutation();
   const [createWebsiteAccessItem, { isLoading: isWebsiteAccessItemCreating }] =
     useCreateWebsiteAccessItemMutation();
-
-  const {
-    data: editData,
-    refetch,
-    isLoading,
-    isFetching,
-  } = useGetEventByIdQuery(editId ? { eventId: editId } : skipToken);
-  const { data: tickets, refetch: ticketRefetch } = useGetAllTicketQuery(
-    eventId ? { eventId } : skipToken,
-  );
 
   const [currentStep, setCurrentStep] = useState(1);
   const [isPublishBtnClicked, setIsPublishBtnClicked] = useState(false);
@@ -187,14 +175,8 @@ export default function CreateEventWizard({
   ];
 
   useEffect(() => {
-    if (editId && isOpen) {
-      setEventId(editId);
-      refetch();
-    }
-  }, [editId, isOpen, refetch, eventId, setImages]);
-  useEffect(() => {
-    if (tickets && eventId) setLocalTickets(tickets);
-  }, [tickets, editData, eventId]);
+    if (tickets && (eventId || editId)) setLocalTickets(tickets);
+  }, [tickets, editData, eventId, editId]);
 
   // Reset all state when wizard closes or opens in create mode
   useEffect(() => {
@@ -591,11 +573,7 @@ export default function CreateEventWizard({
     <ModalWrapper
       onClose={onClose}
       showSpinner={
-        isEventCreating ||
-        isEventCreating ||
-        isLoading ||
-        isFetching ||
-        isWebsiteAccessItemCreating
+        isEventCreating || isEventCreating || isWebsiteAccessItemCreating
       }
     >
       {/* Header */}
@@ -603,7 +581,7 @@ export default function CreateEventWizard({
         className={clsx(
           rowDir,
           "flex items-center justify-between p-6 border-b w-full",
-          theme === "dark" ? "border-gray-800" : "border-gray-200",
+          isDark ? "border-gray-800" : "border-gray-200",
         )}
       >
         {/* Title */}
@@ -637,7 +615,7 @@ export default function CreateEventWizard({
 
       {/* Progress Bar */}
       <div
-        className={`px-6 py-4 border-b ${theme === "dark" ? "border-gray-800" : "border-gray-200"} `}
+        className={`px-6 py-4 border-b ${isDark ? "border-gray-800" : "border-gray-200"} `}
       >
         <div className={clsx(rowDir, "flex items-center justify-between ")}>
           {steps.map((step, index) => (
@@ -653,7 +631,7 @@ export default function CreateEventWizard({
                       ? "bg-green-500 text-white"
                       : currentStep === step.id
                         ? "bg-teal-500 text-white"
-                        : theme === "dark"
+                        : isDark
                           ? "bg-gray-800 text-gray-500"
                           : "bg-gray-200 text-gray-400"
                   }`}
@@ -675,7 +653,7 @@ export default function CreateEventWizard({
                   className={`flex-1 h-0.5 mx-2 ${
                     currentStep > step.id
                       ? "bg-green-500"
-                      : theme === "dark"
+                      : isDark
                         ? "bg-gray-800"
                         : "bg-gray-200"
                   }`}
@@ -815,7 +793,6 @@ export default function CreateEventWizard({
         {currentStep === 6 && (
           <EventMedia
             t={t}
-            theme={theme}
             markDirty={markDirty}
             images={images}
             imagesRef={imagesRef}

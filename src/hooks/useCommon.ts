@@ -29,10 +29,10 @@ export function useCommon() {
   ];
 
   const dateRanges = [
-    { value: "last7days", label: t("last_7_days") },
-    { value: "last30days", label: t("last_30_days") },
-    { value: "last90days", label: t("last_90_days") },
-    { value: "custom", label: t("last_year") },
+    { value: "last_7_days", label: t("last_7_days") },
+    { value: "last_30_days", label: t("last_30_days") },
+    { value: "last_90_days", label: t("last_90_days") },
+    { value: "last_year", label: t("last_year") },
   ];
 
   const languages: { value: Language; label: string }[] = [

@@ -1,0 +1,319 @@
+import type { FC } from "react";
+import { Accessibility, Users, Tag, Grid3x3, CheckCircle2 } from "lucide-react";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { useAppSelector } from "@/hooks/hooks";
+import {
+  useGetAccessibilityQuery,
+  useGetGroupTypesQuery,
+  useGetSubCategoriesQuery,
+} from "@/store/api/masterDataApi";
+import { categoryIds } from "@/lib/utils";
+import clsx from "clsx";
+
+interface EventAttributesDetailsProps {
+  t: (key: string) => string;
+  eventDetails: any;
+}
+
+const EventAttributesDetails: FC<EventAttributesDetailsProps> = ({
+  t,
+  eventDetails,
+}) => {
+  const { language } = useAppSelector((state) => state.settings);
+  const { isDark } = useThemeClasses();
+
+  const { data: subCategories } = useGetSubCategoriesQuery({
+    bussCategoryId: categoryIds.event,
+    locale: language as Language,
+  });
+  const { data: accessibility } = useGetAccessibilityQuery({
+    locale: language as Language,
+  });
+  const { data: groupTypes } = useGetGroupTypesQuery({
+    locale: language as Language,
+  });
+
+  const filteredSubcategories =
+    subCategories?.datas?.data?.filter((item: any) =>
+      eventDetails?.subCategoriesId?.includes(item?._id),
+    ) ?? [];
+
+  const filteredAccessibilities =
+    accessibility?.datas?.data?.filter((item: any) =>
+      eventDetails?.accessibilitiesId?.includes(item?._id),
+    ) ?? [];
+
+  const filteredGroupTypes =
+    groupTypes?.datas?.data?.filter((item: any) =>
+      eventDetails?.groupTypesId?.includes(item?._id),
+    ) ?? [];
+
+  const hasAnyData =
+    filteredSubcategories.length > 0 ||
+    filteredAccessibilities.length > 0 ||
+    filteredGroupTypes.length > 0;
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div>
+        <h2
+          className={clsx(
+            "text-2xl font-bold",
+            isDark ? "text-white" : "text-gray-900",
+          )}
+        >
+          Event Attributes
+        </h2>
+        <p
+          className={clsx(
+            "text-sm mt-1",
+            isDark ? "text-gray-400" : "text-gray-600",
+          )}
+        >
+          Categories, accessibility features, and suitable audience
+        </p>
+      </div>
+
+      {/* Subcategories */}
+      {filteredSubcategories.length > 0 && (
+        <div
+          className={clsx(
+            "rounded-xl border p-6 transition-all duration-200",
+            isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200",
+          )}
+        >
+          <div className="flex items-center gap-3 mb-4">
+            <div
+              className={clsx(
+                "p-2 rounded-lg",
+                isDark ? "bg-green-500/20" : "bg-green-100",
+              )}
+            >
+              <Grid3x3
+                className={clsx(
+                  "w-5 h-5",
+                  isDark ? "text-green-400" : "text-green-600",
+                )}
+              />
+            </div>
+            <div>
+              <h3
+                className={clsx(
+                  "text-base font-semibold",
+                  isDark ? "text-gray-200" : "text-gray-800",
+                )}
+              >
+                {t("subcategories")}
+              </h3>
+              <p
+                className={clsx(
+                  "text-xs mt-0.5",
+                  isDark ? "text-gray-400" : "text-gray-600",
+                )}
+              >
+                {filteredSubcategories.length}{" "}
+                {filteredSubcategories.length === 1 ? "category" : "categories"}{" "}
+                selected
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            {filteredSubcategories.map((item: any, idx: number) => (
+              <span
+                key={idx}
+                className={clsx(
+                  "px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-medium transition-all duration-200 hover:scale-105",
+                  isDark
+                    ? "bg-green-500/20 text-green-400 border border-green-800/50 hover:bg-green-500/30"
+                    : "bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 hover:border-green-300",
+                )}
+              >
+                <CheckCircle2 className="w-4 h-4" />
+                {item?.name}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Accessibility Options */}
+      {filteredAccessibilities.length > 0 && (
+        <div
+          className={clsx(
+            "rounded-xl border p-6 transition-all duration-200",
+            isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200",
+          )}
+        >
+          <div className="flex items-center gap-3 mb-4">
+            <div
+              className={clsx(
+                "p-2 rounded-lg",
+                isDark ? "bg-blue-500/20" : "bg-blue-100",
+              )}
+            >
+              <Accessibility
+                className={clsx(
+                  "w-5 h-5",
+                  isDark ? "text-blue-400" : "text-blue-600",
+                )}
+              />
+            </div>
+            <div>
+              <h3
+                className={clsx(
+                  "text-base font-semibold",
+                  isDark ? "text-gray-200" : "text-gray-800",
+                )}
+              >
+                {t("accessibility")}
+              </h3>
+              <p
+                className={clsx(
+                  "text-xs mt-0.5",
+                  isDark ? "text-gray-400" : "text-gray-600",
+                )}
+              >
+                {filteredAccessibilities.length}{" "}
+                {filteredAccessibilities.length === 1 ? "feature" : "features"}{" "}
+                available
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
+            {filteredAccessibilities.map((option: any, idx: number) => (
+              <div
+                key={idx}
+                className={clsx(
+                  "px-4 py-3 rounded-lg flex items-center gap-3 text-sm font-medium transition-all duration-200 hover:scale-[1.02]",
+                  isDark
+                    ? "bg-blue-500/20 text-blue-400 border border-blue-800/50 hover:bg-blue-500/30"
+                    : "bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 hover:border-blue-300",
+                )}
+              >
+                <div
+                  className={clsx(
+                    "p-1.5 rounded-md",
+                    isDark ? "bg-blue-500/30" : "bg-blue-200",
+                  )}
+                >
+                  <Accessibility className="w-4 h-4" />
+                </div>
+                <span className="flex-1">{option?.name}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Group Types */}
+      {filteredGroupTypes.length > 0 && (
+        <div
+          className={clsx(
+            "rounded-xl border p-6 transition-all duration-200",
+            isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200",
+          )}
+        >
+          <div className="flex items-center gap-3 mb-4">
+            <div
+              className={clsx(
+                "p-2 rounded-lg",
+                isDark ? "bg-purple-500/20" : "bg-purple-100",
+              )}
+            >
+              <Users
+                className={clsx(
+                  "w-5 h-5",
+                  isDark ? "text-purple-400" : "text-purple-600",
+                )}
+              />
+            </div>
+            <div>
+              <h3
+                className={clsx(
+                  "text-base font-semibold",
+                  isDark ? "text-gray-200" : "text-gray-800",
+                )}
+              >
+                {t("group_types")}
+              </h3>
+              <p
+                className={clsx(
+                  "text-xs mt-0.5",
+                  isDark ? "text-gray-400" : "text-gray-600",
+                )}
+              >
+                Suitable for {filteredGroupTypes.length}{" "}
+                {filteredGroupTypes.length === 1 ? "group type" : "group types"}
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
+            {filteredGroupTypes.map((item: any, idx: number) => (
+              <div
+                key={idx}
+                className={clsx(
+                  "px-4 py-3 rounded-lg flex items-center gap-3 text-sm font-medium transition-all duration-200 hover:scale-[1.02]",
+                  isDark
+                    ? "bg-purple-500/20 text-purple-400 border border-purple-800/50 hover:bg-purple-500/30"
+                    : "bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100 hover:border-purple-300",
+                )}
+              >
+                <div
+                  className={clsx(
+                    "p-1.5 rounded-md",
+                    isDark ? "bg-purple-500/30" : "bg-purple-200",
+                  )}
+                >
+                  <Users className="w-4 h-4" />
+                </div>
+                <span className="flex-1">{item?.name}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Empty State */}
+      {!hasAnyData && (
+        <div
+          className={clsx(
+            "rounded-xl border p-12 text-center",
+            isDark
+              ? "bg-gray-800 border-gray-700"
+              : "bg-gray-50 border-gray-200",
+          )}
+        >
+          <Tag
+            className={clsx(
+              "w-12 h-12 mx-auto mb-3",
+              isDark ? "text-gray-600" : "text-gray-400",
+            )}
+          />
+          <h3
+            className={clsx(
+              "text-base font-semibold mb-1",
+              isDark ? "text-gray-300" : "text-gray-700",
+            )}
+          >
+            No Attributes Selected
+          </h3>
+          <p
+            className={clsx(
+              "text-sm",
+              isDark ? "text-gray-400" : "text-gray-500",
+            )}
+          >
+            No subcategories, accessibility features, or group types have been
+            assigned to this event
+          </p>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default EventAttributesDetails;

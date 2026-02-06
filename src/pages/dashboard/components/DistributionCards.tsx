@@ -20,82 +20,99 @@ import {
   useGetPOIStatsQuery,
   useGetProductStatsQuery,
 } from "@/store/api/itemStatsApi";
-import { InfoTooltip } from "@/components/shared";
+import { InfoTooltip, Spinner } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 
-const COLORS = {
+const getColors = (isDark: boolean) => ({
   sleep: {
     base: "#3b82f6",
     gradient: "from-blue-400 via-blue-500 to-blue-600",
     shadow: "shadow-blue-500/30",
     glow: "hover:shadow-blue-500/50",
-    bgGradient:
-      "from-blue-100 via-blue-200 to-blue-300 dark:from-blue-900/40 dark:via-blue-800/50 dark:to-blue-700/60",
-    topGradient:
-      "from-blue-300 to-blue-400 dark:from-blue-600 dark:to-blue-700",
-    sideGradient:
-      "from-blue-400/80 to-blue-500/80 dark:from-blue-700/80 dark:to-blue-800/80",
+    bgGradient: isDark
+      ? "from-blue-900/40 via-blue-800/50 to-blue-700/60"
+      : "from-blue-100 via-blue-200 to-blue-300",
+    topGradient: isDark
+      ? "from-blue-600 to-blue-700"
+      : "from-blue-300 to-blue-400",
+    sideGradient: isDark
+      ? "from-blue-700/80 to-blue-800/80"
+      : "from-blue-400/80 to-blue-500/80",
   },
   attraction: {
     base: "#f59e0b",
     gradient: "from-amber-400 via-amber-500 to-amber-600",
     shadow: "shadow-amber-500/30",
     glow: "hover:shadow-amber-500/50",
-    bgGradient:
-      "from-amber-100 via-amber-200 to-amber-300 dark:from-amber-900/40 dark:via-amber-800/50 dark:to-amber-700/60",
-    topGradient:
-      "from-amber-300 to-amber-400 dark:from-amber-600 dark:to-amber-700",
-    sideGradient:
-      "from-amber-400/80 to-amber-500/80 dark:from-amber-700/80 dark:to-amber-800/80",
+    bgGradient: isDark
+      ? "from-amber-900/40 via-amber-800/50 to-amber-700/60"
+      : "from-amber-100 via-amber-200 to-amber-300",
+    topGradient: isDark
+      ? "from-amber-600 to-amber-700"
+      : "from-amber-300 to-amber-400",
+    sideGradient: isDark
+      ? "from-amber-700/80 to-amber-800/80"
+      : "from-amber-400/80 to-amber-500/80",
   },
   local: {
     base: "#10b981",
     gradient: "from-emerald-400 via-emerald-500 to-emerald-600",
     shadow: "shadow-emerald-500/30",
     glow: "hover:shadow-emerald-500/50",
-    bgGradient:
-      "from-emerald-100 via-emerald-200 to-emerald-300 dark:from-emerald-900/40 dark:via-emerald-800/50 dark:to-emerald-700/60",
-    topGradient:
-      "from-emerald-300 to-emerald-400 dark:from-emerald-600 dark:to-emerald-700",
-    sideGradient:
-      "from-emerald-400/80 to-emerald-500/80 dark:from-emerald-700/80 dark:to-emerald-800/80",
+    bgGradient: isDark
+      ? "from-emerald-900/40 via-emerald-800/50 to-emerald-700/60"
+      : "from-emerald-100 via-emerald-200 to-emerald-300",
+    topGradient: isDark
+      ? "from-emerald-600 to-emerald-700"
+      : "from-emerald-300 to-emerald-400",
+    sideGradient: isDark
+      ? "from-emerald-700/80 to-emerald-800/80"
+      : "from-emerald-400/80 to-emerald-500/80",
   },
   eat: {
     base: "#ef4444",
     gradient: "from-red-400 via-red-500 to-red-600",
     shadow: "shadow-red-500/30",
     glow: "hover:shadow-red-500/50",
-    bgGradient:
-      "from-red-100 via-red-200 to-red-300 dark:from-red-900/40 dark:via-red-800/50 dark:to-red-700/60",
-    topGradient: "from-red-300 to-red-400 dark:from-red-600 dark:to-red-700",
-    sideGradient:
-      "from-red-400/80 to-red-500/80 dark:from-red-700/80 dark:to-red-800/80",
+    bgGradient: isDark
+      ? "from-red-900/40 via-red-800/50 to-red-700/60"
+      : "from-red-100 via-red-200 to-red-300",
+    topGradient: isDark ? "from-red-600 to-red-700" : "from-red-300 to-red-400",
+    sideGradient: isDark
+      ? "from-red-700/80 to-red-800/80"
+      : "from-red-400/80 to-red-500/80",
   },
   travel: {
     base: "#8b5cf6",
     gradient: "from-purple-400 via-purple-500 to-purple-600",
     shadow: "shadow-purple-500/30",
     glow: "hover:shadow-purple-500/50",
-    bgGradient:
-      "from-purple-100 via-purple-200 to-purple-300 dark:from-purple-900/40 dark:via-purple-800/50 dark:to-purple-700/60",
-    topGradient:
-      "from-purple-300 to-purple-400 dark:from-purple-600 dark:to-purple-700",
-    sideGradient:
-      "from-purple-400/80 to-purple-500/80 dark:from-purple-700/80 dark:to-purple-800/80",
+    bgGradient: isDark
+      ? "from-purple-900/40 via-purple-800/50 to-purple-700/60"
+      : "from-purple-100 via-purple-200 to-purple-300",
+    topGradient: isDark
+      ? "from-purple-600 to-purple-700"
+      : "from-purple-300 to-purple-400",
+    sideGradient: isDark
+      ? "from-purple-700/80 to-purple-800/80"
+      : "from-purple-400/80 to-purple-500/80",
   },
   culture: {
     base: "#ec4899",
     gradient: "from-pink-400 via-pink-500 to-pink-600",
     shadow: "shadow-pink-500/30",
     glow: "hover:shadow-pink-500/50",
-    bgGradient:
-      "from-pink-100 via-pink-200 to-pink-300 dark:from-pink-900/40 dark:via-pink-800/50 dark:to-pink-700/60",
-    topGradient:
-      "from-pink-300 to-pink-400 dark:from-pink-600 dark:to-pink-700",
-    sideGradient:
-      "from-pink-400/80 to-pink-500/80 dark:from-pink-700/80 dark:to-pink-800/80",
+    bgGradient: isDark
+      ? "from-pink-900/40 via-pink-800/50 to-pink-700/60"
+      : "from-pink-100 via-pink-200 to-pink-300",
+    topGradient: isDark
+      ? "from-pink-600 to-pink-700"
+      : "from-pink-300 to-pink-400",
+    sideGradient: isDark
+      ? "from-pink-700/80 to-pink-800/80"
+      : "from-pink-400/80 to-pink-500/80",
   },
-};
+});
 
 const CATEGORY_ICONS = {
   sleep: Bed,
@@ -110,6 +127,10 @@ interface DistributionCardProps {
   title: string;
   icon: React.ReactNode;
   total: number;
+  status: string;
+  setStatus: (v: string) => void;
+  isLoading: boolean;
+  statuses: { value: string; label: string }[];
   data: {
     _id?: string;
     name: string;
@@ -119,10 +140,19 @@ interface DistributionCardProps {
   }[];
 }
 
-const statuses = [
-  { value: "active", label: "Active" },
-  { value: "approved", label: "Approved" },
+const bzPoiStatuses = [
+  { value: "DRAFT", label: "Draft" },
+  { value: "PENDING", label: "Pending" },
+  { value: "APPROVED", label: "Approved" },
+  { value: "ARCHIVED", label: "Archived" },
+  { value: "CLOSED", label: "Closed" },
+  { value: "REJECTED", label: "Rejected" },
+];
+
+const prodStatuses = [
   { value: "draft", label: "Draft" },
+  { value: "active", label: "Active" },
+  { value: "inactive", label: "Inactive" },
 ];
 
 const getCategoryName = (name: string, t: (v: string) => string) => {
@@ -149,11 +179,15 @@ export function DistributionCard({
   icon,
   total,
   data,
+  status,
+  setStatus,
+  statuses,
+  isLoading,
 }: DistributionCardProps) {
   const { t } = useTranslation("dashboard");
   const { isDark } = useThemeClasses();
+  const COLORS = getColors(isDark);
 
-  const [status, setStatus] = useState("active");
   const [isAnimated, setIsAnimated] = useState(false);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
@@ -162,10 +196,21 @@ export function DistributionCard({
     return () => clearTimeout(timer);
   }, []);
 
+  // Calculate the highest percentage to normalize bar heights
+  const maxPercentage = Math.max(
+    ...(data?.map((item) => item.percentage) || [0]),
+  );
+
+  // Function to calculate normalized height (scaled to 100% based on max)
+  const getNormalizedHeight = (percentage: number) => {
+    if (maxPercentage === 0) return 0;
+    return (percentage / maxPercentage) * 100;
+  };
+
   return (
     <div
       className={clsx(
-        "rounded-xl border p-6 hover:shadow-lg transition-shadow",
+        "rounded-xl border p-3 hover:shadow-lg transition-shadow",
         isDark ? "bg-gray-900 border-gray-800" : "bg-white border-gray-200",
       )}
     >
@@ -226,7 +271,8 @@ export function DistributionCard({
       </div>
 
       {/* ===== Chart ===== */}
-      <div className="h-80 relative flex items-end justify-around gap-2 px-4 pb-12 pt-16">
+      <div className="h-80 relative flex items-end justify-around gap-2 px-2 pb-12 pt-16">
+        <Spinner isLoading={isLoading} />
         {/* Background */}
         <div
           className={clsx(
@@ -238,7 +284,7 @@ export function DistributionCard({
         />
 
         {/* Grid */}
-        <div className="absolute inset-0 flex flex-col justify-between px-4 pb-12 pt-16 pointer-events-none">
+        <div className="absolute inset-0 flex flex-col justify-between pb-12 pt-16 pointer-events-none">
           {[0, 1, 2, 3, 4].map((i) => (
             <div
               key={i}
@@ -261,6 +307,9 @@ export function DistributionCard({
 
           const isActive = activeIndex === index;
 
+          // Get normalized height for visual display
+          const normalizedHeight = getNormalizedHeight(item.percentage);
+
           return (
             <div
               key={index}
@@ -273,7 +322,7 @@ export function DistributionCard({
               <div
                 className="absolute bottom-0 w-full"
                 style={{
-                  height: isAnimated ? `${item.percentage}%` : "0%",
+                  height: isAnimated ? `${normalizedHeight}%` : "0%",
                   transform: isActive
                     ? "translateY(-8px) scale(1.05)"
                     : "translateY(0) scale(1)",
@@ -320,7 +369,7 @@ export function DistributionCard({
                   }}
                 />
 
-                {/* Value tooltip */}
+                {/* Value tooltip - shows actual count */}
                 <div
                   className={clsx(
                     "absolute -top-20 left-1/2 -translate-x-1/2 transition-all",
@@ -355,7 +404,7 @@ export function DistributionCard({
                   </div>
                 </div>
 
-                {/* Percentage */}
+                {/* Percentage - shows actual percentage */}
                 <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10">
                   <span
                     className={clsx(
@@ -372,7 +421,7 @@ export function DistributionCard({
               </div>
 
               {/* Label */}
-              <div className="absolute -bottom-8 text-center z-30">
+              <div className="absolute -bottom-8 text-center z-30 overflow-clip w-16">
                 <span
                   className={clsx(
                     "text-xs font-bold line-clamp-2",
@@ -395,38 +444,41 @@ export function DistributionCard({
 ---------------------------------------- */
 export default function DistributionCards() {
   const { t } = useTranslation("dashboard");
-  const { theme } = useAppSelector((state) => state.settings);
+  const { isDark } = useThemeClasses();
   const { startDate, endDate, dmoId, authorityId } = useAppSelector(
     (state) => state.auth,
   );
+  const [bzStatus, setBzStatus] = useState("APPROVED");
+  const [productStatus, setProductStatus] = useState("active");
+  const [poiStatus, setPoiStatus] = useState("APPROVED");
 
-  /* ----------------------------------------
-     API Calls
-  ---------------------------------------- */
-  const { data: businessData } = useGetBusinessStatsQuery({
+  /* ---------------- API Calls --------------- */
+  const { data: businessData, isFetching: isBzStatsLoading } =
+    useGetBusinessStatsQuery({
+      startDate,
+      endDate,
+      dmoId,
+      authorityId,
+      status: bzStatus,
+    });
+
+  const { data: poiData, isFetching: isPoiStatsLoading } = useGetPOIStatsQuery({
     startDate,
     endDate,
     dmoId,
     authorityId,
+    status: poiStatus,
   });
 
-  const { data: poiData } = useGetPOIStatsQuery({
-    startDate,
-    endDate,
-    dmoId,
-    authorityId,
-  });
+  const { data: productData, isFetching: isProductStatsLoading } =
+    useGetProductStatsQuery({
+      startDate,
+      endDate,
+      dmoId,
+      authorityId,
+      status: productStatus,
+    });
 
-  const { data: productData } = useGetProductStatsQuery({
-    startDate,
-    endDate,
-    dmoId,
-    authorityId,
-  });
-
-  /* ----------------------------------------
-     Effects
-  ---------------------------------------- */
   useEffect(() => {
     if (!businessData?.datas) return;
   }, [businessData]);
@@ -435,18 +487,10 @@ export default function DistributionCards() {
     if (!poiData?.datas) return;
   }, [poiData]);
 
-  /* ----------------------------------------
-     Render
-  ---------------------------------------- */
   return (
     <section>
       <div className="flex items-start gap-2 mb-6">
-        <h2
-          className={clsx(
-            " flex-1",
-            theme === "dark" ? "text-white" : "text-gray-900",
-          )}
-        >
+        <h2 className={clsx("flex-1", isDark ? "text-white" : "text-gray-900")}>
           {t("distribution_overview")}
         </h2>
         <InfoTooltip
@@ -455,26 +499,38 @@ export default function DistributionCards() {
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
         <DistributionCard
+          status={bzStatus}
+          setStatus={setBzStatus}
           title={t("businesses")}
           icon={<Building2 className="w-5 h-5 text-white" />}
           total={businessData?.total}
           data={businessData?.byCategory}
+          statuses={bzPoiStatuses}
+          isLoading={isBzStatsLoading}
         />
 
         <DistributionCard
+          status={productStatus}
+          setStatus={setProductStatus}
           title={t("products")}
           icon={<Package className="w-5 h-5 text-white" />}
           total={productData?.total}
           data={productData?.byCategory}
+          statuses={prodStatuses}
+          isLoading={isProductStatsLoading}
         />
 
         <DistributionCard
+          status={poiStatus}
+          setStatus={setPoiStatus}
           title={t("pois")}
           icon={<MapPin className="w-5 h-5 text-white" />}
           total={poiData?.total}
           data={poiData?.byCategory}
+          statuses={bzPoiStatuses}
+          isLoading={isPoiStatsLoading}
         />
       </div>
     </section>

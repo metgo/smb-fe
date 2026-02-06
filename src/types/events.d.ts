@@ -213,7 +213,7 @@ interface CustomTemplate {
 }
 
 interface ITicketDateTime {
-  _id: number;
+  _id?: number;
   date: string;
   startTime: string;
   endTime: string;
@@ -224,12 +224,7 @@ interface ITicketPayload {
   name: string;
   description: string;
   eventId: string;
-  dayDescription: {
-    _id?: string;
-    date: string;
-    startTime: string;
-    endTime: string;
-  }[];
+  dayDescription: ITicketDateTime[];
   price: {
     markedPrice: number;
     discountAmount: number;

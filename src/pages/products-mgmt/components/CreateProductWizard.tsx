@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import {
-  X,
   Check,
   Image as ImageIcon,
   Globe,
@@ -30,7 +29,6 @@ import {
 } from "@/store/api/productMutationApi";
 import { skipToken } from "@reduxjs/toolkit/query";
 
-import { useGetbusinessForProductQuery } from "@/store/api/businessQueryApi";
 import { useSearchParams } from "react-router-dom";
 import { useGetProductbyIdQuery } from "@/store/api/productQueryApi";
 import { useImagesUpload } from "@/hooks/useImagesUpload";
@@ -208,14 +206,8 @@ export default function CreateProductWizard({
     "Entertainment",
   ];
 
-  const {
-    bgTertiary,
-    textPrimary,
-    textSecondary,
-    textTertiary,
-    borderColor,
-    hoverBg,
-  } = useThemeClasses();
+  const { bgTertiary, textPrimary, textTertiary, borderColor } =
+    useThemeClasses();
 
   const [initProductCreate, { isLoading: isCreating }] =
     useInitProductCreateMutation();
@@ -232,6 +224,7 @@ export default function CreateProductWizard({
 
   const validateStep = (step: number): boolean => {
     const newErrors: Record<string, string> = {};
+
     switch (step) {
       case 1:
         if (!formData.businessId) newErrors.businessId = t("field_required");
@@ -256,7 +249,7 @@ export default function CreateProductWizard({
         }
         break;
       case 4:
-        if (!formData.images) newErrors.images = t("upload_at_least_one_image");
+        // if (!formData.images) newErrors.images = t("upload_at_least_one_image");
         break;
     }
     setErrors(newErrors);
@@ -277,7 +270,7 @@ export default function CreateProductWizard({
     }
     setCurrentStep((prev) => prev + 1);
 
-    handleSaveDraft();
+    // handleSaveDraft();
   };
 
   const handlePrevious = () => {
@@ -311,57 +304,60 @@ export default function CreateProductWizard({
   const [_lastSaved, setLastSaved] = useState<Date | null>(null);
 
   // Draft Save Payload per Step
-  const stepPayloadMap: Record<number, any> = {
-    1: {
-      businessId: formData.businessId,
-      name: formData.name,
+  const stepPayloadMap = {
+    // 1: {
+    businessId: formData.businessId,
+    name: formData.name,
 
-      shortDescription: formData.shortDescription,
-      description: formData.fullDescription,
+    shortDescription: formData.shortDescription,
+    description: formData.fullDescription,
+    // },
+    // 2: {
+    productType: formData.type,
+    categories: formData.categories,
+    // },
+    // 3: {
+    price: {
+      markedPrice: formData.markedPrice,
+      sellingPrice: formData.sellingPrice,
     },
-    2: {
-      productType: formData.type,
-      categories: formData.categories,
+    quantity: {
+      remaining: formData.quantity,
+      isUnlimited: formData.isUnlimited,
     },
-    3: {
-      price: {
-        markedPrice: formData.markedPrice,
-        sellingPrice: formData.sellingPrice,
-      },
-      quantity: {
-        remaining: formData.quantity,
-        isUnlimited: formData.isUnlimited,
-      },
-      activeStartDate: formData.startDate,
-      activeEndDate: formData.endDate,
-    },
-    4: {
-      // logo: { image: logoGcsUrl },
-      images: galleryImages,
-    },
-    5: {
-      nameHe: formData.nameHe,
-      shortDescriptionHe: formData.shortDescriptionHe,
+    activeStartDate: formData.startDate,
+    activeEndDate: formData.endDate,
+    // },
+    // 4: {
+    // logo: { image: logoGcsUrl },
+    images: galleryImages,
+    // },
+    // 5: {
+    nameHe: formData.nameHe,
+    shortDescriptionHe: formData.shortDescriptionHe,
 
-      nameAr: formData.nameAr,
-      shortDescriptionAr: formData.shortDescriptionAr,
-    },
-    6: {
-      // enableHomeDelivery: formData.enableHomeDelivery,
-      // enableStorePickup: formData.enableStorePickup,
-      // deliveryFee: formData.deliveryFee,
-      // deliveryTime: formData.deliveryTime,
-      // serviceDuration: formData.serviceDuration,
-      // serviceLocation: formData.serviceLocation,
-    },
+    nameAr: formData.nameAr,
+    shortDescriptionAr: formData.shortDescriptionAr,
+    // },
+    // 6: {
+    // enableHomeDelivery: formData.enableHomeDelivery,
+    // enableStorePickup: formData.enableStorePickup,
+    // deliveryFee: formData.deliveryFee,
+    // deliveryTime: formData.deliveryTime,
+    // serviceDuration: formData.serviceDuration,
+    // serviceLocation: formData.serviceLocation,
+    // },
   };
   console.log("formData product", formData);
+  console.log("🚀 ~ saveDraft ~ productId:", productId);
+
   // Auto-save draft function
   const saveDraft = async (isPublish = false) => {
     try {
       let internalProductId;
 
       // 1️⃣ Initialize product if not created yet
+      console.log("🚀 ~ saveDraft ~ productId:", productId);
       if (!productId) {
         const res = await initProductCreate({ businessId }).unwrap();
         internalProductId = res?.id;
@@ -369,7 +365,7 @@ export default function CreateProductWizard({
       }
 
       // Only send payload for the current step
-      const payload = stepPayloadMap[currentStep];
+      const payload = stepPayloadMap;
       if (!payload || !Object.keys(payload).length) return;
 
       // 4️⃣ Update product
@@ -492,23 +488,32 @@ export default function CreateProductWizard({
               >
                 {/* Icon + connector */}
                 <div className="flex items-center">
-                  <div
-                    className={`w-10 h-10 rounded-full flex items-center justify-center transition-all
-                ${
-                  isActive
-                    ? "bg-teal-500 text-white"
-                    : isCompleted
-                      ? "bg-green-500 text-white"
-                      : `${bgTertiary} ${textTertiary}`
-                }`}
-                  >
-                    {isCompleted ? (
-                      <Check className="w-5 h-5" />
-                    ) : (
-                      <Icon className="w-5 h-5" />
-                    )}
+                  {/* Icon + title */}
+                  <div className="flex flex-col items-center">
+                    <div
+                      className={`w-10 h-10 rounded-full flex items-center justify-center transition-all
+          ${
+            isActive
+              ? "bg-teal-500 text-white"
+              : isCompleted
+                ? "bg-green-500 text-white"
+                : `${bgTertiary} ${textTertiary}`
+          }`}
+                    >
+                      {isCompleted ? (
+                        <Check className="w-5 h-5" />
+                      ) : (
+                        <Icon className="w-5 h-5" />
+                      )}
+                    </div>
+
+                    {/* Title below icon */}
+                    <span className="mt-2 text-sm text-center">
+                      {step.title}
+                    </span>
                   </div>
 
+                  {/* Connector line */}
                   {idx < steps.length - 1 && (
                     <div
                       className={`flex-1 h-1 mx-2 ${

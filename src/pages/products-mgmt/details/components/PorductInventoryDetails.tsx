@@ -114,7 +114,7 @@ const ProductInventoryDetails: React.FC<ProductInventoryDetailsProps> = ({
           </h3>
           <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-4 overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-teal-500 to-blue-500 transition-all"
+              className="h-full bg-linear-to-r from-teal-500 to-blue-500 transition-all"
               style={{ width: `${stockPercentage}%` }}
             />
           </div>

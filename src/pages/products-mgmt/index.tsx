@@ -556,7 +556,7 @@ export default function ProductsMgmtPage() {
               {showFilters && (
                 <div>
                   <div
-                    className={`mb-6 p-4 z-5 rounded-t-sm border-t ${themeColor.borderColor} ${themeColor.bgSecondary}`}
+                    className={`mb-6 p-4 rounded-t-sm border-t ${themeColor.borderColor} ${themeColor.bgSecondary}`}
                   >
                     <div className="grid grid-cols-1 z-5 sm:grid-cols-3 gap-4">
                       <div>

@@ -1,5 +1,6 @@
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { Globe } from "lucide-react";
+import ReactSelect from "react-select";
 
 interface ProductBasicInfoProps {
   t: (key: string) => string;
@@ -74,7 +75,7 @@ const ProductBasicInfo = ({
         <label className={`block text-sm font-medium ${textSecondary} mb-2`}>
           {t("select_business")} <span className="text-red-500">*</span>
         </label>
-        <select
+        {/* <select
           value={formData.businessId?._id}
           onChange={(e) => {
             const selectedBusinessId = e.target.value;
@@ -92,8 +93,34 @@ const ProductBasicInfo = ({
               {biz.name}
             </option>
           ))}
-        </select>
-
+        </select> */}
+        <ReactSelect
+          value={
+            businesses?.find((biz) => biz._id === formData.businessId?._id)
+              ? {
+                  value: formData.businessId?._id,
+                  label: businesses.find(
+                    (biz) => biz._id === formData.businessId?._id,
+                  )?.name,
+                }
+              : formData.businessId?._id
+          }
+          onChange={(selectedOption: any) => {
+            const selectedBusinessId = selectedOption?.value || "";
+            setFormData({
+              ...formData,
+              businessId: selectedBusinessId,
+            });
+            setBusinessId(selectedBusinessId);
+          }}
+          placeholder={t("select_business")}
+          options={
+            businesses?.map((biz) => ({
+              value: biz._id,
+              label: biz.name,
+            })) || []
+          }
+        />
         {errors.businessId && (
           <p className="text-red-500 text-sm mt-1">{errors.businessId}</p>
         )}

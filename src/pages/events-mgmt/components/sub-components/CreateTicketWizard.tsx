@@ -1,13 +1,14 @@
 import clsx from "clsx";
 import { toast } from "sonner";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Plus, Trash2, Upload, X } from "lucide-react";
+
 import { formatDate } from "@/helpers/formatter";
 import { ModalWrapper } from "@/components/wrapper";
-import { ConfirmDialog } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useSingleImageUpload } from "@/hooks/useSingleImageUpload";
+import { ConfirmDialog, ImageWithFallback } from "@/components/shared";
 import {
   useCreateTicketMutation,
   useUpdateTicketMutation,
@@ -15,12 +16,11 @@ import {
 
 interface CreateTicketWizardProps {
   opMode: TTicketOpMode;
-  setShowTicketModal: (v: boolean) => void;
-  setEditingTicket: (v: any) => void;
-  theme: Theme;
-  editingTicket: ITicketPayload;
+  setIsOpen: (v: boolean) => void;
+  setEditData: (v: any) => void;
+  editData: ITicketPayload;
   eventId: string | null;
-  refetch: () => void;
+  refetch?: () => void;
   eventDays: EventDay[];
   ticketDateTime: ITicketDateTime[];
   setTicketDateTime: React.Dispatch<React.SetStateAction<ITicketDateTime[]>>;
@@ -40,10 +40,9 @@ const modelTitle = (mode: TTicketOpMode, t: (key: string) => string) => {
 };
 
 const CreateTicketWizard = ({
-  setShowTicketModal,
-  setEditingTicket,
-  theme,
-  editingTicket,
+  setIsOpen,
+  setEditData,
+  editData,
   eventId,
   refetch,
   opMode,
@@ -52,10 +51,17 @@ const CreateTicketWizard = ({
   setTicketDateTime,
 }: CreateTicketWizardProps) => {
   const { t } = useTranslation("events");
-  const { textPrimary, textSecondary, inputClasses, textTertiary, rowDir } =
-    useThemeClasses();
+  const {
+    textPrimary,
+    textSecondary,
+    inputClasses,
+    textTertiary,
+    rowDir,
+    isDark,
+  } = useThemeClasses();
 
   const sectionRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const [isDelete, setIsDelete] = useState(false);
 
   // ─── ERROR STATES ───────────────────────────────────────────────
   const [errors, setErrors] = useState<{
@@ -68,7 +74,7 @@ const CreateTicketWizard = ({
   const [ticketImage, setTicketImage] = useState<IImage | null>(null);
 
   const isPaidOrVip = ["paid", "vip"].includes(
-    editingTicket?.type?.toLowerCase() || "",
+    editData?.type?.toLowerCase() || "",
   );
 
   const {
@@ -81,21 +87,13 @@ const CreateTicketWizard = ({
     isImageDeleting,
     handleDeleteImage,
   } = useSingleImageUpload({
-    initialImage: ticketImage?.image,
-    onChange: () => setTicketImage,
+    initialImage: isDelete ? undefined : editData?.imageUrl,
+    onChange: () => {},
   });
+  console.log("🚀 ~ CreateTicketWizard ~ image:", image);
 
   const [createTicket, { isLoading: isSaving }] = useCreateTicketMutation();
   const [updateTicket, { isLoading: isUpdating }] = useUpdateTicketMutation();
-
-  // const [isSaved, setIsSaved] = useState(false);
-  // const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-
-  useEffect(() => {
-    if (editingTicket?.imageUrl) {
-      setTicketImage({ image: editingTicket?.imageUrl });
-    }
-  }, [editingTicket]);
 
   // ─── VALIDATION ─────────────────────────────────────────────────
   const validateTicket = (): boolean => {
@@ -104,14 +102,14 @@ const CreateTicketWizard = ({
     let firstInvalidField: string | null = null;
 
     // Name
-    if (!editingTicket.name?.trim()) {
+    if (!editData.name?.trim()) {
       newErrors.name = t("ticket_name_required") || "Ticket name is required";
       isValid = false;
       firstInvalidField = firstInvalidField ?? "name";
     }
 
     // Description
-    if (!editingTicket.description?.trim()) {
+    if (!editData.description?.trim()) {
       newErrors.description =
         t("description_required") || "Ticket description is required";
       isValid = false;
@@ -147,19 +145,13 @@ const CreateTicketWizard = ({
 
     // Prices - only when paid or VIP
     if (isPaidOrVip) {
-      if (
-        !editingTicket.price?.markedPrice ||
-        editingTicket.price.markedPrice <= 0
-      ) {
+      if (!editData.price?.markedPrice || editData.price.markedPrice <= 0) {
         newErrors.markedPrice =
           t("marked_price_required") || "Marked price is required";
         isValid = false;
         firstInvalidField = firstInvalidField ?? "markedPrice";
       }
-      if (
-        !editingTicket.price?.sellingPrice ||
-        editingTicket.price.sellingPrice <= 0
-      ) {
+      if (!editData.price?.sellingPrice || editData.price.sellingPrice <= 0) {
         newErrors.sellingPrice =
           t("selling_price_required") || "Selling price is required";
         isValid = false;
@@ -216,37 +208,37 @@ const CreateTicketWizard = ({
 
     const payload: ITicketPayload = {
       eventId,
-      name: editingTicket.name.trim(),
-      description: editingTicket.description?.trim() || "",
+      name: editData.name.trim(),
+      description: editData.description?.trim() || "",
       price: {
-        markedPrice: editingTicket.price?.markedPrice || 0,
-        sellingPrice: editingTicket.price?.sellingPrice || 0,
+        markedPrice: editData.price?.markedPrice || 0,
+        sellingPrice: editData.price?.sellingPrice || 0,
         discountPercent: 0,
         discountAmount: 0,
       },
       quantity: {
-        initial: editingTicket.quantity?.initial || 0,
+        initial: editData.quantity?.initial || 0,
         sold: 0,
-        remaining: editingTicket.quantity?.initial || 0,
-        isUnlimited: editingTicket.quantity?.isUnlimited || false,
-        perUserLimit: editingTicket.quantity?.perUserLimit || 0,
+        remaining: editData.quantity?.initial || 0,
+        isUnlimited: editData.quantity?.isUnlimited || false,
+        perUserLimit: editData.quantity?.perUserLimit || 0,
       },
       dayDescription: ticketDateTime.map((item) => ({
         date: item.date,
         startTime: item.startTime,
         endTime: item.endTime,
       })),
-      images: [{ image: uploadImageUrl }],
+      images: [{ image: uploadImageUrl ?? image?.gcsURL }],
       status: "active",
-      type: editingTicket.type.toUpperCase(),
+      type: editData.type.toUpperCase(),
     };
 
     try {
       const res =
-        editingTicket._id && opMode !== "DUPLICATE"
+        editData._id && opMode !== "DUPLICATE"
           ? await updateTicket({
               body: payload,
-              ticketId: editingTicket._id,
+              ticketId: editData._id,
             }).unwrap()
           : await createTicket(payload).unwrap();
 
@@ -255,9 +247,9 @@ const CreateTicketWizard = ({
           t("ticket_saved_successfully") ||
           "Ticket saved successfully",
       );
-      refetch();
-      setShowTicketModal(false);
-      setEditingTicket(null);
+      if (refetch) refetch();
+      setIsOpen(false);
+      setEditData(null);
     } catch (err: any) {
       toast.error(err?.data?.message || "Failed to save ticket");
     }
@@ -293,16 +285,15 @@ const CreateTicketWizard = ({
   };
 
   function handleClose() {
-    setShowTicketModal(false);
-    setEditingTicket(null);
-    setTicketImage(null);
+    setIsOpen(false);
+    setEditData(null);
   }
 
   return (
     <ModalWrapper
       onClose={handleClose}
       height="h-[88vh]"
-      maxWidth="max-w-2xl"
+      maxWidth="max-w-3xl"
       showSpinner={isSaving || isUpdating || image?.status === "uploading"}
     >
       <div className="p-4 space-y-4 relative">
@@ -311,7 +302,7 @@ const CreateTicketWizard = ({
         <section
           className={clsx(
             "px-3 py-5 space-y-6 max-h-[70vh] overflow-y-auto rounded-lg border",
-            theme === "dark"
+            isDark
               ? "border-gray-700 bg-gray-800/50"
               : "border-gray-200 bg-gray-50",
           )}
@@ -327,9 +318,9 @@ const CreateTicketWizard = ({
             </label>
             <input
               type="text"
-              value={editingTicket?.name || ""}
+              value={editData?.name || ""}
               onChange={(e) => {
-                setEditingTicket((prev: ITicketPayload) => ({
+                setEditData((prev: ITicketPayload) => ({
                   ...prev,
                   name: e.target.value,
                 }));
@@ -359,9 +350,9 @@ const CreateTicketWizard = ({
               {t("description")} <span className="text-red-500">*</span>
             </label>
             <textarea
-              value={editingTicket?.description || ""}
+              value={editData?.description || ""}
               onChange={(e) =>
-                setEditingTicket((prev: ITicketPayload) => ({
+                setEditData((prev: ITicketPayload) => ({
                   ...prev,
                   description: e.target.value,
                 }))
@@ -459,7 +450,7 @@ const CreateTicketWizard = ({
 
                     <button
                       type="button"
-                      onClick={() => removeEventDay(day._id)}
+                      onClick={() => removeEventDay(day?._id || "")}
                       className="col-span-1 p-2 text-red-500 hover:text-red-600 bg-red-100 dark:bg-red-900/30 rounded-md flex items-center justify-center"
                     >
                       <Trash2 size={18} />
@@ -496,7 +487,7 @@ const CreateTicketWizard = ({
                   key={type}
                   type="button"
                   onClick={() => {
-                    setEditingTicket((prev: ITicketPayload) => ({
+                    setEditData((prev: ITicketPayload) => ({
                       ...prev,
                       type,
                       ...(type === "free"
@@ -517,9 +508,9 @@ const CreateTicketWizard = ({
                   }}
                   className={clsx(
                     "px-4 py-2.5 rounded-lg border capitalize transition-colors",
-                    editingTicket?.type?.toLowerCase() === type
+                    editData?.type?.toLowerCase() === type
                       ? "border-teal-500 bg-teal-500/10 text-teal-500 font-medium"
-                      : theme === "dark"
+                      : isDark
                         ? "border-gray-700 hover:bg-gray-800"
                         : "border-gray-300 hover:bg-gray-50",
                   )}
@@ -545,10 +536,10 @@ const CreateTicketWizard = ({
                 <input
                   type="number"
                   min={0}
-                  value={editingTicket?.price?.markedPrice || ""}
+                  value={editData?.price?.markedPrice || ""}
                   onChange={(e) => {
                     const val = parseFloat(e.target.value) || 0;
-                    setEditingTicket((prev: ITicketPayload) => ({
+                    setEditData((prev: ITicketPayload) => ({
                       ...prev,
                       price: { ...prev.price, markedPrice: val },
                     }));
@@ -579,10 +570,10 @@ const CreateTicketWizard = ({
                 <input
                   type="number"
                   min={0}
-                  value={editingTicket?.price?.sellingPrice || ""}
+                  value={editData?.price?.sellingPrice || ""}
                   onChange={(e) => {
                     const val = parseFloat(e.target.value) || 0;
-                    setEditingTicket((prev: ITicketPayload) => ({
+                    setEditData((prev: ITicketPayload) => ({
                       ...prev,
                       price: { ...prev.price, sellingPrice: val },
                     }));
@@ -612,9 +603,9 @@ const CreateTicketWizard = ({
               <input
                 type="number"
                 min={1}
-                value={editingTicket?.quantity?.initial ?? ""}
+                value={editData?.quantity?.initial ?? ""}
                 onChange={(e) =>
-                  setEditingTicket((prev: any) => ({
+                  setEditData((prev: any) => ({
                     ...prev,
                     quantity: {
                       ...prev.quantity,
@@ -632,9 +623,9 @@ const CreateTicketWizard = ({
               <input
                 type="number"
                 min={1}
-                value={editingTicket?.quantity?.perUserLimit ?? ""}
+                value={editData?.quantity?.perUserLimit ?? ""}
                 onChange={(e) =>
-                  setEditingTicket((prev: any) => ({
+                  setEditData((prev: any) => ({
                     ...prev,
                     quantity: {
                       ...prev.quantity,
@@ -673,21 +664,24 @@ const CreateTicketWizard = ({
             <div
               className={clsx(
                 "border-2 border-dashed rounded-lg p-4",
-                theme === "dark"
+                isDark
                   ? "border-gray-700 bg-gray-800/30"
                   : "border-gray-300 bg-gray-50",
               )}
             >
               {image?.previewUrl ? (
                 <div className="relative">
-                  <img
+                  <ImageWithFallback
                     src={image.previewUrl}
                     alt="Ticket preview"
                     className="w-full h-40 object-cover rounded-lg"
                   />
                   <button
                     type="button"
-                    onClick={() => handleDeleteImage(image, opMode)}
+                    onClick={() => {
+                      handleDeleteImage(image, opMode);
+                      setIsDelete(true);
+                    }}
                     className="absolute -top-2 -right-2 p-1.5 bg-red-500 text-white rounded-lg hover:bg-red-600"
                   >
                     <X className="w-6 h-6" />
@@ -727,11 +721,11 @@ const CreateTicketWizard = ({
         <div className="flex justify-end gap-3 mt-6">
           <button
             onClick={() => {
-              setShowTicketModal(false);
-              setEditingTicket(null);
+              setIsOpen(false);
+              setEditData(null);
             }}
             className={`px-5 py-2.5 rounded-lg border transition-colors ${
-              theme === "dark"
+              isDark
                 ? "border-gray-700 hover:bg-gray-800"
                 : "border-gray-300 hover:bg-gray-100"
             }`}
@@ -766,15 +760,6 @@ const CreateTicketWizard = ({
         onCancel={() => setDeleteTarget(null)}
         onConfirm={confirmDelete}
       />
-      {/* <ConfirmDialog
-        open={isConfirmOpen}
-        title="unsaved_changes"
-        message="unsaved_changes_confirm"
-        confirmText="confirm"
-        variant="warning"
-        onCancel={() => setIsSaved(false)}
-        onConfirm={handleClose}
-      /> */}
     </ModalWrapper>
   );
 };
