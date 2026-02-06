@@ -36,6 +36,7 @@ import { useGetProductbyIdQuery } from "@/store/api/productQueryApi";
 import { useImagesUpload } from "@/hooks/useImagesUpload";
 import { ModalWrapper } from "@/components/wrapper";
 import { useSingleImageUpload } from "@/hooks/useSingleImageUpload";
+import { PublishButton } from "@/components/btns";
 
 interface ProductWizardProps {
   onClose: () => void;
@@ -47,6 +48,7 @@ interface ProductWizardProps {
   currentView: string;
   businesses?: any;
   isBusinessesLoading?: any;
+  businessData: any;
 }
 
 export default function CreateProductWizard({
@@ -57,6 +59,7 @@ export default function CreateProductWizard({
   currentView,
   businesses,
   isBusinessesLoading,
+  businessData,
 }: ProductWizardProps) {
   const { t, i18n } = useTranslation("products");
   const { theme } = useAppSelector((state) => state.settings);
@@ -69,7 +72,8 @@ export default function CreateProductWizard({
     "en" | "he" | "ar"
   >("en");
   // const [isSaving, setIsSaving] = useState(false); // unused but kept
-  const [isPublishing, _setIsPublishing] = useState(false); // unused but kept
+  const [isPublishing, setIsPublishing] = useState(false);
+
   const [_isPublishBtnClicked, setIsPublishBtnClicked] = useState(false);
   //image
   const [galleryImages, setGalleryImages] = useState<TImages>([]);
@@ -231,7 +235,7 @@ export default function CreateProductWizard({
     switch (step) {
       case 1:
         if (!formData.businessId) newErrors.businessId = t("field_required");
-        if (!formData.name) newErrors.name = t("field_required");
+        if (!formData.name) newErrors.nameEn = t("field_required");
         if (!formData.shortDescription)
           newErrors.shortDescEn = t("field_required");
         break;
@@ -282,8 +286,23 @@ export default function CreateProductWizard({
 
   const handlePublish = async () => {
     setIsPublishBtnClicked(true);
+    let allValid = true;
+    for (let i = 1; i <= 5; i++) {
+      if (!validateStep(i)) {
+        allValid = false;
+        setCurrentStep(i);
+        break;
+      }
+    }
+    if (!allValid) {
+      toast.error(t("fill_all_fields"));
+      return;
+    }
+    setIsPublishing(true);
 
     await saveDraft(true);
+    setIsPublishing(false);
+
     toast.success(t("business created succesfully"));
 
     onClose();
@@ -416,6 +435,7 @@ export default function CreateProductWizard({
             {...commonProps}
             setBusinessId={setBusinessId}
             isBusinessesLoading={isBusinessesLoading}
+            businessData={businessData}
           />
         );
       case 2:
@@ -441,6 +461,7 @@ export default function CreateProductWizard({
       <div
         className={`p-6 border-b ${borderColor} flex items-center justify-between`}
       >
+        {/* Left content */}
         <div>
           <h2 className={`text-2xl ${textPrimary} mb-1`}>
             {currentView === "edit" ? t("edit_product") : t("create_product")}
@@ -450,6 +471,9 @@ export default function CreateProductWizard({
             {steps[currentStep - 1].title}
           </p>
         </div>
+
+        {/* Right content */}
+        <PublishButton onClick={handlePublish} isLoading={isPublishing} />
       </div>
 
       {/* Progress Bar */}

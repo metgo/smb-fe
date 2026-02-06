@@ -5,14 +5,14 @@ import { ImageWithFallback } from "../shared";
 export type ItemOption = {
   value: string;
   label: string;
-  logo: string | undefined;
+  logo?: string | undefined;
 };
 
 type Props = {
   items?: {
     _id: string;
     name: string;
-    logo: string | undefined;
+    logo?: string | undefined;
   }[];
   value?: string;
   onChange: (value: string) => void;
@@ -53,7 +53,7 @@ export default function ReactSelect({
       placeholder={placeholder}
       onChange={(opt) => onChange(opt?.value ?? "")}
       styles={{
-        container: (base) => ({ ...base, minWidth, zIndex: 30 }),
+        container: (base) => ({ ...base, minWidth, zIndex: 50 }),
         control: (base, state) => ({
           ...base,
           borderRadius: 12,

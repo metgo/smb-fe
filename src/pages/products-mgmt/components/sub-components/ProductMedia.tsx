@@ -41,14 +41,6 @@ const ProductMedia: FC<ProductMediaProps> = ({
   t,
   errors,
 
-  logoImage,
-  handleLogoImageSelect,
-  deleteTargetLogo,
-  setDeleteTargetLogo,
-  confirmDeleteLogo,
-  isLogoImageDeleting,
-  handleDeleteLogoImage,
-
   images,
   primaryImageIndex,
   setPrimaryImage,
@@ -66,7 +58,7 @@ const ProductMedia: FC<ProductMediaProps> = ({
       {/* ---------------- Image Gallery ---------------- */}
       <div>
         <label className={`block text-sm mb-2 ${textSecondary}`}>
-          {t("product_images")}
+          {t("product_images")} <span className="text-red-400">*</span>
           <span className={`text-xs ml-2 ${textTertiary}`}>
             ({t("upload_up_to_10_images")})
           </span>
@@ -165,17 +157,6 @@ const ProductMedia: FC<ProductMediaProps> = ({
         variant="danger"
         onCancel={() => setDeleteTarget(null)}
         onConfirm={confirmDelete}
-      />
-
-      <ConfirmDialog
-        open={!!deleteTargetLogo}
-        title="delete_image"
-        message="delete_image_confirm"
-        confirmText="delete"
-        loading={isLogoImageDeleting}
-        variant="danger"
-        onCancel={() => setDeleteTargetLogo(null)}
-        onConfirm={confirmDeleteLogo}
       />
     </div>
   );

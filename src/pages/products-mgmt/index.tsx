@@ -26,6 +26,7 @@ import { useGetAllProductsQuery } from "@/store/api/productQueryApi";
 import { useNavigate } from "react-router-dom";
 import SearchInput from "@/components/shared/SearchInput";
 import { useGetbusinessForProductQuery } from "@/store/api/businessQueryApi";
+import ReactSelect from "react-select";
 
 const businessId = "";
 const defaultColumns = {
@@ -84,13 +85,13 @@ export default function ProductsMgmtPage() {
 
   const { data: businessData, isLoading: isBusinessesLoading } =
     useGetbusinessForProductQuery({});
-  const businesses = businessData?.data?.slice(0, 10);
+  const businesses = businessData?.data;
   const canChangeStatus = ["superadmin", "admin", "dmo", "authority"].includes(
     USER_ROLE,
   );
 
   //filters
-  const [page, setPage] = useState(1);
+  const [page, _setPage] = useState(1);
   const LIMIT = 10;
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [filters, setFilters] = useState({
@@ -98,13 +99,15 @@ export default function ProductsMgmtPage() {
     productType: "all",
     businessId: "all",
   });
-  const clearFilters = () => {
-    setFilters({
-      status: "all",
-      productType: "all",
-      businessId: "all",
-    });
+  const [clearBusiness, setClearBusiness] = useState(false);
+  const clearFilter = (filterKey: string) => {
+    setClearBusiness(true);
+    setFilters((prev) => ({
+      ...prev,
+      [filterKey]: "all",
+    }));
   };
+
   const productQueryParams = useMemo(() => {
     const params: any = {
       page,
@@ -116,7 +119,7 @@ export default function ProductsMgmtPage() {
     }
 
     if (filters.status !== "all") {
-      params.status = filters.status.toUpperCase(); // API expects DRAFT, APPROVED, etc
+      params.status = filters.status.toUpperCase();
     }
 
     if (filters.productType !== "all") {
@@ -553,9 +556,9 @@ export default function ProductsMgmtPage() {
               {showFilters && (
                 <div>
                   <div
-                    className={`mb-6 p-4 rounded-t-sm border-t ${themeColor.borderColor} ${themeColor.bgSecondary}`}
+                    className={`mb-6 p-4 z-5 rounded-t-sm border-t ${themeColor.borderColor} ${themeColor.bgSecondary}`}
                   >
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 z-5 sm:grid-cols-3 gap-4">
                       <div>
                         <label
                           className={`block text-sm mb-1 ${
@@ -580,10 +583,10 @@ export default function ProductsMgmtPage() {
                         >
                           <option value="all">{t("all")}</option>
                           <option value="draft">{t("draft")}</option>
-                          <option value="pending">{t("pending")}</option>
-                          <option value="approved">{t("approved")}</option>
-                          <option value="rejected">{t("rejected")}</option>
-                          <option value="archived">{t("archived")}</option>
+
+                          <option value="active">{t("active")}</option>
+
+                          <option value="inactive">{t("inactive")}</option>
                         </select>
                       </div>
 
@@ -631,7 +634,7 @@ export default function ProductsMgmtPage() {
                           >
                             {t("filter_by_business")}
                           </label>
-                          <select
+                          {/* <select
                             value={filters.businessId}
                             onChange={(e) =>
                               setFilters((prev) => ({
@@ -655,7 +658,26 @@ export default function ProductsMgmtPage() {
                                 </option>
                               ))
                             )}
-                          </select>
+                          </select> */}
+                          <ReactSelect
+                            isClearable
+                            value={filters.businessId?.name}
+                            onChange={(selectedOption) => {
+                              setFilters((prev) => ({
+                                ...prev,
+                                businessId: selectedOption?.value,
+                              }));
+                            }}
+                            placeholder="Select Business"
+                            options={
+                              businessData?.data?.map((item: any) => ({
+                                value: item._id,
+                                label: item.name,
+                                logo: item.logo,
+                              })) ?? []
+                            }
+                            className="rounded-md z-5"
+                          />
                         </div>
                       )}
                     </div>
@@ -681,28 +703,34 @@ export default function ProductsMgmtPage() {
                       </div>
 
                       {/* Active filters display and clear all button */}
-                      <div className=" flex items-start gap-3">
+                      <div className="flex items-start gap-3">
                         {/* Show active filters */}
                         {Object.entries(filters).some(
                           ([_, val]) => val !== "all",
                         ) && (
-                          <div className="flex flex-wrap gap-2">
+                          <div className="flex flex-wrap items-center gap-2">
                             {filters.status !== "all" && (
-                              <span className="px-3 py-1 rounded-full bg-teal-100 text-teal-800 text-sm">
+                              <span className="flex items-center gap-1 px-3 py-1 rounded-full bg-teal-100 text-teal-800 text-sm">
                                 {t(filters.status)}
+                                <button
+                                  onClick={() => clearFilter("status")}
+                                  aria-label="Clear status filter"
+                                  className="ml-1 text-teal-800 hover:text-teal-600 focus:outline-none"
+                                >
+                                  ×
+                                </button>
                               </span>
                             )}
                             {filters.productType !== "all" && (
-                              <span className="px-3 py-1 rounded-full bg-teal-100 text-teal-800 text-sm">
+                              <span className="flex items-center gap-1 px-3 py-1 rounded-full bg-teal-100 text-teal-800 text-sm">
                                 {t(filters.productType)}
-                              </span>
-                            )}
-                            {!businessId && filters.businessId !== "all" && (
-                              <span className="px-3 py-1 rounded-full bg-teal-100 text-teal-800 text-sm">
-                                {" "}
-                                {businessData?.data?.find(
-                                  (b: any) => b._id === filters.businessId,
-                                )?.name || filters.businessId}
+                                <button
+                                  onClick={() => clearFilter("productType")}
+                                  aria-label="Clear product type filter"
+                                  className="ml-1 text-teal-800 hover:text-teal-600 focus:outline-none"
+                                >
+                                  ×
+                                </button>
                               </span>
                             )}
                           </div>
@@ -888,6 +916,7 @@ export default function ProductsMgmtPage() {
           preSelectedBusinessName={"abc"}
           currentView={currentView}
           businesses={businesses}
+          businessData={businessData}
         />
       )}
       {currentView === "edit" && (
@@ -904,6 +933,7 @@ export default function ProductsMgmtPage() {
           setProductId={setProductId}
           currentView={currentView}
           isBusinessesLoading={isBusinessesLoading}
+          businessData={businessData}
         />
       )}
 

@@ -23,6 +23,7 @@ interface ProductBasicInfoProps {
   };
   businesses: { _id: string; name: string }[];
   isBusinessesLoading: boolean;
+  businessData: any;
 }
 
 const ProductBasicInfo = ({
@@ -36,7 +37,6 @@ const ProductBasicInfo = ({
   setBusinessId,
   isBusinessesLoading,
 }: ProductBasicInfoProps) => {
-  console.log("🚀 ~ ProductBasicInfo ~ businesses:", businesses);
   const { bgTertiary, textPrimary, textSecondary, textTertiary, borderColor } =
     useThemeClasses();
   // Helper to get field key based on selected language
@@ -93,6 +93,7 @@ const ProductBasicInfo = ({
             </option>
           ))}
         </select>
+
         {errors.businessId && (
           <p className="text-red-500 text-sm mt-1">{errors.businessId}</p>
         )}

@@ -29,6 +29,7 @@ import { useGetProductbyIdQuery } from "@/store/api/productQueryApi";
 import { useSearchParams } from "react-router-dom";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { useUpdateProductMutation } from "@/store/api/productMutationApi";
+import { Spinner } from "@/components/shared";
 interface ProductDetailsProps {
   // selectedProduct: Product;
   onBack: () => void;
@@ -56,7 +57,7 @@ export default function ProductDetails({
   const [searchParams] = useSearchParams();
 
   const productIdParam = searchParams.get("productId");
-  const { data: product } = useGetProductbyIdQuery(
+  const { data: product, isLoading } = useGetProductbyIdQuery(
     productIdParam ? { productId: productId } : skipToken,
   );
   const [updateProduct] = useUpdateProductMutation();
@@ -217,6 +218,8 @@ export default function ProductDetails({
         theme === "dark" ? "bg-gray-950" : "bg-gray-50"
       }`}
     >
+      <Spinner isLoading={isLoading} />
+
       {/* Fixed Header */}
       <div
         className={`sticky top-0 z-10 ${

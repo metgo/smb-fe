@@ -349,7 +349,7 @@ export default function ReordableDataTable<T extends Record<string, any>>({
                       <td
                         key={colKey}
                         className={clsx(
-                          "p-3 text-sm cursor-pointer",
+                          "p-3 z-10 text-sm cursor-pointer",
                           textSecondary,
                         )}
                         onClick={(e) =>
