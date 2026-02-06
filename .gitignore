@@ -26,3 +26,4 @@ draft.json
 *.sw?
 
 draft.json
+*.env
