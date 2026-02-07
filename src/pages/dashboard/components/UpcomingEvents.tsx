@@ -1,13 +1,13 @@
 import clsx from "clsx";
+import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Calendar, MapPin, ArrowRight } from "lucide-react";
-import { Link } from "react-router-dom";
 
 import { routes } from "@/lib/routes";
-import { ImageWithFallback, InfoTooltip } from "@/components/shared";
-import { useGetAllEventsQuery } from "@/store/api/eventQueryApi";
 import { formatDate } from "@/helpers/formatter";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { ImageWithFallback, InfoTooltip } from "@/components/shared";
+import { useGetAllEventsQuery } from "@/store/api/eventQueryApi";
 
 export default function UpcomingEvents() {
   const { t, i18n } = useTranslation("dashboard");
@@ -18,6 +18,8 @@ export default function UpcomingEvents() {
     page: 1,
     limit: 3,
   });
+
+  if (events?.length === 0) return null;
 
   return (
     <section>
@@ -41,8 +43,9 @@ export default function UpcomingEvents() {
       {/* Events Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {events?.map((event: any) => (
-          <div
+          <Link
             key={event._id}
+            to={`${routes.eventDetails}?eventId=${event?._id}`}
             className={clsx(
               "rounded-xl border overflow-hidden hover:shadow-lg transition-all group",
               isDark
@@ -95,7 +98,7 @@ export default function UpcomingEvents() {
                 <span className="line-clamp-1">{event?.address?.location}</span>
               </div>
             </div>
-          </div>
+          </Link>
         ))}
 
         {/* Show More Card */}

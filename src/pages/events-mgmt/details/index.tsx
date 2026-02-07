@@ -6,16 +6,13 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { useAppSelector } from "@/hooks/hooks";
 import {
-  EventAttributesDetails,
   EventDateTimeDetails,
   EventInfoDetails,
-  EventLocationDetails,
   EventMediaDetails,
   EventRegistrationDetails,
   EventScheduledNotificationDetails,
   EventTicketDetails,
   EventTitleSection,
-  TabsSection,
 } from "./components";
 import { routes } from "@/lib/routes";
 import { UserRole } from "@/enums/user.types";
@@ -30,9 +27,16 @@ import { CreateEventWizard } from "../components";
 import { StatusChangeBtn } from "@/components/btns";
 import { useUpdateEventMutation } from "@/store/api/eventMutationApi";
 import { toast } from "sonner";
+import {
+  AttributesDetails,
+  LocationDetails,
+} from "@/components/details-sections";
+import { TabsSection } from "@/components/shared";
+import { eventTabs } from "@/constants/tabs";
 
 export default function EventDetailsPage() {
   const { t } = useTranslation("businesses");
+  const { t: tc } = useTranslation("common");
 
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -124,7 +128,15 @@ export default function EventDetailsPage() {
       case "date_time":
         return <EventDateTimeDetails {...(eventDetails ?? {})} />;
       case "location":
-        return <EventLocationDetails {...commonProps} />;
+        return (
+          <LocationDetails
+            t={t}
+            purpose="Event"
+            lat={eventDetails?.geoLocation?.lat}
+            lng={eventDetails?.geoLocation?.long}
+            address={eventDetails?.address}
+          />
+        );
       case "media":
         return <EventMediaDetails {...mediaProps} />;
       case "tickets":
@@ -139,7 +151,14 @@ export default function EventDetailsPage() {
       case "schedual_notification":
         return <EventScheduledNotificationDetails {...(eventDetails ?? {})} />;
       case "attributes":
-        return <EventAttributesDetails {...commonProps} />;
+        return (
+          <AttributesDetails
+            t={t}
+            groupTypesId={eventDetails?.groupTypesId}
+            subCategoriesId={eventDetails?.subCategoriesId}
+            accessibilitiesId={eventDetails?.accessibilitiesId}
+          />
+        );
       case "registration":
         return (
           <EventRegistrationDetails
@@ -195,13 +214,18 @@ export default function EventDetailsPage() {
         {/* Title & Tabs */}
         <div className="px-6 pb-3">
           <EventTitleSection {...(eventDetails ?? {})} />
-          <TabsSection activeTab={activeTab} setActiveTab={setActiveTab} />
+          <TabsSection
+            t={tc}
+            tabs={eventTabs}
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+          />
         </div>
       </div>
 
       {/* Scrollable Content */}
       <div className={clsx("flex-1 overflow-y-auto", bgPrimary)}>
-        <div className="p-6">{renderContent()}</div>
+        <div className="py-3 px-2">{renderContent()}</div>
       </div>
 
       {/* Edit Modal */}
@@ -210,8 +234,6 @@ export default function EventDetailsPage() {
           isOpen={isEditOpen}
           onClose={handleClose}
           editData={eventDetails}
-          tickets={tickets}
-          ticketRefetch={ticketsRefetch}
         />
       )}
     </div>

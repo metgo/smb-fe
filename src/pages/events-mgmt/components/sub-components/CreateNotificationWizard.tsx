@@ -6,7 +6,6 @@ import { Mail, MessageSquare, Send, Smartphone } from "lucide-react";
 
 interface CreateNotificationWizardProps {
   t: (key: string) => string;
-  theme: Theme;
   eventName?: string;
   startDate?: string;
   eventDays?: { startTime: string }[];
@@ -23,7 +22,6 @@ interface CreateNotificationWizardProps {
 
 const CreateNotificationWizard: React.FC<CreateNotificationWizardProps> = ({
   t,
-  theme,
   eventDays,
   startDate,
   eventName,
@@ -35,7 +33,7 @@ const CreateNotificationWizard: React.FC<CreateNotificationWizardProps> = ({
   setShowNotificationForm,
   setNotifications,
 }) => {
-  const { textPrimary, textSecondary, textTertiary, borderColor } =
+  const { textPrimary, textSecondary, textTertiary, borderColor, isDark } =
     useThemeClasses();
 
   if (!editingNotification) return;
@@ -77,7 +75,7 @@ const CreateNotificationWizard: React.FC<CreateNotificationWizardProps> = ({
                   })
                 }
                 className={`w-full px-4 py-2 rounded-lg border ${
-                  theme === "dark"
+                  isDark
                     ? "bg-gray-800 border-gray-700 text-gray-100"
                     : "bg-white border-gray-300 text-gray-900"
                 }`}
@@ -163,7 +161,7 @@ const CreateNotificationWizard: React.FC<CreateNotificationWizardProps> = ({
                   })
                 }
                 className={`w-full px-4 py-2 rounded-lg border ${
-                  theme === "dark"
+                  isDark
                     ? "bg-gray-800 border-gray-700 text-gray-100"
                     : "bg-white border-gray-300 text-gray-900"
                 }`}
@@ -188,7 +186,7 @@ const CreateNotificationWizard: React.FC<CreateNotificationWizardProps> = ({
                   })
                 }
                 className={`w-full px-4 py-2 rounded-lg border ${
-                  theme === "dark"
+                  isDark
                     ? "bg-gray-800 border-gray-700 text-gray-100"
                     : "bg-white border-gray-300 text-gray-900"
                 }`}
@@ -221,7 +219,7 @@ const CreateNotificationWizard: React.FC<CreateNotificationWizardProps> = ({
                   }
                   placeholder="Reminder: {{Event Name}} tomorrow at {{Event Time}}"
                   className={`w-full px-4 py-2 rounded-lg border ${
-                    theme === "dark"
+                    isDark
                       ? "bg-gray-800 border-gray-700 text-gray-100"
                       : "bg-white border-gray-300 text-gray-900"
                   }`}
@@ -256,7 +254,7 @@ const CreateNotificationWizard: React.FC<CreateNotificationWizardProps> = ({
 
               <div
                 className={`p-4 rounded-lg border mb-4 ${
-                  theme === "dark"
+                  isDark
                     ? "border-gray-700 bg-gray-900/50"
                     : "border-gray-200 bg-white"
                 }`}
@@ -278,7 +276,7 @@ const CreateNotificationWizard: React.FC<CreateNotificationWizardProps> = ({
               setEditingNotification(null);
             }}
             className={`px-4 py-2 rounded-lg border transition-colors ${
-              theme === "dark"
+              isDark
                 ? "border-gray-700 hover:bg-gray-800"
                 : "border-gray-300 hover:bg-gray-100"
             }`}

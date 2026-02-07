@@ -37,29 +37,30 @@ import { useImagesUpload } from "@/hooks/useImagesUpload";
 import { PublishButton } from "@/components/btns";
 import { formatToBackendTemplate } from "@/helpers/formatter";
 import { useCreateWebsiteAccessItemMutation } from "@/store/api/commonMutationApi";
+import { useGetAllTicketQuery } from "@/store/api/eventQueryApi";
+import { skipToken } from "@reduxjs/toolkit/query";
 
 interface CreateEventWizardProps {
   isOpen: boolean;
   onClose: () => void;
   editData?: any;
-  tickets?: any;
-  ticketRefetch?: () => void;
 }
 
 export default function CreateEventWizard({
   isOpen,
   onClose,
   editData,
-  tickets,
-  ticketRefetch,
 }: CreateEventWizardProps) {
   const { t } = useTranslation("events");
   const [searchParams] = useSearchParams();
+  const { textPrimary, textTertiary, rowDir, isDark } = useThemeClasses();
 
   const editId = searchParams.get("eventId");
   const [eventId, setEventId] = useState<string>(editId || "");
 
-  const { textPrimary, textTertiary, rowDir, isDark } = useThemeClasses();
+  const { data: tickets, refetch: ticketRefetch } = useGetAllTicketQuery(
+    eventId ? { eventId } : skipToken,
+  );
   const [updateEvent, { isLoading: isEventUpdating }] =
     useUpdateEventMutation();
   const [initEventCreate, { isLoading: isEventCreating }] =

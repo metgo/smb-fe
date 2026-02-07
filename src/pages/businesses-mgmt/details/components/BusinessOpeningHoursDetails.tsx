@@ -14,7 +14,7 @@ interface BusinessOpeningHoursDetailsProps {
 const dayOrder = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
 
 const getDayDisplay = (day: string) =>
-  day.charAt(0).toUpperCase() + day.slice(1).toLowerCase();
+  day?.charAt(0)?.toUpperCase() + day?.slice(1)?.toLowerCase();
 
 const BusinessOpeningHoursDetails: React.FC<
   BusinessOpeningHoursDetailsProps
@@ -40,8 +40,7 @@ const BusinessOpeningHoursDetails: React.FC<
     );
   }
 
-  const hoursMap = new Map(openingHrs.map((h) => [h.day.toUpperCase(), h]));
-  console.log("opemonghrs", business);
+  const hoursMap = new Map(openingHrs?.map((h) => [h?.day?.toUpperCase(), h]));
   return (
     <div>
       <h2
@@ -55,7 +54,7 @@ const BusinessOpeningHoursDetails: React.FC<
       </h2>
 
       <div className="space-y-3 px-4">
-        {dayOrder.map((day) => {
+        {dayOrder?.map((day) => {
           const entry = hoursMap.get(day);
 
           let displayText = "Closed";

@@ -1,6 +1,6 @@
 import { toast } from "sonner";
 import { useRef, useState } from "react";
-import { AlertCircle, MapPin, Phone, TrashIcon } from "lucide-react";
+import { AlertCircle, Image, MapPin, Phone, TrashIcon } from "lucide-react";
 
 import { ConfirmDialog, ImageWithFallback } from "@/components/shared";
 import { useDeleteBusinessMutation } from "@/store/api/businessMutationApi";
@@ -93,7 +93,7 @@ function BusinessGridView<T extends Business>({
       } `}
     >
       <div
-        className="overflow-x-auto max-h-[calc(100vh-450px)] overflow-y-auto"
+        className="overflow-x-auto max-h-[calc(100vh-500px)] overflow-y-auto mb-20"
         id="business-table-scroll"
         ref={scrollRef}
       >
@@ -125,8 +125,8 @@ function BusinessGridView<T extends Business>({
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full bg-linear-to-br from-purple-400 to-pink-400 flex items-center justify-center">
-                    <AlertCircle className="w-20 h-20 text-white/40" />
+                  <div className="w-full h-full bg-linear-to-br from-gray-400 to-teal-400 flex items-center justify-center">
+                    <Image className="w-20 h-20 text-white/40" />
                   </div>
                 )}
               </div>
@@ -168,6 +168,7 @@ function BusinessGridView<T extends Business>({
           ))}
         </div>
       </div>
+
       <ConfirmDialog
         open={isConfirmOpen}
         title={"delete_business"}
