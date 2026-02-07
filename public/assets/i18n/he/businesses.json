@@ -241,5 +241,16 @@
   "clear_all": "נקה הכל",
   "pickup_available": "איסוף זמין",
   "delivery": "משלוח",
-  "specific_seller_delivery_info": "מידע ספציפי על משלוח של המוכר"
+  "specific_seller_delivery_info": "מידע ספציפי על משלוח של המוכר",
+
+  "user_details": "פרטי משתמש",
+  "user_not_in_system_prompt": "משתמש זה אינו קיים במערכת שלנו. אנא ספק את פרטיו.",
+  "new_user": "משתמש חדש",
+  "email_address": "כתובת אימייל",
+  "invite_collaborator": "הזמן שותף",
+  "enter_email_prompt": "הזן את כתובת האימייל של האדם שברצונך להזמין",
+  "role": "תפקיד",
+  "viewer_read_only": "צופה (קריאה בלבד)",
+  "admin": "מנהל",
+  "user_not_in_system_alert": "אינו קיים במערכת שלנו. אנא ספק את פרטיו כדי לשלוח הזמנה."
 }

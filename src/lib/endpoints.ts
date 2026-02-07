@@ -12,7 +12,6 @@ export const endpoints = {
   businessStats: "/home-stats/businesses",
   poiStats: "/home-stats/point-of-interests",
   productStats: "/home-stats/products",
-
   eventStats: "/stats/events",
   voucherStats: "/stats/vouchers",
   onlineOrderStats: "/stats/orders",

@@ -68,9 +68,9 @@ export const masterDataApi = createApi({
       }),
     }),
 
-    getUserByEmail: builder.query<any, { email: string | null }>({
+    getUserByEmail: builder.query<any, { email: string }>({
       query: ({ email }) => ({
-        url: `${endpoints.users}/${email}`,
+        url: `${endpoints.users}/${encodeURIComponent(email)}`,
         method: "GET",
       }),
     }),
@@ -108,7 +108,7 @@ export const {
   useGetGroupTypesQuery,
   useGetDmosQuery,
   usePostUserAdminMutation,
-  useGetUserByEmailQuery,
+  useLazyGetUserByEmailQuery,
   useGetAllWebsitesQuery,
   useGetAllSocialMediaQuery,
 } = masterDataApi;

@@ -1,224 +1,121 @@
-import React, { useState, useEffect } from "react";
-import { TimePickerWidget } from "@/components/shared/TimePickerWidget";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
+import clsx from "clsx";
+import React from "react";
+import { useTranslation } from "react-i18next";
 
-interface DaySchedule {
+interface OperatingHour {
   day: string;
   open: string;
   close: string;
+  isHoliday: boolean;
 }
-
-type View = "list" | "details" | "create" | "edit" | undefined;
 
 interface BusinessOpeningHoursProps {
-  initialHours?: DaySchedule[];
-  onChange?: (hours: DaySchedule[]) => void;
-  theme?: "light" | "dark";
-  isRTL?: boolean;
-  t?: (key: string) => string;
-  business?: any;
-  currentView: View;
+  formData: { operatingHours: OperatingHour[] };
+  setFormData: (data: any) => void;
 }
 
-const DAYS_OF_WEEK = [
-  "sunday",
-  "monday",
-  "tuesday",
-  "wednesday",
-  "thursday",
-  "friday",
-  "saturday",
-] as const;
+const daysOfWeek = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
 
-type DayOfWeek = (typeof DAYS_OF_WEEK)[number];
+const BusinessOpeningHours = ({
+  formData,
+  setFormData,
+}: BusinessOpeningHoursProps) => {
+  const { t } = useTranslation("common");
+  const { isDark, textSecondary } = useThemeClasses();
 
-// Flexible day name normalization
-const normalizeDay = (raw: string): DayOfWeek | null => {
-  const lower = (raw || "").trim().toLowerCase();
-  if (DAYS_OF_WEEK.includes(lower as DayOfWeek)) return lower as DayOfWeek;
-
-  // Abbreviation fallback
-  const abbrMap: Record<string, DayOfWeek> = {
-    sun: "sunday",
-    mon: "monday",
-    tue: "tuesday",
-    tues: "tuesday",
-    wed: "wednesday",
-    thu: "thursday",
-    thur: "thursday",
-    thurs: "thursday",
-    fri: "friday",
-    sat: "saturday",
-  };
-
-  return abbrMap[lower] || null;
-};
-
-const createDefaultSchedule = (day: DayOfWeek): DaySchedule => ({
-  day,
-  open: "09:00",
-  close: "18:00",
-});
-
-const BusinessOpeningHours: React.FC<BusinessOpeningHoursProps> = ({
-  initialHours = [],
-  onChange,
-  theme = "light",
-  isRTL = false,
-  t = (key) => key,
-  business,
-  currentView,
-}) => {
-  const [schedules, setSchedules] = useState<DaySchedule[]>(() => {
-    if (initialHours.length > 0) {
-      const map = new Map(initialHours.map((h) => [h.day, h]));
-      return DAYS_OF_WEEK.map(
-        (day) => map.get(day) ?? createDefaultSchedule(day),
-      );
-    }
-    return DAYS_OF_WEEK.map(createDefaultSchedule);
-  });
-
-  useEffect(() => {
-    if (currentView !== "edit" || !business) return;
-
-    const incoming =
-      business.openingHrs ??
-      business.operatingHours ??
-      business.opening_hours ??
-      business.hours ??
-      [];
-
-    if (!Array.isArray(incoming) || incoming.length === 0) return;
-
-    const hoursMap = new Map<DayOfWeek, DaySchedule>();
-
-    incoming.forEach((item: any) => {
-      // Support both "day" and "days"
-      const dayStr = item.day ?? item.days ?? "";
-      const normalizedDay = normalizeDay(dayStr);
-
-      if (!normalizedDay) return;
-
-      // If there's isHoliday
-      const isHoliday =
-        item.isHoliday === "true" ||
-        item.isHoliday === true ||
-        item.isHoliday === "1";
-
-      const openTime = (item.open || "").trim();
-      const closeTime = (item.close || "").trim();
-
-      hoursMap.set(normalizedDay, {
-        day: normalizedDay,
-        open: isHoliday ? "" : openTime,
-        close: isHoliday ? "" : closeTime,
+  React.useEffect(() => {
+    if (!formData.operatingHours || formData.operatingHours.length === 0) {
+      setFormData({
+        ...formData,
+        operatingHours: daysOfWeek.map((day) => ({
+          day,
+          open: "",
+          close: "",
+          isHoliday: false,
+        })),
       });
-    });
+    }
+  }, [formData, setFormData]);
 
-    // Fill missing days as closed
-    const newSchedules = DAYS_OF_WEEK.map((day) => {
-      return hoursMap.get(day) ?? { day, open: "", close: "" };
-    });
-
-    setSchedules(newSchedules);
-  }, [business, currentView]);
-
-  useEffect(() => {
-    onChange?.(schedules);
-  }, [schedules, onChange]);
+  const handleToggleHoliday = (index: number) => {
+    const newHours = [...formData.operatingHours];
+    const current = newHours[index];
+    if (!current.isHoliday) {
+      newHours[index] = { ...current, isHoliday: true, open: "", close: "" };
+    } else {
+      newHours[index] = { ...current, isHoliday: false };
+    }
+    setFormData({ ...formData, operatingHours: newHours });
+  };
 
   const handleTimeChange = (
-    day: DayOfWeek,
+    index: number,
     field: "open" | "close",
-    time: string,
+    value: string,
   ) => {
-    setSchedules((prev) =>
-      prev.map((item) =>
-        item.day === day ? { ...item, [field]: time } : item,
-      ),
-    );
+    const newHours = [...formData.operatingHours];
+    newHours[index] = { ...newHours[index], [field]: value };
+    setFormData({ ...formData, operatingHours: newHours });
   };
-
-  const handleClosedChange = (day: DayOfWeek, checked: boolean) => {
-    setSchedules((prev) =>
-      prev.map((item) => {
-        if (item.day !== day) return item;
-        return checked
-          ? { ...item, open: "", close: "" }
-          : { ...item, open: "09:00", close: "18:00" };
-      }),
-    );
-  };
-
-  const isClosed = (s: DaySchedule) => !s.open?.trim() && !s.close?.trim();
 
   return (
     <div className="space-y-6">
-      <h3
-        className={`text-lg font-semibold ${theme === "dark" ? "text-gray-200" : "text-gray-800"}`}
-      >
-        {t("operating_hours") || "Business Hours"}
-      </h3>
-
-      {schedules.map((schedule) => {
-        const dayKey = schedule.day as DayOfWeek;
-        const closed = isClosed(schedule);
-
-        return (
-          <div
-            key={dayKey}
-            className={`p-4 rounded-lg border ${
-              theme === "dark"
-                ? "bg-gray-800/50 border-gray-700"
-                : "bg-gray-50 border-gray-200"
-            }`}
-          >
-            <div className="flex items-center justify-between mb-3">
-              <span
-                className={`font-medium ${theme === "dark" ? "text-gray-200" : "text-gray-800"}`}
-              >
-                {t(dayKey) || dayKey.charAt(0).toUpperCase() + dayKey.slice(1)}
-              </span>
-
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={closed}
-                  onChange={(e) => handleClosedChange(dayKey, e.target.checked)}
-                  className="w-4 h-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500"
-                />
-                <span
-                  className={`text-sm ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
-                >
-                  {t("closed") || "Closed"}
-                </span>
-              </label>
+      {formData?.operatingHours?.map((hour, idx) => (
+        <div
+          key={hour.day}
+          className={`flex justify-between items-start p-5 border rounded-md ${
+            isDark ? "bg-gray-800" : "bg-gray-100"
+          }`}
+        >
+          {/* Left side: Day and open time (open time below day) */}
+          <div className="flex flex-col">
+            <div className={clsx("w-12 font-semibold", textSecondary)}>
+              {t(hour.day)}
             </div>
-
-            {!closed && (
-              <div className="flex items-center gap-3">
-                <TimePickerWidget
-                  value={schedule.open}
-                  onChange={(time) => handleTimeChange(dayKey, "open", time)}
-                  theme={theme}
-                  isRTL={isRTL}
-                />
-                <span
-                  className={`${theme === "dark" ? "text-gray-400" : "text-gray-500"}`}
-                >
-                  {t("to") || "to"}
-                </span>
-                <TimePickerWidget
-                  value={schedule.close}
-                  onChange={(time) => handleTimeChange(dayKey, "close", time)}
-                  theme={theme}
-                  isRTL={isRTL}
-                />
-              </div>
-            )}
+            <div className="flex gap-4 items-center">
+              <input
+                type="time"
+                value={hour.open}
+                onChange={(e) => handleTimeChange(idx, "open", e.target.value)}
+                disabled={hour.isHoliday}
+                className={`mt-1 px-3 py-3 rounded-lg border text-sm ${
+                  isDark
+                    ? "bg-gray-700 border-gray-600 text-gray-200"
+                    : "bg-white border-gray-300 text-gray-900"
+                }`}
+              />
+              <div className={clsx(textSecondary)}>{t("to")}</div>
+              <input
+                type="time"
+                value={hour.close}
+                onChange={(e) => handleTimeChange(idx, "close", e.target.value)}
+                disabled={hour.isHoliday}
+                className={`px-3 py-3 rounded-lg border text-sm ${
+                  isDark
+                    ? "bg-gray-700 border-gray-600 text-gray-200"
+                    : "bg-white border-gray-300 text-gray-900"
+                }`}
+              />
+            </div>
           </div>
-        );
-      })}
+
+          {/* Right side: close time and checkbox (stacked vertically) */}
+          <div className="flex flex-col items-end space-y-2">
+            <label className="flex items-center gap-1 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={hour.isHoliday}
+                onChange={() => handleToggleHoliday(idx)}
+                className="w-4 h-4 rounded border-gray-300"
+              />
+              <span className={isDark ? "text-gray-300" : "text-gray-700"}>
+                Closed
+              </span>
+            </label>
+          </div>
+        </div>
+      ))}
     </div>
   );
 };

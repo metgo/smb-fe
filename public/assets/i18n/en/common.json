@@ -14,6 +14,14 @@
   "businesses": "Businesses",
   "delete_business": "Delete Business",
   "delete_business_confirm": "Confirm Delete Business?",
+  "edit_location": "Edit Location",
+  "add_location": "Add Location",
+  "address": "Address",
+  "add": "Add",
+  "cancel": "Cancel",
+  "update": "Update",
+  "opening_hours": "Opening Hours",
+  "open_24_7": "Open 24/7",
   "search_placeholder": "Search Placeholder",
   "orders": "Orders",
   "pois": "Points of Interest",
@@ -48,6 +56,8 @@
   "confirm": "Confirm",
   "details": "Details",
   "edit": "Edit",
+  "continue": "Continue",
+  "send_invite": "Send Invite",
 
   "pending": "Pending",
   "approved": "Approved",
@@ -85,6 +95,7 @@
   "image_upload_failed": "Image upload failed! Please try again...",
   "image_delete_failed": "Image delete failed! Please try again...",
 
+  "to": "to",
   "primary": "Primary",
   "set_as_primary": "Set as Primary",
 

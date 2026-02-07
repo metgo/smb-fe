@@ -62,7 +62,7 @@ const EventTicketDetails: React.FC<EventTicketDetailsProps> = ({
   };
 
   const calculateTotalRevenue = (ticket: ITicketPayload) => {
-    return ticket.quantity.sold * ticket.price.sellingPrice;
+    return ticket?.quantity?.sold * ticket.price.sellingPrice;
   };
 
   const calculateDiscountAmount = (ticket: ITicketPayload) => {
@@ -185,7 +185,7 @@ const EventTicketDetails: React.FC<EventTicketDetailsProps> = ({
             >
               {tickets.reduce(
                 (sum, t) =>
-                  sum + (t.quantity.isUnlimited ? 0 : t.quantity.initial),
+                  sum + (t?.quantity?.isUnlimited ? 0 : t?.quantity?.initial),
                 0,
               )}
             </p>
@@ -222,7 +222,7 @@ const EventTicketDetails: React.FC<EventTicketDetailsProps> = ({
                 isDark ? "text-white" : "text-gray-900",
               )}
             >
-              {tickets.reduce((sum, t) => sum + t.quantity.sold, 0)}
+              {tickets.reduce((sum, t) => sum + t?.quantity?.sold, 0)}
             </p>
           </div>
 
@@ -259,7 +259,7 @@ const EventTicketDetails: React.FC<EventTicketDetailsProps> = ({
             >
               {tickets.reduce(
                 (sum, t) =>
-                  sum + (t.quantity.isUnlimited ? 0 : t.quantity.remaining),
+                  sum + (t?.quantity?.isUnlimited ? 0 : t?.quantity?.remaining),
                 0,
               )}
             </p>
@@ -313,9 +313,9 @@ const EventTicketDetails: React.FC<EventTicketDetailsProps> = ({
               ticket.type?.toLowerCase() === "free";
             const hasDiscount =
               ticket.price.markedPrice > ticket.price.sellingPrice;
-            const soldPercentage = ticket.quantity.isUnlimited
+            const soldPercentage = ticket?.quantity?.isUnlimited
               ? 0
-              : (ticket.quantity.sold / ticket.quantity.initial) * 100;
+              : (ticket?.quantity?.sold / ticket?.quantity?.initial) * 100;
 
             return (
               <div
@@ -387,14 +387,16 @@ const EventTicketDetails: React.FC<EventTicketDetailsProps> = ({
                             {ticket.type}
                           </span>
                         </div>
-                        <p
+
+                        <div
                           className={clsx(
                             "text-sm leading-relaxed line-clamp-2",
                             isDark ? "text-gray-400" : "text-gray-600",
                           )}
-                        >
-                          {ticket.description}
-                        </p>
+                          dangerouslySetInnerHTML={{
+                            __html: ticket?.description || "",
+                          }}
+                        />
                       </div>
 
                       {/* Action Icons */}
@@ -568,9 +570,9 @@ const EventTicketDetails: React.FC<EventTicketDetailsProps> = ({
                             isDark ? "text-white" : "text-gray-900",
                           )}
                         >
-                          {ticket.quantity.isUnlimited
+                          {ticket?.quantity?.isUnlimited
                             ? "∞"
-                            : ticket.quantity.initial}
+                            : ticket?.quantity?.initial}
                         </p>
                       </div>
 
@@ -603,7 +605,7 @@ const EventTicketDetails: React.FC<EventTicketDetailsProps> = ({
                             isDark ? "text-white" : "text-gray-900",
                           )}
                         >
-                          {ticket.quantity.sold}
+                          {ticket?.quantity?.sold}
                         </p>
                       </div>
 
@@ -636,15 +638,15 @@ const EventTicketDetails: React.FC<EventTicketDetailsProps> = ({
                             isDark ? "text-white" : "text-gray-900",
                           )}
                         >
-                          {ticket.quantity.isUnlimited
+                          {ticket?.quantity?.isUnlimited
                             ? "∞"
-                            : ticket.quantity.remaining}
+                            : ticket?.quantity?.remaining}
                         </p>
                       </div>
                     </div>
 
                     {/* Sales Progress */}
-                    {!ticket.quantity.isUnlimited && (
+                    {!ticket?.quantity?.isUnlimited && (
                       <div>
                         <div className="flex items-center justify-between mb-2">
                           <span
@@ -700,12 +702,12 @@ const EventTicketDetails: React.FC<EventTicketDetailsProps> = ({
                             isDark ? "text-gray-400" : "text-gray-600",
                           )}
                         >
-                          Max {ticket.quantity.perUserLimit} per user
+                          Max {ticket?.quantity?.perUserLimit} per user
                         </span>
                       </div>
 
                       {/* Revenue */}
-                      {ticket.quantity.sold > 0 && (
+                      {ticket?.quantity?.sold > 0 && (
                         <div className="flex items-center gap-1.5">
                           <DollarSign
                             className={clsx(

@@ -9,6 +9,7 @@ import PageStats from "./PageStats";
 import ReordableDataTable from "./ReordableDataTable";
 import SelectableChips from "./SelectableChips";
 import Spinner from "./Spinner";
+import TabsSection from "./TabsSection";
 import ViewModeToggle from "./ViewModeToggle";
 import WebsiteSelect from "./WebsiteSelect";
 import WizardFooter from "./WizardFooter";
@@ -19,6 +20,7 @@ export {
   PageHeader,
   IdleLogout,
   InfoTooltip,
+  TabsSection,
   WizardFooter,
   WebsiteSelect,
   ConfirmDialog,

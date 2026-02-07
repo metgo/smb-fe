@@ -1,4 +1,5 @@
-import BusinessesWithViewMode from "./BusinessesWithViewMode";
 import CreateBusinessWizard from "./CreateBusinessWizard";
+import BusinessListView from "./BusinessListView";
+import BusinessGridView from "./BusinessGridView";
 
-export { BusinessesWithViewMode, CreateBusinessWizard };
+export { BusinessGridView, BusinessListView, CreateBusinessWizard };

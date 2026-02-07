@@ -1,10 +1,10 @@
 import { ConfirmDialog, ImageWithFallback } from "@/components/shared";
-import { Upload, Star, Eye, Trash2 } from "lucide-react";
+import { Star, Eye, Trash2 } from "lucide-react";
 interface MediaErrors {
   logo?: string;
 }
 interface BusinessMediaDetailsProps {
-  theme: Theme;
+  isDark: boolean;
   t: (key: string) => string;
   errors: MediaErrors;
 
@@ -32,10 +32,10 @@ interface BusinessMediaDetailsProps {
 /* ---------- Component ---------- */
 const BusinessMediaDetails: React.FC<BusinessMediaDetailsProps> = ({
   t,
-  theme,
+  isDark,
 
   logoImage,
-  handleLogoImageSelect,
+  // handleLogoImageSelect,
 
   images,
   primaryImageIndex,
@@ -44,15 +44,13 @@ const BusinessMediaDetails: React.FC<BusinessMediaDetailsProps> = ({
   setDeleteTarget,
   confirmDelete,
   isImageDeleting,
-  handleImageUpload,
+  // handleImageUpload,
 }) => {
   return (
     <div className="space-y-6">
       {/* Logo */}
       <div>
-        <h3
-          className={`mb-3 ${theme === "dark" ? "text-gray-200" : "text-gray-800"}`}
-        >
+        <h3 className={`mb-3 ${isDark ? "text-gray-200" : "text-gray-800"}`}>
           {t("logo")}
         </h3>
         <div className="flex items-center gap-4">
@@ -63,7 +61,7 @@ const BusinessMediaDetails: React.FC<BusinessMediaDetailsProps> = ({
               className="w-full h-full object-cover"
             />
           </div>
-          <div className="flex gap-2">
+          {/* <div className="flex gap-2">
             <label
               htmlFor="logo-image-upload"
               className="px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-700 rounded cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
@@ -81,22 +79,22 @@ const BusinessMediaDetails: React.FC<BusinessMediaDetailsProps> = ({
               className="hidden"
               id="logo-image-upload"
             />
-          </div>
+          </div> */}
         </div>
       </div>
       {/* Image Gallery Header */}
       <div className="flex items-center justify-between">
-        <h3
-          className={`text-md  ${
-            theme === "dark" ? "text-gray-200" : "text-gray-800"
-          }`}
-        >
-          {t("image_gallery") || "Image Gallery"}
-        </h3>
+        {images.length > 0 && (
+          <h3
+            className={`text-md  ${isDark ? "text-gray-200" : "text-gray-800"}`}
+          >
+            {t("image_gallery") || "Image Gallery"}
+          </h3>
+        )}
 
         {images.length < 10 && (
           <>
-            <button
+            {/* <button
               type="button"
               onClick={() => document.getElementById("image-upload")?.click()}
               className="px-3 py-1 bg-teal-600 hover:bg-teal-700 text-white rounded-none transition-colors flex items-center gap-2"
@@ -104,10 +102,10 @@ const BusinessMediaDetails: React.FC<BusinessMediaDetailsProps> = ({
               <Upload className="w-4 h-4" />
 
               {t("upload_images") || "Upload Images"}
-            </button>
+            </button> */}
 
             {/* Hidden file input */}
-            <input
+            {/* <input
               id="image-upload"
               type="file"
               multiple
@@ -116,7 +114,7 @@ const BusinessMediaDetails: React.FC<BusinessMediaDetailsProps> = ({
                 e.target.files && handleImageUpload(e.target.files)
               }
               className="hidden"
-            />
+            /> */}
           </>
         )}
       </div>
@@ -127,7 +125,7 @@ const BusinessMediaDetails: React.FC<BusinessMediaDetailsProps> = ({
           <div
             key={idx}
             className={`relative aspect-square rounded-lg overflow-hidden border group ${
-              theme === "dark" ? "border-gray-700" : "border-gray-300"
+              isDark ? "border-gray-700" : "border-gray-300"
             }`}
           >
             <ImageWithFallback

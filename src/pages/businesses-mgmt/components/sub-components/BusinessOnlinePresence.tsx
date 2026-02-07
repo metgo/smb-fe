@@ -16,7 +16,6 @@ interface SocialMediaItem {
 }
 
 interface BusinessOnlinePresenceProps {
-  theme: "light" | "dark";
   isRTL: boolean;
   t: (key: string) => string;
   formData: {
@@ -30,22 +29,22 @@ interface BusinessOnlinePresenceProps {
 type View = "list" | "details" | "create" | "edit" | undefined;
 
 const BusinessOnlinePresence: React.FC<BusinessOnlinePresenceProps> = ({
-  theme,
-  isRTL,
   t,
+  isRTL,
   business,
   formData,
   setFormData,
   currentView,
 }) => {
   const { socialMedia } = useCommon();
+  const { isDark } = useThemeClasses();
 
   const allSocialMedia: SocialMediaItem[] = socialMedia?.datas?.data ?? [];
 
   const inputClasses = `w-full ${
     isRTL ? "pr-10 pl-4" : "pl-10 pr-4"
   } py-2 rounded-lg border ${
-    theme === "dark"
+    isDark
       ? "bg-gray-800 border-gray-700 text-gray-200 placeholder-gray-500"
       : "bg-white border-gray-300 text-gray-900 placeholder-gray-400"
   } focus:outline-none focus:ring-2 focus:ring-teal-500`;
@@ -97,11 +96,7 @@ const BusinessOnlinePresence: React.FC<BusinessOnlinePresenceProps> = ({
 
   return (
     <div className="space-y-6">
-      <h3
-        className={`text-lg ${
-          theme === "dark" ? "text-gray-200" : "text-gray-800"
-        }`}
-      >
+      <h3 className={`text-lg ${isDark ? "text-gray-200" : "text-gray-800"}`}>
         {t("online_presence") || "Online Presence & Social Media"}
       </h3>
 

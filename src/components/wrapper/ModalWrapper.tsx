@@ -3,6 +3,7 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 import clsx from "clsx";
 import { X } from "lucide-react";
 import { Spinner } from "../shared";
+import { useEffect } from "react";
 
 interface ModalWrapperProps {
   children: React.ReactNode;
@@ -21,6 +22,13 @@ const ModalWrapper: React.FC<ModalWrapperProps> = ({
 }) => {
   const { cardClasses } = useThemeClasses();
   const { isRTL } = useAppSelector((state) => state.settings);
+
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, []);
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">

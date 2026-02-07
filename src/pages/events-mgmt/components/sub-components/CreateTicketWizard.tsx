@@ -71,7 +71,6 @@ const CreateTicketWizard = ({
     markedPrice?: string;
     sellingPrice?: string;
   }>({ ticketDays: [] });
-  const [_ticketImage, _setTicketImage] = useState<IImage | null>(null);
 
   const isPaidOrVip = ["paid", "vip"].includes(
     editData?.type?.toLowerCase() || "",
@@ -511,7 +510,7 @@ const CreateTicketWizard = ({
                     editData?.type?.toLowerCase() === type
                       ? "border-teal-500 bg-teal-500/10 text-teal-500 font-medium"
                       : isDark
-                        ? "border-gray-700 hover:bg-gray-800"
+                        ? "border-gray-700 hover:bg-gray-800 text-white/80"
                         : "border-gray-300 hover:bg-gray-50",
                   )}
                 >
@@ -724,11 +723,13 @@ const CreateTicketWizard = ({
               setIsOpen(false);
               setEditData(null);
             }}
-            className={`px-5 py-2.5 rounded-lg border transition-colors ${
+            className={clsx(
+              "px-5 py-2.5 rounded-lg border transition-colors",
               isDark
                 ? "border-gray-700 hover:bg-gray-800"
-                : "border-gray-300 hover:bg-gray-100"
-            }`}
+                : "border-gray-300 hover:bg-gray-100",
+              textSecondary,
+            )}
           >
             {t("cancel")}
           </button>

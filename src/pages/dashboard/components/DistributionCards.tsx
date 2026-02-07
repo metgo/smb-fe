@@ -415,7 +415,7 @@ export function DistributionCard({
                       isActive ? "scale-110" : "scale-100",
                     )}
                   >
-                    {item.percentage}%
+                    {item?.percentage}%
                   </span>
                 </div>
               </div>

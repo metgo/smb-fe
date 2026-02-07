@@ -23,7 +23,6 @@ export const defaultColumns = {
 export type ColumnVisibility = typeof defaultColumns;
 
 interface BusinessListViewProps {
-  theme: Theme;
   businesses: any[];
   isLoading: boolean;
   onBusinessClick: (business: any) => void;
@@ -39,7 +38,6 @@ const USER_ROLE = "admin";
 
 export default function BusinessListView({
   t,
-  theme,
   isLoading,
   businesses,
   onBusinessClick,
@@ -49,7 +47,7 @@ export default function BusinessListView({
   selectedBusinesses,
   setSelectedBusinesses,
 }: BusinessListViewProps) {
-  const { textPrimary, textSecondary } = useThemeClasses();
+  const { textPrimary, textSecondary, isDark } = useThemeClasses();
 
   const [error, _setError] = useState(false);
 
@@ -72,14 +70,14 @@ export default function BusinessListView({
             className={clsx(
               "inline-flex items-center justify-center px-3 py-1 rounded-lg text-sm font-medium",
               score >= 650
-                ? theme === "dark"
+                ? isDark
                   ? "bg-green-500/20 text-green-400"
                   : "bg-green-100 text-green-700"
                 : score >= 450
-                  ? theme === "dark"
+                  ? isDark
                     ? "bg-yellow-500/20 text-yellow-400"
                     : "bg-yellow-100 text-yellow-700"
-                  : theme === "dark"
+                  : isDark
                     ? "bg-gray-700 text-gray-400"
                     : "bg-gray-100 text-gray-600",
             )}
@@ -174,7 +172,7 @@ export default function BusinessListView({
                   ? "bg-yellow-500/20 text-yellow-400"
                   : st === "rejected"
                     ? "bg-red-500/20 text-red-400"
-                    : theme === "dark"
+                    : isDark
                       ? "bg-gray-700 text-gray-400"
                       : "bg-gray-100 text-gray-600",
             )}
@@ -237,7 +235,7 @@ export default function BusinessListView({
         <div className="text-center">
           <AlertCircle className="w-12 h-12 mx-auto mb-4 text-red-600" />
           <h3
-            className={`text-xl mb-2 ${theme === "dark" ? "text-gray-200" : "text-gray-800"}`}
+            className={`text-xl mb-2 ${isDark ? "text-gray-200" : "text-gray-800"}`}
           >
             {t("error_loading_businesses")}
           </h3>
@@ -253,7 +251,7 @@ export default function BusinessListView({
   }
 
   return (
-    <div className="flex flex-col overflow-hidden h-[calc(108vh-210px)] ">
+    <div className="flex flex-col overflow-hidden h-[calc(100vh-450px)]">
       <div className="sticky">
         <ReordableDataTable
           rowKey="_id"

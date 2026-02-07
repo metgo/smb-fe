@@ -3,6 +3,8 @@ import { Globe } from "lucide-react";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { DmoAuthorityWebsiteSelector } from "@/components/shared";
+import { useAppSelector } from "@/hooks/hooks";
+import { UserRole } from "@/enums/user.types";
 interface BusinessFormData {
   authority: string;
   slug: string;
@@ -27,12 +29,10 @@ interface FormErrors {
 type View = "list" | "details" | "create" | "edit" | undefined;
 
 interface BusinessBasicInfosProps {
-  theme: Theme;
   t: (key: string) => string;
   formData: BusinessFormData;
   setFormData: (data: BusinessFormData) => void;
   errors: FormErrors;
-  canApprove: boolean;
   selectedDmoId?: string;
   setSelectDmoId: React.Dispatch<React.SetStateAction<string>>;
   businessId: string;
@@ -47,12 +47,10 @@ interface BusinessBasicInfosProps {
 
 const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
   t,
-  theme,
   formData,
   setFormData,
   markDirty,
   errors,
-  canApprove,
   selectedDmoId,
   setSelectDmoId,
   selectedAuthorityId,
@@ -62,9 +60,11 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
   setWebsiteVisibilityIds,
   businessAssociatedWebsites = [],
 }) => {
+  const { userRole } = useAppSelector((state) => state.auth);
+  const { borderColor, isDark } = useThemeClasses();
+
   const [selectedFormLanguage, setSelectedFormLanguage] =
     useState<Language>("en");
-  const { borderColor } = useThemeClasses();
   const dmoSectionRef = useRef<HTMLDivElement | null>(null);
 
   /* -------- Helpers -------- */
@@ -92,9 +92,6 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
     if (type === "short") return "وصف مختصر";
     return "وصف كامل";
   };
-  // const selectedDmos = dmosAuthorities?.find(
-  //   (item) => item?._id === selectedDmoId,
-  // );
 
   useEffect(() => {
     markDirty(1);
@@ -104,16 +101,14 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <h3
-          className={`text-lg ${theme === "dark" ? "text-gray-200" : "text-gray-800"}`}
-        >
+        <h3 className={`text-lg ${isDark ? "text-gray-200" : "text-gray-800"}`}>
           {t("basic_information")}
         </h3>
 
         {/* Language Selector */}
         <div className="flex items-center gap-2">
           <Globe
-            className={`w-4 h-4 ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
+            className={`w-4 h-4 ${isDark ? "text-gray-400" : "text-gray-600"}`}
           />
           <select
             value={selectedFormLanguage}
@@ -121,7 +116,7 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
               setSelectedFormLanguage(e.target.value as Language)
             }
             className={`px-3 py-1.5 rounded-lg border ${
-              theme === "dark"
+              isDark
                 ? "bg-gray-800 border-gray-700 text-gray-200"
                 : "bg-white border-gray-300 text-gray-900"
             } text-sm focus:outline-none focus:ring-2 focus:ring-teal-500`}
@@ -148,7 +143,7 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
       {/* Business Name */}
       <div>
         <label
-          className={`block text-sm mb-2 ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}
+          className={`block text-sm mb-2 ${isDark ? "text-gray-300" : "text-gray-700"}`}
         >
           {t("business_name")} <span className="text-red-500">*</span>
         </label>
@@ -166,7 +161,7 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
           className={`w-full px-4 py-2 rounded-lg border ${
             errors[getFieldName("name")]
               ? "border-red-500"
-              : theme === "dark"
+              : isDark
                 ? "bg-gray-800 border-gray-700 text-gray-200"
                 : "bg-white border-gray-300 text-gray-900"
           } focus:outline-none focus:ring-2 focus:ring-teal-500`}
@@ -181,7 +176,7 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
       {/* Short Description */}
       <div>
         <label
-          className={`block text-sm mb-2 ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}
+          className={`block text-sm mb-2 ${isDark ? "text-gray-300" : "text-gray-700"}`}
         >
           {t("short_description")} <span className="text-red-500">*</span>
         </label>
@@ -201,7 +196,7 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
           className={`w-full px-4 py-2 rounded-lg border ${
             errors[getFieldName("shortDescription")]
               ? "border-red-500"
-              : theme === "dark"
+              : isDark
                 ? "bg-gray-800 border-gray-700 text-gray-200"
                 : "bg-white border-gray-300 text-gray-900"
           } focus:outline-none focus:ring-2 focus:ring-teal-500`}
@@ -211,7 +206,7 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
       {/* Full Description */}
       <div>
         <label
-          className={`block text-sm mb-2 ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}
+          className={`block text-sm mb-2 ${isDark ? "text-gray-300" : "text-gray-700"}`}
         >
           {t("full_description")} <span className="text-red-500">*</span>
         </label>
@@ -231,7 +226,7 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
           className={`w-full px-4 py-2 rounded-lg border ${
             errors[getFieldName("fullDescription")]
               ? "border-red-500"
-              : theme === "dark"
+              : isDark
                 ? "bg-gray-800 border-gray-700 text-gray-200"
                 : "bg-white border-gray-300 text-gray-900"
           } focus:outline-none focus:ring-2 focus:ring-teal-500`}
@@ -239,10 +234,10 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
       </div>
 
       {/* Internal Notes */}
-      {canApprove && (
+      {userRole === UserRole.SUPERADMIN && (
         <div>
           <label
-            className={`block text-sm mb-2 ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}
+            className={`block text-sm mb-2 ${isDark ? "text-gray-300" : "text-gray-700"}`}
           >
             {t("internal_notes")}
             <span className="text-xs ml-2 text-gray-500">
@@ -257,7 +252,7 @@ const BusinessBasicInfos: FC<BusinessBasicInfosProps> = ({
             }
             placeholder={t("add_internal_notes")}
             className={`w-full px-4 py-4 rounded-lg border ${borderColor} focus:outline-none focus:ring-2 focus:ring-teal-500 ${
-              theme === "dark"
+              isDark
                 ? "bg-gray-800 text-gray-200 placeholder-gray-500"
                 : "bg-white text-gray-900 placeholder-gray-400"
             }`}

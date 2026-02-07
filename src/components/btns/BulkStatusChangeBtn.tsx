@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ChevronDown } from "lucide-react";
 
@@ -13,8 +13,9 @@ const BulkStatusChangeBtn: React.FC<BulkStatusChangeBtnProps> = ({
 }) => {
   const { t } = useTranslation("common");
   const { theme, isRTL } = useAppSelector((state) => state.settings);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const [showStatusDropdown, setShowStatusDropdown] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
   const statusConfig = {
     draft: { color: "bg-gray-500", label: t("draft") },
@@ -28,23 +29,42 @@ const BulkStatusChangeBtn: React.FC<BulkStatusChangeBtnProps> = ({
 
   const handleStatusChange = (newStatus: Product["status"]) => {
     handleBulkStatusChange(newStatus);
-    setShowStatusDropdown(false);
+    setIsOpen(false);
   };
 
+  /* -------------------- Outside Click Handler -------------------- */
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false);
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isOpen]);
   return (
-    <div className="relative">
+    <div className="relative" ref={dropdownRef}>
       <button
-        onClick={() => setShowStatusDropdown(!showStatusDropdown)}
+        onClick={() => setIsOpen(!isOpen)}
         className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm transition-opacity border border-blue-500 text-blue-500 font-medium  `}
       >
         <span>{t("change_status")}</span>
         <ChevronDown
-          className={`w-4 h-4 transition-transform ${showStatusDropdown ? "rotate-180" : ""}`}
+          className={`w-4 h-4 transition-transform ${isOpen ? "rotate-180" : ""}`}
         />
       </button>
 
       {/* Dropdown Menu */}
-      {showStatusDropdown && (
+      {isOpen && (
         <div
           className={`absolute ${isRTL ? "left-0" : "-right-4"} top-full mt-2 w-48 rounded-lg shadow-lg border z-60 ${
             theme === "dark"

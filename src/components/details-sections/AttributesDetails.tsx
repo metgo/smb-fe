@@ -1,23 +1,28 @@
+import clsx from "clsx";
 import type { FC } from "react";
 import { Accessibility, Users, Tag, Grid3x3, CheckCircle2 } from "lucide-react";
-import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { useAppSelector } from "@/hooks/hooks";
+
 import {
   useGetAccessibilityQuery,
   useGetGroupTypesQuery,
   useGetSubCategoriesQuery,
 } from "@/store/api/masterDataApi";
 import { categoryIds } from "@/lib/utils";
-import clsx from "clsx";
+import { useAppSelector } from "@/hooks/hooks";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 
-interface EventAttributesDetailsProps {
+interface AttributesDetailsProps {
   t: (key: string) => string;
-  eventDetails: any;
+  groupTypesId?: string[];
+  subCategoriesId?: string[];
+  accessibilitiesId?: string[];
 }
 
-const EventAttributesDetails: FC<EventAttributesDetailsProps> = ({
+const AttributesDetails: FC<AttributesDetailsProps> = ({
   t,
-  eventDetails,
+  groupTypesId,
+  subCategoriesId,
+  accessibilitiesId,
 }) => {
   const { language } = useAppSelector((state) => state.settings);
   const { isDark } = useThemeClasses();
@@ -35,17 +40,17 @@ const EventAttributesDetails: FC<EventAttributesDetailsProps> = ({
 
   const filteredSubcategories =
     subCategories?.datas?.data?.filter((item: any) =>
-      eventDetails?.subCategoriesId?.includes(item?._id),
+      subCategoriesId?.includes(item?._id),
     ) ?? [];
 
   const filteredAccessibilities =
     accessibility?.datas?.data?.filter((item: any) =>
-      eventDetails?.accessibilitiesId?.includes(item?._id),
+      accessibilitiesId?.includes(item?._id),
     ) ?? [];
 
   const filteredGroupTypes =
     groupTypes?.datas?.data?.filter((item: any) =>
-      eventDetails?.groupTypesId?.includes(item?._id),
+      groupTypesId?.includes(item?._id),
     ) ?? [];
 
   const hasAnyData =
@@ -182,27 +187,19 @@ const EventAttributesDetails: FC<EventAttributesDetailsProps> = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             {filteredAccessibilities.map((option: any, idx: number) => (
-              <div
-                key={idx}
-                className={clsx(
-                  "px-4 py-3 rounded-lg flex items-center gap-3 text-sm font-medium transition-all duration-200 hover:scale-[1.02]",
+              <span
+                key={option?.id ?? idx}
+                className={`px-3 py-1.5 rounded-lg flex items-center gap-2 ${
                   isDark
-                    ? "bg-blue-500/20 text-blue-400 border border-blue-800/50 hover:bg-blue-500/30"
-                    : "bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 hover:border-blue-300",
-                )}
+                    ? "bg-blue-900/30 text-blue-400 border border-blue-800"
+                    : "bg-blue-100 text-blue-800 border border-blue-300"
+                }`}
               >
-                <div
-                  className={clsx(
-                    "p-1.5 rounded-md",
-                    isDark ? "bg-blue-500/30" : "bg-blue-200",
-                  )}
-                >
-                  <Accessibility className="w-4 h-4" />
-                </div>
-                <span className="flex-1">{option?.name}</span>
-              </div>
+                <Accessibility className="w-4 h-4" />
+                {option?.name ? option.name : "Unnamed Accessibility"}
+              </span>
             ))}
           </div>
         </div>
@@ -251,27 +248,19 @@ const EventAttributesDetails: FC<EventAttributesDetailsProps> = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3">
-            {filteredGroupTypes.map((item: any, idx: number) => (
-              <div
-                key={idx}
-                className={clsx(
-                  "px-4 py-3 rounded-lg flex items-center gap-3 text-sm font-medium transition-all duration-200 hover:scale-[1.02]",
+          <div className="flex items-center flex-wrap gap-3">
+            {filteredGroupTypes.map((type: any, idx: number) => (
+              <span
+                key={type?.id ?? idx}
+                className={`px-3 py-1.5 rounded-lg flex items-center gap-2 ${
                   isDark
-                    ? "bg-purple-500/20 text-purple-400 border border-purple-800/50 hover:bg-purple-500/30"
-                    : "bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100 hover:border-purple-300",
-                )}
+                    ? "bg-purple-900/30 text-purple-400 border border-purple-800"
+                    : "bg-purple-100 text-purple-800 border border-purple-300"
+                }`}
               >
-                <div
-                  className={clsx(
-                    "p-1.5 rounded-md",
-                    isDark ? "bg-purple-500/30" : "bg-purple-200",
-                  )}
-                >
-                  <Users className="w-4 h-4" />
-                </div>
-                <span className="flex-1">{item?.name}</span>
-              </div>
+                <Users className="w-4 h-4" />
+                {type?.name ? type.name : "Unnamed Group"}
+              </span>
             ))}
           </div>
         </div>
@@ -316,4 +305,4 @@ const EventAttributesDetails: FC<EventAttributesDetailsProps> = ({
   );
 };
 
-export default EventAttributesDetails;
+export default AttributesDetails;
