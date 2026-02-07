@@ -21,6 +21,7 @@ import {
   BusinessDetailsPage,
 } from "@/pages";
 import { IdleLogout } from "./components/shared";
+import TestLabPage from "./pages/test-lab";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -82,7 +83,10 @@ function App() {
           </ProtectedRoute>
         </Suspense>
       ),
-      children: [{ path: routes.auth, element: <AuthPage /> }],
+      children: [
+        { path: routes.auth, element: <AuthPage /> },
+        { path: "/test-lab", element: <TestLabPage /> },
+      ],
     },
   ]);
 

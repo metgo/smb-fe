@@ -1,12 +1,7 @@
-import {
-  Globe,
-  Facebook,
-  Instagram,
-  Youtube,
-  Music,
-  ExternalLink,
-} from "lucide-react";
+import clsx from "clsx";
 import type { FC } from "react";
+import { Link } from "react-router-dom";
+import { Globe, ExternalLink } from "lucide-react";
 
 interface SocialMedia {
   facebook?: string;
@@ -22,11 +17,9 @@ interface Business {
 
 interface BusinessOnlinePresenceDetailsProps {
   isDark: boolean;
-  t: (key: string) => string;
   business: Business;
+  t: (key: string) => string;
 }
-
-/* ---------- Component ---------- */
 
 const BusinessOnlinePresenceDetails: FC<BusinessOnlinePresenceDetailsProps> = ({
   t,
@@ -51,37 +44,37 @@ const BusinessOnlinePresenceDetails: FC<BusinessOnlinePresenceDetailsProps> = ({
     {
       platform: t("website"),
       link: socialMediaMap?.website?.url,
-      icon: Globe,
-      color: "text-blue-600 dark:text-blue-400",
-      bg: "bg-blue-50 dark:bg-blue-950/30",
+      iconPath: socialMediaMap?.website?.iconPath,
+      color: isDark ? "text-blue-400" : "text-blue-600",
+      bg: isDark ? "bg-blue-950/30" : "bg-blue-50",
     },
     {
       platform: t("facebook"),
       link: socialMediaMap.facebook?.url,
-      icon: Facebook,
-      color: "text-blue-700 dark:text-blue-400",
-      bg: "bg-blue-50 dark:bg-blue-950/30",
+      iconPath: socialMediaMap?.facebook?.iconPath,
+      color: isDark ? "text-blue-400" : "text-blue-700",
+      bg: isDark ? "bg-blue-950/30" : "bg-blue-50",
     },
     {
       platform: t("instagram"),
       link: socialMediaMap.instagram?.url,
-      icon: Instagram,
-      color: "text-pink-600 dark:text-pink-400",
-      bg: "bg-pink-50 dark:bg-pink-950/30",
+      iconPath: socialMediaMap?.instagram?.iconPath,
+      color: isDark ? "text-pink-400" : "text-pink-600",
+      bg: isDark ? "bg-pink-950/30" : "bg-pink-50",
     },
     {
       platform: t("youtube"),
       link: socialMediaMap.youtube?.url,
-      icon: Youtube,
-      color: "text-red-600 dark:text-red-400",
-      bg: "bg-red-50 dark:bg-red-950/30",
+      iconPath: socialMediaMap?.youtube?.iconPath,
+      color: isDark ? "text-red-400" : "text-red-600",
+      bg: isDark ? "bg-red-950/30" : "bg-red-50",
     },
     {
       platform: t("tiktok"),
       link: socialMediaMap.tiktok?.url,
-      icon: Music,
-      color: "text-black dark:text-white",
-      bg: "bg-black/5 dark:bg-white/5",
+      iconPath: socialMediaMap?.tiktok?.iconPath,
+      color: isDark ? "text-white" : "text-black",
+      bg: isDark ? "bg-white/5" : "bg-black/5",
     },
   ];
 
@@ -129,8 +122,7 @@ const BusinessOnlinePresenceDetails: FC<BusinessOnlinePresenceDetailsProps> = ({
       </h3>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {activeSocialLinks.map((link) => {
-          const Icon = link.icon;
+        {activeSocialLinks?.map((link) => {
           return (
             <div
               key={link.platform}
@@ -144,30 +136,38 @@ const BusinessOnlinePresenceDetails: FC<BusinessOnlinePresenceDetailsProps> = ({
             >
               <div className="flex items-center gap-3">
                 <div
-                  className={`p-2.5 rounded-lg ${
-                    isDark ? "bg-gray-800/70" : "bg-white shadow-sm"
-                  }`}
+                  className={clsx(
+                    "p-1 rounded-lg",
+                    isDark ? "bg-gray-800/70" : "bg-white shadow-sm",
+                  )}
                 >
-                  <Icon className={`w-6 h-6 ${link.color}`} strokeWidth={2} />
+                  <img
+                    src={link?.iconPath}
+                    alt={link?.platform}
+                    className={`w-12 h-12 ${link.color}`}
+                  />
                 </div>
-                <span
-                  className={`font-medium text-base ${
-                    isDark ? "text-gray-100" : "text-gray-800"
-                  }`}
-                >
-                  {link.platform}
-                </span>
+                <div>
+                  <span
+                    className={`font-medium text-base ${
+                      isDark ? "text-gray-100" : "text-gray-800"
+                    }`}
+                  >
+                    {link.platform}
+                  </span>
+                  <Link
+                    to={link.link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`flex items-center w-full gap-2 text-sm ${link.color} hover:underline group-hover:underline break-all`}
+                  >
+                    <span className="truncate line-clamp-1 max-w-90">
+                      {link.link}
+                    </span>
+                    <ExternalLink className="w-4 h-4 shrink-0 opacity-70 group-hover:opacity-100 transition-opacity" />
+                  </Link>
+                </div>
               </div>
-
-              <a
-                href={link.link}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={`flex items-center gap-2 text-sm ${link.color} hover:underline group-hover:underline break-all`}
-              >
-                <span className="truncate">{link.link}</span>
-                <ExternalLink className="w-4 h-4 shrink-0 opacity-70 group-hover:opacity-100 transition-opacity" />
-              </a>
             </div>
           );
         })}

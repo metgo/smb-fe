@@ -1,7 +1,5 @@
-import { useSearchParams } from "react-router-dom";
-import { TrendingUp, Users, Eye, Timer, Activity } from "lucide-react";
+import { TrendingUp } from "lucide-react";
 
-import { useGetIndividualBusinessStatsQuery } from "@/store/api/businessQueryApi";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 interface BusinessTitleSectionProps {
@@ -11,42 +9,6 @@ interface BusinessTitleSectionProps {
 
 const BusinessTitleSection = ({ business, t }: BusinessTitleSectionProps) => {
   const { isDark } = useThemeClasses();
-
-  const [searchParams] = useSearchParams();
-  const businessId = searchParams.get("businessId");
-
-  const { data: businessStatIndividual } = useGetIndividualBusinessStatsQuery(
-    { businessId },
-    { skip: !businessId },
-  );
-
-  const businessStatsConfig = [
-    {
-      key: "pageViews",
-      title: t("page_views"),
-      icon: Eye,
-    },
-    {
-      key: "activeUsers",
-      title: t("active_users"),
-      icon: Users,
-    },
-    {
-      key: "viewsPerUser",
-      title: t("views_per_user"),
-      icon: Eye,
-    },
-    {
-      key: "averageEngagementTime",
-      title: t("avg_engagement_time"),
-      icon: Timer,
-    },
-    {
-      key: "eventCount",
-      title: t("events"),
-      icon: Activity,
-    },
-  ] as const;
 
   const StatusBadge = ({ status }: { status: Business["status"] }) => {
     const statusConfig = {
@@ -119,44 +81,6 @@ const BusinessTitleSection = ({ business, t }: BusinessTitleSectionProps) => {
             </span>
           </div>
         </div>
-      </div>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-6">
-        {businessStatsConfig.map((item) => {
-          const Icon = item.icon;
-          const value = businessStatIndividual?.[item.key] ?? "-";
-
-          return (
-            <div
-              key={item.key}
-              className={`p-4 rounded-xl border ${
-                isDark
-                  ? "bg-gray-800 border-gray-700"
-                  : "bg-gray-100 border-gray-200"
-              }`}
-            >
-              <div className="flex items-center gap-2 mb-2">
-                <Icon className="w-5 h-5 text-teal-600" />
-                <p
-                  className={`text-md ${
-                    isDark ? "text-gray-300" : "text-gray-600"
-                  }`}
-                >
-                  {item.title}
-                </p>
-              </div>
-
-              <p
-                className={`text-2xl font-semibold ${
-                  isDark ? "text-white" : "text-gray-900"
-                }`}
-              >
-                {value}
-              </p>
-            </div>
-          );
-        })}
       </div>
     </div>
   );

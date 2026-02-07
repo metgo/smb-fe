@@ -246,5 +246,6 @@
 
   "free_access_info": "When registration is disabled, attendees can join freely without signing up.",
   "select_event_day_first": "You must select event day(s) first.",
-  "no_tickets_created": "No ticktes created yet. Please create ticket first"
+  "no_tickets_created": "No ticktes created yet. Please create ticket first",
+  "no_events_available": "No Events Available"
 }

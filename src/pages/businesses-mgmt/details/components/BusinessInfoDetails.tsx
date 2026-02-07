@@ -1,14 +1,7 @@
 import { useState, type FC } from "react";
 import i18n from "@/i18n";
 
-import {
-  Tag,
-  TrendingUp,
-  ExternalLink,
-  Download,
-  ChevronDown,
-  Globe,
-} from "lucide-react";
+import { Tag, ExternalLink, Download, ChevronDown, Globe } from "lucide-react";
 import { toast } from "sonner";
 import { useGetCategoriesQuery } from "@/store/api/masterDataApi";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
@@ -201,26 +194,6 @@ const BusinessInfoDetails: FC<BusinessInfoDetailsProps> = ({ t, business }) => {
           -
         </p>
       )}
-
-      {/* Impact */}
-      <div>
-        <h3
-          className={`text-sm mb-2 ${isDark ? "text-gray-400" : "text-gray-600"}`}
-        >
-          {t("impact")}
-        </h3>
-        <div className="flex items-center gap-3">
-          <TrendingUp className="w-5 h-5 text-green-600" />
-          <span
-            className={`text-2xl ${isDark ? "text-gray-200" : "text-gray-800"}`}
-          >
-            {business?.impact?.toFixed(1) ? business.impact?.toFixed(1) : "-"}
-          </span>
-          <span className={isDark ? "text-gray-400" : "text-gray-600"}>
-            / 10
-          </span>
-        </div>
-      </div>
 
       {/* Website Connections */}
       {business?.associatedWebsites &&
