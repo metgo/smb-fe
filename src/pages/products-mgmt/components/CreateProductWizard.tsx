@@ -185,7 +185,6 @@ export default function CreateProductWizard({
     setProductLogoImage({ image: product?.logo?.image });
   }, [currentView, productId, product]);
 
-  console.log("edit form data", product);
   const availableCategories = [
     "Food & Dining",
     "Accommodation",
@@ -289,7 +288,6 @@ export default function CreateProductWizard({
     refetch();
     onClose();
   };
-  console.log("kdsfhjf", formData.businessId);
   // Last saved timestamp
   const [_lastSaved, setLastSaved] = useState<Date | null>(null);
 
@@ -338,7 +336,6 @@ export default function CreateProductWizard({
     // serviceLocation: formData.serviceLocation,
     // },
   };
-  console.log("formData product", formData);
 
   // Auto-save draft function
   const saveDraft = async (isPublish = false) => {
@@ -346,7 +343,6 @@ export default function CreateProductWizard({
       let internalProductId;
 
       // 1️⃣ Initialize product if not created yet
-      console.log("🚀 ~ saveDraft ~ productId:", productId);
       if (!productId) {
         const res = await initProductCreate({ businessId }).unwrap();
         internalProductId = res?.id;

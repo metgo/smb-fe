@@ -78,14 +78,14 @@ export default function Sidebar() {
       path: routes.productsMgmt,
       label: t("products") || "Products",
       icon: Package,
-      isEnabled: false,
+      isEnabled: true,
     },
     {
       id: "orders",
       path: routes.ordersMgmt,
       label: t("orders") || "Orders",
       icon: ShoppingCart,
-      isEnabled: false,
+      isEnabled: true,
     },
     {
       id: "events",
