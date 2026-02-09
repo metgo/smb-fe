@@ -101,7 +101,7 @@ export default function Header() {
     );
   }, [timeFrame, dispatch]);
 
-  const handleLanguageChange = (lng: string) => {
+  const handleLanguageChange = (lng: Language) => {
     dispatch(setLanguage(lng));
     i18n.changeLanguage(lng);
   };
