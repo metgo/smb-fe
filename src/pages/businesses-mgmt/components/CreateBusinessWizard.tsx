@@ -430,7 +430,7 @@ export default function CreateBusinessWizard({
     if (currentView === "edit") {
       setBusinessId(editData?._id);
     }
-  }, [currentView, business]);
+  }, [currentView, businessId]);
 
   const websiteAccessItemPayload = {
     blacklist: {
