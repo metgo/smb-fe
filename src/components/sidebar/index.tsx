@@ -85,7 +85,7 @@ export default function Sidebar() {
       path: routes.ordersMgmt,
       label: t("orders") || "Orders",
       icon: ShoppingCart,
-      isEnabled: true,
+      isEnabled: false,
     },
     {
       id: "events",
