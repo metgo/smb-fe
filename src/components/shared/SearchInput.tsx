@@ -1,22 +1,22 @@
 import React, { useState, useEffect } from "react";
 import { Search, X } from "lucide-react";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 interface SearchInputProps {
   placeholder: string;
   searchTerm: string;
   setSearchTerm: React.Dispatch<React.SetStateAction<string>>;
-  isRTL?: boolean;
-  isDark: boolean;
 }
 
 const SearchInput: React.FC<SearchInputProps> = ({
   placeholder,
   searchTerm,
   setSearchTerm,
-  isRTL = false,
-  isDark,
 }) => {
   const [inputValue, setInputValue] = useState(searchTerm);
+  const { isDark, rowDir } = useThemeClasses(); // rowDir includes RTL info
+
+  const isRTL = rowDir === "flex-row-reverse";
 
   useEffect(() => {
     setInputValue(searchTerm); // Sync if external searchTerm changes
@@ -33,7 +33,7 @@ const SearchInput: React.FC<SearchInputProps> = ({
   }, [inputValue, setSearchTerm]);
 
   return (
-    <div className="relative">
+    <div>
       <Search
         className={`absolute ${isRTL ? "right-3" : "left-3"} top-1/2 -translate-y-1/2 w-5 h-5 ${
           isDark ? "text-gray-500" : "text-gray-400"

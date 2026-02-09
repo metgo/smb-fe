@@ -43,7 +43,7 @@ const ProductPricingAvailability: React.FC<ProductPricingAvailabilityProps> = ({
 
         <div>
           <label className={`block text-sm font-medium ${textSecondary} mb-2`}>
-            {t("selling_price")} (₪) *
+            {t("selling_price")} (₪) <span className="text-red-500">*</span>
           </label>
           <input
             type="number"
@@ -83,7 +83,7 @@ const ProductPricingAvailability: React.FC<ProductPricingAvailabilityProps> = ({
             <label
               className={`block text-sm font-medium ${textSecondary} mb-2`}
             >
-              {t("stock_quantity")} *
+              {t("stock_quantity")} <span className="text-red-500">*</span>
             </label>
             <input
               type="number"

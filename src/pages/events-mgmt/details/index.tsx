@@ -8,7 +8,6 @@ import { useAppSelector } from "@/hooks/hooks";
 import {
   EventDateTimeDetails,
   EventInfoDetails,
-  EventMediaDetails,
   EventRegistrationDetails,
   EventScheduledNotificationDetails,
   EventTicketDetails,
@@ -30,6 +29,7 @@ import { toast } from "sonner";
 import {
   AttributesDetails,
   LocationDetails,
+  MediaDetails,
 } from "@/components/details-sections";
 import { TabsSection } from "@/components/shared";
 import { eventTabs } from "@/constants/tabs";
@@ -72,7 +72,6 @@ export default function EventDetailsPage() {
 
   const {
     images,
-    imagesRef,
     primaryImageIndex,
     handleImageUpload,
     setPrimaryImage,
@@ -111,7 +110,6 @@ export default function EventDetailsPage() {
     const mediaProps = {
       t,
       images,
-      imagesRef,
       primaryImageIndex,
       setPrimaryImage,
       handleImageUpload,
@@ -138,7 +136,7 @@ export default function EventDetailsPage() {
           />
         );
       case "media":
-        return <EventMediaDetails {...mediaProps} />;
+        return <MediaDetails {...mediaProps} />;
       case "tickets":
         return (
           <EventTicketDetails

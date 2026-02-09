@@ -241,7 +241,7 @@ export default function ReordableDataTable<T extends Record<string, any>>({
     isLoading: isDataLoading,
     onLoadMore: next,
   });
-
+  console.log("columns products", columns);
   return (
     <div className={`rounded-xl border ${borderColor}`}>
       {/* Scrollable container */}
@@ -356,7 +356,7 @@ export default function ReordableDataTable<T extends Record<string, any>>({
                       <td
                         key={colKey}
                         className={clsx(
-                          "p-3 text-sm cursor-pointer",
+                          "p-3 z-10 text-sm cursor-pointer",
                           textSecondary,
                         )}
                         onClick={(e) =>

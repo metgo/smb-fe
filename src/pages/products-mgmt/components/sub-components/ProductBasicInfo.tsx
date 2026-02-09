@@ -1,23 +1,31 @@
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { Globe } from "lucide-react";
+import ReactSelect from "react-select";
 
 interface ProductBasicInfoProps {
   t: (key: string) => string;
   selectedFormLanguage: "en" | "he" | "ar";
   setSelectedFormLanguage: (lang: "en" | "he" | "ar") => void;
   formData: {
-    businessId: string;
-    name: Record<string, string>;
-    shortDescription: Record<string, string>;
-    fullDescription: Record<string, string>;
+    businessId: {
+      _id: string;
+      name: string;
+    };
+    name: string;
+    shortDescription: string;
+    fullDescription: string;
   };
+  setBusinessId: (data: string) => void;
   setFormData: (data: any) => void;
   errors: {
     businessId?: string;
     nameEn?: string;
     shortDescEn?: string;
   };
-  businesses: { id: string; name: string }[];
+  businesses: { _id: string; name: string }[];
+  isBusinessesLoading: boolean;
+  businessData: any;
+  isLoading: any;
 }
 
 const ProductBasicInfo = ({
@@ -28,17 +36,18 @@ const ProductBasicInfo = ({
   setFormData,
   errors,
   businesses,
+  setBusinessId,
+  isLoading,
+  // isBusinessesLoading,
 }: ProductBasicInfoProps) => {
   const { bgTertiary, textPrimary, textSecondary, textTertiary, borderColor } =
     useThemeClasses();
-
   // Helper to get field key based on selected language
-  const getFieldKey = (
-    _field: "name" | "shortDescription" | "fullDescription",
-  ) => {
-    return selectedFormLanguage;
-  };
-
+  // const getFieldKey = (
+  //   _field: "name" | "shortDescription" | "fullDescription",
+  // ) => {
+  //   return selectedFormLanguage;
+  // };
   // Helper to get placeholder text based on language
   const getPlaceholder = (type: "name" | "short" | "full") => {
     const placeholders: Record<string, Record<string, string>> = {
@@ -66,22 +75,55 @@ const ProductBasicInfo = ({
       {/* Select Business */}
       <div>
         <label className={`block text-sm font-medium ${textSecondary} mb-2`}>
-          {t("select_business")} *
+          {t("select_business")} <span className="text-red-500">*</span>
         </label>
-        <select
-          value={formData.businessId}
-          onChange={(e) =>
-            setFormData({ ...formData, businessId: e.target.value })
-          }
+        {/* <select
+          value={formData.businessId?._id}
+          onChange={(e) => {
+            const selectedBusinessId = e.target.value;
+            setFormData({
+              ...formData,
+              businessId: selectedBusinessId,
+            });
+            setBusinessId(selectedBusinessId);
+          }}
           className={`w-full px-4 py-3 rounded-lg border ${borderColor} ${bgTertiary} ${textPrimary}`}
         >
           <option value="">{t("select_business")}</option>
-          {businesses.map((biz) => (
-            <option key={biz.id} value={biz.id}>
+          {businesses?.map((biz) => (
+            <option key={biz._id} value={biz._id}>
               {biz.name}
             </option>
           ))}
-        </select>
+        </select> */}
+        <ReactSelect
+          isLoading={isLoading}
+          value={
+            businesses?.find((biz) => biz._id === formData.businessId?._id)
+              ? {
+                  value: formData.businessId?._id,
+                  label: businesses.find(
+                    (biz) => biz._id === formData.businessId?._id,
+                  )?.name,
+                }
+              : formData.businessId?._id
+          }
+          onChange={(selectedOption: any) => {
+            const selectedBusinessId = selectedOption?.value || "";
+            setFormData({
+              ...formData,
+              businessId: selectedBusinessId,
+            });
+            setBusinessId(selectedBusinessId);
+          }}
+          placeholder={t("select_business")}
+          options={
+            businesses?.map((biz) => ({
+              value: biz._id,
+              label: biz.name,
+            })) || []
+          }
+        />
         {errors.businessId && (
           <p className="text-red-500 text-sm mt-1">{errors.businessId}</p>
         )}
@@ -111,21 +153,21 @@ const ProductBasicInfo = ({
       {/* Product Name */}
       <div>
         <label className={`block text-sm font-medium ${textSecondary} mb-2`}>
-          {t("product_name")} *
+          {t("product_name")} <span className="text-red-500">*</span>
         </label>
         <input
           type="text"
-          value={formData.name[getFieldKey("name")]}
+          value={formData.name}
           onChange={(e) =>
             setFormData({
               ...formData,
-              name: { ...formData.name, [getFieldKey("name")]: e.target.value },
+              name: e.target.value,
             })
           }
           className={`w-full px-4 py-3 rounded-lg border ${borderColor} ${bgTertiary} ${textPrimary}`}
           placeholder={getPlaceholder("name")}
-          dir={selectedFormLanguage === "en" ? "ltr" : "rtl"}
         />
+
         {errors.nameEn && selectedFormLanguage === "en" && (
           <p className="text-red-500 text-sm mt-1">{errors.nameEn}</p>
         )}
@@ -134,25 +176,23 @@ const ProductBasicInfo = ({
       {/* Short Description */}
       <div>
         <label className={`block text-sm font-medium ${textSecondary} mb-2`}>
-          {t("product_short_description")} *
+          {t("product_short_description")}{" "}
+          <span className="text-red-500">*</span>
         </label>
         <textarea
-          value={formData.shortDescription[getFieldKey("shortDescription")]}
+          value={formData.shortDescription}
           onChange={(e) =>
             setFormData({
               ...formData,
-              shortDescription: {
-                ...formData.shortDescription,
-                [getFieldKey("shortDescription")]: e.target.value,
-              },
+              shortDescription: e.target.value,
             })
           }
           rows={3}
+          maxLength={160}
           className={`w-full px-4 py-3 rounded-lg border ${borderColor} ${bgTertiary} ${textPrimary}`}
           placeholder={getPlaceholder("short")}
-          maxLength={160}
-          dir={selectedFormLanguage === "en" ? "ltr" : "rtl"}
         />
+
         {errors.shortDescEn && selectedFormLanguage === "en" && (
           <p className="text-red-500 text-sm mt-1">{errors.shortDescEn}</p>
         )}
@@ -164,20 +204,16 @@ const ProductBasicInfo = ({
           {t("product_full_description")}
         </label>
         <textarea
-          value={formData.fullDescription[getFieldKey("fullDescription")]}
+          value={formData.fullDescription}
           onChange={(e) =>
             setFormData({
               ...formData,
-              fullDescription: {
-                ...formData.fullDescription,
-                [getFieldKey("fullDescription")]: e.target.value,
-              },
+              fullDescription: e.target.value,
             })
           }
           rows={6}
           className={`w-full px-4 py-3 rounded-lg border ${borderColor} ${bgTertiary} ${textPrimary}`}
           placeholder={getPlaceholder("full")}
-          dir={selectedFormLanguage === "en" ? "ltr" : "rtl"}
         />
       </div>
     </div>

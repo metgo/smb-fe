@@ -59,7 +59,7 @@ export default function CreateBusinessWizard({
   const [createWebsiteAccessItem] = useCreateWebsiteAccessItemMutation();
 
   const [isPublishing, setIsPublishing] = useState(false);
-  const [isPublishBtnClicked, setIsPublishBtnClicked] = useState(false);
+  const [_isPublishBtnClicked, setIsPublishBtnClicked] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [lastSaved, _setLastSaved] = useState<Date | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -372,7 +372,7 @@ export default function CreateBusinessWizard({
   };
 
   const handleNext = async () => {
-    if (!validateStep(currentStep) && isPublishBtnClicked) return;
+    // if (!validateStep(currentStep) && isPublishBtnClicked) return;
     if (currentStep === 5) {
       const logoUrl = await uploadLogoImage();
       setLogoGcsUrl(logoUrl);
@@ -430,7 +430,7 @@ export default function CreateBusinessWizard({
     if (currentView === "edit") {
       setBusinessId(editData?._id);
     }
-  }, [currentView]);
+  }, [currentView, businessId]);
 
   const websiteAccessItemPayload = {
     blacklist: {

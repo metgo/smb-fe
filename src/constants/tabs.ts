@@ -1,8 +1,10 @@
 import {
   Accessibility,
   Bell,
+  Box,
   Calendar,
   Clock,
+  DollarSign,
   FileText,
   Globe,
   ImageIcon,
@@ -40,4 +42,20 @@ export const eventTabs = [
     label: "schedual_notification",
     icon: Bell,
   },
+];
+
+export const productTabs = [
+  { id: "overview", label: "overview", icon: FileText },
+  {
+    id: "pricing",
+    label: "pricing",
+    icon: DollarSign,
+  },
+  { id: "inventory", label: "inventory", icon: Box },
+  {
+    id: "availability",
+    label: "availability",
+    icon: Calendar,
+  },
+  { id: "media", label: "media", icon: ImageIcon },
 ];

@@ -7,11 +7,19 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 interface StatusChangeBtnProps {
   status: TStatus;
+  isProduct?: boolean;
   handleStatusChange: (status: TStatus) => void;
 }
+type StatusOption = {
+  color: string;
+  label: string;
+};
+
+type StatusConfig = Partial<Record<TStatus, StatusOption>>;
 
 const StatusChangeBtn: React.FC<StatusChangeBtnProps> = ({
   status,
+  isProduct = false,
   handleStatusChange,
 }) => {
   const { t } = useTranslation("common");
@@ -26,16 +34,28 @@ const StatusChangeBtn: React.FC<StatusChangeBtnProps> = ({
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   /* -------------------- Status Config -------------------- */
-  const statusConfig = useMemo(
-    () => ({
+  const statusConfig = useMemo<StatusConfig>(() => {
+    const allStatuses: Record<TStatus, StatusOption> = {
       draft: { color: "bg-gray-500", label: t("draft") },
       pending: { color: "bg-yellow-500", label: t("pending") },
       approved: { color: "bg-green-500", label: t("approved") },
       rejected: { color: "bg-red-500", label: t("rejected") },
       archived: { color: "bg-gray-400", label: t("archived") },
-    }),
-    [t],
-  );
+      active: { color: "bg-green-400", label: t("active") },
+      inactive: { color: "bg-red-400", label: t("inactive") },
+    };
+
+    if (isProduct) {
+      return {
+        draft: allStatuses.draft,
+        active: allStatuses.active,
+        inactive: allStatuses.inactive,
+      };
+    }
+
+    const { active, inactive, ...rest } = allStatuses;
+    return rest;
+  }, [t, isProduct]);
 
   /* -------------------- Outside Click Handler -------------------- */
   useEffect(() => {
@@ -104,6 +124,7 @@ const StatusChangeBtn: React.FC<StatusChangeBtnProps> = ({
           <div className="p-2">
             {(Object.keys(statusConfig) as TStatus[]).map((key) => {
               const option = statusConfig[key];
+              if (!option) return null;
               const isActive = key === currentStatus;
 
               return (

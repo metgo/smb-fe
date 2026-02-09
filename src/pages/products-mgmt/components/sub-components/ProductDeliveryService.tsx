@@ -2,8 +2,8 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 interface ProductDeliveryServiceProps {
   t: (key: string) => string;
-  formData: ProductFormData;
-  setFormData: (data: ProductFormData) => void;
+  formData: any;
+  setFormData: (data: any) => void;
 }
 
 const ProductDeliveryService = ({
@@ -22,8 +22,19 @@ const ProductDeliveryService = ({
 
   return (
     <div className="space-y-6">
+      {formData.type === "" && (
+        <div
+          className="flex justify-center items-center text-center h-96
+                  bg-gray-50 border border-dashed border-gray-300
+                  rounded-md text-gray-600
+                  transition-all duration-300 ease-in-out"
+        >
+          {t("choose_product_type")}
+        </div>
+      )}
+
       {/* Delivery Options for Physical / Table Order */}
-      {(formData.type === "physical" || formData.type === "table-order") && (
+      {(formData.type === "PHYSICAL" || formData.type === "TABLE_ORDER") && (
         <>
           <h3 className={`text-lg font-medium ${textPrimary}`}>
             {t("delivery_options")}
@@ -119,7 +130,7 @@ const ProductDeliveryService = ({
       )}
 
       {/* Service / Experience Details */}
-      {(formData.type === "service" || formData.type === "experience") && (
+      {(formData.type === "SERVICE" || formData.type === "EXPERIENCE") && (
         <>
           <h3 className={`text-lg font-medium ${textPrimary}`}>
             {t("service_details")}
@@ -159,7 +170,7 @@ const ProductDeliveryService = ({
       )}
 
       {/* Hotel Room Info */}
-      {formData.type === "hotel-room" && (
+      {formData.type === "HOTEL" && (
         <div className={`p-6 rounded-xl ${bgTertiary} text-center`}>
           <p className={`${textSecondary}`}>{t("hotel_room_info")}</p>
         </div>

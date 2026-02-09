@@ -1,13 +1,15 @@
+import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { useState, useEffect, useMemo, useRef } from "react";
 
+import { routes } from "@/lib/routes";
 import {
   BusinessGridView,
   BusinessListView,
   CreateBusinessWizard,
 } from "./components";
-import { routes } from "@/lib/routes";
 
-import { useTranslation } from "react-i18next";
 import {
   Download,
   ChevronDown,
@@ -20,7 +22,6 @@ import {
   Theater,
   Map,
 } from "lucide-react";
-import { useState, useEffect, useMemo, useRef } from "react";
 
 import { useAppSelector } from "@/hooks/hooks";
 import { FilterButton } from "@/components/btns";
@@ -35,7 +36,6 @@ import {
   useGetAllbusinessesQuery,
   useGetBusinessStatsQuery,
 } from "@/store/api/businessQueryApi";
-import { toast } from "sonner";
 import { useBulkBusinessesUpdateMutation } from "@/store/api/businessMutationApi";
 import SearchInput from "@/components/shared/SearchInput";
 
@@ -80,8 +80,7 @@ const LIMIT = 20;
 export default function BusinessesMgmtPage() {
   const navigate = useNavigate();
   const { t } = useTranslation("businesses");
-  const { textSecondary, isDark } = useThemeClasses();
-  const { isRTL } = useAppSelector((state) => state.settings);
+  const { textSecondary, isDark, isRTL } = useThemeClasses();
   const { dmoId, authorityId } = useAppSelector((state) => state.auth);
 
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -542,8 +541,6 @@ export default function BusinessesMgmtPage() {
                 placeholder={t("search_businesses_placeholder")}
                 searchTerm={searchTerm}
                 setSearchTerm={setSearchTerm}
-                isRTL={isRTL}
-                isDark={isDark}
               />
             </div>
 

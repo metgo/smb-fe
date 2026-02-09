@@ -1,18 +1,11 @@
 import React, { useState } from "react";
-import {
-  MapPin,
-  Package,
-  ExternalLink,
-  Download,
-  ChevronDown,
-  Clock,
-} from "lucide-react";
+import { MapPin, Package, Download, ChevronDown, Clock } from "lucide-react";
 import { toast } from "sonner";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 interface ProductInfoDetailsProps {
   t: (key: string) => string;
   product: Product;
-  theme: Theme;
   language: Language;
 }
 
@@ -21,9 +14,9 @@ interface ProductInfoDetailsProps {
 const ProductInfoDetails: React.FC<ProductInfoDetailsProps> = ({
   t,
   product,
-  theme,
   language,
 }) => {
+  const { isDark } = useThemeClasses();
   const [showQRDropdown, setShowQRDropdown] = useState(false);
 
   const handleQRDownload = (site: (typeof qrSites)[0]) => {
@@ -60,45 +53,13 @@ const ProductInfoDetails: React.FC<ProductInfoDetailsProps> = ({
           const url = URL.createObjectURL(blob);
           const a = document.createElement("a");
           a.href = url;
-          a.download = `${product.name[language]}-${site.id}-qr-code.png`;
+          a.download = `${product?.name}-${site.id}-qr-code.png`;
           a.click();
           URL.revokeObjectURL(url);
         }
       });
     }
   };
-
-  // Website connections data
-  const websiteConnections = [
-    {
-      id: "tav8",
-      name: "TAV8",
-      logo: "🎯",
-      url: "https://tav8.com",
-      color: "bg-blue-600",
-    },
-    {
-      id: "negevtime",
-      name: "NegevTime",
-      logo: "⏰",
-      url: "https://negevtime.com",
-      color: "bg-purple-600",
-    },
-    {
-      id: "visitnegev",
-      name: "Visit Negev",
-      logo: "🏜️",
-      url: "https://visitnegev.com",
-      color: "bg-amber-600",
-    },
-    {
-      id: "tourism-il",
-      name: "Tourism IL",
-      logo: "🇮🇱",
-      url: "https://tourism.gov.il",
-      color: "bg-green-600",
-    },
-  ];
 
   // QR code sites - these would be filtered based on user permissions
   const qrSites = [
@@ -109,20 +70,13 @@ const ProductInfoDetails: React.FC<ProductInfoDetailsProps> = ({
     { id: "google-business", name: "Google My Business" },
   ];
 
-  const handleWebsiteClick = (website: (typeof websiteConnections)[0]) => {
-    toast.success(`${website.name} site opened`, {
-      description: `Redirecting to ${website.name}...`,
-      duration: 2000,
-    });
-  };
-
-  const getProductTypeLabel = (type: Product["type"]) => {
+  const getProductTypeLabel = (type: Product["productType"]) => {
     const labels = {
-      physical: t("physical_product"),
-      "table-order": t("table_order"),
-      service: t("service"),
-      "hotel-room": t("hotel_room"),
-      experience: t("experience"),
+      PHYSICAL: t("physical_product"),
+      TABLE_ORDER: t("table_order"),
+      SERVICE: t("service"),
+      HOTEL: t("hotel_room"),
+      EXPERIENCE: t("experience"),
     };
     return labels[type] || type;
   };
@@ -130,92 +84,98 @@ const ProductInfoDetails: React.FC<ProductInfoDetailsProps> = ({
   return (
     <div className="space-y-6">
       {/* Product Image */}
-      {product?.image && (
+      <h3
+        className={`text-sm mb-2 ${isDark ? "text-gray-400" : "text-gray-600"}`}
+      >
+        {t("product_image")}
+      </h3>
+      {product?.images?.length > 0 ? (
         <div>
-          <h3
-            className={`text-sm mb-2 ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
-          >
-            {t("product_image")}
-          </h3>
           <div className="w-full h-64 rounded-lg overflow-hidden">
             <img
-              src={product?.image}
-              alt={product?.name[language]}
+              src={product?.images[0]?.image}
+              alt={product?.name}
               className="w-full h-full object-cover"
             />
           </div>
         </div>
+      ) : (
+        <div className="text-gray-400">-</div>
       )}
 
       {/* Short Description */}
       <div>
         <h3
-          className={`text-sm mb-2 ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
+          className={`text-sm mb-2 ${isDark ? "text-gray-400" : "text-gray-600"}`}
         >
           {t("short_description")}
         </h3>
-        <p className={theme === "dark" ? "text-gray-200" : "text-gray-800"}>
-          {product.shortDescription[language]}
+        <p className={isDark ? "text-gray-200" : "text-gray-800"}>
+          {product?.shortDescription}
         </p>
       </div>
 
       {/* Business */}
       <div>
         <h3
-          className={`text-sm mb-2 ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
+          className={`text-sm mb-2 ${isDark ? "text-gray-400" : "text-gray-600"}`}
         >
           {t("business_name")}
         </h3>
         <div
-          className={`flex items-center gap-2 ${theme === "dark" ? "text-gray-200" : "text-gray-800"}`}
+          className={`flex items-center gap-2 ${isDark ? "text-gray-200" : "text-gray-800"}`}
         >
           <MapPin className="w-4 h-4" />
-          <span>{product.businessName}</span>
+          <span>{product?.businessId?.name}</span>
         </div>
       </div>
 
       {/* Product Type */}
       <div>
         <h3
-          className={`text-sm mb-2 ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
+          className={`text-sm mb-2 ${isDark ? "text-gray-400" : "text-gray-600"}`}
         >
           {t("product_type")}
         </h3>
         <div
-          className={`flex items-center gap-2 ${theme === "dark" ? "text-gray-200" : "text-gray-800"}`}
+          className={`flex items-center gap-2 ${isDark ? "text-gray-200" : "text-gray-800"}`}
         >
           <Package className="w-4 h-4" />
-          <span>{getProductTypeLabel(product?.type)}</span>
+          <span>{getProductTypeLabel(product?.productType)}</span>
         </div>
       </div>
 
       {/* Categories */}
       <div>
         <h3
-          className={`text-sm mb-2 ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
+          className={`text-sm mb-2 ${isDark ? "text-gray-400" : "text-gray-600"}`}
         >
           {t("categories")}
         </h3>
-        <div className="flex flex-wrap gap-2">
-          {product.categories.map((cat, idx) => (
-            <span
-              key={idx}
-              className={`px-3 py-1 rounded-full text-sm ${
-                theme === "dark"
-                  ? "bg-teal-900/30 text-teal-400"
-                  : "bg-teal-100 text-teal-800"
-              }`}
-            >
-              {cat}
-            </span>
-          ))}
-        </div>
+        {product?.categories?.length > 0 ? (
+          <div className="flex flex-wrap gap-2">
+            {product?.categories?.map((cat, idx) => (
+              <span
+                key={idx}
+                className={`px-3 py-1 rounded-full text-sm ${
+                  isDark
+                    ? "bg-teal-900/30 text-teal-400"
+                    : "bg-teal-100 text-teal-800"
+                }`}
+              >
+                {cat}
+              </span>
+            ))}
+          </div>
+        ) : (
+          <div className="">-</div>
+        )}
       </div>
 
       {/* Language Completeness */}
-      <div>
+      {/* <div>
         <h3
-          className={`text-sm mb-2 ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
+          className={`text-sm mb-2 ${isDark? "text-gray-400" : "text-gray-600"}`}
         >
           {t("language_completeness")}
         </h3>
@@ -234,18 +194,18 @@ const ProductInfoDetails: React.FC<ProductInfoDetailsProps> = ({
             </span>
           ))}
         </div>
-      </div>
+      </div> */}
 
       {/* Connected Websites */}
-      <div
+      {/* <div
         className={`p-4 rounded-lg border ${
-          theme === "dark"
+          isDark
             ? "bg-gray-800/50 border-gray-700"
             : "bg-gray-50 border-gray-200"
         }`}
       >
         <h3
-          className={`text-sm mb-3 ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}
+          className={`text-sm mb-3 ${isDark? "text-gray-300" : "text-gray-700"}`}
         >
           {t("connected_websites")}
         </h3>
@@ -262,19 +222,19 @@ const ProductInfoDetails: React.FC<ProductInfoDetailsProps> = ({
             </button>
           ))}
         </div>
-      </div>
+      </div> */}
 
       {/* QR Download */}
       <div
         className={`p-4 rounded-lg border ${
-          theme === "dark"
+          isDark
             ? "bg-gray-800/30 border-gray-700"
             : "bg-gray-50 border-gray-200"
         }`}
       >
         <div className="flex justify-between mb-3">
           <h3
-            className={`text-sm ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}
+            className={`text-sm ${isDark ? "text-gray-300" : "text-gray-700"}`}
           >
             {t("download_qr_codes")}
           </h3>
@@ -310,13 +270,13 @@ const ProductInfoDetails: React.FC<ProductInfoDetailsProps> = ({
       {/* Last Updated */}
       <div>
         <h3
-          className={`text-sm mb-2 ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
+          className={`text-sm mb-2 ${isDark ? "text-gray-400" : "text-gray-600"}`}
         >
           {t("last_updated")}
         </h3>
         <div className="flex items-center gap-2">
           <Clock className="w-4 h-4" />
-          <span>{new Date(product.lastUpdated).toLocaleString(language)}</span>
+          <span>{new Date(product?.updatedAt).toLocaleString(language)}</span>
         </div>
       </div>
     </div>

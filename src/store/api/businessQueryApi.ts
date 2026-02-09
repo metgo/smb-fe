@@ -82,11 +82,25 @@ export const businessQueryApi = createApi({
         method: "GET",
       }),
     }),
+
+    getbusinessBySlug: builder.query<any, { slug: string | null }>({
+      query: ({ slug }) => ({
+        url: `${endpoints.business}/${slug}`,
+        method: "GET",
+      }),
+    }),
+    getbusinessForProduct: builder.query<any, any>({
+      query: () => ({
+        url: "search-businesses",
+        method: "GET",
+      }),
+    }),
   }),
 });
 
 export const {
   useGetAllbusinessesQuery,
+  useGetbusinessForProductQuery,
   useGetBusinessStatsQuery,
   useLazyGetIndividualBusinessStatsQuery,
   useGetbusinessByIdQuery,

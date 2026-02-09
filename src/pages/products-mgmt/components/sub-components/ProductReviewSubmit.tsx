@@ -4,31 +4,29 @@ import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 interface ProductReviewSubmitProps {
   t: (key: string) => string;
-  theme: Theme;
   language: Language;
   formData: ProductFormData;
 }
 
 const ProductReviewSubmit: React.FC<ProductReviewSubmitProps> = ({
   t,
-  theme,
   language,
   formData,
 }) => {
-  const { textPrimary, textSecondary, textTertiary, borderColor } =
+  const { textPrimary, textSecondary, textTertiary, borderColor, isDark } =
     useThemeClasses();
 
   const getTypeLabel = (type: string) => {
     switch (type) {
-      case "physical":
+      case "PHYSICAL":
         return t("physical_product");
-      case "table-order":
+      case "TABLE_ORDER":
         return t("table_order");
-      case "service":
+      case "SERVICE":
         return t("service");
-      case "hotel-room":
+      case "HOTEL":
         return t("hotel_room");
-      case "experience":
+      case "EXPERIENCE":
         return t("experience");
       default:
         return "-";
@@ -39,7 +37,7 @@ const ProductReviewSubmit: React.FC<ProductReviewSubmitProps> = ({
     <div className="space-y-6">
       {/* Review Header */}
       <div
-        className={`p-4 rounded-lg ${theme === "dark" ? "bg-teal-950/30" : "bg-teal-50"} border border-teal-500`}
+        className={`p-4 rounded-lg ${isDark ? "bg-teal-950/30" : "bg-teal-50"} border border-teal-500`}
       >
         <p className={`text-sm ${textSecondary}`}>
           <Eye className="w-4 h-4 inline mr-2" />
@@ -94,7 +92,11 @@ const ProductReviewSubmit: React.FC<ProductReviewSubmitProps> = ({
             <div>
               <p className={`text-sm ${textTertiary}`}>{t("quantity")}</p>
               <p className={`font-medium ${textPrimary}`}>
-                {formData.isUnlimited ? t("unlimited") : formData.quantity}
+                {formData.isUnlimited
+                  ? t("unlimited")
+                  : formData.quantity
+                    ? formData.quantity
+                    : "-"}
               </p>
             </div>
 

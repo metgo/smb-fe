@@ -1,17 +1,19 @@
 import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { useCommon } from "@/hooks/useCommon";
 
 interface ProductAttributesProps {
   t: (key: string) => string;
   formData: {
     type: string;
+    primaryCategory: string;
     categories: string[];
   };
   setFormData: (data: any) => void;
   errors: {
     type?: string;
+    primaryCategory?: string;
     categories?: string;
   };
-  availableCategories: string[];
 }
 
 const ProductAttributes = ({
@@ -19,25 +21,28 @@ const ProductAttributes = ({
   formData,
   setFormData,
   errors,
-  availableCategories,
 }: ProductAttributesProps) => {
   const { textPrimary, textSecondary, borderColor, hoverBg } =
     useThemeClasses();
+  const { primaryCategories } = useCommon(); // <-- Use useCommon here
 
   const productTypes = [
-    { value: "physical", label: t("physical_product"), icon: "📦" },
-    { value: "table-order", label: t("table_order"), icon: "🍽️" },
-    { value: "service", label: t("service"), icon: "⚡" },
-    { value: "hotel-room", label: t("hotel_room"), icon: "🏨" },
-    { value: "experience", label: t("experience"), icon: "🎭" },
+    { value: "PHYSICAL", label: t("physical_product"), icon: "📦" },
+    { value: "TABLE_ORDER", label: t("table_order"), icon: "🍽️" },
+    { value: "SERVICE", label: t("service"), icon: "⚡" },
+    { value: "HOTEL", label: t("hotel_room"), icon: "🏨" },
+    { value: "EXPERIENCE", label: t("experience"), icon: "🎭" },
   ];
+
+  // Extract category names (assuming the shape is {_id, name})
+  const categoriesList = primaryCategories?.datas?.data || [];
 
   return (
     <div className="space-y-6">
       {/* Product Type */}
       <div>
         <label className={`block text-sm font-medium ${textSecondary} mb-2`}>
-          {t("select_product_type")} *
+          {t("select_product_type")} <span className="text-red-500">*</span>
         </label>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {productTypes.map((type) => (
@@ -61,38 +66,38 @@ const ProductAttributes = ({
         )}
       </div>
 
-      {/* Product Categories */}
+      {/* Product Categories (checkboxes) */}
       <div>
         <label className={`block text-sm font-medium ${textSecondary} mb-2`}>
-          {t("select_categories")} *
+          {t("select_categories")} <span className="text-red-500">*</span>
         </label>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-          {availableCategories.map((category) => (
+          {categoriesList.map((cat: any) => (
             <label
-              key={category}
+              key={cat._id}
               className={`flex items-center gap-2 p-3 rounded-lg border ${borderColor} cursor-pointer ${hoverBg}`}
             >
               <input
                 type="checkbox"
-                checked={formData.categories.includes(category)}
+                checked={formData.categories.includes(cat._id)}
                 onChange={(e) => {
                   if (e.target.checked) {
                     setFormData({
                       ...formData,
-                      categories: [...formData.categories, category],
+                      categories: [...formData.categories, cat._id],
                     });
                   } else {
                     setFormData({
                       ...formData,
                       categories: formData.categories.filter(
-                        (c) => c !== category,
+                        (c) => c !== cat._id,
                       ),
                     });
                   }
                 }}
                 className="rounded"
               />
-              <span className={`text-sm ${textSecondary}`}>{category}</span>
+              <span className={`text-sm ${textSecondary}`}>{cat.name}</span>
             </label>
           ))}
         </div>

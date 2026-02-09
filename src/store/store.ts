@@ -4,7 +4,6 @@ import authReducer from "@/features/authSlice";
 import settingsReducer from "@/features/settingsSlice";
 import filterReducer from "@/features/filterSlice";
 import themeSlice from "@/features/themeSlice";
-
 import { authApi } from "@/store/api/authApi";
 import { analyticsApi } from "@/store/api/analyticsApi";
 import { itemStatsApi } from "./api/itemStatsApi";
@@ -16,6 +15,8 @@ import { eventQueryApi } from "./api/eventQueryApi";
 import { userMutationApi } from "./api/userMutationApi";
 import { userQueryApi } from "./api/userQueryApi";
 import { mediaMutationApi } from "./api/mediaMutationApi";
+import { productMutationApi } from "./api/productMutationApi";
+import { productQueryApi } from "./api/productQueryApi";
 import { commonMutationApi } from "./api/commonMutationApi";
 import { saveSettings, saveUserInfo } from "@/lib/storage";
 
@@ -35,9 +36,12 @@ export const store = configureStore({
     [userMutationApi.reducerPath]: userMutationApi.reducer,
     [eventMutationApi.reducerPath]: eventMutationApi.reducer,
     [mediaMutationApi.reducerPath]: mediaMutationApi.reducer,
-    [commonMutationApi.reducerPath]: commonMutationApi.reducer,
 
+    [productMutationApi.reducerPath]: productMutationApi.reducer,
+    [productQueryApi.reducerPath]: productQueryApi.reducer,
+    [commonMutationApi.reducerPath]: commonMutationApi.reducer,
     [businessQueryApi.reducerPath]: businessQueryApi.reducer,
+
     [eventQueryApi.reducerPath]: eventQueryApi.reducer,
     [userQueryApi.reducerPath]: userQueryApi.reducer,
   },
@@ -54,6 +58,8 @@ export const store = configureStore({
       userQueryApi.middleware,
       businessQueryApi.middleware,
       mediaMutationApi.middleware,
+      productMutationApi.middleware,
+      productQueryApi.middleware,
       commonMutationApi.middleware,
     ),
 });

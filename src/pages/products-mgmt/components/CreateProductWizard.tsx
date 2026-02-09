@@ -1,12 +1,16 @@
-import { useState } from "react";
+import clsx from "clsx";
+import { toast } from "sonner";
+import { useEffect, useState } from "react";
+
 import {
-  X,
   Check,
   Image as ImageIcon,
   Globe,
   Package,
   Truck,
   Eye,
+  CreditCard,
+  FileText,
 } from "lucide-react";
 import {
   ProductAttributes,
@@ -18,53 +22,106 @@ import {
   ProductReviewSubmit,
 } from "./sub-components";
 import { useTranslation } from "react-i18next";
-import { useAppSelector } from "@/hooks/hooks";
 import { WizardFooter } from "@/components/shared";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { toast } from "sonner";
+import {
+  useInitProductCreateMutation,
+  useUpdateProductMutation,
+} from "@/store/api/productMutationApi";
+import { skipToken } from "@reduxjs/toolkit/query";
+
+import { useGetProductbyIdQuery } from "@/store/api/productQueryApi";
+import { useImagesUpload } from "@/hooks/useImagesUpload";
+import { ModalWrapper } from "@/components/wrapper";
+import { PublishButton } from "@/components/btns";
+import { useGetbusinessForProductQuery } from "@/store/api/businessQueryApi";
+import { useSearchParams } from "react-router-dom";
+
+const availableCategories = [
+  "Food & Dining",
+  "Accommodation",
+  "Tours & Activities",
+  "Shopping",
+  "Wellness & Spa",
+  "Entertainment",
+];
 
 interface ProductWizardProps {
   onClose: () => void;
   editingProduct?: ProductFormData | null;
-  preSelectedBusinessName?: string | null;
+  selectedProduct?: any;
+  isOpen?: boolean;
+  product?: any;
 }
 
 export default function CreateProductWizard({
   onClose,
   editingProduct,
-  preSelectedBusinessName,
 }: ProductWizardProps) {
-  const { t, i18n } = useTranslation("product");
-  const { theme } = useAppSelector((state) => state.settings);
+  const { t } = useTranslation("products");
+  const [searchParams] = useSearchParams();
 
-  const language = i18n.language as Language;
+  const productId = searchParams?.get("productId");
+
+  const {
+    bgTertiary,
+    textPrimary,
+    textTertiary,
+    textSecondary,
+    borderColor,
+    language,
+  } = useThemeClasses();
+
+  const { data: businessData, isLoading: isBusinessesLoading } =
+    useGetbusinessForProductQuery({});
 
   const [currentStep, setCurrentStep] = useState(1);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [selectedFormLanguage, setSelectedFormLanguage] = useState<
     "en" | "he" | "ar"
   >("en");
-  const [isSaving, setIsSaving] = useState(false); // unused but kept
-  const [isPublishing, _setIsPublishing] = useState(false); // unused but kept
+  const [isPublishing, setIsPublishing] = useState(false);
+  const {
+    data: product,
+    isLoading,
+    refetch,
+  } = useGetProductbyIdQuery(productId ? { productId: productId } : skipToken);
 
-  const businesses = [
-    { id: "biz-1", name: "Desert Lodge Hotel" },
-    { id: "biz-2", name: "Ramon Crater Restaurant" },
-    { id: "biz-3", name: "Negev Adventure Tours" },
-    { id: "biz-4", name: "Be'er Sheva Wellness Spa" },
-    { id: "biz-5", name: "Sderot Artisan Market" },
-  ];
+  const [galleryImages, setGalleryImages] = useState<TImages>([]);
+  console.log("🚀 ~ CreateProductWizard ~ galleryImages:", galleryImages);
 
-  const preSelectedBusinessId = preSelectedBusinessName
-    ? businesses.find((b) => b.name === preSelectedBusinessName)?.id || ""
-    : "";
+  const businesses = businessData?.data;
 
-  const [formData, setFormData] = useState<ProductFormData>(
+  const [businessId, setBusinessId] = useState("");
+
+  const {
+    images,
+    imagesRef,
+    primaryImageIndex,
+    handleImageUpload,
+    uploadAll,
+    setPrimaryImage,
+    // setImages,
+    deleteTarget,
+    setDeleteTarget,
+    confirmDelete,
+    isImageDeleting,
+    handleDeleteImage,
+  } = useImagesUpload({
+    initialImages: galleryImages,
+    onChange: setGalleryImages,
+  });
+
+  const [formData, setFormData] = useState<any>(
     editingProduct || {
-      businessId: preSelectedBusinessId,
-      name: { en: "", he: "", ar: "" },
-      shortDescription: { en: "", he: "", ar: "" },
-      fullDescription: { en: "", he: "", ar: "" },
+      businessId: businessId,
+      name: "",
+      nameHe: "",
+      nameAr: "",
+      shortDescription: "",
+      shortDescriptionHe: "",
+      shortDescriptionAr: "",
+      fullDescription: "",
       type: "",
       categories: [],
       markedPrice: "",
@@ -73,7 +130,8 @@ export default function CreateProductWizard({
       isUnlimited: false,
       startDate: "",
       endDate: "",
-      mainImage: null,
+      logo: null as IImage | null,
+      images: null as TImages | null,
       additionalImages: [],
       enableHomeDelivery: false,
       enableStorePickup: false,
@@ -83,30 +141,56 @@ export default function CreateProductWizard({
       serviceLocation: "",
     },
   );
+  useEffect(() => {
+    if (!productId || !product) return;
 
-  const availableCategories = [
-    "Food & Dining",
-    "Accommodation",
-    "Tours & Activities",
-    "Shopping",
-    "Wellness & Spa",
-    "Entertainment",
-  ];
+    setFormData({
+      // basic info
+      businessId: product.businessId || "",
+      name: product.name || "",
+      nameHe: product.nameHe || "",
+      nameAr: product.nameAr || "",
 
-  const {
-    bgSecondary,
-    bgTertiary,
-    textPrimary,
-    textSecondary,
-    textTertiary,
-    borderColor,
-    hoverBg,
-  } = useThemeClasses();
+      shortDescription: product.shortDescription || "",
+      shortDescriptionHe: product.shortDescriptionHe || "",
+      shortDescriptionAr: product.shortDescriptionAr || "",
+      fullDescription: product.fullDescription || "",
 
+      type: product.productType || "",
+      categories: product.categories || [],
+
+      // pricing & stock
+      markedPrice: product.price?.markedPrice || "",
+      sellingPrice: product.price?.sellingPrice || "",
+      quantity: product.quantity?.remaining || "",
+      isUnlimited: product.quantity?.isUnlimited || false,
+
+      // dates
+      startDate: product.startDate || "",
+      endDate: product.endDate || "",
+
+      // images
+      images: product?.images || null,
+      additionalImages: product.additionalImages || [],
+
+      // delivery / service
+      enableHomeDelivery: product.enableHomeDelivery || false,
+      enableStorePickup: product.enableStorePickup || false,
+      deliveryFee: product.deliveryFee || "",
+      deliveryTime: product.deliveryTime || "",
+      serviceDuration: product.serviceDuration || "",
+      serviceLocation: product.serviceLocation || "",
+    });
+    setGalleryImages(product?.images);
+  }, [productId, product]);
+
+  const [initProductCreate, { isLoading: isCreating }] =
+    useInitProductCreateMutation();
+  const [updateProduct, { isLoading: isSaving }] = useUpdateProductMutation();
   const steps = [
-    { number: 1, title: t("product_basic_info"), icon: Package },
+    { number: 1, title: t("product_basic_info"), icon: FileText },
     { number: 2, title: t("product_type_category"), icon: Package },
-    { number: 3, title: t("product_pricing"), icon: Package },
+    { number: 3, title: t("product_pricing"), icon: CreditCard },
     { number: 4, title: t("product_media"), icon: ImageIcon },
     { number: 5, title: t("product_multilingual"), icon: Globe },
     { number: 6, title: t("product_delivery_service"), icon: Truck },
@@ -115,11 +199,12 @@ export default function CreateProductWizard({
 
   const validateStep = (step: number): boolean => {
     const newErrors: Record<string, string> = {};
+
     switch (step) {
       case 1:
         if (!formData.businessId) newErrors.businessId = t("field_required");
-        if (!formData.name.en) newErrors.nameEn = t("field_required");
-        if (!formData.shortDescription.en)
+        if (!formData.name) newErrors.nameEn = t("field_required");
+        if (!formData.shortDescription)
           newErrors.shortDescEn = t("field_required");
         break;
       case 2:
@@ -139,111 +224,128 @@ export default function CreateProductWizard({
         }
         break;
       case 4:
-        if (!formData.mainImage)
-          newErrors.mainImage = t("upload_at_least_one_image");
+        // if (!formData.images) newErrors.images = t("upload_at_least_one_image");
         break;
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
+  const handleSaveDraft = async () => {
+    await uploadAll();
+    await saveDraft(false);
+  };
 
-  const handleNext = () => {
-    if (validateStep(currentStep)) {
-      if (currentStep < 7) setCurrentStep(currentStep + 1);
+  const handleNext = async () => {
+    if (currentStep === 4) {
+      await uploadAll();
     }
+    setCurrentStep((prev) => prev + 1);
   };
 
   const handlePrevious = () => {
     if (currentStep > 1) setCurrentStep(currentStep - 1);
   };
 
-  const handleSubmit = () => {};
+  const handlePublish = async () => {
+    let allValid = true;
+    for (let i = 1; i <= 5; i++) {
+      if (!validateStep(i)) {
+        allValid = false;
+        setCurrentStep(i);
+        break;
+      }
+    }
+    if (!allValid) {
+      toast.error(t("fill_all_fields"));
+      return;
+    }
+    setIsPublishing(true);
 
-  // Last saved timestamp
-  const [_lastSaved, setLastSaved] = useState<Date | null>(null);
+    await saveDraft(true);
+    setIsPublishing(false);
+
+    toast.success(t("business created succesfully"));
+    refetch();
+    onClose();
+  };
 
   // Draft Save Payload per Step
-  const stepPayloadMap: Record<number, any> = {
-    1: {
-      businessId: formData.businessId,
-      name: formData.name,
-      shortDescription: formData.shortDescription,
-      fullDescription: formData.fullDescription,
-      type: formData.type,
-      categories: formData.categories,
+  const stepPayloadMap = {
+    // 1: {
+    businessId: formData.businessId,
+    name: formData.name,
+
+    shortDescription: formData.shortDescription,
+    description: formData.fullDescription,
+    // },
+    // 2: {
+    productType: formData.type,
+    categories: formData.categories,
+    // },
+    // 3: {
+    price: {
       markedPrice: formData.markedPrice,
       sellingPrice: formData.sellingPrice,
-      quantity: formData.quantity,
+    },
+    quantity: {
+      remaining: formData.quantity,
       isUnlimited: formData.isUnlimited,
     },
-    2: {
-      markedPrice: formData.markedPrice,
-      sellingPrice: formData.sellingPrice,
-      quantity: formData.quantity,
-      isUnlimited: formData.isUnlimited,
-      startDate: formData.startDate,
-      endDate: formData.endDate,
-    },
-    3: {
-      mainImage: formData.mainImage,
-      additionalImages: formData.additionalImages,
-    },
-    4: {
-      name: formData.name,
-      shortDescription: formData.shortDescription,
-      fullDescription: formData.fullDescription,
-    },
-    5: {
-      enableHomeDelivery: formData.enableHomeDelivery,
-      enableStorePickup: formData.enableStorePickup,
-      deliveryFee: formData.deliveryFee,
-      deliveryTime: formData.deliveryTime,
-      serviceDuration: formData.serviceDuration,
-      serviceLocation: formData.serviceLocation,
-    },
+    activeStartDate: formData.startDate,
+    activeEndDate: formData.endDate,
+    // },
+    // 4: {
+    images: galleryImages,
+    // 5: {
+    nameHe: formData.nameHe,
+    shortDescriptionHe: formData.shortDescriptionHe,
+
+    nameAr: formData.nameAr,
+    shortDescriptionAr: formData.shortDescriptionAr,
+    // },
+    // 6: {
+    // enableHomeDelivery: formData.enableHomeDelivery,
+    // enableStorePickup: formData.enableStorePickup,
+    // deliveryFee: formData.deliveryFee,
+    // deliveryTime: formData.deliveryTime,
+    // serviceDuration: formData.serviceDuration,
+    // serviceLocation: formData.serviceLocation,
+    // },
   };
 
   // Auto-save draft function
-  const handleSaveDraft = async () => {
+  const saveDraft = async (isPublish = false) => {
     try {
-      const payload = stepPayloadMap[currentStep];
-      if (!payload) return;
+      let internalProductId;
 
-      setIsSaving(true);
+      // 1️⃣ Initialize product if not created yet
+      if (!productId) {
+        const res = await initProductCreate({ businessId }).unwrap();
+        internalProductId = res?.id;
+      }
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      // Only send payload for the current step
+      const payload = stepPayloadMap;
+      if (!payload || !Object.keys(payload).length) return;
 
-      setIsSaving(false);
-      setLastSaved(new Date());
+      // 4️⃣ Update product
+      const res = await updateProduct({
+        productId: internalProductId || productId!,
+        body: payload,
+      }).unwrap();
 
-      toast.success(t("product_saved_as_draft"));
+      toast.success(
+        res?.message ?? (isPublish ? "Product published" : "Draft saved"),
+      );
     } catch (error: any) {
-      setIsSaving(false);
+      // setIsSaving(false);
       toast.error(error?.message || t("something_went_wrong"));
     }
-  };
-
-  const handleImageUpload = (file: File, type: "main" | "additional") => {
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const imageUrl = reader.result as string;
-      if (type === "main") {
-        setFormData({ ...formData, mainImage: imageUrl });
-      } else {
-        setFormData({
-          ...formData,
-          additionalImages: [...formData.additionalImages, imageUrl],
-        });
-      }
-    };
-    reader.readAsDataURL(file);
   };
 
   const renderStepContent = () => {
     const commonProps = {
       t,
-      theme,
       language,
       formData,
       setFormData,
@@ -255,15 +357,38 @@ export default function CreateProductWizard({
       businesses,
     };
 
+    const mediaProps = {
+      t,
+      errors,
+      images,
+      imagesRef,
+      primaryImageIndex,
+      setPrimaryImage,
+      handleImageUpload,
+      deleteTarget,
+      setDeleteTarget,
+      isImageDeleting,
+      confirmDelete,
+      handleDeleteImage,
+    };
+
     switch (currentStep) {
       case 1:
-        return <ProductBasicInfo {...commonProps} />;
+        return (
+          <ProductBasicInfo
+            {...commonProps}
+            setBusinessId={setBusinessId}
+            isLoading={isLoading}
+            isBusinessesLoading={isBusinessesLoading}
+            businessData={businessData}
+          />
+        );
       case 2:
         return <ProductAttributes {...commonProps} />;
       case 3:
         return <ProductPricingAvailability {...commonProps} />;
       case 4:
-        return <ProductMedia {...commonProps} />;
+        return <ProductMedia {...mediaProps} {...commonProps} />;
       case 5:
         return <ProductMultilingualContent {...commonProps} />;
       case 6:
@@ -276,77 +401,100 @@ export default function CreateProductWizard({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <ModalWrapper onClose={onClose} showSpinner={isCreating || isSaving}>
+      {/* Header */}
       <div
-        className={`${bgSecondary} rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden shadow-2xl flex flex-col`}
+        className={`p-6 border-b ${borderColor} flex items-center justify-between`}
       >
-        {/* Header */}
-        <div
-          className={`p-6 border-b ${borderColor} flex items-center justify-between`}
-        >
-          <div>
-            <h2 className={`text-2xl ${textPrimary} mb-1`}>
-              {editingProduct ? t("edit_product") : t("create_product")}
-            </h2>
-            <p className={`text-sm ${textTertiary}`}>
-              {t("step")} {currentStep} {t("step_of")} 7:{" "}
-              {steps[currentStep - 1].title}
-            </p>
-          </div>
-          <button
-            onClick={onClose}
-            className={`p-2 rounded-lg ${hoverBg} ${textSecondary}`}
-          >
-            <X className="w-5 h-5" />
-          </button>
+        {/* Left content */}
+        <div>
+          <h2 className={`text-2xl ${textPrimary} mb-1`}>
+            {productId ? t("edit_product") : t("create_product")}
+          </h2>
+          <p className={`text-sm ${textTertiary}`}>
+            {t("step")} {currentStep} {t("of")} 7:{" "}
+            {steps[currentStep - 1].title}
+          </p>
         </div>
 
-        {/* Progress Bar */}
-        <div className={`px-6 pt-4 pb-2 border-b ${borderColor}`}>
-          <div className="flex items-center justify-between mb-2">
-            {steps.map((step, idx) => (
-              <div key={step.number} className="flex-1">
+        {/* Right content */}
+        <PublishButton onClick={handlePublish} isLoading={isPublishing} />
+      </div>
+
+      {/* Progress Bar */}
+      <div className={`px-6 pt-4 pb-2 border-b ${borderColor}`}>
+        <div className="flex items-start justify-between">
+          {steps.map((step, idx) => {
+            const Icon = step.icon;
+            const isActive = currentStep === step.number;
+            const isCompleted = currentStep > step.number;
+
+            return (
+              <div
+                key={step.number}
+                className="flex-1 cursor-pointer"
+                onClick={() => setCurrentStep(step.number)}
+              >
+                {/* Icon + connector */}
                 <div className="flex items-center">
-                  <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-all ${
-                      currentStep === step.number
-                        ? "bg-teal-500 text-white"
-                        : currentStep > step.number
-                          ? "bg-green-500 text-white"
-                          : `${bgTertiary} ${textTertiary}`
-                    }`}
-                  >
-                    {currentStep > step.number ? (
-                      <Check className="w-4 h-4" />
-                    ) : (
-                      step.number
-                    )}
+                  {/* Icon + title */}
+                  <div className="flex flex-col items-center">
+                    <div
+                      className={`w-10 h-10 rounded-full flex items-center justify-center transition-all
+                      ${
+                        isActive
+                          ? "bg-teal-500 text-white"
+                          : isCompleted
+                            ? "bg-green-500 text-white"
+                            : `${bgTertiary} ${textTertiary}`
+                      }`}
+                    >
+                      {isCompleted ? (
+                        <Check className="w-5 h-5" />
+                      ) : (
+                        <Icon className="w-5 h-5" />
+                      )}
+                    </div>
+
+                    {/* Title below icon */}
+                    <span
+                      className={clsx(
+                        "mt-2 text-sm text-center",
+                        textSecondary,
+                      )}
+                    >
+                      {step.title}
+                    </span>
                   </div>
+
+                  {/* Connector line */}
                   {idx < steps.length - 1 && (
                     <div
-                      className={`flex-1 h-1 mx-2 ${currentStep > step.number ? "bg-green-500" : bgTertiary}`}
+                      className={`flex-1 h-1 mx-2 ${
+                        isCompleted ? "bg-green-500" : bgTertiary
+                      }`}
                     />
                   )}
                 </div>
               </div>
-            ))}
-          </div>
+            );
+          })}
         </div>
-
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6">{renderStepContent()}</div>
-
-        <WizardFooter
-          currentStep={currentStep}
-          totalSteps={7}
-          isSaving={isSaving}
-          isPublishing={isPublishing}
-          onPrevious={handlePrevious}
-          onNext={handleNext}
-          onSaveDraft={handleSaveDraft}
-          onPublish={handleSubmit}
-        />
       </div>
-    </div>
+
+      {/* Content */}
+      <div className="flex-1 overflow-y-auto p-6">{renderStepContent()}</div>
+
+      <WizardFooter
+        currentStep={currentStep}
+        totalSteps={7}
+        isSaving={isSaving}
+        isPublishing={isPublishing}
+        onPrevious={handlePrevious}
+        onNext={handleNext}
+        onSaveDraft={handleSaveDraft}
+        onPublish={handlePublish}
+      />
+    </ModalWrapper>
   );
 }

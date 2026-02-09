@@ -82,13 +82,14 @@ const BusinessMediaDetails: React.FC<BusinessMediaDetailsProps> = ({
           </div> */}
         </div>
       </div>
+
       {/* Image Gallery Header */}
       <div className="flex items-center justify-between">
         {images.length > 0 && (
           <h3
             className={`text-md  ${isDark ? "text-gray-200" : "text-gray-800"}`}
           >
-            {t("image_gallery") || "Image Gallery"}
+            {t("image_gallery")}
           </h3>
         )}
 

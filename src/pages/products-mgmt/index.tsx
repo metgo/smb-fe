@@ -1,69 +1,239 @@
+import { toast } from "sonner";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Package,
-  Search,
-  Filter,
   Grid3x3,
   List,
-  X,
-  Check,
-  Copy,
   Settings2,
   ArrowUpDown,
   ArrowUp,
+  ChevronUp,
+  ChevronDown,
+  Columns,
 } from "lucide-react";
+
 import { useProductMgmt } from "./useProductMgmt";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { useAppSelector } from "@/hooks/hooks";
-import { PageHeader, PageStats, ReordableDataTable } from "@/components/shared";
-import { CreateProductWizard } from "./components";
-import { Activity, useState } from "react";
-import ProductDetails from "./details/inde";
+import {
+  BulkActionBar,
+  ConfirmDialog,
+  PageHeader,
+  PageStats,
+} from "@/components/shared";
+import {
+  CreateProductWizard,
+  ProductGridView,
+  ProductListView,
+} from "./components";
+
+import { useGetAllProductsQuery } from "@/store/api/productQueryApi";
+import SearchInput from "@/components/shared/SearchInput";
+import { FilterButton } from "@/components/btns";
+import { useBulkProductsUpdateMutation } from "@/store/api/productMutationApi";
+import { useGetbusinessForProductQuery } from "@/store/api/businessQueryApi";
+import ReactSelect from "react-select";
 
 const businessId = "";
+const defaultColumns = {
+  images: true,
+  name: true,
+  businessId: true, //  optional
+  productType: true,
+  actions: true,
+  status: true,
+  price: true,
+  impact: false, //  optional
+  quantity: false,
+  updatedAt: false, //  optional
+};
 
+const columnDefinitions = [
+  { key: "images" as keyof IColumnVisibility, isDefault: true },
+  { key: "name" as keyof IColumnVisibility, isDefault: true },
+  { key: "businessId" as keyof IColumnVisibility, isDefault: true },
+  { key: "productType" as keyof IColumnVisibility, isDefault: true },
+  { key: "status" as keyof IColumnVisibility, isDefault: true },
+  { key: "price" as keyof IColumnVisibility, isDefault: true },
+  { key: "actions" as keyof IColumnVisibility, isDefault: true },
+  { key: "impact" as keyof IColumnVisibility, isDefault: false },
+  { key: "quantity" as keyof IColumnVisibility, isDefault: false },
+  { key: "updatedAt" as keyof IColumnVisibility, isDefault: false },
+];
 export default function ProductsMgmtPage() {
-  const { isRTL } = useAppSelector((state) => state.settings);
-
   const {
     t,
-    language,
-    searchQuery,
-    setSearchQuery,
+    isRTL,
+    isDark,
     viewMode,
     setViewMode,
-    isEditing,
-    setIsEditing,
-    selectedProduct,
-    setSelectedProduct,
-    selectedProducts,
-    setSelectedProducts,
     showFilters,
     setShowFilters,
-    // isCreating,
     setIsCreating,
-    statusFilter,
-    setStatusFilter,
-    typeFilter,
-    setTypeFilter,
-    businessFilter,
-    setBusinessFilter,
-    sortedProducts,
-    handleBulkStatusChange,
-    handleDuplicateProduct,
     salesMetrics,
-    getProductTypeLabel,
-    getStatusBadge,
   } = useProductMgmt();
+  const {
+    bgPrimary,
+    bgSecondary,
+    borderColor,
+    textPrimary,
+    textSecondary,
+    textTertiary,
+  } = useThemeClasses();
+  const { data: businessData } = useGetbusinessForProductQuery({});
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  //select products
+  const [selectedProducts, setSelectedProducts] = useState<Set<string>>(
+    new Set(),
+  );
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [combinedProducts, setCombinedProducts] = useState<any[]>([]);
 
-  const [currentView, setCurrentView] = useState<
-    "list" | "details" | "edit" | "create"
-  >("list");
+  //filters
+  const LIMIT = 20;
+  const [page, setPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState<string>("");
 
-  const themeColor = useThemeClasses();
+  const [filters, setFilters] = useState({
+    status: "all",
+    productType: "all",
+    businessId: {
+      name: "",
+      _id: "",
+    },
+  });
+  const [_clearBusiness, setClearBusiness] = useState(false);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState(null);
+  const [isBulkDelete, setIsBulkDelete] = useState(false);
 
-  const handleProductClick = (product: any) => {
-    setSelectedProduct(product);
-    setCurrentView("details");
+  const clearFilter = (filterKey: string) => {
+    setClearBusiness(true);
+    setFilters((prev) => ({
+      ...prev,
+      [filterKey]: "all",
+    }));
+  };
+
+  const productQueryParams = useMemo(() => {
+    const params: any = {
+      page,
+      limit: LIMIT,
+    };
+
+    if (searchTerm) {
+      params.search = searchTerm;
+    }
+
+    if (filters.status !== "all") {
+      params.status = filters.status.toUpperCase();
+    }
+
+    if (filters.productType !== "all") {
+      params.productType = filters.productType.toUpperCase();
+    }
+
+    if (filters.businessId.name !== "all") {
+      params.businessId = filters.businessId?._id;
+    }
+
+    return params;
+  }, [page, searchTerm, filters]);
+
+  const {
+    data: productData,
+    refetch,
+    isFetching,
+    isLoading: isLoadingProduct,
+  } = useGetAllProductsQuery(productQueryParams);
+  const [bulkProductsUpdate] = useBulkProductsUpdateMutation();
+
+  const products = productData?.data ?? [];
+  const hasMore = productData?.meta?.hasNextPage;
+
+  useEffect(() => {
+    if (!products?.length) return;
+    if (page === 1) setCombinedProducts(products);
+    else {
+      setCombinedProducts((prev: any) => {
+        const existingIds = new Set(prev.map((b: any) => b._id));
+        const newItems = products?.filter((b: any) => !existingIds?.has(b._id));
+
+        return [...prev, ...newItems];
+      });
+    }
+  }, [products]);
+
+  const fetchNextPage = () => {
+    if (!hasMore || isFetching) return;
+    setPage((prev) => {
+      return prev + 1;
+    });
+  };
+
+  const handleCreateNew = () => {
+    setSelectedProduct(null);
+    setIsCreateModalOpen(true);
+  };
+  const promptBulkDelete = () => {
+    if (selectedProducts.size === 0) return;
+    setIsBulkDelete(true); // mark bulk delete mode
+    setIsConfirmOpen(true); // open confirmation dialog
+  };
+
+  //bulk delete
+  const handleBulkDelete = async () => {
+    if (!selectedProducts.size) return;
+    setIsConfirmOpen(true);
+
+    const toastId = toast.loading("Please wait. Businesses are deleting...");
+    try {
+      const results = await bulkProductsUpdate({
+        productsId: Array.from(selectedProducts),
+        isDeleted: true,
+      });
+
+      if (results?.data) {
+        const message = "Products deleted successfully";
+        toast.success(message, { id: toastId });
+        setSelectedProducts(new Set());
+        refetch();
+      }
+    } catch (error: any) {
+      toast.error(error?.message || "Failed to delete Products");
+    }
+  };
+
+  // //bulk status change
+  const handleBulkStatusChange = async (status: TStatus) => {
+    if (!selectedProducts.size) return;
+    toast.loading("Please wait. Product's status are changing...");
+
+    try {
+      const results = await bulkProductsUpdate({
+        productsId: Array.from(selectedProducts),
+        status: status?.toLocaleUpperCase(),
+      });
+
+      if (results?.data) {
+        const message = "Products status updated successfully";
+        toast.success(message);
+        setSelectedProducts(new Set());
+        refetch();
+      }
+    } catch (error: any) {
+      toast.error(error?.message || "Failed to change Products status");
+    }
+  };
+
+  //column settings
+  const [showColumnSettings, setShowColumnSettings] = useState(false);
+  const columnSettingsRef = useRef<HTMLDivElement>(null);
+
+  const [columnVisibility, seIColumnVisibility] =
+    useState<IColumnVisibility>(defaultColumns);
+  // Reset to default columns
+  const resetToDefault = () => {
+    seIColumnVisibility(defaultColumns);
   };
 
   const salesStats = [
@@ -99,467 +269,475 @@ export default function ProductsMgmtPage() {
 
   return (
     <>
-      <Activity mode={currentView === "list" ? "visible" : "hidden"}>
-        <div className="h-[calc(104vh-204px)] flex flex-col">
-          <PageHeader
-            title={t("products_management")}
-            description={t("products_management_desc")}
-            h1Gradient="bg-linear-to-r  text-transparent from-blue-500 via-indigo-600 to-purple-600"
-            btnLabel={t("add_products")}
-            onClick={() => setIsCreating(true)}
-          />
+      <div className="h-[calc(104vh-204px)] flex flex-col">
+        <PageHeader
+          title={t("products_management")}
+          description={t("products_management_desc")}
+          h1Gradient="bg-linear-to-r  text-transparent from-blue-500 via-indigo-600 to-purple-600"
+          btnLabel={t("add_products")}
+          onClick={handleCreateNew}
+        />
+        <PageStats
+          stats={salesStats}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
+        />
 
-          {/* Fixed Stats, Toolbar, Filters - Always Visible */}
-          <div className="shrink-0 py-6 pb-0">
-            <div className=" mx-auto">
-              <PageStats
-                stats={salesStats}
-                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6"
+        <div className="shrink-0">
+          {/* Toolbar */}
+          <div className="py-4 flex flex-col lg:flex-row items-center justify-between gap-3">
+            {/* Search - extreme left */}
+            <div className="flex-1 relative max-w-full ">
+              <SearchInput
+                placeholder={t("search_products")}
+                searchTerm={searchTerm}
+                setSearchTerm={setSearchTerm}
               />
+            </div>
 
-              {/* Toolbar */}
-              <div className="flex items-center justify-between gap-4 mb-6 flex-wrap">
-                {/* Search */}
-                <div className="flex-1 min-w-50 max-w-md">
-                  <div className="relative">
-                    <Search
-                      className={`absolute ${isRTL ? "right-3" : "left-3"} top-1/2 -translate-y-1/2 w-5 h-5 ${themeColor.textTertiary}`}
-                    />
-                    <input
-                      type="text"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder={t("search_products")}
-                      className={`w-full ${isRTL ? "pr-10 pl-4" : "pl-10 pr-4"} py-2 rounded-lg border ${themeColor.borderColor} ${themeColor.bgSecondary} ${themeColor.textPrimary} placeholder-gray-400`}
-                    />
-                  </div>
-                </div>
+            <div className="flex items-center gap-3">
+              <FilterButton value={showFilters} onChange={setShowFilters} />
 
-                {/* Right Section */}
-                <div className="flex items-center gap-2">
+              {viewMode === "list" && (
+                <div className="relative" ref={columnSettingsRef}>
                   <button
-                    onClick={() => setShowFilters(!showFilters)}
-                    className={`px-3 py-2 rounded-lg border ${themeColor.borderColor} ${showFilters ? "bg-teal-50 dark:bg-teal-950 border-teal-500" : themeColor.bgSecondary} ${themeColor.textSecondary} hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex items-center gap-2`}
+                    onClick={() => setShowColumnSettings(!showColumnSettings)}
+                    className={`px-4 py-2 rounded-lg border flex items-center gap-2 transition-colors ${
+                      isDark
+                        ? "border-gray-700 hover:bg-gray-800 text-gray-300"
+                        : "border-gray-300 hover:bg-gray-100 text-gray-700"
+                    }`}
                   >
-                    <Filter className="w-4 h-4" />
-                    <span className="hidden sm:inline">{t("filters")}</span>
+                    <Columns className="w-5 h-5" />
+                    {t("show_columns")}
+                    {showColumnSettings ? (
+                      <ChevronUp className="w-4 h-4" />
+                    ) : (
+                      <ChevronDown className="w-4 h-4" />
+                    )}
                   </button>
 
-                  <div
-                    className={`flex items-center gap-1 p-1 rounded-lg border ${themeColor.borderColor} ${themeColor.bgSecondary}`}
+                  {/* Column Settings Dropdown */}
+                  {showColumnSettings && (
+                    <div
+                      className={`absolute ${isRTL ? "left-0" : "right-0"} mt-2 w-64 rounded-lg shadow-lg max-h-50vh overflow-y-auto border z-50 ${isDark ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}`}
+                    >
+                      <div
+                        className={`p-4 border-b ${isDark ? "border-gray-700" : "border-gray-200"}`}
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <h3
+                            className={`text-sm ${isDark ? "text-gray-200" : "text-gray-900"}`}
+                          >
+                            {t("column_settings") || "Column Settings"}
+                          </h3>
+                          <button
+                            onClick={resetToDefault}
+                            className="text-xs text-teal-600 hover:text-teal-700 transition-colors"
+                          >
+                            {t("reset_to_default") || "Reset to Default"}
+                          </button>
+                        </div>
+                        <p
+                          className={`text-xs ${isDark ? "text-gray-400" : "text-gray-600"}`}
+                        >
+                          {t("select_columns_to_display") ||
+                            "Select columns to display"}
+                        </p>
+                      </div>
+                      <div className="p-3 max-h-96 overflow-y-auto">
+                        {/* Default Columns */}
+                        {Object.entries(columnVisibility)
+                          .filter(
+                            ([key]) =>
+                              columnDefinitions.find((col) => col.key === key)
+                                ?.isDefault,
+                          )
+                          .map(([key, visible]) => (
+                            <label
+                              key={key}
+                              className={`flex items-center gap-2 p-2 rounded cursor-pointer  dark:hover:bg-gray-700 ${
+                                isRTL ? "flex-row-reverse justify-end" : ""
+                              }`}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={visible}
+                                onChange={(e) =>
+                                  seIColumnVisibility((prev) => ({
+                                    ...prev,
+                                    [key]: e.target.checked,
+                                  }))
+                                }
+                                className="rounded"
+                              />
+                              <span className={`text-sm ${textSecondary}`}>
+                                {t(key as keyof typeof t)}
+                              </span>
+                            </label>
+                          ))}
+
+                        {/* Divider */}
+                        {columnDefinitions.some((col) => !col.isDefault) && (
+                          <div className="my-3 border-t border-gray-200 dark:border-gray-700" />
+                        )}
+
+                        {/* Non-default Columns */}
+                        <p
+                          className={`text-xs mb-2 ${isDark ? "text-gray-400" : "text-gray-600"}`}
+                        >
+                          Optional Columns
+                        </p>
+                        {Object.entries(columnVisibility)
+                          .filter(
+                            ([key]) =>
+                              !columnDefinitions.find((col) => col.key === key)
+                                ?.isDefault,
+                          )
+                          .map(([key, visible]) => (
+                            <label
+                              key={key}
+                              className={`flex items-center gap-2 p-2 rounded cursor-pointer ${
+                                isRTL ? "flex-row-reverse justify-end" : ""
+                              }`}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={visible}
+                                onChange={(e) =>
+                                  seIColumnVisibility((prev) => ({
+                                    ...prev,
+                                    [key]: e.target.checked,
+                                  }))
+                                }
+                                className="rounded"
+                              />
+                              <span className={`text-sm ${textSecondary}`}>
+                                {t(key as keyof typeof t)}
+                              </span>
+                            </label>
+                          ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+              {/* View Mode Toggle */}
+              <div
+                className={`flex items-center gap-1 p-1 rounded-lg border border-gray-300 ${isDark ? "bg-gray-900" : "bg-white"} `}
+              >
+                <button
+                  onClick={() => setViewMode("list")}
+                  className={`p-2 rounded ${
+                    viewMode === "list"
+                      ? "bg-teal-500 text-white"
+                      : "text-gray-500 dark:text-gray-400"
+                  } `}
+                >
+                  <List className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => setViewMode("grid")}
+                  className={`p-2 rounded ${
+                    viewMode === "grid"
+                      ? "bg-teal-500 text-white"
+                      : "text-gray-500"
+                  }`}
+                >
+                  <Grid3x3 className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Filters Panel */}
+          {showFilters && (
+            <div
+              className={`p-4 rounded-md border ${borderColor} ${bgPrimary}`}
+            >
+              <div className="grid grid-cols-1 z-5 sm:grid-cols-3 gap-4">
+                <div>
+                  <label
+                    className={`block text-sm mb-1 ${
+                      isDark ? "text-gray-400" : "text-gray-600"
+                    }`}
                   >
-                    <button
-                      onClick={() => setViewMode("list")}
-                      className={`p-2 rounded ${viewMode === "list" ? "bg-teal-500 text-white" : themeColor.textTertiary}`}
+                    {t("filter_by_status")}
+                  </label>
+                  <select
+                    value={filters.status}
+                    onChange={(e) =>
+                      setFilters((prev) => ({
+                        ...prev,
+                        status: e.target.value,
+                      }))
+                    }
+                    className={`w-full px-3 py-2 rounded-lg border ${
+                      isDark
+                        ? "bg-gray-800 border-gray-700 text-gray-200"
+                        : "bg-white border-gray-300 text-gray-900"
+                    } focus:outline-none focus:ring-2 focus:ring-teal-500`}
+                  >
+                    <option value="all">{t("all")}</option>
+                    <option value="draft">{t("draft")}</option>
+                    <option value="active">{t("active")}</option>
+                    <option value="inactive">{t("inactive")}</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label
+                    className={`block text-sm mb-1 ${
+                      isDark ? "text-gray-400" : "text-gray-600"
+                    }`}
+                  >
+                    {t("filter_by_type")}
+                  </label>
+                  <select
+                    value={filters.productType}
+                    onChange={(e) =>
+                      setFilters((prev) => ({
+                        ...prev,
+                        productType: e.target.value,
+                      }))
+                    }
+                    className={`w-full px-3 py-2 rounded-lg border ${
+                      isDark
+                        ? "bg-gray-800 border-gray-700 text-gray-200"
+                        : "bg-white border-gray-300 text-gray-900"
+                    } focus:outline-none focus:ring-2 focus:ring-teal-500`}
+                  >
+                    <option value="all">{t("all")}</option>
+                    <option value="physical">{t("physical_product")}</option>
+                    <option value="table_order">{t("table_order")}</option>
+                    <option value="service">{t("service")}</option>
+                    <option value="hotel-room">{t("hotel_room")}</option>
+                    <option value="experience">{t("experience")}</option>
+                  </select>
+                </div>
+
+                {!businessId && (
+                  <div>
+                    <label
+                      className={`block text-sm mb-1 ${
+                        isDark ? "text-gray-400" : "text-gray-600"
+                      }`}
                     >
-                      <List className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => setViewMode("grid")}
-                      className={`p-2 rounded ${viewMode === "grid" ? "bg-teal-500 text-white" : themeColor.textTertiary}`}
-                    >
-                      <Grid3x3 className="w-4 h-4" />
-                    </button>
+                      {t("filter_by_business")}
+                    </label>
+                    {/* <select
+                            value={filters.businessId}
+                            onChange={(e) =>
+                              setFilters((prev) => ({
+                                ...prev,
+                                businessId: e.target.value,
+                              }))
+                            }
+                            className={`w-full px-3 py-2 rounded-lg border ${
+                              isDark
+                                ? "bg-gray-800 border-gray-700 text-gray-200"
+                                : "bg-white border-gray-300 text-gray-900"
+                            } focus:outline-none focus:ring-2 focus:ring-teal-500`}
+                          >
+                            <option value="all">{t("all_businesses")}</option>
+                            {isBusinessesLoading ? (
+                              <option disabled>{t("loading")}...</option>
+                            ) : (
+                              businessData?.data?.map((business: any) => (
+                                <option key={business._id} value={business._id}>
+                                  {business.name}
+                                </option>
+                              ))
+                            )}
+                          </select> */}
+                    <ReactSelect
+                      isClearable
+                      value={
+                        filters.businessId?._id
+                          ? {
+                              value: filters.businessId._id,
+                              label: filters.businessId.name,
+                            }
+                          : null
+                      }
+                      onChange={(selectedOption) => {
+                        setFilters((prev) => ({
+                          ...prev,
+                          businessId: selectedOption
+                            ? {
+                                _id: selectedOption.value,
+                                name: selectedOption.label,
+                              }
+                            : { _id: "", name: "" }, // or null — depending on your preference
+                        }));
+                      }}
+                      placeholder={t("select_business")}
+                      options={
+                        businessData?.data?.map((item: any) => ({
+                          value: item._id,
+                          label: item.name,
+                        })) ?? []
+                      }
+                      className="rounded-md z-50"
+                    />
                   </div>
+                )}
+              </div>
+              <div className="flex mt-4 gap-6 items-center">
+                <div>
+                  {/* Clear all button */}
+                  {Object.entries(filters).some(
+                    ([_, val]) => val !== "all",
+                  ) && (
+                    <button
+                      onClick={() =>
+                        setFilters({
+                          status: "all",
+                          productType: "all",
+                          businessId: {
+                            name: "",
+                            _id: "",
+                          },
+                        })
+                      }
+                      className="ml-auto text-sm text-green-600 "
+                    >
+                      {t("clear_all")}
+                    </button>
+                  )}
+                </div>
+
+                {/* Active filters display and clear all button */}
+                <div className="flex items-start gap-3">
+                  {/* Show active filters */}
+                  {Object.entries(filters).some(
+                    ([_, val]) => val !== "all",
+                  ) && (
+                    <div className="flex flex-wrap items-center gap-2">
+                      {filters.status !== "all" && (
+                        <span className="flex items-center gap-1 px-3 py-1 rounded-full bg-teal-100 text-teal-800 text-sm">
+                          {t(filters.status)}
+                          <button
+                            onClick={() => clearFilter("status")}
+                            aria-label="Clear status filter"
+                            className="ml-1 text-teal-800 hover:text-teal-600 focus:outline-none"
+                          >
+                            ×
+                          </button>
+                        </span>
+                      )}
+                      {filters.productType !== "all" && (
+                        <span className="flex items-center gap-1 px-3 py-1 rounded-full bg-teal-100 text-teal-800 text-sm">
+                          {t(filters.productType)}
+                          <button
+                            onClick={() => clearFilter("productType")}
+                            aria-label="Clear product type filter"
+                            className="ml-1 text-teal-800 hover:text-teal-600 focus:outline-none"
+                          >
+                            ×
+                          </button>
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
-
-              {/* Filters Panel */}
-              {showFilters && (
-                <div
-                  className={`mb-6 p-4 rounded-xl border ${themeColor.borderColor} ${themeColor.bgSecondary}`}
-                >
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div>
-                      <label
-                        className={`block text-sm ${themeColor.textSecondary} mb-2`}
-                      >
-                        {t("filter_by_status")}
-                      </label>
-                      <select
-                        value={statusFilter}
-                        onChange={(e) => setStatusFilter(e.target.value)}
-                        className={`w-full px-3 py-2 rounded-lg border ${themeColor.borderColor} ${themeColor.bgPrimary} ${themeColor.textPrimary}`}
-                      >
-                        <option value="all">{t("all")}</option>
-                        <option value="draft">{t("draft")}</option>
-                        <option value="pending">{t("pending")}</option>
-                        <option value="approved">{t("approved")}</option>
-                        <option value="rejected">{t("rejected")}</option>
-                        <option value="archived">{t("archived")}</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <label
-                        className={`block text-sm ${themeColor.textSecondary} mb-2`}
-                      >
-                        {t("filter_by_type")}
-                      </label>
-                      <select
-                        value={typeFilter}
-                        onChange={(e) => setTypeFilter(e.target.value)}
-                        className={`w-full px-3 py-2 rounded-lg border ${themeColor.borderColor} ${themeColor.bgPrimary} ${themeColor.textPrimary}`}
-                      >
-                        <option value="all">{t("all")}</option>
-                        <option value="physical">
-                          {t("physical_product")}
-                        </option>
-                        <option value="table-order">{t("table_order")}</option>
-                        <option value="service">{t("service")}</option>
-                        <option value="hotel-room">{t("hotel_room")}</option>
-                        <option value="experience">{t("experience")}</option>
-                      </select>
-                    </div>
-
-                    {!businessId && (
-                      <div>
-                        <label
-                          className={`block text-sm ${themeColor.textSecondary} mb-2`}
-                        >
-                          {t("filter_by_business")}
-                        </label>
-                        <select
-                          value={businessFilter}
-                          onChange={(e) => setBusinessFilter(e.target.value)}
-                          className={`w-full px-3 py-2 rounded-lg border ${themeColor.borderColor} ${themeColor.bgPrimary} ${themeColor.textPrimary}`}
-                        >
-                          <option value="all">{t("all_businesses")}</option>
-                          {/* Add business options dynamically */}
-                        </select>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Bulk Actions */}
-              {selectedProducts.size > 0 && (
-                <div
-                  className={`mb-6 py-4 rounded-xl border ${themeColor.borderColor} bg-teal-50 dark:bg-teal-950/30 flex items-center justify-between gap-4`}
-                >
-                  <div className="flex items-center gap-3">
-                    <Check className="w-5 h-5 text-teal-600 dark:text-teal-400" />
-                    <span className={themeColor.textSecondary}>
-                      {selectedProducts.size} {t("selected_items")}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => handleBulkStatusChange("approved")}
-                      className="px-3 py-1.5 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600 transition-colors"
-                    >
-                      {t("approve")}
-                    </button>
-                    <button
-                      onClick={() => handleBulkStatusChange("archived")}
-                      className="px-3 py-1.5 bg-gray-500 text-white rounded-lg text-sm hover:bg-gray-600 transition-colors"
-                    >
-                      {t("archive")}
-                    </button>
-                    <button
-                      onClick={() => setSelectedProducts(new Set())}
-                      className={`p-1.5 rounded-lg ${themeColor.hoverBg} ${themeColor.textSecondary}`}
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              )}
             </div>
-          </div>
+          )}
 
-          {/* Scrollable Table Section */}
-          <div className="flex-1 overflow-y-auto py-6 pb-6">
-            <div className=" mx-auto">
-              {/* Products Content */}
-              {sortedProducts.length === 0 ? (
-                // Empty State
-                <div
-                  className={`text-center py-16 ${themeColor.bgSecondary} rounded-xl border ${themeColor.borderColor}`}
+          {/* Bulk Actions */}
+          {selectedProducts.size > 0 && (
+            <BulkActionBar
+              selectedItemCount={selectedProducts.size || 0}
+              handleBulkStatusChange={handleBulkStatusChange}
+              onBulkAction={{
+                delete: promptBulkDelete,
+              }}
+            />
+          )}
+        </div>
+
+        {/* Scrollable Table Section */}
+        <div className="flex-1 overflow-y-auto">
+          <div className=" mx-auto">
+            {/* Products Content */}
+            {productData?.data?.length === 0 ? (
+              // Empty State
+              <div
+                className={`text-center py-16 ${bgSecondary} rounded-xl border ${borderColor}`}
+              >
+                <Package className={`w-16 h-16 mx-auto mb-4 ${textTertiary}`} />
+                <h3 className={`text-lg ${textPrimary} mb-2`}>
+                  {t("no_products")}
+                </h3>
+                <p className={`${textTertiary} mb-6`}>
+                  {t("no_products_desc")}
+                </p>
+                <button
+                  onClick={() => setIsCreating(true)}
+                  className="px-6 py-3 bg-linear-to-r from-blue-500 to-indigo-600 text-white rounded-lg hover:shadow-lg transition-all"
                 >
-                  <Package
-                    className={`w-16 h-16 mx-auto mb-4 ${themeColor.textTertiary}`}
-                  />
-                  <h3 className={`text-lg ${themeColor.textPrimary} mb-2`}>
-                    {t("no_products")}
-                  </h3>
-                  <p className={`${themeColor.textTertiary} mb-6`}>
-                    {t("no_products_desc")}
-                  </p>
-                  <button
-                    onClick={() => setIsCreating(true)}
-                    className="px-6 py-3 bg-linear-to-r from-blue-500 to-indigo-600 text-white rounded-lg hover:shadow-lg transition-all"
-                  >
-                    {t("create_product")}
-                  </button>
-                </div>
-              ) : viewMode === "list" ? (
-                // List View
-                <div
-                  className={`rounded-xl border ${themeColor.borderColor} ${themeColor.bgSecondary} overflow-hidden max-h-[calc(100vh-400px)] overflow-y-auto`}
-                >
-                  <ReordableDataTable
-                    rowKey="id"
-                    data={sortedProducts}
-                    selectedItems={selectedProducts}
-                    onSelectionChange={setSelectedProducts}
-                    // onRowClick={setSelectedProduct}
-                    onRowClick={(product) => handleProductClick(product)}
-                    storageKey="productsTableColumnOrder"
-                    columns={[
-                      { key: "checkbox", label: "", width: "50px" },
-                      {
-                        key: "image",
-                        label: t("product_image"),
-                        render: (product) => (
-                          <div className="w-12 h-12 rounded-lg bg-linear-to-br from-blue-500 to-indigo-600 flex items-center justify-center overflow-hidden">
-                            {product.image ? (
-                              <img
-                                src={product.image}
-                                alt={product.name[language]}
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <Package className="w-6 h-6 text-white" />
-                            )}
-                          </div>
-                        ),
-                      },
-                      {
-                        key: "productName",
-                        label: t("product_name"),
-                        sortable: true,
-                        render: (product) => (
-                          <div>
-                            <div className="font-medium">
-                              {product.name[language]}
-                            </div>
-                            <div className="text-xs text-gray-500 truncate max-w-xs">
-                              {product.shortDescription[language]}
-                            </div>
-                          </div>
-                        ),
-                      },
-                      {
-                        key: "businessName",
-                        label: t("business_name"),
-                        render: (p) => p.businessName,
-                      },
-                      {
-                        key: "type",
-                        label: t("product_type"),
-                        render: (p) => getProductTypeLabel(p.type),
-                      },
-                      {
-                        key: "status",
-                        label: t("product_status"),
-                        render: (p) => getStatusBadge(p.status),
-                      },
-                      {
-                        key: "price",
-                        label: t("price"),
-                        sortable: true,
-                        render: (p) => (
-                          <div>
-                            {p.markedPrice !== p.sellingPrice && (
-                              <div className="text-xs text-gray-400 line-through">
-                                ₪{p.markedPrice}
-                              </div>
-                            )}
-                            <div className="font-medium">₪{p.sellingPrice}</div>
-                          </div>
-                        ),
-                      },
-                      {
-                        key: "impact",
-                        label: t("impact"),
-                        sortable: true,
-                        render: (p) => (
-                          <div className="flex items-center gap-2">
-                            <span
-                              className={`font-medium ${p.soldCount > 20 ? "text-green-600" : p.soldCount > 10 ? "text-blue-600" : "text-gray-600"}`}
-                            >
-                              {p.soldCount}
-                            </span>
-                            <span className="text-xs text-gray-400">sold</span>
-                          </div>
-                        ),
-                      },
-                      {
-                        key: "quantity",
-                        label: t("quantity"),
-                        sortable: true,
-                        render: (p) => p.quantity,
-                      },
-                      {
-                        key: "lastUpdated",
-                        label: t("last_updated"),
-                        sortable: true,
-                        render: (p) => (
-                          <div
-                            key="lastUpdated"
-                            className={`p-3 ${themeColor.textTertiary} text-sm`}
-                          >
-                            {new Date(p.lastUpdated).toLocaleDateString(
-                              language,
-                            )}
-                          </div>
-                        ),
-                      },
-                      {
-                        key: "actions",
-                        label: t("actions"),
-                        render: (product) => (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDuplicateProduct(product);
-                            }}
-                            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
-                          >
-                            <Copy className="w-4 h-4" />
-                          </button>
-                        ),
-                      },
-                    ]}
-                  />
-                </div>
-              ) : (
-                // Grid View
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                  {sortedProducts.map((product) => (
-                    <div
-                      key={product.id}
-                      onClick={() => {
-                        setSelectedProduct(product);
-                        setCurrentView("details");
-                      }}
-                      className={`rounded-xl border ${themeColor.borderColor} ${themeColor.bgSecondary} overflow-hidden hover:shadow-lg transition-all cursor-pointer group`}
-                    >
-                      <div className="relative h-48 bg-linear-to-br from-blue-500 to-indigo-600">
-                        {product.image ? (
-                          <img
-                            src={product.image}
-                            alt={product.name[language]}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <Package className="w-16 h-16 text-white opacity-50" />
-                          </div>
-                        )}
-                        <div className="absolute top-3 left-3">
-                          <input
-                            type="checkbox"
-                            checked={selectedProducts.has(product.id)}
-                            onChange={(e) => {
-                              e.stopPropagation();
-                              const newSet = new Set(selectedProducts);
-                              if (e.target.checked) {
-                                newSet.add(product.id);
-                              } else {
-                                newSet.delete(product.id);
-                              }
-                              setSelectedProducts(newSet);
-                            }}
-                            className="rounded"
-                          />
-                        </div>
-                        <div className="absolute top-3 right-3">
-                          {getStatusBadge(product.status)}
-                        </div>
-                      </div>
-                      <div className="p-4">
-                        <h3
-                          className={`${themeColor.textPrimary} mb-2 font-medium line-clamp-2`}
-                        >
-                          {product.name[language]}
-                        </h3>
-                        <p
-                          className={`text-sm ${themeColor.textTertiary} mb-3 line-clamp-2`}
-                        >
-                          {product.shortDescription[language]}
-                        </p>
-                        <div className="flex items-center justify-between mb-2">
-                          <div
-                            className={`text-sm ${themeColor.textSecondary}`}
-                          >
-                            {getProductTypeLabel(product.type)}
-                          </div>
-                          <div className={themeColor.textPrimary}>
-                            {product.markedPrice !== product.sellingPrice && (
-                              <span className="text-xs text-gray-400 line-through mr-2">
-                                ₪{product.markedPrice}
-                              </span>
-                            )}
-                            <span className="font-medium">
-                              ₪{product.sellingPrice}
-                            </span>
-                          </div>
-                        </div>
-                        <div className={`text-xs ${themeColor.textTertiary}`}>
-                          {product.businessName}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+                  {t("create_product")}
+                </button>
+              </div>
+            ) : viewMode === "list" ? (
+              <ProductListView
+                hasMore={hasMore}
+                fetchNextPage={fetchNextPage}
+                products={combinedProducts}
+                isLoading={isLoadingProduct || isFetching}
+                selectedProducts={selectedProducts}
+                setSelectedProducts={setSelectedProducts}
+                columnVisibility={columnVisibility}
+              />
+            ) : (
+              <ProductGridView
+                hasMore={hasMore}
+                refetch={refetch}
+                fetchNextPage={fetchNextPage}
+                products={combinedProducts}
+                isLoading={isLoadingProduct || isFetching}
+                selectedProducts={selectedProducts}
+                setSelectedProducts={setSelectedProducts}
+              />
+            )}
           </div>
         </div>
-      </Activity>
+        <ConfirmDialog
+          open={isConfirmOpen}
+          title={t("delete_product")}
+          message={t("delete_product_confirm")}
+          confirmText="delete"
+          // loading={isDeleting}
+          variant="danger"
+          onCancel={() => {
+            setIsConfirmOpen(false);
+            setItemToDelete(null);
+          }}
+          onConfirm={() => {
+            setIsConfirmOpen(false);
+
+            if (isBulkDelete) {
+              handleBulkDelete();
+              setIsBulkDelete(false);
+              setIsConfirmOpen(false);
+            } else {
+              if (!itemToDelete) return;
+              // handleProductDelete(itemToDelete);
+
+              setItemToDelete(null);
+            }
+          }}
+        />
+      </div>
 
       {/* Create/Edit Product Wizard */}
-      {(currentView === "create" || currentView === "edit") && (
+      {isCreateModalOpen && (
         <CreateProductWizard
           onClose={() => {
-            setIsCreating(false);
-            setIsEditing(false);
-            setSelectedProduct(null);
+            setIsCreateModalOpen(false);
           }}
-          editingProduct={
-            isEditing && selectedProduct
-              ? {
-                  businessId: selectedProduct.businessId,
-                  name: selectedProduct.name,
-                  shortDescription: selectedProduct.shortDescription,
-                  fullDescription: { en: "", he: "", ar: "" },
-                  type: selectedProduct.type,
-                  categories: selectedProduct.categories,
-                  markedPrice: selectedProduct.markedPrice.toString(),
-                  sellingPrice: selectedProduct.sellingPrice.toString(),
-                  quantity: selectedProduct.quantity?.toString() || "",
-                  isUnlimited: selectedProduct.quantity === null,
-                  startDate: selectedProduct.availability.startDate || "",
-                  endDate: selectedProduct.availability.endDate || "",
-                  mainImage: selectedProduct.image,
-                  additionalImages: [],
-                  enableHomeDelivery: false,
-                  enableStorePickup: false,
-                  deliveryFee: "",
-                  deliveryTime: "",
-                  serviceDuration: "",
-                  serviceLocation: "",
-                }
-              : null
-          }
-          preSelectedBusinessName={"abc"}
+          selectedProduct={selectedProduct}
         />
-      )}
-
-      {selectedProduct && currentView === "details" && (
-        <Activity mode={!isEditing ? "visible" : "hidden"}>
-          <ProductDetails
-            product={selectedProduct}
-            onBack={() => {}}
-            onDuplicate={() => {}}
-            onEdit={() => {
-              setIsEditing(true);
-            }}
-          />
-        </Activity>
       )}
     </>
   );
