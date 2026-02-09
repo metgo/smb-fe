@@ -39,7 +39,7 @@ function OrderDetailsModal({
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [cancelType, setCancelType] = useState<"order" | "item">("order");
   const [itemToCancel, setItemToCancel] = useState<IOrderProduct | null>(null);
-
+  console.log("oder", order);
   return (
     <div
       className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
@@ -64,13 +64,17 @@ function OrderDetailsModal({
           <div
             className={`flex items-center justify-between ${isRTL ? "flex-row-reverse" : ""}`}
           >
-            <div>
-              <h2 className={`text-2xl ${textPrimary}`}>{order?.id}</h2>
+            <div className="flex flex-col">
+              <div className="flex">
+                <h2 className={`text-2xl ${textPrimary}`}>ORD- </h2>
+                <h2 className={`text-2xl ${textPrimary}`}> {order?._id}</h2>
+              </div>
               <div className="flex gap-2 mt-2">
-                {getOrderStatusBadge(order?.orderStatus)}
-                {getPaymentStatusBadge(order?.paymentStatus)}
+                {getOrderStatusBadge(order?.status)}
+                {/* {getPaymentStatusBadge(order?.paymentStatus)} */}
               </div>
             </div>
+
             <button
               onClick={onClose}
               className={`p-2 rounded-lg transition-colors ${
@@ -92,7 +96,7 @@ function OrderDetailsModal({
             <div className="grid grid-cols-2 gap-4">
               <InfoRow
                 label={t("name") || "Name"}
-                value={order?.purchaserName}
+                value={order?.buyerFirstName}
                 theme={theme}
               />
 
@@ -104,11 +108,11 @@ function OrderDetailsModal({
                   {t("purchaser_email") || "Email"}
                 </p>
                 <a
-                  href={`mailto:${order?.email}`}
+                  href={`mailto:${order?.buyerEmail}`}
                   className={`text-sm flex items-center gap-1 text-teal-500 hover:text-teal-600 transition-colors`}
                 >
                   <Mail className="w-3 h-3" />
-                  {order?.email}
+                  {order?.buyerEmail}
                 </a>
               </div>
 
@@ -120,23 +124,24 @@ function OrderDetailsModal({
                   {t("purchaser_phone") || "Phone"}
                 </p>
                 <a
-                  href={`tel:${order?.phone}`}
+                  href={`tel:${order?.buyerPhone}`}
                   className={`text-sm flex items-center gap-1 text-teal-500 hover:text-teal-600 transition-colors`}
                 >
                   <Phone className="w-3 h-3" />
-                  {order?.phone}
+                  {order?.buyerPhone ? order?.buyerPhone : "-"}
                 </a>
               </div>
-
+              {/* 
               <InfoRow
                 label={t("campaign") || "Campaign"}
                 value={`${order?.campaign} (${order?.campaignCode})`}
                 theme={theme}
-              />
-              {order?.address && (
+              /> */}
+
+              {order?.buyerAddress && (
                 <InfoRow
                   label={t("purchaser_address") || "Address"}
-                  value={order?.address}
+                  value={order?.buyerAddress}
                   theme={theme}
                 />
               )}
@@ -153,7 +158,7 @@ function OrderDetailsModal({
             >
               {orderProducts?.map((product, idx) => (
                 <div
-                  key={product?.id}
+                  key={product?._id}
                   className={`p-4 ${idx > 0 ? `border-t ${theme === "dark" ? "border-gray-800" : "border-gray-200"}` : ""} ${product?.cancelled ? "opacity-50" : ""}`}
                 >
                   <div className="flex items-start gap-4">
@@ -257,17 +262,17 @@ function OrderDetailsModal({
                 <span className={textTertiary}>
                   {t("voucher_amount") || "Voucher"}
                 </span>
-                <span className={textPrimary}>
+                {/* <span className={textPrimary}>
                   ₪{order?.voucherAmount.toLocaleString()}
-                </span>
+                </span> */}
               </div>
               <div className="flex justify-between">
                 <span className={textTertiary}>
                   {t("credit_card_amount") || "Credit Card"}
                 </span>
-                <span className={textPrimary}>
+                {/* <span className={textPrimary}>
                   ₪{order?.creditCardAmount.toLocaleString()}
-                </span>
+                </span> */}
               </div>
               {order?.deliveryFee > 0 && (
                 <div className="flex justify-between">
@@ -275,7 +280,7 @@ function OrderDetailsModal({
                     {t("delivery_fee") || "Delivery Fee"}
                   </span>
                   <span className={textPrimary}>
-                    ₪{order?.deliveryFee.toLocaleString()}
+                    ₪{order?.deliveryFee?.toLocaleString()}
                   </span>
                 </div>
               )}
@@ -286,7 +291,7 @@ function OrderDetailsModal({
                   {t("total") || "Total"}
                 </span>
                 <span className={`${textPrimary}`}>
-                  ₪{order?.totalAmount.toLocaleString()}
+                  ₪{order?.totalAmount?.toLocaleString()}
                 </span>
               </div>
             </div>

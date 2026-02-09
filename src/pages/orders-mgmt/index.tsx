@@ -22,9 +22,12 @@ import {
 } from "lucide-react";
 
 import { useAppSelector } from "@/hooks/hooks";
-import { generateMockOrders } from "@/constants/data";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
-import { PageStats, ReordableDataTable } from "@/components/shared";
+import {
+  BulkActionBar,
+  PageStats,
+  ReordableDataTable,
+} from "@/components/shared";
 import {
   CreateOrderWizard,
   FilterSelect,
@@ -32,11 +35,16 @@ import {
   OrderDetailsModal,
   QRScannerModal,
 } from "./components";
-import { useGetAllOrdersQuery } from "@/store/api/orderQueryApi";
+import {
+  useGetAllOrdersQuery,
+  useGetOrderByIdQuery,
+} from "@/store/api/orderQueryApi";
+import { FilterButton } from "@/components/btns";
+import { toast } from "sonner";
+import { useBulkOrdersUpdateMutation } from "@/store/api/orderMutationApi";
 
 // Default columns configuration
 const defaultColumns = {
-  _id: true,
   firstName: true,
   email: true,
   phone: true,
@@ -53,10 +61,10 @@ export default function OrdersMgmtPage() {
   const { isRTL, theme } = useAppSelector((state) => state.settings);
   const language = i18n.language;
 
-  const { textPrimary, textSecondary, textTertiary } = useThemeClasses();
+  const { textPrimary, textSecondary, textTertiary, isDark } =
+    useThemeClasses();
 
   // const [orders, setOrders] = useState<IOrder[]>([]);
-  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedOrders, setSelectedOrders] = useState<Set<string>>(new Set());
   const [showFilters, setShowFilters] = useState(false);
@@ -66,7 +74,53 @@ export default function OrdersMgmtPage() {
   const [showAddOrderWizard, setShowAddOrderWizard] = useState(false);
   const [showQRScanner, setShowQRScanner] = useState(false);
   const columnSettingsRef = useRef<HTMLDivElement>(null);
+  const [bulkOrdersUpdate] = useBulkOrdersUpdateMutation();
 
+  const handleBulkDelete = async () => {
+    if (!selectedOrders.size) return;
+    const toastId = toast.loading("Please wait. Orders are deleting...");
+    try {
+      const results = await bulkOrdersUpdate({
+        ordersId: Array.from(selectedOrders),
+        isDeleted: true,
+      });
+
+      if (results?.data) {
+        const message = "Orders deleted successfully";
+        toast.success(message, { id: toastId });
+        setSelectedOrders(new Set());
+        refetch();
+      }
+    } catch (error: any) {
+      toast.error(error?.message || "Failed to delete Orders", {
+        id: toastId,
+      });
+    }
+  };
+  const handleBulkStatusChange = async (status: TStatus) => {
+    if (!selectedOrders.size) return;
+    const toastId = toast.loading(
+      "Please wait. Order's status are changing...",
+    );
+
+    try {
+      const results = await bulkOrdersUpdate({
+        ordersId: Array.from(selectedOrders),
+        status: status?.toLocaleUpperCase(),
+      });
+
+      if (results?.data) {
+        const message = "Orders status updated successfully";
+        toast.success(message, { id: toastId });
+        setSelectedOrders(new Set());
+        refetch();
+      }
+    } catch (error: any) {
+      toast.error(error?.message || "Failed to change Orders status", {
+        id: toastId,
+      });
+    }
+  };
   const defaultFilters = {
     orderType: "all",
     deliveryType: "all",
@@ -142,12 +196,12 @@ export default function OrdersMgmtPage() {
   const columns = [
     { key: "checkbox", label: "", width: "50px" },
 
-    columnVisibility._id && {
-      key: "_id",
-      label: t("order_id"),
-      sortable: true,
-      render: (order: IOrder) => <div className="text-sm">{order._id}</div>,
-    },
+    // columnVisibility._id && {
+    //   key: "_id",
+    //   label: t("order_id"),
+    //   sortable: true,
+    //   render: (order: IOrder) => <div className="text-sm">{order._id}</div>,
+    // },
 
     columnVisibility.firstName && {
       key: "firstName",
@@ -322,8 +376,22 @@ export default function OrdersMgmtPage() {
     return params;
   }, [page, limit, searchTerm, filters]);
 
-  const { data: orders, isLoading } = useGetAllOrdersQuery(orderQueryParams);
-  console.log("🚀 ~ OrdersMgmtPage ~ orders:", orders?.datas?.data);
+  const {
+    data: orders,
+    isLoading,
+    refetch,
+  } = useGetAllOrdersQuery(orderQueryParams);
+
+  //order details
+  const { data: orderDetails, isLoading: isOrderDetailLoading } =
+    useGetOrderByIdQuery(
+      { orderId: selectedOrder?._id ?? null },
+      {
+        skip: !selectedOrder?._id, // only fetch if selectedOrder exists
+      },
+    );
+  console.log("🚀 ~ OrdersMgmtPage ~ orderDetails:", orderDetails);
+
   // Load mock data
   // useEffect(() => {
   //   setLoading(true);
@@ -366,13 +434,13 @@ export default function OrdersMgmtPage() {
   // }, [filteredOrders]);
 
   // // Bulk selection handlers
-  // const handleSelectAll = () => {
-  //   if (selectedOrders.size === filteredOrders.length) {
-  //     setSelectedOrders(new Set());
-  //   } else {
-  //     setSelectedOrders(new Set(filteredOrders.map((o) => o.id)));
-  //   }
-  // };
+  const handleSelectAll = () => {
+    if (selectedOrders.size === filteredOrders.length) {
+      setSelectedOrders(new Set());
+    } else {
+      setSelectedOrders(new Set(filteredOrders.map((o) => o.id)));
+    }
+  };
 
   // const handleSelectOrder = (orderId: string) => {
   //   const newSelected = new Set(selectedOrders);
@@ -389,130 +457,130 @@ export default function OrdersMgmtPage() {
     setShowOrderDetails(true);
   };
 
-  // const handleExportCSV = () => {
-  //   const ordersToExport =
-  //     selectedOrders.size > 0
-  //       ? filteredOrders?.filter((order) => selectedOrders.has(order.id))
-  //       : filteredOrders;
+  const handleExportCSV = () => {
+    const ordersToExport =
+      selectedOrders.size > 0
+        ? orders?.datas?.data?.filter((order) => selectedOrders.has(order.id))
+        : orders?.data?.data;
 
-  //   if (ordersToExport?.length === 0) {
-  //     alert(t("noOrdersToExport") || "No orders to export");
-  //     return;
-  //   }
+    if (ordersToExport?.length === 0) {
+      alert(t("noOrdersToExport") || "No orders to export");
+      return;
+    }
 
-  //   const escapeCSV = (value: any): string => {
-  //     if (value === null || value === undefined) return "";
-  //     const stringValue = String(value);
-  //     if (
-  //       stringValue.includes(",") ||
-  //       stringValue.includes('"') ||
-  //       stringValue.includes("\n")
-  //     ) {
-  //       return `"${stringValue.replace(/"/g, '""')}"`;
-  //     }
-  //     return stringValue;
-  //   };
+    const escapeCSV = (value: any): string => {
+      if (value === null || value === undefined) return "";
+      const stringValue = String(value);
+      if (
+        stringValue.includes(",") ||
+        stringValue.includes('"') ||
+        stringValue.includes("\n")
+      ) {
+        return `"${stringValue.replace(/"/g, '""')}"`;
+      }
+      return stringValue;
+    };
 
-  //   const headers: string[] = [];
-  //   const columnKeys: string[] = [];
+    const headers: string[] = [];
+    const columnKeys: string[] = [];
 
-  //   if (columnVisibility.orderId) {
-  //     headers.push(t("orderId"));
-  //     columnKeys.push("orderId");
-  //   }
-  //   if (columnVisibility.purchaserName) {
-  //     headers.push(t("purchaserName"));
-  //     columnKeys.push("purchaserName");
-  //   }
-  //   if (columnVisibility.email) {
-  //     headers.push(t("email"));
-  //     columnKeys.push("email");
-  //   }
-  //   if (columnVisibility.phone) {
-  //     headers.push(t("phone"));
-  //     columnKeys.push("phone");
-  //   }
-  //   if (columnVisibility.orderStatus) {
-  //     headers.push(t("orderStatus"));
-  //     columnKeys.push("orderStatus");
-  //   }
-  //   if (columnVisibility.totalAmount) {
-  //     headers.push(t("totalAmount"));
-  //     columnKeys.push("totalAmount");
-  //   }
-  //   if (columnVisibility.paymentStatus) {
-  //     headers.push(t("paymentStatus"));
-  //     columnKeys.push("paymentStatus");
-  //   }
-  //   if (columnVisibility.voucherAmount) {
-  //     headers.push(t("voucherAmount"));
-  //     columnKeys.push("voucherAmount");
-  //   }
-  //   if (columnVisibility.creditCardAmount) {
-  //     headers.push(t("creditCardAmount"));
-  //     columnKeys.push("creditCardAmount");
-  //   }
-  //   if (columnVisibility.vendors) {
-  //     headers.push(t("vendors"));
-  //     columnKeys.push("vendors");
-  //   }
-  //   if (columnVisibility.campaign) {
-  //     headers.push(t("campaign"));
-  //     columnKeys.push("campaign");
-  //   }
-  //   if (columnVisibility.createdDate) {
-  //     headers.push(t("createdDate"));
-  //     columnKeys.push("createdDate");
-  //   }
-  //   if (columnVisibility.paymentDate) {
-  //     headers.push(t("paymentDate"));
-  //     columnKeys.push("paymentDate");
-  //   }
+    if (columnVisibility.orderId) {
+      headers.push(t("orderId"));
+      columnKeys.push("orderId");
+    }
+    if (columnVisibility.purchaserName) {
+      headers.push(t("purchaserName"));
+      columnKeys.push("purchaserName");
+    }
+    if (columnVisibility.email) {
+      headers.push(t("email"));
+      columnKeys.push("email");
+    }
+    if (columnVisibility.phone) {
+      headers.push(t("phone"));
+      columnKeys.push("phone");
+    }
+    if (columnVisibility.orderStatus) {
+      headers.push(t("orderStatus"));
+      columnKeys.push("orderStatus");
+    }
+    if (columnVisibility.totalAmount) {
+      headers.push(t("totalAmount"));
+      columnKeys.push("totalAmount");
+    }
+    if (columnVisibility.paymentStatus) {
+      headers.push(t("paymentStatus"));
+      columnKeys.push("paymentStatus");
+    }
+    if (columnVisibility.voucherAmount) {
+      headers.push(t("voucherAmount"));
+      columnKeys.push("voucherAmount");
+    }
+    if (columnVisibility.creditCardAmount) {
+      headers.push(t("creditCardAmount"));
+      columnKeys.push("creditCardAmount");
+    }
+    if (columnVisibility.vendors) {
+      headers.push(t("vendors"));
+      columnKeys.push("vendors");
+    }
+    if (columnVisibility.campaign) {
+      headers.push(t("campaign"));
+      columnKeys.push("campaign");
+    }
+    if (columnVisibility.createdDate) {
+      headers.push(t("createdDate"));
+      columnKeys.push("createdDate");
+    }
+    if (columnVisibility.paymentDate) {
+      headers.push(t("paymentDate"));
+      columnKeys.push("paymentDate");
+    }
 
-  //   let csvContent = headers.map(escapeCSV).join(",") + "\n";
+    let csvContent = headers.map(escapeCSV).join(",") + "\n";
 
-  //   ordersToExport.forEach((order) => {
-  //     const row: string[] = [];
+    ordersToExport.forEach((order) => {
+      const row: string[] = [];
 
-  //     columnKeys.forEach((key) => {
-  //       if (key === "orderId") row.push(escapeCSV(order.id));
-  //       else if (key === "purchaserName")
-  //         row.push(escapeCSV(order.purchaserName));
-  //       else if (key === "email") row.push(escapeCSV(order.email));
-  //       else if (key === "phone") row.push(escapeCSV(order.phone));
-  //       else if (key === "orderStatus") row.push(escapeCSV(order.orderStatus));
-  //       else if (key === "totalAmount")
-  //         row.push(escapeCSV(`₪${order.totalAmount}`));
-  //       else if (key === "paymentStatus")
-  //         row.push(escapeCSV(order.paymentStatus));
-  //       else if (key === "voucherAmount")
-  //         row.push(escapeCSV(`₪${order.voucherAmount}`));
-  //       else if (key === "creditCardAmount")
-  //         row.push(escapeCSV(`₪${order.creditCardAmount}`));
-  //       else if (key === "vendors")
-  //         row.push(escapeCSV(order.vendors.join(", ")));
-  //       else if (key === "campaign") row.push(escapeCSV(order.campaign));
-  //       else if (key === "createdDate")
-  //         row.push(escapeCSV(new Date(order.createdDate).toLocaleDateString()));
-  //       else if (key === "paymentDate")
-  //         row.push(escapeCSV(new Date(order.paymentDate).toLocaleDateString()));
-  //     });
+      columnKeys.forEach((key) => {
+        if (key === "orderId") row.push(escapeCSV(order.id));
+        else if (key === "purchaserName")
+          row.push(escapeCSV(order.purchaserName));
+        else if (key === "email") row.push(escapeCSV(order.email));
+        else if (key === "phone") row.push(escapeCSV(order.phone));
+        else if (key === "orderStatus") row.push(escapeCSV(order.orderStatus));
+        else if (key === "totalAmount")
+          row.push(escapeCSV(`₪${order.totalAmount}`));
+        else if (key === "paymentStatus")
+          row.push(escapeCSV(order.paymentStatus));
+        else if (key === "voucherAmount")
+          row.push(escapeCSV(`₪${order.voucherAmount}`));
+        else if (key === "creditCardAmount")
+          row.push(escapeCSV(`₪${order.creditCardAmount}`));
+        else if (key === "vendors")
+          row.push(escapeCSV(order.vendors.join(", ")));
+        else if (key === "campaign") row.push(escapeCSV(order.campaign));
+        else if (key === "createdDate")
+          row.push(escapeCSV(new Date(order.createdDate).toLocaleDateString()));
+        else if (key === "paymentDate")
+          row.push(escapeCSV(new Date(order.paymentDate).toLocaleDateString()));
+      });
 
-  //     csvContent += row.join(",") + "\n";
-  //   });
+      csvContent += row.join(",") + "\n";
+    });
 
-  //   const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-  //   const link = document.createElement("a");
-  //   const url = URL.createObjectURL(blob);
-  //   const timestamp = new Date().toISOString().slice(0, 10);
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    const timestamp = new Date().toISOString().slice(0, 10);
 
-  //   link.setAttribute("href", url);
-  //   link.setAttribute("download", `orders_export_${timestamp}.csv`);
-  //   link.style.visibility = "hidden";
-  //   document.body.appendChild(link);
-  //   link.click();
-  //   document.body.removeChild(link);
-  // };
+    link.setAttribute("href", url);
+    link.setAttribute("download", `orders_export_${timestamp}.csv`);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   const handleExportXLS = () => {
     console.log("Exporting XLS...");
@@ -766,7 +834,7 @@ export default function OrdersMgmtPage() {
           </div>
 
           <button
-            // onClick={handleExportCSV}
+            onClick={handleExportCSV}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${
               theme === "dark"
                 ? "border-gray-700 bg-gray-800 hover:bg-gray-700 text-gray-300"
@@ -778,34 +846,24 @@ export default function OrdersMgmtPage() {
             <span>{t("downloadCSV")}</span>
           </button>
 
-          <button
-            onClick={() => setShowFilters(!showFilters)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${
-              theme === "dark"
-                ? "border-gray-700 bg-gray-800 hover:bg-gray-700 text-gray-300"
-                : "border-gray-300 bg-white hover:bg-gray-50 text-gray-700"
-            }`}
-          >
-            <Filter className="w-4 h-4" />
-            <span>{t("filters")}</span>
-            {showFilters ? (
-              <ChevronUp className="w-4 h-4" />
-            ) : (
-              <ChevronDown className="w-4 h-4" />
-            )}
-          </button>
+          <FilterButton value={showFilters} onChange={setShowFilters} />
 
           <div className="relative" ref={columnSettingsRef}>
             <button
               onClick={() => setShowColumnSettings(!showColumnSettings)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg border transition-colors ${
-                theme === "dark"
-                  ? "border-gray-700 bg-gray-800 hover:bg-gray-700 text-gray-300"
-                  : "border-gray-300 bg-white hover:bg-gray-50 text-gray-700"
+              className={`px-4 py-2 rounded-lg border flex items-center gap-2 transition-colors ${
+                isDark
+                  ? "border-gray-700 hover:bg-gray-800 text-gray-300"
+                  : "border-gray-300 hover:bg-gray-100 text-gray-700"
               }`}
             >
-              <Columns className="w-4 h-4" />
-              <span>{t("columns")}</span>
+              <Columns className="w-5 h-5" />
+              {t("show_columns")}
+              {showColumnSettings ? (
+                <ChevronUp className="w-4 h-4" />
+              ) : (
+                <ChevronDown className="w-4 h-4" />
+              )}
             </button>
 
             {showColumnSettings && (
@@ -929,9 +987,15 @@ export default function OrdersMgmtPage() {
           </div>
         )}
       </div>
-
+      <BulkActionBar
+        selectedItemCount={selectedOrders.size || 0}
+        handleBulkStatusChange={handleBulkStatusChange}
+        onBulkAction={{
+          delete: handleBulkDelete,
+        }}
+      />
       {/* Bulk Actions Toolbar */}
-      {selectedOrders.size > 0 && (
+      {/* {selectedOrders.size > 0 && (
         <div
           className={`${theme === "dark" ? "bg-teal-900/30 border-teal-800" : "bg-teal-50 border-teal-200"} border rounded-lg p-4 mb-4 flex items-center gap-4 ${isRTL ? "flex-row-reverse" : ""}`}
         >
@@ -950,7 +1014,7 @@ export default function OrdersMgmtPage() {
             <span className="text-sm">{t("resendOrderDetails")}</span>
           </button>
           <button
-            // onClick={handleExportCSV}
+            onClick={handleExportCSV}
             className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-colors ${
               theme === "dark"
                 ? "bg-gray-800 hover:bg-gray-700 text-gray-300"
@@ -972,7 +1036,7 @@ export default function OrdersMgmtPage() {
             <span className="text-sm">{t("exportXLS")}</span>
           </button>
         </div>
-      )}
+      )} */}
 
       {/* Orders Table */}
       <div
@@ -993,7 +1057,7 @@ export default function OrdersMgmtPage() {
               rowKey="_id"
               data={orders?.datas?.data}
               selectedItems={selectedOrders}
-              onSelectionChange={() => setSelectedOrders}
+              onSelectionChange={setSelectedOrders}
               onRowClick={handleRowClick}
               storageKey="ordersTableColumnOrder"
               columns={columns}
@@ -1008,21 +1072,21 @@ export default function OrdersMgmtPage() {
           t={t}
           isRTL={isRTL}
           theme={theme}
-          order={selectedOrder!}
+          order={orderDetails?.datas}
           onClose={() => setShowOrderDetails(false)}
           getOrderStatusBadge={getOrderStatusBadge}
           getPaymentStatusBadge={getPaymentStatusBadge}
         />
       </Activity>
 
-      {/* <Activity mode={showAddOrderWizard ? "visible" : "hidden"}>
+      <Activity mode={showAddOrderWizard ? "visible" : "hidden"}>
         <CreateOrderWizard
           onClose={() => setShowAddOrderWizard(false)}
           onAddOrder={(newOrder) => {
             setOrders((prev) => [newOrder as IOrder, ...prev]);
           }}
         />
-      </Activity> */}
+      </Activity>
 
       <Activity mode={showQRScanner ? "visible" : "hidden"}>
         <QRScannerModal onClose={() => setShowQRScanner(false)} />

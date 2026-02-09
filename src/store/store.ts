@@ -14,7 +14,7 @@ import { businessMutationApi } from "./api/businessMutationApi";
 import { businessQueryApi } from "./api/businessQueryApi";
 import { eventQueryApi } from "./api/eventQueryApi";
 import { orderQueryApi } from "./api/orderQueryApi";
-
+import { orderMutationApi } from "./api/orderMutationApi";
 import { userMutationApi } from "./api/userMutationApi";
 import { userQueryApi } from "./api/userQueryApi";
 import { mediaMutationApi } from "./api/mediaMutationApi";
@@ -38,6 +38,7 @@ export const store = configureStore({
     [eventMutationApi.reducerPath]: eventMutationApi.reducer,
     [mediaMutationApi.reducerPath]: mediaMutationApi.reducer,
     [commonMutationApi.reducerPath]: commonMutationApi.reducer,
+    [orderMutationApi.reducerPath]: orderMutationApi.reducer,
 
     [businessQueryApi.reducerPath]: businessQueryApi.reducer,
     [eventQueryApi.reducerPath]: eventQueryApi.reducer,
@@ -53,6 +54,7 @@ export const store = configureStore({
       userMutationApi.middleware,
       eventMutationApi.middleware,
       businessMutationApi.middleware,
+      orderMutationApi.middleware,
       eventQueryApi.middleware,
       orderQueryApi.middleware,
       userQueryApi.middleware,

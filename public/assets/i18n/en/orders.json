@@ -24,6 +24,7 @@
   "avgOrderValue": "Avg Order Value",
   "perOrder": "Per Order",
   "clear_all": "Clear All",
+  "show_columns": "Show Columns",
   "pickups": "Pickups",
   "deliveries": "Deliveries",
   "orders": "Orders",
