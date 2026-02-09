@@ -119,6 +119,9 @@
   "example_delivery_time": "זמן_אספקה_לדוגמה",
   "availability_dates": "תאריכי_זמינות",
   "product_logo": "לוגו_מוצר",
+  "image_gallery": "גלריית תמונות",
+  "primary_image": "תמונה ראשית",
+
   "upload_up_to_10_images": "העלאה_עד_10_i מג'ים",
   "stock_quantity": "כמות_במלאי",
   "product_short_description": "תיאור_קצר_למוצר",
@@ -134,6 +137,8 @@
   "availability_status": "מצב_זמינות",
   "always_available": "זמין_תמיד",
   "product_basic_info": "מידע_בסיסי_למוצר",
+  "delete_product": "מחיקת מוצר",
+  "delete_product_confirm": "לאשר מחיקת מוצר?",
   "product_multilingual": "שירות_משלוח_לשוני_למוצר",
   "product_delivery_service": "תמחור_מוצר",
   "product_pricing": "תמחור_מוצר",

@@ -1,4 +1,4 @@
-import { Package, TrashIcon } from "lucide-react";
+import { Loader, Package, TrashIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { useThemeClasses } from "@/hooks/useThemeClasses";
@@ -6,7 +6,6 @@ import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
 import { useRef, useState } from "react";
 import { ConfirmDialog, ImageWithFallback } from "@/components/shared";
 import { Checkbox } from "@/components/ui/checkbox";
-import clsx from "clsx";
 import { useDeleteProductMutation } from "@/store/api/productMutationApi";
 import { toast } from "sonner";
 
@@ -34,10 +33,7 @@ const ProductGridView: React.FC<ProductGridViewProps> = ({
 
   const {
     borderColor,
-    bgSecondary,
-    textPrimary,
-    textTertiary,
-    textSecondary,
+
     language,
     isDark,
   } = useThemeClasses();
@@ -53,9 +49,9 @@ const ProductGridView: React.FC<ProductGridViewProps> = ({
   const [itemToDelete, setItemToDelete] = useState<string | null>(null);
   const [deleteProduct, { isLoading: isDeleting }] = useDeleteProductMutation();
 
-  const handleBusinessDelete = async (productId: string) => {
+  const handleProductDelete = async (productId: string) => {
     const res = await deleteProduct({ productId });
-    toast.success(res?.data?.message || "Business deleted successfully");
+    toast.success(res?.data?.message || "Product deleted successfully");
     refetch();
   };
 
@@ -126,90 +122,117 @@ const ProductGridView: React.FC<ProductGridViewProps> = ({
   };
 
   return (
-    <>
+    <div
+      className={`py-6 px-4 ${
+        isDark ? "border-gray-700 bg-gray-900" : "border-gray-300 bg-white"
+      }`}
+    >
       <div
+        id="business-table-scroll"
         ref={scrollRef}
-        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+        className="overflow-x-auto max-h-[calc(100vh-500px)] overflow-y-auto mb-20"
       >
-        {products?.map((product: any) => (
-          <div
-            key={product._id}
-            onClick={() => {}}
-            className={`rounded-xl border ${borderColor} ${bgSecondary} overflow-hidden hover:shadow-lg transition-all cursor-pointer group relative`}
-          >
-            <div className="absolute top-3 left-0 z-30 w-full flex items-center justify-between px-2">
-              <Checkbox
-                checked={selectedProducts?.has(product._id) ?? false}
-                onCheckedChange={() => toggleRow(product)}
-                className={clsx(
-                  "cursor-pointer border transition-colors",
-                  isDark
-                    ? "border-gray-600 data-[state=checked]:bg-teal-500 data-[state=checked]:border-teal-500 data-[state=checked]:text-white"
-                    : "border-gray-300 data-[state=checked]:bg-teal-600 data-[state=checked]:border-teal-600",
-                )}
-              />
-
-              <div className="flex items-center gap-2">
-                <div className="">{getStatusBadge(product.status)}</div>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setIsConfirmOpen(true);
-                    setItemToDelete(product?._id);
-                  }}
-                  className="z-5 p-1 cursor-pointer rounded-full text-red-600 bg-white"
-                  aria-label={`Delete ${product.name}`}
-                >
-                  <TrashIcon size={18} />
-                </button>
-              </div>
-            </div>
-
-            <div className="relative h-48 bg-linear-to-br from-blue-500 to-indigo-600">
-              {product?.images ? (
-                <ImageWithFallback
-                  src={product?.images?.[0]?.image}
-                  alt={product.name}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {products?.map((product) => (
+            <div
+              key={product._id}
+              onClick={() => {}}
+              className={`rounded-xl border ${borderColor} ${
+                isDark ? "bg-gray-900 text-gray-300" : "bg-white text-gray-900"
+              } overflow-hidden hover:shadow-lg transition-all cursor-pointer group relative`}
+            >
+              {/* Checkbox and Delete Button */}
+              <div className="absolute top-3 left-0 z-30 w-full flex items-center justify-between px-2">
+                <Checkbox
+                  checked={selectedProducts?.has(product._id) ?? false}
+                  onCheckedChange={() => toggleRow(product)}
+                  className={`cursor-pointer border transition-colors ${
+                    isDark
+                      ? "border-gray-600 data-[state=checked]:bg-teal-500 data-[state=checked]:border-teal-500 data-[state=checked]:text-white"
+                      : "border-gray-300 data-[state=checked]:bg-teal-600 data-[state=checked]:border-teal-600"
+                  }`}
                 />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center">
-                  <Package className="w-16 h-16 text-white opacity-50" />
-                </div>
-              )}
-            </div>
-            <div className="p-4">
-              <h3 className={`${textPrimary} mb-2 font-medium line-clamp-2`}>
-                {product.name}
-              </h3>
-              <p className={`text-sm ${textTertiary} mb-3 line-clamp-2`}>
-                {product?.shortDescription?.[language]}
-              </p>
-              <div className="flex items-center justify-between mb-2">
-                <div className={`text-sm ${textSecondary}`}>
-                  {getProductTypeLabel(product.type)}
-                </div>
-                <div className={textPrimary}>
-                  {product?.markedPrice !== product?.sellingPrice && (
-                    <span className="text-xs text-gray-400 line-through mr-2">
-                      ₪{product?.markedPrice}
-                    </span>
-                  )}
-                  <span className="font-medium">
-                    ₪{product?.price?.selligPrice}
-                  </span>
+
+                <div className="flex items-center gap-2">
+                  <div>{getStatusBadge(product.status)}</div>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsConfirmOpen(true);
+                      setItemToDelete(product._id);
+                    }}
+                    className="z-5 p-1 cursor-pointer rounded-full text-red-600 bg-white"
+                    aria-label={`Delete ${product.name}`}
+                  >
+                    <TrashIcon size={18} />
+                  </button>
                 </div>
               </div>
-              <div className={`text-xs ${textTertiary}`}>{product.name}</div>
+
+              {/* Product Image */}
+              <div className="relative h-48 bg-linear-to-br from-blue-500 to-indigo-600">
+                {product?.images?.length > 0 ? (
+                  <ImageWithFallback
+                    src={product.images[0].image}
+                    alt={product.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <Package className="w-16 h-16 text-white opacity-50" />
+                  </div>
+                )}
+              </div>
+
+              {/* Product Info */}
+              <div className="p-4">
+                <h3
+                  className={`${isDark ? "text-white" : "text-gray-900"} mb-2 font-medium line-clamp-2`}
+                >
+                  {product.name}
+                </h3>
+                <p
+                  className={`text-sm ${isDark ? "text-gray-400" : "text-gray-600"} mb-3 line-clamp-2`}
+                >
+                  {product?.shortDescription?.[language]}
+                </p>
+                <div className="flex items-center justify-between mb-2">
+                  <div
+                    className={`text-sm ${isDark ? "text-gray-300" : "text-gray-700"}`}
+                  >
+                    {getProductTypeLabel(product.type)}
+                  </div>
+                  <div className={isDark ? "text-white" : "text-gray-900"}>
+                    {product?.markedPrice !== product?.sellingPrice && (
+                      <span className="text-xs text-gray-400 line-through mr-2">
+                        ₪{product.markedPrice}
+                      </span>
+                    )}
+                    <span className="font-medium">
+                      ₪{product?.sellingPrice}
+                    </span>
+                  </div>
+                </div>
+                <div
+                  className={`text-xs ${isDark ? "text-gray-400" : "text-gray-600"}`}
+                >
+                  {product.name}
+                </div>
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+          {isLoading && (
+            <div className="flex flex-col items-center justify-center h-full gap-3">
+              <Loader className="w-10 h-10 animate-spin text-teal-600" />
+            </div>
+          )}
+        </div>
       </div>
 
       <ConfirmDialog
         open={isConfirmOpen}
-        title={"delete_business"}
-        message="delete_business_confirm"
+        title={t("delete_product")}
+        message={t("delete_product_confirm")}
         confirmText="delete"
         loading={isDeleting}
         variant="danger"
@@ -219,12 +242,12 @@ const ProductGridView: React.FC<ProductGridViewProps> = ({
         }}
         onConfirm={() => {
           if (!itemToDelete) return;
-          handleBusinessDelete(itemToDelete);
+          handleProductDelete(itemToDelete);
           setIsConfirmOpen(false);
           setItemToDelete(null);
         }}
       />
-    </>
+    </div>
   );
 };
 

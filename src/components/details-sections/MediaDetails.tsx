@@ -210,7 +210,7 @@ const MediaDetails: React.FC<MediaDetailsProps> = ({
 
               {/* Primary Badge */}
               {idx === primaryImageIndex && (
-                <div className="absolute top-2 left-2 z-10">
+                <div className="absolute top-2 left-2 z-5">
                   <div
                     className={clsx(
                       "px-3 py-1.5 rounded-lg backdrop-blur-sm flex items-center gap-1.5 shadow-lg",
