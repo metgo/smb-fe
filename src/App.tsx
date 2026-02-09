@@ -18,8 +18,10 @@ import {
   ProfilePage,
   OrdersMgmtPage,
   EventDetailsPage,
+  BusinessDetailsPage,
 } from "@/pages";
 import { IdleLogout } from "./components/shared";
+import TestLabPage from "./pages/test-lab";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -59,12 +61,15 @@ function App() {
       ),
       children: [
         { path: routes.dashboard, element: <DashboardPage /> },
+
         { path: routes.businessMgmt, element: <BusinessesMgmtPage /> },
+        { path: routes.businessDetails, element: <BusinessDetailsPage /> },
+
+        { path: routes.eventsMgmt, element: <EventsMgmtPage /> },
+        { path: routes.eventDetails, element: <EventDetailsPage /> },
 
         { path: routes.productsMgmt, element: <ProductsMgmtPage /> },
         { path: routes.miniCampaign, element: <MiniCampaignsMgmtPage /> },
-        { path: routes.eventsMgmt, element: <EventsMgmtPage /> },
-        { path: routes.eventDetails, element: <EventDetailsPage /> },
         { path: routes.profile, element: <ProfilePage /> },
         { path: routes.ordersMgmt, element: <OrdersMgmtPage /> },
         { path: "/*", element: <DashboardPage /> },
@@ -78,7 +83,10 @@ function App() {
           </ProtectedRoute>
         </Suspense>
       ),
-      children: [{ path: routes.auth, element: <AuthPage /> }],
+      children: [
+        { path: routes.auth, element: <AuthPage /> },
+        { path: "/test-lab", element: <TestLabPage /> },
+      ],
     },
   ]);
 

@@ -1,17 +1,12 @@
 import clsx from "clsx";
 import React, { useState, useEffect, useMemo, useRef } from "react";
 
-import {
-  ArrowUpDown,
-  ArrowUp,
-  ArrowDown,
-  // GripVertical,
-  Loader,
-} from "lucide-react";
+import { ArrowUpDown, ArrowUp, ArrowDown, Loader } from "lucide-react";
 
 import { useAppSelector } from "@/hooks/hooks";
 import { useThemeClasses } from "@/hooks/useThemeClasses";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
+import { Checkbox } from "@/components/ui/checkbox";
 
 type SortDirection = "asc" | "desc" | null;
 
@@ -49,9 +44,15 @@ export default function ReordableDataTable<T extends Record<string, any>>({
   t,
   isDataLoading = false,
 }: DataTableProps<T>) {
-  const { theme, isRTL } = useAppSelector((state) => state.settings);
-  const { bgTertiary, borderColor, textSecondary, textPrimary, hoverBg } =
-    useThemeClasses();
+  const { isRTL } = useAppSelector((state) => state.settings);
+  const {
+    bgTertiary,
+    borderColor,
+    textSecondary,
+    textPrimary,
+    hoverBg,
+    isDark,
+  } = useThemeClasses();
 
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
@@ -272,7 +273,7 @@ export default function ReordableDataTable<T extends Record<string, any>>({
                       width: column.width,
                       backgroundColor:
                         dragOverColumn === colKey
-                          ? theme === "dark"
+                          ? isDark
                             ? "rgba(255, 255, 255, 0.08)"
                             : "rgba(0, 0, 0, 0.05)"
                           : undefined,
@@ -286,15 +287,32 @@ export default function ReordableDataTable<T extends Record<string, any>>({
                   >
                     <div className="flex items-center gap-2">
                       {colKey === "checkbox" ? (
-                        <input
-                          type="checkbox"
-                          checked={allSelected}
-                          ref={(input: HTMLInputElement | null) => {
-                            if (input && someSelected)
-                              input.indeterminate = someSelected;
+                        <Checkbox
+                          checked={someSelected ? "indeterminate" : allSelected}
+                          onCheckedChange={(checked) => {
+                            if (checked !== "indeterminate") {
+                              toggleAll();
+                            }
                           }}
-                          onChange={toggleAll}
-                          className="rounded border-gray-300  "
+                          className={clsx(
+                            "cursor-pointer transition-colors",
+                            isDark
+                              ? [
+                                  "border-gray-600",
+                                  "data-[state=checked]:bg-teal-500",
+                                  "data-[state=checked]:border-teal-500",
+                                  "data-[state=indeterminate]:bg-teal-500",
+                                  "data-[state=indeterminate]:border-teal-500",
+                                  "text-white",
+                                ]
+                              : [
+                                  "border-gray-300",
+                                  "data-[state=checked]:bg-teal-600",
+                                  "data-[state=checked]:border-teal-600",
+                                  "data-[state=indeterminate]:bg-teal-600",
+                                  "data-[state=indeterminate]:border-teal-600",
+                                ],
+                          )}
                         />
                       ) : (
                         <>
@@ -309,18 +327,7 @@ export default function ReordableDataTable<T extends Record<string, any>>({
             </tr>
           </thead>
           <tbody>
-            {isDataLoading ? (
-              <tr>
-                <td
-                  colSpan={columnOrder?.length || 1}
-                  className="h-80 text-center"
-                >
-                  <div className="flex flex-col items-center justify-center h-full gap-3">
-                    <Loader className="w-10 h-10 animate-spin text-teal-600" />
-                  </div>
-                </td>
-              </tr>
-            ) : sortedData?.length === 0 ? (
+            {sortedData?.length === 0 ? (
               // No data state
 
               <tr>
@@ -339,7 +346,7 @@ export default function ReordableDataTable<T extends Record<string, any>>({
                 <tr
                   key={item[rowKey] ?? idx}
                   onClick={() => onRowClick?.(item)}
-                  className={`${theme === "dark" ? "bg-gray-900 text-gray-400" : "bg-white"} ${hoverBg} ${onRowClick ? "cursor-pointer hover:bg-gray-50 " : ""} `}
+                  className={`${isDark ? "bg-gray-900 text-gray-400" : "bg-white"} ${hoverBg} ${onRowClick ? "cursor-pointer hover:bg-gray-50 " : ""} `}
                 >
                   {columnOrder?.map((colKey) => {
                     const column = columns.find((c) => c.key === colKey);
@@ -357,12 +364,14 @@ export default function ReordableDataTable<T extends Record<string, any>>({
                         }
                       >
                         {colKey === "checkbox" ? (
-                          <input
-                            type="checkbox"
+                          <Checkbox
                             checked={selectedItems?.has(item[rowKey]) ?? false}
-                            onChange={() => toggleRow(item)}
+                            onCheckedChange={() => toggleRow(item)}
                             className={clsx(
-                              "rounded focus:ring-teal-500 cursor-pointer",
+                              "cursor-pointer border transition-colors",
+                              isDark
+                                ? "border-gray-600 data-[state=checked]:bg-teal-500 data-[state=checked]:border-teal-500 data-[state=checked]:text-white"
+                                : "border-gray-300 data-[state=checked]:bg-teal-600 data-[state=checked]:border-teal-600",
                             )}
                           />
                         ) : column.render ? (
@@ -375,6 +384,18 @@ export default function ReordableDataTable<T extends Record<string, any>>({
                   })}
                 </tr>
               ))
+            )}
+            {isDataLoading && (
+              <tr>
+                <td
+                  colSpan={columnOrder?.length || 1}
+                  className="h-20 text-center"
+                >
+                  <div className="flex flex-col items-center justify-center h-full gap-3">
+                    <Loader className="w-10 h-10 animate-spin text-teal-600" />
+                  </div>
+                </td>
+              </tr>
             )}
           </tbody>
         </table>

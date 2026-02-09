@@ -55,6 +55,8 @@
   "confirm": "Confirm",
   "details": "Details",
   "edit": "Edit",
+  "continue": "Continue",
+  "send_invite": "Send Invite",
 
   "pending": "Pending",
   "approved": "Approved",
@@ -92,6 +94,7 @@
   "image_upload_failed": "Image upload failed! Please try again...",
   "image_delete_failed": "Image delete failed! Please try again...",
 
+  "to": "to",
   "primary": "Primary",
   "set_as_primary": "Set as Primary",
 

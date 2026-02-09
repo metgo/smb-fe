@@ -34,24 +34,6 @@ const RootLayout = () => {
           )}
         >
           <Outlet />
-          {/* Footer Credit */}
-          <div className="mt-40 pt-8 border-t border-gray-200 dark:border-gray-800 text-center">
-            <p className="text-gray-600 dark:text-gray-400 text-sm">
-              Powered by{" "}
-              <span className="text-teal-600 dark:text-teal-400">
-                MetGo LTD.
-              </span>
-            </p>
-            <p className="text-gray-500 dark:text-gray-500 text-xs mt-1">
-              Contact support at{" "}
-              <a
-                href="mailto:support@metgo.app"
-                className="text-teal-600 dark:text-teal-400 hover:text-teal-500 dark:hover:text-teal-300 transition-colors"
-              >
-                support@metgo.app
-              </a>
-            </p>
-          </div>
         </div>
       </div>
     </main>

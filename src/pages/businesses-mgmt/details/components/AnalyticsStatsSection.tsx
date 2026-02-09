@@ -1,3 +1,5 @@
+import { useThemeClasses } from "@/hooks/useThemeClasses";
+import { useGetIndividualBusinessStatsQuery } from "@/store/api/businessQueryApi";
 import {
   Eye,
   Users,
@@ -9,73 +11,76 @@ import {
 } from "lucide-react";
 
 interface AnalyticsStatsSectionProps {
-  business: Business;
-  theme: string;
   t: (key: string) => string;
   borderColor: string;
+  businessId: string;
 }
 
 const AnalyticsStatsSection = ({
   t,
-  theme,
-  business,
   borderColor,
+  businessId,
 }: AnalyticsStatsSectionProps) => {
+  const { isDark } = useThemeClasses();
+  const { data } = useGetIndividualBusinessStatsQuery(
+    { businessId },
+    { skip: !businessId },
+  );
   const stats = [
     {
       icon: Eye,
       label: t("page_views"),
-      value: business?.analytics?.pageViews.toLocaleString(),
+      value: data?.pageViews?.toLocaleString() || 0,
     },
     {
       icon: Users,
       label: t("unique_visitors"),
-      value: business?.analytics?.uniqueVisitors.toLocaleString(),
+      value: data?.uniqueVisitors?.toLocaleString() || 0,
     },
     {
       icon: MousePointer,
       label: t("clicks"),
-      value: business?.analytics?.clicks.toLocaleString(),
+      value: data?.clicks?.toLocaleString() || 0,
     },
     {
       icon: Bookmark,
       label: t("bookmarks"),
-      value: business?.analytics?.bookmarks.toLocaleString(),
+      value: data?.bookmarks?.toLocaleString() || 0,
     },
     {
       icon: Share2,
       label: t("shares"),
-      value: business?.analytics?.shares.toLocaleString(),
+      value: data?.shares?.toLocaleString() || 0,
     },
     {
       icon: Timer,
       label: t("avg_time_on_page"),
-      value: `${business?.analytics?.averageTimeOnPage}s`,
+      value: `${data?.averageEngagementTime}`,
     },
     {
       icon: TrendingUp,
       label: t("conversion_rate"),
-      value: `${business?.analytics?.conversionRate}%`,
+      value: `${data?.conversionRate || 0}%`,
     },
   ];
 
   return (
-    <div className={`mt-4 ${theme === "dark" ? "bg-gray-900" : "bg-white"}`}>
+    <div className={`mt-4`}>
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
-        {stats.map((stat, idx) => {
+        {stats?.map((stat, idx) => {
           const Icon = stat.icon;
           return (
             <div key={idx} className={`p-4 rounded-lg border ${borderColor}`}>
               <div className="flex items-center gap-2 mb-2">
                 <Icon className="w-5 h-5 text-teal-600 dark:text-teal-400" />
                 <h3
-                  className={`text-sm ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}
+                  className={`text-sm ${isDark ? "text-gray-400" : "text-gray-600"}`}
                 >
                   {stat.label}
                 </h3>
               </div>
               <p
-                className={`text-2xl font-bold ${theme === "dark" ? "text-white" : "text-gray-900"}`}
+                className={`text-2xl font-bold ${isDark ? "text-white" : "text-gray-900"}`}
               >
                 {stat.value}
               </p>

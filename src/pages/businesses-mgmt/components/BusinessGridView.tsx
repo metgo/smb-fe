@@ -1,10 +1,11 @@
 import { toast } from "sonner";
 import { useRef, useState } from "react";
-import { AlertCircle, MapPin, Phone, TrashIcon } from "lucide-react";
+import { AlertCircle, Image, MapPin, Phone, TrashIcon } from "lucide-react";
 
 import { ConfirmDialog, ImageWithFallback } from "@/components/shared";
 import { useDeleteBusinessMutation } from "@/store/api/businessMutationApi";
 import { useInfiniteScroll } from "@/hooks/useInfiniteScroll";
+import { useThemeClasses } from "@/hooks/useThemeClasses";
 
 interface Business {
   _id: string;
@@ -25,7 +26,6 @@ interface Business {
 interface GridViewProps<T> {
   data: any[];
   onRowClick?: (item: T) => void;
-  theme: "dark" | "light";
   refetch: () => void;
   next?: () => void;
   hasMore?: boolean;
@@ -36,7 +36,6 @@ interface GridViewProps<T> {
 function BusinessGridView<T extends Business>({
   data,
   onRowClick,
-  theme,
   refetch,
   hasMore,
   next,
@@ -44,6 +43,7 @@ function BusinessGridView<T extends Business>({
   isLoading = false,
 }: GridViewProps<T>) {
   const scrollRef = useRef<HTMLDivElement | null>(null);
+  const { isDark } = useThemeClasses();
 
   //scroll on list view works on grid view by caching but if user opens grid view directly it doesnt so for that
   useInfiniteScroll({
@@ -52,6 +52,7 @@ function BusinessGridView<T extends Business>({
     isLoading: isLoading,
     onLoadMore: next,
   });
+
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [businessToDelete, setBusinessToDelete] = useState<string | null>(null);
   const [deleteBusiness, { isLoading: isDeleting }] =
@@ -68,17 +69,17 @@ function BusinessGridView<T extends Business>({
       <div className="flex flex-col overflow-hidden h-[calc(108vh-210px)] ">
         <AlertCircle
           className={`w-16 h-16 mx-auto mb-4 ${
-            theme === "dark" ? "text-gray-500" : "text-gray-400"
+            isDark ? "text-gray-500" : "text-gray-400"
           }`}
         />
         <h3
           className={`text-lg mb-2 ${
-            theme === "dark" ? "text-gray-300" : "text-gray-700"
+            isDark ? "text-gray-300" : "text-gray-700"
           }`}
         >
           {t("no_businesses_found")}
         </h3>
-        <p className={theme === "dark" ? "text-gray-500" : "text-gray-600"}>
+        <p className={isDark ? "text-gray-500" : "text-gray-600"}>
           {t("no_businesses_found_desc")}
         </p>
       </div>
@@ -88,11 +89,11 @@ function BusinessGridView<T extends Business>({
   return (
     <div
       className={`py-6 px-4 ${
-        theme == "dark" ? "border-gray-700 bg-gray-900" : "border-gray-300 "
+        isDark ? "border-gray-700 bg-gray-900" : "border-gray-300 "
       } `}
     >
       <div
-        className="overflow-x-auto max-h-[calc(100vh-450px)] overflow-y-auto"
+        className="overflow-x-auto max-h-[calc(100vh-500px)] overflow-y-auto mb-20"
         id="business-table-scroll"
         ref={scrollRef}
       >
@@ -100,7 +101,7 @@ function BusinessGridView<T extends Business>({
           {data.map((business) => (
             <div
               key={business._id}
-              className={`${theme === "dark" ? "bg-gray-900" : "bg-white"} dark:bg-gray-900 relative rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow cursor-pointer`}
+              className={`${isDark ? "bg-gray-900" : "bg-white"} dark:bg-gray-900 relative rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow cursor-pointer`}
               onClick={() => onRowClick && onRowClick(business)}
             >
               {/* Delete button */}
@@ -124,21 +125,21 @@ function BusinessGridView<T extends Business>({
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full bg-linear-to-br from-purple-400 to-pink-400 flex items-center justify-center">
-                    <AlertCircle className="w-20 h-20 text-white/40" />
+                  <div className="w-full h-full bg-linear-to-br from-gray-400 to-teal-400 flex items-center justify-center">
+                    <Image className="w-20 h-20 text-white/40" />
                   </div>
                 )}
               </div>
 
               <div
                 className={`p-5 ${
-                  theme === "dark"
+                  isDark
                     ? "bg-gray-800 text-gray-400"
                     : "bg-white text-gray-600"
                 }`}
               >
                 <h3
-                  className={`${theme === "dark" ? "text-white" : "text-gray-600"} font-semibold text-lg mb-3 line-clamp-2 text-gray-900 dark:text-white`}
+                  className={`${isDark ? "text-white" : "text-gray-600"} font-semibold text-lg mb-3 line-clamp-2 text-gray-900 dark:text-white`}
                 >
                   {business.name}
                 </h3>
@@ -167,6 +168,7 @@ function BusinessGridView<T extends Business>({
           ))}
         </div>
       </div>
+
       <ConfirmDialog
         open={isConfirmOpen}
         title={"delete_business"}

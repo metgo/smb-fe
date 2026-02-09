@@ -98,7 +98,13 @@ const EventScheduledNotificationDetails: React.FC<
   };
 
   // Sort notifications by sendHoursBefore (descending)
-  const sortedNotifications = [...scheduledNotificationId].sort(
+  const notifications: ScheduledNotification[] = Array.isArray(
+    scheduledNotificationId,
+  )
+    ? scheduledNotificationId
+    : [];
+
+  const sortedNotifications = notifications.sort(
     (a, b) => b.sendHoursBefore - a.sendHoursBefore,
   );
 
@@ -120,8 +126,8 @@ const EventScheduledNotificationDetails: React.FC<
             isDark ? "text-gray-400" : "text-gray-600",
           )}
         >
-          {scheduledNotificationId.length}{" "}
-          {scheduledNotificationId.length === 1
+          {scheduledNotificationId?.length}{" "}
+          {scheduledNotificationId?.length === 1
             ? "notification"
             : "notifications"}{" "}
           scheduled for this event
@@ -129,9 +135,9 @@ const EventScheduledNotificationDetails: React.FC<
       </div>
 
       {/* Notifications List */}
-      {sortedNotifications.length > 0 ? (
+      {sortedNotifications?.length > 0 ? (
         <div className="space-y-4">
-          {sortedNotifications.map((notification, index) => (
+          {sortedNotifications?.map((notification, index) => (
             <div
               key={notification._id}
               className={clsx(
@@ -177,7 +183,7 @@ const EventScheduledNotificationDetails: React.FC<
                       <span
                         className={clsx(
                           "px-2.5 py-1 rounded-full text-xs font-medium",
-                          notification.status === "ACTIVE"
+                          notification?.status === "ACTIVE"
                             ? isDark
                               ? "bg-green-500/20 text-green-400"
                               : "bg-green-100 text-green-700"
@@ -230,7 +236,7 @@ const EventScheduledNotificationDetails: React.FC<
                       : "bg-gray-100 text-gray-700",
                   )}
                 >
-                  {notification.template === "custom"
+                  {notification?.template === "custom"
                     ? "Custom Template"
                     : "Default Template"}
                 </div>
@@ -257,7 +263,7 @@ const EventScheduledNotificationDetails: React.FC<
                     </h4>
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    {notification.channels.map((channel) => (
+                    {notification?.channels?.map((channel) => (
                       <span
                         key={channel}
                         className={clsx(
@@ -288,13 +294,13 @@ const EventScheduledNotificationDetails: React.FC<
                   >
                     Language:{" "}
                     <span className="font-medium uppercase">
-                      {notification.language}
+                      {notification?.language}
                     </span>
                   </span>
                 </div>
 
                 {/* Custom Template Content */}
-                {notification.customTemplate && (
+                {notification?.customTemplate && (
                   <div
                     className={clsx(
                       "rounded-lg border p-4 space-y-3",
@@ -336,7 +342,7 @@ const EventScheduledNotificationDetails: React.FC<
                           isDark ? "text-gray-200" : "text-gray-800",
                         )}
                       >
-                        {notification.customTemplate.subject}
+                        {notification?.customTemplate.subject}
                       </p>
                     </div>
 
@@ -376,12 +382,14 @@ const EventScheduledNotificationDetails: React.FC<
                 >
                   <div className="flex items-center gap-1.5">
                     <Calendar className="w-3.5 h-3.5" />
-                    <span>Created: {formatDate(notification.createdAt)}</span>
+                    <span>Created: {formatDate(notification?.createdAt)}</span>
                   </div>
-                  {notification.updatedAt && (
+                  {notification?.updatedAt && (
                     <div className="flex items-center gap-1.5">
                       <Calendar className="w-3.5 h-3.5" />
-                      <span>Updated: {formatDate(notification.updatedAt)}</span>
+                      <span>
+                        Updated: {formatDate(notification?.updatedAt)}
+                      </span>
                     </div>
                   )}
                 </div>

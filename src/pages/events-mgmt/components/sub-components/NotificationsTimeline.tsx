@@ -16,6 +16,7 @@ import {
 import { useEffect, useState } from "react";
 import CreateNotificationWizard from "./CreateNotificationWizard";
 import { ConfirmDialog } from "@/components/shared";
+import clsx from "clsx";
 
 interface NotificationsTimelineProps {
   notifications: NotificationData[];
@@ -51,8 +52,8 @@ const NotificationsTimeline: React.FC<NotificationsTimelineProps> = ({
   capacity,
 }) => {
   const { t } = useTranslation("events");
-  const { textPrimary, textTertiary } = useThemeClasses();
-  const { isRTL, theme } = useAppSelector((state) => state.settings);
+  const { textPrimary, textTertiary, isDark } = useThemeClasses();
+  const { isRTL } = useAppSelector((state) => state.settings);
 
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const [notificationToDelete, setNotificationToDelete] = useState<
@@ -91,7 +92,7 @@ const NotificationsTimeline: React.FC<NotificationsTimelineProps> = ({
             .map((notification, index) => (
               <div
                 key={index}
-                className={`p-4 rounded-lg border ${theme === "dark" ? "border-gray-700 bg-gray-800/50" : "border-gray-200 bg-gray-50"} ${
+                className={`p-4 rounded-lg border ${isDark ? "border-gray-700 bg-gray-800/50" : "border-gray-200 bg-gray-50"} ${
                   !notification.enabled ? "opacity-50" : ""
                 }`}
               >
@@ -146,7 +147,7 @@ const NotificationsTimeline: React.FC<NotificationsTimelineProps> = ({
                           ),
                         );
                       }}
-                      className={`p-2 rounded-lg transition-colors cursor-pointer ${theme === "dark" ? "hover:bg-gray-700" : "hover:bg-gray-200"}`}
+                      className={`p-2 rounded-lg transition-colors cursor-pointer ${isDark ? "hover:bg-gray-700" : "hover:bg-gray-200"}`}
                       title={notification.enabled ? t("disable") : t("enable")}
                     >
                       {notification.enabled ? (
@@ -160,7 +161,7 @@ const NotificationsTimeline: React.FC<NotificationsTimelineProps> = ({
                         setEditingNotification(notification);
                         setShowNotificationForm(true);
                       }}
-                      className={`p-2 rounded-lg transition-colors cursor-pointer ${theme === "dark" ? "hover:bg-gray-700" : "hover:bg-gray-200"}`}
+                      className={`p-2 rounded-lg transition-colors cursor-pointer ${isDark ? "hover:bg-gray-700" : "hover:bg-gray-200"}`}
                     >
                       <PenBox className="w-4 h-4" />
                     </button>
@@ -172,7 +173,7 @@ const NotificationsTimeline: React.FC<NotificationsTimelineProps> = ({
                         };
                         setNotifications((prev) => [...prev, duplicated]);
                       }}
-                      className={`p-2 rounded-lg transition-colors cursor-pointer ${theme === "dark" ? "hover:bg-gray-700" : "hover:bg-gray-200"}`}
+                      className={`p-2 rounded-lg transition-colors cursor-pointer ${isDark ? "hover:bg-gray-700" : "hover:bg-gray-200"}`}
                     >
                       <Copy className="w-4 h-4" />
                     </button>
@@ -212,11 +213,13 @@ const NotificationsTimeline: React.FC<NotificationsTimelineProps> = ({
               });
               setShowNotificationForm(true);
             }}
-            className={`w-full px-4 py-3 rounded-lg border-2 border-dashed transition-colors flex items-center justify-center gap-2 ${
-              theme === "dark"
+            className={clsx(
+              "w-full px-4 py-3 rounded-lg border-2 border-dashed transition-colors flex items-center justify-center gap-2",
+              isDark
                 ? "border-gray-700 hover:bg-gray-800"
-                : "border-gray-300 hover:bg-gray-50"
-            }`}
+                : "border-gray-300 hover:bg-gray-50",
+              textTertiary,
+            )}
           >
             <Plus className="w-5 h-5" />
             <span>{t("add_notification")}</span>
@@ -227,7 +230,6 @@ const NotificationsTimeline: React.FC<NotificationsTimelineProps> = ({
         {showNotificationForm && editingNotification && (
           <CreateNotificationWizard
             t={t}
-            theme={theme}
             eventName={eventName}
             startDate={startDate}
             eventDays={eventDays}

@@ -257,7 +257,7 @@ const MarkerMap = ({
         <LocateIcon />
       </button>
 
-      <div ref={mapRef} className="w-full h-full rounded-xl" />
+      <div ref={mapRef} className="w-full h-full rounded" />
     </div>
   );
 };
