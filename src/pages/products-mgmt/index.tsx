@@ -25,6 +25,8 @@ import { useGetAllProductsQuery } from "@/store/api/productQueryApi";
 import SearchInput from "@/components/shared/SearchInput";
 import { FilterButton } from "@/components/btns";
 import { useBulkProductsUpdateMutation } from "@/store/api/productMutationApi";
+import { useGetbusinessForProductQuery } from "@/store/api/businessQueryApi";
+import ReactSelect from "react-select";
 
 const businessId = "";
 const defaultColumns = {
@@ -72,7 +74,7 @@ export default function ProductsMgmtPage() {
     textSecondary,
     textTertiary,
   } = useThemeClasses();
-
+  const { data: businessData } = useGetbusinessForProductQuery({});
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   //select products
   const [selectedProducts, setSelectedProducts] = useState<Set<string>>(
@@ -89,7 +91,10 @@ export default function ProductsMgmtPage() {
   const [filters, setFilters] = useState({
     status: "all",
     productType: "all",
-    businessId: "all",
+    businessId: {
+      name: "",
+      _id: "",
+    },
   });
   const [_clearBusiness, setClearBusiness] = useState(false);
 
@@ -119,8 +124,8 @@ export default function ProductsMgmtPage() {
       params.productType = filters.productType.toUpperCase();
     }
 
-    if (filters.businessId !== "all") {
-      params.businessId = filters.businessId;
+    if (filters.businessId.name !== "all") {
+      params.businessId = filters.businessId?._id;
     }
 
     return params;
@@ -529,25 +534,36 @@ export default function ProductsMgmtPage() {
                               ))
                             )}
                           </select> */}
-                    {/* <ReactSelect
-                            isClearable
-                            value={filters.businessId?.name}
-                            onChange={(selectedOption) => {
-                              setFilters((prev) => ({
-                                ...prev,
-                                businessId: selectedOption?.value,
-                              }));
-                            }}
-                            placeholder="Select Business"
-                            options={
-                              businessData?.data?.map((item: any) => ({
-                                value: item._id,
-                                label: item.name,
-                                logo: item.logo,
-                              })) ?? []
+                    <ReactSelect
+                      isClearable
+                      value={
+                        filters.businessId?._id
+                          ? {
+                              value: filters.businessId._id,
+                              label: filters.businessId.name,
                             }
-                            className="rounded-md z-5"
-                          /> */}
+                          : null
+                      }
+                      onChange={(selectedOption) => {
+                        setFilters((prev) => ({
+                          ...prev,
+                          businessId: selectedOption
+                            ? {
+                                _id: selectedOption.value,
+                                name: selectedOption.label,
+                              }
+                            : { _id: "", name: "" }, // or null — depending on your preference
+                        }));
+                      }}
+                      placeholder={t("select_business")}
+                      options={
+                        businessData?.data?.map((item: any) => ({
+                          value: item._id,
+                          label: item.name,
+                        })) ?? []
+                      }
+                      className="rounded-md z-50"
+                    />
                   </div>
                 )}
               </div>
@@ -562,7 +578,10 @@ export default function ProductsMgmtPage() {
                         setFilters({
                           status: "all",
                           productType: "all",
-                          businessId: "all",
+                          businessId: {
+                            name: "",
+                            _id: "",
+                          },
                         })
                       }
                       className="ml-auto text-sm text-green-600 "
